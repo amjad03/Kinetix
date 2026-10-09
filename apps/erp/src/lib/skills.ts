@@ -1,4 +1,5 @@
 // Types for the skills desk (framework, outcome passport, SDG impact): what v1/skills, v1/passport and v1/sdg send.
+import type { KsaRow } from '@/lib/pathways-a';
 
 export interface Skill { id: string; code: string; name: string; category: string; description: string; active: boolean; sources: number; manualEvidence: number }
 export interface SkillMap { id: string; kind: string; ref: string; label: string }
@@ -10,6 +11,7 @@ export interface PassportSkill { skillId: string; code: string; name: string; ca
 export interface Passport {
   student: { id: string; fullName: string; rollNo: string; className: string };
   skills: PassportSkill[];
+  ksa?: KsaRow[];
   certificates: { serialNo: string | null; title: string; issuedOn: string }[];
   activities: { clubs: { club: string; points: number; activities: number }[]; events: { title: string; eventType: string; on: string }[] };
   verification: { verified: boolean; verifiedAt: string | null };

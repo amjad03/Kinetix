@@ -7,6 +7,7 @@ import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { Day } from '../common/ops.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
+import { ParentVisibilityService } from '../parent/parent-visibility.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { academicYears, attendanceRecords, sections, students, tenants } from '../db/schema.js';
@@ -61,7 +62,10 @@ async function attendanceFor(tx: Tx, studentId: string, from: string, to: string
 /** School mode: report cards with remarks, PUC streams and combinations, and learning-outcome mastery. */
 @Controller('v1/school')
 export class SchoolAcademicsController {
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly vis: ParentVisibilityService,
+  ) {}
 
   // ---- Report cards ----
 
@@ -104,6 +108,7 @@ export class SchoolAcademicsController {
   listReportCards(@CurrentPrincipal() p: UserPrincipal, @Query('studentId', ParseUUIDPipe) studentId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
+      await this.vis.assert(tx, p, 'report_card');
       return tx.select({ id: reportCards.id, academicYearId: reportCards.academicYearId, termLabel: reportCards.termLabel, promotionStatus: reportCards.promotionStatus, updatedAt: reportCards.updatedAt }).from(reportCards).where(eq(reportCards.studentId, studentId)).orderBy(asc(reportCards.updatedAt));
     });
   }
@@ -114,6 +119,7 @@ export class SchoolAcademicsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const d = await this.cardData(tx, id);
       await assertCanSeeStudent(tx, p, d.card.studentId, STAFF);
+      await this.vis.assert(tx, p, 'report_card');
       return { ...d.card, student: d.st, lines: d.lines, coCurricular: d.co, attendance: d.attendance };
     });
   }
@@ -124,6 +130,7 @@ export class SchoolAcademicsController {
     const pdf = await this.db.withTenant(p.tenantId, async (tx) => {
       const d = await this.cardData(tx, id);
       await assertCanSeeStudent(tx, p, d.card.studentId, STAFF);
+      await this.vis.assert(tx, p, 'report_card');
       const [t] = await tx.select({ name: tenants.name }).from(tenants);
       return reportCardPdf({
         institution: t.name,

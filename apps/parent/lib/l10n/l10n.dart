@@ -85,6 +85,7 @@ String? describeErrorCode(AppLocalizations l, String? code) => switch (code) {
   'SUBMISSION_CHECKED' => l.errSubmissionChecked,
   'SUBMISSION_STUDENT_ONLY' => l.errSubmissionStudentOnly,
   'CONSENT_GUARDIAN_DECIDES' => l.errConsentGuardianDecides,
+  'PARENT_VISIBILITY_OFF' => l.errVisibilityOff,
   _ => null,
 };
 

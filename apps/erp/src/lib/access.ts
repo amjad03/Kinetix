@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'projects' | 'careers' | 'comms';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -88,6 +88,12 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   topicVideos: ['principal', 'tenant_admin', 'hod'],
   // placements.access.ts PLACEMENT_VIEW_ROLES (the placement cell edits; a head of department reads)
   placements: ['principal', 'tenant_admin', 'placement_officer', 'hod'],
+  // projects.controller.ts PROJECT_ADMIN (the project workspace and the impact framework); teachers and students use the apps
+  projects: ['principal', 'tenant_admin', 'research_coordinator', 'hod'],
+  // careers.controller.ts CAREER_VIEW (resumes, aptitude tests, career paths)
+  careers: ['principal', 'tenant_admin', 'placement_officer', 'hod'],
+  // comms.controller.ts BROADCAST_ROLES (templates, audiences, scheduled campaigns)
+  comms: ['principal', 'tenant_admin', 'hod'],
   // research.controller.ts RESEARCH_VIEW_ROLES
   research: ['principal', 'tenant_admin', 'research_coordinator', 'hod'],
   // welfare.access.ts GRIEVANCE_STAFF and COMMITTEE_ROLES (committee matters show only to committee members)
@@ -255,6 +261,12 @@ export function sectionOf(pathname: string): Section | null {
       return 'documents';
     case 'skills':
       return 'skills';
+    case 'projects':
+      return 'projects';
+    case 'careers':
+      return 'careers';
+    case 'communication':
+      return 'comms';
     case 'campus-life':
       return 'campusLife';
     case 'placements':

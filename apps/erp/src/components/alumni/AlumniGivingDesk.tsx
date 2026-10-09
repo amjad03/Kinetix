@@ -5,13 +5,15 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { useState, useTransition } from 'react';
 import { recordDonation, recordPledge, saveCampaign, saveOpportunity, signUp, withdraw } from '@/app/(dashboard)/alumni/actions';
+import { SuccessStoriesQueue } from '@/components/alumni/SuccessStoriesQueue';
 import { FormDialog, Grid, Pill, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { DONATION_MODES, receiptPath, type AlumniOption, type CampaignRow, type DonationRow, type OpportunityRow } from '@/lib/govern';
+import type { StoryRow } from '@/lib/pathways-a';
 
 /** Campaigns, donations with receipts, and volunteering. */
-export function AlumniGivingDesk({ campaigns, donations, opportunities, alumni }: { campaigns: CampaignRow[]; donations: DonationRow[]; opportunities: OpportunityRow[] | null; alumni: AlumniOption[] }) {
+export function AlumniGivingDesk({ campaigns, donations, opportunities, alumni, stories, initialTab }: { campaigns: CampaignRow[]; donations: DonationRow[]; opportunities: OpportunityRow[] | null; alumni: AlumniOption[]; stories: StoryRow[] | null; initialTab: string }) {
   const { t, fmt } = useI18n();
   const [toast, toastNode] = useToast();
   const [pending, start] = useTransition();
@@ -133,11 +135,12 @@ export function AlumniGivingDesk({ campaigns, donations, opportunities, alumni }
           },
         ]
       : []),
+    ...(stories ? [{ id: 'stories', label: t('ssq.tab'), node: <SuccessStoriesQueue stories={stories} /> }] : []),
   ];
 
   return (
     <>
-      <Tabbed label={t('nav.alumni')} initial="campaigns" tabs={tabs} />
+      <Tabbed label={t('nav.alumni')} initial={initialTab} tabs={tabs} />
       {campaign && <FormDialog title={campaign === 'new' ? t('alm.newCampaign') : t('alm.edit')} fields={campaignFields(campaign === 'new' ? undefined : campaign)} onSubmit={(v) => saveCampaign(v, campaign === 'new' ? undefined : campaign.id)} onClose={close} />}
       {pledge && (
         <FormDialog

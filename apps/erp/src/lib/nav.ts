@@ -150,6 +150,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/canteen', label: 'nav.canteen', section: 'canteen', icon: 'canteen' },
       { href: '/campus-life', label: 'nav.campusLife', section: 'campusLife', icon: 'campusLife' },
       { href: '/skills', label: 'nav.skills', section: 'skills', icon: 'skills' },
+      { href: '/projects', label: 'nav.projects', section: 'projects', icon: 'research' },
+      { href: '/careers', label: 'nav.careers', section: 'careers', icon: 'placements' },
     ],
   },
   {
@@ -168,6 +170,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/messages', label: 'nav.messages', section: 'school', icon: 'messages' },
       { href: '/conversations', label: 'nav.conversations', section: 'conversations', icon: 'conversations' },
+      { href: '/communication', label: 'nav.comms', section: 'comms', icon: 'messages' },
     ],
   },
   {

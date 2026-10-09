@@ -263,6 +263,21 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
               { label: t('sk.mapped'), cell: (s) => s.evidence.map((e) => `${e.title}: ${e.detail}`).join('; ') || '-' },
             ]}
           />
+          {d.ksa && d.ksa.length > 0 && (
+            <>
+              <Typography variant="h6" sx={{ fontSize: '1.0625rem', mt: 3, mb: 1 }}>{t('sk.pp.ksa')}</Typography>
+              <Grid
+                testId="sk-passport-ksa"
+                empty={t('sk.pp.none')}
+                rows={d.ksa}
+                cols={[
+                  { label: t('sk.col.category'), cell: (k) => t(`sk.cat.${k.category}` as MessageKey), sort: (k) => k.category },
+                  { label: t('sk.stat.skills'), cell: (k) => k.skills, num: true, sort: (k) => k.skills },
+                  { label: t('sk.pp.avgLevel'), cell: (k) => (k.averageLevel === null ? t('sk.pp.noLevel') : t('sk.pp.levelOf', { n: k.averageLevel })), num: true, sort: (k) => k.averageLevel },
+                ]}
+              />
+            </>
+          )}
           <Typography variant="h6" sx={{ fontSize: '1.0625rem', mt: 3, mb: 1 }}>{t('sk.pp.certificates')}</Typography>
           <Grid
             empty={t('sk.pp.none')}

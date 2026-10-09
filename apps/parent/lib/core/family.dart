@@ -5,6 +5,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
+import 'conduct.dart';
 import 'models.dart';
 
 /// The parent's children, which one is selected (remembered), and each child's Home summary, fees,
@@ -17,6 +18,10 @@ class FamilyController extends ChangeNotifier {
   static const _kChild = 'selected_child';
 
   List<Child> children = [];
+
+  /// What the school shows parents; everything until the server says otherwise. Read once per session.
+  ParentVisibility visibility = const ParentVisibility();
+  bool _visibilityLoaded = false;
   bool loading = false;
   ApiException? error;
   String? _selectedId;
@@ -78,7 +83,21 @@ class FamilyController extends ChangeNotifier {
       notifyListeners();
     }
     final c = selected;
-    await Future.wait([if (c != null) _loadAll(c.id), loadCalendar()]);
+    await Future.wait([if (c != null) _loadAll(c.id), loadCalendar(), loadVisibility()]);
+  }
+
+  /// Which sections the school shows parents. Asked once; when it cannot be read everything shows
+  /// and the server still refuses what is switched off.
+  Future<void> loadVisibility() async {
+    if (_visibilityLoaded) return;
+    try {
+      visibility = await api.visibility();
+      _visibilityLoaded = true;
+    } on ApiException {
+      // Keep the default and try again with the next load.
+    } finally {
+      notifyListeners();
+    }
   }
 
   /// Everything Home shows for a child. Each part fails on its own, so one problem never hides the rest.

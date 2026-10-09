@@ -487,15 +487,15 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Skill engine, mapping to course/outcome/activity | Built | `api/skills/skills.controller.ts` | |
 | Evidence, institution verification, revocation | Built | `api/skills/passport.controller.ts` | |
 | Passport PDF and public verify | Built | `api/skills/passport.controller.ts` (`pdf`, `verify-passport`) | |
-| Knowledge/skills/attitudes, leadership, communication tags | Partial | `api/skills/skills.controller.ts` | KSA category structure not confirmed |
+| Knowledge/skills/attitudes, leadership, communication tags | Built | `api/skills/skills.controller.ts`, `api/skills/skills.service.ts` (`ksa`), `erp/skills` | Six categories on every skill; the passport groups skills by category with the average level (`test/pathways-projects.e2e.spec.ts`). |
 
 ## 43. Projects and collaboration
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Project proposal, team, mentor, milestones | Built | `api/research/research.controller.ts` (`projects`) | research-oriented; student coursework projects not a separate module |
-| Files, discussion, review rubric, viva, portfolio | Missing | none | |
-| Collaborator discovery, team matching, showcase | Missing | none | |
+| Files, discussion, review rubric, viva, portfolio | Built | `api/projects/projects.controller.ts`, `erp/projects/[id]`, `S/features/projects`, `T/features/work/project_screens.dart` | Files (links and uploads), threaded discussion, mentor/peer/external rubric reviews, viva with result, portfolio with publish. |
+| Collaborator discovery, team matching, showcase | Built | `api/projects/projects.controller.ts` (`discover`, `matches`, `join`, `hub`, `showcase`), `erp/projects`, `S/features/projects` | Recruiting board, skill-fit ranking from the passport and resume, join requests, showcase list. |
 | SDG mapping of projects | Built | `api/skills/sdg.controller.ts` | |
 
 ## 44. SDG and impact
@@ -503,7 +503,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Tag projects, research, events, internships to SDGs | Built | `api/skills/sdg.controller.ts` | |
-| Custom impact framework | Missing | none | UN SDG only |
+| Custom impact framework | Built | `api/projects/impact.controller.ts`, `erp/projects` (Impact tab) | Own indicators with units; records from projects, events, internships and activities; dashboard totals. |
 | Dashboard | Built | `api/skills/sdg.controller.ts` (`dashboard`) | |
 
 ## 45. Placement
@@ -512,8 +512,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Companies, drives, eligibility, rounds, offers | Built | `api/placements/placements.controller.ts` | |
 | Student registration/withdrawal, offers respond | Built | `api/placements/placements.controller.ts` | |
-| Resume / profile builder | Partial | `S/features/careers` | resume screens exist; no ERP-side profile or file |
-| Aptitude / online tests | Missing | none | |
+| Resume / profile builder | Built | `api/careers/careers.controller.ts` (`resume`, `resumes`, PDF), `erp/careers`, `S/features/careers` | The student keeps the resume; the placement cell searches shared resumes and prints a PDF. |
+| Aptitude / online tests | Built | `api/careers/careers.controller.ts` (`tests`, `attempts`), `erp/careers`, `S/features/careers/aptitude.dart` | Timed tests with answers hidden, graded with topic scores, three attempts, results for staff. |
 | Stats and reports | Built | `api/placements/placements.controller.ts` (`stats`) | |
 
 ## 46. Internship
@@ -521,17 +521,17 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Internship, mentor, evaluation, diary, status | Built | `api/placements/careers.controller.ts` | |
-| Attendance, certificate on completion | Partial | `api/placements/careers.controller.ts` | diary stands for attendance; auto certificate not wired |
-| Map to skills/course/outcomes | Partial | `api/skills/sdg.controller.ts` | SDG yes; course/outcome mapping absent |
+| Attendance, certificate on completion | Built | `api/placements/internship-extras.controller.ts`, `internship-extras.service.ts`, `erp/placements` | Attendance (the diary counts where no muster was kept); completion certificate issued automatically at 75% attendance, or by the office with a waiver. |
+| Map to skills/course/outcomes | Built | `api/placements/internship-extras.controller.ts` (`links`), `api/skills/sdg.controller.ts`, `erp/placements` | Skills, subjects and course outcomes, plus SDG tags. |
 
 ## 47. Career guidance
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
-| Career interest, paths, recommendations | Partial | `S/features/careers` | static guidance; not driven by skill profile or AI |
-| Resume, portfolio | Partial | `S/features/careers` | |
-| Mock interview, aptitude, communication practice | Missing | none | |
-| AI career assistant | Missing | none | |
+| Career interest, paths, recommendations | Built | `api/careers/careers.logic.ts` (`recommendPaths`), `erp/careers`, `S/features/careers/career_prep.dart` | Paths ranked from the skill passport and resume interests, with the skill gaps. |
+| Resume, portfolio | Built | `api/careers/careers.controller.ts`, `api/projects/projects.controller.ts` (`portfolio`), `S/features/careers`, `S/features/projects` |  |
+| Mock interview, aptitude, communication practice | Built | `api/careers/careers.controller.ts` (`mock-interviews`), `S/features/careers/mock_interview.dart` | Rule-based scoring on length, points covered, filler words and pace, with per-question feedback. |
+| AI career assistant | Built | `api/careers/careers.controller.ts` (`assistant`), `api/ai/tasks.ts` (`careerCoach`), `S/features/careers/career_prep.dart` | Uses the AI gateway; with no model connected it answers from the same facts and says it is offline guidance. |
 
 ## 48. Research
 
@@ -539,11 +539,11 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Proposal, ethics, projects, scholars, grants, publications, conferences, patents | Built | `api/research/research.controller.ts` | |
 | KPIs | Built | `api/research/research.controller.ts` (`kpis`) | |
-| Supervisor allocation, thesis/dissertation, viva | Partial | `api/research/research.controller.ts` (`scholars`) | scholar status only; thesis workflow and viva absent |
-| Plagiarism check | Missing | none | needs Turnitin/iThenticate or similar account |
-| Datasets, DOI import, document upload | Missing | none | |
-| University-level research office | Missing | none | |
-| Mobile (faculty / student research) | Missing | `T/`, `S/` (0 hits) | web only |
+| Supervisor allocation, thesis/dissertation, viva | Built | `api/research/thesis.controller.ts`, `erp/research`, `T/features/work/research_screens.dart` | Supervisor caps and history, thesis stages, examiners, open defence, award. |
+| Plagiarism check | Partial | `api/research/thesis.controller.ts` (`similarity`) | external: Turnitin/iThenticate account. Built: an originality check against the institution's own theses (word-run overlap, limit 25%, office override with a reason). |
+| Datasets, DOI import, document upload | Built | `api/research/datasets.controller.ts`, `api/research/doi.ts`, `erp/research` | Datasets with files and access rules (open, restricted, embargoed); DOI import reads Crossref (public API, no account). |
+| University-level research office | Built | `api/research/research-office.controller.ts`, `erp/research` | One view across departments. |
+| Mobile (faculty / student research) | Built | `T/features/work/research_screens.dart`, `S/features/projects` |  |
 
 ## 49. Alumni
 
@@ -552,8 +552,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Directory, batch, career, events, RSVPs | Built | `api/placements/careers.controller.ts` (`alumni`) | |
 | Mentoring requests | Built | `api/placements/careers.controller.ts` | |
 | Fundraising: campaigns, pledges, donations, receipt | Built | `api/placements/alumni-giving.controller.ts` | tax-exemption (80G) receipt format not confirmed |
-| Volunteering, success stories | Partial | `api/placements/alumni-giving.controller.ts` (`volunteering`) | success stories absent |
-| Alumni login/portal | Partial | `api/placements/alumni-portal.controller.ts` | `alumni` role and own profile, giving, receipts, volunteering API; no alumni app screens yet |
+| Volunteering, success stories | Built | `api/placements/success-stories.controller.ts`, `erp/alumni`, `S/features/alumni` | Alumni write, the office reviews and features; published stories show in the student app. |
+| Alumni login/portal | Built | `api/placements/alumni-portal.controller.ts`, `S/features/alumni/alumni_home.dart` | An alumni-only login opens the alumni home in the student app: profile, giving, volunteering, own success stories. |
 
 ## 50. Clubs and student life
 
@@ -561,22 +561,22 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Clubs, membership, coordinators, activities, attendance, points | Built | `api/campus-life/clubs.controller.ts` | |
 | Certificates | Built | `api/campus-life/clubs.controller.ts` | |
-| Student leaders / office bearers, achievements log | Partial | `api/campus-life/clubs.controller.ts` | |
+| Student leaders / office bearers, achievements log | Built | `api/campus-life/life-extras.controller.ts`, `erp/campus-life`, `S/features/school` |  |
 
 ## 51. Committees
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Committees, members, tenure, meetings, agenda, minutes, action items | Built | `api/campus-life/committees.controller.ts` | |
-| Evidence, reports | Partial | `api/campus-life/committees.controller.ts` | no file evidence/report pack |
+| Evidence, reports | Built | `api/campus-life/life-extras.controller.ts` (`evidence`, `report-pack`), `erp/campus-life` | Files and links per meeting, and a PDF report pack. |
 
 ## 52. Events
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Event, venue, registration, capacity, fee, QR check-in, feedback | Built | `api/campus-life/events.controller.ts` | |
-| Certificate on attendance | Partial | `api/campus-life/events.controller.ts` | |
-| Media gallery | Missing | none | |
+| Certificate on attendance | Built | `api/campus-life/life-extras.controller.ts` (`certificates`), `api/documents/auto-certificates.service.ts` | Numbered, verifiable certificates for everyone checked in. |
+| Media gallery | Built | `api/campus-life/life-extras.controller.ts` (`media`), `erp/campus-life` | Staff publish; attendees add items that wait for approval. |
 | Mobile passes (QR) | Built | `S/features/campus`, `P/features/school_life/event_passes_screen.dart` | |
 
 ## 53. Survey and feedback
@@ -584,9 +584,9 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Question types (MCQ, rating, free text, yes/no, NPS) | Built | `api/surveys/surveys.controller.ts` | matrix and rank types not confirmed |
-| Anonymous / identified, scheduling | Partial | `api/surveys/surveys.controller.ts` | publish/close; automatic scheduling and conditional logic absent |
+| Anonymous / identified, scheduling | Built | `api/surveys/surveys.controller.ts`, `surveys.service.ts` (`runSchedule`, `nextCycle`), `survey-rules.ts` (`showIf`) | Opens by itself, repeats on a schedule, conditional questions; anonymity unchanged. |
 | Results, export, CO ratings into OBE | Built | `api/surveys/surveys.controller.ts` (`export.csv`, `outcomes`) | |
-| Trends, action items | Partial | `erp/surveys` | trend across cycles absent |
+| Trends, action items | Built | `api/surveys/surveys.controller.ts` (`series/:key/trend`), `erp/surveys` | Cycle-to-cycle averages and change per question. |
 
 ## 54. Grievance
 
@@ -594,14 +594,14 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Types, anonymous, SLA, assignment, escalation, rating, reopen | Built | `api/welfare/grievances.controller.ts` | |
 | Confidential committees (anti-ragging, ICC/POSH) | Built | `api/welfare/grievances.controller.ts` (`committee-stage`) | |
-| Evidence attachments | Partial | `api/welfare/grievances.controller.ts` | via vault; no dedicated evidence UI check |
+| Evidence attachments | Built | `api/welfare/welfare-extras.controller.ts` (`GrievanceEvidenceController`), `erp/grievances` | Same privacy as the ticket; the uploader is hidden on anonymous tickets. |
 
 ## 55. Discipline
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Incidents, actions, warnings, appeals, closure | Built | `api/welfare/discipline.controller.ts` | |
-| Witnesses, parent involvement | Partial | `api/welfare/discipline.controller.ts` | |
+| Witnesses, parent involvement | Built | `api/welfare/welfare-extras.controller.ts` (`DisciplineExtrasController`), `erp/grievances`, `P/features/school_life/conduct_screens.dart` | Witness statements; parent contact log with a notice the parent acknowledges. |
 
 ## 56. Documents and records
 
@@ -609,9 +609,9 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Upload, metadata, access control, expiry, preview | Built | `api/documents/vault.controller.ts` | |
 | Virus scan | Built | `api/scanning` | |
-| Versioning | Missing | none | no version rows |
-| OCR | Missing | none | |
-| Retention rules (generic) | Partial | `erp/settings/retention-actions.ts` | recordings only |
+| Versioning | Built | `api/documents/vault.controller.ts` (`versions`, `restore`), `erp/documents/vault` | Upload with `replacesId` chains versions; history and restore as a new version. |
+| OCR | Partial | none | external: an OCR engine or vision-model server (none is bundled). |
+| Retention rules (generic) | Built | `api/retention/retention.controller.ts`, `retention.service.ts`, `erp/settings` | Per-target rules, daily sweep and a dry run; documents are archived, never destroyed. |
 | Verification | Built | `api/documents/public-verify.controller.ts` | |
 
 ## 57. Workflow / e-governance engine
@@ -620,10 +620,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Definitions, request, approve/reject, resubmit, cancel, inbox | Built | `api/workflows/workflows.controller.ts` | |
 | Multi-step sequential approvals | Built | `mig/0102_workflows.sql` | |
-| Parallel approval, conditions | Missing | none | |
-| SLA, escalation | Partial | `api/workflows/workflows.controller.ts` | no timed auto-escalation job found |
-| Forms in workflow | Partial | `erp/workflows` | free-form payload; no form builder |
-| Existing flows bound to engine (admissions, scholarships, refunds, certificates, grievance) | Partial | `api/finance/scholarships.controller.ts` | many modules still use their own state machines |
+| Parallel approval, conditions | Built | `api/workflows/workflows.service.ts` (`parallelOutcome`, `applicableSteps`), `mig/0110` |  |
+| SLA, escalation | Built | `api/workflows/workflows.service.ts` (`sweepSla`, hourly job) | Reminders, then escalation to a named role or user. |
+| Forms in workflow | Built | `api/workflows/workflow-rules.ts` (`validatePayload`), `erp/workflows` (field editor) | Definitions declare typed fields; requests are validated against them. |
+| Existing flows bound to engine (admissions, scholarships, refunds, certificates, grievance) | Built | `api/workflows/bound-flows.*` (scholarships, refunds, certificates, admission fee waivers, grievance resolution), `erp/workflows` | With an active workflow for the flow, the direct action answers 409 and the outcome is applied when the last approver decides. |
 
 ## 58. Communication engine
 
@@ -631,10 +631,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | In-app and push | Built | `api/push`, `api/notifications/notifications.service.ts` | |
 | Internal messages, conversations, broadcasts | Built | `api/messages/messages.controller.ts`, `api/broadcasts` | |
-| SMS | Partial | `api/auth/sms-sender.ts` | OTP + absence fallback designed (MSG91); DLT templates not registered |
-| Email | Partial | `api/analytics/mailer.ts` | scheduled reports only; no general email channel |
-| WhatsApp adapter | Missing | none | needs WhatsApp Business account |
-| Templates, audience rules, schedule, retry, read status | Partial | `api/notifications/texts.ts` | read status built; template editor and scheduled sends absent |
+| SMS | Partial | `api/comms/channels.ts`, `api/auth/sms-sender.ts` | external: DLT entity and template registration with the telecom operator. Built: template ids are stored and required before an SMS campaign can be sent; MSG91 flow sender. |
+| Email | Built | `api/comms/comms.service.ts` (email channel), `api/analytics/mailer.ts` | General channel with retry; needs the mail relay (`MAIL_WEBHOOK_URL`) configured, otherwise it only logs. |
+| WhatsApp adapter | Partial | `api/comms/channels.ts` (`WhatsAppSender`) | external: the institution's WhatsApp Business account. Built: the adapter interface and a guard that refuses campaigns while none is connected. |
+| Templates, audience rules, schedule, retry, read status | Built | `api/comms/comms.controller.ts`, `comms.service.ts`, `erp/communication` | Templates per channel and language, saved audiences, scheduled campaigns, back-off retry (15 min, 1 h, 4 h), read status for in-app. |
 
 ## 59. Parent experience
 
@@ -642,10 +642,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Attendance, homework, timetable, marks, fees, transport, events, consent | Built | `P/features` (attendance, homework, exams, fees, transport, privacy) | |
 | Diary, PTM, early years, health, passport, surveys | Built | `P/features/school_life` | |
-| Report card (school) | Partial | `P/features/exams` | marks card only |
+| Report card (school) | Built | `P/features/exams/report_card_screen.dart`, `api/curriculum/school-academics.controller.ts` | Scholastic and co-scholastic grades, remarks, behaviour grade, attendance and PDF. |
 | Teacher messages | Built | `P/features/messages` | |
-| Behaviour/activities where allowed | Partial | `P/features/school_life` | |
-| Visibility driven by policy/config | Partial | `api/parent/parent.controller.ts` | fixed rules, no per-tenant visibility switches |
+| Behaviour/activities where allowed | Built | `api/parent/parent-extras.controller.ts`, `P/features/school_life/conduct_screens.dart` |  |
+| Visibility driven by policy/config | Built | `api/parent/parent-visibility.ts`, `erp/settings`, `P/core/conduct.dart` | Per-institution switches for attendance, diary, report card, behaviour, activities, health; enforced in the API. |
 | Career (PUC), official notices (college) | Built | `P/features/careers`, `P/features/updates` | |
 
 ## 60. Student app
@@ -655,8 +655,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Dashboard, timetable, attendance, learning, homework, results, fees, calendar, messages | Built | `S/features` | |
 | Assessments and quizzes | Built | `S/features/learn` | |
 | Credits, course registration, passport, internship, placement | Built | `S/features/campus/course_registration_screen.dart` | |
-| Research, projects | Missing | `S/` (0 hits) | |
-| School: diary, activities, report card | Partial | `S/features/today` | no diary or report card screen in Student app (Parent only) |
+| Research, projects | Built | `S/features/projects` | My projects and workspace, find a team, showcase and peer review, portfolio, thesis status. |
+| School: diary, activities, report card | Built | `api/parent/parent-extras.controller.ts` (`student/diary`, `student/activities`), `S/features/school` |  |
 
 ## 61. Teacher app
 
@@ -665,7 +665,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Dashboard, timetable, attendance, roster, homework, marks, lesson plan, messages | Built | `T/features` | |
 | Student insights, AI copilot, recordings, board remote | Built | `T/features/insights`, `T/features/ai` | |
 | Exam duties, mentoring, HR (leave/payslip), substitutions | Built | `T/features/work`, `T/features/hr` | |
-| Course file, CO/PO view, research, project mentoring | Missing | `T/` (0 hits for course file, research) | CO/PO shows attainment only |
+| Course file, CO/PO view, research, project mentoring | Built | `T/features/work/course_file_screens.dart`, `obe_screens.dart`, `research_screens.dart`, `project_screens.dart` |  |
 
 ## 62. Smartboard ERP integration
 

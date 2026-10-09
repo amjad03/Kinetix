@@ -88,6 +88,9 @@ class Me {
 
   bool get isStudent => roles.contains('student');
 
+  /// A graduate with an alumni login (they get the alumni home, with or without a student record).
+  bool get isAlumni => roles.contains('alumni');
+
   String get firstName {
     final parts = fullName.split(' ').where((p) => p.isNotEmpty && !p.endsWith('.')).toList();
     return parts.isEmpty ? fullName : parts.first;

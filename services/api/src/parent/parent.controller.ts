@@ -22,6 +22,7 @@ import { addDays } from '../teacher/teacher.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 import { RecordingsService } from '../recordings/recordings.service.js';
 import { WhiteboardsService } from '../whiteboards/whiteboards.service.js';
+import { ParentVisibilityService } from './parent-visibility.js';
 
 /** What a parent sees about their children. Every route checks the guardian link first. */
 @Controller('v1/parent')
@@ -32,6 +33,7 @@ export class ParentController {
     private readonly timetable: TimetableService,
     private readonly boards: WhiteboardsService,
     private readonly recordings: RecordingsService,
+    private readonly vis: ParentVisibilityService,
   ) {}
 
   @Get('children')
@@ -65,6 +67,7 @@ export class ParentController {
       const child = await this.child(tx, p, studentId);
       const today = localParts(this.clock.now(), await this.timetable.tenantTimezone(tx)).date;
       const from = addDays(today, -(days - 1));
+      const showAttendance = await this.vis.allowed(tx, p, 'attendance');
 
       const marks = await tx
         .select({ status: attendanceRecords.status, n: sql<number>`count(*)::int` })
@@ -155,16 +158,19 @@ export class ParentController {
       return {
         child,
         period: { from, to: today, days },
-        attendance: {
-          periods: total,
-          present,
-          absent,
-          late,
-          excused,
-          // Late counts as attended.
-          rate: total === 0 ? null : Math.round(((present + late + excused) / total) * 1000) / 10,
-          recentAbsences,
-        },
+        // The school can switch attendance off for parents: the block stays, empty, so apps need no special case.
+        attendance: showAttendance
+          ? {
+              periods: total,
+              present,
+              absent,
+              late,
+              excused,
+              // Late counts as attended.
+              rate: total === 0 ? null : Math.round(((present + late + excused) / total) * 1000) / 10,
+              recentAbsences,
+            }
+          : { periods: 0, present: 0, absent: 0, late: 0, excused: 0, rate: null, recentAbsences: [], hidden: true },
         homework: { upcoming: upcomingHomework, recent: pastHomework },
         participation,
         sharedBoards,
@@ -200,6 +206,7 @@ export class ParentController {
     const days = Math.min(Math.max(Number(daysParam) || 30, 1), 365);
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.child(tx, p, studentId);
+      await this.vis.assert(tx, p, 'attendance');
       const today = localParts(this.clock.now(), await this.timetable.tenantTimezone(tx)).date;
       return tx
         .select({

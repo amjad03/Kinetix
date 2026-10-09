@@ -8,6 +8,7 @@ import {
   addAction, addActivity, addClub, addCommittee, addCommitteeMember, addEvent, addMeeting, checkIn, clubActivities, clubMembers, committeeMeetings, committeeMembers, decideMember, endTenure, eventRegistrations, eventStep, eventSummary, markAttendance, meetingActions, saveMinutes, setActionStatus, setMemberRole,
 } from '@/app/(dashboard)/campus-life/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
+import { AchievementsTab, ClubExtras, CommitteeExtras, EventExtras } from '@/components/campus-life/LifeExtras';
 import { CheckboxField } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -135,6 +136,7 @@ export function CampusLifeDesk({ clubs, committees, events, initialTab }: { club
               </>
             ),
           },
+          { id: 'achievements', label: t('pwb.cl.tab'), node: <AchievementsTab /> },
         ]}
       />
 
@@ -184,7 +186,7 @@ export function CampusLifeDesk({ clubs, committees, events, initialTab }: { club
       )}
       {dlg && typeof dlg === 'object' && 'club' in dlg && <ClubDialog club={dlg.club} onClose={() => setDlg(null)} toast={toast} />}
       {dlg && typeof dlg === 'object' && 'committee' in dlg && <CommitteeDialog committee={dlg.committee} onClose={() => setDlg(null)} toast={toast} />}
-      {dlg && typeof dlg === 'object' && 'event' in dlg && <EventDialog event={dlg.event} onClose={() => setDlg(null)} />}
+      {dlg && typeof dlg === 'object' && 'event' in dlg && <EventDialog event={dlg.event} onClose={() => setDlg(null)} toast={toast} />}
       {dlg && typeof dlg === 'object' && 'checkIn' in dlg && <FormDialog title={`${t('cl.checkIn')} · ${dlg.checkIn.title}`} intro={t('cl.checkInHelp')} onSubmit={(v) => checkIn(dlg.checkIn.id, v)} onClose={done} fields={[{ name: 'token', label: t('cl.token'), required: true }]} />}
       {toastNode}
     </>
@@ -259,6 +261,7 @@ function ClubDialog({ club, onClose, toast }: { club: Club; onClose: () => void;
           fields={[{ name: 'title', label: t('ops.f.title'), required: true }, { name: 'activityOn', label: t('ops.f.date'), kind: 'date', required: true }, { name: 'points', label: t('cl.points'), kind: 'number', init: '0' }]}
         />
       )}
+      <ClubExtras clubId={club.id} members={members.data ?? []} toast={toast} />
       {sub && typeof sub === 'object' && (
         <AttendanceDialog
           activity={sub.attend}
@@ -369,6 +372,7 @@ function CommitteeDialog({ committee, onClose, toast }: { committee: Committee; 
           },
         ]}
       />
+      <CommitteeExtras committee={committee} meetings={meetings.data ?? []} toast={toast} />
       {sub === 'member' && (
         <FormDialog
           title={t('cl.addMember')}
@@ -448,7 +452,7 @@ function ActionsDialog({ meeting, onClose, toast }: { meeting: Meeting; onClose:
 }
 
 /** Registrations and the attendance and feedback summary for one event. */
-function EventDialog({ event, onClose }: { event: CampusEvent; onClose: () => void }) {
+function EventDialog({ event, onClose, toast }: { event: CampusEvent; onClose: () => void; toast: Toast }) {
   const { t, fmt } = useI18n();
   const regs = useRead<EventRegistration[]>(() => eventRegistrations(event.id));
   const sum = useRead<EventSummary>(() => eventSummary(event.id));
@@ -472,6 +476,7 @@ function EventDialog({ event, onClose }: { event: CampusEvent; onClose: () => vo
           { label: t('cl.col.checkedIn'), cell: (r) => (r.checkedInAt ? fmt.dateTime(r.checkedInAt) : '-'), sort: (r) => r.checkedInAt ?? '' },
         ]}
       />
+      <EventExtras event={event} toast={toast} />
     </InfoDialog>
   );
 }

@@ -7,6 +7,7 @@ import { auditUser } from '../common/audit.js';
 import { Day, Paise } from '../common/ops.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
+import { ParentVisibilityService } from '../parent/parent-visibility.js';
 import { DbService } from '../db/db.service.js';
 import { disciplineActions, disciplineAppeals, disciplineIncidents, students } from '../db/schema.js';
 import { found, hasRole } from '../placements/placements.access.js';
@@ -26,6 +27,7 @@ export class DisciplineController {
   constructor(
     private readonly db: DbService,
     private readonly svc: WelfareService,
+    private readonly vis: ParentVisibilityService,
   ) {}
 
   @Post('incidents')
@@ -59,6 +61,7 @@ export class DisciplineController {
   forStudent(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await assertCanSeeStudent(tx, p, studentId, DISCIPLINE_VIEW);
+      await this.vis.assert(tx, p, 'behaviour');
       const staff = hasRole(p, DISCIPLINE_VIEW);
       const incidents = await tx.select().from(disciplineIncidents).where(eq(disciplineIncidents.studentId, studentId)).orderBy(desc(disciplineIncidents.incidentOn));
       const ids = incidents.map((i) => i.id);

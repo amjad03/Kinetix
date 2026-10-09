@@ -1003,5 +1003,337 @@
   "curriculumEmpty": "ಇನ್ನೂ ಯಾವುದೇ ಸಕ್ರಿಯ ಪಠ್ಯಕ್ರಮ ಇಲ್ಲ.",
   "curriculumNoSubjects": "ಈ ಆವೃತ್ತಿಯಲ್ಲಿ ಯಾವುದೇ ವಿಷಯಗಳಿಲ್ಲ.",
   "curriculumUnits": "ಘಟಕಗಳು",
-  "curriculumOutcomes": "ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು"
+  "curriculumOutcomes": "ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು",
+  "accessEmbargoed": "ತಡೆಹಿಡಿಯಲಾಗಿದೆ",
+  "accessEmbargoedUntil": "{date} ವರೆಗೆ ತಡೆ",
+  "@accessEmbargoedUntil": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accessOpen": "ಮುಕ್ತ",
+  "accessRestricted": "ನಿರ್ಬಂಧಿತ ಪ್ರವೇಶ",
+  "cfAssessments": "ಮೌಲ್ಯಮಾಪನಗಳು",
+  "cfAttendance": "ಹಾಜರಾತಿ ಅವಧಿಗಳು",
+  "cfLessonPlans": "ಪಾಠ ಯೋಜನೆಗಳು",
+  "cfOutcomes": "ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು",
+  "cfPeriods": "ಅವಧಿಗಳು",
+  "cfRecordings": "ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು",
+  "cfTopics": "ಕಲಿಸಿದ ವಿಷಯಗಳು",
+  "cfWhiteboards": "ವೈಟ್‌ಬೋರ್ಡ್‌ಗಳು",
+  "courseFileGenerate": "ಹೊಸ ಆವೃತ್ತಿ ರಚಿಸಿ",
+  "courseFileGenerated": "ಆವೃತ್ತಿ {n} ರಚಿಸಲಾಗಿದೆ.",
+  "@courseFileGenerated": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileMeta": "{date} ರಂದು {name} ಅವರಿಂದ ರಚಿಸಲಾಗಿದೆ · {size}",
+  "@courseFileMeta": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileNone": "ಇನ್ನೂ ಯಾವುದೇ ಆವೃತ್ತಿ ರಚಿಸಲಾಗಿಲ್ಲ.",
+  "courseFileNotReviewed": "ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ",
+  "courseFileOpenPdf": "PDF ತೆರೆಯಿರಿ",
+  "courseFileReviewed": "{name} ಅವರು ಪರಿಶೀಲಿಸಿದ್ದಾರೆ",
+  "@courseFileReviewed": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileVersion": "ಆವೃತ್ತಿ {n}",
+  "@courseFileVersion": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFilesBody": "ನಿಮ್ಮ ವಿಷಯಗಳ ತರಗತಿವಾರು ಕೋರ್ಸ್ ಫೈಲ್ (PDF)",
+  "courseFilesEmpty": "ಕೋರ್ಸ್ ಫೈಲ್ ರಚಿಸಲು ನಿಮಗೆ ಯಾವುದೇ ತರಗತಿ ಅಥವಾ ವಿಷಯ ಇಲ್ಲ.",
+  "courseFilesTitle": "ಕೋರ್ಸ್ ಫೈಲ್‌ಗಳು",
+  "datasetFiles": "{count, plural, =1{1 ಫೈಲ್} other{{count} ಫೈಲ್‌ಗಳು}}",
+  "@datasetFiles": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeAttainmentDirect": "ನೇರ {n}",
+  "@obeAttainmentDirect": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAttainmentHeader": "ಪ್ರತಿ CO ಸಾಧನೆ",
+  "obeAttainmentIndirect": "ಪರೋಕ್ಷ {n}",
+  "@obeAttainmentIndirect": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAttainmentNone": "ಈ ವರ್ಷದ ಸಾಧನೆಯನ್ನು ಇನ್ನೂ ಲೆಕ್ಕಹಾಕಿಲ್ಲ.",
+  "obeAttainmentRestricted": "ಸಾಧನೆಯ ಅಂಕಿಅಂಶಗಳನ್ನು ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರು ಮತ್ತು ಗುಣಮಟ್ಟ ಕಚೇರಿಗೆ ತೋರಿಸಲಾಗುತ್ತದೆ.",
+  "obeAttainmentTarget": "ಗುರಿ {n}",
+  "@obeAttainmentTarget": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeBody": "ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು, CO–PO ಮ್ಯಾಟ್ರಿಕ್ಸ್ ಮತ್ತು ಸಾಧನೆ",
+  "obeMatrixHeader": "CO–PO ಮ್ಯಾಟ್ರಿಕ್ಸ್",
+  "obeMatrixLegend": "ಸಂಬಂಧದ ಬಲ: 1 ಕಡಿಮೆ, 2 ಮಧ್ಯಮ, 3 ಹೆಚ್ಚು",
+  "obeMatrixNoPos": "ಈ ವಿಷಯದ ಕಾರ್ಯಕ್ರಮಕ್ಕೆ ಇನ್ನೂ ಯಾವುದೇ ಕಾರ್ಯಕ್ರಮ ಫಲಿತಾಂಶಗಳನ್ನು (PO/PSO) ನಿಗದಿಪಡಿಸಿಲ್ಲ.",
+  "obeMet": "ಗುರಿ ಸಾಧಿಸಲಾಗಿದೆ",
+  "obeNoOutcomes": "ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಯಾವುದೇ ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳನ್ನು ನಿಗದಿಪಡಿಸಿಲ್ಲ.",
+  "obeNotMet": "ಗುರಿಗಿಂತ ಕಡಿಮೆ",
+  "obeStatusActive": "ಸಕ್ರಿಯ",
+  "obeStatusDraft": "ಕರಡು",
+  "obeStatusRetired": "ಹಳೆಯದು",
+  "obeSubjectsEmpty": "ತೋರಿಸಲು ಯಾವುದೇ ವಿಷಯ ಇಲ್ಲ.",
+  "obeTitle": "ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು (CO/PO)",
+  "obeVersion": "ಆವೃತ್ತಿ {n}",
+  "@obeVersion": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "programmeMphil": "ಎಂ.ಫಿಲ್.",
+  "programmePhd": "ಪಿಎಚ್.ಡಿ.",
+  "projAccept": "ಒಪ್ಪಿಕೊಳ್ಳಿ",
+  "projAccepted": "ಒಪ್ಪಲಾಗಿದೆ",
+  "projAddLink": "ಲಿಂಕ್ ಸೇರಿಸಿ",
+  "projCommentHint": "ಸಂದೇಶ ಬರೆಯಿರಿ",
+  "projCritDocumentation": "ದಾಖಲೀಕರಣ",
+  "projCritExecution": "ಅನುಷ್ಠಾನ",
+  "projCritTeamwork": "ತಂಡ ಕಾರ್ಯ",
+  "projCritUnderstanding": "ತಿಳುವಳಿಕೆ",
+  "projDecline": "ತಿರಸ್ಕರಿಸಿ",
+  "projDeclined": "ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",
+  "projDiscussionEmpty": "ಇನ್ನೂ ಯಾವುದೇ ಸಂದೇಶಗಳಿಲ್ಲ. ಚರ್ಚೆ ಆರಂಭಿಸಿ.",
+  "projFiles": "ಫೈಲ್‌ಗಳು ಮತ್ತು ಲಿಂಕ್‌ಗಳು",
+  "projFilesNone": "ಇನ್ನೂ ಯಾವುದೇ ಫೈಲ್ ಅಥವಾ ಲಿಂಕ್ ಇಲ್ಲ.",
+  "projHub": "ಶೋಕೇಸ್ ಮತ್ತು ನೇಮಕಾತಿ",
+  "projHubLookingFor": "ಬೇಕಾದ ಕೌಶಲ್ಯಗಳು (ಅಲ್ಪವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಿ)",
+  "projHubOpenings": "ಖಾಲಿ ಸ್ಥಾನಗಳು",
+  "projHubRecruiting": "ಸೇರಲು ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ",
+  "projHubSaved": "ಉಳಿಸಲಾಗಿದೆ.",
+  "projHubShowcase": "ಶೋಕೇಸ್‌ನಲ್ಲಿ ತೋರಿಸಿ",
+  "projHubSummary": "ಸಾರಾಂಶ",
+  "projLinkInvalid": "ಶೀರ್ಷಿಕೆ ಮತ್ತು http ಯಿಂದ ಪ್ರಾರಂಭವಾಗುವ ವೆಬ್ ಲಿಂಕ್ ನಮೂದಿಸಿ.",
+  "projLinkTitle": "ಶೀರ್ಷಿಕೆ",
+  "projLinkUrl": "ವೆಬ್ ಲಿಂಕ್",
+  "projMatchFit": "{pct}% ಹೊಂದಾಣಿಕೆ",
+  "@projMatchFit": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "projMatches": "ಸೂಚಿತ ವಿದ್ಯಾರ್ಥಿಗಳು",
+  "projMatchesNone": "ಹೊಂದುವ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ನೋಡಲು ಬೇಕಾದ ಕೌಶಲ್ಯಗಳನ್ನು ಸೇರಿಸಿ.",
+  "projMembers": "ತಂಡ",
+  "projMilestoneDone": "{date} ರಂದು ಪೂರ್ಣಗೊಂಡಿದೆ",
+  "@projMilestoneDone": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projMilestoneDue": "{date} ರೊಳಗೆ",
+  "@projMilestoneDue": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projMilestones": "ಮೈಲಿಗಲ್ಲುಗಳು",
+  "projMilestonesNone": "ಇನ್ನೂ ಯಾವುದೇ ಮೈಲಿಗಲ್ಲು ಇಲ್ಲ.",
+  "projMyRole": "ನಿಮ್ಮ ಪಾತ್ರ: {role}",
+  "@projMyRole": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "projPending": "ಬಾಕಿ",
+  "projPi": "{name} ಅವರ ನೇತೃತ್ವದಲ್ಲಿ",
+  "@projPi": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projRecordResult": "ಫಲಿತಾಂಶ ದಾಖಲಿಸಿ",
+  "projRecruiting": "ನೇಮಕಾತಿ ನಡೆಯುತ್ತಿದೆ",
+  "projReply": "ಉತ್ತರಿಸಿ",
+  "projReplyingTo": "{name} ಅವರಿಗೆ ಉತ್ತರ",
+  "@projReplyingTo": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projRequests": "ಸೇರುವ ವಿನಂತಿಗಳು",
+  "projRequestsNone": "ಸೇರುವ ವಿನಂತಿಗಳಿಲ್ಲ.",
+  "projReviewAverage": "{count} ವಿಮರ್ಶೆಗಳು, ಸರಾಸರಿ {pct}%",
+  "@projReviewAverage": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "projReviewComment": "ಟಿಪ್ಪಣಿ",
+  "projReviewExternal": "ಬಾಹ್ಯ",
+  "projReviewMentor": "ಮಾರ್ಗದರ್ಶಕ",
+  "projReviewPeer": "ಸಹಪಾಠಿ",
+  "projReviewsEmpty": "ಇನ್ನೂ ಯಾವುದೇ ವಿಮರ್ಶೆ ಇಲ್ಲ.",
+  "projRoleAdmin": "ನಿರ್ವಾಹಕರು",
+  "projRoleMember": "ಸದಸ್ಯ",
+  "projRolePi": "ಯೋಜನಾ ಮುಖ್ಯಸ್ಥ",
+  "projRoleStudent": "ವಿದ್ಯಾರ್ಥಿ",
+  "projRoleSupervisor": "ಮೇಲ್ವಿಚಾರಕ",
+  "projScheduleViva": "ವೈವಾ ನಿಗದಿಪಡಿಸಿ",
+  "projScoreOutOf": "ಪ್ರತಿ ಮಾನದಂಡಕ್ಕೆ {max} ರಲ್ಲಿ ಅಂಕ ನೀಡಿ",
+  "@projScoreOutOf": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "projShowcase": "ಶೋಕೇಸ್",
+  "projTabDiscussion": "ಚರ್ಚೆ",
+  "projTabOverview": "ಅವಲೋಕನ",
+  "projTabReviews": "ವಿಮರ್ಶೆಗಳು",
+  "projTabTeam": "ತಂಡ ಮತ್ತು ನೇಮಕಾತಿ",
+  "projVivaPanel": "ಸಮಿತಿ ಸದಸ್ಯರು (ಅಲ್ಪವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಿ)",
+  "projVivaPanelNeeded": "ಕನಿಷ್ಠ ಒಬ್ಬ ಸಮಿತಿ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ.",
+  "projVivaRemarks": "ಟಿಪ್ಪಣಿಗಳು",
+  "projVivaScore": "ಅಂಕ (0–100, ಐಚ್ಛಿಕ)",
+  "projVivaScoreInvalid": "0 ರಿಂದ 100 ರ ನಡುವೆ ಅಂಕ ನಮೂದಿಸಿ.",
+  "projVivaVenue": "ಸ್ಥಳ",
+  "projVivas": "ವೈವಾ",
+  "projVivasNone": "ಯಾವುದೇ ವೈವಾ ನಿಗದಿಯಾಗಿಲ್ಲ.",
+  "projWriteReview": "ಮಾರ್ಗದರ್ಶಕ ವಿಮರ್ಶೆ ಬರೆಯಿರಿ",
+  "projectsBody": "ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿ ಯೋಜನೆಗಳು: ಚರ್ಚೆ, ವಿಮರ್ಶೆ, ವೈವಾ, ನೇಮಕಾತಿ",
+  "projectsEmpty": "ನೀವು ಯಾವುದೇ ಯೋಜನೆಯಲ್ಲಿ ಇಲ್ಲ.",
+  "projectsTitle": "ಯೋಜನಾ ಮಾರ್ಗದರ್ಶನ",
+  "pubAddByDoi": "DOI ಮೂಲಕ ಸೇರಿಸಿ",
+  "pubDoiBody": "ಪ್ರಕಟಣೆಯ DOI ನಮೂದಿಸಿ; KINETIX ಅದರ ವಿವರಗಳನ್ನು DOI ರಿಜಿಸ್ಟ್ರಿಯಿಂದ ಓದುತ್ತದೆ.",
+  "pubImport": "ಆಮದು ಮಾಡಿ",
+  "pubKindBook": "ಪುಸ್ತಕ",
+  "pubKindChapter": "ಪುಸ್ತಕ ಅಧ್ಯಾಯ",
+  "pubKindConference": "ಸಮ್ಮೇಳನ ಪ್ರಬಂಧ",
+  "pubKindJournal": "ಜರ್ನಲ್ ಲೇಖನ",
+  "resKindCapstone": "ಕ್ಯಾಪ್‌ಸ್ಟೋನ್",
+  "resKindIndustry": "ಉದ್ಯಮ",
+  "resKindResearch": "ಸಂಶೋಧನೆ",
+  "resStatusActive": "ಸಕ್ರಿಯ",
+  "resStatusCancelled": "ರದ್ದುಗೊಂಡಿದೆ",
+  "resStatusCompleted": "ಪೂರ್ಣಗೊಂಡಿದೆ",
+  "resStatusOnHold": "ತಡೆಹಿಡಿಯಲಾಗಿದೆ",
+  "researchBody": "ಯೋಜನೆಗಳು, ಸಂಶೋಧನಾ ವಿದ್ಯಾರ್ಥಿಗಳು, ಪ್ರಕಟಣೆಗಳು ಮತ್ತು ಡೇಟಾಸೆಟ್‌ಗಳು",
+  "researchDatasets": "ಡೇಟಾಸೆಟ್‌ಗಳು",
+  "researchDatasetsEmpty": "ಇನ್ನೂ ಯಾವುದೇ ಡೇಟಾಸೆಟ್ ಇಲ್ಲ.",
+  "researchProjects": "ಯೋಜನೆಗಳು",
+  "researchProjectsEmpty": "ನಿಮಗೆ ಯಾವುದೇ ಸಂಶೋಧನಾ ಯೋಜನೆ ಇಲ್ಲ.",
+  "researchPublications": "ಪ್ರಕಟಣೆಗಳು",
+  "researchPublicationsEmpty": "ಇನ್ನೂ ಯಾವುದೇ ಪ್ರಕಟಣೆ ದಾಖಲಾಗಿಲ್ಲ.",
+  "researchScholars": "ಸಂಶೋಧನಾ ವಿದ್ಯಾರ್ಥಿಗಳು",
+  "researchScholarsEmpty": "ನೀವು ಯಾವುದೇ ಸಂಶೋಧನಾ ವಿದ್ಯಾರ್ಥಿಯನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡುತ್ತಿಲ್ಲ.",
+  "researchTitle": "ಸಂಶೋಧನೆ",
+  "scholarAwarded": "ಪದವಿ ಪ್ರದಾನ",
+  "scholarEnrolled": "ದಾಖಲಾಗಿದ್ದಾರೆ",
+  "scholarThesisSubmitted": "ಪ್ರಬಂಧ ಸಲ್ಲಿಸಲಾಗಿದೆ",
+  "scholarWithdrawn": "ಹಿಂಪಡೆಯಲಾಗಿದೆ",
+  "similarityNone": "ಸಾಮ್ಯತೆ ಪರಿಶೀಲನೆ ಇನ್ನೂ ನಡೆದಿಲ್ಲ.",
+  "similarityScore": "ಸಾಮ್ಯತೆ {pct}% (ಮಿತಿ {limit}%)",
+  "@similarityScore": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "thesisAbstract": "ಸಾರಾಂಶ",
+  "thesisHistory": "ಇತಿಹಾಸ",
+  "thesisNeedsText": "ಸಲ್ಲಿಸುವ ಮೊದಲು ಪ್ರಬಂಧದ ಪಠ್ಯವನ್ನು ಸೇರಿಸಬೇಕು.",
+  "thesisNone": "ಇನ್ನೂ ಪ್ರಬಂಧ ದಾಖಲೆ ಇಲ್ಲ. ತೆರೆಯಲು ಒತ್ತಿ.",
+  "thesisOpen": "ಪ್ರಬಂಧ ದಾಖಲೆ ತೆರೆಯಿರಿ",
+  "thesisStageAwarded": "ಪದವಿ ಪ್ರದಾನ",
+  "thesisStageDraft": "ಕರಡು",
+  "thesisStageExamination": "ಪರೀಕ್ಷಣೆ",
+  "thesisStageLabel": "ಹಂತ",
+  "thesisStageSubmitted": "ಸಲ್ಲಿಸಲಾಗಿದೆ",
+  "thesisStageSynopsis": "ಸಿನಾಪ್ಸಿಸ್",
+  "thesisStageViva": "ವೈವಾ",
+  "thesisSubmit": "ಪ್ರಬಂಧ ಸಲ್ಲಿಸಿ",
+  "thesisSubmitBody": "ಪ್ರಬಂಧವು ಕರಡಿನಿಂದ ಸಲ್ಲಿಕೆಯ ಹಂತಕ್ಕೆ ಹೋಗುತ್ತದೆ. ಮುಂದಿನ ಕ್ರಮವನ್ನು ಸಂಶೋಧನಾ ಕಚೇರಿ ನಿರ್ವಹಿಸುತ್ತದೆ.",
+  "thesisTitleLabel": "ಪ್ರಬಂಧದ ಶೀರ್ಷಿಕೆ",
+  "thesisVivas": "ವೈವಾ ಪರೀಕ್ಷೆಗಳು",
+  "thesisVivasNone": "ಇನ್ನೂ ಯಾವುದೇ ವೈವಾ ನಿಗದಿಯಾಗಿಲ್ಲ.",
+  "vivaCancelled": "ರದ್ದುಗೊಂಡಿದೆ",
+  "vivaFailed": "ಅನುತ್ತೀರ್ಣ",
+  "vivaHeld": "ನಡೆದಿದೆ",
+  "vivaPassed": "ಉತ್ತೀರ್ಣ",
+  "vivaRevise": "ಪರಿಷ್ಕರಿಸಿ ಮರುಸಲ್ಲಿಸಿ",
+  "vivaScheduled": "ನಿಗದಿಯಾಗಿದೆ"
 }

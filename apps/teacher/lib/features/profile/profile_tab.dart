@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../cards/answer_cards_screen.dart';
+import '../../core/academics_models.dart';
 import '../../core/api.dart';
 import '../../core/app_state.dart';
 import '../../core/files.dart';
@@ -16,11 +17,15 @@ import '../ai/ai_copilot_screen.dart';
 import '../insights/section_insights_screen.dart';
 import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
+import '../work/course_file_screens.dart';
 import '../work/duties_screens.dart';
 import '../work/evaluation_screens.dart';
 import '../work/houses_curriculum_screens.dart';
 import '../work/mentoring_screens.dart';
+import '../work/obe_screens.dart';
+import '../work/project_screens.dart';
 import '../work/requests_screen.dart';
+import '../work/research_screens.dart';
 import '../work/roster_surveys_clubs.dart';
 import '../work/tasks_screen.dart';
 
@@ -278,6 +283,15 @@ class ProfileTab extends StatelessWidget {
               ('openAppraisal', Icons.assignment_ind_outlined, l.appraisalTitle, l.appraisalBody, () => AppraisalScreen(api: state.api)),
               ('openHouses', Icons.emoji_events_outlined, l.housesTitle, l.housesBody, () => HousesScreen(api: state.api)),
               ('openCurriculum', Icons.menu_book_outlined, l.curriculumTitle, l.curriculumBody, () => CurriculumScreen(api: state.api)),
+              // Each entry follows the roles of the API behind it (course-files, obe, research and projects controllers).
+              if (hasAnyRole(me.roles, courseFileRoles))
+                ('openCourseFiles', Icons.folder_copy_outlined, l.courseFilesTitle, l.courseFilesBody, () => CourseFilesScreen(api: state.api)),
+              if (hasAnyRole(me.roles, obeRoles))
+                ('openOutcomes', Icons.track_changes_outlined, l.obeTitle, l.obeBody, () => OutcomesScreen(api: state.api, roles: me.roles)),
+              if (hasAnyRole(me.roles, researchRoles))
+                ('openResearch', Icons.science_outlined, l.researchTitle, l.researchBody, () => ResearchScreen(api: state.api, userId: me.id)),
+              if (hasAnyRole(me.roles, projectRoles))
+                ('openProjects', Icons.engineering_outlined, l.projectsTitle, l.projectsBody, () => ProjectsScreen(api: state.api)),
             ])
               ListTile(
                 key: Key(key),

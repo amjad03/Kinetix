@@ -24,7 +24,11 @@ import '../campus/leave_screen.dart';
 import '../fees/scholarship_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
+import '../alumni/alumni_home.dart';
+import '../careers/career_prep.dart';
 import '../careers/careers.dart';
+import '../projects/projects_screen.dart';
+import '../school/school_screens.dart';
 import '../grievances/grievances.dart';
 import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
@@ -277,6 +281,7 @@ class ProfileTabState extends State<ProfileTab> {
                       onRegister: (drive) => api.registerForDrive(st.id, drive),
                       onWithdraw: (drive) => api.withdrawFromDrive(st.id, drive),
                       onRespond: (offer, accept) => api.respondToOffer(offer, accept: accept),
+                      onPrepare: () => CareerPrepScreen.open(context, api),
                     );
                   },
                 ),
@@ -333,7 +338,47 @@ class ProfileTabState extends State<ProfileTab> {
                   padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
                   child: Text(feesNote(l), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                 ),
+                ListTile(
+                  key: const Key('openProjects'),
+                  leading: const Icon(Icons.science_outlined),
+                  title: Text(l.pjTitle),
+                  subtitle: Text(l.pjSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ProjectsScreen.open(context, widget.study.api),
+                ),
+                if (me.isAlumni)
+                  ListTile(
+                    key: const Key('openAlumni'),
+                    leading: const Icon(Icons.school_outlined),
+                    title: Text(l.alTitle),
+                    subtitle: Text(l.alSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => AlumniHome.open(context, widget.study.api),
+                  ),
                 KxSectionHeader(l.moreSchoolLife),
+                if (st.programLevel == null || st.programLevel == 'k12') ...[
+                  ListTile(
+                    key: const Key('openDiary'),
+                    leading: const Icon(Icons.menu_book_outlined),
+                    title: Text(l.slDiaryTitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => DiaryScreen.open(context, widget.study.api),
+                  ),
+                  ListTile(
+                    key: const Key('openMyActivities'),
+                    leading: const Icon(Icons.sports_basketball_outlined),
+                    title: Text(l.slActivitiesTitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => MyActivitiesScreen.open(context, widget.study.api),
+                  ),
+                  ListTile(
+                    key: const Key('openReportCards'),
+                    leading: const Icon(Icons.description_outlined),
+                    title: Text(l.slReportCards),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => ReportCardsScreen.open(context, widget.study.api, st.id),
+                  ),
+                ],
                 ListTile(
                   key: const Key('openLeave'),
                   leading: const Icon(Icons.event_busy_outlined),

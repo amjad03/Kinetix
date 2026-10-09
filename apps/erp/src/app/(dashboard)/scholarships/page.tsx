@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import type { Application, Scheme } from '@/lib/finance';
+import { loadFlows } from '@/lib/pathways-b-server';
 import { getI18n } from '@/i18n/server';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,10 +16,11 @@ export default async function ScholarshipsPage({ searchParams }: { searchParams:
   const { tab } = await searchParams;
   const { t } = await getI18n();
   const data = await load(async () => ({ schemes: await api<Scheme[]>('/v1/finance/scholarship-schemes'), applications: await api<Application[]>('/v1/finance/scholarships') }));
+  const flows = await loadFlows();
   return (
     <>
       <PageHeader title={t('nav.scholarships')} subtitle={t('fin.sch.subtitle')} />
-      {data.error !== undefined ? <ErrorState message={data.error} /> : <ScholarshipsDesk schemes={data.data.schemes} applications={data.data.applications} initialTab={tab ?? 'applications'} />}
+      {data.error !== undefined ? <ErrorState message={data.error} /> : <ScholarshipsDesk schemes={data.data.schemes} applications={data.data.applications} initialTab={tab ?? 'applications'} flows={flows} />}
     </>
   );
 }

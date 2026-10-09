@@ -12,6 +12,7 @@ import { assetGlPostings, budgets, costExpenses, departmentStaff, departments, f
 import { FEE_ROLES } from '../fees/fees.service.js';
 import { monthEnd, requireDay } from '../hr/dates.js';
 import { PayrollService } from '../hr/payroll.service.js';
+import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 import { balanced, feeReceiptVoucher, feeRefundVoucher, fiscalRange, glCsv, glTallyXml, payrollVoucher, variance, type Voucher } from './gl.js';
 
 const FY = z.string().regex(/^\d{4}-\d{2}$/, 'Use a financial year like 2026-27');
@@ -63,14 +64,8 @@ export class FinanceController {
   @Auth('user', FEE_ROLES)
   refund(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(RefundBody)) b: z.infer<typeof RefundBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, b.paymentId)).for('update');
-      if (!pay || pay.status !== 'paid') throw new NotFoundException('Paid payment not found');
-      const [done] = await tx.select({ t: sql<number>`coalesce(sum(${feeRefunds.amountPaise}), 0)::bigint` }).from(feeRefunds).where(eq(feeRefunds.paymentId, pay.id));
-      if (Number(done.t) + b.amountPaise > pay.amountPaise) throw new BadRequestException('That is more than was paid');
-      const [row] = await tx.insert(feeRefunds).values({ tenantId: p.tenantId, paymentId: pay.id, invoiceId: pay.invoiceId, studentId: pay.studentId, amountPaise: b.amountPaise, reason: b.reason, refundedBy: p.userId }).returning();
-      await tx.update(feeInvoices).set({ paidPaise: sql`${feeInvoices.paidPaise} - ${b.amountPaise}`, status: sql`case when ${feeInvoices.status} = 'paid' then 'due'::invoice_status else ${feeInvoices.status} end`, updatedAt: new Date() }).where(eq(feeInvoices.id, pay.invoiceId));
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'fees.refunded', subjectType: 'fee_refund', subjectId: row.id, data: { paymentId: pay.id, amountPaise: b.amountPaise } });
-      return row;
+      await assertNotRouted(tx, BOUND.refund);
+      return issueRefund(tx, { tenantId: p.tenantId, userId: p.userId }, b);
     });
   }
 
@@ -169,4 +164,16 @@ export async function budgetReportRows(tx: Tx, fy: string) {
       return { departmentId: d.id, department: d.name, budgetPaise, ...actuals, actualPaise, ...variance(budgetPaise, actualPaise) };
     }),
   };
+}
+
+/** Refunds part or all of a paid fee: the invoice's received amount goes down and it is open again if now short. */
+export async function issueRefund(tx: Tx, ctx: { tenantId: string; userId: string }, b: { paymentId: string; amountPaise: number; reason: string }) {
+  const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, b.paymentId)).for('update');
+  if (!pay || pay.status !== 'paid') throw new NotFoundException('Paid payment not found');
+  const [done] = await tx.select({ t: sql<number>`coalesce(sum(${feeRefunds.amountPaise}), 0)::bigint` }).from(feeRefunds).where(eq(feeRefunds.paymentId, pay.id));
+  if (Number(done.t) + b.amountPaise > pay.amountPaise) throw new BadRequestException('That is more than was paid');
+  const [row] = await tx.insert(feeRefunds).values({ tenantId: ctx.tenantId, paymentId: pay.id, invoiceId: pay.invoiceId, studentId: pay.studentId, amountPaise: b.amountPaise, reason: b.reason, refundedBy: ctx.userId }).returning();
+  await tx.update(feeInvoices).set({ paidPaise: sql`${feeInvoices.paidPaise} - ${b.amountPaise}`, status: sql`case when ${feeInvoices.status} = 'paid' then 'due'::invoice_status else ${feeInvoices.status} end`, updatedAt: new Date() }).where(eq(feeInvoices.id, pay.invoiceId));
+  await audit(tx, { tenantId: ctx.tenantId, actorType: 'user', actorId: ctx.userId, action: 'fees.refunded', subjectType: 'fee_refund', subjectId: row.id, data: { paymentId: pay.id, amountPaise: b.amountPaise } });
+  return row;
 }

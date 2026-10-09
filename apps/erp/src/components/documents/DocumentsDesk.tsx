@@ -15,6 +15,9 @@ import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { bulkIssue, classStudents, decideCertificate, requestCertificate } from '@/app/(dashboard)/documents/actions';
+import { sendCertificate } from '@/app/(dashboard)/workflows/bound-actions';
+import { SendForApproval } from '@/components/pathways-b/SendForApproval';
+import { BOUND_FLOWS } from '@/lib/pathways-b';
 import { DataTable, FormField, TextInput } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
@@ -31,7 +34,7 @@ export interface AvailableTemplate {
   fields: { key: string; label: string; required: boolean }[];
 }
 
-export function DocumentsDesk({ requests, status, templates, classes, staff, approver, canBulk }: { requests: CertificateRequest[]; status: CertificateStatus | ''; templates: AvailableTemplate[]; classes: { id: string; name: string }[]; staff: { id: string; name: string }[]; approver: boolean; canBulk: boolean }) {
+export function DocumentsDesk({ requests, status, templates, classes, staff, approver, canBulk, flows }: { requests: CertificateRequest[]; status: CertificateStatus | ''; templates: AvailableTemplate[]; classes: { id: string; name: string }[]; staff: { id: string; name: string }[]; approver: boolean; canBulk: boolean; flows: Record<string, boolean> | null }) {
   const { t } = useI18n();
   const router = useRouter();
   const { run, view } = useNotice();
@@ -112,6 +115,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
                                             {can.reject && <Button size="small" disabled={pending} onClick={() => { setText(''); setAsking({ r, step: 'reject' }); }}>{t('doc.reject')}</Button>}
                       {can.approve && <Button size="small" variant="contained" disabled={pending} onClick={() => step(r, 'approve')}>{t('doc.approve')}</Button>}
                       {can.issue && <Button size="small" variant="contained" disabled={pending} onClick={() => step(r, 'issue')}>{t('doc.issue')}</Button>}
+                      {r.status === 'requested' && <SendForApproval flow={BOUND_FLOWS[2]} flows={flows} sourceId={r.id} onSend={() => sendCertificate(r.id)} />}
                       {can.pdf && <Button size="small" href={docDownload.certificate(r.id)} target="_blank">{t('doc.openPdf')}</Button>}
                       {can.revoke && <Button size="small" color="error" disabled={pending} onClick={() => { setText(''); setAsking({ r, step: 'revoke' }); }}>{t('doc.revoke')}</Button>}
                     

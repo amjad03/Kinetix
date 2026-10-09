@@ -13,6 +13,7 @@ import '../core/api.dart';
 import '../core/attachments.dart';
 import '../core/boarding.dart';
 import '../core/campus.dart';
+import '../core/conduct.dart';
 import '../core/exam_models.dart';
 import '../core/growth.dart';
 import '../core/realtime.dart';
@@ -1153,6 +1154,90 @@ class FakeParentApi implements ParentApi {
 
   // ── School life: diary, PTM, early years, health, passport, surveys, events ──────────────
 
+  /// What the school shows parents; a test switches sections off with `ParentVisibility.fromJson`.
+  ParentVisibility visibilityData = const ParentVisibility();
+  ApiException? visibilityError;
+
+  @override
+  Future<ParentVisibility> visibility() async {
+    calls.add('visibility');
+    if (visibilityError != null) throw visibilityError!;
+    return visibilityData;
+  }
+
+  Map<String, dynamic> activitiesJson = {
+    'clubs': [
+      {'club': 'Chess Club', 'category': 'sports', 'role': 'member', 'posts': ['Secretary'], 'points': 30, 'activities': 4},
+    ],
+    'events': [
+      {'title': 'Annual Day', 'eventType': 'cultural', 'on': '2026-09-20'},
+    ],
+    'house': {'id': 'h1', 'name': 'Red House', 'colour': '#d00', 'isCaptain': false, 'totalPoints': 25},
+    'recognitions': [
+      {'points': 10, 'category': 'academics', 'reason': 'Maths quiz winner', 'awardedOn': '2026-09-01'},
+    ],
+    'coCurricular': {
+      'term': 'Term 1',
+      'grades': [
+        {'activity': 'Football', 'grade': 'B', 'remark': 'Plays well'},
+      ],
+    },
+    'achievements': [
+      {'club': 'Chess Club', 'title': 'Inter-school chess', 'level': 'district', 'position': 'Second', 'achievedOn': '2026-08-15'},
+    ],
+  };
+  ApiException? activitiesError;
+
+  @override
+  Future<ChildActivities> activities(String childId) async {
+    calls.add('activities $childId');
+    if (activitiesError != null) throw activitiesError!;
+    return ChildActivities.fromJson(activitiesJson);
+  }
+
+  Map<String, dynamic> behaviourJson = {
+    'behaviourGrade': 'A',
+    'term': 'Term 1',
+    'incidents': [
+      {
+        'id': 'in1', 'incidentOn': '2026-09-10', 'kind': 'Late to class', 'severity': 'minor', 'description': 'Arrived ten minutes late twice.', 'status': 'action_taken',
+        'actions': [
+          {'action': 'Warning', 'detail': 'Spoken to by the class teacher', 'startsOn': null, 'endsOn': null, 'status': 'active'},
+        ],
+        'notices': <Object>[],
+      },
+    ],
+    'recognitions': [
+      {'points': 5, 'category': 'service', 'reason': 'Helped organise the library', 'awardedOn': '2026-09-12'},
+    ],
+  };
+  ApiException? behaviourError;
+
+  @override
+  Future<ChildBehaviour> behaviour(String childId) async {
+    calls.add('behaviour $childId');
+    if (behaviourError != null) throw behaviourError!;
+    return ChildBehaviour.fromJson(behaviourJson);
+  }
+
+  final List<Map<String, dynamic>> noticeJson = [
+    {'id': 'nt1', 'method': 'meeting', 'summary': 'Please meet the class teacher about punctuality.', 'meetingOn': '2026-09-15', 'acknowledgedAt': null, 'kind': 'Late to class', 'severity': 'minor', 'incidentOn': '2026-09-10', 'studentId': 'c1', 'studentName': 'Aarav Patel'},
+  ];
+
+  @override
+  Future<List<SchoolNotice>> schoolNotices() async {
+    calls.add('schoolNotices');
+    return [for (final n in noticeJson) SchoolNotice.fromJson(n)];
+  }
+
+  @override
+  Future<void> acknowledgeNotice(String noticeId) async {
+    calls.add('acknowledgeNotice $noticeId');
+    for (final n in noticeJson) {
+      if (n['id'] == noticeId) n['acknowledgedAt'] = '2026-10-09T05:00:00Z';
+    }
+  }
+
   final List<Map<String, dynamic>> diaryJson = [
     {'id': 'de1', 'entryDate': '2026-10-08', 'classwork': 'Fractions: adding unlike denominators', 'homeworkNote': 'Exercise 4.2, questions 1 to 6', 'notice': 'Bring a ruler tomorrow', 'author': 'Meera Iyer', 'subject': 'Mathematics', 'acknowledgedAt': null},
     {'id': 'de2', 'entryDate': '2026-10-07', 'classwork': 'Reading: The Banyan Tree', 'homeworkNote': '', 'notice': '', 'author': 'Asha Rao', 'subject': 'English', 'acknowledgedAt': '2026-10-07T12:00:00Z'},
@@ -1367,8 +1452,10 @@ class FakeParentApi implements ParentApi {
     promotionStatus: 'promoted',
     promotedTo: 'Class 8',
     lines: [ReportLine(subject: 'Mathematics', marks: 88, maxMarks: 100, grade: 'A', remark: 'Very good')],
-    coCurricular: [(activity: 'Football', grade: 'B')],
+    coCurricular: [(activity: 'Football', grade: 'B', remark: 'Plays in the school team')],
     attendancePercent: 94.5,
+    attendancePresent: 170,
+    attendanceTotal: 180,
   );
 
   @override

@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
+import '../core/alumni.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
 import '../core/campus.dart';
@@ -17,7 +18,9 @@ import '../core/campus_services.dart';
 import '../core/growth.dart';
 import '../core/lms.dart';
 import '../core/models.dart';
+import '../core/pathways.dart';
 import '../core/scholarships.dart';
+import '../core/school_life.dart';
 
 /// In-memory [StudentApi] for widget tests.
 class FakeStudentApi implements StudentApi {
@@ -1463,6 +1466,552 @@ class FakeStudentApi implements StudentApi {
   Future<void> markConversationRead(String conversationId) async {
     calls.add('chat-read $conversationId');
     _readAt[conversationId] = DateTime.now();
+  }
+
+  // ── Projects, portfolio, thesis, career preparation, school life and alumni ─────────────────
+
+  ApiException? pathwaysError;
+
+  void _pw() {
+    if (pathwaysError != null) throw pathwaysError!;
+  }
+
+  List<Map<String, dynamic>> projectJson = [
+    {'id': 'p1', 'code': 'PRJ-1', 'title': 'Campus energy dashboard', 'kind': 'capstone', 'status': 'active', 'showcase': false, 'recruiting': true},
+  ];
+  Map<String, dynamic> workspaceJson = {
+    'project': {'id': 'p1', 'code': 'PRJ-1', 'title': 'Campus energy dashboard', 'kind': 'capstone', 'status': 'active', 'outcomeSummary': '', 'pi': 'Dr. Meera Iyer'},
+    'myRole': 'student',
+    'members': [
+      {'id': 'm1', 'role': 'pi', 'name': 'Dr. Meera Iyer'},
+      {'id': 'm2', 'role': 'student', 'name': 'Aarav Patel'},
+    ],
+    'milestones': [
+      {'id': 'ms1', 'title': 'Collect meter data', 'dueOn': '2026-09-01', 'completedOn': '2026-08-30', 'evidenceRef': null},
+      {'id': 'ms2', 'title': 'Build the charts', 'dueOn': '2026-11-15', 'completedOn': null, 'evidenceRef': null},
+    ],
+    'files': [
+      {'id': 'f1', 'title': 'Project brief', 'kind': 'link', 'url': 'https://example.com/brief', 'contentType': null, 'sizeBytes': null, 'createdAt': '2026-08-01T00:00:00Z'},
+    ],
+    'hub': {'showcase': false, 'summary': 'Energy use across the campus', 'recruiting': true, 'lookingFor': ['Python'], 'openings': 1},
+    'vivas': [
+      {'id': 'v1', 'scheduledAt': '2026-12-10T05:00:00Z', 'venue': 'Seminar hall', 'panel': [{'name': 'Dr. Rao'}], 'status': 'scheduled', 'outcome': null, 'score': null, 'remarks': null},
+    ],
+    'reviews': {'count': 1, 'average': 80.0},
+  };
+  List<Map<String, dynamic>> commentJson = [
+    {'id': 'c1', 'parentId': null, 'body': 'Please share the data sheet.', 'author': 'Dr. Meera Iyer', 'authorUserId': 'u9', 'createdAt': '2026-09-02T05:00:00Z'},
+  ];
+  List<Map<String, dynamic>> projectReviewJson = [
+    {'id': 'r1', 'kind': 'mentor', 'rubric': {'Idea': 4, 'Execution': 4}, 'maxPerCriterion': 5, 'total': 8, 'percent': 80.0, 'comment': 'Good start.', 'reviewer': 'Dr. Meera Iyer', 'createdAt': '2026-09-03T05:00:00Z'},
+  ];
+  List<Map<String, dynamic>> discoverJson = [
+    {'id': 'p2', 'title': 'Library chatbot', 'kind': 'research', 'pi': 'Dr. Rao', 'summary': 'A helper for the library', 'lookingFor': ['Python', 'UX'], 'openings': 2, 'matched': ['python'], 'fit': 50},
+  ];
+  List<Map<String, dynamic>> showcaseJson = [
+    {'id': 'p3', 'title': 'Solar tracker', 'kind': 'capstone', 'pi': 'Dr. Rao', 'summary': 'Follows the sun', 'outcomeSummary': 'Built and tested', 'reviewAverage': 84.5},
+  ];
+  List<Map<String, dynamic>> portfolioJson = [
+    {'id': 'pf1', 'title': 'Energy dashboard', 'summary': 'A web dashboard', 'url': 'https://example.com/dash', 'kind': 'project', 'published': false, 'projectId': 'p1'},
+  ];
+  Map<String, dynamic> thesisJson = {'id': null};
+
+  @override
+  Future<List<ProjectSummary>> myProjects() async {
+    calls.add('myProjects');
+    _pw();
+    return [for (final p in projectJson) ProjectSummary.fromJson(p)];
+  }
+
+  @override
+  Future<ProjectWorkspace> projectWorkspace(String id) async {
+    calls.add('projectWorkspace $id');
+    _pw();
+    return ProjectWorkspace.fromJson(workspaceJson);
+  }
+
+  @override
+  Future<void> addProjectLink(String id, {required String title, required String url}) async {
+    calls.add('addProjectLink $id $title $url');
+    _pw();
+    (workspaceJson['files'] as List).add({'id': 'f${(workspaceJson['files'] as List).length + 1}', 'title': title, 'kind': 'link', 'url': url, 'contentType': null, 'sizeBytes': null, 'createdAt': '2026-10-10T00:00:00Z'});
+  }
+
+  @override
+  Future<List<ProjectComment>> projectComments(String id) async {
+    calls.add('projectComments $id');
+    _pw();
+    return [for (final c in commentJson) ProjectComment.fromJson(c)];
+  }
+
+  @override
+  Future<void> addProjectComment(String id, String body, {String? parentId}) async {
+    calls.add('addProjectComment $id $body');
+    _pw();
+    commentJson.add({'id': 'c${commentJson.length + 1}', 'parentId': parentId, 'body': body, 'author': 'Aarav Patel', 'authorUserId': 'u1', 'createdAt': '2026-10-10T05:00:00Z'});
+  }
+
+  @override
+  Future<List<ProjectReview>> projectReviews(String id) async {
+    calls.add('projectReviews $id');
+    _pw();
+    return [for (final r in projectReviewJson) ProjectReview.fromJson(r)];
+  }
+
+  @override
+  Future<List<DiscoverProject>> discoverProjects({String? skill}) async {
+    calls.add('discoverProjects ${skill ?? ''}');
+    _pw();
+    return [for (final d in discoverJson) if (skill == null || skill.isEmpty || (d['lookingFor'] as List).any((l) => '$l'.toLowerCase().contains(skill.toLowerCase()))) DiscoverProject.fromJson(d)];
+  }
+
+  @override
+  Future<void> joinProject(String id, String message) async {
+    calls.add('joinProject $id $message');
+    _pw();
+  }
+
+  @override
+  Future<List<ShowcaseProject>> showcaseProjects() async {
+    calls.add('showcaseProjects');
+    _pw();
+    return [for (final s in showcaseJson) ShowcaseProject.fromJson(s)];
+  }
+
+  /// The last peer review sent.
+  Map<String, int>? lastPeerRubric;
+
+  @override
+  Future<void> peerReviewProject(String id, {required Map<String, int> rubric, String comment = ''}) async {
+    calls.add('peerReviewProject $id');
+    _pw();
+    lastPeerRubric = rubric;
+  }
+
+  @override
+  Future<List<PortfolioItem>> portfolio() async {
+    calls.add('portfolio');
+    _pw();
+    return [for (final p in portfolioJson) PortfolioItem.fromJson(p)];
+  }
+
+  @override
+  Future<PortfolioItem> addPortfolioItem({required String title, String summary = '', String? url, String kind = 'project', String? projectId, bool published = false}) async {
+    calls.add('addPortfolioItem $title');
+    _pw();
+    final row = {'id': 'pf${portfolioJson.length + 1}', 'title': title, 'summary': summary, 'url': url, 'kind': kind, 'published': published, 'projectId': projectId};
+    portfolioJson.insert(0, row);
+    return PortfolioItem.fromJson(row);
+  }
+
+  @override
+  Future<void> publishPortfolioItem(String id, bool published) async {
+    calls.add('publishPortfolioItem $id $published');
+    _pw();
+    for (final p in portfolioJson) {
+      if (p['id'] == id) p['published'] = published;
+    }
+  }
+
+  @override
+  Future<void> deletePortfolioItem(String id) async {
+    calls.add('deletePortfolioItem $id');
+    _pw();
+    portfolioJson.removeWhere((p) => p['id'] == id);
+  }
+
+  @override
+  Future<Thesis?> myThesis() async {
+    calls.add('myThesis');
+    _pw();
+    return Thesis.fromJson(thesisJson);
+  }
+
+  // Career preparation.
+
+  Map<String, dynamic> resumeJson = {
+    'headline': 'BCom student',
+    'summary': '',
+    'education': [
+      {'institution': 'Demo College', 'degree': 'BCom', 'years': '2024-2027'},
+    ],
+    'experience': <Object>[],
+    'projects': <Object>[],
+    'skills': ['Excel'],
+    'interests': ['Finance'],
+    'links': <Object>[],
+    'visibleToRecruiters': true,
+  };
+
+  /// The resume last saved.
+  Map<String, dynamic>? savedResume;
+
+  @override
+  Future<Resume> resume() async {
+    calls.add('resume');
+    _pw();
+    return Resume.fromJson(resumeJson);
+  }
+
+  @override
+  Future<void> saveResume(Resume resume) async {
+    calls.add('saveResume');
+    _pw();
+    savedResume = resume.toJson();
+    resumeJson = Map.of(savedResume!);
+  }
+
+  List<Map<String, dynamic>> testJson = [
+    {'id': 't1', 'title': 'Quantitative basics', 'category': 'quant', 'durationMin': 10, 'passPercent': 50, 'questionCount': 2, 'attempts': 0, 'best': 0, 'passed': false},
+  ];
+  Map<String, dynamic> attemptJson = {
+    'attemptId': 'at1',
+    'durationMin': 10,
+    'startedAt': '2030-01-01T00:00:00Z',
+    'questions': [
+      {'prompt': 'What is 12 + 8?', 'options': ['18', '20', '22'], 'topic': 'Arithmetic'},
+      {'prompt': 'What is 3 x 4?', 'options': ['7', '12', '14'], 'topic': 'Arithmetic'},
+    ],
+  };
+
+  /// The answers last submitted.
+  List<int?>? lastAnswers;
+
+  @override
+  Future<List<AptitudeTest>> aptitudeTests() async {
+    calls.add('aptitudeTests');
+    _pw();
+    return [for (final t in testJson) AptitudeTest.fromJson(t)];
+  }
+
+  @override
+  Future<AptitudeAttempt> startAptitudeTest(String testId) async {
+    calls.add('startAptitudeTest $testId');
+    _pw();
+    return AptitudeAttempt.fromJson({...attemptJson, 'startedAt': DateTime.now().toUtc().toIso8601String()});
+  }
+
+  @override
+  Future<AptitudeResult> submitAptitudeAttempt(String attemptId, List<int?> answers) async {
+    calls.add('submitAptitudeAttempt $attemptId');
+    _pw();
+    lastAnswers = answers;
+    final right = (answers[0] == 1 ? 1 : 0) + (answers.length > 1 && answers[1] == 1 ? 1 : 0);
+    return AptitudeResult.fromJson({
+      'score': right,
+      'total': 2,
+      'percent': right * 50.0,
+      'passed': right >= 1,
+      'passPercent': 50,
+      'topicScores': {'Arithmetic': {'right': right, 'total': 2}},
+    });
+  }
+
+  Map<String, dynamic> recommendationJson = {
+    'skills': ['Excel'],
+    'interests': ['Finance'],
+    'paths': [
+      {'pathId': 'cp1', 'title': 'Financial analyst', 'family': 'Finance', 'fit': 65.0, 'matched': ['Excel'], 'gaps': ['SQL', 'Valuation'], 'interestMatch': true},
+    ],
+  };
+
+  @override
+  Future<CareerRecommendations> careerRecommendations() async {
+    calls.add('careerRecommendations');
+    _pw();
+    return CareerRecommendations.fromJson(recommendationJson).withCatalog([
+      CareerPath.fromJson({'id': 'cp1', 'title': 'Financial analyst', 'description': 'Reads the numbers behind a business.', 'roles': ['Analyst'], 'steps': [{'title': 'Learn SQL', 'detail': 'Do a short course'}]}),
+    ]);
+  }
+
+  @override
+  Future<MockInterview> startMockInterview({required String kind, String role = '', int count = 3}) async {
+    calls.add('startMockInterview $kind $role $count');
+    _pw();
+    return MockInterview(id: 'mi1', kind: kind, questions: ['Tell me about yourself.', 'Why do you want this role?']);
+  }
+
+  /// The answers last submitted to a mock interview.
+  List<({String answer, int? seconds})>? lastMockAnswers;
+
+  @override
+  Future<MockResult> submitMockInterview(String id, List<({String answer, int? seconds})> answers) async {
+    calls.add('submitMockInterview $id');
+    _pw();
+    lastMockAnswers = answers;
+    return MockResult.fromJson({
+      'id': id,
+      'score': 72.5,
+      'questions': ['Tell me about yourself.', 'Why do you want this role?'],
+      'perQuestion': [
+        {'score': 80, 'notes': ['Clear structure']},
+        {'score': 65, 'notes': ['Add an example', 'Avoid filler words']},
+      ],
+      'overall': ['Practise one more round'],
+    });
+  }
+
+  @override
+  Future<List<MockSummary>> myMockInterviews() async {
+    calls.add('myMockInterviews');
+    _pw();
+    return [MockSummary.fromJson({'id': 'mi0', 'kind': 'hr', 'role': 'Analyst', 'status': 'completed', 'score': 70.0, 'createdAt': '2026-09-01T05:00:00Z'})];
+  }
+
+  /// Whether the next answer comes from KINETIX AI (false: the built-in guidance).
+  bool assistantAi = false;
+  List<Map<String, dynamic>> assistantHistoryJson = [
+    {'role': 'user', 'body': 'What should I study?', 'createdAt': '2026-09-01T05:00:00Z'},
+    {'role': 'assistant', 'body': 'Start with SQL.', 'createdAt': '2026-09-01T05:00:01Z'},
+  ];
+
+  @override
+  Future<AssistantReply> askCareerAssistant(String question, String language) async {
+    calls.add('askCareerAssistant $language $question');
+    _pw();
+    final reply = AssistantReply(answer: 'Financial analyst is your closest fit.', suggestions: ['Add evidence of SQL'], pathways: ['Financial analyst'], aiUsed: assistantAi);
+    assistantHistoryJson
+      ..add({'role': 'user', 'body': question})
+      ..add({'role': 'assistant', 'body': reply.answer});
+    return reply;
+  }
+
+  @override
+  Future<List<AssistantMessage>> careerAssistantHistory() async {
+    calls.add('careerAssistantHistory');
+    _pw();
+    return [for (final m in assistantHistoryJson) AssistantMessage.fromJson(m)];
+  }
+
+  // School life.
+
+  List<Map<String, dynamic>> diaryJson = [
+    {'id': 'd1', 'entryDate': '2026-10-08', 'classwork': 'Fractions: adding unlike denominators', 'homeworkNote': 'Exercise 4.2', 'notice': 'Bring a ruler', 'author': 'Meera Iyer', 'subject': 'Mathematics'},
+    {'id': 'd2', 'entryDate': '2026-10-07', 'classwork': 'Reading: The Banyan Tree', 'homeworkNote': '', 'notice': '', 'author': 'Asha Rao', 'subject': 'English'},
+  ];
+  Map<String, dynamic> activitiesJson = {
+    'clubs': [
+      {'club': 'Chess Club', 'category': 'sports', 'role': 'member', 'posts': ['Secretary'], 'points': 30, 'activities': 4},
+    ],
+    'events': [
+      {'title': 'Annual Day', 'eventType': 'cultural', 'on': '2026-09-20'},
+    ],
+    'house': {'id': 'h1', 'name': 'Red House', 'colour': '#d00', 'isCaptain': true, 'totalPoints': 25},
+    'recognitions': [
+      {'points': 10, 'category': 'academics', 'reason': 'Maths quiz winner', 'awardedOn': '2026-09-01'},
+    ],
+    'coCurricular': {
+      'term': 'Term 1',
+      'grades': [
+        {'activity': 'Football', 'grade': 'B', 'remark': 'Plays well'},
+      ],
+    },
+    'achievements': [
+      {'club': 'Chess Club', 'title': 'Inter-school chess', 'level': 'district', 'position': 'Second', 'achievedOn': '2026-08-15'},
+    ],
+  };
+  List<Map<String, dynamic>> reportCardRows = [
+    {'id': 'rc1', 'academicYearId': 'y1', 'termLabel': 'Term 1', 'promotionStatus': 'pending', 'updatedAt': '2026-09-30T00:00:00Z'},
+  ];
+  Map<String, dynamic> reportCardJson = {
+    'id': 'rc1',
+    'termLabel': 'Term 1',
+    'remarks': 'Works steadily.',
+    'behaviourGrade': 'A',
+    'promotionStatus': 'pending',
+    'promotedTo': null,
+    'lines': [
+      {'subjectName': 'Mathematics', 'marks': '88.00', 'maxMarks': '100.00', 'grade': 'A', 'remark': 'Very good'},
+    ],
+    'coCurricular': [
+      {'activity': 'Football', 'grade': 'B', 'remark': 'Plays in the school team'},
+    ],
+    'attendance': {'total': 180, 'present': 170, 'percent': 94.4},
+  };
+
+  @override
+  Future<List<DiaryEntry>> classDiary({int days = 14}) async {
+    calls.add('classDiary $days');
+    _pw();
+    return [for (final d in diaryJson) DiaryEntry.fromJson(d)];
+  }
+
+  @override
+  Future<MyActivities> myActivities() async {
+    calls.add('myActivities');
+    _pw();
+    return MyActivities.fromJson(activitiesJson);
+  }
+
+  @override
+  Future<List<ReportCardRow>> reportCards(String studentId) async {
+    calls.add('reportCards $studentId');
+    _pw();
+    return [for (final r in reportCardRows) ReportCardRow.fromJson(r)];
+  }
+
+  @override
+  Future<ReportCardDetail> reportCard(String id) async {
+    calls.add('reportCard $id');
+    _pw();
+    return ReportCardDetail.fromJson(reportCardJson);
+  }
+
+  @override
+  Future<Uint8List> reportCardPdf(String id) async {
+    calls.add('reportCardPdf $id');
+    _pw();
+    return Uint8List.fromList('%PDF-1.4 report card'.codeUnits);
+  }
+
+  // Alumni.
+
+  Map<String, dynamic> alumniJson = {
+    'fullName': 'Riya Shah',
+    'graduationYear': 2021,
+    'program': 'BCom',
+    'email': 'riya@example.com',
+    'phone': null,
+    'employer': 'Acme Bank',
+    'designation': 'Analyst',
+    'city': 'Bengaluru',
+    'bio': '',
+    'directoryVisible': false,
+    'mentorAvailable': false,
+  };
+  List<Map<String, dynamic>> campaignJson = [
+    {'id': 'ca1', 'name': 'Library fund', 'description': 'New books', 'goalPaise': 5000000, 'endsOn': '2026-12-31'},
+  ];
+  List<Map<String, dynamic>> pledgeJson = [];
+  List<Map<String, dynamic>> donationJson = [
+    {'id': 'dn1', 'campaignId': 'ca1', 'campaign': 'Library fund', 'amountPaise': 250000, 'mode': 'upi', 'receivedOn': '2026-08-01', 'receiptSerial': 'R-0001'},
+  ];
+  List<Map<String, dynamic>> volunteerJson = [
+    {'id': 'vo1', 'title': 'Career talk', 'description': 'Talk to final-year students', 'startsOn': '2026-11-05', 'slots': 5, 'taken': 2, 'signedUp': false},
+  ];
+  List<Map<String, dynamic>> storyJson = [
+    {'id': 's1', 'title': 'My first job', 'body': 'I joined a bank after college and learnt a lot in the first year.', 'status': 'draft', 'featured': false, 'reviewNote': null},
+  ];
+  List<Map<String, dynamic>> publishedStoryJson = [
+    {'id': 'ps1', 'title': 'From Hubli to Mumbai', 'body': 'A long story of one graduate.', 'featured': true, 'publishedAt': '2026-09-01T00:00:00Z', 'alumnus': 'Karan Mehta', 'graduationYear': 2018, 'program': 'BCom', 'employer': 'Acme', 'designation': 'Manager'},
+  ];
+
+  @override
+  Future<AlumniProfile> alumniProfile() async {
+    calls.add('alumniProfile');
+    _pw();
+    return AlumniProfile.fromJson(alumniJson);
+  }
+
+  @override
+  Future<AlumniProfile> saveAlumniProfile({String? phone, String? employer, String? designation, String? city, required String bio, required bool directoryVisible, required bool mentorAvailable}) async {
+    calls.add('saveAlumniProfile');
+    _pw();
+    alumniJson = {...alumniJson, 'phone': phone, 'employer': employer, 'designation': designation, 'city': city, 'bio': bio, 'directoryVisible': directoryVisible, 'mentorAvailable': mentorAvailable};
+    return AlumniProfile.fromJson(alumniJson);
+  }
+
+  @override
+  Future<List<AlumniCampaign>> alumniCampaigns() async {
+    calls.add('alumniCampaigns');
+    _pw();
+    return [for (final c in campaignJson) AlumniCampaign.fromJson(c)];
+  }
+
+  @override
+  Future<Giving> alumniGiving() async {
+    calls.add('alumniGiving');
+    _pw();
+    return Giving.fromJson({'pledges': pledgeJson, 'donations': donationJson, 'totalGivenPaise': 250000});
+  }
+
+  @override
+  Future<void> alumniPledge(String campaignId, int amountPaise, {String note = ''}) async {
+    calls.add('alumniPledge $campaignId $amountPaise');
+    _pw();
+    pledgeJson.add({'id': 'pl${pledgeJson.length + 1}', 'campaignId': campaignId, 'amountPaise': amountPaise, 'pledgedOn': '2026-10-10', 'status': 'open'});
+  }
+
+  @override
+  Future<Uint8List> alumniReceiptPdf(String donationId) async {
+    calls.add('alumniReceiptPdf $donationId');
+    _pw();
+    return Uint8List.fromList('%PDF-1.4 receipt'.codeUnits);
+  }
+
+  @override
+  Future<List<VolunteerOpportunity>> alumniVolunteering() async {
+    calls.add('alumniVolunteering');
+    _pw();
+    return [for (final v in volunteerJson) VolunteerOpportunity.fromJson(v)];
+  }
+
+  @override
+  Future<void> alumniVolunteerSignUp(String id, {String note = ''}) async {
+    calls.add('alumniVolunteerSignUp $id');
+    _pw();
+    for (final v in volunteerJson) {
+      if (v['id'] == id) {
+        v['signedUp'] = true;
+        v['taken'] = (v['taken'] as int) + 1;
+      }
+    }
+  }
+
+  @override
+  Future<void> alumniVolunteerWithdraw(String id) async {
+    calls.add('alumniVolunteerWithdraw $id');
+    _pw();
+    for (final v in volunteerJson) {
+      if (v['id'] == id) {
+        v['signedUp'] = false;
+        v['taken'] = (v['taken'] as int) - 1;
+      }
+    }
+  }
+
+  @override
+  Future<List<SuccessStory>> myStories() async {
+    calls.add('myStories');
+    _pw();
+    return [for (final s in storyJson) SuccessStory.fromJson(s)];
+  }
+
+  @override
+  Future<SuccessStory> writeStory(String title, String body) async {
+    calls.add('writeStory $title');
+    _pw();
+    final row = {'id': 's${storyJson.length + 1}', 'title': title, 'body': body, 'status': 'draft', 'featured': false, 'reviewNote': null};
+    storyJson.insert(0, row);
+    return SuccessStory.fromJson(row);
+  }
+
+  @override
+  Future<SuccessStory> editStory(String id, String title, String body) async {
+    calls.add('editStory $id');
+    _pw();
+    final row = storyJson.firstWhere((s) => s['id'] == id);
+    row
+      ..['title'] = title
+      ..['body'] = body
+      ..['status'] = 'draft';
+    return SuccessStory.fromJson(row);
+  }
+
+  @override
+  Future<SuccessStory> submitStory(String id) async {
+    calls.add('submitStory $id');
+    _pw();
+    final row = storyJson.firstWhere((s) => s['id'] == id);
+    row['status'] = 'submitted';
+    return SuccessStory.fromJson(row);
+  }
+
+  @override
+  Future<List<SuccessStory>> publishedStories() async {
+    calls.add('publishedStories');
+    _pw();
+    return [for (final s in publishedStoryJson) SuccessStory.fromJson(s)];
   }
 
   // ── Live class ────────────────────────────────────────────────────────────────────────────

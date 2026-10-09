@@ -16,6 +16,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import { useState, useTransition } from 'react';
 import { archiveVaultFile, classStudents, listVault } from '@/app/(dashboard)/documents/actions';
+import { VaultVersions } from '@/components/documents/VaultVersions';
 import { DataTable, FormField, TextInput } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
@@ -37,6 +38,7 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
   const [owner, setOwner] = useState<Owner | null>(null);
   const [docs, setDocs] = useState<VaultDocument[]>([]);
   const [uploading, setUploading] = useState<{ replaces?: VaultDocument } | null>(null);
+  const [history, setHistory] = useState<VaultDocument | null>(null);
 
   const open = (o: Owner) => {
     setOwner(o);
@@ -106,6 +108,9 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
                                   <Button size="small" onClick={() => setUploading({ replaces: d })}>
                                     {t('doc.vault.newVersion')}
                                   </Button>
+                                  <Button size="small" onClick={() => setHistory(d)} data-testid={`vault-history-${d.id}`}>
+                                    {t('pwb.vault.history')}
+                                  </Button>
                                   <IconButton aria-label={t('doc.vault.archive')} disabled={pending} onClick={() => start(async () => { const r = await run(() => archiveVaultFile(d.id), t('hr.saved')); if (r.ok) refresh(); })}>
                                     <ArchiveOutlined />
                                   </IconButton></>) },
@@ -121,6 +126,7 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
           {t('doc.vault.expiring')}: {expiring.map((d) => `${d.title} (${d.expiresOn ? formatDate(d.expiresOn, 'short', locale) : ''})`).join(', ')}
         </Alert>
       )}
+      {history && <VaultVersions id={history.id} title={history.title} onClose={() => setHistory(null)} onChanged={refresh} />}
       {uploading && owner && <UploadDialog owner={owner} replaces={uploading.replaces} onClose={(done) => { setUploading(null); if (done) refresh(); }} setError={setError} />}
     </>
   );

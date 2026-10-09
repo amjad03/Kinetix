@@ -1,3 +1,4 @@
+import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 import { BadRequestException, Body, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, Res } from '@nestjs/common';
 import { APPLICATION_MOVES, ENQUIRY_ACTIVITY_KINDS, ENQUIRY_SOURCES, ENQUIRY_STAGES, eligibilityFailures, meritScore, type ApplicationStatus } from '@kinetix/shared';
 import { and, asc, desc, eq, ilike, inArray, lte, notInArray, or, sql } from 'drizzle-orm';
@@ -376,6 +377,7 @@ export class AdmissionsController {
   @Auth('user', ['tenant_admin', 'principal'])
   waive(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(WaiveBody)) body: z.infer<typeof WaiveBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
+      await assertNotRouted(tx, BOUND.waiver);
       const a = await this.svc.application(tx, id, true);
       if (a.feeStatus !== 'pending') throw new BadRequestException('No application fee is due');
       await tx.update(applications).set({ feeStatus: 'waived', updatedAt: new Date() }).where(eq(applications.id, id));

@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'core/app_state.dart';
 import 'demo/demo.dart';
+import 'features/alumni/alumni_home.dart';
 import 'features/shell/shell.dart';
 import 'features/sign_in/sign_in_screen.dart';
 import 'l10n/l10n.dart';
@@ -40,7 +41,8 @@ class StudentApp extends StatelessWidget {
             WidgetsBinding.instance.addPostFrameCallback((_) => navigatorKey.currentState?.popUntil((r) => r.isFirst));
           }
           // Keyed by user so signing out and in again starts from a clean Today.
-          return state.signedIn ? StudentShell(key: ValueKey(state.me!.id), state: state) : SignInScreen(state: state);
+          if (!state.signedIn) return SignInScreen(state: state);
+          return state.alumniOnly ? AlumniHome(key: ValueKey(state.me!.id), api: state.api, state: state) : StudentShell(key: ValueKey(state.me!.id), state: state);
         },
       ),
     ),

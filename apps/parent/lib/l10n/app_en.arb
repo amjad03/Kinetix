@@ -1949,5 +1949,103 @@
   "promotedTo": "Next class",
   "coCurricular": "Co-curricular",
   "behaviour": "Behaviour",
-  "reportCardPdf": "Open as PDF"
+  "reportCardPdf": "Open as PDF",
+  "errVisibilityOff": "Your school has not made this available to parents.",
+  "lifeActivities": "Activities",
+  "lifeActivitiesSub": "Clubs, events, house and achievements",
+  "lifeBehaviour": "Behaviour",
+  "lifeBehaviourSub": "Incidents, notices from the school and recognitions",
+  "activitiesTitle": "{name}'s activities",
+  "@activitiesTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "behaviourTitle": "{name}'s behaviour",
+  "@behaviourTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "activitiesEmpty": "No activities have been recorded yet.",
+  "activitiesHousePoints": "{points} house points",
+  "@activitiesHousePoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "activitiesCaptain": "House captain",
+  "activitiesClubs": "Clubs",
+  "clubRoleMember": "Member",
+  "activitiesClubStats": "{points} points, {count} activities",
+  "@activitiesClubStats": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activitiesEvents": "Events attended",
+  "activitiesGrades": "Co-curricular grades, {term}",
+  "@activitiesGrades": {
+    "placeholders": {
+      "term": {}
+    }
+  },
+  "activitiesAchievements": "Achievements",
+  "activitiesRecognitions": "House recognitions",
+  "behaviourGradeLine": "Behaviour grade: {grade}",
+  "@behaviourGradeLine": {
+    "placeholders": {
+      "grade": {}
+    }
+  },
+  "behaviourNotices": "Notices from the school",
+  "behaviourIncidents": "Incidents",
+  "behaviourNoIncidents": "No incidents on record.",
+  "behaviourAction": "Action: {action}",
+  "@behaviourAction": {
+    "placeholders": {
+      "action": {}
+    }
+  },
+  "actionStatus_revoked": "Withdrawn",
+  "actionStatus_reduced": "Reduced",
+  "severity_minor": "Minor",
+  "severity_major": "Major",
+  "severity_severe": "Severe",
+  "incidentStatus_reported": "Reported",
+  "incidentStatus_under_review": "Under review",
+  "incidentStatus_action_taken": "Action taken",
+  "incidentStatus_appealed": "Appealed",
+  "incidentStatus_closed": "Closed",
+  "noticeMethod_message": "Message",
+  "noticeMethod_call": "Phone call",
+  "noticeMethod_meeting": "Meeting",
+  "noticeMethod_letter": "Letter",
+  "noticeMeeting": "Meeting on {date}",
+  "@noticeMeeting": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "noticeAcknowledge": "Acknowledge",
+  "noticeAcknowledged": "Acknowledged",
+  "noticeAckDone": "Thank you. The school has been told.",
+  "reportAttendanceDays": "{present} of {total} days",
+  "@reportAttendanceDays": {
+    "placeholders": {
+      "present": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

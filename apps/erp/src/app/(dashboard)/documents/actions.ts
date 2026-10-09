@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
+import type { VaultVersion } from '@/lib/pathways-b';
 import type { ActionResult } from '@/lib/types';
 import type { CertificateKind, CertificateRequest, CertificateTemplate, VaultDocument } from '@/lib/hr-types';
 
@@ -60,6 +61,20 @@ export async function classStudents(sectionId: string): Promise<ActionResult<{ i
 export async function listVault(ownerType: 'student' | 'staff', ownerId: string): Promise<ActionResult<VaultDocument[]>> {
   if (!UUID.test(ownerId)) return bad();
   return act(() => api<VaultDocument[]>(`/v1/documents/vault/${ownerType}/${ownerId}`));
+}
+
+/** Every version of a vault document, oldest first. */
+export async function vaultVersions(id: string): Promise<ActionResult<VaultVersion[]>> {
+  if (!UUID.test(id)) return bad();
+  return act(() => api<VaultVersion[]>(`/v1/documents/vault/files/${id}/versions`));
+}
+
+/** Brings an older version back as the new current version. */
+export async function restoreVaultVersion(id: string): Promise<ActionResult<VaultDocument>> {
+  if (!UUID.test(id)) return bad();
+  const res = await act(() => api<VaultDocument>(`/v1/documents/vault/files/${id}/restore`, { method: 'POST', body: {} }));
+  if (res.ok) revalidatePath('/documents/vault');
+  return res;
 }
 
 export async function archiveVaultFile(id: string): Promise<ActionResult<undefined>> {

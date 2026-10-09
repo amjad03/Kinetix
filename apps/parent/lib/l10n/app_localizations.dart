@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// No description provided for @today.
   ///
@@ -4706,9 +4713,256 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open as PDF'**
   String get reportCardPdf;
+
+  /// No description provided for @errVisibilityOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Your school has not made this available to parents.'**
+  String get errVisibilityOff;
+
+  /// No description provided for @lifeActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get lifeActivities;
+
+  /// No description provided for @lifeActivitiesSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs, events, house and achievements'**
+  String get lifeActivitiesSub;
+
+  /// No description provided for @lifeBehaviour.
+  ///
+  /// In en, this message translates to:
+  /// **'Behaviour'**
+  String get lifeBehaviour;
+
+  /// No description provided for @lifeBehaviourSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Incidents, notices from the school and recognitions'**
+  String get lifeBehaviourSub;
+
+  /// No description provided for @activitiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s activities'**
+  String activitiesTitle(Object name);
+
+  /// No description provided for @behaviourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s behaviour'**
+  String behaviourTitle(Object name);
+
+  /// No description provided for @activitiesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities have been recorded yet.'**
+  String get activitiesEmpty;
+
+  /// No description provided for @activitiesHousePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} house points'**
+  String activitiesHousePoints(int points);
+
+  /// No description provided for @activitiesCaptain.
+  ///
+  /// In en, this message translates to:
+  /// **'House captain'**
+  String get activitiesCaptain;
+
+  /// No description provided for @activitiesClubs.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs'**
+  String get activitiesClubs;
+
+  /// No description provided for @clubRoleMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get clubRoleMember;
+
+  /// No description provided for @activitiesClubStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} points, {count} activities'**
+  String activitiesClubStats(int points, int count);
+
+  /// No description provided for @activitiesEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Events attended'**
+  String get activitiesEvents;
+
+  /// No description provided for @activitiesGrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-curricular grades, {term}'**
+  String activitiesGrades(Object term);
+
+  /// No description provided for @activitiesAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get activitiesAchievements;
+
+  /// No description provided for @activitiesRecognitions.
+  ///
+  /// In en, this message translates to:
+  /// **'House recognitions'**
+  String get activitiesRecognitions;
+
+  /// No description provided for @behaviourGradeLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Behaviour grade: {grade}'**
+  String behaviourGradeLine(Object grade);
+
+  /// No description provided for @behaviourNotices.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices from the school'**
+  String get behaviourNotices;
+
+  /// No description provided for @behaviourIncidents.
+  ///
+  /// In en, this message translates to:
+  /// **'Incidents'**
+  String get behaviourIncidents;
+
+  /// No description provided for @behaviourNoIncidents.
+  ///
+  /// In en, this message translates to:
+  /// **'No incidents on record.'**
+  String get behaviourNoIncidents;
+
+  /// No description provided for @behaviourAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Action: {action}'**
+  String behaviourAction(Object action);
+
+  /// No description provided for @actionStatus_revoked.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get actionStatus_revoked;
+
+  /// No description provided for @actionStatus_reduced.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduced'**
+  String get actionStatus_reduced;
+
+  /// No description provided for @severity_minor.
+  ///
+  /// In en, this message translates to:
+  /// **'Minor'**
+  String get severity_minor;
+
+  /// No description provided for @severity_major.
+  ///
+  /// In en, this message translates to:
+  /// **'Major'**
+  String get severity_major;
+
+  /// No description provided for @severity_severe.
+  ///
+  /// In en, this message translates to:
+  /// **'Severe'**
+  String get severity_severe;
+
+  /// No description provided for @incidentStatus_reported.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported'**
+  String get incidentStatus_reported;
+
+  /// No description provided for @incidentStatus_under_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get incidentStatus_under_review;
+
+  /// No description provided for @incidentStatus_action_taken.
+  ///
+  /// In en, this message translates to:
+  /// **'Action taken'**
+  String get incidentStatus_action_taken;
+
+  /// No description provided for @incidentStatus_appealed.
+  ///
+  /// In en, this message translates to:
+  /// **'Appealed'**
+  String get incidentStatus_appealed;
+
+  /// No description provided for @incidentStatus_closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get incidentStatus_closed;
+
+  /// No description provided for @noticeMethod_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get noticeMethod_message;
+
+  /// No description provided for @noticeMethod_call.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone call'**
+  String get noticeMethod_call;
+
+  /// No description provided for @noticeMethod_meeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting'**
+  String get noticeMethod_meeting;
+
+  /// No description provided for @noticeMethod_letter.
+  ///
+  /// In en, this message translates to:
+  /// **'Letter'**
+  String get noticeMethod_letter;
+
+  /// No description provided for @noticeMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting on {date}'**
+  String noticeMeeting(Object date);
+
+  /// No description provided for @noticeAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledge'**
+  String get noticeAcknowledge;
+
+  /// No description provided for @noticeAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledged'**
+  String get noticeAcknowledged;
+
+  /// No description provided for @noticeAckDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you. The school has been told.'**
+  String get noticeAckDone;
+
+  /// No description provided for @reportAttendanceDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{present} of {total} days'**
+  String reportAttendanceDays(int present, int total);
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -4717,7 +4971,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

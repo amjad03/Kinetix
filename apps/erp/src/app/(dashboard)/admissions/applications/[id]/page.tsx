@@ -14,6 +14,7 @@ import { ErrorState } from '@/components/States';
 import { ApiError, api, load, requireSection } from '@/lib/api';
 import type { ApplicationDetail } from '@/lib/admissions';
 import { formatDate } from '@/lib/dates';
+import { loadFlows } from '@/lib/pathways-b-server';
 import type { Structure } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 import type { MessageKey } from '@/i18n/messages';
@@ -115,7 +116,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
             ))}
           </Stack>
         </Paper>
-        <ApplicationReview app={a} classes={classes} canWaive={me?.roles.some((r) => r === 'principal' || r === 'tenant_admin') ?? false} />
+        <ApplicationReview app={a} classes={classes} canWaive={me?.roles.some((r) => r === 'principal' || r === 'tenant_admin') ?? false} flows={await loadFlows()} />
       </Box>
     </>
   );

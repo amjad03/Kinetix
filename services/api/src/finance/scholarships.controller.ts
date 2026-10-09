@@ -11,6 +11,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { assessments, feeInvoices, marks, scholarshipApplications, scholarshipSchemes, students } from '../db/schema.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
 import { discountFor } from './gl.js';
+import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 
 type Scheme = typeof scholarshipSchemes.$inferSelect;
 const SchemeBody = z
@@ -74,7 +75,7 @@ export class ScholarshipsController {
       await assertCanSeeStudent(tx, p, b.studentId, []);
       const [scheme] = await tx.select().from(scholarshipSchemes).where(eq(scholarshipSchemes.id, b.schemeId));
       if (!scheme || !scheme.active || (scheme.validUntil && scheme.validUntil < new Date().toISOString().slice(0, 10))) throw new NotFoundException('This scholarship is not open');
-      const why = await this.ineligible(tx, scheme, b.studentId, b.incomePaise);
+      const why = await scholarshipIneligible(tx, scheme, b.studentId, b.incomePaise);
       if (why) throw new BadRequestException(why);
       const row = await orConflict('There is already an open application for this scholarship', async () => {
         const [r] = await tx.insert(scholarshipApplications).values({ tenantId: p.tenantId, schemeId: b.schemeId, studentId: b.studentId, incomePaise: b.incomePaise ?? null, note: b.note, requestedBy: p.userId }).returning();
@@ -114,34 +115,8 @@ export class ScholarshipsController {
   @Auth('user', FEE_ROLES)
   decide(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(DecideBody)) b: z.infer<typeof DecideBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [app] = await tx.select().from(scholarshipApplications).where(eq(scholarshipApplications.id, id)).for('update');
-      if (!app) throw new NotFoundException('Application not found');
-      if (app.status !== 'pending') throw new ConflictException(`This application is already ${app.status}`);
-      let awarded = 0;
-      const adjustments: { invoiceId: string; paise: number }[] = [];
-      if (b.approve) {
-        const [scheme] = await tx.select().from(scholarshipSchemes).where(eq(scholarshipSchemes.id, app.schemeId));
-        const why = await this.ineligible(tx, scheme, app.studentId, app.incomePaise ?? undefined);
-        if (why) throw new BadRequestException(why);
-        const open = await tx.select().from(feeInvoices).where(and(eq(feeInvoices.studentId, app.studentId), eq(feeInvoices.status, 'due'))).orderBy(asc(feeInvoices.dueOn)).for('update');
-        let fixedLeft = scheme.kind === 'fixed' ? scheme.value : 0;
-        for (const inv of open) {
-          const paise = discountFor(scheme.kind, scheme.value, inv.amountPaise - inv.paidPaise, fixedLeft);
-          if (paise <= 0) continue;
-          fixedLeft -= scheme.kind === 'fixed' ? paise : 0;
-          const settled = inv.amountPaise - paise <= inv.paidPaise;
-          await tx.update(feeInvoices).set({ amountPaise: sql`${feeInvoices.amountPaise} - ${paise}`, ...(settled ? { status: 'paid' as const } : {}), updatedAt: new Date() }).where(eq(feeInvoices.id, inv.id));
-          adjustments.push({ invoiceId: inv.id, paise });
-          awarded += paise;
-        }
-      }
-      const [row] = await tx
-        .update(scholarshipApplications)
-        .set({ status: b.approve ? 'approved' : 'rejected', decidedBy: p.userId, decisionNote: b.note ?? null, decidedAt: new Date(), awardedPaise: awarded, adjustments })
-        .where(eq(scholarshipApplications.id, id))
-        .returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `scholarship.${row.status}`, subjectType: 'scholarship_application', subjectId: id, data: { awardedPaise: awarded, adjustments } });
-      return row;
+      if (b.approve) await assertNotRouted(tx, BOUND.scholarship);
+      return decideScholarship(tx, { tenantId: p.tenantId, userId: p.userId }, id, b.approve, b.note);
     });
   }
 
@@ -158,19 +133,51 @@ export class ScholarshipsController {
       return row;
     });
   }
+}
 
-  /** Why the student does not qualify, or null. Marks are the student's average over published assessments. */
-  private async ineligible(tx: Tx, s: Scheme, studentId: string, incomePaise?: number): Promise<string | null> {
-    if (s.maxIncomePaise !== null) {
-      if (incomePaise === undefined) return 'This scholarship needs the family income';
-      if (incomePaise > s.maxIncomePaise) return 'The family income is above the limit for this scholarship';
-    }
-    if (s.minPercentage !== null) {
-      const rows = await tx.select({ got: sql<number>`coalesce(${marks.moderatedMarks}, ${marks.marks})`, max: assessments.maxMarks }).from(marks).innerJoin(assessments, eq(assessments.id, marks.assessmentId)).where(and(eq(marks.studentId, studentId), eq(marks.absent, false), isNotNull(assessments.publishedAt)));
-      const max = rows.reduce((t, r) => t + (r.got === null ? 0 : r.max), 0);
-      const got = rows.reduce((t, r) => t + (r.got ?? 0), 0);
-      if (max === 0 || (got / max) * 100 < s.minPercentage) return `This scholarship needs at least ${s.minPercentage}% in published marks`;
-    }
-    return null;
+/** Why the student does not qualify, or null. Marks are the student's average over published assessments. */
+export async function scholarshipIneligible(tx: Tx, s: Scheme, studentId: string, incomePaise?: number): Promise<string | null> {
+  if (s.maxIncomePaise !== null) {
+    if (incomePaise === undefined) return 'This scholarship needs the family income';
+    if (incomePaise > s.maxIncomePaise) return 'The family income is above the limit for this scholarship';
   }
+  if (s.minPercentage !== null) {
+    const rows = await tx.select({ got: sql<number>`coalesce(${marks.moderatedMarks}, ${marks.marks})`, max: assessments.maxMarks }).from(marks).innerJoin(assessments, eq(assessments.id, marks.assessmentId)).where(and(eq(marks.studentId, studentId), eq(marks.absent, false), isNotNull(assessments.publishedAt)));
+    const max = rows.reduce((t, r) => t + (r.got === null ? 0 : r.max), 0);
+    const got = rows.reduce((t, r) => t + (r.got ?? 0), 0);
+    if (max === 0 || (got / max) * 100 < s.minPercentage) return `This scholarship needs at least ${s.minPercentage}% in published marks`;
+  }
+  return null;
+}
+
+/** Approves or rejects an application. Approval re-checks eligibility and reduces the student's open fees, oldest first. */
+export async function decideScholarship(tx: Tx, ctx: { tenantId: string; userId: string }, id: string, approve: boolean, note?: string) {
+  const [app] = await tx.select().from(scholarshipApplications).where(eq(scholarshipApplications.id, id)).for('update');
+  if (!app) throw new NotFoundException('Application not found');
+  if (app.status !== 'pending') throw new ConflictException(`This application is already ${app.status}`);
+  let awarded = 0;
+  const adjustments: { invoiceId: string; paise: number }[] = [];
+  if (approve) {
+    const [scheme] = await tx.select().from(scholarshipSchemes).where(eq(scholarshipSchemes.id, app.schemeId));
+    const why = await scholarshipIneligible(tx, scheme, app.studentId, app.incomePaise ?? undefined);
+    if (why) throw new BadRequestException(why);
+    const open = await tx.select().from(feeInvoices).where(and(eq(feeInvoices.studentId, app.studentId), eq(feeInvoices.status, 'due'))).orderBy(asc(feeInvoices.dueOn)).for('update');
+    let fixedLeft = scheme.kind === 'fixed' ? scheme.value : 0;
+    for (const inv of open) {
+      const paise = discountFor(scheme.kind, scheme.value, inv.amountPaise - inv.paidPaise, fixedLeft);
+      if (paise <= 0) continue;
+      fixedLeft -= scheme.kind === 'fixed' ? paise : 0;
+      const settled = inv.amountPaise - paise <= inv.paidPaise;
+      await tx.update(feeInvoices).set({ amountPaise: sql`${feeInvoices.amountPaise} - ${paise}`, ...(settled ? { status: 'paid' as const } : {}), updatedAt: new Date() }).where(eq(feeInvoices.id, inv.id));
+      adjustments.push({ invoiceId: inv.id, paise });
+      awarded += paise;
+    }
+  }
+  const [row] = await tx
+    .update(scholarshipApplications)
+    .set({ status: approve ? 'approved' : 'rejected', decidedBy: ctx.userId, decisionNote: note ?? null, decidedAt: new Date(), awardedPaise: awarded, adjustments })
+    .where(eq(scholarshipApplications.id, id))
+    .returning();
+  await audit(tx, { tenantId: ctx.tenantId, actorType: 'user', actorId: ctx.userId, action: `scholarship.${row.status}`, subjectType: 'scholarship_application', subjectId: id, data: { awardedPaise: awarded, adjustments } });
+  return row;
 }

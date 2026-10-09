@@ -20,9 +20,21 @@ export interface PassportSkill { skillId: string; code: string; name: string; ca
 export interface Passport {
   student: { id: string; fullName: string; rollNo: string; className: string };
   skills: PassportSkill[];
+  /** Knowledge, skills, attitudes, leadership, communication: how many of the student's skills sit in each and their average level. */
+  ksa: { category: string; skills: number; averageLevel: number | null }[];
   certificates: { serialNo: string | null; title: string; issuedOn: string }[];
   activities: { clubs: { club: string; points: number; activities: number }[]; events: { title: string; eventType: string; on: string }[] };
   verification: { verified: boolean; verifiedAt: string | null };
+}
+
+/** Skills grouped by category (knowledge, skill, attitude, leadership, communication, career) with the average of their known levels. */
+export function ksaSummary(list: { category: string; level: number | null }[]): Passport['ksa'] {
+  const groups = new Map<string, (number | null)[]>();
+  for (const s of list) groups.set(s.category, [...(groups.get(s.category) ?? []), s.level]);
+  return [...groups.entries()].map(([category, levels]) => {
+    const known = levels.filter((l): l is number => l !== null);
+    return { category, skills: levels.length, averageLevel: known.length ? Math.round((known.reduce((a, b) => a + b, 0) / known.length) * 10) / 10 : null };
+  });
 }
 
 /** Skill evidence computed from existing data, the passport built from it, and small lookups. */
@@ -205,9 +217,11 @@ export class SkillsService {
       .orderBy(asc(clubs.name));
     const events = await this.attendedEvents(tx, studentId);
     const [pp] = await tx.select().from(outcomePassports).where(eq(outcomePassports.studentId, studentId));
+    const skillList = await this.skillsFor(tx, studentId);
     return {
       student: s,
-      skills: await this.skillsFor(tx, studentId),
+      skills: skillList,
+      ksa: ksaSummary(skillList),
       certificates: certs.map((c) => ({ serialNo: c.serialNo, title: c.renderedTitle ?? 'Certificate', issuedOn: (c.issuedAt ?? c.createdAt).toISOString().slice(0, 10) })),
       activities: { clubs: clubRows, events: events.map((e) => ({ title: e.title, eventType: e.eventType, on: e.startsAt.toISOString().slice(0, 10) })) },
       verification: { verified: !!pp?.verifiedAt && !pp.revokedAt, verifiedAt: pp?.verifiedAt && !pp.revokedAt ? pp.verifiedAt.toISOString() : null },

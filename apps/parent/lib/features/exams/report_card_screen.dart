@@ -160,10 +160,28 @@ class _ReportCardScreenState extends State<ReportCardScreen> {
             if (c.coCurricular.isNotEmpty) ...[
               const SizedBox(height: Kx.s8),
               Text(l.coCurricular, style: context.text.titleSmall),
-              for (final g in c.coCurricular) Text('${g.activity}: ${g.grade}'),
+              for (final g in c.coCurricular)
+                ListTile(
+                  key: Key('coGrade-${g.activity}'),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: Text(g.activity),
+                  subtitle: g.remark.isEmpty ? null : Text(g.remark),
+                  trailing: Text(g.grade, style: context.text.titleSmall),
+                ),
             ],
-            if (c.attendancePercent != null) Padding(padding: const EdgeInsets.only(top: Kx.s12), child: Text('${l.attendance}: ${_num(c.attendancePercent!)}%', key: const Key('reportAttendance'))),
-            if (c.behaviourGrade != null) Text('${l.behaviour}: ${c.behaviourGrade}'),
+            if (c.attendancePercent != null)
+              Padding(
+                padding: const EdgeInsets.only(top: Kx.s12),
+                child: Text(
+                  [
+                    '${l.attendance}: ${_num(c.attendancePercent!)}%',
+                    if (c.attendancePresent != null && c.attendanceTotal != null) l.reportAttendanceDays(c.attendancePresent!, c.attendanceTotal!),
+                  ].join(' · '),
+                  key: const Key('reportAttendance'),
+                ),
+              ),
+            if (c.behaviourGrade != null) Text('${l.behaviour}: ${c.behaviourGrade}', key: const Key('reportBehaviour')),
             if (c.remarks.isNotEmpty) Padding(padding: const EdgeInsets.only(top: Kx.s12), child: Text(c.remarks)),
             if (_message != null) Padding(padding: const EdgeInsets.only(top: Kx.s12), child: Text(_message!)),
             const SizedBox(height: Kx.s16),

@@ -5,6 +5,7 @@ import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
+import { ParentVisibilityService } from '../parent/parent-visibility.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { diaryAcks, diaryEntries, sections, students, subjects, users } from '../db/schema.js';
 import { DIARY_WRITERS, SchoolLifeService } from './school-life.service.js';
@@ -132,6 +133,7 @@ export class ParentDiaryController {
   constructor(
     private readonly db: DbService,
     private readonly svc: SchoolLifeService,
+    private readonly vis: ParentVisibilityService,
   ) {}
 
   /** The child's class diary, newest first; each entry says whether a guardian has acknowledged it. */
@@ -140,6 +142,7 @@ export class ParentDiaryController {
   list(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string, @Query('date') date?: string, @Query('days') days?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const child = await this.svc.guardianChild(tx, p, studentId);
+      await this.vis.assert(tx, p, 'diary');
       const since = date ? Day.parse(date) : undefined;
       const limit = Math.min(Math.max(Number(days) || 14, 1), 90);
       const rows = await tx
@@ -160,6 +163,7 @@ export class ParentDiaryController {
   acknowledge(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string, @Param('entryId', ParseUUIDPipe) entryId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const child = await this.svc.guardianChild(tx, p, studentId);
+      await this.vis.assert(tx, p, 'diary');
       const [e] = await tx.select({ id: diaryEntries.id, sectionId: diaryEntries.sectionId }).from(diaryEntries).where(eq(diaryEntries.id, entryId));
       if (!e || e.sectionId !== child.sectionId) throw new NotFoundException('Entry not found');
       const [row] = await tx.insert(diaryAcks).values({ tenantId: p.tenantId, entryId, studentId, guardianUserId: p.userId }).onConflictDoNothing().returning();

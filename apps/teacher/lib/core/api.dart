@@ -6,6 +6,7 @@ import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
+import 'academics_models.dart';
 import 'growth_models.dart';
 import 'hr_models.dart';
 import 'insights_models.dart';
@@ -169,6 +170,55 @@ abstract class TeacherApi {
   /// Clubs (the staff list; the screen keeps those I coordinate) and a club's members.
   Future<List<ClubInfo>> clubs();
   Future<List<ClubMember>> clubMembers(String clubId);
+
+  // --- Course files, outcome-based education, research, project mentoring -------------------------
+
+  /// The classes and subjects I may build a course file for, and the versions built so far (newest first).
+  Future<List<CourseFileOption>> courseFileOptions();
+  Future<List<CourseFileVersion>> courseFiles();
+
+  /// Builds a new version from the records as they stand now.
+  Future<CourseFileVersion> generateCourseFile({required String sectionId, required String subjectId});
+  Future<Uint8List> courseFilePdf(String id);
+
+  /// A subject's course-outcome versions, the CO x PO/PSO matrix of one version, the academic year to read attainment for
+  /// (null when the school has no terms) and a programme's attainment per course outcome (heads of department and the quality office).
+  Future<List<CoSet>> coSets(String subjectId);
+  Future<CoMatrix> coMatrix(String coSetId);
+  Future<String?> currentAcademicYearId();
+  Future<List<CoAttainment>> coAttainment({required String programId, required String academicYearId});
+
+  /// Research (faculty): projects, scholars I supervise, theses, publications and datasets.
+  Future<List<ResearchProject>> researchProjects();
+  Future<List<Scholar>> researchScholars();
+  Future<List<ThesisRow>> researchTheses();
+  Future<ThesisDetail> researchThesis(String id);
+
+  /// Moves a thesis along (draft -> submitted for a supervisor).
+  Future<void> moveThesisStage(String id, {required String to, String note = ''});
+
+  /// Opens the thesis record of a scholar I supervise.
+  Future<void> openThesis(String scholarId, {required String title, String abstract = ''});
+  Future<List<Publication>> researchPublications({String? ownerUserId});
+  Future<Publication> importPublicationDoi(String doi);
+  Future<List<ResearchDataset>> researchDatasets();
+
+  /// Project mentoring: my projects, a workspace, the discussion, rubric reviews, viva, showcase and recruiting hub, join requests and skill matches.
+  Future<List<MyProject>> myProjects();
+  Future<ProjectWorkspace> projectWorkspace(String id);
+  Future<List<ProjectComment>> projectComments(String id);
+  Future<void> addProjectComment(String id, {required String body, String? parentId});
+  Future<List<ProjectReview>> projectReviews(String id);
+  Future<void> addProjectReview(String id, {required Map<String, double> rubric, required int maxPerCriterion, String comment = ''});
+  Future<void> scheduleProjectViva(String id, {required DateTime scheduledAt, required String venue, required List<String> panel});
+
+  /// [outcome] is pass, revise or fail.
+  Future<void> recordProjectViva(String vivaId, {required String outcome, double? score, String remarks = ''});
+  Future<void> setProjectHub(String id, ProjectHub hub);
+  Future<List<JoinRequest>> projectJoinRequests(String id);
+  Future<void> decideJoinRequest(String requestId, {required bool accept});
+  Future<List<ProjectMatch>> projectMatches(String id);
+  Future<void> addProjectLink(String id, {required String title, required String url});
 
   /// Saves the teacher's language on the server (notifications and pushes use it).
   Future<Me> updatePreferredLanguage(String language);
@@ -646,6 +696,120 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<List<ClubMember>> clubMembers(String clubId) async =>
       _rows(await _send('GET', '/v1/campus-life/clubs/$clubId/members?status=active'), ClubMember.fromJson);
+
+  @override
+  Future<List<CourseFileOption>> courseFileOptions() async => _rows(await _send('GET', '/v1/course-files/options'), CourseFileOption.fromJson);
+
+  @override
+  Future<List<CourseFileVersion>> courseFiles() async => _rows(await _send('GET', '/v1/course-files'), CourseFileVersion.fromJson);
+
+  @override
+  Future<CourseFileVersion> generateCourseFile({required String sectionId, required String subjectId}) async =>
+      CourseFileVersion.fromJson(await _send('POST', '/v1/course-files', body: {'sectionId': sectionId, 'subjectId': subjectId}, timeout: const Duration(seconds: 90)) as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> courseFilePdf(String id) async => (await _request('GET', '/v1/course-files/$id/download', timeout: const Duration(seconds: 60))).bodyBytes;
+
+  @override
+  Future<List<CoSet>> coSets(String subjectId) async => _rows(await _send('GET', '/v1/obe/subjects/$subjectId/co-sets'), CoSet.fromJson);
+
+  @override
+  Future<CoMatrix> coMatrix(String coSetId) async => CoMatrix.fromJson(await _send('GET', '/v1/obe/co-sets/$coSetId/matrix') as Map<String, dynamic>);
+
+  @override
+  Future<String?> currentAcademicYearId() async {
+    final terms = _rows(await _send('GET', '/v1/terms'), TermYear.fromJson);
+    final n = DateTime.now();
+    return TermYear.current(terms, '${n.year.toString().padLeft(4, '0')}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}');
+  }
+
+  @override
+  Future<List<CoAttainment>> coAttainment({required String programId, required String academicYearId}) async {
+    final j = await _send('GET', '/v1/obe/programs/$programId/attainment?academicYearId=$academicYearId') as Map<String, dynamic>;
+    final max = (j['config'] as Map?)?['maxLevel'];
+    return _rows(j['cos'], (m) => CoAttainment.fromJson({...m, 'maxLevel': max}));
+  }
+
+  @override
+  Future<List<ResearchProject>> researchProjects() async => _rows(await _send('GET', '/v1/research/projects'), ResearchProject.fromJson);
+
+  @override
+  Future<List<Scholar>> researchScholars() async => _rows(await _send('GET', '/v1/research/scholars'), Scholar.fromJson);
+
+  @override
+  Future<List<ThesisRow>> researchTheses() async => _rows(await _send('GET', '/v1/research/theses'), ThesisRow.fromJson);
+
+  @override
+  Future<ThesisDetail> researchThesis(String id) async => ThesisDetail.fromJson(await _send('GET', '/v1/research/theses/$id') as Map<String, dynamic>);
+
+  @override
+  Future<void> moveThesisStage(String id, {required String to, String note = ''}) async => _send('POST', '/v1/research/theses/$id/stage', body: {'to': to, 'note': note});
+
+  @override
+  Future<void> openThesis(String scholarId, {required String title, String abstract = ''}) async =>
+      _send('POST', '/v1/research/scholars/$scholarId/thesis', body: {'title': title, 'abstract': abstract});
+
+  @override
+  Future<List<Publication>> researchPublications({String? ownerUserId}) async =>
+      _rows(await _send('GET', '/v1/research/publications${ownerUserId == null ? '' : '?ownerUserId=$ownerUserId'}'), Publication.fromJson);
+
+  @override
+  Future<Publication> importPublicationDoi(String doi) async =>
+      Publication.fromJson(await _send('POST', '/v1/research/publications/import-doi', body: {'doi': doi}, timeout: const Duration(seconds: 40)) as Map<String, dynamic>);
+
+  @override
+  Future<List<ResearchDataset>> researchDatasets() async => _rows(await _send('GET', '/v1/research/datasets'), ResearchDataset.fromJson);
+
+  @override
+  Future<List<MyProject>> myProjects() async => _rows(await _send('GET', '/v1/projects/mine'), MyProject.fromJson);
+
+  @override
+  Future<ProjectWorkspace> projectWorkspace(String id) async => ProjectWorkspace.fromJson(await _send('GET', '/v1/projects/$id/workspace') as Map<String, dynamic>);
+
+  @override
+  Future<List<ProjectComment>> projectComments(String id) async => _rows(await _send('GET', '/v1/projects/$id/comments'), ProjectComment.fromJson);
+
+  @override
+  Future<void> addProjectComment(String id, {required String body, String? parentId}) async =>
+      _send('POST', '/v1/projects/$id/comments', body: {'body': body, 'parentId': ?parentId});
+
+  @override
+  Future<List<ProjectReview>> projectReviews(String id) async => _rows(await _send('GET', '/v1/projects/$id/reviews'), ProjectReview.fromJson);
+
+  @override
+  Future<void> addProjectReview(String id, {required Map<String, double> rubric, required int maxPerCriterion, String comment = ''}) async =>
+      _send('POST', '/v1/projects/$id/reviews', body: {'kind': 'mentor', 'rubric': rubric, 'maxPerCriterion': maxPerCriterion, 'comment': comment});
+
+  @override
+  Future<void> scheduleProjectViva(String id, {required DateTime scheduledAt, required String venue, required List<String> panel}) async => _send(
+    'POST',
+    '/v1/projects/$id/viva',
+    body: {'scheduledAt': scheduledAt.toUtc().toIso8601String(), 'venue': venue, 'panel': [for (final n in panel) {'name': n}]},
+  );
+
+  @override
+  Future<void> recordProjectViva(String vivaId, {required String outcome, double? score, String remarks = ''}) async =>
+      _send('POST', '/v1/projects/viva/$vivaId/result', body: {'outcome': outcome, 'score': ?score, 'remarks': remarks});
+
+  @override
+  Future<void> setProjectHub(String id, ProjectHub hub) async => _send(
+    'PUT',
+    '/v1/projects/$id/hub',
+    body: {'showcase': hub.showcase, 'summary': hub.summary, 'recruiting': hub.recruiting, 'lookingFor': hub.lookingFor, 'openings': hub.openings},
+  );
+
+  @override
+  Future<List<JoinRequest>> projectJoinRequests(String id) async => _rows(await _send('GET', '/v1/projects/$id/requests'), JoinRequest.fromJson);
+
+  @override
+  Future<void> decideJoinRequest(String requestId, {required bool accept}) async => _send('POST', '/v1/projects/requests/$requestId/decide', body: {'accept': accept});
+
+  @override
+  Future<List<ProjectMatch>> projectMatches(String id) async => _rows(await _send('GET', '/v1/projects/$id/matches'), ProjectMatch.fromJson);
+
+  @override
+  Future<void> addProjectLink(String id, {required String title, required String url}) async =>
+      _send('POST', '/v1/projects/$id/files', body: {'title': title, 'kind': 'link', 'url': url});
 
   @override
   Future<Me> updatePreferredLanguage(String language) async =>

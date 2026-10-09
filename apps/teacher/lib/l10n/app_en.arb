@@ -2959,5 +2959,337 @@
   "curriculumEmpty": "No active curriculum yet.",
   "curriculumNoSubjects": "This version has no subjects.",
   "curriculumUnits": "Units",
-  "curriculumOutcomes": "Course outcomes"
+  "curriculumOutcomes": "Course outcomes",
+  "accessEmbargoed": "Under embargo",
+  "accessEmbargoedUntil": "Embargoed until {date}",
+  "@accessEmbargoedUntil": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accessOpen": "Open",
+  "accessRestricted": "Restricted",
+  "cfAssessments": "Assessments",
+  "cfAttendance": "Attendance sessions",
+  "cfLessonPlans": "Lesson plans",
+  "cfOutcomes": "Course outcomes",
+  "cfPeriods": "Periods",
+  "cfRecordings": "Recordings",
+  "cfTopics": "Topics taught",
+  "cfWhiteboards": "Whiteboards",
+  "courseFileGenerate": "Generate new version",
+  "courseFileGenerated": "Version {n} generated.",
+  "@courseFileGenerated": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileMeta": "Generated {date} by {name} · {size}",
+  "@courseFileMeta": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileNone": "No version has been generated yet.",
+  "courseFileNotReviewed": "Not reviewed yet",
+  "courseFileOpenPdf": "Open PDF",
+  "courseFileReviewed": "Reviewed by {name}",
+  "@courseFileReviewed": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileVersion": "Version {n}",
+  "@courseFileVersion": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFilesBody": "Class-wise course file PDFs for your subjects",
+  "courseFilesEmpty": "You have no classes or subjects to build a course file for.",
+  "courseFilesTitle": "Course files",
+  "datasetFiles": "{count, plural, =1{1 file} other{{count} files}}",
+  "@datasetFiles": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeAttainmentDirect": "Direct {n}",
+  "@obeAttainmentDirect": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAttainmentHeader": "Attainment per CO",
+  "obeAttainmentIndirect": "Indirect {n}",
+  "@obeAttainmentIndirect": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAttainmentNone": "Attainment has not been calculated for this year yet.",
+  "obeAttainmentRestricted": "Attainment figures are shown to heads of department and the quality office.",
+  "obeAttainmentTarget": "Target {n}",
+  "@obeAttainmentTarget": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeBody": "Course outcomes, the CO–PO matrix and attainment",
+  "obeMatrixHeader": "CO–PO matrix",
+  "obeMatrixLegend": "Strength of link: 1 low, 2 medium, 3 high",
+  "obeMatrixNoPos": "No programme outcomes (PO/PSO) are defined for this subject's programme yet.",
+  "obeMet": "Target met",
+  "obeNoOutcomes": "No course outcomes have been set for this subject yet.",
+  "obeNotMet": "Below target",
+  "obeStatusActive": "Active",
+  "obeStatusDraft": "Draft",
+  "obeStatusRetired": "Retired",
+  "obeSubjectsEmpty": "No subjects to show.",
+  "obeTitle": "Course outcomes (CO/PO)",
+  "obeVersion": "Version {n}",
+  "@obeVersion": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "programmeMphil": "M.Phil",
+  "programmePhd": "PhD",
+  "projAccept": "Accept",
+  "projAccepted": "Accepted",
+  "projAddLink": "Add link",
+  "projCommentHint": "Write a message",
+  "projCritDocumentation": "Documentation",
+  "projCritExecution": "Execution",
+  "projCritTeamwork": "Teamwork",
+  "projCritUnderstanding": "Understanding",
+  "projDecline": "Decline",
+  "projDeclined": "Declined",
+  "projDiscussionEmpty": "No messages yet. Start the discussion.",
+  "projFiles": "Files and links",
+  "projFilesNone": "No files or links yet.",
+  "projHub": "Showcase and recruiting",
+  "projHubLookingFor": "Skills wanted (comma separated)",
+  "projHubOpenings": "Open places",
+  "projHubRecruiting": "Looking for students to join",
+  "projHubSaved": "Saved.",
+  "projHubShowcase": "Show on the showcase",
+  "projHubSummary": "Summary",
+  "projLinkInvalid": "Enter a title and a web link starting with http.",
+  "projLinkTitle": "Title",
+  "projLinkUrl": "Web link",
+  "projMatchFit": "{pct}% match",
+  "@projMatchFit": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "projMatches": "Suggested students",
+  "projMatchesNone": "Add the skills you are looking for to see matching students.",
+  "projMembers": "Team",
+  "projMilestoneDone": "Done {date}",
+  "@projMilestoneDone": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projMilestoneDue": "Due {date}",
+  "@projMilestoneDue": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projMilestones": "Milestones",
+  "projMilestonesNone": "No milestones yet.",
+  "projMyRole": "Your role: {role}",
+  "@projMyRole": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "projPending": "Pending",
+  "projPi": "Led by {name}",
+  "@projPi": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projRecordResult": "Record result",
+  "projRecruiting": "Recruiting",
+  "projReply": "Reply",
+  "projReplyingTo": "Replying to {name}",
+  "@projReplyingTo": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projRequests": "Join requests",
+  "projRequestsNone": "No join requests.",
+  "projReviewAverage": "{count} reviews, average {pct}%",
+  "@projReviewAverage": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "projReviewComment": "Comment",
+  "projReviewExternal": "External",
+  "projReviewMentor": "Mentor",
+  "projReviewPeer": "Peer",
+  "projReviewsEmpty": "No reviews yet.",
+  "projRoleAdmin": "Administrator",
+  "projRoleMember": "Member",
+  "projRolePi": "Project lead",
+  "projRoleStudent": "Student",
+  "projRoleSupervisor": "Supervisor",
+  "projScheduleViva": "Schedule viva",
+  "projScoreOutOf": "Score each criterion out of {max}",
+  "@projScoreOutOf": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "projShowcase": "Showcase",
+  "projTabDiscussion": "Discussion",
+  "projTabOverview": "Overview",
+  "projTabReviews": "Reviews",
+  "projTabTeam": "Team and recruiting",
+  "projVivaPanel": "Panel members (comma separated)",
+  "projVivaPanelNeeded": "Add at least one panel member.",
+  "projVivaRemarks": "Remarks",
+  "projVivaScore": "Score (0–100, optional)",
+  "projVivaScoreInvalid": "Enter a score from 0 to 100.",
+  "projVivaVenue": "Venue",
+  "projVivas": "Viva",
+  "projVivasNone": "No viva scheduled.",
+  "projWriteReview": "Write a mentor review",
+  "projectsBody": "Your student projects: discussion, reviews, viva, recruiting",
+  "projectsEmpty": "You are not on any projects.",
+  "projectsTitle": "Project mentoring",
+  "pubAddByDoi": "Add by DOI",
+  "pubDoiBody": "Enter the publication's DOI; KINETIX reads its details from the DOI registry.",
+  "pubImport": "Import",
+  "pubKindBook": "Book",
+  "pubKindChapter": "Book chapter",
+  "pubKindConference": "Conference paper",
+  "pubKindJournal": "Journal article",
+  "resKindCapstone": "Capstone",
+  "resKindIndustry": "Industry",
+  "resKindResearch": "Research",
+  "resStatusActive": "Active",
+  "resStatusCancelled": "Cancelled",
+  "resStatusCompleted": "Completed",
+  "resStatusOnHold": "On hold",
+  "researchBody": "Projects, scholars, publications and datasets",
+  "researchDatasets": "Datasets",
+  "researchDatasetsEmpty": "No datasets yet.",
+  "researchProjects": "Projects",
+  "researchProjectsEmpty": "You have no research projects.",
+  "researchPublications": "Publications",
+  "researchPublicationsEmpty": "No publications recorded yet.",
+  "researchScholars": "Scholars",
+  "researchScholarsEmpty": "You supervise no research scholars.",
+  "researchTitle": "Research",
+  "scholarAwarded": "Awarded",
+  "scholarEnrolled": "Enrolled",
+  "scholarThesisSubmitted": "Thesis submitted",
+  "scholarWithdrawn": "Withdrawn",
+  "similarityNone": "Similarity check not run yet.",
+  "similarityScore": "Similarity {pct}% (limit {limit}%)",
+  "@similarityScore": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "thesisAbstract": "Abstract",
+  "thesisHistory": "History",
+  "thesisNeedsText": "The thesis text must be added before it can be submitted.",
+  "thesisNone": "No thesis record yet. Tap to open one.",
+  "thesisOpen": "Open thesis record",
+  "thesisStageAwarded": "Awarded",
+  "thesisStageDraft": "Draft",
+  "thesisStageExamination": "Examination",
+  "thesisStageLabel": "Stage",
+  "thesisStageSubmitted": "Submitted",
+  "thesisStageSynopsis": "Synopsis",
+  "thesisStageViva": "Viva",
+  "thesisSubmit": "Submit thesis",
+  "thesisSubmitBody": "The thesis moves from draft to submitted. The research office takes it on from here.",
+  "thesisTitleLabel": "Thesis title",
+  "thesisVivas": "Viva examinations",
+  "thesisVivasNone": "No viva scheduled yet.",
+  "vivaCancelled": "Cancelled",
+  "vivaFailed": "Failed",
+  "vivaHeld": "Held",
+  "vivaPassed": "Passed",
+  "vivaRevise": "Revise and resubmit",
+  "vivaScheduled": "Scheduled"
 }

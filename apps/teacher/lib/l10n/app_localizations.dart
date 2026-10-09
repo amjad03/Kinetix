@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -4610,9 +4617,1018 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Course outcomes'**
   String get curriculumOutcomes;
+
+  /// No description provided for @accessEmbargoed.
+  ///
+  /// In en, this message translates to:
+  /// **'Under embargo'**
+  String get accessEmbargoed;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Embargoed until {date}'**
+  String accessEmbargoedUntil(String date);
+
+  /// No description provided for @accessOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get accessOpen;
+
+  /// No description provided for @accessRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'Restricted'**
+  String get accessRestricted;
+
+  /// No description provided for @cfAssessments.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessments'**
+  String get cfAssessments;
+
+  /// No description provided for @cfAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance sessions'**
+  String get cfAttendance;
+
+  /// No description provided for @cfLessonPlans.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson plans'**
+  String get cfLessonPlans;
+
+  /// No description provided for @cfOutcomes.
+  ///
+  /// In en, this message translates to:
+  /// **'Course outcomes'**
+  String get cfOutcomes;
+
+  /// No description provided for @cfPeriods.
+  ///
+  /// In en, this message translates to:
+  /// **'Periods'**
+  String get cfPeriods;
+
+  /// No description provided for @cfRecordings.
+  ///
+  /// In en, this message translates to:
+  /// **'Recordings'**
+  String get cfRecordings;
+
+  /// No description provided for @cfTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Topics taught'**
+  String get cfTopics;
+
+  /// No description provided for @cfWhiteboards.
+  ///
+  /// In en, this message translates to:
+  /// **'Whiteboards'**
+  String get cfWhiteboards;
+
+  /// No description provided for @courseFileGenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate new version'**
+  String get courseFileGenerate;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {n} generated.'**
+  String courseFileGenerated(String n);
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated {date} by {name} · {size}'**
+  String courseFileMeta(String date, String name, String size);
+
+  /// No description provided for @courseFileNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No version has been generated yet.'**
+  String get courseFileNone;
+
+  /// No description provided for @courseFileNotReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not reviewed yet'**
+  String get courseFileNotReviewed;
+
+  /// No description provided for @courseFileOpenPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Open PDF'**
+  String get courseFileOpenPdf;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed by {name}'**
+  String courseFileReviewed(String name);
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {n}'**
+  String courseFileVersion(String n);
+
+  /// No description provided for @courseFilesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Class-wise course file PDFs for your subjects'**
+  String get courseFilesBody;
+
+  /// No description provided for @courseFilesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no classes or subjects to build a course file for.'**
+  String get courseFilesEmpty;
+
+  /// No description provided for @courseFilesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course files'**
+  String get courseFilesTitle;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file} other{{count} files}}'**
+  String datasetFiles(int count);
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct {n}'**
+  String obeAttainmentDirect(String n);
+
+  /// No description provided for @obeAttainmentHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Attainment per CO'**
+  String get obeAttainmentHeader;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Indirect {n}'**
+  String obeAttainmentIndirect(String n);
+
+  /// No description provided for @obeAttainmentNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Attainment has not been calculated for this year yet.'**
+  String get obeAttainmentNone;
+
+  /// No description provided for @obeAttainmentRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'Attainment figures are shown to heads of department and the quality office.'**
+  String get obeAttainmentRestricted;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Target {n}'**
+  String obeAttainmentTarget(String n);
+
+  /// No description provided for @obeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Course outcomes, the CO–PO matrix and attainment'**
+  String get obeBody;
+
+  /// No description provided for @obeMatrixHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'CO–PO matrix'**
+  String get obeMatrixHeader;
+
+  /// No description provided for @obeMatrixLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength of link: 1 low, 2 medium, 3 high'**
+  String get obeMatrixLegend;
+
+  /// No description provided for @obeMatrixNoPos.
+  ///
+  /// In en, this message translates to:
+  /// **'No programme outcomes (PO/PSO) are defined for this subject\'s programme yet.'**
+  String get obeMatrixNoPos;
+
+  /// No description provided for @obeMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Target met'**
+  String get obeMet;
+
+  /// No description provided for @obeNoOutcomes.
+  ///
+  /// In en, this message translates to:
+  /// **'No course outcomes have been set for this subject yet.'**
+  String get obeNoOutcomes;
+
+  /// No description provided for @obeNotMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Below target'**
+  String get obeNotMet;
+
+  /// No description provided for @obeStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get obeStatusActive;
+
+  /// No description provided for @obeStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get obeStatusDraft;
+
+  /// No description provided for @obeStatusRetired.
+  ///
+  /// In en, this message translates to:
+  /// **'Retired'**
+  String get obeStatusRetired;
+
+  /// No description provided for @obeSubjectsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No subjects to show.'**
+  String get obeSubjectsEmpty;
+
+  /// No description provided for @obeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course outcomes (CO/PO)'**
+  String get obeTitle;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {n}'**
+  String obeVersion(String n);
+
+  /// No description provided for @programmeMphil.
+  ///
+  /// In en, this message translates to:
+  /// **'M.Phil'**
+  String get programmeMphil;
+
+  /// No description provided for @programmePhd.
+  ///
+  /// In en, this message translates to:
+  /// **'PhD'**
+  String get programmePhd;
+
+  /// No description provided for @projAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get projAccept;
+
+  /// No description provided for @projAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get projAccepted;
+
+  /// No description provided for @projAddLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Add link'**
+  String get projAddLink;
+
+  /// No description provided for @projCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message'**
+  String get projCommentHint;
+
+  /// No description provided for @projCritDocumentation.
+  ///
+  /// In en, this message translates to:
+  /// **'Documentation'**
+  String get projCritDocumentation;
+
+  /// No description provided for @projCritExecution.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution'**
+  String get projCritExecution;
+
+  /// No description provided for @projCritTeamwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Teamwork'**
+  String get projCritTeamwork;
+
+  /// No description provided for @projCritUnderstanding.
+  ///
+  /// In en, this message translates to:
+  /// **'Understanding'**
+  String get projCritUnderstanding;
+
+  /// No description provided for @projDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get projDecline;
+
+  /// No description provided for @projDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get projDeclined;
+
+  /// No description provided for @projDiscussionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet. Start the discussion.'**
+  String get projDiscussionEmpty;
+
+  /// No description provided for @projFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files and links'**
+  String get projFiles;
+
+  /// No description provided for @projFilesNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No files or links yet.'**
+  String get projFilesNone;
+
+  /// No description provided for @projHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Showcase and recruiting'**
+  String get projHub;
+
+  /// No description provided for @projHubLookingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills wanted (comma separated)'**
+  String get projHubLookingFor;
+
+  /// No description provided for @projHubOpenings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open places'**
+  String get projHubOpenings;
+
+  /// No description provided for @projHubRecruiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for students to join'**
+  String get projHubRecruiting;
+
+  /// No description provided for @projHubSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get projHubSaved;
+
+  /// No description provided for @projHubShowcase.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on the showcase'**
+  String get projHubShowcase;
+
+  /// No description provided for @projHubSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get projHubSummary;
+
+  /// No description provided for @projLinkInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a title and a web link starting with http.'**
+  String get projLinkInvalid;
+
+  /// No description provided for @projLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get projLinkTitle;
+
+  /// No description provided for @projLinkUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Web link'**
+  String get projLinkUrl;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'{pct}% match'**
+  String projMatchFit(String pct);
+
+  /// No description provided for @projMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested students'**
+  String get projMatches;
+
+  /// No description provided for @projMatchesNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the skills you are looking for to see matching students.'**
+  String get projMatchesNone;
+
+  /// No description provided for @projMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Team'**
+  String get projMembers;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Done {date}'**
+  String projMilestoneDone(String date);
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String projMilestoneDue(String date);
+
+  /// No description provided for @projMilestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get projMilestones;
+
+  /// No description provided for @projMilestonesNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No milestones yet.'**
+  String get projMilestonesNone;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Your role: {role}'**
+  String projMyRole(String role);
+
+  /// No description provided for @projPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get projPending;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Led by {name}'**
+  String projPi(String name);
+
+  /// No description provided for @projRecordResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Record result'**
+  String get projRecordResult;
+
+  /// No description provided for @projRecruiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Recruiting'**
+  String get projRecruiting;
+
+  /// No description provided for @projReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get projReply;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to {name}'**
+  String projReplyingTo(String name);
+
+  /// No description provided for @projRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Join requests'**
+  String get projRequests;
+
+  /// No description provided for @projRequestsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No join requests.'**
+  String get projRequestsNone;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews, average {pct}%'**
+  String projReviewAverage(String count, String pct);
+
+  /// No description provided for @projReviewComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get projReviewComment;
+
+  /// No description provided for @projReviewExternal.
+  ///
+  /// In en, this message translates to:
+  /// **'External'**
+  String get projReviewExternal;
+
+  /// No description provided for @projReviewMentor.
+  ///
+  /// In en, this message translates to:
+  /// **'Mentor'**
+  String get projReviewMentor;
+
+  /// No description provided for @projReviewPeer.
+  ///
+  /// In en, this message translates to:
+  /// **'Peer'**
+  String get projReviewPeer;
+
+  /// No description provided for @projReviewsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet.'**
+  String get projReviewsEmpty;
+
+  /// No description provided for @projRoleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator'**
+  String get projRoleAdmin;
+
+  /// No description provided for @projRoleMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get projRoleMember;
+
+  /// No description provided for @projRolePi.
+  ///
+  /// In en, this message translates to:
+  /// **'Project lead'**
+  String get projRolePi;
+
+  /// No description provided for @projRoleStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Student'**
+  String get projRoleStudent;
+
+  /// No description provided for @projRoleSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Supervisor'**
+  String get projRoleSupervisor;
+
+  /// No description provided for @projScheduleViva.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule viva'**
+  String get projScheduleViva;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Score each criterion out of {max}'**
+  String projScoreOutOf(String max);
+
+  /// No description provided for @projShowcase.
+  ///
+  /// In en, this message translates to:
+  /// **'Showcase'**
+  String get projShowcase;
+
+  /// No description provided for @projTabDiscussion.
+  ///
+  /// In en, this message translates to:
+  /// **'Discussion'**
+  String get projTabDiscussion;
+
+  /// No description provided for @projTabOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get projTabOverview;
+
+  /// No description provided for @projTabReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get projTabReviews;
+
+  /// No description provided for @projTabTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Team and recruiting'**
+  String get projTabTeam;
+
+  /// No description provided for @projVivaPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel members (comma separated)'**
+  String get projVivaPanel;
+
+  /// No description provided for @projVivaPanelNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one panel member.'**
+  String get projVivaPanelNeeded;
+
+  /// No description provided for @projVivaRemarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Remarks'**
+  String get projVivaRemarks;
+
+  /// No description provided for @projVivaScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score (0–100, optional)'**
+  String get projVivaScore;
+
+  /// No description provided for @projVivaScoreInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a score from 0 to 100.'**
+  String get projVivaScoreInvalid;
+
+  /// No description provided for @projVivaVenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Venue'**
+  String get projVivaVenue;
+
+  /// No description provided for @projVivas.
+  ///
+  /// In en, this message translates to:
+  /// **'Viva'**
+  String get projVivas;
+
+  /// No description provided for @projVivasNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No viva scheduled.'**
+  String get projVivasNone;
+
+  /// No description provided for @projWriteReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a mentor review'**
+  String get projWriteReview;
+
+  /// No description provided for @projectsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your student projects: discussion, reviews, viva, recruiting'**
+  String get projectsBody;
+
+  /// No description provided for @projectsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not on any projects.'**
+  String get projectsEmpty;
+
+  /// No description provided for @projectsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Project mentoring'**
+  String get projectsTitle;
+
+  /// No description provided for @pubAddByDoi.
+  ///
+  /// In en, this message translates to:
+  /// **'Add by DOI'**
+  String get pubAddByDoi;
+
+  /// No description provided for @pubDoiBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the publication\'s DOI; KINETIX reads its details from the DOI registry.'**
+  String get pubDoiBody;
+
+  /// No description provided for @pubImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get pubImport;
+
+  /// No description provided for @pubKindBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get pubKindBook;
+
+  /// No description provided for @pubKindChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Book chapter'**
+  String get pubKindChapter;
+
+  /// No description provided for @pubKindConference.
+  ///
+  /// In en, this message translates to:
+  /// **'Conference paper'**
+  String get pubKindConference;
+
+  /// No description provided for @pubKindJournal.
+  ///
+  /// In en, this message translates to:
+  /// **'Journal article'**
+  String get pubKindJournal;
+
+  /// No description provided for @resKindCapstone.
+  ///
+  /// In en, this message translates to:
+  /// **'Capstone'**
+  String get resKindCapstone;
+
+  /// No description provided for @resKindIndustry.
+  ///
+  /// In en, this message translates to:
+  /// **'Industry'**
+  String get resKindIndustry;
+
+  /// No description provided for @resKindResearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Research'**
+  String get resKindResearch;
+
+  /// No description provided for @resStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get resStatusActive;
+
+  /// No description provided for @resStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get resStatusCancelled;
+
+  /// No description provided for @resStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get resStatusCompleted;
+
+  /// No description provided for @resStatusOnHold.
+  ///
+  /// In en, this message translates to:
+  /// **'On hold'**
+  String get resStatusOnHold;
+
+  /// No description provided for @researchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects, scholars, publications and datasets'**
+  String get researchBody;
+
+  /// No description provided for @researchDatasets.
+  ///
+  /// In en, this message translates to:
+  /// **'Datasets'**
+  String get researchDatasets;
+
+  /// No description provided for @researchDatasetsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No datasets yet.'**
+  String get researchDatasetsEmpty;
+
+  /// No description provided for @researchProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get researchProjects;
+
+  /// No description provided for @researchProjectsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no research projects.'**
+  String get researchProjectsEmpty;
+
+  /// No description provided for @researchPublications.
+  ///
+  /// In en, this message translates to:
+  /// **'Publications'**
+  String get researchPublications;
+
+  /// No description provided for @researchPublicationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No publications recorded yet.'**
+  String get researchPublicationsEmpty;
+
+  /// No description provided for @researchScholars.
+  ///
+  /// In en, this message translates to:
+  /// **'Scholars'**
+  String get researchScholars;
+
+  /// No description provided for @researchScholarsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You supervise no research scholars.'**
+  String get researchScholarsEmpty;
+
+  /// No description provided for @researchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Research'**
+  String get researchTitle;
+
+  /// No description provided for @scholarAwarded.
+  ///
+  /// In en, this message translates to:
+  /// **'Awarded'**
+  String get scholarAwarded;
+
+  /// No description provided for @scholarEnrolled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolled'**
+  String get scholarEnrolled;
+
+  /// No description provided for @scholarThesisSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Thesis submitted'**
+  String get scholarThesisSubmitted;
+
+  /// No description provided for @scholarWithdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get scholarWithdrawn;
+
+  /// No description provided for @similarityNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Similarity check not run yet.'**
+  String get similarityNone;
+
+  /// Course files, outcomes, research and project mentoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Similarity {pct}% (limit {limit}%)'**
+  String similarityScore(String pct, String limit);
+
+  /// No description provided for @thesisAbstract.
+  ///
+  /// In en, this message translates to:
+  /// **'Abstract'**
+  String get thesisAbstract;
+
+  /// No description provided for @thesisHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get thesisHistory;
+
+  /// No description provided for @thesisNeedsText.
+  ///
+  /// In en, this message translates to:
+  /// **'The thesis text must be added before it can be submitted.'**
+  String get thesisNeedsText;
+
+  /// No description provided for @thesisNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No thesis record yet. Tap to open one.'**
+  String get thesisNone;
+
+  /// No description provided for @thesisOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open thesis record'**
+  String get thesisOpen;
+
+  /// No description provided for @thesisStageAwarded.
+  ///
+  /// In en, this message translates to:
+  /// **'Awarded'**
+  String get thesisStageAwarded;
+
+  /// No description provided for @thesisStageDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get thesisStageDraft;
+
+  /// No description provided for @thesisStageExamination.
+  ///
+  /// In en, this message translates to:
+  /// **'Examination'**
+  String get thesisStageExamination;
+
+  /// No description provided for @thesisStageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage'**
+  String get thesisStageLabel;
+
+  /// No description provided for @thesisStageSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get thesisStageSubmitted;
+
+  /// No description provided for @thesisStageSynopsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Synopsis'**
+  String get thesisStageSynopsis;
+
+  /// No description provided for @thesisStageViva.
+  ///
+  /// In en, this message translates to:
+  /// **'Viva'**
+  String get thesisStageViva;
+
+  /// No description provided for @thesisSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit thesis'**
+  String get thesisSubmit;
+
+  /// No description provided for @thesisSubmitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The thesis moves from draft to submitted. The research office takes it on from here.'**
+  String get thesisSubmitBody;
+
+  /// No description provided for @thesisTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Thesis title'**
+  String get thesisTitleLabel;
+
+  /// No description provided for @thesisVivas.
+  ///
+  /// In en, this message translates to:
+  /// **'Viva examinations'**
+  String get thesisVivas;
+
+  /// No description provided for @thesisVivasNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No viva scheduled yet.'**
+  String get thesisVivasNone;
+
+  /// No description provided for @vivaCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get vivaCancelled;
+
+  /// No description provided for @vivaFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get vivaFailed;
+
+  /// No description provided for @vivaHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Held'**
+  String get vivaHeld;
+
+  /// No description provided for @vivaPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get vivaPassed;
+
+  /// No description provided for @vivaRevise.
+  ///
+  /// In en, this message translates to:
+  /// **'Revise and resubmit'**
+  String get vivaRevise;
+
+  /// No description provided for @vivaScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get vivaScheduled;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -4621,7 +5637,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

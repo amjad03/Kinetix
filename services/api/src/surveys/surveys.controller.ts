@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
-import { asc, count, desc, eq, inArray } from 'drizzle-orm';
+import { asc, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -11,7 +11,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { coSets, courseOutcomes, sections, subjects, surveyAnswers, surveyQuestions, surveyResponses, surveys, users } from '../db/schema.js';
 import { hasRole } from '../placements/placements.access.js';
 import { SurveysService } from './surveys.service.js';
-import { acceptsAnswers, checkAnswers, inAudience, questionProblem, summarize, type QuestionDef } from './survey-rules.js';
+import { acceptsAnswers, checkAnswers, inAudience, questionProblem, showIfProblem, summarize, type QuestionDef } from './survey-rules.js';
 
 /** Builds and reads surveys. Teachers see only their own; the rest see every survey. */
 export const SURVEY_ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher', 'quality_officer'];
@@ -25,6 +25,8 @@ const QuestionBody = z.object({
   options: z.array(z.string().trim().min(1).max(120)).max(12).default([]),
   required: z.boolean().default(true),
   coId: z.uuid().optional(),
+  /** Show only when an earlier question (1 is the first) was answered this way. */
+  showIf: z.object({ ord: z.number().int().min(1).max(40), op: z.enum(['eq', 'neq', 'gte', 'lte', 'includes']), value: z.union([z.string().max(120), z.number()]) }).optional(),
 });
 const CreateBody = z
   .object({
@@ -35,10 +37,18 @@ const CreateBody = z
     anonymous: z.boolean().default(false),
     opensAt: z.coerce.date().optional(),
     closesAt: z.coerce.date().optional(),
+    /** Opens by itself at opensAt. */
+    autoPublish: z.boolean().default(false),
+    /** Starts the next cycle this many days after this one closes. */
+    repeatEveryDays: z.number().int().min(1).max(366).optional(),
+    /** Surveys with the same key are cycles of one series. */
+    seriesKey: z.string().trim().min(2).max(60).optional(),
     questions: z.array(QuestionBody).min(1).max(40),
   })
   .refine((b) => b.audience !== 'section' || !!b.sectionId, { message: 'Choose the section', path: ['sectionId'] })
-  .refine((b) => !b.opensAt || !b.closesAt || b.closesAt > b.opensAt, { message: 'The closing time must be after the opening time', path: ['closesAt'] });
+  .refine((b) => !b.opensAt || !b.closesAt || b.closesAt > b.opensAt, { message: 'The closing time must be after the opening time', path: ['closesAt'] })
+  .refine((b) => !b.autoPublish || (!!b.opensAt && !!b.closesAt), { message: 'A survey that opens by itself needs an opening and a closing time', path: ['opensAt'] })
+  .refine((b) => !b.repeatEveryDays || b.autoPublish, { message: 'A repeating survey must open by itself', path: ['repeatEveryDays'] });
 const AnswerBody = z.object({
   answers: z.array(z.object({ questionId: z.uuid(), choices: z.array(z.string().max(120)).max(12).optional(), rating: z.number().optional(), text: z.string().max(3000).optional() })).max(40),
 });
@@ -82,12 +92,24 @@ export class SurveysController {
       }
       const [s] = await tx
         .insert(surveys)
-        .values({ tenantId: p.tenantId, title: b.title, description: b.description, audience: b.audience, sectionId: b.audience === 'section' ? b.sectionId : null, anonymous: b.anonymous, opensAt: b.opensAt ?? null, closesAt: b.closesAt ?? null, createdBy: p.userId })
+        .values({ tenantId: p.tenantId, title: b.title, description: b.description, audience: b.audience, sectionId: b.audience === 'section' ? b.sectionId : null, anonymous: b.anonymous, opensAt: b.opensAt ?? null, closesAt: b.closesAt ?? null, autoPublish: b.autoPublish, repeatEveryDays: b.repeatEveryDays ?? null, seriesKey: b.seriesKey ?? (b.repeatEveryDays ? b.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 60) : null), createdBy: p.userId })
         .returning();
       const qs = await tx
         .insert(surveyQuestions)
         .values(b.questions.map((q, i) => ({ tenantId: p.tenantId, surveyId: s.id, ord: i + 1, kind: q.kind, prompt: q.prompt, options: q.options, required: q.required, coId: q.coId ?? null })))
         .returning();
+      // Conditions are written against question numbers; store them against the new question ids.
+      qs.sort((a, c) => a.ord - c.ord);
+      for (const [i, q] of b.questions.entries()) {
+        if (!q.showIf) continue;
+        const earlier = qs.filter((x) => x.ord < i + 1).sort((a, c) => a.ord - c.ord);
+        const ref = earlier.find((x) => x.ord === q.showIf!.ord);
+        const cond = ref ? { questionId: ref.id, op: q.showIf.op, value: q.showIf.value } : null;
+        const problem = cond ? showIfProblem({ showIf: cond }, earlier as QuestionDef[]) : 'A condition must refer to an earlier question';
+        if (!cond || problem) throw new BadRequestException(problem ?? 'A condition must refer to an earlier question');
+        await tx.update(surveyQuestions).set({ showIf: cond }).where(eq(surveyQuestions.id, qs[i].id));
+        qs[i].showIf = cond;
+      }
       await auditUser(tx, p, 'survey.created', 'survey', s.id, { audience: b.audience, anonymous: b.anonymous });
       return { ...s, questions: qs.sort((a, c) => a.ord - c.ord) };
     });
@@ -140,10 +162,44 @@ export class SurveysController {
           anonymous: s.anonymous,
           closesAt: s.closesAt,
           answered,
-          questions: answered ? [] : qs.filter((q) => q.surveyId === s.id).map((q) => ({ id: q.id, ord: q.ord, kind: q.kind, prompt: q.prompt, options: q.options, required: q.required })),
+          questions: answered ? [] : qs.filter((q) => q.surveyId === s.id).map((q) => ({ id: q.id, ord: q.ord, kind: q.kind, prompt: q.prompt, options: q.options, required: q.required, showIf: q.showIf })),
         };
       });
     });
+  }
+
+  /** Recurring series of surveys, with how many cycles each has run. */
+  @Get('series')
+  @Auth('user', SURVEY_ROLES)
+  series(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx.select().from(surveys).where(isNotNull(surveys.seriesKey));
+      const mine = hasRole(p, SEE_ALL) ? rows : rows.filter((s) => s.createdBy === p.userId);
+      const keys = [...new Set(mine.map((s) => s.seriesKey!))];
+      return keys.map((key) => {
+        const cycles = mine.filter((s) => s.seriesKey === key);
+        return { key, title: cycles[0].title, cycles: cycles.length, closed: cycles.filter((s) => s.status === 'closed').length, repeatEveryDays: cycles[0].repeatEveryDays };
+      });
+    });
+  }
+
+  /** Each question across the cycles of a series: the average rating (or option counts) per cycle, and the change since the last cycle. */
+  @Get('series/:key/trend')
+  @Auth('user', SURVEY_ROLES)
+  trend(@CurrentPrincipal() p: UserPrincipal, @Param('key') key: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const cycles = (await tx.select().from(surveys).where(eq(surveys.seriesKey, key)).orderBy(asc(surveys.createdAt))).filter((s) => hasRole(p, SEE_ALL) || s.createdBy === p.userId);
+      if (cycles.length === 0) throw new NotFoundException('Survey series not found');
+      return this.svc.trend(tx, key, cycles);
+    });
+  }
+
+  /** Runs the scheduler now: opens surveys whose time has come and closes the ones that have ended. */
+  @Post('schedule/run')
+  @Auth('user', ['tenant_admin', 'principal', 'quality_officer'])
+  @HttpCode(200)
+  runSchedule(@CurrentPrincipal() p: UserPrincipal) {
+    return this.svc.runSchedule(p.tenantId);
   }
 
   @Get(':id')
