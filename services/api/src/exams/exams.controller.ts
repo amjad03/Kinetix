@@ -234,10 +234,13 @@ export class ExamSessionsController {
         for (const r of roster) {
           const a = att.get(r.id);
           if (a && !a.eligible && !blocks.has(r.id)) blocks.set(r.id, `Attendance ${a.effectivePct}% is below ${cfg.thresholdPct}%`);
+        }
+      }
       // With a registration window, only registered students (eligible, or overridden by the controller) get a ticket.
       const [win] = await tx.select({ id: examRegistrationWindows.id }).from(examRegistrationWindows).where(eq(examRegistrationWindows.sessionId, id));
       if (win) {
         const regs = new Map((await tx.select({ studentId: examRegistrations.studentId, status: examRegistrations.status, reasons: examRegistrations.reasons }).from(examRegistrations).where(eq(examRegistrations.sessionId, id))).map((x) => [x.studentId, x]));
+        for (const r of roster) {
           const reg = regs.get(r.id);
           if (!blocks.has(r.id) && reg?.status !== 'registered') blocks.set(r.id, reg ? `Not eligible: ${reg.reasons.join('; ')}` : 'Not registered for this examination');
         }
