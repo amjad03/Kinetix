@@ -53,9 +53,9 @@ describe('bulk import', () => {
     const tpl = await http().get('/v1/admin/import/templates/students').set('authorization', `Bearer ${tokens.admin}`).expect(200);
     expect(tpl.headers['content-type']).toMatch(/^text\/csv/);
     expect(tpl.text).toBe(TEMPLATES.students);
-    await http().get('/v1/admin/import/templates/fees').set('authorization', `Bearer ${tokens.admin}`).expect(404);
+    await http().get('/v1/admin/import/templates/bogus').set('authorization', `Bearer ${tokens.admin}`).expect(404);
     await post('staff', TEMPLATES.staff, '', 'otherTeacher').expect(403);
-    await post('fees', TEMPLATES.staff).expect(404);
+    await post('bogus', TEMPLATES.staff).expect(404);
 
     expect((await post('staff', '').expect(400)).body.code).toBe('IMPORT_NO_FILE');
     expect((await post('staff', '# only a comment\nfull_name,roles\n').expect(400)).body.code).toBe('IMPORT_EMPTY');

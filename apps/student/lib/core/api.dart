@@ -17,6 +17,7 @@ import 'forum.dart';
 import 'growth.dart';
 import 'learning.dart';
 import 'lms.dart';
+import 'campus_extras.dart';
 import 'models.dart';
 import 'pathways.dart';
 import 'scholarships.dart';
@@ -324,6 +325,18 @@ abstract class StudentApi {
   /// Whether this phone is one I have trusted (`trusted`, `new`, or `none` when the app has no install id), and trusting it (`/v1/me/devices`).
   Future<String> deviceState();
   Future<void> trustDevice(String label);
+
+  /// Extends a book I (or my child) have out by another loan period (`POST /v1/library/loans/:id/renew`).
+  Future<void> renewLoan(String loanId);
+
+  /// Rates a canteen meal 1 to 5; rating the same meal again replaces the earlier rating (`POST /v1/canteen/ops/feedback`).
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''});
+
+  /// Repairs raised from my own hostel complaints and where each stands (`GET /v1/hostel/work-orders/mine`).
+  Future<List<RepairRequest>> repairRequests();
+
+  /// A fee's instalment schedule with due dates and status (`GET /v1/fees/invoices/:id/instalments`).
+  Future<InstalmentSchedule> instalments(String invoiceId);
 
   /// My learning: worksheets and scores, extra help, entrance readiness and the promotion decision (`GET /v1/school-learning/students/:id/summary`),
   /// and mastery by subject with what to practise next (`GET /v1/lms/students/:id/recommendations`).
@@ -1028,6 +1041,21 @@ class HttpStudentApi implements StudentApi {
   Future<void> replyToThread(String threadId, String body) async {
     await _send('POST', '/v1/lms/forum/$threadId/posts', body: {'body': body});
   }
+
+  @override
+  Future<void> renewLoan(String loanId) async => _send('POST', '/v1/library/loans/$loanId/renew');
+
+  @override
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''}) async =>
+      _send('POST', '/v1/canteen/ops/feedback', body: {'mealDate': mealDate, 'meal': meal, 'rating': rating, 'comment': comment});
+
+  @override
+  Future<List<RepairRequest>> repairRequests() async =>
+      [for (final r in await _send('GET', '/v1/hostel/work-orders/mine') as List) RepairRequest.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<InstalmentSchedule> instalments(String invoiceId) async =>
+      InstalmentSchedule.fromJson(await _send('GET', '/v1/fees/invoices/$invoiceId/instalments') as Map<String, dynamic>);
 
   @override
   Future<String> deviceState() async {

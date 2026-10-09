@@ -96,6 +96,8 @@ void main() {
     expect(find.byKey(const Key('pay-i2')), findsOneWidget);
 
     await tester.scrollUntilVisible(find.byKey(const Key('payment-p1')), 200, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.byKey(const Key('payment-p1')));
+    await tester.pumpAndSettle();
     expect(find.text('₹10,000 · Semester 3 tuition'), findsOneWidget);
     expect(find.text('Mon 28 Sept · Cash · RCPT/2026-27/00001'), findsOneWidget);
 

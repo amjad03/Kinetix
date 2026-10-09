@@ -19,6 +19,7 @@ import '../core/forum.dart';
 import '../core/growth.dart';
 import '../core/learning.dart';
 import '../core/lms.dart';
+import '../core/campus_extras.dart';
 import '../core/models.dart';
 import '../core/pathways.dart';
 import '../core/scholarships.dart';
@@ -177,6 +178,42 @@ class FakeStudentApi implements StudentApi {
   Future<void> replyToThread(String threadId, String body) async {
     calls.add('reply $threadId $body');
     forumPosts[threadId] = [...(forumPosts[threadId] ?? const []), ForumPost(id: 'p${(forumPosts[threadId]?.length ?? 0) + 1}', body: body, author: 'Me', createdAt: '2026-10-10T10:00:00Z')];
+  }
+
+  List<RepairRequest> repairList = [
+    RepairRequest(id: 'w1', title: 'Fix the leaking tap', status: 'in_progress', complaint: 'The tap in room 12 drips all night', dueOn: DateTime(2026, 10, 14)),
+    RepairRequest(id: 'w2', title: 'Replace the tube light', status: 'verified', complaint: 'Light in the corridor is out', completedAt: DateTime(2026, 10, 6)),
+  ];
+  InstalmentSchedule? instalmentData;
+
+  @override
+  Future<void> renewLoan(String loanId) async => calls.add('renewLoan $loanId');
+
+  @override
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''}) async =>
+      calls.add('rateMeal $mealDate $meal $rating $comment');
+
+  @override
+  Future<List<RepairRequest>> repairRequests() async {
+    calls.add('repairRequests');
+    return repairList;
+  }
+
+  @override
+  Future<InstalmentSchedule> instalments(String invoiceId) async {
+    calls.add('instalments $invoiceId');
+    return instalmentData ??
+        InstalmentSchedule(
+          invoiceId: invoiceId,
+          title: 'Term 2 fee',
+          amountPaise: 3000000,
+          paidPaise: 1500000,
+          instalments: [
+            Instalment(seq: 1, dueOn: DateTime(2026, 9, 10), amountPaise: 1000000, paidPaise: 1000000, status: 'paid'),
+            Instalment(seq: 2, dueOn: DateTime(2026, 10, 5), amountPaise: 1000000, paidPaise: 500000, status: 'overdue'),
+            Instalment(seq: 3, dueOn: DateTime(2026, 11, 10), amountPaise: 1000000, paidPaise: 0, status: 'due'),
+          ],
+        );
   }
 
   String deviceStateValue = 'new';

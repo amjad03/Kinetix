@@ -1,3 +1,4 @@
+import { governedParams, overlayPassRules } from '../governance/rule-params.js';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
@@ -39,7 +40,7 @@ export class ExamsService {
     if (!sc) return null;
     const [scale] = await tx.select().from(gradeScales).where(eq(gradeScales.id, sc.gradeScaleId));
     const comps = await tx.select().from(schemeComponents).where(eq(schemeComponents.schemeId, sc.id)).orderBy(asc(schemeComponents.ord));
-    return { subjectId, credits: sc.credits, pass: sc.passRules as PassRules, scale: scale.rules as GradeScaleRules, components: comps.map((c) => ({ id: c.id, code: c.code, name: c.name, kind: c.kind, weight: c.weight })) };
+    return { subjectId, credits: sc.credits, pass: overlayPassRules(sc.passRules as PassRules, await governedParams(tx, 'grading', 'pass-mark')), scale: scale.rules as GradeScaleRules, components: comps.map((c) => ({ id: c.id, code: c.code, name: c.name, kind: c.kind, weight: c.weight })) };
   }
 
   /** Problems that stop a session from being processed (missing schemes, unlinked or unverified marks). */

@@ -38,7 +38,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} actions={<><LinkButton href="/library/circulation" variant="outlined">{t('dx.link.circ')}</LinkButton><LinkButton href="/library/e-resources" variant="outlined">{t('dx.link.eres')}</LinkButton></>} />
+      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} actions={<><LinkButton href="/library/circulation" variant="outlined">{t('dx.link.circ')}</LinkButton><LinkButton href="/library/e-resources" variant="outlined">{t('dx.link.eres')}</LinkButton><LinkButton href="/scan" variant="outlined">{t('nav.scan')}</LinkButton></>} />
       {books.error !== undefined || loans.error !== undefined || fines.error !== undefined ? (
         <ErrorState message={(books.error ?? loans.error ?? fines.error)!} />
       ) : (

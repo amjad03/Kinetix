@@ -19,7 +19,7 @@ describe('Soundarya governance sample', () => {
     const ctx = { kit: makeKit(owner, t.tenantId), tenantId: t.tenantId, today: '2026-10-10', byEmail, students: [{ id: t.students[0].id, userId: t.studentUser.id }] } as unknown as Ctx;
     await governanceDepth(ctx);
     const count = async (table: string) => Number((await owner.query(`select count(*)::int as n from ${table} where tenant_id = $1`, [t.tenantId])).rows[0].n);
-    expect(await count('business_rules')).toBe(5);
+    expect(await count('business_rules')).toBe(6);
     expect(await count('incidents')).toBe(2);
     expect(await count('incident_updates')).toBe(3);
     expect(await count('document_retention_policies')).toBe(4);

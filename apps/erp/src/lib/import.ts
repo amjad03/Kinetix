@@ -4,7 +4,8 @@
 import type { MessageKey } from '@/i18n/messages';
 import type { TFunction } from '@/i18n/translate';
 
-export const IMPORT_KINDS = ['programs', 'staff', 'students', 'timetable'] as const;
+/** The four files that set up an institution, then the seven onboarding data families (services/api/src/import/templates.ts). */
+export const IMPORT_KINDS = ['programs', 'staff', 'students', 'timetable', 'outcomes', 'exams', 'fees', 'library', 'placement', 'research', 'quality'] as const;
 export type ImportKind = (typeof IMPORT_KINDS)[number];
 export type RowStatus = 'created' | 'updated' | 'skipped' | 'error';
 
@@ -34,6 +35,13 @@ export const REQUIRED_COLUMNS: Record<ImportKind, string[]> = {
   staff: ['full_name', 'roles'],
   students: ['roll_no', 'full_name', 'section'],
   timetable: ['section', 'subject_code', 'teacher', 'day', 'start', 'end'],
+  outcomes: ['type', 'program', 'code', 'statement'],
+  exams: ['program', 'term', 'name', 'starts_on', 'ends_on'],
+  fees: ['structure', 'head', 'amount'],
+  library: ['title'],
+  placement: ['company'],
+  research: ['owner_email', 'title', 'venue', 'year'],
+  quality: ['framework', 'code', 'title'],
 };
 
 export const STEP_LABEL: Record<ImportKind, MessageKey> = {
@@ -41,6 +49,13 @@ export const STEP_LABEL: Record<ImportKind, MessageKey> = {
   staff: 'import.step.staff',
   students: 'import.step.students',
   timetable: 'import.step.timetable',
+  outcomes: 'import.step.outcomes',
+  exams: 'import.step.exams',
+  fees: 'import.step.fees',
+  library: 'import.step.library',
+  placement: 'import.step.placement',
+  research: 'import.step.research',
+  quality: 'import.step.quality',
 };
 
 export const STEP_HELP: Record<ImportKind, MessageKey> = {
@@ -48,6 +63,13 @@ export const STEP_HELP: Record<ImportKind, MessageKey> = {
   staff: 'import.help.staff',
   students: 'import.help.students',
   timetable: 'import.help.timetable',
+  outcomes: 'import.help.outcomes',
+  exams: 'import.help.exams',
+  fees: 'import.help.fees',
+  library: 'import.help.library',
+  placement: 'import.help.placement',
+  research: 'import.help.research',
+  quality: 'import.help.quality',
 };
 
 export const STATUS_LABEL: Record<RowStatus, MessageKey> = {
@@ -106,7 +128,7 @@ export function canImport(r: ImportResult | null): boolean {
   return !!r && r.dryRun && r.totals.rows > 0 && r.totals.error === 0;
 }
 
-/** The next file after this one, or null after the timetable. */
+/** The next file after this one, or null after the last. */
 export function nextKind(kind: ImportKind): ImportKind | null {
   return IMPORT_KINDS[IMPORT_KINDS.indexOf(kind) + 1] ?? null;
 }

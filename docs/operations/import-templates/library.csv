@@ -1,0 +1,12 @@
+# KINETIX import: library books. One row per title.
+# title       Book title (required)
+# author      Author
+# isbn        ISBN-10 or ISBN-13
+# call_no     Shelf mark, e.g. 530 HAL
+# copies      Number of copies (default 1)
+# barcode     Accession code printed on the label
+# price       Replacement cost in rupees
+# A book is matched by barcode, else ISBN, else title and author.
+title,author,isbn,call_no,copies,barcode,price
+Fundamentals of Physics,Halliday and Resnick,9788126552559,530 HAL,5,LIB-0001,850
+Introduction to Algorithms,Cormen,9780262033848,005.1 COR,2,LIB-0002,1200

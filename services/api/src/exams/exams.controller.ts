@@ -14,11 +14,12 @@ import { toCsv } from '../common/pdf.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, tenants, examRegistrationWindows, examRegistrations, users } from '../db/schema.js';
+import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, institutionProfiles, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, tenants, examRegistrationWindows, examRegistrations, users } from '../db/schema.js';
 import type { Readable } from 'node:stream';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { WorkflowsService } from '../workflows/workflows.service.js';
 import { workflowDefinitions, workflowRequests } from '../db/schema.js';
+import { GOVERNANCE_RULES, type GovernanceModel } from '../institution/presets.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { parseDate } from '../teacher/teacher.service.js';
 import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
@@ -56,6 +57,14 @@ async function readAll(stream: Readable): Promise<Buffer> {
   const chunks: Buffer[] = [];
   for await (const c of stream) chunks.push(Buffer.from(c));
   return Buffer.concat(chunks);
+}
+
+/** An affiliated college does not own its exams: the affiliating university publishes results, so publishing here is refused. */
+export async function assertOwnsExams(tx: Tx): Promise<void> {
+  const [prof] = await tx.select({ g: institutionProfiles.governanceModel }).from(institutionProfiles);
+  if (prof?.g && GOVERNANCE_RULES[prof.g as GovernanceModel] && !GOVERNANCE_RULES[prof.g as GovernanceModel].ownExams) {
+    throw new ForbiddenException('This institution is an affiliated college: the affiliating university publishes exam results. Enter or import the university results instead.');
+  }
 }
 
 /** Results are published through the approval workflow when the institution has an active "result_publish" route. */
@@ -401,6 +410,7 @@ export class ExamSessionsController {
   publish(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const s = await this.exams.session(tx, id);
+      await assertOwnsExams(tx);
       if (s.status !== 'processed') throw new ConflictException(s.status === 'published' || s.status === 'locked' ? 'Results are already published' : 'Process the results first');
       const gate = await approvalGate(tx, id);
       if (!gate.approved) throw new ConflictException('Results need approval before they are published. Send them for approval first.');
