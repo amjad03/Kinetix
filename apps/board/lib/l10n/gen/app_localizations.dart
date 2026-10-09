@@ -1246,6 +1246,12 @@ abstract class AppLocalizations {
   /// **'Slower'**
   String get readerSlower;
 
+  /// No description provided for @readerEasyRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy read'**
+  String get readerEasyRead;
+
   /// No description provided for @readerHint.
   ///
   /// In en, this message translates to:
@@ -5997,6 +6003,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Number answers come from the Student App only (answer cards show A to D).'**
   String get askNumberNoCards;
+
+  /// No description provided for @askWordCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Word cloud'**
+  String get askWordCloud;
+
+  /// No description provided for @askWordCloudHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Students type one to three words in the Student App. The words most of the class typed show biggest.'**
+  String get askWordCloudHint;
 
   /// No description provided for @askStart.
   ///

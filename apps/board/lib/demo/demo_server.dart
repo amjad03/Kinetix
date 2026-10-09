@@ -171,13 +171,16 @@ class DemoBoardServer {
   void _askClass(String id, Map<String, dynamic> body) {
     final options = (body['options'] as List? ?? const []).length;
     final numeric = body['kind'] == 'numeric';
+    final word = body['kind'] == 'word';
     final correct = body['correct'] as String?;
     // Students 3, 5, 8 and 11 have phones; most of them get it right.
     _pollTimers[id] = [
       for (final (i, n) in [3, 5, 8, 11].indexed)
         Timer(studentAnswerDelay * (i + 1), () {
           final right = i != 2;
-          final answer = numeric
+          final answer = word
+              ? const ['photosynthesis', 'sunlight', 'chlorophyll', 'photosynthesis'][i]
+              : numeric
               ? (right && correct != null ? correct : '${n * 2}')
               : (right && correct != null ? correct : '${n % (options == 0 ? 1 : options)}');
           realtime.fire(RealtimeEvents.pollAnswered, {'pollId': id, 'studentId': 's$n', 'answer': answer, 'source': 'app'});

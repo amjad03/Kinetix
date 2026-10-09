@@ -63,6 +63,13 @@ enum BoardTool {
   aiPen,
 }
 
+/// One zone's pen in multi-user zones ([WhiteboardController.zonePen]): a colour, or the eraser.
+class ZonePen {
+  const ZonePen({required this.color, this.eraser = false});
+  final Color color;
+  final bool eraser;
+}
+
 extension BoardToolDraws on BoardTool {
   /// Tools that put ink down where the pointer goes.
   bool get draws => this == BoardTool.pen || this == BoardTool.highlighter || this == BoardTool.shape || this == BoardTool.compass || this == BoardTool.aiPen;
@@ -1327,9 +1334,16 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   };
 
   /// [stylus] says which end of a stylus touched (null: a finger, a mouse or a palm).
+  /// Multi-user zones: the pen (or eraser) for a touch that lands at a point on the board, so
+  /// students in different parts of the board each write with their own zone's tool. Null, or
+  /// a null answer, uses the board's own tool. Palms, stylus tips and the eraser button win.
+  ZonePen? Function(Offset at)? zonePen;
+
   void pointerDown(int pointer, InkPoint p, {double scale = 1, bool palm = false, double contactRadius = 0, bool forceEraser = false, StylusEnd? stylus}) {
     _scale = scale;
     var tool = _tool;
+    final zone = palm || stylus != null || forceEraser ? null : zonePen?.call(p.offset);
+    if (zone != null) tool = zone.eraser ? BoardTool.eraser : BoardTool.pen;
     if (palm && palmMode != PalmMode.off) {
       if (palmMode == PalmMode.ignore) return;
       tool = BoardTool.eraser;
@@ -1348,7 +1362,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
         final hl = tool == BoardTool.highlighter;
         final style = InkStyle(
           tool: hl ? InkTool.highlighter : InkTool.pen,
-          color: hl ? highlighterColor : penColor,
+          color: zone?.color ?? (hl ? highlighterColor : penColor),
           width: hl ? highlighterWidth : penWidth,
           nib: hl ? PenNib.round : penNib,
           pressure: !hl && penPressure,

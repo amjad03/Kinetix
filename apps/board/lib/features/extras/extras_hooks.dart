@@ -5,6 +5,8 @@ import '../../core/board_controller.dart';
 import '../board/kit/subjects.dart' show KitTab;
 import '../board/side_panel.dart' show SplitContent;
 import '../class_check/ask_dialog.dart' show AskSetup;
+import '../classroom_plus/voice_commands.dart' show VoiceCommand;
+import '../classroom_plus/zones.dart' show BoardZones;
 
 /// What the board screen lends the classroom extras (demo classes, primary activities, the
 /// document camera, the safe browser, captions, classroom management, assessment, the
@@ -23,6 +25,8 @@ class ExtrasHooks {
     required this.openCamera,
     required this.openWeb,
     required this.askClass,
+    this.zones,
+    this.voiceCommand,
   });
 
   final BoardController board;
@@ -40,4 +44,10 @@ class ExtrasHooks {
 
   /// Asks the class a question in the Student App (and with answer cards).
   final Future<void> Function(AskSetup setup) askClass;
+
+  /// Multi-user zones on the board, when it has them.
+  final BoardZones? zones;
+
+  /// Does a spoken command; false when the board could not.
+  final bool Function(VoiceCommand c)? voiceCommand;
 }

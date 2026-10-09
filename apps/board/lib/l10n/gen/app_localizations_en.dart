@@ -699,6 +699,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readerSlower => 'Slower';
 
   @override
+  String get readerEasyRead => 'Easy read';
+
+  @override
   String get readerHint => 'The page’s text, large, read aloud word by word';
 
   @override
@@ -3453,6 +3456,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get askNumberNoCards =>
       'Number answers come from the Student App only (answer cards show A to D).';
+
+  @override
+  String get askWordCloud => 'Word cloud';
+
+  @override
+  String get askWordCloudHint =>
+      'Students type one to three words in the Student App. The words most of the class typed show biggest.';
 
   @override
   String get askStart => 'Ask';

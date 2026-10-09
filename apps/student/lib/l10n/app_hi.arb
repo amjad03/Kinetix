@@ -509,6 +509,8 @@
   "liveQuestionYourNumber": "आपका उत्तर",
   "liveQuestionSend": "उत्तर भेजें",
   "liveQuestionNotNumber": "कोई संख्या लिखें, जैसे 2.5",
+  "liveQuestionYourWords": "आपका उत्तर (एक से तीन शब्द)",
+  "liveQuestionNotWords": "एक से तीन शब्द लिखें",
   "liveQuestionClosed": "आपके शिक्षक ने यह प्रश्न समाप्त कर दिया है।",
   "careersTitle": "करियर और प्लेसमेंट",
   "careersSubtitle": "कैंपस ड्राइव, प्रस्ताव और इंटर्नशिप",

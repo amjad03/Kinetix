@@ -693,6 +693,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get readerSlower => 'धीमे';
 
   @override
+  String get readerEasyRead => 'आसान पढ़ाई';
+
+  @override
   String get readerHint =>
       'पेज का टेक्स्ट, बड़े अक्षरों में, शब्द-दर-शब्द ज़ोर से';
 
@@ -3432,6 +3435,13 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get askNumberNoCards =>
       'संख्या वाले उत्तर केवल स्टूडेंट ऐप से आते हैं (उत्तर कार्ड पर A से D होते हैं)।';
+
+  @override
+  String get askWordCloud => 'शब्द बादल';
+
+  @override
+  String get askWordCloudHint =>
+      'विद्यार्थी स्टूडेंट ऐप में एक से तीन शब्द लिखते हैं। जो शब्द सबसे ज़्यादा लिखे गए, वे सबसे बड़े दिखते हैं।';
 
   @override
   String get askStart => 'पूछें';

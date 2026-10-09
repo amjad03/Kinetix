@@ -1065,13 +1065,15 @@ class MessagePage {
 
 /// The class the teacher is teaching live right now (`GET /v1/student/live`).
 /// A question the teacher asked the class on the board (`GET /v1/student/poll`): the "Live
-/// question" banner. MCQ answers are option indexes ("0" = A); numeric ones are the number.
+/// question" banner. MCQ answers are option indexes ("0" = A); numeric ones are the number;
+/// word-cloud ones ([word]) are one to three words.
 class ClassQuestion {
-  ClassQuestion({required this.id, required this.numeric, required this.question, required this.options, required this.teacher, this.subject, this.myAnswer});
+  ClassQuestion({required this.id, required this.numeric, this.word = false, required this.question, required this.options, required this.teacher, this.subject, this.myAnswer});
 
   factory ClassQuestion.fromJson(Map<String, dynamic> j) => ClassQuestion(
     id: j['id'] as String,
     numeric: j['kind'] == 'numeric',
+    word: j['kind'] == 'word',
     question: j['question'] as String? ?? '',
     options: [for (final o in (j['options'] as List? ?? const [])) '$o'],
     teacher: j['teacher'] as String? ?? '',
@@ -1081,6 +1083,9 @@ class ClassQuestion {
 
   final String id;
   final bool numeric;
+
+  /// A word-cloud question: the student types one to three words.
+  final bool word;
   final String question;
   final List<String> options;
   final String teacher;
@@ -1088,7 +1093,7 @@ class ClassQuestion {
   String? myAnswer;
 
   /// "B" or "True" for an option index; the number itself otherwise.
-  String label(String answer) => numeric ? answer : (options.elementAtOrNull(int.tryParse(answer) ?? -1) ?? answer);
+  String label(String answer) => numeric || word ? answer : (options.elementAtOrNull(int.tryParse(answer) ?? -1) ?? answer);
 }
 
 class LiveClass {

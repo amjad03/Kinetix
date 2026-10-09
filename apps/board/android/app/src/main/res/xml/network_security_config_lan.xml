@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Demo builds only (-Pkinetix.lanHttp=true, docs/product/demo-builds.md): plain HTTP to a KINETIX
+     server on the local network, such as a laptop on the school Wi-Fi, besides the device itself.
+     Android cannot match address ranges, so cleartext is allowed by default here; builds handed to
+     schools use network_security_config.xml (HTTPS only). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
