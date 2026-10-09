@@ -1,10 +1,11 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Payslip, PayrollRunDetail, PayrollRunSummary, SalaryComponent, SalaryStructure } from '@kinetix/shared';
-import { and, asc, desc, eq, gte, inArray, lt, lte, ne, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, ne, or, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import type { Tx } from '../db/db.service.js';
+import { payrollAdjustments } from '../db/schema-depth.js';
 import { payrollRuns, payslips, salaryComponents, salaryStructureLines, salaryStructures, staffProfiles, tenants } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { texts } from '../notifications/texts.js';
@@ -121,6 +122,10 @@ export class PayrollService {
       .groupBy(payslips.userId);
     const ytd = new Map(ytdRows.map((r) => [r.userId, r]));
 
+    // Approved overtime, arrears, bonuses and recoveries for this month go onto the payslip in full.
+    const adjRows = await tx.select().from(payrollAdjustments).where(and(eq(payrollAdjustments.payMonth, month), eq(payrollAdjustments.status, 'approved'), or(isNull(payrollAdjustments.runId), eq(payrollAdjustments.runId, run.id))));
+    const ADJ_NAME: Record<string, [string, string]> = { overtime: ['OT', 'Overtime'], arrear: ['ARR', 'Arrears'], bonus: ['BONUS', 'Bonus'], recovery: ['REC', 'Recovery'] };
+
     await tx.delete(payslips).where(eq(payslips.runId, run.id));
     const skipped: Run['skipped'] = [];
     const days = daysInMonth(month);
@@ -149,6 +154,7 @@ export class PayrollService {
         ptSlabs: settings.ptSlabs,
         staff: { regime: prof.taxRegime as 'new', pfEnabled: prof.pfEnabled, esiEnabled: prof.esiEnabled, ptEnabled: prof.ptEnabled, tax80cPaise: prof.tax80cPaise, taxOtherDeductionsPaise: prof.taxOtherDeductionsPaise },
         ytd: { grossTaxablePaise: y?.taxable ?? 0, ptPaise: y?.pt ?? 0, employeePfPaise: y?.pf ?? 0, tdsPaise: y?.tds ?? 0 },
+        extras: adjRows.filter((a) => a.userId === s.userId).map((a) => ({ code: ADJ_NAME[a.kind]?.[0] ?? 'ADJ', name: ADJ_NAME[a.kind]?.[1] ?? 'Adjustment', amountPaise: a.amountPaise, taxable: true, recovery: a.kind === 'recovery' })),
       });
       const employerCost = c.grossPaise + c.employer.epfPaise + c.employer.epsPaise + c.employer.esiPaise;
       const data: StoredPayslip = {
@@ -176,6 +182,7 @@ export class PayrollService {
       };
       await tx.insert(payslips).values({ tenantId, runId: run.id, userId: s.userId, grossPaise: c.grossPaise, deductionsPaise: c.deductionsPaise, netPaise: c.netPaise, employerCostPaise: employerCost, taxableGrossPaise: c.taxableGrossPaise, ptPaise: c.ptPaise, employeePfPaise: c.employeePfPaise, tdsPaise: c.tdsPaise, data });
     }
+    if (adjRows.length) await tx.update(payrollAdjustments).set({ runId: run.id }).where(inArray(payrollAdjustments.id, adjRows.map((a) => a.id)));
     await tx.update(payrollRuns).set({ skipped, version: sql`${payrollRuns.version} + 1` }).where(eq(payrollRuns.id, run.id));
   }
 

@@ -1,3 +1,5 @@
+import { ExamOpsController } from './exam-ops.controller.js';
+import { WorkflowsModule } from '../workflows/workflows.module.js';
 import { Module } from '@nestjs/common';
 import { NotificationsModule } from '../notifications/notifications.module.js';
 import { ExamControllerDepthController, ResultsDepthController } from './exam-depth.controller.js';
@@ -8,5 +10,5 @@ import { ResultsController } from './results.controller.js';
 import { SchemesController } from './schemes.controller.js';
 
 /** Assessment schemes, exam sessions (schedule, seating, hall tickets), results, transcripts and revaluation. */
-@Module({ imports: [NotificationsModule], controllers: [SchemesController, ExamSessionsController, ExamRegistrationController, ResultsController, ExamControllerDepthController, ResultsDepthController], providers: [ExamsService], exports: [ExamsService] })
+@Module({ imports: [NotificationsModule, WorkflowsModule], controllers: [SchemesController, ExamSessionsController, ExamRegistrationController, ResultsController, ExamControllerDepthController, ResultsDepthController, ExamOpsController], providers: [ExamsService], exports: [ExamsService] })
 export class ExamsModule {}

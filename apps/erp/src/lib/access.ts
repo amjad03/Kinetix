@@ -236,7 +236,7 @@ export function sectionOf(pathname: string): Section | null {
     case 'obe':
       return 'obe';
     case 'hr':
-      return pathname.startsWith('/hr/appraisal') || pathname.startsWith('/hr/training') || pathname.startsWith('/hr/probation') ? 'appraisal' : 'hr';
+      return pathname.startsWith('/hr/appraisal') || pathname.startsWith('/hr/training') || pathname.startsWith('/hr/probation') || pathname.startsWith('/hr/faculty') ? 'appraisal' : 'hr';
     case 'reports':
       return 'reports';
     case 'surveys':

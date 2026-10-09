@@ -4610,6 +4610,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Course outcomes'**
   String get curriculumOutcomes;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Course files'**
+  String get courseFilesTitle;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Build and download the course file for your classes'**
+  String get courseFilesBody;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'You have no classes to build a course file for.'**
+  String get courseFilesEmpty;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Build new version'**
+  String get courseFilesBuild;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Course file built'**
+  String get courseFilesBuilt;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Version {n}'**
+  String courseFilesVersion(int n);
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed'**
+  String get courseFilesReviewed;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting review'**
+  String get courseFilesAwaiting;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the file'**
+  String get courseFilesOpenFailed;
+
+  /// Course files screen (teacher profile).
+  ///
+  /// In en, this message translates to:
+  /// **'No version built yet'**
+  String get courseFilesNone;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

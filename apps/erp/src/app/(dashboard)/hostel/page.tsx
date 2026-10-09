@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { HostelDesk } from '@/components/hostel/HostelDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -36,7 +37,7 @@ export default async function HostelPage({ searchParams }: { searchParams: Promi
 
   return (
     <>
-      <PageHeader title={t('nav.hostel')} subtitle={t('ho.subtitle')} />
+      <PageHeader title={t('nav.hostel')} subtitle={t('ho.subtitle')} actions={<><LinkButton href="/hostel/work-orders" variant="outlined">{t('dx.link.hostel')}</LinkButton></>} />
       {failed !== undefined ? (
         <ErrorState message={failed} />
       ) : (

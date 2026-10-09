@@ -1287,7 +1287,7 @@ export const feeInvoices = pgTable(
 );
 
 export const paymentStatus = pgEnum('payment_status', ['created', 'paid', 'failed']);
-export const paymentMethod = pgEnum('payment_method', ['online', 'cash', 'cheque', 'bank_transfer', 'upi']);
+export const paymentMethod = pgEnum('payment_method', ['online', 'cash', 'cheque', 'bank_transfer', 'upi', 'credit']);
 
 /**
  * A payment against an invoice: online (an order with the payment provider, confirmed by its
@@ -1366,6 +1366,10 @@ export const libraryBooks = pgTable(
     /** Shelf mark, e.g. "657.95 GUP". */
     callNo: text('call_no'),
     copies: smallint('copies').notNull().default(1),
+    /** Accession number printed as the barcode on the book's label. */
+    barcode: text('barcode'),
+    /** What a lost book costs the borrower, in paise. */
+    pricePaise: integer('price_paise').notNull().default(0),
     createdAt: createdAt(),
   },
   (t) => [index('library_books_title_idx').on(t.tenantId, t.title)],
@@ -1386,6 +1390,10 @@ export const libraryLoans = pgTable(
     /** When the fine was collected at the desk. */
     finePaidAt: timestamp('fine_paid_at', { withTimezone: true }),
     issuedBy: uuid('issued_by').notNull().references(() => users.id),
+    renewCount: smallint('renew_count').notNull().default(0),
+    /** lost | damaged, with the note and the charge. */
+    condition: text('condition'),
+    conditionNote: text('condition_note'),
   },
   (t) => [index('library_loans_student_idx').on(t.studentId, t.returnedAt), index('library_loans_book_idx').on(t.bookId, t.returnedAt)],
 );
@@ -2259,6 +2267,8 @@ export const evalQuestions = pgTable(
     no: text('no').notNull(),
     maxMarks: numeric('max_marks', { precision: 6, scale: 2, mode: 'number' }).notNull(),
     ord: smallint('ord').notNull().default(0),
+    /** The course outcome this question tests, so marks per question feed outcome attainment. */
+    coId: uuid('co_id'),
   },
   (t) => [uniqueIndex('eval_questions_uq').on(t.paperId, t.no)],
 );
@@ -2563,13 +2573,22 @@ export const improvementActions = pgTable('improvement_actions', {
   createdBy: uuid('created_by').notNull().references(() => users.id),
   createdAt: createdAt(),
   closedAt: timestamp('closed_at', { withTimezone: true }),
+  /** CQI loop: why the gap exists, the figure before, the target, and the re-measurement after the action. */
+  rootCause: text('root_cause'),
+  baselineValue: numeric('baseline_value', { precision: 12, scale: 2, mode: 'number' }),
+  targetValue: numeric('target_value', { precision: 12, scale: 2, mode: 'number' }),
+  remeasureOn: date('remeasure_on'),
+  remeasuredValue: numeric('remeasured_value', { precision: 12, scale: 2, mode: 'number' }),
+  remeasureNote: text('remeasure_note'),
+  remeasuredAt: timestamp('remeasured_at', { withTimezone: true }),
 });
 
 /** Evidence for accreditation: a link or note tied to a CO, PO/PSO or an improvement action. */
 export const obeEvidence = pgTable('obe_evidence', {
   id: id(),
   tenantId: tenantId(),
-  programId: uuid('program_id').notNull().references(() => programs.id, { onDelete: 'cascade' }),
+  /** Null for evidence tied to an accreditation criterion rather than a programme. */
+  programId: uuid('program_id').references(() => programs.id, { onDelete: 'cascade' }),
   scope: text('scope').notNull(),
   targetId: uuid('target_id').notNull(),
   title: text('title').notNull(),
@@ -2577,6 +2596,12 @@ export const obeEvidence = pgTable('obe_evidence', {
   note: text('note'),
   uploadedBy: uuid('uploaded_by').notNull().references(() => users.id),
   createdAt: createdAt(),
+  /** A file kept in object storage (a PDF or image). */
+  fileKey: text('file_key'),
+  fileName: text('file_name'),
+  /** manual, or the module the evidence engine harvested it from (placements, exams, surveys …). */
+  source: text('source').notNull().default('manual'),
+  sourceRef: text('source_ref'),
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -3240,6 +3265,34 @@ export const TENANT_TABLES = [
   'grade_suggestions',
   'poll_co_map',
   'tenant_signing_keys',
+  'qb_paper_releases',
+  'exam_practical_slots',
+  'exam_practical_candidates',
+  'result_class_bands',
+  'mark_normalisations',
+  'accreditation_frameworks',
+  'accreditation_criteria',
+  'staff_qualifications',
+  'teaching_evaluations',
+  'payroll_adjustments',
+  'payroll_tax_profile',
+  'tds_challans',
+  'fee_instalment_plans',
+  'fee_instalments',
+  'fee_late_fee_rules',
+  'fee_late_fees',
+  'student_credits',
+  'amc_contracts',
+  'library_reservations',
+  'library_eresources',
+  'library_eresource_access',
+  'resource_topic_links',
+  'hostel_work_orders',
+  'canteen_stock_log',
+  'canteen_feedback',
+  'retention_rules',
+  'intervention_support',
+  'intervention_reassessments',
   'regulations',
   'curriculum_versions',
   'curriculum_subjects',
@@ -3757,6 +3810,11 @@ export const assets = pgTable(
     status: text('status').notNull().default('active'),
     disposedOn: date('disposed_on'),
     disposalPaise: bigint('disposal_paise', { mode: 'number' }),
+    /** Warranty end, serial number, and the room and board it sits in (smartboards link to the device fleet). */
+    warrantyUntil: date('warranty_until'),
+    serialNo: text('serial_no'),
+    roomId: uuid('room_id').references(() => rooms.id, { onDelete: 'set null' }),
+    deviceId: uuid('device_id'),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('assets_tag_uq').on(t.tenantId, t.tag)],

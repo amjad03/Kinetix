@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { QuestionBankDesk } from '@/components/question-bank/QuestionBankDesk';
 import { ErrorState } from '@/components/States';
@@ -26,7 +27,7 @@ export default async function QuestionBankPage({ searchParams }: { searchParams:
   if (data.error !== undefined) return <ErrorState message={data.error} />;
   return (
     <>
-      <PageHeader title={t('nav.questionBank')} subtitle={t('qb.subtitle')} />
+      <PageHeader title={t('nav.questionBank')} subtitle={t('qb.subtitle')} actions={<><LinkButton href="/question-bank/usage" variant="outlined">{t('dx.link.qb')}</LinkButton></>} />
       <QuestionBankDesk {...data.data} initialTab={tab ?? 'questions'} />
     </>
   );

@@ -24,14 +24,19 @@ export interface HallTicketData extends StudentHeader {
   ticketNo: string;
   /** Signed link for the QR code; the page it opens shows only name, session and validity. */
   verifyUrl?: string;
+  /** The student's profile photo (a JPEG); printed beside the ticket number when present. */
+  photo?: Buffer | null;
   papers: { date: string; time: string; subject: string; room: string | null; seat: number | null }[];
 }
 
 export function hallTicketPdf(d: HallTicketData): Buffer {
   const pdf = new PdfWriter();
   header(pdf, d, 'HALL TICKET', d.sessionName);
+  const top = pdf.y;
+  const hasPhoto = d.photo ? pdf.image(d.photo, { x: 445, width: 70, height: 85 }) : false;
   pdf.text(`Hall ticket no: ${d.ticketNo}`, { bold: true });
   pdf.gap();
+  if (hasPhoto && top - pdf.y < 92) pdf.gap(92 - (top - pdf.y));
   const xs = [0, 80, 150, 380, 460];
   pdf.row(['Date', 'Time', 'Subject', 'Hall', 'Seat'], xs, { bold: true });
   pdf.rule();

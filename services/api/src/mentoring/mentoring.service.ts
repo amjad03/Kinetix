@@ -6,7 +6,9 @@ import type { Tx } from '../db/db.service.js';
 import { attendanceRecords, assessments, feeInvoices, grievanceTickets, marks, mentorAssignments, sections, students, users, welfareRequests } from '../db/schema.js';
 import { addDays } from '../hr/dates.js';
 import { OPEN_STATUSES } from '../welfare/welfare-rules.js';
-import { riskOf, type RiskInputs } from './mentoring-rules.js';
+import { interventionReassessments } from '../db/schema-depth.js';
+import type { interventionPlans } from '../db/schema.js';
+import { reassessOutcome, riskOf, type RiskInputs } from './mentoring-rules.js';
 
 /** A mark below this share of the maximum counts as failing. */
 const PASS_FRACTION = 0.35;
@@ -114,6 +116,7 @@ export class MentoringService {
       .where(and(inArray(grievanceTickets.studentId, ids), inArray(grievanceTickets.status, OPEN_STATUSES), isNull(grievanceTickets.committee), eq(grievanceTickets.anonymous, false)))
       .groupBy(grievanceTickets.studentId);
 
+    const extra = await this.extraSignals(tx, ids, today);
     const by = <T extends { studentId: string | null }>(list: T[]) => new Map(list.map((x) => [x.studentId, x]));
     const attBy = by(att);
     const failBy = by(failing);
@@ -127,6 +130,7 @@ export class MentoringService {
         return [
           id,
           {
+            ...extra.get(id),
             attendancePct: days > 0 ? Math.round((a!.attended / days) * 100) : null,
             attendanceDays: days,
             failingMarks: failBy.get(id)?.n ?? 0,
@@ -136,6 +140,60 @@ export class MentoringService {
         ];
       }),
     );
+  }
+
+  /** Outcome, skill, assignment and engagement signals for each student id (kept apart from the first four so those stay cheap). */
+  private async extraSignals(tx: Tx, ids: string[], today: string): Promise<Map<string, Partial<RiskInputs>>> {
+    const list = sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `);
+    const out = new Map<string, Partial<RiskInputs>>();
+    const put = (id: string, patch: Partial<RiskInputs>) => out.set(id, { ...out.get(id), ...patch });
+    const since = addDays(today, -ATTENDANCE_WINDOW_DAYS);
+    const outcomes = (await tx.execute(sql`select student_id, count(*)::int as n from (
+        select m.student_id, cm.co_id from marks m join assessments a on a.id = m.assessment_id join assessment_co_map cm on cm.assessment_id = a.id
+        where m.student_id in (${list}) and a.published_at is not null and m.absent = false and a.max_marks > 0 and coalesce(m.moderated_marks, m.marks) is not null
+        group by m.student_id, cm.co_id having avg(100.0 * coalesce(m.moderated_marks, m.marks) / a.max_marks) < 50) t group by student_id`)).rows as { student_id: string; n: number }[];
+    for (const r of outcomes) put(r.student_id, { lowOutcomes: r.n });
+    const skills = (await tx.execute(sql`select student_id, count(*)::int as n from (select student_id, skill_id, max(level) as best from skill_evidence where student_id in (${list}) group by student_id, skill_id) t where best < 2 group by student_id`)).rows as { student_id: string; n: number }[];
+    for (const r of skills) put(r.student_id, { lowSkills: r.n });
+    const missed = (await tx.execute(sql`select s.id as student_id, count(*)::int as n from students s join homework h on h.section_id = s.section_id
+        where s.id in (${list}) and h.due_on < ${today}::date and h.due_on >= ${since}::date
+          and not exists (select 1 from homework_submissions hs where hs.homework_id = h.id and hs.student_id = s.id) group by s.id`)).rows as { student_id: string; n: number }[];
+    for (const r of missed) put(r.student_id, { missedAssignments: r.n });
+    const eng = (await tx.execute(sql`select student_id, count(*)::int as total, count(*) filter (where outcome = 'skipped')::int as skipped from participation_events
+        where student_id in (${list}) and occurred_at >= ${since}::date group by student_id`)).rows as { student_id: string; total: number; skipped: number }[];
+    for (const r of eng) if (r.total >= 5 && r.skipped / r.total >= 0.6) put(r.student_id, { lowEngagement: true });
+    return out;
+  }
+
+  /** The current risk of one student: score and the signals behind it. */
+  async riskFor(tx: Tx, studentId: string, attendanceThreshold = 75): Promise<{ score: number; signals: { kind: string; value: number }[] }> {
+    const today = await this.today(tx);
+    const inputs = (await this.inputsFor(tx, [studentId], today)).get(studentId)!;
+    const r = riskOf(inputs, attendanceThreshold);
+    return { score: r.score, signals: r.signals };
+  }
+
+  /** Records the risk when a plan opens, to be set against the risk at its review date. */
+  async openReassessment(tx: Tx, plan: typeof interventionPlans.$inferSelect): Promise<void> {
+    const now = await this.riskFor(tx, plan.studentId);
+    await tx.insert(interventionReassessments).values({ tenantId: plan.tenantId, planId: plan.id, studentId: plan.studentId, scoreBefore: now.score, signalsBefore: now.signals, dueOn: plan.reviewOn }).onConflictDoNothing();
+  }
+
+  /** Measures the risk again and stores the change; the first call settles the plan's reassessment, later calls refresh it until it is closed. */
+  async runReassessment(tx: Tx, planId: string) {
+    const [re] = await tx.select().from(interventionReassessments).where(eq(interventionReassessments.planId, planId));
+    if (!re) return null;
+    const now = await this.riskFor(tx, re.studentId);
+    const [row] = await tx.update(interventionReassessments).set({ scoreAfter: now.score, signalsAfter: now.signals, assessedAt: this.now(), outcome: reassessOutcome(re.scoreBefore, now.score) }).where(eq(interventionReassessments.id, re.id)).returning();
+    return row;
+  }
+
+  /** Plans whose review date has come and that have not been measured yet. */
+  async reassessDue(tx: Tx): Promise<number> {
+    const today = await this.today(tx);
+    const due = await tx.select({ planId: interventionReassessments.planId }).from(interventionReassessments).where(and(isNull(interventionReassessments.assessedAt), sql`${interventionReassessments.dueOn} <= ${today}`));
+    for (const d of due) await this.runReassessment(tx, d.planId);
+    return due.length;
   }
 
   /** One class: every student's attendance %, average mark % over published assessments, and risk flag. Fees and welfare detail stay with mentors. */

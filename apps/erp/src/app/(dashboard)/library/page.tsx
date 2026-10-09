@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { LibraryDesk } from '@/components/library/LibraryDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -37,7 +38,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} />
+      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} actions={<><LinkButton href="/library/circulation" variant="outlined">{t('dx.link.circ')}</LinkButton><LinkButton href="/library/e-resources" variant="outlined">{t('dx.link.eres')}</LinkButton></>} />
       {books.error !== undefined || loans.error !== undefined || fines.error !== undefined ? (
         <ErrorState message={(books.error ?? loans.error ?? fines.error)!} />
       ) : (

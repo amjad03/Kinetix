@@ -2533,4 +2533,36 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get curriculumOutcomes => 'ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು';
+
+  @override
+  String get courseFilesTitle => 'ಕೋರ್ಸ್ ಫೈಲ್‌ಗಳು';
+
+  @override
+  String get courseFilesBody => 'ನಿಮ್ಮ ತರಗತಿಗಳ ಕೋರ್ಸ್ ಫೈಲ್ ರಚಿಸಿ ಮತ್ತು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
+
+  @override
+  String get courseFilesEmpty => 'ಕೋರ್ಸ್ ಫೈಲ್ ರಚಿಸಲು ನಿಮಗೆ ಯಾವುದೇ ತರಗತಿ ಇಲ್ಲ.';
+
+  @override
+  String get courseFilesBuild => 'ಹೊಸ ಆವೃತ್ತಿ ರಚಿಸಿ';
+
+  @override
+  String get courseFilesBuilt => 'ಕೋರ್ಸ್ ಫೈಲ್ ರಚಿಸಲಾಗಿದೆ';
+
+  @override
+  String courseFilesVersion(int n) {
+    return 'ಆವೃತ್ತಿ $n';
+  }
+
+  @override
+  String get courseFilesReviewed => 'ಪರಿಶೀಲನೆ ಆಗಿದೆ';
+
+  @override
+  String get courseFilesAwaiting => 'ಪರಿಶೀಲನೆಗೆ ಕಾಯುತ್ತಿದೆ';
+
+  @override
+  String get courseFilesOpenFailed => 'ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ';
+
+  @override
+  String get courseFilesNone => 'ಇನ್ನೂ ಯಾವುದೇ ಆವೃತ್ತಿ ರಚಿಸಿಲ್ಲ';
 }

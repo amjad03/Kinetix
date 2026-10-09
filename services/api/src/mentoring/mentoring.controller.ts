@@ -202,6 +202,7 @@ export class MentoringController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.mustMentor(tx, p, b.studentId);
       const [row] = await tx.insert(interventionPlans).values({ tenantId: p.tenantId, studentId: b.studentId, mentorUserId: p.userId, goal: b.goal, actions: b.actions.map((text) => ({ text, done: false })), reviewOn: b.reviewOn }).returning();
+      await this.svc.openReassessment(tx, row);
       await auditUser(tx, p, 'mentoring.plan_created', 'intervention_plan', row.id, { studentId: b.studentId });
       return row;
     });
@@ -249,8 +250,9 @@ export class MentoringController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.ownPlan(tx, p, id);
       const [row] = await tx.update(interventionPlans).set({ status: 'closed', outcome: b.outcome, outcomeRating: b.outcomeRating, closedAt: this.svc.now() }).where(eq(interventionPlans.id, id)).returning();
+      const reassessment = await this.svc.runReassessment(tx, id);
       await auditUser(tx, p, 'mentoring.plan_closed', 'intervention_plan', id, { outcomeRating: b.outcomeRating });
-      return row;
+      return { ...row, reassessment };
     });
   }
 }

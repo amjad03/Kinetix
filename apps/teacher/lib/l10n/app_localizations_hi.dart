@@ -2527,4 +2527,36 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get curriculumOutcomes => 'पाठ्यक्रम परिणाम';
+
+  @override
+  String get courseFilesTitle => 'पाठ्यक्रम फ़ाइलें';
+
+  @override
+  String get courseFilesBody => 'अपनी कक्षाओं की पाठ्यक्रम फ़ाइल बनाएँ और डाउनलोड करें';
+
+  @override
+  String get courseFilesEmpty => 'आपके पास पाठ्यक्रम फ़ाइल बनाने के लिए कोई कक्षा नहीं है।';
+
+  @override
+  String get courseFilesBuild => 'नया संस्करण बनाएँ';
+
+  @override
+  String get courseFilesBuilt => 'पाठ्यक्रम फ़ाइल बन गई';
+
+  @override
+  String courseFilesVersion(int n) {
+    return 'संस्करण $n';
+  }
+
+  @override
+  String get courseFilesReviewed => 'समीक्षा हो चुकी';
+
+  @override
+  String get courseFilesAwaiting => 'समीक्षा की प्रतीक्षा';
+
+  @override
+  String get courseFilesOpenFailed => 'फ़ाइल नहीं खुल सकी';
+
+  @override
+  String get courseFilesNone => 'अभी कोई संस्करण नहीं बना';
 }

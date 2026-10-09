@@ -2959,5 +2959,50 @@
   "curriculumEmpty": "No active curriculum yet.",
   "curriculumNoSubjects": "This version has no subjects.",
   "curriculumUnits": "Units",
-  "curriculumOutcomes": "Course outcomes"
+  "curriculumOutcomes": "Course outcomes",
+  "courseFilesTitle": "Course files",
+  "@courseFilesTitle": {
+    "description": "Course files screen (teacher profile)."
+  },
+  "courseFilesBody": "Build and download the course file for your classes",
+  "@courseFilesBody": {
+    "description": "Course files screen (teacher profile)."
+  },
+  "courseFilesEmpty": "You have no classes to build a course file for.",
+  "@courseFilesEmpty": {
+    "description": "Course files screen (teacher profile)."
+  },
+  "courseFilesBuild": "Build new version",
+  "@courseFilesBuild": {
+    "description": "Course files screen (teacher profile)."
+  },
+  "courseFilesBuilt": "Course file built",
+  "@courseFilesBuilt": {
+    "description": "Course files screen (teacher profile)."
+  },
+  "courseFilesVersion": "Version {n}",
+  "@courseFilesVersion": {
+    "description": "Course files screen (teacher profile).",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "courseFilesReviewed": "Reviewed",
+  "@courseFilesReviewed": {
+    "description": "Course files screen (teacher profile)."
+  },
+  "courseFilesAwaiting": "Awaiting review",
+  "@courseFilesAwaiting": {
+    "description": "Course files screen (teacher profile)."
+  },
+  "courseFilesOpenFailed": "Could not open the file",
+  "@courseFilesOpenFailed": {
+    "description": "Course files screen (teacher profile)."
+  },
+  "courseFilesNone": "No version built yet",
+  "@courseFilesNone": {
+    "description": "Course files screen (teacher profile)."
+  }
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { PayrollDesk, type PayrollTab } from '@/components/payroll/PayrollDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
@@ -23,7 +24,7 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
   );
   return (
     <>
-      <PageHeader title={t('nav.payroll')} subtitle={t('pay.subtitle')} />
+      <PageHeader title={t('nav.payroll')} subtitle={t('pay.subtitle')} actions={<><LinkButton href="/payroll/adjustments" variant="outlined">{t('dx.link.pay')}</LinkButton></>} />
       {data.error !== undefined ? (
         <ErrorState message={data.error} />
       ) : (

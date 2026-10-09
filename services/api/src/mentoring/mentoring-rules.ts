@@ -13,10 +13,18 @@ export interface RiskInputs {
   failingMarks: number;
   overdueFees: number;
   openCases: number;
+  /** Course outcomes where the student's mapped assessments average under half. */
+  lowOutcomes?: number;
+  /** Skills whose best evidence is still at the lowest level. */
+  lowSkills?: number;
+  /** Homework past its due date, in the last 60 days, with nothing handed in. */
+  missedAssignments?: number;
+  /** Class questions skipped far more than answered. */
+  lowEngagement?: boolean;
 }
 
 export interface RiskSignal {
-  kind: 'attendance' | 'marks' | 'fees' | 'cases';
+  kind: 'attendance' | 'marks' | 'fees' | 'cases' | 'outcomes' | 'skills' | 'assignments' | 'engagement';
   value: number;
 }
 
@@ -43,5 +51,26 @@ export function riskOf(i: RiskInputs, attendanceThreshold: number): { signals: R
     signals.push({ kind: 'cases', value: i.openCases });
     score += 1;
   }
+  if ((i.lowOutcomes ?? 0) > 0) {
+    signals.push({ kind: 'outcomes', value: i.lowOutcomes! });
+    score += i.lowOutcomes! >= 3 ? 2 : 1;
+  }
+  if ((i.lowSkills ?? 0) > 0) {
+    signals.push({ kind: 'skills', value: i.lowSkills! });
+    score += 1;
+  }
+  if ((i.missedAssignments ?? 0) >= 2) {
+    signals.push({ kind: 'assignments', value: i.missedAssignments! });
+    score += i.missedAssignments! >= 4 ? 2 : 1;
+  }
+  if (i.lowEngagement) {
+    signals.push({ kind: 'engagement', value: 1 });
+    score += 1;
+  }
   return { signals, score, level: score >= 4 ? 'high' : score >= 2 ? 'medium' : score >= 1 ? 'low' : 'none' };
+}
+
+/** How a re-assessed risk score compares with the score when the plan opened. */
+export function reassessOutcome(before: number, after: number): 'improved' | 'no_change' | 'worse' {
+  return after < before ? 'improved' : after > before ? 'worse' : 'no_change';
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { AssetsDesk } from '@/components/assets/AssetsDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -22,7 +23,7 @@ export default async function AssetsPage() {
 
   return (
     <>
-      <PageHeader title={t('nav.assets')} subtitle={t('as.subtitle')} />
+      <PageHeader title={t('nav.assets')} subtitle={t('as.subtitle')} actions={<><LinkButton href="/assets/amc" variant="outlined">{t('dx.link.assets')}</LinkButton></>} />
       {failed !== undefined ? (
         <ErrorState message={failed} />
       ) : (

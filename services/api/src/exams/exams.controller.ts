@@ -1,7 +1,7 @@
 import { ENV, type Env } from '../config/env.js';
 import { hallTicketCode } from './hall-ticket-code.js';
 import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
@@ -12,7 +12,11 @@ import { toCsv } from '../common/pdf.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, tenants, examRegistrationWindows, examRegistrations } from '../db/schema.js';
+import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, tenants, examRegistrationWindows, examRegistrations, users } from '../db/schema.js';
+import type { Readable } from 'node:stream';
+import { ObjectStorage } from '../storage/storage.service.js';
+import { WorkflowsService } from '../workflows/workflows.service.js';
+import { workflowDefinitions, workflowRequests } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { parseDate } from '../teacher/teacher.service.js';
 import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
@@ -46,6 +50,20 @@ const PaperBody = z.object({
 const SeatingBody = z.object({ halls: z.array(z.object({ roomId: z.uuid(), capacity: z.number().int().min(1).max(2000) })).min(1).max(40) });
 const TicketsBody = z.object({ blocks: z.array(z.object({ studentId: z.uuid(), reason: z.string().trim().min(1).max(200) })).max(500).default([]), /** Also withhold tickets from students under the attendance threshold (after condonation). */ blockByAttendance: z.boolean().default(false) });
 
+async function readAll(stream: Readable): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  for await (const c of stream) chunks.push(Buffer.from(c));
+  return Buffer.concat(chunks);
+}
+
+/** Results are published through the approval workflow when the institution has an active "result_publish" route. */
+async function approvalGate(tx: Tx, sessionId: string): Promise<{ required: boolean; approved: boolean }> {
+  const [def] = await tx.select({ id: workflowDefinitions.id }).from(workflowDefinitions).where(and(eq(workflowDefinitions.requestType, 'result_publish'), eq(workflowDefinitions.active, true)));
+  if (!def) return { required: false, approved: true };
+  const [ok] = await tx.select({ id: workflowRequests.id }).from(workflowRequests).where(and(eq(workflowRequests.sourceModule, 'exam_session'), eq(workflowRequests.sourceId, sessionId), eq(workflowRequests.status, 'approved')));
+  return { required: true, approved: !!ok };
+}
+
 /** Exam sessions: papers, seating, hall tickets, result processing, publish and lock. */
 @Controller('v1/exam-sessions')
 export class ExamSessionsController {
@@ -55,6 +73,8 @@ export class ExamSessionsController {
     private readonly notifications: NotificationsService,
     private readonly events: EventBus,
     @Inject(ENV) private readonly env: Env,
+    private readonly storage: ObjectStorage,
+    private readonly workflows: WorkflowsService,
   ) {}
 
   @Post()
@@ -283,7 +303,9 @@ export class ExamSessionsController {
         .orderBy(asc(examPapers.examDate), asc(examPapers.startsAt));
       const [tenant] = await tx.select({ slug: tenants.slug }).from(tenants).where(eq(tenants.id, p.tenantId));
       const verifyUrl = `${this.env.VERIFY_BASE_URL.replace(/\/$/, '')}/hallticket/${tenant.slug}/${encodeURIComponent(hallTicketCode(this.env.JWT_SECRET, p.tenantId, t.ticketNo))}`;
-      return hallTicketPdf({ ...(await studentHeader(tx, p.tenantId, studentId)), sessionName: s.name, ticketNo: t.ticketNo, verifyUrl, papers: papers.map((x) => ({ date: x.examDate, time: `${x.startsAt}-${x.endsAt}`, subject: x.subject, room: x.room, seat: x.seat })) });
+      const [ph] = await tx.select({ key: users.photoKey }).from(students).innerJoin(users, eq(users.id, students.userId)).where(eq(students.id, studentId));
+      const photo = ph?.key ? await readAll((await this.storage.get(ph.key)).stream).catch(() => null) : null;
+      return hallTicketPdf({ ...(await studentHeader(tx, p.tenantId, studentId)), sessionName: s.name, ticketNo: t.ticketNo, verifyUrl, photo, papers: papers.map((x) => ({ date: x.examDate, time: `${x.startsAt}-${x.endsAt}`, subject: x.subject, room: x.room, seat: x.seat })) });
     });
     res.setHeader('content-type', 'application/pdf');
     res.setHeader('content-disposition', 'inline; filename="hall-ticket.pdf"');
@@ -317,6 +339,8 @@ export class ExamSessionsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const s = await this.exams.session(tx, id);
       if (s.status !== 'processed') throw new ConflictException(s.status === 'published' || s.status === 'locked' ? 'Results are already published' : 'Process the results first');
+      const gate = await approvalGate(tx, id);
+      if (!gate.approved) throw new ConflictException('Results need approval before they are published. Send them for approval first.');
       const now = new Date();
       await tx.update(examSessions).set({ status: 'published', publishedAt: now }).where(eq(examSessions.id, id));
       const papers = await tx.select().from(examPapers).where(eq(examPapers.sessionId, id));
@@ -326,6 +350,36 @@ export class ExamSessionsController {
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.results.published', subjectType: 'exam_session', subjectId: id });
       await this.events.emit(tx, p.tenantId, { type: DomainEvents.ResultsPublished, aggregateType: 'exam_session', aggregateId: id, actorId: p.userId, payload: { name: s.name, papers: papers.length } });
       return { status: 'published' };
+    });
+  }
+
+  /** Where the publish approval stands: whether the institution requires it, and the latest request. */
+  @Get(':id/publish-approval')
+  @Auth('user', ADMIN)
+  approvalState(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const gate = await approvalGate(tx, id);
+      const [req] = await tx.select({ id: workflowRequests.id, status: workflowRequests.status, createdAt: workflowRequests.createdAt }).from(workflowRequests).where(and(eq(workflowRequests.sourceModule, 'exam_session'), eq(workflowRequests.sourceId, id))).orderBy(desc(workflowRequests.createdAt)).limit(1);
+      return { ...gate, request: req ?? null };
+    });
+  }
+
+  /** Sends the processed results through the "result_publish" approval route; publishing opens once it is approved. */
+  @Post(':id/request-publish')
+  @HttpCode(200)
+  @Auth('user', ADMIN)
+  requestPublish(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const s = await this.exams.session(tx, id);
+      if (s.status !== 'processed') throw new ConflictException('Process the results first');
+      const gate = await approvalGate(tx, id);
+      if (!gate.required) throw new ConflictException('No approval route is set up for results; publish directly');
+      if (gate.approved) throw new ConflictException('The results are already approved');
+      const [open] = await tx.select({ id: workflowRequests.id }).from(workflowRequests).where(and(eq(workflowRequests.sourceModule, 'exam_session'), eq(workflowRequests.sourceId, id), eq(workflowRequests.status, 'pending')));
+      if (open) throw new ConflictException('An approval request is already open for these results');
+      const req = await this.workflows.start(tx, { tenantId: p.tenantId, requesterId: p.userId, requestType: 'result_publish', title: `Publish results: ${s.name}`, payload: { session: s.name }, sourceModule: 'exam_session', sourceId: id });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.results.approval_requested', subjectType: 'exam_session', subjectId: id });
+      return { requestId: req.id, status: req.status };
     });
   }
 

@@ -10,6 +10,7 @@ import 'package:flutter/painting.dart';
 
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
+import '../core/course_file_models.dart';
 import '../core/growth_models.dart';
 import '../core/hr_models.dart';
 import '../core/insights_models.dart';
@@ -851,6 +852,30 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<Uint8List> payslipPdf(String id) async {
     calls.add('payslipPdf $id');
+    return Uint8List.fromList('%PDF-1.4'.codeUnits);
+  }
+
+  List<CourseFileOption> courseOptionList = [];
+  List<CourseFileVersion> courseFileList = [];
+
+  @override
+  Future<List<CourseFileOption>> courseFileOptions() async => courseOptionList;
+
+  @override
+  Future<List<CourseFileVersion>> courseFiles() async => courseFileList;
+
+  @override
+  Future<CourseFileVersion> buildCourseFile(String sectionId, String subjectId) async {
+    calls.add('buildCourseFile $sectionId $subjectId');
+    final next = courseFileList.where((f) => f.sectionId == sectionId && f.subjectId == subjectId).length + 1;
+    final v = CourseFileVersion(id: 'cf-$next', sectionId: sectionId, subjectId: subjectId, version: next, generatedAt: DateTime.utc(2026, 10, 12));
+    courseFileList = [v, ...courseFileList];
+    return v;
+  }
+
+  @override
+  Future<Uint8List> courseFilePdf(String id) async {
+    calls.add('courseFilePdf $id');
     return Uint8List.fromList('%PDF-1.4'.codeUnits);
   }
 

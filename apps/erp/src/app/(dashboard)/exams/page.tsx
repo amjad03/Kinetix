@@ -19,7 +19,7 @@ export default async function ExamsPage() {
   const { t } = await getI18n();
   return (
     <>
-      <PageHeader title={t('nav.exams')} subtitle={t('exm.subtitle')} actions={<LinkButton href="/exams/schemes" variant="outlined">{t('exm.schemes')}</LinkButton>} />
+      <PageHeader title={t('nav.exams')} subtitle={t('exm.subtitle')} actions={<><LinkButton href="/exams/schemes" variant="outlined">{t('exm.schemes')}</LinkButton><LinkButton href="/exams/operations" variant="outlined">{t('dx.link.exams')}</LinkButton></>} />
       {sessions.error !== undefined || structure.error !== undefined ? (
         <ErrorState message={(sessions.error ?? structure.error)!} />
       ) : (
