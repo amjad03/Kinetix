@@ -122,5 +122,5 @@ export function StatTile({
 }
 
 export function StatGrid({ children, min = 170 }: { children: ReactNode; min?: number }) {
-  return <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: `repeat(auto-fit, minmax(${min}px, 1fr))` }}>{children}</Box>;
+  return <Box sx={{ display: 'grid', gap: 2, mb: 3, gridTemplateColumns: `repeat(auto-fit, minmax(${min}px, 1fr))` }}>{children}</Box>;
 }

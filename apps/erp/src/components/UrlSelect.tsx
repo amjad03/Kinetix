@@ -44,7 +44,7 @@ export function UrlSelect({ label, param, value, options, minWidth = 220, testId
   return (
     <>
       {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label={t('common.loading')} />}
-      <FormControl size="small" sx={{ minWidth }}>
+      <FormControl size="small" sx={{ minWidth, maxWidth: '100%' }}>
         <InputLabel id={id}>{label}</InputLabel>
         <Select
           labelId={id}

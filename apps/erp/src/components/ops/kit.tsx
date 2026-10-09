@@ -142,7 +142,8 @@ export interface Col<T> {
 /** A list in the shared DataTable (sortable columns, search and paging once it is long), or an empty state. */
 export function Grid<T>({ cols, rows, empty, testId, tint, exportName, filters }: { cols: Col<T>[]; rows: T[]; empty: string; testId?: string; tint?: (row: T) => boolean; exportName?: string; filters?: TableFilter<T>[] }) {
   const ids = useMemo(() => new Map(rows.map((r, i) => [r, String(i)])), [rows]);
-  if (rows.length === 0) return <EmptyState icon={<Box component="span">·</Box>} title={empty} dense testId={testId ? `${testId}-empty` : undefined} />;
+  const gap = { mb: 3, '&:last-child': { mb: 0 } };
+  if (rows.length === 0) return <Box sx={gap}><EmptyState icon={<Box component="span">·</Box>} title={empty} dense testId={testId ? `${testId}-empty` : undefined} /></Box>;
   const columns: Column<T>[] = cols.map((c, i) => ({
     id: `c${i}`,
     header: c.label,
@@ -159,7 +160,11 @@ export function Grid<T>({ cols, rows, empty, testId, tint, exportName, filters }
         }
       : { csv: false as const }),
   }));
-  return <DataTable testId={testId} label={testId ?? 'list'} columns={columns} rows={rows} rowId={(r) => ids.get(r) ?? ''} rowTone={tint ? (r) => (tint(r) ? 'danger' : undefined) : undefined} exportName={exportName} filters={filters} bare={rows.length <= 10 && !filters && !exportName} />;
+  return (
+    <Box sx={gap}>
+      <DataTable testId={testId} label={testId ?? 'list'} columns={columns} rows={rows} rowId={(r) => ids.get(r) ?? ''} rowTone={tint ? (r) => (tint(r) ? 'danger' : undefined) : undefined} exportName={exportName} filters={filters} bare={rows.length <= 10 && !filters && !exportName} />
+    </Box>
+  );
 }
 
 /** A button that runs one server action and reports it in the toast. */

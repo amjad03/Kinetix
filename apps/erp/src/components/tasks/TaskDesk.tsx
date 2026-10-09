@@ -1,6 +1,7 @@
 'use client';
 
 import Add from '@mui/icons-material/Add';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { createTask, setTaskStatus } from '@/app/(dashboard)/tasks/actions';
@@ -37,9 +38,11 @@ export function TaskDesk({ mine, assigned, people }: { mine: TaskRow[]; assigned
 
   return (
     <>
-      <Button variant="contained" startIcon={<Add />} onClick={() => setOpen(true)} sx={{ my: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+        <Button variant="contained" startIcon={<Add />} onClick={() => setOpen(true)}>
         {t('wk.tk.new')}
       </Button>
+      </Box>
       <Tabbed
         label={t('nav.tasks')}
         initial="mine"

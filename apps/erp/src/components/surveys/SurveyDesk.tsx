@@ -1,6 +1,7 @@
 'use client';
 
 import Add from '@mui/icons-material/Add';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -33,9 +34,11 @@ export function SurveyDesk({ surveys, sections, outcomes }: { surveys: SurveyRow
 
   return (
     <>
-      <Button variant="contained" startIcon={<Add />} onClick={() => setDlg('new')} sx={{ my: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+        <Button variant="contained" startIcon={<Add />} onClick={() => setDlg('new')}>
         {t('wk.sv.new')}
       </Button>
+      </Box>
       <Grid
         testId="surveys-table"
         empty={t('wk.sv.empty')}

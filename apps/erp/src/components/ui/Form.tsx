@@ -57,6 +57,11 @@ export function FormField({
   );
 }
 
+/** An input and its button on one row: the button lines up with the control, not with the label above it. */
+export function FieldRow({ children }: { children: ReactNode }) {
+  return <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, flexWrap: 'wrap', '& > .MuiButton-root': { mt: '26px', height: 40, flexShrink: 0 } }}>{children}</Box>;
+}
+
 export type TextInputProps = Omit<TextFieldProps, 'variant' | 'size'> & { helper?: ReactNode };
 
 /** A single-line, multi-line or select input. Small by default: forms in an ERP are dense. */

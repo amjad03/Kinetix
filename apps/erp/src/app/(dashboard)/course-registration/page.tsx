@@ -3,6 +3,7 @@ import { RegistrationDesk } from '@/components/course-registration/RegistrationD
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
+import Box from '@mui/material/Box';
 import { UrlSelect } from '@/components/UrlSelect';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
@@ -37,8 +38,9 @@ export default async function CourseRegistrationPage({ searchParams }: { searchP
   return (
     <>
       {header}
-      <UrlSelect label={t('cr.term')} param="term" value={term.id} minWidth={240} testId="cr-term" options={terms.data.map((x) => ({ value: x.id, label: `${x.name} (${fmt.date(x.startsOn)})` }))} />
-      <StatGrid min={140}>
+      <Box sx={{ mb: 3 }}>
+        <UrlSelect label={t('cr.term')} param="term" value={term.id} minWidth={240} testId="cr-term" options={terms.data.map((x) => ({ value: x.id, label: `${x.name} (${fmt.date(x.startsOn)})` }))} />
+      </Box>      <StatGrid min={140}>
         <StatTile label={t('cr.stat.offerings')} value={list.length} testId="cr-offerings" />
         <StatTile label={t('cr.stat.filled')} value={list.reduce((n, o) => n + o.registered, 0)} />
         <StatTile label={t('cr.stat.pending')} value={approvals.data.length} tone={approvals.data.length ? 'warning' : 'default'} />

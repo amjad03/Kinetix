@@ -19,7 +19,7 @@ export default area(
     'payments.keyIdHelp': 'Starts with {live} (real payments) or {test} (testing).',
     'payments.secretSaved': 'Saved (ending {last4}). Leave empty to keep it.',
     'payments.secretSavedNoHint': 'Saved. Leave empty to keep it.',
-    'payments.secretNew': 'Required. It is stored encrypted and never shown again.',
+    'payments.secretNew': 'Required. Stored encrypted, never shown again.',
     'payments.webhookUrl': 'Webhook URL to paste into the Razorpay dashboard',
     'payments.copy': 'Copy',
     'payments.copied': 'Webhook URL copied',

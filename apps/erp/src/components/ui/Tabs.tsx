@@ -44,7 +44,7 @@ export function Tabs<V extends string>({ value, onChange, items, label }: { valu
 /** Tabs that navigate (each tab is a link); the active one is chosen by the caller, usually from the path. */
 export function LinkTabs<V extends string>({ value, items, label }: { value: V; items: (TabItem<V> & { href: string })[]; label: string }) {
   return (
-    <MuiTabs value={value} aria-label={label} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile sx={{ minHeight: 44, borderBottom: 1, borderColor: 'm3.outlineVariant', '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' } }}>
+    <MuiTabs value={value} aria-label={label} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile sx={{ mb: 3, minHeight: 44, borderBottom: 1, borderColor: 'm3.outlineVariant', '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' } }}>
       {items.map((it) => (
         <MuiTab key={it.value} value={it.value} component={Link} href={it.href} icon={it.icon as never} iconPosition="start" label={<TabLabel item={it} />} sx={tabSx} />
       ))}

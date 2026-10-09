@@ -163,10 +163,11 @@ export function RazorpayForm({ initial, webhookUrl }: { initial: RazorpayAccount
               slotProps={{ htmlInput: { autoComplete: 'new-password', 'data-testid': 'razorpay-webhook-secret' } }}
             />
           </FormField>
+          <Box sx={{ gridColumn: '1 / -1' }}>
           <FormField label={t('payments.webhookUrl')}>
             <TextInput
               value={webhookUrl}
-              sx={{ gridColumn: '1 / -1' }}
+              fullWidth
               slotProps={{
                 htmlInput: { readOnly: true, 'data-testid': 'razorpay-webhook-url', onFocus: (e: FocusEvent<HTMLInputElement>) => e.target.select() },
                 input: {
@@ -181,12 +182,13 @@ export function RazorpayForm({ initial, webhookUrl }: { initial: RazorpayAccount
               }}
             />
           </FormField>
+          </Box>
           {result && (
             <Alert severity={result.ok ? 'success' : 'error'} sx={{ gridColumn: '1 / -1' }} data-testid="razorpay-test-result">
               {result.text}
             </Alert>
           )}
-          <Box sx={{ gridColumn: '1 / -1', display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+          <Box sx={{ gridColumn: '1 / -1', display: 'flex', gap: 1.5, justifyContent: 'flex-end', flexWrap: 'wrap', mt: 1 }}>
             <Button onClick={test} disabled={!saved.configured || testing || pending} data-testid="razorpay-test" startIcon={testing ? <CircularProgress size={16} color="inherit" /> : undefined}>
               {t('payments.test')}
             </Button>

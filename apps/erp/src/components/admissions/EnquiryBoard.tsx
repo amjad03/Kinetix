@@ -49,7 +49,7 @@ export function EnquiryBoard({ enquiries, counsellors, programs, today }: Props)
         {stages.map((stage) => {
           const items = enquiries.filter((e) => e.stage === stage);
           return (
-            <Box key={stage} component="section" aria-label={t(`adm.stage.${stage}` as MessageKey)} sx={{ bgcolor: 'kx.frame', borderRadius: 2, p: 1.5, minHeight: 160 }}>
+            <Box key={stage} component="section" aria-label={t(`adm.stage.${stage}` as MessageKey)} sx={{ bgcolor: 'kx.frame', border: 1, borderColor: 'm3.outlineVariant', borderRadius: 2, p: 1.5, minHeight: 160 }}>
               <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
                 {t(`adm.stage.${stage}` as MessageKey)} · {items.length}
               </Typography>

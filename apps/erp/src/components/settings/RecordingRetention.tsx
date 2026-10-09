@@ -13,7 +13,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { useState, useTransition } from 'react';
-import { DataTable, FormField, TextInput } from '@/components/ui';
+import { DataTable, FieldRow, FormField, TextInput } from '@/components/ui';
 import { saveRetentionGraceDays } from '@/app/(dashboard)/settings/retention-actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -62,7 +62,8 @@ export function RecordingRetention({ overview }: { overview: RetentionOverview }
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, maxWidth: 760 }}>
             {t('retention.graceHelp')}
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mt: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ mt: 2 }}>
+          <FieldRow>
             <FormField label={t('retention.graceLabel')}>
               <TextInput
                 value={value}
@@ -73,9 +74,10 @@ export function RecordingRetention({ overview }: { overview: RetentionOverview }
                 slotProps={{ htmlInput: { inputMode: 'numeric', 'data-testid': 'retention-days' }, input: { endAdornment: <InputAdornment position="end">0–90</InputAdornment> } }}
               />
             </FormField>
-            <Button variant="contained" onClick={save} disabled={pending || days === null || days === saved} data-testid="retention-save" sx={{ mt: '2px' }}>
+            <Button variant="contained" onClick={save} disabled={pending || days === null || days === saved} data-testid="retention-save">
               {pending ? <CircularProgress size={20} color="inherit" aria-label={t('common.saving')} /> : t('retention.save')}
             </Button>
+          </FieldRow>
           </Box>
         </Box>
         <Divider />

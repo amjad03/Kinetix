@@ -50,6 +50,7 @@ export function InsightCard({ kind }: { kind: InsightKind }) {
       title={t('aiq.title')}
       subtitle={t(`aiq.${kind}` as MessageKey)}
       testId={`ai-insight-${kind}`}
+      sx={{ mb: 3 }}
       action={
         <Button variant="outlined" size="small" startIcon={pending ? <CircularProgress size={16} /> : <AutoAwesomeOutlined />} onClick={ask} disabled={pending} data-testid="ai-insight-ask">
           {t(res ? 'aiq.again' : 'aiq.ask')}

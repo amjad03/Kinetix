@@ -7,7 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FormField, TextInput } from '@/components/ui';
+import { FieldRow, FormField, TextInput } from '@/components/ui';
 import { addOutcome, removeOutcome, saveConfig } from '@/app/(dashboard)/obe/actions';
 import { useRun } from '@/components/exams/useRun';
 import { useI18n } from '@/i18n/client';
@@ -63,7 +63,7 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
       ))}
       {canEdit && (
         <Card sx={{ p: 2, mb: 3 }}>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <FieldRow>
             <FormField label={t('obe.f.kind')}>
               <TextInput select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as OutcomeKind })} sx={{ minWidth: 150 }}>
                 {KINDS.map((k) => (
@@ -82,7 +82,7 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
             <Button variant="outlined" disabled={pending} onClick={() => run(() => addOutcome(programId, f), t('obe.added'), () => setF({ ...f, code: '', statement: '' }))}>
               {t('obe.add')}
             </Button>
-          </Box>
+          </FieldRow>
         </Card>
       )}
       <Typography variant="h6" component="h2" sx={{ mb: 1 }}>

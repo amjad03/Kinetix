@@ -93,7 +93,7 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
 
   return (
     <>
-      <Stack direction="row" spacing={1} sx={{ my: 3 }}>
+      <Stack direction="row" spacing={1} sx={{ mb: 3, justifyContent: 'flex-end', flexWrap: 'wrap', rowGap: 1 }}>
         <Button variant="contained" startIcon={<Add />} onClick={() => setDialog('offer')}>
           {t('cr.new')}
         </Button>
