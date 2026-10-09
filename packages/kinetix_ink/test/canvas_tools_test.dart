@@ -393,6 +393,9 @@ void main() {
         expect(find.byKey(Key('flow-shape-${s.name}')), findsOneWidget);
       }
       expect(find.byKey(const Key('flow-pattern-ifElse')), findsOneWidget);
+      // The palette scrolls: the conditions sit below the blocks on a short dialog.
+      await tester.ensureVisible(find.byKey(const Key('flow-pattern-ifElse')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('flow-pattern-ifElse')));
       await tester.pumpAndSettle();
       expect(board.elements.whereType<FlowNodeElement>(), hasLength(4));

@@ -7,6 +7,7 @@ import { Clock } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { answerCards, boardSessions, participationEvents, pollResponses, polls, sections, students, subjects, users } from '../db/schema.js';
 import { headsSubject } from '../departments/departments.controller.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
 
@@ -89,6 +90,7 @@ export class PollsService {
     private readonly realtime: RealtimeGateway,
     private readonly teacher: TeacherService,
     private readonly clock: Clock,
+    private readonly events: EventBus,
   ) {}
 
   // --- Answer cards --------------------------------------------------------------------------
@@ -159,6 +161,8 @@ export class PollsService {
       })
       .returning();
     await audit(tx, { tenantId: p.tenantId, actorType: 'device', actorId: p.deviceId, action: 'poll.open', subjectType: 'poll', subjectId: poll.id });
+    // A question with a right answer is a quiz: announce it so the OBE and analytics consumers can follow.
+    if (poll.correct !== null) await this.events.emit(tx, p.tenantId, { type: DomainEvents.QuizStarted, aggregateType: 'poll', aggregateId: poll.id, payload: { sectionId: poll.sectionId, subjectId: poll.subjectId, kind: poll.kind } });
     const view = await this.view(tx, poll);
     this.realtime.toUsers(await this.studentUsers(tx, poll.sectionId), RealtimeEvents.PollOpened, view);
     return this.results(tx, poll);

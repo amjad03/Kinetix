@@ -54,3 +54,31 @@ groups:
         labels: { severity: ticket }
         annotations:
           summary: API process above 1.5 GB resident memory.
+  # Anomaly rules (PRD section 82): each compares now with the same time yesterday, so a quiet institution and a busy one
+  # are both judged against their own normal rather than a fixed number.
+  - name: kinetix-anomalies
+    rules:
+      - alert: KinetixTrafficSpike
+        expr: sum(rate(kinetix_http_requests_total[10m])) > 4 * sum(rate(kinetix_http_requests_total[10m] offset 1d)) and sum(rate(kinetix_http_requests_total[10m])) > 5
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: API traffic is more than four times what it was at this time yesterday. Check for scraping or a stuck client.
+      - alert: KinetixTrafficDrop
+        expr: sum(rate(kinetix_http_requests_total[10m])) < 0.2 * sum(rate(kinetix_http_requests_total[10m] offset 1d)) and sum(rate(kinetix_http_requests_total[10m] offset 1d)) > 2
+        for: 15m
+        labels: { severity: page }
+        annotations:
+          summary: API traffic fell below a fifth of yesterday's at this time. Apps may not be reaching the API.
+      - alert: KinetixClientErrorSurge
+        expr: sum(rate(kinetix_http_requests_total{status="4xx"}[10m])) > 4 * sum(rate(kinetix_http_requests_total{status="4xx"}[10m] offset 1d)) and sum(rate(kinetix_http_requests_total{status="4xx"}[10m])) > 1
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: Rejected requests (4xx) are four times yesterday's rate. Look for a credential-guessing run in the audit log.
+      - alert: KinetixLatencyRegression
+        expr: histogram_quantile(0.95, sum by (le) (rate(kinetix_http_request_duration_seconds_bucket[15m]))) > 3 * histogram_quantile(0.95, sum by (le) (rate(kinetix_http_request_duration_seconds_bucket[15m] offset 1d))) and histogram_quantile(0.95, sum by (le) (rate(kinetix_http_request_duration_seconds_bucket[15m]))) > 0.4
+        for: 20m
+        labels: { severity: ticket }
+        annotations:
+          summary: p95 latency is three times yesterday's. A deploy or a slow query may be the cause.

@@ -140,3 +140,26 @@
     --kx-elev-card: none;
   }
 }
+
+/* Display density (PRD section 79): compact shows more rows and tighter controls on a college or university desk. */
+.kx-main[data-density='compact'] .MuiTableCell-root {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 0.8125rem;
+}
+.kx-main[data-density='compact'] .MuiTableCell-head {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.kx-main[data-density='compact'] .MuiButton-root {
+  min-height: 30px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.kx-main[data-density='compact'] .MuiOutlinedInput-input {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.kx-main[data-density='compact'] .MuiCardContent-root {
+  padding: 12px 16px;
+}

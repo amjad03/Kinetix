@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { cosine, embed } from '../ai/embed.js';
 import { licenceAllows } from './licensing.js';
 import type { Tx } from '../db/db.service.js';
 import { chapters, courses, subjects, topics, type TopicLesson } from '../db/schema.js';
@@ -7,6 +8,9 @@ import { chapters, courses, subjects, topics, type TopicLesson } from '../db/sch
 const STOPWORDS = new Set(
   'the and for with from that this what how why are was were into about using use of to in on by an a is it its be as at or explain chapter topic class lesson give write questions question quiz homework'.split(' '),
 );
+
+/** How close (cosine of the hashed-trigram vectors) a topic must be to count as a match with no shared keyword. */
+export const SEMANTIC_MIN = 0.4;
 
 /** Lower-case words worth matching on: three letters or more, no stop words. */
 export function keywords(text: string): Set<string> {
@@ -78,11 +82,16 @@ export class ContentService {
       .from(topics)
       .innerJoin(chapters, eq(chapters.id, topics.chapterId))
       .where(eq(chapters.courseId, courseId));
+    // Exact keywords first. A topic with none still counts when its title and terms are close in meaning to the request
+    // (local hashed-trigram embeddings: "photosynthesise" finds "photosynthesis"); it scores below any keyword hit.
+    const query = embed([...want].join(' '));
     return rows
       .map((r) => {
-        const have = keywords(`${r.title} ${r.chapter} ${r.summary} ${r.lesson?.terms.join(' ') ?? ''}`);
+        const text = `${r.title} ${r.chapter} ${r.summary} ${r.lesson?.terms.join(' ') ?? ''}`;
+        const have = keywords(text);
         let score = 0;
         for (const w of want) if (have.has(w)) score++;
+        if (score === 0 && cosine(query, embed(text)) >= SEMANTIC_MIN) score = 0.5;
         return { r, score };
       })
       .filter((x) => x.score > 0 && x.r.notes.length > 0)

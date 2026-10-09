@@ -8,6 +8,7 @@ import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
+import 'ai_update_card.dart';
 import '../boards/board_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../exams/exams_screen.dart';
@@ -238,6 +239,7 @@ class _HomeTabState extends State<HomeTab> {
         onTap: () => SchoolLifeScreen.open(context, family.api, c),
         child: Text(l.schoolLifeSubtitle, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
       ),
+      AiUpdateCard(api: family.api, child: c),
     ];
   }
 

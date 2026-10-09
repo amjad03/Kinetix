@@ -7605,6 +7605,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The AI pen is ready: handwriting, maths and shapes now convert.'**
   String get aiPenModelsReady;
+
+  /// No description provided for @offlineCodeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Scan this code in the KINETIX Teacher app to confirm this board. It works until {time}.'**
+  String offlineCodeBody(String time);
 }
 
 class _AppLocalizationsDelegate

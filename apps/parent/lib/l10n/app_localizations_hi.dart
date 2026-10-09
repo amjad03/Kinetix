@@ -2700,4 +2700,29 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get reportCardPdf => 'पीडीएफ़ में खोलें';
+
+  @override
+  String get aiUpdateTitle => 'KINETIX AI की ओर से अपडेट';
+
+  @override
+  String get aiUpdateGood => 'जो अच्छा चल रहा है';
+
+  @override
+  String get aiUpdateWatch => 'ध्यान देने योग्य';
+
+  @override
+  String get aiUpdateDo => 'आप क्या कर सकते हैं';
+
+  @override
+  String get aiUpdatePreview => 'यह एक नमूना है: अभी कोई AI सर्वर जुड़ा नहीं है।';
+
+  @override
+  String aiUpdateAsk(String name) {
+    return '$name के बारे में अपडेट पाएँ';
+  }
+
+  @override
+  String aiUpdateNote(String name) {
+    return 'KINETIX AI ने $name के अंकों, उपस्थिति और गृहकार्य से लिखा। इसमें गलती हो सकती है: कक्षा शिक्षक $name को सबसे अच्छी तरह जानते हैं।';
+  }
 }

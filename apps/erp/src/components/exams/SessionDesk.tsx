@@ -7,7 +7,7 @@ import Card from '@mui/material/Card';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
-import { addPaper, completeRevaluation, decideRevaluation, generateSeating, issueHallTickets, removePaper, sessionStep } from '@/app/(dashboard)/exams/actions';
+import { addPaper, approvalStep, completeRevaluation, decideRevaluation, generateSeating, issueHallTickets, removePaper, sessionStep, setApprovalRequired } from '@/app/(dashboard)/exams/actions';
 import { DataTable, FormField, StatGrid, StatTile, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { exportHref, nextStep, type ExamSessionDetail, type ResultRow, type Revaluation } from '@/lib/exams';
@@ -22,6 +22,7 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
   const [p, setP] = useState({ subjectId: subjects[0]?.id ?? '', sectionId: sections[0]?.id ?? '', examDate: s.startsOn, startsAt: '10:00', endsAt: '13:00', maxMarks: '60' });
   const [halls, setHalls] = useState(() => structure.rooms.slice(0, 1).map((r) => ({ roomId: r.id, capacity: '30' })));
   const [blocks, setBlocks] = useState('');
+  const [approvalNote, setApprovalNote] = useState('');
   const [newMarks, setNewMarks] = useState<Record<string, string>>({});
   const step = nextStep(s.status, s.papers.length);
   const open = s.status === 'draft' || s.status === 'scheduled';
@@ -37,6 +38,12 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
         <StatTile label={t('exm.avgSgpa')} value={s.stats.averageSgpa ?? '—'} tone={fail ? 'warning' : 'default'} caption={fail ? t('exm.failing', { n: fail }) : undefined} testId="exm-sgpa" />
       </StatGrid>
       {feedback}
+      {s.status === 'processed' && s.approvalRequired && (
+        <Alert severity={s.approvedAt ? 'success' : 'info'} sx={{ my: 2 }} data-testid="ap-state">
+          {s.approvedAt ? t('ap.stateApproved') : s.approvalRequestedAt ? t('ap.stateWaiting') : t('ap.stateNeeded')}
+          {s.approvalNote ? ` · ${s.approvalNote}` : ''}
+        </Alert>
+      )}
 
       {canManage && (
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', my: 2 }}>
@@ -51,7 +58,28 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
             </Button>
           )}
           {s.status === 'processed' && (
-            <Button variant="contained" color="success" disabled={pending} onClick={() => run(() => sessionStep(s.id, 'publish'), t('exm.published'))}>
+            <Button variant="outlined" disabled={pending} onClick={() => run(() => setApprovalRequired(s.id, !s.approvalRequired), t('ap.saved'))} data-testid="ap-toggle">
+              {s.approvalRequired ? t('ap.turnOff') : t('ap.turnOn')}
+            </Button>
+          )}
+          {s.status === 'processed' && s.approvalRequired && !s.approvalRequestedAt && (
+            <Button variant="contained" disabled={pending} onClick={() => run(() => approvalStep(s.id, 'request-approval'), t('ap.requested'))} data-testid="ap-request">
+              {t('ap.request')}
+            </Button>
+          )}
+          {s.status === 'processed' && s.approvalRequired && s.approvalRequestedAt && !s.approvedAt && (
+            <>
+              <TextInput label={t('ap.note')} value={approvalNote} onChange={(e) => setApprovalNote(e.target.value)} />
+              <Button variant="contained" disabled={pending} onClick={() => run(() => approvalStep(s.id, 'approve', approvalNote), t('ap.approved'))} data-testid="ap-approve">
+                {t('ap.approve')}
+              </Button>
+              <Button variant="outlined" color="warning" disabled={pending} onClick={() => run(() => approvalStep(s.id, 'return', approvalNote), t('ap.returned'))}>
+                {t('ap.return')}
+              </Button>
+            </>
+          )}
+          {s.status === 'processed' && (
+            <Button variant="contained" color="success" disabled={pending || (!!s.approvalRequired && !s.approvedAt)} onClick={() => run(() => sessionStep(s.id, 'publish'), t('exm.published'))}>
               {t('exm.publish')}
             </Button>
           )}

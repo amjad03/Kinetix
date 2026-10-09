@@ -4298,4 +4298,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiPenModelsReady =>
       'The AI pen is ready: handwriting, maths and shapes now convert.';
+
+  @override
+  String offlineCodeBody(String time) {
+    return 'No connection. Scan this code in the KINETIX Teacher app to confirm this board. It works until $time.';
+  }
 }

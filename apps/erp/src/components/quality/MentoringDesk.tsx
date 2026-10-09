@@ -98,6 +98,16 @@ export function MentoringDesk({ risk, mentees, plans, mentors, sections, initial
                   { label: t('mn.col.student'), cell: (p) => `${p.studentName} (${p.rollNo})` },
                   { label: t('mn.col.goal'), cell: (p) => p.plan.goal },
                   { label: '', cell: (p) => t('mn.actionsDone', { done: p.plan.actions.filter((a) => a.done).length, total: p.plan.actions.length }) },
+                  { label: t('mn.col.remedial'), cell: (p) => (p.plan.remedial?.length ? p.plan.remedial.map((r) => r.title).join(', ') : t('ops.none')) },
+                  {
+                    label: t('mn.col.remeasure'),
+                    cell: (p) =>
+                      p.plan.remeasure
+                        ? `${t(`mn.verdict.${p.plan.remeasure.verdict}` as MessageKey)}${p.plan.remeasure.deltaPct === null ? '' : ` (${p.plan.remeasure.deltaPct > 0 ? '+' : ''}${p.plan.remeasure.deltaPct})`}`
+                        : p.plan.baseline?.avgPct != null
+                          ? t('mn.baseline', { pct: p.plan.baseline.avgPct })
+                          : t('ops.none'),
+                  },
                   { label: t('mn.col.review'), cell: (p) => fmt.date(p.plan.reviewOn, 'short'), sort: (p) => p.plan.reviewOn },
                   { label: t('mn.col.status'), cell: (p) => <Pill label={t(`mn.plan.${p.plan.status}` as MessageKey)} /> },
                   { label: t('mn.col.outcome'), cell: (p) => (p.plan.outcomeRating ? `${t(`mn.rating.${p.plan.outcomeRating}` as MessageKey)}: ${p.plan.outcome ?? ''}` : t('ops.none')) },

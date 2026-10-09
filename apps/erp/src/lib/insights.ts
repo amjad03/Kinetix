@@ -69,7 +69,7 @@ export interface Schedule {
 }
 
 export interface SearchHit {
-  type: 'students' | 'staff' | 'courses' | 'topics' | 'documents' | 'reports';
+  type: 'students' | 'staff' | 'courses' | 'topics' | 'documents' | 'reports' | 'events' | 'fees' | 'messages' | 'knowledge';
   id: string;
   title: string;
   subtitle: string;

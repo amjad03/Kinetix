@@ -8,6 +8,8 @@ import { Day, orConflict } from '../common/ops.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
+import { DomainEvents, EventBus } from '../events/events.js';
+import { promoteToAlumni } from './alumni-promotion.js';
 import { driveRegistrations, driveRounds, internships, placementCompanies, placementDrives, placementOffers, programs, roundResults, sections, students } from '../db/schema.js';
 import { canMoveDrive, checkEligibility, ctcSummary } from './eligibility.js';
 import { PLACEMENT_ROLES, PLACEMENT_VIEW_ROLES, checkVersion, found } from './placements.access.js';
@@ -50,6 +52,7 @@ export class PlacementsController {
   constructor(
     private readonly db: DbService,
     private readonly svc: PlacementsService,
+    private readonly events: EventBus,
   ) {}
 
   // ---- companies ----------------------------------------------------------------------------
@@ -221,6 +224,7 @@ export class PlacementsController {
       await tx.update(driveRegistrations).set({ status: 'selected' }).where(eq(driveRegistrations.id, reg.id));
       await auditUser(tx, p, 'placement.offer_made', 'offer', row.id, { driveId: id, studentId: reg.studentId, ctcLpa: row.ctcLpa });
       await this.svc.notifyStudent(tx, reg.studentId, drive.title, `You have an offer: ${row.roleTitle}`, `offer:${row.id}`);
+      await this.events.emit(tx, p.tenantId, { type: DomainEvents.PlacementOffered, aggregateType: 'placement_offer', aggregateId: row.id, actorId: p.userId, payload: { driveId: id, studentId: reg.studentId, roleTitle: row.roleTitle } });
       return row;
     });
   }
@@ -343,6 +347,11 @@ export class PlacementsController {
       }
       const [row] = await orConflict('You have already accepted another offer', () => tx.update(placementOffers).set({ status: b.response, respondedAt: new Date(), declineReason: b.response === 'declined' ? (b.reason ?? null) : null }).where(eq(placementOffers.id, id)).returning());
       await auditUser(tx, p, `placement.offer_${b.response}`, 'offer', id, { driveId: o.driveId });
+      if (b.response === 'accepted') {
+        const [drive] = await tx.select({ companyId: placementDrives.companyId }).from(placementDrives).where(eq(placementDrives.id, o.driveId));
+        const alumniId = drive ? await promoteToAlumni(tx, p.tenantId, o.studentId, { roleTitle: o.roleTitle }, drive.companyId) : null;
+        await this.events.emit(tx, p.tenantId, { type: DomainEvents.PlacementAccepted, aggregateType: 'placement_offer', aggregateId: id, actorId: p.userId, payload: { driveId: o.driveId, studentId: o.studentId, alumniProfileId: alumniId } });
+      }
       return row;
     });
   }

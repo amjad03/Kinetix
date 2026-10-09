@@ -4706,6 +4706,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open as PDF'**
   String get reportCardPdf;
+
+  /// No description provided for @aiUpdateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'An update from KINETIX AI'**
+  String get aiUpdateTitle;
+
+  /// No description provided for @aiUpdateGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Going well'**
+  String get aiUpdateGood;
+
+  /// No description provided for @aiUpdateWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'To watch'**
+  String get aiUpdateWatch;
+
+  /// No description provided for @aiUpdateDo.
+  ///
+  /// In en, this message translates to:
+  /// **'What you can do'**
+  String get aiUpdateDo;
+
+  /// No description provided for @aiUpdatePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a sample: no AI server is connected yet.'**
+  String get aiUpdatePreview;
+
+  /// No description provided for @aiUpdateAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Get an update on {name}'**
+  String aiUpdateAsk(String name);
+
+  /// No description provided for @aiUpdateNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Written by KINETIX AI from {name}\'s marks, attendance and homework. It can be wrong: the class teacher knows {name} best.'**
+  String aiUpdateNote(String name);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

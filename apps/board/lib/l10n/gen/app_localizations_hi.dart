@@ -4277,4 +4277,9 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get aiPenModelsReady =>
       'AI पेन तैयार है: लिखावट, गणित और आकृतियाँ अब बदलती हैं।';
+
+  @override
+  String offlineCodeBody(String time) {
+    return 'कनेक्शन नहीं है। इस बोर्ड की पुष्टि के लिए इस कोड को KINETIX शिक्षक ऐप में स्कैन करें। यह $time तक मान्य है।';
+  }
 }

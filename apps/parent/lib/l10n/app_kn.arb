@@ -881,5 +881,12 @@
   "promotedTo": "ಮುಂದಿನ ತರಗತಿ",
   "coCurricular": "ಸಹ-ಪಠ್ಯ ಚಟುವಟಿಕೆಗಳು",
   "behaviour": "ವರ್ತನೆ",
-  "reportCardPdf": "ಪಿಡಿಎಫ್ ಆಗಿ ತೆರೆಯಿರಿ"
+  "reportCardPdf": "ಪಿಡಿಎಫ್ ಆಗಿ ತೆರೆಯಿರಿ",
+  "aiUpdateTitle": "KINETIX AI ಯಿಂದ ಅಪ್‌ಡೇಟ್",
+  "aiUpdateGood": "ಚೆನ್ನಾಗಿ ನಡೆಯುತ್ತಿರುವುದು",
+  "aiUpdateWatch": "ಗಮನಿಸಬೇಕಾದದ್ದು",
+  "aiUpdateDo": "ನೀವು ಏನು ಮಾಡಬಹುದು",
+  "aiUpdatePreview": "ಇದು ಮಾದರಿ: ಇನ್ನೂ ಯಾವ AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ.",
+  "aiUpdateAsk": "{name} ಬಗ್ಗೆ ಅಪ್‌ಡೇಟ್ ಪಡೆಯಿರಿ",
+  "aiUpdateNote": "KINETIX AI ಯು {name} ಅವರ ಅಂಕ, ಹಾಜರಾತಿ ಮತ್ತು ಮನೆಕೆಲಸದಿಂದ ಬರೆದಿದೆ. ಇದು ತಪ್ಪಾಗಿರಬಹುದು: ತರಗತಿ ಶಿಕ್ಷಕರು {name} ಅವರನ್ನು ಚೆನ್ನಾಗಿ ತಿಳಿದಿದ್ದಾರೆ."
 }

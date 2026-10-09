@@ -59,6 +59,10 @@ export interface InterventionPlanRow {
     status: 'open' | 'in_progress' | 'closed';
     outcome: string | null;
     outcomeRating: string | null;
+    /** Remedial content picked for the plan and the before/after figures (PRD 89.4). */
+    remedial?: { kind: string; title: string; assignedOn: string }[];
+    baseline?: { takenOn: string; avgPct: number | null; attendancePct: number | null } | null;
+    remeasure?: { takenOn: string; avgPct: number | null; attendancePct: number | null; deltaPct: number | null; verdict: 'improved' | 'unchanged' | 'declined' | 'no_data' } | null;
   };
   studentName: string;
   rollNo: string;

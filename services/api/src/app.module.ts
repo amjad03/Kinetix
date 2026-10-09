@@ -79,6 +79,9 @@ import { FlagsModule } from './flags/flags.js';
 import { ObservabilityModule } from './observability/observability.js';
 import { ScanningModule } from './scanning/upload-scan.js';
 import { SearchModule } from './search/search.controller.js';
+import { GovernanceModule } from './governance/governance.module.js';
+import { BillingModule } from './billing/billing.module.js';
+import { IntegrityModule } from './integrity/integrity.module.js';
 
 @Module({
   imports: [
@@ -162,6 +165,9 @@ import { SearchModule } from './search/search.controller.js';
     PlatformModule,
     AnalyticsModule,
     SearchModule,
+    GovernanceModule,
+    BillingModule,
+    IntegrityModule,
   ],
 })
 export class AppModule {}

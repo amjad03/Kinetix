@@ -119,6 +119,15 @@ abstract class StudentApi {
     String? topicId,
   });
 
+  /// The AI tutor: a conversation that remembers earlier turns and is pitched by the student's own marks and attendance.
+  Future<TutorReply> tutorAsk({required String question, required AiLanguage language, String? threadId, String? subjectId});
+
+  /// The student's tutor conversations, newest first.
+  Future<List<TutorThread>> tutorThreads();
+
+  /// The messages of one conversation, oldest first.
+  Future<List<TutorMessage>> tutorMessages(String threadId);
+
   Future<List<TopicHit>> searchTopics(String query);
   Future<TopicDetail> topic(String id);
 
@@ -480,6 +489,25 @@ class HttpStudentApi implements StudentApi {
       timeout: const Duration(seconds: 60),
     ),
   );
+
+  @override
+  Future<TutorReply> tutorAsk({required String question, required AiLanguage language, String? threadId, String? subjectId}) async => TutorReply.fromJson(
+    await _send(
+      'POST',
+      '/v1/ai/tutor/ask',
+      body: {'question': question, 'language': language.name, 'threadId': ?threadId, 'subjectId': ?subjectId},
+      timeout: const Duration(seconds: 60),
+    ),
+  );
+
+  @override
+  Future<List<TutorThread>> tutorThreads() async => [for (final t in await _send('GET', '/v1/ai/tutor/threads') as List) TutorThread.fromJson(t as Map<String, dynamic>)];
+
+  @override
+  Future<List<TutorMessage>> tutorMessages(String threadId) async {
+    final j = await _send('GET', '/v1/ai/tutor/threads/$threadId') as Map<String, dynamic>;
+    return [for (final m in j['messages'] as List) TutorMessage.fromJson(m as Map<String, dynamic>)];
+  }
 
   @override
   Future<List<TopicHit>> searchTopics(String query) async => [

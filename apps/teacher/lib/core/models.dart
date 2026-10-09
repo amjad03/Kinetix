@@ -321,6 +321,30 @@ class Submission {
       Submission.fromJson({'studentId': studentId, 'fullName': fullName, 'rollNo': rollNo, ...j});
 }
 
+/// An AI marking draft for one homework answer. The teacher decides the marks; this only suggests them.
+class MarkingDraft {
+  const MarkingDraft({required this.suggestedMarks, required this.maxMarks, required this.rationale, this.criteria = const []});
+
+  factory MarkingDraft.fromJson(Map<String, dynamic> j) => MarkingDraft(
+    suggestedMarks: double.parse('${j['suggestedMarks']}'),
+    maxMarks: double.parse('${j['maxMarks']}'),
+    rationale: j['rationale'] as String? ?? '',
+    criteria: [
+      for (final c in (j['criteria'] as List? ?? const []))
+        (
+          criterion: (c as Map<String, dynamic>)['criterion'] as String? ?? '',
+          awarded: double.parse('${c['awarded']}'),
+          comment: c['comment'] as String? ?? '',
+        ),
+    ],
+  );
+
+  final double suggestedMarks;
+  final double maxMarks;
+  final String rationale;
+  final List<({String criterion, double awarded, String comment})> criteria;
+}
+
 class SubmissionCounts {
   const SubmissionCounts({
     required this.students,

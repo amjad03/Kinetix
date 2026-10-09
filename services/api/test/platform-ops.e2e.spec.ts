@@ -130,7 +130,7 @@ describe('audit viewer, custom reports, connectors and alumni giving', () => {
 
     it('audits being viewed and exported', async () => {
       await get('principal', '/v1/audit?action=alumni.*').expect(200);
-      const seen = (await get('admin', `/v1/audit?action=audit.viewed&actorId=${(await owner.query('select id from users where email = $1', [(await owner.query('select email from users where id = $1', [t.principal.id])).rows[0].email])).rows[0].id}`).expect(200)).body;
+      const seen = (await get('admin', `/v1/audit?action=audit.viewed&actorId=${t.principal.id}`).expect(200)).body;
       expect(seen.total).toBeGreaterThan(0);
       expect(seen.items[0].data.filters.action).toBe('alumni.*');
       const csv = await get('admin', '/v1/audit/export?action=alumni.*').expect(200);

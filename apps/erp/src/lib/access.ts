@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'governance' | 'billing' | 'aiAudit' | 'integrity';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -102,6 +102,14 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   tasks: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
   // delegation.controller.ts: any staff role hands their own approvals to a colleague
   delegations: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
+  // governance.controller.ts GOVERNANCE_ROLES: business rules, incidents and file retention
+  governance: ['principal', 'tenant_admin', 'quality_officer'],
+  // billing.controller.ts BILLING_ROLES: the institution's own KINETIX plan, usage and invoices
+  billing: ['principal', 'tenant_admin'],
+  // ai-admin.controller.ts AI_ADMIN: the AI action audit and the evaluation harness
+  aiAudit: ['principal', 'tenant_admin', 'quality_officer'],
+  // integrity.controller.ts: leaders and heads check any homework here; the teacher who set it can also check it through the API
+  integrity: ['principal', 'tenant_admin', 'hod'],
   // dpdp.controller.ts: the administrator works the data-principal request queue (people file requests in the apps)
   dpdp: ['principal', 'tenant_admin'],
   // curriculum.controller.ts: editors are EDITORS (admin, principal, HOD); quality officers and the exam controller read
@@ -200,7 +208,13 @@ export function sectionOf(pathname: string): Section | null {
     case 'topic-videos':
       return 'topicVideos';
     case 'ai':
-      return 'ai';
+      return pathname.startsWith('/ai/audit') || pathname.startsWith('/ai/evals') ? 'aiAudit' : 'ai';
+    case 'governance':
+      return 'governance';
+    case 'billing':
+      return 'billing';
+    case 'integrity':
+      return 'integrity';
     case 'library':
       return 'library';
     case 'results':

@@ -1,13 +1,21 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
-import { attendanceCondonations, attendanceRecords, subjects, tenants, timetableSlots } from '../db/schema.js';
+import { attendanceCondonations, attendanceRecords, businessRules, subjects, tenants, timetableSlots } from '../db/schema.js';
+import { ruleInForce } from '../governance/governance.logic.js';
 import { attendancePct, effectivePct } from './attendance-rules.js';
 
 export const DEFAULT_THRESHOLD_PCT = 75;
 
-export async function attendanceSettings(tx: Tx): Promise<{ lockHours: number | null; thresholdPct: number }> {
+/**
+ * The attendance rules in force. The threshold comes from the approved, dated rule `attendance/exam-eligibility` in the rule
+ * registry (governance) when there is one for today, else the institution's setting, else 75.
+ */
+export async function attendanceSettings(tx: Tx, today: string = new Date().toISOString().slice(0, 10)): Promise<{ lockHours: number | null; thresholdPct: number }> {
   const [t] = await tx.select({ settings: tenants.settings }).from(tenants);
-  return { lockHours: t?.settings?.attendanceLockHours ?? null, thresholdPct: t?.settings?.attendanceThresholdPct ?? DEFAULT_THRESHOLD_PCT };
+  const rules = await tx.select().from(businessRules).where(and(eq(businessRules.domain, 'attendance'), eq(businessRules.key, 'exam-eligibility'), eq(businessRules.status, 'approved')));
+  const fromRule = Number(ruleInForce(rules, today)?.params?.thresholdPercent);
+  const governed = Number.isFinite(fromRule) && fromRule > 0 && fromRule <= 100 ? fromRule : null;
+  return { lockHours: t?.settings?.attendanceLockHours ?? null, thresholdPct: governed ?? t?.settings?.attendanceThresholdPct ?? DEFAULT_THRESHOLD_PCT };
 }
 
 export interface SubjectAttendance {

@@ -870,6 +870,39 @@ class FakeStudentApi implements StudentApi {
     return answer;
   }
 
+  /// The tutor's saved conversation (one thread), kept between questions like the server does.
+  final tutorLog = <TutorMessage>[];
+  final tutorRequests = <Map<String, Object?>>[];
+  ApiException? tutorError;
+
+  @override
+  Future<TutorReply> tutorAsk({required String question, required AiLanguage language, String? threadId, String? subjectId}) async {
+    tutorRequests.add({'question': question, 'language': language.name, 'threadId': threadId, 'subjectId': subjectId});
+    calls.add('tutor $question');
+    if (tutorError != null) throw tutorError!;
+    final reply = TutorReply(
+      threadId: 'th1',
+      answer: 'Think of ${question.toLowerCase()} step by step: first the idea, then an example.',
+      keyPoints: const ['Start with the definition'],
+      nextSteps: const ['Try two questions on Corporate Accounting'],
+      followUps: const ['Can you give an example?'],
+      preview: false,
+    );
+    tutorLog
+      ..add(TutorMessage(fromStudent: true, text: question))
+      ..add(TutorMessage(fromStudent: false, text: reply.answer));
+    return reply;
+  }
+
+  @override
+  Future<List<TutorThread>> tutorThreads() async => tutorLog.isEmpty ? const [] : const [TutorThread(id: 'th1', title: 'Earlier conversation')];
+
+  @override
+  Future<List<TutorMessage>> tutorMessages(String threadId) async {
+    calls.add('tutorMessages $threadId');
+    return List.of(tutorLog);
+  }
+
   @override
   Future<List<TopicHit>> searchTopics(String query) async {
     calls.add('search $query');

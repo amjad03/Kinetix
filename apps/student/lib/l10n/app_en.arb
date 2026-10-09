@@ -2197,5 +2197,13 @@
   "peerNeedAll": "Give a score for each and write a comment.",
   "peerAverage": "Average score (out of 15)",
   "peerPending": "Reviews still to come",
-  "peerNoFeedback": "No classmate has reviewed your work yet."
+  "peerNoFeedback": "No classmate has reviewed your work yet.",
+  "tutorOpen": "Chat with your tutor",
+  "tutorTitle": "Your tutor",
+  "tutorNew": "New conversation",
+  "tutorEmpty": "Ask anything you are stuck on. Your tutor remembers the conversation and knows where you need the most help.",
+  "tutorHint": "Type your question",
+  "tutorSend": "Send",
+  "tutorNext": "Practise next",
+  "tutorPreview": "This is a sample answer: no AI server is connected yet."
 }

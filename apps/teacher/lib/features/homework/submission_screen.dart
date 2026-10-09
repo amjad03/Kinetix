@@ -30,6 +30,7 @@ class _SubmissionScreenState extends State<SubmissionScreen> {
   final _files = <int, Future<Uint8List>>{};
   SubmissionStatus? _saving;
   bool _openingFile = false;
+  bool _drafting = false;
 
   Submission get s => widget.submission;
 
@@ -56,6 +57,52 @@ class _SubmissionScreenState extends State<SubmissionScreen> {
     } on ApiException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(l.errorText(e))));
       if (mounted) setState(() => _saving = null);
+    }
+  }
+
+  /// Asks how many marks the question carries, then shows the AI's draft. The teacher can copy its reasoning into the remark.
+  Future<void> _markingHelp() async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final max = await showDialog<double>(context: context, builder: (_) => const _OutOfDialog());
+    if (max == null || max <= 0 || max > 100 || !mounted) return;
+    setState(() => _drafting = true);
+    try {
+      final hw = widget.homework;
+      final draft = await widget.api.suggestMarks(hw.id, s.studentId, question: hw.instructions.trim().length >= 3 ? hw.instructions : hw.title, maxMarks: max);
+      if (!mounted) return;
+      setState(() => _drafting = false);
+      final use = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          key: const Key('markingDraft'),
+          title: Text(l.markingHelpDraft(draft.suggestedMarks.toStringAsFixed(1), draft.maxMarks.toStringAsFixed(0))),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(draft.rationale),
+                for (final c in draft.criteria) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text('${c.criterion}: ${c.awarded.toStringAsFixed(1)}. ${c.comment}')),
+                const SizedBox(height: Kx.s12),
+                Text(l.markingHelpNote, style: Theme.of(ctx).textTheme.bodySmall),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.done)),
+            FilledButton(key: const Key('markingUse'), onPressed: () => Navigator.pop(ctx, true), child: Text(l.markingHelpUse)),
+          ],
+        ),
+      );
+      if (use == true && mounted) {
+        final text = draft.rationale.length > 500 ? draft.rationale.substring(0, 500) : draft.rationale;
+        setState(() => _remark.text = text);
+      }
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l.errorText(e))));
+    } finally {
+      if (mounted) setState(() => _drafting = false);
     }
   }
 
@@ -117,6 +164,16 @@ class _SubmissionScreenState extends State<SubmissionScreen> {
           if (s.text.isNotEmpty) ...[
             _Label(l.answer),
             SelectableText(s.text, key: const Key('submissionText'), style: context.text.bodyLarge),
+            const SizedBox(height: Kx.s8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                key: const Key('markingHelp'),
+                onPressed: _drafting ? null : _markingHelp,
+                icon: _drafting ? const _Spinner() : const Icon(Icons.auto_awesome_outlined),
+                label: Text(l.markingHelp),
+              ),
+            ),
           ],
           if (s.files.isNotEmpty) _Label(l.photosAndFiles),
           if (photos.isNotEmpty)
@@ -174,6 +231,45 @@ class _SubmissionScreenState extends State<SubmissionScreen> {
           Text(l.reviewNotifies, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
         ],
       ),
+    );
+  }
+}
+
+/// Asks how many marks the question carries. It owns its text controller so the field is not used after the dialog closes.
+class _OutOfDialog extends StatefulWidget {
+  const _OutOfDialog();
+
+  @override
+  State<_OutOfDialog> createState() => _OutOfDialogState();
+}
+
+class _OutOfDialogState extends State<_OutOfDialog> {
+  final _outOf = TextEditingController(text: '10');
+
+  @override
+  void dispose() {
+    _outOf.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AlertDialog(
+      title: Text(l.markingHelp),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.markingHelpNote),
+          const SizedBox(height: Kx.s12),
+          TextField(key: const Key('markingOutOf'), controller: _outOf, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: l.markingHelpOutOf, border: const OutlineInputBorder())),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
+        FilledButton(key: const Key('markingAsk'), onPressed: () => Navigator.pop(context, double.tryParse(_outOf.text.trim())), child: Text(l.markingHelpAsk)),
+      ],
     );
   }
 }

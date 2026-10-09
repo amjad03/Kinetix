@@ -472,6 +472,47 @@ class AiQuestion {
 
 /// `POST /v1/ai/explain`: the answer, key points, follow-up questions and the library topics it
 /// was grounded in. [preview] means the institution has no AI server connected yet.
+/// One message in a conversation with the AI tutor.
+class TutorMessage {
+  const TutorMessage({required this.fromStudent, required this.text});
+
+  factory TutorMessage.fromJson(Map<String, dynamic> j) => TutorMessage(fromStudent: j['role'] == 'student', text: j['content'] as String? ?? '');
+
+  final bool fromStudent;
+  final String text;
+}
+
+/// A past conversation with the tutor (`GET /v1/ai/tutor/threads`).
+class TutorThread {
+  const TutorThread({required this.id, required this.title});
+
+  factory TutorThread.fromJson(Map<String, dynamic> j) => TutorThread(id: j['id'] as String, title: j['title'] as String? ?? '');
+
+  final String id;
+  final String title;
+}
+
+/// The tutor's answer to one question (`POST /v1/ai/tutor/ask`). It remembers the conversation, so [threadId] is sent with the next question.
+class TutorReply {
+  const TutorReply({required this.threadId, required this.answer, required this.keyPoints, required this.nextSteps, required this.followUps, required this.preview});
+
+  factory TutorReply.fromJson(Map<String, dynamic> j) => TutorReply(
+    threadId: j['threadId'] as String,
+    answer: j['answer'] as String? ?? '',
+    keyPoints: _strings(j['keyPoints']),
+    nextSteps: _strings(j['nextSteps']),
+    followUps: _strings(j['followUps']),
+    preview: j['preview'] == true,
+  );
+
+  final String threadId;
+  final String answer;
+  final List<String> keyPoints;
+  final List<String> nextSteps;
+  final List<String> followUps;
+  final bool preview;
+}
+
 class Explanation {
   Explanation({required this.answer, required this.keyPoints, required this.followUps, required this.preview, required this.sources});
 

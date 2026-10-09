@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { ENV, type Env } from '../config/env.js';
 import { ContentModule } from '../content/content.module.js';
 import { DbService } from '../db/db.service.js';
+import { AiAdminController } from './ai-admin.controller.js';
 import { AiController } from './ai.controller.js';
+import { TutorController } from './tutor.controller.js';
 import { InsightsController } from './insights.controller.js';
 import { PastExamsController } from './past-exams.js';
 import { AsrGateway, NoSpeechToText, OpenAiCompatibleAsr, SarvamAsr, SpeechToText } from './asr.js';
@@ -31,7 +33,7 @@ export function speechToTextFromEnv(env: Env, db: DbService): SpeechToText {
     { provide: LLM_PROVIDER, inject: [ENV], useFactory: (env: Env) => providerFromEnv(env) },
     { provide: SpeechToText, inject: [ENV, DbService], useFactory: speechToTextFromEnv },
   ],
-  controllers: [AiController, PastExamsController, InsightsController],
+  controllers: [AiController, PastExamsController, InsightsController, TutorController, AiAdminController],
   exports: [AiService, SpeechToText],
 })
 export class AiModule {}

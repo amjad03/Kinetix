@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// No description provided for @today.
   ///
@@ -5552,9 +5559,58 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No classmate has reviewed your work yet.'**
   String get peerNoFeedback;
+
+  /// No description provided for @tutorOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with your tutor'**
+  String get tutorOpen;
+
+  /// No description provided for @tutorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your tutor'**
+  String get tutorTitle;
+
+  /// No description provided for @tutorNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New conversation'**
+  String get tutorNew;
+
+  /// No description provided for @tutorEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask anything you are stuck on. Your tutor remembers the conversation and knows where you need the most help.'**
+  String get tutorEmpty;
+
+  /// No description provided for @tutorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your question'**
+  String get tutorHint;
+
+  /// No description provided for @tutorSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get tutorSend;
+
+  /// No description provided for @tutorNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise next'**
+  String get tutorNext;
+
+  /// No description provided for @tutorPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a sample answer: no AI server is connected yet.'**
+  String get tutorPreview;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -5563,7 +5619,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

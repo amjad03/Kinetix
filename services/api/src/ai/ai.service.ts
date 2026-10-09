@@ -13,7 +13,7 @@ import { and, eq, gte, inArray, sql } from 'drizzle-orm';
 import { ENV, type Env } from '../config/env.js';
 import { ContentService } from '../content/content.service.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { aiCache, aiUsage, sections, subjects, tenants } from '../db/schema.js';
+import { aiActions, aiCache, aiUsage, sections, subjects, tenants } from '../db/schema.js';
 import {
   AiUnavailableError,
   CircuitBreaker,
@@ -82,10 +82,12 @@ export interface AiResponse<T extends TaskName> {
     preview: boolean;
     /** Content-library topics the answer was grounded in, for citing. */
     sources: { topicId: string; title: string }[];
+    /** The id of the AI action log entry (PRD section 70); the app sends it back with the person's decision. */
+    actionId?: string;
   };
 }
 
-const MAX_TOKENS: Record<TaskName, number> = { explain: 1200, quiz: 2500, homework: 2500, lessonPlan: 1500, summarize: 1200, readBoard: 1500, boardSummary: 1500, lecture: 2200, selectAsk: 1500, financeInsight: 1200, admissionsInsight: 1200, hrInsight: 1200, syllabusImport: 4000, gradeAssist: 1200 };
+const MAX_TOKENS: Record<TaskName, number> = { explain: 1200, quiz: 2500, homework: 2500, lessonPlan: 1500, summarize: 1200, readBoard: 1500, boardSummary: 1500, lecture: 2200, selectAsk: 1500, financeInsight: 1200, admissionsInsight: 1200, hrInsight: 1200, syllabusImport: 4000, gradeAssist: 1200, qualityInsight: 1200, researchInsight: 1200, careerInsight: 1200, parentInsight: 1200, tutor: 1500 };
 const CACHE_DAYS = 30;
 const BLOCKED = "KINETIX AI can't help with that request. Try rephrasing it for the classroom.";
 
@@ -116,7 +118,40 @@ export class AiService {
     private readonly content: ContentService,
   ) {}
 
+  /** Runs the task and logs it as an AI action: who asked, what grounded the answer and a short preview of both. */
   async run<T extends TaskName>(caller: AiCaller, task: T, input: TaskInput<T>, opts: { fresh?: boolean } = {}): Promise<AiResponse<T>> {
+    const out = await this.runCore(caller, task, input, opts);
+    const actionId = await this.logAction(caller, task, input, out).catch((e) => {
+      this.log.warn(`AI action log failed: ${(e as Error).message}`);
+      return undefined;
+    });
+    return actionId ? { ...out, meta: { ...out.meta, actionId } } : out;
+  }
+
+  private async logAction<T extends TaskName>(caller: AiCaller, task: T, input: TaskInput<T>, out: AiResponse<T>): Promise<string> {
+    const text = requestText(input);
+    const surface = task === 'tutor' ? 'tutor' : task === 'parentInsight' ? 'parent' : task === 'gradeAssist' ? 'grading' : task.endsWith('Insight') ? 'insight' : 'teacher_copilot';
+    return this.db.withTenant(caller.tenantId, async (tx) => {
+      const [row] = await tx
+        .insert(aiActions)
+        .values({
+          tenantId: caller.tenantId,
+          userId: caller.userId ?? null,
+          task,
+          surface,
+          inputHash: createHash('sha256').update(text).digest('hex'),
+          inputPreview: text.slice(0, 240),
+          outputPreview: allText(out.result).slice(0, 400),
+          sources: out.meta.sources,
+          provider: out.meta.provider,
+          model: out.meta.model,
+        })
+        .returning({ id: aiActions.id });
+      return row.id;
+    });
+  }
+
+  private async runCore<T extends TaskName>(caller: AiCaller, task: T, input: TaskInput<T>, opts: { fresh?: boolean } = {}): Promise<AiResponse<T>> {
     const p = this.provider;
     const { grounding, key, cached, sources } = await this.db.withTenant(caller.tenantId, async (tx) => {
       const words = requestText(input);

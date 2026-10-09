@@ -99,6 +99,7 @@ describe('lesson recordings', () => {
   });
 
   it('uploads, transcribes, summarises and shares a lesson with the class', async () => {
+    await drain(); // jobs other test files left queued
     const { id, body } = await record({ audio: true, share: true });
     expect(body).toMatchObject({ title: 'Valuation of goodwill', sectionName: 'BCom Sem 3 A', subjectName: 'Corporate Accounting', hasAudio: true, transcriptState: 'queued', durationMs: 120_000 });
     expect(body.sharedAt).toBeTruthy();

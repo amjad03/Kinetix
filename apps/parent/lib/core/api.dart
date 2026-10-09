@@ -84,6 +84,9 @@ abstract class ParentApi {
   /// Attendance, homework, class participation and shared boards over the last [days] days.
   Future<ChildSummary> summary(String childId, {int days = 30});
 
+  /// A short written update about the child, from their marks, attendance and homework (KINETIX AI). [language] is en, hi or kn.
+  Future<AiUpdate> aiUpdate(String childId, {required String language});
+
   /// Every period's mark over the last [days] days, newest day first.
   Future<List<ClassMark>> attendance(String childId, {int days = 30});
   Future<Inbox> notifications();
@@ -401,6 +404,10 @@ class HttpParentApi implements ParentApi {
   @override
   Future<ChildSummary> summary(String childId, {int days = 30}) async =>
       ChildSummary.fromJson(await _send('GET', '/v1/parent/children/$childId/summary?days=$days'));
+
+  @override
+  Future<AiUpdate> aiUpdate(String childId, {required String language}) async =>
+      AiUpdate.fromJson(await _send('POST', '/v1/ai/parent/children/$childId/insight', body: {'language': language}) as Map<String, dynamic>);
 
   @override
   Future<List<ClassMark>> attendance(String childId, {int days = 30}) async => [

@@ -1,6 +1,7 @@
 'use client';
 
 import Add from '@mui/icons-material/Add';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -9,7 +10,8 @@ import { deleteCustomReport, runCustomReport, saveCustomReport, scheduleCustomRe
 import { FormDialog, Grid, InfoDialog, Pill, useToast, type Col, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { customExportPath, formatAggregates, formatFilters, formatList, formatSort, OPS, type CustomResult, type DatasetMeta, type SavedReport } from '@/lib/govern';
+import { MiniBar } from '@/components/Bars';
+import { chartOf, customExportPath, formatAggregates, formatFilters, formatList, formatSort, OPS, type CustomResult, type DatasetMeta, type SavedReport } from '@/lib/govern';
 
 /** Saved custom reports: build, preview, run, download as CSV and schedule by email. */
 export function ReportBuilder({ datasets, reports }: { datasets: DatasetMeta[]; reports: SavedReport[] }) {
@@ -124,10 +126,37 @@ export function ReportBuilder({ datasets, reports }: { datasets: DatasetMeta[]; 
       {result && (
         <InfoDialog title={result.title} onClose={() => setResult(null)}>
           {result.data.truncated && <Typography variant="caption" color="text.secondary">{t('rb.truncated')}</Typography>}
+          <ResultChart data={result.data} />
           <Grid testId="rb-result" empty={t('rb.noRows')} rows={result.data.rows} cols={resultCols(result.data)} />
         </InfoDialog>
       )}
       {toastNode}
     </>
+  );
+}
+
+/** A bar for each of the first rows: the first column names the bar and the first numeric column sets its length. */
+function ResultChart({ data }: { data: CustomResult }) {
+  const { t, fmt } = useI18n();
+  const chart = chartOf(data);
+  if (!chart) return null;
+  const max = Math.max(...chart.bars.map((b) => b.value), 1);
+  return (
+    <Box sx={{ mb: 2 }} data-testid="rb-chart" role="figure" aria-label={t('rb.chart', { measure: chart.measure })}>
+      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+        {t('rb.chart', { measure: chart.measure })}
+      </Typography>
+      {chart.bars.map((b, i) => (
+        <Box key={i} sx={{ display: 'grid', gridTemplateColumns: 'minmax(80px, 200px) 1fr 80px', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+          <Typography variant="body2" noWrap title={b.name}>
+            {b.name}
+          </Typography>
+          <MiniBar value={(b.value / max) * 100} label={`${b.name}: ${b.value}`} />
+          <Typography variant="body2" sx={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+            {fmt.number(b.value)}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
   );
 }

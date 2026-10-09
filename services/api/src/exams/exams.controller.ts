@@ -1,12 +1,13 @@
 import { ENV, type Env } from '../config/env.js';
 import { hallTicketCode } from './hall-ticket-code.js';
-import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { TasksService } from '../tasks/tasks.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { toCsv } from '../common/pdf.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
@@ -54,6 +55,7 @@ export class ExamSessionsController {
     private readonly exams: ExamsService,
     private readonly notifications: NotificationsService,
     private readonly events: EventBus,
+    private readonly tasks: TasksService,
     @Inject(ENV) private readonly env: Env,
   ) {}
 
@@ -310,6 +312,65 @@ export class ExamSessionsController {
     });
   }
 
+  /** Turns the approval step on or off for a session (PRD section 76). With it on, processed results must be approved by a second person before they are published. */
+  @Put(':id/approval-required')
+  @Auth('user', ADMIN)
+  setApprovalRequired(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ required: z.boolean() }))) b: { required: boolean }) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const s = await this.exams.session(tx, id);
+      if (s.status === 'published' || s.status === 'locked') throw new ConflictException('Results are already published');
+      await tx.update(examSessions).set({ approvalRequired: b.required, approvedBy: null, approvedAt: null, approvalRequestedAt: null, approvalRequestedBy: null }).where(eq(examSessions.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.approval_required_set', subjectType: 'exam_session', subjectId: id, changes: { approvalRequired: { before: !b.required, after: b.required } } });
+      return { approvalRequired: b.required };
+    });
+  }
+
+  /** The exam controller asks the principal to approve the processed results. A task lands on the approver's list with a 24-hour SLA. */
+  @Post(':id/request-approval')
+  @HttpCode(200)
+  @Auth('user', ADMIN)
+  requestApproval(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const s = await this.exams.session(tx, id);
+      if (s.status !== 'processed') throw new ConflictException('Process the results before asking for approval');
+      const [row] = await tx.update(examSessions).set({ approvalRequestedBy: p.userId, approvalRequestedAt: new Date(), approvedBy: null, approvedAt: null, approvalNote: null }).where(eq(examSessions.id, id)).returning({ approvalRequired: examSessions.approvalRequired });
+      if (!row.approvalRequired) throw new ConflictException('This session does not need approval');
+      await this.tasks.createForRole(tx, p.tenantId, ['principal', 'tenant_admin'], { ownerId: p.userId, title: `Approve results: ${s.name}`, description: 'Check the result summary, then approve or return it.', sourceModule: 'exam_results', sourceId: id, priority: 'high', slaHours: 24, escalateRole: 'tenant_admin' });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.approval_requested', subjectType: 'exam_session', subjectId: id });
+      return { status: 'approval_requested' };
+    });
+  }
+
+  /** A second person approves. The person who asked cannot approve their own request. */
+  @Post(':id/approve')
+  @HttpCode(200)
+  @Auth('user', ['principal', 'tenant_admin'])
+  approve(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ note: z.string().trim().max(500).optional() }))) b: { note?: string }) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const s = await this.exams.session(tx, id);
+      const [g] = await tx.select().from(examSessions).where(eq(examSessions.id, id));
+      if (s.status !== 'processed' || !g.approvalRequestedAt) throw new ConflictException('There is no approval request for these results');
+      if (g.approvalRequestedBy === p.userId) throw new ForbiddenException('Results must be approved by someone other than the person who asked');
+      await tx.update(examSessions).set({ approvedBy: p.userId, approvedAt: new Date(), approvalNote: b.note ?? null }).where(eq(examSessions.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.results.approved', subjectType: 'exam_session', subjectId: id, data: { note: b.note ?? null } });
+      return { status: 'approved' };
+    });
+  }
+
+  /** Sends the results back to the exam controller with a reason. */
+  @Post(':id/return')
+  @HttpCode(200)
+  @Auth('user', ['principal', 'tenant_admin'])
+  returnForChanges(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ note: z.string().trim().min(3).max(500) }))) b: { note: string }) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const s = await this.exams.session(tx, id);
+      if (s.status !== 'processed') throw new ConflictException('Only processed results can be returned');
+      await tx.update(examSessions).set({ approvalRequestedAt: null, approvalRequestedBy: null, approvedAt: null, approvedBy: null, approvalNote: b.note }).where(eq(examSessions.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.results.returned', subjectType: 'exam_session', subjectId: id, data: { note: b.note } });
+      return { status: 'returned' };
+    });
+  }
+
   @Post(':id/publish')
   @HttpCode(200)
   @Auth('user', ADMIN)
@@ -317,6 +378,8 @@ export class ExamSessionsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const s = await this.exams.session(tx, id);
       if (s.status !== 'processed') throw new ConflictException(s.status === 'published' || s.status === 'locked' ? 'Results are already published' : 'Process the results first');
+      const [gate] = await tx.select({ required: examSessions.approvalRequired, approvedAt: examSessions.approvedAt }).from(examSessions).where(eq(examSessions.id, id));
+      if (gate?.required && !gate.approvedAt) throw new ConflictException('These results need approval before they can be published. Request approval first.');
       const now = new Date();
       await tx.update(examSessions).set({ status: 'published', publishedAt: now }).where(eq(examSessions.id, id));
       const papers = await tx.select().from(examPapers).where(eq(examPapers.sessionId, id));

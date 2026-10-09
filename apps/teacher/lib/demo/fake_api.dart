@@ -14,6 +14,7 @@ import '../core/growth_models.dart';
 import '../core/hr_models.dart';
 import '../core/insights_models.dart';
 import '../core/models.dart';
+import '../core/offline_key.dart';
 import '../core/work_models.dart';
 import '../core/push.dart';
 import '../core/realtime.dart';
@@ -1310,6 +1311,29 @@ class FakeTeacherApi implements TeacherApi {
   Future<Uint8List> submissionFile(String homeworkId, String studentId, int index) async {
     calls.add('file $studentId $index');
     return index == 2 ? Uint8List.fromList(utf8.encode('%PDF-1.4')) : onePixelPng;
+  }
+
+  /// The key the fake hands out; tests set it to match a code they signed.
+  OfflineKey offlineKey = const OfflineKey(keyId: 'demo', publicKeyRaw: 'wUSKObY9fXzKXSYqvfh82s0dHTUrrx0i0MgnNgYqpc0', tenantId: 'tenant-1');
+
+  @override
+  Future<OfflineKey> offlineSigningKey() async {
+    return offlineKey;
+  }
+
+  /// Set to make the next marking-help request fail.
+  ApiException? suggestError;
+
+  @override
+  Future<MarkingDraft> suggestMarks(String homeworkId, String studentId, {required String question, required double maxMarks}) async {
+    calls.add('suggest $studentId $maxMarks');
+    if (suggestError != null) throw suggestError!;
+    return MarkingDraft(
+      suggestedMarks: maxMarks * 0.7,
+      maxMarks: maxMarks,
+      rationale: 'States the main idea; the example is missing.',
+      criteria: [(criterion: 'Overall answer', awarded: maxMarks * 0.7, comment: 'Main idea given, no example.')],
+    );
   }
 
   @override

@@ -33,7 +33,7 @@ class _QrScannerViewState extends State<QrScannerView> {
     for (final b in capture.barcodes) {
       final raw = b.rawValue;
       if (raw == null) continue;
-      if (raw.startsWith('kinetix://pair')) {
+      if (raw.startsWith('kinetix://pair') || raw.startsWith('KXO1.')) {
         setState(() => _notOurs = false);
         widget.onScanned(raw);
         return;

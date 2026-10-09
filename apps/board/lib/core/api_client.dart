@@ -7,6 +7,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 
 import 'app_info.dart';
 import 'models.dart';
+import 'offline_codes.dart';
 import 'recording/recordings.dart' show RecordingSummary;
 
 class ApiException implements Exception {
@@ -43,6 +44,10 @@ class ApiClient {
 
   Future<PairingCode> newPairingCode() async =>
       PairingCode.fromJson(await _send('POST', '/v1/devices/me/pairing-codes', useDeviceToken: true));
+
+  /// Signed codes for the next [hours] hours, one per [windowMinutes] window, to show when the cloud cannot be reached.
+  Future<List<OfflineCode>> offlineCodes({int hours = 24, int windowMinutes = 15}) async =>
+      OfflineCodes.parse(await _send('POST', '/v1/pairing/offline-codes', body: {'hours': hours, 'windowMinutes': windowMinutes}, useDeviceToken: true) as Map<String, dynamic>);
 
   /// What the institution has set for its boards: kiosk mode and the IT PIN's hash (the `kiosk` object).
   Future<Map<String, dynamic>> boardConfig() async => await _send('GET', '/v1/devices/me/config', useDeviceToken: true) as Map<String, dynamic>;

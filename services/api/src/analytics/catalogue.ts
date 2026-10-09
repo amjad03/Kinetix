@@ -229,6 +229,30 @@ export const REPORTS: ReportDef[] = [
     params: SCOPE_PARAMS,
     run: async (tx, c) => ({ columns: [{ key: 'parent', label: 'Program' }, { key: 'label', label: 'Class' }, { key: 'topics', label: 'Topics in syllabus', kind: 'int' }, { key: 'covered', label: 'Covered', kind: 'int' }, { key: 'percent', label: 'Coverage %', kind: 'percent' }], rows: await drilldown(tx, 'coverage', 'section', c.scope, c.range, c.timezone, c.today) }),
   },
+  {
+    key: 'university.convocations',
+    title: 'Convocations and degrees',
+    description: 'Each convocation with its graduates: eligible, registered, degrees issued and the average CGPA, and the affiliated colleges that are active.',
+    category: 'academic',
+    roles: [...MGMT, 'exam_controller'],
+    params: [],
+    async run(tx) {
+      const [aff] = await rows<{ n: number }>(tx, sql`select count(*)::int as n from affiliated_institutions where active`);
+      const list = await rows(
+        tx,
+        sql`select c.name, to_char(c.held_on, 'YYYY-MM-DD') as held_on, c.graduation_year::int as graduation_year, coalesce(p.name, 'All programs') as program, c.status,
+              count(k.*)::int as candidates, count(k.*) filter (where k.status in ('registered', 'issued'))::int as registered, count(k.*) filter (where k.status = 'issued')::int as issued,
+              round(avg(k.cgpa)::numeric, 2)::float8 as avg_cgpa
+            from convocations c left join programs p on p.id = c.program_id left join convocation_candidates k on k.convocation_id = c.id
+            group by c.id, p.name order by c.held_on desc`,
+      );
+      return {
+        columns: [{ key: 'name', label: 'Convocation' }, { key: 'held_on', label: 'Date', kind: 'date' }, { key: 'graduation_year', label: 'Batch', kind: 'int' }, { key: 'program', label: 'Program' }, { key: 'status', label: 'Status' }, { key: 'candidates', label: 'Graduates', kind: 'int' }, { key: 'registered', label: 'Registered', kind: 'int' }, { key: 'issued', label: 'Degrees issued', kind: 'int' }, { key: 'avg_cgpa', label: 'Average CGPA' }],
+        rows: list,
+        summary: [{ label: 'Affiliated colleges', value: aff?.n ?? 0 }, { label: 'Convocations', value: list.length }, { label: 'Degrees issued', value: list.reduce((n, r) => n + Number(r.issued ?? 0), 0) }],
+      };
+    },
+  },
 ];
 
 export const reportByKey = (key: string): ReportDef | undefined => REPORTS.find((r) => r.key === key);

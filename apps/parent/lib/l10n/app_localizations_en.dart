@@ -2689,4 +2689,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportCardPdf => 'Open as PDF';
+
+  @override
+  String get aiUpdateTitle => 'An update from KINETIX AI';
+
+  @override
+  String get aiUpdateGood => 'Going well';
+
+  @override
+  String get aiUpdateWatch => 'To watch';
+
+  @override
+  String get aiUpdateDo => 'What you can do';
+
+  @override
+  String get aiUpdatePreview => 'This is a sample: no AI server is connected yet.';
+
+  @override
+  String aiUpdateAsk(String name) {
+    return 'Get an update on $name';
+  }
+
+  @override
+  String aiUpdateNote(String name) {
+    return 'Written by KINETIX AI from $name\'s marks, attendance and homework. It can be wrong: the class teacher knows $name best.';
+  }
 }

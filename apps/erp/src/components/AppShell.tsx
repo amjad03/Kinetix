@@ -55,6 +55,7 @@ export function AppShell({
   notices = [],
   unread = 0,
   disabledModules = [],
+  density = 'comfortable',
   children,
 }: {
   user: ShellUser;
@@ -65,6 +66,7 @@ export function AppShell({
   unread?: number;
   /** Sections the institution switched off; hidden from the menu. */
   disabledModules?: string[];
+  density?: 'comfortable' | 'compact';
   children: ReactNode;
 }) {
   const { t } = useI18n();
@@ -139,8 +141,8 @@ export function AppShell({
         </Drawer>
 
         <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <TopBar user={user} school={school} groups={groups} years={years} yearId={yearId} notices={notices} unread={unread} onMenu={() => setMobile(true)} />
-          <Box component="main" id="main" tabIndex={-1} className="kx-main" sx={{ flex: 1, minWidth: 0, width: '100%', maxWidth: 1600, mx: 'auto', px: { xs: 2, md: 3, xl: 4 }, py: { xs: 2, md: 3 }, outline: 'none' }}>
+          <TopBar user={user} school={school} groups={groups} years={years} yearId={yearId} notices={notices} unread={unread} density={density} onMenu={() => setMobile(true)} />
+          <Box component="main" id="main" tabIndex={-1} className="kx-main" data-density={density} sx={{ flex: 1, minWidth: 0, width: '100%', maxWidth: 1600, mx: 'auto', px: { xs: 2, md: 3, xl: 4 }, py: { xs: 2, md: 3 }, outline: 'none' }}>
             <Breadcrumbs crumbs={crumbs} />
             {children}
           </Box>

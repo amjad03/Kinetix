@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/api_client.dart';
 import '../../core/models.dart';
+import '../../core/offline_codes.dart';
 import '../../l10n/l10n.dart';
 import '../board/phone_chrome.dart';
 
@@ -31,6 +32,9 @@ class _SignInDialogState extends State<SignInDialog> {
   Timer? _refresh;
   Timer? _tick;
 
+  /// The signed code for the current window, kept while the cloud cannot be reached.
+  OfflineCode? _offline;
+
   @override
   void initState() {
     super.initState();
@@ -47,17 +51,33 @@ class _SignInDialogState extends State<SignInDialog> {
         _code = code;
         _error = null;
         _unreachable = false;
+        _offline = null;
       });
+      unawaited(_keepOfflineCodes());
       // Replace the code a little before it expires so the board never shows a dead code.
       final wait = code.expiresAt.difference(DateTime.now()) - const Duration(seconds: 10);
       _refresh = Timer(wait.isNegative ? const Duration(seconds: 5) : wait, _load);
     } catch (e) {
       if (!mounted) return;
+      final cached = e is ApiException ? null : OfflineCodes.current(await OfflineCodes.load(), DateTime.now());
+      if (!mounted) return;
       setState(() {
         _error = e is ApiException ? e : null;
         _unreachable = e is! ApiException;
+        _offline = cached;
       });
       _refresh = Timer(const Duration(seconds: 5), _load);
+    }
+  }
+
+  /// While the cloud answers, keep a day of signed codes on the board for the day it does not.
+  Future<void> _keepOfflineCodes() async {
+    try {
+      final cached = await OfflineCodes.load();
+      if (!OfflineCodes.needsRefresh(cached, DateTime.now())) return;
+      await OfflineCodes.save(await widget.api.offlineCodes(), DateTime.now());
+    } catch (_) {
+      // Best effort: the pairing code on screen is unaffected.
     }
   }
 
@@ -167,6 +187,11 @@ class _SignInDialogState extends State<SignInDialog> {
                             ],
                           ),
                         ),
+                        if (_offline != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: Kx.s12),
+                            child: Text(l.offlineCodeBody(TimeOfDay.fromDateTime(_offline!.validUntil.toLocal()).format(context)), key: const Key('offline-note'), style: context.text.bodyMedium),
+                          ),
                         if (error != null)
                           Padding(
                             padding: const EdgeInsets.only(top: Kx.s12),
@@ -187,7 +212,9 @@ class _SignInDialogState extends State<SignInDialog> {
                     padding: const EdgeInsets.all(Kx.s16),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: Kx.radiusLg),
                     child: code == null
-                        ? const SizedBox(width: 240, height: 240, child: Center(child: CircularProgressIndicator()))
+                        ? (_offline != null
+                              ? QrImageView(key: const Key('offline-qr'), data: _offline!.token, size: 240, padding: EdgeInsets.zero, errorCorrectionLevel: QrErrorCorrectLevel.L)
+                              : const SizedBox(width: 240, height: 240, child: Center(child: CircularProgressIndicator())))
                         : QrImageView(data: code.qrPayload, size: 240, padding: EdgeInsets.zero),
                   ),
                 ],

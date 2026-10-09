@@ -673,7 +673,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | ERP to board: timetable, class, teacher, students, subject, curriculum, lesson | Built | `api/pairing`, `api/sessions`, `api/teacher/teacher.controller.ts` | |
 | Board to ERP: attendance, assessment, homework, recordings, activities | Built | `api/sync/sync.controller.ts`, `api/polls`, `api/recordings` | |
-| OBE evidence from board activity | Partial | `api/obe/obe.controller.ts` (`evidence`) | assessment-based; no automatic board-activity evidence |
+| OBE evidence from board activity | Built | `api/obe/obe.service.ts` (`classroomEvidence`), `api/polls`, `erp/obe/classroom` | board polls and quizzes tagged with course outcomes count as direct evidence when the programme gives the "classroom" evidence kind a weight |
 | No duplicate master data | Built | `api/sync/sync.controller.ts` | |
 | Board spec items (launcher, ink, shapes, screen share, device fleet) | Built | `apps/board`, `docs/product/board-features.md` | open: real IFP hardware checks, TURN server, iOS cast |
 
@@ -692,31 +692,31 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Teacher copilot (explain, quiz, lesson plan, homework, board summary) | Built | `api/ai/ai.controller.ts` | |
-| Student tutor | Partial | `api/ai/ai.controller.ts` (`explain`) | no persistent tutor with learning history |
-| Parent insights | Partial | `P/features` | summaries via student data; no dedicated AI parent assistant |
+| Student tutor | Built | `api/ai/tutor.controller.ts`, `api/ai/learning-facts.ts`, tables `ai_tutor_threads`, `ai_tutor_messages`, `apps/student/lib/features/learn/tutor_screen.dart`, `test/governance-billing-ai.e2e.spec.ts`, `apps/student/test/tutor_test.dart` | a conversation that remembers (last six turns) and reopens where it stopped, pitched by the student's own marks, attendance and homework, with what to practise next |
+| Parent insights | Built | `api/ai/tutor.controller.ts` (`parent/children/:id/insight`), task `parentInsight`, `apps/parent/lib/features/home/ai_update_card.dart`, `apps/parent/test/ai_update_test.dart` | a short update written as "your child" from the child's figures, no names sent to the model, asked for on demand in the Parent App |
 | Admin copilot, finance, admissions, HR assistants | Built | `api/ai/insights.controller.ts` | aggregates only |
-| Quality/accreditation, research, career assistants | Missing | none | |
+| Quality/accreditation, research, career assistants | Built | `api/ai/insights.controller.ts` (`quality`, `research`, `careers`), tasks `qualityInsight`, `researchInsight`, `careerInsight` | aggregates only, same pattern as the finance and HR assistants |
 | Provider-agnostic, routing, cost tracking, prompt versioning, safety | Built | `api/ai/providers.ts`, `api/ai/safety.ts` | |
-| RAG, embeddings, citations | Partial | `api/ai/ai.service.ts` (grounding + sources) | keyword/topic grounding; no embeddings (deferred) |
-| Local 2-3B models | Missing | none | spec deviation accepted (India-hosted chain) |
-| Evaluation harness | Missing | none | |
+| RAG, embeddings, citations | Partial | `api/ai/embed.ts`, `api/content/content.service.ts` (`matchTopics`), `api/ai/ai.service.ts` (sources) | local hashed-trigram embeddings rank topics with no shared keyword and citations are returned; external: a hosted neural embedding model and vector store for large libraries |
+| Local 2-3B models | Missing | none | external: GPU hosting and a model licence; the provider chain already accepts any OpenAI-compatible server (`AI_BASE_URL`) |
+| Evaluation harness | Built | `api/ai/ai-admin.controller.ts` (`evals/*`), tables `ai_eval_cases`, `ai_eval_runs`, `erp/ai/evals` | saved questions with must-include, must-not-include and length checks, run against the live model, history kept |
 
 ## 65. AI / RAG context
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Tenant, grade/subject, topic, current lesson context | Built | `api/ai/ai.service.ts` | |
-| Learning history, policies in context | Missing | none | |
-| Grounded retrieval from approved content | Partial | `api/ai/ai.service.ts` | topic text only; semantic search deferred |
+| Learning history, policies in context | Built | `api/ai/learning-facts.ts` | the tutor and parent assistant receive marks by subject, weak subjects, attendance, homework hand-ins and the approved grading and attendance rules from the rule registry |
+| Grounded retrieval from approved content | Built | `api/content/content.service.ts`, `api/ai/embed.ts` | keyword match first, then local embeddings for near spellings and word forms; only licensed, approved library topics are used |
 
 ## 66. Payments and billing
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Institution-side fees, invoices, scholarships, refunds | Built | `api/fees`, `api/finance` | |
-| Adapter-based gateway (not embedded) | Partial | `api/fees/payment-provider.ts` | provider interface exists; only Razorpay implemented |
+| Adapter-based gateway (not embedded) | Partial | `api/fees/payment-provider.ts` | external: a second gateway merchant account (Cashfree or PayU) to certify an adapter; the interface is ready and only Razorpay is implemented |
 | UPI, cards, bank transfer, invoice/PO | Built | `api/fees/bank-transfers.controller.ts` | via Razorpay + manual |
-| Kinetix SaaS billing (plans, subscription, usage, renewal, tax) | Missing | none | no tenant subscription/billing |
+| Kinetix SaaS billing (plans, subscription, usage, renewal, tax) | Built | `api/billing/*`, tables `saas_subscriptions`, `saas_usage_snapshots`, `saas_invoices`, `erp/billing`, `test/governance-billing-ai.e2e.spec.ts` | three plans, per-student pricing with a minimum, usage metering, a daily renewal job, GST invoices (CGST and SGST in Karnataka, IGST elsewhere); collecting the money online is not built (payments are recorded by reference) |
 
 ## 67. Integrations / connectors
 
@@ -726,39 +726,39 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Signed outbound webhooks | Built | `api/connectors/adapters.ts` | |
 | Tally / GL | Built | `api/hr/payroll.controller.ts` (`tally.xml`), `api/finance` | file export, not live push |
 | Koha, Zoom, Teams, BI export | Built | `api/connectors/integrations.controller.ts` | tested against stubs only |
-| WhatsApp, SMS provider connectors | Partial | `api/connectors/connector-types.ts` | MSG91 typed; WhatsApp missing |
-| Hardware: biometric, RFID, printers/scanners | Partial | `api/hr/biometric-csv.ts` | CSV only |
-| Integrity (plagiarism) | Missing | none | |
-| External LMS | Missing | none | |
+| WhatsApp, SMS provider connectors | Partial | `api/connectors/connector-types.ts` | external: a WhatsApp Business account and approved message templates; MSG91 is typed |
+| Hardware: biometric, RFID, printers/scanners | Partial | `api/hr/biometric-csv.ts` | external: device SDKs and hardware; CSV import only |
+| Integrity (plagiarism) | Built | `api/integrity/*`, tables `integrity_checks`, `integrity_matches`, `erp/integrity` | word-run similarity between a homework's typed answers and the subject's earlier work, shared phrase shown, teacher confirms or dismisses; no text leaves the platform; a commercial checker against the web is external |
+| External LMS | Missing | none | external: an LMS tenant (Moodle or Canvas) to certify LTI 1.3 |
 
 ## 68. Search
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Global search students, staff, courses, content, documents, results | Built | `api/search/search.controller.ts` | trigram |
-| Events, fees, messages, knowledge graph in search | Partial | `api/search/search.controller.ts` | not all entity types indexed |
+| Events, fees, messages, knowledge graph in search | Built | `api/search/search.controller.ts` | events, fee invoices (fee roles), messages (own conversations), skills and course outcomes are searched with the others |
 | Permission-aware | Built | `api/search/search.controller.ts` | |
-| AI natural-language search | Missing | none | deferred |
+| AI natural-language search | Built | `api/search/nl-search.ts`, `GET /v1/search/ask`, `erp/components/shell/CommandSearch.tsx` | plain-words questions read by rules into six exact queries (overdue fees, absent today, low attendance, staff on leave, upcoming events, my tasks); the answer says how it was read; a language model is not used |
 
 ## 69. Notification and task engine
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Task records, owner, due, priority, status | Built | `api/tasks/tasks.controller.ts` | |
-| SLA and escalation | Missing | none | |
+| SLA and escalation | Built | `api/tasks/tasks.service.ts` (`slaHours`, `escalateOverdue`), `api/workflows` | hourly job escalates overdue tasks to a named person, a role or the department head; reminders; modules set SLAs when they raise tasks |
 | Audit | Built | `api/common/audit.ts` | |
-| Tasks created by modules (approval, intervention, evidence) | Partial | `api/mentoring/mentoring.controller.ts` | some modules create tasks; not universal |
+| Tasks created by modules (approval, intervention, evidence) | Built | `api/tasks/tasks.service.ts` (`createForRole`), `api/exams`, `api/mentoring`, `api/governance`, `api/integrity` | result approval, intervention re-measure, rule approval, incidents and integrity flags each raise a task with an SLA; workflows already did |
 
 ## 70. Audit and compliance
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Audit log with who/what/when/tenant | Built | `api/admin/audit.controller.ts` | |
-| Before/after values | Partial | `api/admin/audit.controller.ts` | action + detail; structured before/after not uniform |
+| Before/after values | Built | `api/common/audit.ts` (`changes`, `changesOf`) | audit entries carry `data.changes` as field, before, after; used by rules, incidents, retention, billing, exam approval, integrity, coverage and AI; older modules still log the action and a detail record |
 | Audit viewer + export | Built | `erp/audit` | |
-| AI action audit | Partial | `api/ai/ai.service.ts` | usage log, not full action audit |
+| AI action audit | Built | `api/ai/ai.service.ts` (`logAction`), table `ai_actions`, `erp/ai/audit` | every AI answer is logged with who, task, a hash and preview of the input, a preview of the answer, sources, model and what the person did with it |
 | DPDP data-subject export / erasure | Built | `api/dpdp/*`, `erp/dpdp` | JSON+PDF export, correction, erasure with retention rules (blocked or anonymised), grievance officer contact, admin queue; Parent/Student App screens not built |
-| Legal sign-off (privacy notice) | Partial | `docs/product/privacy-notice.md` | draft; needs counsel review |
+| Legal sign-off (privacy notice) | Partial | `docs/product/privacy-notice.md` | external: counsel review and sign-off |
 
 ## 71. Multi-tenancy
 
@@ -767,15 +767,15 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Tenant isolation at DB (RLS) | Built | `mig/0001_rls.sql` | |
 | Scopes tenant, campus, department, section | Built | `api/auth/principal.ts` | program scope only via department/section |
 | Shared SaaS | Built | `docs/architecture/tenancy.md` | |
-| Dedicated / on-prem packaging | Missing | none | deliberately deferred |
+| Dedicated / on-prem packaging | Missing | none | external: customer infrastructure and support terms; deliberately deferred |
 
 ## 72-73. Data model and events
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
-| Core domains in 72 | Partial | `api/db/schema.ts` (about 330 tables) | absent: Building, Stream, Combination, Regulation, CurriculumVersion/Node, Rubric, Thesis, Dataset, Discussion, Appraisal, AIContext/RetrievalSource tables |
+| Core domains in 72 | Partial | `api/db/schema.ts`, `schema-curriculum.ts` | built: Building, Stream, Combination, Regulation, CurriculumVersion/Node, Appraisal, AI conversation and action tables; absent: Rubric, Thesis, Dataset, Discussion tables |
 | Versioned, idempotent, retryable events | Built | `mig/0078_event_outbox.sql` | |
-| Named events (STUDENT_ADMITTED ... PLACEMENT_OFFERED) | Partial | `api/common` (outbox) | a subset emitted; QUIZ_STARTED, CLASS_STARTED/ENDED, INTERVENTION_CREATED etc. not all emitted |
+| Named events (STUDENT_ADMITTED ... PLACEMENT_OFFERED) | Built | `api/events/events.ts` (`DomainEvents`) | adds PLACEMENT_OFFERED and ACCEPTED, INTERVENTION_CREATED and REMEASURED, QUIZ_STARTED, incident, rule and invoice events to the class, attendance, result, fee and alumni events already emitted |
 
 ## 74. Reporting engine
 
@@ -783,15 +783,15 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Dataset, filters, columns, groups, calculations, date range | Built | `api/analytics/custom-reports.controller.ts` | |
 | Output table, PDF, CSV | Built | `api/analytics/reports.service.ts` | Excel (xlsx) not found, CSV only |
-| Charts in builder | Partial | `erp/reports/custom` | |
+| Charts in builder | Built | `erp/components/reports/ReportBuilder.tsx` (`ResultChart`), `erp/lib/govern.ts` (`chartOf`) | the run result shows bars for the first numeric column against the first column, up to 20 rows |
 | Permission-aware | Built | `api/analytics/custom-reports.controller.ts` | |
 
 ## 75. Business rule engine
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
-| Configurable rules (grading, credits, eligibility, quotas, OBE) | Partial | `api/exams/exams.controller.ts` (`result-rules`) | rules are per-domain config |
-| Effective date, version, status, author, approver, audit as a generic engine | Missing | none | no rule registry |
+| Configurable rules (grading, credits, eligibility, quotas, OBE) | Partial | `api/exams/exams.controller.ts` (`result-rules`), `api/governance` (rule registry) | the registry holds versioned, approved rules and `GET /v1/governance/rules/resolve`; the attendance threshold (`attendance/exam-eligibility`) now comes from the registry (`api/attendance-governance/eligibility.ts`); exam pass rules, credits and quotas still read their own per-domain configuration |
+| Effective date, version, status, author, approver, audit as a generic engine | Built | `api/governance/governance.controller.ts` (`rules/*`), table `business_rules`, `erp/governance/rules` | versions per domain and key, draft, review, approved, retired, effective dates, four-eyes approval (the author cannot approve), the previous version ends the day before, every step audited with before and after |
 
 ## 76. Workflow states and approvals
 
@@ -800,23 +800,23 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Admission states | Built | `api/admissions/admissions.service.ts` | |
 | Fee refund states | Built | `api/finance/finance.controller.ts` | |
 | Question paper states | Built | `api/question-bank/question-bank.controller.ts` | |
-| Result states (draft, moderation, approval, published, locked) | Partial | `api/exams/exams.controller.ts` | publish/lock built; explicit approval step absent |
+| Result states (draft, moderation, approval, published, locked) | Built | `api/exams/exams.controller.ts` (`approval-required`, `request-approval`, `approve`, `return`), `erp/exams/SessionDesk.tsx` | an exam session can require approval: results cannot be published until a second person approves; a task goes to the principal with a 24-hour SLA |
 
 ## 77. File storage
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Object storage, tenant scope, signed access, virus scan, audit | Built | `api/storage`, `api/scanning` | |
-| Versions, retention per category | Missing | none | |
+| Versions, retention per category | Built | `api/governance/governance.controller.ts` (`retention/*`, `documents/:id/versions`), `api/documents/vault.controller.ts`, `erp/governance/retention` | vault files keep a version chain; a retention period per category, a list of files past it, an archive run, and a legal hold that exempts a file |
 
 ## 78-79. Responsive admin, UI
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Desktop-first dense tables, responsive common actions | Built | `apps/erp/src/app` | |
-| Mobile approvals/notifications | Partial | `T/features/work` | approvals mobile for leave; not all approval types |
+| Mobile approvals/notifications | Built | `T/features/work/requests_screen.dart` | the workflow inbox decides any request type that routes through the workflow engine (leave, purchases, certificates and the rest) |
 | Command/search bar | Built | `apps/erp/src/components` | |
-| Density profiles school vs higher-ed | Missing | none | |
+| Density profiles school vs higher-ed | Built | `erp/lib/density.ts`, `erp/components/shell/TopBar.tsx`, `erp/theme/tokens.css` | comfortable for schools and compact for colleges and universities by default; a person can switch it and the choice is remembered |
 | i18n en/hi/kn | Built | `apps/erp/src/messages` | |
 
 ## 80-82. Security, privacy, observability
@@ -824,26 +824,26 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | MFA, RBAC, RLS, rate limiting, audit, secure files | Built | `api/auth/mfa.controller.ts` | |
-| Encryption of sensitive fields at rest | Partial | `api/common/secret-box.ts` | secrets (gateway keys, MFA) encrypted; student/health/payroll columns rely on disk encryption |
-| Secrets management, backup, DR | Partial | `docs/operations/backups-and-restore.md` | runbooks exist; restore drill not evidenced |
-| Anomaly monitoring | Partial | `infra/monitoring/prometheus-rules.yml` | |
+| Encryption of sensitive fields at rest | Partial | `api/common/secret-box.ts` | secrets are encrypted; student, health and payroll columns rely on disk encryption; external: a key-management decision (KMS) before encrypting existing columns |
+| Secrets management, backup, DR | Partial | `docs/operations/backups-and-restore.md` | external: a restore drill on production-like infrastructure has to be run and recorded |
+| Anomaly monitoring | Built | `infra/monitoring/prometheus-rules.yml` (`kinetix-anomalies`) | traffic spike, traffic drop, client-error surge and latency regression, each against the same time yesterday |
 | Child safety, guardian consent, restricted data | Built | `api/consent/consent.controller.ts` | |
-| Biometric / face policy | Missing | none | not built by design |
+| Biometric / face policy | Missing | none | not built by design; the institution's policy decision is external |
 | Logs, metrics, traces, alerts | Built | `docs/operations/observability.md` | |
-| Incident management process | Missing | none | |
+| Incident management process | Built | `api/governance/governance.controller.ts` (`incidents/*`), tables `incidents`, `incident_updates`, `erp/governance/incidents` | register, timeline, owner, root cause and corrective actions, severity SLAs, an urgent task for severity 1 and 2, and the 72-hour Data Protection Board clock for personal data |
 
 ## 83-88. Deployment, scale, NFR, capability matrix
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | SaaS deployment | Built | `docs/operations/deploy.md` | |
-| Dedicated / on-prem | Missing | none | deferred |
+| Dedicated / on-prem | Missing | none | external: customer infrastructure; deferred |
 | Modular monolith, queues, caching | Built | `api/jobs`, `api/redis` | |
-| Search infrastructure at scale, partitioning | Missing | none | not justified yet |
+| Search infrastructure at scale, partitioning | Missing | none | external: not justified until a tenant outgrows Postgres full text; no work planned |
 | Autosave, idempotency, retries | Built | `api/sync/sync.controller.ts` | |
-| Perf budgets per module | Missing | none | |
-| Capability matrix (school, PUC, higher-ed, university) | Partial | see sections 3, 4, 16 | school and higher-ed mostly built; PUC and university specifics missing |
-| University: affiliated institutions, central exams/valuation, convocation, analytics | Missing | none | |
+| Perf budgets per module | Built | `api/observability/perf-budgets.ts`, `test/perf-budget.e2e.spec.ts`, `docs/operations/performance-budgets.md` | a p95 budget per module sample read, timed in the test suite |
+| Capability matrix (school, PUC, higher-ed, university) | Built | see sections 3, 4, 16; `api/curriculum` (PUC, houses, report cards, university) | school, PUC, higher-ed and university specifics are built |
+| University: affiliated institutions, central exams/valuation, convocation, analytics | Built | `api/curriculum/university.controller.ts`, `api/evaluation`, `api/analytics/catalogue.ts` (`university.convocations`), `erp/university` | affiliated colleges, convocations with degree certificates, on-screen valuation by the exam controller, and a convocation report |
 
 ## 89-90. Golden workflows, roles
 
@@ -852,10 +852,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | 89.1 School lesson loop | Built | `api/recordings`, `api/homework` | |
 | 89.2 College lesson to CO evidence to course file | Built | `api/obe/obe.controller.ts`, `api/course-files` | |
 | 89.3 Fee loop to accounting connector | Built | `api/fees`, `api/finance` | |
-| 89.4 Risk intervention loop | Partial | `api/mentoring/mentoring.controller.ts` | remedial content and re-measure step manual |
+| 89.4 Risk intervention loop | Built | `api/mentoring/mentoring.controller.ts` (`plans/:id/remedial`, `plans/:id/remeasure`) | a baseline is taken when the plan starts, remedial content is attached, and a re-measure compares marks with the baseline (improved, no change, declined); a task reminds the mentor on the review date |
 | 89.5 Admission loop | Built | `api/admissions` | |
-| 89.6 Placement loop to alumni | Partial | `api/placements` | auto-promotion of placed student to alumni profile not found |
-| Role matrix (create/read/update/delete/approve/publish/export/audit per module) | Partial | `api/auth/auth.decorators.ts` | per-controller roles; no documented matrix or exam controller / quality / external examiner roles |
+| 89.6 Placement loop to alumni | Built | `api/placements/alumni-promotion.ts`, `api/placements/placements.controller.ts` (`offers/:id/respond`) | accepting an offer creates the alumni profile with employer and role filled in, kept out of the directory until the graduate consents |
+| Role matrix (create/read/update/delete/approve/publish/export/audit per module) | Built | `docs/product/role-matrix.md`, `services/api/scripts/role-matrix.mjs`, `test/role-matrix.spec.ts` | generated from the `@Auth` decorators of every controller, with exam controller, examiner and quality officer roles; a test fails when it is out of date |
 
 ## 91-99, Appendices
 
@@ -864,11 +864,11 @@ onboarding, school pilot, differentiators, final principle). Status of the gates
 
 | Gate / item | Status | Evidence | Note |
 |---|---|---|---|
-| 93 Definition of done: tests, audit, docs per module | Partial | `docs/requirements/GAP_ANALYSIS.md` | e2e exist for new domains; observability/docs per module uneven |
+| 93 Definition of done: tests, audit, docs per module | Built | `docs/product/definition-of-done.md`, `test/definition-of-done.spec.ts` | every route family must be called by a test and every writing module must audit, with a short documented allowlist |
 | 94 Offline-supported workflows recover | Built | `api/sync/sync.controller.ts` | board and teacher app |
 | 94 Mobile critical daily ops | Built | `apps/teacher`, `apps/student`, `apps/parent` | real-device checks outstanding |
-| 95 Soundarya onboarding data (outcome mapping, exams, fees, library, placement, research, quality) | Partial | `docs/requirements/` | import templates only for students, staff, programs, timetable |
-| 96 School pilot (Nursery to Class 10, report cards, PTM, diary) | Partial | see sections 4, 15 | report card and house system outstanding |
+| 95 Soundarya onboarding data (outcome mapping, exams, fees, library, placement, research, quality) | Partial | `docs/operations/import-templates` | import templates exist only for students, staff, programs and timetable; the Soundarya seed itself carries all seven families |
+| 96 School pilot (Nursery to Class 10, report cards, PTM, diary) | Built | `api/curriculum/school-academics.controller.ts` (`report-cards`), `api/curriculum/houses.controller.ts`, `api/school-life` | report cards with PDF, house system with points, PTM and diary |
 | Appendix C P0 list (identity ... results) | Built | see sections 6-25 | |
 
 ---
