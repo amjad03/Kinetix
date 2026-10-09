@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:kinetix_board/core/api_client.dart';
 import 'package:kinetix_board/core/board_controller.dart';
+import 'package:kinetix_board/features/classroom_plus/recording_notice.dart';
 import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/core/recording/recordings.dart';
@@ -27,6 +28,9 @@ class _NoRealtime extends Realtime {
 }
 
 void main() {
+  // The consent notice has its own test below; the recorder tests start recording straight away.
+  setUp(() => RecordingPolicy.notice = false);
+  tearDown(RecordingPolicy.reset);
   late FakeRecordingsApi server;
   late List<http.Request> requests;
   late MemoryRecordingStore store;
@@ -108,6 +112,26 @@ void main() {
     expect(defaultRecordingTitle('Corporate Accounting', DateTime(2026, 10, 5)), 'Corporate Accounting · 5 Oct');
   });
 
+  testWidgets('the first recording in a class tells the teacher what is recorded; the institution can turn recording off', (tester) async {
+    RecordingPolicy.notice = true;
+    await pump(tester);
+    await tester.tap(find.byKey(const Key('record')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('rec-notice')), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('rec-indicator')), findsNothing);
+    expect(voice.calls, isEmpty);
+
+    RecordingPolicy.applyConfig({'recordingAllowed': false});
+    await tester.tap(find.byKey(const Key('record')));
+    await tester.pump();
+    expect(find.text('Your institution has turned off lesson recording on this board.'), findsOneWidget);
+    expect(find.byKey(const Key('rec-notice')), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    board.dispose();
+  });
+
   testWidgets('a guest board explains that the teacher must sign in to record', (tester) async {
     await pump(tester, signIn: false);
     await tester.tap(find.byKey(const Key('record')));
@@ -146,6 +170,9 @@ void main() {
     await tester.tapAt(const Offset(1300, 150)); // close the popover
     await wait(tester);
     await drawLine(tester, at: const Offset(600, 500));
+    // Holding the chapter marker marks an important moment (a starred chapter).
+    await tester.longPress(find.byKey(const Key('rec-marker')));
+    await wait(tester);
 
     await tester.tap(find.byKey(const Key('rec-stop')));
     await wait(tester);
@@ -162,6 +189,7 @@ void main() {
     final kinds = (eventLog()['events'] as List).map((e) => (e as List)[1]).toList();
     expect(kinds, containsAllInOrder(['L', 'b', 'e', 'n', 'k', 'b', 'e']));
     expect(eventLog()['canvas'], {'w': 1920, 'h': 1080});
+    expect(jsonEncode(eventLog()), contains('★ Important moment'));
     expect(store.events, isEmpty, reason: 'media is deleted after upload');
     expect(find.byKey(const Key('rec-indicator')), findsNothing);
 

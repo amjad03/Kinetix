@@ -1111,6 +1111,8 @@
   "liveQuestionYourNumber": "Your answer",
   "liveQuestionSend": "Send answer",
   "liveQuestionNotNumber": "Type a number, like 2.5",
+  "liveQuestionYourWords": "Your answer (one to three words)",
+  "liveQuestionNotWords": "Type one to three words",
   "liveQuestionClosed": "Your teacher has ended this question.",
   "careersTitle": "Careers",
   "careersSubtitle": "Campus drives, offers and internships",

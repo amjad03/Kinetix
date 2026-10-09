@@ -12,6 +12,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'class_poll.dart';
+import 'word_cloud.dart';
 
 /// Where photos of the class come from: the board's camera (Android panels), or a photo file
 /// on Windows panels without one. Tests and the demo replace it.
@@ -75,7 +76,8 @@ class _ClassCheckPanelState extends State<ClassCheckPanel> {
 
   Future<void> _putOnBoard() async {
     final l = context.l10n;
-    final png = await pollResultsPng(poll, answered: l.pollAnswered(poll.answers.length, poll.classSize), reveal: _reveal);
+    final answered = l.pollAnswered(poll.answers.length, poll.classSize);
+    final png = poll.kind == PollKind.word ? await wordCloudPng(poll, answered: answered) : await pollResultsPng(poll, answered: answered, reveal: _reveal);
     widget.onPutOnBoard(png);
   }
 
@@ -112,7 +114,10 @@ class _ClassCheckPanelState extends State<ClassCheckPanel> {
               if (poll.saved && poll.open) Text(l.pollLiveInApp, style: context.text.bodySmall?.copyWith(color: c.primary)),
               if (!poll.saved) Text(l.pollNotSaved, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
               const SizedBox(height: Kx.s12),
-              Padding(padding: const EdgeInsets.only(right: Kx.s12), child: PollBars(poll: poll, reveal: _reveal)),
+              Padding(
+                padding: const EdgeInsets.only(right: Kx.s12),
+                child: poll.kind == PollKind.word ? WordCloud(poll: poll, emptyText: l.pollNoAnswersYet) : PollBars(poll: poll, reveal: _reveal),
+              ),
               const SizedBox(height: Kx.s12),
               Wrap(
                 spacing: Kx.s8,

@@ -31,6 +31,14 @@ export function normaliseNumber(raw: string): string | null {
   return Number.isFinite(n) ? String(n) : null;
 }
 
+/** A word-cloud answer as stored: one to three words, trimmed and lower-case (so "Photosynthesis " and
+ * "photosynthesis" count together), at most 40 characters; null when there is nothing to count. */
+export function normaliseWord(raw: string): string | null {
+  const s = raw.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+  if (!s || s.length > 40 || s.split(' ').length > 3 || !/[\p{L}\p{N}]/u.test(s)) return null;
+  return s;
+}
+
 /** Whether [answer] is right, or null when the question has no right answer. */
 export function isCorrect(poll: Pick<Poll, 'kind' | 'correct'>, answer: string): boolean | null {
   if (poll.correct == null) return null;
@@ -124,7 +132,8 @@ export class PollsService {
     }
     const options = input.kind === 'mcq' ? input.options : [];
     if (input.kind === 'mcq' && (options.length < 2 || options.length > 6)) throw new BadRequestException('A question needs 2 to 6 answers');
-    let correct = input.correct ?? null;
+    // A word cloud has no right answer.
+    let correct = input.kind === 'word' ? null : (input.correct ?? null);
     if (correct != null) {
       correct = input.kind === 'mcq' ? (/^\d$/.test(correct) && Number(correct) < options.length ? correct : null) : normaliseNumber(correct);
       if (correct == null) throw new BadRequestException('The right answer is not one of the answers');
@@ -253,8 +262,9 @@ export class PollsService {
     if (!row || row.poll.sectionId !== me.sectionId) throw new NotFoundException('Question not found');
     if (row.poll.closedAt || row.endedAt || row.expiresAt <= this.clock.now()) throw new BadRequestException('This question is closed');
     const poll = row.poll;
-    const answer = poll.kind === 'mcq' ? (/^\d$/.test(raw.trim()) && Number(raw) < poll.options.length ? raw.trim() : null) : normaliseNumber(raw);
-    if (answer == null) throw new BadRequestException(poll.kind === 'mcq' ? 'Pick one of the answers' : 'Type a number');
+    const answer =
+      poll.kind === 'mcq' ? (/^\d$/.test(raw.trim()) && Number(raw) < poll.options.length ? raw.trim() : null) : poll.kind === 'word' ? normaliseWord(raw) : normaliseNumber(raw);
+    if (answer == null) throw new BadRequestException(poll.kind === 'mcq' ? 'Pick one of the answers' : poll.kind === 'word' ? 'Type one to three words' : 'Type a number');
     await this.saveAnswer(tx, poll, me.id, answer, 'app');
     this.notifyBoard(row.deviceId, { pollId: poll.id, studentId: me.id, answer, source: 'app', tally: await this.tally(tx, poll) });
     return { answer };

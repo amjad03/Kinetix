@@ -197,7 +197,7 @@ class _LecturePanelState extends State<LecturePanel> {
 }
 
 /// Select & Ask (spec §39): explain, simplify, expand, solve, translate, example, quiz,
-/// homework, diagram or board-ready notes for what the teacher selected on the board.
+/// homework, diagram, board-ready notes, remedial steps or a class activity for what the teacher selected on the board.
 class SelectAskPanel extends StatelessWidget {
   const SelectAskPanel({super.key, required this.ai, this.onBack});
 
@@ -215,6 +215,8 @@ class SelectAskPanel extends StatelessWidget {
     ('homework', 'saHomework', Icons.assignment_outlined),
     ('diagram', 'saDiagram', Icons.schema_outlined),
     ('boardReady', 'saBoardReady', Icons.notes),
+    ('remedial', 'saRemedial', Icons.healing_outlined),
+    ('activity', 'saActivity', Icons.groups_2_outlined),
   ];
 
   Future<void> _run(BuildContext context, String action) async {

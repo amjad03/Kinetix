@@ -73,6 +73,29 @@ When no release key is configured (no `KINETIX_ANDROID_KEYSTORE_*` variables and
 warning. Never publish such an APK or give it to users. Without the flag, a release build with no
 key still fails as before; with a key configured, the flag changes nothing.
 
+## Board against a real server (live demo)
+
+The board APK in `dist/kinetix-board.apk` is a server build, not a demo build: it talks to the
+KINETIX API. Pick the server in one of two ways:
+
+1. **At build time:** `--dart-define=KINETIX_API_URL=<address>`, which pre-fills the server.
+2. **In the app:** the enrolment screen (first start, or after *Unpair* from the IT console) has a
+   **Server** field, pre-filled from the build. Type another address there before entering the
+   enrolment code; it is remembered for that board.
+
+For a laptop running the API on the school Wi-Fi (`pnpm dev` in `services/api`, port 4000), the
+board needs plain HTTP to a local address, which Android release builds refuse. Build with
+`-Pkinetix.lanHttp=true` (or `KINETIX_LAN_HTTP=true`) to allow it:
+
+```sh
+cd apps/board
+KINETIX_TEST_SIGNING=true flutter build apk --release \
+  --dart-define=KINETIX_API_URL=http://<laptop-ip>:4000 -Pkinetix.lanHttp=true
+```
+
+Then create an enrolment code for the board in the ERP (the devices page, `POST /v1/devices/:id/enrollment-code`) and enter it on the board. A build
+for schools uses an `https://` address and no `lanHttp`.
+
 ## For developers
 
 - The demo backends live in each app's `lib/demo/`: `fake_api.dart` (the in-memory fakes, which

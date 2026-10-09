@@ -72,8 +72,9 @@ export const RealtimeEvents = {
 
 // --- Class questions (polls) and answer cards ------------------------------------------------
 
-/** `mcq`: options A, B, C… (answer = option index); `numeric`: a number typed in the Student App. */
-export type PollKind = 'mcq' | 'numeric';
+/** `mcq`: options A, B, C… (answer = option index); `numeric`: a number typed in the Student App;
+ * `word`: one to three words typed in the Student App, shown on the board as a word cloud. */
+export type PollKind = 'mcq' | 'numeric' | 'word';
 /** Answered in the Student App, or with a printed answer card held up and read by the board's camera. */
 export type PollAnswerSource = 'app' | 'card';
 

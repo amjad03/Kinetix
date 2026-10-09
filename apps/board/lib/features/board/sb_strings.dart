@@ -156,6 +156,8 @@ class SbStrings {
       'saHomework': 'Create homework',
       'saDiagram': 'Create diagram',
       'saBoardReady': 'Board-ready notes',
+      'saRemedial': 'Remedial help',
+      'saActivity': 'Class activity',
       'sumFormat': 'For',
       'sumTeacher': 'Teacher',
       'sumStudent': 'Student notes',
@@ -282,6 +284,8 @@ class SbStrings {
       'profileNew': 'नया',
       'exit': 'बाहर निकलें',
       'eraserSize': 'रबर का आकार',
+      'saRemedial': 'सुधारात्मक मदद',
+      'saActivity': 'कक्षा गतिविधि',
     },
     'kn': {
       'switch': 'ಬದಲಿಸಿ',
@@ -334,6 +338,8 @@ class SbStrings {
       'yourClassrooms': 'ನಿಮ್ಮ ತರಗತಿಗಳು',
       'profileNew': 'ಹೊಸದು',
       'exit': 'ನಿರ್ಗಮಿಸಿ',
+      'saRemedial': 'ಪರಿಹಾರ ಬೋಧನೆ',
+      'saActivity': 'ತರಗತಿ ಚಟುವಟಿಕೆ',
     },
   };
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../classroom_plus/plus_strings.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
@@ -501,6 +502,14 @@ class EyeComfortPopover extends StatelessWidget {
             subtitle: Text(l.highContrastHint),
             value: s.highContrast,
             onChanged: (v) => onChanged(s.copyWith(highContrast: v)),
+          ),
+          SwitchListTile(
+            key: const Key('break-reminders'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(plusStrings(context)['breakReminders']),
+            subtitle: Text(plusStrings(context)['breakRemindersHint']),
+            value: s.breakReminder,
+            onChanged: (v) => onChanged(s.copyWith(breakReminder: v)),
           ),
           SwitchListTile(
             key: const Key('chalkboard'),

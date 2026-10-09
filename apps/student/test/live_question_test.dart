@@ -69,4 +69,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('answer-error')), findsOneWidget);
   });
+
+  testWidgets('a word-cloud question takes a few words', (tester) async {
+    final (api, _) = await pumpApp(
+      tester,
+      setup: (api) => api.question = ClassQuestion(id: 'p3', numeric: false, word: true, question: 'One word for photosynthesis?', options: const [], teacher: 'Anita Sharma'),
+    );
+    await tester.tap(find.byKey(const Key('liveQuestionBanner')));
+    await tester.pumpAndSettle();
+    expect(find.text('Your answer (one to three words)'), findsOneWidget);
+    expect(find.byKey(const Key('answer-0')), findsNothing);
+    await tester.enterText(find.byKey(const Key('answer-number')), 'sunlight');
+    await tester.tap(find.byKey(const Key('answer-send')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('answer p3 sunlight'));
+  });
 }

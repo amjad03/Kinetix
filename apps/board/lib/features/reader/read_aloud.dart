@@ -214,6 +214,15 @@ class ReaderController extends ChangeNotifier {
     _changed();
   }
 
+  /// Easy read, for students with dyslexia or who are new to reading: Andika (distinct b, d, p
+  /// and q, single-storey a and g), wider letter, word and line spacing, and no line focus fade.
+  bool easyRead = false;
+
+  void setEasyRead(bool v) {
+    easyRead = v;
+    _changed();
+  }
+
   @override
   void dispose() {
     _disposed = true;
@@ -336,7 +345,7 @@ class _ImmersiveReaderState extends State<ImmersiveReader> {
                                     color: n == _r.index ? mark.withValues(alpha: _r.theme == ReaderTheme.contrast ? 0.22 : 0.35) : null,
                                     borderRadius: BorderRadius.circular(_r.size * 0.3),
                                   ),
-                                  child: Text.rich(_spans(p, n == _r.index ? _r.word : null, mark, onMark), style: TextStyle(fontSize: _r.size, height: 1.45, color: fg, letterSpacing: 0.2)),
+                                  child: Text.rich(_spans(p, n == _r.index ? _r.word : null, mark, onMark), style: readerTextStyle(_r.size, fg, easyRead: _r.easyRead)),
                                 ),
                               ),
                             ),
@@ -407,6 +416,7 @@ class _ImmersiveReaderState extends State<ImmersiveReader> {
               ),
               FilterChip(key: const Key('reader-focus'), label: Text(l.readerLineFocus), selected: _r.focus, onSelected: _r.setFocus),
               FilterChip(key: const Key('reader-slow'), label: Text(l.readerSlower), selected: _r.slow, onSelected: _r.setSlow),
+              FilterChip(key: const Key('reader-easy'), label: Text(l.readerEasyRead), selected: _r.easyRead, onSelected: _r.setEasyRead),
             ],
           ),
         ),
@@ -414,6 +424,11 @@ class _ImmersiveReaderState extends State<ImmersiveReader> {
     );
   }
 }
+
+/// The reader's text: the board's usual text, or easy read (Andika with wider spacing).
+TextStyle readerTextStyle(double size, Color colour, {bool easyRead = false}) => easyRead
+    ? TextStyle(fontFamily: KxFonts.primary, fontSize: size, height: 1.9, color: colour, letterSpacing: size * 0.06, wordSpacing: size * 0.3)
+    : TextStyle(fontSize: size, height: 1.45, color: colour, letterSpacing: 0.2);
 
 ReaderVoice? _quickVoice;
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import '../../core/board_controller.dart';
+import '../../core/models.dart' show AiLanguage;
 import '../../demo/demo.dart' show Demo;
 import '../../demo/demo_class_switcher.dart';
 import '../../l10n/feature_strings.dart';
@@ -11,6 +12,13 @@ import '../assessment/assessment.dart';
 import '../board/layout/tools_drawer.dart';
 import '../captions/live_captions.dart';
 import '../classroom/classroom_tools.dart';
+import '../classroom_plus/buzzer.dart';
+import '../classroom_plus/diagnostics.dart';
+import '../classroom_plus/plus_strings.dart';
+import '../classroom_plus/recording_notice.dart';
+import '../classroom_plus/voice_commands.dart';
+import '../classroom_plus/zones.dart';
+import '../profiles/profiles_ui.dart' show PinPad;
 import '../doc_camera/doc_camera.dart';
 import '../language_kit/language_kit.dart';
 import '../primary/primary_panel.dart';
@@ -127,6 +135,8 @@ void initBoardExtras() {
   _init = true;
   unawaited(SafeWebPolicy.load());
   BoardController.configListeners.add((config) => unawaited(SafeWebPolicy.applyConfig(config['safeWeb'])));
+  BoardController.configListeners.add(PinPad.applyConfig);
+  BoardController.configListeners.add(RecordingPolicy.applyConfig);
 }
 
 bool _init = false;
@@ -159,6 +169,8 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
   final s = extrasStrings(boardLang(context));
   const prim = Color(0xFFFDD663), lang = Color(0xFFA8DAB5), cls = Color(0xFFF28B82), media = Color(0xFF8AB4F8), assess = Color(0xFFD7AEFB);
   VoidCallback page(String key, IconData icon, WidgetBuilder b) => () => run(() => h.openPage(s[key], icon, b));
+  final p = plusStrings(context);
+  VoidCallback plusPage(String key, IconData icon, WidgetBuilder b) => () => run(() => h.openPage(p[key], icon, b));
   return [
     if (Demo.enabled) ...[
       DrawerTool('demo-classes', Icons.swap_horiz, s['demoClasses'], const [ToolGroup.classroom], cls, () => run(() => unawaited(DemoClassSwitcher.open(context, h.board)))),
@@ -192,6 +204,18 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     DrawerTool('group-maker', Icons.diversity_3_outlined, s['groups'], const [ToolGroup.classroom], cls, page('groups', Icons.diversity_3_outlined, (_) => GroupMakerPanel(board: h.board, wb: h.wb))),
     DrawerTool('teacher-notes', Icons.sticky_note_2_outlined, s['notes'], const [ToolGroup.classroom], cls, page('notes', Icons.sticky_note_2_outlined, (_) => TeacherNotesPanel(board: h.board))),
     DrawerTool('scoreboard', Icons.scoreboard_outlined, s['scoreboard'], const [ToolGroup.classroom], cls, page('scoreboard', Icons.scoreboard_outlined, (_) => const ScoreboardPanel())),
+    DrawerTool('buzzer', Icons.campaign_outlined, p['buzzer'], const [ToolGroup.classroom], cls, plusPage('buzzer', Icons.campaign_outlined, (_) => const BuzzerPanel())),
+    if (h.zones case final zones?) DrawerTool('zones', Icons.view_week_outlined, p['zones'], const [ToolGroup.classroom], cls, () => run(() => unawaited(pickZones(context, zones)))),
+    if (h.voiceCommand case final voice?)
+      DrawerTool(
+        'voice-commands',
+        Icons.keyboard_voice_outlined,
+        p['voiceCommands'],
+        const [ToolGroup.classroom],
+        media,
+        () => run(() => unawaited(VoiceCommandDialog.open(context, language: AiLanguage.fromCode(boardLang(context)), run: voice))),
+      ),
+    DrawerTool('diagnostics', Icons.monitor_heart_outlined, p['diagnostics'], const [ToolGroup.classroom], media, plusPage('diagnostics', Icons.monitor_heart_outlined, (_) => DiagnosticsPanel(board: h.board))),
     DrawerTool('exam-clock', Icons.timer_outlined, s['exam'], const [ToolGroup.classroom], cls, page('exam', Icons.timer_outlined, (_) => const ExamClockPanel())),
     DrawerTool('organisers', Icons.hub_outlined, s['organisers'], const [ToolGroup.classroom, ToolGroup.commerce, ToolGroup.language], cls, page('organisers', Icons.hub_outlined, (_) => OrganisersPanel(wb: h.wb))),
     // Assessment

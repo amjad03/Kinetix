@@ -92,6 +92,39 @@ void main() {
     board.dispose();
   });
 
+  testWidgets('a word-cloud question: typed words gather into a cloud, then go on the board', (tester) async {
+    await pump(tester);
+    await tap(tester, find.byKey(const Key('tool-tools')));
+    await tap(tester, find.text('Ask the class'));
+    await tester.enterText(find.byKey(const Key('ask-question')), 'One word for photosynthesis?');
+    await tap(tester, find.byKey(const Key('ask-word-cloud')));
+    expect(find.byKey(const Key('ask-word-hint')), findsOneWidget);
+    expect(find.byKey(const Key('ask-correct-0')), findsNothing);
+    await tap(tester, find.byKey(const Key('ask-start')));
+    expect(server.requests.where((r) => r.startsWith('PUT /v1/polls/')), hasLength(1));
+    expect(find.byKey(const Key('poll-scan')), findsNothing);
+
+    await tester.pump(const Duration(seconds: 13));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('word-cloud')), findsOneWidget);
+    expect(find.byKey(const Key('word-photosynthesis')), findsOneWidget);
+    expect(find.byKey(const Key('word-sunlight')), findsOneWidget);
+    final big = tester.widget<Text>(find.byKey(const Key('word-photosynthesis'))).style!.fontSize!;
+    final small = tester.widget<Text>(find.byKey(const Key('word-sunlight'))).style!.fontSize!;
+    expect(big, greaterThan(small));
+
+    await tap(tester, find.byKey(const Key('poll-end')));
+    await tester.runAsync(() async {
+      await tester.tap(find.byKey(const Key('poll-put')));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+    final canvas = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas));
+    expect(canvas.controller.elements.whereType<ImageElement>(), hasLength(1));
+    await tester.pumpWidget(const SizedBox());
+    board.dispose();
+  });
+
   testWidgets('the phone remote turns pages, starts the timer, points and hears back the board state', (tester) async {
     await pump(tester);
     final canvas = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas));

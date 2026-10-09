@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,8 +16,12 @@ import 'profiles_controller.dart';
 
 /// A number pad for PINs, big enough for a classroom panel: dots for the digits typed, 0–9,
 /// delete and OK. [onSubmit] gets 4 to 6 digits; it may return an error to show.
+///
+/// With [shuffle] (unlocking on the shared screen) the digit keys are in a new order each time
+/// the pad opens and after each wrong PIN, so nobody can learn a PIN from where the finger went.
+/// The institution can turn this off (`pinShuffle: false` in the board config).
 class PinPad extends StatefulWidget {
-  const PinPad({super.key, required this.title, required this.onSubmit, this.message});
+  const PinPad({super.key, required this.title, required this.onSubmit, this.message, this.shuffle = false, this.random});
 
   final String title;
   final Future<String?> Function(String pin) onSubmit;
@@ -24,11 +29,31 @@ class PinPad extends StatefulWidget {
   /// Shown under the dots before the first try (e.g. a hint).
   final String? message;
 
+  /// Shuffles the digit keys (when [shuffleAllowed]).
+  final bool shuffle;
+
+  /// The shuffle's randomness; tests pass a seeded one.
+  final math.Random? random;
+
+  /// Whether the institution lets unlock pads shuffle their keys (board config `pinShuffle`).
+  static bool shuffleAllowed = true;
+
+  /// Reads `pinShuffle` from the board config (absent = on).
+  static void applyConfig(Map<String, dynamic> config) => shuffleAllowed = config['pinShuffle'] != false;
+
+  /// The digits in the order the pad lays them out: 1–9 then 0, or shuffled.
+  static List<String> layout({required bool shuffle, math.Random? random}) {
+    final digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+    if (shuffle && shuffleAllowed) digits.shuffle(random ?? math.Random.secure());
+    return digits;
+  }
+
   @override
   State<PinPad> createState() => _PinPadState();
 }
 
 class _PinPadState extends State<PinPad> {
+  late List<String> _digits = PinPad.layout(shuffle: widget.shuffle, random: widget.random);
   String _pin = '';
   String? _error;
   bool _busy = false;
@@ -55,6 +80,7 @@ class _PinPadState extends State<PinPad> {
       _busy = false;
       _error = error;
       _pin = '';
+      if (error != null) _digits = PinPad.layout(shuffle: widget.shuffle, random: widget.random);
     });
   }
 
@@ -126,17 +152,12 @@ class _PinPadState extends State<PinPad> {
                     ),
             ),
           ),
-          for (final row in const [
-            ['1', '2', '3'],
-            ['4', '5', '6'],
-            ['7', '8', '9'],
-          ])
-            Row(mainAxisSize: MainAxisSize.min, children: [for (final d in row) digit(d)]),
+          for (var r = 0; r < 3; r++) Row(mainAxisSize: MainAxisSize.min, children: [for (final d in _digits.sublist(r * 3, r * 3 + 3)) digit(d)]),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               key(const Icon(Icons.backspace_outlined), _pin.isEmpty ? null : _delete, k: const Key('pin-delete')),
-              digit('0'),
+              digit(_digits[9]),
               key(Text(l.ok, style: const TextStyle(fontSize: 18)), _pin.length >= 4 ? _submit : null, k: const Key('pin-ok')),
             ],
           ),
@@ -187,6 +208,7 @@ class _ProfileSwitcherState extends State<ProfileSwitcher> {
           KxAvatar(name: picked.name, size: 64),
           const SizedBox(height: Kx.s12),
           PinPad(
+            shuffle: true,
             title: l.pinEnterFor(picked.name),
             onSubmit: (pin) async {
               final r = await widget.profiles.unlock(picked, pin);
@@ -507,6 +529,7 @@ class _ProfileLockState extends State<ProfileLock> {
                         const SizedBox(height: Kx.s24),
                         if (me != null && me.pin != null)
                           PinPad(
+                            shuffle: true,
                             title: l.pinEnterFor(s.teacherName),
                             onSubmit: (pin) async {
                               final r = await _profiles.unlock(me, pin);

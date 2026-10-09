@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../classroom_plus/plus_strings.dart';
 import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -88,12 +89,17 @@ class RecordingIndicator extends StatelessWidget {
                   ),
                 ),
               const SizedBox(width: Kx.s4),
-              // Marker (spec §56): a chapter in the recording here; the Student App lists them.
-              IconButton(
-                key: const Key('rec-marker'),
-                tooltip: '${SbStrings.of(context)('recMarker')}${capture.chapters > 0 ? ' (${capture.chapters})' : ''}',
-                onPressed: paused ? null : () => capture.mark(),
-                icon: const Icon(Icons.bookmark_add_outlined),
+              // Marker (spec §56): a chapter in the recording here; the Student App lists them. Held
+              // down, it marks an important moment (a starred chapter) instead.
+              Tooltip(
+                // Shown on hover; a long press is the important moment, not the tooltip.
+                triggerMode: TooltipTriggerMode.manual,
+                message: '${SbStrings.of(context)('recMarker')}${capture.chapters > 0 ? ' (${capture.chapters})' : ''} · ${plusStrings(context)['recImportantHint']}',
+                child: GestureDetector(
+                  key: const Key('rec-important'),
+                  onLongPress: paused ? null : () => capture.mark('★ ${plusStrings(context)['recImportant']}'),
+                  child: IconButton(key: const Key('rec-marker'), onPressed: paused ? null : () => capture.mark(), icon: const Icon(Icons.bookmark_add_outlined)),
+                ),
               ),
               IconButton(
                 key: const Key('rec-pause'),

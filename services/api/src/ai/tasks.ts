@@ -76,7 +76,7 @@ export const TaskInputs = {
   }),
   /** Select & Ask (spec §39): an action on what the teacher selected on the board. */
   selectAsk: z.object({
-    action: z.enum(['explain', 'simplify', 'expand', 'solve', 'translate', 'example', 'quiz', 'homework', 'diagram', 'boardReady']),
+    action: z.enum(['explain', 'simplify', 'expand', 'solve', 'translate', 'example', 'quiz', 'homework', 'diagram', 'boardReady', 'remedial', 'activity']),
     content: z.string().trim().min(1).max(6000),
     /** For translate. */
     targetLanguage: Language.optional(),
@@ -292,6 +292,8 @@ const SELECT_ASK: Record<TaskInput<'selectAsk'>['action'], string> = {
   homework: 'Write homework questions on this; one per item, with marks',
   diagram: 'Describe a clear diagram to draw on the board for this; one drawing step per item',
   boardReady: 'Rewrite this as short board-ready notes (headings and bullet points); one line per item',
+  remedial: 'Suggest remedial steps for students who did not understand this: the likely misconception, then a simpler re-teach and a quick check; one step per item',
+  activity: 'Plan a short classroom activity (5 to 10 minutes) on this: materials, then what the teacher and students do; one step per item',
 };
 
 function scanned(i: Record<string, unknown>): string {

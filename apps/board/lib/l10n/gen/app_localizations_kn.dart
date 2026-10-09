@@ -694,6 +694,9 @@ class AppLocalizationsKn extends AppLocalizations {
   String get readerSlower => 'ನಿಧಾನ';
 
   @override
+  String get readerEasyRead => 'ಸುಲಭ ಓದು';
+
+  @override
   String get readerHint => 'ಪುಟದ ಪಠ್ಯ, ದೊಡ್ಡದಾಗಿ, ಪದ ಪದವಾಗಿ ಗಟ್ಟಿಯಾಗಿ';
 
   @override
@@ -3441,6 +3444,13 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get askNumberNoCards =>
       'ಸಂಖ್ಯೆಯ ಉತ್ತರಗಳು ಸ್ಟೂಡೆಂಟ್ ಆ್ಯಪ್‌ನಿಂದ ಮಾತ್ರ ಬರುತ್ತವೆ (ಉತ್ತರ ಕಾರ್ಡ್‌ಗಳಲ್ಲಿ A ಇಂದ D).';
+
+  @override
+  String get askWordCloud => 'ಪದ ಮೋಡ';
+
+  @override
+  String get askWordCloudHint =>
+      'ವಿದ್ಯಾರ್ಥಿಗಳು ಸ್ಟೂಡೆಂಟ್ ಆ್ಯಪ್‌ನಲ್ಲಿ ಒಂದರಿಂದ ಮೂರು ಪದಗಳನ್ನು ಬರೆಯುತ್ತಾರೆ. ಹೆಚ್ಚು ಜನ ಬರೆದ ಪದಗಳು ದೊಡ್ಡದಾಗಿ ಕಾಣುತ್ತವೆ.';
 
   @override
   String get askStart => 'ಕೇಳಿ';

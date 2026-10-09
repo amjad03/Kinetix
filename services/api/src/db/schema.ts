@@ -611,7 +611,7 @@ export const answerCards = pgTable(
   (t) => [primaryKey({ columns: [t.sectionId, t.cardNo] }), uniqueIndex('answer_cards_student_uq').on(t.sectionId, t.studentId)],
 );
 
-export const pollKind = pgEnum('poll_kind', ['mcq', 'numeric']);
+export const pollKind = pgEnum('poll_kind', ['mcq', 'numeric', 'word']);
 export const pollAnswerSource = pgEnum('poll_answer_source', ['app', 'card']);
 
 /** A question the teacher asked the class on the board ("Ask the class"). */

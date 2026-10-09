@@ -743,6 +743,13 @@
       "when": 1791410905229,
       "tag": "0114_curriculum_school_university",
       "breakpoints": true
+    },
+    {
+      "idx": 108,
+      "version": "7",
+      "when": 1791410906229,
+      "tag": "0112_poll_word_cloud",
+      "breakpoints": true
     }
   ]
 }

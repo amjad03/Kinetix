@@ -89,7 +89,15 @@ class _LiveQuestionSheetState extends State<LiveQuestionSheet> {
       await widget.study.answerQuestion(answer);
       if (mounted) Navigator.pop(context);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.status == 400 && widget.study.question?.numeric == true ? l.liveQuestionNotNumber : l.liveQuestionClosed);
+      final q = widget.study.question;
+      final message = e.status != 400
+          ? l.liveQuestionClosed
+          : q?.numeric == true
+          ? l.liveQuestionNotNumber
+          : q?.word == true
+          ? l.liveQuestionNotWords
+          : l.liveQuestionClosed;
+      if (mounted) setState(() => _error = message);
       await widget.study.loadQuestion();
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -112,7 +120,7 @@ class _LiveQuestionSheetState extends State<LiveQuestionSheet> {
           Text(q?.question ?? l.liveQuestionClosed, style: context.text.titleLarge),
           if (q?.subject != null) Text('${q!.subject} · ${q.teacher}', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
           const SizedBox(height: Kx.s16),
-          if (q != null && !q.numeric)
+          if (q != null && !q.numeric && !q.word)
             for (final (i, option) in q.options.indexed)
               Padding(
                 padding: const EdgeInsets.only(bottom: Kx.s8),
@@ -120,12 +128,13 @@ class _LiveQuestionSheetState extends State<LiveQuestionSheet> {
                     ? FilledButton(key: Key('answer-$i'), onPressed: _sending ? null : () => _answer('$i'), child: Text(option))
                     : OutlinedButton(key: Key('answer-$i'), onPressed: _sending ? null : () => _answer('$i'), child: Text(option)),
               ),
-          if (q != null && q.numeric) ...[
+          if (q != null && (q.numeric || q.word)) ...[
             TextField(
               key: const Key('answer-number'),
               controller: _number..text = _number.text.isEmpty ? (q.myAnswer ?? '') : _number.text,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-              decoration: InputDecoration(labelText: l.liveQuestionYourNumber),
+              keyboardType: q.word ? TextInputType.text : const TextInputType.numberWithOptions(decimal: true, signed: true),
+              maxLength: q.word ? 40 : null,
+              decoration: InputDecoration(labelText: q.word ? l.liveQuestionYourWords : l.liveQuestionYourNumber),
               onSubmitted: (v) => _answer(v.trim()),
             ),
             const SizedBox(height: Kx.s12),

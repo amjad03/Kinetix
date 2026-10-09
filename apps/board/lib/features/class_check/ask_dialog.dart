@@ -29,12 +29,13 @@ class _AskClassDialogState extends State<AskClassDialog> {
   late final _question = TextEditingController(text: widget.question);
   final _number = TextEditingController();
 
-  /// 2, 3 or 4 letters; 5 = True / False; 0 = a number.
+  /// 2, 3 or 4 letters; 5 = True / False; 0 = a number; 6 = a word cloud.
   int _choices = 4;
   int? _correct;
 
   bool get _trueFalse => _choices == 5;
   bool get _numeric => _choices == 0;
+  bool get _word => _choices == 6;
   int get _count => _trueFalse ? 2 : _choices;
 
   @override
@@ -47,15 +48,15 @@ class _AskClassDialogState extends State<AskClassDialog> {
   void _submit() {
     final l = context.l10n;
     final q = _question.text.trim();
-    final options = _numeric ? <String>[] : (_trueFalse ? [l.pollTrue, l.pollFalse] : answerLetters.take(_count).toList());
+    final options = _numeric || _word ? <String>[] : (_trueFalse ? [l.pollTrue, l.pollFalse] : answerLetters.take(_count).toList());
     final number = _number.text.trim();
     Navigator.pop(
       context,
       AskSetup(
-        kind: _numeric ? PollKind.numeric : PollKind.mcq,
+        kind: _word ? PollKind.word : (_numeric ? PollKind.numeric : PollKind.mcq),
         question: q.isEmpty ? l.pollDefaultQuestion : q,
         options: options,
-        correct: _numeric ? (double.tryParse(number) == null ? null : number) : _correct?.toString(),
+        correct: _word ? null : _numeric ? (double.tryParse(number) == null ? null : number) : _correct?.toString(),
       ),
     );
   }
@@ -91,6 +92,7 @@ class _AskClassDialogState extends State<AskClassDialog> {
                 const ButtonSegment(value: 3, label: Text('A–C')),
                 const ButtonSegment(value: 4, label: Text('A–D')),
                 ButtonSegment(value: 0, label: Text(l.askNumber)),
+                ButtonSegment(value: 6, label: Text(l.askWordCloud, key: const Key('ask-word-cloud'))),
               ],
               selected: {_choices},
               onSelectionChanged: (s) => setState(() {
@@ -99,6 +101,9 @@ class _AskClassDialogState extends State<AskClassDialog> {
               }),
             ),
             const SizedBox(height: Kx.s16),
+            if (_word)
+              Text(l.askWordCloudHint, key: const Key('ask-word-hint'), style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant))
+            else ...[
             Text(l.askRightAnswer, style: context.text.titleSmall),
             const SizedBox(height: Kx.s8),
             if (_numeric)
@@ -124,6 +129,7 @@ class _AskClassDialogState extends State<AskClassDialog> {
             if (_numeric) ...[
               const SizedBox(height: Kx.s8),
               Text(l.askNumberNoCards, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
+            ],
             ],
           ],
         ),

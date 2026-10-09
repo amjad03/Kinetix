@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { assignCards, isCorrect, normaliseNumber } from '../src/polls/polls.service.js';
+import { assignCards, isCorrect, normaliseNumber, normaliseWord } from '../src/polls/polls.service.js';
 import { createApp, createTenant, FixedClock, nextMondayIst, ownerPool, pairBoard } from './helpers.js';
 
 const next = <T>(s: Socket, event: string, ms = 2000) =>
@@ -85,6 +85,10 @@ describe('answer cards and class questions', () => {
     expect(normaliseNumber('abc')).toBeNull();
     expect(isCorrect({ kind: 'numeric', correct: '0.1' }, String(0.1 + 0.2 - 0.2))).toBe(true);
     expect(isCorrect({ kind: 'mcq', correct: null }, '1')).toBeNull();
+    expect(normaliseWord('  Photo   Synthesis ')).toBe('photo synthesis');
+    expect(normaliseWord('one two three four')).toBeNull();
+    expect(normaliseWord('?!')).toBeNull();
+    expect(normaliseWord('प्रकाश संश्लेषण')).toBe('प्रकाश संश्लेषण');
   });
 
   it('prints a class its answer cards: teachers of the class and leaders only', async () => {
@@ -192,5 +196,19 @@ describe('answer cards and class questions', () => {
     await http().get(`/v1/sections/${t.section.id}/polls`).set(as('principal')).expect(200);
     await http().get(`/v1/sections/${t.section.id}/polls`).set(as('teacher2')).expect(403);
     await http().get(`/v1/sections/${t.section.id}/polls`).set(as('student')).expect(403);
+  });
+
+  it('word-cloud questions: students type a few words, counted together whatever the case', async () => {
+    const id = randomUUID();
+    tick();
+    await http().put(`/v1/polls/${id}`).set(as('board')).send({ kind: 'word', question: 'One word for photosynthesis?', correct: 'ignored' }).expect(200);
+    expect((await http().get('/v1/student/poll').set(as('student')).expect(200)).body.poll).toMatchObject({ kind: 'word', options: [] });
+    await http().post(`/v1/polls/${id}/answer`).set(as('student')).send({ answer: 'a b c d' }).expect(400);
+    await http().post(`/v1/polls/${id}/answer`).set(as('student')).send({ answer: ' Sunlight ' }).expect(200);
+    await http().post(`/v1/polls/${id}/cards`).set(as('board')).send({ answers: [{ cardNo: 1, choice: 0 }] }).expect(400);
+    const results = (await http().get(`/v1/polls/${id}`).set(as('board')).expect(200)).body as PollResults;
+    expect(results.correct).toBeNull();
+    expect(results.responses).toMatchObject([{ answer: 'sunlight', correct: null }]);
+    await http().post(`/v1/polls/${id}/close`).set(as('board')).expect(200);
   });
 });

@@ -8,7 +8,7 @@ import { TeacherService } from '../teacher/teacher.service.js';
 import { MAX_CARDS, PollsService } from './polls.service.js';
 
 const NewPollBody = z.object({
-  kind: z.enum(['mcq', 'numeric']),
+  kind: z.enum(['mcq', 'numeric', 'word']),
   question: z.string().max(500).default(''),
   options: z.array(z.string().trim().min(1).max(60)).max(6).default([]),
   correct: z.string().max(32).nullish(),

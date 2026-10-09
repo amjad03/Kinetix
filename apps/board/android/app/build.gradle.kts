@@ -46,6 +46,12 @@ val releaseSigningProblem: String? = when {
 val testSigning = ((findProperty("kinetix.testSigning") as String?) ?: System.getenv("KINETIX_TEST_SIGNING"))?.toBoolean() ?: false
 val useTestSigning = releaseSigningProblem != null && testSigning
 
+// Demo against a server on the local network (docs/product/demo-builds.md): with
+// -Pkinetix.lanHttp=true (or KINETIX_LAN_HTTP=true) the app may also talk plain HTTP (Android
+// cannot limit that to private addresses), so KINETIX_API_URL can be a laptop on the school
+// Wi-Fi. Never for builds handed to schools: those use HTTPS only.
+val lanHttp = ((findProperty("kinetix.lanHttp") as String?) ?: System.getenv("KINETIX_LAN_HTTP"))?.toBoolean() ?: false
+
 // R8 (code + resource shrinking) stays off until a minified release has been smoke-tested on a
 // device; turn it on with -Pkinetix.minify=true (keep rules in proguard-rules.pro).
 val minifyRelease = (findProperty("kinetix.minify") as String?)?.toBoolean() ?: false
@@ -68,6 +74,7 @@ android {
         // From `version: x.y.z+build` in pubspec.yaml. With --split-per-abi Flutter adds 1000 * ABI.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["networkSecurityConfig"] = if (lanHttp) "@xml/network_security_config_lan" else "@xml/network_security_config"
     }
 
     signingConfigs {

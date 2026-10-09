@@ -8,7 +8,8 @@ import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../core/realtime.dart';
 
-enum PollKind { mcq, numeric }
+/// `word`: students type one to three words; the board shows a word cloud.
+enum PollKind { mcq, numeric, word }
 
 /// Where an answer came from: the Student App, or an answer card read by the board's camera.
 enum AnswerSource { app, card }
@@ -93,6 +94,7 @@ class ClassPoll extends ChangeNotifier {
     }
     final keys = counts.keys.toList();
     if (kind == PollKind.numeric) keys.sort((a, b) => (double.tryParse(a) ?? 0).compareTo(double.tryParse(b) ?? 0));
+    if (kind == PollKind.word) keys.sort((a, b) => counts[b]!.compareTo(counts[a]!));
     return [for (final k in keys) (k, counts[k]!)];
   }
 
@@ -100,7 +102,7 @@ class ClassPoll extends ChangeNotifier {
   String label(String answer) => kind == PollKind.mcq ? (options.elementAtOrNull(int.tryParse(answer) ?? -1) ?? answer) : answer;
 
   bool? isRight(String answer) {
-    if (correct == null) return null;
+    if (correct == null || kind == PollKind.word) return null;
     if (kind == PollKind.mcq) return answer == correct;
     final a = double.tryParse(answer), b = double.tryParse(correct!);
     return a != null && b != null && (a - b).abs() <= 1e-9 * (b.abs() < 1 ? 1 : b.abs());

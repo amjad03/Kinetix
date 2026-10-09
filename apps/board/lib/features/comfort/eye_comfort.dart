@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 ///   goes on, when eyes are tired and afternoon light makes glare worse.
 /// - **High contrast** helps on washed-out projectors.
 class EyeComfortSettings {
-  const EyeComfortSettings({this.enabled = false, this.auto = true, this.warmth = 0.3, this.dim = 0.1, this.highContrast = false});
+  const EyeComfortSettings({this.enabled = false, this.auto = true, this.warmth = 0.3, this.dim = 0.1, this.highContrast = false, this.breakReminder = false});
 
   final bool enabled;
   final bool auto;
@@ -20,25 +20,31 @@ class EyeComfortSettings {
   final double dim;
   final bool highContrast;
 
-  EyeComfortSettings copyWith({bool? enabled, bool? auto, double? warmth, double? dim, bool? highContrast}) => EyeComfortSettings(
+  /// 20-20-20 break reminders after long continuous use.
+  final bool breakReminder;
+
+  EyeComfortSettings copyWith({bool? enabled, bool? auto, double? warmth, double? dim, bool? highContrast, bool? breakReminder}) => EyeComfortSettings(
     enabled: enabled ?? this.enabled,
     auto: auto ?? this.auto,
     warmth: warmth ?? this.warmth,
     dim: dim ?? this.dim,
     highContrast: highContrast ?? this.highContrast,
+    breakReminder: breakReminder ?? this.breakReminder,
   );
 
-  String encode() => [enabled, auto, warmth, dim, highContrast].join(',');
+  String encode() => [enabled, auto, warmth, dim, highContrast, breakReminder].join(',');
 
   static EyeComfortSettings decode(String? s) {
     final p = s?.split(',');
-    if (p == null || p.length != 5) return const EyeComfortSettings();
+    // Five values before break reminders were added.
+    if (p == null || p.length < 5 || p.length > 6) return const EyeComfortSettings();
     return EyeComfortSettings(
       enabled: p[0] == 'true',
       auto: p[1] == 'true',
       warmth: double.tryParse(p[2]) ?? 0.3,
       dim: double.tryParse(p[3]) ?? 0.1,
       highContrast: p[4] == 'true',
+      breakReminder: p.length > 5 && p[5] == 'true',
     );
   }
 

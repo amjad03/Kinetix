@@ -82,6 +82,10 @@ import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
 import '../../demo/demo_class_switcher.dart' show DemoClassSwitcher;
 import '../../demo/demo_classes.dart' show DemoClass;
+import '../classroom_plus/break_reminder.dart';
+import '../classroom_plus/recording_notice.dart';
+import '../classroom_plus/voice_commands.dart';
+import '../classroom_plus/zones.dart';
 import '../extras/board_extras.dart';
 import '../extras/extras_hooks.dart';
 import 'board_shot.dart';
@@ -325,7 +329,47 @@ class _BoardScreenState extends State<BoardScreen> {
     openCamera: () => _show(PanelKind.camera),
     openWeb: () => _show(PanelKind.web),
     askClass: _classCheck.start,
+    zones: _zones,
+    voiceCommand: _runVoiceCommand,
   );
+
+  /// Multi-user zones (lib/features/classroom_plus/zones.dart).
+  late final BoardZones _zones = BoardZones(_wb);
+
+  /// Does a spoken command (lib/features/classroom_plus/voice_commands.dart).
+  bool _runVoiceCommand(VoiceCommand c) {
+    final kit = _toolkit();
+    switch (c.action) {
+      case VoiceAction.nextPage:
+        _wb.hasNext ? _wb.next() : _wb.addPage();
+      case VoiceAction.previousPage:
+        if (!_wb.hasPrevious) return false;
+        _wb.previous();
+      case VoiceAction.newPage:
+        // Like Add Page: only after something is on this page.
+        if (!_wb.canAddPage) return false;
+        _wb.addPage();
+      case VoiceAction.nextSlide:
+        return kit.nextSlide();
+      case VoiceAction.previousSlide:
+        return kit.previousSlide();
+      case VoiceAction.startTimer:
+        kit.startTimer(c.duration ?? const Duration(minutes: 1));
+      case VoiceAction.stopTimer:
+        kit.stopTimer();
+      case VoiceAction.pickStudent:
+        kit.pickStudent();
+      case VoiceAction.attendance:
+        WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? _attendance() : null);
+      case VoiceAction.undo:
+        if (!_wb.canUndo) return false;
+        _wb.undo();
+      case VoiceAction.redo:
+        if (!_wb.canRedo) return false;
+        _wb.redo();
+    }
+    return true;
+  }
 
   /// A demo class was opened (the DEMO chip's timetable): a clean page on its paper, and its
   /// panel with the plan and the resources picked for it (primary classes start an activity).
@@ -338,6 +382,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   @override
   void dispose() {
+    _zones.dispose();
     if (presentationHost == _showPresentation) presentationHost = null;
     _ppt?.dispose();
     DemoClassSwitcher.detach(board);
@@ -800,6 +845,8 @@ class _BoardScreenState extends State<BoardScreen> {
     if (_captureStarting) return;
     _captureStarting = true;
     try {
+      // The institution's policy, and the notice the first time in each class.
+      if (!await RecordingPolicy.confirm(context, s.sessionId) || !mounted) return;
       final capture = await board.recordings.newCapture(id: board.newId(), board: _wb, background: _background, canvas: _canvasSize);
       final noSound = await capture.start();
       if (!mounted || board.session?.sessionId != s.sessionId) {
@@ -1783,6 +1830,19 @@ class _BoardScreenState extends State<BoardScreen> {
         // The class toolkit: its cards, the screen shade and the spotlight (under the toolbars).
         Positioned.fill(
           child: ToolkitLayer(kit: _kit, insets: _wb.safeInsets, onAnswer: board.session == null ? null : board.recordAnswer),
+        ),
+        // Multi-user zones: a pen bar per zone, lines between zones.
+        Positioned.fill(child: BoardChromeTheme(child: BoardZonesLayer(zones: _zones))),
+        // The 20-20-20 break reminder (Eye comfort → Break reminders).
+        Positioned(
+          top: 72,
+          left: Kx.s16,
+          right: Kx.s16,
+          child: Center(
+            child: BoardChromeTheme(
+              child: BreakReminderBanner(activity: _wb, enabled: () => board.eyeComfort.breakReminder),
+            ),
+          ),
         ),
         if (_practice != null)
           Positioned(
