@@ -1675,6 +1675,10 @@ export const enquiries = pgTable(
     campaignId: uuid('campaign_id').references((): AnyPgColumn => admissionCampaigns.id, { onDelete: 'set null' }),
     utmSource: text('utm_source'),
     utmMedium: text('utm_medium'),
+    /** Rule-based lead score (admissions/lead-score.ts), recomputed whenever the enquiry changes. */
+    leadScore: integer('lead_score').notNull().default(0),
+    /** The agent or partner whose referral code the family used. */
+    agentId: uuid('agent_id').references((): AnyPgColumn => admissionAgents.id, { onDelete: 'set null' }),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -1788,6 +1792,7 @@ export const applications = pgTable(
     /** SHA-256 of the token in the applicant's link; the token itself is shown once. */
     accessTokenHash: text('access_token_hash').notNull(),
     offerExpiresOn: date('offer_expires_on'),
+    agentId: uuid('agent_id').references((): AnyPgColumn => admissionAgents.id, { onDelete: 'set null' }),
     studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: updatedAt(),
