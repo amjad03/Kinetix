@@ -2843,4 +2843,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get classNotesWatch => 'Watch the lesson';
+
+  @override
+  String get attendanceEnterCode => 'Mark yourself present';
+
+  @override
+  String get attendanceCodeHint => 'Code on the teacher\'s screen';
+
+  @override
+  String get attendanceCodeSubmit => 'Mark me present';
+
+  @override
+  String get attendanceMarkedPresent => 'You are marked present.';
+
+  @override
+  String get attendanceAlreadyMarked => 'Your attendance for this period was already recorded.';
 }

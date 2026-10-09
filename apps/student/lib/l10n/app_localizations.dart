@@ -5108,6 +5108,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Watch the lesson'**
   String get classNotesWatch;
+
+  /// No description provided for @attendanceEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark yourself present'**
+  String get attendanceEnterCode;
+
+  /// No description provided for @attendanceCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Code on the teacher\'s screen'**
+  String get attendanceCodeHint;
+
+  /// No description provided for @attendanceCodeSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark me present'**
+  String get attendanceCodeSubmit;
+
+  /// No description provided for @attendanceMarkedPresent.
+  ///
+  /// In en, this message translates to:
+  /// **'You are marked present.'**
+  String get attendanceMarkedPresent;
+
+  /// No description provided for @attendanceAlreadyMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Your attendance for this period was already recorded.'**
+  String get attendanceAlreadyMarked;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

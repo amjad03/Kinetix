@@ -835,5 +835,10 @@
   "classNotesEmpty": "ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಇನ್ನೂ ಏನನ್ನೂ ಹಂಚಿಕೊಂಡಿಲ್ಲ.",
   "classNotesNoRecap": "ಈ ಪಾಠದ ಸಾರಾಂಶ ಇನ್ನೂ ಸಿದ್ಧವಾಗಿಲ್ಲ.",
   "classNotesKeyPoints": "ಮುಖ್ಯ ಅಂಶಗಳು",
-  "classNotesWatch": "ಪಾಠ ನೋಡಿ"
+  "classNotesWatch": "ಪಾಠ ನೋಡಿ",
+  "attendanceEnterCode": "ನಿಮ್ಮನ್ನು ಹಾಜರು ಎಂದು ದಾಖಲಿಸಿ",
+  "attendanceCodeHint": "ಶಿಕ್ಷಕರ ಪರದೆಯಲ್ಲಿರುವ ಕೋಡ್",
+  "attendanceCodeSubmit": "ನನ್ನನ್ನು ಹಾಜರು ಎಂದು ದಾಖಲಿಸಿ",
+  "attendanceMarkedPresent": "ನಿಮ್ಮನ್ನು ಹಾಜರು ಎಂದು ದಾಖಲಿಸಲಾಗಿದೆ.",
+  "attendanceAlreadyMarked": "ಈ ಅವಧಿಯ ನಿಮ್ಮ ಹಾಜರಾತಿ ಈಗಾಗಲೇ ದಾಖಲಾಗಿದೆ."
 }

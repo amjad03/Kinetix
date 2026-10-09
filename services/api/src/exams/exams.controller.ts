@@ -13,6 +13,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { parseDate } from '../teacher/teacher.service.js';
+import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
 import { hallTicketPdf } from './documents.js';
 import { ExamsService, type SessionRow } from './exams.service.js';
 import { allocateSeats, overlaps, slotGroups } from './seating.js';
@@ -41,7 +42,7 @@ const PaperBody = z.object({
   maxMarks: z.number().positive().max(1000),
 });
 const SeatingBody = z.object({ halls: z.array(z.object({ roomId: z.uuid(), capacity: z.number().int().min(1).max(2000) })).min(1).max(40) });
-const TicketsBody = z.object({ blocks: z.array(z.object({ studentId: z.uuid(), reason: z.string().trim().min(1).max(200) })).max(500).default([]) });
+const TicketsBody = z.object({ blocks: z.array(z.object({ studentId: z.uuid(), reason: z.string().trim().min(1).max(200) })).max(500).default([]), /** Also withhold tickets from students under the attendance threshold (after condonation). */ blockByAttendance: z.boolean().default(false) });
 
 /** Exam sessions: papers, seating, hall tickets, result processing, publish and lock. */
 @Controller('v1/exam-sessions')
@@ -224,6 +225,14 @@ export class ExamSessionsController {
       const papers = await tx.select({ sectionId: examPapers.sectionId }).from(examPapers).where(eq(examPapers.sessionId, id));
       const roster = await tx.select({ id: students.id, rollNo: students.rollNo }).from(students).where(and(inArray(students.sectionId, [...new Set(papers.map((x) => x.sectionId))]), eq(students.status, 'active')));
       const blocks = new Map(body.blocks.map((b) => [b.studentId, b.reason]));
+      if (body.blockByAttendance) {
+        const cfg = await attendanceSettings(tx);
+        const att = await overallAttendance(tx, roster.map((r) => r.id), cfg.thresholdPct);
+        for (const r of roster) {
+          const a = att.get(r.id);
+          if (a && !a.eligible && !blocks.has(r.id)) blocks.set(r.id, `Attendance ${a.effectivePct}% is below ${cfg.thresholdPct}%`);
+        }
+      }
       for (const r of roster) {
         const v = { blocked: blocks.has(r.id), blockedReason: blocks.get(r.id) ?? null };
         await tx.insert(hallTickets).values({ tenantId: p.tenantId, sessionId: id, studentId: r.id, ticketNo: `HT-${id.slice(0, 6).toUpperCase()}-${r.rollNo}`, ...v }).onConflictDoUpdate({ target: [hallTickets.sessionId, hallTickets.studentId], set: v });

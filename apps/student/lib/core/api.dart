@@ -88,6 +88,9 @@ abstract class StudentApi {
   /// Every period's mark over the last [days] days, newest day first.
   Future<List<ClassMark>> attendance(String studentId, {int days = 30});
 
+  /// Marks the student present for the period whose code the teacher is showing. Returns true when a mark was already there.
+  Future<bool> scanAttendance(String code);
+
   Future<Inbox> notifications();
   Future<void> markRead(String notificationId);
   Future<void> markAllRead();
@@ -406,6 +409,10 @@ class HttpStudentApi implements StudentApi {
     for (final m in await _send('GET', '/v1/parent/children/$studentId/attendance?days=$days') as List)
       ClassMark.fromJson(m as Map<String, dynamic>),
   ];
+
+  @override
+  Future<bool> scanAttendance(String code) async =>
+      ((await _send('POST', '/v1/student/attendance/scan', body: {'code': code.trim()})) as Map<String, dynamic>)['alreadyMarked'] == true;
 
   @override
   Future<Inbox> notifications() async => Inbox.fromJson(await _send('GET', '/v1/notifications'));

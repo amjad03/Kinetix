@@ -835,5 +835,10 @@
   "classNotesEmpty": "आपकी कक्षा के साथ अभी कुछ साझा नहीं किया गया है।",
   "classNotesNoRecap": "इस पाठ का सारांश अभी तैयार नहीं है।",
   "classNotesKeyPoints": "मुख्य बिंदु",
-  "classNotesWatch": "पाठ देखें"
+  "classNotesWatch": "पाठ देखें",
+  "attendanceEnterCode": "स्वयं को उपस्थित दर्ज करें",
+  "attendanceCodeHint": "शिक्षक की स्क्रीन पर दिखा कोड",
+  "attendanceCodeSubmit": "मुझे उपस्थित दर्ज करें",
+  "attendanceMarkedPresent": "आप उपस्थित दर्ज हो गए हैं।",
+  "attendanceAlreadyMarked": "इस पीरियड की आपकी उपस्थिति पहले ही दर्ज है।"
 }

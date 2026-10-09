@@ -170,6 +170,9 @@ const SettingsBody = z
       .object({ name: z.string().trim().min(1).max(120), email: z.email().optional(), phone: z.string().trim().max(20).optional() })
       .nullable(),
     recordingRetentionGraceDays: z.number().int().min(0).max(90),
+    /** Hours after a day ends when its attendance locks; null = never. */
+    attendanceLockHours: z.number().int().min(0).max(720).nullable(),
+    attendanceThresholdPct: z.number().int().min(1).max(100),
     boardTraining: z.object({ url: z.url().max(500).nullable().optional(), contact: z.string().trim().max(200).nullable().optional() }).strict().nullable(),
     boardWhatsNew: z.array(z.object({ title: z.string().trim().min(1).max(120), body: z.string().trim().max(1000), at: z.iso.date() })).max(30),
     /** Kiosk mode on boards. `pin` sets the IT PIN (4–8 digits; only its hash is kept) or removes it (null). */
@@ -232,6 +235,8 @@ function withDefaults(s: TenantSettings) {
     classroomAudioToViewers: s.classroomAudioToViewers ?? false,
     pinFallbackEnabled: s.pinFallbackEnabled ?? false,
     grievanceOfficer: s.grievanceOfficer ?? null,
+    attendanceLockHours: s.attendanceLockHours ?? null,
+    attendanceThresholdPct: s.attendanceThresholdPct ?? 75,
     recordingRetentionGraceDays: s.recordingRetentionGraceDays ?? DEFAULT_RETENTION_GRACE_DAYS,
     // The board profile's training link and the What's New announcements (Settings → Smartboard reads them back).
     boardTraining: s.boardTraining ?? null,

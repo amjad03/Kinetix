@@ -2857,4 +2857,19 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get classNotesWatch => 'ಪಾಠ ನೋಡಿ';
+
+  @override
+  String get attendanceEnterCode => 'ನಿಮ್ಮನ್ನು ಹಾಜರು ಎಂದು ದಾಖಲಿಸಿ';
+
+  @override
+  String get attendanceCodeHint => 'ಶಿಕ್ಷಕರ ಪರದೆಯಲ್ಲಿರುವ ಕೋಡ್';
+
+  @override
+  String get attendanceCodeSubmit => 'ನನ್ನನ್ನು ಹಾಜರು ಎಂದು ದಾಖಲಿಸಿ';
+
+  @override
+  String get attendanceMarkedPresent => 'ನಿಮ್ಮನ್ನು ಹಾಜರು ಎಂದು ದಾಖಲಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get attendanceAlreadyMarked => 'ಈ ಅವಧಿಯ ನಿಮ್ಮ ಹಾಜರಾತಿ ಈಗಾಗಲೇ ದಾಖಲಾಗಿದೆ.';
 }

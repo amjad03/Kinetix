@@ -76,7 +76,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final dates = days.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.yourAttendance)),
+      appBar: AppBar(
+        title: Text(context.l10n.yourAttendance),
+        actions: [
+          IconButton(
+            key: const Key('attendance-enter-code'),
+            tooltip: context.l10n.attendanceEnterCode,
+            icon: const Icon(Icons.qr_code_2_outlined),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AttendanceCodeScreen(api: widget.api))),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: CustomScrollView(
@@ -216,6 +226,85 @@ class _DayCard extends StatelessWidget {
                   ],
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Type the code the teacher shows on the classroom screen to mark yourself present (rotates every 30 seconds).
+class AttendanceCodeScreen extends StatefulWidget {
+  const AttendanceCodeScreen({super.key, required this.api});
+
+  final StudentApi api;
+
+  @override
+  State<AttendanceCodeScreen> createState() => _AttendanceCodeScreenState();
+}
+
+class _AttendanceCodeScreenState extends State<AttendanceCodeScreen> {
+  final _code = TextEditingController();
+  bool _busy = false;
+  String? _message;
+  bool _failed = false;
+
+  @override
+  void dispose() {
+    _code.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    setState(() {
+      _busy = true;
+      _message = null;
+    });
+    try {
+      final already = await widget.api.scanAttendance(_code.text);
+      if (!mounted) return;
+      setState(() {
+        _failed = false;
+        _message = already ? context.l10n.attendanceAlreadyMarked : context.l10n.attendanceMarkedPresent;
+      });
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _failed = true;
+          _message = e.message;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(context.l10n.attendanceEnterCode)),
+      body: Padding(
+        padding: const EdgeInsets.all(Kx.s16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              key: const Key('attendance-code-field'),
+              controller: _code,
+              autocorrect: false,
+              decoration: InputDecoration(labelText: context.l10n.attendanceCodeHint),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: Kx.s16),
+            FilledButton(
+              key: const Key('attendance-code-submit'),
+              onPressed: _busy || _code.text.trim().length < 20 ? null : _submit,
+              child: Text(context.l10n.attendanceCodeSubmit),
+            ),
+            if (_message != null) ...[
+              const SizedBox(height: Kx.s16),
+              Text(_message!, key: const Key('attendance-code-result'), style: TextStyle(color: _failed ? context.colors.error : null)),
+            ],
           ],
         ),
       ),

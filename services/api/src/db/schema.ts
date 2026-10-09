@@ -57,6 +57,10 @@ export interface TenantSettings {
   grievanceOfficer?: { name: string; email?: string; phone?: string } | null;
   /** Days lesson recordings are kept after their semester ends (default 7, 0–90). */
   recordingRetentionGraceDays?: number;
+  /** Hours after a day ends when its attendance locks (corrections then need approval). Absent = never locks. */
+  attendanceLockHours?: number | null;
+  /** Attendance percentage below which a student is short (default 75). */
+  attendanceThresholdPct?: number;
   /**
    * Kiosk mode on boards (docs/hardware/kiosk-mode.md): on unless turned off. pinHash is the IT
    * PIN's salted hash (src/common/kiosk-pin.ts), never the PIN; null until one is set.
@@ -268,10 +272,31 @@ export const students = pgTable(
   (t) => [uniqueIndex('students_section_roll_uq').on(t.sectionId, t.rollNo)],
 );
 
+/** A building on a campus; floors and rooms hang off it (Settings > Institution > Buildings). */
+export const buildings = pgTable('buildings', {
+  id: id(),
+  tenantId: tenantId(),
+  campusId: uuid('campus_id').notNull().references(() => campuses.id),
+  name: text('name').notNull(),
+  code: text('code'),
+  createdAt: createdAt(),
+});
+
+export const buildingFloors = pgTable('building_floors', {
+  id: id(),
+  tenantId: tenantId(),
+  buildingId: uuid('building_id').notNull().references(() => buildings.id, { onDelete: 'cascade' }),
+  /** 0 = ground floor, negative = basement. */
+  level: integer('level').notNull(),
+  label: text('label').notNull(),
+});
+
 export const rooms = pgTable('rooms', {
   id: id(),
   tenantId: tenantId(),
   campusId: uuid('campus_id').notNull().references(() => campuses.id),
+  /** Optional place in the buildings hierarchy. */
+  floorId: uuid('floor_id').references(() => buildingFloors.id, { onDelete: 'set null' }),
   name: text('name').notNull(),
   /** Seats; null = not set, so no capacity check. */
   capacity: integer('capacity'),
@@ -467,6 +492,82 @@ export const attendanceRecords = pgTable(
     unique('attendance_uq').on(t.studentId, t.date, t.timetableSlotId).nullsNotDistinct(),
   ],
 );
+
+/** A teacher's request to change a mark after the day was locked; a head of department or the principal decides. */
+export const attendanceCorrections = pgTable(
+  'attendance_corrections',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    timetableSlotId: uuid('timetable_slot_id').notNull().references(() => timetableSlots.id),
+    date: date('date').notNull(),
+    fromStatus: attendanceStatus('from_status'),
+    toStatus: attendanceStatus('to_status').notNull(),
+    reason: text('reason').notNull(),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    /** pending | approved | rejected */
+    status: text('status').notNull().default('pending'),
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('attendance_corrections_status_idx').on(t.tenantId, t.status)],
+);
+
+/** Attendance condonation (medical or other); the principal sets how many percentage points it adds. */
+export const attendanceCondonations = pgTable(
+  'attendance_condonations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    /** Null = applies to overall attendance. */
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    /** medical | other */
+    kind: text('kind').notNull(),
+    reason: text('reason').notNull(),
+    documentKey: text('document_key'),
+    documentType: text('document_type'),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    status: text('status').notNull().default('pending'),
+    /** Percentage points added to the student's attendance once approved. */
+    approvedPoints: integer('approved_points').notNull().default(0),
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('attendance_condonations_student_idx').on(t.studentId, t.status)],
+);
+
+/** One row per institution: legal and affiliation details, plus the capability profile (academic model and module toggles). */
+export const institutionProfiles = pgTable('institution_profiles', {
+  id: id(),
+  tenantId: tenantId().unique(),
+  legalName: text('legal_name'),
+  affiliationBody: text('affiliation_body'),
+  affiliationNo: text('affiliation_no'),
+  aisheCode: text('aishe_code'),
+  naacGrade: text('naac_grade'),
+  establishedYear: integer('established_year'),
+  addressLine: text('address_line'),
+  city: text('city'),
+  state: text('state'),
+  pincode: text('pincode'),
+  phone: text('phone'),
+  email: text('email'),
+  website: text('website'),
+  /** school | puc | ug | pg | university */
+  academicModel: text('academic_model').notNull().default('school'),
+  /** Board or university name, e.g. CBSE, State Board, Bangalore University. */
+  boardOrUniversity: text('board_or_university'),
+  /** Module key -> off. A module not listed is on. */
+  disabledModules: jsonb('disabled_modules').$type<string[]>().notNull().default([]),
+  updatedAt: updatedAt(),
+});
 
 /** `answered`: answered a class question that has no right answer (an opinion poll). */
 export const participationOutcome = pgEnum('participation_outcome', ['correct', 'partial', 'incorrect', 'skipped', 'answered']);
@@ -2940,6 +3041,11 @@ export const TENANT_TABLES = [
   'discipline_appeals',
   'counselling_sessions',
   'welfare_requests',
+  'attendance_corrections',
+  'attendance_condonations',
+  'institution_profiles',
+  'buildings',
+  'building_floors',
   'surveys',
   'survey_questions',
   'survey_responses',

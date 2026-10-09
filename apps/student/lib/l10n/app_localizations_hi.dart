@@ -2848,4 +2848,19 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get classNotesWatch => 'पाठ देखें';
+
+  @override
+  String get attendanceEnterCode => 'स्वयं को उपस्थित दर्ज करें';
+
+  @override
+  String get attendanceCodeHint => 'शिक्षक की स्क्रीन पर दिखा कोड';
+
+  @override
+  String get attendanceCodeSubmit => 'मुझे उपस्थित दर्ज करें';
+
+  @override
+  String get attendanceMarkedPresent => 'आप उपस्थित दर्ज हो गए हैं।';
+
+  @override
+  String get attendanceAlreadyMarked => 'इस पीरियड की आपकी उपस्थिति पहले ही दर्ज है।';
 }

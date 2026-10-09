@@ -37,11 +37,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   if (me.data.mustSetUpMfa) redirect('/account/security');
   // The top bar's extras are best effort: a failure hides them rather than the page.
   const roles = me.data.roles;
-  const [structure, notes] = await Promise.all([
+  const [structure, notes, caps] = await Promise.all([
     canSee(roles, 'school') || canSee(roles, 'fees') || canSee(roles, 'admissions')
       ? load(() => api<{ academicYears: { id: string; label: string; isCurrent: boolean }[] }>('/v1/admin/structure'))
       : Promise.resolve(null),
     load(() => api<Notifications>('/v1/notifications?limit=10')),
+    load(() => api<{ disabledModules: string[] }>('/v1/institution/capabilities')),
   ]);
   const years = structure?.data?.academicYears ?? [];
   const picked = (await cookies()).get(YEAR_COOKIE)?.value ?? '';
@@ -54,6 +55,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       yearId={yearId}
       notices={notes.data?.items ?? []}
       unread={notes.data?.unread ?? 0}
+      disabledModules={caps.data?.disabledModules ?? []}
     >
       {children}
     </AppShell>

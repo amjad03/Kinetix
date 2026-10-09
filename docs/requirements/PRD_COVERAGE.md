@@ -37,9 +37,9 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Institution type (school/college/university) | Partial | `api/db/schema.ts` (`institution_kind`) | only 3 kinds; no PUC, autonomous college, deemed, custom |
 | Academic model selector (GRADE_SECTION, PROGRAM_SEMESTER_COURSE, EARLY_YEARS, STREAM_COMBINATION) | Missing | none | no `academicModel` on tenant; model is implied by data |
 | Board / university / regulatory framework per tenant | Missing | `api/db/schema.ts` (`programs.curriculumCode` only) | no board/regulation entity on tenant |
-| Enabled modules by capability flag | Partial | `api/flags/flags.ts` | only 5 flags (analytics, accreditation, search, classroom analytics, virus scan); modules are not gated by capability |
+| Enabled modules by capability flag | Partial | `api/institution/institution.controller.ts` | academic model and 16 module toggles hide ERP nav sections; API endpoints are not gated |
 | Grading model per institution | Built | `api/exams/exams.controller.ts` (`grade-scales`, `result-rules`) | |
-| Attendance model per institution | Missing | none | thresholds/modes not configurable |
+| Attendance model per institution | Partial | `api/calendar/calendar.controller.ts` (settings) | lock hours and threshold configurable; no per-programme override |
 | Fee model, quality framework, language set, integrations | Partial | `api/fees/fees.controller.ts`, `api/analytics/accreditation.ts`, `api/connectors` | languages en/hi/kn built; fee model and framework not driven by a capability profile |
 | Sample configurations (Appendix B) loadable as presets | Missing | none | no preset import |
 
@@ -59,8 +59,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
-| 5.1 Institution profile | Partial | `api/db/schema.ts` (`tenants`) | name, timezone, settings only; no legal name, registration, affiliation, accreditation, address, branding fields |
-| 5.2 Campus, rooms, departments | Partial | `api/departments/departments.controller.ts`, `api/admin/timetable-admin.controller.ts` (`rooms`) | no buildings/floors/facilities entity; labs only as room kind |
+| 5.1 Institution profile | Built | `api/institution/institution.controller.ts`, `erp/settings/institution` | legal, affiliation, AISHE, NAAC, address, contacts; logo not covered |
+| 5.2 Campus, rooms, departments | Built | `api/institution/institution.controller.ts`, `erp/settings/buildings` | buildings, floors, rooms placed on floors |
 | 5.3 Multi-campus (staff, students, timetable, fee, assets, transport per campus) | Partial | `api/db/schema.ts` (`campusId` on programs, rooms, devices, roles) | campus-specific fee structures and configs absent |
 | 5.4 Institution configuration (grading, approvals, comms, privacy, AI policy, content policy) | Partial | `erp/settings/page.tsx` | retention + security policy built; AI policy, communication-channel and privacy toggles absent |
 
@@ -167,13 +167,13 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Manual, Smartboard marking | Built | `api/teacher/teacher.controller.ts` (`v1/attendance`) | |
-| QR attendance | Missing | none | QR exists only for events/passes |
+| QR attendance | Built | `api/attendance-governance/governance.controller.ts` | 8-digit code rotating every 30 s (HMAC), Student App code entry; camera scan not added (no scanner dependency) |
 | Biometric (students) | Missing | `api/hr/biometric-csv.ts` (staff only) | |
 | AI-assisted attendance (confidence, consent, audit) | Missing | none | deliberately not built |
 | Statuses present/absent/late/excused | Built | `api/db/schema.ts` (`attendance_status`) | approved-leave and custom states absent |
 | Leave integration | Built | `api/students/student-leave.controller.ts` | |
 | Subject-wise / day / month / term / class views | Partial | `erp/attendance`, `erp/reports` | period-level data; no term/semester roll-up screen |
-| Corrections, approval, lock, shortage, warnings | Missing | none | upsert last-writer-wins; no lock, no condonation, no shortage warning |
+| Corrections, approval, lock, shortage, warnings | Built | `api/attendance-governance/governance.controller.ts` | lock after N hours, HoD/principal-approved corrections, shortage report, condonation with document, eligibility |
 | Parent alerts on absence | Built | `api/notifications/notifications.service.ts` | |
 
 ## 15. School-specific academic system
@@ -271,7 +271,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Exam sessions, calendar/schedule, publication, lock | Built | `api/exams/exams.controller.ts` | |
-| Exam declaration / student exam registration, eligibility | Partial | `api/exams/exams.service.ts` | attendance-based eligibility rule not found; registration implicit |
+| Exam declaration / student exam registration, eligibility | Partial | `api/exams/exams.controller.ts` | hall tickets can withhold on attendance shortage (blockByAttendance); registration implicit |
 | Hall tickets (photo, QR/barcode) | Partial | `api/exams/documents.ts` | PDF built; barcode/QR on hall ticket not found |
 | Hall allocation and seating (batch, roll number, anti-collusion) | Partial | `api/exams/seating.ts` | rule set is basic; anti-collusion pattern not found |
 | Invigilation (duty, substitution, reporting) | Built | `api/exams/exam-depth.controller.ts` | duty attendance not recorded |

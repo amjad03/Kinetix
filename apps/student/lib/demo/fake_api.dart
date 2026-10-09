@@ -717,6 +717,12 @@ class FakeStudentApi implements StudentApi {
   Future<Inbox> notifications() async => Inbox(unread: inbox.where((n) => n.unread).length, items: inbox);
 
   @override
+  Future<bool> scanAttendance(String code) async {
+    calls.add('scan $code');
+    return false;
+  }
+
+  @override
   Future<void> markRead(String notificationId) async => calls.add('read $notificationId');
 
   @override

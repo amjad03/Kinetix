@@ -13,6 +13,7 @@ import { SystemLookups } from '../db/system-lookups.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { attendanceRecords, boardSessions, devices, guardians, homework, sections, students, subjects, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
+import { attendanceLocked } from '../attendance-governance/attendance-rules.js';
 import { isoWeekday, isSchoolAdmin, parseDate, TeacherService } from './teacher.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 
@@ -250,6 +251,10 @@ export class AttendanceController {
       if (isoWeekday(day) !== slot.dayOfWeek) throw new BadRequestException('This period is not on that day');
       const now = await this.teacher.localNow(tx);
       if (day > now.date) throw new BadRequestException('Attendance cannot be taken for a future date');
+      const [cfg] = await tx.select({ settings: tenants.settings, tz: tenants.timezone }).from(tenants);
+      if (attendanceLocked(day, this.clock.now(), cfg?.tz ?? 'Asia/Kolkata', cfg?.settings?.attendanceLockHours)) {
+        throw new ConflictException('Attendance for this day is locked. Ask for a correction and your head of department will review it.');
+      }
 
       // One mark per student; the last one in the list wins.
       const marks = new Map(body.records.map((r) => [r.studentId, r.status]));

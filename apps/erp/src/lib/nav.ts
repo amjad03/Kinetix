@@ -69,7 +69,15 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/calendar', label: 'nav.calendar', section: 'calendar', icon: 'calendar' },
     ],
   },
-  { id: 'attendance', label: 'grp.attendance', icon: 'attendance', items: [{ href: '/attendance', label: 'nav.attendance', section: 'school', icon: 'attendance' }] },
+  {
+    id: 'attendance',
+    label: 'grp.attendance',
+    icon: 'attendance',
+    items: [
+      { href: '/attendance', label: 'nav.attendance', section: 'school', icon: 'attendance' },
+      { href: '/attendance/governance', label: 'nav.attendanceGov', section: 'school', icon: 'academicAudit' },
+    ],
+  },
   {
     id: 'exams',
     label: 'grp.exams',
@@ -184,6 +192,8 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'settings',
     items: [
       { href: '/settings', label: 'nav.settings', section: 'settings', icon: 'settings' },
+      { href: '/settings/institution', label: 'nav.institution', section: 'settings', icon: 'departments' },
+      { href: '/settings/buildings', label: 'nav.buildings', section: 'settings', icon: 'campus' },
       { href: '/audit', label: 'nav.audit', section: 'audit', icon: 'academicAudit' },
       { href: '/connectors', label: 'nav.connectors', section: 'connectors', icon: 'import' },
       { href: '/import', label: 'nav.import', section: 'import', icon: 'import' },
@@ -194,8 +204,10 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 /** The groups (and the pages in them) this person may open; empty groups are dropped. */
-export function visibleGroups(roles: readonly RoleName[], platformAdmin = false): NavGroup[] {
-  return NAV_GROUPS.map((g) => ({ ...g, solo: g.items.length === 1, items: g.items.filter((i) => (i.section === 'platform' ? platformAdmin : canSee(roles, i.section))) })).filter((g) => g.items.length > 0);
+export function visibleGroups(roles: readonly RoleName[], platformAdmin = false, disabledModules: readonly string[] = []): NavGroup[] {
+  // Modules the institution switched off (Settings > Institution profile) are hidden from the menu.
+  const on = (i: NavItem) => !disabledModules.includes(i.section);
+  return NAV_GROUPS.map((g) => ({ ...g, solo: g.items.length === 1, items: g.items.filter((i) => on(i) && (i.section === 'platform' ? platformAdmin : canSee(roles, i.section))) })).filter((g) => g.items.length > 0);
 }
 
 export function isActivePath(pathname: string, href: string): boolean {

@@ -1,6 +1,7 @@
 import type { Ctx } from './ctx.js';
 import { assessmentsAndHomework, attendance, lessonPlans, lms } from './academics.js';
 import { assets, hostelAndCanteen, inventory, library, transport } from './campus.js';
+import { attendanceGovernance } from './attendance-gov.js';
 import { admissions } from './admissions.js';
 import { alumni, campusLife, mentoring, placements, skills } from './engagement.js';
 import { communication, documents, governance, health, integrations, lifecycle, reportsAndSystem, research, smartboards, tasksAndWorkflows, welfareAndDiscipline } from './operations.js';
@@ -14,6 +15,7 @@ import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['attendance and student leave', attendance],
+  ['today\'s attendance, corrections, condonation, institution profile and buildings', attendanceGovernance],
   ['internal assessments and homework', assessmentsAndHomework],
   ['LMS', lms],
   ['lesson plans', lessonPlans],

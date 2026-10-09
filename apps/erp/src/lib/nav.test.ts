@@ -22,6 +22,15 @@ describe('navigation groups', () => {
     expect(all[all.length - 1]).toBe('settings');
   });
 
+  it('hides the modules an institution switched off', () => {
+    const all = visibleGroups(['principal']).flatMap((g) => g.items.map((i) => i.section));
+    expect(all).toContain('hostel');
+    const off = visibleGroups(['principal'], false, ['hostel', 'transport']).flatMap((g) => g.items.map((i) => i.section));
+    expect(off).not.toContain('hostel');
+    expect(off).not.toContain('transport');
+    expect(off).toContain('canteen');
+  });
+
   it('lists every section that has a page exactly where access.ts says', () => {
     const used = new Set(NAV_GROUPS.flatMap((g) => g.items.map((i) => i.section)));
     // Everything but the sections that are reached from inside another page.

@@ -54,6 +54,7 @@ export function AppShell({
   yearId = '',
   notices = [],
   unread = 0,
+  disabledModules = [],
   children,
 }: {
   user: ShellUser;
@@ -62,6 +63,8 @@ export function AppShell({
   yearId?: string;
   notices?: ShellNotice[];
   unread?: number;
+  /** Sections the institution switched off; hidden from the menu. */
+  disabledModules?: string[];
   children: ReactNode;
 }) {
   const { t } = useI18n();
@@ -69,7 +72,7 @@ export function AppShell({
   const [mobile, setMobile] = useState(false);
   // null: follow the screen (rail on tablets, full on desktops); otherwise the person's choice, remembered.
   const pref = useSyncExternalStore(subscribeRail, readRail, () => null);
-  const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin), [user.roles, user.platformAdmin]);
+  const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin, disabledModules), [user.roles, user.platformAdmin, disabledModules]);
   const crumbs = useMemo(() => crumbsFor(groups, pathname), [groups, pathname]);
   const home = homeFor(user.roles as never);
 

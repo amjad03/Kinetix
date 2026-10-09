@@ -38,6 +38,8 @@ import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { ConnectorsModule } from './connectors/connectors.module.js';
 import { WelfareModule } from './welfare/welfare.module.js';
+import { AttendanceGovernanceModule } from './attendance-governance/governance.module.js';
+import { InstitutionModule } from './institution/institution.module.js';
 import { SurveysModule } from './surveys/surveys.module.js';
 import { CourseRegistrationModule } from './course-registration/course-registration.module.js';
 import { WorkflowsModule } from './workflows/workflows.module.js';
@@ -134,6 +136,8 @@ import { SearchModule } from './search/search.controller.js';
     PlacementsModule,
     ResearchModule,
     WelfareModule,
+    AttendanceGovernanceModule,
+    InstitutionModule,
     ConnectorsModule,
     SurveysModule,
     CourseRegistrationModule,
