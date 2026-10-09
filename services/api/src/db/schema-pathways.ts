@@ -653,7 +653,7 @@ export const disciplineParentContacts = pgTable(
 
 /** How long records are kept: archive or delete after `keepDays`. */
 export const retentionRules = pgTable(
-  'retention_rules',
+  'data_retention_rules',
   {
     id: id(),
     tenantId: tenantId(),
@@ -666,7 +666,7 @@ export const retentionRules = pgTable(
     lastAffected: integer('last_affected').notNull().default(0),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('retention_rules_uq').on(t.tenantId, t.target, t.category)],
+  (t) => [uniqueIndex('data_retention_rules_uq').on(t.tenantId, t.target, t.category)],
 );
 
 // ---- Communication engine ---------------------------------------------------------------------

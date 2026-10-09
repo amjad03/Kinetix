@@ -208,7 +208,10 @@ describe('placements, internships and alumni', () => {
       const shown = (await post('officer', '/v1/placements/alumni', { ...base, directoryVisible: true }).expect(201)).body;
       await post('officer', '/v1/placements/alumni', { ...base, fullName: 'Private Person', directoryVisible: false }).expect(201);
       await post('teacher', '/v1/placements/alumni', base).expect(403);
-      expect((await get('officer', '/v1/placements/alumni').expect(200)).body).toHaveLength(2);
+      // The two above, and the placed student whom accepting an offer in the drive tests made an alumnus (not in the directory until they consent).
+      const all = (await get('officer', '/v1/placements/alumni').expect(200)).body;
+      expect(all).toHaveLength(3);
+      expect(all.filter((a: { directoryVisible: boolean }) => a.directoryVisible)).toHaveLength(1);
       const dir = (await get('student', '/v1/placements/alumni').expect(200)).body;
       expect(dir).toHaveLength(1);
       expect(dir[0]).toMatchObject({ fullName: 'Asha Rao', employer: 'Infosys' });

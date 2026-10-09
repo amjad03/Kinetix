@@ -85,6 +85,18 @@ export interface CustomResult {
   truncated: boolean;
 }
 
+/** The chart a result can show: the first column as the label and the first column with numbers as the bar, up to 20 rows; null when nothing is numeric. */
+export function chartOf(data: CustomResult): { label: string; measure: string; bars: { name: string; value: number }[] } | null {
+  const numeric = data.columns.find((c, i) => i > 0 && data.rows.some((r) => typeof r[c.key] === 'number'));
+  const first = data.columns[0];
+  if (!numeric || !first) return null;
+  const bars = data.rows
+    .filter((r) => typeof r[numeric.key] === 'number')
+    .slice(0, 20)
+    .map((r) => ({ name: String(r[first.key] ?? '-'), value: Math.max(0, r[numeric.key] as number) }));
+  return bars.length ? { label: first.label, measure: numeric.label, bars } : null;
+}
+
 export const OPS = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'contains', 'in', 'is_null', 'not_null'] as const;
 const list = (s: string) => s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
 

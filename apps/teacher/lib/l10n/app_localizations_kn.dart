@@ -3099,4 +3099,47 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get vivaScheduled => 'ನಿಗದಿಯಾಗಿದೆ';
+
+  @override
+  String get markingHelp => 'ಅಂಕ ನೀಡಲು ಸಹಾಯ';
+
+  @override
+  String get markingHelpNote => 'AI ಕೇವಲ ಕರಡನ್ನು ನೀಡುತ್ತದೆ. ಅಂಕ ಮತ್ತು ಟಿಪ್ಪಣಿಯನ್ನು ನೀವು ನಿರ್ಧರಿಸುತ್ತೀರಿ.';
+
+  @override
+  String get markingHelpOutOf => 'ಒಟ್ಟು ಎಷ್ಟು ಅಂಕಗಳಲ್ಲಿ?';
+
+  @override
+  String get markingHelpAsk => 'ಕರಡು ಪಡೆಯಿರಿ';
+
+  @override
+  String get markingHelpUse => 'ಟಿಪ್ಪಣಿಯಾಗಿ ಬಳಸಿ';
+
+  @override
+  String markingHelpDraft(String marks, String max) {
+    return '$max ರಲ್ಲಿ $marks ಸೂಚಿತ';
+  }
+
+  @override
+  String get offlineTitle => 'ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲದೆ ಬೋರ್ಡ್ ಪರಿಶೀಲನೆ';
+
+  @override
+  String get offlineNeedKey => 'ಒಮ್ಮೆ ಆನ್‌ಲೈನ್ ಇರುವಾಗ ಬೋರ್ಡ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ತೆರೆಯಿರಿ, ಆಗ ಈ ಫೋನ್ ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಕೀಲಿಯನ್ನು ಇಟ್ಟುಕೊಳ್ಳುತ್ತದೆ.';
+
+  @override
+  String get offlineExpired => 'ಈ ಕೋಡ್ ಅವಧಿ ಮೀರಿದೆ. ಈಗಿನ ಕೋಡ್‌ಗಾಗಿ ಬೋರ್ಡ್ ನೋಡಿ.';
+
+  @override
+  String get offlineNotYet => 'ಈ ಕೋಡ್ ಇನ್ನೂ ಮಾನ್ಯವಾಗಿಲ್ಲ. ಈ ಫೋನ್‌ನ ಸಮಯ ಪರಿಶೀಲಿಸಿ.';
+
+  @override
+  String get offlineWrongInstitution => 'ಈ ಬೋರ್ಡ್ ಬೇರೊಂದು ಸಂಸ್ಥೆಗೆ ಸೇರಿದೆ.';
+
+  @override
+  String get offlineBad => 'ಇದು ನಿಜವಾದ KINETIX ಬೋರ್ಡ್ ಕೋಡ್ ಅಲ್ಲ.';
+
+  @override
+  String offlineVerified(String board, String time) {
+    return 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ನಿಜವಾದ ಬೋರ್ಡ್ ($board ರಲ್ಲಿ ಕೊನೆ). ಕೋಡ್ $time ವರೆಗೆ ಮಾನ್ಯ. ಅದಕ್ಕೆ ಸೈನ್ ಇನ್ ಆಗಲು ಇಂಟರ್ನೆಟ್ ಬೇಕು.';
+  }
 }

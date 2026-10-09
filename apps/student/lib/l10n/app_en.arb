@@ -2815,5 +2815,13 @@
   "volSignUp": "Sign up",
   "volWithdraw": "Withdraw",
   "volFull": "Full",
-  "volThanks": "Thank you for volunteering."
+  "volThanks": "Thank you for volunteering.",
+  "tutorOpen": "Chat with your tutor",
+  "tutorTitle": "Your tutor",
+  "tutorNew": "New conversation",
+  "tutorEmpty": "Ask anything you are stuck on. Your tutor remembers the conversation and knows where you need the most help.",
+  "tutorHint": "Type your question",
+  "tutorSend": "Send",
+  "tutorNext": "Practise next",
+  "tutorPreview": "This is a sample answer: no AI server is connected yet."
 }

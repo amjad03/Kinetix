@@ -93,6 +93,29 @@ class Me {
   }
 }
 
+/// A short update written by KINETIX AI for a parent about their own child (`POST /v1/ai/parent/children/:id/insight`).
+class AiUpdate {
+  const AiUpdate({required this.headline, required this.highlights, required this.risks, required this.suggestions, required this.preview});
+
+  factory AiUpdate.fromJson(Map<String, dynamic> j) {
+    final r = j['result'] as Map<String, dynamic>;
+    List<String> strings(Object? v) => [for (final s in (v as List? ?? const [])) '$s'];
+    return AiUpdate(
+      headline: r['headline'] as String? ?? '',
+      highlights: strings(r['highlights']),
+      risks: strings(r['risks']),
+      suggestions: strings(r['suggestions']),
+      preview: ((j['meta'] as Map?)?['preview']) == true,
+    );
+  }
+
+  final String headline;
+  final List<String> highlights;
+  final List<String> risks;
+  final List<String> suggestions;
+  final bool preview;
+}
+
 class Child {
   Child({
     required this.id,

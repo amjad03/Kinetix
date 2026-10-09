@@ -8,6 +8,7 @@ import { alumni, campusLife, mentoring, placements, skills } from './engagement.
 import { communication, documents, governance, health, integrations, lifecycle, reportsAndSystem, research, smartboards, tasksAndWorkflows, welfareAndDiscipline } from './operations.js';
 import { curriculumAndConvocation } from './curriculum.js';
 import { smallTables, syllabus } from './finish.js';
+import { governanceDepth } from './governance-depth.js';
 import { exams } from './exams.js';
 import { obe, questionBank, studentAccounts, surveys } from './outcomes.js';
 import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from './quality.js';
@@ -61,6 +62,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['notices, messages and parent-teacher meeting', communication],
   ['counselling, grievances and discipline', welfareAndDiscipline],
   ['committees and governance', governance],
+  ['rule registry, incidents, retention, SaaS billing, AI evaluation and tutor history', governanceDepth],
   ['research', research],
   ['certificates, vault and consents', documents],
   ['student lifecycle history', lifecycle],

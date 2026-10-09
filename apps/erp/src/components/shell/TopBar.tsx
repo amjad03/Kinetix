@@ -9,6 +9,8 @@ import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsNoneOutlined from '@mui/icons-material/NotificationsNoneOutlined';
 import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
+import ViewAgendaOutlined from '@mui/icons-material/ViewAgendaOutlined';
+import ViewListOutlined from '@mui/icons-material/ViewListOutlined';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
@@ -28,7 +30,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { setLanguage } from '@/app/language/actions';
 import { signOut } from '@/app/login/actions';
-import { markNotificationsRead, setAcademicYear } from '@/app/shell/actions';
+import { markNotificationsRead, setAcademicYear, setDensity } from '@/app/shell/actions';
 import { useI18n } from '@/i18n/client';
 import { BCP47, LANGUAGE_NAMES, LOCALES } from '@/i18n/locales';
 import type { MessageKey } from '@/i18n/messages';
@@ -88,6 +90,7 @@ export function TopBar({
   yearId,
   notices,
   unread,
+  density = 'comfortable',
   onMenu,
 }: {
   user: { fullName: string; email: string | null; roles: RoleName[] };
@@ -98,6 +101,7 @@ export function TopBar({
   yearId: string;
   notices: ShellNotice[];
   unread: number;
+  density?: 'comfortable' | 'compact';
   onMenu: () => void;
 }) {
   const { t, fmt, locale } = useI18n();
@@ -169,6 +173,23 @@ export function TopBar({
           </Menu>
         </>
       )}
+
+      <Tooltip title={t(density === 'compact' ? 'shell.densityCompact' : 'shell.densityComfortable')}>
+        <IconButton
+          aria-label={t('shell.density')}
+          aria-pressed={density === 'compact'}
+          disabled={busy}
+          data-testid="density-button"
+          onClick={() =>
+            start(async () => {
+              await setDensity(density === 'compact' ? 'comfortable' : 'compact');
+              router.refresh();
+            })
+          }
+        >
+          {density === 'compact' ? <ViewAgendaOutlined /> : <ViewListOutlined />}
+        </IconButton>
+      </Tooltip>
 
       <Tooltip title={t('shell.language')}>
         <IconButton onClick={(e) => setLang(e.currentTarget)} aria-label={t('shell.language')} aria-haspopup="menu" data-testid="language-button">

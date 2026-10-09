@@ -17,21 +17,21 @@ export const WORKSPACE_SECTIONS: Record<Exclude<Workspace, 'all'>, readonly Sect
     ...COMMON,
     'admissions', 'admissionsTools', 'students', 'mentoring', 'diary', 'ptm', 'earlyYears', 'health', 'documents',
     'school', 'syllabus', 'curriculum', 'schoolMode', 'university', 'departments', 'courseRegistration', 'timetable', 'calendar', 'scheduling',
-    'exams', 'evaluation', 'evaluationDesk', 'results', 'courses', 'learningSupport', 'assessmentTools', 'conversations', 'placements', 'alumni', 'research', 'grievances', 'campusLife', 'skills',
+    'exams', 'evaluation', 'evaluationDesk', 'results', 'courses', 'learningSupport', 'assessmentTools', 'conversations', 'placements', 'alumni', 'research', 'grievances', 'campusLife', 'skills', 'integrity',
   ],
   finance_ops: [
     ...COMMON,
-    'fees', 'finance', 'payroll', 'payslips', 'hr', 'appraisal', 'transport', 'hostel', 'canteen', 'library', 'inventory', 'assets', 'import', 'connectors', 'dpdp', 'reports',
+    'fees', 'finance', 'payroll', 'payslips', 'hr', 'appraisal', 'transport', 'hostel', 'canteen', 'library', 'inventory', 'assets', 'import', 'connectors', 'dpdp', 'reports', 'billing', 'governance',
   ],
   quality: [
     ...COMMON,
-    'obe', 'academicAudit', 'courseFiles', 'surveys', 'reports', 'department', 'curriculum', 'university', 'grievances', 'dpdp', 'connectors',
+    'obe', 'academicAudit', 'courseFiles', 'surveys', 'reports', 'department', 'curriculum', 'university', 'grievances', 'dpdp', 'connectors', 'governance', 'aiAudit',
   ],
   content: [
     ...COMMON,
     'syllabus', 'topicVideos', 'courses', 'questionBank', 'curriculum', 'learningSupport', 'assessmentTools', 'skills', 'library', 'boards', 'devices', 'live',
   ],
-  ai: [...COMMON, 'ai', 'reports', 'department', 'topicVideos'],
+  ai: [...COMMON, 'ai', 'aiAudit', 'reports', 'department', 'topicVideos'],
 };
 
 /** Whether a page appears in the chosen workspace. */

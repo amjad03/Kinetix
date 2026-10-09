@@ -58,6 +58,19 @@ export async function sessionStep(sessionId: string, step: 'schedule' | 'process
   return post<Record<string, unknown>>(`/v1/exam-sessions/${sessionId}/${step}`, undefined, [`/exams/${sessionId}`, '/exams', '/results']);
 }
 
+/** Turns the approval step on or off for a session. */
+export async function setApprovalRequired(sessionId: string, required: boolean) {
+  if (!UUID.test(sessionId)) return bad('exm.err.session.pick');
+  return post(`/v1/exam-sessions/${sessionId}/approval-required`, { required }, [`/exams/${sessionId}`], 'PUT');
+}
+
+/** Asks for approval, approves, or returns the processed results with a note. */
+export async function approvalStep(sessionId: string, step: 'request-approval' | 'approve' | 'return', note?: string) {
+  if (!UUID.test(sessionId)) return bad('exm.err.session.pick');
+  if (step === 'return' && (note ?? '').trim().length < 3) return bad('ap.err.note');
+  return post(`/v1/exam-sessions/${sessionId}/${step}`, step === 'request-approval' ? undefined : { note: note?.trim() || undefined }, [`/exams/${sessionId}`, '/exams']);
+}
+
 export async function generateSeating(sessionId: string, halls: { roomId: string; capacity: number }[]) {
   if (!UUID.test(sessionId) || halls.length === 0 || halls.some((h) => !UUID.test(h.roomId) || !Number.isInteger(h.capacity) || h.capacity < 1)) return bad('exm.err.seating');
   return post<{ seated: number }>(`/v1/exam-sessions/${sessionId}/seating`, { halls }, [`/exams/${sessionId}`]);

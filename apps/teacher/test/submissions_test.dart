@@ -127,6 +127,32 @@ void main() {
     expect(opened, ['workings.pdf application/pdf 8']);
   });
 
+  testWidgets('marking help drafts marks for a typed answer and can fill the remark', (tester) async {
+    await pumpDetail(tester);
+    await tapAndSettle(tester, find.byKey(const Key('submission-s1')));
+    await tester.ensureVisible(find.byKey(const Key('markingHelp')));
+    await tapAndSettle(tester, find.byKey(const Key('markingHelp')));
+    await tester.enterText(find.byKey(const Key('markingOutOf')), '20');
+    await tapAndSettle(tester, find.byKey(const Key('markingAsk')));
+    expect(api.calls, contains('suggest s1 20.0'));
+    expect(find.byKey(const Key('markingDraft')), findsOneWidget);
+    expect(find.text('Suggested 14.0 out of 20'), findsOneWidget);
+    expect(find.text('The AI gives a draft only. You decide the marks and the remark.'), findsOneWidget);
+    await tapAndSettle(tester, find.byKey(const Key('markingUse')));
+    expect(tester.widget<TextField>(find.byKey(const Key('reviewRemark'))).controller!.text, 'States the main idea; the example is missing.');
+  });
+
+  testWidgets('marking help shows the error when the AI is not reachable', (tester) async {
+    api.suggestError = ApiException(503, 'KINETIX AI is not reachable right now. Try again in a minute.');
+    await pumpDetail(tester);
+    await tapAndSettle(tester, find.byKey(const Key('submission-s1')));
+    await tester.ensureVisible(find.byKey(const Key('markingHelp')));
+    await tapAndSettle(tester, find.byKey(const Key('markingHelp')));
+    await tapAndSettle(tester, find.byKey(const Key('markingAsk')));
+    expect(find.byKey(const Key('markingDraft')), findsNothing);
+    expect(find.textContaining('not reachable'), findsOneWidget);
+  });
+
   testWidgets('Check with a remark: the list and counts update', (tester) async {
     await pumpDetail(tester);
     await tapAndSettle(tester, find.byKey(const Key('submission-s1')));

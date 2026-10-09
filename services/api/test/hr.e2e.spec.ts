@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 import argon2 from 'argon2';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
@@ -79,7 +80,7 @@ describe('HR and payroll', () => {
     it('creates and updates a record with optimistic concurrency, validated and audited', async () => {
       const des = (await post('hr', '/v1/hr/designations', { name: 'Senior Lecturer', grade: 'L3' }).expect(201)).body;
       await post('hr', '/v1/hr/designations', { name: 'Senior Lecturer' }).expect(409);
-      const [dept] = await db.select().from(s.departments);
+      const [dept] = await db.select().from(s.departments).where(eq(s.departments.tenantId, t.tenantId));
       await put('hr', `/v1/hr/staff/${ids.teacher}`, profile('T001', { pan: 'bad' })).expect(400);
       const created = (await put('hr', `/v1/hr/staff/${ids.teacher}`, profile('T001', { designationId: des.id, departmentId: dept.id })).expect(200)).body;
       expect(created).toMatchObject({ employeeCode: 'T001', version: 1, designation: { name: 'Senior Lecturer' }, department: { name: 'Commerce' }, bank: null });

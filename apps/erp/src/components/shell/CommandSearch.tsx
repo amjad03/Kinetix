@@ -6,6 +6,10 @@ import AssessmentOutlined from '@mui/icons-material/AssessmentOutlined';
 import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
 import PlayCircleOutlined from '@mui/icons-material/PlayCircleOutlined';
+import EventOutlined from '@mui/icons-material/EventOutlined';
+import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
+import ChatBubbleOutlined from '@mui/icons-material/ChatBubbleOutlined';
+import HubOutlined from '@mui/icons-material/HubOutlined';
 import KeyboardReturn from '@mui/icons-material/KeyboardReturn';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import Box from '@mui/material/Box';
@@ -17,7 +21,7 @@ import type { SvgIconComponent } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { Fragment, useEffect, useId, useMemo, useState } from 'react';
 import { useI18n } from '@/i18n/client';
-import { groupHits, safeHitUrl } from '@/lib/search';
+import { groupHits, isQuestion, safeHitUrl, type AskAnswer } from '@/lib/search';
 import type { SearchHit } from '@/lib/insights';
 import { matchesQuery } from '@/lib/table';
 import type { NavGroup } from '@/lib/nav';
@@ -33,7 +37,7 @@ interface Hit {
   group: string;
 }
 
-const TYPE_ICONS: Record<SearchHit['type'], SvgIconComponent> = { students: GroupsOutlined, staff: BadgeOutlined, courses: MenuBookOutlined, topics: PlayCircleOutlined, documents: DescriptionOutlined, reports: AssessmentOutlined };
+const TYPE_ICONS: Record<SearchHit['type'], SvgIconComponent> = { students: GroupsOutlined, staff: BadgeOutlined, courses: MenuBookOutlined, topics: PlayCircleOutlined, documents: DescriptionOutlined, events: EventOutlined, fees: ReceiptLongOutlined, messages: ChatBubbleOutlined, knowledge: HubOutlined, reports: AssessmentOutlined };
 
 /**
  * Global search: a field in the top bar that opens a command palette (also Ctrl/⌘ K). It finds any
@@ -51,7 +55,27 @@ export function CommandSearch({ groups }: { groups: NavGroup[] }) {
   const [active, setActive] = useState(0);
   const [found, setFound] = useState<SearchHit[]>([]);
   const [loading, setLoading] = useState(false);
+  const [answer, setAnswer] = useState<AskAnswer | null>(null);
   const term = q.trim();
+  const asking = open && isQuestion(term);
+
+  useEffect(() => {
+    if (!asking) return;
+    const ctl = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search/ask?q=${encodeURIComponent(term.replace(/^ask\s+/i, ''))}`, { signal: ctl.signal });
+        if (res.status === 401) return router.refresh();
+        setAnswer((await res.json()) as AskAnswer);
+      } catch {
+        /* aborted or offline */
+      }
+    }, 400);
+    return () => {
+      clearTimeout(timer);
+      ctl.abort();
+    };
+  }, [asking, term, router]);
 
   useEffect(() => {
     if (!open || term.length < 2) return;
@@ -104,6 +128,7 @@ export function CommandSearch({ groups }: { groups: NavGroup[] }) {
     setOpen(false);
     setQ('');
     setActive(0);
+    setAnswer(null);
   };
   const go = (h: Hit | undefined) => {
     if (!h) return;
@@ -150,6 +175,29 @@ export function CommandSearch({ groups }: { groups: NavGroup[] }) {
             sx={{ height: 56, fontSize: '1rem' }}
           />
         </Box>
+        {asking && answer && answer.rows !== undefined && (
+          <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'm3.outlineVariant', maxHeight: 220, overflowY: 'auto' }} role="status" data-testid="ask-answer">
+            <Typography variant="overline" sx={{ color: 'text.secondary' }}>
+              {t('ask.title')}
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              {answer.interpretation}
+            </Typography>
+            {answer.note && <Typography variant="body2" color="text.secondary">{answer.note}</Typography>}
+            {!answer.note && answer.rows.length === 0 && <Typography variant="body2" color="text.secondary">{t('ask.none')}</Typography>}
+            {answer.rows.slice(0, 6).map((r, i) => (
+              <Typography key={i} variant="body2" color="text.secondary" noWrap>
+                {answer.columns.map((c) => String(r[c] ?? '')).filter(Boolean).join(' · ')}
+              </Typography>
+            ))}
+            {answer.rows.length > 6 && <Typography variant="caption" color="text.secondary">{t('ask.more', { n: answer.rows.length - 6 })}</Typography>}
+            {answer.url && safeHitUrl(answer.url) && (
+              <Typography component="a" href={safeHitUrl(answer.url)!} variant="body2" sx={{ display: 'block', mt: 0.5 }}>
+                {t('ask.open')}
+              </Typography>
+            )}
+          </Box>
+        )}
         <Box component="ul" role="listbox" id={`${id}-list`} aria-label={t('shell.searchResults')} sx={{ listStyle: 'none', m: 0, p: 1, maxHeight: 360, overflowY: 'auto' }}>
           {hits.length === 0 && (
             <Typography role="status" variant="body2" color="text.secondary" sx={{ p: 2 }}>

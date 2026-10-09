@@ -996,7 +996,7 @@ export const auditLog = pgTable('audit_log', {
 // AI (India-hosted; see docs/architecture/ai-platform.md)
 // ---------------------------------------------------------------------------------------------
 
-export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight', 'syllabusImport', 'gradeAssist', 'careerCoach']);
+export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight', 'syllabusImport', 'careerCoach', 'gradeAssist', 'qualityInsight', 'researchInsight', 'careerInsight', 'parentInsight', 'tutor']);
 export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota']);
 
 /** One row per AI request: metering per tenant, plus the model and template behind each answer. */
@@ -2119,6 +2119,13 @@ export const examSessions = pgTable('exam_sessions', {
   processedAt: timestamp('processed_at', { withTimezone: true }),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   lockedAt: timestamp('locked_at', { withTimezone: true }),
+  /** Approval step before publishing (PRD section 76): when on, results go processed, approval requested, approved, published. */
+  approvalRequired: boolean('approval_required').notNull().default(false),
+  approvalRequestedBy: uuid('approval_requested_by').references(() => users.id),
+  approvalRequestedAt: timestamp('approval_requested_at', { withTimezone: true }),
+  approvedBy: uuid('approved_by').references(() => users.id),
+  approvedAt: timestamp('approved_at', { withTimezone: true }),
+  approvalNote: text('approval_note'),
   createdBy: uuid('created_by').notNull().references(() => users.id),
   createdAt: createdAt(),
 });
@@ -2983,6 +2990,8 @@ export const vaultDocuments = pgTable(
     expiresOn: date('expires_on'),
     /** Virus scan state (common/upload-scan.ts): 'clean' unless scanning is on and the file is still waiting; only clean files download. */
     scanStatus: text('scan_status').notNull().default('clean'),
+    /** A legal hold keeps the file out of retention archiving (document_retention_policies). */
+    legalHold: boolean('legal_hold').notNull().default(false),
     uploadedBy: uuid('uploaded_by').notNull().references(() => users.id),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: createdAt(),
@@ -3363,7 +3372,7 @@ export const TENANT_TABLES = [
   'grievance_evidence',
   'discipline_witnesses',
   'discipline_parent_contacts',
-  'retention_rules',
+  'data_retention_rules',
   'message_templates',
   'audience_rules',
   'message_campaigns',
@@ -3433,6 +3442,21 @@ export const TENANT_TABLES = [
   'rubric_scores',
   'reattempt_requests',
   'integrity_flags',
+  // Governance, SaaS billing, AI depth and integrity (migration 0120).
+  'business_rules',
+  'incidents',
+  'incident_updates',
+  'document_retention_policies',
+  'saas_subscriptions',
+  'saas_usage_snapshots',
+  'saas_invoices',
+  'ai_tutor_threads',
+  'ai_tutor_messages',
+  'ai_actions',
+  'ai_eval_cases',
+  'ai_eval_runs',
+  'integrity_checks',
+  'integrity_matches',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -5128,6 +5152,10 @@ export const interventionPlans = pgTable(
     goal: text('goal').notNull(),
     actions: jsonb('actions').$type<InterventionAction[]>().notNull().default([]),
     reviewOn: date('review_on').notNull(),
+    /** Remedial content picked for the plan and the before/after figures that show whether it worked (PRD 89.4). */
+    remedial: jsonb('remedial').$type<{ kind: string; title: string; topicId?: string; note?: string; assignedOn: string }[]>().notNull().default([]),
+    baseline: jsonb('baseline').$type<{ takenOn: string; avgPct: number | null; attendancePct: number | null } | null>(),
+    remeasure: jsonb('remeasure').$type<{ takenOn: string; avgPct: number | null; attendancePct: number | null; deltaPct: number | null; verdict: 'improved' | 'unchanged' | 'declined' | 'no_data' } | null>(),
     status: text('status').notNull().default('open'), // open | in_progress | closed
     outcome: text('outcome'),
     outcomeRating: text('outcome_rating'), // improved | no_change | worsened
@@ -6444,4 +6472,271 @@ export const exitClearances = pgTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('exit_clearances_uq').on(t.separationId, t.department)],
+);
+
+
+// ---------------------------------------------------------------------------------------------
+// Governance, SaaS billing, AI depth and integrity (migration 0120)
+
+/** A versioned business rule (PRD section 75): grading, credits, eligibility, quotas, OBE. Only one version is active for a date. */
+export const businessRules = pgTable(
+  'business_rules',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    domain: text('domain').notNull(), // grading | credits | eligibility | quota | obe | attendance | fees | other
+    key: text('key').notNull(),
+    version: integer('version').notNull(),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    params: jsonb('params').$type<Record<string, unknown>>().notNull().default({}),
+    status: text('status').notNull().default('draft'), // draft | in_review | approved | retired
+    effectiveFrom: date('effective_from').notNull(),
+    effectiveTo: date('effective_to'),
+    authorId: uuid('author_id').notNull().references(() => users.id),
+    approverId: uuid('approver_id').references(() => users.id),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('business_rules_uq').on(t.tenantId, t.domain, t.key, t.version), index('business_rules_lookup_idx').on(t.tenantId, t.domain, t.key, t.status)],
+);
+
+/** A security or operations incident with its timeline (PRD section 82). */
+export const incidents = pgTable(
+  'incidents',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    title: text('title').notNull(),
+    severity: text('severity').notNull(), // sev1 | sev2 | sev3 | sev4
+    category: text('category').notNull(), // security | data_breach | outage | data_quality | safety | other
+    status: text('status').notNull().default('open'), // open | investigating | mitigated | resolved | closed
+    description: text('description').notNull().default(''),
+    impact: text('impact').notNull().default(''),
+    detectedAt: timestamp('detected_at', { withTimezone: true }).notNull(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    reportedBy: uuid('reported_by').notNull().references(() => users.id),
+    ownerId: uuid('owner_id').references(() => users.id),
+    /** A personal-data breach must be reported to the Data Protection Board; the app tracks the 72-hour deadline from detection. */
+    personalDataInvolved: boolean('personal_data_involved').notNull().default(false),
+    regulatorNotifiedAt: timestamp('regulator_notified_at', { withTimezone: true }),
+    rootCause: text('root_cause'),
+    correctiveActions: text('corrective_actions'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('incidents_status_idx').on(t.tenantId, t.status, t.severity)],
+);
+
+export const incidentUpdates = pgTable(
+  'incident_updates',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    incidentId: uuid('incident_id').notNull().references(() => incidents.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull().default('note'), // note | status | escalation | notification
+    body: text('body').notNull(),
+    statusAfter: text('status_after'),
+    authorId: uuid('author_id').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('incident_updates_incident_idx').on(t.incidentId, t.createdAt)],
+);
+
+/** How long files of a category are kept before they are archived (PRD section 77). */
+export const documentRetentionPolicies = pgTable(
+  'document_retention_policies',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    category: text('category').notNull(),
+    retainMonths: integer('retain_months').notNull(),
+    note: text('note').notNull().default(''),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('document_retention_uq').on(t.tenantId, t.category)],
+);
+
+/** The institution's KINETIX subscription (PRD section 66): the plan, billing interval and current period. */
+export const saasSubscriptions = pgTable(
+  'saas_subscriptions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    planCode: text('plan_code').notNull(),
+    interval: text('interval').notNull().default('month'), // month | year
+    status: text('status').notNull().default('active'), // trial | active | past_due | cancelled
+    startedOn: date('started_on').notNull(),
+    currentPeriodStart: date('current_period_start').notNull(),
+    currentPeriodEnd: date('current_period_end').notNull(),
+    trialEndsOn: date('trial_ends_on'),
+    autoRenew: boolean('auto_renew').notNull().default(true),
+    billingStateCode: text('billing_state_code').notNull().default('29'), // GST state code of the institution
+    gstin: text('gstin'),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('saas_subscriptions_tenant_uq').on(t.tenantId)],
+);
+
+export const saasUsageSnapshots = pgTable(
+  'saas_usage_snapshots',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    periodStart: date('period_start').notNull(),
+    students: integer('students').notNull(),
+    staff: integer('staff').notNull(),
+    boards: integer('boards').notNull(),
+    aiCalls: integer('ai_calls').notNull(),
+    storageMb: integer('storage_mb').notNull(),
+    takenAt: timestamp('taken_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('saas_usage_period_uq').on(t.tenantId, t.periodStart)],
+);
+
+export const saasInvoices = pgTable(
+  'saas_invoices',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    number: text('number').notNull(),
+    periodStart: date('period_start').notNull(),
+    periodEnd: date('period_end').notNull(),
+    planCode: text('plan_code').notNull(),
+    lines: jsonb('lines').$type<{ label: string; quantity: number; unitPaise: number; amountPaise: number }[]>().notNull(),
+    subtotalPaise: bigint('subtotal_paise', { mode: 'number' }).notNull(),
+    taxPaise: bigint('tax_paise', { mode: 'number' }).notNull(),
+    taxBreakdown: jsonb('tax_breakdown').$type<{ cgstPaise: number; sgstPaise: number; igstPaise: number; ratePercent: number }>().notNull(),
+    totalPaise: bigint('total_paise', { mode: 'number' }).notNull(),
+    status: text('status').notNull().default('issued'), // issued | paid | void
+    issuedOn: date('issued_on').notNull(),
+    dueOn: date('due_on').notNull(),
+    paidOn: date('paid_on'),
+    paymentRef: text('payment_ref'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('saas_invoices_number_uq').on(t.tenantId, t.number), uniqueIndex('saas_invoices_period_uq').on(t.tenantId, t.periodStart)],
+);
+
+/** A student's conversation with the AI tutor; the history is what makes it a tutor and not a one-off explainer (PRD section 64). */
+export const aiTutorThreads = pgTable(
+  'ai_tutor_threads',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    title: text('title').notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('ai_tutor_threads_student_idx').on(t.studentId, t.updatedAt)],
+);
+
+export const aiTutorMessages = pgTable(
+  'ai_tutor_messages',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    threadId: uuid('thread_id').notNull().references(() => aiTutorThreads.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(), // student | tutor
+    content: text('content').notNull(),
+    sources: jsonb('sources').$type<{ topicId: string; title: string }[]>().notNull().default([]),
+    createdAt: createdAt(),
+  },
+  (t) => [index('ai_tutor_messages_thread_idx').on(t.threadId, t.createdAt)],
+);
+
+/** Every AI answer that reached a person: who asked, what for, what grounded it, and whether the person kept it (PRD section 70). */
+export const aiActions = pgTable(
+  'ai_actions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').references(() => users.id),
+    task: text('task').notNull(),
+    surface: text('surface').notNull(), // teacher_copilot | tutor | parent | insight | grading | search
+    inputHash: text('input_hash').notNull(),
+    inputPreview: text('input_preview').notNull().default(''),
+    outputPreview: text('output_preview').notNull().default(''),
+    sources: jsonb('sources').$type<{ topicId?: string; title: string }[]>().notNull().default([]),
+    provider: text('provider').notNull().default(''),
+    model: text('model').notNull().default(''),
+    decision: text('decision'), // accepted | edited | rejected, set when the person acts on it
+    createdAt: createdAt(),
+  },
+  (t) => [index('ai_actions_task_idx').on(t.tenantId, t.task, t.createdAt)],
+);
+
+/** A fixed question with checks on the answer, so a model or prompt change can be judged before it ships (PRD section 64: evaluation harness). */
+export const aiEvalCases = pgTable(
+  'ai_eval_cases',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    task: text('task').notNull(), // explain | tutor
+    input: jsonb('input').$type<Record<string, unknown>>().notNull(),
+    mustInclude: jsonb('must_include').$type<string[]>().notNull().default([]),
+    mustNotInclude: jsonb('must_not_include').$type<string[]>().notNull().default([]),
+    maxChars: integer('max_chars'),
+    active: boolean('active').notNull().default(true),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('ai_eval_cases_name_uq').on(t.tenantId, t.name)],
+);
+
+export const aiEvalRuns = pgTable(
+  'ai_eval_runs',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    startedBy: uuid('started_by').notNull().references(() => users.id),
+    provider: text('provider').notNull(),
+    model: text('model').notNull(),
+    promptVersion: text('prompt_version').notNull(),
+    passed: integer('passed').notNull(),
+    failed: integer('failed').notNull(),
+    results: jsonb('results').$type<{ caseId: string; name: string; passed: boolean; failures: string[]; chars: number }[]>().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('ai_eval_runs_idx').on(t.tenantId, t.createdAt)],
+);
+
+/** A similarity check over a set of written work (PRD section 67: integrity). Done in-house; no text leaves the platform. */
+export const integrityChecks = pgTable(
+  'integrity_checks',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sourceKind: text('source_kind').notNull(), // homework
+    sourceId: uuid('source_id'),
+    threshold: numeric('threshold', { precision: 4, scale: 2, mode: 'number' }).notNull().default(0.5),
+    compared: integer('compared').notNull().default(0),
+    flagged: integer('flagged').notNull().default(0),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('integrity_checks_source_idx').on(t.tenantId, t.sourceKind, t.sourceId)],
+);
+
+export const integrityMatches = pgTable(
+  'integrity_matches',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    checkId: uuid('check_id').notNull().references(() => integrityChecks.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    matchedStudentId: uuid('matched_student_id').notNull().references(() => students.id),
+    similarity: numeric('similarity', { precision: 4, scale: 3, mode: 'number' }).notNull(),
+    sharedPhrase: text('shared_phrase').notNull().default(''),
+    reviewed: text('reviewed'), // confirmed | dismissed
+    reviewedBy: uuid('reviewed_by').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('integrity_matches_check_idx').on(t.checkId, t.similarity)],
 );

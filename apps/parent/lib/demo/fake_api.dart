@@ -382,6 +382,21 @@ class FakeParentApi implements ParentApi {
     return s;
   }
 
+  ApiException? aiUpdateError;
+
+  @override
+  Future<AiUpdate> aiUpdate(String childId, {required String language}) async {
+    calls.add('aiUpdate $childId $language');
+    if (aiUpdateError != null) throw aiUpdateError!;
+    return const AiUpdate(
+      headline: 'Your child is doing well and needs a little help in Accounting.',
+      highlights: ['Attendance is 92 percent.'],
+      risks: ['Accounting marks are 48 percent.'],
+      suggestions: ['Ask your child to explain one Accounting problem aloud each evening.'],
+      preview: false,
+    );
+  }
+
   @override
   Future<List<ClassMark>> attendance(String childId, {int days = 30}) async => attendanceMarks;
 

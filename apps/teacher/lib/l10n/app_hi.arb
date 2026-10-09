@@ -1342,5 +1342,18 @@
   "vivaHeld": "संपन्न",
   "vivaPassed": "उत्तीर्ण",
   "vivaRevise": "संशोधन कर पुनः जमा करें",
-  "vivaScheduled": "तय"
+  "vivaScheduled": "तय",
+  "markingHelp": "अंकन में सहायता",
+  "markingHelpNote": "AI केवल एक मसौदा देता है। अंक और टिप्पणी आप तय करते हैं।",
+  "markingHelpOutOf": "कुल कितने अंकों में से?",
+  "markingHelpAsk": "मसौदा पाएँ",
+  "markingHelpUse": "टिप्पणी में लें",
+  "markingHelpDraft": "{max} में से {marks} का सुझाव",
+  "offlineTitle": "बिना नेटवर्क के बोर्ड की जाँच",
+  "offlineNeedKey": "एक बार ऑनलाइन रहते हुए बोर्ड से जुड़ें खोलें, ताकि यह फ़ोन आपके संस्थान की कुंजी रख सके।",
+  "offlineExpired": "यह कोड समाप्त हो चुका है। वर्तमान कोड के लिए बोर्ड देखें।",
+  "offlineNotYet": "यह कोड अभी मान्य नहीं है। इस फ़ोन का समय जाँचें।",
+  "offlineWrongInstitution": "यह बोर्ड किसी दूसरे संस्थान का है।",
+  "offlineBad": "यह KINETIX बोर्ड का असली कोड नहीं है।",
+  "offlineVerified": "आपके संस्थान का असली बोर्ड ({board} पर समाप्त)। कोड {time} तक मान्य है। उसमें साइन इन करने के लिए इंटरनेट चाहिए।"
 }

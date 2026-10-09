@@ -2047,5 +2047,26 @@
         "type": "int"
       }
     }
+  },
+  "aiUpdateTitle": "An update from KINETIX AI",
+  "aiUpdateGood": "Going well",
+  "aiUpdateWatch": "To watch",
+  "aiUpdateDo": "What you can do",
+  "aiUpdatePreview": "This is a sample: no AI server is connected yet.",
+  "aiUpdateAsk": "Get an update on {name}",
+  "@aiUpdateAsk": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiUpdateNote": "Written by KINETIX AI from {name}'s marks, attendance and homework. It can be wrong: the class teacher knows {name} best.",
+  "@aiUpdateNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -3093,4 +3093,47 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get vivaScheduled => 'तय';
+
+  @override
+  String get markingHelp => 'अंकन में सहायता';
+
+  @override
+  String get markingHelpNote => 'AI केवल एक मसौदा देता है। अंक और टिप्पणी आप तय करते हैं।';
+
+  @override
+  String get markingHelpOutOf => 'कुल कितने अंकों में से?';
+
+  @override
+  String get markingHelpAsk => 'मसौदा पाएँ';
+
+  @override
+  String get markingHelpUse => 'टिप्पणी में लें';
+
+  @override
+  String markingHelpDraft(String marks, String max) {
+    return '$max में से $marks का सुझाव';
+  }
+
+  @override
+  String get offlineTitle => 'बिना नेटवर्क के बोर्ड की जाँच';
+
+  @override
+  String get offlineNeedKey => 'एक बार ऑनलाइन रहते हुए बोर्ड से जुड़ें खोलें, ताकि यह फ़ोन आपके संस्थान की कुंजी रख सके।';
+
+  @override
+  String get offlineExpired => 'यह कोड समाप्त हो चुका है। वर्तमान कोड के लिए बोर्ड देखें।';
+
+  @override
+  String get offlineNotYet => 'यह कोड अभी मान्य नहीं है। इस फ़ोन का समय जाँचें।';
+
+  @override
+  String get offlineWrongInstitution => 'यह बोर्ड किसी दूसरे संस्थान का है।';
+
+  @override
+  String get offlineBad => 'यह KINETIX बोर्ड का असली कोड नहीं है।';
+
+  @override
+  String offlineVerified(String board, String time) {
+    return 'आपके संस्थान का असली बोर्ड ($board पर समाप्त)। कोड $time तक मान्य है। उसमें साइन इन करने के लिए इंटरनेट चाहिए।';
+  }
 }

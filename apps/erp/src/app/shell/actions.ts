@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { api } from '@/lib/api';
 import { YEAR_COOKIE } from '@/lib/config';
 import { isWorkspace, WORKSPACE_COOKIE } from '@/lib/workspaces';
+import { DENSITY_COOKIE, isDensity } from '@/lib/density';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -24,6 +25,14 @@ export async function setWorkspace(id: string): Promise<{ ok: boolean }> {
   const jar = await cookies();
   if (id === 'all') jar.delete(WORKSPACE_COOKIE);
   else jar.set(WORKSPACE_COOKIE, id, { sameSite: 'lax', path: '/', maxAge: 365 * 86_400 });
+  revalidatePath('/', 'layout');
+  return { ok: true };
+}
+
+/** Remembers the person's display density on this browser. */
+export async function setDensity(value: string): Promise<{ ok: boolean }> {
+  if (!isDensity(value)) return { ok: false };
+  (await cookies()).set(DENSITY_COOKIE, value, { sameSite: 'lax', path: '/', maxAge: 365 * 86_400 });
   revalidatePath('/', 'layout');
   return { ok: true };
 }

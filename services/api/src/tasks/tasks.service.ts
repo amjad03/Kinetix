@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { and, eq, inArray, isNull, lt, ne, or } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, lt, ne, or } from 'drizzle-orm';
 import type { RoleName } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
@@ -75,6 +75,21 @@ export class TasksService implements OnModuleInit {
       await this.notifications.notifyUsers(tx, [t.assigneeId], { kind: 'task', text: { title: 'New task for you', body: row.title }, data: { taskId: row.id }, dedupeKey: `task:new:${row.id}` });
     }
     return row;
+  }
+
+  /**
+   * Raises a task for the first active holder of one of [roles] (or the owner when nobody holds them). Modules use this
+   * for approvals, interventions and evidence requests so the work lands on a person's list with an SLA.
+   */
+  async createForRole(tx: Tx, tenantId: string, roles: RoleName[], t: Omit<NewTask, 'tenantId' | 'assigneeId'>) {
+    const [holder] = await tx
+      .select({ id: userRoles.userId })
+      .from(userRoles)
+      .innerJoin(users, eq(users.id, userRoles.userId))
+      .where(and(inArray(userRoles.role, roles), eq(users.status, 'active')))
+      .orderBy(asc(users.createdAt))
+      .limit(1);
+    return this.create(tx, { ...t, tenantId, assigneeId: holder?.id ?? t.ownerId });
   }
 
   /** The hourly job: reminders first, then escalation of what is overdue. */

@@ -3,6 +3,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, UserPrincipal } from '../auth/principal.js';
+import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -93,10 +94,12 @@ export class CoverageController {
       if (coveredOn > today) throw new BadRequestException('A topic cannot be marked as taught in the future');
       const by = p.kind === 'board' ? p.teacherId : p.userId;
       const boardSessionId = p.kind === 'board' ? p.sessionId : null;
+      const [before] = await tx.select({ coveredOn: topicCoverage.coveredOn }).from(topicCoverage).where(and(eq(topicCoverage.sectionId, sectionId), eq(topicCoverage.topicId, b.topicId)));
       await tx
         .insert(topicCoverage)
         .values({ tenantId: p.tenantId, sectionId, topicId: b.topicId, coveredOn, coveredBy: by, boardSessionId })
         .onConflictDoUpdate({ target: [topicCoverage.sectionId, topicCoverage.topicId], set: { coveredOn, coveredBy: by, boardSessionId } });
+      await audit(tx, { tenantId: p.tenantId, actorType: p.kind === 'board' ? 'device' : 'user', actorId: p.kind === 'board' ? p.deviceId : p.userId, action: 'coverage.marked', subjectType: 'topic', subjectId: b.topicId, data: { sectionId }, changes: { coveredOn: { before: before?.coveredOn ?? null, after: coveredOn } } });
       return { sectionId, subjectId, topicId: b.topicId, coveredOn };
     });
   }
@@ -108,7 +111,8 @@ export class CoverageController {
     await this.db.withTenant(p.tenantId, async (tx) => {
       const { sectionId } = await this.target(tx, p, b.sectionId, b.subjectId);
       if (p.kind === 'user') await this.assertCanMark(tx, p, sectionId);
-      await tx.delete(topicCoverage).where(and(eq(topicCoverage.sectionId, sectionId), eq(topicCoverage.topicId, b.topicId)));
+      const gone = await tx.delete(topicCoverage).where(and(eq(topicCoverage.sectionId, sectionId), eq(topicCoverage.topicId, b.topicId))).returning({ coveredOn: topicCoverage.coveredOn });
+      if (gone.length) await audit(tx, { tenantId: p.tenantId, actorType: p.kind === 'board' ? 'device' : 'user', actorId: p.kind === 'board' ? p.deviceId : p.userId, action: 'coverage.unmarked', subjectType: 'topic', subjectId: b.topicId, data: { sectionId }, changes: { coveredOn: { before: gone[0].coveredOn, after: null } } });
     });
   }
 

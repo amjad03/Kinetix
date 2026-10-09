@@ -7,11 +7,14 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { leaveRequests, leaveTypes, payrollRuns, payslips, staffAttendance } from '../db/schema.js';
+import { auditNonConformities, leaveRequests, leaveTypes, payrollRuns, payslips, researchGrants, staffAttendance } from '../db/schema.js';
 import { feeSummary } from '../fees/fees.controller.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
 import { budgetReportRows, currentFiscalYear } from '../finance/finance.controller.js';
 import { HR_ROLES } from '../hr/hr.access.js';
+import { PLACEMENT_VIEW_ROLES } from '../placements/placements.access.js';
+import { RESEARCH_VIEW_ROLES } from '../research/research.controller.js';
+import { countsByStatus } from './learning-facts.js';
 import { AiService } from './ai.service.js';
 import { Language } from './tasks.js';
 
@@ -101,6 +104,44 @@ export class InsightsController {
   async hr(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(Request)) b: z.infer<typeof Request>) {
     const facts = await this.db.withTenant(p.tenantId, (tx) => this.hrFacts(tx));
     return this.ai.run({ tenantId: p.tenantId, userId: p.userId }, 'hrInsight', { facts, language: b.language }, { fresh: b.fresh });
+  }
+
+  /** Accreditation readiness: audits and non-conformities by status (counts only). */
+  @Post('quality')
+  @HttpCode(200)
+  @Auth('user', ['tenant_admin', 'principal', 'quality_officer'])
+  async quality(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(Request)) b: z.infer<typeof Request>) {
+    const facts = await this.db.withTenant(p.tenantId, async (tx) => {
+      const [overdue] = await tx.select({ n: sql<number>`count(*)::int` }).from(auditNonConformities).where(sql`${auditNonConformities.status} <> 'closed' and ${auditNonConformities.dueOn} < current_date`);
+      return { audits: await countsByStatus(tx, 'academic_audits'), nonConformities: await countsByStatus(tx, 'audit_non_conformities'), overdueNonConformities: overdue.n };
+    });
+    return this.ai.run({ tenantId: p.tenantId, userId: p.userId }, 'qualityInsight', { facts, language: b.language }, { fresh: b.fresh });
+  }
+
+  /** Research office: proposals, projects, grants and scholars by status, and the sanctioned funding. */
+  @Post('research')
+  @HttpCode(200)
+  @Auth('user', RESEARCH_VIEW_ROLES)
+  async research(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(Request)) b: z.infer<typeof Request>) {
+    const facts = await this.db.withTenant(p.tenantId, async (tx) => {
+      const [g] = await tx.select({ sanctionedRupees: sql<number>`coalesce(sum(${researchGrants.sanctionedPaise}) / 100, 0)::float` }).from(researchGrants).where(sql`${researchGrants.status} = 'active'`);
+      return { proposals: await countsByStatus(tx, 'research_proposals'), projects: await countsByStatus(tx, 'research_projects'), grants: await countsByStatus(tx, 'research_grants'), activeSanctionedRupees: g.sanctionedRupees, scholars: await countsByStatus(tx, 'research_scholars') };
+    });
+    return this.ai.run({ tenantId: p.tenantId, userId: p.userId }, 'researchInsight', { facts, language: b.language }, { fresh: b.fresh });
+  }
+
+  /** Placement cell: drives, registrations, offers and internships by status. */
+  @Post('careers')
+  @HttpCode(200)
+  @Auth('user', PLACEMENT_VIEW_ROLES)
+  async careers(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(Request)) b: z.infer<typeof Request>) {
+    const facts = await this.db.withTenant(p.tenantId, async (tx) => ({
+      drives: await countsByStatus(tx, 'placement_drives'),
+      registrations: await countsByStatus(tx, 'drive_registrations'),
+      offers: await countsByStatus(tx, 'placement_offers'),
+      internships: await countsByStatus(tx, 'internships'),
+    }));
+    return this.ai.run({ tenantId: p.tenantId, userId: p.userId }, 'careerInsight', { facts, language: b.language }, { fresh: b.fresh });
   }
 
   /** Leave, attendance and the latest payroll run as counts and totals. */

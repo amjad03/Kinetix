@@ -12,6 +12,7 @@ import 'growth_models.dart';
 import 'hr_models.dart';
 import 'insights_models.dart';
 import 'models.dart';
+import 'offline_key.dart';
 import 'work_models.dart';
 
 /// Where an [ApiException] came from; the UI turns it into words with AppLocalizations.errorText.
@@ -370,6 +371,12 @@ abstract class TeacherApi {
 
   /// Notifies the students who have not handed in, and their families. Returns how many.
   Future<int> remindMissing(String homeworkId);
+
+  /// The institution's public signing key, for checking a board's offline code with no network (Ed25519, raw 32 bytes, base64url).
+  Future<OfflineKey> offlineSigningKey();
+
+  /// An AI draft of the marks for the student's typed answer (`question` is what was asked). Never final: the teacher marks.
+  Future<MarkingDraft> suggestMarks(String homeworkId, String studentId, {required String question, required double maxMarks});
 
   /// Edits the profile (the phone number is the sign-in: only the office changes it).
   Future<Me> updateProfile({required String fullName, required String? email, List<String>? teachingSubjects});
@@ -1059,6 +1066,15 @@ class HttpTeacherApi implements TeacherApi {
     '/v1/homework/$homeworkId/submissions/$studentId/files/$index',
     timeout: const Duration(seconds: 60),
   )).bodyBytes;
+
+  @override
+  Future<OfflineKey> offlineSigningKey() async => OfflineKey.fromJson(await _send('GET', '/v1/pairing/signing-key') as Map<String, dynamic>);
+
+  @override
+  Future<MarkingDraft> suggestMarks(String homeworkId, String studentId, {required String question, required double maxMarks}) async =>
+      MarkingDraft.fromJson(
+        await _send('POST', '/v1/grading-assist/homework/$homeworkId/$studentId/suggest', body: {'question': question, 'maxMarks': maxMarks}, timeout: const Duration(seconds: 60)) as Map<String, dynamic>,
+      );
 
   @override
   Future<Submission> reviewSubmission(String homeworkId, Submission submission, {required SubmissionStatus status, String? remark}) async =>

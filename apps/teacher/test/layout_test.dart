@@ -201,6 +201,7 @@ void main() {
           await tapAndSettle(tester, find.byKey(const Key('submission-s1')));
           await tapAndSettle(tester, find.byKey(const Key('photo-0')));
           await pop(tester);
+          await reveal(tester, const Key('reviewRemark'));
           await tester.enterText(find.byKey(const Key('reviewRemark')), 'Show the working for Q2 as well');
           api.reviewError = ApiException(404, 'Nothing has been handed in yet', code: 'SUBMISSION_MISSING');
           await reveal(tester, const Key('checkWork'));

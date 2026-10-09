@@ -4094,4 +4094,29 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get volThanks => 'ಸ್ವಯಂಸೇವೆಗೆ ಧನ್ಯವಾದ.';
+
+  @override
+  String get tutorOpen => 'ನಿಮ್ಮ ಬೋಧಕರೊಂದಿಗೆ ಮಾತನಾಡಿ';
+
+  @override
+  String get tutorTitle => 'ನಿಮ್ಮ ಬೋಧಕ';
+
+  @override
+  String get tutorNew => 'ಹೊಸ ಸಂಭಾಷಣೆ';
+
+  @override
+  String get tutorEmpty =>
+      'ನೀವು ಸಿಲುಕಿದ್ದನ್ನು ಕೇಳಿ. ನಿಮ್ಮ ಬೋಧಕ ಸಂಭಾಷಣೆಯನ್ನು ನೆನಪಿಡುತ್ತಾರೆ ಮತ್ತು ನಿಮಗೆ ಎಲ್ಲಿ ಹೆಚ್ಚು ಸಹಾಯ ಬೇಕೆಂದು ತಿಳಿದಿದ್ದಾರೆ.';
+
+  @override
+  String get tutorHint => 'ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಟೈಪ್ ಮಾಡಿ';
+
+  @override
+  String get tutorSend => 'ಕಳುಹಿಸಿ';
+
+  @override
+  String get tutorNext => 'ಮುಂದೆ ಅಭ್ಯಾಸ ಮಾಡಿ';
+
+  @override
+  String get tutorPreview => 'ಇದು ಮಾದರಿ ಉತ್ತರ: ಇನ್ನೂ ಯಾವ AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ.';
 }

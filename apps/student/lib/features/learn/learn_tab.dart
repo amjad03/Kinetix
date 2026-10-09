@@ -10,6 +10,7 @@ import 'courses_view.dart';
 import 'labs_view.dart';
 import '../privacy/privacy.dart';
 import 'syllabus_view.dart';
+import 'tutor_screen.dart';
 import 'topic_screen.dart';
 
 /// Self-paced learning: ask KINETIX AI a doubt, browse and search the syllabus library, do a
@@ -64,6 +65,14 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.navLearn),
+        actions: [
+          IconButton(
+            key: const Key('openTutor'),
+            tooltip: context.l10n.tutorOpen,
+            icon: const Icon(Icons.forum_outlined),
+            onPressed: () => TutorScreen.open(context, widget.study.api, language: widget.state.aiLanguage),
+          ),
+        ],
         bottom: TabBar(
           controller: tabs,
           tabs: [

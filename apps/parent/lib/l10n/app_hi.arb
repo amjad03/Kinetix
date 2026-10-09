@@ -922,5 +922,12 @@
   "noticeAcknowledge": "पावती दें",
   "noticeAcknowledged": "पावती दी गई",
   "noticeAckDone": "धन्यवाद। स्कूल को बता दिया गया है।",
-  "reportAttendanceDays": "{total} में से {present} दिन"
+  "reportAttendanceDays": "{total} में से {present} दिन",
+  "aiUpdateTitle": "KINETIX AI की ओर से अपडेट",
+  "aiUpdateGood": "जो अच्छा चल रहा है",
+  "aiUpdateWatch": "ध्यान देने योग्य",
+  "aiUpdateDo": "आप क्या कर सकते हैं",
+  "aiUpdatePreview": "यह एक नमूना है: अभी कोई AI सर्वर जुड़ा नहीं है।",
+  "aiUpdateAsk": "{name} के बारे में अपडेट पाएँ",
+  "aiUpdateNote": "KINETIX AI ने {name} के अंकों, उपस्थिति और गृहकार्य से लिखा। इसमें गलती हो सकती है: कक्षा शिक्षक {name} को सबसे अच्छी तरह जानते हैं।"
 }

@@ -104,6 +104,18 @@ export const TaskInputs = {
   hrInsight: z.object({ facts: Facts, language: Language.default('en') }),
   /** Career guidance for one student: the API computes the skills, interests and matching paths; the model advises. No names are sent. */
   careerCoach: z.object({ question: z.string().trim().min(3).max(600), facts: Facts, language: Language.default('en') }),
+  qualityInsight: z.object({ facts: Facts, language: Language.default('en') }),
+  researchInsight: z.object({ facts: Facts, language: Language.default('en') }),
+  careerInsight: z.object({ facts: Facts, language: Language.default('en') }),
+  /** A parent's own child, as figures. No names are sent; the answer speaks of "your child". */
+  parentInsight: z.object({ facts: Facts, language: Language.default('en') }),
+  /** The student's question, the last few turns of the conversation and what the student's own record says (learning history, policies). */
+  tutor: z.object({
+    question: z.string().trim().min(2).max(1000),
+    history: z.array(z.object({ role: z.enum(['student', 'tutor']), text: z.string().max(2000) })).max(8).default([]),
+    context: Facts.default({}),
+    language: Language.default('en'),
+  }),
   /** Curriculum importer: text read from an uploaded syllabus PDF or Word file; the model proposes subjects, units, topics and outcomes for a person to review. */
   syllabusImport: z.object({ text: z.string().trim().min(20).max(60_000), programName: z.string().trim().max(200).optional(), language: Language.default('en') }),
   readBoard: z.object({ image: z.string().min(100).max(6_000_000).regex(/^[A-Za-z0-9+/=]+$/, 'Send the PNG as base64'), language: Language.default('en') }),
@@ -124,6 +136,16 @@ export const TaskOutputs = {
   admissionsInsight: Insight,
   hrInsight: Insight,
   careerCoach: z.object({ answer: Text(3000), suggestions: z.array(Text(300)).max(6).default([]), pathways: z.array(Text(120)).max(5).default([]) }),
+  qualityInsight: Insight,
+  researchInsight: Insight,
+  careerInsight: Insight,
+  parentInsight: Insight,
+  tutor: z.object({
+    answer: Text(6000),
+    keyPoints: z.array(Text(400)).max(8).default([]),
+    nextSteps: z.array(Text(300)).max(5).default([]),
+    followUps: z.array(Text(300)).max(5).default([]),
+  }),
   syllabusImport: ContentSchema,
   explain: z.object({
     answer: Text(6000),
@@ -279,6 +301,11 @@ const SHAPES: Record<TaskName, string> = {
   careerCoach: '{"answer": string (practical advice in a few short paragraphs), "suggestions": string[] (3-5 concrete next steps), "pathways": string[] (up to 3 career path names taken from the facts)}',
   admissionsInsight: INSIGHT_SHAPE,
   hrInsight: INSIGHT_SHAPE,
+  qualityInsight: INSIGHT_SHAPE,
+  researchInsight: INSIGHT_SHAPE,
+  careerInsight: INSIGHT_SHAPE,
+  parentInsight: INSIGHT_SHAPE,
+  tutor: '{"answer": string (a clear explanation that builds on what the student already said and knows), "keyPoints": string[] (2-4), "nextSteps": string[] (1-3 things to practise, using the student\'s weak areas), "followUps": string[] (2-3 questions to check understanding)}',
   syllabusImport:
     '{"subjects": [{"code": string, "name": string, "term": integer (semester or class), "credits": number, "hours": integer, "units": [{"title": string, "hours": integer, "topics": string[]}], "cos": [{"code": "CO1", "statement": string, "bloomLevel": string or null}]}]}',
 };
@@ -359,6 +386,19 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
         return insightAsk('Summarise leave, attendance and payroll for the HR office', i.facts);
       case 'careerCoach':
         return `Answer this student's career question: "${i.question}". Ground the advice in these facts about their skills, interests and the career paths on offer; never invent employers, salaries or openings.\nFacts: ${JSON.stringify(i.facts)}`;
+      case 'qualityInsight':
+        return insightAsk('Summarise academic audits, non-conformities and outcome attainment for the quality office and accreditation', i.facts);
+      case 'researchInsight':
+        return insightAsk('Summarise grants, projects, proposals and scholars for the research office', i.facts);
+      case 'careerInsight':
+        return insightAsk('Summarise placements, offers, eligibility and skills readiness for the placement cell', i.facts);
+      case 'parentInsight':
+        return `Write a short, kind update for a parent about their own child, using only these figures. Say "your child", never a name. Praise real progress, state concerns plainly, and suggest what the family can do at home. Do not invent numbers.\n"""\n${JSON.stringify(i.facts)}\n"""`;
+      case 'tutor': {
+        const turns = (i.history as { role: string; text: string }[]).map((h) => `${h.role === 'student' ? 'Student' : 'Tutor'}: ${h.text}`).join('\n');
+        const ctx = Object.keys(i.context as object).length ? `\nWhat the student's record shows (use it to pitch the answer; do not recite it):\n"""\n${JSON.stringify(i.context)}\n"""` : '';
+        return `You are tutoring one student. ${turns ? `The conversation so far:\n${turns}\n` : ''}${ctx}\nThe student now asks: ${i.question}\nExplain step by step, at the student's level, and point to what to practise next.`;
+      }
       case 'syllabusImport':
         return `Read this syllabus${i.programName ? ` for ${i.programName}` : ''} and list every subject with its code, semester, credits, units (with hours and topics) and course outcomes. Copy what the document says; leave a value empty or zero when it is not stated.\n"""\n${i.text}\n"""`;
       case 'readBoard':
@@ -387,6 +427,11 @@ export function buildMessages<T extends TaskName>(task: T, input: TaskInput<T>, 
 /** The words in a request, for grounding and safety checks (never the image data). */
 export function requestText(input: unknown): string {
   const { image: _image, ...rest } = input as Record<string, unknown>;
+  // The tutor's record (marks, attendance) is context for the answer, not what the student asked: match topics on the questions only.
+  if (typeof rest.question === 'string' && 'context' in rest) {
+    const earlier = ((rest.history as { role: string; text: string }[] | undefined) ?? []).filter((h) => h.role === 'student').slice(-2).map((h) => h.text);
+    return [...earlier, rest.question].join(' ');
+  }
   return JSON.stringify(rest);
 }
 
@@ -517,9 +562,15 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
           activities: [],
           recap: 'Preview only.',
         };
+      case 'tutor':
+        return { answer: `Preview only. Connect the KINETIX AI server for a tutor answer to: ${String(i.question).slice(0, 120)}`, keyPoints: [], nextSteps: [], followUps: [] };
       case 'financeInsight':
       case 'admissionsInsight':
-      case 'hrInsight': {
+      case 'hrInsight':
+      case 'qualityInsight':
+      case 'researchInsight':
+      case 'careerInsight':
+      case 'parentInsight': {
         const figures = Object.entries(i.facts as Record<string, unknown>)
           .filter(([, v]) => typeof v === 'number')
           .slice(0, 4)

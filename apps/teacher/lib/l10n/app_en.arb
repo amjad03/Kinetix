@@ -3333,5 +3333,53 @@
   "vivaHeld": "Held",
   "vivaPassed": "Passed",
   "vivaRevise": "Revise and resubmit",
-  "vivaScheduled": "Scheduled"
+  "vivaScheduled": "Scheduled",
+  "markingHelp": "Marking help",
+  "@markingHelp": {
+    "description": "Marking help on a homework answer."
+  },
+  "markingHelpNote": "The AI gives a draft only. You decide the marks and the remark.",
+  "@markingHelpNote": {
+    "description": "Marking help on a homework answer."
+  },
+  "markingHelpOutOf": "Out of how many marks?",
+  "@markingHelpOutOf": {
+    "description": "Marking help on a homework answer."
+  },
+  "markingHelpAsk": "Get a draft",
+  "@markingHelpAsk": {
+    "description": "Marking help on a homework answer."
+  },
+  "markingHelpUse": "Use as remark",
+  "@markingHelpUse": {
+    "description": "Marking help on a homework answer."
+  },
+  "markingHelpDraft": "Suggested {marks} out of {max}",
+  "@markingHelpDraft": {
+    "placeholders": {
+      "marks": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "offlineTitle": "Board check without a network",
+  "offlineNeedKey": "Open Connect to board once while online, so this phone can keep your institution's key.",
+  "offlineExpired": "This code has expired. Look at the board for the current one.",
+  "offlineNotYet": "This code is not valid yet. Check the time on this phone.",
+  "offlineWrongInstitution": "This board belongs to another institution.",
+  "offlineBad": "This is not a genuine KINETIX board code.",
+  "offlineVerified": "A genuine board of your institution (ending {board}). The code is valid until {time}. Signing in to it still needs the internet.",
+  "@offlineVerified": {
+    "placeholders": {
+      "board": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

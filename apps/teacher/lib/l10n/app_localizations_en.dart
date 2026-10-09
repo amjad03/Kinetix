@@ -3093,4 +3093,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vivaScheduled => 'Scheduled';
+
+  @override
+  String get markingHelp => 'Marking help';
+
+  @override
+  String get markingHelpNote => 'The AI gives a draft only. You decide the marks and the remark.';
+
+  @override
+  String get markingHelpOutOf => 'Out of how many marks?';
+
+  @override
+  String get markingHelpAsk => 'Get a draft';
+
+  @override
+  String get markingHelpUse => 'Use as remark';
+
+  @override
+  String markingHelpDraft(String marks, String max) {
+    return 'Suggested $marks out of $max';
+  }
+
+  @override
+  String get offlineTitle => 'Board check without a network';
+
+  @override
+  String get offlineNeedKey => 'Open Connect to board once while online, so this phone can keep your institution\'s key.';
+
+  @override
+  String get offlineExpired => 'This code has expired. Look at the board for the current one.';
+
+  @override
+  String get offlineNotYet => 'This code is not valid yet. Check the time on this phone.';
+
+  @override
+  String get offlineWrongInstitution => 'This board belongs to another institution.';
+
+  @override
+  String get offlineBad => 'This is not a genuine KINETIX board code.';
+
+  @override
+  String offlineVerified(String board, String time) {
+    return 'A genuine board of your institution (ending $board). The code is valid until $time. Signing in to it still needs the internet.';
+  }
 }

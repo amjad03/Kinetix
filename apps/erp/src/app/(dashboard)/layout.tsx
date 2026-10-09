@@ -9,6 +9,7 @@ import { api, getMe, load } from '@/lib/api';
 import { canSee, canUseErp } from '@/lib/access';
 import { YEAR_COOKIE } from '@/lib/config';
 import { isWorkspace, WORKSPACE_COOKIE } from '@/lib/workspaces';
+import { densityFor, DENSITY_COOKIE } from '@/lib/density';
 import { CHANGE_PASSWORD_PATH } from '@/lib/password';
 import { getI18n } from '@/i18n/server';
 
@@ -43,7 +44,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       ? load(() => api<{ academicYears: { id: string; label: string; isCurrent: boolean }[] }>('/v1/admin/structure'))
       : Promise.resolve(null),
     load(() => api<Notifications>('/v1/notifications?limit=10')),
-    load(() => api<{ disabledModules: string[] }>('/v1/institution/capabilities')),
+    load(() => api<{ disabledModules: string[]; academicModel?: string }>('/v1/institution/capabilities')),
   ]);
   const years = structure?.data?.academicYears ?? [];
   const picked = (await cookies()).get(YEAR_COOKIE)?.value ?? '';
@@ -59,6 +60,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       unread={notes.data?.unread ?? 0}
       disabledModules={caps.data?.disabledModules ?? []}
       workspace={isWorkspace(wsCookie) ? wsCookie : 'all'}
+      density={densityFor(caps.data?.academicModel, (await cookies()).get(DENSITY_COOKIE)?.value)}
     >
       {children}
     </AppShell>

@@ -28,6 +28,15 @@ export const DomainEvents = {
   BankTransferSubmitted: 'fees.bank_transfer_submitted',
   BankTransferRejected: 'fees.bank_transfer_rejected',
   SponsorPaymentReceived: 'fees.sponsor_payment_received',
+  // Named events of PRD section 73 that were not yet announced.
+  PlacementOffered: 'placements.offered',
+  PlacementAccepted: 'placements.accepted',
+  InterventionCreated: 'mentoring.intervention_created',
+  InterventionRemeasured: 'mentoring.intervention_remeasured',
+  QuizStarted: 'classroom.quiz_started',
+  IncidentReported: 'governance.incident_reported',
+  RuleApproved: 'governance.rule_approved',
+  InvoiceIssued: 'billing.invoice_issued',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

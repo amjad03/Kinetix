@@ -3,7 +3,10 @@ import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
+import { learningFacts, type LearningFacts } from '../ai/learning-facts.js';
 import { auditUser } from '../common/audit.js';
+import { DomainEvents, EventBus } from '../events/events.js';
+import { TasksService } from '../tasks/tasks.service.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { interventionPlans, mentorAssignments, mentoringSessions, sections, students, userRoles, users } from '../db/schema.js';
@@ -23,6 +26,8 @@ export class MentoringController {
     private readonly db: DbService,
     private readonly svc: MentoringService,
     private readonly teacher: TeacherService,
+    private readonly events: EventBus,
+    private readonly tasks: TasksService,
   ) {}
 
   private isAdmin(p: UserPrincipal) {
@@ -201,9 +206,12 @@ export class MentoringController {
   createPlan(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(z.object({ studentId: z.uuid(), goal: z.string().trim().min(3).max(1000), actions: z.array(z.string().trim().min(1).max(500)).min(1).max(20), reviewOn: day }))) b: { studentId: string; goal: string; actions: string[]; reviewOn: string }) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.mustMentor(tx, p, b.studentId);
-      const [row] = await tx.insert(interventionPlans).values({ tenantId: p.tenantId, studentId: b.studentId, mentorUserId: p.userId, goal: b.goal, actions: b.actions.map((text) => ({ text, done: false })), reviewOn: b.reviewOn }).returning();
+      const baseline = await this.measure(tx, b.studentId);
+      const [row] = await tx.insert(interventionPlans).values({ tenantId: p.tenantId, studentId: b.studentId, mentorUserId: p.userId, goal: b.goal, actions: b.actions.map((text) => ({ text, done: false })), reviewOn: b.reviewOn, baseline }).returning();
       await this.svc.openReassessment(tx, row);
       await auditUser(tx, p, 'mentoring.plan_created', 'intervention_plan', row.id, { studentId: b.studentId });
+      await this.events.emit(tx, p.tenantId, { type: DomainEvents.InterventionCreated, aggregateType: 'intervention_plan', aggregateId: row.id, actorId: p.userId, payload: { studentId: b.studentId, reviewOn: b.reviewOn } });
+      await this.tasks.create(tx, { tenantId: p.tenantId, ownerId: p.userId, assigneeId: p.userId, title: 'Re-measure intervention plan', description: b.goal, dueAt: new Date(`${b.reviewOn}T09:00:00+05:30`), sourceModule: 'mentoring', sourceId: row.id, priority: 'normal', reminderHours: 24 });
       return row;
     });
   }
@@ -239,6 +247,44 @@ export class MentoringController {
       const actions = b.actions ?? plan.actions;
       const [row] = await tx.update(interventionPlans).set({ actions, reviewOn: b.reviewOn ?? plan.reviewOn, status: actions.some((a) => a.done) ? 'in_progress' : plan.status }).where(eq(interventionPlans.id, id)).returning();
       await auditUser(tx, p, 'mentoring.plan_updated', 'intervention_plan', id);
+      return row;
+    });
+  }
+
+  /** Marks and attendance as they stand today: the figures a plan is judged by. */
+  private async measure(tx: Tx, studentId: string): Promise<{ takenOn: string; avgPct: number | null; attendancePct: number | null }> {
+    const f: LearningFacts = await learningFacts(tx, studentId, this.svc.now().toISOString().slice(0, 10));
+    const avg = f.subjects.length ? Math.round((f.subjects.reduce((n, s) => n + s.averagePercent, 0) / f.subjects.length) * 10) / 10 : null;
+    return { takenOn: this.svc.now().toISOString().slice(0, 10), avgPct: avg, attendancePct: f.attendancePercent };
+  }
+
+  /** Adds remedial content (a topic to re-teach, a practice set, a note) to the plan and starts it. */
+  @Post('plans/:id/remedial')
+  @Auth('user', ['teacher', 'hod', 'principal'])
+  @HttpCode(200)
+  addRemedial(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ kind: z.enum(['topic', 'practice', 'note', 'session']), title: z.string().trim().min(2).max(200), topicId: z.uuid().optional(), note: z.string().trim().max(1000).optional() }))) b: { kind: string; title: string; topicId?: string; note?: string }) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const plan = await this.ownPlan(tx, p, id);
+      const remedial = [...plan.remedial, { ...b, assignedOn: this.svc.now().toISOString().slice(0, 10) }];
+      const [row] = await tx.update(interventionPlans).set({ remedial, status: 'in_progress', baseline: plan.baseline ?? (await this.measure(tx, plan.studentId)) }).where(eq(interventionPlans.id, id)).returning();
+      await auditUser(tx, p, 'mentoring.remedial_added', 'intervention_plan', id, { kind: b.kind, title: b.title });
+      return row;
+    });
+  }
+
+  /** Measures again and compares with the baseline: improved, unchanged or declined (3 percentage points either way). */
+  @Post('plans/:id/remeasure')
+  @Auth('user', ['teacher', 'hod', 'principal'])
+  @HttpCode(200)
+  remeasure(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const plan = await this.ownPlan(tx, p, id);
+      const now = await this.measure(tx, plan.studentId);
+      const delta = plan.baseline?.avgPct != null && now.avgPct != null ? Math.round((now.avgPct - plan.baseline.avgPct) * 10) / 10 : null;
+      const verdict = delta === null ? 'no_data' : delta >= 3 ? 'improved' : delta <= -3 ? 'declined' : 'unchanged';
+      const [row] = await tx.update(interventionPlans).set({ remeasure: { ...now, deltaPct: delta, verdict } }).where(eq(interventionPlans.id, id)).returning();
+      await auditUser(tx, p, 'mentoring.plan_remeasured', 'intervention_plan', id, { deltaPct: delta, verdict });
+      await this.events.emit(tx, p.tenantId, { type: DomainEvents.InterventionRemeasured, aggregateType: 'intervention_plan', aggregateId: id, actorId: p.userId, payload: { studentId: plan.studentId, verdict, deltaPct: delta } });
       return row;
     });
   }

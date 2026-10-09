@@ -7376,6 +7376,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Thank you for volunteering.'**
   String get volThanks;
+
+  /// No description provided for @tutorOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with your tutor'**
+  String get tutorOpen;
+
+  /// No description provided for @tutorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your tutor'**
+  String get tutorTitle;
+
+  /// No description provided for @tutorNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New conversation'**
+  String get tutorNew;
+
+  /// No description provided for @tutorEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask anything you are stuck on. Your tutor remembers the conversation and knows where you need the most help.'**
+  String get tutorEmpty;
+
+  /// No description provided for @tutorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your question'**
+  String get tutorHint;
+
+  /// No description provided for @tutorSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get tutorSend;
+
+  /// No description provided for @tutorNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise next'**
+  String get tutorNext;
+
+  /// No description provided for @tutorPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a sample answer: no AI server is connected yet.'**
+  String get tutorPreview;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -53,6 +53,11 @@ export interface ExamSession {
   endsOn: string;
   status: SessionStatus;
   publishedAt: string | null;
+  /** The approval step before publishing (PRD section 76). */
+  approvalRequired?: boolean;
+  approvalRequestedAt?: string | null;
+  approvedAt?: string | null;
+  approvalNote?: string | null;
 }
 export interface ExamPaper {
   id: string;

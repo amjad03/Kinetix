@@ -4083,4 +4083,28 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get volThanks => 'स्वयंसेवा के लिए धन्यवाद।';
+
+  @override
+  String get tutorOpen => 'अपने ट्यूटर से बात करें';
+
+  @override
+  String get tutorTitle => 'आपका ट्यूटर';
+
+  @override
+  String get tutorNew => 'नई बातचीत';
+
+  @override
+  String get tutorEmpty => 'जहाँ अटके हों वह पूछें। आपका ट्यूटर बातचीत याद रखता है और जानता है कि आपको कहाँ सबसे ज़्यादा मदद चाहिए।';
+
+  @override
+  String get tutorHint => 'अपना प्रश्न लिखें';
+
+  @override
+  String get tutorSend => 'भेजें';
+
+  @override
+  String get tutorNext => 'आगे अभ्यास करें';
+
+  @override
+  String get tutorPreview => 'यह एक नमूना उत्तर है: अभी कोई AI सर्वर जुड़ा नहीं है।';
 }

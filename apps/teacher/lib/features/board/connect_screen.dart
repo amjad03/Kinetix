@@ -7,6 +7,8 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
+import '../../core/offline_key.dart';
+import '../../core/offline_pairing.dart';
 import 'qr_scanner_view.dart';
 
 /// Phones and tablets can scan; desktop builds (Linux) only offer the typed code.
@@ -33,6 +35,51 @@ class _ConnectScreenState extends State<ConnectScreen> {
   late _Mode _mode = _canScan ? _Mode.scan : _Mode.code;
   BoardConnection? _connection;
   bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _keepKey();
+  }
+
+  /// While online, keep the institution's public key so a board's offline code can be checked later with no network.
+  Future<void> _keepKey() async {
+    try {
+      await (await widget.api.offlineSigningKey()).save();
+    } catch (_) {
+      // Best effort: the scan still works with the key from an earlier visit.
+    }
+  }
+
+  /// A board's signed offline code: checked here, with no network. Says what it found; signing in to the board still needs the cloud.
+  Future<void> _checkOffline(String token) async {
+    final l = context.l10n;
+    final times = MaterialLocalizations.of(context);
+    final key = await OfflineKey.load();
+    final String text;
+    if (key == null) {
+      text = l.offlineNeedKey;
+    } else {
+      final r = verifyOfflineCode(token: token, publicKeyRaw: key.publicKeyRaw, tenantId: key.tenantId, now: DateTime.now());
+      text = switch (r) {
+        OfflineOk(:final code) => l.offlineVerified(code.deviceId.length > 4 ? code.deviceId.substring(code.deviceId.length - 4) : code.deviceId, times.formatTimeOfDay(TimeOfDay.fromDateTime(code.validUntil))),
+        OfflineBad(reason: OfflineFailure.expired) => l.offlineExpired,
+        OfflineBad(reason: OfflineFailure.notYetValid) => l.offlineNotYet,
+        OfflineBad(reason: OfflineFailure.wrongInstitution) => l.offlineWrongInstitution,
+        OfflineBad() => l.offlineBad,
+      };
+    }
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('offlineResult'),
+        title: Text(l.offlineTitle),
+        content: Text(text),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.done))],
+      ),
+    );
+  }
 
   /// From the server, or [_localError] for a short code.
   ApiException? _error;
@@ -81,7 +128,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
       _Mode.scan => QrScannerView(
         busy: _busy,
         error: _errorText(context),
-        onScanned: (raw) => _claim(qr: raw),
+        onScanned: (raw) => raw.startsWith(offlinePrefix) ? _checkOffline(raw) : _claim(qr: raw),
         onEnterCode: () => setState(() => (_mode = _Mode.code, _error = null, _localError = false)),
       ),
       _Mode.code => CodeEntryView(

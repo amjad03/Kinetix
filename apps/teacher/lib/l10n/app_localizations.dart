@@ -5660,6 +5660,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scheduled'**
   String get vivaScheduled;
+
+  /// Marking help on a homework answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Marking help'**
+  String get markingHelp;
+
+  /// Marking help on a homework answer.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI gives a draft only. You decide the marks and the remark.'**
+  String get markingHelpNote;
+
+  /// Marking help on a homework answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of how many marks?'**
+  String get markingHelpOutOf;
+
+  /// Marking help on a homework answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a draft'**
+  String get markingHelpAsk;
+
+  /// Marking help on a homework answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Use as remark'**
+  String get markingHelpUse;
+
+  /// No description provided for @markingHelpDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested {marks} out of {max}'**
+  String markingHelpDraft(String marks, String max);
+
+  /// No description provided for @offlineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Board check without a network'**
+  String get offlineTitle;
+
+  /// No description provided for @offlineNeedKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Connect to board once while online, so this phone can keep your institution\'s key.'**
+  String get offlineNeedKey;
+
+  /// No description provided for @offlineExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This code has expired. Look at the board for the current one.'**
+  String get offlineExpired;
+
+  /// No description provided for @offlineNotYet.
+  ///
+  /// In en, this message translates to:
+  /// **'This code is not valid yet. Check the time on this phone.'**
+  String get offlineNotYet;
+
+  /// No description provided for @offlineWrongInstitution.
+  ///
+  /// In en, this message translates to:
+  /// **'This board belongs to another institution.'**
+  String get offlineWrongInstitution;
+
+  /// No description provided for @offlineBad.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not a genuine KINETIX board code.'**
+  String get offlineBad;
+
+  /// No description provided for @offlineVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'A genuine board of your institution (ending {board}). The code is valid until {time}. Signing in to it still needs the internet.'**
+  String offlineVerified(String board, String time);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

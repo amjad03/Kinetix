@@ -4079,4 +4079,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get volThanks => 'Thank you for volunteering.';
+
+  @override
+  String get tutorOpen => 'Chat with your tutor';
+
+  @override
+  String get tutorTitle => 'Your tutor';
+
+  @override
+  String get tutorNew => 'New conversation';
+
+  @override
+  String get tutorEmpty => 'Ask anything you are stuck on. Your tutor remembers the conversation and knows where you need the most help.';
+
+  @override
+  String get tutorHint => 'Type your question';
+
+  @override
+  String get tutorSend => 'Send';
+
+  @override
+  String get tutorNext => 'Practise next';
+
+  @override
+  String get tutorPreview => 'This is a sample answer: no AI server is connected yet.';
 }

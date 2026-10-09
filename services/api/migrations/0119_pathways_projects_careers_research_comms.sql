@@ -781,7 +781,7 @@ DO $$ BEGIN
     GRANT SELECT, INSERT, UPDATE, DELETE ON "discipline_parent_contacts" TO kinetix_app;
   END IF;
 END $$;--> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "retention_rules" (
+CREATE TABLE IF NOT EXISTS "data_retention_rules" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
   "target" text NOT NULL,
@@ -793,15 +793,15 @@ CREATE TABLE IF NOT EXISTS "retention_rules" (
   "last_affected" integer DEFAULT 0 NOT NULL,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL
 );--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "retention_rules_uq" ON "retention_rules" ("tenant_id", "target", "category");--> statement-breakpoint
-ALTER TABLE "retention_rules" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "retention_rules";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "retention_rules"
+CREATE UNIQUE INDEX IF NOT EXISTS "data_retention_rules_uq" ON "data_retention_rules" ("tenant_id", "target", "category");--> statement-breakpoint
+ALTER TABLE "data_retention_rules" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_isolation ON "data_retention_rules";--> statement-breakpoint
+CREATE POLICY tenant_isolation ON "data_retention_rules"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
   IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "retention_rules" TO kinetix_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "data_retention_rules" TO kinetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "message_templates" (

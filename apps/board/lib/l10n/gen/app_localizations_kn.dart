@@ -4286,4 +4286,9 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get aiPenModelsReady =>
       'AI ಪೆನ್ ಸಿದ್ಧವಾಗಿದೆ: ಕೈಬರಹ, ಗಣಿತ ಮತ್ತು ಆಕಾರಗಳು ಈಗ ಪರಿವರ್ತನೆಯಾಗುತ್ತವೆ.';
+
+  @override
+  String offlineCodeBody(String time) {
+    return 'ಸಂಪರ್ಕವಿಲ್ಲ. ಈ ಬೋರ್ಡ್ ಅನ್ನು ದೃಢೀಕರಿಸಲು ಈ ಕೋಡ್ ಅನ್ನು KINETIX ಶಿಕ್ಷಕರ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ. ಇದು $time ವರೆಗೆ ಮಾನ್ಯ.';
+  }
 }

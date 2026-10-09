@@ -174,7 +174,7 @@ export async function pathwaySamples(c: Ctx): Promise<void> {
   }
 
   // ---- retention, communication and parent visibility --------------------------------------------------------------------------------------------
-  await k.ins('retention_rules', [
+  await k.ins('data_retention_rules', [
     { target: 'vault_documents', category: 'aadhaar', keepDays: 2555, action: 'archive' },
     { target: 'notifications', category: '', keepDays: 180, action: 'delete' },
     { target: 'career_assistant', category: '', keepDays: 365, action: 'delete' },
