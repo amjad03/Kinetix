@@ -5,6 +5,7 @@ import { attendanceGovernance } from './attendance-gov.js';
 import { admissions } from './admissions.js';
 import { alumni, campusLife, mentoring, placements, skills } from './engagement.js';
 import { communication, documents, governance, health, integrations, lifecycle, reportsAndSystem, research, smartboards, tasksAndWorkflows, welfareAndDiscipline } from './operations.js';
+import { curriculumAndConvocation } from './curriculum.js';
 import { smallTables, syllabus } from './finish.js';
 import { exams } from './exams.js';
 import { obe, questionBank, studentAccounts, surveys } from './outcomes.js';
@@ -61,4 +62,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['custom reports, schedules and audit log', reportsAndSystem],
   ['syllabus coverage and year plans', syllabus],
   ['substitutions, AI usage and remaining records', smallTables],
+  ['curriculum versions (NEP 2024), affiliated institutions and convocations', curriculumAndConvocation],
 ];

@@ -53,6 +53,9 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/classes', label: 'nav.classes', section: 'school', icon: 'classes' },
       { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: 'syllabus' },
+      { href: '/curriculum', label: 'nav.curriculum', section: 'curriculum', icon: 'syllabus' },
+      { href: '/school-mode', label: 'nav.schoolMode', section: 'schoolMode', icon: 'classes' },
+      { href: '/university', label: 'nav.university', section: 'university', icon: 'departments' },
       { href: '/departments', label: 'nav.departments', section: 'departments', icon: 'departments' },
       { href: '/course-files', label: 'nav.courseFiles', section: 'courseFiles', icon: 'courseFiles' },
       { href: '/academic-audit', label: 'nav.academicAudit', section: 'academicAudit', icon: 'academicAudit' },

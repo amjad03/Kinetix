@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ContentSchema, parseSyllabusText } from '../curriculum/curriculum-logic.js';
 
 /**
  * The AI task catalogue. Apps ask for a task with structured input; they never send a raw
@@ -93,6 +94,8 @@ export const TaskInputs = {
   financeInsight: z.object({ facts: Facts, language: Language.default('en') }),
   admissionsInsight: z.object({ facts: Facts, language: Language.default('en') }),
   hrInsight: z.object({ facts: Facts, language: Language.default('en') }),
+  /** Curriculum importer: text read from an uploaded syllabus PDF or Word file; the model proposes subjects, units, topics and outcomes for a person to review. */
+  syllabusImport: z.object({ text: z.string().trim().min(20).max(60_000), programName: z.string().trim().max(200).optional(), language: Language.default('en') }),
   readBoard: z.object({ image: z.string().min(100).max(6_000_000).regex(/^[A-Za-z0-9+/=]+$/, 'Send the PNG as base64'), language: Language.default('en') }),
 } as const;
 
@@ -110,6 +113,7 @@ export const TaskOutputs = {
   financeInsight: Insight,
   admissionsInsight: Insight,
   hrInsight: Insight,
+  syllabusImport: ContentSchema,
   explain: z.object({
     answer: Text(6000),
     keyPoints: z.array(Text(400)).max(8).default([]),
@@ -257,6 +261,8 @@ const SHAPES: Record<TaskName, string> = {
   financeInsight: INSIGHT_SHAPE,
   admissionsInsight: INSIGHT_SHAPE,
   hrInsight: INSIGHT_SHAPE,
+  syllabusImport:
+    '{"subjects": [{"code": string, "name": string, "term": integer (semester or class), "credits": number, "hours": integer, "units": [{"title": string, "hours": integer, "topics": string[]}], "cos": [{"code": "CO1", "statement": string, "bloomLevel": string or null}]}]}',
 };
 
 const QUIZ_TYPE_SHAPE =
@@ -327,6 +333,8 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
         return insightAsk('Summarise the admissions funnel and how each campaign converts', i.facts);
       case 'hrInsight':
         return insightAsk('Summarise leave, attendance and payroll for the HR office', i.facts);
+      case 'syllabusImport':
+        return `Read this syllabus${i.programName ? ` for ${i.programName}` : ''} and list every subject with its code, semester, credits, units (with hours and topics) and course outcomes. Copy what the document says; leave a value empty or zero when it is not stated.\n"""\n${i.text}\n"""`;
       case 'readBoard':
         return 'Read the handwriting on this classroom whiteboard exactly as written. Do not solve or correct anything.';
     }
@@ -482,6 +490,8 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
           suggestions: [],
         };
       }
+      case 'syllabusImport':
+        return parseSyllabusText(String(i.text));
       case 'selectAsk':
         return { title: `Preview: ${i.action}`, answer: 'Preview only. Connect the KINETIX AI server to act on the selection.', items: [] };
       case 'summarize':

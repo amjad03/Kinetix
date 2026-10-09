@@ -736,6 +736,13 @@
       "when": 1791410902229,
       "tag": "0111_roles_annotations_delegation_dpdp",
       "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1791410905229,
+      "tag": "0114_curriculum_school_university",
+      "breakpoints": true
     }
   ]
 }

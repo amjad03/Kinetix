@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -102,6 +102,12 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   delegations: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
   // dpdp.controller.ts: the administrator works the data-principal request queue (people file requests in the apps)
   dpdp: ['principal', 'tenant_admin'],
+  // curriculum.controller.ts: editors are EDITORS (admin, principal, HOD); quality officers and the exam controller read
+  curriculum: ['principal', 'tenant_admin', 'hod', 'quality_officer', 'exam_controller'],
+  // school-academics.controller.ts and houses.controller.ts: leaders set up houses, PUC combinations and outcomes here; teachers mark and award points in the Teacher App
+  schoolMode: ['principal', 'tenant_admin', 'hod'],
+  // university.controller.ts: the registrar side (admin, principal, exam controller) and HODs read
+  university: ['principal', 'tenant_admin', 'hod', 'exam_controller'],
   // campus-life: committees are COMMITTEE_STAFF (campus-life.access.ts); teachers run clubs and events in the Teacher App
   campusLife: ['principal', 'tenant_admin', 'hod'],
   // mentoring.controller.ts MENTORING_ADMIN (teachers and counsellors log sessions in the Teacher App)

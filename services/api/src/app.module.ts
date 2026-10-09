@@ -36,6 +36,7 @@ import { CoverageModule } from './coverage/coverage.module.js';
 import { HrModule } from './hr/hr.module.js';
 import { LmsModule } from './lms/lms.module.js';
 import { FinanceModule } from './finance/finance.module.js';
+import { CurriculumModule } from './curriculum/curriculum.module.js';
 import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { ConnectorsModule } from './connectors/connectors.module.js';
@@ -137,6 +138,7 @@ import { SearchModule } from './search/search.controller.js';
     HrModule,
     LmsModule,
     FinanceModule,
+    CurriculumModule,
     PlacementsModule,
     ResearchModule,
     WelfareModule,

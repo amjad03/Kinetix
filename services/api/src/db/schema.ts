@@ -972,7 +972,7 @@ export const auditLog = pgTable('audit_log', {
 // AI (India-hosted; see docs/architecture/ai-platform.md)
 // ---------------------------------------------------------------------------------------------
 
-export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight']);
+export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight', 'syllabusImport']);
 export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota']);
 
 /** One row per AI request: metering per tenant, plus the model and template behind each answer. */
@@ -3207,6 +3207,28 @@ export const TENANT_TABLES = [
   'eval_annotations',
   'approval_delegations',
   'dpdp_requests',
+  'regulations',
+  'curriculum_versions',
+  'curriculum_subjects',
+  'curriculum_units',
+  'curriculum_cos',
+  'student_curriculum_pins',
+  'syllabus_imports',
+  'report_cards',
+  'report_card_lines',
+  'co_curricular_grades',
+  'puc_streams',
+  'puc_combinations',
+  'puc_enrollments',
+  'puc_marks',
+  'learning_outcomes',
+  'mastery_records',
+  'houses',
+  'house_members',
+  'house_points',
+  'affiliated_institutions',
+  'convocations',
+  'convocation_candidates',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------

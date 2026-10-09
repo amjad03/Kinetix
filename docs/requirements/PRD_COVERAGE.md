@@ -36,7 +36,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Institution type (school/college/university) | Partial | `api/db/schema.ts` (`institution_kind`) | only 3 kinds; no PUC, autonomous college, deemed, custom |
 | Academic model selector (GRADE_SECTION, PROGRAM_SEMESTER_COURSE, EARLY_YEARS, STREAM_COMBINATION) | Missing | none | no `academicModel` on tenant; model is implied by data |
-| Board / university / regulatory framework per tenant | Missing | `api/db/schema.ts` (`programs.curriculumCode` only) | no board/regulation entity on tenant |
+| Board / university / regulatory framework per tenant | Partial | `api/curriculum/curriculum.controller.ts`, `mig/0114_curriculum_school_university.sql`, `erp/curriculum` | regulations by year (name, authority, effective date) link to curriculum versions; no board entity for school boards (CBSE, ICSE, state) |
 | Enabled modules by capability flag | Partial | `api/institution/institution.controller.ts` | academic model and 16 module toggles hide ERP nav sections; API endpoints are not gated |
 | Grading model per institution | Built | `api/exams/exams.controller.ts` (`grade-scales`, `result-rules`) | |
 | Attendance model per institution | Partial | `api/calendar/calendar.controller.ts` (settings) | lock hours and threshold configurable; no per-programme override |
@@ -50,10 +50,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | 4.1 Nursery: domains, observations, milestones, learning stories, parent updates | Built | `api/school-life/early-years.controller.ts` | |
 | 4.2 LKG/UKG: phonics, numeracy, worksheets, activity assessment | Partial | `api/school-life/early-years-framework.ts` | observation + milestones built; worksheets and activity-assessment scoring absent |
 | 4.3 Classes 1-5: subject, chapter, topic, outcome, activity, mastery | Partial | `api/content/content.controller.ts` | chapter/topic built; learning-outcome and mastery entities absent |
-| 4.4 Classes 6-10: projects, practicals, competency, board-exam prep, promotion | Partial | `api/students/students.controller.ts` (`promotions`) | promotion built; competency tracking, practical marks, board-exam prep, remedial absent |
-| 4.5 PUC: stream, combination, practicals, internal marks, entrance readiness | Missing | none | no stream/combination entities (0 hits) |
+| 4.4 Classes 6-10: projects, practicals, competency, board-exam prep, promotion | Partial | `api/students/students.controller.ts` (`promotions`), `api/curriculum/school-academics.controller.ts`, `erp/school-mode` | promotion, report card with remarks, co-curricular and learning outcome mastery built; board-exam prep and remedial absent |
+| 4.5 PUC: stream, combination, practicals, internal marks, entrance readiness | Partial | `api/curriculum/school-academics.controller.ts`, `erp/school-mode` | streams, combinations with practical and internal components, enrolment with seat limit built; entrance readiness absent |
 | 4.6 UG/PG: dept, program, year, term, course, unit, topic, CO, assessment, credits, electives, OBE, projects, internships, placements, research | Built | `api/obe/obe.controller.ts`, `api/course-registration`, `api/placements`, `api/research` | minors/majors/multidisciplinary tracks not modelled |
-| 4.7 University: constituent/affiliated institutions, faculty/school, regulation | Missing | none | single tenant = single institution; no affiliation hierarchy or academic regulation entity |
+| 4.7 University: constituent/affiliated institutions, faculty/school, regulation | Partial | `api/curriculum/university.controller.ts`, `erp/university` | affiliated institutions registry (affiliated, autonomous, constituent, deemed) and regulations built; no faculty/school hierarchy |
 
 ## 5. Institution and organisation management
 
@@ -124,10 +124,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Entities: program, course, subject, chapter, unit, topic, credits | Built | `api/content/content.controller.ts`, `api/db/schema.ts` | |
-| Entities: framework, regulation, stream, combination, learning outcome, competency, elective groups | Partial | `mig/0099_course_registration.sql` (elective groups) | framework/regulation/stream/competency entities absent |
+| Entities: framework, regulation, stream, combination, learning outcome, competency, elective groups | Partial | `mig/0099_course_registration.sql`, `api/curriculum/curriculum.controller.ts`, `mig/0114_curriculum_school_university.sql`, `erp/curriculum`, `api/curriculum/school-academics.controller.ts`, `erp/school-mode` | regulation, stream, combination, learning outcome and competency built; framework entity absent |
 | Prerequisites | Built | `api/course-registration/registration-rules.ts` | |
-| Versioning (version, effective date, approved by, supersedes, archive) | Missing | none | curricula are code-keyed; no version rows |
-| Curriculum importer (PDF/DOCX/sheet with AI proposal and approve) | Partial | `api/import/import.controller.ts` | CSV templates for students, staff, programs, timetable only; no PDF/DOCX AI extraction or ambiguity flags |
+| Versioning (version, effective date, approved by, supersedes, archive) | Built | `api/curriculum/curriculum.controller.ts`, `mig/0114_curriculum_school_university.sql`, `erp/curriculum` | draft, approved by the Board of Studies (resolution number), active, archived; revisions supersede; students pinned to their batch version; diff view |
+| Curriculum importer (PDF/DOCX/sheet with AI proposal and approve) | Partial | `api/curriculum/syllabus-text.ts`, `api/ai/tasks.ts` (`syllabusImport`), `erp/curriculum` | PDF and DOCX text extraction, virus scan, AI proposal (rule-based preview with no AI server), review then draft version; scanned PDFs need OCR; no ambiguity flags |
 | Institution overrides (terminology, subjects, credits, outcomes) | Partial | `api/obe/obe.controller.ts` | subjects and COs editable; terminology override absent |
 
 ## 11. CBCS / CBE course registration
@@ -145,8 +145,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | School grade/section, class teacher | Built | `api/admin/admin.controller.ts` (`classes`), `api/db/schema.ts` (`sections`) | |
-| House | Missing | none | |
-| PUC stream/combination sections | Missing | none | |
+| House | Built | `api/curriculum/houses.controller.ts`, `erp/school-mode` |  |
+| PUC stream/combination sections | Partial | `api/curriculum/school-academics.controller.ts`, `erp/school-mode` | combinations and enrolment, not yet class sections per combination |
 | College batch/section/semester/offering | Built | `api/db/schema.ts` (`sections`, `course_offerings`) | |
 | Transfers, section change, promotion, history | Built | `api/students/students.controller.ts` (`:id/section`, `promotions`, `:id/status-history`) | batch rollover is part of promotion; no separate rollover wizard |
 
@@ -182,19 +182,19 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Early years: observations, milestones, learning stories, parent updates | Built | `api/school-life/early-years.controller.ts` | |
 | Primary/secondary: classwork, homework, worksheets | Partial | `api/homework/submissions.controller.ts` | homework built; worksheets/reading/remedial absent |
-| School report card (grades, competency, remarks, attendance, co-curricular, promotion status) | Partial | `api/exams/exams.controller.ts` (`marks-card.pdf`) | marks card only; no teacher remarks, co-curricular, behaviour or promotion status on the card |
+| School report card (grades, competency, remarks, attendance, co-curricular, promotion status) | Built | `api/curriculum/school-academics.controller.ts` (`report-cards/:id/pdf`) | marks by subject, teacher remarks, conduct, co-curricular grades, attendance %, promotion status (principal only); Parent and Student app screens absent |
 | Promotion rules, supplementary/compartment, subject-failure policy, approvals, parent communication | Partial | `api/students/students.controller.ts` (`promotions`) | bulk promotion with audit; no rule engine or compartment policy |
 | PTM (schedule, slots, parent booking, reschedule, reminders) | Built | `api/school-life/ptm.controller.ts` | PTM notes/action items absent |
 | School diary (homework, classwork, announcements, acknowledgements) | Built | `api/school-life/diary.controller.ts` | |
-| House system (houses, allocation, points, leaderboard) | Missing | none | |
+| House system (houses, allocation, points, leaderboard) | Built | `api/curriculum/houses.controller.ts`, `erp/school-mode` | allotment with captain, points ledger by category, leaderboard |
 | Activities: clubs, competitions, points | Built | `api/campus-life/clubs.controller.ts` | sports/culture categories via clubs/events |
 
 ## 16. PUC / Class 11-12
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
-| Stream and combination (configurable) | Missing | none | |
-| Practical subjects, internal marks, board exam rules | Missing | none | schemes exist (`api/exams/schemes.controller.ts`) but no PUC preset |
+| Stream and combination (configurable) | Built | `api/curriculum/school-academics.controller.ts`, `erp/school-mode` |  |
+| Practical subjects, internal marks, board exam rules | Partial | `api/curriculum/school-academics.controller.ts`, `erp/school-mode` | theory, practical and internal marks checked against combination maximums with totals; board pass rules absent |
 | Entrance readiness, career guidance | Partial | `S/features/careers` | careers screens exist; no entrance-readiness tracking |
 | Subject-specific attendance | Built | `api/teacher/teacher.controller.ts` (per-period) | |
 
@@ -204,7 +204,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Departments, programs, semesters, courses, credits, sections | Built | `api/departments`, `api/db/schema.ts` | |
 | Course allocation to faculty | Built | `api/course-registration/course-registration.controller.ts` (`me/teaching`), `api/admin/timetable-admin.controller.ts` | |
-| Affiliated / autonomous / university-dept / deemed models | Missing | none | no academic-model switch |
+| Affiliated / autonomous / university-dept / deemed models | Partial | `api/curriculum/university.controller.ts`, `erp/university` | registry records the model per institution; no behavioural switch per model |
 | Electives, projects, internships, research | Built | `api/placements/careers.controller.ts`, `api/research` | |
 
 ## 18. Lesson planning and course planner
@@ -321,7 +321,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Request, approve, issue, bulk issue | Built | `api/documents/certificates.controller.ts` | |
 | QR, unique serial, revoke, public verification | Built | `api/documents/public-verify.controller.ts` | |
 | Marks card, transcript, passport | Built | `api/skills/passport.controller.ts` | |
-| Graduation / convocation | Missing | none | no convocation module |
+| Graduation / convocation | Built | `api/curriculum/university.controller.ts`, `erp/university` | eligible graduates from final-semester pass results, registration, withhold, degree numbers, certificate PDF with signed QR and public check |
 | Blockchain / wallet-style digital credentials (DigiLocker) | Missing | none | no DigiLocker/NAD push |
 
 ## 27. OBE / outcome engine
@@ -332,7 +332,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Direct and indirect attainment, thresholds, weights, targets, levels | Built | `api/obe/attainment.ts` | |
 | Formula configurable (not hard-coded) | Built | `api/obe/obe.controller.ts` (`config`) | |
 | Matrix colour scale, drill-down | Built | `erp/obe/matrix` | |
-| School mode (learning outcome, competency, mastery) | Missing | none | |
+| School mode (learning outcome, competency, mastery) | Built | `api/curriculum/school-academics.controller.ts`, `erp/school-mode` | outcomes and competencies by class and subject, four mastery levels per student, section distribution; marking from the Teacher App absent |
 | CQI gaps and actions | Built | `api/obe/obe.controller.ts` (`actions`) | |
 
 ## 28. Accreditation and quality OS
