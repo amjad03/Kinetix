@@ -242,6 +242,10 @@ Map<String, dynamic> encodeElement(BoardElement e, {Object? Function(Uint8List b
     if (e.fill != null) 'f': e.fill!.toARGB32(),
     if (e.measure.any) 'm': e.measure.bits,
     if (e.turn != 0) 'tr': _round3(e.turn),
+    if (e.sideColors.isNotEmpty)
+      'sc': [
+        for (final en in e.sideColors.entries) ...[en.key, en.value.toARGB32()],
+      ],
   },
   NoteElement() => {
     't': 'note',
@@ -414,6 +418,7 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
           fill: j['f'] is num ? color('f') : null,
           measure: j['m'] is num ? ShapeMeasure.fromBits((j['m'] as num).toInt()) : ShapeMeasure.none,
           turn: n('tr'),
+          sideColors: _readSideColors(j['sc']),
         );
       case 'note':
         final rect = _readRect(j['r']);
@@ -484,4 +489,13 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
     // A malformed element from a newer or broken writer: skip it, keep the board.
   }
   return null;
+}
+
+/// Coloured sides saved as a flat list of index, colour pairs.
+Map<int, Color> _readSideColors(Object? j) {
+  if (j is! List || j.length < 2) return const {};
+  return {
+    for (var i = 0; i + 1 < j.length; i += 2)
+      if (j[i] is num && j[i + 1] is num) (j[i] as num).toInt(): Color((j[i + 1] as num).toInt()),
+  };
 }

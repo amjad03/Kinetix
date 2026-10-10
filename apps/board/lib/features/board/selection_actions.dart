@@ -181,6 +181,8 @@ class SelectionActions extends StatelessWidget {
           () => wb.setSelectionFill(!wb.selectionFilled),
           key: const Key('sel-fill'),
         ),
+      if (canColourSides(wb) && !locked)
+        Builder(builder: (ctx) => btn(Icons.border_color_outlined, ToolStrings.of(ctx).t('sideColour'), () => showShapeFaceDialog(ctx, wb), key: const Key('sel-side-colour'))),
       ?measureToggle,
       if (measure.any) ?measureMenu,
       if (wb.canEditPoints) btn(Icons.polyline_outlined, l.selEditPoints, () => wb.editingPoints = !wb.editingPoints, key: const Key('sel-edit-points'), on: wb.editingPoints),

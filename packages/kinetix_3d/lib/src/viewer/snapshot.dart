@@ -7,7 +7,7 @@ import 'annotations.dart';
 /// A picture of a 3D model as the class sees it (labels drawn in), for the board to place
 /// on its canvas.
 class Model3dSnapshot {
-  const Model3dSnapshot({required this.png, required this.modelId, required this.title, this.credit = '', this.annotations = Model3dAnnotations.empty});
+  const Model3dSnapshot({required this.png, required this.modelId, required this.title, this.credit = '', this.annotations = Model3dAnnotations.empty, this.preset});
 
   /// PNG bytes.
   final Uint8List png;
@@ -22,6 +22,9 @@ class Model3dSnapshot {
   /// The notes and drawing on the model when the picture was taken (drawn into [png] too),
   /// so the board can keep them with the picture.
   final Model3dAnnotations annotations;
+
+  /// The view to come back to (painted faces of a solid, see [encodeFaceColorMap]), or null.
+  final String? preset;
 }
 
 /// Where the 3D view is shown to the students (the projector or a second screen):
