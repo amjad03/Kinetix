@@ -96,6 +96,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | 8.1 Lead source, campaign, counsellor, follow-up, notes, status, next action | Built | `api/admissions/enquiries.service.ts` | |
 | 8.1 Lead score | Built | `api/admissions/lead-score.ts`, `erp/admissions` (score chip, sort by score) | rule-based points for source, programme interest, follow-ups and stage; recomputed on every change |
 | 8.2 Campaigns, UTM, funnel | Built | `erp/admissions/campaigns`, `apps/erp/src/components/dashboard/AdmissionsDashboard.tsx` | |
+| 8.2a Index marks, rank lists, seat matrix, CAP rounds | Built | `api/admissions/depth`, `erp/admissions/depth`, test `admissions-depth.e2e.spec.ts` | per-programme formulas, category ranks, registry-driven quotas, float/freeze rounds |
+| 8.2b Agent commission rules and payouts; lead connectors and source ROI | Built | `api/admissions/depth/commission.ts`, `leads.service.ts` | flat/percent/slab rules, TDS on payout, Meta/Google/website webhooks |
 | 8.2 Landing pages / forms | Built | `api/admissions/admissions-ext.controller.ts` (`landing`), `erp/app/apply/[slug]/landing/[cycleId]`, `erp/admissions-tools` | per-cycle public page with highlights, questions and contact, behind a publish switch; the form itself is unchanged |
 | 8.2 Referral, source ROI | Built | `api/admissions/enquiries.service.ts` (`resolveAgent`), `apps/erp/src/app/apply/[slug]` (`?ref=`), campaign report | referral code on the public enquiry form; cost per enrolment in the campaign report |
 | 8.3 Online application, documents, eligibility, application fee, verification, submission | Built | `api/admissions/public-admissions.controller.ts` | |

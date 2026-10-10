@@ -298,14 +298,71 @@ class BoardController extends ChangeNotifier {
   /// Saved to disk on every change, so they survive a crash or restart and still go up after
   /// the class has ended (with the device token; see [flushOutbox]).
   final List<Map<String, dynamic>> _outbox = [];
+
+  /// Calls that need the network but must not be lost (homework, topics taught, badges): replayed in order once the board is back online.
+  final List<Map<String, dynamic>> _deferred = [];
   Future<void> _outboxSaving = Future.value();
-  int get pendingOps => _outbox.length;
+  int get pendingOps => _outbox.length + _deferred.length;
 
   /// The id the current board is saved under. A new lesson gets a new id; opening a saved
   /// board continues it, so saving again updates the same board.
   String whiteboardId = '';
 
   Timer? _sessionTimer;
+
+  /// The teacher's current timetable period when the board is not on it yet (offered as a banner), from `GET /v1/classroom/now`.
+  Map<String, dynamic>? suggestedClass;
+
+  /// The paper being sat in this board's room (exam room mode), or null. From `GET /v1/devices/me/exam-room`.
+  Map<String, dynamic>? examRoom;
+  Timer? _roomTimer;
+
+  /// Asks the cloud what is on in this room now: the next period for the signed-in teacher, and any exam. Runs every minute.
+  Future<void> refreshRoom() async {
+    final api = this.api;
+    if (api == null || _disposed) return;
+    try {
+      final exam = await api.examRoom();
+      examRoom = exam['active'] == true ? exam : null;
+    } catch (_) {}
+    if (session != null && api.sessionToken != null) {
+      try {
+        final now = await api.classNow();
+        final slot = now['slot'] as Map<String, dynamic>?;
+        // Nothing is attached to the session: take the period straight away. Otherwise offer it.
+        if (slot != null && now['onIt'] != true && now['sessionSectionId'] == null) {
+          await refreshSessionContext(await api.openClassNow());
+          suggestedClass = null;
+        } else {
+          suggestedClass = slot != null && now['onIt'] != true ? slot : null;
+        }
+      } catch (_) {}
+    } else {
+      suggestedClass = null;
+    }
+    if (!_disposed) notifyListeners();
+  }
+
+  /// Starts the minute-by-minute room check (call once the board is enrolled).
+  void startRoomWatch() {
+    _roomTimer?.cancel();
+    _roomTimer = Timer.periodic(const Duration(minutes: 1), (_) => unawaited(refreshRoom()));
+    unawaited(refreshRoom());
+  }
+
+  /// The teacher accepts the suggested period: the board moves to it and keeps the period for attendance.
+  Future<void> acceptSuggestedClass() async {
+    final api = this.api;
+    if (api == null || suggestedClass == null) return;
+    await refreshSessionContext(await api.openClassNow());
+    suggestedClass = null;
+    notifyListeners();
+  }
+
+  void dismissSuggestedClass() {
+    suggestedClass = null;
+    notifyListeners();
+  }
   final _random = Random();
 
   bool get isEnrolled => api != null;
@@ -315,7 +372,9 @@ class BoardController extends ChangeNotifier {
 
   Future<void> start() async {
     try {
-      _outbox.addAll(await _outboxStore.load());
+      for (final op in await _outboxStore.load()) {
+        (op['type'] == 'rest' ? _deferred : _outbox).add(op);
+      }
     } catch (e) {
       debugPrint('Outbox unreadable: $e');
     }
@@ -730,9 +789,44 @@ class BoardController extends ChangeNotifier {
     unawaited(flushOutbox());
   }
 
+  /// Keeps a call that could not reach the server (see [ApiClient.defer]) with the class it was made in.
+  Future<void> _deferRest(String method, String path, Map<String, dynamic>? body) async {
+    if (session == null) return;
+    _deferred.add({'opId': _uuidV4(), 'type': 'rest', 'method': method, 'path': path, 'body': body, 'sessionId': session!.sessionId, 'at': DateTime.now().toUtc().toIso8601String()});
+    online = false;
+    _persistOutbox();
+    notifyListeners();
+  }
+
+  /// Replays kept calls for the current class, oldest first. A call the server refuses is dropped; a network failure stops the run.
+  Future<bool> _replayDeferred(ApiClient api) async {
+    var changed = false;
+    try {
+    while (_deferred.isNotEmpty && api.sessionToken != null) {
+      final op = _deferred.first;
+      if (op['sessionId'] != session?.sessionId) {
+        // A call from an earlier class needs that class's session to be accepted; it cannot be replayed now.
+        _deferred.removeAt(0);
+        changed = true;
+        continue;
+      }
+      try {
+        await api.replay(op['method'] as String, op['path'] as String, (op['body'] as Map?)?.cast<String, dynamic>());
+      } on ApiException {
+        // refused for good (already done, class changed): do not block the rest
+      }
+      _deferred.removeAt(0);
+      changed = true;
+    }
+    } finally {
+      if (changed) _persistOutbox();
+    }
+    return changed;
+  }
+
   /// Writes the outbox to disk, one write after another so an older list never wins.
   void _persistOutbox() {
-    final snapshot = [for (final op in _outbox) Map<String, dynamic>.of(op)];
+    final snapshot = [for (final op in [..._outbox, ..._deferred]) Map<String, dynamic>.of(op)];
     _outboxSaving = _outboxSaving.then((_) => _outboxStore.save(snapshot)).catchError((_) {});
   }
 
@@ -747,6 +841,7 @@ class BoardController extends ChangeNotifier {
     _flushing = true;
     var changed = false;
     try {
+      if (await _replayDeferred(api)) changed = true;
       // Keep going while there is work: operations queued during a request go in the next batch.
       while (_outbox.isNotEmpty) {
         // Oldest class first. The current class uses its session token; an earlier class's ops
@@ -789,7 +884,9 @@ class BoardController extends ChangeNotifier {
   // --- Connection --------------------------------------------------------------------------
 
   void _connect(String url, String deviceToken) {
-    api = _apiFactory(url)..deviceToken = deviceToken;
+    api = _apiFactory(url)
+      ..deviceToken = deviceToken
+      ..defer = _deferRest;
     _realtime?.dispose();
     final rt = _realtimeFactory(url);
     rt.on(
@@ -1058,6 +1155,7 @@ class BoardController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _sessionTimer?.cancel();
+    _roomTimer?.cancel();
     kiosk.dispose();
     profiles.dispose();
     projector.dispose();

@@ -2,6 +2,7 @@
 import { eq } from 'drizzle-orm';
 import { AgentsService } from '../../admissions/agents.service.js';
 import { EnquiriesService } from '../../admissions/enquiries.service.js';
+import { INDEX_PRESETS } from '../../admissions/depth/index-mark.js';
 import { InterviewsService } from '../../admissions/interviews.service.js';
 import { OnlineTestService } from '../../admissions/online-test.service.js';
 import { APPRAISAL_CATEGORIES, gradeFor, percentOf, type AppraisalScores } from '../../hr/appraisal-math.js';
@@ -73,6 +74,19 @@ export async function admissionsGrowth(c: Ctx): Promise<void> {
 
   // Interviews for the BBA early round: six held, four coming up.
   const [cycleB] = await k.q<{ id: string }>("select id from admission_cycles where tenant_id = $1 and name like 'BBA 2027-28%'", [c.tenantId]);
+
+  // Admission depth: index-mark formula for the cycle, commission rules, lead connectors with a month of ad spend.
+  if (cycleB) {
+    await k.ins('admission_index_formulas', { cycleId: cycleB.id, spec: J(INDEX_PRESETS.postgraduate.formula) }, { returning: false });
+  }
+  await k.ins('agent_commission_rules', { agentId: null, programId: null, kind: 'slab', slabs: J([{ upTo: 5, paise: rupees(3000) }, { upTo: null, paise: rupees(4000) }]), tdsBps: 200 }, { returning: false });
+  await k.ins('lead_connectors', { kind: 'website', name: 'Soundarya website enquiry form', secret: 'seed-website-key-not-for-production' }, { returning: false });
+  await k.ins('lead_connectors', { kind: 'meta', name: 'Soundarya Meta lead ads', secret: 'seed-meta-secret-not-for-production' }, { returning: false });
+  await k.ins('lead_connectors', { kind: 'google', name: 'Soundarya Google Ads', secret: 'seed-google-key-not-for-production' }, { returning: false });
+  for (let d = 1; d <= 30; d++) {
+    await k.ins('lead_spend', { channel: 'meta', day: addDays(c.today, -d), spendPaise: rupees(1800 + (d % 7) * 150), impressions: 9000 + d * 40, clicks: 210 + d }, { returning: false });
+    await k.ins('lead_spend', { channel: 'google', day: addDays(c.today, -d), spendPaise: rupees(1200 + (d % 5) * 100), impressions: 6000 + d * 30, clicks: 150 + d }, { returning: false });
+  }
   const [cycleC] = await k.q<{ id: string }>("select id from admission_cycles where tenant_id = $1 and name like 'BCA 2027-28%'", [c.tenantId]);
   const shortlisted = await k.q<{ id: string }>("select id from applications where cycle_id = $1 and status in ('offered', 'accepted', 'waitlisted', 'eligible') order by merit_rank nulls last, application_no limit 10", [cycleB.id]);
   const hodMgmt = c.byEmail['hod.management'];

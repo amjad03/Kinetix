@@ -2,7 +2,8 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
-import { admissionAgents, agentCommissions, applications, enquiries } from '../db/schema.js';
+import { admissionAgents, admissionCycles, agentCommissionRules, agentCommissions, applications, enquiries } from '../db/schema.js';
+import { commissionAmount, pickRule, type CommissionRule } from './depth/commission.js';
 import { type Actor, auditActor } from './enquiries.service.js';
 
 type AgentInput = { name: string; kind: 'agent' | 'partner'; phone?: string | null; email?: string | null; commissionPaise: number; referralCode?: string | null; active?: boolean };
@@ -20,9 +21,14 @@ export async function accrueCommission(tx: Tx, tenantId: string, app: { id: stri
   if (!agentId) return null;
   const [agent] = await tx.select().from(admissionAgents).where(eq(admissionAgents.id, agentId));
   if (!agent) return null;
+  // The most specific commission rule (agent and programme, agent, programme, institution) decides the amount; an agent with no rule gets their fixed commission.
+  const [cycle] = await tx.select({ programId: admissionCycles.programId }).from(applications).innerJoin(admissionCycles, eq(admissionCycles.id, applications.cycleId)).where(eq(applications.id, app.id));
+  const rule = pickRule((await tx.select().from(agentCommissionRules)) as CommissionRule[], agentId, cycle?.programId ?? null);
+  const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(agentCommissions).where(eq(agentCommissions.agentId, agentId));
+  const amountPaise = rule ? commissionAmount(rule, n + 1) : agent.commissionPaise;
   const [row] = await tx
     .insert(agentCommissions)
-    .values({ tenantId, agentId, applicationId: app.id, amountPaise: agent.commissionPaise })
+    .values({ tenantId, agentId, applicationId: app.id, amountPaise })
     .onConflictDoNothing()
     .returning();
   if (row) await audit(tx, { tenantId, actorType: 'system', action: 'admissions.commission_accrued.v1', subjectType: 'application', subjectId: app.id, data: { agentId, amountPaise: row.amountPaise } });

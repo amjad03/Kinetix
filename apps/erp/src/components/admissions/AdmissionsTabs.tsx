@@ -10,6 +10,7 @@ const TABS = [
   { href: '/admissions/interviews', key: 'interviews', label: 'adm.tab.interviews' },
   { href: '/admissions/online-test', key: 'onlineTest', label: 'adm.tab.onlineTest' },
   { href: '/admissions/partners', key: 'partners', label: 'adm.tab.partners' },
+  { href: '/admissions/depth', key: 'depth', label: 'adm.tab.depth' },
 ] as const;
 
 /** The admissions areas, as link tabs across the top of each page. */

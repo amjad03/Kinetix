@@ -21,6 +21,7 @@ import 'features/insert/picture_library.dart';
 import 'features/preview/panel_preview.dart';
 import 'features/profiles/profiles_ui.dart';
 import 'features/projector/projector_screen.dart';
+import 'features/room_sync/room_sync_gate.dart';
 import 'l10n/l10n.dart';
 
 void main() {
@@ -101,7 +102,7 @@ class KinetixBoardApp extends StatelessWidget {
                       messages: controller.broadcasts,
                       acknowledged: controller.acknowledgedEmergencies,
                       onDismiss: controller.dismissBroadcast,
-                      child: Theme(data: boardAppTheme(look), child: DeviceLockGate(board: controller, child: child!)),
+                      child: Theme(data: boardAppTheme(look), child: DeviceLockGate(board: controller, child: RoomSyncGate(board: controller, child: child!))),
                     ),
                   ),
                 ),
