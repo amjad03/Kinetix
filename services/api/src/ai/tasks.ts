@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { cleanAnswerText, cleanOcrText, tidyList } from './math-format.js';
 import { ContentSchema, parseSyllabusText } from '../curriculum/curriculum-logic.js';
 
 /**
@@ -36,7 +37,7 @@ const Difficulty = z.enum(['easy', 'medium', 'hard']).default('medium');
 const Facts = z.record(z.string(), z.unknown());
 
 export const TaskInputs = {
-  explain: z.object({ question: z.string().trim().min(2).max(1000), language: Language.default('en') }),
+  explain: z.object({ question: z.string().trim().min(2).max(1000), language: Language.default('en'), /** Class, board and subject, e.g. "Class 10 CBSE Maths". */ level: Level }),
   quiz: z.object({
     topic: Topic,
     count: z.number().int().min(1).max(20).default(5),
@@ -248,7 +249,7 @@ export type TaskInput<T extends TaskName> = z.infer<(typeof TaskInputs)[T]>;
 export type TaskOutput<T extends TaskName> = z.infer<(typeof TaskOutputs)[T]>;
 
 /** Bump when a template changes; it is logged with every output and part of the cache key. */
-export const PROMPT_VERSION = 'v1';
+export const PROMPT_VERSION = 'v2';
 
 export type ChatContent = string | ({ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } })[];
 
@@ -268,7 +269,11 @@ function systemPrompt(g: Grounding, language: Language): string {
     `Institution: ${g.institution}.`,
     g.className ? `Class: ${g.className}.` : null,
     g.subjectName ? `Subject: ${g.subjectName}.` : null,
-    'Follow the Indian syllabus for this class and level. Use Indian examples, names and rupees (₹) where examples help.',
+    'Follow the Indian syllabus (NCERT / CBSE / the state board named) for this class and level. Use Indian examples, names and rupees (₹) where examples help.',
+    'Pitch the language to the class named above: simple words for lower classes, precise terms for senior classes.',
+    'Accuracy first. For maths, physics, chemistry and any numerical question, work step by step: state the formula, substitute the values with units, calculate carefully, check the result, then give the final answer on its own last line starting "Answer:".',
+    'Write maths as plain text with Unicode (x², √, ×, ÷, ≤, π, fractions as a/b). Do not use LaTeX, dollar signs or markdown.',
+    'Never invent facts, dates, names, formulas or figures. If the question is ambiguous, state the assumption you made. When you are unsure of something, begin that sentence with "Not sure:" and say what to verify in the textbook.',
     audience,
     `Write in ${LANGUAGE_NAMES[language]}${language === 'en' ? '' : ' (use the native script)'}.`,
     'If you are not sure a fact is correct, say so rather than guessing.',
@@ -354,7 +359,7 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
   const ask = (() => {
     switch (task) {
       case 'explain':
-        return `Explain for the class: ${i.question}`;
+        return `Explain for the class${i.level ? ` (${i.level})` : ''}: ${i.question}\nIf it is a problem to solve, give numbered steps and end with "Answer: …". If it is a concept, give a definition, a short explanation and one example from daily life in India.`;
       case 'quiz': {
         const types = i.types as string[];
         const kinds = types.length === 1 && types[0] === 'mcq' ? 'multiple-choice questions' : `questions mixing these types: ${types.join(', ')}`;
@@ -402,7 +407,7 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
       case 'syllabusImport':
         return `Read this syllabus${i.programName ? ` for ${i.programName}` : ''} and list every subject with its code, semester, credits, units (with hours and topics) and course outcomes. Copy what the document says; leave a value empty or zero when it is not stated.\n"""\n${i.text}\n"""`;
       case 'readBoard':
-        return 'Read the handwriting on this classroom whiteboard exactly as written. Do not solve or correct anything.';
+        return 'Read the handwriting on this classroom whiteboard exactly as written, top to bottom, left to right, one line of text per line. Keep Hindi and Kannada in their own script. Read digits carefully (0/O, 1/l, 5/S, 2/z, 7/1). Write each mathematical expression in LaTeX in the "math" list, with exponents, fractions, roots, subscripts and signs exactly as drawn, and also as written in "text". Put [?] in place of anything illegible; never guess a word. Do not solve, complete or correct anything. Ignore the board frame, shadows and the teacher\'s hand.';
     }
   })();
   const shape = task === 'quiz' && JSON.stringify(i.types) !== '["mcq"]' ? QUIZ_TYPE_SHAPE : task === 'homework' ? HOMEWORK_TYPE_SHAPE : SHAPES[task];
@@ -485,6 +490,22 @@ export function fitGrade(input: TaskInput<'gradeAssist'>, out: TaskOutput<'grade
 
 /** Fixes what a model reliably gets slightly wrong: lesson-plan steps always add up to the chosen length. */
 export function postProcess<T extends TaskName>(task: T, input: TaskInput<T>, out: TaskOutput<T>): TaskOutput<T> {
+  if (task === 'explain') {
+    const e = out as TaskOutput<'explain'>;
+    return { answer: cleanAnswerText(e.answer), keyPoints: tidyList(e.keyPoints), followUps: tidyList(e.followUps) } as TaskOutput<T>;
+  }
+  if (task === 'selectAsk') {
+    const e = out as TaskOutput<'selectAsk'>;
+    return { ...e, title: cleanAnswerText(e.title), answer: cleanAnswerText(e.answer), items: tidyList(e.items) } as TaskOutput<T>;
+  }
+  if (task === 'readBoard') {
+    const e = out as TaskOutput<'readBoard'>;
+    return { text: cleanOcrText(e.text), math: [...new Set(e.math.map((m) => m.replace(/^\$+|\$+$/g, '').trim()).filter(Boolean))] } as TaskOutput<T>;
+  }
+  if (task === 'quiz') {
+    const e = out as TaskOutput<'quiz'>;
+    return { ...e, questions: e.questions.map((q) => ({ ...q, question: cleanAnswerText(q.question), explanation: q.explanation ? cleanAnswerText(q.explanation) : q.explanation })) } as TaskOutput<T>;
+  }
   if (task === 'gradeAssist') return fitGrade(input as TaskInput<'gradeAssist'>, out as TaskOutput<'gradeAssist'>) as TaskOutput<T>;
   if (task !== 'lessonPlan') return out;
   const plan = out as TaskOutput<'lessonPlan'>;

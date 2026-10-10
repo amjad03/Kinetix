@@ -39,7 +39,23 @@ ValueChanged<Presentation>? presentationHost;
 
 /// An open presentation beside the teacher's writing (spec §28).
 class Presentation extends ChangeNotifier {
-  Presentation({required this.name, required this.bytes, required this.pages, required this.left});
+  Presentation({required this.name, required this.bytes, required this.pages, required this.left, this.isPdf = false});
+
+  /// A PDF opens in the same split pane; it has no presenter app, only pages to add.
+  final bool isPdf;
+
+  /// Pages ticked to add to the whiteboard (0-based).
+  final Set<int> selected = {};
+
+  void toggleSelected(int i) {
+    if (!selected.remove(i)) selected.add(i);
+    notifyListeners();
+  }
+
+  void clearSelected() {
+    selected.clear();
+    notifyListeners();
+  }
 
   final String name;
   final Uint8List bytes;
@@ -109,6 +125,14 @@ class PresentationPane extends StatelessWidget {
     showBoardMessage(context, labels.added(p.pages.length));
   }
 
+  void _addSelected(BuildContext context) {
+    final picks = p.selected.toList()..sort();
+    if (picks.isEmpty) return;
+    wb.addPages([for (final i in picks) _pageFor(p.pages[i])]);
+    showBoardMessage(context, labels.added(picks.length));
+    p.clearSelected();
+  }
+
   Future<void> _present(BuildContext context) async {
     var ok = false;
     try {
@@ -124,6 +148,35 @@ class PresentationPane extends StatelessWidget {
     final page = p.pages[p.index];
     Widget btn(String key, IconData icon, String tip, VoidCallback? onTap) =>
         IconButton(key: Key(key), tooltip: tip, onPressed: onTap, icon: Icon(icon), iconSize: 28, style: IconButton.styleFrom(minimumSize: const Size(52, 52)));
+    final picker = SizedBox(
+      height: 56,
+      child: Row(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              key: const Key('ppt-chips'),
+              scrollDirection: Axis.horizontal,
+              itemCount: p.pages.length,
+              itemBuilder: (_, i) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
+                child: FilterChip(
+                  key: Key('ppt-chip-$i'),
+                  label: Text('${i + 1}'),
+                  selected: p.selected.contains(i),
+                  onSelected: (_) => p.toggleSelected(i),
+                ),
+              ),
+            ),
+          ),
+          TextButton.icon(
+            key: const Key('ppt-add-selected'),
+            onPressed: p.selected.isEmpty ? null : () => _addSelected(context),
+            icon: const Icon(Icons.playlist_add_check),
+            label: Text(labels.addSelected(p.selected.length)),
+          ),
+        ],
+      ),
+    );
     final bar = Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -134,7 +187,7 @@ class PresentationPane extends StatelessWidget {
         btn('ppt-add-page', Icons.note_add_outlined, labels.addPage, () => _addPage(context)),
         btn('ppt-add-all', Icons.library_add_outlined, labels.addAll, () => _addAll(context)),
         btn('ppt-edge', p.edgeToEdge ? Icons.fullscreen_exit : Icons.fullscreen, labels.edgeToEdge, p.toggleEdge),
-        btn('ppt-present', Icons.slideshow_outlined, labels.present, () => unawaited(_present(context))),
+        if (!p.isPdf) btn('ppt-present', Icons.slideshow_outlined, labels.present, () => unawaited(_present(context))),
         btn('ppt-close', Icons.close, labels.close, onClose),
       ],
     );
@@ -153,7 +206,7 @@ class PresentationPane extends StatelessWidget {
               child: Center(child: Image.memory(page.png, key: ValueKey('ppt-slide-${p.index}'), fit: BoxFit.contain, gaplessPlayback: true)),
             ),
           ),
-          ColoredBox(color: context.colors.surface, child: SizedBox(width: double.infinity, child: bar)),
+          ColoredBox(color: context.colors.surface, child: SizedBox(width: double.infinity, child: Column(mainAxisSize: MainAxisSize.min, children: [picker, bar]))),
         ],
       ),
     );
@@ -184,8 +237,12 @@ class PresentationLabels {
     required this.close,
     required this.noPresenter,
     required this.added,
+    required this.addSelected,
   });
 
   final String previous, next, addPage, addAll, edgeToEdge, present, close, noPresenter;
   final String Function(int) added;
+
+  /// The "add the ticked pages" button, given how many are ticked.
+  final String Function(int) addSelected;
 }

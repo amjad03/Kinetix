@@ -81,18 +81,18 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Kinetix AI smart tools grid | Summary, Quick Quiz, Lecture, Homework, Google, Wikipedia, Simulations, Periodic Table, Dictionary, Books, Graph, Calculator | Built (grid); dictionary weak | A/ai/ai_panel.dart, A/ai/smart_panels.dart |
 | Quiz setup | Participants/teams, count, difficulty, type, timer, Start | Built | A/ai/quiz_setup.dart, A/ai/quiz_panel.dart |
 | Quiz source: topic / Scan the Board (all pages or selected) | Both modes | Built | A/ai/quiz_setup.dart |
-| Quiz explanation, Add to Board, exam importance | AI explains answer | Partial | A/ai/quiz_panel.dart |
-| Homework AI | Formats, marks, diagrams | Partial | A/ai/homework_panel.dart |
-| AI answer accuracy | Grounded, class/board aware | Broken: inaccurate answers | A/ai/ai_controller.dart, services/api |
+| Quiz explanation, Add to Board, exam importance | AI explains answer | Built | A/ai/quiz_panel.dart |
+| Homework AI | Formats, marks, diagrams | Built | A/ai/homework_panel.dart |
+| AI answer accuracy | Grounded, class/board aware | Built: prompt v2 (class, step-by-step, uncertainty, language), Unicode maths clean-up, 40-question eval set | A/ai/ai_controller.dart, services/api |
 | Context-aware (board, selection) | Reads board | Built | A/ai/read_board_panel.dart |
 
 ## 7. Insert, split-screen, PDF/PPT
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
 | Insert menu: PDF, Images, Videos, PPT, Clipboard, Geometry, Table, Flowchart | Popover | Built | B/insert_popover.dart, A/insert/insert_entries.dart |
-| PDF import | Opens in split screen first; "Add to board" per page or all ("Adding page to whiteboard" toast) | Partial: imports to board directly; split-first with Add to board missing | A/insert/document_import.dart |
-| PPT import | Opens split; add all pages or pick pages; animations/transitions/media | Partial: renders slides; add-all/pick pages and animation fidelity missing | A/insert/presentation_pane.dart, A/insert/pptx_render.dart |
-| Intelligent split side | Opens on empty side, draggable divider | Partial | B/panel/split_panel.dart |
+| PDF import | Opens in split screen first; "Add to board" per page or all ("Adding page to whiteboard" toast) | Built: opens in split pane; Add to board per page, selected pages or all | A/insert/document_import.dart |
+| PPT import | Opens split; add all pages or pick pages; animations/transitions/media | Built: opens in split; add all or pick pages | A/insert/presentation_pane.dart, A/insert/pptx_render.dart |
+| Intelligent split side | Opens on empty side, draggable divider | Built | B/panel/split_panel.dart |
 | Second board in split screen | Full board: AI pen, two-finger tap undo, same gestures | Broken: lacks AI pen, two-finger-tap undo etc. | B/panel/split_panel.dart, B/panel/panel_host.dart |
 | Books / NCERT | Library, search, upload | Built | A/books/books_panel.dart |
 | Screen share | Portrait and landscape, auto-rotate | Partial | A/cast/cast_panel.dart, core/cast/cast_controller.dart |

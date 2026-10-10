@@ -231,6 +231,15 @@ void main() {
       expect(find.textContaining('Save it as .pptx or PDF'), findsOneWidget);
     });
 
+    testWidgets('a PDF opens in the split pane with no presenter button', (tester) async {
+      await pumpBoard(tester);
+      PageRenderer.instance = FakeRenderer(3);
+      files.document = PickedFile('notes.pdf', Uint8List.fromList(utf8.encode('%PDF-1.4')));
+      await insert(tester, 'insert-document');
+      expect(find.byKey(const Key('presentation')), findsOneWidget);
+      expect(find.byKey(const Key('ppt-present')), findsNothing);
+    });
+
     testWidgets('a PDF that cannot be drawn says so', (tester) async {
       final wb = await pumpBoard(tester);
       PageRenderer.instance = FakeRenderer(0);
@@ -247,7 +256,11 @@ void main() {
       await tester.tap(find.byKey(const Key('profile-button')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('menu-import')));
-      await waitUntil(tester, () => wb.pageCount == 3);
+      await waitUntil(tester, () => find.byKey(const Key('presentation')).evaluate().isNotEmpty);
+      // The PDF opens in the split pane first; Add to board puts its pages on the board.
+      expect(wb.pageCount, 1);
+      await tester.tap(find.byKey(const Key('ppt-add-all')));
+      await tester.pumpAndSettle();
       expect(wb.pageCount, 3);
     });
   });
