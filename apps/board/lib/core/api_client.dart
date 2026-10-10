@@ -156,7 +156,33 @@ class ApiClient {
 
   Future<List<Student>> roster() async {
     final j = await _send('GET', '/v1/sessions/current') as Map<String, dynamic>;
-    return (j['roster'] as List<dynamic>).map((e) => Student.fromJson(e as Map<String, dynamic>)).toList();
+    final students = (j['roster'] as List<dynamic>).map((e) => Student.fromJson(e as Map<String, dynamic>)).toList();
+    final sectionId = (j['section'] as Map<String, dynamic>?)?['id'] as String?;
+    if (sectionId != null) {
+      // Early alerts are for the teacher only; a failure here must never hide the roster.
+      try {
+        final flags = await _send('GET', '/v1/early-alerts/section/$sectionId') as List<dynamic>;
+        final byStudent = {for (final f in flags) (f as Map<String, dynamic>)['studentId'] as String: f['level'] as String};
+        for (final s in students) {
+          s.alert = byStudent[s.id];
+        }
+      } catch (_) {}
+    }
+    return students;
+  }
+
+  /// Signs the teacher who just tapped at the reader in on this board; the answer is the session token and its context.
+  Future<({String sessionToken, SessionContext session})> tapSignIn() async {
+    final j = await _send('POST', '/v1/pairing/tap-signin', useDeviceToken: true) as Map<String, dynamic>;
+    return (sessionToken: j['sessionToken'] as String, session: SessionContext.fromJson(j['session'] as Map<String, dynamic>));
+  }
+
+  /// The teacher who just tapped a card or finger at the reader beside this board, or null when none did
+  /// (or no reader is fitted: [present] is false then).
+  Future<({bool present, String? name})> teacherTap() async {
+    final j = await _send('GET', '/v1/devices/teacher-tap', useDeviceToken: true) as Map<String, dynamic>;
+    final who = j['signedIn'] as Map<String, dynamic>?;
+    return (present: j['present'] == true, name: who?['name'] as String?);
   }
 
   /// Sends outbox operations. Returns the opIds the server has (applied or duplicate) and

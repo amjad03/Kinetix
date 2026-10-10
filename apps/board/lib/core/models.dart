@@ -92,6 +92,9 @@ class Student {
   final String id;
   final String rollNo;
   final String fullName;
+
+  /// Early-alert level (high, medium or watch) for the teacher's eyes only; null when the student is not flagged.
+  String? alert;
 }
 
 enum AttendanceMark { present, absent, late }

@@ -253,6 +253,9 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<List<Student>> roster(String sectionId) async => students;
 
+  @override
+  Future<Map<String, String>> earlyAlerts(String sectionId) async => const {};
+
   /// What [sectionInsights] returns; tests set [insightsError] to fail it.
   SectionInsights insights = SectionInsights.fromJson({
     'classAttendancePct': 81,

@@ -3478,5 +3478,8 @@
   "evidenceYearBad": "The year must be a number.",
   "@evidenceYearBad": {
     "description": "Accreditation evidence screen."
-  }
+  },
+  "earlyAlertHigh": "Needs help: high",
+  "earlyAlertMedium": "Needs help: medium",
+  "earlyAlertWatch": "Keep an eye"
 }

@@ -1381,5 +1381,8 @@
   "evidencePending": "ಪರಿಶೀಲನೆಗೆ ಕಾಯುತ್ತಿದೆ",
   "evidenceBadImage": "JPEG ಅಥವಾ PNG ಫೋಟೋ ಆಯ್ಕೆಮಾಡಿ.",
   "evidenceTitleNeeded": "ಶೀರ್ಷಿಕೆ ಬರೆಯಿರಿ.",
-  "evidenceYearBad": "ವರ್ಷ ಒಂದು ಸಂಖ್ಯೆಯಾಗಿರಬೇಕು."
+  "evidenceYearBad": "ವರ್ಷ ಒಂದು ಸಂಖ್ಯೆಯಾಗಿರಬೇಕು.",
+  "earlyAlertHigh": "ಸಹಾಯ ಬೇಕು: ಹೆಚ್ಚು",
+  "earlyAlertMedium": "ಸಹಾಯ ಬೇಕು: ಮಧ್ಯಮ",
+  "earlyAlertWatch": "ಗಮನವಿರಲಿ"
 }

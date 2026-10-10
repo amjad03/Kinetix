@@ -3222,4 +3222,13 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get evidenceYearBad => 'ವರ್ಷ ಒಂದು ಸಂಖ್ಯೆಯಾಗಿರಬೇಕು.';
+
+  @override
+  String get earlyAlertHigh => 'ಸಹಾಯ ಬೇಕು: ಹೆಚ್ಚು';
+
+  @override
+  String get earlyAlertMedium => 'ಸಹಾಯ ಬೇಕು: ಮಧ್ಯಮ';
+
+  @override
+  String get earlyAlertWatch => 'ಗಮನವಿರಲಿ';
 }

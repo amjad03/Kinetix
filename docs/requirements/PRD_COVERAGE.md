@@ -168,7 +168,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Manual, Smartboard marking | Built | `api/teacher/teacher.controller.ts` (`v1/attendance`) | |
 | QR attendance | Built | `api/attendance-governance/governance.controller.ts` | 8-digit code rotating every 30 s (HMAC), Student App code entry; camera scan not added (no scanner dependency) |
-| Biometric (students) | Built | `api/scheduling/scheduling.controller.ts` (`biometric`), `erp/scheduling` | device ids per student and import of the device export marks the day; a live device push is hardware and vendor work (see section B) |
+| Biometric (students) | Built | `api/scheduling/scheduling.controller.ts` (`biometric`), `erp/scheduling` | device ids per student and import of the device export marks the day; a live device push is hardware and vendor work (see section B) | Live push built: `api/integrations/devices.controller.ts`, `mig/0129`, `erp/integrations`.
 | AI-assisted attendance (confidence, consent, audit) | Partial | none | external: a face-recognition model or vendor and legal sign-off on biometric consent under the DPDP Act before anything is built |
 | Statuses present/absent/late/excused | Built | `api/db/schema.ts` (`attendance_status`) | approved-leave and custom states absent |
 | Leave integration | Built | `api/students/student-leave.controller.ts` | |
@@ -326,7 +326,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | QR, unique serial, revoke, public verification | Built | `api/documents/public-verify.controller.ts` | |
 | Marks card, transcript, passport | Built | `api/skills/passport.controller.ts` | |
 | Graduation / convocation | Built | `api/curriculum/university.controller.ts`, `erp/university` | eligible graduates from final-semester pass results, registration, withhold, degree numbers, certificate PDF with signed QR and public check |
-| Blockchain / wallet-style digital credentials (DigiLocker) | Partial | `api/documents/public-verify.controller.ts`, `api/pairing/offline-pairing.controller.ts` (signing keys) | external: DigiLocker/NAD issuer registration and API credentials; signed QR verification of certificates is built |
+| Blockchain / wallet-style digital credentials (DigiLocker) | Partial | `api/documents/public-verify.controller.ts`, `api/pairing/offline-pairing.controller.ts` (signing keys) | external: DigiLocker/NAD issuer registration and API credentials; signed QR verification of certificates is built | DigiLocker issuer, NAD batch and ABC credit file built: `api/integrations/digilocker.controller.ts`, `mig/0129`; partner onboarding stays external.
 
 ## 27. OBE / outcome engine
 
@@ -963,3 +963,5 @@ Excel (xlsx) export in report builder (S); subject ranking and consolidated mark
 | AI/face-based attendance | 14, 81 | not built; needs explicit institution policy and consent design first |
 | iOS cast capture and audio in casts | 62 | deferred |
 | Offline-alert emails | Smartboard | SMS via MSG91 decided, not built |
+
+| Integrations (DigiLocker/NAD/ABC, live devices, LTI/SCORM, OData/SIP2, embeddings, early alerts) | Built | `api/integrations/*`, `api/ai/embeddings.ts`, `mig/0129`, `erp/integrations`, `erp/early-alerts`, board roster alert dots | sandbox endpoints via tenant settings or env; vendor onboarding and hardware external |

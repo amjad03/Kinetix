@@ -1,8 +1,8 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { PairingClaimedEvent } from '@kinetix/shared';
 import { RealtimeEvents } from '@kinetix/shared';
-import { and, eq, gt, inArray, isNull } from 'drizzle-orm';
-import type { UserPrincipal } from '../auth/principal.js';
+import { and, desc, eq, gte, gt, inArray, isNull, sql } from 'drizzle-orm';
+import type { DevicePrincipal, UserPrincipal } from '../auth/principal.js';
 import { TokensService } from '../auth/tokens.service.js';
 import { audit } from '../common/audit.js';
 import { hmac, safeEqual } from '../common/crypto.js';
@@ -10,6 +10,7 @@ import { RateLimiter } from '../common/rate-limiter.js';
 import { Clock } from '../common/time.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
+import { accessDevices, deviceEvents } from '../db/schema-integrations.js';
 import { boardSessions, deviceProfiles, devices, pairingCodes, userRoles, users } from '../db/schema.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { SessionsService } from '../sessions/sessions.service.js';
@@ -87,6 +88,30 @@ export class PairingService {
     };
   }
 
+  /**
+   * Signs a teacher in on this board after they tapped a card or finger at the reader beside it (access-devices, purpose
+   * board_signin) within the last two minutes. A tap is used once.
+   */
+  async tapSignIn(p: DevicePrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [device] = await tx.select().from(devices).where(eq(devices.id, p.deviceId));
+      if (!device) throw new NotFoundException('Board not found');
+      const since = new Date(this.clock.now().getTime() - 120_000);
+      const [tap] = await tx
+        .select({ id: deviceEvents.id, teacherId: deviceEvents.subjectId })
+        .from(deviceEvents)
+        .innerJoin(accessDevices, eq(accessDevices.id, deviceEvents.deviceId))
+        .where(and(eq(accessDevices.purpose, 'board_signin'), sql`${accessDevices.config}->>'boardDeviceId' = ${device.id}`, eq(deviceEvents.outcome, 'signed_in'), gte(deviceEvents.eventAt, since)))
+        .orderBy(desc(deviceEvents.eventAt))
+        .limit(1);
+      if (!tap?.teacherId) throw new NotFoundException('Nobody has tapped at this board lately');
+      await this.checkTeacher(tx, device, tap.teacherId);
+      await tx.update(deviceEvents).set({ outcome: 'signed_in_used' }).where(eq(deviceEvents.id, tap.id));
+      const { context, sessionToken } = await this.openSession(tx, device, tap.teacherId, 'tap');
+      return { sessionToken, session: context };
+    });
+  }
+
   /** Throws unless [teacherId] is active and may teach at the campus [device] belongs to. */
   async checkTeacher(tx: Tx, device: Device, teacherId: string): Promise<void> {
     const [teacher] = await tx.select().from(users).where(eq(users.id, teacherId));
@@ -106,7 +131,7 @@ export class PairingService {
    * [checkTeacher]. Ends whatever class was open on the board, finds the teacher's period in
    * its room, and keeps the teacher in the board's list of profiles.
    */
-  async openSession(tx: Tx, device: Device, teacherId: string, method: 'qr' | 'code' | 'pin') {
+  async openSession(tx: Tx, device: Device, teacherId: string, method: 'qr' | 'code' | 'pin' | 'tap') {
     const now = this.clock.now();
     const replaced = await this.sessions.endActiveOnDevice(tx, device.tenantId, device.id, 'taken_over');
 

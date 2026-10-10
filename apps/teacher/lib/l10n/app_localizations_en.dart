@@ -3216,4 +3216,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evidenceYearBad => 'The year must be a number.';
+
+  @override
+  String get earlyAlertHigh => 'Needs help: high';
+
+  @override
+  String get earlyAlertMedium => 'Needs help: medium';
+
+  @override
+  String get earlyAlertWatch => 'Keep an eye';
 }

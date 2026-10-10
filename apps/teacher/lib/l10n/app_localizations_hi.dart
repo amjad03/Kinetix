@@ -3216,4 +3216,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get evidenceYearBad => 'वर्ष एक संख्या होनी चाहिए।';
+
+  @override
+  String get earlyAlertHigh => 'मदद चाहिए: उच्च';
+
+  @override
+  String get earlyAlertMedium => 'मदद चाहिए: मध्यम';
+
+  @override
+  String get earlyAlertWatch => 'ध्यान रखें';
 }

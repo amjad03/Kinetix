@@ -5894,6 +5894,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The year must be a number.'**
   String get evidenceYearBad;
+
+  /// No description provided for @earlyAlertHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs help: high'**
+  String get earlyAlertHigh;
+
+  /// No description provided for @earlyAlertMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs help: medium'**
+  String get earlyAlertMedium;
+
+  /// No description provided for @earlyAlertWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep an eye'**
+  String get earlyAlertWatch;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

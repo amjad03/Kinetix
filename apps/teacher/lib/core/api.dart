@@ -233,6 +233,9 @@ abstract class TeacherApi {
   Future<List<TeacherClass>> classes();
   Future<List<Student>> roster(String sectionId);
 
+  /// Early-alert level (high, medium or watch) by student id for a class I teach; empty when nobody is flagged.
+  Future<Map<String, String>> earlyAlerts(String sectionId) async => const {};
+
   /// A class at a glance: attendance %, average mark % and risk flag per student (`GET /v1/mentoring/sections/:id/insights`).
   Future<SectionInsights> sectionInsights(String sectionId);
 
@@ -872,6 +875,12 @@ class HttpTeacherApi implements TeacherApi {
     };
     final res = await _send('POST', '/v1/ai/${task.path}', body: body, timeout: const Duration(seconds: 90));
     return AiDraft.fromJson(task, (res as Map).cast<String, dynamic>());
+  }
+
+  @override
+  Future<Map<String, String>> earlyAlerts(String sectionId) async {
+    final rows = await _send('GET', '/v1/early-alerts/section/$sectionId') as List;
+    return {for (final r in rows) (r as Map<String, dynamic>)['studentId'] as String: r['level'] as String};
   }
 
   @override

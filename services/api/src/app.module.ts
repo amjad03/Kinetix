@@ -47,6 +47,7 @@ import { TallyModule } from './tally/tally.module.js';
 import { SsoModule } from './sso/sso.module.js';
 import { CurriculumModule } from './curriculum/curriculum.module.js';
 import { PathwaysModule } from './pathways/pathways.module.js';
+import { IntegrationsModule } from './integrations/integrations.module.js';
 import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { ConnectorsModule } from './connectors/connectors.module.js';
@@ -171,6 +172,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     CurriculumModule,
     PathwaysModule,
     PlacementsModule,
+    IntegrationsModule,
     ResearchModule,
     WelfareModule,
     AttendanceGovernanceModule,
