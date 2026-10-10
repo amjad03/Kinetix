@@ -3148,4 +3148,72 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get deviceTrustButton => 'इस फ़ोन पर भरोसा करें';
+
+  @override
+  String get evidenceTitle => 'मेरे मान्यता प्रमाण';
+
+  @override
+  String get evidenceBody => 'मान्यता रिपोर्ट के लिए प्रकाशन, कार्यक्रम और पुरस्कार';
+
+  @override
+  String get evidenceEmpty => 'आपने अभी कोई प्रमाण नहीं जोड़ा।';
+
+  @override
+  String get evidenceAdd => 'प्रमाण जोड़ें';
+
+  @override
+  String get evidenceKindLabel => 'प्रकार';
+
+  @override
+  String get evidenceKindPublication => 'प्रकाशन';
+
+  @override
+  String get evidenceKindFdp => 'विकास कार्यक्रम';
+
+  @override
+  String get evidenceKindAward => 'पुरस्कार';
+
+  @override
+  String get evidenceKindPatent => 'पेटेंट';
+
+  @override
+  String get evidenceKindBook => 'पुस्तक या अध्याय';
+
+  @override
+  String get evidenceKindOther => 'अन्य';
+
+  @override
+  String get evidenceTitleField => 'शीर्षक';
+
+  @override
+  String get evidenceYear => 'वर्ष';
+
+  @override
+  String get evidenceVenue => 'पत्रिका, आयोजन या आयोजक';
+
+  @override
+  String get evidenceAttach => 'प्रमाणपत्र या पेपर की फ़ोटो जोड़ें';
+
+  @override
+  String evidenceAttached(String name) {
+    return 'जोड़ा गया: $name';
+  }
+
+  @override
+  String get evidenceSave => 'सहेजें';
+
+  @override
+  String get evidenceVerified => 'सत्यापित';
+
+  @override
+  String get evidencePending => 'समीक्षा की प्रतीक्षा';
+
+  @override
+  String get evidenceBadImage => 'JPEG या PNG फ़ोटो चुनें।';
+
+  @override
+  String get evidenceTitleNeeded => 'शीर्षक लिखें।';
+
+  @override
+  String get evidenceYearBad => 'वर्ष एक संख्या होनी चाहिए।';
 }

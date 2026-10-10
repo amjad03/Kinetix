@@ -10,6 +10,7 @@ import { ReportsService } from '../analytics/reports.service.js';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
+import { BlobBody, putBlob, type BlobInput } from '../common/blob.js';
 import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -36,7 +37,7 @@ const EntryBody = z.object({
   selfScore: z.number().min(0).max(4).nullish(),
   note: z.string().max(2000).optional(),
 });
-const EvidenceBody = z.object({ cycle: CYCLE.optional(), title: z.string().trim().min(2).max(200), url: z.url().optional(), note: z.string().trim().max(2000).optional() });
+const EvidenceBody = z.object({ cycle: CYCLE.optional(), file: BlobBody.optional(), title: z.string().trim().min(2).max(200), url: z.url().optional(), note: z.string().trim().max(2000).optional() });
 const DvvBody = z.object({ cycle: CYCLE, metricCode: z.string().trim().min(1).max(24), query: z.string().trim().min(3).max(2000) });
 const DvvPatch = z.object({ response: z.string().trim().max(4000).optional(), status: z.enum(['open', 'answered', 'closed']).optional() });
 const MeetingBody = z.object({ title: z.string().trim().min(2).max(200), meetingOn: DATE, agenda: z.string().max(4000).default(''), minutes: z.string().max(12000).default(''), attendees: z.string().max(2000).default('') });
@@ -45,7 +46,7 @@ const ActionPatch = z.object({ status: z.enum(['open', 'done']).optional(), acti
 const PracticeBody = z.object({ kind: z.enum(['best_practice', 'distinctiveness']), title: z.string().trim().min(2).max(200), year: z.string().max(20).default(''), objectives: z.string().max(4000).default(''), context: z.string().max(4000).default(''), practice: z.string().max(8000).default(''), evidence: z.string().max(4000).default(''), problems: z.string().max(4000).default('') });
 const FeedbackBody = z.object({ cycle: CYCLE, stakeholder: z.enum(['students', 'teachers', 'employers', 'alumni', 'parents']), summary: z.string().trim().min(3).max(4000), averageRating: z.number().min(0).max(10).nullish(), responses: z.number().int().min(0).max(32000).nullish(), actionTaken: z.string().max(4000).default('') });
 const FeedbackPatch = z.object({ actionTaken: z.string().max(4000).optional(), status: z.enum(['analysed', 'action_planned', 'action_taken']).optional(), summary: z.string().trim().min(3).max(4000).optional() });
-const FacultyBody = z.object({ kind: z.enum(['publication', 'fdp', 'award', 'patent', 'book', 'other']), title: z.string().trim().min(2).max(300), year: z.number().int().min(1950).max(2100).nullish(), venue: z.string().trim().max(300).default(''), url: z.url().optional() });
+const FacultyBody = z.object({ file: BlobBody.optional(), kind: z.enum(['publication', 'fdp', 'award', 'patent', 'book', 'other']), title: z.string().trim().min(2).max(300), year: z.number().int().min(1950).max(2100).nullish(), venue: z.string().trim().max(300).default(''), url: z.url().optional() });
 
 /** NAAC SSR/AQAR, NBA SAR, NIRF and AISHE data, the IQAC workspace and teacher-uploaded evidence (PRD sections 24 and 28). */
 @Controller('v1/accreditation')
@@ -139,13 +140,14 @@ export class AccreditationController {
   /** Adds a link or note as evidence for a metric; attach a file with `POST evidence/:id/file`. */
   @Post(':body/metrics/:code/evidence')
   @Auth('user', ADMIN)
-  addEvidence(@CurrentPrincipal() p: UserPrincipal, @Param('body') b: string, @Param('code') code: string, @Body(new ZodBody(EvidenceBody)) v: z.infer<typeof EvidenceBody>, @Query('cycle') cycle?: string) {
+  async addEvidence(@CurrentPrincipal() p: UserPrincipal, @Param('body') b: string, @Param('code') code: string, @Body(new ZodBody(EvidenceBody)) v: z.infer<typeof EvidenceBody>, @Query('cycle') cycle?: string) {
     const body = this.body(b);
     this.def(body, code);
     const c = this.cycle(v.cycle ?? cycle);
+    const blob = await this.storeBlob(p, v.file);
     return this.db.withTenant(p.tenantId, async (tx) => {
       const e = await this.ensureEntry(tx, p, body, c, code);
-      const [row] = await tx.insert(obeEvidence).values({ tenantId: p.tenantId, programId: null, scope: 'metric', targetId: e.id, title: v.title, url: v.url ?? null, note: v.note ?? null, uploadedBy: p.userId }).returning();
+      const [row] = await tx.insert(obeEvidence).values({ tenantId: p.tenantId, programId: null, scope: 'metric', targetId: e.id, title: v.title, url: v.url ?? null, note: v.note ?? null, uploadedBy: p.userId, ...blob }).returning();
       await auditUser(tx, p, 'accreditation.evidence_added', 'obe_evidence', row.id, { body, cycle: c, code });
       return row;
     });
@@ -169,6 +171,14 @@ export class AccreditationController {
       await this.storage.delete(key).catch(() => undefined);
       throw e;
     }
+  }
+
+  /** Scans and stores a file sent inside a JSON body; returns what the table keeps. */
+  private async storeBlob(p: UserPrincipal, f: BlobInput | undefined) {
+    if (!f) return { fileKey: null, fileName: null };
+    await this.scans.assertClean(Buffer.from(f.contentBase64, 'base64'), 'The evidence file');
+    const b = await putBlob(this.storage, p.tenantId, 'accreditation', f);
+    return { fileKey: b.storageKey, fileName: f.filename.slice(0, 200) };
   }
 
   private async store(p: UserPrincipal, file: { buffer: Buffer; originalname: string } | undefined, prefix: string) {
@@ -488,9 +498,10 @@ export class AccreditationController {
   /** A teacher adds evidence of their own work (publication, FDP, award, patent) that the ERP does not hold. */
   @Post('my-evidence')
   @Auth('user', FACULTY)
-  addMine(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(FacultyBody)) v: z.infer<typeof FacultyBody>) {
+  async addMine(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(FacultyBody)) v: z.infer<typeof FacultyBody>) {
+    const blob = await this.storeBlob(p, v.file);
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [r] = await tx.insert(facultyEvidence).values({ tenantId: p.tenantId, userId: p.userId, kind: v.kind, title: v.title, year: v.year ?? null, venue: v.venue, url: v.url ?? null }).returning();
+      const [r] = await tx.insert(facultyEvidence).values({ tenantId: p.tenantId, userId: p.userId, kind: v.kind, title: v.title, year: v.year ?? null, venue: v.venue, url: v.url ?? null, ...blob }).returning();
       await auditUser(tx, p, 'accreditation.faculty_evidence_added', 'faculty_evidence', r.id, { kind: v.kind });
       return r;
     });

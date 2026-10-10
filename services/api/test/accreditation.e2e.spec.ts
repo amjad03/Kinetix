@@ -71,15 +71,18 @@ describe('accreditation module', () => {
     const before = (await get('principal', '/v1/accreditation/naac/overview').expect(200)).body.completeness.complete;
     await put('principal', '/v1/accreditation/naac/metrics/1.1.2', { value: 80, rows: [['BCom', '2020', '2025', '80']] }).expect(200);
     await put('principal', '/v1/accreditation/naac/metrics/1.1.1', { textValue: 'Academic calendar is prepared before each term.' }).expect(200);
-    await put('principal', '/v1/accreditation/naac/metrics/3.4.2', { selfScore: 3.5 }).expect(200);
+    await put('principal', '/v1/accreditation/naac/metrics/3.6.2', { selfScore: 3.5 }).expect(200);
     await post('principal', '/v1/accreditation/naac/metrics/1.1.2/evidence', { title: 'Board of studies minutes', url: 'https://example.org/bos.pdf' }).expect(201);
+    const withFile = (await post('principal', '/v1/accreditation/naac/metrics/1.1.2/evidence', { title: 'Signed minutes', file: { filename: 'minutes.pdf', contentType: 'application/pdf', contentBase64: Buffer.from('%PDF-1.4 minutes').toString('base64') } }).expect(201)).body;
+    expect(withFile.fileName).toBe('minutes.pdf');
+    await post('principal', '/v1/accreditation/naac/metrics/1.1.2/evidence', { title: 'Fake', file: { filename: 'x.pdf', contentType: 'application/pdf', contentBase64: Buffer.from('not a pdf').toString('base64') } }).expect(400);
     await put('teacher', '/v1/accreditation/naac/metrics/1.1.2', { value: 1 }).expect(403);
     await put('principal', '/v1/accreditation/naac/metrics/9.9.9', { value: 1 }).expect(404);
     const o = (await get('principal', '/v1/accreditation/naac/overview').expect(200)).body;
     const m = o.metrics.find((x: { code: string }) => x.code === '1.1.2');
-    expect(m).toMatchObject({ value: 80, source: 'manual', evidence: 1, score: 3.2, complete: true });
+    expect(m).toMatchObject({ value: 80, source: 'manual', evidence: 2, score: 3.2, complete: true });
     expect(o.completeness.complete).toBeGreaterThan(before);
-    expect((await get('principal', '/v1/accreditation/naac/metrics/1.1.2/evidence').expect(200)).body).toHaveLength(1);
+    expect((await get('principal', '/v1/accreditation/naac/metrics/1.1.2/evidence').expect(200)).body).toHaveLength(2);
     // another tenant sees none of it
     const x = (await get('outsider', '/v1/accreditation/naac/overview').expect(200)).body;
     expect(x.metrics.find((y: { code: string }) => y.code === '1.1.2').source).not.toBe('manual');
@@ -121,7 +124,8 @@ describe('accreditation module', () => {
   });
 
   it('lets a teacher add own evidence, which the quality team verifies and the publication metric counts', async () => {
-    const e = (await post('teacher', '/v1/accreditation/my-evidence', { kind: 'publication', title: 'A study of cooperative banks', year: 2026, venue: 'Journal of Commerce' }).expect(201)).body;
+    const e = (await post('teacher', '/v1/accreditation/my-evidence', { kind: 'publication', title: 'A study of cooperative banks', year: 2026, venue: 'Journal of Commerce', file: { filename: 'minutes.pdf', contentType: 'application/pdf', contentBase64: Buffer.from('%PDF-1.4 minutes').toString('base64') } }).expect(201)).body;
+    expect(e.fileName).toBe('minutes.pdf');
     expect((await get('teacher', '/v1/accreditation/my-evidence').expect(200)).body).toHaveLength(1);
     await get('teacher', '/v1/accreditation/faculty-evidence').expect(403);
     await post('teacher', `/v1/accreditation/faculty-evidence/${e.id}/verify`).expect(403);

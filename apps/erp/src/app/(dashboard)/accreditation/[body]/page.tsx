@@ -8,6 +8,7 @@ import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import type { Panel } from '@/lib/depth';
 import { dl, opt, safe } from '@/lib/depth-ui';
+import { MetricEvidenceUpload } from '@/components/accreditation/UploadButtons';
 import { cycleOptions, type AccOverview, type DvvRow } from '@/lib/accreditation-ui';
 
 const BODIES = ['naac', 'nba', 'nirf'] as const;
@@ -132,6 +133,9 @@ export default async function AccreditationPage({ params, searchParams }: { para
   return (
     <>
       <PageHeader title={t(`acc.title.${b}`)} subtitle={t(`acc.sub.${b}`)} actions={<UrlSelect label={t('acc.cycle')} param="cycle" value={ov.cycle} options={cycleOptions(ov.cycle)} minWidth={160} />} />
+      <div style={{ marginBottom: 16 }}>
+        <MetricEvidenceUpload body={b} cycle={ov.cycle} codes={ov.metrics.map((m) => m.code)} />
+      </div>
       <DepthDesk panels={panels} />
     </>
   );

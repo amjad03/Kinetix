@@ -12,6 +12,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/academics_models.dart';
 import '../core/api.dart';
 import '../core/course_file_models.dart';
+import '../core/evidence_models.dart';
 import '../core/growth_models.dart';
 import '../core/hr_models.dart';
 import '../core/insights_models.dart';
@@ -790,6 +791,7 @@ class FakeTeacherApi implements TeacherApi {
   List<LeaveRequestInfo> pendingLeaves = [];
   AttendanceDayInfo? todayMark;
   List<PayslipInfo> payslipList = [];
+  List<EvidenceInfo> evidenceList = [];
   int _leaveSeq = 0;
 
   @override
@@ -861,6 +863,17 @@ class FakeTeacherApi implements TeacherApi {
 
   @override
   Future<List<PayslipInfo>> myPayslips() async => payslipList;
+
+  @override
+  Future<List<EvidenceInfo>> myEvidence() async => evidenceList;
+
+  @override
+  Future<EvidenceInfo> addMyEvidence({required String kind, required String title, int? year, String venue = '', String? fileName, Uint8List? fileBytes, String? contentType}) async {
+    calls.add('addMyEvidence $kind $title ${fileName ?? '-'} ${contentType ?? '-'}');
+    final e = EvidenceInfo(id: 'ev${evidenceList.length + 1}', kind: kind, title: title, year: year, venue: venue, fileName: fileName);
+    evidenceList = [e, ...evidenceList];
+    return e;
+  }
 
   @override
   Future<Uint8List> payslipPdf(String id) async {

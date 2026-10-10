@@ -15,7 +15,7 @@ export async function accreditationSamples(c: Ctx): Promise<void> {
       entry('1.2.2', { value: 6, dataRows: J([['Tally Prime', 'ADD-01', '2026', '40', '52', '48'], ['Spoken English', 'ADD-02', '2026', '30', '60', '55']]) }),
       entry('2.1.2', { value: 92 }),
       entry('2.5.1', { value: 24 }),
-      entry('3.5.2', { value: 3, dataRows: J([['Infosys Springboard', 'Training and internships', '2025', '3 years', '120'], ['Local Chamber of Commerce', 'Guest lectures', '2025', '2 years', '80'], ['Bengaluru City University library network', 'Resource sharing', '2024', '5 years', '300']]) }),
+      entry('3.7.2', { value: 3, dataRows: J([['Infosys Springboard', 'Training and internships', '2025', '3 years', '120'], ['Local Chamber of Commerce', 'Guest lectures', '2025', '2 years', '80'], ['Bengaluru City University library network', 'Resource sharing', '2024', '5 years', '300']]) }),
       entry('4.1.2', { value: 18.5 }),
       entry('5.2.2', { value: 22 }),
       entry('6.5.2', { selfScore: 3 }),

@@ -51,7 +51,7 @@ describe('breadcrumbs', () => {
   });
   it('builds Dashboard > Group > Page > Details', () => {
     expect(crumbsFor(groups, '/')).toEqual([]);
-    expect(crumbsFor(groups, '/obe')).toEqual([{ label: 'nav.dashboard', href: '/' }, { label: 'nav.obe', href: undefined }]);
+    expect(crumbsFor(groups, '/obe').map((c) => c.label)).toEqual(['nav.dashboard', 'grp.obe', 'nav.obe']);
     expect(crumbsFor(groups, '/students/123').map((c) => c.label)).toEqual(['nav.dashboard', 'grp.students', 'nav.students', 'ui.crumb.details']);
     expect(crumbsFor(groups, '/payroll/runs/9')[2]).toEqual({ label: 'nav.payroll', href: '/payroll' });
   });

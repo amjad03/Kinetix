@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { DepthDesk } from '@/components/depth/DepthDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
+import { MyEvidenceUpload } from '@/components/accreditation/UploadButtons';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import type { Panel } from '@/lib/depth';
@@ -80,6 +81,7 @@ export default async function MyEvidencePage() {
   return (
     <>
       <PageHeader title={t('acc.title.mine')} subtitle={t('acc.sub.mine')} />
+      <MyEvidenceUpload kinds={KINDS.map((k) => ({ value: k, label: kinds[k] }))} />
       <DepthDesk panels={panels} />
     </>
   );

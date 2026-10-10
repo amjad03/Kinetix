@@ -159,6 +159,9 @@ export default area(
     'acc.mine.none': 'Nothing added yet.',
     'acc.mine.new': 'Add evidence',
     'acc.mine.all': 'Evidence from all teachers',
+    'acc.up.metric': 'Upload evidence file',
+    'acc.up.mine': 'Add evidence with a file',
+    'acc.up.submit': 'Upload',
   },
   {
     hi: {
@@ -318,6 +321,9 @@ export default area(
       'acc.mine.none': 'अभी कुछ नहीं जोड़ा।',
       'acc.mine.new': 'प्रमाण जोड़ें',
       'acc.mine.all': 'सभी शिक्षकों के प्रमाण',
+      'acc.up.metric': 'प्रमाण फ़ाइल अपलोड करें',
+      'acc.up.mine': 'फ़ाइल के साथ प्रमाण जोड़ें',
+      'acc.up.submit': 'अपलोड करें',
     },
     kn: {
       'nav.accNaac': 'NAAC ಸ್ವಯಂ ಅಧ್ಯಯನ ಮತ್ತು ವಾರ್ಷಿಕ ವರದಿ',
@@ -476,6 +482,9 @@ export default area(
       'acc.mine.none': 'ಇನ್ನೂ ಏನೂ ಸೇರಿಸಿಲ್ಲ.',
       'acc.mine.new': 'ಪುರಾವೆ ಸೇರಿಸಿ',
       'acc.mine.all': 'ಎಲ್ಲ ಶಿಕ್ಷಕರ ಪುರಾವೆಗಳು',
+      'acc.up.metric': 'ಪುರಾವೆ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ',
+      'acc.up.mine': 'ಫೈಲ್‌ನೊಂದಿಗೆ ಪುರಾವೆ ಸೇರಿಸಿ',
+      'acc.up.submit': 'ಅಪ್‌ಲೋಡ್ ಮಾಡಿ',
     },
   },
 );

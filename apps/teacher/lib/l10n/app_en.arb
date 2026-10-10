@@ -3385,5 +3385,98 @@
   "deviceTrustTitle": "This phone",
   "deviceTrustNew": "Not trusted yet. Trust it so a sign-in from this phone is not flagged as new.",
   "deviceTrustTrusted": "Trusted",
-  "deviceTrustButton": "Trust this phone"
+  "deviceTrustButton": "Trust this phone",
+  "evidenceTitle": "My accreditation evidence",
+  "@evidenceTitle": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceBody": "Publications, programmes and awards for accreditation reports",
+  "@evidenceBody": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceEmpty": "You have not added any evidence yet.",
+  "@evidenceEmpty": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceAdd": "Add evidence",
+  "@evidenceAdd": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceKindLabel": "Type",
+  "@evidenceKindLabel": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceKindPublication": "Publication",
+  "@evidenceKindPublication": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceKindFdp": "Development programme",
+  "@evidenceKindFdp": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceKindAward": "Award",
+  "@evidenceKindAward": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceKindPatent": "Patent",
+  "@evidenceKindPatent": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceKindBook": "Book or chapter",
+  "@evidenceKindBook": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceKindOther": "Other",
+  "@evidenceKindOther": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceTitleField": "Title",
+  "@evidenceTitleField": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceYear": "Year",
+  "@evidenceYear": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceVenue": "Journal, event or organiser",
+  "@evidenceVenue": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceAttach": "Attach a photo of the certificate or paper",
+  "@evidenceAttach": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceAttached": "Attached: {name}",
+  "@evidenceAttached": {
+    "description": "Accreditation evidence screen.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "evidenceSave": "Save",
+  "@evidenceSave": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceVerified": "Verified",
+  "@evidenceVerified": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidencePending": "Waiting for review",
+  "@evidencePending": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceBadImage": "Choose a JPEG or PNG photo.",
+  "@evidenceBadImage": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceTitleNeeded": "Write a title.",
+  "@evidenceTitleNeeded": {
+    "description": "Accreditation evidence screen."
+  },
+  "evidenceYearBad": "The year must be a number.",
+  "@evidenceYearBad": {
+    "description": "Accreditation evidence screen."
+  }
 }

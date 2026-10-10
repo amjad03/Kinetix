@@ -1,4 +1,4 @@
-// Accreditation and statutory reporting tables (migration 0124): metric entries for NAAC, NBA and NIRF, DVV queries, IQAC workspace and faculty evidence.
+// Accreditation and statutory reporting tables (migration 0127): metric entries for NAAC, NBA and NIRF, DVV queries, IQAC workspace and faculty evidence.
 import { sql } from 'drizzle-orm';
 import { boolean, date, index, jsonb, numeric, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { tenants, users } from './schema.js';

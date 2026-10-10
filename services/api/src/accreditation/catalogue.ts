@@ -1,4 +1,7 @@
 // Metric catalogues for NAAC (7 criteria), NBA (Tier-I/II SAR) and NIRF (TLR, RP, GO, OI, PR), plus the scoring estimators.
+// NAAC key indicators and criterion totals follow the revised manual of 21 Dec 2022 for affiliated UG colleges (1: 100, 2: 350,
+// 3: 110, 4: 100, 5: 140, 6: 100, 7: 100). NAAC announced binary accreditation and maturity-based graded levels in 2025; check the
+// manual in force for your cycle.
 // Codes follow the published manuals' numbering (criterion.key indicator.metric); titles are our own wording, so check each
 // against the manual in force for your cycle before filing. Weights are indicative.
 
@@ -64,17 +67,17 @@ const NAAC_ITEMS: Omit<MetricDef, 'group'>[] = [
   m('2.6.3', 'QnM', 'Pass percentage of students who appeared in the final examination', '%', { auto: 'pass_rate', bench: 100, columns: ['Programme', 'Students appeared', 'Students passed', 'Year'] }),
   m('2.7.1', 'QnM', 'Online satisfaction survey on teaching-learning (average rating)', 'of 5', { auto: 'feedback_rating', bench: 5 }),
   // Criterion 3 - Research, innovations and extension
-  m('3.1.1', 'QnM', 'Grants from government and non-government bodies for research', 'INR lakhs', { auto: 'grants_lakhs', columns: ['Project', 'Principal investigator', 'Funding agency', 'Year of award', 'Amount (INR lakhs)', 'Duration'] }),
-  m('3.1.2', 'QnM', 'Teachers recognised as research guides or holding research projects', 'teachers', { auto: 'research_teachers' }),
-  m('3.2.1', 'QlM', 'Ecosystem for innovations: incubation centre, innovation council, knowledge transfer'),
-  m('3.2.2', 'QnM', 'Workshops and seminars on intellectual property and entrepreneurship', 'events', { bench: 4, columns: ['Event', 'Date', 'Participants', 'Resource person'] }),
-  m('3.2.3', 'QnM', 'Patents filed or granted', 'patents', { auto: 'patents', bench: 3 }),
-  m('3.3.1', 'QnM', 'Research papers in listed journals per teacher', 'papers per teacher', { auto: 'papers_per_teacher', bench: 2, columns: ['Paper title', 'Authors', 'Department', 'Journal', 'Year', 'ISSN', 'Link to the paper'] }),
-  m('3.3.2', 'QnM', 'Books, chapters and conference papers per teacher', 'items per teacher', { auto: 'books_per_teacher', bench: 2, columns: ['Title', 'Authors', 'Publisher or proceedings', 'Year', 'ISBN or ISSN'] }),
-  m('3.4.1', 'QnM', 'Extension activities with community, NSS or NCC', 'activities', { bench: 10, columns: ['Activity', 'Organising unit', 'Date', 'Students taking part'] }),
-  m('3.4.2', 'QnM', 'Awards and recognition for extension work', 'awards', { bench: 2, columns: ['Award', 'Awarding body', 'Year'] }),
-  m('3.5.1', 'QnM', 'Collaborative activities for research, faculty exchange or student exchange', 'activities', { bench: 5, columns: ['Collaborating agency', 'Title of activity', 'Year', 'Duration'] }),
-  m('3.5.2', 'QnM', 'Functional MoUs with institutions and industry', 'MoUs', { bench: 5, columns: ['Organisation', 'Purpose', 'Year signed', 'Duration', 'Participants'] }),
+  m('3.2.1', 'QnM', 'Grants from government and non-government bodies for research', 'INR lakhs', { auto: 'grants_lakhs', columns: ['Project', 'Principal investigator', 'Funding agency', 'Year of award', 'Amount (INR lakhs)', 'Duration'] }),
+  m('3.2.2', 'QnM', 'Teachers recognised as research guides or holding research projects', 'teachers', { auto: 'research_teachers' }),
+  m('3.3.1', 'QlM', 'Ecosystem for innovations: incubation centre, innovation council, knowledge transfer'),
+  m('3.3.2', 'QnM', 'Workshops and seminars on intellectual property and entrepreneurship', 'events', { bench: 4, columns: ['Event', 'Date', 'Participants', 'Resource person'] }),
+  m('3.3.3', 'QnM', 'Patents filed or granted', 'patents', { auto: 'patents', bench: 3 }),
+  m('3.4.1', 'QnM', 'Research papers in listed journals per teacher', 'papers per teacher', { auto: 'papers_per_teacher', bench: 2, columns: ['Paper title', 'Authors', 'Department', 'Journal', 'Year', 'ISSN', 'Link to the paper'] }),
+  m('3.4.2', 'QnM', 'Books, chapters and conference papers per teacher', 'items per teacher', { auto: 'books_per_teacher', bench: 2, columns: ['Title', 'Authors', 'Publisher or proceedings', 'Year', 'ISBN or ISSN'] }),
+  m('3.6.1', 'QnM', 'Extension activities with community, NSS or NCC', 'activities', { bench: 10, columns: ['Activity', 'Organising unit', 'Date', 'Students taking part'] }),
+  m('3.6.2', 'QnM', 'Awards and recognition for extension work', 'awards', { bench: 2, columns: ['Award', 'Awarding body', 'Year'] }),
+  m('3.7.1', 'QnM', 'Collaborative activities for research, faculty exchange or student exchange', 'activities', { bench: 5, columns: ['Collaborating agency', 'Title of activity', 'Year', 'Duration'] }),
+  m('3.7.2', 'QnM', 'Functional MoUs with institutions and industry', 'MoUs', { bench: 5, columns: ['Organisation', 'Purpose', 'Year signed', 'Duration', 'Participants'] }),
   // Criterion 4 - Infrastructure and learning resources
   m('4.1.1', 'QlM', 'Adequacy of classrooms, labs, sports, cultural and ICT facilities', '', { auto: 'rooms_summary' }),
   m('4.1.2', 'QnM', 'Spend on augmenting infrastructure (excluding salary)', 'INR lakhs', { bench: 20, columns: ['Year', 'Head of expenditure', 'Amount (INR lakhs)'] }),
