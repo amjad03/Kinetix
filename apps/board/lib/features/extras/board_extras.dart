@@ -16,7 +16,9 @@ import '../classroom_plus/buzzer.dart';
 import '../classroom_plus/diagnostics.dart';
 import '../classroom_plus/plus_strings.dart';
 import '../classroom_plus/recording_notice.dart';
+import '../board/layout/tool_palette.dart';
 import '../classroom_plus/voice_commands.dart';
+import '../exit_ticket/exit_ticket.dart';
 import '../classroom_plus/zones.dart';
 import '../profiles/profiles_ui.dart' show PinPad;
 import '../doc_camera/doc_camera.dart';
@@ -167,7 +169,7 @@ Widget safeBrowserPanel(ExtrasHooks h) => SafeBrowserPanel(wb: h.wb, board: h.bo
 /// The extras' tiles in the tools drawer.
 List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required void Function(VoidCallback) run}) {
   final s = extrasStrings(boardLang(context));
-  const prim = Color(0xFFFDD663), lang = Color(0xFFA8DAB5), cls = Color(0xFFF28B82), media = Color(0xFF8AB4F8), assess = Color(0xFFD7AEFB);
+  const prim = ToolPalette.primary, lang = ToolPalette.language, cls = ToolPalette.classroom, media = ToolPalette.media, assess = ToolPalette.assessment;
   VoidCallback page(String key, IconData icon, WidgetBuilder b) => () => run(() => h.openPage(s[key], icon, b));
   final p = plusStrings(context);
   VoidCallback plusPage(String key, IconData icon, WidgetBuilder b) => () => run(() => h.openPage(p[key], icon, b));
@@ -200,7 +202,7 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     DrawerTool('safe-web', Icons.travel_explore, s['safeWeb'], const [ToolGroup.classroom], media, () => run(h.openWeb)),
     DrawerTool('live-captions', Icons.closed_caption_outlined, s['captions'], const [ToolGroup.classroom, ToolGroup.language], media, () => run(() => unawaited(LiveCaptions.toggle(context)))),
     DrawerTool('magnifier', Icons.zoom_in, s['magnifier'], const [ToolGroup.classroom], cls, () => run(() => BoardMagnifier.toggle(context))),
-    DrawerTool('seating-chart', Icons.event_seat_outlined, s['seating'], const [ToolGroup.classroom], cls, page('seating', Icons.event_seat_outlined, (_) => SeatingChartPanel(board: h.board))),
+    DrawerTool('seating-chart', Icons.event_seat_outlined, s['seating'], const [ToolGroup.classroom], cls, page('seating', Icons.event_seat_outlined, (_) => SeatingChartPanel(board: h.board, wb: h.wb))),
     DrawerTool('group-maker', Icons.diversity_3_outlined, s['groups'], const [ToolGroup.classroom], cls, page('groups', Icons.diversity_3_outlined, (_) => GroupMakerPanel(board: h.board, wb: h.wb))),
     DrawerTool('teacher-notes', Icons.sticky_note_2_outlined, s['notes'], const [ToolGroup.classroom], cls, page('notes', Icons.sticky_note_2_outlined, (_) => TeacherNotesPanel(board: h.board))),
     DrawerTool('scoreboard', Icons.scoreboard_outlined, s['scoreboard'], const [ToolGroup.classroom], cls, page('scoreboard', Icons.scoreboard_outlined, (_) => const ScoreboardPanel())),
@@ -219,7 +221,7 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     DrawerTool('exam-clock', Icons.timer_outlined, s['exam'], const [ToolGroup.classroom], cls, page('exam', Icons.timer_outlined, (_) => const ExamClockPanel())),
     DrawerTool('organisers', Icons.hub_outlined, s['organisers'], const [ToolGroup.classroom, ToolGroup.commerce, ToolGroup.language], cls, page('organisers', Icons.hub_outlined, (_) => OrganisersPanel(wb: h.wb))),
     // Assessment
-    DrawerTool('exit-ticket', Icons.logout, s['exitTicket'], const [ToolGroup.classroom], assess, page('exitTicket', Icons.logout, (_) => AssessmentPanel(board: h.board, wb: h.wb, askClass: h.askClass))),
+    DrawerTool('exit-ticket', Icons.logout, s['exitTicket'], const [ToolGroup.classroom], assess, page('exitTicket', Icons.logout, (_) => ExitTicketPanel(board: h.board, wb: h.wb))),
     DrawerTool(
       'worksheet',
       Icons.assignment_outlined,

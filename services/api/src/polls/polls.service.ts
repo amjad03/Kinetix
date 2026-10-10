@@ -358,7 +358,8 @@ export class PollsService {
     };
   }
 
-  private async results(tx: Tx, poll: Poll): Promise<PollResults> {
+  /** A question with its tally and every response. */
+  async results(tx: Tx, poll: Poll): Promise<PollResults> {
     const responses = await tx
       .select({ studentId: pollResponses.studentId, rollNo: students.rollNo, fullName: students.fullName, answer: pollResponses.answer, source: pollResponses.source })
       .from(pollResponses)

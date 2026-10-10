@@ -367,6 +367,10 @@ class ApiClient {
 
   Future<Map<String, dynamic>> closePoll(String id) async => await _send('POST', '/v1/polls/$id/close') as Map<String, dynamic>;
 
+  /// Keeps an exit ticket (the questions just asked, [pollIds] in order) in the class record; [id] is chosen here, so a retry saves once.
+  Future<Map<String, dynamic>> saveExitTicket(String id, String topic, List<String> pollIds) async =>
+      await _send('PUT', '/v1/exit-tickets/$id', body: {'topic': topic, 'pollIds': pollIds}) as Map<String, dynamic>;
+
   /// The answer cards of the class open on the board (card number → student).
   Future<Map<String, dynamic>> answerCards() async => await _send('GET', '/v1/answer-cards/current') as Map<String, dynamic>;
 

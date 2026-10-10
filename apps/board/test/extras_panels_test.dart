@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -11,6 +12,7 @@ import 'package:kinetix_board/features/captions/live_captions.dart';
 import 'package:kinetix_board/features/class_check/ask_dialog.dart';
 import 'package:kinetix_board/features/classroom/classroom_tools.dart';
 import 'package:kinetix_board/features/doc_camera/doc_camera.dart';
+import 'package:kinetix_board/features/language_kit/dictionary_data.dart';
 import 'package:kinetix_board/features/language_kit/language_kit.dart';
 import 'package:kinetix_board/features/primary/matching.dart';
 import 'package:kinetix_board/features/primary/primary_panel.dart';
@@ -221,7 +223,7 @@ void main() {
         await tester.pump();
         expect(find.text('Light bends towards the normal'), findsOneWidget);
         voice.say('Light bends towards the normal in glass', done: true);
-        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
         expect(voice.listens, 2, reason: 'listens again after each sentence');
         await tapKey(tester, 'captions-lang-hi');
         await tester.pump();
@@ -326,6 +328,8 @@ void main() {
       });
 
       testWidgets('language kit: dictionary, card builder, phonics and grammar', (tester) async {
+        OfflineDictionary.override(OfflineDictionary.parse(File('assets/dictionary/wordnet.tsv').readAsStringSync(), File('assets/dictionary/hi_kn.tsv').readAsStringSync()));
+        addTearDown(() => OfflineDictionary.override(null));
         final board = BoardController();
         final wb = WhiteboardController();
         await pumpPanel(tester, LanguageKitPanel(board: board, wb: wb), size: size);
@@ -364,6 +368,8 @@ void main() {
         final wb = WhiteboardController();
         await pumpPanel(tester, OrganisersPanel(wb: wb), size: size);
         await tapKey(tester, 'organiser-kwl');
+        await tester.pump();
+        await tapKey(tester, 'organiser-add');
         await tester.pump();
         expect(wb.elements.whereType<TextElement>().map((e) => e.text), contains('What I Know'));
 

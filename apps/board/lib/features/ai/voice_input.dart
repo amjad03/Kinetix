@@ -40,14 +40,21 @@ class SpeechVoiceInput extends VoiceInput {
   final _speech = SpeechToText();
   bool? _ready;
   void Function(VoiceProblem p)? _onProblem;
+  void Function(String words, bool done)? _onWords;
+
+  /// What the session last heard, and whether its end has been reported (the recogniser can
+  /// stop on its own time limit without a final result: the words so far are then final).
+  String _last = '';
+  bool _reported = false;
 
   static const _tags = {AiLanguage.en: 'en_IN', AiLanguage.hi: 'hi_IN', AiLanguage.kn: 'kn_IN'};
 
   @override
   Future<bool> listen(AiLanguage language, {required void Function(String words, bool done) onWords, required void Function(VoiceProblem p) onProblem}) async {
     _onProblem = onProblem;
+    _onWords = onWords;
     try {
-      _ready ??= await _speech.initialize(onError: _error);
+      _ready ??= await _speech.initialize(onError: _error, onStatus: _status);
     } catch (e) {
       debugPrint('Speech recognition not available: $e');
       _ready = false;
@@ -57,9 +64,23 @@ class SpeechVoiceInput extends VoiceInput {
       return false;
     }
     final locale = await _locale(language);
+    _last = '';
+    _reported = false;
     await _speech.listen(
-      onResult: (r) => onWords(r.recognizedWords, r.finalResult),
-      listenOptions: SpeechListenOptions(localeId: locale, onDevice: true, partialResults: true, cancelOnError: true, listenFor: const Duration(seconds: 30), pauseFor: const Duration(seconds: 3)),
+      onResult: (r) {
+        _last = r.recognizedWords;
+        if (r.finalResult) _reported = true;
+        onWords(r.recognizedWords, r.finalResult);
+      },
+      listenOptions: SpeechListenOptions(
+        localeId: locale,
+        onDevice: true,
+        partialResults: true,
+        cancelOnError: true,
+        listenMode: ListenMode.dictation,
+        listenFor: const Duration(seconds: 60),
+        pauseFor: const Duration(seconds: 3),
+      ),
     );
     return true;
   }
@@ -78,8 +99,27 @@ class SpeechVoiceInput extends VoiceInput {
     }
   }
 
+  /// The session ended: report it once, with the words so far as final or as "heard nothing".
+  void _status(String status) {
+    if (status != 'done' && status != 'notListening') return;
+    if (_reported) return;
+    _reported = true;
+    final words = _last.trim();
+    if (words.isNotEmpty) {
+      _onWords?.call(words, true);
+    } else {
+      _onProblem?.call(VoiceProblem.noSpeech);
+    }
+  }
+
   void _error(SpeechRecognitionError e) {
+    if (_reported) return;
+    _reported = true;
     final msg = e.errorMsg;
+    if (_last.trim().isNotEmpty && (msg == 'error_no_match' || msg == 'error_speech_timeout')) {
+      _onWords?.call(_last.trim(), true);
+      return;
+    }
     _onProblem?.call(switch (msg) {
       'error_no_match' || 'error_speech_timeout' => VoiceProblem.noSpeech,
       'error_language_not_supported' || 'error_language_unavailable' || 'error_server' || 'error_network' => VoiceProblem.language,

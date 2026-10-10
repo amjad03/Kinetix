@@ -61,15 +61,15 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 |---|---|---|---|
 | Timer / stopwatch | Floating timer, presets, alarm | Built | A/toolkit/toolkit_layer.dart, A/toolkit/toolkit_controller.dart |
 | Buzzer | Quick-answer buzzer, first press wins, teacher resets | Built: students buzz from the Student App, order reaches the board live, teacher locks and resets | A/classroom_plus/buzzer.dart |
-| Seat plan / arrangement | Class seating on board, drag students | Broken: lacks rows/layouts (U-shape, pairs, groups, custom rows) | A/classroom/classroom_tools.dart |
-| Exit ticket | Teacher sets question, students answer at end | Broken: incomplete flow | A/assessment/assessment.dart, A/class_check/class_check.dart |
-| Graphic organiser | Venn, KWL, T-chart, mind map, cycle, fishbone etc. | Broken: 7 templates only; incomplete (editing, more types) | A/teaching_aids/teaching_aids.dart |
-| Dictionary | Look up word with meaning, pronunciation, examples, language | Broken: weak | A/language_kit/language_data.dart, B/profile_extras.dart |
-| Key dates | Historical date lookup | Broken: 35 entries; needs full history | B/kit/subject_data.dart, B/kit/kit_panel.dart |
-| Immersive reader | Read-aloud, highlight, text size, spacing | Broken: needs voice select, speed, settings | A/reader/read_aloud.dart |
-| Live caption | Speech to on-board captions | Broken: weak accuracy/UX | A/captions/live_captions.dart |
-| Voice commands | Spoken next page, timer etc. | Broken: not working | A/classroom_plus/voice_commands.dart, A/ai/voice_input.dart |
-| Calculator | Scientific calculator window | Broken: CSS/layout on mobile, tab, IFP | B/calculator.dart, A/board/kit/college/calculator_dialog.dart |
+| Seat plan / arrangement | Class seating on board, drag students | Built: rows, pairs, groups of 4, U shape, custom (move desks); rows x columns; drag to swap; gender and height per student; auto-arrange random / boys-girls mixed / height / A-Z; kept per class; put on board; save/print as picture | A/classroom/seating.dart |
+| Exit ticket | Teacher sets question, students answer at end | Built: write MCQ / number / word questions (or suggest), run one by one, live bars, answers from Student App or answer cards, results on board, saved to ERP (API exit_tickets, migration 0122) | A/exit_ticket/exit_ticket.dart, services/api/src/exit-tickets |
+| Graphic organiser | Venn, KWL, T-chart, mind map, cycle, fishbone etc. | Built: 16 templates (Venn 2/3, KWL, T-chart, mind map, cycle, fishbone, flow, timeline, tree, SWOT, Frayer, 5W+H, compare, causes to effect, pyramid); edit labels and number of parts, then add to board | A/teaching_aids/organisers.dart |
+| Dictionary | Look up word with meaning, pronunciation, examples, language | Built: offline WordNet-derived list (about 9,000 words, meanings, examples, synonyms), Hindi and Kannada for the commonest, on-device TTS pronunciation, tap a synonym | A/language_kit/dictionary_data.dart, assets/dictionary |
+| Key dates | Historical date lookup | Built: about 5,000 dated events (world and India history, science, Karnataka) from 3000 BCE to today; search, region/subject/era filters, On this day, draw a timeline | B/kit/key_dates_data.dart, assets/history |
+| Immersive reader | Read-aloud, highlight, text size, spacing | Built: on-device voice picker, language, speed, pitch, font, size, letter/word/line spacing, line focus, syllables, 8 colour themes, word highlight | A/reader/read_aloud.dart, reader_settings.dart |
+| Live caption | Speech to on-board captions | Built: on-device continuous recognition that restarts after sentences and silence, en/hi/kn switch without stopping, font size, top/bottom, background, save VTT or text | A/captions/live_captions.dart |
+| Voice commands | Spoken next page, timer etc. | Built: on-device, keeps listening; next/previous page and slide, new page, timer, pick student, attendance, undo/redo, pen colour, pen/eraser/highlighter, open a tool by name, stop listening; command list and per-command feedback (en/hi/kn) | A/classroom_plus/voice_commands.dart |
+| Calculator | Scientific calculator window | Built: basic and scientific (trig in degrees or radians, logs, powers, factorial), lays out for phone, tablet and IFP panel widths | B/calculator.dart |
 | Spotlight | Dim canvas, reveal circle | Built | A/toolkit/toolkit_layer.dart |
 | Multi-user zone | Split board into zones, each user own pen, simultaneous | Built: zones force multiWriter on phone, tablet and IFP, each pointer takes its zone pen; zones_test + board_screen wiring | A/classroom_plus/zones.dart |
 | Periodic table | Interactive, info panel, highlight selected | Partial: verify against reference style | A/board/kit/subject_tools.dart |

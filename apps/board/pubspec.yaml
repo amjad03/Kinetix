@@ -93,6 +93,8 @@ flutter:
     - assets/phet/
     - assets/phet/thumbs/
     - assets/sounds/
+    - assets/dictionary/
+    - assets/history/
 
 # MSIX installer for Windows panels / OPS PCs. Version comes from `version:` above.
 # `publisher` must equal the Subject of the code-signing certificate (placeholder until we buy

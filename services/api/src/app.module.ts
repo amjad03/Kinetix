@@ -68,6 +68,7 @@ import { ClassroomProfileModule } from './classroom-profile/classroom-profile.mo
 import { DevicesModule } from './devices/devices.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PairingModule } from './pairing/pairing.module.js';
+import { ExitTicketsModule } from './exit-tickets/exit-tickets.module.js';
 import { PollsModule } from './polls/polls.module.js';
 import { BadgesModule } from './badges/badges.module.js';
 import { ParentModule } from './parent/parent.module.js';
@@ -115,6 +116,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     DevicesModule,
     PairingModule,
     PollsModule,
+    ExitTicketsModule,
     BadgesModule,
     RemoteModule,
     CastModule,

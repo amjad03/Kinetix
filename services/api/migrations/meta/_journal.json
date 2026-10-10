@@ -813,6 +813,13 @@
       "when": 1791410915229,
       "tag": "0122_classroom_profile_buzzer",
       "breakpoints": true
+    },
+    {
+      "idx": 118,
+      "version": "7",
+      "when": 1791410916229,
+      "tag": "0123_exit_tickets",
+      "breakpoints": true
     }
   ]
 }

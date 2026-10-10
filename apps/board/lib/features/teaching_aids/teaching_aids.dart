@@ -3,13 +3,12 @@ import 'dart:math' as math;
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/feature_strings.dart';
-import '../board/chrome.dart' show showBoardMessage;
-import '../extras/board_table.dart';
 import '../primary/activities.dart' show say;
+
+export 'organisers.dart';
 
 FeatureStrings aidStrings(BuildContext context) => FeatureStrings(boardLang(context), aidStringTable);
 
@@ -138,137 +137,6 @@ const aidStringTable = <String, Map<String, String>>{
     'defaultInstructions': 'ನಿಮ್ಮ ಹೆಸರು ಮತ್ತು ಕ್ರಮ ಸಂಖ್ಯೆ ಬರೆಯಿರಿ. ಎಲ್ಲ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿ. ಫೋನ್ ಅಥವಾ ಟಿಪ್ಪಣಿ ಬೇಡ.',
   },
 };
-
-// --- Graphic organisers -------------------------------------------------------------------------
-
-enum Organiser { venn2, venn3, kwl, tchart, mindmap, cycle, fishbone }
-
-/// A graphic organiser as ordinary board elements, ready to write in.
-List<BoardElement> organiserElements(Organiser o, FeatureStrings s, Color ink) {
-  const a = Color(0x334F8CFF), b = Color(0x33FF5A5F), c = Color(0x333CB44B);
-  switch (o) {
-    case Organiser.venn2:
-      return [
-        boardShape(ShapeKind.circle, const Offset(200, 200), const Offset(380, 200), ink, fill: a),
-        boardShape(ShapeKind.circle, const Offset(440, 200), const Offset(620, 200), ink, fill: b),
-        boardLabel('A', const Offset(120, 200), ink, size: 30, bold: true, center: true),
-        boardLabel('B', const Offset(520, 200), ink, size: 30, bold: true, center: true),
-        boardLabel('A ∩ B', const Offset(320, 200), ink, size: 22, center: true),
-      ];
-    case Organiser.venn3:
-      return [
-        boardShape(ShapeKind.circle, const Offset(240, 180), const Offset(400, 180), ink, fill: a),
-        boardShape(ShapeKind.circle, const Offset(420, 180), const Offset(580, 180), ink, fill: b),
-        boardShape(ShapeKind.circle, const Offset(330, 330), const Offset(490, 330), ink, fill: c),
-        boardLabel('A', const Offset(170, 140), ink, size: 30, bold: true, center: true),
-        boardLabel('B', const Offset(490, 140), ink, size: 30, bold: true, center: true),
-        boardLabel('C', const Offset(330, 420), ink, size: 30, bold: true, center: true),
-      ];
-    case Organiser.kwl:
-      return boardTable([
-        [s['know'], s['want'], s['learnt']],
-        for (var i = 0; i < 5; i++) ['                    ', '                    ', '                    '],
-      ], ink, size: 22, header: a);
-    case Organiser.tchart:
-      return [
-        boardLabel(s['pros'], const Offset(160, 20), ink, size: 30, bold: true, center: true),
-        boardLabel(s['cons'], const Offset(480, 20), ink, size: 30, bold: true, center: true),
-        boardLine(const Offset(0, 50), const Offset(640, 50), ink, w: 4),
-        boardLine(const Offset(320, 50), const Offset(320, 440), ink, w: 4),
-      ];
-    case Organiser.mindmap:
-      final out = <BoardElement>[
-        boardShape(ShapeKind.ellipse, const Offset(220, 190), const Offset(420, 270), ink, fill: a),
-        boardLabel(s['topic'], const Offset(320, 230), ink, size: 28, bold: true, center: true),
-      ];
-      for (var i = 0; i < 6; i++) {
-        final ang = -math.pi / 2 + i * math.pi / 3;
-        final end = const Offset(320, 230) + Offset(math.cos(ang) * 260, math.sin(ang) * 170);
-        final start = const Offset(320, 230) + Offset(math.cos(ang) * 105, math.sin(ang) * 45);
-        out
-          ..add(boardLine(start, end, ink, w: 3))
-          ..add(boardShape(ShapeKind.rectangle, end - const Offset(70, 26), end + const Offset(70, 26), ink, fill: i.isEven ? b : c))
-          ..add(boardLabel('${s['idea']} ${i + 1}', end, ink, size: 20, center: true));
-      }
-      return out;
-    case Organiser.cycle:
-      final out = <BoardElement>[];
-      const n = 4;
-      for (var i = 0; i < n; i++) {
-        final ang = -math.pi / 2 + i * 2 * math.pi / n;
-        final p = const Offset(300, 240) + Offset(math.cos(ang) * 200, math.sin(ang) * 170);
-        final q = const Offset(300, 240) + Offset(math.cos(ang + 2 * math.pi / n) * 200, math.sin(ang + 2 * math.pi / n) * 170);
-        out
-          ..add(boardShape(ShapeKind.ellipse, p - const Offset(80, 32), p + const Offset(80, 32), ink, fill: i.isEven ? a : c))
-          ..add(boardLabel('${s['step']} ${i + 1}', p, ink, size: 22, center: true))
-          ..add(boardShape(ShapeKind.arrow, Offset.lerp(p, q, 0.3)!, Offset.lerp(p, q, 0.7)!, ink, w: 3));
-      }
-      return out;
-    case Organiser.fishbone:
-      final out = <BoardElement>[
-        boardShape(ShapeKind.arrow, const Offset(0, 200), const Offset(600, 200), ink, w: 4),
-        boardShape(ShapeKind.rectangle, const Offset(610, 160), const Offset(760, 240), ink, fill: b),
-        boardLabel(s['effect'], const Offset(685, 200), ink, size: 24, bold: true, center: true),
-      ];
-      for (var i = 0; i < 3; i++) {
-        final x = 120.0 + i * 160;
-        out
-          ..add(boardLine(Offset(x, 60), Offset(x + 80, 200), ink, w: 3))
-          ..add(boardLine(Offset(x, 340), Offset(x + 80, 200), ink, w: 3))
-          ..add(boardLabel('${s['cause']} ${i * 2 + 1}', Offset(x - 20, 36), ink, size: 18, center: true))
-          ..add(boardLabel('${s['cause']} ${i * 2 + 2}', Offset(x - 20, 364), ink, size: 18, center: true));
-      }
-      return out;
-  }
-}
-
-/// The organisers to pick from; one tap puts it on the board.
-class OrganisersPanel extends StatelessWidget {
-  const OrganisersPanel({super.key, required this.wb});
-  final WhiteboardController wb;
-
-  static const _icons = {
-    Organiser.venn2: Icons.join_inner,
-    Organiser.venn3: Icons.workspaces_outline,
-    Organiser.kwl: Icons.view_column_outlined,
-    Organiser.tchart: Icons.vertical_split_outlined,
-    Organiser.mindmap: Icons.hub_outlined,
-    Organiser.cycle: Icons.autorenew,
-    Organiser.fishbone: Icons.account_tree_outlined,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final s = aidStrings(context);
-    return GridView.extent(
-      key: const Key('organisers-panel'),
-      padding: const EdgeInsets.all(Kx.s16),
-      maxCrossAxisExtent: 180,
-      mainAxisSpacing: Kx.s12,
-      crossAxisSpacing: Kx.s12,
-      children: [
-        for (final o in Organiser.values)
-          Material(
-            color: context.colors.surfaceContainerLow,
-            borderRadius: Kx.radiusLg,
-            child: InkWell(
-              key: Key('organiser-${o.name}'),
-              borderRadius: Kx.radiusLg,
-              onTap: () {
-                final ink = wb.background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
-                wb.insert(organiserElements(o, s, ink));
-                showBoardMessage(context, s['onBoard']);
-              },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [Icon(_icons[o], size: 48), const SizedBox(height: Kx.s8), Text(s[o.name], textAlign: TextAlign.center)],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
 
 // --- Teaching clock -----------------------------------------------------------------------------
 

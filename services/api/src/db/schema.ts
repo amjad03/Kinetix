@@ -693,6 +693,25 @@ export const polls = pgTable(
   (t) => [index('polls_session_idx').on(t.boardSessionId), index('polls_section_idx').on(t.sectionId, t.openedAt)],
 );
 
+/** An exit ticket: the class questions (polls) asked together at the end of a lesson. */
+export const exitTickets = pgTable(
+  'exit_tickets',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    teacherId: uuid('teacher_id').notNull().references(() => users.id),
+    topic: text('topic').notNull(),
+    /** The polls of the ticket, in the order they were asked. */
+    pollIds: jsonb('poll_ids').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    createdAt: createdAt(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+  },
+  (t) => [index('exit_tickets_section_idx').on(t.sectionId, t.createdAt)],
+);
+
 /** One student's answer to a poll; a later answer replaces an earlier one. */
 export const pollResponses = pgTable(
   'poll_responses',
@@ -3058,6 +3077,7 @@ export const TENANT_TABLES = [
   'lesson_plans',
   'answer_cards',
   'polls',
+  'exit_tickets',
   'poll_responses',
   'badges',
   'enquiries',

@@ -4,5 +4,5 @@ import { AnswerCardsController, PollsController, StudentPollController } from '.
 import { PollsService } from './polls.service.js';
 
 /** Class questions ("Ask the class") and printed answer cards. */
-@Module({ imports: [TeacherModule], controllers: [PollsController, StudentPollController, AnswerCardsController], providers: [PollsService] })
+@Module({ imports: [TeacherModule], controllers: [PollsController, StudentPollController, AnswerCardsController], providers: [PollsService], exports: [PollsService] })
 export class PollsModule {}
