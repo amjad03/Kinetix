@@ -105,8 +105,8 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
 | Profile menu: New, Import, Your Whiteboards, Your Classrooms, Configurations, Schedule a Training, What's New, Exit | Sidebar | Built | B/profile_menu.dart |
-| Profile Import PDF | Opens split screen first, with "add to board" | Missing (see PDF row) | B/profile_menu.dart, A/insert/document_import.dart |
-| Profile Import PPT | Add all or pick pages | Missing | A/insert/presentation_pane.dart |
+| Profile Import PDF | Opens split screen first, with "add to board" | Built: profile Import uses importDocument → presentation split pane (add page, ticked pages, add all) | B/profile_menu.dart, A/insert/document_import.dart |
+| Profile Import PPT | Add all or pick pages | Built: same split pane; add all or pick slides | A/insert/presentation_pane.dart |
 | Your Classrooms | Classes taken per section/standard | Built: classroom_profile_ui.dart lists every class taught (section, standard, subject, sessions, last taken) from GET /v1/classroom/classrooms with Open class | B/classroom_profile_ui.dart, API classroom-profile |
 | Schedule a Training | Training flow with QR | Built: pick a slot, topic, stored via API, status shown on the board; ERP /trainings lists and answers | B/classroom_profile_ui.dart, E/trainings | B/profile_menu.dart |
 | What's New | Release feed | Built | B/profile_extras.dart |
