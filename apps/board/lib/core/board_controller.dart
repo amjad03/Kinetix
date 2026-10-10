@@ -181,6 +181,9 @@ class BoardController extends ChangeNotifier {
   /// the touch surface: panels and IR frames are multi-touch, tablets single.
   bool? multiTouch;
 
+  /// Touch-size limits, stylus buttons, dual pens and touch calibration, saved on this device.
+  InputConfig inputConfig = InputConfig();
+
   /// What the AI pen converts: shapes, maths and text.
   Set<String> aiPenConvert = {'shapes', 'maths', 'text'};
 
@@ -356,6 +359,7 @@ class BoardController extends ChangeNotifier {
       toolbarPanel = _ids(await _store.setting('toolbarPanel'));
       toolbarPhone = _ids(await _store.setting('toolbarPhone'));
       palmRejection = await _store.setting('palmRejection') != 'false';
+      inputConfig = InputConfig.decode(await _store.setting('inputConfig'));
       final multi = await _store.setting('multiTouch');
       multiTouch = multi == null ? null : multi == 'true';
       final convert = await _store.setting('aiPenConvert');
@@ -577,6 +581,12 @@ class BoardController extends ChangeNotifier {
   void setPalmRejection(bool on) {
     palmRejection = on;
     unawaited(_store.setSetting('palmRejection', '$on'));
+    notifyListeners();
+  }
+
+  /// Saves the input setup (call after changing [inputConfig]).
+  void saveInputConfig() {
+    unawaited(_store.setSetting('inputConfig', inputConfig.encode()));
     notifyListeners();
   }
 

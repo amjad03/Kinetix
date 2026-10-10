@@ -10,6 +10,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import 'board_background.dart';
 import 'element_painting.dart';
 import 'geometry_tools.dart';
+import 'input_config.dart';
 import 'ink_canvas.dart' show inkColorFor;
 import 'ink_models.dart';
 import 'lesson.dart' show paintLaser;
@@ -230,12 +231,15 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   double get _scale => c.view.value.scale;
   Offset _board(Offset screen) => c.view.value.toBoard(screen);
 
+  /// Where the pointer is, after this device's touch calibration (touches only).
+  Offset _pos(PointerEvent e) => e.kind == PointerDeviceKind.touch ? c.inputConfig.position(e.localPosition) : e.localPosition;
+
   InkPoint _point(PointerEvent e) {
     // Mice and most fingers report pressure 0 or 1; only pens give a useful range.
-    final pressure = e.kind == PointerDeviceKind.stylus && e.pressureMax > e.pressureMin
+    final pressure = e.kind == PointerDeviceKind.stylus && c.inputConfig.stylus.pressure && e.pressureMax > e.pressureMin
         ? ((e.pressure - e.pressureMin) / (e.pressureMax - e.pressureMin)).clamp(0.0, 1.0)
         : 0.5;
-    final b = _board(e.localPosition);
+    final b = _board(_pos(e));
     return InkPoint(b.dx, b.dy, pressure);
   }
 
@@ -255,22 +259,28 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       _penSeen = true;
       widget.onPenSeen?.call();
     }
-    _downAt[e.pointer] = e.localPosition;
+    _downAt[e.pointer] = _pos(e);
 
     // The right or middle mouse button moves the board.
     if (kind == PointerDeviceKind.mouse && (e.buttons & (kSecondaryMouseButton | kMiddleMouseButton)) != 0) {
-      _startPan(e.pointer, e.localPosition);
+      _startPan(e.pointer, _pos(e));
       return;
     }
 
-    if (kind == PointerDeviceKind.touch) {
+    // A thin touch contact (an IFP's passive pen) is a pen when the device is set up that way.
+    final penTouch = kind == PointerDeviceKind.touch && c.inputConfig.classify(e.radiusMajor, learnedPalm: (_) => false) == ContactClass.pen;
+    if (penTouch && !_penSeen && widget.inputMode == InputMode.auto) {
+      _penSeen = true;
+      widget.onPenSeen?.call();
+    }
+    if (kind == PointerDeviceKind.touch && !penTouch) {
       // A second or third finger that lands at once is a tap or a pinch, never a palm (phones
       // report broad contacts for thumbs).
       final joining = _joinsTap(e);
       // Moving the board or what is selected takes any part of the hand (a broad thumb too).
       final moving = c.tool == BoardTool.hand || c.tool == BoardTool.select;
       // A palm or fist: rubbed out or ignored by the controller, never a finger.
-      if (!joining && !moving && c.palmMode != PalmMode.off && _palm.isPalm(e.radiusMajor)) {
+      if (!joining && !moving && c.palmMode != PalmMode.off && c.inputConfig.classify(e.radiusMajor, learnedPalm: _palm.isPalm) == ContactClass.palm) {
         _drawing.add(e.pointer);
         c.pointerDown(e.pointer, _point(e), scale: _scale, palm: true, contactRadius: e.radiusMajor / _scale);
         return;
@@ -278,7 +288,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       // Where many write at once, two fingers that land together, a hand's span apart, still
       // move and zoom the board (two children rarely start at the same instant side by side).
       final pair = widget.multiWriter && (_pinching || _pairsWithFirst(e));
-      _touches[e.pointer] = e.localPosition;
+      _touches[e.pointer] = _pos(e);
       _downTime[e.pointer] = e.timeStamp;
       _trackTap(e, joining);
       final navigate = c.tool == BoardTool.hand || _fingersNavigate;
@@ -299,8 +309,8 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
           return;
         }
         if (navigate) {
-          _startPan(e.pointer, e.localPosition);
-          _startHold(e.localPosition);
+          _startPan(e.pointer, _pos(e));
+          _startHold(_pos(e));
           return;
         }
       }
@@ -309,26 +319,26 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     // A handle of the selection resizes or turns it, whatever the tool; a shape's own handles
     // move its corners, its radius or its rounding.
     if (_transformPointer == null && _drawing.isEmpty && c.selection.isNotEmpty) {
-      final sh = shapeHandleAt(e.localPosition);
+      final sh = shapeHandleAt(_pos(e));
       if (sh != null) {
         _transformPointer = e.pointer;
-        c.beginShapeEdit(sh, _board(e.localPosition), scale: _scale);
+        c.beginShapeEdit(sh, _board(_pos(e)), scale: _scale);
         return;
       }
-      final h = handleAt(e.localPosition);
+      final h = handleAt(_pos(e));
       if (h != null) {
         _transformPointer = e.pointer;
-        c.beginTransform(h, _board(e.localPosition));
+        c.beginTransform(h, _board(_pos(e)));
         return;
       }
     }
     if (c.tool == BoardTool.hand) {
-      _startPan(e.pointer, e.localPosition);
+      _startPan(e.pointer, _pos(e));
       return;
     }
     // A tap on a covered answer shows it (with any tool but the eraser).
     if (c.tool != BoardTool.eraser) {
-      final b = _board(e.localPosition);
+      final b = _board(_pos(e));
       final answer = c.hiddenAnswers.where((a) => a.hitTest(b, 0)).firstOrNull;
       if (answer != null) {
         _tapPointer = e.pointer;
@@ -340,15 +350,41 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       _tapPointer = e.pointer;
       return;
     }
-    if (kind == PointerDeviceKind.touch) _startHold(e.localPosition);
+    if (kind == PointerDeviceKind.touch && !penTouch) _startHold(_pos(e));
     _drawing.add(e.pointer);
+    final cfg = c.inputConfig;
+    // Barrel buttons held as the pen lands: erase, highlight, select or undo.
+    var override_ = <String, Object?>{};
+    if (pen) {
+      switch (cfg.stylus.actionFor(e.buttons)) {
+        case ButtonAction.erase:
+          override_['tool'] = BoardTool.eraser;
+        case ButtonAction.highlight:
+          override_['tool'] = BoardTool.highlighter;
+        case ButtonAction.select:
+          override_['tool'] = BoardTool.select;
+        case ButtonAction.undo:
+          _drawing.remove(e.pointer);
+          c.undo();
+          return;
+        case ButtonAction.none:
+          break;
+      }
+    }
+    // Two pens, each its own colour: by tip size, else the pen that landed first is the first.
+    Color? colour;
+    if (cfg.dual.enabled && (pen || penTouch || widget.multiWriter) && override_['tool'] == null) {
+      colour = cfg.dual.colourFor(radius: kind == PointerDeviceKind.touch ? e.radiusMajor : 0, slot: _drawing.length > 1 ? 1 : 0);
+    }
     c.pointerDown(
       e.pointer,
       _point(e),
       scale: _scale,
+      colour: colour,
+      toolOverride: override_['tool'] as BoardTool?,
       stylus: switch (kind) {
         PointerDeviceKind.stylus => StylusEnd.front,
-        PointerDeviceKind.invertedStylus => StylusEnd.back,
+        PointerDeviceKind.invertedStylus => cfg.stylus.eraserEnd ? StylusEnd.back : StylusEnd.front,
         _ => null,
       },
     );
@@ -357,10 +393,10 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   String? _tapAnswer;
 
   void _onMove(PointerMoveEvent e) {
-    if (_touches.containsKey(e.pointer)) _touches[e.pointer] = e.localPosition;
+    if (_touches.containsKey(e.pointer)) _touches[e.pointer] = _pos(e);
     final down = _downAt[e.pointer];
-    if (down != null && (e.localPosition - down).distance > 10) _hold?.cancel();
-    if (down != null && _tapStart != null && (e.localPosition - down).distance > WhiteboardCanvas.tapSlop) _tapStart = null;
+    if (down != null && (_pos(e) - down).distance > 10) _hold?.cancel();
+    if (down != null && _tapStart != null && (_pos(e) - down).distance > WhiteboardCanvas.tapSlop) _tapStart = null;
     if (_selectionPinch) {
       final pts = _touches.values.take(2).toList();
       if (pts.length == 2) c.updateSelectionPinch(_board(pts[0]), _board(pts[1]));
@@ -371,17 +407,17 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       return;
     }
     if (e.pointer == _panPointer) {
-      if (_panLast != null) c.panBy(e.localPosition - _panLast!);
-      _panLast = e.localPosition;
+      if (_panLast != null) c.panBy(_pos(e) - _panLast!);
+      _panLast = _pos(e);
       return;
     }
     if (e.pointer == _transformPointer) {
-      c.updateTransform(_board(e.localPosition), free: HardwareKeyboard.instance.isShiftPressed);
+      c.updateTransform(_board(_pos(e)), free: HardwareKeyboard.instance.isShiftPressed);
       return;
     }
     if (_drawing.contains(e.pointer)) {
       c.pointerMove(e.pointer, _point(e));
-      if (c.tool == BoardTool.eraser) setState(() => _hover = e.localPosition);
+      if (c.tool == BoardTool.eraser) setState(() => _hover = _pos(e));
     }
   }
 
@@ -418,14 +454,14 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     }
     if (e.pointer == _tapPointer) {
       _tapPointer = null;
-      final tap = down != null && (e.localPosition - down).distance < 10;
+      final tap = down != null && (_pos(e) - down).distance < 10;
       final answer = _tapAnswer;
       _tapAnswer = null;
       if (!tap) return;
       if (answer != null) {
         c.revealAnswers(id: answer);
       } else {
-        _tapWithTool(_board(e.localPosition));
+        _tapWithTool(_board(_pos(e)));
       }
       return;
     }
@@ -456,7 +492,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     if (e is PointerScrollEvent) {
       final keys = HardwareKeyboard.instance;
       if (keys.isControlPressed || keys.isMetaPressed) {
-        c.zoomBy(math.exp(-e.scrollDelta.dy / 300), e.localPosition);
+        c.zoomBy(math.exp(-e.scrollDelta.dy / 300), _pos(e));
       } else {
         c.panBy(-e.scrollDelta);
       }
@@ -473,7 +509,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     if (_touches.length != 1) return false;
     final first = _touches.keys.single;
     final at = _downTime[first];
-    return at != null && e.timeStamp - at < WhiteboardCanvas.tapTimeout && (_touches[first]! - e.localPosition).distance <= pairReach;
+    return at != null && e.timeStamp - at < WhiteboardCanvas.tapTimeout && (_touches[first]! - _pos(e)).distance <= pairReach;
   }
 
   /// Whether this finger joins a finger tap or pinch begun a moment ago.
@@ -773,7 +809,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
                     child: MouseRegion(
                       cursor: _cursor,
                       onHover: (e) {
-                        if (c.tool == BoardTool.eraser) setState(() => _hover = e.localPosition);
+                        if (c.tool == BoardTool.eraser) setState(() => _hover = _pos(e));
                       },
                       onExit: (_) => setState(() => _hover = null),
                       child: Listener(
@@ -787,7 +823,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
                         onPointerPanZoomUpdate: (e) {
                           c.panBy(e.localPanDelta);
                           if (e.scale != _trackpadScale) {
-                            c.zoomBy(e.scale / _trackpadScale, e.localPosition);
+                            c.zoomBy(e.scale / _trackpadScale, _pos(e));
                             _trackpadScale = e.scale;
                           }
                         },

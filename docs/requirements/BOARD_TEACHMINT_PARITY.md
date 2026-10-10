@@ -7,15 +7,15 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 ## 1. Canvas and pages
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
-| Add page rule | Add (+) on last page; Kinetix doc: only allowed if current page has content, blank page blocks Add (doc C) | Partial: add exists; blank-page block unverified | B/layout/page_overview.dart, B/phone_chrome.dart |
-| Add page speed / stale content | New page appears instantly, blank | Broken: add-page slow; previous page content lingers on new page | INK/whiteboard_controller.dart, B/layout/page_overview.dart |
+| Add page rule | Add (+) on last page; Kinetix doc: only allowed if current page has content, blank page blocks Add (doc C) | Built: blank page blocks Add (canAddPage); test pages_paper_test "Add Page needs something on the open page" | B/layout/page_overview.dart, B/phone_chrome.dart |
+| Add page speed / stale content | New page appears instantly, blank | Built: root cause was addPage/goToPage not bumping the finished-layer repaint notifier, so the old page lingered; fixed in whiteboard_controller.dart; test input_config_test "adding a page repaints the finished layer" | INK/whiteboard_controller.dart, B/layout/page_overview.dart |
 | Prev / Next / page indicator "1/1" | Bottom-right group: Hide, Prev, n/N, Next, Switch (doc B) | Built | B/layout/board_chrome.dart, B/layout/toolbar_layout.dart |
 | Page overview / thumbnails | Grid of pages, reorder, delete | Built | B/layout/page_overview.dart |
 | Switch toolbar side | Quick group (Switch, Guest/Profile, Share, WhatsApp, End Class) flips to the opposite side | Partial: verify quick group contents and mirrored nav | B/layout/toolbar_layout.dart, B/layout/board_chrome.dart |
 | Hide / restore UI | Hide collapses all tool UI, small restore button stays | Partial: verify restore handle | B/layout/board_chrome.dart |
 | Screen Freeze | Canvas frozen non-interactive, small Close bottom-left | Built (touch lock) ; verify Close bottom-left | B/touch_lock.dart |
 | Pinch zoom (2 finger, global) | Pinch zoom/pan anywhere on canvas, no stray ink | Built; verify no accidental ink in multitouch mode | INK/ink_canvas.dart, INK/pen/gestures.dart |
-| Two-finger tap = undo | Two-finger tap undoes last action | Partial: exists on main board, absent on split second board (see 9) | INK/pen/gestures.dart |
+| Two-finger tap = undo | Two-finger tap undoes last action | Built on main and split second board (same WhiteboardCanvas); tools_test second-board, whiteboard_canvas_test "two fingers undo" | INK/pen/gestures.dart |
 | Undo / redo | Toolbar buttons | Built | INK/whiteboard_controller.dart |
 | Version history / autosave | Whiteboards saved in "Your Whiteboards" | Built | B/version_history.dart, A/profiles/profile_boards.dart |
 | Clear all | In eraser settings with confirm | Built | B/layout/pen_popover.dart |
@@ -25,13 +25,13 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 |---|---|---|---|
 | Pen module: Solid, Highlighter, Two Side, Text AI, Shape AI | 5-way pen popover (doc 12) | Built | B/layout/pen_modes.dart, B/layout/pen_popover.dart |
 | Solid pen size and colour | Size slider, colour swatches | Built | B/layout/pen_popover.dart |
-| Single / Multi Touch toggle | Multi: several students write simultaneously, low latency | Partial: toggle exists; multitouch accuracy on mobile/tab/IFP unverified | A/../core/board_controller.dart, B/layout/pen_popover.dart |
+| Single / Multi Touch toggle | Multi: several students write simultaneously, low latency | Built: phone no longer excluded (multiWriter = panel/IFP, Multi Touch on, or zones active); per-pointer writing tested in whiteboard_canvas_test "on a panel every finger writes its own line" | A/../core/board_controller.dart, B/layout/pen_popover.dart |
 | Highlighter | Size, opacity, colour, smooth, palm-compatible | Built | B/layout/pen_popover.dart, INK/ink_canvas.dart |
 | Two Side pen: Front tip / Back tip | Front: Write; Back: Write / Erase / Select / Highlight; independent | Partial: modes exist; front/back independence and immediate switch unverified | B/layout/pen_modes.dart, B/layout/pen_popover.dart |
-| Palm rejection / palm eraser (global) | Palm-only touch erases with no tool selected | Partial | B/touch_lock.dart, apps/board/lib/core/board_controller.dart |
-| Pen configuration: generic IFP touch (size-based pen / finger / palm classification) | Touch contact size decides pen vs finger vs palm; calibratable thresholds | Missing: no touch-size classifier or config UI | apps/board/lib/core/board_controller.dart |
-| Active stylus: pressure, eraser end, barrel buttons | Pressure width, eraser tip erases, buttons map to actions | Missing / Partial: pressure refs only, no button/eraser-end mapping UI | apps/board/lib/core/board_controller.dart, B/touch_lock.dart |
-| Dual-pen colour panels | Two pens, each with own colour panel, for two writers | Missing | B/layout/pen_popover.dart |
+| Palm rejection / palm eraser (global) | Palm-only touch erases with no tool selected | Built: InputConfig.classify (manual limits or auto-learn) drives palm erase; input_config_test + whiteboard_canvas_test palm tests | B/touch_lock.dart, apps/board/lib/core/board_controller.dart |
+| Pen configuration: generic IFP touch (size-based pen / finger / palm classification) | Touch contact size decides pen vs finger vs palm; calibratable thresholds | Built: pen_config_screen.dart Touch size tab (pen/finger/palm limits, auto-learn, learn-from-touches wizard); pen_config_test | apps/board/lib/core/board_controller.dart |
+| Active stylus: pressure, eraser end, barrel buttons | Pressure width, eraser tip erases, buttons map to actions | Built: Active stylus tab (pressure, eraser end, two barrel buttons mapped to erase/highlight/select/undo); input_config_test "barrel button" | apps/board/lib/core/board_controller.dart, B/touch_lock.dart |
+| Dual-pen colour panels | Two pens, each with own colour panel, for two writers | Built: Two pens tab (per pointer order or tip size colours) applied in WhiteboardCanvas; input_config_test "two pens write in their own colours" | B/layout/pen_popover.dart |
 | Eraser size, stroke/area | Size slider | Built | B/layout/pen_popover.dart |
 | Pen colour palette consistency | Same palette everywhere | Broken: icon/colour inconsistencies across toolbar and panels | B/layout/board_chrome.dart, B/layout/tools_drawer.dart |
 
@@ -53,7 +53,7 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 |---|---|---|---|
 | Ruler, protractor, set squares, compass | Draggable, rotatable overlays | Built | INK/tools/geo_overlay.dart, INK/geometry_tools.dart |
 | Stacked tools: reach the bottom one | Tools overlap; user can select/move any | Broken: bottom tool of a stack hard to reach | INK/tools/geo_overlay.dart, INK/tools/geo_tool.dart |
-| Calibration | Screen size/DPI calibration so ruler is true scale | Broken: dialog exists but incomplete | A/canvas_tools/canvas_tools.dart, INK/tools/geo_tool.dart |
+| Calibration | Screen size/DPI calibration so ruler is true scale | Partial: touch offset calibration Built (5 targets, saved per device, applied to input: pen_config_screen.dart CalibrationPad, pen_config_test); ruler/DPI dialog not re-audited | A/canvas_tools/canvas_tools.dart, INK/tools/geo_tool.dart |
 | Graph tool / graph templates | Plot expressions, templates | Built | INK/tools/graph_editor.dart, A/canvas_tools/graph_templates_panel.dart |
 
 ## 5. Teaching tools
@@ -71,7 +71,7 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Voice commands | Spoken next page, timer etc. | Broken: not working | A/classroom_plus/voice_commands.dart, A/ai/voice_input.dart |
 | Calculator | Scientific calculator window | Broken: CSS/layout on mobile, tab, IFP | B/calculator.dart, A/board/kit/college/calculator_dialog.dart |
 | Spotlight | Dim canvas, reveal circle | Built | A/toolkit/toolkit_layer.dart |
-| Multi-user zone | Split board into zones, each user own pen, simultaneous | Broken: must support true multitouch on mobile/tab/IFP | A/classroom_plus/zones.dart |
+| Multi-user zone | Split board into zones, each user own pen, simultaneous | Built: zones force multiWriter on phone, tablet and IFP, each pointer takes its zone pen; zones_test + board_screen wiring | A/classroom_plus/zones.dart |
 | Periodic table | Interactive, info panel, highlight selected | Partial: verify against reference style | A/board/kit/subject_tools.dart |
 | Break reminder, diagnostics, recording notice | n/a (Kinetix extras) | Built | A/classroom_plus/*.dart |
 
@@ -93,7 +93,7 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | PDF import | Opens in split screen first; "Add to board" per page or all ("Adding page to whiteboard" toast) | Partial: imports to board directly; split-first with Add to board missing | A/insert/document_import.dart |
 | PPT import | Opens split; add all pages or pick pages; animations/transitions/media | Partial: renders slides; add-all/pick pages and animation fidelity missing | A/insert/presentation_pane.dart, A/insert/pptx_render.dart |
 | Intelligent split side | Opens on empty side, draggable divider | Partial | B/panel/split_panel.dart |
-| Second board in split screen | Full board: AI pen, two-finger tap undo, same gestures | Broken: lacks AI pen, two-finger-tap undo etc. | B/panel/split_panel.dart, B/panel/panel_host.dart |
+| Second board in split screen | Full board: AI pen, two-finger tap undo, same gestures | Built: second board is a WhiteboardController + WhiteboardCanvas + AiPenOverlay that mirrors the one toolbar (mirrorToolsFrom); tools_test, input_config_test "second board follows" | B/panel/split_panel.dart, B/panel/panel_host.dart |
 | Books / NCERT | Library, search, upload | Built | A/books/books_panel.dart |
 | Screen share | Portrait and landscape, auto-rotate | Partial | A/cast/cast_panel.dart, core/cast/cast_controller.dart |
 | Classroom Apps grid | Study Material, Live Class, Homework, Lessons, Attendance, Class Prep, Students, Tests, Recordings, Books; Other Tools: Calculator, Spotlight | Built | B/classroom_apps.dart |

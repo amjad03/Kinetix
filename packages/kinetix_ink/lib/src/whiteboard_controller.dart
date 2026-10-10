@@ -7,6 +7,7 @@ import 'package:flutter/painting.dart' show EdgeInsets;
 
 import 'board_background.dart';
 import 'flow_chart.dart' show absorbTextIntoFlow;
+import 'input_config.dart';
 import 'ink_models.dart';
 import 'serialization.dart';
 import 'shape_edit.dart';
@@ -308,7 +309,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _paperChanged(was, page.background);
     _selection.clear();
     _showPage();
-    _changed(content: false);
+    _changed(content: false, repaint: true);
   }
 
   /// Adds a blank page after the open one and opens it.
@@ -326,7 +327,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _index++;
     _selection.clear();
     _showPage();
-    _changed(content: false);
+    _changed(content: false, repaint: true);
   }
 
   /// Adds [pages] after the open page (an imported PDF or slide deck, one board page each)
@@ -549,6 +550,32 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     notifyListeners();
   }
 
+  /// Takes the tool and every tool setting of [o], so a second board follows the one toolbar
+  /// (the pen, colours, sizes, nib, shapes, stylus tips and input setup are shared, not copied
+  /// into a second set of controls).
+  void mirrorToolsFrom(WhiteboardController o) {
+    _tool = o._tool;
+    penColor = o.penColor;
+    penWidth = o.penWidth;
+    penNib = o.penNib;
+    penPressure = o.penPressure;
+    penSmoothing = o.penSmoothing;
+    highlighterColor = o.highlighterColor;
+    highlighterWidth = o.highlighterWidth;
+    eraserRadius = o.eraserRadius;
+    shapeKind = o.shapeKind;
+    shapeFill = o.shapeFill;
+    noteKind = o.noteKind;
+    noteColor = o.noteColor;
+    textSize = o.textSize;
+    font = o.font;
+    palmMode = o.palmMode;
+    frontTip = o.frontTip;
+    backTip = o.backTip;
+    inputConfig = o.inputConfig;
+    notifyListeners();
+  }
+
   void update(VoidCallback change) {
     change();
     notifyListeners();
@@ -587,6 +614,9 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   /// The corner handles keep the proportions (Shift, or switching this off, frees them).
   bool lockAspect = true;
+
+  /// Touch sizes, stylus buttons, dual pens and calibration for this device (the app sets it).
+  InputConfig inputConfig = InputConfig();
 
   /// How large contacts (a palm, a fist) are treated; see [PalmMode].
   /// Read on the next touch; nothing on the board changes, so it may be set while building.
@@ -1339,7 +1369,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   /// a null answer, uses the board's own tool. Palms, stylus tips and the eraser button win.
   ZonePen? Function(Offset at)? zonePen;
 
-  void pointerDown(int pointer, InkPoint p, {double scale = 1, bool palm = false, double contactRadius = 0, bool forceEraser = false, StylusEnd? stylus}) {
+  void pointerDown(int pointer, InkPoint p, {double scale = 1, bool palm = false, double contactRadius = 0, bool forceEraser = false, StylusEnd? stylus, Color? colour, BoardTool? toolOverride}) {
     _scale = scale;
     var tool = _tool;
     final zone = palm || stylus != null || forceEraser ? null : zonePen?.call(p.offset);
@@ -1349,6 +1379,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       tool = BoardTool.eraser;
     }
     if (stylus != null) tool = toolForTip(stylus == StylusEnd.front ? frontTip : backTip, front: stylus == StylusEnd.front);
+    if (toolOverride != null) tool = toolOverride;
     if (forceEraser) tool = BoardTool.eraser;
     if (_selection.isNotEmpty && tool != BoardTool.select && tool != BoardTool.eraser) {
       // Just placed or pasted: anything else lets it go and carries on with the tool.
@@ -1362,7 +1393,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
         final hl = tool == BoardTool.highlighter;
         final style = InkStyle(
           tool: hl ? InkTool.highlighter : InkTool.pen,
-          color: zone?.color ?? (hl ? highlighterColor : penColor),
+          color: zone?.color ?? colour ?? (hl ? highlighterColor : penColor),
           width: hl ? highlighterWidth : penWidth,
           nib: hl ? PenNib.round : penNib,
           pressure: !hl && penPressure,
