@@ -212,11 +212,14 @@ const panelDividerWidth = 24.0;
 /// The bar between the board and the panel: drag it (a finger, a pen or the mouse) to share
 /// the width (30–60 %); it snaps to 30 %, 40 %, half and 60 % when let go near one.
 class PanelDivider extends StatefulWidget {
-  const PanelDivider({super.key, required this.onDrag, this.onDragEnd});
+  const PanelDivider({super.key, required this.onDrag, this.onDragEnd, this.onFling});
 
   /// How far it moved, in logical pixels (to the right is positive).
   final ValueChanged<double> onDrag;
   final VoidCallback? onDragEnd;
+
+  /// The velocity (px/s, to the right is positive) the finger let go with.
+  final ValueChanged<double>? onFling;
 
   @override
   State<PanelDivider> createState() => _PanelDividerState();
@@ -244,8 +247,9 @@ class _PanelDividerState extends State<PanelDivider> {
           dragStartBehavior: DragStartBehavior.down,
           onHorizontalDragStart: (_) => setState(() => _active = true),
           onHorizontalDragUpdate: (d) => widget.onDrag(d.delta.dx),
-          onHorizontalDragEnd: (_) {
+          onHorizontalDragEnd: (d) {
             setState(() => _active = false);
+            widget.onFling?.call(d.primaryVelocity ?? 0);
             widget.onDragEnd?.call();
           },
           onHorizontalDragCancel: () => setState(() => _active = false),

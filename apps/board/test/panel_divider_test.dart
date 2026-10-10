@@ -45,8 +45,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(share(tester, size), greaterThan(start + 0.05));
         expect(share(tester, size), lessThanOrEqualTo(panelMax + 0.001));
-        // All the way right: 30 %.
-        await tester.dragFrom(tester.getCenter(divider), Offset(size.width, 0), kind: kind);
+        // Right to about 30 %: snaps to it.
+        await tester.dragFrom(tester.getCenter(divider), Offset(size.width * (0.6 - panelMin - 0.02), 0), kind: kind);
         await tester.pumpAndSettle();
         expect(share(tester, size), closeTo(panelMin, 0.001));
         // Near a half: snaps to it.
@@ -59,4 +59,26 @@ void main() {
       });
     }
   }
+
+  testWidgets('the drawer overlays the board without moving it, and a drag to the right closes it', (tester) async {
+    const size = Size(1920, 1080);
+    screenSize(tester, size);
+    final board = await enrolledBoard();
+    board.onPaired('t', sessionIn('en'));
+    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpAndSettle();
+    final before = tester.getRect(find.byKey(const ValueKey('board-area')));
+    final toolbar = tester.getRect(find.byKey(const Key('board-menu')));
+    await tester.tap(find.byKey(const Key('panel-ai')));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.byKey(const ValueKey('board-area'))), before);
+    expect(tester.getRect(find.byKey(const Key('board-menu'))), toolbar);
+    expect(tester.getRect(find.byKey(const Key('split-panel'))).right, closeTo(size.width, 0.5));
+    final divider = find.byKey(const Key('panel-divider'));
+    await tester.drag(divider, Offset(size.width, 0));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('split-panel')), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    board.dispose();
+  });
 }

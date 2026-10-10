@@ -49,13 +49,13 @@ void main() {
         expect(panel.width, size.width);
         expect(canvas.size, size);
       } else {
-        expect(canvas.right, lessThanOrEqualTo(panel.left), reason: 'the board is at the left');
+        expect(canvas.width, size.width, reason: 'the drawer is over the board, which keeps its size');
         expect(canvas.height, size.height);
       }
 
       // The board still writes where it shows.
       final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
-      final at = portrait ? Offset(size.width / 2, size.height / 4) : Offset(canvas.center.dx, size.height / 3);
+      final at = portrait ? Offset(size.width / 2, size.height / 4) : Offset(panel.left / 2, size.height / 3);
       final g = await tester.startGesture(at, kind: PointerDeviceKind.touch);
       for (var i = 1; i <= 5; i++) {
         await g.moveTo(at + Offset(i * 10.0, i * 4.0));

@@ -179,7 +179,7 @@ class _MagnifierLensState extends State<_MagnifierLens> {
                 top: 0,
                 child: Material(
                   shape: const CircleBorder(),
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
                   elevation: 3,
                   child: IconButton(key: const Key('magnifier-close'), tooltip: s['close'], onPressed: BoardMagnifier.hide, icon: const Icon(Icons.close)),
                 ),
@@ -189,7 +189,7 @@ class _MagnifierLensState extends State<_MagnifierLens> {
                 bottom: 0,
                 child: Material(
                   shape: const StadiumBorder(),
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
                   elevation: 3,
                   child: TextButton(
                     key: const Key('magnifier-zoom'),

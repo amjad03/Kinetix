@@ -447,7 +447,7 @@ void main() {
         await ask(tester, 'A long question about the causes of the French Revolution and its effects on Europe');
         for (final narrow in [false, true]) {
           if (narrow) {
-            await tester.drag(find.byKey(const Key('panel-divider')), const Offset(2000, 0));
+            await tester.drag(find.byKey(const Key('panel-divider')), Offset(size.width * 0.14, 0));
             await tester.pumpAndSettle();
           }
           expect(tester.takeException(), isNull);

@@ -93,15 +93,16 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
 | Insert menu: PDF, Images, Videos, PPT, Clipboard, Geometry, Table, Flowchart | Popover | Built | B/insert_popover.dart, A/insert/insert_entries.dart |
-| Second board in split screen | Full board: AI pen, two-finger tap undo, same gestures | Built: second board is a WhiteboardController + WhiteboardCanvas + AiPenOverlay that mirrors the one toolbar (mirrorToolsFrom); tools_test, input_config_test "second board follows" | B/panel/split_panel.dart, B/panel/panel_host.dart |
-| PDF import | Opens in split screen first; "Add to board" per page or all ("Adding page to whiteboard" toast) | Built: opens in split pane; Add to board per page, selected pages or all | A/insert/document_import.dart |
-| PPT import | Opens split; add all pages or pick pages; animations/transitions/media | Built: opens in split; add all or pick pages | A/insert/presentation_pane.dart, A/insert/pptx_render.dart |
-| Intelligent split side | Opens on empty side, draggable divider | Built | B/panel/split_panel.dart |
+| Second board in split screen | Full board: AI pen, two-finger tap undo, same gestures | Built: lives in the right-hand drawer (overlay, board and toolbars do not reflow); second board is a WhiteboardController + WhiteboardCanvas + AiPenOverlay that mirrors the one toolbar (mirrorToolsFrom); tools_test, input_config_test "second board follows" | B/panel/split_panel.dart, B/panel/panel_host.dart, B/panel/panel_drawer.dart |
+| PDF import | Opens in split screen first; "Add to board" per page or all ("Adding page to whiteboard" toast) | Built: opens in the right-hand drawer (also from Profile) with a thumbnail per page, tick, per-page Add page, Add selected, Add all; presentation_pane_test | A/insert/document_import.dart, A/insert/presentation_pane.dart |
+| PPT import | Opens split; add all pages or pick pages; animations/transitions/media | Built: opens in the right-hand drawer with page thumbnails, ticks, Add page, Add all, Present in presenter app | A/insert/presentation_pane.dart, A/insert/pptx_render.dart |
+| Right-hand drawer | Slides in over the board from the right edge on a spring; drag handle resizes (30-60 %), drag or fling right closes; board and toolbars never reflow | Built: panel_divider_test "drawer overlays the board" | B/panel/panel_drawer.dart, B/panel/split_panel.dart |
 | Books / NCERT | Library, search, upload | Built | A/books/books_panel.dart |
 | Screen share | Portrait and landscape, auto-rotate | Partial | A/cast/cast_panel.dart, core/cast/cast_controller.dart |
 | Classroom Apps grid | Study Material, Live Class, Homework, Lessons, Attendance, Class Prep, Students, Tests, Recordings, Books; Other Tools: Calculator, Spotlight | Built | B/classroom_apps.dart |
 | Theme templates (15 listed) | Black, Grid, Horizontal, English, 2/3 Columns, Isometric, Graph, Hindi, Dotted, Checks, Music, Basketball, Football, World Map | Partial: verify all 15 plus spelling | INK/board_background.dart, B/layout/backgrounds_popover.dart |
 | Theme background colours | Palette, per page | Built | B/layout/backgrounds_popover.dart |
+| App light / dark theme | Whole app follows one theme (toolbars, popovers, dialogs, drawer, default paper; chalkboard kept) | Built: Board settings theme chips plus quick toggle in the board menu; theme_toggle_test, theme_test | B/chrome.dart, B/board_screen.dart |
 | Theme Custom (JPG/PNG up to 10 MB, logo/watermark) | Upload tab | Built | B/layout/custom_theme_tab.dart |
 
 ## 8. Profile, classrooms, share

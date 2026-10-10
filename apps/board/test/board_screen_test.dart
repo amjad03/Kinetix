@@ -338,19 +338,21 @@ void main() {
       await pump(tester);
       await tapKey(tester, 'panel-ai');
       final panel = find.byKey(const Key('split-panel'));
+      await tester.pumpAndSettle();
       expect(tester.getSize(panel).width, closeTo(1920 * 0.42, 2));
-      expect(tester.getTopRight(panel).dx, 1920);
+      expect(tester.getTopRight(panel).dx, closeTo(1920, 0.5));
       await tester.drag(find.byKey(const Key('panel-divider')), const Offset(-600, 0));
       await tester.pumpAndSettle();
       expect(tester.getSize(panel).width, closeTo(1920 * 0.60, 2));
-      await tester.drag(find.byKey(const Key('panel-divider')), const Offset(900, 0));
+      await tester.drag(find.byKey(const Key('panel-divider')), const Offset(600, 0));
       await tester.pumpAndSettle();
       expect(tester.getSize(panel).width, closeTo(1920 * 0.30, 2));
       // The board stays writable beside it.
       await stroke(tester, const Offset(300, 400));
       expect(whiteboard(tester).elements, hasLength(1));
       await tapKey(tester, 'panel-full');
-      expect(tester.getSize(panel).width, 1920);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(panel).width, closeTo(1920, 0.5));
       await tapKey(tester, 'panel-full');
       for (final t in ['model3d', 'labs', 'videos', 'books', 'kit', 'animations', 'ai']) {
         await tapKey(tester, 'panel-tab-$t');
