@@ -278,7 +278,10 @@ void main() {
       await tester.pump();
       expect(find.text('Done: New page'), findsOneWidget);
       expect(wb.pageCount, pages + 1);
+      // It keeps listening for the next command until it is told to stop.
       await tester.pump(const Duration(seconds: 1));
+      expect(find.byKey(const Key('voice-commands')), findsOneWidget);
+      _Voice.last!.words!('stop listening', true);
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('voice-commands')), findsNothing);
       await tester.pumpWidget(const SizedBox());

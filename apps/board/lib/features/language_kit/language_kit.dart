@@ -11,6 +11,8 @@ import '../board/chrome.dart' show showBoardMessage;
 import '../extras/board_table.dart';
 import '../primary/activities.dart' show say;
 import '../primary/matching.dart' show matchPictures;
+import '../reader/read_aloud.dart' show speakOnce;
+import 'dictionary_data.dart';
 import 'language_data.dart';
 
 FeatureStrings languageStrings(BuildContext context) => FeatureStrings(boardLang(context), languageStringTable);
@@ -41,6 +43,9 @@ const languageStringTable = <String, Map<String, String>>{
     'picture': 'Picture',
     'none': 'None',
     'example': 'Example',
+    'synonyms': 'Synonyms',
+    'pronounce': 'Hear it',
+    'noVoice': 'This board has no voice for that language. Install it in the device text-to-speech settings.',
   },
   'hi': {
     'title': 'भाषा किट',
@@ -67,6 +72,9 @@ const languageStringTable = <String, Map<String, String>>{
     'picture': 'चित्र',
     'none': 'कोई नहीं',
     'example': 'उदाहरण',
+    'synonyms': 'पर्यायवाची',
+    'pronounce': 'उच्चारण सुनें',
+    'noVoice': 'इस बोर्ड पर उस भाषा की आवाज़ नहीं है। डिवाइस की टेक्स्ट-टू-स्पीच सेटिंग में इसे जोड़ें।',
   },
   'kn': {
     'title': 'ಭಾಷಾ ಕಿಟ್',
@@ -93,6 +101,9 @@ const languageStringTable = <String, Map<String, String>>{
     'picture': 'ಚಿತ್ರ',
     'none': 'ಯಾವುದೂ ಇಲ್ಲ',
     'example': 'ಉದಾಹರಣೆ',
+    'synonyms': 'ಸಮಾನಾರ್ಥಕ',
+    'pronounce': 'ಉಚ್ಚಾರಣೆ ಕೇಳಿ',
+    'noVoice': 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಆ ಭಾಷೆಯ ಧ್ವನಿ ಇಲ್ಲ. ಸಾಧನದ ಟೆಕ್ಸ್ಟ್-ಟು-ಸ್ಪೀಚ್ ಸೆಟ್ಟಿಂಗ್‌ನಲ್ಲಿ ಸೇರಿಸಿ.',
   },
 };
 
@@ -184,14 +195,39 @@ class _Dictionary extends StatefulWidget {
 
 class _DictionaryState extends State<_Dictionary> {
   final _q = TextEditingController();
-  List<Word> _found = const [];
+  OfflineDictionary? _dict;
+  List<DictEntry> _found = const [];
   String? _ai;
   bool _aiPreview = false, _busy = false;
+  String? _noVoice;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(OfflineDictionary.load().then((d) {
+      if (!mounted) return;
+      setState(() {
+        _dict = d;
+        _found = d.search(_q.text);
+      });
+    }));
+  }
 
   void _search(String v) => setState(() {
-    _found = lookUpWords(v);
+    _found = _dict?.search(v) ?? const [];
     _ai = null;
   });
+
+  void _open(String word) {
+    _q.text = word;
+    _search(word);
+  }
+
+  /// Says [text] with the board's own voice (English, Hindi or Kannada by its script).
+  Future<void> _speak(String text) async {
+    final missing = await speakOnce(text);
+    if (mounted) setState(() => _noVoice = missing);
+  }
 
   Future<void> _askAi(FeatureStrings s) async {
     final word = _q.text.trim();
@@ -217,6 +253,68 @@ class _DictionaryState extends State<_Dictionary> {
     super.dispose();
   }
 
+  Widget _entry(BuildContext context, FeatureStrings s, DictEntry e) {
+    final c = context.colors;
+    return Card(
+      key: Key('dictionary-word-${e.word}'),
+      elevation: 0,
+      color: c.surfaceContainerLow,
+      child: Padding(
+        padding: const EdgeInsets.all(Kx.s12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(e.word, style: context.text.titleLarge?.copyWith(fontWeight: FontWeight.w700))),
+                IconButton(key: Key('dictionary-say-${e.word}'), tooltip: s['pronounce'], onPressed: () => unawaited(_speak(e.word)), icon: const Icon(Icons.volume_up_outlined)),
+                IconButton(
+                  key: Key('dictionary-card-${e.word}'),
+                  tooltip: s['makeCard'],
+                  onPressed: () => widget.onCard((en: e.word, pos: e.senses.first.pos, meaning: e.senses.first.gloss, hi: e.hi ?? '', kn: e.kn ?? '', example: e.senses.first.example)),
+                  icon: const Icon(Icons.style_outlined),
+                ),
+              ],
+            ),
+            if (e.hi != null || e.kn != null)
+              Wrap(
+                spacing: Kx.s8,
+                children: [
+                  if (e.hi != null) ActionChip(key: Key('dictionary-hi-${e.word}'), avatar: const Icon(Icons.volume_up_outlined, size: 16), label: Text(e.hi!), onPressed: () => unawaited(_speak(e.hi!))),
+                  if (e.kn != null) ActionChip(key: Key('dictionary-kn-${e.word}'), avatar: const Icon(Icons.volume_up_outlined, size: 16), label: Text(e.kn!), onPressed: () => unawaited(_speak(e.kn!))),
+                ],
+              ),
+            for (final (i, sense) in e.senses.indexed)
+              Padding(
+                padding: const EdgeInsets.only(top: Kx.s8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${i + 1}. (${sense.pos}) ${sense.gloss}'),
+                    if (sense.example.isNotEmpty)
+                      InkWell(
+                        onTap: () => unawaited(_speak(sense.example)),
+                        child: Text('${s['example']}: ${sense.example}', style: context.text.bodyMedium?.copyWith(fontStyle: FontStyle.italic, color: c.onSurfaceVariant)),
+                      ),
+                    if (sense.synonyms.isNotEmpty)
+                      Wrap(
+                        spacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text('${s['synonyms']}:', style: context.text.labelMedium),
+                          for (final syn in sense.synonyms)
+                            ActionChip(key: Key('dictionary-syn-${e.word}-$syn'), visualDensity: VisualDensity.compact, label: Text(syn), onPressed: () => _open(syn)),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = languageStrings(context);
@@ -236,6 +334,7 @@ class _DictionaryState extends State<_Dictionary> {
           child: OutlinedButton.icon(key: const Key('dictionary-ai'), onPressed: _busy ? null : () => _askAi(s), icon: const Icon(Icons.auto_awesome), label: Text(s['askAi'])),
         ),
         if (_busy) const LinearProgressIndicator(),
+        if (_noVoice != null) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(s['noVoice'], key: const Key('dictionary-no-voice'), style: TextStyle(color: c.error))),
         if (_ai != null)
           Card(
             key: const Key('dictionary-ai-answer'),
@@ -252,30 +351,13 @@ class _DictionaryState extends State<_Dictionary> {
               ),
             ),
           ),
-        if (_q.text.trim().isNotEmpty && _found.isEmpty) Padding(padding: const EdgeInsets.all(Kx.s12), child: Text(s['notFound'], key: const Key('dictionary-none'))),
-        for (final w in _found)
-          Card(
-            key: Key('dictionary-word-${w.en}'),
-            elevation: 0,
-            color: c.surfaceContainerLow,
-            child: ListTile(
-              title: Text('${w.en}  ·  ${w.hi}  ·  ${w.kn}', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-              subtitle: Text('(${w.pos}) ${w.meaning}\n${s['example']}: ${w.example}'),
-              isThreeLine: true,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(onPressed: () => say(context, w.en), icon: const Icon(Icons.volume_up_outlined)),
-                  IconButton(key: Key('dictionary-card-${w.en}'), tooltip: s['makeCard'], onPressed: () => widget.onCard(w), icon: const Icon(Icons.style_outlined)),
-                ],
-              ),
-            ),
-          ),
+        if (_dict == null) const Padding(padding: EdgeInsets.all(Kx.s12), child: LinearProgressIndicator()),
+        if (_dict != null && _q.text.trim().isNotEmpty && _found.isEmpty) Padding(padding: const EdgeInsets.all(Kx.s12), child: Text(s['notFound'], key: const Key('dictionary-none'))),
+        for (final e in _found) _entry(context, s, e),
       ],
     );
   }
 }
-
 class _Phonics extends StatefulWidget {
   const _Phonics({required this.onBoard});
   final ValueChanged<List<List<String>>> onBoard;

@@ -10,11 +10,13 @@ import '../../core/board_controller.dart';
 import '../toolkit/toolkit_controller.dart' show demoClassNames;
 import 'classroom_strings.dart';
 
+export 'seating.dart';
+
 /// The class's students as (id, name): the roster, or the sample class on a board with no class.
 List<(String, String)> classStudents(BoardController board) =>
     board.roster.isNotEmpty ? [for (final r in board.roster) (r.id, r.fullName)] : [for (final n in demoClassNames) (n, n)];
 
-String _classKey(BoardController board) => board.session?.sectionName ?? 'guest';
+String classKey(BoardController board) => board.session?.sectionName ?? 'guest';
 
 // --- Groups ------------------------------------------------------------------------------------
 
@@ -103,213 +105,6 @@ class _GroupMakerPanelState extends State<GroupMakerPanel> {
           ],
         ),
       ],
-    );
-  }
-}
-
-// --- Seating chart ------------------------------------------------------------------------------
-
-/// The seats of a class, front row first; each holds a student id or nothing.
-class SeatingPlan {
-  SeatingPlan(this.rows, this.cols, this.seats);
-
-  /// The roster in order, filling the rows from the front.
-  factory SeatingPlan.fill(List<String> ids, {int? cols}) {
-    final c = cols ?? math.max(2, math.min(6, (math.sqrt(ids.length) * 1.3).ceil()));
-    final r = math.max(1, (ids.length / c).ceil());
-    return SeatingPlan(r, c, [for (var i = 0; i < r * c; i++) i < ids.length ? ids[i] : null]);
-  }
-
-  int rows, cols;
-  List<String?> seats;
-
-  /// Swaps the occupants of seats [a] and [b].
-  void swap(int a, int b) {
-    final t = seats[a];
-    seats[a] = seats[b];
-    seats[b] = t;
-  }
-
-  /// Changes the grid, keeping everyone (new seats are empty; students past the end move up).
-  void resize(int r, int c) {
-    final people = seats.whereType<String>().toList();
-    rows = math.max(r, (people.length / c).ceil());
-    cols = c;
-    seats = [for (var i = 0; i < rows * cols; i++) i < people.length ? people[i] : null];
-  }
-
-  String encode() => '$rows|$cols|${seats.map((s) => s ?? '').join(',')}';
-
-  static SeatingPlan? decode(String? s, Set<String> known) {
-    final p = s?.split('|');
-    if (p == null || p.length != 3) return null;
-    final r = int.tryParse(p[0]), c = int.tryParse(p[1]);
-    if (r == null || c == null) return null;
-    final seats = [for (final id in p[2].split(',')) id.isEmpty || !known.contains(id) ? null : id];
-    if (seats.length != r * c) return null;
-    // Students who joined since: the first empty seats.
-    final missing = known.difference(seats.whereType<String>().toSet()).toList();
-    for (var i = 0; i < seats.length && missing.isNotEmpty; i++) {
-      if (seats[i] == null) seats[i] = missing.removeAt(0);
-    }
-    final plan = SeatingPlan(r, c, seats);
-    if (missing.isNotEmpty) plan.resize(r + (missing.length / c).ceil(), c);
-    return plan;
-  }
-}
-
-/// The seating chart from the roster: the board at the front, students in desks; drag a
-/// student onto another desk to swap them. Kept on the board for each class.
-class SeatingChartPanel extends StatefulWidget {
-  const SeatingChartPanel({super.key, required this.board, this.random});
-
-  final BoardController board;
-  final math.Random? random;
-
-  @override
-  State<SeatingChartPanel> createState() => SeatingChartPanelState();
-}
-
-class SeatingChartPanelState extends State<SeatingChartPanel> {
-  late SeatingPlan plan;
-  late Map<String, String> _names;
-
-  String get _key => 'kinetix.seating.${_classKey(widget.board)}';
-
-  @override
-  void initState() {
-    super.initState();
-    final students = classStudents(widget.board);
-    _names = {for (final s in students) s.$1: s.$2};
-    plan = SeatingPlan.fill([for (final s in students) s.$1]);
-    SharedPreferences.getInstance().then((p) {
-      final saved = SeatingPlan.decode(p.getString(_key), _names.keys.toSet());
-      if (saved != null && mounted) setState(() => plan = saved);
-    }).catchError((_) {});
-  }
-
-  void _save() {
-    final key = _key, value = plan.encode();
-    unawaited(SharedPreferences.getInstance().then((p) => p.setString(key, value)).catchError((_) => false));
-  }
-
-  void swap(int a, int b) {
-    setState(() => plan.swap(a, b));
-    _save();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final s = classroomStrings(context);
-    final c = context.colors;
-    return Column(
-      key: const Key('seating-panel'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, 0),
-          child: Text(s['seatingHint'], style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s8),
-          child: Wrap(
-            spacing: Kx.s8,
-            runSpacing: Kx.s8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text('${s['cols']}: ${plan.cols}'),
-              IconButton.outlined(key: const Key('seating-cols-minus'), onPressed: plan.cols <= 2 ? null : () => setState(() => plan.resize(plan.rows, plan.cols - 1)), icon: const Icon(Icons.remove)),
-              IconButton.outlined(key: const Key('seating-cols-plus'), onPressed: plan.cols >= 10 ? null : () => setState(() => plan.resize(plan.rows, plan.cols + 1)), icon: const Icon(Icons.add)),
-              OutlinedButton.icon(
-                key: const Key('seating-shuffle'),
-                onPressed: () {
-                  setState(() => plan.seats.shuffle(widget.random ?? math.Random()));
-                  _save();
-                },
-                icon: const Icon(Icons.shuffle),
-                label: Text(s['shuffle']),
-              ),
-              OutlinedButton.icon(
-                key: const Key('seating-az'),
-                onPressed: () {
-                  final ids = plan.seats.whereType<String>().toList()..sort((a, b) => (_names[a] ?? a).compareTo(_names[b] ?? b));
-                  setState(() => plan = SeatingPlan.fill(ids, cols: plan.cols));
-                  _save();
-                },
-                icon: const Icon(Icons.sort_by_alpha),
-                label: Text(s['alphabetical']),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: Kx.s16),
-          padding: const EdgeInsets.all(Kx.s8),
-          decoration: BoxDecoration(color: c.inverseSurface, borderRadius: Kx.radiusSm),
-          alignment: Alignment.center,
-          child: Text(s['front'], style: TextStyle(color: c.onInverseSurface, fontWeight: FontWeight.w700)),
-        ),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, box) {
-              final w = math.max(84.0, (box.maxWidth - Kx.s32) / plan.cols - Kx.s8);
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(Kx.s16),
-                child: Wrap(
-                  spacing: Kx.s8,
-                  runSpacing: Kx.s8,
-                  children: [
-                    for (var i = 0; i < plan.seats.length; i++)
-                      SizedBox(
-                        width: w,
-                        height: 64,
-                        child: DragTarget<int>(
-                          onWillAcceptWithDetails: (d) => d.data != i,
-                          onAcceptWithDetails: (d) => swap(d.data, i),
-                          builder: (context, hover, _) {
-                            final id = plan.seats[i];
-                            final desk = _Desk(name: id == null ? null : _names[id] ?? id, empty: s['empty'], highlight: hover.isNotEmpty);
-                            if (id == null) return KeyedSubtree(key: Key('seat-$i'), child: desk);
-                            return LongPressDraggable<int>(
-                              key: Key('seat-$i'),
-                              data: i,
-                              delay: const Duration(milliseconds: 150),
-                              feedback: SizedBox(width: w, height: 64, child: Material(color: Colors.transparent, child: _Desk(name: _names[id] ?? id, empty: '', highlight: true))),
-                              childWhenDragging: Opacity(opacity: 0.35, child: desk),
-                              child: desk,
-                            );
-                          },
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Desk extends StatelessWidget {
-  const _Desk({required this.name, required this.empty, required this.highlight});
-  final String? name;
-  final String empty;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      decoration: BoxDecoration(
-        color: highlight ? c.primaryContainer : (name == null ? c.surfaceContainerLow : c.secondaryContainer),
-        borderRadius: Kx.radiusMd,
-        border: Border.all(color: highlight ? c.primary : c.outlineVariant, width: highlight ? 2 : 1),
-      ),
-      child: Text(name ?? empty, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: TextStyle(color: name == null ? c.onSurfaceVariant : c.onSecondaryContainer, fontWeight: FontWeight.w600)),
     );
   }
 }
@@ -428,7 +223,7 @@ class _TeacherNotesPanelState extends State<TeacherNotesPanel> {
   Timer? _debounce;
   bool _saved = false;
 
-  String get _key => 'kinetix.teacherNotes.${widget.board.session?.teacherId ?? 'guest'}.${_classKey(widget.board)}';
+  String get _key => 'kinetix.teacherNotes.${widget.board.session?.teacherId ?? 'guest'}.${classKey(widget.board)}';
 
   @override
   void initState() {

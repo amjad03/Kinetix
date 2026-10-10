@@ -1,0 +1,9 @@
+Key dates data
+
+"On this day" events are taken from the English Wikipedia (api.wikimedia.org feed/v1/wikipedia/en/onthisday),
+text under Creative Commons Attribution-ShareAlike 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
+The dataset here is a shortened, edited selection of those lines. The KINETIX curriculum entries
+(India, Karnataka, science) are the board's own list (tool/key_dates_extra.tsv).
+The file format is
+year, month, day (0 = not known), region, topic, text, separated by tabs.
+Tools: tool/build_key_dates.py (needs the saved Wikipedia JSON), tool/build_dictionary.py (WordNet 3.0 dict files).

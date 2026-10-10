@@ -85,6 +85,7 @@ import '../../demo/demo_classes.dart' show DemoClass;
 import '../classroom_plus/break_reminder.dart';
 import '../classroom_plus/recording_notice.dart';
 import '../classroom_plus/voice_commands.dart';
+import 'layout/tool_palette.dart';
 import '../classroom_plus/zones.dart';
 import '../extras/board_extras.dart';
 import '../extras/extras_hooks.dart';
@@ -367,6 +368,24 @@ class _BoardScreenState extends State<BoardScreen> {
       case VoiceAction.redo:
         if (!_wb.canRedo) return false;
         _wb.redo();
+      case VoiceAction.penColor:
+        final color = voiceColors[c.color]?.$1;
+        if (color == null) return false;
+        _wb.penColor = color;
+        _wb.tool = BoardTool.pen;
+      case VoiceAction.usePen:
+        _wb.tool = BoardTool.pen;
+      case VoiceAction.useEraser:
+        _wb.tool = BoardTool.eraser;
+      case VoiceAction.useHighlighter:
+        _wb.tool = BoardTool.highlighter;
+      case VoiceAction.openTool:
+        final tool = _drawerTools(context.l10n).where((t) => t.id == c.tool).firstOrNull;
+        if (tool == null) return false;
+        // After the dialog's frame, so the tool opens over the board and not the dialog.
+        WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? tool.onTap() : null);
+      case VoiceAction.stopListening:
+        break;
     }
     return true;
   }
@@ -1256,7 +1275,7 @@ class _BoardScreenState extends State<BoardScreen> {
   List<DrawerTool> _drawerTools(AppLocalizations l) {
     final s = LayoutStrings(Localizations.localeOf(context).languageCode);
     final runner = _subjectTools;
-    const geo = Color(0xFF78D9EC), maths = Color(0xFF8AB4F8), sci = Color(0xFF81C995), com = Color(0xFFFCAD70), cs = Color(0xFFC58AF9), cls = Color(0xFFF28B82);
+    const geo = ToolPalette.geometry, maths = ToolPalette.maths, sci = ToolPalette.science, com = ToolPalette.commerce, cs = ToolPalette.cs, cls = ToolPalette.classroom;
     void subject(SubjectTool t) => unawaited(runner.run(t, _menuAnchor));
     return [
       // Geometry
@@ -1314,7 +1333,7 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('binary', Icons.looks_one_outlined, l.kitTabName(KitTab.binary), [ToolGroup.cs, ToolGroup.maths], cs, _run(() => _kitAt(KitTab.binary))),
       // Class
       for (final t in ToolkitItem.values) DrawerTool('toolkit-${t.name}', toolkitIcon(t), toolkitName(l, t), [ToolGroup.classroom], toolkitColor(t), () => _showKit(t)),
-      DrawerTool('badges', Icons.emoji_events_outlined, s.badges, [ToolGroup.classroom], const Color(0xFFF9AB00), _run(() => _show(PanelKind.badges))),
+      DrawerTool('badges', Icons.emoji_events_outlined, s.badges, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.badges))),
       DrawerTool('quick-quiz', Icons.quiz_outlined, s.quickQuiz, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.quiz))),
       DrawerTool('ask-class', Icons.how_to_vote_outlined, l.toolAskClass, [ToolGroup.classroom], cls, _run(() => unawaited(_classCheck.ask(context)))),
       DrawerTool('attendance', Icons.how_to_reg_outlined, l.toolAttendance, [ToolGroup.classroom], cls, _run(_attendance)),
@@ -1328,7 +1347,7 @@ class _BoardScreenState extends State<BoardScreen> {
       if (!_primary) DrawerTool('move', Icons.pan_tool_outlined, l.toolMove, [ToolGroup.classroom], cls, _run(() => _wb.tool = BoardTool.hand)),
       DrawerTool('eye-comfort', Icons.visibility_outlined, l.toolEyeComfort, [ToolGroup.classroom], cls, () => setState(() => _popover = BoardPopover.eyeComfort)),
       DrawerTool('screenshot', Icons.photo_camera_outlined, l.toolScreenshot, [ToolGroup.classroom], cls, _run(() => unawaited(BoardShot.take(context, _captureScreen)))),
-      DrawerTool('touch-lock', Icons.lock_outline, l.toolTouchLock, [ToolGroup.classroom], const Color(0xFFDADCE0), _run(() => setState(() => _touchLocked = true))),
+      DrawerTool('touch-lock', Icons.lock_outline, l.toolTouchLock, [ToolGroup.classroom], cls, _run(() => setState(() => _touchLocked = true))),
       ...extraDrawerTools(context, _extras, run: (f) => _run(f)()),
     ];
   }

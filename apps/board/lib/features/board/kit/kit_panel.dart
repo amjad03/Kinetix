@@ -13,6 +13,7 @@ import '../side_panel.dart';
 import 'builders.dart';
 import 'cs/cs_kit.dart';
 import 'college/college_kit.dart';
+import 'key_dates_panel.dart';
 import 'subject_data.dart';
 import 'subjects.dart';
 
@@ -136,7 +137,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
               ),
               KitTab.periodic => _periodic(),
               KitTab.ions => _ions(),
-              KitTab.dates => _DatesTab(onDraw: (ev) => _insert(timeline(ev, _ink, _accent))),
+              KitTab.dates => KeyDatesPanel(onDraw: (ev) => _insert(timeline(ev, _ink, _accent))),
               KitTab.words => _WordWall(wb: widget.wb, accent: _accent, onCard: (w) => _insert([wordCard(w, _accent)])),
               KitTab.logic => _logic(),
               KitTab.binary => _BinaryTab(onInsert: (t) => _insertText(t, size: 28, bold: true)),
@@ -430,74 +431,6 @@ class _Tap extends StatelessWidget {
       ),
     ),
   );
-}
-
-// --- Key dates ----------------------------------------------------------------------------
-
-class _DatesTab extends StatefulWidget {
-  const _DatesTab({required this.onDraw});
-
-  final void Function(List<(String, String)>) onDraw;
-
-  @override
-  State<_DatesTab> createState() => _DatesTabState();
-}
-
-class _DatesTabState extends State<_DatesTab> {
-  final _picked = <KeyDate>{};
-  String _region = 'india';
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final list = keyDates.where((d) => _region == 'all' || d.region == _region || (_region == 'india' && d.region == 'karnataka')).toList();
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(Kx.s8),
-          child: Wrap(
-            spacing: 6,
-            children: [
-              for (final (k, label) in [('india', l.kitIndia), ('world', l.kitWorld), ('all', l.kitAll)])
-                ChoiceChip(label: Text(label), selected: _region == k, onSelected: (_) => setState(() => _region = k)),
-            ],
-          ),
-        ),
-        Expanded(
-          child: ListView(
-            children: [
-              for (final d in list)
-                CheckboxListTile(
-                  dense: true,
-                  value: _picked.contains(d),
-                  onChanged: (v) => setState(() => v == true ? _picked.add(d) : _picked.remove(d)),
-                  title: Text(d.what),
-                  subtitle: Text(d.when, style: const TextStyle(fontWeight: FontWeight.w700)),
-                ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(Kx.s12),
-          child: FilledButton.icon(
-            key: const Key('kit-timeline'),
-            onPressed: _picked.isEmpty
-                ? null
-                : () {
-                    final ev = [
-                      for (final d in keyDates)
-                        if (_picked.contains(d)) (d.when, d.what),
-                    ];
-                    widget.onDraw(ev);
-                    setState(_picked.clear);
-                  },
-            icon: const Icon(Icons.timeline),
-            label: Text(_picked.isEmpty ? l.kitPickEvents : l.kitDrawTimeline(_picked.length)),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 // --- Word wall ----------------------------------------------------------------------------

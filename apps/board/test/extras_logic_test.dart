@@ -163,7 +163,7 @@ void main() {
     voice.say('Good morning');
     t = t.add(const Duration(seconds: 2));
     voice.say('Good morning class', done: true);
-    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     expect(voice.listens, 2);
     await c.setLanguage(AiLanguage.kn);
     expect(c.language, AiLanguage.kn);
