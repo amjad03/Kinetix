@@ -201,8 +201,8 @@ class ApiClient {
 
   // --- KINETIX AI (board-session token; the class and subject come from the session) --------
 
-  Future<AiResult<Explanation>> explain(String question, AiLanguage language, {bool fresh = false, String? topicId}) =>
-      _ai('explain', {'question': question, 'language': language.name, 'fresh': fresh, 'topicId': ?topicId}, Explanation.fromJson);
+  Future<AiResult<Explanation>> explain(String question, AiLanguage language, {bool fresh = false, String? topicId, String? level}) =>
+      _ai('explain', {'question': question, 'language': language.name, 'fresh': fresh, 'topicId': ?topicId, 'level': ?level}, Explanation.fromJson);
 
   Future<AiResult<Quiz>> quiz(
     String topic, {

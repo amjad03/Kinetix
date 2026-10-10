@@ -158,9 +158,9 @@ Future<void> importDocument(BuildContext context, WhiteboardController wb) async
     return;
   }
   final host = presentationHost;
-  if (kind == DocKind.pptx && host != null) {
-    // PPT opens beside the writing, on the side the intelligent split picks (spec §28).
-    host(Presentation(name: file.name, bytes: file.bytes, pages: pages, left: presentationGoesLeft(wb.elements)));
+  if (host != null) {
+    // A PDF or PPT opens beside the writing, on the side the intelligent split picks (spec §28).
+    host(Presentation(name: file.name, bytes: file.bytes, pages: pages, left: presentationGoesLeft(wb.elements), isPdf: kind == DocKind.pdf));
     return;
   }
   wb.addPages(backdropPages(pages));

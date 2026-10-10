@@ -17,6 +17,7 @@ class SbStrings {
 
   static const _strings = <String, Map<String, String>>{
     'en': {
+      'pptAddSelected': 'Add selected ({n})',
       'switch': 'Switch',
       'hide': 'Hide',
       'restore': 'Show tools',
@@ -220,6 +221,7 @@ class SbStrings {
       'filled': 'Filled',
     },
     'hi': {
+      'pptAddSelected': 'चुने हुए जोड़ें ({n})',
       'switch': 'बदलें',
       'hide': 'छिपाएँ',
       'restore': 'टूल दिखाएँ',
@@ -288,6 +290,7 @@ class SbStrings {
       'saActivity': 'कक्षा गतिविधि',
     },
     'kn': {
+      'pptAddSelected': 'ಆಯ್ದವನ್ನು ಸೇರಿಸಿ ({n})',
       'switch': 'ಬದಲಿಸಿ',
       'hide': 'ಮರೆಮಾಡಿ',
       'restore': 'ಉಪಕರಣ ತೋರಿಸಿ',

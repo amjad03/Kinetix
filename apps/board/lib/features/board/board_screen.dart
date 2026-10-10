@@ -1951,6 +1951,7 @@ class _BoardScreenState extends State<BoardScreen> {
                   close: SbStrings.of(context)('pptClose'),
                   noPresenter: SbStrings.of(context)('pptNoPresenter'),
                   added: (n) => SbStrings.of(context)('pptAdded', {'n': n}),
+                  addSelected: (n) => SbStrings.of(context)('pptAddSelected', {'n': n}),
                 ),
               ),
             ),

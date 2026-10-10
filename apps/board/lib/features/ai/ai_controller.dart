@@ -240,7 +240,7 @@ class AiController extends ChangeNotifier {
     question = text;
     if (!fresh) this.topicId = topicId;
     notifyListeners();
-    await explain.run(() => _withOffline(() => _api.explain(text, language, fresh: fresh, topicId: this.topicId), () => offlineAi.explain(text, subject: _subject)));
+    await explain.run(() => _withOffline(() => _api.explain(text, language, fresh: fresh, topicId: this.topicId, level: level), () => offlineAi.explain(text, subject: _subject)));
   }
 
   Future<void> generateQuiz(String topic, {bool fresh = false, String? topicId}) async {

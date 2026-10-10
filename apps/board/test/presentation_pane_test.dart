@@ -50,7 +50,7 @@ void main() {
                 wb: wb,
                 width: 1920,
                 onClose: () => closed = true,
-                labels: PresentationLabels(previous: 'p', next: 'n', addPage: 'a', addAll: 'all', edgeToEdge: 'e', present: 'pr', close: 'c', noPresenter: 'none', added: (n) => '$n'),
+                labels: PresentationLabels(previous: 'p', next: 'n', addPage: 'a', addAll: 'all', edgeToEdge: 'e', present: 'pr', close: 'c', noPresenter: 'none', added: (n) => '$n', addSelected: (n) => 'sel$n'),
               ),
             ),
           ),
@@ -66,6 +66,13 @@ void main() {
     await tester.tap(find.byKey(const Key('ppt-add-all')));
     await tester.pump();
     expect(wb.pageCount, 5);
+    await tester.tap(find.byKey(const Key('ppt-chip-0')));
+    await tester.tap(find.byKey(const Key('ppt-chip-2')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ppt-add-selected')));
+    await tester.pump();
+    expect(wb.pageCount, 7);
+    expect(p.selected, isEmpty);
     await tester.drag(find.byKey(const Key('ppt-divider')), const Offset(192, 0));
     await tester.pump();
     expect(p.fraction, closeTo(0.6, 0.01));
