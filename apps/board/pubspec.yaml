@@ -30,10 +30,12 @@ dependencies:
   # Handwriting to text on Android panels: ML Kit Digital Ink, on-device (the language model
   # downloads once from Google; no ink leaves the panel). See lib/core/handwriting.
   google_mlkit_digital_ink_recognition: ^0.16.1
+  flutter_map: ^8.3.2
   http: ^1.6.0
   # The gallery and camera on Android panels, and photos of the class for answer cards.
   image_picker: ^1.2.3
   intl: ^0.20.3
+  latlong2: ^0.9.1
   kinetix_3d:
     path: ../../packages/kinetix_3d
   # Animations for the split panel: photosynthesis, the heart, cell division, the water cycle,
@@ -92,6 +94,10 @@ flutter:
     # download on demand. Built by tools/phet/build-catalogue.mjs (docs/operations/phet.md).
     - assets/phet/
     - assets/phet/thumbs/
+    # Simulations hub (lib/features/sim_hub): bundled offline sims, see docs/licensing/SIMULATIONS.md.
+    - assets/simhub/phet/
+    - assets/simhub/blockly/
+    - assets/simhub/blockly/media/
     - assets/sounds/
     - assets/dictionary/
     - assets/history/

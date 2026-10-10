@@ -115,3 +115,11 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | WhatsApp share sheet | Pages, PDF, message, send to number/groups | Built: Android share sheet carries the PDF and notes link | B/share_whiteboard.dart, core/api_client.dart |
 | End class | Quick-group End Class, saves recording and summary | Built: notes, publish to students, session closed, summary with WhatsApp share | B/layout/board_chrome.dart, A/profiles/profiles_controller.dart |
 | Settings / configurations | Board settings sheet | Built | B/profile_menu.dart |
+
+## 9. Simulations hub
+| Feature | Teachmint behaviour | KINETIX status | Files |
+|---|---|---|---|
+| Simulations hub | Not in Teachmint's board | Built: own panel (tools drawer, Simulations hub); about 40 sims by subject and class with Offline/Online badges and filters; 15 PhET sims and Blockly bundled and served offline; online: OSP, MW Next-Gen, LabXchange, ChemCollective, GeoGebra (non-commercial note), Polypad, CircuitJS, CircuitVerse, Wokwi, Mol*, EconGraphs, Pavlovia, TimelineJS, LearningApps, JupyterLite; native: Stroop, reaction time, memory span, macro money model, map lab (flutter_map), map quiz, key-dates timeline, LanguageTool check. Metadata (subject, gradeMin, gradeMax, tags, offline) for subject-context filtering | A/sim_hub/, assets/simhub/, docs/licensing/SIMULATIONS.md |
+| Pin a sim to a page | n/a | Built: pin per board page, reopen from the panel | A/sim_hub/sim_server.dart (SimPins) |
+| Sim picture to board | n/a | Built: Add to board with source and licence line (PhET sims via their own screenshot generator; other web pages may be blank on Android) | A/sim_hub/sim_hub_panel.dart |
+

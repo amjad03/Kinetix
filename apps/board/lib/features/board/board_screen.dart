@@ -43,6 +43,7 @@ import '../remote/board_remote.dart';
 import '../remote/board_toolkit.dart';
 import '../signin/sign_in_dialog.dart';
 import '../phet/phet_panel.dart';
+import '../sim_hub/sim_hub_panel.dart';
 import '../phet/phet_strings.dart';
 import '../sims/sims.dart';
 import '../toolkit/toolkit_controller.dart';
@@ -147,6 +148,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// The Sims tab (PhET, lib/features/phet): the sim open in it, for "Add to board".
   final _phet = PhetPanelController();
+  final _simHub = SimHubController();
 
   /// Today's plan step timer: keeps running while other panels are open or the panel is closed.
   late final PlanTimer _planTimer;
@@ -220,6 +222,7 @@ class _BoardScreenState extends State<BoardScreen> {
     unawaited(loadCustomBoardFont(board));
     presentationHost = _showPresentation;
     _phet.addListener(_onPhetChanged);
+    _simHub.openModel3d = () => _openSplit(SplitContent.model3d);
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
     // Someone asked to cast, or a screen was approved: the Cast tab opens for the teacher.
@@ -1393,6 +1396,7 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('constants', Icons.pin_outlined, l.kitTabName(KitTab.constants), [ToolGroup.science], sci, _run(() => _kitAt(KitTab.constants))),
       DrawerTool('sims', Icons.science, l.simTitle, [ToolGroup.science, ToolGroup.maths], sci, _run(() => unawaited(_openSim()))),
       DrawerTool('phet', Icons.science, PhetStrings(s.lang).title, [ToolGroup.science, ToolGroup.maths], sci, _run(() => _show(PanelKind.phet))),
+      DrawerTool('simhub', Icons.biotech, 'Simulations hub', [ToolGroup.science, ToolGroup.maths, ToolGroup.commerce], sci, _run(() => _show(PanelKind.simHub))),
       DrawerTool('labs', Icons.biotech_outlined, LayoutStrings.of(context).tabLabs, [ToolGroup.science], sci, _run(() => _openSplit(SplitContent.lab))),
       DrawerTool('models3d', Icons.view_in_ar_outlined, l.splitModel3d, [ToolGroup.science, ToolGroup.geometry], sci, _run(() => _openSplit(SplitContent.model3d))),
       DrawerTool('circuit', Icons.electrical_services, l.subjectToolName(SubjectTool.circuit), [ToolGroup.science], sci, _run(() => subject(SubjectTool.circuit))),
@@ -1627,6 +1631,7 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.kit => PanelTab.kit,
     PanelKind.animations => PanelTab.animations,
     PanelKind.phet => PanelTab.sims,
+    PanelKind.simHub => null,
     PanelKind.camera => PanelTab.camera,
     PanelKind.web => PanelTab.web,
     PanelKind.cast => PanelTab.cast,
@@ -1673,7 +1678,9 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   /// "Add to board" in the panel's header, where what is showing has one.
-  VoidCallback? get _addToBoard => _panel == PanelKind.phet
+  VoidCallback? get _addToBoard => _panel == PanelKind.simHub
+      ? (_simHub.showing ? () => unawaited(addSimShotToBoard(context, _wb, _simHub, dark: _background.isDark)) : null)
+      : _panel == PanelKind.phet
       ? (_phet.showing ? () => unawaited(addPhetShotToBoard(context, _wb, _phet, dark: _background.isDark)) : null)
       : _panel == PanelKind.split && _splitItem != null && (_splitContent == SplitContent.lab || _splitContent == SplitContent.model3d)
       ? () => unawaited(_snapshotSplit())
@@ -1729,6 +1736,7 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.animations => animationsPanel(context, wb: _wb, subject: board.session?.subjectName),
     PanelKind.badges => BadgesPanel(board: board),
     PanelKind.phet => PhetPanel(downloads: phetDownloadsFor(board), controller: _phet, subject: board.session?.subjectName),
+    PanelKind.simHub => SimHubPanel(controller: _simHub, page: () => _wb.pageIndex, subject: board.session?.subjectName),
     PanelKind.sim => SimWindow(
       sim: _sim ?? ActiveSim.of(SimKind.values.first),
       onChanged: (s) => setState(() => _sim = s),
