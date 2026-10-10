@@ -37,6 +37,9 @@ import { CoverageModule } from './coverage/coverage.module.js';
 import { HrModule } from './hr/hr.module.js';
 import { LmsModule } from './lms/lms.module.js';
 import { FinanceModule } from './finance/finance.module.js';
+import { BooksModule } from './books/books.module.js';
+import { TallyModule } from './tally/tally.module.js';
+import { SsoModule } from './sso/sso.module.js';
 import { CurriculumModule } from './curriculum/curriculum.module.js';
 import { PathwaysModule } from './pathways/pathways.module.js';
 import { PlacementsModule } from './placements/placements.module.js';
@@ -152,6 +155,9 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     HrModule,
     LmsModule,
     FinanceModule,
+    BooksModule,
+    TallyModule,
+    SsoModule,
     CurriculumModule,
     PathwaysModule,
     PlacementsModule,

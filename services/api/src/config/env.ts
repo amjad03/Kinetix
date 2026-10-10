@@ -73,7 +73,16 @@ const EnvSchema = z.object({
    * own Razorpay keys in the ERP (Settings → Online payments) and fees go straight to its
    * account; there are no platform-wide Razorpay keys.
    */
-  PAYMENTS_PROVIDER: z.enum(['none', 'demo', 'razorpay']).default('none'),
+  PAYMENTS_PROVIDER: z.enum(['none', 'demo', 'razorpay', 'payu', 'gateways']).default('none'),
+  /** PayU endpoints: the sandbox (default) or live. Each institution enters its own PayU key and salt. */
+  PAYU_MODE: z.enum(['test', 'live']).default('test'),
+  /** Tests and local e2e only: PayU's API is faked (no network). */
+  PAYU_FAKE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  /** Public base URL of this API (for OIDC callbacks and PayU return URLs); falls back to the request's own origin. */
+  API_PUBLIC_URL: z.url().optional(),
   /**
    * Tests and local e2e only: with PAYMENTS_PROVIDER=razorpay, Razorpay's API is faked (orders
    * are made up, "Test connection" succeeds unless the key secret starts with "wrong"); the
@@ -172,7 +181,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   if (parsed.data.STORAGE_DRIVER === 's3' && !parsed.data.S3_REGION.startsWith('ap-south-')) {
     throw new Error('Invalid environment: recordings must be stored in India (S3_REGION ap-south-1 or ap-south-2)');
   }
-  if (parsed.data.PAYMENTS_PROVIDER === 'razorpay' && !parsed.data.SECRETS_ENCRYPTION_KEY) {
+  if (['razorpay', 'payu', 'gateways'].includes(parsed.data.PAYMENTS_PROVIDER) && !parsed.data.SECRETS_ENCRYPTION_KEY) {
     throw new Error('Invalid environment: SECRETS_ENCRYPTION_KEY is required with PAYMENTS_PROVIDER=razorpay (institutions\' Razorpay secrets are encrypted with it)');
   }
   try {

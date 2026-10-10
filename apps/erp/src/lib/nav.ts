@@ -120,6 +120,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/scholarships', label: 'nav.scholarships', section: 'finance', icon: 'finance' },
       { href: '/budgets', label: 'nav.budgets', section: 'finance', icon: 'finance' },
       { href: '/gl-export', label: 'nav.glExport', section: 'finance', icon: 'finance' },
+      { href: '/books', label: 'nav.books', section: 'finance', icon: 'finance' },
+      { href: '/tally', label: 'nav.tally', section: 'finance', icon: 'finance' },
+      { href: '/settlements', label: 'nav.settlements', section: 'finance', icon: 'finance' },
     ],
   },
   {
@@ -206,6 +209,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'settings',
     items: [
       { href: '/settings', label: 'nav.settings', section: 'settings', icon: 'settings' },
+      { href: '/sso', label: 'nav.sso', section: 'settings', icon: 'settings' },
       { href: '/settings/institution', label: 'nav.institution', section: 'settings', icon: 'departments' },
       { href: '/institution-setup', label: 'nav.institutionSetup', section: 'institutionSetup', icon: 'settings' },
       { href: '/settings/buildings', label: 'nav.buildings', section: 'settings', icon: 'campus' },

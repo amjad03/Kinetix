@@ -51,6 +51,13 @@ export interface KohaLoan {
   renewals: number;
   overdue: boolean;
 }
+export interface MeetingParticipant {
+  name: string;
+  email: string | null;
+  joinedAt: string | null;
+  leftAt: string | null;
+  minutes: number;
+}
 export interface MeetingInfo {
   externalId: string;
   joinUrl: string;
@@ -91,7 +98,7 @@ export class ConnectorAdapters {
       if (type === 'lms_video') {
         const token = await this.videoToken(config);
         if (str(config, 'provider') === 'zoom') await this.json({ method: 'GET', url: `${trimSlash(str(config, 'apiBaseUrl') || 'https://api.zoom.us/v2')}/users/me`, headers: { authorization: `Bearer ${token}` } }, 'Zoom');
-        return { status: 'ok', message: `Signed in to ${str(config, 'provider') === 'zoom' ? 'Zoom' : 'Microsoft Teams'}` };
+        return { status: 'ok', message: `Signed in to ${({ zoom: 'Zoom', meet: 'Google Meet', teams: 'Microsoft Teams' } as Record<string, string>)[str(config, 'provider')] ?? 'the provider'}` };
       }
       if (type === 'bi_export') {
         const sig = this.sign(str(config, 'signingSecret'), 'test', 'students', 1);
@@ -158,6 +165,15 @@ export class ConnectorAdapters {
   // ----- Zoom / Teams -------------------------------------------------------------------------------------
 
   private async videoToken(c: Cfg): Promise<string> {
+    if (str(c, 'provider') === 'meet') {
+      if (!str(c, 'refreshToken')) throw new BadRequestException('Add the organiser\'s refresh token to the Google Meet connector first');
+      const t = await this.json(
+        { method: 'POST', url: str(c, 'tokenUrl') || 'https://oauth2.googleapis.com/token', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form({ grant_type: 'refresh_token', refresh_token: str(c, 'refreshToken'), client_id: str(c, 'clientId'), client_secret: str(c, 'clientSecret') }) },
+        'Google sign-in',
+      );
+      if (!t.access_token) throw new BadGatewayException('Google sign-in: no access token came back');
+      return t.access_token as string;
+    }
     if (str(c, 'provider') === 'zoom') {
       const url = `${str(c, 'tokenUrl') || 'https://zoom.us/oauth/token'}?${form({ grant_type: 'account_credentials', account_id: str(c, 'accountId') })}`;
       const t = await this.json({ method: 'POST', url, headers: { authorization: `Basic ${Buffer.from(`${str(c, 'clientId')}:${str(c, 'clientSecret')}`).toString('base64')}` } }, 'Zoom sign-in');
@@ -185,6 +201,21 @@ export class ConnectorAdapters {
       if (!r.id || !r.join_url) throw new BadGatewayException('Zoom: the meeting was not created');
       return { externalId: String(r.id), joinUrl: String(r.join_url), hostUrl: r.start_url ?? null };
     }
+    if (str(c, 'provider') === 'meet') {
+      const end = new Date(m.startsAt.getTime() + m.durationMin * 60_000);
+      const r = await this.json(
+        {
+          method: 'POST',
+          url: `${trimSlash(str(c, 'apiBaseUrl') || 'https://www.googleapis.com/calendar/v3')}/calendars/${encodeURIComponent(str(c, 'calendarId') || 'primary')}/events?conferenceDataVersion=1`,
+          headers,
+          body: JSON.stringify({ summary: m.topic, start: { dateTime: m.startsAt.toISOString() }, end: { dateTime: end.toISOString() }, conferenceData: { createRequest: { requestId: `kx-${m.startsAt.getTime()}-${Math.random().toString(36).slice(2, 8)}`, conferenceSolutionKey: { type: 'hangoutsMeet' } } } }),
+        },
+        'Google Meet',
+      );
+      const join = r.hangoutLink ?? r.conferenceData?.entryPoints?.find((e: any) => e.entryPointType === 'video')?.uri;
+      if (!r.id || !join) throw new BadGatewayException('Google Meet: the meeting was not created');
+      return { externalId: String(r.id), joinUrl: String(join), hostUrl: null };
+    }
     const organizer = str(c, 'organizerId');
     if (!organizer) throw new BadRequestException('Add the organiser (user id or address) to the Teams connector first');
     const end = new Date(m.startsAt.getTime() + m.durationMin * 60_000);
@@ -194,6 +225,50 @@ export class ConnectorAdapters {
     );
     if (!r.id || !r.joinWebUrl) throw new BadGatewayException('Teams: the meeting was not created');
     return { externalId: String(r.id), joinUrl: String(r.joinWebUrl), hostUrl: null };
+  }
+
+  /** Who was in the meeting, from the provider's own participant report (Zoom, Teams attendance report, Meet conference records). */
+  async meetingParticipants(c: Cfg, m: { externalId: string; joinUrl: string }): Promise<MeetingParticipant[]> {
+    const token = await this.videoToken(c);
+    const headers = { authorization: `Bearer ${token}` };
+    const provider = str(c, 'provider');
+    const merged = new Map<string, MeetingParticipant>();
+    const add = (p: MeetingParticipant) => {
+      const key = (p.email ?? p.name).toLowerCase();
+      const cur = merged.get(key);
+      if (!cur) return void merged.set(key, p);
+      cur.minutes += p.minutes;
+      if (p.joinedAt && (!cur.joinedAt || p.joinedAt < cur.joinedAt)) cur.joinedAt = p.joinedAt;
+      if (p.leftAt && (!cur.leftAt || p.leftAt > cur.leftAt)) cur.leftAt = p.leftAt;
+    };
+    if (provider === 'zoom') {
+      const r = await this.json({ method: 'GET', url: `${trimSlash(str(c, 'apiBaseUrl') || 'https://api.zoom.us/v2')}/report/meetings/${encodeURIComponent(m.externalId)}/participants?page_size=300`, headers }, 'Zoom report');
+      for (const p of (r.participants ?? []) as any[]) add({ name: String(p.name ?? ''), email: p.user_email || null, joinedAt: p.join_time ?? null, leftAt: p.leave_time ?? null, minutes: Math.round(Number(p.duration ?? 0) / 60) });
+    } else if (provider === 'teams') {
+      const base = `${trimSlash(str(c, 'apiBaseUrl') || 'https://graph.microsoft.com/v1.0')}/users/${encodeURIComponent(str(c, 'organizerId'))}/onlineMeetings/${encodeURIComponent(m.externalId)}/attendanceReports`;
+      const reports = await this.json({ method: 'GET', url: base, headers }, 'Teams attendance report');
+      for (const rep of (reports.value ?? []) as any[]) {
+        const recs = await this.json({ method: 'GET', url: `${base}/${encodeURIComponent(rep.id)}/attendanceRecords`, headers }, 'Teams attendance records');
+        for (const p of (recs.value ?? []) as any[]) {
+          const iv = (p.attendanceIntervals ?? []) as any[];
+          add({ name: String(p.identity?.displayName ?? ''), email: p.emailAddress || null, joinedAt: iv[0]?.joinDateTime ?? null, leftAt: iv[iv.length - 1]?.leaveDateTime ?? null, minutes: Math.round(Number(p.totalAttendanceInSeconds ?? 0) / 60) });
+        }
+      }
+    } else {
+      const base = trimSlash(str(c, 'meetApiUrl') || 'https://meet.googleapis.com/v2');
+      const code = /meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/.exec(m.joinUrl)?.[1];
+      if (!code) throw new BadRequestException('This meeting has no Google Meet code');
+      const recs = await this.json({ method: 'GET', url: `${base}/conferenceRecords?filter=${encodeURIComponent(`space.meeting_code="${code}"`)}`, headers }, 'Google Meet report');
+      for (const rec of (recs.conferenceRecords ?? []) as any[]) {
+        const parts = await this.json({ method: 'GET', url: `${base}/${rec.name}/participants?pageSize=250`, headers }, 'Google Meet participants');
+        for (const p of (parts.participants ?? []) as any[]) {
+          const a = p.earliestStartTime ?? null;
+          const b = p.latestEndTime ?? null;
+          add({ name: String(p.signedinUser?.displayName ?? p.anonymousUser?.displayName ?? ''), email: null, joinedAt: a, leftAt: b, minutes: a && b ? Math.max(0, Math.round((Date.parse(b) - Date.parse(a)) / 60_000)) : 0 });
+        }
+      }
+    }
+    return [...merged.values()].filter((p) => p.name || p.email);
   }
 
   // ----- BI export ----------------------------------------------------------------------------------------

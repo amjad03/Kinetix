@@ -58,7 +58,7 @@ describe('per-institution Razorpay accounts', () => {
 
   it('without keys there is no online payment (PAYMENTS_NOT_CONFIGURED); the counter still works', async () => {
     const view = await http().get('/v1/admin/payments/razorpay').set(auth('principalA')).expect(200);
-    expect(view.body).toEqual({ provider: 'razorpay', configured: false, keyId: null, mode: null, keySecretLast4: null, updatedAt: null, webhookPath: `/v1/fees/webhooks/razorpay/${a.slug}` });
+    expect(view.body).toEqual({ provider: 'razorpay', gateway: null, payuWebhookPath: `/v1/fees/webhooks/payu/${a.slug}`, configured: false, keyId: null, mode: null, keySecretLast4: null, updatedAt: null, webhookPath: `/v1/fees/webhooks/razorpay/${a.slug}` });
     const fees = await invoiceOf('parentA', a.students[0].id);
     expect(fees.onlinePayments).toBeNull();
     const res = await http().post(`/v1/fees/invoices/${fees.invoices[0].id}/checkout`).set(auth('parentA')).send({}).expect(503);

@@ -43,10 +43,10 @@ export const CONNECTOR_TYPES: ConnectorType[] = [
   { type: 'library_koha', label: 'Library (Koha)', description: 'Sync the catalogue and loans with a Koha library system.', available: true, fields: [url('baseUrl', 'Koha URL'), text('clientId', 'Client id'), secret('clientSecret', 'Client secret')] },
   {
     type: 'lms_video',
-    label: 'Video classes (Zoom / Teams)',
+    label: 'Video classes (Zoom / Google Meet / Teams)',
     description: 'Create meetings for online classes from the timetable.',
     available: true,
-    fields: [select('provider', 'Provider', ['zoom', 'teams']), text('accountId', 'Account / tenant id'), text('clientId', 'Client id'), secret('clientSecret', 'Client secret'), text('organizerId', 'Teams organiser (user id or address)', false), { ...url('apiBaseUrl', 'API URL (leave empty for the provider default)', false) }, { ...url('tokenUrl', 'Token URL (leave empty for the provider default)', false) }],
+    fields: [select('provider', 'Provider', ['zoom', 'meet', 'teams']), text('accountId', 'Zoom account id / Teams directory (tenant) id', false), text('clientId', 'OAuth client id'), secret('clientSecret', 'OAuth client secret'), secret('refreshToken', 'Google Meet: refresh token of the organiser', false), text('calendarId', 'Google Meet: calendar (empty for the organiser\'s own)', false), text('organizerId', 'Teams organiser (user id or address)', false), { ...url('meetApiUrl', 'Google Meet reports API URL (leave empty for the default)', false) }, { ...url('apiBaseUrl', 'API URL (leave empty for the provider default)', false) }, { ...url('tokenUrl', 'Token URL (leave empty for the provider default)', false) }],
   },
   {
     type: 'bi_export',
