@@ -20,6 +20,7 @@ import { rolesAndRights } from './access.js';
 import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 import { depthSamples } from './depth.js';
 import { accreditationSamples } from './accreditation.js';
+import { migrationAndExaminer } from './migration-examiner.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -78,4 +79,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['setup, rules, learning support, rubrics, forums, reattempts and integrity (requirements gap close)', gapClose],
   ['projects, careers, thesis, student life, communication and parent visibility', pathwaySamples],
   ['accreditation: NAAC entries, DVV, IQAC workspace and teacher evidence', accreditationSamples],
+  ['data migration history, university templates, transcripts and the external examiner portal', migrationAndExaminer],
 ];

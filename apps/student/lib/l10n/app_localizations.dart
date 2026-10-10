@@ -7665,6 +7665,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} buzzed first'**
   String buzzerFirstIs(Object name);
+
+  /// No description provided for @acadDocTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcripts and certificates'**
+  String get acadDocTitle;
+
+  /// No description provided for @acadDocTranscript.
+  ///
+  /// In en, this message translates to:
+  /// **'Academic transcript'**
+  String get acadDocTranscript;
+
+  /// No description provided for @acadDocProvisional.
+  ///
+  /// In en, this message translates to:
+  /// **'Provisional certificate'**
+  String get acadDocProvisional;
+
+  /// No description provided for @acadDocGradeCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Consolidated grade card'**
+  String get acadDocGradeCard;
+
+  /// No description provided for @acadDocRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get acadDocRequest;
+
+  /// No description provided for @acadDocPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose (optional)'**
+  String get acadDocPurpose;
+
+  /// No description provided for @acadDocSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to the exam office.'**
+  String get acadDocSent;
+
+  /// No description provided for @acadDocDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get acadDocDownload;
+
+  /// No description provided for @acadDocNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet.'**
+  String get acadDocNone;
+
+  /// No description provided for @acadDocRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval'**
+  String get acadDocRequested;
+
+  /// No description provided for @acadDocApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved, being issued'**
+  String get acadDocApproved;
+
+  /// No description provided for @acadDocRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get acadDocRejected;
+
+  /// No description provided for @acadDocIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get acadDocIssued;
+
+  /// No description provided for @acadDocCannotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'No app on this phone can open the file.'**
+  String get acadDocCannotOpen;
 }
 
 class _AppLocalizationsDelegate

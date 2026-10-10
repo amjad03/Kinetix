@@ -30,6 +30,6 @@ import { TokensService } from './tokens.service.js';
     AuthGuard,
     { provide: APP_GUARD, useExisting: AuthGuard },
   ],
-  exports: [TokensService, MfaService, RateLimiter, AuthGuard],
+  exports: [TokensService, MfaService, OtpService, RateLimiter, AuthGuard],
 })
 export class AuthModule {}

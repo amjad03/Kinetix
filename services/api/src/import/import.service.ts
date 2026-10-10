@@ -129,6 +129,24 @@ export class ImportService {
     return result!;
   }
 
+  /**
+   * Runs already-parsed rows of one kind inside the caller's transaction, each in a savepoint (the data-migration
+   * importer maps its own columns onto these handlers). Never commits or rolls back by itself.
+   */
+  async applyRows(tx: Tx, p: UserPrincipal, kind: ImportKind, rows: Row[]): Promise<RowResult[]> {
+    const ctx = await this.context(tx, p.tenantId, p.userId, false);
+    const results: RowResult[] = [];
+    for (const r of rows) {
+      try {
+        const out = await tx.transaction((sp) => this.handlers[kind](sp, ctx, r));
+        results.push({ row: r.line, ...out });
+      } catch (e) {
+        results.push(errorRow(r.line, e));
+      }
+    }
+    return results;
+  }
+
   private readonly handlers: Record<ImportKind, (tx: Tx, ctx: Ctx, r: Row) => Promise<Outcome>> = {
     programs: (tx, ctx, r) => this.program(tx, ctx, r),
     staff: (tx, ctx, r) => this.staff(tx, ctx, r),

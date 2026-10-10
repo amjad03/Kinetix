@@ -2870,5 +2870,19 @@
   "@buzzerYourPlace": {"placeholders": {"n": {"type": "int"}}},
   "buzzerFirstIs": "{name} buzzed first",
   "@buzzerFirstIs": {"placeholders": {"name": {}}},
-  "classNotesTitle": "Class notes"
+  "classNotesTitle": "Class notes",
+  "acadDocTitle": "Transcripts and certificates",
+  "acadDocTranscript": "Academic transcript",
+  "acadDocProvisional": "Provisional certificate",
+  "acadDocGradeCard": "Consolidated grade card",
+  "acadDocRequest": "Request",
+  "acadDocPurpose": "Purpose (optional)",
+  "acadDocSent": "Request sent to the exam office.",
+  "acadDocDownload": "Download",
+  "acadDocNone": "No requests yet.",
+  "acadDocRequested": "Waiting for approval",
+  "acadDocApproved": "Approved, being issued",
+  "acadDocRejected": "Not approved",
+  "acadDocIssued": "Ready",
+  "acadDocCannotOpen": "No app on this phone can open the file."
 }

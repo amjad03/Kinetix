@@ -1261,5 +1261,19 @@
   "buzzerYouFirst": "ನೀವು ಮೊದಲು ಬಜರ್ ಒತ್ತಿದ್ದೀರಿ!",
   "buzzerYourPlace": "ನೀವು ಬಜರ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು {n}ನೇ ಸ್ಥಾನದಲ್ಲಿದ್ದೀರಿ",
   "buzzerFirstIs": "{name} ಮೊದಲು ಬಜರ್ ಒತ್ತಿದರು",
-  "classNotesTitle": "ತರಗತಿಯ ಟಿಪ್ಪಣಿಗಳು"
+  "classNotesTitle": "ತರಗತಿಯ ಟಿಪ್ಪಣಿಗಳು",
+  "acadDocTitle": "ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಟ್ ಮತ್ತು ಪ್ರಮಾಣಪತ್ರಗಳು",
+  "acadDocTranscript": "ಶೈಕ್ಷಣಿಕ ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಟ್",
+  "acadDocProvisional": "ತಾತ್ಕಾಲಿಕ ಪ್ರಮಾಣಪತ್ರ",
+  "acadDocGradeCard": "ಸಂಯೋಜಿತ ಗ್ರೇಡ್ ಕಾರ್ಡ್",
+  "acadDocRequest": "ವಿನಂತಿಸಿ",
+  "acadDocPurpose": "ಉದ್ದೇಶ (ಐಚ್ಛಿಕ)",
+  "acadDocSent": "ವಿನಂತಿಯನ್ನು ಪರೀಕ್ಷಾ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.",
+  "acadDocDownload": "ಡೌನ್‌ಲೋಡ್",
+  "acadDocNone": "ಇನ್ನೂ ವಿನಂತಿಗಳಿಲ್ಲ.",
+  "acadDocRequested": "ಅನುಮೋದನೆಗಾಗಿ ಕಾಯುತ್ತಿದೆ",
+  "acadDocApproved": "ಅನುಮೋದಿತ, ನೀಡಲಾಗುತ್ತಿದೆ",
+  "acadDocRejected": "ಅನುಮೋದಿಸಲಾಗಿಲ್ಲ",
+  "acadDocIssued": "ಸಿದ್ಧ",
+  "acadDocCannotOpen": "ಈ ಫೋನ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಬಲ್ಲ ಆ್ಯಪ್ ಇಲ್ಲ."
 }

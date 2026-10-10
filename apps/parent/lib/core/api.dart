@@ -9,6 +9,7 @@ import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
+import 'academic_docs.dart';
 import 'boarding.dart';
 import 'campus.dart';
 import 'conduct.dart';
@@ -156,6 +157,11 @@ abstract class ParentApi {
 
   /// The child's hall ticket as a PDF; the server refuses (403) when the college withholds it.
   Future<Uint8List> hallTicketPdf(String sessionId, String childId);
+
+  /// Transcript, provisional certificate and grade card requests for a child.
+  Future<List<AcademicDocRequest>> academicDocRequests(String childId);
+  Future<AcademicDocRequest> requestAcademicDoc(String childId, String kind, String purpose);
+  Future<Uint8List> academicDocPdf(String requestId);
 
   /// Asks for a paper to be re-checked while the results are published and open.
   Future<void> requestRevaluation(String childId, {required String sessionId, required String subjectId, required String reason});
@@ -521,6 +527,17 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<ExamResults> examResults(String childId) async => ExamResults.fromJson(await _send('GET', '/v1/results/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<List<AcademicDocRequest>> academicDocRequests(String childId) async =>
+      [for (final r in await _send('GET', '/v1/academic-docs/students/$childId/requests') as List) AcademicDocRequest.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<AcademicDocRequest> requestAcademicDoc(String childId, String kind, String purpose) async =>
+      AcademicDocRequest.fromJson(await _send('POST', '/v1/academic-docs/requests', body: {'studentId': childId, 'kind': kind, 'purpose': purpose}) as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> academicDocPdf(String requestId) => _download('/v1/academic-docs/requests/$requestId/document.pdf');
 
   @override
   Future<Uint8List> hallTicketPdf(String sessionId, String childId) => _download('/v1/exam-sessions/$sessionId/hall-tickets/$childId/pdf');

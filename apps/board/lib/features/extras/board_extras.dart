@@ -18,6 +18,7 @@ import '../classroom_plus/plus_strings.dart';
 import '../classroom_plus/recording_notice.dart';
 import '../board/layout/tool_palette.dart';
 import '../classroom_plus/voice_commands.dart';
+import '../exam_room/exam_room.dart';
 import '../exit_ticket/exit_ticket.dart';
 import '../classroom_plus/zones.dart';
 import '../profiles/profiles_ui.dart' show PinPad;
@@ -221,6 +222,7 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     DrawerTool('exam-clock', Icons.timer_outlined, s['exam'], const [ToolGroup.classroom], cls, page('exam', Icons.timer_outlined, (_) => const ExamClockPanel())),
     DrawerTool('organisers', Icons.hub_outlined, s['organisers'], const [ToolGroup.classroom, ToolGroup.commerce, ToolGroup.language], cls, page('organisers', Icons.hub_outlined, (_) => OrganisersPanel(wb: h.wb))),
     // Assessment
+    DrawerTool('exam-room', Icons.meeting_room_outlined, examRoomStrings(context)['title'], const [ToolGroup.classroom], assess, () => run(() => h.openPage(examRoomStrings(context)['title'], Icons.meeting_room_outlined, (_) => ExamRoomPanel(board: h.board)))),
     DrawerTool('exit-ticket', Icons.logout, s['exitTicket'], const [ToolGroup.classroom], assess, page('exitTicket', Icons.logout, (_) => ExitTicketPanel(board: h.board, wb: h.wb))),
     DrawerTool(
       'worksheet',

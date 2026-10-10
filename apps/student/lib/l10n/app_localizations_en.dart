@@ -4441,4 +4441,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String buzzerFirstIs(Object name) {
     return '$name buzzed first';
   }
+
+  @override
+  String get acadDocTitle => 'Transcripts and certificates';
+
+  @override
+  String get acadDocTranscript => 'Academic transcript';
+
+  @override
+  String get acadDocProvisional => 'Provisional certificate';
+
+  @override
+  String get acadDocGradeCard => 'Consolidated grade card';
+
+  @override
+  String get acadDocRequest => 'Request';
+
+  @override
+  String get acadDocPurpose => 'Purpose (optional)';
+
+  @override
+  String get acadDocSent => 'Request sent to the exam office.';
+
+  @override
+  String get acadDocDownload => 'Download';
+
+  @override
+  String get acadDocNone => 'No requests yet.';
+
+  @override
+  String get acadDocRequested => 'Waiting for approval';
+
+  @override
+  String get acadDocApproved => 'Approved, being issued';
+
+  @override
+  String get acadDocRejected => 'Not approved';
+
+  @override
+  String get acadDocIssued => 'Ready';
+
+  @override
+  String get acadDocCannotOpen => 'No app on this phone can open the file.';
 }

@@ -7,6 +7,7 @@ import '../../core/files.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'academic_docs_screen.dart';
 
 /// Exams: the timetable of every session, the hall ticket as a PDF, published results with
 /// SGPA and CGPA, and a request to have a paper re-checked while the window is open.
@@ -94,6 +95,8 @@ class _ExamsTabState extends State<ExamsTab> {
                 KxCard(child: Text(l.noExamsScheduled, key: const Key('noExams'), style: context.text.bodyLarge))
               else
                 for (final s in upcoming) ...[_SessionCard(session: s, onHallTicket: () => _hallTicket(s)), const SizedBox(height: Kx.s12)],
+              KxCard(child: ListTile(key: const Key('academicDocs'), contentPadding: EdgeInsets.zero, leading: const Icon(Icons.workspace_premium_outlined), title: Text(academicDocsTitle(context)), trailing: const Icon(Icons.chevron_right), onTap: () => AcademicDocsScreen.open(context, widget.api, widget.student.id))),
+              const SizedBox(height: Kx.s12),
               SectionTitle(l.examResultsTitle),
               if (results == null || results.terms.isEmpty)
                 KxCard(child: Text(l.noExamResults, key: const Key('noResults'), style: context.text.bodyLarge))

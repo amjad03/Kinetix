@@ -310,6 +310,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Rank, progression, backlog | Built | `api/exams/ranks.ts` | subject ranking absent |
 | Normalised marks, distinction class | Built | `api/exams/exam-ops.controller.ts` (`normalise`, `class-bands`, `classification`), `api/exams/exam-ops.logic.ts` | preview, apply and undo; original marks kept; configurable class bands and subject distinctions |
 | Marksheet, transcript PDFs | Built | `api/exams/results.controller.ts` | |
+| Standalone transcript, provisional certificate, consolidated grade card (request, approve, issue, signed QR verify; student and parent app) | Built | `api/academic-docs`, `erp/exams/documents`, `student/features/exams/academic_docs_screen.dart` | serial numbers GC/TR/PC; figures frozen at issue; includes imported history |
+| Affiliating-university mark list and tabulation register (internal normalisation and moderation, grace, pass rules via rule registry; PDF, XLSX, CSV) | Built | `api/university-results`, `erp/exams/university` | Kerala-style and VTU-style samples; numbers are illustrative and must be checked against the university's rules |
+| External examiner portal (invite + OTP, anonymised valuation, QP scrutiny states, claims); exam room board view | Built | `api/external-examiner`, `api/exams/exam-board.controller.ts`, `erp/examiner`, `board/features/exam_room` | no ERP seat needed |
+| Data migration from Linways/Excel exports (mapping, dry run, reconciliation, rollback) | Built | `api/data-migration`, `erp/import/migration` | history lands in legacy_* tables and feeds transcripts |
 | Consolidated marks, rank list, subject ranking, progress report PDFs | Built | `api/exams/exam-ops.controller.ts` (`consolidated.pdf`, `progress-report.pdf`), `api/exams/exam-depth.controller.ts` (`ranks`) | class, programme and subject ranks; PDFs |
 | Indic text in PDFs | Built | `api/common/pdf-fonts.ts`, `api/common/pdf.ts` | Hindi and Kannada shaped with HarfBuzz and embedded |
 

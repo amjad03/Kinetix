@@ -1261,5 +1261,19 @@
   "buzzerYouFirst": "आपने सबसे पहले बज़र दबाया!",
   "buzzerYourPlace": "आपने बज़र दबाया। आप नंबर {n} पर हैं",
   "buzzerFirstIs": "{name} ने सबसे पहले बज़र दबाया",
-  "classNotesTitle": "कक्षा के नोट्स"
+  "classNotesTitle": "कक्षा के नोट्स",
+  "acadDocTitle": "ट्रांसक्रिप्ट और प्रमाणपत्र",
+  "acadDocTranscript": "शैक्षणिक ट्रांसक्रिप्ट",
+  "acadDocProvisional": "अनंतिम प्रमाणपत्र",
+  "acadDocGradeCard": "समेकित ग्रेड कार्ड",
+  "acadDocRequest": "अनुरोध करें",
+  "acadDocPurpose": "उद्देश्य (वैकल्पिक)",
+  "acadDocSent": "अनुरोध परीक्षा कार्यालय को भेज दिया गया।",
+  "acadDocDownload": "डाउनलोड",
+  "acadDocNone": "अभी कोई अनुरोध नहीं।",
+  "acadDocRequested": "स्वीकृति की प्रतीक्षा",
+  "acadDocApproved": "स्वीकृत, जारी हो रहा है",
+  "acadDocRejected": "स्वीकृत नहीं हुआ",
+  "acadDocIssued": "तैयार",
+  "acadDocCannotOpen": "इस फ़ोन पर कोई ऐप फ़ाइल नहीं खोल सकता।"
 }

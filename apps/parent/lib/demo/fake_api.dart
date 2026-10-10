@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
+import '../core/academic_docs.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
 import '../core/boarding.dart';
@@ -1052,6 +1053,31 @@ class FakeParentApi implements ParentApi {
     calls.add('examResults $childId');
     if (examsError != null) throw examsError!;
     return examResultsByChild[childId] ?? const ExamResults(cgpa: null, terms: []);
+  }
+
+  List<AcademicDocRequest> docRequests = const [AcademicDocRequest(id: 'd1', kind: 'grade_card', title: 'CONSOLIDATED GRADE CARD', status: 'issued', purpose: 'Higher studies', serialNo: 'GC/2026/0001')];
+  ApiException? docError;
+
+  @override
+  Future<List<AcademicDocRequest>> academicDocRequests(String childId) async {
+    calls.add('academicDocRequests');
+    if (docError != null) throw docError!;
+    return docRequests;
+  }
+
+  @override
+  Future<AcademicDocRequest> requestAcademicDoc(String childId, String kind, String purpose) async {
+    calls.add('requestAcademicDoc $kind');
+    if (docError != null) throw docError!;
+    final r = AcademicDocRequest(id: 'd${docRequests.length + 1}', kind: kind, title: kind, status: 'requested', purpose: purpose);
+    docRequests = [r, ...docRequests];
+    return r;
+  }
+
+  @override
+  Future<Uint8List> academicDocPdf(String requestId) async {
+    calls.add('academicDocPdf $requestId');
+    return Uint8List.fromList('%PDF-1.4 document'.codeUnits);
   }
 
   @override
