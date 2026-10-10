@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>KINETIX promo</title>
+<style>
+@font-face { font-family: Flex; src: url(../../../packages/kinetix_ui/fonts/SansFlex-400.ttf); font-weight: 400; }
+@font-face { font-family: Flex; src: url(../../../packages/kinetix_ui/fonts/SansFlex-500.ttf); font-weight: 500; }
+@font-face { font-family: Flex; src: url(../../../packages/kinetix_ui/fonts/SansFlex-600.ttf); font-weight: 600; }
+@font-face { font-family: Flex; src: url(../../../packages/kinetix_ui/fonts/SansFlex-700.ttf); font-weight: 700; }
+@font-face { font-family: FlexD; src: url(../../../packages/kinetix_ui/fonts/SansFlexDisplay-500.ttf); font-weight: 500; }
+@font-face { font-family: FlexD; src: url(../../../packages/kinetix_ui/fonts/SansFlexDisplay-400.ttf); font-weight: 400; }
+@font-face { font-family: Deva; src: url(../../../packages/kinetix_ui/fonts/NotoSansDevanagari-500.ttf); }
+@font-face { font-family: Knda; src: url(../../../packages/kinetix_ui/fonts/NotoSansKannada-500.ttf); }
+@font-face { font-family: Kalam; src: url(../../../packages/kinetix_ui/fonts/Kalam-400.ttf); }
+:root { --brand: #1D4ED8; --brand2: #4F7BFF; --indigo: #6366F1; --cyan: #38BDF8; --amber: #F5A524; --ink: #EAF0FF; --navy: #050816; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--navy); }
+body { font-family: Flex, Deva, Knda, -apple-system, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+#stage { position: absolute; inset: 0; overflow: hidden; }
+.abs { position: absolute; }
+.layer { position: absolute; inset: 0; will-change: transform, opacity, filter; }
+.persp { perspective: 2200px; perspective-origin: 50% 45%; }
+.glow { position: absolute; border-radius: 50%; pointer-events: none; }
+.title { font-family: FlexD, Flex; font-weight: 500; letter-spacing: -0.02em; }
+.kicker { font-size: 22px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #8FB0FF; }
+.word { position: absolute; font-family: FlexD, Flex; font-weight: 500; font-size: 104px; letter-spacing: -0.025em; white-space: nowrap; transform-origin: 50% 50%; }
+.chip { position: absolute; font-size: 25px; font-weight: 500; padding: 10px 20px; border-radius: 14px; border: 1.5px dashed rgba(160,180,255,.35); color: rgba(205,216,255,.8); background: rgba(20,28,70,.35); white-space: nowrap; }
+/* devices */
+.device { position: absolute; transform-style: preserve-3d; }
+.board { width: 1360px; height: 800px; border-radius: 26px; background: linear-gradient(160deg,#1b1f2c,#07080c); padding: 22px 22px 40px; box-shadow: 0 60px 120px rgba(0,0,0,.6), 0 0 0 1.5px rgba(255,255,255,.08) inset, 0 0 90px rgba(60,100,255,.18); }
+.board .scr { position: relative; width: 100%; height: 100%; border-radius: 8px; overflow: hidden; background: #fff; }
+.board .brandbar { position: absolute; left: 0; right: 0; bottom: 11px; text-align: center; font-size: 13px; letter-spacing: .4em; color: rgba(255,255,255,.35); font-weight: 600; }
+.scr img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+.laptop { width: 1280px; }
+.laptop .lid { width: 1280px; height: 750px; border-radius: 24px 24px 10px 10px; background: linear-gradient(180deg,#24262e,#101116); padding: 18px 18px 14px; box-shadow: 0 0 0 1.5px rgba(255,255,255,.09) inset, 0 50px 100px rgba(0,0,0,.55), 0 0 100px rgba(60,100,255,.16); }
+.laptop .scr { position: relative; width: 100%; height: 100%; border-radius: 6px; overflow: hidden; background: #fff; }
+.laptop .deck { margin: 0 -70px; height: 26px; border-radius: 0 0 26px 26px; background: linear-gradient(180deg,#c9ccd6,#8b8f9c 45%,#4b4e58); box-shadow: 0 30px 50px rgba(0,0,0,.55); position: relative; }
+.laptop .deck::after { content: ""; position: absolute; left: 50%; top: 0; width: 200px; height: 9px; margin-left: -100px; border-radius: 0 0 10px 10px; background: rgba(0,0,0,.25); }
+.phone { width: 336px; height: 712px; border-radius: 54px; background: linear-gradient(150deg,#3a3d47,#0d0e12 40%,#1c1d22); padding: 12px; box-shadow: 0 0 0 1.5px rgba(255,255,255,.12) inset, 0 50px 90px rgba(0,0,0,.6), 0 0 70px rgba(70,110,255,.18); }
+.phone .scr { position: relative; width: 100%; height: 100%; border-radius: 43px; overflow: hidden; background: #fff; }
+.phone .island { position: absolute; left: 50%; top: 22px; width: 96px; height: 28px; margin-left: -48px; border-radius: 16px; background: #000; z-index: 5; }
+.label { position: absolute; font-size: 26px; font-weight: 600; text-align: center; color: #DCE6FF; }
+.pill { position: absolute; padding: 10px 22px; border-radius: 999px; font-size: 22px; font-weight: 600; color: #fff; background: rgba(29,78,216,.85); box-shadow: 0 10px 30px rgba(29,78,216,.45); white-space: nowrap; }
+.card { position: absolute; border-radius: 22px; background: rgba(255,255,255,.97); color: #111827; box-shadow: 0 40px 80px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.04); font-family: Flex; }
+.feat { position: absolute; font-size: 30px; font-weight: 500; color: #9aa8d6; display: flex; align-items: center; gap: 16px; }
+.feat i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #34408a; }
+.badge { position: absolute; width: 760px; height: 172px; border-radius: 30px; background: linear-gradient(160deg, rgba(40,56,140,.55), rgba(14,20,56,.65)); border: 1.5px solid rgba(140,170,255,.25); box-shadow: 0 30px 70px rgba(0,0,0,.35), 0 0 60px rgba(60,100,255,.12) inset; display: flex; align-items: center; padding: 0 44px; gap: 34px; }
+.badge .ic { width: 92px; height: 92px; border-radius: 24px; background: linear-gradient(150deg,#4F7BFF,#1D4ED8); display: grid; place-items: center; flex: none; box-shadow: 0 10px 30px rgba(29,78,216,.5); }
+.badge .tx { font-size: 40px; font-weight: 600; letter-spacing: -0.01em; color: #fff; line-height: 1.1; }
+.badge .sub { font-size: 24px; font-weight: 500; color: #9fb3ff; margin-top: 8px; }
+#cap { position: absolute; left: 0; right: 0; bottom: 34px; text-align: center; pointer-events: none; z-index: 50; }
+#cap span { display: inline-block; font-size: 31px; font-weight: 500; line-height: 1.25; padding: 10px 26px; border-radius: 16px; background: rgba(4,7,22,.62); color: rgba(255,255,255,.95); letter-spacing: .005em; max-width: 1500px; }
+.node { position: absolute; width: 300px; border-radius: 22px; background: rgba(14,20,56,.82); border: 1.5px solid rgba(140,170,255,.3); box-shadow: 0 25px 60px rgba(0,0,0,.4); overflow: hidden; }
+.node .th { height: 170px; overflow: hidden; position: relative; background: #fff; }
+.node .th img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.node .th img[src*=nav] { object-position: center 12%; }
+.node .nm { padding: 14px 18px; font-size: 24px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 10px; }
+.node .nm b { width: 10px; height: 10px; border-radius: 50%; background: #5BE49B; box-shadow: 0 0 12px #5BE49B; }
+.btn { display: inline-block; padding: 24px 54px; border-radius: 999px; font-size: 34px; font-weight: 600; color: #fff; background: linear-gradient(180deg,#3b6bff,#1D4ED8); box-shadow: 0 18px 50px rgba(29,78,216,.6), 0 0 0 1px rgba(255,255,255,.18) inset; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="cap"><span></span></div>
+<script src="timeline.js"></script>
+<script src="scene.js"></script>
+</body>
+</html>

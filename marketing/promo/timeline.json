@@ -1,0 +1,214 @@
+{
+ "duration": 100.0,
+ "fps": 30,
+ "scenes": [
+  {
+   "start": 0,
+   "end": 7,
+   "vo": 0.8,
+   "voEnd": 3.936
+  },
+  {
+   "start": 7,
+   "end": 13,
+   "vo": 7.4,
+   "voEnd": 10.109
+  },
+  {
+   "start": 13,
+   "end": 17,
+   "vo": 13.053,
+   "voEnd": 16.85
+  },
+  {
+   "start": 17,
+   "end": 30,
+   "vo": 17.4,
+   "voEnd": 29.197
+  },
+  {
+   "start": 30,
+   "end": 36,
+   "vo": 30.4,
+   "voEnd": 33.792
+  },
+  {
+   "start": 36,
+   "end": 52,
+   "vo": 36.4,
+   "voEnd": 47.771
+  },
+  {
+   "start": 52,
+   "end": 60,
+   "vo": 52.4,
+   "voEnd": 57.221
+  },
+  {
+   "start": 60,
+   "end": 74,
+   "vo": 60.4,
+   "voEnd": 73.029
+  },
+  {
+   "start": 74,
+   "end": 82,
+   "vo": 74.4,
+   "voEnd": 77.941
+  },
+  {
+   "start": 82,
+   "end": 92,
+   "vo": 82.4,
+   "voEnd": 90.101
+  },
+  {
+   "start": 92,
+   "end": 100.0,
+   "vo": 92.6,
+   "voEnd": 97.4
+  }
+ ],
+ "captions": [
+  {
+   "t0": 0.8,
+   "t1": 3.936,
+   "text": "Every campus runs on a dozen disconnected tools."
+  },
+  {
+   "t0": 7.4,
+   "t1": 10.109,
+   "text": "What if one intelligent system connected them all?"
+  },
+  {
+   "t0": 13.053,
+   "t1": 14.198,
+   "text": "Meet KINETIX."
+  },
+  {
+   "t0": 14.198,
+   "t1": 16.85,
+   "text": "The AI operating system for education."
+  },
+  {
+   "t0": 17.4,
+   "t1": 19.428,
+   "text": "It starts in the classroom."
+  },
+  {
+   "t0": 19.428,
+   "t1": 22.991,
+   "text": "The KINETIX AI smartboard turns every lesson into an"
+  },
+  {
+   "t0": 22.991,
+   "t1": 24.712,
+   "text": "interactive experience"
+  },
+  {
+   "t0": 24.712,
+   "t1": 29.197,
+   "text": "ink, 3D models, live polls, and AI that builds the lesson with you."
+  },
+  {
+   "t0": 30.4,
+   "t1": 33.792,
+   "text": "Teachers sign in with a scan, even when the internet doesn't."
+  },
+  {
+   "t0": 36.4,
+   "t1": 40.834,
+   "text": "Behind it, an AI-powered ERP runs the entire institution"
+  },
+  {
+   "t0": 40.834,
+   "t1": 45.339,
+   "text": "admissions to alumni, exams and evaluation, fees, HR, and"
+  },
+  {
+   "t0": 45.339,
+   "t1": 47.771,
+   "text": "outcome-based accreditation."
+  },
+  {
+   "t0": 52.4,
+   "t1": 55.259,
+   "text": "Built-in AI assistants draft, check, and flag"
+  },
+  {
+   "t0": 55.259,
+   "t1": 57.221,
+   "text": "while people stay in control."
+  },
+  {
+   "t0": 60.4,
+   "t1": 62.382,
+   "text": "And everyone stays connected."
+  },
+  {
+   "t0": 62.382,
+   "t1": 65.667,
+   "text": "Teachers take attendance and mark scripts on the go."
+  },
+  {
+   "t0": 65.667,
+   "t1": 68.442,
+   "text": "Students learn, submit, and track progress."
+  },
+  {
+   "t0": 68.442,
+   "t1": 71.387,
+   "text": "Parents see attendance, fees, and report cards"
+  },
+  {
+   "t0": 71.387,
+   "t1": 73.029,
+   "text": "the moment they happen."
+  },
+  {
+   "t0": 74.4,
+   "t1": 75.334,
+   "text": "One platform."
+  },
+  {
+   "t0": 75.334,
+   "t1": 76.613,
+   "text": "One source of truth."
+  },
+  {
+   "t0": 76.613,
+   "t1": 77.941,
+   "text": "Every screen in sync."
+  },
+  {
+   "t0": 82.4,
+   "t1": 84.679,
+   "text": "In English, Hindi, and Kannada."
+  },
+  {
+   "t0": 84.679,
+   "t1": 88.684,
+   "text": "Privacy-first, DPDP-ready, and built for schools, colleges,"
+  },
+  {
+   "t0": 88.684,
+   "t1": 90.101,
+   "text": "and universities."
+  },
+  {
+   "t0": 92.6,
+   "t1": 93.391,
+   "text": "KINETIX."
+  },
+  {
+   "t0": 93.391,
+   "t1": 95.875,
+   "text": "The AI operating system for education."
+  },
+  {
+   "t0": 95.875,
+   "t1": 97.4,
+   "text": "Book your demo today."
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+*.bin
+*.jpg
+*.mp4
+*.onnx
+*.png
+*.wav
+audio/
+build/
+frames/
+models/
+node_modules/
+renders/
+shots/
+venv/
