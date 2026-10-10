@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:kinetix_board/core/api_client.dart';
 import 'package:kinetix_board/core/board_controller.dart';
@@ -11,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kinetix_board/features/board/classroom_profile_strings.dart';
 import 'package:kinetix_board/features/board/classroom_profile_ui.dart';
 import 'package:kinetix_board/features/classroom_plus/student_buzzers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';

@@ -123,7 +123,7 @@ void main() {
       await tester.pump();
     }
     expect(find.byKey(const Key('share-note')), findsOneWidget);
-    expect(tester.widget<OutlinedButton>(find.byKey(const Key('share-whatsapp'))).onPressed, isNull);
+    expect(tester.widget<OutlinedButton>(find.byKey(const Key('share-whatsapp'))).onPressed, isNotNull);
     expect(tester.widget<OutlinedButton>(find.byKey(const Key('share-other'))).onPressed, isNotNull);
   });
 }

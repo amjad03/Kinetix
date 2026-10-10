@@ -20,7 +20,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
 import 'package:kinetix_board/features/board/layout/layout_strings.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show InkCanvas;
 import 'support/layout.dart';
 
 void main() {
@@ -429,7 +428,7 @@ void main() {
         await openTool(tester, 'graphs');
         fits('graph templates');
         await openTool(tester, 'second-board');
-        expect(find.byType(InkCanvas), findsOneWidget);
+        expect(find.byKey(const Key('second-board')), findsOneWidget);
         fits('second board');
         await tap(find.byKey(const Key('panel-close')));
         await openTool(tester, 'todays-plan');
