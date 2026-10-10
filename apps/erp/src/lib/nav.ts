@@ -107,6 +107,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/topic-videos', label: 'nav.topicVideos', section: 'topicVideos', icon: 'topicVideos' },
       { href: '/boards', label: 'nav.boards', section: 'boards', icon: 'boards' },
       { href: '/devices', label: 'nav.devices', section: 'devices', icon: 'devices' },
+      { href: '/trainings', label: 'nav.trainings', section: 'trainings', icon: 'devices' },
       { href: '/live', label: 'nav.live', section: 'live', icon: 'live' },
     ],
   },

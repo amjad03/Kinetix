@@ -60,7 +60,7 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
 | Timer / stopwatch | Floating timer, presets, alarm | Built | A/toolkit/toolkit_layer.dart, A/toolkit/toolkit_controller.dart |
-| Buzzer | Quick-answer buzzer, first press wins, teacher resets | Partial: board-only; must work from student app too | A/classroom_plus/buzzer.dart |
+| Buzzer | Quick-answer buzzer, first press wins, teacher resets | Built: students buzz from the Student App, order reaches the board live, teacher locks and resets | A/classroom_plus/buzzer.dart |
 | Seat plan / arrangement | Class seating on board, drag students | Broken: lacks rows/layouts (U-shape, pairs, groups, custom rows) | A/classroom/classroom_tools.dart |
 | Exit ticket | Teacher sets question, students answer at end | Broken: incomplete flow | A/assessment/assessment.dart, A/class_check/class_check.dart |
 | Graphic organiser | Venn, KWL, T-chart, mind map, cycle, fishbone etc. | Broken: 7 templates only; incomplete (editing, more types) | A/teaching_aids/teaching_aids.dart |
@@ -104,14 +104,14 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 ## 8. Profile, classrooms, share
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
-| Profile menu: New, Import, Your Whiteboards, Your Classrooms, Configurations, Schedule a Training, What's New, Exit | Sidebar | Partial: items present; behaviours below | B/profile_menu.dart |
+| Profile menu: New, Import, Your Whiteboards, Your Classrooms, Configurations, Schedule a Training, What's New, Exit | Sidebar | Built | B/profile_menu.dart |
 | Profile Import PDF | Opens split screen first, with "add to board" | Missing (see PDF row) | B/profile_menu.dart, A/insert/document_import.dart |
 | Profile Import PPT | Add all or pick pages | Missing | A/insert/presentation_pane.dart |
-| Your Classrooms | Classes taken per section/standard | Missing: entry exists, no per-section/standard taken-classes view | B/profile_menu.dart, A/profiles/profiles_ui.dart |
-| Schedule a Training | Training flow with QR | Partial: stub entry | B/profile_menu.dart |
-| What's New | Release feed | Partial | B/profile_extras.dart |
+| Your Classrooms | Classes taken per section/standard | Built: classroom_profile_ui.dart lists every class taught (section, standard, subject, sessions, last taken) from GET /v1/classroom/classrooms with Open class | B/classroom_profile_ui.dart, API classroom-profile |
+| Schedule a Training | Training flow with QR | Built: pick a slot, topic, stored via API, status shown on the board; ERP /trainings lists and answers | B/classroom_profile_ui.dart, E/trainings | B/profile_menu.dart |
+| What's New | Release feed | Built | B/profile_extras.dart |
 | Guest mode | Basic teaching without login | Built | A/signin/sign_in_dialog.dart |
-| Share whiteboard | Email, WhatsApp, QR | Partial: WhatsApp share sheet incomplete | B/share_whiteboard.dart |
-| WhatsApp share sheet | Pages, PDF, message, send to number/groups | Partial | B/share_whiteboard.dart, core/api_client.dart |
-| End class | Quick-group End Class, saves recording and summary | Partial | B/layout/board_chrome.dart, A/profiles/profiles_controller.dart |
+| Share whiteboard | Email, WhatsApp, QR | Built: WhatsApp opens, else the Android share sheet with the PDF; QR beside the buttons | B/share_whiteboard.dart |
+| WhatsApp share sheet | Pages, PDF, message, send to number/groups | Built: Android share sheet carries the PDF and notes link | B/share_whiteboard.dart, core/api_client.dart |
+| End class | Quick-group End Class, saves recording and summary | Built: notes, publish to students, session closed, summary with WhatsApp share | B/layout/board_chrome.dart, A/profiles/profiles_controller.dart |
 | Settings / configurations | Board settings sheet | Built | B/profile_menu.dart |

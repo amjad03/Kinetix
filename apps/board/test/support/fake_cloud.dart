@@ -61,6 +61,7 @@ MockClient fakeCloud() => MockClient((req) async {
       ],
     }),
     '/v1/sessions/current/end' => jsonResponse({'ended': true}, 201),
+    '/v1/classroom/end' => jsonResponse({'ended': true, 'summary': {'minutes': 0}}, 201),
     '/v1/whiteboards' => jsonResponse([
       {
         'id': 'w1',

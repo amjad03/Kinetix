@@ -18,6 +18,7 @@ import '../boards/board_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
+import '../live/buzzer_card.dart';
 import '../live/live_class_screen.dart';
 import '../live/live_question.dart';
 import '../marks/marks.dart';
@@ -108,6 +109,8 @@ class _TodayTabState extends State<TodayTab> {
         final cards = <Widget>[
           if (study.question case final question?) LiveQuestionBanner(study: study, question: question),
           if (live != null) LiveNowBanner(live: live, onWatch: () => LiveClassScreen.open(context, study, live)),
+          BuzzerCard(api: study.api),
+          ClassNotesCard(api: study.api),
           if (study.holidaySoon case (final holiday, final isToday))
             HolidayBanner(holiday: holiday, isToday: isToday, onOpen: () => _openCalendar(context)),
           if (summary == null && study.error == null)

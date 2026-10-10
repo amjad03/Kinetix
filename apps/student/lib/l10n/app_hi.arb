@@ -1253,5 +1253,13 @@
   "instalmentOverdue": "समय सीमा बीत गई",
   "instalmentsSummary": "{total} में से {paid} चुकाए गए",
   "libraryRenew": "नवीनीकृत करें",
-  "libraryRenewed": "नवीनीकृत। नई देय तिथि दिखाई गई है।"
+  "libraryRenewed": "नवीनीकृत। नई देय तिथि दिखाई गई है।",
+  "buzzerTitle": "कक्षा बज़र",
+  "buzzerPress": "बज़र दबाएँ!",
+  "buzzerReady": "शिक्षक ने बज़र खोल दिया है। सबसे पहले दबाएँ!",
+  "buzzerLocked": "बज़र बंद है",
+  "buzzerYouFirst": "आपने सबसे पहले बज़र दबाया!",
+  "buzzerYourPlace": "आपने बज़र दबाया। आप नंबर {n} पर हैं",
+  "buzzerFirstIs": "{name} ने सबसे पहले बज़र दबाया",
+  "classNotesTitle": "कक्षा के नोट्स"
 }

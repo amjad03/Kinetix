@@ -204,7 +204,7 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     DrawerTool('group-maker', Icons.diversity_3_outlined, s['groups'], const [ToolGroup.classroom], cls, page('groups', Icons.diversity_3_outlined, (_) => GroupMakerPanel(board: h.board, wb: h.wb))),
     DrawerTool('teacher-notes', Icons.sticky_note_2_outlined, s['notes'], const [ToolGroup.classroom], cls, page('notes', Icons.sticky_note_2_outlined, (_) => TeacherNotesPanel(board: h.board))),
     DrawerTool('scoreboard', Icons.scoreboard_outlined, s['scoreboard'], const [ToolGroup.classroom], cls, page('scoreboard', Icons.scoreboard_outlined, (_) => const ScoreboardPanel())),
-    DrawerTool('buzzer', Icons.campaign_outlined, p['buzzer'], const [ToolGroup.classroom], cls, plusPage('buzzer', Icons.campaign_outlined, (_) => const BuzzerPanel())),
+    DrawerTool('buzzer', Icons.campaign_outlined, p['buzzer'], const [ToolGroup.classroom], cls, plusPage('buzzer', Icons.campaign_outlined, (_) => BuzzerPanel(board: h.board))),
     if (h.zones case final zones?) DrawerTool('zones', Icons.view_week_outlined, p['zones'], const [ToolGroup.classroom], cls, () => run(() => unawaited(pickZones(context, zones)))),
     if (h.voiceCommand case final voice?)
       DrawerTool(

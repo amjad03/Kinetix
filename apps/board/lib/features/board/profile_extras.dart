@@ -3,6 +3,8 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/board_controller.dart';
+import 'classroom_profile_strings.dart';
+import 'classroom_profile_ui.dart';
 import 'panel/panel_host.dart';
 import 'sb_strings.dart';
 
@@ -38,7 +40,7 @@ Future<void> showTrainingDialog(BuildContext context, BoardController board, {Vo
       title: Text(s('trainingTitle')),
       content: SizedBox(
         width: 520,
-        child: Column(
+        child: SingleChildScrollView(child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -50,6 +52,8 @@ Future<void> showTrainingDialog(BuildContext context, BoardController board, {Vo
             ] else
               Text(s('trainingNoLink'), key: const Key('training-no-link')),
             if (contact != null && contact.isNotEmpty) ...[const SizedBox(height: Kx.s8), Text(s('trainingContact', {'c': contact}))],
+            const SizedBox(height: Kx.s16),
+            if (board.isSignedIn && board.api != null) TrainingScheduler(board: board) else Text(classroomStrings(ctx).t('trainingSignIn'), key: const Key('training-sign-in')),
             const SizedBox(height: Kx.s16),
             Wrap(
               spacing: Kx.s8,
@@ -77,7 +81,7 @@ Future<void> showTrainingDialog(BuildContext context, BoardController board, {Vo
               ],
             ),
           ],
-        ),
+        )),
       ),
       actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(MaterialLocalizations.of(ctx).closeButtonLabel))],
     ),

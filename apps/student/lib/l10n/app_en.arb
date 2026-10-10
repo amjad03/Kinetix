@@ -2860,5 +2860,15 @@
   "instalmentsSummary": "{paid} paid of {total}",
   "@instalmentsSummary": {"placeholders": {"paid": {}, "total": {}}},
   "libraryRenew": "Renew",
-  "libraryRenewed": "Renewed. The new due date is shown."
+  "libraryRenewed": "Renewed. The new due date is shown.",
+  "buzzerTitle": "Class buzzer",
+  "buzzerPress": "Buzz!",
+  "buzzerReady": "Your teacher opened the buzzer. Be first!",
+  "buzzerLocked": "The buzzer is locked",
+  "buzzerYouFirst": "You buzzed first!",
+  "buzzerYourPlace": "You buzzed. You are number {n}",
+  "@buzzerYourPlace": {"placeholders": {"n": {"type": "int"}}},
+  "buzzerFirstIs": "{name} buzzed first",
+  "@buzzerFirstIs": {"placeholders": {"name": {}}},
+  "classNotesTitle": "Class notes"
 }

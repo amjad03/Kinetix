@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../core/board_controller.dart';
 import '../toolkit/toolkit_sounds.dart';
 import 'plus_strings.dart';
+import 'student_buzzers.dart';
 
 /// Who buzzed first in a quiz round. Pure state, so the rules are easy to test.
 class BuzzerRound {
@@ -29,7 +31,10 @@ class BuzzerRound {
 /// The buzzer (split panel): a big button per team for quiz rounds. The first team to press
 /// buzzes in with a bell, the others are locked until Next question.
 class BuzzerPanel extends StatefulWidget {
-  const BuzzerPanel({super.key, this.sounds});
+  const BuzzerPanel({super.key, this.sounds, this.board});
+
+  /// The signed-in board; with it the students' buzzers from the Student App show below.
+  final BoardController? board;
 
   /// The bell; tests pass a silent one.
   final ToolkitSounds? sounds;
@@ -114,6 +119,10 @@ class _BuzzerPanelState extends State<BuzzerPanel> {
             label: Text(s['buzzerReset']),
           ),
         ),
+        if (widget.board?.api != null && widget.board!.isSignedIn) ...[
+          const Divider(height: Kx.s24),
+          StudentBuzzers(board: widget.board!, sounds: widget.sounds),
+        ],
       ],
     );
   }

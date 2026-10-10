@@ -256,4 +256,15 @@ export async function gapClose(c: Ctx): Promise<void> {
   // ---- course registration: a fee on one course, audit course outside the credit limit, a custom allocation window ----
   await k.q("update course_offerings set fee_paise = $2 where id = (select id from course_offerings where tenant_id = $1 and category = 'skill' order by created_at limit 1)", [c.tenantId, rupees(1500)]);
   await k.q("update registration_windows set allocation_rule = 'custom', rule_config = $2::jsonb where id = (select id from registration_windows where tenant_id = $1 order by opens_at desc limit 1)", [c.tenantId, JSON.stringify({ cgpa: 50, attendance: 30, priority: 20 })]);
+
+  // ---- board profile: teachers' training requests (Schedule a Training on the board; the ERP lists and answers them) ----
+  const slot = (days: number, hour: number) => new Date(Date.UTC(2026, 9, 12 + days, hour - 6, 30)).toISOString(); // hour in IST
+  await k.ins(
+    'training_requests',
+    [
+      { requestedBy: c.teachers[0].id, slotAt: slot(1, 10), topic: 'Smart board basics: pens, shapes and saving a class', status: 'confirmed', adminNote: 'Seminar hall, 10:00 with the IT team.' },
+      ...(c.teachers[1] ? [{ requestedBy: c.teachers[1].id, slotAt: slot(2, 14), topic: 'Using the buzzer and quiz tools with students', status: 'requested', adminNote: '' }] : []),
+    ],
+    { returning: false },
+  );
 }

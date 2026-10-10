@@ -138,7 +138,7 @@ class _ShareDialogState extends State<_ShareDialog> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        action(const Key('share-whatsapp'), Icons.chat_outlined, s('whatsapp'), link == null ? null : () => _open(Uri.https('wa.me', '/', {'text': s('waText', {'t': widget.title, 'u': link})}))),
+                        action(const Key('share-whatsapp'), Icons.chat_outlined, s('whatsapp'), link == null && _pdf == null ? null : () => unawaited(_whatsapp(link))),
                         action(
                           const Key('share-email'),
                           Icons.mail_outline,
@@ -174,6 +174,22 @@ class _ShareDialogState extends State<_ShareDialog> {
   }
 
   static String _query(Map<String, String> q) => q.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&');
+
+  /// WhatsApp: with a link, WhatsApp opens with the message; where it cannot be opened (no
+  /// WhatsApp, or a board with no link) the Android share sheet takes the PDF, and the QR code
+  /// beside the buttons still opens the board on a phone.
+  Future<void> _whatsapp(Uri? link) async {
+    final s = SbStrings.of(context);
+    if (link != null) {
+      try {
+        if (await openExternal(Uri.https('wa.me', '/', {'text': s('waText', {'t': widget.title, 'u': link})}))) return;
+      } catch (_) {
+        // Falls through to the share sheet.
+      }
+    }
+    final pdf = _pdf;
+    if (pdf != null) await sharePdf(_fileName, pdf);
+  }
 
   Future<void> _open(Uri u) async {
     try {

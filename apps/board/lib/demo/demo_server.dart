@@ -447,7 +447,7 @@ class DemoBoardServer {
         ],
       });
     }
-    if (path == '/v1/sessions/current/end') return json({'ended': true}, 201);
+    if (path == '/v1/sessions/current/end' || path == '/v1/classroom/end') return json({'ended': true, 'summary': {'minutes': 0}}, 201);
     if (path == '/v1/sessions/current/live') return notInDemo();
     if (path == '/v1/sync/push') {
       return json({
