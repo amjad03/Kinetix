@@ -9,6 +9,7 @@ export 'src/astronomy.dart' show AstronomyModels;
 export 'src/catalogue.dart';
 export 'src/chemistry.dart';
 export 'src/earth_map.dart' show isLand, earthColor;
+export 'src/face_colour_picker.dart';
 export 'src/glb.dart';
 export 'src/math3d.dart';
 export 'src/mesh.dart';

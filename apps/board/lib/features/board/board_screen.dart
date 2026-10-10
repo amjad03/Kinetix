@@ -50,6 +50,7 @@ import '../toolkit/remote_toolkit.dart';
 import '../toolkit/toolkit_layer.dart';
 import '../search/board_search.dart';
 import '../search/solids3d.dart' show Solid3dDialog;
+import 'live_solids.dart';
 import 'ai_pen_ui.dart';
 import 'animations_hook.dart';
 import '../canvas_tools/canvas_tools.dart';
@@ -180,6 +181,9 @@ class _BoardScreenState extends State<BoardScreen> {
   /// Notes written on 3D models in the panel's 3D tab, kept with the board when it is saved
   /// (by model id) and put back when it is opened.
   Model3dAnnotationStore _modelNotes = Model3dAnnotationStore();
+
+  /// The live 3D solid waiting for a tap on a face to colour ("Face colour" was pressed).
+  final ValueNotifier<String?> _faceArmed = ValueNotifier(null);
 
   /// While the toolbar is being dragged to an edge: how far it has moved.
   Offset? _toolbarDrag;
@@ -853,11 +857,16 @@ class _BoardScreenState extends State<BoardScreen> {
     final w = math.min(560.0, decoded.width);
     final h = w * decoded.height / math.max(1, decoded.width);
     const ink = WhiteboardController.inkBlack;
+    final solidId = newElementId();
     _wb.insert([
-      ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: s.png, link: EmbedLink(kind: EmbedLink.model3d, id: s.modelId, preset: s.preset)),
+      ImageElement(id: solidId, rect: Rect.fromLTWH(0, 0, w, h), bytes: s.png, link: EmbedLink(kind: EmbedLink.model3d, id: s.modelId, preset: s.preset)),
       if (s.credit.isNotEmpty)
         TextElement(id: newElementId(), position: Offset(0, h + 6), text: s.credit, color: ink, fontSize: 14, size: measureBoardText(s.credit, 14)),
     ]);
+    if (s.preset?.startsWith('v:') ?? false) {
+      _wb.tool = BoardTool.select;
+      _wb.select({solidId});
+    }
     if (mounted) showBoardMessage(context, context.l10n.snapshotAdded);
   }
 
@@ -1930,8 +1939,13 @@ class _BoardScreenState extends State<BoardScreen> {
             editMath: _editMath,
             editNote: _editNote,
             labels: _canvasLabels(l),
+            liveOverlay: (context, view) => LiveSolidsLayer(wb: _wb, view: view, armed: _faceArmed),
             selectionActions: (context, box) => SelectionActions(
               wb: _wb,
+              onFaceColour: (id) {
+                _faceArmed.value = id;
+                showBoardMessage(context, context.l10n.faceColourTapHint);
+              },
               box: box,
               onOpenLink: _openLink,
               onEdit: _editElement,

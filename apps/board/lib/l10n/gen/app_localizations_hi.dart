@@ -4282,4 +4282,40 @@ class AppLocalizationsHi extends AppLocalizations {
   String offlineCodeBody(String time) {
     return 'कनेक्शन नहीं है। इस बोर्ड की पुष्टि के लिए इस कोड को KINETIX शिक्षक ऐप में स्कैन करें। यह $time तक मान्य है।';
   }
+
+  @override
+  String get faceColourTitle => 'सतह का रंग';
+
+  @override
+  String get faceColourAction => 'सतह का रंग';
+
+  @override
+  String get faceColourHue => 'रंगत';
+
+  @override
+  String get faceColourSaturation => 'सघनता';
+
+  @override
+  String get faceColourBrightness => 'चमक';
+
+  @override
+  String get faceColourHex => 'हेक्स रंग';
+
+  @override
+  String get faceColourPalette => 'रंग';
+
+  @override
+  String get faceColourRecent => 'हाल के रंग';
+
+  @override
+  String get faceColourApply => 'लागू करें';
+
+  @override
+  String get faceColourReset => 'सतह रीसेट करें';
+
+  @override
+  String get faceColourTapHint => 'रंगने के लिए ठोस की किसी सतह पर टैप करें';
+
+  @override
+  String get liveSolidMove => 'इस ठोस को हिलाएँ';
 }

@@ -1251,5 +1251,17 @@
   "aiPenModelHandwriting": "{language} ಕೈಬರಹ",
   "aiPenModelsStep": "{name} ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ ({count} ರಲ್ಲಿ {step})…",
   "aiPenModelsReady": "AI ಪೆನ್ ಸಿದ್ಧವಾಗಿದೆ: ಕೈಬರಹ, ಗಣಿತ ಮತ್ತು ಆಕಾರಗಳು ಈಗ ಪರಿವರ್ತನೆಯಾಗುತ್ತವೆ.",
-  "offlineCodeBody": "ಸಂಪರ್ಕವಿಲ್ಲ. ಈ ಬೋರ್ಡ್ ಅನ್ನು ದೃಢೀಕರಿಸಲು ಈ ಕೋಡ್ ಅನ್ನು KINETIX ಶಿಕ್ಷಕರ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ. ಇದು {time} ವರೆಗೆ ಮಾನ್ಯ."
+  "offlineCodeBody": "ಸಂಪರ್ಕವಿಲ್ಲ. ಈ ಬೋರ್ಡ್ ಅನ್ನು ದೃಢೀಕರಿಸಲು ಈ ಕೋಡ್ ಅನ್ನು KINETIX ಶಿಕ್ಷಕರ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ. ಇದು {time} ವರೆಗೆ ಮಾನ್ಯ.",
+  "faceColourTitle": "ಮುಖದ ಬಣ್ಣ",
+  "faceColourAction": "ಮುಖದ ಬಣ್ಣ",
+  "faceColourHue": "ಛಾಯೆ",
+  "faceColourSaturation": "ಸಾಂದ್ರತೆ",
+  "faceColourBrightness": "ಪ್ರಕಾಶ",
+  "faceColourHex": "ಹೆಕ್ಸ್ ಬಣ್ಣ",
+  "faceColourPalette": "ಬಣ್ಣಗಳು",
+  "faceColourRecent": "ಇತ್ತೀಚಿನ ಬಣ್ಣಗಳು",
+  "faceColourApply": "ಅನ್ವಯಿಸಿ",
+  "faceColourReset": "ಮುಖ ಮರುಹೊಂದಿಸಿ",
+  "faceColourTapHint": "ಬಣ್ಣ ಹಾಕಲು ಘನದ ಯಾವುದೇ ಮುಖವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ",
+  "liveSolidMove": "ಈ ಘನವನ್ನು ಸರಿಸಿ"
 }

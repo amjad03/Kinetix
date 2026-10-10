@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import 'face_colour_picker.dart';
 import 'model.dart';
 import 'renderer.dart';
 
@@ -28,6 +29,12 @@ class ModelViewController extends ChangeNotifier {
   /// instead of selecting a part. The solid stays rotatable.
   Color? paintColor;
 
+  /// Tap-face mode: while true, a tap on a face opens the colour picker for that face.
+  bool pickFaces = false;
+
+  /// Words of the picker, in the teacher's language.
+  FaceColourStrings faceStrings = const FaceColourStrings();
+
   /// Painted faces: triangle index → ARGB.
   final Map<int, int> faceColors = {};
 
@@ -40,6 +47,11 @@ class ModelViewController extends ChangeNotifier {
     for (final t in triangles) {
       faceColors[t] = c.toARGB32();
     }
+    notifyListeners();
+  }
+
+  void unpaintFaces(Iterable<int> triangles) {
+    triangles.forEach(faceColors.remove);
     notifyListeners();
   }
 
@@ -285,6 +297,22 @@ class _ModelViewerState extends State<ModelViewer> with SingleTickerProviderStat
                       if (t != null) _ctrl.paintFaces(_renderer.planarFace(t), paint);
                       return;
                     }
+                    if (_ctrl.pickFaces) {
+                      final t = _renderer.hitTriangle(d.localPosition);
+                      if (t != null) {
+                        final face = _renderer.planarFace(t);
+                        final now = _ctrl.faceColors[t];
+                        showFaceColourPicker(context, current: now == null ? null : Color(now), strings: _ctrl.faceStrings).then((r) {
+                          if (r == null) return;
+                          if (r.color == null) {
+                            _ctrl.unpaintFaces(face);
+                          } else {
+                            _ctrl.paintFaces(face, r.color!);
+                          }
+                        });
+                        return;
+                      }
+                    }
                     final id = _renderer.hitTest(d.localPosition);
                     _ctrl.select(id == _ctrl.selectedPartId ? null : id);
                   },
@@ -488,12 +516,38 @@ String encodeFaceColorMap(Map<int, int> faces) => faces.isEmpty ? '' : 'fc:${fac
 
 /// The faces in text made by [encodeFaceColorMap]; empty for null, empty or other text.
 Map<int, int> decodeFaceColorMap(String? text) {
-  if (text == null || !text.startsWith('fc:')) return {};
+  final fc = text?.split('|').where((p) => p.startsWith('fc:')).firstOrNull;
+  if (fc == null) return {};
   final out = <int, int>{};
-  for (final part in text.substring(3).split(',')) {
+  for (final part in fc.substring(3).split(',')) {
     final kv = part.split('=');
     final k = kv.length == 2 ? int.tryParse(kv[0]) : null, v = kv.length == 2 ? int.tryParse(kv[1]) : null;
     if (k != null && v != null && k >= 0) out[k] = v;
   }
   return out;
+}
+
+/// A solid kept live on the board: the way it is turned and its painted faces, as text
+/// (`v:yaw,pitch|fc:...`). Plain `fc:` text (older pictures) is not a live view.
+class SolidView {
+  const SolidView({this.yaw = -35, this.pitch = 22, this.faces = const {}});
+
+  final double yaw, pitch;
+  final Map<int, int> faces;
+
+  String encode() {
+    final fc = encodeFaceColorMap(faces);
+    return 'v:${yaw.toStringAsFixed(1)},${pitch.toStringAsFixed(1)}${fc.isEmpty ? '' : '|$fc'}';
+  }
+
+  SolidView copyWith({double? yaw, double? pitch, Map<int, int>? faces}) => SolidView(yaw: yaw ?? this.yaw, pitch: pitch ?? this.pitch, faces: faces ?? this.faces);
+
+  /// The view in [text]; null when it is not a live view (`v:`).
+  static SolidView? decode(String? text) {
+    final v = text?.split('|').where((p) => p.startsWith('v:')).firstOrNull;
+    if (v == null) return null;
+    final xy = v.substring(2).split(',');
+    final yaw = xy.isNotEmpty ? double.tryParse(xy[0]) : null, pitch = xy.length > 1 ? double.tryParse(xy[1]) : null;
+    return SolidView(yaw: yaw ?? -35, pitch: pitch ?? 22, faces: decodeFaceColorMap(text));
+  }
 }

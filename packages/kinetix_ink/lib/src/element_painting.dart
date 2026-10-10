@@ -121,7 +121,9 @@ void paintElement(
   bool angles = false,
   bool paintMath = false,
   MeasureUnit unit = MeasureUnit.cm,
+  bool hideLiveSolids = false,
 }) {
+  if (hideLiveSolids && e is ImageElement && e.isLiveSolid) return;
   final rot = e.rotation;
   if (rot != 0) {
     // A turned box: drawn upright in a canvas turned about its centre.

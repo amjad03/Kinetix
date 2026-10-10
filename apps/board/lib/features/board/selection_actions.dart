@@ -21,6 +21,7 @@ class SelectionActions extends StatelessWidget {
     required this.wb,
     required this.box,
     this.onOpenLink,
+    this.onFaceColour,
     this.onEdit,
     this.onAskAi,
     this.onSolve,
@@ -37,6 +38,9 @@ class SelectionActions extends StatelessWidget {
 
   /// Opens the 3D model or lab a picture is a snapshot of.
   final void Function(EmbedLink link)? onOpenLink;
+
+  /// Arms "tap a face to colour it" on the selected live 3D solid.
+  final void Function(String elementId)? onFaceColour;
 
   /// Edits the selected equation, note or text.
   final void Function(BoardElement e)? onEdit;
@@ -133,6 +137,8 @@ class SelectionActions extends StatelessWidget {
 
     // What the selection is: opening, AI, solving, editing.
     final context_ = <Widget>[
+      if (single is ImageElement && single.isLiveSolid && onFaceColour != null)
+        btn(Icons.palette_outlined, l.faceColourAction, () => onFaceColour!(single.id), key: const Key('sel-face-colour'), text: true),
       if (link != null && onOpenLink != null)
         btn(
           link.kind == EmbedLink.lab ? Icons.science_outlined : Icons.view_in_ar_outlined,
