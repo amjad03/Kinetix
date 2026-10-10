@@ -1,5 +1,5 @@
 import { ExamOpsController } from './exam-ops.controller.js';
-import { ExamBoardController } from './exam-board.controller.js';
+import { ExamBoardController } from './exam-room-board-view.controller.js';
 import { WorkflowsModule } from '../workflows/workflows.module.js';
 import { Module } from '@nestjs/common';
 import { NotificationsModule } from '../notifications/notifications.module.js';

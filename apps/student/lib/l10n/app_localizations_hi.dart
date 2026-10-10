@@ -4446,4 +4446,46 @@ class AppLocalizationsHi extends AppLocalizations {
   String buzzerFirstIs(Object name) {
     return '$name ने सबसे पहले बज़र दबाया';
   }
+
+  @override
+  String get acadDocTitle => 'ट्रांसक्रिप्ट और प्रमाणपत्र';
+
+  @override
+  String get acadDocTranscript => 'शैक्षणिक ट्रांसक्रिप्ट';
+
+  @override
+  String get acadDocProvisional => 'अनंतिम प्रमाणपत्र';
+
+  @override
+  String get acadDocGradeCard => 'समेकित ग्रेड कार्ड';
+
+  @override
+  String get acadDocRequest => 'अनुरोध करें';
+
+  @override
+  String get acadDocPurpose => 'उद्देश्य (वैकल्पिक)';
+
+  @override
+  String get acadDocSent => 'अनुरोध परीक्षा कार्यालय को भेज दिया गया।';
+
+  @override
+  String get acadDocDownload => 'डाउनलोड';
+
+  @override
+  String get acadDocNone => 'अभी कोई अनुरोध नहीं।';
+
+  @override
+  String get acadDocRequested => 'स्वीकृति की प्रतीक्षा';
+
+  @override
+  String get acadDocApproved => 'स्वीकृत, जारी हो रहा है';
+
+  @override
+  String get acadDocRejected => 'स्वीकृत नहीं हुआ';
+
+  @override
+  String get acadDocIssued => 'तैयार';
+
+  @override
+  String get acadDocCannotOpen => 'इस फ़ोन पर कोई ऐप फ़ाइल नहीं खोल सकता।';
 }

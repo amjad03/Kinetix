@@ -83,9 +83,9 @@ class ExamRoomView {
 
 /// The exam room panel: today's sittings with the seating plan, the room's exam timetable and the hall instructions.
 class ExamRoomPanel extends StatefulWidget {
-  const ExamRoomPanel({super.key, required this.board, this.load});
+  const ExamRoomPanel({super.key, this.board, this.load});
 
-  final BoardController board;
+  final BoardController? board;
 
   /// Tests pass their own loader.
   final Future<ExamRoomView> Function(String lang)? load;
@@ -114,7 +114,7 @@ class _ExamRoomPanelState extends State<ExamRoomPanel> {
     }
   }
 
-  Future<ExamRoomView> _fromApi(String lang) async => ExamRoomView.fromJson(await widget.board.api!.examRoom(lang: lang));
+  Future<ExamRoomView> _fromApi(String lang) async => ExamRoomView.fromJson(await widget.board!.api!.examRoom(lang: lang));
 
   @override
   Widget build(BuildContext context) {

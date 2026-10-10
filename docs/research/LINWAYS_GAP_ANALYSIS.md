@@ -160,7 +160,7 @@ Effort: S <2 wks, M 2-6 wks, L 6+ wks (one engineer unless noted).
 | Live biometric and RFID | Vendor API/webhook for devices (eSSL, Matrix etc.), library and transport RFID | Punch appears in attendance within 1 min | M | Device hardware |
 | Teams/Meet/Zoom scheduling | Create meetings from timetable, attendance import | One-click class link, attendance pulled | M | Tenant/API accounts |
 | Admission depth | Index mark, rank list, agent commissions, ad-campaign ROI, Meta/Google lead connectors | Admission cycle run end to end incl. CAP-style rank list | M | Ad accounts |
-| External examiner portal and scrutiny workflow (BUILT, migration 0124) | Scoped login, anonymised scripts, QP scrutiny states | External examiner completes valuation without ERP seat | M | |
+| External examiner portal and scrutiny workflow (BUILT, migration 0128) | Scoped login, anonymised scripts, QP scrutiny states | External examiner completes valuation without ERP seat | M | |
 | LTI 1.3/SCORM, Moodle bridge | LTI tool provider/consumer | Import a SCORM package; LTI launch works | M | |
 | Accounting books | Vouchers, ledgers, trial balance, balance sheet (or certified Tally-only stance) | Matches Tally for pilot FY | L | Accountant reviewer |
 | Power BI/Excel connector, Koha/SIP2 | OData feed | Power BI dataset refresh | S | |

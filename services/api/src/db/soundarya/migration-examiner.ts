@@ -1,6 +1,6 @@
 /**
  * Samples for data migration, university result formats, standalone transcripts and the external examiner portal
- * (migration 0124): the two sample templates, a committed import batch with imported history and a saved mapping,
+ * (migration 0128): the two sample templates, a committed import batch with imported history and a saved mapping,
  * an issued grade card, and an external examiner with valuation, question paper and claim.
  */
 import { createHash } from 'node:crypto';

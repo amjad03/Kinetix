@@ -7,60 +7,8 @@ import '../../core/files.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
-/// Words on this screen, in the three app languages.
-const _words = <String, Map<String, String>>{
-  'en': {
-    'title': 'Transcripts and certificates',
-    'transcript': 'Academic transcript',
-    'provisional_certificate': 'Provisional certificate',
-    'grade_card': 'Consolidated grade card',
-    'request': 'Request',
-    'purpose': 'Purpose (optional)',
-    'sent': 'Request sent to the exam office.',
-    'download': 'Download',
-    'none': 'No requests yet.',
-    'requested': 'Waiting for approval',
-    'approved': 'Approved, being issued',
-    'rejected': 'Not approved',
-    'issued': 'Ready',
-    'cannotOpen': 'No app on this phone can open the file.',
-  },
-  'hi': {
-    'title': 'ट्रांसक्रिप्ट और प्रमाणपत्र',
-    'transcript': 'शैक्षणिक ट्रांसक्रिप्ट',
-    'provisional_certificate': 'अनंतिम प्रमाणपत्र',
-    'grade_card': 'समेकित ग्रेड कार्ड',
-    'request': 'अनुरोध करें',
-    'purpose': 'उद्देश्य (वैकल्पिक)',
-    'sent': 'अनुरोध परीक्षा कार्यालय को भेज दिया गया।',
-    'download': 'डाउनलोड',
-    'none': 'अभी कोई अनुरोध नहीं।',
-    'requested': 'स्वीकृति की प्रतीक्षा',
-    'approved': 'स्वीकृत, जारी हो रहा है',
-    'rejected': 'स्वीकृत नहीं हुआ',
-    'issued': 'तैयार',
-    'cannotOpen': 'इस फ़ोन पर कोई ऐप फ़ाइल नहीं खोल सकता।',
-  },
-  'kn': {
-    'title': 'ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಟ್ ಮತ್ತು ಪ್ರಮಾಣಪತ್ರಗಳು',
-    'transcript': 'ಶೈಕ್ಷಣಿಕ ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಟ್',
-    'provisional_certificate': 'ತಾತ್ಕಾಲಿಕ ಪ್ರಮಾಣಪತ್ರ',
-    'grade_card': 'ಸಂಯೋಜಿತ ಗ್ರೇಡ್ ಕಾರ್ಡ್',
-    'request': 'ವಿನಂತಿಸಿ',
-    'purpose': 'ಉದ್ದೇಶ (ಐಚ್ಛಿಕ)',
-    'sent': 'ವಿನಂತಿಯನ್ನು ಪರೀಕ್ಷಾ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.',
-    'download': 'ಡೌನ್‌ಲೋಡ್',
-    'none': 'ಇನ್ನೂ ವಿನಂತಿಗಳಿಲ್ಲ.',
-    'requested': 'ಅನುಮೋದನೆಗಾಗಿ ಕಾಯುತ್ತಿದೆ',
-    'approved': 'ಅನುಮೋದಿತ, ನೀಡಲಾಗುತ್ತಿದೆ',
-    'rejected': 'ಅನುಮೋದಿಸಲಾಗಿಲ್ಲ',
-    'issued': 'ಸಿದ್ಧ',
-    'cannotOpen': 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಬಲ್ಲ ಆ್ಯಪ್ ಇಲ್ಲ.',
-  },
-};
-
 /// The title of the screen and of the link to it, in the app language.
-String academicDocsTitle(BuildContext context) => (_words[Localizations.localeOf(context).languageCode] ?? _words['en']!)['title']!;
+String academicDocsTitle(BuildContext context) => context.l10n.acadDocTitle;
 
 /// Asks the exam office for a transcript, provisional certificate or consolidated grade card and downloads it once issued.
 class AcademicDocsScreen extends StatefulWidget {
@@ -96,8 +44,24 @@ class _AcademicDocsScreenState extends State<AcademicDocsScreen> {
   }
 
   String _w(String key) {
-    final code = Localizations.localeOf(context).languageCode;
-    return (_words[code] ?? _words['en']!)[key] ?? _words['en']![key] ?? key;
+    final l = context.l10n;
+    return switch (key) {
+      'title' => l.acadDocTitle,
+      'transcript' => l.acadDocTranscript,
+      'provisional_certificate' => l.acadDocProvisional,
+      'grade_card' => l.acadDocGradeCard,
+      'request' => l.acadDocRequest,
+      'purpose' => l.acadDocPurpose,
+      'sent' => l.acadDocSent,
+      'download' => l.acadDocDownload,
+      'none' => l.acadDocNone,
+      'requested' => l.acadDocRequested,
+      'approved' => l.acadDocApproved,
+      'rejected' => l.acadDocRejected,
+      'issued' => l.acadDocIssued,
+      'cannotOpen' => l.acadDocCannotOpen,
+      _ => key,
+    };
   }
 
   Future<void> _load() async {

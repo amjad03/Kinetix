@@ -4453,4 +4453,46 @@ class AppLocalizationsKn extends AppLocalizations {
   String buzzerFirstIs(Object name) {
     return '$name ಮೊದಲು ಬಜರ್ ಒತ್ತಿದರು';
   }
+
+  @override
+  String get acadDocTitle => 'ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಟ್ ಮತ್ತು ಪ್ರಮಾಣಪತ್ರಗಳು';
+
+  @override
+  String get acadDocTranscript => 'ಶೈಕ್ಷಣಿಕ ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಟ್';
+
+  @override
+  String get acadDocProvisional => 'ತಾತ್ಕಾಲಿಕ ಪ್ರಮಾಣಪತ್ರ';
+
+  @override
+  String get acadDocGradeCard => 'ಸಂಯೋಜಿತ ಗ್ರೇಡ್ ಕಾರ್ಡ್';
+
+  @override
+  String get acadDocRequest => 'ವಿನಂತಿಸಿ';
+
+  @override
+  String get acadDocPurpose => 'ಉದ್ದೇಶ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get acadDocSent => 'ವಿನಂತಿಯನ್ನು ಪರೀಕ್ಷಾ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get acadDocDownload => 'ಡೌನ್‌ಲೋಡ್';
+
+  @override
+  String get acadDocNone => 'ಇನ್ನೂ ವಿನಂತಿಗಳಿಲ್ಲ.';
+
+  @override
+  String get acadDocRequested => 'ಅನುಮೋದನೆಗಾಗಿ ಕಾಯುತ್ತಿದೆ';
+
+  @override
+  String get acadDocApproved => 'ಅನುಮೋದಿತ, ನೀಡಲಾಗುತ್ತಿದೆ';
+
+  @override
+  String get acadDocRejected => 'ಅನುಮೋದಿಸಲಾಗಿಲ್ಲ';
+
+  @override
+  String get acadDocIssued => 'ಸಿದ್ಧ';
+
+  @override
+  String get acadDocCannotOpen => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಬಲ್ಲ ಆ್ಯಪ್ ಇಲ್ಲ.';
 }
