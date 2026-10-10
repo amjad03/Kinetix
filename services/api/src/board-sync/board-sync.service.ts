@@ -1,11 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, gte, lte, sql } from 'drizzle-orm';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { and, asc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import type { BoardPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { localParts } from '../common/time.js';
 import { Clock } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { boardSessions, devices, examPapers, examSeats, examSessions, invigilationDuties, rooms, sections, subjects, users } from '../db/schema.js';
+import { pollCoMap } from '../db/schema-assist.js';
+import { boardSessions, coSets, courseOutcomes, devices, polls, examPapers, examSeats, examSessions, invigilationDuties, rooms, sections, subjects, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 
@@ -64,6 +65,35 @@ export class BoardSyncService {
       .where(and(eq(boardSessions.id, p.sessionId), sql`${boardSessions.endedAt} is null`));
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.teacherId, action: 'board_session.period_opened', subjectType: 'board_session', subjectId: p.sessionId, data: { slotId: slot.id, sectionId: slot.sectionId } });
     return { ...(await this.sessions.context(tx, p.sessionId)), roster: await this.sessions.roster(tx, slot.sectionId) };
+  }
+
+  /** The course outcomes of the subject open on the board, for tagging a question the teacher asks (OBE classroom evidence). */
+  async courseOutcomes(tx: Tx, p: BoardPrincipal) {
+    const [s] = await tx.select({ subjectId: boardSessions.subjectId }).from(boardSessions).where(eq(boardSessions.id, p.sessionId));
+    if (!s?.subjectId) return [];
+    return tx
+      .select({ id: courseOutcomes.id, code: courseOutcomes.code, statement: courseOutcomes.statement })
+      .from(courseOutcomes)
+      .innerJoin(coSets, eq(coSets.id, courseOutcomes.coSetId))
+      .where(eq(coSets.subjectId, s.subjectId))
+      .orderBy(asc(courseOutcomes.ord), asc(courseOutcomes.code));
+  }
+
+  /** Tags a question asked on this board with the course outcomes it measures (replacing earlier tags). */
+  async tagPoll(tx: Tx, p: BoardPrincipal, pollId: string, coIds: string[]) {
+    const [poll] = await tx.select().from(polls).where(eq(polls.id, pollId));
+    if (!poll) throw new NotFoundException('Poll not found');
+    if (poll.teacherId !== p.teacherId) throw new ForbiddenException('Only the teacher who asked this question can tag it');
+    if (!poll.subjectId) throw new BadRequestException('This question has no subject, so it cannot be tied to a course outcome');
+    const ids = [...new Set(coIds)];
+    if (ids.length) {
+      const ok = await tx.select({ id: courseOutcomes.id }).from(courseOutcomes).innerJoin(coSets, eq(coSets.id, courseOutcomes.coSetId)).where(and(inArray(courseOutcomes.id, ids), eq(coSets.subjectId, poll.subjectId)));
+      if (ok.length !== ids.length) throw new BadRequestException('Some course outcomes belong to another subject');
+    }
+    await tx.delete(pollCoMap).where(eq(pollCoMap.pollId, pollId));
+    if (ids.length) await tx.insert(pollCoMap).values(ids.map((coId) => ({ tenantId: p.tenantId, pollId, coId, createdBy: p.teacherId })));
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.teacherId, action: 'obe.poll.tagged', subjectType: 'poll', subjectId: pollId, data: { cos: ids.length, from: 'board' } });
+    return { tagged: ids.length };
   }
 
   /**

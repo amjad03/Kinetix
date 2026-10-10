@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../core/attendance_live.dart';
 
 import '../../core/app_state.dart';
 import '../../core/family.dart';
@@ -56,6 +57,7 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
         onMessage: messages.received,
         onReconnected: messages.load,
         onBusPosition: family.busMoved,
+        onAttendance: (_) => AttendanceLive.changed(),
       )..start();
     }
     widget.state.pendingPushTap.addListener(_openPushTap);

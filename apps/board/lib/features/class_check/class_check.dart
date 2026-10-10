@@ -27,7 +27,13 @@ class ClassCheck extends ChangeNotifier {
 
   /// Sets up a question with the teacher and asks it.
   Future<void> ask(BuildContext context) async {
-    final setup = await showPanelDialog<AskSetup>(context: context, builder: (_) => const BoardChromeTheme(child: AskClassDialog()));
+    // The subject's course outcomes, when a class is open and the board is online; the teacher may tag the question with them.
+    var outcomes = <Map<String, dynamic>>[];
+    try {
+      if (board.isSignedIn && board.session?.sectionName != null) outcomes = await board.api?.courseOutcomes() ?? outcomes;
+    } catch (_) {}
+    if (!context.mounted) return;
+    final setup = await showPanelDialog<AskSetup>(context: context, builder: (_) => BoardChromeTheme(child: AskClassDialog(outcomes: outcomes)));
     if (setup == null) return;
     await start(setup);
   }
@@ -38,7 +44,7 @@ class ClassCheck extends ChangeNotifier {
       await old.close();
       old.dispose();
     }
-    poll = ClassPoll(board: board, kind: setup.kind, question: setup.question, options: setup.options, correct: setup.correct);
+    poll = ClassPoll(board: board, kind: setup.kind, question: setup.question, options: setup.options, correct: setup.correct, coIds: setup.coIds);
     notifyListeners();
     await poll!.start();
   }

@@ -10,6 +10,7 @@ import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/core/outbox_store.dart';
 import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/features/room_sync/room_sync_gate.dart';
+import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _NoRealtime extends Realtime {
@@ -64,6 +65,7 @@ void main() {
     expect(first.pendingOps, 3);
     expect(store.ops.every((op) => op['type'] == 'rest'), isTrue);
     await first.outboxSaved;
+    await Future<void>.delayed(const Duration(milliseconds: 50)); // let the recordings list finish loading
     first.dispose();
 
     final second = board(store);
@@ -74,8 +76,27 @@ void main() {
     await second.flushOutbox();
     await second.outboxSaved;
     expect(second.pendingOps, 0);
-    expect(calls.map((c) => c.split(' ').take(2).join(' ')), ['POST /v1/coverage', 'POST /v1/homework/from-board', 'POST /v1/badges']);
-    second.dispose();
+    expect(calls.where((c) => !c.startsWith('GET')).map((c) => c.split(' ').take(2).join(' ')), ['POST /v1/coverage', 'POST /v1/homework/from-board', 'POST /v1/badges']);
+  });
+
+  test('a board saved offline is kept (the latest save only) and goes up when the board is back', () async {
+    final store = MemoryOutboxStore();
+    final b = board(store);
+    await b.start();
+    await b.enroll('http://test', 'KX-AAAA-BBBB');
+    b.onPaired('session-token', _session('s1'));
+    final saved = SavedBoard(background: BoardBackground.plain, canvas: const Size(1920, 1080), pages: const []);
+    final first = await b.api!.saveWhiteboard('11111111-1111-4111-8111-111111111111', title: 'Shares', board: saved, share: true);
+    expect(first.title, 'Shares');
+    await b.api!.saveWhiteboard('11111111-1111-4111-8111-111111111111', title: 'Shares v2', board: saved, share: true);
+    expect(b.pendingOps, 1);
+    up = true;
+    await b.flushOutbox();
+    await b.outboxSaved;
+    expect(b.pendingOps, 0);
+    final puts = calls.where((c) => c.startsWith('PUT /v1/whiteboards/')).toList();
+    expect(puts, hasLength(1));
+    expect(puts.single, contains('Shares v2'));
   });
 
   test('a call the server refuses is not kept', () async {

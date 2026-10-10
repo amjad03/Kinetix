@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import type { SyncOpResult } from '@kinetix/shared';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { BoardPrincipal } from '../auth/principal.js';
 import { localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { attendanceRecords, boardSessions, participationEvents, students, syncOps } from '../db/schema.js';
+import { attendanceRecords, boardSessions, guardians, participationEvents, students, syncOps, userRoles } from '../db/schema.js';
+import { RealtimeEvents, type AttendanceUpdatedEvent } from '@kinetix/shared';
+import { RealtimeGateway } from '../realtime/realtime.gateway.js';
+import { DbService } from '../db/db.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
@@ -30,9 +33,33 @@ export class SyncService {
     private readonly timetable: TimetableService,
     private readonly notifications: NotificationsService,
     private readonly events: EventBus,
+    private readonly db: DbService,
+    private readonly realtime: RealtimeGateway,
   ) {}
 
-  async push(tx: Tx, p: BoardPrincipal, ops: IncomingOp[]): Promise<SyncOpResult[]> {
+  /** Staff who see attendance live in the ERP. */
+  private static readonly WATCHERS = ['tenant_admin', 'principal', 'hod', 'teacher'] as const;
+
+  /**
+   * Tells the students, their guardians and staff that attendance changed, once the batch has been committed (so a refetch sees it).
+   * Best effort: a failure here never fails the sync.
+   */
+  async announceAttendance(tenantId: string, notice: AttendanceUpdatedEvent): Promise<void> {
+    if (notice.studentIds.length === 0) return;
+    try {
+      const users = await this.db.withTenant(tenantId, async (tx) => {
+        const family = await tx.select({ userId: guardians.userId }).from(guardians).where(inArray(guardians.studentId, notice.studentIds));
+        const own = await tx.select({ userId: students.userId }).from(students).where(inArray(students.id, notice.studentIds));
+        const staff = await tx.select({ userId: userRoles.userId }).from(userRoles).where(inArray(userRoles.role, [...SyncService.WATCHERS]));
+        return [...family, ...own, ...staff].map((r) => r.userId).filter((u): u is string => !!u);
+      });
+      this.realtime.toUsers(users, RealtimeEvents.AttendanceUpdated, notice);
+    } catch {
+      // the marks are saved; the pages catch up on their next load
+    }
+  }
+
+  async push(tx: Tx, p: BoardPrincipal, ops: IncomingOp[], marked?: AttendanceUpdatedEvent[]): Promise<SyncOpResult[]> {
     const [session] = await tx.select().from(boardSessions).where(eq(boardSessions.id, p.sessionId));
     const tz = await this.timetable.tenantTimezone(tx);
     const results: SyncOpResult[] = [];
@@ -52,6 +79,15 @@ export class SyncService {
         // A savepoint per operation: one bad op does not undo the rest of the batch.
         await tx.transaction(async (sp) => this.apply(sp, p, session, tz, op));
         result = { opId: op.opId, status: 'applied' };
+        if (marked && op.type === 'attendance.marked') {
+          const day = localParts(new Date(op.occurredAt), tz).date;
+          const status = String(op.payload.status);
+          let n = marked.find((m) => m.date === day && m.slotId === (session.timetableSlotId ?? null));
+          if (!n) marked.push((n = { sectionId: session.sectionId ?? null, date: day, slotId: session.timetableSlotId ?? null, studentIds: [], present: 0, absent: 0 }));
+          n.studentIds.push(String(op.payload.studentId));
+          if (status === 'present' || status === 'late') n.present++;
+          if (status === 'absent') n.absent++;
+        }
       } catch (e) {
         if (!(e instanceof Rejection)) throw e;
         result = { opId: op.opId, status: 'rejected', reason: e.message };

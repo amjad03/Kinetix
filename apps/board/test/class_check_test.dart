@@ -47,6 +47,24 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('a question can be tagged with course outcomes, which the board sends for OBE', (tester) async {
+    await pump(tester);
+    await tap(tester, find.byKey(const Key('tool-tools')));
+    await tap(tester, find.text('Ask the class'));
+    expect(find.byKey(const Key('ask-co-co-1')), findsOneWidget);
+    await tap(tester, find.byKey(const Key('ask-co-co-2')));
+    await tap(tester, find.byKey(const Key('ask-start')));
+    expect(server.requests.where((r) => r.startsWith('GET /v1/classroom/course-outcomes')), hasLength(1));
+    expect(server.requests.where((r) => RegExp(r'^PUT /v1/polls/[^/]+/cos$').hasMatch(r)), hasLength(1));
+    // End the question and clear it so no timer is left running.
+    await tester.pump(const Duration(seconds: 13));
+    await tester.pumpAndSettle();
+    await tap(tester, find.byKey(const Key('poll-end')));
+    await tap(tester, find.byKey(const Key('poll-dismiss')));
+    await tester.pumpWidget(const SizedBox());
+    board.dispose();
+  });
+
   testWidgets('ask the class: app answers arrive live, cards from a photo join them, results go on the board', (tester) async {
     await pump(tester);
     // Two cards in the photo: card 1 (Aarav) holds up B, card 2 (Ananya) holds up D.

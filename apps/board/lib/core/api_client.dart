@@ -89,6 +89,12 @@ class ApiClient {
   /// Exam room mode: the paper being sat in this board's room, or `{active: false}`.
   Future<Map<String, dynamic>> examRoom() async => await _send('GET', '/v1/devices/me/exam-room', useDeviceToken: true) as Map<String, dynamic>;
 
+  /// The course outcomes of the subject open on the board (a poll can be tagged with them for OBE).
+  Future<List<Map<String, dynamic>>> courseOutcomes() async => (await _send('GET', '/v1/classroom/course-outcomes') as List<dynamic>).cast<Map<String, dynamic>>();
+
+  /// Tags a poll with the course outcomes it measures; its results then count as classroom evidence in OBE.
+  Future<void> tagPoll(String pollId, List<String> coIds) async => _send('PUT', '/v1/polls/$pollId/cos', body: {'coIds': coIds});
+
   Future<Map<String, dynamic>> buzzer() async => await _send('GET', '/v1/classroom/buzzer') as Map<String, dynamic>;
   Future<Map<String, dynamic>> lockBuzzer(bool locked) async => await _send('POST', '/v1/classroom/buzzer/lock', body: {'locked': locked}) as Map<String, dynamic>;
   Future<Map<String, dynamic>> resetBuzzer() async => await _send('POST', '/v1/classroom/buzzer/reset') as Map<String, dynamic>;
@@ -115,8 +121,19 @@ class ApiClient {
   Future<void> setClassLive(bool on) async => _send('POST', '/v1/sessions/current/live', body: {'on': on});
 
   Future<WhiteboardSummary> saveWhiteboard(String id, {required String title, required SavedBoard board, required bool share}) async {
-    final j = await _send('PUT', '/v1/whiteboards/$id', body: {...board.toJson(), 'title': title, 'share': share});
-    return WhiteboardSummary.fromJson(j as Map<String, dynamic>);
+    final body = {...board.toJson(), 'title': title, 'share': share};
+    try {
+      final j = await _send('PUT', '/v1/whiteboards/$id', body: body);
+      return WhiteboardSummary.fromJson(j as Map<String, dynamic>);
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      // Offline: the save is kept and goes up (the board picks the id, so saving again is safe) when the board is back.
+      final keep = defer;
+      if (keep == null) rethrow;
+      await keep('PUT', '/v1/whiteboards/$id', body);
+      return WhiteboardSummary(id: id, title: title, pageCount: (body['pages'] as List?)?.length ?? 1, updatedAt: DateTime.now());
+    }
   }
 
   Future<List<WhiteboardSummary>> whiteboards() async {

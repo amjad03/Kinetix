@@ -346,7 +346,8 @@ class BoardController extends ChangeNotifier {
   /// Starts the minute-by-minute room check (call once the board is enrolled).
   void startRoomWatch() {
     _roomTimer?.cancel();
-    _roomTimer = Timer.periodic(const Duration(minutes: 1), (_) => unawaited(refreshRoom()));
+    // Under `flutter test` nothing may keep a timer running; tests call [refreshRoom] themselves.
+    if (!Platform.environment.containsKey('FLUTTER_TEST')) _roomTimer = Timer.periodic(const Duration(minutes: 1), (_) => unawaited(refreshRoom()));
     unawaited(refreshRoom());
   }
 
@@ -792,6 +793,8 @@ class BoardController extends ChangeNotifier {
   /// Keeps a call that could not reach the server (see [ApiClient.defer]) with the class it was made in.
   Future<void> _deferRest(String method, String path, Map<String, dynamic>? body) async {
     if (session == null) return;
+    // Saving the same board again replaces the earlier kept save: only the latest snapshot needs to go up.
+    if (method == 'PUT') _deferred.removeWhere((d) => d['method'] == 'PUT' && d['path'] == path && d['sessionId'] == session!.sessionId);
     _deferred.add({'opId': _uuidV4(), 'type': 'rest', 'method': method, 'path': path, 'body': body, 'sessionId': session!.sessionId, 'at': DateTime.now().toUtc().toIso8601String()});
     online = false;
     _persistOutbox();

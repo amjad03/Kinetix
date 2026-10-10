@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
+import '../../core/attendance_live.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
@@ -43,6 +44,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   void initState() {
     super.initState();
     _load();
+    AttendanceLive.tick.addListener(_load);
+  }
+
+  @override
+  void dispose() {
+    AttendanceLive.tick.removeListener(_load);
+    super.dispose();
   }
 
   Future<void> _load() async {

@@ -42,6 +42,8 @@ export const RealtimeEvents = {
   RemoteCommand: 'remote.command',
   /** Board → server → the teacher of its class: what the board shows ({@link RemoteBoardState}). */
   RemoteState: 'remote.state',
+  /** Server → the student, their guardians and staff: attendance was marked or changed from a board ({@link AttendanceUpdatedEvent}); refetch it. */
+  AttendanceUpdated: 'attendance.updated',
   /** Server → the student and their guardians: a teacher awarded a badge ({@link BadgeAwardedEvent}). */
   BadgeAwarded: 'badge.awarded',
   /** Server → guardians, staff and the driver: the school bus moved ({@link TransportPositionEvent}). */
@@ -358,6 +360,16 @@ export interface StudentBadges {
   studentId: string;
   badges: BadgeView[];
   counts: Partial<Record<BadgeKind, number>>;
+}
+
+export interface AttendanceUpdatedEvent {
+  sectionId: string | null;
+  /** The school day, `2026-10-12`. */
+  date: string;
+  slotId: string | null;
+  studentIds: string[];
+  present: number;
+  absent: number;
 }
 
 export interface BadgeAwardedEvent {
