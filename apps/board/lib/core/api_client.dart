@@ -60,6 +60,30 @@ class ApiClient {
 
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
 
+  // --- Profile: classrooms, training, End class with notes, student buzzer -------------------
+
+  /// Every class the signed-in teacher teaches or has taught, with sessions and last taken.
+  Future<List<Map<String, dynamic>>> classrooms() async => (await _send('GET', '/v1/classroom/classrooms') as List<dynamic>).cast<Map<String, dynamic>>();
+
+  /// Switches the board's open session to one of the teacher's classes.
+  Future<Map<String, dynamic>> openClassroom(String sectionId, String? subjectId) async =>
+      await _send('POST', '/v1/classroom/classrooms/open', body: {'sectionId': sectionId, 'subjectId': subjectId}) as Map<String, dynamic>;
+
+  Future<List<Map<String, dynamic>>> trainingSlots() async => (await _send('GET', '/v1/classroom/trainings/slots') as List<dynamic>).cast<Map<String, dynamic>>();
+
+  Future<Map<String, dynamic>> requestTraining(String slotAt, String topic) async =>
+      await _send('POST', '/v1/classroom/trainings', body: {'slotAt': slotAt, 'topic': topic}) as Map<String, dynamic>;
+
+  Future<List<Map<String, dynamic>>> myTrainings() async => (await _send('GET', '/v1/classroom/trainings/mine') as List<dynamic>).cast<Map<String, dynamic>>();
+
+  /// Ends the class: saves the notes, optionally publishes them to the students and answers a summary.
+  Future<Map<String, dynamic>> endClassWithNotes({String notes = '', bool publish = false}) async =>
+      await _send('POST', '/v1/classroom/end', body: {'notes': notes, 'publish': publish}) as Map<String, dynamic>;
+
+  Future<Map<String, dynamic>> buzzer() async => await _send('GET', '/v1/classroom/buzzer') as Map<String, dynamic>;
+  Future<Map<String, dynamic>> lockBuzzer(bool locked) async => await _send('POST', '/v1/classroom/buzzer/lock', body: {'locked': locked}) as Map<String, dynamic>;
+  Future<Map<String, dynamic>> resetBuzzer() async => await _send('POST', '/v1/classroom/buzzer/reset') as Map<String, dynamic>;
+
   // --- Shared-board profiles (features/profiles; docs/architecture/board-profiles.md) -------
 
   /// The teachers who have signed in on this board, with each PIN's salt and hash for offline checks.

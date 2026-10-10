@@ -3000,6 +3000,10 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'training_requests',
+  'class_notes',
+  'buzzer_rounds',
+  'buzzer_presses',
   'campuses',
   'users',
   'user_roles',
@@ -6739,4 +6743,73 @@ export const integrityMatches = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('integrity_matches_check_idx').on(t.checkId, t.similarity)],
+);
+
+/** A teacher's request, from the board, for a training session with the institution (Schedule a Training). */
+export const trainingRequests = pgTable(
+  'training_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    deviceId: uuid('device_id').references(() => devices.id, { onDelete: 'set null' }),
+    slotAt: timestamp('slot_at', { withTimezone: true }).notNull(),
+    topic: text('topic').notNull(),
+    notes: text('notes').notNull().default(''),
+    /** requested | confirmed | done | cancelled */
+    status: text('status').notNull().default('requested'),
+    adminNote: text('admin_note').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [index('training_requests_status_idx').on(t.tenantId, t.status, t.slotAt)],
+);
+
+/** The notes a teacher saved when ending a class; published ones reach the section's students. */
+export const classNotes = pgTable(
+  'class_notes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id),
+    teacherId: uuid('teacher_id').notNull().references(() => users.id),
+    sectionId: uuid('section_id').references(() => sections.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    title: text('title').notNull(),
+    notes: text('notes').notNull(),
+    summary: jsonb('summary').$type<Record<string, unknown>>().notNull().default({}),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    /** Link token: `<tenantId>.<random>`, so the public page can find the tenant. */
+    shareToken: text('share_token').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('class_notes_session_uq').on(t.boardSessionId), uniqueIndex('class_notes_token_uq').on(t.shareToken)],
+);
+
+/** The buzzer of a class: one row per board session; `roundNo` goes up on each reset. */
+export const buzzerRounds = pgTable(
+  'buzzer_rounds',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id),
+    roundNo: integer('round_no').notNull().default(1),
+    locked: boolean('locked').notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('buzzer_rounds_session_uq').on(t.boardSessionId)],
+);
+
+/** One student's buzz in a round; `seq` is the order (1 = first). */
+export const buzzerPresses = pgTable(
+  'buzzer_presses',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id),
+    roundNo: integer('round_no').notNull(),
+    studentUserId: uuid('student_user_id').notNull().references(() => users.id),
+    seq: integer('seq').notNull(),
+    pressedAt: timestamp('pressed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('buzzer_presses_uq').on(t.boardSessionId, t.roundNo, t.studentUserId)],
 );

@@ -69,7 +69,7 @@ void main() {
           201,
         );
       }
-      if (req.url.path == '/v1/sessions/current/end') return http.Response('{"ended":true}', 201);
+      if (req.url.path == '/v1/classroom/end') return http.Response('{"ended":true}', 201);
       return http.Response('[]', 200);
     });
     board = BoardController(
@@ -258,7 +258,7 @@ void main() {
     final paths = requests.map((r) => '${r.method} ${r.url.path}').toList();
     final finish = paths.indexWhere((p) => p.endsWith('/finish'));
     expect(finish, greaterThan(0));
-    expect(paths.indexOf('POST /v1/sessions/current/end'), greaterThan(finish));
+    expect(paths.indexOf('POST /v1/classroom/end'), greaterThan(finish));
     expect(board.isSignedIn, isFalse);
     expect(board.recordings.statusOf(board.recordings.items.single), RecordingStatus.shared);
     board.dispose();

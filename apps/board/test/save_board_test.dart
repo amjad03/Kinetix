@@ -52,7 +52,7 @@ void main() {
       if (req.method == 'PUT' && req.url.path.startsWith('/v1/whiteboards/')) {
         return http.Response(jsonEncode(summary(jsonDecode(req.body) as Map<String, dynamic>, req.url.pathSegments.last)), 200);
       }
-      if (req.url.path == '/v1/sessions/current/end') return http.Response('{"ended":true}', 201);
+      if (req.url.path == '/v1/classroom/end') return http.Response('{"ended":true}', 201);
       return http.Response('[]', 200);
     });
     board = BoardController(apiFactory: (url) => ApiClient(baseUrl: url, client: client), realtimeFactory: (_) => _NoRealtime());
@@ -129,7 +129,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(lastSave()['share'], isTrue);
-    expect(requests.last.url.path, '/v1/sessions/current/end');
+    expect(requests.last.url.path, '/v1/classroom/end');
     expect(board.isSignedIn, isFalse);
     expect(find.byTooltip('Undo'), findsOneWidget); // the board is still there, cleared
     board.dispose();

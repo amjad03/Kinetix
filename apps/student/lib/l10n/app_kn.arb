@@ -1253,5 +1253,13 @@
   "instalmentOverdue": "ಗಡುವು ಮೀರಿದೆ",
   "instalmentsSummary": "{total} ರಲ್ಲಿ {paid} ಪಾವತಿಸಲಾಗಿದೆ",
   "libraryRenew": "ನವೀಕರಿಸಿ",
-  "libraryRenewed": "ನವೀಕರಿಸಲಾಗಿದೆ. ಹೊಸ ಗಡುವು ತೋರಿಸಲಾಗಿದೆ."
+  "libraryRenewed": "ನವೀಕರಿಸಲಾಗಿದೆ. ಹೊಸ ಗಡುವು ತೋರಿಸಲಾಗಿದೆ.",
+  "buzzerTitle": "ತರಗತಿಯ ಬಜರ್",
+  "buzzerPress": "ಬಜರ್ ಒತ್ತಿ!",
+  "buzzerReady": "ಶಿಕ್ಷಕರು ಬಜರ್ ತೆರೆದಿದ್ದಾರೆ. ಮೊದಲು ಒತ್ತಿ!",
+  "buzzerLocked": "ಬಜರ್ ಲಾಕ್ ಆಗಿದೆ",
+  "buzzerYouFirst": "ನೀವು ಮೊದಲು ಬಜರ್ ಒತ್ತಿದ್ದೀರಿ!",
+  "buzzerYourPlace": "ನೀವು ಬಜರ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು {n}ನೇ ಸ್ಥಾನದಲ್ಲಿದ್ದೀರಿ",
+  "buzzerFirstIs": "{name} ಮೊದಲು ಬಜರ್ ಒತ್ತಿದರು",
+  "classNotesTitle": "ತರಗತಿಯ ಟಿಪ್ಪಣಿಗಳು"
 }

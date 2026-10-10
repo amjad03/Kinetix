@@ -10,6 +10,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
 import 'alumni.dart';
+import 'buzzer.dart';
 import 'campus.dart';
 import 'campus_life.dart';
 import 'campus_services.dart';
@@ -219,6 +220,15 @@ abstract class StudentApi {
 
   /// The class being taught live right now, or null.
   Future<LiveClass?> live();
+
+  /// The class buzzer: is it open, locked, and my place this round.
+  Future<BuzzerStatus> buzzer();
+
+  /// Press the buzzer; answers the status with my place.
+  Future<BuzzerStatus> pressBuzzer();
+
+  /// Notes the teachers of my class published when they ended a class, newest first.
+  Future<List<ClassNote>> classNotes();
 
   /// The question open in the student's class on the board now, or null.
   Future<ClassQuestion?> classQuestion();
@@ -807,6 +817,15 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<void> markConversationRead(String conversationId) async => _send('POST', '/v1/conversations/$conversationId/read');
+
+  @override
+  Future<BuzzerStatus> buzzer() async => BuzzerStatus.fromJson(await _send('GET', '/v1/student/buzzer') as Map<String, dynamic>);
+
+  @override
+  Future<BuzzerStatus> pressBuzzer() async => BuzzerStatus.fromJson(await _send('POST', '/v1/student/buzzer/press') as Map<String, dynamic>);
+
+  @override
+  Future<List<ClassNote>> classNotes() async => [for (final j in await _send('GET', '/v1/student/class-notes') as List<dynamic>) ClassNote.fromJson((j as Map).cast<String, dynamic>())];
 
   @override
   Future<LiveClass?> live() async {

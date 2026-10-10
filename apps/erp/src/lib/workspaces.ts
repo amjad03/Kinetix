@@ -29,7 +29,7 @@ export const WORKSPACE_SECTIONS: Record<Exclude<Workspace, 'all'>, readonly Sect
   ],
   content: [
     ...COMMON,
-    'syllabus', 'topicVideos', 'courses', 'questionBank', 'curriculum', 'learningSupport', 'assessmentTools', 'skills', 'library', 'boards', 'devices', 'live',
+    'syllabus', 'topicVideos', 'courses', 'questionBank', 'curriculum', 'learningSupport', 'assessmentTools', 'skills', 'library', 'boards', 'devices', 'trainings', 'live',
   ],
   ai: [...COMMON, 'ai', 'aiAudit', 'reports', 'department', 'topicVideos'],
 };

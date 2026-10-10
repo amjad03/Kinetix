@@ -519,18 +519,26 @@ class BoardController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> endClass() async {
+  /// The students' buzzes in the current round, pushed by the server ({open, locked, roundNo, presses}).
+  final ValueNotifier<Map<String, dynamic>?> buzzerState = ValueNotifier(null);
+
+  /// Ends the class. With [notes] they are saved (and published to the students when [publish]);
+  /// answers the server's summary ({summary, sharePath, published, ...}), or null when offline.
+  Future<Map<String, dynamic>?> endClass({String notes = '', bool publish = false}) async {
+    Map<String, dynamic>? result;
     if (session != null) {
       await flushOutbox();
       // Uploads need this session's token, so lesson recordings go up before it ends.
       await recordings.uploadBeforeSignOut();
       try {
-        await api?.endSession();
+        result = await api?.endClassWithNotes(notes: notes, publish: publish);
       } catch (_) {
         // Offline: the server ends the session itself when the period expires.
       }
     }
+    buzzerState.value = null;
     _signOut();
+    return result;
   }
 
   void setEyeComfort(EyeComfortSettings s) {
@@ -810,6 +818,7 @@ class BoardController extends ChangeNotifier {
         if (!classEvents.isClosed) classEvents.add((event, e));
       });
     }
+    rt.on(RealtimeEvents.buzzerUpdated, (e) => buzzerState.value = e);
     rt.on(RealtimeEvents.castPending, cast.onPending);
     rt.on(RealtimeEvents.castIce, (e) => unawaited(cast.onIce(e)));
     rt.on(RealtimeEvents.castSignal, (e) => unawaited(cast.onSignal(e)));
@@ -857,6 +866,15 @@ class BoardController extends ChangeNotifier {
   /// Opens a teacher's class on the board with a session the board got another way than
   /// pairing: a teacher's PIN on a shared board (features/profiles).
   void openSession(String sessionToken, SessionContext ctx) => onPaired(sessionToken, ctx);
+
+  /// "Open class" (Your Classrooms): the open session switched to another of the teacher's
+  /// classes; [json] is the server's session context with its roster.
+  Future<void> refreshSessionContext(Map<String, dynamic> json) async {
+    session = SessionContext.fromJson(json);
+    attendance.clear();
+    notifyListeners();
+    await _loadRoster();
+  }
 
   @visibleForTesting
   void onPaired(String sessionToken, SessionContext ctx) {

@@ -10,6 +10,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/alumni.dart';
+import '../core/buzzer.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
 import '../core/campus.dart';
@@ -2174,6 +2175,29 @@ class FakeStudentApi implements StudentApi {
   Future<LiveClass?> live() async {
     calls.add('live');
     return liveClass;
+  }
+
+  /// The buzzer as the teacher left it; a press takes the next place.
+  BuzzerStatus buzzerStatus = const BuzzerStatus(active: false, locked: true, roundNo: 0);
+  List<ClassNote> notes = [];
+
+  @override
+  Future<BuzzerStatus> buzzer() async {
+    calls.add('buzzer');
+    return buzzerStatus;
+  }
+
+  @override
+  Future<BuzzerStatus> pressBuzzer() async {
+    calls.add('buzz');
+    if (buzzerStatus.canPress) buzzerStatus = BuzzerStatus(active: true, locked: false, roundNo: buzzerStatus.roundNo, myRank: 1, firstName: 'You');
+    return buzzerStatus;
+  }
+
+  @override
+  Future<List<ClassNote>> classNotes() async {
+    calls.add('classNotes');
+    return notes;
   }
 
   /// The question open on the board, if any; answers land in [ClassQuestion.myAnswer].

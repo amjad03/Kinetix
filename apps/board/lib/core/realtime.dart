@@ -20,6 +20,7 @@ abstract final class RealtimeEvents {
   static const castIce = 'cast.ice';
   static const castSignal = 'cast.signal';
   static const castEnded = 'cast.ended';
+  static const buzzerUpdated = 'buzzer.updated';
   static const deviceAction = 'device.action';
   static const deviceActionAck = 'device.action.ack';
   static const deviceActionsPull = 'device.actions.pull';

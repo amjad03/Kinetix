@@ -95,6 +95,8 @@ import '../insert/presentation_pane.dart';
 import '../safe_web/safe_web.dart';
 import 'layout/pen_modes.dart';
 import 'classroom_apps.dart';
+import 'classroom_profile_strings.dart';
+import 'classroom_profile_ui.dart';
 import 'profile_extras.dart';
 import 'sb_strings.dart';
 import 'share_whiteboard.dart';
@@ -1064,6 +1066,8 @@ class _BoardScreenState extends State<BoardScreen> {
 
   Future<void> _endClass() async {
     final hasInk = !_wb.isBlank;
+    var notes = '';
+    var publish = board.session?.sectionName != null;
     final canShare = board.session?.sectionName != null;
     var save = hasInk;
     var share = hasInk && canShare;
@@ -1086,6 +1090,22 @@ class _BoardScreenState extends State<BoardScreen> {
                     const SizedBox(height: Kx.s12),
                     Text(context.l10n.endClassRecordingNote, key: const Key('end-recording-note')),
                   ],
+                  const SizedBox(height: Kx.s12),
+                  TextField(
+                    key: const Key('end-notes'),
+                    minLines: 2,
+                    maxLines: 4,
+                    onChanged: (v) => setDialog(() => notes = v),
+                    decoration: InputDecoration(labelText: classroomStrings(context).t('endNotes'), hintText: classroomStrings(context).t('endNotesHint'), border: const OutlineInputBorder()),
+                  ),
+                  if (notes.trim().isNotEmpty && canShare)
+                    SwitchListTile(
+                      key: const Key('end-publish'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(classroomStrings(context).t('endPublish')),
+                      value: publish,
+                      onChanged: (v) => setDialog(() => publish = v),
+                    ),
                   if (hasInk) ...[
                     const SizedBox(height: Kx.s12),
                     SwitchListTile(
@@ -1125,7 +1145,18 @@ class _BoardScreenState extends State<BoardScreen> {
     final teacher = board.session;
     bool waiting() => board.recordings.items.any((r) => r.teacherId == teacher?.teacherId && !r.uploaded && !r.failed);
     if (waiting() && mounted) showBoardMessage(context, context.l10n.uploadingBeforeSignOut);
-    await board.endClass();
+    // The PDF of the board is made before it is cleared, for the share sheet.
+    Uint8List? pdfBytes;
+    if (hasInk && notes.trim().isNotEmpty) {
+      try {
+        final branding = await boardBranding(board, title: _boardTitle ?? _defaultTitle());
+        pdfBytes = await boardPdf(_wb, _canvasSize, branding: branding);
+        branding.logo?.dispose();
+      } catch (_) {
+        pdfBytes = null;
+      }
+    }
+    final ended = await board.endClass(notes: notes.trim(), publish: publish && notes.trim().isNotEmpty);
     if (waiting() && mounted) {
       final name = teacher!.teacherName.split(' ').first;
       // Instead of the plain "Signed out" message, which is shown at the end of the frame
@@ -1138,7 +1169,13 @@ class _BoardScreenState extends State<BoardScreen> {
     }
     _wb.load(SavedBoard(background: themePaper(_theme), canvas: Size.zero, pages: const []));
     _setModelNotes(const {});
+    final title = _boardTitle ?? _defaultTitle();
     _boardTitle = null;
+    // The summary, with the share sheet (WhatsApp) for the notes link and the board PDF.
+    if (ended != null && ended['notesSaved'] == true && mounted) {
+      final bytes = pdfBytes;
+      await showEndSummary(context, board, ended, pdf: bytes == null ? null : () async => bytes, pdfName: 'KINETIX $title.pdf');
+    }
   }
 
   void _attendance() {
@@ -2541,7 +2578,7 @@ class _BoardScreenState extends State<BoardScreen> {
         onSettings: _openSettings,
         onClose: close,
         onNewBoard: () => unawaited(_newWhiteboard()),
-        onClassrooms: () => _runDrawerTool('todays-plan'),
+        onClassrooms: () => unawaited(showClassroomsDialog(context, board)),
         onTraining: () => unawaited(showTrainingDialog(context, board, onTour: () => unawaited(_startTour()), onPractice: _startPractice)),
         onWhatsNew: () => unawaited(showWhatsNewDialog(context, board)),
         onExit: () => unawaited(_endClass()),
