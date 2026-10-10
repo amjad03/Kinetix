@@ -122,4 +122,10 @@ void main() {
     final (api, _) = await pumpApp(tester);
     expect(api.calls.where((c) => c.startsWith('push')), isEmpty);
   });
+
+  testWidgets('offers sign-in with the institution account', (tester) async {
+    await pumpApp(tester, signedIn: false);
+    final button = tester.widget<OutlinedButton>(find.byKey(const Key('ssoSignIn'), skipOffstage: false));
+    expect(button.onPressed, isNotNull);
+  });
 }

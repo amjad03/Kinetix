@@ -71,7 +71,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | 6.1 Identity types | Built | `mig/0117` (role_name), `api/auth/principal.ts`, `api/evaluation/evaluation.controller.ts`, `api/curriculum/university.controller.ts` | external_examiner (marks scripts), mentor, accreditation_reviewer (reads curriculum) and university_admin (faculties and affiliated institutions) added |
 | 6.2 Password, email, mobile OTP, MFA, sessions, refresh tokens | Built | `api/auth/auth.controller.ts`, `api/auth/mfa.controller.ts` | |
 | 6.2 Device trust | Built | `api/trust/trust.controller.ts`, `mig/0117` (`trusted_devices`), `erp/institution-setup`, `S/core/device_id.dart`, `S/features/profile/device_trust_tile.dart` | a person trusts and revokes devices (a hash of the install id is kept), a sign-in from an unknown device is audited, administrators revoke; the Student App sends an install id and offers "Trust this phone" (Teacher and Parent Apps now do the same via `T|P/features/profile/device_trust_tile.dart`; apps do not yet) |
-| 6.2 Enterprise SSO/OIDC | Partial | none | external: an identity-provider client registration (Google, Microsoft or Okta) and a customer IdP to test the OIDC flow against |
+| 6.2 Enterprise SSO/OIDC | Built | `api/sso/sso.controller.ts`, `erp/sso`, `erp/login/sso` | OIDC code + PKCE for Google Workspace, Microsoft Entra and generic providers; domain to tenant, JIT link to existing users. external: a customer IdP registration to certify live; Safari/system-browser flow in the apps uses `/v1/auth/sso/exchange` |
 | 6.3 RBAC, institution/campus/section scope, data ownership | Built | `api/auth/auth.guard.ts`, `mig/0001_rls.sql` (RLS) | |
 | 6.3 Department/program-scoped permissions, delegated access | Built | `api/auth/principal.ts`, `api/delegation/*`, `erp/delegations` | HOD scope; dated, audited, revocable delegation of workflow and leave approvals |
 | 6.4 Privacy rules (linked children, restricted counselling/health, finance) | Built | `api/documents/documents.access.ts`, `api/welfare/counselling.controller.ts` | |
@@ -405,8 +405,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Scholarship, concession, refund | Built | `api/finance/scholarships.controller.ts`, `api/finance/finance.controller.ts` (`refunds`) | |
 | Fine (late fee) | Built | `api/fees/fees-depth.controller.ts` (`late-fee-rule`, `late-fees`), `erp/fees/plans` | daily job adds the fine once and then only new days; waiver by the principal |
 | Wallet / advance / credit | Built | `api/fees/fees-depth.controller.ts` (`credits`, `apply-credit`), `erp/fees/plans` | ledger of advances, adjustments and refunds; settles an invoice with a receipt |
-| Reconciliation support, finance reports | Built | `api/finance/finance.controller.ts` (`gl`), `erp/gl-export` | gateway settlement reconciliation file import absent |
-| Accounting connector (Tally, GL export) | Built | `api/finance/finance.controller.ts` (`gl.xml`) | |
+| Reconciliation support, finance reports | Built | `api/fees/settlements.controller.ts`, `api/books`, `erp/settlements`, `erp/books` | settlement file/API import, match to receipts, exceptions queue; books: vouchers, ledgers, day book, trial balance, I&E, balance sheet, year close |
+| Accounting connector (Tally, GL export) | Built | `api/tally`, `api/finance/finance.controller.ts` (`gl.xml`) | live push over Tally HTTP/XML with ledger mapping, sync log, retry and offline XML file |
 | Budgets, expenses | Built | `api/finance/finance.controller.ts` | |
 | Sponsor invoicing, bank-transfer verification | Built | `api/fees/sponsor-billing.controller.ts` | |
 
@@ -714,7 +714,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Institution-side fees, invoices, scholarships, refunds | Built | `api/fees`, `api/finance` | |
-| Adapter-based gateway (not embedded) | Partial | `api/fees/payment-provider.ts` | external: a second gateway merchant account (Cashfree or PayU) to certify an adapter; the interface is ready and only Razorpay is implemented |
+| Adapter-based gateway (not embedded) | Built | `api/fees/payment-provider.ts` | Razorpay and PayU behind one interface; external: PayU merchant account to certify live; Cashfree not integrated |
 | UPI, cards, bank transfer, invoice/PO | Built | `api/fees/bank-transfers.controller.ts` | via Razorpay + manual |
 | Kinetix SaaS billing (plans, subscription, usage, renewal, tax) | Built | `api/billing/*`, tables `saas_subscriptions`, `saas_usage_snapshots`, `saas_invoices`, `erp/billing`, `test/governance-billing-ai.e2e.spec.ts` | three plans, per-student pricing with a minimum, usage metering, a daily renewal job, GST invoices (CGST and SGST in Karnataka, IGST elsewhere); collecting the money online is not built (payments are recorded by reference) |
 
@@ -724,7 +724,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Registry (provider, scopes, health, test, deliveries) | Built | `api/connectors/connectors.controller.ts` | |
 | Signed outbound webhooks | Built | `api/connectors/adapters.ts` | |
-| Tally / GL | Built | `api/hr/payroll.controller.ts` (`tally.xml`), `api/finance` | file export, not live push |
+| Tally / GL | Built | `api/tally`, `api/finance` | live push and file export |
 | Koha, Zoom, Teams, BI export | Built | `api/connectors/integrations.controller.ts` | tested against stubs only |
 | WhatsApp, SMS provider connectors | Partial | `api/connectors/connector-types.ts` | external: a WhatsApp Business account and approved message templates; MSG91 is typed |
 | Hardware: biometric, RFID, printers/scanners | Partial | `api/hr/biometric-csv.ts` | external: device SDKs and hardware; CSV import only |

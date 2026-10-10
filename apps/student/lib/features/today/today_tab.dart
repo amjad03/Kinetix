@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:kinetix_cast/kinetix_cast.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../demo/demo.dart';
 import '../../core/models.dart';
@@ -121,6 +124,15 @@ class _TodayTabState extends State<TodayTab> {
           if (study.error != null) ErrorBanner(study.error!, onRetry: study.loadSummary),
           if (summary != null) ...[
             NextClassCard(study: study, onOpenTopic: (id) => onOpenTopic?.call(id)),
+            if (study.api is HttpStudentApi)
+              OnlineClassesSection(
+                load: () => OnlineApi(baseUrl: study.api.baseUrl, token: study.api.token).classes(),
+                onJoin: (c) => launchUrl(Uri.parse(c.joinUrl), mode: LaunchMode.externalApplication),
+                onCopy: (c) {
+                  Clipboard.setData(ClipboardData(text: c.joinUrl));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(OnlineStrings(context).copied)));
+                },
+              ),
             HomeTiles(
               study: study,
               summary: summary,

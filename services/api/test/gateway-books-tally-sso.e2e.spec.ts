@@ -350,6 +350,19 @@ describe('PayU, settlements, books, Tally, SSO and meeting attendance', () => {
       expect(again.location.searchParams.get('ticket')).toBeTruthy();
     });
 
+    it('apps without a deep link: the system browser finishes and the app collects the session by polling with its own id', async () => {
+      const pollId = randomUUID();
+      const start = await http().post('/v1/auth/sso/start').send({ email: 'teacher@college.example.in', pollId }).expect(201);
+      await http().post('/v1/auth/sso/exchange').send({ tenant: t.slug, ticket: pollId }).expect(401);
+      const url = new URL(start.body.authorizationUrl);
+      nextClaims = { nonce: url.searchParams.get('nonce'), sub: 'idp-user-1', email: 'teacher@college.example.in', email_verified: true };
+      const page = await http().get('/v1/auth/sso/callback').query({ code: 'abc', state: url.searchParams.get('state') }).expect(200);
+      expect(page.text).toContain('Signed in');
+      const session = await http().post('/v1/auth/sso/exchange').send({ tenant: t.slug, ticket: pollId }).expect(201);
+      expect(session.body.user.roles).toContain('teacher');
+      await http().post('/v1/auth/sso/exchange').send({ tenant: t.slug, ticket: pollId }).expect(401);
+    });
+
     it('refuses unknown people, wrong domains, unverified emails, bad nonces, bad return addresses and tampered state', async () => {
       expect((await begin('nobody@college.example.in', { sub: 'idp-x', email: 'nobody@college.example.in', email_verified: true })).location.searchParams.get('error')).toBe('no_account');
       expect((await begin('teacher@college.example.in', { sub: 'idp-y', email: 'teacher@other.com', email_verified: true })).location.searchParams.get('error')).toBe('domain');

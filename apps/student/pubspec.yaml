@@ -26,6 +26,7 @@ dependencies:
     path: ../../packages/kinetix_cs
   crypto: ^3.0.7
   http: ^1.6.0
+  url_launcher: ^6.3.3
   http_parser: ^4.1.2
   intl: ^0.20.3
   qr_flutter: ^4.1.0

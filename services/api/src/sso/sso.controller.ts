@@ -38,10 +38,10 @@ const ProviderBody = z.object({
   redirectAllowlist: z.array(redirect).min(1, 'Add at least one return address').max(20),
   enabled: z.boolean().default(true),
 });
-const StartBody = z.object({ tenant: z.string().trim().toLowerCase().max(64).optional(), email: z.email().optional(), providerId: z.uuid().optional(), redirectUri: redirect });
+const StartBody = z.object({ tenant: z.string().trim().toLowerCase().max(64).optional(), email: z.email().optional(), providerId: z.uuid().optional(), redirectUri: redirect.optional(), /** A random id the app makes: the sign-in completes in the system browser and the app collects it by polling `exchange` with this as the ticket (no deep link needed). */ pollId: z.uuid().optional() }).refine((b) => b.redirectUri || b.pollId, 'Give a return address or a poll id');
 const ExchangeBody = z.object({ tenant: z.string().trim().toLowerCase().min(1).max(64), ticket: z.uuid() });
 
-interface StatePayload { pid: string; tid: string; v: string; n: string; ru: string; exp: number }
+interface StatePayload { pid: string; tid: string; v: string; n: string; ru: string; poll?: string; exp: number }
 
 /** OpenID Connect sign-in (authorization code + PKCE) for Google Workspace, Microsoft Entra and any other provider. */
 @Injectable()
@@ -111,10 +111,10 @@ export class SsoAuthController {
       }
     }
     if (!provider) throw new NotFoundException('No single-sign-on is set up for that address');
-    if (!redirectAllowed(b.redirectUri, provider.redirectAllowlist)) throw new BadRequestException('That return address is not allowed');
+    if (b.redirectUri && !redirectAllowed(b.redirectUri, provider.redirectAllowlist)) throw new BadRequestException('That return address is not allowed');
     const pkce = newPkce();
     const nonce = newNonce();
-    const state = this.sso.seal({ pid: provider.id, tid: provider.tenantId, v: pkce.verifier, n: nonce, ru: b.redirectUri, exp: this.sso.clock.now().getTime() + 10 * 60_000 });
+    const state = this.sso.seal({ pid: provider.id, tid: provider.tenantId, v: pkce.verifier, n: nonce, ru: b.redirectUri ?? '', poll: b.pollId, exp: this.sso.clock.now().getTime() + 10 * 60_000 });
     const hd = provider.kind === 'google' && provider.allowedDomains.length === 1 ? provider.allowedDomains[0] : undefined;
     return {
       providerId: provider.id,
@@ -128,6 +128,7 @@ export class SsoAuthController {
     const st = state ? this.sso.open(state) : null;
     if (!st) return res.status(400).type('text/plain').send('This sign-in link has expired. Start again from the app.');
     const back = (q: Record<string, string>) => {
+      if (st.poll) return res.status(200).type('text/html').send(q.error ? '<p>Sign-in did not work. Return to the app and try again.</p>' : '<p>Signed in. You can close this page and return to the app.</p>');
       const u = new URL(st.ru);
       for (const [k, v] of Object.entries(q)) u.searchParams.set(k, v);
       return res.redirect(302, u.toString());
@@ -170,7 +171,7 @@ export class SsoAuthController {
         }
         const [u2] = await tx.select({ status: users.status }).from(users).where(eq(users.id, userId));
         if (u2?.status !== 'active') return null;
-        const [row] = await tx.insert(ssoLoginTickets).values({ tenantId: p.tenantId, userId, expiresAt: new Date(this.sso.clock.now().getTime() + 2 * 60_000) }).returning({ id: ssoLoginTickets.id });
+        const [row] = await tx.insert(ssoLoginTickets).values({ ...(st.poll ? { id: st.poll } : {}), tenantId: p.tenantId, userId, expiresAt: new Date(this.sso.clock.now().getTime() + 2 * 60_000) }).returning({ id: ssoLoginTickets.id });
         return row.id;
       });
       if (!ticket) return back({ error: 'no_account' });
