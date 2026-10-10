@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_board/features/board/context/class_context.dart';
 import 'package:kinetix_board/features/help/tour.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_sounds.dart';
 
@@ -11,6 +12,8 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   setUp(() {
     FlutterSecureStorage.setMockInitialValues({});
     BoardTour.autoStart = false;
+    // The drawer, Insert menu and simulations open showing every tool (test/class_context_test.dart turns narrowing on).
+    showAllToolsByDefault = true;
     ToolkitSounds.instance = SilentSounds();
   });
   await testMain();

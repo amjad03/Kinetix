@@ -31,6 +31,7 @@ class SubjectKitPanel extends StatefulWidget {
     required this.onPanel,
     required this.onSplit,
     this.initialTab,
+    this.keyDatesFocus = '',
   });
 
   final BoardController board;
@@ -45,6 +46,9 @@ class SubjectKitPanel extends StatefulWidget {
   /// Opens 3D models or labs next to the board.
   final ValueChanged<SplitContent> onSplit;
   final KitTab? initialTab;
+
+  /// The subject profile's key dates focus (see [KeyDatesPanel.focus]).
+  final String keyDatesFocus;
 
   @override
   State<SubjectKitPanel> createState() => _SubjectKitPanelState();
@@ -137,7 +141,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
               ),
               KitTab.periodic => _periodic(),
               KitTab.ions => _ions(),
-              KitTab.dates => KeyDatesPanel(onDraw: (ev) => _insert(timeline(ev, _ink, _accent))),
+              KitTab.dates => KeyDatesPanel(focus: widget.keyDatesFocus, onDraw: (ev) => _insert(timeline(ev, _ink, _accent))),
               KitTab.words => _WordWall(wb: widget.wb, accent: _accent, onCard: (w) => _insert([wordCard(w, _accent)])),
               KitTab.logic => _logic(),
               KitTab.binary => _BinaryTab(onInsert: (t) => _insertText(t, size: 28, bold: true)),

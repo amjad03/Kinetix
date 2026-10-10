@@ -1,6 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_board/features/board/context/context_switcher.dart';
+import 'package:kinetix_board/features/logic_gates/logic_gates_lab.dart';
+import 'package:kinetix_board/features/mindmap/mind_map_editor.dart';
 import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/demo/demo_strings.dart';
 import 'package:kinetix_board/features/assessment/assessment.dart';
@@ -33,6 +36,9 @@ void main() {
       'language': languageStringTable,
       'aids': aidStringTable,
       'extras': extrasStringTable,
+      'context': contextStringTable,
+      'mindMap': mindMapStringTable,
+      'logic': logicStringTable,
     };
     for (final MapEntry(key: name, value: t) in tables.entries) {
       final en = t['en']!;

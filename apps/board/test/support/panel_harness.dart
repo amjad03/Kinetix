@@ -9,7 +9,7 @@ const phoneSize = Size(390, 844), panelSize = Size(1920, 1080);
 
 /// Pumps [child] as the split panel would hold it (42 % of a wide screen, the whole width of a
 /// phone), in [lang], at [size]; [spoken] collects what the board would say.
-Future<void> pumpPanel(WidgetTester tester, Widget child, {Size size = panelSize, String lang = 'en', List<String>? spoken}) async {
+Future<void> pumpPanel(WidgetTester tester, Widget child, {Size size = panelSize, String lang = 'en', List<String>? spoken, bool settle = true}) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -32,5 +32,5 @@ Future<void> pumpPanel(WidgetTester tester, Widget child, {Size size = panelSize
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) await tester.pumpAndSettle();
 }

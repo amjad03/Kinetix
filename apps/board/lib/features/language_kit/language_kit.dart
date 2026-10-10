@@ -26,6 +26,8 @@ const languageStringTable = <String, Map<String, String>>{
     'cards': 'Vocabulary cards',
     'searchWord': 'Look up a word (English, हिंदी or ಕನ್ನಡ)',
     'notFound': 'Not in the offline word list.',
+    'loadFailed': 'The dictionary could not be loaded.',
+    'retry': 'Retry',
     'askAi': 'Meaning from KINETIX AI',
     'aiPreview': 'Sample answer (demo): connect KINETIX AI for real meanings',
     'aiOffline': 'KINETIX AI cannot be reached; the offline list is shown.',
@@ -55,6 +57,8 @@ const languageStringTable = <String, Map<String, String>>{
     'cards': 'शब्द कार्ड',
     'searchWord': 'शब्द खोजें (English, हिंदी या ಕನ್ನಡ)',
     'notFound': 'ऑफ़लाइन शब्द सूची में नहीं है।',
+    'loadFailed': 'शब्दकोश लोड नहीं हो सका।',
+    'retry': 'फिर कोशिश करें',
     'askAi': 'KINETIX AI से अर्थ',
     'aiPreview': 'नमूना उत्तर (डेमो): वास्तविक अर्थ के लिए KINETIX AI जोड़ें',
     'aiOffline': 'KINETIX AI तक नहीं पहुँच सके; ऑफ़लाइन सूची दिखाई गई है।',
@@ -84,6 +88,8 @@ const languageStringTable = <String, Map<String, String>>{
     'cards': 'ಪದ ಕಾರ್ಡ್‌ಗಳು',
     'searchWord': 'ಪದ ಹುಡುಕಿ (English, हिंदी ಅಥವಾ ಕನ್ನಡ)',
     'notFound': 'ಆಫ್‌ಲೈನ್ ಪದ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲ.',
+    'loadFailed': 'ನಿಘಂಟು ಲೋಡ್ ಆಗಲಿಲ್ಲ.',
+    'retry': 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
     'askAi': 'KINETIX AI ಇಂದ ಅರ್ಥ',
     'aiPreview': 'ಮಾದರಿ ಉತ್ತರ (ಡೆಮೊ): ನಿಜವಾದ ಅರ್ಥಕ್ಕೆ KINETIX AI ಜೋಡಿಸಿ',
     'aiOffline': 'KINETIX AI ತಲುಪಲಾಗಲಿಲ್ಲ; ಆಫ್‌ಲೈನ್ ಪಟ್ಟಿ ತೋರಿಸಲಾಗಿದೆ.',
@@ -204,13 +210,24 @@ class _DictionaryState extends State<_Dictionary> {
   @override
   void initState() {
     super.initState();
-    unawaited(OfflineDictionary.load().then((d) {
+    unawaited(_load());
+  }
+
+  bool _failed = false;
+
+  /// Loads the bundled word list; a failure shows a Retry instead of a spinner that never ends.
+  Future<void> _load() async {
+    setState(() => _failed = false);
+    try {
+      final d = await OfflineDictionary.load();
       if (!mounted) return;
       setState(() {
         _dict = d;
         _found = d.search(_q.text);
       });
-    }));
+    } catch (_) {
+      if (mounted) setState(() => _failed = true);
+    }
   }
 
   void _search(String v) => setState(() {
@@ -351,7 +368,29 @@ class _DictionaryState extends State<_Dictionary> {
               ),
             ),
           ),
-        if (_dict == null) const Padding(padding: EdgeInsets.all(Kx.s12), child: LinearProgressIndicator()),
+        if (_dict == null && !_failed) const Padding(padding: EdgeInsets.all(Kx.s12), child: LinearProgressIndicator()),
+        if (_failed)
+          Padding(
+            padding: const EdgeInsets.all(Kx.s12),
+            child: Row(
+              key: const Key('dictionary-load-failed'),
+              children: [
+                Expanded(child: Text(s['loadFailed'], style: TextStyle(color: c.error))),
+                TextButton(key: const Key('dictionary-retry'), onPressed: _load, child: Text(s['retry'])),
+              ],
+            ),
+          ),
+        if (_dict != null && _q.text.trim().isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: Kx.s8),
+            child: Wrap(
+              spacing: 6,
+              children: [
+                for (final w in const ['teacher', 'energy', 'planet', 'triangle', 'river'])
+                  ActionChip(key: Key('dictionary-try-$w'), label: Text(w), onPressed: () => _open(w)),
+              ],
+            ),
+          ),
         if (_dict != null && _q.text.trim().isNotEmpty && _found.isEmpty) Padding(padding: const EdgeInsets.all(Kx.s12), child: Text(s['notFound'], key: const Key('dictionary-none'))),
         for (final e in _found) _entry(context, s, e),
       ],

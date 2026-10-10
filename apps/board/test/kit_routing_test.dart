@@ -44,7 +44,6 @@ void main() {
     'drawer-cs-labs': KitTab.csLabs,
     'drawer-logic': KitTab.logic,
     'drawer-binary': KitTab.binary,
-    'drawer-dictionary': KitTab.words,
     'drawer-timeline': KitTab.dates,
   };
 
