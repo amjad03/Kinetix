@@ -1,3 +1,7 @@
+import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { cosine, embed, EMBED_DIMS } from './embed.js';
 
 /** Turns text into unit vectors. Callers rank by cosine; the id names the model so vectors from different models never mix. */
@@ -49,20 +53,32 @@ export class HttpProvider implements EmbeddingProvider {
 }
 
 /**
- * A model that runs in this process through transformers.js (ONNX). The package is optional: install `@huggingface/transformers`
- * on the API host and set the provider to "local"; without it this provider reports that it is unavailable instead of failing quietly.
+ * A model that runs in this process through transformers.js (ONNX, `@huggingface/transformers`). The default is all-MiniLM-L6-v2
+ * (22 MB quantised, English). It is downloaded on first use into EMBEDDINGS_CACHE_DIR (default: the system temp folder) and reused after that.
+ * If the package or the download is not available the provider throws a plain message and callers keep the hashed baseline.
+ * EMBEDDINGS_MODULE_DIR may name a folder whose node_modules holds the package when it is installed outside this project.
  */
 export class LocalProvider implements EmbeddingProvider {
   readonly id: string;
   private pipe?: Promise<(t: string[], o: object) => Promise<{ tolist(): number[][] }>>;
-  constructor(private readonly model = 'Xenova/paraphrase-multilingual-MiniLM-L12-v2') {
+  constructor(private readonly model = 'Xenova/all-MiniLM-L6-v2') {
     this.id = `local:${model}`;
   }
-  async embed(texts: string[]) {
-    const name = '@huggingface/transformers';
-    this.pipe ??= (import(/* @vite-ignore */ name) as Promise<{ pipeline: (task: string, model: string) => Promise<never> }>).then((m) => m.pipeline('feature-extraction', this.model)).catch(() => {
-      throw new Error('The local embedding model is not installed on this server (add @huggingface/transformers)');
+  private load() {
+    return (async () => {
+      const name = '@huggingface/transformers';
+      const dir = process.env.EMBEDDINGS_MODULE_DIR;
+      const spec = dir ? pathToFileURL(createRequire(join(dir, 'x.js')).resolve(name)).href : name;
+      const m = (await import(/* @vite-ignore */ spec)) as { pipeline: (task: string, model: string, o: object) => Promise<never>; env: { cacheDir: string } };
+      m.env.cacheDir = process.env.EMBEDDINGS_CACHE_DIR ?? join(tmpdir(), 'kinetix-models');
+      return m.pipeline('feature-extraction', this.model, { dtype: 'q8' });
+    })().catch((e) => {
+      this.pipe = undefined;
+      throw new Error(`The local embedding model is not available (${(e as Error).message.slice(0, 120)}). Install @huggingface/transformers and allow the first download.`);
     });
+  }
+  async embed(texts: string[]) {
+    this.pipe ??= this.load();
     const out = await (await this.pipe)(texts, { pooling: 'mean', normalize: true });
     return out.tolist().map(unit);
   }

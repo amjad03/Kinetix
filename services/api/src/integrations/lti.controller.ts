@@ -258,7 +258,7 @@ export class LtiController {
       const ticket = randomBytes(24).toString('base64url');
       await tx.insert(ltiStates).values({ tenantId, kind: 'ticket', state: sha256(ticket), nonce: '', ref: { userId: user.id, courseId: course?.id ?? null }, expiresAt: new Date(this.clock.now().getTime() + 60_000) });
       await audit(tx, { tenantId, actorType: 'user', actorId: user.id, action: 'lti.provider_launch', subjectType: 'lti_platform', subjectId: pl.id, data: { courseId: course?.id ?? null } });
-      const base = (await getSetting(tx, tenantId, 'lti', { landingUrl: process.env.LTI_LANDING_URL })).landingUrl ?? '/';
+      const base = (await getSetting(tx, tenantId, 'lti', { landingUrl: process.env.LTI_LANDING_URL })).landingUrl ?? '/lti/enter';
       return `${base}${base.includes('?') ? '&' : '?'}ticket=${ticket}&tenant=${tenantId}${course ? `&course=${course.id}` : ''}`;
     });
     res.redirect(302, landing);

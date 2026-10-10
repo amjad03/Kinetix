@@ -167,6 +167,12 @@ class ApiClient {
     return students;
   }
 
+  /// Signs the teacher who just tapped at the reader in on this board; the answer is the session token and its context.
+  Future<({String sessionToken, SessionContext session})> tapSignIn() async {
+    final j = await _send('POST', '/v1/pairing/tap-signin', useDeviceToken: true) as Map<String, dynamic>;
+    return (sessionToken: j['sessionToken'] as String, session: SessionContext.fromJson(j['session'] as Map<String, dynamic>));
+  }
+
   /// The teacher who just tapped a card or finger at the reader beside this board, or null when none did
   /// (or no reader is fitted: [present] is false then).
   Future<({bool present, String? name})> teacherTap() async {

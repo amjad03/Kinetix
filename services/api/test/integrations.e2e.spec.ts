@@ -272,14 +272,17 @@ describe('integrations: DigiLocker, devices, LTI/SCORM, feeds, retrieval and ear
     });
 
     it('lets a board see the teacher who just tapped at the reader beside it', async () => {
-      const dev = new TokensService({ JWT_SECRET: 'x' } as never);
-      void dev;
       const token = app.get(TokensService).signDevice({ sub: t.device.id, tid: t.tenantId, cid: t.campus.id, ver: 0 });
       const read = () => http().get('/v1/devices/teacher-tap').set('authorization', `Bearer ${token}`);
       expect((await read().expect(200)).body.present).toBe(true);
       await http().post(ad('/events')).set('x-device-key', keys.board).send({ events: [{ tag: 'STAFF-T', at: new Date(clock.now().getTime() - 30_000).toISOString() }] }).expect(200);
       const body = (await read().expect(200)).body;
       expect(body.signedIn.name).toBe(t.teacher.fullName);
+      // The board signs that teacher in from the tap, once.
+      const signed = (await http().post('/v1/pairing/tap-signin').set('authorization', `Bearer ${token}`).expect(200)).body;
+      expect(signed.session.teacher.id).toBe(t.teacher.id);
+      expect(signed.sessionToken).toBeTruthy();
+      await http().post('/v1/pairing/tap-signin').set('authorization', `Bearer ${token}`).expect(404);
     });
 
     it('rotates a key so the old one stops working', async () => {

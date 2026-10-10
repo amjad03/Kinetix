@@ -1,5 +1,5 @@
 /**
- * Samples for the integrations desk (migration 0125): sandbox settings without secrets, APAAR and ABC ids, attendance and card devices
+ * Samples for the integrations desk (migration 0129): sandbox settings without secrets, APAAR and ABC ids, attendance and card devices
  * with registered tags, a Moodle platform for LTI, and a few early-alert flags with reasons. Device keys are random and not kept.
  */
 import { createHash, randomBytes } from 'node:crypto';

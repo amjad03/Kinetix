@@ -43,7 +43,7 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 | 13 | Student leave, leave mgmt | Yes | leave (67 files) | Have | api/hr |
 | 14 | Grievance | Yes | Yes | Have | api/welfare, grievance 33 files |
 | 15 | Mentoring | Yes | Yes, risk->task | Have | api/mentoring |
-| 16 | Slow learner analysis | Listed | Early alerts from attendance, marks, homework, fees; mentor intervention workflow (mig 0125) | Have | api/integrations/early-alerts |
+| 16 | Slow learner analysis | Listed | Early alerts from attendance, marks, homework, fees; mentor intervention workflow (mig 0129) | Have | api/integrations/early-alerts |
 | 17 | Admission CRM, enquiry, lead mgmt, landing page | Yes | public-admissions, growth.controller, lead-score | Have | api/admissions/growth.controller.ts, lead-score.ts |
 | 18 | Marketing ROI, social ad tracking | Yes | growth.controller (extent unverified) | Partial | |
 | 19 | Index mark + rank list for admission | Yes | rank/merit hits but no "index mark" | Partial | api/admissions/entrance.service.ts |
@@ -66,7 +66,7 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 | 36 | Online exams | Yes | assessment-tools, lms | Have | proctoring unverified |
 | 37 | LMS: classes, assignments, repository, video conf | Yes | lms, homework, recordings, live | Have | Teams integration absent |
 | 38 | MS Teams / Meet / Zoom integration | Teams listed | Meet/Zoom grep present in connectors; Teams not confirmed | Partial | api/connectors |
-| 39 | LTI / SCORM | Unk | LTI 1.3 consumer and provider, SCORM 1.2/2004 import and player with tracking (mig 0125) | Have | api/integrations/lti, scorm |
+| 39 | LTI / SCORM | Unk | LTI 1.3 consumer and provider, SCORM 1.2/2004 import and player with tracking (mig 0129) | Have | api/integrations/lti, scorm |
 | 40 | CBCS: electives, allocation, credits | Yes | course-registration (elective rules) | Have | api/course-registration/registration-rules.spec.ts |
 | 41 | OBE: CO/PO/PSO, attainment, CQI | Yes (Ease OBE) | obe + quality, CQI root-cause | Have | api/obe |
 | 42 | Course file | Yes | course-files | Have | |
@@ -78,7 +78,7 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 | 48 | Committees, event planning | Yes | events, governance | Have | |
 | 49 | E-Governance custom workflow builder | Yes | workflows + delegations (38 files) | Have/Partial | builder UX depth unverified |
 | 50 | HR: recruitment, leave, payroll, appraisal | HRIS, leave, appraisal (payroll Unk) | Full incl. payroll, exit | Have (better) | api/hr |
-| 51 | Biometric integration | API | CSV import plus live push for eSSL/ZKTeco ADMS, COSEC and generic readers, mapped to staff and student attendance on arrival (mig 0125) | Have | api/integrations/devices |
+| 51 | Biometric integration | API | CSV import plus live push for eSSL/ZKTeco ADMS, COSEC and generic readers, mapped to staff and student attendance on arrival (mig 0129) | Have | api/integrations/devices |
 | 52 | Library + Koha + digital library | Yes | Full library, RFID issue/return, SIP2 bridge for Koha-side tools | Have | api/integrations/sip2, devices |
 | 53 | Hostel | Yes | Yes + canteen | Have | |
 | 54 | Transport (routes, pickup-point reports) | Yes | Yes, RFID boarding with parent notice | Have | GPS unverified |
@@ -205,5 +205,5 @@ Effort: S <2 wks, M 2-6 wks, L 6+ wks (one engineer unless noted).
 12. E-governance builder: actual capabilities vs form-routing.
 
 
-## Update: integrations built (migration 0125)
+## Update: integrations built (migration 0129)
 DigiLocker issuer, NAD batch, ABC credit file and APAAR/ABC capture; live biometric and RFID devices; LTI 1.3 and SCORM; OData and SIP2 feeds; pluggable embeddings with eval; early alerts with mentor workflow. All run against sandbox URLs set per tenant or by environment; partner onboarding, device hardware and a hosted embedding model remain external.

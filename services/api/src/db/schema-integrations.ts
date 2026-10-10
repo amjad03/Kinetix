@@ -1,4 +1,4 @@
-// Integrations (migration 0125): DigiLocker/NAD/ABC, live devices, LTI/SCORM, API tokens, embeddings and early alerts.
+// Integrations (migration 0129): DigiLocker/NAD/ABC, live devices, LTI/SCORM, API tokens, embeddings and early alerts.
 // Kept apart from schema.ts, which these tables reference.
 import { sql } from 'drizzle-orm';
 import { boolean, customType, date, integer, jsonb, numeric, pgTable, primaryKey, real, text, timestamp, uuid } from 'drizzle-orm/pg-core';

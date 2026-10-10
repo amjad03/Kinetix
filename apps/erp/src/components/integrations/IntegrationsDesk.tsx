@@ -42,7 +42,7 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
             id: 'docs',
             label: t('itg.tab.docs'),
             node: (
-              <Stack gap={2}>
+              <Stack spacing={2}>
                 <Bar>
                   <ActionButton label={t('itg.btn.pushAll')} run={pushAllDocuments} onDone={done} />
                   <ActionButton label={t('itg.btn.nadBatch')} run={buildNadBatch} onDone={() => done()} />
@@ -66,7 +66,7 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
             id: 'devices',
             label: t('itg.tab.devices'),
             node: (
-              <Stack gap={2}>
+              <Stack spacing={2}>
                 <Bar>
                   <button type="button" onClick={() => setDialog('device')}>{t('itg.btn.newDevice')}</button>
                 </Bar>
@@ -77,7 +77,7 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
                     { label: t('itg.col.name'), cell: (r) => r.name },
                     { label: t('itg.f.serial'), cell: (r) => r.serial },
                     { label: t('itg.col.purpose'), cell: (r) => t(`itg.purpose.${r.purpose}` as MessageKey) },
-                    { label: t('itg.col.seen'), cell: (r) => (r.lastSeenAt ? fmt.dateTime(new Date(r.lastSeenAt)) : '') },
+                    { label: t('itg.col.seen'), cell: (r) => (r.lastSeenAt ? fmt.dateTime(r.lastSeenAt) : '') },
                   ]}
                 />
               </Stack>
@@ -87,7 +87,7 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
             id: 'standards',
             label: t('itg.tab.standards'),
             node: (
-              <Stack gap={3}>
+              <Stack spacing={3}>
                 <Grid rows={tools} empty={t('itg.empty')} cols={[{ label: t('itg.col.name'), cell: (r) => r.name }, { label: 'ID', cell: (r) => r.clientId }]} />
                 <Grid rows={scorm} empty={t('itg.empty')} cols={[{ label: t('itg.col.name'), cell: (r) => r.title }, { label: t('itg.col.version'), cell: (r) => r.version }]} />
               </Stack>
@@ -97,7 +97,7 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
             id: 'feeds',
             label: t('itg.tab.feeds'),
             node: (
-              <Stack gap={2}>
+              <Stack spacing={2}>
                 <Bar>
                   <button type="button" onClick={() => setDialog('token')}>{t('itg.btn.newToken')}</button>
                 </Bar>

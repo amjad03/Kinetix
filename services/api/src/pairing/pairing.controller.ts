@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
-import type { UserPrincipal } from '../auth/principal.js';
+import type { DevicePrincipal, UserPrincipal } from '../auth/principal.js';
 import { ZodBody } from '../common/zod-body.js';
 import { PairingService } from './pairing.service.js';
 
@@ -14,6 +14,14 @@ export class PairingController {
   constructor(private readonly pairing: PairingService) {}
 
   /** Teacher App: "Connect to board" after scanning the QR or typing the code. */
+  /** A board signs a teacher in after a card or finger tap at its reader. */
+  @Post('tap-signin')
+  @HttpCode(200)
+  @Auth('device')
+  tapSignIn(@CurrentPrincipal() p: DevicePrincipal) {
+    return this.pairing.tapSignIn(p);
+  }
+
   @Post('claim')
   @HttpCode(200)
   @Auth('user', TEACHING_ROLES)

@@ -7,6 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/api_client.dart';
 import '../../core/models.dart';
 import '../../core/offline_codes.dart';
+import '../../l10n/feature_strings.dart';
 import '../../l10n/l10n.dart';
 import '../board/phone_chrome.dart';
 
@@ -14,7 +15,13 @@ import '../board/phone_chrome.dart';
 /// KINETIX Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
 /// when the board receives the session (see [BoardController.onPaired]).
 class SignInDialog extends StatefulWidget {
-  const SignInDialog({super.key, required this.api, required this.boardName});
+  const SignInDialog({super.key, required this.api, required this.boardName, this.onTapSignIn, this.tapPoll = const Duration(seconds: 3)});
+
+  /// Called with the new session when a teacher taps a card or finger at the reader beside the board and confirms.
+  final void Function(String sessionToken, SessionContext session)? onTapSignIn;
+
+  /// How often to ask whether someone has tapped (only when [onTapSignIn] is set and the board has a reader).
+  final Duration tapPoll;
 
   final ApiClient api;
   final String? boardName;
@@ -31,6 +38,11 @@ class _SignInDialogState extends State<SignInDialog> {
   bool _unreachable = false;
   Timer? _refresh;
   Timer? _tick;
+  Timer? _tapTimer;
+
+  /// The teacher who tapped, offered as a one-touch sign-in.
+  String? _tapped;
+  bool _tapBusy = false;
 
   /// The signed code for the current window, kept while the cloud cannot be reached.
   OfflineCode? _offline;
@@ -40,6 +52,28 @@ class _SignInDialogState extends State<SignInDialog> {
     super.initState();
     _load();
     _tick = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
+    if (widget.onTapSignIn != null) _tapTimer = Timer.periodic(widget.tapPoll, (_) => _pollTap());
+  }
+
+  Future<void> _pollTap() async {
+    try {
+      final r = await widget.api.teacherTap();
+      if (mounted && r.name != _tapped) setState(() => _tapped = r.present ? r.name : null);
+    } catch (_) {
+      // No reader or no connection: the code on screen still works.
+    }
+  }
+
+  Future<void> _continueAsTapped() async {
+    setState(() => _tapBusy = true);
+    try {
+      final r = await widget.api.tapSignIn();
+      widget.onTapSignIn!(r.sessionToken, r.session);
+    } catch (_) {
+      if (mounted) setState(() => _tapped = null);
+    } finally {
+      if (mounted) setState(() => _tapBusy = false);
+    }
   }
 
   Future<void> _load() async {
@@ -85,6 +119,7 @@ class _SignInDialogState extends State<SignInDialog> {
   void dispose() {
     _refresh?.cancel();
     _tick?.cancel();
+    _tapTimer?.cancel();
     super.dispose();
   }
 
@@ -141,6 +176,22 @@ class _SignInDialogState extends State<SignInDialog> {
                   IconButton(tooltip: l.close, onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
                 ],
               ),
+              if (_tapped != null) ...[
+                Builder(builder: (context) {
+                  final s = FeatureStrings(boardLang(context), _tapStrings);
+                  return Card(
+                    key: const Key('tap-signin'),
+                    child: ListTile(
+                      leading: const Icon(Icons.badge_outlined),
+                      title: Text(s.t('tapped').replaceAll('{name}', _tapped!)),
+                      trailing: FilledButton(
+                        onPressed: _tapBusy ? null : _continueAsTapped,
+                        child: Text(s.t('continue').replaceAll('{name}', _tapped!)),
+                      ),
+                    ),
+                  );
+                }),
+              ],
               const SizedBox(height: Kx.s24),
               Wrap(
                 spacing: Kx.s32,
@@ -239,3 +290,9 @@ class _SignInDialogState extends State<SignInDialog> {
     );
   }
 }
+
+const _tapStrings = {
+  'en': {'tapped': '{name} tapped at this board', 'continue': 'Continue as {name}'},
+  'hi': {'tapped': '{name} ने इस बोर्ड पर कार्ड लगाया', 'continue': '{name} के रूप में जारी रखें'},
+  'kn': {'tapped': '{name} ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಕಾರ್ಡ್ ತೋರಿಸಿದರು', 'continue': '{name} ಆಗಿ ಮುಂದುವರಿಸಿ'},
+};
