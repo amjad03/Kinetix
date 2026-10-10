@@ -6,6 +6,7 @@ import '../../search/filter_bar.dart';
 import '../../search/fuzzy.dart';
 import '../../extras/board_extras.dart' show extrasStrings;
 import '../chrome.dart';
+import '../context/context_switcher.dart' show contextStrings;
 import 'layout_strings.dart';
 
 /// The tools drawer's groups (screen 4).
@@ -41,13 +42,20 @@ class DrawerTool {
 /// period's subject first; [preferred] tools lead their group (a commerce class sees the
 /// spreadsheet and formulas first).
 class ToolsDrawer extends StatefulWidget {
-  const ToolsDrawer({super.key, required this.tools, required this.order, this.preferred = const [], this.width = 640, this.maxHeight = 560});
+  const ToolsDrawer({super.key, required this.tools, required this.order, this.preferred = const [], this.width = 640, this.maxHeight = 560, this.relevant, this.contextLabel = ''});
 
   final List<DrawerTool> tools;
   final List<ToolGroup> order;
   final List<String> preferred;
   final double width;
   final double maxHeight;
+
+  /// Whether a tool (by id) belongs to what is being taught; null shows every tool. The rest sit
+  /// behind "Show all tools".
+  final bool Function(String id)? relevant;
+
+  /// "Maths · Class 7", for the line above the grid.
+  final String contextLabel;
 
   @override
   State<ToolsDrawer> createState() => _ToolsDrawerState();
@@ -56,6 +64,7 @@ class ToolsDrawer extends StatefulWidget {
 class _ToolsDrawerState extends State<ToolsDrawer> {
   ToolGroup? _group;
   String _q = '';
+  bool _all = false;
 
   List<DrawerTool> _sorted(Iterable<DrawerTool> tools) {
     final pref = widget.preferred;
@@ -68,7 +77,11 @@ class _ToolsDrawerState extends State<ToolsDrawer> {
   @override
   Widget build(BuildContext context) {
     final s = LayoutStrings.of(context);
-    final tools = widget.tools;
+    final cs = contextStrings(context);
+    final filter = widget.relevant;
+    final narrowed = filter != null && !_all;
+    // Search always looks through every tool; the grid shows the subject's own.
+    final tools = narrowed && _q.trim().isEmpty ? widget.tools.where((t) => filter(t.id)).toList() : widget.tools;
     final tileWidth = widget.width < 420 ? (widget.width - 3 * Kx.s8) / 3 : 104.0;
     Widget grid(List<DrawerTool> list) => Wrap(
       spacing: Kx.s8,
@@ -108,7 +121,7 @@ class _ToolsDrawerState extends State<ToolsDrawer> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                for (final g in [null, ...widget.order])
+                for (final g in [null, ...widget.order.where((g) => !narrowed || tools.any((t) => t.groups.contains(g)))])
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: ChoiceChip(
@@ -121,6 +134,16 @@ class _ToolsDrawerState extends State<ToolsDrawer> {
               ],
             ),
           ),
+          if (filter != null)
+            Padding(
+              padding: const EdgeInsets.only(top: Kx.s8),
+              child: Row(
+                children: [
+                  Expanded(child: Text(narrowed ? cs.n('showingFor', widget.contextLabel) : '', key: const Key('drawer-context'), style: context.text.labelMedium?.copyWith(color: context.colors.onSurfaceVariant))),
+                  TextButton(key: const Key('drawer-show-all'), onPressed: () => setState(() => _all = !_all), child: Text(_all ? cs['showRelevant'] : cs['showAll'])),
+                ],
+              ),
+            ),
           ModuleSearchField(key: const Key('tools-search'), hint: s.searchTools, padding: const EdgeInsets.symmetric(vertical: Kx.s8), onChanged: (v) => setState(() => _q = v)),
           ConstrainedBox(
             constraints: BoxConstraints(maxHeight: widget.maxHeight),

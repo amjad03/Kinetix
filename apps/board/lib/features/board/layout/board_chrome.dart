@@ -263,7 +263,10 @@ class PhoneBar extends StatelessWidget {
 /// Top left (callout 1): class and subject (tap to switch), Go live, attendance (tap to take)
 /// and the time left in the period.
 class ClassBar extends StatefulWidget {
-  const ClassBar({super.key, required this.board, required this.onSignIn, required this.onSwitchClass, required this.onAttendance, this.phone = false});
+  const ClassBar({super.key, required this.board, required this.onSignIn, required this.onSwitchClass, required this.onAttendance, this.phone = false, this.contextChip});
+
+  /// The subject and class chip (what is being taught), shown beside the class.
+  final Widget? contextChip;
 
   final BoardController board;
   final VoidCallback onSignIn;
@@ -329,6 +332,7 @@ class _ClassBarState extends State<ClassBar> {
                   ),
                   onPressed: widget.onSwitchClass,
                 ),
+                if (widget.contextChip case final chip?) ...[gap, chip],
                 if (!widget.phone) ...[
                   if (board.liveLeaders > 0 && board.liveIndicator) ...[
                     gap,
@@ -360,6 +364,7 @@ class _ClassBarState extends State<ClassBar> {
                   ClassAudioButton(board: board),
                 ],
               ],
+              if (s == null && widget.contextChip != null) ...[gap, widget.contextChip!],
               if (Demo.enabled) ...[gap, const DemoChip()],
               // Privacy: whenever the microphone is going out to the class, the teacher sees it.
               if (board.classAudio.sending) ...[

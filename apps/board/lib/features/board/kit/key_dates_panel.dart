@@ -78,7 +78,10 @@ const keyDatesStringTable = <String, Map<String, String>>{
 /// words or year, filtered by place, subject and era, with "On this day"; any events can be
 /// drawn as a timeline on the board.
 class KeyDatesPanel extends StatefulWidget {
-  const KeyDatesPanel({super.key, required this.onDraw, this.today});
+  const KeyDatesPanel({super.key, required this.onDraw, this.today, this.focus = ''});
+
+  /// What the class is about (the subject profile's key dates focus): `science`, `history`, `world`, `politics` or empty.
+  final String focus;
 
   final void Function(List<(String, String)>) onDraw;
 
@@ -100,6 +103,14 @@ class _KeyDatesPanelState extends State<KeyDatesPanel> {
   @override
   void initState() {
     super.initState();
+    switch (widget.focus) {
+      case 'science':
+        _topic = 'science';
+      case 'history' || 'politics':
+        _topic = 'history';
+      case 'world':
+        _region = 'world';
+    }
     unawaited(
       KeyDatesData.load().then((d) {
         if (mounted) setState(() => _data = d);

@@ -62,14 +62,15 @@ void main() {
     expect(find.byKey(const Key('flow-plus-right')), findsOneWidget);
   });
 
-  testWidgets('a mind map in Hindi starts with a topic in Hindi', (tester) async {
+  testWidgets('a mind map opens the mind map tool, in Hindi, with its own centre topic', (tester) async {
     final context = await pump(tester, locale: const Locale('hi'));
-    final done = CanvasTools.insertFlowchart(context, wb);
+    CanvasTools.insertFlowchart(context, wb);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('insert-mindmap')));
-    await done;
-    final n = wb.elements.single as FlowNodeElement;
-    expect((n.shape, n.text), (FlowBlock.topic, 'विचार'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('mind-map')), findsOneWidget);
+    expect(find.text('मुख्य विषय'), findsOneWidget);
+    expect(wb.elements, isEmpty, reason: 'nothing is on the board until Put on board');
   });
 
   testWidgets('the graph panel preselects from the period topic and adds the graph', (tester) async {

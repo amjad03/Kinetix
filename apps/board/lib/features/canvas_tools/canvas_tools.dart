@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../mindmap/mind_map_editor.dart';
 import 'graph_templates_panel.dart';
 
 export 'graph_templates_panel.dart';
@@ -74,7 +75,12 @@ class CanvasTools {
       ),
     );
     if (mind == null) return;
-    wb.insert([starterNode(mindMap: mind, color: wb.penColor, words: s.flowWords)]);
+    // A mind map is its own tool (radial, auto-laid out); a flowchart is shapes and connectors.
+    if (mind) {
+      if (context.mounted) await MindMapEditor.open(context, wb);
+      return;
+    }
+    wb.insert([starterNode(mindMap: false, color: wb.penColor, words: s.flowWords)]);
     if (context.mounted) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(s.t('flowchartHint')), duration: const Duration(seconds: 4)));
     }

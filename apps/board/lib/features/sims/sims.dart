@@ -6,6 +6,7 @@ import 'package:kinetix_ink/kinetix_ink.dart' show GraphElement, compileGraph, p
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../board/context/context_switcher.dart' show contextStrings;
 import '../search/filter_bar.dart';
 import '../search/fuzzy.dart';
 import '../search/search_strings.dart';
@@ -532,7 +533,10 @@ class SimWindow extends StatelessWidget {
 
 /// Picks a simulation to open.
 class SimPickerDialog extends StatefulWidget {
-  const SimPickerDialog({super.key});
+  const SimPickerDialog({super.key, this.relevant});
+
+  /// Whether a simulation (by `SimKind.name`) fits what is being taught; the rest show after "Show all tools".
+  final bool Function(String name)? relevant;
 
   @override
   State<SimPickerDialog> createState() => _SimPickerDialogState();
@@ -540,6 +544,7 @@ class SimPickerDialog extends StatefulWidget {
 
 class _SimPickerDialogState extends State<SimPickerDialog> {
   String _q = '';
+  bool _all = false;
 
   @override
   Widget build(BuildContext context) {
@@ -564,6 +569,11 @@ class _SimPickerDialogState extends State<SimPickerDialog> {
               onChanged: (v) => setState(() => _q = v),
             ),
             _grid(l, tile),
+            if (widget.relevant != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(key: const Key('sims-show-all'), onPressed: () => setState(() => _all = !_all), child: Text(contextStrings(context)[_all ? 'showRelevant' : 'showAll'])),
+              ),
           ],
         ),
       ),
@@ -575,7 +585,7 @@ class _SimPickerDialogState extends State<SimPickerDialog> {
           spacing: Kx.s12,
           runSpacing: Kx.s12,
           children: [
-            for (final k in matchingLabels(SimKind.values, (k) => simName(l, k), _q))
+            for (final k in matchingLabels([for (final k in SimKind.values) if (_all || widget.relevant == null || widget.relevant!(k.name)) k], (k) => simName(l, k), _q))
               SizedBox(
                 width: tile,
                 child: OutlinedButton(

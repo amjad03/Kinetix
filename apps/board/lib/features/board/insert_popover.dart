@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../insert/insert_entries.dart';
+import 'context/context_switcher.dart' show contextStrings;
 import 'chrome.dart';
 import 'editors.dart';
 
@@ -24,7 +25,16 @@ class InsertPopover extends StatelessWidget {
     required this.onClose,
     this.extras = const [],
     this.categories = const [],
+    this.relevant,
+    this.showAll = false,
+    this.onToggleAll,
   });
+
+  /// Whether an entry (by key, `insert-graph`) belongs to what is being taught; null shows all.
+  /// The rest show after "Show all tools".
+  final bool Function(String key)? relevant;
+  final bool showAll;
+  final VoidCallback? onToggleAll;
 
   /// The spec's Insert categories (§24) as big tiles on top: PDF, Images, Videos, PPT,
   /// Clipboard, Geometry, Table, Flowchart.
@@ -49,6 +59,13 @@ class InsertPopover extends StatelessWidget {
       f();
     }
 
+    bool vis(Key? k) {
+      final f = relevant;
+      return showAll || f == null || k is! ValueKey<String> || f(k.value);
+    }
+
+    final cats = [for (final c in categories) if (vis(c.key)) c];
+    final more = [for (final e in extras) if (vis(e.key)) e];
     return ListenableBuilder(
       listenable: wb,
       builder: (context, _) => PopoverCard(
@@ -58,12 +75,12 @@ class InsertPopover extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (categories.isNotEmpty) ...[
+            if (cats.isNotEmpty) ...[
               Wrap(
                 spacing: Kx.s8,
                 runSpacing: Kx.s8,
                 children: [
-                  for (final c in categories)
+                  for (final c in cats)
                     SizedBox(
                       width: 84,
                       height: 84,
@@ -89,7 +106,8 @@ class InsertPopover extends StatelessWidget {
               ),
               const Divider(height: Kx.s24),
             ],
-            KxMenuItem(
+            if (vis(const Key('insert-equation')))
+              KxMenuItem(
               key: const Key('insert-equation'),
               icon: Icons.functions,
               title: l.stEquation,
@@ -131,10 +149,10 @@ class InsertPopover extends StatelessWidget {
                   ],
                 ),
               ),
-            if (!primary) KxMenuItem(key: const Key('insert-graph'), icon: Icons.show_chart, title: l.stGraph, hint: l.graphHint, onTap: () => then(onGraph)),
-            KxMenuItem(key: const Key('insert-model3d'), icon: Icons.view_in_ar_outlined, title: l.splitModel3d, hint: l.insertModelHint, onTap: () => then(onModel3d)),
-            KxMenuItem(key: const Key('insert-lab'), icon: Icons.science_outlined, title: l.splitLab, hint: l.insertModelHint, onTap: () => then(onLab)),
-            for (final e in extras) KxMenuItem(key: e.key, icon: e.icon, title: e.title, hint: e.hint, onTap: () => then(e.onTap)),
+            if (!primary && vis(const Key('insert-graph'))) KxMenuItem(key: const Key('insert-graph'), icon: Icons.show_chart, title: l.stGraph, hint: l.graphHint, onTap: () => then(onGraph)),
+            if (vis(const Key('insert-model3d'))) KxMenuItem(key: const Key('insert-model3d'), icon: Icons.view_in_ar_outlined, title: l.splitModel3d, hint: l.insertModelHint, onTap: () => then(onModel3d)),
+            if (vis(const Key('insert-lab'))) KxMenuItem(key: const Key('insert-lab'), icon: Icons.science_outlined, title: l.splitLab, hint: l.insertModelHint, onTap: () => then(onLab)),
+            for (final e in more) KxMenuItem(key: e.key, icon: e.icon, title: e.title, hint: e.hint, onTap: () => then(e.onTap)),
             if (!primary)
               KxMenuItem(
                 key: const Key('insert-laser'),
@@ -145,6 +163,11 @@ class InsertPopover extends StatelessWidget {
                 onTap: () => then(() => wb.tool = BoardTool.laser),
               ),
             if (wb.canPaste) KxMenuItem(icon: Icons.content_paste, title: l.paste, onTap: () => then(wb.paste)),
+            if (relevant != null && onToggleAll != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(key: const Key('insert-show-all'), onPressed: onToggleAll, child: Text(showAll ? contextStrings(context)['showRelevant'] : contextStrings(context)['showAll'])),
+              ),
           ],
         ),
       ),

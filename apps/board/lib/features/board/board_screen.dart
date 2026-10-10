@@ -89,6 +89,11 @@ import '../classroom_plus/voice_commands.dart';
 import 'layout/tool_palette.dart';
 import '../classroom_plus/zones.dart';
 import '../extras/board_extras.dart';
+import '../logic_gates/logic_gates_lab.dart';
+import '../mindmap/mind_map_editor.dart';
+import 'context/class_context.dart';
+import 'context/context_switcher.dart';
+import '../language_kit/language_kit.dart' show LanguageKitPanel, LanguageTab;
 import '../extras/extras_hooks.dart';
 import 'board_shot.dart';
 import 'calculator.dart';
@@ -211,12 +216,20 @@ class _BoardScreenState extends State<BoardScreen> {
   BoardController get board => widget.board;
   BoardBackground get _background => _wb.background;
   bool get _primary => board.primaryMode;
-  SubjectStyle get _style => styleOf(board.session?.subjectName);
+  /// The teacher's own pick of subject and class (top bar chip); the timetable decides until they pick.
+  final _ctxPick = ContextOverride();
+  ClassContext get _ctx => resolveClassContext(board.session, _ctxPick);
+  SubjectStyle get _style => subjectStyles[_ctx.subject]!;
+
+  /// Whether the tools drawer and Insert menu show every tool, not just this subject's and grade's.
+  bool _showAllTools = false;
+  Widget get _contextChip => ContextChip(ctx: () => _ctx, pick: _ctxPick);
 
   @override
   void initState() {
     super.initState();
     board.addListener(_onBoardChanged);
+    _ctxPick.addListener(_onContextPicked);
     unawaited(loadCustomBoardFont(board));
     presentationHost = _showPresentation;
     _phet.addListener(_onPhetChanged);
@@ -411,6 +424,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   @override
   void dispose() {
+    _ctxPick.dispose();
     _zones.dispose();
     if (presentationHost == _showPresentation) presentationHost = null;
     _ppt?.dispose();
@@ -614,6 +628,13 @@ class _BoardScreenState extends State<BoardScreen> {
     await _pen.convertStrokes(strokes);
   }
 
+  /// A new subject or class on top: the paper, tools and kit follow it.
+  void _onContextPicked() {
+    if (!mounted) return;
+    setState(() {});
+    if (_wb.isBlank) _wb.background = _themed(_style.paper);
+  }
+
   void _onBoardChanged() {
     _followTheme();
     if (board.liveViewers == 0 && _live.isStreaming) _live.stop();
@@ -621,6 +642,8 @@ class _BoardScreenState extends State<BoardScreen> {
     final id = board.session?.sessionId;
     if (id == _lastSessionId) return;
     _lastSessionId = id;
+    // A new period is the timetable's word again.
+    _ctxPick.clear();
     unawaited(_loadLetterSize());
     if (_signInOpen && id != null) Navigator.of(context).pop();
     // A new class on a clean board starts on its subject's paper.
@@ -1217,7 +1240,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   Future<void> _openSim([SimKind? kind]) async {
     setState(() => _popover = null);
-    final k = kind ?? await showPanelDialog<SimKind>(context: context, builder: (_) => const SimPickerDialog());
+    final k = kind ?? await showPanelDialog<SimKind>(context: context, builder: (_) => SimPickerDialog(relevant: (n) => simRelevant(_ctx.profile, n)));
     if (k == null || !mounted) return;
     _sim = ActiveSim.of(k);
     _show(PanelKind.sim);
@@ -1407,6 +1430,7 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('code', Icons.code, l.subjectToolName(SubjectTool.code), [ToolGroup.cs], cs, _run(() => subject(SubjectTool.code))),
       DrawerTool('algorithms', Icons.sort, l.kitTabName(KitTab.algorithms), [ToolGroup.cs], cs, _run(() => _kitAt(KitTab.algorithms))),
       DrawerTool('cs-labs', Icons.memory, l.kitTabName(KitTab.csLabs), [ToolGroup.cs], cs, _run(() => _kitAt(KitTab.csLabs))),
+      DrawerTool('logic-gates', Icons.memory_outlined, contextStrings(context)['logicGates'], [ToolGroup.cs, ToolGroup.science], cs, _run(() => _openPage(contextStrings(context)['logicGates'], Icons.memory_outlined, (_) => LogicGatesLab(wb: _wb)))),
       DrawerTool('logic', Icons.developer_board, l.kitTabName(KitTab.logic), [ToolGroup.cs], cs, _run(() => _kitAt(KitTab.logic))),
       DrawerTool('binary', Icons.looks_one_outlined, l.kitTabName(KitTab.binary), [ToolGroup.cs, ToolGroup.maths], cs, _run(() => _kitAt(KitTab.binary))),
       // Class
@@ -1417,7 +1441,9 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('attendance', Icons.how_to_reg_outlined, l.toolAttendance, [ToolGroup.classroom], cls, _run(_attendance)),
       DrawerTool('todays-plan', Icons.event_note_outlined, l.toolTodaysPlan, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.plan))),
       DrawerTool('concept-videos', Icons.smart_display_outlined, l.toolConceptVideos, [ToolGroup.classroom, ToolGroup.science], cls, _run(() => _show(PanelKind.videos))),
-      DrawerTool('dictionary', Icons.menu_book_outlined, s.dictionary, [ToolGroup.classroom], cls, _run(() => _kitAt(KitTab.words))),
+      // The offline dictionary (language kit), not the kit's word wall of picture words.
+      DrawerTool('dictionary', Icons.menu_book_outlined, s.dictionary, [ToolGroup.classroom, ToolGroup.language], cls, _run(() => _openPage(s.dictionary, Icons.menu_book_outlined, (_) => LanguageKitPanel(key: const ValueKey(LanguageTab.dictionary), board: board, wb: _wb)))),
+      DrawerTool('mindmap', Icons.bubble_chart_outlined, contextStrings(context)['mindmap'], [ToolGroup.classroom, ToolGroup.language], cls, _run(() => unawaited(MindMapEditor.open(context, _wb)))),
       DrawerTool('timeline', Icons.timeline, l.kitTabName(KitTab.dates), [ToolGroup.classroom], cls, _run(() => _kitAt(KitTab.dates))),
       DrawerTool('read-aloud', Icons.record_voice_over_outlined, l.readerTitle, [ToolGroup.classroom], cls, _run(_readPage)),
       DrawerTool('second-board', Icons.vertical_split_outlined, s.secondBoard, [ToolGroup.classroom], cls, _run(() => _openSplit(SplitContent.whiteboard))),
@@ -1703,6 +1729,7 @@ class _BoardScreenState extends State<BoardScreen> {
       board: board,
       wb: _wb,
       style: _style,
+      keyDatesFocus: _ctx.profile.keyDates,
       primary: _primary,
       initialTab: _kitTab,
       onAi: _openAi,
@@ -2242,7 +2269,7 @@ class _BoardScreenState extends State<BoardScreen> {
         child: BoardChromeTheme(
           child: Align(
             alignment: Alignment.centerLeft,
-            child: ClassBar(board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance),
+            child: ClassBar(contextChip: _contextChip, board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance),
           ),
         ),
       ),
@@ -2341,7 +2368,7 @@ class _BoardScreenState extends State<BoardScreen> {
         child: BoardChromeTheme(
           child: Row(
             children: [
-              Expanded(child: ClassBar(board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance, phone: true)),
+              Expanded(child: ClassBar(contextChip: _contextChip, board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance, phone: true)),
               const SizedBox(width: Kx.s4),
               TopRightBar(board: board, onSearch: _openSearch, onProfile: () => _toggle(BoardPopover.profile), phone: true, onMenu: () => _toggle(BoardPopover.menu)),
             ],
@@ -2553,6 +2580,8 @@ class _BoardScreenState extends State<BoardScreen> {
         tools: _drawerTools(l),
         order: _groupOrder,
         preferred: _preferredTools,
+        relevant: (id) => toolRelevant(_ctx.profile, id),
+        contextLabel: contextLabel(context, _ctx),
         width: 680,
         maxHeight: math.max(160, screen.height - (phone ? 300 : 360)),
       ),
@@ -2565,6 +2594,9 @@ class _BoardScreenState extends State<BoardScreen> {
         onModel3d: () => _openSplit(SplitContent.model3d),
         onLab: () => _openSplit(SplitContent.lab),
         categories: _insertCategories(context),
+        relevant: (key) => insertRelevant(_ctx.profile, key),
+        showAll: _showAllTools,
+        onToggleAll: () => setState(() => _showAllTools = !_showAllTools),
         extras: [
           InsertExtra(key: const Key('insert-text'), icon: Icons.title, title: l.toolText, hint: l.tapToPlace, onTap: () => _wb.tool = BoardTool.text),
           ...insertExtras(context, wb: _wb, subject: board.session?.subjectName, onSimulation: () => unawaited(_openSim())),
