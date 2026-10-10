@@ -9,6 +9,5 @@ import { WelfareRequestsController } from './welfare-requests.controller.js';
 import { WelfareService } from './welfare.service.js';
 
 /** Grievances and the confidential committee workflow, discipline, counselling and welfare requests. */
-@Module({ imports: [NotificationsModule], controllers: [GrievancesController, DisciplineController, CounsellingController, WelfareRequestsController, RetentionController], providers: [WelfareService] })
-@Module({ imports: [NotificationsModule], controllers: [GrievancesController, DisciplineController, GrievanceEvidenceController, DisciplineExtrasController, CounsellingController, WelfareRequestsController], providers: [WelfareService] })
+@Module({ imports: [NotificationsModule], controllers: [GrievancesController, DisciplineController, GrievanceEvidenceController, DisciplineExtrasController, CounsellingController, WelfareRequestsController, RetentionController], providers: [WelfareService] })
 export class WelfareModule {}

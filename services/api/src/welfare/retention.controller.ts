@@ -27,7 +27,7 @@ const cutoff = (now: Date, months: number) => {
 };
 
 /** How long health visits and counselling records are kept, and what happens afterwards (PRD section 40, DPDP storage limitation). */
-@Controller('v1/retention')
+@Controller('v1/retention/sensitive')
 export class RetentionController implements OnModuleInit {
   constructor(
     private readonly db: DbService,

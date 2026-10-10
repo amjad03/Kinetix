@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RetentionPage() {
   await requireSection('health');
   const { t } = await getI18n();
-  const data = await load(() => api<Record<string, unknown>[]>('/v1/retention/rules'));
+  const data = await load(() => api<Record<string, unknown>[]>('/v1/retention/sensitive/rules'));
   if (data.error !== undefined) return <ErrorState message={data.error} />;
   const classWords = { health_visits: t('dx.ret.c.health_visits'), counselling: t('dx.ret.c.counselling') };
   const actionWords = { delete: t('dx.ret.a.delete'), redact: t('dx.ret.a.redact') };
@@ -39,7 +39,7 @@ export default async function RetentionPage() {
         {
           label: t('dx.ret.set'),
           method: 'PUT',
-          path: '/v1/retention/rules/{id}',
+          path: '/v1/retention/sensitive/rules/{id}',
           fields: [
             { name: 'retainMonths', label: t('dx.ret.months'), type: 'number', required: true, hint: t('dx.ret.monthsHint'), initial: '36' },
             { name: 'action', label: t('dx.ret.action'), type: 'select', options: opt(['delete', 'redact'] as const, (a) => a, (a) => actionWords[a]), required: true, initial: 'delete' },
@@ -47,7 +47,7 @@ export default async function RetentionPage() {
           ],
         },
       ],
-      forms: [{ id: 'run', title: t('dx.ret.runTitle'), submit: t('dx.ret.run'), path: '/v1/retention/run', fields: [] }],
+      forms: [{ id: 'run', title: t('dx.ret.runTitle'), submit: t('dx.ret.run'), path: '/v1/retention/sensitive/run', fields: [] }],
     },
   ];
   return (

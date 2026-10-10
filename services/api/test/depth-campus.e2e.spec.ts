@@ -242,20 +242,20 @@ describe('campus depth: library, hostel work orders, canteen stock, retention, m
       ]);
       await db.insert(s.counsellingSessions).values({ tenantId: t.tenantId, studentId: t.students[B].id, requestedBy: t.principal.id, reason: 'Exam stress', status: 'completed', confidentialNotes: 'Private notes', createdAt: new Date('2023-12-01T05:00:00Z') });
 
-      await get('teacher', '/v1/retention/rules').expect(403);
-      expect((await get('principal', '/v1/retention/rules').expect(200)).body.map((r: { dataClass: string; active: boolean }) => [r.dataClass, r.active])).toEqual([['health_visits', false], ['counselling', false]]);
-      await put('principal', '/v1/retention/rules/health_visits', { retainMonths: 3, action: 'delete', active: true }).expect(400); // not shorter than six months
-      await put('principal', '/v1/retention/rules/grades', { retainMonths: 12, action: 'delete', active: true }).expect(400);
-      await put('principal', '/v1/retention/rules/health_visits', { retainMonths: 24, action: 'delete', active: true }).expect(200);
-      await put('principal', '/v1/retention/rules/counselling', { retainMonths: 24, action: 'redact', active: true }).expect(200);
-      const rules = (await get('principal', '/v1/retention/rules').expect(200)).body;
+      await get('teacher', '/v1/retention/sensitive/rules').expect(403);
+      expect((await get('principal', '/v1/retention/sensitive/rules').expect(200)).body.map((r: { dataClass: string; active: boolean }) => [r.dataClass, r.active])).toEqual([['health_visits', false], ['counselling', false]]);
+      await put('principal', '/v1/retention/sensitive/rules/health_visits', { retainMonths: 3, action: 'delete', active: true }).expect(400); // not shorter than six months
+      await put('principal', '/v1/retention/sensitive/rules/grades', { retainMonths: 12, action: 'delete', active: true }).expect(400);
+      await put('principal', '/v1/retention/sensitive/rules/health_visits', { retainMonths: 24, action: 'delete', active: true }).expect(200);
+      await put('principal', '/v1/retention/sensitive/rules/counselling', { retainMonths: 24, action: 'redact', active: true }).expect(200);
+      const rules = (await get('principal', '/v1/retention/sensitive/rules').expect(200)).body;
       expect(rules.map((r: { dueNow: number }) => r.dueNow)).toEqual([1, 1]);
 
-      expect((await post('principal', '/v1/retention/run').expect(200)).body.processed).toEqual({ health_visits: 1, counselling: 1 });
+      expect((await post('principal', '/v1/retention/sensitive/run').expect(200)).body.processed).toEqual({ health_visits: 1, counselling: 1 });
       expect((await db.select().from(s.healthVisits).where(eq(s.healthVisits.tenantId, t.tenantId))).map((v) => v.complaint)).toEqual(['Headache']);
       const [session] = await db.select().from(s.counsellingSessions).where(eq(s.counsellingSessions.tenantId, t.tenantId));
       expect(session).toMatchObject({ reason: '', confidentialNotes: null, status: 'completed' }); // the session stays, its content goes
-      expect((await post('principal', '/v1/retention/run').expect(200)).body.processed).toEqual({ health_visits: 0, counselling: 0 });
+      expect((await post('principal', '/v1/retention/sensitive/run').expect(200)).body.processed).toEqual({ health_visits: 0, counselling: 0 });
       const audit = (await owner.query("select count(*)::int as n from audit_log where tenant_id = $1 and action = 'retention.sensitive_applied'", [t.tenantId])).rows[0].n;
       expect(audit).toBe(2);
     });

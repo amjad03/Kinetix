@@ -14,6 +14,7 @@ describe('onboarding imports and affiliated exam publishing', () => {
   const owner = ownerPool();
   let app: INestApplication;
   let token = '';
+  let tenantId = '';
   const http = () => request(app.getHttpServer());
   const auth = () => ({ authorization: `Bearer ${token}` });
   const post = (kind: string, csv: string, query = '') => http().post(`/v1/admin/import/${kind}${query}`).set(auth()).set('content-type', 'text/csv; charset=utf-8').send(csv);
@@ -25,6 +26,7 @@ describe('onboarding imports and affiliated exam publishing', () => {
     const args = parseArgs(['--slug', slug, '--name', 'Onboarding College', '--kind', 'college', '--year-label', '2026-27', '--year-start', '2026-06-01', '--year-end', '2027-03-31', '--admin-name', 'Admin', '--admin-email', 'admin@onb.example.in']);
     const inst = await createInstitution(drizzle(owner, { schema: s }), args);
     const login = async (password: string) => (await http().post('/v1/auth/login').send({ tenant: slug, login: 'admin@onb.example.in', password }).expect(201)).body.accessToken as string;
+    tenantId = inst.tenant.id;
     const temp = await login(inst.password!);
     token = (await http().post('/v1/me/password').set('authorization', `Bearer ${temp}`).send({ currentPassword: inst.password, newPassword: 'Onboard-office-2026' }).expect(200)).body.accessToken as string;
   });
@@ -51,13 +53,13 @@ describe('onboarding imports and affiliated exam publishing', () => {
       const again = (await post(kind, TEMPLATES[kind]).expect(200)).body as { totals: Totals };
       expect(again.totals, kind).toMatchObject({ created: 0, updated: 0, error: 0 });
     }
-    expect((await q<{ n: number }>("select count(*)::int n from co_outcome_map"))[0]!.n).toBe(2);
-    expect((await q<{ n: number }>("select count(*)::int n from fee_structures where jsonb_array_length(items) = 3"))[0]!.n).toBe(1);
-    expect((await q<{ n: number }>("select count(*)::int n from exam_sessions"))[0]!.n).toBe(2);
-    expect((await q<{ n: number }>("select count(*)::int n from library_books"))[0]!.n).toBe(2);
-    expect((await q<{ n: number }>("select count(*)::int n from placement_companies"))[0]!.n).toBe(2);
-    expect((await q<{ n: number }>("select count(*)::int n from publications"))[0]!.n).toBe(2);
-    expect((await q<{ n: number }>("select count(*)::int n from accreditation_criteria"))[0]!.n).toBe(2);
+    expect((await q<{ n: number }>(`select count(*)::int n from co_outcome_map where tenant_id = '${tenantId}'`))[0]!.n).toBe(2);
+    expect((await q<{ n: number }>(`select count(*)::int n from fee_structures where tenant_id = '${tenantId}' and jsonb_array_length(items) = 3`))[0]!.n).toBe(1);
+    expect((await q<{ n: number }>(`select count(*)::int n from exam_sessions where tenant_id = '${tenantId}'`))[0]!.n).toBe(2);
+    expect((await q<{ n: number }>(`select count(*)::int n from library_books where tenant_id = '${tenantId}'`))[0]!.n).toBe(2);
+    expect((await q<{ n: number }>(`select count(*)::int n from placement_companies where tenant_id = '${tenantId}'`))[0]!.n).toBe(2);
+    expect((await q<{ n: number }>(`select count(*)::int n from publications where tenant_id = '${tenantId}'`))[0]!.n).toBe(2);
+    expect((await q<{ n: number }>(`select count(*)::int n from accreditation_criteria where tenant_id = '${tenantId}'`))[0]!.n).toBe(2);
   });
 
   it('names the row and the reason when a family file is wrong', async () => {
@@ -69,7 +71,7 @@ describe('onboarding imports and affiliated exam publishing', () => {
   });
 
   it('refuses to publish exam results in an affiliated college, with a clear message, and allows an autonomous one', async () => {
-    const [session] = await q<{ id: string }>("select id from exam_sessions order by name limit 1");
+    const [session] = await q<{ id: string }>(`select id from exam_sessions where tenant_id = '${tenantId}' order by name limit 1`);
     await http().put('/v1/admin/institution/setup').set(auth()).send({ governanceModel: 'affiliated' }).expect(200);
     const refused = await http().post(`/v1/exam-sessions/${session!.id}/publish`).set(auth()).expect(403);
     expect(refused.body.message).toMatch(/affiliating university publishes exam results/);

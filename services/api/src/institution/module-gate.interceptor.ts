@@ -19,6 +19,7 @@ export class ModuleGateInterceptor implements NestInterceptor {
   constructor(private readonly db: DbService) {}
 
   intercept(ctx: ExecutionContext, next: CallHandler): Observable<unknown> {
+    if (ctx.getType() !== 'http') return next.handle();
     const req = ctx.switchToHttp().getRequest<{ originalUrl?: string; url: string; principal?: { kind: string; tenantId?: string } }>();
     const mod = moduleOfPath(req.originalUrl ?? req.url);
     const p = req.principal;

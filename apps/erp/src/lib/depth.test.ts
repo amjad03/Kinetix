@@ -48,7 +48,7 @@ describe('formBody', () => {
 describe('fillPath', () => {
   it('fills placeholders from the row and escapes them', () => {
     expect(fillPath('/v1/library/loans/{id}/renew', { id: ID })).toBe(`/v1/library/loans/${ID}/renew`);
-    expect(fillPath('/v1/retention/rules/{id}', { id: 'health visits/../x' })).toBe('/v1/retention/rules/health%20visits%2F..%2Fx');
+    expect(fillPath('/v1/retention/sensitive/rules/{id}', { id: 'health visits/../x' })).toBe('/v1/retention/sensitive/rules/health%20visits%2F..%2Fx');
     expect(fillPath('/v1/x/{missing}', {})).toBe('/v1/x/');
   });
 });
@@ -75,14 +75,14 @@ describe('the paths a desk may call', () => {
       `/v1/library/topic-links/${ID}`,
       `/v1/hostel/work-orders/${ID}/verify`,
       '/v1/canteen/ops/stock',
-      '/v1/retention/rules/health_visits',
+      '/v1/retention/sensitive/rules/health_visits',
       `/v1/mentoring/plans/${ID}/support`,
     ])
       expect(isDepthPath(p), p).toBe(true);
   });
 
   it('refuses everything else', () => {
-    for (const p of ['/v1/auth/login', '/v1/admin/structure', '/v1/fees/invoices', `/v1/fees/invoices/${ID}/cancel`, `/v1/library/loans/${ID}/return`, `/v1/hr/payroll/adjustments/${ID}/decide?x=1`, '/v1/retention/rules/../../auth', `/v1/exam-ops/normalise/not-an-id`, 'https://example.org/v1/exam-ops/class-bands'])
+    for (const p of ['/v1/auth/login', '/v1/admin/structure', '/v1/fees/invoices', `/v1/fees/invoices/${ID}/cancel`, `/v1/library/loans/${ID}/return`, `/v1/hr/payroll/adjustments/${ID}/decide?x=1`, '/v1/retention/sensitive/rules/../../auth', `/v1/exam-ops/normalise/not-an-id`, 'https://example.org/v1/exam-ops/class-bands'])
       expect(isDepthPath(p), p).toBe(false);
   });
 });
