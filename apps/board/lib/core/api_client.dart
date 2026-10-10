@@ -84,6 +84,21 @@ class ApiClient {
   Future<Map<String, dynamic>> endClassWithNotes({String notes = '', bool publish = false}) async =>
       await _send('POST', '/v1/classroom/end', body: {'notes': notes, 'publish': publish}) as Map<String, dynamic>;
 
+  /// The teacher's current period in this room (`slot` is null between periods) and whether the board is already on it.
+  Future<Map<String, dynamic>> classNow() async => await _send('GET', '/v1/classroom/now') as Map<String, dynamic>;
+
+  /// Switches the board to the current period, keeping the period so attendance lands against it.
+  Future<Map<String, dynamic>> openClassNow() async => await _send('POST', '/v1/classroom/now/open') as Map<String, dynamic>;
+
+  /// Exam room mode: the paper being sat in this board's room, or `{active: false}`.
+  Future<Map<String, dynamic>> examRoom() async => await _send('GET', '/v1/devices/me/exam-room', useDeviceToken: true) as Map<String, dynamic>;
+
+  /// The course outcomes of the subject open on the board (a poll can be tagged with them for OBE).
+  Future<List<Map<String, dynamic>>> courseOutcomes() async => (await _send('GET', '/v1/classroom/course-outcomes') as List<dynamic>).cast<Map<String, dynamic>>();
+
+  /// Tags a poll with the course outcomes it measures; its results then count as classroom evidence in OBE.
+  Future<void> tagPoll(String pollId, List<String> coIds) async => _send('PUT', '/v1/polls/$pollId/cos', body: {'coIds': coIds});
+
   Future<Map<String, dynamic>> buzzer() async => await _send('GET', '/v1/classroom/buzzer') as Map<String, dynamic>;
   Future<Map<String, dynamic>> lockBuzzer(bool locked) async => await _send('POST', '/v1/classroom/buzzer/lock', body: {'locked': locked}) as Map<String, dynamic>;
   Future<Map<String, dynamic>> resetBuzzer() async => await _send('POST', '/v1/classroom/buzzer/reset') as Map<String, dynamic>;
@@ -110,8 +125,19 @@ class ApiClient {
   Future<void> setClassLive(bool on) async => _send('POST', '/v1/sessions/current/live', body: {'on': on});
 
   Future<WhiteboardSummary> saveWhiteboard(String id, {required String title, required SavedBoard board, required bool share}) async {
-    final j = await _send('PUT', '/v1/whiteboards/$id', body: {...board.toJson(), 'title': title, 'share': share});
-    return WhiteboardSummary.fromJson(j as Map<String, dynamic>);
+    final body = {...board.toJson(), 'title': title, 'share': share};
+    try {
+      final j = await _send('PUT', '/v1/whiteboards/$id', body: body);
+      return WhiteboardSummary.fromJson(j as Map<String, dynamic>);
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      // Offline: the save is kept and goes up (the board picks the id, so saving again is safe) when the board is back.
+      final keep = defer;
+      if (keep == null) rethrow;
+      await keep('PUT', '/v1/whiteboards/$id', body);
+      return WhiteboardSummary(id: id, title: title, pageCount: (body['pages'] as List?)?.length ?? 1, updatedAt: DateTime.now());
+    }
   }
 
   Future<List<WhiteboardSummary>> whiteboards() async {
@@ -248,7 +274,7 @@ class ApiClient {
   /// Gives [studentId] a badge (one of the board's ten badge types, e.g. `star`) in the class
   /// [sectionId] (the open class when the server knows it from the session).
   Future<void> awardBadge(String studentId, String badgeType, {String? sectionId}) async =>
-      _send('POST', '/v1/badges', body: {'studentId': studentId, 'sectionId': ?sectionId, 'badge': badgeType});
+      _sendOrDefer('POST', '/v1/badges', body: {'studentId': studentId, 'sectionId': ?sectionId, 'badge': badgeType});
 
   Future<void> markDisplayed(String id) async => _send('POST', '/v1/broadcasts/$id/displayed');
   Future<void> acknowledge(String id) async => _send('POST', '/v1/broadcasts/$id/ack');
@@ -305,10 +331,10 @@ class ApiClient {
   }
 
   /// Marks a topic as taught today to the open class (by the signed-in teacher).
-  Future<void> markTopicTaught(String topicId) async => _send('POST', '/v1/coverage', body: {'topicId': topicId});
+  Future<void> markTopicTaught(String topicId) async => _sendOrDefer('POST', '/v1/coverage', body: {'topicId': topicId});
 
   /// Undoes [markTopicTaught].
-  Future<void> unmarkTopicTaught(String topicId) async => _send('DELETE', '/v1/coverage', body: {'topicId': topicId});
+  Future<void> unmarkTopicTaught(String topicId) async => _sendOrDefer('DELETE', '/v1/coverage', body: {'topicId': topicId});
 
   /// The lesson plan for the period open on the board, or null in a free session.
   Future<PeriodLessonPlan?> currentLessonPlan() async {
@@ -383,7 +409,7 @@ class ApiClient {
   /// Gives homework to the class open on the board; students and parents are notified.
   Future<void> homeworkFromBoard({required String title, String? instructions, required DateTime dueOn}) async {
     final due = '${dueOn.year}-${dueOn.month.toString().padLeft(2, '0')}-${dueOn.day.toString().padLeft(2, '0')}';
-    await _send('POST', '/v1/homework/from-board', body: {'title': title, 'instructions': ?instructions, 'dueOn': due});
+    await _sendOrDefer('POST', '/v1/homework/from-board', body: {'title': title, 'instructions': ?instructions, 'dueOn': due});
   }
 
   // --- Class questions and answer cards (features/class_check) -----------------------------
@@ -414,6 +440,28 @@ class ApiClient {
     final res = await http.Response.fromStream(await _http.send(req));
     if (res.statusCode >= 400) _decode(res);
     return res.bodyBytes;
+  }
+
+  /// Set by the board: keeps a call that could not reach the server (offline) to replay when it can.
+  /// Calls the server refused (an [ApiException]) are never kept.
+  Future<void> Function(String method, String path, Map<String, dynamic>? body)? defer;
+
+  /// Sends a call that must not be lost when the network is down: posted homework, a topic marked taught, a badge.
+  Future<void> _sendOrDefer(String method, String path, {Map<String, dynamic>? body}) async {
+    try {
+      await _send(method, path, body: body);
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      final keep = defer;
+      if (keep == null) rethrow;
+      await keep(method, path, body);
+    }
+  }
+
+  /// Replays a kept call (see [defer]); throws what the server or the network throws.
+  Future<void> replay(String method, String path, Map<String, dynamic>? body) async {
+    await _send(method, path, body: body);
   }
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false}) async {

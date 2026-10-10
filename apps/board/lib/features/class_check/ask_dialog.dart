@@ -7,19 +7,23 @@ import 'class_poll.dart';
 
 /// What the teacher set up in [AskClassDialog].
 class AskSetup {
-  const AskSetup({required this.kind, required this.question, required this.options, this.correct});
+  const AskSetup({required this.kind, required this.question, required this.options, this.correct, this.coIds = const []});
   final PollKind kind;
   final String question;
   final List<String> options;
   final String? correct;
+  final List<String> coIds;
 }
 
 /// "Ask the class": the question (optional: it can be read out or written on the board), A–B,
 /// A–C, A–D, True / False or a number, and the right answer if the teacher wants it marked.
 class AskClassDialog extends StatefulWidget {
-  const AskClassDialog({super.key, this.question = ''});
+  const AskClassDialog({super.key, this.question = '', this.outcomes = const []});
 
   final String question;
+
+  /// The subject's course outcomes (`id`, `code`, `statement`); the question can be tagged with some of them.
+  final List<Map<String, dynamic>> outcomes;
 
   @override
   State<AskClassDialog> createState() => _AskClassDialogState();
@@ -32,6 +36,7 @@ class _AskClassDialogState extends State<AskClassDialog> {
   /// 2, 3 or 4 letters; 5 = True / False; 0 = a number; 6 = a word cloud.
   int _choices = 4;
   int? _correct;
+  final _cos = <String>{};
 
   bool get _trueFalse => _choices == 5;
   bool get _numeric => _choices == 0;
@@ -56,6 +61,7 @@ class _AskClassDialogState extends State<AskClassDialog> {
         kind: _word ? PollKind.word : (_numeric ? PollKind.numeric : PollKind.mcq),
         question: q.isEmpty ? l.pollDefaultQuestion : q,
         options: options,
+        coIds: _cos.toList(),
         correct: _word ? null : _numeric ? (double.tryParse(number) == null ? null : number) : _correct?.toString(),
       ),
     );
@@ -100,6 +106,23 @@ class _AskClassDialogState extends State<AskClassDialog> {
                 if (_correct != null && _correct! >= _count) _correct = null;
               }),
             ),
+            if (widget.outcomes.isNotEmpty) ...[
+              const SizedBox(height: Kx.s16),
+              Text(_coTitle(context), style: context.text.titleSmall),
+              const SizedBox(height: Kx.s8),
+              Wrap(
+                spacing: Kx.s8,
+                children: [
+                  for (final c in widget.outcomes)
+                    FilterChip(
+                      key: Key('ask-co-${c['id']}'),
+                      label: Text('${c['code']}'),
+                      selected: _cos.contains(c['id']),
+                      onSelected: (v) => setState(() => v ? _cos.add('${c['id']}') : _cos.remove('${c['id']}')),
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: Kx.s16),
             if (_word)
               Text(l.askWordCloudHint, key: const Key('ask-word-hint'), style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant))
@@ -141,3 +164,9 @@ class _AskClassDialogState extends State<AskClassDialog> {
     );
   }
 }
+
+String _coTitle(BuildContext context) => switch (Localizations.maybeLocaleOf(context)?.languageCode) {
+      'hi' => 'यह प्रश्न किस पाठ्यक्रम परिणाम को मापता है (वैकल्पिक)',
+      'kn' => 'ಈ ಪ್ರಶ್ನೆ ಯಾವ ಕೋರ್ಸ್ ಫಲಿತಾಂಶವನ್ನು ಅಳೆಯುತ್ತದೆ (ಐಚ್ಛಿಕ)',
+      _ => 'Course outcomes this question measures (optional)',
+    };

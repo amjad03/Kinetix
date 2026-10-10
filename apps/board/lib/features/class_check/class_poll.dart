@@ -47,6 +47,7 @@ class ClassPoll extends ChangeNotifier {
     required this.question,
     this.options = const [],
     this.correct,
+    this.coIds = const [],
     String? id,
   }) : id = id ?? board.newId();
 
@@ -60,6 +61,9 @@ class ClassPoll extends ChangeNotifier {
 
   /// MCQ: the right option's index as text; numeric: the value. Null = no right answer.
   final String? correct;
+
+  /// Course outcomes this question measures (picked by the teacher); its results count as classroom evidence in OBE.
+  final List<String> coIds;
 
   /// Answers by student id (or "card:N" for a card the board cannot put a name to).
   final Map<String, PollAnswer> answers = {};
@@ -125,6 +129,7 @@ class ClassPoll extends ChangeNotifier {
         'correct': correct,
       });
       saved = true;
+      if (coIds.isNotEmpty) await api.tagPoll(id, coIds);
     } catch (e) {
       error = '$e';
     }

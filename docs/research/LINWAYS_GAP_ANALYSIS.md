@@ -45,9 +45,9 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 | 15 | Mentoring | Yes | Yes, risk->task | Have | api/mentoring |
 | 16 | Slow learner analysis | Listed | Early alerts from attendance, marks, homework, fees; mentor intervention workflow (mig 0129) | Have | api/integrations/early-alerts |
 | 17 | Admission CRM, enquiry, lead mgmt, landing page | Yes | public-admissions, growth.controller, lead-score | Have | api/admissions/growth.controller.ts, lead-score.ts |
-| 18 | Marketing ROI, social ad tracking | Yes | growth.controller (extent unverified) | Partial | |
-| 19 | Index mark + rank list for admission | Yes | rank/merit hits but no "index mark" | Partial | api/admissions/entrance.service.ts |
-| 20 | Admission agents | Yes | agent hits (15 files), unverified | Partial | |
+| 18 | Marketing ROI, social ad tracking | Yes | Meta, Google and website lead connectors (signed webhooks), daily ad spend, source ROI report | Have | api/admissions/depth/leads.service.ts, ERP /admissions/depth; not run against live ad accounts |
+| 19 | Index mark + rank list for admission | Yes | Per-programme index formulas (engineering, medical, degree, PG, custom; weights tunable by registry rule), overall and category rank lists, seat matrix from registry quotas, CAP rounds (freeze/float/slide/reject/forfeit) | Have | api/admissions/depth (migration 0126); university-specific formulas need a rules document |
+| 20 | Admission agents | Yes | Agent registry, commission rules (flat, percent, slab; most specific wins), payouts with TDS | Have | api/admissions/depth/commission.ts |
 | 21 | Entrance tests, event registration, career pages | Yes | entrance, events, careers | Have | |
 | 22 | Fees: heads, challan, receipts, fines, concessions, instalments, refunds, wallet | Yes | Yes | Have | api/fees, api/finance; challan 5 files |
 | 23 | Payment gateways | Unk | Razorpay + PayU behind one gateway interface (order, hosted checkout, webhook signature, refund, settlement); tenant chooses; settlement reconciliation with exceptions queue | Have | api/fees (PayU sandbox only; Cashfree not integrated) |
@@ -117,7 +117,7 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 
 ## 5. Partial list
 
-Accreditation workbench; admission index mark and agent commissions; marketing ROI; gateways; Tally; biometric CSV only; Teams/Meet; plagiarism (internal only); student planner; slow learner; question paper scrutiny; e-governance builder UX; external examiner; mobile gaps (teacher course file/CO-PO, student diary/report card); DPDP/security certification; Power BI; transcript.
+Accreditation workbench; gateways; Tally; biometric CSV only; Teams/Meet; plagiarism (internal only); student planner; slow learner; question paper scrutiny; e-governance builder UX; external examiner; mobile gaps (none left: teacher course files and OBE screens, student report card and diary exist in the apps); DPDP/security certification; Power BI; transcript.
 
 ## 6. KINETIX advantages (not advertised by Linways)
 

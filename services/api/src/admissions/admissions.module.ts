@@ -8,6 +8,9 @@ import { AgentsService } from './agents.service.js';
 import { EnquiriesService } from './enquiries.service.js';
 import { EntranceController } from './entrance.controller.js';
 import { EntranceService } from './entrance.service.js';
+import { DepthController, LeadWebhookController, PublicAllotmentController } from './depth/depth.controller.js';
+import { DepthService } from './depth/depth.service.js';
+import { LeadsService } from './depth/leads.service.js';
 import { GrowthController } from './growth.controller.js';
 import { InterviewsService } from './interviews.service.js';
 import { OnlineTestService } from './online-test.service.js';
@@ -16,7 +19,7 @@ import { PublicAdmissionsController } from './public-admissions.controller.js';
 /** Admissions CRM: enquiries, cycles and applications, merit lists, offers and enrolment. */
 @Module({
   imports: [FeesModule, StudentsModule],
-  controllers: [AdmissionsController, AdmissionsExtController, EntranceController, GrowthController, PublicAdmissionsController, PublicAdmissionsExtController],
-  providers: [AdmissionsService, EnquiriesService, EntranceService, AgentsService, InterviewsService, OnlineTestService],
+  controllers: [AdmissionsController, AdmissionsExtController, EntranceController, GrowthController, DepthController, LeadWebhookController, PublicAllotmentController, PublicAdmissionsController, PublicAdmissionsExtController],
+  providers: [AdmissionsService, EnquiriesService, EntranceService, AgentsService, InterviewsService, OnlineTestService, DepthService, LeadsService],
 })
 export class AdmissionsModule {}

@@ -486,6 +486,13 @@ class DemoBoardServer {
     if (method == 'PUT' && RegExp(r'^/v1/exit-tickets/[^/]+$').hasMatch(path)) {
       return json({'id': path.split('/').last, 'topic': body['topic'], 'questions': (body['pollIds'] as List? ?? const []).length});
     }
+    if (path == '/v1/classroom/course-outcomes') {
+      return json([
+        {'id': 'co-1', 'code': 'CO1', 'statement': 'Explain share capital'},
+        {'id': 'co-2', 'code': 'CO2', 'statement': 'Record share transactions'},
+      ]);
+    }
+    if (method == 'PUT' && RegExp(r'^/v1/polls/[^/]+/cos$').hasMatch(path)) return json({'tagged': (body['coIds'] as List).length});
     final poll = RegExp(r'^/v1/polls/([^/]+)(?:/(cards|close))?$').firstMatch(path);
     if (poll != null) {
       final id = poll[1]!;

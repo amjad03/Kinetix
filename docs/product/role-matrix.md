@@ -18,6 +18,7 @@ A role in brackets is not a staff role: `(board device)` is a smartboard, `(any 
 | badges | (any signed-in user; the handler checks ownership) | - | - | - | - | - | - | - |
 | billing | principal, tenant_admin | principal, tenant_admin | - | - | - | - | - | - |
 | board-profiles | principal, tenant_admin | principal, tenant_admin | - | principal, tenant_admin | - | - | - | - |
+| board-sync | (board device) | - | - | - | - | - | - | - |
 | broadcasts | hod, principal, tenant_admin | hod, principal, tenant_admin | - | - | - | - | - | - |
 | calendar | (any signed-in user; the handler checks ownership), principal, tenant_admin | principal, tenant_admin | principal, tenant_admin | principal, tenant_admin | - | - | - | - |
 | campus-life | (any signed-in user; the handler checks ownership), guardian, hod, principal, student, teacher, tenant_admin | (any signed-in user; the handler checks ownership), guardian, hod, principal, student, teacher, tenant_admin | hod, principal, teacher, tenant_admin | hod, principal, teacher, tenant_admin | hod, principal, teacher, tenant_admin | hod, principal, teacher, tenant_admin | hod, principal, tenant_admin | - |

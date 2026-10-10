@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
 import { AbsenteesTable, ClassAttendanceTable } from '@/components/attendance/AttendanceTables';
+import { LiveAttendance } from '@/components/attendance/LiveAttendance';
 import { DateNav } from '@/components/DateNav';
 import { NoClasses } from '@/components/NoClasses';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
@@ -33,6 +34,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
 
   return (
     <>
+      <LiveAttendance date={date} />
       <PageHeader
         title={t('nav.attendance')}
         subtitle={`${fmt.date(date, 'long')}${date === today ? '' : ` · ${fmt.relativeDay(date, today)}`}`}

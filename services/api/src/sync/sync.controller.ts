@@ -1,6 +1,7 @@
 import { Body, Controller, ForbiddenException, HttpCode, Post } from '@nestjs/common';
 import { and, eq, gt } from 'drizzle-orm';
 import { z } from 'zod';
+import type { AttendanceUpdatedEvent } from '@kinetix/shared';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, DevicePrincipal } from '../auth/principal.js';
 import { boardSessions } from '../db/schema.js';
@@ -40,6 +41,7 @@ export class SyncController {
   @HttpCode(200)
   @Auth(['board', 'device'])
   async push(@CurrentPrincipal() caller: BoardPrincipal | DevicePrincipal, @Body(new ZodBody(PushBody)) body: z.infer<typeof PushBody>) {
+    const marked: AttendanceUpdatedEvent[] = [];
     const results = await this.db.withTenant(caller.tenantId, async (tx) => {
       let p: BoardPrincipal;
       if (caller.kind === 'board' && (!body.sessionId || body.sessionId === caller.sessionId)) {
@@ -54,8 +56,9 @@ export class SyncController {
         if (!s) throw new ForbiddenException('That class session is not from this board, or is too old to sync');
         p = { kind: 'board', tenantId: caller.tenantId, deviceId: caller.deviceId, campusId: caller.campusId, teacherId: s.teacherId, sessionId: s.id };
       }
-      return this.sync.push(tx, p, body.ops);
+      return this.sync.push(tx, p, body.ops, marked);
     });
+    for (const n of marked) await this.sync.announceAttendance(caller.tenantId, n);
     return { results, serverTime: new Date().toISOString() };
   }
 }

@@ -3032,6 +3032,17 @@ export const TENANT_TABLES = [
   'sso_identities',
   'sso_login_tickets',
   'meeting_attendance_proposals',
+  'admission_index_formulas',
+  'application_index_marks',
+  'admission_seat_matrix',
+  'application_preferences',
+  'admission_rounds',
+  'admission_allotments',
+  'agent_commission_rules',
+  'agent_payouts',
+  'lead_connectors',
+  'lead_events',
+  'lead_spend',
   'training_requests',
   'class_notes',
   'buzzer_rounds',
@@ -7058,6 +7069,159 @@ export const acctAccounts = pgTable(
     name: text('name').notNull(),
     university: text('university').notNull(),
     config: jsonb('config').$type<Record<string, unknown>>().notNull(),
+// Admission depth: index marks, rank lists, seat matrix, CAP rounds, agent rules and payouts, lead connectors and spend.
+
+/** The index-mark formula a cycle ranks on (a preset or a custom list of weighted components). */
+export const admissionIndexFormulas = pgTable(
+  'admission_index_formulas',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    spec: jsonb('spec').$type<Record<string, unknown>>().notNull(),
+    updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('admission_index_formulas_cycle_uq').on(t.cycleId)],
+);
+
+/** One applicant's marks for the formula, the index mark computed from them, and their ranks once a rank list is built. */
+export const applicationIndexMarks = pgTable(
+  'application_index_marks',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    marks: jsonb('marks').$type<Record<string, number>>().notNull().default({}),
+    indexMark: numeric('index_mark', { precision: 8, scale: 2, mode: 'number' }),
+    breakdown: jsonb('breakdown').$type<Record<string, unknown>>().notNull().default({}),
+    complete: boolean('complete').notNull().default(false),
+    overallRank: integer('overall_rank'),
+    categoryRank: integer('category_rank'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('application_index_marks_app_uq').on(t.applicationId), index('application_index_marks_cycle_idx').on(t.cycleId, t.overallRank)],
+);
+
+/** Seats per option (course and college) and seat category. 'merit' rows are open seats. */
+export const admissionSeatMatrix = pgTable(
+  'admission_seat_matrix',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    optionLabel: text('option_label').notNull(),
+    category: text('category').notNull().default('merit'),
+    seats: integer('seats').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('admission_seat_matrix_uq').on(t.cycleId, t.optionLabel, t.category)],
+);
+
+/** The ordered options an applicant wants, most wanted first. */
+export const applicationPreferences = pgTable(
+  'application_preferences',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    options: jsonb('options').$type<string[]>().notNull().default([]),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('application_preferences_app_uq').on(t.applicationId)],
+);
+
+/** A CAP round: allotments are drafted, published for applicants to answer, then closed. */
+export const admissionRounds = pgTable(
+  'admission_rounds',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    roundNo: integer('round_no').notNull(),
+    status: text('status').notNull().default('draft'), // draft | published | closed
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('admission_rounds_uq').on(t.cycleId, t.roundNo)],
+);
+
+export const admissionAllotments = pgTable(
+  'admission_allotments',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    roundId: uuid('round_id').notNull().references(() => admissionRounds.id, { onDelete: 'cascade' }),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    optionLabel: text('option_label').notNull(),
+    seatCategory: text('seat_category').notNull(),
+    rank: integer('rank').notNull(),
+    kind: text('kind').notNull().default('new'), // new | upgraded | kept
+    response: text('response').notNull().default('pending'), // pending | freeze | float | slide | reject | forfeit
+    respondedAt: timestamp('responded_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('admission_allotments_uq').on(t.roundId, t.applicationId), index('admission_allotments_app_idx').on(t.applicationId)],
+);
+
+/** How an agent is paid: a flat amount, a share of a fee base, or a slab on how many students they have enrolled. Most specific rule wins. */
+export const agentCommissionRules = pgTable(
+  'agent_commission_rules',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    agentId: uuid('agent_id').references(() => admissionAgents.id, { onDelete: 'cascade' }),
+    programId: uuid('program_id').references(() => programs.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(), // flat | percent | slab
+    flatPaise: bigint('flat_paise', { mode: 'number' }).notNull().default(0),
+    percentBps: integer('percent_bps').notNull().default(0),
+    basePaise: bigint('base_paise', { mode: 'number' }).notNull().default(0),
+    /** [{ upTo: 5, paise: 500000 }, { upTo: null, paise: 750000 }]: the amount for the Nth enrolment this agent brings. */
+    slabs: jsonb('slabs').$type<{ upTo: number | null; paise: number }[]>().notNull().default([]),
+    tdsBps: integer('tds_bps').notNull().default(0),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [index('agent_commission_rules_idx').on(t.tenantId, t.agentId, t.programId)],
+);
+
+export const agentPayouts = pgTable(
+  'agent_payouts',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    agentId: uuid('agent_id').notNull().references(() => admissionAgents.id),
+    grossPaise: bigint('gross_paise', { mode: 'number' }).notNull(),
+    tdsPaise: bigint('tds_paise', { mode: 'number' }).notNull().default(0),
+    netPaise: bigint('net_paise', { mode: 'number' }).notNull(),
+    commissionIds: jsonb('commission_ids').$type<string[]>().notNull().default([]),
+    paidOn: date('paid_on').notNull(),
+    reference: text('reference'),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('agent_payouts_agent_idx').on(t.agentId, t.paidOn)],
+);
+
+/** A lead source feeding enquiries: Meta lead ads, Google Ads lead forms or the website form, each with its own secret. */
+export const leadConnectors = pgTable(
+  'lead_connectors',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    kind: text('kind').notNull(), // meta | google | website
+    name: text('name').notNull(),
+    /** Shared secret: Meta app secret (signature), Google key, or the website form key. */
+    secret: text('secret').notNull(),
+    programId: uuid('program_id').references(() => programs.id, { onDelete: 'set null' }),
+    campaignId: uuid('campaign_id').references(() => admissionCampaigns.id, { onDelete: 'set null' }),
     active: boolean('active').notNull().default(true),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
@@ -7354,4 +7518,37 @@ export const meetingAttendanceProposals = pgTable(
     confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
   },
   (t) => [uniqueIndex('meeting_attendance_proposals_uq').on(t.meetingId, t.studentId)],
+  (t) => [uniqueIndex('lead_connectors_name_uq').on(t.tenantId, t.name)],
+);
+
+export const leadEvents = pgTable(
+  'lead_events',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    connectorId: uuid('connector_id').notNull().references(() => leadConnectors.id, { onDelete: 'cascade' }),
+    externalId: text('external_id').notNull(),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
+    enquiryId: uuid('enquiry_id').references(() => enquiries.id, { onDelete: 'set null' }),
+    status: text('status').notNull(), // ok | duplicate | rejected
+    error: text('error'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('lead_events_uq').on(t.connectorId, t.externalId)],
+);
+
+/** Daily ad spend per channel, entered by hand or pushed by an ad-platform job, for the source ROI dashboard. */
+export const leadSpend = pgTable(
+  'lead_spend',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    channel: text('channel').notNull(),
+    day: date('day').notNull(),
+    spendPaise: bigint('spend_paise', { mode: 'number' }).notNull(),
+    impressions: integer('impressions').notNull().default(0),
+    clicks: integer('clicks').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('lead_spend_uq').on(t.tenantId, t.channel, t.day)],
 );
