@@ -118,6 +118,11 @@ void main() {
 
     Future<void> pickClass(WidgetTester tester, String id) async {
       final chip = find.byKey(const Key('demoChip'));
+      // A tools panel can cover the top bar; close it first.
+      while (find.byKey(const Key('panel-close')).evaluate().isNotEmpty) {
+        await tester.tap(find.byKey(const Key('panel-close')).first);
+        await tester.pumpAndSettle();
+      }
       await tester.ensureVisible(chip);
       await tester.pumpAndSettle();
       await tester.tap(chip);

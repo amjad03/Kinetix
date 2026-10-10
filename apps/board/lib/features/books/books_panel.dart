@@ -17,7 +17,7 @@ import '../board/side_panel.dart';
 import '../phet/phet_panel.dart' show RelatedPhetSims;
 import '../reader/read_aloud.dart' show ReadAloudScope;
 
-const _booksAccent = Color(0xFF8AB4F8);
+Color _booksAccent(BuildContext c) => Theme.of(c).brightness == Brightness.dark ? const Color(0xFF8AB4F8) : const Color(0xFF1A5FC8);
 
 /// Books: the syllabus of the class open on the board, from the KINETIX content library.
 /// A topic opens its notes and lesson (hook, terms, example, activity, questions, homework) in
@@ -168,7 +168,7 @@ class _BooksPanelState extends State<BooksPanel> {
     return PanelPage(
       icon: Icons.menu_book_outlined,
       title: topic == null ? context.l10n.toolBooks : context.l10n.booksTopic,
-      accent: _booksAccent,
+      accent: _booksAccent(context),
       onBack: topic == null
           ? null
           : () => setState(() {
@@ -385,7 +385,7 @@ class _BooksPanelState extends State<BooksPanel> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 3),
-                      child: Icon(icon, size: 20, color: _booksAccent),
+                      child: Icon(icon, size: 20, color: _booksAccent(context)),
                     ),
                     const SizedBox(width: Kx.s12),
                     Expanded(

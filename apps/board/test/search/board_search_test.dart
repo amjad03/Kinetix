@@ -58,6 +58,9 @@ void main() {
 
       // The top bar's button; a formula goes on the board.
       expect(tester.takeException(), isNull);
+      // The split panel covers the top bar; close it first.
+      await tester.tap(find.byKey(const Key('panel-close')).first);
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('open-search')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('universal-search-field')), 'pythagoras');

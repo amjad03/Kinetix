@@ -115,9 +115,9 @@ class ExamRoomScreen extends StatelessWidget {
     final inv = [for (final i in (exam['invigilators'] as List? ?? const [])) '${(i as Map)['name']}'].join(', ');
     return Material(
       key: const Key('exam-room'),
-      color: const Color(0xFF10151C),
+      color: Theme.of(context).colorScheme.surface,
       child: DefaultTextStyle(
-        style: const TextStyle(color: Colors.white, fontSize: 28),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 28),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -132,7 +132,7 @@ class ExamRoomScreen extends StatelessWidget {
               Text(_t(context, 'seated', {'n': '${exam['seated']}'})),
               if (inv.isNotEmpty) Text(_t(context, 'invig', {'n': inv})),
               const SizedBox(height: 24),
-              Text(_t(context, 'quiet'), style: const TextStyle(fontSize: 20, color: Colors.white70)),
+              Text(_t(context, 'quiet'), style: TextStyle(fontSize: 20, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ],
           ),
         ),

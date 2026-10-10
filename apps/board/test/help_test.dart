@@ -70,7 +70,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('help-search')), 'PowerPoint');
     await tester.pumpAndSettle();
     expect(find.text('Open a PDF or PowerPoint'), findsOneWidget);
-    expect(find.text('Shapes'), findsNothing);
+    expect(find.descendant(of: find.byKey(const Key('help-sheet')), matching: find.text('Shapes')), findsNothing);
     await tester.tap(find.byKey(const Key('help-show-import')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('coach-title')), findsOneWidget);

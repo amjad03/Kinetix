@@ -122,7 +122,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-pen-models')), findsOneWidget);
     expect(find.text('English handwriting'), findsOneWidget);
-    expect(find.text('Shapes'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('ai-pen-models')), matching: find.text('Shapes')), findsOneWidget);
     await tester.tap(find.byKey(const Key('ai-pen-models-download')));
     await tester.pump();
     expect(find.byKey(const Key('ai-pen-models-progress')), findsOneWidget);

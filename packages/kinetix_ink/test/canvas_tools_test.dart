@@ -4,7 +4,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ink/src/tools/geo_overlay.dart' show geoGripHandle;
 
 const _deg = math.pi / 180;
 

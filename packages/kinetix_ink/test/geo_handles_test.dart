@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ink/src/tools/geo_overlay.dart';
 
 void main() {
   setUp(() => GeoCalibration.pxPerCm.value = 40);
