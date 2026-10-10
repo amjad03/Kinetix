@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
-import 'support/layout.dart';
 
 void main() {
   setUpAll(loadBoardFonts);
