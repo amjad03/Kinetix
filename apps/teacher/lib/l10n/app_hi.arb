@@ -1359,5 +1359,8 @@
   "deviceTrustTitle": "यह फ़ोन",
   "deviceTrustNew": "अभी विश्वसनीय नहीं। इसे विश्वसनीय बनाएं ताकि इस फ़ोन से साइन-इन नया न माना जाए।",
   "deviceTrustTrusted": "विश्वसनीय",
-  "deviceTrustButton": "इस फ़ोन पर भरोसा करें"
+  "deviceTrustButton": "इस फ़ोन पर भरोसा करें",
+  "earlyAlertHigh": "मदद चाहिए: उच्च",
+  "earlyAlertMedium": "मदद चाहिए: मध्यम",
+  "earlyAlertWatch": "ध्यान रखें"
 }

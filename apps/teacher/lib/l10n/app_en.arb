@@ -3385,5 +3385,8 @@
   "deviceTrustTitle": "This phone",
   "deviceTrustNew": "Not trusted yet. Trust it so a sign-in from this phone is not flagged as new.",
   "deviceTrustTrusted": "Trusted",
-  "deviceTrustButton": "Trust this phone"
+  "deviceTrustButton": "Trust this phone",
+  "earlyAlertHigh": "Needs help: high",
+  "earlyAlertMedium": "Needs help: medium",
+  "earlyAlertWatch": "Keep an eye"
 }

@@ -122,6 +122,16 @@ class _AttendanceTile extends StatelessWidget {
                       style: TextStyle(color: fg, fontWeight: FontWeight.w500),
                     ),
                     Text(student.rollNo, style: TextStyle(color: fg.withValues(alpha: 0.8), fontSize: 12)),
+                    if (student.alert != null)
+                      Semantics(
+                        label: 'Early alert: ${student.alert}',
+                        child: Container(
+                          key: ValueKey('alert-${student.id}'),
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: student.alert == 'high' ? const Color(0xFFD32F2F) : const Color(0xFFF9A825)),
+                        ),
+                      ),
                     // The status reads from the colour and icon; the label is for screen readers.
                     Semantics(label: label, child: const SizedBox.shrink()),
                   ],

@@ -25,6 +25,7 @@ class _RosterScreenState extends State<RosterScreen> {
   List<TeacherClass>? _classes;
   TeacherClass? _class;
   List<Student>? _students;
+  Map<String, String> _alerts = const {};
   ApiException? _error;
 
   @override
@@ -50,13 +51,19 @@ class _RosterScreenState extends State<RosterScreen> {
     final sameSection = _class?.section == c.section;
     setState(() {
       _class = c;
-      if (!sameSection) _students = null;
+      if (!sameSection) {
+        _students = null;
+        _alerts = const {};
+      }
       _error = null;
     });
     if (sameSection && _students != null) return;
     try {
       final students = await widget.api.roster(c.section.id);
       if (mounted && _class == c) setState(() => _students = students);
+      // Flags are for the teacher only; the roster still shows if they cannot be read.
+      final alerts = await widget.api.earlyAlerts(c.section.id).catchError((_) => <String, String>{});
+      if (mounted && _class == c) setState(() => _alerts = alerts);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
     }
@@ -77,6 +84,8 @@ class _RosterScreenState extends State<RosterScreen> {
       messenger.showSnackBar(SnackBar(content: Text(l.errorText(e))));
     }
   }
+
+  String _alertText(AppLocalizations l, String level) => level == 'high' ? l.earlyAlertHigh : level == 'medium' ? l.earlyAlertMedium : l.earlyAlertWatch;
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +122,7 @@ class _RosterScreenState extends State<RosterScreen> {
                   key: ValueKey('roster-${s.id}'),
                   leading: KxAvatar(name: s.fullName, image: widget.api.photo(s.photoUrl)),
                   title: Text(s.fullName),
-                  subtitle: Text(s.rollNo),
+                  subtitle: Text(_alerts[s.id] == null ? s.rollNo : '${s.rollNo} - ${_alertText(l, _alerts[s.id]!)}'),
                   trailing: IconButton(
                     key: ValueKey('award-${s.id}'),
                     tooltip: strings.awardBadgeTo(s.fullName),

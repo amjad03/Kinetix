@@ -142,6 +142,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/alumni', label: 'nav.alumni', section: 'alumni', icon: 'placements' },
       { href: '/research', label: 'nav.research', section: 'research', icon: 'research' },
       { href: '/grievances', label: 'nav.grievances', section: 'grievances', icon: 'grievances' },
+      { href: '/early-alerts', label: 'nav.earlyAlerts', section: 'earlyAlerts', icon: 'grievances' },
     ],
   },
   { id: 'library', label: 'grp.library', icon: 'library', items: [{ href: '/library', label: 'nav.library', section: 'library', icon: 'library' }] },
@@ -219,6 +220,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/integrity', label: 'nav.integrity', section: 'integrity', icon: 'homework' },
       { href: '/dpdp', label: 'nav.dpdp', section: 'dpdp', icon: 'grievances' },
       { href: '/connectors', label: 'nav.connectors', section: 'connectors', icon: 'import' },
+      { href: '/integrations', label: 'nav.integrations', section: 'integrations', icon: 'import' },
       { href: '/import', label: 'nav.import', section: 'import', icon: 'import' },
       // The KINETIX platform team only (GET /v1/me platformAdmin), not an institution's role.
       { href: '/platform/concept-videos', label: 'nav.conceptVideos', section: 'platform', icon: 'platform' },

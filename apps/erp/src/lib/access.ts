@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings';
+export type Section = 'dashboard' | 'integrations' | 'earlyAlerts' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -69,6 +69,10 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   audit: ['principal', 'tenant_admin'],
   // connectors.controller.ts: the principal reads, the administrator configures
   connectors: ['principal', 'tenant_admin'],
+  // integrations.controller family (digilocker, access-devices, lti, scorm, api-tokens): INTEGRATION_ADMIN
+  integrations: ['principal', 'tenant_admin'],
+  // early-alerts.controller.ts WORKERS: heads, counsellors and mentors see (teachers use the Teacher App) the students they are responsible for
+  earlyAlerts: ['principal', 'tenant_admin', 'hod', 'counsellor', 'mentor'],
   // alumni-giving.controller.ts GIVING_ROLES (volunteering tab: alumni relations only)
   alumni: ['principal', 'tenant_admin', 'placement_officer', 'accountant'],
   // obe.controller.ts MANAGE: principal, administrator and heads of department
@@ -280,8 +284,11 @@ export function sectionOf(pathname: string): Section | null {
       return 'workflows';
     case 'audit':
     case 'connectors':
+    case 'integrations':
     case 'alumni':
       return first;
+    case 'early-alerts':
+      return 'earlyAlerts';
     case 'course-registration':
       return 'courseRegistration';
     case 'documents':

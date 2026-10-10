@@ -49,6 +49,7 @@ import topicVideos from './topic-videos';
 import questionBank from './question-bank';
 import lifecycleDeep from './lifecycle-deep';
 import govern from './govern';
+import integrations from './integrations';
 import paymentsDesk from './payments-desk';
 import institution from './institution';
 import depth from './depth';
@@ -60,7 +61,7 @@ import trainings from './trainings';
 
 import governDepth from './govern-depth';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, integrations } as const;
 
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.
 // See docs/i18n/erp.md for how to add strings.

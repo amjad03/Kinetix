@@ -17,11 +17,11 @@ export const WORKSPACE_SECTIONS: Record<Exclude<Workspace, 'all'>, readonly Sect
     ...COMMON,
     'admissions', 'admissionsTools', 'students', 'mentoring', 'diary', 'ptm', 'earlyYears', 'health', 'documents',
     'school', 'syllabus', 'curriculum', 'schoolMode', 'university', 'departments', 'courseRegistration', 'timetable', 'calendar', 'scheduling',
-    'exams', 'evaluation', 'evaluationDesk', 'results', 'courses', 'learningSupport', 'assessmentTools', 'conversations', 'placements', 'alumni', 'research', 'grievances', 'campusLife', 'skills', 'integrity',
+    'exams', 'evaluation', 'evaluationDesk', 'results', 'courses', 'learningSupport', 'assessmentTools', 'conversations', 'placements', 'alumni', 'research', 'grievances', 'earlyAlerts', 'campusLife', 'skills', 'integrity',
   ],
   finance_ops: [
     ...COMMON,
-    'fees', 'finance', 'payroll', 'payslips', 'hr', 'appraisal', 'transport', 'hostel', 'canteen', 'library', 'inventory', 'assets', 'import', 'connectors', 'dpdp', 'reports', 'billing', 'governance',
+    'fees', 'finance', 'payroll', 'payslips', 'hr', 'appraisal', 'transport', 'hostel', 'canteen', 'library', 'inventory', 'assets', 'import', 'connectors', 'integrations', 'dpdp', 'reports', 'billing', 'governance',
   ],
   quality: [
     ...COMMON,

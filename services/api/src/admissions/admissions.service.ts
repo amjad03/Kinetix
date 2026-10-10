@@ -1,4 +1,5 @@
 import { governedParams, quotaSeatsFromRule } from '../governance/rule-params.js';
+import { studentAcademicIds } from '../db/schema-integrations.js';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   AdmissionsEvents,
@@ -454,6 +455,11 @@ export class AdmissionsService {
       .values({ tenantId: actor.tenantId, userId: studentUserId, sectionId: section.id, rollNo, fullName: a.applicantName, status: 'enrolled', statusChangedAt: new Date(), enrolledOn: today, applicationId: a.id })
       .returning();
     await tx.update(studentPriorEducation).set({ studentId: st.id }).where(eq(studentPriorEducation.applicationId, a.id));
+    // APAAR / ABC ids typed on the application form carry over to the student (DigiLocker, NAD and credit files use them).
+    const idOf = (...keys: string[]) => keys.map((k) => String(a.answers?.[k] ?? '').replace(/\s|-/g, '')).find((v) => /^\d{12}$/.test(v)) ?? null;
+    const apaarId = idOf('apaar_id', 'apaarId', 'apaar');
+    const abcId = idOf('abc_id', 'abcId', 'abc');
+    if (apaarId || abcId) await tx.insert(studentAcademicIds).values({ tenantId: actor.tenantId, studentId: st.id, apaarId, abcId, source: 'admission', capturedBy: actor.userId });
     await this.lifecycle.addEvent(tx, actor, { studentId: st.id, kind: 'status', fromStatus: 'applicant', toStatus: 'enrolled', toSectionId: section.id, reason: `Admitted: ${a.applicationNo}`, effectiveOn: today, data: { applicationId: a.id, rollNo } });
     await this.lifecycle.linkGuardian(tx, actor, st.id, { fullName: a.guardianName, phone: a.guardianPhone, email: a.guardianEmail, relation: a.guardianRelation, isPrimary: true, isEmergencyContact: true });
     if (input.activate) await this.lifecycle.changeStatus(tx, actor, st.id, 'active', { reason: 'Joined the class', effectiveOn: today });

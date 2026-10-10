@@ -892,6 +892,21 @@ class BoardController extends ChangeNotifier {
     unawaited(_applyTeacherSettings());
   }
 
+  /// Name of the teacher who last tapped at the sign-in reader beside this board, when a reader is fitted.
+  String? tappedTeacher;
+
+  /// Asks the server whether a card or finger just signed a teacher in at the board's reader. Does nothing without a reader.
+  Future<void> refreshTeacherTap() async {
+    try {
+      final r = await api!.teacherTap();
+      final next = r.present ? r.name : null;
+      if (next != tappedTeacher) {
+        tappedTeacher = next;
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
   Future<void> _loadRoster() async {
     try {
       roster = await api!.roster();

@@ -1359,5 +1359,8 @@
   "deviceTrustTitle": "ಈ ಫೋನ್",
   "deviceTrustNew": "ಇನ್ನೂ ವಿಶ್ವಾಸಾರ್ಹವಲ್ಲ. ಈ ಫೋನ್‌ನಿಂದ ಸೈನ್-ಇನ್ ಹೊಸದೆಂದು ಗುರುತಿಸದಂತೆ ಇದನ್ನು ವಿಶ್ವಾಸಾರ್ಹ ಮಾಡಿ.",
   "deviceTrustTrusted": "ವಿಶ್ವಾಸಾರ್ಹ",
-  "deviceTrustButton": "ಈ ಫೋನ್ ವಿಶ್ವಾಸಾರ್ಹ ಮಾಡಿ"
+  "deviceTrustButton": "ಈ ಫೋನ್ ವಿಶ್ವಾಸಾರ್ಹ ಮಾಡಿ",
+  "earlyAlertHigh": "ಸಹಾಯ ಬೇಕು: ಹೆಚ್ಚು",
+  "earlyAlertMedium": "ಸಹಾಯ ಬೇಕು: ಮಧ್ಯಮ",
+  "earlyAlertWatch": "ಗಮನವಿರಲಿ"
 }
