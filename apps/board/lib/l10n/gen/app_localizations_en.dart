@@ -4303,4 +4303,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String offlineCodeBody(String time) {
     return 'No connection. Scan this code in the KINETIX Teacher app to confirm this board. It works until $time.';
   }
+
+  @override
+  String get faceColourTitle => 'Face colour';
+
+  @override
+  String get faceColourAction => 'Face colour';
+
+  @override
+  String get faceColourHue => 'Hue';
+
+  @override
+  String get faceColourSaturation => 'Saturation';
+
+  @override
+  String get faceColourBrightness => 'Brightness';
+
+  @override
+  String get faceColourHex => 'Hex colour';
+
+  @override
+  String get faceColourPalette => 'Colours';
+
+  @override
+  String get faceColourRecent => 'Recent colours';
+
+  @override
+  String get faceColourApply => 'Apply';
+
+  @override
+  String get faceColourReset => 'Reset face';
+
+  @override
+  String get faceColourTapHint => 'Tap a face of the solid to colour it';
+
+  @override
+  String get liveSolidMove => 'Move this solid';
 }

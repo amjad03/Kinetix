@@ -7611,6 +7611,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No connection. Scan this code in the KINETIX Teacher app to confirm this board. It works until {time}.'**
   String offlineCodeBody(String time);
+
+  /// No description provided for @faceColourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Face colour'**
+  String get faceColourTitle;
+
+  /// No description provided for @faceColourAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Face colour'**
+  String get faceColourAction;
+
+  /// No description provided for @faceColourHue.
+  ///
+  /// In en, this message translates to:
+  /// **'Hue'**
+  String get faceColourHue;
+
+  /// No description provided for @faceColourSaturation.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturation'**
+  String get faceColourSaturation;
+
+  /// No description provided for @faceColourBrightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Brightness'**
+  String get faceColourBrightness;
+
+  /// No description provided for @faceColourHex.
+  ///
+  /// In en, this message translates to:
+  /// **'Hex colour'**
+  String get faceColourHex;
+
+  /// No description provided for @faceColourPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Colours'**
+  String get faceColourPalette;
+
+  /// No description provided for @faceColourRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent colours'**
+  String get faceColourRecent;
+
+  /// No description provided for @faceColourApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get faceColourApply;
+
+  /// No description provided for @faceColourReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset face'**
+  String get faceColourReset;
+
+  /// No description provided for @faceColourTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a face of the solid to colour it'**
+  String get faceColourTapHint;
+
+  /// No description provided for @liveSolidMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Move this solid'**
+  String get liveSolidMove;
 }
 
 class _AppLocalizationsDelegate

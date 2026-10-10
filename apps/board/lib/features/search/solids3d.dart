@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_3d/kinetix_3d.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../board/live_solids.dart' show faceColourStrings;
 import '../board/phone_chrome.dart';
 import 'search_strings.dart';
 import '../board/panel/panel_host.dart';
@@ -202,12 +203,13 @@ class _Solid3dDialogState extends State<Solid3dDialog> {
     final png = await renderSolidPng(widget.kind, yaw: _ctrl.camera.yaw, pitch: _ctrl.camera.pitch, faceColors: _ctrl.faceColors);
     if (!mounted) return;
     Navigator.of(context).pop();
-    put(Model3dSnapshot(png: png, modelId: widget.kind.id, title: s.solidName(widget.kind.name), preset: _ctrl.faceColors.isEmpty ? null : _ctrl.encodeFaceColors()));
+    put(Model3dSnapshot(png: png, modelId: widget.kind.id, title: s.solidName(widget.kind.name), preset: SolidView(yaw: _ctrl.camera.yaw, pitch: _ctrl.camera.pitch, faces: Map.of(_ctrl.faceColors)).encode()));
   }
 
   @override
   Widget build(BuildContext context) {
     final s = SearchStrings.of(context);
+    _ctrl.faceStrings = faceColourStrings(context);
     final phone = context.isPhone;
     final title = s.solidName(widget.kind.name);
     final header = Padding(

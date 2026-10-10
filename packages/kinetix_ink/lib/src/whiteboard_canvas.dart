@@ -101,7 +101,12 @@ class WhiteboardCanvas extends StatefulWidget {
     this.onPenSeen,
     this.fingerTaps = true,
     this.labels = const WhiteboardCanvasLabels(),
+    this.liveOverlay,
   });
+
+  /// Draws live (non-picture) elements, such as 3D solids, above the board; it is given the
+  /// current view. Pictures kept live (see [ImageElement.isLiveSolid]) are then not painted flat.
+  final Widget Function(BuildContext context, ViewState view)? liveOverlay;
 
   final WhiteboardController controller;
   final InputMode inputMode;
@@ -836,7 +841,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
                               // Finished elements repaint only when they change.
                               Positioned.fill(
                                 child: RepaintBoundary(
-                                  child: CustomPaint(painter: _ElementsPainter(c, view, images, hidden), isComplex: true),
+                                  child: CustomPaint(painter: _ElementsPainter(c, view, images, hidden, widget.liveOverlay != null), isComplex: true),
                                 ),
                               ),
                               Positioned.fill(
@@ -859,6 +864,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
                       ),
                     ),
                   ),
+                  if (widget.liveOverlay != null) Positioned.fill(child: widget.liveOverlay!(context, view)),
                   if (c.ruler.value.visible) Positioned.fill(child: RulerOverlay(controller: c, closeLabel: widget.labels.hideRuler, turnLabel: widget.labels.turn)),
                   if (c.protractor.value.visible)
                     Positioned.fill(child: ProtractorOverlay(controller: c, closeLabel: widget.labels.hideProtractor, turnLabel: widget.labels.turn)),
@@ -934,12 +940,13 @@ class _PaperPainter extends CustomPainter {
 }
 
 class _ElementsPainter extends CustomPainter {
-  _ElementsPainter(this.c, this.view, this.images, this.hidden) : super(repaint: Listenable.merge([c.committed, images]));
+  _ElementsPainter(this.c, this.view, this.images, this.hidden, this.hideLive) : super(repaint: Listenable.merge([c.committed, images]));
 
   final WhiteboardController c;
   final ViewState view;
   final BoardImages images;
   final Set<String> hidden;
+  final bool hideLive;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -949,7 +956,7 @@ class _ElementsPainter extends CustomPainter {
     final visible = view.visible(size).inflate(40 / view.scale);
     for (final e in c.page.elements) {
       if (hidden.contains(e.id) || !visible.overlaps(e.bounds)) continue;
-      paintElement(canvas, e, c.background, images: images, lengths: c.showLengths, angles: c.showAngles, unit: c.measureUnit);
+      paintElement(canvas, e, c.background, images: images, lengths: c.showLengths, angles: c.showAngles, unit: c.measureUnit, hideLiveSolids: hideLive);
     }
   }
 
@@ -981,7 +988,7 @@ class _ActivePainter extends CustomPainter {
     if (preview != null) {
       selected = [for (final e in selected) preview(e)];
       for (final e in selected) {
-        paintElement(canvas, e, bg, images: s.images, lengths: c.showLengths, angles: c.showAngles, unit: c.measureUnit);
+        paintElement(canvas, e, bg, images: s.images, lengths: c.showLengths, angles: c.showAngles, unit: c.measureUnit, hideLiveSolids: s.widget.liveOverlay != null);
       }
     }
     if (selected.isNotEmpty) {

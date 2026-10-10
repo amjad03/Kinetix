@@ -1251,5 +1251,17 @@
   "aiPenModelHandwriting": "{language} लिखावट",
   "aiPenModelsStep": "{name} डाउनलोड हो रहा है ({count} में से {step})…",
   "aiPenModelsReady": "AI पेन तैयार है: लिखावट, गणित और आकृतियाँ अब बदलती हैं।",
-  "offlineCodeBody": "कनेक्शन नहीं है। इस बोर्ड की पुष्टि के लिए इस कोड को KINETIX शिक्षक ऐप में स्कैन करें। यह {time} तक मान्य है।"
+  "offlineCodeBody": "कनेक्शन नहीं है। इस बोर्ड की पुष्टि के लिए इस कोड को KINETIX शिक्षक ऐप में स्कैन करें। यह {time} तक मान्य है।",
+  "faceColourTitle": "सतह का रंग",
+  "faceColourAction": "सतह का रंग",
+  "faceColourHue": "रंगत",
+  "faceColourSaturation": "सघनता",
+  "faceColourBrightness": "चमक",
+  "faceColourHex": "हेक्स रंग",
+  "faceColourPalette": "रंग",
+  "faceColourRecent": "हाल के रंग",
+  "faceColourApply": "लागू करें",
+  "faceColourReset": "सतह रीसेट करें",
+  "faceColourTapHint": "रंगने के लिए ठोस की किसी सतह पर टैप करें",
+  "liveSolidMove": "इस ठोस को हिलाएँ"
 }

@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:kinetix_ink/src/tools/geo_overlay.dart' show geoGripHandle;
 
 const _deg = math.pi / 180;
 
@@ -343,7 +344,12 @@ void main() {
       await tester.pump();
       expect(find.byKey(Key('geo-close-${r.id}')), findsOneWidget);
 
-      final on = board.view.value.toScreen(r.toBoard(const Offset(-100, 60)));
+      // The body is locked (a pen can write along its edge); only the grip dot moves the tool.
+      final body = board.view.value.toScreen(r.toBoard(const Offset(-100, 60)));
+      await tester.dragFrom(body, const Offset(0, 120));
+      await tester.pump();
+      expect(board.geoTools.value.first.center, r.center);
+      final on = board.view.value.toScreen(r.toBoard(geoGripHandle(r)));
       await tester.dragFrom(on, const Offset(0, 120));
       await tester.pump();
       final moved = board.geoTools.value.first;
@@ -351,7 +357,7 @@ void main() {
 
       await tester.tap(find.byKey(Key('geo-lock-${r.id}')));
       await tester.pump();
-      await tester.dragFrom(board.view.value.toScreen(moved.toBoard(const Offset(-100, 60))), const Offset(0, 120));
+      await tester.dragFrom(board.view.value.toScreen(moved.toBoard(geoGripHandle(moved))), const Offset(0, 120));
       await tester.pump();
       expect(board.geoTools.value.first.center, moved.center);
 

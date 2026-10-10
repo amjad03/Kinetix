@@ -252,8 +252,12 @@ class ImageElement extends BoardElement {
   @override
   bool hitTest(Offset p, double radius) => rect.inflate(radius).contains(unturn(p, rect, rotation));
 
-  ImageElement copyWith({String? id, Rect? rect, double? rotation}) =>
-      ImageElement(id: id ?? this.id, rect: rect ?? this.rect, bytes: bytes, rotation: rotation ?? this.rotation, link: link, backdrop: backdrop);
+  /// True for a 3D solid kept live on the board: its link's view starts `v:` (the picture is only
+  /// the last look, for viewers that cannot show it live).
+  bool get isLiveSolid => link != null && link!.kind == EmbedLink.model3d && (link!.preset?.startsWith('v:') ?? false);
+
+  ImageElement copyWith({String? id, Rect? rect, double? rotation, Uint8List? bytes, EmbedLink? link}) =>
+      ImageElement(id: id ?? this.id, rect: rect ?? this.rect, bytes: bytes ?? this.bytes, rotation: rotation ?? this.rotation, link: link ?? this.link, backdrop: backdrop);
 
   @override
   ImageElement translated(Offset d) => _moved(this, d, copyWith(rect: rect.shift(d)));

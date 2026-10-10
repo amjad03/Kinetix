@@ -27,7 +27,7 @@ class _SolidExplorerState extends State<SolidExplorer> {
   late Solid _solid;
   late double _fit;
   late Model3D _model;
-  late final ModelViewController _ctrl = widget.controller ?? ModelViewController();
+  late final ModelViewController _ctrl = (widget.controller ?? ModelViewController())..pickFaces = true;
   bool _lengths = true, _angles = false;
 
   /// Colours a tapped face can be painted (spec §20: face-level colouring).
@@ -102,7 +102,7 @@ class _SolidExplorerState extends State<SolidExplorer> {
           ],
         ),
         const SizedBox(height: Kx.s8),
-        Text('Colour a face: pick a colour, then tap a face', style: context.text.bodySmall),
+        Text('Tap any face to choose its colour, or pick a colour here first', style: context.text.bodySmall),
         const SizedBox(height: Kx.s4),
         Wrap(
           spacing: 6,

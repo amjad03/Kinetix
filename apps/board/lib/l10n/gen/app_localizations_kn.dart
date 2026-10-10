@@ -4291,4 +4291,40 @@ class AppLocalizationsKn extends AppLocalizations {
   String offlineCodeBody(String time) {
     return 'ಸಂಪರ್ಕವಿಲ್ಲ. ಈ ಬೋರ್ಡ್ ಅನ್ನು ದೃಢೀಕರಿಸಲು ಈ ಕೋಡ್ ಅನ್ನು KINETIX ಶಿಕ್ಷಕರ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ. ಇದು $time ವರೆಗೆ ಮಾನ್ಯ.';
   }
+
+  @override
+  String get faceColourTitle => 'ಮುಖದ ಬಣ್ಣ';
+
+  @override
+  String get faceColourAction => 'ಮುಖದ ಬಣ್ಣ';
+
+  @override
+  String get faceColourHue => 'ಛಾಯೆ';
+
+  @override
+  String get faceColourSaturation => 'ಸಾಂದ್ರತೆ';
+
+  @override
+  String get faceColourBrightness => 'ಪ್ರಕಾಶ';
+
+  @override
+  String get faceColourHex => 'ಹೆಕ್ಸ್ ಬಣ್ಣ';
+
+  @override
+  String get faceColourPalette => 'ಬಣ್ಣಗಳು';
+
+  @override
+  String get faceColourRecent => 'ಇತ್ತೀಚಿನ ಬಣ್ಣಗಳು';
+
+  @override
+  String get faceColourApply => 'ಅನ್ವಯಿಸಿ';
+
+  @override
+  String get faceColourReset => 'ಮುಖ ಮರುಹೊಂದಿಸಿ';
+
+  @override
+  String get faceColourTapHint => 'ಬಣ್ಣ ಹಾಕಲು ಘನದ ಯಾವುದೇ ಮುಖವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ';
+
+  @override
+  String get liveSolidMove => 'ಈ ಘನವನ್ನು ಸರಿಸಿ';
 }
