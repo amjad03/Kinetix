@@ -6,6 +6,7 @@ import 'package:kinetix_ink/kinetix_ink.dart' show GraphElement, compileGraph, p
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../board/context/class_context.dart' show showAllToolsByDefault;
 import '../board/context/context_switcher.dart' show contextStrings;
 import '../search/filter_bar.dart';
 import '../search/fuzzy.dart';
@@ -544,7 +545,7 @@ class SimPickerDialog extends StatefulWidget {
 
 class _SimPickerDialogState extends State<SimPickerDialog> {
   String _q = '';
-  bool _all = false;
+  bool _all = showAllToolsByDefault;
 
   @override
   Widget build(BuildContext context) {

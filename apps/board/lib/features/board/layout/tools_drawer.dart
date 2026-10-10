@@ -6,6 +6,7 @@ import '../../search/filter_bar.dart';
 import '../../search/fuzzy.dart';
 import '../../extras/board_extras.dart' show extrasStrings;
 import '../chrome.dart';
+import '../context/class_context.dart' show showAllToolsByDefault;
 import '../context/context_switcher.dart' show contextStrings;
 import 'layout_strings.dart';
 
@@ -64,7 +65,7 @@ class ToolsDrawer extends StatefulWidget {
 class _ToolsDrawerState extends State<ToolsDrawer> {
   ToolGroup? _group;
   String _q = '';
-  bool _all = false;
+  bool _all = showAllToolsByDefault;
 
   List<DrawerTool> _sorted(Iterable<DrawerTool> tools) {
     final pref = widget.preferred;

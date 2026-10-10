@@ -9,6 +9,9 @@ import 'package:kinetix_board/features/board/layout/tools_drawer.dart';
 import 'support/panel_harness.dart';
 
 void main() {
+  setUp(() => showAllToolsByDefault = false);
+  tearDown(() => showAllToolsByDefault = true);
+
   ToolProfile p(Subject s, int grade) => toolProfileFor(s, gradeBandOf(grade: grade));
 
   test('grade bands from the class grade and the programme', () {

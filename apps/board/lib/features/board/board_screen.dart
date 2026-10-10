@@ -222,7 +222,7 @@ class _BoardScreenState extends State<BoardScreen> {
   SubjectStyle get _style => subjectStyles[_ctx.subject]!;
 
   /// Whether the tools drawer and Insert menu show every tool, not just this subject's and grade's.
-  bool _showAllTools = false;
+  bool _showAllTools = showAllToolsByDefault;
   Widget get _contextChip => ContextChip(ctx: () => _ctx, pick: _ctxPick);
 
   @override

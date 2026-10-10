@@ -1,5 +1,9 @@
 import '../kit/subjects.dart';
 
+/// Whether the drawer, Insert menu and simulation picker open showing every tool. Off on a device; the
+/// older widget tests, which tap tiles of any subject, turn it on (test/flutter_test_config.dart).
+bool showAllToolsByDefault = false;
+
 /// The age band of a class, from its grade (LKG..12) or, in college, its programme.
 enum GradeBand { early, primary, middle, secondary, seniorSecondary, college }
 

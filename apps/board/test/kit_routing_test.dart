@@ -86,12 +86,6 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(t);
         await tester.pumpAndSettle();
-        // The drawer shows the class's subject tools first; every tile is behind "Show all tools".
-        final all = find.byKey(const Key('drawer-show-all'));
-        if (all.evaluate().isNotEmpty) {
-          await tester.tap(all);
-          await tester.pumpAndSettle();
-        }
       }
 
       await fresh();
