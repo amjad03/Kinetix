@@ -3078,6 +3078,8 @@ export const TENANT_TABLES = [
   'answer_cards',
   'polls',
   'exit_tickets',
+  'migration_mappings', 'migration_batches', 'migration_batch_records', 'legacy_marks', 'legacy_attendance', 'legacy_fee_entries', 'university_templates', 'tabulation_registers',
+  'academic_doc_requests', 'ext_examiners', 'ext_examiner_assignments', 'ext_valuation_scripts', 'ext_question_papers', 'ext_remuneration_claims',
   'poll_responses',
   'badges',
   'enquiries',
@@ -6833,3 +6835,263 @@ export const buzzerPresses = pgTable(
   },
   (t) => [uniqueIndex('buzzer_presses_uq').on(t.boardSessionId, t.roundNo, t.studentUserId)],
 );
+
+// ---------------------------------------------------------------------------------------------
+// Data migration, university result formats, transcripts and the external examiner portal
+// ---------------------------------------------------------------------------------------------
+
+/** A saved column mapping: which column of a Linways/Excel export fills which KINETIX field. */
+export const migrationMappings = pgTable(
+  'migration_mappings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    entity: text('entity').notNull(),
+    name: text('name').notNull(),
+    /** KINETIX field → the export's column heading. */
+    mapping: jsonb('mapping').$type<Record<string, string>>().notNull(),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('migration_mappings_uq').on(t.tenantId, t.entity, t.name)],
+);
+
+/** One import run of one file. `committed` batches can be rolled back; dry runs are not stored. */
+export const migrationBatches = pgTable(
+  'migration_batches',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    entity: text('entity').notNull(),
+    fileName: text('file_name').notNull(),
+    /** SHA-256 of the file plus the mapping: the same file with the same mapping is never committed twice. */
+    fingerprint: text('fingerprint').notNull(),
+    status: text('status').notNull().default('committed'),
+    rowCount: integer('row_count').notNull(),
+    createdCount: integer('created_count').notNull().default(0),
+    updatedCount: integer('updated_count').notNull().default(0),
+    skippedCount: integer('skipped_count').notNull().default(0),
+    /** Counts and money totals of the file against what was stored (the reconciliation report). */
+    reconciliation: jsonb('reconciliation').notNull().default(sql`'{}'::jsonb`),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    rolledBackAt: timestamp('rolled_back_at', { withTimezone: true }),
+    rolledBackBy: uuid('rolled_back_by').references(() => users.id, { onDelete: 'set null' }),
+  },
+  (t) => [uniqueIndex('migration_batches_fp_uq').on(t.tenantId, t.entity, t.fingerprint).where(sql`${t.status} = 'committed'`)],
+);
+
+/** A row a batch created, so that rolling the batch back removes exactly those rows. */
+export const migrationBatchRecords = pgTable(
+  'migration_batch_records',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    batchId: uuid('batch_id').notNull().references(() => migrationBatches.id, { onDelete: 'cascade' }),
+    tableName: text('table_name').notNull(),
+    recordId: uuid('record_id').notNull(),
+  },
+  (t) => [index('migration_batch_records_idx').on(t.batchId)],
+);
+
+/** Historical marks from the previous system, per student, year, term and subject. Feeds transcripts. */
+export const legacyMarks = pgTable(
+  'legacy_marks',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    batchId: uuid('batch_id').notNull().references(() => migrationBatches.id, { onDelete: 'cascade' }),
+    rollNo: text('roll_no').notNull(),
+    studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
+    academicYear: text('academic_year').notNull(),
+    term: smallint('term').notNull(),
+    subjectCode: text('subject_code').notNull(),
+    subjectName: text('subject_name').notNull().default(''),
+    credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }).notNull().default(0),
+    internalMarks: numeric('internal_marks', { precision: 6, scale: 2, mode: 'number' }),
+    externalMarks: numeric('external_marks', { precision: 6, scale: 2, mode: 'number' }),
+    maxInternal: numeric('max_internal', { precision: 6, scale: 2, mode: 'number' }).notNull().default(0),
+    maxExternal: numeric('max_external', { precision: 6, scale: 2, mode: 'number' }).notNull().default(0),
+    grade: text('grade'),
+    gradePoint: numeric('grade_point', { precision: 4, scale: 2, mode: 'number' }),
+    result: text('result').notNull().default('pass'),
+  },
+  (t) => [uniqueIndex('legacy_marks_uq').on(t.tenantId, t.rollNo, t.academicYear, t.term, t.subjectCode), index('legacy_marks_student_idx').on(t.studentId)],
+);
+
+/** Attendance totals from the previous system (held and attended classes per student and term). */
+export const legacyAttendance = pgTable(
+  'legacy_attendance',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    batchId: uuid('batch_id').notNull().references(() => migrationBatches.id, { onDelete: 'cascade' }),
+    rollNo: text('roll_no').notNull(),
+    studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
+    academicYear: text('academic_year').notNull(),
+    term: smallint('term').notNull(),
+    classesHeld: integer('classes_held').notNull(),
+    classesAttended: integer('classes_attended').notNull(),
+  },
+  (t) => [uniqueIndex('legacy_attendance_uq').on(t.tenantId, t.rollNo, t.academicYear, t.term)],
+);
+
+/** Fee ledger lines and receipts from the previous system, in paise. entry_type is charge or receipt. */
+export const legacyFeeEntries = pgTable(
+  'legacy_fee_entries',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    batchId: uuid('batch_id').notNull().references(() => migrationBatches.id, { onDelete: 'cascade' }),
+    rollNo: text('roll_no').notNull(),
+    studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
+    academicYear: text('academic_year').notNull(),
+    entryType: text('entry_type').notNull(),
+    head: text('head').notNull().default(''),
+    reference: text('reference').notNull(),
+    entryDate: date('entry_date'),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+  },
+  (t) => [uniqueIndex('legacy_fee_entries_uq').on(t.tenantId, t.rollNo, t.entryType, t.reference, t.head)],
+);
+
+/** An affiliating university's mark-list / tabulation register layout and rules. */
+export const universityTemplates = pgTable(
+  'university_templates',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    code: text('code').notNull(),
+    name: text('name').notNull(),
+    university: text('university').notNull(),
+    config: jsonb('config').$type<Record<string, unknown>>().notNull(),
+    active: boolean('active').notNull().default(true),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('university_templates_uq').on(t.tenantId, t.code)],
+);
+
+/** A generated tabulation register: the computed rows are kept so every export is the same. */
+export const tabulationRegisters = pgTable('tabulation_registers', {
+  id: id(),
+  tenantId: tenantId(),
+  templateId: uuid('template_id').notNull().references(() => universityTemplates.id),
+  label: text('label').notNull(),
+  source: text('source').notNull(),
+  payload: jsonb('payload').notNull(),
+  createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: createdAt(),
+});
+
+/** A student's request for a transcript, provisional certificate or consolidated grade card. */
+export const academicDocRequests = pgTable(
+  'academic_doc_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    kind: text('kind').notNull(),
+    purpose: text('purpose').notNull().default(''),
+    status: text('status').notNull().default('requested'),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    decisionNote: text('decision_note'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    issuedAt: timestamp('issued_at', { withTimezone: true }),
+    serialNo: text('serial_no'),
+    verifyToken: text('verify_token'),
+    /** The figures as issued, so a re-download never changes. */
+    snapshot: jsonb('snapshot'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('academic_doc_requests_student_idx').on(t.studentId), uniqueIndex('academic_doc_requests_serial_uq').on(t.tenantId, t.serialNo), uniqueIndex('academic_doc_requests_token_uq').on(t.verifyToken)],
+);
+
+/** An external examiner (from another institution): a scoped login, no ERP seat. */
+export const extExaminers = pgTable(
+  'ext_examiners',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id),
+    organisation: text('organisation').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('ext_examiners_user_uq').on(t.userId)],
+);
+
+/** What an examiner may touch: one subject of one exam session, as valuer, question-paper setter or scrutiniser. */
+export const extExaminerAssignments = pgTable(
+  'ext_examiner_assignments',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    examinerId: uuid('examiner_id').notNull().references(() => extExaminers.id, { onDelete: 'cascade' }),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    role: text('role').notNull(),
+    ratePaise: bigint('rate_paise', { mode: 'number' }).notNull().default(0),
+    inviteHash: text('invite_hash'),
+    inviteExpiresAt: timestamp('invite_expires_at', { withTimezone: true }),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    status: text('status').notNull().default('invited'),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('ext_assign_uq').on(t.examinerId, t.sessionId, t.subjectId, t.role), uniqueIndex('ext_assign_invite_uq').on(t.inviteHash)],
+);
+
+/** An answer script as the examiner sees it: a code and a maximum, never the student. */
+export const extValuationScripts = pgTable(
+  'ext_valuation_scripts',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    assignmentId: uuid('assignment_id').notNull().references(() => extExaminerAssignments.id, { onDelete: 'cascade' }),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    scriptCode: text('script_code').notNull(),
+    maxMarks: numeric('max_marks', { precision: 6, scale: 2, mode: 'number' }).notNull(),
+    marks: numeric('marks', { precision: 6, scale: 2, mode: 'number' }),
+    remarks: text('remarks'),
+    status: text('status').notNull().default('pending'),
+    valuedAt: timestamp('valued_at', { withTimezone: true }),
+    appliedAt: timestamp('applied_at', { withTimezone: true }),
+  },
+  (t) => [uniqueIndex('ext_scripts_code_uq').on(t.tenantId, t.scriptCode), uniqueIndex('ext_scripts_uq').on(t.assignmentId, t.studentId)],
+);
+
+/** A question paper moving draft, scrutiny, approved, locked. */
+export const extQuestionPapers = pgTable(
+  'ext_question_papers',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    setterAssignmentId: uuid('setter_assignment_id').references(() => extExaminerAssignments.id, { onDelete: 'set null' }),
+    title: text('title').notNull(),
+    content: text('content').notNull().default(''),
+    status: text('status').notNull().default('draft'),
+    scrutinyNote: text('scrutiny_note'),
+    updatedAt: updatedAt(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('ext_qp_uq').on(t.sessionId, t.subjectId)],
+);
+
+/** An examiner's remuneration claim; the amount is units times the assignment rate, set by the server. */
+export const extRemunerationClaims = pgTable('ext_remuneration_claims', {
+  id: id(),
+  tenantId: tenantId(),
+  examinerId: uuid('examiner_id').notNull().references(() => extExaminers.id, { onDelete: 'cascade' }),
+  assignmentId: uuid('assignment_id').notNull().references(() => extExaminerAssignments.id, { onDelete: 'cascade' }),
+  units: integer('units').notNull(),
+  amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+  status: text('status').notNull().default('submitted'),
+  note: text('note'),
+  decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+  decidedAt: timestamp('decided_at', { withTimezone: true }),
+  createdAt: createdAt(),
+});

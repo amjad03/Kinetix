@@ -9,6 +9,7 @@ import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
+import 'academic_docs.dart';
 import 'alumni.dart';
 import 'buzzer.dart';
 import 'campus.dart';
@@ -453,6 +454,11 @@ abstract class StudentApi {
   Future<List<ReportCardRow>> reportCards(String studentId);
   Future<ReportCardDetail> reportCard(String id);
   Future<Uint8List> reportCardPdf(String id);
+
+  // ── Transcripts and certificates ────────────────────────────────────────────────────────────
+  Future<List<AcademicDocRequest>> academicDocRequests(String studentId);
+  Future<AcademicDocRequest> requestAcademicDoc(String studentId, String kind, String purpose);
+  Future<Uint8List> academicDocPdf(String requestId);
 
   // ── Alumni ──────────────────────────────────────────────────────────────────────────────────
 
@@ -1315,6 +1321,17 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<void> alumniVolunteerSignUp(String id, {String note = ''}) => _send('POST', '/v1/alumni-portal/volunteering/$id/signup', body: {'note': note});
+
+  @override
+  Future<List<AcademicDocRequest>> academicDocRequests(String studentId) async =>
+      [for (final r in await _send('GET', '/v1/academic-docs/students/$studentId/requests') as List) AcademicDocRequest.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<AcademicDocRequest> requestAcademicDoc(String studentId, String kind, String purpose) async =>
+      AcademicDocRequest.fromJson(await _send('POST', '/v1/academic-docs/requests', body: {'studentId': studentId, 'kind': kind, 'purpose': purpose}) as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> academicDocPdf(String requestId) => _download('/v1/academic-docs/requests/$requestId/document.pdf');
 
   @override
   Future<void> alumniVolunteerWithdraw(String id) => _send('DELETE', '/v1/alumni-portal/volunteering/$id/signup');

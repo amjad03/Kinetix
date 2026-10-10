@@ -52,6 +52,10 @@ class ApiClient {
   /// What the institution has set for its boards: kiosk mode and the IT PIN's hash (the `kiosk` object).
   Future<Map<String, dynamic>> boardConfig() async => await _send('GET', '/v1/devices/me/config', useDeviceToken: true) as Map<String, dynamic>;
 
+  /// What an exam room's board shows, read-only: today's sittings with seats, the room's timetable and the hall rules (device token).
+  Future<Map<String, dynamic>> examRoom({String lang = 'en', String? date}) async =>
+      await _send('GET', '/v1/devices/me/exam-room?lang=$lang${date == null ? '' : '&date=$date'}', useDeviceToken: true) as Map<String, dynamic>;
+
   /// Asks the server whether it is up (device diagnostics). Throws when it does not answer.
   Future<void> ping() async => _send('GET', '/health', auth: false);
 

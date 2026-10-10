@@ -93,6 +93,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/exams', label: 'nav.exams', section: 'exams', icon: 'exams' },
       { href: '/evaluation', label: 'nav.evaluation', section: 'evaluation', icon: 'exams' },
       { href: '/evaluation/desk', label: 'nav.evaluationDesk', section: 'evaluationDesk', icon: 'exams' },
+      { href: '/exams/university', label: 'nav.universityFormats', section: 'exams', icon: 'exams' },
+      { href: '/exams/documents', label: 'nav.docRequests', section: 'exams', icon: 'results' },
+      { href: '/exams/examiners', label: 'nav.examiners', section: 'exams', icon: 'exams' },
       { href: '/results', label: 'nav.results', section: 'results', icon: 'results' },
     ],
   },
@@ -220,6 +223,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/dpdp', label: 'nav.dpdp', section: 'dpdp', icon: 'grievances' },
       { href: '/connectors', label: 'nav.connectors', section: 'connectors', icon: 'import' },
       { href: '/import', label: 'nav.import', section: 'import', icon: 'import' },
+      { href: '/import/migration', label: 'nav.migration', section: 'import', icon: 'import' },
       // The KINETIX platform team only (GET /v1/me platformAdmin), not an institution's role.
       { href: '/platform/concept-videos', label: 'nav.conceptVideos', section: 'platform', icon: 'platform' },
     ],

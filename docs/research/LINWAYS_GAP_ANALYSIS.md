@@ -61,7 +61,7 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 | 31 | Certificate generation + online verification | Yes | documents + public-verify QR, degree cert PDF | Have | api/documents |
 | 32 | Digital evaluation (on-screen) | Yes | scripts, scan upload, annotation, allocate, finalise | Have | api/evaluation; OCR absent |
 | 33 | Exam controller module | Yes (autonomous) | exam-ops | Have | |
-| 34 | External examiner portal | Yes | second valuation; dedicated portal unverified | Partial | |
+| 34 | External examiner portal | Yes | Invite link + OTP scoped login, anonymised script valuation, QP draft/scrutiny/approved/locked, remuneration claims (`api/external-examiner`, `erp /examiner`, `/exams/examiners`) | Built | |
 | 35 | Question paper generation + scrutiny + Bloom/K-level | Yes | question-bank, paper-release, bloom 16 files, scrutiny 2 | Have/Partial | scrutiny workflow thin |
 | 36 | Online exams | Yes | assessment-tools, lms | Have | proctoring unverified |
 | 37 | LMS: classes, assignments, repository, video conf | Yes | lms, homework, recordings, live | Have | Teams integration absent |
@@ -141,9 +141,9 @@ Effort: S <2 wks, M 2-6 wks, L 6+ wks (one engineer unless noted).
 | Item | Build | Acceptance criteria | Effort | Dependencies |
 |---|---|---|---|---|
 | Pilot institution | Sign 1-2 friendly colleges (ideally Kerala/Karnataka affiliated + one autonomous); run a full semester | Real attendance, internal marks, fee collection, one exam cycle in production | L | Relationship, MoU, support owner |
-| Linways/Excel data-migration | Importers for students, faculty, subjects, marks, fee ledgers, attendance; mapping templates | Pilot's full back-data imported with reconciliation report, <1% manual fixes | M | Sample exports from pilot; Linways export format (open question) |
+| Linways/Excel data-migration (BUILT: `api/data-migration`, `erp /import/migration`; students, guardians, faculty, programmes, marks, attendance, fee ledgers; saved mappings, dry run, reconciliation, batch rollback) | Importers for students, faculty, subjects, marks, fee ledgers, attendance; mapping templates | Pilot's full back-data imported with reconciliation report, <1% manual fixes | M | Sample exports from pilot; Linways export format (open question) |
 | Accreditation exports | Verified NAAC SSR/AQAR criterion-wise metrics (7 criteria, QnM/QlM), NBA SAR (SAR tables, CO/PO), NIRF data, AISHE; gap analysis and score estimate | Generated report matches latest official template; reviewed by a NAAC consultant on pilot data | L | NAAC/NBA templates; domain reviewer |
-| Result/exam university formats | Affiliating-university specific mark lists, internal-mark normalisation, grace rules, transcript and provisional certificate | One target university's format reproduced exactly; standalone transcript endpoint | M | University rule documents |
+| Result/exam university formats (BUILT: `api/university-results`, `api/academic-docs`, `erp /exams/university`, `/exams/documents`; Kerala-style and VTU-style samples; transcript, provisional certificate and grade card with signed QR) | Affiliating-university specific mark lists, internal-mark normalisation, grace rules, transcript and provisional certificate | One target university's format reproduced exactly; standalone transcript endpoint | M | University rule documents |
 | Payments + reconciliation | Add Cashfree and/or PayU/BillDesk adapter; settlement reconciliation; receipts/80G-style where needed | Sandbox end-to-end incl. webhook signature, refund, settlement recon | M | Merchant accounts (sandbox then live); follow Cashfree skills when integrating |
 | Tally Prime live sync | Push vouchers via Tally XML/HTTP, ledger mapping, sync log | Fee receipts and expenses appear in Tally company with matching totals | M | Tally Prime test install |
 | SMS/WhatsApp production | MSG91 DLT templates approved; WhatsApp BA connect | Delivery receipts in prod for attendance/fee/result alerts | S | DLT registration, Meta BA account |
@@ -160,7 +160,7 @@ Effort: S <2 wks, M 2-6 wks, L 6+ wks (one engineer unless noted).
 | Live biometric and RFID | Vendor API/webhook for devices (eSSL, Matrix etc.), library and transport RFID | Punch appears in attendance within 1 min | M | Device hardware |
 | Teams/Meet/Zoom scheduling | Create meetings from timetable, attendance import | One-click class link, attendance pulled | M | Tenant/API accounts |
 | Admission depth | Index mark, rank list, agent commissions, ad-campaign ROI, Meta/Google lead connectors | Admission cycle run end to end incl. CAP-style rank list | M | Ad accounts |
-| External examiner portal and scrutiny workflow | Scoped login, anonymised scripts, QP scrutiny states | External examiner completes valuation without ERP seat | M | |
+| External examiner portal and scrutiny workflow (BUILT, migration 0124) | Scoped login, anonymised scripts, QP scrutiny states | External examiner completes valuation without ERP seat | M | |
 | LTI 1.3/SCORM, Moodle bridge | LTI tool provider/consumer | Import a SCORM package; LTI launch works | M | |
 | Accounting books | Vouchers, ledgers, trial balance, balance sheet (or certified Tally-only stance) | Matches Tally for pilot FY | L | Accountant reviewer |
 | Power BI/Excel connector, Koha/SIP2 | OData feed | Power BI dataset refresh | S | |

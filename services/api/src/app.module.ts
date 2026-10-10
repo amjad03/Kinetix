@@ -27,6 +27,10 @@ import { ContentModule } from './content/content.module.js';
 import { DbModule } from './db/db.module.js';
 import { RedisModule } from './redis/redis.module.js';
 import { ImportModule } from './import/import.module.js';
+import { DataMigrationModule } from './data-migration/data-migration.module.js';
+import { UniversityResultsModule } from './university-results/university-results.module.js';
+import { AcademicDocsModule } from './academic-docs/academic-docs.module.js';
+import { ExaminerModule } from './external-examiner/examiner.module.js';
 import { HealthModule } from './health/health.controller.js';
 import { CalendarModule } from './calendar/calendar.module.js';
 import { CodeModule } from './code/code.module.js';
@@ -129,6 +133,10 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     ParentModule,
     AdminModule,
     ImportModule,
+    DataMigrationModule,
+    UniversityResultsModule,
+    AcademicDocsModule,
+    ExaminerModule,
     TeacherModule,
     ContentModule,
     AiModule,
