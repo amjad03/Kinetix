@@ -96,7 +96,19 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/results', label: 'nav.results', section: 'results', icon: 'results' },
     ],
   },
-  { id: 'obe', label: 'grp.obe', icon: 'obe', items: [{ href: '/obe', label: 'nav.obe', section: 'obe', icon: 'obe' }] },
+  {
+    id: 'obe',
+    label: 'grp.obe',
+    icon: 'obe',
+    items: [
+      { href: '/obe', label: 'nav.obe', section: 'obe', icon: 'obe' },
+      { href: '/accreditation/naac', label: 'nav.accNaac', section: 'accreditation', icon: 'obe' },
+      { href: '/accreditation/nba', label: 'nav.accNba', section: 'accreditation', icon: 'obe' },
+      { href: '/accreditation/nirf', label: 'nav.accNirf', section: 'accreditation', icon: 'obe' },
+      { href: '/accreditation/iqac', label: 'nav.accIqac', section: 'accreditation', icon: 'obe' },
+      { href: '/accreditation/my-evidence', label: 'nav.accMine', section: 'facultyEvidence', icon: 'obe' },
+    ],
+  },
   {
     id: 'lms',
     label: 'grp.lms',

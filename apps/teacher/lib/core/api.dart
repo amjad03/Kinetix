@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import 'course_file_models.dart';
+import 'evidence_models.dart';
 import 'academics_models.dart';
 import 'growth_models.dart';
 import 'hr_models.dart';
@@ -100,6 +101,9 @@ abstract class TeacherApi {
   Future<AttendanceDayInfo> checkOut();
   Future<List<PayslipInfo>> myPayslips();
   Future<Uint8List> payslipPdf(String id);
+  /// The teacher's own accreditation evidence, and adding one (with an optional photo of the certificate).
+  Future<List<EvidenceInfo>> myEvidence();
+  Future<EvidenceInfo> addMyEvidence({required String kind, required String title, int? year, String venue = '', String? fileName, Uint8List? fileBytes, String? contentType});
   Future<List<CourseFileOption>> courseFileOptions();
   Future<List<CourseFileVersion>> courseFiles();
   Future<CourseFileVersion> buildCourseFile(String sectionId, String subjectId);
@@ -521,6 +525,21 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<List<PayslipInfo>> myPayslips() async =>
       [for (final e in await _send('GET', '/v1/payroll/payslips/me') as List) PayslipInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<List<EvidenceInfo>> myEvidence() async =>
+      [for (final e in await _send('GET', '/v1/accreditation/my-evidence') as List) EvidenceInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<EvidenceInfo> addMyEvidence({required String kind, required String title, int? year, String venue = '', String? fileName, Uint8List? fileBytes, String? contentType}) async => EvidenceInfo.fromJson(
+    await _send('POST', '/v1/accreditation/my-evidence', body: {
+      'kind': kind,
+      'title': title,
+      'year': ?year,
+      'venue': venue,
+      if (fileBytes != null) 'file': {'filename': fileName ?? 'evidence', 'contentType': contentType, 'contentBase64': base64Encode(fileBytes)},
+    }) as Map<String, dynamic>,
+  );
 
   @override
   Future<Uint8List> payslipPdf(String id) async => (await _request('GET', '/v1/payroll/payslips/$id/pdf', timeout: const Duration(seconds: 60))).bodyBytes;

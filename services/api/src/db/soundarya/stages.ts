@@ -19,6 +19,7 @@ import { pathwaySamples } from './pathways.js';
 import { rolesAndRights } from './access.js';
 import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 import { depthSamples } from './depth.js';
+import { accreditationSamples } from './accreditation.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -76,4 +77,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['exam, quality, HR, fee, asset, library, hostel, canteen and mentoring depth', depthSamples],
   ['setup, rules, learning support, rubrics, forums, reattempts and integrity (requirements gap close)', gapClose],
   ['projects, careers, thesis, student life, communication and parent visibility', pathwaySamples],
+  ['accreditation: NAAC entries, DVV, IQAC workspace and teacher evidence', accreditationSamples],
 ];

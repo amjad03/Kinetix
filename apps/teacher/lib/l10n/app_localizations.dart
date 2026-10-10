@@ -5762,6 +5762,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Trust this phone'**
   String get deviceTrustButton;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'My accreditation evidence'**
+  String get evidenceTitle;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Publications, programmes and awards for accreditation reports'**
+  String get evidenceBody;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not added any evidence yet.'**
+  String get evidenceEmpty;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Add evidence'**
+  String get evidenceAdd;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get evidenceKindLabel;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Publication'**
+  String get evidenceKindPublication;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Development programme'**
+  String get evidenceKindFdp;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Award'**
+  String get evidenceKindAward;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Patent'**
+  String get evidenceKindPatent;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Book or chapter'**
+  String get evidenceKindBook;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get evidenceKindOther;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get evidenceTitleField;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get evidenceYear;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Journal, event or organiser'**
+  String get evidenceVenue;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a photo of the certificate or paper'**
+  String get evidenceAttach;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached: {name}'**
+  String evidenceAttached(String name);
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get evidenceSave;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get evidenceVerified;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for review'**
+  String get evidencePending;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a JPEG or PNG photo.'**
+  String get evidenceBadImage;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a title.'**
+  String get evidenceTitleNeeded;
+
+  /// Accreditation evidence screen.
+  ///
+  /// In en, this message translates to:
+  /// **'The year must be a number.'**
+  String get evidenceYearBad;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

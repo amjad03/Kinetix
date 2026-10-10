@@ -60,6 +60,16 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/campus-life/committees/${id}/report-pack?from=${range[0]}&to=${range[1]}`;
   }
+  // Accreditation exports: ?kind=accreditation&id=<naac|nba1|nba2|nirf|aishe|atr|tmpl-naac-2.6.3>&cycle=2026-27
+  if (kind === 'accreditation') {
+    const cycle = req.nextUrl.searchParams.get('cycle') ?? '';
+    const q = /^\d{4}(-\d{2,4})?$/.test(cycle) ? `?cycle=${cycle}` : '';
+    const tmpl = /^tmpl-(naac|nba|nirf)-([A-Za-z0-9.]+)$/.exec(id);
+    const files: Record<string, string> = { naac: `/v1/accreditation/naac/export.zip${q}`, nba1: `/v1/accreditation/nba/export.xlsx${q}${q ? '&' : '?'}tier=1`, nba2: `/v1/accreditation/nba/export.xlsx${q}${q ? '&' : '?'}tier=2`, nirf: `/v1/accreditation/nirf/export.xlsx${q}`, aishe: '/v1/accreditation/aishe/export.xlsx', atr: `/v1/accreditation/iqac/atr.xlsx${q}` };
+    const target = tmpl ? `/v1/accreditation/${tmpl[1]}/metrics/${tmpl[2]}/template.xlsx` : files[id];
+    if (!target) return new Response('Not found', { status: 404 });
+    FIXED[kind] = target;
+  }
   if (kind === 'hall-ticket') {
     const test = req.nextUrl.searchParams.get('test') ?? '';
     const app = req.nextUrl.searchParams.get('app') ?? '';

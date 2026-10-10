@@ -12,6 +12,7 @@ import '../driver/driver_screen.dart';
 import '../hr/appraisal_screen.dart';
 import '../hr/check_in_screen.dart';
 import '../hr/leave_screen.dart';
+import '../hr/my_evidence_screen.dart';
 import '../hr/payslips_screen.dart';
 import '../ai/ai_copilot_screen.dart';
 import '../insights/section_insights_screen.dart';
@@ -270,6 +271,14 @@ class ProfileTab extends StatelessWidget {
               subtitle: Text(l.payslipsBody),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PayslipsScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openEvidence'),
+              leading: const Icon(Icons.workspace_premium_outlined),
+              title: Text(l.evidenceTitle),
+              subtitle: Text(l.evidenceBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => MyEvidenceScreen(api: state.api))),
             ),
             KxSectionHeader(l.workToolsSection),
             for (final (key, icon, title, body, open) in <(String, IconData, String, String, Widget Function())>[

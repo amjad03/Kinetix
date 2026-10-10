@@ -3148,4 +3148,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deviceTrustButton => 'Trust this phone';
+
+  @override
+  String get evidenceTitle => 'My accreditation evidence';
+
+  @override
+  String get evidenceBody => 'Publications, programmes and awards for accreditation reports';
+
+  @override
+  String get evidenceEmpty => 'You have not added any evidence yet.';
+
+  @override
+  String get evidenceAdd => 'Add evidence';
+
+  @override
+  String get evidenceKindLabel => 'Type';
+
+  @override
+  String get evidenceKindPublication => 'Publication';
+
+  @override
+  String get evidenceKindFdp => 'Development programme';
+
+  @override
+  String get evidenceKindAward => 'Award';
+
+  @override
+  String get evidenceKindPatent => 'Patent';
+
+  @override
+  String get evidenceKindBook => 'Book or chapter';
+
+  @override
+  String get evidenceKindOther => 'Other';
+
+  @override
+  String get evidenceTitleField => 'Title';
+
+  @override
+  String get evidenceYear => 'Year';
+
+  @override
+  String get evidenceVenue => 'Journal, event or organiser';
+
+  @override
+  String get evidenceAttach => 'Attach a photo of the certificate or paper';
+
+  @override
+  String evidenceAttached(String name) {
+    return 'Attached: $name';
+  }
+
+  @override
+  String get evidenceSave => 'Save';
+
+  @override
+  String get evidenceVerified => 'Verified';
+
+  @override
+  String get evidencePending => 'Waiting for review';
+
+  @override
+  String get evidenceBadImage => 'Choose a JPEG or PNG photo.';
+
+  @override
+  String get evidenceTitleNeeded => 'Write a title.';
+
+  @override
+  String get evidenceYearBad => 'The year must be a number.';
 }

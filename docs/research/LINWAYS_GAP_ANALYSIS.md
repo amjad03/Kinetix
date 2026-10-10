@@ -72,8 +72,8 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 | 42 | Course file | Yes | course-files | Have | |
 | 43 | SDG mapping | Listed | sdg hits (9 files) | Have/Unk | |
 | 44 | Skill mapping | Listed | skills module | Have/Unk | |
-| 45 | Accreditation: SSR/SAR autogen, criteria reports, gap analysis, score estimate | Yes (flagship) | frameworks, criteria, evidence, harvest, NAAC/NBA/NIRF logic | Partial | api/obe/quality.logic.ts; no verified official-format export |
-| 46 | AQAR, DVV, AISHE returns | Unk (not mentioned) | AISHE fields; AQAR 1 file | Partial/Exp | |
+| 45 | Accreditation: SSR/SAR autogen, criteria reports, gap analysis, score estimate | Yes (flagship) | frameworks, criteria, evidence, harvest, NAAC/NBA/NIRF logic | Built (pending domain review) | api/accreditation (NAAC 7 criteria with auto values, predicted CGPA, per-metric XLSX; NBA SAR with OBE attainment); official-template match not yet reviewed |
+| 46 | AQAR, DVV, AISHE returns | Unk (not mentioned) | AQAR via NAAC cycle export; DVV clarification list; AISHE XLSX | Built (pending domain review) | |
 | 47 | Academic audit | Yes | academic-audit | Have | |
 | 48 | Committees, event planning | Yes | events, governance | Have | |
 | 49 | E-Governance custom workflow builder | Yes | workflows + delegations (38 files) | Have/Partial | builder UX depth unverified |

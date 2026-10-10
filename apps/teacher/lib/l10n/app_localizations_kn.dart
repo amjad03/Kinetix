@@ -3154,4 +3154,72 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get deviceTrustButton => 'ಈ ಫೋನ್ ವಿಶ್ವಾಸಾರ್ಹ ಮಾಡಿ';
+
+  @override
+  String get evidenceTitle => 'ನನ್ನ ಮಾನ್ಯತೆ ಪುರಾವೆಗಳು';
+
+  @override
+  String get evidenceBody => 'ಮಾನ್ಯತೆ ವರದಿಗಳಿಗೆ ಪ್ರಕಟಣೆ, ಕಾರ್ಯಕ್ರಮ ಮತ್ತು ಪ್ರಶಸ್ತಿಗಳು';
+
+  @override
+  String get evidenceEmpty => 'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ಪುರಾವೆ ಸೇರಿಸಿಲ್ಲ.';
+
+  @override
+  String get evidenceAdd => 'ಪುರಾವೆ ಸೇರಿಸಿ';
+
+  @override
+  String get evidenceKindLabel => 'ಪ್ರಕಾರ';
+
+  @override
+  String get evidenceKindPublication => 'ಪ್ರಕಟಣೆ';
+
+  @override
+  String get evidenceKindFdp => 'ಅಭಿವೃದ್ಧಿ ಕಾರ್ಯಕ್ರಮ';
+
+  @override
+  String get evidenceKindAward => 'ಪ್ರಶಸ್ತಿ';
+
+  @override
+  String get evidenceKindPatent => 'ಪೇಟೆಂಟ್';
+
+  @override
+  String get evidenceKindBook => 'ಪುಸ್ತಕ ಅಥವಾ ಅಧ್ಯಾಯ';
+
+  @override
+  String get evidenceKindOther => 'ಇತರೆ';
+
+  @override
+  String get evidenceTitleField => 'ಶೀರ್ಷಿಕೆ';
+
+  @override
+  String get evidenceYear => 'ವರ್ಷ';
+
+  @override
+  String get evidenceVenue => 'ನಿಯತಕಾಲಿಕ, ಕಾರ್ಯಕ್ರಮ ಅಥವಾ ಆಯೋಜಕರು';
+
+  @override
+  String get evidenceAttach => 'ಪ್ರಮಾಣಪತ್ರ ಅಥವಾ ಪ್ರಬಂಧದ ಫೋಟೋ ಜೋಡಿಸಿ';
+
+  @override
+  String evidenceAttached(String name) {
+    return 'ಜೋಡಿಸಲಾಗಿದೆ: $name';
+  }
+
+  @override
+  String get evidenceSave => 'ಉಳಿಸಿ';
+
+  @override
+  String get evidenceVerified => 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get evidencePending => 'ಪರಿಶೀಲನೆಗೆ ಕಾಯುತ್ತಿದೆ';
+
+  @override
+  String get evidenceBadImage => 'JPEG ಅಥವಾ PNG ಫೋಟೋ ಆಯ್ಕೆಮಾಡಿ.';
+
+  @override
+  String get evidenceTitleNeeded => 'ಶೀರ್ಷಿಕೆ ಬರೆಯಿರಿ.';
+
+  @override
+  String get evidenceYearBad => 'ವರ್ಷ ಒಂದು ಸಂಖ್ಯೆಯಾಗಿರಬೇಕು.';
 }
