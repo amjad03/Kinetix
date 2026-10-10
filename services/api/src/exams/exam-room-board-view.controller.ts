@@ -30,7 +30,7 @@ export class ExamBoardController {
     private readonly clock: Clock,
   ) {}
 
-  @Get('me/exam-room')
+  @Get('me/exam-room/plan')
   @Auth(['device', 'board'])
   examRoom(@CurrentPrincipal() p: DevicePrincipal | BoardPrincipal, @Query('date') dateQ?: string, @Query('lang') langQ?: string) {
     const lang: Lang = langQ === 'hi' || langQ === 'kn' ? langQ : 'en';

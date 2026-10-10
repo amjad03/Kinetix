@@ -167,7 +167,7 @@ describe('data migration, university formats, academic documents, external exami
   it('an exam-room board shows seating, timetable and instructions read-only', async () => {
     await owner.query(`update devices set room_id = $2 where id = $1`, [t.device.id, t.room.id]);
     const { deviceToken } = await import('./helpers.js').then(async (h) => ({ deviceToken: (await http().post('/v1/devices/enroll').send({ code: t.enrollmentCode, platform: 'android' }).expect(201)).body.deviceToken as string, h }));
-    const r = await http().get('/v1/devices/me/exam-room?date=2026-11-10&lang=hi').set({ authorization: `Bearer ${deviceToken}` }).expect(200);
+    const r = await http().get('/v1/devices/me/exam-room/plan?date=2026-11-10&lang=hi').set({ authorization: `Bearer ${deviceToken}` }).expect(200);
     expect(r.body.room.name).toBe('Room 1');
     expect(r.body.sittings[0].seats).toEqual([{ seatNo: 1, rollNo: 'R1' }]);
     expect(r.body.timetable.length).toBe(1);

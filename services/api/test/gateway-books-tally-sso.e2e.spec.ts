@@ -37,7 +37,7 @@ describe('PayU, settlements, books, Tally, SSO and meeting attendance', () => {
     tokens.teacher = await login(t.slug, t.teacher.email!);
     tokens.parent = await login(t.slug, t.guardian.email!);
     tokens.student = await login(t.slug, t.studentUser.email!);
-    const [ca] = await db.insert(s.users).values({ tenantId: t.tenantId, fullName: 'Conn Admin', email: 'connadmin@x.in', passwordHash: (await import('argon2')).default.hash ? await (await import('argon2')).default.hash('pw') : '' }).returning();
+    const [ca] = await db.insert(s.users).values({ tenantId: t.tenantId, fullName: 'Conn Admin', email: 'connadmin@x.in', passwordHash: await (await import('argon2')).default.hash('pw') }).returning();
     await db.insert(s.userRoles).values({ tenantId: t.tenantId, userId: ca.id, role: 'tenant_admin' });
     tokens.connAdmin = await login(t.slug, 'connadmin@x.in');
     tokens.otherPrincipal = await login(other.slug, other.principal.email!);

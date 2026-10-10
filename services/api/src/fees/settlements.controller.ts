@@ -194,7 +194,7 @@ export class SettlementsController {
     });
   }
 
-  private async store(tx: Tx, p: UserPrincipal, b: { provider: 'razorpay' | 'payu'; source: string; reference: string; settlementDate: string; lines: Omit<GatewaySettlementLine, 'netPaise'>[] & { netPaise?: number }[] }) {
+  private async store(tx: Tx, p: UserPrincipal, b: { provider: 'razorpay' | 'payu'; source: string; reference: string; settlementDate: string; lines: (Omit<GatewaySettlementLine, 'netPaise' | 'providerOrderId'> & { providerOrderId?: string | null; netPaise?: number })[] }) {
     const [dupe] = await tx.select({ id: settlementBatches.id }).from(settlementBatches).where(and(eq(settlementBatches.provider, b.provider), eq(settlementBatches.reference, b.reference)));
     if (dupe) throw new BadRequestException('That settlement was already imported');
     const lines = b.lines.map((l) => ({ ...l, kind: l.kind ?? 'payment', feePaise: l.feePaise ?? 0, netPaise: l.netPaise ?? (l.kind === 'refund' ? -l.amountPaise : l.amountPaise - (l.feePaise ?? 0)) }));

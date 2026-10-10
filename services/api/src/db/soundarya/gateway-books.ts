@@ -25,7 +25,7 @@ export async function gatewayBooksSamples(c: Ctx): Promise<void> {
   };
   type V = { id: string; type: string; date: string; narration: string; lines: [string, number, number][] };
   const vouchers: V[] = months.map((m) => ({ id: `fees-${m.m}`, type: 'receipt', date: `${m.m}-28`, narration: `Fee collection for ${m.m}`, lines: [['1010', Number(m.total), 0], ['4000', 0, Number(m.total)]] }));
-  const d = (n: number) => addDays(c.today, n).toISOString().slice(0, 10);
+  const d = (n: number) => addDays(c.today, n);
   vouchers.push(
     { id: 'rent', type: 'receipt', date: d(-12), narration: 'Auditorium rent from the Rotary Club', lines: [['1010', 25_000_00, 0], ['4100', 0, 25_000_00]] },
     { id: 'stationery', type: 'payment', date: d(-9), narration: 'Stationery and printing', lines: [['5100', 18_400_00, 0], ['1010', 0, 18_400_00]] },

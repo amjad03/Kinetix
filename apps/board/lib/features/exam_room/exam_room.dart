@@ -114,7 +114,7 @@ class _ExamRoomPanelState extends State<ExamRoomPanel> {
     }
   }
 
-  Future<ExamRoomView> _fromApi(String lang) async => ExamRoomView.fromJson(await widget.board!.api!.examRoom(lang: lang));
+  Future<ExamRoomView> _fromApi(String lang) async => ExamRoomView.fromJson(await widget.board!.api!.examRoomPlan(lang: lang));
 
   @override
   Widget build(BuildContext context) {

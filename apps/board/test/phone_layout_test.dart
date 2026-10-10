@@ -80,6 +80,11 @@ void main() {
   Future<void> tap(WidgetTester tester, Finder f) async {
     await tester.ensureVisible(f);
     await tester.pumpAndSettle();
+    // A dialog's fixed action bar can sit over a field scrolled to the edge: centre it.
+    if (f.hitTestable().evaluate().isEmpty && f.evaluate().isNotEmpty) {
+      await Scrollable.ensureVisible(f.evaluate().first, alignment: 0.5);
+      await tester.pumpAndSettle();
+    }
     // Reachable: on screen and not covered (a dialog that clips its content hides it).
     if (f.hitTestable().evaluate().isEmpty) {
       // A board message (a snackbar) passes in a few seconds.

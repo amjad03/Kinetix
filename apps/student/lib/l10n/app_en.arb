@@ -2870,7 +2870,6 @@
   "@buzzerYourPlace": {"placeholders": {"n": {"type": "int"}}},
   "buzzerFirstIs": "{name} buzzed first",
   "@buzzerFirstIs": {"placeholders": {"name": {}}},
-  "classNotesTitle": "Class notes",
   "acadDocTitle": "Transcripts and certificates",
   "acadDocTranscript": "Academic transcript",
   "acadDocProvisional": "Provisional certificate",
