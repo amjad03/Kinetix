@@ -10,7 +10,10 @@ import 'solids.dart';
 /// A solid with dimension sliders and live measurements (formula, working and value).
 /// Side by side when there is room, stacked in a narrow pane.
 class SolidExplorer extends StatefulWidget {
-  const SolidExplorer({super.key, required this.kind, this.initialDims, this.controller});
+  const SolidExplorer({super.key, required this.kind, this.initialDims, this.controller, this.initialFaceColors});
+
+  /// Faces painted before (see [encodeFaceColorMap]), shown when the explorer opens.
+  final String? initialFaceColors;
 
   final SolidKind kind;
   final Map<String, double>? initialDims;
@@ -53,7 +56,9 @@ class _SolidExplorerState extends State<SolidExplorer> {
   void _reset() {
     _solid = Solid(widget.kind, widget.initialDims);
     _model = _build(_solid);
-    _ctrl.faceColors.clear();
+    _ctrl.faceColors
+      ..clear()
+      ..addAll(decodeFaceColorMap(widget.initialFaceColors));
     _fit = _model.bounds.$2;
   }
 

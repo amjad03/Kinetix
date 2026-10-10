@@ -500,6 +500,7 @@ class PolygonElement extends BoardElement {
     this.fill,
     this.measure = ShapeMeasure.none,
     this.turn = 0,
+    this.sideColors = const {},
   });
 
   @override
@@ -509,6 +510,9 @@ class PolygonElement extends BoardElement {
   final double width;
   final bool closed;
   final Color? fill;
+
+  /// Sides coloured on their own: side index (point i to point i + 1) to colour.
+  final Map<int, Color> sideColors;
 
   /// The measurements this figure shows.
   final ShapeMeasure measure;
@@ -545,6 +549,7 @@ class PolygonElement extends BoardElement {
     double? width,
     ShapeMeasure? measure,
     double? turn,
+    Map<int, Color>? sideColors,
   }) => PolygonElement(
     id: id ?? this.id,
     points: points ?? this.points,
@@ -554,6 +559,7 @@ class PolygonElement extends BoardElement {
     fill: clearFill ? null : (fill ?? this.fill),
     measure: measure ?? this.measure,
     turn: turn ?? this.turn,
+    sideColors: sideColors ?? this.sideColors,
   );
 
   @override
@@ -564,7 +570,7 @@ class PolygonElement extends BoardElement {
   @override
   PolygonElement rotated(Offset center, double angle) => copyWith(points: [for (final p in points) rotatePoint(p, center, angle)], turn: turn + angle);
   @override
-  PolygonElement recolored(Color c) => copyWith(color: c, fill: fill == null ? null : c.withValues(alpha: fill!.a));
+  PolygonElement recolored(Color c) => copyWith(color: c, fill: fill == null ? null : c.withValues(alpha: fill!.a), sideColors: const {});
   @override
   PolygonElement withId(String id) => copyWith(id: id);
 }

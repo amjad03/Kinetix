@@ -165,6 +165,20 @@ void paintElement(
           ..strokeJoin = StrokeJoin.round
           ..strokeCap = StrokeCap.round,
       );
+      // Sides that were coloured on their own, over the outline.
+      for (final en in e.sideColors.entries) {
+        final i = en.key;
+        if (i < 0 || i >= e.points.length || (!e.closed && i == e.points.length - 1)) continue;
+        canvas.drawLine(
+          e.points[i],
+          e.points[(i + 1) % e.points.length],
+          Paint()
+            ..color = en.value
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = e.width
+            ..strokeCap = StrokeCap.round,
+        );
+      }
       final m = e.measure | ShapeMeasure(lengths: lengths, angles: angles);
       if (m.any) paintShapeMeasurements(canvas, e, inkColorFor(e.color, background), m, unit);
     case NoteElement():

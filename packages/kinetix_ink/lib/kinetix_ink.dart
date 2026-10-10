@@ -33,6 +33,7 @@ export 'src/sheet_painting.dart';
 export 'src/tools/flow_overlay.dart';
 export 'src/tools/geo_overlay.dart';
 export 'src/tools/geo_tool.dart';
+export 'src/tools/shape_face.dart';
 export 'src/tools/graph_editor.dart';
 export 'src/tools/graph_templates.dart';
 export 'src/tools/tool_strings.dart';

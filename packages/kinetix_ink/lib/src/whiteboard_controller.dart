@@ -1225,7 +1225,9 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   GeoTool addGeoTool(GeoKind kind) {
     final c = visibleArea?.center ?? const Offset(400, 300);
     // Each new tool a little below the last, so several do not land on top of each other.
-    final t = GeoTool.create(kind, c + Offset(0, 40.0 * (geoTools.value.length % 5)));
+    var t = GeoTool.create(kind, c + Offset(0, 40.0 * (geoTools.value.length % 5)));
+    final area = visibleArea;
+    if (area != null) t = t.fitTo(area.size);
     geoTools.value = [...geoTools.value, t];
     notifyListeners();
     return t;
@@ -1233,6 +1235,20 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   void updateGeoTool(GeoTool t) {
     geoTools.value = [for (final x in geoTools.value) x.id == t.id ? t : x];
+  }
+
+  /// Raises tool [id] above the others (the last in the list is on top).
+  void bringGeoToFront(String id) {
+    final l = geoTools.value;
+    if (l.isEmpty || l.last.id == id || !l.any((t) => t.id == id)) return;
+    geoTools.value = [...l.where((t) => t.id != id), l.firstWhere((t) => t.id == id)];
+  }
+
+  /// Puts tool [id] beneath the others, so the one under it can be reached.
+  void sendGeoToBack(String id) {
+    final l = geoTools.value;
+    if (l.isEmpty || l.first.id == id || !l.any((t) => t.id == id)) return;
+    geoTools.value = [l.firstWhere((t) => t.id == id), ...l.where((t) => t.id != id)];
   }
 
   void removeGeoTool(String id) {

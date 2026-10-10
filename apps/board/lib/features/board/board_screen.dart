@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show Model3dAnnotationStore, Model3dMirror, Model3dScope, Model3dSnapshot;
+import 'package:kinetix_3d/kinetix_3d.dart' show Model3dAnnotationStore, Model3dMirror, Model3dScope, Model3dSnapshot, SolidKind;
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -49,6 +49,7 @@ import '../toolkit/toolkit_controller.dart';
 import '../toolkit/remote_toolkit.dart';
 import '../toolkit/toolkit_layer.dart';
 import '../search/board_search.dart';
+import '../search/solids3d.dart' show Solid3dDialog;
 import 'ai_pen_ui.dart';
 import 'animations_hook.dart';
 import '../canvas_tools/canvas_tools.dart';
@@ -801,7 +802,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final h = w * decoded.height / math.max(1, decoded.width);
     const ink = WhiteboardController.inkBlack;
     _wb.insert([
-      ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: s.png, link: EmbedLink(kind: EmbedLink.model3d, id: s.modelId)),
+      ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: s.png, link: EmbedLink(kind: EmbedLink.model3d, id: s.modelId, preset: s.preset)),
       if (s.credit.isNotEmpty)
         TextElement(id: newElementId(), position: Offset(0, h + 6), text: s.credit, color: ink, fontSize: 14, size: measureBoardText(s.credit, 14)),
     ]);
@@ -826,11 +827,20 @@ class _BoardScreenState extends State<BoardScreen> {
     return w == 0 || h == 0 ? const Size(640, 480) : Size(w.toDouble(), h.toDouble());
   }
 
-  void _openLink(EmbedLink link) => switch (link.kind) {
-    EmbedLink.lab => _openSplit(SplitContent.lab, link.id, link.preset),
-    EmbedLink.model3d => _openSplit(SplitContent.model3d, link.id, link.preset),
-    _ => null,
-  };
+  void _openLink(EmbedLink link) {
+    // A solid put on the board opens in the solid explorer again, with its painted faces.
+    final solid = SolidKind.values.where((k) => k.id == link.id).firstOrNull;
+    if (link.kind == EmbedLink.model3d && solid != null) {
+      unawaited(Solid3dDialog.open(context, solid, faceColors: link.preset));
+      return;
+    }
+    switch (link.kind) {
+      case EmbedLink.lab:
+        _openSplit(SplitContent.lab, link.id, link.preset);
+      case EmbedLink.model3d:
+        _openSplit(SplitContent.model3d, link.id, link.preset);
+    }
+  }
 
   // --- Lesson recording ----------------------------------------------------------------------
 

@@ -40,11 +40,11 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 |---|---|---|---|
 | Shape AI (rough to clean) | Recognises drawn shapes, keeps proportions/placement | Built | INK/pen/shape_fit.dart, B/layout/pen_modes.dart |
 | 2D shape library (lines, polygons) | Lined/filled, Show Lengths / Show Angles toggles | Built | INK/shape_edit.dart, INK/tools/geo_tool.dart |
-| 2D shape colour change | Select shape, palette, only that object changes | Built; verify isolation | B/selection_actions.dart |
+| 2D shape colour change | Select shape, palette, only that object changes | Built: tests/geo_stack_faces_test.dart proves only the chosen side/face (PolygonElement.sideColors, INK/tools/shape_face.dart, "Colour a side or face" in the selection bar) changes | B/selection_actions.dart |
 | Selected object contextual controls | Edit, colour, actions, move/resize | Built | B/selection_actions.dart |
 | 2D/3D switch, lined and filled 3D library | 3D panel, rotate any angle, lengths/angles | Built | packages/kinetix_3d/lib/src/solid_explorer.dart, A/search/solids3d.dart |
-| Cube face colour change in 2D and 3D | Tap a face, pick colour, only that face | Broken: model_viewer has faceColors but not reachable in 2D cube nor in board 3D flow; no UI | packages/kinetix_3d/lib/src/model_viewer.dart, packages/kinetix_3d/lib/src/solid_explorer.dart, INK/shape_edit.dart |
-| 3D responsiveness | No lag while rotating | Partial: verify on IFP | packages/kinetix_3d/lib/src/renderer.dart |
+| Cube face colour change in 2D and 3D | Tap a face, pick colour, only that face | Built: solid explorer face palette; faces now kept with the board picture (link preset fc:...), drawn on the 2D picture and restored on reopening (kinetix_3d/test/face_colors_persist_test.dart); 2D sides/face via shape_face.dart | packages/kinetix_3d/lib/src/model_viewer.dart, packages/kinetix_3d/lib/src/solid_explorer.dart, INK/shape_edit.dart |
+| 3D responsiveness | No lag while rotating | Partial: verify on IFP (renderer unchanged; not measurable here) | packages/kinetix_3d/lib/src/renderer.dart |
 | Text AI (handwriting to text) | Languages: English, Hindi, Kannada, Arabic, Marathi, Gujarati, Tamil, Punjabi, Telugu, Bangla, Odia, Malayalam, Nepali; fonts Default, Kalam, more | Partial: engines exist (ML Kit / Windows); full 13-language and font library unverified | apps/board/lib/core/handwriting/*.dart, INK/pen/handwriting.dart |
 | Flowchart AI | Start block suggests next step | Built | INK/flow_chart.dart, INK/tools/flow_overlay.dart |
 
@@ -52,8 +52,8 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
 | Ruler, protractor, set squares, compass | Draggable, rotatable overlays | Built | INK/tools/geo_overlay.dart, INK/geometry_tools.dart |
-| Stacked tools: reach the bottom one | Tools overlap; user can select/move any | Broken: bottom tool of a stack hard to reach | INK/tools/geo_overlay.dart, INK/tools/geo_tool.dart |
-| Calibration | Screen size/DPI calibration so ruler is true scale | Broken: dialog exists but incomplete | A/canvas_tools/canvas_tools.dart, INK/tools/geo_tool.dart |
+| Stacked tools: reach the bottom one | Tools overlap; user can select/move any | Built: touch raises a tool, long-press (held still) sends it back, stack chip lists all tools, set-square cut-out and empty area pass touches through, only the top tool shows buttons, tools shrink to fit phones (geo_stack_faces_test.dart) | INK/tools/geo_overlay.dart, INK/tools/geo_tool.dart |
+| Calibration | Screen size/DPI calibration so ruler is true scale | Built: calibration by screen diagonal (phone/tablet/IFP), 8.56 cm bank card, ruler marks and +/- fine nudge, saved per device; warns when zoom makes scales not true size (geo_stack_faces_test.dart) | A/canvas_tools/canvas_tools.dart, INK/tools/geo_tool.dart |
 | Graph tool / graph templates | Plot expressions, templates | Built | INK/tools/graph_editor.dart, A/canvas_tools/graph_templates_panel.dart |
 
 ## 5. Teaching tools

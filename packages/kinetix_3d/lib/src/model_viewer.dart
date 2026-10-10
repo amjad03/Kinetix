@@ -48,6 +48,18 @@ class ModelViewController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The painted faces as text (`fc:triangle=argb,...`), for keeping with a picture on the
+  /// board; empty when nothing is painted.
+  String encodeFaceColors() => encodeFaceColorMap(faceColors);
+
+  /// Paints the faces [encoded] by [encodeFaceColors] (ignored when it is not that format).
+  void loadFaceColors(String? encoded) {
+    faceColors
+      ..clear()
+      ..addAll(decodeFaceColorMap(encoded));
+    notifyListeners();
+  }
+
   void setHome(double yaw, double pitch) {
     _homeYaw = yaw;
     _homePitch = pitch;
@@ -469,4 +481,19 @@ class _CaptionCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Painted faces (triangle index to ARGB) as `fc:12=4294901760,13=...`; empty when none.
+String encodeFaceColorMap(Map<int, int> faces) => faces.isEmpty ? '' : 'fc:${faces.entries.map((e) => '${e.key}=${e.value}').join(',')}';
+
+/// The faces in text made by [encodeFaceColorMap]; empty for null, empty or other text.
+Map<int, int> decodeFaceColorMap(String? text) {
+  if (text == null || !text.startsWith('fc:')) return {};
+  final out = <int, int>{};
+  for (final part in text.substring(3).split(',')) {
+    final kv = part.split('=');
+    final k = kv.length == 2 ? int.tryParse(kv[0]) : null, v = kv.length == 2 ? int.tryParse(kv[1]) : null;
+    if (k != null && v != null && k >= 0) out[k] = v;
+  }
+  return out;
 }

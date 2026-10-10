@@ -41,13 +41,13 @@ RenderStyle solidStyle({Color foreground = const Color(0xFF1F1F1F), double label
 );
 
 /// A picture of [kind] (its default sizes, labelled), seen from [yaw] and [pitch], as PNG.
-Future<Uint8List> renderSolidPng(SolidKind kind, {double yaw = -30, double pitch = 20, Size size = const Size(640, 520), bool labels = true, Map<String, double>? dims}) async {
+Future<Uint8List> renderSolidPng(SolidKind kind, {double yaw = -30, double pitch = 20, Size size = const Size(640, 520), bool labels = true, Map<String, double>? dims, Map<int, int> faceColors = const {}}) async {
   final model = Solid(kind, dims).toModel(grid: false);
   final renderer = SceneRenderer(model);
   try {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder, Offset.zero & size);
-    renderer.paint(canvas, size, OrbitCamera(yaw: yaw, pitch: pitch), solidStyle(labelScale: 1.1), RenderOptions(labels: labels));
+    renderer.paint(canvas, size, OrbitCamera(yaw: yaw, pitch: pitch), solidStyle(labelScale: 1.1), RenderOptions(labels: labels, faceColors: faceColors));
     final picture = recorder.endRecording();
     final image = await picture.toImage(size.width.round(), size.height.round());
     picture.dispose();
@@ -162,18 +162,21 @@ class Solids3dGrid extends StatelessWidget {
 /// of it as it is turned (linked, so a tap on the picture opens it again), "Open in 3D
 /// viewer" opens it beside the board.
 class Solid3dDialog extends StatefulWidget {
-  const Solid3dDialog({super.key, required this.kind, this.onPut, this.onOpenViewer});
+  const Solid3dDialog({super.key, required this.kind, this.onPut, this.onOpenViewer, this.faceColors});
+
+  /// Faces painted before, as kept with a picture on the board (see [encodeFaceColorMap]).
+  final String? faceColors;
 
   final SolidKind kind;
   final ValueChanged<Model3dSnapshot>? onPut;
   final ValueChanged<String>? onOpenViewer;
 
-  static Future<void> open(BuildContext context, SolidKind kind, {ValueChanged<Model3dSnapshot>? onPut, ValueChanged<String>? onOpenViewer}) {
+  static Future<void> open(BuildContext context, SolidKind kind, {ValueChanged<Model3dSnapshot>? onPut, ValueChanged<String>? onOpenViewer, String? faceColors}) {
     // The board's 3D scope places pictures; the dialog sits above it, so take it along.
     final put = onPut ?? Model3dScope.maybeOf(context)?.onSnapshot;
     return showPanelDialog<void>(
       context: context,
-      builder: (_) => Solid3dDialog(kind: kind, onPut: put, onOpenViewer: onOpenViewer),
+      builder: (_) => Solid3dDialog(kind: kind, onPut: put, onOpenViewer: onOpenViewer, faceColors: faceColors),
     );
   }
 
@@ -196,10 +199,10 @@ class _Solid3dDialogState extends State<Solid3dDialog> {
     if (put == null || _busy) return;
     setState(() => _busy = true);
     final s = SearchStrings.of(context);
-    final png = await renderSolidPng(widget.kind, yaw: _ctrl.camera.yaw, pitch: _ctrl.camera.pitch);
+    final png = await renderSolidPng(widget.kind, yaw: _ctrl.camera.yaw, pitch: _ctrl.camera.pitch, faceColors: _ctrl.faceColors);
     if (!mounted) return;
     Navigator.of(context).pop();
-    put(Model3dSnapshot(png: png, modelId: widget.kind.id, title: s.solidName(widget.kind.name)));
+    put(Model3dSnapshot(png: png, modelId: widget.kind.id, title: s.solidName(widget.kind.name), preset: _ctrl.faceColors.isEmpty ? null : _ctrl.encodeFaceColors()));
   }
 
   @override
@@ -244,7 +247,7 @@ class _Solid3dDialogState extends State<Solid3dDialog> {
       children: [
         header,
         const Divider(height: 1),
-        Expanded(child: SolidExplorer(kind: widget.kind, controller: _ctrl)),
+        Expanded(child: SolidExplorer(kind: widget.kind, controller: _ctrl, initialFaceColors: widget.faceColors)),
       ],
     );
     if (phone) return Dialog.fullscreen(key: const Key('solid-dialog'), child: SafeArea(child: body));

@@ -40,6 +40,14 @@ class GeoCalibration {
 
 const double _deg = math.pi / 180;
 
+/// Whether [p] is inside triangle [a] [b] [c] (a corner counts when shrunk by [slop]).
+bool _inTriangle(Offset p, Offset a, Offset b, Offset c, double slop) {
+  double side(Offset p1, Offset p2, Offset p3) => (p1.dx - p3.dx) * (p2.dy - p3.dy) - (p2.dx - p3.dx) * (p1.dy - p3.dy);
+  final d1 = side(p, a, b), d2 = side(p, b, c), d3 = side(p, c, a);
+  final neg = d1 < -slop || d2 < -slop || d3 < -slop, pos = d1 > slop || d2 > slop || d3 > slop;
+  return !(neg && pos);
+}
+
 /// Rounds [a] to the nearest 15° unless [free]. For turning tools.
 double snapAngle15(double a, {bool free = false}) {
   if (free) return a;
@@ -212,6 +220,31 @@ class GeoTool {
         final pencil = Offset(size, 0);
         return l.distance <= 28 + slop || (l - pencil).distance <= 28 + slop || _distToSegment(l, Offset.zero, pencil) <= 14 + slop;
     }
+  }
+
+  /// True when board point [p] is on something solid: like [contains], but a set square's
+  /// cut-out is open, so a pen or a tool below reaches through it.
+  bool opaqueAt(Offset p, {double slop = 0}) {
+    if (!contains(p, slop: slop)) return false;
+    if (kind == GeoKind.setSquare45 || kind == GeoKind.setSquare3060) {
+      final o = outline;
+      final c = (o[0] + o[1] + o[2]) / 3;
+      final hole = [for (final q in o) c + (q - c) * 0.45];
+      return !_inTriangle(toLocal(p), hole[0], hole[1], hole[2], slop);
+    }
+    return true;
+  }
+
+  /// This tool shrunk (never grown) so it fits a view [area] board units across, for a phone.
+  GeoTool fitTo(Size area) {
+    final m = math.min(area.width, area.height);
+    final cap = switch (kind) {
+      GeoKind.ruler => area.width * 0.8,
+      GeoKind.protractor || GeoKind.protractor360 => m * 0.42,
+      GeoKind.setSquare45 || GeoKind.setSquare3060 => m * 0.55,
+      GeoKind.compass => m * 0.3,
+    };
+    return size <= cap ? this : copyWith(size: cap);
   }
 
   /// The edge nearest [p] if it is within [tolerance] of it (and level with it).

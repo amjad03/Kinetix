@@ -30,15 +30,21 @@ class GeoToolsOverlay extends StatelessWidget {
         final view = c.view.value;
         final tools = c.geoTools.value;
         final line = c.edgeLine.value;
-        return Stack(
-          children: [
-            for (final t in tools)
-              Positioned.fill(
-                child: _GeoToolView(key: ValueKey('geo-${t.id}'), controller: c, tool: t, view: view),
-              ),
-            for (final t in tools) _buttons(context, t, view),
-            if (line != null) _lengthPill(line, view),
-          ],
+        return LayoutBuilder(
+          builder: (context, box) => Stack(
+            children: [
+              for (final t in tools)
+                Positioned.fill(
+                  child: _GeoToolView(key: ValueKey('geo-${t.id}'), controller: c, tool: t, view: view),
+                ),
+              // Only the top tool shows its buttons; the chip reaches the rest of the stack.
+              if (tools.isNotEmpty) _buttons(context, tools.last, view, box.maxWidth),
+              if (tools.length > 1) Positioned(left: 8, bottom: 8, child: GeoStackChip(controller: c)),
+              if (tools.isNotEmpty && (view.scale - 1).abs() > 0.02)
+                Positioned(left: 8, top: 8, child: IgnorePointer(child: _Pill(ToolStrings.of(context).t('scaleNotTrue')))),
+              if (line != null) _lengthPill(line, view),
+            ],
+          ),
         );
       },
     );
@@ -55,7 +61,7 @@ class GeoToolsOverlay extends StatelessWidget {
     );
   }
 
-  Widget _buttons(BuildContext context, GeoTool t, ViewState view) {
+  Widget _buttons(BuildContext context, GeoTool t, ViewState view, double width) {
     final s = ToolStrings.of(context);
     final box = geoScreenBounds(t, view);
     final c = controller;
@@ -69,7 +75,7 @@ class GeoToolsOverlay extends StatelessWidget {
       padding: EdgeInsets.zero,
     );
     return Positioned(
-      left: box.center.dx - 160,
+      left: (box.center.dx - 160).clamp(4.0, math.max(4.0, width - 324)),
       top: math.max(4, box.top - 48),
       width: 320,
       child: Center(
@@ -119,6 +125,92 @@ class GeoToolsOverlay extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Words for a tool in the stack chip.
+String geoToolName(ToolStrings s, GeoKind k) => s.t(k.name);
+
+IconData geoToolIcon(GeoKind k) => switch (k) {
+  GeoKind.ruler => Icons.straighten,
+  GeoKind.protractor || GeoKind.protractor360 => Icons.architecture,
+  GeoKind.setSquare45 || GeoKind.setSquare3060 => Icons.change_history,
+  GeoKind.compass => Icons.gesture,
+};
+
+/// A small chip shown while several tools are on the board: tap it for the list, then tap a
+/// tool to bring it to the front (the front one is ticked). Reaches a tool buried under others.
+class GeoStackChip extends StatefulWidget {
+  const GeoStackChip({super.key, required this.controller});
+
+  final WhiteboardController controller;
+
+  @override
+  State<GeoStackChip> createState() => _GeoStackChipState();
+}
+
+class _GeoStackChipState extends State<GeoStackChip> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ToolStrings.of(context);
+    final c = widget.controller;
+    final tools = c.geoTools.value;
+    return Material(
+      color: KxColor.inverse.withValues(alpha: 0.9),
+      borderRadius: BorderRadius.circular(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_open)
+            for (final t in tools.reversed)
+              InkWell(
+                key: Key('geo-stack-item-${t.id}'),
+                onTap: () {
+                  c.bringGeoToFront(t.id);
+                  setState(() => _open = false);
+                },
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 44, minWidth: 160),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(geoToolIcon(t.kind), size: 18, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(geoToolName(s, t.kind), style: const TextStyle(color: Colors.white)),
+                        const Spacer(),
+                        if (t.id == tools.last.id) const Icon(Icons.check, size: 18, color: Colors.white),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          InkWell(
+            key: const Key('geo-stack-chip'),
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => setState(() => _open = !_open),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 44),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.layers, size: 18, color: Colors.white),
+                    const SizedBox(width: 6),
+                    Text('${s.t('toolStack')} ${tools.length}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -197,13 +289,15 @@ class _GeoToolViewState extends State<_GeoToolView> {
   Offset _startAt = Offset.zero;
   double _startPointer = 0;
   double _sweep = 0, _lastPointer = 0;
-  bool _free = false, _drawing = false;
+  bool _free = false, _drawing = false, _lpMoved = false;
 
   GeoTool get t => widget.tool;
   ViewState get v => widget.view;
   double get _reach => 26 / v.scale;
 
   void _begin(Offset local, int pointers) {
+    // A touch on a tool raises it, so the one that was under another can be used.
+    widget.controller.bringGeoToFront(t.id);
     final b = v.toBoard(local);
     _start = t;
     _startAt = b;
@@ -269,9 +363,20 @@ class _GeoToolViewState extends State<_GeoToolView> {
       onLongPressStart: (d) {
         _begin(d.localPosition, 1);
         _free = true;
+        _lpMoved = false;
       },
-      onLongPressMoveUpdate: (d) => _move(d.localPosition),
-      onLongPressEnd: (_) => _end(),
+      onLongPressMoveUpdate: (d) {
+        if (d.offsetFromOrigin.distance > 10) _lpMoved = true;
+        _move(d.localPosition);
+      },
+      onLongPressEnd: (_) {
+        // Held still: send the tool to the back, so the one beneath comes up.
+        if (!_lpMoved) {
+          HapticFeedback.mediumImpact();
+          widget.controller.sendGeoToBack(t.id);
+        }
+        _end();
+      },
       child: CustomPaint(
         painter: GeoToolPainter(t, v, sweep: _drawing ? _sweep : 0, startAngle: _drawing ? _start.angle : t.angle, reach: _reach),
         child: const SizedBox.expand(),
@@ -522,16 +627,26 @@ class GeoToolPainter extends CustomPainter {
   @override
   bool? hitTest(Offset position) {
     final b = view.toBoard(position);
-    return t.contains(b, slop: 4 / view.scale) || geoPartAt(t, b, reach) != GeoPart.body;
+    return t.opaqueAt(b, slop: 4 / view.scale) || geoPartAt(t, b, reach) != GeoPart.body;
   }
 
   @override
   bool shouldRepaint(GeoToolPainter old) => old.t != t || old.view != view || old.sweep != sweep || old.startAngle != startAngle || old.t.flipped != t.flipped;
 }
 
-/// Matches the scales to this screen: drag until 10 marks on screen match 10 cm on a real ruler.
+/// Board units in one cm on a screen [diagonalInches] across whose logical size is [size].
+double pxPerCmForDiagonal(Size size, double diagonalInches) =>
+    diagonalInches <= 0 ? GeoCalibration.deviceDefault : math.sqrt(size.width * size.width + size.height * size.height) / (diagonalInches * 2.54);
+
+/// A bank card is 8.56 cm wide: the reference a teacher can hold to the screen.
+const double cardWidthCm = 8.56;
+
+/// Matches the scales to this screen, three ways: type the screen's diagonal (the quick way for a
+/// phone, a tablet or a panel), hold a bank card against the bar, or hold a real ruler against
+/// the marks. Nudge with the + and - buttons for the last millimetre.
 Future<void> showGeoCalibrationDialog(BuildContext context) async {
   final s = ToolStrings.of(context);
+  final screen = MediaQuery.sizeOf(context);
   var px = GeoCalibration.pxPerCm.value;
   final ok = await showDialog<bool>(
     context: context,
@@ -540,21 +655,49 @@ Future<void> showGeoCalibrationDialog(BuildContext context) async {
         title: Text(s.t('calibrateTitle')),
         content: SizedBox(
           width: 520,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(s.t('calibrateHint')),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 60,
-                child: ClipRect(
-                  child: CustomPaint(key: const Key('geo-calibrate-scale'), painter: _CalibrationPainter(px), size: Size.infinite),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(s.t('calibrateHint')),
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('geo-calibrate-diagonal'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(labelText: s.t('screenDiagonal'), suffixText: 'in', isDense: true),
+                  onChanged: (v) {
+                    final d = double.tryParse(v);
+                    if (d != null && d >= 3 && d <= 150) set(() => px = pxPerCmForDiagonal(screen, d).clamp(15.0, 120.0));
+                  },
                 ),
-              ),
-              Slider(key: const Key('geo-calibrate-slider'), value: px.clamp(15, 120), min: 15, max: 120, onChanged: (v) => set(() => px = v)),
-              Text('${(px * 2.54).round()} dpi · 1 ${s.t('cm')} = ${px.toStringAsFixed(1)} px'),
-            ],
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 60,
+                  child: ClipRect(
+                    child: CustomPaint(key: const Key('geo-calibrate-scale'), painter: _CalibrationPainter(px), size: Size.infinite),
+                  ),
+                ),
+                Text(s.t('calibrateCard'), style: const TextStyle(fontSize: 12)),
+                const SizedBox(height: 4),
+                Container(
+                  key: const Key('geo-calibrate-card'),
+                  width: cardWidthCm * px,
+                  height: 5.4 * px,
+                  decoration: BoxDecoration(border: Border.all(color: _accent, width: 2), borderRadius: BorderRadius.circular(0.3 * px)),
+                  alignment: Alignment.center,
+                  child: const Text('8.56 cm', style: TextStyle(color: _accent, fontWeight: FontWeight.w700)),
+                ),
+                Row(
+                  children: [
+                    IconButton(key: const Key('geo-calibrate-minus'), tooltip: '-', onPressed: () => set(() => px = (px - 0.2).clamp(15.0, 120.0)), icon: const Icon(Icons.remove)),
+                    Expanded(child: Slider(key: const Key('geo-calibrate-slider'), value: px.clamp(15, 120), min: 15, max: 120, onChanged: (v) => set(() => px = v))),
+                    IconButton(key: const Key('geo-calibrate-plus'), tooltip: '+', onPressed: () => set(() => px = (px + 0.2).clamp(15.0, 120.0)), icon: const Icon(Icons.add)),
+                  ],
+                ),
+                Text('${(px * 2.54).round()} dpi · 1 ${s.t('cm')} = ${px.toStringAsFixed(1)} px'),
+              ],
+            ),
           ),
         ),
         actions: [
