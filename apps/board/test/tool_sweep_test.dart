@@ -38,7 +38,8 @@ void main() {
       for (final e in find.byWidgetPredicate((w) => w.key is ValueKey<String>).evaluate()) (e.widget.key! as ValueKey<String>).value,
     }..removeWhere((k) => k.startsWith('page-indicator'));
     final texts = find.byType(SnackBar).evaluate().length;
-    return '${wb.tool} ${wb.view.value.scale} ${wb.view.value.offset} ${wb.pageCount} ${wb.elements.length} ${wb.ruler.value.visible} '
+    final look = Theme.of(tester.element(find.byType(WhiteboardCanvas).first)).colorScheme.surface;
+    return '$look ${wb.tool} ${wb.view.value.scale} ${wb.view.value.offset} ${wb.pageCount} ${wb.elements.length} ${wb.ruler.value.visible} '
         '${wb.protractor.value.visible} $texts ${find.byType(Dialog).evaluate().length} ${find.byWidgetPredicate((w) => w is PopupMenuEntry).evaluate().length} ${(keys.toList()..sort()).join(',')}';
   }
 

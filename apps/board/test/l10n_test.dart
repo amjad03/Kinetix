@@ -427,6 +427,8 @@ void main() {
         fits('badges');
         await openTool(tester, 'graphs');
         fits('graph templates');
+        // The drawer covers the right edge: close it to reach the tools again.
+        await tap(find.byKey(const Key('panel-close')));
         await openTool(tester, 'second-board');
         expect(find.byKey(const Key('second-board')), findsOneWidget);
         fits('second board');

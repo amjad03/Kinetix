@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -100,36 +99,26 @@ bool presentationGoesLeft(List<BoardElement> elements, {double width = 1920}) {
   return true;
 }
 
-/// The slides pane: the slide, previous/next, Add Page, Add All Pages, Edge-to-Edge, Present
-/// (in the presenter app) and Close. Its inner edge is the draggable divider.
+/// The deck drawer's body (a PDF or PPT in the right-hand drawer): the open page large, then a
+/// thumbnail for every page with a tick and its own "Add page", and Add selected / Add all.
 class PresentationPane extends StatelessWidget {
-  const PresentationPane({super.key, required this.p, required this.wb, required this.width, required this.onClose, required this.labels});
+  const PresentationPane({super.key, required this.p, required this.wb, required this.onClose, required this.labels});
 
   final Presentation p;
   final WhiteboardController wb;
-
-  /// The board area's width (the divider's drag is a share of it).
-  final double width;
   final VoidCallback onClose;
   final PresentationLabels labels;
 
   List<BoardElement> _pageFor(ImportedPage page) => backdropPages([page]).single;
 
-  void _addPage(BuildContext context) {
-    wb.addPages([_pageFor(p.pages[p.index])]);
-    showBoardMessage(context, labels.added(1));
-  }
-
-  void _addAll(BuildContext context) {
-    wb.addPages([for (final page in p.pages) _pageFor(page)]);
-    showBoardMessage(context, labels.added(p.pages.length));
-  }
-
-  void _addSelected(BuildContext context) {
-    final picks = p.selected.toList()..sort();
+  void _addIndexes(BuildContext context, List<int> picks) {
     if (picks.isEmpty) return;
     wb.addPages([for (final i in picks) _pageFor(p.pages[i])]);
     showBoardMessage(context, labels.added(picks.length));
+  }
+
+  void _addSelected(BuildContext context) {
+    _addIndexes(context, p.selected.toList()..sort());
     p.clearSelected();
   }
 
@@ -145,38 +134,10 @@ class PresentationPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final page = p.pages[p.index];
     Widget btn(String key, IconData icon, String tip, VoidCallback? onTap) =>
-        IconButton(key: Key(key), tooltip: tip, onPressed: onTap, icon: Icon(icon), iconSize: 28, style: IconButton.styleFrom(minimumSize: const Size(52, 52)));
-    final picker = SizedBox(
-      height: 56,
-      child: Row(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              key: const Key('ppt-chips'),
-              scrollDirection: Axis.horizontal,
-              itemCount: p.pages.length,
-              itemBuilder: (_, i) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
-                child: FilterChip(
-                  key: Key('ppt-chip-$i'),
-                  label: Text('${i + 1}'),
-                  selected: p.selected.contains(i),
-                  onSelected: (_) => p.toggleSelected(i),
-                ),
-              ),
-            ),
-          ),
-          TextButton.icon(
-            key: const Key('ppt-add-selected'),
-            onPressed: p.selected.isEmpty ? null : () => _addSelected(context),
-            icon: const Icon(Icons.playlist_add_check),
-            label: Text(labels.addSelected(p.selected.length)),
-          ),
-        ],
-      ),
-    );
+        IconButton(key: Key(key), tooltip: tip, onPressed: onTap, icon: Icon(icon), iconSize: 26, style: IconButton.styleFrom(minimumSize: const Size(48, 48)));
     final bar = Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -184,44 +145,83 @@ class PresentationPane extends StatelessWidget {
         btn('ppt-prev', Icons.chevron_left, labels.previous, p.index > 0 ? () => p.go(p.index - 1) : null),
         Text('${p.index + 1}/${p.pages.length}', key: const Key('ppt-index'), style: context.text.titleMedium),
         btn('ppt-next', Icons.chevron_right, labels.next, p.index < p.pages.length - 1 ? () => p.go(p.index + 1) : null),
-        btn('ppt-add-page', Icons.note_add_outlined, labels.addPage, () => _addPage(context)),
-        btn('ppt-add-all', Icons.library_add_outlined, labels.addAll, () => _addAll(context)),
-        btn('ppt-edge', p.edgeToEdge ? Icons.fullscreen_exit : Icons.fullscreen, labels.edgeToEdge, p.toggleEdge),
+        btn('ppt-add-page', Icons.note_add_outlined, labels.addPage, () => _addIndexes(context, [p.index])),
+        btn('ppt-add-all', Icons.library_add_outlined, labels.addAll, () => _addIndexes(context, [for (var i = 0; i < p.pages.length; i++) i])),
+        TextButton.icon(
+          key: const Key('ppt-add-selected'),
+          onPressed: p.selected.isEmpty ? null : () => _addSelected(context),
+          icon: const Icon(Icons.playlist_add_check),
+          label: Text(labels.addSelected(p.selected.length)),
+        ),
         if (!p.isPdf) btn('ppt-present', Icons.slideshow_outlined, labels.present, () => unawaited(_present(context))),
         btn('ppt-close', Icons.close, labels.close, onClose),
       ],
     );
-    final slide = ColoredBox(
-      color: Colors.black,
+    final big = ColoredBox(
+      color: c.surfaceContainerHighest,
+      child: GestureDetector(
+        // Swipe to change page, as on a phone.
+        onHorizontalDragEnd: (d) {
+          final v = d.primaryVelocity ?? 0;
+          if (v < -200) p.go(p.index + 1);
+          if (v > 200) p.go(p.index - 1);
+        },
+        child: Center(child: Image.memory(page.png, key: ValueKey('ppt-slide-${p.index}'), fit: BoxFit.contain, gaplessPlayback: true)),
+      ),
+    );
+    final thumbs = GridView.builder(
+      key: const Key('ppt-thumbs'),
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 150, mainAxisSpacing: 8, crossAxisSpacing: 8, childAspectRatio: 0.9),
+      itemCount: p.pages.length,
+      itemBuilder: (_, i) {
+        final on = p.selected.contains(i);
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: c.surfaceContainerLow,
+            border: Border.all(color: i == p.index ? c.primary : c.outlineVariant, width: i == p.index ? 2 : 1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: InkWell(
+                  key: Key('ppt-thumb-$i'),
+                  onTap: () => p.go(i),
+                  child: Padding(padding: const EdgeInsets.all(4), child: Image.memory(p.pages[i].png, fit: BoxFit.contain, gaplessPlayback: true)),
+                ),
+              ),
+              Row(
+                children: [
+                  Checkbox(key: Key('ppt-chip-$i'), value: on, visualDensity: VisualDensity.compact, onChanged: (_) => p.toggleSelected(i)),
+                  Text('${i + 1}', style: context.text.labelMedium),
+                  const Spacer(),
+                  IconButton(
+                    key: Key('ppt-add-$i'),
+                    tooltip: labels.addPage,
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => _addIndexes(context, [i]),
+                    icon: const Icon(Icons.add_circle_outline, size: 22),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    return ColoredBox(
+      key: const Key('presentation'),
+      color: c.surface,
       child: Column(
         children: [
-          Expanded(
-            child: GestureDetector(
-              // Swipe to change slides, as on a phone.
-              onHorizontalDragEnd: (d) {
-                final v = d.primaryVelocity ?? 0;
-                if (v < -200) p.go(p.index + 1);
-                if (v > 200) p.go(p.index - 1);
-              },
-              child: Center(child: Image.memory(page.png, key: ValueKey('ppt-slide-${p.index}'), fit: BoxFit.contain, gaplessPlayback: true)),
-            ),
-          ),
-          ColoredBox(color: context.colors.surface, child: SizedBox(width: double.infinity, child: Column(mainAxisSize: MainAxisSize.min, children: [picker, bar]))),
+          Expanded(flex: 5, child: big),
+          bar,
+          const Divider(height: 1),
+          Expanded(flex: 4, child: thumbs),
         ],
       ),
     );
-    if (p.edgeToEdge) return slide;
-    final divider = GestureDetector(
-      key: const Key('ppt-divider'),
-      behavior: HitTestBehavior.opaque,
-      onHorizontalDragUpdate: (d) => p.setFraction(p.fraction + (p.left ? d.delta.dx : -d.delta.dx) / math.max(1, width)),
-      child: Container(
-        width: 20,
-        color: context.colors.surfaceContainerHighest,
-        child: Center(child: Container(width: 4, height: 64, decoration: BoxDecoration(color: context.colors.outline, borderRadius: BorderRadius.circular(2)))),
-      ),
-    );
-    return Row(children: p.left ? [Expanded(child: slide), divider] : [divider, Expanded(child: slide)]);
   }
 }
 

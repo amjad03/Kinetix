@@ -12,7 +12,7 @@ import 'layout/layout_strings.dart';
 
 /// What the split panel shows. Opening any of these splits the screen with the whiteboard.
 /// [page] is a tool's content (graph templates…); [host] is a dialog alone in the panel.
-enum PanelKind { ai, books, quiz, homework, split, plan, kit, videos, animations, badges, sim, page, host, phet, camera, web, cast }
+enum PanelKind { ai, books, quiz, homework, split, plan, kit, videos, animations, badges, sim, page, host, phet, camera, web, cast, deck }
 
 /// What the split screen shows beside the board: a second whiteboard, a 3D model or a lab.
 enum SplitContent { whiteboard, model3d, lab }

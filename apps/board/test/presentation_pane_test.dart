@@ -41,26 +41,23 @@ void main() {
       home: Scaffold(
         body: ListenableBuilder(
           listenable: p,
-          builder: (context, _) => Align(
-            alignment: Alignment.centerLeft,
-            child: SizedBox(
-              width: p.edgeToEdge ? 1920 : 1920 * p.fraction,
-              child: PresentationPane(
-                p: p,
-                wb: wb,
-                width: 1920,
-                onClose: () => closed = true,
-                labels: PresentationLabels(previous: 'p', next: 'n', addPage: 'a', addAll: 'all', edgeToEdge: 'e', present: 'pr', close: 'c', noPresenter: 'none', added: (n) => '$n', addSelected: (n) => 'sel$n'),
-              ),
-            ),
+          builder: (context, _) => PresentationPane(
+            p: p,
+            wb: wb,
+            onClose: () => closed = true,
+            labels: PresentationLabels(previous: 'p', next: 'n', addPage: 'a', addAll: 'all', edgeToEdge: 'e', present: 'pr', close: 'c', noPresenter: 'none', added: (n) => '$n', addSelected: (n) => 'sel$n'),
           ),
         ),
       ),
     ));
+    expect(find.byKey(const Key('ppt-thumb-2')), findsOneWidget);
     await tester.tap(find.byKey(const Key('ppt-next')));
     await tester.pump();
     expect(find.text('2/3'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('ppt-add-page')));
+    await tester.tap(find.byKey(const Key('ppt-thumb-0')));
+    await tester.pump();
+    expect(p.index, 0);
+    await tester.tap(find.byKey(const Key('ppt-add-1')));
     await tester.pump();
     expect(wb.pageCount, 2);
     await tester.tap(find.byKey(const Key('ppt-add-all')));
@@ -73,13 +70,6 @@ void main() {
     await tester.pump();
     expect(wb.pageCount, 7);
     expect(p.selected, isEmpty);
-    await tester.drag(find.byKey(const Key('ppt-divider')), const Offset(192, 0));
-    await tester.pump();
-    expect(p.fraction, closeTo(0.6, 0.01));
-    await tester.tap(find.byKey(const Key('ppt-edge')));
-    await tester.pump();
-    expect(p.edgeToEdge, isTrue);
-    expect(find.byKey(const Key('ppt-divider')), findsNothing);
     await tester.tap(find.byKey(const Key('ppt-present')));
     await tester.pump();
     expect(opened, 'deck.pptx');

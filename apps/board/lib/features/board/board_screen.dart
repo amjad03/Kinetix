@@ -73,6 +73,7 @@ import 'layout/ui_strings.dart';
 import 'live_stream.dart';
 import 'panel/badges_panel.dart';
 import 'panel/panel_host.dart';
+import 'panel/panel_drawer.dart';
 import 'panel/split_panel.dart';
 import 'panel/videos_tab.dart';
 import 'phone_chrome.dart';
@@ -493,12 +494,19 @@ class _BoardScreenState extends State<BoardScreen> {
 
   void _showPresentation(Presentation p) {
     _ppt?.dispose();
-    setState(() => _ppt = p..addListener(() => setState(() {})));
+    setState(() {
+      _ppt = p..addListener(() => setState(() {}));
+      _popover = null;
+      _panel = PanelKind.deck;
+    });
   }
 
   void _closePresentation() {
     _ppt?.dispose();
-    setState(() => _ppt = null);
+    setState(() {
+      _ppt = null;
+      if (_panel == PanelKind.deck) _panel = null;
+    });
   }
 
   /// Switch: the quick group and the page navigation trade sides (kept per teacher).
@@ -1591,6 +1599,10 @@ class _BoardScreenState extends State<BoardScreen> {
   void _closePanel() {
     _popHosted();
     _secondInk.clear();
+    if (_panel == PanelKind.deck) {
+      _ppt?.dispose();
+      _ppt = null;
+    }
     setState(() {
       _panel = null;
       _panelFull = false;
@@ -1740,6 +1752,25 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.camera => docCameraPanel(_wb),
     PanelKind.web => safeBrowserPanel(_extras),
     PanelKind.cast => CastPanel(cast: board.cast, wb: _wb),
+    PanelKind.deck => _ppt == null
+        ? const SizedBox.shrink()
+        : PresentationPane(
+            p: _ppt!,
+            wb: _wb,
+            onClose: _closePresentation,
+            labels: PresentationLabels(
+              previous: SbStrings.of(context)('pptPrev'),
+              next: SbStrings.of(context)('pptNext'),
+              addPage: SbStrings.of(context)('pptAddPage'),
+              addAll: SbStrings.of(context)('pptAddAll'),
+              edgeToEdge: SbStrings.of(context)('pptEdge'),
+              present: SbStrings.of(context)('pptPresent'),
+              close: SbStrings.of(context)('pptClose'),
+              noPresenter: SbStrings.of(context)('pptNoPresenter'),
+              added: (n) => SbStrings.of(context)('pptAdded', {'n': n}),
+              addSelected: (n) => SbStrings.of(context)('pptAddSelected', {'n': n}),
+            ),
+          ),
   };
 
   /// The second whiteboard in the split pane: the main board's canvas widget and AI pen overlay
@@ -1854,20 +1885,16 @@ class _BoardScreenState extends State<BoardScreen> {
     final full = open && !sheet && _panelFull;
     // Half the width on a phone on its side, 42 % on a panel, until the teacher drags it.
     final fraction = _panelFraction ?? (phone ? 0.5 : panelDefault);
-    final panelW = !open || sheet ? 0.0 : (full ? w : w * fraction);
-    const dividerW = panelDividerWidth;
-    final besideW = !open || sheet ? 0.0 : (full ? 0.0 : panelW + dividerW);
     final sheetH = open && sheet ? h * _sheetFraction : 0.0;
     return Stack(
       children: [
-        // The board keeps its place in the tree when the panel opens and closes.
+        // The board keeps its full size and place: the drawer is stacked over it.
         Positioned(
           key: const ValueKey('board-area'),
           left: 0,
           top: 0,
           bottom: 0,
-          // Across the whole panel the board keeps its size under it.
-          width: !open || sheet ? w : w - (w * fraction + dividerW),
+          width: w,
           child: LayoutBuilder(
             builder: (context, area) {
               _canvasSize = area.biggest;
@@ -1876,16 +1903,21 @@ class _BoardScreenState extends State<BoardScreen> {
             },
           ),
         ),
-        if (open && !sheet && !full)
-          Positioned(left: w - besideW, top: 0, bottom: 0, width: dividerW, child: BoardChromeTheme(
-              child: PanelDivider(
-                // A little past the ends while dragging, kept to 30–60 % and snapped when let go.
-                onDrag: (dx) => setState(() => _panelFraction = ((_panelFraction ?? fraction) - dx / w).clamp(panelMin - 0.05, panelMax + 0.05)),
-                onDragEnd: () => setState(() => _panelFraction = snapPanelFraction(_panelFraction ?? fraction)),
+        if (open && !sheet)
+          Positioned.fill(
+            child: BoardChromeTheme(
+              child: PanelDrawer(
+                screenWidth: w,
+                fraction: fraction,
+                full: full,
+                onFraction: (f, {required settled}) => setState(
+                  () => _panelFraction = settled ? snapPanelFraction(f) : f.clamp(drawerCloseBelow - 0.05, panelMax + 0.05),
+                ),
+                onClose: _closePanel,
+                child: _panelFrame(full ? PanelMode.full : PanelMode.side, h),
               ),
             ),
           ),
-        if (open && !sheet) Positioned(right: 0, top: 0, bottom: 0, width: panelW, child: _panelFrame(full ? PanelMode.full : PanelMode.side, h)),
         if (open && sheet) Positioned(left: 0, right: 0, bottom: 0, height: sheetH, child: _panelFrame(PanelMode.sheet, h)),
       ],
     );
@@ -1980,35 +2012,6 @@ class _BoardScreenState extends State<BoardScreen> {
                   final (text, icon, key) = practiceText(context.l10n, t);
                   unawaited(_showMe(key, icon, text, ''));
                 },
-              ),
-            ),
-          ),
-        if (_ppt case final ppt?)
-          Positioned(
-            key: const Key('presentation'),
-            top: ppt.edgeToEdge ? 0 : 64,
-            bottom: ppt.edgeToEdge ? 0 : 96,
-            left: ppt.edgeToEdge || ppt.left ? 0 : null,
-            right: ppt.edgeToEdge || !ppt.left ? 0 : null,
-            width: ppt.edgeToEdge ? null : _canvasSize.width * ppt.fraction,
-            child: BoardChromeTheme(
-              child: PresentationPane(
-                p: ppt,
-                wb: _wb,
-                width: _canvasSize.width,
-                onClose: _closePresentation,
-                labels: PresentationLabels(
-                  previous: SbStrings.of(context)('pptPrev'),
-                  next: SbStrings.of(context)('pptNext'),
-                  addPage: SbStrings.of(context)('pptAddPage'),
-                  addAll: SbStrings.of(context)('pptAddAll'),
-                  edgeToEdge: SbStrings.of(context)('pptEdge'),
-                  present: SbStrings.of(context)('pptPresent'),
-                  close: SbStrings.of(context)('pptClose'),
-                  noPresenter: SbStrings.of(context)('pptNoPresenter'),
-                  added: (n) => SbStrings.of(context)('pptAdded', {'n': n}),
-                  addSelected: (n) => SbStrings.of(context)('pptAddSelected', {'n': n}),
-                ),
               ),
             ),
           ),
@@ -2385,6 +2388,13 @@ class _BoardScreenState extends State<BoardScreen> {
       (const Key('menu-freeze'), Icons.ac_unit, SbStrings.of(context)('freeze'), () => setState(() => _frozen = true), true),
       (const Key('menu-versions'), Icons.history, SbStrings.of(context)('versions'), () => unawaited(_versions()), board.isSignedIn && board.whiteboardId.isNotEmpty),
       (const Key('menu-import'), Icons.upload_file_outlined, l.importFiles, () => unawaited(importDocument(context, _wb)), true),
+      (
+        const Key('menu-theme-toggle'),
+        BoardLook.of(context) == BoardTheme.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+        BoardLook.of(context) == BoardTheme.dark ? l.themeLight : l.themeDark,
+        () => board.setTheme(BoardLook.of(context) == BoardTheme.dark ? BoardTheme.light : BoardTheme.dark),
+        true,
+      ),
       (const Key('tool-theme'), Icons.texture, s.background, () => setState(() => _popover = BoardPopover.background), true),
       (const Key('menu-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort), true),
       (const Key('menu-settings'), Icons.settings_outlined, l.boardSettings, _openSettings, true),
