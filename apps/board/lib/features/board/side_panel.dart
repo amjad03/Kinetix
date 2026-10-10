@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart';
 
 import '../../l10n/l10n.dart';
@@ -106,8 +105,7 @@ class SplitPanel extends StatelessWidget {
     super.key,
     required this.content,
     required this.onContent,
-    required this.secondInk,
-    required this.background,
+    required this.secondBoard,
     this.itemId,
     this.preset,
     this.onItem,
@@ -117,8 +115,8 @@ class SplitPanel extends StatelessWidget {
 
   final SplitContent? content;
   final ValueChanged<SplitContent?> onContent;
-  final InkController secondInk;
-  final BoardBackground background;
+  /// The second whiteboard: the same canvas, toolbar state and AI pen as the main board.
+  final Widget secondBoard;
 
   /// The 3D model or lab shown (catalogue id), and an optional lab preset.
   final String? itemId;
@@ -140,7 +138,7 @@ class SplitPanel extends StatelessWidget {
         children: [
           _SplitHeader(content: SplitContent.whiteboard, onBack: () => onContent(null)),
           Expanded(
-            child: InkCanvas(controller: secondInk, background: background),
+            child: secondBoard,
           ),
         ],
       );

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/features/ai/voice_input.dart';
+import 'package:kinetix_board/features/board/ai_pen_ui.dart';
 import 'package:kinetix_board/features/board/board_shot.dart';
 import 'package:kinetix_board/features/board/calculator.dart';
 import 'package:kinetix_board/l10n/l10n.dart';
@@ -202,7 +203,9 @@ void main() {
       }
       await close(tester);
       await tool(tester, 'second-board');
-      expect(find.byType(InkCanvas), findsOneWidget);
+      // The second board is a full whiteboard (same canvas, gestures and AI pen as the main one).
+      expect(find.byKey(const Key('second-board')), findsOneWidget);
+      expect(find.byType(AiPenOverlay), findsNWidgets(2));
       await tester.pumpWidget(const SizedBox());
       board.dispose();
     });

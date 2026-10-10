@@ -130,6 +130,10 @@ class _BoardScreenState extends State<BoardScreen> {
   final _images = BoardImages();
   final _canvasKey = GlobalKey<WhiteboardCanvasState>();
   final _secondInk = InkController();
+
+  /// The second board (split screen): a full whiteboard that follows the main board's tools.
+  late final WhiteboardController _secondWb = WhiteboardController(palmMode: widget.board.touchProfile.palmMode);
+  late final AiPenController _secondPen = AiPenController(_secondWb, handwriting: widget.board.handwriting);
   late final AiController _ai;
 
   /// The AI pen: shapes, maths and words from what the teacher writes.
@@ -253,6 +257,9 @@ class _BoardScreenState extends State<BoardScreen> {
     unawaited(_loadLetterSize());
     _remote = BoardRemote(board: board, wb: _wb, toolkit: _toolkit(), hooks: _remoteHooks());
     _wb.addListener(_onWbChanged);
+    _wb.addListener(_mirrorSecond);
+    _zones.addListener(_onZonesChanged);
+    _mirrorSecond();
     PanelHost.active = _pushInPanel;
     // The classroom extras (lib/features/extras) and the demo class switcher.
     initBoardExtras();
@@ -404,6 +411,10 @@ class _BoardScreenState extends State<BoardScreen> {
     _practice?.dispose();
     _classCheck.dispose();
     _capture?.dispose();
+    _wb.removeListener(_mirrorSecond);
+    _zones.removeListener(_onZonesChanged);
+    _secondPen.dispose();
+    _secondWb.dispose();
     _pen.dispose();
     _wb.dispose();
     _images.dispose();
@@ -515,6 +526,25 @@ class _BoardScreenState extends State<BoardScreen> {
     _syncPen();
   }
 
+  /// The second board follows the one toolbar: tool, pen, colours, stylus tips, input setup and
+  /// the AI pen's settings.
+  void _mirrorSecond() {
+    _secondWb.mirrorToolsFrom(_wb);
+    _secondWb.inputConfig = widget.board.inputConfig;
+    _secondPen
+      ..mode = _pen.mode
+      ..language = _pen.language
+      ..textFont = _pen.textFont
+      ..snapShapes = _pen.snapShapes
+      ..convertShapes = _pen.convertShapes
+      ..convertMaths = _pen.convertMaths
+      ..convertText = _pen.convertText;
+  }
+
+  void _onZonesChanged() {
+    if (mounted) setState(() {});
+  }
+
   /// The AI pen's settings from Board settings. Primary boards have no AI pen (tidying shapes
   /// stays, as an option of the pen).
   void _syncPen() {
@@ -527,6 +557,7 @@ class _BoardScreenState extends State<BoardScreen> {
       ..convertMaths = board.aiPenConvert.contains('maths')
       ..convertText = board.aiPenConvert.contains('text');
     applyStylusTips(_wb, board);
+    _wb.inputConfig = board.inputConfig;
     _wb.measureNewShapes = board.measureShapes;
     if (_wb.measureUnit != board.measureUnit) _wb.measureUnit = board.measureUnit;
     if (_primary && (_wb.tool == BoardTool.aiPen || _wb.tool == BoardTool.laser)) _wb.tool = BoardTool.pen;
@@ -1634,8 +1665,7 @@ class _BoardScreenState extends State<BoardScreen> {
         _splitItem = id;
         _splitPreset = preset;
       }),
-      secondInk: _secondInk,
-      background: _background,
+      secondBoard: _secondBoard(),
       snapshotKey: _splitKey,
       onSnapshot: _snapshotSplit,
     ),
@@ -1655,6 +1685,33 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.web => safeBrowserPanel(_extras),
     PanelKind.cast => CastPanel(cast: board.cast, wb: _wb),
   };
+
+  /// The second whiteboard in the split pane: the main board's canvas widget and AI pen overlay
+  /// on a second controller, so gestures (two-finger undo, pinch, multi-touch) all work.
+  Widget _secondBoard() => Stack(
+    children: [
+      Positioned.fill(
+        child: WhiteboardCanvas(
+          key: const Key('second-board'),
+          controller: _secondWb,
+          images: _images,
+          inputMode: board.inputMode,
+          multiWriter: _multiWriter(false),
+          fingerTaps: board.fingerTaps,
+          labels: _canvasLabels(context.l10n),
+        ),
+      ),
+      Positioned.fill(
+        child: BoardChromeTheme(
+          child: AiPenOverlay(wb: _secondWb, pen: _secondPen, onSolve: _solveMath, onMessage: (m) => showBoardMessage(context, m)),
+        ),
+      ),
+    ],
+  );
+
+  /// Every finger writes its own line: on panels and IR frames, when the teacher switched
+  /// Multi Touch on (also on phones), and always while multi-user zones are running.
+  bool _multiWriter(bool phone) => (board.multiWriter && !phone) || board.multiTouch == true || _zones.active;
 
   /// The panel's body: its content, with dialogs pushed over it in the panel's own navigator.
   Widget _panelBody() => _PanelContent(
@@ -1812,7 +1869,7 @@ class _BoardScreenState extends State<BoardScreen> {
             controller: _wb,
             images: _images,
             inputMode: board.inputMode,
-            multiWriter: board.multiWriter && !phone,
+            multiWriter: _multiWriter(phone),
             fingerTaps: board.fingerTaps,
             editMath: _editMath,
             editNote: _editNote,

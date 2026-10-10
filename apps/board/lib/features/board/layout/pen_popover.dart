@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../pen_config/pen_config_screen.dart';
+import '../pen_config/pen_config_strings.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -277,6 +279,12 @@ class _PenPopoverState extends State<PenPopover> {
                 ],
                 selected: {board.multiWriter},
                 onSelectionChanged: (v) => board.setMultiTouch(v.single),
+              ),
+              TextButton.icon(
+                key: const Key('pen-config-open'),
+                onPressed: () => openPenConfig(context, board),
+                icon: const Icon(Icons.tune),
+                label: Text(PenConfigStrings.of(context)('penConfig')),
               ),
               if (wb.tool == BoardTool.aiPen) ...[
                 const SizedBox(height: Kx.s12),

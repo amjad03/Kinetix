@@ -4,6 +4,7 @@
 /// from handwriting).
 library;
 
+export 'src/input_config.dart';
 export 'src/board_background.dart';
 export 'src/code_highlight.dart';
 export 'src/element_painting.dart';
