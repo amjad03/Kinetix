@@ -86,6 +86,16 @@ class _FeesScreenState extends State<FeesScreen> {
                     const SizedBox(height: Kx.s12),
                     _Note(),
                     SectionTitle(context.l10n.fees),
+                    if (a.invoices.isNotEmpty)
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: TextButton.icon(
+                          key: const Key('allInstalments'),
+                          onPressed: () => AllInstalmentsScreen.open(context, widget.api, widget.studentId),
+                          icon: const Icon(Icons.event_note_outlined),
+                          label: Text(context.l10n.instalmentsTitle),
+                        ),
+                      ),
                     if (a.invoices.isEmpty)
                       Text(context.l10n.noFeesIssued, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
                     for (final inv in a.invoices) _InvoiceTile(invoice: inv, today: widget.today, onInstalments: () => InstalmentsScreen.open(context, widget.api, inv.id, inv.title)),

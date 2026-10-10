@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/campus_extras.dart';
+import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
@@ -10,15 +11,18 @@ String _day(DateTime d) => '${d.year.toString().padLeft(4, '0')}-${d.month.toStr
 
 /// Rate a canteen meal served today from one to five stars, with an optional note.
 class RateMealScreen extends StatefulWidget {
-  const RateMealScreen({super.key, required this.api, this.now});
+  const RateMealScreen({super.key, required this.api, this.child, this.now});
 
   final ParentApi api;
+
+  /// The selected child the rating is for; stored so each child has one rating per meal.
+  final Child? child;
 
   /// For tests; defaults to the device clock.
   final DateTime Function()? now;
 
-  static Future<void> open(BuildContext context, ParentApi api) =>
-      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RateMealScreen(api: api)));
+  static Future<void> open(BuildContext context, ParentApi api, {Child? child}) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RateMealScreen(api: api, child: child)));
 
   @override
   State<RateMealScreen> createState() => _RateMealScreenState();
@@ -53,7 +57,7 @@ class _RateMealScreenState extends State<RateMealScreen> {
     }
     setState(() => _busy = true);
     try {
-      await widget.api.rateMeal(mealDate: _day((widget.now ?? DateTime.now)()), meal: _meal, rating: _stars, comment: _comment.text.trim());
+      await widget.api.rateMeal(mealDate: _day((widget.now ?? DateTime.now)()), meal: _meal, rating: _stars, comment: _comment.text.trim(), childId: widget.child?.id);
       messenger.showSnackBar(SnackBar(content: Text(l.mealRateThanks)));
       if (mounted) Navigator.of(context).pop();
     } on ApiException catch (e) {
@@ -112,12 +116,15 @@ class _RateMealScreenState extends State<RateMealScreen> {
 
 /// The repairs the person asked for and where each stands.
 class RepairRequestsScreen extends StatefulWidget {
-  const RepairRequestsScreen({super.key, required this.api});
+  const RepairRequestsScreen({super.key, required this.api, this.child});
 
   final ParentApi api;
 
-  static Future<void> open(BuildContext context, ParentApi api) =>
-      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RepairRequestsScreen(api: api)));
+  /// The selected child, whose hostel complaints are shown too.
+  final Child? child;
+
+  static Future<void> open(BuildContext context, ParentApi api, {Child? child}) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RepairRequestsScreen(api: api, child: child)));
 
   @override
   State<RepairRequestsScreen> createState() => _RepairRequestsScreenState();
@@ -136,7 +143,7 @@ class _RepairRequestsScreenState extends State<RepairRequestsScreen> {
   Future<void> _load() async {
     setState(() => _error = null);
     try {
-      final r = await widget.api.repairRequests();
+      final r = await widget.api.repairRequests(childId: widget.child?.id);
       if (mounted) setState(() => _items = r);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);

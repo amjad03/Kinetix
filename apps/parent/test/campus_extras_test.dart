@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_parent/core/campus_extras.dart';
+import 'package:kinetix_parent/core/models.dart';
 import 'package:kinetix_parent/features/school_life/campus_extras_screens.dart';
 import 'package:kinetix_parent/features/fees/instalments_screen.dart';
 import 'package:kinetix_parent/features/profile/device_trust_tile.dart';
@@ -67,6 +68,13 @@ void main() {
     expect(find.byKey(const Key('repairEmpty')), findsOneWidget);
   });
 
+  testWidgets('a meal rating and the repair list are for the selected child', (tester) async {
+    final api = FakeParentApi();
+    await tester.pumpWidget(screen(RepairRequestsScreen(api: api, child: Child(id: 'c1', fullName: 'Asha Rao', rollNo: '1', sectionId: 's1', sectionName: '8A'))));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('repairRequests c1'));
+  });
+
   testWidgets('fees show the instalment plan with due dates and status', (tester) async {
     final api = FakeParentApi();
     await tester.pumpWidget(screen(InstalmentsScreen(api: api, invoiceId: 'i2', title: 'Term 2 fee')));
@@ -76,6 +84,15 @@ void main() {
     expect(find.text('Paid'), findsOneWidget);
     expect(find.text('Overdue'), findsOneWidget);
     expect(find.text('Due'), findsOneWidget);
+  });
+
+  testWidgets('all of a student\'s instalment plans show in one list', (tester) async {
+    final api = FakeParentApi();
+    await tester.pumpWidget(screen(AllInstalmentsScreen(api: api, studentId: 'c1')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('studentInstalments c1'));
+    expect(find.text('Term 2 fee'), findsNWidgets(2));
+    expect(find.text('Instalment 1'), findsNWidgets(2));
   });
 
   testWidgets('a fee that is not split says so', (tester) async {

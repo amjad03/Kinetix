@@ -225,6 +225,16 @@ class _FeesScreenState extends State<FeesScreen> {
               message: l.noFeesIssuedLong(widget.child.firstName),
             ),
           ),
+        if (fees.invoices.isNotEmpty)
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: TextButton.icon(
+              key: const Key('allInstalments'),
+              onPressed: () => AllInstalmentsScreen.open(context, api, widget.child.id),
+              icon: const Icon(Icons.event_note_outlined),
+              label: Text(l.instalmentsTitle),
+            ),
+          ),
         if (open.isNotEmpty) ...[
           KxSectionHeader(l.toPay),
           for (final inv in open)

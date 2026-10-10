@@ -437,7 +437,7 @@
   "answerCards": "उत्तर कार्ड",
   "answerCardsMenuBody": "कार्ड प्रिंट करें ताकि बिना फ़ोन वाले विद्यार्थी बोर्ड पर उत्तर दे सकें",
   "answerCardsBody": "हर विद्यार्थी को रोल नंबर के अनुसार एक कार्ड मिलता है। बोर्ड पर \"कक्षा से पूछें\" में वे उत्तर को ऊपर रखकर कार्ड उठाते हैं, और बोर्ड एक फ़ोटो से पूरी कक्षा पढ़ लेता है।",
-  "answerCardsPrintHint": "Hold the card with your answer at the top. Keep your fingers off the black pattern.",
+  "answerCardsPrintHint": "कार्ड को ऊपर से, जहाँ आपका उत्तर है, वहाँ से पकड़ें। काले पैटर्न को उँगलियों से न छुएँ।",
   "answerCardsReady": "{className} के {count} कार्ड प्रिंट के लिए तैयार हैं।",
   "answerCardsFailed": "कार्ड नहीं बन सके। फिर कोशिश करें।",
   "print": "प्रिंट",

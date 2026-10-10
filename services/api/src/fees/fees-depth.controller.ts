@@ -96,6 +96,19 @@ export class FeesDepthController implements OnModuleInit {
     return { invoiceId, title: inv.title, amountPaise: inv.amountPaise, paidPaise: inv.paidPaise, instalments: allocatePaid(rows.map((r) => ({ seq: r.seq, dueOn: r.dueOn, amountPaise: r.amountPaise })), inv.paidPaise, await this.today(tx)) };
   }
 
+  /** Every instalment plan across all of a student's invoices (the student, a linked guardian or fee staff). */
+  @Get('students/:studentId/instalments')
+  @Auth('user')
+  async studentInstalments(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.fees.assertCanSee(tx, p, studentId);
+      const ids = await tx.selectDistinct({ id: feeInstalments.invoiceId }).from(feeInstalments).innerJoin(feeInvoices, eq(feeInvoices.id, feeInstalments.invoiceId)).where(eq(feeInvoices.studentId, studentId));
+      const plans = [];
+      for (const { id } of ids) plans.push(await this.schedule(tx, id));
+      return plans;
+    });
+  }
+
   @Get('invoices/:id/instalments')
   @Auth('user')
   async instalments(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {

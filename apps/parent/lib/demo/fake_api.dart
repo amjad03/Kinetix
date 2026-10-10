@@ -34,13 +34,19 @@ class FakeParentApi implements ParentApi {
   Future<void> renewLoan(String loanId) async => calls.add('renewLoan $loanId');
 
   @override
-  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''}) async =>
-      calls.add('rateMeal $mealDate $meal $rating $comment');
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = '', String? childId}) async =>
+      calls.add('rateMeal $mealDate $meal $rating $comment ${childId ?? ''}'.trim());
 
   @override
-  Future<List<RepairRequest>> repairRequests() async {
-    calls.add('repairRequests');
+  Future<List<RepairRequest>> repairRequests({String? childId}) async {
+    calls.add('repairRequests ${childId ?? ''}'.trim());
     return repairList;
+  }
+
+  @override
+  Future<List<InstalmentSchedule>> studentInstalments(String studentId) async {
+    calls.add('studentInstalments $studentId');
+    return [await instalments('i1'), await instalments('i2')];
   }
 
   @override

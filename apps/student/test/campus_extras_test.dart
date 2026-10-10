@@ -78,6 +78,15 @@ void main() {
     expect(find.text('Due'), findsOneWidget);
   });
 
+  testWidgets('all of a student\'s instalment plans show in one list', (tester) async {
+    final api = FakeStudentApi();
+    await tester.pumpWidget(screen(AllInstalmentsScreen(api: api, studentId: 's1')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('studentInstalments s1'));
+    expect(find.text('Term 2 fee'), findsNWidgets(2));
+    expect(find.text('Instalment 1'), findsNWidgets(2));
+  });
+
   testWidgets('a fee that is not split says so', (tester) async {
     final api = FakeStudentApi()..instalmentData = const InstalmentSchedule(invoiceId: 'i2', title: 'Term 2 fee', amountPaise: 0, paidPaise: 0, instalments: []);
     await tester.pumpWidget(screen(InstalmentsScreen(api: api, invoiceId: 'i2', title: 'Term 2 fee')));

@@ -1,4 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { assertCanSeeStudent } from '../common/student-access.js';
 import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -43,7 +44,8 @@ const StockBody = z
   .refine((b) => b.kind !== 'purchase' || b.costPaise > 0, { message: 'A purchase needs its cost', path: ['costPaise'] })
   .refine((b) => b.kind !== 'waste' || b.reason.length >= 3, { message: 'Say why the food was wasted', path: ['reason'] })
   .refine((b) => !b.issueFromStore || (!!b.invItemId && b.kind !== 'purchase'), { message: 'Drawing from the store needs a store item and a use or waste entry', path: ['issueFromStore'] });
-const FeedbackBody = z.object({ mealDate: Day, meal: Meal, rating: z.number().int().min(1).max(5), comment: z.string().trim().max(500).default('') });
+const NO_CHILD = '00000000-0000-0000-0000-000000000000';
+const FeedbackBody = z.object({ studentId: z.uuid().optional(), mealDate: Day, meal: Meal, rating: z.number().int().min(1).max(5), comment: z.string().trim().max(500).default('') });
 
 const NEXT: Record<string, string[]> = { open: ['assigned', 'in_progress'], reopened: ['assigned', 'in_progress'], assigned: ['in_progress', 'assigned'], in_progress: ['done'], done: ['verified', 'reopened'] };
 
@@ -262,11 +264,13 @@ export class CanteenOpsController {
   feedback(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(FeedbackBody)) b: z.infer<typeof FeedbackBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       if (b.mealDate > this.clock.now().toISOString().slice(0, 10)) throw new BadRequestException('You can rate a meal only after it has been served');
-      const [st] = await tx.select({ id: students.id }).from(students).where(eq(students.userId, p.userId));
+      // A parent may rate on behalf of a linked child; that child is stored, and each child has one rating per meal.
+      if (b.studentId) await assertCanSeeStudent(tx, p, b.studentId, []);
+      const [st] = b.studentId ? [{ id: b.studentId }] : await tx.select({ id: students.id }).from(students).where(eq(students.userId, p.userId));
       const [row] = await tx
         .insert(canteenFeedback)
-        .values({ tenantId: p.tenantId, userId: p.userId, studentId: st?.id ?? null, mealDate: b.mealDate, meal: b.meal, rating: b.rating, comment: b.comment })
-        .onConflictDoUpdate({ target: [canteenFeedback.userId, canteenFeedback.mealDate, canteenFeedback.meal], set: { rating: b.rating, comment: b.comment } })
+        .values({ tenantId: p.tenantId, userId: p.userId, studentId: st?.id ?? null, childKey: st?.id ?? NO_CHILD, mealDate: b.mealDate, meal: b.meal, rating: b.rating, comment: b.comment })
+        .onConflictDoUpdate({ target: [canteenFeedback.userId, canteenFeedback.mealDate, canteenFeedback.meal, canteenFeedback.childKey], set: { rating: b.rating, comment: b.comment } })
         .returning();
       return row;
     });

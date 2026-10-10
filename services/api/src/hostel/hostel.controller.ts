@@ -528,15 +528,17 @@ export class HostelController {
   /** The warden sees all complaints; anyone else sees their own. */
   @Get('complaints')
   @Auth('user')
-  complaints(@CurrentPrincipal() p: UserPrincipal, @Query('status') status?: string) {
-    return this.db.withTenant(p.tenantId, (tx) =>
-      tx
+  complaints(@CurrentPrincipal() p: UserPrincipal, @Query('status') status?: string, @Query('studentId') studentId?: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      // A linked guardian (or the student) may read every complaint about that child, whoever raised it.
+      if (studentId) await assertCanSeeStudent(tx, p, studentId, HOSTEL_ROLES);
+      return tx
         .select()
         .from(hostelComplaints)
-        .where(and(this.isWarden(p) ? undefined : eq(hostelComplaints.raisedBy, p.userId), status ? eq(hostelComplaints.status, status) : undefined))
+        .where(and(studentId ? eq(hostelComplaints.studentId, studentId) : this.isWarden(p) ? undefined : eq(hostelComplaints.raisedBy, p.userId), status ? eq(hostelComplaints.status, status) : undefined))
         .orderBy(desc(hostelComplaints.createdAt))
-        .limit(200),
-    );
+        .limit(200);
+    });
   }
 
   @Post('complaints/:id/status')

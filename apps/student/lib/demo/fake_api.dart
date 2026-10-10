@@ -200,6 +200,12 @@ class FakeStudentApi implements StudentApi {
   }
 
   @override
+  Future<List<InstalmentSchedule>> studentInstalments(String studentId) async {
+    calls.add('studentInstalments $studentId');
+    return [await instalments('i1'), await instalments('i2')];
+  }
+
+  @override
   Future<InstalmentSchedule> instalments(String invoiceId) async {
     calls.add('instalments $invoiceId');
     return instalmentData ??

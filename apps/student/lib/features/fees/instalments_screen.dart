@@ -42,17 +42,6 @@ class _InstalmentsScreenState extends State<InstalmentsScreen> {
     }
   }
 
-  (String, Color, Color) _chip(BuildContext context, String status) {
-    final l = context.l10n;
-    final c = context.colors;
-    return switch (status) {
-      'paid' => (l.instalmentPaid, Tone.goodContainer(context), Tone.good(context)),
-      'overdue' => (l.instalmentOverdue, c.errorContainer, c.onErrorContainer),
-      'partial' => (l.instalmentPartial, Tone.warnContainer(context), Tone.warn(context)),
-      _ => (l.instalmentDue, c.secondaryContainer, c.onSecondaryContainer),
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -78,7 +67,7 @@ class _InstalmentsScreenState extends State<InstalmentsScreen> {
                     for (final i in plan.instalments)
                       Builder(
                         builder: (context) {
-                          final (label, bg, fg) = _chip(context, i.status);
+                          final (label, bg, fg) = instalmentChip(context, i.status);
                           return Card(
                             key: Key('instalment-${i.seq}'),
                             child: ListTile(
@@ -89,6 +78,95 @@ class _InstalmentsScreenState extends State<InstalmentsScreen> {
                           );
                         },
                       ),
+                  ],
+                ],
+              ),
+            ),
+    );
+  }
+}
+
+/// Label and colours for an instalment's status.
+(String, Color, Color) instalmentChip(BuildContext context, String status) {
+  final l = context.l10n;
+  final c = context.colors;
+  return switch (status) {
+    'paid' => (l.instalmentPaid, Tone.goodContainer(context), Tone.good(context)),
+    'overdue' => (l.instalmentOverdue, c.errorContainer, c.onErrorContainer),
+    'partial' => (l.instalmentPartial, Tone.warnContainer(context), Tone.warn(context)),
+    _ => (l.instalmentDue, c.secondaryContainer, c.onSecondaryContainer),
+  };
+}
+
+/// All of a student's instalment plans in one list, each under its fee's name.
+class AllInstalmentsScreen extends StatefulWidget {
+  const AllInstalmentsScreen({super.key, required this.api, required this.studentId});
+
+  final StudentApi api;
+  final String studentId;
+
+  static Future<void> open(BuildContext context, StudentApi api, String studentId) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => AllInstalmentsScreen(api: api, studentId: studentId)));
+
+  @override
+  State<AllInstalmentsScreen> createState() => _AllInstalmentsScreenState();
+}
+
+class _AllInstalmentsScreenState extends State<AllInstalmentsScreen> {
+  List<InstalmentSchedule>? _plans;
+  ApiException? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _error = null);
+    try {
+      final p = await widget.api.studentInstalments(widget.studentId);
+      if (mounted) setState(() => _plans = p);
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final c = context.colors;
+    final plans = _plans;
+    return Scaffold(
+      appBar: AppBar(title: Text(l.instalmentsTitle)),
+      body: plans == null
+          ? (_error == null ? const Center(child: CircularProgressIndicator()) : Padding(padding: const EdgeInsets.all(Kx.s16), child: ErrorBanner(_error!, onRetry: _load)))
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(
+                key: const Key('allInstalments'),
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(Kx.s16),
+                children: [
+                  if (plans.isEmpty) Text(l.instalmentsNone, key: const Key('instalmentsNone'), style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
+                  for (final plan in plans) ...[
+                    Text(plan.title, style: context.text.titleMedium),
+                    Text(l.instalmentsSummary(Fmt.rupees(plan.paidPaise), Fmt.rupees(plan.amountPaise)), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+                    const SizedBox(height: Kx.s8),
+                    for (final i in plan.instalments)
+                      Builder(
+                        builder: (context) {
+                          final (label, bg, fg) = instalmentChip(context, i.status);
+                          return Card(
+                            child: ListTile(
+                              title: Text(l.instalmentN(i.seq)),
+                              subtitle: Text([Fmt.rupees(i.amountPaise), l.instalmentDueOn(context.fmt.shortDay(i.dueOn))].join(' · ')),
+                              trailing: Pill(label, background: bg, foreground: fg),
+                            ),
+                          );
+                        },
+                      ),
+                    const SizedBox(height: Kx.s12),
                   ],
                 ],
               ),

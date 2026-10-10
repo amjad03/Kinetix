@@ -471,13 +471,15 @@ export const canteenFeedback = pgTable(
     tenantId: tenantId(),
     userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
     studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
+    /** The child rated for (zero uuid when none), so a parent with two children has one rating per child per meal. */
+    childKey: uuid('child_key').notNull().default('00000000-0000-0000-0000-000000000000'),
     mealDate: date('meal_date').notNull(),
     meal: text('meal').notNull(),
     rating: smallint('rating').notNull(),
     comment: text('comment').notNull().default(''),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('canteen_feedback_uq').on(t.userId, t.mealDate, t.meal)],
+  (t) => [uniqueIndex('canteen_feedback_uq').on(t.userId, t.mealDate, t.meal, t.childKey)],
 );
 
 // ---- Health, counselling and mentoring ----------------------------------------------------------------

@@ -72,13 +72,16 @@ abstract class ParentApi {
   Future<void> renewLoan(String loanId);
 
   /// Rates a canteen meal 1 to 5; rating the same meal again replaces the earlier rating (`POST /v1/canteen/ops/feedback`).
-  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''});
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = '', String? childId});
 
   /// Repairs raised from my own hostel complaints and where each stands (`GET /v1/hostel/work-orders/mine`).
-  Future<List<RepairRequest>> repairRequests();
+  Future<List<RepairRequest>> repairRequests({String? childId});
 
   /// A fee's instalment schedule with due dates and status (`GET /v1/fees/invoices/:id/instalments`).
   Future<InstalmentSchedule> instalments(String invoiceId);
+
+  /// Every instalment plan across all of a student's invoices (`GET /v1/fees/students/:id/instalments`).
+  Future<List<InstalmentSchedule>> studentInstalments(String studentId);
 
   /// User access token after sign-in.
   String? get token;
@@ -830,12 +833,22 @@ class HttpParentApi implements ParentApi {
   Future<void> renewLoan(String loanId) async => _send('POST', '/v1/library/loans/$loanId/renew');
 
   @override
-  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''}) async =>
-      _send('POST', '/v1/canteen/ops/feedback', body: {'mealDate': mealDate, 'meal': meal, 'rating': rating, 'comment': comment});
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = '', String? childId}) async =>
+      _send('POST', '/v1/canteen/ops/feedback', body: {'mealDate': mealDate, 'meal': meal, 'rating': rating, 'comment': comment, 'studentId': ?childId});
 
   @override
-  Future<List<RepairRequest>> repairRequests() async =>
-      [for (final r in await _send('GET', '/v1/hostel/work-orders/mine') as List) RepairRequest.fromJson((r as Map).cast<String, dynamic>())];
+  Future<List<RepairRequest>> repairRequests({String? childId}) async {
+    final orders = [for (final r in await _send('GET', '/v1/hostel/work-orders/mine') as List) RepairRequest.fromJson((r as Map).cast<String, dynamic>())];
+    if (childId == null) return orders;
+    // The selected child's hostel complaints (whoever raised them) sit alongside the repairs raised from mine.
+    final complaints = [for (final c in await _send('GET', '/v1/hostel/complaints?studentId=$childId') as List) RepairRequest.fromComplaint((c as Map).cast<String, dynamic>())];
+    final seen = orders.map((o) => o.complaint).toSet();
+    return [...orders, ...complaints.where((c) => !seen.contains(c.title))];
+  }
+
+  @override
+  Future<List<InstalmentSchedule>> studentInstalments(String studentId) async =>
+      [for (final p in await _send('GET', '/v1/fees/students/$studentId/instalments') as List) InstalmentSchedule.fromJson((p as Map).cast<String, dynamic>())];
 
   @override
   Future<InstalmentSchedule> instalments(String invoiceId) async =>

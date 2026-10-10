@@ -338,6 +338,9 @@ abstract class StudentApi {
   /// A fee's instalment schedule with due dates and status (`GET /v1/fees/invoices/:id/instalments`).
   Future<InstalmentSchedule> instalments(String invoiceId);
 
+  /// Every instalment plan across all of a student's invoices (`GET /v1/fees/students/:id/instalments`).
+  Future<List<InstalmentSchedule>> studentInstalments(String studentId);
+
   /// My learning: worksheets and scores, extra help, entrance readiness and the promotion decision (`GET /v1/school-learning/students/:id/summary`),
   /// and mastery by subject with what to practise next (`GET /v1/lms/students/:id/recommendations`).
   Future<LearningSummary> learningSummary(String studentId);
@@ -1052,6 +1055,10 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<List<RepairRequest>> repairRequests() async =>
       [for (final r in await _send('GET', '/v1/hostel/work-orders/mine') as List) RepairRequest.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<List<InstalmentSchedule>> studentInstalments(String studentId) async =>
+      [for (final p in await _send('GET', '/v1/fees/students/$studentId/instalments') as List) InstalmentSchedule.fromJson((p as Map).cast<String, dynamic>())];
 
   @override
   Future<InstalmentSchedule> instalments(String invoiceId) async =>

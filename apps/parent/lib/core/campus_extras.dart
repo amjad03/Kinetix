@@ -17,6 +17,14 @@ class RepairRequest {
     completedAt: j['completedAt'] == null ? null : DateTime.parse('${j['completedAt']}').toLocal(),
   );
 
+  /// A hostel complaint about the child (`GET /v1/hostel/complaints?studentId=`), shown as a repair: resolved counts as done.
+  factory RepairRequest.fromComplaint(Map<String, dynamic> j) => RepairRequest(
+    id: '${j['id']}',
+    title: '${j['description'] ?? ''}',
+    status: switch ('${j['status']}') { 'resolved' => 'done', 'in_progress' => 'in_progress', _ => 'open' },
+    completedAt: j['resolvedAt'] == null ? null : DateTime.parse('${j['resolvedAt']}').toLocal(),
+  );
+
   final String id;
   final String title;
 

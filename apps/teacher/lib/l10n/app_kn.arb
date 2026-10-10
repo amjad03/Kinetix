@@ -437,7 +437,7 @@
   "answerCards": "ಉತ್ತರ ಕಾರ್ಡ್‌ಗಳು",
   "answerCardsMenuBody": "ಫೋನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗಳು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಉತ್ತರಿಸಲು ಕಾರ್ಡ್‌ಗಳನ್ನು ಮುದ್ರಿಸಿ",
   "answerCardsBody": "ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಗೆ ಹಾಜರಿ ಸಂಖ್ಯೆಯ ಪ್ರಕಾರ ಒಂದು ಕಾರ್ಡ್. ಬೋರ್ಡ್‌ನ \"ತರಗತಿಯನ್ನು ಕೇಳಿ\" ಯಲ್ಲಿ ಅವರು ಉತ್ತರ ಮೇಲಿರುವಂತೆ ಕಾರ್ಡ್ ಎತ್ತುತ್ತಾರೆ, ಬೋರ್ಡ್ ಒಂದೇ ಫೋಟೋದಿಂದ ಇಡೀ ತರಗತಿಯನ್ನು ಓದುತ್ತದೆ.",
-  "answerCardsPrintHint": "Hold the card with your answer at the top. Keep your fingers off the black pattern.",
+  "answerCardsPrintHint": "ಕಾರ್ಡ್ ಅನ್ನು ನಿಮ್ಮ ಉತ್ತರ ಇರುವ ಮೇಲ್ಭಾಗದಲ್ಲಿ ಹಿಡಿಯಿರಿ. ಕಪ್ಪು ಮಾದರಿಯನ್ನು ಬೆರಳುಗಳಿಂದ ಮುಟ್ಟಬೇಡಿ.",
   "answerCardsReady": "{className} ತರಗತಿಯ {count} ಕಾರ್ಡ್‌ಗಳು ಮುದ್ರಣಕ್ಕೆ ಸಿದ್ಧ.",
   "answerCardsFailed": "ಕಾರ್ಡ್‌ಗಳನ್ನು ಮಾಡಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   "print": "ಮುದ್ರಿಸಿ",
