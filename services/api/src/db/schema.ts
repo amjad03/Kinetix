@@ -3019,6 +3019,19 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'settlement_batches',
+  'settlement_lines',
+  'acct_accounts',
+  'acct_vouchers',
+  'acct_voucher_lines',
+  'acct_fy_closes',
+  'tally_settings',
+  'tally_ledger_map',
+  'tally_sync_log',
+  'sso_providers',
+  'sso_identities',
+  'sso_login_tickets',
+  'meeting_attendance_proposals',
   'training_requests',
   'class_notes',
   'buzzer_rounds',
@@ -6160,6 +6173,9 @@ export const classMeetings = pgTable(
     externalId: text('external_id').notNull(),
     joinUrl: text('join_url').notNull(),
     hostUrl: text('host_url'),
+    /** The provider's participant report as last pulled. */
+    participants: jsonb('participants').$type<{ name: string; email: string | null; joinedAt: string | null; leftAt: string | null; minutes: number }[]>(),
+    participantsPulledAt: timestamp('participants_pulled_at', { withTimezone: true }),
     createdBy: uuid('created_by').references(() => users.id),
     createdAt: createdAt(),
   },
@@ -6965,6 +6981,58 @@ export const legacyFeeEntries = pgTable(
 /** An affiliating university's mark-list / tabulation register layout and rules. */
 export const universityTemplates = pgTable(
   'university_templates',
+// Settlement reconciliation, accounting books, Tally live sync, SSO and meeting attendance (migration 0124)
+// ---------------------------------------------------------------------------------------------
+
+/** One settlement the gateway paid out (a file imported or fetched by API), with its lines matched to receipts. */
+export const settlementBatches = pgTable(
+  'settlement_batches',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    provider: text('provider').notNull(),
+    source: text('source').notNull(),
+    reference: text('reference').notNull(),
+    settlementDate: date('settlement_date').notNull(),
+    grossPaise: bigint('gross_paise', { mode: 'number' }).notNull().default(0),
+    feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0),
+    netPaise: bigint('net_paise', { mode: 'number' }).notNull().default(0),
+    lineCount: integer('line_count').notNull().default(0),
+    exceptionCount: integer('exception_count').notNull().default(0),
+    importedBy: uuid('imported_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('settlement_batches_ref_uq').on(t.tenantId, t.provider, t.reference)],
+);
+
+export const settlementLines = pgTable(
+  'settlement_lines',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    batchId: uuid('batch_id').notNull().references(() => settlementBatches.id, { onDelete: 'cascade' }),
+    /** payment or refund. */
+    kind: text('kind').notNull().default('payment'),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    providerOrderId: text('provider_order_id'),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0),
+    netPaise: bigint('net_paise', { mode: 'number' }).notNull(),
+    /** matched, exception or resolved. */
+    status: text('status').notNull(),
+    exceptionReason: text('exception_reason'),
+    feePaymentId: uuid('fee_payment_id').references(() => feePayments.id, { onDelete: 'set null' }),
+    resolvedBy: uuid('resolved_by').references(() => users.id, { onDelete: 'set null' }),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    note: text('note'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('settlement_lines_batch_idx').on(t.batchId), index('settlement_lines_status_idx').on(t.tenantId, t.status)],
+);
+
+/** The chart of accounts. group_type is asset, liability, equity, income or expense; opening_paise is a debit-positive balance. */
+export const acctAccounts = pgTable(
+  'acct_accounts',
   {
     id: id(),
     tenantId: tenantId(),
@@ -7102,3 +7170,170 @@ export const extRemunerationClaims = pgTable('ext_remuneration_claims', {
   decidedAt: timestamp('decided_at', { withTimezone: true }),
   createdAt: createdAt(),
 });
+    groupType: text('group_type').notNull(),
+    parentId: uuid('parent_id'),
+    isCashBank: boolean('is_cash_bank').notNull().default(false),
+    openingPaise: bigint('opening_paise', { mode: 'number' }).notNull().default(0),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('acct_accounts_code_uq').on(t.tenantId, t.code)],
+);
+
+export const acctVouchers = pgTable(
+  'acct_vouchers',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    financialYear: text('financial_year').notNull(),
+    /** receipt, payment, journal or contra. */
+    voucherType: text('voucher_type').notNull(),
+    number: text('number').notNull(),
+    voucherDate: date('voucher_date').notNull(),
+    narration: text('narration').notNull().default(''),
+    sourceType: text('source_type'),
+    sourceId: text('source_id'),
+    isClosing: boolean('is_closing').notNull().default(false),
+    postedBy: uuid('posted_by').references(() => users.id, { onDelete: 'set null' }),
+    voidedAt: timestamp('voided_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('acct_vouchers_number_uq').on(t.tenantId, t.financialYear, t.voucherType, t.number), index('acct_vouchers_date_idx').on(t.tenantId, t.voucherDate)],
+);
+
+export const acctVoucherLines = pgTable(
+  'acct_voucher_lines',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    voucherId: uuid('voucher_id').notNull().references(() => acctVouchers.id, { onDelete: 'cascade' }),
+    accountId: uuid('account_id').notNull().references(() => acctAccounts.id),
+    debitPaise: bigint('debit_paise', { mode: 'number' }).notNull().default(0),
+    creditPaise: bigint('credit_paise', { mode: 'number' }).notNull().default(0),
+  },
+  (t) => [index('acct_voucher_lines_voucher_idx').on(t.voucherId), index('acct_voucher_lines_account_idx').on(t.accountId)],
+);
+
+export const acctFyCloses = pgTable(
+  'acct_fy_closes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    financialYear: text('financial_year').notNull(),
+    surplusPaise: bigint('surplus_paise', { mode: 'number' }).notNull(),
+    closingVoucherId: uuid('closing_voucher_id').references(() => acctVouchers.id, { onDelete: 'set null' }),
+    closedBy: uuid('closed_by').references(() => users.id, { onDelete: 'set null' }),
+    closedAt: timestamp('closed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('acct_fy_closes_uq').on(t.tenantId, t.financialYear)],
+);
+
+/** Where the institution's Tally Prime listens (its HTTP/XML port, 9000 by default) and the company to post into. */
+export const tallySettings = pgTable(
+  'tally_settings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    host: text('host').notNull().default('localhost'),
+    port: integer('port').notNull().default(9000),
+    company: text('company').notNull(),
+    enabled: boolean('enabled').notNull().default(false),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('tally_settings_tenant_uq').on(t.tenantId)],
+);
+
+export const tallyLedgerMap = pgTable(
+  'tally_ledger_map',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    accountId: uuid('account_id').notNull().references(() => acctAccounts.id, { onDelete: 'cascade' }),
+    tallyLedger: text('tally_ledger').notNull(),
+    tallyParent: text('tally_parent').notNull(),
+  },
+  (t) => [uniqueIndex('tally_ledger_map_uq').on(t.tenantId, t.accountId)],
+);
+
+/** One thing to push to Tally (a ledger or a voucher) and how the last try went. kind: ledger or voucher; status: pending, sent or failed. */
+export const tallySyncLog = pgTable(
+  'tally_sync_log',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    kind: text('kind').notNull(),
+    refId: uuid('ref_id').notNull(),
+    label: text('label').notNull(),
+    status: text('status').notNull().default('pending'),
+    attempts: integer('attempts').notNull().default(0),
+    lastError: text('last_error'),
+    requestXml: text('request_xml'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('tally_sync_log_ref_uq').on(t.tenantId, t.kind, t.refId), index('tally_sync_log_status_idx').on(t.tenantId, t.status)],
+);
+
+/** An institution's OpenID Connect identity provider (Google Workspace, Microsoft Entra or any other). */
+export const ssoProviders = pgTable(
+  'sso_providers',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    kind: text('kind').notNull(),
+    name: text('name').notNull(),
+    issuer: text('issuer').notNull(),
+    clientId: text('client_id').notNull(),
+    clientSecretEnc: text('client_secret_enc').notNull(),
+    authorizationEndpoint: text('authorization_endpoint').notNull(),
+    tokenEndpoint: text('token_endpoint').notNull(),
+    jwksUri: text('jwks_uri').notNull(),
+    scopes: text('scopes').notNull().default('openid email profile'),
+    allowedDomains: text('allowed_domains').array().notNull().default(sql`'{}'::text[]`),
+    redirectAllowlist: text('redirect_allowlist').array().notNull().default(sql`'{}'::text[]`),
+    enabled: boolean('enabled').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [index('sso_providers_tenant_idx').on(t.tenantId)],
+);
+
+export const ssoIdentities = pgTable(
+  'sso_identities',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    providerId: uuid('provider_id').notNull().references(() => ssoProviders.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    subject: text('subject').notNull(),
+    email: text('email'),
+    linkedAt: timestamp('linked_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('sso_identities_uq').on(t.providerId, t.subject)],
+);
+
+/** A single-use, two-minute ticket the browser hands back after the IdP: the app exchanges it for a session. */
+export const ssoLoginTickets = pgTable('sso_login_tickets', {
+  id: id(),
+  tenantId: tenantId(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+});
+
+/** What the participant report suggests for each student of an online class; the teacher confirms before attendance is written. */
+export const meetingAttendanceProposals = pgTable(
+  'meeting_attendance_proposals',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    meetingId: uuid('meeting_id').notNull().references(() => classMeetings.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    status: text('status').notNull(),
+    minutes: integer('minutes').notNull().default(0),
+    sourceName: text('source_name'),
+    confirmedStatus: text('confirmed_status'),
+    confirmedBy: uuid('confirmed_by').references(() => users.id, { onDelete: 'set null' }),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+  },
+  (t) => [uniqueIndex('meeting_attendance_proposals_uq').on(t.meetingId, t.studentId)],
+);

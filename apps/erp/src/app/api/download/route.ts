@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
   const kind = req.nextUrl.searchParams.get('kind') ?? '';
   const id = req.nextUrl.searchParams.get('id') ?? '';
   // The staff and own-card PDFs need no id.
-  const FIXED: Record<string, string> = { 'library-labels': '/v1/library/books/labels.pdf', 'asset-tags-all': '/v1/assets/tags.pdf', 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf' };
+  const FIXED: Record<string, string> = { 'library-labels': '/v1/library/books/labels.pdf', 'asset-tags-all': '/v1/assets/tags.pdf', 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf', 'tally-file': '/v1/tally/export.xml' };
   // GL journals for a date range: gl-csv / gl-tally with ?from=&to=
   const range = ['from', 'to'].map((k) => req.nextUrl.searchParams.get(k) ?? '');
   const GL: Record<string, string> = { 'gl-csv': 'csv', 'gl-tally': 'xml' };

@@ -97,7 +97,8 @@ function loginsDoc(studentRows: { name: string; roll: string; sec: string }[]): 
   return lines.join('\n');
 }
 
-main()
+/** Settles when the seed has finished (the tests await it). */
+export const seeded = main()
   .catch((e) => {
     console.error(e);
     process.exitCode = 1;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
@@ -75,7 +77,22 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
       icon: Icons.event_note_outlined,
       title: l.toolTodaysPlan,
       accent: planAccent,
-      child: _body(context),
+      child: Column(
+        children: [
+          // The paired teacher's online classes (Zoom, Google Meet, Teams): the join link opens on the board's browser.
+          if (widget.board.api != null)
+            OnlineClassesSection(
+              key: const Key('board-online-classes'),
+              load: () => OnlineApi(baseUrl: widget.board.api!.baseUrl, token: widget.board.api!.sessionToken ?? widget.board.api!.deviceToken).classes(board: true),
+              onJoin: (c) => launchUrl(Uri.parse(c.joinUrl), mode: LaunchMode.externalApplication),
+              onCopy: (c) {
+                Clipboard.setData(ClipboardData(text: c.joinUrl));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(OnlineStrings(context).copied)));
+              },
+            ),
+          Expanded(child: _body(context)),
+        ],
+      ),
     );
   }
 

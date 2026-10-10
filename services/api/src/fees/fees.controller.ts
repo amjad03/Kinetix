@@ -45,8 +45,8 @@ const CounterBody = z.object({
   method: z.enum(['cash', 'cheque', 'bank_transfer', 'upi']),
   reference: z.string().trim().max(100).optional(),
 });
-const CheckoutBody = z.object({ amountPaise: Paise.optional() });
-const ConfirmBody = z.object({ providerPaymentId: z.string().min(1).max(100), signature: z.string().min(1).max(200) });
+const CheckoutBody = z.object({ amountPaise: Paise.optional(), returnUrl: z.url().max(300).optional() });
+const ConfirmBody = z.object({ providerPaymentId: z.string().min(1).max(100), signature: z.string().min(1).max(200), /** A hosted checkout's whole response (PayU). */ fields: z.record(z.string(), z.string().max(500)).optional() });
 
 /**
  * Fees: the accounts office issues fees to a class and records counter payments; families pay
@@ -199,7 +199,7 @@ export class FeesController {
       return { inv, amountPaise, payer, provider };
     });
     // The gateway call happens outside the transaction.
-    const order = await provider.createOrder({ amountPaise, receipt: `inv_${id.slice(0, 8)}`, notes: { invoiceId: id, tenantId: p.tenantId } });
+    const order = await provider.createOrder({ amountPaise, receipt: `inv_${id.slice(0, 8)}`, notes: { invoiceId: id, tenantId: p.tenantId }, payer: { name: payer?.fullName ?? '', email: payer?.email ?? '', phone: payer?.phone ?? '' }, returnUrl: body.returnUrl });
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [pay] = await tx
         .insert(feePayments)
@@ -212,6 +212,8 @@ export class FeesController {
         // The institution's own public key: the app's checkout pays into its account.
         keyId: provider.keyId,
         orderId: order.orderId,
+        /** A hosted checkout (PayU): the app posts these fields to the url in a browser. */
+        hosted: order.hosted ?? null,
         amountPaise,
         currency: 'INR',
         name: tenant?.name ?? 'KINETIX',
@@ -233,7 +235,7 @@ export class FeesController {
       if (pay.status !== 'paid') {
         // Signed with the institution's key secret.
         const provider = await this.gateway.forTenant(tx);
-        if (!pay.providerOrderId || !provider || !provider.verifyPayment(pay.providerOrderId, body.providerPaymentId, body.signature)) {
+        if (!pay.providerOrderId || !provider || !provider.verifyPayment(pay.providerOrderId, body.providerPaymentId, body.signature, body.fields)) {
           throw new ForbiddenException('The payment could not be verified');
         }
         await this.fees.markPaid(tx, id, { providerPaymentId: body.providerPaymentId });
@@ -287,6 +289,26 @@ export class FeesController {
       this.assertSigned(await this.gateway.forTenant(tx), req, signature);
       const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, found.paymentId));
       await this.credit(tx, pay, entity!);
+    });
+    return { ok: true };
+  }
+
+  /**
+   * PayU's server-to-server notice (and its success/failure return post): a form whose `hash`
+   * field, computed with the institution's own salt, proves it. Public, like the Razorpay one.
+   */
+  @Post('webhooks/payu/:tenantSlug')
+  @HttpCode(200)
+  async payuWebhook(@Param('tenantSlug') slug: string, @Req() req: RawBodyRequest<Request>) {
+    const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
+    if (!tenant) throw new NotFoundException('Not found');
+    const f = Object.fromEntries(new URLSearchParams(req.rawBody?.toString('utf8') ?? '')) as Record<string, string>;
+    await this.db.withTenant(tenant.id, async (tx) => {
+      const provider = await this.gateway.forTenant(tx);
+      this.assertSigned(provider, req, f.hash);
+      if (f.status !== 'success' || !f.txnid) return;
+      const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, f.txnid));
+      if (pay) await this.credit(tx, pay, { id: f.mihpayid, amount: Math.round(Number(f.amount) * 100) });
     });
     return { ok: true };
   }

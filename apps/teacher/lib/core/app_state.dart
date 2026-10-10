@@ -191,6 +191,13 @@ class AppState extends ChangeNotifier {
   }
 
   /// Signs in with the code texted to [phone].
+  /// Signs in with the session a single-sign-on (institution account) sign-in produced in the system browser.
+  Future<void> signInWithToken({required String server, required String tenant, required String token}) async {
+    api.baseUrl = server;
+    api.token = token;
+    await _finishSignIn(server: server, tenant: tenant);
+  }
+
   Future<void> signInWithOtp({required String server, required String tenant, required String phone, required String code}) async {
     api.baseUrl = server;
     await api.verifyOtp(tenant: tenant, phone: phone, code: code);

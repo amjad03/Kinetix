@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
@@ -240,6 +242,15 @@ class _HomeTabState extends State<HomeTab> {
         onTap: () => SchoolLifeScreen.open(context, family.api, c, visibility: family.visibility),
         child: Text(l.schoolLifeSubtitle, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
       ),
+      if (family.api is HttpParentApi)
+        OnlineClassesSection(
+          load: () => OnlineApi(baseUrl: family.api.baseUrl, token: family.api.token).classes(),
+          onJoin: (c) => launchUrl(Uri.parse(c.joinUrl), mode: LaunchMode.externalApplication),
+          onCopy: (c) {
+            Clipboard.setData(ClipboardData(text: c.joinUrl));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(OnlineStrings(context).copied)));
+          },
+        ),
       AiUpdateCard(api: family.api, child: c),
     ];
   }

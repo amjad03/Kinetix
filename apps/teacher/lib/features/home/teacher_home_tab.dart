@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
@@ -159,6 +161,15 @@ class _TeacherHomeTabState extends State<TeacherHomeTab> {
                             ],
                           ],
                         ),
+                      ),
+                    if (api is HttpTeacherApi)
+                      OnlineClassesSection(
+                        load: () => OnlineApi(baseUrl: api.baseUrl, token: api.token).classes(),
+                        onJoin: (c) => launchUrl(Uri.parse(c.joinUrl), mode: LaunchMode.externalApplication),
+                        onCopy: (c) {
+                          Clipboard.setData(ClipboardData(text: c.joinUrl));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(OnlineStrings(context).copied)));
+                        },
                       ),
                     _SectionTitle(l.quickActions),
                     KxCard(

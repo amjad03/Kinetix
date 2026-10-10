@@ -8,7 +8,9 @@ import { FeesController } from './fees.controller.js';
 import { FeesDepthController } from './fees-depth.controller.js';
 import { FeesService } from './fees.service.js';
 import { PaymentGateway } from './payment-gateway.service.js';
-import { FakeRazorpayApi, HttpRazorpayApi, RazorpayApi } from './payment-provider.js';
+import { FakePayuApi, FakeRazorpayApi, HttpPayuApi, HttpRazorpayApi, PayuApi, RazorpayApi } from './payment-provider.js';
+import { SettlementsController } from './settlements.controller.js';
+import { PaymentsGatewayController } from './payments-gateway.controller.js';
 import { WalletTopupService } from './wallet-topup.service.js';
 import { PaymentsAdminController } from './payments-admin.controller.js';
 
@@ -21,8 +23,9 @@ import { PaymentsAdminController } from './payments-admin.controller.js';
     PaymentGateway,
     // Each institution's own keys are used per request (PaymentGateway); RAZORPAY_FAKE keeps tests off the network.
     { provide: RazorpayApi, inject: [ENV], useFactory: (env: Env) => (env.RAZORPAY_FAKE ? new FakeRazorpayApi() : new HttpRazorpayApi()) },
+    { provide: PayuApi, inject: [ENV], useFactory: (env: Env) => (env.PAYU_FAKE ? new FakePayuApi() : new HttpPayuApi(env.PAYU_MODE)) },
   ],
-  controllers: [FeesController, FeesDepthController, PaymentsAdminController, BankTransfersController, SponsorBillingController],
+  controllers: [FeesController, FeesDepthController, PaymentsAdminController, PaymentsGatewayController, SettlementsController, BankTransfersController, SponsorBillingController],
   exports: [FeesService, PaymentGateway, ApplicationFeesService, WalletTopupService],
 })
 export class FeesModule {}

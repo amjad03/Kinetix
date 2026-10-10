@@ -50,9 +50,9 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 | 20 | Admission agents | Yes | agent hits (15 files), unverified | Partial | |
 | 21 | Entrance tests, event registration, career pages | Yes | entrance, events, careers | Have | |
 | 22 | Fees: heads, challan, receipts, fines, concessions, instalments, refunds, wallet | Yes | Yes | Have | api/fees, api/finance; challan 5 files |
-| 23 | Payment gateways | Unk | Razorpay only | Partial | Exp: Cashfree/PayU/BillDesk/SBIePay |
-| 24 | Tally integration | Yes | GL XML/CSV/JSON export | Partial | api/finance GL export; no live sync |
-| 25 | Accounting books (vouchers, ledgers, BS) | Unk | Not confirmed | Missing/Exp | |
+| 23 | Payment gateways | Unk | Razorpay + PayU behind one gateway interface (order, hosted checkout, webhook signature, refund, settlement); tenant chooses; settlement reconciliation with exceptions queue | Have | api/fees (PayU sandbox only; Cashfree not integrated) |
+| 24 | Tally integration | Yes | GL export plus live Tally Prime sync (XML over HTTP, ledger mapping, sync log with retry, offline XML file) | Have | api/tally; tested with a fake Tally server |
+| 25 | Accounting books (vouchers, ledgers, BS) | Unk | Chart of accounts, receipt/payment/journal/contra vouchers, ledgers, day book, trial balance, income and expenditure, balance sheet, fee receipts auto-post, year close | Have | api/books |
 | 26 | Exams: registration, types (regular/reval/supply/lab), hall, seating, invigilation | Yes | Yes | Have | api/exams (seating.ts, hall-ticket-code.ts, registration-rules.ts) |
 | 27 | Dummy/false numbers, anonymisation | Yes | evaluation/scan-sanitise, anonymise | Have | api/evaluation |
 | 28 | Grace marks, moderation | Yes | grace in 26 files, marks moderation | Have | |
@@ -65,7 +65,7 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 | 35 | Question paper generation + scrutiny + Bloom/K-level | Yes | question-bank, paper-release, bloom 16 files, scrutiny 2 | Have/Partial | scrutiny workflow thin |
 | 36 | Online exams | Yes | assessment-tools, lms | Have | proctoring unverified |
 | 37 | LMS: classes, assignments, repository, video conf | Yes | lms, homework, recordings, live | Have | Teams integration absent |
-| 38 | MS Teams / Meet / Zoom integration | Teams listed | Meet/Zoom grep present in connectors; Teams not confirmed | Partial | api/connectors |
+| 38 | MS Teams / Meet / Zoom integration | Teams listed | Zoom, Google Meet and Teams adapters; meeting from timetable slot; participant report becomes suggested attendance the teacher confirms; join links API for teacher, student and board (Flutter UI pending) | Partial | api/connectors |
 | 39 | LTI / SCORM | Unk | Missing | Missing/Exp | |
 | 40 | CBCS: electives, allocation, credits | Yes | course-registration (elective rules) | Have | api/course-registration/registration-rules.spec.ts |
 | 41 | OBE: CO/PO/PSO, attainment, CQI | Yes (Ease OBE) | obe + quality, CQI root-cause | Have | api/obe |
@@ -147,7 +147,7 @@ Effort: S <2 wks, M 2-6 wks, L 6+ wks (one engineer unless noted).
 | Payments + reconciliation | Add Cashfree and/or PayU/BillDesk adapter; settlement reconciliation; receipts/80G-style where needed | Sandbox end-to-end incl. webhook signature, refund, settlement recon | M | Merchant accounts (sandbox then live); follow Cashfree skills when integrating |
 | Tally Prime live sync | Push vouchers via Tally XML/HTTP, ledger mapping, sync log | Fee receipts and expenses appear in Tally company with matching totals | M | Tally Prime test install |
 | SMS/WhatsApp production | MSG91 DLT templates approved; WhatsApp BA connect | Delivery receipts in prod for attendance/fee/result alerts | S | DLT registration, Meta BA account |
-| SSO | Complete OIDC for Google Workspace and Microsoft Entra | College staff login via institute IdP | S-M | Tenant test accounts |
+| SSO | Complete OIDC for Google Workspace and Microsoft Entra | DONE: OIDC code+PKCE, domain to tenant, JIT link, admin page, ERP sign-in; mobile/board system-browser flow pending (API ticket exchange ready) | S-M | Tenant test accounts |
 | Security and compliance | Third-party pen-test, fix findings, KMS field encryption, DPDP records, backup restore drill | Report with zero open high/critical; restore tested | M | Budget, vendor |
 | Hosting, SLA, support | Managed cloud in India region, 99.5% SLA, monitoring/alerting, status page, support desk and runbooks | 30 days measured uptime; response-time policy published | M | Cloud account, on-call person |
 | Mobile store release | Device-verify teacher/student/parent apps, publish to Play/App Store | Apps installed on pilot devices, crash-free >99% | M | Apple/Google developer accounts |

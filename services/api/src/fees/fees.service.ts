@@ -8,6 +8,7 @@ import { feeInvoices, feePayments, guardians, receiptCounters, sections, student
 import { DomainEvents, EventBus } from '../events/events.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import type { RoleName } from '../auth/principal.js';
+import { postFeeReceipt } from '../books/books.service.js';
 
 export const FEE_ROLES: RoleName[] = ['tenant_admin', 'principal', 'accountant'];
 
@@ -85,6 +86,7 @@ export class FeesService {
       amountPaise: payment.amountPaise,
       receiptNo,
     });
+    await postFeeReceipt(tx, { tenantId: payment.tenantId, paymentId, date: today, receiptNo, method: payment.method, amountPaise: payment.amountPaise, student: student?.fullName ?? 'student' });
     return paid;
   }
 

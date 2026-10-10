@@ -9,6 +9,7 @@ import { Day, Paise } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { assetGlPostings, budgets, costExpenses, departmentStaff, departments, feeInvoices, feePayments, feeRefunds, invPurchaseOrders, payrollRuns, payslips, students, tenants } from '../db/schema.js';
+import { postFeeRefund } from '../books/books.service.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
 import { monthEnd, requireDay } from '../hr/dates.js';
 import { PayrollService } from '../hr/payroll.service.js';
@@ -175,5 +176,7 @@ export async function issueRefund(tx: Tx, ctx: { tenantId: string; userId: strin
   const [row] = await tx.insert(feeRefunds).values({ tenantId: ctx.tenantId, paymentId: pay.id, invoiceId: pay.invoiceId, studentId: pay.studentId, amountPaise: b.amountPaise, reason: b.reason, refundedBy: ctx.userId }).returning();
   await tx.update(feeInvoices).set({ paidPaise: sql`${feeInvoices.paidPaise} - ${b.amountPaise}`, status: sql`case when ${feeInvoices.status} = 'paid' then 'due'::invoice_status else ${feeInvoices.status} end`, updatedAt: new Date() }).where(eq(feeInvoices.id, pay.invoiceId));
   await audit(tx, { tenantId: ctx.tenantId, actorType: 'user', actorId: ctx.userId, action: 'fees.refunded', subjectType: 'fee_refund', subjectId: row.id, data: { paymentId: pay.id, amountPaise: b.amountPaise } });
+  const [st] = await tx.select({ n: students.fullName }).from(students).where(eq(students.id, pay.studentId));
+  await postFeeRefund(tx, { tenantId: ctx.tenantId, userId: ctx.userId, refundId: row.id, date: new Date().toISOString().slice(0, 10), amountPaise: b.amountPaise, student: st?.n ?? 'student', reason: b.reason });
   return row;
 }

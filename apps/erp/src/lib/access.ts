@@ -214,6 +214,9 @@ export function sectionOf(pathname: string): Section | null {
     case 'scholarships':
     case 'budgets':
     case 'gl-export':
+    case 'books':
+    case 'tally':
+    case 'settlements':
       return 'finance';
     case 'boards':
       return 'boards';
@@ -249,6 +252,7 @@ export function sectionOf(pathname: string): Section | null {
       return 'departments';
     case 'calendar':
       return 'calendar';
+    case 'sso':
     case 'settings':
       return 'settings';
     case 'import':

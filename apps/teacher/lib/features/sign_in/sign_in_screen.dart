@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -362,6 +363,22 @@ class _SignInScreenState extends State<SignInScreen> {
                             : Text(_mode == SignInMode.phone ? l.sendCode : l.signInButton),
                       ),
                       const SizedBox(height: Kx.s8),
+                      if (_mode != SignInMode.code) ...[
+                        SsoSignInButton(
+                          server: _serverUrl,
+                          tenant: () => _tenant.text.trim().toLowerCase(),
+                          enabled: !_busy,
+                          open: (u) => launchUrl(u, mode: LaunchMode.externalApplication),
+                          onToken: (t) async {
+                            try {
+                              await widget.state.signInWithToken(server: _serverUrl, tenant: _tenant.text.trim().toLowerCase(), token: t);
+                            } on ApiException catch (e) {
+                              if (mounted) setState(() => _error = e);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: Kx.s8),
+                      ],
                       if (_mode == SignInMode.code)
                         Wrap(
                           alignment: WrapAlignment.center,

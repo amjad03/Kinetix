@@ -18,6 +18,7 @@ dependencies:
   kinetix_lesson:
     path: ../../packages/kinetix_lesson
   http: ^1.6.0
+  url_launcher: ^6.3.3
   intl: ^0.20.3
   qr_flutter: ^4.1.0
   shared_preferences: ^2.5.5

@@ -22,5 +22,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if (jar.get(SESSION_COOKIE) && !reason) redirect('/');
   const { t } = await getI18n();
   const notice = reason ? NOTICES[reason] : undefined;
-  return <LoginForm defaultTenant={jar.get(TENANT_COOKIE)?.value ?? ''} notice={notice ? { severity: notice.severity, text: t(notice.text) } : undefined} next={next} />;
+  const tenant = jar.get(TENANT_COOKIE)?.value ?? '';
+  return (
+    <>
+      <LoginForm defaultTenant={jar.get(TENANT_COOKIE)?.value ?? ''} notice={notice ? { severity: notice.severity, text: t(notice.text) } : undefined} next={next} />
+      <form action="/login/sso" method="get" style={{ textAlign: 'center', marginTop: 16 }}>
+        <input type="hidden" name="tenant" value={tenant} />
+        {tenant && <button type="submit">{t('gb.sso.signIn')}</button>}
+      </form>
+    </>
+  );
 }

@@ -86,4 +86,10 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(state.rememberedTenant, 'demo-college');
   });
+
+  testWidgets('offers sign-in with the institution account', (tester) async {
+    await pumpApp(tester, signedIn: false);
+    final button = tester.widget<OutlinedButton>(find.byKey(const Key('ssoSignIn'), skipOffstage: false));
+    expect(button.onPressed, isNotNull);
+  });
 }
