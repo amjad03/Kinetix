@@ -1,0 +1,260 @@
+{
+ "chapters": [
+  {
+   "id": "open",
+   "title": "",
+   "segs": [
+    {
+     "id": "s00",
+     "vo": "This is KINETIX Board, the AI smartboard in every Soundarya classroom. Everything you'll see is the real board app, driven by a stylus, just as a teacher uses it."
+    }
+   ]
+  },
+  {
+   "id": "c1",
+   "title": "Sign in and start the class",
+   "segs": [
+    {
+     "id": "s10",
+     "vo": "Signing in takes one scan. The teacher opens the KINETIX Teacher app and scans this QR code, or types the six digit code. No passwords on a shared screen."
+    },
+    {
+     "id": "s11",
+     "vo": "If the internet is down, the board shows a signed offline code instead, and the phone verifies it without any network."
+    },
+    {
+     "id": "s12",
+     "vo": "Teachers can also keep a personal PIN for this board. Set it once, and from then on the board unlocks on a shuffled keypad, so nobody learns it from smudges on the glass."
+    },
+    {
+     "id": "s13",
+     "vo": "The board already knows the class from the timetable: Class 10 B, Science, Refraction through a glass slab. And it suggests concept videos for this period, in English, Hindi and Kannada."
+    },
+    {
+     "id": "s14",
+     "vo": "Today's plan brings the lesson plan from the ERP: objectives, timed steps, materials and homework, with a step timer to keep pace."
+    },
+    {
+     "id": "s15",
+     "vo": "Books shows the NCERT syllabus and which topics have been taught. And the profile menu holds saved whiteboards, recordings, training and a guided tour."
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "title": "Ink that feels like a pen",
+   "segs": [
+    {
+     "id": "s20",
+     "vo": "Now the canvas. The pen panel sets the pen type, thickness and colour, with pressure, smoothing and palm rejection for a real stylus."
+    },
+    {
+     "id": "s21",
+     "vo": "Handwriting flows naturally. The ink keeps up at full writing speed, with no lag, and it's smoothed just enough to stay crisp on a big panel."
+    },
+    {
+     "id": "s22",
+     "vo": "The shapes tool draws a clean glass slab. A line marks the normal, and arrows trace the incident ray, the refracted ray, and the emergent ray leaving the slab."
+    },
+    {
+     "id": "s23",
+     "vo": "Labels go on by hand: air, glass, the angle of incidence and the angle of refraction. The highlighter sits behind the ink, so nothing gets covered."
+    },
+    {
+     "id": "s24",
+     "vo": "The eraser removes whole strokes. Undo and redo step back and forth through every change."
+    },
+    {
+     "id": "s25",
+     "vo": "Select with a lasso to move, resize, duplicate, group or lock anything on the page."
+    },
+    {
+     "id": "s26",
+     "vo": "Real geometry tools: a ruler and protractor you can move, rotate and draw against, plus a compass and set squares."
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "title": "AI pen, maths and diagrams",
+   "segs": [
+    {
+     "id": "s30",
+     "vo": "The AI pen turns handwriting into clean, typed text, right where it was written. And with Shape AI switched on, a rough sketch snaps into a perfect circle."
+    },
+    {
+     "id": "s31",
+     "vo": "Equations are typeset properly. Here is Snell's law, placed straight onto the board."
+    },
+    {
+     "id": "s32",
+     "vo": "The math solver works offline, and shows every step of the working."
+    },
+    {
+     "id": "s33",
+     "vo": "The tools drawer holds the rest: graphs, a periodic table, formulas, circuits, flowcharts, mind maps, code labs, logic gates and more, filtered to the subject being taught."
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "title": "Pages, backgrounds and saving",
+   "segs": [
+    {
+     "id": "s40",
+     "vo": "Add pages as the lesson grows. Here, page two gets Snell's law, written by hand. The page overview shows every page at a glance, to jump between them, reorder or export."
+    },
+    {
+     "id": "s41",
+     "vo": "Backgrounds and templates: ruled, grid, graph, a dark board or a chalkboard, for one page or all of them."
+    },
+    {
+     "id": "s42",
+     "vo": "Every board is saved for the class, and can be shared with students on WhatsApp, by email, or with a QR code."
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "title": "3D models, labs and simulations",
+   "segs": [
+    {
+     "id": "s50",
+     "vo": "The side panel brings content in without leaving the board. 3D models render right here: rotate them with the stylus, and read off their measurements as you teach."
+    },
+    {
+     "id": "s51",
+     "vo": "Virtual labs make the lesson hands-on. In the glass slab lab, change the angle and the ray bends in real time."
+    },
+    {
+     "id": "s52",
+     "vo": "There are PhET simulations that work offline, animations, concept videos, and the subject kit with formulas and constants."
+    },
+    {
+     "id": "s53",
+     "vo": "From the Add menu, bring in PDFs, PowerPoint slides, pictures, tables, sticky notes, word cards and covered answers. There's a safe browser and a document camera too."
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "title": "KINETIX AI, built into the lesson",
+   "segs": [
+    {
+     "id": "s60",
+     "vo": "KINETIX AI answers questions about the lesson, in the class's language, with sources, and follows the syllabus."
+    },
+    {
+     "id": "s61",
+     "vo": "The AI lesson builder drafts a full plan for a topic: objectives, steps, activities and an exit ticket, ready to teach."
+    },
+    {
+     "id": "s62",
+     "vo": "It also writes quick quizzes, homework and lecture notes, summarises the board, and reads whatever has been written on it."
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "title": "Live class responses",
+   "segs": [
+    {
+     "id": "s70",
+     "vo": "Attendance is taken on the board in seconds and synced to the ERP."
+    },
+    {
+     "id": "s71",
+     "vo": "Ask the class: pose a multiple choice question, and students answer from the Student app or by holding up printed answer cards that the camera scans."
+    },
+    {
+     "id": "s72",
+     "vo": "Answers build live on the board as students respond. End the question to reveal the right answer, and see at a glance who needs help."
+    },
+    {
+     "id": "s73",
+     "vo": "Or ask for a word cloud. Students type a word or two from their phones, and the cloud grows as they answer, with the most common words largest."
+    },
+    {
+     "id": "s74",
+     "vo": "And there's a full classroom toolkit. A random picker chooses who answers next. There are timers and stopwatches, team scoreboards, badges for good work, a group maker that splits the class in one tap, and multi-user zones, so several students can write on the board at once. Everything a teacher needs is one tap away."
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "title": "Homework, marking and OBE",
+   "segs": [
+    {
+     "id": "s80",
+     "vo": "Homework AI turns the lesson into an assignment and sends it to the Student app, with a due date."
+    },
+    {
+     "id": "s81",
+     "vo": "Submissions are reviewed by classmates on a rubric, and AI suggests marks that the teacher approves, in the Teacher app."
+    },
+    {
+     "id": "s82",
+     "vo": "For accreditation, each question is tagged with course outcomes, so every poll and quiz becomes OBE evidence in the ERP."
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "title": "Record, cast and share",
+   "segs": [
+    {
+     "id": "s90",
+     "vo": "Record the lesson with one tap. The board shows a consent notice, then records with chapter markers. Hold a marker to star an important moment."
+    },
+    {
+     "id": "s91",
+     "vo": "Recordings come back with a transcript, a summary and chapters, and can be shared with enrolled students."
+    },
+    {
+     "id": "s92",
+     "vo": "Live captions help every student follow along. Phones can cast to the board after the teacher approves, and the board can project to a second screen, or freeze its display while the teacher sets up the next step."
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "title": "Comfort, languages and control",
+   "segs": [
+    {
+     "id": "s100",
+     "vo": "Eye comfort warms and dims the panel for long teaching days, with break reminders. And the whole board switches to a dark theme in a single tap."
+    },
+    {
+     "id": "s101",
+     "vo": "The whole board speaks English, Hindi and Kannada, and switches instantly. Each teacher's language follows them when they sign in."
+    },
+    {
+     "id": "s102",
+     "vo": "There are tools for every learner. Voice commands control the board hands free, and the immersive reader reads text aloud. A screen shade, a spotlight and a magnifier focus the class on exactly what matters."
+    },
+    {
+     "id": "s103",
+     "vo": "Board settings, a customisable toolbar, simple mode, kiosk lock and device diagnostics keep every panel under the school's control, managed remotely from the IT console."
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "title": "Works offline, syncs everywhere",
+   "segs": [
+    {
+     "id": "s110",
+     "vo": "When the network drops, the board keeps working. Changes wait in an outbox and sync as soon as it's back."
+    },
+    {
+     "id": "s111",
+     "vo": "End the class, and attendance, polls, homework, recordings and lesson evidence flow to the KINETIX ERP, and on to the Teacher, Student and Parent apps."
+    },
+    {
+     "id": "s112",
+     "vo": "KINETIX Board. Every lesson, connected."
+    }
+   ]
+  }
+ ]
+}

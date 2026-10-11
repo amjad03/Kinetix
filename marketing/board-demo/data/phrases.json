@@ -1,0 +1,9 @@
+{"title": {"text": "Refraction of light", "speed": 15},
+ "air": {"text": "air", "speed": 12},
+ "glass": {"text": "glass", "speed": 12},
+ "i": {"text": "i", "speed": 10},
+ "r": {"text": "r", "speed": 10},
+ "normal": {"text": "normal", "speed": 13},
+ "slab": {"text": "glass slab", "font": "scripts", "speed": 13},
+ "snell": {"text": "n = sin i / sin r", "font": "scripts", "speed": 14},
+ "bends": {"text": "bends towards normal", "speed": 16}}

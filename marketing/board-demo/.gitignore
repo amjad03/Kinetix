@@ -1,0 +1,6 @@
+venv/
+models/
+frames/
+renders/
+audio/*.wav
+node_modules/
