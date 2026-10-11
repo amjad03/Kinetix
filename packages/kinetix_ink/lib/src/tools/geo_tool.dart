@@ -196,9 +196,28 @@ class GeoTool {
   /// Straight edges the pen runs along, in board units.
   List<GeoEdge> get edges {
     final o = outline;
-    if (o.length < 2) return const [];
-    if (o.length == 2) return [(toBoard(o[0]), toBoard(o[1]))];
+    // A protractor's marking arm is an edge too: a pen along it draws a straight ray.
+    final ray = isProtractor ? <GeoEdge>[armRay] : const <GeoEdge>[];
+    if (o.length < 2) return ray;
+    if (o.length == 2) return [(toBoard(o[0]), toBoard(o[1])), ...ray];
     return [for (var i = 0; i < o.length; i++) (toBoard(o[i]), toBoard(o[(i + 1) % o.length]))];
+  }
+
+  bool get isProtractor => kind == GeoKind.protractor || kind == GeoKind.protractor360;
+
+  bool get isSetSquare => kind == GeoKind.setSquare45 || kind == GeoKind.setSquare3060;
+
+  /// The protractor's marking arm as a line from its centre out to the scale's edge.
+  GeoEdge get armRay => (center, armTip);
+
+  /// The set square's three sides, as edges (bottom leg, hypotenuse, upright leg).
+  List<GeoEdge> get sides => isSetSquare ? edges : const [];
+
+  /// Where the "draw edge" dot of side [i] sits, in tool units.
+  Offset sideHandle(int i) {
+    final o = outline;
+    final f = i == 0 ? 0.3 : 0.5;
+    return Offset.lerp(o[i], o[(i + 1) % o.length], f)!;
   }
 
   /// True when board point [p] is on the tool's body.
@@ -327,6 +346,13 @@ List<Offset> compassArc(Offset center, double radius, double start, double sweep
   final n = math.max(2, (s.abs() * radius / 4).ceil().clamp(8, 720));
   return [for (var i = 0; i <= n; i++) center + Offset(math.cos(start + s * i / n), math.sin(start + s * i / n)) * radius];
 }
+
+/// A straight pen stroke from [a] to [b], as drawn by "draw edge" and the protractor's "draw".
+Stroke lineStroke(Offset a, Offset b, {required Color color, required double width}) => Stroke(
+  id: newElementId(),
+  style: InkStyle(tool: InkTool.pen, color: color, width: width),
+  points: [InkPoint(a.dx, a.dy), InkPoint(b.dx, b.dy)],
+);
 
 /// A pen stroke along a compass arc.
 Stroke compassStroke(Offset center, double radius, double start, double sweep, {required Color color, required double width}) {

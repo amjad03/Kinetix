@@ -6,6 +6,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../view.dart';
 import '../whiteboard_controller.dart';
+import 'compass_painter.dart';
 import 'geo_tool.dart';
 import 'tool_strings.dart';
 
@@ -98,6 +99,11 @@ class GeoToolsOverlay extends StatelessWidget {
                   btn('smaller', Icons.remove, s.t('smaller'), () => c.updateGeoTool(t.copyWith(size: t.clampSize(t.size / 1.25)))),
                   btn('bigger', Icons.add, s.t('bigger'), () => c.updateGeoTool(t.copyWith(size: t.clampSize(t.size * 1.25)))),
                 ],
+                if (t.isProtractor)
+                  btn('draw', Icons.timeline, s.t('drawArm'), () {
+                    final (a, b) = t.armRay;
+                    c.add(lineStroke(a, b, color: c.penColor, width: c.penWidth));
+                  }),
                 if (t.kind == GeoKind.compass)
                   btn('circle', Icons.radio_button_unchecked, s.t('circle'), () {
                     c.add(compassStroke(t.center, t.size, t.angle, 2 * math.pi, color: c.penColor, width: c.penWidth));
@@ -221,7 +227,7 @@ Rect geoScreenBounds(GeoTool t, ViewState view) {
   final pts = switch (t.kind) {
     GeoKind.protractor ||
     GeoKind.protractor360 => [for (var i = 0; i < 16; i++) t.toBoard(Offset(math.cos(i * math.pi / 8), math.sin(i * math.pi / 8)) * t.size)],
-    GeoKind.compass => [t.center, t.pencil, t.hinge],
+    GeoKind.compass => [t.center, t.pencil, t.hinge, t.toBoard(geoGripHandle(t))],
     _ => [for (final p in t.outline) t.toBoard(p)],
   };
   var r = Rect.fromPoints(view.toScreen(pts.first), view.toScreen(pts.first));
@@ -249,7 +255,7 @@ class _Pill extends StatelessWidget {
 }
 
 /// Which part of a tool a touch began on.
-enum GeoPart { body, grip, rotate, arm, pencil, draw }
+enum GeoPart { body, grip, rotate, arm, pencil, draw, side }
 
 /// Where a tool's grip dot is, in tool units. The tool moves only when this dot is dragged (and
 /// turns only from [geoRotateHandle]); the rest of it is locked so a pen can write along its edge.
@@ -258,7 +264,8 @@ Offset geoGripHandle(GeoTool t) => switch (t.kind) {
   GeoKind.protractor => Offset(-t.size * 0.78, 15),
   GeoKind.protractor360 => Offset(0, -t.size * 0.55),
   GeoKind.setSquare45 || GeoKind.setSquare3060 => Offset(t.size * 0.16, t.outline[2].dy * 0.2),
-  GeoKind.compass => Offset(t.size / 2, -math.max(60.0, t.size * 0.45)),
+  // Beside the hinge head, so the dot never covers the screw.
+  GeoKind.compass => Offset(t.size / 2 + math.max(40.0, t.size * 0.2), -math.max(60.0, t.size * 0.45)),
 };
 
 /// Where a tool's turn handle is, in tool units.
@@ -273,7 +280,7 @@ Offset geoRotateHandle(GeoTool t) => switch (t.kind) {
 /// The part of [t] at board point [b]; handles are [reach] board units across.
 GeoPart geoPartAt(GeoTool t, Offset b, double reach) {
   if (t.kind == GeoKind.compass) {
-    if ((b - t.hinge).distance <= reach) return GeoPart.grip;
+    if ((b - t.toBoard(geoGripHandle(t))).distance <= reach) return GeoPart.grip;
     if ((b - t.pencil).distance <= reach) return GeoPart.pencil;
     if ((b - t.toBoard(geoRotateHandle(t))).distance <= reach) return GeoPart.rotate;
     return GeoPart.body;
@@ -281,7 +288,17 @@ GeoPart geoPartAt(GeoTool t, Offset b, double reach) {
   if ((t.kind == GeoKind.protractor || t.kind == GeoKind.protractor360) && (b - t.armTip).distance <= reach) return GeoPart.arm;
   if ((b - t.toBoard(geoGripHandle(t))).distance <= reach) return GeoPart.grip;
   if ((b - t.toBoard(geoRotateHandle(t))).distance <= reach) return GeoPart.rotate;
+  if (geoSideAt(t, b, reach) != null) return GeoPart.side;
   return GeoPart.body;
+}
+
+/// The set-square side whose "draw edge" dot is at board point [b], if any.
+int? geoSideAt(GeoTool t, Offset b, double reach) {
+  if (!t.isSetSquare) return null;
+  for (var i = 0; i < 3; i++) {
+    if ((b - t.toBoard(t.sideHandle(i))).distance <= reach * 0.7) return i;
+  }
+  return null;
 }
 
 class _GeoToolView extends StatefulWidget {
@@ -302,6 +319,8 @@ class _GeoToolViewState extends State<_GeoToolView> {
   double _startPointer = 0;
   double _sweep = 0, _lastPointer = 0;
   bool _free = false, _drawing = false;
+  int? _side;
+  bool _moved = false;
   // The compass pencil: undecided until the finger has moved, then along the leg (radius) or round it (arc).
   int _pencilMode = 0; // 0 undecided, 1 radius, 2 arc
 
@@ -320,6 +339,8 @@ class _GeoToolViewState extends State<_GeoToolView> {
     _sweep = 0;
     _drawing = false;
     _pencilMode = 0;
+    _moved = false;
+    _side = _part == GeoPart.side ? geoSideAt(t, b, _reach) : null;
     if (HardwareKeyboard.instance.isShiftPressed) _free = true;
   }
 
@@ -328,8 +349,9 @@ class _GeoToolViewState extends State<_GeoToolView> {
     final c = widget.controller;
     final pointerAngle = math.atan2((b - t.center).dy, (b - t.center).dx);
     final compass = t.kind == GeoKind.compass;
+    if ((b - _startAt).distance > 6 / v.scale) _moved = true;
     switch (_part) {
-      case GeoPart.body || GeoPart.draw:
+      case GeoPart.body || GeoPart.draw || GeoPart.side:
         break; // locked: only the dots move a tool
       case GeoPart.grip:
         if (!t.locked) c.updateGeoTool(t.copyWith(center: _start.center + (b - _startAt)));
@@ -364,6 +386,12 @@ class _GeoToolViewState extends State<_GeoToolView> {
 
   void _end() {
     final c = widget.controller;
+    final side = _side;
+    if (side != null && !_moved && side < t.sides.length) {
+      final (a, b) = t.sides[side];
+      c.add(lineStroke(a, b, color: c.penColor, width: c.penWidth));
+    }
+    _side = null;
     if (_drawing && _sweep.abs() > 0.03) {
       c.add(compassStroke(t.center, t.size, _start.angle, _sweep, color: c.penColor, width: c.penWidth));
     }
@@ -381,7 +409,20 @@ class _GeoToolViewState extends State<_GeoToolView> {
       onScaleEnd: (_) => _end(),
       child: CustomPaint(
         painter: GeoToolPainter(t, v, sweep: _drawing ? _sweep : 0, startAngle: _drawing ? _start.angle : t.angle, reach: _reach),
-        child: const SizedBox.expand(),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (t.isSetSquare)
+              for (var i = 0; i < 3; i++)
+                Positioned(
+                  left: v.toScreen(t.toBoard(t.sideHandle(i))).dx - 12,
+                  top: v.toScreen(t.toBoard(t.sideHandle(i))).dy - 12,
+                  width: 24,
+                  height: 24,
+                  child: Tooltip(key: Key('geo-side-tip-$i'), message: ToolStrings.of(context).t('drawEdge'), triggerMode: TooltipTriggerMode.manual, child: const SizedBox.expand()),
+                ),
+          ],
+        ),
       ),
     );
   }
@@ -481,6 +522,11 @@ class GeoToolPainter extends CustomPainter {
     }
     _knob(canvas, geoGripHandle(t), Icons.drag_indicator, color: _accent);
     _knob(canvas, geoRotateHandle(t), Icons.rotate_right);
+    if (t.isSetSquare) {
+      for (var i = 0; i < 3; i++) {
+        _knob(canvas, t.sideHandle(i), Icons.timeline, color: _accent, radius: 12);
+      }
+    }
     canvas.restore();
   }
 
@@ -547,19 +593,9 @@ class GeoToolPainter extends CustomPainter {
     if (!full) _label(canvas, '${t.angleDegrees.round()}°', const Offset(0, 18), 13, color: _accent, bold: true);
   }
 
-  /// A leg from [a] (wide end) to [b] (narrow end) as a tapered bar.
-  void _taper(Canvas canvas, Offset a, Offset b, double w0, double w1, Paint paint) {
-    final d = b - a;
-    if (d.distance == 0) return;
-    final n = Offset(-d.dy, d.dx) / d.distance;
-    canvas.drawPath(Path()..addPolygon([a + n * w0 / 2, b + n * w1 / 2, b - n * w1 / 2, a - n * w0 / 2], true), paint);
-  }
-
   void _compass(Canvas canvas) {
     final needle = t.center, pencil = t.pencil, hinge = t.hinge;
     final k = 1 / view.scale;
-    final steel = Paint()..color = const Color(0xFF8D96A3);
-    final dark = Paint()..color = const Color(0xFF5B6470);
     // The radius, dashed, with its reading.
     final dash = Paint()
       ..color = _accent
@@ -581,22 +617,7 @@ class GeoToolPainter extends CustomPainter {
           ..strokeWidth = 3 * k,
       );
     }
-    // Needle leg: steel bar ending in a fine point.
-    final nl = needle - hinge;
-    final nTip = needle - nl / nl.distance * 4 * k;
-    _taper(canvas, hinge, nTip, 9 * k, 2.5 * k, steel);
-    canvas.drawCircle(needle, 2.2 * k, Paint()..color = const Color(0xFFD7263D));
-    // Pencil leg: metal upper leg, wooden holder, graphite lead.
-    final pl = pencil - hinge;
-    final pu = pl / pl.distance;
-    final holder = pencil - pu * 34 * k;
-    _taper(canvas, hinge, holder, 9 * k, 8 * k, steel);
-    _taper(canvas, holder, pencil - pu * 12 * k, 10 * k, 10 * k, Paint()..color = const Color(0xFFE0B26B));
-    _taper(canvas, pencil - pu * 12 * k, pencil, 10 * k, 1.6 * k, Paint()..color = const Color(0xFF2B2F36));
-    // Hinge: a collar with a stem and a screw.
-    canvas.drawCircle(hinge, 10 * k, dark);
-    canvas.drawCircle(hinge, 4 * k, steel);
-    canvas.drawLine(hinge, hinge + Offset(0, -16 * k), Paint()..color = const Color(0xFF5B6470)..strokeWidth = 5 * k..strokeCap = StrokeCap.round);
+    paintCompass(canvas, needle: needle, pencil: pencil, hinge: hinge, k: k);
     final mid = (needle + pencil) / 2;
     canvas
       ..save()
@@ -607,18 +628,18 @@ class GeoToolPainter extends CustomPainter {
     tp.paint(canvas, Offset(-tp.width / 2, 8));
     canvas.restore();
     // Dots: move (hinge), set radius / swing to draw (pencil), turn (behind the needle).
-    _knobAt(canvas, hinge, Icons.drag_indicator, color: _accent);
+    _knobAt(canvas, t.toBoard(geoGripHandle(t)), Icons.drag_indicator, color: _accent);
     _knobAt(canvas, pencil, Icons.open_with, color: _accent);
     _knobAt(canvas, t.toBoard(geoRotateHandle(t)), Icons.rotate_right);
   }
 
   /// A round handle at tool point [at] (in the turned tool frame).
-  void _knob(Canvas canvas, Offset at, IconData icon, {Color? color}) {
+  void _knob(Canvas canvas, Offset at, IconData icon, {Color? color, double radius = 18}) {
     canvas
       ..save()
       ..translate(at.dx, at.dy)
       ..scale(1 / view.scale, _fy / view.scale);
-    _drawKnob(canvas, icon, color);
+    _drawKnob(canvas, icon, color, radius);
     canvas.restore();
   }
 
@@ -628,16 +649,16 @@ class GeoToolPainter extends CustomPainter {
       ..save()
       ..translate(at.dx, at.dy)
       ..scale(1 / view.scale);
-    _drawKnob(canvas, icon, color);
+    _drawKnob(canvas, icon, color, 18);
     canvas.restore();
   }
 
-  void _drawKnob(Canvas canvas, IconData icon, Color? color) {
-    canvas.drawCircle(Offset.zero, 18, Paint()..color = (color ?? KxColor.inverse).withValues(alpha: 0.85));
+  void _drawKnob(Canvas canvas, IconData icon, Color? color, double radius) {
+    canvas.drawCircle(Offset.zero, radius, Paint()..color = (color ?? KxColor.inverse).withValues(alpha: 0.85));
     final tp = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(icon.codePoint),
-        style: TextStyle(fontSize: 20, fontFamily: icon.fontFamily, package: icon.fontPackage, color: Colors.white),
+        style: TextStyle(fontSize: radius * 1.1, fontFamily: icon.fontFamily, package: icon.fontPackage, color: Colors.white),
       ),
       textDirection: TextDirection.ltr,
     )..layout();

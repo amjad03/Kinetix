@@ -64,7 +64,7 @@ void main() {
   test('the compass pencil sets the radius and swinging it draws an arc', () {
     var t = GeoTool.create(GeoKind.compass, const Offset(600, 400));
     expect(geoPartAt(t, t.pencil, 26), GeoPart.pencil);
-    expect(geoPartAt(t, t.hinge, 26), GeoPart.grip);
+    expect(geoPartAt(t, t.toBoard(geoGripHandle(t)), 26), GeoPart.grip);
     expect(geoPartAt(t, t.toBoard(geoRotateHandle(t)), 26), GeoPart.rotate);
     t = t.copyWith(size: 200);
     final arc = compassStroke(t.center, t.size, 0, math.pi / 2, color: Colors.black, width: 3);
