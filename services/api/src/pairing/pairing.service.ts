@@ -89,6 +89,38 @@ export class PairingService {
   }
 
   /**
+   * Polling fallback for the realtime `pairing.claimed` push: a board whose socket is down asks
+   * whether a teacher has just paired with it. Returns the session opened in the last 3 minutes,
+   * with a fresh board token, or null.
+   */
+  async pending(p: DevicePrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const now = this.clock.now();
+      const [row] = await tx
+        .select()
+        .from(boardSessions)
+        .where(
+          and(
+            eq(boardSessions.deviceId, p.deviceId),
+            isNull(boardSessions.endedAt),
+            gt(boardSessions.expiresAt, now),
+            gte(boardSessions.startedAt, new Date(now.getTime() - 180_000)),
+          ),
+        )
+        .orderBy(desc(boardSessions.startedAt))
+        .limit(1);
+      if (!row) return { pending: null };
+      const [device] = await tx.select().from(devices).where(eq(devices.id, p.deviceId));
+      const context = await this.sessions.context(tx, row.id);
+      const sessionToken = this.tokens.signBoard(
+        { sub: row.teacherId, tid: row.tenantId, did: p.deviceId, cid: device.campusId, sid: row.id },
+        row.expiresAt,
+      );
+      return { pending: { sessionToken, session: context } };
+    });
+  }
+
+  /**
    * Signs a teacher in on this board after they tapped a card or finger at the reader beside it (access-devices, purpose
    * board_signin) within the last two minutes. A tap is used once.
    */

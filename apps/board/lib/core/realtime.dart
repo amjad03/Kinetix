@@ -45,7 +45,7 @@ class Realtime {
     _socket?.dispose();
     final socket = io.io(
       '$baseUrl/realtime',
-      io.OptionBuilder().setTransports(['websocket']).setAuth({'token': token}).disableAutoConnect().enableReconnection().build(),
+      io.OptionBuilder().setTransports(['websocket', 'polling']).setAuth({'token': token}).disableAutoConnect().enableReconnection().build(),
     );
     for (final e in _handlers.entries) {
       socket.on(e.key, (d) => e.value(Map<String, dynamic>.from(d as Map)));

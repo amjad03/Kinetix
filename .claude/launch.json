@@ -1,0 +1,34 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "services/api",
+        "start"
+      ],
+      "port": 4000
+    },
+    {
+      "name": "erp",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "apps/erp",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "board-macos",
+      "runtimeExecutable": "open",
+      "runtimeArgs": [
+        "-n",
+        "apps/board/build/macos/Build/Products/Debug/kinetix_board.app"
+      ],
+      "port": 4000
+    }
+  ]
+}

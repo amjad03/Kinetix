@@ -203,6 +203,15 @@ class ApiClient {
     return (sessionToken: j['sessionToken'] as String, session: SessionContext.fromJson(j['session'] as Map<String, dynamic>));
   }
 
+  /// Polling fallback for the realtime `pairing.claimed` push: the session a teacher just opened
+  /// on this board by claiming its code, or null when none.
+  Future<({String sessionToken, SessionContext session})?> pendingPairing() async {
+    final j = await _send('GET', '/v1/pairing/pending', useDeviceToken: true) as Map<String, dynamic>;
+    final p = j['pending'] as Map<String, dynamic>?;
+    if (p == null) return null;
+    return (sessionToken: p['sessionToken'] as String, session: SessionContext.fromJson(p['session'] as Map<String, dynamic>));
+  }
+
   /// The teacher who just tapped a card or finger at the reader beside this board, or null when none did
   /// (or no reader is fitted: [present] is false then).
   Future<({bool present, String? name})> teacherTap() async {

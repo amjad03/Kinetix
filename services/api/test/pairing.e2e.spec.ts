@@ -52,6 +52,19 @@ describe('board enrolment and teacher pairing', () => {
     await owner.end();
   });
 
+  it('polling fallback: a board with no socket learns of the pairing from GET /v1/pairing/pending', async () => {
+    const asBoard = (r: request.Test) => r.set('authorization', `Bearer ${deviceToken}`);
+    const before = await asBoard(request(app.getHttpServer()).get('/v1/pairing/pending')).expect(200);
+    const { qrPayload } = await newCode();
+    const teacherToken = await login(t.slug, t.teacher.email!);
+    const claim = await request(app.getHttpServer()).post('/v1/pairing/claim').set('authorization', `Bearer ${teacherToken}`).send({ qr: qrPayload }).expect(200);
+    const after = await asBoard(request(app.getHttpServer()).get('/v1/pairing/pending')).expect(200);
+    expect(after.body.pending.session.sessionId).toBe(claim.body.session.sessionId);
+    expect(typeof after.body.pending.sessionToken).toBe('string');
+    expect(before.body.pending === null || before.body.pending.session.sessionId !== claim.body.session.sessionId).toBe(true);
+    await request(app.getHttpServer()).get('/v1/pairing/pending').expect(401);
+  });
+
   it('an enrolment code works only once', async () => {
     await request(app.getHttpServer()).post('/v1/devices/enroll').send({ code: t.enrollmentCode, platform: 'android' }).expect(401);
   });

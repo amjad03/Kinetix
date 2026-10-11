@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { DevicePrincipal, UserPrincipal } from '../auth/principal.js';
@@ -20,6 +20,13 @@ export class PairingController {
   @Auth('device')
   tapSignIn(@CurrentPrincipal() p: DevicePrincipal) {
     return this.pairing.tapSignIn(p);
+  }
+
+  /** A board whose realtime socket is down polls this to learn a teacher has paired. */
+  @Get('pending')
+  @Auth('device')
+  pending(@CurrentPrincipal() p: DevicePrincipal) {
+    return this.pairing.pending(p);
   }
 
   @Post('claim')

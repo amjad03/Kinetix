@@ -15,7 +15,13 @@ import '../board/phone_chrome.dart';
 /// KINETIX Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
 /// when the board receives the session (see [BoardController.onPaired]).
 class SignInDialog extends StatefulWidget {
-  const SignInDialog({super.key, required this.api, required this.boardName, this.onTapSignIn, this.tapPoll = const Duration(seconds: 3)});
+  const SignInDialog({super.key, required this.api, required this.boardName, this.onTapSignIn, this.onPaired, this.tapPoll = const Duration(seconds: 3), this.pairPoll = const Duration(seconds: 2)});
+
+  /// Called when polling finds that a teacher paired while the realtime push never arrived.
+  final void Function(String sessionToken, SessionContext session)? onPaired;
+
+  /// How often to ask the server whether a teacher has paired (the fallback when realtime is down).
+  final Duration pairPoll;
 
   /// Called with the new session when a teacher taps a card or finger at the reader beside the board and confirms.
   final void Function(String sessionToken, SessionContext session)? onTapSignIn;
@@ -39,6 +45,7 @@ class _SignInDialogState extends State<SignInDialog> {
   Timer? _refresh;
   Timer? _tick;
   Timer? _tapTimer;
+  Timer? _pairTimer;
 
   /// The teacher who tapped, offered as a one-touch sign-in.
   String? _tapped;
@@ -52,7 +59,17 @@ class _SignInDialogState extends State<SignInDialog> {
     super.initState();
     _load();
     _tick = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
+    if (widget.onPaired != null) _pairTimer = Timer.periodic(widget.pairPoll, (_) => _pollPaired());
     if (widget.onTapSignIn != null) _tapTimer = Timer.periodic(widget.tapPoll, (_) => _pollTap());
+  }
+
+  Future<void> _pollPaired() async {
+    try {
+      final r = await widget.api.pendingPairing();
+      if (r != null && mounted) widget.onPaired!(r.sessionToken, r.session);
+    } catch (_) {
+      // Offline or server error: the realtime push or the next poll will do.
+    }
   }
 
   Future<void> _pollTap() async {
@@ -120,6 +137,7 @@ class _SignInDialogState extends State<SignInDialog> {
     _refresh?.cancel();
     _tick?.cancel();
     _tapTimer?.cancel();
+    _pairTimer?.cancel();
     super.dispose();
   }
 

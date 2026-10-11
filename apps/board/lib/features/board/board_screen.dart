@@ -752,7 +752,7 @@ class _BoardScreenState extends State<BoardScreen> {
     await showDialog<void>(
       context: context,
       builder: (_) => BoardChromeTheme(
-        child: SignInDialog(api: api, boardName: board.deviceName, onTapSignIn: board.openSession),
+        child: SignInDialog(api: api, boardName: board.deviceName, onTapSignIn: board.openSession, onPaired: board.openSession),
       ),
     );
     if (mounted) setState(() => _signInOpen = false);

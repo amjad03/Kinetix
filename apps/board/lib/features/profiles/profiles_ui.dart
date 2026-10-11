@@ -415,7 +415,7 @@ class _ProfileLockState extends State<ProfileLock> {
             }
             return child!;
           },
-          child: SignInDialog(api: api, boardName: widget.board.deviceName),
+          child: SignInDialog(api: api, boardName: widget.board.deviceName, onPaired: widget.board.openSession),
         ),
       ),
     );
