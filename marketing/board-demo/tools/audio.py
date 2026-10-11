@@ -27,13 +27,13 @@ def load(path):
 # ---- voice
 vo = np.zeros(N, np.float32)
 spans = []
-prev_end = 0.0
+prev_end = None
 for s in TL['segs']:
-    at = s['at'] / FPS + (-0.8 if s.get('afterCard') else -0.2) + (0.7 if s.get('end') else 0)
+    at = (s['at'] + s.get('voOff', 0)) / FPS
     a = load(os.path.join(HERE, 'audio', s['id'] + '.wav'))
-    # keep the narration continuous: a line may start a little early, never with >0.75 s of silence before it
-    if prev_end and at - prev_end > 0.95:
-        at -= min(at - prev_end - 0.75, 1.5)
+    # keep pauses under a second: a line may start up to 0.45 s early (captions lead by the same)
+    if prev_end is not None and at - prev_end > 0.9:
+        at -= min(at - prev_end - 0.9, 0.45)
     prev_end = at + len(a) / SR
     i = int(max(0, at) * SR)
     a = a[: N - i]

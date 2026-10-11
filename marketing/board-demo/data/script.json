@@ -36,7 +36,7 @@
     },
     {
      "id": "s15",
-     "vo": "Books shows the NCERT syllabus and which topics have been taught. And the profile menu holds saved whiteboards, recordings, training and a guided tour."
+     "vo": "Books shows the NCERT syllabus, and which topics have been taught. The profile menu keeps your saved whiteboards. Your lesson recordings. Teacher training. And a guided tour."
     }
    ]
   },
@@ -46,7 +46,7 @@
    "segs": [
     {
      "id": "s20",
-     "vo": "Now the canvas. The pen panel sets the pen type, thickness and colour, with pressure, smoothing and palm rejection for a real stylus."
+     "vo": "Now the canvas. The pen panel sets the pen type. The thickness. And the colour. With pressure, smoothing and palm rejection for a real stylus."
     },
     {
      "id": "s21",
@@ -66,11 +66,11 @@
     },
     {
      "id": "s25",
-     "vo": "Select with a lasso to move, resize, duplicate, group or lock anything on the page."
+     "vo": "Select with a lasso, then move it anywhere. The selection bar can resize, duplicate, group or lock it."
     },
     {
      "id": "s26",
-     "vo": "Real geometry tools: a ruler and protractor you can move, rotate and draw against, plus a compass and set squares."
+     "vo": "Real geometry tools live in the drawer: a ruler, a protractor, a compass and set squares. Here the protractor goes on the board, to move, rotate and measure against."
     }
    ]
   },
@@ -92,7 +92,7 @@
     },
     {
      "id": "s33",
-     "vo": "The tools drawer holds the rest: graphs, a periodic table, formulas, circuits, flowcharts, mind maps, code labs, logic gates and more, filtered to the subject being taught."
+     "vo": "The tools drawer holds the rest, filtered by subject. For science: a periodic table, circuits and atoms. For maths: graphs, equations and statistics. And for computer science: flowcharts, code labs and logic gates."
     }
    ]
   },
@@ -106,7 +106,7 @@
     },
     {
      "id": "s41",
-     "vo": "Backgrounds and templates: ruled, grid, graph, a dark board or a chalkboard, for one page or all of them."
+     "vo": "Backgrounds and templates: ruled, grid, dots, or a chalkboard, for one page or for all of them."
     },
     {
      "id": "s42",
@@ -128,11 +128,11 @@
     },
     {
      "id": "s52",
-     "vo": "There are PhET simulations that work offline, animations, concept videos, and the subject kit with formulas and constants."
+     "vo": "There are PhET simulations that work offline. Animations. Concept videos. And the subject kit, with the periodic table, formulas and constants."
     },
     {
      "id": "s53",
-     "vo": "From the Add menu, bring in PDFs, PowerPoint slides, pictures, tables, sticky notes, word cards and covered answers. There's a safe browser and a document camera too."
+     "vo": "From the Add menu, bring in PDFs and PowerPoint slides, pictures, tables, sticky notes, word cards and covered answers. The side panel adds a safe browser for the web, and a document camera."
     }
    ]
   },
@@ -150,7 +150,7 @@
     },
     {
      "id": "s62",
-     "vo": "It also writes quick quizzes, homework and lecture notes, summarises the board, and reads whatever has been written on it."
+     "vo": "It also writes quick quizzes. Homework. And lecture notes. It summarises the board, and Read board reads whatever has been written on it."
     }
    ]
   },
@@ -176,7 +176,7 @@
     },
     {
      "id": "s74",
-     "vo": "And there's a full classroom toolkit. A random picker chooses who answers next. There are timers and stopwatches, team scoreboards, badges for good work, a group maker that splits the class in one tap, and multi-user zones, so several students can write on the board at once. Everything a teacher needs is one tap away."
+     "vo": "And there's a full classroom toolkit. A random picker chooses who answers next. A timer keeps activities on track. Scoreboards run team quizzes. Badges reward good work. The group maker splits the class in one tap. And multi-user zones let several students write on the board at once."
     }
    ]
   },
@@ -212,7 +212,7 @@
     },
     {
      "id": "s92",
-     "vo": "Live captions help every student follow along. Phones can cast to the board after the teacher approves, and the board can project to a second screen, or freeze its display while the teacher sets up the next step."
+     "vo": "Live captions help every student follow along. In the Cast panel, phones share their screen after the teacher approves. Screen projection mirrors the board to a second display. And Freeze screen holds the picture while the teacher sets up the next step."
     }
    ]
   },
@@ -222,7 +222,7 @@
    "segs": [
     {
      "id": "s100",
-     "vo": "Eye comfort warms and dims the panel for long teaching days, with break reminders. And the whole board switches to a dark theme in a single tap."
+     "vo": "Eye comfort warms and dims the panel for long teaching days. Break reminders follow the twenty twenty twenty rule. And the whole board switches to a dark theme in a single tap."
     },
     {
      "id": "s101",
@@ -230,11 +230,11 @@
     },
     {
      "id": "s102",
-     "vo": "There are tools for every learner. Voice commands control the board hands free, and the immersive reader reads text aloud. A screen shade, a spotlight and a magnifier focus the class on exactly what matters."
+     "vo": "There are tools for every learner. Voice commands control the board hands free. The immersive reader reads the page aloud. A screen shade reveals the board step by step. A spotlight focuses attention. And a magnifier enlarges any detail."
     },
     {
      "id": "s103",
-     "vo": "Board settings, a customisable toolbar, simple mode, kiosk lock and device diagnostics keep every panel under the school's control, managed remotely from the IT console."
+     "vo": "Board settings hold the language, theme and writing options, with a simple mode of big labelled tools. The toolbar can be customised. Touch lock keeps the panel safe in kiosk mode. And device diagnostics report its health to the IT console."
     }
    ]
   },
@@ -248,7 +248,7 @@
     },
     {
      "id": "s111",
-     "vo": "End the class, and attendance, polls, homework, recordings and lesson evidence flow to the KINETIX ERP, and on to the Teacher, Student and Parent apps."
+     "vo": "End the class, and attendance, polls, homework, recordings and lesson evidence flow to the KINETIX ERP. And on to the Teacher app, the Student app, and the Parent app."
     },
     {
      "id": "s112",

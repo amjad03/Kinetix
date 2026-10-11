@@ -20,13 +20,19 @@ const frameDt = Duration(microseconds: 33333);
 const headerBytes = 512;
 
 class Director {
-  Director(this.t, this.rk, {required this.vo, this.outPath, this.previewDir}) {
+  Director(this.t, this.rk, {required this.vo, this.words = const {}, this.voText = const {}, this.outPath, this.previewDir}) {
     if (outPath != null) _out = File(outPath!).openSync(mode: FileMode.writeOnly);
   }
 
   final WidgetTester t;
   final GlobalKey rk;
   final Map<String, double> vo;
+
+  /// Word timings of each VO clip ([word, start, end] in seconds, from tools/words.py) and the
+  /// VO text (for a proportional estimate when a word is not found).
+  final Map<String, List<dynamic>> words;
+  final Map<String, String> voText;
+  double _cueAt = 0;
   final String? outPath, previewDir;
   RandomAccessFile? _out;
   final log = StringBuffer();
@@ -123,7 +129,7 @@ class Director {
       if (wb.protractor.value.visible) wb.toggleProtractor();
       wb.clearSelection();
     }
-    for (final k in ['panel-close', 'zones-end']) {
+    for (final k in ['panel-close', 'zones-end', 'spotlight-end', 'magnifier-close', 'captions-stop']) {
       final f = find.byKey(Key(k)).hitTestable();
       if (f.evaluate().isNotEmpty) {
         await t.tap(f.first, warnIfMissed: false);
@@ -136,7 +142,7 @@ class Director {
 
   /// A chapter title card (rendered by the compositor, 1.2 s).
   void card(int n, String title) {
-    if (_out != null) _writeHeader({'card': title, 'num': n, 'frames': 36}, 0);
+    if (_out != null) _writeHeader({'card': title, 'num': n, 'frames': 33}, 0);
     log.writeln('card $n $title at $frame');
     _afterCard = true;
   }
@@ -151,15 +157,78 @@ class Director {
     if (_seg != null) await endSeg();
     _seg = id;
     _segStart = frame;
-    ev({'seg': id, 'afterCard': _afterCard});
+    _cueAt = 0;
+    ev({'seg': id, 'afterCard': _afterCard, 'voOff': voStart - frame});
     log.writeln('seg $id at $frame');
   }
+
+  /// Frame at which this segment's voice-over starts (it leads the action by 0.2 s; after a
+  /// chapter card it starts during the card).
+  int get voStart => _segStart + ((_afterCard ? -0.5 : preroll) * fps).round();
+  double preroll = 0.5;
+
+  /// Seconds into the current segment's voice-over where [word] (the [nth] match after the last
+  /// cue) is spoken.
+  double wordTime(String word, {int nth = 0}) {
+    final id = _seg!;
+    final key = word.toLowerCase();
+    final list = words[id] ?? const [];
+    var n = nth;
+    for (final w in list) {
+      final text = ((w as List)[0] as String).toLowerCase().replaceAll(RegExp(r"[^a-z0-9'-]"), '');
+      final st = (w[1] as num).toDouble();
+      if (st + 0.01 < _cueAt) continue;
+      final k4 = key.length >= 5 ? key.substring(0, 4) : key;
+      if (text.startsWith(key) || key.startsWith(text) && text.length >= 3 || key.length >= 5 && text.startsWith(k4)) {
+        if (n-- == 0) return st;
+      }
+    }
+    final vt = (voText[id] ?? '').toLowerCase();
+    final i = vt.indexOf(key);
+    log.writeln('word "$word" not timed in $id, estimating');
+    return i < 0 ? _cueAt : (vo[id] ?? 1) * i / vt.length;
+  }
+
+  /// Waits (stylus resting) until [lead] seconds before [word] is spoken, so the action it starts
+  /// lands on the word. [title] shows a kinetic feature title on the word.
+  Future<void> at(String word, {double lead = 0.45, int nth = 0, String? title}) async {
+    final w = wordTime(word, nth: nth);
+    _cueAt = w;
+    final target = voStart + ((w - lead) * fps).round();
+    if (frame < target) {
+      await idle((target - frame) / fps);
+    } else if (frame - target > 12) {
+      log.writeln('LATE "$word" in $_seg by ${((frame - target) / fps).toStringAsFixed(1)}s');
+    }
+    if (title != null) ev({'title': title, 'in': math.max(0, voStart + (w * fps).round() - frame)});
+  }
+
+  /// Spotlight + camera on [r] (board coordinates) for [seconds], with an optional label.
+  void hl(Rect r, {String? label, double seconds = 2.2, bool zoom = true}) =>
+      ev({'hl': [r.left.round(), r.top.round(), r.width.round(), r.height.round()], 'dur': (seconds * fps).round(), if (label != null) 'label': label, 'zoom': zoom});
+
+  /// Spotlights the widget found by [f] (if present).
+  void hlFinder(Finder f, {String? label, double seconds = 2.2, bool zoom = true, double pad = 8}) {
+    if (f.evaluate().isEmpty) {
+      log.writeln('no widget to highlight ($label) in ${_seg ?? '-'}');
+      return;
+    }
+    hl(t.getRect(f.first).inflate(pad), label: label, seconds: seconds, zoom: zoom);
+  }
+
+  void hlKey(String key, {String? label, double seconds = 2.2, bool zoom = true}) => hlFinder(find.byKey(Key(key)), label: label, seconds: seconds, zoom: zoom);
+
+  /// Camera framing (no spotlight) on [r] for [seconds]; the camera eases back to the full board after.
+  void focus(Rect r, {double seconds = 3}) => ev({'focus': [r.left.round(), r.top.round(), r.width.round(), r.height.round()], 'dur': (seconds * fps).round()});
+
+  /// A pill in the side stack (a quick list), on the word.
+  void chip(String text) => ev({'chip': text});
 
   /// Holds (stylus resting) until the segment is as long as its voice-over.
   Future<void> endSeg({Offset? rest}) async {
     final id = _seg;
     if (id == null) return;
-    final need = (((vo[id] ?? 2) + (_afterCard ? -0.8 : -0.2) + 0.25) * fps).round();
+    final need = voStart - _segStart + (((vo[id] ?? 2) + 0.2) * fps).round();
     final have = frame - _segStart;
     if (have < need) {
       await idle((need - have) / fps, rest: rest);
@@ -192,7 +261,7 @@ class Director {
     final from = pen;
     final h0 = h;
     final dist = (to - from).distance;
-    final dur = ms ?? (220 + dist * 0.32).clamp(220, 820).toDouble();
+    final dur = ms ?? (170 + dist * 0.22).clamp(170, 560).toDouble();
     final n = math.max(1, (dur / 1000 * fps).round());
     final perp = dist < 1 ? Offset.zero : Offset(-(to - from).dy, (to - from).dx) / dist * (dist * 0.08 * (_rng.nextBool() ? 1 : -1));
     for (var i = 1; i <= n; i++) {
@@ -231,7 +300,7 @@ class Director {
     ev({'tap': [p.dx.round(), p.dy.round()]});
     await emit(hold ? 18 : 2);
     await _lift();
-    for (final hh in [0.06, 0.11, 0.16]) {
+    for (final hh in [0.08, 0.16]) {
       h = hh;
       await emit();
     }
@@ -412,31 +481,107 @@ extension DirectorUi on Director {
   }
 
   /// Opens a tile of the tools drawer, scrolling the drawer with the stylus until it is built.
-  Future<bool> drawerTool(String id, {String? filter}) async {
+  /// Opens the tools drawer (once), optionally on a subject filter.
+  Future<bool> openDrawer({String? filter}) async {
     final drawer = find.byKey(const Key('tools-drawer'));
-    if (drawer.evaluate().isEmpty) {
+    for (var i = 0; i < 2 && drawer.evaluate().isEmpty; i++) {
       await tapKey('tool-tools');
-      await emit(5);
-    }
-    if (drawer.evaluate().isEmpty) {
-      await tapKey('tool-tools');
-      await emit(5);
-    }
-    if (drawer.evaluate().isEmpty) {
-      log.writeln('no drawer for $id in ${_seg ?? '-'}');
-      return false;
-    }
-    if (filter != null && find.byKey(Key('drawer-filter-$filter')).evaluate().isNotEmpty && find.byKey(Key('drawer-$id')).hitTestable().evaluate().isEmpty) {
-      await tapKey('drawer-filter-$filter');
       await emit(4);
     }
-    final k = find.byKey(Key('drawer-$id'));
-    for (var i = 0; i < 6 && k.hitTestable().evaluate().isEmpty; i++) {
-      final r = t.getRect(find.byKey(const Key('tools-drawer')));
-      await drag([r.center + Offset(0, r.height * 0.3), r.center - Offset(0, r.height * 0.3)], 380);
+    if (drawer.evaluate().isEmpty) {
+      log.writeln('no drawer in ${_seg ?? '-'}');
+      return false;
+    }
+    if (filter != null && find.byKey(Key('drawer-filter-$filter')).evaluate().isNotEmpty) {
+      await tapKey('drawer-filter-$filter');
       await emit(3);
     }
+    return true;
+  }
+
+  static const _search = {
+    'read-aloud': 'immersive', 'toolkit-curtain': 'shade', 'toolkit-spotlight': 'spotlight', 'touch-lock': 'touch lock',
+    'live-captions': 'captions', 'group-maker': 'group', 'ask-class': 'ask the', 'todays-plan': 'plan', 'voice-commands': 'voice',
+    'toolkit-picker': 'random', 'toolkit-timer': 'timer', 'seating-chart': 'seating',
+  };
+
+  /// Opens a tile of the tools drawer: on screen already, or found with the drawer's search box
+  /// (typed with the on-screen keyboard), which is how a teacher finds a tool fast.
+  Future<bool> drawerTool(String id, {String? filter}) async {
+    if (!await drawerFind(id, filter: filter)) return false;
     return tapKey('drawer-$id');
+  }
+
+  /// Opens the drawer and brings tile [id] into view (search box, then scrolling) without tapping it.
+  Future<bool> drawerFind(String id, {String? filter}) async {
+    if (!await openDrawer(filter: filter)) return false;
+    final k = find.byKey(Key('drawer-$id'));
+    if (k.hitTestable().evaluate().isEmpty) {
+      final field = find.descendant(of: find.byKey(const Key('tools-search')), matching: find.byType(TextField));
+      final f = field.evaluate().isNotEmpty ? field : find.byKey(const Key('tools-search'));
+      if (f.evaluate().isNotEmpty) {
+        await tapFinder(f.first);
+        await type(f.first, _search[id] ?? id.split('-').last, charsPerFrame: 3);
+        await emit(2);
+      }
+    }
+    for (var i = 0; i < 4 && k.hitTestable().evaluate().isEmpty; i++) {
+      final r = t.getRect(find.byKey(const Key('tools-drawer')));
+      await drag([r.center + Offset(0, r.height * 0.3), r.center - Offset(0, r.height * 0.3)], 320);
+      await emit(2);
+    }
+    return k.hitTestable().evaluate().isNotEmpty;
+  }
+
+  /// Shows tab [name] of the side panel (opening the panel if needed).
+  Future<void> panelTab(String name) async {
+    if (find.byKey(const Key('split-panel')).evaluate().isEmpty) {
+      await tapKey('panel-ai');
+      await emit(10);
+    }
+    final tab = find.byKey(Key('panel-tab-$name'));
+    if (tab.evaluate().isEmpty) return;
+    await t.ensureVisible(tab);
+    await emit(3);
+    await tapFinder(tab, visibleFirst: false);
+    await emit(3);
+  }
+
+  /// Opens drawer tool [id] so that it appears as [word] is spoken: the drawer and its search are
+  /// prepared beforehand, the tile is tapped on the word.
+  Future<void> toolOnWord(String word, String id, {String? filter, String? title, double prep = 2.0}) async {
+    await at(word, lead: prep);
+    await drawerFind(id, filter: filter);
+    await at(word, lead: 0.4, title: title);
+    await tapKey('drawer-$id');
+    await emit(2);
+  }
+
+  /// Shows the AI tab of the side panel (opening the panel if needed).
+  Future<void> aiTab() async {
+    if (find.byKey(const Key('split-panel')).evaluate().isEmpty) {
+      await tapKey('panel-ai');
+      await emit(10);
+    }
+    if (find.byKey(const Key('ai-ask')).hitTestable().evaluate().isEmpty) {
+      final tab = find.byKey(const Key('panel-tab-ai'));
+      if (tab.evaluate().isNotEmpty) {
+        await t.ensureVisible(tab);
+        await emit(3);
+        await tapFinder(tab, visibleFirst: false);
+        await emit(3);
+      }
+    }
+    for (var i = 0; i < 3 && find.byKey(const Key('ai-tool-homework')).hitTestable().evaluate().isEmpty && find.byKey(const Key('panel-back')).hitTestable().evaluate().isNotEmpty; i++) {
+      await tapKey('panel-back');
+      await emit(2);
+    }
+  }
+
+  /// A kinetic feature title on [word] without waiting for it.
+  void titleAt(String word, String title, {int nth = 0}) {
+    final w = wordTime(word, nth: nth);
+    ev({'title': title, 'in': math.max(0, voStart + (w * fps).round() - frame)});
   }
 
   /// Taps outside an open popover (its barrier) to close it.
