@@ -23,7 +23,7 @@ void paintCompass(Canvas canvas, {required Offset needle, required Offset pencil
   final legLen = (nl.distance + pl.distance) / 2;
   if (legLen <= 0) return;
   // One width unit for the whole instrument: grows with the legs, never below a few pixels.
-  final s = (legLen * 0.075).clamp(6 * k, 26 * k).toDouble();
+  final s = (legLen * 0.085).clamp(6 * k, 30 * k).toDouble();
   final axis = (needle + pencil) / 2 - hinge;
   final up = axis.distance == 0 ? const Offset(0, -1) : -axis / axis.distance;
 
@@ -102,7 +102,7 @@ void _needleLeg(Canvas canvas, Offset hinge, Offset needle, Offset pencil, doubl
       ..lineTo(len * 0.78, s * 0.4)
       ..close();
     _metal(canvas, foot, s * 0.4);
-    _wheel(canvas, Offset(len * 0.84, out * s * 0.72), s * 0.5);
+    _wheel(canvas, Offset(len * 0.84, out * s * 0.8), s * 0.65);
     // The needle itself.
     final nd = Path()..addPolygon([Offset(len * 0.9, -s * 0.11), Offset(len, 0), Offset(len * 0.9, s * 0.11)], true);
     canvas.drawPath(nd, Paint()..shader = _across(s * 0.11, colors: const [Color(0xFFE9ECEF), Color(0xFF6D747C)]));
@@ -123,7 +123,7 @@ void _pencilLeg(Canvas canvas, Offset hinge, Offset pencil, Offset needle, doubl
     _metal(canvas, leaf, s * 1.6, edge: 0.7);
     final rodY = out * s * 1.6;
     canvas.drawLine(Offset(len * 0.54, rodY), Offset(len * 0.66, rodY), _line(const Color(0xFF69707A), s * 0.12));
-    _wheel(canvas, Offset(len * 0.6, rodY), s * 0.4);
+    _wheel(canvas, Offset(len * 0.6, rodY), s * 0.5);
     // Lead holder: a sleeve, a knurled adjusting collar, then the lead cone and lead.
     _metal(canvas, _taper(len * 0.66, len * 0.92, s * 0.62, s * 0.5), s * 0.31);
     final collar = Rect.fromLTRB(len * 0.76, -s * 0.5, len * 0.84, s * 0.5);

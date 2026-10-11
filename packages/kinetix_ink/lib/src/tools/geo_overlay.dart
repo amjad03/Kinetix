@@ -227,7 +227,7 @@ Rect geoScreenBounds(GeoTool t, ViewState view) {
   final pts = switch (t.kind) {
     GeoKind.protractor ||
     GeoKind.protractor360 => [for (var i = 0; i < 16; i++) t.toBoard(Offset(math.cos(i * math.pi / 8), math.sin(i * math.pi / 8)) * t.size)],
-    GeoKind.compass => [t.center, t.pencil, t.hinge],
+    GeoKind.compass => [t.center, t.pencil, t.hinge, t.toBoard(geoGripHandle(t))],
     _ => [for (final p in t.outline) t.toBoard(p)],
   };
   var r = Rect.fromPoints(view.toScreen(pts.first), view.toScreen(pts.first));
@@ -264,7 +264,8 @@ Offset geoGripHandle(GeoTool t) => switch (t.kind) {
   GeoKind.protractor => Offset(-t.size * 0.78, 15),
   GeoKind.protractor360 => Offset(0, -t.size * 0.55),
   GeoKind.setSquare45 || GeoKind.setSquare3060 => Offset(t.size * 0.16, t.outline[2].dy * 0.2),
-  GeoKind.compass => Offset(t.size / 2, -math.max(60.0, t.size * 0.45)),
+  // Beside the hinge head, so the dot never covers the screw.
+  GeoKind.compass => Offset(t.size / 2 + math.max(40.0, t.size * 0.2), -math.max(60.0, t.size * 0.45)),
 };
 
 /// Where a tool's turn handle is, in tool units.
@@ -279,7 +280,7 @@ Offset geoRotateHandle(GeoTool t) => switch (t.kind) {
 /// The part of [t] at board point [b]; handles are [reach] board units across.
 GeoPart geoPartAt(GeoTool t, Offset b, double reach) {
   if (t.kind == GeoKind.compass) {
-    if ((b - t.hinge).distance <= reach) return GeoPart.grip;
+    if ((b - t.toBoard(geoGripHandle(t))).distance <= reach) return GeoPart.grip;
     if ((b - t.pencil).distance <= reach) return GeoPart.pencil;
     if ((b - t.toBoard(geoRotateHandle(t))).distance <= reach) return GeoPart.rotate;
     return GeoPart.body;
@@ -408,7 +409,20 @@ class _GeoToolViewState extends State<_GeoToolView> {
       onScaleEnd: (_) => _end(),
       child: CustomPaint(
         painter: GeoToolPainter(t, v, sweep: _drawing ? _sweep : 0, startAngle: _drawing ? _start.angle : t.angle, reach: _reach),
-        child: const SizedBox.expand(),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (t.isSetSquare)
+              for (var i = 0; i < 3; i++)
+                Positioned(
+                  left: v.toScreen(t.toBoard(t.sideHandle(i))).dx - 12,
+                  top: v.toScreen(t.toBoard(t.sideHandle(i))).dy - 12,
+                  width: 24,
+                  height: 24,
+                  child: Tooltip(key: Key('geo-side-tip-$i'), message: ToolStrings.of(context).t('drawEdge'), triggerMode: TooltipTriggerMode.manual, child: const SizedBox.expand()),
+                ),
+          ],
+        ),
       ),
     );
   }
@@ -614,7 +628,7 @@ class GeoToolPainter extends CustomPainter {
     tp.paint(canvas, Offset(-tp.width / 2, 8));
     canvas.restore();
     // Dots: move (hinge), set radius / swing to draw (pencil), turn (behind the needle).
-    _knobAt(canvas, hinge, Icons.drag_indicator, color: _accent);
+    _knobAt(canvas, t.toBoard(geoGripHandle(t)), Icons.drag_indicator, color: _accent);
     _knobAt(canvas, pencil, Icons.open_with, color: _accent);
     _knobAt(canvas, t.toBoard(geoRotateHandle(t)), Icons.rotate_right);
   }
