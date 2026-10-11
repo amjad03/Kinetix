@@ -2979,4 +2979,13 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get libraryRenewed => 'ನವೀಕರಿಸಲಾಗಿದೆ. ಹೊಸ ಗಡುವು ತೋರಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get testConnection => 'ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ';
+
+  @override
+  String get connectionOk => 'ಸರ್ವರ್ ಲಭ್ಯವಿದೆ';
+
+  @override
+  String get connectionFailed => 'ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ';
 }

@@ -4327,4 +4327,17 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get liveSolidMove => 'ಈ ಘನವನ್ನು ಸರಿಸಿ';
+
+  @override
+  String get testConnection => 'ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ';
+
+  @override
+  String get connectionOk => 'ಸರ್ವರ್ ಲಭ್ಯವಿದೆ';
+
+  @override
+  String get connectionFailed => 'ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ';
+
+  @override
+  String get invalidServer =>
+      'ಸರ್ವರ್ ವಿಳಾಸ ನಮೂದಿಸಿ, ಉದಾ. https://api.kinetix.in';
 }

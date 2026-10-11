@@ -378,6 +378,12 @@ class _SignInScreenState extends State<SignInScreen> {
                           autocorrect: false,
                           validator: validateServer,
                         ),
+                        TestConnectionButton(
+                          url: () => _serverUrl,
+                          label: l.testConnection,
+                          okText: l.connectionOk,
+                          failText: l.connectionFailed,
+                        ),
                       ],
                       if (Demo.enabled && !_usePassword) ...[
                         const SizedBox(height: Kx.s8),

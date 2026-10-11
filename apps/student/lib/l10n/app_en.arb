@@ -2883,5 +2883,8 @@
   "acadDocApproved": "Approved, being issued",
   "acadDocRejected": "Not approved",
   "acadDocIssued": "Ready",
-  "acadDocCannotOpen": "No app on this phone can open the file."
+  "acadDocCannotOpen": "No app on this phone can open the file.",
+  "testConnection": "Test connection",
+  "connectionOk": "Server reachable",
+  "connectionFailed": "Cannot reach the server"
 }

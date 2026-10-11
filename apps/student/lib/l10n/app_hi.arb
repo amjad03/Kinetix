@@ -1274,5 +1274,8 @@
   "acadDocApproved": "स्वीकृत, जारी हो रहा है",
   "acadDocRejected": "स्वीकृत नहीं हुआ",
   "acadDocIssued": "तैयार",
-  "acadDocCannotOpen": "इस फ़ोन पर कोई ऐप फ़ाइल नहीं खोल सकता।"
+  "acadDocCannotOpen": "इस फ़ोन पर कोई ऐप फ़ाइल नहीं खोल सकता।",
+  "testConnection": "कनेक्शन जाँचें",
+  "connectionOk": "सर्वर उपलब्ध है",
+  "connectionFailed": "सर्वर तक नहीं पहुँच सका"
 }

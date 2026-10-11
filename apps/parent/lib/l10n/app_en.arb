@@ -2105,5 +2105,8 @@
   "instalmentsSummary": "{paid} paid of {total}",
   "@instalmentsSummary": {"placeholders": {"paid": {}, "total": {}}},
   "libraryRenew": "Renew",
-  "libraryRenewed": "Renewed. The new due date is shown."
+  "libraryRenewed": "Renewed. The new due date is shown.",
+  "testConnection": "Test connection",
+  "connectionOk": "Server reachable",
+  "connectionFailed": "Cannot reach the server"
 }

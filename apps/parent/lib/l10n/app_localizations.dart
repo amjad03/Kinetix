@@ -5186,6 +5186,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Renewed. The new due date is shown.'**
   String get libraryRenewed;
+
+  /// No description provided for @testConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get testConnection;
+
+  /// No description provided for @connectionOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Server reachable'**
+  String get connectionOk;
+
+  /// No description provided for @connectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot reach the server'**
+  String get connectionFailed;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

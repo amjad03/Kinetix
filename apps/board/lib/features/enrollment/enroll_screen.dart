@@ -85,15 +85,24 @@ class _EnrollScreenState extends State<EnrollScreen> {
                     const SizedBox(height: Kx.s12),
                     TextField(
                       controller: _server,
-                      decoration: InputDecoration(labelText: l.enrollServer, prefixIcon: const Icon(Icons.dns_outlined)),
+                      key: const Key('enroll-server'),
+                      keyboardType: TextInputType.url,
+                      autocorrect: false,
+                      decoration: InputDecoration(
+                        labelText: l.enrollServer,
+                        prefixIcon: const Icon(Icons.dns_outlined),
+                        errorText: isValidServerUrl(_server.text) ? null : l.invalidServer,
+                      ),
+                      onChanged: (_) => setState(() {}),
                     ),
+                    TestConnectionButton(url: () => _server.text, label: l.testConnection, okText: l.connectionOk, failText: l.connectionFailed),
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(top: Kx.s12),
                         child: Text(_error!, style: TextStyle(color: c.error)),
                       ),
                     const SizedBox(height: Kx.s24),
-                    FilledButton(onPressed: _busy ? null : _submit, child: Text(_busy ? l.enrollRegistering : l.enrollRegister)),
+                    FilledButton(onPressed: _busy || !isValidServerUrl(_server.text) ? null : _submit, child: Text(_busy ? l.enrollRegistering : l.enrollRegister)),
                     const SizedBox(height: Kx.s8),
                     TextButton(onPressed: widget.controller.skipEnrollment, child: Text(l.enrollSkip)),
                   ],

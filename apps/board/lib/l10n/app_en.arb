@@ -2410,5 +2410,9 @@
   "faceColourApply": "Apply",
   "faceColourReset": "Reset face",
   "faceColourTapHint": "Tap a face of the solid to colour it",
-  "liveSolidMove": "Move this solid"
+  "liveSolidMove": "Move this solid",
+  "testConnection": "Test connection",
+  "connectionOk": "Server reachable",
+  "connectionFailed": "Cannot reach the server",
+  "invalidServer": "Enter a server address like https://api.kinetix.in"
 }

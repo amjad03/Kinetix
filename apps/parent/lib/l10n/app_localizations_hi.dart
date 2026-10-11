@@ -2972,4 +2972,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get libraryRenewed => 'नवीनीकृत। नई देय तिथि दिखाई गई है।';
+
+  @override
+  String get testConnection => 'कनेक्शन जाँचें';
+
+  @override
+  String get connectionOk => 'सर्वर उपलब्ध है';
+
+  @override
+  String get connectionFailed => 'सर्वर तक नहीं पहुँच सका';
 }

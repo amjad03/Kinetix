@@ -1263,5 +1263,9 @@
   "faceColourApply": "लागू करें",
   "faceColourReset": "सतह रीसेट करें",
   "faceColourTapHint": "रंगने के लिए ठोस की किसी सतह पर टैप करें",
-  "liveSolidMove": "इस ठोस को हिलाएँ"
+  "liveSolidMove": "इस ठोस को हिलाएँ",
+  "testConnection": "कनेक्शन जाँचें",
+  "connectionOk": "सर्वर उपलब्ध है",
+  "connectionFailed": "सर्वर तक नहीं पहुँच सका",
+  "invalidServer": "सर्वर का पता लिखें, जैसे https://api.kinetix.in"
 }

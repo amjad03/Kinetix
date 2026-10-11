@@ -1274,5 +1274,8 @@
   "acadDocApproved": "ಅನುಮೋದಿತ, ನೀಡಲಾಗುತ್ತಿದೆ",
   "acadDocRejected": "ಅನುಮೋದಿಸಲಾಗಿಲ್ಲ",
   "acadDocIssued": "ಸಿದ್ಧ",
-  "acadDocCannotOpen": "ಈ ಫೋನ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಬಲ್ಲ ಆ್ಯಪ್ ಇಲ್ಲ."
+  "acadDocCannotOpen": "ಈ ಫೋನ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಬಲ್ಲ ಆ್ಯಪ್ ಇಲ್ಲ.",
+  "testConnection": "ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ",
+  "connectionOk": "ಸರ್ವರ್ ಲಭ್ಯವಿದೆ",
+  "connectionFailed": "ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ"
 }

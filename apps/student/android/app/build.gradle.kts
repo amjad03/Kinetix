@@ -46,6 +46,11 @@ val releaseSigningProblem: String? = when {
 val testSigning = ((findProperty("kinetix.testSigning") as String?) ?: System.getenv("KINETIX_TEST_SIGNING"))?.toBoolean() ?: false
 val useTestSigning = releaseSigningProblem != null && testSigning
 
+// Demo against a server on the local network (docs/product/demo-builds.md): with
+// -Pkinetix.lanHttp=true (or KINETIX_LAN_HTTP=true) release builds may talk plain HTTP.
+// Never for builds handed to schools: those use HTTPS only.
+val lanHttp = ((findProperty("kinetix.lanHttp") as String?) ?: System.getenv("KINETIX_LAN_HTTP"))?.toBoolean() ?: false
+
 // R8 (code + resource shrinking) stays off until a minified release has been smoke-tested on a
 // device; turn it on with -Pkinetix.minify=true (keep rules in proguard-rules.pro).
 val minifyRelease = (findProperty("kinetix.minify") as String?)?.toBoolean() ?: false
@@ -73,6 +78,16 @@ android {
     }
 
     signingConfigs {
+        // Per-app throwaway key for test APKs (KINETIX_TEST_SIGNING=true): ~/.kinetix-test-keys/student.jks, outside the repo.
+        val testKeystore = File(System.getProperty("user.home"), ".kinetix-test-keys/student.jks")
+        if (useTestSigning && testKeystore.isFile) {
+            create("kinetixTest") {
+                storeFile = testKeystore
+                storePassword = "kinetixtest"
+                keyAlias = "test"
+                keyPassword = "kinetixtest"
+            }
+        }
         if (releaseSigningProblem == null) {
             create("release") {
                 storeFile = releaseKeystore
@@ -86,10 +101,10 @@ android {
     buildTypes {
         release {
             // Never the debug key (unless test signing was asked for): without a release key the build stops (below).
-            signingConfig = if (useTestSigning) signingConfigs.getByName("debug") else signingConfigs.findByName("release")
+            signingConfig = if (useTestSigning) (signingConfigs.findByName("kinetixTest") ?: signingConfigs.getByName("debug")) else signingConfigs.findByName("release")
             isMinifyEnabled = minifyRelease
             isShrinkResources = minifyRelease
-            manifestPlaceholders["usesCleartextTraffic"] = "false"
+            manifestPlaceholders["usesCleartextTraffic"] = if (lanHttp) "true" else "false"
         }
     }
 }

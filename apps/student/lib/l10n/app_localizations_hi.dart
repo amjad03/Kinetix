@@ -4280,4 +4280,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get acadDocCannotOpen => 'इस फ़ोन पर कोई ऐप फ़ाइल नहीं खोल सकता।';
+
+  @override
+  String get testConnection => 'कनेक्शन जाँचें';
+
+  @override
+  String get connectionOk => 'सर्वर उपलब्ध है';
+
+  @override
+  String get connectionFailed => 'सर्वर तक नहीं पहुँच सका';
 }

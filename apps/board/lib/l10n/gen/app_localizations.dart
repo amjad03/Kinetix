@@ -7683,6 +7683,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Move this solid'**
   String get liveSolidMove;
+
+  /// No description provided for @testConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get testConnection;
+
+  /// No description provided for @connectionOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Server reachable'**
+  String get connectionOk;
+
+  /// No description provided for @connectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot reach the server'**
+  String get connectionFailed;
+
+  /// No description provided for @invalidServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a server address like https://api.kinetix.in'**
+  String get invalidServer;
 }
 
 class _AppLocalizationsDelegate

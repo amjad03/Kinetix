@@ -1384,5 +1384,8 @@
   "evidenceYearBad": "ವರ್ಷ ಒಂದು ಸಂಖ್ಯೆಯಾಗಿರಬೇಕು.",
   "earlyAlertHigh": "ಸಹಾಯ ಬೇಕು: ಹೆಚ್ಚು",
   "earlyAlertMedium": "ಸಹಾಯ ಬೇಕು: ಮಧ್ಯಮ",
-  "earlyAlertWatch": "ಗಮನವಿರಲಿ"
+  "earlyAlertWatch": "ಗಮನವಿರಲಿ",
+  "testConnection": "ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ",
+  "connectionOk": "ಸರ್ವರ್ ಲಭ್ಯವಿದೆ",
+  "connectionFailed": "ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ"
 }

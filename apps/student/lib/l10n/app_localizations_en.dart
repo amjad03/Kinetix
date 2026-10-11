@@ -4276,4 +4276,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get acadDocCannotOpen => 'No app on this phone can open the file.';
+
+  @override
+  String get testConnection => 'Test connection';
+
+  @override
+  String get connectionOk => 'Server reachable';
+
+  @override
+  String get connectionFailed => 'Cannot reach the server';
 }

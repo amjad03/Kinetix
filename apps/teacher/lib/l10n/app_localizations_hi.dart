@@ -3225,4 +3225,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get earlyAlertWatch => 'ध्यान रखें';
+
+  @override
+  String get testConnection => 'कनेक्शन जाँचें';
+
+  @override
+  String get connectionOk => 'सर्वर उपलब्ध है';
+
+  @override
+  String get connectionFailed => 'सर्वर तक नहीं पहुँच सका';
 }

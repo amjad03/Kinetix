@@ -4339,4 +4339,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveSolidMove => 'Move this solid';
+
+  @override
+  String get testConnection => 'Test connection';
+
+  @override
+  String get connectionOk => 'Server reachable';
+
+  @override
+  String get connectionFailed => 'Cannot reach the server';
+
+  @override
+  String get invalidServer =>
+      'Enter a server address like https://api.kinetix.in';
 }

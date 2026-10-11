@@ -3481,5 +3481,8 @@
   },
   "earlyAlertHigh": "Needs help: high",
   "earlyAlertMedium": "Needs help: medium",
-  "earlyAlertWatch": "Keep an eye"
+  "earlyAlertWatch": "Keep an eye",
+  "testConnection": "Test connection",
+  "connectionOk": "Server reachable",
+  "connectionFailed": "Cannot reach the server"
 }

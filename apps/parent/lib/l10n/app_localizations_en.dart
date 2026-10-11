@@ -2961,4 +2961,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryRenewed => 'Renewed. The new due date is shown.';
+
+  @override
+  String get testConnection => 'Test connection';
+
+  @override
+  String get connectionOk => 'Server reachable';
+
+  @override
+  String get connectionFailed => 'Cannot reach the server';
 }

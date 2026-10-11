@@ -1263,5 +1263,9 @@
   "faceColourApply": "ಅನ್ವಯಿಸಿ",
   "faceColourReset": "ಮುಖ ಮರುಹೊಂದಿಸಿ",
   "faceColourTapHint": "ಬಣ್ಣ ಹಾಕಲು ಘನದ ಯಾವುದೇ ಮುಖವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ",
-  "liveSolidMove": "ಈ ಘನವನ್ನು ಸರಿಸಿ"
+  "liveSolidMove": "ಈ ಘನವನ್ನು ಸರಿಸಿ",
+  "testConnection": "ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ",
+  "connectionOk": "ಸರ್ವರ್ ಲಭ್ಯವಿದೆ",
+  "connectionFailed": "ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ",
+  "invalidServer": "ಸರ್ವರ್ ವಿಳಾಸ ನಮೂದಿಸಿ, ಉದಾ. https://api.kinetix.in"
 }

@@ -3225,4 +3225,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get earlyAlertWatch => 'Keep an eye';
+
+  @override
+  String get testConnection => 'Test connection';
+
+  @override
+  String get connectionOk => 'Server reachable';
+
+  @override
+  String get connectionFailed => 'Cannot reach the server';
 }

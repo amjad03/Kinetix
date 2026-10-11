@@ -4292,4 +4292,13 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get acadDocCannotOpen => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಬಲ್ಲ ಆ್ಯಪ್ ಇಲ್ಲ.';
+
+  @override
+  String get testConnection => 'ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ';
+
+  @override
+  String get connectionOk => 'ಸರ್ವರ್ ಲಭ್ಯವಿದೆ';
+
+  @override
+  String get connectionFailed => 'ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ';
 }

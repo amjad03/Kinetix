@@ -4318,4 +4318,16 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get liveSolidMove => 'इस ठोस को हिलाएँ';
+
+  @override
+  String get testConnection => 'कनेक्शन जाँचें';
+
+  @override
+  String get connectionOk => 'सर्वर उपलब्ध है';
+
+  @override
+  String get connectionFailed => 'सर्वर तक नहीं पहुँच सका';
+
+  @override
+  String get invalidServer => 'सर्वर का पता लिखें, जैसे https://api.kinetix.in';
 }

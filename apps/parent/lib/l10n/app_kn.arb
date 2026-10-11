@@ -961,5 +961,8 @@
   "instalmentOverdue": "ಗಡುವು ಮೀರಿದೆ",
   "instalmentsSummary": "{total} ರಲ್ಲಿ {paid} ಪಾವತಿಸಲಾಗಿದೆ",
   "libraryRenew": "ನವೀಕರಿಸಿ",
-  "libraryRenewed": "ನವೀಕರಿಸಲಾಗಿದೆ. ಹೊಸ ಗಡುವು ತೋರಿಸಲಾಗಿದೆ."
+  "libraryRenewed": "ನವೀಕರಿಸಲಾಗಿದೆ. ಹೊಸ ಗಡುವು ತೋರಿಸಲಾಗಿದೆ.",
+  "testConnection": "ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ",
+  "connectionOk": "ಸರ್ವರ್ ಲಭ್ಯವಿದೆ",
+  "connectionFailed": "ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ"
 }

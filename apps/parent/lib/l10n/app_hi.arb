@@ -961,5 +961,8 @@
   "instalmentOverdue": "समय सीमा बीत गई",
   "instalmentsSummary": "{total} में से {paid} चुकाए गए",
   "libraryRenew": "नवीनीकृत करें",
-  "libraryRenewed": "नवीनीकृत। नई देय तिथि दिखाई गई है।"
+  "libraryRenewed": "नवीनीकृत। नई देय तिथि दिखाई गई है।",
+  "testConnection": "कनेक्शन जाँचें",
+  "connectionOk": "सर्वर उपलब्ध है",
+  "connectionFailed": "सर्वर तक नहीं पहुँच सका"
 }

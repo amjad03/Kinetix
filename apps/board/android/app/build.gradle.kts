@@ -78,6 +78,16 @@ android {
     }
 
     signingConfigs {
+        // Per-app throwaway key for test APKs (KINETIX_TEST_SIGNING=true): ~/.kinetix-test-keys/board.jks, outside the repo.
+        val testKeystore = File(System.getProperty("user.home"), ".kinetix-test-keys/board.jks")
+        if (useTestSigning && testKeystore.isFile) {
+            create("kinetixTest") {
+                storeFile = testKeystore
+                storePassword = "kinetixtest"
+                keyAlias = "test"
+                keyPassword = "kinetixtest"
+            }
+        }
         if (releaseSigningProblem == null) {
             create("release") {
                 storeFile = releaseKeystore
@@ -91,7 +101,7 @@ android {
     buildTypes {
         release {
             // Never the debug key (unless test signing was asked for): without a release key the build stops (below).
-            signingConfig = if (useTestSigning) signingConfigs.getByName("debug") else signingConfigs.findByName("release")
+            signingConfig = if (useTestSigning) (signingConfigs.findByName("kinetixTest") ?: signingConfigs.getByName("debug")) else signingConfigs.findByName("release")
             isMinifyEnabled = minifyRelease
             isShrinkResources = minifyRelease
         }
