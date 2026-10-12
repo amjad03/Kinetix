@@ -53,11 +53,11 @@ describe('m3Scheme (ColorScheme.fromSeed, TonalSpot)', () => {
 });
 
 describe('brandScheme (the KINETIX design tokens)', () => {
-  it('uses deep blue and marigold for AI in light, as kinetix_ui does', () => {
+  it('uses the neutral redesign palette in light (near-black action, amber AI)', () => {
     const light = brandScheme(false);
-    expect(light.primary).toBe('#1d4ed8');
-    expect(light.tertiary).toBe('#8f5b00');
-    expect(light.surface).toBe('#f3f6fb');
+    expect(light.primary).toBe('#18181b');
+    expect(light.tertiary).toBe('#a35c06');
+    expect(light.surface).toBe('#f7f7f8');
     expect(light.surfaceContainerLowest).toBe('#ffffff');
     for (const [role, value] of Object.entries(BRAND_LIGHT)) expect(light[role as keyof typeof light]).toBe(value);
   });

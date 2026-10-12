@@ -23,31 +23,31 @@ export interface KxColors {
 }
 
 const KX_LIGHT = {
-  live: SEMANTIC.live,
-  liveContainer: '#FEEFE3',
-  onLiveContainer: '#8A3B00',
-  success: SEMANTIC.success,
-  successContainer: '#DCF3E4',
-  onSuccessContainer: '#0B4A22',
-  warning: SEMANTIC.warning,
-  warningContainer: '#FEF0D4',
-  onWarningContainer: '#5A2A00',
+  live: '#f97316',
+  liveContainer: '#ffeddc',
+  onLiveContainer: '#9a3412',
+  success: '#15803d',
+  successContainer: '#dcf5e5',
+  onSuccessContainer: '#166534',
+  warning: '#a35c06',
+  warningContainer: '#fdf2d6',
+  onWarningContainer: '#7c4a03',
   record: SEMANTIC.record,
-  chart: ['#1D4ED8', '#0E7490', '#7C3AED', '#BE185D', '#8F5B00'],
+  chart: ['#0f9488', '#b45309', '#64748b', '#ea580c', '#0f766e'],
 } as const;
 
 const KX_DARK = {
-  live: '#FCAD70',
-  liveContainer: '#4A2600',
-  onLiveContainer: '#FFDCC2',
-  success: '#86D9A0',
-  successContainer: '#0F3D1F',
-  onSuccessContainer: '#CDEED8',
-  warning: '#FBBF6A',
-  warningContainer: '#4A2C00',
-  onWarningContainer: '#FFE2B8',
+  live: '#fdba74',
+  liveContainer: '#3a2416',
+  onLiveContainer: '#fdba74',
+  success: '#86efac',
+  successContainer: '#16301f',
+  onSuccessContainer: '#86efac',
+  warning: '#fcd34d',
+  warningContainer: '#3b2f12',
+  onWarningContainer: '#fcd34d',
   record: '#F28B82',
-  chart: ['#9DB8FF', '#5EEAD4', '#C4B5FD', '#F9A8D4', '#FFC25E'],
+  chart: ['#14b8a6', '#f59e0b', '#94a3b8', '#f97316', '#5eead4'],
 } as const;
 
 /** Maps Material 3 roles onto MUI's palette slots, plus the full M3 scheme under `m3`. */

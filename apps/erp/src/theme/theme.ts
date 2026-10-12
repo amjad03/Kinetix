@@ -41,9 +41,9 @@ export function buildTheme() {
   const dark = brandScheme(true);
 
   return createTheme({
-    cssVariables: { colorSchemeSelector: 'media', cssVarPrefix: 'kx' },
+    cssVariables: { colorSchemeSelector: 'class', cssVarPrefix: 'kx' },
     colorSchemes: { light: { palette: paletteFor(light, false) }, dark: { palette: paletteFor(dark, true) } },
-    shape: { borderRadius: SHAPE.md },
+    shape: { borderRadius: 10 },
     shadows,
     typography: {
       fontFamily: FONT_STACK,
@@ -56,8 +56,8 @@ export function buildTheme() {
       h6: type(16, 24, 500, 0.1), // title medium
       subtitle1: type(16, 24, 500, 0.1),
       subtitle2: type(14, 20, 500, 0.1), // title small
-      body1: type(16, 24, 400, 0.1), // body large
-      body2: type(14, 20, 400, 0.2), // body medium
+      body1: type(14, 21, 400, 0), // body (redesign: 14 px)
+      body2: type(13, 19, 400, 0), // body small
       caption: type(12, 16, 400, 0.3), // body small
       overline: { ...type(11, 16, 500, 0.5), textTransform: 'none' }, // label small
       button: { ...type(14, 20, 500, 0.1), textTransform: 'none' }, // label large
@@ -67,7 +67,7 @@ export function buildTheme() {
         styleOverrides: {
           body: { WebkitFontSmoothing: 'antialiased', fontFeatureSettings: '"tnum" 0' },
           // Visible keyboard focus everywhere (WCAG 2.4.7); mouse clicks do not show it.
-          ':focus-visible': { outline: '2px solid var(--kx-palette-m3-primary)', outlineOffset: 2 },
+          ':focus-visible': { outline: '2px solid #0f9488', outlineOffset: 2 },
           '@media (prefers-reduced-motion: reduce)': { '*, *::before, *::after': { animationDuration: '0.01ms !important', transitionDuration: '0.01ms !important' } },
           '::selection': { background: 'var(--kx-palette-m3-primaryContainer)' },
         },
@@ -76,10 +76,10 @@ export function buildTheme() {
       MuiButton: {
         defaultProps: { disableElevation: true },
         styleOverrides: {
-          root: { borderRadius: SHAPE.md - 2, minHeight: 40, paddingInline: 20 },
-          sizeSmall: { minHeight: 32, paddingInline: 14 },
+          root: { borderRadius: 10, minHeight: 36, paddingInline: 14, fontSize: '0.84375rem', fontWeight: 550 },
+          sizeSmall: { minHeight: 30, paddingInline: 10, borderRadius: 8, fontSize: '0.78125rem' },
           text: { paddingInline: 12 },
-          outlined: ({ theme }) => ({ borderColor: theme.vars.palette.m3.outline }),
+          outlined: ({ theme }) => ({ borderColor: theme.vars.palette.m3.outlineVariant, backgroundColor: theme.vars.palette.kx.pane, color: theme.vars.palette.m3.onSurface, '&:hover': { backgroundColor: theme.vars.palette.m3.surfaceContainer, borderColor: theme.vars.palette.m3.outlineVariant } }),
         },
         variants: [
           {
@@ -93,7 +93,7 @@ export function buildTheme() {
           },
         ],
       },
-      MuiIconButton: { styleOverrides: { root: { borderRadius: SHAPE.full } } },
+      MuiIconButton: { styleOverrides: { root: { borderRadius: 10 } } },
       MuiFab: { styleOverrides: { root: { borderRadius: SHAPE.lg, boxShadow: level3, textTransform: 'none' } } },
       MuiPaper: {
         defaultProps: { elevation: 0 },
@@ -102,16 +102,16 @@ export function buildTheme() {
       MuiCard: {
         defaultProps: { variant: 'outlined' },
         styleOverrides: {
-          root: ({ theme }) => ({ borderRadius: SHAPE.lg, borderColor: theme.vars.palette.m3.outlineVariant, backgroundColor: theme.vars.palette.kx.pane, boxShadow: '0 1px 2px rgba(15,23,42,.04)' }),
+          root: ({ theme }) => ({ borderRadius: 14, borderColor: theme.vars.palette.m3.outlineVariant, backgroundColor: theme.vars.palette.kx.pane, boxShadow: 'var(--kx-elev-card)' }),
         },
       },
       MuiCardContent: { styleOverrides: { root: { padding: 20, '&:last-child': { paddingBottom: 20 } } } },
       MuiDialog: {
         styleOverrides: {
           paper: ({ theme }) => ({
-            borderRadius: SHAPE.lg + 4,
+            borderRadius: 14,
             backgroundColor: theme.vars.palette.kx.pane,
-            boxShadow: level3,
+            boxShadow: '0 20px 50px -12px rgba(16,24,40,.25)',
             padding: 8,
           }),
         },
@@ -121,17 +121,17 @@ export function buildTheme() {
       MuiBackdrop: { styleOverrides: { root: { '&:not(.MuiBackdrop-invisible)': { backgroundColor: 'rgba(0,0,0,.32)' } } } },
       MuiMenu: {
         styleOverrides: {
-          paper: ({ theme }) => ({ borderRadius: SHAPE.xs, backgroundColor: theme.vars.palette.m3.surfaceContainer, boxShadow: level2, minWidth: 180 }),
-          list: { paddingBlock: 8 },
+          paper: ({ theme }) => ({ borderRadius: 12, backgroundColor: theme.vars.palette.kx.pane, border: `1px solid ${theme.vars.palette.m3.outlineVariant}`, boxShadow: '0 20px 50px -12px rgba(16,24,40,.25)', minWidth: 180 }),
+          list: { padding: 6 },
         },
       },
-      MuiMenuItem: { styleOverrides: { root: { minHeight: 48, ...type(14, 20, 400, 0.1) } } },
+      MuiMenuItem: { styleOverrides: { root: { minHeight: 36, borderRadius: 8, ...type(14, 20, 400, 0.1) } } },
       MuiPopover: {
-        styleOverrides: { paper: ({ theme }) => ({ borderRadius: SHAPE.lg, backgroundColor: theme.vars.palette.m3.surfaceContainerHigh, boxShadow: level2 }) },
+        styleOverrides: { paper: ({ theme }) => ({ borderRadius: 12, backgroundColor: theme.vars.palette.kx.pane, border: `1px solid ${theme.vars.palette.m3.outlineVariant}`, boxShadow: '0 20px 50px -12px rgba(16,24,40,.25)' }) },
       },
       MuiAutocomplete: {
         styleOverrides: {
-          paper: ({ theme }) => ({ borderRadius: SHAPE.xs, backgroundColor: theme.vars.palette.m3.surfaceContainer, boxShadow: level2 }),
+          paper: ({ theme }) => ({ borderRadius: 12, backgroundColor: theme.vars.palette.kx.pane, border: `1px solid ${theme.vars.palette.m3.outlineVariant}`, boxShadow: '0 20px 50px -12px rgba(16,24,40,.25)' }),
         },
       },
       MuiTooltip: {
@@ -140,7 +140,7 @@ export function buildTheme() {
           tooltip: ({ theme }) => ({
             backgroundColor: theme.vars.palette.m3.inverseSurface,
             color: theme.vars.palette.m3.inverseOnSurface,
-            borderRadius: SHAPE.xs,
+            borderRadius: 8,
             ...type(12, 16, 400, 0.3),
             padding: '4px 8px',
           }),
@@ -148,7 +148,7 @@ export function buildTheme() {
       },
       MuiChip: {
         styleOverrides: {
-          root: { borderRadius: SHAPE.sm, fontWeight: 500, letterSpacing: '0.1px' },
+          root: { borderRadius: SHAPE.full, fontWeight: 550, letterSpacing: 0 },
           outlined: ({ theme }) => ({ borderColor: theme.vars.palette.m3.outlineVariant }),
           sizeSmall: { height: 24, fontSize: '0.75rem' },
         },
@@ -156,15 +156,17 @@ export function buildTheme() {
       MuiOutlinedInput: {
         styleOverrides: {
           root: ({ theme }) => ({
-            borderRadius: SHAPE.xs,
-            '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.vars.palette.m3.outline },
+            borderRadius: 10,
+            backgroundColor: theme.vars.palette.kx.pane,
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--border-strong, #dcdce1)' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#0f9488', borderWidth: 1, boxShadow: '0 0 0 3px var(--teal-soft, #e3f5f2)' },
           }),
         },
       },
       MuiTextField: { defaultProps: { variant: 'outlined', fullWidth: true } },
       MuiTableCell: {
         styleOverrides: {
-          root: ({ theme }) => ({ borderBottomColor: theme.vars.palette.m3.outlineVariant, paddingBlock: 12 }),
+          root: ({ theme }) => ({ borderBottomColor: theme.vars.palette.m3.outlineVariant, paddingBlock: 10, paddingInline: 12 }),
           head: ({ theme }) => ({ color: theme.vars.palette.m3.onSurfaceVariant, ...type(12, 16, 600, 0.3), whiteSpace: 'nowrap' }),
         },
       },
@@ -174,7 +176,7 @@ export function buildTheme() {
       MuiToggleButtonGroup: {
         styleOverrides: {
           root: { borderRadius: SHAPE.sm + 2 },
-          grouped: ({ theme }) => ({ borderColor: theme.vars.palette.m3.outline }),
+          grouped: ({ theme }) => ({ borderColor: theme.vars.palette.m3.outlineVariant }),
         },
       },
       MuiToggleButton: {
@@ -183,8 +185,8 @@ export function buildTheme() {
             textTransform: 'none',
             ...type(14, 20, 500, 0.1),
             color: theme.vars.palette.m3.onSurface,
-            paddingInline: 16,
-            height: 40,
+            paddingInline: 12,
+            height: 34,
             '&:first-of-type': { borderTopLeftRadius: SHAPE.sm + 2, borderBottomLeftRadius: SHAPE.sm + 2 },
             '&:last-of-type': { borderTopRightRadius: SHAPE.sm + 2, borderBottomRightRadius: SHAPE.sm + 2 },
             '&.Mui-selected': {
@@ -229,13 +231,13 @@ export function buildTheme() {
           bar: { borderRadius: SHAPE.full },
         },
       },
-      MuiAlert: { styleOverrides: { root: { borderRadius: SHAPE.md } } },
+      MuiAlert: { styleOverrides: { root: { borderRadius: 12 } } },
       MuiSnackbarContent: {
         styleOverrides: {
           root: ({ theme }) => ({
             backgroundColor: theme.vars.palette.m3.inverseSurface,
             color: theme.vars.palette.m3.inverseOnSurface,
-            borderRadius: SHAPE.xs,
+            borderRadius: 10,
           }),
         },
       },

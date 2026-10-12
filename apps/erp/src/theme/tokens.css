@@ -10,50 +10,50 @@
  */
 :root {
   /* Colour roles */
-  --kx-bg: #f3f6fb;
-  --kx-rail: #e8edf5;
+  --kx-bg: #f7f7f8;
+  --kx-rail: #f3f3f5;
   --kx-surface: #ffffff;
-  --kx-surface-hi: #e0e6f0;
-  --kx-line: #d5dde9;
-  --kx-outline: #64748b;
-  --kx-text: #0f172a;
-  --kx-muted: #475569;
+  --kx-surface-hi: #ededf0;
+  --kx-line: #ececee;
+  --kx-outline: #8b8c94;
+  --kx-text: #18181b;
+  --kx-muted: #5d5e66;
 
   /* Brand: deep blue. The one strong action on a screen. */
-  --kx-accent: #1d4ed8;
+  --kx-accent: #18181b;
   --kx-on-accent: #ffffff;
-  --kx-accent-container: #dbe6ff;
-  --kx-on-accent-container: #0b2a7a;
-  --kx-secondary-container: #e3eafa;
-  --kx-on-secondary-container: #0f2a5c;
+  --kx-accent-container: #e3f5f2;
+  --kx-on-accent-container: #0f766e;
+  --kx-secondary-container: #f3f3f5;
+  --kx-on-secondary-container: #18181b;
 
   /* AI: marigold. Only AI uses it. */
-  --kx-spark: #8f5b00;
-  --kx-spark-container: #ffe2a8;
-  --kx-on-spark-container: #2b1b00;
+  --kx-spark: #a35c06;
+  --kx-spark-container: #fdf2d6;
+  --kx-on-spark-container: #5a2a00;
 
-  --kx-inverse: #1e293b;
-  --kx-on-inverse: #eef2f8;
+  --kx-inverse: #18181b;
+  --kx-on-inverse: #f4f4f5;
 
   /* State */
-  --kx-danger: #b3261e;
-  --kx-danger-container: #fde3e1;
-  --kx-on-danger-container: #5c0a06;
+  --kx-danger: #b91c1c;
+  --kx-danger-container: #fde6e6;
+  --kx-on-danger-container: #7f1d1d;
   --kx-success: #15803d;
-  --kx-success-container: #dcf3e4;
-  --kx-on-success-container: #0b4a22;
-  --kx-warning: #b45309;
-  --kx-warning-container: #fef0d4;
+  --kx-success-container: #dcf5e5;
+  --kx-on-success-container: #14532d;
+  --kx-warning: #a35c06;
+  --kx-warning-container: #fdf2d6;
   --kx-on-warning-container: #5a2a00;
-  --kx-live: #e8710a;
-  --kx-record: #d93025;
+  --kx-live: #f97316;
+  --kx-record: #ef4444;
 
   /* Categorical chart series (each 3:1 against a card) */
-  --kx-chart-1: #1d4ed8;
-  --kx-chart-2: #0e7490;
-  --kx-chart-3: #7c3aed;
-  --kx-chart-4: #be185d;
-  --kx-chart-5: #8f5b00;
+  --kx-chart-1: #0f9488;
+  --kx-chart-2: #b45309;
+  --kx-chart-3: #64748b;
+  --kx-chart-4: #ea580c;
+  --kx-chart-5: #0f766e;
 
   /* The board (Board app only; chalkboard green is a board theme, not the brand) */
   --kx-paper: #fbfaf6;
@@ -89,7 +89,7 @@
   --kx-radius-full: 999px;
 
   /* Elevation: cards sit almost flat; menus and dialogs lift; the board floats. */
-  --kx-elev-card: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --kx-elev-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
   --kx-elev-raised: 0 1px 3px rgba(15, 23, 42, 0.1), 0 4px 12px 1px rgba(15, 23, 42, 0.08);
   --kx-shadow-floating: 0 1px 3px rgba(0, 0, 0, 0.1), 0 4px 12px 1px rgba(0, 0, 0, 0.08);
 
@@ -100,45 +100,43 @@
   --kx-duration-medium: 350ms;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --kx-bg: #0b1220;
-    --kx-rail: #162137;
-    --kx-surface: #111a2c;
-    --kx-surface-hi: #1d2940;
-    --kx-line: #2e3b55;
-    --kx-outline: #7d8ba3;
-    --kx-text: #e2e8f5;
-    --kx-muted: #a9b5ca;
-    --kx-accent: #9db8ff;
-    --kx-on-accent: #0a2463;
-    --kx-accent-container: #1f3e8f;
-    --kx-on-accent-container: #dbe6ff;
-    --kx-secondary-container: #26385c;
-    --kx-on-secondary-container: #dce6fa;
-    --kx-spark: #ffc25e;
-    --kx-spark-container: #5e3f00;
-    --kx-on-spark-container: #ffe2a8;
-    --kx-inverse: #e2e8f5;
-    --kx-on-inverse: #1e293b;
-    --kx-danger: #ffb4ab;
-    --kx-danger-container: #7a1a14;
-    --kx-on-danger-container: #ffdad6;
-    --kx-success: #86d9a0;
-    --kx-success-container: #0f3d1f;
-    --kx-on-success-container: #cdeed8;
-    --kx-warning: #fbbf6a;
-    --kx-warning-container: #4a2c00;
-    --kx-on-warning-container: #ffe2b8;
-    --kx-live: #fcad70;
-    --kx-record: #f28b82;
-    --kx-chart-1: #9db8ff;
-    --kx-chart-2: #5eead4;
-    --kx-chart-3: #c4b5fd;
-    --kx-chart-4: #f9a8d4;
-    --kx-chart-5: #ffc25e;
-    --kx-elev-card: none;
-  }
+.dark {
+  --kx-bg: #0c0c0e;
+  --kx-rail: #1e1e23;
+  --kx-surface: #151518;
+  --kx-surface-hi: #26262c;
+  --kx-line: #26262c;
+  --kx-outline: #7c7c86;
+  --kx-text: #f4f4f5;
+  --kx-muted: #a6a6b0;
+  --kx-accent: #f4f4f5;
+  --kx-on-accent: #18181b;
+  --kx-accent-container: rgba(20,184,166,.15);
+  --kx-on-accent-container: #5eead4;
+  --kx-secondary-container: #1e1e23;
+  --kx-on-secondary-container: #f4f4f5;
+  --kx-spark: #fcd34d;
+  --kx-spark-container: rgba(245,158,11,.16);
+  --kx-on-spark-container: #fcd34d;
+  --kx-inverse: #f4f4f5;
+  --kx-on-inverse: #18181b;
+  --kx-danger: #fca5a5;
+  --kx-danger-container: rgba(239,68,68,.16);
+  --kx-on-danger-container: #fca5a5;
+  --kx-success: #86efac;
+  --kx-success-container: rgba(34,197,94,.15);
+  --kx-on-success-container: #86efac;
+  --kx-warning: #fcd34d;
+  --kx-warning-container: rgba(245,158,11,.16);
+  --kx-on-warning-container: #fcd34d;
+  --kx-live: #fdba74;
+  --kx-record: #fca5a5;
+  --kx-chart-1: #14b8a6;
+  --kx-chart-2: #f59e0b;
+  --kx-chart-3: #94a3b8;
+  --kx-chart-4: #f97316;
+  --kx-chart-5: #5eead4;
+  --kx-elev-card: none;
 }
 
 /* Display density (PRD section 79): compact shows more rows and tighter controls on a college or university desk. */
