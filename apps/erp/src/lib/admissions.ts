@@ -129,6 +129,8 @@ export interface ApplicationRow {
   submittedAt: string;
   cycleId: string;
   cycleName: string;
+  /** The seat-quota category (office setting); absent on older API builds. */
+  category?: string | null;
 }
 export interface ApplicationDetail extends Omit<ApplicationRow, 'cycleName'> {
   dateOfBirth: string | null;

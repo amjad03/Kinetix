@@ -1,3 +1,4 @@
+import { ExamsTabs } from '@/components/exams/ExamsTabs';
 import type { Metadata } from 'next';
 import { DepthDesk } from '@/components/depth/DepthDesk';
 import { PageHeader } from '@/components/PageHeader';
@@ -22,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ExamOperationsPage({ searchParams }: { searchParams: Promise<{ session?: string }> }) {
-  await requireSection('exams');
+  const me = await requireSection('exams');
   const { t } = await getI18n();
   const sp = await searchParams;
   const data = await load(async () => {
@@ -199,6 +200,7 @@ export default async function ExamOperationsPage({ searchParams }: { searchParam
   return (
     <>
       <PageHeader title={t('dx.exo.title')} subtitle={t('dx.exo.subtitle')} actions={o.sessions.length ? <UrlSelect label={t('dx.c.session')} param="session" value={session?.id ?? ''} options={opt(o.sessions, (s) => s.id, (s) => s.name)} /> : undefined} />
+      <ExamsTabs current="operations" roles={me?.roles} />
       <DepthDesk panels={panels} />
     </>
   );

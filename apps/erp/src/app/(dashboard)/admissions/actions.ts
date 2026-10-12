@@ -116,3 +116,11 @@ export async function publishMeritList(id: string): Promise<ActionResult<unknown
   if (res.ok) refresh();
   return res;
 }
+
+/** Offers freed seats to the best-ranked waitlisted applicants of a cycle, in rank order. */
+export async function promoteWaitlist(cycleId: string): Promise<ActionResult<{ promoted: number }>> {
+  if (!UUID.test(cycleId)) return bad('adm.err.invalid');
+  const res = await act(() => api<{ promoted: number }>(`/v1/admissions/cycles/${cycleId}/waitlist/promote`, { method: 'POST', body: {} }));
+  if (res.ok) refresh();
+  return res;
+}

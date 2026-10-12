@@ -118,7 +118,11 @@ export class ExamSessionsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const s = await this.exams.session(tx, id);
       const papers = await tx
-        .select({ id: examPapers.id, subjectId: examPapers.subjectId, subject: subjects.name, sectionId: examPapers.sectionId, section: sections.displayName, examDate: examPapers.examDate, startsAt: examPapers.startsAt, endsAt: examPapers.endsAt, maxMarks: examPapers.maxMarks, assessmentId: examPapers.assessmentId })
+        .select({ id: examPapers.id, subjectId: examPapers.subjectId, subject: subjects.name, sectionId: examPapers.sectionId, section: sections.displayName, examDate: examPapers.examDate, startsAt: examPapers.startsAt, endsAt: examPapers.endsAt, maxMarks: examPapers.maxMarks, assessmentId: examPapers.assessmentId,
+          // Valuation progress: marks entered against the section's active students, and the marks workflow stage.
+          entered: sql<number>`(select count(*)::int from marks m where m.assessment_id = ${examPapers.assessmentId} and (m.marks is not null or m.absent))`,
+          enrolled: sql<number>`(select count(*)::int from students st where st.section_id = ${examPapers.sectionId} and st.status in ('active', 'enrolled'))`,
+          markStatus: sql<string | null>`(select a.mark_status::text from assessments a where a.id = ${examPapers.assessmentId})` })
         .from(examPapers)
         .innerJoin(subjects, eq(subjects.id, examPapers.subjectId))
         .innerJoin(sections, eq(sections.id, examPapers.sectionId))
@@ -126,9 +130,18 @@ export class ExamSessionsController {
         .orderBy(asc(examPapers.examDate), asc(examPapers.startsAt));
       const results = await tx.select({ outcome: examResults.outcome, sgpa: examResults.sgpa }).from(examResults).where(eq(examResults.sessionId, id));
       const pass = results.filter((r) => r.outcome === 'pass').length;
+      const bySubject = await tx
+        .select({ subjectId: examResultLines.subjectId, subject: subjects.name, students: sql<number>`count(*)::int`, passed: sql<number>`count(*) filter (where ${examResultLines.passed})::int` })
+        .from(examResultLines)
+        .innerJoin(examResults, eq(examResults.id, examResultLines.resultId))
+        .innerJoin(subjects, eq(subjects.id, examResultLines.subjectId))
+        .where(eq(examResults.sessionId, id))
+        .groupBy(examResultLines.subjectId, subjects.name)
+        .orderBy(asc(subjects.name));
       return {
         ...s,
         papers,
+        subjects: bySubject,
         stats: { students: results.length, passed: pass, passPercent: results.length ? Math.round((pass / results.length) * 1000) / 10 : null, averageSgpa: results.length ? Math.round((results.reduce((a, r) => a + r.sgpa, 0) / results.length) * 100) / 100 : null },
       };
     });
