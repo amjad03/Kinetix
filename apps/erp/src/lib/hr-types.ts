@@ -370,3 +370,11 @@ export interface VaultDocument {
   uploadedBy: { id: string; fullName: string };
   createdAt: string;
 }
+
+/** GET /v1/profiles/staff/:id (redesign v2 profile tabs). */
+export interface StaffOverview {
+  classes: { sectionId: string; section: string; subject: string; periods: number }[];
+  attendance: { present: number; absent: number; leave: number; total: number; percent: number | null };
+  payslips: { id: string; month: string; netPaise: number; grossPaise: number; status: string }[];
+  mentees: { studentId: string; fullName: string; section: string }[];
+}

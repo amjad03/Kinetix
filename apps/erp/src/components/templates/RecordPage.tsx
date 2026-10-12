@@ -3,6 +3,7 @@
 import { FileText } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { PageHeader } from '@/components/PageHeader';
+import { ProfileHeader, type ProfileCover } from './ProfileHeader';
 import { Card, StatusPill, TabPanel, Tabs, type Tone } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { cn } from '@/lib/utils';
@@ -70,6 +71,7 @@ export function RecordPage({
   activity,
   aside,
   initialTab = 'overview',
+  profile,
 }: {
   title: string;
   subtitle?: ReactNode;
@@ -88,6 +90,8 @@ export function RecordPage({
   activity?: ActivityItem[];
   aside?: ReactNode;
   initialTab?: string;
+  /** Profile layout (people): a cover header with avatar, chips and the facts instead of the plain header. */
+  profile?: { cover?: ProfileCover; chips?: string[] };
 }) {
   const { t } = useI18n();
   const [tab, setTab] = useState(initialTab);
@@ -100,6 +104,9 @@ export function RecordPage({
 
   return (
     <div className="grid gap-6" data-testid="record-page">
+      {profile ? (
+        <ProfileHeader title={title} subtitle={subtitle} status={status} facts={facts} chips={profile.chips} cover={profile.cover} actions={(primary || secondary) && (<>{secondary}{primary}</>)} />
+      ) : (
       <PageHeader
         title={title}
         subtitle={
@@ -119,7 +126,8 @@ export function RecordPage({
           )
         }
       />
-      {facts.length > 0 && (
+      )}
+      {!profile && facts.length > 0 && (
         <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-lg border bg-card p-5 shadow-card sm:grid-cols-3 lg:grid-cols-6">
           {facts.map((f) => (
             <div key={f.label} className="min-w-0">

@@ -11,7 +11,7 @@ import { formatDate, formatDateTime, formatMonth } from '@/lib/dates';
 import { downloadUrl } from '@/lib/hr';
 import { leaveSteps, linearSteps, runSteps, type ServiceBookEntry, type StaffLoan } from '@/lib/hr-flow';
 import type { Appraisal, AppraisalCategory, SeparationDetail, TrainingRecord } from '@/lib/hr-lifecycle';
-import type { JobApplicant, JobOpening, LeaveRequest, PayrollRunDetail, Payslip, StaffProfile } from '@/lib/hr-types';
+import type { JobApplicant, JobOpening, LeaveRequest, PayrollRunDetail, Payslip, StaffOverview, StaffProfile } from '@/lib/hr-types';
 import { formatRupees } from '@/lib/money';
 
 function useFmt() {
@@ -34,10 +34,106 @@ function Details({ items }: { items: [string, ReactNode][] }) {
 
 const STAFF_TONE: Record<string, Tone> = { active: 'success', on_notice: 'warning', exited: 'neutral' };
 
-export function StaffRecord({ s, book, leave, loans, training, activity, canAdd }: { s: StaffProfile; book: ServiceBookEntry[]; leave: LeaveRequest[]; loans: StaffLoan[]; training: TrainingRecord[]; activity: ActivityItem[]; canAdd: boolean }) {
-  const { t, d } = useFmt();
+function StaffTabs(o: StaffOverview, { t, m }: ReturnType<typeof useFmt>) {
+  const tile = (label: string, value: ReactNode) => (
+    <div className="rounded-lg border bg-card p-4">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1 text-xl font-semibold tabular-nums">{value}</div>
+    </div>
+  );
+  return [
+    {
+      value: 'classes',
+      label: t('v2.prof.classes'),
+      count: o.classes.length,
+      content: (
+        <Card>
+          {o.classes.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('v2.prof.noClasses')}</p>
+          ) : (
+            <ul className="divide-y">
+              {o.classes.map((c) => (
+                <li key={c.sectionId + c.subject} className="flex items-center gap-3 py-2.5 text-sm">
+                  <a className="font-medium hover:underline" href={`/academics/sections/${c.sectionId}`}>{c.section}</a>
+                  <span className="flex-1 text-muted-foreground">{c.subject}</span>
+                  <span className="tabular-nums text-muted-foreground">{t('v2.prof.periods', { n: c.periods })}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      ),
+    },
+    {
+      value: 'attendance',
+      label: t('v2.prof.attendance'),
+      content: (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {tile(t('v2.prof.attPercent'), o.attendance.percent === null ? '–' : `${o.attendance.percent}%`)}
+          {tile(t('v2.prof.present'), o.attendance.present)}
+          {tile(t('v2.prof.absent'), o.attendance.absent)}
+          {tile(t('v2.prof.onLeave'), o.attendance.leave)}
+        </div>
+      ),
+    },
+    {
+      value: 'payroll',
+      label: t('v2.prof.payroll'),
+      count: o.payslips.length,
+      content: (
+        <Card>
+          {o.payslips.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('v2.prof.noPayslips')}</p>
+          ) : (
+            <ul className="divide-y">
+              {o.payslips.map((p) => (
+                <li key={p.id} className="flex items-center gap-3 py-2.5 text-sm">
+                  <span className="flex-1 font-medium">{m(p.month)}</span>
+                  <span className="text-muted-foreground">{t('v2.prof.gross', { amount: formatRupees(p.grossPaise) })}</span>
+                  <b className="tabular-nums">{formatRupees(p.netPaise)}</b>
+                  <a className="text-xs underline" href={downloadUrl.payslip(p.id)}>PDF</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      ),
+    },
+    {
+      value: 'mentees',
+      label: t('v2.prof.mentees'),
+      count: o.mentees.length,
+      content: (
+        <Card>
+          {o.mentees.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('v2.prof.noMentees')}</p>
+          ) : (
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {o.mentees.map((m) => (
+                <li key={m.studentId}>
+                  <a href={`/students/${m.studentId}`} className="flex items-center gap-2.5 rounded-lg border p-2.5 text-sm hover:bg-muted">
+                    <span className="grid size-8 place-items-center rounded-full bg-violet-500/12 text-xs font-semibold text-violet-700">{m.fullName.split(' ').map((x) => x[0]).slice(0, 2).join('')}</span>
+                    <span className="min-w-0">
+                      <b className="block truncate font-medium">{m.fullName}</b>
+                      <span className="text-xs text-muted-foreground">{m.section}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      ),
+    },
+  ];
+}
+
+export function StaffRecord({ s, book, leave, loans, training, activity, canAdd, overview }: { s: StaffProfile; book: ServiceBookEntry[]; leave: LeaveRequest[]; loans: StaffLoan[]; training: TrainingRecord[]; activity: ActivityItem[]; canAdd: boolean; overview?: StaffOverview | null }) {
+  const fmt = useFmt();
+  const { t, d } = fmt;
   return (
     <RecordPage
+      profile={{ cover: 'violet', chips: s.roles.map((r) => t(`role.${r}` as MessageKey)) }}
       title={s.fullName}
       subtitle={[s.employeeCode, s.designation?.name, s.department?.name].filter(Boolean).join(' · ')}
       status={s.status ? { label: t(`hr.status.${s.status}` as MessageKey), tone: STAFF_TONE[s.status] } : undefined}
@@ -65,6 +161,7 @@ export function StaffRecord({ s, book, leave, loans, training, activity, canAdd 
         />
       }
       related={[
+        ...(overview ? StaffTabs(overview, fmt) : []),
         { value: 'service', label: t('hf.sb.title'), count: book.length, content: <ServiceBook userId={s.userId} entries={book} canAdd={canAdd} /> },
         {
           value: 'leave',

@@ -3,3 +3,4 @@ export { RecordPage, ActivityTimeline, type ActivityItem, type RecordDocument, t
 export { WorkflowStepper, ApprovalPanel, type WorkflowStep } from './Workflow';
 export { ReportPage } from './ReportPage';
 export { ModuleSettingsPage, NumberingSeriesField, type SettingsSection } from './ModuleSettingsPage';
+export { ProfileHeader, type ProfileCover } from './ProfileHeader';
