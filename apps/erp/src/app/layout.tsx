@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
 import { I18nProvider } from '@/i18n/client';
 import { BCP47 } from '@/i18n/locales';
@@ -29,10 +30,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const messages = await getMessages();
   return (
     <html lang={BCP47[locale]} className={`${sansFlex.variable} ${sansFlexDisplay.variable} ${notoDevanagari.variable} ${notoKannada.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: MODE_SCRIPT }} />
-      </head>
       <body>
+        <Script id="kx-mode" strategy="beforeInteractive">
+          {MODE_SCRIPT}
+        </Script>
         <I18nProvider locale={locale} messages={messages}>
           <ThemeRegistry>{children}</ThemeRegistry>
         </I18nProvider>

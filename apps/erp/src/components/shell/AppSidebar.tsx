@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronsUpDown, Check } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, Check, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
@@ -8,7 +8,7 @@ import { setWorkspace } from '@/app/shell/actions';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/shadcn/dropdown-menu';
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
-  SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail, useSidebar,
+  SidebarMenuAction, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail, useSidebar,
 } from '@/components/shadcn/sidebar';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -16,9 +16,11 @@ import { isActivePath, navSections, type NavGroup } from '@/lib/nav';
 import type { SetupSummary } from '@/lib/setup';
 import { WORKSPACES, type Workspace } from '@/lib/workspaces';
 import { cn } from '@/lib/utils';
-import { NAV_ICONS } from './nav-icons';
+import { NavTile } from './nav-icons';
 
 const CLOSED_KEY = 'kx.nav.closed';
+const FAV_KEY = 'kx.nav.fav.';
+const MAX_FAV = 8;
 
 function readClosed(): string[] {
   try {
@@ -45,6 +47,7 @@ export function AppSidebar({
   workspace,
   home,
   setup,
+  userKey = '',
 }: {
   groups: NavGroup[];
   pathname: string;
@@ -53,6 +56,8 @@ export function AppSidebar({
   workspace: Workspace;
   home: string;
   setup?: SetupSummary | null;
+  /** Favourites are remembered per person on this browser. */
+  userKey?: string;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -62,6 +67,32 @@ export function AppSidebar({
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   // eslint-disable-next-line react-hooks/set-state-in-effect -- read the remembered choice after hydration
   useEffect(() => setClosed(readClosed()), []);
+  const [favs, setFavs] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read the remembered favourites after hydration
+      setFavs(JSON.parse(localStorage.getItem(FAV_KEY + userKey) ?? '[]') as string[]);
+    } catch {
+      /* storage blocked */
+    }
+  }, [userKey]);
+  const toggleFav = (href: string) => {
+    const next = favs.includes(href) ? favs.filter((x) => x !== href) : [...favs, href].slice(-MAX_FAV);
+    setFavs(next);
+    try {
+      localStorage.setItem(FAV_KEY + userKey, JSON.stringify(next));
+    } catch {
+      /* storage blocked */
+    }
+  };
+  const allItems = groups.flatMap((g) => g.items.map((i) => ({ ...i, groupLabel: g.solo || g.items.length === 1 ? g.label : i.label })));
+  const favItems = favs.map((h) => allItems.find((i) => i.href === h)).filter((i): i is (typeof allItems)[number] => !!i);
+  const favAction = (href: string, label: string) => (
+    <SidebarMenuAction showOnHover onClick={() => toggleFav(href)} aria-label={t(favs.includes(href) ? 'shell.fav.remove' : 'shell.fav.add', { name: label })} data-testid="fav-toggle">
+      <Star className={cn(favs.includes(href) && 'fill-amber-400 text-amber-500')} />
+    </SidebarMenuAction>
+  );
+  const TILE_BTN = 'group-data-[collapsible=icon]:p-1! gap-2.5';
   const sections = navSections(groups);
   const toggleSection = (id: string) => {
     const next = closed.includes(id) ? closed.filter((x) => x !== id) : [...closed, id];
@@ -117,6 +148,29 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="gap-0 px-1">
+        {favItems.length > 0 && (
+          <SidebarGroup className="py-1" data-testid="nav-favourites">
+            <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-[.06em] text-muted-foreground">{t('shell.fav.title')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {favItems.map((i) => {
+                  const label = t(i.groupLabel);
+                  return (
+                    <SidebarMenuItem key={'fav' + i.href}>
+                      <SidebarMenuButton asChild isActive={isActivePath(pathname, i.href)} tooltip={label} className={cn('font-medium text-sidebar-foreground', TILE_BTN, ACTIVE_BAR)}>
+                        <Link href={i.href === '/' ? home : i.href} onClick={done}>
+                          <NavTile icon={i.icon} />
+                          <span>{label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                      {favAction(i.href, label)}
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
         {sections.map((sec) => {
           const isClosed = closed.includes(sec.id) && !collapsed;
           return (
@@ -131,18 +185,18 @@ export function AppSidebar({
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {sec.groups.map((g) => {
-                      const Icon = NAV_ICONS[g.icon];
                       if (g.items.length === 1) {
                         const item = g.items[0];
                         const label = t(g.solo ? g.label : item.label);
                         return (
                           <SidebarMenuItem key={g.id}>
-                            <SidebarMenuButton asChild isActive={isActivePath(pathname, item.href)} tooltip={label} className={cn('font-medium text-sidebar-foreground', ACTIVE_BAR)}>
+                            <SidebarMenuButton asChild isActive={isActivePath(pathname, item.href)} tooltip={label} className={cn('font-medium text-sidebar-foreground', TILE_BTN, ACTIVE_BAR)}>
                               <Link href={item.href === '/' ? home : item.href} onClick={done}>
-                                <Icon />
+                                <NavTile icon={g.icon} />
                                 <span>{label}</span>
                               </Link>
                             </SidebarMenuButton>
+                            {!collapsed && favAction(item.href, label)}
                           </SidebarMenuItem>
                         );
                       }
@@ -151,15 +205,15 @@ export function AppSidebar({
                       return (
                         <SidebarMenuItem key={g.id}>
                           {collapsed ? (
-                            <SidebarMenuButton asChild isActive={hasActive} tooltip={t(g.label)} className={cn('font-medium text-sidebar-foreground', ACTIVE_BAR)}>
+                            <SidebarMenuButton asChild isActive={hasActive} tooltip={t(g.label)} className={cn('font-medium text-sidebar-foreground', TILE_BTN, ACTIVE_BAR)}>
                               <Link href={g.items[0].href}>
-                                <Icon />
+                                <NavTile icon={g.icon} />
                                 <span>{t(g.label)}</span>
                               </Link>
                             </SidebarMenuButton>
                           ) : (
-                            <SidebarMenuButton aria-expanded={open} onClick={() => setOpenGroups((o) => ({ ...o, [g.id]: !open }))} className={cn('font-medium text-sidebar-foreground', hasActive && 'text-foreground')}>
-                              <Icon />
+                            <SidebarMenuButton aria-expanded={open} onClick={() => setOpenGroups((o) => ({ ...o, [g.id]: !open }))} className={cn('font-medium text-sidebar-foreground', TILE_BTN, hasActive && 'text-foreground')}>
+                              <NavTile icon={g.icon} />
                               <span>{t(g.label)}</span>
                               <ChevronDown className={cn('ml-auto transition-transform', !open && '-rotate-90')} />
                             </SidebarMenuButton>
@@ -167,12 +221,15 @@ export function AppSidebar({
                           {open && !collapsed && (
                             <SidebarMenuSub>
                               {g.items.map((i) => (
-                                <SidebarMenuSubItem key={i.href}>
+                                <SidebarMenuSubItem key={i.href} className="group/sub relative">
                                   <SidebarMenuSubButton asChild isActive={isActivePath(pathname, i.href) && !g.items.some((o) => o.href.length > i.href.length && isActivePath(pathname, o.href))} className="text-sidebar-foreground data-[active=true]:font-semibold">
                                     <Link href={i.href} onClick={done}>
                                       <span>{t(i.label)}</span>
                                     </Link>
                                   </SidebarMenuSubButton>
+                                  <button type="button" onClick={() => toggleFav(i.href)} aria-label={t(favs.includes(i.href) ? 'shell.fav.remove' : 'shell.fav.add', { name: t(i.label) })} className={cn('absolute top-1 right-1 grid size-5 place-items-center rounded-md text-sidebar-foreground opacity-0 hover:bg-sidebar-accent group-hover/sub:opacity-100 focus-visible:opacity-100 [&>svg]:size-3.5', favs.includes(i.href) && 'opacity-100')}>
+                                    <Star className={cn(favs.includes(i.href) && 'fill-amber-400 text-amber-500')} />
+                                  </button>
                                 </SidebarMenuSubItem>
                               ))}
                             </SidebarMenuSub>

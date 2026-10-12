@@ -1,16 +1,17 @@
 'use client';
 
 import { ChevronDown, Columns2, FileText, Pin, PinOff, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/shadcn/dropdown-menu';
 import { useI18n } from '@/i18n/client';
 import type { NavIcon } from '@/lib/nav';
 import type { WorkTab } from '@/lib/tabs';
 import { cn } from '@/lib/utils';
-import { NAV_ICONS } from '../shell/nav-icons';
+import { NAV_ICONS, NavTile } from '../shell/nav-icons';
 import { useTabs } from './TabsProvider';
 
 function TabIcon({ tab, className }: { tab: WorkTab; className?: string }) {
+  if (tab.icon && tab.icon in NAV_ICONS) return <NavTile icon={tab.icon as NavIcon} size="xs" />;
   const Icon = NAV_ICONS[tab.icon as NavIcon] ?? FileText;
   return <Icon aria-hidden className={cn('size-4 shrink-0', className)} />;
 }
@@ -25,7 +26,13 @@ export function TabBar() {
   const { t } = useI18n();
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
+  // The tab strip depends on tabs restored from this browser and on Radix ids, so it renders only
+  // after hydration (a same-height placeholder first): no server/client markup mismatch.
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- mount gate
+  useEffect(() => setMounted(true), []);
   if (!api || api.state.tabs.length === 0) return null;
+  if (!mounted) return <div className="kx-tabbar sticky top-[60px] z-20 h-[45px] border-b bg-background/95" data-testid="tab-bar" aria-hidden />;
   const { state } = api;
   const active = state.tabs.find((x) => x.id === state.activeId) ?? state.tabs[0];
   const many = state.tabs.length > 1;
