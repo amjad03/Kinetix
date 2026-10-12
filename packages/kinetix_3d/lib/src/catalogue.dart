@@ -5,12 +5,14 @@ import 'astronomy.dart';
 import 'chemistry.dart';
 import 'model.dart';
 import 'model_viewer.dart';
+import 'procedural_library.dart';
 import 'solid_explorer.dart';
 import 'solids.dart';
 import 'viewer/annotations.dart';
 import 'viewer/catalogue_info.dart';
 import 'viewer/engine.dart';
 import 'viewer/manifest.dart';
+import 'viewer/remote_models.dart';
 import 'viewer/scenes.dart';
 import 'viewer/snapshot.dart';
 import 'viewer/strings.dart';
@@ -37,6 +39,10 @@ class ModelEntry {
     this.viewerId,
     this.variant,
     this.listed = true,
+    this.buildLang,
+    this.topic,
+    this.remote,
+    this.keywordsMore = const [],
   });
 
   /// A three.js viewer model, under its own id.
@@ -49,6 +55,29 @@ class ModelEntry {
     classes: m.classes,
     keywords: m.keywords,
     viewerId: m.id,
+  );
+
+  /// Builds the model with its labels in a language (en, hi, kn): the procedural library.
+  final Model3D Function(String lang)? buildLang;
+
+  /// The class-context model topic (`machine`, `optics`, `landform`...), see ToolProfile.models.
+  final String? topic;
+
+  /// Set for models that are downloaded on first use.
+  final RemoteModelInfo? remote;
+  final List<String> keywordsMore;
+
+  /// A downloadable model.
+  factory ModelEntry.downloadable(RemoteModelInfo m) => ModelEntry(
+    id: 'dl.${m.id}',
+    title: m.title.en,
+    titles: m.title,
+    subjects: [m.subject],
+    levels: [for (final c in m.classes) 'Class $c'],
+    classes: m.classes,
+    keywords: m.keywords,
+    topic: m.topic,
+    remote: m,
   );
 
   final String id;
@@ -83,17 +112,20 @@ class ModelEntry {
   bool get usesViewer => viewerId != null;
 
   /// Whether the Dart renderer can draw it (no WebView needed).
-  bool get native => solid != null || build != null;
+  bool get native => solid != null || build != null || buildLang != null;
 
   String titleIn(String lang) => titles?.of(lang) ?? title;
 
-  Model3D buildModel() => solid != null ? Solid(solid!).toModel() : build!();
+  Model3D buildModel([String lang = 'en']) => solid != null ? Solid(solid!).toModel() : buildLang != null ? buildLang!(lang) : build!();
 
   /// The viewer model's details (summary, keywords, picture), if it has one.
   ViewerModelInfo? get info => viewerId == null ? null : ViewerModelInfo.byId(viewerId!);
 }
 
 /// Every built-in model: solids drawn here, and the three.js viewer's models (no downloads).
+Model3D _convex(String lang) => ProceduralModels.optics(lang, convex: true);
+Model3D _concave(String lang) => ProceduralModels.optics(lang, convex: false);
+
 abstract final class ModelCatalogue {
   static final List<ModelEntry> all = [
     for (final k in SolidKind.values)
@@ -116,6 +148,22 @@ abstract final class ModelCatalogue {
     const ModelEntry(id: 'chem.nacl', title: 'Sodium chloride lattice (NaCl)', subjects: ['Chemistry'], levels: ['CBSE 10'], build: ChemistryModels.sodiumChloride, viewerId: 'crystal_lattices', variant: 'nacl', listed: false),
     const ModelEntry(id: 'astro.solar-system', title: 'The Solar System', subjects: ['Science', 'Geography'], levels: ['Class 6', 'Class 8'], build: AstronomyModels.solarSystem, viewerId: 'solar_system', listed: false),
     const ModelEntry(id: 'astro.earth', title: 'The Earth: tilt, day and night', subjects: ['Geography', 'Science'], levels: ['Class 6', 'Class 9'], build: AstronomyModels.earth, viewerId: 'seasons', listed: false),
+    // Procedural teaching models (KINETIX-made; see docs/licensing/3D_MODELS.md).
+    ModelEntry(id: 'proc.gears', title: 'Gears and gear train', titles: LocalText({'en': 'Gears and gear train', 'hi': 'गियर और गियर-गाड़ी', 'kn': 'ಗೇರ್‌ಗಳು ಮತ್ತು ಗೇರ್ ಸರಣಿ'}), subjects: ['Engineering'], levels: ['Class 8', 'Class 11'], classes: [8, 9, 11], keywords: ['gear', 'gears', 'gear ratio', 'machines', 'speed ratio', 'torque'], topic: 'machine', buildLang: ProceduralModels.gears),
+    ModelEntry(id: 'proc.engine', title: 'Four-stroke engine', titles: LocalText({'en': 'Four-stroke engine', 'hi': 'चार-स्ट्रोक इंजन', 'kn': 'ನಾಲ್ಕು-ಸ್ಟ್ರೋಕ್ ಎಂಜಿನ್'}), subjects: ['Engineering'], levels: ['Class 11', 'Class 12'], classes: [10, 11, 12], keywords: ['engine', 'petrol engine', 'piston', 'crankshaft', 'internal combustion', 'four stroke', 'valves'], topic: 'machine', buildLang: ProceduralModels.engine),
+    ModelEntry(id: 'proc.optics-convex', title: 'Convex lens bench', titles: LocalText({'en': 'Convex lens bench', 'hi': 'उत्तल लेंस बेंच', 'kn': 'ಪೀನ ಮಸೂರ ಬೆಂಚ್'}), subjects: ['Physics'], levels: ['Class 10', 'Class 12'], classes: [10, 12], keywords: ['lens', 'convex lens', 'optics', 'ray diagram', 'image formation', 'focal length', 'light'], topic: 'optics', buildLang: _convex),
+    ModelEntry(id: 'proc.optics-concave', title: 'Concave lens bench', titles: LocalText({'en': 'Concave lens bench', 'hi': 'अवतल लेंस बेंच', 'kn': 'ನಿಮ್ನ ಮಸೂರ ಬೆಂಚ್'}), subjects: ['Physics'], levels: ['Class 10', 'Class 12'], classes: [10, 12], keywords: ['lens', 'concave lens', 'optics', 'ray diagram', 'virtual image', 'light'], topic: 'optics', buildLang: _concave),
+    ModelEntry(id: 'proc.lab-apparatus', title: 'Laboratory apparatus', titles: LocalText({'en': 'Laboratory apparatus', 'hi': 'प्रयोगशाला के उपकरण', 'kn': 'ಪ್ರಯೋಗಾಲಯದ ಉಪಕರಣಗಳು'}), subjects: ['Chemistry'], levels: ['Class 6', 'Class 9', 'Class 11'], classes: [6, 7, 8, 9, 11], keywords: ['beaker', 'flask', 'test tube', 'burette', 'bunsen burner', 'retort stand', 'lab equipment', 'titration', 'apparatus'], topic: 'lab', buildLang: ProceduralModels.labApparatus),
+    ModelEntry(id: 'proc.globe', title: 'Globe', titles: LocalText({'en': 'Globe', 'hi': 'ग्लोब', 'kn': 'ಭೂಗೋಳ'}), subjects: ['Geography'], levels: ['Class 6', 'Class 7'], classes: [6, 7, 9], keywords: ['globe', 'equator', 'latitude', 'longitude', 'axis', 'poles', 'tropic of cancer', 'earth'], topic: 'earth', buildLang: ProceduralModels.globe),
+    ModelEntry(id: 'proc.landforms', title: 'Landforms', titles: LocalText({'en': 'Landforms', 'hi': 'भू-आकृतियाँ', 'kn': 'ಭೂರೂಪಗಳು'}), subjects: ['Geography'], levels: ['Class 6', 'Class 7', 'Class 9'], classes: [6, 7, 9], keywords: ['landform', 'mountain', 'valley', 'plateau', 'delta', 'river', 'relief', 'physical features'], topic: 'earth', buildLang: ProceduralModels.landforms),
+    ModelEntry(id: 'proc.virus', title: 'Virus', titles: LocalText({'en': 'Virus', 'hi': 'विषाणु', 'kn': 'ವೈರಸ್'}), subjects: ['Biology'], levels: ['Class 8', 'Class 9', 'Class 11'], classes: [8, 9, 11], keywords: ['virus', 'coronavirus', 'spike protein', 'microbes', 'disease', 'rna'], topic: 'cell', buildLang: ProceduralModels.virus),
+    ModelEntry(id: 'proc.teeth', title: 'Teeth', titles: LocalText({'en': 'Teeth', 'hi': 'दाँत', 'kn': 'ಹಲ್ಲುಗಳು'}), subjects: ['Biology'], levels: ['Class 5', 'Class 7', 'Class 10'], classes: [5, 7, 10], keywords: ['teeth', 'tooth', 'incisor', 'canine', 'premolar', 'molar', 'digestion', 'dentition'], topic: 'human', buildLang: ProceduralModels.teeth),
+    ModelEntry(id: 'proc.skull', title: 'Human skull', titles: LocalText({'en': 'Human skull', 'hi': 'मानव खोपड़ी', 'kn': 'ಮಾನವ ತಲೆಬುರುಡೆ'}), subjects: ['Biology'], levels: ['Class 7', 'Class 11'], classes: [7, 11], keywords: ['skull', 'cranium', 'jaw', 'mandible', 'skeleton', 'bones', 'head'], topic: 'human', buildLang: ProceduralModels.skull),
+    ModelEntry(id: 'proc.taj-mahal', title: 'Taj Mahal', titles: LocalText({'en': 'Taj Mahal, Agra', 'hi': 'ताजमहल, आगरा', 'kn': 'ತಾಜ್ ಮಹಲ್, ಆಗ್ರಾ'}), subjects: ['History'], levels: ['Class 7', 'Class 12'], classes: [7, 12], keywords: ['taj mahal', 'mughal', 'shah jahan', 'monument', 'architecture', 'agra', 'tomb'], topic: 'monument', buildLang: ProceduralModels.tajMahal),
+    ModelEntry(id: 'proc.qutub-minar', title: 'Qutub Minar', titles: LocalText({'en': 'Qutub Minar, Delhi', 'hi': 'क़ुतुब मीनार, दिल्ली', 'kn': 'ಕುತುಬ್ ಮಿನಾರ್, ದೆಹಲಿ'}), subjects: ['History'], levels: ['Class 7'], classes: [7], keywords: ['qutub minar', 'qutb', 'delhi sultanate', 'aibak', 'monument', 'minaret', 'architecture'], topic: 'monument', buildLang: ProceduralModels.qutubMinar),
+    ModelEntry(id: 'proc.india-gate', title: 'India Gate', titles: LocalText({'en': 'India Gate, New Delhi', 'hi': 'इंडिया गेट, नई दिल्ली', 'kn': 'ಇಂಡಿಯಾ ಗೇಟ್, ನವದೆಹಲಿ'}), subjects: ['History'], levels: ['Class 8', 'Class 10'], classes: [8, 10], keywords: ['india gate', 'war memorial', 'world war', 'delhi', 'monument', 'amar jawan jyoti'], topic: 'monument', buildLang: ProceduralModels.indiaGate),
+    ModelEntry(id: 'proc.konark', title: 'Konark Sun Temple', titles: LocalText({'en': 'Sun Temple, Konark', 'hi': 'सूर्य मंदिर, कोणार्क', 'kn': 'ಸೂರ್ಯ ದೇವಾಲಯ, ಕೋನಾರ್ಕ್'}), subjects: ['History'], levels: ['Class 6', 'Class 7'], classes: [6, 7], keywords: ['konark', 'sun temple', 'odisha', 'temple architecture', 'monument', 'chariot', 'sundial'], topic: 'monument', buildLang: ProceduralModels.konark),
+    for (final m in RemoteModels.all) ModelEntry.downloadable(m),
   ];
 
   /// The models pickers list, in library order.
@@ -200,9 +248,14 @@ class _ModelViewState extends State<ModelView> {
         onAnnotationsChanged: widget.onAnnotationsChanged,
       );
     }
-    if (_builtFor != entry.id) {
-      _model = entry.buildModel();
-      _builtFor = entry.id;
+    final remote = entry.remote;
+    if (remote != null) {
+      return RemoteModelView(key: ValueKey(entry.id), info: remote, cache: RemoteModels.cache, lang: widget.lang ?? viewerLangOf(context));
+    }
+    final lang = widget.lang ?? viewerLangOf(context);
+    if (_builtFor != '${entry.id}/$lang') {
+      _model = entry.buildModel(lang);
+      _builtFor = '${entry.id}/$lang';
     }
     return ModelViewer(model: _model!);
   }

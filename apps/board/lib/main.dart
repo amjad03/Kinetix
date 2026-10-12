@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:kinetix_3d/kinetix_3d.dart' show RemoteModels;
 import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'core/api_client.dart';
 import 'core/board_controller.dart';
@@ -28,6 +31,8 @@ void main() {
   // Plugins (saved settings, secure storage, the outbox) can only be used once Flutter's engine
   // binding exists; the controllers below start reading them before runApp.
   WidgetsFlutterBinding.ensureInitialized();
+  // Downloaded 3D models are kept here so they work offline after the first use.
+  unawaited(getApplicationSupportDirectory().then((d) => RemoteModels.cacheDir = Directory('${d.path}/models3d'), onError: (_) {}));
   // A release built without --dart-define=KINETIX_API_URL stops here with a clear message
   // (unless it is a demo build: --dart-define=KINETIX_DEMO=true, which needs no server).
   if (!checkServerConfig()) return;

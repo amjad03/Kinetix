@@ -1767,6 +1767,8 @@ class _BoardScreenState extends State<BoardScreen> {
       onSplit: _openSplit,
     ),
     PanelKind.split => SplitPanel(
+      catalogueSubject: modelSubjectKey(_ctx.subject),
+      catalogueLevel: modelLevelKey(_ctx.grade),
       content: _splitContent,
       onContent: (c) => setState(() {
         _splitContent = c;

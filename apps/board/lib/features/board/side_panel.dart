@@ -106,6 +106,8 @@ class SplitPanel extends StatelessWidget {
     required this.content,
     required this.onContent,
     required this.secondBoard,
+    this.catalogueSubject,
+    this.catalogueLevel,
     this.itemId,
     this.preset,
     this.onItem,
@@ -117,6 +119,9 @@ class SplitPanel extends StatelessWidget {
   final ValueChanged<SplitContent?> onContent;
   /// The second whiteboard: the same canvas, toolbar state and AI pen as the main board.
   final Widget secondBoard;
+
+  /// The class's subject and level, so the 3D model list opens on what is being taught.
+  final String? catalogueSubject, catalogueLevel;
 
   /// The 3D model or lab shown (catalogue id), and an optional lab preset.
   final String? itemId;
@@ -165,6 +170,8 @@ class SplitPanel extends StatelessWidget {
                 ? CatalogueBrowser(
                     key: ValueKey(kind),
                     kind: kind == SplitContent.model3d ? CatalogueKind.model3d : CatalogueKind.lab,
+                    initialSubject: kind == SplitContent.model3d ? catalogueSubject : null,
+                    initialLevel: kind == SplitContent.model3d ? catalogueLevel : null,
                     onPick: (id) => onItem?.call(id, null),
                   )
                 : RepaintBoundary(

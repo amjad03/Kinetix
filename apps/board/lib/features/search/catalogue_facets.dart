@@ -49,7 +49,7 @@ class CatalogueItem {
 }
 
 /// Subjects in the order the dropdown lists them.
-const catalogueSubjects = ['physics', 'chemistry', 'biology', 'maths', 'electronics', 'geography', 'space', 'forensics'];
+const catalogueSubjects = ['physics', 'chemistry', 'biology', 'maths', 'electronics', 'geography', 'space', 'engineering', 'history', 'forensics'];
 
 /// Each subject's topics, in order, with the words that put a model or a lab in them. The
 /// first that fits wins; nothing fitting means 'other'.
@@ -71,10 +71,10 @@ const catalogueCategories = <String, List<(String, List<String>)>>{
     ('mixtures', ['separation', 'filtration', 'distillation', 'chromatograph', 'mixture', 'solution', 'solubility', 'crystallis', 'evaporat', 'sublimation', 'colloid', 'suspension', 'melting', 'boiling', 'viscosity']),
   ],
   'biology': [
-    ('humanBody', ['heart', 'brain', 'lung', 'digest', 'excret', 'skeleton', 'ear', 'eye', 'kidney', 'nephron', 'blood', 'nervous', 'respirat', 'circulat', 'human', 'muscle', 'pulse', 'teeth', 'tooth']),
+    ('humanBody', ['skull', 'teeth', 'tooth', 'heart', 'brain', 'lung', 'digest', 'excret', 'skeleton', 'ear', 'eye', 'kidney', 'nephron', 'blood', 'nervous', 'respirat', 'circulat', 'human', 'muscle', 'pulse', 'teeth', 'tooth']),
     ('plants', ['plant', 'flower', 'leaf', 'photosynthesis', 'stomata', 'seed', 'germinat', 'root', 'transpiration', 'pollen', 'chlorophyll']),
     ('cells', ['cell', 'dna', 'microscope', 'mitosis', 'meiosis', 'genetic', 'chromosome', 'gene', 'heredity', 'neuron', 'tissue', 'osmosis']),
-    ('ecology', ['ecosystem', 'environment', 'microb', 'food chain', 'pollution', 'adaptation', 'bacteria', 'fung', 'soil', 'water']),
+    ('ecology', ['virus', 'ecosystem', 'environment', 'microb', 'food chain', 'pollution', 'adaptation', 'bacteria', 'fung', 'soil', 'water']),
   ],
   'electronics': [
     ('digital', ['logic', 'gate', 'binary', 'flip', 'counter', 'adder', 'boolean', 'digital']),
@@ -92,7 +92,14 @@ const catalogueCategories = <String, List<(String, List<String>)>>{
     ('geometry', ['solid', 'shape', 'cube', 'cuboid', 'sphere', 'cone', 'cylinder', 'pyramid', 'prism', 'hemisphere', 'frustum', 'tetrahedron', 'net', 'area', 'volume', 'triangle', 'circle', 'angle', 'pythagoras', 'mensuration', 'geometr']),
   ],
   'geography': [
+    ('landforms', ['landform', 'globe']),
     ('earth', ['earth', 'layer', 'volcano', 'plate', 'rock', 'earthquake', 'mountain']),
+  ],
+  'engineering': [
+    ('machines', ['gear', 'engine', 'machine', 'motor', 'piston']),
+  ],
+  'history': [
+    ('monuments', ['taj', 'minar', 'gate', 'temple', 'monument', 'fort', 'memorial']),
   ],
   'space': [
     ('solarSystem', ['solar', 'planet', 'sun', 'moon', 'season', 'orbit', 'eclipse', 'star']),
