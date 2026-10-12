@@ -38,7 +38,7 @@ async function examDepth(c: Ctx): Promise<void> {
   await k.ins('result_class_bands', { bands: J([{ name: 'Distinction', minPercent: 75 }, { name: 'First class', minPercent: 60 }, { name: 'Second class', minPercent: 50 }, { name: 'Pass class', minPercent: 40 }]), updatedBy: principal }, { returning: false });
 
   // A locked question paper waits, sealed, for the controller.
-  const [paper] = await k.q<{ id: string }>("select id from qb_papers where status = 'locked' order by created_at desc limit 1");
+  const [paper] = await k.q<{ id: string }>("select id from qb_papers where status = 'locked' and tenant_id = $1 order by created_at desc limit 1", [c.tenantId]);
   if (paper) await k.ins('qb_paper_releases', { paperId: paper.id, releaseAt: at(addDays(c.today, 2), '09:00'), controllerId: controller, status: 'scheduled', createdBy: principal }, { returning: false });
 
   // Practical and viva sittings of the latest exam session, with external examiners.

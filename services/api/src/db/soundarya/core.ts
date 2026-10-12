@@ -1,5 +1,5 @@
 /** Part 1: the institution, programmes, people, classes, timetable and academic calendar. */
-import { DEPARTMENTS, DOMAIN, FEMALE, MALE, PROGRAMS, SLUG, STAFF, SURNAMES, type Dept } from './data.js';
+import { ALIASES, DEPARTMENTS, DOMAIN, FEMALE, INST, MALE, PROFILE, PROGRAMS, SLUG, STAFF, SURNAMES, type Dept } from './data.js';
 import type { Ctx, SectionRef, StudentRef, SubjectRef, UserRef } from './ctx.js';
 import { addDays, iso, makeKit, rng, weekday, type Kit } from './kit.js';
 
@@ -27,17 +27,17 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
     'tenants',
     {
       slug: SLUG,
-      name: 'Soundarya Institute of Management and Science',
-      kind: 'college',
+      name: INST.name,
+      kind: INST.kind,
       timezone: 'Asia/Kolkata',
       settings: {
         liveViewEnabled: true,
         liveViewIndicator: true,
         profile: {
-          shortName: 'SIMS',
-          address: 'Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru 560073',
-          affiliation: 'Bengaluru City University',
-          scheme: 'NEP semester scheme',
+          shortName: INST.shortName,
+          address: INST.address,
+          affiliation: INST.affiliation,
+          scheme: INST.scheme,
           phone: '+91 90000 10000',
           email: `office@${DOMAIN}`,
         },
@@ -47,14 +47,14 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
   );
   const tenantId = tenant.id;
   const k = makeKit(kit.pool, tenantId);
-  const campus = await k.one<{ id: string }>('campuses', { name: 'Soundarya Nagar Campus', city: 'Bengaluru' });
+  const campus = await k.one<{ id: string }>('campuses', { name: INST.campus, city: 'Bengaluru' });
   const yrs = await k.ins<{ id: string; label: string }>('academic_years', [
     { label: '2025-26', startsOn: '2025-08-01', endsOn: '2026-05-31', isCurrent: false },
     { label: '2026-27', startsOn: '2026-08-01', endsOn: '2027-05-31', isCurrent: true },
     { label: '2027-28', startsOn: '2027-08-01', endsOn: '2028-05-31', isCurrent: false },
   ]);
   const yid = (l: string) => yrs.find((y) => y.label === l)!.id;
-  const term = await k.one<{ id: string }>('academic_terms', { academicYearId: yid('2026-27'), name: 'Odd semester 2026', startsOn: '2026-08-01', endsOn: '2026-12-19' });
+  const term = await k.one<{ id: string }>('academic_terms', { academicYearId: yid('2026-27'), name: PROFILE === 'school' ? 'Term 1 (2026-27)' : 'Odd semester 2026', startsOn: '2026-08-01', endsOn: '2026-12-19' });
 
   // Programmes, classes, papers.
   const programs: Ctx['programs'] = {};
@@ -75,7 +75,8 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
     STAFF.map((s) => ({ fullName: s.name, email: `${s.email}@${DOMAIN}`, phone: nextPhone(), passwordHash: hash, preferredLanguage: s.lang ?? 'en', status: 'active' })),
   );
   const staff: UserRef[] = userRows.map((u, i) => ({ id: u.id, name: u.fullName, email: STAFF[i].email, dept: STAFF[i].dept }));
-  const byEmail = Object.fromEntries(staff.map((s) => [s.email, s]));
+  const byEmail: Record<string, UserRef> = Object.fromEntries(staff.map((s) => [s.email, s]));
+  for (const [alias, to] of Object.entries(ALIASES)) byEmail[alias] = byEmail[to];
   await k.ins('user_roles', STAFF.flatMap((s, i) => s.roles.map((role) => ({ userId: staff[i].id, role, campusId: campus.id }))), { returning: false });
   const teachers = staff.filter((_, i) => STAFF[i].roles.includes('teacher'));
   const hods: Record<Dept, string> = {} as Record<Dept, string>;
@@ -88,7 +89,7 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
     'staff_profiles',
     STAFF.map((s, i) => ({
       userId: staff[i].id,
-      employeeCode: `SIMS-${String(i + 1).padStart(3, '0')}`,
+      employeeCode: `${INST.codePrefix}-${String(i + 1).padStart(3, '0')}`,
       departmentId: s.dept ? departments[s.dept] : null,
       designationId: designations[s.designation],
       employmentType: i % 11 === 10 ? 'contract' : 'permanent',
@@ -106,7 +107,7 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
   );
 
   // Rooms.
-  const roomNames = [...Array.from({ length: 16 }, (_, i) => `Room ${101 + i}`), 'Computer Lab 1', 'Computer Lab 2', 'Seminar Hall', 'Aviation Simulation Lab', 'Auditorium', 'Examination Hall'];
+  const roomNames = [...Array.from({ length: 16 }, (_, i) => `Room ${101 + i}`), 'Computer Lab 1', 'Computer Lab 2', 'Seminar Hall', PROFILE === 'school' ? 'Science Lab' : 'Aviation Simulation Lab', 'Auditorium', 'Examination Hall'];
   const rooms = await k.ins<{ id: string; name: string }>(
     'rooms',
     roomNames.map((name) => ({ campusId: campus.id, name, capacity: /Hall|Auditorium/.test(name) ? 200 : /Lab/.test(name) ? 40 : 70, kind: /Lab/.test(name) ? 'lab' : /Hall|Auditorium/.test(name) ? 'hall' : 'classroom' })),
@@ -124,10 +125,9 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
   let roomIdx = 0;
   for (const def of PROGRAMS) {
     const pid = programs[def.code].id;
-    for (const [t, size] of def.classes) {
-      const label = `${def.name} Sem ${t} A`;
-      const sec = await k.one<{ id: string }>('sections', { programId: pid, academicYearId: yid('2026-27'), term: t, name: 'A', displayName: label });
+    for (const [t, size, nSec = 1] of def.classes) {
       const papers = def.papers[t];
+      // One set of subjects per class; every section of that class shares it.
       const subjRows = await k.ins<{ id: string; code: string; name: string }>(
         'subjects',
         papers.map(([name, credits, dept], i) => ({
@@ -149,13 +149,21 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
         dept: papers[i][2] ?? def.dept,
         teacherId: teacherFor(papers[i][2] ?? def.dept),
       }));
-      sections.push({ id: sec.id, programId: pid, prog: def.code, def, term: t, label, roomId: rooms[roomIdx++ % 16].id, subjects, students: [], slotIds: [] });
+      for (let si = 0; si < nSec; si++) {
+        const secName = String.fromCharCode(65 + si);
+        const label = PROFILE === 'school' ? `Class ${t}${def.code === 'SCI' ? ' Science' : def.code === 'COM' ? ' Commerce' : ''} ${secName}` : `${def.name} Sem ${t} ${secName}`;
+        const sec = await k.one<{ id: string }>('sections', { programId: pid, academicYearId: yid('2026-27'), term: t, name: secName, displayName: label });
+        // Each section gets its own teacher per subject where the department has one free.
+        const own = si === 0 ? subjects : subjects.map((x) => ({ ...x, teacherId: teacherFor(x.dept) }));
+        sections.push({ id: sec.id, programId: pid, prog: def.code, def, term: t, label, roomId: rooms[roomIdx++ % 16].id, subjects: own, students: [], slotIds: [] });
+      }
       void size;
     }
   }
 
   // Students: unique fictional names; two reserved for logins.
-  const used = new Set<string>(['Sahana Gowda', 'Vignesh Naik', 'Chaitra Naik']);
+  const SP = [INST.strong, INST.weak, INST.sibling];
+  const used = new Set<string>(SP.map((x) => x.name));
   const students: StudentRef[] = [];
   const makeName = (female: boolean) => {
     for (;;) {
@@ -168,24 +176,24 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
   };
   for (const sec of sections) {
     const size = sec.def.classes.find(([t]) => t === sec.term)![1];
-    const intake = 2026 - Math.floor((sec.term - 1) / 2);
+    const firstOfClass = sections.find((x) => x.prog === sec.prog && x.term === sec.term) === sec;
+    const intake = PROFILE === 'school' ? 2026 - (sec.term - 1) : 2026 - Math.floor((sec.term - 1) / 2);
     for (let i = 0; i < size; i++) {
       let name: string;
       let female: boolean;
-      if (sec.prog === 'BCM' && sec.term === 3 && i === 0) [name, female] = ['Sahana Gowda', true];
-      else if (sec.prog === 'BCA' && sec.term === 3 && i === 0) [name, female] = ['Vignesh Naik', false];
-      else if (sec.prog === 'BBA' && sec.term === 1 && i === 0) [name, female] = ['Chaitra Naik', true];
+      const sp = i === 0 && firstOfClass ? SP.find((x) => x.prog === sec.prog && x.term === sec.term) : undefined;
+      if (sp) [name, female] = [sp.name, sp.female];
       else {
-        female = r.chance(sec.prog === 'BAV' ? 0.55 : 0.52);
+        female = r.chance(sec.prog === 'BAV' ? 0.55 : 0.5);
         name = makeName(female);
       }
       // Most students attend about four days in five; one in eight is at risk.
       let presence = Math.min(0.97, Math.max(0.5, r.gauss(0.86, 0.06)));
       if (r.chance(0.12)) presence = 0.58 + r.next() * 0.14;
-      if (name === 'Sahana Gowda') presence = 0.95;
-      if (name === 'Vignesh Naik') presence = 0.66;
+      if (name === INST.strong.name) presence = 0.95;
+      if (name === INST.weak.name) presence = 0.66;
       const ability = Math.min(0.97, Math.max(0.2, r.gauss(0.62, 0.17) - (presence < 0.74 ? 0.1 : 0)));
-      students.push({ id: '', name, rollNo: `${String(intake).slice(2)}${sec.prog}${String(i + 1).padStart(3, '0')}`, sectionId: sec.id, prog: sec.prog, term: sec.term, female, presence, ability });
+      students.push({ id: '', name, rollNo: `${String(intake).slice(2)}${sec.prog}${PROFILE === 'school' ? sec.label.slice(-1) : ''}${String(i + 1).padStart(PROFILE === 'school' ? 2 : 3, '0')}`, sectionId: sec.id, prog: sec.prog, term: sec.term, female, presence, ability });
     }
   }
   const stRows = await k.ins<{ id: string; rollNo: string }>(
@@ -218,20 +226,20 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
 
   // Guardians for roughly a third of the students (two of them have logins).
   const guardianOf = new Map<string, string[]>();
-  const withGuardian = students.filter((s, i) => i % 3 === 0 || ['Sahana Gowda', 'Vignesh Naik', 'Chaitra Naik'].includes(s.name));
-  const relationOf = (s: StudentRef, i: number) => (s.name === 'Vignesh Naik' || s.name === 'Chaitra Naik' ? 'mother' : s.name === 'Sahana Gowda' ? 'father' : i % 2 ? 'mother' : 'father');
+  const withGuardian = students.filter((s, i) => i % 3 === 0 || [INST.strong.name, INST.weak.name, INST.sibling.name].includes(s.name));
+  const relationOf = (s: StudentRef, i: number) => (s.name === INST.weak.name || s.name === INST.sibling.name ? 'mother' : s.name === INST.strong.name ? 'father' : i % 2 ? 'mother' : 'father');
   const gUsers = await k.ins<{ id: string }>(
     'users',
     withGuardian.map((s, i) => {
-      const special = s.name === 'Sahana Gowda' ? 'parent.bcom' : s.name === 'Vignesh Naik' ? 'parent.bca' : null;
+      const special = s.name === INST.strong.name ? INST.strong.parentLogin : s.name === INST.weak.name ? INST.weak.parentLogin : null;
       const rel = relationOf(s, i);
-      const fullName = s.name === 'Sahana Gowda' ? 'Basavaraj Gowda' : s.name === 'Vignesh Naik' || s.name === 'Chaitra Naik' ? 'Revathi Naik' : `${r.pick(rel === 'father' ? MALE : FEMALE)} ${s.name.split(' ').slice(-1)[0]}`;
-      return { fullName, email: special ? `${special}@${DOMAIN}` : s.name === 'Chaitra Naik' ? null : `guardian.${s.rollNo.toLowerCase()}@${DOMAIN}`, phone: nextPhone(), passwordHash: hash, preferredLanguage: i % 4 === 0 ? 'kn' : 'en', status: 'active' };
+      const fullName = s.name === INST.strong.name ? INST.strong.parentName : s.name === INST.weak.name || s.name === INST.sibling.name ? INST.weak.parentName : `${r.pick(rel === 'father' ? MALE : FEMALE)} ${s.name.split(' ').slice(-1)[0]}`;
+      return { fullName, email: special ? `${special}@${DOMAIN}` : s.name === INST.sibling.name ? null : `guardian.${s.rollNo.toLowerCase()}@${DOMAIN}`, phone: nextPhone(), passwordHash: hash, preferredLanguage: i % 4 === 0 ? 'kn' : 'en', status: 'active' };
     }),
   );
   // Revathi Naik is one user for two children (Vignesh and Chaitra): Chaitra's own guardian row points at her.
-  const vigneshIdx = withGuardian.findIndex((s) => s.name === 'Vignesh Naik');
-  const chaitraIdx = withGuardian.findIndex((s) => s.name === 'Chaitra Naik');
+  const vigneshIdx = withGuardian.findIndex((s) => s.name === INST.weak.name);
+  const chaitraIdx = withGuardian.findIndex((s) => s.name === INST.sibling.name);
   const guardians = withGuardian.map((s, i) => {
     const userId = i === chaitraIdx ? gUsers[vigneshIdx].id : gUsers[i].id;
     guardianOf.set(s.id, [userId]);
@@ -243,7 +251,7 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
   await k.q('delete from users where id = $1', [gUsers[chaitraIdx].id]);
 
   // Student logins.
-  const logins: [string, string][] = [['Sahana Gowda', 'student.bcom'], ['Vignesh Naik', 'student.bca']];
+  const logins: [string, string][] = [[INST.strong.name, INST.strong.login], [INST.weak.name, INST.weak.login]];
   for (const [name, mail] of logins) {
     const st = students.find((s) => s.name === name)!;
     const u = await k.one<{ id: string }>('users', { fullName: name, email: `${mail}@${DOMAIN}`, phone: nextPhone(), passwordHash: hash, status: 'active' });
@@ -258,12 +266,23 @@ export async function buildCore(kit: Kit, hash: string): Promise<Ctx> {
     'calendar_events',
     [
       ...HOLIDAYS.map(([title, startsOn, endsOn]) => ({ kind: 'holiday', title, startsOn, endsOn, createdBy: principal })),
-      { kind: 'exam', title: 'Internal Assessment 1', startsOn: '2026-09-21', endsOn: '2026-09-26', createdBy: principal },
-      { kind: 'exam', title: 'Internal Assessment 2', startsOn: '2026-11-16', endsOn: '2026-11-21', createdBy: principal },
-      { kind: 'exam', title: 'Semester End Examinations (BCU)', startsOn: '2026-12-21', endsOn: '2027-01-09', createdBy: principal },
-      { kind: 'event', title: 'Freshers Day: Aarambh 2026', startsOn: '2026-09-05', endsOn: '2026-09-05', createdBy: principal },
-      { kind: 'event', title: 'Annual Day and Alumni Meet', startsOn: '2026-12-12', endsOn: '2026-12-12', createdBy: principal },
-      { kind: 'event', title: 'Teachers Day Celebration', startsOn: '2026-09-05', endsOn: '2026-09-05', createdBy: principal },
+      ...(PROFILE === 'school'
+        ? [
+            { kind: 'exam', title: 'Periodic Test 1', startsOn: '2026-09-21', endsOn: '2026-09-26', createdBy: principal },
+            { kind: 'exam', title: 'Half-Yearly Examination', startsOn: '2026-11-16', endsOn: '2026-11-25', createdBy: principal },
+            { kind: 'exam', title: 'CBSE Pre-Board (Classes 10 and 12)', startsOn: '2027-01-11', endsOn: '2027-01-23', createdBy: principal },
+            { kind: 'event', title: 'Sports Day', startsOn: '2026-11-14', endsOn: '2026-11-14', createdBy: principal },
+            { kind: 'event', title: 'Annual Day: Utsav 2026', startsOn: '2026-12-12', endsOn: '2026-12-12', createdBy: principal },
+            { kind: 'event', title: 'Teachers Day Celebration', startsOn: '2026-09-05', endsOn: '2026-09-05', createdBy: principal },
+          ]
+        : [
+          { kind: 'exam', title: 'Internal Assessment 1', startsOn: '2026-09-21', endsOn: '2026-09-26', createdBy: principal },
+          { kind: 'exam', title: 'Internal Assessment 2', startsOn: '2026-11-16', endsOn: '2026-11-21', createdBy: principal },
+          { kind: 'exam', title: 'Semester End Examinations (BCU)', startsOn: '2026-12-21', endsOn: '2027-01-09', createdBy: principal },
+          { kind: 'event', title: 'Freshers Day: Aarambh 2026', startsOn: '2026-09-05', endsOn: '2026-09-05', createdBy: principal },
+          { kind: 'event', title: 'Annual Day and Alumni Meet', startsOn: '2026-12-12', endsOn: '2026-12-12', createdBy: principal },
+          { kind: 'event', title: 'Teachers Day Celebration', startsOn: '2026-09-05', endsOn: '2026-09-05', createdBy: principal },
+          ]),
     ],
     { returning: false },
   );

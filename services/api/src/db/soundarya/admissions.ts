@@ -1,3 +1,4 @@
+import { PROFILE } from './data.js';
 /** Admissions: campaigns, the enquiry pipeline, a closed cycle that filled this year's classes, and an open early-admission round with entrance test and merit list. */
 import { AdmissionsService } from '../../admissions/admissions.service.js';
 import { EnquiriesService } from '../../admissions/enquiries.service.js';
@@ -74,7 +75,7 @@ export async function admissions(c: Ctx): Promise<void> {
   await k.ins('application_payments', aRows.slice(0, 30).map((a, i) => ({ applicationId: a.id, amountPaise: rupees(500), method: i % 2 ? 'upi' : 'cash', status: 'paid', reference: i % 2 ? `UPI ${5200 + i}` : null, receiptNo: `APP/2026-27/${String(i + 1).padStart(4, '0')}`, recordedBy: officer, paidAt: at(addDays('2026-04-15', i), '11:15') })), { returning: false });
 
   // Next year's first-semester classes, where the admitted students will join.
-  await k.ins('sections', ['BBA', 'BCA', 'MBA'].map((code) => ({ programId: prog(code), academicYearId: c.years.next, term: 1, name: 'A', displayName: `${c.programs[code].def.name} Sem 1 A (2027-28)` })), { returning: false });
+  await k.ins('sections', ['BBA', 'BCA', 'MBA'].map((code) => ({ programId: prog(code), academicYearId: c.years.next, term: 1, name: 'A', displayName: PROFILE === 'school' ? `Class ${c.programs[code].def.classes[0][0]} A (2027-28)` : `${c.programs[code].def.name} Sem 1 A (2027-28)` })), { returning: false });
 
   // Cycle B: BBA 2027-28 early round, open, with an entrance test and a published merit list.
   const cycleB = await withTenant(c.tenantId, (tx) =>

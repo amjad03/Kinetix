@@ -19,7 +19,8 @@
     "secrets:rotate": "pnpm build && node --env-file-if-exists=.env dist/db/rotate-secrets.js",
     "content:import": "pnpm build && node --env-file-if-exists=.env dist/content/import.js",
     "content:convert-prototype": "node --experimental-strip-types scripts/convert-prototype-syllabus.ts",
-    "content:build-syllabus": "node --experimental-strip-types scripts/build-syllabus.ts"
+    "content:build-syllabus": "node --experimental-strip-types scripts/build-syllabus.ts",
+    "db:seed:school": "pnpm build && SEED_PROFILE=school node --env-file-if-exists=.env dist/db/seed-soundarya.js"
   },
   "devDependencies": {
     "@nestjs/testing": "^12.1.2",

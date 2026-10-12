@@ -1,3 +1,4 @@
+import { PROFILE } from './data.js';
 /**
  * Samples for data migration, university result formats, standalone transcripts and the external examiner portal
  * (migration 0128): the two sample templates, a committed import batch with imported history and a saved mapping,
@@ -50,14 +51,14 @@ export async function migrationAndExaminer(c: Ctx): Promise<void> {
   await k.ins(
     'academic_doc_requests',
     [
-      { studentId: first!.id, kind: 'grade_card', purpose: 'Higher studies', status: 'issued', requestedBy: first!.userId ?? principal, decidedBy: principal, decidedAt: at('2026-10-02'), issuedAt: at('2026-10-03'), serialNo: 'GC/2026/0001', verifyToken: 'seed-GC-2026-0001', snapshot: J({ header: { institution: '', name: first!.name, rollNo: first!.rollNo, className: sec.label, program: sec.prog }, terms: [], cgpa: 8, creditsEarned: 8, creditsAttempted: 8, outcome: 'passed', classLabel: 'First Class with Distinction' }) },
+      { studentId: first!.id, kind: 'grade_card', purpose: 'Higher studies', status: 'issued', requestedBy: first!.userId ?? principal, decidedBy: principal, decidedAt: at('2026-10-02'), issuedAt: at('2026-10-03'), serialNo: 'GC/2026/0001', verifyToken: `${PROFILE === 'school' ? 'svn-' : ''}seed-GC-2026-0001`, snapshot: J({ header: { institution: '', name: first!.name, rollNo: first!.rollNo, className: sec.label, program: sec.prog }, terms: [], cgpa: 8, creditsEarned: 8, creditsAttempted: 8, outcome: 'passed', classLabel: 'First Class with Distinction' }) },
       { studentId: second!.id, kind: 'transcript', purpose: 'Job application', status: 'requested', requestedBy: second!.userId ?? principal },
     ],
     { returning: false },
   );
 
   // ---- an external examiner: valuation, question paper and a claim ----
-  const [session] = await k.q<{ id: string; programId: string }>("select id, program_id from exam_sessions where status in ('scheduled','published') order by starts_on limit 1");
+  const [session] = await k.q<{ id: string; programId: string }>("select id, program_id from exam_sessions where status in ('scheduled','published') and tenant_id = $1 order by starts_on limit 1", [c.tenantId]);
   const subject = sec.subjects[0];
   if (!session || !subject) return;
   const [user] = await k.ins<{ id: string }>('users', { fullName: 'Dr. Meera Iyer', phone: '+919845099001', email: 'meera.iyer@visiting.example.in', passwordHash: null });
