@@ -1,4 +1,4 @@
-// Fees and accounts desk (migration 0130): approval workflows for concessions, refunds, write-offs and vouchers,
+// Fees and accounts desk (migration 0132): approval workflows for concessions, refunds, write-offs and vouchers,
 // the cheque register, day-end cash closing, month close and the module settings. Amounts are integer paise.
 // Kept apart from schema.ts, which these tables reference.
 import { sql } from 'drizzle-orm';
