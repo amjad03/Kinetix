@@ -91,6 +91,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'exams',
     items: [
       { href: '/exams', label: 'nav.exams', section: 'exams', icon: 'exams' },
+      { href: '/exams/office', label: 'nav.examOffice', section: 'exams', icon: 'exams' },
       { href: '/evaluation', label: 'nav.evaluation', section: 'evaluation', icon: 'exams' },
       { href: '/evaluation/desk', label: 'nav.evaluationDesk', section: 'evaluationDesk', icon: 'exams' },
       { href: '/exams/university', label: 'nav.universityFormats', section: 'exams', icon: 'exams' },
