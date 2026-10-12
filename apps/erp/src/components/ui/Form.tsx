@@ -1,14 +1,8 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-import MenuItem from '@mui/material/MenuItem';
-import Switch from '@mui/material/Switch';
-import TextField, { type TextFieldProps } from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { cloneElement, useId, type ReactElement, type ReactNode } from 'react';
+import { Checkbox, FormControlLabel, FormHelperText, MenuItem, Switch, TextField, type TextFieldProps } from '@/components/kx';
+import { cn } from '@/lib/utils';
 
 /**
  * The form field set. All of them show a visible label above the control (never only a placeholder),
@@ -16,7 +10,7 @@ import { cloneElement, useId, type ReactElement, type ReactNode } from 'react';
  * screen readers as well as with the asterisk.
  */
 
-/** A label, a control and helper or error text, for controls MUI has no field for (pickers, tag inputs). */
+/** A label, a control and helper or error text, for controls with no built-in field (pickers, tag inputs). */
 export function FormField({
   label,
   helper,
@@ -38,47 +32,41 @@ export function FormField({
   const id = given ?? generated;
   const hid = `${id}-h`;
   return (
-    <Box sx={{ display: 'grid', gap: 0.5 }}>
-      <Typography component="label" id={`${id}-label`} htmlFor={id} variant="subtitle2" sx={{ fontWeight: 600 }}>
+    <div className="grid gap-1.5">
+      <label id={`${id}-label`} htmlFor={id} className="text-[13px] leading-5 font-semibold">
         {label}
         {required && (
-          <Box component="span" aria-hidden sx={{ color: 'error.main', ml: 0.5 }}>
+          <span aria-hidden className="ml-1 text-red-ink">
             *
-          </Box>
+          </span>
         )}
-      </Typography>
+      </label>
       {cloneElement(children, { id, 'aria-describedby': error || helper ? hid : undefined, 'aria-invalid': error ? true : undefined, 'aria-required': required ? true : undefined })}
       {(error || helper) && (
-        <FormHelperText id={hid} error={!!error} role={error ? 'alert' : undefined} sx={{ mx: 0 }}>
+        <FormHelperText id={hid} error={!!error} role={error ? 'alert' : undefined}>
           {error ?? helper}
         </FormHelperText>
       )}
-    </Box>
+    </div>
   );
 }
 
 /** An input and its button on one row: the button lines up with the control, not with the label above it. */
 export function FieldRow({ children }: { children: ReactNode }) {
-  return <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, flexWrap: 'wrap', '& > .MuiButton-root': { mt: '26px', height: 40, flexShrink: 0 } }}>{children}</Box>;
+  return <div className="flex flex-wrap items-start gap-3 [&>button]:mt-[26px] [&>button]:shrink-0">{children}</div>;
 }
 
-export type TextInputProps = Omit<TextFieldProps, 'variant' | 'size'> & { helper?: ReactNode };
+export type TextInputProps = TextFieldProps & { helper?: ReactNode };
 
 /** A single-line, multi-line or select input. Small by default: forms in an ERP are dense. */
 export function TextInput({ helper, error, helperText, ...props }: TextInputProps) {
-  // A select's combobox is a div, not the input the label's htmlFor points at: name it through the label's id (FormField sets `${id}-label`).
-  const select = props.select && props.id ? { labelId: `${props.id}-label`, ...(props.slotProps?.select as object | undefined) } : props.slotProps?.select;
-  return <TextField size="small" {...props} error={!!error} helperText={typeof error === 'string' ? error : (helper ?? helperText)} slotProps={{ ...props.slotProps, ...(select ? { select } : {}), formHelperText: { role: error ? 'alert' : undefined } }} />;
+  return <TextField size="small" {...props} error={!!error} helperText={typeof error === 'string' ? error : (helper ?? helperText)} />;
 }
 
-export function SelectInput({ options, empty, ...props }: Omit<TextInputProps, 'select' | 'children'> & { options: { value: string; label: string }[]; /** A leading "any" or "none" choice. */ empty?: string }) {
+export function SelectInput({ options, empty, ...props }: TextInputProps & { options: { value: string; label: string }[]; /** A leading "any" or "none" choice. */ empty?: string }) {
   return (
     <TextInput {...props} select>
-      {empty !== undefined && (
-        <MenuItem value="">
-          <em>{empty}</em>
-        </MenuItem>
-      )}
+      {empty !== undefined && <MenuItem value="">{empty}</MenuItem>}
       {options.map((o) => (
         <MenuItem key={o.value} value={o.value}>
           {o.label}
@@ -91,27 +79,29 @@ export function SelectInput({ options, empty, ...props }: Omit<TextInputProps, '
 export function CheckboxField({ label, checked, onChange, helper, disabled }: { label: ReactNode; checked: boolean; onChange: (v: boolean) => void; helper?: ReactNode; disabled?: boolean }) {
   const id = useId();
   return (
-    <Box>
-      <FormControlLabel control={<Checkbox checked={checked} onChange={(e) => onChange(e.target.checked)} disabled={disabled} slotProps={{ input: { 'aria-describedby': helper ? id : undefined } }} />} label={label} />
+    <div>
+      <FormControlLabel control={<Checkbox checked={checked} onChange={(_, c) => onChange(c)} disabled={disabled} aria-describedby={helper ? id : undefined} />} label={label} />
       {helper && (
-        <FormHelperText id={id} sx={{ mt: -0.5, ml: 4.5 }}>
+        <FormHelperText id={id} className="ml-8">
           {helper}
         </FormHelperText>
       )}
-    </Box>
+    </div>
   );
 }
 
 export function SwitchField({ label, checked, onChange, disabled }: { label: ReactNode; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
-  return <FormControlLabel control={<Switch checked={checked} onChange={(e) => onChange(e.target.checked)} disabled={disabled} />} label={label} sx={{ ml: 0 }} />;
+  return <FormControlLabel control={<Switch checked={checked} onChange={(_, c) => onChange(c)} disabled={disabled} />} label={label} />;
 }
+
+const COLS = { 1: 'sm:grid-cols-1', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3' } as const;
 
 /** A responsive grid of fields: one column on a phone, two from tablet up (or `cols`). */
 export function FormGrid({ children, cols = 2 }: { children: ReactNode; cols?: 1 | 2 | 3 }) {
-  return <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: `repeat(${cols}, minmax(0, 1fr))` } }}>{children}</Box>;
+  return <div className={cn('grid grid-cols-1 gap-4', COLS[cols])}>{children}</div>;
 }
 
 /** The buttons under a form, right-aligned, wrapping on a phone. */
 export function FormActions({ children }: { children: ReactNode }) {
-  return <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 1, mt: 3 }}>{children}</Box>;
+  return <div className="mt-6 flex flex-wrap justify-end gap-2">{children}</div>;
 }

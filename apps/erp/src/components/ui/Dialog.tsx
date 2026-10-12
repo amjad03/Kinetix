@@ -1,18 +1,12 @@
 'use client';
 
-import Close from '@mui/icons-material/Close';
-import Box from '@mui/material/Box';
-import MuiDialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import { X } from 'lucide-react';
 import { useId, type ReactNode } from 'react';
+import { Dialog as KxDialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@/components/kx';
+import { Sheet as ShadSheet, SheetContent, SheetDescription, SheetTitle } from '@/components/shadcn/sheet';
 import { useI18n } from '@/i18n/client';
 
-/** A modal dialog: focus is trapped and returned by MUI; Escape and the close button dismiss it. */
+/** A modal dialog: focus is trapped and returned; Escape and the close button dismiss it. */
 export function Dialog({
   open = true,
   title,
@@ -34,47 +28,39 @@ export function Dialog({
   const { t } = useI18n();
   const id = useId();
   return (
-    <MuiDialog open={open} onClose={() => !busy && onClose()} fullWidth maxWidth={size} aria-labelledby={id}>
-      <DialogTitle id={id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, fontSize: '1.25rem', fontWeight: 600, lineHeight: '28px' }}>
+    <KxDialog open={open} onClose={() => !busy && onClose()} fullWidth maxWidth={size} aria-labelledby={id}>
+      <DialogTitle id={id} className="flex items-center justify-between gap-4 text-xl leading-7 font-semibold">
         {title}
         <IconButton onClick={onClose} disabled={busy} aria-label={t('common.close')} edge="end" size="small">
-          <Close />
+          <X />
         </IconButton>
       </DialogTitle>
       <DialogContent>{children}</DialogContent>
       {actions && <DialogActions>{actions}</DialogActions>}
-    </MuiDialog>
+    </KxDialog>
   );
 }
+
+const WIDTH: Record<number, string> = { 420: 'sm:max-w-[420px]', 480: 'sm:max-w-[480px]', 520: 'sm:max-w-[520px]', 560: 'sm:max-w-[560px]', 600: 'sm:max-w-[600px]', 640: 'sm:max-w-[640px]', 720: 'sm:max-w-[720px]' };
 
 /** A side sheet for details and long forms: from the right on a tablet or desktop, full width on a phone. */
 export function Sheet({ open, title, subtitle, children, actions, onClose, width = 480 }: { open: boolean; title: string; subtitle?: ReactNode; children: ReactNode; actions?: ReactNode; onClose: () => void; width?: number }) {
   const { t } = useI18n();
-  const id = useId();
   return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      slotProps={{ paper: { 'aria-labelledby': id, sx: { width: { xs: '100%', sm: width }, maxWidth: '100%', bgcolor: 'kx.pane', backgroundImage: 'none' } } as never }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, px: 3, pt: 2.5, pb: 1.5, borderBottom: 1, borderColor: 'm3.outlineVariant' }}>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography id={id} variant="h6" component="h2" sx={{ fontWeight: 600 }}>
-            {title}
-          </Typography>
-          {subtitle && (
-            <Typography variant="body2" color="text.secondary">
-              {subtitle}
-            </Typography>
-          )}
-        </Box>
-        <IconButton onClick={onClose} aria-label={t('common.close')} edge="end">
-          <Close />
-        </IconButton>
-      </Box>
-      <Box sx={{ flex: 1, overflowY: 'auto', px: 3, py: 2.5 }}>{children}</Box>
-      {actions && <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, px: 3, py: 2, borderTop: 1, borderColor: 'm3.outlineVariant' }}>{actions}</Box>}
-    </Drawer>
+    <ShadSheet open={open} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="right" showCloseButton={false} {...(subtitle ? {} : { "aria-describedby": undefined })} className={`w-full max-w-full gap-0 bg-card p-0 ${WIDTH[width] ?? 'sm:max-w-[480px]'}`} style={WIDTH[width] ? undefined : { maxWidth: `min(100%, ${width}px)` }}>
+        <div className="flex items-start justify-between gap-4 border-b px-6 pt-5 pb-3">
+          <div className="min-w-0">
+            <SheetTitle className="text-base leading-6 font-semibold">{title}</SheetTitle>
+            {subtitle && <SheetDescription className="text-[13px] text-muted-foreground">{subtitle}</SheetDescription>}
+          </div>
+          <IconButton onClick={onClose} aria-label={t('common.close')} edge="end">
+            <X />
+          </IconButton>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        {actions && <div className="flex justify-end gap-2 border-t px-6 py-4">{actions}</div>}
+      </SheetContent>
+    </ShadSheet>
   );
 }

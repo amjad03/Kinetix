@@ -1,6 +1,6 @@
 'use client';
 
-import { useColorScheme } from '@mui/material/styles';
+import { useColorScheme } from '@/theme/ThemeRegistry';
 import { Bell, Check, KeyRound, Languages, LogOut, Monitor, Moon, Rows3, ShieldCheck, Sun } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

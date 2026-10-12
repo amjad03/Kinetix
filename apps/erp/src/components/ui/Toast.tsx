@@ -1,8 +1,7 @@
 'use client';
 
-import Alert from '@mui/material/Alert';
-import Snackbar from '@mui/material/Snackbar';
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { toast } from 'sonner';
 
 type Kind = 'success' | 'error' | 'info' | 'warning';
 interface ToastApi {
@@ -15,31 +14,15 @@ interface ToastApi {
 const Ctx = createContext<ToastApi | null>(null);
 
 /**
- * Short, polite confirmations ("Saved", "Exported 120 rows"). Errors stay longer. Mounted once in
- * the app shell; call `useToast()` from any client component. Announced to screen readers (role=status / alert).
+ * Short, polite confirmations ("Saved", "Exported 120 rows") through the app's sonner toaster.
+ * Errors stay longer. Mounted once in the app shell; call `useToast()` from any client component.
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toast, setToast] = useState<{ id: number; message: string; kind: Kind } | null>(null);
-  const show = useCallback((message: string, kind: Kind = 'success') => setToast({ id: Date.now(), message, kind }), []);
-  const api = useMemo<ToastApi>(() => ({ show, success: (m) => show(m, 'success'), error: (m) => show(m, 'error'), info: (m) => show(m, 'info') }), [show]);
-  return (
-    <Ctx.Provider value={api}>
-      {children}
-      <Snackbar
-        key={toast?.id}
-        open={!!toast}
-        autoHideDuration={toast?.kind === 'error' ? 8000 : 4000}
-        onClose={(_, reason) => reason !== 'clickaway' && setToast(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        {toast ? (
-          <Alert severity={toast.kind} variant="filled" onClose={() => setToast(null)} role={toast.kind === 'error' ? 'alert' : 'status'} sx={{ alignItems: 'center', boxShadow: 'var(--kx-elev-raised)' }}>
-            {toast.message}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
-    </Ctx.Provider>
-  );
+  const api = useMemo<ToastApi>(() => {
+    const show = (message: string, kind: Kind = 'success') => void toast[kind](message, { duration: kind === 'error' ? 8000 : 4000 });
+    return { show, success: (m) => show(m, 'success'), error: (m) => show(m, 'error'), info: (m) => show(m, 'info') };
+  }, []);
+  return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }
 
 /** Like `useToast`, but null outside the provider (shared components that may render anywhere). */

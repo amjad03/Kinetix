@@ -1,30 +1,75 @@
 'use client';
 
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
-import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider } from '@mui/material/styles';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import 'dayjs/locale/en-in';
-import 'dayjs/locale/hi';
-import 'dayjs/locale/kn';
-import type { ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
+import { Toaster } from '@/components/shadcn/sonner';
+import { TooltipProvider } from '@/components/shadcn/tooltip';
 import type { Locale } from '@/i18n/locales';
-import { buildTheme } from './theme';
 
-const DAYJS_LOCALE: Record<Locale, string> = { en: 'en-in', hi: 'hi', kn: 'kn' };
+export type Mode = 'light' | 'dark' | 'system';
+const KEY = 'kx-mode';
 
-const theme = buildTheme();
+/** Runs before paint (in <head>) so the first frame already has the right `dark` class. */
+export const MODE_SCRIPT = `(function(){try{var m=localStorage.getItem('${KEY}')||'system';var d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
 
-export function ThemeRegistry({ locale, children }: { locale: Locale; children: ReactNode }) {
+interface ModeApi {
+  mode: Mode;
+  systemMode: 'light' | 'dark';
+  setMode: (m: Mode) => void;
+}
+const Ctx = createContext<ModeApi>({ mode: 'system', systemMode: 'light', setMode: () => {} });
+
+/** The colour scheme (light, dark or follow the system), kept in localStorage and applied as the `dark` class on <html>. */
+export function useColorScheme(): ModeApi {
+  return useContext(Ctx);
+}
+
+// The saved mode and the system's scheme as external stores (read after hydration, 'system'/'light' on the server).
+const listeners = new Set<() => void>();
+function subscribeMode(cb: () => void) {
+  listeners.add(cb);
+  window.addEventListener('storage', cb);
+  return () => {
+    listeners.delete(cb);
+    window.removeEventListener('storage', cb);
+  };
+}
+function readMode(): Mode {
+  try {
+    const m = localStorage.getItem(KEY);
+    return m === 'light' || m === 'dark' ? m : 'system';
+  } catch {
+    return 'system';
+  }
+}
+function subscribeSystem(cb: () => void) {
+  const mq = matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener('change', cb);
+  return () => mq.removeEventListener('change', cb);
+}
+const readSystem = (): 'light' | 'dark' => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+export function ThemeRegistry({ children }: { locale?: Locale; children: ReactNode }) {
+  const mode = useSyncExternalStore(subscribeMode, readMode, () => 'system' as Mode);
+  const systemMode = useSyncExternalStore(subscribeSystem, readSystem, () => 'light' as const);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', (mode === 'system' ? systemMode : mode) === 'dark');
+  }, [mode, systemMode]);
+
+  const setMode = useCallback((m: Mode) => {
+    try {
+      localStorage.setItem(KEY, m);
+    } catch {}
+    listeners.forEach((l) => l());
+  }, []);
+
+  const api = useMemo(() => ({ mode, systemMode, setMode }), [mode, systemMode, setMode]);
   return (
-    <AppRouterCacheProvider options={{ key: 'kx' }}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline enableColorScheme />
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={DAYJS_LOCALE[locale]}>
-          {children}
-        </LocalizationProvider>
-      </ThemeProvider>
-    </AppRouterCacheProvider>
+    <Ctx.Provider value={api}>
+      <TooltipProvider delayDuration={400}>
+        {children}
+        <Toaster position="bottom-center" />
+      </TooltipProvider>
+    </Ctx.Provider>
   );
 }

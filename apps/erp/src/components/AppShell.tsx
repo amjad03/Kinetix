@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation';
 import { useMemo, type ReactNode } from 'react';
 import { SidebarInset, SidebarProvider } from '@/components/shadcn/sidebar';
-import { Toaster } from '@/components/shadcn/sonner';
 import { TooltipProvider } from '@/components/shadcn/tooltip';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -88,7 +87,6 @@ export function AppShell({
             </main>
           </SidebarInset>
         </SidebarProvider>
-        <Toaster position="bottom-right" />
       </TooltipProvider>
     </ToastProvider>
   );

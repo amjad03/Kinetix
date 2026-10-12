@@ -1,12 +1,9 @@
-import Box from '@mui/material/Box';
-import type { SxProps, Theme } from '@mui/material/styles';
 import { useId, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
  * A card (redesign: white, 14 px radius, hairline border): an optional header (title, subtitle,
  * one action) and a body. It is a labelled region when it has a title.
- * `sx` is kept for older callers (spacing, grid placement) and only then renders through MUI's Box.
  */
 export function Card({
   title,
@@ -15,7 +12,6 @@ export function Card({
   children,
   padded = true,
   tone = 'default',
-  sx,
   testId,
   className,
 }: {
@@ -27,7 +23,6 @@ export function Card({
   padded?: boolean;
   /** `ai` tints the card amber; use only for AI content. */
   tone?: 'default' | 'ai' | 'tonal';
-  sx?: SxProps<Theme>;
   testId?: string;
   className?: string;
 }) {
@@ -56,12 +51,6 @@ export function Card({
       <div className={cn('min-w-0 flex-1', padded && 'px-[18px] pb-[18px]', padded && (title || action ? 'pt-3' : 'pt-[18px]'))}>{children}</div>
     </>
   );
-  if (sx)
-    return (
-      <Box component="section" aria-labelledby={title ? id : undefined} data-testid={testId} className={cls} sx={sx}>
-        {inner}
-      </Box>
-    );
   return (
     <section aria-labelledby={title ? id : undefined} data-testid={testId} className={cls}>
       {inner}
