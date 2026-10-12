@@ -57,7 +57,7 @@ export function DialogContentText({ className, ...rest }: Rest) {
   return <p className={cn('text-sm leading-[21px] text-muted-foreground', className)} {...(rest as HTMLAttributes<HTMLParagraphElement>)} />;
 }
 export function DialogActions({ className, disableSpacing: _d, ...rest }: Rest & { disableSpacing?: boolean }) {
-  return <div className={cn('flex flex-wrap items-center justify-end gap-2 px-4 pt-3 pb-2', className)} {...(rest as HTMLAttributes<HTMLDivElement>)} />;
+  return <div className={cn('flex flex-wrap items-center justify-end gap-2 px-4 pt-3 pb-4', className)} {...(rest as HTMLAttributes<HTMLDivElement>)} />;
 }
 
 // A menu opened from an anchor element (the button the user clicked).

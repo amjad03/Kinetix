@@ -36,7 +36,7 @@ export function Card({
   const inner = (
     <>
       {(title || action) && (
-        <div className={cn('flex items-start justify-between gap-3 px-[18px] pt-4', padded ? 'pb-0' : 'pb-3')}>
+        <div className={cn('flex items-center justify-between gap-3 px-[18px] pt-4', padded ? 'pb-0' : 'pb-3')}>
           <div className="min-w-0">
             {title && (
               <h2 id={id} className="m-0 text-[15px] leading-6 font-semibold">
