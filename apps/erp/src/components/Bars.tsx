@@ -1,34 +1,41 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { cn } from '@/lib/utils';
+
+// Legacy MUI palette paths still passed by callers, mapped onto the shadcn tokens (app/globals.css).
+const PALETTE: Record<string, string> = {
+  'primary.main': 'var(--teal)',
+  'kx.success': 'var(--green)',
+  'success.main': 'var(--green)',
+  'error.main': 'var(--red)',
+  'warning.main': 'var(--amber)',
+  'text.secondary': 'var(--muted-foreground)',
+};
+
+/** Resolves a colour prop: a legacy palette path, a CSS var, or any CSS colour. */
+function resolve(color: string): string {
+  return PALETTE[color] ?? color;
+}
 
 /** A thin rounded bar. `value` 0–100. */
-export function MiniBar({ value, color = 'primary.main', width = '100%', label }: { value: number; color?: string; width?: number | string; label?: string }) {
+export function MiniBar({ value, color, width = '100%', label }: { value: number; color?: string; width?: number | string; label?: string }) {
   const v = Math.max(0, Math.min(100, value));
   return (
-    <Box role="img" aria-label={label ?? `${Math.round(v)}%`} sx={{ width, height: 6, borderRadius: 3, bgcolor: 'm3.surfaceContainerHighest', overflow: 'hidden' }}>
-      <Box sx={{ width: `${v}%`, height: '100%', bgcolor: color, borderRadius: 3 }} />
-    </Box>
+    <div role="img" aria-label={label ?? `${Math.round(v)}%`} className="h-1.5 overflow-hidden rounded-full bg-muted" style={{ width }}>
+      <div className={cn('h-full rounded-full', !color && 'bg-teal')} style={{ width: `${v}%`, background: color ? resolve(color) : undefined }} />
+    </div>
   );
 }
 
 /** Percentage with a small bar, for table cells. */
 export function RateCell({ rate }: { rate: number | null }) {
-  if (rate === null)
-    return (
-      <Typography variant="body2" color="text.secondary">
-        —
-      </Typography>
-    );
-  const color = rate >= 90 ? 'kx.success' : rate >= 75 ? 'primary.main' : 'error.main';
+  if (rate === null) return <span className="text-sm text-muted-foreground">—</span>;
+  const color = rate >= 90 ? 'var(--green)' : rate >= 75 ? 'var(--teal)' : 'var(--red)';
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'flex-end' }}>
-      <Box sx={{ width: { xs: 48, md: 88 } }}>
+    <div className="flex items-center justify-end gap-3">
+      <div className="w-12 md:w-22">
         <MiniBar value={rate} color={color} />
-      </Box>
-      <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', minWidth: 48, textAlign: 'right' }}>
-        {rate.toFixed(1)}%
-      </Typography>
-    </Box>
+      </div>
+      <span className="min-w-12 text-right text-sm tabular-nums">{rate.toFixed(1)}%</span>
+    </div>
   );
 }
 
@@ -36,11 +43,11 @@ export function RateCell({ rate }: { rate: number | null }) {
 export function SegmentBar({ parts, label }: { parts: { value: number; color: string }[]; label: string }) {
   const total = parts.reduce((s, p) => s + p.value, 0);
   return (
-    <Box role="img" aria-label={label} sx={{ display: 'flex', gap: '2px', height: 6, borderRadius: 3, overflow: 'hidden', bgcolor: 'm3.surfaceContainerHighest' }}>
+    <div role="img" aria-label={label} className="flex h-1.5 gap-0.5 overflow-hidden rounded-full bg-muted">
       {total > 0 &&
         parts
           .filter((p) => p.value > 0)
-          .map((p, i) => <Box key={i} sx={{ flex: p.value, bgcolor: p.color }} />)}
-    </Box>
+          .map((p, i) => <div key={i} className="h-full rounded-full" style={{ flex: p.value, background: resolve(p.color) }} />)}
+    </div>
   );
 }

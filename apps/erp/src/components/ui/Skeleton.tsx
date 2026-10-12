@@ -1,62 +1,69 @@
-import Box from '@mui/material/Box';
-import MuiSkeleton from '@mui/material/Skeleton';
-import Stack from '@mui/material/Stack';
+import { Skeleton } from '@/components/shadcn/skeleton';
+import { cn } from '@/lib/utils';
+
+const px = (v: number | string) => (typeof v === 'number' ? `${v}px` : v);
 
 /** Loading placeholders that keep the layout steady; announced once as "busy". */
 export function SkeletonBlock({ height = 16, width = '100%', radius = 6 }: { height?: number | string; width?: number | string; radius?: number }) {
-  return <MuiSkeleton variant="rounded" animation="wave" height={height} width={width} sx={{ borderRadius: `${radius}px` }} />;
+  return <Skeleton className="bg-muted" style={{ height: px(height), width: px(width), borderRadius: `${radius}px` }} />;
 }
 
 export function SkeletonText({ lines = 3 }: { lines?: number }) {
   return (
-    <Stack spacing={1} aria-hidden>
+    <div aria-hidden className="flex flex-col gap-2">
       {Array.from({ length: lines }, (_, i) => (
         <SkeletonBlock key={i} height={14} width={i === lines - 1 ? '60%' : '100%'} />
       ))}
-    </Stack>
+    </div>
   );
 }
 
+const frame = 'rounded-lg border border-border bg-card';
+
 export function SkeletonCard({ height = 160 }: { height?: number }) {
   return (
-    <Box aria-hidden sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '16px', bgcolor: 'kx.pane', p: 2.5 }}>
+    <div aria-hidden className={cn(frame, 'p-5')}>
       <SkeletonBlock height={16} width="40%" />
-      <Box sx={{ mt: 2 }}>
+      <div className="mt-4">
         <SkeletonBlock height={height} />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
 export function SkeletonStats({ n = 5 }: { n?: number }) {
   return (
-    <Box aria-hidden sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))' }}>
+    <div aria-hidden className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(170px,1fr))]">
       {Array.from({ length: n }, (_, i) => (
-        <Box key={i} sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '16px', bgcolor: 'kx.pane', p: 2.5 }}>
+        <div key={i} className={cn(frame, 'p-5')}>
           <SkeletonBlock height={14} width="55%" />
-          <Box sx={{ mt: 1.5 }}>
+          <div className="mt-3">
             <SkeletonBlock height={32} width="45%" />
-          </Box>
-          <Box sx={{ mt: 1.5 }}>
+          </div>
+          <div className="mt-3">
             <SkeletonBlock height={12} width="70%" />
-          </Box>
-        </Box>
+          </div>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
 
 /** A table-shaped placeholder. */
 export function SkeletonTable({ rows = 6, cols = 4 }: { rows?: number; cols?: number }) {
   return (
-    <Box aria-hidden sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '16px', bgcolor: 'kx.pane', overflow: 'hidden' }}>
+    <div aria-hidden className={cn(frame, 'overflow-hidden shadow-card')}>
       {Array.from({ length: rows + 1 }, (_, r) => (
-        <Box key={r} sx={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 2, px: 2, py: 1.75, borderBottom: r === rows ? 0 : 1, borderColor: 'm3.outlineVariant', bgcolor: r === 0 ? 'm3.surfaceContainerLow' : undefined }}>
+        <div
+          key={r}
+          className={cn('grid gap-4 px-4 py-3.5', r !== rows && 'border-b border-border', r === 0 && 'bg-muted')}
+          style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+        >
           {Array.from({ length: cols }, (_, c) => (
             <SkeletonBlock key={c} height={14} width={r === 0 ? '50%' : c === 0 ? '80%' : '60%'} />
           ))}
-        </Box>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }

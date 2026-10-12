@@ -1,12 +1,12 @@
 import Box from '@mui/material/Box';
-import MuiCard from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { useId, type ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 /**
- * A white card on the cool-grey ground: an optional header (title, subtitle, one action) and a body.
- * It is a labelled region when it has a title, so screen readers can jump between cards.
+ * A card (redesign: white, 14 px radius, hairline border): an optional header (title, subtitle,
+ * one action) and a body. It is a labelled region when it has a title.
+ * `sx` is kept for older callers (spacing, grid placement) and only then renders through MUI's Box.
  */
 export function Card({
   title,
@@ -17,6 +17,7 @@ export function Card({
   tone = 'default',
   sx,
   testId,
+  className,
 }: {
   title?: ReactNode;
   subtitle?: ReactNode;
@@ -24,42 +25,46 @@ export function Card({
   children?: ReactNode;
   /** false: the body runs edge to edge (tables, lists). */
   padded?: boolean;
-  /** `ai` tints the card marigold; use only for AI content. */
+  /** `ai` tints the card amber; use only for AI content. */
   tone?: 'default' | 'ai' | 'tonal';
   sx?: SxProps<Theme>;
   testId?: string;
+  className?: string;
 }) {
   const id = useId();
-  return (
-    <MuiCard
-      component="section"
-      aria-labelledby={title ? id : undefined}
-      data-testid={testId}
-      sx={[
-        { display: 'flex', flexDirection: 'column', minWidth: 0 },
-        tone === 'ai' && { bgcolor: 'm3.tertiaryContainer', borderColor: 'transparent', color: 'm3.onTertiaryContainer' },
-        tone === 'tonal' && { bgcolor: 'kx.tonal' },
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-    >
+  const cls = cn(
+    'flex min-w-0 flex-col rounded-lg border bg-card text-card-foreground shadow-card',
+    tone === 'ai' && 'border-transparent bg-amber-soft text-foreground',
+    tone === 'tonal' && 'bg-muted',
+    className,
+  );
+  const inner = (
+    <>
       {(title || action) && (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2.5, pt: 2, pb: padded ? 0.5 : 1.5, minHeight: 48 }}>
-          <Box sx={{ minWidth: 0 }}>
+        <div className={cn('flex items-start justify-between gap-3 px-[18px] pt-4', padded ? 'pb-0' : 'pb-3')}>
+          <div className="min-w-0">
             {title && (
-              <Typography id={id} variant="h6" component="h2" sx={{ fontSize: '1rem', fontWeight: 600, lineHeight: '24px' }}>
+              <h2 id={id} className="m-0 text-[15px] leading-6 font-semibold">
                 {title}
-              </Typography>
+              </h2>
             )}
-            {subtitle && (
-              <Typography variant="caption" component="p" sx={{ color: tone === 'ai' ? 'inherit' : 'text.secondary' }}>
-                {subtitle}
-              </Typography>
-            )}
-          </Box>
-          {action && <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 1 }}>{action}</Box>}
-        </Box>
+            {subtitle && <p className={cn('m-0 mt-0.5 text-[12.5px]', tone === 'ai' ? 'text-inherit' : 'text-muted-foreground')}>{subtitle}</p>}
+          </div>
+          {action && <div className="shrink-0">{action}</div>}
+        </div>
       )}
-      <Box sx={{ flex: 1, minWidth: 0, ...(padded ? { px: 2.5, pb: 2.5, pt: title || action ? 1 : 2.5 } : {}) }}>{children}</Box>
-    </MuiCard>
+      <div className={cn('min-w-0 flex-1', padded && 'px-[18px] pb-[18px]', padded && (title || action ? 'pt-3' : 'pt-[18px]'))}>{children}</div>
+    </>
+  );
+  if (sx)
+    return (
+      <Box component="section" aria-labelledby={title ? id : undefined} data-testid={testId} className={cls} sx={sx}>
+        {inner}
+      </Box>
+    );
+  return (
+    <section aria-labelledby={title ? id : undefined} data-testid={testId} className={cls}>
+      {inner}
+    </section>
   );
 }

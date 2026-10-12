@@ -1,29 +1,15 @@
 'use client';
 
-import Close from '@mui/icons-material/Close';
-import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
-import FilterListOff from '@mui/icons-material/FilterListOff';
-import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import SearchOutlined from '@mui/icons-material/SearchOutlined';
-import SearchOff from '@mui/icons-material/SearchOff';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Download, FilterX, Search, SearchX, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { EmptyState } from '@/components/States';
+import { Button } from '@/components/shadcn/button';
+import { Checkbox } from '@/components/shadcn/checkbox';
+import { Input } from '@/components/shadcn/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/shadcn/table';
 import { useI18n } from '@/i18n/client';
+import { cn } from '@/lib/utils';
 import { matchesQuery, paginate, sortRows, toCsv, type Cell, type SortDir } from '@/lib/table';
 import { SkeletonTable } from './Skeleton';
 import { useToastOptional } from './Toast';
@@ -59,7 +45,23 @@ export interface BulkAction<T> {
   onClick: (rows: T[]) => void | Promise<void>;
 }
 
-const HIDE = { sm: 'sm', md: 'md', lg: 'lg' } as const;
+const HIDE = { sm: 'hidden sm:table-cell', md: 'hidden md:table-cell', lg: 'hidden lg:table-cell' } as const;
+const ALIGN = { left: 'text-left', right: 'text-right', center: 'text-center' } as const;
+const ALL = '__all__';
+const onBar = 'h-8 border border-primary-foreground/30 bg-transparent text-primary-foreground shadow-none hover:bg-primary-foreground/10 hover:text-primary-foreground';
+
+/** Page numbers to show: first, last, and a window around the current page (null = gap). */
+function pageList(page: number, pages: number): (number | null)[] {
+  if (pages <= 7) return Array.from({ length: pages }, (_, i) => i);
+  const out: (number | null)[] = [0];
+  const lo = Math.max(1, Math.min(page - 1, pages - 4));
+  const hi = Math.min(pages - 2, Math.max(page + 1, 3));
+  if (lo > 1) out.push(null);
+  for (let i = lo; i <= hi; i++) out.push(i);
+  if (hi < pages - 2) out.push(null);
+  out.push(pages - 1);
+  return out;
+}
 
 /**
  * The table for lists of records: search, filters, sortable columns, pagination, row selection with
@@ -232,213 +234,250 @@ export function DataTable<T>({
 
   const nBulk = selectedRows.length;
   const colSpan = columns.length + (selectable ? 1 : 0);
+  const cellPad = dense ? 'px-1.5' : 'px-3';
+  const showBar = nBulk > 0 || !(bare && !exportName);
   return (
-    <Box data-testid={testId} sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '16px', bgcolor: 'kx.pane', overflow: 'hidden', boxShadow: 'var(--kx-elev-card)' }}>
+    <div data-testid={testId} className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
       {/* Toolbar, or the bulk bar when rows are selected */}
       {nBulk > 0 ? (
-        <Box role="toolbar" aria-label={t('ui.table.bulk')} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, px: 2, py: 1, minHeight: 56, bgcolor: 'm3.primaryContainer', color: 'm3.onPrimaryContainer' }}>
-          <IconButton size="small" onClick={() => setPicked(new Set())} aria-label={t('ui.table.clearSelection')} sx={{ color: 'inherit' }}>
-            <Close fontSize="small" />
-          </IconButton>
-          <Typography variant="body2" role="status" sx={{ fontWeight: 700, mr: 1 }}>
+        <div role="toolbar" aria-label={t('ui.table.bulk')} className="flex min-h-14 flex-wrap items-center gap-2 border-b border-border bg-primary px-4 py-2.5 text-primary-foreground">
+          <Button size="icon-sm" variant="ghost" onClick={() => setPicked(new Set())} aria-label={t('ui.table.clearSelection')} className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+            <X />
+          </Button>
+          <span role="status" className="mr-2 text-sm font-bold">
             {t('ui.table.selected', { n: nBulk })}
-          </Typography>
+          </span>
           {nBulk < sorted.length && allOnPage && (
-            <Button size="small" onClick={() => setPicked(new Set(sorted.map(rowId)))} sx={{ color: 'inherit', textDecoration: 'underline' }}>
+            <Button size="sm" variant="link" onClick={() => setPicked(new Set(sorted.map(rowId)))} className="h-8 px-1 text-primary-foreground underline">
               {t('ui.table.selectAllN', { n: sorted.length })}
             </Button>
           )}
-          <Box sx={{ flex: 1 }} />
+          <div className="flex-1" />
           {(bulkActions ?? []).map((a) => (
-            <Button key={a.id} size="small" variant="outlined" startIcon={a.icon} color={a.tone === 'danger' ? 'error' : 'inherit'} onClick={() => a.onClick(selectedRows)} sx={{ borderColor: 'currentColor' }}>
+            <Button key={a.id} size="sm" variant="outline" onClick={() => a.onClick(selectedRows)} className={cn(onBar, a.tone === 'danger' && 'border-red-soft/60')}>
+              {a.icon}
               {a.label}
             </Button>
           ))}
           {exportName && (
-            <Button size="small" variant="outlined" startIcon={<FileDownloadOutlined />} onClick={exportCsv} color="inherit" sx={{ borderColor: 'currentColor' }}>
+            <Button size="sm" variant="outline" onClick={exportCsv} className={onBar}>
+              <Download />
               {t('ui.table.export')}
             </Button>
           )}
-        </Box>
+        </div>
       ) : bare && !exportName ? null : (
-        <Box role="search" aria-label={label} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, px: 2, py: 1.5, minHeight: 56 }}>
-          <TextField
-            size="small"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(0);
-            }}
-            inputRef={searchRef}
-            placeholder={t('ui.table.search')}
-            slotProps={{
-              htmlInput: { 'aria-label': t('ui.table.searchIn', { name: label }), 'aria-keyshortcuts': '/' },
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchOutlined fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-            sx={{ width: { xs: '100%', sm: 280 } }}
-          />
-          {(filters ?? []).map((f) => (
-            <TextField
-              key={f.id}
-              select
-              size="small"
-              value={fv[f.id] ?? ''}
+        <div role="search" aria-label={label} className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3.5">
+          <div className="relative max-w-[320px] flex-[1_1_220px]">
+            <Search aria-hidden className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              ref={searchRef}
+              type="search"
+              value={query}
               onChange={(e) => {
-                setFv({ ...fv, [f.id]: e.target.value });
+                setQuery(e.target.value);
                 setPage(0);
               }}
-              label={f.label}
-              sx={{ minWidth: 150, width: { xs: '100%', sm: 'auto' } }}
-              slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+              placeholder={t('ui.table.search')}
+              aria-label={t('ui.table.searchIn', { name: label })}
+              aria-keyshortcuts="/"
+              className="h-9 rounded-md bg-background pl-8"
+            />
+          </div>
+          {(filters ?? []).map((f) => (
+            <Select
+              key={f.id}
+              value={fv[f.id] || ALL}
+              onValueChange={(v) => {
+                setFv({ ...fv, [f.id]: v === ALL ? '' : v });
+                setPage(0);
+              }}
             >
-              <MenuItem value="">{t('ui.table.all')}</MenuItem>
-              {f.options.map((o) => (
-                <MenuItem key={o.value} value={o.value}>
-                  {o.label}
-                </MenuItem>
-              ))}
-            </TextField>
+              <SelectTrigger aria-label={f.label} className="h-9 min-w-[150px] rounded-md bg-background max-sm:w-full">
+                <span className="text-muted-foreground">{f.label}:</span>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('ui.table.all')}</SelectItem>
+                {f.options.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           ))}
           {filtering && (
-            <Button size="small" startIcon={<FilterListOff />} onClick={clearAll}>
+            <Button size="sm" variant="ghost" onClick={clearAll} className="h-9">
+              <FilterX />
               {t('common.clearFilters')}
             </Button>
           )}
-          <Box sx={{ flex: 1 }} />
+          <div className="flex-1" />
           {toolbar}
           {exportName && (
-            <Button size="small" variant="outlined" startIcon={<FileDownloadOutlined />} onClick={exportCsv} disabled={sorted.length === 0}>
+            <Button size="sm" variant="outline" onClick={exportCsv} disabled={sorted.length === 0} className="h-9 rounded-md">
+              <Download />
               {t('ui.table.export')}
             </Button>
           )}
-        </Box>
+        </div>
       )}
 
-      <Box sx={{ overflowX: 'auto', borderTop: bare && !exportName && nBulk === 0 ? 0 : 1, borderColor: 'm3.outlineVariant' }}>
-        <Table size="small" aria-label={label} aria-rowcount={sorted.length} sx={{ '& .MuiTableRow-root:last-of-type > .MuiTableCell-body': { borderBottom: 0 }, ...(dense ? { '& .MuiTableCell-root': { px: 0.75 } } : {}) }}>
-          <TableHead>
-            <TableRow>
-              {selectable && (
-                <TableCell padding="checkbox" sx={{ bgcolor: 'm3.surfaceContainerLow', width: 48 }}>
-                  <Checkbox size="small" checked={allOnPage} indeterminate={!allOnPage && someOnPage} onChange={(e) => toggle(pageIds, e.target.checked)} slotProps={{ input: { 'aria-label': t('ui.table.selectPage') } }} />
-                </TableCell>
-              )}
-              {columns.map((c) => {
-                const active = sort?.id === c.id;
-                return (
-                  <TableCell
-                    key={c.id}
-                    align={c.align}
-                    aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : c.sort ? 'none' : undefined}
-                    sx={{ bgcolor: 'm3.surfaceContainerLow', width: c.width, display: c.hideBelow ? { xs: 'none', [HIDE[c.hideBelow]]: 'table-cell' } : undefined }}
-                  >
-                    {c.sort ? (
-                      <TableSortLabel
-                        active={active}
-                        direction={active ? sort!.dir : 'asc'}
-                        onClick={() => {
-                          setSort(!active ? { id: c.id, dir: 'asc' } : sort!.dir === 'asc' ? { id: c.id, dir: 'desc' } : null);
-                          setPage(0);
-                        }}
-                      >
-                        {c.header}
-                      </TableSortLabel>
-                    ) : (
-                      c.header
-                    )}
-                  </TableCell>
-                );
-              })}
+      <Table aria-label={label} aria-rowcount={sorted.length} className={cn(!showBar && 'border-t-0')}>
+        <TableHeader className="[&_tr]:border-b-0">
+          <TableRow className="hover:bg-transparent">
+            {selectable && (
+              <TableHead className="h-auto w-12 border-b border-border px-3 py-2.5">
+                <Checkbox
+                  checked={allOnPage ? true : someOnPage ? 'indeterminate' : false}
+                  onCheckedChange={(v) => toggle(pageIds, v === true)}
+                  aria-label={t('ui.table.selectPage')}
+                />
+              </TableHead>
+            )}
+            {columns.map((c) => {
+              const active = sort?.id === c.id;
+              const Icon = active ? (sort!.dir === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown;
+              return (
+                <TableHead
+                  key={c.id}
+                  aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : c.sort ? 'none' : undefined}
+                  style={{ width: c.width }}
+                  className={cn('h-auto border-b border-border py-2.5 text-xs font-semibold whitespace-nowrap text-muted-foreground', cellPad, ALIGN[c.align ?? 'left'], c.hideBelow && HIDE[c.hideBelow])}
+                >
+                  {c.sort ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSort(!active ? { id: c.id, dir: 'asc' } : sort!.dir === 'asc' ? { id: c.id, dir: 'desc' } : null);
+                        setPage(0);
+                      }}
+                      className={cn('group inline-flex items-center gap-1 rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring', active && 'text-foreground', c.align === 'right' && 'flex-row-reverse')}
+                    >
+                      {c.header}
+                      <Icon aria-hidden className={cn('size-3.5', !active && 'opacity-0 group-hover:opacity-50 group-focus-visible:opacity-50')} />
+                    </button>
+                  ) : (
+                    c.header
+                  )}
+                </TableHead>
+              );
+            })}
+          </TableRow>
+        </TableHeader>
+        <TableBody ref={bodyRef} className="[&_tr:last-child>*]:border-b-0">
+          {view.rows.length === 0 ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={colSpan} className="border-0 whitespace-normal">
+                <EmptyState dense icon={<SearchX />} title={t('ui.table.noMatch')} actions={filtering ? <Button variant="outline" onClick={clearAll}>{t('common.clearFilters')}</Button> : undefined}>
+                  {t('ui.table.noMatchHelp')}
+                </EmptyState>
+              </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody ref={bodyRef}>
-            {view.rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={colSpan} sx={{ border: 0 }}>
-                  <EmptyState dense icon={<SearchOff />} title={t('ui.table.noMatch')} actions={filtering ? <Button onClick={clearAll}>{t('common.clearFilters')}</Button> : undefined}>
-                    {t('ui.table.noMatchHelp')}
-                  </EmptyState>
-                </TableCell>
-              </TableRow>
-            ) : (
-              view.rows.map((r, i) => {
-                const id = rowId(r);
-                const on = picked.has(id);
-                const tone = rowTone?.(r);
-                return (
-                  <TableRow
-                    key={id}
-                    data-row
-                    {...rowAttrs?.(r)}
-                    hover
-                    selected={on || highlight?.(r) === true}
-                    tabIndex={0}
-                    onKeyDown={(e) => onRowKey(e, r, i)}
-                    onClick={onRowClick ? () => onRowClick(r) : undefined}
-                    aria-selected={selectable ? on : undefined}
-                    sx={{ cursor: onRowClick ? 'pointer' : undefined, '&:focus-visible': { outline: '2px solid var(--kx-palette-m3-primary)', outlineOffset: -2 }, ...(tone && { boxShadow: `inset 3px 0 0 var(--kx-palette-${tone === 'danger' ? 'm3-error' : 'kx-warning'})` }) }}
-                  >
-                    {selectable && (
-                      <TableCell padding="checkbox">
-                        <Checkbox size="small" checked={on} onChange={(e) => toggle([id], e.target.checked)} onClick={(e) => e.stopPropagation()} slotProps={{ input: { 'aria-label': t('ui.table.selectRow') } }} />
-                      </TableCell>
-                    )}
-                    {columns.map((c) => (
-                      <TableCell key={c.id} align={c.align} component={c.rowHeader ? 'th' : 'td'} scope={c.rowHeader ? 'row' : undefined} sx={{ fontWeight: c.rowHeader ? 600 : undefined, display: c.hideBelow ? { xs: 'none', [HIDE[c.hideBelow]]: 'table-cell' } : undefined }}>
+          ) : (
+            view.rows.map((r, i) => {
+              const id = rowId(r);
+              const on = picked.has(id);
+              const tone = rowTone?.(r);
+              const selected = on || highlight?.(r) === true;
+              return (
+                <TableRow
+                  key={id}
+                  data-row
+                  {...rowAttrs?.(r)}
+                  data-state={selected ? 'selected' : undefined}
+                  tabIndex={0}
+                  onKeyDown={(e) => onRowKey(e, r, i)}
+                  onClick={onRowClick ? () => onRowClick(r) : undefined}
+                  aria-selected={selectable ? on : undefined}
+                  className={cn(
+                    'border-b-0 outline-none hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+                    onRowClick && 'cursor-pointer',
+                    selected && 'bg-teal-soft hover:bg-teal-soft data-[state=selected]:bg-teal-soft',
+                    tone === 'danger' && 'shadow-[inset_3px_0_0_var(--color-red)]',
+                    tone === 'warning' && 'shadow-[inset_3px_0_0_var(--color-amber)]',
+                  )}
+                >
+                  {selectable && (
+                    <TableCell className="w-12 border-b border-border px-3 py-2.5">
+                      <Checkbox checked={on} onCheckedChange={(v) => toggle([id], v === true)} onClick={(e) => e.stopPropagation()} aria-label={t('ui.table.selectRow')} />
+                    </TableCell>
+                  )}
+                  {columns.map((c) => {
+                    const cls = cn('border-b border-border py-2.5 align-middle', cellPad, ALIGN[c.align ?? 'left'], c.hideBelow && HIDE[c.hideBelow]);
+                    return c.rowHeader ? (
+                      <th key={c.id} scope="row" className={cn(cls, 'font-semibold')}>
+                        {c.cell(r)}
+                      </th>
+                    ) : (
+                      <TableCell key={c.id} className={cls}>
                         {c.cell(r)}
                       </TableCell>
-                    ))}
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </Box>
+                    );
+                  })}
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
 
       {sorted.length > Math.min(size, 10) || view.pages > 1 ? (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 2, px: 2, py: 1, borderTop: 1, borderColor: 'm3.outlineVariant', color: 'text.secondary' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="caption" component="label" htmlFor="kx-dt-size">
-              {t('ui.table.rowsPerPage')}
-            </Typography>
-            <TextField
-              select
-              size="small"
-              value={size}
-              onChange={(e) => {
-                setSize(Number(e.target.value));
+        <nav aria-label={label} className="flex flex-wrap items-center gap-4 border-t border-border px-4 py-3 text-xs text-muted-foreground">
+          <span role="status" aria-live="polite">
+            {t('ui.table.range', { from: view.from, to: view.to, total: view.total })}
+          </span>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <label htmlFor="kx-dt-size">{t('ui.table.rowsPerPage')}</label>
+            <Select
+              value={String(size)}
+              onValueChange={(v) => {
+                setSize(Number(v));
                 setPage(0);
               }}
-              slotProps={{ htmlInput: { id: 'kx-dt-size' } }}
-              sx={{ width: 76, '& .MuiSelect-select': { py: 0.5 } }}
             >
-              {[10, 25, 50, 100].map((n) => (
-                <MenuItem key={n} value={n}>
-                  {n}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-          <Typography variant="caption" role="status" aria-live="polite">
-            {t('ui.table.range', { from: view.from, to: view.to, total: view.total })}
-          </Typography>
-          <Box>
-            <IconButton size="small" onClick={() => setPage(view.page - 1)} disabled={view.page === 0} aria-label={t('ui.table.prev')}>
-              <KeyboardArrowLeft />
-            </IconButton>
-            <IconButton size="small" onClick={() => setPage(view.page + 1)} disabled={view.page >= view.pages - 1} aria-label={t('ui.table.next')}>
-              <KeyboardArrowRight />
-            </IconButton>
-          </Box>
-        </Box>
+              <SelectTrigger id="kx-dt-size" size="sm" className="w-[76px] rounded-md">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100].map((n) => (
+                  <SelectItem key={n} value={String(n)}>
+                    {n}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button size="icon-sm" variant="outline" onClick={() => setPage(view.page - 1)} disabled={view.page === 0} aria-label={t('ui.table.prev')} className="rounded-md">
+              <ChevronLeft />
+            </Button>
+            {pageList(view.page, view.pages).map((p, k) =>
+              p === null ? (
+                <span key={`gap${k}`} aria-hidden className="w-6 text-center">
+                  …
+                </span>
+              ) : (
+                <Button
+                  key={p}
+                  size="icon-sm"
+                  variant={p === view.page ? 'default' : 'outline'}
+                  onClick={() => setPage(p)}
+                  aria-current={p === view.page ? 'page' : undefined}
+                  className={cn('rounded-md text-xs', p === view.page && 'border border-primary bg-primary text-primary-foreground')}
+                >
+                  {p + 1}
+                </Button>
+              ),
+            )}
+            <Button size="icon-sm" variant="outline" onClick={() => setPage(view.page + 1)} disabled={view.page >= view.pages - 1} aria-label={t('ui.table.next')} className="rounded-md">
+              <ChevronRight />
+            </Button>
+          </div>
+        </nav>
       ) : null}
-    </Box>
+    </div>
   );
 }

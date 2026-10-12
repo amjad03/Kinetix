@@ -1,14 +1,11 @@
 'use client';
 
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import LinearProgress from '@mui/material/LinearProgress';
-import ListSubheader from '@mui/material/ListSubheader';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import { usePathname, useRouter } from 'next/navigation';
-import { useId, useTransition } from 'react';
+import { Fragment, useId, useTransition } from 'react';
+import { Label } from '@/components/shadcn/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/shadcn/select';
 import { useI18n } from '@/i18n/client';
+import { PendingBar } from './PendingBar';
 
 export interface UrlOption {
   value: string;
@@ -28,34 +25,48 @@ export function UrlSelect({ label, param, value, options, minWidth = 220, testId
   const [pending, start] = useTransition();
   const id = useId();
   const { t } = useI18n();
-  const items: React.ReactNode[] = [];
-  let group: string | undefined;
+  const groups: { group?: string; options: UrlOption[] }[] = [];
   for (const o of options) {
-    if (o.group && o.group !== group) {
-      group = o.group;
-      items.push(<ListSubheader key={`g-${o.group}`}>{o.group}</ListSubheader>);
-    }
-    items.push(
-      <MenuItem key={`${o.group ?? ''}${o.value}`} value={o.value}>
-        {o.label}
-      </MenuItem>,
-    );
+    const last = groups[groups.length - 1];
+    if (last && last.group === o.group) last.options.push(o);
+    else groups.push({ group: o.group, options: [o] });
   }
+  const current = options.some((o) => o.value === value) ? value : undefined;
   return (
     <>
-      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label={t('common.loading')} />}
-      <FormControl size="small" sx={{ minWidth, maxWidth: '100%' }}>
-        <InputLabel id={id}>{label}</InputLabel>
-        <Select
-          labelId={id}
-          label={label}
-          value={options.some((o) => o.value === value) ? value : ''}
-          onChange={(e) => start(() => router.push(`${pathname}?${param ? new URLSearchParams({ [param]: e.target.value }) : e.target.value}`, { scroll: false }))}
-          data-testid={testId}
-        >
-          {items}
+      {pending && <PendingBar label={t('common.loading')} />}
+      <div className="grid max-w-full gap-1" style={{ minWidth }}>
+        <Label htmlFor={id} className="text-xs font-medium text-muted-foreground">
+          {label}
+        </Label>
+        <Select value={current} onValueChange={(v) => start(() => router.push(`${pathname}?${param ? new URLSearchParams({ [param]: v }) : v}`, { scroll: false }))}>
+          <SelectTrigger id={id} data-testid={testId} aria-label={label} className="h-9 w-full rounded-md bg-card">
+            <SelectValue placeholder={label} />
+          </SelectTrigger>
+          <SelectContent>
+            {groups.map((g, i) =>
+              g.group ? (
+                <SelectGroup key={`g-${g.group}-${i}`}>
+                  <SelectLabel>{g.group}</SelectLabel>
+                  {g.options.map((o) => (
+                    <SelectItem key={`${g.group}${o.value}`} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ) : (
+                <Fragment key={`n-${i}`}>
+                  {g.options.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </Fragment>
+              ),
+            )}
+          </SelectContent>
         </Select>
-      </FormControl>
+      </div>
     </>
   );
 }

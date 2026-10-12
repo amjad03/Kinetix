@@ -1,11 +1,7 @@
-import ArrowDownward from '@mui/icons-material/ArrowDownward';
-import ArrowUpward from '@mui/icons-material/ArrowUpward';
-import Remove from '@mui/icons-material/Remove';
-import Box from '@mui/material/Box';
-import MuiCard from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import { LinkBox } from './LinkBox';
+import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 export interface Trend {
   /** Change versus the comparison period: a percentage (or points); null when there is nothing to compare. */
@@ -24,24 +20,23 @@ export function TrendPill({ delta, label, goodWhen = 'up', suffix = '%' }: Trend
   const flat = delta === 0;
   const up = delta > 0;
   const good = flat ? null : up === (goodWhen === 'up');
-  const Icon = flat ? Remove : up ? ArrowUpward : ArrowDownward;
+  const Icon = flat ? Minus : up ? ArrowUp : ArrowDown;
   const shown = `${up ? '+' : ''}${Math.round(delta * 10) / 10}${suffix}`;
   return (
-    <Box component="span" data-trend={flat ? 'flat' : up ? 'up' : 'down'} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, fontSize: '0.75rem', fontWeight: 600, color: good === null ? 'text.secondary' : good ? 'kx.success' : 'error.main' }}>
-      <Icon aria-hidden sx={{ fontSize: 14 }} />
-      {shown}
-      {label && (
-        <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400, ml: 0.5 }}>
-          {label}
-        </Box>
-      )}
-    </Box>
+    <span data-trend={flat ? 'flat' : up ? 'up' : 'down'} className="inline-flex items-center gap-1.5 whitespace-nowrap">
+      <span className={cn('inline-flex items-center gap-0.5 rounded-full px-[7px] py-px text-xs font-semibold', good === null ? 'bg-slate-soft text-slate-ink' : good ? 'bg-green-soft text-green-ink' : 'bg-red-soft text-red-ink')}>
+        <Icon aria-hidden className="size-3" strokeWidth={2.5} />
+        {shown}
+      </span>
+      {label && <span className="text-[12.5px] text-muted-foreground">{label}</span>}
+    </span>
   );
 }
 
 /**
- * A KPI tile: label, one big number, a trend, one line of context and an optional small bar or chart.
- * With `href` the whole tile is a link.
+ * A KPI card (redesign): label and an icon chip, one big number with an optional mini chart
+ * beside it, then the trend pill and one line of context. With `href` the whole card is a link
+ * (the drill-down into the filtered list).
  */
 export function StatTile({
   label,
@@ -69,58 +64,48 @@ export function StatTile({
   testId?: string;
 }) {
   const body = (
-    <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', minHeight: 24 }}>
+    <div className="flex h-full flex-col px-[18px] py-4">
+      <div className="flex min-h-[30px] items-center justify-between gap-2 text-[13px] font-medium text-muted-foreground">
+        <h3 className="m-0 text-[13px] font-medium">{label}</h3>
         {icon && (
-          <Box aria-hidden sx={{ display: 'grid', placeItems: 'center', width: 32, height: 32, borderRadius: '10px', bgcolor: 'm3.primaryContainer', color: 'm3.onPrimaryContainer', '& svg': { fontSize: 18 } }}>
+          <span aria-hidden className="grid size-[30px] shrink-0 place-items-center rounded-[9px] border bg-background text-muted-foreground [&_svg]:!size-[15px]">
             {icon}
-          </Box>
+          </span>
         )}
-        <Typography variant="subtitle2" component="h3" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-          {label}
-        </Typography>
-      </Box>
-      {/* Wraps the unit ("4 of 7 topics") under the number when the tile is narrow, instead of clipping it. */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 0.75, mt: 1.5, minWidth: 0 }}>
-        <Typography
-          component="p"
-          sx={{ fontSize: '1.875rem', lineHeight: '40px', fontWeight: 600, letterSpacing: '-0.5px', fontVariantNumeric: 'tabular-nums', color: tone === 'warning' ? 'error.main' : tone === 'live' ? 'kx.live' : 'text.primary' }}
-        >
-          {value}
-        </Typography>
-        {unit && (
-          <Typography variant="body2" color="text.secondary" component="span" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
-            {unit}
-          </Typography>
-        )}
-        {trend && (
-          <Box sx={{ ml: 'auto', pl: 1 }}>
-            <TrendPill {...trend} />
-          </Box>
-        )}
-      </Box>
-      {spark && <Box sx={{ mt: 1 }}>{spark}</Box>}
-      {bar && <Box sx={{ mt: 1.25 }}>{bar}</Box>}
-      {caption && (
-        <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: bar || spark ? 1 : 0.5 }}>
-          {caption}
-        </Typography>
+      </div>
+      <div className="mt-2.5 flex min-w-0 flex-wrap items-end justify-between gap-2.5">
+        <p className="m-0 flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+          <b className={cn('text-[28px] leading-[1.1] font-[650] whitespace-nowrap tracking-[-0.02em] tabular-nums', tone === 'warning' ? 'text-red-ink' : tone === 'live' ? 'text-orange-ink' : 'text-foreground')}>{value}</b>
+          {unit && <span className="min-w-0 text-[13px] [overflow-wrap:anywhere] text-muted-foreground">{unit}</span>}
+        </p>
+        {spark && <div className="shrink-0">{spark}</div>}
+      </div>
+      {bar && <div className="mt-2.5">{bar}</div>}
+      {(trend || caption) && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-[12.5px] text-muted-foreground">
+          {trend && <TrendPill {...trend} />}
+          {caption && <div>{caption}</div>}
+        </div>
       )}
-    </Box>
+    </div>
   );
   return (
-    <MuiCard data-testid={testId} sx={{ height: '100%', position: 'relative', ...(href && { transition: 'border-color 150ms', '&:hover': { borderColor: 'm3.primary' } }) }}>
+    <div data-testid={testId} className={cn('relative h-full min-w-0 rounded-lg border bg-card shadow-card transition-colors', href && 'hover:border-border-strong')}>
       {href ? (
-        <LinkBox href={href} sx={{ display: 'block', height: '100%', color: 'inherit', textDecoration: 'none', borderRadius: 'inherit' }}>
+        <Link href={href} className="block h-full rounded-[inherit] text-inherit no-underline">
           {body}
-        </LinkBox>
+        </Link>
       ) : (
         body
       )}
-    </MuiCard>
+    </div>
   );
 }
 
 export function StatGrid({ children, min = 170 }: { children: ReactNode; min?: number }) {
-  return <Box sx={{ display: 'grid', gap: 2, mb: 3, gridTemplateColumns: `repeat(auto-fit, minmax(${min}px, 1fr))` }}>{children}</Box>;
+  return (
+    <div className="mb-4 grid gap-4" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}px, calc(50% - 8px)), 1fr))` }}>
+      {children}
+    </div>
+  );
 }

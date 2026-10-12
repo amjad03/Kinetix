@@ -1,14 +1,12 @@
 'use client';
 
-import Check from '@mui/icons-material/Check';
-import LinearProgress from '@mui/material/LinearProgress';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/shadcn/toggle-group';
 import { useI18n } from '@/i18n/client';
+import { PendingBar } from './PendingBar';
 
-/** M3 segmented button that sets `?days=`. */
+/** A segmented control that sets `?days=`. */
 export function RangeToggle({ value, options }: { value: number; options: number[] }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -17,25 +15,25 @@ export function RangeToggle({ value, options }: { value: number; options: number
   const { t } = useI18n();
   return (
     <>
-      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} />}
-      <ToggleButtonGroup
-        exclusive
-        value={value}
+      {pending && <PendingBar label={t('common.loading')} />}
+      <ToggleGroup
+        type="single"
+        value={String(value)}
         aria-label={t('range.label')}
-        onChange={(_, v: number | null) => {
+        className="gap-0.5 rounded-md border bg-card p-[3px]"
+        onValueChange={(v) => {
           if (!v) return;
           const q = new URLSearchParams(params.toString());
-          q.set('days', String(v));
+          q.set('days', v);
           start(() => router.push(`${pathname}?${q}`, { scroll: false }));
         }}
       >
         {options.map((d) => (
-          <ToggleButton key={d} value={d} aria-label={t('range.lastDays', { n: d })} sx={{ gap: 0.75 }}>
-            {value === d && <Check sx={{ fontSize: 18 }} />}
+          <ToggleGroupItem key={d} value={String(d)} aria-label={t('range.lastDays', { n: d })} className="h-7 rounded-[7px] px-2.5 text-[12.5px] font-medium text-muted-foreground data-[state=on]:bg-accent data-[state=on]:font-semibold data-[state=on]:text-foreground">
             {t('range.days', { n: d })}
-          </ToggleButton>
+          </ToggleGroupItem>
         ))}
-      </ToggleButtonGroup>
+      </ToggleGroup>
     </>
   );
 }

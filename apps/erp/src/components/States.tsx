@@ -1,13 +1,12 @@
 'use client';
 
-import CloudOffOutlined from '@mui/icons-material/CloudOffOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { CloudOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useI18n } from '@/i18n/client';
+import { cn } from '@/lib/utils';
 import { RetryButton } from './RetryButton';
 
-/** Calm, helpful empty state: icon in a tonal circle, a title, one line of help, and next steps. */
+/** The shared empty state: what the page is for, why it is empty, and one clear next step. */
 export function EmptyState({
   icon,
   title,
@@ -24,51 +23,27 @@ export function EmptyState({
   testId?: string;
 }) {
   return (
-    <Box
-      data-testid={testId}
-      sx={{
-        textAlign: 'center',
-        py: dense ? 4 : 7,
-        px: 3,
-        border: 1,
-        borderColor: 'm3.outlineVariant',
-        borderRadius: '12px',
-        borderStyle: 'dashed',
-      }}
-    >
-      <Box
-        sx={{
-          width: dense ? 48 : 64,
-          height: dense ? 48 : 64,
-          mx: 'auto',
-          mb: 2,
-          borderRadius: '50%',
-          display: 'grid',
-          placeItems: 'center',
-          bgcolor: 'm3.secondaryContainer',
-          color: 'm3.onSecondaryContainer',
-          '& svg': { fontSize: dense ? 24 : 32 },
-        }}
+    <div data-testid={testId} className={cn('grid place-items-center rounded-lg border border-dashed border-border-strong px-5 text-center text-muted-foreground', dense ? 'py-6' : 'py-10')}>
+      <span
+        aria-hidden
+        className={cn(
+          'mb-3 grid place-items-center rounded-[14px] border border-dashed border-border-strong bg-background text-muted-foreground [&_svg]:!size-6',
+          dense ? 'size-11' : 'size-[52px]',
+        )}
       >
         {icon}
-      </Box>
-      <Typography variant="h6" component="p">
-        {title}
-      </Typography>
-      {children && (
-        <Typography variant="body2" color="text.secondary" component="div" sx={{ mt: 0.5, maxWidth: 460, mx: 'auto' }}>
-          {children}
-        </Typography>
-      )}
-      {actions && <Box sx={{ mt: 2.5, display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>{actions}</Box>}
-    </Box>
+      </span>
+      <p className="m-0 text-base font-semibold text-foreground">{title}</p>
+      {children && <div className="mx-auto mt-1 max-w-[460px] text-[13px]">{children}</div>}
+      {actions && <div className="mt-4 flex flex-wrap justify-center gap-2">{actions}</div>}
+    </div>
   );
 }
 
 export function ErrorState({ message, title }: { message: string; title?: string }) {
   const { t } = useI18n();
   return (
-    <EmptyState icon={<CloudOffOutlined />} title={title ?? t('state.loadFailed')} actions={<RetryButton />} testId="error-state">
+    <EmptyState icon={<CloudOff />} title={title ?? t('state.loadFailed')} actions={<RetryButton />} testId="error-state">
       {message}
     </EmptyState>
   );
