@@ -94,7 +94,7 @@ class _MathEditorDialogState extends State<MathEditorDialog> {
                       child: Padding(
                         padding: const EdgeInsets.all(Kx.s12),
                         child: BoardMath(
-                          element: MathElement(id: 'preview', position: Offset.zero, latex: _tex.text, color: KxColor.ink, fontSize: 34, size: const Size(1, 1)),
+                          element: MathElement(id: 'preview', position: Offset.zero, latex: _tex.text, color: context.colors.onSurface, fontSize: 34, size: const Size(1, 1)),
                         ),
                       ),
                     ),
@@ -108,7 +108,7 @@ class _MathEditorDialogState extends State<MathEditorDialog> {
                   ActionChip(
                     label: SizedBox(
                       height: 28,
-                      child: BoardMath(element: MathElement(id: label, position: Offset.zero, latex: label, color: KxColor.ink, fontSize: 16, size: const Size(1, 1))),
+                      child: BoardMath(element: MathElement(id: label, position: Offset.zero, latex: label, color: context.colors.onSurface, fontSize: 16, size: const Size(1, 1))),
                     ),
                     onPressed: () => _insert(insert),
                   ),

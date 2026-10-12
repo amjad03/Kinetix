@@ -545,9 +545,17 @@ class _VocabCardBuilderState extends State<VocabCardBuilder> {
   List<BoardElement> card() {
     final text = [_word.text.trim().toUpperCase(), _meaning.text.trim(), if (_sentence.text.trim().isNotEmpty) '“${_sentence.text.trim()}”'].where((t) => t.isNotEmpty).join('\n');
     final lines = text.split('\n').length;
+    final icon = _picture == null ? null : matchPictures[_picture];
+    // The picture is part of the card (so it moves and scales with it); the card paints it.
     return [
-      NoteElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, 420, 72.0 + lines * 34), text: text, color: _color, kind: NoteKind.card),
-      if (_picture != null) boardLabel(_picture!, const Offset(430, 8), WhiteboardController.inkBlack, size: 18, bold: true),
+      NoteElement(
+        id: newElementId(),
+        rect: Rect.fromLTWH(0, 0, icon == null ? 420 : 520, 96.0 + lines * 40),
+        text: text,
+        color: _color,
+        kind: NoteKind.card,
+        language: icon == null ? null : 'icon:${icon.codePoint}',
+      ),
     ];
   }
 

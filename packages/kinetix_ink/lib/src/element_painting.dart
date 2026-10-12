@@ -285,23 +285,20 @@ void paintNote(Canvas canvas, NoteElement s) {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 4,
       );
-      final tp = _noteCache[s] ??= TextPainter(
-        text: TextSpan(
-          text: s.text,
-          style: TextStyle(
-            fontSize: s.fontSize * 1.8,
-            color: const Color(0xFF1B1F24),
-            fontWeight: FontWeight.w700,
-            fontFamily: KxFonts.board,
-            fontFamilyFallback: KxFonts.fallback,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-        maxLines: 3,
-        ellipsis: '…',
-      )..layout(maxWidth: math.max(0, r.width - 24));
-      tp.paint(canvas, r.center - Offset(tp.width / 2, tp.height / 2));
+      // A picture (icon code point in `language`, as `icon:<n>`) sits inside the card, left of the
+      // text. The text shrinks until the word, meaning and example all fit: never an ellipsis.
+      final pic = s.language != null && s.language!.startsWith('icon:') ? int.tryParse(s.language!.substring(5)) : null;
+      final picW = pic == null ? 0.0 : math.min(r.height - 24, r.width * 0.28);
+      if (pic != null) {
+        final ip = TextPainter(
+          text: TextSpan(text: String.fromCharCode(pic), style: TextStyle(fontSize: picW * 0.9, fontFamily: 'MaterialIcons', color: const Color(0xFF1B1F24))),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        ip.paint(canvas, Offset(r.left + 12 + (picW - ip.width) / 2, r.center.dy - ip.height / 2));
+      }
+      final tp = _noteCache[s] ??= _fitCardText(s.text, s.fontSize * 1.8, math.max(1, r.width - 24 - (pic == null ? 0 : picW + 8)), math.max(1, r.height - 24));
+      final textBox = Rect.fromLTRB(r.left + 12 + (pic == null ? 0 : picW + 8), r.top, r.right - 12, r.bottom);
+      tp.paint(canvas, textBox.center - Offset(tp.width / 2, tp.height / 2));
     case NoteKind.answer:
       // Covered: a quiet striped card with no trace of the answer.
       final rr = RRect.fromRectAndRadius(r, const Radius.circular(14));
@@ -593,4 +590,37 @@ void paintFlowLink(Canvas canvas, FlowLinkElement l, BoardBackground background)
   final chip = RRect.fromRectAndRadius(Rect.fromCenter(center: at, width: tp.width + 12, height: tp.height + 4), const Radius.circular(6));
   canvas.drawRRect(chip, Paint()..color = background.isDark ? const Color(0xFF22262C) : const Color(0xFFFFFFFF));
   tp.paint(canvas, at - Offset(tp.width / 2, tp.height / 2));
+}
+
+/// The card's text: word first (big, bold), then the meaning and example (smaller), shrunk in
+/// steps until it fits [maxW] x [maxH] with every line shown.
+TextPainter _fitCardText(String text, double base, double maxW, double maxH) {
+  final lines = text.split('\n');
+  TextPainter build(double k) => TextPainter(
+    text: TextSpan(
+      children: [
+        for (var i = 0; i < lines.length; i++)
+          TextSpan(
+            text: i == lines.length - 1 ? lines[i] : '${lines[i]}\n',
+            style: TextStyle(
+              fontSize: (i == 0 ? base : base * 0.62) * k,
+              color: const Color(0xFF1B1F24),
+              fontWeight: i == 0 ? FontWeight.w800 : FontWeight.w500,
+              fontStyle: lines[i].startsWith('\u201c') ? FontStyle.italic : FontStyle.normal,
+              fontFamily: KxFonts.board,
+              fontFamilyFallback: KxFonts.fallback,
+            ),
+          ),
+      ],
+    ),
+    textDirection: TextDirection.ltr,
+    textAlign: TextAlign.center,
+  )..layout(maxWidth: maxW);
+  var k = 1.0;
+  var tp = build(k);
+  while ((tp.height > maxH || tp.width > maxW + 0.5) && k > 0.05) {
+    k *= 0.9;
+    tp = build(k);
+  }
+  return tp;
 }

@@ -41,7 +41,22 @@ class SubjectStyle {
   final List<KitTab> tabs;
 
   /// A light tint of [accent] for chips and selected states.
-  Color get container => Color.alphaBlend(accent.withValues(alpha: 0.12), Colors.white);
+  /// [accent] lightened until it reads (4.5:1) on the dark theme's surfaces; unchanged in light.
+  Color accentFor(ColorScheme c) {
+    if (c.brightness == Brightness.light) return accent;
+    var a = accent;
+    for (var i = 0; i < 10 && _contrast(a, c.surfaceContainerHigh) < 4.5; i++) {
+      a = Color.lerp(a, Colors.white, 0.15)!;
+    }
+    return a;
+  }
+
+  static double _contrast(Color a, Color b) {
+    final x = a.computeLuminance(), y = b.computeLuminance();
+    return (x > y ? x + 0.05 : y + 0.05) / (x > y ? y + 0.05 : x + 0.05);
+  }
+
+  Color containerOn(ColorScheme c) => Color.alphaBlend(accent.withValues(alpha: 0.18), c.surfaceContainerHigh);
 }
 
 const subjectStyles = <Subject, SubjectStyle>{

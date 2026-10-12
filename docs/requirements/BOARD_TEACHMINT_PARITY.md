@@ -102,7 +102,7 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Classroom Apps grid | Study Material, Live Class, Homework, Lessons, Attendance, Class Prep, Students, Tests, Recordings, Books; Other Tools: Calculator, Spotlight | Built | B/classroom_apps.dart |
 | Theme templates (15 listed) | Black, Grid, Horizontal, English, 2/3 Columns, Isometric, Graph, Hindi, Dotted, Checks, Music, Basketball, Football, World Map | Partial: verify all 15 plus spelling | INK/board_background.dart, B/layout/backgrounds_popover.dart |
 | Theme background colours | Palette, per page | Built | B/layout/backgrounds_popover.dart |
-| App light / dark theme | Whole app follows one theme (toolbars, popovers, dialogs, drawer, default paper; chalkboard kept) | Built: Board settings theme chips plus quick toggle in the board menu; theme_toggle_test, theme_test | B/chrome.dart, B/board_screen.dart |
+| App light / dark theme | Whole app follows one theme (toolbars, popovers, dialogs, drawer, default paper; chalkboard kept) | Built: Board settings theme chips plus quick toggle in the board menu; theme_toggle_test, theme_test. Component themes (buttons, chips, segmented, inputs, dropdowns, tabs, switches) derive from the ColorScheme; contrast_test pumps panels in both themes, fails on any Text/Icon under 4.5:1, plus light/dark goldens | KUI/theme.dart, B/chrome.dart, test/contrast |
 | Theme Custom (JPG/PNG up to 10 MB, logo/watermark) | Upload tab | Built | B/layout/custom_theme_tab.dart |
 
 ## 8. Profile, classrooms, share
@@ -127,3 +127,4 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Pin a sim to a page | n/a | Built: pin per board page, reopen from the panel | A/sim_hub/sim_server.dart (SimPins) |
 | Sim picture to board | n/a | Built: Add to board with source and licence line (PhET sims via their own screenshot generator; other web pages may be blank on Android) | A/sim_hub/sim_hub_panel.dart |
 
+| Word / vocabulary card on the board | Readable card, picture with it | Built: card text auto-shrinks to show the whole word, meaning and example (no ellipsis); the picture is painted inside the card so it selects, moves and scales as one element; dark ink on a light card in both themes | INK/element_painting.dart, A/language_kit/language_kit.dart |
