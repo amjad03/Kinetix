@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { useTabs } from '@/components/tabs/TabsProvider';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/shadcn/command';
 import { useI18n } from '@/i18n/client';
 import type { SearchHit } from '@/lib/insights';
@@ -34,6 +35,8 @@ export function CommandSearch({ groups }: { groups: NavGroup[] }) {
   const { t } = useI18n();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [newTab, setNewTab] = useState(false);
+  const tabs = useTabs();
   const [q, setQ] = useState('');
   const [found, setFound] = useState<SearchHit[]>([]);
   const [loading, setLoading] = useState(false);
@@ -89,8 +92,17 @@ export function CommandSearch({ groups }: { groups: NavGroup[] }) {
         setOpen(true);
       }
     };
+    // Ctrl+T in the tab bar: pick a page to open in a new tab.
+    const onPalette = () => {
+      setNewTab(true);
+      setOpen(true);
+    };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    window.addEventListener('kx:palette', onPalette);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('kx:palette', onPalette);
+    };
   }, []);
 
   const hits = useMemo<Hit[]>(() => {
@@ -119,13 +131,16 @@ export function CommandSearch({ groups }: { groups: NavGroup[] }) {
   const onOpenChange = (v: boolean) => {
     setOpen(v);
     if (!v) {
+      setNewTab(false);
       setQ('');
       setAnswer(null);
     }
   };
   const go = (href: string) => {
+    const inTab = newTab && tabs;
     onOpenChange(false);
-    router.push(href);
+    if (inTab) tabs.open(href);
+    else router.push(href);
   };
 
   return (

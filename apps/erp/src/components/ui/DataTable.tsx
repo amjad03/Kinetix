@@ -2,6 +2,7 @@
 
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Download, FilterX, Search, SearchX, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { EmptyState } from '@/components/States';
 import { Button } from '@/components/shadcn/button';
 import { Checkbox } from '@/components/shadcn/checkbox';
@@ -87,6 +88,7 @@ export function DataTable<T>({
   empty,
   toolbar,
   onRowClick,
+  rowHref,
   rowTone,
   rowAttrs,
   highlight,
@@ -115,6 +117,8 @@ export function DataTable<T>({
   empty?: ReactNode;
   toolbar?: ReactNode;
   onRowClick?: (row: T) => void;
+  /** The row's page. Click opens it; Ctrl/Cmd+click, middle-click or the right-click menu open it in a new workspace tab. */
+  rowHref?: (row: T) => string | undefined;
   /** Tint a row that needs attention. */
   rowTone?: (row: T) => 'warning' | 'danger' | undefined;
   /** Marks the row a detail panel is open for. */
@@ -206,6 +210,7 @@ export function DataTable<T>({
     toast?.success(t('ui.table.exported', { n: source.length }));
   };
 
+  const router = useRouter();
   const onRowKey = (e: KeyboardEvent<HTMLTableRowElement>, row: T, i: number) => {
     if (e.target !== e.currentTarget) return;
     const go = (j: number) => {
@@ -221,6 +226,7 @@ export function DataTable<T>({
       toggle([rowId(row)], !picked.has(rowId(row)));
       e.preventDefault();
     } else if (e.key === 'Enter' && onRowClick) onRowClick(row);
+    else if (e.key === 'Enter' && rowHref?.(row)) router.push(rowHref(row)!);
   };
 
   const clearAll = () => {
@@ -389,11 +395,12 @@ export function DataTable<T>({
                   data-state={selected ? 'selected' : undefined}
                   tabIndex={0}
                   onKeyDown={(e) => onRowKey(e, r, i)}
-                  onClick={onRowClick ? () => onRowClick(r) : undefined}
+                  data-href={rowHref?.(r)}
+                  onClick={onRowClick ? () => onRowClick(r) : rowHref?.(r) ? () => router.push(rowHref(r)!) : undefined}
                   aria-selected={selectable ? on : undefined}
                   className={cn(
                     'border-b-0 outline-none hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-                    onRowClick && 'cursor-pointer',
+                    (onRowClick || rowHref) && 'cursor-pointer',
                     selected && 'bg-teal-soft hover:bg-teal-soft data-[state=selected]:bg-teal-soft',
                     tone === 'danger' && 'shadow-[inset_3px_0_0_var(--color-red)]',
                     tone === 'warning' && 'shadow-[inset_3px_0_0_var(--color-amber)]',

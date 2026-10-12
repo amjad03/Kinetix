@@ -13,6 +13,9 @@ import type { Workspace } from '@/lib/workspaces';
 import { AppSidebar } from './shell/AppSidebar';
 import { TopBar, type ShellNotice, type ShellYear } from './shell/TopBar';
 import { ToastProvider } from './ui/Toast';
+import { TabBar } from './tabs/TabBar';
+import { TabHost } from './tabs/TabHost';
+import { TabsProvider } from './tabs/TabsProvider';
 
 export interface ShellUser {
   fullName: string;
@@ -81,10 +84,13 @@ export function AppShell({
         <SidebarProvider defaultOpen={sidebarOpen} className="kx-shell">
           <AppSidebar groups={groups} pathname={pathname} school={school} roleText={roleText} workspace={workspace} home={home} setup={setup} />
           <SidebarInset className="min-w-0 bg-background">
-            <TopBar user={user} roleText={roleText} groups={groups} crumbs={crumbs} years={years} yearId={yearId} notices={notices} unread={unread} density={density} />
-            <main id="main" tabIndex={-1} className="kx-main mx-auto w-full max-w-[1440px] min-w-0 flex-1 p-4 outline-none md:p-6" data-density={density}>
-              {children}
-            </main>
+            <TabsProvider groups={groups} userKey={user.email ?? user.fullName}>
+              <TopBar user={user} roleText={roleText} groups={groups} crumbs={crumbs} years={years} yearId={yearId} notices={notices} unread={unread} density={density} />
+              <TabBar />
+              <TabHost className="kx-main mx-auto w-full max-w-[1440px] min-w-0 flex-1 p-4 outline-none md:p-6" density={density}>
+                {children}
+              </TabHost>
+            </TabsProvider>
           </SidebarInset>
         </SidebarProvider>
       </TooltipProvider>
