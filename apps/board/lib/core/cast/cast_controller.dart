@@ -41,6 +41,14 @@ class CastTile {
   CastTileState state;
   CastReceiver? receiver;
 
+  /// The receiver has started and can take signalling; earlier messages wait in [queued].
+  bool ready = false;
+
+  /// Offer and ICE candidates that arrived before the receiver was ready (the sender of a
+  /// teacher's own screen sends its offer the moment it is approved, before this board has
+  /// finished setting up WebRTC). Dropping them left the cast stuck on "Connecting".
+  final queued = <Map<String, dynamic>>[];
+
   /// The teacher is drawing over this screen (marks stay on the board only).
   bool annotate = false;
   final strokes = <(Color, List<Offset>)>[];
@@ -70,6 +78,9 @@ class CastController extends ChangeNotifier {
   VoidCallback? onAttention;
 
   bool _disposed = false;
+
+  /// Signals for a cast this board has not heard of yet (the offer overtook `cast.ice`).
+  final _early = <String, List<Map<String, dynamic>>>{};
 
   Iterable<CastTile> get pending => tiles.where((t) => t.state == CastTileState.pending);
   bool get any => tiles.isNotEmpty;
@@ -112,6 +123,7 @@ class CastController extends ChangeNotifier {
       for (final s in (e['iceServers'] as List<dynamic>? ?? const [])) Map<String, dynamic>.from(s as Map),
     ];
     try {
+      t.queued.insertAll(0, _early.remove(id) ?? const []);
       await r.start(
         servers,
         sendSignal: (d) => emit(CastEvents.signal, {'castId': id, 'data': d}),
@@ -125,6 +137,11 @@ class CastController extends ChangeNotifier {
           }
         },
       );
+      // Replay what arrived while WebRTC was starting, in order, then take messages directly.
+      while (t.queued.isNotEmpty && t.receiver == r) {
+        await r.handleSignal(t.queued.removeAt(0));
+      }
+      t.ready = true;
     } catch (err) {
       debugPrint('Cast $id: $err');
       await stop(id);
@@ -133,14 +150,25 @@ class CastController extends ChangeNotifier {
 
   /// `cast.signal`: the sender's offer or an ICE candidate.
   Future<void> onSignal(Map<String, dynamic> e) async {
-    final r = tile(e['castId'] as String? ?? '')?.receiver;
+    final id = e['castId'] as String? ?? '';
     final data = e['data'];
-    if (r != null && data is Map) await r.handleSignal(Map<String, dynamic>.from(data));
+    if (data is! Map) return;
+    final msg = Map<String, dynamic>.from(data);
+    final t = tile(id);
+    if (t == null) {
+      (_early[id] ??= []).add(msg);
+    } else if (!t.ready) {
+      t.queued.add(msg);
+    } else {
+      await t.receiver?.handleSignal(msg);
+    }
   }
 
   /// `cast.ended`: the sender left, the teacher or the class ended it.
   void onEnded(Map<String, dynamic> e) {
-    final t = tile(e['castId'] as String? ?? '');
+    final id = e['castId'] as String? ?? '';
+    _early.remove(id);
+    final t = tile(id);
     if (t != null) unawaited(_drop(t));
   }
 
@@ -215,6 +243,7 @@ class CastController extends ChangeNotifier {
 
   Future<void> _drop(CastTile t) async {
     tiles.remove(t);
+    _early.remove(t.id);
     if (focusedId == t.id) focusedId = null;
     _changed();
     final r = t.receiver;

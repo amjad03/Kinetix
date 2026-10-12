@@ -9,14 +9,14 @@ served from a loopback-only server (`sim_server.dart`). URLs were checked with `
 |---|---|---|---|
 | PhET (15 sims: projectile-motion, pendulum-lab, circuit-construction-kit-dc, wave-on-a-string, forces-and-motion-basics, energy-skate-park-basics, gravity-and-orbits, density, states-of-matter, build-an-atom, ph-scale, balancing-chemical-equations, molecule-polarity, natural-selection, fractions-intro) | Bundled, English `_en.html` | CC BY 4.0, PhET Interactive Simulations, University of Colorado Boulder. Attribution shown under every open sim and on every board picture. | https://phet.colorado.edu/sims/html/<id>/latest/<id>_en.html 200; catalogue https://phet.colorado.edu/en/simulations/filter?type=html (online entry). The rest of PhET: existing Sims tab (download on demand). |
 | Blockly | Bundled (blockly 11.2.2 from npm) | Apache-2.0, Google LLC | npm package |
-| Open Source Physics (EJS web sims) | Online | Per item, mostly CC BY-NC-SA | https://www.compadre.org/osp/EJSS/ 200 |
-| Molecular Workbench Next-Gen | Online | Concord Consortium, per activity mostly CC BY | https://mw.concord.org/nextgen/ 200 |
+| Open Source Physics (EJS web sims) | Online, not bundled: items are CC BY-NC-SA or GPL per simulation, and non-commercial terms do not fit a school product. Opened in the same viewer; kept for offline use after the first online visit | Per item, mostly CC BY-NC-SA | https://www.compadre.org/osp/EJSS/ 200 |
+| Molecular Workbench Next-Gen (6 activities: gas laws x2, phase change, diffusion x2, oil and water) | Bundled: Lab framework 1.17.2 and the activity files mirrored from https://lab.concord.org (analytics and web fonts removed) under `assets/simhub/mw/` | Lab framework MIT, Concord Consortium; activities CC BY | https://lab.concord.org/embeddable.html 200 |
 | LabXchange | Online | Per item, mostly CC BY | https://www.labxchange.org/ 200 |
 | ChemCollective virtual lab | Online | CC BY-NC-SA | https://chemcollective.org/vlabs 200 |
 | GeoGebra | Online only, not bundled | Non-commercial only; commercial use needs a GeoGebra licence (shown in the panel) | https://www.geogebra.org/classic 200 |
 | Mathigon Polypad | Online | Free to use online | https://mathigon.org/polypad 200 |
-| CircuitJS (Falstad) | Online, loaded from falstad.com, not bundled | GPL-2.0 | https://falstad.com/circuit/circuitjs.html 200 |
-| CircuitVerse | Online | MIT | https://circuitverse.org/simulator 200 |
+| CircuitJS (Falstad) | Bundled as a separate aggregate program in `assets/simhub/circuitjs/` (compiled files from https://falstad.com/circuit/, WebKit and Chromium build only). It is not linked with any KINETIX code; it runs in the web view only. GPL-2.0 text in `COPYING.txt` there. Source: https://github.com/pfalstad/circuitjs1 (offer: the same source is available from the KINETIX maintainers on request) | GPL-2.0-or-later | https://falstad.com/circuit/circuitjs.html 200 |
+| CircuitVerse | Bundled: classic simulator (v0) built from the MIT source with a relative base, jQuery 1.9.1 local, in `assets/simhub/circuitverse/` (`LICENSE.txt` there). Source: https://github.com/CircuitVerse/cv-frontend-vue | MIT | built from source |
 | Wokwi | Online | Free tier | https://wokwi.com/ 200 |
 | Mol* 3D molecules | Online | MIT; PDB data CC0 | https://molstar.org/viewer/ 200 |
 | 3D biology models | Native: opens the board's existing 3D viewer (`kinetix_3d`) | Open models, credits in the 3D viewer | n/a |
@@ -26,15 +26,18 @@ served from a loopback-only server (`sim_server.dart`). URLs were checked with `
 | Stroop, reaction time, memory span | Native, classic tests (PEBL is desktop-only; no PEBL code used) | KINETIX | n/a |
 | Map lab (QGIS-style: base layers, markers, measure) | Native, `flutter_map` | flutter_map BSD-3; map data OpenStreetMap contributors (ODbL), attribution shown on the map; tiles need internet | https://tile.openstreetmap.org/2/1/1.png 200 |
 | Geography map quiz | Native; labels-free basemap from CARTO (OSM data) | ODbL; attribution on the map | https://a.basemaps.cartocdn.com/light_nolabels/2/1/1.png 200 |
-| TimelineJS | Online | MPL-2.0 | https://timeline.knightlab.com/ 200 |
+| TimelineJS | Bundled: @knight-lab/timelinejs 3.9.13 (npm) with a sample science timeline, English and Hindi labels (Kannada falls back to English) in `assets/simhub/timelinejs/` | MPL-2.0 (`LICENSE.txt` there; modified files: none, only `index.html` added) | npm package |
 | Timeline from key dates | Native, `assets/history/key_dates.tsv` | See `assets/history/CREDITS.txt` | n/a |
 | LanguageTool grammar check | Native UI, public API; the text is sent to the service (panel says so) | LGPL-2.1 (service) | https://api.languagetool.org/v2/languages 200 |
 | LearningApps | Online | Per app, mostly CC BY-SA | https://learningapps.org/ 200 |
-| JupyterLite | Online | BSD-3 | https://jupyterlite.github.io/demo/lab/index.html 200 |
+| JupyterLite | Bundled: REPL app of JupyterLite 0.8.6 with the Pyodide kernel, Pyodide core (wasm, stdlib, IPython and micropip wheels) in `assets/simhub/jupyterlite/`, pruned to the files the REPL loads. Extra Python packages (numpy etc.) need internet | JupyterLite BSD-3-Clause; Pyodide MPL-2.0 | pip jupyterlite-core + CDN pyodide v314.0.6 |
 
 ## Not included (could not be verified)
 - EconPlayground (https://econplayground.mathforeconomists.org): connection fails; EconGraphs and the native macro model cover economics. OpenMacro has no web version we could find, so the native macro model is used.
 - BizSim (bizsim.com 502, bizsim.in unreachable), The Slingshot (Cloudflare challenge blocks non-browser requests, 403), OpenLabs (no site with simulations found; openlabs.org says "Coming Soon"). Add them to `simCatalogue` once a working URL is confirmed.
+
+## Size
+The 15 PhET sims and Blockly were 51 MB raw. This round added about 38 MB raw (JupyterLite with Pyodide 23.7 MB, Molecular Workbench 5.7, CircuitVerse 4.9, CircuitJS 2.7, TimelineJS 0.4), so the sim assets are about 89 MB raw and roughly 35 MB inside the compressed APK. Not bundled, shown in the same viewer and kept for offline use after the first online visit: GeoGebra (non-commercial licence), Wokwi, Polypad (Mathigon), LabXchange, ChemCollective, Open Source Physics.
 
 ## Offline behaviour
 Bundled and native sims work with no internet (map tiles excepted). An online sim first checks reachability and, with

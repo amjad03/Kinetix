@@ -38,6 +38,13 @@ class WebRtcCastPeer implements CastPeer {
   /// mediaProjection runs (declared in the app's manifest); on Android 14 it may start only after
   /// the person has agreed to the capture.
   Future<void> _startService() async {
+    // Android 13+: without notification permission the foreground service's notification is
+    // hidden and some phones stop the capture; ask first (the cast still goes on if declined).
+    try {
+      if (await FlutterForegroundTask.checkNotificationPermission() != NotificationPermission.granted) {
+        await FlutterForegroundTask.requestNotificationPermission();
+      }
+    } catch (_) {}
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(channelId: 'kinetix_cast', channelName: 'Screen sharing', channelDescription: 'Shown while your screen is on the classroom board.'),
       iosNotificationOptions: const IOSNotificationOptions(),

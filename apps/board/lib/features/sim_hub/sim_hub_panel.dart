@@ -9,6 +9,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
+import '../../l10n/feature_strings.dart';
 import '../board/chrome.dart' show showBoardMessage;
 import '../phet/phet_view.dart';
 import 'native/map_sims.dart';
@@ -16,6 +17,27 @@ import 'native/other_sims.dart';
 import 'native/psych_tests.dart';
 import 'sim_entry.dart';
 import 'sim_server.dart';
+
+/// The hub's viewer notices for sims loaded from the web.
+FeatureStrings simHubStrings(String lang) => FeatureStrings(lang, simHubStringTable);
+
+const simHubStringTable = <String, Map<String, String>>{
+  'en': {
+    'saved': 'Saved for offline',
+    'offlineSaved': 'No internet. Showing the copy saved when this simulation was last opened online ({date}).',
+    'offlineNever': '{title} is an online simulation and the board has no internet. Open it once while connected and it is kept for offline use, or choose one of the Offline sims.',
+  },
+  'hi': {
+    'saved': 'ऑफ़लाइन के लिए सहेजा गया',
+    'offlineSaved': 'इंटरनेट नहीं है। यह सिमुलेशन पिछली बार ऑनलाइन खुलने पर सहेजी गई प्रति में दिख रहा है ({date})।',
+    'offlineNever': '{title} ऑनलाइन सिमुलेशन है और बोर्ड पर इंटरनेट नहीं है। इसे एक बार इंटरनेट से जुड़कर खोलें, फिर यह ऑफ़लाइन के लिए सहेज लिया जाता है, या कोई ऑफ़लाइन सिमुलेशन चुनें।',
+  },
+  'kn': {
+    'saved': 'ಆಫ್‌ಲೈನ್‌ಗಾಗಿ ಉಳಿಸಲಾಗಿದೆ',
+    'offlineSaved': 'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಈ ಸಿಮ್ಯುಲೇಶನ್ ಕೊನೆಯ ಬಾರಿ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ತೆರೆದಾಗ ಉಳಿಸಿದ ಪ್ರತಿಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ ({date}).',
+    'offlineNever': '{title} ಆನ್‌ಲೈನ್ ಸಿಮ್ಯುಲೇಶನ್ ಆಗಿದ್ದು ಬೋರ್ಡ್‌ಗೆ ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಸಂಪರ್ಕದಲ್ಲಿರುವಾಗ ಒಮ್ಮೆ ತೆರೆದರೆ ಅದು ಆಫ್‌ಲೈನ್‌ಗಾಗಿ ಉಳಿಯುತ್ತದೆ, ಅಥವಾ ಆಫ್‌ಲೈನ್ ಸಿಮ್ ಆರಿಸಿ.',
+  },
+};
 
 /// Whether the board can reach the internet right now; tests replace it.
 Future<bool> Function() simHubOnlineCheck = () async {
@@ -222,6 +244,8 @@ class _OpenSimState extends State<_OpenSim> {
   PhetWebView? _web;
   bool? _online;
   bool _viewerMissing = false;
+  SimVisited? _visited;
+  bool _fromCache = false;
 
   @override
   void initState() {
@@ -241,8 +265,11 @@ class _OpenSimState extends State<_OpenSim> {
       return;
     }
     if (e.kind == SimKindOf.online) {
+      _visited = await SimVisited.load();
       _online = await simHubOnlineCheck();
-      if (_online != true) return _refresh();
+      // Offline: a sim opened before is tried from the web view's saved copy; a new one cannot load.
+      if (_online != true && !_visited!.has(e.id)) return _refresh();
+      _fromCache = _online != true;
     }
     final view = PhetWebView.create();
     if (view == null) {
@@ -252,6 +279,7 @@ class _OpenSimState extends State<_OpenSim> {
     _web = view;
     widget.controller._view = view;
     await view.load(e.kind == SimKindOf.bundled ? await SimAssetServer.pageFor(e.asset!) : Uri.parse(e.url!));
+    if (e.kind == SimKindOf.online && _online == true) await _visited?.mark(e.id);
     _refresh();
   }
 
@@ -267,8 +295,9 @@ class _OpenSimState extends State<_OpenSim> {
 
   Widget _body() {
     final e = widget.entry;
-    if (e.kind == SimKindOf.online && _online == false) {
-      return _Message(icon: Icons.cloud_off, text: '${e.title} is an online simulation and the board has no internet. Connect it, or open one of the Offline sims.', key: const Key('hub-offline-msg'));
+    final hs = simHubStrings(boardLang(context));
+    if (e.kind == SimKindOf.online && _online == false && !_fromCache) {
+      return _Message(icon: Icons.cloud_off, text: hs['offlineNever'].replaceAll('{title}', e.title), key: const Key('hub-offline-msg'));
     }
     if (e.kind == SimKindOf.online && _online == null) return const Center(child: CircularProgressIndicator());
     if (_viewerMissing) return const _Message(icon: Icons.web_asset_off, text: 'This panel cannot show web simulations.', key: Key('hub-no-viewer'));
@@ -299,6 +328,11 @@ class _OpenSimState extends State<_OpenSim> {
         Expanded(child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
         IconButton(key: const Key('hub-pin'), icon: Icon(widget.pinned ? Icons.push_pin : Icons.push_pin_outlined), tooltip: 'Pin to this page', onPressed: widget.onPin),
       ]),
+      if (_fromCache)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(simHubStrings(boardLang(context))['offlineSaved'].replaceAll('{date}', _visited?.when(e.id)?.toIso8601String().substring(0, 10) ?? ''), key: const Key('hub-cache-note'), style: const TextStyle(fontSize: 12)),
+        ),
       Expanded(child: RepaintBoundary(key: widget.controller.boundaryKey, child: ColoredBox(color: Theme.of(context).colorScheme.surface, child: _body()))),
       Padding(padding: const EdgeInsets.all(6), child: Text(e.note ?? '${e.source} · ${e.licence}', key: const Key('hub-credit'), style: const TextStyle(fontSize: 12))),
     ]);

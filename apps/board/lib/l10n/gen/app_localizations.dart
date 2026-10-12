@@ -988,6 +988,54 @@ abstract class AppLocalizations {
   /// **'Only the sound level is measured, on this board. Nothing is recorded.'**
   String get tkNoiseLocal;
 
+  /// No description provided for @tkNoiseNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now: {db} dB'**
+  String tkNoiseNow(String db);
+
+  /// No description provided for @tkNoiseMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Loudest so far: {db} dB at {time}'**
+  String tkNoiseMax(String db, String time);
+
+  /// No description provided for @tkNoiseMaxNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Loudest so far: nothing yet'**
+  String get tkNoiseMaxNone;
+
+  /// No description provided for @tkNoiseReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get tkNoiseReset;
+
+  /// No description provided for @tkNoiseGraph.
+  ///
+  /// In en, this message translates to:
+  /// **'Last two minutes'**
+  String get tkNoiseGraph;
+
+  /// No description provided for @tkNoiseAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Over the limit {count} times'**
+  String tkNoiseAlerts(int count);
+
+  /// No description provided for @tkNoiseApprox.
+  ///
+  /// In en, this message translates to:
+  /// **'An approximate level: the board microphone is not calibrated.'**
+  String get tkNoiseApprox;
+
+  /// No description provided for @tkLimitDb.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit: {db} dB'**
+  String tkLimitDb(String db);
+
   /// No description provided for @tkDragToReveal.
   ///
   /// In en, this message translates to:

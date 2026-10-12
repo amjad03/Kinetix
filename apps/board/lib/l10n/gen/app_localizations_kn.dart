@@ -548,6 +548,39 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಧ್ವನಿಯ ಮಟ್ಟವನ್ನು ಮಾತ್ರ ಈ ಬೋರ್ಡ್‌ನಲ್ಲೇ ಅಳೆಯಲಾಗುತ್ತದೆ. ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡುವುದಿಲ್ಲ.';
 
   @override
+  String tkNoiseNow(String db) {
+    return 'ಈಗ: $db dB';
+  }
+
+  @override
+  String tkNoiseMax(String db, String time) {
+    return 'ಇಲ್ಲಿಯವರೆಗೆ ಅತಿ ಜೋರು: $db dB, ಸಮಯ $time';
+  }
+
+  @override
+  String get tkNoiseMaxNone => 'ಇಲ್ಲಿಯವರೆಗೆ ಅತಿ ಜೋರು: ಇನ್ನೂ ಇಲ್ಲ';
+
+  @override
+  String get tkNoiseReset => 'ಮರುಹೊಂದಿಸಿ';
+
+  @override
+  String get tkNoiseGraph => 'ಕಳೆದ ಎರಡು ನಿಮಿಷ';
+
+  @override
+  String tkNoiseAlerts(int count) {
+    return 'ಮಿತಿ ಮೀರಿದ್ದು $count ಬಾರಿ';
+  }
+
+  @override
+  String get tkNoiseApprox =>
+      'ಇದು ಅಂದಾಜು ಮಟ್ಟ: ಬೋರ್ಡ್ ಮೈಕ್ರೋಫೋನ್ ಮಾಪನಾಂಕಗೊಂಡಿಲ್ಲ.';
+
+  @override
+  String tkLimitDb(String db) {
+    return 'ಮಿತಿ: $db dB';
+  }
+
+  @override
   String get tkDragToReveal => 'ತೋರಿಸಲು ಎಳೆಯಿರಿ';
 
   @override

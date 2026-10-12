@@ -98,6 +98,76 @@ flutter:
     - assets/simhub/phet/
     - assets/simhub/blockly/
     - assets/simhub/blockly/media/
+    - assets/simhub/circuitverse/
+    - assets/simhub/circuitverse/assets/
+    - assets/simhub/jupyterlite/
+    - assets/simhub/jupyterlite/api/translations/
+    - assets/simhub/jupyterlite/build/
+    - assets/simhub/jupyterlite/build/repl/
+    - assets/simhub/jupyterlite/build/schemas/
+    - assets/simhub/jupyterlite/build/themes/@jupyterlab/theme-light-extension/
+    - assets/simhub/jupyterlite/extensions/@jupyterlite/pyodide-kernel-extension/
+    - assets/simhub/jupyterlite/extensions/@jupyterlite/pyodide-kernel-extension/static/
+    - assets/simhub/jupyterlite/extensions/@jupyterlite/pyodide-kernel-extension/static/pypi/
+    - assets/simhub/jupyterlite/extensions/@jupyterlite/pyodide-kernel-extension/static/schema/
+    - assets/simhub/jupyterlite/lab/
+    - assets/simhub/jupyterlite/pyodide/
+    - assets/simhub/jupyterlite/repl/
+    - assets/simhub/circuitjs/
+    - assets/simhub/circuitjs/circuitjs110/
+    - assets/simhub/circuitjs/circuitjs110/circuits/
+    - assets/simhub/circuitjs/font/
+    - assets/simhub/mw/
+    - assets/simhub/mw/interactives/sam/diffusion/
+    - assets/simhub/mw/interactives/sam/gas-laws/
+    - assets/simhub/mw/interactives/sam/intermolecular-attractions/
+    - assets/simhub/mw/interactives/sam/phase-change/
+    - assets/simhub/mw/lab/
+    - assets/simhub/mw/lab/resources/
+    - assets/simhub/mw/lab/resources/dna/
+    - assets/simhub/mw/lab/resources/layout/
+    - assets/simhub/mw/lab/resources/upstatement/
+    - assets/simhub/mw/lab/vendor/fonts/Font-Awesome/font/
+    - assets/simhub/mw/lab/vendor/jquery/
+    - assets/simhub/mw/lab/vendor/jquery-ui/
+    - assets/simhub/mw/lab/vendor/jquery-ui/images/
+    - assets/simhub/mw/locales/el/interactives/sam/gas-laws/
+    - assets/simhub/mw/locales/it/interactives/sam/diffusion/
+    - assets/simhub/mw/locales/it/interactives/sam/gas-laws/
+    - assets/simhub/mw/locales/it/interactives/sam/intermolecular-attractions/
+    - assets/simhub/mw/locales/it/interactives/sam/phase-change/
+    - assets/simhub/mw/locales/metadata/interactives/sam/diffusion/
+    - assets/simhub/mw/locales/metadata/interactives/sam/gas-laws/
+    - assets/simhub/mw/locales/metadata/interactives/sam/intermolecular-attractions/
+    - assets/simhub/mw/locales/metadata/interactives/sam/phase-change/
+    - assets/simhub/mw/locales/nb/interactives/sam/diffusion/
+    - assets/simhub/mw/locales/nb/interactives/sam/gas-laws/
+    - assets/simhub/mw/locales/nb/interactives/sam/intermolecular-attractions/
+    - assets/simhub/mw/locales/nb/interactives/sam/phase-change/
+    - assets/simhub/mw/locales/nb/models/lab-version/1/md2d/sam-activities/diffusion/page1/
+    - assets/simhub/mw/locales/nn/interactives/sam/diffusion/
+    - assets/simhub/mw/locales/nn/interactives/sam/gas-laws/
+    - assets/simhub/mw/locales/nn/interactives/sam/intermolecular-attractions/
+    - assets/simhub/mw/locales/nn/interactives/sam/phase-change/
+    - assets/simhub/mw/locales/nn/models/lab-version/1/md2d/sam-activities/diffusion/page1/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/conversion-and-physics-examples/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/sam-activities/diffusion/DiffusionTemp/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/sam-activities/diffusion/page1/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/sam-activities/diffusion/semipermeable/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/sam-activities/gas-laws/original-interactives-in-pages/page3/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/sam-activities/gas-laws/original-interactives-in-pages/page4/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/sam-activities/intermolecular-attraction/original-interactives-in-pages/page2/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/sam-activities/intermolecular-attraction/original-interactives-in-pages/page3/
+    - assets/simhub/mw/models-converted/lab-version/1/md2d/sam-activities/phase-change/original-interactives-in-pages/page6/
+    - assets/simhub/mw/themes/
+    - assets/simhub/mw/vendor/modernizr/
+    - assets/simhub/mw/vendor/shutterbug/
+    - assets/simhub/timelinejs/
+    - assets/simhub/timelinejs/css/
+    - assets/simhub/timelinejs/css/fonts/
+    - assets/simhub/timelinejs/css/icons/
+    - assets/simhub/timelinejs/js/
+    - assets/simhub/timelinejs/js/locale/
     - assets/sounds/
     - assets/dictionary/
     - assets/history/

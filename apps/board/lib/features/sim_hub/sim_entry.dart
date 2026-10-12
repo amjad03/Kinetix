@@ -99,6 +99,22 @@ SimEntry _web(String id, String title, String subject, int lo, int hi, String ur
   note: note,
 );
 
+SimEntry _bundled(String id, String title, String subject, int lo, int hi, String asset, String source, String licence, List<String> tags, {String? note}) => SimEntry(
+  id: id,
+  title: title,
+  subject: subject,
+  gradeMin: lo,
+  gradeMax: hi,
+  kind: SimKindOf.bundled,
+  asset: asset,
+  source: source,
+  licence: licence,
+  tags: tags,
+  note: note,
+);
+
+const _mwCredit = 'Molecular Workbench Next-Generation, Concord Consortium (Lab framework, MIT). Activities: CC BY';
+
 SimEntry _native(String id, String title, String subject, int lo, int hi, String source, String licence, List<String> tags, {bool needsNet = false, String? note}) => SimEntry(
   id: id,
   title: title,
@@ -131,16 +147,24 @@ final List<SimEntry> simCatalogue = List.unmodifiable([
   _phet('molecule-polarity', 'Molecule Polarity', 'chemistry', 11, 13, ['bonding']),
   _phet('natural-selection', 'Natural Selection', 'biology', 9, 12, ['evolution', 'genetics']),
   _phet('fractions-intro', 'Fractions: Intro', 'maths', 3, 7, ['fractions']),
+  // Bundled web sims, served from the loopback server like PhET (docs/licensing/SIMULATIONS.md).
+  _bundled('mw-gas-pressure', 'Molecular Workbench: volume and pressure of a gas', 'chemistry', 8, 13, 'mw/index.html#interactives/sam/gas-laws/3-volume-pressure-relationship.json', 'Concord Consortium', 'MIT (framework), CC BY (activity)', ['molecules', 'gas', 'pressure'], note: _mwCredit),
+  _bundled('mw-gas-temperature', 'Molecular Workbench: temperature and volume of a gas', 'chemistry', 8, 13, 'mw/index.html#interactives/sam/gas-laws/4-temperature-volume-relationship.json', 'Concord Consortium', 'MIT (framework), CC BY (activity)', ['molecules', 'gas', 'temperature'], note: _mwCredit),
+  _bundled('mw-phase-change', 'Molecular Workbench: phase change', 'chemistry', 8, 13, 'mw/index.html#interactives/sam/phase-change/6-phase-changes-caused-by-energy-input.json', 'Concord Consortium', 'MIT (framework), CC BY (activity)', ['molecules', 'energy', 'states'], note: _mwCredit),
+  _bundled('mw-diffusion', 'Molecular Workbench: diffusion of a drop', 'biology', 8, 13, 'mw/index.html#interactives/sam/diffusion/1-dropping-dye-on-click.json', 'Concord Consortium', 'MIT (framework), CC BY (activity)', ['molecules', 'diffusion'], note: _mwCredit),
+  _bundled('mw-membrane', 'Molecular Workbench: diffusion across a membrane', 'biology', 9, 13, 'mw/index.html#interactives/sam/diffusion/4-semipermeable.json', 'Concord Consortium', 'MIT (framework), CC BY (activity)', ['molecules', 'membrane', 'osmosis'], note: _mwCredit),
+  _bundled('mw-oil-water', 'Molecular Workbench: oil and water', 'chemistry', 9, 13, 'mw/index.html#interactives/sam/intermolecular-attractions/3-1-oil-and-water.json', 'Concord Consortium', 'MIT (framework), CC BY (activity)', ['molecules', 'polarity'], note: _mwCredit),
+  _bundled('circuitjs', 'CircuitJS (Falstad circuit simulator)', 'electronics', 9, 13, 'circuitjs/index.html', 'Paul Falstad', 'GPL-2.0-or-later (separate program)', ['circuits', 'analog'], note: 'CircuitJS1 by Paul Falstad, GPL-2.0-or-later. Shipped as a separate program; source: https://github.com/pfalstad/circuitjs1'),
+  _bundled('circuitverse', 'CircuitVerse (digital logic simulator)', 'electronics', 9, 13, 'circuitverse/index.html', 'CircuitVerse', 'MIT', ['logic', 'digital'], note: 'CircuitVerse, MIT licence.'),
+  _bundled('jupyterlite', 'JupyterLite (Python in the board)', 'cs', 9, 13, 'jupyterlite/repl/index.html?kernel=python&toolbar=1', 'JupyterLite, Pyodide', 'BSD-3-Clause; Pyodide MPL-2.0', ['python', 'console'], note: 'JupyterLite (BSD-3) with Pyodide (MPL-2.0). Extra Python packages need internet.'),
+  _bundled('timelinejs', 'TimelineJS (timelines)', 'history', 6, 13, 'timelinejs/index.html', 'Knight Lab', 'MPL-2.0', ['timeline'], note: 'TimelineJS, Knight Lab, MPL-2.0.'),
   // Online physics, chemistry, maths and electronics.
   _web('phet-all', 'PhET: all simulations (online catalogue)', 'physics', 1, 13, 'https://phet.colorado.edu/en/simulations/filter?type=html', 'PhET', 'CC BY 4.0', ['phet', 'catalogue'], note: _phetCredit),
-  _web('osp', 'Open Source Physics (EJS web sims)', 'physics', 9, 13, 'https://www.compadre.org/osp/EJSS/', 'Open Source Physics / ComPADRE', 'Per item, mostly CC BY-NC-SA', ['osp', 'ejs']),
-  _web('mw-nextgen', 'Molecular Workbench (Next-Gen)', 'chemistry', 8, 13, 'https://mw.concord.org/nextgen/', 'Concord Consortium', 'Per activity, mostly CC BY', ['molecules', 'energy']),
+  _web('osp', 'Open Source Physics (EJS web sims)', 'physics', 9, 13, 'https://www.compadre.org/osp/EJSS/', 'Open Source Physics / ComPADRE', 'Per item, mostly CC BY-NC-SA', ['osp', 'ejs'], note: 'Non-commercial licences: not bundled. Opened online and kept for offline use after the first visit.'),
   _web('labxchange', 'LabXchange', 'biology', 9, 13, 'https://www.labxchange.org/', 'LabXchange (Harvard)', 'Per item, mostly CC BY', ['lab', 'virtual']),
   _web('chemcollective', 'ChemCollective virtual lab', 'chemistry', 9, 13, 'https://chemcollective.org/vlabs', 'ChemCollective (Carnegie Mellon)', 'CC BY-NC-SA', ['titration', 'virtual-lab']),
   _web('geogebra', 'GeoGebra', 'maths', 1, 13, 'https://www.geogebra.org/classic', 'GeoGebra', 'Non-commercial only', ['geometry', 'graphing', 'algebra'], note: 'Free for non-commercial use. Commercial use needs a GeoGebra licence. Not bundled.'),
   _web('polypad', 'Mathigon Polypad', 'maths', 1, 12, 'https://mathigon.org/polypad', 'Mathigon', 'Free to use online', ['manipulatives', 'tiles']),
-  _web('circuitjs', 'CircuitJS (Falstad)', 'electronics', 9, 13, 'https://falstad.com/circuit/circuitjs.html', 'Paul Falstad', 'GPL-2.0 (loaded from its site)', ['circuits', 'analog'], note: 'GPL software, loaded from falstad.com and not bundled.'),
-  _web('circuitverse', 'CircuitVerse', 'electronics', 9, 13, 'https://circuitverse.org/simulator', 'CircuitVerse', 'MIT', ['logic', 'digital']),
   _web('wokwi', 'Wokwi (Arduino and ESP32)', 'electronics', 8, 13, 'https://wokwi.com/', 'Wokwi', 'Free tier', ['arduino', 'microcontroller']),
   _web('molstar', '3D molecules (Mol* viewer)', 'biology', 9, 13, 'https://molstar.org/viewer/', 'Mol* / RCSB PDB', 'MIT; PDB data CC0', ['3d', 'protein', 'molecules']),
   _native('model3d', '3D biology models (board 3D viewer)', 'biology', 5, 12, 'KINETIX 3D viewer', 'Open models, see 3D credits', ['3d', 'anatomy']),
@@ -155,11 +179,9 @@ final List<SimEntry> simCatalogue = List.unmodifiable([
   // Geography, history, language, CS and general.
   _native('map-lab', 'Map lab (layers, markers, measure)', 'geography', 6, 13, 'OpenStreetMap contributors (ODbL) via flutter_map', 'BSD-3 (flutter_map); ODbL map data', ['gis', 'qgis', 'maps'], needsNet: true, note: 'Map tiles are from OpenStreetMap contributors and need internet.'),
   _native('geo-quiz', 'Geography map quiz', 'geography', 5, 12, 'KINETIX', 'KINETIX', ['quiz', 'maps', 'capitals']),
-  _web('timelinejs', 'TimelineJS', 'history', 6, 13, 'https://timeline.knightlab.com/', 'Knight Lab', 'MPL-2.0', ['timeline']),
   _native('timeline', 'Timeline from key dates', 'history', 6, 12, 'KINETIX key-dates data', 'See assets/history/CREDITS.txt', ['timeline', 'dates']),
   _native('grammar', 'Grammar check (LanguageTool)', 'language', 6, 13, 'LanguageTool public API', 'LGPL-2.1 (service)', ['grammar', 'spelling'], needsNet: true, note: 'Needs internet: the text is sent to api.languagetool.org.'),
   _web('learningapps', 'LearningApps', 'general', 1, 12, 'https://learningapps.org/', 'LearningApps.org', 'Per app, mostly CC BY-SA', ['quiz', 'games']),
-  _web('jupyterlite', 'JupyterLite (Python in the browser)', 'cs', 9, 13, 'https://jupyterlite.github.io/demo/lab/index.html', 'JupyterLite', 'BSD-3', ['python', 'notebook']),
   const SimEntry(
     id: 'blockly',
     title: 'Blockly (block coding)',

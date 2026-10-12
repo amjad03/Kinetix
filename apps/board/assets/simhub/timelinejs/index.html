@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TimelineJS</title>
+<link rel="stylesheet" href="css/fonts/font.default.css"><link rel="stylesheet" href="css/timeline.css">
+<style>html,body{margin:0;height:100%}#t{height:100%}</style></head>
+<body><div id="t"></div>
+<script src="js/timeline.js"></script>
+<script>
+var lang = (location.search.match(/lang=(\w+)/) || [0, 'en'])[1];
+var ev = function (y, m, d, h, t) { return { start_date: { year: y, month: m, day: d }, text: { headline: h, text: t } }; };
+new TL.Timeline('t', {
+  title: { text: { headline: 'Milestones in science and computing', text: 'Press the arrows or drag to move along the timeline.' } },
+  events: [
+    ev(1687, 7, 5, 'Principia Mathematica', 'Isaac Newton publishes the laws of motion and universal gravitation.'),
+    ev(1831, 8, 29, 'Electromagnetic induction', 'Michael Faraday shows that a changing magnetic field makes a current.'),
+    ev(1869, 3, 6, 'Periodic table', 'Dmitri Mendeleev presents his table of the elements.'),
+    ev(1905, 6, 30, 'Special relativity', 'Albert Einstein publishes his theory of special relativity.'),
+    ev(1928, 2, 28, 'Raman effect', 'C. V. Raman discovers the scattering of light that now carries his name.'),
+    ev(1947, 12, 23, 'The transistor', 'Bell Labs demonstrates the first working transistor.'),
+    ev(1969, 10, 29, 'First network message', 'ARPANET sends its first message between two computers.'),
+    ev(1991, 8, 6, 'The World Wide Web', 'Tim Berners-Lee makes the first website public.')
+  ]
+}, { language: lang, font: 'default' });
+</script></body></html>

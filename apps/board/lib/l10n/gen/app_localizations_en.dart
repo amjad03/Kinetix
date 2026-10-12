@@ -552,6 +552,39 @@ class AppLocalizationsEn extends AppLocalizations {
       'Only the sound level is measured, on this board. Nothing is recorded.';
 
   @override
+  String tkNoiseNow(String db) {
+    return 'Now: $db dB';
+  }
+
+  @override
+  String tkNoiseMax(String db, String time) {
+    return 'Loudest so far: $db dB at $time';
+  }
+
+  @override
+  String get tkNoiseMaxNone => 'Loudest so far: nothing yet';
+
+  @override
+  String get tkNoiseReset => 'Reset';
+
+  @override
+  String get tkNoiseGraph => 'Last two minutes';
+
+  @override
+  String tkNoiseAlerts(int count) {
+    return 'Over the limit $count times';
+  }
+
+  @override
+  String get tkNoiseApprox =>
+      'An approximate level: the board microphone is not calibrated.';
+
+  @override
+  String tkLimitDb(String db) {
+    return 'Limit: $db dB';
+  }
+
+  @override
   String get tkDragToReveal => 'Drag to reveal';
 
   @override

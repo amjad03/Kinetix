@@ -28,7 +28,7 @@ void main() {
         expect(e.tags, isNotEmpty, reason: e.id);
         expect(e.licence, isNotEmpty);
         if (e.kind == SimKindOf.bundled) {
-          expect(File('assets/simhub/${e.asset}').existsSync(), isTrue, reason: e.id);
+          expect(File('assets/simhub/${e.asset!.split(RegExp('[?#]')).first}').existsSync(), isTrue, reason: e.id);
           expect(e.offline, isTrue);
         }
         if (e.kind == SimKindOf.online) {
