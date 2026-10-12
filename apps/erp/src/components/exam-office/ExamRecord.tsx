@@ -41,24 +41,25 @@ export function ExamRecord({ record: r }: { record: RecordView }) {
   const blocked = r.actions.find((a) => a.blocked)?.blocked;
 
   const approvalAction = (d: 'approve' | 'reject') => (r.approval?.key === 'result_approval' ? `result_approval_${d}` : d);
+  const steps = r.steps?.map((s) => ({ id: s.key, label: label(t, 'xo.s.', s.key), state: s.state, by: s.by ?? undefined, at: s.at ?? undefined, note: s.note === 'pending' ? t('xo.s.pending') : (s.note ?? undefined) }));
+  // A long workflow (the session's twelve steps) gets the full width of the overview; a short one sits beside the tabs.
+  const wide = !!steps && steps.length > 5;
   const aside =
-    r.steps || r.approval ? (
-      <>
-        {r.approval ? (
-          <ApprovalPanel
-            title={label(t, 'xo.ap.', r.approval.key)}
-            steps={r.steps?.map((s) => ({ id: s.key, label: label(t, 'xo.s.', s.key), state: s.state, by: s.by ?? undefined, at: s.at ?? undefined, note: s.note === 'pending' ? t('xo.s.pending') : (s.note ?? undefined) }))}
-            canDecide={r.approval.canDecide}
-            onDecide={(d, comment) => run({ key: approvalAction(d) }, { comment })}
-            history={activity.slice(0, 4)}
-            extra={!r.approval.canDecide ? <p className="text-sm text-muted-foreground">{t('xo.ap.waiting')}</p> : undefined}
-          />
-        ) : (
-          <Card title={t('xo.c.stage')}>
-            <WorkflowStepper steps={r.steps!.map((s) => ({ id: s.key, label: label(t, 'xo.s.', s.key), state: s.state, by: s.by ?? undefined, at: s.at ?? undefined, note: s.note === 'pending' ? t('xo.s.pending') : (s.note ?? undefined) }))} />
-          </Card>
-        )}
-      </>
+    r.approval || (steps && !wide) ? (
+      r.approval ? (
+        <ApprovalPanel
+          title={label(t, 'xo.ap.', r.approval.key)}
+          steps={wide ? undefined : steps}
+          canDecide={r.approval.canDecide}
+          onDecide={(d, comment) => run({ key: approvalAction(d) }, { comment })}
+          history={activity.slice(0, 4)}
+          extra={!r.approval.canDecide ? <p className="text-sm text-muted-foreground">{t('xo.ap.waiting')}</p> : undefined}
+        />
+      ) : (
+        <Card title={t('xo.c.stage')}>
+          <WorkflowStepper steps={steps!} />
+        </Card>
+      )
     ) : undefined;
 
   const content = r.overview.find((f) => f.key === 'content');
@@ -73,6 +74,11 @@ export function ExamRecord({ record: r }: { record: RecordView }) {
         secondary={rest.length ? <>{rest.map(button)}</> : undefined}
         overview={
           <div className="grid gap-6">
+            {wide && (
+              <Card title={t('xo.c.stage')}>
+                <WorkflowStepper steps={steps!} />
+              </Card>
+            )}
             <Card>
               <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
                 {r.overview

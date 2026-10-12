@@ -50,8 +50,9 @@ export async function examOffice(c: Ctx): Promise<void> {
       marked++;
       await k.ins('exam_attendance', cands.map((st, i) => ({ paperId: p.id, studentId: st.id, status: i === (pi * 3 + 2) % cands.length ? 'absent' : pi === 0 && i === cands.length - 1 ? 'debarred' : 'present', bookletNo: `AB${String(pi + 1).padStart(2, '0')}${String(i + 1).padStart(3, '0')}`, markedBy: controller, markedAt: at(p.examDate, '13:15') })), { returning: false });
     }
-    const done = ['setup', 'timetable', 'registration', 'fees', 'hall_tickets'];
-    if (marked && marked === papers.filter((p) => p.examDate <= c.today).length && papers.every((p) => p.examDate <= c.today)) done.push('conduct', 'valuation');
+    // A scheduled session still has unpaid exam fees, so it waits at the fees step.
+    const done = s.status === 'scheduled' ? ['setup', 'timetable', 'registration'] : ['setup', 'timetable', 'registration', 'fees', 'hall_tickets'];
+    if (s.status !== 'scheduled' && marked && marked === papers.filter((p) => p.examDate <= c.today).length && papers.every((p) => p.examDate <= c.today)) done.push('conduct', 'valuation');
     const rows = done.map((name) => stage(name, 'done', name === 'timetable' ? 'Approved by the principal' : null, name === 'timetable' ? principal : controller));
     await k.ins('exam_session_stages', rows.filter((r) => STAGES.includes(r.stage as (typeof STAGES)[number])), { returning: false });
 

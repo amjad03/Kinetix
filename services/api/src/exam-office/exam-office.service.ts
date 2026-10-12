@@ -207,7 +207,7 @@ export class ExamOfficeService {
     const actions: RecordAction[] = [];
     if (cur && !APPROVAL_STAGES.includes(cur) && cur !== 'published') actions.push({ key: 'complete', tone: 'primary', input: 'comment', blocked: stageBlocker(cur, f) ?? undefined });
     if (cur === 'timetable' && !curRow?.pending) actions.push({ key: 'submit_timetable', tone: 'primary', blocked: stageBlocker('timetable', f) ?? undefined });
-    if (cur === 'fees' || (f.registrations > 0 && f.feeDues === 0)) actions.push({ key: 'raise_fees', tone: cur === 'fees' && f.feeDues === 0 ? 'primary' : 'outline', blocked: f.registrations ? undefined : 'No candidate has registered yet' });
+    if (f.registrations > f.feeDues && (cur === 'fees' || f.feeDues === 0)) actions.push({ key: 'raise_fees', tone: cur === 'fees' ? 'primary' : 'outline' });
     if (cur === 'result_approval') {
       if (f.status === 'processed' && f.approvalRequired && !f.approvalRequestedAt) actions.push({ key: 'request_result_approval', tone: 'primary' });
       if (!f.approvalRequired || f.approved) actions.push({ key: 'complete', tone: 'primary', input: 'comment', blocked: stageBlocker('result_approval', f) ?? undefined });
