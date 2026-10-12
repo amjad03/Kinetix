@@ -274,6 +274,21 @@ def caption_chunks(seg):
     return chunks
 
 
+def caption_chunks_from(ws):
+    chunks, cur = [], []
+    for w in ws:
+        cur.append(w)
+        if len(cur) >= 8 or (len(cur) >= 4 and w[0][-1:] in ',.:;?!'):
+            chunks.append(cur)
+            cur = []
+    if cur:
+        if chunks and len(cur) <= 2:
+            chunks[-1] += cur
+        else:
+            chunks.append(cur)
+    return chunks
+
+
 def draw_caption(frame, chunk, t):
     words = [w[0] for w in chunk]
     full = ' '.join(words)

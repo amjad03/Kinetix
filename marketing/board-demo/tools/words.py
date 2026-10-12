@@ -6,7 +6,7 @@ os.environ.setdefault('HF_HOME', os.path.join(os.path.dirname(os.path.dirname(os
 from faster_whisper import WhisperModel
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-S = json.load(open(os.path.join(HERE, 'data', 'script.json')))
+S = json.load(open(os.path.join(HERE, 'data', 'beats.json')))
 import difflib
 
 
@@ -40,7 +40,7 @@ def align(text, ws):
 m = WhisperModel('tiny.en', device='cpu', compute_type='int8')
 out = {}
 for c in S['chapters']:
-    for s in c['segs']:
+    for s in c['beats']:
         segs, _ = m.transcribe(os.path.join(HERE, 'audio', s['id'] + '.wav'), word_timestamps=True, language='en', beam_size=1)
         ws = []
         for sg in segs:

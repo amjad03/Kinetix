@@ -27,14 +27,9 @@ def load(path):
 # ---- voice
 vo = np.zeros(N, np.float32)
 spans = []
-prev_end = None
-for s in TL['segs']:
-    at = (s['at'] + s.get('voOff', 0)) / FPS
+for s in TL['beats']:
+    at = s['vo']
     a = load(os.path.join(HERE, 'audio', s['id'] + '.wav'))
-    # keep pauses under a second: a line may start up to 0.45 s early (captions lead by the same)
-    if prev_end is not None and at - prev_end > 0.9:
-        at -= min(at - prev_end - 0.9, 0.45)
-    prev_end = at + len(a) / SR
     i = int(max(0, at) * SR)
     a = a[: N - i]
     vo[i:i + len(a)] += a
@@ -80,11 +75,20 @@ noise = rng.normal(0, 1, N).astype(np.float32)
 air = np.convolve(noise, np.ones(400) / 400, 'same') * 0.4
 music = pad + pulse + air
 # swell into each chapter card
-for c in TL['cards']:
-    i = int(c['at'] / FPS * SR)
+for c in TL['cards'] + [{'at': next(b['vo'] for b in TL['beats'] if b['id'] == 'h3') + 0.4}]:
+    i = int(c['at'] * SR)
     L = int(1.4 * SR)
     seg = np.sin(np.linspace(0, np.pi, L)) * 0.6
     music[max(0, i - L // 2): max(0, i - L // 2) + L] *= (1 + seg[: len(music[max(0, i - L // 2): max(0, i - L // 2) + L])])
+# a soft hit on each chapter card and the logo: low thump + bell (added after the bed is levelled)
+hits = np.zeros(N, np.float32)
+for c in TL['cards'] + [{'at': next(b['vo'] for b in TL['beats'] if b['id'] == 'h3') + 0.4}]:
+    i = int(c['at'] * SR)
+    L = min(int(1.6 * SR), N - i)
+    tt = np.arange(L) / SR
+    hit = np.sin(2 * np.pi * 52 * tt) * np.exp(-tt * 6) * 0.9 + sum(np.sin(2 * np.pi * f * tt) * np.exp(-tt * d) * g
+                                                                 for f, d, g in ((880, 3.5, 0.22), (1320, 4.5, 0.12), (1760, 6, 0.06)))
+    hits[i:i + L] += (hit * np.minimum(1, tt / 0.004)).astype(np.float32)
 # fade in/out
 fade = int(1.5 * SR)
 music[:fade] *= np.linspace(0, 1, fade)
@@ -106,6 +110,7 @@ for i in range(0, N, 64):
     smooth[i:i + 64] = g
 duck = 10 ** ((-15 * smooth) / 20)
 music *= duck * (10 ** (-17 / 20)) / (np.abs(music).max() + 1e-6)
+music += hits * (10 ** (-16 / 20))
 
 mix = vo / (np.abs(vo).max() + 1e-6) * 0.8 + music
 stereo = np.stack([mix, mix * 0.98 + np.roll(music, 240) * 0.02], 1)[:end + SR // 2]

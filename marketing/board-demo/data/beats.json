@@ -1,0 +1,1206 @@
+{
+ "note": "v3 beat list. Each beat: one VO clip; acts are anchored to words (w). kind act = the board changes (capture is time-warped so it lands on the word); hl = a spotlight/callout on the word; tile = one tile of a montage grid; text = kinetic text on the stage (hook); phone/chip = overlays.",
+ "chapters": [
+  {
+   "id": "hook",
+   "title": "",
+   "beats": [
+    {
+     "id": "h1",
+     "kind": "text",
+     "title": "8:30 am",
+     "vo": "It's eight thirty. Thirty students are waiting, and the teacher has a dozen jobs to do before she can even start.",
+     "acts": [
+      {
+       "w": "eight",
+       "text": "8:30 am"
+      },
+      {
+       "w": "thirty",
+       "n": 1,
+       "text": "30 students"
+      },
+      {
+       "w": "dozen",
+       "text": "a dozen jobs"
+      }
+     ]
+    },
+    {
+     "id": "h2",
+     "kind": "text",
+     "vo": "What if the board did the busywork, so she could just teach?",
+     "acts": [
+      {
+       "w": "busywork",
+       "text": "What if the board did the busywork?"
+      }
+     ]
+    },
+    {
+     "id": "h3",
+     "kind": "logo",
+     "vo": "Meet KINETIX Board, the AI smartboard.",
+     "acts": [
+      {
+       "w": "kinetix",
+       "text": "KINETIX Board"
+      }
+     ]
+    },
+    {
+     "id": "h4",
+     "title": "One lesson, start to finish",
+     "vo": "Let's follow Ms Kavya through one science lesson, from the first minute to the bell.",
+     "acts": [
+      {
+       "w": "follow",
+       "kind": "act"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c1",
+   "title": "Walk in and sign in",
+   "beats": [
+    {
+     "id": "b11",
+     "title": "Scan to sign in",
+     "vo": "She signs in by scanning a code with her phone. No password on a big screen.",
+     "acts": [
+      {
+       "w": "scanning",
+       "kind": "act",
+       "label": "Scan with the Teacher app"
+      }
+     ]
+    },
+    {
+     "id": "b12",
+     "title": "Or type 6 digits",
+     "vo": "Or she can type the six digit code instead.",
+     "acts": [
+      {
+       "w": "six",
+       "kind": "hl",
+       "label": "6-digit code"
+      }
+     ]
+    },
+    {
+     "id": "b13",
+     "title": "Works offline",
+     "vo": "No internet? The board shows a backup code that works offline.",
+     "acts": [
+      {
+       "w": "backup",
+       "kind": "act",
+       "label": "Offline code"
+      }
+     ]
+    },
+    {
+     "id": "b14",
+     "title": "Personal PIN",
+     "vo": "She can set her own PIN for this board, too.",
+     "acts": [
+      {
+       "w": "pin",
+       "kind": "act",
+       "label": "Set a PIN"
+      }
+     ]
+    },
+    {
+     "id": "b15",
+     "title": "Shuffled keypad",
+     "vo": "When the board locks, the keys shuffle, so nobody can copy her PIN.",
+     "acts": [
+      {
+       "w": "shuffle",
+       "kind": "act",
+       "label": "Keys move every time"
+      }
+     ]
+    },
+    {
+     "id": "b16",
+     "title": "Knows your class",
+     "vo": "The board already knows her class, Class 10 B science, from the timetable.",
+     "acts": [
+      {
+       "w": "class",
+       "kind": "hl",
+       "label": "From the timetable"
+      }
+     ]
+    },
+    {
+     "id": "b17",
+     "title": "Concept videos",
+     "vo": "It suggests short concept videos for today, in English, Hindi and Kannada.",
+     "acts": [
+      {
+       "w": "videos",
+       "kind": "hl",
+       "label": "English · Hindi · Kannada"
+      }
+     ]
+    },
+    {
+     "id": "b18",
+     "title": "Today's plan",
+     "vo": "Today's plan shows the lesson step by step, with a timer to keep pace.",
+     "acts": [
+      {
+       "w": "plan",
+       "kind": "act",
+       "label": "Steps with timings"
+      }
+     ]
+    },
+    {
+     "id": "b19",
+     "title": "Books & syllabus",
+     "vo": "Books shows which chapters the class has already covered.",
+     "acts": [
+      {
+       "w": "books",
+       "kind": "act",
+       "label": "Syllabus progress"
+      }
+     ]
+    },
+    {
+     "id": "b1a",
+     "title": "Everything one tap away",
+     "vo": "Her saved boards, recordings and training are one tap away.",
+     "acts": [
+      {
+       "w": "saved",
+       "kind": "act",
+       "label": "Profile menu"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "title": "Teach with ink",
+   "beats": [
+    {
+     "id": "b21",
+     "title": "Pick your pen",
+     "vo": "Pick a pen, a colour and a thickness.",
+     "acts": [
+      {
+       "w": "pen",
+       "kind": "act",
+       "label": "Pen settings"
+      },
+      {
+       "w": "colour",
+       "kind": "act"
+      },
+      {
+       "w": "thickness",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b22",
+     "title": "Just write",
+     "vo": "Then just write. The ink keeps up with her hand.",
+     "acts": [
+      {
+       "w": "write",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b23",
+     "title": "Perfect shapes",
+     "vo": "Shapes come out straight and clean. Here, a glass slab.",
+     "acts": [
+      {
+       "w": "shapes",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b24",
+     "title": "Lines and arrows",
+     "vo": "A line for the normal, and arrows for the light rays.",
+     "acts": [
+      {
+       "w": "line",
+       "kind": "act"
+      },
+      {
+       "w": "arrows",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b25",
+     "title": "Labels by hand",
+     "vo": "She labels it by hand: air, and glass.",
+     "acts": [
+      {
+       "w": "air",
+       "kind": "act"
+      },
+      {
+       "w": "glass",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b26",
+     "title": "Highlighter",
+     "vo": "The highlighter marks the title, without hiding the ink.",
+     "acts": [
+      {
+       "w": "highlighter",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b27",
+     "title": "Erase",
+     "vo": "A mistake? The eraser wipes it away.",
+     "acts": [
+      {
+       "w": "eraser",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b28",
+     "title": "Undo",
+     "vo": "And undo brings it right back.",
+     "acts": [
+      {
+       "w": "undo",
+       "kind": "act",
+       "label": "Undo"
+      }
+     ]
+    },
+    {
+     "id": "b29",
+     "title": "Lasso to move",
+     "vo": "Draw a lasso around anything to move it.",
+     "acts": [
+      {
+       "w": "lasso",
+       "kind": "act"
+      },
+      {
+       "w": "move",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b2a",
+     "title": "Geometry tools",
+     "vo": "A ruler, a protractor and a compass are built in.",
+     "acts": [
+      {
+       "w": "ruler",
+       "kind": "act",
+       "label": "Geometry"
+      },
+      {
+       "w": "protractor",
+       "kind": "act",
+       "label": "Protractor"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "title": "Smart ink and maths",
+   "beats": [
+    {
+     "id": "b31",
+     "title": "AI pen",
+     "vo": "With the AI pen, her handwriting turns into neat, typed text.",
+     "acts": [
+      {
+       "w": "neat",
+       "kind": "act",
+       "label": "Handwriting to text"
+      }
+     ]
+    },
+    {
+     "id": "b32",
+     "title": "Shape AI",
+     "vo": "And Shape AI turns a wobbly circle into a perfect one.",
+     "acts": [
+      {
+       "w": "perfect",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b33",
+     "title": "Typeset equations",
+     "vo": "Equations look just like the textbook.",
+     "acts": [
+      {
+       "w": "textbook",
+       "kind": "act",
+       "label": "Snell's law"
+      }
+     ]
+    },
+    {
+     "id": "b34",
+     "title": "Math solver",
+     "vo": "The math solver shows every step, even offline.",
+     "acts": [
+      {
+       "w": "every",
+       "kind": "act",
+       "label": "Every step"
+      }
+     ]
+    },
+    {
+     "id": "b35",
+     "title": "Tools for every subject",
+     "vo": "The tools drawer has tools for science. For maths. And for computer science.",
+     "acts": [
+      {
+       "w": "science",
+       "kind": "act",
+       "label": "Science"
+      },
+      {
+       "w": "maths",
+       "kind": "act",
+       "label": "Maths"
+      },
+      {
+       "w": "computer",
+       "kind": "act",
+       "label": "Computer science"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "title": "Pages and saving",
+   "beats": [
+    {
+     "id": "b41",
+     "title": "Add a page",
+     "vo": "Need more space? Add a page.",
+     "acts": [
+      {
+       "w": "add",
+       "kind": "act",
+       "label": "Add page"
+      }
+     ]
+    },
+    {
+     "id": "b42",
+     "title": "Page overview",
+     "vo": "See every page at once, and jump to any of them.",
+     "acts": [
+      {
+       "w": "every",
+       "kind": "act",
+       "label": "Page overview"
+      }
+     ]
+    },
+    {
+     "id": "b43",
+     "title": "Backgrounds",
+     "vo": "Change the background: lines, a grid, or a chalkboard.",
+     "acts": [
+      {
+       "w": "lines",
+       "kind": "act"
+      },
+      {
+       "w": "grid",
+       "kind": "act"
+      },
+      {
+       "w": "chalkboard",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b44",
+     "title": "Share the board",
+     "vo": "Then share the whole board with students, on WhatsApp or by email.",
+     "acts": [
+      {
+       "w": "share",
+       "kind": "act",
+       "label": "Share"
+      },
+      {
+       "w": "whatsapp",
+       "kind": "hl",
+       "label": "WhatsApp"
+      },
+      {
+       "w": "email",
+       "kind": "hl",
+       "label": "Email"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "title": "Bring the lesson to life",
+   "beats": [
+    {
+     "id": "b51",
+     "title": "3D models",
+     "vo": "Open a 3D model, and turn it with the stylus.",
+     "acts": [
+      {
+       "w": "open",
+       "kind": "act"
+      },
+      {
+       "w": "turn",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b52",
+     "title": "Virtual labs",
+     "vo": "In the virtual lab, move the light ray and watch it bend.",
+     "acts": [
+      {
+       "w": "lab",
+       "kind": "act"
+      },
+      {
+       "w": "move",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b53",
+     "kind": "grid",
+     "title": "Simulations & videos",
+     "vo": "PhET simulations run even offline. Animations explain each idea. Concept videos help with revision. And the science kit has every formula.",
+     "acts": [
+      {
+       "w": "phet",
+       "kind": "tile",
+       "label": "PhET simulations"
+      },
+      {
+       "w": "animations",
+       "kind": "tile",
+       "label": "Animations"
+      },
+      {
+       "w": "concept",
+       "kind": "tile",
+       "label": "Concept videos"
+      },
+      {
+       "w": "kit",
+       "kind": "tile",
+       "label": "Science kit"
+      }
+     ]
+    },
+    {
+     "id": "b54",
+     "title": "Add anything",
+     "vo": "From the Add menu, bring in PDFs, slides, pictures and sticky notes.",
+     "acts": [
+      {
+       "w": "add",
+       "kind": "act",
+       "label": "Add menu"
+      },
+      {
+       "w": "pdfs",
+       "kind": "hl",
+       "label": "PDF"
+      },
+      {
+       "w": "slides",
+       "kind": "hl",
+       "label": "PowerPoint"
+      },
+      {
+       "w": "pictures",
+       "kind": "hl",
+       "label": "Pictures"
+      },
+      {
+       "w": "sticky",
+       "kind": "hl",
+       "label": "Sticky notes"
+      }
+     ]
+    },
+    {
+     "id": "b55",
+     "kind": "grid",
+     "title": "Web & camera",
+     "vo": "There's a safe web browser for research, and a document camera for showing real objects.",
+     "acts": [
+      {
+       "w": "browser",
+       "kind": "tile",
+       "label": "Safe browser"
+      },
+      {
+       "w": "camera",
+       "kind": "tile",
+       "label": "Document camera"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "title": "Your AI teaching assistant",
+   "beats": [
+    {
+     "id": "b61",
+     "title": "Ask KINETIX AI",
+     "vo": "She asks KINETIX AI a question about the lesson.",
+     "acts": [
+      {
+       "w": "asks",
+       "kind": "act",
+       "label": "Answer in seconds"
+      }
+     ]
+    },
+    {
+     "id": "b62",
+     "title": "With sources",
+     "vo": "It answers at the class's level, and shows where it got the answer.",
+     "acts": [
+      {
+       "w": "shows",
+       "kind": "hl",
+       "label": "NCERT source"
+      }
+     ]
+    },
+    {
+     "id": "b63",
+     "title": "AI lesson builder",
+     "vo": "Short on time? The lesson builder writes a whole lesson plan in seconds.",
+     "acts": [
+      {
+       "w": "writes",
+       "kind": "act",
+       "label": "AI lesson builder"
+      }
+     ]
+    },
+    {
+     "id": "b64",
+     "title": "A complete plan",
+     "vo": "Goals, steps, activities, and an exit ticket.",
+     "acts": [
+      {
+       "w": "goals",
+       "kind": "hl",
+       "label": "Objectives"
+      },
+      {
+       "w": "steps",
+       "kind": "hl",
+       "label": "Steps"
+      },
+      {
+       "w": "activities",
+       "kind": "hl",
+       "label": "Activities"
+      },
+      {
+       "w": "exit",
+       "kind": "hl",
+       "label": "Exit ticket"
+      }
+     ]
+    },
+    {
+     "id": "b65",
+     "kind": "grid",
+     "title": "More AI helpers",
+     "vo": "It can make a quick quiz in seconds. It can write tonight's homework for the class. It can draft the lecture notes. Or it can read whatever is on the board.",
+     "acts": [
+      {
+       "w": "quiz",
+       "kind": "tile",
+       "label": "Quick quiz"
+      },
+      {
+       "w": "homework",
+       "kind": "tile",
+       "label": "Homework"
+      },
+      {
+       "w": "lecture",
+       "kind": "tile",
+       "label": "Lecture notes"
+      },
+      {
+       "w": "read",
+       "kind": "tile",
+       "label": "Read board"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "title": "The whole class answers",
+   "beats": [
+    {
+     "id": "b71",
+     "title": "Attendance",
+     "vo": "Attendance takes seconds, and goes straight to the school office.",
+     "acts": [
+      {
+       "w": "attendance",
+       "kind": "act",
+       "label": "Tap who's absent"
+      }
+     ]
+    },
+    {
+     "id": "b72",
+     "title": "Ask the class",
+     "vo": "Now she asks the whole class a question.",
+     "acts": [
+      {
+       "w": "question",
+       "kind": "act",
+       "label": "Live question"
+      }
+     ]
+    },
+    {
+     "id": "b73",
+     "title": "Answers from phones",
+     "vo": "Students answer on their phones, and the bars move live.",
+     "acts": [
+      {
+       "w": "phones",
+       "kind": "act"
+      },
+      {
+       "w": "live",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b74",
+     "title": "Or answer cards",
+     "vo": "No phones? They hold up answer cards, and the camera reads them.",
+     "acts": [
+      {
+       "w": "cards",
+       "kind": "hl",
+       "label": "Scan answer cards"
+      }
+     ]
+    },
+    {
+     "id": "b75",
+     "title": "Reveal the answer",
+     "vo": "Then she reveals the right answer.",
+     "acts": [
+      {
+       "w": "reveals",
+       "kind": "act",
+       "label": "Right answer"
+      }
+     ]
+    },
+    {
+     "id": "b76",
+     "title": "Word cloud",
+     "vo": "Or she asks for one word, and watches a word cloud grow.",
+     "acts": [
+      {
+       "w": "word",
+       "kind": "act"
+      },
+      {
+       "w": "grow",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b77",
+     "kind": "grid",
+     "title": "Classroom toolkit",
+     "vo": "Pick a random student to answer. Set a timer for the next group activity. Keep score in a team quiz. And give badges for great answers.",
+     "acts": [
+      {
+       "w": "random",
+       "kind": "tile",
+       "label": "Random picker"
+      },
+      {
+       "w": "timer",
+       "kind": "tile",
+       "label": "Timer"
+      },
+      {
+       "w": "score",
+       "kind": "tile",
+       "label": "Scoreboard"
+      },
+      {
+       "w": "badges",
+       "kind": "tile",
+       "label": "Badges"
+      }
+     ]
+    },
+    {
+     "id": "b78",
+     "kind": "grid",
+     "title": "Groups & zones",
+     "vo": "Make groups in a single tap. Or split the board, so students can write together.",
+     "acts": [
+      {
+       "w": "groups",
+       "kind": "tile",
+       "label": "Group maker"
+      },
+      {
+       "w": "split",
+       "kind": "tile",
+       "label": "Multi-user zones"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "title": "Homework and marking",
+   "beats": [
+    {
+     "id": "b81",
+     "title": "Homework AI",
+     "vo": "Homework AI turns today's lesson into homework.",
+     "acts": [
+      {
+       "w": "homework",
+       "n": 1,
+       "kind": "act",
+       "label": "Homework AI"
+      }
+     ]
+    },
+    {
+     "id": "b82",
+     "title": "Sent to every student",
+     "vo": "One tap sends it to every student's app.",
+     "acts": [
+      {
+       "w": "sends",
+       "kind": "act",
+       "label": "Sent"
+      }
+     ]
+    },
+    {
+     "id": "b83",
+     "title": "Peer review & AI marks",
+     "vo": "Classmates review each other's work, and AI suggests marks for the teacher to approve.",
+     "acts": [
+      {
+       "w": "classmates",
+       "kind": "phone",
+       "img": "student-navLearn.jpg"
+      },
+      {
+       "w": "marks",
+       "kind": "phone",
+       "img": "teacher-navClasses.jpg"
+      }
+     ]
+    },
+    {
+     "id": "b84",
+     "title": "Course outcomes",
+     "vo": "Each question is tagged with a course outcome, for the college's records.",
+     "acts": [
+      {
+       "w": "tagged",
+       "kind": "act",
+       "label": "Course outcome (OBE)"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "title": "Record and share the screen",
+   "beats": [
+    {
+     "id": "b91",
+     "title": "Record the lesson",
+     "vo": "She presses record, and the board shows a consent notice first.",
+     "acts": [
+      {
+       "w": "record",
+       "kind": "act",
+       "label": "Consent first"
+      }
+     ]
+    },
+    {
+     "id": "b92",
+     "title": "Mark the moments",
+     "vo": "She adds chapter markers, and stars the important moments.",
+     "acts": [
+      {
+       "w": "markers",
+       "kind": "act",
+       "label": "Chapter marker"
+      },
+      {
+       "w": "stars",
+       "kind": "act",
+       "label": "Important moment"
+      }
+     ]
+    },
+    {
+     "id": "b93",
+     "title": "Ready to share",
+     "vo": "Recordings come with a transcript and a summary, ready to share.",
+     "acts": [
+      {
+       "w": "recordings",
+       "kind": "act",
+       "label": "Recordings"
+      }
+     ]
+    },
+    {
+     "id": "b94",
+     "kind": "grid",
+     "title": "Captions, cast & more",
+     "vo": "Live captions help everyone follow along. Students can cast their phone screens. The board can mirror to a second display at the back. And freeze screen pauses the picture.",
+     "acts": [
+      {
+       "w": "captions",
+       "kind": "tile",
+       "label": "Live captions"
+      },
+      {
+       "w": "cast",
+       "kind": "tile",
+       "label": "Cast from phones"
+      },
+      {
+       "w": "second",
+       "kind": "tile",
+       "label": "Second display"
+      },
+      {
+       "w": "freeze",
+       "kind": "tile",
+       "label": "Freeze screen"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "title": "Comfortable for everyone",
+   "beats": [
+    {
+     "id": "b101",
+     "title": "Eye comfort",
+     "vo": "Eye comfort makes the screen warmer and easier on the eyes.",
+     "acts": [
+      {
+       "w": "warmer",
+       "kind": "act",
+       "label": "Eye comfort"
+      }
+     ]
+    },
+    {
+     "id": "b102",
+     "title": "Dark mode",
+     "vo": "Or switch the whole board to dark.",
+     "acts": [
+      {
+       "w": "dark",
+       "kind": "act"
+      }
+     ]
+    },
+    {
+     "id": "b103",
+     "title": "Three languages",
+     "vo": "The board speaks Hindi, and Kannada, as well as English.",
+     "acts": [
+      {
+       "w": "hindi",
+       "kind": "act",
+       "label": "हिंदी"
+      },
+      {
+       "w": "kannada",
+       "kind": "act",
+       "label": "ಕನ್ನಡ"
+      }
+     ]
+    },
+    {
+     "id": "b104",
+     "kind": "grid",
+     "title": "Help every learner",
+     "vo": "Voice commands work hands free. A reader reads the page aloud. A screen shade hides what's coming next. And a spotlight focuses attention.",
+     "acts": [
+      {
+       "w": "voice",
+       "kind": "tile",
+       "label": "Voice commands"
+      },
+      {
+       "w": "reader",
+       "kind": "tile",
+       "label": "Immersive reader"
+      },
+      {
+       "w": "shade",
+       "kind": "tile",
+       "label": "Screen shade"
+      },
+      {
+       "w": "spotlight",
+       "kind": "tile",
+       "label": "Spotlight"
+      }
+     ]
+    },
+    {
+     "id": "b105",
+     "title": "Magnifier",
+     "vo": "And a magnifier, for the tiniest details.",
+     "acts": [
+      {
+       "w": "magnifier",
+       "kind": "act",
+       "label": "Magnifier"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "title": "Safe and managed",
+   "beats": [
+    {
+     "id": "b111",
+     "title": "Simple mode",
+     "vo": "In settings, simple mode gives big, easy buttons.",
+     "acts": [
+      {
+       "w": "simple",
+       "kind": "act",
+       "label": "Simple mode"
+      }
+     ]
+    },
+    {
+     "id": "b112",
+     "title": "Your own toolbar",
+     "vo": "Each teacher can arrange her own toolbar.",
+     "acts": [
+      {
+       "w": "toolbar",
+       "kind": "act",
+       "label": "Customise toolbar"
+      }
+     ]
+    },
+    {
+     "id": "b113",
+     "kind": "grid",
+     "title": "Locked down, checked up",
+     "vo": "Touch lock keeps the board safe. And diagnostics report its health.",
+     "acts": [
+      {
+       "w": "touch",
+       "kind": "tile",
+       "label": "Touch lock"
+      },
+      {
+       "w": "diagnostics",
+       "kind": "tile",
+       "label": "Diagnostics"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "title": "Offline and in sync",
+   "beats": [
+    {
+     "id": "b121",
+     "title": "Works offline",
+     "vo": "If the Wi-Fi drops, nothing is lost. Changes wait, and sync when it's back.",
+     "acts": [
+      {
+       "w": "nothing",
+       "kind": "act",
+       "label": "Saved offline"
+      },
+      {
+       "w": "sync",
+       "kind": "hl",
+       "label": "Waiting to sync"
+      }
+     ]
+    },
+    {
+     "id": "b122",
+     "title": "End the class",
+     "vo": "When the bell rings, she ends the class.",
+     "acts": [
+      {
+       "w": "ends",
+       "kind": "act",
+       "label": "End class"
+      }
+     ]
+    },
+    {
+     "id": "b123",
+     "title": "Everything in sync",
+     "vo": "Attendance, homework and recordings flow to the school's system, and to the teacher, student and parent apps.",
+     "acts": [
+      {
+       "w": "attendance",
+       "kind": "chip",
+       "text": "Attendance"
+      },
+      {
+       "w": "homework",
+       "kind": "chip",
+       "text": "Homework"
+      },
+      {
+       "w": "recordings",
+       "kind": "chip",
+       "text": "Recordings"
+      },
+      {
+       "w": "teacher",
+       "kind": "phone",
+       "img": "teacher-navHome.jpg"
+      },
+      {
+       "w": "student",
+       "kind": "phone",
+       "img": "student-navHome.jpg"
+      },
+      {
+       "w": "parent",
+       "kind": "phone",
+       "img": "parent-navHome.jpg"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "end",
+   "title": "",
+   "beats": [
+    {
+     "id": "r1",
+     "kind": "recap",
+     "vo": "One board for the whole lesson. Ink that feels real. A helpful AI assistant for every lesson. Live answers from every student. And every app in sync.",
+     "acts": [
+      {
+       "w": "ink",
+       "kind": "tile",
+       "snap": "ink",
+       "label": "Ink"
+      },
+      {
+       "w": "assistant",
+       "kind": "tile",
+       "snap": "ai",
+       "label": "AI assistant"
+      },
+      {
+       "w": "answers",
+       "kind": "tile",
+       "snap": "poll",
+       "label": "Live answers"
+      },
+      {
+       "w": "sync",
+       "kind": "tile",
+       "snap": "sync",
+       "label": "In sync"
+      }
+     ]
+    },
+    {
+     "id": "r2",
+     "kind": "endcard",
+     "vo": "KINETIX Board. Every lesson, connected.",
+     "acts": []
+    }
+   ]
+  }
+ ]
+}

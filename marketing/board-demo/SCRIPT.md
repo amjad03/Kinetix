@@ -1,126 +1,163 @@
-# KINETIX Board product demo — script
+# KINETIX Board product demo, v3 script
 
-Real KINETIX Board app (apps/board) running under flutter_test at 1920x1080 with the built-in demo server
-(Soundarya Central School, Class 10 B Science, "Refraction through a glass slab"), driven by a scripted stylus
-(stylus pointer events along Hershey-script handwriting paths). Frames stream to `tools/compose.py`, which adds the
-stylus graphic, tap ripples, zooms, callouts, captions, chapter cards and app insets. VO: Kokoro af_heart (`tools/tts.py`).
-Music: generated ambient bed, ducked under the VO (`tools/audio.py`).
+**Story:** one teacher (Ms Kavya Menon), one lesson (Class 10 B Science, refraction through a glass slab, at Soundarya Central School), from the first minute to the bell.
+**Shape:** a 15 s hook (problem), the reveal, 12 short chapters, a recap and an end card. Every feature is one beat: a 2–4 word title, the stylus doing it, and one plain sentence on why it helps.
+Hero features (ink, AI lesson builder, live polls) get a short run of beats. Minor features are 2-up or 2x2 montages whose tiles light up as they are named.
 
-v2 editing: every named feature is cued to its word (faster-whisper word timings aligned to the script, `tools/words.py` -> `data/words.json`; `Director.at(word)` in the capture). The compositor frames the board in a floating window on the navy/blue stage with an eased camera, spotlight + callout pills, kinetic feature titles, word-synced captions under the window and 3D-tilt chapter transitions.
+**How it is made:** the real board app (apps/board) runs under flutter_test with the built-in demo server. A scripted stylus drives it along Hershey-script handwriting paths, and the capture is recorded at a natural pace (`tools/capture_v3.sh`).
+`tools/edit.py` builds the edit from this beat list. Word timings come from faster-whisper (`tools/words.py`), and each beat's clip is time-warped so its act lands 100 ms before the anchor word.
+Captions use the same word timings. `SYNC_AUDIT.md` measures every beat. VO is Kokoro af_heart (`tools/tts.py`); music is generated with a hit on each chapter card (`tools/audio.py`).
 
-Pipeline: `tools/tts.py` -> `tools/words.py` -> `tools/handwriting.py` -> `tools/render.sh` (capture + compose) -> `tools/audio.py` -> `dist/kinetix-board-demo.mp4`.
-Preview stills: `ONLY=c1,c2 tools/capture.sh preview` then `tools/pvsheet.py`.
+Pipeline: `tts.py` → `words.py` → `capture_v3.sh` → `edit.py` → `audio.py` → `contact.py`.
 
-## Cold open
+Kinds: **act** = the board changes on the word, **hl** = spotlight/callout on the word, **tile** = montage tile lit on the word, **text/logo** = kinetic type on the stage, **phone/chip** = app screens / pills over the stage.
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s00 | This is KINETIX Board, the AI smartboard in every Soundarya classroom. Everything you'll see is the real board app, driven by a stylus, just as a teacher uses it. | Stylus writes "Refraction of light" (Hershey cursive, timed strokes) on the real board; title lower-third. |
+## Hook (15 s)
 
-## Sign in and start the class
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| h1 | 8:30 am | It's eight thirty. Thirty students are waiting, and the teacher has a dozen jobs to do before she can even start. | eight → text, thirty → text, dozen → text |
+| h2 |  | What if the board did the busywork, so she could just teach? | busywork → text |
+| h3 |  | Meet KINETIX Board, the AI smartboard. | kinetix → logo |
+| h4 | One lesson, start to finish | Let's follow Ms Kavya through one science lesson, from the first minute to the bell. | follow → act |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s10 | Signing in takes one scan. The teacher opens the KINETIX Teacher app and scans this QR code, or types the six digit code. No passwords on a shared screen. | Tap class chip -> real "Sign in to Room 204 Board" dialog (QR + 6-digit code); zoom on dialog. |
-| s11 | If the internet is down, the board shows a signed offline code instead, and the phone verifies it without any network. | Network cut in the test client -> dialog shows the cached signed offline QR + validity note; callout. |
-| s12 | Teachers can also keep a personal PIN for this board. Set it once, and from then on the board unlocks on a shuffled keypad, so nobody learns it from smudges on the glass. | Set PIN on the PIN pad (tap digits), lock the board, unlock on the shuffled keypad. |
-| s13 | The board already knows the class from the timetable: Class 10 B, Science, Refraction through a glass slab. And it suggests concept videos for this period, in English, Hindi and Kannada. | Point at class chip (callout "From the timetable"); zoom on concept-video suggestions (en/hi/kn); Skip. |
-| s14 | Today's plan brings the lesson plan from the ERP: objectives, timed steps, materials and homework, with a step timer to keep pace. | Tools drawer -> Today's plan; start step timer. |
-| s15 | Books shows the NCERT syllabus, and which topics have been taught. The profile menu keeps your saved whiteboards. Your lesson recordings. Teacher training. And a guided tour. | Books tab (syllabus progress); profile menu. |
+## Walk in and sign in
 
-## Ink that feels like a pen
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b11 | Scan to sign in | She signs in by scanning a code with her phone. No password on a big screen. | scanning → act |
+| b12 | Or type 6 digits | Or she can type the six digit code instead. | six → hl |
+| b13 | Works offline | No internet? The board shows a backup code that works offline. | backup → act |
+| b14 | Personal PIN | She can set her own PIN for this board, too. | pin → act |
+| b15 | Shuffled keypad | When the board locks, the keys shuffle, so nobody can copy her PIN. | shuffle → act |
+| b16 | Knows your class | The board already knows her class, Class 10 B science, from the timetable. | class → hl |
+| b17 | Concept videos | It suggests short concept videos for today, in English, Hindi and Kannada. | videos → hl |
+| b18 | Today's plan | Today's plan shows the lesson step by step, with a timer to keep pace. | plan → act |
+| b19 | Books & syllabus | Books shows which chapters the class has already covered. | books → act |
+| b1a | Everything one tap away | Her saved boards, recordings and training are one tap away. | saved → act |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s20 | Now the canvas. The pen panel sets the pen type. The thickness. And the colour. With pressure, smoothing and palm rejection for a real stylus. | Pen popover: pen types, thickness slider drag, colour, pressure; zoomed. |
-| s21 | Handwriting flows naturally. The ink keeps up at full writing speed, with no lag, and it's smoothed just enough to stay crisp on a big panel. | Writes "bends towards normal". |
-| s22 | The shapes tool draws a clean glass slab. A line marks the normal, and arrows trace the incident ray, the refracted ray, and the emergent ray leaving the slab. | Shapes: rectangle slab, normal line, three arrows (stylus drags). |
-| s23 | Labels go on by hand: air, glass, the angle of incidence and the angle of refraction. The highlighter sits behind the ink, so nothing gets covered. | Handwritten labels air/glass/i/r; highlighter under the title. |
-| s24 | The eraser removes whole strokes. Undo and redo step back and forth through every change. | Eraser stroke over a label; undo, redo, undo. |
-| s25 | Select with a lasso, then move it anywhere. The selection bar can resize, duplicate, group or lock it. | Lasso around the diagram; drag to move. |
-| s26 | Real geometry tools live in the drawer: a ruler, a protractor, a compass and set squares. Here the protractor goes on the board, to move, rotate and measure against. | Protractor from the drawer; drag it into place. |
+## Teach with ink
 
-## AI pen, maths and diagrams
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b21 | Pick your pen | Pick a pen, a colour and a thickness. | pen → act, colour → act, thickness → act |
+| b22 | Just write | Then just write. The ink keeps up with her hand. | write → act |
+| b23 | Perfect shapes | Shapes come out straight and clean. Here, a glass slab. | shapes → act |
+| b24 | Lines and arrows | A line for the normal, and arrows for the light rays. | line → act, arrows → act |
+| b25 | Labels by hand | She labels it by hand: air, and glass. | air → act, glass → act |
+| b26 | Highlighter | The highlighter marks the title, without hiding the ink. | highlighter → act |
+| b27 | Erase | A mistake? The eraser wipes it away. | eraser → act |
+| b28 | Undo | And undo brings it right back. | undo → act |
+| b29 | Lasso to move | Draw a lasso around anything to move it. | lasso → act, move → act |
+| b2a | Geometry tools | A ruler, a protractor and a compass are built in. | ruler → act, protractor → act |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s30 | The AI pen turns handwriting into clean, typed text, right where it was written. And with Shape AI switched on, a rough sketch snaps into a perfect circle. | AI pen writes "glass slab" -> converted to text; Shape AI: rough circle -> tidy circle. |
-| s31 | Equations are typeset properly. Here is Snell's law, placed straight onto the board. | Add -> Equation, type LaTeX for Snell's law, put on board. |
-| s32 | The math solver works offline, and shows every step of the working. | KINETIX AI -> Math solver: 2x + 5 = 17 with steps. |
-| s33 | The tools drawer holds the rest, filtered by subject. For science: a periodic table, circuits and atoms. For maths: graphs, equations and statistics. And for computer science: flowcharts, code labs and logic gates. | Tools drawer scrolled by stylus; periodic table in the kit. |
+## Smart ink and maths
 
-## Pages, backgrounds and saving
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b31 | AI pen | With the AI pen, her handwriting turns into neat, typed text. | neat → act |
+| b32 | Shape AI | And Shape AI turns a wobbly circle into a perfect one. | perfect → act |
+| b33 | Typeset equations | Equations look just like the textbook. | textbook → act |
+| b34 | Math solver | The math solver shows every step, even offline. | every → act |
+| b35 | Tools for every subject | The tools drawer has tools for science. For maths. And for computer science. | science → act, maths → act, computer → act |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s40 | Add pages as the lesson grows. Here, page two gets Snell's law, written by hand. The page overview shows every page at a glance, to jump between them, reorder or export. | Add page; write n = sin i / sin r; page overview (zoom). |
-| s41 | Backgrounds and templates: ruled, grid, dots, or a chalkboard, for one page or for all of them. | Background popover: ruled, grid, dots, chalkboard, back to plain. |
-| s42 | Every board is saved for the class, and can be shared with students on WhatsApp, by email, or with a QR code. | Menu -> version history; share whiteboard dialog. |
+## Pages and saving
 
-## 3D models, labs and simulations
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b41 | Add a page | Need more space? Add a page. | add → act |
+| b42 | Page overview | See every page at once, and jump to any of them. | every → act |
+| b43 | Backgrounds | Change the background: lines, a grid, or a chalkboard. | lines → act, grid → act, chalkboard → act |
+| b44 | Share the board | Then share the whole board with students, on WhatsApp or by email. | share → act, whatsapp → hl, email → hl |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s50 | The side panel brings content in without leaving the board. 3D models render right here: rotate them with the stylus, and read off their measurements as you teach. | Side panel 3D: search "cone", open Frustum of a cone (native renderer), rotate by dragging. |
-| s51 | Virtual labs make the lesson hands-on. In the glass slab lab, change the angle and the ray bends in real time. | Labs -> Refraction through a glass slab; drag the incident ray. |
-| s52 | There are PhET simulations that work offline. Animations. Concept videos. And the subject kit, with the periodic table, formulas and constants. | Sims (PhET list), Animations, Videos, Kit tabs. |
-| s53 | From the Add menu, bring in PDFs and PowerPoint slides, pictures, tables, sticky notes, word cards and covered answers. The side panel adds a safe browser for the web, and a document camera. | Add menu; sticky note typed and placed; Web (safe browser) tab. |
+## Bring the lesson to life
 
-## KINETIX AI, built into the lesson
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b51 | 3D models | Open a 3D model, and turn it with the stylus. | open → act, turn → act |
+| b52 | Virtual labs | In the virtual lab, move the light ray and watch it bend. | lab → act, move → act |
+| b53 | Simulations & videos | There are PhET simulations. Animations. Concept videos. And a science kit. | phet → tile, animations → tile, concept → tile, kit → tile |
+| b54 | Add anything | From the Add menu, bring in PDFs, slides, pictures and sticky notes. | add → act, pdfs → hl, slides → hl, pictures → hl, sticky → hl |
+| b55 | Web & camera | A safe web browser, and a document camera, are built in too. | browser → tile, camera → tile |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s60 | KINETIX AI answers questions about the lesson, in the class's language, with sources, and follows the syllabus. | AI tab: type a question, answer with key points + sources callout. |
-| s61 | The AI lesson builder drafts a full plan for a topic: objectives, steps, activities and an exit ticket, ready to teach. | AI lesson plan generated for the topic; scroll. |
-| s62 | It also writes quick quizzes. Homework. And lecture notes. It summarises the board, and Read board reads whatever has been written on it. | Quick quiz generated; Read board. |
+## Your AI teaching assistant
 
-## Live class responses
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b61 | Ask KINETIX AI | She asks KINETIX AI a question about the lesson. | asks → act |
+| b62 | With sources | It answers at the class's level, and shows where it got the answer. | shows → hl |
+| b63 | AI lesson builder | Short on time? The lesson builder writes a whole lesson plan in seconds. | writes → act |
+| b64 | A complete plan | Goals, steps, activities, and an exit ticket. | goals → hl, steps → hl, activities → hl, exit → hl |
+| b65 | More AI helpers | It can also make a quiz. Write homework. Draft lecture notes. Or read the board. | quiz → tile, homework → tile, lecture → tile, read → tile |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s70 | Attendance is taken on the board in seconds and synced to the ERP. | Attendance dialog: mark two absent, save. |
-| s71 | Ask the class: pose a multiple choice question, and students answer from the Student app or by holding up printed answer cards that the camera scans. | Ask the class: type question, tag a course outcome, start; answers arrive (zoom on live card). |
-| s72 | Answers build live on the board as students respond. End the question to reveal the right answer, and see at a glance who needs help. | More answers; end question / reveal. |
-| s73 | Or ask for a word cloud. Students type a word or two from their phones, and the cloud grows as they answer, with the most common words largest. | Word cloud question; words arrive and the cloud grows (zoom). |
-| s74 | And there's a full classroom toolkit. A random picker chooses who answers next. A timer keeps activities on track. Scoreboards run team quizzes. Badges reward good work. The group maker splits the class in one tap. And multi-user zones let several students write on the board at once. | Toolkit montage: picker (Pick), timer, scoreboard, badges, group maker, multi-user zones. |
+## The whole class answers
 
-## Homework, marking and OBE
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b71 | Attendance | Attendance takes seconds, and goes straight to the school office. | attendance → act |
+| b72 | Ask the class | Now she asks the whole class a question. | question → act |
+| b73 | Answers from phones | Students answer on their phones, and the bars move live. | phones → act, live → act |
+| b74 | Or answer cards | No phones? They hold up answer cards, and the camera reads them. | cards → hl |
+| b75 | Reveal the answer | Then she reveals the right answer. | reveals → act |
+| b76 | Word cloud | Or she asks for one word, and watches a word cloud grow. | word → act, grow → act |
+| b77 | Classroom toolkit | Pick a random student. Set a timer. Keep score. Give badges. | random → tile, timer → tile, score → tile, badges → tile |
+| b78 | Groups & zones | Make groups in one tap. Or split the board, so students write together. | groups → tile, split → tile |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s80 | Homework AI turns the lesson into an assignment and sends it to the Student app, with a due date. | Homework AI: generate, send to Student app. |
-| s81 | Submissions are reviewed by classmates on a rubric, and AI suggests marks that the teacher approves, in the Teacher app. | Insets: real Teacher and Student app screens (captured from the apps for the promo). |
-| s82 | For accreditation, each question is tagged with course outcomes, so every poll and quiz becomes OBE evidence in the ERP. | Ask-the-class dialog: course outcome (CO) chips tapped; callout. |
+## Homework and marking
 
-## Record, cast and share
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b81 | Homework AI | Homework AI turns today's lesson into homework. | homework → act |
+| b82 | Sent to every student | One tap sends it to every student's app. | sends → act |
+| b83 | Peer review & AI marks | Classmates review each other's work, and AI suggests marks for the teacher to approve. | classmates → phone, marks → phone |
+| b84 | Course outcomes | Each question is tagged with a course outcome, for the college's records. | tagged → act |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s90 | Record the lesson with one tap. The board shows a consent notice, then records with chapter markers. Hold a marker to star an important moment. | Record -> consent notice -> recording; chapter marker; hold for important moment. |
-| s91 | Recordings come back with a transcript, a summary and chapters, and can be shared with enrolled students. | Stop & save; Recordings list. |
-| s92 | Live captions help every student follow along. In the Cast panel, phones share their screen after the teacher approves. Screen projection mirrors the board to a second display. And Freeze screen holds the picture while the teacher sets up the next step. | Live captions (words stream in), Cast tab, Screen projection dialog. |
+## Record and share the screen
 
-## Comfort, languages and control
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b91 | Record the lesson | She presses record, and the board shows a consent notice first. | record → act |
+| b92 | Mark the moments | She adds chapter markers, and stars the important moments. | markers → act, stars → act |
+| b93 | Ready to share | Recordings come with a transcript and a summary, ready to share. | recordings → act |
+| b94 | Captions, cast & more | Live captions. Casting from phones. A second display. And freeze screen. | captions → tile, casting → tile, second → tile, freeze → tile |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s100 | Eye comfort warms and dims the panel for long teaching days. Break reminders follow the twenty twenty twenty rule. And the whole board switches to a dark theme in a single tap. | Eye comfort on/off; dark theme toggle and back. |
-| s101 | The whole board speaks English, Hindi and Kannada, and switches instantly. Each teacher's language follows them when they sign in. | Board settings: language Hindi, Kannada, English (whole UI switches). |
-| s102 | There are tools for every learner. Voice commands control the board hands free. The immersive reader reads the page aloud. A screen shade reveals the board step by step. A spotlight focuses attention. And a magnifier enlarges any detail. | Voice commands ("next page" heard), screen shade, spotlight. |
-| s103 | Board settings hold the language, theme and writing options, with a simple mode of big labelled tools. The toolbar can be customised. Touch lock keeps the panel safe in kiosk mode. And device diagnostics report its health to the IT console. | Customise toolbar; device diagnostics. |
+## Comfortable for everyone
 
-## Works offline, syncs everywhere
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b101 | Eye comfort | Eye comfort makes the screen warmer and easier on the eyes. | warmer → act |
+| b102 | Dark mode | Or switch the whole board to dark. | dark → act |
+| b103 | Three languages | The board speaks Hindi, and Kannada, as well as English. | hindi → act, kannada → act |
+| b104 | Help every learner | Voice commands. A reader that reads aloud. A screen shade. And a spotlight. | voice → tile, reader → tile, shade → tile, spotlight → tile |
+| b105 | Magnifier | And a magnifier, for the tiniest details. | magnifier → act |
 
-| Seg | Voice-over | On screen (stylus) |
-|---|---|---|
-| s110 | When the network drops, the board keeps working. Changes wait in an outbox and sync as soon as it's back. | Network cut: attendance saved to the outbox, sync callout; network back, outbox syncs. |
-| s111 | End the class, and attendance, polls, homework, recordings and lesson evidence flow to the KINETIX ERP. And on to the Teacher app, the Student app, and the Parent app. | End class dialog -> End class; insets: Teacher, Student and Parent apps. |
-| s112 | KINETIX Board. Every lesson, connected. | End card: KINETIX Board - Every lesson, connected. |
+## Safe and managed
 
-## Simulated in the capture (not live services)
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b111 | Simple mode | In settings, simple mode gives big, easy buttons. | simple → act |
+| b112 | Your own toolbar | Each teacher can arrange her own toolbar. | toolbar → act |
+| b113 | Locked down, checked up | Touch lock keeps the board safe. And diagnostics report its health. | touch → tile, diagnostics → tile |
 
-- AI answers (explain, lesson plan, quiz, homework, read board): scripted responses in the API shape; on a real board they come from KINETIX AI.
-- Student answers to polls and the word cloud: realtime events fired by the script (as the Student App would).
-- Handwriting recognition (AI pen): a scripted recognizer stands in for ML Kit / Windows Ink, which do not run under flutter_test.
-- Offline code: a seeded signed-code entry; network loss simulated in the HTTP client. Live captions: scripted speech input.
-- Teacher/Student/Parent app screens are real app captures from marketing/promo/shots.
+## Offline and in sync
+
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| b121 | Works offline | If the Wi-Fi drops, nothing is lost. Changes wait, and sync when it's back. | nothing → act, sync → hl |
+| b122 | End the class | When the bell rings, she ends the class. | ends → act |
+| b123 | Everything in sync | Attendance, homework and recordings flow to the school's system, and to the teacher, student and parent apps. | attendance → chip, homework → chip, recordings → chip, teacher → phone, student → phone, parent → phone |
+
+## Recap and end card
+
+| Beat | Title | Voice-over | Anchors (word → kind) |
+|---|---|---|---|
+| r1 |  | One board. Ink, AI, live answers, and every app in sync. | ink → tile, ai → tile, answers → tile, sync → tile |
+| r2 |  | KINETIX Board. Every lesson, connected. |  |
+
+## Simulated in the capture
+
+- AI answers (explain, lesson plan, quiz, homework, read board) are scripted responses in the API's shape; a live board gets them from KINETIX AI.
+- Student poll and word-cloud answers are realtime events fired by the script, as the Student App would send them.
+- AI-pen handwriting recognition uses a scripted recognizer (ML Kit / Windows Ink do not run under flutter_test), and live-caption speech comes from a scripted voice input.
+- The offline code is a seeded signed-code entry; network loss is simulated in the HTTP client. The PIN hash is returned by the test client.
+- Teacher, Student and Parent app screens are real captures from marketing/promo/shots.

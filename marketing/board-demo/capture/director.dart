@@ -113,6 +113,56 @@ class Director {
 
   void ev(Map<String, Object?> e) => _events.add(e);
 
+  // ---------------------------------------------------------------- v3 beats
+  // The capture runs at a natural pace; each beat marks its acts (the frame where the board
+  // visibly changes) and the editor time-warps the clip so every act lands on its anchor word.
+
+  String? beatId;
+  Map<String, Object?>? _pendingAct;
+  int _actN = 0;
+
+  Future<void> beatStart(String id) async {
+    beatId = id;
+    _actN = 0;
+    ev({'beat': id});
+    log.writeln('beat $id at $frame');
+  }
+
+  Map<String, Object?> _act(String kind, Rect? r, String? label) => {
+        'act': _actN++,
+        'kind': kind,
+        'beatOf': beatId,
+        if (r != null) 'rect': [r.left.round(), r.top.round(), r.width.round(), r.height.round()],
+        if (label != null) 'label': label,
+      };
+
+  /// The next stylus contact (tap, stroke, drag) is this beat's next act.
+  void actOnPress({Rect? rect, String? label, String kind = 'act'}) => _pendingAct = _act(kind, rect, label);
+
+  /// The next frame is this beat's next act (a change not caused by a press: an answer arriving).
+  void actNow({Rect? rect, String? label, String kind = 'act'}) => ev(_act(kind, rect, label)..['now'] = true);
+
+  /// A spotlight act on [rect] (the editor times the overlay to its word).
+  void hlAct(Rect? rect, {String? label}) => ev(_act('hl', rect, label));
+
+  /// A montage tile: [rect] is the area the tile shows; the next press is its act.
+  void tileOnPress(Rect rect, {String? label}) => _pendingAct = _act('tile', rect, label);
+  void tileNow(Rect rect, {String? label}) => ev(_act('tile', rect, label)..['now'] = true);
+
+  Future<void> beatEnd({double settle = 1.4, Offset? rest}) async {
+    if (_pendingAct != null) {
+      ev(_pendingAct!);
+      _pendingAct = null;
+      log.writeln('act without press in $beatId');
+    }
+    await idle(settle, rest: rest);
+    ev({'beatEnd': beatId});
+    log.writeln('beatEnd $beatId at $frame acts $_actN');
+  }
+
+  /// A still for the hook/recap (the editor keeps this frame).
+  void snap(String name) => ev({'snap': name});
+
   // ---------------------------------------------------------------- script structure
 
   /// Between chapters (hidden by the title card): closes leftover dialogs, popovers, panels
@@ -282,6 +332,10 @@ class Director {
 
   Future<void> _press(Offset p) async {
     final g = await _gesture();
+    if (_pendingAct != null) {
+      ev(_pendingAct!);
+      _pendingAct = null;
+    }
     await g.down(p);
     _down = true;
     pen = p;
@@ -618,6 +672,8 @@ extension DirectorUi on Director {
     await emit(2);
     _clearSelection();
   }
+
+  void clearSel() => _clearSelection();
 
   void _clearSelection() {
     final c = find.byType(WhiteboardCanvas);
