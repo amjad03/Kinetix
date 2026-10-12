@@ -6,9 +6,9 @@ const hrefs = (roles: string[], platform = false) => visibleGroups(roles as neve
 
 describe('navigation groups', () => {
   it('shows a role only the pages access.ts lets it open', () => {
-    expect([...hrefs(['accountant'])].sort()).toEqual(['/', '/academics', '/alumni', '/budgets', '/calendar', '/delegations', '/documents', '/fees', '/accounts', '/books', '/gl-export', '/payroll', '/payroll/payslips', '/payroll/loans', '/reports', '/scholarships', '/settlements', '/students', '/tally', '/tasks', '/workflows'].sort());
+    expect([...hrefs(['accountant'])].sort()).toEqual(['/', '/academics', '/analytics', '/chat', '/alumni', '/budgets', '/calendar', '/delegations', '/documents', '/fees', '/accounts', '/books', '/gl-export', '/payroll', '/payroll/payslips', '/payroll/loans', '/reports', '/scholarships', '/settlements', '/students', '/tally', '/tasks', '/workflows'].sort());
     expect(hrefs(['accountant'])).not.toContain('/settings');
-    expect([...hrefs(['librarian'])].sort()).toEqual(['/academics', '/calendar', '/delegations', '/library', '/payroll/payslips', '/payroll/loans', '/tasks', '/workflows'].sort());
+    expect([...hrefs(['librarian'])].sort()).toEqual(['/academics', '/calendar', '/chat', '/delegations', '/library', '/payroll/payslips', '/payroll/loans', '/tasks', '/workflows'].sort());
     expect(hrefs(['principal'])).toContain('/obe');
     expect(hrefs(['principal'])).not.toContain('/platform/concept-videos');
     expect(hrefs(['principal'], true)).toContain('/platform/concept-videos');
@@ -16,7 +16,7 @@ describe('navigation groups', () => {
 
   it('drops groups with nothing to show and keeps the product order', () => {
     const ids = visibleGroups(['hr_manager']).map((g) => g.id);
-    expect(ids).toEqual(['dashboard', 'students', 'hr', 'reports', 'work']);
+    expect(ids).toEqual(['dashboard', 'students', 'hr', 'communication', 'reports', 'work']);
     const all = visibleGroups(['principal'], true).map((g) => g.id);
     expect(all[0]).toBe('dashboard');
     expect(all[all.length - 1]).toBe('settings');
