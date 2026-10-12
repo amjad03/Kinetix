@@ -185,20 +185,17 @@ abstract final class KinetixTheme {
         shape: RoundedRectangleBorder(borderRadius: Kx.radiusLg, side: large ? BorderSide.none : BorderSide(color: scheme.outlineVariant)),
         margin: EdgeInsets.zero,
       ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          minimumSize: Size(64, large ? Kx.boardTarget : Kx.target),
-          shape: const StadiumBorder(),
-          textStyle: text.labelLarge?.copyWith(fontWeight: FontWeight.w500, fontSize: large ? 16 : 14),
-        ),
-      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(minimumSize: Size(64, large ? Kx.boardTarget : Kx.target), shape: const StadiumBorder()),
+        style: OutlinedButton.styleFrom(foregroundColor: scheme.primary, side: BorderSide(color: scheme.outline), minimumSize: Size(64, large ? Kx.boardTarget : Kx.target), shape: const StadiumBorder()),
       ),
-      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(shape: const StadiumBorder())),
+      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: scheme.primary, shape: const StadiumBorder())),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: light ? scheme.surfaceContainer : scheme.surfaceContainerHighest,
+        labelStyle: TextStyle(color: scheme.onSurfaceVariant),
+        hintStyle: TextStyle(color: scheme.onSurfaceVariant),
+        prefixIconColor: scheme.onSurfaceVariant,
+        suffixIconColor: scheme.onSurfaceVariant,
         border: field(),
         enabledBorder: field(),
         disabledBorder: field(),
@@ -208,8 +205,52 @@ abstract final class KinetixTheme {
       ),
       chipTheme: ChipThemeData(
         shape: const RoundedRectangleBorder(borderRadius: Kx.radiusMd),
+        backgroundColor: scheme.surfaceContainerLow,
         selectedColor: scheme.secondaryContainer,
+        disabledColor: scheme.onSurface.withValues(alpha: 0.12),
+        labelStyle: text.labelLarge?.copyWith(color: scheme.onSurface),
+        secondaryLabelStyle: text.labelLarge?.copyWith(color: scheme.onSecondaryContainer),
+        checkmarkColor: scheme.onSecondaryContainer,
         side: BorderSide(color: scheme.outlineVariant),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: scheme.primary,
+          foregroundColor: scheme.onPrimary,
+          minimumSize: Size(64, large ? Kx.boardTarget : Kx.target),
+          shape: const StadiumBorder(),
+          textStyle: text.labelLarge?.copyWith(fontWeight: FontWeight.w500, fontSize: large ? 16 : 14),
+        ),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.secondaryContainer : Colors.transparent),
+          foregroundColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.onSecondaryContainer : scheme.onSurface),
+          iconColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.onSecondaryContainer : scheme.onSurface),
+          side: WidgetStatePropertyAll(BorderSide(color: scheme.outline)),
+        ),
+      ),
+      listTileTheme: ListTileThemeData(iconColor: scheme.onSurfaceVariant, textColor: scheme.onSurface),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        textStyle: text.bodyLarge?.copyWith(color: scheme.onSurface),
+        menuStyle: MenuStyle(backgroundColor: WidgetStatePropertyAll(scheme.surfaceContainerHigh)),
+      ),
+      popupMenuTheme: PopupMenuThemeData(color: scheme.surfaceContainerHigh, textStyle: text.bodyMedium?.copyWith(color: scheme.onSurface)),
+      menuTheme: MenuThemeData(style: MenuStyle(backgroundColor: WidgetStatePropertyAll(scheme.surfaceContainerHigh))),
+      tabBarTheme: TabBarThemeData(
+        labelColor: scheme.onSurface,
+        unselectedLabelColor: scheme.onSurfaceVariant,
+        indicatorColor: scheme.primary,
+        dividerColor: scheme.outlineVariant,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.onPrimary : scheme.outline),
+        trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.primary : scheme.surfaceContainerHighest),
+      ),
+      toggleButtonsTheme: ToggleButtonsThemeData(
+        color: scheme.onSurface,
+        selectedColor: scheme.onSecondaryContainer,
+        fillColor: scheme.secondaryContainer,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: light ? scheme.surfaceContainerLowest : scheme.surfaceContainerHigh,

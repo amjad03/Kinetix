@@ -61,7 +61,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
   /// periodic table opened from the tools drawer in a commerce period must open the periodic
   /// table, not the commerce kit's first tab).
   List<KitTab> get _tabs => kitTabsWith(widget.style, primary: widget.primary, requested: widget.initialTab);
-  Color get _accent => widget.style.accent;
+  Color get _accent => widget.style.accentFor(Theme.of(context).colorScheme);
   Color get _ink => widget.wb.background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
   BoardFont get _font => widget.primary ? BoardFont.andika : BoardFont.inter;
 
@@ -115,7 +115,8 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
                         key: Key('kit-${t.name}'),
                         label: Text(l.kitTabName(t)),
                         selected: _tab == t,
-                        selectedColor: widget.style.container,
+                        selectedColor: widget.style.containerOn(context.colors),
+                        labelStyle: TextStyle(color: context.colors.onSurface),
                         onSelected: (_) => setState(() => _tab = t),
                       ),
                     ),
