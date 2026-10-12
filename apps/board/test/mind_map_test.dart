@@ -156,6 +156,7 @@ void main() {
   test('on the board it is topic blocks with curved branches, or a picture', () async {
     final m = sample();
     m.root.children.first.image = Uint8List.fromList([1, 2, 3]);
+    m.root.children.last.icon = 3;
     final els = m.toElements();
     final nodes = els.whereType<FlowNodeElement>().toList();
     final links = els.whereType<FlowLinkElement>().toList();
@@ -163,6 +164,10 @@ void main() {
     expect(links, hasLength(5));
     expect(els.whereType<ImageElement>(), hasLength(1));
     expect(links.every((l) => l.curved), isTrue);
+    final withIcon = nodes.where((n) => n.icon != null).toList();
+    expect(withIcon, hasLength(1), reason: 'the icon survives placing the map as blocks');
+    expect(withIcon.single.icon, mindIcons[3].codePoint);
+    expect((decodeElement(encodeElement(withIcon.single), 'z') as FlowNodeElement).iconFamily, mindIcons[3].fontFamily);
     expect({for (final l in links) l.color.toARGB32()}.length, greaterThan(1), reason: 'colours differ by branch');
     final png = (await TestWidgetsFlutterBinding.ensureInitialized().runAsync(() => mindMapPng(m, scale: 1)))!;
     expect(png.sublist(1, 4), [0x50, 0x4E, 0x47], reason: 'a PNG');

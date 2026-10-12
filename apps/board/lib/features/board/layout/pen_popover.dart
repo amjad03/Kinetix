@@ -140,7 +140,7 @@ class _PenPopoverState extends State<PenPopover> {
           for (final t in PenType.values)
             if (!widget.primary || (t != PenType.aiPen && t != PenType.laser)) t,
         ];
-        final palette = _hl ? highlighterPalette : inkPalette.take(8).toList();
+        final palette = _hl ? highlighterPalette : inkPalette;
         final opaque = _colour.withValues(alpha: 1);
         return PopoverCard(
           key: const Key('pen-popover'),

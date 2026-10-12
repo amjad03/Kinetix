@@ -73,4 +73,20 @@ void main() {
     expect((last - t.center).distance, closeTo(200, 0.5));
     expect((last - first).distance, closeTo(200 * math.sqrt2, 1));
   });
+
+  testWidgets('set-square edge dot: long-press shows its label, a tap still draws', (tester) async {
+    final b = WhiteboardController();
+    addTearDown(b.dispose);
+    final t = b.addGeoTool(GeoKind.setSquare45);
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SizedBox(width: 1600, height: 1000, child: GeoToolsOverlay(controller: b)))));
+    final dot = t.toBoard(t.sideHandle(0));
+    await tester.tapAt(dot);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(b.elements.whereType<Stroke>().length, 1, reason: 'a tap draws along the edge');
+    await tester.pump(const Duration(seconds: 2));
+    await tester.longPressAt(dot);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(ToolStrings('en').t('drawEdge')), findsOneWidget, reason: 'long-press shows the label');
+    expect(b.elements.whereType<Stroke>().length, 1, reason: 'a long-press only labels');
+  });
 }

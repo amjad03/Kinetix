@@ -267,6 +267,8 @@ Map<String, dynamic> encodeElement(BoardElement e, {Object? Function(Uint8List b
     'c': e.color.toARGB32(),
     if (e.fill != null) 'f': e.fill!.toARGB32(),
     if (e.fontSize != 22) 'fs': _round1(e.fontSize),
+    if (e.icon != null) 'ic': e.icon,
+    if (e.icon != null && e.iconFamily != null) 'icf': e.iconFamily,
   },
   FlowLinkElement() => {
     't': 'flowlink',
@@ -445,6 +447,8 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
           color: color(),
           fill: j['f'] is num ? color('f') : null,
           fontSize: n('fs', 22),
+          icon: j['ic'] is int ? j['ic'] as int : null,
+          iconFamily: j['icf'] as String?,
         );
       case 'flowlink':
         final from = j['fr'], to = j['to'];

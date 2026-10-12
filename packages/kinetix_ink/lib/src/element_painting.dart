@@ -287,18 +287,9 @@ void paintNote(Canvas canvas, NoteElement s) {
       );
       // A picture (icon code point in `language`, as `icon:<n>`) sits inside the card, left of the
       // text. The text shrinks until the word, meaning and example all fit: never an ellipsis.
-      final pic = s.language != null && s.language!.startsWith('icon:') ? int.tryParse(s.language!.substring(5)) : null;
-      final picW = pic == null ? 0.0 : math.min(r.height - 24, r.width * 0.28);
-      if (pic != null) {
-        final ip = TextPainter(
-          text: TextSpan(text: String.fromCharCode(pic), style: TextStyle(fontSize: picW * 0.9, fontFamily: 'MaterialIcons', color: const Color(0xFF1B1F24))),
-          textDirection: TextDirection.ltr,
-        )..layout();
-        ip.paint(canvas, Offset(r.left + 12 + (picW - ip.width) / 2, r.center.dy - ip.height / 2));
-      }
-      final tp = _noteCache[s] ??= _fitCardText(s.text, s.fontSize * 1.8, math.max(1, r.width - 24 - (pic == null ? 0 : picW + 8)), math.max(1, r.height - 24));
-      final textBox = Rect.fromLTRB(r.left + 12 + (pic == null ? 0 : picW + 8), r.top, r.right - 12, r.bottom);
-      tp.paint(canvas, textBox.center - Offset(tp.width / 2, tp.height / 2));
+      final lay = cardLayout(s);
+      if (lay.icon != null) lay.icon!.painter.paint(canvas, lay.icon!.rect.topLeft);
+      lay.text.painter.paint(canvas, lay.text.rect.topLeft);
     case NoteKind.answer:
       // Covered: a quiet striped card with no trace of the answer.
       final rr = RRect.fromRectAndRadius(r, const Radius.circular(14));
@@ -540,7 +531,7 @@ void paintFlowNode(Canvas canvas, FlowNodeElement n, BoardBackground background)
       ..strokeWidth = 2.5
       ..strokeJoin = StrokeJoin.round,
   );
-  if (n.text.isEmpty) return;
+  if (n.text.isEmpty && n.icon == null) return;
   // Words stay inside the narrower middle of a diamond or a slanted block.
   final inset = switch (n.shape) {
     FlowBlock.decision => n.rect.width * 0.22,
@@ -557,9 +548,18 @@ void paintFlowNode(Canvas canvas, FlowNodeElement n, BoardBackground background)
     textAlign: TextAlign.center,
     maxLines: 4,
     ellipsis: '…',
-  )..layout(maxWidth: math.max(10, n.rect.width - 2 * inset));
+  )..layout(maxWidth: math.max(10, n.rect.width - 2 * inset - (n.icon != null ? 30 : 0)));
   final dy = n.shape == FlowBlock.merge ? -n.rect.height * 0.18 : 0.0;
-  tp.paint(canvas, n.rect.center - Offset(tp.width / 2, tp.height / 2 - dy));
+  final iconW = n.icon != null ? 30.0 : 0.0;
+  final left = n.rect.center.dx - (tp.width + iconW) / 2;
+  if (n.icon != null) {
+    final ip = TextPainter(
+      text: TextSpan(text: String.fromCharCode(n.icon!), style: TextStyle(fontSize: 22, fontFamily: n.iconFamily, color: ink)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    ip.paint(canvas, Offset(left, n.rect.center.dy + dy - ip.height / 2));
+  }
+  tp.paint(canvas, Offset(left + iconW, n.rect.center.dy - tp.height / 2 + dy));
 }
 
 /// A flowchart arrow: its route, an arrowhead at the end, and its label on a white chip.
@@ -594,6 +594,25 @@ void paintFlowLink(Canvas canvas, FlowLinkElement l, BoardBackground background)
 
 /// The card's text: word first (big, bold), then the meaning and example (smaller), shrunk in
 /// steps until it fits [maxW] x [maxH] with every line shown.
+/// Where a word card puts its picture (if it has one) and its words: each a laid-out painter and
+/// the box it fills, both inside the card. Exposed so a test can check nothing spills out.
+({({TextPainter painter, Rect rect})? icon, ({TextPainter painter, Rect rect}) text}) cardLayout(NoteElement s) {
+  final r = s.rect;
+  final pic = s.language != null && s.language!.startsWith('icon:') ? int.tryParse(s.language!.substring(5)) : null;
+  final picW = pic == null ? 0.0 : math.max(0.0, math.min(r.height - 24, r.width * 0.28));
+  ({TextPainter painter, Rect rect})? icon;
+  if (pic != null) {
+    final ip = TextPainter(
+      text: TextSpan(text: String.fromCharCode(pic), style: TextStyle(fontSize: picW * 0.9, fontFamily: 'MaterialIcons', color: const Color(0xFF1B1F24))),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    icon = (painter: ip, rect: (Offset(r.left + 12 + (picW - ip.width) / 2, r.center.dy - ip.height / 2)) & ip.size);
+  }
+  final tp = _noteCache[s] ??= _fitCardText(s.text, s.fontSize * 1.8, math.max(1, r.width - 24 - (pic == null ? 0 : picW + 8)), math.max(1, r.height - 24));
+  final textBox = Rect.fromLTRB(r.left + 12 + (pic == null ? 0 : picW + 8), r.top, r.right - 12, r.bottom);
+  return (icon: icon, text: (painter: tp, rect: (textBox.center - Offset(tp.width / 2, tp.height / 2)) & tp.size));
+}
+
 TextPainter _fitCardText(String text, double base, double maxW, double maxH) {
   final lines = text.split('\n');
   TextPainter build(double k) => TextPainter(

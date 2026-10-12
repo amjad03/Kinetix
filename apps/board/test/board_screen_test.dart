@@ -9,6 +9,7 @@ import 'package:kinetix_board/features/board/kit/subjects.dart';
 import 'package:kinetix_board/features/board/layout/board_chrome.dart';
 import 'package:kinetix_board/features/board/layout/layout_strings.dart';
 import 'package:kinetix_board/features/board/layout/page_overview.dart';
+import 'package:kinetix_board/features/board/popovers.dart' show inkPalette;
 import 'package:kinetix_board/features/toolkit/toolkit_layer.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -176,6 +177,9 @@ void main() {
       expect(find.byKey(const Key('pen-popover')), findsOneWidget);
       await tapKey(tester, 'pen-type-dashed');
       expect(wb.penNib, PenNib.dashed);
+      for (var i = 0; i < inkPalette.length; i++) {
+        expect(find.byKey(Key('pen-colour-$i'), skipOffstage: false), findsOneWidget, reason: 'the pen offers the same palette as every other colour menu: swatch $i');
+      }
       await tapKey(tester, 'pen-colour-1');
       expect(wb.penColor.withValues(alpha: 1), const Color(0xFFD93025));
       final thickness = find.byKey(const Key('pen-thickness'));
