@@ -433,7 +433,7 @@ class MindMap {
       ids[n.id] = id;
       final color = colorOf(n.id);
       final r = rectOf(n, at[n.id]!);
-      nodesOut.add(FlowNodeElement(id: id, rect: r, shape: _block(n.shape), text: n.text, color: color, fill: color.withValues(alpha: n == root ? 0.25 : 0.12), fontSize: fontSizeOf(n.id)));
+      nodesOut.add(FlowNodeElement(id: id, rect: r, shape: _block(n.shape), text: n.text, color: color, fill: color.withValues(alpha: n == root ? 0.25 : 0.12), fontSize: fontSizeOf(n.id), icon: n.icon == null ? null : mindIcons[n.icon!].codePoint, iconFamily: n.icon == null ? null : mindIcons[n.icon!].fontFamily));
       if (n.image != null) {
         nodesOut.add(ImageElement(id: newElementId(), rect: Rect.fromCenter(center: Offset(r.center.dx, r.top + 8 + imageSide / 2), width: imageSide, height: imageSide), bytes: n.image!));
       }

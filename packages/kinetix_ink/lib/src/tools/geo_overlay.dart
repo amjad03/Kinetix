@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -321,6 +323,7 @@ class _GeoToolViewState extends State<_GeoToolView> {
   bool _free = false, _drawing = false;
   int? _side;
   bool _moved = false;
+  bool _held = false; // the finger stayed on an edge dot: that was a request for its label, not a tap
   // The compass pencil: undecided until the finger has moved, then along the leg (radius) or round it (arc).
   int _pencilMode = 0; // 0 undecided, 1 radius, 2 arc
 
@@ -340,6 +343,7 @@ class _GeoToolViewState extends State<_GeoToolView> {
     _drawing = false;
     _pencilMode = 0;
     _moved = false;
+    _held = false;
     _side = _part == GeoPart.side ? geoSideAt(t, b, _reach) : null;
     if (HardwareKeyboard.instance.isShiftPressed) _free = true;
   }
@@ -387,7 +391,7 @@ class _GeoToolViewState extends State<_GeoToolView> {
   void _end() {
     final c = widget.controller;
     final side = _side;
-    if (side != null && !_moved && side < t.sides.length) {
+    if (side != null && !_moved && !_held && side < t.sides.length) {
       final (a, b) = t.sides[side];
       c.add(lineStroke(a, b, color: c.penColor, width: c.penWidth));
     }
@@ -419,13 +423,56 @@ class _GeoToolViewState extends State<_GeoToolView> {
                   top: v.toScreen(t.toBoard(t.sideHandle(i))).dy - 12,
                   width: 24,
                   height: 24,
-                  child: Tooltip(key: Key('geo-side-tip-$i'), message: ToolStrings.of(context).t('drawEdge'), triggerMode: TooltipTriggerMode.manual, child: const SizedBox.expand()),
+                  child: _EdgeDotLabel(key: Key('geo-side-tip-$i'), onHold: () => _held = true, message: ToolStrings.of(context).t('drawEdge')),
                 ),
           ],
         ),
       ),
     );
   }
+}
+
+/// The label of a set-square "draw edge" dot. A touch has no hover, so holding the dot for half a
+/// second shows it. It listens to raw pointers, so it never competes with the tap that draws.
+class _EdgeDotLabel extends StatefulWidget {
+  const _EdgeDotLabel({super.key, required this.message, required this.onHold});
+
+  final String message;
+  final VoidCallback onHold;
+
+  @override
+  State<_EdgeDotLabel> createState() => _EdgeDotLabelState();
+}
+
+class _EdgeDotLabelState extends State<_EdgeDotLabel> {
+  final _tip = GlobalKey<TooltipState>();
+  Timer? _hold;
+
+  void _cancel() {
+    _hold?.cancel();
+    _hold = null;
+  }
+
+  @override
+  void dispose() {
+    _cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Listener(
+    behavior: HitTestBehavior.translucent,
+    onPointerDown: (_) {
+      _cancel();
+      _hold = Timer(kLongPressTimeout, () {
+        widget.onHold();
+        _tip.currentState?.ensureTooltipVisible();
+      });
+    },
+    onPointerUp: (_) => _cancel(),
+    onPointerCancel: (_) => _cancel(),
+    child: Tooltip(key: _tip, message: widget.message, triggerMode: TooltipTriggerMode.manual, child: const SizedBox.expand()),
+  );
 }
 
 const _ink = Color(0xFF2F343B);

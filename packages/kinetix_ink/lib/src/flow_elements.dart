@@ -145,7 +145,7 @@ Path flowShapePath(FlowBlock s, Rect r) {
 
 /// A flowchart block or mind-map topic with its words inside.
 class FlowNodeElement extends BoardElement {
-  const FlowNodeElement({required this.id, required this.rect, required this.shape, required this.color, this.text = '', this.fill, this.fontSize = 22});
+  const FlowNodeElement({required this.id, required this.rect, required this.shape, required this.color, this.text = '', this.fill, this.fontSize = 22, this.icon, this.iconFamily});
 
   @override
   final String id;
@@ -158,6 +158,10 @@ class FlowNodeElement extends BoardElement {
   final Color? fill;
   final double fontSize;
 
+  /// Icon glyph (code point) drawn before the words, in font [iconFamily]; null for none.
+  final int? icon;
+  final String? iconFamily;
+
   @override
   Rect get frame => rect;
   @override
@@ -165,7 +169,7 @@ class FlowNodeElement extends BoardElement {
 
   Offset anchor(FlowSide s) => flowAnchor(rect, s);
 
-  FlowNodeElement copyWith({String? id, Rect? rect, FlowBlock? shape, String? text, Color? color, Color? fill, bool clearFill = false, double? fontSize}) =>
+  FlowNodeElement copyWith({String? id, Rect? rect, FlowBlock? shape, String? text, Color? color, Color? fill, bool clearFill = false, double? fontSize, int? icon, String? iconFamily}) =>
       FlowNodeElement(
         id: id ?? this.id,
         rect: rect ?? this.rect,
@@ -174,6 +178,8 @@ class FlowNodeElement extends BoardElement {
         color: color ?? this.color,
         fill: clearFill ? null : (fill ?? this.fill),
         fontSize: fontSize ?? this.fontSize,
+        icon: icon ?? this.icon,
+        iconFamily: iconFamily ?? this.iconFamily,
       );
 
   @override
