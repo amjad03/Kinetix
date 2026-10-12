@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { BankTransferQueue } from '@/components/fees/BankTransferQueue';
+import { FeesNav } from '@/components/fees/FeesNav';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
@@ -18,6 +19,7 @@ export default async function BankTransfersPage() {
   return (
     <>
       <PageHeader title={t('pd.transfers.title')} subtitle={t('pd.transfers.subtitle')} />
+      <FeesNav value="transfers" />
       {rows.error !== undefined ? <ErrorState message={rows.error} /> : <BankTransferQueue rows={rows.data!} />}
     </>
   );

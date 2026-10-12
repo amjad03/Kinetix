@@ -132,6 +132,17 @@ export const texts = {
         })[l],
     ),
 
+  feeReminder: (p: { amountPaise: number; dueOn: string }) =>
+    all((l) => {
+      const d = dateIn(l, p.dueOn);
+      const a = rupees(p.amountPaise);
+      return {
+        en: { title: 'Fee reminder', body: `${a} is still due (from ${d}). Pay in the app or at the fees counter.` },
+        hi: { title: 'फ़ीस अनुस्मारक', body: `${a} अभी बाकी है (${d} से)। ऐप में या फ़ीस काउंटर पर भुगतान करें।` },
+        kn: { title: 'ಶುಲ್ಕ ಜ್ಞಾಪನೆ', body: `${a} ಇನ್ನೂ ಬಾಕಿ ಇದೆ (${d} ರಿಂದ). ಆ್ಯಪ್‌ನಲ್ಲಿ ಅಥವಾ ಶುಲ್ಕ ಕೌಂಟರ್‌ನಲ್ಲಿ ಪಾವತಿಸಿ.` },
+      }[l];
+    }),
+
   feeIssued: (p: { title: string; amountPaise: number; dueOn: string }) =>
     all((l) => {
       const d = dateIn(l, p.dueOn);

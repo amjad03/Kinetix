@@ -126,6 +126,23 @@ describe('fees and payments', () => {
     expect((await http().get('/v1/fees/summary').set(auth('outsider')).expect(200)).body.billedPaise).toBe(0);
   });
 
+  it('lists recent receipts and reminds families of what is due', async () => {
+    const pays = await http().get('/v1/fees/payments?months=3').set(auth('principal')).expect(200);
+    expect(pays.body.length).toBeGreaterThanOrEqual(3);
+    expect(pays.body[0]).toMatchObject({ receiptNo: expect.stringMatching(/^RCPT\//), student: { fullName: expect.any(String) }, className: expect.any(String) });
+    await http().get('/v1/fees/payments').set(auth('teacher')).expect(403);
+
+    await http().post('/v1/fees/invoices').set(auth('principal')).send({ sectionId: t.section.id, title: 'Lab fee', amountPaise: 300_00, dueOn }).expect(201);
+    const ids = t.students.map((s: { id: string }) => s.id);
+    await http().post('/v1/fees/reminders').set(auth('teacher')).send({ studentIds: ids }).expect(403);
+    const sent = await http().post('/v1/fees/reminders').set(auth('principal')).send({ studentIds: ids }).expect(200);
+    expect(sent.body).toEqual({ reminded: 3, skipped: 0 });
+    // Once a day per student: a second reminder the same day does not stack up.
+    await http().post('/v1/fees/reminders').set(auth('principal')).send({ studentIds: ids }).expect(200);
+    const inbox = await http().get('/v1/notifications').set(auth('parent')).expect(200);
+    expect(inbox.body.items.filter((n: { title: string }) => n.title === 'Fee reminder')).toHaveLength(1);
+  });
+
   it('cancels an unpaid fee', async () => {
     const batch = await http().post('/v1/fees/invoices').set(auth('principal')).send({ sectionId: t.section.id, title: 'Library fine', amountPaise: 50_00, dueOn }).expect(201);
     expect(batch.body.invoices).toBe(3);

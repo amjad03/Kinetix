@@ -1,5 +1,5 @@
 import 'server-only';
-import { cookies } from 'next/headers';
+import { cookies, headers as requestHeaders } from 'next/headers';
 import { redirect, unstable_rethrow } from 'next/navigation';
 import { cache } from 'react';
 import { errorText } from '@/i18n/errors';
@@ -7,6 +7,7 @@ import { getI18n } from '@/i18n/server';
 import { canSee, homeFor, type Section } from './access';
 import { API_URL, SESSION_COOKIE } from './config';
 import { CHANGE_PASSWORD_PATH } from './password';
+import { loginUrl, PATH_HEADER } from './return-path';
 import type { ActionResult, Me } from './types';
 
 export class ApiError extends Error {
@@ -74,7 +75,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
   const headers: Record<string, string> = { accept: 'application/json' };
   if (!opts.anonymous) {
     const token = (await cookies()).get(SESSION_COOKIE)?.value;
-    if (!token) redirect('/login');
+    if (!token) redirect(loginUrl(await currentPath()));
     headers.authorization = `Bearer ${token}`;
   }
   if (opts.body !== undefined) headers['content-type'] = 'application/json';
@@ -93,7 +94,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
   } catch {
     throw new ApiError(0, "Can't reach KINETIX Cloud. Check your connection and try again.", 'NETWORK');
   }
-  if (res.status === 401 && !opts.anonymous) redirect('/auth/end?reason=expired');
+  if (res.status === 401 && !opts.anonymous) redirect(loginUrl(await currentPath(), '/auth/end', { reason: 'expired' }));
   if (!res.ok) {
     const err = await errorFrom(res);
     // Signed in with a temporary password: the API allows nothing else until it is changed.
@@ -107,6 +108,15 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
   const text = await res.text();
   if (opts.text) return text as T;
   return (text ? JSON.parse(text) : null) as T;
+}
+
+/** The page being opened (set by the proxy), to come back to after signing in. */
+async function currentPath(): Promise<string | null> {
+  try {
+    return (await requestHeaders()).get(PATH_HEADER);
+  } catch {
+    return null;
+  }
 }
 
 export type Loaded<T> = { data: T; error?: undefined } | { data?: undefined; error: string };

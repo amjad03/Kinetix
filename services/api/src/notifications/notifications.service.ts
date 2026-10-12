@@ -198,6 +198,16 @@ export class NotificationsService {
     );
   }
 
+  /** The accounts office reminded a family of what is still due (at most once a day per student). */
+  async feeReminder(tx: Tx, f: { studentId: string; balancePaise: number; dueOn: string; day: string }): Promise<void> {
+    await this.insertFor(
+      tx,
+      sql`select g.user_id from guardians g where g.student_id = ${f.studentId}::uuid
+          union select s.user_id from students s where s.id = ${f.studentId}::uuid and s.user_id is not null`,
+      { kind: 'fee', text: texts.feeReminder({ amountPaise: f.balancePaise, dueOn: f.dueOn }), data: { studentId: f.studentId }, dedupeKey: `fee-reminder:${f.studentId}:${f.day}` },
+    );
+  }
+
   /** A fee payment went through: the student's family gets the receipt number. */
   async feePaid(tx: Tx, p: { paymentId: string; studentId: string; studentName: string; title: string; amountPaise: number; receiptNo: string }): Promise<void> {
     await this.insertFor(

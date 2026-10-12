@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { IssueFeeButton } from '@/components/fees/IssueFeeDialog';
 import { InvoiceFilters } from '@/components/fees/InvoiceFilters';
 import { InvoicesTable } from '@/components/fees/InvoicesTable';
-import { LinkButton } from '@/components/LinkButton';
+import { FeesNav } from '@/components/fees/FeesNav';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
@@ -12,7 +12,6 @@ import { schoolToday, TIMEZONE } from '@/lib/school';
 import { getI18n } from '@/i18n/server';
 import type { FeeInvoice, FeeSummary } from '@/lib/types';
 
-import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('fees.invoices') };
 }
@@ -40,16 +39,12 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <div className="-ml-2 mb-1">
-        <LinkButton href="/fees" size="small" startIcon={<ArrowBack />}>
-          {t('nav.fees')}
-        </LinkButton>
-      </div>
       <PageHeader
         title={className ? t('fees.invoicesTitle', { name: className }) : t('fees.invoices')}
         subtitle={t('fees.invoicesSubtitle')}
         actions={<IssueFeeButton classes={classes.data ?? []} today={today} defaultClassId={classId || undefined} />}
       />
+      <FeesNav value="invoices" />
       <InvoiceFilters status={status} classId={classId} classes={filterClasses} />
       {invoices.error !== undefined ? <ErrorState message={invoices.error} /> : <InvoicesTable key={`${status}:${classId}`} invoices={list} today={today} timeZone={TIMEZONE} />}
     </>

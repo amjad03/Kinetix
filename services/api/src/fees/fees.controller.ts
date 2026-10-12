@@ -18,7 +18,7 @@ import {
 } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, ne, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, ne, sql } from 'drizzle-orm';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -45,6 +45,7 @@ const CounterBody = z.object({
   method: z.enum(['cash', 'cheque', 'bank_transfer', 'upi']),
   reference: z.string().trim().max(100).optional(),
 });
+const RemindBody = z.object({ studentIds: z.array(z.uuid()).min(1).max(500) });
 const CheckoutBody = z.object({ amountPaise: Paise.optional(), returnUrl: z.url().max(300).optional() });
 const ConfirmBody = z.object({ providerPaymentId: z.string().min(1).max(100), signature: z.string().min(1).max(200), /** A hosted checkout's whole response (PayU). */ fields: z.record(z.string(), z.string().max(500)).optional() });
 
@@ -118,6 +119,55 @@ export class FeesController {
   @Auth('user', FEE_ROLES)
   summary(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) => feeSummary(tx));
+  }
+
+  /** Paid receipts of the last few months (newest first): the monthly collection chart and recent receipts. */
+  @Get('payments')
+  @Auth('user', FEE_ROLES)
+  payments(@CurrentPrincipal() p: UserPrincipal, @Query('months') months?: string) {
+    const m = Math.min(24, Math.max(1, Number(months ?? 6) || 6));
+    return this.db.withTenant(p.tenantId, (tx) =>
+      tx
+        .select({
+          id: feePayments.id,
+          receiptNo: feePayments.receiptNo,
+          amountPaise: feePayments.amountPaise,
+          method: feePayments.method,
+          paidAt: feePayments.paidAt,
+          student: { id: students.id, fullName: students.fullName, rollNo: students.rollNo },
+          className: sections.displayName,
+        })
+        .from(feePayments)
+        .innerJoin(feeInvoices, eq(feeInvoices.id, feePayments.invoiceId))
+        .innerJoin(students, eq(students.id, feePayments.studentId))
+        .innerJoin(sections, eq(sections.id, feeInvoices.sectionId))
+        .where(and(eq(feePayments.status, 'paid'), gte(feePayments.paidAt, sql`date_trunc('month', now()) - (${m - 1} || ' months')::interval`)))
+        .orderBy(desc(feePayments.paidAt))
+        .limit(5000),
+    );
+  }
+
+  /** Reminds the families of these students about everything still due (once a day per student). */
+  @Post('reminders')
+  @HttpCode(200)
+  @Auth('user', FEE_ROLES)
+  remind(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(RemindBody)) body: z.infer<typeof RemindBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [tenant] = await tx.select({ timezone: tenants.timezone }).from(tenants);
+      const today = localParts(new Date(), tenant?.timezone ?? 'Asia/Kolkata').date;
+      const due = await tx
+        .select({ studentId: feeInvoices.studentId, balance: sql<number>`(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise})::int`, dueOn: feeInvoices.dueOn })
+        .from(feeInvoices)
+        .where(and(eq(feeInvoices.status, 'due'), inArray(feeInvoices.studentId, [...new Set(body.studentIds)])));
+      const per = new Map<string, { balancePaise: number; dueOn: string; invoices: number }>();
+      for (const d of due) {
+        const cur = per.get(d.studentId) ?? { balancePaise: 0, dueOn: d.dueOn, invoices: 0 };
+        per.set(d.studentId, { balancePaise: cur.balancePaise + d.balance, dueOn: d.dueOn < cur.dueOn ? d.dueOn : cur.dueOn, invoices: cur.invoices + 1 });
+      }
+      for (const [studentId, r] of per) await this.notifications.feeReminder(tx, { studentId, balancePaise: r.balancePaise, dueOn: r.dueOn, day: today });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'fees.reminded', subjectType: 'fee_reminder', subjectId: randomUUID(), data: { students: per.size } });
+      return { reminded: per.size, skipped: new Set(body.studentIds).size - per.size };
+    });
   }
 
   @Post('invoices/:id/cancel')

@@ -73,7 +73,7 @@ export class StudentsController {
           ),
         )
         .orderBy(asc(sections.displayName), asc(students.rollNo))
-        .limit(200),
+        .limit(5000),
     );
   }
 
