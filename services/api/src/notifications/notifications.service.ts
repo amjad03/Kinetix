@@ -223,6 +223,11 @@ export class NotificationsService {
     );
   }
 
+  /** A fees-desk decision about one student (concession, refund, cheque bounce, write-off): the family and the student are told. */
+  async feeDeskNotice(tx: Tx, studentId: string, n: { text: Localized; data: Record<string, string>; dedupeKey: string }): Promise<void> {
+    await this.insertFor(tx, this.studentAndFamily(studentId), { kind: 'fee', ...n });
+  }
+
   /** HR, payroll and document events for specific users (idempotent per user and dedupe key). */
   async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare' | 'survey' | 'task' | 'homework' | 'calendar' | 'transport'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean } = {}): Promise<void> {
     if (userIds.length === 0) return;

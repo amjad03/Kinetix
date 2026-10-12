@@ -132,6 +132,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'finance',
     items: [
       { href: '/fees', label: 'nav.fees', section: 'fees', icon: 'finance' },
+      { href: '/accounts', label: 'nav.accountsDesk', section: 'finance', icon: 'finance' },
       { href: '/scholarships', label: 'nav.scholarships', section: 'finance', icon: 'finance' },
       { href: '/budgets', label: 'nav.budgets', section: 'finance', icon: 'finance' },
       { href: '/gl-export', label: 'nav.glExport', section: 'finance', icon: 'finance' },

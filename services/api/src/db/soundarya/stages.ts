@@ -23,6 +23,7 @@ import { depthSamples } from './depth.js';
 import { accreditationSamples } from './accreditation.js';
 import { migrationAndExaminer } from './migration-examiner.js';
 import { gatewayBooksSamples } from './gateway-books.js';
+import { feeAccountsSamples } from './fee-accounts.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -83,5 +84,6 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['accreditation: NAAC entries, DVV, IQAC workspace and teacher evidence', accreditationSamples],
   ['data migration history, university templates, transcripts and the external examiner portal', migrationAndExaminer],
   ['books, gateway settlements, Tally mapping, single sign-on and online-class attendance', gatewayBooksSamples],
+  ['fees and accounts desk: structures, concessions, cheques, refunds, write-offs, vouchers and cash closing', feeAccountsSamples],
   ['DigiLocker settings, APAAR ids, devices, tags, LTI platform and early alerts', integrationSamples],
 ];

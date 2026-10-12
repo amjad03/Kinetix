@@ -1318,6 +1318,8 @@ export const feeInvoices = pgTable(
     /** Invoices issued together to a class share a batch. */
     batchId: uuid('batch_id').notNull(),
     title: text('title').notNull(),
+    /** INV/<FY>/<n> from the invoice numbering series, given the first time the accounts desk lists it. */
+    invoiceNo: text('invoice_no'),
     amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
     paidPaise: bigint('paid_paise', { mode: 'number' }).notNull().default(0),
     dueOn: date('due_on').notNull(),
@@ -3019,6 +3021,14 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'fee_concessions',
+  'fee_cheques',
+  'fee_refund_requests',
+  'fee_write_offs',
+  'acct_voucher_requests',
+  'fee_cash_closings',
+  'acct_period_closes',
+  'fee_accounts_settings',
   'settlement_batches',
   'settlement_lines',
   'acct_accounts',
