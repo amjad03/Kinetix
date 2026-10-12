@@ -173,6 +173,12 @@ export default area(
     "v2.cp.status": "Status",
     "v2.cp.live": "Live",
     "v2.cp.paused": "Paused",
+    "v2.set.nav": "Settings",
+    "v2.set.g.institution": "Institution",
+    "v2.set.g.automation": "Workflows and approvals",
+    "v2.set.g.data": "Data and integrations",
+    "v2.set.g.compliance": "Security and compliance",
+    "v2.set.g.billing": "Billing",
   },
   {
     hi: {
@@ -346,6 +352,12 @@ export default area(
       "v2.cp.status": "स्थिति",
       "v2.cp.live": "सक्रिय",
       "v2.cp.paused": "रुका हुआ",
+      "v2.set.nav": "सेटिंग्स",
+      "v2.set.g.institution": "संस्थान",
+      "v2.set.g.automation": "वर्कफ़्लो और स्वीकृतियाँ",
+      "v2.set.g.data": "डेटा और एकीकरण",
+      "v2.set.g.compliance": "सुरक्षा और अनुपालन",
+      "v2.set.g.billing": "बिलिंग",
     },
     kn: {
       "shell.fav.title": "ಮೆಚ್ಚಿನವು",
@@ -518,6 +530,12 @@ export default area(
       "v2.cp.status": "ಸ್ಥಿತಿ",
       "v2.cp.live": "ಸಕ್ರಿಯ",
       "v2.cp.paused": "ವಿರಾಮದಲ್ಲಿ",
+      "v2.set.nav": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+      "v2.set.g.institution": "ಸಂಸ್ಥೆ",
+      "v2.set.g.automation": "ವರ್ಕ್‌ಫ್ಲೋ ಮತ್ತು ಅನುಮೋದನೆಗಳು",
+      "v2.set.g.data": "ಡೇಟಾ ಮತ್ತು ಸಂಯೋಜನೆಗಳು",
+      "v2.set.g.compliance": "ಭದ್ರತೆ ಮತ್ತು ಅನುಸರಣೆ",
+      "v2.set.g.billing": "ಬಿಲ್ಲಿಂಗ್",
     },
   },
 );
