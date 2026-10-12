@@ -1,9 +1,3 @@
-import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
-import InboxOutlined from '@mui/icons-material/InboxOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { TextInput } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
@@ -17,6 +11,8 @@ import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import { accreditationPath, isDay, type ClassroomAnalytics, type Kpis, type ReportMeta, type ReportResult, type Schedule } from '@/lib/insights';
 
+import { Button, Card } from '@/components/kx';
+import { FileDown as FileDownloadOutlined, Inbox as InboxOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.reports') };
 }
@@ -58,19 +54,19 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader title={t('reports.title')} subtitle={t('reports.subtitle')} />
-      <Box sx={{ mb: 2 }}>
+      <div className="mb-4">
         <LinkButton href="/reports/custom" variant="outlined" data-testid="custom-reports-link">
           {t('rb.title')}
         </LinkButton>
-      </Box>
-      <Box component="form" method="get" sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
+      </div>
+      <form className="flex gap-3 flex-wrap items-center mb-6" method="get">
         <TextInput type="date" name="from" label={t('reports.from')} defaultValue={from ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
         <TextInput type="date" name="to" label={t('reports.to')} defaultValue={to ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
         {sp.report && <input type="hidden" name="report" value={sp.report} />}
         <Button type="submit" variant="outlined">
           {t('reports.apply')}
         </Button>
-      </Box>
+      </form>
 
       {kpis?.error !== undefined && <ErrorState message={kpis.error} />}
       {k && (
@@ -96,14 +92,14 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
             <StatTile label={t('reports.classroom.boardsUsed')} value={fmt.number(classroom.data.sessions.boards)} />
           </StatGrid>
           <SectionTitle>{t('reports.classroom.byClass')}</SectionTitle>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">
             {t('reports.classroom.byClassHint')}
-          </Typography>
+          </p>
           <ClassEngagementTable rows={classroom.data.bySection} i18n={i18n} />
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mt: 2 }}>
+          <div className="grid gap-4 grid-cols-[1fr] md:grid-cols-[1fr_1fr] mt-4">
             <ToolUseTable rows={classroom.data.tools} />
             <CoverageTable rows={classroom.data.coverage} />
-          </Box>
+          </div>
         </>
       )}
 
@@ -125,23 +121,23 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       {leader && (
         <>
           <SectionTitle>{t('reports.accreditation')}</SectionTitle>
-          <Card sx={{ p: 2.5 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          <Card className="p-5">
+            <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">
               {t('reports.accreditation.lead')}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            </p>
+            <div className="flex gap-2 flex-wrap">
               {(['naac', 'nirf', 'aishe'] as const).map((f) => (
                 <Button key={f} variant="outlined" href={accreditationPath(f)} startIcon={<FileDownloadOutlined />}>
                   {f.toUpperCase()}
                 </Button>
               ))}
-            </Box>
+            </div>
           </Card>
         </>
       )}
 
       <SectionTitle>{t('reports.schedules')}</SectionTitle>
-      <Card sx={{ p: 2.5 }}>
+      <Card className="p-5">
         {schedules.error !== undefined ? <ErrorState message={schedules.error} /> : <Schedules schedules={schedules.data} reports={catalogue.data} />}
       </Card>
     </>

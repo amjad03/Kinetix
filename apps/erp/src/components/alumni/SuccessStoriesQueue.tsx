@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { reviewStory } from '@/app/(dashboard)/alumni/actions';
 import { Bar, FormDialog, Grid, InfoDialog, Pill, useToast, type Col } from '@/components/ops/kit';
@@ -9,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { StoryRow } from '@/lib/pathways-a';
 
+import { Button } from '@/components/kx';
 const STATUSES = ['submitted', 'published', 'rejected'] as const;
 
 /** The alumni office's queue of success stories written by alumni: read, publish (optionally featured) or send back. */
@@ -41,7 +39,7 @@ export function SuccessStoriesQueue({ stories }: { stories: StoryRow[] }) {
       {review && review.status === 'submitted' && (
         <FormDialog
           title={review.title}
-          intro={<Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{review.body}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] whitespace-pre-wrap">{review.body}</p>}
           fields={[
             { name: 'decision', label: t('ssq.decision'), kind: 'select', required: true, init: 'publish', options: [{ value: 'publish', label: t('ssq.publish') }, { value: 'reject', label: t('ssq.sendBack') }] },
             { name: 'note', label: t('ops.f.note') },
@@ -56,7 +54,7 @@ export function SuccessStoriesQueue({ stories }: { stories: StoryRow[] }) {
       )}
       {review && review.status !== 'submitted' && (
         <InfoDialog title={review.title} onClose={() => setReview(null)}>
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{review.body}</Typography>
+          <p className="text-[13px] leading-[19px] whitespace-pre-wrap">{review.body}</p>
         </InfoDialog>
       )}
       {toastNode}

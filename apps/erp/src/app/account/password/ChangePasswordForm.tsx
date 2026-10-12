@@ -1,15 +1,4 @@
 'use client';
-
-import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined';
-import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -19,6 +8,8 @@ import { useI18n } from '@/i18n/client';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password';
 import { changePassword, type ChangePasswordState } from './actions';
 
+import { Alert, Button, CircularProgress, IconButton, InputAdornment } from '@/components/kx';
+import { Eye as VisibilityOutlined, EyeOff as VisibilityOffOutlined } from 'lucide-react';
 export function ChangePasswordForm({ forced, hasPassword, emailName, next, back }: { forced: boolean; hasPassword: boolean; emailName: string; next: string; back: string }) {
   const [state, action, pending] = useActionState<ChangePasswordState, FormData>(changePassword, {});
   const [show, setShow] = useState(false);
@@ -39,41 +30,30 @@ export function ChangePasswordForm({ forced, hasPassword, emailName, next, back 
   ];
 
   return (
-    <Box component="main" sx={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', bgcolor: 'm3.surfaceContainer', p: 2 }}>
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: 1040,
-          bgcolor: 'm3.surfaceContainerLowest',
-          borderRadius: '28px',
-          p: { xs: 3, sm: 5 },
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          columnGap: 6,
-          rowGap: 3,
-        }}
+    <main className="min-h-[100dvh] grid place-items-center bg-muted p-4">
+      <div className="w-full max-w-[1040px] bg-card rounded-[28px] p-6 sm:p-10 grid grid-cols-[1fr] md:grid-cols-[1fr_1fr] gap-x-12 gap-y-6"
       >
-        <Box>
+        <div>
           <LogoMark size={48} />
-          <Typography variant="h2" component="h1" sx={{ mt: 3, fontSize: { xs: '2rem', md: '2.25rem' }, lineHeight: '44px' }}>
+          <h1 className="font-display mt-6 text-[2rem] md:text-[2.25rem] leading-[44px]">
             {forced ? t('account.password.forcedTitle') : t('account.password.title')}
-          </Typography>
-          <Typography variant="body1" sx={{ mt: 2, color: 'text.secondary', maxWidth: 420 }}>
+          </h1>
+          <p className="text-sm leading-[21px] mt-4 text-muted-foreground max-w-[420px]">
             {forced ? t('account.password.forcedLead') : hasPassword ? t('account.password.lead') : t('account.password.firstLead')}
-          </Typography>
-          <Typography variant="body2" sx={{ mt: 3, fontWeight: 500 }}>
+          </p>
+          <p className="text-[13px] leading-[19px] mt-6 font-medium">
             {t('account.password.rules')}
-          </Typography>
-          <Box component="ul" data-testid="password-rules" sx={{ mt: 1, pl: 2.5, color: 'text.secondary', typography: 'body2', '& li': { mb: 0.5 } }}>
+          </p>
+          <ul className="mt-2 pl-5 text-muted-foreground text-[13px] leading-[19px] [&_li]:mb-1" data-testid="password-rules">
             {rules.map((r) => (
               <li key={r}>{r}</li>
             ))}
-          </Box>
-        </Box>
+          </ul>
+        </div>
 
-        <Box component="form" action={action} noValidate>
+        <form action={action} noValidate>
           <input type="hidden" name="next" value={next} />
-          <Stack spacing={2.5}>
+          <div className="flex flex-col gap-5">
             {state.error && (
               <Alert severity="error" role="alert" data-testid="password-error">
                 {state.error}
@@ -97,7 +77,7 @@ export function ChangePasswordForm({ forced, hasPassword, emailName, next, back 
             <FormField label={t('account.password.confirm')} required>
               <TextInput name="confirm" type={type} autoComplete="new-password" required />
             </FormField>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', pt: 2, gap: 1 }}>
+            <div className="flex justify-end items-center pt-4 gap-2">
               {forced ? (
                 <Button type="submit" formAction={signOut} formNoValidate variant="text">
                   {t('shell.signOut')}
@@ -107,13 +87,13 @@ export function ChangePasswordForm({ forced, hasPassword, emailName, next, back 
                   {t('account.password.back')}
                 </Button>
               )}
-              <Button type="submit" variant="contained" disabled={pending} sx={{ minWidth: 104 }}>
+              <Button className="min-w-[104px]" type="submit" variant="contained" disabled={pending}>
                 {pending ? <CircularProgress size={20} color="inherit" aria-label={t('account.password.saving')} /> : t('account.password.submit')}
               </Button>
-            </Box>
-          </Stack>
-        </Box>
-      </Box>
-    </Box>
+            </div>
+          </div>
+        </form>
+      </div>
+    </main>
   );
 }

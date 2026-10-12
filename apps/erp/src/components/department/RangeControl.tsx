@@ -1,16 +1,4 @@
 'use client';
-
-import Check from '@mui/icons-material/Check';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import LinearProgress from '@mui/material/LinearProgress';
-import Stack from '@mui/material/Stack';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Typography from '@mui/material/Typography';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -18,6 +6,8 @@ import { deptQuery, MAX_RANGE_DAYS, RANGE_LABEL, type DeptRange, type RangeKey }
 import { addDays, daysBetween } from '@/lib/dates';
 import { useI18n } from '@/i18n/client';
 
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, LinearProgress, ToggleButton, ToggleButtonGroup, Typography } from '@/components/kx';
+import { Check } from 'lucide-react';
 /** M3 segmented button for the department's range: this week, 30 days, the term, or custom dates. */
 export function RangeControl({ deptId, range, today }: { deptId: string | null; range: DeptRange; today: string }) {
   const router = useRouter();
@@ -29,7 +19,7 @@ export function RangeControl({ deptId, range, today }: { deptId: string | null; 
 
   return (
     <>
-      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label={t('common.loading')} />}
+      {pending && <LinearProgress className="fixed top-0 left-0 right-0 z-[2000] h-[3px] rounded-none" aria-label={t('common.loading')} />}
       <ToggleButtonGroup
         exclusive
         size="small"
@@ -42,14 +32,13 @@ export function RangeControl({ deptId, range, today }: { deptId: string | null; 
         }}
       >
         {(['week', 'month', 'term', 'custom'] as const).map((k) => (
-          <ToggleButton
+          <ToggleButton className="gap-1.5 px-3.5"
             key={k}
             value={k}
-            sx={{ gap: 0.75, px: 1.75 }}
             // Custom opens the dialog again even when it is already chosen.
             onClick={k === 'custom' && range.key === 'custom' ? () => setCustom(true) : undefined}
           >
-            {range.key === k && <Check sx={{ fontSize: 18 }} />}
+            {range.key === k && <Check className="text-[18px]" />}
             {t(RANGE_LABEL[k])}
           </ToggleButton>
         ))}
@@ -84,7 +73,7 @@ function CustomDialog({ range, today, onClose, onApply }: { range: DeptRange; to
       >
         <DialogTitle>{t('dept.range.title')}</DialogTitle>
         <DialogContent>
-          <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+          <div className="flex flex-row gap-4 mt-2">
             <FormField label={t('dept.range.from')}>
               <TextInput
                 type="date"
@@ -97,8 +86,8 @@ function CustomDialog({ range, today, onClose, onApply }: { range: DeptRange; to
             <FormField label={t('dept.range.to')}>
               <TextInput type="date" value={to} onChange={(e) => setTo(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today } }} fullWidth />
             </FormField>
-          </Stack>
-          <Typography variant="caption" color={error && from && to ? 'error' : 'text.secondary'} component="p" sx={{ mt: 1.5 }}>
+          </div>
+          <Typography className="mt-3" variant="caption" color={error && from && to ? 'error' : 'text.secondary'} component="p">
             {error && from && to ? error : t('dept.range.help', { n: MAX_RANGE_DAYS })}
           </Typography>
         </DialogContent>

@@ -5,7 +5,7 @@ export function TableFrame({ children, testId }: { children: ReactNode; testId?:
   return (
     <div
       data-testid={testId}
-      className="overflow-x-auto rounded-lg border border-border bg-card shadow-card [&_.MuiTableCell-head]:bg-card [&_.MuiTableRow-root:last-of-type>.MuiTableCell-body]:border-b-0"
+      className="overflow-x-auto rounded-lg border border-border bg-card shadow-card [&_th]:bg-card [&_tbody>tr:last-of-type>td]:border-b-0"
     >
       {children}
     </div>

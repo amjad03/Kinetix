@@ -1,19 +1,11 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { changeStudentStatus } from '@/app/(dashboard)/students/actions';
 import { FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@/components/kx';
 /**
  * A status change that goes on the permanent record: the reason, the day it takes effect, and for
  * a leave of absence or suspension the day the student returns.
@@ -43,10 +35,10 @@ export function StatusDialog({ studentId, status, withReturn, onClose }: { stude
       >
         <DialogTitle>{t(`stu.moveTo.${status}` as MessageKey)}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ pt: 0.5 }}>
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex flex-col gap-4 pt-1">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('stu.reasonHelp')}
-            </Typography>
+            </p>
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('adm.field.reason')} required>
               <TextInput value={reason} onChange={(e) => setReason(e.target.value)} required multiline minRows={2} autoFocus slotProps={{ htmlInput: { maxLength: 500 } }} />
@@ -59,7 +51,7 @@ export function StatusDialog({ studentId, status, withReturn, onClose }: { stude
                 <TextInput type="date" value={returnOn} onChange={(e) => setReturnOn(e.target.value)} required={needsReturn} />
               </FormField>
             )}
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose(false)} disabled={pending}>

@@ -1,11 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRef, useState, useTransition } from 'react';
 import { addDataset, allocateScholar, importDoi, moveStage, recordThesisViva, runSimilarity, scheduleThesisViva, setCapacity, setExaminers, thesisDetail, uploadDatasetFile } from '@/app/(dashboard)/research/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col } from '@/components/ops/kit';
@@ -16,6 +9,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { examinersText, MAX_UPLOAD_BYTES, nextThesisStages, type DatasetRow, type OfficeSummary, type ScholarRow, type SupervisorRow, type ThesisRow } from '@/lib/pathways-a';
 
+import { Alert, Button, CircularProgress } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 export interface ResearchDeskData { summary: OfficeSummary; supervisors: SupervisorRow[]; scholars: ScholarRow[]; theses: ThesisRow[]; datasets: DatasetRow[] }
 
 const ACCESS = ['open', 'restricted', 'embargoed'] as const;
@@ -75,11 +70,11 @@ export function ResearchOfficeDesk({ data, canEdit }: { data: ResearchDeskData; 
         d.files.length === 0 ? (
           '-'
         ) : d.canOpen ? (
-          <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+          <div className="flex flex-row gap-1 flex-wrap">
             {d.files.map((f) => (
               <Button key={f.index} size="small" href={`/api/pathways?kind=dataset-file&id=${d.id}&index=${f.index}`}>{f.name}</Button>
             ))}
-          </Stack>
+          </div>
         ) : (
           t('rsd.locked', { n: d.files.length })
         ),
@@ -156,7 +151,7 @@ export function ResearchOfficeDesk({ data, canEdit }: { data: ResearchDeskData; 
 
   return (
     <>
-      <Typography variant="h5" component="h2" sx={{ mt: 4, fontSize: '1.25rem', fontWeight: 600 }}>{t('rsd.title')}</Typography>
+      <h2 className="mt-8 text-[1.25rem] font-semibold">{t('rsd.title')}</h2>
       <Tabbed label={t('rsd.title')} initial="office" tabs={tabs} />
       {cap && (
         <FormDialog
@@ -201,7 +196,7 @@ export function ResearchOfficeDesk({ data, canEdit }: { data: ResearchDeskData; 
       {doi && (
         <FormDialog
           title={t('rsd.importDoi')}
-          intro={<Typography variant="body2">{t('rsd.doiHint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('rsd.doiHint')}</p>}
           fields={[{ name: 'doi', label: t('rsd.doi'), required: true }]}
           submitLabel={t('rsd.import')}
           onSubmit={async (v) => {
@@ -248,13 +243,13 @@ function DatasetFileDialog({ dataset, onClose }: { dataset: DatasetRow; onClose:
         </>
       }
     >
-      <Stack spacing={2} sx={{ pt: 1 }}>
-        <Typography variant="body2">{t('rsd.fileHint')}</Typography>
+      <div className="flex flex-col gap-4 pt-2">
+        <p className="text-[13px] leading-[19px]">{t('rsd.fileHint')}</p>
         <FormField label={t('rsd.f.file')} required>
           <input type="file" aria-label={t('rsd.f.file')} data-testid="rsd-file-input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </FormField>
         {error && <Alert severity="error">{error}</Alert>}
-      </Stack>
+      </div>
     </Dialog>
   );
 }
@@ -278,12 +273,12 @@ function ThesisDialog({ row, canEdit, onClose, toast }: { row: ThesisRow; canEdi
       <ReadError message={d.error} />
       {x && (
         <>
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mb: 2, alignItems: 'center' }}>
+          <div className="flex flex-row gap-2 flex-wrap mb-4 items-center">
             <Pill label={t(`rsd.stage.${x.stage}` as MessageKey)} warn={false} />
             <Pill label={`${x.scholar.fullName} (${x.scholar.programme})`} warn={false} />
             <Pill label={score === null ? t('rsd.noSimilarity') : t('rsd.similarity', { n: fmt.number(score), limit: x.similarityLimitPercent })} warn={score !== null && score > x.similarityLimitPercent} />
-          </Stack>
-          {x.abstract && <Typography variant="body2" sx={{ mb: 2 }}>{x.abstract}</Typography>}
+          </div>
+          {x.abstract && <p className="text-[13px] leading-[19px] mb-4">{x.abstract}</p>}
           {canEdit && (
             <Bar>
               <ActionButton label={t('rsd.runSimilarity')} run={() => runSimilarity(x.id)} onDone={(m) => { toast(m); d.reload(); }} />
@@ -292,7 +287,7 @@ function ThesisDialog({ row, canEdit, onClose, toast }: { row: ThesisRow; canEdi
               <Button size="small" onClick={() => setDlg('viva')}>{t('rsd.scheduleViva')}</Button>
             </Bar>
           )}
-          {!x.hasText && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('rsd.noText')}</Typography>}
+          {!x.hasText && <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('rsd.noText')}</p>}
           {x.similarity && x.similarity.matches.length > 0 && (
             <>
               <Heading>{t('rsd.closestMatches')}</Heading>
@@ -320,7 +315,7 @@ function ThesisDialog({ row, canEdit, onClose, toast }: { row: ThesisRow; canEdi
           {dlg === 'stage' && (
             <FormDialog
               title={t('rsd.moveStage')}
-              intro={<Typography variant="body2">{t('rsd.overrideHint', { limit: x.similarityLimitPercent })}</Typography>}
+              intro={<p className="text-[13px] leading-[19px]">{t('rsd.overrideHint', { limit: x.similarityLimitPercent })}</p>}
               fields={[
                 { name: 'to', label: t('rsd.col.stage'), kind: 'select', required: true, options: stageOptions },
                 { name: 'note', label: t('ops.f.note') },
@@ -333,7 +328,7 @@ function ThesisDialog({ row, canEdit, onClose, toast }: { row: ThesisRow; canEdi
           {dlg === 'examiners' && (
             <FormDialog
               title={t('rsd.setExaminers')}
-              intro={<Typography variant="body2">{t('rsd.examinersHint')}</Typography>}
+              intro={<p className="text-[13px] leading-[19px]">{t('rsd.examinersHint')}</p>}
               fields={[{ name: 'examiners', label: t('rsd.examiners'), kind: 'multiline', init: examinersText(x.examiners) }]}
               onSubmit={(v) => setExaminers(x.id, v)}
               onClose={done}
@@ -342,7 +337,7 @@ function ThesisDialog({ row, canEdit, onClose, toast }: { row: ThesisRow; canEdi
           {dlg === 'viva' && (
             <FormDialog
               title={t('rsd.scheduleViva')}
-              intro={<Typography variant="body2">{t('rsd.panelHint')}</Typography>}
+              intro={<p className="text-[13px] leading-[19px]">{t('rsd.panelHint')}</p>}
               fields={[
                 { name: 'kind', label: t('rsd.col.kind'), kind: 'select', init: 'open_defence', options: [{ value: 'pre_submission', label: t('rsd.vivaKind.pre_submission') }, { value: 'open_defence', label: t('rsd.vivaKind.open_defence') }] },
                 { name: 'scheduledAt', label: t('rsd.col.when'), kind: 'datetime', required: true },

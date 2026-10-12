@@ -1,20 +1,11 @@
 'use client';
-
-import HeadphonesOutlined from '@mui/icons-material/HeadphonesOutlined';
-import Mic from '@mui/icons-material/Mic';
-import Stop from '@mui/icons-material/Stop';
-import VolumeOff from '@mui/icons-material/VolumeOff';
-import VolumeUp from '@mui/icons-material/VolumeUp';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Slider from '@mui/material/Slider';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { useI18n } from '@/i18n/client';
 import type { LiveAudioPlayer } from './audio-player';
 
+import { Button, IconButton, Slider, Tooltip } from '@/components/kx';
+import { Headphones as HeadphonesOutlined, Mic, Square as Stop, Volume2 as VolumeUp, VolumeX as VolumeOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
 /**
  * "Teacher's mic is on" with Listen; while listening, mute, volume and Stop. Shown only when
  * this viewer may hear class audio and the teacher has it on.
@@ -42,48 +33,24 @@ export function LiveAudioControls({
   }, [listening, player]);
 
   return (
-    <Box
+    <div className="flex items-center gap-2 pl-3 pr-1 py-1 rounded-[24px] bg-secondary text-secondary-foreground min-h-[48px]"
       data-testid="live-audio"
       data-listening={listening ? 'true' : 'false'}
       data-played={stats.played}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        pl: 1.5,
-        pr: 0.5,
-        py: 0.5,
-        borderRadius: '24px',
-        bgcolor: 'm3.secondaryContainer',
-        color: 'm3.onSecondaryContainer',
-        minHeight: 48,
-      }}
     >
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-        <Box
-          sx={{
-            display: 'grid',
-            placeItems: 'center',
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
-            bgcolor: 'kx.live',
-            color: '#fff',
-            '@keyframes kxMicPulse': { '0%, 100%': { boxShadow: '0 0 0 0 rgba(217,48,37,.45)' }, '50%': { boxShadow: '0 0 0 6px rgba(217,48,37,0)' } },
-            animation: listening ? 'kxMicPulse 1.6s ease-in-out infinite' : 'none',
-            '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-          }}
+      <div className="inline-flex items-center gap-1.5">
+        <div className={cn('grid place-items-center w-[28px] h-[28px] rounded-full bg-orange text-white motion-reduce:[animation:none]', listening ? '[animation:kxMicPulse_1.6s_ease-in-out_infinite]' : '[animation:none]')}
         >
-          <Mic sx={{ fontSize: 18 }} />
-        </Box>
-        <Typography variant="body2" sx={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
+          <Mic className="text-[18px]" />
+        </div>
+        <p className="text-[13px] leading-[19px] font-medium whitespace-nowrap">
           {t('live.mic.on')}
-        </Typography>
-      </Box>
+        </p>
+      </div>
       {listening ? (
         <>
           <Tooltip title={muted ? t('live.mic.unmute') : t('live.mic.mute')}>
-            <IconButton
+            <IconButton className="text-inherit"
               size="small"
               aria-label={muted ? t('live.mic.unmuteClass') : t('live.mic.muteClass')}
               aria-pressed={muted}
@@ -91,12 +58,11 @@ export function LiveAudioControls({
                 player.setMuted(!muted);
                 setMuted(!muted);
               }}
-              sx={{ color: 'inherit' }}
             >
-              {muted ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
+              {muted ? <VolumeOff className="size-5" /> : <VolumeUp className="size-5" />}
             </IconButton>
           </Tooltip>
-          <Slider
+          <Slider className="w-[64px] sm:w-[96px] mx-1 text-secondary-foreground"
             size="small"
             aria-label={t('live.mic.volume')}
             min={0}
@@ -112,17 +78,16 @@ export function LiveAudioControls({
                 player.setMuted(false);
               }
             }}
-            sx={{ width: { xs: 64, sm: 96 }, mx: 0.5, color: 'm3.onSecondaryContainer' }}
           />
-          <Button size="small" variant="text" startIcon={<Stop />} onClick={onStop} sx={{ color: 'inherit', borderRadius: 20 }}>
+          <Button className="text-inherit rounded-[200px]" size="small" variant="text" startIcon={<Stop />} onClick={onStop}>
             {t('live.mic.stop')}
           </Button>
         </>
       ) : (
-        <Button size="small" variant="contained" startIcon={<HeadphonesOutlined />} onClick={onListen} sx={{ borderRadius: 20 }}>
+        <Button className="rounded-[200px]" size="small" variant="contained" startIcon={<HeadphonesOutlined />} onClick={onListen}>
           {t('live.mic.listen')}
         </Button>
       )}
-    </Box>
+    </div>
   );
 }

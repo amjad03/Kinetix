@@ -1,10 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { saveMarks, submitValuation } from '@/app/(dashboard)/evaluation/desk/actions';
 import { Bar, Grid, useToast } from '@/components/ops/kit';
@@ -16,6 +10,7 @@ import { useI18n } from '@/i18n/client';
 import { annotationCounts, type AnnotationSet } from '@/lib/annotations';
 import { draftFrom, draftTotal, entriesFrom, missingMarks, type AllocationDetail, type MarkDraft, type MyAllocation } from '@/lib/evaluation-desk';
 
+import { Alert, Button } from '@/components/kx';
 /** The examiner's scripts: pending first, each opening its own marking screen. */
 export function MyScripts({ rows }: { rows: MyAllocation[] }) {
   const { t } = useI18n();
@@ -26,7 +21,7 @@ export function MyScripts({ rows }: { rows: MyAllocation[] }) {
         <StatTile label={t('ev.desk.stat.pending')} value={pending} tone={pending ? 'warning' : 'default'} testId="evd-pending" />
         <StatTile label={t('ev.desk.stat.submitted')} value={rows.length - pending} testId="evd-submitted" />
       </StatGrid>
-      <Typography sx={{ my: 2 }}>{t('ev.anon')}</Typography>
+      <p className="text-sm leading-[21px] my-4">{t('ev.anon')}</p>
       <Grid
         testId="evd-scripts"
         empty={t('ev.desk.empty')}
@@ -97,23 +92,23 @@ export function ScriptMarking({ detail, annotations }: { detail: AllocationDetai
         <LinkButton href="/evaluation/desk" size="small">
           {t('ev.desk.back')}
         </LinkButton>
-        <Typography variant="h6" component="h2" data-testid="evd-dummy">
+        <h2 className="text-base leading-6 font-medium tracking-[0.1px]" data-testid="evd-dummy">
           {t('ev.desk.script', { no: detail.dummyNo })}
-        </Typography>
+        </h2>
       </Bar>
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mt: 2, alignItems: 'flex-start' }}>
-        <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
+      <div className="flex flex-col md:flex-row gap-6 mt-4 items-start">
+        <div className="flex-1 min-w-0 w-full">
           {pages.length === 0 ? (
-            <Typography color="text.secondary">{t('ev.desk.noPages')}</Typography>
+            <p className="text-sm leading-[21px] text-muted-foreground">{t('ev.desk.noPages')}</p>
           ) : (
             <>
-              <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap' }}>
+              <div className="flex flex-row gap-2 mb-2 flex-wrap">
                 {pages.map((p) => (
                   <Button key={p.index} size="small" variant={p.index === page ? 'contained' : 'outlined'} onClick={() => setPage(p.index)} aria-label={t('ev.desk.page', { n: p.index + 1 })}>
                     {p.index + 1}
                   </Button>
                 ))}
-              </Stack>
+              </div>
               <PageAnnotator
                 allocationId={detail.id}
                 pageIndex={page}
@@ -124,13 +119,13 @@ export function ScriptMarking({ detail, annotations }: { detail: AllocationDetai
                 locked={submitted}
                 onChange={setMarksOn}
               />
-              <Typography variant="caption" color="text.secondary" data-testid="ann-count">
+              <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground" data-testid="ann-count">
                 {t('ev.ann.count', { n: Object.values(annotationCounts(marksOn)).reduce((a, b) => a + b, 0) })}
-              </Typography>
+              </span>
             </>
           )}
-        </Box>
-        <Stack spacing={1.5} sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0 }}>
+        </div>
+        <div className="flex flex-col gap-3 w-full md:w-[360px] shrink-0">
           <StatGrid min={110}>
             <StatTile label={t('ev.desk.col.total')} value={draftTotal(draft, questions)} caption={`/ ${max}`} testId="evd-total" />
             <StatTile label={t('ev.desk.stat.left')} value={missing} tone={missing ? 'warning' : 'default'} testId="evd-left" />
@@ -138,34 +133,33 @@ export function ScriptMarking({ detail, annotations }: { detail: AllocationDetai
           {submitted && <Alert severity="success">{t('ev.desk.locked')}</Alert>}
           {error && <Alert severity="error">{error}</Alert>}
           {questions.map((q) => (
-            <Stack key={q.id} spacing={0.5}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
-              <TextInput
+            <div className="flex flex-col gap-1" key={q.id}>
+            <div className="flex flex-row gap-2 items-start">
+              <TextInput className="w-[150px]"
                 label={t('ev.desk.question', { no: q.no, max: q.maxMarks })}
                 value={draft[q.id]?.marks ?? ''}
                 onChange={(e) => set(q.id, { marks: e.target.value })}
                 error={bad === q.id}
                 disabled={submitted}
                 slotProps={{ htmlInput: { inputMode: 'decimal', 'data-testid': `evd-marks-${q.no}` } }}
-                sx={{ width: 150 }}
               />
               <TextInput label={t('ev.desk.comment')} value={draft[q.id]?.comment ?? ''} onChange={(e) => set(q.id, { comment: e.target.value })} disabled={submitted} fullWidth />
-            </Stack>
+            </div>
             {!submitted && <GradeAssist allocationId={detail.id} questionId={q.id} questionNo={q.no} maxMarks={q.maxMarks} onMarks={(m) => set(q.id, { marks: String(m) })} />}
-            </Stack>
+            </div>
           ))}
           {!submitted && (
-            <Stack direction="row" spacing={1}>
+            <div className="flex flex-row gap-2">
               <Button variant="outlined" onClick={() => save()} disabled={pending} data-testid="evd-save">
                 {t('ev.desk.save')}
               </Button>
               <Button variant="contained" onClick={submit} disabled={pending} data-testid="evd-submit">
                 {t('ev.desk.submit')}
               </Button>
-            </Stack>
+            </div>
           )}
-        </Stack>
-      </Stack>
+        </div>
+      </div>
       {toastNode}
     </>
   );

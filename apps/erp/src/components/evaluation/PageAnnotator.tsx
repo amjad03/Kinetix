@@ -1,11 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Typography from '@mui/material/Typography';
 import { useRef, useState, type PointerEvent } from 'react';
 import { addAnnotation, removeAnnotation } from '@/app/(dashboard)/evaluation/desk/actions';
 import { TextInput } from '@/components/ui';
@@ -13,6 +6,9 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { ANNOTATION_TOOLS, extendStroke, inkAnnotation, newAnnotation, onPage, pointOnPage, strokePath, type Annotation, type AnnotationKind, type Point, type Stroke } from '@/lib/annotations';
 
+import { Box, Button, ToggleButton, ToggleButtonGroup } from '@/components/kx';
+import { cn } from '@/lib/utils';
+import { pal, size } from '@/lib/sx';
 const COLOUR = { tick: '#1b873f', cross: '#c62828', comment: '#1565c0', highlight: '#f9a825', ink: '#d81b60' } as const;
 const GLYPH = { tick: '✓', cross: '✗', comment: '\u{1F4AC}', ink: '✎' } as const;
 
@@ -98,10 +94,10 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
   const draft = tool === 'highlight' && start && cursor ? { x: Math.min(start.x, cursor.x), y: Math.min(start.y, cursor.y), w: Math.abs(start.x - cursor.x), h: Math.abs(start.y - cursor.y) } : null;
 
   return (
-    <Stack spacing={1}>
+    <div className="flex flex-col gap-2">
       {!locked && (
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-          <Typography variant="body2">{t('ev.ann.tools')}</Typography>
+        <div className="flex flex-row gap-2 items-center flex-wrap">
+          <p className="text-[13px] leading-[19px]">{t('ev.ann.tools')}</p>
           <ToggleButtonGroup size="small" exclusive value={tool} onChange={(_, v: AnnotationKind | null) => v && setTool(v)} aria-label={t('ev.ann.tools')}>
             {ANNOTATION_TOOLS.map((k) => (
               <ToggleButton key={k} value={k} data-testid={`ann-tool-${k}`}>
@@ -109,19 +105,18 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
-        </Stack>
+        </div>
       )}
       {!locked && (
-        <Typography variant="caption" color="text.secondary">
+        <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
           {t('ev.ann.hint')}
-        </Typography>
+        </span>
       )}
-      <Box
+      <div className={cn('relative inline-block max-w-full leading-[0]', locked ? '[touch-action:auto]' : '[touch-action:none]', locked ? 'cursor-default' : '[cursor:crosshair]')}
         ref={box}
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
-        sx={{ position: 'relative', display: 'inline-block', maxWidth: '100%', touchAction: locked ? 'auto' : 'none', cursor: locked ? 'default' : 'crosshair', lineHeight: 0 }}
         data-testid="ann-surface"
       >
         {/* The page is streamed through the download route so the session token stays in its cookie. */}
@@ -140,10 +135,10 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
             {[...strokes, ...(pen ? [pen] : [])].map((st, i) => <path key={`draft-${i}`} d={strokePath(st)} fill="none" stroke={COLOUR.ink} strokeDasharray="4 3" strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />)}
           </svg>
         )}
-        {draft && <Box sx={{ position: 'absolute', left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: `${draft.w * 100}%`, height: `${draft.h * 100}%`, border: `2px dashed ${COLOUR.highlight}`, pointerEvents: 'none' }} />}
-      </Box>
+        {draft && <div className="absolute pointer-events-none" style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: size(`${draft.w * 100}%`), height: size(`${draft.h * 100}%`), border: `2px dashed ${COLOUR.highlight}` }} />}
+      </div>
       {!locked && tool === 'ink' && (
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="flex flex-row gap-2 items-center flex-wrap">
           <Button size="small" variant="contained" disabled={strokes.length === 0} onClick={() => void saveInk()} data-testid="ink-save">
             {t('ev.ann.inkSave', { n: strokes.length })}
           </Button>
@@ -153,24 +148,24 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
           <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
             {t('ev.ann.inkClear')}
           </Button>
-        </Stack>
+        </div>
       )}
       {here.filter((a) => a.kind === 'ink').length > 0 && (
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="flex flex-row gap-2 items-center flex-wrap">
           {here.filter((a) => a.kind === 'ink').map((a, i) => (
             <Button key={a.id} size="small" color="inherit" disabled={locked} onClick={() => void remove(a)} aria-label={`${t('ev.ann.ink')} ${i + 1}: ${t('ev.ann.remove')}`}>
               {t('ev.ann.ink')} {i + 1} ✕
             </Button>
           ))}
-        </Stack>
+        </div>
       )}
       {before.length > 0 && (
-        <Typography variant="caption" color="text.secondary">
+        <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
           {t('ev.ann.earlier')}
-        </Typography>
+        </span>
       )}
       {pendingComment && (
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
+        <div className="flex flex-row gap-2 items-start">
           <TextInput label={t('ev.ann.commentLabel')} value={text} onChange={(e) => setText(e.target.value)} fullWidth autoFocus slotProps={{ htmlInput: { maxLength: 500, 'data-testid': 'ann-comment' } }} />
           <Button
             variant="contained"
@@ -185,14 +180,14 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
           >
             {t('ev.ann.commentAdd')}
           </Button>
-        </Stack>
+        </div>
       )}
       {error && (
-        <Typography color="error" variant="body2" role="alert">
+        <p className="text-[13px] leading-[19px] text-red-ink" role="alert">
           {error}
-        </Typography>
+        </p>
       )}
-    </Stack>
+    </div>
   );
 }
 
@@ -202,16 +197,15 @@ function Mark({ a, dim, label, onRemove, removeLabel }: { a: Annotation; dim?: b
   const stop = (e: PointerEvent) => e.stopPropagation();
   if (a.kind === 'highlight')
     return (
-      <Box
+      <div className={cn('absolute', dim ? 'bg-[rgba(117,117,117,0.18)]' : 'bg-[rgba(249,168,37,0.3)]')} style={{ left: `${a.x * 100}%`, top: `${a.y * 100}%`, width: size(`${a.w * 100}%`), height: size(`${a.h * 100}%`), border: `1px ${dim ? 'dashed' : 'solid'} ${colour}` }}
         title={label}
         onPointerDown={stop}
         onPointerUp={stop}
         onDoubleClick={onRemove}
-        sx={{ position: 'absolute', left: `${a.x * 100}%`, top: `${a.y * 100}%`, width: `${a.w * 100}%`, height: `${a.h * 100}%`, bgcolor: dim ? 'rgba(117,117,117,0.18)' : 'rgba(249,168,37,0.3)', border: `1px ${dim ? 'dashed' : 'solid'} ${colour}` }}
       />
     );
   return (
-    <Box
+    <Box className={cn('absolute [transform:translate(-50%,-50%)] [font:inherit] text-[22px] font-bold leading-none [background:none] border-0 p-0', onRemove ? 'cursor-pointer' : 'cursor-default', dim ? 'opacity-[0.6]' : 'opacity-[1]')} style={{ left: `${a.x * 100}%`, top: `${a.y * 100}%`, color: pal(colour) }}
       component={onRemove ? 'button' : 'span'}
       type={onRemove ? 'button' : undefined}
       title={label}
@@ -219,7 +213,6 @@ function Mark({ a, dim, label, onRemove, removeLabel }: { a: Annotation; dim?: b
       onPointerDown={stop}
       onPointerUp={stop}
       onClick={onRemove}
-      sx={{ position: 'absolute', left: `${a.x * 100}%`, top: `${a.y * 100}%`, transform: 'translate(-50%, -50%)', color: colour, font: 'inherit', fontSize: 22, fontWeight: 700, lineHeight: 1, background: 'none', border: 0, p: 0, cursor: onRemove ? 'pointer' : 'default', opacity: dim ? 0.6 : 1 }}
     >
       {GLYPH[a.kind]}
     </Box>

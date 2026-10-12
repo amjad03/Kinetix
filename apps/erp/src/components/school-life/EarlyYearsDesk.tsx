@@ -1,10 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addObservation, loadChild, seedFramework, setMilestone } from '@/app/(dashboard)/early-years/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, useToast, type Col, type Field } from '@/components/ops/kit';
@@ -13,6 +7,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { EY_DOMAINS, EY_STATUSES, type EyChild, type EyRecord, type EyTerm, type SectionOption } from '@/lib/school-life';
 
+import { Button, Link } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** Nursery to UKG: the class list, each child's milestones and observations, and the learning story. */
 export function EarlyYearsDesk({ sections, sectionId, kids, terms, canSeed, milestoneCount }: { sections: SectionOption[]; sectionId: string; kids: EyChild[]; terms: EyTerm[]; canSeed: boolean; milestoneCount: number }) {
   const { t, fmt } = useI18n();
@@ -60,13 +56,13 @@ export function EarlyYearsDesk({ sections, sectionId, kids, terms, canSeed, mile
         <UrlSelect label={t('ey.section')} param="sectionId" value={sectionId} options={sections.map((s) => ({ value: s.id, label: s.displayName }))} testId="ey-section" />
         {canSeed && milestoneCount === 0 && <ActionButton label={t('ey.seed')} run={seedFramework} onDone={toast} />}
       </Bar>
-      {milestoneCount === 0 && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('ey.noFramework')}</Typography>}
+      {milestoneCount === 0 && <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">{t('ey.noFramework')}</p>}
       <Grid testId="ey-children" empty={t('ey.empty')} rows={kids} cols={cols} />
 
       {child && (
         <InfoDialog title={child.record.student.fullName} onClose={() => setChild(null)}>
-          <Stack spacing={2} data-testid="ey-detail">
-            <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex flex-col gap-4" data-testid="ey-detail">
+            <div className="flex flex-row gap-2 items-center flex-wrap">
               <Button variant="contained" size="small" startIcon={<Add />} onClick={() => setNoting(true)}>{t('ey.addNote')}</Button>
               {terms.length > 0 && (
                 <>
@@ -78,36 +74,36 @@ export function EarlyYearsDesk({ sections, sectionId, kids, terms, canSeed, mile
                   <Link href={`/api/download?kind=learning-story&id=${child.id}&termId=${termId}`} download>{t('ey.story')}</Link>
                 </>
               )}
-            </Stack>
+            </div>
             {EY_DOMAINS.map((d) => {
               const ms = child.record.milestones.filter((m) => m.domain === d);
               if (ms.length === 0) return null;
               return (
                 <div key={d}>
-                  <Typography variant="subtitle2">{t(`ey.domain.${d}` as MessageKey)}</Typography>
+                  <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t(`ey.domain.${d}` as MessageKey)}</h6>
                   {ms.map((m) => (
-                    <Stack key={m.id} direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', py: 0.25 }}>
-                      <Typography variant="body2" sx={{ flex: '1 1 240px' }}>{m.title} ({m.ageBand})</Typography>
+                    <div className="flex flex-row gap-2 items-center flex-wrap py-0.5" key={m.id}>
+                      <p className="text-[13px] leading-[19px] flex-[1_1_240px]">{m.title} ({m.ageBand})</p>
                       {EY_STATUSES.map((s) => (
                         <Button key={s} size="small" disabled={pending} variant={m.status === s ? 'contained' : 'text'} onClick={() => mark(m.id, s)}>
                           {t(`ey.status.${s}` as MessageKey)}
                         </Button>
                       ))}
-                    </Stack>
+                    </div>
                   ))}
                 </div>
               );
             })}
             <div>
-              <Typography variant="subtitle2">{t('ey.observations')}</Typography>
-              {child.record.observations.length === 0 && <Typography variant="body2" color="text.secondary">{t('ey.noObservations')}</Typography>}
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('ey.observations')}</h6>
+              {child.record.observations.length === 0 && <p className="text-[13px] leading-[19px] text-muted-foreground">{t('ey.noObservations')}</p>}
               {child.record.observations.map((o) => (
-                <Typography key={o.id} variant="body2" sx={{ py: 0.25 }}>
+                <p className="text-[13px] leading-[19px] py-0.5" key={o.id}>
                   {fmt.date(o.observedOn)} <Pill label={t(`ey.domain.${o.domain}` as MessageKey)} /> {o.note} {o.status && <Pill label={t(`ey.status.${o.status}` as MessageKey)} />} {o.hasPhoto && <Pill label={t('ey.photo')} />}
-                </Typography>
+                </p>
               ))}
             </div>
-          </Stack>
+          </div>
         </InfoDialog>
       )}
       {noting && child && (

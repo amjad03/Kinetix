@@ -1,5 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { LinkButton } from '@/components/LinkButton';
@@ -11,6 +9,7 @@ import { api, load, requireSection } from '@/lib/api';
 import type { Structure } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('stu.promotion') };
 }
@@ -23,11 +22,11 @@ export default async function PromotionPage() {
   const classes = (structure.data?.sections ?? []).map((s) => ({ id: s.id, name: s.displayName, programId: s.programId, term: s.term, students: s.students, final: s.term >= (structure.data!.programs.find((p) => p.id === s.programId)?.termCount ?? Infinity) }));
   return (
     <>
-      <Box sx={{ ml: -1, mb: 0.5 }}>
+      <div className="-ml-2 mb-1">
         <LinkButton href="/students" size="small" startIcon={<ArrowBack />}>
           {t('nav.students')}
         </LinkButton>
-      </Box>
+      </div>
       <PageHeader title={t('stu.promotion')} subtitle={t('stu.promo.subtitle')} />
       {structure.error !== undefined ? <ErrorState message={structure.error} /> : <PromotionTool classes={classes} />}
     </>

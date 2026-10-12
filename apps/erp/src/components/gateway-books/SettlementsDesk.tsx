@@ -1,12 +1,11 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { fetchSettlement, importSettlement, resolveLine, saveGateway } from '@/app/(dashboard)/settlements/actions';
 import { ActionButton, Bar, FormDialog, Grid, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Button } from '@/components/kx';
 export interface GatewayView { gateway: 'razorpay' | 'payu' | null; configured: boolean; keyId: string | null; mode: string | null; webhookPath: string; payuWebhookPath: string }
 export interface Batch { id: string; provider: string; reference: string; settlementDate: string; grossPaise: number; feePaise: number; netPaise: number; lineCount: number; exceptionCount: number }
 export interface Exception { line: { id: string; providerPaymentId: string; amountPaise: number; exceptionReason: string; kind: string }; reference: string; provider: string }

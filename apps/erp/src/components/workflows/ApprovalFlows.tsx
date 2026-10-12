@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { setUpFlow } from '@/app/(dashboard)/workflows/bound-actions';
 import { FormDialog, Grid, Pill, useToast } from '@/components/ops/kit';
@@ -10,6 +7,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { APPROVER_ROLES, BOUND_FLOWS, type BoundFlow } from '@/lib/pathways-b';
 import type { DefinitionRow } from '@/lib/workflows';
 
+import { Button } from '@/components/kx';
 /** The five actions that can be routed for approval, whether the institution has set each one up, and a one-click setup. */
 export function ApprovalFlows({ definitions, isAdmin }: { definitions: DefinitionRow[]; isAdmin: boolean }) {
   const { t } = useI18n();
@@ -19,7 +17,7 @@ export function ApprovalFlows({ definitions, isAdmin }: { definitions: Definitio
   const flowName = (f: BoundFlow) => t(`pwb.flow.${f.requestType}` as MessageKey);
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('pwb.wf.help')}</Typography>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">{t('pwb.wf.help')}</p>
       <Grid
         testId="pwb-bound-flows"
         empty={t('pwb.wf.empty')}
@@ -42,7 +40,7 @@ export function ApprovalFlows({ definitions, isAdmin }: { definitions: Definitio
               isAdmin && !defOf(f) ? (
                 <Button size="small" variant="outlined" onClick={() => setSetting(f)} data-testid={`pwb-setup-${f.requestType}`}>{t('pwb.wf.setup')}</Button>
               ) : defOf(f) && !defOf(f)!.active ? (
-                <Typography variant="caption" color="text.secondary">{t('pwb.wf.switchedOff')}</Typography>
+                <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">{t('pwb.wf.switchedOff')}</span>
               ) : null,
           },
         ]}
@@ -50,7 +48,7 @@ export function ApprovalFlows({ definitions, isAdmin }: { definitions: Definitio
       {setting && (
         <FormDialog
           title={`${t('pwb.wf.setup')} · ${flowName(setting)}`}
-          intro={<Typography variant="body2" color="text.secondary">{t('pwb.wf.setupHelp')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.wf.setupHelp')}</p>}
           onSubmit={(v) => setUpFlow({ ...v, requestType: setting.requestType })}
           onClose={(m) => {
             setSetting(null);

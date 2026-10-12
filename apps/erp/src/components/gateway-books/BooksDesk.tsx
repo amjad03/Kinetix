@@ -1,14 +1,11 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addAccount, closeYear, loadDaybook, loadReports, postVoucher, voidVoucher } from '@/app/(dashboard)/books/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Button, TextField, Typography } from '@/components/kx';
 export interface Account { id: string; code: string; name: string; groupType: string; isCashBank: boolean; active: boolean }
 export interface FyClose { financialYear: string; surplusPaise: number; closedAt: string }
 interface Voucher { id: string; voucherType: string; number: string; date: string; narration: string; voided: boolean; lines: { code: string; accountName: string; debitPaise: number; creditPaise: number }[] }
@@ -146,7 +143,7 @@ export function BooksDesk({ accounts, years, initialTab }: { accounts: Account[]
           </Bar>
           {reports && (
             <>
-              <Typography variant="h6" sx={{ mt: 2 }}>{t('gb.rep.trial')}</Typography>
+              <h6 className="text-base leading-6 font-medium tracking-[0.1px] mt-4">{t('gb.rep.trial')}</h6>
               <Typography variant="body2" color={reports.trial.balanced ? 'text.secondary' : 'error'}>{reports.trial.balanced ? t('gb.rep.balanced') : t('gb.rep.unbalanced')}</Typography>
               <Grid
                 testId="books-trial"
@@ -159,11 +156,11 @@ export function BooksDesk({ accounts, years, initialTab }: { accounts: Account[]
                   { label: t('gb.col.credit'), num: true, cell: (r) => (r.creditPaise ? fmt.rupees(r.creditPaise) : '') },
                 ]}
               />
-              <Typography variant="h6" sx={{ mt: 3 }}>{t('gb.rep.ie')} ({reports.ie.financialYear})</Typography>
+              <h6 className="text-base leading-6 font-medium tracking-[0.1px] mt-6">{t('gb.rep.ie')} ({reports.ie.financialYear})</h6>
               {sumRows(reports.ie.income, reports.ie.totalIncomePaise, `${t('gb.rep.income')} ${t('gb.rep.total')}`)}
               {sumRows(reports.ie.expense, reports.ie.totalExpensePaise, `${t('gb.rep.expense')} ${t('gb.rep.total')}`)}
-              <Typography sx={{ mt: 1 }}>{t('gb.rep.surplus')}: {fmt.rupees(reports.ie.surplusPaise)}</Typography>
-              <Typography variant="h6" sx={{ mt: 3 }}>{t('gb.rep.bs')}</Typography>
+              <p className="text-sm leading-[21px] mt-2">{t('gb.rep.surplus')}: {fmt.rupees(reports.ie.surplusPaise)}</p>
+              <h6 className="text-base leading-6 font-medium tracking-[0.1px] mt-6">{t('gb.rep.bs')}</h6>
               {sumRows(reports.bs.assets, reports.bs.totalAssetsPaise, `${t('gb.rep.assets')} ${t('gb.rep.total')}`)}
               {sumRows([...reports.bs.liabilities, ...reports.bs.equity, { code: '', name: t('gb.rep.surplus'), paise: reports.bs.surplusPaise }], reports.bs.totalLiabilitiesPaise, `${t('gb.rep.liabilities')} ${t('gb.rep.total')}`)}
             </>
@@ -176,7 +173,7 @@ export function BooksDesk({ accounts, years, initialTab }: { accounts: Account[]
       label: t('gb.tab.years'),
       node: (
         <>
-          <Typography variant="body2" sx={{ mb: 1.5 }}>{t('gb.years.help')}</Typography>
+          <p className="text-[13px] leading-[19px] mb-3">{t('gb.years.help')}</p>
           <Grid
             testId="books-years"
             empty={t('gb.empty')}

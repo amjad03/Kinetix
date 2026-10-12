@@ -1,24 +1,4 @@
 'use client';
-
-import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
-import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
-import DoneAll from '@mui/icons-material/DoneAll';
-import FamilyRestroomOutlined from '@mui/icons-material/FamilyRestroomOutlined';
-import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
-import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Snackbar from '@mui/material/Snackbar';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition, type ReactNode } from 'react';
 import { DataTable } from '@/components/ui';
 import { clearBroadcast, deliveryReport } from '@/app/(dashboard)/messages/actions';
@@ -29,6 +9,9 @@ import { MiniBar } from '../Bars';
 import { EmptyState } from '../States';
 import { PriorityChip } from './priorities';
 
+import { Alert, Button, Card, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar, Tooltip } from '@/components/kx';
+import { CheckCheck as DoneAll, Eye as VisibilityOutlined, Megaphone as CampaignOutlined, Presentation as CastForEducationOutlined, Users as FamilyRestroomOutlined, UsersRound as GroupsOutlined } from 'lucide-react';
+import { cn } from '@/lib/utils';
 function audienceLabel(b: SentBroadcast, s: Structure, t: TFunction): string {
   const a = b.audience;
   if (a.all) return t('msg.mode.all');
@@ -45,12 +28,12 @@ function audienceLabel(b: SentBroadcast, s: Structure, t: TFunction): string {
 function Stat({ icon, children, title }: { icon: ReactNode; children: ReactNode; title: string }) {
   return (
     <Tooltip title={title}>
-      <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, '& svg': { fontSize: 18, color: 'text.secondary' } }}>
+      <span className="inline-flex items-center gap-1.5 [&_svg]:text-[18px] [&_svg]:text-muted-foreground">
         {icon}
-        <Typography variant="body2" component="span" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+        <span className="text-[13px] leading-[19px] tabular-nums">
           {children}
-        </Typography>
-      </Box>
+        </span>
+      </span>
     </Tooltip>
   );
 }
@@ -100,62 +83,49 @@ export function SentMessages({
   };
 
   return (
-    <Box sx={{ display: 'grid', gap: 1.5 }} data-testid="sent-messages">
+    <div className="grid gap-3" data-testid="sent-messages">
       {items.map((b) => {
         const d = b.delivery;
         const state = b.clearedAt ? 'cleared' : b.active ? 'active' : 'expired';
         return (
-          <Card key={b.id} component="article" data-testid="sent-message" sx={{ borderColor: state === 'active' && b.priority === 'emergency' ? 'error.main' : undefined }}>
-            <Box sx={{ p: 2.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Card className={cn(state === 'active' && b.priority === 'emergency' ? 'border-destructive' : '')} key={b.id} component="article" data-testid="sent-message">
+            <div className="p-5">
+              <div className="flex items-center gap-2 flex-wrap">
                 <PriorityChip priority={b.priority} />
                 {state === 'active' ? (
                   <Chip
                     size="small"
                     variant="outlined"
                     label={t('msg.state.active')}
-                    icon={<Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'kx.success', ml: '8px !important' }} />}
+                    icon={<span className="w-[8px] h-[8px] rounded-full bg-green ml-[8px_!important]" />}
                   />
                 ) : (
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {state === 'cleared' ? t('msg.state.cleared', { date: fmt.dateTime(b.clearedAt!, timeZone) }) : t('msg.state.expired', { date: fmt.dateTime(b.expiresAt, timeZone) })}
-                  </Typography>
+                  </span>
                 )}
-                <Box sx={{ flex: 1 }} />
+                <div className="flex-1" />
                 <Tooltip title={fmt.dateTime(b.createdAt, timeZone)}>
-                  <Typography variant="caption" color="text.secondary" suppressHydrationWarning>
+                  <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground" suppressHydrationWarning>
                     {fmt.relative(b.createdAt, now, timeZone)}
-                  </Typography>
+                  </span>
                 </Tooltip>
-              </Box>
-              <Typography variant="subtitle1" component="h3" sx={{ mt: 1 }}>
+              </div>
+              <h3 className="text-base leading-6 font-medium tracking-[0.1px] mt-2">
                 {b.title}
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mt: 0.25, whiteSpace: 'pre-wrap', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+              </h3>
+              <p className="text-[13px] leading-[19px] text-muted-foreground mt-0.5 whitespace-pre-wrap line-clamp-3 overflow-hidden"
               >
                 {b.body}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1 }}>
+              </p>
+              <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-2">
                 {t('msg.to', { audience: audienceLabel(b, structure, t), name: b.sender.fullName })}
                 {state === 'active' ? ` · ${t('msg.until', { time: `${fmt.time(b.expiresAt, timeZone)}${new Date(b.expiresAt).toDateString() !== now.toDateString() ? `, ${fmt.dateTime(b.expiresAt, timeZone, false)}` : ''}` })}` : ''}
-              </Typography>
+              </p>
 
-              <Box
-                sx={{
-                  mt: 1.5,
-                  pt: 1.5,
-                  borderTop: 1,
-                  borderColor: 'm3.outlineVariant',
-                  display: 'grid',
-                  gridTemplateColumns: '1fr auto',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
+              <div className="mt-3 pt-3 border-t border-border grid grid-cols-[1fr_auto] items-center gap-4"
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', columnGap: 2.5, rowGap: 1, flexWrap: 'wrap' }} data-testid="delivery">
+                <div className="flex items-center gap-x-5 gap-y-2 flex-wrap" data-testid="delivery">
                   {d.boards > 0 ? (
                     <Stat icon={<CastForEducationOutlined />} title={t('msg.displayedTip')}>
                       {t.plural('msg.displayed', d.boards, { n: d.displayed })}
@@ -174,8 +144,8 @@ export function SentMessages({
                   <Stat icon={<FamilyRestroomOutlined />} title={t('msg.familiesTip')}>
                     {t('msg.families', { n: d.families })}
                   </Stat>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                </div>
+                <div className="flex gap-2 items-center">
                   <Button size="small" startIcon={<VisibilityOutlined />} onClick={() => openReport(b)}>
                     {t('msg.delivery')}
                   </Button>
@@ -191,9 +161,9 @@ export function SentMessages({
                       {b.priority === 'emergency' ? t('msg.allClear') : t('msg.clear')}
                     </Button>
                   )}
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
           </Card>
         );
       })}
@@ -202,15 +172,15 @@ export function SentMessages({
         <DialogTitle id="delivery-title">{t('msg.delivery')}</DialogTitle>
         <DialogContent>
           {report && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
               {t('msg.sentAt', { title: report.b.title, date: fmt.dateTime(report.b.createdAt, timeZone) })}
-            </Typography>
+            </p>
           )}
           {report?.error && <Alert severity="error">{report.error}</Alert>}
           {report && !report.data && !report.error && (
-            <Box sx={{ display: 'grid', placeItems: 'center', py: 4 }}>
+            <div className="grid place-items-center py-8">
               <CircularProgress size={28} />
-            </Box>
+            </div>
           )}
           {report?.data && report.data.total === 0 && (
             <EmptyState dense icon={<GroupsOutlined />} title={t('msg.noBoardsSent')}>
@@ -224,8 +194,8 @@ export function SentMessages({
               rowId={(r) => String(r.deviceId)}
               columns={[
                 { id: 'c0', header: t('msg.col.board'), rowHeader: true, sort: (r) => r.deviceName, cell: (r) => r.deviceName },
-                { id: 'c1', header: t('msg.col.displayed'), sort: (r) => r.displayedAt ?? '', cell: (r) => (<>{r.displayedAt ? fmt.dateTime(r.displayedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>{t('msg.notYet')}{r.lastSeenAt ? '' : t('msg.offline')}</Box>}</>) },
-                { id: 'c2', header: t('msg.col.acknowledged'), sort: (r) => r.acknowledgedAt ?? '', cell: (r) => (<>{r.acknowledgedAt ? fmt.dateTime(r.acknowledgedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>}</>) },
+                { id: 'c1', header: t('msg.col.displayed'), sort: (r) => r.displayedAt ?? '', cell: (r) => (<>{r.displayedAt ? fmt.dateTime(r.displayedAt, timeZone) : <span className="text-muted-foreground">{t('msg.notYet')}{r.lastSeenAt ? '' : t('msg.offline')}</span>}</>) },
+                { id: 'c2', header: t('msg.col.acknowledged'), sort: (r) => r.acknowledgedAt ?? '', cell: (r) => (<>{r.acknowledgedAt ? fmt.dateTime(r.acknowledgedAt, timeZone) : <span className="text-muted-foreground">—</span>}</>) },
               ]}
             />
           )}
@@ -236,6 +206,6 @@ export function SentMessages({
       </Dialog>
 
       <Snackbar open={!!toast} autoHideDuration={5000} onClose={() => setToast(null)} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} />
-    </Box>
+    </div>
   );
 }

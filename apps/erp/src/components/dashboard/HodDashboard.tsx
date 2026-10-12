@@ -1,18 +1,3 @@
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
-import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
-import ClassOutlined from '@mui/icons-material/ClassOutlined';
-import EventBusyOutlined from '@mui/icons-material/EventBusyOutlined';
-import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
-import GradingOutlined from '@mui/icons-material/GradingOutlined';
-import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
-import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
-import PeopleAltOutlined from '@mui/icons-material/PeopleAltOutlined';
-import QuizOutlined from '@mui/icons-material/QuizOutlined';
-import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
-import VideoLibraryOutlined from '@mui/icons-material/VideoLibraryOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { MiniBar } from '@/components/Bars';
 import { ClassTimeline } from '@/components/ClassTimeline';
 import { LinkButton } from '@/components/LinkButton';
@@ -29,6 +14,7 @@ import type { ClassesDay, DepartmentOverview, DepartmentRef, Me } from '@/lib/ty
 import { getI18n } from '@/i18n/server';
 import { PendingTasks, QuickActions, Row } from './parts';
 
+import { ArrowRight as ArrowForward, BookMarked as ClassOutlined, BookOpenText as MenuBookOutlined, CalendarX as EventBusyOutlined, ChartLine as InsightsOutlined, Clapperboard as VideoLibraryOutlined, ClipboardCheck as GradingOutlined, ClipboardList as AssignmentOutlined, FileQuestion as QuizOutlined, IdCard as BadgeOutlined, ListChecks as FactCheckOutlined, Target as TrackChangesOutlined, Users as PeopleAltOutlined } from 'lucide-react';
 /** The head of department: how the department's classes, attendance and teachers are doing this week. */
 export async function HodDashboard({ me, today }: { me: Me; today: string }) {
   const { t } = await getI18n();
@@ -75,25 +61,25 @@ export async function HodDashboard({ me, today }: { me: Me; today: string }) {
         </Card>
         <Card title={t('dash.hod.attention')} subtitle={t('dash.hod.attentionSub')} padded={false} testId="teachers-attention">
           {behind.length === 0 ? (
-            <Box sx={{ px: 2.5, pb: 2.5 }}>
+            <div className="px-5 pb-5">
               <EmptyState dense icon={<BadgeOutlined />} title={t('dash.hod.allGood')} />
-            </Box>
+            </div>
           ) : (
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            <ul className="list-none m-0 p-0">
               {behind.map((x) => (
-                <Box component="li" key={x.id} sx={{ px: 2.5, py: 1.25, borderTop: 1, borderColor: 'm3.outlineVariant', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }} noWrap>
+                <li className="px-5 py-2.5 border-t border-border flex items-center gap-3" key={x.id}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.875rem] font-semibold">
                       {x.fullName}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    </p>
+                    <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {t('dash.hod.teacherLine', { held: pct(x.taughtPercent), taken: pct(x.attendanceTakenPercent) })}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                   <StatusPill tone="warning">{t('dash.hod.low')}</StatusPill>
-                </Box>
+                </li>
               ))}
-            </Box>
+            </ul>
           )}
         </Card>
         <PendingTasks

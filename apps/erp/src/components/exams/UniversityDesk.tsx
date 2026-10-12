@@ -1,17 +1,10 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { DeskTable } from '@/components/campus/Desk';
 import { generateRegister, installSamples } from '@/app/(dashboard)/exams/university-actions';
 import { useI18n } from '@/i18n/client';
 
+import { Alert, Button, Card, MenuItem, TextField } from '@/components/kx';
 export interface UniTemplate {
   id: string;
   code: string;
@@ -51,17 +44,17 @@ export function UniversityDesk({ templates, registers, sessions }: { templates: 
     });
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {msg && <Alert severity={msg.tone}>{msg.text}</Alert>}
       <DeskTable title={t('uni.fmt.templates')} head={[t('uni.fmt.template'), 'Code', '']} rows={templates.map((x) => [x.name, x.code, x.university])} testId="uni-templates" />
-      <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+      <div className="flex flex-row gap-4 items-center">
         <Button variant="outlined" disabled={pending} onClick={samples}>{t('uni.fmt.samples')}</Button>
-        <Typography variant="body2" color="text.secondary">{t('uni.fmt.sampleNote')}</Typography>
-      </Stack>
+        <p className="text-[13px] leading-[19px] text-muted-foreground">{t('uni.fmt.sampleNote')}</p>
+      </div>
       {templates.length > 0 && (
-        <Card sx={{ p: 2.5 }}>
-          <Typography variant="h6" component="h2" sx={{ mb: 2 }}>{t('uni.fmt.generate')}</Typography>
-          <Stack spacing={2} sx={{ maxWidth: 520 }}>
+        <Card className="p-5">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-4">{t('uni.fmt.generate')}</h2>
+          <div className="flex flex-col gap-4 max-w-[520px]">
             <TextField select size="small" label={t('uni.fmt.template')} value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
               {templates.map((x) => <MenuItem key={x.id} value={x.id}>{x.name}</MenuItem>)}
             </TextField>
@@ -71,17 +64,17 @@ export function UniversityDesk({ templates, registers, sessions }: { templates: 
               <MenuItem value="session">{t('uni.fmt.source.session')}</MenuItem>
             </TextField>
             {kind === 'legacy' ? (
-              <Stack direction="row" spacing={2}>
+              <div className="flex flex-row gap-4">
                 <TextField size="small" label={t('uni.fmt.year')} value={year} onChange={(e) => setYear(e.target.value)} />
                 <TextField size="small" type="number" label={t('uni.fmt.term')} value={term} onChange={(e) => setTerm(e.target.value)} />
-              </Stack>
+              </div>
             ) : (
               <TextField select size="small" label={t('uni.fmt.session')} value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
                 {sessions.map((s) => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
               </TextField>
             )}
             <Button variant="contained" disabled={pending || !label.trim() || !templateId || (kind === 'legacy' ? !year.trim() : !sessionId)} onClick={generate}>{t('uni.fmt.run')}</Button>
-          </Stack>
+          </div>
         </Card>
       )}
       <DeskTable
@@ -93,12 +86,12 @@ export function UniversityDesk({ templates, registers, sessions }: { templates: 
           r.summary.passed,
           r.summary.failed,
           r.summary.passPercent,
-          <Stack key={r.id} direction="row" spacing={1}>
+          <div className="flex flex-row gap-2" key={r.id}>
             {(['pdf', 'xlsx', 'csv'] as const).map((f) => <Button key={f} size="small" href={`/api/download?kind=register-${f}&id=${r.id}`}>{f === 'xlsx' ? 'Excel' : f.toUpperCase()}</Button>)}
-          </Stack>,
+          </div>,
         ])}
         testId="uni-registers"
       />
-    </Stack>
+    </div>
   );
 }

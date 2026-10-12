@@ -1,15 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import CheckCircle from '@mui/icons-material/CheckCircle';
-import ChevronLeft from '@mui/icons-material/ChevronLeft';
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
-import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
-import RadioButtonUnchecked from '@mui/icons-material/RadioButtonUnchecked';
-import ScheduleOutlined from '@mui/icons-material/ScheduleOutlined';
-import ViewWeekOutlined from '@mui/icons-material/ViewWeekOutlined';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { LessonPlanBadges } from '@/components/department/LessonPlanBadges';
@@ -28,13 +16,14 @@ import { mondayOf, planChip, planWeeks, totalMinutes, weekFrom, weekRange, type 
 import { schoolToday } from '@/lib/school';
 import type { LessonPlan, LessonPlanList, Structure, YearPlan } from '@/lib/types';
 
+import { Chip, Typography } from '@/components/kx';
+import { ArrowLeft as ArrowBack, ChevronLeft, ChevronRight, Circle as RadioButtonUnchecked, CircleAlert as ErrorOutline, CircleCheck as CheckCircle, Clock as ScheduleOutlined, Columns3 as ViewWeekOutlined, NotebookText as EventNoteOutlined } from 'lucide-react';
+import { cn } from '@/lib/utils';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('plan.title') };
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const num = { fontVariantNumeric: 'tabular-nums' } as const;
-const frame = { border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', overflow: 'hidden' } as const;
 
 /**
  * One class's plans for a subject: the year plan week by week (GET /v1/year-plans) and the lesson
@@ -46,11 +35,11 @@ export default async function ClassPlanPage({ searchParams }: { searchParams: Pr
   const { t } = i18n;
   const { section, subject, week: weekParam } = await searchParams;
   const back = (
-    <Box sx={{ ml: -1, mb: 0.5 }}>
+    <div className="-ml-2 mb-1">
       <LinkButton href="/department" size="small" startIcon={<ArrowBack />}>
         {t('nav.department')}
       </LinkButton>
-    </Box>
+    </div>
   );
   if (!section || !subject || !UUID.test(section) || !UUID.test(subject))
     return (
@@ -100,10 +89,10 @@ export default async function ClassPlanPage({ searchParams }: { searchParams: Pr
         </EmptyState>
       )}
 
-      <Box id="lessons" sx={{ scrollMarginTop: 80 }}>
+      <div className="scroll-mt-[80px]" id="lessons">
         <SectionTitle
           action={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }} data-testid="week-nav">
+            <div className="flex items-center gap-1 flex-wrap" data-testid="week-nav">
               <LinkButton href={`${href(addDays(week, -7))}#lessons`} size="small" startIcon={<ChevronLeft />}>
                 {t('plan.lessons.prev')}
               </LinkButton>
@@ -115,26 +104,26 @@ export default async function ClassPlanPage({ searchParams }: { searchParams: Pr
               <LinkButton href={`${href(addDays(week, 7))}#lessons`} size="small" endIcon={<ChevronRight />}>
                 {t('plan.lessons.next')}
               </LinkButton>
-            </Box>
+            </div>
           }
         >
           {t('plan.lessons.title')}
         </SectionTitle>
-      </Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, mt: -1 }} data-testid="lessons-week">
+      </div>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-3 -mt-2" data-testid="lessons-week">
         {t('plan.week', { date: i18n.fmt.date(week, 'day') })} · {rangeText({ from, to }, i18n.locale)}
         {lessons.plans.length > 0 && <> · {t.plural('plan.lessons.count', lessons.plans.length)}</>}
-      </Typography>
+      </p>
       {lessons.plans.length === 0 ? (
         <EmptyState dense icon={<ViewWeekOutlined />} title={t('plan.lessons.none')} testId="no-lesson-plans">
           {t('plan.lessons.noneBody')}
         </EmptyState>
       ) : (
-        <Box sx={{ display: 'grid', gap: 2 }}>
+        <div className="grid gap-4">
           {lessons.plans.map((p) => (
             <LessonPlanCard key={p.id} p={p} canReview={canReview} i18n={i18n} />
           ))}
-        </Box>
+        </div>
       )}
     </>
   );
@@ -147,122 +136,101 @@ function YearPlanView({ plan, today, selected, href, i18n }: { plan: YearPlan; t
   const weeks = planWeeks(plan, today);
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', columnGap: 1, rowGap: 0.5, mb: 1.5 }} data-testid="year-plan-summary">
-        <Chip
+      <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mb-3" data-testid="year-plan-summary">
+        <Chip className={cn('font-medium', chip.status === 'behind' ? 'bg-red-soft text-red-ink' : chip.tone === 'good' ? 'bg-green-soft text-green-ink' : '')}
           size="small"
           label={chip.label}
           data-testid="plan-status"
           data-status={chip.status}
           variant={chip.tone === 'none' ? 'outlined' : 'filled'}
-          sx={{
-            fontWeight: 500,
-            ...(chip.status === 'behind' ? { bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' } : chip.tone === 'good' ? { bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' } : {}),
-          }}
         />
-        <Typography variant="body2" sx={{ ...num, ml: 0.5 }}>
+        <p className="text-[13px] leading-[19px] ml-1 tabular-nums">
           {t('plan.taught', { covered: p.covered, total: p.total })}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={num}>
+        </p>
+        <p className="text-[13px] leading-[19px] text-muted-foreground tabular-nums">
           · {t.plural('plan.expected', p.expected)} · {t('plan.runs', { range: rangeText({ from: plan.startsOn, to: plan.endsOn }, i18n.locale) })}
-        </Typography>
-      </Box>
-      <Box component="ol" sx={{ ...frame, listStyle: 'none', m: 0, p: 0 }} data-testid="year-plan">
+        </p>
+      </div>
+      <ol className="list-none m-0 p-0 overflow-hidden rounded-[12px] border" data-testid="year-plan">
         {weeks.map((w, i) => (
           <WeekRow key={w.weekOf} w={w} first={i === 0} selected={w.weekOf === selected} href={href(w.weekOf)} t={t} fmt={fmt} />
         ))}
-      </Box>
+      </ol>
     </>
   );
 }
 
 function WeekRow({ w, first, selected, href, t, fmt }: { w: PlanWeek; first: boolean; selected: boolean; href: string; t: I18n['t']; fmt: I18n['fmt'] }) {
   return (
-    <Box
-      component="li"
+    <li className={cn('grid grid-cols-[1fr] md:grid-cols-[220px_minmax(0,1fr)] gap-2 md:gap-4 pr-4 py-3 border-border border-l-teal', first ? 'border-t-0' : 'border-t', w.thisWeek ? 'bg-secondary' : '', w.thisWeek ? 'text-secondary-foreground' : '', w.thisWeek ? 'border-l-4' : 'border-l-0', w.thisWeek ? 'pl-3' : 'pl-4')}
       data-testid="plan-week"
       data-week={w.weekOf}
       data-this-week={w.thisWeek ? 'true' : 'false'}
       aria-current={w.thisWeek ? 'date' : undefined}
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '220px minmax(0, 1fr)' },
-        gap: { xs: 1, md: 2 },
-        pr: 2,
-        py: 1.5,
-        borderTop: first ? 0 : 1,
-        borderColor: 'm3.outlineVariant',
-        bgcolor: w.thisWeek ? 'm3.secondaryContainer' : undefined,
-        color: w.thisWeek ? 'm3.onSecondaryContainer' : undefined,
-        borderLeft: w.thisWeek ? 4 : 0,
-        borderLeftColor: 'primary.main',
-        pl: w.thisWeek ? 1.5 : 2,
-      }}
     >
-      <Box sx={{ minWidth: 0 }}>
-        <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      <div className="min-w-0">
+        <h6 className="text-sm leading-5 font-medium tracking-[0.1px] flex items-center gap-2 flex-wrap">
           {t('plan.week', { date: fmt.date(w.weekOf, 'dayMonth') })}
-          {w.thisWeek && <Chip size="small" label={t('plan.thisWeek')} color="primary" sx={{ height: 20, fontSize: 12 }} data-testid="this-week" />}
-        </Typography>
-        <LinkButton
+          {w.thisWeek && <Chip className="h-[20px] text-[12px]" size="small" label={t('plan.thisWeek')} color="primary" data-testid="this-week" />}
+        </h6>
+        <LinkButton className="-ml-1.5 mt-0.5 min-h-[28px] py-0"
           href={`${href}#lessons`}
           size="small"
           variant={selected ? 'outlined' : 'text'}
           aria-label={t('plan.week.lessons', { date: fmt.date(w.weekOf, 'day') })}
           aria-current={selected ? 'true' : undefined}
-          sx={{ ml: -0.75, mt: 0.25, minHeight: 28, py: 0 }}
         >
           {t('plan.col.lessonPlans')}
         </LinkButton>
-      </Box>
+      </div>
       {w.items.length === 0 ? (
-        <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'center' }}>
+        <p className="text-[13px] leading-[19px] text-muted-foreground self-center">
           {t('plan.week.empty')}
-        </Typography>
+        </p>
       ) : (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 1 }}>
+        <ul className="list-none m-0 p-0 grid gap-2">
           {w.items.map((it) => (
-            <Box component="li" key={it.topicId} data-testid="plan-topic" data-state={it.state} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start', minWidth: 0 }}>
+            <li className="flex gap-2.5 items-start min-w-0" key={it.topicId} data-testid="plan-topic" data-state={it.state}>
               <TopicIcon state={it.state} />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] leading-[19px] font-medium">
                   {it.title}
-                </Typography>
-                <Typography variant="caption" color={w.thisWeek ? 'inherit' : 'text.secondary'} component="div" sx={{ opacity: w.thisWeek ? 0.8 : 1 }}>
+                </p>
+                <Typography className={cn(w.thisWeek ? 'opacity-[0.8]' : 'opacity-[1]')} variant="caption" color={w.thisWeek ? 'inherit' : 'text.secondary'} component="div">
                   {it.chapter} · {t.plural('plan.periods', it.periods)}
                 </Typography>
-              </Box>
+              </div>
               <TopicStateChip state={it.state} coveredOn={it.coveredOn} t={t} fmt={fmt} />
-            </Box>
+            </li>
           ))}
-        </Box>
+        </ul>
       )}
-    </Box>
+    </li>
   );
 }
 
 function TopicIcon({ state }: { state: TopicState }) {
-  const sx = { mt: '2px', fontSize: 18 };
-  if (state === 'taught') return <CheckCircle sx={{ ...sx, color: 'kx.success' }} />;
-  if (state === 'late') return <ErrorOutline sx={{ ...sx, color: 'error.main' }} />;
-  if (state === 'due') return <ScheduleOutlined sx={{ ...sx, color: 'primary.main' }} />;
-  return <RadioButtonUnchecked sx={{ ...sx, color: 'text.disabled' }} />;
+  if (state === 'taught') return <CheckCircle className="text-green-ink  mt-0.5 size-[18px] shrink-0" />;
+  if (state === 'late') return <ErrorOutline className="text-red-ink  mt-0.5 size-[18px] shrink-0" />;
+  if (state === 'due') return <ScheduleOutlined className="text-teal-ink  mt-0.5 size-[18px] shrink-0" />;
+  return <RadioButtonUnchecked className="text-faint  mt-0.5 size-[18px] shrink-0" />;
 }
 
 function TopicStateChip({ state, coveredOn, t, fmt }: { state: TopicState; coveredOn: string | null; t: I18n['t']; fmt: I18n['fmt'] }) {
-  const base = { size: 'small' as const, sx: { height: 22, flexShrink: 0, fontWeight: 500 } };
+  const base = { size: 'small' as const, className: 'h-[22px] shrink-0 font-medium' };
   switch (state) {
     case 'taught':
-      return <Chip {...base} label={t('plan.topic.taught', { date: fmt.date(coveredOn!, 'dayMonth') })} data-testid="topic-taught" sx={{ ...base.sx, bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }} />;
+      return <Chip {...base} className="h-[22px] shrink-0 font-medium bg-green-soft text-green-ink" label={t('plan.topic.taught', { date: fmt.date(coveredOn!, 'dayMonth') })} data-testid="topic-taught" />;
     case 'late':
       return (
         <Hint title={t('plan.topic.lateHelp')}>
-          <Chip {...base} label={t('plan.topic.late')} data-testid="topic-late" sx={{ ...base.sx, bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} />
+          <Chip {...base} className="h-[22px] shrink-0 font-medium bg-red-soft text-red-ink" label={t('plan.topic.late')} data-testid="topic-late" />
         </Hint>
       );
     case 'due':
       return <Chip {...base} label={t('plan.topic.due')} color="primary" variant="outlined" />;
     default:
-      return <Chip {...base} label={t('plan.topic.planned')} variant="outlined" sx={{ ...base.sx, color: 'text.secondary' }} />;
+      return <Chip {...base} className="h-[22px] shrink-0 font-medium text-muted-foreground" label={t('plan.topic.planned')} variant="outlined" />;
   }
 }
 
@@ -271,35 +239,35 @@ function LessonPlanCard({ p, canReview, i18n }: { p: LessonPlan; canReview: bool
   const c = p.content;
   const minutes = totalMinutes(c.steps);
   return (
-    <Box component="article" data-testid="lesson-plan" data-reviewed={p.reviewedAt ? 'true' : 'false'} aria-labelledby={`lp-${p.id}`} sx={{ ...frame, bgcolor: 'background.paper' }}>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, px: 2, py: 1.5, borderBottom: 1, borderColor: 'm3.outlineVariant' }}>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant="subtitle1" component="h3" id={`lp-${p.id}`} sx={{ fontWeight: 500 }}>
+    <article className="bg-card overflow-hidden rounded-[12px] border" data-testid="lesson-plan" data-reviewed={p.reviewedAt ? 'true' : 'false'} aria-labelledby={`lp-${p.id}`}>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-border">
+        <div className="min-w-0">
+          <h3 className="text-base leading-6 tracking-[0.1px] font-medium" id={`lp-${p.id}`}>
             {fmt.date(p.date, 'long')}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
+          </h3>
+          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {p.teacher}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          </span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
           <LessonPlanBadges aiDrafted={p.aiDrafted} reviewedAt={p.reviewedAt} reviewedBy={p.reviewedBy} />
           {canReview && <ReviewLessonPlan id={p.id} date={p.date} reviewed={!!p.reviewedAt} remark={p.reviewRemark} />}
-        </Box>
-      </Box>
+        </div>
+      </div>
       {p.reviewRemark && (
-        <Typography variant="body2" sx={{ px: 2, py: 1, bgcolor: 'kx.tonal', borderBottom: 1, borderColor: 'm3.outlineVariant', overflowWrap: 'anywhere' }} data-testid="review-remark">
+        <p className="text-[13px] leading-[19px] px-4 py-2 bg-muted border-b border-border wrap-anywhere" data-testid="review-remark">
           {t('plan.lesson.remark', { remark: p.reviewRemark })}
-        </Typography>
+        </p>
       )}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 3fr) minmax(0, 2fr)' }, gap: { xs: 2, md: 3 }, p: 2 }}>
-        <Box sx={{ display: 'grid', gap: 2, alignContent: 'start', minWidth: 0 }}>
+      <div className="grid grid-cols-[1fr] md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-4 md:gap-6 p-4">
+        <div className="grid gap-4 content-start min-w-0">
           <Part title={t('plan.lesson.topics')}>
             {p.topics.length ? (
-              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+              <div className="flex gap-1.5 flex-wrap">
                 {p.topics.map((tp) => (
-                  <Chip key={tp.id} size="small" label={tp.title} data-testid="lesson-topic" sx={{ maxWidth: '100%' }} />
+                  <Chip className="max-w-full" key={tp.id} size="small" label={tp.title} data-testid="lesson-topic" />
                 ))}
-              </Box>
+              </div>
             ) : (
               <Dash />
             )}
@@ -309,27 +277,27 @@ function LessonPlanCard({ p, canReview, i18n }: { p: LessonPlan; canReview: bool
           </Part>
           <Part title={t('plan.lesson.steps')} aside={minutes ? t('plan.lesson.totalMinutes', { n: minutes }) : undefined}>
             {c.steps.length ? (
-              <Box component="ol" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 0.75 }} data-testid="lesson-steps">
+              <ol className="m-0 p-0 list-none grid gap-1.5" data-testid="lesson-steps">
                 {c.steps.map((s, i) => (
-                  <Box component="li" key={i} sx={{ display: 'grid', gridTemplateColumns: '28px 64px minmax(0, 1fr)', alignItems: 'baseline' }}>
-                    <Typography variant="body2" color="text.secondary" sx={num}>
+                  <li className="grid grid-cols-[28px_64px_minmax(0,1fr)] items-baseline" key={i}>
+                    <p className="text-[13px] leading-[19px] text-muted-foreground tabular-nums">
                       {i + 1}.
-                    </Typography>
-                    <Typography variant="body2" color="primary.main" sx={{ ...num, fontWeight: 500, whiteSpace: 'nowrap' }} data-testid="step-minutes">
+                    </p>
+                    <p className="text-[13px] leading-[19px] text-teal-ink font-medium whitespace-nowrap tabular-nums" data-testid="step-minutes">
                       {t('plan.lesson.minutes', { n: s.minutes })}
-                    </Typography>
-                    <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
+                    </p>
+                    <p className="text-[13px] leading-[19px] wrap-anywhere">
                       {s.activity}
-                    </Typography>
-                  </Box>
+                    </p>
+                  </li>
                 ))}
-              </Box>
+              </ol>
             ) : (
               <Dash />
             )}
           </Part>
-        </Box>
-        <Box sx={{ display: 'grid', gap: 2, alignContent: 'start', minWidth: 0 }}>
+        </div>
+        <div className="grid gap-4 content-start min-w-0">
           <Part title={t('plan.lesson.materials')}>
             <Bullets items={c.materials} testId="lesson-materials" />
           </Part>
@@ -339,52 +307,52 @@ function LessonPlanCard({ p, canReview, i18n }: { p: LessonPlan; canReview: bool
           <Part title={t('plan.lesson.homework')}>
             <Text value={c.homework} testId="lesson-homework" />
           </Part>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </article>
   );
 }
 
 function Part({ title, aside, children }: { title: string; aside?: string; children: ReactNode }) {
   return (
-    <Box component="section" sx={{ minWidth: 0 }}>
-      <Typography variant="overline" component="h4" color="text.secondary" sx={{ display: 'flex', gap: 1, alignItems: 'baseline', lineHeight: '20px', letterSpacing: '0.04em', mb: 0.5 }}>
+    <section className="min-w-0">
+      <h4 className="text-[11px] font-medium text-muted-foreground flex gap-2 items-baseline leading-[20px] tracking-[0.04em] mb-1">
         {title}
         {aside && (
-          <Typography component="span" variant="caption" sx={{ textTransform: 'none', letterSpacing: 0, ...num }}>
+          <span className="text-xs leading-4 normal-case tracking-[0px] tabular-nums">
             · {aside}
-          </Typography>
+          </span>
         )}
-      </Typography>
+      </h4>
       {children}
-    </Box>
+    </section>
   );
 }
 
 const Dash = () => (
-  <Typography variant="body2" color="text.secondary">
+  <p className="text-[13px] leading-[19px] text-muted-foreground">
     —
-  </Typography>
+  </p>
 );
 
 function Bullets({ items, testId }: { items: string[]; testId: string }) {
   if (!items.length) return <Dash />;
   return (
-    <Box component="ul" sx={{ m: 0, pl: 2.5, display: 'grid', gap: 0.25 }} data-testid={testId}>
+    <ul className="m-0 pl-5 grid gap-0.5" data-testid={testId}>
       {items.map((x, i) => (
-        <Typography component="li" variant="body2" key={i} sx={{ overflowWrap: 'anywhere' }}>
+        <li className="text-[13px] leading-[19px] wrap-anywhere" key={i}>
           {x}
-        </Typography>
+        </li>
       ))}
-    </Box>
+    </ul>
   );
 }
 
 function Text({ value, testId }: { value: string; testId: string }) {
   if (!value.trim()) return <Dash />;
   return (
-    <Typography variant="body2" data-testid={testId} sx={{ whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}>
+    <p className="text-[13px] leading-[19px] whitespace-pre-line wrap-anywhere" data-testid={testId}>
       {value}
-    </Typography>
+    </p>
   );
 }

@@ -1,8 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useState, useTransition } from 'react';
 import { recordDonation, recordPledge, saveCampaign, saveOpportunity, signUp, withdraw } from '@/app/(dashboard)/alumni/actions';
 import { SuccessStoriesQueue } from '@/components/alumni/SuccessStoriesQueue';
@@ -12,6 +8,8 @@ import type { MessageKey } from '@/i18n/messages';
 import { DONATION_MODES, receiptPath, type AlumniOption, type CampaignRow, type DonationRow, type OpportunityRow } from '@/lib/govern';
 import type { StoryRow } from '@/lib/pathways-a';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** Campaigns, donations with receipts, and volunteering. */
 export function AlumniGivingDesk({ campaigns, donations, opportunities, alumni, stories, initialTab }: { campaigns: CampaignRow[]; donations: DonationRow[]; opportunities: OpportunityRow[] | null; alumni: AlumniOption[]; stories: StoryRow[] | null; initialTab: string }) {
   const { t, fmt } = useI18n();
@@ -51,11 +49,11 @@ export function AlumniGivingDesk({ campaigns, donations, opportunities, alumni, 
     {
       label: '',
       cell: (c) => (
-        <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+        <div className="flex flex-row gap-1 flex-wrap">
           {c.status === 'active' && <Button size="small" onClick={() => setDonate(c)} data-testid={`alm-donate-${c.id}`}>{t('alm.donate')}</Button>}
           {c.status === 'active' && <Button size="small" onClick={() => setPledge(c)}>{t('alm.pledge')}</Button>}
           <Button size="small" onClick={() => setCampaign(c)}>{t('alm.edit')}</Button>
-        </Stack>
+        </div>
       ),
     },
   ];
@@ -77,23 +75,23 @@ export function AlumniGivingDesk({ campaigns, donations, opportunities, alumni, 
     {
       label: t('alm.col.volunteers'),
       cell: (o) => (
-        <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+        <div className="flex flex-row gap-1 flex-wrap">
           {o.signups.map((s) => (
             <Button key={s.alumniId} size="small" disabled={pending} onClick={() => done(() => withdraw(o.id, s.alumniId))} title={t('alm.withdraw')}>
               {s.fullName} ×
             </Button>
           ))}
-        </Stack>
+        </div>
       ),
     },
     { label: t('alm.col.status'), cell: (o) => <Pill label={t(`alm.oppStatus.${o.status}` as MessageKey)} warn={o.status === 'closed'} /> },
     {
       label: '',
       cell: (o) => (
-        <Stack direction="row" spacing={0.5}>
+        <div className="flex flex-row gap-1">
           {o.status === 'open' && <Button size="small" onClick={() => setSigning(o)}>{t('alm.signUp')}</Button>}
           <Button size="small" onClick={() => setOpportunity(o)}>{t('alm.edit')}</Button>
-        </Stack>
+        </div>
       ),
     },
   ];
@@ -115,7 +113,7 @@ export function AlumniGivingDesk({ campaigns, donations, opportunities, alumni, 
       label: t('alm.tab.campaigns'),
       node: (
         <>
-          <Button variant="contained" startIcon={<Add />} sx={{ mb: 2 }} onClick={() => setCampaign('new')} data-testid="alm-new-campaign">{t('alm.newCampaign')}</Button>
+          <Button className="mb-4" variant="contained" startIcon={<Add />} onClick={() => setCampaign('new')} data-testid="alm-new-campaign">{t('alm.newCampaign')}</Button>
           <Grid testId="alm-campaigns" empty={t('alm.empty.campaigns')} rows={campaigns} cols={campaignCols} />
         </>
       ),
@@ -128,7 +126,7 @@ export function AlumniGivingDesk({ campaigns, donations, opportunities, alumni, 
             label: t('alm.tab.volunteering'),
             node: (
               <>
-                <Button variant="contained" startIcon={<Add />} sx={{ mb: 2 }} onClick={() => setOpportunity('new')}>{t('alm.newOpportunity')}</Button>
+                <Button className="mb-4" variant="contained" startIcon={<Add />} onClick={() => setOpportunity('new')}>{t('alm.newOpportunity')}</Button>
                 <Grid testId="alm-volunteering" empty={t('alm.empty.volunteering')} rows={opportunities} cols={oppCols} />
               </>
             ),

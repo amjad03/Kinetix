@@ -1,17 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { cancelTransfer, recordTransfer } from '@/app/(dashboard)/hr/staff-actions';
@@ -22,6 +9,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { formatDate } from '@/lib/dates';
 import type { Transfer, TransferOptions } from '@/lib/staff-changes';
 
+import { Alert, Button, MenuItem, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 const BLANK = { userId: '', toDepartmentId: '', toDesignationId: '', toCampusId: '', effectiveOn: '', reason: '' };
 const TONE: Record<string, Tone> = { scheduled: 'warning', applied: 'success', cancelled: 'neutral' };
 
@@ -56,17 +44,15 @@ export function TransfersDesk({ transfers, options, staff }: { transfers: Transf
     </FormField>
   );
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('as.tr.new')}</SectionTitle>
-        <Box
-          component="form"
+        <form className="grid grid-cols-[1fr] sm:grid-cols-[repeat(3,1fr)] gap-3"
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
             run(() => recordTransfer(f), () => setF(BLANK));
           }}
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 1.5 }}
         >
           <FormField label={t('as.tr.staff')} required>
             <TextInput select value={f.userId} onChange={(e) => setF({ ...f, userId: e.target.value })} required>
@@ -87,19 +73,19 @@ export function TransfersDesk({ transfers, options, staff }: { transfers: Transf
           <FormField label={t('as.tr.reason')}>
             <TextInput value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} slotProps={{ htmlInput: { maxLength: 1000 } }} />
           </FormField>
-          <Box sx={{ alignSelf: 'end' }}>
+          <div className="self-end">
             <Button type="submit" variant="contained" disabled={pending || !f.userId || !f.effectiveOn}>
               {t('as.tr.create')}
             </Button>
-          </Box>
-        </Box>
-      </Paper>
+          </div>
+        </form>
+      </div>
 
       <SectionTitle flush>{t('as.tr.history')}</SectionTitle>
       {transfers.length === 0 ? (
-        <Typography color="text.secondary">{t('as.tr.none')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('as.tr.none')}</p>
       ) : (
-        <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
+        <div className="rounded-[12px] border bg-card overflow-x-auto">
           <Table size="small" data-testid="transfer-list">
             <TableHead>
               <TableRow>
@@ -119,9 +105,9 @@ export function TransfersDesk({ transfers, options, staff }: { transfers: Transf
                   <TableCell>
                     {place(r.to)}
                     {r.reason && (
-                      <Typography variant="caption" color="text.secondary" component="div">
+                      <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {r.reason}
-                      </Typography>
+                      </div>
                     )}
                   </TableCell>
                   <TableCell>{formatDate(r.effectiveOn, 'dayMonth', locale)}</TableCell>
@@ -139,8 +125,8 @@ export function TransfersDesk({ transfers, options, staff }: { transfers: Transf
               ))}
             </TableBody>
           </Table>
-        </Paper>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }

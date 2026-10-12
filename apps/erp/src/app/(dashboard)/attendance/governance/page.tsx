@@ -1,4 +1,3 @@
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { DecideControl } from '@/components/attendance/DecideControl';
 import { DeskTable, Pill } from '@/components/campus/Desk';
@@ -40,9 +39,9 @@ export default async function AttendanceGovernancePage({ searchParams }: { searc
     <>
       <PageHeader title={t('nav.attendanceGov')} subtitle={t('agv.subtitle')} />
       {corrections.length === 0 ? (
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <p className="text-sm leading-[21px] text-muted-foreground mb-6">
           {t('agv.noCorrections')}
-        </Typography>
+        </p>
       ) : (
         <DeskTable
           title={t('agv.corrections')}
@@ -62,13 +61,13 @@ export default async function AttendanceGovernancePage({ searchParams }: { searc
       )}
 
       <UrlSelect label={t('agv.section')} param="sectionId" value={pick} options={structure.sections.map((s) => ({ value: s.id, label: s.displayName }))} />
-      <Typography variant="body2" color="text.secondary" sx={{ my: 1.5 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground my-3">
         {t('agv.threshold', { n: shortage.thresholdPct })}
-      </Typography>
+      </p>
       {shortage.rows.length === 0 ? (
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <p className="text-sm leading-[21px] text-muted-foreground mb-6">
           {t('agv.noShortage')}
-        </Typography>
+        </p>
       ) : (
         <DeskTable
           title={t('agv.shortage')}
@@ -79,7 +78,7 @@ export default async function AttendanceGovernancePage({ searchParams }: { searc
       )}
 
       {condonations.length === 0 ? (
-        <Typography color="text.secondary">{t('agv.noCondonations')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('agv.noCondonations')}</p>
       ) : (
         <DeskTable
           title={t('agv.condonations')}

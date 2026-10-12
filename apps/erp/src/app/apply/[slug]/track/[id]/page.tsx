@@ -1,9 +1,4 @@
 import { CorrectionPanel, type Correction } from '@/components/admissions/CorrectionPanel';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { StatusPill } from '@/components/admissions/Chips';
@@ -15,6 +10,7 @@ import type { PublicApplication } from '@/lib/admissions';
 import { getI18n } from '@/i18n/server';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Container } from '@/components/kx';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,46 +36,46 @@ export default async function TrackPage({ params, searchParams }: { params: Prom
   });
   const fix = res.data?.status === 'correction_requested' ? await load(() => api<Correction>(`/v1/public/admissions/${slug}/applications/${id}/corrections`, { anonymous: true, headers: { 'x-application-token': token } })) : null;
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', py: 4 }}>
+    <div className="min-h-[100dvh] bg-background py-8">
       <Container maxWidth="sm">
         <Logo />
         {res.error !== undefined ? (
-          <Box sx={{ mt: 4 }}>
+          <div className="mt-8">
             <ErrorState message={res.error} />
-          </Box>
+          </div>
         ) : (
-          <Paper variant="outlined" sx={{ p: 3, mt: 3 }}>
+          <div className="rounded-[12px] border bg-card p-6 mt-6">
             {sp.new === '1' && (
-              <Alert severity="success" sx={{ mb: 2 }}>
+              <Alert className="mb-4" severity="success">
                 {t('apply.submitted')}
               </Alert>
             )}
-            <Typography variant="h5" component="h1">
+            <h1 className="text-[1.375rem] leading-7">
               {res.data.applicantName}
-            </Typography>
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
+            </h1>
+            <p className="text-sm leading-[21px] text-muted-foreground mb-4">
               {res.data.applicationNo} · {res.data.cycleName}
-            </Typography>
-            <Box sx={{ mb: 3 }}>
+            </p>
+            <div className="mb-6">
               <StatusPill kind="application" status={res.data.status} />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              <p className="text-[13px] leading-[19px] text-muted-foreground mt-2">
                 {t(`apply.status.${res.data.status}` as MessageKey)}
                 {res.data.statusReason ? ` ${res.data.statusReason}` : ''}
-              </Typography>
+              </p>
               {res.data.meritRank && (
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                <p className="text-[13px] leading-[19px] mt-1">
                   {t('apply.rank', { rank: res.data.meritRank })}
-                </Typography>
+                </p>
               )}
-            </Box>
+            </div>
             {res.data.status === 'correction_requested' && fix?.data && <CorrectionPanel slug={slug} id={id} token={token} fix={fix.data} name={res.data.applicantName} dob={res.data.dateOfBirth ?? ''} />}
             <TrackActions slug={slug} app={res.data} token={token} />
-            <Alert severity="warning" sx={{ mt: 3 }}>
+            <Alert className="mt-6" severity="warning">
               {t('apply.keepLink')}
             </Alert>
-          </Paper>
+          </div>
         )}
       </Container>
-    </Box>
+    </div>
   );
 }

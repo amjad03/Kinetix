@@ -1,8 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { closeOutIncident, incidentTimeline, reportIncident, updateIncident } from '@/app/(dashboard)/governance/actions';
 import { Bar, FormDialog, Grid, InfoDialog, useToast } from '@/components/ops/kit';
@@ -11,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { INCIDENT_CATEGORIES, INCIDENT_SEVERITIES, INCIDENT_STATUSES, type Incident } from '@/lib/governance';
 
+import { Button } from '@/components/kx';
 /** The incident register: report, update the timeline, record root cause and corrective actions, and watch the 72-hour breach clock. */
 export function IncidentsDesk({ incidents }: { incidents: Incident[] }) {
   const { t, fmt } = useI18n();
@@ -23,9 +20,9 @@ export function IncidentsDesk({ incidents }: { incidents: Incident[] }) {
   };
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
         {t('inc.hint')}
-      </Typography>
+      </p>
       <Bar>
         <Button variant="contained" onClick={() => setDialog('report')} data-testid="inc-report">
           {t('inc.report')}
@@ -56,7 +53,7 @@ export function IncidentsDesk({ incidents }: { incidents: Incident[] }) {
           {
             label: '',
             cell: (r) => (
-              <Stack direction="row">
+              <div className="flex flex-row">
                 <Button size="small" onClick={() => setDialog({ timeline: r })}>
                   {t('inc.act.timeline')}
                 </Button>
@@ -70,7 +67,7 @@ export function IncidentsDesk({ incidents }: { incidents: Incident[] }) {
                     </Button>
                   </>
                 )}
-              </Stack>
+              </div>
             ),
           },
         ]}
@@ -129,17 +126,17 @@ function Timeline({ incident, onClose }: { incident: Incident; onClose: () => vo
   }, [incident.id]);
   return (
     <InfoDialog title={`${incident.title}`} onClose={onClose}>
-      {error && <Typography color="error">{error}</Typography>}
+      {error && <p className="text-sm leading-[21px] text-red-ink">{error}</p>}
       {incident.rootCause && (
-        <Typography variant="body2" sx={{ mb: 1 }}>
+        <p className="text-[13px] leading-[19px] mb-2">
           <strong>{t('inc.f.rootCause')}:</strong> {incident.rootCause}
-        </Typography>
+        </p>
       )}
       {rows?.map((u) => (
-        <Typography key={u.id} variant="body2" sx={{ mb: 0.5 }}>
+        <p className="text-[13px] leading-[19px] mb-1" key={u.id}>
           {fmt.dateTime(u.createdAt)} · {u.author}: {u.body}
           {u.statusAfter ? ` (${t(`inc.st.${u.statusAfter}` as MessageKey)})` : ''}
-        </Typography>
+        </p>
       ))}
     </InfoDialog>
   );

@@ -1,20 +1,5 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addLeaveType, decideLeave, getBalances } from '@/app/(dashboard)/hr/actions';
 import { EmptyState } from '@/components/States';
@@ -25,6 +10,8 @@ import { LEAVE_TONE } from '@/lib/hr';
 import type { Holiday, LeaveBalance, LeaveRequest, LeaveType, StaffSummary } from '@/lib/hr-types';
 import { pillTone, useNotice } from './Common';
 
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Tab, Tabs } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 type Tab_ = 'requests' | 'balances' | 'types' | 'holidays';
 
 export function LeaveDesk({ requests, types, holidays, staff }: { requests: LeaveRequest[]; types: LeaveType[]; holidays: Holiday[]; staff: StaffSummary[] }) {
@@ -43,7 +30,7 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
   return (
     <>
       {view}
-      <Tabs value={tab} onChange={(_, v: Tab_) => setTab(v)} aria-label={t('hr.tab.leave')} variant="scrollable" scrollButtons={false} sx={{ mb: 2 }}>
+      <Tabs className="mb-4" value={tab} onChange={(_, v: Tab_) => setTab(v)} aria-label={t('hr.tab.leave')} variant="scrollable" scrollButtons={false}>
         <Tab value="requests" label={t('hr.leave.tab.requests', { n: open })} />
         <Tab value="balances" label={t('hr.leave.tab.balances')} />
         <Tab value="types" label={t('hr.leave.tab.types')} />
@@ -84,7 +71,7 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
       {tab === 'balances' && (
         <>
           <FormField label={t('hr.leave.pickStaff')}>
-            <TextInput select value={who} onChange={(e) => { setWho(e.target.value); setBalances(null); start(async () => { const r = await run(() => getBalances(e.target.value)); if (r.ok) setBalances(r.data); }); }} sx={{ minWidth: 260, mb: 2 }}>
+            <TextInput className="min-w-[260px] mb-4" select value={who} onChange={(e) => { setWho(e.target.value); setBalances(null); start(async () => { const r = await run(() => getBalances(e.target.value)); if (r.ok) setBalances(r.data); }); }}>
               {staff.map((s) => (
                 <MenuItem key={s.userId} value={s.userId}>
                   {s.fullName}
@@ -108,17 +95,17 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
               ]}
             />
           )}
-          {pending && !balances && <Typography variant="body2">{t('hr.loading')}</Typography>}
+          {pending && !balances && <p className="text-[13px] leading-[19px]">{t('hr.loading')}</p>}
         </>
       )}
 
       {tab === 'types' && (
         <>
-          <Box sx={{ mb: 2 }}>
+          <div className="mb-4">
             <Button variant="outlined" startIcon={<Add />} onClick={() => setAdding(true)}>
               {t('hr.leave.addType')}
             </Button>
-          </Box>
+          </div>
           <DataTable
             testId="leave-types"
             label={t('hr.leave.name')}
@@ -159,9 +146,9 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
         <Dialog open onClose={() => setDeciding(null)} fullWidth maxWidth="xs">
           <DialogTitle>{t(deciding.decision === 'approve' ? 'hr.leave.approveTitle' : 'hr.leave.rejectTitle', { name: deciding.r.user.fullName })}</DialogTitle>
           <DialogContent>
-            <Typography variant="body2" sx={{ mb: 2 }}>
+            <p className="text-[13px] leading-[19px] mb-4">
               {deciding.r.leaveType.name} · {range(deciding.r)} · {deciding.r.days}
-            </Typography>
+            </p>
             <FormField label={t('hr.leave.note')}>
               <TextInput value={note} onChange={(e) => setNote(e.target.value)} fullWidth multiline minRows={2} />
             </FormField>
@@ -199,7 +186,7 @@ function TypeDialog({ onClose, run }: { onClose: () => void; run: ReturnType<typ
     <Dialog open onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>{t('hr.leave.addType')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           <FormField label={t('hr.leave.code')}>
             <TextInput value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
           </FormField>
@@ -219,7 +206,7 @@ function TypeDialog({ onClose, run }: { onClose: () => void; run: ReturnType<typ
           <FormField label={t('hr.leave.carry')}>
             <TextInput value={f.carryForwardMax} onChange={(e) => setF({ ...f, carryForwardMax: e.target.value })} />
           </FormField>
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('hr.cancel')}</Button>

@@ -1,19 +1,10 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition, type ReactNode } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { ActionResult } from '@/lib/types';
 
+import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@/components/kx';
 /**
  * Asks for a reason (or a note) before a change that goes on the permanent record, then runs
  * `onSubmit`. Closes on success; shows the API's message otherwise.
@@ -58,18 +49,18 @@ export function ReasonDialog({
       >
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ pt: 0.5 }}>
+          <div className="flex flex-col gap-4 pt-1">
             {help && (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {help}
-              </Typography>
+              </p>
             )}
             {error && <Alert severity="error">{error}</Alert>}
             {extra}
             <FormField label={label} required={required}>
               <TextInput value={reason} onChange={(e) => setReason(e.target.value)} required={required} multiline minRows={2} autoFocus slotProps={{ htmlInput: { maxLength: 500 } }} />
             </FormField>
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose(false)} disabled={pending}>

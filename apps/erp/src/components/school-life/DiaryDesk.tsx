@@ -1,9 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { createEntry, loadAcks } from '@/app/(dashboard)/diary/actions';
 import { Bar, FormDialog, Grid, InfoDialog, Pill, useToast, type Col, type Field } from '@/components/ops/kit';
@@ -11,6 +6,8 @@ import { UrlSelect } from '@/components/UrlSelect';
 import { useI18n } from '@/i18n/client';
 import type { DiaryAck, DiaryEntry, SectionOption } from '@/lib/school-life';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** A section's diary: entries by day, who has read each, and a form to write one. */
 export function DiaryDesk({ sections, sectionId, entries }: { sections: SectionOption[]; sectionId: string; entries: DiaryEntry[] }) {
   const { t, fmt } = useI18n();
@@ -66,13 +63,13 @@ export function DiaryDesk({ sections, sectionId, entries }: { sections: SectionO
       )}
       {acks && (
         <InfoDialog title={t('dy.whoTitle')} onClose={() => setAcks(null)}>
-          <Stack spacing={0.5} data-testid="dy-acks">
+          <div className="flex flex-col gap-1" data-testid="dy-acks">
             {acks.rows.map((a) => (
-              <Typography key={a.studentId} variant="body2">
+              <p className="text-[13px] leading-[19px]" key={a.studentId}>
                 {a.rollNo} {a.fullName}: {a.acknowledgedAt ? fmt.dateTime(a.acknowledgedAt) : t('dy.notRead')}
-              </Typography>
+              </p>
             ))}
-          </Stack>
+          </div>
         </InfoDialog>
       )}
       {toastNode}

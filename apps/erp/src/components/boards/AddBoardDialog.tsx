@@ -1,26 +1,12 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import CheckOutlined from '@mui/icons-material/CheckOutlined';
-import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { addBoard } from '@/app/(dashboard)/boards/actions';
 import { useI18n } from '@/i18n/client';
 import type { CreatedDevice, Structure } from '@/lib/types';
 
+import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Tooltip } from '@/components/kx';
+import { Check as CheckOutlined, Copy as ContentCopyOutlined, Plus as Add } from 'lucide-react';
 export function AddBoardButton({ structure, allowed, timeZone }: { structure: Structure; allowed: boolean; timeZone: string }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -66,8 +52,7 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
 
   return (
     <Dialog open onClose={pending ? undefined : onClose} maxWidth="xs" fullWidth aria-labelledby="add-board-title">
-      <Box
-        component="form"
+      <form
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -76,10 +61,10 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
       >
         <DialogTitle id="add-board-title">{t('boards.add.title')}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-5">
             {t('boards.add.help')}
-          </Typography>
-          <Stack spacing={2.5}>
+          </p>
+          <div className="flex flex-col gap-5">
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('boards.add.name')} required>
               <TextInput
@@ -109,9 +94,9 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
                 slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
               >
                 <MenuItem value="">
-                  <Box component="em" sx={{ color: 'text.secondary', fontStyle: 'normal' }}>
+                  <em className="text-muted-foreground not-italic">
                     {t('boards.add.noRoom')}
-                  </Box>
+                  </em>
                 </MenuItem>
                 {rooms.map((r) => (
                   <MenuItem key={r.id} value={r.id}>
@@ -120,7 +105,7 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
                 ))}
               </TextInput>
             </FormField>
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={pending}>
@@ -130,7 +115,7 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
             {t('boards.add.getCode')}
           </Button>
         </DialogActions>
-      </Box>
+      </form>
     </Dialog>
   );
 }
@@ -143,34 +128,21 @@ export function EnrollmentCodeDialog({ created, timeZone, onClose }: { created: 
       <Dialog open onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="code-title">
         <DialogTitle id="code-title">{t('boards.code.title', { name: created.name })}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('boards.code.help')}
-          </Typography>
-          <Box
-            sx={{
-              mt: 2.5,
-              mb: 1,
-              py: 3,
-              px: 2,
-              borderRadius: '16px',
-              bgcolor: 'm3.primaryContainer',
-              color: 'm3.onPrimaryContainer',
-              textAlign: 'center',
-              position: 'relative',
-            }}
+          </p>
+          <div className="mt-5 mb-2 py-6 px-4 rounded-[16px] bg-teal-soft text-teal-ink text-center relative"
           >
-            <Typography
+            <p className="text-[2rem] sm:text-[2.75rem] leading-[1.2] font-medium tracking-[0.12em] tabular-nums select-all"
               data-testid="enrollment-code"
-              component="p"
-              sx={{ fontSize: { xs: '2rem', sm: '2.75rem' }, lineHeight: 1.2, fontWeight: 500, letterSpacing: '0.12em', fontVariantNumeric: 'tabular-nums', userSelect: 'all' }}
             >
               {created.enrollmentCode}
-            </Typography>
-            <Typography variant="caption" component="p" sx={{ mt: 1, opacity: 0.85 }}>
+            </p>
+            <p className="text-xs leading-4 tracking-[0.3px] mt-2 opacity-[0.85]">
               {t('boards.code.expires', { date: fmt.dateTime(created.enrollmentExpiresAt, timeZone) })}
-            </Typography>
+            </p>
             <Tooltip title={copied ? t('boards.code.copied') : t('boards.code.copyCode')}>
-              <Button
+              <Button className="absolute top-[8px] right-[8px] text-inherit"
                 size="small"
                 onClick={async () => {
                   try {
@@ -181,18 +153,17 @@ export function EnrollmentCodeDialog({ created, timeZone, onClose }: { created: 
                   }
                 }}
                 startIcon={copied ? <CheckOutlined /> : <ContentCopyOutlined />}
-                sx={{ position: 'absolute', top: 8, right: 8, color: 'inherit' }}
               >
                 {copied ? t('boards.code.copied') : t('boards.code.copy')}
               </Button>
             </Tooltip>
-          </Box>
-          <Box component="ol" sx={{ pl: 2.5, my: 2, '& li': { mb: 1 }, typography: 'body2' }}>
+          </div>
+          <ol className="pl-5 my-4 [&_li]:mb-2 text-[13px] leading-[19px]">
             <li>{t('boards.code.step1')}</li>
             <li>{t('boards.code.step2')}</li>
             <li>{t('boards.code.step3')}</li>
-          </Box>
-          <Alert severity="info" variant="outlined" sx={{ borderColor: 'm3.outlineVariant' }}>
+          </ol>
+          <Alert className="border-border" severity="info" variant="outlined">
             {t('boards.code.private')}
           </Alert>
         </DialogContent>

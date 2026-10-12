@@ -1,17 +1,4 @@
 'use client';
-
-import Check from '@mui/icons-material/Check';
-import Close from '@mui/icons-material/Close';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { reviewVideo } from '@/app/(dashboard)/topic-videos/actions';
@@ -19,6 +6,8 @@ import { useI18n } from '@/i18n/client';
 import { thumbnail } from '@/lib/concept-videos';
 import type { ManagedVideo } from '@/lib/types';
 
+import { Button, Card, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar } from '@/components/kx';
+import { Check, X as Close } from 'lucide-react';
 /** Teachers' videos waiting for the principal: approve to show them to the whole institution, or reject with a reason. */
 export function ApprovalQueue({ items }: { items: ManagedVideo[] }) {
   const { t } = useI18n();
@@ -44,21 +33,21 @@ export function ApprovalQueue({ items }: { items: ManagedVideo[] }) {
   return (
     <>
       {waiting.length === 0 ? (
-        <Typography color="text.secondary" data-testid="queue-empty">
+        <p className="text-sm leading-[21px] text-muted-foreground" data-testid="queue-empty">
           {t('tv.queueEmpty')}
-        </Typography>
+        </p>
       ) : (
-        <Stack spacing={1.5} data-testid="approval-queue">
+        <div className="flex flex-col gap-3" data-testid="approval-queue">
           {waiting.map((v) => (
-            <Card key={v.id} sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }} data-testid="approval-item">
-              <Box component="img" src={thumbnail(v.youtubeVideoId)} alt={t('tv.thumbAlt', { title: v.title })} loading="lazy" referrerPolicy="no-referrer" sx={{ width: 120, aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: '8px', bgcolor: 'm3.surfaceContainerHighest' }} />
-              <Box sx={{ flex: '1 1 240px', minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 500 }}>{v.title}</Typography>
-                <Typography variant="body2" color="text.secondary">
+            <Card className="p-4 flex gap-4 items-center flex-wrap" key={v.id} data-testid="approval-item">
+              <img className="w-[120px] aspect-[16/9] object-cover rounded-[8px] bg-accent" src={thumbnail(v.youtubeVideoId)} alt={t('tv.thumbAlt', { title: v.title })} loading="lazy" referrerPolicy="no-referrer" />
+              <div className="flex-[1_1_240px] min-w-0">
+                <p className="text-sm leading-[21px] font-medium">{v.title}</p>
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {v.topicTitle} · {t('tv.addedBy', { name: v.createdByName ?? '' })}
                   {v.sections.length ? ` · ${t('tv.forClasses', { classes: v.sections.map((s) => s.displayName).join(', ') })}` : ''}
-                </Typography>
-              </Box>
+                </p>
+              </div>
               <Button startIcon={<Close />} disabled={pending} onClick={() => setRejecting(v)}>
                 {t('tv.reject')}
               </Button>
@@ -67,12 +56,12 @@ export function ApprovalQueue({ items }: { items: ManagedVideo[] }) {
               </Button>
             </Card>
           ))}
-        </Stack>
+        </div>
       )}
       {error && !rejecting && (
-        <Typography color="error" role="alert" sx={{ mt: 1 }}>
+        <p className="text-sm leading-[21px] text-red-ink mt-2" role="alert">
           {error}
-        </Typography>
+        </p>
       )}
       <Dialog open={!!rejecting} onClose={() => setRejecting(null)} fullWidth maxWidth="xs">
         <DialogTitle>{t('tv.reasonTitle', { title: rejecting?.title ?? '' })}</DialogTitle>

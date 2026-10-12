@@ -1,16 +1,4 @@
 'use client';
-
-import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { DataTable, FormField, TextInput } from '@/components/ui';
@@ -24,8 +12,9 @@ import { StatGrid, StatTile } from '@/components/ui/StatTile';
 import { useI18n } from '@/i18n/client';
 import { exportHref } from '@/lib/exams';
 import { fmtLevel, levelTone, strengthMap, type Attainment, type AttainmentRow, type ImprovementAction, type MatrixData } from '@/lib/obe';
-import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
 
+import { Button, MenuItem, Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@/components/kx';
+import { Download as DownloadOutlined, Target as TrackChangesOutlined } from 'lucide-react';
 const COLOR = { met: 'var(--kx-success)', near: 'var(--kx-warning)', short: 'var(--kx-danger)', none: 'var(--kx-line)' } as const;
 const PILL: Record<'met' | 'near' | 'short' | 'none', Tone> = { met: 'success', near: 'warning', short: 'danger', none: 'neutral' };
 const ARROW = { up: '▲', down: '▼', flat: '●', new: '' } as const;
@@ -70,7 +59,7 @@ export function ObeDashboard({
 
   const table = (rows: AttainmentRow[], title: string, id: string) => (
     <Card title={title} padded={false}>
-      <Box data-testid={id} sx={{ overflowX: 'auto' }}>
+      <div className="overflow-x-auto" data-testid={id}>
         <DataTable
           label={title}
           rows={rows}
@@ -85,17 +74,17 @@ export function ObeDashboard({
             { id: 'c6', header: t('obe.trend'), sort: (r) => r.trend, cell: (r) => ARROW[r.trend] },
           ]}
         />
-      </Box>
+      </div>
     </Card>
   );
 
   const strength = matrix ? strengthMap(matrix.cells) : null;
   return (
     <>
-      <Card padded sx={{ mb: 2.5 }}>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+      <Card className="mb-5" padded>
+        <div className="flex gap-4 flex-wrap items-center">
           <FormField label={t('exm.f.program')}>
-            <TextInput select value={programId} onChange={(e) => go(e.target.value, yearId)} sx={{ minWidth: 200, width: { xs: '100%', sm: 'auto' } }}>
+            <TextInput className="min-w-[200px] w-full sm:w-auto" select value={programId} onChange={(e) => go(e.target.value, yearId)}>
               {programs.map((p) => (
                 <MenuItem key={p.id} value={p.id}>
                   {p.name}
@@ -104,7 +93,7 @@ export function ObeDashboard({
             </TextInput>
           </FormField>
           <FormField label={t('exm.f.year')}>
-            <TextInput select value={yearId} onChange={(e) => go(programId, e.target.value, subjectId)} sx={{ minWidth: 140, width: { xs: '100%', sm: 'auto' } }}>
+            <TextInput className="min-w-[140px] w-full sm:w-auto" select value={yearId} onChange={(e) => go(programId, e.target.value, subjectId)}>
               {years.map((y) => (
                 <MenuItem key={y.id} value={y.id}>
                   {y.label}
@@ -112,7 +101,7 @@ export function ObeDashboard({
               ))}
             </TextInput>
           </FormField>
-          <Box sx={{ flex: 1 }} />
+          <div className="flex-1" />
           <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.csv?academicYearId=${yearId}`)} download size="small">CSV</Button>
           <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.pdf?academicYearId=${yearId}&framework=nba`)} size="small">{t('obe.pdfNba')}</Button>
           <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.pdf?academicYearId=${yearId}&framework=naac`)} size="small">{t('obe.pdfNaac')}</Button>
@@ -121,16 +110,16 @@ export function ObeDashboard({
               {t('obe.compute')}
             </Button>
           )}
-        </Box>
+        </div>
       </Card>
       {feedback}
       {!attainment || attainment.computedAt === null ? (
         <EmptyState icon={<TrackChangesOutlined />} title={t('obe.notComputed')} />
       ) : (
         <>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">
             {t('obe.computedAt', { when: fmt.dateTime(attainment.computedAt) })}
-          </Typography>
+          </p>
           <StatGrid min={170}>
             <StatTile label={t('obe.cosMet')} value={`${attainment.summary.cosMet}/${attainment.summary.cos}`} testId="obe-cos" />
             <StatTile label={t('obe.posMet')} value={`${attainment.summary.posMet}/${attainment.summary.pos}`} testId="obe-pos" />
@@ -138,21 +127,21 @@ export function ObeDashboard({
             <StatTile label={t('obe.gaps')} value={attainment.summary.gaps.length} tone={attainment.summary.gaps.length ? 'warning' : 'default'} caption={attainment.summary.gaps[0]?.code} />
           </StatGrid>
 
-          <Card title={t('obe.poTitle')} subtitle={t('obe.ringsSub', { n: attainment.config.targetLevel, max })} sx={{ mt: 2.5 }} testId="obe-rings">
-            <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', justifyItems: 'center' }}>
+          <Card className="mt-5" title={t('obe.poTitle')} subtitle={t('obe.ringsSub', { n: attainment.config.targetLevel, max })} testId="obe-rings">
+            <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(150px,1fr))] justify-items-center">
               {attainment.pos.map((r) => (
                 <DonutChart key={r.targetId} value={share(r.combined)} color={COLOR[levelTone(r)]} label={r.code} caption={<b>{r.code}</b>} />
               ))}
-            </Box>
+            </div>
           </Card>
 
-          <Box sx={{ display: 'grid', gap: 2.5, mt: 2.5, gridTemplateColumns: { xs: 'minmax(0,1fr)', lg: 'repeat(2, minmax(0,1fr))' }, alignItems: 'start' }}>
+          <div className="grid gap-5 mt-5 grid-cols-[minmax(0,1fr)] lg:grid-cols-[repeat(2,minmax(0,1fr))] items-start">
             <Card
               title={t('obe.matrixTitle')}
               testId="obe-matrix"
               action={
                 subjects.length > 1 ? (
-                  <TextField select size="small" value={subjectId} onChange={(e) => go(programId, yearId, e.target.value)} aria-label={t('obe.f.subject')} sx={{ minWidth: 160 }}>
+                  <TextField className="min-w-[160px]" select size="small" value={subjectId} onChange={(e) => go(programId, yearId, e.target.value)} aria-label={t('obe.f.subject')}>
                     {subjects.map((s) => (
                       <MenuItem key={s.id} value={s.id}>
                         {s.code}
@@ -166,11 +155,11 @@ export function ObeDashboard({
                 <EmptyState dense icon={<TrackChangesOutlined />} title={t('obe.noVersion')} />
               ) : (
                 <>
-                  <Box sx={{ overflowX: 'auto' }}>
-                    <Table size="small" aria-label={t('obe.matrixTitle')} sx={{ '& td, & th': { px: 0.75, py: 0.75, textAlign: 'center', borderBottom: 0 } }}>
+                  <div className="overflow-x-auto">
+                    <Table className="[&_:is(td,th)]:px-1.5 [&_:is(td,th)]:py-1.5 [&_:is(td,th)]:text-center [&_:is(td,th)]:border-b-0" size="small" aria-label={t('obe.matrixTitle')}>
                       <TableHead>
                         <TableRow>
-                          <TableCell sx={{ textAlign: 'left !important' }}>{t('obe.coCol')}</TableCell>
+                          <TableCell className="[text-align:left_!important]">{t('obe.coCol')}</TableCell>
                           {matrix.outcomes.map((o) => (
                             <TableCell key={o.id}>{o.code}</TableCell>
                           ))}
@@ -179,7 +168,7 @@ export function ObeDashboard({
                       <TableBody>
                         {matrix.cos.map((c) => (
                           <TableRow key={c.id}>
-                            <TableCell component="th" scope="row" sx={{ textAlign: 'left !important', fontWeight: 600 }}>
+                            <TableCell className="[text-align:left_!important] font-semibold" component="th" scope="row">
                               {c.code}
                             </TableCell>
                             {matrix.outcomes.map((o) => {
@@ -194,10 +183,10 @@ export function ObeDashboard({
                         ))}
                       </TableBody>
                     </Table>
-                  </Box>
-                  <Box sx={{ mt: 1.5 }}>
+                  </div>
+                  <div className="mt-3">
                     <HeatLegend labels={[t('obe.heat.3'), t('obe.heat.2'), t('obe.heat.1'), t('obe.heat.0')]} />
-                  </Box>
+                  </div>
                 </>
               )}
             </Card>
@@ -215,34 +204,34 @@ export function ObeDashboard({
                 }))}
               />
             </Card>
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'grid', gap: 2.5, mt: 2.5 }}>
+          <div className="grid gap-5 mt-5">
             {table(attainment.cos, t('obe.coTitle'), 'obe-co-table')}
             {table(attainment.pos, t('obe.poTitle'), 'obe-po-table')}
-          </Box>
+          </div>
         </>
       )}
 
-      <Card title={t('obe.actionsTitle')} sx={{ mt: 2.5 }}>
-        {actions.length === 0 && <Typography variant="body2" color="text.secondary">{t('obe.noActions')}</Typography>}
+      <Card className="mt-5" title={t('obe.actionsTitle')}>
+        {actions.length === 0 && <p className="text-[13px] leading-[19px] text-muted-foreground">{t('obe.noActions')}</p>}
         {actions.map((a) => (
-          <Box key={a.id} sx={{ py: 1, display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', borderBottom: 1, borderColor: 'm3.outlineVariant' }}>
-            <Typography sx={{ flex: 1, minWidth: 200 }}>{a.title}</Typography>
-            {a.dueOn && <Typography variant="body2" color="text.secondary">{fmt.date(a.dueOn, 'short')}</Typography>}
-            <TextField select size="small" value={a.status} disabled={!canManage || pending} onChange={(e) => run(() => setActionStatus(a.id, e.target.value as 'open'), t('obe.actionUpdated'))} sx={{ width: 160 }}>
+          <div className="py-2 flex gap-3 items-center flex-wrap border-b border-border" key={a.id}>
+            <p className="text-sm leading-[21px] flex-1 min-w-[200px]">{a.title}</p>
+            {a.dueOn && <p className="text-[13px] leading-[19px] text-muted-foreground">{fmt.date(a.dueOn, 'short')}</p>}
+            <TextField className="w-[160px]" select size="small" value={a.status} disabled={!canManage || pending} onChange={(e) => run(() => setActionStatus(a.id, e.target.value as 'open'), t('obe.actionUpdated'))}>
               {(['open', 'in_progress', 'done'] as const).map((s) => (
                 <MenuItem key={s} value={s}>
                   {t(`obe.as.${s}`)}
                 </MenuItem>
               ))}
             </TextField>
-          </Box>
+          </div>
         ))}
         {canManage && all.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
+          <div className="flex gap-2 flex-wrap mt-4">
             <FormField label={t('obe.f.target')}>
-              <TextInput select value={draft.targetId} onChange={(e) => setDraft({ ...draft, targetId: e.target.value })} sx={{ minWidth: 200 }}>
+              <TextInput className="min-w-[200px]" select value={draft.targetId} onChange={(e) => setDraft({ ...draft, targetId: e.target.value })}>
                 {all.filter((r) => !r.met).map((r) => (
                   <MenuItem key={r.targetId} value={r.targetId}>
                     {r.code}
@@ -251,10 +240,10 @@ export function ObeDashboard({
               </TextInput>
             </FormField>
             <FormField label={t('obe.f.action')}>
-              <TextInput value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} sx={{ flex: 1, minWidth: 220 }} />
+              <TextInput className="flex-1 min-w-[220px]" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
             </FormField>
             <FormField label={t('obe.f.due')}>
-              <TextInput type="date" value={draft.dueOn} onChange={(e) => setDraft({ ...draft, dueOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} sx={{ width: 170 }} />
+              <TextInput className="w-[170px]" type="date" value={draft.dueOn} onChange={(e) => setDraft({ ...draft, dueOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
             </FormField>
             <Button
               variant="outlined"
@@ -263,7 +252,7 @@ export function ObeDashboard({
             >
               {t('obe.addAction')}
             </Button>
-          </Box>
+          </div>
         )}
       </Card>
     </>

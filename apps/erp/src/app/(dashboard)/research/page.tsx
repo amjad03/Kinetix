@@ -1,5 +1,3 @@
-import ScienceOutlined from '@mui/icons-material/ScienceOutlined';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { DeskTable, Pill, Tiles } from '@/components/campus/Desk';
 import { PageHeader } from '@/components/PageHeader';
@@ -12,6 +10,7 @@ import type { DatasetRow, OfficeSummary, ScholarRow, SupervisorRow, ThesisRow } 
 import { getI18n } from '@/i18n/server';
 import type { MessageKey } from '@/i18n/messages';
 
+import { FlaskConical as ScienceOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.research') };
 }
@@ -48,9 +47,9 @@ export default async function ResearchPage() {
         <StatTile label={t('rs.kpi.grants')} value={fmt.rupeesShort(k.grants.totalSanctionedPaise)} caption={t('rs.kpi.grantsCaption', { count: k.grants.count })} />
         <StatTile label={t('rs.kpi.patents')} value={fmt.number(k.patents.total)} caption={t('rs.kpi.patentsCaption', { granted: k.patents.granted })} />
       </Tiles>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }} data-testid="naac">
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-6" data-testid="naac">
         {t('rs.naac')}: {Object.entries(k.naac).map(([id, v]) => `${id} = ${v.value}`).join(', ')}
-      </Typography>
+      </p>
       {projects.length === 0 ? (
         <EmptyState icon={<ScienceOutlined />} title={t('rs.empty')}>
           {t('rs.emptyHint')}

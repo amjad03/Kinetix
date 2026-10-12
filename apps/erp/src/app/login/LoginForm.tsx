@@ -1,15 +1,4 @@
 'use client';
-
-import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined';
-import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -19,6 +8,8 @@ import { BCP47, LANGUAGE_NAMES, LOCALES } from '@/i18n/locales';
 import { LogoMark } from '@/components/Logo';
 import { signIn, type LoginState } from './actions';
 
+import { Alert, Button, CircularProgress, IconButton, InputAdornment } from '@/components/kx';
+import { Eye as VisibilityOutlined, EyeOff as VisibilityOffOutlined } from 'lucide-react';
 export function LoginForm({
   defaultTenant,
   notice,
@@ -35,32 +26,19 @@ export function LoginForm({
   const [switching, startSwitch] = useTransition();
 
   return (
-    <Box
-      component="main"
-      sx={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', bgcolor: 'm3.surfaceContainer', p: 2 }}
+    <main className="min-h-[100dvh] grid place-items-center bg-muted p-4"
     >
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: 1040,
-          bgcolor: 'm3.surfaceContainerLowest',
-          borderRadius: '28px',
-          p: { xs: 3, sm: 5 },
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          columnGap: 6,
-          rowGap: 3,
-        }}
+      <div className="w-full max-w-[1040px] bg-card rounded-[28px] p-6 sm:p-10 grid grid-cols-[1fr] md:grid-cols-[1fr_1fr] gap-x-12 gap-y-6"
       >
-        <Box>
+        <div>
           <LogoMark size={48} />
-          <Typography variant="h2" component="h1" sx={{ mt: 3, fontSize: { xs: '2rem', md: '2.25rem' }, lineHeight: '44px' }}>
+          <h1 className="font-display mt-6 text-[2rem] md:text-[2.25rem] leading-[44px]">
             {t('login.title')}
-          </Typography>
-          <Typography variant="body1" sx={{ mt: 2, color: 'text.secondary', maxWidth: 380 }}>
+          </h1>
+          <p className="text-sm leading-[21px] mt-4 text-muted-foreground max-w-[380px]">
             {t('login.lead')}
-          </Typography>
-          <Box role="group" aria-label={t('shell.language')} sx={{ display: 'flex', gap: 0.5, mt: 3, ml: -1, flexWrap: 'wrap' }}>
+          </p>
+          <div className="flex gap-1 mt-6 -ml-2 flex-wrap" role="group" aria-label={t('shell.language')}>
             {LOCALES.map((l) => (
               <Button
                 key={l}
@@ -81,12 +59,12 @@ export function LoginForm({
                 {LANGUAGE_NAMES[l]}
               </Button>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
-        <Box component="form" action={action} noValidate>
+        <form action={action} noValidate>
           <input type="hidden" name="next" value={next ?? ''} />
-          <Stack spacing={2.5}>
+          <div className="flex flex-col gap-5">
             {notice && !state.error && <Alert severity={notice.severity}>{notice.text}</Alert>}
             {state.error && (
               <Alert severity="error" role="alert">
@@ -96,20 +74,20 @@ export function LoginForm({
             {state.mfaToken ? (
               <>
                 <input type="hidden" name="mfaToken" value={state.mfaToken} />
-                <Typography variant="h6" component="h2">
+                <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
                   {t('login.mfa.title')}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </h2>
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {t('login.mfa.lead')}
-                </Typography>
+                </p>
                 <FormField label={t('login.mfa.code')} required>
                   <TextInput name="code" autoComplete="one-time-code" autoFocus required slotProps={{ htmlInput: { inputMode: 'numeric', autoCapitalize: 'none', spellCheck: false } }} />
                 </FormField>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
-                  <Button type="submit" variant="contained" disabled={pending} sx={{ minWidth: 104 }}>
+                <div className="flex justify-end pt-4">
+                  <Button className="min-w-[104px]" type="submit" variant="contained" disabled={pending}>
                     {pending ? <CircularProgress size={20} color="inherit" aria-label={t('login.signingIn')} /> : t('login.mfa.submit')}
                   </Button>
-                </Box>
+                </div>
               </>
             ) : (
               <>
@@ -153,19 +131,19 @@ export function LoginForm({
                 }}
               />
             </FormField>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 2, gap: 2 }}>
-              <Typography variant="body2" color="text.secondary">
+            <div className="flex justify-between items-center pt-4 gap-4">
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {t('login.forgot')}
-              </Typography>
-              <Button type="submit" variant="contained" disabled={pending} sx={{ minWidth: 104 }}>
+              </p>
+              <Button className="min-w-[104px]" type="submit" variant="contained" disabled={pending}>
                 {pending ? <CircularProgress size={20} color="inherit" aria-label={t('login.signingIn')} /> : t('login.submit')}
               </Button>
-            </Box>
+            </div>
               </>
             )}
-          </Stack>
-        </Box>
-      </Box>
-    </Box>
+          </div>
+        </form>
+      </div>
+    </main>
   );
 }

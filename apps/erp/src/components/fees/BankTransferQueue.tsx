@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useState } from 'react';
 import { rejectTransfer, verifyTransfer } from '@/app/(dashboard)/fees/bank-transfers/actions';
 import { ActionButton, FormDialog, Grid, Pill, Tabbed, useToast, type Col } from '@/components/ops/kit';
@@ -9,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { proofPath, type BankTransferRow, type TransferStatus } from '@/lib/payments-desk';
 
+import { Button } from '@/components/kx';
 const TABS: TransferStatus[] = ['pending', 'verified', 'rejected'];
 
 /** The verification queue: pending transfers first, then the ones already decided. */
@@ -33,10 +31,10 @@ export function BankTransferQueue({ rows }: { rows: BankTransferRow[] }) {
       ? {
           label: '',
           cell: (r) => (
-            <Stack direction="row" spacing={0.5}>
+            <div className="flex flex-row gap-1">
               <ActionButton label={t('pd.verify')} run={() => verifyTransfer(r.id)} onDone={toast} />
               <Button size="small" color="error" onClick={() => setRejecting(r)} data-testid={`pd-reject-${r.id}`}>{t('pd.reject')}</Button>
-            </Stack>
+            </div>
           ),
         }
       : { label: t('pd.col.status'), cell: (r) => <Pill label={r.status === 'rejected' && r.reviewNote ? `${t(`pd.status.${r.status}` as MessageKey)}: ${r.reviewNote}` : t(`pd.status.${r.status}` as MessageKey)} warn={r.status === 'rejected'} /> },

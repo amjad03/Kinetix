@@ -1,11 +1,9 @@
 'use client';
-
-import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
-import VerifiedOutlined from '@mui/icons-material/VerifiedOutlined';
-import Tooltip from '@mui/material/Tooltip';
 import { StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 
+import { Tooltip } from '@/components/kx';
+import { BadgeCheck as VerifiedOutlined, Sparkles as AutoAwesomeOutlined } from 'lucide-react';
 /** A lesson plan's "AI draft" label (marigold: it is AI) and review status. */
 export function LessonPlanBadges({ aiDrafted, reviewedAt, reviewedBy }: { aiDrafted: boolean; reviewedAt: string | null; reviewedBy?: string | null }) {
   const { t, fmt } = useI18n();

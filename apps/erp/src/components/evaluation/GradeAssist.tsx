@@ -1,17 +1,11 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { decideGrade, suggestGrade } from '@/app/(dashboard)/evaluation/desk/actions';
 import { StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { GradeDraft } from '@/lib/staff-changes';
 
+import { Alert, Button, Collapse, IconButton } from '@/components/kx';
 interface Row {
   criterion: string;
   marks: string;
@@ -63,62 +57,62 @@ export function GradeAssist({ allocationId, questionId, questionNo, maxMarks, on
         {t('as.ga.open')}
       </Button>
       <Collapse in={open} unmountOnExit>
-        <Stack spacing={1.5} sx={{ p: 1.5, mt: 0.5, border: 1, borderColor: 'divider', borderRadius: 1 }}>
-          <Typography variant="caption" color="text.secondary">
+        <div className="flex flex-col gap-3 p-3 mt-1 border border-border rounded-[10px]">
+          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {t('as.ga.notFinal')}
-          </Typography>
+          </span>
           {error && <Alert severity="error">{error}</Alert>}
           {note && <Alert severity="success">{note}</Alert>}
           <TextInput label={t('as.ga.question')} value={question} onChange={(e) => setQuestion(e.target.value)} fullWidth slotProps={{ htmlInput: { maxLength: 2000 } }} />
           <TextInput label={t('as.ga.answer')} value={answer} onChange={(e) => setAnswer(e.target.value)} multiline minRows={3} fullWidth slotProps={{ htmlInput: { maxLength: 8000, 'data-testid': `ga-answer-${questionNo}` } }} />
-          <Typography variant="subtitle2">{t('as.ga.rubric')}</Typography>
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('as.ga.rubric')}</h6>
           {rubric.map((r, i) => (
-            <Stack key={i} direction="row" spacing={1}>
+            <div className="flex flex-row gap-2" key={i}>
               <TextInput label={t('as.ga.criterion')} value={r.criterion} onChange={(e) => setRubric(rubric.map((x, j) => (j === i ? { ...x, criterion: e.target.value } : x)))} fullWidth />
-              <TextInput label={t('as.ga.marks')} value={r.marks} onChange={(e) => setRubric(rubric.map((x, j) => (j === i ? { ...x, marks: e.target.value } : x)))} sx={{ width: 110 }} slotProps={{ htmlInput: { inputMode: 'decimal' } }} />
+              <TextInput className="w-[110px]" label={t('as.ga.marks')} value={r.marks} onChange={(e) => setRubric(rubric.map((x, j) => (j === i ? { ...x, marks: e.target.value } : x)))} slotProps={{ htmlInput: { inputMode: 'decimal' } }} />
               <IconButton aria-label="x" size="small" onClick={() => setRubric(rubric.filter((_, j) => j !== i))}>
                 ✕
               </IconButton>
-            </Stack>
+            </div>
           ))}
-          <Stack direction="row" spacing={1}>
+          <div className="flex flex-row gap-2">
             <Button size="small" onClick={() => setRubric([...rubric, { criterion: '', marks: '' }])}>
               {t('as.ga.addCriterion')}
             </Button>
             <Button size="small" variant="outlined" disabled={pending} onClick={ask} data-testid={`ga-ask-${questionNo}`}>
               {t('as.ga.ask')}
             </Button>
-          </Stack>
+          </div>
           {draft && (
-            <Stack spacing={1} data-testid={`ga-draft-${questionNo}`}>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <div className="flex flex-col gap-2" data-testid={`ga-draft-${questionNo}`}>
+              <div className="flex flex-row gap-2 items-center">
                 <StatusPill tone="info">{t('as.ga.draft', { marks: draft.suggestedMarks, max: maxMarks })}</StatusPill>
-              </Stack>
+              </div>
               {draft.preview && <Alert severity="warning">{t('as.ga.preview')}</Alert>}
               {draft.criteria.map((c) => (
-                <Typography key={c.criterion} variant="body2">
+                <p className="text-[13px] leading-[19px]" key={c.criterion}>
                   {c.criterion}: {c.awarded}/{c.max}
                   {c.comment ? ` · ${c.comment}` : ''}
-                </Typography>
+                </p>
               ))}
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {draft.rationale}
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+              </p>
+              <div className="flex flex-row gap-2 items-center flex-wrap">
                 <Button size="small" variant="contained" disabled={pending || draft.preview} onClick={() => decide('accept')}>
                   {t('as.ga.accept')}
                 </Button>
-                <TextInput label={t('as.ga.myMarks')} value={mine} onChange={(e) => setMine(e.target.value)} sx={{ width: 120 }} slotProps={{ htmlInput: { inputMode: 'decimal' } }} />
+                <TextInput className="w-[120px]" label={t('as.ga.myMarks')} value={mine} onChange={(e) => setMine(e.target.value)} slotProps={{ htmlInput: { inputMode: 'decimal' } }} />
                 <Button size="small" variant="outlined" disabled={pending || mine.trim() === '' || Number.isNaN(Number(mine))} onClick={() => decide('edit')}>
                   {t('as.ga.edit')}
                 </Button>
                 <Button size="small" color="inherit" disabled={pending} onClick={() => decide('reject')}>
                   {t('as.ga.reject')}
                 </Button>
-              </Stack>
-            </Stack>
+              </div>
+            </div>
           )}
-        </Stack>
+        </div>
       </Collapse>
     </div>
   );

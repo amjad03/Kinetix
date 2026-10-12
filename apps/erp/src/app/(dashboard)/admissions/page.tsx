@@ -1,4 +1,3 @@
-import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
 import type { Metadata } from 'next';
 import { AdmissionsTabs } from '@/components/admissions/AdmissionsTabs';
 import { EnquiryBoard } from '@/components/admissions/EnquiryBoard';
@@ -12,6 +11,7 @@ import { schoolToday } from '@/lib/school';
 import type { Structure } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
+import { UserCheck as HowToRegOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.admissions') };
 }

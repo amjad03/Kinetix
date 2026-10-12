@@ -1,8 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { boundStatus } from '@/app/(dashboard)/workflows/bound-actions';
 import { FormDialog, useToast, type Field } from '@/components/ops/kit';
@@ -12,15 +8,16 @@ import type { MessageKey } from '@/i18n/messages';
 import type { BoundFlow, BoundStatus } from '@/lib/pathways-b';
 import type { ActionResult } from '@/lib/types';
 
+import { Alert, Button } from '@/components/kx';
 /** Where the latest approval request for this record stands (read when the dialog opens). */
 function Latest({ flow, sourceId }: { flow: BoundFlow; sourceId: string }) {
   const { t } = useI18n();
   const status = useLoad<BoundStatus>(() => boundStatus(flow.module, sourceId));
   if (!status.data?.id) return null;
   return (
-    <Typography variant="body2" data-testid="pwb-bound-status">
+    <p className="text-[13px] leading-[19px]" data-testid="pwb-bound-status">
       {t('pwb.approval.latest', { title: status.data.title ?? '', status: t(`wf.status.${status.data.status ?? 'pending'}` as MessageKey) })}
-    </Typography>
+    </p>
   );
 }
 

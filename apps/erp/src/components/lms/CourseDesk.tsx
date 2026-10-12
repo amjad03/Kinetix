@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addItem, addModule, announce, removeItem, removeModule, setStatus } from '@/app/(dashboard)/courses/actions';
 import { ActionButton, Bar, FormDialog, Pill, useToast } from '@/components/ops/kit';
@@ -9,6 +6,7 @@ import { Card } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { LMS_KINDS, type LmsCourse } from '@/lib/lms';
 
+import { Button } from '@/components/kx';
 type Dialog = 'module' | 'announce' | { item: string };
 
 export function CourseDesk({ course }: { course: LmsCourse }) {
@@ -32,17 +30,17 @@ export function CourseDesk({ course }: { course: LmsCourse }) {
           </>
         )}
       </Bar>
-      {course.description && <Typography sx={{ mb: 2 }}>{course.description}</Typography>}
-      {course.modules.length === 0 && <Typography color="text.secondary">{t('lms.noModules')}</Typography>}
+      {course.description && <p className="text-sm leading-[21px] mb-4">{course.description}</p>}
+      {course.modules.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('lms.noModules')}</p>}
       {course.modules.map((m) => (
-        <Card key={m.id} sx={{ mb: 2 }} testId="module">
-          <Typography variant="h6" component="h2">{m.title}</Typography>
+        <Card className="mb-4" key={m.id} testId="module">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px]">{m.title}</h2>
           {m.items.map((i) => (
-            <Typography key={i.id} component="div" sx={{ display: 'flex', gap: 1, alignItems: 'center', py: 0.5 }}>
+            <div className="text-sm leading-[21px] flex gap-2 items-center py-1" key={i.id}>
               <Pill label={t(`lms.kind.${i.kind}`)} />
               {i.url ? <a href={i.url} target="_blank" rel="noreferrer">{i.title}</a> : i.title}
               {course.canManage && <ActionButton label={t('lms.remove')} tone="error" run={() => removeItem(course.id, i.id)} onDone={toast} />}
-            </Typography>
+            </div>
           ))}
           {course.canManage && (
             <Bar>
@@ -52,13 +50,13 @@ export function CourseDesk({ course }: { course: LmsCourse }) {
           )}
         </Card>
       ))}
-      <Typography variant="h6" component="h2" sx={{ mt: 3 }}>{t('lms.announcements')}</Typography>
-      {course.announcements.length === 0 && <Typography color="text.secondary">{t('lms.noAnnouncements')}</Typography>}
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mt-6">{t('lms.announcements')}</h2>
+      {course.announcements.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('lms.noAnnouncements')}</p>}
       {course.announcements.map((a) => (
-        <Typography key={a.id} component="div" sx={{ py: 0.5 }}>
+        <div className="text-sm leading-[21px] py-1" key={a.id}>
           <strong>{a.title}</strong> <span style={{ opacity: 0.7 }}>{fmt.date(a.createdAt.slice(0, 10), 'short')}</span>
           <div>{a.body}</div>
-        </Typography>
+        </div>
       ))}
       {dlg === 'module' && <FormDialog title={t('lms.addModule')} onSubmit={(v) => addModule(course.id, v)} onClose={done} fields={[{ name: 'title', label: t('lms.fTitle'), required: true }]} />}
       {dlg === 'announce' && <FormDialog title={t('lms.announce')} onSubmit={(v) => announce(course.id, v)} onClose={done} fields={[{ name: 'title', label: t('lms.fTitle'), required: true }, { name: 'body', label: t('lms.fBody'), kind: 'multiline' }]} />}

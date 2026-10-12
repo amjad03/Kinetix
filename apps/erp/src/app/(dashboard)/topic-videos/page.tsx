@@ -1,7 +1,3 @@
-import VideoLibraryOutlined from '@mui/icons-material/VideoLibraryOutlined';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
@@ -12,6 +8,8 @@ import { api, load, requireSection } from '@/lib/api';
 import type { Course, ManagedVideo } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
+import { Card, CardActionArea } from '@/components/kx';
+import { Clapperboard as VideoLibraryOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.topicVideos') };
 }
@@ -45,11 +43,11 @@ export default async function TopicVideosPage() {
           <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
             {courses.data.map((c) => (
               <Card key={c.id}>
-                <CardActionArea component={Link} href={`/topic-videos/${c.id}`} sx={{ p: 2 }}>
-                  <Typography sx={{ fontWeight: 500 }}>{c.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                <CardActionArea className="p-4" component={Link} href={`/topic-videos/${c.id}`}>
+                  <p className="text-sm leading-[21px] font-medium">{c.title}</p>
+                  <p className="text-[13px] leading-[19px] text-muted-foreground">
                     {c.curriculumCode} · {t('pv.term', { n: c.term })}
-                  </Typography>
+                  </p>
                 </CardActionArea>
               </Card>
             ))}

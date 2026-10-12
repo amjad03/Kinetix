@@ -1,11 +1,4 @@
 'use client';
-
-import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { askInsight } from '@/app/(dashboard)/ai/insight-actions';
 import { Card, StatusPill } from '@/components/ui';
@@ -13,19 +6,21 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { InsightKind, InsightResponse } from '@/lib/ai-insight';
 
+import { Alert, Button, CircularProgress } from '@/components/kx';
+import { Sparkles as AutoAwesomeOutlined } from 'lucide-react';
 function Bullets({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
-    <Stack spacing={0.5}>
-      <Typography variant="subtitle2">{title}</Typography>
+    <div className="flex flex-col gap-1">
+      <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{title}</h6>
       <ul style={{ margin: 0, paddingInlineStart: 20 }}>
         {items.map((x, i) => (
           <li key={i}>
-            <Typography variant="body2">{x}</Typography>
+            <p className="text-[13px] leading-[19px]">{x}</p>
           </li>
         ))}
       </ul>
-    </Stack>
+    </div>
   );
 }
 
@@ -46,35 +41,34 @@ export function InsightCard({ kind }: { kind: InsightKind }) {
     });
 
   return (
-    <Card
+    <Card className="mb-6"
       title={t('aiq.title')}
       subtitle={t(`aiq.${kind}` as MessageKey)}
       testId={`ai-insight-${kind}`}
-      sx={{ mb: 3 }}
       action={
         <Button variant="outlined" size="small" startIcon={pending ? <CircularProgress size={16} /> : <AutoAwesomeOutlined />} onClick={ask} disabled={pending} data-testid="ai-insight-ask">
           {t(res ? 'aiq.again' : 'aiq.ask')}
         </Button>
       }
     >
-      <Stack spacing={1.5}>
-        <Typography variant="caption" color="text.secondary">
+      <div className="flex flex-col gap-3">
+        <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
           {t('aiq.privacy')}
-        </Typography>
+        </span>
         {error && <Alert severity="error">{error}</Alert>}
         {res && (
-          <Stack spacing={1.5} data-testid="ai-insight-result">
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex flex-col gap-3" data-testid="ai-insight-result">
+            <div className="flex flex-row gap-2 items-center flex-wrap">
               <StatusPill tone="warning">{t('aiq.draft')}</StatusPill>
-            </Stack>
+            </div>
             {res.meta.preview && <Alert severity="info">{t('aiq.preview')}</Alert>}
-            <Typography variant="subtitle1">{res.result.headline}</Typography>
+            <h6 className="text-base leading-6 font-medium tracking-[0.1px]">{res.result.headline}</h6>
             <Bullets title={t('aiq.highlights')} items={res.result.highlights} />
             <Bullets title={t('aiq.risks')} items={res.result.risks} />
             <Bullets title={t('aiq.suggestions')} items={res.result.suggestions} />
-          </Stack>
+          </div>
         )}
-      </Stack>
+      </div>
     </Card>
   );
 }

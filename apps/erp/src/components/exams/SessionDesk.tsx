@@ -1,11 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addPaper, approvalStep, completeRevaluation, decideRevaluation, generateSeating, issueHallTickets, removePaper, sessionStep, setApprovalRequired } from '@/app/(dashboard)/exams/actions';
 import { DataTable, FormField, StatGrid, StatTile, StatusPill, TextInput } from '@/components/ui';
@@ -14,6 +7,7 @@ import { exportHref, nextStep, type ExamSessionDetail, type ResultRow, type Reva
 import type { Structure } from '@/lib/types';
 import { useRun } from './useRun';
 
+import { Alert, Button, Card, MenuItem } from '@/components/kx';
 export function SessionDesk({ session: s, structure, results, revaluations, canManage }: { session: ExamSessionDetail; structure: Structure; results: ResultRow[]; revaluations: Revaluation[]; canManage: boolean }) {
   const { t, fmt } = useI18n();
   const { pending, run, feedback } = useRun();
@@ -39,14 +33,14 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
       </StatGrid>
       {feedback}
       {s.status === 'processed' && s.approvalRequired && (
-        <Alert severity={s.approvedAt ? 'success' : 'info'} sx={{ my: 2 }} data-testid="ap-state">
+        <Alert className="my-4" severity={s.approvedAt ? 'success' : 'info'} data-testid="ap-state">
           {s.approvedAt ? t('ap.stateApproved') : s.approvalRequestedAt ? t('ap.stateWaiting') : t('ap.stateNeeded')}
           {s.approvalNote ? ` · ${s.approvalNote}` : ''}
         </Alert>
       )}
 
       {canManage && (
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', my: 2 }}>
+        <div className="flex gap-2 flex-wrap my-4">
           {s.status === 'draft' && (
             <Button variant="contained" disabled={pending || s.papers.length === 0} onClick={() => run(() => sessionStep(s.id, 'schedule'), t('exm.scheduled'))}>
               {t('exm.schedule')}
@@ -93,14 +87,14 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
               {t('exm.exportCsv')}
             </Button>
           )}
-        </Box>
+        </div>
       )}
 
-      <Typography variant="h6" component="h2" sx={{ mt: 3, mb: 1 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-2">
         {t('exm.timetable')}
-      </Typography>
+      </h2>
       {s.papers.length === 0 ? (
-        <Typography color="text.secondary">{t('exm.noPapers')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('exm.noPapers')}</p>
       ) : (
         <DataTable
           testId="exam-papers"
@@ -125,10 +119,10 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
       )}
 
       {canManage && open && (
-        <Card sx={{ p: 2.5, mt: 2 }}>
-          <Typography variant="subtitle1" component="h3" sx={{ mb: 1.5 }}>
+        <Card className="p-5 mt-4">
+          <h3 className="text-base leading-6 font-medium tracking-[0.1px] mb-3">
             {t('exm.addPaper')}
-          </Typography>
+          </h3>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -174,17 +168,17 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
       )}
 
       {canManage && s.status !== 'draft' && (
-        <Card sx={{ p: 2.5, mt: 3 }}>
-          <Typography variant="h6" component="h2" sx={{ mb: 0.5 }}>
+        <Card className="p-5 mt-6">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-1">
             {t('exm.seatingTitle')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          </h2>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">
             {t('exm.seatingHelp')}
-          </Typography>
+          </p>
           {halls.map((h, i) => (
-            <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1 }}>
+            <div className="flex gap-2 mb-2" key={i}>
               <FormField label={t('exm.f.hall')}>
-                <TextInput select value={h.roomId} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, roomId: e.target.value } : x)))} sx={{ minWidth: 180 }}>
+                <TextInput className="min-w-[180px]" select value={h.roomId} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, roomId: e.target.value } : x)))}>
                   {structure.rooms.map((r) => (
                     <MenuItem key={r.id} value={r.id}>
                       {r.name}
@@ -193,24 +187,24 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
                 </TextInput>
               </FormField>
               <FormField label={t('exm.f.capacity')}>
-                <TextInput type="number" value={h.capacity} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, capacity: e.target.value } : x)))} sx={{ width: 120 }} />
+                <TextInput className="w-[120px]" type="number" value={h.capacity} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, capacity: e.target.value } : x)))} />
               </FormField>
               <Button size="small" onClick={() => setHalls(halls.filter((_, j) => j !== i))} disabled={halls.length === 1}>
                 {t('exm.remove')}
               </Button>
-            </Box>
+            </div>
           ))}
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <div className="flex gap-2 flex-wrap">
             <Button size="small" onClick={() => setHalls([...halls, { roomId: structure.rooms[0]?.id ?? '', capacity: '30' }])}>
               {t('exm.addHall')}
             </Button>
             <Button variant="outlined" disabled={pending || s.status === 'processed' || s.status === 'published' || s.status === 'locked'} onClick={() => run(() => generateSeating(s.id, halls.map((h) => ({ roomId: h.roomId, capacity: Number(h.capacity) }))), t('exm.seated'))}>
               {t('exm.seat')}
             </Button>
-          </Box>
-          <Typography variant="subtitle1" component="h3" sx={{ mt: 3, mb: 0.5 }}>
+          </div>
+          <h3 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-1">
             {t('exm.ticketsTitle')}
-          </Typography>
+          </h3>
           <FormField label={t('exm.blocks')}>
             <TextInput
               fullWidth
@@ -221,8 +215,7 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
               onChange={(e) => setBlocks(e.target.value)}
             />
           </FormField>
-          <Button
-            sx={{ mt: 1 }}
+          <Button className="mt-2"
             variant="outlined"
             disabled={pending}
             onClick={() => {
@@ -245,9 +238,9 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
 
       {results.length > 0 && (
         <>
-          <Typography variant="h6" component="h2" sx={{ mt: 3, mb: 1 }}>
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-2">
             {t('exm.resultsTitle')}
-          </Typography>
+          </h2>
           <DataTable
             testId="exam-results"
             label={t('exm.resultsTitle')}
@@ -268,10 +261,10 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
 
       {revaluations.length > 0 && (
         <>
-          <Typography variant="h6" component="h2" sx={{ mt: 3, mb: 1 }}>
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-2">
             {t('exm.revalTitle')}
-          </Typography>
-          {s.status === 'locked' && <Alert severity="info" sx={{ mb: 1 }}>{t('exm.revalClosed')}</Alert>}
+          </h2>
+          {s.status === 'locked' && <Alert className="mb-2" severity="info">{t('exm.revalClosed')}</Alert>}
           <DataTable
             testId="exam-revaluations"
             label={t('exm.revalTitle')}
@@ -295,14 +288,14 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
                                     </>
                                   )}
                                   {canManage && r.status === 'accepted' && s.status === 'published' && (
-                                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                    <div className="flex gap-2 justify-end">
                                       <FormField label={t('exm.newMarks')}>
-                                        <TextInput type="number" value={newMarks[r.id] ?? ''} onChange={(e) => setNewMarks({ ...newMarks, [r.id]: e.target.value })} sx={{ width: 120 }} />
+                                        <TextInput className="w-[120px]" type="number" value={newMarks[r.id] ?? ''} onChange={(e) => setNewMarks({ ...newMarks, [r.id]: e.target.value })} />
                                       </FormField>
                                       <Button size="small" disabled={pending || (newMarks[r.id] ?? '') === ''} onClick={() => run(() => completeRevaluation(s.id, r.id, Number(newMarks[r.id])), t('exm.rv.completed'))}>
                                         {t('exm.regrade')}
                                       </Button>
-                                    </Box>
+                                    </div>
                                   )}</>) },
             ]}
           />

@@ -1,20 +1,11 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { savePolicy, setFeature } from '@/app/(dashboard)/settings/security/actions';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { FeatureFlag } from '@/lib/insights';
 
+import { Alert, Button, Card, Checkbox, FormControlLabel, Switch } from '@/components/kx';
 const ROLE_LABEL: Record<string, MessageKey> = {
   tenant_admin: 'role.tenant_admin',
   principal: 'role.principal',
@@ -38,13 +29,13 @@ export function SecurityAdmin({ features, requiredRoles, assignableRoles }: { fe
   const label = (key: string) => t(`feature.${key}` as MessageKey);
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Card sx={{ p: 3 }}>
-        <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+      <Card className="p-6">
+        <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
           {t('security.policy')}
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 3 }}>
+        </h2>
+        <div className="flex flex-wrap gap-x-6">
           {assignableRoles.map((r) => (
             <FormControlLabel
               key={r}
@@ -52,19 +43,19 @@ export function SecurityAdmin({ features, requiredRoles, assignableRoles }: { fe
               label={ROLE_LABEL[r] ? t(ROLE_LABEL[r]) : r}
             />
           ))}
-        </Box>
-        <Button variant="contained" disabled={pending} onClick={() => run(() => savePolicy(roles))} sx={{ mt: 1.5 }}>
+        </div>
+        <Button className="mt-3" variant="contained" disabled={pending} onClick={() => run(() => savePolicy(roles))}>
           {t('security.policy.save')}
         </Button>
       </Card>
-      <Card sx={{ p: 3 }}>
-        <Typography variant="h6" component="h2">
+      <Card className="p-6">
+        <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
           {t('security.features')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        </h2>
+        <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">
           {t('security.features.lead')}
-        </Typography>
-        <Stack data-testid="features">
+        </p>
+        <div className="flex flex-col" data-testid="features">
           {features.map((f) => (
             <FormControlLabel
               key={f.key}
@@ -72,8 +63,8 @@ export function SecurityAdmin({ features, requiredRoles, assignableRoles }: { fe
               label={label(f.key)}
             />
           ))}
-        </Stack>
+        </div>
       </Card>
-    </Stack>
+    </div>
   );
 }

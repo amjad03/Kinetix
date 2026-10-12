@@ -1,7 +1,4 @@
 'use client';
-
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import { restoreVaultVersion, vaultVersions } from '@/app/(dashboard)/documents/actions';
 import { ActionButton, Grid, InfoDialog, Pill, useToast } from '@/components/ops/kit';
 import { useLoad } from '@/components/pathways-b/common';
@@ -9,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import { docDownload } from '@/lib/documents';
 import { sizeLabel, type VaultVersion } from '@/lib/pathways-b';
 
+import { Button } from '@/components/kx';
 /** Every version of one vault document, with a way to bring an older one back as the current version. */
 export function VaultVersions({ id, title, onClose, onChanged }: { id: string; title: string; onClose: () => void; onChanged: () => void }) {
   const { t, fmt } = useI18n();
@@ -22,8 +20,8 @@ export function VaultVersions({ id, title, onClose, onChanged }: { id: string; t
   };
   return (
     <InfoDialog title={t('pwb.vault.versionsTitle', { title })} onClose={onClose}>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('pwb.vault.versionsHelp')}</Typography>
-      {versions.error && <Typography color="error">{versions.error}</Typography>}
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">{t('pwb.vault.versionsHelp')}</p>
+      {versions.error && <p className="text-sm leading-[21px] text-red-ink">{versions.error}</p>}
       <Grid
         testId="pwb-versions"
         empty={t('pwb.vault.noVersions')}

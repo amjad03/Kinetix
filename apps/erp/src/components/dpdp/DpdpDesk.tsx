@@ -1,9 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { processRequest } from '@/app/(dashboard)/dpdp/actions';
 import { FormDialog, Grid, useToast } from '@/components/ops/kit';
@@ -12,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { waitingDays, type DpdpRow } from '@/lib/dpdp';
 
+import { Alert, Button } from '@/components/kx';
 const TONE = { pending: 'warning', completed: 'success', rejected: 'neutral', blocked: 'danger' } as const;
 
 /** The data-privacy queue: who asked for what, with approve and reject on the open ones. */
@@ -30,7 +26,7 @@ export function DpdpDesk({ rows, officer, nowIso }: { rows: DpdpRow[]; officer: 
         <StatTile label={t('dp.stat.blocked')} value={count('blocked')} testId="dp-blocked" />
         <StatTile label={t('dp.stat.done')} value={count('completed')} testId="dp-done" />
       </StatGrid>
-      <Alert severity="info" sx={{ my: 2 }} data-testid="dp-officer">
+      <Alert className="my-4" severity="info" data-testid="dp-officer">
         {officer ? `${t('dp.officer')}: ${officer.name}${officer.email ? ` · ${officer.email}` : ''}${officer.phone ? ` · ${officer.phone}` : ''}` : t('dp.officer.none')}
       </Alert>
       <Grid
@@ -43,14 +39,14 @@ export function DpdpDesk({ rows, officer, nowIso }: { rows: DpdpRow[]; officer: 
           {
             label: t('dp.col.details'),
             cell: (r) => (
-              <Stack spacing={0.5}>
-                <Typography variant="body2">{detail(r)}</Typography>
+              <div className="flex flex-col gap-1">
+                <p className="text-[13px] leading-[19px]">{detail(r)}</p>
                 {r.retentionReasons.length > 0 && (
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {t('dp.reasons')}: {r.retentionReasons.join(' ')}
-                  </Typography>
+                  </span>
                 )}
-              </Stack>
+              </div>
             ),
           },
           { label: t('dp.col.status'), cell: (r) => <StatusPill tone={TONE[r.status]}>{t(`dp.st.${r.status}` as MessageKey)}</StatusPill>, sort: (r) => r.status },
@@ -60,14 +56,14 @@ export function DpdpDesk({ rows, officer, nowIso }: { rows: DpdpRow[]; officer: 
             label: '',
             cell: (r) =>
               r.status === 'pending' && r.kind !== 'export' ? (
-                <Stack direction="row" spacing={1}>
+                <div className="flex flex-row gap-2">
                   <Button size="small" onClick={() => setPick({ row: r, decision: 'approve' })}>
                     {t('dp.approve')}
                   </Button>
                   <Button size="small" color="error" onClick={() => setPick({ row: r, decision: 'reject' })}>
                     {t('dp.reject')}
                   </Button>
-                </Stack>
+                </div>
               ) : null,
           },
         ]}
@@ -75,7 +71,7 @@ export function DpdpDesk({ rows, officer, nowIso }: { rows: DpdpRow[]; officer: 
       {pick && (
         <FormDialog
           title={t(pick.decision === 'approve' ? 'dp.approveTitle' : 'dp.rejectTitle')}
-          intro={pick.decision === 'approve' ? <Typography variant="body2">{t('dp.approveHint')}</Typography> : undefined}
+          intro={pick.decision === 'approve' ? <p className="text-[13px] leading-[19px]">{t('dp.approveHint')}</p> : undefined}
           fields={[{ name: 'note', label: t('dp.note'), kind: 'multiline', required: pick.decision === 'reject' }]}
           onSubmit={(v) => processRequest(pick.row.id, pick.decision, v.note ?? '')}
           onClose={(m) => {

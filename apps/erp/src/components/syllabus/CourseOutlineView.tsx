@@ -1,29 +1,13 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
-import Card from '@mui/material/Card';
 import { FormField, StatusPill, TextInput } from '@/components/ui';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useEffect, useState, useTransition } from 'react';
 import { addTopic, deleteTopic, editTopic, getTopic, type TopicInput } from '@/app/(dashboard)/syllabus/actions';
 import type { CourseOutline, Topic } from '@/lib/types';
 import { useI18n } from '@/i18n/client';
 import { ListEditor } from './ListEditor';
 
+import { Alert, Button, ButtonBase, Card, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar } from '@/components/kx';
+import { ChevronRight, Pencil as EditOutlined, Plus as Add, Trash2 as DeleteOutlined } from 'lucide-react';
 type Chapter = CourseOutline['chapters'][number];
 type TopicRow = Chapter['topics'][number];
 
@@ -42,56 +26,55 @@ export function CourseOutlineView({ course, canEdit }: { course: CourseOutline; 
 
   return (
     <>
-      <Stack spacing={2} data-testid="chapters">
+      <div className="flex flex-col gap-4" data-testid="chapters">
         {course.chapters.map((ch, i) => (
           <Card key={ch.id} data-testid="chapter">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, pt: 2, pb: 1 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, fontVariantNumeric: 'tabular-nums' }}>
+            <div className="flex items-center gap-3 px-5 pt-4 pb-2">
+              <p className="text-[13px] leading-[19px] text-muted-foreground min-w-[24px] tabular-nums">
                 {i + 1}
-              </Typography>
-              <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 500, flex: 1, minWidth: 0 }}>
+              </p>
+              <h2 className="text-base leading-6 tracking-[0.1px] font-medium flex-1 min-w-0">
                 {ch.title}
-              </Typography>
+              </h2>
               {ch.own && ownChip}
               {canEdit && (
                 <Button size="small" startIcon={<Add />} onClick={() => setAdding(ch)} aria-label={t('syl.addTopicTo', { title: ch.title })}>
                   {t('syl.addTopic')}
                 </Button>
               )}
-            </Box>
+            </div>
             {ch.topics.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" sx={{ px: 2.5, pb: 2, pl: 7.5 }}>
+              <p className="text-[13px] leading-[19px] text-muted-foreground px-5 pb-4 pl-15">
                 {t('syl.noTopics')}
-              </Typography>
+              </p>
             ) : (
-              <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, pb: 1 }}>
+              <ul className="list-none m-0 p-0 pb-2">
                 {ch.topics.map((tp) => (
                   <li key={tp.id}>
-                    <ButtonBase
+                    <ButtonBase className="w-full text-left flex items-center gap-3 pl-15 pr-4 py-2.5 hover:bg-accent"
                       onClick={() => setViewing(tp)}
                       data-testid="topic"
-                      sx={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 1.5, pl: 7.5, pr: 2, py: 1.25, '&:hover': { bgcolor: 'action.hover' } }}
                     >
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                          <Typography variant="body1">{tp.title}</Typography>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm leading-[21px]">{tp.title}</p>
                           {tp.own && ownChip}
-                        </Box>
+                        </div>
                         {tp.summary && (
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                          <p className="text-[13px] leading-[19px] text-muted-foreground mt-0.5">
                             {tp.summary}
-                          </Typography>
+                          </p>
                         )}
-                      </Box>
-                      <ChevronRight sx={{ color: 'text.secondary' }} />
+                      </div>
+                      <ChevronRight className="text-muted-foreground" />
                     </ButtonBase>
                   </li>
                 ))}
-              </Box>
+              </ul>
             )}
           </Card>
         ))}
-      </Stack>
+      </div>
 
       {viewing && <TopicDialog courseId={course.id} row={viewing} canEdit={canEdit} onClose={(msg) => (setViewing(null), msg && setToast(msg))} />}
       {adding && (
@@ -145,66 +128,66 @@ function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; ro
 
   return (
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="sm" fullWidth aria-labelledby="topic-title" scroll="paper">
-      <DialogTitle id="topic-title" sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      <DialogTitle className="flex items-center gap-2 flex-wrap" id="topic-title">
         {row.title}
         {row.own && ownChip}
       </DialogTitle>
       <DialogContent dividers>
         {error && <Alert severity="error">{error}</Alert>}
-        {!topic && !error && <CircularProgress size={24} sx={{ display: 'block', mx: 'auto', my: 4 }} />}
+        {!topic && !error && <CircularProgress className="block mx-auto my-8" size={24} />}
         {topic && mode === 'delete' && (
-          <Alert severity="warning" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="warning">
             {t('syl.deleteConfirm', { title: topic.title })}
           </Alert>
         )}
         {topic && (
-          <Box data-testid="topic-detail">
+          <div data-testid="topic-detail">
             {topic.chapter && (
-              <Typography variant="caption" color="text.secondary" component="p" sx={{ mb: 1 }}>
+              <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mb-2">
                 {topic.chapter.title}
-              </Typography>
+              </p>
             )}
-            {topic.summary && <Typography variant="body1">{topic.summary}</Typography>}
-            <Typography variant="subtitle2" sx={{ mt: 2.5, mb: 0.5 }}>
+            {topic.summary && <p className="text-sm leading-[21px]">{topic.summary}</p>}
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mt-5 mb-1">
               {t('syl.notes')}
-            </Typography>
+            </h6>
             {topic.notes.length ? (
-              <Box component="ol" sx={{ m: 0, pl: 2.5, '& li': { mb: 0.75 }, typography: 'body2' }}>
+              <ol className="m-0 pl-5 [&_li]:mb-1.5 text-[13px] leading-[19px]">
                 {topic.notes.map((n, i) => (
                   <li key={i}>{n}</li>
                 ))}
-              </Box>
+              </ol>
             ) : (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {t('syl.noNotes')}
-              </Typography>
+              </p>
             )}
-            <Typography variant="subtitle2" sx={{ mt: 2.5, mb: 0.5 }}>
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mt-5 mb-1">
               {t('syl.outcomes')}
-            </Typography>
+            </h6>
             {topic.outcomes.length ? (
-              <Box component="ul" sx={{ m: 0, pl: 2.5, '& li': { mb: 0.75 }, typography: 'body2' }}>
+              <ul className="m-0 pl-5 [&_li]:mb-1.5 text-[13px] leading-[19px]">
                 {topic.outcomes.map((n, i) => (
                   <li key={i}>{n}</li>
                 ))}
-              </Box>
+              </ul>
             ) : (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {t('syl.noOutcomes')}
-              </Typography>
+              </p>
             )}
             {!topic.own && (
-              <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 3 }}>
+              <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-6">
                 {t('syl.fromLibrary')}
-              </Typography>
+              </p>
             )}
-          </Box>
+          </div>
         )}
       </DialogContent>
       <DialogActions>
         {topic?.own && canEdit && mode === 'view' && (
           <>
-            <Button color="error" startIcon={<DeleteOutlined />} onClick={() => setMode('delete')} sx={{ mr: 'auto' }}>
+            <Button className="mr-auto" color="error" startIcon={<DeleteOutlined />} onClick={() => setMode('delete')}>
               {t('common.delete')}
             </Button>
             <Button startIcon={<EditOutlined />} onClick={() => setMode('edit')}>
@@ -263,8 +246,7 @@ function TopicForm({
 
   return (
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="sm" fullWidth aria-labelledby="topic-form-title" scroll="paper">
-      <Box
-        component="form"
+      <form className="contents"
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -275,11 +257,10 @@ function TopicForm({
             else setError(res.error);
           });
         }}
-        sx={{ display: 'contents' }}
       >
         <DialogTitle id="topic-form-title">{title}</DialogTitle>
         <DialogContent dividers>
-          <Stack spacing={2.5}>
+          <div className="flex flex-col gap-5">
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('syl.form.title')} required>
               <TextInput value={value.title} onChange={(e) => set('title', e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 200 } }} />
@@ -316,7 +297,7 @@ function TopicForm({
               maxLength={500}
               placeholder={t('syl.form.outcomePlaceholder')}
             />
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
@@ -326,7 +307,7 @@ function TopicForm({
             {submitLabel}
           </Button>
         </DialogActions>
-      </Box>
+      </form>
     </Dialog>
   );
 }

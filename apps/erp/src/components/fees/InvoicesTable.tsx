@@ -1,31 +1,4 @@
 'use client';
-
-import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
-import MoreVert from '@mui/icons-material/MoreVert';
-import PrintOutlined from '@mui/icons-material/PrintOutlined';
-import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
-import Search from '@mui/icons-material/Search';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { cancelInvoice, invoicePayments, recordPayment } from '@/app/(dashboard)/fees/actions';
@@ -37,6 +10,9 @@ import { formatRupees, methodLabel, paiseToInput, PAY_METHODS, referenceKey, rup
 import type { FeeInvoice, FeeReceipt, StudentFees } from '@/lib/types';
 import { ReceiptView } from './ReceiptView';
 
+import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, List, ListItem, ListItemText, Menu, MenuItem, Snackbar, TextField, ToggleButton, ToggleButtonGroup } from '@/components/kx';
+import { CircleCheck as CheckCircleOutlined, EllipsisVertical as MoreVert, Printer as PrintOutlined, ReceiptText as ReceiptLongOutlined, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 function StatusCell({ inv, today }: { inv: FeeInvoice; today: string }) {
   const { t } = useI18n();
   if (inv.status === 'paid')
@@ -52,16 +28,16 @@ function DueCell({ inv, today }: { inv: FeeInvoice; today: string }) {
   const n = daysBetween(today, inv.dueOn);
   const open = inv.status === 'due';
   return (
-    <Box>
-      <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+    <div>
+      <p className="text-[13px] leading-[19px] whitespace-nowrap">
         {fmt.date(inv.dueOn, 'short')}
-      </Typography>
+      </p>
       {open && (
-        <Typography variant="caption" sx={{ color: n < 0 ? 'error.main' : 'text.secondary', whiteSpace: 'nowrap' }}>
+        <span className={cn('text-xs leading-4 tracking-[0.3px] whitespace-nowrap', n < 0 ? 'text-red-ink' : 'text-muted-foreground')}>
           {n < 0 ? t.plural('fees.late', -n) : n === 0 ? t('fees.dueToday') : t.plural('fees.inDays', n)}
-        </Typography>
+        </span>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -83,23 +59,22 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-        <TextField
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <TextField className="flex-[1_1_260px] max-w-[420px]"
           size="small"
           placeholder={t('fees.search')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          sx={{ flex: '1 1 260px', maxWidth: 420 }}
           slotProps={{
-            input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
+            input: { startAdornment: <InputAdornment position="start"><Search className="size-5" /></InputAdornment> },
             htmlInput: { 'aria-label': t('fees.searchLabel') },
           }}
         />
-        <Typography variant="body2" color="text.secondary" data-testid="invoice-count">
+        <p className="text-[13px] leading-[19px] text-muted-foreground" data-testid="invoice-count">
           {t.plural('fees.count', rows.length)}
           {balance > 0 && ` · ${t('fees.amountDue', { amount: formatRupees(balance) })}`}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {rows.length === 0 ? (
         <EmptyState dense icon={<ReceiptLongOutlined />} title={invoices.length ? t('fees.noMatch') : t('fees.noInvoices')} testId="no-invoices">
@@ -121,24 +96,24 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
               sort: (inv) => inv.student.fullName,
               cell: (inv) => (
                 <>
-                  <Typography variant="subtitle2">{inv.student.fullName}</Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{inv.student.fullName}</h6>
+                  <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {[inv.student.rollNo, inv.className].filter(Boolean).join(' · ')}
-                  </Typography>
+                  </span>
                 </>
               ),
             },
             { id: 'fee', header: t('fees.col.fee'), sort: (inv) => inv.title, cell: (inv) => inv.title },
-            { id: 'amount', header: t('fees.col.amount'), align: 'right', sort: (inv) => inv.amountPaise / 100, cell: (inv) => <Box component="span" sx={{ whiteSpace: 'nowrap' }}>{formatRupees(inv.amountPaise)}</Box> },
+            { id: 'amount', header: t('fees.col.amount'), align: 'right', sort: (inv) => inv.amountPaise / 100, cell: (inv) => <span className="whitespace-nowrap">{formatRupees(inv.amountPaise)}</span> },
             {
               id: 'balance',
               header: t('fees.col.balance'),
               align: 'right',
               sort: (inv) => (inv.status === 'cancelled' ? 0 : Math.max(0, inv.amountPaise - inv.paidPaise) / 100),
               cell: (inv) => (
-                <Box component="span" sx={{ whiteSpace: 'nowrap', color: inv.status === 'due' ? 'text.primary' : 'text.secondary' }}>
+                <span className={cn('whitespace-nowrap', inv.status === 'due' ? 'text-foreground' : 'text-muted-foreground')}>
                   {inv.status === 'cancelled' ? '—' : formatRupees(Math.max(0, inv.amountPaise - inv.paidPaise))}
-                </Box>
+                </span>
               ),
             },
             { id: 'due', header: t('fees.col.due'), sort: (inv) => inv.dueOn, cell: (inv) => <DueCell inv={inv} today={today} /> },
@@ -149,18 +124,18 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
               csv: false,
               align: 'right',
               cell: (inv) => (
-                <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+                <span className="whitespace-nowrap">
                   {inv.status === 'due' && (
-                    <Button size="small" variant="outlined" onClick={() => setPaying(inv)} sx={{ mr: 0.5 }}>
+                    <Button className="mr-1" size="small" variant="outlined" onClick={() => setPaying(inv)}>
                       {t('fees.recordPayment')}
                     </Button>
                   )}
                   {(inv.paidPaise > 0 || inv.status === 'due') && (
                     <IconButton size="small" aria-label={t('fees.moreFor', { name: inv.student.fullName })} onClick={(e) => setMenu({ el: e.currentTarget, inv })} data-testid="invoice-menu">
-                      <MoreVert fontSize="small" />
+                      <MoreVert className="size-5" />
                     </IconButton>
                   )}
-                </Box>
+                </span>
               ),
             },
           ]}
@@ -179,12 +154,11 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
           </MenuItem>
         )}
         {menu && menu.inv.status === 'due' && menu.inv.paidPaise === 0 && (
-          <MenuItem
+          <MenuItem className="text-red-ink"
             onClick={() => {
               setCancelling(menu.inv);
               setMenu(null);
             }}
-            sx={{ color: 'error.main' }}
           >
             {t('fees.cancelInvoice')}
           </MenuItem>
@@ -235,17 +209,17 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
   if (done) {
     return (
       <Dialog open onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="paid-title">
-        <DialogTitle id="paid-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <CheckCircleOutlined sx={{ color: 'kx.success' }} />
+        <DialogTitle className="flex items-center gap-3" id="paid-title">
+          <CheckCircleOutlined className="text-green-ink" />
           {t('fees.paid.title')}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', p: 2.5 }}>
+          <div className="border border-border rounded-[12px] p-5">
             <ReceiptView r={done} timeZone={timeZone} />
-          </Box>
-          <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+          </div>
+          <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-3">
             {t('fees.paid.notified')}
-          </Typography>
+          </p>
         </DialogContent>
         <DialogActions>
           <Button component={Link} href={`/fees/receipts/${done.paymentId}`} target="_blank" startIcon={<PrintOutlined />}>
@@ -261,8 +235,7 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
 
   return (
     <Dialog open onClose={pending ? undefined : onClose} maxWidth="xs" fullWidth aria-labelledby="pay-title">
-      <Box
-        component="form"
+      <form
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -271,17 +244,17 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
       >
         <DialogTitle id="pay-title">{t('fees.pay.title')}</DialogTitle>
         <DialogContent>
-          <Box sx={{ mb: 2.5, p: 2, borderRadius: '12px', bgcolor: 'kx.tonal' }}>
-            <Typography variant="subtitle2">{inv.student.fullName}</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <div className="mb-5 p-4 rounded-[12px] bg-muted">
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{inv.student.fullName}</h6>
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {inv.title} · {inv.className}
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 0.5 }}>
+            </p>
+            <p className="text-[13px] leading-[19px] mt-1">
               {t('fees.pay.balance')} <strong>{formatRupees(balance)}</strong>
               {inv.paidPaise > 0 && ` ${t('fees.pay.ofAmount', { amount: formatRupees(inv.amountPaise) })}`}
-            </Typography>
-          </Box>
-          <Stack spacing={2.5}>
+            </p>
+          </div>
+          <div className="flex flex-col gap-5">
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('fees.pay.received')} required>
               <TextInput
@@ -294,18 +267,18 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
                 slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> }, htmlInput: { inputMode: 'decimal' } }}
               />
             </FormField>
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }} id="pay-method">
+            <div>
+              <p className="text-[13px] leading-[19px] text-muted-foreground mb-2" id="pay-method">
                 {t('fees.pay.paidBy')}
-              </Typography>
-              <ToggleButtonGroup exclusive value={method} onChange={(_, v: CounterMethod | null) => v && setMethod(v)} aria-labelledby="pay-method" size="small" sx={{ flexWrap: 'wrap' }}>
+              </p>
+              <ToggleButtonGroup className="flex-wrap" exclusive value={method} onChange={(_, v: CounterMethod | null) => v && setMethod(v)} aria-labelledby="pay-method" size="small">
                 {PAY_METHODS.map((m) => (
-                  <ToggleButton key={m} value={m} sx={{ px: 1.75 }}>
+                  <ToggleButton className="px-3.5" key={m} value={m}>
                     {methodLabel(m, t)}
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
-            </Box>
+            </div>
             <FormField label={t(referenceKey(method))} required={needsRef}>
               <TextInput
                 value={reference}
@@ -314,7 +287,7 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
                 slotProps={{ htmlInput: { maxLength: 100 } }}
               />
             </FormField>
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={pending}>
@@ -324,7 +297,7 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
             {t('fees.recordPayment')}
           </Button>
         </DialogActions>
-      </Box>
+      </form>
     </Dialog>
   );
 }
@@ -338,13 +311,13 @@ function CancelDialog({ inv, onClose }: { inv: FeeInvoice; onClose: (done?: bool
       <DialogTitle id="cancel-inv-title">{t('fees.cancel.title')}</DialogTitle>
       <DialogContent>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="error">
             {error}
           </Alert>
         )}
-        <Typography variant="body2">
+        <p className="text-[13px] leading-[19px]">
           {t('fees.cancel.body', { title: inv.title, amount: formatRupees(inv.amountPaise), name: inv.student.fullName })}
-        </Typography>
+        </p>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} disabled={pending}>
@@ -389,12 +362,12 @@ function ReceiptsDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone:
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth aria-labelledby="receipts-title">
       <DialogTitle id="receipts-title">{t('fees.paymentsReceipts')}</DialogTitle>
       <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">
           {inv.student.fullName} · {inv.title}
-        </Typography>
+        </p>
         {error && <Alert severity="error">{error}</Alert>}
-        {!payments && !error && <CircularProgress size={24} sx={{ display: 'block', mx: 'auto', my: 3 }} />}
-        {payments && payments.length === 0 && <Typography variant="body2">{t('fees.noPayments')}</Typography>}
+        {!payments && !error && <CircularProgress className="block mx-auto my-6" size={24} />}
+        {payments && payments.length === 0 && <p className="text-[13px] leading-[19px]">{t('fees.noPayments')}</p>}
         {payments && payments.length > 0 && (
           <List dense disablePadding>
             {payments.map((p) => (

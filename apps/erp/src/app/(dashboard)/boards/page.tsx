@@ -1,5 +1,3 @@
-import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { AddBoardButton } from '@/components/boards/AddBoardDialog';
 import { BoardsTable } from '@/components/boards/BoardsTable';
@@ -11,6 +9,7 @@ import { getI18n } from '@/i18n/server';
 import { TIMEZONE } from '@/lib/school';
 import { BOARD_ADMIN_ROLES, type Board, type Structure } from '@/lib/types';
 
+import { Presentation as CastForEducationOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.boards') };
 }
@@ -46,7 +45,7 @@ export default async function BoardsPage() {
             <StatTile label={t('boards.stat.online')} value={online} unit={t('boards.stat.of', { n: list.length - waiting })} caption={t('boards.stat.onlineCaption')} />
             <StatTile label={t('boards.stat.inClass')} value={inClass} tone={inClass ? 'live' : 'default'} caption={inClass ? t('boards.stat.teacherIn') : t('boards.stat.noTeacher')} />
           </StatGrid>
-          <Box sx={{ mt: 3 }} />
+          <div className="mt-6" />
           <BoardsTable boards={list} allowed={allowed} timeZone={TIMEZONE} nowIso={now.toISOString()} />
         </>
       )}

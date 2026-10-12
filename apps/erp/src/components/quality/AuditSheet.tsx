@@ -1,8 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { completeAudit, raiseNc, recordResult } from '@/app/(dashboard)/academic-audit/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, useToast } from '@/components/ops/kit';
@@ -10,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { AuditDetail, MentorRef } from '@/lib/quality';
 
+import { Button, Link } from '@/components/kx';
 type Item = AuditDetail['results'][number];
 type Dialog = { record: Item } | 'raise';
 
@@ -27,14 +24,14 @@ export function AuditSheet({ audit, owners }: { audit: AuditDetail; owners: Ment
   return (
     <>
       <Bar>
-        <Link href="/academic-audit?tab=audits" underline="hover" sx={{ alignSelf: 'center', mr: 2 }}>
+        <Link className="self-center mr-4" href="/academic-audit?tab=audits" underline="hover">
           {t('au.sheet.back')}
         </Link>
         {open && <Button variant="outlined" onClick={() => setDlg('raise')}>{t('au.raise')}</Button>}
         {open && <ActionButton label={t('au.complete')} run={() => completeAudit(audit.id)} onDone={toast} />}
       </Bar>
-      {open && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('au.completeHint')}</Typography>}
-      <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 2, mb: 1 }}>{t('au.sheet.checklist')}</Typography>
+      {open && <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('au.completeHint')}</p>}
+      <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-4 mb-2">{t('au.sheet.checklist')}</h6>
       <Grid
         testId="au-checklist"
         empty={t('au.empty.audits')}
@@ -48,7 +45,7 @@ export function AuditSheet({ audit, owners }: { audit: AuditDetail; owners: Ment
           { label: '', cell: (r) => (open ? <Button size="small" onClick={() => setDlg({ record: r })}>{t('au.record')}</Button> : null) },
         ]}
       />
-      <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('au.sheet.ncs')}</Typography>
+      <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('au.sheet.ncs')}</h6>
       <Grid
         testId="au-sheet-ncs"
         empty={t('au.empty.ncs')}
@@ -65,7 +62,7 @@ export function AuditSheet({ audit, owners }: { audit: AuditDetail; owners: Ment
       {dlg && typeof dlg === 'object' && 'record' in dlg && (
         <FormDialog
           title={t('au.recordTitle')}
-          intro={<Typography variant="body2">{dlg.record.itemText}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{dlg.record.itemText}</p>}
           fields={[
             { name: 'result', label: t('au.f.result'), kind: 'select', options: (['compliant', 'partial', 'non_compliant'] as const).map((r) => ({ value: r, label: t(`au.result.${r}` as MessageKey) })), required: true, init: dlg.record.result === 'pending' ? '' : dlg.record.result },
             { name: 'remark', label: t('au.f.remark'), kind: 'multiline', init: dlg.record.remark },

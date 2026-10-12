@@ -1,43 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import BeachAccessOutlined from '@mui/icons-material/BeachAccessOutlined';
-import Check from '@mui/icons-material/Check';
-import ChevronLeft from '@mui/icons-material/ChevronLeft';
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
-import EventOutlined from '@mui/icons-material/EventOutlined';
-import QuizOutlined from '@mui/icons-material/QuizOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
-import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
-import LinearProgress from '@mui/material/LinearProgress';
-import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Select from '@mui/material/Select';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition, type ReactNode } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -60,6 +21,10 @@ import {
 } from '@/lib/calendar';
 import { weekdayShort } from '@/lib/dates';
 
+import { Alert, Button, ButtonBase, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormHelperText, IconButton, InputLabel, LinearProgress, ListItemText, MenuItem, Radio, RadioGroup, Select, Snackbar, ToggleButton, ToggleButtonGroup, Tooltip } from '@/components/kx';
+import { Calendar as EventOutlined, Check, ChevronLeft, ChevronRight, FileQuestion as QuizOutlined, NotebookText as EventNoteOutlined, Pencil as EditOutlined, Plus as Add, Trash2 as DeleteOutlined, Umbrella as BeachAccessOutlined } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { pal } from '@/lib/sx';
 const KIND_COLORS: Record<CalendarKind, { bg: string; fg: string; dot: string }> = {
   holiday: { bg: 'kx.warningContainer', fg: 'kx.onWarningContainer', dot: 'kx.warning' },
   exam: { bg: 'm3.errorContainer', fg: 'm3.onErrorContainer', dot: 'm3.error' },
@@ -118,7 +83,7 @@ export function CalendarView({
 
   return (
     <>
-      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label={t('common.loading')} />}
+      {pending && <LinearProgress className="fixed top-0 left-0 right-0 z-[2000] h-[3px] rounded-none" aria-label={t('common.loading')} />}
       <PageHeader
         title={t('nav.calendar')}
         subtitle={canEdit ? t('cal.subtitle') : t('cal.subtitleReadOnly')}
@@ -131,34 +96,34 @@ export function CalendarView({
         }
       />
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 2 }}>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <Tooltip title={t('cal.prevMonth')}>
           <IconButton onClick={() => go(addMonths(month, -1))} aria-label={t('cal.prevMonth')} data-testid="calendar-prev">
             <ChevronLeft />
           </IconButton>
         </Tooltip>
-        <Typography variant="h5" component="h2" sx={{ minWidth: { sm: 200 }, textAlign: 'center', fontSize: '1.375rem' }} data-testid="calendar-month">
+        <h2 className="sm:min-w-[200px] text-center text-[1.375rem]" data-testid="calendar-month">
           {monthLabel}
-        </Typography>
+        </h2>
         <Tooltip title={t('cal.nextMonth')}>
           <IconButton onClick={() => go(addMonths(month, 1))} aria-label={t('cal.nextMonth')} data-testid="calendar-next">
             <ChevronRight />
           </IconButton>
         </Tooltip>
-        <Button variant="outlined" size="small" onClick={() => go(today.slice(0, 7))} disabled={month === today.slice(0, 7)} sx={{ ml: 1 }}>
+        <Button className="ml-2" variant="outlined" size="small" onClick={() => go(today.slice(0, 7))} disabled={month === today.slice(0, 7)}>
           {t('cal.thisMonth')}
         </Button>
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
         <Legend />
         <ToggleButtonGroup exclusive size="small" value={view} onChange={(_, v: 'month' | 'list' | null) => v && go(month, v)} aria-label={t('cal.view')}>
           {(['month', 'list'] as const).map((v) => (
-            <ToggleButton key={v} value={v} sx={{ gap: 0.75, px: 2 }} data-testid={`calendar-view-${v}`}>
-              {view === v && <Check sx={{ fontSize: 18 }} />}
+            <ToggleButton className="gap-1.5 px-4" key={v} value={v} data-testid={`calendar-view-${v}`}>
+              {view === v && <Check className="text-[18px]" />}
               {t(`cal.view.${v}`)}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
-      </Box>
+      </div>
 
       {view === 'month' ? (
         <>
@@ -178,10 +143,10 @@ export function CalendarView({
         </EmptyState>
       ) : (
         groupByMonth(events).map(([m, list]) => (
-          <Box key={m} component="section" aria-labelledby={`m-${m}`}>
+          <section key={m} aria-labelledby={`m-${m}`}>
             <SectionTitle id={`m-${m}`}>{fmt.month(`${m}-01`)}</SectionTitle>
             <EntryList events={list} today={today} onEdit={onEdit} onDelete={onDelete} />
-          </Box>
+          </section>
         ))
       )}
 
@@ -197,16 +162,16 @@ export function CalendarView({
 function Legend() {
   const { t } = useI18n();
   return (
-    <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 1, color: 'text.secondary' }} aria-label={t('cal.legend')}>
+    <div className="hidden md:flex items-center gap-3 mr-2 text-muted-foreground" aria-label={t('cal.legend')}>
       {CALENDAR_KINDS.map((k) => (
-        <Box key={k} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-          <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: KIND_COLORS[k].dot }} />
-          <Typography variant="caption" sx={{ fontSize: '0.8125rem' }}>
+        <div className="inline-flex items-center gap-1" key={k}>
+          <div className="w-[10px] h-[10px] rounded-full" style={{ backgroundColor: pal(KIND_COLORS[k].dot) }} />
+          <span className="tracking-[0.3px] text-[0.8125rem]">
             {t(`cal.kind.${k}`)}
-          </Typography>
-        </Box>
+          </span>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
 
@@ -216,57 +181,33 @@ function MonthGrid({ month, today, events, onOpen, onAdd }: { month: string; tod
   const { t, locale } = useI18n();
   const weeks = useMemo(() => monthGrid(month), [month]);
   return (
-    <Box sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', overflowX: 'auto' }} data-testid="calendar-grid">
-      <Box role="grid" aria-label={month} sx={{ minWidth: 640 }}>
-        <Box role="row" sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', bgcolor: 'm3.surfaceContainerLow', borderBottom: 1, borderColor: 'm3.outlineVariant' }}>
+    <div className="border border-border rounded-[12px] overflow-x-auto" data-testid="calendar-grid">
+      <div className="min-w-[640px]" role="grid" aria-label={month}>
+        <div className="grid grid-cols-[repeat(7,1fr)] bg-muted border-b border-border" role="row">
           {weeks[0].map((d) => (
-            <Typography key={d.date} role="columnheader" variant="caption" sx={{ px: 1.25, py: 1, color: 'text.secondary', fontWeight: 500, fontSize: '0.8125rem' }}>
+            <span className="tracking-[0.3px] px-2.5 py-2 text-muted-foreground font-medium text-[0.8125rem]" key={d.date} role="columnheader">
               {weekdayShort(d.date, locale)}
-            </Typography>
+            </span>
           ))}
-        </Box>
+        </div>
         {weeks.map((week, wi) => (
-          <Box key={week[0].date} role="row" sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: wi === weeks.length - 1 ? 0 : 1, borderColor: 'm3.outlineVariant' }}>
+          <div className={cn('grid grid-cols-[repeat(7,1fr)] border-border', wi === weeks.length - 1 ? 'border-b-0' : 'border-b')} key={week[0].date} role="row">
             {week.map((d, di) => {
               const list = eventsOn(d.date, events);
               const isToday = d.date === today;
               const holiday = list.some((e) => e.kind === 'holiday');
               return (
-                <Box
+                <div className={cn('min-h-[112px] p-1.5 border-border flex flex-col gap-1 min-w-0', di === 6 ? 'border-r-0' : 'border-r', holiday && d.inMonth ? 'bg-muted' : 'bg-transparent', d.inMonth ? 'opacity-[1]' : 'opacity-[0.55]')}
                   key={d.date}
                   role="gridcell"
                   data-date={d.date}
                   data-testid="calendar-day"
                   aria-current={isToday ? 'date' : undefined}
-                  sx={{
-                    minHeight: 112,
-                    p: 0.75,
-                    borderRight: di === 6 ? 0 : 1,
-                    borderColor: 'm3.outlineVariant',
-                    bgcolor: holiday && d.inMonth ? 'kx.tonal' : 'transparent',
-                    opacity: d.inMonth ? 1 : 0.55,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0.5,
-                    minWidth: 0,
-                  }}
                 >
-                  <ButtonBase
+                  <ButtonBase className={cn('self-start w-[28px] h-[28px] rounded-full text-[0.8125rem] tabular-nums', isToday ? 'font-bold' : 'font-medium', isToday ? 'bg-teal' : 'bg-transparent', isToday ? 'text-white' : 'text-foreground', onAdd && !isToday && 'hover:bg-accent')}
                     onClick={onAdd ? () => onAdd(d.date) : undefined}
                     disabled={!onAdd}
                     aria-label={onAdd ? `${t('cal.add')}: ${d.date}` : undefined}
-                    sx={{
-                      alignSelf: 'flex-start',
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      fontSize: '0.8125rem',
-                      fontWeight: isToday ? 700 : 500,
-                      fontVariantNumeric: 'tabular-nums',
-                      bgcolor: isToday ? 'primary.main' : 'transparent',
-                      color: isToday ? 'primary.contrastText' : 'text.primary',
-                      '&:hover': onAdd && !isToday ? { bgcolor: 'action.hover' } : undefined,
-                    }}
                   >
                     {Number(d.date.slice(8))}
                   </ButtonBase>
@@ -274,17 +215,17 @@ function MonthGrid({ month, today, events, onOpen, onAdd }: { month: string; tod
                     <EventChip key={e.id} e={e} onOpen={onOpen} />
                   ))}
                   {list.length > MAX_CHIPS && (
-                    <Typography variant="caption" color="text.secondary" sx={{ pl: 0.75 }}>
+                    <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground pl-1.5">
                       {t('cal.more', { n: list.length - MAX_CHIPS })}
-                    </Typography>
+                    </span>
                   )}
-                </Box>
+                </div>
               );
             })}
-          </Box>
+          </div>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -292,29 +233,12 @@ function EventChip({ e, onOpen }: { e: CalendarEvent; onOpen?: (e: CalendarEvent
   const { t } = useI18n();
   const c = KIND_COLORS[e.kind];
   return (
-    <ButtonBase
+    <ButtonBase className="justify-start w-full px-1.5 py-0.5 rounded-[6px] text-[0.75rem] leading-[18px] font-medium text-left overflow-hidden whitespace-nowrap text-ellipsis block" style={{ backgroundColor: pal(c.bg), color: pal(c.fg) }}
       onClick={onOpen ? () => onOpen(e) : undefined}
       disabled={!onOpen}
       title={`${t(`cal.kind.${e.kind}`)} · ${e.title}`}
       data-testid="calendar-chip"
       data-kind={e.kind}
-      sx={{
-        justifyContent: 'flex-start',
-        width: '100%',
-        px: 0.75,
-        py: 0.25,
-        borderRadius: '6px',
-        bgcolor: c.bg,
-        color: c.fg,
-        fontSize: '0.75rem',
-        lineHeight: '18px',
-        fontWeight: 500,
-        textAlign: 'left',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        textOverflow: 'ellipsis',
-        display: 'block',
-      }}
     >
       {e.title}
     </ButtonBase>
@@ -324,33 +248,31 @@ function EventChip({ e, onOpen }: { e: CalendarEvent; onOpen?: (e: CalendarEvent
 function EntryList({ events, today, onEdit, onDelete }: { events: CalendarEvent[]; today: string; onEdit?: (e: CalendarEvent) => void; onDelete?: (e: CalendarEvent) => void }) {
   const { t, fmt } = useI18n();
   return (
-    <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', overflow: 'hidden' }} data-testid="calendar-list">
+    <ul className="list-none m-0 p-0 border border-border rounded-[12px] overflow-hidden" data-testid="calendar-list">
       {events.map((e, i) => {
         const c = KIND_COLORS[e.kind];
         const days = eventDays(e);
         const past = e.endsOn < today;
         return (
-          <Box
-            component="li"
+          <li className={cn('flex items-center gap-4 px-4 py-3 border-border', i === 0 ? 'border-t-0' : 'border-t', past ? 'opacity-[0.7]' : 'opacity-[1]')}
             key={e.id}
             data-testid="calendar-entry"
             data-kind={e.kind}
-            sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, borderTop: i === 0 ? 0 : 1, borderColor: 'm3.outlineVariant', opacity: past ? 0.7 : 1 }}
           >
-            <Box sx={{ width: 40, height: 40, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: c.bg, color: c.fg, flexShrink: 0, '& svg': { fontSize: 22 } }}>
+            <div className="w-[40px] h-[40px] rounded-full grid place-items-center shrink-0 [&_svg]:text-[22px]" style={{ backgroundColor: pal(c.bg), color: pal(c.fg) }}>
               {KIND_ICON[e.kind]}
-            </Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle1" component="p" sx={{ lineHeight: '24px' }}>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-base font-medium tracking-[0.1px] leading-[24px]">
                 {e.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </p>
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {t(`cal.kind.${e.kind}`)} · {days === 1 ? fmt.date(e.startsOn, 'short') : t('cal.range', { from: fmt.date(e.startsOn, 'short'), to: fmt.date(e.endsOn, 'short') })}
                 {days > 1 && ` · ${t.plural('cal.days', days)}`}
                 {' · '}
                 {e.programs?.length ? t('cal.forPrograms', { programs: e.programs.join(', ') }) : t('cal.forAll')}
-              </Typography>
-            </Box>
+              </p>
+            </div>
             {onEdit && (
               <Tooltip title={t('common.edit')}>
                 <IconButton onClick={() => onEdit(e)} aria-label={t('cal.editEntry', { title: e.title })}>
@@ -365,10 +287,10 @@ function EntryList({ events, today, onEdit, onDelete }: { events: CalendarEvent[
                 </IconButton>
               </Tooltip>
             )}
-          </Box>
+          </li>
         );
       })}
-    </Box>
+    </ul>
   );
 }
 
@@ -405,25 +327,25 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
     <Dialog open onClose={() => !pending && onClose()} maxWidth="sm" fullWidth aria-labelledby="cal-dialog-title">
       <DialogTitle id="cal-dialog-title">{event ? t('cal.dialog.edit') : t('cal.dialog.add')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2.5} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-5 pt-2">
           {error && (
             <Alert severity="error" role="alert">
               {error}
             </Alert>
           )}
-          <Box>
-            <Typography variant="body2" color="text.secondary" id="cal-kind" sx={{ mb: 0.75 }}>
+          <div>
+            <p className="text-[13px] leading-[19px] text-muted-foreground mb-1.5" id="cal-kind">
               {t('cal.dialog.kind')}
-            </Typography>
-            <ToggleButtonGroup exclusive value={kind} onChange={(_, v: CalendarKind | null) => v && setKind(v)} aria-labelledby="cal-kind" size="small" sx={{ flexWrap: 'wrap' }}>
+            </p>
+            <ToggleButtonGroup className="flex-wrap" exclusive value={kind} onChange={(_, v: CalendarKind | null) => v && setKind(v)} aria-labelledby="cal-kind" size="small">
               {CALENDAR_KINDS.map((k) => (
-                <ToggleButton key={k} value={k} sx={{ gap: 0.75, px: 2 }} data-testid={`calendar-kind-${k}`}>
-                  {kind === k && <Check sx={{ fontSize: 18 }} />}
+                <ToggleButton className="gap-1.5 px-4" key={k} value={k} data-testid={`calendar-kind-${k}`}>
+                  {kind === k && <Check className="text-[18px]" />}
                   {t(`cal.kind.${k}`)}
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
-          </Box>
+          </div>
           <FormField label={t('cal.dialog.title')} required>
             <TextInput
               value={title}
@@ -435,7 +357,7 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
               slotProps={{ htmlInput: { maxLength: 200, 'data-testid': 'calendar-title' } }}
             />
           </FormField>
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+          <div className="grid gap-4 grid-cols-[1fr] sm:grid-cols-[1fr_1fr]">
             <FormField label={t('cal.dialog.startsOn')} required>
               <TextInput
                 type="date"
@@ -462,11 +384,11 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
                 slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: startsOn || undefined, 'data-testid': 'calendar-ends' } }}
               />
             </FormField>
-          </Box>
+          </div>
           <FormControl>
-            <Typography variant="body2" color="text.secondary" id="cal-who">
+            <p className="text-[13px] leading-[19px] text-muted-foreground" id="cal-who">
               {t('cal.dialog.who')}
-            </Typography>
+            </p>
             <RadioGroup row aria-labelledby="cal-who" value={scope} onChange={(e) => setScope(e.target.value as 'all' | 'some')}>
               <FormControlLabel value="all" control={<Radio />} label={t('cal.dialog.everyone')} />
               <FormControlLabel value="some" control={<Radio />} label={t('cal.dialog.some')} disabled={programs.length === 0} />
@@ -486,7 +408,7 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
               >
                 {programs.map((p) => (
                   <MenuItem key={p.id} value={p.id}>
-                    <Checkbox checked={programIds.includes(p.id)} size="small" sx={{ py: 0 }} />
+                    <Checkbox className="py-0" checked={programIds.includes(p.id)} size="small" />
                     <ListItemText primary={p.name} />
                   </MenuItem>
                 ))}
@@ -495,20 +417,20 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
             </FormControl>
           )}
           {kind === 'holiday' && (
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('cal.dialog.holidayHelp')}
-            </Typography>
+            </p>
           )}
-          <Box>
+          <div>
             <FormControlLabel
               control={<Checkbox checked={notify} onChange={(e) => setNotify(e.target.checked)} data-testid="calendar-notify" />}
               label={t('cal.dialog.notify')}
             />
-            <Typography variant="caption" color="text.secondary" component="p" sx={{ ml: 4 }}>
+            <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground ml-8">
               {t('cal.dialog.notifyHelp')}
-            </Typography>
-          </Box>
-        </Stack>
+            </p>
+          </div>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} disabled={pending}>
@@ -531,12 +453,12 @@ function DeleteDialog({ event, onClose }: { event: CalendarEvent; onClose: (mess
       <DialogTitle id="cal-delete-title">{t('cal.delete.title', { title: event.title })}</DialogTitle>
       <DialogContent>
         {error && (
-          <Alert severity="error" role="alert" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="error" role="alert">
             {error}
           </Alert>
         )}
         <DialogContentText>{t('cal.delete.body')}</DialogContentText>
-        {event.kind === 'holiday' && <DialogContentText sx={{ mt: 1.5 }}>{t('cal.delete.holidayBody')}</DialogContentText>}
+        {event.kind === 'holiday' && <DialogContentText className="mt-3">{t('cal.delete.holidayBody')}</DialogContentText>}
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} disabled={pending}>

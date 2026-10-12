@@ -1,6 +1,4 @@
 'use client';
-
-import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { StatusPill as AdmissionStatus } from '@/components/admissions/Chips';
 import { DataTable, StatusPill, type Column } from '@/components/ui';
@@ -8,7 +6,6 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { ApplicationRow, CycleRow, MeritListDetail } from '@/lib/admissions';
 
-const link = { color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } } as const;
 
 /** Admission cycles: search, sortable columns and CSV export. */
 export function CyclesTable({ rows }: { rows: CycleRow[] }) {
@@ -23,12 +20,12 @@ export function CyclesTable({ rows }: { rows: CycleRow[] }) {
       csv: (c) => `${c.name} (${c.programName}, ${c.yearLabel})`,
       cell: (c) => (
         <>
-          <Typography component={NextLink} href={`/admissions/cycles/${c.id}`} variant="subtitle2" sx={link}>
+          <NextLink className="text-sm leading-5 font-medium tracking-[0.1px] text-teal-ink no-underline hover:underline" href={`/admissions/cycles/${c.id}`}>
             {c.name}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" component="div">
+          </NextLink>
+          <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {c.programName} · {c.yearLabel}
-          </Typography>
+          </div>
         </>
       ),
     },
@@ -66,12 +63,12 @@ export function ApplicationsTable({ rows }: { rows: ApplicationRow[] }) {
       csv: (a) => `${a.applicantName} (${a.applicationNo}, ${a.phone})`,
       cell: (a) => (
         <>
-          <Typography component={NextLink} href={`/admissions/applications/${a.id}`} variant="subtitle2" sx={link}>
+          <NextLink className="text-sm leading-5 font-medium tracking-[0.1px] text-teal-ink no-underline hover:underline" href={`/admissions/applications/${a.id}`}>
             {a.applicantName}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" component="div">
+          </NextLink>
+          <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {a.applicationNo} · {a.phone}
-          </Typography>
+          </div>
         </>
       ),
     },
@@ -100,12 +97,12 @@ export function MeritListTable({ rows }: { rows: MeritEntry[] }) {
       csv: (e) => `${e.applicantName} (${e.applicationNo})`,
       cell: (e) => (
         <>
-          <Typography component={NextLink} href={`/admissions/applications/${e.applicationId}`} variant="body2" sx={link}>
+          <NextLink className="text-[13px] leading-[19px] text-teal-ink no-underline hover:underline" href={`/admissions/applications/${e.applicationId}`}>
             {e.applicantName}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" component="div">
+          </NextLink>
+          <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {e.applicationNo}
-          </Typography>
+          </div>
         </>
       ),
     },

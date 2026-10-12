@@ -1,9 +1,3 @@
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
-import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
 import { FeeClassesTable } from '@/components/fees/FeeClassesTable';
@@ -19,6 +13,7 @@ import { schoolToday } from '@/lib/school';
 import { getI18n } from '@/i18n/server';
 import type { FeeSummary } from '@/lib/types';
 
+import { ArrowRight as ArrowForward, Banknote as PaymentsOutlined, ChevronRight, ReceiptText as ReceiptLongOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.fees') };
 }
@@ -98,38 +93,38 @@ export default async function FeesPage() {
           >
             {t('fees.byClass')}
           </SectionTitle>
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <div className="hidden md:block">
             <FeeClassesTable rows={s!.classes} />
-          </Box>
+          </div>
           {/* Phones: one card per class instead of a wide table. */}
-          <Box sx={{ display: { xs: 'grid', md: 'none' }, gap: 1.5 }} data-testid="fee-classes-list">
+          <div className="grid md:hidden gap-3" data-testid="fee-classes-list">
             {s!.classes.map((c) => (
-              <Box key={c.sectionId} sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', p: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+              <div className="border border-border rounded-[12px] p-4" key={c.sectionId}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <h6 className="text-base leading-6 tracking-[0.1px] font-medium">
                     {c.className}
-                  </Typography>
+                  </h6>
                   {c.overdue > 0 && (
-                    <Typography variant="body2" sx={{ color: 'error.main', whiteSpace: 'nowrap' }}>
+                    <p className="text-[13px] leading-[19px] text-red-ink whitespace-nowrap">
                       {t('fees.amountOverdue', { amount: formatRupees(c.overduePaise) })}
-                    </Typography>
+                    </p>
                   )}
-                </Box>
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                </div>
+                <p className="text-[13px] leading-[19px] mt-1">
                   {t('fees.amountOutstanding', { amount: formatRupees(c.outstandingPaise) })}
-                </Typography>
-                <Box sx={{ my: 1 }}>
+                </p>
+                <div className="my-2">
                   <MiniBar value={pct(c.collectedPaise, c.billedPaise)} color="kx.success" label={t('fees.pctCollected', { p: pct(c.collectedPaise, c.billedPaise).toFixed(0) })} />
-                </Box>
-                <Typography variant="caption" color="text.secondary" component="p">
+                </div>
+                <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {t('fees.collectedOf', { collected: formatRupees(c.collectedPaise), billed: formatRupees(c.billedPaise), open: c.open })}
-                </Typography>
-                <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} sx={{ mt: 1, ml: -1 }}>
+                </p>
+                <LinkButton className="mt-2 -ml-2" href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />}>
                   {t('fees.invoices')}
                 </LinkButton>
-              </Box>
+              </div>
             ))}
-          </Box>
+          </div>
         </>
       )}
     </>

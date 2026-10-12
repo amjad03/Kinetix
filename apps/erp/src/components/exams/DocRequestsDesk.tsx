@@ -1,14 +1,11 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useState, useTransition } from 'react';
 import { DeskTable, Pill } from '@/components/campus/Desk';
 import { decideDoc, issueDoc } from '@/app/(dashboard)/exams/university-actions';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button } from '@/components/kx';
 export interface DocRequest {
   id: string;
   title: string;
@@ -30,7 +27,7 @@ export function DocRequestsDesk({ rows }: { rows: DocRequest[] }) {
       setError(r.ok ? null : (r.error ?? null));
     });
   return (
-    <Stack spacing={2}>
+    <div className="flex flex-col gap-4">
       {error && <Alert severity="error">{error}</Alert>}
       <DeskTable
         title={t('nav.docRequests')}
@@ -41,7 +38,7 @@ export function DocRequestsDesk({ rows }: { rows: DocRequest[] }) {
           r.purpose,
           <Pill key={r.id} tone={r.status === 'issued' ? 'success' : r.status === 'rejected' ? 'error' : 'warning'} label={t(`uni.doc.status.${r.status}` as MessageKey)} />,
           r.serialNo ?? '',
-          <Stack key={`a${r.id}`} direction="row" spacing={1}>
+          <div className="flex flex-row gap-2" key={`a${r.id}`}>
             {r.status === 'requested' && (
               <>
                 <Button size="small" disabled={pending} onClick={() => run(() => decideDoc(r.id, true))}>{t('uni.doc.approve')}</Button>
@@ -50,11 +47,11 @@ export function DocRequestsDesk({ rows }: { rows: DocRequest[] }) {
             )}
             {r.status === 'approved' && <Button size="small" variant="contained" disabled={pending} onClick={() => run(() => issueDoc(r.id))}>{t('uni.doc.issue')}</Button>}
             {r.status === 'issued' && <Button size="small" href={`/api/download?kind=academic-doc&id=${r.id}`}>{t('uni.doc.download')}</Button>}
-          </Stack>,
+          </div>,
         ])}
         testId="doc-requests"
       />
       {rows.length === 0 && <Alert severity="info">{t('uni.doc.empty')}</Alert>}
-    </Stack>
+    </div>
   );
 }

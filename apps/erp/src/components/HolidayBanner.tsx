@@ -1,41 +1,27 @@
-import BeachAccessOutlined from '@mui/icons-material/BeachAccessOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { getI18n } from '@/i18n/server';
 import { LinkButton } from './LinkButton';
 
+import { Umbrella as BeachAccessOutlined } from 'lucide-react';
 /** A holiday for the whole institution on the day shown: no classes, none counted as missed. */
 export async function HolidayBanner({ title, date }: { title: string; date: string }) {
   const { t } = await getI18n();
   return (
-    <Box
+    <div className="flex items-center flex-wrap gap-4 px-5 py-4 mb-6 rounded-[16px] bg-amber-soft text-amber-ink"
       data-testid="holiday-banner"
       role="status"
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 2,
-        px: 2.5,
-        py: 2,
-        mb: 3,
-        borderRadius: '16px',
-        bgcolor: 'kx.warningContainer',
-        color: 'kx.onWarningContainer',
-      }}
     >
-      <Box aria-hidden sx={{ width: 48, height: 48, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'kx.warning', color: 'kx.pane', flexShrink: 0 }}>
+      <div className="w-[48px] h-[48px] rounded-full grid place-items-center bg-amber text-card shrink-0" aria-hidden>
         <BeachAccessOutlined />
-      </Box>
-      <Box sx={{ flex: '1 1 260px', minWidth: 0 }}>
-        <Typography variant="h6" component="p">
+      </div>
+      <div className="flex-[1_1_260px] min-w-0">
+        <p className="text-base leading-6 font-medium tracking-[0.1px]">
           {t('holiday.title', { title })}
-        </Typography>
-        <Typography variant="body2">{t('holiday.body')}</Typography>
-      </Box>
+        </p>
+        <p className="text-[13px] leading-[19px]">{t('holiday.body')}</p>
+      </div>
       <LinkButton href={`/calendar?month=${date.slice(0, 7)}`} variant="outlined" color="inherit">
         {t('holiday.openCalendar')}
       </LinkButton>
-    </Box>
+    </div>
   );
 }

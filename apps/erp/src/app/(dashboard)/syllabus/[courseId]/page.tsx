@@ -1,6 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
@@ -12,6 +9,8 @@ import { api, load, requireSection } from '@/lib/api';
 import type { CourseOutline, Curriculum } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
+import { Alert } from '@/components/kx';
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('syl.course') };
 }
@@ -33,11 +32,11 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
 
   return (
     <>
-      <Box sx={{ ml: -1, mb: 0.5 }}>
+      <div className="-ml-2 mb-1">
         <LinkButton href="/syllabus" size="small" startIcon={<ArrowBack />}>
           {t('nav.syllabus')}
         </LinkButton>
-      </Box>
+      </div>
       {course.error !== undefined ? (
         <ErrorState title={t('syl.cantOpen')} message={course.error} />
       ) : (
@@ -45,17 +44,17 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
           <PageHeader
             title={c!.title}
             subtitle={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
+              <div className="flex items-center gap-2 flex-wrap mt-1">
                 <span>
                   {t('syl.counts', { curriculum: curriculum ?? '', chapters: c!.chapters.length, topics })}
                   {own ? ` ${t('syl.yours', { n: own })}` : ''}
                 </span>
                 <ReviewChip reviewed={c!.reviewed} />
-              </Box>
+              </div>
             }
           />
           {!c!.reviewed && (
-            <Alert severity="info" variant="outlined" sx={{ mb: 3, borderColor: 'm3.outlineVariant' }}>
+            <Alert className="mb-6 border-border" severity="info" variant="outlined">
               {t('syl.unreviewedAlert')}
             </Alert>
           )}

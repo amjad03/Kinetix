@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addBlock, addToWaitlist, allotFromWaitlist, cancelWaiting, markNight, transferRoom, addPlan, addRoom, allot, chargeHostelFees, chargeMessFees, issuePass, passStep, setComplaintStatus, setMenu, signInVisitor, signOutVisitor, subscribeMess, vacate } from '@/app/(dashboard)/hostel/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -11,6 +8,7 @@ import { MEALS } from '@/lib/ops';
 import { st } from '@/lib/ops-labels';
 import type { HBed, HBlock, HComplaint, HMenu, HNight, HPassRow, HPlan, HVisitorRow, HWait } from '@/lib/ops';
 
+import { Button } from '@/components/kx';
 type Dialog = 'block' | 'room' | 'allot' | 'fees' | 'pass' | 'visitor' | 'plan' | 'subscribe' | 'messFees' | { menu: { day: number; meal: string; items: string } } | { resolve: HComplaint } | 'wait' | { fromWait: HWait } | { move: HBed };
 
 export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, complaints, waitlist, night, initialTab }: { blocks: HBlock[]; beds: HBed[]; passes: HPassRow[]; visitors: HVisitorRow[]; plans: HPlan[]; menu: HMenu[]; complaints: HComplaint[]; waitlist: HWait[]; night: HNight; initialTab: string }) {
@@ -58,7 +56,7 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
                     { label: t('ho.occupied'), cell: (b) => b.occupied, num: true },
                   ]}
                 />
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('ho.beds')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('ho.beds')}</h6>
                 <Grid
                   testId="ho-bed-list"
                   empty={t('ho.noBeds')}
@@ -148,7 +146,7 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
                     { label: t('ho.subscribers'), cell: (p) => p.subscribers, num: true },
                   ]}
                 />
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('ho.weekMenu')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('ho.weekMenu')}</h6>
                 <Grid
                   testId="ho-menu"
                   empty={t('ho.noMenu')}
@@ -158,7 +156,7 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
                     ...MEALS.map((m) => ({
                       label: st(t, m),
                       cell: (d: number) => (
-                        <Button size="small" color="inherit" onClick={() => setDlg({ menu: { day: d, meal: m, items: cell(d, m) } })} sx={{ textTransform: 'none', textAlign: 'left' }}>
+                        <Button className="normal-case text-left" size="small" color="inherit" onClick={() => setDlg({ menu: { day: d, meal: m, items: cell(d, m) } })}>
                           {cell(d, m) || t('ho.setMenu')}
                         </Button>
                       ),
@@ -223,7 +221,7 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
             label: t('ho.tab.night', { n: night.absent }),
             node: (
               <>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }} data-testid="ho-night-counts">{t('ho.nightCounts', { date: night.night, present: night.present, absent: night.absent, leave: night.leave, unmarked: night.unmarked })}</Typography>
+                <p className="text-[13px] leading-[19px] text-muted-foreground mb-2" data-testid="ho-night-counts">{t('ho.nightCounts', { date: night.night, present: night.present, absent: night.absent, leave: night.leave, unmarked: night.unmarked })}</p>
                 <Grid
                   testId="ho-night"
                   empty={t('ho.noResidents')}

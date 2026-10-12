@@ -1,18 +1,11 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { DeskTable, Pill } from '@/components/campus/Desk';
 import { addExaminer, assignExaminer, assignmentAction, decideClaim, paperAction } from '@/app/(dashboard)/exams/university-actions';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button, Card, MenuItem, TextField } from '@/components/kx';
 export interface ExaminerRow {
   id: string;
   fullName: string;
@@ -54,22 +47,22 @@ export function ExaminersDesk({ examiners, papers, claims, sessions, subjects, o
   const rupees = (p: number) => new Intl.NumberFormat(locale === 'en' ? 'en-IN' : locale, { style: 'currency', currency: 'INR' }).format(p / 100);
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {msg && <Alert severity={msg.tone}>{msg.text}</Alert>}
-      <Card sx={{ p: 2.5 }}>
-        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>{t('uni.ex.add')}</Typography>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+      <Card className="p-5">
+        <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-4">{t('uni.ex.add')}</h2>
+        <div className="flex flex-col md:flex-row gap-4">
           <TextField size="small" label={t('uni.ex.name')} value={name} onChange={(e) => setName(e.target.value)} />
           <TextField size="small" label={t('uni.ex.phone')} value={phone} onChange={(e) => setPhone(e.target.value)} />
           <TextField size="small" label={t('uni.ex.org')} value={org} onChange={(e) => setOrg(e.target.value)} />
           <Button variant="contained" disabled={pending || !name.trim() || !phone.trim()} onClick={() => start(async () => say(await addExaminer({ fullName: name, phone, organisation: org }), t('uni.ex.saved')))}>{t('uni.ex.add')}</Button>
-        </Stack>
+        </div>
       </Card>
 
       {examiners.length > 0 && (
-        <Card sx={{ p: 2.5 }}>
-          <Typography variant="h6" component="h2" sx={{ mb: 2 }}>{t('uni.ex.assign')}</Typography>
-          <Stack spacing={2} sx={{ maxWidth: 520 }}>
+        <Card className="p-5">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-4">{t('uni.ex.assign')}</h2>
+          <div className="flex flex-col gap-4 max-w-[520px]">
             <TextField select size="small" label={t('uni.ex.name')} value={who} onChange={(e) => setWho(e.target.value)}>
               {examiners.map((x) => <MenuItem key={x.id} value={x.id}>{x.fullName}</MenuItem>)}
             </TextField>
@@ -96,7 +89,7 @@ export function ExaminersDesk({ examiners, papers, claims, sessions, subjects, o
             >
               {t('uni.ex.assign')}
             </Button>
-          </Stack>
+          </div>
         </Card>
       )}
 
@@ -113,14 +106,14 @@ export function ExaminersDesk({ examiners, papers, claims, sessions, subjects, o
               a.session,
               a.subject,
               a.status,
-              <Stack key={a.id} direction="row" spacing={1}>
+              <div className="flex flex-row gap-2" key={a.id}>
                 {a.role === 'valuer' && (
                   <>
                     <Button size="small" disabled={pending} onClick={() => start(async () => { const r = await assignmentAction(a.id, 'scripts'); say(r, r.ok ? t('uni.ex.scriptsAdded', { n: Number(r.data.added) }) : ''); })}>{t('uni.ex.prepare')}</Button>
                     <Button size="small" disabled={pending} onClick={() => start(async () => { const r = await assignmentAction(a.id, 'apply'); say(r, r.ok ? t('uni.ex.applied', { n: Number(r.data.applied) }) : ''); })}>{t('uni.ex.apply')}</Button>
                   </>
                 )}
-              </Stack>,
+              </div>,
             ]),
           )}
           testId="ext-assignments"
@@ -135,13 +128,13 @@ export function ExaminersDesk({ examiners, papers, claims, sessions, subjects, o
           p.title,
           <Pill key={p.id} tone={p.status === 'locked' || p.status === 'approved' ? 'success' : 'warning'} label={t(`uni.ex.paper.status.${p.status}` as MessageKey)} />,
           p.scrutinyNote ?? '',
-          <Stack key={`p${p.id}`} direction="row" spacing={1}>
+          <div className="flex flex-row gap-2" key={`p${p.id}`}>
             {p.status === 'scrutiny' && <Button size="small" disabled={pending} onClick={() => start(async () => say(await paperAction(p.id, 'approve'), t('uni.ex.saved')))}>{t('uni.ex.paper.approve')}</Button>}
             {(p.status === 'scrutiny' || p.status === 'approved') && (
               <Button size="small" color="warning" disabled={pending} onClick={() => { const note = window.prompt(t('uni.ex.note')); if (note) start(async () => say(await paperAction(p.id, 'return', note), t('uni.ex.saved'))); }}>{t('uni.ex.paper.return')}</Button>
             )}
             {p.status === 'approved' && <Button size="small" disabled={pending} onClick={() => start(async () => say(await paperAction(p.id, 'lock'), t('uni.ex.saved')))}>{t('uni.ex.paper.lock')}</Button>}
-          </Stack>,
+          </div>,
         ])}
         testId="ext-papers"
       />
@@ -155,7 +148,7 @@ export function ExaminersDesk({ examiners, papers, claims, sessions, subjects, o
           c.units,
           rupees(c.amountPaise),
           t(`uni.ex.claim.status.${c.status}` as MessageKey),
-          <Stack key={c.id} direction="row" spacing={1}>
+          <div className="flex flex-row gap-2" key={c.id}>
             {c.status === 'submitted' && (
               <>
                 <Button size="small" disabled={pending} onClick={() => start(async () => say(await decideClaim(c.id, 'approved'), t('uni.ex.saved')))}>{t('uni.ex.claim.approved')}</Button>
@@ -163,10 +156,10 @@ export function ExaminersDesk({ examiners, papers, claims, sessions, subjects, o
               </>
             )}
             {c.status === 'approved' && <Button size="small" disabled={pending} onClick={() => start(async () => say(await decideClaim(c.id, 'paid'), t('uni.ex.saved')))}>{t('uni.ex.claim.paid')}</Button>}
-          </Stack>,
+          </div>,
         ])}
         testId="ext-claims"
       />
-    </Stack>
+    </div>
   );
 }

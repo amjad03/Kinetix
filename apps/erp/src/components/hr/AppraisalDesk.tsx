@@ -1,17 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { closeCycle, createCycle, finaliseAppraisal, hodReview, saveSelfAppraisal } from '@/app/(dashboard)/hr/talent-actions';
@@ -21,6 +8,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { Appraisal, AppraisalCategory, AppraisalCycle, AppraisalScores, AppraisalStatus } from '@/lib/hr-lifecycle';
 
+import { Alert, Button, MenuItem, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 const TONE: Record<AppraisalStatus, Tone> = { draft: 'neutral', self_submitted: 'warning', hod_reviewed: 'info', finalised: 'success' };
 
 export interface AppraisalViewer {
@@ -39,10 +27,10 @@ const percent = (scores: AppraisalScores, cats: AppraisalCategory[]) => Math.rou
 function ScoreForm({ cats, scores, onChange, evidence, readOnly }: { cats: AppraisalCategory[]; scores: AppraisalScores; onChange: (s: AppraisalScores) => void; evidence: boolean; readOnly?: boolean }) {
   const { t } = useI18n();
   return (
-    <Stack spacing={2}>
+    <div className="flex flex-col gap-4">
       {cats.map((c) => (
-        <Box key={c.key} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: evidence ? '2fr 1fr 2fr' : '3fr 1fr' }, gap: 1.5, alignItems: 'start' }}>
-          <Typography sx={{ pt: 1 }}>{t(`hl.appr.cat.${c.key}` as MessageKey)}</Typography>
+        <div className={`grid grid-cols-1 items-start gap-3 ${evidence ? 'sm:grid-cols-[2fr_1fr_2fr]' : 'sm:grid-cols-[3fr_1fr]'}`} key={c.key}>
+          <p className="text-sm leading-[21px] pt-2">{t(`hl.appr.cat.${c.key}` as MessageKey)}</p>
           <FormField label={t('hl.appr.score', { max: c.max })}>
             <TextInput type="number" disabled={readOnly} value={scores[c.key]?.score ?? ''} slotProps={{ htmlInput: { min: 0, max: c.max } }} onChange={(e) => onChange({ ...scores, [c.key]: { ...scores[c.key], score: Number(e.target.value) } })} />
           </FormField>
@@ -51,10 +39,10 @@ function ScoreForm({ cats, scores, onChange, evidence, readOnly }: { cats: Appra
               <TextInput disabled={readOnly} value={scores[c.key]?.evidence ?? ''} onChange={(e) => onChange({ ...scores, [c.key]: { score: scores[c.key]?.score ?? 0, evidence: e.target.value } })} />
             </FormField>
           )}
-        </Box>
+        </div>
       ))}
-      <Typography color="text.secondary">{t('hl.appr.total', { pct: percent(scores, cats) })}</Typography>
-    </Stack>
+      <p className="text-sm leading-[21px] text-muted-foreground">{t('hl.appr.total', { pct: percent(scores, cats) })}</p>
+    </div>
   );
 }
 
@@ -83,10 +71,10 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
       } else setError(res.error ?? null);
     });
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'flex-end' } }}>
-        <Box sx={{ minWidth: 240 }}>
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
+        <div className="min-w-[240px]">
           <FormField label={t('hl.appr.cycle')}>
             <TextInput select value={cycleId ?? ''} onChange={(e) => router.push(`/hr/appraisal?cycle=${e.target.value}`)} disabled={cycles.length === 0}>
               {cycles.map((c) => (
@@ -96,25 +84,23 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
               ))}
             </TextInput>
           </FormField>
-        </Box>
+        </div>
         {viewer.hr && current?.status === 'open' && (
           <Button color="inherit" disabled={pending} onClick={() => run(() => closeCycle(current.id))}>
             {t('hl.appr.closeCycle')}
           </Button>
         )}
-      </Stack>
-      {cycles.length === 0 && <Typography color="text.secondary">{t('hl.appr.noCycle')}</Typography>}
+      </div>
+      {cycles.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('hl.appr.noCycle')}</p>}
 
       {viewer.hr && (
-        <Paper variant="outlined" sx={{ p: 2.5 }}>
+        <div className="rounded-[12px] border bg-card p-5">
           <SectionTitle flush>{t('hl.appr.newCycle')}</SectionTitle>
-          <Box
-            component="form"
+          <form className="grid grid-cols-[1fr] sm:grid-cols-[repeat(4,1fr)] gap-3 items-end"
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
               run(() => createCycle(cycle), () => setCycle({ period: '', opensOn: '', closesOn: '' }));
             }}
-            sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(4, 1fr)' }, gap: 1.5, alignItems: 'end' }}
           >
             <FormField label={t('hl.appr.period')} required>
               <TextInput value={cycle.period} onChange={(e) => setCycle({ ...cycle, period: e.target.value })} required />
@@ -125,46 +111,46 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
             <FormField label={t('hl.appr.closes')} required>
               <TextInput type="date" value={cycle.closesOn} onChange={(e) => setCycle({ ...cycle, closesOn: e.target.value })} required />
             </FormField>
-            <Box>
+            <div>
               <Button type="submit" variant="contained" disabled={pending}>
                 {t('hl.appr.createCycle')}
               </Button>
-            </Box>
-          </Box>
-        </Paper>
+            </div>
+          </form>
+        </div>
       )}
 
       {current && (
-        <Paper variant="outlined" sx={{ p: 2.5 }} data-testid="self-appraisal">
+        <div className="rounded-[12px] border bg-card p-5" data-testid="self-appraisal">
           <SectionTitle flush>{t('hl.appr.mine')}</SectionTitle>
           {mine && mine.status !== 'draft' && (
-            <Alert severity="info" sx={{ mb: 2 }}>
+            <Alert className="mb-4" severity="info">
               {t('hl.appr.locked')}
             </Alert>
           )}
           <ScoreForm cats={cats} scores={self} onChange={setSelf} evidence readOnly={locked} />
           {!locked && (
-            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+            <div className="flex flex-row gap-2 mt-4">
               <Button disabled={pending} onClick={() => run(() => saveSelfAppraisal(current.id, self, false))}>
                 {t('hl.appr.saveDraft')}
               </Button>
               <Button variant="contained" disabled={pending} onClick={() => run(() => saveSelfAppraisal(current.id, self, true))}>
                 {t('hl.appr.submit')}
               </Button>
-            </Stack>
+            </div>
           )}
-        </Paper>
+        </div>
       )}
 
       {viewer.reviewer && current && (
-        <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
-          <Box sx={{ p: 2, pb: 0 }}>
+        <div className="rounded-[12px] border bg-card overflow-x-auto">
+          <div className="p-4 pb-0">
             <SectionTitle flush>{t('hl.appr.team')}</SectionTitle>
-          </Box>
+          </div>
           {appraisals.length === 0 ? (
-            <Typography color="text.secondary" sx={{ p: 2 }}>
+            <p className="text-sm leading-[21px] text-muted-foreground p-4">
               {t('hl.appr.none')}
-            </Typography>
+            </p>
           ) : (
             <Table size="small" data-testid="appraisal-list">
               <TableHead>
@@ -189,7 +175,7 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
                     <TableCell align="right">{a.status === 'self_submitted' || a.status === 'draft' ? '–' : `${a.hodPercent}%`}</TableCell>
                     <TableCell align="right">{a.finalScore == null ? '–' : `${a.finalScore}%`}</TableCell>
                     <TableCell>{a.grade ? t(`hl.grade.${a.grade}` as MessageKey) : '–'}</TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                    <TableCell className="whitespace-nowrap" align="right">
                       {a.userId !== viewer.userId && (a.status === 'self_submitted' || a.status === 'hod_reviewed') && (
                         <Button
                           size="small"
@@ -213,7 +199,7 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
               </TableBody>
             </Table>
           )}
-        </Paper>
+        </div>
       )}
 
       {review && (
@@ -228,14 +214,14 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
             </Button>
           }
         >
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Typography variant="subtitle2">{t('hl.appr.selfScores')}: {review.selfPercent}%</Typography>
-            <Typography variant="subtitle2">{t('hl.appr.hodScores')}</Typography>
+          <div className="flex flex-col gap-4 pt-2">
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('hl.appr.selfScores')}: {review.selfPercent}%</h6>
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('hl.appr.hodScores')}</h6>
             <ScoreForm cats={cats} scores={reviewScores} onChange={setReviewScores} evidence={false} />
             <FormField label={t('hl.appr.remarks')}>
               <TextInput multiline minRows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
             </FormField>
-          </Stack>
+          </div>
         </Dialog>
       )}
 
@@ -250,17 +236,17 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
             </Button>
           }
         >
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Typography>{t('hl.appr.col.hod')}: {final.hodPercent}%</Typography>
+          <div className="flex flex-col gap-4 pt-2">
+            <p className="text-sm leading-[21px]">{t('hl.appr.col.hod')}: {final.hodPercent}%</p>
             <FormField label={t('hl.appr.finalPercent')} helper={t('hl.appr.finalHelp')}>
               <TextInput type="number" value={finalPct} slotProps={{ htmlInput: { min: 0, max: 100, step: 0.01 } }} onChange={(e) => setFinalPct(e.target.value)} />
             </FormField>
             <FormField label={t('hl.appr.remarks')}>
               <TextInput multiline minRows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
             </FormField>
-          </Stack>
+          </div>
         </Dialog>
       )}
-    </Stack>
+    </div>
   );
 }

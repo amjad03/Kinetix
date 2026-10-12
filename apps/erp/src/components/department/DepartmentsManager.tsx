@@ -1,27 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
-import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
-import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useMemo, useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -33,6 +10,8 @@ import { headCandidates, movedSubjects } from '@/lib/department';
 import type { AdminDepartment, StaffMember } from '@/lib/types';
 import { useI18n } from '@/i18n/client';
 
+import { Alert, Autocomplete, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, MenuItem, Snackbar, Tooltip, Typography } from '@/components/kx';
+import { ChartLine as InsightsOutlined, Pencil as EditOutlined, Plus as Add, Trash2 as DeleteOutlined, UsersRound as GroupsOutlined } from 'lucide-react';
 export interface SubjectOption {
   id: string;
   code: string;
@@ -114,7 +93,7 @@ export function DepartmentsManager({ departments, staff, subjects }: { departmen
               csv: false,
               align: 'right',
               cell: (d) => (
-                <Box sx={{ display: 'inline-flex', whiteSpace: 'nowrap' }}>
+                <div className="inline-flex whitespace-nowrap">
                   <Tooltip title={t('depts.view')}>
                     <IconButton component={Link} href={`/department?dept=${d.id}`} aria-label={t('depts.viewName', { name: d.name })}>
                       <InsightsOutlined />
@@ -130,16 +109,16 @@ export function DepartmentsManager({ departments, staff, subjects }: { departmen
                       <DeleteOutlined />
                     </IconButton>
                   </Tooltip>
-                </Box>
+                </div>
               ),
             },
           ]}
         />
       )}
       {unassigned.length > 0 && departments.length > 0 && (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }} data-testid="unassigned-subjects">
+        <p className="text-[13px] leading-[19px] text-muted-foreground mt-4" data-testid="unassigned-subjects">
           {t('depts.unassigned', { names: unassigned.map((s) => s.name).join(', ') })}
-        </Typography>
+        </p>
       )}
 
       {open?.kind === 'create' && <CreateDialog staff={staff} onClose={close} />}
@@ -152,19 +131,19 @@ export function DepartmentsManager({ departments, staff, subjects }: { departmen
 
 function ChipRow({ empty, items, testId }: { empty: string; items: { id: string; label: string; title?: string }[]; testId: string }) {
   return (
-    <Box data-testid={testId}>
+    <div data-testid={testId}>
       {items.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
+        <p className="text-[13px] leading-[19px] text-muted-foreground">
           {empty}
-        </Typography>
+        </p>
       ) : (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+        <div className="flex flex-wrap gap-1.5">
           {items.map((i) => (
             <Chip key={i.id} label={i.label} title={i.title} size="small" variant="outlined" />
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -179,7 +158,7 @@ function HeadSelect({ staff, value, onChange }: { staff: StaffMember[]; value: s
         onChange={(e) => onChange(e.target.value)}
         helperText={heads.length === 0 ? t('depts.noHods') : t('depts.onlyHods')}
         fullWidth
-        slotProps={{ select: { 'data-testid': 'head-select' } as object }}
+        slotProps={{ select: { 'data-testid': 'head-select' } }}
       >
         <MenuItem value="">
           <em>{t('depts.noHeadOption')}</em>
@@ -218,13 +197,13 @@ function CreateDialog({ staff, onClose }: { staff: StaffMember[]; onClose: (mess
       >
         <DialogTitle>{t('depts.add')}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
+          <div className="flex flex-col gap-5 mt-2">
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('depts.name')} required>
               <TextInput value={name} onChange={(e) => setName(e.target.value)} autoFocus required fullWidth slotProps={{ htmlInput: { maxLength: 120 } }} placeholder={t('depts.namePlaceholder')} />
             </FormField>
             <HeadSelect staff={staff} value={head} onChange={setHead} />
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
@@ -298,7 +277,7 @@ function EditDialog({
       >
         <DialogTitle>{t('depts.edit', { name: dept.name })}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
+          <div className="flex flex-col gap-5 mt-2">
             {error && (
               <Alert severity="error" data-testid="department-error">
                 {error}
@@ -322,13 +301,13 @@ function EditDialog({
                 const from = owner.get(s.id);
                 return (
                   <li key={key} {...rest}>
-                    <Box>
-                      <Typography variant="body2">{s.name}</Typography>
-                      <Typography variant="caption" color="text.secondary">
+                    <div>
+                      <p className="text-[13px] leading-[19px]">{s.name}</p>
+                      <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {s.code} · {t('tt.sem', { n: s.term })}
                         {from && from !== dept.name ? ` · ${t('depts.inDept', { name: from })}` : ''}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   </li>
                 );
               }}
@@ -351,7 +330,7 @@ function EditDialog({
               renderInput={(params) => <FormField id={params.id} label={t('depts.staff')}><TextInput {...params} placeholder={staffIds.length ? '' : t('depts.chooseStaff')} /></FormField>}
               data-testid="staff-select"
             />
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
@@ -375,7 +354,7 @@ function DeleteDialog({ dept, onClose }: { dept: AdminDepartment; onClose: (mess
       <DialogTitle>{t('depts.delete.title', { name: dept.name })}</DialogTitle>
       <DialogContent>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="error">
             {error}
           </Alert>
         )}

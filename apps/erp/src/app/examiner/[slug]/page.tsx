@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { ClaimButton, InviteLogin, PaperPanel, PortalCard, ValuationPanel, type PortalPaper, type PortalScript } from '@/components/exams/ExaminerPortal';
 import { Logo } from '@/components/Logo';
@@ -29,18 +27,18 @@ export default async function ExaminerPage({ params, searchParams }: { params: P
   const { invite } = await searchParams;
   const { t } = await getI18n();
   const frame = (children: React.ReactNode) => (
-    <Box component="main" sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', p: { xs: 2, sm: 4 } }}>
-      <Box sx={{ maxWidth: 860, mx: 'auto' }}>
-        <Box sx={{ mb: 3 }}><Logo /></Box>
-        <Typography variant="h5" component="h1" sx={{ mb: 3 }}>{t('uni.portal.title')}</Typography>
+    <main className="min-h-[100dvh] bg-background p-4 sm:p-8">
+      <div className="max-w-[860px] mx-auto">
+        <div className="mb-6"><Logo /></div>
+        <h1 className="text-[1.375rem] leading-7 mb-6">{t('uni.portal.title')}</h1>
         {children}
-      </Box>
-    </Box>
+      </div>
+    </main>
   );
 
   if (invite) {
     const info = await inviteInfo(slug, invite);
-    if (!info) return frame(<Typography>{t('uni.portal.invalid')}</Typography>);
+    if (!info) return frame(<p className="text-sm leading-[21px]">{t('uni.portal.invalid')}</p>);
     return frame(<InviteLogin slug={slug} token={invite} who={info.name} phone={info.phone} role={info.role} institution={info.institution} />);
   }
 
@@ -54,12 +52,12 @@ export default async function ExaminerPage({ params, searchParams }: { params: P
   );
   return frame(
     <>
-      <Typography sx={{ mb: 2 }}>{home.name}{home.organisation ? `, ${home.organisation}` : ''}</Typography>
-      {parts.length === 0 && <Typography>{t('uni.portal.empty')}</Typography>}
+      <p className="text-sm leading-[21px] mb-4">{home.name}{home.organisation ? `, ${home.organisation}` : ''}</p>
+      {parts.length === 0 && <p className="text-sm leading-[21px]">{t('uni.portal.empty')}</p>}
       {parts.map(({ a, scripts, paper }) => (
         <PortalCard key={a.id} title={`${t(`uni.ex.role.${a.role}` as MessageKey)}: ${a.subject} (${a.session})`}>
           {a.role === 'valuer' ? <ValuationPanel scripts={scripts} /> : <PaperPanel assignmentId={a.id} role={a.role} paper={paper} />}
-          <Box sx={{ mt: 2 }}><ClaimButton assignmentId={a.id} /></Box>
+          <div className="mt-4"><ClaimButton assignmentId={a.id} /></div>
         </PortalCard>
       ))}
     </>,

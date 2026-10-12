@@ -1,9 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useState } from 'react';
 import { frameworkDashboard, recordImpact, saveFramework } from '@/app/(dashboard)/projects/actions';
@@ -13,6 +8,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { IMPACT_SOURCES, indicatorsText, type ImpactFramework, type ProjectRow, type ShowcaseRow } from '@/lib/pathways-a';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** Projects the caller can see, the showcase, and the institution's impact frameworks. */
 export function ProjectsDesk({ projects, showcase, frameworks, initialTab }: { projects: ProjectRow[]; showcase: ShowcaseRow[]; frameworks: ImpactFramework[]; initialTab: string }) {
   const { t, fmt } = useI18n();
@@ -56,11 +53,11 @@ export function ProjectsDesk({ projects, showcase, frameworks, initialTab }: { p
     {
       label: '',
       cell: (f) => (
-        <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+        <div className="flex flex-row gap-1 flex-wrap">
           <Button size="small" onClick={() => setDashboard(f)}>{t('prj.totals')}</Button>
           {f.active && <Button size="small" onClick={() => setRecording(f)}>{t('prj.record')}</Button>}
           <Button size="small" onClick={() => setFramework(f)}>{t('ops.edit')}</Button>
-        </Stack>
+        </div>
       ),
     },
   ];
@@ -81,7 +78,7 @@ export function ProjectsDesk({ projects, showcase, frameworks, initialTab }: { p
       label: t('prj.tab.impact'),
       node: (
         <>
-          <Button variant="contained" startIcon={<Add />} sx={{ mb: 2 }} onClick={() => setFramework('new')} data-testid="prj-new-framework">{t('prj.newFramework')}</Button>
+          <Button className="mb-4" variant="contained" startIcon={<Add />} onClick={() => setFramework('new')} data-testid="prj-new-framework">{t('prj.newFramework')}</Button>
           <Grid testId="prj-frameworks" empty={t('prj.empty.frameworks')} rows={frameworks} cols={frameworkCols} />
         </>
       ),
@@ -95,7 +92,7 @@ export function ProjectsDesk({ projects, showcase, frameworks, initialTab }: { p
         <FormDialog
           title={framework === 'new' ? t('prj.newFramework') : t('ops.edit')}
           fields={frameworkFields(framework === 'new' ? undefined : framework)}
-          intro={<Typography variant="body2">{t('prj.indicatorsHint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('prj.indicatorsHint')}</p>}
           onSubmit={(v) => saveFramework(v, framework === 'new' ? undefined : framework.id)}
           onClose={close}
         />

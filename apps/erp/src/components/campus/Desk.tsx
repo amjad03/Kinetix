@@ -1,13 +1,10 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { isValidElement, useMemo, type ReactNode } from 'react';
 import { DataTable, StatusPill, type Column } from '@/components/ui';
 
 /** A row of stat tiles that stacks on a phone. */
 export function Tiles({ children }: { children: ReactNode }) {
-  return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>{children}</Box>;
+  return <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] lg:grid-cols-[repeat(4,1fr)] gap-4 mb-6">{children}</div>;
 }
 
 /** The words in a ready-made cell (text, numbers and pill labels), for sorting, search and export. */
@@ -27,12 +24,12 @@ export function DeskTable({ title, head, rows, testId, exportName }: { title: st
   const ids = useMemo(() => new Map(rows.map((r, i) => [r, String(i)])), [rows]);
   const columns: Column<ReactNode[]>[] = head.map((h, j) => ({ id: `c${j}`, header: h, rowHeader: j === 0, sort: (r) => nodeText(r[j]), cell: (r) => r[j] }));
   return (
-    <Box sx={{ mb: 3 }}>
-      <Typography variant="h6" component="h2" sx={{ mb: 1.5 }}>
+    <div className="mb-6">
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-3">
         {title}
-      </Typography>
+      </h2>
       <DataTable testId={testId} label={title} columns={columns} rows={rows} rowId={(r) => ids.get(r) ?? ''} exportName={exportName ?? testId ?? 'list'} />
-    </Box>
+    </div>
   );
 }
 

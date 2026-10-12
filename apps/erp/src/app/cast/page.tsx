@@ -1,6 +1,3 @@
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { CastClient, type CastBoard } from '@/components/cast/CastClient';
@@ -10,6 +7,7 @@ import { API_URL, TENANT_COOKIE } from '@/lib/config';
 import { castToken } from '@/lib/cast/relay';
 import { castSignOut } from './actions';
 
+import { Button } from '@/components/kx';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,27 +31,27 @@ export default async function CastPage() {
   const boards = token ? await boardsFor(token) : 'signin';
   const tenant = (await cookies()).get(TENANT_COOKIE)?.value ?? '';
   return (
-    <Box component="main" sx={{ minHeight: '100dvh', bgcolor: 'm3.surfaceContainer', p: { xs: 2, sm: 4 } }}>
-      <Box sx={{ maxWidth: 720, mx: 'auto', bgcolor: 'm3.surfaceContainerLowest', borderRadius: '28px', p: { xs: 3, sm: 5 } }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+    <main className="min-h-[100dvh] bg-muted p-4 sm:p-8">
+      <div className="max-w-[720px] mx-auto bg-card rounded-[28px] p-6 sm:p-10">
+        <h1 className="font-display text-2xl leading-8 mb-[0.35em]">
           {t('cast.title')}
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        </h1>
+        <p className="text-sm leading-[21px] text-muted-foreground mb-6">
           {t('cast.lead')}
-        </Typography>
+        </p>
         {boards === 'signin' ? (
           <CastSignIn defaultTenant={tenant} />
         ) : (
           <>
             <CastClient boards={boards} />
-            <Box component="form" action={castSignOut} sx={{ mt: 4 }}>
+            <form className="mt-8" action={castSignOut}>
               <Button type="submit" size="small" color="inherit">
                 {t('cast.signOut')}
               </Button>
-            </Box>
+            </form>
           </>
         )}
-      </Box>
-    </Box>
+      </div>
+    </main>
   );
 }

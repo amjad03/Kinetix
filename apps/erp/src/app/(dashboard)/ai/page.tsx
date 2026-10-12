@@ -1,6 +1,3 @@
-import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { getI18n } from '@/i18n/server';
 import type { TFunction } from '@/i18n/translate';
@@ -12,6 +9,8 @@ import { compactNumber, summarizeUsage } from '@/lib/ai-usage';
 import { api, load, requireSection } from '@/lib/api';
 import type { AiUsage } from '@/lib/types';
 
+import { Sparkles as AutoAwesomeOutlined } from 'lucide-react';
+import { pal } from '@/lib/sx';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('ai.title') };
 }
@@ -22,7 +21,7 @@ const n = (v: number) => v.toLocaleString('en-IN');
 
 function Legend({ t }: { t: TFunction }) {
   return (
-    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', color: 'text.secondary', mb: 1.5 }}>
+    <div className="flex gap-4 flex-wrap text-muted-foreground mb-3">
       {(
         [
           ['answered', t('ai.legend.answered')],
@@ -30,12 +29,12 @@ function Legend({ t }: { t: TFunction }) {
           ['failed', t('ai.legend.failed')],
         ] as const
       ).map(([k, label]) => (
-        <Box key={k} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-          <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: AI_COLORS[k] }} />
-          <Typography variant="caption">{label}</Typography>
-        </Box>
+        <div className="inline-flex items-center gap-1.5" key={k}>
+          <div className="w-[10px] h-[10px] rounded-full" style={{ backgroundColor: pal(AI_COLORS[k]) }} />
+          <span className="text-xs leading-4 tracking-[0.3px]">{label}</span>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
 
@@ -78,9 +77,9 @@ export default async function AiUsagePage() {
           <SectionTitle>{t('ai.byTask')}</SectionTitle>
           <Legend t={t} />
           <AiUsageTable tasks={s!.tasks} />
-          <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+          <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-3">
             {t('ai.tokensNote')}
-          </Typography>
+          </p>
         </>
       )}
     </>

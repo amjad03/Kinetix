@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addDuty, applyGrace, cancelSupplementary, decideMalpractice, registerSupplementary, removeDuty, reportMalpractice, saveResultRules, substituteDuty } from '@/app/(dashboard)/exams/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast } from '@/components/ops/kit';
@@ -10,6 +7,7 @@ import type { MessageKey } from '@/i18n/messages';
 import type { Duty, GraceRow, MalpracticeCase, ProgressionReport, RankRow, ResultRules, StaffMember, SupplementaryRow } from '@/lib/evaluation';
 import type { ExamSessionDetail } from '@/lib/exams';
 
+import { Button } from '@/components/kx';
 export interface DepthData {
   duties: Duty[];
   supplementary: SupplementaryRow[];
@@ -79,7 +77,7 @@ export function ExamDepthPanel({ session, data, canManage }: { session: ExamSess
             label: t('ed.tab.supp'),
             node: (
               <>
-                {canManage && session.kind === 'supplementary' ? <Bar><Button variant="outlined" onClick={() => setDlg('supp')}>{t('ed.supp.register')}</Button></Bar> : <Typography sx={{ mb: 1.5 }}>{t('ed.supp.notSupp')}</Typography>}
+                {canManage && session.kind === 'supplementary' ? <Bar><Button variant="outlined" onClick={() => setDlg('supp')}>{t('ed.supp.register')}</Button></Bar> : <p className="text-sm leading-[21px] mb-3">{t('ed.supp.notSupp')}</p>}
                 <Grid
                   testId="ed-supp"
                   empty={t('ed.supp.none')}
@@ -122,10 +120,10 @@ export function ExamDepthPanel({ session, data, canManage }: { session: ExamSess
             label: t('ed.tab.results'),
             node: (
               <>
-                <Typography variant="h6" component="h3" sx={{ mb: 1 }}>{t('ed.rules.title')}</Typography>
-                <Typography sx={{ mb: 1.5 }} data-testid="ed-rules">
+                <h3 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">{t('ed.rules.title')}</h3>
+                <p className="text-sm leading-[21px] mb-3" data-testid="ed-rules">
                   {rules ? t('ed.rules.summary', { per: rules.graceMaxPerSubject, total: rules.graceMaxTotal, credits: num(rules.progressionMinCredits), backlogs: num(rules.progressionMaxBacklogs) }) : t('ed.rules.unset')}
-                </Typography>
+                </p>
                 {canManage && (
                   <Bar>
                     <Button variant="outlined" onClick={() => setDlg('rules')} disabled={session.status === 'published' || session.status === 'locked'}>{t('ed.rules.edit')}</Button>
@@ -145,7 +143,7 @@ export function ExamDepthPanel({ session, data, canManage }: { session: ExamSess
                   ]}
                 />
 
-                <Typography variant="h6" component="h3" sx={{ mt: 3, mb: 1 }}>{t('ed.ranks.title')}</Typography>
+                <h3 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-2">{t('ed.ranks.title')}</h3>
                 <Grid
                   testId="ed-ranks"
                   empty={t('ed.ranks.none')}
@@ -159,10 +157,10 @@ export function ExamDepthPanel({ session, data, canManage }: { session: ExamSess
                   ]}
                 />
 
-                <Typography variant="h6" component="h3" sx={{ mt: 3, mb: 1 }}>{t('ed.prog.title')}</Typography>
+                <h3 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-2">{t('ed.prog.title')}</h3>
                 {data.progression ? (
                   <>
-                    <Typography sx={{ mb: 1 }} data-testid="ed-prog-summary">{t('ed.prog.summary', { eligible: data.progression.eligible, held: data.progression.held })}</Typography>
+                    <p className="text-sm leading-[21px] mb-2" data-testid="ed-prog-summary">{t('ed.prog.summary', { eligible: data.progression.eligible, held: data.progression.held })}</p>
                     <Grid
                       testId="ed-progression"
                       empty={t('ed.prog.none')}
@@ -178,7 +176,7 @@ export function ExamDepthPanel({ session, data, canManage }: { session: ExamSess
                     />
                   </>
                 ) : (
-                  <Typography>{t('ed.prog.none')}</Typography>
+                  <p className="text-sm leading-[21px]">{t('ed.prog.none')}</p>
                 )}
               </>
             ),

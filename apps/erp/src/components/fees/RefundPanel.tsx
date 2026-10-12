@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useState } from 'react';
 import { refundPayment } from '@/app/(dashboard)/fees/refund-actions';
 import { sendRefund } from '@/app/(dashboard)/workflows/bound-actions';
@@ -10,6 +7,7 @@ import { SendForApproval } from '@/components/pathways-b/SendForApproval';
 import { useI18n } from '@/i18n/client';
 import { BOUND_FLOWS } from '@/lib/pathways-b';
 
+import { Button } from '@/components/kx';
 /** Refund this payment now, or send the refund for approval. Hidden when printing. */
 export function RefundPanel({ paymentId, amountPaise, flows }: { paymentId: string; amountPaise: number; flows: Record<string, boolean> | null }) {
   const { t } = useI18n();
@@ -20,7 +18,7 @@ export function RefundPanel({ paymentId, amountPaise, flows }: { paymentId: stri
     { name: 'reason', label: t('pwb.refund.reason'), required: true },
   ];
   return (
-    <Stack direction="row" spacing={1} className="kx-noprint" sx={{ alignItems: 'center', flexWrap: 'wrap' }} data-testid="pwb-refund-panel">
+    <div className="flex flex-row gap-2 kx-noprint items-center flex-wrap" data-testid="pwb-refund-panel">
       <Button size="small" variant="outlined" onClick={() => setOpen(true)} data-testid="pwb-refund">{t('pwb.refund.now')}</Button>
       <SendForApproval flow={BOUND_FLOWS[1]} flows={flows} fields={fields} onSend={(v) => sendRefund(paymentId, v)} />
       {open && (
@@ -36,6 +34,6 @@ export function RefundPanel({ paymentId, amountPaise, flows }: { paymentId: stri
         />
       )}
       {toastNode}
-    </Stack>
+    </div>
   );
 }

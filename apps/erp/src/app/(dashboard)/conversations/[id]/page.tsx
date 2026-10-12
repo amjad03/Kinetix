@@ -1,6 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { AuditNote } from '@/components/conversations/AuditNote';
@@ -13,6 +10,8 @@ import { getI18n } from '@/i18n/server';
 import { TIMEZONE } from '@/lib/school';
 import type { ConversationThread } from '@/lib/types';
 
+import { ArrowLeft as ArrowBack } from 'lucide-react';
+import { cn } from '@/lib/utils';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('conv.title') };
 }
@@ -35,11 +34,11 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
 
   const { t, fmt } = await getI18n();
   const back = (
-    <Box sx={{ ml: -1, mb: 0.5 }}>
+    <div className="-ml-2 mb-1">
       <LinkButton href="/conversations" size="small" startIcon={<ArrowBack />}>
         {t('nav.conversations')}
       </LinkButton>
-    </Box>
+    </div>
   );
   if (res.error !== undefined)
     return (
@@ -56,40 +55,32 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
       <PageHeader title={t('conv.pair', { family: c.family.fullName, staff: c.staff.fullName })} subtitle={t('conv.aboutReadOnly', { student: c.student.fullName, className: c.className })} />
       <AuditNote>{t('conv.auditThread')}</AuditNote>
       {messages.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
+        <p className="text-[13px] leading-[19px] text-muted-foreground">
           {t('conv.noMessagesYet')}
-        </Typography>
+        </p>
       ) : (
-        <Box sx={{ display: 'grid', gap: 1.5, maxWidth: 760 }} data-testid="thread">
+        <div className="grid gap-3 max-w-[760px]" data-testid="thread">
           {messages.map((m) => {
             const side = senderSide(m, c);
             const staff = side === 'staff';
             return (
-              <Box key={m.id} sx={{ display: 'flex', justifyContent: staff ? 'flex-end' : 'flex-start' }} data-testid="message" data-side={side}>
-                <Box
-                  sx={{
-                    maxWidth: '82%',
-                    px: 2,
-                    py: 1.25,
-                    borderRadius: staff ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    bgcolor: staff ? 'm3.secondaryContainer' : 'm3.surfaceContainerHigh',
-                    color: staff ? 'm3.onSecondaryContainer' : 'text.primary',
-                  }}
+              <div className={cn('flex', staff ? 'justify-end' : 'justify-start')} key={m.id} data-testid="message" data-side={side}>
+                <div className={cn('max-w-[82%] px-4 py-2.5', staff ? 'rounded-[16px_16px_4px_16px]' : 'rounded-[16px_16px_16px_4px]', staff ? 'bg-secondary' : 'bg-accent', staff ? 'text-secondary-foreground' : 'text-foreground')}
                 >
-                  <Typography variant="caption" sx={{ fontWeight: 500, display: 'block', mb: 0.25 }}>
+                  <span className="text-xs leading-4 tracking-[0.3px] font-medium block mb-0.5">
                     {side === 'staff' ? t('conv.asTeacher', { name: c.staff.fullName }) : side === 'family' ? t('conv.asParent', { name: c.family.fullName }) : 'KINETIX'}
-                  </Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                  </span>
+                  <p className="text-[13px] leading-[19px] whitespace-pre-wrap wrap-anywhere">
                     {m.body}
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7, textAlign: 'right' }}>
+                  </p>
+                  <span className="text-xs leading-4 tracking-[0.3px] block mt-1 opacity-[0.7] text-right">
                     {fmt.dateTime(m.createdAt, TIMEZONE)}
-                  </Typography>
-                </Box>
-              </Box>
+                  </span>
+                </div>
+              </div>
             );
           })}
-        </Box>
+        </div>
       )}
     </>
   );

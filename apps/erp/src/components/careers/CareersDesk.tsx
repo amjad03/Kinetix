@@ -1,9 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { createTest, savePath, searchResumes, setTestActive, testResults } from '@/app/(dashboard)/careers/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col } from '@/components/ops/kit';
@@ -13,6 +8,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { stepsText, TEST_CATEGORIES, type AptitudeTest, type CareerPath, type ResumeRow } from '@/lib/pathways-a';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** Resumes students shared, aptitude tests, and career paths. */
 export function CareersDesk({ resumes, tests, paths, canEdit, initialTab }: { resumes: ResumeRow[]; tests: AptitudeTest[]; paths: CareerPath[]; canEdit: boolean; initialTab: string }) {
   const { t, fmt } = useI18n();
@@ -58,10 +55,10 @@ export function CareersDesk({ resumes, tests, paths, canEdit, initialTab }: { re
     {
       label: '',
       cell: (x) => (
-        <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+        <div className="flex flex-row gap-1 flex-wrap">
           <Button size="small" onClick={() => setResults(x)}>{t('crr.results')}</Button>
           {canEdit && <ActionButton label={x.active ? t('crr.deactivate') : t('crr.activate')} run={() => setTestActive(x.id, !x.active)} onDone={toast} />}
-        </Stack>
+        </div>
       ),
     },
   ];
@@ -93,7 +90,7 @@ export function CareersDesk({ resumes, tests, paths, canEdit, initialTab }: { re
               <Button type="submit" variant="contained" disabled={searching}>{t('crr.search')}</Button>
             </form>
           </Bar>
-          {searchError && <Typography color="error" role="alert" sx={{ mb: 1 }}>{searchError}</Typography>}
+          {searchError && <p className="text-sm leading-[21px] text-red-ink mb-2" role="alert">{searchError}</p>}
           <Grid testId="crr-resumes" empty={t('crr.empty.resumes')} rows={found} cols={resumeCols} />
         </>
       ),
@@ -126,7 +123,7 @@ export function CareersDesk({ resumes, tests, paths, canEdit, initialTab }: { re
       {newTest && (
         <FormDialog
           title={t('crr.newTest')}
-          intro={<Typography variant="body2">{t('crr.questionsHint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('crr.questionsHint')}</p>}
           fields={[
             { name: 'title', label: t('ops.f.title'), required: true },
             { name: 'category', label: t('crr.col.category'), kind: 'select', init: 'mixed', options: TEST_CATEGORIES.map((c) => ({ value: c, label: t(`crr.cat.${c}` as MessageKey) })) },
@@ -141,7 +138,7 @@ export function CareersDesk({ resumes, tests, paths, canEdit, initialTab }: { re
       {path && (
         <FormDialog
           title={path === 'new' ? t('crr.newPath') : t('ops.edit')}
-          intro={<Typography variant="body2">{t('crr.stepsHint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('crr.stepsHint')}</p>}
           fields={[
             { name: 'title', label: t('ops.f.title'), required: true, init: path === 'new' ? '' : path.title },
             { name: 'family', label: t('crr.col.family'), init: path === 'new' ? '' : path.family },
@@ -169,11 +166,11 @@ function ResultsDialog({ test, onClose }: { test: AptitudeTest; onClose: () => v
       <ReadError message={r.error} />
       {r.data && (
         <>
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mb: 2 }}>
+          <div className="flex flex-row gap-2 flex-wrap mb-4">
             <Pill label={t('crr.attempts', { n: r.data.attempts })} />
             <Pill label={t('crr.passedCount', { n: r.data.passed })} />
             <Pill label={t('crr.average', { n: fmt.number(r.data.averagePercent) })} />
-          </Stack>
+          </div>
           <Grid
             testId="crr-results"
             empty={t('crr.empty.results')}

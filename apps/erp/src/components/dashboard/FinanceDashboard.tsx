@@ -1,13 +1,3 @@
-import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWalletOutlined';
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import FolderCopyOutlined from '@mui/icons-material/FolderCopyOutlined';
-import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
-import PercentOutlined from '@mui/icons-material/PercentOutlined';
-import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
-import RequestQuoteOutlined from '@mui/icons-material/RequestQuoteOutlined';
-import ScheduleOutlined from '@mui/icons-material/ScheduleOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { MiniBar } from '@/components/Bars';
 import { LinkButton } from '@/components/LinkButton';
@@ -22,6 +12,7 @@ import type { FeeInvoice, FeeSummary, Me } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 import { PendingTasks, QuickActions, Row } from './parts';
 
+import { ArrowRight as ArrowForward, Banknote as PaymentsOutlined, Clock as ScheduleOutlined, FileText as RequestQuoteOutlined, Folders as FolderCopyOutlined, Percent as PercentOutlined, ReceiptText as ReceiptLongOutlined, Wallet as AccountBalanceWalletOutlined } from 'lucide-react';
 /** The accounts office: money collected and owed, who to chase, and where fees stand by class. */
 export async function FinanceDashboard({ me, today }: { me: Me; today: string }) {
   const { t, fmt } = await getI18n();
@@ -50,54 +41,54 @@ export async function FinanceDashboard({ me, today }: { me: Me; today: string })
       <Row cols={3}>
         <Card title={t('dash.fin.followUps')} subtitle={t('dash.fin.followUpsSub')} padded={false} action={<LinkButton href="/fees/invoices?status=overdue" size="small" endIcon={<ArrowForward />}>{t('dash.viewAll')}</LinkButton>} testId="overdue-list">
           {overdue.length === 0 ? (
-            <Box sx={{ px: 2.5, pb: 2.5 }}>
+            <div className="px-5 pb-5">
               <EmptyState dense icon={<ReceiptLongOutlined />} title={t('dash.fin.noOverdue')} />
-            </Box>
+            </div>
           ) : (
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            <ul className="list-none m-0 p-0">
               {overdue.slice(0, 7).map((i) => (
-                <Box component="li" key={i.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.25, borderTop: 1, borderColor: 'm3.outlineVariant' }}>
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }} noWrap>
+                <li className="flex items-center gap-3 px-5 py-2.5 border-t border-border" key={i.id}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.875rem] font-semibold">
                       <Link href={`/students/${i.student.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                         {i.student.fullName}
                       </Link>
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" noWrap component="p">
+                    </p>
+                    <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground truncate">
                       {i.className} · {i.title}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ textAlign: 'right' }}>
-                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmt.rupees(i.amountPaise - i.paidPaise)}</Typography>
-                    <Typography variant="caption" sx={{ color: 'error.main' }}>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[0.875rem] font-bold tabular-nums">{fmt.rupees(i.amountPaise - i.paidPaise)}</p>
+                    <span className="text-xs leading-4 tracking-[0.3px] text-red-ink">
                       {t('dash.fin.daysLate', { n: daysBetween(i.dueOn, today) })}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </span>
+                  </div>
+                </li>
               ))}
-            </Box>
+            </ul>
           )}
         </Card>
         <Card title={t('dash.fin.byClass')} subtitle={t('dash.fin.byClassSub')} testId="fees-by-class">
           {classes.length === 0 ? (
             <EmptyState dense icon={<PaymentsOutlined />} title={t('dash.fin.noClasses')} />
           ) : (
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 2 }}>
+            <ul className="list-none m-0 p-0 grid gap-4">
               {classes.map((c) => {
                 const pct = c.billedPaise > 0 ? (c.collectedPaise / c.billedPaise) * 100 : 0;
                 return (
                   <li key={c.sectionId}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600 }}>{c.className}</Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                    <div className="flex justify-between gap-2 mb-1">
+                      <p className="text-[0.8125rem] font-semibold">{c.className}</p>
+                      <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground tabular-nums">
                         {t('dash.fin.classLine', { pct: Math.round(pct), out: fmt.rupeesShort(c.outstandingPaise) })}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                     <MiniBar value={pct} color={pct >= 90 ? 'var(--kx-success)' : pct >= 60 ? 'var(--kx-accent)' : 'var(--kx-warning)'} label={`${c.className}: ${Math.round(pct)}%`} />
                   </li>
                 );
               })}
-            </Box>
+            </ul>
           )}
         </Card>
         <PendingTasks

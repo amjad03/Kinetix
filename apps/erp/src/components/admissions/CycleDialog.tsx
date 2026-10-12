@@ -1,17 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -21,6 +8,8 @@ import { DEFAULT_DOCUMENTS, DEFAULT_QUESTIONS, parseDocuments, parsePairs, parse
 import { addDays } from '@/lib/dates';
 import { rupeesToPaise } from '@/lib/money';
 
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment, MenuItem } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 interface Props {
   programs: { id: string; name: string; termCount?: number }[];
   years: { id: string; label: string; isCurrent: boolean }[];
@@ -109,15 +98,15 @@ function CycleDialog({ programs, years, today, onClose }: Props & { onClose: () 
       >
         <DialogTitle>{t('adm.cycle.new')}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2.5} sx={{ pt: 0.5 }}>
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex flex-col gap-5 pt-1">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('adm.cycle.help')}
-            </Typography>
+            </p>
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('adm.field.name')} required>
               <TextInput value={f.name} onChange={set('name')} required placeholder={t('adm.cycle.namePlaceholder')} />
             </FormField>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
+            <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr_1fr] gap-4">
               <FormField label={t('adm.field.program')} required>
                 <TextInput select value={f.programId} onChange={set('programId')} required>
                   {programs.map((p) => (
@@ -157,22 +146,22 @@ function CycleDialog({ programs, years, today, onClose }: Props & { onClose: () 
               <FormField label={t('adm.cycle.minAge')}>
                 <TextInput type="number" value={f.minAge} onChange={set('minAge')} slotProps={{ htmlInput: { min: 0, max: 100 } }} />
               </FormField>
-            </Box>
+            </div>
             <FormField label={t('adm.cycle.questions')}>
               <TextInput helperText={t('adm.cycle.questionsHelp')} value={f.questions} onChange={set('questions')} multiline minRows={3} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
             </FormField>
             <FormField label={t('adm.cycle.documents')}>
               <TextInput helperText={t('adm.cycle.documentsHelp')} value={f.documents} onChange={set('documents')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
             </FormField>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+            <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
               <FormField label={t('adm.cycle.minimums')}>
                 <TextInput helperText={t('adm.cycle.minimumsHelp')} value={f.minimums} onChange={set('minimums')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
               </FormField>
               <FormField label={t('adm.cycle.merit')}>
                 <TextInput helperText={t('adm.cycle.meritHelp')} value={f.merit} onChange={set('merit')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
               </FormField>
-            </Box>
-          </Stack>
+            </div>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={pending}>

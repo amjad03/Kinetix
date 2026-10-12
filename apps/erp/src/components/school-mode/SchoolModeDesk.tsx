@@ -1,14 +1,11 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addCombination, addHouse, addOutcome, addStream, awardPoints, saveReportCard } from '@/app/(dashboard)/school-mode/actions';
 import { Bar, FormDialog, Grid, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { HouseRow, OutcomeRow, PucStream } from '@/lib/curriculum';
 
+import { Button } from '@/components/kx';
 type Dlg = { title: string; fields: Field[]; run: (v: Record<string, string>) => Promise<{ ok: true; data: unknown } | { ok: false; error: string }> };
 
 /** School mode: house system, PUC streams and combinations, learning outcomes, and report cards with remarks and promotion. */
@@ -134,8 +131,8 @@ export function SchoolModeDesk({ houses, streams, outcomes, years, tab, canAdmin
   );
 
   const cardsTab = (
-    <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
-      <Typography variant="body2">{t('sm.c.hint')}</Typography>
+    <div className="flex flex-col gap-4 items-start">
+      <p className="text-[13px] leading-[19px]">{t('sm.c.hint')}</p>
       <Button
         variant="contained"
         onClick={() =>
@@ -162,7 +159,7 @@ export function SchoolModeDesk({ houses, streams, outcomes, years, tab, canAdmin
       >
         {t('sm.c.save')}
       </Button>
-    </Stack>
+    </div>
   );
 
   return (

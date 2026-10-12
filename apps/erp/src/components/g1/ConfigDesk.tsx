@@ -1,11 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { Bar, FormDialog, Grid, InfoDialog, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
@@ -14,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import { buildBody, fillPath, getPath, initText, type DeskAction, type DeskColumn, type DeskField, type DeskSpec } from '@/lib/g1-desk';
 import { deskSend } from '@/lib/g1-actions';
 
+import { Button, MenuItem, TextField } from '@/components/kx';
 export interface Opt {
   value: string;
   label: string;
@@ -125,7 +119,7 @@ export function ConfigDesk({ spec, data, filterOptions, filterValues, lookups, i
       cols.push({
         label: '',
         cell: (r) => (
-          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
+          <div className="flex flex-row gap-1 flex-wrap">
             {rowActions
               .filter((a) => !a.when || a.when.in.includes(String(getPath(r, a.when.key) ?? '')))
               .map((a) => (
@@ -133,16 +127,16 @@ export function ConfigDesk({ spec, data, filterOptions, filterValues, lookups, i
                   {t(a.label)}
                 </Button>
               ))}
-          </Stack>
+          </div>
         ),
       });
     }
     const node = (
       <>
         {tab.hint && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
             {t(tab.hint)}
-          </Typography>
+          </p>
         )}
         {tabActions.length > 0 && (
           <Bar>
@@ -154,9 +148,9 @@ export function ConfigDesk({ spec, data, filterOptions, filterValues, lookups, i
           </Bar>
         )}
         {d?.error !== undefined ? (
-          <Typography color="error">{d.error}</Typography>
+          <p className="text-sm leading-[21px] text-red-ink">{d.error}</p>
         ) : d?.missing?.length ? (
-          <Typography color="text.secondary">{t('g1.pickFirst')}</Typography>
+          <p className="text-sm leading-[21px] text-muted-foreground">{t('g1.pickFirst')}</p>
         ) : (
           <Grid testId={`g1-${spec.id}-${tab.id}`} empty={t(tab.empty)} rows={d?.rows ?? []} cols={cols} />
         )}
@@ -169,9 +163,9 @@ export function ConfigDesk({ spec, data, filterOptions, filterValues, lookups, i
   return (
     <>
       {spec.filters.length > 0 && (
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
           {spec.filters.map((f) => (
-            <TextField key={f.param} select size="small" label={t(f.label)} value={filterValues[f.param] ?? ''} onChange={(e) => setFilter(f.param, e.target.value)} sx={{ minWidth: 220 }}>
+            <TextField className="min-w-[220px]" key={f.param} select size="small" label={t(f.label)} value={filterValues[f.param] ?? ''} onChange={(e) => setFilter(f.param, e.target.value)}>
               <MenuItem value="">{t('g1.any')}</MenuItem>
               {(f.from === 'static' ? (f.options ?? []).map((o) => ({ value: o.value, label: t(o.label) })) : (filterOptions[f.param] ?? [])).map((o) => (
                 <MenuItem key={o.value} value={o.value}>
@@ -180,14 +174,14 @@ export function ConfigDesk({ spec, data, filterOptions, filterValues, lookups, i
               ))}
             </TextField>
           ))}
-        </Stack>
+        </div>
       )}
       <Tabbed label={t(spec.title)} initial={initialTab} tabs={tabs} />
       {dlg && (
         <FormDialog
           title={t(dlg.action.label)}
           fields={toFields(dlg.action, dlg.row)}
-          intro={dlg.action.confirm ? <Typography>{t(dlg.action.confirm)}</Typography> : undefined}
+          intro={dlg.action.confirm ? <p className="text-sm leading-[21px]">{t(dlg.action.confirm)}</p> : undefined}
           onSubmit={run(dlg.action, dlg.row)}
           onClose={(m) => {
             setDlg(null);
@@ -197,9 +191,9 @@ export function ConfigDesk({ spec, data, filterOptions, filterValues, lookups, i
       )}
       {result !== undefined && (
         <InfoDialog title={t('g1.result')} onClose={() => setResult(undefined)}>
-          <Box component="pre" sx={{ m: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 420, overflow: 'auto', fontSize: '0.8125rem' }}>
+          <pre className="m-0 whitespace-pre-wrap wrap-break-word max-h-[420px] overflow-auto text-[0.8125rem]">
             {JSON.stringify(result, null, 2)}
-          </Box>
+          </pre>
         </InfoDialog>
       )}
       {toastNode}

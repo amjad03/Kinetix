@@ -1,21 +1,4 @@
 'use client';
-
-import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
-import LiveTvOutlined from '@mui/icons-material/LiveTvOutlined';
-import PrivacyTipOutlined from '@mui/icons-material/PrivacyTipOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Divider from '@mui/material/Divider';
-import Snackbar from '@mui/material/Snackbar';
-import Switch from '@mui/material/Switch';
-import Typography from '@mui/material/Typography';
 import { useId, useState, useTransition, type ReactNode } from 'react';
 import { saveSetting } from '@/app/(dashboard)/settings/actions';
 import { SectionTitle } from '@/components/PageHeader';
@@ -23,6 +6,9 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { needsConfirm, settingDisabled, type InstitutionSettings, type SettingKey } from '@/lib/settings';
 
+import { Alert, Button, Card, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Snackbar, Switch } from '@/components/kx';
+import { Presentation as CastForEducationOutlined, ShieldAlert as PrivacyTipOutlined, Tv as LiveTvOutlined } from 'lucide-react';
+import { cn } from '@/lib/utils';
 const ROWS: Record<SettingKey, { label: MessageKey; help: MessageKey }> = {
   liveViewEnabled: { label: 'settings.live.enabled', help: 'settings.live.enabledHelp' },
   liveViewIndicator: { label: 'settings.live.indicator', help: 'settings.live.indicatorHelp' },
@@ -65,14 +51,14 @@ export function SettingsForm({ initial }: { initial: InstitutionSettings }) {
   return (
     <>
       {error && (
-        <Alert severity="error" role="alert" sx={{ mb: 2 }}>
+        <Alert className="mb-4" severity="error" role="alert">
           {error}
         </Alert>
       )}
       <SectionTitle flush>
-        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-          <LiveTvOutlined fontSize="small" /> {t('settings.live.title')}
-        </Box>
+        <span className="inline-flex items-center gap-2">
+          <LiveTvOutlined className="size-5" /> {t('settings.live.title')}
+        </span>
       </SectionTitle>
       <Card data-testid="settings-live">
         {row('liveViewEnabled')}
@@ -81,17 +67,17 @@ export function SettingsForm({ initial }: { initial: InstitutionSettings }) {
         <Divider />
         {row(
           'classroomAudioToViewers',
-          <Box sx={{ display: 'flex', gap: 1, mt: 1.25, p: 1.5, borderRadius: '12px', bgcolor: 'm3.surfaceContainerHigh', color: 'text.secondary' }} data-testid="audio-privacy">
-            <PrivacyTipOutlined fontSize="small" sx={{ mt: '2px', color: 'm3.tertiary' }} />
-            <Typography variant="body2">{t('settings.live.audioPrivacy')}</Typography>
-          </Box>,
+          <div className="flex gap-2 mt-2.5 p-3 rounded-[12px] bg-accent text-muted-foreground" data-testid="audio-privacy">
+            <PrivacyTipOutlined className="size-5 mt-[2px] text-amber-ink" />
+            <p className="text-[13px] leading-[19px]">{t('settings.live.audioPrivacy')}</p>
+          </div>,
         )}
       </Card>
 
       <SectionTitle>
-        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-          <CastForEducationOutlined fontSize="small" /> {t('settings.board.title')}
-        </Box>
+        <span className="inline-flex items-center gap-2">
+          <CastForEducationOutlined className="size-5" /> {t('settings.board.title')}
+        </span>
       </SectionTitle>
       <Card data-testid="settings-board">{row('pinFallbackEnabled')}</Card>
 
@@ -142,27 +128,27 @@ function SettingRow({
   const { t } = useI18n();
   const id = useId();
   return (
-    <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', px: 2.5, py: 2 }} data-testid={`setting-${k}`} data-checked={checked ? 'true' : 'false'}>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="subtitle1" component="label" htmlFor={id} sx={{ display: 'block', lineHeight: '24px', cursor: disabled ? 'default' : 'pointer' }}>
+    <div className="flex gap-4 items-start px-5 py-4" data-testid={`setting-${k}`} data-checked={checked ? 'true' : 'false'}>
+      <div className="flex-1 min-w-0">
+        <label className={cn('text-base font-medium tracking-[0.1px] block leading-[24px]', disabled ? 'cursor-default' : 'cursor-pointer')} htmlFor={id}>
           {label}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" id={`${id}-help`} sx={{ mt: 0.5, maxWidth: 760 }}>
+        </label>
+        <p className="text-[13px] leading-[19px] text-muted-foreground mt-1 max-w-[760px]" id={`${id}-help`}>
           {help}
-        </Typography>
+        </p>
         {hint && (
-          <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.5, fontStyle: 'italic' }}>
+          <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-1 italic">
             {hint}
-          </Typography>
+          </p>
         )}
         {children}
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 32, textAlign: 'right' }} aria-hidden>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <p className="text-[13px] leading-[19px] text-muted-foreground min-w-[32px] text-right" aria-hidden>
           {checked ? t('settings.on') : t('settings.off')}
-        </Typography>
+        </p>
         <Switch id={id} checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} slotProps={{ input: { 'aria-describedby': `${id}-help` } }} />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

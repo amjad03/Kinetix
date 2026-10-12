@@ -1,15 +1,10 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { resubmitApplication } from '@/app/apply/actions';
 import { useI18n } from '@/i18n/client';
 
+import { Alert, Button, TextField } from '@/components/kx';
 export interface Correction {
   open: boolean;
   dueOn: string | null;
@@ -28,24 +23,24 @@ export function CorrectionPanel({ slug, id, token, fix, name, dob }: { slug: str
   if (!fix.open && !done) return null;
   if (done) return <Alert severity="success">{t('g1.fix.sent')}</Alert>;
   return (
-    <Stack spacing={2} sx={{ mb: 3 }} data-testid="correction-panel">
+    <div className="flex flex-col gap-4 mb-6" data-testid="correction-panel">
       <Alert severity="warning">
-        <Typography variant="subtitle2">{t('g1.fix.title')}</Typography>
-        {fix.latest && <Typography variant="body2">{fix.latest.notes}</Typography>}
+        <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('g1.fix.title')}</h6>
+        {fix.latest && <p className="text-[13px] leading-[19px]">{fix.latest.notes}</p>}
         {fix.latest && fix.latest.items.length > 0 && (
-          <Typography variant="body2" sx={{ mt: 0.5 }}>
+          <p className="text-[13px] leading-[19px] mt-1">
             {t('g1.fix.items', { items: fix.latest.items.join(', ') })}
-          </Typography>
+          </p>
         )}
-        {fix.dueOn && <Typography variant="body2">{t('g1.fix.due', { date: fmt.date(fix.dueOn, 'long') })}</Typography>}
+        {fix.dueOn && <p className="text-[13px] leading-[19px]">{t('g1.fix.due', { date: fmt.date(fix.dueOn, 'long') })}</p>}
       </Alert>
       {error && <Alert severity="error">{error}</Alert>}
       <TextField label={t('g1.fix.name')} value={v.applicantName} onChange={(e) => setV({ ...v, applicantName: e.target.value })} size="small" />
       <TextField label={t('g1.fix.dob')} type="date" value={v.dateOfBirth} onChange={(e) => setV({ ...v, dateOfBirth: e.target.value })} size="small" slotProps={{ inputLabel: { shrink: true } }} />
       <TextField label={t('g1.fix.note')} value={v.note} onChange={(e) => setV({ ...v, note: e.target.value })} size="small" multiline minRows={2} />
-      <Typography variant="body2" color="text.secondary">
+      <p className="text-[13px] leading-[19px] text-muted-foreground">
         {t('g1.fix.docs')}
-      </Typography>
+      </p>
       <Button
         variant="contained"
         disabled={pending}
@@ -62,6 +57,6 @@ export function CorrectionPanel({ slug, id, token, fix, name, dob }: { slug: str
       >
         {t('g1.fix.send')}
       </Button>
-    </Stack>
+    </div>
   );
 }

@@ -1,10 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { saveAttendanceRules, saveProfile } from '@/app/(dashboard)/settings/institution/actions';
 import { SectionTitle } from '@/components/PageHeader';
@@ -13,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { ACADEMIC_MODELS, NAAC_GRADES, orNull, type AttendanceRules, type InstitutionProfile } from '@/lib/institution';
 
+import { Alert, Button } from '@/components/kx';
 type Text = 'legalName' | 'affiliationBody' | 'affiliationNo' | 'aisheCode' | 'addressLine' | 'city' | 'state' | 'pincode' | 'phone' | 'email' | 'website' | 'boardOrUniversity';
 const TEXT_FIELDS: Text[] = ['legalName', 'affiliationBody', 'affiliationNo', 'aisheCode', 'addressLine', 'city', 'state', 'pincode', 'phone', 'email', 'website', 'boardOrUniversity'];
 
@@ -50,14 +45,14 @@ export function InstitutionAdmin({ initial, rules }: { initial: InstitutionProfi
 
   const modules = initial.toggleableModules;
   return (
-    <Box data-testid="institution-admin" aria-busy={pending}>
+    <div data-testid="institution-admin" aria-busy={pending}>
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert className="mb-4" severity="error">
           {error}
         </Alert>
       )}
       <SectionTitle>{t('inst.profile')}</SectionTitle>
-      <Card sx={{ p: 2.5, mb: 3 }}>
+      <Card className="p-5 mb-6">
         <FormGrid cols={2}>
           {TEXT_FIELDS.filter((k) => k !== 'boardOrUniversity').map((k) => (
             <TextInput key={k} label={t(`inst.f.${k}` as MessageKey)} value={text[k]} onChange={(e) => setText({ ...text, [k]: e.target.value })} />
@@ -68,23 +63,23 @@ export function InstitutionAdmin({ initial, rules }: { initial: InstitutionProfi
       </Card>
 
       <SectionTitle>{t('inst.capability')}</SectionTitle>
-      <Card sx={{ p: 2.5, mb: 3 }}>
+      <Card className="p-5 mb-6">
         <FormGrid cols={2}>
           <SelectInput label={t('inst.f.academicModel')} value={model} options={ACADEMIC_MODELS.map((m) => ({ value: m, label: t(`inst.model.${m}` as MessageKey) }))} onChange={(e) => setModel(e.target.value as typeof model)} />
           <TextInput label={t('inst.f.boardOrUniversity')} value={text.boardOrUniversity} onChange={(e) => setText({ ...text, boardOrUniversity: e.target.value })} />
         </FormGrid>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
+        <p className="text-[13px] leading-[19px] text-muted-foreground mt-4 mb-2">
           {t('inst.modules.help')}
-        </Typography>
-        <Stack sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, columnGap: 3 }}>
+        </p>
+        <div className="flex-col grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] md:grid-cols-[1fr_1fr_1fr] gap-x-6">
           {modules.map((m) => (
             <SwitchField key={m} label={t(`inst.mod.${m}` as MessageKey)} checked={!off.includes(m)} onChange={(on) => setOff(on ? off.filter((x) => x !== m) : [...off, m])} />
           ))}
-        </Stack>
+        </div>
       </Card>
 
       <SectionTitle>{t('inst.attendance')}</SectionTitle>
-      <Card sx={{ p: 2.5, mb: 3 }}>
+      <Card className="p-5 mb-6">
         <FormGrid cols={2}>
           <TextInput label={t('inst.f.lockHours')} helper={t('inst.f.lockHours.help')} value={lock} inputMode="numeric" onChange={(e) => setLock(e.target.value.replace(/\D/g, '').slice(0, 3))} />
           <TextInput label={t('inst.f.threshold')} value={pct} inputMode="numeric" onChange={(e) => setPct(e.target.value.replace(/\D/g, '').slice(0, 3))} />
@@ -95,6 +90,6 @@ export function InstitutionAdmin({ initial, rules }: { initial: InstitutionProfi
           {t('inst.save')}
         </Button>
       </FormActions>
-    </Box>
+    </div>
   );
 }

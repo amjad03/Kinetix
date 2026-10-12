@@ -1,13 +1,7 @@
 'use client';
 
-import Add from '@mui/icons-material/Add';
-import Close from '@mui/icons-material/Close';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-
+import { Button, IconButton, TextField } from '@/components/kx';
+import { Plus as Add, X as Close } from 'lucide-react';
 /** Edits a list of short texts: one field per item, add and remove. */
 export function ListEditor({
   label,
@@ -34,15 +28,15 @@ export function ListEditor({
 }) {
   const set = (i: number, v: string) => onChange(items.map((x, j) => (j === i ? v : x)));
   return (
-    <Box role="group" aria-label={label}>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+    <div role="group" aria-label={label}>
+      <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
         {label}
-      </Typography>
+      </h6>
       {items.map((item, i) => (
-        <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ width: 20, pt: 1.25, textAlign: 'right', flexShrink: 0 }}>
+        <div className="flex items-start gap-2 mb-2" key={i}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground w-[20px] pt-2.5 text-right shrink-0">
             {i + 1}.
-          </Typography>
+          </p>
           <TextField
             size="small"
             fullWidth
@@ -53,14 +47,14 @@ export function ListEditor({
             onChange={(e) => set(i, e.target.value)}
             slotProps={{ htmlInput: { maxLength, 'aria-label': `${itemLabel} ${i + 1}` } }}
           />
-          <IconButton aria-label={removeLabel(i + 1)} onClick={() => onChange(items.filter((_, j) => j !== i))} size="small" sx={{ mt: 0.5 }}>
-            <Close fontSize="small" />
+          <IconButton className="mt-1" aria-label={removeLabel(i + 1)} onClick={() => onChange(items.filter((_, j) => j !== i))} size="small">
+            <Close className="size-5" />
           </IconButton>
-        </Box>
+        </div>
       ))}
-      <Button size="small" startIcon={<Add />} onClick={() => onChange([...items, ''])} disabled={items.length >= max} sx={{ ml: 2.5 }}>
+      <Button className="ml-5" size="small" startIcon={<Add />} onClick={() => onChange([...items, ''])} disabled={items.length >= max}>
         {addLabel}
       </Button>
-    </Box>
+    </div>
   );
 }

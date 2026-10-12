@@ -1,11 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { allocate, finalise, saveConfig, saveQuestions, secondValuation, uploadScript } from '@/app/(dashboard)/evaluation/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, useToast } from '@/components/ops/kit';
@@ -15,6 +8,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { questionsText, valuedCount, type EvalOverview, type EvalScript, type StaffMember } from '@/lib/evaluation';
 import type { ActionResult } from '@/lib/types';
 
+import { Alert, Button, Checkbox, FormControlLabel } from '@/components/kx';
 type Dlg = 'config' | 'questions' | 'upload' | 'allocate' | 'second' | null;
 
 /** One paper's evaluation: settings, questions, script upload, allocation, second valuation and final marks. */
@@ -39,7 +33,7 @@ export function EvaluationDesk({ paperId, overview, staff }: { paperId: string; 
         <StatTile label={t('ev.stat.third')} value={needThird} tone={needThird ? 'warning' : 'default'} testId="ev-third" />
         <StatTile label={t('ev.stat.questions')} value={questions.length} caption={`${overview.paper.maxMarks}`} testId="ev-questions" />
       </StatGrid>
-      <Typography sx={{ my: 2 }}>{t('ev.anon')}</Typography>
+      <p className="text-sm leading-[21px] my-4">{t('ev.anon')}</p>
       <Bar>
         <Button variant="outlined" onClick={() => setDlg('config')} disabled={finalised}>{t('ev.settings')}</Button>
         <Button variant="outlined" onClick={() => setDlg('questions')} disabled={finalised || workload.length > 0}>{t('ev.questions')}</Button>
@@ -49,7 +43,7 @@ export function EvaluationDesk({ paperId, overview, staff }: { paperId: string; 
         <ActionButton label={t('ev.finalise')} disabled={finalised} run={() => finalise(paperId)} onDone={toast} />
       </Bar>
 
-      <Typography variant="h6" component="h2" sx={{ mb: 1 }}>{t('ev.scripts')}</Typography>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">{t('ev.scripts')}</h2>
       <Grid
         testId="ev-script-list"
         empty={t('ev.noScripts')}
@@ -67,7 +61,7 @@ export function EvaluationDesk({ paperId, overview, staff }: { paperId: string; 
         ]}
       />
 
-      <Typography variant="h6" component="h2" sx={{ mt: 3, mb: 1 }}>{t('ev.workload')}</Typography>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-2">{t('ev.workload')}</h2>
       <Grid
         testId="ev-workload"
         empty={t('ev.noWorkload')}
@@ -83,7 +77,7 @@ export function EvaluationDesk({ paperId, overview, staff }: { paperId: string; 
       {dlg === 'config' && (
         <FormDialog
           title={t('ev.settings')}
-          intro={<Typography variant="body2">{t('ev.mask.hint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('ev.mask.hint')}</p>}
           onSubmit={(v) => saveConfig(paperId, v)}
           onClose={done}
           fields={[
@@ -135,7 +129,7 @@ function UploadDialog({ paperId, onClose }: { paperId: string; onClose: (msg?: s
         </>
       }
     >
-      <Stack spacing={2} sx={{ pt: 1 }}>
+      <div className="flex flex-col gap-4 pt-2">
         <FormField label={t('ev.f.roll')} required>
           <TextInput value={roll} onChange={(e) => setRoll(e.target.value)} fullWidth />
         </FormField>
@@ -143,7 +137,7 @@ function UploadDialog({ paperId, onClose }: { paperId: string; onClose: (msg?: s
           <input type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setFiles([...(e.target.files ?? [])])} aria-label={t('ev.f.files')} />
         </FormField>
         {error && <Alert severity="error">{error}</Alert>}
-      </Stack>
+      </div>
     </Dialog>
   );
 }
@@ -176,12 +170,12 @@ function ExaminerDialog<T>({ title, staff, run, message, onClose }: { title: str
         </>
       }
     >
-      <Stack sx={{ pt: 1 }} role="group" aria-label={t('ev.f.examiners')}>
+      <div className="flex flex-col pt-2" role="group" aria-label={t('ev.f.examiners')}>
         {staff.map((s) => (
           <FormControlLabel key={s.id} control={<Checkbox checked={picked.includes(s.id)} onChange={() => toggle(s.id)} />} label={s.fullName} />
         ))}
-        {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
-      </Stack>
+        {error && <Alert className="mt-2" severity="error">{error}</Alert>}
+      </div>
     </Dialog>
   );
 }

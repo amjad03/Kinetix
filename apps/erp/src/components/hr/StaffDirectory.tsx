@@ -1,21 +1,5 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
-import Typography from '@mui/material/Typography';
 import { useEffect, useState, useTransition } from 'react';
 import { addDesignation, getProfile, saveBank, saveProfile, type ProfileInput } from '@/app/(dashboard)/hr/actions';
 import { EmptyState } from '@/components/States';
@@ -25,6 +9,8 @@ import { paiseToInput, rupeesToPaise } from '@/lib/money';
 import type { Designation, EmploymentType, StaffProfile, StaffStatus, StaffSummary } from '@/lib/hr-types';
 import { useNotice } from './Common';
 
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, MenuItem, Switch } from '@/components/kx';
+import { Pencil as EditOutlined, Plus as Add } from 'lucide-react';
 const TYPES: EmploymentType[] = ['permanent', 'contract', 'probation', 'visiting'];
 const STATUSES: StaffStatus[] = ['active', 'on_notice', 'exited'];
 
@@ -36,14 +22,14 @@ export function StaffDirectory({ staff, designations, departments }: { staff: St
   return (
     <>
       {view}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 1, flexWrap: 'wrap' }}>
-        <Typography variant="body2" color="text.secondary">
+      <div className="flex justify-between items-center mb-4 gap-2 flex-wrap">
+        <p className="text-[13px] leading-[19px] text-muted-foreground">
           {t('hr.staff.designationsLine', { n: designations.length })}
-        </Typography>
+        </p>
         <Button variant="outlined" startIcon={<Add />} onClick={() => setAdding(true)}>
           {t('hr.staff.newDesignation')}
         </Button>
-      </Box>
+      </div>
       <DataTable
         testId="staff-table"
         label={t('nav.hr')}
@@ -51,12 +37,12 @@ export function StaffDirectory({ staff, designations, departments }: { staff: St
         rowId={(s) => s.userId}
         exportName="staff"
         columns={[
-          { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (s) => s.fullName, cell: (s) => (<><Typography variant="body2" sx={{ fontWeight: 500 }}>
+          { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (s) => s.fullName, cell: (s) => (<><p className="text-[13px] leading-[19px] font-medium">
                             {s.fullName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          </p>
+                          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                             {s.email ?? s.phone ?? ''}
-                          </Typography></>) },
+                          </span></>) },
           { id: 'c1', header: t('hr.staff.code'), sort: (s) => s.employeeCode ?? '', cell: (s) => s.employeeCode ?? <StatusPill tone="warning">{t('hr.staff.noRecord')}</StatusPill> },
           { id: 'c2', header: t('hr.f.department'), sort: (s) => s.department?.name ?? '–', cell: (s) => s.department?.name ?? '–' },
           { id: 'c3', header: t('hr.f.designation'), sort: (s) => s.designation?.name ?? '–', cell: (s) => s.designation?.name ?? '–' },
@@ -82,14 +68,14 @@ function DesignationDialog({ onClose, run }: { onClose: () => void; run: ReturnT
     <Dialog open onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>{t('hr.staff.newDesignation')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           <FormField label={t('hr.staff.designationName')}>
             <TextInput value={name} onChange={(e) => setName(e.target.value)} autoFocus />
           </FormField>
           <FormField label={t('hr.staff.grade')}>
             <TextInput value={grade} onChange={(e) => setGrade(e.target.value)} />
           </FormField>
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('hr.cancel')}</Button>
@@ -185,12 +171,12 @@ function ProfileDialog({ person, designations, departments, onClose }: { person:
       <DialogContent>
         {view}
         {!d || !profile ? (
-          <Box sx={{ display: 'grid', placeItems: 'center', py: 6 }}>
+          <div className="grid place-items-center py-12">
             <CircularProgress aria-label={t('hr.loading')} />
-          </Box>
+          </div>
         ) : (
-          <Stack spacing={3} sx={{ pt: 1 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
+          <div className="flex flex-col gap-6 pt-2">
+            <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr_1fr] gap-4">
               {text('employeeCode', 'hr.f.employeeCode')}
               <FormField label={t('hr.f.department')}>
                 <TextInput select value={d.departmentId ?? ''} onChange={(e) => set('departmentId', e.target.value || null)}>
@@ -258,34 +244,34 @@ function ProfileDialog({ person, designations, departments, onClose }: { person:
               <FormField label={t('hr.f.taxOther')}>
                 <TextInput value={d.taxOther} onChange={(e) => set('taxOther', e.target.value)} />
               </FormField>
-            </Box>
-            <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
+            </div>
+            <div className="flex flex-row flex-wrap">
               <FormControlLabel control={<Switch checked={d.pfEnabled} onChange={(e) => set('pfEnabled', e.target.checked)} />} label={t('hr.f.pf')} />
               <FormControlLabel control={<Switch checked={d.esiEnabled} onChange={(e) => set('esiEnabled', e.target.checked)} />} label={t('hr.f.esi')} />
               <FormControlLabel control={<Switch checked={d.ptEnabled} onChange={(e) => set('ptEnabled', e.target.checked)} />} label={t('hr.f.pt')} />
-            </Stack>
-            <Box>
+            </div>
+            <div>
               <Button variant="contained" onClick={save} disabled={pending || !d.employeeCode?.trim()}>
                 {t('hr.save')}
               </Button>
-            </Box>
+            </div>
 
-            <Box sx={{ borderTop: 1, borderColor: 'm3.outlineVariant', pt: 2 }}>
-              <Typography variant="h6" component="h3" sx={{ fontSize: '1rem', mb: 1 }}>
+            <div className="border-t border-border pt-4">
+              <h3 className="font-medium tracking-[0.1px] text-[1rem] mb-2">
                 {t('hr.bank.title')}
-              </Typography>
+              </h3>
               {profile.version === 0 && d.version === 0 ? (
-                <Typography variant="body2" color="text.secondary">
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {t('hr.bank.needRecord')}
-                </Typography>
+                </p>
               ) : (
                 <>
                   {profile.bank && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                    <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">
                       {t('hr.bank.onFile', { last4: profile.bank.accountLast4 })}
-                    </Typography>
+                    </p>
                   )}
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
                     <FormField label={t('hr.bank.holder')}>
                       <TextInput value={bank.accountHolder} onChange={(e) => setBank({ ...bank, accountHolder: e.target.value })} />
                     </FormField>
@@ -298,14 +284,14 @@ function ProfileDialog({ person, designations, departments, onClose }: { person:
                     <FormField label={t('hr.bank.account')}>
                       <TextInput value={bank.accountNumber} onChange={(e) => setBank({ ...bank, accountNumber: e.target.value })} autoComplete="off" slotProps={{ htmlInput: { inputMode: 'numeric' } }} />
                     </FormField>
-                  </Box>
-                  <Button sx={{ mt: 1.5 }} variant="outlined" onClick={saveBankDetails} disabled={pending || !bank.accountNumber || !bank.ifsc || !bank.bankName || !bank.accountHolder}>
+                  </div>
+                  <Button className="mt-3" variant="outlined" onClick={saveBankDetails} disabled={pending || !bank.accountNumber || !bank.ifsc || !bank.bankName || !bank.accountHolder}>
                     {t('hr.bank.save')}
                   </Button>
                 </>
               )}
-            </Box>
-          </Stack>
+            </div>
+          </div>
         )}
       </DialogContent>
       <DialogActions>

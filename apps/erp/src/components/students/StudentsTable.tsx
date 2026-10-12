@@ -1,6 +1,4 @@
 'use client';
-
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { StatusPill } from '@/components/admissions/Chips';
@@ -19,9 +17,9 @@ export function StudentsTable({ rows, initialQuery = '' }: { rows: StudentRow[];
       rowHeader: true,
       sort: (s) => s.fullName,
       cell: (s) => (
-        <Typography component={Link} href={`/students/${s.id}`} variant="subtitle2" sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+        <Link className="text-sm leading-5 font-medium tracking-[0.1px] text-teal-ink no-underline hover:underline" href={`/students/${s.id}`}>
           {s.fullName}
-        </Typography>
+        </Link>
       ),
     },
     { id: 'class', header: t('stu.class'), sort: (s) => s.className, cell: (s) => s.className },

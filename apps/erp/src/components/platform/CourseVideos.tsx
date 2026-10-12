@@ -1,38 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import ArrowDownward from '@mui/icons-material/ArrowDownward';
-import ArrowUpward from '@mui/icons-material/ArrowUpward';
-import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import OpenInNew from '@mui/icons-material/OpenInNew';
-import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
-import Search from '@mui/icons-material/Search';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
-import Card from '@mui/material/Card';
-import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Collapse from '@mui/material/Collapse';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
-import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useEffect, useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { addVideo, deleteVideo, editVideo, getTopicVideos, importPlaylist, previewPlaylist, reorderVideos } from '@/app/(dashboard)/platform/concept-videos/actions';
@@ -41,19 +7,19 @@ import { filterChapters, formatDuration, importItems, initialChoices, isPlaylist
 import type { ConceptVideo, PlatformCourseTree, PlaylistPreview, VideoLanguage } from '@/lib/types';
 import { LANG_LABEL, VideoCountChip } from './VideoLibrary';
 
+import { Alert, Button, ButtonBase, Card, Checkbox, Chip, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, MenuItem, Snackbar, Switch, TextField, Tooltip } from '@/components/kx';
+import { ArrowDown as ArrowDownward, ArrowUp as ArrowUpward, ChevronDown as ExpandMore, ChevronUp as ExpandLess, ExternalLink as OpenInNew, ListPlus as PlaylistAdd, Pencil as EditOutlined, Plus as Add, Search, Trash2 as DeleteOutlined } from 'lucide-react';
 type Chapter = PlatformCourseTree['chapters'][number];
 const LANGS: VideoLanguage[] = ['en', 'hi', 'kn'];
 
 function Thumb({ id, title, width = 120 }: { id: string; title: string; width?: number }) {
   const { t } = useI18n();
   return (
-    <Box
-      component="img"
+    <img className="aspect-[16/9] object-cover rounded-[8px] bg-accent shrink-0" style={{ width }}
       src={thumbnail(id)}
       alt={t('pv.thumbAlt', { title })}
       loading="lazy"
       referrerPolicy="no-referrer"
-      sx={{ width, aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: '8px', bgcolor: 'm3.surfaceContainerHighest', flexShrink: 0 }}
     />
   );
 }
@@ -62,7 +28,7 @@ function LanguageSelect({ value, onChange, testId }: { value: VideoLanguage; onC
   const { t } = useI18n();
   return (
     <FormField label={t('pv.language')}>
-      <TextInput select value={value} onChange={(e) => onChange(e.target.value as VideoLanguage)} sx={{ minWidth: 140 }} slotProps={{ htmlInput: { 'data-testid': testId } }}>
+      <TextInput className="min-w-[140px]" select value={value} onChange={(e) => onChange(e.target.value as VideoLanguage)} slotProps={{ htmlInput: { 'data-testid': testId } }}>
         {LANGS.map((l) => (
           <MenuItem key={l} value={l}>
             {t(LANG_LABEL[l])}
@@ -111,50 +77,48 @@ export function CourseVideos({ course, playlistImport }: { course: PlatformCours
 
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-        <TextField
+      <div className="flex items-center gap-4 flex-wrap mb-4">
+        <TextField className="flex-[1_1_280px] max-w-[420px]"
           size="small"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('pv.search')}
           slotProps={{ htmlInput: { 'aria-label': t('pv.search') }, input: { startAdornment: <InputAdornment position="start"><Search /></InputAdornment> } }}
-          sx={{ flex: '1 1 280px', maxWidth: 420 }}
         />
         <FormControlLabel control={<Switch checked={missingOnly} onChange={(e) => setMissingOnly(e.target.checked)} />} label={t('pv.missingOnly')} />
-      </Box>
+      </div>
       {shown.length === 0 ? (
-        <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+        <p className="text-sm leading-[21px] text-muted-foreground py-8 text-center">
           {t('pv.noResults')}
-        </Typography>
+        </p>
       ) : (
-        <Stack spacing={2} data-testid="video-chapters">
+        <div className="flex flex-col gap-4" data-testid="video-chapters">
           {shown.map((ch) => (
             <Card key={ch.id} data-testid="video-chapter">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, pt: 2, pb: 1 }}>
-                <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 500, flex: 1, minWidth: 0 }}>
+              <div className="flex items-center gap-3 px-5 pt-4 pb-2">
+                <h2 className="text-base leading-6 tracking-[0.1px] font-medium flex-1 min-w-0">
                   {ch.title}
-                </Typography>
+                </h2>
                 <Button size="small" startIcon={<PlaylistAdd />} onClick={() => setImporting(ch)}>
                   {t('pv.importPlaylist')}
                 </Button>
-              </Box>
-              <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, pb: 1 }}>
+              </div>
+              <ul className="list-none m-0 p-0 pb-2">
                 {ch.topics.map((tp) => {
                   const expanded = open.has(tp.id);
                   return (
                     <li key={tp.id} id={`topic-${tp.id}`}>
-                      <ButtonBase
+                      <ButtonBase className="w-full text-left flex items-center gap-3 px-5 py-2.5 hover:bg-accent"
                         onClick={() => toggle(tp.id)}
                         aria-expanded={expanded}
                         aria-label={t('pv.showVideos', { title: tp.title })}
                         data-testid="video-topic"
-                        sx={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.25, '&:hover': { bgcolor: 'action.hover' } }}
                       >
-                        <Typography variant="body1" sx={{ flex: 1, minWidth: 0 }}>
+                        <p className="text-sm leading-[21px] flex-1 min-w-0">
                           {tp.title}
-                        </Typography>
+                        </p>
                         <VideoCountChip n={tp.videos} />
-                        {expanded ? <ExpandLess sx={{ color: 'text.secondary' }} /> : <ExpandMore sx={{ color: 'text.secondary' }} />}
+                        {expanded ? <ExpandLess className="text-muted-foreground" /> : <ExpandMore className="text-muted-foreground" />}
                       </ButtonBase>
                       <Collapse in={expanded} unmountOnExit>
                         <TopicVideos
@@ -169,10 +133,10 @@ export function CourseVideos({ course, playlistImport }: { course: PlatformCours
                     </li>
                   );
                 })}
-              </Box>
+              </ul>
             </Card>
           ))}
-        </Stack>
+        </div>
       )}
       {importing && (
         <ImportDialog
@@ -250,70 +214,70 @@ function TopicVideos({
   };
 
   if (!videos) {
-    return <Box sx={{ px: 2.5, pb: 2 }}>{error ? <Alert severity="error">{error}</Alert> : <CircularProgress size={20} />}</Box>;
+    return <div className="px-5 pb-4">{error ? <Alert severity="error">{error}</Alert> : <CircularProgress size={20} />}</div>;
   }
 
   return (
-    <Box sx={{ px: 2.5, pb: 2, pt: 0.5 }} data-testid="topic-videos">
+    <div className="px-5 pb-4 pt-1" data-testid="topic-videos">
       {error && (
-        <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setError(null)}>
+        <Alert className="mb-3" severity="error" onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
-      <Stack spacing={1} component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }} aria-label={t('pv.topicVideos', { title: topicTitle })}>
+      <ol className="flex flex-col gap-2 list-none m-0 p-0" aria-label={t('pv.topicVideos', { title: topicTitle })}>
         {videos.map((v, i) => (
-          <Box component="li" key={v.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1, borderRadius: '12px', bgcolor: 'm3.surfaceContainerLow' }} data-testid="topic-video">
+          <li className="flex items-center gap-3 p-2 rounded-[12px] bg-muted" key={v.id} data-testid="topic-video">
             <Thumb id={v.youtubeVideoId} title={v.title} />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] leading-[19px] font-medium">
                 {v.title}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 0.5, flexWrap: 'wrap' }}>
-                <Chip size="small" label={t(LANG_LABEL[v.language])} sx={{ height: 22 }} />
+              </p>
+              <div className="flex gap-2 items-center mt-1 flex-wrap">
+                <Chip className="h-[22px]" size="small" label={t(LANG_LABEL[v.language])} />
                 {v.durationSeconds ? (
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {formatDuration(v.durationSeconds)}
-                  </Typography>
+                  </span>
                 ) : null}
                 {v.channelTitle && (
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {v.channelTitle}
-                  </Typography>
+                  </span>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
             <Tooltip title={t('pv.moveUp')}>
               <span>
                 <IconButton size="small" disabled={i === 0 || pending} onClick={() => reorder(i, -1)} aria-label={t('pv.moveUp')}>
-                  <ArrowUpward fontSize="small" />
+                  <ArrowUpward className="size-5" />
                 </IconButton>
               </span>
             </Tooltip>
             <Tooltip title={t('pv.moveDown')}>
               <span>
                 <IconButton size="small" disabled={i === videos.length - 1 || pending} onClick={() => reorder(i, 1)} aria-label={t('pv.moveDown')}>
-                  <ArrowDownward fontSize="small" />
+                  <ArrowDownward className="size-5" />
                 </IconButton>
               </span>
             </Tooltip>
             <Tooltip title={t('pv.open')}>
               <IconButton size="small" component="a" href={watchUrl(v.youtubeVideoId)} target="_blank" rel="noopener noreferrer" aria-label={t('pv.open')}>
-                <OpenInNew fontSize="small" />
+                <OpenInNew className="size-5" />
               </IconButton>
             </Tooltip>
             <Tooltip title={t('pv.editVideo')}>
               <IconButton size="small" onClick={() => setEditing(v)} aria-label={t('pv.editVideo')}>
-                <EditOutlined fontSize="small" />
+                <EditOutlined className="size-5" />
               </IconButton>
             </Tooltip>
             <Tooltip title={t('pv.remove')}>
               <IconButton size="small" onClick={() => setRemoving(v)} aria-label={t('pv.remove')}>
-                <DeleteOutlined fontSize="small" />
+                <DeleteOutlined className="size-5" />
               </IconButton>
             </Tooltip>
-          </Box>
+          </li>
         ))}
-      </Stack>
+      </ol>
       <AddVideoForm
         courseId={courseId}
         topicId={topicId}
@@ -339,7 +303,7 @@ function TopicVideos({
         <Dialog open onClose={() => setRemoving(null)} maxWidth="xs" fullWidth>
           <DialogTitle>{t('pv.remove')}</DialogTitle>
           <DialogContent>
-            <Typography>{t('pv.removeConfirm', { title: removing.title })}</Typography>
+            <p className="text-sm leading-[21px]">{t('pv.removeConfirm', { title: removing.title })}</p>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setRemoving(null)}>{t('common.cancel')}</Button>
@@ -363,7 +327,7 @@ function TopicVideos({
           </DialogActions>
         </Dialog>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -378,8 +342,7 @@ function AddVideoForm({ courseId, topicId, defaultLanguage, onAdded }: { courseI
   const hint = !url.trim() || id ? null : isPlaylistLink(url) ? t('pv.isPlaylist') : t('pv.notALink');
 
   return (
-    <Box
-      component="form"
+    <form className="flex gap-3 flex-wrap items-start mt-3"
       onSubmit={(e) => {
         e.preventDefault();
         if (!id) return;
@@ -392,32 +355,30 @@ function AddVideoForm({ courseId, topicId, defaultLanguage, onAdded }: { courseI
           onAdded(res.data);
         });
       }}
-      sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'flex-start', mt: 1.5 }}
     >
       {id && <Thumb id={id} title={title || url} width={96} />}
       <FormField label={t('pv.link')}>
-        <TextInput
+        <TextInput className="flex-[2_1_260px]"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           error={!!hint}
           helperText={hint ?? t('pv.linkHelp')}
-          sx={{ flex: '2 1 260px' }}
           slotProps={{ htmlInput: { 'data-testid': 'video-link' } }}
         />
       </FormField>
       <FormField label={t('pv.titleOptional')}>
-        <TextInput value={title} onChange={(e) => setTitle(e.target.value)} sx={{ flex: '2 1 220px' }} slotProps={{ htmlInput: { maxLength: 200 } }} />
+        <TextInput className="flex-[2_1_220px]" value={title} onChange={(e) => setTitle(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
       </FormField>
       <LanguageSelect value={language} onChange={setLanguage} />
-      <Button type="submit" variant="contained" startIcon={pending ? <CircularProgress size={16} color="inherit" /> : <Add />} disabled={!id || pending} sx={{ mt: 0.25 }}>
+      <Button className="mt-0.5" type="submit" variant="contained" startIcon={pending ? <CircularProgress size={16} color="inherit" /> : <Add />} disabled={!id || pending}>
         {t('pv.addVideo')}
       </Button>
       {error && (
-        <Alert severity="error" sx={{ flexBasis: '100%' }} onClose={() => setError(null)}>
+        <Alert className="basis-full" severity="error" onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
-    </Box>
+    </form>
   );
 }
 
@@ -431,14 +392,14 @@ function EditVideoDialog({ video, onClose }: { video: ConceptVideo; onClose: (sa
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="sm" fullWidth>
       <DialogTitle>{t('pv.editVideo')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           <Thumb id={video.youtubeVideoId} title={video.title} width={240} />
           <FormField label={t('pv.title')}>
             <TextInput value={title} onChange={(e) => setTitle(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
           </FormField>
           <LanguageSelect value={language} onChange={setLanguage} />
           {error && <Alert severity="error">{error}</Alert>}
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} disabled={pending}>
@@ -483,9 +444,8 @@ function ImportDialog({ chapter, courseId, defaultLanguage, available, onClose }
             {t('pv.import.unavailable')}
           </Alert>
         ) : (
-          <Stack spacing={2}>
-            <Box
-              component="form"
+          <div className="flex flex-col gap-4">
+            <form className="flex gap-3 flex-wrap items-start"
               onSubmit={(e) => {
                 e.preventDefault();
                 start(async () => {
@@ -496,44 +456,42 @@ function ImportDialog({ chapter, courseId, defaultLanguage, available, onClose }
                   setChoices(initialChoices(res.data));
                 });
               }}
-              sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'flex-start' }}
             >
               <FormField label={t('pv.import.link')}>
-                <TextInput value={url} onChange={(e) => setUrl(e.target.value)} sx={{ flex: '1 1 320px' }} />
+                <TextInput className="flex-[1_1_320px]" value={url} onChange={(e) => setUrl(e.target.value)} />
               </FormField>
-              <Button type="submit" variant="outlined" disabled={!url.trim() || pending} sx={{ mt: 0.25 }}>
+              <Button className="mt-0.5" type="submit" variant="outlined" disabled={!url.trim() || pending}>
                 {t('pv.import.find')}
               </Button>
-            </Box>
+            </form>
             {error && <Alert severity="error">{error}</Alert>}
-            {preview && preview.videos.length === 0 && <Typography color="text.secondary">{t('pv.import.empty')}</Typography>}
+            {preview && preview.videos.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('pv.import.empty')}</p>}
             {preview && preview.videos.length > 0 && (
               <>
-                <Typography variant="body2" color="text.secondary">
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {t('pv.import.help')}
-                </Typography>
+                </p>
                 <LanguageSelect value={language} onChange={setLanguage} />
-                <Stack spacing={1} data-testid="import-rows">
+                <div className="flex flex-col gap-2" data-testid="import-rows">
                   {preview.videos.map((v) => {
                     const c = choices[v.youtubeVideoId];
                     const already = !!c?.topicId && v.alreadyOn.includes(c.topicId);
                     return (
-                      <Box key={v.youtubeVideoId} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                      <div className="flex items-center gap-3 flex-wrap" key={v.youtubeVideoId}>
                         <Checkbox checked={!!c?.include} onChange={(e) => set(v.youtubeVideoId, { include: e.target.checked })} slotProps={{ input: { 'aria-label': t('pv.import.include', { title: v.title }) } }} />
                         <Thumb id={v.youtubeVideoId} title={v.title} width={96} />
-                        <Box sx={{ flex: '1 1 220px', minWidth: 0 }}>
-                          <Typography variant="body2">{v.title}</Typography>
-                          <Typography variant="caption" color="text.secondary">
+                        <div className="flex-[1_1_220px] min-w-0">
+                          <p className="text-[13px] leading-[19px]">{v.title}</p>
+                          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                             {formatDuration(v.durationSeconds)}
                             {already ? `${v.durationSeconds ? ' · ' : ''}${t('pv.import.already')}` : ''}
-                          </Typography>
-                        </Box>
+                          </span>
+                        </div>
                         <FormField label={t('pv.import.topic')}>
-                          <TextInput
+                          <TextInput className="w-[260px]"
                             select
                             value={c?.topicId ?? ''}
                             onChange={(e) => set(v.youtubeVideoId, { topicId: e.target.value, include: !!e.target.value })}
-                            sx={{ width: 260 }}
                           >
                             <MenuItem value="">
                               <em>{t('pv.import.noTopic')}</em>
@@ -545,13 +503,13 @@ function ImportDialog({ chapter, courseId, defaultLanguage, available, onClose }
                             ))}
                           </TextInput>
                         </FormField>
-                      </Box>
+                      </div>
                     );
                   })}
-                </Stack>
+                </div>
               </>
             )}
-          </Stack>
+          </div>
         )}
       </DialogContent>
       <DialogActions>

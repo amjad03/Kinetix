@@ -1,33 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import ArrowDownward from '@mui/icons-material/ArrowDownward';
-import ArrowUpward from '@mui/icons-material/ArrowUpward';
-import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import IosShare from '@mui/icons-material/IosShare';
-import OpenInNew from '@mui/icons-material/OpenInNew';
-import Search from '@mui/icons-material/Search';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
-import Card from '@mui/material/Card';
-import Checkbox from '@mui/material/Checkbox';
-import Collapse from '@mui/material/Collapse';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addVideo, getMine, removeVideo, reorderVideos, shareVideo } from '@/app/(dashboard)/topic-videos/actions';
 import { FormField, StatusPill, TextInput } from '@/components/ui';
@@ -37,25 +8,27 @@ import { canRequestShare, countsByTopic, sourceLabel, splitByScope, statusLabel 
 import type { CourseOutline, ManagedVideo, TopicVideoCount, VideoLanguage } from '@/lib/types';
 import { LANG_LABEL } from '@/components/platform/VideoLibrary';
 
+import { Button, ButtonBase, Card, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, MenuItem, Snackbar, TextField, Tooltip } from '@/components/kx';
+import { ArrowDown as ArrowDownward, ArrowUp as ArrowUpward, ChevronDown as ExpandMore, ChevronUp as ExpandLess, ExternalLink as OpenInNew, Plus as Add, Search, Share as IosShare, Trash2 as DeleteOutlined } from 'lucide-react';
 const LANGS: VideoLanguage[] = ['en', 'hi', 'kn'];
 
 function VideoRow({ v, canEdit, first, last, onMove, onRemove, onShare, busy }: { v: ManagedVideo; canEdit: boolean; first: boolean; last: boolean; onMove: (d: -1 | 1) => void; onRemove: () => void; onShare?: () => void; busy: boolean }) {
   const { t } = useI18n();
   return (
-    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', py: 1, flexWrap: 'wrap' }} data-testid="topic-video">
-      <Box component="img" src={thumbnail(v.youtubeVideoId)} alt={t('tv.thumbAlt', { title: v.title })} loading="lazy" referrerPolicy="no-referrer" sx={{ width: 104, aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: '8px', bgcolor: 'm3.surfaceContainerHighest' }} />
-      <Box sx={{ flex: '1 1 220px', minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 500 }}>{v.title}</Typography>
-        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', mt: 0.5 }}>
+    <div className="flex gap-3 items-center py-2 flex-wrap" data-testid="topic-video">
+      <img className="w-[104px] aspect-[16/9] object-cover rounded-[8px] bg-accent" src={thumbnail(v.youtubeVideoId)} alt={t('tv.thumbAlt', { title: v.title })} loading="lazy" referrerPolicy="no-referrer" />
+      <div className="flex-[1_1_220px] min-w-0">
+        <p className="text-sm leading-[21px] font-medium">{v.title}</p>
+        <div className="flex gap-1.5 flex-wrap items-center mt-1">
           <StatusPill tone="neutral">{t(sourceLabel(v.source))}</StatusPill>
           <StatusPill tone="info">{t(LANG_LABEL[v.language])}</StatusPill>
           {v.source === 'teacher' && <StatusPill tone={v.shareStatus === 'rejected' ? 'danger' : v.shareStatus === 'approved' ? 'success' : 'warning'}>{t(statusLabel(v.shareStatus))}</StatusPill>}
-        </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        </div>
+        <p className="text-[13px] leading-[19px] text-muted-foreground mt-1">
           {v.source === 'teacher' ? [t('tv.addedBy', { name: v.createdByName ?? '' }), v.sections.length ? t('tv.forClasses', { classes: v.sections.map((s) => s.displayName).join(', ') }) : ''].filter(Boolean).join(' · ') : ''}
           {v.shareStatus === 'rejected' && v.reviewReason ? ` ${t('tv.reasonShown', { reason: v.reviewReason })}` : ''}
-        </Typography>
-      </Box>
+        </p>
+      </div>
       <Tooltip title={t('tv.open')}>
         <IconButton component="a" href={watchUrl(v.youtubeVideoId)} target="_blank" rel="noreferrer" aria-label={t('tv.open')}>
           <OpenInNew />
@@ -81,7 +54,7 @@ function VideoRow({ v, canEdit, first, last, onMove, onRemove, onShare, busy }: 
           <DeleteOutlined />
         </IconButton>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -108,11 +81,11 @@ function AddDialog({ open, admin, classes, defaultLanguage, onClose, onAdd }: { 
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>{t('tv.addVideo')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           <FormField label={t('tv.link')}>
             <TextInput autoFocus value={url} onChange={(e) => setUrl(e.target.value)} helperText={url && !id ? t('tv.notALink') : t('tv.linkHelp')} error={!!url && !id} fullWidth />
           </FormField>
-          {id && <Box component="img" src={thumbnail(id)} alt="" referrerPolicy="no-referrer" sx={{ width: 160, aspectRatio: '16 / 9', borderRadius: '8px' }} />}
+          {id && <img className="w-[160px] aspect-[16/9] rounded-[8px]" src={thumbnail(id)} alt="" referrerPolicy="no-referrer" />}
           <FormField label={t('tv.titleOptional')}>
             <TextInput value={title} onChange={(e) => setTitle(e.target.value)} fullWidth slotProps={{ htmlInput: { maxLength: 200 } }} />
           </FormField>
@@ -126,22 +99,22 @@ function AddDialog({ open, admin, classes, defaultLanguage, onClose, onAdd }: { 
             </TextInput>
           </FormField>
           {!admin && (
-            <Box>
-              <Typography variant="subtitle2">{t('tv.classes')}</Typography>
-              <Typography variant="body2" color="text.secondary">
+            <div>
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('tv.classes')}</h6>
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {classes.length ? t('tv.classesHelp') : t('tv.noClasses')}
-              </Typography>
+              </p>
               {classes.map((c) => (
                 <FormControlLabel key={c.id} control={<Checkbox checked={picked.has(c.id)} onChange={(e) => setPicked((s) => { const n = new Set(s); if (e.target.checked) n.add(c.id); else n.delete(c.id); return n; })} />} label={c.displayName} />
               ))}
-            </Box>
+            </div>
           )}
           {error && (
-            <Typography color="error" role="alert">
+            <p className="text-sm leading-[21px] text-red-ink" role="alert">
               {error}
-            </Typography>
+            </p>
           )}
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('tv.cancel')}</Button>
@@ -206,63 +179,63 @@ export function TopicVideos({ course, counts, admin, classes }: { course: Course
 
   return (
     <>
-      <TextField size="small" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('tv.search')} slotProps={{ htmlInput: { 'aria-label': t('tv.search') }, input: { startAdornment: <InputAdornment position="start"><Search /></InputAdornment> } }} sx={{ mb: 2, width: { xs: '100%', sm: 360 } }} />
+      <TextField className="mb-4 w-full sm:w-[360px]" size="small" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('tv.search')} slotProps={{ htmlInput: { 'aria-label': t('tv.search') }, input: { startAdornment: <InputAdornment position="start"><Search /></InputAdornment> } }} />
       {error && (
-        <Typography color="error" role="alert" sx={{ mb: 1 }}>
+        <p className="text-sm leading-[21px] text-red-ink mb-2" role="alert">
           {error}
-        </Typography>
+        </p>
       )}
       {chapters.length === 0 ? (
-        <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+        <p className="text-sm leading-[21px] text-muted-foreground py-8 text-center">
           {t('tv.noResults')}
-        </Typography>
+        </p>
       ) : (
-        <Stack spacing={2}>
+        <div className="flex flex-col gap-4">
           {chapters.map((ch) => (
             <Card key={ch.id}>
-              <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 500, px: 2.5, pt: 2, pb: 1 }}>
+              <h2 className="text-base leading-6 tracking-[0.1px] font-medium px-5 pt-4 pb-2">
                 {ch.title}
-              </Typography>
+              </h2>
               {ch.topics.map((tp) => {
                 const c = live[tp.id];
                 const list = videos[tp.id];
                 const split = splitByScope(list ?? []);
                 return (
-                  <Box key={tp.id} sx={{ borderTop: 1, borderColor: 'divider' }} data-testid="topic-row">
-                    <ButtonBase onClick={() => toggle(tp.id)} aria-expanded={open === tp.id} sx={{ width: '100%', px: 2.5, py: 1.5, justifyContent: 'flex-start', gap: 1.5, textAlign: 'left' }}>
-                      <Typography sx={{ flex: 1 }}>{tp.title}</Typography>
+                  <div className="border-t border-border" key={tp.id} data-testid="topic-row">
+                    <ButtonBase className="w-full px-5 py-3 justify-start gap-3 text-left" onClick={() => toggle(tp.id)} aria-expanded={open === tp.id}>
+                      <p className="text-sm leading-[21px] flex-1">{tp.title}</p>
                       {!!c?.institution && <StatusPill tone="neutral">{t('tv.institutionCount', { count: c.institution })}</StatusPill>}
                       {admin && !!c?.teacher && <StatusPill tone="info">{t('tv.teacherCount', { count: c.teacher })}</StatusPill>}
                       {admin && !!c?.pending && <StatusPill tone="warning">{t('tv.pendingBadge', { count: c.pending })}</StatusPill>}
                       {open === tp.id ? <ExpandLess /> : <ExpandMore />}
                     </ButtonBase>
                     <Collapse in={open === tp.id} unmountOnExit>
-                      <Box sx={{ px: 2.5, pb: 2 }}>
+                      <div className="px-5 pb-4">
                         {admin && (
                           <>
-                            <Typography variant="subtitle2">{t('tv.yours')}</Typography>
+                            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('tv.yours')}</h6>
                             {split.institution.map((v, i) => (
                               <VideoRow key={v.id} v={v} canEdit first={i === 0} last={i === split.institution.length - 1} busy={pending} onMove={(d) => reorder(tp.id, 'institution', split.institution, i, d)} onRemove={() => remove(tp.id, v)} />
                             ))}
                           </>
                         )}
-                        {!admin && <Typography variant="subtitle2">{t('tv.mine')}</Typography>}
-                        {!admin && split.teacher.length === 0 && <Typography color="text.secondary">{t('tv.noVideos')}</Typography>}
-                        {admin && split.teacher.length > 0 && <Typography variant="subtitle2" sx={{ mt: 1 }}>{t('tv.teachers')}</Typography>}
+                        {!admin && <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('tv.mine')}</h6>}
+                        {!admin && split.teacher.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('tv.noVideos')}</p>}
+                        {admin && split.teacher.length > 0 && <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mt-2">{t('tv.teachers')}</h6>}
                         {split.teacher.map((v, i) => (
                           <VideoRow key={v.id} v={v} canEdit={!admin ? true : false} first={i === 0} last={i === split.teacher.length - 1} busy={pending} onMove={(d) => reorder(tp.id, 'teacher', split.teacher, i, d)} onRemove={() => remove(tp.id, v)} onShare={admin ? undefined : () => share(tp.id, v)} />
                         ))}
-                        <Button startIcon={<Add />} onClick={() => setAdding(tp.id)} sx={{ mt: 1 }}>
+                        <Button className="mt-2" startIcon={<Add />} onClick={() => setAdding(tp.id)}>
                           {t('tv.addVideo')}
                         </Button>
-                      </Box>
+                      </div>
                     </Collapse>
-                  </Box>
+                  </div>
                 );
               })}
             </Card>
           ))}
-        </Stack>
+        </div>
       )}
       <AddDialog
         key={adding ?? 'none'}

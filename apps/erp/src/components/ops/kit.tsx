@@ -1,14 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import MenuItem from '@mui/material/MenuItem';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import { usePathname } from 'next/navigation';
 import { useMemo, useState, useTransition, type ReactNode } from 'react';
 import { DataTable, Dialog, EmptyState, FormField, StatusPill, TextInput, type Column, type TableFilter } from '@/components/ui';
@@ -18,6 +8,7 @@ import type { Cell } from '@/lib/table';
 import { UUID_RE } from '@/lib/ops';
 import type { ActionResult } from '@/lib/types';
 
+import { Alert, Button, CircularProgress, MenuItem, Snackbar, Tab, Tabs } from '@/components/kx';
 export type FieldKind = 'text' | 'multiline' | 'number' | 'rupees' | 'date' | 'time' | 'datetime' | 'select' | 'uuid';
 export interface Field {
   name: string;
@@ -88,7 +79,7 @@ export function FormDialog({ title, fields, submitLabel, onSubmit, onClose, intr
         </>
       }
     >
-      <Stack spacing={2} sx={{ pt: 1 }}>
+      <div className="flex flex-col gap-4 pt-2">
         {intro}
         {fields.map((f) => {
           const k = f.kind ?? 'text';
@@ -116,7 +107,7 @@ export function FormDialog({ title, fields, submitLabel, onSubmit, onClose, intr
           );
         })}
         {error && <Alert severity="error">{error}</Alert>}
-      </Stack>
+      </div>
     </Dialog>
   );
 }
@@ -142,8 +133,7 @@ export interface Col<T> {
 /** A list in the shared DataTable (sortable columns, search and paging once it is long), or an empty state. */
 export function Grid<T>({ cols, rows, empty, testId, tint, exportName, filters }: { cols: Col<T>[]; rows: T[]; empty: string; testId?: string; tint?: (row: T) => boolean; exportName?: string; filters?: TableFilter<T>[] }) {
   const ids = useMemo(() => new Map(rows.map((r, i) => [r, String(i)])), [rows]);
-  const gap = { mb: 3, '&:last-child': { mb: 0 } };
-  if (rows.length === 0) return <Box sx={gap}><EmptyState icon={<Box component="span">·</Box>} title={empty} dense testId={testId ? `${testId}-empty` : undefined} /></Box>;
+  if (rows.length === 0) return <div className="mb-6 last:mb-0"><EmptyState icon={<span>·</span>} title={empty} dense testId={testId ? `${testId}-empty` : undefined} /></div>;
   const columns: Column<T>[] = cols.map((c, i) => ({
     id: `c${i}`,
     header: c.label,
@@ -161,9 +151,9 @@ export function Grid<T>({ cols, rows, empty, testId, tint, exportName, filters }
       : { csv: false as const }),
   }));
   return (
-    <Box sx={gap}>
+    <div className="mb-6 last:mb-0">
       <DataTable testId={testId} label={testId ?? 'list'} columns={columns} rows={rows} rowId={(r) => ids.get(r) ?? ''} rowTone={tint ? (r) => (tint(r) ? 'danger' : undefined) : undefined} exportName={exportName} filters={filters} bare={rows.length <= 10 && !filters && !exportName} />
-    </Box>
+    </div>
   );
 }
 
@@ -209,14 +199,14 @@ export function Tabbed({ tabs, initial, label, actions }: { tabs: { id: string; 
   };
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mt: 3, mb: 2, borderBottom: 1, borderColor: 'm3.outlineVariant' }}>
-        <Tabs value={tab} onChange={(_, v: string) => go(v)} aria-label={label} variant="scrollable" scrollButtons="auto" sx={{ flex: '1 1 auto', minHeight: 48 }}>
+      <div className="flex flex-wrap items-center gap-3 mt-6 mb-4 border-b border-border">
+        <Tabs className="flex-auto min-h-[48px]" value={tab} onChange={(_, v: string) => go(v)} aria-label={label} variant="scrollable" scrollButtons="auto">
           {tabs.map((x) => (
             <Tab key={x.id} value={x.id} label={x.label} data-testid={`tab-${x.id}`} />
           ))}
         </Tabs>
-        {actions && <Box sx={{ display: 'flex', gap: 1, pb: 1, flexWrap: 'wrap' }}>{actions}</Box>}
-      </Box>
+        {actions && <div className="flex gap-2 pb-2 flex-wrap">{actions}</div>}
+      </div>
       {tabs.find((x) => x.id === tab)?.node}
     </>
   );
@@ -224,5 +214,5 @@ export function Tabbed({ tabs, initial, label, actions }: { tabs: { id: string; 
 
 /** A row of buttons above a table. */
 export const Bar = ({ children }: { children: ReactNode }) => (
-  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>{children}</Box>
+  <div className="flex flex-wrap gap-2 mb-3">{children}</div>
 );

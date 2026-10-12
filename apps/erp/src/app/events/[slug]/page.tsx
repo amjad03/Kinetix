@@ -1,7 +1,3 @@
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Logo } from '@/components/Logo';
@@ -9,6 +5,7 @@ import { EmptyState, ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
 import { ApiError, api, load } from '@/lib/api';
 
+import { Container } from '@/components/kx';
 export const dynamic = 'force-dynamic';
 
 interface PublicEvents {
@@ -34,39 +31,39 @@ export default async function PublicEventsPage({ params }: { params: Promise<{ s
     }
   });
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', py: 4 }}>
+    <div className="min-h-[100dvh] bg-background py-8">
       <Container maxWidth="md">
         <Logo />
         {res.error !== undefined ? (
-          <Box sx={{ mt: 4 }}>
+          <div className="mt-8">
             <ErrorState message={res.error} />
-          </Box>
+          </div>
         ) : (
           <>
-            <Typography variant="h4" component="h1" sx={{ mt: 3 }}>
+            <h1 className="font-display text-2xl leading-8 mt-6">
               {t('g1.ev.heading', { institution: res.data.institution })}
-            </Typography>
-            <Typography color="text.secondary" sx={{ mb: 3 }}>
+            </h1>
+            <p className="text-sm leading-[21px] text-muted-foreground mb-6">
               {t('g1.ev.how')}
-            </Typography>
-            {res.data.events.length === 0 && <EmptyState icon={<Box component="span">·</Box>} title={t('g1.ev.empty')} />}
+            </p>
+            {res.data.events.length === 0 && <EmptyState icon={<span>·</span>} title={t('g1.ev.empty')} />}
             {res.data.events.map((e) => (
-              <Paper key={e.id} variant="outlined" sx={{ p: 2.5, mb: 2 }} data-testid="public-event">
-                <Typography variant="h6" component="h2">
+              <div className="rounded-[12px] border bg-card p-5 mb-4" key={e.id} data-testid="public-event">
+                <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
                   {e.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </h2>
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {fmt.dateTime(e.startsAt)} · {e.venue}
-                </Typography>
-                {e.description && <Typography sx={{ mt: 1 }}>{e.description}</Typography>}
-                <Typography variant="body2" sx={{ mt: 1 }}>
+                </p>
+                {e.description && <p className="text-sm leading-[21px] mt-2">{e.description}</p>}
+                <p className="text-[13px] leading-[19px] mt-2">
                   {e.seatsLeft > 0 ? t('g1.ev.seats', { n: e.seatsLeft }) : t('g1.ev.full')} · {e.feePaise > 0 ? fmt.rupees(e.feePaise) : t('g1.ev.free')}
-                </Typography>
-              </Paper>
+                </p>
+              </div>
             ))}
           </>
         )}
       </Container>
-    </Box>
+    </div>
   );
 }

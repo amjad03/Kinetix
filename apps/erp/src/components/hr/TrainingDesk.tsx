@@ -1,17 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { addTraining, removeTraining, verifyTraining } from '@/app/(dashboard)/hr/talent-actions';
@@ -23,6 +10,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { formatDate } from '@/lib/dates';
 import type { TrainingRecord, TrainingSummary } from '@/lib/hr-lifecycle';
 
+import { Alert, Button, MenuItem, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 const KINDS = ['fdp', 'workshop', 'conference', 'course'] as const;
 const BLANK = { userId: '', title: '', kind: 'fdp', organiser: '', startsOn: '', endsOn: '', hours: '', certificateRef: '' };
 
@@ -43,17 +31,15 @@ export function TrainingDesk({ records, summary, staff, isHr, meId }: { records:
       } else setError(res.error ?? null);
     });
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('hl.train.add')}</SectionTitle>
-        <Box
-          component="form"
+        <form className="grid grid-cols-[1fr] sm:grid-cols-[repeat(3,1fr)] gap-3"
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
             run(() => addTraining({ ...f, hours: Number(f.hours) }), () => setF(BLANK));
           }}
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 1.5 }}
         >
           {isHr && (
             <FormField label={t('hl.staff')}>
@@ -94,31 +80,31 @@ export function TrainingDesk({ records, summary, staff, isHr, meId }: { records:
           <FormField label={t('hl.train.certificate')}>
             <TextInput value={f.certificateRef} onChange={(e) => setF({ ...f, certificateRef: e.target.value })} />
           </FormField>
-          <Box sx={{ alignSelf: 'end' }}>
+          <div className="self-end">
             <Button type="submit" variant="contained" disabled={pending}>
               {t('hl.train.create')}
             </Button>
-          </Box>
-        </Box>
-      </Paper>
+          </div>
+        </form>
+      </div>
 
       {isHr && summary.length > 0 && (
-        <Paper variant="outlined" sx={{ p: 2.5 }}>
+        <div className="rounded-[12px] border bg-card p-5">
           <SectionTitle flush>{t('hl.train.summary')}</SectionTitle>
-          <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
+          <div className="flex flex-row flex-wrap gap-2">
             {summary.map((s) => (
               <StatusPill key={s.userId} tone="info">
                 {s.fullName}: {s.hours} · {t('hl.train.programmes', { n: s.programmes })}
               </StatusPill>
             ))}
-          </Stack>
-        </Paper>
+          </div>
+        </div>
       )}
 
       {records.length === 0 ? (
-        <Typography color="text.secondary">{t('hl.train.none')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('hl.train.none')}</p>
       ) : (
-        <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
+        <div className="rounded-[12px] border bg-card overflow-x-auto">
           <Table size="small" data-testid="training-list">
             <TableHead>
               <TableRow>
@@ -136,16 +122,16 @@ export function TrainingDesk({ records, summary, staff, isHr, meId }: { records:
                   {isHr && <TableCell>{r.fullName}</TableCell>}
                   <TableCell>
                     {r.title}
-                    <Typography variant="caption" color="text.secondary" component="div">
+                    <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {t(`hl.train.kind.${r.kind}` as MessageKey)}
                       {r.organiser ? ` · ${r.organiser}` : ''}
                       {r.certificateRef ? ` · ${r.certificateRef}` : ''}
-                    </Typography>
+                    </div>
                   </TableCell>
                   <TableCell>{formatDate(r.startsOn, 'dayMonth', locale)}</TableCell>
                   <TableCell align="right">{r.hours}</TableCell>
                   <TableCell>{r.verified ? <StatusPill tone="success">{t('hl.train.verified')}</StatusPill> : <StatusPill tone="warning">{t('hl.train.unverified')}</StatusPill>}</TableCell>
-                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                  <TableCell className="whitespace-nowrap" align="right">
                     {r.hasCertificate && (
                       <Button size="small" component="a" href={`/api/download?kind=training-cert&id=${r.id}`} target="_blank" rel="noopener">
                         {t('as.cert.view')}
@@ -185,8 +171,8 @@ export function TrainingDesk({ records, summary, staff, isHr, meId }: { records:
               ))}
             </TableBody>
           </Table>
-        </Paper>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }

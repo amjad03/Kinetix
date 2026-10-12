@@ -1,7 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MeritListTable } from '@/components/admissions/AdmissionsTables';
@@ -16,6 +12,8 @@ import { formatDate } from '@/lib/dates';
 import type { MessageKey } from '@/i18n/messages';
 import { getI18n } from '@/i18n/server';
 
+import { Chip } from '@/components/kx';
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('adm.tab.cycles') };
 }
@@ -38,11 +36,11 @@ export default async function CyclePage({ params }: { params: Promise<{ id: stri
     }
   });
   const back = (
-    <Box sx={{ ml: -1, mb: 0.5 }}>
+    <div className="-ml-2 mb-1">
       <LinkButton href="/admissions/cycles" size="small" startIcon={<ArrowBack />}>
         {t('adm.tab.cycles')}
       </LinkButton>
-    </Box>
+    </div>
   );
   if (data.error !== undefined) {
     return (
@@ -77,7 +75,7 @@ export default async function CyclePage({ params }: { params: Promise<{ id: stri
         {latest ? ` · v${latest.version}${latest.publishedAt ? ` (${t('adm.cycle.publishedTag')})` : ` (${t('adm.cycle.draftTag')})`}` : ''}
       </SectionTitle>
       {!latest ? (
-        <Typography color="text.secondary">{t('adm.cycle.noList')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('adm.cycle.noList')}</p>
       ) : (
         <MeritListTable rows={latest.entries} />
       )}

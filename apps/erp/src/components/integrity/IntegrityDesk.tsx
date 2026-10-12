@@ -1,6 +1,4 @@
 'use client';
-
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { reviewFlag, runIntegrityCheck } from '@/app/(dashboard)/integrity/actions';
 import { ActionButton, Bar, Grid, useToast } from '@/components/ops/kit';
@@ -16,9 +14,9 @@ export function IntegrityDesk({ homeworkId, report }: { homeworkId: string; repo
   const [threshold, setThreshold] = useState(50);
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
         {t('ig.hint')}
-      </Typography>
+      </p>
       <Bar>
         <label>
           {t('ig.threshold')}{' '}
@@ -33,9 +31,9 @@ export function IntegrityDesk({ homeworkId, report }: { homeworkId: string; repo
         <ActionButton label={t('ig.run')} run={() => runIntegrityCheck(homeworkId, threshold / 100)} onDone={toast} />
       </Bar>
       {report.check && (
-        <Typography sx={{ mb: 2 }} data-testid="ig-summary">
+        <p className="text-sm leading-[21px] mb-4" data-testid="ig-summary">
           {t('ig.summary', { compared: report.check.compared, flagged: report.check.flagged, when: fmt.dateTime(report.check.createdAt) })}
-        </Typography>
+        </p>
       )}
       <Grid
         testId="ig-table"

@@ -1,6 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { LivePlayer } from '@/lib/live/player';
 import { drawPage } from '@/lib/live/draw-elements';
@@ -67,27 +65,16 @@ export function LiveBoard({ player, version, children }: { player: LivePlayer; v
 
   const area = player.area;
   return (
-    <Box
+    <div className="relative w-full rounded-[12px] overflow-hidden bg-accent border border-border [&:fullscreen]:border-0 [&:fullscreen]:rounded-none [&:fullscreen]:aspect-[auto] [&:fullscreen]:h-full [&:fullscreen]:bg-[#000]" style={{ aspectRatio: `${area.w} / ${area.h}` }}
       ref={frame}
       data-testid="live-board"
       data-strokes={player.strokes.length}
       data-elements={player.elements.length}
       data-page={player.index + 1}
       data-background={player.background}
-      sx={{
-        position: 'relative',
-        width: '100%',
-        aspectRatio: `${area.w} / ${area.h}`,
-        borderRadius: '12px',
-        overflow: 'hidden',
-        bgcolor: 'm3.surfaceContainerHighest',
-        border: 1,
-        borderColor: 'm3.outlineVariant',
-        ':fullscreen': { border: 0, borderRadius: 0, aspectRatio: 'auto', height: '100%', bgcolor: '#000' },
-      }}
     >
       <canvas ref={canvas} role="img" aria-label={t('live.boardAria')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
       {children}
-    </Box>
+    </div>
   );
 }

@@ -1,8 +1,3 @@
-import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
-import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
-import PersonOffOutlined from '@mui/icons-material/PersonOffOutlined';
-import ScheduleOutlined from '@mui/icons-material/ScheduleOutlined';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
 import { AbsenteesTable, ClassAttendanceTable } from '@/components/attendance/AttendanceTables';
@@ -20,6 +15,7 @@ import { rateOf, type AbsentStudent } from '@/lib/attendance';
 import { dateParam, schoolToday } from '@/lib/school';
 import type { AttendanceDay } from '@/lib/types';
 
+import { Clock as ScheduleOutlined, ListChecks as FactCheckOutlined, UserCheck as HowToRegOutlined, UserX as PersonOffOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.attendance') };
 }
@@ -90,9 +86,9 @@ function AttendanceView({ a, date, today, i18n: { t } }: { a: AttendanceDay; dat
 
       <SectionTitle>{t('att.byClass')}</SectionTitle>
       <ClassAttendanceTable rows={a.sections} />
-      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1 }}>
+      <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-2">
         {t('att.note')}
-      </Typography>
+      </p>
 
       <SectionTitle>{t('att.absentTitle', { n: absentees.length })}</SectionTitle>
       {absentees.length === 0 ? (

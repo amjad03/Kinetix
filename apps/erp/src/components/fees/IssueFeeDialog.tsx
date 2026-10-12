@@ -1,19 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { issueFee } from '@/app/(dashboard)/fees/actions';
@@ -21,6 +6,8 @@ import { addDays, isIsoDate } from '@/lib/dates';
 import { formatRupees, rupeesToPaise } from '@/lib/money';
 import { useI18n } from '@/i18n/client';
 
+import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment, MenuItem, Snackbar } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 export interface FeeClass {
   id: string;
   name: string;
@@ -79,8 +66,7 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
 
   return (
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="xs" fullWidth aria-labelledby="issue-fee-title">
-      <Box
-        component="form"
+      <form
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -89,10 +75,10 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
       >
         <DialogTitle id="issue-fee-title">{t('fees.issue.title')}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-5">
             {t('fees.issue.help')}
-          </Typography>
-          <Stack spacing={2.5}>
+          </p>
+          <div className="flex flex-col gap-5">
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('fees.class')} required>
               <TextInput select value={sectionId} onChange={(e) => setSectionId(e.target.value)} required>
@@ -100,9 +86,9 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
                   <MenuItem key={c.id} value={c.id}>
                     {c.name}
                     {c.students !== null && (
-                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                      <span className="text-[13px] leading-[19px] text-muted-foreground ml-2">
                         {t('fees.issue.students', { n: c.students })}
-                      </Typography>
+                      </span>
                     )}
                   </MenuItem>
                 ))}
@@ -144,7 +130,7 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
                 slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
               />
             </FormField>
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
@@ -154,7 +140,7 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
             {t('fees.issue.submit')}
           </Button>
         </DialogActions>
-      </Box>
+      </form>
     </Dialog>
   );
 }

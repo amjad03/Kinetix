@@ -1,22 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { runDepth } from '@/app/(dashboard)/depth-actions';
@@ -25,17 +7,18 @@ import { FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { fillPath, formBody, type Col, type Field, type FormSpec, type Panel, type RowAction } from '@/lib/depth';
 
+import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 const initialValues = (fields: Field[]) => Object.fromEntries(fields.map((f) => [f.name, f.initial ?? '']));
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Draws the panels a depth page describes: figures, downloads, forms, and a table whose rows can carry actions. */
 export function DepthDesk({ panels }: { panels: Panel[] }) {
   return (
-    <Stack spacing={3} data-testid="depth-desk">
+    <div className="flex flex-col gap-6" data-testid="depth-desk">
       {panels.map((p) => (
         <PanelView key={p.id} panel={p} />
       ))}
-    </Stack>
+    </div>
   );
 }
 
@@ -57,46 +40,46 @@ function PanelView({ panel }: { panel: Panel }) {
     });
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5 }} data-testid={`panel-${panel.id}`}>
+    <div className="rounded-[12px] border bg-card p-5" data-testid={`panel-${panel.id}`}>
       <SectionTitle flush>{panel.title}</SectionTitle>
       {panel.hint && (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+        <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">
           {panel.hint}
-        </Typography>
+        </p>
       )}
       {error && (
-        <Alert severity="error" sx={{ mb: 1.5 }}>
+        <Alert className="mb-3" severity="error">
           {error}
         </Alert>
       )}
       {notice && (
-        <Alert severity="success" sx={{ mb: 1.5 }}>
+        <Alert className="mb-3" severity="success">
           {notice}
         </Alert>
       )}
       {panel.stats && (
-        <Stack direction="row" sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+        <div className="flex flex-row mb-3 flex-wrap gap-2">
           {panel.stats.map((s) => (
             <Chip key={s.label} label={`${s.label}: ${s.value}`} size="small" variant="outlined" />
           ))}
-        </Stack>
+        </div>
       )}
       {panel.downloads && panel.downloads.length > 0 && (
-        <Stack direction="row" sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+        <div className="flex flex-row mb-3 flex-wrap gap-2">
           {panel.downloads.map((d) => (
             <Button key={d.href} component="a" href={d.href} size="small" variant="outlined">
               {d.label}
             </Button>
           ))}
-        </Stack>
+        </div>
       )}
       {panel.forms?.map((f) => <FormView key={f.id} spec={f} pending={pending} onSend={send} setNotice={setNotice} />)}
       {panel.rows.length === 0 ? (
-        <Typography color="text.secondary" sx={{ mt: 1 }}>
+        <p className="text-sm leading-[21px] text-muted-foreground mt-2">
           {panel.empty}
-        </Typography>
+        </p>
       ) : (
-        <Box sx={{ overflowX: 'auto', mt: 1 }}>
+        <div className="overflow-x-auto mt-2">
           <Table size="small">
             <TableHead>
               <TableRow>
@@ -115,7 +98,7 @@ function PanelView({ panel }: { panel: Panel }) {
                     </TableCell>
                   ))}
                   {panel.actions && (
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                    <TableCell className="whitespace-nowrap" align="right">
                       {panel.actions.filter((a) => visible(a, row)).map((a) => <ActionButton key={a.label} action={a} row={row} pending={pending} onSend={send} setNotice={setNotice} />)}
                     </TableCell>
                   )}
@@ -123,9 +106,9 @@ function PanelView({ panel }: { panel: Panel }) {
               ))}
             </TableBody>
           </Table>
-        </Box>
+        </div>
       )}
-    </Paper>
+    </div>
   );
 }
 
@@ -234,35 +217,35 @@ function FormView({ spec, pending, onSend, setNotice }: { spec: FormSpec; pendin
     });
   };
   return (
-    <Box component="form" onSubmit={submit} sx={{ mb: 2 }} data-testid={`form-${spec.id}`}>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+    <form className="mb-4" onSubmit={submit} data-testid={`form-${spec.id}`}>
+      <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
         {spec.title}
-      </Typography>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' }, gap: 1.5 }}>
+      </h6>
+      <div className="grid grid-cols-[1fr] sm:grid-cols-[repeat(3,minmax(0,1fr))] gap-3">
         {spec.fields.map((f) => (
-          <Box key={f.name} sx={{ gridColumn: f.type === 'lines' || f.type === 'textarea' ? { sm: '1 / -1' } : undefined }}>
+          <div className={f.type === 'lines' || f.type === 'textarea' ? 'sm:col-span-full' : undefined} key={f.name}>
             <FieldInput f={f} value={values[f.name] ?? ''} onChange={(v) => setValues({ ...values, [f.name]: v })} />
-          </Box>
+          </div>
         ))}
-        <Box sx={{ alignSelf: 'end' }}>
+        <div className="self-end">
           <Button type="submit" variant="contained" disabled={pending}>
             {spec.submit}
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
       {bad && (
-        <Alert severity="warning" sx={{ mt: 1 }}>
+        <Alert className="mt-2" severity="warning">
           {bad}
         </Alert>
       )}
       {shown && (
-        <Stack direction="row" sx={{ mt: 1, flexWrap: 'wrap', gap: 1 }} data-testid={`result-${spec.id}`}>
+        <div className="flex flex-row mt-2 flex-wrap gap-2" data-testid={`result-${spec.id}`}>
           {shown.map((s) => (
             <Chip key={s.label} label={`${s.label}: ${s.value}`} size="small" color="info" variant="outlined" />
           ))}
-        </Stack>
+        </div>
       )}
-    </Box>
+    </form>
   );
 }
 
@@ -297,12 +280,12 @@ function ActionButton({ action, row, pending, onSend, setNotice }: { action: Row
         <Dialog open onClose={() => setOpen(false)} fullWidth maxWidth="xs">
           <DialogTitle>{action.label}</DialogTitle>
           <DialogContent>
-            <Stack spacing={1.5} sx={{ pt: 1 }}>
+            <div className="flex flex-col gap-3 pt-2">
               {action.fields!.map((f) => (
                 <FieldInput key={f.name} f={f} value={values[f.name] ?? ''} onChange={(v) => setValues({ ...values, [f.name]: v })} />
               ))}
               {bad && <Alert severity="warning">{bad}</Alert>}
-            </Stack>
+            </div>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpen(false)}>{t('dx.cancel')}</Button>

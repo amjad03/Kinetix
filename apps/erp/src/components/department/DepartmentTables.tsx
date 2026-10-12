@@ -1,9 +1,4 @@
 'use client';
-
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { MiniBar } from '@/components/Bars';
 import { Rate } from '@/components/department/Rate';
@@ -18,6 +13,9 @@ import { lessonPlansText, planChip } from '@/lib/plans';
 import { kindLabel } from '@/lib/results';
 import type { DepartmentOverview, DeptClass, DeptTeacher } from '@/lib/types';
 
+import { Chip } from '@/components/kx';
+import { ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 const num = { fontVariantNumeric: 'tabular-nums' } as const;
 
 function Flags({ r, t }: { r: DeptTeacher | DeptClass; t: TFunction }) {
@@ -25,7 +23,7 @@ function Flags({ r, t }: { r: DeptTeacher | DeptClass; t: TFunction }) {
   if (flags.length === 0) return null;
   return (
     <Hint title={flags.map((k) => t(k)).join(' · ')}>
-      <Chip size="small" label={t('dept.needsAttention')} data-testid="flag" sx={{ ml: 1, height: 22, bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer', fontWeight: 500 }} />
+      <Chip className="ml-2 h-[22px] bg-red-soft text-red-ink font-medium" size="small" label={t('dept.needsAttention')} data-testid="flag" />
     </Hint>
   );
 }
@@ -41,13 +39,13 @@ export function TeachersTable({ rows }: { rows: DeptTeacher[] }) {
       sort: (r) => r.fullName,
       cell: (r) => (
         <>
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-            <Typography variant="subtitle2">{r.fullName}</Typography>
+          <div className="flex items-center flex-wrap">
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{r.fullName}</h6>
             <Flags r={r} t={t} />
-          </Box>
-          <Typography variant="caption" color="text.secondary">
+          </div>
+          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {r.scheduled ? t.plural('dept.periodsDue', r.scheduled) : t('dept.noPeriodsDue')}
-          </Typography>
+          </span>
         </>
       ),
     },
@@ -68,10 +66,10 @@ export function ClassesTable({ rows }: { rows: DeptClass[] }) {
   const { t, fmt } = useI18n();
   const results = (c: DeptClass) => (
     <Link href={`/results?class=${c.sectionId}`} aria-label={t('dept.resultsFor', { section: c.section })} style={{ textDecoration: 'none' }}>
-      <Typography variant="caption" component="span" sx={{ color: 'primary.main', fontWeight: 500, display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', '&:hover': { textDecoration: 'underline' } }}>
+      <span className="text-xs leading-4 tracking-[0.3px] text-teal-ink font-medium inline-flex items-center whitespace-nowrap hover:underline">
         {t('dept.col.results')}
-        <ChevronRight sx={{ fontSize: 16, mr: -0.5 }} />
-      </Typography>
+        <ChevronRight className="text-[16px] -mr-1" />
+      </span>
     </Link>
   );
   const columns: Column<DeptClass>[] = [
@@ -83,22 +81,22 @@ export function ClassesTable({ rows }: { rows: DeptClass[] }) {
       csv: (c) => `${c.section} · ${c.subject} · ${c.teacher}`,
       cell: (c) => (
         <>
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-            <Typography variant="subtitle2">{c.section}</Typography>
+          <div className="flex items-center flex-wrap">
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{c.section}</h6>
             <Flags r={c} t={t} />
-          </Box>
-          <Typography variant="caption" color="text.secondary" component="div">
+          </div>
+          <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {c.subject} ·{' '}
-            <Box component="span" data-testid="class-teacher" sx={{ whiteSpace: 'nowrap' }}>
+            <span className="whitespace-nowrap" data-testid="class-teacher">
               {c.teacher}
-            </Box>
-          </Typography>
+            </span>
+          </div>
         </>
       ),
     },
     { id: 'held', header: t('dept.col.heldShort'), align: 'right', sort: (c) => c.taughtPercent, cell: (c) => <Rate compact value={c.taughtPercent} kind="held" detail={ofText(c.taught, c.scheduled, t)} /> },
     { id: 'attendance', header: t('dept.col.attendance'), align: 'right', sort: (c) => c.attendancePercent, cell: (c) => <Rate compact value={c.attendancePercent} kind="attendance" detail={c.scheduled ? t('dept.takenOf', { n: c.attendanceTaken, d: c.scheduled }) : undefined} /> },
-    { id: 'syllabus', header: t('dept.col.syllabus'), hideBelow: 'md', sort: (c) => c.syllabus?.percent ?? null, cell: (c) => <Box data-testid="class-syllabus"><SyllabusCell c={c} t={t} /></Box> },
+    { id: 'syllabus', header: t('dept.col.syllabus'), hideBelow: 'md', sort: (c) => c.syllabus?.percent ?? null, cell: (c) => <div data-testid="class-syllabus"><SyllabusCell c={c} t={t} /></div> },
     {
       id: 'plan',
       header: `${t('plan.col.yearPlan')} / ${t('plan.col.lessonPlans')}`,
@@ -107,13 +105,13 @@ export function ClassesTable({ rows }: { rows: DeptClass[] }) {
       csv: (c) => `${planChip(c.yearPlan, t).label} · ${lessonPlansText(c.lessonPlans ?? 0, c.scheduled, t)}`,
       cell: (c) => (
         <>
-          <Box data-testid="class-year-plan">
+          <div data-testid="class-year-plan">
             <YearPlanCell c={c} t={t} />
-          </Box>
+          </div>
           <Hint title={t('plan.lessonsHelp')}>
-            <Typography variant="caption" component="span" data-testid="class-lesson-plans" sx={{ ...num, lineHeight: '20px', whiteSpace: 'nowrap', color: c.lessonPlans ? 'text.primary' : 'text.secondary' }}>
+            <span className={cn('text-xs tracking-[0.3px] leading-[20px] whitespace-nowrap', c.lessonPlans ? 'text-foreground' : 'text-muted-foreground', 'tabular-nums')} data-testid="class-lesson-plans">
               {lessonPlansText(c.lessonPlans ?? 0, c.scheduled, t)}
-            </Typography>
+            </span>
           </Hint>
         </>
       ),
@@ -128,22 +126,22 @@ export function ClassesTable({ rows }: { rows: DeptClass[] }) {
       cell: (c) => {
         const latest = c.latestAssessment;
         return (
-          <Box data-testid="class-latest">
+          <div data-testid="class-latest">
             {latest ? (
               <Hint title={`${latest.title} · ${fmt.date(latest.heldOn, 'short')} · ${t('dept.classAverage')}`} block>
                 <Rate compact value={latest.averagePercent} kind="marks" detail={results(c)} />
               </Hint>
             ) : (
               <>
-                <Typography variant="body2" color="text.secondary">
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   —
-                </Typography>
-                <Typography variant="caption" component="div">
+                </p>
+                <div className="text-xs leading-4 tracking-[0.3px]">
                   {results(c)}
-                </Typography>
+                </div>
               </>
             )}
-          </Box>
+          </div>
         );
       },
     },
@@ -164,14 +162,14 @@ export function DeptAssessmentsTable({ o }: { o: DepartmentOverview }) {
       csv: (a) => `${a.title} (${a.section}, ${a.subject}, ${kindLabel(a.kind, t)})`,
       cell: (a) => (
         <>
-          <Typography variant="subtitle2">{a.title}</Typography>
-          <Typography variant="caption" color="text.secondary">
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{a.title}</h6>
+          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {a.section} · {a.subject} · {kindLabel(a.kind, t)} · {a.createdBy}
-          </Typography>
+          </span>
         </>
       ),
     },
-    { id: 'heldOn', header: t('dept.col.heldOn'), sort: (a) => a.heldOn, cell: (a) => <Box sx={{ whiteSpace: 'nowrap' }}>{fmt.date(a.heldOn, 'short')}</Box> },
+    { id: 'heldOn', header: t('dept.col.heldOn'), sort: (a) => a.heldOn, cell: (a) => <div className="whitespace-nowrap">{fmt.date(a.heldOn, 'short')}</div> },
     { id: 'entered', header: t('dept.col.entered'), align: 'right', sort: (a) => a.entered, cell: (a) => <span style={num}>{a.entered}</span> },
     { id: 'average', header: t('dept.col.average'), align: 'right', sort: (a) => a.averagePercent, cell: (a) => <Rate value={a.averagePercent} kind="marks" /> },
     { id: 'status', header: t('dept.col.status'), sort: (a) => a.publishedAt ?? '', csv: (a) => a.publishedAt?.slice(0, 10) ?? '', cell: (a) => <PublishedChip publishedAt={a.publishedAt} /> },
@@ -196,9 +194,9 @@ function SyllabusCell({ c, t }: { c: DeptClass; t: TFunction }) {
   if (!sy || sy.total === 0)
     return (
       <Hint title={t('dept.syllabus.noneHelp')}>
-        <Typography variant="body2" component="span" color="text.secondary" data-percent="none">
+        <span className="text-[13px] leading-[19px] text-muted-foreground" data-percent="none">
           {t('dept.syllabus.none')}
-        </Typography>
+        </span>
       </Hint>
     );
   const p = sy.percent ?? 0;
@@ -209,17 +207,17 @@ function SyllabusCell({ c, t }: { c: DeptClass; t: TFunction }) {
       data-percent={p}
       style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}
     >
-      <Box sx={{ width: 40, flexShrink: 0 }}>
+      <div className="w-[40px] shrink-0">
         <MiniBar value={p} color={p >= 100 ? 'kx.success' : 'primary.main'} />
-      </Box>
-      <Box>
-        <Typography variant="body2" sx={{ ...num, color: 'primary.main', fontWeight: 500 }}>
+      </div>
+      <div>
+        <p className="text-[13px] leading-[19px] text-teal-ink font-medium tabular-nums">
           {formatPercent(p)}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" component="div" sx={{ ...num, lineHeight: '16px', whiteSpace: 'nowrap' }}>
+        </p>
+        <div className="text-xs tracking-[0.3px] text-muted-foreground leading-[16px] whitespace-nowrap tabular-nums">
           {t('dept.syllabus.topics', { covered: sy.covered, total: sy.total })}
-        </Typography>
-      </Box>
+        </div>
+      </div>
     </Link>
   );
 }
@@ -230,16 +228,11 @@ const planHref = (c: DeptClass) => `/department/plan?section=${c.sectionId}&subj
 function YearPlanCell({ c, t }: { c: DeptClass; t: TFunction }) {
   const p = c.yearPlan;
   const chip = planChip(p, t);
-  const sx =
-    chip.status === 'behind'
-      ? { bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }
-      : chip.tone === 'good'
-        ? { bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }
-        : { color: 'text.secondary' };
+  const tone = chip.status === 'behind' ? 'bg-red-soft text-red-ink' : chip.tone === 'good' ? 'bg-green-soft text-green-ink' : 'text-muted-foreground';
   return (
     <Hint title={p ? t('plan.status.help', { covered: p.covered, total: p.total, expected: p.expected }) : t('plan.status.noneHelp')}>
       <Link href={planHref(c)} aria-label={t('plan.open', { section: c.section, subject: c.subject })} style={{ textDecoration: 'none' }}>
-        <Chip size="small" label={chip.label} variant={chip.tone === 'none' ? 'outlined' : 'filled'} data-testid="plan-status" data-status={chip.status} sx={{ ...sx, fontWeight: 500, maxWidth: 180, cursor: 'pointer' }} />
+        <Chip className={`max-w-[180px] cursor-pointer font-medium ${tone}`} size="small" label={chip.label} variant={chip.tone === 'none' ? 'outlined' : 'filled'} data-testid="plan-status" data-status={chip.status} />
       </Link>
     </Hint>
   );

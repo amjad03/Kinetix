@@ -1,7 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { addSlots, cancelBooking, closeEvent, createEvent, remindFamilies } from '@/app/(dashboard)/ptm/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
@@ -9,6 +6,8 @@ import { UrlSelect } from '@/components/UrlSelect';
 import { useI18n } from '@/i18n/client';
 import type { PtmEvent, PtmSlot, StaffOption } from '@/lib/school-life';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** Parent-teacher meetings: the meetings, each teacher's slots and who has booked them. */
 export function PtmDesk({ events, eventId, slots, staff }: { events: PtmEvent[]; eventId: string; slots: PtmSlot[]; staff: StaffOption[] }) {
   const { t, fmt } = useI18n();

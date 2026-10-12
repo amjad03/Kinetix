@@ -1,16 +1,4 @@
 'use client';
-
-import VideocamOutlined from '@mui/icons-material/VideocamOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
-import InputAdornment from '@mui/material/InputAdornment';
-import Link from '@mui/material/Link';
-import Snackbar from '@mui/material/Snackbar';
-import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { useState, useTransition } from 'react';
 import { DataTable, FieldRow, FormField, TextInput } from '@/components/ui';
@@ -19,6 +7,8 @@ import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
 import { expiringFirst, parseGraceDays, totalExpiring, type RetentionOverview } from '@/lib/retention';
 
+import { Alert, Button, Card, CircularProgress, Divider, InputAdornment, Link, Snackbar } from '@/components/kx';
+import { Video as VideocamOutlined } from 'lucide-react';
 /** "Keep class recordings until N days after the semester ends", and per class what goes in the next 30 days. */
 export function RecordingRetention({ overview }: { overview: RetentionOverview }) {
   const { t, fmt } = useI18n();
@@ -45,32 +35,31 @@ export function RecordingRetention({ overview }: { overview: RetentionOverview }
   return (
     <>
       <SectionTitle>
-        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-          <VideocamOutlined fontSize="small" /> {t('retention.title')}
-        </Box>
+        <span className="inline-flex items-center gap-2">
+          <VideocamOutlined className="size-5" /> {t('retention.title')}
+        </span>
       </SectionTitle>
       <Card data-testid="retention" data-grace={saved} aria-busy={pending}>
-        <Box sx={{ px: 2.5, py: 2 }}>
+        <div className="px-5 py-4">
           {error && (
-            <Alert severity="error" role="alert" sx={{ mb: 2 }}>
+            <Alert className="mb-4" severity="error" role="alert">
               {error}
             </Alert>
           )}
-          <Typography variant="subtitle1" component="p" sx={{ lineHeight: '24px' }} data-testid="retention-summary">
+          <p className="text-base font-medium tracking-[0.1px] leading-[24px]" data-testid="retention-summary">
             {t('retention.grace', { n: saved })}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, maxWidth: 760 }}>
+          </p>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mt-1 max-w-[760px]">
             {t('retention.graceHelp')}
-          </Typography>
-          <Box sx={{ mt: 2 }}>
+          </p>
+          <div className="mt-4">
           <FieldRow>
             <FormField label={t('retention.graceLabel')}>
-              <TextInput
+              <TextInput className="w-[260px]"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 error={days === null}
                 helperText={days === null ? t('retention.graceProblem') : ' '}
-                sx={{ width: 260 }}
                 slotProps={{ htmlInput: { inputMode: 'numeric', 'data-testid': 'retention-days' }, input: { endAdornment: <InputAdornment position="end">0–90</InputAdornment> } }}
               />
             </FormField>
@@ -78,19 +67,19 @@ export function RecordingRetention({ overview }: { overview: RetentionOverview }
               {pending ? <CircularProgress size={20} color="inherit" aria-label={t('common.saving')} /> : t('retention.save')}
             </Button>
           </FieldRow>
-          </Box>
-        </Box>
+          </div>
+        </div>
         <Divider />
-        <Box sx={{ px: 2.5, py: 2 }} data-testid="retention-overview" data-expiring={totalExpiring(overview.classes)}>
-          <Typography variant="subtitle2" component="h3" sx={{ mb: 1 }}>
+        <div className="px-5 py-4" data-testid="retention-overview" data-expiring={totalExpiring(overview.classes)}>
+          <h3 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
             {t('retention.overview')}
-          </Typography>
+          </h3>
           {soon.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" data-testid="retention-nothing">
+            <p className="text-[13px] leading-[19px] text-muted-foreground" data-testid="retention-nothing">
               {t('retention.nothingSoon')}
-            </Typography>
+            </p>
           ) : (
-            <Box sx={{ overflowX: 'auto' }}>
+            <div className="overflow-x-auto">
               <DataTable
                 label={t('retention.overview')}
                 rows={soon}
@@ -103,24 +92,24 @@ export function RecordingRetention({ overview }: { overview: RetentionOverview }
                   { id: 'c4', header: t('retention.total'), align: 'right', sort: (c) => c.total, cell: (c) => fmt.number(c.total) },
                 ]}
               />
-            </Box>
+            </div>
           )}
           {overview.noTerm.count > 0 && (
-            <Alert severity="info" sx={{ mt: 2 }} data-testid="retention-no-term">
+            <Alert className="mt-4" severity="info" data-testid="retention-no-term">
               {t.plural('retention.noTerm', overview.noTerm.count)}{' '}
               <Link component={NextLink} href="/calendar">
                 {t('retention.noTermHint')}
               </Link>
-              <Box component="ul" sx={{ m: 0, mt: 1, pl: 2.5 }}>
+              <ul className="m-0 mt-2 pl-5">
                 {overview.noTerm.recordings.slice(0, 10).map((r) => (
                   <li key={r.id} data-testid="retention-no-term-item">
                     {r.title} · {r.sectionName ?? t('retention.noClass')} · {r.teacherName} · {fmt.date(r.startedAt.slice(0, 10), 'short')}
                   </li>
                 ))}
-              </Box>
+              </ul>
             </Alert>
           )}
-        </Box>
+        </div>
       </Card>
       <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast(null)} message={toast} />
     </>

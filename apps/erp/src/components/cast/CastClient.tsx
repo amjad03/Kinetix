@@ -1,18 +1,12 @@
 'use client';
-
-import CastOutlined from '@mui/icons-material/CastOutlined';
-import StopScreenShareOutlined from '@mui/icons-material/StopScreenShareOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { endedKey, type CastSignalData, type CastStreamMessage, type IceServer } from '@/lib/cast/events';
 
+import { Alert, Button } from '@/components/kx';
+import { Cast as CastOutlined, ScreenShareOff as StopScreenShareOutlined } from 'lucide-react';
 export interface CastBoard {
   deviceId: string;
   name: string;
@@ -164,25 +158,25 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
   if (!supported) return <Alert severity="info">{t('cast.unsupported')}</Alert>;
 
   return (
-    <Stack spacing={2}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" component="h2">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
           {t('cast.boards')}
-        </Typography>
+        </h2>
         <Button size="small" onClick={() => router.refresh()} disabled={phase !== 'idle'}>
           {t('cast.refresh')}
         </Button>
-      </Box>
+      </div>
       {boards.length === 0 && <Alert severity="info">{t('cast.noBoards')}</Alert>}
       {boards.map((b) => (
-        <Box key={b.deviceId} data-testid="cast-board" sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 3, bgcolor: 'm3.surfaceContainer' }}>
+        <div className="flex items-center gap-4 p-4 rounded-[30px] bg-muted" key={b.deviceId} data-testid="cast-board">
           <CastOutlined />
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1">{b.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex-1">
+            <h6 className="text-base leading-6 font-medium tracking-[0.1px]">{b.name}</h6>
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {[b.subject, b.section].filter(Boolean).join(' · ')} · {b.teacher}
-            </Typography>
-          </Box>
+            </p>
+          </div>
           {active === b.deviceId ? (
             <Button color="error" variant="outlined" startIcon={<StopScreenShareOutlined />} onClick={stop}>
               {t('cast.stop')}
@@ -192,11 +186,11 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
               {t('cast.start')}
             </Button>
           )}
-        </Box>
+        </div>
       ))}
-      <Typography role="status" color="text.secondary" data-testid="cast-status">
+      <p className="text-sm leading-[21px] text-muted-foreground" role="status" data-testid="cast-status">
         {status || (boards.length ? t('cast.status.choose' as MessageKey) : '')}
-      </Typography>
-    </Stack>
+      </p>
+    </div>
   );
 }

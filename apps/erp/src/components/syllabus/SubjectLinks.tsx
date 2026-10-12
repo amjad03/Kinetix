@@ -1,13 +1,4 @@
 'use client';
-
-import LinkOff from '@mui/icons-material/LinkOff';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import ListSubheader from '@mui/material/ListSubheader';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Snackbar from '@mui/material/Snackbar';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { linkSubject } from '@/app/(dashboard)/syllabus/actions';
@@ -15,6 +6,8 @@ import { DataTable } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { Course, Curriculum, SubjectLink } from '@/lib/types';
 
+import { CircularProgress, ListSubheader, MenuItem, Select, Snackbar } from '@/components/kx';
+import { Unlink as LinkOff } from 'lucide-react';
 const NONE = '';
 
 /** Each of the institution's subjects, and the library course its class uses (the board's Books panel, KINETIX AI). */
@@ -59,14 +52,14 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
             csv: (s) => `${s.name} (${s.code})`,
             cell: (s) => (
               <>
-                <Typography variant="subtitle2">{s.name}</Typography>
-                <Typography variant="caption" color="text.secondary">
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{s.name}</h6>
+                <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {s.code}
-                </Typography>
+                </span>
               </>
             ),
           },
-          { id: 'classes', header: t('syl.col.classes'), sort: (s) => s.classes.join(', '), cell: (s) => (s.classes.length ? s.classes.join(', ') : <Box component="span" sx={{ color: 'text.secondary' }}>{t('syl.noClass')}</Box>) },
+          { id: 'classes', header: t('syl.col.classes'), sort: (s) => s.classes.join(', '), cell: (s) => (s.classes.length ? s.classes.join(', ') : <span className="text-muted-foreground">{t('syl.noClass')}</span>) },
           {
             id: 'course',
             header: t('syl.col.course'),
@@ -81,7 +74,7 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
               return (
                 <>
                   {canLink ? (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         <Select
                           size="small"
                           fullWidth
@@ -93,9 +86,9 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
                           data-testid="subject-course"
                         >
                           <MenuItem value={NONE}>
-                            <Box component="span" sx={{ color: 'text.secondary', display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-                              <LinkOff fontSize="small" /> {t('syl.notLinked')}
-                            </Box>
+                            <span className="text-muted-foreground inline-flex items-center gap-2">
+                              <LinkOff className="size-5" /> {t('syl.notLinked')}
+                            </span>
                           </MenuItem>
                           {curricula.flatMap((cur) => {
                             const list = courses.filter((c) => c.curriculumCode === cur.code);
@@ -112,15 +105,15 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
                           })}
                         </Select>
                         {busy === s.id && <CircularProgress size={18} aria-label={t('syl.saving')} />}
-                      </Box>
+                      </div>
                     ) : course ? (
-                      <Typography component={Link} href={`/syllabus/${course.id}`} variant="body2" sx={{ color: 'primary.main' }}>
+                      <Link className="text-[13px] leading-[19px] text-teal-ink" href={`/syllabus/${course.id}`}>
                         {course.title}
-                      </Typography>
+                      </Link>
                     ) : (
-                      <Typography variant="body2" color="text.secondary">
+                      <p className="text-[13px] leading-[19px] text-muted-foreground">
                         {t('syl.notLinked')}
-                      </Typography>
+                      </p>
                     )}
                 </>
               );

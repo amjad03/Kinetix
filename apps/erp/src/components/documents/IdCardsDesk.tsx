@@ -1,31 +1,27 @@
 'use client';
-
-import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { docDownload } from '@/lib/documents';
 
+import { Button, MenuItem } from '@/components/kx';
+import { IdCard as BadgeOutlined } from 'lucide-react';
 export function IdCardsDesk({ classes, canStudents }: { classes: { id: string; name: string }[]; canStudents: boolean }) {
   const { t } = useI18n();
   const [sectionId, setSectionId] = useState('');
   return (
-    <Box sx={{ display: 'grid', gap: 3, maxWidth: 560 }}>
-      <Typography variant="body2" color="text.secondary">
+    <div className="grid gap-6 max-w-[560px]">
+      <p className="text-[13px] leading-[19px] text-muted-foreground">
         {t('doc.id.help')}
-      </Typography>
-      <Box>
-        <Typography variant="h6" component="h2" sx={{ fontSize: '1rem', mb: 1 }}>
+      </p>
+      <div>
+        <h2 className="font-medium tracking-[0.1px] text-[1rem] mb-2">
           {t('doc.id.students')}
-        </Typography>
+        </h2>
         {canStudents ? (
-          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          <div className="flex gap-3 flex-wrap">
             <FormField label={t('doc.class')}>
-              <TextInput select value={sectionId} onChange={(e) => setSectionId(e.target.value)} sx={{ minWidth: 240 }}>
+              <TextInput className="min-w-[240px]" select value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
                 {classes.map((c) => (
                   <MenuItem key={c.id} value={c.id}>
                     {c.name}
@@ -36,29 +32,29 @@ export function IdCardsDesk({ classes, canStudents }: { classes: { id: string; n
             <Button variant="contained" startIcon={<BadgeOutlined />} disabled={!sectionId} href={docDownload.students(sectionId || 'none')} target="_blank">
               {t('doc.id.open')}
             </Button>
-          </Box>
+          </div>
         ) : (
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('doc.id.notAllowed')}
-          </Typography>
+          </p>
         )}
-      </Box>
-      <Box>
-        <Typography variant="h6" component="h2" sx={{ fontSize: '1rem', mb: 1 }}>
+      </div>
+      <div>
+        <h2 className="font-medium tracking-[0.1px] text-[1rem] mb-2">
           {t('doc.id.staff')}
-        </Typography>
+        </h2>
         <Button variant="contained" startIcon={<BadgeOutlined />} href={docDownload.staff} target="_blank">
           {t('doc.id.open')}
         </Button>
-      </Box>
-      <Box>
-        <Typography variant="h6" component="h2" sx={{ fontSize: '1rem', mb: 1 }}>
+      </div>
+      <div>
+        <h2 className="font-medium tracking-[0.1px] text-[1rem] mb-2">
           {t('doc.id.mine')}
-        </Typography>
+        </h2>
         <Button variant="outlined" startIcon={<BadgeOutlined />} href={docDownload.me} target="_blank">
           {t('doc.id.open')}
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

@@ -1,11 +1,9 @@
 'use client';
-
-import ErrorOutline from '@mui/icons-material/ErrorOutlined';
-import Refresh from '@mui/icons-material/Refresh';
-import Button from '@mui/material/Button';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
 
+import { Button } from '@/components/kx';
+import { CircleAlert as ErrorOutline, RefreshCw as Refresh } from 'lucide-react';
 export default function DashboardError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const { t } = useI18n();
   return (

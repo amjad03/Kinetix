@@ -1,11 +1,4 @@
 'use client';
-
-import ApartmentOutlined from '@mui/icons-material/ApartmentOutlined';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addBuilding, addFloor, placeRoom } from '@/app/(dashboard)/settings/institution/actions';
 import { SectionTitle } from '@/components/PageHeader';
@@ -13,6 +6,8 @@ import { Card, EmptyState, FormGrid, SelectInput, TextInput, useToast } from '@/
 import { useI18n } from '@/i18n/client';
 import type { BuildingsTree } from '@/lib/institution';
 
+import { Alert, Button, Chip } from '@/components/kx';
+import { Building2 as ApartmentOutlined } from 'lucide-react';
 /** Settings > Buildings and rooms: campus buildings, floors, and where each room sits. */
 export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
   const { t } = useI18n();
@@ -39,18 +34,18 @@ export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
   return (
     <div data-testid="buildings-admin" aria-busy={pending}>
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert className="mb-4" severity="error">
           {error}
         </Alert>
       )}
       <SectionTitle>{t('bld.addBuilding')}</SectionTitle>
-      <Card sx={{ p: 2.5, mb: 3 }}>
+      <Card className="p-5 mb-6">
         <FormGrid cols={3}>
           <SelectInput label={t('bld.campus')} value={campusId} options={tree.campuses.map((c) => ({ value: c.id, label: c.name }))} onChange={(e) => setCampusId(e.target.value)} />
           <TextInput label={t('bld.name')} value={name} onChange={(e) => setName(e.target.value)} />
           <TextInput label={t('bld.code')} value={code} onChange={(e) => setCode(e.target.value)} />
         </FormGrid>
-        <Button sx={{ mt: 2 }} variant="contained" disabled={pending || !name.trim() || !campusId} onClick={() => run(() => addBuilding({ campusId, name, code }), () => { setName(''); setCode(''); })}>
+        <Button className="mt-4" variant="contained" disabled={pending || !name.trim() || !campusId} onClick={() => run(() => addBuilding({ campusId, name, code }), () => { setName(''); setCode(''); })}>
           {t('bld.add')}
         </Button>
       </Card>
@@ -61,23 +56,23 @@ export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
         tree.buildings.map((b) => {
           const d = floorDraft[b.id] ?? { level: '', label: '' };
           return (
-            <Card key={b.id} sx={{ p: 2.5, mb: 2 }} data-testid="building">
-              <Typography variant="h6" component="h3">
-                {b.name} {b.code && <Chip size="small" label={b.code} sx={{ ml: 1 }} />}
-              </Typography>
+            <Card className="p-5 mb-4" key={b.id} data-testid="building">
+              <h3 className="text-base leading-6 font-medium tracking-[0.1px]">
+                {b.name} {b.code && <Chip className="ml-2" size="small" label={b.code} />}
+              </h3>
               {b.floors.map((f) => (
-                <Stack key={f.id} direction="row" sx={{ mt: 1.5, alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                  <Typography sx={{ minWidth: 140, fontWeight: 600 }}>{f.label}</Typography>
-                  {f.rooms.length === 0 ? <Typography variant="body2" color="text.secondary">{t('bld.noRooms')}</Typography> : f.rooms.map((r) => <Chip key={r.id} size="small" variant="outlined" label={r.name} />)}
-                </Stack>
+                <div className="flex flex-row mt-3 items-center flex-wrap gap-2" key={f.id}>
+                  <p className="text-sm leading-[21px] min-w-[140px] font-semibold">{f.label}</p>
+                  {f.rooms.length === 0 ? <p className="text-[13px] leading-[19px] text-muted-foreground">{t('bld.noRooms')}</p> : f.rooms.map((r) => <Chip key={r.id} size="small" variant="outlined" label={r.name} />)}
+                </div>
               ))}
-              <Stack direction="row" sx={{ mt: 2, gap: 1.5, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div className="flex flex-row mt-4 gap-3 items-end flex-wrap">
                 <TextInput label={t('bld.level')} value={d.level} inputMode="numeric" onChange={(e) => setFloorDraft({ ...floorDraft, [b.id]: { ...d, level: e.target.value.replace(/[^\d-]/g, '').slice(0, 3) } })} />
                 <TextInput label={t('bld.floorLabel')} value={d.label} onChange={(e) => setFloorDraft({ ...floorDraft, [b.id]: { ...d, label: e.target.value } })} />
                 <Button variant="outlined" disabled={pending || d.level === '' || !d.label.trim() || Number.isNaN(Number(d.level))} onClick={() => run(() => addFloor(b.id, { level: Number(d.level), label: d.label }), () => setFloorDraft({ ...floorDraft, [b.id]: { level: '', label: '' } }))}>
                   {t('bld.addFloor')}
                 </Button>
-              </Stack>
+              </div>
             </Card>
           );
         })
@@ -86,15 +81,15 @@ export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
       {tree.unplacedRooms.length > 0 && (
         <>
           <SectionTitle>{t('bld.unplaced')}</SectionTitle>
-          <Card sx={{ p: 2.5 }}>
+          <Card className="p-5">
             {tree.unplacedRooms.map((r) => (
-              <Stack key={r.id} direction="row" sx={{ alignItems: 'flex-end', gap: 1.5, mb: 1.5, flexWrap: 'wrap' }}>
-                <Typography sx={{ minWidth: 160 }}>{r.name}</Typography>
-                <SelectInput label={t('bld.chooseFloor')} value={placing[r.id] ?? ''} options={floors} onChange={(e) => setPlacing({ ...placing, [r.id]: e.target.value })} sx={{ minWidth: 240 }} />
+              <div className="flex flex-row items-end gap-3 mb-3 flex-wrap" key={r.id}>
+                <p className="text-sm leading-[21px] min-w-[160px]">{r.name}</p>
+                <SelectInput className="min-w-[240px]" label={t('bld.chooseFloor')} value={placing[r.id] ?? ''} options={floors} onChange={(e) => setPlacing({ ...placing, [r.id]: e.target.value })} />
                 <Button variant="outlined" disabled={pending || !placing[r.id]} onClick={() => run(() => placeRoom(r.id, placing[r.id]))}>
                   {t('bld.place')}
                 </Button>
-              </Stack>
+              </div>
             ))}
           </Card>
         </>

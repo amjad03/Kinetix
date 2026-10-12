@@ -1,19 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { saveTemplate } from '@/app/(dashboard)/documents/actions';
 import { DataTable, FormField, TextInput } from '@/components/ui';
@@ -23,6 +8,8 @@ import type { MessageKey } from '@/i18n/messages';
 import { CERT_KINDS, fieldLines, fieldsHelp, parseFieldLines, PLACEHOLDERS } from '@/lib/documents';
 import type { CertificateTemplate } from '@/lib/hr-types';
 
+import { Alert, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 export function TemplatesManager({ templates, canEdit }: { templates: CertificateTemplate[]; canEdit: boolean }) {
   const { t } = useI18n();
   const { run, view } = useNotice();
@@ -30,15 +17,15 @@ export function TemplatesManager({ templates, canEdit }: { templates: Certificat
   return (
     <>
       {view}
-      <Alert severity="info" sx={{ mb: 2 }}>
+      <Alert className="mb-4" severity="info">
         {t('doc.tpl.help')} {PLACEHOLDERS.map((p) => `{{${p}}}`).join(' ')}
       </Alert>
       {canEdit && (
-        <Box sx={{ mb: 2 }}>
+        <div className="mb-4">
           <Button variant="contained" startIcon={<Add />} onClick={() => setEditing('new')}>
             {t('doc.tpl.new')}
           </Button>
-        </Box>
+        </div>
       )}
       <DataTable
         testId="templates"
@@ -84,8 +71,8 @@ function TemplateDialog({ template, onClose, run }: { template: CertificateTempl
     <Dialog open onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>{template ? t('doc.tpl.edit') : t('doc.tpl.new')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+        <div className="flex flex-col gap-4 pt-2">
+          <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
             <FormField label={t('hr.leave.name')}>
               <TextInput value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
             </FormField>
@@ -111,7 +98,7 @@ function TemplateDialog({ template, onClose, run }: { template: CertificateTempl
               <TextInput value={f.prefix} onChange={(e) => setF({ ...f, prefix: e.target.value.toUpperCase() })} />
             </FormField>
             <FormControlLabel control={<Checkbox checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} />} label={t('doc.tpl.active')} />
-          </Box>
+          </div>
           <FormField label={t('doc.tpl.body')}>
             <TextInput multiline minRows={6} value={f.body} onChange={(e) => setF({ ...f, body: e.target.value })} />
           </FormField>
@@ -119,11 +106,11 @@ function TemplateDialog({ template, onClose, run }: { template: CertificateTempl
             <TextInput multiline minRows={2} value={f.fields} onChange={(e) => setF({ ...f, fields: e.target.value })} error={!fields} helperText={t('doc.tpl.fieldsHelp')} />
           </FormField>
           {fields && fields.length > 0 && (
-            <Typography variant="caption" color="text.secondary">
+            <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
               {fieldsHelp(fields).join(' ')}
-            </Typography>
+            </span>
           )}
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('hr.cancel')}</Button>

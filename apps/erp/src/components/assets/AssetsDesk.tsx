@@ -1,11 +1,5 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
-import PrintOutlined from '@mui/icons-material/PrintOutlined';
 import { allocateAsset, disposeAsset, loadAsset, logMaintenance, postDepreciation, registerAsset, returnAsset } from '@/app/(dashboard)/assets/actions';
 import { assetTagsUrl } from '@/lib/documents';
 import { DataTable, EmptyState } from '@/components/ui';
@@ -15,18 +9,20 @@ import { useI18n } from '@/i18n/client';
 import { st } from '@/lib/ops-labels';
 import type { Asset, AssetDetail, MaintDue } from '@/lib/ops';
 
+import { Button } from '@/components/kx';
+import { Plus as Add, Printer as PrintOutlined } from 'lucide-react';
 type Dialog = 'register' | 'depr' | { detail: AssetDetail } | { allocate: AssetDetail } | { maintain: AssetDetail } | { dispose: AssetDetail };
 
 /** The printable label: the tag large, the name, the QR code a scanner reads (`kinetix://asset/<tag>`) and that text beneath it. */
 export function AssetLabel({ a }: { a: Pick<AssetDetail, 'tag' | 'name' | 'qr' | 'qrSvg'> }) {
   return (
-    <Box data-testid="asset-label" sx={{ border: 2, borderStyle: 'solid', borderColor: 'text.primary', borderRadius: 1, p: 2, maxWidth: 320, textAlign: 'center', '@media print': { breakInside: 'avoid' } }}>
-      <Typography variant="h5" component="div" sx={{ fontWeight: 700, letterSpacing: 2 }}>{a.tag}</Typography>
-      <Typography variant="body2">{a.name}</Typography>
+    <div className="border-2 border-solid border-foreground rounded-[10px] p-4 max-w-[320px] text-center print:[break-inside:avoid]" data-testid="asset-label">
+      <div className="text-[1.375rem] leading-7 font-bold tracking-[2px]">{a.tag}</div>
+      <p className="text-[13px] leading-[19px]">{a.name}</p>
       {/* The SVG is drawn by our API from the tag alone, so it holds nothing a person typed. */}
-      <Box data-testid="asset-qr" role="img" aria-label={a.qr} sx={{ width: 160, height: 160, mx: 'auto', my: 1, '& svg': { width: '100%', height: '100%', display: 'block' } }} dangerouslySetInnerHTML={{ __html: a.qrSvg }} />
-      <Typography variant="caption" component="div" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>{a.qr}</Typography>
-    </Box>
+      <div className="w-[160px] h-[160px] mx-auto my-2 [&_svg]:w-full [&_svg]:h-full [&_svg]:block" data-testid="asset-qr" role="img" aria-label={a.qr} dangerouslySetInnerHTML={{ __html: a.qrSvg }} />
+      <div className="text-xs leading-4 tracking-[0.3px] font-mono break-all">{a.qr}</div>
+    </div>
   );
 }
 
@@ -48,12 +44,12 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
   return (
     <>
       <Bar>
-        <Button variant="contained" startIcon={<Add />} onClick={() => setDlg('register')} sx={{ mt: 3 }}>{t('as.register')}</Button>
-        <Button variant="outlined" startIcon={<PrintOutlined />} href={assetTagsUrl()} target="_blank" disabled={assets.length === 0} sx={{ mt: 3 }}>{t('as.printAllTags')}</Button>
-        <Button variant="outlined" onClick={() => setDlg('depr')} disabled={assets.length === 0} sx={{ mt: 3 }}>{t('as.postDep')}</Button>
+        <Button className="mt-6" variant="contained" startIcon={<Add />} onClick={() => setDlg('register')}>{t('as.register')}</Button>
+        <Button className="mt-6" variant="outlined" startIcon={<PrintOutlined />} href={assetTagsUrl()} target="_blank" disabled={assets.length === 0}>{t('as.printAllTags')}</Button>
+        <Button className="mt-6" variant="outlined" onClick={() => setDlg('depr')} disabled={assets.length === 0}>{t('as.postDep')}</Button>
       </Bar>
       {assets.length === 0 ? (
-        <EmptyState dense icon={<Box component="span">·</Box>} title={t('as.none')} testId="as-list-empty" />
+        <EmptyState dense icon={<span>·</span>} title={t('as.none')} testId="as-list-empty" />
       ) : (
         <DataTable
           testId="as-list"
@@ -104,17 +100,17 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
       )}
       {dlg && typeof dlg === 'object' && 'detail' in dlg && (
         <InfoDialog title={`${dlg.detail.tag} · ${dlg.detail.name}`} onClose={() => setDlg(null)}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'flex-start', mb: 2 }}>
+          <div className="flex flex-wrap gap-6 items-start mb-4">
             <AssetLabel a={dlg.detail} />
-            <Box>
-              <Typography variant="body2">{t('as.bookValue')}: {fmt.rupees(dlg.detail.bookValuePaise)}</Typography>
-              <Typography variant="body2">{t('as.cost')}: {fmt.rupees(dlg.detail.costPaise)}</Typography>
-              <Typography variant="body2">{t('as.method')}: {st(t, dlg.detail.method)}{dlg.detail.method === 'wdv' && dlg.detail.wdvRatePct != null ? ` (${dlg.detail.wdvRatePct}%)` : ''}</Typography>
-              <Typography variant="body2">{t('ops.f.status')}: {st(t, dlg.detail.status)}</Typography>
-              <Button size="small" onClick={() => window.print()} sx={{ mt: 1 }}>{t('as.printLabel')}</Button>
-              <Button size="small" href={assetTagsUrl([dlg.detail.id])} target="_blank" sx={{ mt: 1 }}>{t('as.printTags')}</Button>
-            </Box>
-          </Box>
+            <div>
+              <p className="text-[13px] leading-[19px]">{t('as.bookValue')}: {fmt.rupees(dlg.detail.bookValuePaise)}</p>
+              <p className="text-[13px] leading-[19px]">{t('as.cost')}: {fmt.rupees(dlg.detail.costPaise)}</p>
+              <p className="text-[13px] leading-[19px]">{t('as.method')}: {st(t, dlg.detail.method)}{dlg.detail.method === 'wdv' && dlg.detail.wdvRatePct != null ? ` (${dlg.detail.wdvRatePct}%)` : ''}</p>
+              <p className="text-[13px] leading-[19px]">{t('ops.f.status')}: {st(t, dlg.detail.status)}</p>
+              <Button className="mt-2" size="small" onClick={() => window.print()}>{t('as.printLabel')}</Button>
+              <Button className="mt-2" size="small" href={assetTagsUrl([dlg.detail.id])} target="_blank">{t('as.printTags')}</Button>
+            </div>
+          </div>
           {dlg.detail.status !== 'disposed' && (
             <Bar>
               {dlg.detail.allocations.some((x) => !x.returnedOn) ? <ActionButton label={t('as.return')} run={() => returnAsset(dlg.detail.id)} onDone={(m) => done(m)} /> : <Button variant="outlined" onClick={() => setDlg({ allocate: dlg.detail })}>{t('as.allocate')}</Button>}
@@ -122,7 +118,7 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
               <Button variant="outlined" color="error" onClick={() => setDlg({ dispose: dlg.detail })}>{t('as.dispose')}</Button>
             </Bar>
           )}
-          <Typography variant="h6" sx={{ fontSize: '1.125rem', mb: 1 }}>{t('as.depreciation')}</Typography>
+          <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mb-2">{t('as.depreciation')}</h6>
           <Grid
             testId="as-depr"
             empty={t('as.noDepr')}
@@ -133,9 +129,9 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
               { label: t('as.bookValue'), cell: (r) => fmt.rupees(r.bookValuePaise), num: true },
             ]}
           />
-          <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('as.allocations')}</Typography>
+          <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('as.allocations')}</h6>
           <Grid testId="as-allocs" empty={t('as.noAllocs')} rows={dlg.detail.allocations} cols={[{ label: t('as.assignedTo'), cell: (r) => r.assignedTo }, { label: t('as.from'), cell: (r) => fmt.date(r.allocatedOn, 'short') }, { label: t('as.to'), cell: (r) => (r.returnedOn ? fmt.date(r.returnedOn, 'short') : t('as.current')) }]} />
-          <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('as.maintenance')}</Typography>
+          <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('as.maintenance')}</h6>
           <Grid
             testId="as-maint-list"
             empty={t('as.noMaint')}

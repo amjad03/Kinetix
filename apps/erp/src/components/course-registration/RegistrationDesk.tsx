@@ -1,9 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { allocate, createOffering, decide, loadRoster, saveWindow, setOfferingStatus } from '@/app/(dashboard)/course-registration/actions';
 import { ActionButton, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col } from '@/components/ops/kit';
@@ -11,6 +6,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { CATEGORIES, type ApprovalRow, type OfferingRow, type RosterRow, type WindowRow } from '@/lib/course-registration';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 type Option = { value: string; label: string };
 
 /** Offerings, approvals and the registration window of one term. */
@@ -39,8 +36,8 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
       label: '',
       cell: (o) => (
         <>
-          {o.waitlisted > 0 && <Typography component="span" variant="caption">{t('cr.waiting', { n: o.waitlisted })} </Typography>}
-          {o.preferences > 0 && <Typography component="span" variant="caption">{t('cr.ranked', { n: o.preferences })} </Typography>}
+          {o.waitlisted > 0 && <span className="text-xs leading-4 tracking-[0.3px]">{t('cr.waiting', { n: o.waitlisted })} </span>}
+          {o.preferences > 0 && <span className="text-xs leading-4 tracking-[0.3px]">{t('cr.ranked', { n: o.preferences })} </span>}
           <Button size="small" onClick={() => openRoster(o)}>{t('cr.roster')}</Button>
           <ActionButton label={o.status === 'open' ? t('cr.close') : t('cr.reopen')} run={() => setOfferingStatus(o.id, o.status === 'open' ? 'closed' : 'open', o.version)} onDone={toast} />
         </>
@@ -93,14 +90,14 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
 
   return (
     <>
-      <Stack direction="row" spacing={1} sx={{ mb: 3, justifyContent: 'flex-end', flexWrap: 'wrap', rowGap: 1 }}>
+      <div className="flex flex-row gap-2 mb-6 justify-end flex-wrap gap-y-2">
         <Button variant="contained" startIcon={<Add />} onClick={() => setDialog('offer')}>
           {t('cr.new')}
         </Button>
         <Button variant="outlined" disabled={pending} onClick={runAllocate}>
           {t('cr.allocate')}
         </Button>
-      </Stack>
+      </div>
       <Tabbed
         label={t('nav.courseRegistration')}
         initial="offerings"
@@ -112,7 +109,7 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
             label: t('cr.tab.window'),
             node: (
               <>
-                <Button variant="outlined" sx={{ mb: 2 }} onClick={() => setDialog('window')}>
+                <Button className="mb-4" variant="outlined" onClick={() => setDialog('window')}>
                   {t('cr.win.save')}
                 </Button>
                 <Grid testId="cr-windows" empty={t('cr.win.none')} rows={windows} cols={windowCols} />

@@ -1,35 +1,29 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 /** KINETIX mark: a K in a rounded tile, in the primary colour. */
 export function LogoMark({ size = 32 }: { size?: number }) {
   return (
-    <Box
-      component="svg"
+    <svg className="shrink-0 block" style={{ width: size, height: size }}
       viewBox="0 0 48 48"
       aria-hidden
-      sx={{ width: size, height: size, flexShrink: 0, display: 'block' }}
     >
-      <Box component="rect" width={48} height={48} rx={14} sx={{ fill: 'var(--kx-palette-m3-primary)' }} />
-      <Box
-        component="path"
+      <rect className="fill-teal" width={48} height={48} rx={14} />
+      <path className="[fill:none] stroke-white [stroke-width:5px] [stroke-linecap:round] [stroke-linejoin:round]"
         d="M15 12v24M33 12 20.5 24 33 36"
-        sx={{ fill: 'none', stroke: 'var(--kx-palette-m3-onPrimary)', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }}
       />
-    </Box>
+    </svg>
   );
 }
 
 export function Logo({ size = 32 }: { size?: number }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+    <div className="flex items-center gap-2.5">
       <LogoMark size={size} />
-      <Typography component="span" sx={{ fontSize: size * 0.62, fontWeight: 500, letterSpacing: 0, color: 'text.primary', whiteSpace: 'nowrap' }}>
+      <span className="text-sm leading-[21px] font-medium tracking-[0px] text-foreground whitespace-nowrap" style={{ fontSize: size * 0.62 }}>
         KINETIX{' '}
-        <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>
+        <span className="text-muted-foreground font-normal">
           ERP
-        </Box>
-      </Typography>
-    </Box>
+        </span>
+      </span>
+    </div>
   );
 }

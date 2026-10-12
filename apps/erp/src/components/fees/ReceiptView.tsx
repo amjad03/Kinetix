@@ -1,24 +1,22 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import { useI18n } from '@/i18n/client';
 import { formatDateTime } from '@/lib/dates';
 import { formatRupees, methodLabel, rupeesInWords } from '@/lib/money';
 import type { FeeReceipt } from '@/lib/types';
 
+import { Divider, Typography } from '@/components/kx';
+import { cn } from '@/lib/utils';
 function Row({ label, children, strong }: { label: string; children: ReactNode; strong?: boolean }) {
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '180px 1fr' }, gap: { xs: 0, sm: 2 }, py: 0.75 }}>
-      <Typography variant="body2" color="text.secondary">
+    <div className="grid grid-cols-[1fr] sm:grid-cols-[180px_1fr] gap-0 sm:gap-4 py-1.5">
+      <p className="text-[13px] leading-[19px] text-muted-foreground">
         {label}
-      </Typography>
-      <Typography variant={strong ? 'subtitle1' : 'body2'} sx={{ fontWeight: strong ? 500 : 400, fontVariantNumeric: 'tabular-nums', wordBreak: 'break-word' }}>
+      </p>
+      <Typography className={cn('tabular-nums wrap-break-word', strong ? 'font-medium' : 'font-normal')} variant={strong ? 'subtitle1' : 'body2'}>
         {children}
       </Typography>
-    </Box>
+    </div>
   );
 }
 
@@ -26,28 +24,28 @@ function Row({ label, children, strong }: { label: string; children: ReactNode; 
 export function ReceiptView({ r, timeZone, full }: { r: FeeReceipt; timeZone: string; full?: boolean }) {
   const { t, locale } = useI18n();
   return (
-    <Box data-testid="receipt">
+    <div data-testid="receipt">
       {full && (
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <Typography variant="h5" component="p" sx={{ fontWeight: 500 }}>
+        <div className="text-center mb-6">
+          <p className="text-[1.375rem] leading-7 font-medium">
             {r.institution}
-          </Typography>
-          <Typography variant="overline" component="h1" sx={{ letterSpacing: '0.2em', fontSize: '0.875rem', color: 'text.secondary' }}>
+          </p>
+          <h1 className="font-medium tracking-[0.2em] text-[0.875rem] text-muted-foreground">
             {t('fees.receipt.title')}
-          </Typography>
-        </Box>
+          </h1>
+        </div>
       )}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mb: 1 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 500 }} data-testid="receipt-no">
+      <div className="flex justify-between flex-wrap gap-2 mb-2">
+        <h6 className="text-base leading-6 tracking-[0.1px] font-medium" data-testid="receipt-no">
           {r.receiptNo}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </h6>
+        <p className="text-[13px] leading-[19px] text-muted-foreground">
           {locale === 'en'
             ? new Intl.DateTimeFormat('en-IN', { timeZone, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(r.paidAt))
             : `${formatDateTime(r.paidAt, timeZone, true, locale)} · ${new Intl.DateTimeFormat('en-IN', { timeZone, year: 'numeric' }).format(new Date(r.paidAt))}`}
-        </Typography>
-      </Box>
-      <Divider sx={{ mb: 1 }} />
+        </p>
+      </div>
+      <Divider className="mb-2" />
       <Row label={t('fees.receipt.student')}>
         {r.student.fullName}
         {r.student.rollNo ? ` · ${r.student.rollNo}` : ''}
@@ -62,9 +60,9 @@ export function ReceiptView({ r, timeZone, full }: { r: FeeReceipt; timeZone: st
         {methodLabel(r.method, t)}
         {r.reference ? ` · ${r.reference}` : ''}
       </Row>
-      <Divider sx={{ my: 1 }} />
+      <Divider className="my-2" />
       <Row label={t('fees.receipt.fee')}>{formatRupees(r.invoice.amountPaise)}</Row>
       <Row label={t('fees.receipt.balance')}>{r.invoice.balancePaise > 0 ? formatRupees(r.invoice.balancePaise) : t('fees.receipt.nil')}</Row>
-    </Box>
+    </div>
   );
 }

@@ -1,17 +1,11 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { createSchedule, deleteSchedule, setScheduleActive } from '@/app/(dashboard)/reports/actions';
 import { useI18n } from '@/i18n/client';
 import type { ReportMeta, Schedule } from '@/lib/insights';
 
+import { Alert, Button, MenuItem } from '@/components/kx';
 /** Scheduled reports: who gets which report how often (emailed at 06:00), with pause and delete. */
 export function Schedules({ schedules, reports }: { schedules: Schedule[]; reports: ReportMeta[] }) {
   const { t, fmt } = useI18n();
@@ -30,30 +24,30 @@ export function Schedules({ schedules, reports }: { schedules: Schedule[]; repor
     });
 
   return (
-    <Stack spacing={2} data-testid="schedules">
+    <div className="flex flex-col gap-4" data-testid="schedules">
       {error && <Alert severity="error">{error}</Alert>}
-      {schedules.length === 0 && <Typography color="text.secondary">{t('reports.schedules.none')}</Typography>}
+      {schedules.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('reports.schedules.none')}</p>}
       {schedules.map((s) => (
-        <Box key={s.id} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="subtitle2">
+        <div className="flex flex-wrap gap-3 items-center justify-between" key={s.id}>
+          <div className="min-w-0">
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">
               {title(s.reportKey)} · {t(`reports.freq.${s.frequency}`)} · {s.format.toUpperCase()}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
+            </h6>
+            <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
               {s.recipients.join(', ')} · {s.active ? `${t('reports.schedules.next')}: ${fmt.dateTime(s.nextRunAt)}` : t('reports.schedules.paused')}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+            </span>
+          </div>
+          <div className="flex gap-2">
             <Button size="small" disabled={pending} onClick={() => run(() => setScheduleActive(s.id, !s.active))}>
               {s.active ? t('reports.schedules.pause') : t('reports.schedules.resume')}
             </Button>
             <Button size="small" color="error" disabled={pending} onClick={() => run(() => deleteSchedule(s.id))}>
               {t('reports.schedules.delete')}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       ))}
-      <Box component="form" onSubmit={(e) => { e.preventDefault(); run(() => createSchedule({ reportKey, frequency, format, recipients })); }} sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, alignItems: 'start' }}>
+      <form className="grid gap-4 grid-cols-[1fr] md:grid-cols-[2fr_1fr_1fr] items-start" onSubmit={(e) => { e.preventDefault(); run(() => createSchedule({ reportKey, frequency, format, recipients })); }}>
         <FormField label={t('reports.schedules.report')}>
           <TextInput select value={reportKey} onChange={(e) => setReportKey(e.target.value)}>
             {reports.map((r) => (
@@ -79,12 +73,12 @@ export function Schedules({ schedules, reports }: { schedules: Schedule[]; repor
           </TextInput>
         </FormField>
         <FormField label={t('reports.schedules.recipients')}>
-          <TextInput value={recipients} onChange={(e) => setRecipients(e.target.value)} sx={{ gridColumn: { md: '1 / 3' } }} />
+          <TextInput className="md:col-[1/3]" value={recipients} onChange={(e) => setRecipients(e.target.value)} />
         </FormField>
         <Button type="submit" variant="contained" disabled={pending || !recipients.trim() || !reportKey}>
           {t('reports.schedules.add')}
         </Button>
-      </Box>
-    </Stack>
+      </form>
+    </div>
   );
 }

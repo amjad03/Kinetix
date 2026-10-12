@@ -1,5 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { IssueFeeButton } from '@/components/fees/IssueFeeDialog';
 import { InvoiceFilters } from '@/components/fees/InvoiceFilters';
@@ -14,6 +12,7 @@ import { schoolToday, TIMEZONE } from '@/lib/school';
 import { getI18n } from '@/i18n/server';
 import type { FeeInvoice, FeeSummary } from '@/lib/types';
 
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('fees.invoices') };
 }
@@ -41,11 +40,11 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <Box sx={{ ml: -1, mb: 0.5 }}>
+      <div className="-ml-2 mb-1">
         <LinkButton href="/fees" size="small" startIcon={<ArrowBack />}>
           {t('nav.fees')}
         </LinkButton>
-      </Box>
+      </div>
       <PageHeader
         title={className ? t('fees.invoicesTitle', { name: className }) : t('fees.invoices')}
         subtitle={t('fees.invoicesSubtitle')}

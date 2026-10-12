@@ -1,18 +1,12 @@
 'use client';
-
-import Check from '@mui/icons-material/Check';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import LinearProgress from '@mui/material/LinearProgress';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 import { useI18n } from '@/i18n/client';
 import { INVOICE_FILTERS, type InvoiceFilter } from '@/lib/invoices';
+import { cn } from '@/lib/utils';
 
+import { Chip, FormControl, InputLabel, LinearProgress, MenuItem, Select } from '@/components/kx';
+import { Check } from 'lucide-react';
 /** Status chips and a class picker; both live in the URL. */
 export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFilter; classId: string; classes: { id: string; name: string }[] }) {
   const router = useRouter();
@@ -30,27 +24,26 @@ export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFi
   };
 
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center', mb: 2 }}>
-      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label={t('common.loading')} />}
-      <Box role="group" aria-label={t('fees.filterStatus')} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+    <div className="flex flex-wrap gap-2 items-center mb-4">
+      {pending && <LinearProgress className="fixed top-0 left-0 right-0 z-[2000] h-[3px] rounded-none" aria-label={t('common.loading')} />}
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('fees.filterStatus')}>
         {INVOICE_FILTERS.map((f) => {
           const on = status === f;
           return (
-            <Chip
+            <Chip className={cn(on && 'bg-secondary text-secondary-foreground [&_svg]:text-inherit')}
               key={f}
               label={t(`fees.filter.${f}`)}
               variant={on ? 'filled' : 'outlined'}
               onClick={() => set('status', f)}
-              icon={on ? <Check sx={{ fontSize: '18px !important' }} /> : undefined}
-              sx={on ? { bgcolor: 'm3.secondaryContainer', color: 'm3.onSecondaryContainer', '& .MuiChip-icon': { color: 'inherit' } } : undefined}
+              icon={on ? <Check className="text-[18px_!important]" /> : undefined}
               aria-pressed={on}
               data-testid={`invoice-filter-${f}`}
             />
           );
         })}
-      </Box>
-      <Box sx={{ flex: 1 }} />
-      <FormControl size="small" sx={{ minWidth: 200 }}>
+      </div>
+      <div className="flex-1" />
+      <FormControl className="min-w-[200px]" size="small">
         <InputLabel id="f-fee-class" shrink>
           {t('fees.class')}
         </InputLabel>
@@ -63,6 +56,6 @@ export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFi
           ))}
         </Select>
       </FormControl>
-    </Box>
+    </div>
   );
 }

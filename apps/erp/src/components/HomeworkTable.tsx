@@ -1,7 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useI18n } from '@/i18n/client';
 import { daysBetween } from '@/lib/dates';
 import type { HomeworkRow } from '@/lib/types';
@@ -14,27 +11,27 @@ export function HomeworkTable({ rows, today, timezone }: { rows: HomeworkRow[]; 
   const due = (h: HomeworkRow) => {
     if (!h.dueOn)
       return (
-        <Typography variant="body2" color="text.secondary">
+        <p className="text-[13px] leading-[19px] text-muted-foreground">
           {t('hw.noDue')}
-        </Typography>
+        </p>
       );
     const n = daysBetween(today, h.dueOn);
     const label = n === 0 ? t('hw.dueToday') : n === 1 ? t('hw.dueTomorrow') : n > 1 ? t('hw.inDays', { n }) : n === -1 ? t('hw.wasYesterday') : t('hw.wasDaysAgo', { n: -n });
     return (
-      <Box>
-        <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+      <div>
+        <p className="text-[13px] leading-[19px] whitespace-nowrap">
           {fmt.date(h.dueOn, 'short')}
-        </Typography>
+        </p>
         {n >= 0 ? (
-          <Box sx={{ mt: 0.5 }}>
+          <div className="mt-1">
             <StatusPill tone={n <= 1 ? 'warning' : 'neutral'}>{label}</StatusPill>
-          </Box>
+          </div>
         ) : (
-          <Typography variant="caption" color="text.secondary" component="p" sx={{ whiteSpace: 'nowrap' }}>
+          <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground whitespace-nowrap">
             {label}
-          </Typography>
+          </p>
         )}
-      </Box>
+      </div>
     );
   };
 
@@ -48,25 +45,25 @@ export function HomeworkTable({ rows, today, timezone }: { rows: HomeworkRow[]; 
       csv: (h) => (h.instructions ? `${h.title} — ${h.instructions}` : h.title),
       cell: (h) => (
         <>
-          <Typography variant="subtitle2">{h.title}</Typography>
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{h.title}</h6>
           {h.instructions && (
-            <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mt: 0.25, fontWeight: 400 }}>
+            <p className="text-[13px] leading-[19px] text-muted-foreground line-clamp-2 overflow-hidden mt-0.5 font-normal">
               {h.instructions}
-            </Typography>
+            </p>
           )}
         </>
       ),
     },
-    { id: 'section', header: t('hw.col.class'), sort: (h) => h.section, cell: (h) => <Box sx={{ whiteSpace: 'nowrap' }}>{h.section}</Box> },
-    { id: 'subject', header: t('hw.col.subject'), sort: (h) => h.subject, hideBelow: 'sm', cell: (h) => <Box sx={{ whiteSpace: 'nowrap' }}>{h.subject}</Box> },
-    { id: 'teacher', header: t('hw.col.teacher'), sort: (h) => h.teacher, hideBelow: 'md', cell: (h) => <Box sx={{ whiteSpace: 'nowrap' }}>{h.teacher}</Box> },
+    { id: 'section', header: t('hw.col.class'), sort: (h) => h.section, cell: (h) => <div className="whitespace-nowrap">{h.section}</div> },
+    { id: 'subject', header: t('hw.col.subject'), sort: (h) => h.subject, hideBelow: 'sm', cell: (h) => <div className="whitespace-nowrap">{h.subject}</div> },
+    { id: 'teacher', header: t('hw.col.teacher'), sort: (h) => h.teacher, hideBelow: 'md', cell: (h) => <div className="whitespace-nowrap">{h.teacher}</div> },
     {
       id: 'set',
       header: t('hw.col.set'),
       sort: (h) => h.createdAt,
       csv: (h) => h.createdAt,
       hideBelow: 'md',
-      cell: (h) => <Box sx={{ whiteSpace: 'nowrap', color: 'text.secondary' }}>{fmt.dateTime(h.createdAt, timezone)}</Box>,
+      cell: (h) => <div className="whitespace-nowrap text-muted-foreground">{fmt.dateTime(h.createdAt, timezone)}</div>,
     },
     { id: 'due', header: t('hw.col.due'), sort: (h) => h.dueOn ?? '', csv: (h) => h.dueOn ?? '', cell: due },
   ];

@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addEvalCase, removeEvalCase, runEvals } from '@/app/(dashboard)/ai/audit-actions';
 import { ActionButton, Bar, FormDialog, Grid, useToast } from '@/components/ops/kit';
@@ -9,6 +6,7 @@ import { StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { EvalCase, EvalRun } from '@/lib/governance';
 
+import { Button } from '@/components/kx';
 /** Fixed questions with checks on the answer, run against the live model before a prompt or model change ships. */
 export function EvalDesk({ cases, runs }: { cases: EvalCase[]; runs: EvalRun[] }) {
   const { t, fmt } = useI18n();
@@ -17,9 +15,9 @@ export function EvalDesk({ cases, runs }: { cases: EvalCase[]; runs: EvalRun[] }
   const latest = runs[0];
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
         {t('ae.hint')}
-      </Typography>
+      </p>
       <Bar>
         <Button variant="contained" onClick={() => setOpen(true)} data-testid="ae-add">
           {t('ae.add')}
@@ -27,9 +25,9 @@ export function EvalDesk({ cases, runs }: { cases: EvalCase[]; runs: EvalRun[] }
         <ActionButton label={t('ae.run')} run={runEvals} onDone={toast} disabled={cases.length === 0} />
       </Bar>
       {latest && (
-        <Typography sx={{ mb: 2 }} data-testid="ae-latest">
+        <p className="text-sm leading-[21px] mb-4" data-testid="ae-latest">
           {t('ae.latest', { passed: latest.passed, total: latest.passed + latest.failed, when: fmt.dateTime(latest.createdAt), model: latest.model || latest.provider })}
-        </Typography>
+        </p>
       )}
       <Grid
         testId="ae-cases"
@@ -50,9 +48,9 @@ export function EvalDesk({ cases, runs }: { cases: EvalCase[]; runs: EvalRun[] }
           { label: '', cell: (r) => <ActionButton label={t('ae.remove')} tone="error" run={() => removeEvalCase(r.id)} onDone={toast} /> },
         ]}
       />
-      <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
         {t('ae.runs')}
-      </Typography>
+      </h2>
       <Grid
         testId="ae-runs"
         empty={t('ae.noRuns')}

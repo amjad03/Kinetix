@@ -1,12 +1,3 @@
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
-import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
-import GradingOutlined from '@mui/icons-material/GradingOutlined';
-import PublishedWithChangesOutlined from '@mui/icons-material/PublishedWithChangesOutlined';
-import QuizOutlined from '@mui/icons-material/QuizOutlined';
-import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { LinkButton } from '@/components/LinkButton';
 import { EmptyState, ErrorState } from '@/components/States';
@@ -19,6 +10,7 @@ import type { ExamSession } from '@/lib/exams';
 import { getI18n } from '@/i18n/server';
 import { PendingTasks, QuickActions, Row } from './parts';
 
+import { ArrowRight as ArrowForward, ClipboardCheck as GradingOutlined, FileQuestion as QuizOutlined, ListChecks as FactCheckOutlined, NotebookText as EventNoteOutlined, RefreshCcwDot as PublishedWithChangesOutlined, Target as TrackChangesOutlined } from 'lucide-react';
 const TONE: Record<ExamSession['status'], Tone> = { draft: 'neutral', scheduled: 'info', processed: 'warning', published: 'success', locked: 'neutral' };
 
 /** The examination desk: sessions in flight, papers coming up, marks waiting for verification. */
@@ -43,29 +35,29 @@ export async function ExamsDashboard({ today }: { today: string }) {
       </StatGrid>
 
       <Row cols={3}>
-        <Card title={t('dash.exm.sessions')} padded={false} action={<LinkButton href="/exams" size="small" endIcon={<ArrowForward />}>{t('dash.viewAll')}</LinkButton>} testId="exam-sessions" sx={{ gridColumn: { xl: 'span 2' } }}>
+        <Card className="xl:col-span-2" title={t('dash.exm.sessions')} padded={false} action={<LinkButton href="/exams" size="small" endIcon={<ArrowForward />}>{t('dash.viewAll')}</LinkButton>} testId="exam-sessions">
           {list.length === 0 ? (
-            <Box sx={{ px: 2.5, pb: 2.5 }}>
+            <div className="px-5 pb-5">
               <EmptyState dense icon={<QuizOutlined />} title={t('dash.exm.noSessions')} />
-            </Box>
+            </div>
           ) : (
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            <ul className="list-none m-0 p-0">
               {list.map((s) => (
-                <Box component="li" key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.25, borderTop: 1, borderColor: 'm3.outlineVariant' }}>
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }} noWrap>
+                <li className="flex items-center gap-3 px-5 py-2.5 border-t border-border" key={s.id}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.875rem] font-semibold">
                       <Link href={`/exams/${s.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                         {s.name}
                       </Link>
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    </p>
+                    <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {fmt.date(s.startsOn, 'dayMonth')} – {fmt.date(s.endsOn, 'dayMonth')}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                   <StatusPill tone={TONE[s.status]}>{t(`exm.st.${s.status}` as never)}</StatusPill>
-                </Box>
+                </li>
               ))}
-            </Box>
+            </ul>
           )}
         </Card>
         <PendingTasks

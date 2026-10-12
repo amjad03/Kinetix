@@ -1,13 +1,4 @@
 'use client';
-
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import ForumOutlined from '@mui/icons-material/ForumOutlined';
-import Search from '@mui/icons-material/Search';
-import Box from '@mui/material/Box';
-import ButtonBase from '@mui/material/ButtonBase';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/States';
@@ -15,6 +6,9 @@ import { filterThreads } from '@/lib/conversations';
 import { useI18n } from '@/i18n/client';
 import type { ConversationSummary } from '@/lib/types';
 
+import { ButtonBase, InputAdornment, TextField } from '@/components/kx';
+import { ChevronRight, MessagesSquare as ForumOutlined, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 /** Every parent–teacher thread, without message text; opening one is audited. */
 export function ThreadList({ threads, timeZone }: { threads: ConversationSummary[]; timeZone: string }) {
   const { t, fmt } = useI18n();
@@ -22,66 +16,51 @@ export function ThreadList({ threads, timeZone }: { threads: ConversationSummary
   const rows = useMemo(() => filterThreads(threads, q), [threads, q]);
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-        <TextField
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <TextField className="flex-[1_1_260px] max-w-[420px]"
           size="small"
           placeholder={t('conv.search')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          sx={{ flex: '1 1 260px', maxWidth: 420 }}
           slotProps={{
-            input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
+            input: { startAdornment: <InputAdornment position="start"><Search className="size-5" /></InputAdornment> },
             htmlInput: { 'aria-label': t('conv.searchLabel') },
           }}
         />
-        <Typography variant="body2" color="text.secondary" data-testid="thread-count">
+        <p className="text-[13px] leading-[19px] text-muted-foreground" data-testid="thread-count">
           {t.plural('conv.count', rows.length)}
-        </Typography>
-      </Box>
+        </p>
+      </div>
       {rows.length === 0 ? (
         <EmptyState dense icon={<ForumOutlined />} title={t('conv.noMatch')} testId="no-thread-match">
           {t('conv.noMatchBody')}
         </EmptyState>
       ) : (
-        <Box sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '16px', bgcolor: 'kx.pane', boxShadow: 'var(--kx-elev-card)', overflow: 'hidden' }} data-testid="threads">
+        <div className="border border-border rounded-[16px] bg-card shadow-[var(--kx-elev-card)] overflow-hidden" data-testid="threads">
           {rows.map((c, i) => (
-            <ButtonBase
+            <ButtonBase className={cn('flex w-full text-left items-center gap-4 px-4 py-3 border-border no-underline text-inherit hover:bg-accent', i ? 'border-t' : 'border-t-0')}
               key={c.id}
               component={Link}
               href={`/conversations/${c.id}`}
               // No prefetch: opening a thread is what gets audited, so only a click should load it.
               prefetch={false}
               data-testid="thread-row"
-              sx={{
-                display: 'flex',
-                width: '100%',
-                textAlign: 'left',
-                alignItems: 'center',
-                gap: 2,
-                px: 2,
-                py: 1.5,
-                borderTop: i ? 1 : 0,
-                borderColor: 'm3.outlineVariant',
-                textDecoration: 'none',
-                color: 'inherit',
-                '&:hover': { bgcolor: 'action.hover' },
-              }}
             >
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle2" noWrap>
+              <div className="flex-1 min-w-0">
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px] truncate">
                   {c.family.fullName} ↔ {c.staff.fullName}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" noWrap>
+                </h6>
+                <p className="text-[13px] leading-[19px] text-muted-foreground truncate">
                   {t('conv.about', { student: c.student.fullName, className: c.className })}
-                </Typography>
-              </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }} suppressHydrationWarning>
+                </p>
+              </div>
+              <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground whitespace-nowrap" suppressHydrationWarning>
                 {c.lastMessageAt ? fmt.relative(c.lastMessageAt, new Date(), timeZone) : t('conv.noMessages')}
-              </Typography>
-              <ChevronRight sx={{ color: 'text.secondary' }} />
+              </span>
+              <ChevronRight className="text-muted-foreground" />
             </ButtonBase>
           ))}
-        </Box>
+        </div>
       )}
     </>
   );

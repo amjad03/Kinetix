@@ -1,11 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRef, useState, useTransition } from 'react';
 import { removeRetentionRule, runRetention, saveRetentionRule } from '@/app/(dashboard)/settings/privacy-actions';
 import { ActionButton, FormDialog, Grid, InfoDialog, Pill, useToast } from '@/components/ops/kit';
@@ -14,6 +7,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { KEEP_DAYS_MAX, KEEP_DAYS_MIN, type RetentionOutcome, type RetentionRule, type RetentionRules } from '@/lib/pathways-b';
 
+import { Button, Card } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 type Dlg = RetentionRule | 'new' | 'run' | { result: RetentionOutcome[]; dryRun: boolean } | null;
 
 /** Settings: how long vault documents, read notifications and career assistant chats are kept, with a preview before running. */
@@ -44,13 +39,13 @@ export function DataRetention({ data }: { data: RetentionRules }) {
     <>
       <SectionTitle>{t('pwb.ret.title')}</SectionTitle>
       <Card data-testid="pwb-retention">
-        <Box sx={{ px: 2.5, py: 2 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('pwb.ret.help', { min: KEEP_DAYS_MIN, max: KEEP_DAYS_MAX })}</Typography>
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mb: 2 }}>
+        <div className="px-5 py-4">
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">{t('pwb.ret.help', { min: KEEP_DAYS_MIN, max: KEEP_DAYS_MAX })}</p>
+          <div className="flex flex-row gap-2 flex-wrap mb-4">
             <Button variant="contained" startIcon={<Add />} onClick={() => setDlg('new')} data-testid="pwb-new-rule">{t('pwb.ret.add')}</Button>
             <Button variant="outlined" disabled={pending || data.rules.length === 0} onClick={() => run(true)} data-testid="pwb-preview">{t('pwb.ret.preview')}</Button>
             <Button variant="outlined" color="error" disabled={pending || data.rules.length === 0} onClick={() => setDlg('run')} data-testid="pwb-run-now">{t('pwb.ret.runNow')}</Button>
-          </Stack>
+          </div>
           <Grid
             testId="pwb-rules"
             empty={t('pwb.ret.empty')}
@@ -73,13 +68,13 @@ export function DataRetention({ data }: { data: RetentionRules }) {
               },
             ]}
           />
-        </Box>
+        </div>
       </Card>
 
       {(dlg === 'new' || rule) && (
         <FormDialog
           title={rule ? t('pwb.ret.edit') : t('pwb.ret.add')}
-          intro={<Typography variant="body2" color="text.secondary">{t('pwb.ret.ruleHelp')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.ret.ruleHelp')}</p>}
           onSubmit={(v) => {
             const allowed = data.targets.find((x) => x.key === v.target)?.actions ?? [];
             if (!allowed.includes(v.action)) return Promise.resolve({ ok: false as const, error: t('pwb.ret.err.action', { kind: name(v.target) }) });
@@ -99,7 +94,7 @@ export function DataRetention({ data }: { data: RetentionRules }) {
         <FormDialog
           title={t('pwb.ret.runNow')}
           submitLabel={t('pwb.ret.runNow')}
-          intro={<Typography variant="body2">{t('pwb.ret.runWarn')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('pwb.ret.runWarn')}</p>}
           fields={[]}
           onSubmit={async () => {
             const res = await runRetention(false);
@@ -112,7 +107,7 @@ export function DataRetention({ data }: { data: RetentionRules }) {
       )}
       {dlg && typeof dlg === 'object' && 'result' in dlg && (
         <InfoDialog title={dlg.dryRun ? t('pwb.ret.previewTitle') : t('pwb.ret.ranTitle')} onClose={() => setDlg(null)}>
-          <Typography variant="body2" sx={{ mb: 2 }}>{dlg.dryRun ? t('pwb.ret.previewHelp') : t('pwb.ret.ranHelp')}</Typography>
+          <p className="text-[13px] leading-[19px] mb-4">{dlg.dryRun ? t('pwb.ret.previewHelp') : t('pwb.ret.ranHelp')}</p>
           <Grid
             testId="pwb-run-result"
             empty={t('pwb.ret.noRules')}

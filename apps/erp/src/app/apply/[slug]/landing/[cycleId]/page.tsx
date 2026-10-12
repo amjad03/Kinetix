@@ -1,9 +1,3 @@
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -12,6 +6,8 @@ import { ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
 import { ApiError, api, load } from '@/lib/api';
 
+import { Button, Container } from '@/components/kx';
+import { pal } from '@/lib/sx';
 export const dynamic = 'force-dynamic';
 
 interface Landing {
@@ -46,98 +42,98 @@ export default async function LandingPage({ params }: { params: Promise<{ slug: 
   });
   if (res.error !== undefined)
     return (
-      <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', py: 4 }}>
+      <div className="min-h-[100dvh] bg-background py-8">
         <Container maxWidth="md">
           <ErrorState message={res.error} />
         </Container>
-      </Box>
+      </div>
     );
   const p = res.data;
   const open = p.cycle.status === 'open';
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', py: 4 }}>
+    <div className="min-h-[100dvh] bg-background py-8">
       <Container maxWidth="md">
         <Logo />
-        <Paper variant="outlined" sx={{ mt: 3, p: { xs: 2.5, md: 4 }, borderTop: `6px solid ${p.accentColour}` }}>
-          <Typography variant="overline" color="text.secondary">
+        <div className="rounded-[12px] border bg-card mt-6 p-5 md:p-8" style={{ borderTop: `6px solid ${p.accentColour}` }}>
+          <span className="text-[11px] leading-4 font-medium tracking-[0.5px] text-muted-foreground">
             {p.institution} · {p.cycle.programName}
-          </Typography>
-          <Typography variant="h4" component="h1" sx={{ mt: 0.5 }}>
+          </span>
+          <h1 className="font-display text-2xl leading-8 mt-1">
             {p.headline}
-          </Typography>
+          </h1>
           {p.intro && (
-            <Typography sx={{ mt: 2, whiteSpace: 'pre-line' }} color="text.secondary">
+            <p className="text-sm leading-[21px] text-muted-foreground mt-4 whitespace-pre-line">
               {p.intro}
-            </Typography>
+            </p>
           )}
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mt: 3 }}>
-            <Typography variant="body2">{t('g1.land.closes', { date: fmt.date(p.cycle.closesOn, 'long') })}</Typography>
-            <Typography variant="body2">{t('g1.land.seats', { n: p.cycle.seats })}</Typography>
-            <Typography variant="body2">{p.cycle.applicationFeePaise > 0 ? t('g1.land.fee', { amount: fmt.rupees(p.cycle.applicationFeePaise) }) : t('g1.land.free')}</Typography>
-          </Stack>
+          <div className="flex flex-col sm:flex-row gap-6 mt-6">
+            <p className="text-[13px] leading-[19px]">{t('g1.land.closes', { date: fmt.date(p.cycle.closesOn, 'long') })}</p>
+            <p className="text-[13px] leading-[19px]">{t('g1.land.seats', { n: p.cycle.seats })}</p>
+            <p className="text-[13px] leading-[19px]">{p.cycle.applicationFeePaise > 0 ? t('g1.land.fee', { amount: fmt.rupees(p.cycle.applicationFeePaise) }) : t('g1.land.free')}</p>
+          </div>
           {open && (
-            <Button component={Link} href={`/apply/${slug}`} variant="contained" size="large" sx={{ mt: 3, bgcolor: p.accentColour }} data-testid="landing-apply">
+            <Button className="mt-6" style={{ backgroundColor: pal(p.accentColour) }} component={Link} href={`/apply/${slug}`} variant="contained" size="large" data-testid="landing-apply">
               {t('g1.land.apply')}
             </Button>
           )}
-          {!open && <Typography sx={{ mt: 3 }}>{t('g1.land.closed')}</Typography>}
-        </Paper>
+          {!open && <p className="text-sm leading-[21px] mt-6">{t('g1.land.closed')}</p>}
+        </div>
 
         {p.highlights.length > 0 && (
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mt: 3 }}>
+          <div className="flex flex-col md:flex-row gap-4 mt-6">
             {p.highlights.map((h) => (
-              <Paper key={h.title} variant="outlined" sx={{ p: 2.5, flex: 1 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              <div className="rounded-[12px] border bg-card p-5 flex-1" key={h.title}>
+                <h6 className="text-base leading-6 tracking-[0.1px] font-bold">
                   {h.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </h6>
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {h.text}
-                </Typography>
-              </Paper>
+                </p>
+              </div>
             ))}
-          </Stack>
+          </div>
         )}
 
         {p.documents.length > 0 && (
-          <Paper variant="outlined" sx={{ p: 2.5, mt: 3 }}>
-            <Typography variant="h6" component="h2">
+          <div className="rounded-[12px] border bg-card p-5 mt-6">
+            <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
               {t('g1.land.documents')}
-            </Typography>
-            <Box component="ul" sx={{ m: 0, mt: 1, pl: 3 }}>
+            </h2>
+            <ul className="m-0 mt-2 pl-6">
               {p.documents.map((d) => (
                 <li key={d.label}>
-                  <Typography variant="body2">
+                  <p className="text-[13px] leading-[19px]">
                     {d.label}
                     {d.required ? ' *' : ''}
-                  </Typography>
+                  </p>
                 </li>
               ))}
-            </Box>
-          </Paper>
+            </ul>
+          </div>
         )}
 
         {p.faqs.length > 0 && (
-          <Paper variant="outlined" sx={{ p: 2.5, mt: 3 }}>
-            <Typography variant="h6" component="h2">
+          <div className="rounded-[12px] border bg-card p-5 mt-6">
+            <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
               {t('g1.land.faq')}
-            </Typography>
+            </h2>
             {p.faqs.map((f) => (
-              <Box key={f.q} sx={{ mt: 1.5 }}>
-                <Typography variant="subtitle2">{f.q}</Typography>
-                <Typography variant="body2" color="text.secondary">
+              <div className="mt-3" key={f.q}>
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{f.q}</h6>
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {f.a}
-                </Typography>
-              </Box>
+                </p>
+              </div>
             ))}
-          </Paper>
+          </div>
         )}
 
         {(p.contactPhone || p.contactEmail) && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mt-6">
             {t('g1.land.contact')}: {[p.contactPhone, p.contactEmail].filter(Boolean).join(' · ')}
-          </Typography>
+          </p>
         )}
       </Container>
-    </Box>
+    </div>
   );
 }

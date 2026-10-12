@@ -1,19 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { AdmissionsTabs } from '@/components/admissions/AdmissionsTabs';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
 
+import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('adm.tab.depth') };
 }
@@ -57,12 +50,12 @@ export default async function DepthPage({ searchParams }: { searchParams: Promis
       {err !== undefined ? (
         <ErrorState message={err} />
       ) : (
-        <Stack spacing={3}>
-          <Paper variant="outlined" sx={{ p: 2 }}>
+        <div className="flex flex-col gap-6">
+          <div className="rounded-[12px] border bg-card p-4">
             <SectionTitle>{t('ad.roi.title')}</SectionTitle>
-            <Typography variant="body2" color="text.secondary">{t('ad.roi.help')}</Typography>
+            <p className="text-[13px] leading-[19px] text-muted-foreground">{t('ad.roi.help')}</p>
             {roi.data!.rows.length === 0 ? (
-              <Typography sx={{ mt: 1 }}>{t('ad.roi.empty')}</Typography>
+              <p className="text-sm leading-[21px] mt-2">{t('ad.roi.empty')}</p>
             ) : (
               <Table size="small">
                 <TableHead>
@@ -88,13 +81,13 @@ export default async function DepthPage({ searchParams }: { searchParams: Promis
                 </TableBody>
               </Table>
             )}
-          </Paper>
+          </div>
 
-          <Paper variant="outlined" sx={{ p: 2 }}>
+          <div className="rounded-[12px] border bg-card p-4">
             <SectionTitle>{t('ad.conn.title')}</SectionTitle>
-            <Typography variant="body2" color="text.secondary">{t('ad.conn.help')}</Typography>
+            <p className="text-[13px] leading-[19px] text-muted-foreground">{t('ad.conn.help')}</p>
             {connectors.data!.length === 0 ? (
-              <Typography sx={{ mt: 1 }}>{t('ad.conn.empty')}</Typography>
+              <p className="text-sm leading-[21px] mt-2">{t('ad.conn.empty')}</p>
             ) : (
               <Table size="small">
                 <TableHead>
@@ -117,12 +110,12 @@ export default async function DepthPage({ searchParams }: { searchParams: Promis
                 </TableBody>
               </Table>
             )}
-          </Paper>
+          </div>
 
-          <Paper variant="outlined" sx={{ p: 2 }}>
+          <div className="rounded-[12px] border bg-card p-4">
             <SectionTitle>{t('ad.pay.title')}</SectionTitle>
             {payouts.data!.length === 0 ? (
-              <Typography>{t('ad.pay.empty')}</Typography>
+              <p className="text-sm leading-[21px]">{t('ad.pay.empty')}</p>
             ) : (
               <Table size="small">
                 <TableHead>
@@ -145,22 +138,22 @@ export default async function DepthPage({ searchParams }: { searchParams: Promis
                 </TableBody>
               </Table>
             )}
-          </Paper>
+          </div>
 
           {cycles.data!.length > 0 && (
-            <Paper variant="outlined" sx={{ p: 2 }}>
+            <div className="rounded-[12px] border bg-card p-4">
               <SectionTitle>{t('ad.cycle.pick')}</SectionTitle>
-              <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', mb: 2 }}>
+              <div className="flex flex-row gap-4 flex-wrap mb-4">
                 {cycles.data!.map((c) => (
                   <Link key={c.id} href={`/admissions/depth?cycle=${c.id}`} style={{ fontWeight: c.id === picked ? 700 : 400 }}>
                     {c.name}
                   </Link>
                 ))}
-              </Stack>
+              </div>
 
               <SectionTitle>{t('ad.rank.title')}</SectionTitle>
               {!rank?.data || rank.data.rows.length === 0 ? (
-                <Typography>{t('ad.rank.empty')}</Typography>
+                <p className="text-sm leading-[21px]">{t('ad.rank.empty')}</p>
               ) : (
                 <Table size="small">
                   <TableHead>
@@ -188,7 +181,7 @@ export default async function DepthPage({ searchParams }: { searchParams: Promis
 
               <SectionTitle>{t('ad.seats.title')}</SectionTitle>
               {!seats?.data || seats.data.length === 0 ? (
-                <Typography>{t('ad.seats.empty')}</Typography>
+                <p className="text-sm leading-[21px]">{t('ad.seats.empty')}</p>
               ) : (
                 <Table size="small">
                   <TableHead>
@@ -216,7 +209,7 @@ export default async function DepthPage({ searchParams }: { searchParams: Promis
 
               <SectionTitle>{t('ad.rounds.title')}</SectionTitle>
               {!rounds?.data || rounds.data.length === 0 ? (
-                <Typography>{t('ad.rounds.empty')}</Typography>
+                <p className="text-sm leading-[21px]">{t('ad.rounds.empty')}</p>
               ) : (
                 <Table size="small">
                   <TableHead>
@@ -235,9 +228,9 @@ export default async function DepthPage({ searchParams }: { searchParams: Promis
                   </TableBody>
                 </Table>
               )}
-            </Paper>
+            </div>
           )}
-        </Stack>
+        </div>
       )}
     </>
   );

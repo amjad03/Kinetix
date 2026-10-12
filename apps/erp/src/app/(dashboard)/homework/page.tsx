@@ -1,4 +1,3 @@
-import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
 import type { Metadata } from 'next';
 import { HomeworkTable } from '@/components/HomeworkTable';
 import { PageHeader } from '@/components/PageHeader';
@@ -9,6 +8,7 @@ import { getI18n } from '@/i18n/server';
 import { schoolToday, TIMEZONE } from '@/lib/school';
 import type { HomeworkRow } from '@/lib/types';
 
+import { ClipboardList as AssignmentOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.homework') };
 }

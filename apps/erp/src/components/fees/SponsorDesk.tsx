@@ -1,8 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useState } from 'react';
 import { addSponsor, cancelSponsorInvoice, issueSponsorInvoice, recordSponsorPayment } from '@/app/(dashboard)/fees/sponsors/actions';
 import { ActionButton, FormDialog, Grid, Pill, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
@@ -10,6 +6,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { SPONSOR_LINE_SLOTS, SPONSOR_PAY_METHODS, type SponsorInvoiceRow, type SponsorOutstanding, type SponsorRow } from '@/lib/payments-desk';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** Sponsor invoices, the outstanding report and the sponsor list. */
 export function SponsorDesk({ sponsors, invoices, outstanding, students }: { sponsors: SponsorRow[]; invoices: SponsorInvoiceRow[]; outstanding: SponsorOutstanding; students: { id: string; label: string }[] }) {
   const { t, fmt } = useI18n();
@@ -32,10 +30,10 @@ export function SponsorDesk({ sponsors, invoices, outstanding, students }: { spo
       label: '',
       cell: (i) =>
         i.status === 'open' || i.status === 'partial' ? (
-          <Stack direction="row" spacing={0.5}>
+          <div className="flex flex-row gap-1">
             <Button size="small" onClick={() => setDialog(i)} data-testid={`pd-pay-${i.id}`}>{t('pd.recordPayment')}</Button>
             {i.paidPaise === 0 && <ActionButton label={t('pd.cancelInvoice')} tone="error" run={() => cancelSponsorInvoice(i.id)} onDone={toast} />}
-          </Stack>
+          </div>
         ) : null,
     },
   ];
@@ -80,10 +78,10 @@ export function SponsorDesk({ sponsors, invoices, outstanding, students }: { spo
       label: t('pd.tab.invoices'),
       node: (
         <>
-          <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+          <div className="flex flex-row gap-2 mb-4">
             <Button variant="contained" startIcon={<Add />} onClick={() => setDialog('invoice')} disabled={sponsors.length === 0} data-testid="pd-new-invoice">{t('pd.newInvoice')}</Button>
             <Button onClick={() => setDialog('sponsor')} data-testid="pd-new-sponsor">{t('pd.newSponsor')}</Button>
-          </Stack>
+          </div>
           <Grid testId="pd-invoices" empty={t('pd.empty.invoices')} rows={invoices} cols={invoiceCols} exportName="sponsor-invoices" />
         </>
       ),
@@ -93,12 +91,12 @@ export function SponsorDesk({ sponsors, invoices, outstanding, students }: { spo
       label: t('pd.tab.outstanding'),
       node: (
         <>
-          <Stack direction="row" spacing={3} useFlexGap sx={{ mb: 2, flexWrap: 'wrap' }} data-testid="pd-totals">
+          <div className="flex flex-row gap-6 mb-4 flex-wrap" data-testid="pd-totals">
             <span>{t('pd.total.billed', { amount: fmt.rupees(outstanding.billedPaise) })}</span>
             <span>{t('pd.total.received', { amount: fmt.rupees(outstanding.paidPaise) })}</span>
             <strong>{t('pd.total.outstanding', { amount: fmt.rupees(outstanding.outstandingPaise) })}</strong>
             <span>{t('pd.total.overdue', { amount: fmt.rupees(outstanding.overduePaise) })}</span>
-          </Stack>
+          </div>
           <Grid testId="pd-outstanding" empty={t('pd.empty.outstanding')} rows={outstanding.sponsors} cols={outCols} exportName="sponsor-outstanding" />
         </>
       ),

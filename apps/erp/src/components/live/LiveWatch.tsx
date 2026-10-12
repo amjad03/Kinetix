@@ -1,21 +1,4 @@
 'use client';
-
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import CloudOffOutlined from '@mui/icons-material/CloudOffOutlined';
-import EventBusyOutlined from '@mui/icons-material/EventBusyOutlined';
-import Fullscreen from '@mui/icons-material/Fullscreen';
-import LockOutlined from '@mui/icons-material/LockOutlined';
-import MicOffOutlined from '@mui/icons-material/MicOffOutlined';
-import Refresh from '@mui/icons-material/Refresh';
-import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
-import WifiOffOutlined from '@mui/icons-material/WifiOffOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useI18n } from '@/i18n/client';
@@ -27,6 +10,9 @@ import { LiveAudioControls } from './LiveAudioControls';
 import { LiveBoard } from './LiveBoard';
 import { LiveChip } from './LiveChip';
 
+import { Button, Chip, CircularProgress, IconButton, Tooltip } from '@/components/kx';
+import { ArrowLeft as ArrowBack, CalendarX as EventBusyOutlined, CloudOff as CloudOffOutlined, Eye as VisibilityOutlined, Lock as LockOutlined, Maximize as Fullscreen, MicOff as MicOffOutlined, RefreshCw as Refresh, WifiOff as WifiOffOutlined } from 'lucide-react';
+import { cn } from '@/lib/utils';
 type Status =
   | { kind: 'connecting' }
   | { kind: 'watching' }
@@ -158,58 +144,56 @@ export function LiveWatch({ board, timeZone, canChangeSettings = false }: { boar
 
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, ml: -1 }}>
+      <div className="flex items-center gap-2 mb-2 -ml-2">
         <Button component={Link} href="/live" startIcon={<ArrowBack />} size="small">
           {t('live.classrooms')}
         </Button>
-      </Box>
+      </div>
 
       {/* Status strip, like the board's own */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: { xs: 1, md: 2 }, mb: 2 }} data-testid="live-info">
-        <Box sx={{ minWidth: 0, flex: '1 1 320px' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-            <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', md: '1.75rem' } }}>
+      <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4" data-testid="live-info">
+        <div className="min-w-0 flex-[1_1_320px]">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="font-display text-[1.5rem] md:text-[1.75rem]">
               {title}
-            </Typography>
+            </h1>
             <StatusChip status={status} />
-          </Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          </div>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mt-1">
             {session ? t('live.since', { teacher: session.teacher, time: fmt.time(session.startedAt, timeZone) }) : ''}
             {board.name}
             {board.room ? ` · ${board.room}` : ''}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
           {audio?.allowed && audio.on && status.kind !== 'ended' && status.kind !== 'refused' && (
             <LiveAudioControls player={player} listening={listening} onListen={listen} onStop={stopListening} />
           )}
           {hasFrame && (
-            <Chip variant="outlined" label={t('live.page', { n: p.index + 1, d: p.pageCount })} data-testid="live-page" sx={{ fontVariantNumeric: 'tabular-nums' }} />
+            <Chip className="tabular-nums" variant="outlined" label={t('live.page', { n: p.index + 1, d: p.pageCount })} data-testid="live-page" />
           )}
           <Tooltip title={t('live.fullScreen')}>
             <IconButton aria-label={t('live.fullScreen')} onClick={() => stage.current?.requestFullscreen?.().catch(() => {})}>
               <Fullscreen />
             </IconButton>
           </Tooltip>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box ref={stage} sx={{ width: '100%', maxWidth: 'calc((100dvh - 250px) * 16 / 9)', minWidth: { xs: 0, sm: 480 }, mx: 'auto', ':fullscreen': { maxWidth: 'none', display: 'grid', placeItems: 'center', bgcolor: '#000' } }}>
+      <div className="w-full max-w-[calc((100dvh_-_250px)_*_16_/_9)] min-w-0 sm:min-w-[480px] mx-auto [&:fullscreen]:max-w-none [&:fullscreen]:grid [&:fullscreen]:place-items-center [&:fullscreen]:bg-[#000]" ref={stage}>
         <LiveBoard player={p} version={version}>
           <Overlay status={status} hasFrame={hasFrame} slow={slow} onRetry={retry} canChangeSettings={canChangeSettings} />
           {status.kind === 'watching' && hasFrame && p.strokes.length === 0 && (
-            <Box
+            <div className="absolute left-1/2 bottom-[16px] [transform:translateX(-50%)] px-4 py-1.5 rounded-[160px] bg-[rgba(32,33,36,.72)] text-white text-[13px] leading-[19px] whitespace-nowrap"
               data-testid="live-empty"
-              sx={{ position: 'absolute', left: '50%', bottom: 16, transform: 'translateX(-50%)', px: 2, py: 0.75, borderRadius: 16, bgcolor: 'rgba(32,33,36,.72)', color: '#fff', typography: 'body2', whiteSpace: 'nowrap' }}
             >
               {p.pageCount > 1 ? t('live.pageEmpty') : t('live.boardEmpty')}
-            </Box>
+            </div>
           )}
         </LiveBoard>
-      </Box>
+      </div>
 
-      <Box
-        sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, md: 3 }, mt: 1.5, color: 'text.secondary', justifyContent: 'center' }}
+      <div className="flex flex-wrap gap-2 md:gap-6 mt-3 text-muted-foreground justify-center"
         data-testid="live-notes"
       >
         <Note icon={<VisibilityOutlined />}>{t('live.audited')}</Note>
@@ -219,27 +203,27 @@ export function LiveWatch({ board, timeZone, canChangeSettings = false }: { boar
             {canChangeSettings && (
               <>
                 {' '}
-                <Box component={Link} href="/settings" sx={{ color: 'primary.main', fontWeight: 500 }} data-testid="live-audio-settings">
+                <Link className="text-teal-ink font-medium" href="/settings" data-testid="live-audio-settings">
                   {t('live.audioSettings')}
-                </Box>
+                </Link>
               </>
             )}
           </Note>
         )}
         {audio?.allowed && !audio.on && <Note icon={<MicOffOutlined />}>{t('live.micOff')}</Note>}
-      </Box>
+      </div>
     </>
   );
 }
 
 function Note({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, '& svg': { fontSize: 18 } }}>
+    <div className="inline-flex items-center gap-1.5 [&_svg]:text-[18px]">
       {icon}
-      <Typography variant="caption" component="span" sx={{ fontSize: '0.8125rem' }}>
+      <span className="tracking-[0.3px] text-[0.8125rem]">
         {children}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 }
 
@@ -253,11 +237,11 @@ function StatusChip({ status }: { status: Status }) {
     case 'reconnecting':
       return <Chip size="small" variant="outlined" label={t('live.reconnecting')} />;
     case 'offline':
-      return <Chip size="small" variant="outlined" label={t('live.boardOffline')} sx={{ color: 'text.secondary' }} />;
+      return <Chip className="text-muted-foreground" size="small" variant="outlined" label={t('live.boardOffline')} />;
     case 'ended':
-      return <Chip size="small" label={t('live.ended')} sx={{ bgcolor: 'm3.surfaceContainerHighest' }} />;
+      return <Chip className="bg-accent" size="small" label={t('live.ended')} />;
     case 'refused':
-      return <Chip size="small" label={t('live.notAvailable')} sx={{ bgcolor: 'm3.surfaceContainerHighest' }} />;
+      return <Chip className="bg-accent" size="small" label={t('live.notAvailable')} />;
   }
 }
 
@@ -269,13 +253,13 @@ function Overlay({ status, hasFrame, slow, onRetry, canChangeSettings }: { statu
     return (
       <Center testId="live-waiting" scrim={false}>
         <CircularProgress size={28} />
-        <Typography variant="body2" sx={{ mt: 1.5 }}>
+        <p className="text-[13px] leading-[19px] mt-3">
           {status.kind === 'connecting' ? t('live.connectingBoard') : t('live.waitingBoard')}
-        </Typography>
+        </p>
         {slow && (
-          <Typography variant="caption" component="p" sx={{ mt: 0.5, maxWidth: 380 }}>
+          <p className="text-xs leading-4 tracking-[0.3px] mt-1 max-w-[380px]">
             {t('live.slow')}
-          </Typography>
+          </p>
         )}
       </Center>
     );
@@ -285,12 +269,12 @@ function Overlay({ status, hasFrame, slow, onRetry, canChangeSettings }: { statu
     return (
       <Center testId={offline ? 'live-offline' : 'live-reconnecting'} scrim={hasFrame}>
         {offline ? <WifiOffOutlined /> : <CircularProgress size={28} />}
-        <Typography variant="subtitle1" sx={{ mt: 1.5 }}>
+        <h6 className="text-base leading-6 font-medium tracking-[0.1px] mt-3">
           {offline ? t('live.wentOffline') : t('live.reconnecting')}
-        </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.85 }}>
+        </h6>
+        <p className="text-[13px] leading-[19px] opacity-[0.85]">
           {offline ? t('live.offlineBody') : t('live.reconnectingBody')}
-        </Typography>
+        </p>
       </Center>
     );
   }
@@ -309,13 +293,13 @@ function Overlay({ status, hasFrame, slow, onRetry, canChangeSettings }: { statu
   return (
     <Center testId={ended ? 'live-ended' : 'live-refused'} scrim={hasFrame}>
       {icon}
-      <Typography variant="subtitle1" sx={{ mt: 1.5 }}>
+      <h6 className="text-base leading-6 font-medium tracking-[0.1px] mt-3">
         {title}
-      </Typography>
-      <Typography variant="body2" sx={{ opacity: 0.85, maxWidth: 420 }}>
+      </h6>
+      <p className="text-[13px] leading-[19px] opacity-[0.85] max-w-[420px]">
         {text}
-      </Typography>
-      <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+      </p>
+      <div className="flex gap-2 mt-4">
         {status.kind === 'refused' && status.code === 'expired' ? (
           <Button variant="contained" href="/auth/end?reason=expired">
             {t('live.signIn')}
@@ -337,32 +321,18 @@ function Overlay({ status, hasFrame, slow, onRetry, canChangeSettings }: { statu
             )}
           </>
         )}
-      </Box>
+      </div>
     </Center>
   );
 }
 
 function Center({ children, testId, scrim }: { children: ReactNode; testId: string; scrim: boolean }) {
   return (
-    <Box
+    <div className={cn('absolute inset-0 flex flex-col items-center justify-center text-center p-6 [&>svg]:text-[36px] [&>svg]:opacity-[0.9]', scrim ? 'bg-[rgba(32,33,36,.72)]' : 'bg-transparent', scrim ? 'text-white' : 'text-[#3c4043]')}
       data-testid={testId}
       role="status"
-      sx={{
-        position: 'absolute',
-        inset: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        p: 3,
-        // Over a drawn board: a scrim. Over the empty paper: the board's own ink colour.
-        bgcolor: scrim ? 'rgba(32,33,36,.72)' : 'transparent',
-        color: scrim ? '#fff' : '#3c4043',
-        '& > svg': { fontSize: 36, opacity: 0.9 },
-      }}
     >
       {children}
-    </Box>
+    </div>
   );
 }

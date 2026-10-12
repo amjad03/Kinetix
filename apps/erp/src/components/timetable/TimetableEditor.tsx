@@ -1,22 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
-import DeleteOutline from '@mui/icons-material/DeleteOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useMemo, useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { addSlot, changeSlot, removeSlot } from '@/app/(dashboard)/timetable/actions';
@@ -27,6 +9,10 @@ import { weekdayName, weekdayNameShort } from '@/lib/dates';
 import { addMinutes, hm, slotProblem, subjectsFor, weekGrid, type SlotInput } from '@/lib/timetable';
 import type { StaffMember, Structure, TimetableSlot } from '@/lib/types';
 
+import { Alert, Button, ButtonBase, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Snackbar } from '@/components/kx';
+import { CalendarDays as CalendarMonthOutlined, Plus as Add, Trash2 as DeleteOutline } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { size } from '@/lib/sx';
 export interface TimetableView {
   kind: 'class' | 'teacher';
   id: string;
@@ -63,79 +49,75 @@ export function TimetableEditor({
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2 }}>
-        <Box>
-          <Typography variant="h6" component="h2" sx={{ fontSize: '1.125rem' }} data-testid="timetable-title">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 className="font-medium tracking-[0.1px] text-[1.125rem]" data-testid="timetable-title">
             {view.name}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" data-testid="timetable-summary">
+          </h2>
+          <p className="text-[13px] leading-[19px] text-muted-foreground" data-testid="timetable-summary">
             {t.plural('tt.periods', slots.length)}
             {hours ? ` · ${t('tt.teaching', { time: formatHours(hours, t) })}` : ''}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Button variant="contained" startIcon={<Add />} onClick={() => add()}>
           {t('tt.addPeriod')}
         </Button>
-      </Box>
+      </div>
 
       {slots.length === 0 ? (
         <EmptyState icon={<CalendarMonthOutlined />} title={view.kind === 'class' ? t('tt.noPeriodsClass') : t('tt.noPeriodsTeacher')} testId="no-periods" actions={<Button variant="outlined" startIcon={<Add />} onClick={() => add()}>{t('tt.addPeriod')}</Button>}>
           {t('tt.noPeriodsBody')}
         </EmptyState>
       ) : (
-        <Box
+        <div className="border border-border rounded-[12px] overflow-x-auto"
           data-testid="timetable-grid"
-          sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', overflowX: 'auto' }}
         >
-          <Box
+          <div className="grid" style={{ gridTemplateColumns: `72px repeat(${grid.columns.length}, minmax(132px, 1fr))`, minWidth: size(72 + grid.columns.length * 132) }}
             role="table"
             aria-label={t('tt.gridLabel', { name: view.name })}
-            sx={{ display: 'grid', gridTemplateColumns: `72px repeat(${grid.columns.length}, minmax(132px, 1fr))`, minWidth: 72 + grid.columns.length * 132 }}
           >
-            <Box role="row" sx={{ display: 'contents' }}>
-              <Box role="columnheader" sx={{ ...headSx, position: 'sticky', left: 0, zIndex: 2 }} />
+            <div className="contents" role="row">
+              <div className="sticky left-0 z-[2] border-b bg-muted px-3 py-2.5" role="columnheader" />
               {grid.columns.map((c) => (
-                <Box key={c.key} role="columnheader" sx={{ ...headSx, textAlign: 'center' }}>
-                  <Typography variant="subtitle2" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                <div className="text-center border-b bg-muted px-3 py-2.5" key={c.key} role="columnheader">
+                  <h6 className="text-sm leading-5 font-medium tracking-[0.1px] tabular-nums">
                     {c.startsAt}–{c.endsAt}
-                  </Typography>
-                </Box>
+                  </h6>
+                </div>
               ))}
-            </Box>
+            </div>
             {grid.rows.map((r) => (
-              <Box key={r.day} role="row" sx={{ display: 'contents' }} data-testid={`day-${r.day}`}>
-                <Box role="rowheader" sx={{ ...cellSx, display: 'flex', alignItems: 'center', bgcolor: 'm3.surfaceContainerLow', position: 'sticky', left: 0, zIndex: 1 }}>
-                  <Typography variant="subtitle2">{weekdayNameShort(r.day, locale)}</Typography>
-                </Box>
+              <div className="contents" key={r.day} role="row" data-testid={`day-${r.day}`}>
+                <div className="flex items-center bg-muted sticky left-0 z-[1] min-h-[76px] border-b border-l p-1.5 first-of-type:border-l-0" role="rowheader">
+                  <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{weekdayNameShort(r.day, locale)}</h6>
+                </div>
                 {grid.columns.map((c) => {
                   const here = r.cells[c.key] ?? [];
                   return (
-                    <Box key={c.key} role="cell" sx={{ ...cellSx, display: 'grid', gap: 0.5, '&:hover .kx-add': { opacity: 1 } }}>
+                    <div className="grid gap-1 [&:hover_.kx-add]:opacity-[1] min-h-[76px] border-b border-l p-1.5 first-of-type:border-l-0" key={c.key} role="cell">
                       {here.map((s) => (
                         <SlotCard key={s.id} slot={s} view={view} onClick={() => setEditing({ slot: s })} />
                       ))}
                       {here.length === 0 && (
-                        <IconButton
-                          className="kx-add"
+                        <IconButton className="kx-add justify-self-center self-center opacity-[0.35] focus-visible:opacity-[1] text-muted-foreground"
                           size="small"
                           aria-label={t('tt.addAt', { day: weekdayName(r.day, locale), time: c.startsAt })}
                           onClick={() => add({ dayOfWeek: r.day, startsAt: c.startsAt, endsAt: c.endsAt })}
-                          sx={{ justifySelf: 'center', alignSelf: 'center', opacity: 0.35, '&:focus-visible': { opacity: 1 }, color: 'text.secondary' }}
                         >
-                          <Add fontSize="small" />
+                          <Add className="size-5" />
                         </IconButton>
                       )}
-                    </Box>
+                    </div>
                   );
                 })}
-              </Box>
+              </div>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+      <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-3">
         {t('tt.footer')}
-      </Typography>
+      </p>
 
       {editing && (
         <PeriodDialog
@@ -157,8 +139,6 @@ export function TimetableEditor({
   );
 }
 
-const headSx = { px: 1.5, py: 1.25, bgcolor: 'm3.surfaceContainerLow', borderBottom: 1, borderColor: 'm3.outlineVariant' } as const;
-const cellSx = { p: 0.75, minHeight: 76, borderBottom: 1, borderLeft: 1, borderColor: 'm3.outlineVariant', '&:first-of-type': { borderLeft: 0 } } as const;
 
 const minutes = (t: string) => {
   const [h, m] = t.split(':').map(Number);
@@ -170,36 +150,21 @@ function SlotCard({ slot, view, onClick }: { slot: TimetableSlot; view: Timetabl
   const { t, locale } = useI18n();
   const who = view.kind === 'class' ? slot.teacher.fullName : slot.section.displayName;
   return (
-    <ButtonBase
+    <ButtonBase className="block text-left w-full h-full rounded-[8px] px-2.5 py-2 bg-secondary text-secondary-foreground border-l-3 border-teal hover:bg-teal-soft hover:text-teal-ink focus-visible:[outline:2px] focus-visible:outline-teal focus-visible:[outline-style:solid]"
       onClick={onClick}
       data-testid="slot"
       aria-label={t('tt.slotLabel', { subject: slot.subject.name, who, day: weekdayName(slot.dayOfWeek, locale), time: `${hm(slot.startsAt)}–${hm(slot.endsAt)}` })}
-      sx={{
-        display: 'block',
-        textAlign: 'left',
-        width: '100%',
-        height: '100%',
-        borderRadius: '8px',
-        px: 1.25,
-        py: 1,
-        bgcolor: 'm3.secondaryContainer',
-        color: 'm3.onSecondaryContainer',
-        borderLeft: 3,
-        borderColor: 'primary.main',
-        '&:hover': { bgcolor: 'm3.primaryContainer', color: 'm3.onPrimaryContainer' },
-        '&:focus-visible': { outline: 2, outlineColor: 'primary.main', outlineStyle: 'solid' },
-      }}
     >
-      <Typography variant="subtitle2" sx={{ lineHeight: '18px', fontSize: '0.8125rem' }}>
+      <h6 className="font-medium tracking-[0.1px] text-[0.8125rem]">
         {slot.subject.name}
-      </Typography>
-      <Typography variant="caption" component="p" sx={{ opacity: 0.85, lineHeight: '16px' }} noWrap>
+      </h6>
+      <p className="text-xs tracking-[0.3px] truncate opacity-[0.85] leading-[16px]">
         {who}
-      </Typography>
+      </p>
       {slot.room && (
-        <Typography variant="caption" component="p" sx={{ opacity: 0.7, lineHeight: '16px' }} noWrap>
+        <p className="text-xs tracking-[0.3px] truncate opacity-[0.7] leading-[16px]">
           {slot.room}
-        </Typography>
+        </p>
       )}
     </ButtonBase>
   );
@@ -281,9 +246,9 @@ function PeriodDialog({
       <Dialog open onClose={pending ? undefined : () => setConfirmRemove(false)} maxWidth="xs" fullWidth aria-labelledby="remove-period-title">
         <DialogTitle id="remove-period-title">{t('tt.remove.title')}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2">
+          <p className="text-[13px] leading-[19px]">
             {t('tt.remove.body', { subject: existing.subject.name, className: existing.section.displayName, teacher: existing.teacher.fullName, day: weekdayName(existing.dayOfWeek, locale), time: hm(existing.startsAt) })}
-          </Typography>
+          </p>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmRemove(false)} disabled={pending}>
@@ -298,8 +263,7 @@ function PeriodDialog({
 
   return (
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="sm" fullWidth aria-labelledby="period-title">
-      <Box
-        component="form"
+      <form
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -308,7 +272,7 @@ function PeriodDialog({
       >
         <DialogTitle id="period-title">{existing ? t('tt.change') : t('tt.add')}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2.5} sx={{ pt: 1 }}>
+          <div className="flex flex-col gap-5 pt-2">
             {error && (
               <Alert severity="error" data-testid="period-error">
                 {error}
@@ -345,14 +309,14 @@ function PeriodDialog({
                 {classSubjects.map((s) => (
                   <MenuItem key={s.id} value={s.id}>
                     {s.name}
-                    <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                    <span className="text-[13px] leading-[19px] text-muted-foreground ml-2">
                       {s.code}
-                    </Typography>
+                    </span>
                   </MenuItem>
                 ))}
               </TextInput>
             </FormField>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+            <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
               <FormField label={t('tt.teacher')} required>
                 <TextInput select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} required>
                   {staff.map((p) => (
@@ -365,9 +329,9 @@ function PeriodDialog({
               <FormField label={t('tt.room')}>
                 <TextInput select value={roomId} onChange={(e) => setRoomId(e.target.value)} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
                   <MenuItem value="">
-                    <Typography component="span" color="text.secondary">
+                    <span className="text-sm leading-[21px] text-muted-foreground">
                       {t('tt.noRoom')}
-                    </Typography>
+                    </span>
                   </MenuItem>
                   {rooms.map((r) => (
                     <MenuItem key={r.id} value={r.id}>
@@ -376,10 +340,10 @@ function PeriodDialog({
                   ))}
                 </TextInput>
               </FormField>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: '1.4fr 1fr 1fr' }, gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-[1fr_1fr] sm:grid-cols-[1.4fr_1fr_1fr] gap-4">
               <FormField label={t('tt.day')} required>
-                <TextInput select value={day} onChange={(e) => setDay(Number(e.target.value))} required sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}>
+                <TextInput className="col-span-full sm:col-[auto]" select value={day} onChange={(e) => setDay(Number(e.target.value))} required>
                   {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                     <MenuItem key={n} value={n}>
                       {weekdayName(n, locale)}
@@ -411,30 +375,30 @@ function PeriodDialog({
                   slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 300 } }}
                 />
               </FormField>
-            </Box>
+            </div>
             {existing && (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                 {t('tt.replaces')}
-              </Typography>
+              </span>
             )}
-          </Stack>
+          </div>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: existing ? 'space-between' : 'flex-end' }}>
+        <DialogActions className={cn(existing ? 'justify-between' : 'justify-end')}>
           {existing && (
             <Button color="error" startIcon={<DeleteOutline />} onClick={() => setConfirmRemove(true)} disabled={pending}>
               {t('tt.remove')}
             </Button>
           )}
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2">
             <Button onClick={() => onClose()} disabled={pending}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" variant="contained" disabled={pending || !!problem} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
               {existing ? t('common.save') : t('tt.addPeriod')}
             </Button>
-          </Box>
+          </div>
         </DialogActions>
-      </Box>
+      </form>
     </Dialog>
   );
 }

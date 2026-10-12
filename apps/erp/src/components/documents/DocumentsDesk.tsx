@@ -1,17 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import WorkspacePremiumOutlined from '@mui/icons-material/WorkspacePremiumOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { bulkIssue, classStudents, decideCertificate, requestCertificate } from '@/app/(dashboard)/documents/actions';
@@ -26,6 +13,8 @@ import type { MessageKey } from '@/i18n/messages';
 import { CERT_STATUSES, CERT_TONE, certActions, docDownload } from '@/lib/documents';
 import type { CertificateKind, CertificateRequest, CertificateStatus, CertificateSubject } from '@/lib/hr-types';
 
+import { Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem } from '@/components/kx';
+import { Award as WorkspacePremiumOutlined, Plus as Add } from 'lucide-react';
 export interface AvailableTemplate {
   id: string;
   kind: CertificateKind;
@@ -48,9 +37,9 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
   return (
     <>
       {view}
-      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', mb: 2 }}>
+      <div className="flex gap-3 flex-wrap items-center mb-4">
         <FormField label={t('hr.f.status')}>
-          <TextInput select value={status} onChange={(e) => router.push(e.target.value ? `/documents?status=${e.target.value}` : '/documents')} sx={{ minWidth: 180 }}>
+          <TextInput className="min-w-[180px]" select value={status} onChange={(e) => router.push(e.target.value ? `/documents?status=${e.target.value}` : '/documents')}>
             <MenuItem value="">{t('doc.allStatuses')}</MenuItem>
             {CERT_STATUSES.map((s) => (
               <MenuItem key={s} value={s}>
@@ -59,7 +48,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
             ))}
           </TextInput>
         </FormField>
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
         {canBulk && (
           <Button variant="outlined" onClick={() => setBulk(true)}>
             {t('doc.bulk')}
@@ -68,7 +57,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
         <Button variant="contained" startIcon={<Add />} onClick={() => setCreating(true)}>
           {t('doc.newRequest')}
         </Button>
-      </Box>
+      </div>
       {requests.length === 0 ? (
         <EmptyState icon={<WorkspacePremiumOutlined />} title={t('doc.none')}>
           {t('doc.noneBody')}
@@ -91,14 +80,14 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
                   <>
                     {r.subject.name}
                     {r.subject.detail && (
-                      <Typography variant="caption" color="text.secondary" component="div">
+                      <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {r.subject.detail}
-                      </Typography>
+                      </div>
                     )}
                   </>
                 ),
               },
-              { id: 'purpose', header: t('doc.purpose'), sort: (r) => r.purpose, cell: (r) => <Box sx={{ maxWidth: 220 }}>{r.purpose || '–'}</Box> },
+              { id: 'purpose', header: t('doc.purpose'), sort: (r) => r.purpose, cell: (r) => <div className="max-w-[220px]">{r.purpose || '–'}</div> },
               { id: 'status', header: t('hr.f.status'), sort: (r) => t(`doc.status.${r.status}` as MessageKey), cell: (r) => <Chip size="small" color={CERT_TONE[r.status]} label={t(`doc.status.${r.status}` as MessageKey)} /> },
               { id: 'serial', header: t('doc.serial'), sort: (r) => r.serialNo ?? '', cell: (r) => r.serialNo ?? '–' },
               {
@@ -111,7 +100,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
                   const can = certActions(r.status, { approver: r.subjectType === 'staff' ? approver : canBulk, office: true });
                   if (!canBulk) can.revoke = false;
                   return (
-                    <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+                    <span className="whitespace-nowrap">
                                             {can.reject && <Button size="small" disabled={pending} onClick={() => { setText(''); setAsking({ r, step: 'reject' }); }}>{t('doc.reject')}</Button>}
                       {can.approve && <Button size="small" variant="contained" disabled={pending} onClick={() => step(r, 'approve')}>{t('doc.approve')}</Button>}
                       {can.issue && <Button size="small" variant="contained" disabled={pending} onClick={() => step(r, 'issue')}>{t('doc.issue')}</Button>}
@@ -119,7 +108,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
                       {can.pdf && <Button size="small" href={docDownload.certificate(r.id)} target="_blank">{t('doc.openPdf')}</Button>}
                       {can.revoke && <Button size="small" color="error" disabled={pending} onClick={() => { setText(''); setAsking({ r, step: 'revoke' }); }}>{t('doc.revoke')}</Button>}
                     
-                    </Box>
+                    </span>
                   );
                 },
               },
@@ -132,7 +121,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
           <DialogTitle>{t(asking.step === 'reject' ? 'doc.rejectTitle' : 'doc.revokeTitle', { name: asking.r.subject.name })}</DialogTitle>
           <DialogContent>
             <FormField label={t(asking.step === 'reject' ? 'doc.note' : 'doc.reason')}>
-              <TextInput fullWidth multiline minRows={2} sx={{ mt: 1 }} value={text} onChange={(e) => setText(e.target.value)} />
+              <TextInput className="mt-2" fullWidth multiline minRows={2} value={text} onChange={(e) => setText(e.target.value)} />
             </FormField>
           </DialogContent>
           <DialogActions>
@@ -174,7 +163,7 @@ function RequestDialog({ templates, classes, staff, onClose, run }: { templates:
     <Dialog open onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>{t('doc.newRequest')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           <FormField label={t('doc.certificate')}>
             <TextInput select value={templateId} onChange={(e) => { setTemplateId(e.target.value); setSubject(''); setFields({}); }}>
               {templates.map((x) => (
@@ -225,7 +214,7 @@ function RequestDialog({ templates, classes, staff, onClose, run }: { templates:
           <FormField label={t('doc.purpose')}>
             <TextInput value={purpose} onChange={(e) => setPurpose(e.target.value)} />
           </FormField>
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('hr.cancel')}</Button>
@@ -256,10 +245,10 @@ function BulkDialog({ templates, classes, onClose, run }: { templates: Available
     <Dialog open onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>{t('doc.bulk')}</DialogTitle>
       <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
           {t('doc.bulkHelp')}
-        </Typography>
-        <Stack spacing={2}>
+        </p>
+        <div className="flex flex-col gap-4">
           <FormField label={t('doc.certificate')}>
             <TextInput select value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
               {templates.map((x) => (
@@ -281,7 +270,7 @@ function BulkDialog({ templates, classes, onClose, run }: { templates: Available
           <FormField label={t('doc.purpose')}>
             <TextInput value={purpose} onChange={(e) => setPurpose(e.target.value)} />
           </FormField>
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('hr.cancel')}</Button>

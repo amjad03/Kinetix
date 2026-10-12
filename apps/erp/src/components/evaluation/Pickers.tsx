@@ -1,6 +1,4 @@
 'use client';
-
-import Typography from '@mui/material/Typography';
 import { Grid } from '@/components/ops/kit';
 import { LinkButton } from '@/components/LinkButton';
 import { StatusPill } from '@/components/ui';
@@ -12,7 +10,7 @@ export function SessionPicker({ sessions }: { sessions: ExamSession[] }) {
   const { t, fmt } = useI18n();
   return (
     <>
-      <Typography sx={{ mb: 2 }}>{t('ev.anon')}</Typography>
+      <p className="text-sm leading-[21px] mb-4">{t('ev.anon')}</p>
       <Grid
         testId="ev-sessions"
         empty={t('ev.noSessions')}
@@ -33,9 +31,9 @@ export function SessionPapers({ session }: { session: ExamSessionDetail }) {
   const { t, fmt } = useI18n();
   return (
     <>
-      <Typography variant="h6" component="h2" sx={{ mb: 1.5 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-3">
         {t('ev.papers', { name: session.name })}
-      </Typography>
+      </h2>
       <Grid
         testId="ev-papers"
         empty={t('ev.noPapers')}

@@ -1,20 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition, type ChangeEvent, type FormEvent } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -25,6 +9,8 @@ import { ACTIVITY_KINDS, ENQUIRY_SOURCES, ENQUIRY_STAGES, ENQUIRY_STAGE_MOVES, t
 import { formatDate } from '@/lib/dates';
 import { ReasonDialog } from './ReasonDialog';
 
+import { Alert, Button, Card, CardActionArea, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 interface Props {
   enquiries: Enquiry[];
   counsellors: Counsellor[];
@@ -41,50 +27,50 @@ export function EnquiryBoard({ enquiries, counsellors, programs, today }: Props)
   const stages = ENQUIRY_STAGES.filter((s) => s !== 'converted' || enquiries.some((e) => e.stage === 'converted'));
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}>
+      <div className="flex justify-end gap-2 mb-4">
         <Button variant={byScore ? 'contained' : 'outlined'} color="inherit" onClick={() => setByScore(!byScore)} data-testid="sort-by-score">
           {byScore ? t('ag.lead.sortScore') : t('ag.lead.sortNewest')}
         </Button>
         <Button variant="contained" startIcon={<Add />} onClick={() => setAdding(true)}>
           {t('adm.enquiry.new')}
         </Button>
-      </Box>
-      <Box sx={{ display: 'grid', gridAutoFlow: 'column', gridAutoColumns: 'minmax(250px, 1fr)', gap: 2, overflowX: 'auto', pb: 1 }} data-testid="enquiry-board">
+      </div>
+      <div className="grid grid-flow-col auto-cols-[minmax(250px,1fr)] gap-4 overflow-x-auto pb-2" data-testid="enquiry-board">
         {stages.map((stage) => {
           const items = enquiries.filter((e) => e.stage === stage).sort((a, b) => (byScore ? b.leadScore - a.leadScore : 0));
           return (
-            <Box key={stage} component="section" aria-label={t(`adm.stage.${stage}` as MessageKey)} sx={{ bgcolor: 'kx.frame', border: 1, borderColor: 'm3.outlineVariant', borderRadius: 2, p: 1.5, minHeight: 160 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+            <section className="bg-background border border-border rounded-[20px] p-3 min-h-[160px]" key={stage} aria-label={t(`adm.stage.${stage}` as MessageKey)}>
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-3">
                 {t(`adm.stage.${stage}` as MessageKey)} · {items.length}
-              </Typography>
-              <Stack spacing={1}>
+              </h6>
+              <div className="flex flex-col gap-2">
                 {items.map((e) => (
                   <Card key={e.id} variant="outlined">
-                    <CardActionArea onClick={() => setOpenId(e.id)} sx={{ p: 1.5 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    <CardActionArea className="p-3" onClick={() => setOpenId(e.id)}>
+                      <p className="text-[13px] leading-[19px] font-semibold">
                         {e.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" component="div">
+                      </p>
+                      <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {e.programName ?? t('adm.enquiry.anyProgram')} · {t(`adm.source.${e.source}` as MessageKey)}
-                      </Typography>
-                      <Stack direction="row" spacing={0.5} sx={{ mt: 0.75, flexWrap: 'wrap', rowGap: 0.5 }}>
+                      </div>
+                      <div className="flex flex-row gap-1 mt-1.5 flex-wrap gap-y-1">
                         <Chip size="small" color={e.leadScore >= 50 ? 'success' : e.leadScore >= 25 ? 'info' : 'default'} label={t('ag.lead.score', { n: e.leadScore })} title={t('ag.lead.scoreHelp')} data-testid="lead-score" />
                         {e.nextFollowUpOn && e.nextFollowUpOn <= today && stage !== 'lost' && stage !== 'converted' && <Chip size="small" color="warning" label={t('adm.enquiry.followUpDue')} />}
                         <Chip size="small" variant="outlined" label={e.counsellorName ?? t('adm.enquiry.unassigned')} />
-                      </Stack>
+                      </div>
                       {e.nextFollowUpOn && (
-                        <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.5 }}>
+                        <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-1">
                           {t('adm.enquiry.next', { date: formatDate(e.nextFollowUpOn, 'dayMonth', locale) })}
-                        </Typography>
+                        </div>
                       )}
                     </CardActionArea>
                   </Card>
                 ))}
-              </Stack>
-            </Box>
+              </div>
+            </section>
           );
         })}
-      </Box>
+      </div>
       {adding && <NewEnquiry programs={programs} onClose={() => setAdding(false)} />}
       {openId && <EnquiryDesk id={openId} counsellors={counsellors} today={today} onClose={() => setOpenId(null)} />}
     </>
@@ -115,7 +101,7 @@ function NewEnquiry({ programs, onClose }: { programs: Props['programs']; onClos
       >
         <DialogTitle>{t('adm.enquiry.new')}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ pt: 0.5 }}>
+          <div className="flex flex-col gap-4 pt-1">
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('adm.field.name')} required>
               <TextInput value={f.name} onChange={set('name')} required autoFocus />
@@ -148,7 +134,7 @@ function NewEnquiry({ programs, onClose }: { programs: Props['programs']; onClos
             <FormField label={t('adm.field.message')}>
               <TextInput value={f.message} onChange={set('message')} multiline minRows={2} />
             </FormField>
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={pending}>
@@ -198,33 +184,33 @@ function EnquiryDesk({ id, counsellors, today, onClose }: { id: string; counsell
       <DialogTitle>{e ? e.name : t('common.loading')}</DialogTitle>
       <DialogContent>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="error">
             {error}
           </Alert>
         )}
         {!e ? (
           <CircularProgress size={24} />
         ) : (
-          <Stack spacing={2.5}>
-            <Box>
-              <Typography variant="body2">
+          <div className="flex flex-col gap-5">
+            <div>
+              <p className="text-[13px] leading-[19px]">
                 {e.phone}
                 {e.email ? ` · ${e.email}` : ''}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </p>
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {e.programName ?? t('adm.enquiry.anyProgram')} · {t(`adm.source.${e.source}` as MessageKey)} · {formatDate(e.createdAt.slice(0, 10), 'short', locale)}
-              </Typography>
+              </p>
               {e.message && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
+                <p className="text-[13px] leading-[19px] mt-2">
                   {`“${e.message}”`}
-                </Typography>
+                </p>
               )}
               {e.lostReason && (
-                <Alert severity="info" sx={{ mt: 1 }}>
+                <Alert className="mt-2" severity="info">
                   {e.lostReason}
                 </Alert>
               )}
-            </Box>
+            </div>
             <FormField label={t('adm.enquiry.counsellor')}>
               <TextInput select value={e.counsellorId ?? ''} disabled={pending} onChange={(ev) => run(() => assignEnquiry(id, ev.target.value || null))}>
                 <MenuItem value="">{t('adm.enquiry.unassigned')}</MenuItem>
@@ -235,26 +221,25 @@ function EnquiryDesk({ id, counsellors, today, onClose }: { id: string; counsell
                 ))}
               </TextInput>
             </FormField>
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            <div>
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
                 {t('adm.enquiry.moveTo')} ({t(`adm.stage.${e.stage}` as MessageKey)})
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+              </h6>
+              <div className="flex flex-row gap-2 flex-wrap gap-y-2">
                 {moves.map((s) => (
                   <Button key={s} size="small" variant="outlined" disabled={pending} onClick={() => (s === 'lost' ? setLost(true) : run(() => moveEnquiry(id, s)))}>
                     {t(`adm.stage.${s}` as MessageKey)}
                   </Button>
                 ))}
                 {moves.length === 0 && (
-                  <Typography variant="body2" color="text.secondary">
+                  <p className="text-[13px] leading-[19px] text-muted-foreground">
                     {t('adm.enquiry.final')}
-                  </Typography>
+                  </p>
                 )}
-              </Stack>
-            </Box>
+              </div>
+            </div>
             {e.stage !== 'converted' && e.stage !== 'lost' && (
-              <Box
-                component="form"
+              <form
                 onSubmit={(ev: FormEvent) => {
                   ev.preventDefault();
                   run(async () => {
@@ -264,13 +249,13 @@ function EnquiryDesk({ id, counsellors, today, onClose }: { id: string; counsell
                   });
                 }}
               >
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
                   {t('adm.enquiry.logContact')}
-                </Typography>
-                <Stack spacing={1.5}>
-                  <Stack direction="row" spacing={1}>
+                </h6>
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-row gap-2">
                     <FormField label={t('adm.field.kind')}>
-                      <TextInput select value={note.kind} onChange={(ev) => setNote({ ...note, kind: ev.target.value })} sx={{ minWidth: 130 }}>
+                      <TextInput className="min-w-[130px]" select value={note.kind} onChange={(ev) => setNote({ ...note, kind: ev.target.value })}>
                         {ACTIVITY_KINDS.map((k) => (
                           <MenuItem key={k} value={k}>
                             {t(`adm.kind.${k}` as MessageKey)}
@@ -286,42 +271,42 @@ function EnquiryDesk({ id, counsellors, today, onClose }: { id: string; counsell
                         slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
                       />
                     </FormField>
-                  </Stack>
+                  </div>
                   <FormField label={t('adm.field.note')}>
                     <TextInput value={note.note} onChange={(ev) => setNote({ ...note, note: ev.target.value })} multiline minRows={2} />
                   </FormField>
-                  <Box>
+                  <div>
                     <Button type="submit" variant="contained" size="small" disabled={pending || !note.note.trim()}>
                       {t('adm.enquiry.log')}
                     </Button>
-                  </Box>
-                </Stack>
-              </Box>
+                  </div>
+                </div>
+              </form>
             )}
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            <div>
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
                 {t('adm.enquiry.history')}
-              </Typography>
+              </h6>
               {e.activities.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {t('adm.enquiry.noHistory')}
-                </Typography>
+                </p>
               ) : (
-                <Stack spacing={1}>
+                <div className="flex flex-col gap-2">
                   {e.activities.map((a) => (
-                    <Box key={a.id}>
-                      <Typography variant="body2">
+                    <div key={a.id}>
+                      <p className="text-[13px] leading-[19px]">
                         <strong>{t(`adm.kind.${a.kind}` as MessageKey)}</strong> · {a.note}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      </p>
+                      <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {a.actorName ?? t('adm.system')} · {formatDate(a.createdAt.slice(0, 10), 'short', locale)}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   ))}
-                </Stack>
+                </div>
               )}
-            </Box>
-          </Stack>
+            </div>
+          </div>
         )}
       </DialogContent>
       <DialogActions>

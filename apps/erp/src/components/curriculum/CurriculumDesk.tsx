@@ -1,15 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { activateVersion, approveVersion, compareVersions, createVersion, draftFromImport, uploadSyllabus } from '@/app/(dashboard)/curriculum/actions';
 import { Bar, FormDialog, Grid, InfoDialog, useToast, type Field } from '@/components/ops/kit';
@@ -19,6 +8,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { diffCount, nextStep, type CurriculumDiff, type ImportRow, type VersionRow } from '@/lib/curriculum';
 
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@/components/kx';
 const TONE = { draft: 'warning', approved: 'info', active: 'success', archived: 'neutral' } as const;
 
 type Dlg = { title: string; fields: Field[]; run: (v: Record<string, string>) => Promise<{ ok: true; data: unknown } | { ok: false; error: string }> };
@@ -93,7 +83,7 @@ export function CurriculumDesk({ versions, imports, programs, canEdit, canApprov
             cell: (v) => {
               const step = canEdit ? nextStep(v.status, canApprove) : null;
               return (
-                <Stack direction="row" spacing={1}>
+                <div className="flex flex-row gap-2">
                   {step === 'approve' && (
                     <Button size="small" onClick={() => setDlg({ title: t('cu.approve'), fields: [{ name: 'bosRef', label: t('cu.f.bos'), required: true }], run: (f) => approveVersion(v.id, f.bosRef) })}>
                       {t('cu.approve')}
@@ -114,7 +104,7 @@ export function CurriculumDesk({ versions, imports, programs, canEdit, canApprov
                       {t('cu.compare')}
                     </Button>
                   )}
-                </Stack>
+                </div>
               );
             },
           },
@@ -155,29 +145,29 @@ export function CurriculumDesk({ versions, imports, programs, canEdit, canApprov
       {dlg && <FormDialog title={dlg.title} fields={dlg.fields} onSubmit={dlg.run} onClose={done} />}
       {flags && (
         <InfoDialog title={t('g1.imp.flags')} onClose={() => setFlags(null)}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">
             {t('g1.imp.flagHint')}
-          </Typography>
+          </p>
           {flags.map((f, n) => (
-            <Typography key={n} variant="body2" sx={{ mb: 0.5 }}>
+            <p className="text-[13px] leading-[19px] mb-1" key={n}>
               {f.where}: {f.message}
-            </Typography>
+            </p>
           ))}
         </InfoDialog>
       )}
       {upload && <UploadDialog programs={programs} onClose={(m) => { setUpload(false); if (m) toast(m); }} />}
       {diff && (
         <InfoDialog title={t('cu.diff.title')} onClose={() => setDiff(null)}>
-          <Typography variant="body2" sx={{ mb: 1 }} data-testid="cu-diff-summary">
+          <p className="text-[13px] leading-[19px] mb-2" data-testid="cu-diff-summary">
             {diff.from.label} to {diff.to.label}: {diffCount(diff) === 0 ? t('cu.diff.none') : t('cu.diff.count', { n: diffCount(diff) })}
-          </Typography>
-          {diff.added.map((s) => <Typography key={`a${s.code}`} variant="body2">+ {s.code} {s.name}</Typography>)}
-          {diff.removed.map((s) => <Typography key={`r${s.code}`} variant="body2">- {s.code} {s.name}</Typography>)}
+          </p>
+          {diff.added.map((s) => <p className="text-[13px] leading-[19px]" key={`a${s.code}`}>+ {s.code} {s.name}</p>)}
+          {diff.removed.map((s) => <p className="text-[13px] leading-[19px]" key={`r${s.code}`}>- {s.code} {s.name}</p>)}
           {diff.changed.map((s) => (
-            <Typography key={`c${s.code}`} variant="body2" component="div">
+            <div className="text-[13px] leading-[19px]" key={`c${s.code}`}>
               ~ {s.code} {s.name}
               <ul style={{ margin: 0 }}>{s.changes.map((c) => <li key={c}>{c}</li>)}</ul>
-            </Typography>
+            </div>
           ))}
         </InfoDialog>
       )}
@@ -210,15 +200,15 @@ function UploadDialog({ programs, onClose }: { programs: { id: string; name: str
     <Dialog open onClose={() => onClose()} fullWidth maxWidth="sm">
       <DialogTitle>{t('cu.upload')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <Typography variant="body2">{t('cu.upload.hint')}</Typography>
+        <div className="flex flex-col gap-4 mt-2">
+          <p className="text-[13px] leading-[19px]">{t('cu.upload.hint')}</p>
           <TextField select label={t('cu.f.programme')} value={programId} onChange={(e) => setProgramId(e.target.value)}>
             {programs.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
           </TextField>
           <TextField label={t('cu.f.year')} value={year} onChange={(e) => setYear(e.target.value)} />
           <input type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label={t('cu.imp.file')} data-testid="cu-file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           {error && <Alert severity="error">{error}</Alert>}
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()}>{t('ops.cancel')}</Button>

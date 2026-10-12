@@ -1,11 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { confirmFee, respondToOffer, startFee, uploadDocument, type FeeCheckout } from '@/app/apply/actions';
@@ -14,6 +7,7 @@ import type { MessageKey } from '@/i18n/messages';
 import type { PublicApplication } from '@/lib/admissions';
 import { formatRupees } from '@/lib/money';
 
+import { Alert, Button, Chip } from '@/components/kx';
 interface RazorpayWindow {
   Razorpay?: new (o: Record<string, unknown>) => { open(): void; on(e: string, f: () => void): void };
 }
@@ -69,38 +63,38 @@ export function TrackActions({ slug, app, token }: { slug: string; app: PublicAp
     });
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
       {info && <Alert severity="info">{info}</Alert>}
       {app.feeStatus === 'pending' && !closed && (
-        <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+        <div>
+          <h6 className="text-base leading-6 tracking-[0.1px] font-semibold">
             {t('apply.feeDue', { amount: formatRupees(app.feeDuePaise) })}
-          </Typography>
-          <Button variant="contained" sx={{ mt: 1 }} disabled={pending} onClick={pay}>
+          </h6>
+          <Button className="mt-2" variant="contained" disabled={pending} onClick={pay}>
             {t('apply.payOnline')}
           </Button>
-        </Box>
+        </div>
       )}
-      {app.receiptNo && <Typography variant="body2">{t('apply.receipt', { no: app.receiptNo })}</Typography>}
+      {app.receiptNo && <p className="text-[13px] leading-[19px]">{t('apply.receipt', { no: app.receiptNo })}</p>}
 
-      <Box>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+      <div>
+        <h6 className="text-base leading-6 tracking-[0.1px] font-semibold mb-2">
           {t('apply.documents')}
-        </Typography>
-        <Stack spacing={1.5}>
+        </h6>
+        <div className="flex flex-col gap-3">
           {app.documents.map((d) => (
-            <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 200px', minWidth: 0 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            <div className="flex items-center gap-2 flex-wrap" key={d.key}>
+              <div className="flex-[1_1_200px] min-w-0">
+                <p className="text-[13px] leading-[19px] font-semibold">
                   {d.label}
                   {d.required ? ' *' : ''}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
+                </p>
+                <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {d.uploaded ? d.fileName : t('adm.review.notUploaded')}
                   {d.reviewNote ? ` · ${d.reviewNote}` : ''}
-                </Typography>
-              </Box>
+                </span>
+              </div>
               {d.status && <Chip size="small" color={d.status === 'verified' ? 'success' : d.status === 'rejected' ? 'error' : 'default'} label={t(`adm.doc.${d.status}` as MessageKey)} />}
               {!closed && (
                 <>
@@ -131,37 +125,37 @@ export function TrackActions({ slug, app, token }: { slug: string; app: PublicAp
                   </Button>
                 </>
               )}
-            </Box>
+            </div>
           ))}
           {app.documents.length === 0 && (
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('adm.review.noDocuments')}
-            </Typography>
+            </p>
           )}
-        </Stack>
-      </Box>
+        </div>
+      </div>
 
       {app.status === 'offered' && (
         <Alert severity="success" action={undefined}>
-          <Typography sx={{ fontWeight: 600 }}>{t('apply.offerTitle')}</Typography>
-          {app.offerExpiresOn && <Typography variant="body2">{t('apply.offerUntil', { date: app.offerExpiresOn })}</Typography>}
-          <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+          <p className="text-sm leading-[21px] font-semibold">{t('apply.offerTitle')}</p>
+          {app.offerExpiresOn && <p className="text-[13px] leading-[19px]">{t('apply.offerUntil', { date: app.offerExpiresOn })}</p>}
+          <div className="flex flex-row gap-2 mt-3">
             <Button variant="contained" disabled={pending} onClick={() => start(async () => { const r = await respondToOffer(slug, app.id, token, 'accept'); if (r.ok) router.refresh(); else setError(r.error); })}>
               {t('apply.accept')}
             </Button>
             <Button disabled={pending} onClick={() => start(async () => { const r = await respondToOffer(slug, app.id, token, 'decline'); if (r.ok) router.refresh(); else setError(r.error); })}>
               {t('apply.decline')}
             </Button>
-          </Stack>
+          </div>
         </Alert>
       )}
       {!closed && app.status !== 'offered' && app.status !== 'accepted' && (
-        <Box>
+        <div>
           <Button size="small" color="error" disabled={pending} onClick={() => start(async () => { const r = await respondToOffer(slug, app.id, token, 'withdraw'); if (r.ok) router.refresh(); else setError(r.error); })}>
             {t('apply.withdraw')}
           </Button>
-        </Box>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }

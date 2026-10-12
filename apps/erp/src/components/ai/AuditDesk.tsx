@@ -1,6 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
 import { Grid } from '@/components/ops/kit';
 import { StatTile } from '@/components/ui';
 import { StatusPill } from '@/components/ui';
@@ -15,12 +13,12 @@ export function AuditDesk({ actions, summary }: { actions: AiActionRow[]; summar
   const decided = (d: string) => summary.byDecision.find((x) => x.decision === d)?.n ?? 0;
   return (
     <>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
+      <div className="grid grid-cols-[1fr_1fr] lg:grid-cols-[repeat(4,1fr)] gap-4 mb-6">
         <StatTile label={t('aa.total')} value={fmt.number(count(summary.bySurface))} />
         <StatTile label={t('aa.decision.accepted')} value={fmt.number(decided('accepted'))} />
         <StatTile label={t('aa.decision.rejected')} value={fmt.number(decided('rejected'))} />
         <StatTile label={t('aa.decision.undecided')} value={fmt.number(decided('undecided'))} />
-      </Box>
+      </div>
       <Grid
         testId="aa-table"
         empty={t('aa.empty')}

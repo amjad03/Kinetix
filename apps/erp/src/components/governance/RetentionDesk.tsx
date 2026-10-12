@@ -1,13 +1,11 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { holdFile, removeRetention, runRetention, setRetention } from '@/app/(dashboard)/governance/actions';
 import { ActionButton, Bar, FormDialog, Grid, useToast } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { DueFile, RetentionPolicy } from '@/lib/governance';
 
+import { Button } from '@/components/kx';
 /** How long each category of file is kept, the files that are past it, and a legal hold that keeps a file out. */
 export function RetentionDesk({ policies, due }: { policies: RetentionPolicy[]; due: DueFile[] }) {
   const { t, fmt } = useI18n();
@@ -15,17 +13,17 @@ export function RetentionDesk({ policies, due }: { policies: RetentionPolicy[]; 
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
         {t('ret.hint')}
-      </Typography>
+      </p>
       <Bar>
         <Button variant="contained" onClick={() => setOpen(true)} data-testid="ret-set">
           {t('ret.set')}
         </Button>
       </Bar>
-      <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
         {t('ret.policies')}
-      </Typography>
+      </h2>
       <Grid
         testId="ret-policies"
         empty={t('ret.noPolicies')}
@@ -37,9 +35,9 @@ export function RetentionDesk({ policies, due }: { policies: RetentionPolicy[]; 
           { label: '', cell: (r) => <ActionButton label={t('ret.remove')} tone="error" run={() => removeRetention(r.category)} onDone={toast} /> },
         ]}
       />
-      <Typography variant="h6" component="h2" sx={{ mt: 3, mb: 1 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-2">
         {t('ret.due')}
-      </Typography>
+      </h2>
       <Bar>
         <ActionButton label={t('ret.run', { n: due.length })} run={runRetention} onDone={toast} disabled={due.length === 0} />
       </Bar>

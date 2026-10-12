@@ -1,14 +1,3 @@
-import SettingsRemoteOutlined from '@mui/icons-material/SettingsRemoteOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { DeviceMenu } from '@/components/devices/DeviceMenu';
 import { OfflineKeyCard } from '@/components/devices/OfflineKeyCard';
@@ -24,6 +13,8 @@ import type { MessageKey } from '@/i18n/messages';
 import { TIMEZONE } from '@/lib/school';
 import type { DeviceActionRow, Fleet, FleetBoard, Structure } from '@/lib/types';
 
+import { Alert, Chip, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography } from '@/components/kx';
+import { RadioTower as SettingsRemoteOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.devices') };
 }
@@ -68,7 +59,7 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
       ) : (
         <>
           {alerts.length > 0 && (
-            <Alert severity="warning" sx={{ mb: 2 }} data-testid="offline-alert">
+            <Alert className="mb-4" severity="warning" data-testid="offline-alert">
               {t('devices.alertBanner', { n: alerts.length, hours, names: alerts.map((b) => b.name).join(', ') })}
             </Alert>
           )}
@@ -84,9 +75,9 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
             />
             <StatTile label={t('devices.stat.lowStorage')} value={lowStorage} tone={lowStorage ? 'warning' : 'default'} caption={t('devices.stat.lowStorageCaption')} />
           </StatGrid>
-          <Box sx={{ mt: 3 }} />
+          <div className="mt-6" />
           <TableFrame testId="devices-table">
-            <Table sx={{ minWidth: 1000 }}>
+            <Table className="min-w-[1000px]">
               <TableHead>
                 <TableRow>
                   {(['board', 'status', 'version', 'kiosk', 'class', 'storage', 'power', 'lastSeen'] as const).map((k) => (
@@ -98,41 +89,41 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
               <TableBody>
                 {list.map((b) => {
                   const h = b.health;
-                  const dash = <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>;
+                  const dash = <span className="text-muted-foreground">—</span>;
                   return (
-                    <TableRow key={b.id} hover data-testid="device-row" sx={b.alert ? { bgcolor: 'action.hover' } : undefined}>
+                    <TableRow className={b.alert ? 'bg-accent' : undefined} key={b.id} hover data-testid="device-row">
                       <TableCell>
-                        <Typography variant="subtitle2">{b.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{b.name}</h6>
+                        <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                           {b.room ?? '—'}
-                        </Typography>
+                        </span>
                       </TableCell>
                       <TableCell>
                         {!b.enrolled ? (
                           <Chip size="small" variant="outlined" label={t('devices.waiting')} />
                         ) : b.online ? (
-                          <Chip size="small" label={t('devices.online')} sx={{ bgcolor: 'kx.liveContainer', color: 'kx.onLiveContainer' }} />
+                          <Chip className="bg-orange-soft text-orange-ink" size="small" label={t('devices.online')} />
                         ) : (
                           <Chip size="small" color={b.alert ? 'warning' : 'default'} label={b.offlineHours >= 1 ? t('devices.offlineFor', { hours: Math.floor(b.offlineHours) }) : t('devices.offline')} />
                         )}
-                        {b.locked && <Chip size="small" color="error" variant="outlined" label={t('devices.locked')} sx={{ ml: 0.5 }} />}
+                        {b.locked && <Chip className="ml-1" size="small" color="error" variant="outlined" label={t('devices.locked')} />}
                       </TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      <TableCell className="whitespace-nowrap">
                         {b.appVersion ? `v${b.appVersion}` : dash}
-                        <Typography variant="caption" color="text.secondary" component="div">
+                        <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                           {h?.os ? [h.os, h.osVersion].filter(Boolean).join(' ') : (b.platform ?? '')}
-                        </Typography>
+                        </div>
                       </TableCell>
                       <TableCell>
                         {h?.kiosk ? t(`devices.kiosk.${h.kiosk}` as MessageKey) : dash}
                         {b.kioskOverride !== null && (
-                          <Typography variant="caption" color="text.secondary" component="div">
+                          <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                             {t('devices.kiosk.override')}
-                          </Typography>
+                          </div>
                         )}
                       </TableCell>
-                      <TableCell>{b.currentClass ?? <Typography variant="body2" color="text.secondary">{t('devices.noClass')}</Typography>}</TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      <TableCell>{b.currentClass ?? <p className="text-[13px] leading-[19px] text-muted-foreground">{t('devices.noClass')}</p>}</TableCell>
+                      <TableCell className="whitespace-nowrap">
                         {h?.storageFreeMb !== undefined ? (
                           <Typography variant="body2" color={h.storageFreeMb < LOW_STORAGE_MB ? 'warning.main' : 'text.primary'}>
                             {h.storageTotalMb ? t('devices.storage', { free: gb(h.storageFreeMb), total: gb(h.storageTotalMb) }) : gb(h.storageFreeMb)}
@@ -141,16 +132,16 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
                           dash
                         )}
                       </TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      <TableCell className="whitespace-nowrap">
                         {h?.battery ? `${t('devices.battery', { n: h.battery.percent })}${h.battery.charging ? ` · ${t('devices.charging')}` : ''}` : b.healthAt ? t('devices.mains') : dash}
                       </TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      <TableCell className="whitespace-nowrap">
                         {b.lastSeenAt ? (
                           <Tooltip title={fmt.dateTime(b.lastSeenAt, TIMEZONE)}>
                             <span>{fmt.relative(b.lastSeenAt, now, TIMEZONE)}</span>
                           </Tooltip>
                         ) : (
-                          <Box component="span" sx={{ color: 'text.secondary' }}>{t('devices.never')}</Box>
+                          <span className="text-muted-foreground">{t('devices.never')}</span>
                         )}
                       </TableCell>
                       <TableCell align="right" padding="checkbox">
@@ -163,11 +154,11 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
             </Table>
           </TableFrame>
 
-          <Typography variant="h6" component="h2" sx={{ mt: 4, mb: 1.5 }}>
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mt-8 mb-3">
             {t('devices.history')}
-          </Typography>
+          </h2>
           {(history.data ?? []).length === 0 ? (
-            <Typography color="text.secondary">{t('devices.history.none')}</Typography>
+            <p className="text-sm leading-[21px] text-muted-foreground">{t('devices.history.none')}</p>
           ) : (
             <TableFrame testId="device-history">
               <Table size="small">
@@ -181,7 +172,7 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
                 <TableBody>
                   {(history.data ?? []).slice(0, 20).map((a) => (
                     <TableRow key={a.id}>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmt.dateTime(a.createdAt, TIMEZONE)}</TableCell>
+                      <TableCell className="whitespace-nowrap">{fmt.dateTime(a.createdAt, TIMEZONE)}</TableCell>
                       <TableCell>{a.device}</TableCell>
                       <TableCell>{t(`devices.act.${a.type}` as MessageKey).replace('…', '')}</TableCell>
                       <TableCell>{a.by ?? '—'}</TableCell>

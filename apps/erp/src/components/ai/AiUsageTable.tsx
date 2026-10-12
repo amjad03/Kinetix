@@ -1,12 +1,11 @@
 'use client';
-
-import Typography from '@mui/material/Typography';
 import { SegmentBar } from '@/components/Bars';
 import { DataTable, type Column } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { TaskUsage } from '@/lib/ai-usage';
 
+import { cn } from '@/lib/utils';
 export const AI_COLORS = { answered: 'kx.success', blocked: 'kx.live', failed: 'error.main' };
 
 const TASKS = ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize'];
@@ -16,7 +15,7 @@ export function AiUsageTable({ tasks }: { tasks: TaskUsage[] }) {
   const { t, fmt } = useI18n();
   const label = (r: TaskUsage) => (TASKS.includes(r.task) ? t(`ai.task.${r.task}` as MessageKey) : r.label);
   const columns: Column<TaskUsage>[] = [
-    { id: 'task', header: t('ai.col.task'), rowHeader: true, sort: label, cell: (r) => <Typography variant="subtitle2">{label(r)}</Typography> },
+    { id: 'task', header: t('ai.col.task'), rowHeader: true, sort: label, cell: (r) => <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{label(r)}</h6> },
     { id: 'requests', header: t('ai.col.requests'), align: 'right', sort: (r) => r.requests, cell: (r) => fmt.number(r.requests) },
     {
       id: 'outcome',
@@ -37,7 +36,7 @@ export function AiUsageTable({ tasks }: { tasks: TaskUsage[] }) {
     },
     { id: 'answered', header: t('ai.col.answered'), align: 'right', sort: (r) => r.answered, cell: (r) => fmt.number(r.answered) },
     { id: 'blocked', header: t('ai.col.blocked'), align: 'right', sort: (r) => r.blocked, cell: (r) => <span style={{ opacity: r.blocked ? 1 : 0.7 }}>{fmt.number(r.blocked)}</span> },
-    { id: 'failed', header: t('ai.col.failed'), align: 'right', sort: (r) => r.failed, cell: (r) => <Typography component="span" variant="body2" sx={{ color: r.failed ? 'error.main' : 'text.secondary' }}>{fmt.number(r.failed)}</Typography> },
+    { id: 'failed', header: t('ai.col.failed'), align: 'right', sort: (r) => r.failed, cell: (r) => <span className={cn('text-[13px] leading-[19px]', r.failed ? 'text-red-ink' : 'text-muted-foreground')}>{fmt.number(r.failed)}</span> },
     { id: 'tokens', header: t('ai.col.tokens'), align: 'right', sort: (r) => r.tokens, cell: (r) => fmt.number(r.tokens) },
   ];
   return <DataTable testId="ai-usage-table" label={t('ai.byTask')} rows={tasks} rowId={(r) => r.task} exportName="ai-usage" rowAttrs={() => ({ 'data-testid': 'ai-task-row' })} columns={columns} />;

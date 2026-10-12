@@ -1,11 +1,10 @@
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { OnlineTestRunner } from '@/components/admissions/OnlineTestRunner';
 import { Logo } from '@/components/Logo';
 import { getI18n } from '@/i18n/server';
 
+import { Container } from '@/components/kx';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,11 +16,11 @@ export default async function OnlineTestPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   if (!/^[a-z0-9-]{1,64}$/.test(slug)) notFound();
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', py: 4 }}>
+    <div className="min-h-[100dvh] bg-background py-8">
       <Container maxWidth="md">
         <Logo />
         <OnlineTestRunner slug={slug} />
       </Container>
-    </Box>
+    </div>
   );
 }

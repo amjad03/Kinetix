@@ -1,6 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { createScheme, decideApplication, setSchemeActive } from '@/app/(dashboard)/scholarships/actions';
 import { sendScholarship } from '@/app/(dashboard)/workflows/bound-actions';
@@ -10,6 +8,7 @@ import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast } from '@/c
 import { useI18n } from '@/i18n/client';
 import type { Application, Scheme } from '@/lib/finance';
 
+import { Button } from '@/components/kx';
 export function ScholarshipsDesk({ schemes, applications, initialTab, flows }: { schemes: Scheme[]; applications: Application[]; initialTab: string; flows: Record<string, boolean> | null }) {
   const { t, fmt } = useI18n();
   const [dlg, setDlg] = useState<'scheme' | { reject: Application } | null>(null);

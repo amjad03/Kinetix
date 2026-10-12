@@ -1,23 +1,10 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import { useEffect, useState, useTransition } from 'react';
 import { boardProfiles, removeProfile, resetProfilePin } from '@/app/(dashboard)/boards/actions';
 import { useI18n } from '@/i18n/client';
 import type { BoardProfile } from '@/lib/types';
 
+import { Alert, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemText } from '@/components/kx';
 /**
  * Teachers on a shared board (docs/architecture/board-profiles.md): whose PIN is set, who is
  * locked out after five wrong PINs, with Reset PIN and Remove.
@@ -55,45 +42,44 @@ export function BoardProfilesDialog({ id, name, timeZone, onClose }: { id: strin
       <DialogContent>
         <DialogContentText>{t('boards.profiles.body')}</DialogContentText>
         {notice && (
-          <Alert severity="success" sx={{ mt: 2 }} onClose={() => setNotice(null)}>
+          <Alert className="mt-4" severity="success" onClose={() => setNotice(null)}>
             {notice}
           </Alert>
         )}
         {error && (
-          <Alert severity="error" sx={{ mt: 2 }}>
+          <Alert className="mt-4" severity="error">
             {error}
           </Alert>
         )}
         {profiles === null ? (
           !error && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+            <div className="flex justify-center py-6">
               <CircularProgress size={28} />
-            </Box>
+            </div>
           )
         ) : profiles.length === 0 ? (
-          <DialogContentText sx={{ mt: 2 }}>{t('boards.profiles.none')}</DialogContentText>
+          <DialogContentText className="mt-4">{t('boards.profiles.none')}</DialogContentText>
         ) : (
-          <List sx={{ mt: 1 }}>
+          <List className="mt-2">
             {profiles.map((p) => (
-              <ListItem
+              <ListItem className="pr-52"
                 key={p.userId}
                 divider
                 data-testid="board-profile"
                 secondaryAction={
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <div className="flex gap-2">
                     <Button size="small" disabled={pending || (!p.pinSet && !p.locked)} onClick={() => act(p, 'reset')}>
                       {t('boards.profiles.reset')}
                     </Button>
                     <Button size="small" color="error" disabled={pending} onClick={() => act(p, 'remove')}>
                       {t('boards.profiles.remove')}
                     </Button>
-                  </Box>
+                  </div>
                 }
-                sx={{ pr: 26 }}
               >
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <div className="flex items-center gap-2 flex-wrap">
                       {p.name}
                       {p.locked ? (
                         <Chip size="small" color="error" label={t('boards.profiles.locked')} />
@@ -101,7 +87,7 @@ export function BoardProfilesDialog({ id, name, timeZone, onClose }: { id: strin
                         <Chip size="small" variant="outlined" label={p.pinSet ? t('boards.profiles.pinSet') : t('boards.profiles.noPin')} />
                       )}
                       {!p.locked && p.failedAttempts > 0 && <Chip size="small" color="warning" variant="outlined" label={t('boards.profiles.attempts', { n: p.failedAttempts })} />}
-                    </Box>
+                    </div>
                   }
                   secondary={t('boards.profiles.lastUsed', { time: fmt.relative(p.lastUsedAt, now, timeZone) })}
                 />

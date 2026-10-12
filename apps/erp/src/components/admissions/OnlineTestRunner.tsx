@@ -1,14 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Paper from '@mui/material/Paper';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { onlineLogin, onlineSave, onlineStart, onlineSubmit, onlineTests, type OnlineRun, type OnlineTestInfo } from '@/app/apply/actions';
 import { FormField, TextInput } from '@/components/ui';
@@ -16,6 +6,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { formatDate } from '@/lib/dates';
 
+import { Alert, Button, FormControlLabel, Radio, RadioGroup } from '@/components/kx';
+import { cn } from '@/lib/utils';
 const clock = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
@@ -77,20 +69,19 @@ export function OnlineTestRunner({ slug }: { slug: string }) {
 
   if (!who) {
     return (
-      <Paper variant="outlined" sx={{ p: 3, mt: 3 }}>
-        <Typography variant="h5" component="h1" sx={{ mb: 1 }}>
+      <div className="rounded-[12px] border bg-card p-6 mt-6">
+        <h1 className="text-[1.375rem] leading-7 mb-2">
           {t('ag.take.title')}
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 2 }}>
+        </h1>
+        <p className="text-sm leading-[21px] text-muted-foreground mb-4">
           {t('ag.take.intro')}
-        </Typography>
+        </p>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="error">
             {error}
           </Alert>
         )}
-        <Box
-          component="form"
+        <form
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
             setError(null);
@@ -102,21 +93,21 @@ export function OnlineTestRunner({ slug }: { slug: string }) {
             });
           }}
         >
-          <Stack spacing={2} sx={{ maxWidth: 420 }}>
+          <div className="flex flex-col gap-4 max-w-[420px]">
             <FormField label={t('ag.take.appNo')} required>
               <TextInput value={login.appNo} onChange={(e) => setLogin({ ...login, appNo: e.target.value })} required />
             </FormField>
             <FormField label={t('ag.take.token')} required>
               <TextInput type="password" autoComplete="off" value={login.token} onChange={(e) => setLogin({ ...login, token: e.target.value })} required />
             </FormField>
-            <Box>
+            <div>
               <Button type="submit" variant="contained" disabled={pending}>
                 {t('ag.take.signIn')}
               </Button>
-            </Box>
-          </Stack>
-        </Box>
-      </Paper>
+            </div>
+          </div>
+        </form>
+      </div>
     );
   }
 
@@ -124,20 +115,20 @@ export function OnlineTestRunner({ slug }: { slug: string }) {
     const q = run.data.questions;
     const done = Object.keys(answers).filter((id) => q.some((x) => x.id === id)).length;
     return (
-      <Stack spacing={2} sx={{ mt: 3 }} data-testid="online-test-run">
-        <Paper variant="outlined" sx={{ p: 2, position: 'sticky', top: 0, zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-          <Typography sx={{ fontWeight: 700, color: left < 120_000 ? 'error.main' : 'text.primary' }} role="timer" aria-live="off">
+      <div className="flex flex-col gap-4 mt-6" data-testid="online-test-run">
+        <div className="rounded-[12px] border bg-card p-4 sticky top-0 z-[1] flex justify-between items-center gap-4 flex-wrap">
+          <p className={cn('text-sm leading-[21px] font-bold', left < 120_000 ? 'text-red-ink' : 'text-foreground')} role="timer" aria-live="off">
             {t('ag.take.timeLeft', { time: clock(left) })}
-          </Typography>
-          <Typography color="text.secondary">{t('ag.take.answered', { n: done, total: q.length })}</Typography>
-        </Paper>
+          </p>
+          <p className="text-sm leading-[21px] text-muted-foreground">{t('ag.take.answered', { n: done, total: q.length })}</p>
+        </div>
         {error && <Alert severity="error">{error}</Alert>}
         {q.map((x, i) => (
-          <Paper key={x.id} variant="outlined" sx={{ p: 2.5 }}>
-            <Typography variant="subtitle2" color="text.secondary">
+          <div className="rounded-[12px] border bg-card p-5" key={x.id}>
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px] text-muted-foreground">
               {t('ag.take.question', { n: i + 1 })} · {t('ag.take.marks', { n: x.marks })}
-            </Typography>
-            <Typography sx={{ my: 1 }}>{x.question}</Typography>
+            </h6>
+            <p className="text-sm leading-[21px] my-2">{x.question}</p>
             <RadioGroup
               value={answers[x.id] ?? ''}
               onChange={(e) => {
@@ -150,9 +141,9 @@ export function OnlineTestRunner({ slug }: { slug: string }) {
                 <FormControlLabel key={k} value={k} control={<Radio />} label={o} />
               ))}
             </RadioGroup>
-          </Paper>
+          </div>
         ))}
-        <Box>
+        <div>
           <Button
             variant="contained"
             disabled={pending}
@@ -162,32 +153,32 @@ export function OnlineTestRunner({ slug }: { slug: string }) {
           >
             {t('ag.take.submit')}
           </Button>
-        </Box>
-      </Stack>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Stack spacing={2} sx={{ mt: 3 }}>
-      <Typography variant="h5" component="h1">
+    <div className="flex flex-col gap-4 mt-6">
+      <h1 className="text-[1.375rem] leading-7">
         {t('ag.take.hello', { name: who.applicantName })}
-      </Typography>
+      </h1>
       {notice && <Alert severity="success">{notice}</Alert>}
       {error && <Alert severity="error">{error}</Alert>}
-      <Typography variant="h6" component="h2">
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
         {t('ag.take.tests')}
-      </Typography>
-      {tests.length === 0 && <Typography color="text.secondary">{t('ag.take.none')}</Typography>}
+      </h2>
+      {tests.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('ag.take.none')}</p>}
       {tests.map((x) => (
-        <Paper key={x.testId} variant="outlined" sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-          <Box>
-            <Typography sx={{ fontWeight: 600 }}>{x.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
+        <div className="rounded-[12px] border bg-card p-5 flex justify-between items-center gap-4 flex-wrap" key={x.testId}>
+          <div>
+            <p className="text-sm leading-[21px] font-semibold">{x.name}</p>
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('ag.take.info', { date: formatDate(x.testDate, 'dayMonth', locale), minutes: x.durationMinutes, n: x.questionCount })}
-            </Typography>
-          </Box>
+            </p>
+          </div>
           {x.status === 'submitted' || x.status === 'expired' ? (
-            <Typography color="text.secondary">{t(x.status === 'submitted' ? 'ag.take.submitted' : ('ag.take.expired' as MessageKey))}</Typography>
+            <p className="text-sm leading-[21px] text-muted-foreground">{t(x.status === 'submitted' ? 'ag.take.submitted' : ('ag.take.expired' as MessageKey))}</p>
           ) : (
             <Button
               variant="contained"
@@ -206,8 +197,8 @@ export function OnlineTestRunner({ slug }: { slug: string }) {
               {x.status === 'in_progress' ? t('ag.take.resume') : t('ag.take.start')}
             </Button>
           )}
-        </Paper>
+        </div>
       ))}
-    </Stack>
+    </div>
   );
 }

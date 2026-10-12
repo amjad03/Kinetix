@@ -1,12 +1,11 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { removeProvider, saveProvider, toggleProvider } from '@/app/(dashboard)/sso/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Button } from '@/components/kx';
 export interface Provider { id: string; kind: string; name: string; enabled: boolean; allowedDomains: string[]; redirectAllowlist: string[] }
 
 /** The institution's OpenID Connect providers: add, switch on or off, remove. */

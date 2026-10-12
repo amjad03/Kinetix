@@ -1,10 +1,8 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Snackbar from '@mui/material/Snackbar';
 import { useState, useTransition, type ReactNode } from 'react';
 import type { ActionResult } from '@/lib/types';
 
+import { Alert, Snackbar } from '@/components/kx';
 /** Runs a server action, then shows its error inline or a short confirmation. */
 export function useRun(): { pending: boolean; run: <T>(fn: () => Promise<ActionResult<T>>, done?: string, after?: (d: T) => void) => void; feedback: ReactNode } {
   const [pending, start] = useTransition();
@@ -24,7 +22,7 @@ export function useRun(): { pending: boolean; run: <T>(fn: () => Promise<ActionR
     feedback: (
       <>
         {error && (
-          <Alert severity="error" onClose={() => setError(null)} sx={{ my: 1.5 }} role="alert">
+          <Alert className="my-3" severity="error" onClose={() => setError(null)} role="alert">
             {error}
           </Alert>
         )}

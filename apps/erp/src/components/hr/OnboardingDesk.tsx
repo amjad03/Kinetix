@@ -1,13 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { addOnboardingItem, loadOnboarding, startOnboarding, tickOnboarding } from '@/app/(dashboard)/hr/talent-actions';
@@ -17,6 +8,8 @@ import { useI18n } from '@/i18n/client';
 import { formatDate } from '@/lib/dates';
 import type { OnboardingItem, OnboardingProgress } from '@/lib/hr-lifecycle';
 
+import { Alert, Button, Checkbox, MenuItem } from '@/components/kx';
+import { cn } from '@/lib/utils';
 /** Joining checklists: who is being onboarded, how far along, and the items to tick. */
 export function OnboardingDesk({ progress, staff }: { progress: OnboardingProgress[]; staff: { userId: string; fullName: string }[] }) {
   const { t, locale } = useI18n();
@@ -42,12 +35,12 @@ export function OnboardingDesk({ progress, staff }: { progress: OnboardingProgre
     else setError(res.error);
   };
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('hl.onb.start')}</SectionTitle>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ alignItems: { sm: 'flex-end' } }}>
-          <Box sx={{ minWidth: 260 }}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+          <div className="min-w-[260px]">
             <FormField label={t('hl.staff')}>
               <TextInput select value={who} onChange={(e) => setWho(e.target.value)}>
                 <MenuItem value="">{t('hl.chooseStaff')}</MenuItem>
@@ -58,23 +51,23 @@ export function OnboardingDesk({ progress, staff }: { progress: OnboardingProgre
                 ))}
               </TextInput>
             </FormField>
-          </Box>
+          </div>
           <Button variant="contained" disabled={pending || !who} onClick={() => run(() => startOnboarding(who), () => setWho(''))}>
             {t('hl.onb.start')}
           </Button>
-        </Stack>
-      </Paper>
+        </div>
+      </div>
 
-      {progress.length === 0 && <Typography color="text.secondary">{t('hl.onb.none')}</Typography>}
+      {progress.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('hl.onb.none')}</p>}
       {progress.map((p) => (
-        <Paper key={p.userId} variant="outlined" sx={{ p: 2 }} data-testid="onboarding-row">
-          <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-            <Box>
-              <Typography sx={{ fontWeight: 600 }}>{p.fullName}</Typography>
-              <Typography variant="body2" color="text.secondary">
+        <div className="rounded-[12px] border bg-card p-4" key={p.userId} data-testid="onboarding-row">
+          <div className="flex flex-row justify-between items-center gap-4 flex-wrap">
+            <div>
+              <p className="text-sm leading-[21px] font-semibold">{p.fullName}</p>
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {t('hl.onb.progress', { done: p.done, total: p.total })}
-              </Typography>
-            </Box>
+              </p>
+            </div>
             <Button
               size="small"
               onClick={async () => {
@@ -85,33 +78,33 @@ export function OnboardingDesk({ progress, staff }: { progress: OnboardingProgre
             >
               {t('hl.onb.open')}
             </Button>
-          </Stack>
+          </div>
           {open === p.userId && (
-            <Box sx={{ mt: 1.5 }}>
+            <div className="mt-3">
               {items.map((it) => (
-                <Stack key={it.id} direction="row" sx={{ alignItems: 'center' }}>
+                <div className="flex flex-row items-center" key={it.id}>
                   <Checkbox checked={it.done} disabled={pending} onChange={(e) => run(() => tickOnboarding(it.id, e.target.checked), () => reload(p.userId))} slotProps={{ input: { 'aria-label': it.title } }} />
-                  <Box>
-                    <Typography sx={{ textDecoration: it.done ? 'line-through' : 'none' }}>{it.title}</Typography>
-                    <Typography variant="caption" color="text.secondary">
+                  <div>
+                    <p className={cn('text-sm leading-[21px]', it.done ? 'line-through' : 'no-underline')}>{it.title}</p>
+                    <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {t('hl.onb.owner')}: {it.owner}
                       {it.dueOn ? ` · ${t('hl.onb.due')}: ${formatDate(it.dueOn, 'dayMonth', locale)}` : ''}
-                    </Typography>
-                  </Box>
-                </Stack>
+                    </span>
+                  </div>
+                </div>
               ))}
-              <Stack direction="row" spacing={1} sx={{ mt: 1.5, alignItems: 'flex-end' }}>
+              <div className="flex flex-row gap-2 mt-3 items-end">
                 <FormField label={t('hl.onb.itemTitle')}>
                   <TextInput value={extra} onChange={(e) => setExtra(e.target.value)} />
                 </FormField>
                 <Button disabled={pending || extra.trim().length < 3} onClick={() => run(() => addOnboardingItem(p.userId, extra), async () => { setExtra(''); await reload(p.userId); })}>
                   {t('hl.onb.addItem')}
                 </Button>
-              </Stack>
-            </Box>
+              </div>
+            </div>
           )}
-        </Paper>
+        </div>
       ))}
-    </Stack>
+    </div>
   );
 }

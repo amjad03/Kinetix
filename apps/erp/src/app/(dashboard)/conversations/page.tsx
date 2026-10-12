@@ -1,4 +1,3 @@
-import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import type { Metadata } from 'next';
 import { AuditNote } from '@/components/conversations/AuditNote';
 import { ThreadList } from '@/components/conversations/ThreadList';
@@ -9,6 +8,7 @@ import { TIMEZONE } from '@/lib/school';
 import { getI18n } from '@/i18n/server';
 import type { ConversationSummary } from '@/lib/types';
 
+import { MessagesSquare as ForumOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.conversations') };
 }

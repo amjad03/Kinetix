@@ -1,19 +1,5 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import PersonAddOutlined from '@mui/icons-material/PersonAddOutlined';
-import WorkOutlineOutlined from '@mui/icons-material/WorkOutlineOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addApplicant, moveApplicant, saveOpening } from '@/app/(dashboard)/hr/actions';
 import { EmptyState } from '@/components/States';
@@ -24,6 +10,8 @@ import type { ApplicantStage, JobApplicant, JobOpening } from '@/lib/hr-types';
 import { useNotice } from './Common';
 import { OfferDialog } from './OfferDialog';
 
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@/components/kx';
+import { Briefcase as WorkOutlineOutlined, Plus as Add, UserPlus as PersonAddOutlined } from 'lucide-react';
 export function RecruitmentDesk({ openings, applicants, selected, departments }: { openings: JobOpening[]; applicants: JobApplicant[]; selected: string | null; departments: { id: string; name: string }[] }) {
   const { t } = useI18n();
   const { run, view } = useNotice();
@@ -36,11 +24,11 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
   return (
     <>
       {view}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+      <div className="flex justify-end mb-4">
         <Button variant="contained" startIcon={<Add />} onClick={() => setEditing('new')}>
           {t('hr.rec.newOpening')}
         </Button>
-      </Box>
+      </div>
       {openings.length === 0 ? (
         <EmptyState icon={<WorkOutlineOutlined />} title={t('hr.rec.noOpenings')} />
       ) : (
@@ -54,14 +42,14 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
           columns={[
             { id: 'c0', header: t('hr.rec.title'), rowHeader: true, sort: (o) => o.title, cell: (o) => (<>{o.title}
                               {o.department && (
-                                <Typography variant="caption" color="text.secondary" component="div">
+                                <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                                   {o.department.name}
-                                </Typography>
+                                </div>
                               )}</>) },
             { id: 'c1', header: t('hr.rec.positions'), align: 'right', sort: (o) => o.positions, cell: (o) => o.positions },
             { id: 'c2', header: t('hr.f.status'), sort: (o) => t(`hr.rec.status.${o.status}` as MessageKey), cell: (o) => t(`hr.rec.status.${o.status}` as MessageKey) },
             { id: 'c3', header: t('hr.rec.pipeline'), csv: false, cell: (o) => (<>{STAGES.filter((s) => o.pipeline[s]).map((s) => (
-                                <Box component="span" key={s} sx={{ mr: 0.5 }}><StatusPill>{`${t(`hr.rec.stage.${s}` as MessageKey)} ${o.pipeline[s]}`}</StatusPill></Box>
+                                <span className="mr-1" key={s}><StatusPill>{`${t(`hr.rec.stage.${s}` as MessageKey)} ${o.pipeline[s]}`}</StatusPill></span>
                               ))}</>) },
             { id: 'c4', header: '', align: 'right', csv: false, cell: (o) => (<><Button size="small" onClick={() => setEditing(o)}>
                                 {t('hr.edit')}
@@ -74,15 +62,15 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
       )}
 
       {current && (
-        <Box sx={{ mt: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, gap: 1, flexWrap: 'wrap' }}>
-            <Typography variant="h6" component="h2" sx={{ fontSize: '1.125rem' }}>
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-3 gap-2 flex-wrap">
+            <h2 className="font-medium tracking-[0.1px] text-[1.125rem]">
               {t('hr.rec.applicantsFor', { title: current.title })}
-            </Typography>
+            </h2>
             <Button variant="outlined" startIcon={<PersonAddOutlined />} onClick={() => setAdding(true)} disabled={current.status === 'closed'}>
               {t('hr.rec.addApplicant')}
             </Button>
-          </Box>
+          </div>
           {applicants.length === 0 ? (
             <EmptyState dense icon={<PersonAddOutlined />} title={t('hr.rec.noApplicants')} />
           ) : (
@@ -95,9 +83,9 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
               columns={[
                 { id: 'c0', header: t('hr.rec.fullName'), rowHeader: true, sort: (a) => a.fullName, cell: (a) => (<>{a.fullName}
                                       {a.notes && (
-                                        <Typography variant="caption" color="text.secondary" component="div">
+                                        <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                                           {a.notes}
-                                        </Typography>
+                                        </div>
                                       )}</>) },
                 { id: 'c1', header: t('hr.rec.contact'), sort: (a) => [a.email, a.phone].filter(Boolean).join(' · ') || '–', cell: (a) => [a.email, a.phone].filter(Boolean).join(' · ') || '–' },
                 { id: 'c2', header: t('hr.rec.stage'), sort: (a) => a.stage, cell: (a) => (<><TextField
@@ -119,7 +107,7 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
               ]}
             />
           )}
-        </Box>
+        </div>
       )}
       {editing && <OpeningDialog opening={editing === 'new' ? null : editing} departments={departments} onClose={() => setEditing(null)} run={run} />}
       {offerFor && <OfferDialog applicant={offerFor} onClose={() => setOfferFor(null)} />}
@@ -138,7 +126,7 @@ function OpeningDialog({ opening, departments, onClose, run }: { opening: JobOpe
     <Dialog open onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>{opening ? t('hr.rec.editOpening') : t('hr.rec.newOpening')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           <FormField label={t('hr.rec.title')}>
             <TextInput value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} autoFocus />
           </FormField>
@@ -170,7 +158,7 @@ function OpeningDialog({ opening, departments, onClose, run }: { opening: JobOpe
           <FormField label={t('hr.rec.description')}>
             <TextInput value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} multiline minRows={3} />
           </FormField>
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('hr.cancel')}</Button>
@@ -199,7 +187,7 @@ function ApplicantDialog({ openingId, onClose, run }: { openingId: string; onClo
     <Dialog open onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>{t('hr.rec.addApplicant')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           <FormField label={t('hr.rec.fullName')}>
             <TextInput value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} autoFocus />
           </FormField>
@@ -212,7 +200,7 @@ function ApplicantDialog({ openingId, onClose, run }: { openingId: string; onClo
           <FormField label={t('hr.rec.notes')}>
             <TextInput value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} multiline minRows={2} />
           </FormField>
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('hr.cancel')}</Button>

@@ -1,14 +1,12 @@
 'use client';
-
-import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { LinkButton } from '@/components/LinkButton';
 import { DataTable, type Column } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { exportPath, showCell, type ClassroomAnalytics, type ReportMeta, type ReportResult } from '@/lib/insights';
 
+import { Button } from '@/components/kx';
+import { FileDown as FileDownloadOutlined } from 'lucide-react';
 /** How often each classroom tool was used in the period. */
 export function ToolUseTable({ rows }: { rows: ClassroomAnalytics['tools'] }) {
   const { t, fmt } = useI18n();
@@ -42,10 +40,10 @@ export function CatalogueTable({ rows, selected, range, from, to }: { rows: Repo
       csv: (r) => `${r.title}: ${r.description}`,
       cell: (r) => (
         <>
-          <Typography variant="subtitle2">{r.title}</Typography>
-          <Typography variant="caption" color="text.secondary">
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{r.title}</h6>
+          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {r.description}
-          </Typography>
+          </span>
         </>
       ),
     },

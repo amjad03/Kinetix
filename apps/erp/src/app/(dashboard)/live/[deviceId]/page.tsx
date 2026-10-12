@@ -1,4 +1,3 @@
-import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
 import type { Metadata } from 'next';
 import { LinkButton } from '@/components/LinkButton';
 import { LiveWatch } from '@/components/live/LiveWatch';
@@ -10,6 +9,7 @@ import { getI18n } from '@/i18n/server';
 import { canSee } from '@/lib/access';
 import type { Board } from '@/lib/types';
 
+import { Presentation as CastForEducationOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('live.watchTitle') };
 }

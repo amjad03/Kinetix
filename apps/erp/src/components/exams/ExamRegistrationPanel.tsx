@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { generateAntiCollusionPlan, overrideRegistration, saveRegistrationWindow } from '@/app/(dashboard)/exams/actions';
 import { Bar, FormDialog, Grid, Pill, Tabbed, useToast } from '@/components/ops/kit';
@@ -10,6 +7,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { chartHref, hallSeats, type RegistrationRow, type RegistrationWindow, type SeatingPlanOverview } from '@/lib/exam-registration';
 import type { ExamSessionDetail } from '@/lib/exams';
 
+import { Button } from '@/components/kx';
 type Dlg = 'window' | 'plan' | { override: RegistrationRow } | null;
 
 /** Registration window and eligibility with the controller's override, and the anti-collusion seating plan with a chart per hall. */
@@ -37,18 +35,18 @@ export function ExamRegistrationPanel({ session, window: win, registrations, pla
               <>
                 {canManage && !closed && <Bar><Button variant="outlined" onClick={() => setDlg('window')} data-testid="er-set-window">{t('er.window.set')}</Button></Bar>}
                 {win ? (
-                  <Typography sx={{ mb: 1.5 }} data-testid="er-window">
+                  <p className="text-sm leading-[21px] mb-3" data-testid="er-window">
                     {t('er.window.summary', { from: fmt.date(win.opensOn), to: fmt.date(win.closesOn) })} <Pill label={t(`er.state.${win.state}` as MessageKey)} warn={win.state === 'closed'} />{' '}
                     {[
                       win.minAttendancePercent !== null ? t('er.rule.attendance', { n: win.minAttendancePercent }) : null,
                       win.blockOnFeeDues ? t('er.rule.fees') : null,
                       win.maxBacklogs !== null ? t('er.rule.backlogs', { n: win.maxBacklogs }) : null,
                     ].filter(Boolean).join(' · ')}
-                  </Typography>
+                  </p>
                 ) : (
-                  <Typography sx={{ mb: 1.5 }}>{t('er.window.none')}</Typography>
+                  <p className="text-sm leading-[21px] mb-3">{t('er.window.none')}</p>
                 )}
-                {ineligible > 0 && <Typography sx={{ mb: 1.5 }}>{t('er.held', { n: ineligible })}</Typography>}
+                {ineligible > 0 && <p className="text-sm leading-[21px] mb-3">{t('er.held', { n: ineligible })}</p>}
                 <Grid
                   testId="er-registrations"
                   empty={t('er.none')}
@@ -73,12 +71,12 @@ export function ExamRegistrationPanel({ session, window: win, registrations, pla
             label: t('er.tab.seating'),
             node: (
               <>
-                <Typography sx={{ mb: 1.5 }}>{t('er.seat.hint')}</Typography>
+                <p className="text-sm leading-[21px] mb-3">{t('er.seat.hint')}</p>
                 {canManage && !closed && <Bar><Button variant="outlined" onClick={() => setDlg('plan')} data-testid="er-generate">{t('er.seat.generate')}</Button></Bar>}
                 {plan && plan.layouts.length > 0 && (
-                  <Typography sx={{ mb: 1.5 }}>
+                  <p className="text-sm leading-[21px] mb-3">
                     {plan.layouts.map((l) => t('er.seat.layout', { room: l.room, rows: l.rows, benches: l.benchesPerRow, seats: l.seatsPerBench, total: hallSeats(l) })).join(' · ')}
-                  </Typography>
+                  </p>
                 )}
                 <Grid
                   testId="er-sittings"
@@ -126,7 +124,7 @@ export function ExamRegistrationPanel({ session, window: win, registrations, pla
       {typeof dlg === 'object' && dlg && 'override' in dlg && (
         <FormDialog
           title={t('er.override.title', { name: dlg.override.student })}
-          intro={<Typography variant="body2">{dlg.override.reasons.join('; ')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{dlg.override.reasons.join('; ')}</p>}
           onSubmit={(v) => overrideRegistration(session.id, dlg.override.studentId, v)}
           onClose={(m) => done(m ? t('ops.saved') : undefined)}
           fields={[{ name: 'reason', label: t('er.override.reason'), kind: 'multiline', required: true }]}
@@ -135,7 +133,7 @@ export function ExamRegistrationPanel({ session, window: win, registrations, pla
       {dlg === 'plan' && (
         <FormDialog
           title={t('er.seat.generate')}
-          intro={<Typography variant="body2">{t('er.seat.formHint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('er.seat.formHint')}</p>}
           onSubmit={(v) => generateAntiCollusionPlan(session.id, v)}
           onClose={(m) => done(m ? t('er.seat.done') : undefined)}
           fields={[

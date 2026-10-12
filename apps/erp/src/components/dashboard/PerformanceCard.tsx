@@ -1,12 +1,10 @@
 'use client';
-
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { LineChart, SERIES, type LineSeries } from '@/components/ui/Charts';
 import { useI18n } from '@/i18n/client';
 
+import { ToggleButton, ToggleButtonGroup } from '@/components/kx';
 type Metric = 'attendance' | 'internalMarks' | 'coAttainment' | 'overall';
 
 /** Academic performance over the last six months: one metric at a time, or all three. */
@@ -31,9 +29,9 @@ export function PerformanceCard({ labels, attendance, internalMarks, coAttainmen
       subtitle={t('dash.perf.subtitle')}
       testId="performance-card"
       action={
-        <ToggleButtonGroup exclusive size="small" value={metric} onChange={(_, v: Metric | null) => v && setMetric(v)} aria-label={t('dash.perf.metric')} sx={{ flexWrap: 'wrap' }}>
+        <ToggleButtonGroup className="flex-wrap" exclusive size="small" value={metric} onChange={(_, v: Metric | null) => v && setMetric(v)} aria-label={t('dash.perf.metric')}>
           {options.map((o) => (
-            <ToggleButton key={o.value} value={o.value} data-testid={`perf-${o.value}`} sx={{ height: 32, px: 1.5, fontSize: '0.75rem' }}>
+            <ToggleButton className="h-[32px] px-3 text-[0.75rem]" key={o.value} value={o.value} data-testid={`perf-${o.value}`}>
               {o.label}
             </ToggleButton>
           ))}

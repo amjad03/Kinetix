@@ -1,37 +1,11 @@
 'use client';
-
-import DriveFileRenameOutlineOutlined from '@mui/icons-material/DriveFileRenameOutlineOutlined';
-import LinkOffOutlined from '@mui/icons-material/LinkOffOutlined';
-import LockOpenOutlined from '@mui/icons-material/LockOpenOutlined';
-import LockOutlined from '@mui/icons-material/LockOutlined';
-import MoreVert from '@mui/icons-material/MoreVert';
-import PersonOffOutlined from '@mui/icons-material/PersonOffOutlined';
-import RestartAltOutlined from '@mui/icons-material/RestartAltOutlined';
-import SmsOutlined from '@mui/icons-material/SmsOutlined';
-import TuneOutlined from '@mui/icons-material/TuneOutlined';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Snackbar from '@mui/material/Snackbar';
-import TextField from '@mui/material/TextField';
 import { useState, useTransition, type ReactNode } from 'react';
 import { sendAction, type RemoteAction } from '@/app/(dashboard)/devices/actions';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Radio, RadioGroup, Snackbar, TextField } from '@/components/kx';
+import { EllipsisVertical as MoreVert, Lock as LockOutlined, LockOpen as LockOpenOutlined, MessageSquare as SmsOutlined, PencilLine as DriveFileRenameOutlineOutlined, RotateCcw as RestartAltOutlined, SlidersHorizontal as TuneOutlined, Unlink as LinkOffOutlined, UserX as PersonOffOutlined } from 'lucide-react';
 type Dlg = null | 'confirm' | 'message' | 'kiosk' | 'rename' | 'unpair';
 type Simple = 'lock' | 'unlock' | 'restart_app' | 'clear_pin_profiles';
 
@@ -79,7 +53,7 @@ export function DeviceMenu({ id, name, locked, rooms, roomId }: { id: string; na
     setDlg('confirm');
   };
   const errorAlert = error && (
-    <Alert severity="error" sx={{ mt: 2 }}>
+    <Alert className="mt-4" severity="error">
       {error}
     </Alert>
   );
@@ -96,18 +70,18 @@ export function DeviceMenu({ id, name, locked, rooms, roomId }: { id: string; na
       </IconButton>
       <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
         {locked
-          ? item(<LockOpenOutlined fontSize="small" />, 'devices.act.unlock', () => run({ type: 'unlock' }), 'device-unlock')
-          : item(<LockOutlined fontSize="small" />, 'devices.act.lock', askSimple('lock'), 'device-lock')}
-        {item(<RestartAltOutlined fontSize="small" />, 'devices.act.restart_app', askSimple('restart_app'), 'device-restart')}
-        {item(<PersonOffOutlined fontSize="small" />, 'devices.act.clear_pin_profiles', askSimple('clear_pin_profiles'))}
-        {item(<SmsOutlined fontSize="small" />, 'devices.act.message', () => setDlg('message'))}
-        {item(<TuneOutlined fontSize="small" />, 'devices.act.kiosk_policy', () => setDlg('kiosk'))}
-        {item(<DriveFileRenameOutlineOutlined fontSize="small" />, 'devices.act.rename_move', () => {
+          ? item(<LockOpenOutlined className="size-5" />, 'devices.act.unlock', () => run({ type: 'unlock' }), 'device-unlock')
+          : item(<LockOutlined className="size-5" />, 'devices.act.lock', askSimple('lock'), 'device-lock')}
+        {item(<RestartAltOutlined className="size-5" />, 'devices.act.restart_app', askSimple('restart_app'), 'device-restart')}
+        {item(<PersonOffOutlined className="size-5" />, 'devices.act.clear_pin_profiles', askSimple('clear_pin_profiles'))}
+        {item(<SmsOutlined className="size-5" />, 'devices.act.message', () => setDlg('message'))}
+        {item(<TuneOutlined className="size-5" />, 'devices.act.kiosk_policy', () => setDlg('kiosk'))}
+        {item(<DriveFileRenameOutlineOutlined className="size-5" />, 'devices.act.rename_move', () => {
           setNewName(name);
           setNewRoom('keep');
           setDlg('rename');
         })}
-        {item(<LinkOffOutlined fontSize="small" color="error" />, 'devices.act.unpair', () => setDlg('unpair'))}
+        {item(<LinkOffOutlined className="size-5 text-red-ink" />, 'devices.act.unpair', () => setDlg('unpair'))}
       </Menu>
 
       <Dialog open={dlg === 'confirm'} onClose={pending ? undefined : close} maxWidth="xs" fullWidth>
@@ -133,8 +107,8 @@ export function DeviceMenu({ id, name, locked, rooms, roomId }: { id: string; na
         >
           <DialogTitle>{t('devices.message.title', { name })}</DialogTitle>
           <DialogContent>
-            <TextField autoFocus fullWidth multiline minRows={2} label={t('devices.message.text')} value={text} onChange={(e) => setText(e.target.value)} slotProps={{ htmlInput: { maxLength: 280 } }} sx={{ mt: 1 }} />
-            <TextField fullWidth type="number" label={t('devices.message.seconds')} value={seconds} onChange={(e) => setSeconds(Math.min(600, Math.max(5, Number(e.target.value) || 30)))} sx={{ mt: 2 }} />
+            <TextField className="mt-2" autoFocus fullWidth multiline minRows={2} label={t('devices.message.text')} value={text} onChange={(e) => setText(e.target.value)} slotProps={{ htmlInput: { maxLength: 280 } }} />
+            <TextField className="mt-4" fullWidth type="number" label={t('devices.message.seconds')} value={seconds} onChange={(e) => setSeconds(Math.min(600, Math.max(5, Number(e.target.value) || 30)))} />
             {errorAlert}
           </DialogContent>
           <DialogActions>
@@ -175,8 +149,8 @@ export function DeviceMenu({ id, name, locked, rooms, roomId }: { id: string; na
         >
           <DialogTitle>{t('devices.rename.title', { name })}</DialogTitle>
           <DialogContent>
-            <TextField autoFocus fullWidth label={t('devices.rename.name')} value={newName} onChange={(e) => setNewName(e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} sx={{ mt: 1 }} />
-            <TextField select fullWidth label={t('devices.rename.room')} value={newRoom} onChange={(e) => setNewRoom(e.target.value)} sx={{ mt: 2 }}>
+            <TextField className="mt-2" autoFocus fullWidth label={t('devices.rename.name')} value={newName} onChange={(e) => setNewName(e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} />
+            <TextField className="mt-4" select fullWidth label={t('devices.rename.room')} value={newRoom} onChange={(e) => setNewRoom(e.target.value)}>
               <MenuItem value="keep">{t('devices.rename.keepRoom')}</MenuItem>
               <MenuItem value="none">{t('devices.rename.noRoom')}</MenuItem>
               {rooms.filter((r) => r.id !== roomId).map((r) => (

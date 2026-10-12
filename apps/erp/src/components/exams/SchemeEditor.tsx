@@ -1,11 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -15,6 +8,7 @@ import { schemeProblem, weightTotal, type GradeScale, type PassRules, type Schem
 import type { Structure } from '@/lib/types';
 import { useRun } from './useRun';
 
+import { Alert, Button, Card, MenuItem } from '@/components/kx';
 const KINDS = ['internal', 'external', 'practical', 'project', 'viva'] as const;
 const pct = (v: string): number | null => (v.trim() === '' ? null : Number(v));
 
@@ -37,9 +31,9 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
 
   return (
     <>
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+      <div className="flex gap-4 flex-wrap mb-4">
         <FormField label={t('exm.f.subject')}>
-          <TextInput select value={subjectId} onChange={(e) => go(e.target.value, yearId)} sx={{ minWidth: 280 }}>
+          <TextInput className="min-w-[280px]" select value={subjectId} onChange={(e) => go(e.target.value, yearId)}>
             {structure.subjects.map((s) => (
               <MenuItem key={s.id} value={s.id}>
                 {s.code} {s.name}
@@ -48,7 +42,7 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
           </TextInput>
         </FormField>
         <FormField label={t('exm.f.year')}>
-          <TextInput select value={yearId} onChange={(e) => go(subjectId, e.target.value)} sx={{ minWidth: 140 }}>
+          <TextInput className="min-w-[140px]" select value={yearId} onChange={(e) => go(subjectId, e.target.value)}>
             {years.map((y) => (
               <MenuItem key={y.id} value={y.id}>
                 {y.label}
@@ -56,16 +50,16 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
             ))}
           </TextInput>
         </FormField>
-      </Box>
-      <Card sx={{ p: 2.5, mb: 3 }}>
-        <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+      </div>
+      <Card className="p-5 mb-6">
+        <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
           {scheme ? t('exm.scheme.edit') : t('exm.scheme.new')}
-        </Typography>
+        </h2>
         {canEdit && (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2, alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex gap-2 flex-wrap mb-4 items-center">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('exm.scheme.preset')}
-            </Typography>
+            </p>
             {Object.entries(presets.schemes).map(([k, p]) => (
               <Button
                 key={k}
@@ -81,9 +75,9 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
                 {p.name}
               </Button>
             ))}
-          </Box>
+          </div>
         )}
-        <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', mb: 2 }}>
+        <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(200px,1fr))] mb-4">
           <FormField label={t('exm.f.name')}>
             <TextInput value={name} onChange={(e) => setName(e.target.value)} disabled={!canEdit} />
           </FormField>
@@ -99,17 +93,17 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
               ))}
             </TextInput>
           </FormField>
-        </Box>
+        </div>
         {comps.map((c, i) => (
-          <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+          <div className="flex gap-2 mb-2 flex-wrap" key={i}>
             <FormField label={t('exm.f.code')}>
-              <TextInput value={c.code} onChange={(e) => upd(i, { code: e.target.value })} sx={{ width: 100 }} disabled={!canEdit} />
+              <TextInput className="w-[100px]" value={c.code} onChange={(e) => upd(i, { code: e.target.value })} disabled={!canEdit} />
             </FormField>
             <FormField label={t('exm.f.name')}>
-              <TextInput value={c.name} onChange={(e) => upd(i, { name: e.target.value })} sx={{ flex: 1, minWidth: 180 }} disabled={!canEdit} />
+              <TextInput className="flex-1 min-w-[180px]" value={c.name} onChange={(e) => upd(i, { name: e.target.value })} disabled={!canEdit} />
             </FormField>
             <FormField label={t('exm.f.kindOfComponent')}>
-              <TextInput select value={c.kind} onChange={(e) => upd(i, { kind: e.target.value as SchemeComponent['kind'] })} sx={{ width: 140 }} disabled={!canEdit}>
+              <TextInput className="w-[140px]" select value={c.kind} onChange={(e) => upd(i, { kind: e.target.value as SchemeComponent['kind'] })} disabled={!canEdit}>
                 {KINDS.map((k) => (
                   <MenuItem key={k} value={k}>
                     {t(`exm.ck.${k}`)}
@@ -118,24 +112,24 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
               </TextInput>
             </FormField>
             <FormField label={t('exm.f.weight')}>
-              <TextInput type="number" value={c.weight} onChange={(e) => upd(i, { weight: Number(e.target.value) })} sx={{ width: 100 }} disabled={!canEdit} />
+              <TextInput className="w-[100px]" type="number" value={c.weight} onChange={(e) => upd(i, { weight: Number(e.target.value) })} disabled={!canEdit} />
             </FormField>
             {canEdit && (
               <Button size="small" color="error" onClick={() => setComps(comps.filter((_, j) => j !== i))}>
                 {t('exm.remove')}
               </Button>
             )}
-          </Box>
+          </div>
         ))}
         {canEdit && (
           <Button size="small" onClick={() => setComps([...comps, { code: '', name: '', kind: 'internal', weight: 0 }])}>
             {t('exm.scheme.addComponent')}
           </Button>
         )}
-        <Alert severity={total === 100 ? 'success' : 'warning'} sx={{ my: 1.5 }}>
+        <Alert className="my-3" severity={total === 100 ? 'success' : 'warning'}>
           {t('exm.scheme.total', { n: total })}
         </Alert>
-        <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', mb: 2 }}>
+        <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(180px,1fr))] mb-4">
           <FormField label={t('exm.f.minInternal')}>
             <TextInput type="number" value={pass.internal} onChange={(e) => setPass({ ...pass, internal: e.target.value })} disabled={!canEdit} />
           </FormField>
@@ -145,7 +139,7 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
           <FormField label={t('exm.f.minTotal')}>
             <TextInput type="number" value={pass.total} onChange={(e) => setPass({ ...pass, total: e.target.value })} disabled={!canEdit} />
           </FormField>
-        </Box>
+        </div>
         {canEdit ? (
           <Button
             variant="contained"
@@ -155,23 +149,23 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
             {t('exm.scheme.save')}
           </Button>
         ) : (
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('exm.scheme.readOnly')}
-          </Typography>
+          </p>
         )}
         {feedback}
       </Card>
       {canEdit && (
-        <Card sx={{ p: 2.5 }}>
-          <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+        <Card className="p-5">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
             {t('exm.scale.title')}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          </h2>
+          <div className="flex gap-2 flex-wrap">
             <FormField label={t('exm.f.name')}>
               <TextInput value={scaleName} onChange={(e) => setScaleName(e.target.value)} />
             </FormField>
             <FormField label={t('exm.scale.from')}>
-              <TextInput select value={scalePreset} onChange={(e) => setScalePreset(e.target.value)} sx={{ minWidth: 260 }}>
+              <TextInput className="min-w-[260px]" select value={scalePreset} onChange={(e) => setScalePreset(e.target.value)}>
                 {Object.entries(presets.gradeScales).map(([k, g]) => (
                   <MenuItem key={k} value={k}>
                     {g.name}
@@ -182,7 +176,7 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
             <Button variant="outlined" disabled={pending} onClick={() => run(() => createGradeScale({ name: scaleName, preset: scalePreset }), t('exm.scale.created'), () => setScaleName(''))}>
               {t('exm.scale.add')}
             </Button>
-          </Box>
+          </div>
         </Card>
       )}
     </>

@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { EvaluationDesk } from '@/components/evaluation/EvaluationDesk';
 import { SessionPapers, SessionPicker } from '@/components/evaluation/Pickers';
@@ -29,11 +28,11 @@ export default async function EvaluationPage({ searchParams }: { searchParams: P
     return (
       <>
         {header}
-        <Box sx={{ ml: -1, mb: 1 }}>
+        <div className="-ml-2 mb-2">
           <LinkButton href={`/evaluation?session=${session}`} size="small">
             {t('ev.backPapers')}
           </LinkButton>
-        </Box>
+        </div>
         {failed !== undefined ? <ErrorState message={failed} /> : <EvaluationDesk paperId={paper} overview={overview.data!} staff={staff.data ?? []} />}
       </>
     );
@@ -44,11 +43,11 @@ export default async function EvaluationPage({ searchParams }: { searchParams: P
     return (
       <>
         {header}
-        <Box sx={{ ml: -1, mb: 1 }}>
+        <div className="-ml-2 mb-2">
           <LinkButton href="/evaluation" size="small">
             {t('ev.back')}
           </LinkButton>
-        </Box>
+        </div>
         {detail.error !== undefined ? <ErrorState message={detail.error} /> : <SessionPapers session={detail.data!} />}
       </>
     );

@@ -1,19 +1,10 @@
 'use client';
-
-import PublishOutlined from '@mui/icons-material/PublishOutlined';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Snackbar from '@mui/material/Snackbar';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { publishAssessment } from '@/app/(dashboard)/results/actions';
 import { useI18n } from '@/i18n/client';
 
+import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar } from '@/components/kx';
+import { Upload as PublishOutlined } from 'lucide-react';
 /** Rendered on published assessments too (with `published`), so the confirmation outlives the refresh. */
 export function PublishButton({ id, title, className, entered, missing, published }: { id: string; title: string; className: string; entered: number; missing: number; published: boolean }) {
   const { t } = useI18n();
@@ -32,15 +23,15 @@ export function PublishButton({ id, title, className, entered, missing, publishe
         <DialogTitle id="publish-title">{t('results.publish.title')}</DialogTitle>
         <DialogContent>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert className="mb-4" severity="error">
               {error}
             </Alert>
           )}
-          <Typography variant="body2">
+          <p className="text-[13px] leading-[19px]">
             {t('results.publish.body', { className, title })}
-          </Typography>
+          </p>
           {missing > 0 && (
-            <Alert severity="warning" sx={{ mt: 2 }}>
+            <Alert className="mt-4" severity="warning">
               {t.plural('results.publish.missing', missing)}
             </Alert>
           )}

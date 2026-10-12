@@ -1,9 +1,9 @@
-import EventBusyOutlined from '@mui/icons-material/EventBusyOutlined';
 import { LinkButton } from './LinkButton';
 import { getI18n } from '@/i18n/server';
 import { addDays, isoWeekday } from '@/lib/dates';
 import { EmptyState } from './States';
 
+import { CalendarX as EventBusyOutlined } from 'lucide-react';
 function hrefFor(path: string, date: string, today: string, extra?: Record<string, string>) {
   const q = new URLSearchParams(extra);
   if (date !== today) q.set('date', date);

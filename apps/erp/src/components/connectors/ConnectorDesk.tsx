@@ -1,9 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { deleteConnector, loadDeliveries, retryDelivery, saveConnector, setConnectorEnabled, testConnector } from '@/app/(dashboard)/connectors/actions';
 import { FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
@@ -11,6 +6,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { ConnectorRow, ConnectorTypeMeta, DeliveryRow } from '@/lib/govern';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** Settings form of one connector type; secrets are never filled in (leaving one empty keeps the stored value). */
 function configFields(t: (k: MessageKey) => string, type: ConnectorTypeMeta, existing?: ConnectorRow): Field[] {
   return [
@@ -74,13 +71,13 @@ export function ConnectorDesk({ types, connectors, canEdit }: { types: Connector
       label: '',
       cell: (c) =>
         canEdit ? (
-          <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+          <div className="flex flex-row gap-1 flex-wrap">
             <Button size="small" disabled={pending} onClick={() => run(() => setConnectorEnabled(c.id, !c.enabled), t('ops.saved'))}>{c.enabled ? t('conn.disable') : t('conn.enable')}</Button>
             <Button size="small" disabled={pending} onClick={() => test(c)} data-testid={`conn-test-${c.id}`}>{t('conn.test')}</Button>
             <Button size="small" onClick={() => setEditing(c)}>{t('conn.edit')}</Button>
             {c.type === 'webhook_out' && <Button size="small" onClick={() => openLog(c)}>{t('conn.log')}</Button>}
             <Button size="small" color="error" disabled={pending} onClick={() => run(() => deleteConnector(c.id), t('ops.saved'))}>{t('conn.delete')}</Button>
-          </Stack>
+          </div>
         ) : null,
     },
   ];
@@ -115,7 +112,7 @@ export function ConnectorDesk({ types, connectors, canEdit }: { types: Connector
       {adding && (
         <FormDialog
           title={adding.label}
-          intro={<Typography variant="body2">{adding.available ? adding.description : `${adding.description} ${t('conn.notAvailableHint')}`}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{adding.available ? adding.description : `${adding.description} ${t('conn.notAvailableHint')}`}</p>}
           fields={configFields(t, adding)}
           onSubmit={(v) => saveConnector(adding.type, adding.fields, v)}
           onClose={close}

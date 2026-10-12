@@ -1,8 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Snackbar from '@mui/material/Snackbar';
 import { usePathname } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { useI18n } from '@/i18n/client';
@@ -10,15 +6,16 @@ import type { MessageKey } from '@/i18n/messages';
 import { LinkTabs, type Tone } from '@/components/ui';
 import type { ActionResult } from '@/lib/types';
 
+import { Alert, Snackbar } from '@/components/kx';
 /** Section tabs as links, so each part keeps its own URL. */
 export function SectionTabs({ tabs, label }: { tabs: { href: string; label: MessageKey }[]; label: MessageKey }) {
   const pathname = usePathname();
   const { t } = useI18n();
   const current = tabs.find((x) => (x.href === tabs[0].href ? pathname === x.href : pathname.startsWith(x.href)))?.href ?? tabs[0].href;
   return (
-    <Box sx={{ mb: 3 }}>
+    <div className="mb-6">
       <LinkTabs value={current} label={t(label)} items={tabs.map((x) => ({ value: x.href, href: x.href, label: t(x.label) }))} />
-    </Box>
+    </div>
   );
 }
 
@@ -54,7 +51,7 @@ export function useNotice() {
   const view = (
     <>
       {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }} role="alert">
+        <Alert className="mb-4" severity="error" onClose={() => setError(null)} role="alert">
           {error}
         </Alert>
       )}

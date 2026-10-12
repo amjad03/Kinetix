@@ -1,7 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MiniBar } from '@/components/Bars';
@@ -20,6 +16,8 @@ import { getI18n } from '@/i18n/server';
 import { distribution, formatMarks, kindLabel, percent, resultCounts } from '@/lib/results';
 import type { AssessmentDetail, Structure } from '@/lib/types';
 
+import { Card } from '@/components/kx';
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('results.marks') };
 }
@@ -46,12 +44,12 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
   const className = structure.data?.sections.find((s) => s.id === a?.sectionId)?.displayName ?? t('results.class');
 
   const back = (
-    <Box sx={{ ml: -1, mb: 0.5 }}>
+    <div className="-ml-2 mb-1">
       <LinkButton href={a ? `/results?class=${a.sectionId}` : '/results'} size="small" startIcon={<ArrowBack />}>
         {t('results.back')}
         {a ? ` · ${className}` : ''}
       </LinkButton>
-    </Box>
+    </div>
   );
   if (!a)
     return (
@@ -75,12 +73,12 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
       <PageHeader
         title={a.title}
         subtitle={
-          <Box component="span" sx={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+          <span className="inline-flex flex-wrap items-center gap-2">
             <span>
               {className} · {a.subject.name} · {kindLabel(a.kind, t)} · {fmt.date(a.heldOn, 'short')} · {t('results.outOf', { n: formatMarks(a.maxMarks) })} · {t('results.setBy', { name: a.createdBy })}
             </span>
             <PublishedChip publishedAt={a.publishedAt} />
-          </Box>
+          </span>
         }
         actions={
           me && canPublishMarks(me.roles) ? (
@@ -112,16 +110,16 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
       {a.markStatus && <MarksPanel assessment={a} canPublish={!!me && canPublishMarks(me.roles)} canVerify={!!me && me.roles.some((r) => r === 'principal' || r === 'tenant_admin' || r === 'hod')} />}
 
       <SectionTitle>{t('results.howClassDid')}</SectionTitle>
-      <Card sx={{ p: { xs: 2, md: 3 } }}>
+      <Card className="p-4 md:p-6">
         {c.entered === 0 ? (
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('results.chartLater')}
-          </Typography>
+          </p>
         ) : (
           <>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
               {t('results.chartHelp', { max: formatMarks(a.maxMarks) })} {c.absent ? t('results.absentNotShown', { n: c.absent }) : ''}
-            </Typography>
+            </p>
             <Distribution bands={bands} total={c.entered} />
           </>
         )}

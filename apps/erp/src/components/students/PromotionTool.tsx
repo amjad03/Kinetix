@@ -1,13 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -15,6 +6,7 @@ import { runPromotion } from '@/app/(dashboard)/students/actions';
 import { useI18n } from '@/i18n/client';
 import type { PromotionResult } from '@/lib/admissions';
 
+import { Alert, Button, MenuItem, TextField } from '@/components/kx';
 export interface PromotionClass {
   id: string;
   name: string;
@@ -63,7 +55,7 @@ export function PromotionTool({ classes }: { classes: PromotionClass[] }) {
       }
     });
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
       {done && (
         <Alert severity="success">
@@ -71,15 +63,15 @@ export function PromotionTool({ classes }: { classes: PromotionClass[] }) {
         </Alert>
       )}
       <FormField label={t('stu.promo.label')}>
-        <TextInput helperText={t('stu.promo.labelHelp')} value={label} onChange={(e) => { setLabel(e.target.value); setPreview(null); }} sx={{ maxWidth: 420 }} />
+        <TextInput className="max-w-[420px]" helperText={t('stu.promo.labelHelp')} value={label} onChange={(e) => { setLabel(e.target.value); setPreview(null); }} />
       </FormField>
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, alignItems: 'center' }}>
+      <div className="rounded-[12px] border bg-card p-5">
+        <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4 items-center">
           {classes.map((c) => (
-            <Box key={c.id} sx={{ display: 'contents' }}>
-              <Typography variant="body2">
+            <div className="contents" key={c.id}>
+              <p className="text-[13px] leading-[19px]">
                 {c.name} · {t('stu.promo.students', { n: c.students })}
-              </Typography>
+              </p>
               <TextField
                 select
                 size="small"
@@ -101,19 +93,19 @@ export function PromotionTool({ classes }: { classes: PromotionClass[] }) {
                       </MenuItem>
                     ))}
               </TextField>
-            </Box>
+            </div>
           ))}
-        </Box>
-      </Paper>
-      <Stack direction="row" spacing={1}>
+        </div>
+      </div>
+      <div className="flex flex-row gap-2">
         <Button variant="outlined" disabled={pending || mappings.length === 0 || label.trim().length < 3} onClick={() => go(true)}>
           {t('stu.promo.preview')}
         </Button>
         <Button variant="contained" disabled={pending || !preview || label.trim().length < 3} onClick={() => go(false)}>
           {t('stu.promo.run')}
         </Button>
-      </Stack>
+      </div>
       {preview && <Alert severity="info">{t('stu.promo.preview.result', { promoted: preview.promoted, detained: preview.detained, graduated: preview.graduated, skipped: preview.skipped })}</Alert>}
-    </Stack>
+    </div>
   );
 }

@@ -1,5 +1,3 @@
-import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
-import SwapVert from '@mui/icons-material/SwapVert';
 import type { Metadata } from 'next';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
@@ -10,6 +8,7 @@ import { canChangeLifecycle } from '@/lib/access';
 import type { StudentRow } from '@/lib/admissions';
 import { getI18n } from '@/i18n/server';
 
+import { ArrowUpDown as SwapVert, UsersRound as GroupsOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.students') };
 }

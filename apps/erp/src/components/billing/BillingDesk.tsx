@@ -1,8 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { cancelSubscription, payInvoice, renewNow, subscribe } from '@/app/(dashboard)/billing/actions';
 import { ActionButton, Bar, FormDialog, Grid, useToast } from '@/components/ops/kit';
@@ -11,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { rupees, type SaasInvoice, type SaasPlan, type SaasSubscriptionView } from '@/lib/governance';
 
+import { Button } from '@/components/kx';
 const TONE = { trial: 'warning', active: 'success', past_due: 'danger', cancelled: 'neutral', issued: 'warning', paid: 'success', void: 'neutral' } as const;
 
 /** The institution's KINETIX plan: what it pays, what it uses, and its invoices with GST. */
@@ -34,7 +31,7 @@ export function BillingDesk({ view, plans, invoices }: { view: SaasSubscriptionV
         {sub && <ActionButton label={t('bl.renew')} run={renewNow} onDone={toast} />}
       </Bar>
       {sub && plan ? (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
+        <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] lg:grid-cols-[repeat(4,1fr)] gap-4 mb-6">
           <StatTile label={t('bl.plan')} value={plan.name} caption={t(`bl.int.${sub.interval}` as MessageKey)} />
           <StatTile label={t('bl.status')} value={t(`bl.st.${sub.status}` as MessageKey)} tone={sub.status === 'past_due' ? 'warning' : 'default'} caption={`${sub.currentPeriodStart} – ${sub.currentPeriodEnd}`} />
           <StatTile label={t('bl.students')} value={fmt.number(usage.students)} caption={t('bl.minimum', { n: plan.minStudents })} />
@@ -43,11 +40,11 @@ export function BillingDesk({ view, plans, invoices }: { view: SaasSubscriptionV
           <StatTile label={t('bl.boards')} value={fmt.number(usage.boards)} caption={t('bl.included', { n: plan.boards })} />
           <StatTile label={t('bl.aiCalls')} value={fmt.number(usage.aiCalls)} caption={t('bl.included', { n: fmt.number(plan.includedAiCalls) })} tone={usage.aiCalls > plan.includedAiCalls ? 'warning' : 'default'} />
           <StatTile label={t('bl.storage')} value={`${fmt.number(Math.round(usage.storageMb / 1024))} GB`} caption={t('bl.included', { n: `${Math.round(plan.includedStorageMb / 1024)} GB` })} tone={usage.storageMb > plan.includedStorageMb ? 'warning' : 'default'} />
-        </Box>
+        </div>
       ) : (
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <p className="text-sm leading-[21px] text-muted-foreground mb-6">
           {t('bl.none')}
-        </Typography>
+        </p>
       )}
       {estimate && (
         <Grid
@@ -61,9 +58,9 @@ export function BillingDesk({ view, plans, invoices }: { view: SaasSubscriptionV
           ]}
         />
       )}
-      <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
         {t('bl.invoices')}
-      </Typography>
+      </h2>
       <Grid
         testId="bl-invoices"
         empty={t('bl.noInvoices')}

@@ -1,14 +1,11 @@
 'use client';
-
-import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
-import NotificationImportantOutlined from '@mui/icons-material/NotificationImportantOutlined';
-import ReportOutlined from '@mui/icons-material/ReportOutlined';
-import Chip from '@mui/material/Chip';
 import type { ReactNode } from 'react';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { Priority } from '@/lib/types';
 
+import { Chip } from '@/components/kx';
+import { BellRing as NotificationImportantOutlined, Megaphone as CampaignOutlined, OctagonAlert as ReportOutlined } from 'lucide-react';
 /** Label, short line, what boards do and what families get: dictionary keys `msg.pri.<value>[.short|.board|.families]`. */
 export const PRIORITIES: { value: Priority; icon: ReactNode }[] = [
   { value: 'info', icon: <CampaignOutlined /> },
@@ -20,9 +17,9 @@ export const priorityKey = (p: Priority, part?: 'short' | 'board' | 'families') 
 
 export function PriorityChip({ priority }: { priority: Priority }) {
   const { t } = useI18n();
-  if (priority === 'emergency') return <Chip size="small" label={t('msg.pri.emergency')} sx={{ bgcolor: 'error.main', color: 'error.contrastText' }} />;
-  if (priority === 'important') return <Chip size="small" label={t('msg.pri.important')} sx={{ bgcolor: 'kx.liveContainer', color: 'kx.onLiveContainer' }} />;
-  return <Chip size="small" label={t('msg.pri.info')} sx={{ bgcolor: 'm3.secondaryContainer', color: 'm3.onSecondaryContainer' }} />;
+  if (priority === 'emergency') return <Chip className="bg-destructive text-white" size="small" label={t('msg.pri.emergency')} />;
+  if (priority === 'important') return <Chip className="bg-orange-soft text-orange-ink" size="small" label={t('msg.pri.important')} />;
+  return <Chip className="bg-secondary text-secondary-foreground" size="small" label={t('msg.pri.info')} />;
 }
 
 /** How long a message stays; the label is `msg.exp.<minutes>`. */

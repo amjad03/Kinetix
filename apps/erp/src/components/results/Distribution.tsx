@@ -1,11 +1,10 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useI18n } from '@/i18n/client';
 import { BANDS } from '@/lib/results';
 
+import { Tooltip } from '@/components/kx';
+import { cn } from '@/lib/utils';
+import { size } from '@/lib/sx';
 /**
  * How the class did: one bar per score band, a single series in the primary colour. Bars are
  * anchored to the baseline with rounded tops; the count sits above each bar that has students,
@@ -17,44 +16,33 @@ export function Distribution({ bands, total }: { bands: { label: string; count: 
   const max = Math.max(1, ...bands.map((b) => b.count));
   const H = 160;
   return (
-    <Box data-testid="distribution" role="img" aria-label={t('results.chartLabel', { bands: bands.map((b) => `${name(b.label)}: ${b.count}`).join(', ') })}>
-      <Box sx={{ position: 'relative', height: H + 24, display: 'grid', gridTemplateColumns: `repeat(${bands.length}, 1fr)`, gap: '2px', alignItems: 'end', px: 0.5 }}>
+    <div data-testid="distribution" role="img" aria-label={t('results.chartLabel', { bands: bands.map((b) => `${name(b.label)}: ${b.count}`).join(', ') })}>
+      <div className="relative grid gap-[2px] items-end px-1" style={{ height: size(H + 24), gridTemplateColumns: `repeat(${bands.length}, 1fr)` }}>
         {/* Recessive gridlines at half and full scale */}
         {[0.5, 1].map((f) => (
-          <Box key={f} aria-hidden sx={{ position: 'absolute', left: 0, right: 0, bottom: H * f, borderTop: 1, borderColor: 'm3.outlineVariant', borderStyle: 'dashed', opacity: 0.6 }} />
+          <div className="absolute left-0 right-0 border-t border-border border-dashed opacity-[0.6]" style={{ bottom: H * f }} key={f} aria-hidden />
         ))}
         {bands.map((b) => (
           <Tooltip key={b.label} title={`${t.plural('results.bandTip', b.count, { band: name(b.label) })}${total ? ` (${Math.round((b.count / total) * 100)}%)` : ''}`} placement="top" followCursor>
-            <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', cursor: 'default', '&:hover .kx-bar': { bgcolor: 'primary.dark' } }} data-band={b.label} data-count={b.count}>
+            <div className="h-full flex flex-col justify-end items-center cursor-default [&:hover_.kx-bar]:bg-teal-ink" data-band={b.label} data-count={b.count}>
               {b.count > 0 && (
-                <Typography variant="caption" sx={{ fontVariantNumeric: 'tabular-nums', color: 'text.primary', fontWeight: 500, mb: 0.5 }}>
+                <span className="text-xs leading-4 tracking-[0.3px] tabular-nums text-foreground font-medium mb-1">
                   {b.count}
-                </Typography>
+                </span>
               )}
-              <Box
-                className="kx-bar"
-                sx={{
-                  width: '100%',
-                  maxWidth: 56,
-                  height: b.count ? Math.max(4, (b.count / max) * H) : 2,
-                  bgcolor: b.count ? 'primary.main' : 'm3.outlineVariant',
-                  borderRadius: b.count ? '4px 4px 0 0' : 1,
-                  transition: 'background-color 120ms',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
+              <div className={cn('kx-bar w-full max-w-[56px] [transition:background-color_120ms] relative z-[1]', b.count ? 'bg-teal' : 'bg-border', b.count ? 'rounded-[4px_4px_0_0]' : 'rounded-[10px]')} style={{ height: size(b.count ? Math.max(4, (b.count / max) * H) : 2) }}
               />
-            </Box>
+            </div>
           </Tooltip>
         ))}
-      </Box>
-      <Box sx={{ borderTop: 1, borderColor: 'm3.outline', display: 'grid', gridTemplateColumns: `repeat(${bands.length}, 1fr)`, gap: '2px', pt: 0.75, px: 0.5 }}>
+      </div>
+      <div className="border-t border-border-strong grid gap-[2px] pt-1.5 px-1" style={{ gridTemplateColumns: `repeat(${bands.length}, 1fr)` }}>
         {bands.map((b) => (
-          <Typography key={b.label} variant="caption" color="text.secondary" sx={{ textAlign: 'center', lineHeight: 1.2, fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
+          <span className="tracking-[0.3px] text-muted-foreground text-center text-[0.625rem] sm:text-[0.75rem]" key={b.label}>
             {name(b.label)}
-          </Typography>
+          </span>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

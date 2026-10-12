@@ -1,16 +1,5 @@
 'use client';
-
-import Download from '@mui/icons-material/Download';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import { DataTable, StatusPill } from '@/components/ui';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Stack from '@mui/material/Stack';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { runAction } from '@/app/(dashboard)/payroll/actions';
@@ -22,6 +11,8 @@ import { downloadUrl, RUN_TONE, runActions, type StatutoryKind } from '@/lib/hr'
 import { formatRupees } from '@/lib/money';
 import type { PayrollRunDetail } from '@/lib/hr-types';
 
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@/components/kx';
+import { Download } from 'lucide-react';
 type Step = 'recompute' | 'approve' | 'lock' | 'reopen';
 
 export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canApprove: boolean }) {
@@ -43,14 +34,14 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
   return (
     <>
       {view}
-      <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
+      <div className="flex flex-row gap-2 flex-wrap items-center mb-6">
         <StatusPill tone={pillTone(RUN_TONE[run.status])}>{t(`pay.status.${run.status}` as MessageKey)}</StatusPill>
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
         {can.recompute && <Button variant="outlined" disabled={pending} onClick={() => go('recompute')}>{t('pay.recompute')}</Button>}
         {can.reopen && <Button variant="outlined" disabled={pending} onClick={() => setConfirm('reopen')}>{t('pay.reopen')}</Button>}
         {can.approve && <Button variant="contained" disabled={pending || run.payslips.length === 0} onClick={() => setConfirm('approve')}>{t('pay.approve')}</Button>}
         {can.lock && <Button variant="contained" disabled={pending} onClick={() => setConfirm('lock')}>{t('pay.lock')}</Button>}
-      </Stack>
+      </div>
       <StatGrid min={140}>
         <StatTile label={t('pay.staff')} value={run.staffCount} />
         <StatTile label={t('pay.gross')} value={formatRupees(run.grossPaise)} />
@@ -60,22 +51,22 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
       </StatGrid>
 
       {can.exports && (
-        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mt: 3 }}>
+        <div className="flex flex-row gap-2 flex-wrap mt-6">
           <Button variant="outlined" startIcon={<Download />} href={downloadUrl.bank(run.id)}>{t('pay.dl.bank')}</Button>
           {statutory.map((k) => (
             <Button key={k} variant="outlined" startIcon={<Download />} href={downloadUrl.statutory(run.id, k)}>{t(`pay.dl.${k}` as MessageKey)}</Button>
           ))}
           <Button variant="outlined" startIcon={<Download />} href={downloadUrl.tally(run.id)}>{t('pay.dl.tally')}</Button>
-        </Stack>
+        </div>
       )}
 
       {run.skipped.length > 0 && (
-        <Alert severity="warning" sx={{ mt: 3 }}>
+        <Alert className="mt-6" severity="warning">
           {t('pay.skipped')}: {run.skipped.map((s) => `${s.fullName} (${s.reason})`).join(', ')}
         </Alert>
       )}
 
-      <Box sx={{ mt: 3 }}>
+      <div className="mt-6">
         <DataTable
           testId="payslips"
           label={t('nav.payslips')}
@@ -92,7 +83,7 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
             { id: 'c6', header: '', align: 'right', csv: false, cell: (p) => (<><Button size="small" href={downloadUrl.payslip(p.id)}>{t('pay.dl.pdf')}</Button></>) },
           ]}
         />
-      </Box>
+      </div>
 
       {confirm && (
         <Dialog open onClose={() => setConfirm(null)}>

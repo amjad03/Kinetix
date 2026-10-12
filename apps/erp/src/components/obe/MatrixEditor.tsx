@@ -1,15 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -19,6 +8,8 @@ import { useRun } from '@/components/exams/useRun';
 import { useI18n } from '@/i18n/client';
 import { nextStrength, setCell, strengthMap, uncoveredOutcomes, unmappedCos, type CoSet, type MatrixData } from '@/lib/obe';
 
+import { Alert, Button, MenuItem, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
+import { cn } from '@/lib/utils';
 export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit }: { subjects: { id: string; code: string; name: string }[]; subjectId: string; sets: CoSet[]; setId: string | null; matrix: MatrixData | null; canEdit: boolean }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -29,9 +20,9 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
   const get = strengthMap(cells);
   return (
     <>
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+      <div className="flex gap-4 flex-wrap mb-4">
         <FormField label={t('exm.f.subject')}>
-          <TextInput select value={subjectId} onChange={(e) => router.push(`/obe/matrix?subjectId=${e.target.value}`)} sx={{ minWidth: 280 }}>
+          <TextInput className="min-w-[280px]" select value={subjectId} onChange={(e) => router.push(`/obe/matrix?subjectId=${e.target.value}`)}>
             {subjects.map((s) => (
               <MenuItem key={s.id} value={s.id}>
                 {s.code} {s.name}
@@ -40,7 +31,7 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
           </TextInput>
         </FormField>
         <FormField label={t('obe.f.version')}>
-          <TextInput select value={setId ?? ''} onChange={(e) => router.push(`/obe/matrix?subjectId=${subjectId}&setId=${e.target.value}`)} sx={{ minWidth: 200 }}>
+          <TextInput className="min-w-[200px]" select value={setId ?? ''} onChange={(e) => router.push(`/obe/matrix?subjectId=${subjectId}&setId=${e.target.value}`)}>
             {sets.map((s) => (
               <MenuItem key={s.id} value={s.id}>
                 v{s.version} · {t(`obe.cs.${s.status}`)}
@@ -53,15 +44,15 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
             {t('obe.newVersion')}
           </Button>
         )}
-      </Box>
+      </div>
       {feedback}
       {!matrix ? (
-        <Typography color="text.secondary">{t('obe.noVersion')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('obe.noVersion')}</p>
       ) : (
         <>
-          {!draft && <Alert severity="info" sx={{ mb: 2 }}>{t('obe.frozen')}</Alert>}
-          {unmappedCos(matrix.cos, cells).length > 0 && <Alert severity="warning" sx={{ mb: 1 }}>{t('obe.unmapped', { codes: unmappedCos(matrix.cos, cells).map((c) => c.code).join(', ') })}</Alert>}
-          {matrix.cos.length > 0 && uncoveredOutcomes(matrix.outcomes, cells).length > 0 && <Alert severity="warning" sx={{ mb: 1 }}>{t('obe.uncovered', { codes: uncoveredOutcomes(matrix.outcomes, cells).map((c) => c.code).join(', ') })}</Alert>}
+          {!draft && <Alert className="mb-4" severity="info">{t('obe.frozen')}</Alert>}
+          {unmappedCos(matrix.cos, cells).length > 0 && <Alert className="mb-2" severity="warning">{t('obe.unmapped', { codes: unmappedCos(matrix.cos, cells).map((c) => c.code).join(', ') })}</Alert>}
+          {matrix.cos.length > 0 && uncoveredOutcomes(matrix.outcomes, cells).length > 0 && <Alert className="mb-2" severity="warning">{t('obe.uncovered', { codes: uncoveredOutcomes(matrix.outcomes, cells).map((c) => c.code).join(', ') })}</Alert>}
           <TableFrame testId="co-po-matrix">
             <Table size="small">
               <TableHead>
@@ -83,7 +74,7 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
                       const v = get(c.id, o.id);
                       return (
                         <TableCell key={o.id} align="center" padding="none">
-                          <Button size="small" disabled={!canEdit || !draft} onClick={() => setCells(setCell(cells, c.id, o.id, nextStrength(v)))} aria-label={`${c.code} ${o.code}: ${v}`} sx={{ minWidth: 40, fontWeight: v ? 700 : 400, color: v ? 'primary.main' : 'text.disabled' }}>
+                          <Button className={cn('min-w-[40px]', v ? 'font-bold' : 'font-normal', v ? 'text-teal-ink' : 'text-faint')} size="small" disabled={!canEdit || !draft} onClick={() => setCells(setCell(cells, c.id, o.id, nextStrength(v)))} aria-label={`${c.code} ${o.code}: ${v}`}>
                             {v || '·'}
                           </Button>
                         </TableCell>
@@ -101,33 +92,33 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
               </TableBody>
             </Table>
           </TableFrame>
-          <Typography variant="caption" color="text.secondary">
+          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {t('obe.legend')}
-          </Typography>
+          </span>
           {canEdit && draft && (
             <>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
+              <div className="flex gap-2 flex-wrap mt-4">
                 <FormField label={t('exm.f.code')}>
-                  <TextInput value={co.code} onChange={(e) => setCo({ ...co, code: e.target.value })} sx={{ width: 100 }} />
+                  <TextInput className="w-[100px]" value={co.code} onChange={(e) => setCo({ ...co, code: e.target.value })} />
                 </FormField>
                 <FormField label={t('obe.f.statement')}>
-                  <TextInput value={co.statement} onChange={(e) => setCo({ ...co, statement: e.target.value })} sx={{ flex: 1, minWidth: 260 }} />
+                  <TextInput className="flex-1 min-w-[260px]" value={co.statement} onChange={(e) => setCo({ ...co, statement: e.target.value })} />
                 </FormField>
                 <FormField label={t('obe.f.bloom')}>
-                  <TextInput value={co.bloomLevel} onChange={(e) => setCo({ ...co, bloomLevel: e.target.value })} sx={{ width: 140 }} />
+                  <TextInput className="w-[140px]" value={co.bloomLevel} onChange={(e) => setCo({ ...co, bloomLevel: e.target.value })} />
                 </FormField>
                 <Button variant="outlined" disabled={pending} onClick={() => run(() => addCo(matrix.set.id, co), t('obe.added'), () => setCo({ code: '', statement: '', bloomLevel: '' }))}>
                   {t('obe.addCo')}
                 </Button>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+              </div>
+              <div className="flex gap-2 mt-4">
                 <Button variant="contained" disabled={pending} onClick={() => run(() => saveMatrix(matrix.set.id, cells), t('obe.matrixSaved'))}>
                   {t('obe.saveMatrix')}
                 </Button>
                 <Button variant="outlined" color="success" disabled={pending} onClick={() => run(() => activateCoSet(matrix.set.id), t('obe.activated'))}>
                   {t('obe.activate')}
                 </Button>
-              </Box>
+              </div>
             </>
           )}
         </>

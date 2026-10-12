@@ -1,19 +1,3 @@
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
-import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
-import BeachAccessOutlined from '@mui/icons-material/BeachAccessOutlined';
-import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
-import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
-import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
-import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
-import ClassOutlined from '@mui/icons-material/ClassOutlined';
-import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
-import GradingOutlined from '@mui/icons-material/GradingOutlined';
-import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
-import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
-import PersonOffOutlined from '@mui/icons-material/PersonOffOutlined';
-import QuizOutlined from '@mui/icons-material/QuizOutlined';
-import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
 import { SegmentBar } from '@/components/Bars';
 import { ClassTimeline } from '@/components/ClassTimeline';
 import { HolidayBanner } from '@/components/HolidayBanner';
@@ -35,6 +19,7 @@ import { Announcements, QuickActions, Row, UpcomingEvents, type QuickAction, typ
 import { Sparkline } from '@/components/ui/Charts';
 import type { FeeSummary } from '@/lib/types';
 
+import { ArrowRight as ArrowForward, Banknote as PaymentsOutlined, BookMarked as ClassOutlined, CalendarDays as CalendarMonthOutlined, ClipboardCheck as GradingOutlined, ClipboardList as AssignmentOutlined, FileQuestion as QuizOutlined, IdCard as BadgeOutlined, ListChecks as FactCheckOutlined, Megaphone as CampaignOutlined, Presentation as CastForEducationOutlined, Sparkles as AutoAwesomeOutlined, Target as TrackChangesOutlined, Umbrella as BeachAccessOutlined, UserX as PersonOffOutlined, UsersRound as GroupsOutlined } from 'lucide-react';
 /** The principal's and administrator's overview: KPIs with trend, the day's classes, performance, what needs a decision. */
 export async function PrincipalDashboard({ me, date, today }: { me: Me; date: string; today: string }) {
   const i18n = await getI18n();

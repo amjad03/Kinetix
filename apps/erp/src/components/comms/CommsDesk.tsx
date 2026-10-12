@@ -1,12 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { campaignDetail, cancelCampaign, createCampaign, previewAudience, removeAudience, runDue, saveAudience, saveTemplate } from '@/app/(dashboard)/communication/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -16,6 +8,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { AUDIENCE_ROLES, CHANNELS, LOCALES_OFFERED, type AudienceRow, type CampaignDetail, type CampaignRow, type MessageTemplate } from '@/lib/pathways-b';
 
+import { Alert, Button, CircularProgress } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 type Section = { value: string; label: string };
 
 /** Templates, audiences and campaigns of the communication engine. */
@@ -58,7 +52,7 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
       label: t('pwb.comms.tab.templates', { n: templates.length }),
       node: (
         <>
-          <Alert severity="info" sx={{ mb: 2 }}>{t('pwb.comms.channelNotes')}</Alert>
+          <Alert className="mb-4" severity="info">{t('pwb.comms.channelNotes')}</Alert>
           <Bar>
             <Button variant="contained" startIcon={<Add />} onClick={() => setTpl('new')} data-testid="comms-new-template">{t('pwb.comms.newTemplate')}</Button>
           </Bar>
@@ -122,7 +116,7 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
               {t('pwb.comms.runDue')}
             </Button>
           </Bar>
-          {(templates.length === 0 || audiences.length === 0) && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('pwb.comms.needFirst')}</Typography>}
+          {(templates.length === 0 || audiences.length === 0) && <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">{t('pwb.comms.needFirst')}</p>}
           <Grid
             testId="comms-campaigns"
             empty={t('pwb.comms.noCampaigns')}
@@ -150,7 +144,7 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
       {tpl && (
         <FormDialog
           title={tpl === 'new' ? t('pwb.comms.newTemplate') : tplName(tpl)}
-          intro={<Typography variant="body2" color="text.secondary">{t('pwb.comms.templateHelp', { example: '{{name}}' })}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.comms.templateHelp', { example: '{{name}}' })}</p>}
           onSubmit={(v) => saveTemplate(v, tpl === 'new' ? undefined : tpl.id)}
           onClose={done}
           fields={tplFields(tpl === 'new' ? null : tpl)}
@@ -162,11 +156,11 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
           title={t('pwb.comms.newCampaign')}
           intro={
             <>
-              <Typography variant="body2" color="text.secondary">{t('pwb.comms.campaignHelp')}</Typography>
+              <p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.comms.campaignHelp')}</p>
               {templates.some((x) => x.placeholders.length > 0) && (
-                <Typography variant="caption" color="text.secondary" component="div">
+                <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {templates.filter((x) => x.placeholders.length > 0).map((x) => `${tplName(x)}: ${x.placeholders.join(', ')}`).join(' | ')}
-                </Typography>
+                </div>
               )}
             </>
           }
@@ -231,35 +225,35 @@ function AudienceDialog({ sections, onClose }: { sections: Section[]; onClose: (
         </>
       }
     >
-      <Stack spacing={2} sx={{ pt: 1 }}>
+      <div className="flex flex-col gap-4 pt-2">
         <FormField label={t('ops.f.name')} required>
           <TextInput value={name} onChange={(e) => setName(e.target.value)} fullWidth data-testid="f-name" />
         </FormField>
-        <Box>
-          <Typography variant="subtitle2">{t('pwb.comms.roles')}</Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))' }}>
+        <div>
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('pwb.comms.roles')}</h6>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))]">
             {AUDIENCE_ROLES.map((r) => (
               <CheckboxField key={r} label={t(`pwb.aud.${r}` as MessageKey)} checked={roles.includes(r)} onChange={(on) => flip(roles, setRoles, r, on)} />
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
         {sections.length > 0 && (
-          <Box>
-            <Typography variant="subtitle2">{t('pwb.comms.classes')}</Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', maxHeight: 180, overflow: 'auto' }}>
+          <div>
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('pwb.comms.classes')}</h6>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] max-h-[180px] overflow-auto">
               {sections.map((s) => (
                 <CheckboxField key={s.value} label={s.label} checked={classes.includes(s.value)} onChange={(on) => flip(classes, setClasses, s.value, on)} />
               ))}
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
         <FormField label={t('pwb.comms.userIds')}>
           <TextInput value={ids} onChange={(e) => { setIds(e.target.value); setSize(null); }} multiline minRows={2} fullWidth />
         </FormField>
-        <Typography variant="caption" color="text.secondary">{t('pwb.comms.audienceHelp')}</Typography>
+        <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">{t('pwb.comms.audienceHelp')}</span>
         {size !== null && <Alert severity="info" data-testid="comms-audience-size">{t('pwb.comms.reaches', { n: size })}</Alert>}
         {error && <Alert severity="error">{error}</Alert>}
-      </Stack>
+      </div>
     </Dialog>
   );
 }
@@ -271,22 +265,22 @@ function CampaignDialog({ campaign, onClose, toast }: { campaign: CampaignRow; o
   const d = detail.data;
   return (
     <InfoDialog title={campaign.title} onClose={onClose}>
-      {detail.error && <Typography color="error">{detail.error}</Typography>}
+      {detail.error && <p className="text-sm leading-[21px] text-red-ink">{detail.error}</p>}
       {d && (
-        <Stack spacing={2} data-testid="comms-campaign-detail">
-          <Typography variant="body2">
+        <div className="flex flex-col gap-4" data-testid="comms-campaign-detail">
+          <p className="text-[13px] leading-[19px]">
             {t('pwb.comms.detailLine', { channel: t(`pwb.ch.${d.channel}` as MessageKey), key: d.templateKey, audience: campaign.audience, when: fmt.dateTime(d.sendAt) })}
-          </Typography>
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', alignItems: 'center' }}>
+          </p>
+          <div className="flex flex-row gap-2 flex-wrap items-center">
             <Pill label={t(`pwb.comms.status.${d.status}` as MessageKey)} warn={d.status === 'failed' || d.status === 'cancelled'} />
-            <Typography variant="body2">{t('pwb.comms.counts', { recipients: d.recipients, sent: d.sentCount, failed: d.failedCount })}</Typography>
-          </Stack>
+            <p className="text-[13px] leading-[19px]">{t('pwb.comms.counts', { recipients: d.recipients, sent: d.sentCount, failed: d.failedCount })}</p>
+          </div>
           {Object.keys(d.delivery).length > 0 && (
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {Object.entries(d.delivery).map(([k, n]) => `${t(`pwb.comms.delivery.${k}` as MessageKey)}: ${fmt.number(n)}`).join(' · ')}
-            </Typography>
+            </p>
           )}
-          <Typography variant="subtitle2">{t('pwb.comms.failures')}</Typography>
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('pwb.comms.failures')}</h6>
           <Grid
             testId="comms-failures"
             empty={t('pwb.comms.noFailures')}
@@ -299,7 +293,7 @@ function CampaignDialog({ campaign, onClose, toast }: { campaign: CampaignRow; o
             ]}
           />
           {d.status === 'scheduled' && (
-            <Box>
+            <div>
               <ActionButton
                 tone="error"
                 label={t('pwb.comms.cancel')}
@@ -309,9 +303,9 @@ function CampaignDialog({ campaign, onClose, toast }: { campaign: CampaignRow; o
                   detail.reload();
                 }}
               />
-            </Box>
+            </div>
           )}
-        </Stack>
+        </div>
       )}
     </InfoDialog>
   );

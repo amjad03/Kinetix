@@ -1,17 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { cancelInterview, completeInterview, markNoShow, saveSheet, scheduleInterview } from '@/app/(dashboard)/admissions/growth-actions';
@@ -20,6 +7,7 @@ import { Dialog, FormField, StatusPill, TextInput, type Tone } from '@/component
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button, MenuItem, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 export interface Interview {
   id: string;
   applicationId: string;
@@ -70,17 +58,15 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
     });
   const when = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' }).format(new Date(iso));
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('ag.int.schedule')}</SectionTitle>
-        <Box
-          component="form"
+        <form className="grid grid-cols-[1fr] sm:grid-cols-[repeat(2,1fr)] gap-3"
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
             run(() => scheduleInterview(f), () => setF({ applicationId: '', slotAt: '', venue: '', panel: '' }));
           }}
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}
         >
           <FormField label={t('ag.int.application')} required>
             <TextInput select value={f.applicationId} onChange={(e) => setF({ ...f, applicationId: e.target.value })} required>
@@ -101,18 +87,18 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
           <FormField label={t('ag.int.panel')} required>
             <TextInput multiline minRows={2} value={f.panel} onChange={(e) => setF({ ...f, panel: e.target.value })} required />
           </FormField>
-          <Box>
+          <div>
             <Button type="submit" variant="contained" disabled={pending || !f.applicationId || !f.slotAt || !f.panel.trim()}>
               {t('ag.int.create')}
             </Button>
-          </Box>
-        </Box>
-      </Paper>
+          </div>
+        </form>
+      </div>
 
       {interviews.length === 0 ? (
-        <Typography color="text.secondary">{t('ag.int.none')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('ag.int.none')}</p>
       ) : (
-        <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
+        <div className="rounded-[12px] border bg-card overflow-x-auto">
           <Table size="small" data-testid="interview-list">
             <TableHead>
               <TableRow>
@@ -129,29 +115,29 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
                 <TableRow key={i.id}>
                   <TableCell>
                     {i.applicantName}
-                    <Typography variant="caption" color="text.secondary" component="div">
+                    <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {i.applicationNo}
-                    </Typography>
+                    </div>
                   </TableCell>
                   <TableCell>
                     {when(i.slotAt)}
                     {i.venue && (
-                      <Typography variant="caption" color="text.secondary" component="div">
+                      <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {i.venue}
-                      </Typography>
+                      </div>
                     )}
                   </TableCell>
                   <TableCell>{i.panel.map((p) => p.name).join(', ')}</TableCell>
                   <TableCell>
                     <StatusPill tone={TONE[i.status]}>{t(`ag.int.status.${i.status}` as MessageKey)}</StatusPill>
                     {i.outcome && (
-                      <Typography variant="caption" component="div" color="text.secondary">
+                      <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {t(`ag.int.outcome.${i.outcome}` as MessageKey)}
-                      </Typography>
+                      </div>
                     )}
                   </TableCell>
                   <TableCell align="right">{i.score == null ? '–' : `${i.score} / ${i.maxScore}`}</TableCell>
-                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                  <TableCell className="whitespace-nowrap" align="right">
                     {i.status === 'scheduled' && (
                       <>
                         <Button size="small" onClick={() => { setScores(CRITERIA.map(() => 0)); setRemarks(''); setSheet(i); }}>
@@ -173,7 +159,7 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
               ))}
             </TableBody>
           </Table>
-        </Paper>
+        </div>
       )}
 
       {sheet && (
@@ -191,7 +177,7 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
             </Button>
           }
         >
-          <Stack spacing={2} sx={{ pt: 1 }}>
+          <div className="flex flex-col gap-4 pt-2">
             {CRITERIA.map((c, k) => (
               <FormField key={c.key} label={`${t(c.key)} (${t('ag.int.outOf', { max: c.max })})`}>
                 <TextInput type="number" value={scores[k]} slotProps={{ htmlInput: { min: 0, max: c.max, step: 0.5 } }} onChange={(e) => setScores(scores.map((s, j) => (j === k ? Number(e.target.value) : s)))} />
@@ -200,7 +186,7 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
             <FormField label={t('ag.int.remarks')}>
               <TextInput multiline minRows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
             </FormField>
-          </Stack>
+          </div>
         </Dialog>
       )}
 
@@ -215,7 +201,7 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
             </Button>
           }
         >
-          <Stack spacing={2} sx={{ pt: 1 }}>
+          <div className="flex flex-col gap-4 pt-2">
             <FormField label={t('ag.int.decision')}>
               <TextInput select value={outcome} onChange={(e) => setOutcome(e.target.value)}>
                 {(['selected', 'waitlisted', 'rejected'] as const).map((o) => (
@@ -228,9 +214,9 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
             <FormField label={t('ag.int.remarks')}>
               <TextInput multiline minRows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
             </FormField>
-          </Stack>
+          </div>
         </Dialog>
       )}
-    </Stack>
+    </div>
   );
 }

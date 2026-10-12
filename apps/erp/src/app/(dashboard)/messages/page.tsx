@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { ComposeMessage } from '@/components/messages/ComposeMessage';
 import { SentMessages } from '@/components/messages/SentMessages';
@@ -29,9 +28,9 @@ export default async function MessagesPage() {
       {structure.error !== undefined ? (
         <ErrorState message={structure.error} />
       ) : (
-        <Box sx={{ display: 'grid', gap: 4, gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) minmax(0, 1fr)' }, alignItems: 'start' }}>
+        <div className="grid gap-8 grid-cols-[1fr] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start">
           <ComposeMessage structure={structure.data} />
-          <Box component="section" aria-labelledby="sent-title">
+          <section aria-labelledby="sent-title">
             <SectionTitle id="sent-title" flush>
               {t('msg.sent')}
               {sent.data ? ` · ${sent.data.length}` : ''}
@@ -48,8 +47,8 @@ export default async function MessagesPage() {
                 isAdmin={me.roles.some((r) => r === 'principal' || r === 'tenant_admin')}
               />
             )}
-          </Box>
-        </Box>
+          </section>
+        </div>
       )}
     </>
   );

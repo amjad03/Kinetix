@@ -1,20 +1,5 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Typography from '@mui/material/Typography';
-import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -28,6 +13,8 @@ import { ptSlabs, RUN_TONE, shiftMonth, type LineDraft } from '@/lib/hr';
 import { formatRupees, paiseToInput, rupeesToPaise } from '@/lib/money';
 import type { PayrollRunSummary, PayrollSettings, SalaryComponent, SalaryStructure, StaffSummary, TallyLedgers } from '@/lib/hr-types';
 
+import { Button, Checkbox, FormControlLabel, IconButton, MenuItem, Switch, Tab, Tabs } from '@/components/kx';
+import { Plus as Add, ReceiptText as ReceiptLongOutlined, Trash2 as DeleteOutlined } from 'lucide-react';
 export type PayrollTab = 'runs' | 'structures' | 'components' | 'settings';
 
 export function PayrollDesk({ initialTab, runs, components, settings, staff, thisMonth, canApprove }: { initialTab: PayrollTab; runs: PayrollRunSummary[]; components: SalaryComponent[]; settings: PayrollSettings; staff: StaffSummary[]; thisMonth: string; canApprove: boolean }) {
@@ -39,14 +26,14 @@ export function PayrollDesk({ initialTab, runs, components, settings, staff, thi
   };
   return (
     <>
-      <Box sx={{ borderBottom: 1, borderColor: 'm3.outlineVariant', mb: 3 }}>
+      <div className="border-b border-border mb-6">
         <Tabs value={tab} onChange={(_, v: PayrollTab) => switchTab(v)} aria-label={t('nav.payroll')} variant="scrollable" scrollButtons={false}>
           <Tab value="runs" label={t('pay.tab.runs')} />
           <Tab value="structures" label={t('pay.tab.structures')} />
           <Tab value="components" label={t('pay.tab.components')} />
           <Tab value="settings" label={t('pay.tab.settings')} />
         </Tabs>
-      </Box>
+      </div>
       {tab === 'runs' && <Runs runs={runs} thisMonth={thisMonth} />}
       {tab === 'structures' && <Structures staff={staff} components={components} />}
       {tab === 'components' && <Components components={components} />}
@@ -64,7 +51,7 @@ function Runs({ runs, thisMonth }: { runs: PayrollRunSummary[]; thisMonth: strin
   return (
     <>
       {view}
-      <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', mb: 2 }}>
+      <div className="flex gap-3 items-center flex-wrap mb-4">
         <FormField label={t('pay.month')}>
           <TextInput type="month" value={month} onChange={(e) => setMonth(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: thisMonth } }} />
         </FormField>
@@ -81,7 +68,7 @@ function Runs({ runs, thisMonth }: { runs: PayrollRunSummary[]; thisMonth: strin
         >
           {t('pay.newRun')}
         </Button>
-      </Box>
+      </div>
       {runs.length === 0 ? (
         <EmptyState icon={<ReceiptLongOutlined />} title={t('pay.noRuns')}>
           {t('pay.noRunsBody')}
@@ -138,7 +125,7 @@ function Structures({ staff, components }: { staff: StaffSummary[]; components: 
     <>
       {view}
       <FormField label={t('pay.st.staff')}>
-        <TextInput select value={who} onChange={(e) => pick(e.target.value)} sx={{ minWidth: 280, mb: 3 }}>
+        <TextInput className="min-w-[280px] mb-6" select value={who} onChange={(e) => pick(e.target.value)}>
           {staff.map((s) => (
             <MenuItem key={s.userId} value={s.userId} disabled={!s.employeeCode}>
               {s.fullName}
@@ -148,12 +135,12 @@ function Structures({ staff, components }: { staff: StaffSummary[]; components: 
         </TextInput>
       </FormField>
       {who && (
-        <Stack spacing={2} sx={{ maxWidth: 640 }}>
+        <div className="flex flex-col gap-4 max-w-[640px]">
           <FormField label={t('pay.st.effective')}>
-            <TextInput type="date" value={from} onChange={(e) => setFrom(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} sx={{ maxWidth: 220 }} />
+            <TextInput className="max-w-[220px]" type="date" value={from} onChange={(e) => setFrom(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} />
           </FormField>
           {rows.map((r, i) => (
-            <Stack key={i} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <div className="flex flex-row gap-2 items-center" key={i}>
               <FormField label={t('pay.st.component')}>
                 <TextInput select fullWidth value={r.componentId} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, componentId: e.target.value } : x)))}>
                   {active.map((c) => (
@@ -164,22 +151,22 @@ function Structures({ staff, components }: { staff: StaffSummary[]; components: 
                 </TextInput>
               </FormField>
               <FormField label={t('pay.st.monthly')}>
-                <TextInput value={r.amount} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} sx={{ width: 180 }} slotProps={{ htmlInput: { inputMode: 'decimal' } }} />
+                <TextInput className="w-[180px]" value={r.amount} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} slotProps={{ htmlInput: { inputMode: 'decimal' } }} />
               </FormField>
               <IconButton aria-label={t('pay.st.removeLine')} onClick={() => setRows(rows.length > 1 ? rows.filter((_, k) => k !== i) : [{ componentId: '', amount: '' }])}>
                 <DeleteOutlined />
               </IconButton>
-            </Stack>
+            </div>
           ))}
-          <Box>
+          <div>
             <Button size="small" startIcon={<Add />} onClick={() => setRows([...rows, { componentId: '', amount: '' }])}>
               {t('pay.st.addLine')}
             </Button>
-          </Box>
-          <Typography variant="body2">
+          </div>
+          <p className="text-[13px] leading-[19px]">
             {t('pay.st.gross')}: <strong>{formatRupees(gross)}</strong>
-          </Typography>
-          <Box>
+          </p>
+          <div>
             <Button
               variant="contained"
               disabled={pending || !from}
@@ -192,20 +179,20 @@ function Structures({ staff, components }: { staff: StaffSummary[]; components: 
             >
               {t('hr.save')}
             </Button>
-          </Box>
+          </div>
           {history.length > 0 && (
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+            <div>
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-1">
                 {t('pay.st.history')}
-              </Typography>
+              </h6>
               {history.map((h) => (
-                <Typography key={h.effectiveFrom} variant="body2" color="text.secondary">
+                <p className="text-[13px] leading-[19px] text-muted-foreground" key={h.effectiveFrom}>
                   {formatDate(h.effectiveFrom, 'short', locale)} · {formatRupees(h.monthlyGrossPaise)}
-                </Typography>
+                </p>
               ))}
-            </Box>
+            </div>
           )}
-        </Stack>
+        </div>
       )}
     </>
   );
@@ -233,15 +220,15 @@ function Components({ components }: { components: SalaryComponent[] }) {
           { id: 'c4', header: t('pay.co.taxable'), sort: (c) => c.kind === 'earning' ? (c.taxable ? t('hr.yes') : t('hr.no')) : '–', cell: (c) => c.kind === 'earning' ? (c.taxable ? t('hr.yes') : t('hr.no')) : '–' },
         ]}
       />
-      <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap', mt: 3 }}>
+      <div className="flex flex-row gap-3 items-center flex-wrap mt-6">
         <FormField label={t('hr.leave.code')}>
-          <TextInput value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} sx={{ width: 120 }} />
+          <TextInput className="w-[120px]" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
         </FormField>
         <FormField label={t('hr.leave.name')}>
           <TextInput value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
         </FormField>
         <FormField label={t('pay.co.kind')}>
-          <TextInput select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as SalaryComponent['kind'] })} sx={{ width: 140 }}>
+          <TextInput className="w-[140px]" select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as SalaryComponent['kind'] })}>
             <MenuItem value="earning">{t('pay.co.earning')}</MenuItem>
             <MenuItem value="deduction">{t('pay.co.deduction')}</MenuItem>
           </TextInput>
@@ -261,7 +248,7 @@ function Components({ components }: { components: SalaryComponent[] }) {
         >
           {t('hr.add')}
         </Button>
-      </Stack>
+      </div>
     </>
   );
 }
@@ -292,30 +279,30 @@ function Settings({ settings, canEdit }: { settings: PayrollSettings; canEdit: b
     });
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 720 }}>
+    <div className="flex flex-col gap-6 max-w-[720px]">
       {view}
-      {!canEdit && <Typography variant="body2" color="text.secondary">{t('pay.set.readOnly')}</Typography>}
-      <Box>
-        <Typography variant="h6" component="h2" sx={{ fontSize: '1rem', mb: 1 }}>{t('pay.set.pfEsi')}</Typography>
-        <Stack spacing={2}>
+      {!canEdit && <p className="text-[13px] leading-[19px] text-muted-foreground">{t('pay.set.readOnly')}</p>}
+      <div>
+        <h2 className="font-medium tracking-[0.1px] text-[1rem] mb-2">{t('pay.set.pfEsi')}</h2>
+        <div className="flex flex-col gap-4">
           <FormControlLabel control={<Switch checked={pfCap} disabled={!canEdit} onChange={(e) => setPfCap(e.target.checked)} />} label={t('pay.set.pfCap')} />
-          <Stack direction="row" spacing={2}>
+          <div className="flex flex-row gap-4">
             <FormField label={t('pay.set.pfCeiling')}>
               <TextInput value={pfCeil} disabled={!canEdit} onChange={(e) => setPfCeil(e.target.value)} />
             </FormField>
             <FormField label={t('pay.set.esiLimit')}>
               <TextInput value={esiLimit} disabled={!canEdit} onChange={(e) => setEsiLimit(e.target.value)} />
             </FormField>
-          </Stack>
-        </Stack>
-      </Box>
-      <Box>
-        <Typography variant="h6" component="h2" sx={{ fontSize: '1rem', mb: 1 }}>{t('pay.set.pt')}</Typography>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2 className="font-medium tracking-[0.1px] text-[1rem] mb-2">{t('pay.set.pt')}</h2>
         <FormField label={t('pay.set.ptState')}>
-          <TextInput value={state} disabled={!canEdit} onChange={(e) => setState(e.target.value)} sx={{ mb: 2 }} />
+          <TextInput className="mb-4" value={state} disabled={!canEdit} onChange={(e) => setState(e.target.value)} />
         </FormField>
         {slabs.map((s, i) => (
-          <Stack key={i} direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
+          <div className="flex flex-row gap-2 items-center mb-2" key={i}>
             <FormField label={t('pay.set.slabFrom')}>
               <TextInput value={s.from} disabled={!canEdit} onChange={(e) => setSlabs(slabs.map((x, k) => (k === i ? { ...x, from: e.target.value } : x)))} />
             </FormField>
@@ -330,40 +317,40 @@ function Settings({ settings, canEdit }: { settings: PayrollSettings; canEdit: b
                 <DeleteOutlined />
               </IconButton>
             )}
-          </Stack>
+          </div>
         ))}
         {canEdit && (
           <Button size="small" startIcon={<Add />} onClick={() => setSlabs([...slabs, { from: '', amount: '', february: '' }])}>
             {t('pay.st.addLine')}
           </Button>
         )}
-      </Box>
-      <Box>
-        <Typography variant="h6" component="h2" sx={{ fontSize: '1rem', mb: 1 }}>{t('pay.set.weeklyOffs')}</Typography>
-        <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
+      </div>
+      <div>
+        <h2 className="font-medium tracking-[0.1px] text-[1rem] mb-2">{t('pay.set.weeklyOffs')}</h2>
+        <div className="flex flex-row flex-wrap">
           {days.map((d) => (
             <FormControlLabel key={d} control={<Checkbox checked={offs.includes(d)} disabled={!canEdit} onChange={(e) => setOffs(e.target.checked ? [...offs, d] : offs.filter((x) => x !== d))} />} label={tt(`pay.day.${d}` as MessageKey)} />
           ))}
-        </Stack>
-      </Box>
-      <Box>
-        <Typography variant="h6" component="h2" sx={{ fontSize: '1rem', mb: 0.5 }}>{t('pay.set.ledgers')}</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>{t('pay.set.ledgersHelp')}</Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+        </div>
+      </div>
+      <div>
+        <h2 className="font-medium tracking-[0.1px] text-[1rem] mb-1">{t('pay.set.ledgers')}</h2>
+        <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">{t('pay.set.ledgersHelp')}</p>
+        <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
           {LEDGERS.map((k) => (
             <FormField key={k} label={t(`pay.led.${k}` as MessageKey)}>
               <TextInput value={ledgers[k]} disabled={!canEdit} onChange={(e) => setLedgers({ ...ledgers, [k]: e.target.value })} />
             </FormField>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
       {canEdit && (
-        <Box>
+        <div>
           <Button variant="contained" onClick={save} disabled={pending}>
             {t('hr.save')}
           </Button>
-        </Box>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }

@@ -1,16 +1,11 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { rotateSigningKey } from '@/app/(dashboard)/devices/actions';
 import { useI18n } from '@/i18n/client';
 import type { SigningKeyInfo } from '@/lib/staff-changes';
 
+import { Alert, Button } from '@/components/kx';
 /** The institution's offline pairing key: boards get signed codes while online, and the Teacher App checks them against it. */
 export function OfflineKeyCard({ info, canRotate }: { info: SigningKeyInfo; canRotate: boolean }) {
   const { t, locale } = useI18n();
@@ -18,16 +13,16 @@ export function OfflineKeyCard({ info, canRotate }: { info: SigningKeyInfo; canR
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   return (
-    <Paper variant="outlined" sx={{ p: 2, mb: 2 }} data-testid="offline-key">
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between' }}>
+    <div className="rounded-[12px] border bg-card p-4 mb-4" data-testid="offline-key">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
         <div>
-          <Typography variant="subtitle2">{t('as.off.title')}</Typography>
-          <Typography variant="body2" color="text.secondary">
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('as.off.title')}</h6>
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('as.off.help')}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
+          </p>
+          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {t('as.off.keyId')}: {info.keyId} · {info.algorithm} · {t('as.off.created')} {new Date(info.createdAt).toLocaleDateString(locale)}
-          </Typography>
+          </span>
         </div>
         {canRotate && (
           <Button
@@ -46,8 +41,8 @@ export function OfflineKeyCard({ info, canRotate }: { info: SigningKeyInfo; canR
             {t('as.off.rotate')}
           </Button>
         )}
-      </Stack>
-      {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
-    </Paper>
+      </div>
+      {error && <Alert className="mt-2" severity="error">{error}</Alert>}
+    </div>
   );
 }

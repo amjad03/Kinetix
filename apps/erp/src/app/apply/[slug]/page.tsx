@@ -1,6 +1,3 @@
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ApplyForm, EnquiryForm } from '@/components/admissions/ApplyForm';
@@ -10,6 +7,7 @@ import { ApiError, api, load } from '@/lib/api';
 import type { PublicCycles } from '@/lib/admissions';
 import { getI18n } from '@/i18n/server';
 
+import { Container } from '@/components/kx';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -31,32 +29,32 @@ export default async function ApplyPage({ params, searchParams }: { params: Prom
     }
   });
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', py: 4 }}>
+    <div className="min-h-[100dvh] bg-background py-8">
       <Container maxWidth="md">
         <Logo />
         {data.error !== undefined ? (
-          <Box sx={{ mt: 4 }}>
+          <div className="mt-8">
             <ErrorState message={data.error} />
-          </Box>
+          </div>
         ) : (
           <>
-            <Typography variant="h4" component="h1" sx={{ mt: 3 }}>
+            <h1 className="font-display text-2xl leading-8 mt-6">
               {t('apply.heading', { institution: data.data.institution })}
-            </Typography>
-            <Typography color="text.secondary" sx={{ mb: 3 }}>
+            </h1>
+            <p className="text-sm leading-[21px] text-muted-foreground mb-6">
               {t('apply.intro')}
-            </Typography>
+            </p>
             <ApplyForm slug={slug} data={data.data} />
-            <Typography variant="h5" component="h2" sx={{ mt: 6, mb: 1 }}>
+            <h2 className="text-[1.375rem] leading-7 mt-12 mb-2">
               {t('apply.questions')}
-            </Typography>
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
+            </h2>
+            <p className="text-sm leading-[21px] text-muted-foreground mb-4">
               {t('apply.questionsBody')}
-            </Typography>
+            </p>
             <EnquiryForm slug={slug} programs={data.data.programs} referral={/^[A-Za-z0-9-]{4,20}$/.test(ref ?? '') ? ref!.toUpperCase() : ''} />
           </>
         )}
       </Container>
-    </Box>
+    </div>
   );
 }

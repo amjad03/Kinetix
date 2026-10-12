@@ -1,14 +1,11 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { buildCourseFile, reviewCourseFile } from '@/app/(dashboard)/course-files/actions';
 import { Bar, FormDialog, Grid, Pill, useToast } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { CourseFileOption, CourseFileRow } from '@/lib/quality';
 
+import { Button, Link } from '@/components/kx';
 type Dialog = 'build' | { review: CourseFileRow };
 
 export function CourseFilesDesk({ options, files }: { options: CourseFileOption[]; files: CourseFileRow[] }) {
@@ -41,7 +38,7 @@ export function CourseFilesDesk({ options, files }: { options: CourseFileOption[
             label: '',
             cell: (f) => (
               <>
-                <Link href={`/api/download?kind=course-file&id=${f.id}`} underline="hover" sx={{ mr: 1.5 }}>
+                <Link className="mr-3" href={`/api/download?kind=course-file&id=${f.id}`} underline="hover">
                   {t('cf.download')}
                 </Link>
                 {!f.reviewedAt && (
@@ -57,7 +54,7 @@ export function CourseFilesDesk({ options, files }: { options: CourseFileOption[
       {dlg === 'build' && (
         <FormDialog
           title={t('cf.buildTitle')}
-          intro={<Typography variant="body2">{t('cf.buildIntro')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('cf.buildIntro')}</p>}
           fields={[{ name: 'pick', label: t('cf.f.pick'), kind: 'select', options: options.map((o) => ({ value: `${o.sectionId}|${o.subjectId}`, label: `${o.section} · ${o.subject}` })), required: true }]}
           onSubmit={buildCourseFile}
           onClose={done}

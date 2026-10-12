@@ -1,21 +1,4 @@
 'use client';
-
-import DriveFileRenameOutlineOutlined from '@mui/icons-material/DriveFileRenameOutlineOutlined';
-import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
-import KeyOutlined from '@mui/icons-material/KeyOutlined';
-import MoreVert from '@mui/icons-material/MoreVert';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { newEnrollmentCode, renameBoard } from '@/app/(dashboard)/boards/actions';
@@ -24,6 +7,8 @@ import { useI18n } from '@/i18n/client';
 import { EnrollmentCodeDialog } from './AddBoardDialog';
 import { BoardProfilesDialog } from './BoardProfilesDialog';
 
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@/components/kx';
+import { EllipsisVertical as MoreVert, KeyRound as KeyOutlined, PencilLine as DriveFileRenameOutlineOutlined, UsersRound as GroupsOutlined } from 'lucide-react';
 type Open = null | 'rename' | 'reenrol' | 'profiles';
 
 /**
@@ -58,7 +43,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
           }}
         >
           <ListItemIcon>
-            <DriveFileRenameOutlineOutlined fontSize="small" />
+            <DriveFileRenameOutlineOutlined className="size-5" />
           </ListItemIcon>
           <ListItemText>{t('boards.rename')}</ListItemText>
         </MenuItem>
@@ -70,7 +55,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
           }}
         >
           <ListItemIcon>
-            <KeyOutlined fontSize="small" />
+            <KeyOutlined className="size-5" />
           </ListItemIcon>
           <ListItemText primary={t('boards.newCode')} secondary={enrolled ? t('boards.newCode.replacement') : t('boards.newCode.lost')} />
         </MenuItem>
@@ -83,7 +68,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
             }}
           >
             <ListItemIcon>
-              <GroupsOutlined fontSize="small" />
+              <GroupsOutlined className="size-5" />
             </ListItemIcon>
             <ListItemText primary={t('boards.profiles')} secondary={t('boards.profiles.hint')} />
           </MenuItem>
@@ -106,10 +91,10 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
           <DialogTitle>{t('boards.rename.title')}</DialogTitle>
           <DialogContent>
             <FormField label={t('boards.rename.name')}>
-              <TextInput autoFocus fullWidth value={value} onChange={(e) => setValue(e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} sx={{ mt: 1 }} />
+              <TextInput className="mt-2" autoFocus fullWidth value={value} onChange={(e) => setValue(e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} />
             </FormField>
             {error && (
-              <Alert severity="error" sx={{ mt: 2 }}>
+              <Alert className="mt-4" severity="error">
                 {error}
               </Alert>
             )}
@@ -132,7 +117,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
             {enrolled ? t('boards.newCode.enrolled') : t('boards.newCode.notEnrolled')}
           </DialogContentText>
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
+            <Alert className="mt-4" severity="error">
               {error}
             </Alert>
           )}

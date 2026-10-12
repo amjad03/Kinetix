@@ -1,9 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRef, useState, useTransition } from 'react';
 import { addInternshipLink, internshipAttendance, internshipCertificate, internshipLinks, issueCertificate, markAttendance, moveInternship, removeInternshipLink } from '@/app/(dashboard)/placements/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, useToast, type Col } from '@/components/ops/kit';
@@ -12,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { INTERNSHIP_MOVES, type InternshipRow } from '@/lib/pathways-a';
 
+import { Button, CircularProgress } from '@/components/kx';
 type Toast = (m: string) => void;
 export interface SkillOption { id: string; name: string }
 type Dlg = { kind: 'attendance' | 'links' | 'certificate' | 'move'; row: InternshipRow };
@@ -38,19 +34,19 @@ export function InternshipsDesk({ rows, skills, canEdit }: { rows: InternshipRow
     {
       label: '',
       cell: (r) => (
-        <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+        <div className="flex flex-row gap-1 flex-wrap">
           {canEdit && (INTERNSHIP_MOVES[r.status]?.length ?? 0) > 0 && <Button size="small" onClick={() => setDlg({ kind: 'move', row: r })}>{t('ixn.move')}</Button>}
           <Button size="small" onClick={() => setDlg({ kind: 'attendance', row: r })} data-testid={`ixn-attendance-${r.id}`}>{t('ixn.attendance')}</Button>
           <Button size="small" onClick={() => setDlg({ kind: 'links', row: r })} data-testid={`ixn-links-${r.id}`}>{t('ixn.links')}</Button>
           <Button size="small" onClick={() => setDlg({ kind: 'certificate', row: r })} data-testid={`ixn-certificate-${r.id}`}>{t('ixn.certificate')}</Button>
-        </Stack>
+        </div>
       ),
     },
   ];
 
   return (
     <>
-      <Typography variant="h6" component="h2" sx={{ mt: 4, mb: 1.5, fontSize: '1.0625rem', fontWeight: 600 }}>{t('ixn.title')}</Typography>
+      <h2 className="tracking-[0.1px] mt-8 mb-3 text-[1.0625rem] font-semibold">{t('ixn.title')}</h2>
       <Grid testId="ixn-table" empty={t('ixn.empty')} rows={rows} cols={cols} exportName="internships" />
       {dlg?.kind === 'move' && (
         <FormDialog
@@ -84,13 +80,13 @@ function AttendanceDialog({ row, onClose, toast }: { row: InternshipRow; onClose
       <ReadError message={a.error} />
       {a.data && s && (
         <>
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mb: 2 }}>
+          <div className="flex flex-row gap-2 flex-wrap mb-4">
             <Pill label={t('ixn.workingDays', { n: s.workingDays })} />
             <Pill label={t('ixn.presentDays', { n: s.presentDays })} />
             <Pill label={t('ixn.hours', { n: fmt.number(s.hours) })} />
             <Pill label={t('ixn.percent', { n: fmt.number(s.percent) })} warn={!s.eligible} />
             <Pill label={s.eligible ? t('ixn.eligible') : t('ixn.notEligible')} warn={!s.eligible} />
-          </Stack>
+          </div>
           <Bar><Button variant="contained" onClick={() => setMark(true)} data-testid="ixn-mark">{t('ixn.markDay')}</Button></Bar>
           <Grid
             testId="ixn-attendance-rows"
@@ -138,7 +134,7 @@ function LinksDialog({ row, skills, onClose, toast }: { row: InternshipRow; skil
   };
   return (
     <InfoDialog title={`${t('ixn.links')}: ${row.title}`} onClose={onClose}>
-      <Typography variant="body2" sx={{ mb: 2 }}>{t('ixn.linksHint')}</Typography>
+      <p className="text-[13px] leading-[19px] mb-4">{t('ixn.linksHint')}</p>
       <ReadError message={l.error} />
       <Bar>
         {(['skill', 'course', 'course_outcome'] as const).map((k) => (
@@ -161,7 +157,7 @@ function LinksDialog({ row, skills, onClose, toast }: { row: InternshipRow; skil
       {add && (
         <FormDialog
           title={t(`ixn.linkAdd.${add}` as MessageKey)}
-          intro={add === 'skill' && skills.length > 0 ? undefined : <Typography variant="body2">{t('ixn.idHint')}</Typography>}
+          intro={add === 'skill' && skills.length > 0 ? undefined : <p className="text-[13px] leading-[19px]">{t('ixn.idHint')}</p>}
           fields={[
             add === 'skill' && skills.length > 0
               ? { name: 'refId', label: t('ixn.linkKind.skill'), kind: 'select', required: true, options: skills.map((s) => ({ value: s.id, label: s.name })) }
@@ -197,19 +193,19 @@ function CertificateDialog({ row, canEdit, onClose, toast }: { row: InternshipRo
       <ReadError message={c.error} />
       {c.data && (
         <>
-          <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+          <div className="flex flex-row gap-2 mb-4">
             <Pill label={issued ? t('ixn.certIssued', { serial: c.data.serialNo ?? '-' }) : t('ixn.certNone')} warn={!issued} />
             {c.data.status && <Pill label={c.data.status} />}
-          </Stack>
-          {!issued && row.status !== 'completed' && <Typography variant="body2" sx={{ mb: 2 }}>{t('ixn.certNeedsCompleted')}</Typography>}
+          </div>
+          {!issued && row.status !== 'completed' && <p className="text-[13px] leading-[19px] mb-4">{t('ixn.certNeedsCompleted')}</p>}
           {!issued && canEdit && row.status === 'completed' && (
             <>
               <Heading>{t('ixn.issueTitle')}</Heading>
-              <Typography variant="body2" sx={{ mb: 1 }}>{t('ixn.waiveHint')}</Typography>
-              <Stack direction="row" spacing={1}>
+              <p className="text-[13px] leading-[19px] mb-2">{t('ixn.waiveHint')}</p>
+              <div className="flex flex-row gap-2">
                 <Button variant="contained" disabled={pending} onClick={() => issue(false)} startIcon={pending ? <CircularProgress size={16} /> : undefined} data-testid="ixn-issue">{t('ixn.issue')}</Button>
                 <Button variant="outlined" disabled={pending} onClick={() => issue(true)} data-testid="ixn-issue-waive">{t('ixn.issueWaive')}</Button>
-              </Stack>
+              </div>
             </>
           )}
         </>

@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Logo } from '@/components/Logo';
@@ -25,12 +24,12 @@ export default async function ChangePasswordPage({ searchParams }: { searchParam
   const { t } = await getI18n();
   if (me.error !== undefined) {
     return (
-      <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', p: 3 }}>
+      <div className="min-h-[100dvh] bg-background p-6">
         <Logo />
-        <Box sx={{ maxWidth: 640, mx: 'auto', mt: 10 }}>
+        <div className="max-w-[640px] mx-auto mt-20">
           <ErrorState title={t('state.cantOpen')} message={me.error} />
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
   if (!canUseErp(me.data.roles)) redirect('/auth/end?reason=denied');

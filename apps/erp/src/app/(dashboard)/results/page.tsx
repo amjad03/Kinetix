@@ -1,7 +1,3 @@
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import GradingOutlined from '@mui/icons-material/GradingOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { AssessmentsTable } from '@/components/results/ResultsTables';
 import { LinkButton } from '@/components/LinkButton';
@@ -14,6 +10,7 @@ import { getI18n } from '@/i18n/server';
 import { formatMarks } from '@/lib/results';
 import { resultClasses } from '@/lib/results-data';
 
+import { ChevronRight, ClipboardCheck as GradingOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.results') };
 }
@@ -51,33 +48,33 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
         </EmptyState>
       ) : (
         <>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }} data-testid="results-summary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-3" data-testid="results-summary">
             {t('results.summary', { name: klass.name, students: klass.students, assessments: t.plural('results.assessments', rows.length), published })}
-          </Typography>
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          </p>
+          <div className="hidden md:block">
             <AssessmentsTable rows={rows} />
-          </Box>
-          <Box sx={{ display: { xs: 'grid', md: 'none' }, gap: 1.5 }}>
+          </div>
+          <div className="grid md:hidden gap-3">
             {rows.map((a) => (
-              <Box key={a.id} sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', p: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 500, lineHeight: 1.3 }}>
+              <div className="border border-border rounded-[12px] p-4" key={a.id}>
+                <div className="flex justify-between gap-2">
+                  <h6 className="text-base tracking-[0.1px] font-medium leading-[1.3]">
                     {a.title}
-                  </Typography>
+                  </h6>
                   <PublishedChip publishedAt={a.publishedAt} />
-                </Box>
-                <Typography variant="body2" color="text.secondary">
+                </div>
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {a.subject.name} · {fmt.date(a.heldOn, 'short')}
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
+                </p>
+                <p className="text-[13px] leading-[19px] mt-2">
                   {t('results.averageLine', { avg: a.average === null ? '—' : `${formatMarks(a.average)} / ${formatMarks(a.maxMarks)}`, n: a.entered, d: a.classSize })}
-                </Typography>
-                <LinkButton href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />} sx={{ mt: 1, ml: -1 }}>
+                </p>
+                <LinkButton className="mt-2 -ml-2" href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />}>
                   {t('results.marks')}
                 </LinkButton>
-              </Box>
+              </div>
             ))}
-          </Box>
+          </div>
         </>
       )}
     </>

@@ -1,12 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -14,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MfaStatus, SessionRow } from '@/lib/insights';
 import { confirmMfa, disableMfa, newBackupCodes, revokeOtherSessions, revokeSession, startMfa } from './actions';
 
+import { Alert, Button, Card, Chip } from '@/components/kx';
 /** Two-step sign-in set-up (TOTP authenticator and backup codes) and the devices the user is signed in on. */
 export function SecurityPanel({ status, sessions, back }: { status: MfaStatus; sessions: SessionRow[]; back: string }) {
   const { t, fmt } = useI18n();
@@ -31,19 +24,19 @@ export function SecurityPanel({ status, sessions, back }: { status: MfaStatus; s
     });
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error" role="alert">{error}</Alert>}
-      <Card sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-          <Typography variant="h6" component="h2">
+      <Card className="p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
             {t('security.mfa.title')}
-          </Typography>
+          </h2>
           <Chip size="small" color={status.enrolled ? 'success' : 'default'} label={status.enrolled ? t('security.mfa.statusOn') : t('security.mfa.statusOff')} />
-        </Box>
-        {!status.enrolled && status.required && <Alert severity="warning" sx={{ mb: 2 }}>{t('security.mfa.required')}</Alert>}
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        </div>
+        {!status.enrolled && status.required && <Alert className="mb-4" severity="warning">{t('security.mfa.required')}</Alert>}
+        <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
           {status.enrolled ? t('security.mfa.on') : t('security.mfa.off')}
-        </Typography>
+        </p>
 
         {!status.enrolled && !setup && (
           <Button variant="contained" disabled={pending} onClick={() => run(async () => { const r = await startMfa(); if (r.ok) setSetup(r.data); return r; })}>
@@ -51,40 +44,40 @@ export function SecurityPanel({ status, sessions, back }: { status: MfaStatus; s
           </Button>
         )}
         {setup && !backup && (
-          <Stack spacing={2} component="form" onSubmit={(e) => { e.preventDefault(); run(async () => { const r = await confirmMfa(code); if (r.ok) setBackup(r.data.backupCodes); return r; }, () => setSetup(null)); }}>
-            <Typography variant="body2">{t('security.mfa.secret')}</Typography>
-            <Typography component="code" sx={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: 2, wordBreak: 'break-all' }} data-testid="mfa-secret">
+          <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); run(async () => { const r = await confirmMfa(code); if (r.ok) setBackup(r.data.backupCodes); return r; }, () => setSetup(null)); }}>
+            <p className="text-[13px] leading-[19px]">{t('security.mfa.secret')}</p>
+            <code className="font-mono text-[1.1rem] tracking-[2px] break-all" data-testid="mfa-secret">
               {setup.secret}
-            </Typography>
-            <Button href={setup.otpauthUri} size="small" sx={{ alignSelf: 'flex-start' }}>
+            </code>
+            <Button className="self-start" href={setup.otpauthUri} size="small">
               {t('security.mfa.open')}
             </Button>
             <FormField label={t('security.mfa.code')}>
-              <TextInput value={code} onChange={(e) => setCode(e.target.value)} autoComplete="one-time-code" slotProps={{ htmlInput: { inputMode: 'numeric' } }} sx={{ maxWidth: 240 }} />
+              <TextInput className="max-w-[240px]" value={code} onChange={(e) => setCode(e.target.value)} autoComplete="one-time-code" slotProps={{ htmlInput: { inputMode: 'numeric' } }} />
             </FormField>
-            <Button type="submit" variant="contained" disabled={pending || code.trim().length < 6} sx={{ alignSelf: 'flex-start' }}>
+            <Button className="self-start" type="submit" variant="contained" disabled={pending || code.trim().length < 6}>
               {t('security.mfa.confirm')}
             </Button>
-          </Stack>
+          </form>
         )}
         {backup && (
-          <Stack spacing={1.5}>
+          <div className="flex flex-col gap-3">
             <Alert severity="info">{t('security.mfa.backup')}</Alert>
-            <Box component="pre" sx={{ fontFamily: 'monospace', m: 0, columnCount: 2, maxWidth: 360 }} data-testid="backup-codes">
+            <pre className="font-mono m-0 columns-2 max-w-[360px]" data-testid="backup-codes">
               {backup.join('\n')}
-            </Box>
-            <Button variant="contained" sx={{ alignSelf: 'flex-start' }} onClick={() => { setBackup(null); router.push(back); router.refresh(); }}>
+            </pre>
+            <Button className="self-start" variant="contained" onClick={() => { setBackup(null); router.push(back); router.refresh(); }}>
               OK
             </Button>
-          </Stack>
+          </div>
         )}
         {status.enrolled && !backup && (
-          <Stack spacing={2} sx={{ maxWidth: 360 }}>
-            <Typography variant="body2">{t('security.mfa.codesLeft', { n: status.backupCodesLeft })}</Typography>
+          <div className="flex flex-col gap-4 max-w-[360px]">
+            <p className="text-[13px] leading-[19px]">{t('security.mfa.codesLeft', { n: status.backupCodesLeft })}</p>
             <FormField label={t('security.mfa.code')}>
               <TextInput value={code} onChange={(e) => setCode(e.target.value)} autoComplete="one-time-code" />
             </FormField>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <div className="flex gap-2 flex-wrap">
               <Button variant="outlined" disabled={pending || code.trim().length < 6} onClick={() => run(async () => { const r = await newBackupCodes(code); if (r.ok) setBackup(r.data.backupCodes); return r; }, () => setCode(''))}>
                 {t('security.mfa.newCodes')}
               </Button>
@@ -93,43 +86,43 @@ export function SecurityPanel({ status, sessions, back }: { status: MfaStatus; s
                   {t('security.mfa.disable')}
                 </Button>
               )}
-            </Box>
-          </Stack>
+            </div>
+          </div>
         )}
       </Card>
 
-      <Card sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h6" component="h2">
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-3 gap-2 flex-wrap">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
             {t('security.sessions')}
-          </Typography>
+          </h2>
           {sessions.length > 1 && (
             <Button size="small" disabled={pending} onClick={() => run(revokeOtherSessions)}>
               {t('security.sessions.signOutOthers')}
             </Button>
           )}
-        </Box>
-        <Stack spacing={1.5} data-testid="sessions">
+        </div>
+        <div className="flex flex-col gap-3" data-testid="sessions">
           {sessions.map((s) => (
-            <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography variant="subtitle2">
-                  {s.label} {s.current && <Chip size="small" label={t('security.sessions.thisDevice')} sx={{ ml: 0.5 }} />}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
+            <div className="flex justify-between items-center gap-2" key={s.id}>
+              <div className="min-w-0">
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">
+                  {s.label} {s.current && <Chip className="ml-1" size="small" label={t('security.sessions.thisDevice')} />}
+                </h6>
+                <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {t('security.sessions.lastSeen')}: {fmt.dateTime(s.lastSeenAt)}
                   {s.ip ? ` · ${s.ip}` : ''}
-                </Typography>
-              </Box>
+                </span>
+              </div>
               {!s.current && (
                 <Button size="small" color="error" disabled={pending} onClick={() => run(() => revokeSession(s.id))}>
                   {t('security.sessions.signOut')}
                 </Button>
               )}
-            </Box>
+            </div>
           ))}
-        </Stack>
+        </div>
       </Card>
-    </Stack>
+    </div>
   );
 }

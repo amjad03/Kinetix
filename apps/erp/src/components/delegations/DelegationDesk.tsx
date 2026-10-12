@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { giveDelegation, revokeDelegation } from '@/app/(dashboard)/delegations/actions';
 import { ActionButton, Bar, FormDialog, Grid, useToast } from '@/components/ops/kit';
@@ -10,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { delegationState, type DelegationRow } from '@/lib/dpdp';
 
+import { Button } from '@/components/kx';
 const TONE = { active: 'success', upcoming: 'neutral', ended: 'neutral', revoked: 'warning' } as const;
 
 /** Approvals I delegated and approvals delegated to me, with the form to hand mine to a colleague. */
@@ -46,13 +44,13 @@ export function DelegationDesk({ rows, colleagues, today }: { rows: DelegationRo
           {t('dg.give')}
         </Button>
       </Bar>
-      <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
         {t('dg.given')}
-      </Typography>
+      </h2>
       {table(given, 'dg-given', true)}
-      <Typography variant="h6" component="h2" sx={{ mt: 3, mb: 1 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mt-6 mb-2">
         {t('dg.received')}
-      </Typography>
+      </h2>
       {table(received, 'dg-received', false)}
       {open && (
         <FormDialog

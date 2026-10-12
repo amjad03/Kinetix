@@ -1,11 +1,9 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import { Bar, Grid } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { Voucher } from '@/lib/finance';
 
+import { Button, TextField } from '@/components/kx';
 export function GlExport({ range, vouchers }: { range: { from: string; to: string } | null; vouchers: Voucher[] | null }) {
   const { t, fmt } = useI18n();
   const q = range ? `from=${range.from}&to=${range.to}` : '';

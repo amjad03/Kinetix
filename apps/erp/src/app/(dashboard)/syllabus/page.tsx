@@ -1,5 +1,3 @@
-import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
@@ -11,6 +9,7 @@ import { subjectLinks } from '@/lib/syllabus';
 import type { Course, Curriculum, Structure } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
+import { BookOpenText as MenuBookOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.syllabus') };
 }
@@ -34,9 +33,9 @@ export default async function SyllabusPage({ searchParams }: { searchParams: Pro
       <PageHeader title={t('nav.syllabus')} subtitle={t('syl.subtitle')} />
 
       <SectionTitle flush>{t('syl.yourSubjects')}</SectionTitle>
-      <Typography variant="body2" color="text.secondary" sx={{ mt: -1, mb: 2, maxWidth: 760 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground -mt-2 mb-4 max-w-[760px]">
         {t('syl.yourSubjectsHelp')}
-      </Typography>
+      </p>
       {subjects.error !== undefined || courses.error !== undefined ? (
         <ErrorState message={subjects.error ?? courses.error ?? ''} />
       ) : subjects.data.length === 0 ? (

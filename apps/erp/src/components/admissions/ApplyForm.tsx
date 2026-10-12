@@ -1,12 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -16,6 +8,7 @@ import type { FormField as QuestionDef, PublicCycles } from '@/lib/admissions';
 import { formatDate } from '@/lib/dates';
 import { formatRupees } from '@/lib/money';
 
+import { Alert, Button, MenuItem } from '@/components/kx';
 /** The public application form: built from the chosen program's own questions. */
 export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) {
   const { t, locale } = useI18n();
@@ -48,8 +41,7 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
     return p;
   };
   return (
-    <Box
-      component="form"
+    <form
       noValidate
       onSubmit={(e: React.FormEvent) => {
         e.preventDefault();
@@ -64,7 +56,7 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
         });
       }}
     >
-      <Stack spacing={3}>
+      <div className="flex flex-col gap-6">
         {error && <Alert severity="error">{error}</Alert>}
         <FormField label={t('apply.program')} required>
           <TextInput select value={cycleId} onChange={(e) => { setCycleId(e.target.value); setAnswers({}); }} required>
@@ -76,15 +68,15 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
           </TextInput>
         </FormField>
         {cycle && (
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('apply.closesOn', { date: formatDate(cycle.closesOn, 'long', locale) })} · {cycle.applicationFeePaise > 0 ? t('apply.fee', { amount: formatRupees(cycle.applicationFeePaise) }) : t('apply.noFee')}
-          </Typography>
+          </p>
         )}
-        <Paper variant="outlined" sx={{ p: 2.5 }}>
-          <Typography variant="h6" component="h2" sx={{ mb: 2, fontSize: '1.0625rem' }}>
+        <div className="rounded-[12px] border bg-card p-5">
+          <h2 className="font-medium tracking-[0.1px] mb-4 text-[1.0625rem]">
             {t('apply.applicant')}
-          </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          </h2>
+          <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
             <FormField label={t('apply.fullName')} required>
               <TextInput value={f.applicantName} onChange={set('applicantName')} required />
             </FormField>
@@ -105,13 +97,13 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
             <FormField label={t('adm.field.email')}>
               <TextInput type="email" value={f.email} onChange={set('email')} />
             </FormField>
-          </Box>
-        </Paper>
-        <Paper variant="outlined" sx={{ p: 2.5 }}>
-          <Typography variant="h6" component="h2" sx={{ mb: 2, fontSize: '1.0625rem' }}>
+          </div>
+        </div>
+        <div className="rounded-[12px] border bg-card p-5">
+          <h2 className="font-medium tracking-[0.1px] mb-4 text-[1.0625rem]">
             {t('apply.guardian')}
-          </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          </h2>
+          <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
             <FormField label={t('apply.fullName')} required>
               <TextInput value={f.guardianName} onChange={set('guardianName')} required />
             </FormField>
@@ -124,31 +116,31 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
             <FormField label={t('adm.field.email')}>
               <TextInput type="email" value={f.guardianEmail} onChange={set('guardianEmail')} />
             </FormField>
-          </Box>
-        </Paper>
+          </div>
+        </div>
         {cycle && cycle.formFields.length > 0 && (
-          <Paper variant="outlined" sx={{ p: 2.5 }}>
-            <Typography variant="h6" component="h2" sx={{ mb: 2, fontSize: '1.0625rem' }}>
+          <div className="rounded-[12px] border bg-card p-5">
+            <h2 className="font-medium tracking-[0.1px] mb-4 text-[1.0625rem]">
               {t('apply.about', { program: cycle.programName })}
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+            </h2>
+            <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
               {cycle.formFields.map((q) => (
                 <Question key={q.key} q={q} value={answers[q.key] ?? ''} error={fieldErrors[q.key]} onChange={(v) => setAnswers({ ...answers, [q.key]: v })} />
               ))}
-            </Box>
-          </Paper>
+            </div>
+          </div>
         )}
         {/* Real visitors never see this; bots fill it in. */}
-        <Box aria-hidden sx={{ position: 'absolute', left: -9999, height: 0, overflow: 'hidden' }}>
+        <div className="absolute left-[-9999px] h-0 overflow-hidden" aria-hidden>
           <input tabIndex={-1} autoComplete="off" name="website" value={f.website} onChange={set('website')} />
-        </Box>
-        <Box>
+        </div>
+        <div>
           <Button type="submit" variant="contained" size="large" disabled={pending || !cycle || !f.applicantName.trim() || !f.phone.trim() || !f.guardianName.trim() || !f.guardianPhone.trim()}>
             {t('apply.submit')}
           </Button>
-        </Box>
-      </Stack>
-    </Box>
+        </div>
+      </div>
+    </form>
   );
 }
 
@@ -184,8 +176,7 @@ export function EnquiryForm({ slug, programs, referral = '' }: { slug: string; p
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
   if (sent) return <Alert severity="success">{t('apply.enquirySent')}</Alert>;
   return (
-    <Box
-      component="form"
+    <form
       onSubmit={(e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -196,7 +187,7 @@ export function EnquiryForm({ slug, programs, referral = '' }: { slug: string; p
         });
       }}
     >
-      <Stack spacing={2}>
+      <div className="flex flex-col gap-4">
         {error && <Alert severity="error">{error}</Alert>}
         <FormField label={t('adm.field.name')} required>
           <TextInput value={f.name} onChange={set('name')} required />
@@ -223,15 +214,15 @@ export function EnquiryForm({ slug, programs, referral = '' }: { slug: string; p
         <FormField label={t('ag.referral.code')} helper={t('ag.referral.help')}>
           <TextInput value={f.referralCode} onChange={set('referralCode')} slotProps={{ htmlInput: { maxLength: 30, autoCapitalize: 'characters' } }} />
         </FormField>
-        <Box aria-hidden sx={{ position: 'absolute', left: -9999, height: 0, overflow: 'hidden' }}>
+        <div className="absolute left-[-9999px] h-0 overflow-hidden" aria-hidden>
           <input tabIndex={-1} autoComplete="off" name="website" value={f.website} onChange={set('website')} />
-        </Box>
-        <Box>
+        </div>
+        <div>
           <Button type="submit" variant="outlined" disabled={pending || !f.name.trim() || !f.phone.trim()}>
             {t('apply.askUs')}
           </Button>
-        </Box>
-      </Stack>
-    </Box>
+        </div>
+      </div>
+    </form>
   );
 }

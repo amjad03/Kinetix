@@ -1,10 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FieldRow, FormField, TextInput } from '@/components/ui';
@@ -13,6 +7,7 @@ import { useRun } from '@/components/exams/useRun';
 import { useI18n } from '@/i18n/client';
 import type { AttainmentConfig, OutcomeKind, ProgramOutcome } from '@/lib/obe';
 
+import { Button, Card, MenuItem } from '@/components/kx';
 const KINDS: OutcomeKind[] = ['mission', 'vision', 'peo', 'po', 'pso'];
 
 export function OutcomesEditor({ programs, programId, outcomes, config, canEdit }: { programs: { id: string; name: string }[]; programId: string; outcomes: ProgramOutcome[]; config: AttainmentConfig; canEdit: boolean }) {
@@ -34,7 +29,7 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
   return (
     <>
       <FormField label={t('exm.f.program')}>
-        <TextInput select value={programId} onChange={(e) => router.push(`/obe/setup?programId=${e.target.value}`)} sx={{ minWidth: 220, mb: 2 }}>
+        <TextInput className="min-w-[220px] mb-4" select value={programId} onChange={(e) => router.push(`/obe/setup?programId=${e.target.value}`)}>
           {programs.map((p) => (
             <MenuItem key={p.id} value={p.id}>
               {p.name}
@@ -44,28 +39,28 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
       </FormField>
       {feedback}
       {KINDS.map((k) => (
-        <Box key={k} sx={{ mb: 2 }}>
-          <Typography variant="subtitle1" component="h2">
+        <div className="mb-4" key={k}>
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
             {t(`obe.kind.${k}`)}
-          </Typography>
+          </h2>
           {outcomes.filter((o) => o.kind === k).map((o) => (
-            <Box key={o.id} sx={{ display: 'flex', gap: 1, alignItems: 'baseline' }}>
-              <Typography sx={{ fontWeight: 600, minWidth: 56 }}>{o.code}</Typography>
-              <Typography sx={{ flex: 1 }}>{o.statement}</Typography>
+            <div className="flex gap-2 items-baseline" key={o.id}>
+              <p className="text-sm leading-[21px] font-semibold min-w-[56px]">{o.code}</p>
+              <p className="text-sm leading-[21px] flex-1">{o.statement}</p>
               {canEdit && (
                 <Button size="small" color="error" disabled={pending} onClick={() => run(() => removeOutcome(o.id), t('obe.removed'))}>
                   {t('exm.remove')}
                 </Button>
               )}
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       ))}
       {canEdit && (
-        <Card sx={{ p: 2, mb: 3 }}>
+        <Card className="p-4 mb-6">
           <FieldRow>
             <FormField label={t('obe.f.kind')}>
-              <TextInput select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as OutcomeKind })} sx={{ minWidth: 150 }}>
+              <TextInput className="min-w-[150px]" select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as OutcomeKind })}>
                 {KINDS.map((k) => (
                   <MenuItem key={k} value={k}>
                     {t(`obe.kind.${k}`)}
@@ -74,10 +69,10 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
               </TextInput>
             </FormField>
             <FormField label={t('exm.f.code')}>
-              <TextInput value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} sx={{ width: 100 }} />
+              <TextInput className="w-[100px]" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} />
             </FormField>
             <FormField label={t('obe.f.statement')}>
-              <TextInput value={f.statement} onChange={(e) => setF({ ...f, statement: e.target.value })} sx={{ flex: 1, minWidth: 260 }} />
+              <TextInput className="flex-1 min-w-[260px]" value={f.statement} onChange={(e) => setF({ ...f, statement: e.target.value })} />
             </FormField>
             <Button variant="outlined" disabled={pending} onClick={() => run(() => addOutcome(programId, f), t('obe.added'), () => setF({ ...f, code: '', statement: '' }))}>
               {t('obe.add')}
@@ -85,10 +80,10 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
           </FieldRow>
         </Card>
       )}
-      <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
         {t('obe.cfg.title')}
-      </Typography>
-      <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
+      </h2>
+      <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(190px,1fr))]">
         {num('studentThresholdPercent')}
         {num('directWeight')}
         {num('indirectWeight')}
@@ -100,9 +95,9 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
         <FormField label={t('obe.cfg.evidence')}>
           <TextInput helperText={t('obe.cfg.evidenceHelp')} value={c.evidence} onChange={(e) => setC({ ...c, evidence: e.target.value })} disabled={!canEdit} />
         </FormField>
-      </Box>
+      </div>
       {canEdit && (
-        <Button sx={{ mt: 1.5 }} variant="contained" disabled={pending} onClick={save}>
+        <Button className="mt-3" variant="contained" disabled={pending} onClick={save}>
           {t('obe.cfg.save')}
         </Button>
       )}

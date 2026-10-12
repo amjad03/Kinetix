@@ -1,9 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useState } from 'react';
 import { createSession } from '@/app/(dashboard)/exams/actions';
@@ -13,6 +8,7 @@ import { sessionTone, type ExamSession } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
 import { useRun } from './useRun';
 
+import { Button, Card, MenuItem } from '@/components/kx';
 export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions: ExamSession[]; structure: Structure & { academicYears?: { id: string; label: string; isCurrent: boolean }[] }; canManage: boolean }) {
   const { t, fmt } = useI18n();
   const { pending, run, feedback } = useRun();
@@ -22,10 +18,10 @@ export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions:
   return (
     <>
       {canManage && (
-        <Card sx={{ p: 2.5, mb: 3 }}>
-          <Typography variant="h6" component="h2" sx={{ mb: 1.5 }}>
+        <Card className="p-5 mb-6">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-3">
             {t('exm.newSession')}
-          </Typography>
+          </h2>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -69,7 +65,7 @@ export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions:
             <FormField label={t('exm.f.ends')} required>
               <TextInput type="date" value={f.endsOn} onChange={set('endsOn')} required slotProps={{ inputLabel: { shrink: true } }} />
             </FormField>
-            <Button type="submit" variant="contained" disabled={pending} sx={{ alignSelf: 'center' }}>
+            <Button className="self-center" type="submit" variant="contained" disabled={pending}>
               {t('exm.create')}
             </Button>
           </form>
@@ -77,7 +73,7 @@ export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions:
         </Card>
       )}
       {sessions.length === 0 ? (
-        <Typography color="text.secondary">{t('exm.none')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('exm.none')}</p>
       ) : (
         <DataTable
           testId="exam-sessions"

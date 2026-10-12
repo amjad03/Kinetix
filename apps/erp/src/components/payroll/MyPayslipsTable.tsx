@@ -1,11 +1,10 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import { DataTable } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { downloadUrl } from '@/lib/hr';
 import type { Payslip } from '@/lib/hr-types';
 
+import { Button } from '@/components/kx';
 /** The signed-in person's payslips: sortable by month and amount, with the PDF a click away. */
 export function MyPayslipsTable({ rows }: { rows: Payslip[] }) {
   const { t, fmt } = useI18n();

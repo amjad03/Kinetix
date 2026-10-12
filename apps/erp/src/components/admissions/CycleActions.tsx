@@ -1,13 +1,10 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { cycleAction, publishMeritList } from '@/app/(dashboard)/admissions/actions';
 import { useI18n } from '@/i18n/client';
 
+import { Alert, Button } from '@/components/kx';
 /** Open or close the cycle, check eligibility, rank, publish the offers, lapse late offers. */
 export function CycleActions({ id, status, latestUnpublished }: { id: string; status: 'draft' | 'open' | 'closed'; latestUnpublished: string | null }) {
   const { t } = useI18n();
@@ -25,10 +22,10 @@ export function CycleActions({ id, status, latestUnpublished }: { id: string; st
       router.refresh();
     });
   return (
-    <Stack spacing={1.5}>
+    <div className="flex flex-col gap-3">
       {msg?.error && <Alert severity="error">{msg.error}</Alert>}
       {msg?.info && <Alert severity="success">{msg.info}</Alert>}
-      <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+      <div className="flex flex-row gap-2 flex-wrap gap-y-2">
         {status !== 'open' && (
           <Button variant="contained" disabled={pending} onClick={() => run('open')}>
             {t('adm.cycle.open')}
@@ -67,7 +64,7 @@ export function CycleActions({ id, status, latestUnpublished }: { id: string; st
         <Button disabled={pending} onClick={() => run('expire')}>
           {t('adm.cycle.expire')}
         </Button>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 }

@@ -1,16 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { addQuestion, type AttemptRow, configureOnlineTest, getAttempts, retireQuestion } from '@/app/(dashboard)/admissions/growth-actions';
@@ -18,6 +6,7 @@ import { SectionTitle } from '@/components/PageHeader';
 import { CheckboxField, FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 
+import { Alert, Button, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 export interface BankQuestion {
   id: string;
   topic: string;
@@ -46,17 +35,17 @@ function TestCard({ test, slug }: { test: OnlineTest; slug: string }) {
   const url = `${typeof window === 'undefined' ? '' : window.location.origin}/apply/${slug}/test`;
   const stamp = (iso: string | null) => (iso ? new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Kolkata' }).format(new Date(iso)) : '–');
   return (
-    <Paper variant="outlined" sx={{ p: 2.5 }} data-testid="online-test-card">
+    <div className="rounded-[12px] border bg-card p-5" data-testid="online-test-card">
       <SectionTitle flush>{test.name}</SectionTitle>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">
         {test.testDate} · {test.durationMinutes}
-      </Typography>
+      </p>
       {message && (
-        <Alert severity={message.ok ? 'success' : 'error'} sx={{ mb: 1.5 }}>
+        <Alert className="mb-3" severity={message.ok ? 'success' : 'error'}>
           {message.text}
         </Alert>
       )}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 1.5, alignItems: 'end' }}>
+      <div className="grid grid-cols-[1fr] sm:grid-cols-[repeat(3,1fr)] gap-3 items-end">
         <FormField label={t('ag.ot.test.count')}>
           <TextInput type="number" value={count} onChange={(e) => setCount(e.target.value)} />
         </FormField>
@@ -64,8 +53,8 @@ function TestCard({ test, slug }: { test: OnlineTest; slug: string }) {
           <TextInput type="number" value={negative} slotProps={{ htmlInput: { step: 0.25, min: 0 } }} onChange={(e) => setNegative(e.target.value)} />
         </FormField>
         <CheckboxField label={t('ag.ot.test.open')} checked={open} onChange={setOpen} />
-      </Box>
-      <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+      </div>
+      <div className="flex flex-row gap-2 mt-3">
         <Button
           variant="contained"
           disabled={pending}
@@ -91,16 +80,16 @@ function TestCard({ test, slug }: { test: OnlineTest; slug: string }) {
         >
           {t('ag.ot.test.attempts')}
         </Button>
-      </Stack>
+      </div>
       {test.config?.open && (
-        <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 1 }}>
+        <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-2">
           {t('ag.ot.test.link', { url })}
-        </Typography>
+        </div>
       )}
       {attempts && (
-        <Box sx={{ mt: 2, overflowX: 'auto' }}>
+        <div className="mt-4 overflow-x-auto">
           {attempts.length === 0 ? (
-            <Typography color="text.secondary">{t('ag.ot.attempt.none')}</Typography>
+            <p className="text-sm leading-[21px] text-muted-foreground">{t('ag.ot.attempt.none')}</p>
           ) : (
             <Table size="small">
               <TableHead>
@@ -117,9 +106,9 @@ function TestCard({ test, slug }: { test: OnlineTest; slug: string }) {
                   <TableRow key={a.id}>
                     <TableCell>
                       {a.applicantName}
-                      <Typography variant="caption" color="text.secondary" component="div">
+                      <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {a.applicationNo}
-                      </Typography>
+                      </div>
                     </TableCell>
                     <TableCell>{stamp(a.startedAt)}</TableCell>
                     <TableCell>{stamp(a.submittedAt)}</TableCell>
@@ -130,9 +119,9 @@ function TestCard({ test, slug }: { test: OnlineTest; slug: string }) {
               </TableBody>
             </Table>
           )}
-        </Box>
+        </div>
       )}
-    </Paper>
+    </div>
   );
 }
 
@@ -145,15 +134,14 @@ export function OnlineTestDesk({ questions, tests, slug }: { questions: BankQues
   const BLANK = { topic: '', question: '', options: '', correct: '1', marks: '1' };
   const [f, setF] = useState(BLANK);
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
       <SectionTitle flush>{t('ag.ot.tests')}</SectionTitle>
-      {tests.length === 0 ? <Typography color="text.secondary">{t('ag.ot.noTests')}</Typography> : tests.map((x) => <TestCard key={x.id} test={x} slug={slug} />)}
+      {tests.length === 0 ? <p className="text-sm leading-[21px] text-muted-foreground">{t('ag.ot.noTests')}</p> : tests.map((x) => <TestCard key={x.id} test={x} slug={slug} />)}
 
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('ag.ot.q.new')}</SectionTitle>
-        <Box
-          component="form"
+        <form className="grid grid-cols-[1fr] sm:grid-cols-[repeat(2,1fr)] gap-3"
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
             start(async () => {
@@ -165,7 +153,6 @@ export function OnlineTestDesk({ questions, tests, slug }: { questions: BankQues
               } else setError(res.error);
             });
           }}
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}
         >
           <FormField label={t('ag.ot.q.topic')}>
             <TextInput value={f.topic} onChange={(e) => setF({ ...f, topic: e.target.value })} />
@@ -182,24 +169,24 @@ export function OnlineTestDesk({ questions, tests, slug }: { questions: BankQues
           <FormField label={t('ag.ot.q.correct')}>
             <TextInput type="number" value={f.correct} slotProps={{ htmlInput: { min: 1, max: 6 } }} onChange={(e) => setF({ ...f, correct: e.target.value })} />
           </FormField>
-          <Box sx={{ alignSelf: 'end' }}>
+          <div className="self-end">
             <Button type="submit" variant="contained" disabled={pending}>
               {t('ag.ot.q.add')}
             </Button>
-          </Box>
-        </Box>
-      </Paper>
+          </div>
+        </form>
+      </div>
 
-      <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
-        <Box sx={{ p: 2, pb: 0 }}>
+      <div className="rounded-[12px] border bg-card overflow-x-auto">
+        <div className="p-4 pb-0">
           <SectionTitle flush>
             {t('ag.ot.bank')} · {t('ag.ot.q.count', { n: questions.length })}
           </SectionTitle>
-        </Box>
+        </div>
         {questions.length === 0 ? (
-          <Typography color="text.secondary" sx={{ p: 2 }}>
+          <p className="text-sm leading-[21px] text-muted-foreground p-4">
             {t('ag.ot.q.none')}
-          </Typography>
+          </p>
         ) : (
           <Table size="small" data-testid="question-bank">
             <TableBody>
@@ -208,9 +195,9 @@ export function OnlineTestDesk({ questions, tests, slug }: { questions: BankQues
                   <TableCell>{q.topic}</TableCell>
                   <TableCell>
                     {q.question}
-                    <Typography variant="caption" color="text.secondary" component="div">
+                    <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {q.options.map((o, i) => `${i + 1}. ${o}${i === q.correctIndex ? ' ✓' : ''}`).join('   ')}
-                    </Typography>
+                    </div>
                   </TableCell>
                   <TableCell align="right">{q.marks}</TableCell>
                   <TableCell>
@@ -234,7 +221,7 @@ export function OnlineTestDesk({ questions, tests, slug }: { questions: BankQues
             </TableBody>
           </Table>
         )}
-      </Paper>
-    </Stack>
+      </div>
+    </div>
   );
 }

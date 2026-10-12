@@ -1,12 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import {
   assignSubstitute,
@@ -22,6 +14,7 @@ import { FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button, Chip } from '@/components/kx';
 /** Periods of teachers on approved leave that day: pick a free teacher of the same subject or department. */
 export function SubstitutionsPanel({ today }: { today: string }) {
   const { t } = useI18n();
@@ -47,35 +40,35 @@ export function SubstitutionsPanel({ today }: { today: string }) {
   const time = (a: string, b: string) => `${a.slice(0, 5)}-${b.slice(0, 5)}`;
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5, mt: 3 }} data-testid="substitutions">
+    <div className="rounded-[12px] border bg-card p-5 mt-6" data-testid="substitutions">
       <SectionTitle flush>{t('sub.title')}</SectionTitle>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">
         {t('sub.help')}
-      </Typography>
+      </p>
       {error && (
-        <Alert severity="error" sx={{ mb: 1.5 }}>
+        <Alert className="mb-3" severity="error">
           {error}
         </Alert>
       )}
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-end', mb: 2 }}>
+      <div className="flex flex-row gap-2 items-end mb-4">
         <FormField label={t('sub.date')}>
           <TextInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </FormField>
         <Button variant="outlined" size="small" disabled={pending || !date} onClick={() => go(() => reload(date))}>
           {t('sub.show')}
         </Button>
-      </Stack>
+      </div>
 
       {needed && (
-        <Stack spacing={1.5}>
-          <Typography variant="subtitle2">{t('sub.needed')}</Typography>
-          {needed.length === 0 && <Typography color="text.secondary">{t('sub.none')}</Typography>}
+        <div className="flex flex-col gap-3">
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('sub.needed')}</h6>
+          {needed.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('sub.none')}</p>}
           {needed.map((p) => (
-            <Box key={p.slotId} sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
-              <Stack direction="row" sx={{ alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                <Typography variant="body2" sx={{ flex: '1 1 220px' }}>
+            <div className="border border-border rounded-[10px] p-3" key={p.slotId}>
+              <div className="flex flex-row items-center gap-2 flex-wrap">
+                <p className="text-[13px] leading-[19px] flex-[1_1_220px]">
                   <strong>{time(p.startsAt, p.endsAt)}</strong> · {p.section} · {p.subject} · {t('sub.away', { name: p.teacher })}
-                </Typography>
+                </p>
                 <Button
                   size="small"
                   variant="outlined"
@@ -90,10 +83,10 @@ export function SubstitutionsPanel({ today }: { today: string }) {
                 >
                   {t('sub.suggest')}
                 </Button>
-              </Stack>
+              </div>
               {suggest?.slotId === p.slotId && (
-                <Stack direction="row" sx={{ mt: 1.5, gap: 1, flexWrap: 'wrap' }}>
-                  {suggest.list.length === 0 && <Typography variant="body2" color="text.secondary">{t('sub.noFree')}</Typography>}
+                <div className="flex flex-row mt-3 gap-2 flex-wrap">
+                  {suggest.list.length === 0 && <p className="text-[13px] leading-[19px] text-muted-foreground">{t('sub.noFree')}</p>}
                   {suggest.list.map((c) => (
                     <Chip
                       key={c.id}
@@ -109,20 +102,20 @@ export function SubstitutionsPanel({ today }: { today: string }) {
                       }
                     />
                   ))}
-                </Stack>
+                </div>
               )}
-            </Box>
+            </div>
           ))}
 
-          <Typography variant="subtitle2" sx={{ pt: 1 }}>
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px] pt-2">
             {t('sub.assigned')}
-          </Typography>
-          {assigned.length === 0 && <Typography color="text.secondary">{t('sub.noneAssigned')}</Typography>}
+          </h6>
+          {assigned.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('sub.noneAssigned')}</p>}
           {assigned.map((a) => (
-            <Stack key={a.id} direction="row" sx={{ alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Typography variant="body2" sx={{ flex: '1 1 220px' }}>
+            <div className="flex flex-row items-center gap-2 flex-wrap" key={a.id}>
+              <p className="text-[13px] leading-[19px] flex-[1_1_220px]">
                 <strong>{time(a.startsAt, a.endsAt)}</strong> · {a.section.displayName} · {a.subject.name} · {a.originalTeacher} → {a.substituteTeacher}
-              </Typography>
+              </p>
               <Button
                 size="small"
                 color="error"
@@ -137,10 +130,10 @@ export function SubstitutionsPanel({ today }: { today: string }) {
               >
                 {t('sub.cancel')}
               </Button>
-            </Stack>
+            </div>
           ))}
-        </Stack>
+        </div>
       )}
-    </Paper>
+    </div>
   );
 }

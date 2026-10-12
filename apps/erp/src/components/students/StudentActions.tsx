@@ -1,15 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
@@ -21,6 +10,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { STUDENT_READMIT_FROM, STUDENT_REASON_REQUIRED, STUDENT_RETURN_STATUSES, type StudentProfile } from '@/lib/admissions';
 
+import { Alert, Button, Checkbox, Chip, FormControlLabel, MenuItem } from '@/components/kx';
 type Dialog = { kind: 'status'; status: string } | { kind: 'section'; sectionId: string } | { kind: 'readmit' } | null;
 
 /** Status buttons (only the moves the rules allow), class change, and the student's guardians. */
@@ -42,12 +32,12 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
       } else setError(res.error ?? null);
     });
   return (
-    <Stack spacing={3} sx={{ mt: 3 }}>
+    <div className="flex flex-col gap-6 mt-6">
       {error && <Alert severity="error">{error}</Alert>}
       {canChange && (
-        <Paper variant="outlined" sx={{ p: 2.5 }}>
+        <div className="rounded-[12px] border bg-card p-5">
           <SectionTitle flush>{t('stu.changeStatus')}</SectionTitle>
-          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+          <div className="flex flex-row gap-2 flex-wrap gap-y-2">
             {s.allowedStatuses.map((to) => (
               <Button key={to} size="small" variant="outlined" color={['dropped', 'transferred', 'expelled', 'deceased'].includes(to) ? 'error' : 'primary'} disabled={pending} onClick={() => (STUDENT_REASON_REQUIRED.includes(to) ? setDialog({ kind: 'status', status: to }) : run(() => changeStudentStatus(s.id, to)))}>
                 {t(`stu.moveTo.${to}` as MessageKey)}
@@ -59,15 +49,15 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
               </Button>
             )}
             {s.allowedStatuses.length === 0 && !STUDENT_READMIT_FROM.includes(s.status) && (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {t('stu.final')}
-              </Typography>
+              </p>
             )}
-          </Stack>
+          </div>
           {classes.length > 0 && !['transferred', 'alumni', 'dropped', 'expelled', 'deceased'].includes(s.status) && (
-            <Stack direction="row" spacing={1} sx={{ mt: 2, alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
+            <div className="flex flex-row gap-2 mt-4 items-center flex-wrap gap-y-2">
               <FormField label={t('stu.moveClass')}>
-                <TextInput select value={target} onChange={(e) => setTarget(e.target.value)} sx={{ minWidth: 220 }}>
+                <TextInput className="min-w-[220px]" select value={target} onChange={(e) => setTarget(e.target.value)}>
                   {classes.map((c) => (
                     <MenuItem key={c.id} value={c.id}>
                       {c.name}
@@ -78,25 +68,25 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
               <Button variant="outlined" size="small" disabled={!target || pending} onClick={() => setDialog({ kind: 'section', sectionId: target })}>
                 {t('stu.moveClassGo')}
               </Button>
-            </Stack>
+            </div>
           )}
-        </Paper>
+        </div>
       )}
 
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('stu.guardians')}</SectionTitle>
-        <Stack spacing={1.5}>
+        <div className="flex flex-col gap-3">
           {s.guardians.map((x) => (
-            <Box key={x.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 180px', minWidth: 0 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {x.fullName} <Typography component="span" variant="body2" color="text.secondary">({x.relation})</Typography>
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
+            <div className="flex items-center gap-2 flex-wrap" key={x.id}>
+              <div className="flex-[1_1_180px] min-w-0">
+                <p className="text-[13px] leading-[19px] font-semibold">
+                  {x.fullName} <span className="text-[13px] leading-[19px] text-muted-foreground">({x.relation})</span>
+                </p>
+                <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {x.phone ?? '–'}
                   {x.email ? ` · ${x.email}` : ''}
-                </Typography>
-              </Box>
+                </span>
+              </div>
               {x.isPrimary && <Chip size="small" color="primary" label={t('stu.primary')} />}
               {x.isEmergencyContact && <Chip size="small" variant="outlined" label={t('stu.emergency')} />}
               {canGuardians && s.guardians.length > 1 && (
@@ -104,27 +94,25 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
                   {t('stu.unlink')}
                 </Button>
               )}
-            </Box>
+            </div>
           ))}
           {s.guardians.length === 0 && (
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('stu.noGuardians')}
-            </Typography>
+            </p>
           )}
-        </Stack>
+        </div>
         {canGuardians && (
-          <Box
-            component="form"
-            sx={{ mt: 2.5 }}
+          <form className="mt-5"
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
               run(() => linkGuardian(s.id, g), () => setG({ fullName: '', phone: '', email: '', relation: 'mother', isPrimary: false }));
             }}
           >
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
               {t('stu.addGuardian')}
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+            </h6>
+            <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-3">
               <FormField label={t('adm.field.name')} required>
                 <TextInput value={g.fullName} onChange={(e) => setG({ ...g, fullName: e.target.value })} required />
               </FormField>
@@ -137,16 +125,16 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
               <FormField label={t('stu.relation')} required>
                 <TextInput value={g.relation} onChange={(e) => setG({ ...g, relation: e.target.value })} required />
               </FormField>
-            </Box>
+            </div>
             <FormControlLabel control={<Checkbox size="small" checked={g.isPrimary} onChange={(e) => setG({ ...g, isPrimary: e.target.checked })} />} label={t('stu.makePrimary')} />
-            <Box>
+            <div>
               <Button type="submit" variant="contained" size="small" disabled={pending || !g.fullName.trim() || !g.phone.trim()}>
                 {t('stu.linkGuardian')}
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </form>
         )}
-      </Paper>
+      </div>
 
       {dialog?.kind === 'status' && <StatusDialog studentId={s.id} status={dialog.status} withReturn={STUDENT_RETURN_STATUSES.includes(dialog.status)} onClose={(done) => { setDialog(null); if (done) router.refresh(); }} />}
       {dialog?.kind === 'readmit' && (
@@ -179,6 +167,6 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
           }}
         />
       )}
-    </Stack>
+    </div>
   );
 }

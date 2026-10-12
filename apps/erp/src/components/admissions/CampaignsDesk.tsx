@@ -1,16 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { createCampaign, setCampaignActive } from '@/app/(dashboard)/admissions/deep-actions';
@@ -18,6 +6,7 @@ import { SectionTitle } from '@/components/PageHeader';
 import { FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 
+import { Alert, Button, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 interface Line {
   enquiries: number;
   applied: number;
@@ -49,17 +38,15 @@ export function CampaignsDesk({ report }: { report: CampaignReport }) {
       } else setError(res.error ?? null);
     });
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('camp.new')}</SectionTitle>
-        <Box
-          component="form"
+        <form className="grid grid-cols-[1fr] sm:grid-cols-[repeat(3,1fr)] gap-3"
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
             run(() => createCampaign({ name: f.name, channel: f.channel, utmSource: f.utmSource, utmMedium: f.utmMedium, utmCampaign: f.utmCampaign, budgetRupees: Number(f.budget) }), () => setF({ name: '', channel: '', utmSource: '', utmMedium: '', utmCampaign: '', budget: '0' }));
           }}
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 1.5 }}
         >
           <FormField label={t('camp.name')} required>
             <TextInput value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />
@@ -79,15 +66,15 @@ export function CampaignsDesk({ report }: { report: CampaignReport }) {
           <FormField label={t('camp.utmCampaign')} helper={t('camp.utmHelp')}>
             <TextInput value={f.utmCampaign} onChange={(e) => setF({ ...f, utmCampaign: e.target.value })} />
           </FormField>
-          <Box>
+          <div>
             <Button type="submit" variant="contained" disabled={pending || f.name.trim().length < 2 || f.channel.trim().length < 2}>
               {t('camp.create')}
             </Button>
-          </Box>
-        </Box>
-      </Paper>
+          </div>
+        </form>
+      </div>
 
-      <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
+      <div className="rounded-[12px] border bg-card overflow-x-auto">
         <Table size="small" data-testid="campaign-report">
           <TableHead>
             <TableRow>
@@ -106,10 +93,10 @@ export function CampaignsDesk({ report }: { report: CampaignReport }) {
               <TableRow key={c.id}>
                 <TableCell>
                   {c.name}
-                  <Typography variant="caption" color="text.secondary" component="div">
+                  <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {c.channel}
                     {c.utmCampaign ? ` · ${c.utmCampaign}` : ''}
-                  </Typography>
+                  </div>
                 </TableCell>
                 <TableCell align="right">{c.enquiries}</TableCell>
                 <TableCell align="right">{c.applied}</TableCell>
@@ -136,8 +123,8 @@ export function CampaignsDesk({ report }: { report: CampaignReport }) {
             </TableRow>
           </TableBody>
         </Table>
-      </Paper>
-      {report.campaigns.length === 0 && <Typography color="text.secondary">{t('camp.none')}</Typography>}
-    </Stack>
+      </div>
+      {report.campaigns.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('camp.none')}</p>}
+    </div>
   );
 }

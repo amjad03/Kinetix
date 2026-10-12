@@ -1,8 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addExpense, addGpsSource, reportIncident, resolveIncident, revokeGpsSource, addDriver, addRoute, addStop, addVehicle, chargeFees, endSeat, loadRoute, loadTrip, seatStudent, setRouteActive, updateRoute } from '@/app/(dashboard)/transport/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -10,6 +6,8 @@ import { useI18n } from '@/i18n/client';
 import { st } from '@/lib/ops-labels';
 import type { TCompliance, TDriver, TExpenseSummary, TGpsSource, TIncident, TRoute, TRouteDetail, TTripDetail, TTripRow, TVehicle } from '@/lib/ops';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 type Dialog =
   | { k: 'route' }
   | { k: 'edit'; r: TRoute }
@@ -123,7 +121,7 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, ex
                     { label: t('ops.f.status'), cell: (v) => <Pill label={st(t, v.status)} /> },
                   ]}
                 />
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('tr.drivers')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('tr.drivers')}</h6>
                 <Grid
                   testId="tr-driver-list"
                   empty={t('tr.noDrivers')}
@@ -143,9 +141,9 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, ex
             label: t('tr.tab.trips', { n: live.length }),
             node: (
               <>
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mb: 1 }}>{t('tr.liveTrips')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mb-2">{t('tr.liveTrips')}</h6>
                 {tripCols(live)}
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('tr.tripLog')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('tr.tripLog')}</h6>
                 {tripCols(trips)}
               </>
             ),
@@ -220,7 +218,7 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, ex
             node: (
               <>
                 <Bar><Button variant="outlined" onClick={() => setDlg({ k: 'gpsNew' })}>{t('tr.addGps')}</Button></Bar>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('tr.gpsHelp')}</Typography>
+                <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('tr.gpsHelp')}</p>
                 <Grid
                   testId="tr-gps"
                   empty={t('tr.noGps')}
@@ -275,7 +273,7 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, ex
           title={t('tr.chargeFees')}
           onSubmit={chargeFees}
           onClose={done}
-          intro={<Typography variant="body2" color="text.secondary">{t('tr.chargeHelp')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('tr.chargeHelp')}</p>}
           fields={[
             { name: 'title', label: t('ops.f.title'), required: true },
             { name: 'dueOn', label: t('ops.f.dueOn'), kind: 'date', required: true },
@@ -300,7 +298,7 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, ex
               { label: '', cell: (s) => <Button size="small" onClick={() => setDlg({ k: 'seat', d: dlg.d, stopId: s.id })}>{t('tr.seat')}</Button> },
             ]}
           />
-          <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('tr.riders')}</Typography>
+          <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('tr.riders')}</h6>
           <Grid
             testId="tr-riders-list"
             empty={t('tr.noRiders')}
@@ -384,8 +382,8 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, ex
       )}
       {dlg?.k === 'token' && (
         <InfoDialog title={t('tr.gpsToken')} onClose={() => setDlg(null)}>
-          <Typography variant="body2" sx={{ mb: 1 }}>{t('tr.gpsTokenHelp')}</Typography>
-          <Typography component="code" data-testid="tr-gps-token" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>{dlg.token}</Typography>
+          <p className="text-[13px] leading-[19px] mb-2">{t('tr.gpsTokenHelp')}</p>
+          <code className="text-sm leading-[21px] font-mono break-all" data-testid="tr-gps-token">{dlg.token}</code>
         </InfoDialog>
       )}
       {toastNode}

@@ -1,30 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import AssignmentReturnOutlined from '@mui/icons-material/AssignmentReturnOutlined';
-import Check from '@mui/icons-material/Check';
-import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
-import LibraryAddOutlined from '@mui/icons-material/LibraryAddOutlined';
-import LocalLibraryOutlined from '@mui/icons-material/LocalLibraryOutlined';
-import Search from '@mui/icons-material/Search';
-import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import InputAdornment from '@mui/material/InputAdornment';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import type { Theme } from '@mui/material/styles';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { addBook, findStudents, issueBook, markFinePaid, returnBook } from '@/app/(dashboard)/library/actions';
@@ -34,14 +8,14 @@ import { useI18n } from '@/i18n/client';
 import { addDays } from '@/lib/dates';
 import { availableCopies, canSearchStudents, daysLate, dueLabel, finePreview, LOAN_DAYS } from '@/lib/library';
 import { formatRupees } from '@/lib/money';
-import { withAlpha } from '@/theme/scheme';
 import type { LibraryBook, LibraryLoan, LibraryStudent } from '@/lib/types';
 
+import { Alert, Autocomplete, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment, Snackbar, Tab, Tabs, TextField } from '@/components/kx';
+import { Check, CircleCheck as CheckCircleOutlined, Library as LocalLibraryOutlined, LibraryBig as LibraryAddOutlined, Plus as Add, Search, Undo2 as AssignmentReturnOutlined } from 'lucide-react';
+import { cn } from '@/lib/utils';
 type TabName = 'loans' | 'catalogue' | 'fines';
 
-const num = { fontVariantNumeric: 'tabular-nums' } as const;
 /** A light wash of the error container on overdue loans. */
-const overdueTint = (t: Theme) => withAlpha(t.palette.m3.errorContainer, 0.45);
 
 export function LibraryDesk({
   books,
@@ -74,21 +48,21 @@ export function LibraryDesk({
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mt: 3, mb: 2, borderBottom: 1, borderColor: 'm3.outlineVariant' }}>
-        <Tabs value={tab} onChange={(_, v: TabName) => switchTab(v)} aria-label={t('lib.tabs')} variant="scrollable" scrollButtons={false} sx={{ flex: '1 1 auto', minHeight: 48 }}>
+      <div className="flex flex-wrap items-center gap-3 mt-6 mb-4 border-b border-border">
+        <Tabs className="flex-auto min-h-[48px]" value={tab} onChange={(_, v: TabName) => switchTab(v)} aria-label={t('lib.tabs')} variant="scrollable" scrollButtons={false}>
           <Tab value="loans" label={t('lib.tab.loans', { n: loans.length })} data-testid="tab-loans" />
           <Tab value="catalogue" label={t('lib.tab.catalogue', { n: books.length })} data-testid="tab-catalogue" />
           <Tab value="fines" label={t('lib.tab.fines', { n: fines.length })} data-testid="tab-fines" />
         </Tabs>
-        <Box sx={{ display: { xs: 'grid', sm: 'flex' }, gridTemplateColumns: '1fr 1fr', width: { xs: '100%', sm: 'auto' }, gap: 1, pb: 1, '& .MuiButton-startIcon': { display: { xs: 'none', sm: 'inherit' } } }}>
+        <div className="grid sm:flex grid-cols-[1fr_1fr] w-full sm:w-auto gap-2 pb-2 [&_svg]:hidden sm:[&_svg]:inline">
           <Button variant="outlined" startIcon={<LibraryAddOutlined />} onClick={() => setAdding(true)}>
             {t('lib.addBook')}
           </Button>
-          <Button variant="contained" startIcon={<Add />} onClick={() => setIssuing({})} disabled={books.every((b) => availableCopies(b) === 0)} sx={{ whiteSpace: 'nowrap' }}>
+          <Button className="whitespace-nowrap" variant="contained" startIcon={<Add />} onClick={() => setIssuing({})} disabled={books.every((b) => availableCopies(b) === 0)}>
             {t('lib.issueBook')}
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {tab === 'loans' ? (
         <Loans loans={loans} overdue={overdue} today={today} onReturn={setReturning} />
@@ -141,14 +115,14 @@ export function LibraryDesk({
 function DueText({ loan, today }: { loan: LibraryLoan; today: string }) {
   const { t, fmt } = useI18n();
   return (
-    <Box>
-      <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+    <div>
+      <p className="text-[13px] leading-[19px] whitespace-nowrap">
         {fmt.date(loan.dueOn, 'short')}
-      </Typography>
-      <Typography variant="caption" sx={{ color: loan.overdue ? 'error.main' : 'text.secondary', whiteSpace: 'nowrap', fontWeight: loan.overdue ? 500 : 400 }}>
+      </p>
+      <span className={cn('text-xs leading-4 tracking-[0.3px] whitespace-nowrap', loan.overdue ? 'text-red-ink' : 'text-muted-foreground', loan.overdue ? 'font-medium' : 'font-normal')}>
         {dueLabel(loan.dueOn, today, t)}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 }
 
@@ -179,37 +153,35 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Box role="group" aria-label={t('lib.filterLoans')} sx={{ display: 'flex', gap: 1 }}>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex gap-2" role="group" aria-label={t('lib.filterLoans')}>
           {[
             { on: !only, label: t('lib.all', { n: loans.length }), set: false, id: 'all' },
             { on: only, label: t('lib.overdueN', { n: overdue }), set: true, id: 'overdue' },
           ].map((c) => (
-            <Chip
+            <Chip className={cn(c.on && 'bg-secondary text-secondary-foreground [&_svg]:text-inherit')}
               key={c.id}
               label={c.label}
               variant={c.on ? 'filled' : 'outlined'}
               onClick={() => setOnly(c.set)}
-              icon={c.on ? <Check sx={{ fontSize: '18px !important' }} /> : undefined}
-              sx={c.on ? { bgcolor: 'm3.secondaryContainer', color: 'm3.onSecondaryContainer', '& .MuiChip-icon': { color: 'inherit' } } : undefined}
+              icon={c.on ? <Check className="text-[18px_!important]" /> : undefined}
               aria-pressed={c.on}
               data-testid={`loan-filter-${c.id}`}
             />
           ))}
-        </Box>
-        <Box sx={{ flex: 1 }} />
-        <TextField
+        </div>
+        <div className="flex-1" />
+        <TextField className="flex-[1_1_240px] max-w-[360px]"
           size="small"
           placeholder={t('lib.searchLoans')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          sx={{ flex: '1 1 240px', maxWidth: 360 }}
           slotProps={{
-            input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
+            input: { startAdornment: <InputAdornment position="start"><Search className="size-5" /></InputAdornment> },
             htmlInput: { 'aria-label': t('lib.searchLoansLabel') },
           }}
         />
-      </Box>
+      </div>
 
       {rows.length === 0 ? (
         <EmptyState dense icon={<Search />} title={t('lib.noLoanMatch')} testId="no-loan-match">
@@ -217,7 +189,7 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
         </EmptyState>
       ) : (
         <>
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <div className="hidden md:block">
             <DataTable
               testId="loans-table"
               label={t('nav.library')}
@@ -235,10 +207,10 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
                   csv: (l) => [l.book.title, l.book.author, l.book.callNo].filter(Boolean).join(' · '),
                   cell: (l) => (
                     <>
-                      <Typography variant="subtitle2">{l.book.title}</Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{l.book.title}</h6>
+                      <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {[l.book.author, l.book.callNo].filter(Boolean).join(' · ')}
-                      </Typography>
+                      </span>
                     </>
                   ),
                 },
@@ -249,23 +221,23 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
                   csv: (l) => [l.student.fullName, l.student.rollNo, l.className].filter(Boolean).join(' · '),
                   cell: (l) => (
                     <>
-                      <Typography variant="body2">{l.student.fullName}</Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <p className="text-[13px] leading-[19px]">{l.student.fullName}</p>
+                      <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {[l.student.rollNo, l.className].filter(Boolean).join(' · ')}
-                      </Typography>
+                      </span>
                     </>
                   ),
                 },
-                { id: 'issued', header: t('lib.col.issued'), sort: (l) => l.issuedAt, csv: (l) => l.issuedAt.slice(0, 10), cell: (l) => <Box sx={{ whiteSpace: 'nowrap' }}>{fmt.dateTime(l.issuedAt, undefined, false)}</Box> },
+                { id: 'issued', header: t('lib.col.issued'), sort: (l) => l.issuedAt, csv: (l) => l.issuedAt.slice(0, 10), cell: (l) => <div className="whitespace-nowrap">{fmt.dateTime(l.issuedAt, undefined, false)}</div> },
                 {
                   id: 'due',
                   header: t('lib.col.due'),
                   sort: (l) => l.dueOn,
                   cell: (l) => (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <div className="flex items-center gap-3">
                       <DueText loan={l} today={today} />
                       {l.overdue && <OverdueChip />}
-                    </Box>
+                    </div>
                   ),
                 },
                 {
@@ -277,9 +249,9 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
                   cell: (l) => {
                     const fine = finePreview(l.dueOn, today);
                     return (
-                      <Box component="span" data-testid="loan-fine" sx={{ ...num, whiteSpace: 'nowrap', color: fine ? 'error.main' : 'text.secondary', fontWeight: fine ? 500 : 400 }}>
+                      <span className={cn('whitespace-nowrap', fine ? 'text-red-ink' : 'text-muted-foreground', fine ? 'font-medium' : 'font-normal', 'tabular-nums')} data-testid="loan-fine">
                         {fine ? formatRupees(fine) : '—'}
-                      </Box>
+                      </span>
                     );
                   },
                 },
@@ -296,45 +268,44 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
                 },
               ]}
             />
-          </Box>
+          </div>
           {/* Phones: a card per loan. */}
-          <Box sx={{ display: { xs: 'grid', md: 'none' }, gap: 1.5 }} data-testid="loans-list">
+          <div className="grid md:hidden gap-3" data-testid="loans-list">
             {rows.map((l) => {
               const fine = finePreview(l.dueOn, today);
               return (
-                <Box
+                <div className={cn('border rounded-[12px] p-4', l.overdue ? 'border-destructive bg-red-soft/45' : 'border-border')}
                   key={l.id}
                   data-testid="loan-card"
-                  sx={{ border: 1, borderColor: l.overdue ? 'error.main' : 'm3.outlineVariant', borderRadius: '12px', p: 2, bgcolor: l.overdue ? overdueTint : undefined }}
                 >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'flex-start' }}>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 500, lineHeight: 1.3 }}>
+                  <div className="flex justify-between gap-2 items-start">
+                    <div className="min-w-0">
+                      <h6 className="text-base tracking-[0.1px] font-medium leading-[1.3]">
                         {l.book.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      </h6>
+                      <p className="text-[13px] leading-[19px] text-muted-foreground">
                         {l.student.fullName} · {l.className}
-                      </Typography>
-                    </Box>
+                      </p>
+                    </div>
                     {l.overdue && <OverdueChip />}
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mt: 1.5, gap: 1 }}>
-                    <Box>
+                  </div>
+                  <div className="flex justify-between items-end mt-3 gap-2">
+                    <div>
                       <DueText loan={l} today={today} />
                       {fine > 0 && (
-                        <Typography variant="caption" component="p" sx={{ color: 'error.main', fontWeight: 500 }}>
+                        <p className="text-xs leading-4 tracking-[0.3px] text-red-ink font-medium">
                           {t('lib.fine', { amount: formatRupees(fine) })}
-                        </Typography>
+                        </p>
                       )}
-                    </Box>
+                    </div>
                     <Button size="small" variant="outlined" startIcon={<AssignmentReturnOutlined />} onClick={() => onReturn(l)}>
                       {t('lib.return')}
                     </Button>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               );
             })}
-          </Box>
+          </div>
         </>
       )}
     </>
@@ -354,9 +325,9 @@ function Fines({ fines, onCollect }: { fines: LibraryLoan[]; onCollect: (l: Libr
   const total = fines.reduce((s, f) => s + f.finePaise, 0);
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} data-testid="fines-summary">
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4" data-testid="fines-summary">
         {t.plural('lib.finesSummary', fines.length, { amount: formatRupees(total) })}
-      </Typography>
+      </p>
       <DataTable
         testId="fines-table"
         label={t('lib.col.fine')}
@@ -373,28 +344,28 @@ function Fines({ fines, onCollect }: { fines: LibraryLoan[]; onCollect: (l: Libr
             csv: (f) => [f.student.fullName, f.student.rollNo, f.className].filter(Boolean).join(' · '),
             cell: (f) => (
               <>
-                <Typography variant="subtitle2">{f.student.fullName}</Typography>
-                <Typography variant="caption" color="text.secondary">
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{f.student.fullName}</h6>
+                <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {[f.student.rollNo, f.className].filter(Boolean).join(' · ')}
-                </Typography>
+                </span>
               </>
             ),
           },
           { id: 'book', header: t('lib.col.book'), sort: (f) => f.book.title, cell: (f) => f.book.title },
-          { id: 'due', header: t('lib.col.due'), sort: (f) => f.dueOn, cell: (f) => <Box sx={{ whiteSpace: 'nowrap' }}>{fmt.date(f.dueOn, 'short')}</Box> },
-          { id: 'returned', header: t('lib.col.returned'), sort: (f) => f.returnedAt ?? '', csv: (f) => f.returnedAt?.slice(0, 10) ?? '', cell: (f) => <Box sx={{ whiteSpace: 'nowrap' }}>{f.returnedAt ? fmt.dateTime(f.returnedAt, undefined, false) : '—'}</Box> },
+          { id: 'due', header: t('lib.col.due'), sort: (f) => f.dueOn, cell: (f) => <div className="whitespace-nowrap">{fmt.date(f.dueOn, 'short')}</div> },
+          { id: 'returned', header: t('lib.col.returned'), sort: (f) => f.returnedAt ?? '', csv: (f) => f.returnedAt?.slice(0, 10) ?? '', cell: (f) => <div className="whitespace-nowrap">{f.returnedAt ? fmt.dateTime(f.returnedAt, undefined, false) : '—'}</div> },
           {
             id: 'fine',
             header: t('lib.col.fine'),
             align: 'right',
             sort: (f) => f.finePaise / 100,
             cell: (f) => (
-              <Box component="span" sx={{ ...num, whiteSpace: 'nowrap', color: 'error.main', fontWeight: 500 }}>
+              <span className="whitespace-nowrap text-red-ink font-medium tabular-nums">
                 {formatRupees(f.finePaise)}
-                <Box component="span" sx={{ ml: 1 }} data-status="unpaid">
+                <span className="ml-2" data-status="unpaid">
                   <StatusPill tone="danger">{t('lib.unpaid')}</StatusPill>
-                </Box>
-              </Box>
+                </span>
+              </span>
             ),
           },
           {
@@ -423,22 +394,22 @@ function FinePaidDialog({ loan, onClose }: { loan: LibraryLoan; onClose: (done?:
       <DialogTitle id="fine-paid-title">{t('lib.finePaid.title')}</DialogTitle>
       <DialogContent>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="error">
             {error}
           </Alert>
         )}
-        <Box sx={{ p: 2, borderRadius: '12px', bgcolor: 'kx.tonal' }}>
-          <Typography sx={{ fontSize: '2rem', lineHeight: '40px', ...num }}>{formatRupees(loan.finePaise)}</Typography>
-          <Typography variant="body2">
+        <div className="p-4 rounded-[12px] bg-muted">
+          <p className="text-[2rem] leading-[40px] tabular-nums">{formatRupees(loan.finePaise)}</p>
+          <p className="text-[13px] leading-[19px]">
             {loan.student.fullName} · {[loan.student.rollNo, loan.className].filter(Boolean).join(' · ')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          </p>
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('lib.finePaid.late', { title: loan.book.title })}
-          </Typography>
-        </Box>
-        <Typography variant="body2" sx={{ mt: 2 }}>
+          </p>
+        </div>
+        <p className="text-[13px] leading-[19px] mt-4">
           {t('lib.finePaid.confirm', { amount: formatRupees(loan.finePaise) })}
-        </Typography>
+        </p>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} disabled={pending}>
@@ -490,29 +461,28 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-        <TextField
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <TextField className="flex-[1_1_260px] max-w-[440px]"
           size="small"
           placeholder={t('lib.searchCatalogue')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          sx={{ flex: '1 1 260px', maxWidth: 440 }}
           slotProps={{
-            input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
+            input: { startAdornment: <InputAdornment position="start"><Search className="size-5" /></InputAdornment> },
             htmlInput: { 'aria-label': t('lib.searchCatalogueLabel') },
           }}
         />
-        <Typography variant="body2" color="text.secondary" data-testid="book-count">
+        <p className="text-[13px] leading-[19px] text-muted-foreground" data-testid="book-count">
           {t.plural('lib.titles', rows.length)}
-        </Typography>
-      </Box>
+        </p>
+      </div>
       {rows.length === 0 ? (
         <EmptyState dense icon={<Search />} title={t('lib.noBooks')} testId="no-books">
           {t('lib.noBooksBody')}
         </EmptyState>
       ) : (
         <>
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <div className="hidden md:block">
             <DataTable
               testId="books-table"
               label={t('nav.library')}
@@ -529,15 +499,15 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
                   csv: (b) => (b.author ? `${b.title} (${b.author})` : b.title),
                   cell: (b) => (
                     <>
-                      <Typography variant="subtitle2">{b.title}</Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{b.title}</h6>
+                      <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {b.author || t('lib.noAuthor')}
-                      </Typography>
+                      </span>
                     </>
                   ),
                 },
-                { id: 'callNo', header: t('lib.col.callNo'), sort: (b) => b.callNo ?? '', cell: (b) => <Box sx={{ whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.8125rem' }}>{b.callNo ?? '—'}</Box> },
-                { id: 'isbn', header: t('lib.col.isbn'), sort: (b) => b.isbn ?? '', cell: (b) => <Box sx={{ whiteSpace: 'nowrap', color: b.isbn ? 'text.primary' : 'text.secondary' }}>{b.isbn ?? '—'}</Box> },
+                { id: 'callNo', header: t('lib.col.callNo'), sort: (b) => b.callNo ?? '', cell: (b) => <div className="whitespace-nowrap font-mono text-[0.8125rem]">{b.callNo ?? '—'}</div> },
+                { id: 'isbn', header: t('lib.col.isbn'), sort: (b) => b.isbn ?? '', cell: (b) => <div className={cn('whitespace-nowrap', b.isbn ? 'text-foreground' : 'text-muted-foreground')}>{b.isbn ?? '—'}</div> },
                 { id: 'copies', header: t('lib.col.copies'), align: 'right', sort: (b) => b.copies, cell: (b) => b.copies },
                 { id: 'availability', header: t('lib.col.availability'), sort: (b) => availableCopies(b), cell: (b) => <Availability book={b} /> },
                 {
@@ -553,25 +523,25 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
                 },
               ]}
             />
-          </Box>
-          <Box sx={{ display: { xs: 'grid', md: 'none' }, gap: 1.5 }} data-testid="books-list">
+          </div>
+          <div className="grid md:hidden gap-3" data-testid="books-list">
             {rows.map((b) => (
-              <Box key={b.id} sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', p: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, lineHeight: 1.3 }}>
+              <div className="border border-border rounded-[12px] p-4" key={b.id}>
+                <h6 className="text-base tracking-[0.1px] font-medium leading-[1.3]">
                   {b.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </h6>
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {[b.author, b.callNo].filter(Boolean).join(' · ')}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5 }}>
+                </p>
+                <div className="flex items-center justify-between mt-3">
                   <Availability book={b} />
                   <Button size="small" onClick={() => onIssue(b)} disabled={availableCopies(b) === 0}>
                     {t('lib.issue')}
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
             ))}
-          </Box>
+          </div>
         </>
       )}
     </>
@@ -637,8 +607,7 @@ function IssueDialog({
 
   return (
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="sm" fullWidth aria-labelledby="issue-book-title">
-      <Box
-        component="form"
+      <form
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -647,10 +616,10 @@ function IssueDialog({
       >
         <DialogTitle id="issue-book-title">{t('lib.issueBook')}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-5">
             {t('lib.issue.help')}
-          </Typography>
-          <Stack spacing={2.5}>
+          </p>
+          <div className="flex flex-col gap-5">
             {error && <Alert severity="error">{error}</Alert>}
             <Autocomplete
               options={shelf}
@@ -659,12 +628,12 @@ function IssueDialog({
               getOptionLabel={(b) => b.title}
               isOptionEqualToValue={(a, b) => a.id === b.id}
               renderOption={({ key, ...props }, b) => (
-                <Box component="li" key={key} {...props} sx={{ display: 'block !important' }}>
-                  <Typography variant="body2">{b.title}</Typography>
-                  <Typography variant="caption" color="text.secondary">
+                <li className="[display:block_!important]" key={key} {...props}>
+                  <p className="text-[13px] leading-[19px]">{b.title}</p>
+                  <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {[b.author, b.callNo, t('lib.available', { n: availableCopies(b), d: b.copies })].filter(Boolean).join(' · ')}
-                  </Typography>
-                </Box>
+                  </span>
+                </li>
               )}
               renderInput={(params) => <FormField id={params.id} label={t('lib.issue.book')} required><TextInput {...params} required placeholder={t('lib.issue.bookPlaceholder')} /></FormField>}
               filterOptions={(opts, { inputValue }) => {
@@ -688,12 +657,12 @@ function IssueDialog({
               loading={searching}
               loadingText={t('lib.issue.searching')}
               renderOption={({ key, ...props }, s) => (
-                <Box component="li" key={key} {...props} sx={{ display: 'block !important' }}>
-                  <Typography variant="body2">{s.fullName}</Typography>
-                  <Typography variant="caption" color="text.secondary">
+                <li className="[display:block_!important]" key={key} {...props}>
+                  <p className="text-[13px] leading-[19px]">{s.fullName}</p>
+                  <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {[s.rollNo, s.className].filter(Boolean).join(' · ')}
-                  </Typography>
-                </Box>
+                  </span>
+                </li>
               )}
               renderInput={(params) => (
                 <FormField id={params.id} label={t('lib.issue.student')} required>
@@ -722,7 +691,7 @@ function IssueDialog({
                 slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
               />
             </FormField>
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
@@ -732,7 +701,7 @@ function IssueDialog({
             {t('lib.issue')}
           </Button>
         </DialogActions>
-      </Box>
+      </form>
     </Dialog>
   );
 }
@@ -748,31 +717,31 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
   if (done) {
     return (
       <Dialog open onClose={onClose} maxWidth="xs" fullWidth aria-labelledby="returned-title">
-        <DialogTitle id="returned-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <CheckCircleOutlined sx={{ color: 'kx.success' }} />
+        <DialogTitle className="flex items-center gap-3" id="returned-title">
+          <CheckCircleOutlined className="text-green-ink" />
           {t('lib.returned.title')}
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body2">{t('lib.returned.body', { title: loan.book.title, name: loan.student.fullName })}</Typography>
+          <p className="text-[13px] leading-[19px]">{t('lib.returned.body', { title: loan.book.title, name: loan.student.fullName })}</p>
           {done.finePaise > 0 ? (
-            <Box sx={{ mt: 2, p: 2, borderRadius: '12px', bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} data-testid="return-fine">
-              <Typography variant="body2">{t('lib.returned.fineToCollect')}</Typography>
-              <Typography sx={{ fontSize: '2rem', lineHeight: '40px', ...num }}>{formatRupees(done.finePaise)}</Typography>
-              <Typography variant="caption">
+            <div className="mt-4 p-4 rounded-[12px] bg-red-soft text-red-ink" data-testid="return-fine">
+              <p className="text-[13px] leading-[19px]">{t('lib.returned.fineToCollect')}</p>
+              <p className="text-[2rem] leading-[40px] tabular-nums">{formatRupees(done.finePaise)}</p>
+              <span className="text-xs leading-4 tracking-[0.3px]">
                 {t.plural('lib.returned.lateAt', late)}{' '}
-                <Box component="strong" data-testid="return-fine-status">
+                <strong data-testid="return-fine-status">
                   {done.paid ? t('lib.paid') : t('lib.unpaid')}
-                </Box>
-              </Typography>
-            </Box>
+                </strong>
+              </span>
+            </div>
           ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }} data-testid="return-fine">
+            <p className="text-[13px] leading-[19px] text-muted-foreground mt-3" data-testid="return-fine">
               {t('lib.returned.onTime')}
-            </Typography>
+            </p>
           )}
         </DialogContent>
         {error && (
-          <Alert severity="error" sx={{ mx: 3 }}>
+          <Alert className="mx-6" severity="error">
             {error}
           </Alert>
         )}
@@ -814,22 +783,22 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
       <DialogTitle id="return-title">{t('lib.return.title')}</DialogTitle>
       <DialogContent>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="error">
             {error}
           </Alert>
         )}
-        <Box sx={{ p: 2, borderRadius: '12px', bgcolor: 'kx.tonal' }}>
-          <Typography variant="subtitle2">{loan.book.title}</Typography>
-          <Typography variant="body2" color="text.secondary">
+        <div className="p-4 rounded-[12px] bg-muted">
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{loan.book.title}</h6>
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {loan.student.fullName} · {[loan.student.rollNo, loan.className].filter(Boolean).join(' · ')}
-          </Typography>
-          <Typography variant="body2" sx={{ mt: 0.5 }}>
-            {t('lib.return.due', { date: fmt.date(loan.dueOn, 'short') })} <Box component="span" sx={{ color: late ? 'error.main' : 'inherit' }}>{dueLabel(loan.dueOn, today, t)}</Box>
-          </Typography>
-        </Box>
-        <Typography variant="body2" sx={{ mt: 2 }}>
+          </p>
+          <p className="text-[13px] leading-[19px] mt-1">
+            {t('lib.return.due', { date: fmt.date(loan.dueOn, 'short') })} <span className={cn(late ? 'text-red-ink' : 'text-inherit')}>{dueLabel(loan.dueOn, today, t)}</span>
+          </p>
+        </div>
+        <p className="text-[13px] leading-[19px] mt-4">
           {fine > 0 ? t.plural('lib.return.fine', late, { amount: formatRupees(fine) }) : t('lib.return.noFine')}
-        </Typography>
+        </p>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={pending}>
@@ -879,8 +848,7 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
 
   return (
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="xs" fullWidth aria-labelledby="add-book-title">
-      <Box
-        component="form"
+      <form
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -889,7 +857,7 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
       >
         <DialogTitle id="add-book-title">{t('lib.add.title')}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2.5} sx={{ pt: 1 }}>
+          <div className="flex flex-col gap-5 pt-2">
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('lib.add.bookTitle')} required>
               <TextInput value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 300 } }} />
@@ -897,7 +865,7 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
             <FormField label={t('lib.add.author')}>
               <TextInput value={author} onChange={(e) => setAuthor(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
             </FormField>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-[1fr_1fr] gap-4">
               <FormField label={t('lib.add.callNo')}>
                 <TextInput value={callNo} onChange={(e) => setCallNo(e.target.value)} placeholder="657.95 MAH" slotProps={{ htmlInput: { maxLength: 40 } }} />
               </FormField>
@@ -911,11 +879,11 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
                   slotProps={{ htmlInput: { inputMode: 'numeric' } }}
                 />
               </FormField>
-            </Box>
+            </div>
             <FormField label={t('lib.add.isbn')}>
               <TextInput value={isbn} onChange={(e) => setIsbn(e.target.value)} placeholder="978-93-…" slotProps={{ htmlInput: { maxLength: 20 } }} />
             </FormField>
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
@@ -925,7 +893,7 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
             {t('lib.addBook')}
           </Button>
         </DialogActions>
-      </Box>
+      </form>
     </Dialog>
   );
 }

@@ -1,34 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import DateRangeOutlined from '@mui/icons-material/DateRangeOutlined';
-import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
-import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Select from '@mui/material/Select';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { createTerm, deleteTerm, updateTerm } from '@/app/(dashboard)/calendar/actions';
@@ -38,6 +8,9 @@ import { useI18n } from '@/i18n/client';
 import { currentTerm, termProblem, type Term, type TermInput } from '@/lib/terms';
 import type { ProgramOption } from './CalendarView';
 
+import { Alert, Button, Checkbox, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormHelperText, IconButton, InputLabel, ListItemText, MenuItem, Radio, RadioGroup, Select, Snackbar, Tooltip } from '@/components/kx';
+import { CalendarRange as DateRangeOutlined, Pencil as EditOutlined, Plus as Add, Trash2 as DeleteOutlined } from 'lucide-react';
+import { cn } from '@/lib/utils';
 type Open = { kind: 'add' } | { kind: 'edit'; term: Term } | { kind: 'delete'; term: Term } | null;
 
 /** The academic terms (semesters) under the calendar: recordings are kept until their term ends. */
@@ -52,7 +25,7 @@ export function TermsSection({ terms, today, canEdit, programs }: { terms: Term[
   };
 
   return (
-    <Box component="section" aria-labelledby="terms-title" data-testid="terms">
+    <section aria-labelledby="terms-title" data-testid="terms">
       <SectionTitle
         id="terms-title"
         action={
@@ -65,38 +38,36 @@ export function TermsSection({ terms, today, canEdit, programs }: { terms: Term[
       >
         {t('term.title')}
       </SectionTitle>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, maxWidth: 760 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-3 max-w-[760px]">
         {t('term.help')}
-      </Typography>
+      </p>
       {terms.length === 0 ? (
         <EmptyState dense icon={<DateRangeOutlined />} title={t('term.empty')} testId="terms-empty">
           {t('term.emptyBody')}
         </EmptyState>
       ) : (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', overflow: 'hidden' }}>
+        <ul className="list-none m-0 p-0 border border-border rounded-[12px] overflow-hidden">
           {terms.map((term, i) => (
-            <Box
-              component="li"
+            <li className={cn('flex items-center gap-4 px-4 py-3 border-border', i === 0 ? 'border-t-0' : 'border-t', term.endsOn < today ? 'opacity-[0.7]' : 'opacity-[1]')}
               key={term.id}
               data-testid="term-row"
-              sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, borderTop: i === 0 ? 0 : 1, borderColor: 'm3.outlineVariant', opacity: term.endsOn < today ? 0.7 : 1 }}
             >
-              <Box sx={{ width: 40, height: 40, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'm3.secondaryContainer', color: 'm3.onSecondaryContainer', flexShrink: 0 }}>
+              <div className="w-[40px] h-[40px] rounded-full grid place-items-center bg-secondary text-secondary-foreground shrink-0">
                 <DateRangeOutlined />
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle1" component="div" sx={{ lineHeight: '24px', display: 'flex', alignItems: 'center', gap: 1 }}>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-base font-medium tracking-[0.1px] leading-[24px] flex items-center gap-2">
                   {term.name}
                   {current?.id === term.id && term.startsOn <= today && <Chip size="small" color="primary" label={t('term.current')} data-testid="term-current" />}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </div>
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
                   {t('term.dates', { from: fmt.date(term.startsOn, 'short'), to: fmt.date(term.endsOn, 'short') })}
                   {' · '}
                   {term.programs?.length ? t('term.forPrograms', { programs: term.programs.join(', ') }) : t('term.forAll')}
                   {' · '}
                   {t('term.year', { year: term.academicYear })}
-                </Typography>
-              </Box>
+                </p>
+              </div>
               {canEdit && (
                 <>
                   <Tooltip title={t('common.edit')}>
@@ -111,14 +82,14 @@ export function TermsSection({ terms, today, canEdit, programs }: { terms: Term[
                   </Tooltip>
                 </>
               )}
-            </Box>
+            </li>
           ))}
-        </Box>
+        </ul>
       )}
       {(open?.kind === 'add' || open?.kind === 'edit') && <TermDialog term={open.kind === 'edit' ? open.term : undefined} terms={terms} programs={programs} onClose={close} />}
       {open?.kind === 'delete' && <DeleteTermDialog term={open.term} onClose={close} />}
       <Snackbar open={!!toast} autoHideDuration={4000} onClose={() => setToast(null)} message={toast} />
-    </Box>
+    </section>
   );
 }
 
@@ -153,7 +124,7 @@ function TermDialog({ term, terms, programs, onClose }: { term?: Term; terms: Te
     <Dialog open onClose={() => !pending && onClose()} maxWidth="sm" fullWidth aria-labelledby="term-dialog-title">
       <DialogTitle id="term-dialog-title">{term ? t('term.dialog.edit') : t('term.dialog.add')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2.5} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-5 pt-2">
           {error && (
             <Alert severity="error" role="alert">
               {error}
@@ -170,7 +141,7 @@ function TermDialog({ term, terms, programs, onClose }: { term?: Term; terms: Te
               slotProps={{ htmlInput: { maxLength: 150, 'data-testid': 'term-name' } }}
             />
           </FormField>
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+          <div className="grid gap-4 grid-cols-[1fr] sm:grid-cols-[1fr_1fr]">
             <FormField label={t('term.dialog.startsOn')} required>
               <TextInput
                 type="date"
@@ -193,11 +164,11 @@ function TermDialog({ term, terms, programs, onClose }: { term?: Term; terms: Te
                 slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: startsOn || undefined, 'data-testid': 'term-ends' } }}
               />
             </FormField>
-          </Box>
+          </div>
           <FormControl>
-            <Typography variant="body2" color="text.secondary" id="term-who">
+            <p className="text-[13px] leading-[19px] text-muted-foreground" id="term-who">
               {t('term.dialog.who')}
-            </Typography>
+            </p>
             <RadioGroup row aria-labelledby="term-who" value={scope} onChange={(e) => setScope(e.target.value as 'all' | 'some')}>
               <FormControlLabel value="all" control={<Radio />} label={t('term.dialog.all')} />
               <FormControlLabel value="some" control={<Radio />} label={t('term.dialog.some')} disabled={programs.length === 0} data-testid="term-some" />
@@ -217,7 +188,7 @@ function TermDialog({ term, terms, programs, onClose }: { term?: Term; terms: Te
               >
                 {programs.map((p) => (
                   <MenuItem key={p.id} value={p.id}>
-                    <Checkbox checked={programIds.includes(p.id)} size="small" sx={{ py: 0 }} />
+                    <Checkbox className="py-0" checked={programIds.includes(p.id)} size="small" />
                     <ListItemText primary={p.name} />
                   </MenuItem>
                 ))}
@@ -225,7 +196,7 @@ function TermDialog({ term, terms, programs, onClose }: { term?: Term; terms: Te
               {show(['programs']) && <FormHelperText>{show(['programs'])}</FormHelperText>}
             </FormControl>
           )}
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} disabled={pending}>
@@ -248,7 +219,7 @@ function DeleteTermDialog({ term, onClose }: { term: Term; onClose: (message?: s
       <DialogTitle id="term-delete-title">{t('term.deleteTitle', { name: term.name })}</DialogTitle>
       <DialogContent>
         {error && (
-          <Alert severity="error" role="alert" sx={{ mb: 2 }}>
+          <Alert className="mb-4" severity="error" role="alert">
             {error}
           </Alert>
         )}

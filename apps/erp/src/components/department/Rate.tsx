@@ -1,13 +1,11 @@
 'use client';
-
-import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import { MiniBar } from '@/components/Bars';
 import { useI18n } from '@/i18n/client';
 import { formatPercent, TONE_COLOR, toneOf, type THRESHOLDS } from '@/lib/department';
 
+import { CircleAlert as ErrorOutline } from 'lucide-react';
+import { cn } from '@/lib/utils';
 /**
  * A percentage for a table cell, with a small bar; low values are red with an icon, so they read
  * without colour too. `detail` is a second line ("12 of 15"). `compact` narrows the bar for wide tables.
@@ -29,27 +27,27 @@ export function Rate({
   const tone = toneOf(value, kind);
   if (tone === 'none')
     return (
-      <Typography variant="body2" color="text.secondary" data-testid={testId} data-tone="none">
+      <p className="text-[13px] leading-[19px] text-muted-foreground" data-testid={testId} data-tone="none">
         —
-      </Typography>
+      </p>
     );
   const low = tone === 'low';
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: compact ? 1 : 1.25, justifyContent: 'flex-end' }} data-testid={testId} data-tone={tone}>
-      <Box sx={{ width: compact ? 36 : { xs: 40, md: 64 } }}>
+    <div className={cn('flex items-center justify-end', compact ? 'gap-2' : 'gap-2.5')} data-testid={testId} data-tone={tone}>
+      <div className={compact ? 'w-9' : 'w-10 md:w-16'}>
         <MiniBar value={value ?? 0} color={TONE_COLOR[tone]} />
-      </Box>
-      <Box sx={{ minWidth: compact ? 48 : 64, textAlign: 'right' }}>
-        <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', color: low ? 'error.main' : 'text.primary', fontWeight: low ? 500 : 400, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-          {low && <ErrorOutline sx={{ fontSize: 16 }} aria-label={t('dept.low')} />}
+      </div>
+      <div className={cn('text-right', compact ? 'min-w-[48px]' : 'min-w-[64px]')}>
+        <p className={cn('text-[13px] leading-[19px] tabular-nums inline-flex items-center gap-1', low ? 'text-red-ink' : 'text-foreground', low ? 'font-medium' : 'font-normal')}>
+          {low && <ErrorOutline className="text-[16px]" aria-label={t('dept.low')} />}
           {formatPercent(value)}
-        </Typography>
+        </p>
         {detail && (
-          <Typography variant="caption" color="text.secondary" component="div" sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: '16px', whiteSpace: 'nowrap' }}>
+          <div className="text-xs tracking-[0.3px] text-muted-foreground tabular-nums leading-[16px] whitespace-nowrap">
             {detail}
-          </Typography>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

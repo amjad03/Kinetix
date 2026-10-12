@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useRef, useState } from 'react';
 import { addItem, addQuote, addStore, addVendor, approveInvoice, awardQuote, createPo, decideRequisition, loadPo, loadRfq, markInvoicePaid, moveStock, openRfq, raiseRequisition, receiveGoods, recordInvoice, returnFromIssue, returnToVendor, transferStock } from '@/app/(dashboard)/inventory/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -10,6 +7,7 @@ import { newKey } from '@/lib/ops';
 import { st } from '@/lib/ops-labels';
 import type { IInvoiceRow, IItem, IPoDetail, IPoRow, IReq, IReturn, IRfq, IRfqDetail, IStock, IStore, ITransfer, IVendor } from '@/lib/ops';
 
+import { Button } from '@/components/kx';
 type Dialog = 'item' | 'store' | 'vendor' | 'req' | { move: 'in' | 'out' | 'issue' } | { reject: IReq } | { po: IReq } | { pod: IPoDetail } | { grn: IPoDetail } | { inv: IPoDetail } | 'rfq' | 'transfer' | 'retVendor' | 'retIssue' | { quote: IRfq } | { cmp: IRfqDetail } | { award: { rfqId: string; quoteId: string } };
 
 export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoices, rfqs, transfers, returns, canApprove, initialTab }: { items: IItem[]; stores: IStore[]; stock: IStock[]; vendors: IVendor[]; reqs: IReq[]; pos: IPoRow[]; invoices: IInvoiceRow[]; rfqs: IRfq[]; transfers: ITransfer[]; returns: IReturn[]; canApprove: boolean; initialTab: string }) {
@@ -92,7 +90,7 @@ export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoic
               <>
                 <Bar>{btn(t('inv.addStore'), 'store')}</Bar>
                 <Grid testId="inv-stores" empty={t('inv.noStores')} rows={stores} cols={[{ label: t('ops.f.name'), cell: (s) => s.name }, { label: t('inv.location'), cell: (s) => s.location || t('ops.none') }]} />
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('inv.stockByStore')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('inv.stockByStore')}</h6>
                 <Grid
                   testId="inv-stock"
                   empty={t('inv.noStock')}
@@ -174,7 +172,7 @@ export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoic
                     },
                   ]}
                 />
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('inv.invoices')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('inv.invoices')}</h6>
                 <Grid
                   testId="inv-invoices"
                   empty={t('inv.noInvoices')}
@@ -238,14 +236,14 @@ export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoic
                   {btn(t('inv.returnVendor'), 'retVendor', pos.length === 0)}
                   {btn(t('inv.returnIssue'), 'retIssue', stores.length === 0 || items.length === 0)}
                 </Bar>
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mb: 1 }}>{t('inv.transfers')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mb-2">{t('inv.transfers')}</h6>
                 <Grid
                   testId="inv-transfers"
                   empty={t('inv.noTransfers')}
                   rows={transfers}
                   cols={[{ label: t('inv.number'), cell: (x) => x.number }, { label: t('inv.item'), cell: (x) => itemName(x.itemId) }, { label: t('inv.from'), cell: (x) => storeName(x.fromStoreId) }, { label: t('inv.to'), cell: (x) => storeName(x.toStoreId) }, { label: t('ops.f.qty'), cell: (x) => x.qty, num: true }]}
                 />
-                <Typography variant="h6" sx={{ fontSize: '1.125rem', mt: 3, mb: 1 }}>{t('inv.returns')}</Typography>
+                <h6 className="font-medium tracking-[0.1px] text-[1.125rem] mt-6 mb-2">{t('inv.returns')}</h6>
                 <Grid
                   testId="inv-returns"
                   empty={t('inv.noReturns')}
@@ -318,7 +316,7 @@ export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoic
       {dlg && typeof dlg === 'object' && 'grn' in dlg && (
         <FormDialog
           title={t('inv.receive')}
-          intro={<Typography variant="body2" color="text.secondary">{t('inv.receiveHelp')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('inv.receiveHelp')}</p>}
           onSubmit={(v) => receiveGoods(dlg.grn.id, v, key.current)}
           onClose={done}
           fields={[...qtyFields(dlg.grn.lines.map((l) => ({ id: l.id, label: t('inv.lineLeft', { item: l.item, n: Math.max(0, l.qty - l.receivedQty) }) }))), { name: 'note', label: t('ops.f.note') }]}
@@ -327,7 +325,7 @@ export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoic
       {dlg && typeof dlg === 'object' && 'inv' in dlg && (
         <FormDialog
           title={t('inv.recordInvoice')}
-          intro={<Typography variant="body2" color="text.secondary">{t('inv.invoiceHelp', { amount: fmt.rupees(dlg.inv.lines.reduce((s, l) => s + l.receivedQty * l.unitPricePaise, 0)) })}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('inv.invoiceHelp', { amount: fmt.rupees(dlg.inv.lines.reduce((s, l) => s + l.receivedQty * l.unitPricePaise, 0)) })}</p>}
           onSubmit={(v) => recordInvoice(dlg.inv.id, v)}
           onClose={done}
           fields={[{ name: 'invoiceNo', label: t('inv.invoiceNo'), required: true }, { name: 'amount', label: t('ops.f.amount'), kind: 'rupees', required: true }]}

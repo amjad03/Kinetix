@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addTicketEvidence, addWitness, contactParents, incidentContacts, incidentWitnesses, removeTicketEvidence, ticketEvidence } from '@/app/(dashboard)/grievances/actions';
 import { sendResolution } from '@/app/(dashboard)/workflows/bound-actions';
@@ -13,6 +10,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { slaState, type GrievanceTicket } from '@/lib/campus-life';
 import { BOUND_FLOWS, CONTACT_METHODS, downloadPath, sizeLabel, WITNESS_ROLES, type GrievanceEvidence, type IncidentRow, type ParentContact, type Witness } from '@/lib/pathways-b';
 
+import { Button } from '@/components/kx';
 type Toast = (m: string) => void;
 const RESOLVED = ['resolved', 'closed'];
 
@@ -105,7 +103,7 @@ function TicketDialog({ ticket, flows, onClose, toast }: { ticket: GrievanceTick
       <SectionHead title={t('pwb.gv.evidence')}>
         <Button variant="outlined" size="small" onClick={() => setAdding(true)} data-testid="pwb-add-ticket-evidence">{t('pwb.gv.addEvidence')}</Button>
       </SectionHead>
-      {evidence.error && <Typography color="error">{evidence.error}</Typography>}
+      {evidence.error && <p className="text-sm leading-[21px] text-red-ink">{evidence.error}</p>}
       <Grid
         testId="pwb-ticket-evidence"
         empty={t('pwb.gv.noEvidence')}
@@ -128,7 +126,7 @@ function TicketDialog({ ticket, flows, onClose, toast }: { ticket: GrievanceTick
       {!ticket.committee && !RESOLVED.includes(ticket.status) && (
         <>
           <SectionHead title={t('pwb.gv.resolution')} />
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('pwb.gv.resolutionHelp')}</Typography>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('pwb.gv.resolutionHelp')}</p>
           <SendForApproval flow={BOUND_FLOWS[4]} flows={flows} sourceId={ticket.id} fields={[{ name: 'resolution', label: t('pwb.gv.resolutionText'), kind: 'multiline', required: true }]} onSend={(v) => sendResolution(ticket.id, v)} />
         </>
       )}
@@ -164,7 +162,7 @@ function IncidentDialog({ incident, onClose, toast }: { incident: IncidentRow; o
   };
   return (
     <InfoDialog title={`${incident.fullName} · ${incident.kind}`} onClose={onClose}>
-      <Typography variant="body2" sx={{ mb: 1 }}>{incident.description}</Typography>
+      <p className="text-[13px] leading-[19px] mb-2">{incident.description}</p>
       <SectionHead title={t('pwb.dis.witnesses')}>
         <Button variant="outlined" size="small" onClick={() => setDlg('witness')} data-testid="pwb-add-witness">{t('pwb.dis.addWitness')}</Button>
       </SectionHead>
@@ -210,7 +208,7 @@ function IncidentDialog({ incident, onClose, toast }: { incident: IncidentRow; o
       {dlg === 'contact' && (
         <FormDialog
           title={t('pwb.dis.addContact')}
-          intro={<Typography variant="body2" color="text.secondary">{t('pwb.dis.contactHelp')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.dis.contactHelp')}</p>}
           onSubmit={(v) => contactParents(incident.id, v)}
           onClose={close}
           fields={[

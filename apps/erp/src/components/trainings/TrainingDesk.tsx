@@ -1,6 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { decideTraining } from '@/app/(dashboard)/trainings/actions';
 import { Tiles } from '@/components/campus/Desk';
@@ -11,6 +9,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { nextTrainingSteps, type TrainingRequestRow, type TrainingStatus } from '@/lib/trainings';
 
+import { Button } from '@/components/kx';
 const TONE = { requested: 'warning', confirmed: 'success', done: 'neutral', cancelled: 'neutral' } as const;
 const STEP_LABEL = { confirmed: 'trn.confirm', done: 'trn.done', cancelled: 'trn.cancel', requested: 'trn.st.requested' } as const;
 

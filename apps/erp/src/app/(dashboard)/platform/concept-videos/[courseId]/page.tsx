@@ -1,5 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
@@ -10,6 +8,7 @@ import { coverage } from '@/lib/concept-videos';
 import type { PlatformCourseTree } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.conceptVideos') };
 }
@@ -30,11 +29,11 @@ export default async function CourseVideosPage({ params }: { params: Promise<{ c
 
   return (
     <>
-      <Box sx={{ ml: -1, mb: 0.5 }}>
+      <div className="-ml-2 mb-1">
         <LinkButton href="/platform/concept-videos" size="small" startIcon={<ArrowBack />}>
           {t('nav.conceptVideos')}
         </LinkButton>
-      </Box>
+      </div>
       {course.error !== undefined ? (
         <ErrorState title={t('pv.cantOpen')} message={course.error} />
       ) : (

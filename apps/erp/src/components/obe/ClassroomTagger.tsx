@@ -1,17 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { tagPoll } from '@/app/(dashboard)/obe/classroom/actions';
@@ -20,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import { formatDate } from '@/lib/dates';
 import type { ClassroomActivity } from '@/lib/staff-changes';
 
+import { Alert, Button, Checkbox, FormControlLabel, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 /** Board polls and class checks of one subject, each tagged with the course outcomes it measures. */
 export function ClassroomTagger({ activities, cos }: { activities: ClassroomActivity[]; cos: { id: string; code: string; statement: string }[] }) {
   const { t, locale } = useI18n();
@@ -42,15 +30,15 @@ export function ClassroomTagger({ activities, cos }: { activities: ClassroomActi
     });
 
   return (
-    <Stack spacing={2} sx={{ mt: 2 }}>
-      <Typography variant="body2" color="text.secondary">
+    <div className="flex flex-col gap-4 mt-4">
+      <p className="text-[13px] leading-[19px] text-muted-foreground">
         {t('as.cls.hint')}
-      </Typography>
+      </p>
       {error && <Alert severity="error">{error}</Alert>}
       {activities.length === 0 ? (
-        <Typography color="text.secondary">{t('as.cls.none')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('as.cls.none')}</p>
       ) : (
-        <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
+        <div className="rounded-[12px] border bg-card overflow-x-auto">
           <Table size="small" data-testid="classroom-list">
             <TableHead>
               <TableRow>
@@ -66,19 +54,19 @@ export function ClassroomTagger({ activities, cos }: { activities: ClassroomActi
                 <TableRow key={a.id}>
                   <TableCell>
                     {a.question || '-'}
-                    <Typography variant="caption" color="text.secondary" component="div">
+                    <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {formatDate(a.openedAt.slice(0, 10), 'dayMonth', locale)}
-                    </Typography>
+                    </div>
                     {!a.hasAnswer && <StatusPill tone="warning">{t('as.cls.noAnswer')}</StatusPill>}
                   </TableCell>
                   <TableCell>{a.section}</TableCell>
                   <TableCell align="right">{a.responses}</TableCell>
                   <TableCell>
-                    <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
+                    <div className="flex flex-row flex-wrap">
                       {cos.map((c) => (
                         <FormControlLabel key={c.id} label={c.code} title={c.statement} control={<Checkbox size="small" checked={picked[a.id]?.includes(c.id) ?? false} onChange={() => toggle(a.id, c.id)} />} />
                       ))}
-                    </Stack>
+                    </div>
                   </TableCell>
                   <TableCell align="right">
                     <Button size="small" variant="outlined" disabled={pending} onClick={() => save(a.id)}>
@@ -89,8 +77,8 @@ export function ClassroomTagger({ activities, cos }: { activities: ClassroomActi
               ))}
             </TableBody>
           </Table>
-        </Paper>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }

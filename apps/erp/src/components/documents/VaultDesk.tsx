@@ -1,19 +1,4 @@
 'use client';
-
-import ArchiveOutlined from '@mui/icons-material/ArchiveOutlined';
-import FolderOutlined from '@mui/icons-material/FolderOutlined';
-import UploadFile from '@mui/icons-material/UploadFile';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
 import { useState, useTransition } from 'react';
 import { archiveVaultFile, classStudents, listVault } from '@/app/(dashboard)/documents/actions';
 import { VaultVersions } from '@/components/documents/VaultVersions';
@@ -26,6 +11,8 @@ import { formatDate } from '@/lib/dates';
 import { CATEGORY, docDownload, fileSize, vaultFileProblem, vaultQuery } from '@/lib/documents';
 import type { VaultDocument } from '@/lib/hr-types';
 
+import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem } from '@/components/kx';
+import { Archive as ArchiveOutlined, FileUp as UploadFile, Folder as FolderOutlined } from 'lucide-react';
 type Owner = { type: 'student' | 'staff'; id: string; name: string };
 
 export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: { classes: { id: string; name: string }[]; staff: { id: string; name: string }[]; canStudents: boolean; canStaff: boolean; expiring: VaultDocument[] }) {
@@ -53,16 +40,16 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
   return (
     <>
       {view}
-      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
+      <div className="flex gap-3 flex-wrap mb-6">
         <FormField label={t('doc.vault.owner')}>
-          <TextInput select value={type} onChange={(e) => { setType(e.target.value as 'student' | 'staff'); setOwner(null); setDocs([]); }} sx={{ minWidth: 150 }}>
+          <TextInput className="min-w-[150px]" select value={type} onChange={(e) => { setType(e.target.value as 'student' | 'staff'); setOwner(null); setDocs([]); }}>
             {canStudents && <MenuItem value="student">{t('doc.subject.student')}</MenuItem>}
             {canStaff && <MenuItem value="staff">{t('doc.subject.staff')}</MenuItem>}
           </TextInput>
         </FormField>
         {type === 'student' && (
           <FormField label={t('doc.class')}>
-            <TextInput select value={sectionId} onChange={(e) => { setSectionId(e.target.value); setOwner(null); start(async () => { const r = await classStudents(e.target.value); setStudents(r.ok ? r.data : []); }); }} sx={{ minWidth: 220 }}>
+            <TextInput className="min-w-[220px]" select value={sectionId} onChange={(e) => { setSectionId(e.target.value); setOwner(null); start(async () => { const r = await classStudents(e.target.value); setStudents(r.ok ? r.data : []); }); }}>
               {classes.map((c) => (
                 <MenuItem key={c.id} value={c.id}>
                   {c.name}
@@ -72,7 +59,7 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
           </FormField>
         )}
         <FormField label={type === 'student' ? t('doc.student') : t('doc.staffMember')}>
-          <TextInput select value={owner?.type === type ? owner.id : ''} onChange={(e) => { const p = people.find((x) => x.id === e.target.value); if (p) open({ type, id: p.id, name: p.name }); }} sx={{ minWidth: 260 }}>
+          <TextInput className="min-w-[260px]" select value={owner?.type === type ? owner.id : ''} onChange={(e) => { const p = people.find((x) => x.id === e.target.value); if (p) open({ type, id: p.id, name: p.name }); }}>
             {people.map((p) => (
               <MenuItem key={p.id} value={p.id}>
                 {p.name}
@@ -80,11 +67,11 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
             ))}
           </TextInput>
         </FormField>
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
         <Button variant="contained" startIcon={<UploadFile />} disabled={!owner} onClick={() => setUploading({})}>
           {t('doc.vault.upload')}
         </Button>
-      </Box>
+      </div>
 
       {owner ? (
         docs.length === 0 && !pending ? (
@@ -97,7 +84,7 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
             rowId={(d) => String(d.id)}
             exportName="vault"
             columns={[
-              { id: 'c0', header: t('doc.vault.title'), rowHeader: true, sort: (d) => d.title, cell: (d) => (<>{d.title} <Chip size="small" label={fileSize(d.sizeBytes)} sx={{ ml: 0.5 }} /></>) },
+              { id: 'c0', header: t('doc.vault.title'), rowHeader: true, sort: (d) => d.title, cell: (d) => (<>{d.title} <Chip className="ml-1" size="small" label={fileSize(d.sizeBytes)} /></>) },
               { id: 'c1', header: t('doc.vault.category'), sort: (d) => d.category, cell: (d) => d.category },
               { id: 'c2', header: t('doc.vault.version'), sort: (d) => d.version, cell: (d) => `v${d.version}` },
               { id: 'c3', header: t('doc.vault.visibility'), sort: (d) => d.visibility, cell: (d) => t(d.visibility === 'owner' ? 'doc.vault.vis.owner' : 'doc.vault.vis.staff') },
@@ -122,7 +109,7 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
       )}
 
       {expiring.length > 0 && (
-        <Alert severity="warning" sx={{ mt: 3 }}>
+        <Alert className="mt-6" severity="warning">
           {t('doc.vault.expiring')}: {expiring.map((d) => `${d.title} (${d.expiresOn ? formatDate(d.expiresOn, 'short', locale) : ''})`).join(', ')}
         </Alert>
       )}
@@ -167,7 +154,7 @@ function UploadDialog({ owner, replaces, onClose, setError }: { owner: Owner; re
     <Dialog open onClose={() => !busy && onClose(false)} fullWidth maxWidth="xs">
       <DialogTitle>{replaces ? t('doc.vault.newVersion') : t('doc.vault.upload')}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           <Button component="label" variant="outlined" startIcon={<UploadFile />}>
             {file ? file.name : t('doc.vault.chooseFile')}
             <input hidden type="file" accept="application/pdf,image/jpeg,image/png" onChange={(e) => pick(e.target.files?.[0] ?? null)} />
@@ -188,7 +175,7 @@ function UploadDialog({ owner, replaces, onClose, setError }: { owner: Owner; re
           <FormField label={t('doc.vault.expires')}>
             <TextInput type="date" value={f.expiresOn} onChange={(e) => setF({ ...f, expiresOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
           </FormField>
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose(false)} disabled={busy}>

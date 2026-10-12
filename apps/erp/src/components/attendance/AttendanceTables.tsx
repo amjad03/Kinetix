@@ -1,8 +1,4 @@
 'use client';
-
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { RateCell } from '@/components/Bars';
 import { initials } from '@/components/initials';
 import { DataTable, StatusPill, type Column } from '@/components/ui';
@@ -11,6 +7,8 @@ import { rateOf, type AbsentStudent } from '@/lib/attendance';
 import { hhmm } from '@/lib/dates';
 import type { AttendanceDay } from '@/lib/types';
 
+import { Avatar } from '@/components/kx';
+import { cn } from '@/lib/utils';
 type ClassRow = AttendanceDay['sections'][number];
 
 /** One day's attendance by class: marks, the rate, and which classes have not been marked. */
@@ -25,16 +23,16 @@ export function ClassAttendanceTable({ rows }: { rows: ClassRow[] }) {
       sort: (s) => s.section,
       cell: (s) => (
         <>
-          <Typography variant="subtitle2">{s.section}</Typography>
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{s.section}</h6>
           {s.students === 0 && (
-            <Typography variant="caption" color="text.secondary">
+            <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
               {t('att.noStudents')}
-            </Typography>
+            </span>
           )}
           {s.students !== 0 && s.marked === 0 && (
-            <Typography variant="caption" color="error.main">
+            <span className="text-xs leading-4 tracking-[0.3px] text-red-ink">
               {t('att.notMarked')}
-            </Typography>
+            </span>
           )}
         </>
       ),
@@ -42,7 +40,7 @@ export function ClassAttendanceTable({ rows }: { rows: ClassRow[] }) {
     { id: 'students', header: t('att.col.students'), align: 'right', sort: (s) => s.students, cell: (s) => s.students },
     { id: 'marked', header: t('att.col.marked'), align: 'right', hideBelow: 'sm', sort: (s) => s.marked, cell: (s) => s.marked },
     { id: 'present', header: t('att.col.present'), align: 'right', sort: (s) => s.present, cell: (s) => s.present },
-    { id: 'absent', header: t('att.col.absent'), align: 'right', sort: (s) => s.absent, cell: (s) => <Box component="span" sx={{ color: s.absent ? 'error.main' : undefined, fontWeight: s.absent ? 500 : undefined }}>{s.absent}</Box> },
+    { id: 'absent', header: t('att.col.absent'), align: 'right', sort: (s) => s.absent, cell: (s) => <span className={cn(s.absent ? 'text-red-ink' : '', s.absent ? 'font-medium' : '')}>{s.absent}</span> },
     { id: 'late', header: t('att.col.late'), align: 'right', hideBelow: 'sm', sort: (s) => s.late, cell: (s) => s.late },
     { id: 'rate', header: t('att.col.rate'), align: 'right', width: 200, sort: rate, csv: (s) => rate(s), cell: (s) => <RateCell rate={rate(s)} /> },
   ];
@@ -62,33 +60,33 @@ export function AbsenteesTable({ rows }: { rows: AbsentStudent[] }) {
       sort: (s) => s.student,
       csv: (s) => (s.rollNo ? `${s.student} (${s.rollNo})` : s.student),
       cell: (s) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Avatar sx={{ width: 32, height: 32, fontSize: 13, bgcolor: 'm3.primaryContainer', color: 'm3.onPrimaryContainer' }}>{initials(s.student)}</Avatar>
-          <Box>
-            <Typography variant="subtitle2" sx={{ whiteSpace: 'nowrap' }}>
+        <div className="flex items-center gap-3">
+          <Avatar className="w-[32px] h-[32px] text-[13px] bg-teal-soft text-teal-ink">{initials(s.student)}</Avatar>
+          <div>
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px] whitespace-nowrap">
               {s.student}
-            </Typography>
+            </h6>
             {s.rollNo && (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                 {s.rollNo}
-              </Typography>
+              </span>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       ),
     },
-    { id: 'class', header: t('att.col.class'), sort: (s) => s.section, cell: (s) => <Box sx={{ whiteSpace: 'nowrap' }}>{s.section}</Box> },
+    { id: 'class', header: t('att.col.class'), sort: (s) => s.section, cell: (s) => <div className="whitespace-nowrap">{s.section}</div> },
     {
       id: 'absentFor',
       header: t('att.col.absentFor'),
       sort: (s) => s.periods.length,
       csv: missed,
       cell: (s) => (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+        <div className="flex flex-wrap gap-1.5">
           {s.periods.map((p, i) => (
             <StatusPill key={i} tone="danger">{`${hhmm(p.startsAt)} ${p.subject ?? t('att.unscheduled')}`}</StatusPill>
           ))}
-        </Box>
+        </div>
       ),
     },
     { id: 'markedBy', header: t('att.col.markedBy'), hideBelow: 'md', sort: marker, cell: marker },

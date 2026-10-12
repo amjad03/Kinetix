@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { approveRule, createRule, moveRule } from '@/app/(dashboard)/governance/actions';
 import { ActionButton, Bar, FormDialog, Grid, useToast } from '@/components/ops/kit';
@@ -10,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { RULE_DOMAINS, type BusinessRule } from '@/lib/governance';
 
+import { Button } from '@/components/kx';
 const TONE = { draft: 'neutral', in_review: 'warning', approved: 'success', retired: 'neutral' } as const;
 
 /** Business rules by domain: every version, who wrote and approved it, and when it is in force. */
@@ -20,9 +18,9 @@ export function RulesDesk({ rules, today, me }: { rules: BusinessRule[]; today: 
   const inForce = (r: BusinessRule) => r.status === 'approved' && r.effectiveFrom <= today && (!r.effectiveTo || r.effectiveTo >= today);
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
         {t('gr.hint')}
-      </Typography>
+      </p>
       <Bar>
         <Button variant="contained" onClick={() => setOpen(true)} data-testid="gr-new">
           {t('gr.new')}

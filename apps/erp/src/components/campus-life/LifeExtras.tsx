@@ -1,10 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import {
   addAchievement, addBearer, addEvidence, addMedia, allAchievements, approveMedia, clubAchievementsOf, clubBearers, committeeEvidence, endBearer, eventMedia, issueCertificates, removeEvidence, removeMedia,
@@ -20,6 +14,7 @@ import {
   type AchievementLogRow, type ClubAchievement, type EvidenceRow, type MediaRow, type OfficeBearer,
 } from '@/lib/pathways-b';
 
+import { Button, MenuItem } from '@/components/kx';
 type Toast = (m: string) => void;
 const levels = (t: (k: MessageKey) => string) => ACHIEVEMENT_LEVELS.map((l) => ({ value: l, label: t(`pwb.level.${l}` as MessageKey) }));
 
@@ -88,7 +83,7 @@ export function ClubExtras({ clubId, members, toast }: { clubId: string; members
       {dlg === 'win' && (
         <FormDialog
           title={t('pwb.cl.addWin')}
-          intro={<Typography variant="body2" color="text.secondary">{t('pwb.cl.participantsHelp')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.cl.participantsHelp')}</p>}
           onSubmit={(v) => addAchievement(clubId, roster, v)}
           onClose={close}
           fields={[
@@ -144,8 +139,8 @@ export function CommitteeExtras({ committee, meetings, toast }: { committee: Com
         ]}
       />
       <SectionHead title={t('pwb.cm.pack')} />
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('pwb.cm.packHelp')}</Typography>
-      <Stack direction="row" spacing={1.5} useFlexGap sx={{ flexWrap: 'wrap', alignItems: 'flex-end' }}>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('pwb.cm.packHelp')}</p>
+      <div className="flex flex-row gap-3 flex-wrap items-end">
         <FormField label={t('pwb.cm.packFrom')}>
           <TextInput type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
         </FormField>
@@ -153,11 +148,11 @@ export function CommitteeExtras({ committee, meetings, toast }: { committee: Com
           <TextInput type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
         </FormField>
         <Button variant="contained" href={downloadPath('report-pack', committee.id, { from: range.from, to: range.to })} disabled={!range.from || !range.to} data-testid="pwb-pack">{t('pwb.cm.packDownload')}</Button>
-      </Stack>
+      </div>
       {adding && (
         <FileFormDialog
           title={t('pwb.cm.addEvidence')}
-          intro={<Typography variant="body2" color="text.secondary">{t('pwb.cm.evidenceHelp')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.cm.evidenceHelp')}</p>}
           onSubmit={(v, file) => addEvidence(committee.id, v, file)}
           onClose={(m) => {
             setAdding(false);
@@ -181,16 +176,16 @@ export function AchievementsTab() {
   const [level, setLevel] = useState('');
   return (
     <>
-      <Stack direction="row" sx={{ mb: 2 }}>
+      <div className="flex flex-row mb-4">
         <FormField label={t('pwb.cl.level')}>
-          <TextInput select value={level} onChange={(e) => setLevel(e.target.value)} sx={{ minWidth: 200 }} slotProps={{ select: { displayEmpty: true } }} data-testid="pwb-level">
+          <TextInput className="min-w-[200px]" select value={level} onChange={(e) => setLevel(e.target.value)} slotProps={{ select: { displayEmpty: true } }} data-testid="pwb-level">
             <MenuItem value="">{t('pwb.cl.allLevels')}</MenuItem>
             {levels(t).map((l) => (
               <MenuItem key={l.value} value={l.value}>{l.label}</MenuItem>
             ))}
           </TextInput>
         </FormField>
-      </Stack>
+      </div>
       <AchievementsTable key={level} level={level} />
     </>
   );
@@ -201,7 +196,7 @@ function AchievementsTable({ level }: { level: string }) {
   const log = useLoad<AchievementLogRow[]>(() => allAchievements(level || undefined));
   return (
     <>
-      {log.error && <Typography color="error">{log.error}</Typography>}
+      {log.error && <p className="text-sm leading-[21px] text-red-ink">{log.error}</p>}
       <Grid
         testId="pwb-achievements"
         empty={t('pwb.cl.noWins')}
@@ -248,37 +243,37 @@ export function EventExtras({ event, toast }: { event: CampusEvent; toast: Toast
           {t('pwb.ev.issueCerts')}
         </Button>
       </SectionHead>
-      <Typography variant="body2" color="text.secondary">{event.checkedIn === 0 ? t('pwb.ev.certsNone') : t('pwb.ev.certsHelp', { n: event.checkedIn })}</Typography>
+      <p className="text-[13px] leading-[19px] text-muted-foreground">{event.checkedIn === 0 ? t('pwb.ev.certsNone') : t('pwb.ev.certsHelp', { n: event.checkedIn })}</p>
       <SectionHead title={t('pwb.ev.gallery')}>
         <Button variant="outlined" size="small" onClick={() => setAdding(true)} data-testid="pwb-add-media">{t('pwb.ev.addMedia')}</Button>
       </SectionHead>
       {(media.data ?? []).length === 0 ? (
-        <Typography variant="body2" color="text.secondary">{t('pwb.ev.noMedia')}</Typography>
+        <p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.ev.noMedia')}</p>
       ) : (
-        <Box data-testid="pwb-gallery" sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(180px,1fr))]" data-testid="pwb-gallery">
           {(media.data ?? []).map((m) => (
-            <Stack key={m.id} spacing={0.5} sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: 2, p: 1 }}>
+            <div className="flex flex-col gap-1 border border-border rounded-[20px] p-2" key={m.id}>
               {m.contentType?.startsWith('image/') ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={downloadPath('event-media', m.id)} alt={m.caption || t('pwb.ev.photo')} loading="lazy" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8 }} />
               ) : (
                 <Button size="small" href={m.url ?? downloadPath('event-media', m.id)} target="_blank" rel="noreferrer">{m.kind === 'video' ? t('pwb.ev.video') : t('pwb.open')}</Button>
               )}
-              <Typography variant="body2">{m.caption || '-'}</Typography>
-              <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap', alignItems: 'center' }}>
+              <p className="text-[13px] leading-[19px]">{m.caption || '-'}</p>
+              <div className="flex flex-row gap-1 flex-wrap items-center">
                 {!m.approved && <Pill warn label={t('pwb.ev.waiting')} />}
                 {!m.approved && <ActionButton label={t('pwb.ev.approve')} run={() => approveMedia(m.id)} onDone={refresh} />}
                 <ActionButton tone="error" label={t('pwb.delete')} run={() => removeMedia(m.id)} onDone={refresh} />
-              </Stack>
-            </Stack>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
       {adding && (
         <FileFormDialog
           title={t('pwb.ev.addMedia')}
           allowed={MEDIA_TYPES}
-          intro={<Typography variant="body2" color="text.secondary">{t('pwb.ev.mediaHelp')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.ev.mediaHelp')}</p>}
           onSubmit={(v, file) => addMedia(event.id, v, file)}
           onClose={(m) => {
             setAdding(false);

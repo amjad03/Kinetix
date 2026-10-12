@@ -1,37 +1,25 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { BoardMenu } from '@/components/boards/BoardMenu';
 import { DataTable, type Column } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { TFunction } from '@/i18n/translate';
 import type { Board } from '@/lib/types';
 
+import { Chip, Tooltip } from '@/components/kx';
+import { cn } from '@/lib/utils';
+import { pal } from '@/lib/sx';
 const PLATFORM: Record<string, string> = { android: 'Android', windows: 'Windows', linux: 'Linux', web: 'Web' };
 
 function StatusDot({ b, t }: { b: Board; t: TFunction }) {
   const [color, label] = !b.enrolled ? ['m3.outline', t('boards.waiting')] : b.online ? ['kx.success', t('boards.online')] : ['m3.outlineVariant', t('boards.offline')];
   return (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, whiteSpace: 'nowrap' }}>
-      <Box
-        component="span"
-        sx={{
-          width: 10,
-          height: 10,
-          borderRadius: '50%',
-          bgcolor: b.enrolled ? color : 'transparent',
-          border: b.enrolled ? 0 : 2,
-          borderColor: color,
-          boxShadow: b.online ? '0 0 0 3px rgba(24,128,56,.18)' : 'none',
-        }}
+    <div className="inline-flex items-center gap-2 whitespace-nowrap">
+      <span className={cn('w-[10px] h-[10px] rounded-full', b.enrolled ? 'border-0' : 'border-2', b.online ? 'shadow-[0_0_0_3px_rgba(24,128,56,.18)]' : 'shadow-none')} style={{ backgroundColor: pal(b.enrolled ? color : 'transparent'), borderColor: pal(color) }}
       />
-      <Typography variant="body2" sx={{ color: b.online ? 'text.primary' : 'text.secondary' }}>
+      <p className={cn('text-[13px] leading-[19px]', b.online ? 'text-foreground' : 'text-muted-foreground')}>
         {label}
-      </Typography>
-    </Box>
+      </p>
+    </div>
   );
 }
 
@@ -49,40 +37,40 @@ export function BoardsTable({ boards, allowed, timeZone, nowIso }: { boards: Boa
       sort: (b) => b.name,
       cell: (b) => (
         <>
-          <Typography variant="subtitle2">{b.name}</Typography>
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{b.name}</h6>
           {b.enrolledAt && (
-            <Typography variant="caption" color="text.secondary">
+            <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
               {t('boards.enrolled', { date: fmt.dateTime(b.enrolledAt, timeZone, false) })}
-            </Typography>
+            </span>
           )}
         </>
       ),
     },
     { id: 'status', header: t('boards.col.status'), sort: status, cell: (b) => <StatusDot b={b} t={t} /> },
-    { id: 'room', header: t('boards.col.room'), hideBelow: 'md', sort: (b) => b.room ?? '', cell: (b) => b.room ?? <Box component="span" sx={{ color: 'text.secondary' }}>—</Box> },
+    { id: 'room', header: t('boards.col.room'), hideBelow: 'md', sort: (b) => b.room ?? '', cell: (b) => b.room ?? <span className="text-muted-foreground">—</span> },
     {
       id: 'now',
       header: t('boards.col.now'),
       sort: nowText,
       cell: (b) =>
         b.session ? (
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Chip size="small" label={t('boards.inClass')} sx={{ bgcolor: 'kx.liveContainer', color: 'kx.onLiveContainer' }} />
-              <Typography variant="subtitle2">{nowText(b)}</Typography>
-            </Box>
-            <Typography variant="caption" color="text.secondary">
+          <div>
+            <div className="flex items-center gap-2">
+              <Chip className="bg-orange-soft text-orange-ink" size="small" label={t('boards.inClass')} />
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{nowText(b)}</h6>
+            </div>
+            <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
               {t('boards.since', { teacher: b.session.teacher, time: fmt.time(b.session.startedAt, timeZone) })}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ) : !b.enrolled ? (
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {b.enrollmentExpiresAt && new Date(b.enrollmentExpiresAt) > now ? t('boards.codeValid', { date: fmt.dateTime(b.enrollmentExpiresAt, timeZone, false) }) : t('boards.codeExpired')}
-          </Typography>
+          </p>
         ) : (
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('boards.free')}
-          </Typography>
+          </p>
         ),
     },
     {
@@ -92,17 +80,17 @@ export function BoardsTable({ boards, allowed, timeZone, nowIso }: { boards: Boa
       sort: (b) => (b.platform ? `${PLATFORM[b.platform] ?? b.platform}${b.appVersion ? ` v${b.appVersion}` : ''}` : ''),
       cell: (b) =>
         b.platform ? (
-          <Box sx={{ whiteSpace: 'nowrap' }}>
+          <div className="whitespace-nowrap">
             {PLATFORM[b.platform] ?? b.platform}
             {b.appVersion && (
-              <Typography variant="caption" color="text.secondary" component="span">
+              <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                 {' '}
                 · v{b.appVersion}
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
         ) : (
-          <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>
+          <span className="text-muted-foreground">—</span>
         ),
     },
     {
@@ -117,7 +105,7 @@ export function BoardsTable({ boards, allowed, timeZone, nowIso }: { boards: Boa
             <span style={{ whiteSpace: 'nowrap' }}>{fmt.relative(b.lastSeenAt, now, timeZone)}</span>
           </Tooltip>
         ) : (
-          <Box component="span" sx={{ color: 'text.secondary' }}>{t('boards.never')}</Box>
+          <span className="text-muted-foreground">{t('boards.never')}</span>
         ),
     },
   ];

@@ -1,27 +1,4 @@
 'use client';
-
-import CheckCircle from '@mui/icons-material/CheckCircle';
-import ReportOutlined from '@mui/icons-material/ReportOutlined';
-import Send from '@mui/icons-material/Send';
-import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
-import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Snackbar from '@mui/material/Snackbar';
-import Switch from '@mui/material/Switch';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Typography from '@mui/material/Typography';
 import { useMemo, useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { sendBroadcast } from '@/app/(dashboard)/messages/actions';
@@ -29,6 +6,10 @@ import type { Priority, Structure } from '@/lib/types';
 import { useI18n } from '@/i18n/client';
 import { EXPIRY_OPTIONS, PRIORITIES, priorityKey } from './priorities';
 
+import { Alert, Autocomplete, Button, ButtonBase, Card, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Snackbar, Switch, ToggleButton, ToggleButtonGroup, Typography } from '@/components/kx';
+import { CircleCheck as CheckCircle, OctagonAlert as ReportOutlined, Send } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { pal } from '@/lib/sx';
 type Mode = 'all' | 'programs' | 'classes';
 
 interface Option {
@@ -108,24 +89,22 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
   };
 
   return (
-    <Card component="section" aria-labelledby="compose-title" sx={{ bgcolor: 'kx.tonal', borderColor: 'transparent' }}>
-      <Box
-        component="form"
+    <Card className="bg-muted border-transparent" component="section" aria-labelledby="compose-title">
+      <form className="p-5 md:p-6 flex flex-col gap-5"
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
-        sx={{ p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 2.5 }}
       >
-        <Box>
-          <Typography variant="h5" component="h2" id="compose-title">
+        <div>
+          <h2 className="text-[1.375rem] leading-7" id="compose-title">
             {t('msg.compose.title')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          </h2>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mt-1">
             {t('msg.compose.help')}
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {error && (
           <Alert severity="error" onClose={() => setError(null)}>
@@ -134,18 +113,17 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
         )}
 
         <FormField label={t('msg.title')} required>
-          <TextInput
+          <TextInput className={cn('[&>p]:bg-muted [&>p]:px-3.5 [&>p]:pt-1', !titleError && '[&>p]:text-right')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             error={!!titleError}
             helperText={titleError || `${title.length}/120`}
-            slotProps={{ htmlInput: { maxLength: 120 }, formHelperText: { sx: { textAlign: titleError ? 'left' : 'right' } } }}
-            sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
+            slotProps={{ htmlInput: { maxLength: 120 } }}
             required
           />
         </FormField>
         <FormField label={t('msg.body')} required>
-          <TextInput
+          <TextInput className={cn('[&>p]:bg-muted [&>p]:px-3.5 [&>p]:pt-1', !bodyError && '[&>p]:text-right')}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             error={!!bodyError}
@@ -153,77 +131,59 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
             multiline
             minRows={4}
             maxRows={10}
-            slotProps={{ htmlInput: { maxLength: 2000 }, formHelperText: { sx: { textAlign: bodyError ? 'left' : 'right' } } }}
-            sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
+            slotProps={{ htmlInput: { maxLength: 2000 } }}
             required
           />
         </FormField>
 
-        <Box component="fieldset" sx={{ border: 0, p: 0, m: 0 }}>
-          <Typography component="legend" variant="subtitle2" sx={{ mb: 1 }}>
+        <fieldset className="border-0 p-0 m-0">
+          <legend className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
             {t('msg.priority')}
-          </Typography>
-          <Box role="radiogroup" aria-label={t('msg.priority')} sx={{ display: 'grid', gap: 1, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+          </legend>
+          <div className="grid gap-2 grid-cols-[repeat(3,minmax(0,1fr))]" role="radiogroup" aria-label={t('msg.priority')}>
             {PRIORITIES.map((p) => {
               const on = p.value === priority;
               const danger = p.value === 'emergency';
               return (
-                <ButtonBase
+                <ButtonBase className={cn('flex-col items-start text-left gap-1 p-3 rounded-[12px] border [transition:background-color_.15s,border-color_.15s] relative', on ? '[outline:1px_solid]' : 'outline-none', danger ? 'outline-destructive' : 'outline-teal')} style={{ borderColor: pal(on ? (danger ? 'error.main' : 'primary.main') : 'm3.outlineVariant'), backgroundColor: pal(on ? (danger ? 'm3.errorContainer' : 'm3.secondaryContainer') : 'kx.pane'), color: pal(on ? (danger ? 'm3.onErrorContainer' : 'm3.onSecondaryContainer') : 'text.primary') }}
                   key={p.value}
                   role="radio"
                   aria-checked={on}
                   title={`${t(priorityKey(p.value, 'board'))} ${t(priorityKey(p.value, 'families'))}`}
                   data-testid={`priority-${p.value}`}
                   onClick={() => setPriority(p.value)}
-                  sx={{
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    textAlign: 'left',
-                    gap: 0.5,
-                    p: 1.5,
-                    borderRadius: '12px',
-                    border: 1,
-                    borderColor: on ? (danger ? 'error.main' : 'primary.main') : 'm3.outlineVariant',
-                    outline: on ? '1px solid' : 'none',
-                    outlineColor: danger ? 'error.main' : 'primary.main',
-                    bgcolor: on ? (danger ? 'm3.errorContainer' : 'm3.secondaryContainer') : 'kx.pane',
-                    color: on ? (danger ? 'm3.onErrorContainer' : 'm3.onSecondaryContainer') : 'text.primary',
-                    transition: 'background-color .15s, border-color .15s',
-                    position: 'relative',
-                  }}
                 >
-                  <Box sx={{ display: 'flex', color: danger ? 'error.main' : on ? 'inherit' : 'text.secondary', '& svg': { fontSize: 22 } }}>{p.icon}</Box>
-                  <Typography variant="subtitle2">{t(priorityKey(p.value))}</Typography>
-                  <Typography variant="caption" sx={{ color: on ? 'inherit' : 'text.secondary' }}>
+                  <div className="flex [&_svg]:text-[22px]" style={{ color: pal(danger ? 'error.main' : on ? 'inherit' : 'text.secondary') }}>{p.icon}</div>
+                  <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t(priorityKey(p.value))}</h6>
+                  <span className={cn('text-xs leading-4 tracking-[0.3px]', on ? 'text-inherit' : 'text-muted-foreground')}>
                     {t(priorityKey(p.value, 'short'))}
-                  </Typography>
-                  {on && <CheckCircle sx={{ position: 'absolute', top: 10, right: 10, color: danger ? 'error.main' : 'primary.main', fontSize: 18 }} />}
+                  </span>
+                  {on && <CheckCircle className={cn('absolute top-[10px] right-[10px] text-[18px]', danger ? 'text-red-ink' : 'text-teal-ink')} />}
                 </ButtonBase>
               );
             })}
-          </Box>
+          </div>
           {(() => {
             return (
-              <Typography variant="body2" color={emergency ? 'error.main' : 'text.secondary'} sx={{ mt: 1 }} data-testid="priority-help">
+              <Typography className="mt-2" variant="body2" color={emergency ? 'error.main' : 'text.secondary'} data-testid="priority-help">
                 <strong>{t('msg.onBoards')}</strong> {t(priorityKey(priority, 'board'))} {t(priorityKey(priority, 'families'))}
               </Typography>
             );
           })()}
-        </Box>
+        </fieldset>
 
-        <Box component="fieldset" sx={{ border: 0, p: 0, m: 0 }}>
-          <Typography component="legend" variant="subtitle2" sx={{ mb: 1 }}>
+        <fieldset className="border-0 p-0 m-0">
+          <legend className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
             {t('msg.sendTo')}
-          </Typography>
-          <ToggleButtonGroup exclusive value={mode} onChange={(_, v: Mode | null) => v && setMode(v)} aria-label={t('msg.audience')} sx={{ bgcolor: 'kx.pane' }}>
+          </legend>
+          <ToggleButtonGroup className="bg-card" exclusive value={mode} onChange={(_, v: Mode | null) => v && setMode(v)} aria-label={t('msg.audience')}>
             <ToggleButton value="all">{t('msg.mode.all')}</ToggleButton>
             <ToggleButton value="programs">{t('msg.mode.programs')}</ToggleButton>
             <ToggleButton value="classes">{t('msg.mode.classes')}</ToggleButton>
           </ToggleButtonGroup>
           {mode !== 'all' && (
-            <Autocomplete
+            <Autocomplete className="mt-3 bg-card"
               multiple
-              sx={{ mt: 1.5, bgcolor: 'kx.pane' }}
               options={mode === 'programs' ? programOptions : classOptions}
               groupBy={(o) => o.group ?? ''}
               value={mode === 'programs' ? programs : classes}
@@ -249,19 +209,18 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
               data-testid="audience-picker"
             />
           )}
-          <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1 }}>
+          <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-2">
             {mode === 'all' ? t('msg.mode.allHelp') : t('msg.mode.someHelp')}
-          </Typography>
-        </Box>
+          </p>
+        </fieldset>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, alignItems: 'start' }}>
+        <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4 items-start">
           <FormField label={t('msg.expires')}>
-            <TextInput
+            <TextInput className="[&>p]:bg-muted [&>p]:px-3.5 [&>p]:pt-1"
               select
               value={ttl}
               onChange={(e) => setTtl(Number(e.target.value))}
               helperText={t('msg.expiresHelp')}
-              sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
             >
               {EXPIRY_OPTIONS.map((o) => (
                 <MenuItem key={o.minutes} value={o.minutes}>
@@ -270,19 +229,18 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
               ))}
             </TextInput>
           </FormField>
-          <Box>
-            <FormControlLabel
-              sx={{ ml: -1 }}
+          <div>
+            <FormControlLabel className="-ml-2"
               control={<Switch checked={requiresAck || emergency} disabled={emergency} onChange={(e) => setRequiresAck(e.target.checked)} />}
               label={t('msg.ack')}
             />
-            <Typography variant="caption" color="text.secondary" component="p" sx={{ ml: 0.5 }}>
+            <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground ml-1">
               {emergency ? t('msg.ackEmergency') : t('msg.ackHelp')}
-            </Typography>
-          </Box>
-        </Box>
+            </p>
+          </div>
+        </div>
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 0.5 }}>
+        <div className="flex justify-end gap-2 pt-1">
           <Button
             type="submit"
             variant="contained"
@@ -292,26 +250,26 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
           >
             {emergency ? t('msg.circulateEmergency') : t('msg.circulate')}
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </form>
 
       <Dialog open={confirm} onClose={() => setConfirm(false)} maxWidth="xs" aria-labelledby="confirm-emergency">
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2, color: 'error.main' }}>
-          <ReportOutlined sx={{ fontSize: 28 }} />
-        </Box>
-        <DialogTitle id="confirm-emergency" sx={{ textAlign: 'center' }}>
+        <div className="flex justify-center pt-4 text-red-ink">
+          <ReportOutlined className="text-[28px]" />
+        </div>
+        <DialogTitle className="text-center" id="confirm-emergency">
           {t('msg.confirm.title')}
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('msg.confirm.body', { audience: audienceText })}
-          </Typography>
-          <Box sx={{ mt: 2, p: 1.5, borderRadius: '12px', bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }}>
-            <Typography variant="subtitle2">{title}</Typography>
-            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          </p>
+          <div className="mt-4 p-3 rounded-[12px] bg-red-soft text-red-ink">
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{title}</h6>
+            <p className="text-[13px] leading-[19px] whitespace-pre-wrap line-clamp-4 overflow-hidden">
               {body}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirm(false)}>{t('common.cancel')}</Button>

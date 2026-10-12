@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
 import { useState } from 'react';
 import { archiveTemplate, closeNc, createTemplate, startAudit, updateNc } from '@/app/(dashboard)/academic-audit/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast } from '@/components/ops/kit';
@@ -9,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { AuditOptions, AuditRow, AuditSummaryRow, AuditTemplateRow, NonConformityRow } from '@/lib/quality';
 
+import { Button, Link } from '@/components/kx';
 type Dialog = 'template' | 'audit' | { update: NonConformityRow } | { close: NonConformityRow };
 
 export function AuditDesk({ summary, audits, templates, ncs, options, canWriteTemplates, initialTab }: { summary: AuditSummaryRow[]; audits: AuditRow[]; templates: AuditTemplateRow[]; ncs: NonConformityRow[]; options: AuditOptions; canWriteTemplates: boolean; initialTab: string }) {

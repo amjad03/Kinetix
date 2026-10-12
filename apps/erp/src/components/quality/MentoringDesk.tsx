@@ -1,8 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { assignByClass, changeMentor, endAssignment, loadSessions } from '@/app/(dashboard)/mentoring/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -10,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { InterventionPlanRow, MentoringSession, MentorAssignment, MentorRef, RiskRow } from '@/lib/quality';
 
+import { Button } from '@/components/kx';
 type Dialog = 'bulk' | { change: MentorAssignment } | { sessions: { studentId: string; name: string } };
 
 export function MentoringDesk({ risk, mentees, plans, mentors, sections, initialTab }: { risk: RiskRow[]; mentees: MentorAssignment[]; plans: InterventionPlanRow[]; mentors: MentorRef[]; sections: { id: string; name: string }[]; initialTab: string }) {
@@ -120,7 +117,7 @@ export function MentoringDesk({ risk, mentees, plans, mentors, sections, initial
       {dlg === 'bulk' && (
         <FormDialog
           title={t('mn.bulkTitle')}
-          intro={<Typography variant="body2">{t('mn.bulkIntro')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('mn.bulkIntro')}</p>}
           fields={[{ name: 'sectionId', label: t('mn.f.section'), kind: 'select', options: sections.map((s) => ({ value: s.id, label: s.name })), required: true }, mentorField('mentor1', t('mn.f.mentorN', { n: 1 }), true), mentorField('mentor2', t('mn.f.mentorN', { n: 2 }), false), mentorField('mentor3', t('mn.f.mentorN', { n: 3 }), false)]}
           onSubmit={assignByClass}
           onClose={done}
@@ -151,28 +148,28 @@ function SessionsDialog({ studentId, name, onClose }: { studentId: string; name:
   }, [studentId]);
   return (
     <InfoDialog title={t('mn.sessionsTitle', { name })} onClose={onClose}>
-      {error && <Typography color="error">{error}</Typography>}
-      {rows && rows.length === 0 && <Typography>{t('mn.noSessions')}</Typography>}
-      <Stack spacing={2}>
+      {error && <p className="text-sm leading-[21px] text-red-ink">{error}</p>}
+      {rows && rows.length === 0 && <p className="text-sm leading-[21px]">{t('mn.noSessions')}</p>}
+      <div className="flex flex-col gap-4">
         {(rows ?? []).map((s) => (
           <div key={s.id}>
-            <Typography variant="subtitle2">
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">
               {fmt.date(s.heldOn, 'long')} · {t(`mn.mode.${s.mode}` as MessageKey)}
-            </Typography>
-            <Typography variant="body2">{s.summary}</Typography>
+            </h6>
+            <p className="text-[13px] leading-[19px]">{s.summary}</p>
             {s.privateNotes ? (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {t('mn.privateNotes')}: {s.privateNotes}
-              </Typography>
+              </p>
             ) : s.hasNotes ? (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                 {t('mn.notesHidden')}
-              </Typography>
+              </span>
             ) : null}
-            {s.followUpOn && <Typography variant="caption">{t('mn.followUp', { date: fmt.date(s.followUpOn, 'short') })}</Typography>}
+            {s.followUpOn && <span className="text-xs leading-4 tracking-[0.3px]">{t('mn.followUp', { date: fmt.date(s.followUpOn, 'short') })}</span>}
           </div>
         ))}
-      </Stack>
+      </div>
     </InfoDialog>
   );
 }

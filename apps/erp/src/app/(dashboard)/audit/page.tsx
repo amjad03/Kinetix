@@ -1,17 +1,15 @@
-import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { DeskTable } from '@/components/campus/Desk';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
-import { FormField, TextInput } from '@/components/ui/Form';
+import { TextInput } from '@/components/ui/Form';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import { AUDIT_PAGE_SIZE, auditExportPath, auditPageNo, auditParams, type AuditPage, type AuditSearch } from '@/lib/govern';
 
+import { Button } from '@/components/kx';
+import { FileDown as FileDownloadOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.audit') };
 }
@@ -38,7 +36,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageHeader title={t('nav.audit')} subtitle={t('audit.subtitle')} />
-      <Box component="form" method="get" sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'flex-end', mb: 3 }} data-testid="audit-filters">
+      <form className="flex gap-3 flex-wrap items-end mb-6" method="get" data-testid="audit-filters">
         {input('action', t('audit.f.action'))}
         {input('subjectType', t('audit.f.subjectType'))}
         {input('subjectId', t('audit.f.subjectId'))}
@@ -47,12 +45,12 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
         {input('to', t('audit.f.to'), 'date')}
         <Button type="submit" variant="outlined">{t('audit.apply')}</Button>
         <Button variant="outlined" href={auditExportPath(filters)} startIcon={<FileDownloadOutlined />} data-testid="audit-export">{t('audit.export')}</Button>
-      </Box>
+      </form>
       {res.error !== undefined ? (
         <ErrorState message={res.error} />
       ) : (
         <>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }} data-testid="audit-total">{t('audit.total', { n: fmt.number(res.data.total) })}</Typography>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-2" data-testid="audit-total">{t('audit.total', { n: fmt.number(res.data.total) })}</p>
           <DeskTable
             title={t('nav.audit')}
             testId="audit-table"
@@ -66,11 +64,11 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
               r.data === null ? '-' : JSON.stringify(r.data).slice(0, 160),
             ])}
           />
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <div className="flex gap-2 items-center">
             {page > 1 && <LinkButton href={link(page - 1)} size="small">{t('audit.prev')}</LinkButton>}
-            <Typography variant="body2">{t('audit.page', { n: page })}</Typography>
+            <p className="text-[13px] leading-[19px]">{t('audit.page', { n: page })}</p>
             {res.data.offset + res.data.items.length < res.data.total && <LinkButton href={link(page + 1)} size="small">{t('audit.next')}</LinkButton>}
-          </Box>
+          </div>
         </>
       )}
     </>

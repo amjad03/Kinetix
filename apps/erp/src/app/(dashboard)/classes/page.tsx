@@ -3,7 +3,6 @@ import { ClassesTable } from '@/components/ClassesTable';
 import { DateNav } from '@/components/DateNav';
 import { NoClasses } from '@/components/NoClasses';
 import { PageHeader } from '@/components/PageHeader';
-import BeachAccessOutlined from '@mui/icons-material/BeachAccessOutlined';
 import { EmptyState, ErrorState } from '@/components/States';
 import { HolidayBanner } from '@/components/HolidayBanner';
 import { getI18n } from '@/i18n/server';
@@ -12,6 +11,7 @@ import { api, load, requireSection } from '@/lib/api';
 import { dateParam, schoolToday } from '@/lib/school';
 import type { ClassesDay, ClassStatus } from '@/lib/types';
 
+import { Umbrella as BeachAccessOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.classes') };
 }

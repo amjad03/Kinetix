@@ -1,8 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import CheckCircle from '@mui/icons-material/CheckCircle';
-import RadioButtonUnchecked from '@mui/icons-material/RadioButtonUnchecked';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
 import { LinkButton } from '@/components/LinkButton';
@@ -13,6 +8,8 @@ import { api, load, requireSection } from '@/lib/api';
 import { formatPercent } from '@/lib/department';
 import type { Coverage, CourseOutline, Structure } from '@/lib/types';
 
+import { ArrowLeft as ArrowBack, Circle as RadioButtonUnchecked, CircleCheck as CheckCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('dept.syllabus.title') };
 }
@@ -25,11 +22,11 @@ export default async function ClassSyllabusPage({ searchParams }: { searchParams
   const { t, fmt } = await getI18n();
   const { section, subject } = await searchParams;
   const back = (
-    <Box sx={{ ml: -1, mb: 0.5 }}>
+    <div className="-ml-2 mb-1">
       <LinkButton href="/department" size="small" startIcon={<ArrowBack />}>
         {t('nav.department')}
       </LinkButton>
-    </Box>
+    </div>
   );
   if (!section || !subject || !UUID.test(section) || !UUID.test(subject))
     return (
@@ -61,12 +58,12 @@ export default async function ClassSyllabusPage({ searchParams }: { searchParams
       <PageHeader
         title={title || t('dept.syllabus.title')}
         subtitle={
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1.5 }} data-testid="syllabus-progress">
-            <Box component="span" sx={{ width: 120, display: 'inline-block' }}>
+          <span className="inline-flex items-center gap-3" data-testid="syllabus-progress">
+            <span className="w-[120px] inline-block">
               <MiniBar value={coverage.percent ?? 0} />
-            </Box>
+            </span>
             {t('dept.syllabus.title')}: {formatPercent(coverage.percent)} · {t('dept.syllabus.topics', { covered: coverage.covered, total: coverage.total })}
-          </Box>
+          </span>
         }
       />
       {!course || course.chapters.length === 0 ? (
@@ -75,31 +72,29 @@ export default async function ClassSyllabusPage({ searchParams }: { searchParams
         </EmptyState>
       ) : (
         course.chapters.map((ch) => (
-          <Box key={ch.id} component="section">
+          <section key={ch.id}>
             <SectionTitle>{ch.title}</SectionTitle>
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', overflow: 'hidden' }}>
+            <ul className="list-none m-0 p-0 border border-border rounded-[12px] overflow-hidden">
               {ch.topics.map((tp, i) => {
                 const c = covered.get(tp.id);
                 return (
-                  <Box
-                    component="li"
+                  <li className={cn('flex gap-3 items-start px-4 py-2.5 border-border', i ? 'border-t' : 'border-t-0')}
                     key={tp.id}
                     data-testid="syllabus-topic"
                     data-covered={c ? 'true' : 'false'}
-                    sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', px: 2, py: 1.25, borderTop: i ? 1 : 0, borderColor: 'm3.outlineVariant' }}
                   >
-                    {c ? <CheckCircle sx={{ color: 'kx.success', mt: '2px' }} fontSize="small" /> : <RadioButtonUnchecked sx={{ color: 'text.disabled', mt: '2px' }} fontSize="small" />}
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body1">{tp.title}</Typography>
-                      <Typography variant="caption" color="text.secondary">
+                    {c ? <CheckCircle className="size-5 text-green-ink mt-[2px]" /> : <RadioButtonUnchecked className="size-5 text-faint mt-[2px]" />}
+                    <div className="min-w-0">
+                      <p className="text-sm leading-[21px]">{tp.title}</p>
+                      <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {c ? t('dept.syllabus.covered', { date: fmt.date(c.coveredOn, 'day'), name: c.coveredBy }) : t('dept.syllabus.notYet')}
-                      </Typography>
-                    </Box>
-                  </Box>
+                      </span>
+                    </div>
+                  </li>
                 );
               })}
-            </Box>
-          </Box>
+            </ul>
+          </section>
         ))
       )}
     </>

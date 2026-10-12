@@ -1,12 +1,11 @@
 'use client';
-
-import UploadFile from '@mui/icons-material/UploadFile';
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { addMyEvidence, uploadMetricEvidence } from '@/app/(dashboard)/accreditation/actions';
 import { FileFormDialog } from '@/components/pathways-b/common';
 import { useI18n } from '@/i18n/client';
 
+import { Button } from '@/components/kx';
+import { FileUp as UploadFile } from 'lucide-react';
 const TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] as const;
 
 /** Upload a file (PDF, image or filled template) as evidence for a metric. */
@@ -43,7 +42,7 @@ export function MyEvidenceUpload({ kinds }: { kinds: { value: string; label: str
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant="outlined" size="small" startIcon={<UploadFile />} onClick={() => setOpen(true)} data-testid="acc-mine-upload" sx={{ mb: 2 }}>
+      <Button className="mb-4" variant="outlined" size="small" startIcon={<UploadFile />} onClick={() => setOpen(true)} data-testid="acc-mine-upload">
         {t('acc.up.mine')}
       </Button>
       {open && (

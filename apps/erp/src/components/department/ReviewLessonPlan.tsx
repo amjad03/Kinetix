@@ -1,21 +1,12 @@
 'use client';
-
-import RateReviewOutlined from '@mui/icons-material/RateReviewOutlined';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Snackbar from '@mui/material/Snackbar';
-import Typography from '@mui/material/Typography';
 import { useId, useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { reviewLessonPlan } from '@/app/(dashboard)/department/plan/actions';
 import { useI18n } from '@/i18n/client';
 import { REMARK_MAX } from '@/lib/plans';
 
+import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar } from '@/components/kx';
+import { MessageSquareText as RateReviewOutlined } from 'lucide-react';
 /** Review a lesson plan, with an optional remark (POST /v1/lesson-plans/:id/review). */
 export function ReviewLessonPlan({ id, date, reviewed, remark }: { id: string; date: string; reviewed: boolean; remark: string | null }) {
   const { t, fmt } = useI18n();
@@ -51,13 +42,13 @@ export function ReviewLessonPlan({ id, date, reviewed, remark }: { id: string; d
         <DialogTitle id={titleId}>{t('plan.review.title')}</DialogTitle>
         <DialogContent>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }} data-testid="review-error">
+            <Alert className="mb-4" severity="error" data-testid="review-error">
               {error}
             </Alert>
           )}
-          <Typography variant="body2" sx={{ mb: 2 }}>
+          <p className="text-[13px] leading-[19px] mb-4">
             {t('plan.review.body', { date: fmt.date(date, 'long') })}
-          </Typography>
+          </p>
           <FormField label={t('plan.review.remark')}>
             <TextInput
               value={text}
@@ -70,9 +61,9 @@ export function ReviewLessonPlan({ id, date, reviewed, remark }: { id: string; d
               slotProps={{ htmlInput: { maxLength: REMARK_MAX + 200 } }}
             />
           </FormField>
-          <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+          <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-3">
             {t('plan.review.again')}
-          </Typography>
+          </p>
         </DialogContent>
         <DialogActions>
           <Button onClick={close} disabled={pending}>

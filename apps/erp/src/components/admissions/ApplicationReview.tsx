@@ -1,14 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Link from '@mui/material/Link';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -24,6 +14,7 @@ import { APPLICATION_REASON_REQUIRED, type ApplicationDetail } from '@/lib/admis
 import { formatRupees, PAY_METHODS, type CounterMethod } from '@/lib/money';
 import { ReasonDialog } from './ReasonDialog';
 
+import { Alert, Button, Chip, Link, MenuItem } from '@/components/kx';
 type Dialog = { kind: 'status'; status: string } | { kind: 'reject-doc'; docId: string } | { kind: 'waive' } | null;
 
 /** The reviewer's side of an application: move it along, check documents, take the fee, enrol. */
@@ -46,30 +37,30 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
     });
   const moves = app.allowedStatuses.filter((s) => s !== 'enrolled');
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('adm.review.actions')}</SectionTitle>
-        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+        <div className="flex flex-row gap-2 flex-wrap gap-y-2">
           {moves.map((s) => (
             <Button key={s} size="small" variant="outlined" color={s === 'rejected' || s === 'withdrawn' || s === 'ineligible' ? 'error' : 'primary'} disabled={pending} onClick={() => (APPLICATION_REASON_REQUIRED.includes(s) ? setDialog({ kind: 'status', status: s }) : run(() => setApplicationStatus(app.id, s)))}>
               {t(`adm.moveTo.${s}` as MessageKey)}
             </Button>
           ))}
           {moves.length === 0 && app.status !== 'accepted' && (
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('adm.review.noMoves')}
-            </Typography>
+            </p>
           )}
-        </Stack>
+        </div>
         {app.status === 'accepted' && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+          <div className="mt-4">
+            <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
               {t('adm.review.enrol')}
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
+            </h6>
+            <div className="flex flex-row gap-2 items-center flex-wrap gap-y-2">
               <FormField label={t('adm.review.class')}>
-                <TextInput select value={sectionId} onChange={(e) => setSectionId(e.target.value)} sx={{ minWidth: 200 }}>
+                <TextInput className="min-w-[200px]" select value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
                   <MenuItem value="">{t('adm.review.autoClass')}</MenuItem>
                   {classes.map((c) => (
                     <MenuItem key={c.id} value={c.id}>
@@ -79,50 +70,50 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
                 </TextInput>
               </FormField>
               <FormField label={t('g1.dup.reason')}>
-                <TextInput value={override} onChange={(e) => setOverride(e.target.value)} sx={{ minWidth: 260 }} />
+                <TextInput className="min-w-[260px]" value={override} onChange={(e) => setOverride(e.target.value)} />
               </FormField>
               <Button variant="contained" disabled={pending} onClick={() => run(() => enrollApplicant(app.id, sectionId || undefined, override))}>
                 {t('adm.review.enrolNow')}
               </Button>
-            </Stack>
-          </Box>
+            </div>
+          </div>
         )}
         {app.studentId && (
-          <Box sx={{ mt: 2 }}>
+          <div className="mt-4">
             <Link component={NextLink} href={`/students/${app.studentId}`}>
               {t('adm.review.openStudent')}
             </Link>
-          </Box>
+          </div>
         )}
-      </Paper>
+      </div>
 
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('adm.review.documents')}</SectionTitle>
-        <Stack spacing={1.5}>
+        <div className="flex flex-col gap-3">
           {app.cycle.documents.map((spec) => {
             const d = app.documents.find((x) => x.docKey === spec.key);
             return (
-              <Box key={spec.key} sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                <Box sx={{ flex: '1 1 200px', minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              <div className="flex items-center gap-2 flex-wrap" key={spec.key}>
+                <div className="flex-[1_1_200px] min-w-0">
+                  <p className="text-[13px] leading-[19px] font-semibold">
                     {spec.label}
                     {spec.required ? ' *' : ''}
-                  </Typography>
+                  </p>
                   {d ? (
                     <Link href={`/admissions/applications/${app.id}/documents/${d.id}`} target="_blank" rel="noreferrer" variant="body2">
                       {d.fileName}
                     </Link>
                   ) : (
-                    <Typography variant="body2" color="text.secondary">
+                    <p className="text-[13px] leading-[19px] text-muted-foreground">
                       {t('adm.review.notUploaded')}
-                    </Typography>
+                    </p>
                   )}
                   {d?.reviewNote && (
-                    <Typography variant="caption" color="text.secondary" component="div">
+                    <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {d.reviewNote}
-                    </Typography>
+                    </div>
                   )}
-                </Box>
+                </div>
                 {d && <Chip size="small" color={d.status === 'verified' ? 'success' : d.status === 'rejected' ? 'error' : 'default'} label={t(`adm.doc.${d.status}` as MessageKey)} />}
                 {d && d.status !== 'verified' && (
                   <Button size="small" disabled={pending} onClick={() => run(() => reviewDocument(app.id, d.id, 'verified'))}>
@@ -134,34 +125,34 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
                     {t('adm.doc.reject')}
                   </Button>
                 )}
-              </Box>
+              </div>
             );
           })}
           {app.cycle.documents.length === 0 && (
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {t('adm.review.noDocuments')}
-            </Typography>
+            </p>
           )}
-        </Stack>
-      </Paper>
+        </div>
+      </div>
 
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('adm.review.fee')}</SectionTitle>
-        <Typography variant="body2" sx={{ mb: 1 }}>
+        <p className="text-[13px] leading-[19px] mb-2">
           {formatRupees(app.cycle.applicationFeePaise)} · {t(`adm.fee.${app.feeStatus}` as MessageKey)}
-        </Typography>
+        </p>
         {app.payments
           .filter((p) => p.status === 'paid')
           .map((p) => (
-            <Typography key={p.id} variant="caption" color="text.secondary" component="div">
+            <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground" key={p.id}>
               {p.receiptNo} · {p.method}
               {p.reference ? ` · ${p.reference}` : ''}
-            </Typography>
+            </div>
           ))}
         {app.feeStatus === 'pending' && (
-          <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', rowGap: 1, alignItems: 'center' }}>
+          <div className="flex flex-row gap-2 mt-3 flex-wrap gap-y-2 items-center">
             <FormField label={t('adm.fee.method')}>
-              <TextInput select value={method} onChange={(e) => setMethod(e.target.value as CounterMethod)} sx={{ minWidth: 140 }}>
+              <TextInput className="min-w-[140px]" select value={method} onChange={(e) => setMethod(e.target.value as CounterMethod)}>
                 {PAY_METHODS.map((m) => (
                   <MenuItem key={m} value={m}>
                     {m}
@@ -181,9 +172,9 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
               </Button>
             )}
             <SendForApproval flow={BOUND_FLOWS[3]} flows={flows} sourceId={app.id} fields={[{ name: 'reason', label: t('adm.field.reason'), required: true }]} onSend={(v) => sendWaiver(app.id, v)} />
-          </Stack>
+          </div>
         )}
-      </Paper>
+      </div>
 
       {dialog?.kind === 'status' && (
         <ReasonDialog
@@ -225,6 +216,6 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
           }}
         />
       )}
-    </Stack>
+    </div>
   );
 }

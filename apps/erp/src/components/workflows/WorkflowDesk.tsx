@@ -1,10 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { cancelRequest, decideRequest, loadRequest, resubmitRequest, runSla, saveDefinition, startRequest } from '@/app/(dashboard)/workflows/actions';
 import { FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
@@ -14,6 +8,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { formatFields, formatSteps, type DefField, type DefinitionRow, type RequestDetail, type RequestRow } from '@/lib/workflows';
 
+import { Alert, Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** The form fields of a request: title, amount and the fields its definition declares. */
 function requestFields(t: (k: MessageKey) => string, fields: DefField[], init?: { title: string; amount: number | null; payload: Record<string, unknown> }): Field[] {
   return [
@@ -95,13 +91,13 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
       label: t('wf.tab.mine'),
       node: (
         <>
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mb: 2 }}>
+          <div className="flex flex-row gap-2 flex-wrap mb-4">
             {activeDefs.map((d) => (
               <Button key={d.id} variant="outlined" startIcon={<Add />} onClick={() => setStarting(d)} data-testid={`wf-start-${d.requestType}`}>
                 {d.name}
               </Button>
             ))}
-          </Stack>
+          </div>
           <Grid testId="wf-mine" empty={t('wf.empty.mine')} rows={mine} cols={requestCols(false)} />
         </>
       ),
@@ -115,7 +111,7 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
             label: t('wf.tab.defs'),
             node: (
               <>
-                <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                <div className="flex flex-row gap-2 mb-4">
                   <Button variant="contained" startIcon={<Add />} onClick={() => setEditing('new')} data-testid="wf-new-def">
                     {t('wf.def.new')}
                   </Button>
@@ -132,7 +128,7 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
                   >
                     {t('wf.sla.run')}
                   </Button>
-                </Stack>
+                </div>
                 <Grid testId="wf-defs" empty={t('wf.empty.defs')} rows={definitions} cols={defCols} />
               </>
             ),
@@ -154,31 +150,31 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
 
       {detail && (
         <InfoDialog title={detail.title} onClose={() => setDetail(null)}>
-          <Stack spacing={2} data-testid="wf-detail">
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex flex-col gap-4" data-testid="wf-detail">
+            <div className="flex flex-row gap-2 items-center flex-wrap">
               {statusPill(detail)}
-              <Typography variant="body2">{t('wf.d.requester')}: {detail.requesterName}</Typography>
-              {detail.amount !== null && <Typography variant="body2">{t('wf.d.amount')}: {fmt.number(detail.amount)}</Typography>}
-              {detail.stepName && <Typography variant="body2">{detail.stepName} ({t('wf.step.of', { n: detail.stepNumber, total: detail.stepCount })})</Typography>}
-            </Stack>
+              <p className="text-[13px] leading-[19px]">{t('wf.d.requester')}: {detail.requesterName}</p>
+              {detail.amount !== null && <p className="text-[13px] leading-[19px]">{t('wf.d.amount')}: {fmt.number(detail.amount)}</p>}
+              {detail.stepName && <p className="text-[13px] leading-[19px]">{detail.stepName} ({t('wf.step.of', { n: detail.stepNumber, total: detail.stepCount })})</p>}
+            </div>
             {detail.definition.fields.length > 0 && (
               <div>
-                <Typography variant="subtitle2">{t('wf.d.details')}</Typography>
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('wf.d.details')}</h6>
                 {detail.definition.fields.map((f) => (
-                  <Typography key={f.key} variant="body2">{f.label}: {detail.payload[f.key] != null ? String(detail.payload[f.key]) : '-'}</Typography>
+                  <p className="text-[13px] leading-[19px]" key={f.key}>{f.label}: {detail.payload[f.key] != null ? String(detail.payload[f.key]) : '-'}</p>
                 ))}
               </div>
             )}
             <div>
-              <Typography variant="subtitle2">{t('wf.d.timeline')}</Typography>
-              <Stack component="ol" spacing={0.5} sx={{ m: 0, pl: 2.5 }} data-testid="wf-timeline">
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('wf.d.timeline')}</h6>
+              <ol className="flex flex-col gap-1 m-0 pl-5" data-testid="wf-timeline">
                 {detail.timeline.map((e) => (
                   <li key={e.id}>
-                    <Typography variant="body2">{timelineLine(e)}</Typography>
-                    {e.comment && <Typography variant="caption" color="text.secondary">{e.comment}</Typography>}
+                    <p className="text-[13px] leading-[19px]">{timelineLine(e)}</p>
+                    {e.comment && <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">{e.comment}</span>}
                   </li>
                 ))}
-              </Stack>
+              </ol>
             </div>
             {error && <Alert severity="error">{error}</Alert>}
             {(detail.canDecide || detail.canCancel) && (
@@ -186,7 +182,7 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
                 <TextInput value={comment} onChange={(e) => setComment(e.target.value)} multiline minRows={2} fullWidth data-testid="wf-comment" />
               </FormField>
             )}
-            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+            <div className="flex flex-row gap-2 flex-wrap">
               {detail.canDecide && (
                 <>
                   <Button variant="contained" disabled={pending} onClick={() => run(() => decideRequest(detail.id, 'approve', comment, detail.version))} data-testid="wf-approve">{t('wf.d.approve')}</Button>
@@ -200,12 +196,12 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
               {detail.canCancel && (
                 <Button color="error" disabled={pending} onClick={() => run(() => cancelRequest(detail.id, comment))}>{t('wf.d.cancel')}</Button>
               )}
-            </Stack>
-          </Stack>
+            </div>
+          </div>
         </InfoDialog>
       )}
 
-      {starting && <FormDialog title={starting.name} intro={starting.description ? <Typography variant="body2">{starting.description}</Typography> : undefined} onSubmit={(v) => startRequest(starting.requestType, starting.fields, v)} onClose={close} fields={requestFields(t, starting.fields)} />}
+      {starting && <FormDialog title={starting.name} intro={starting.description ? <p className="text-[13px] leading-[19px]">{starting.description}</p> : undefined} onSubmit={(v) => startRequest(starting.requestType, starting.fields, v)} onClose={close} fields={requestFields(t, starting.fields)} />}
 
       {resubmitting && (
         <FormDialog
@@ -221,10 +217,10 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
           title={editing === 'new' ? t('wf.def.new') : t('wf.def.edit')}
           intro={
             <>
-              <Typography variant="body2">{t('wf.def.help')}</Typography>
-              <Typography variant="caption" component="pre" sx={{ m: 0, whiteSpace: 'pre-wrap' }}>
+              <p className="text-[13px] leading-[19px]">{t('wf.def.help')}</p>
+              <pre className="text-xs leading-4 tracking-[0.3px] m-0 whitespace-pre-wrap">
                 {'days | Days | number | required\nkind | Kind | select | required | casual, sick\n\nHead | head | | | 24\nBudget | all(role:accountant, role:hr_manager) | | | 48 | | role:principal | 24\nDean | role:principal | | | | amount>100000; kind==capex\nDesk | user:<id>'}
-              </Typography>
+              </pre>
             </>
           }
           onSubmit={(v) => saveDefinition(v, editing === 'new' ? undefined : { id: editing.id, version: editing.version })}

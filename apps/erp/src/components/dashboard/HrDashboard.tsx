@@ -1,14 +1,3 @@
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
-import BeachAccessOutlined from '@mui/icons-material/BeachAccessOutlined';
-import EventBusyOutlined from '@mui/icons-material/EventBusyOutlined';
-import FolderCopyOutlined from '@mui/icons-material/FolderCopyOutlined';
-import PeopleAltOutlined from '@mui/icons-material/PeopleAltOutlined';
-import PersonAddAltOutlined from '@mui/icons-material/PersonAddAltOutlined';
-import RequestQuoteOutlined from '@mui/icons-material/RequestQuoteOutlined';
-import WorkOutlineOutlined from '@mui/icons-material/WorkOutlineOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { LinkButton } from '@/components/LinkButton';
 import { EmptyState, ErrorState } from '@/components/States';
 import { Card } from '@/components/ui/Card';
@@ -21,6 +10,8 @@ import type { Me } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 import { PendingTasks, QuickActions, Row } from './parts';
 
+import { ArrowRight as ArrowForward, Briefcase as WorkOutlineOutlined, CalendarX as EventBusyOutlined, FileText as RequestQuoteOutlined, Folders as FolderCopyOutlined, IdCard as BadgeOutlined, Umbrella as BeachAccessOutlined, UserPlus as PersonAddAltOutlined, Users as PeopleAltOutlined } from 'lucide-react';
+import { size } from '@/lib/sx';
 /** HR: head count, who is away, leave waiting for a decision, the payroll run and open positions. */
 export async function HrDashboard({ me, today }: { me: Me; today: string }) {
   const { t, fmt } = await getI18n();
@@ -55,45 +46,45 @@ export async function HrDashboard({ me, today }: { me: Me; today: string }) {
       <Row cols={3}>
         <Card title={t('dash.hr.pendingLeave')} padded={false} action={<LinkButton href="/hr/leave" size="small" endIcon={<ArrowForward />}>{t('dash.viewAll')}</LinkButton>} testId="pending-leave">
           {pending.length === 0 ? (
-            <Box sx={{ px: 2.5, pb: 2.5 }}>
+            <div className="px-5 pb-5">
               <EmptyState dense icon={<EventBusyOutlined />} title={t('dash.hr.noPending')} />
-            </Box>
+            </div>
           ) : (
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            <ul className="list-none m-0 p-0">
               {pending.slice(0, 6).map((l) => (
-                <Box component="li" key={l.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.25, borderTop: 1, borderColor: 'm3.outlineVariant' }}>
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }} noWrap>
+                <li className="flex items-center gap-3 px-5 py-2.5 border-t border-border" key={l.id}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.875rem] font-semibold">
                       {l.user.fullName}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    </p>
+                    <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {l.leaveType.name} · {fmt.date(l.fromDate, 'dayMonth')}
                       {l.toDate !== l.fromDate ? ` – ${fmt.date(l.toDate, 'dayMonth')}` : ''}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                   <StatusPill tone="warning">{t('dash.hr.days', { n: l.days })}</StatusPill>
-                </Box>
+                </li>
               ))}
-            </Box>
+            </ul>
           )}
         </Card>
         <Card title={t('dash.hr.byDept')} testId="staff-by-dept">
           {depts.length === 0 ? (
             <EmptyState dense icon={<BadgeOutlined />} title={t('dash.hr.noStaff')} />
           ) : (
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 1.5 }}>
+            <ul className="list-none m-0 p-0 grid gap-3">
               {depts.map(([name, n]) => (
                 <li key={name}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600 }}>{name}</Typography>
-                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{n}</Typography>
-                  </Box>
-                  <Box role="img" aria-label={`${name}: ${n}`} sx={{ height: 10, borderRadius: 5, bgcolor: 'm3.surfaceContainerHigh', overflow: 'hidden' }}>
-                    <Box sx={{ width: `${(n / top) * 100}%`, height: '100%', bgcolor: 'var(--kx-chart-1)', borderRadius: 5 }} />
-                  </Box>
+                  <div className="flex justify-between mb-1">
+                    <p className="text-[0.8125rem] font-semibold">{name}</p>
+                    <p className="text-[0.8125rem] font-bold tabular-nums">{n}</p>
+                  </div>
+                  <div className="h-[10px] rounded-[50px] bg-accent overflow-hidden" role="img" aria-label={`${name}: ${n}`}>
+                    <div className="h-full bg-[var(--kx-chart-1)] rounded-[50px]" style={{ width: size(`${(n / top) * 100}%`) }} />
+                  </div>
                 </li>
               ))}
-            </Box>
+            </ul>
           )}
         </Card>
         <PendingTasks

@@ -1,12 +1,11 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import { useState, useTransition } from 'react';
 import { markImported, retryRow, saveMapping, saveSettings, syncNow } from '@/app/(dashboard)/tally/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Button } from '@/components/kx';
 export interface TallyConfig { host: string; port: number; company: string; enabled: boolean }
 export interface MapRow { accountId: string; code: string; accountName: string; tallyLedger: string; tallyParent: string; mapped: boolean }
 interface LogRow { id: string; kind: string; label: string; status: string; attempts: number; lastError: string | null }

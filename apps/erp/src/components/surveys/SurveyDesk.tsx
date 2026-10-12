@@ -1,10 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { closeSurvey, createSurvey, publishSurvey, runSchedule, seriesTrend, surveyResults } from '@/app/(dashboard)/surveys/actions';
 import { ActionButton, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col } from '@/components/ops/kit';
@@ -13,6 +7,8 @@ import type { MessageKey } from '@/i18n/messages';
 import { trendCell, type SeriesRow, type SeriesTrend } from '@/lib/pathways-b';
 import { percent, type SurveyResults, type SurveyRow } from '@/lib/work';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 type Dialog = 'new' | { results: SurveyResults } | { trend: SeriesTrend } | null;
 
 /** The survey list with a builder, open/close buttons, per-question results, CSV export, and recurring series with their trends. */
@@ -54,11 +50,11 @@ export function SurveyDesk({ surveys, sections, outcomes, series, canRun }: { su
 
   const list = (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+      <div className="flex justify-end mb-6">
         <Button variant="contained" startIcon={<Add />} onClick={() => setDlg('new')}>
           {t('wk.sv.new')}
         </Button>
-      </Box>
+      </div>
       <Grid
         testId="surveys-table"
         empty={t('wk.sv.empty')}
@@ -92,14 +88,14 @@ export function SurveyDesk({ surveys, sections, outcomes, series, canRun }: { su
 
   const seriesTab = (
     <>
-      <Stack direction="row" spacing={1.5} sx={{ mb: 2, alignItems: 'center', flexWrap: 'wrap' }} useFlexGap>
-        <Typography variant="body2" color="text.secondary" sx={{ flex: 1, minWidth: 240 }}>{t('pwb.sv.seriesHelp')}</Typography>
+      <div className="flex flex-row gap-3 mb-4 items-center flex-wrap">
+        <p className="text-[13px] leading-[19px] text-muted-foreground flex-1 min-w-[240px]">{t('pwb.sv.seriesHelp')}</p>
         {canRun && (
           <Button variant="outlined" disabled={busy} onClick={() => void runNow()} data-testid="pwb-run-schedule">
             {t('pwb.sv.runSchedule')}
           </Button>
         )}
-      </Stack>
+      </div>
       <Grid
         testId="pwb-series"
         empty={t('pwb.sv.noSeries')}
@@ -132,8 +128,8 @@ export function SurveyDesk({ surveys, sections, outcomes, series, canRun }: { su
           onClose={done}
           intro={
             <>
-              <Typography variant="body2" color="text.secondary">{t('wk.sv.questionsHelp')}</Typography>
-              <Typography variant="body2" color="text.secondary">{t('pwb.sv.showIfHelp', { example: 'text: Why? @if 1 eq Slow', ops: 'eq, neq, includes, gte, lte' })}</Typography>
+              <p className="text-[13px] leading-[19px] text-muted-foreground">{t('wk.sv.questionsHelp')}</p>
+              <p className="text-[13px] leading-[19px] text-muted-foreground">{t('pwb.sv.showIfHelp', { example: 'text: Why? @if 1 eq Slow', ops: 'eq, neq, includes, gte, lte' })}</p>
             </>
           }
           fields={[
@@ -154,40 +150,40 @@ export function SurveyDesk({ surveys, sections, outcomes, series, canRun }: { su
       )}
       {dlg && typeof dlg === 'object' && 'results' in dlg && (
         <InfoDialog title={dlg.results.survey.title} onClose={() => setDlg(null)}>
-          <Stack spacing={2} data-testid="survey-results">
-            <Typography variant="body2">{t('wk.sv.responseCount', { n: dlg.results.responses })}</Typography>
+          <div className="flex flex-col gap-4" data-testid="survey-results">
+            <p className="text-[13px] leading-[19px]">{t('wk.sv.responseCount', { n: dlg.results.responses })}</p>
             {dlg.results.questions.map((q) => (
-              <Stack key={q.questionId} spacing={0.5}>
-                <Typography variant="subtitle2">{q.prompt}</Typography>
+              <div className="flex flex-col gap-1" key={q.questionId}>
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{q.prompt}</h6>
                 {q.counts?.map((c) => (
-                  <Typography key={c.option} variant="body2">
+                  <p className="text-[13px] leading-[19px]" key={c.option}>
                     {c.option}: {fmt.number(c.count)} ({fmt.number(percent(c.count, q.answered))}%)
-                  </Typography>
+                  </p>
                 ))}
                 {q.distribution && (
-                  <Typography variant="body2">
+                  <p className="text-[13px] leading-[19px]">
                     {t('wk.sv.average')}: {q.average === null || q.average === undefined ? '-' : fmt.number(q.average, { maximumFractionDigits: 2 })} ({q.distribution.map((n, i) => `${i + 1}: ${fmt.number(n)}`).join(', ')})
-                  </Typography>
+                  </p>
                 )}
                 {q.texts?.map((x, i) => (
-                  <Typography key={i} variant="body2" color="text.secondary">
+                  <p className="text-[13px] leading-[19px] text-muted-foreground" key={i}>
                     {x}
-                  </Typography>
+                  </p>
                 ))}
-                {q.answered === 0 && <Typography variant="body2" color="text.secondary">{t('wk.sv.noAnswers')}</Typography>}
-              </Stack>
+                {q.answered === 0 && <p className="text-[13px] leading-[19px] text-muted-foreground">{t('wk.sv.noAnswers')}</p>}
+              </div>
             ))}
-          </Stack>
+          </div>
         </InfoDialog>
       )}
       {dlg && typeof dlg === 'object' && 'trend' in dlg && (
         <InfoDialog title={t('pwb.sv.trendTitle', { name: dlg.trend.series })} onClose={() => setDlg(null)}>
-          <Stack spacing={2} data-testid="pwb-trend">
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex flex-col gap-4" data-testid="pwb-trend">
+            <p className="text-[13px] leading-[19px] text-muted-foreground">
               {dlg.trend.cycles.map((c) => t('pwb.sv.cycleLine', { n: c.cycle, responses: c.responses, status: t(`wk.sv.status.${c.status}` as MessageKey) })).join(' · ')}
-            </Typography>
+            </p>
             <Grid testId="pwb-trend-table" empty={t('pwb.sv.noTrend')} rows={dlg.trend.questions} cols={trendCols(dlg.trend)} />
-          </Stack>
+          </div>
         </InfoDialog>
       )}
       {toastNode}

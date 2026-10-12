@@ -1,7 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useState } from 'react';
 import { addConvocation, addInstitution, convocationStep } from '@/app/(dashboard)/university/actions';
 import { Bar, FormDialog, Grid, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -10,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { ConvocationRow, InstitutionRow } from '@/lib/curriculum';
 
+import { Button } from '@/components/kx';
 type Dlg = { title: string; fields: Field[]; run: (v: Record<string, string>) => Promise<{ ok: true; data: unknown } | { ok: false; error: string }> };
 const TONE = { draft: 'neutral', registration_open: 'success', closed: 'warning', held: 'info' } as const;
 
@@ -102,11 +100,11 @@ export function UniversityDesk({ institutions, convocations, programs, tab, canA
             label: '',
             cell: (c) =>
               canAdmin && c.status !== 'held' ? (
-                <Stack direction="row" spacing={1}>
+                <div className="flex flex-row gap-2">
                   {step(c, 'eligible', t('un.c.generate'))}
                   {c.status !== 'registration_open' ? step(c, 'open', t('un.c.open')) : step(c, 'close', t('un.c.close'))}
                   {step(c, 'issue', t('un.c.issue'))}
-                </Stack>
+                </div>
               ) : null,
           },
         ]}

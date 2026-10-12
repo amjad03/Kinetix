@@ -1,15 +1,4 @@
 'use client';
-
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { enterMarks, moderateMarks, reopenMarks, submitMarks, verifyMarks } from '@/app/(dashboard)/results/actions';
 import { TableFrame } from '@/components/DataTable';
@@ -19,6 +8,7 @@ import { useI18n } from '@/i18n/client';
 import { canEnterMarks } from '@/lib/exams';
 import type { AssessmentDetail } from '@/lib/types';
 
+import { Button, Card, Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@/components/kx';
 /** Marks entry and the check-and-moderate workflow: draft → submitted → verified → moderated. */
 export function MarksPanel({ assessment: a, canVerify }: { assessment: AssessmentDetail; canPublish: boolean; canVerify: boolean }) {
   const { t } = useI18n();
@@ -29,13 +19,13 @@ export function MarksPanel({ assessment: a, canVerify }: { assessment: Assessmen
   const editable = canEnterMarks(status);
 
   return (
-    <Card sx={{ p: { xs: 2, md: 3 }, mb: 3 }} data-testid="marks-panel">
-      <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', mb: 1.5 }}>
-        <Typography variant="h6" component="h2">
+    <Card className="p-4 md:p-6 mb-6" data-testid="marks-panel">
+      <div className="flex gap-3 items-center flex-wrap mb-3">
+        <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
           {t('results.entry.title')}
-        </Typography>
+        </h2>
         <StatusPill tone={status === 'draft' ? 'neutral' : status === 'submitted' ? 'warning' : 'success'}>{t(`results.ms.${status}`)}</StatusPill>
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
         {status === 'draft' && (
           <Button variant="contained" disabled={pending} onClick={() => run(() => submitMarks(a.id), t('results.entry.submitted'))}>
             {t('results.entry.submit')}
@@ -51,7 +41,7 @@ export function MarksPanel({ assessment: a, canVerify }: { assessment: Assessmen
             {t('results.entry.reopen')}
           </Button>
         )}
-      </Box>
+      </div>
       {feedback}
       <TableFrame>
         <Table size="small">
@@ -73,17 +63,17 @@ export function MarksPanel({ assessment: a, canVerify }: { assessment: Assessmen
                   <TableCell>{s.rollNo}</TableCell>
                   <TableCell>{s.fullName}</TableCell>
                   <TableCell>
-                    <TextField size="small" type="number" value={v.marks} disabled={!editable || v.absent} onChange={(e) => setVals({ ...vals, [s.id]: { ...v, marks: e.target.value } })} sx={{ width: 100 }} slotProps={{ htmlInput: { min: 0, max: a.maxMarks, step: 0.5, 'aria-label': `${s.fullName} ${t('results.entry.marks', { max: a.maxMarks })}` } }} />
+                    <TextField className="w-[100px]" size="small" type="number" value={v.marks} disabled={!editable || v.absent} onChange={(e) => setVals({ ...vals, [s.id]: { ...v, marks: e.target.value } })} slotProps={{ htmlInput: { min: 0, max: a.maxMarks, step: 0.5, 'aria-label': `${s.fullName} ${t('results.entry.marks', { max: a.maxMarks })}` } }} />
                   </TableCell>
                   <TableCell>
                     <input type="checkbox" checked={v.absent} disabled={!editable} onChange={(e) => setVals({ ...vals, [s.id]: { marks: '', absent: e.target.checked } })} aria-label={`${s.fullName} ${t('results.entry.absent')}`} />
                   </TableCell>
                   {(status === 'verified' || status === 'moderated') && canVerify && (
                     <TableCell>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <TextField size="small" type="number" placeholder={s.moderatedMarks == null ? undefined : String(s.moderatedMarks)} value={mod[s.id]?.marks ?? ''} onChange={(e) => setMod({ ...mod, [s.id]: { marks: e.target.value, note: mod[s.id]?.note ?? '' } })} sx={{ width: 90 }} slotProps={{ htmlInput: { 'aria-label': `${s.fullName} ${t('results.moderate.to')}` } }} />
+                      <div className="flex gap-2">
+                        <TextField className="w-[90px]" size="small" type="number" placeholder={s.moderatedMarks == null ? undefined : String(s.moderatedMarks)} value={mod[s.id]?.marks ?? ''} onChange={(e) => setMod({ ...mod, [s.id]: { marks: e.target.value, note: mod[s.id]?.note ?? '' } })} slotProps={{ htmlInput: { 'aria-label': `${s.fullName} ${t('results.moderate.to')}` } }} />
                         <TextField size="small" placeholder={t('results.moderate.note')} value={mod[s.id]?.note ?? ''} onChange={(e) => setMod({ ...mod, [s.id]: { marks: mod[s.id]?.marks ?? '', note: e.target.value } })} />
-                      </Box>
+                      </div>
                     </TableCell>
                   )}
                   {status !== 'draft' && <TableCell>{s.moderatedMarks ?? s.marks ?? '—'}</TableCell>}
@@ -93,7 +83,7 @@ export function MarksPanel({ assessment: a, canVerify }: { assessment: Assessmen
           </TableBody>
         </Table>
       </TableFrame>
-      <Box sx={{ mt: 1.5, display: 'flex', gap: 1 }}>
+      <div className="mt-3 flex gap-2">
         {editable && (
           <Button
             variant="outlined"
@@ -123,7 +113,7 @@ export function MarksPanel({ assessment: a, canVerify }: { assessment: Assessmen
             {t('results.moderate.apply')}
           </Button>
         )}
-      </Box>
+      </div>
     </Card>
   );
 }

@@ -1,8 +1,4 @@
 'use client';
-
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { MiniBar } from '@/components/Bars';
 import { LinkButton } from '@/components/LinkButton';
 import { PublishedChip } from '@/components/results/PublishedChip';
@@ -12,28 +8,28 @@ import type { TFunction } from '@/i18n/translate';
 import { formatMarks, kindLabel, percent } from '@/lib/results';
 import type { AssessmentDetail, AssessmentSummary } from '@/lib/types';
 
-const num = { fontVariantNumeric: 'tabular-nums' } as const;
+import { ChevronRight } from 'lucide-react';
 
 function Average({ a, t }: { a: AssessmentSummary; t: TFunction }) {
   if (a.average === null)
     return (
-      <Typography variant="body2" color="text.secondary">
+      <p className="text-[13px] leading-[19px] text-muted-foreground">
         —
-      </Typography>
+      </p>
     );
   const p = percent(a.average, a.maxMarks);
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'flex-end' }} data-testid="assessment-average">
-      <Box sx={{ width: { xs: 48, md: 72 } }}>
+    <div className="flex items-center gap-3 justify-end" data-testid="assessment-average">
+      <div className="w-[48px] md:w-[72px]">
         <MiniBar value={p} label={t('results.classAverage', { p: `${p.toFixed(0)}%` })} />
-      </Box>
-      <Typography variant="body2" sx={{ ...num, minWidth: 92, textAlign: 'right' }}>
+      </div>
+      <p className="text-[13px] leading-[19px] min-w-[92px] text-right tabular-nums">
         {formatMarks(a.average)} / {formatMarks(a.maxMarks)}
-        <Typography component="span" variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+        <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground block">
           {p.toFixed(1)}%
-        </Typography>
-      </Typography>
-    </Box>
+        </span>
+      </p>
+    </div>
   );
 }
 
@@ -49,14 +45,14 @@ export function AssessmentsTable({ rows }: { rows: AssessmentSummary[] }) {
       csv: (a) => `${a.title} (${a.subject.name}, ${kindLabel(a.kind, t)}, ${t('results.outOf', { n: formatMarks(a.maxMarks) })})`,
       cell: (a) => (
         <>
-          <Typography variant="subtitle2">{a.title}</Typography>
-          <Typography variant="caption" color="text.secondary">
+          <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{a.title}</h6>
+          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
             {a.subject.name} · {kindLabel(a.kind, t)} · {t('results.outOf', { n: formatMarks(a.maxMarks) })} · {a.createdBy}
-          </Typography>
+          </span>
         </>
       ),
     },
-    { id: 'heldOn', header: t('results.col.heldOn'), sort: (a) => a.heldOn, csv: (a) => a.heldOn, cell: (a) => <Box sx={{ whiteSpace: 'nowrap' }}>{fmt.date(a.heldOn, 'short')}</Box> },
+    { id: 'heldOn', header: t('results.col.heldOn'), sort: (a) => a.heldOn, csv: (a) => a.heldOn, cell: (a) => <div className="whitespace-nowrap">{fmt.date(a.heldOn, 'short')}</div> },
     { id: 'entered', header: t('results.col.entered'), align: 'right', sort: (a) => a.entered, csv: (a) => `${a.entered}/${a.classSize}`, cell: (a) => <span data-testid="assessment-entered">{t('results.entered', { n: a.entered, d: a.classSize })}</span> },
     { id: 'average', header: t('results.col.average'), align: 'right', sort: (a) => (a.average === null ? null : percent(a.average, a.maxMarks)), csv: (a) => (a.average === null ? '' : formatMarks(a.average)), cell: (a) => <Average a={a} t={t} /> },
     { id: 'status', header: t('results.col.status'), sort: (a) => a.publishedAt ?? '', csv: (a) => (a.publishedAt ? a.publishedAt.slice(0, 10) : ''), cell: (a) => <PublishedChip publishedAt={a.publishedAt} /> },
@@ -93,7 +89,7 @@ export function MarksListTable({ rows, maxMarks }: { rows: MarkRow[]; maxMarks: 
   const { t } = useI18n();
   const pct = (m: MarkRow) => (m.marks === null ? null : percent(m.marks, maxMarks));
   const columns: Column<MarkRow>[] = [
-    { id: 'roll', header: t('results.col.roll'), sort: (s) => s.rollNo ?? '', cell: (s) => <Box component="span" sx={{ ...num, color: 'text.secondary', whiteSpace: 'nowrap' }}>{s.rollNo ?? '—'}</Box> },
+    { id: 'roll', header: t('results.col.roll'), sort: (s) => s.rollNo ?? '', cell: (s) => <span className="text-muted-foreground whitespace-nowrap tabular-nums">{s.rollNo ?? '—'}</span> },
     { id: 'student', header: t('results.col.student'), rowHeader: true, sort: (s) => s.fullName, cell: (s) => s.fullName },
     {
       id: 'marks',
@@ -102,25 +98,25 @@ export function MarksListTable({ rows, maxMarks }: { rows: MarkRow[]; maxMarks: 
       sort: (s) => (s.absent ? -1 : s.marks),
       csv: (s) => (s.absent ? t('results.absent') : s.marks === null ? '' : formatMarks(s.marks)),
       cell: (s) => (
-        <Box component="span" sx={{ ...num, whiteSpace: 'nowrap' }}>
+        <span className="whitespace-nowrap tabular-nums">
           {s.absent ? (
             <span data-status="absent">
               <StatusPill tone="neutral">{t('results.absent')}</StatusPill>
             </span>
           ) : s.marks === null ? (
-            <Typography variant="body2" color="text.secondary" component="span">
+            <span className="text-[13px] leading-[19px] text-muted-foreground">
               {t('results.notEntered')}
-            </Typography>
+            </span>
           ) : (
             <>
               <strong>{formatMarks(s.marks)}</strong>
-              <Typography component="span" variant="body2" color="text.secondary">
+              <span className="text-[13px] leading-[19px] text-muted-foreground">
                 {' '}
                 / {formatMarks(maxMarks)}
-              </Typography>
+              </span>
             </>
           )}
-        </Box>
+        </span>
       ),
     },
     {
@@ -137,19 +133,19 @@ export function MarksListTable({ rows, maxMarks }: { rows: MarkRow[]; maxMarks: 
         const p = pct(s);
         return (
           p !== null && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ flex: 1, minWidth: 48 }}>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-[48px]">
                 <MiniBar value={p} color={p < 40 ? 'error.main' : 'primary.main'} label={`${p.toFixed(0)}%`} />
-              </Box>
-              <Typography variant="body2" sx={{ ...num, minWidth: 44, textAlign: 'right' }}>
+              </div>
+              <p className="text-[13px] leading-[19px] min-w-[44px] text-right tabular-nums">
                 {p.toFixed(0)}%
-              </Typography>
-            </Box>
+              </p>
+            </div>
           )
         );
       },
     },
-    { id: 'remark', header: t('results.col.remark'), sort: (s) => s.remark ?? '', cell: (s) => <Box component="span" sx={{ color: 'text.secondary' }}>{s.remark ?? ''}</Box> },
+    { id: 'remark', header: t('results.col.remark'), sort: (s) => s.remark ?? '', cell: (s) => <span className="text-muted-foreground">{s.remark ?? ''}</span> },
   ];
   return <DataTable testId="marks-table" label={t('results.marks')} rows={rows} rowId={(s) => s.id} exportName="marks" rowAttrs={() => ({ 'data-testid': 'mark-row' })} columns={columns} />;
 }

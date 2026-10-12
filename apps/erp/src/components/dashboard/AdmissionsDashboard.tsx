@@ -1,14 +1,3 @@
-import AddCircleOutline from '@mui/icons-material/AddCircleOutlineOutlined';
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import EventRepeatOutlined from '@mui/icons-material/EventRepeatOutlined';
-import FolderOpenOutlined from '@mui/icons-material/FolderOpenOutlined';
-import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
-import PersonSearchOutlined from '@mui/icons-material/PersonSearchOutlined';
-import PlaylistAddCheckOutlined from '@mui/icons-material/PlaylistAddCheckOutlined';
-import SchoolOutlined from '@mui/icons-material/SchoolOutlined';
-import TodayOutlined from '@mui/icons-material/TodayOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { LinkButton } from '@/components/LinkButton';
 import { EmptyState, ErrorState } from '@/components/States';
@@ -21,6 +10,8 @@ import type { DashboardRollup } from '@/lib/dashboard';
 import { getI18n } from '@/i18n/server';
 import { PendingTasks, QuickActions, Row } from './parts';
 
+import { ArrowRight as ArrowForward, CalendarCheck as TodayOutlined, CalendarSync as EventRepeatOutlined, CirclePlus as AddCircleOutline, FolderOpen as FolderOpenOutlined, GraduationCap as SchoolOutlined, ListChecks as PlaylistAddCheckOutlined, UserCheck as HowToRegOutlined, UserSearch as PersonSearchOutlined } from 'lucide-react';
+import { pal, size } from '@/lib/sx';
 /** The admissions desk: the enquiry funnel, follow-ups due, applications to review and the open cycles. */
 export async function AdmissionsDashboard() {
   const { t, fmt } = await getI18n();
@@ -48,46 +39,46 @@ export async function AdmissionsDashboard() {
 
       <Row cols={3}>
         <Card title={t('dash.adm.funnel')} subtitle={t('dash.adm.funnelSub')} testId="funnel">
-          <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 1.5 }}>
+          <ul className="list-none m-0 p-0 grid gap-3">
             {funnel.map((s, i) => {
               const n = p.stages[s] ?? 0;
               return (
                 <li key={s}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600 }}>{t(`adm.stage.${s}` as never)}</Typography>
-                    <Typography sx={{ fontSize: '0.8125rem', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{n}</Typography>
-                  </Box>
-                  <Box role="img" aria-label={`${t(`adm.stage.${s}` as never)}: ${n}`} sx={{ height: 12, borderRadius: 6, bgcolor: 'm3.surfaceContainerHigh', overflow: 'hidden' }}>
-                    <Box sx={{ width: `${(n / maxStage) * 100}%`, height: '100%', bgcolor: `var(--kx-chart-${(i % 3) + 1})`, borderRadius: 6 }} />
-                  </Box>
+                  <div className="flex justify-between mb-1">
+                    <p className="text-[0.8125rem] font-semibold">{t(`adm.stage.${s}` as never)}</p>
+                    <p className="text-[0.8125rem] tabular-nums font-bold">{n}</p>
+                  </div>
+                  <div className="h-[12px] rounded-[60px] bg-accent overflow-hidden" role="img" aria-label={`${t(`adm.stage.${s}` as never)}: ${n}`}>
+                    <div className="h-full rounded-[60px]" style={{ width: size(`${(n / maxStage) * 100}%`), backgroundColor: pal(`var(--kx-chart-${(i % 3) + 1})`) }} />
+                  </div>
                 </li>
               );
             })}
-          </Box>
+          </ul>
         </Card>
         <Card title={t('dash.adm.cycles')} padded={false} action={<LinkButton href="/admissions/cycles" size="small" endIcon={<ArrowForward />}>{t('dash.viewAll')}</LinkButton>} testId="cycles">
           {(cycles.data ?? []).length === 0 ? (
-            <Box sx={{ px: 2.5, pb: 2.5 }}>
+            <div className="px-5 pb-5">
               <EmptyState dense icon={<SchoolOutlined />} title={t('dash.adm.noCycles')} />
-            </Box>
+            </div>
           ) : (
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            <ul className="list-none m-0 p-0">
               {(cycles.data ?? []).slice(0, 6).map((c) => (
-                <Box component="li" key={c.id} sx={{ px: 2.5, py: 1.25, borderTop: 1, borderColor: 'm3.outlineVariant', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }} noWrap>
+                <li className="px-5 py-2.5 border-t border-border flex items-center gap-3" key={c.id}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.875rem] font-semibold">
                       <Link href={`/admissions/cycles/${c.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                         {c.name}
                       </Link>
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    </p>
+                    <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {t('dash.adm.cycleLine', { program: c.programName, left: c.seatsLeft, seats: c.seats })}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                   <StatusPill tone={c.status === 'open' ? 'success' : c.status === 'draft' ? 'neutral' : 'warning'}>{t(`adm.cycleStatus.${c.status}` as never)}</StatusPill>
-                </Box>
+                </li>
               ))}
-            </Box>
+            </ul>
           )}
         </Card>
         <PendingTasks

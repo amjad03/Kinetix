@@ -1,4 +1,3 @@
-import BusinessCenterOutlined from '@mui/icons-material/BusinessCenterOutlined';
 import type { Metadata } from 'next';
 import { DeskTable, Pill, Tiles } from '@/components/campus/Desk';
 import { PageHeader } from '@/components/PageHeader';
@@ -12,6 +11,7 @@ import type { Skill } from '@/lib/skills';
 import { getI18n } from '@/i18n/server';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Briefcase as BusinessCenterOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.placements') };
 }

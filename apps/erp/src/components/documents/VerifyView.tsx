@@ -1,10 +1,6 @@
-import CancelOutlined from '@mui/icons-material/CancelOutlined';
-import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
-import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Logo } from '@/components/Logo';
 
+import { CircleCheck as CheckCircleOutlined, CircleHelp as HelpOutlineOutlined, CircleX as CancelOutlined } from 'lucide-react';
 export type VerifyTone = 'valid' | 'bad' | 'unknown';
 
 /** The public verification result: no sign-in, and only what is printed on the document. */
@@ -12,31 +8,31 @@ export function VerifyView({ tone, heading, lines, footer }: { tone: VerifyTone;
   const Icon = tone === 'valid' ? CheckCircleOutlined : tone === 'bad' ? CancelOutlined : HelpOutlineOutlined;
   const color = tone === 'valid' ? 'success.main' : tone === 'bad' ? 'error.main' : 'text.secondary';
   return (
-    <Box component="main" sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', display: 'grid', placeItems: 'center', p: 2 }}>
-      <Box sx={{ width: '100%', maxWidth: 480, bgcolor: 'background.paper', border: 1, borderColor: 'm3.outlineVariant', borderRadius: '16px', p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+    <main className="min-h-[100dvh] bg-background grid place-items-center p-4">
+      <div className="w-full max-w-[480px] bg-card border border-border rounded-[16px] p-6 sm:p-8 text-center">
+        <div className="mb-6 flex justify-center">
           <Logo />
-        </Box>
-        <Icon sx={{ fontSize: 64, color }} aria-hidden />
-        <Typography variant="h5" component="h1" role="status" sx={{ mt: 1, color }} data-testid="verify-heading">
+        </div>
+        <Icon className="mx-auto size-16" style={{ color }} aria-hidden />
+        <h1 className="text-[1.375rem] leading-7 mt-2" style={{ color }} role="status" data-testid="verify-heading">
           {heading}
-        </Typography>
-        <Box component="dl" sx={{ mt: 3, mb: 0, textAlign: 'left', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 1, columnGap: 2 }}>
+        </h1>
+        <dl className="mt-6 mb-0 text-left grid grid-cols-[auto_1fr] gap-2 gap-x-4">
           {lines.map((l) => (
-            <Box key={l.label} sx={{ display: 'contents' }}>
-              <Typography component="dt" variant="body2" color="text.secondary">
+            <div className="contents" key={l.label}>
+              <dt className="text-[13px] leading-[19px] text-muted-foreground">
                 {l.label}
-              </Typography>
-              <Typography component="dd" variant="body2" sx={{ m: 0, fontWeight: 500, overflowWrap: 'anywhere' }}>
+              </dt>
+              <dd className="text-[13px] leading-[19px] m-0 font-medium wrap-anywhere">
                 {l.value}
-              </Typography>
-            </Box>
+              </dd>
+            </div>
           ))}
-        </Box>
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 3 }}>
+        </dl>
+        <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-6">
           {footer}
-        </Typography>
-      </Box>
-    </Box>
+        </p>
+      </div>
+    </main>
   );
 }

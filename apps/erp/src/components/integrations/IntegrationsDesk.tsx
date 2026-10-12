@@ -1,6 +1,4 @@
 'use client';
-
-import Stack from '@mui/material/Stack';
 import { useState } from 'react';
 import { addDevice, buildNadBatch, createToken, pushAllDocuments, pushDocument, revokeToken } from '@/app/(dashboard)/integrations/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -42,7 +40,7 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
             id: 'docs',
             label: t('itg.tab.docs'),
             node: (
-              <Stack spacing={2}>
+              <div className="flex flex-col gap-4">
                 <Bar>
                   <ActionButton label={t('itg.btn.pushAll')} run={pushAllDocuments} onDone={done} />
                   <ActionButton label={t('itg.btn.nadBatch')} run={buildNadBatch} onDone={() => done()} />
@@ -59,14 +57,14 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
                     { label: t('itg.col.action'), cell: (r) => (r.status === 'issued' ? null : <ActionButton label={t('itg.btn.push')} run={() => pushDocument(r.id)} onDone={done} />) },
                   ]}
                 />
-              </Stack>
+              </div>
             ),
           },
           {
             id: 'devices',
             label: t('itg.tab.devices'),
             node: (
-              <Stack spacing={2}>
+              <div className="flex flex-col gap-4">
                 <Bar>
                   <button type="button" onClick={() => setDialog('device')}>{t('itg.btn.newDevice')}</button>
                 </Bar>
@@ -80,24 +78,24 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
                     { label: t('itg.col.seen'), cell: (r) => (r.lastSeenAt ? fmt.dateTime(r.lastSeenAt) : '') },
                   ]}
                 />
-              </Stack>
+              </div>
             ),
           },
           {
             id: 'standards',
             label: t('itg.tab.standards'),
             node: (
-              <Stack spacing={3}>
+              <div className="flex flex-col gap-6">
                 <Grid rows={tools} empty={t('itg.empty')} cols={[{ label: t('itg.col.name'), cell: (r) => r.name }, { label: 'ID', cell: (r) => r.clientId }]} />
                 <Grid rows={scorm} empty={t('itg.empty')} cols={[{ label: t('itg.col.name'), cell: (r) => r.title }, { label: t('itg.col.version'), cell: (r) => r.version }]} />
-              </Stack>
+              </div>
             ),
           },
           {
             id: 'feeds',
             label: t('itg.tab.feeds'),
             node: (
-              <Stack spacing={2}>
+              <div className="flex flex-col gap-4">
                 <Bar>
                   <button type="button" onClick={() => setDialog('token')}>{t('itg.btn.newToken')}</button>
                 </Bar>
@@ -110,7 +108,7 @@ export function IntegrationsDesk({ docs, devices, tools, scorm, tokens }: { docs
                     { label: t('itg.col.action'), cell: (r) => (r.revokedAt ? null : <ActionButton label={t('itg.btn.revoke')} tone="error" run={() => revokeToken(r.id)} onDone={done} />) },
                   ]}
                 />
-              </Stack>
+              </div>
             ),
           },
         ]}

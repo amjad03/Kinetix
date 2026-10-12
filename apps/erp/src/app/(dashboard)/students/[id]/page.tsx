@@ -1,9 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -20,6 +14,8 @@ import { formatDate } from '@/lib/dates';
 import type { Structure } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
+import { Alert, Link } from '@/components/kx';
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('stu.profile') };
 }
@@ -40,11 +36,11 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
     }
   });
   const back = (
-    <Box sx={{ ml: -1, mb: 0.5 }}>
+    <div className="-ml-2 mb-1">
       <LinkButton href="/students" size="small" startIcon={<ArrowBack />}>
         {t('nav.students')}
       </LinkButton>
-    </Box>
+    </div>
   );
   if (res.error !== undefined) {
     return (
@@ -63,31 +59,31 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
       {back}
       <PageHeader title={s.fullName} subtitle={`${s.section.displayName} · ${t('stu.rollNo', { roll: s.rollNo })} · ${s.program.name}`} actions={<StatusPill kind="student" status={s.status} />} />
       {s.finalTerm && s.status === 'active' && (
-        <Alert severity="info" sx={{ mb: 2 }}>
+        <Alert className="mb-4" severity="info">
           {t('stu.finalTerm')}
         </Alert>
       )}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
-        <Box>
-          <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="grid grid-cols-[1fr] lg:grid-cols-[1fr_1fr] gap-6">
+        <div>
+          <div className="rounded-[12px] border bg-card p-5">
             <SectionTitle flush>{t('stu.admission')}</SectionTitle>
-            <Typography variant="body2">{s.enrolledOn ? t('stu.joined', { date: formatDate(s.enrolledOn, 'long', locale) }) : t('stu.noJoinDate')}</Typography>
+            <p className="text-[13px] leading-[19px]">{s.enrolledOn ? t('stu.joined', { date: formatDate(s.enrolledOn, 'long', locale) }) : t('stu.noJoinDate')}</p>
             {s.application && (
-              <Typography variant="body2" sx={{ mt: 0.5 }}>
+              <p className="text-[13px] leading-[19px] mt-1">
                 <Link component={NextLink} href={`/admissions/applications/${s.application.id}`}>
                   {s.application.applicationNo}
                 </Link>{' '}
                 · {s.application.cycleName}
-              </Typography>
+              </p>
             )}
-          </Paper>
+          </div>
           <StudentActions student={s} canChange={canChange} canGuardians classes={sameProgram} />
-        </Box>
-        <Paper variant="outlined" sx={{ p: 2.5 }}>
+        </div>
+        <div className="rounded-[12px] border bg-card p-5">
           <SectionTitle flush>{t('stu.timeline')}</SectionTitle>
           <LifecycleTimeline events={s.timeline} />
-        </Paper>
-      </Box>
+        </div>
+      </div>
     </>
   );
 }

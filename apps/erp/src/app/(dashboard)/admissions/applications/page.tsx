@@ -1,6 +1,4 @@
-import Stack from '@mui/material/Stack';
 import type { Metadata } from 'next';
-import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
 import { ApplicationsTable } from '@/components/admissions/AdmissionsTables';
 import { AdmissionsTabs } from '@/components/admissions/AdmissionsTabs';
 import { LinkButton } from '@/components/LinkButton';
@@ -12,6 +10,7 @@ import { APPLICATION_STATUSES, type ApplicationRow, type CycleRow } from '@/lib/
 import type { MessageKey } from '@/i18n/messages';
 import { getI18n } from '@/i18n/server';
 
+import { UserCheck as HowToRegOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('adm.tab.applications') };
 }
@@ -39,9 +38,9 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
     <>
       <PageHeader title={t('adm.tab.applications')} subtitle={t('adm.apps.subtitle')} />
       <AdmissionsTabs current="applications" />
-      <Stack direction="row" spacing={1.5} sx={{ mb: 2, flexWrap: 'wrap', rowGap: 1.5, alignItems: 'center' }}>
+      <div className="flex flex-row gap-3 mb-4 flex-wrap gap-y-3 items-center">
         <UrlSelect label={t('adm.cycle')} param="cycle" value={cycle} options={[{ value: '', label: t('adm.allCycles') }, ...(cycles.data ?? []).map((c) => ({ value: c.id, label: c.name }))]} />
-        <Stack direction="row" spacing={0.75} sx={{ flexWrap: 'wrap', rowGap: 0.75 }}>
+        <div className="flex flex-row gap-1.5 flex-wrap gap-y-1.5">
           <LinkButton size="small" href={keep({ status: '' })} variant={status ? 'outlined' : 'contained'}>
             {t('adm.allStatuses')}
           </LinkButton>
@@ -50,8 +49,8 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
               {t(`adm.app.${s}` as MessageKey)}
             </LinkButton>
           ))}
-        </Stack>
-      </Stack>
+        </div>
+      </div>
       {apps.error !== undefined ? (
         <ErrorState message={apps.error} />
       ) : apps.data!.length === 0 ? (

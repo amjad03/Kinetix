@@ -1,9 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { addBlueprint, addQuestion, approveQuestion, decidePaper, generatePaper, loadPaper, lockPaper, reviewQuestion, submitPaper } from '@/app/(dashboard)/question-bank/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast } from '@/components/ops/kit';
@@ -11,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { QbBlueprint, QbOptions, QbPaper, QbPaperDetail, QbQuestion } from '@/lib/question-bank';
 
+import { Button, Link } from '@/components/kx';
 type Dialog = 'question' | 'blueprint' | 'paper' | { submit: QbPaper } | { decide: QbPaper } | { view: QbPaper };
 
 const BLOOM = ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create'];
@@ -131,7 +127,7 @@ export function QuestionBankDesk({ options, questions, blueprints, papers, initi
                           {p.status === 'approved' && <ActionButton label={t('qb.lock')} run={() => lockPaper(p.id)} onDone={toast} />}
                           {p.status === 'locked' && (
                             <>
-                              <Link href={`/api/download?kind=qb-paper&id=${p.id}`} underline="hover" sx={{ mx: 1 }}>{t('qb.downloadPaper')}</Link>
+                              <Link className="mx-2" href={`/api/download?kind=qb-paper&id=${p.id}`} underline="hover">{t('qb.downloadPaper')}</Link>
                               <Link href={`/api/download?kind=qb-key&id=${p.id}`} underline="hover">{t('qb.downloadKey')}</Link>
                             </>
                           )}
@@ -150,10 +146,10 @@ export function QuestionBankDesk({ options, questions, blueprints, papers, initi
           title={t('qb.addQuestion')}
           intro={
             <>
-              <Typography variant="body2">{t('qb.questionIntro')}</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              <p className="text-[13px] leading-[19px]">{t('qb.questionIntro')}</p>
+              <p className="text-[13px] leading-[19px] text-muted-foreground mt-1">
                 {t('g1.qb.detailsHint')}
-              </Typography>
+              </p>
             </>
           }
           fields={[
@@ -182,10 +178,10 @@ export function QuestionBankDesk({ options, questions, blueprints, papers, initi
           title={t('qb.addBlueprint')}
           intro={
             <>
-              <Typography variant="body2">{t('qb.blueprintIntro')}</Typography>
-              <Typography variant="body2" component="code" sx={{ display: 'block', mt: 0.5 }}>
+              <p className="text-[13px] leading-[19px]">{t('qb.blueprintIntro')}</p>
+              <code className="text-[13px] leading-[19px] block mt-1">
                 A; 4; 2; short; remember=1,apply=1; easy=1,hard=1; CO1,CO2
-              </Typography>
+              </code>
             </>
           }
           fields={[
@@ -202,7 +198,7 @@ export function QuestionBankDesk({ options, questions, blueprints, papers, initi
       {dlg === 'paper' && (
         <FormDialog
           title={t('qb.generate')}
-          intro={<Typography variant="body2">{t('qb.generateIntro')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('qb.generateIntro')}</p>}
           fields={[
             { name: 'blueprintId', label: t('qb.f.blueprint'), kind: 'select', required: true, options: blueprints.map((b) => ({ value: b.id, label: `${b.title} (${subjectName(b.subjectId)})` })) },
             { name: 'title', label: t('qb.f.title'), required: true },
@@ -243,22 +239,22 @@ function PaperDialog({ paper, onClose }: { paper: QbPaper; onClose: () => void }
   }, [paper.id]);
   return (
     <InfoDialog title={paper.title} onClose={onClose}>
-      {error && <Typography color="error">{error}</Typography>}
-      {paper.remarks && <Typography color="warning.main">{t('qb.remarks', { text: paper.remarks })}</Typography>}
+      {error && <p className="text-sm leading-[21px] text-red-ink">{error}</p>}
+      {paper.remarks && <p className="text-sm leading-[21px] text-amber-ink">{t('qb.remarks', { text: paper.remarks })}</p>}
       {d && (
-        <Stack spacing={2}>
-          <Typography variant="body2">{t('qb.paperSummary', { marks: d.totalMarks, count: d.items.length, repeats: d.repeats })}</Typography>
+        <div className="flex flex-col gap-4">
+          <p className="text-[13px] leading-[19px]">{t('qb.paperSummary', { marks: d.totalMarks, count: d.items.length, repeats: d.repeats })}</p>
           {d.blueprint.sections.map((sec, si) => (
             <div key={sec.name + si}>
-              <Typography variant="subtitle2">{sec.name}</Typography>
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{sec.name}</h6>
               {d.items.filter((i) => i.section === si).map((i) => (
-                <Typography key={i.id} variant="body2">
+                <p className="text-[13px] leading-[19px]" key={i.id}>
                   {i.position + 1}. {i.snapshot.text} [{i.marks}] {i.snapshot.coCode ?? ''} · {t(`qb.bloom.${i.snapshot.bloom}` as MessageKey)} · {t(`qb.difficulty.${i.snapshot.difficulty}` as MessageKey)}
-                </Typography>
+                </p>
               ))}
             </div>
           ))}
-        </Stack>
+        </div>
       )}
     </InfoDialog>
   );

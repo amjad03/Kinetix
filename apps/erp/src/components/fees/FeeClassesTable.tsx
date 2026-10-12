@@ -1,14 +1,11 @@
 'use client';
-
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { MiniBar } from '@/components/Bars';
 import { LinkButton } from '@/components/LinkButton';
 import { DataTable, type Column } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { FeeSummary } from '@/lib/types';
 
+import { ChevronRight } from 'lucide-react';
 type ClassFees = FeeSummary['classes'][number];
 
 const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0);
@@ -17,7 +14,7 @@ const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 :
 export function FeeClassesTable({ rows }: { rows: ClassFees[] }) {
   const { t, fmt } = useI18n();
   const columns: Column<ClassFees>[] = [
-    { id: 'class', header: t('fees.col.class'), rowHeader: true, sort: (c) => c.className, cell: (c) => <Typography variant="subtitle2">{c.className}</Typography> },
+    { id: 'class', header: t('fees.col.class'), rowHeader: true, sort: (c) => c.className, cell: (c) => <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{c.className}</h6> },
     { id: 'billed', header: t('fees.col.billed'), align: 'right', sort: (c) => c.billedPaise / 100, cell: (c) => fmt.rupees(c.billedPaise) },
     {
       id: 'collected',
@@ -27,14 +24,14 @@ export function FeeClassesTable({ rows }: { rows: ClassFees[] }) {
       cell: (c) => {
         const share = pct(c.collectedPaise, c.billedPaise);
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
-            <Box sx={{ width: 64 }}>
+          <div className="flex items-center justify-end gap-3">
+            <div className="w-[64px]">
               <MiniBar value={share} color="kx.success" label={t('fees.pctCollected', { p: share.toFixed(0) })} />
-            </Box>
-            <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', minWidth: 96 }}>
+            </div>
+            <p className="text-[13px] leading-[19px] tabular-nums min-w-[96px]">
               {fmt.rupees(c.collectedPaise)}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         );
       },
     },
@@ -47,16 +44,16 @@ export function FeeClassesTable({ rows }: { rows: ClassFees[] }) {
       sort: (c) => c.overduePaise / 100,
       cell: (c) =>
         c.overdue ? (
-          <Box sx={{ color: 'error.main', whiteSpace: 'nowrap' }}>
-            <Box component="span" sx={{ fontWeight: 500 }}>
+          <div className="text-red-ink whitespace-nowrap">
+            <span className="font-medium">
               {fmt.rupees(c.overduePaise)}
-            </Box>
-            <Typography component="span" variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+            </span>
+            <span className="text-xs leading-4 tracking-[0.3px] block text-muted-foreground">
               {t('fees.nInvoices', { n: c.overdue })}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ) : (
-          <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>
+          <span className="text-muted-foreground">—</span>
         ),
     },
     {

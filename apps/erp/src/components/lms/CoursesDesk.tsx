@@ -1,6 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import Link from 'next/link';
 import { useState } from 'react';
 import { createCourse } from '@/app/(dashboard)/courses/actions';
@@ -8,6 +6,7 @@ import { Bar, FormDialog, Grid, Pill, useToast } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { LmsCourseRow } from '@/lib/lms';
 
+import { Button } from '@/components/kx';
 export function CoursesDesk({ courses, offerings }: { courses: LmsCourseRow[]; offerings: { value: string; label: string }[] }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);

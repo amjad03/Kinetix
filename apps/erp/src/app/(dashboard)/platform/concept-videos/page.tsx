@@ -1,5 +1,3 @@
-import OndemandVideoOutlined from '@mui/icons-material/OndemandVideoOutlined';
-import SearchOff from '@mui/icons-material/SearchOff';
 import { StatusPill } from '@/components/ui';
 import type { Metadata } from 'next';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
@@ -9,6 +7,7 @@ import { api, load, requirePlatformAdmin } from '@/lib/api';
 import type { PlatformLibraryCurriculum, PlatformTopicHit } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
+import { MonitorPlay as OndemandVideoOutlined, SearchX as SearchOff } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.conceptVideos') };
 }

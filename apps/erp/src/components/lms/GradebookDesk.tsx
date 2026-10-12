@@ -1,12 +1,11 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { overrideGrade, saveCategories } from '@/app/(dashboard)/courses/actions';
 import { Bar, FormDialog, Grid, Pill, useToast } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import { LMS_SOURCES, type Gradebook, type GradeRow } from '@/lib/lms';
 
+import { Button } from '@/components/kx';
 export function GradebookDesk({ courseId, book }: { courseId: string; book: Gradebook }) {
   const { t } = useI18n();
   const [dlg, setDlg] = useState<'cats' | GradeRow | null>(null);

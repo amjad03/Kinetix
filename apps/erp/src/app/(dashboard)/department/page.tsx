@@ -1,13 +1,3 @@
-import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
-import ClassOutlined from '@mui/icons-material/ClassOutlined';
-import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
-import GradingOutlined from '@mui/icons-material/GradingOutlined';
-import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
-import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
-import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
-import AutoStoriesOutlined from '@mui/icons-material/AutoStoriesOutlined';
-import VideocamOutlined from '@mui/icons-material/VideocamOutlined';
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
 import { ClassesTable, DeptAssessmentsTable, TeachersTable } from '@/components/department/DepartmentTables';
@@ -27,6 +17,7 @@ import type { ClassEngagement, ClassroomAnalytics } from '@/lib/insights';
 import { schoolToday } from '@/lib/school';
 import type { DepartmentOverview, DepartmentRef } from '@/lib/types';
 
+import { BookMarked as ClassOutlined, BookOpen as AutoStoriesOutlined, BookOpenText as MenuBookOutlined, ClipboardCheck as GradingOutlined, ClipboardList as AssignmentOutlined, ListChecks as FactCheckOutlined, UserCheck as HowToRegOutlined, UsersRound as GroupsOutlined, Video as VideocamOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.department') };
 }
@@ -127,9 +118,9 @@ function Overview({ o, canManage, i18n, engagement }: { o: DepartmentOverview; c
   const syl = syllabusTotal(o.classes);
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} data-testid="dept-subjects">
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4" data-testid="dept-subjects">
         {o.subjects.map((s) => s.name).join(' · ')}
-      </Typography>
+      </p>
       <StatGrid min={140}>
         <StatTile
           testId="dept-stat-held"

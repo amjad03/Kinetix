@@ -1,4 +1,3 @@
-import Button from '@mui/material/Button';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
@@ -8,6 +7,7 @@ import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import type { Workspace } from '@/lib/pathways-a';
 
+import { Button } from '@/components/kx';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.projects') };
 }

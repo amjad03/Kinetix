@@ -1,17 +1,10 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { claimFor, movePaper, savePaper, sendInviteCode, valueScript, verifyInviteCode } from '@/app/examiner/[slug]/actions';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button, Card, TextField } from '@/components/kx';
 /** The invite page: send a code to the registered phone, enter it, and the portal opens. */
 export function InviteLogin({ slug, token, who, phone, role, institution }: { slug: string; token: string; who: string; phone: string; role: string; institution: string }) {
   const { t } = useI18n();
@@ -20,8 +13,8 @@ export function InviteLogin({ slug, token, who, phone, role, institution }: { sl
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   return (
-    <Stack spacing={2}>
-      <Typography>{t('uni.portal.invited', { name: who, role: t(`uni.ex.role.${role}` as MessageKey), institution })}</Typography>
+    <div className="flex flex-col gap-4">
+      <p className="text-sm leading-[21px]">{t('uni.portal.invited', { name: who, role: t(`uni.ex.role.${role}` as MessageKey), institution })}</p>
       {error && <Alert severity="error">{error}</Alert>}
       {!sent ? (
         <Button variant="contained" disabled={pending} onClick={() => start(async () => { const r = await sendInviteCode(slug, token); if (r.ok) { setSent(true); setError(null); } else setError(r.error); })}>{t('uni.portal.sendCode')}</Button>
@@ -32,7 +25,7 @@ export function InviteLogin({ slug, token, who, phone, role, institution }: { sl
           <Button variant="contained" disabled={pending || code.length !== 6} onClick={() => start(async () => { const r = await verifyInviteCode(slug, token, code); if (r && !r.ok) setError(r.error); })}>{t('uni.portal.enter')}</Button>
         </>
       )}
-    </Stack>
+    </div>
   );
 }
 
@@ -59,23 +52,23 @@ function ScriptRow({ s }: { s: PortalScript }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   return (
-    <Stack direction="row" spacing={1} sx={{ alignItems: "center", py: 0.5 }}>
-      <Typography sx={{ width: 110, fontFamily: 'monospace' }}>{s.scriptCode}</Typography>
-      <Typography variant="body2" sx={{ width: 70 }}>/ {s.maxMarks}</Typography>
-      <TextField size="small" type="number" label={t('uni.portal.marks')} value={marks} onChange={(e) => setMarks(e.target.value)} sx={{ width: 110 }} error={!!error} helperText={error ?? undefined} />
+    <div className="flex flex-row gap-2 items-center py-1">
+      <p className="text-sm leading-[21px] w-[110px] font-mono">{s.scriptCode}</p>
+      <p className="text-[13px] leading-[19px] w-[70px]">/ {s.maxMarks}</p>
+      <TextField className="w-[110px]" size="small" type="number" label={t('uni.portal.marks')} value={marks} onChange={(e) => setMarks(e.target.value)} error={!!error} helperText={error ?? undefined} />
       <TextField size="small" label={t('uni.portal.remarks')} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
       <Button size="small" variant={s.status === 'valued' ? 'outlined' : 'contained'} disabled={pending || marks === ''} onClick={() => start(async () => { const r = await valueScript(s.id, Number(marks), remarks); setError(r.ok ? null : r.error); })}>{t('uni.portal.save')}</Button>
-    </Stack>
+    </div>
   );
 }
 
 export function ValuationPanel({ scripts }: { scripts: PortalScript[] }) {
   const { t } = useI18n();
   return (
-    <Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('uni.portal.valued', { done: scripts.filter((s) => s.status === 'valued').length, total: scripts.length })}</Typography>
+    <div>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('uni.portal.valued', { done: scripts.filter((s) => s.status === 'valued').length, total: scripts.length })}</p>
       {scripts.map((s) => <ScriptRow key={s.id} s={s} />)}
-    </Box>
+    </div>
   );
 }
 
@@ -89,24 +82,24 @@ export function PaperPanel({ assignmentId, role, paper }: { assignmentId: string
   if (role === 'scrutiniser' && !paper) return <Alert severity="info">{t('uni.portal.noPaper')}</Alert>;
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>) => start(async () => { const r = await fn(); setMsg(r.ok ? null : (r.error ?? null)); });
   return (
-    <Stack spacing={1.5}>
-      {paper && <Typography variant="body2" color="text.secondary">{t(`uni.ex.paper.status.${paper.status}` as MessageKey)}{paper.scrutinyNote ? `: ${paper.scrutinyNote}` : ''}</Typography>}
+    <div className="flex flex-col gap-3">
+      {paper && <p className="text-[13px] leading-[19px] text-muted-foreground">{t(`uni.ex.paper.status.${paper.status}` as MessageKey)}{paper.scrutinyNote ? `: ${paper.scrutinyNote}` : ''}</p>}
       {msg && <Alert severity="error">{msg}</Alert>}
       <TextField size="small" label={t('uni.portal.paperTitle')} value={title} onChange={(e) => setTitle(e.target.value)} disabled={!editable} />
       <TextField label={t('uni.portal.paperBody')} value={body} onChange={(e) => setBody(e.target.value)} multiline minRows={8} disabled={!editable} />
       {editable && (
-        <Stack direction="row" spacing={1}>
+        <div className="flex flex-row gap-2">
           <Button variant="outlined" disabled={pending || !title.trim()} onClick={() => run(() => savePaper(assignmentId, title, body))}>{t('uni.portal.save')}</Button>
           <Button variant="contained" disabled={pending || !paper} onClick={() => run(() => movePaper(assignmentId, 'submit'))}>{t('uni.portal.submit')}</Button>
-        </Stack>
+        </div>
       )}
       {role === 'scrutiniser' && paper?.status === 'scrutiny' && (
-        <Stack direction="row" spacing={1}>
+        <div className="flex flex-row gap-2">
           <Button variant="contained" disabled={pending} onClick={() => run(() => movePaper(assignmentId, 'approve'))}>{t('uni.portal.approve')}</Button>
           <Button variant="outlined" color="warning" disabled={pending} onClick={() => { const n = window.prompt(t('uni.ex.note')); if (n) run(() => movePaper(assignmentId, 'return', n)); }}>{t('uni.portal.return')}</Button>
-        </Stack>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }
 
@@ -115,17 +108,17 @@ export function ClaimButton({ assignmentId }: { assignmentId: string }) {
   const [msg, setMsg] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
   const [pending, start] = useTransition();
   return (
-    <Box>
+    <div>
       <Button variant="outlined" disabled={pending} onClick={() => start(async () => { const r = await claimFor(assignmentId); setMsg(r.ok ? { tone: 'success', text: t('uni.portal.claimed', { amount: new Intl.NumberFormat(locale === 'en' ? 'en-IN' : locale, { style: 'currency', currency: 'INR' }).format(r.data.amountPaise / 100) }) } : { tone: 'error', text: r.error }); })}>{t('uni.portal.claim')}</Button>
-      {msg && <Alert severity={msg.tone} sx={{ mt: 1 }}>{msg.text}</Alert>}
-    </Box>
+      {msg && <Alert className="mt-2" severity={msg.tone}>{msg.text}</Alert>}
+    </div>
   );
 }
 
 export function PortalCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Card sx={{ p: 2.5, mb: 2 }}>
-      <Typography variant="h6" component="h2" sx={{ mb: 1.5 }}>{title}</Typography>
+    <Card className="p-5 mb-4">
+      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-3">{title}</h2>
       {children}
     </Card>
   );

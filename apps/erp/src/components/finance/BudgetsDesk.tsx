@@ -1,6 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { addExpense, setBudget } from '@/app/(dashboard)/budgets/actions';
 import { Bar, FormDialog, Grid, useToast } from '@/components/ops/kit';
@@ -8,6 +6,7 @@ import { UrlSelect } from '@/components/UrlSelect';
 import { useI18n } from '@/i18n/client';
 import type { BudgetReport, BudgetRow } from '@/lib/finance';
 
+import { Button } from '@/components/kx';
 export function BudgetsDesk({ report, years }: { report: BudgetReport; years: string[] }) {
   const { t, fmt } = useI18n();
   const [dlg, setDlg] = useState<'budget' | 'expense' | null>(null);

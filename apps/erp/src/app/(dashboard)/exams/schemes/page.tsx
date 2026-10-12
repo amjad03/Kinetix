@@ -1,5 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { SchemeEditor } from '@/components/exams/SchemeEditor';
 import { LinkButton } from '@/components/LinkButton';
@@ -10,6 +8,7 @@ import { getI18n } from '@/i18n/server';
 import type { GradeScale, Scheme, SchemePresets } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
 
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('exm.schemes') };
 }
@@ -27,11 +26,11 @@ export default async function SchemesPage({ searchParams }: { searchParams: Prom
   const { t } = await getI18n();
   const head = (
     <>
-      <Box sx={{ ml: -1, mb: 0.5 }}>
+      <div className="-ml-2 mb-1">
         <LinkButton href="/exams" size="small" startIcon={<ArrowBack />}>
           {t('exm.back')}
         </LinkButton>
-      </Box>
+      </div>
       <PageHeader title={t('exm.schemes')} subtitle={t('exm.schemesSubtitle')} />
     </>
   );

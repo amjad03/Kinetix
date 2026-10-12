@@ -1,15 +1,4 @@
 'use client';
-
-import Check from '@mui/icons-material/Check';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Typography from '@mui/material/Typography';
-import FilterAltOffOutlined from '@mui/icons-material/FilterAltOffOutlined';
-import Button from '@mui/material/Button';
 import { useMemo, useState } from 'react';
 import { DataTable } from '@/components/ui';
 import { hhmm } from '@/lib/dates';
@@ -19,7 +8,10 @@ import { EmptyState } from './States';
 import { STATUS_ORDER } from '@/lib/status';
 import { useI18n } from '@/i18n/client';
 import { StatusChip } from './StatusChip';
+import { cn } from '@/lib/utils';
 
+import { Button, Chip, FormControl, InputLabel, MenuItem, Select } from '@/components/kx';
+import { Check, FilterX as FilterAltOffOutlined } from 'lucide-react';
 const ALL = '';
 
 export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; initialStatus?: ClassStatus }) {
@@ -46,32 +38,30 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center', mb: 2 }} role="group" aria-label={t('classes.filterStatus')}>
-        <Chip
+      <div className="flex flex-wrap gap-2 items-center mb-4" role="group" aria-label={t('classes.filterStatus')}>
+        <Chip className={cn(status === ALL && 'bg-secondary text-secondary-foreground [&_svg]:text-inherit')}
           label={t('classes.all', { n: classes.length })}
           variant={status === ALL ? 'filled' : 'outlined'}
           onClick={() => setStatus(ALL)}
-          icon={status === ALL ? <Check sx={{ fontSize: '18px !important' }} /> : undefined}
-          sx={status === ALL ? { bgcolor: 'm3.secondaryContainer', color: 'm3.onSecondaryContainer', '& .MuiChip-icon': { color: 'inherit' } } : undefined}
+          icon={status === ALL ? <Check className="text-[18px_!important]" /> : undefined}
           aria-pressed={status === ALL}
         />
         {STATUS_ORDER.map((s) => {
           const on = status === s;
           return (
-            <Chip
+            <Chip className={cn(on && 'bg-secondary text-secondary-foreground [&_svg]:text-inherit')}
               key={s}
               label={t('classes.chip', { label: t(`status.${s}`), n: counts.get(s) ?? 0 })}
               variant={on ? 'filled' : 'outlined'}
               onClick={() => setStatus(on ? ALL : s)}
-              icon={on ? <Check sx={{ fontSize: '18px !important' }} /> : undefined}
-              sx={on ? { bgcolor: 'm3.secondaryContainer', color: 'm3.onSecondaryContainer', '& .MuiChip-icon': { color: 'inherit' } } : undefined}
+              icon={on ? <Check className="text-[18px_!important]" /> : undefined}
               aria-pressed={on}
               data-testid={`filter-${s}`}
             />
           );
         })}
-        <Box sx={{ flex: 1 }} />
-        <FormControl size="small" sx={{ minWidth: 180 }}>
+        <div className="flex-1" />
+        <FormControl className="min-w-[180px]" size="small">
           <InputLabel id="f-class" shrink>{t('classes.col.class')}</InputLabel>
           <Select labelId="f-class" label={t('classes.col.class')} notched displayEmpty value={section} onChange={(e) => setSection(e.target.value)} data-testid="filter-class">
             <MenuItem value={ALL}>{t('common.allClasses')}</MenuItem>
@@ -82,7 +72,7 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
             ))}
           </Select>
         </FormControl>
-        <FormControl size="small" sx={{ minWidth: 180 }}>
+        <FormControl className="min-w-[180px]" size="small">
           <InputLabel id="f-teacher" shrink>{t('classes.col.teacher')}</InputLabel>
           <Select labelId="f-teacher" label={t('classes.col.teacher')} notched displayEmpty value={teacher} onChange={(e) => setTeacher(e.target.value)}>
             <MenuItem value={ALL}>{t('common.allTeachers')}</MenuItem>
@@ -93,7 +83,7 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
             ))}
           </Select>
         </FormControl>
-      </Box>
+      </div>
 
       {rows.length === 0 ? (
         <EmptyState
@@ -115,27 +105,27 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
           exportName="classes"
           columns={[
             { id: 'c0', header: t('classes.col.time'), rowHeader: true, sort: (c) => `${hhmm(c.startsAt)}–${hhmm(c.endsAt)}`, cell: (c) => `${hhmm(c.startsAt)}–${hhmm(c.endsAt)}` },
-            { id: 'c1', header: t('classes.col.class'), sort: (c) => c.subject.name, csv: (c) => `${c.subject.name} (${c.section.displayName} · ${c.subject.code})`, cell: (c) => (<><Typography variant="subtitle2">{c.subject.name}</Typography>
-                              <Typography variant="caption" color="text.secondary">
+            { id: 'c1', header: t('classes.col.class'), sort: (c) => c.subject.name, csv: (c) => `${c.subject.name} (${c.section.displayName} · ${c.subject.code})`, cell: (c) => (<><h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{c.subject.name}</h6>
+                              <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                                 {c.section.displayName} · {c.subject.code}
-                              </Typography></>) },
+                              </span></>) },
             { id: 'c2', header: t('classes.col.teacher'), sort: (c) => c.teacher.fullName, cell: (c) => c.teacher.fullName },
             { id: 'c3', header: t('classes.col.room'), sort: (c) => c.room ?? '', cell: (c) => c.room ?? '—' },
             { id: 'c4', header: t('classes.col.board'), sort: (c) => c.board ?? '', cell: (c) => c.board ?? '—' },
-            { id: 'c5', header: t('classes.col.attendance'), csv: false, cell: (c) => (<><Typography variant="body2" component="span">
+            { id: 'c5', header: t('classes.col.attendance'), csv: false, cell: (c) => (<><span className="text-[13px] leading-[19px]">
                                 <AttendanceSummary c={c} />
-                              </Typography></>) },
+                              </span></>) },
             { id: 'c6', header: t('classes.col.status'), sort: (c) => c.status, cell: (c) => (<><StatusChip status={c.status} /></>) },
           ]}
         />
       )}
       {filtered && rows.length > 0 && (
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+        <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mt-3">
           {t('classes.showing', { shown: rows.length, total: classes.length })}{' '}
-          <Box component="button" onClick={clear} sx={{ all: 'unset', cursor: 'pointer', color: 'primary.main', fontWeight: 500 }}>
+          <button className="[all:unset] cursor-pointer text-teal-ink font-medium" onClick={clear}>
             {t('common.clearFilters')}
-          </Box>
-        </Typography>
+          </button>
+        </p>
       )}
     </>
   );

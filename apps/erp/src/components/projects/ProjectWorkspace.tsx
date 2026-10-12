@@ -1,11 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import {
   addProjectLink,
@@ -29,6 +22,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { MAX_UPLOAD_BYTES, type ProjectComment, type ProjectReview, type Workspace, type WorkspaceFile, type WorkspaceViva } from '@/lib/pathways-a';
 
+import { Alert, Button, CircularProgress } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 type Toast = (m: string) => void;
 
 /** One project: the team and milestones, files, discussion, reviews, viva, showcase settings, and who wants to join. */
@@ -52,10 +47,10 @@ export function ProjectWorkspace({ ws, initialTab }: { ws: Workspace; initialTab
     {
       label: '',
       cell: (f) => (
-        <Stack direction="row" spacing={0.5}>
+        <div className="flex flex-row gap-1">
           {f.url ? <Button size="small" href={f.url} target="_blank" rel="noopener noreferrer">{t('prj.openLink')}</Button> : <Button size="small" href={`/api/pathways?kind=project-file&id=${f.id}`}>{t('prj.download')}</Button>}
           <ActionButton tone="error" label={t('prj.remove')} run={() => removeProjectFile(projectId, f.id)} onDone={toast} />
-        </Stack>
+        </div>
       ),
     },
   ];
@@ -80,13 +75,13 @@ export function ProjectWorkspace({ ws, initialTab }: { ws: Workspace; initialTab
 
   const overview = (
     <>
-      <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mb: 2 }}>
+      <div className="flex flex-row gap-2 flex-wrap mb-4">
         <Pill label={t(`rs.kind.${ws.project.kind}` as MessageKey)} />
         <Pill label={t(`rs.status.${ws.project.status}` as MessageKey)} warn={ws.project.status === 'cancelled'} />
         <Pill label={t('prj.myRole', { role: t(`prj.role.${ws.myRole}` as MessageKey) })} />
         <Pill label={ws.reviews.count === 0 ? t('prj.noReviews') : t('prj.reviewAvg', { avg: fmt.number(ws.reviews.average ?? 0), count: ws.reviews.count })} />
-      </Stack>
-      {ws.project.outcomeSummary && <Typography sx={{ mb: 2 }}>{ws.project.outcomeSummary}</Typography>}
+      </div>
+      {ws.project.outcomeSummary && <p className="text-sm leading-[21px] mb-4">{ws.project.outcomeSummary}</p>}
       <Heading>{t('prj.team')}</Heading>
       <Grid empty={t('prj.empty.team')} rows={ws.members} cols={[{ label: t('ops.f.name'), cell: (m) => m.name || '-' }, { label: t('prj.col.role'), cell: (m) => t(`prj.role.${m.role}` as MessageKey) }]} />
       <Heading>{t('prj.milestones')}</Heading>
@@ -136,12 +131,12 @@ export function ProjectWorkspace({ ws, initialTab }: { ws: Workspace; initialTab
             label: t('prj.tab.hub'),
             node: (
               <>
-                <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mb: 2 }}>
+                <div className="flex flex-row gap-2 flex-wrap mb-4">
                   <Pill label={ws.hub.showcase ? t('prj.onShowcase') : t('prj.notOnShowcase')} warn={!ws.hub.showcase} />
                   <Pill label={ws.hub.recruiting ? t('prj.recruitingOpen', { n: ws.hub.openings }) : t('prj.notRecruiting')} warn={!ws.hub.recruiting} />
-                </Stack>
-                {ws.hub.summary && <Typography sx={{ mb: 1 }}>{ws.hub.summary}</Typography>}
-                {ws.hub.lookingFor.length > 0 && <Typography variant="body2" sx={{ mb: 2 }}>{t('prj.f.lookingFor')}: {ws.hub.lookingFor.join(', ')}</Typography>}
+                </div>
+                {ws.hub.summary && <p className="text-sm leading-[21px] mb-2">{ws.hub.summary}</p>}
+                {ws.hub.lookingFor.length > 0 && <p className="text-[13px] leading-[19px] mb-4">{t('prj.f.lookingFor')}: {ws.hub.lookingFor.join(', ')}</p>}
                 <Button variant="contained" onClick={() => setDlg('hub')} data-testid="prj-edit-hub">{t('ops.edit')}</Button>
               </>
             ),
@@ -175,7 +170,7 @@ export function ProjectWorkspace({ ws, initialTab }: { ws: Workspace; initialTab
             { name: 'venue', label: t('prj.col.venue') },
             { name: 'panel', label: t('prj.f.panel'), required: true },
           ]}
-          intro={<Typography variant="body2">{t('prj.panelHint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('prj.panelHint')}</p>}
           onSubmit={(v) => scheduleViva(projectId, v)}
           onClose={close}
         />
@@ -227,8 +222,8 @@ function UploadDialog({ projectId, onClose }: { projectId: string; onClose: (don
         </>
       }
     >
-      <Stack spacing={2} sx={{ pt: 1 }}>
-        <Typography variant="body2">{t('prj.uploadHint')}</Typography>
+      <div className="flex flex-col gap-4 pt-2">
+        <p className="text-[13px] leading-[19px]">{t('prj.uploadHint')}</p>
         <FormField label={t('prj.f.file')} required>
           <input type="file" aria-label={t('prj.f.file')} data-testid="prj-file-input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </FormField>
@@ -236,7 +231,7 @@ function UploadDialog({ projectId, onClose }: { projectId: string; onClose: (don
           <TextInput value={title} onChange={(e) => setTitle(e.target.value)} fullWidth />
         </FormField>
         {error && <Alert severity="error">{error}</Alert>}
-      </Stack>
+      </div>
     </Dialog>
   );
 }
@@ -308,7 +303,7 @@ function ReviewsTab({ projectId, toast, mentor }: { projectId: string; toast: To
       {open && (
         <FormDialog
           title={t('prj.writeReview')}
-          intro={<Typography variant="body2">{t('prj.rubricHint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('prj.rubricHint')}</p>}
           fields={[
             { name: 'kind', label: t('prj.col.kind'), kind: 'select', init: 'mentor', options: (['mentor', 'external'] as const).map((k) => ({ value: k, label: t(`prj.reviewKind.${k}` as MessageKey) })) },
             { name: 'rubric', label: t('prj.col.rubric'), kind: 'multiline', required: true },
@@ -356,10 +351,10 @@ function TeamTab({ projectId, toast }: { projectId: string; toast: Toast }) {
               label: '',
               cell: (r) =>
                 r.status === 'pending' ? (
-                  <Stack direction="row" spacing={0.5}>
+                  <div className="flex flex-row gap-1">
                     <ActionButton label={t('prj.accept')} run={() => decideRequest(projectId, r.id, true)} onDone={decided} />
                     <ActionButton tone="error" label={t('prj.decline')} run={() => decideRequest(projectId, r.id, false)} onDone={decided} />
-                  </Stack>
+                  </div>
                 ) : null,
             },
           ]}

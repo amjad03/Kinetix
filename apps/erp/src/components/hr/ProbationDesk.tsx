@@ -1,20 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -25,6 +9,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { formatDate } from '@/lib/dates';
 import type { Probationer } from '@/lib/staff-changes';
 
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@/components/kx';
 const TONE: Record<string, Tone> = { pending: 'warning', recommended: 'info', confirmed: 'success', extended: 'neutral' };
 
 /** Staff on probation: the head of department recommends, the principal confirms or extends and the letter is a PDF. */
@@ -55,16 +40,16 @@ export function ProbationDesk({ rows, showAll, canDecide }: { rows: Probationer[
     });
 
   return (
-    <Stack spacing={2}>
-      <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-row justify-end">
         <Button component={Link} href={showAll ? '/hr/probation' : '/hr/probation?all=1'} size="small">
           {showAll ? t('as.prob.cancel') : t('as.prob.showAll')}
         </Button>
-      </Stack>
+      </div>
       {rows.length === 0 ? (
-        <Typography color="text.secondary">{t('as.prob.none')}</Typography>
+        <p className="text-sm leading-[21px] text-muted-foreground">{t('as.prob.none')}</p>
       ) : (
-        <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
+        <div className="rounded-[12px] border bg-card overflow-x-auto">
           <Table size="small" data-testid="probation-list">
             <TableHead>
               <TableRow>
@@ -82,10 +67,10 @@ export function ProbationDesk({ rows, showAll, canDecide }: { rows: Probationer[
                   <TableRow key={r.userId}>
                     <TableCell>
                       {r.fullName}
-                      <Typography variant="caption" color="text.secondary" component="div">
+                      <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                         {r.employeeCode}
                         {r.joinedOn ? ` · ${t('as.prob.joined')} ${formatDate(r.joinedOn, 'dayMonth', locale)}` : ''}
-                      </Typography>
+                      </div>
                     </TableCell>
                     <TableCell>{r.department ?? '-'}</TableCell>
                     <TableCell>
@@ -99,17 +84,17 @@ export function ProbationDesk({ rows, showAll, canDecide }: { rows: Probationer[
                     <TableCell>
                       <StatusPill tone={TONE[status] ?? 'neutral'}>{t(`as.prob.st.${status}` as MessageKey)}</StatusPill>
                       {r.review?.recommendation && (
-                        <Typography variant="caption" color="text.secondary" component="div">
+                        <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                           {t('as.prob.hodSays', { what: t(`as.prob.rec.${r.review.recommendation}` as MessageKey) })}
-                        </Typography>
+                        </div>
                       )}
                     </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                    <TableCell className="whitespace-nowrap" align="right">
                       <Button size="small" onClick={() => setOpen({ row: r, mode: 'recommend' })}>
                         {t('as.prob.recommend')}
                       </Button>
                       {canDecide && (
-                        <Button size="small" variant="contained" sx={{ ml: 1 }} onClick={() => setOpen({ row: r, mode: 'decide' })}>
+                        <Button className="ml-2" size="small" variant="contained" onClick={() => setOpen({ row: r, mode: 'decide' })}>
                           {t('as.prob.decide')}
                         </Button>
                       )}
@@ -119,12 +104,12 @@ export function ProbationDesk({ rows, showAll, canDecide }: { rows: Probationer[
               })}
             </TableBody>
           </Table>
-        </Paper>
+        </div>
       )}
       <Dialog open={!!open} onClose={close} fullWidth maxWidth="xs">
         <DialogTitle>{open ? `${open.mode === 'recommend' ? t('as.prob.recommend') : t('as.prob.decide')}: ${open.row.fullName}` : ''}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
+          <div className="flex flex-col gap-4 pt-2">
             {error && <Alert severity="error">{error}</Alert>}
             <FormField label={t('as.prob.recommendation')}>
               <TextInput select value={choice} onChange={(e) => setChoice(e.target.value as 'confirm' | 'extend')}>
@@ -145,7 +130,7 @@ export function ProbationDesk({ rows, showAll, canDecide }: { rows: Probationer[
                 {t('as.prob.letter')}
               </Button>
             )}
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={close}>{t('as.prob.cancel')}</Button>
@@ -154,6 +139,6 @@ export function ProbationDesk({ rows, showAll, canDecide }: { rows: Probationer[
           </Button>
         </DialogActions>
       </Dialog>
-    </Stack>
+    </div>
   );
 }

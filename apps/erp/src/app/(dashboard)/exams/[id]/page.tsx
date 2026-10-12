@@ -1,5 +1,3 @@
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ExamDepthPanel } from '@/components/exams/ExamDepthPanel';
@@ -16,6 +14,7 @@ import type { RegistrationRow, RegistrationWindow, SeatingPlanOverview } from '@
 import type { ExamSessionDetail, ResultRow, Revaluation } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
 
+import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.exams') };
 }
@@ -36,11 +35,11 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
   });
   const { t } = await getI18n();
   const back = (
-    <Box sx={{ ml: -1, mb: 0.5 }}>
+    <div className="-ml-2 mb-1">
       <LinkButton href="/exams" size="small" startIcon={<ArrowBack />}>
         {t('exm.back')}
       </LinkButton>
-    </Box>
+    </div>
   );
   if (!session.data)
     return (

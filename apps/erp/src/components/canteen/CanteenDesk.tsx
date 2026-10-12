@@ -1,7 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
 import { useRef, useState } from 'react';
 import { addItem, markMeal, placeOrder, setItem, topUp } from '@/app/(dashboard)/canteen/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, useToast, type Field } from '@/components/ops/kit';
@@ -10,6 +7,8 @@ import { MEALS, newKey } from '@/lib/ops';
 import { st } from '@/lib/ops-labels';
 import type { CItem, CMeals } from '@/lib/ops';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 type Dialog = 'item' | 'topup' | 'order' | 'meal' | { price: CItem };
 
 export function CanteenDesk({ items, meals }: { items: CItem[]; meals: CMeals }) {
@@ -32,10 +31,10 @@ export function CanteenDesk({ items, meals }: { items: CItem[]; meals: CMeals })
   return (
     <>
       <Bar>
-        <Button variant="contained" startIcon={<Add />} onClick={() => setDlg('item')} sx={{ mt: 3 }}>{t('ca.addItem')}</Button>
-        <Button variant="outlined" onClick={() => show('topup')} sx={{ mt: 3 }}>{t('ca.topUp')}</Button>
-        <Button variant="outlined" onClick={() => show('order')} disabled={available.length === 0} sx={{ mt: 3 }}>{t('ca.order')}</Button>
-        <Button variant="outlined" onClick={() => setDlg('meal')} sx={{ mt: 3 }}>{t('ca.markMeal')}</Button>
+        <Button className="mt-6" variant="contained" startIcon={<Add />} onClick={() => setDlg('item')}>{t('ca.addItem')}</Button>
+        <Button className="mt-6" variant="outlined" onClick={() => show('topup')}>{t('ca.topUp')}</Button>
+        <Button className="mt-6" variant="outlined" onClick={() => show('order')} disabled={available.length === 0}>{t('ca.order')}</Button>
+        <Button className="mt-6" variant="outlined" onClick={() => setDlg('meal')}>{t('ca.markMeal')}</Button>
       </Bar>
       <Grid
         testId="ca-menu"

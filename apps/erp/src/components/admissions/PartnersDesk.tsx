@@ -1,17 +1,4 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { createAgent, payCommission, setAgentActive } from '@/app/(dashboard)/admissions/growth-actions';
@@ -20,6 +7,7 @@ import { FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button, MenuItem, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 export interface Agent {
   id: string;
   name: string;
@@ -64,17 +52,15 @@ export function PartnersDesk({ agents, commissions, today }: { agents: Agent[]; 
       } else setError(res.error ?? null);
     });
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <div className="rounded-[12px] border bg-card p-5">
         <SectionTitle flush>{t('ag.agent.new')}</SectionTitle>
-        <Box
-          component="form"
+        <form className="grid grid-cols-[1fr] sm:grid-cols-[repeat(3,1fr)] gap-3"
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
             run(() => createAgent({ name: f.name, kind: f.kind, phone: f.phone, email: f.email, commissionRupees: Number(f.commission), referralCode: f.code }), () => setF(BLANK));
           }}
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 1.5 }}
         >
           <FormField label={t('ag.agent.name')} required>
             <TextInput value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />
@@ -97,15 +83,15 @@ export function PartnersDesk({ agents, commissions, today }: { agents: Agent[]; 
           <FormField label={t('ag.agent.code')} helper={t('ag.agent.codeHelp')}>
             <TextInput value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
           </FormField>
-          <Box>
+          <div>
             <Button type="submit" variant="contained" disabled={pending || f.name.trim().length < 2}>
               {t('ag.agent.create')}
             </Button>
-          </Box>
-        </Box>
-      </Paper>
+          </div>
+        </form>
+      </div>
 
-      <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
+      <div className="rounded-[12px] border bg-card overflow-x-auto">
         <Table size="small" data-testid="agents-table">
           <TableHead>
             <TableRow>
@@ -124,10 +110,10 @@ export function PartnersDesk({ agents, commissions, today }: { agents: Agent[]; 
               <TableRow key={a.id}>
                 <TableCell>
                   {a.name}
-                  <Typography variant="caption" color="text.secondary" component="div">
+                  <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                     {t(`ag.agent.kind.${a.kind}` as MessageKey)}
                     {a.phone ? ` · ${a.phone}` : ''}
-                  </Typography>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <code>{a.referralCode}</code>
@@ -146,17 +132,17 @@ export function PartnersDesk({ agents, commissions, today }: { agents: Agent[]; 
             ))}
           </TableBody>
         </Table>
-      </Paper>
-      {agents.length === 0 && <Typography color="text.secondary">{t('ag.agent.none')}</Typography>}
+      </div>
+      {agents.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('ag.agent.none')}</p>}
 
-      <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
-        <Box sx={{ p: 2, pb: 0 }}>
+      <div className="rounded-[12px] border bg-card overflow-x-auto">
+        <div className="p-4 pb-0">
           <SectionTitle flush>{t('ag.comm.title')}</SectionTitle>
-        </Box>
+        </div>
         {commissions.length === 0 ? (
-          <Typography color="text.secondary" sx={{ p: 2 }}>
+          <p className="text-sm leading-[21px] text-muted-foreground p-4">
             {t('ag.comm.none')}
-          </Typography>
+          </p>
         ) : (
           <Table size="small" data-testid="commission-ledger">
             <TableHead>
@@ -173,9 +159,9 @@ export function PartnersDesk({ agents, commissions, today }: { agents: Agent[]; 
                 <TableRow key={c.id}>
                   <TableCell>
                     {c.applicantName}
-                    <Typography variant="caption" color="text.secondary" component="div">
+                    <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {c.applicationNo}
-                    </Typography>
+                    </div>
                   </TableCell>
                   <TableCell>{c.agentName}</TableCell>
                   <TableCell align="right">{money(c.amountPaise)}</TableCell>
@@ -192,7 +178,7 @@ export function PartnersDesk({ agents, commissions, today }: { agents: Agent[]; 
             </TableBody>
           </Table>
         )}
-      </Paper>
-    </Stack>
+      </div>
+    </div>
   );
 }

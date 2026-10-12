@@ -1,17 +1,4 @@
 'use client';
-
-import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
-import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import Snackbar from '@mui/material/Snackbar';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition, type FocusEvent } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { saveRazorpay, testRazorpay } from '@/app/(dashboard)/settings/actions';
@@ -20,6 +7,8 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { razorpayProblem, type RazorpayAccount } from '@/lib/payments';
 
+import { Alert, Button, Card, Chip, CircularProgress, IconButton, Snackbar, Tooltip } from '@/components/kx';
+import { Banknote as PaymentsOutlined, Copy as ContentCopyOutlined } from 'lucide-react';
 const TEST_RESULTS = ['AUTHENTICATION_FAILED', 'GATEWAY_ERROR', 'NETWORK_ERROR', 'PAYMENTS_NOT_CONFIGURED'];
 
 /**
@@ -84,53 +73,51 @@ export function RazorpayForm({ initial, webhookUrl }: { initial: RazorpayAccount
   return (
     <>
       <SectionTitle>
-        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-          <PaymentsOutlined fontSize="small" /> {t('payments.title')}
-        </Box>
+        <span className="inline-flex items-center gap-2">
+          <PaymentsOutlined className="size-5" /> {t('payments.title')}
+        </span>
       </SectionTitle>
-      <Card data-testid="razorpay" data-configured={saved.configured ? 'true' : 'false'} aria-busy={pending || testing} sx={{ px: 2.5, py: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 820 }}>
+      <Card className="px-5 py-4" data-testid="razorpay" data-configured={saved.configured ? 'true' : 'false'} aria-busy={pending || testing}>
+        <p className="text-[13px] leading-[19px] text-muted-foreground max-w-[820px]">
           {t('payments.help')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 820, mt: 1 }}>
+        </p>
+        <p className="text-[13px] leading-[19px] text-muted-foreground max-w-[820px] mt-2">
           {t('payments.steps')}
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mt: 1.5 }} data-testid="razorpay-status">
+        </p>
+        <div className="flex flex-wrap items-center gap-2 mt-3" data-testid="razorpay-status">
           {saved.configured ? (
             <>
               <Chip size="small" color="success" label={t('payments.status.configured')} />
               {saved.mode && <Chip size="small" variant="outlined" color={saved.mode === 'live' ? 'primary' : 'warning'} label={t(saved.mode === 'live' ? 'payments.mode.live' : 'payments.mode.test')} data-testid="razorpay-mode" />}
               {saved.updatedAt && (
-                <Typography variant="caption" color="text.secondary">
+                <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {t('payments.updated', { when: fmt.dateTime(saved.updatedAt) })}
-                </Typography>
+                </span>
               )}
             </>
           ) : (
-            <Typography variant="body2" sx={{ color: 'error.main' }}>
+            <p className="text-[13px] leading-[19px] text-red-ink">
               {t('payments.status.notConfigured')}
-            </Typography>
+            </p>
           )}
-        </Box>
+        </div>
         {saved.provider !== 'razorpay' && (
-          <Alert severity="info" sx={{ mt: 2 }} data-testid="razorpay-server-mode">
+          <Alert className="mt-4" severity="info" data-testid="razorpay-server-mode">
             {t(saved.provider === 'demo' ? 'payments.server.demo' : 'payments.server.none')}
           </Alert>
         )}
         {error && (
-          <Alert severity="error" sx={{ mt: 2 }}>
+          <Alert className="mt-4" severity="error">
             {error}
           </Alert>
         )}
-        <Box
-          component="form"
+        <form className="mt-4 grid gap-4 grid-cols-[1fr] md:grid-cols-[1.2fr_1fr_1fr] items-start"
           noValidate
           autoComplete="off"
           onSubmit={(e) => {
             e.preventDefault();
             save();
           }}
-          sx={{ mt: 2, display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1.2fr 1fr 1fr' }, alignItems: 'start' }}
         >
           <FormField label={t('payments.keyId')} required>
             <TextInput
@@ -163,7 +150,7 @@ export function RazorpayForm({ initial, webhookUrl }: { initial: RazorpayAccount
               slotProps={{ htmlInput: { autoComplete: 'new-password', 'data-testid': 'razorpay-webhook-secret' } }}
             />
           </FormField>
-          <Box sx={{ gridColumn: '1 / -1' }}>
+          <div className="col-span-full">
           <FormField label={t('payments.webhookUrl')}>
             <TextInput
               value={webhookUrl}
@@ -174,7 +161,7 @@ export function RazorpayForm({ initial, webhookUrl }: { initial: RazorpayAccount
                   endAdornment: (
                     <Tooltip title={t('payments.copy')}>
                       <IconButton aria-label={t('payments.copy')} onClick={copy} edge="end">
-                        <ContentCopyOutlined fontSize="small" />
+                        <ContentCopyOutlined className="size-5" />
                       </IconButton>
                     </Tooltip>
                   ),
@@ -182,21 +169,21 @@ export function RazorpayForm({ initial, webhookUrl }: { initial: RazorpayAccount
               }}
             />
           </FormField>
-          </Box>
+          </div>
           {result && (
-            <Alert severity={result.ok ? 'success' : 'error'} sx={{ gridColumn: '1 / -1' }} data-testid="razorpay-test-result">
+            <Alert className="col-span-full" severity={result.ok ? 'success' : 'error'} data-testid="razorpay-test-result">
               {result.text}
             </Alert>
           )}
-          <Box sx={{ gridColumn: '1 / -1', display: 'flex', gap: 1.5, justifyContent: 'flex-end', flexWrap: 'wrap', mt: 1 }}>
+          <div className="col-span-full flex gap-3 justify-end flex-wrap mt-2">
             <Button onClick={test} disabled={!saved.configured || testing || pending} data-testid="razorpay-test" startIcon={testing ? <CircularProgress size={16} color="inherit" /> : undefined}>
               {t('payments.test')}
             </Button>
             <Button type="submit" variant="contained" disabled={pending || !changed} data-testid="razorpay-save" startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
               {t('payments.save')}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </form>
       </Card>
       <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast(null)} message={toast} />
     </>

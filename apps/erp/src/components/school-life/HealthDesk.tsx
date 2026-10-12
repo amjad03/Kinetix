@@ -1,8 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addVaccination, loadRecord, logVisit, saveProfile } from '@/app/(dashboard)/health/actions';
 import { Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
@@ -10,6 +6,7 @@ import { UrlSelect } from '@/components/UrlSelect';
 import { useI18n } from '@/i18n/client';
 import { BLOOD_GROUPS, formatContacts, type HealthChild, type HealthRecord, type HealthVisit, type SectionOption } from '@/lib/school-life';
 
+import { Button } from '@/components/kx';
 type Form = 'profile' | 'visit' | 'vaccine' | null;
 
 /** Student health records: choose a class and a child, then the profile, nurse visits and vaccinations. Every open of a record is audited by the API. */
@@ -90,45 +87,45 @@ export function HealthDesk({ sections, sectionId, kids, visits }: { sections: Se
 
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('hl.notice')}</Typography>
+      <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('hl.notice')}</p>
       <Tabbed label={t('nav.health')} initial="students" tabs={tabs} />
       {rec && (
         <InfoDialog title={rec.student.fullName} onClose={() => setRec(null)}>
-          <Stack spacing={2} data-testid="hl-detail">
-            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+          <div className="flex flex-col gap-4" data-testid="hl-detail">
+            <div className="flex flex-row gap-2 flex-wrap">
               <Button size="small" variant="contained" onClick={() => setForm('profile')}>{t('hl.editProfile')}</Button>
               <Button size="small" variant="outlined" onClick={() => setForm('visit')}>{t('hl.logVisit')}</Button>
               <Button size="small" variant="outlined" onClick={() => setForm('vaccine')}>{t('hl.addVaccine')}</Button>
-            </Stack>
+            </div>
             {p ? (
               <div>
-                <Typography variant="body2">{t('hl.f.blood')}: {p.bloodGroup ?? t('hl.f.unknown')}</Typography>
-                <Typography variant="body2">{t('hl.f.allergies')}: {p.allergies.join(', ') || '-'}</Typography>
-                <Typography variant="body2">{t('hl.f.conditions')}: {p.conditions.join(', ') || '-'}</Typography>
-                <Typography variant="body2">{t('hl.f.medications')}: {p.medications.join(', ') || '-'}</Typography>
+                <p className="text-[13px] leading-[19px]">{t('hl.f.blood')}: {p.bloodGroup ?? t('hl.f.unknown')}</p>
+                <p className="text-[13px] leading-[19px]">{t('hl.f.allergies')}: {p.allergies.join(', ') || '-'}</p>
+                <p className="text-[13px] leading-[19px]">{t('hl.f.conditions')}: {p.conditions.join(', ') || '-'}</p>
+                <p className="text-[13px] leading-[19px]">{t('hl.f.medications')}: {p.medications.join(', ') || '-'}</p>
                 {p.emergencyContacts.map((c) => (
-                  <Typography key={c.phone} variant="body2">{t('hl.contact')}: {c.name} ({c.relation}) {c.phone}</Typography>
+                  <p className="text-[13px] leading-[19px]" key={c.phone}>{t('hl.contact')}: {c.name} ({c.relation}) {c.phone}</p>
                 ))}
-                {p.notes && <Typography variant="body2">{p.notes}</Typography>}
+                {p.notes && <p className="text-[13px] leading-[19px]">{p.notes}</p>}
               </div>
             ) : (
-              <Typography variant="body2" color="text.secondary">{t('hl.noProfile')}</Typography>
+              <p className="text-[13px] leading-[19px] text-muted-foreground">{t('hl.noProfile')}</p>
             )}
             <div>
-              <Typography variant="subtitle2">{t('hl.tab.visits')}</Typography>
-              {rec.visits.length === 0 && <Typography variant="body2" color="text.secondary">{t('hl.emptyVisits')}</Typography>}
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('hl.tab.visits')}</h6>
+              {rec.visits.length === 0 && <p className="text-[13px] leading-[19px] text-muted-foreground">{t('hl.emptyVisits')}</p>}
               {rec.visits.map((v) => (
-                <Typography key={v.id} variant="body2">{fmt.dateTime(v.visitedAt)}: {v.complaint}{v.action ? ` (${v.action})` : ''} {v.sentHome && <Pill label={t('hl.col.sentHome')} warn />}</Typography>
+                <p className="text-[13px] leading-[19px]" key={v.id}>{fmt.dateTime(v.visitedAt)}: {v.complaint}{v.action ? ` (${v.action})` : ''} {v.sentHome && <Pill label={t('hl.col.sentHome')} warn />}</p>
               ))}
             </div>
             <div>
-              <Typography variant="subtitle2">{t('hl.vaccinations')}</Typography>
-              {rec.vaccinations.length === 0 && <Typography variant="body2" color="text.secondary">{t('hl.emptyVaccines')}</Typography>}
+              <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('hl.vaccinations')}</h6>
+              {rec.vaccinations.length === 0 && <p className="text-[13px] leading-[19px] text-muted-foreground">{t('hl.emptyVaccines')}</p>}
               {rec.vaccinations.map((v) => (
-                <Typography key={v.id} variant="body2">{v.vaccine}{v.dose ? ` (${v.dose})` : ''}: {fmt.date(v.givenOn)}{v.nextDueOn ? `, ${t('hl.nextDue', { date: fmt.date(v.nextDueOn) })}` : ''}</Typography>
+                <p className="text-[13px] leading-[19px]" key={v.id}>{v.vaccine}{v.dose ? ` (${v.dose})` : ''}: {fmt.date(v.givenOn)}{v.nextDueOn ? `, ${t('hl.nextDue', { date: fmt.date(v.nextDueOn) })}` : ''}</p>
               ))}
             </div>
-          </Stack>
+          </div>
         </InfoDialog>
       )}
       {form === 'profile' && rec && <FormDialog title={t('hl.editProfile')} fields={profileFields} onSubmit={(v) => saveProfile(rec.student.id, v)} onClose={done} />}

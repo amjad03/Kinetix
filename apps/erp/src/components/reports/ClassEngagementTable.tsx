@@ -1,20 +1,15 @@
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import { TableFrame } from '@/components/DataTable';
 import type { I18n } from '@/i18n/format';
 import type { ClassEngagement } from '@/lib/insights';
 
+import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
 /** Per-class use of the board: sessions and hours, then what the class did (polls, answers, whiteboards, recordings). */
 export function ClassEngagementTable({ rows, i18n: { t, fmt } }: { rows: ClassEngagement[]; i18n: I18n }) {
   const used = rows.filter((r) => r.sessions > 0);
-  if (used.length === 0) return <Typography color="text.secondary">{t('reports.classroom.noSessions')}</Typography>;
+  if (used.length === 0) return <p className="text-sm leading-[21px] text-muted-foreground">{t('reports.classroom.noSessions')}</p>;
   return (
     <TableFrame testId="class-engagement">
-      <Table size="small" aria-label={t('reports.classroom.byClass')} sx={{ minWidth: 720 }}>
+      <Table className="min-w-[720px]" size="small" aria-label={t('reports.classroom.byClass')}>
         <TableHead>
           <TableRow>
             <TableCell>{t('reports.classroom.col.class')}</TableCell>
@@ -31,10 +26,10 @@ export function ClassEngagementTable({ rows, i18n: { t, fmt } }: { rows: ClassEn
           {used.map((r) => (
             <TableRow key={r.id} hover data-testid="class-engagement-row">
               <TableCell>
-                <Typography variant="subtitle2">{r.label}</Typography>
-                <Typography variant="caption" color="text.secondary">
+                <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{r.label}</h6>
+                <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                   {r.parent}
-                </Typography>
+                </span>
               </TableCell>
               <TableCell align="right">{fmt.number(r.sessions)}</TableCell>
               <TableCell align="right">{fmt.number(r.hours)}</TableCell>

@@ -1,21 +1,11 @@
 'use client';
-
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useRef, useState, useTransition } from 'react';
 import { DeskTable, Pill } from '@/components/campus/Desk';
 import { previewMigration, rollbackBatch, runMigration, saveMigrationMapping, type MigrationPreview, type MigrationReport } from '@/app/(dashboard)/exams/university-actions';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
+import { Alert, Button, Card, Checkbox, FormControlLabel, MenuItem, TextField } from '@/components/kx';
 export const MIGRATION_ENTITIES = ['programmes', 'faculty', 'students', 'marks', 'attendance', 'fees'] as const;
 export interface SavedMapping {
   id: string;
@@ -88,11 +78,11 @@ export function MigrationDesk({ mappings, batches }: { mappings: SavedMapping[];
 
   const saved = mappings.filter((m) => m.entity === entity);
   return (
-    <Stack spacing={3}>
-      <Card sx={{ p: 2.5 }}>
-        <Stack spacing={2}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
-            <TextField select size="small" label={t('uni.mig.entity')} value={entity} onChange={(e) => { setEntity(e.target.value as typeof entity); setPreview(null); setReport(null); }} sx={{ minWidth: 260 }}>
+    <div className="flex flex-col gap-6">
+      <Card className="p-5">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+            <TextField className="min-w-[260px]" select size="small" label={t('uni.mig.entity')} value={entity} onChange={(e) => { setEntity(e.target.value as typeof entity); setPreview(null); setReport(null); }}>
               {MIGRATION_ENTITIES.map((e) => (
                 <MenuItem key={e} value={e}>{t(`uni.mig.entity.${e}` as MessageKey)}</MenuItem>
               ))}
@@ -101,29 +91,29 @@ export function MigrationDesk({ mappings, batches }: { mappings: SavedMapping[];
               {t('uni.mig.chooseFile')}
               <input ref={fileRef} hidden type="file" accept=".csv,.xlsx,text/csv" onChange={read} />
             </Button>
-          </Stack>
+          </div>
           {message && <Alert severity={message.tone}>{message.text}</Alert>}
-        </Stack>
+        </div>
       </Card>
 
       {preview && (
-        <Card sx={{ p: 2.5 }}>
-          <Typography variant="h6" component="h2" sx={{ mb: 0.5 }}>{t('uni.mig.mapTitle')}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('uni.mig.constHint')}</Typography>
+        <Card className="p-5">
+          <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-1">{t('uni.mig.mapTitle')}</h2>
+          <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">{t('uni.mig.constHint')}</p>
           {saved.length > 0 && (
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2, flexWrap: "wrap" }}>
-              <Typography variant="body2">{t('uni.mig.savedMappings')}:</Typography>
+            <div className="flex flex-row gap-2 items-center mb-4 flex-wrap">
+              <p className="text-[13px] leading-[19px]">{t('uni.mig.savedMappings')}:</p>
               {saved.map((m) => (
                 <Button key={m.id} size="small" variant="outlined" onClick={() => setMapping(m.mapping)}>{m.name}</Button>
               ))}
-            </Stack>
+            </div>
           )}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          <div className="grid grid-cols-[1fr] md:grid-cols-[1fr_1fr] gap-4">
             {preview.fields.map((f) => {
               const v = mapping[f.key] ?? '';
               const isConst = v.startsWith('=');
               return (
-                <Stack key={f.key} direction="row" spacing={1}>
+                <div className="flex flex-row gap-2" key={f.key}>
                   <TextField select size="small" fullWidth required={f.required} label={f.label} value={isConst || preview.headers.includes(v) ? (isConst ? '__const' : v) : ''} onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value === '__const' ? '=' : e.target.value })}>
                     <MenuItem value="">{t('uni.mig.notMapped')}</MenuItem>
                     {preview.headers.map((h) => (
@@ -131,27 +121,27 @@ export function MigrationDesk({ mappings, batches }: { mappings: SavedMapping[];
                     ))}
                     <MenuItem value="__const">=…</MenuItem>
                   </TextField>
-                  {isConst && <TextField size="small" value={v.slice(1)} onChange={(e) => setMapping({ ...mapping, [f.key]: `=${e.target.value}` })} sx={{ width: 140 }} />}
-                </Stack>
+                  {isConst && <TextField className="w-[140px]" size="small" value={v.slice(1)} onChange={(e) => setMapping({ ...mapping, [f.key]: `=${e.target.value}` })} />}
+                </div>
               );
             })}
-          </Box>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' }, mt: 2 }}>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-center mt-4">
             <TextField size="small" label={t('uni.mig.mappingName')} value={name} onChange={(e) => setName(e.target.value)} />
             <Button variant="outlined" disabled={pending || !name.trim()} onClick={save}>{t('uni.mig.saveMapping')}</Button>
-          </Stack>
-          {missing.length > 0 && <Alert severity="warning" sx={{ mt: 2 }}>{t('uni.mig.missing', { fields: missing.join(', ') })}</Alert>}
-          <FormControlLabel sx={{ display: 'block', mt: 1 }} control={<Checkbox checked={partial} onChange={(e) => setPartial(e.target.checked)} />} label={t('uni.mig.partial')} />
-          <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+          </div>
+          {missing.length > 0 && <Alert className="mt-4" severity="warning">{t('uni.mig.missing', { fields: missing.join(', ') })}</Alert>}
+          <FormControlLabel className="block mt-2" control={<Checkbox checked={partial} onChange={(e) => setPartial(e.target.checked)} />} label={t('uni.mig.partial')} />
+          <div className="flex flex-row gap-2 mt-2">
             <Button variant="outlined" disabled={pending || missing.length > 0} onClick={() => go(true)}>{pending ? t('uni.mig.working') : t('uni.mig.dryRun')}</Button>
             <Button variant="contained" disabled={pending || missing.length > 0} onClick={() => go(false)}>{t('uni.mig.commit')}</Button>
-          </Stack>
+          </div>
         </Card>
       )}
 
       {report && (
-        <Card sx={{ p: 2.5 }}>
-          <Alert severity={report.totals.error ? 'warning' : 'success'} sx={{ mb: 2 }}>{t('uni.mig.totals', report.totals)}</Alert>
+        <Card className="p-5">
+          <Alert className="mb-4" severity={report.totals.error ? 'warning' : 'success'}>{t('uni.mig.totals', report.totals)}</Alert>
           <DeskTable
             title={t('uni.mig.recon')}
             head={[t('uni.mig.what'), t('uni.mig.file'), t('uni.mig.stored'), t('uni.mig.match')]}
@@ -181,6 +171,6 @@ export function MigrationDesk({ mappings, batches }: { mappings: SavedMapping[];
         ])}
         testId="migration-batches"
       />
-    </Stack>
+    </div>
   );
 }

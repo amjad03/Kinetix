@@ -1,4 +1,3 @@
-import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { Tiles } from '@/components/campus/Desk';
 import { GrievanceDesk } from '@/components/grievances/GrievanceDesk';
@@ -39,9 +38,9 @@ export default async function GrievancesPage() {
         <StatTile label={t('gv.stat.resolution')} value={stats.averageResolutionHours === null ? '-' : fmt.number(stats.averageResolutionHours)} unit={t('gv.stat.hours')} />
       </Tiles>
       {stats.committee && (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }} data-testid="committee-count">
+        <p className="text-[13px] leading-[19px] text-muted-foreground mb-6" data-testid="committee-count">
           {t('gv.committee')}: {t('gv.committeeCaption', { open: stats.committee.open, total: stats.committee.total })}
-        </Typography>
+        </p>
       )}
       <GrievanceDesk tickets={tickets} incidents={incidents.error === undefined ? incidents.data : null} flows={flows} nowIso={new Date().toISOString()} />
     </>
