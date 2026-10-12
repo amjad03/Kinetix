@@ -290,3 +290,24 @@ export function crumbsFor(groups: readonly NavGroup[], pathname: string): Crumb[
   if (deeper) out.push({ label: 'ui.crumb.details' });
   return out;
 }
+
+/** The sidebar's top-level sections (the redesign): each holds whole groups, in this order. */
+export const NAV_SECTIONS: readonly { id: string; label: MessageKey; groups: readonly string[] }[] = [
+  { id: 'overview', label: 'sec.overview', groups: ['dashboard', 'reports', 'work', 'communication'] },
+  { id: 'academics', label: 'sec.academics', groups: ['admissions', 'students', 'academics', 'timetable', 'attendance', 'lms', 'success'] },
+  { id: 'exams', label: 'sec.exams', groups: ['exams'] },
+  { id: 'finance', label: 'sec.finance', groups: ['finance', 'hr'] },
+  { id: 'campus', label: 'sec.campus', groups: ['library', 'campus', 'inventory'] },
+  { id: 'accreditation', label: 'sec.accreditation', groups: ['obe'] },
+  { id: 'admin', label: 'sec.admin', groups: ['settings'] },
+];
+
+/** The visible groups arranged under the sidebar sections; empty sections are dropped and unknown groups go to Admin. */
+export function navSections(groups: readonly NavGroup[]): { id: string; label: MessageKey; groups: NavGroup[] }[] {
+  const known = new Set(NAV_SECTIONS.flatMap((s) => s.groups));
+  return NAV_SECTIONS.map((s) => ({
+    id: s.id,
+    label: s.label,
+    groups: groups.filter((g) => s.groups.includes(g.id) || (s.id === 'admin' && !known.has(g.id))),
+  })).filter((s) => s.groups.length > 0);
+}

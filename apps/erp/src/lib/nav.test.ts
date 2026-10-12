@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SECTION_ROLES } from './access';
-import { crumbsFor, findNav, NAV_GROUPS, visibleGroups } from './nav';
+import { crumbsFor, findNav, NAV_GROUPS, navSections, visibleGroups } from './nav';
 
 const hrefs = (roles: string[], platform = false) => visibleGroups(roles as never, platform).flatMap((g) => g.items.map((i) => i.href));
 
@@ -54,5 +54,19 @@ describe('breadcrumbs', () => {
     expect(crumbsFor(groups, '/obe').map((c) => c.label)).toEqual(['nav.dashboard', 'grp.obe', 'nav.obe']);
     expect(crumbsFor(groups, '/students/123').map((c) => c.label)).toEqual(['nav.dashboard', 'grp.students', 'nav.students', 'ui.crumb.details']);
     expect(crumbsFor(groups, '/payroll/runs/9')[2]).toEqual({ label: 'nav.payroll', href: '/payroll' });
+  });
+});
+
+describe('sidebar sections', () => {
+  it('places every group in exactly one section, in the redesign order', () => {
+    const all = visibleGroups(['principal'], true);
+    const secs = navSections(all);
+    expect(secs.map((s) => s.id)).toEqual(['overview', 'academics', 'exams', 'finance', 'campus', 'accreditation', 'admin']);
+    expect(secs.flatMap((s) => s.groups).length).toBe(all.length);
+  });
+
+  it('drops sections a role cannot open', () => {
+    const secs = navSections(visibleGroups(['librarian']));
+    expect(secs.some((s) => s.id === 'exams')).toBe(false);
   });
 });

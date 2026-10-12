@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -12,6 +11,8 @@ import { isWorkspace, WORKSPACE_COOKIE } from '@/lib/workspaces';
 import { densityFor, DENSITY_COOKIE } from '@/lib/density';
 import { CHANGE_PASSWORD_PATH } from '@/lib/password';
 import { getI18n } from '@/i18n/server';
+import { summarize } from '@/lib/setup';
+import { loadSetup } from '@/lib/setup-load';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,12 +26,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const { t } = await getI18n();
   if (me.error !== undefined) {
     return (
-      <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', p: 3 }}>
+      <div className="min-h-dvh bg-background p-6">
         <Logo />
-        <Box sx={{ maxWidth: 640, mx: 'auto', mt: 10 }}>
+        <div className="mx-auto mt-20 max-w-[640px]">
           <ErrorState title={t('state.cantOpen')} message={me.error} />
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
   if (!canUseErp(me.data.roles)) redirect('/auth/end?reason=denied');
@@ -39,12 +40,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   if (me.data.mustSetUpMfa) redirect('/account/security');
   // The top bar's extras are best effort: a failure hides them rather than the page.
   const roles = me.data.roles;
-  const [structure, notes, caps] = await Promise.all([
+  const [structure, notes, caps, setupSteps] = await Promise.all([
     canSee(roles, 'school') || canSee(roles, 'fees') || canSee(roles, 'admissions')
       ? load(() => api<{ academicYears: { id: string; label: string; isCurrent: boolean }[] }>('/v1/admin/structure'))
       : Promise.resolve(null),
     load(() => api<Notifications>('/v1/notifications?limit=10')),
     load(() => api<{ disabledModules: string[]; academicModel?: string }>('/v1/institution/capabilities')),
+    canSee(roles, 'institutionSetup') ? loadSetup() : Promise.resolve(null),
   ]);
   const years = structure?.data?.academicYears ?? [];
   const picked = (await cookies()).get(YEAR_COOKIE)?.value ?? '';
@@ -60,6 +62,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       unread={notes.data?.unread ?? 0}
       disabledModules={caps.data?.disabledModules ?? []}
       workspace={isWorkspace(wsCookie) ? wsCookie : 'all'}
+      sidebarOpen={(await cookies()).get('sidebar_state')?.value !== 'false'}
+      setup={setupSteps ? summarize(setupSteps) : null}
       density={densityFor(caps.data?.academicModel, (await cookies()).get(DENSITY_COOKIE)?.value)}
     >
       {children}

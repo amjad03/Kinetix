@@ -1,41 +1,26 @@
 'use client';
 
-import { WorkspaceSwitcher } from './WorkspaceSwitcher';
-import type { Workspace } from '@/lib/workspaces';
-import Check from '@mui/icons-material/Check';
-import LockOutlined from '@mui/icons-material/LockOutlined';
-import SecurityOutlined from '@mui/icons-material/SecurityOutlined';
-import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
-import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsNoneOutlined from '@mui/icons-material/NotificationsNoneOutlined';
-import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
-import ViewAgendaOutlined from '@mui/icons-material/ViewAgendaOutlined';
-import ViewListOutlined from '@mui/icons-material/ViewListOutlined';
-import Avatar from '@mui/material/Avatar';
-import Badge from '@mui/material/Badge';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Popover from '@mui/material/Popover';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+import { useColorScheme } from '@mui/material/styles';
+import { Bell, Check, KeyRound, Languages, LogOut, Monitor, Moon, Rows3, ShieldCheck, Sun } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { Fragment, useTransition } from 'react';
 import { setLanguage } from '@/app/language/actions';
 import { signOut } from '@/app/login/actions';
 import { markNotificationsRead, setAcademicYear, setDensity } from '@/app/shell/actions';
+import { Avatar, AvatarFallback } from '@/components/shadcn/avatar';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/shadcn/breadcrumb';
+import { Button } from '@/components/shadcn/button';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/shadcn/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn/popover';
+import { Separator } from '@/components/shadcn/separator';
+import { SidebarTrigger } from '@/components/shadcn/sidebar';
 import { useI18n } from '@/i18n/client';
-import { BCP47, LANGUAGE_NAMES, LOCALES } from '@/i18n/locales';
-import type { MessageKey } from '@/i18n/messages';
-import type { NavGroup } from '@/lib/nav';
-import type { RoleName } from '@/lib/types';
+import { BCP47, LANGUAGE_NAMES, LOCALES, type Locale } from '@/i18n/locales';
+import type { Crumb, NavGroup } from '@/lib/nav';
+import { cn } from '@/lib/utils';
 import { initials } from '../initials';
 import { CommandSearch } from './CommandSearch';
 
@@ -53,293 +38,247 @@ export interface ShellYear {
   isCurrent: boolean;
 }
 
-const ROLE_LABEL: Record<string, MessageKey> = {
-  principal: 'role.principal',
-  tenant_admin: 'role.tenant_admin',
-  hod: 'role.hod',
-  teacher: 'role.teacher',
-  accountant: 'role.accountant',
-  librarian: 'role.librarian',
-  transport_manager: 'role.transport_manager',
-  hostel_warden: 'role.hostel_warden',
-  canteen_manager: 'role.canteen_manager',
-  store_keeper: 'role.store_keeper',
-  admissions_officer: 'role.admissions_officer',
-  hr_manager: 'role.hr_manager',
-  placement_officer: 'role.placement_officer',
-  research_coordinator: 'role.research_coordinator',
-  grievance_officer: 'role.grievance_officer',
-  counsellor: 'role.counsellor',
-  icc_member: 'role.icc_member',
-  exam_controller: 'role.exam_controller',
-  examiner: 'role.examiner',
-  quality_officer: 'role.quality_officer',
-  alumni: 'role.alumni',
-  external_examiner: 'role.external_examiner',
-  mentor: 'role.mentor',
-  accreditation_reviewer: 'role.accreditation_reviewer',
-  university_admin: 'role.university_admin',
-};
+const SHORT: Record<Locale, string> = { en: 'EN', hi: 'हिं', kn: 'ಕನ್ನಡ' };
 
+/** Avatar colours from the redesign, picked by name. */
+const AV = ['bg-[#d7f2ee] text-[#0b5e57]', 'bg-[#fdecc8] text-[#7a4405]', 'bg-[#e3e8f0] text-[#334155]', 'bg-[#ffe2cc] text-[#9a3412]', 'bg-[#dde7fd] text-[#1e3a8a]', 'bg-[#f9dde7] text-[#9d174d]'];
+export const avatarTone = (name: string) => AV[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
+
+/**
+ * The top bar: menu toggle, breadcrumbs, ⌘K search, academic year, language (EN · हिं · ಕನ್ನಡ),
+ * notifications, light/dark theme and the profile menu.
+ */
 export function TopBar({
   user,
-  school,
+  roleText,
   groups,
-  workspace,
+  crumbs,
   years,
   yearId,
   notices,
   unread,
   density = 'comfortable',
-  onMenu,
 }: {
-  user: { fullName: string; email: string | null; roles: RoleName[] };
-  school: string;
+  user: { fullName: string; email: string | null };
+  roleText: string;
   groups: NavGroup[];
-  workspace: Workspace;
+  crumbs: Crumb[];
   years: ShellYear[];
   yearId: string;
   notices: ShellNotice[];
   unread: number;
   density?: 'comfortable' | 'compact';
-  onMenu: () => void;
 }) {
   const { t, fmt, locale } = useI18n();
   const router = useRouter();
-  const [profile, setProfile] = useState<HTMLElement | null>(null);
-  const [lang, setLang] = useState<HTMLElement | null>(null);
-  const [year, setYear] = useState<HTMLElement | null>(null);
-  const [bell, setBell] = useState<HTMLElement | null>(null);
   const [busy, start] = useTransition();
-  const roleText = user.roles
-    .map((r) => ROLE_LABEL[r])
-    .filter(Boolean)
-    .map((k) => t(k))
-    .join(' · ');
+  const { mode, systemMode, setMode } = useColorScheme();
+  const dark = (mode === 'system' ? systemMode : mode) === 'dark';
   const current = years.find((y) => y.id === yearId) ?? years.find((y) => y.isCurrent) ?? years[0];
+  const changeLang = (l: Locale) => {
+    if (l === locale) return;
+    start(async () => {
+      await setLanguage(l);
+      router.refresh();
+    });
+  };
 
   return (
-    <Box
-      component="header"
-      className="kx-chrome"
-      sx={{ position: 'sticky', top: 0, zIndex: 1100, height: 64, display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 }, px: { xs: 1.5, md: 3 }, bgcolor: 'kx.pane', borderBottom: 1, borderColor: 'm3.outlineVariant' }}
-    >
-      <IconButton onClick={onMenu} aria-label={t('shell.menu')} sx={{ display: { xs: 'inline-flex', md: 'none' } }}>
-        <MenuIcon />
-      </IconButton>
-      <Typography component="p" noWrap data-testid="school-name" sx={{ display: { xs: 'none', lg: 'block' }, maxWidth: 280, fontSize: '0.875rem', fontWeight: 600, color: 'text.primary' }}>
-        {school}
-      </Typography>
-      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: { xs: 'flex-start', md: 'center' } }}>
-        <CommandSearch groups={groups} />
-      </Box>
+    <header className="kx-chrome sticky top-0 z-30 flex h-[60px] shrink-0 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur-md md:px-5">
+      <SidebarTrigger aria-label={t('shell.toggleSidebar')} className="size-9 text-muted-foreground" />
+      <Separator orientation="vertical" className="mr-1 hidden data-[orientation=vertical]:h-5 md:block" />
+      {crumbs.length > 0 && (
+        <Breadcrumb className="hidden min-w-0 md:block">
+          <BreadcrumbList className="flex-nowrap text-[13px]">
+            {crumbs.map((c, i) => (
+              <Fragment key={`${c.label}-${i}`}>
+                {i > 0 && <BreadcrumbSeparator />}
+                <BreadcrumbItem className="min-w-0">
+                  {i === crumbs.length - 1 ? (
+                    <BreadcrumbPage className="truncate font-semibold">{t(c.label)}</BreadcrumbPage>
+                  ) : c.href ? (
+                    <BreadcrumbLink asChild>
+                      <Link href={c.href}>{t(c.label)}</Link>
+                    </BreadcrumbLink>
+                  ) : (
+                    <span className="truncate">{t(c.label)}</span>
+                  )}
+                </BreadcrumbItem>
+              </Fragment>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
+      <CommandSearch groups={groups} />
 
-      <WorkspaceSwitcher value={workspace} />
       {current && (
-        <>
-          <Button
-            onClick={(e) => setYear(e.currentTarget)}
-            aria-haspopup="menu"
-            aria-label={t('shell.year', { year: current.label })}
-            variant="outlined"
-            color="inherit"
-            size="small"
-            sx={{ display: { xs: 'none', sm: 'inline-flex' }, borderColor: 'm3.outlineVariant', color: 'text.primary', whiteSpace: 'nowrap' }}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="hidden h-9 sm:inline-flex" aria-label={t('shell.year', { year: current.label })}>
+              {t('shell.yearShort', { year: current.label })}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" aria-label={t('shell.yearMenu')}>
+            <DropdownMenuRadioGroup
+              value={current.id}
+              onValueChange={(id) => {
+                const y = years.find((x) => x.id === id);
+                if (!y) return;
+                start(async () => {
+                  await setAcademicYear(y.isCurrent ? '' : y.id);
+                  router.refresh();
+                });
+              }}
+            >
+              {years.map((y) => (
+                <DropdownMenuRadioItem key={y.id} value={y.id} disabled={busy}>
+                  <span className="flex-1">{y.label}</span>
+                  {y.isCurrent && <span className="ml-3 text-xs text-muted-foreground">{t('shell.yearCurrent')}</span>}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
+      <div role="group" aria-label={t('shell.language')} data-testid="language-button" className="hidden gap-0.5 rounded-md border bg-card p-[3px] lg:inline-flex">
+        {LOCALES.map((l) => (
+          <button
+            key={l}
+            type="button"
+            lang={BCP47[l]}
+            aria-pressed={l === locale}
+            aria-label={LANGUAGE_NAMES[l]}
+            disabled={busy}
+            data-testid={`language-${l}`}
+            onClick={() => changeLang(l)}
+            className={cn('rounded-[7px] px-2 py-1 text-[12.5px] font-medium whitespace-nowrap text-muted-foreground hover:text-foreground', l === locale && 'bg-accent font-semibold text-foreground')}
           >
-            {t('shell.yearShort', { year: current.label })}
+            {SHORT[l]}
+          </button>
+        ))}
+      </div>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative size-9 text-muted-foreground" aria-label={unread ? t('shell.notificationsUnread', { n: unread }) : t('shell.notifications')}>
+            <Bell className="size-[18px]" />
+            {unread > 0 && <span className="absolute top-[7px] right-2 size-2 rounded-full border-2 border-card bg-orange" />}
           </Button>
-          <Menu anchorEl={year} open={!!year} onClose={() => setYear(null)} slotProps={{ list: { 'aria-label': t('shell.yearMenu') } }}>
-            {years.map((y) => (
-              <MenuItem
-                key={y.id}
-                selected={y.id === current.id}
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-[min(380px,calc(100vw-24px))] p-0">
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <h2 className="text-sm font-semibold">{t('shell.notifications')}</h2>
+            {unread > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
                 disabled={busy}
                 onClick={() =>
                   start(async () => {
-                    await setAcademicYear(y.isCurrent ? '' : y.id);
-                    setYear(null);
+                    await markNotificationsRead();
                     router.refresh();
                   })
                 }
               >
-                <ListItemText>{y.label}</ListItemText>
-                {y.isCurrent && (
-                  <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                    {t('shell.yearCurrent')}
-                  </Typography>
-                )}
-              </MenuItem>
-            ))}
-          </Menu>
-        </>
-      )}
-
-      <Tooltip title={t(density === 'compact' ? 'shell.densityCompact' : 'shell.densityComfortable')}>
-        <IconButton
-          aria-label={t('shell.density')}
-          aria-pressed={density === 'compact'}
-          disabled={busy}
-          data-testid="density-button"
-          onClick={() =>
-            start(async () => {
-              await setDensity(density === 'compact' ? 'comfortable' : 'compact');
-              router.refresh();
-            })
-          }
-        >
-          {density === 'compact' ? <ViewAgendaOutlined /> : <ViewListOutlined />}
-        </IconButton>
-      </Tooltip>
-
-      <Tooltip title={t('shell.language')}>
-        <IconButton onClick={(e) => setLang(e.currentTarget)} aria-label={t('shell.language')} aria-haspopup="menu" data-testid="language-button">
-          <TranslateOutlined />
-        </IconButton>
-      </Tooltip>
-      <Menu anchorEl={lang} open={!!lang} onClose={() => setLang(null)}>
-        {LOCALES.map((l) => (
-          <MenuItem
-            key={l}
-            lang={BCP47[l]}
-            selected={l === locale}
-            disabled={busy}
-            data-testid={`language-${l}`}
-            onClick={() => {
-              if (l === locale) return setLang(null);
-              start(async () => {
-                await setLanguage(l);
-                setLang(null);
-                router.refresh();
-              });
-            }}
-          >
-            <ListItemIcon>{l === locale && <Check fontSize="small" />}</ListItemIcon>
-            <ListItemText>{LANGUAGE_NAMES[l]}</ListItemText>
-          </MenuItem>
-        ))}
-      </Menu>
-
-      <Tooltip title={t('shell.notifications')}>
-        <IconButton onClick={(e) => setBell(e.currentTarget)} aria-label={unread ? t('shell.notificationsUnread', { n: unread }) : t('shell.notifications')} aria-haspopup="dialog">
-          <Badge badgeContent={unread} color="error" max={99}>
-            <NotificationsNoneOutlined />
-          </Badge>
-        </IconButton>
-      </Tooltip>
-      <Popover anchorEl={bell} open={!!bell} onClose={() => setBell(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }} slotProps={{ paper: { sx: { width: 360, maxWidth: 'calc(100vw - 24px)' }, 'aria-label': t('shell.notifications') } as never }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.25 }}>
-          <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 600 }}>
-            {t('shell.notifications')}
-          </Typography>
-          {unread > 0 && (
-            <Button
-              size="small"
-              disabled={busy}
-              onClick={() =>
-                start(async () => {
-                  await markNotificationsRead();
-                  router.refresh();
-                })
-              }
-            >
-              {t('shell.markRead')}
-            </Button>
+                {t('shell.markRead')}
+              </Button>
+            )}
+          </div>
+          <Separator />
+          {notices.length === 0 ? (
+            <p className="p-6 text-center text-sm text-muted-foreground">{t('shell.noNotifications')}</p>
+          ) : (
+            <ul className="max-h-[360px] overflow-y-auto">
+              {notices.map((n) => (
+                <li key={n.id} className={cn('border-b px-4 py-2.5 last:border-0', !n.readAt && 'bg-teal-soft/60')}>
+                  <p className={cn('text-[13px]', n.readAt ? 'font-medium' : 'font-semibold')}>{n.title}</p>
+                  {n.body && <p className="line-clamp-2 text-xs text-muted-foreground">{n.body}</p>}
+                  <p className="text-xs text-faint">{fmt.relative(n.createdAt)}</p>
+                </li>
+              ))}
+            </ul>
           )}
-        </Box>
-        <Divider />
-        {notices.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" sx={{ p: 3, textAlign: 'center' }}>
-            {t('shell.noNotifications')}
-          </Typography>
-        ) : (
-          <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, maxHeight: 360, overflowY: 'auto' }}>
-            {notices.map((n) => (
-              <Box component="li" key={n.id} sx={{ px: 2, py: 1.25, borderBottom: 1, borderColor: 'm3.outlineVariant', bgcolor: n.readAt ? 'transparent' : 'm3.secondaryContainer' }}>
-                <Typography variant="body2" sx={{ fontWeight: n.readAt ? 500 : 700 }}>
-                  {n.title}
-                </Typography>
-                {n.body && (
-                  <Typography variant="caption" color="text.secondary" component="p" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {n.body}
-                  </Typography>
-                )}
-                <Typography variant="caption" color="text.secondary">
-                  {fmt.relative(n.createdAt)}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        )}
+        </PopoverContent>
       </Popover>
 
-      <Tooltip title={`${user.fullName}${roleText ? ` · ${roleText}` : ''}`}>
-        <IconButton onClick={(e) => setProfile(e.currentTarget)} aria-label={t('shell.account')} aria-haspopup="menu" sx={{ p: 0.5, ml: 0.5 }}>
-          <Avatar sx={{ width: 36, height: 36, bgcolor: 'm3.primaryContainer', color: 'm3.onPrimaryContainer', fontSize: 14, fontWeight: 700 }}>{initials(user.fullName)}</Avatar>
-        </IconButton>
-      </Tooltip>
-      <Menu anchorEl={profile} open={!!profile} onClose={() => setProfile(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }} slotProps={{ paper: { sx: { minWidth: 280, mt: 1 } } }}>
-        <Box sx={{ px: 2.5, pt: 1.5, pb: 1.5 }}>
-          <Typography variant="subtitle1" component="p" sx={{ fontWeight: 600 }}>
-            {t('shell.hi', { name: user.fullName })}
-          </Typography>
-          {user.email && (
-            <Typography variant="body2" color="text.secondary">
-              {user.email}
-            </Typography>
-          )}
-          {roleText && (
-            <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.5 }}>
-              {roleText} · {school}
-            </Typography>
-          )}
-        </Box>
-        <Divider />
-        <ListSubheader sx={{ bgcolor: 'transparent', lineHeight: '36px', px: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TranslateOutlined fontSize="small" /> {t('shell.language')}
-        </ListSubheader>
-        {LOCALES.map((l) => (
-          <MenuItem
-            key={`p-${l}`}
-            data-testid={`language-${l}`}
-            lang={BCP47[l]}
-            selected={l === locale}
+      <Button variant="ghost" size="icon" className="size-9 text-muted-foreground" aria-label={t('shell.theme')} aria-pressed={dark} data-testid="theme-toggle" onClick={() => setMode(dark ? 'light' : 'dark')}>
+        {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
+      </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" aria-label={t('shell.account')} title={`${user.fullName}${roleText ? ` · ${roleText}` : ''}`} className="ml-0.5 rounded-full">
+            <Avatar className="size-8">
+              <AvatarFallback className={cn('text-xs font-semibold', avatarTone(user.fullName))}>{initials(user.fullName)}</AvatarFallback>
+            </Avatar>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-64">
+          <div className="flex items-center gap-2.5 px-2.5 py-2">
+            <Avatar className="size-[34px]">
+              <AvatarFallback className={cn('text-xs font-semibold', avatarTone(user.fullName))}>{initials(user.fullName)}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <b className="block truncate text-sm">{user.fullName}</b>
+              {user.email && <span className="block truncate text-xs text-muted-foreground">{user.email}</span>}
+              {roleText && <span className="block truncate text-xs text-muted-foreground">{roleText}</span>}
+            </div>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <Languages className="size-3.5" /> {t('shell.language')}
+          </DropdownMenuLabel>
+          {LOCALES.map((l) => (
+            <DropdownMenuItem key={l} lang={BCP47[l]} disabled={busy} onSelect={() => changeLang(l)} data-testid={`profile-language-${l}`}>
+              <span className="flex-1">{LANGUAGE_NAMES[l]}</span>
+              {l === locale && <Check className="size-4" />}
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t('shell.theme')}</DropdownMenuLabel>
+          <DropdownMenuRadioGroup value={mode ?? 'system'} onValueChange={(v) => setMode(v as 'light' | 'dark' | 'system')}>
+            <DropdownMenuRadioItem value="light">
+              <Sun className="size-4" /> {t('shell.themeLight')}
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="dark">
+              <Moon className="size-4" /> {t('shell.themeDark')}
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="system">
+              <Monitor className="size-4" /> {t('shell.themeSystem')}
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            data-testid="density-button"
             disabled={busy}
-            onClick={() => {
-              if (l === locale) return;
+            onSelect={() =>
               start(async () => {
-                await setLanguage(l);
-                setProfile(null);
+                await setDensity(density === 'compact' ? 'comfortable' : 'compact');
                 router.refresh();
-              });
-            }}
-            sx={{ px: 2.5, minHeight: 40 }}
+              })
+            }
           >
-            <ListItemIcon>{l === locale && <Check fontSize="small" />}</ListItemIcon>
-            <ListItemText>{LANGUAGE_NAMES[l]}</ListItemText>
-          </MenuItem>
-        ))}
-        <Divider />
-        <MenuItem component={Link} href="/account/password" onClick={() => setProfile(null)} sx={{ px: 2.5 }} data-testid="change-password">
-          <ListItemIcon>
-            <LockOutlined fontSize="small" />
-          </ListItemIcon>
-          {t('shell.changePassword')}
-        </MenuItem>
-        <MenuItem component={Link} href="/account/security" onClick={() => setProfile(null)} sx={{ px: 2.5 }} data-testid="security">
-          <ListItemIcon>
-            <SecurityOutlined fontSize="small" />
-          </ListItemIcon>
-          {t('shell.security')}
-        </MenuItem>
-        <form action={signOut}>
-          <MenuItem component="button" type="submit" sx={{ width: '100%', px: 2.5 }}>
-            <ListItemIcon>
-              <LogoutOutlined fontSize="small" />
-            </ListItemIcon>
-            {t('shell.signOut')}
-          </MenuItem>
-        </form>
-      </Menu>
-    </Box>
+            <Rows3 className="size-4" />
+            <span className="flex-1">{t('shell.density')}</span>
+            <span className="text-xs text-muted-foreground">{t(density === 'compact' ? 'shell.densityCompact' : 'shell.densityComfortable')}</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild data-testid="change-password">
+            <Link href="/account/password">
+              <KeyRound className="size-4" /> {t('shell.changePassword')}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild data-testid="security">
+            <Link href="/account/security">
+              <ShieldCheck className="size-4" /> {t('shell.security')}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem data-testid="sign-out" onSelect={() => start(() => signOut())}>
+            <LogOut className="size-4" /> {t('shell.signOut')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </header>
   );
 }
