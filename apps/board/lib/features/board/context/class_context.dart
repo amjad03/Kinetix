@@ -120,13 +120,13 @@ ToolProfile toolProfileFor(Subject s, GradeBand b) {
       if (b == GradeBand.seniorSecondary || college) tools.add('logic-gates');
       insert = {'insert-equation', 'insert-graph', 'insert-model3d', 'insert-lab', 'insert-simulation', 'insert-cat-geometry'};
       sims = {'pendulum', 'projectile', 'wave', 'grapher'};
-      models = {'physics'};
+      models = {'physics', 'machine', 'optics'};
       templates = {'graphs', 'organisers'};
     case Subject.chemistry:
       tools = {'periodic-table', 'chem-equation', 'atom', 'labs', 'models3d', 'constants', 'calculator', 'formulas', 'phet'};
       insert = {'insert-model3d', 'insert-lab', 'insert-simulation', 'insert-cat-flowchart'};
       sims = {};
-      models = {'atom', 'molecule'};
+      models = {'atom', 'molecule', 'lab'};
       templates = {'organisers', 'flowchart'};
     case Subject.biology:
       tools = {'models3d', 'labs', 'flowchart', 'phet', 'organisers'};
@@ -149,7 +149,7 @@ ToolProfile toolProfileFor(Subject s, GradeBand b) {
     case Subject.geography:
       tools = {'timeline', 'graphs', 'models3d', 'organisers', 'phet', 'spreadsheet'};
       insert = {'insert-model3d', 'insert-graph'};
-      models = {'solar', 'earth'};
+      models = {'solar', 'earth', 'landform'};
       keyDates = 'world';
       templates = {'graphs', 'organisers'};
     case Subject.history:
@@ -228,3 +228,18 @@ InkDomain inkDomainOf(Subject s) => switch (s) {
   Subject.computer => InkDomain.code,
   _ => InkDomain.general,
 };
+
+/// The 3D picker's subject key (`catalogueSubjects`) for a class subject, or null when the
+/// picker should open on everything (science covers physics, chemistry and biology).
+String? modelSubjectKey(Subject s) => switch (s) {
+  Subject.maths || Subject.statistics => 'maths',
+  Subject.physics => 'physics',
+  Subject.chemistry => 'chemistry',
+  Subject.biology => 'biology',
+  Subject.geography => 'geography',
+  Subject.history => 'history',
+  _ => null,
+};
+
+/// The 3D picker's class level for a grade, or null (no grade, or college).
+String? modelLevelKey(int? grade) => grade != null && grade >= 1 && grade <= 12 ? '$grade' : null;

@@ -103,6 +103,11 @@ class RemoteModels {
     ),
   ];
 
+  /// Where downloaded models are kept. The app points this at its support directory at start-up.
+  static Directory cacheDir = Directory('${Directory.systemTemp.path}/kinetix_models');
+  static ModelCache? _cache;
+  static ModelCache get cache => _cache ??= ModelCache(cacheDir);
+
   static RemoteModelInfo? byId(String id) {
     for (final m in all) {
       if (m.id == id) return m;

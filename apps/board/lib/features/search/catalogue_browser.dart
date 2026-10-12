@@ -21,11 +21,14 @@ IconData subjectIcon(String subject) => switch (subject) {
 /// Subject, Topic and Class dropdowns over the list (grouped by subject until something is
 /// typed, then best match first).
 class CatalogueBrowser extends StatefulWidget {
-  const CatalogueBrowser({super.key, required this.kind, required this.onPick, this.initialSubject, this.initialQuery = ''});
+  const CatalogueBrowser({super.key, required this.kind, required this.onPick, this.initialSubject, this.initialLevel, this.initialQuery = ''});
 
   final CatalogueKind kind;
   final ValueChanged<String> onPick;
   final String? initialSubject;
+
+  /// The class level ('1' to '12') the list opens on.
+  final String? initialLevel;
   final String initialQuery;
 
   @override
@@ -35,7 +38,8 @@ class CatalogueBrowser extends StatefulWidget {
 class _CatalogueBrowserState extends State<CatalogueBrowser> {
   late String _query = widget.initialQuery;
   late String? _subject = widget.initialSubject;
-  String? _category, _level;
+  String? _category;
+  late String? _level = widget.initialLevel;
 
   List<CatalogueItem> get _all => widget.kind == CatalogueKind.model3d ? modelItems : labItems;
 
