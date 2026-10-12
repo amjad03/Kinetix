@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JSXGraph</title>
+<link rel="stylesheet" href="jsxgraph.css">
+<script src="jsxgraphcore.js"></script>
+<style>html,body{margin:0;height:100%;background:#fff;font-family:sans-serif}#box{width:100%;height:100%}</style>
+</head><body><div id="box" class="jxgbox"></div>
+<script>
+// JSXGraph (MIT / LGPL-3.0). Two starter boards: #geometry (triangle with angles) and #graph (function and sliders).
+var mode = location.hash.replace('#', '') || 'geometry';
+var b = JXG.JSXGraph.initBoard('box', {boundingbox: [-8, 6, 8, -6], axis: mode === 'graph', grid: true, showCopyright: false, showNavigation: true, keepAspectRatio: mode === 'geometry'});
+if (mode === 'graph') {
+  var a = b.create('slider', [[-6, 4.5], [-2, 4.5], [-5, 1, 5]], {name: 'a'});
+  var c = b.create('slider', [[-6, 3.8], [-2, 3.8], [-5, 0, 5]], {name: 'c'});
+  b.create('functiongraph', [function (x) { return a.Value() * x * x / 4 + c.Value(); }], {strokeColor: '#c0392b', strokeWidth: 3});
+  b.create('functiongraph', [function (x) { return Math.sin(x); }], {strokeColor: '#1b5e9e', strokeWidth: 2});
+} else {
+  var A = b.create('point', [-4, -2], {name: 'A'}), B = b.create('point', [4, -2], {name: 'B'}), C = b.create('point', [0, 4], {name: 'C'});
+  b.create('polygon', [A, B, C], {fillColor: '#9fd3c7'});
+  b.create('angle', [B, A, C], {radius: 1});
+  b.create('angle', [C, B, A], {radius: 1});
+  b.create('angle', [A, C, B], {radius: 1});
+  b.create('circumcircle', [A, B, C], {strokeColor: '#888', dash: 2});
+}
+</script></body></html>
