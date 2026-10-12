@@ -25,6 +25,7 @@ import { accreditationSamples } from './accreditation.js';
 import { migrationAndExaminer } from './migration-examiner.js';
 import { examOffice } from './exam-office.js';
 import { gatewayBooksSamples } from './gateway-books.js';
+import { feeAccountsSamples } from './fee-accounts.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -86,6 +87,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['data migration history, university templates, transcripts and the external examiner portal', migrationAndExaminer],
   ['exam office: workflow stages, exam fees, paper attendance, moderation, revaluation fees and a sealed paper', examOffice],
   ['books, gateway settlements, Tally mapping, single sign-on and online-class attendance', gatewayBooksSamples],
+  ['fees and accounts desk: structures, concessions, cheques, refunds, write-offs, vouchers and cash closing', feeAccountsSamples],
   ['DigiLocker settings, APAAR ids, devices, tags, LTI platform and early alerts', integrationSamples],
   ['academics desk: settings, approval requests, locked marks and lesson plans to review', academicsCore],
 ];

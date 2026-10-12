@@ -49,6 +49,7 @@ import { SsoModule } from './sso/sso.module.js';
 import { CurriculumModule } from './curriculum/curriculum.module.js';
 import { PathwaysModule } from './pathways/pathways.module.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
+import { FeeAccountsModule } from './fee-accounts/fee-accounts.module.js';
 import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { ConnectorsModule } from './connectors/connectors.module.js';
@@ -178,6 +179,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     PathwaysModule,
     PlacementsModule,
     IntegrationsModule,
+    FeeAccountsModule,
     ResearchModule,
     WelfareModule,
     AcademicsModule,
