@@ -474,9 +474,9 @@ void main() {
         final labels = organiserLabels(o, s);
         final range = organiserCount(o);
         if (range != null) {
-          final more = organiserLabels(o, s, count: range.$3);
-          final fewer = organiserLabels(o, s, count: range.$1);
-          expect(more.length, greaterThan(fewer.length), reason: '${o.name} grows with its count');
+          final more = organiserElements(o, s, const Color(0xFF000000), count: range.$3);
+          final fewer = organiserElements(o, s, const Color(0xFF000000), count: range.$1);
+          expect(more.length, greaterThan(fewer.length), reason: '${o.name} grows with its count (rows or cells are drawn)');
         }
         // A changed label shows on the board; the others stay.
         final edited = [for (final (i, l) in labels.indexed) i == 0 ? 'EDITED' : l];

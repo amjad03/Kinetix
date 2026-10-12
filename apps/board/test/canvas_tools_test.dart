@@ -69,7 +69,7 @@ void main() {
     await tester.tap(find.byKey(const Key('insert-mindmap')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('mind-map')), findsOneWidget);
-    expect(find.text('मुख्य विषय'), findsOneWidget);
+    expect(find.bySemanticsLabel('मुख्य विषय'), findsOneWidget);
     expect(wb.elements, isEmpty, reason: 'nothing is on the board until Put on board');
   });
 
