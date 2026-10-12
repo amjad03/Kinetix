@@ -80,6 +80,12 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(test) || !UUID.test(app)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/admissions/entrance-tests/${test}/hall-ticket/${app}`;
   }
+  // A staff-chat attachment: ?kind=chat-file&id=<thread>&msg=<message>
+  if (kind === 'chat-file') {
+    const msg = req.nextUrl.searchParams.get('msg') ?? '';
+    if (!UUID.test(id) || !UUID.test(msg)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/chat/threads/${id}/messages/${msg}/attachment`;
+  }
   // One scanned page of the examiner's own script: ?kind=eval-page&id=<allocation>&index=<page>
   if (kind === 'eval-page') {
     const index = req.nextUrl.searchParams.get('index') ?? '';

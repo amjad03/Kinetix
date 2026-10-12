@@ -197,6 +197,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'grp.communication',
     icon: 'communication',
     items: [
+      { href: '/chat', label: 'nav.chat', section: 'chat', icon: 'conversations' },
       { href: '/messages', label: 'nav.messages', section: 'school', icon: 'messages' },
       { href: '/conversations', label: 'nav.conversations', section: 'conversations', icon: 'conversations' },
       { href: '/communication', label: 'nav.comms', section: 'comms', icon: 'messages' },

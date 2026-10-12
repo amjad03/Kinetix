@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics' | 'chat';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -104,6 +104,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   careers: ['principal', 'tenant_admin', 'placement_officer', 'hod'],
   // comms.controller.ts BROADCAST_ROLES (templates, audiences, scheduled campaigns)
   comms: ['principal', 'tenant_admin', 'hod'],
+  // chat.controller.ts: every staff role (not families)
+  chat: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
   // research.controller.ts RESEARCH_VIEW_ROLES
   research: ['principal', 'tenant_admin', 'research_coordinator', 'hod'],
   // welfare.access.ts GRIEVANCE_STAFF and COMMITTEE_ROLES (committee matters show only to committee members)
@@ -252,6 +254,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'timetable';
     case 'conversations':
       return 'conversations';
+    case 'chat':
+      return 'chat';
     case 'department':
       return 'department';
     case 'departments':
