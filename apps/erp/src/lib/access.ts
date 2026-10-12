@@ -277,6 +277,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'assets';
     case 'admissions':
       return 'admissions';
+    case 'analytics':
+      return pathname.startsWith('/analytics/campaigns') ? 'admissions' : 'dashboard';
     case 'students':
       return 'students';
     case 'exams':
