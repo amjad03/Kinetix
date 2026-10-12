@@ -1,5 +1,5 @@
 /**
- * Exam office samples (migration 0130): numbering and fee settings, each session's workflow stages (one timetable
+ * Exam office samples (migration 0131): numbering and fee settings, each session's workflow stages (one timetable
  * waiting for the principal), exam fees with a few dues, paper attendance with absentees, a moderation waiting for
  * approval, revaluation kinds and fees, and a sealed question paper.
  */

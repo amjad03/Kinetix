@@ -2,6 +2,7 @@ import type { Ctx } from './ctx.js';
 import { assessmentsAndHomework, attendance, lessonPlans, lms } from './academics.js';
 import { assets, hostelAndCanteen, inventory, library, transport } from './campus.js';
 import { attendanceGovernance } from './attendance-gov.js';
+import { academicsCore } from './academics-core.js';
 import { admissions } from './admissions.js';
 import { admissionsGrowth, hrLifecycle } from './growth.js';
 import { alumni, campusLife, mentoring, placements, skills } from './engagement.js';
@@ -86,4 +87,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['exam office: workflow stages, exam fees, paper attendance, moderation, revaluation fees and a sealed paper', examOffice],
   ['books, gateway settlements, Tally mapping, single sign-on and online-class attendance', gatewayBooksSamples],
   ['DigiLocker settings, APAAR ids, devices, tags, LTI platform and early alerts', integrationSamples],
+  ['academics desk: settings, approval requests, locked marks and lesson plans to review', academicsCore],
 ];

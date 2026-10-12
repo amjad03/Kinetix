@@ -1472,6 +1472,9 @@ export const assessments = pgTable(
     verifiedAt: timestamp('verified_at', { withTimezone: true }),
     moderatedBy: uuid('moderated_by').references(() => users.id),
     moderatedAt: timestamp('moderated_at', { withTimezone: true }),
+    /** Locked by the head after verification: no edits or reopening until unlocked (migration 0131). */
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lockedBy: uuid('locked_by').references(() => users.id),
   },
   (t) => [index('assessments_section_idx').on(t.sectionId, t.heldOn)],
 );
@@ -1717,6 +1720,9 @@ export const lessonPlans = pgTable(
     reviewedBy: uuid('reviewed_by').references(() => users.id),
     reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
     reviewRemark: text('review_remark'),
+    /** draft → submitted (teacher) → approved | returned (head of department). Editing makes it a draft again. */
+    status: text('status').$type<'draft' | 'submitted' | 'approved' | 'returned'>().notNull().default('draft'),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -3023,6 +3029,8 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'academic_settings',
+  'academic_requests',
   'settlement_batches',
   'settlement_lines',
   'acct_accounts',
@@ -7582,7 +7590,7 @@ export const leadSpend = pgTable(
   (t) => [uniqueIndex('lead_spend_uq').on(t.tenantId, t.channel, t.day)],
 );
 
-// ---- Exam office (0130): the session workflow, paper attendance, exam fees, moderation and settings ----
+// ---- Exam office (0131): the session workflow, paper attendance, exam fees, moderation and settings ----
 
 /** One step of an exam session's workflow (setup, timetable, registration … supplementary): done, pending approval or rejected. */
 export const examSessionStages = pgTable(
@@ -7666,3 +7674,58 @@ export const examOfficeSettings = pgTable('exam_office_settings', {
   updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
   updatedAt: updatedAt(),
 });
+// ---------------------------------------------------------------------------------------------
+// Academics core: module settings and approval requests (migration 0130, src/academics)
+// ---------------------------------------------------------------------------------------------
+
+/** One row per tenant and settings kind (numbering, attendance, assessment, timetable, registration). */
+export const academicSettings = pgTable(
+  'academic_settings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    kind: text('kind').notNull(),
+    value: jsonb('value').$type<Record<string, unknown>>().notNull(),
+    updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('academic_settings_kind_uq').on(t.tenantId, t.kind)],
+);
+
+export interface AcademicRequestStep {
+  key: string;
+  state: 'done' | 'current' | 'upcoming' | 'rejected' | 'skipped';
+  by?: string | null;
+  byName?: string | null;
+  at?: string | null;
+  note?: string | null;
+}
+
+/**
+ * A request that needs approval before it changes academic records: admission handover, section
+ * change, withdrawal / TC, timetable change and substitution. Steps follow ACADEMIC_WORKFLOWS.
+ */
+export const academicRequests = pgTable(
+  'academic_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    number: text('number').notNull(),
+    kind: text('kind').notNull(),
+    studentId: uuid('student_id').references(() => students.id),
+    title: text('title').notNull(),
+    reason: text('reason').notNull().default(''),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
+    /** pending | approved | rejected | cancelled */
+    status: text('status').notNull().default('pending'),
+    steps: jsonb('steps').$type<AcademicRequestStep[]>().notNull(),
+    /** What the approval produced, e.g. the TC number or the new roll number. */
+    outcome: jsonb('outcome').$type<Record<string, unknown>>(),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    version: integer('version').notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('academic_requests_status_idx').on(t.tenantId, t.status, t.kind), uniqueIndex('academic_requests_number_uq').on(t.tenantId, t.number)],
+);

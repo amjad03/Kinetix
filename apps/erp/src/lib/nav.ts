@@ -52,6 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'grp.academics',
     icon: 'academics',
     items: [
+      { href: '/academics', label: 'nav.academics', section: 'academics', icon: 'classes' },
       { href: '/classes', label: 'nav.classes', section: 'school', icon: 'classes' },
       { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: 'syllabus' },
       { href: '/curriculum', label: 'nav.curriculum', section: 'curriculum', icon: 'syllabus' },

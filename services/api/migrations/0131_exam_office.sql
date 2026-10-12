@@ -1,4 +1,4 @@
--- Exam office (0130): session workflow stages, paper attendance, exam fees, moderation and module settings;
+-- Exam office (0131): session workflow stages, paper attendance, exam fees, moderation and module settings;
 -- question papers gain a code, version and secure release; revaluation requests gain a kind and a fee.
 ALTER TABLE "ext_question_papers" ADD COLUMN IF NOT EXISTS "code" text;--> statement-breakpoint
 ALTER TABLE "ext_question_papers" ADD COLUMN IF NOT EXISTS "version" integer NOT NULL DEFAULT 1;--> statement-breakpoint
