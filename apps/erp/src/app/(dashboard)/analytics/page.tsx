@@ -85,7 +85,7 @@ export default async function AnalyticsPage() {
       </div>
       <div className="grid gap-5 lg:grid-cols-2">
         <V2Card title={t('v2.an.classDues')} icon="classes">
-          {classes.length === 0 ? <p className="text-sm text-muted-foreground">{t('v2.an.noData')}</p> : <Bars tone="bg-amber-500" rows={classes.map((c) => ({ label: c.className, value: Math.round(c.outstandingPaise / 100000) / 1000, caption: t('v2.an.lakh') }))} />}
+          {classes.length === 0 ? <p className="text-sm text-muted-foreground">{t('v2.an.noData')}</p> : <Bars tone="bg-amber-500" rows={classes.map((c) => ({ label: c.className, value: Math.round(c.outstandingPaise / 100000) / 100, caption: t('v2.an.lakh') }))} />}
         </V2Card>
         <V2Card title={t('v2.an.pending')} icon="tasks">
           <ul className="divide-y">

@@ -25,7 +25,7 @@ export function ProfileHeader({ title, subtitle, status, chips = [], facts = [],
         </svg>
       </div>
       <div className="px-5 pb-5 md:px-6">
-        <div className="-mt-10 flex flex-wrap items-end gap-4 md:-mt-12">
+        <div className="relative -mt-10 flex flex-wrap items-end gap-4 md:-mt-12">
           <span className="grid size-20 shrink-0 place-items-center rounded-full border-4 border-card bg-teal-soft text-2xl font-semibold text-teal-ink md:size-24 md:text-3xl">{initials(title) || '?'}</span>
           <div className="min-w-0 flex-1 pb-1">
             <h1 className="m-0 truncate text-xl font-semibold tracking-tight md:text-2xl">{title}</h1>

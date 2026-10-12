@@ -145,7 +145,7 @@ export function ChatView({ meId, threads, people, open, tab: initialTab }: { meI
               {x.kind === 'external' && <span className="rounded-[5px] bg-amber-soft px-1.5 text-[10.5px] font-semibold text-amber-ink">{x.channel === 'whatsapp' ? 'WhatsApp' : t('v2.chat.email')}</span>}
             </span>
             <span className={cn('block truncate text-[12.5px]', x.unread ? 'font-medium text-foreground' : 'text-muted-foreground')}>
-              {x.kind === 'group' && lm?.senderName ? `${lm.senderName.split(' ')[0]}: ` : ''}
+              {x.kind === 'group' && lm?.senderName ? `${lm.senderName.replace(/^(Dr|Prof|Mr|Mrs|Ms|Capt)\.?\s+/i, '').split(' ')[0]}: ` : ''}
               {preview}
             </span>
           </span>
@@ -162,7 +162,7 @@ export function ChatView({ meId, threads, people, open, tab: initialTab }: { meI
   const name = current ? threadName(current) : '';
 
   return (
-    <div className="-m-4 grid h-[calc(100dvh-105px)] min-h-[480px] overflow-hidden border-t bg-card md:-m-6 md:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)_auto]" data-testid="chat">
+    <div className="-m-4 grid h-[calc(100dvh-105px)] min-h-[480px] overflow-hidden border-t bg-card grid-cols-[minmax(0,1fr)] md:-m-6 md:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)_auto]" data-testid="chat">
       {/* Conversation list */}
       <section aria-label={t('v2.chat.list')} className={cn('flex min-h-0 flex-col border-r', mobileThread && 'hidden md:flex')}>
         <div className="flex flex-col gap-3 px-4 pt-4">

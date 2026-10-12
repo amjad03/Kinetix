@@ -18,7 +18,7 @@ import { formatRupees } from '@/lib/money';
 import type { Structure } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
 
-import { Alert, Link } from '@/components/kx';
+import { Alert } from '@/components/kx';
 import { ArrowLeft as ArrowBack } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('stu.profile') };
@@ -103,9 +103,9 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
                   <p className="text-[13px] leading-[19px]">{s.enrolledOn ? t('stu.joined', { date: formatDate(s.enrolledOn, 'long', locale) }) : t('stu.noJoinDate')}</p>
                   {s.application && (
                     <p className="text-[13px] leading-[19px] mt-1">
-                      <Link component={NextLink} href={`/admissions/applications/${s.application.id}`}>
+                      <NextLink className="underline" href={`/admissions/applications/${s.application.id}`}>
                         {s.application.applicationNo}
-                      </Link>{' '}
+                      </NextLink>{' '}
                       · {s.application.cycleName}
                     </p>
                   )}
