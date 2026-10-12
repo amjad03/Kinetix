@@ -23,7 +23,11 @@ describe('fees and accounts desk', () => {
   const audited = async (action: string) => (await owner.query('select count(*)::int as n from audit_log where tenant_id = $1 and action = $2', [t.tenantId, action])).rows[0].n as number;
   const R = (rupees: number) => rupees * 100;
   const invoice = async (studentId: string, amount: number, dueOn = '2026-09-30') => (await db.insert(s.feeInvoices).values({ tenantId: t.tenantId, studentId, sectionId: t.section.id, batchId: crypto.randomUUID(), title: 'Term 2 tuition', amountPaise: R(amount), dueOn, createdBy: t.principal.id }).returning())[0];
-  const pay = async (invoiceId: string, amount: number, method: string, who = 'acc') => (await post(who, `/v1/fees/invoices/${invoiceId}/payments`, { amountPaise: R(amount), method, reference: 'CHQ 104455' }).expect(201)).body;
+  const pay = async (invoiceId: string, amount: number, method: string, who = 'acc') => {
+    const res = await post(who, `/v1/fees/invoices/${invoiceId}/payments`, { amountPaise: R(amount), method, reference: 'CHQ 104455' });
+    expect(res.status, JSON.stringify(res.body)).toBe(201);
+    return { ...res.body, id: res.body.paymentId ?? res.body.id };
+  };
   const inv = async (id: string) => (await owner.query('select amount_paise::int as amount, paid_paise::int as paid, status from fee_invoices where id = $1', [id])).rows[0];
 
   beforeAll(async () => {
@@ -127,7 +131,7 @@ describe('fees and accounts desk', () => {
   });
 
   it('a write-off needs the principal and lowers what is due', async () => {
-    const i = await invoice(t.students[3].id, 800);
+    const i = await invoice(t.students[1].id, 800);
     const w = (await post('acc', '/v1/fee-accounts/write-offs', { invoiceId: i.id, amountPaise: R(800), reason: 'Family unreachable' }).expect(201)).body;
     await post('acc2', `/v1/fee-accounts/write-offs/${w.id}/decide`, { decision: 'approve' }).expect(403);
     await post('principal', `/v1/fee-accounts/write-offs/${w.id}/decide`, { decision: 'approve' }).expect(201);
@@ -151,10 +155,12 @@ describe('fees and accounts desk', () => {
   });
 
   it('a cashier closes the day against the cash receipts and someone else verifies it', async () => {
-    const exp = (await get('acc', '/v1/fee-accounts/closings/expected?date=2026-10-20').expect(200)).body;
+    // Counter receipts are stamped with the real time, so close the day they were taken on.
+    const day = (await owner.query("select (paid_at at time zone 'Asia/Kolkata')::date::text as d from fee_payments where tenant_id = $1 and method = 'cash'", [t.tenantId])).rows[0].d as string;
+    const exp = (await get('acc', `/v1/fee-accounts/closings/expected?date=${day}`).expect(200)).body;
     expect(exp).toMatchObject({ systemPaise: R(400), receiptCount: 1 });
-    await post('acc', '/v1/fee-accounts/closings', { date: '2026-10-20', denominations: { 3: 1 } }).expect(400);
-    const c = (await post('acc', '/v1/fee-accounts/closings', { date: '2026-10-20', denominations: { 200: 1, 100: 1, 50: 1 }, note: '' }).expect(201)).body;
+    await post('acc', '/v1/fee-accounts/closings', { date: day, denominations: { 3: 1 } }).expect(400);
+    const c = (await post('acc', '/v1/fee-accounts/closings', { date: day, denominations: { 200: 1, 100: 1, 50: 1 }, note: '' }).expect(201)).body;
     expect(c).toMatchObject({ systemPaise: R(400), countedPaise: R(350) });
     await post('acc', `/v1/fee-accounts/closings/${c.id}/decide`, { decision: 'approve' }).expect(403);
     await post('acc2', `/v1/fee-accounts/closings/${c.id}/decide`, { decision: 'approve' }).expect(400);

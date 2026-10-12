@@ -57,7 +57,7 @@ export async function feeAccountsSamples(c: Ctx): Promise<void> {
     ['BBA fee plan', 40000, 'rejected', { submittedBy: acc, submittedAt: at(d(-9)), decidedBy: principal, decidedAt: at(d(-8)), decisionNote: 'Laboratory fee is not charged in BBA; remove it and send again.' }],
   ];
   for (const [i, [name, base, status, extra]] of structures.entries()) {
-    const [row] = await k.ins<{ id: string }>('fee_structures', { programId: progs[i % progs.length]?.id ?? null, campusId: c.campusId, name: `${name} ${nextYear}`, academicYear: nextYear, items: J(plan(base)), dueInDays: 30, active: false, status, createdBy: acc, ...extra });
+    const [row] = await k.ins<{ id: string }>('fee_structures', { programId: (Object.entries(c.programs).find(([k, v]) => `${k} ${JSON.stringify(v.def)}`.toLowerCase().includes(name.split(' ')[0].toLowerCase()))?.[1] ?? progs[i % progs.length])?.id ?? null, campusId: c.campusId, name: `${name} ${nextYear}`, academicYear: nextYear, items: J(plan(base)), dueInDays: 30, active: false, status, createdBy: acc, ...extra });
     await k.ins('audit_log', [{ actorType: 'user', actorId: acc, action: 'fee_structure.created', subjectType: 'fee_structure', subjectId: row.id, at: at(d(-10)) }, ...(extra.submittedBy ? [{ actorType: 'user', actorId: acc, action: 'fee_structure.submitted', subjectType: 'fee_structure', subjectId: row.id, at: extra.submittedAt }] : []), ...(extra.decidedBy ? [{ actorType: 'user', actorId: principal, action: `fee_structure.${status}`, subjectType: 'fee_structure', subjectId: row.id, data: J({ comment: extra.decisionNote }), at: extra.decidedAt }] : [])], { returning: false });
   }
 

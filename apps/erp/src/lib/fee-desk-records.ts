@@ -23,7 +23,7 @@ export interface RecordView {
 
 const f = (label: string, value: unknown, kind?: ColKind): Fact => ({ label: `fd.col.${label}`, value, kind });
 const col = (key: string, label: string, kind: ColKind = 'text'): ColSpec => ({ key, label: `fd.col.${label}`, kind });
-const rows = (v: unknown) => (Array.isArray(v) ? (v as Row[]).map((r, i) => ({ ...r, id: String(r.id ?? i) })) : []);
+const rows = (v: unknown): Row[] => (Array.isArray(v) ? (v as Row[]).map((r, i) => ({ ...r, id: String(r.id ?? i) })) : []);
 const s = (v: unknown) => (v == null ? '' : String(v));
 const HEADS: RoleName[] = ['principal', 'tenant_admin'];
 const FEE: RoleName[] = ['principal', 'tenant_admin', 'accountant'];

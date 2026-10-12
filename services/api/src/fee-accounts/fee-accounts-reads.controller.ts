@@ -18,7 +18,7 @@ const PG_TS = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d+)?)([+-]\d{2})(:?\
 /** Timestamps as ISO strings and dates as YYYY-MM-DD, whatever the driver returned. */
 const norm = (v: unknown) => (v instanceof Date ? v.toISOString() : typeof v === 'string' && PG_TS.test(v) ? v.replace(PG_TS, (_, d, t, h, m) => `${d}T${t}${h}:${(m ?? '00').replace(':', '')}`) : v);
 const rowsOf = async (tx: Tx, q: SQL) => ((await tx.execute(q)).rows as Row[]).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, norm(v)])));
-const num = (r: Row[], ...keys: string[]) => r.map((x) => Object.fromEntries(Object.entries(x).map(([k, v]) => [k, keys.includes(k) ? Number(v ?? 0) : v])));
+const num = (r: Row[], ...keys: string[]): Row[] => r.map((x) => Object.fromEntries(Object.entries(x).map(([k, v]) => [k, keys.includes(k) ? Number(v ?? 0) : v])));
 const sum = (r: Row[], key: string) => r.reduce((a, x) => a + Number(x[key] ?? 0), 0);
 
 export const ENTITIES = ['structures', 'accounts', 'invoices', 'receipts', 'concessions', 'refunds', 'write-offs', 'vouchers', 'voucher-requests', 'ledgers', 'budgets', 'cheques', 'closings'] as const;
@@ -57,7 +57,7 @@ export class FeeAccountsReadsController {
           ) x order by at desc nulls last limit 200`,
         ),
         'amount',
-      ).map((r) => ({ ...r, mine: r.by === p.userId }));
+      ).map((r): Row => ({ ...r, mine: r.by === p.userId }));
       const counts: Record<string, number> = {};
       for (const i of items) counts[String(i.entity)] = (counts[String(i.entity)] ?? 0) + 1;
       const [k] = await rowsOf(

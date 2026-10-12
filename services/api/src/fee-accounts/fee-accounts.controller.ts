@@ -38,7 +38,7 @@ const ClosingBody = z.object({ date: Day, denominations: z.record(z.string(), z.
 const PeriodBody = z.object({ note: z.string().trim().max(300).default('') });
 const SeriesZ = z.object({ prefix: z.string().max(30), next: z.number().int().min(1), pad: z.number().int().min(1).max(10), suffix: z.string().max(20).optional() });
 const SettingsBody = z.object({
-  series: z.record(z.enum(SERIES_KEYS as [string, ...string[]]), SeriesZ).optional(),
+  series: z.partialRecord(z.enum(SERIES_KEYS as [string, ...string[]]), SeriesZ).optional(),
   feeHeads: z.array(z.object({ code: z.string().trim().regex(/^[A-Z0-9]{2,6}$/, 'Codes are 2 to 6 capital letters or digits'), name: z.string().trim().min(2).max(60), gstRate: z.number().min(0).max(28), accountCode: z.string().trim().min(1).max(12) })).max(60).optional(),
   paymentModes: z.array(z.object({ mode: z.enum(['cash', 'cheque', 'dd', 'online', 'bank_transfer', 'upi']), enabled: z.boolean(), accountCode: z.string().trim().min(1).max(12) })).max(10).optional(),
   gateway: z.enum(['razorpay', 'payu', 'none']).optional(),
@@ -93,7 +93,7 @@ export class FeeAccountsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const cur = await settingsOf(tx, p.tenantId);
       for (const s of Object.values(b.series ?? {})) {
-        const problem = seriesProblem(s);
+        const problem = s ? seriesProblem(s) : null;
         if (problem) throw new BadRequestException(problem);
       }
       if (b.feeHeads && new Set(b.feeHeads.map((h) => h.code)).size !== b.feeHeads.length) throw new BadRequestException('Each fee head needs its own code');

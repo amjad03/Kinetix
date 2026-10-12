@@ -20,7 +20,7 @@ export function useWord() {
 export function useCell() {
   const { fmt, t } = useI18n();
   const word = useWord();
-  return (col: ColSpec, v: unknown): ReactNode => {
+  return function formatCell(col: ColSpec, v: unknown): ReactNode {
     if (v === null || v === undefined || v === '') return '—';
     switch (col.kind) {
       case 'money':

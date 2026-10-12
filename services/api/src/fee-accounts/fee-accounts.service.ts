@@ -9,14 +9,15 @@ import { DEFAULT_APPROVALS, DEFAULT_HEADS, DEFAULT_MAPPINGS, DEFAULT_MODES, DEFA
 
 /** The desk's settings row, created with the defaults the first time it is read. */
 export async function settingsOf(tx: Tx, tenantId: string) {
-  const [row] = await tx.select().from(feeAccountsSettings);
-  if (row) return { ...row, series: { ...DEFAULT_SERIES, ...row.series }, mappings: { ...DEFAULT_MAPPINGS, ...row.mappings }, approvals: { ...DEFAULT_APPROVALS, ...row.approvals } };
-  const [made] = await tx
-    .insert(feeAccountsSettings)
-    .values({ tenantId, series: DEFAULT_SERIES, feeHeads: DEFAULT_HEADS, paymentModes: DEFAULT_MODES, mappings: DEFAULT_MAPPINGS, approvals: DEFAULT_APPROVALS })
-    .onConflictDoNothing()
-    .returning();
-  return made ?? settingsOf(tx, tenantId);
+  let [row] = await tx.select().from(feeAccountsSettings);
+  if (!row) {
+    await tx
+      .insert(feeAccountsSettings)
+      .values({ tenantId, series: DEFAULT_SERIES, feeHeads: DEFAULT_HEADS, paymentModes: DEFAULT_MODES, mappings: DEFAULT_MAPPINGS, approvals: DEFAULT_APPROVALS })
+      .onConflictDoNothing();
+    [row] = await tx.select().from(feeAccountsSettings);
+  }
+  return { ...row, series: { ...DEFAULT_SERIES, ...row.series }, mappings: { ...DEFAULT_MAPPINGS, ...row.mappings }, approvals: { ...DEFAULT_APPROVALS, ...row.approvals } };
 }
 
 /** Takes the next number of a series (the settings row is locked, so two requests never share one). */
