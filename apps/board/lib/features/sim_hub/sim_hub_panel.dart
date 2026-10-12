@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
@@ -193,7 +194,7 @@ class _SimHubPanelState extends State<SimHubPanel> {
               key: Key('sim-${e.id}'),
               title: Text(e.title),
               subtitle: Text('${e.subject} · ${e.gradeMin == e.gradeMax ? 'class ${e.gradeMin}' : 'classes ${e.gradeMin}-${e.gradeMax == 13 ? 'college' : e.gradeMax}'} · ${e.source} · ${e.licence}'),
-              leading: Icon(e.offline ? Icons.download_done : Icons.cloud_outlined, color: e.offline ? Colors.green : Colors.blueGrey),
+              leading: Icon(e.offline ? Icons.download_done : Icons.cloud_outlined, color: Kx.readable(e.offline ? Colors.green : Colors.blueGrey, Theme.of(context).scaffoldBackgroundColor)),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 Chip(label: Text(e.offline ? 'Offline' : 'Online'), visualDensity: VisualDensity.compact),
                 IconButton(key: Key('pin-${e.id}'), icon: Icon(isPinned ? Icons.push_pin : Icons.push_pin_outlined), tooltip: 'Pin to this page', onPressed: () => _togglePin(e)),

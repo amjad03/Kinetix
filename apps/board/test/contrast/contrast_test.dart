@@ -36,13 +36,13 @@ Color _backgroundOf(Element e, Color fallback) {
     } else if (w is PhysicalModel) {
       c = w.color;
     }
-    if (c != null && c.a > 0.9) {
+    if (c != null && c.a > 0.5) {
       found = c;
       return false;
     }
     return true;
   });
-  return found ?? fallback;
+  return found == null ? fallback : Color.alphaBlend(found!, fallback);
 }
 
 /// Every Text/Icon whose contrast is below [_min], as "text ratio".

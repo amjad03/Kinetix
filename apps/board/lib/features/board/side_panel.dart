@@ -63,7 +63,7 @@ class PanelPage extends StatelessWidget {
                   color: (accent ?? context.colors.primary).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(Kx.rMd),
                 ),
-                child: Icon(icon, color: accent ?? context.colors.primary),
+                child: Icon(icon, color: Kx.readable(accent ?? context.colors.primary, Color.alphaBlend((accent ?? context.colors.primary).withValues(alpha: 0.2), context.colors.surface))),
               ),
               const SizedBox(width: Kx.s12),
               Expanded(

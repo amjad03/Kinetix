@@ -147,7 +147,7 @@ class ToolButton extends StatelessWidget {
         : selected
         ? c.onSecondaryContainer
         : c.onSurfaceVariant;
-    Widget glyph = Icon(icon, size: big ? 30 : 24, color: iconColor ?? (accent != null && enabled ? Colors.white : fg));
+    Widget glyph = Icon(icon, size: big ? 30 : 24, color: iconColor != null ? Kx.readable(iconColor!, selected ? c.secondaryContainer : (c.brightness == Brightness.light ? c.surfaceContainerLowest : c.surfaceContainer)) : (accent != null && enabled ? Colors.white : fg));
     if (accent != null) {
       glyph = Container(
         width: 32,
@@ -306,9 +306,12 @@ class ChromeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final tint = color ?? c.primary;
+    final base = selected ? c.secondaryContainer : c.surfaceContainerHigh;
+    final tint0 = color ?? c.primary;
+    // Palette colours are pastel (made for dark): darken them to read on a light tile.
+    final tint = Kx.readable(tint0, Color.alphaBlend(tint0.withValues(alpha: 0.18), base));
     return Material(
-      color: selected ? c.secondaryContainer : c.surfaceContainerHigh,
+      color: base,
       borderRadius: BorderRadius.circular(Kx.rLg),
       child: InkWell(
         borderRadius: BorderRadius.circular(Kx.rLg),
@@ -326,7 +329,7 @@ class ChromeTile extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: tint.withValues(alpha: 0.18),
+                        color: tint0.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(Kx.rMd),
                       ),
                       child: Icon(icon, color: tint, size: 22),

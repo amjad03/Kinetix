@@ -281,7 +281,7 @@ class _ExplanationCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome, color: aiAccent, size: 20),
+              Icon(Icons.auto_awesome, color: Kx.readable(aiAccent, Theme.of(context).scaffoldBackgroundColor), size: 20),
               const SizedBox(width: Kx.s8),
               Expanded(
                 child: Text(question, maxLines: 2, overflow: TextOverflow.ellipsis, style: context.text.titleMedium?.copyWith(color: c.onSurfaceVariant)),
