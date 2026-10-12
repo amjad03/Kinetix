@@ -406,6 +406,50 @@ class ToolkitController extends ChangeNotifier {
 
   bool get tooLoud => noise > noiseLimit;
 
+  /// The smoothed level in approximate dB.
+  double get noiseDb => levelToDb(noise);
+
+  /// The loudest smoothed level since the meter opened or was reset, and when it was heard.
+  double noiseMax = 0;
+  DateTime? noiseMaxAt;
+
+  /// One smoothed level a second, newest last, for the graph (at most [noiseHistoryLength]).
+  final noiseHistory = <double>[];
+  static const noiseHistoryLength = 120;
+  DateTime? _lastHistory;
+
+  /// Times the level went over the limit since the last reset (each rise above it counts once).
+  int noiseAlerts = 0;
+  bool _wasLoud = false;
+
+  /// Clears the maximum, the graph and the alert count; the meter goes on listening.
+  void resetNoise() {
+    noiseMax = 0;
+    noiseMaxAt = null;
+    noiseHistory.clear();
+    _lastHistory = null;
+    noiseAlerts = 0;
+    _wasLoud = false;
+    _changed();
+  }
+
+  void _noiseReading(double v) {
+    noise = noise * 0.6 + v.clamp(0.0, 1.0) * 0.4;
+    final at = _now();
+    if (noise > noiseMax) {
+      noiseMax = noise;
+      noiseMaxAt = at;
+    }
+    if (_lastHistory == null || at.difference(_lastHistory!) >= const Duration(seconds: 1)) {
+      _lastHistory = at;
+      noiseHistory.add(noise);
+      if (noiseHistory.length > noiseHistoryLength) noiseHistory.removeAt(0);
+    }
+    if (tooLoud && !_wasLoud) noiseAlerts++;
+    _wasLoud = tooLoud;
+    _changed();
+  }
+
   void setNoiseLimit(double v) {
     noiseLimit = v.clamp(0.3, 0.95);
     _changed();
@@ -420,10 +464,7 @@ class ToolkitController extends ChangeNotifier {
         await source.stop();
         return;
       }
-      _noiseSub = levels.listen((v) {
-        noise = noise * 0.6 + v.clamp(0.0, 1.0) * 0.4;
-        _changed();
-      });
+      _noiseSub = levels.listen(_noiseReading);
     } on NoiseUnavailable catch (e) {
       noiseProblem = e.problem;
       _changed();
@@ -437,6 +478,7 @@ class ToolkitController extends ChangeNotifier {
     await _noiseSub?.cancel();
     _noiseSub = null;
     noise = 0;
+    _wasLoud = false;
     try {
       await _noiseSource?.stop();
     } catch (_) {

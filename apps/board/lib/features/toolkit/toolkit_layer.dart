@@ -960,16 +960,64 @@ class NoiseBody extends StatelessWidget {
           borderRadius: BorderRadius.circular(Kx.rMd),
           child: LinearProgressIndicator(value: k.noise, minHeight: 26, color: color, backgroundColor: c.surfaceContainerHighest),
         ),
+        const SizedBox(height: Kx.s4),
+        Text(l.tkNoiseNow(k.noiseDb.round().toString()), key: const Key('noise-now'), textAlign: TextAlign.center, style: context.text.titleMedium),
+        Text(
+          k.noiseMaxAt == null ? l.tkNoiseMaxNone : l.tkNoiseMax(levelToDb(k.noiseMax).round().toString(), MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(k.noiseMaxAt!), alwaysUse24HourFormat: true)),
+          key: const Key('noise-max'),
+          textAlign: TextAlign.center,
+          style: context.text.bodyMedium,
+        ),
+        const SizedBox(height: Kx.s8),
+        Text(l.tkNoiseGraph, style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+        SizedBox(
+          height: 70,
+          child: CustomPaint(key: const Key('noise-graph'), painter: NoiseGraphPainter(k.noiseHistory, k.noiseLimit, c.primary, c.error, c.outlineVariant), size: Size.infinite),
+        ),
         Row(
           children: [
-            Text(l.tkLimit, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+            Text(l.tkLimitDb(levelToDb(k.noiseLimit).round().toString()), style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
             Expanded(child: Slider(key: const Key('noise-limit'), value: k.noiseLimit, min: 0.3, max: 0.95, onChanged: k.setNoiseLimit)),
+            TextButton.icon(key: const Key('noise-reset'), onPressed: k.resetNoise, icon: const Icon(Icons.restart_alt, size: 18), label: Text(l.tkNoiseReset)),
           ],
         ),
+        if (k.noiseAlerts > 0) Text(l.tkNoiseAlerts(k.noiseAlerts), key: const Key('noise-alerts'), style: context.text.bodySmall?.copyWith(color: c.error)),
+        Text(l.tkNoiseApprox, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
         Text(l.tkNoiseLocal, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
       ],
     );
   }
+}
+
+/// The noise graph: one smoothed level a second over the last two minutes, with the limit as a
+/// line; readings above the limit are drawn in the alert colour.
+class NoiseGraphPainter extends CustomPainter {
+  NoiseGraphPainter(this.history, this.limit, this.line, this.alert, this.grid);
+
+  final List<double> history;
+  final double limit;
+  final Color line, alert, grid;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = grid.withValues(alpha: 0.25));
+    final ly = size.height * (1 - limit);
+    canvas.drawLine(Offset(0, ly), Offset(size.width, ly), Paint()..color = alert);
+    if (history.length < 2) return;
+    final step = size.width / (ToolkitController.noiseHistoryLength - 1);
+    final x0 = size.width - step * (history.length - 1);
+    for (var i = 1; i < history.length; i++) {
+      final a = Offset(x0 + step * (i - 1), size.height * (1 - history[i - 1]));
+      final b = Offset(x0 + step * i, size.height * (1 - history[i]));
+      final paint = Paint()
+        ..color = history[i] > limit ? alert : line
+        ..strokeWidth = 2;
+      canvas.drawLine(a, b, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(NoiseGraphPainter old) => true;
 }
 
 /// The spotlight's size and the buttons that end the shade and the spotlight.

@@ -547,6 +547,39 @@ class AppLocalizationsHi extends AppLocalizations {
       'सिर्फ़ आवाज़ का स्तर इसी बोर्ड पर मापा जाता है। कुछ भी रिकॉर्ड नहीं होता।';
 
   @override
+  String tkNoiseNow(String db) {
+    return 'अभी: $db dB';
+  }
+
+  @override
+  String tkNoiseMax(String db, String time) {
+    return 'अब तक सबसे तेज़: $db dB, समय $time';
+  }
+
+  @override
+  String get tkNoiseMaxNone => 'अब तक सबसे तेज़: अभी कुछ नहीं';
+
+  @override
+  String get tkNoiseReset => 'रीसेट';
+
+  @override
+  String get tkNoiseGraph => 'पिछले दो मिनट';
+
+  @override
+  String tkNoiseAlerts(int count) {
+    return 'सीमा से ऊपर $count बार';
+  }
+
+  @override
+  String get tkNoiseApprox =>
+      'यह अनुमानित स्तर है: बोर्ड का माइक्रोफ़ोन कैलिब्रेट नहीं है।';
+
+  @override
+  String tkLimitDb(String db) {
+    return 'सीमा: $db dB';
+  }
+
+  @override
   String get tkDragToReveal => 'दिखाने के लिए खींचें';
 
   @override

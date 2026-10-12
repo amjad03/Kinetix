@@ -22,7 +22,7 @@ class SimAssetServer {
     return 'http://127.0.0.1:${server.port}';
   }
 
-  static final _path = RegExp(r'^[A-Za-z0-9_\-]+(/[A-Za-z0-9_\-.]+)*\.(html|js|css|png|svg|gif|mp3|ogg|wav|json)$');
+  static final _path = RegExp(r'^[A-Za-z0-9_\-]+(/[A-Za-z0-9_\-.$@]+)*\.(html|js|mjs|css|png|jpg|jpeg|svg|gif|ico|mp3|ogg|wav|json|txt|ipynb|woff|woff2|ttf|wasm|zip|whl|csv)$');
 
   static String contentType(String path) => switch (path.substring(path.lastIndexOf('.') + 1)) {
     'html' => 'text/html; charset=utf-8',
@@ -34,7 +34,17 @@ class SimAssetServer {
     'mp3' => 'audio/mpeg',
     'ogg' => 'audio/ogg',
     'wav' => 'audio/wav',
-    _ => 'application/json',
+    'mjs' => 'application/javascript; charset=utf-8',
+    'jpg' || 'jpeg' => 'image/jpeg',
+    'ico' => 'image/x-icon',
+    'txt' || 'csv' => 'text/plain; charset=utf-8',
+    'woff' => 'font/woff',
+    'woff2' => 'font/woff2',
+    'ttf' => 'font/ttf',
+    'wasm' => 'application/wasm',
+    'zip' || 'whl' => 'application/zip',
+    'json' || 'ipynb' => 'application/json',
+    _ => 'application/octet-stream',
   };
 
   /// True when [path] (the request path without the leading slash) may be served.
@@ -43,7 +53,8 @@ class SimAssetServer {
   @visibleForTesting
   static Future<void> handle(HttpRequest req) async {
     final res = req.response;
-    final path = req.uri.path.startsWith('/') ? req.uri.path.substring(1) : req.uri.path;
+    final decoded = Uri.decodeComponent(req.uri.path);
+    final path = decoded.startsWith('/') ? decoded.substring(1) : decoded;
     try {
       if (!allowed(path)) throw const FormatException('bad path');
       final bytes = await loader('assets/simhub/$path');
@@ -85,5 +96,35 @@ class SimPins {
     final k = '$page:$simId';
     list.contains(k) ? list.remove(k) : list.add(k);
     await _prefs.setStringList(_key, list);
+  }
+}
+
+/// Online sims the board has opened while connected. The web view keeps their files, so a sim
+/// seen once can usually be opened again with no internet; this records which ones.
+/// Kept in shared preferences as `simhub.visited` = `simId=milliseconds` lines.
+class SimVisited {
+  SimVisited._(this._prefs);
+
+  final SharedPreferences _prefs;
+  static const _key = 'simhub.visited';
+
+  static Future<SimVisited> load() async => SimVisited._(await SharedPreferences.getInstance());
+
+  Map<String, int> _all() => {
+    for (final s in _prefs.getStringList(_key) ?? const <String>[])
+      if (s.contains('=') && int.tryParse(s.split('=').last) != null) s.substring(0, s.lastIndexOf('=')): int.parse(s.split('=').last),
+  };
+
+  /// When [simId] was last opened online, or null.
+  DateTime? when(String simId) {
+    final ms = _all()[simId];
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  bool has(String simId) => when(simId) != null;
+
+  Future<void> mark(String simId, [DateTime? at]) async {
+    final all = _all()..[simId] = (at ?? DateTime.now()).millisecondsSinceEpoch;
+    await _prefs.setStringList(_key, [for (final e in all.entries) '${e.key}=${e.value}']);
   }
 }

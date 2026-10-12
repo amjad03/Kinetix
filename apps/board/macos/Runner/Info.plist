@@ -28,5 +28,15 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>KINETIX uses the microphone for the noise meter (only the sound level is measured), class audio and lesson recording.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>KINETIX uses the camera for the document camera.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>KINETIX connects to phones and tablets in the classroom to show their screens on the board.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_kinetix._tcp</string>
+	</array>
 </dict>
 </plist>

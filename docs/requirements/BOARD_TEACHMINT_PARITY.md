@@ -98,7 +98,7 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | PPT import | Opens split; add all pages or pick pages; animations/transitions/media | Built: opens in the right-hand drawer with page thumbnails, ticks, Add page, Add all, Present in presenter app | A/insert/presentation_pane.dart, A/insert/pptx_render.dart |
 | Right-hand drawer | Slides in over the board from the right edge on a spring; drag handle resizes (30-60 %), drag or fling right closes; board and toolbars never reflow | Built: panel_divider_test "drawer overlays the board" | B/panel/panel_drawer.dart, B/panel/split_panel.dart |
 | Books / NCERT | Library, search, upload | Built | A/books/books_panel.dart |
-| Screen share | Portrait and landscape, auto-rotate | Partial | A/cast/cast_panel.dart, core/cast/cast_controller.dart |
+| Screen share | Portrait and landscape, auto-rotate | Built, fixed for Mac board + phone Teacher App: the sender's offer and ICE candidates that arrived before the board finished starting WebRTC were dropped, leaving the cast on "Connecting" (now queued and replayed in order, also when the offer overtakes `cast.ice`); macOS Release entitlements gained network server (inbound UDP), microphone and camera, Info.plist gained microphone, camera and local-network usage text; Android sender asks for notification permission before the media-projection service. Tests: test/cast_signalling_test.dart | A/cast/cast_panel.dart, core/cast/cast_controller.dart, packages/kinetix_cast/lib/src/cast_peer.dart, macos/Runner/*.entitlements |
 | Classroom Apps grid | Study Material, Live Class, Homework, Lessons, Attendance, Class Prep, Students, Tests, Recordings, Books; Other Tools: Calculator, Spotlight | Built | B/classroom_apps.dart |
 | Theme templates (15 listed) | Black, Grid, Horizontal, English, 2/3 Columns, Isometric, Graph, Hindi, Dotted, Checks, Music, Basketball, Football, World Map | Partial: verify all 15 plus spelling | INK/board_background.dart, B/layout/backgrounds_popover.dart |
 | Theme background colours | Palette, per page | Built | B/layout/backgrounds_popover.dart |
@@ -123,7 +123,14 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 ## 9. Simulations hub
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
-| Simulations hub | Not in Teachmint's board | Built: own panel (tools drawer, Simulations hub); about 40 sims by subject and class with Offline/Online badges and filters; 15 PhET sims and Blockly bundled and served offline; online: OSP, MW Next-Gen, LabXchange, ChemCollective, GeoGebra (non-commercial note), Polypad, CircuitJS, CircuitVerse, Wokwi, Mol*, EconGraphs, Pavlovia, TimelineJS, LearningApps, JupyterLite; native: Stroop, reaction time, memory span, macro money model, map lab (flutter_map), map quiz, key-dates timeline, LanguageTool check. Metadata (subject, gradeMin, gradeMax, tags, offline) for subject-context filtering | A/sim_hub/, assets/simhub/, docs/licensing/SIMULATIONS.md |
+| Simulations hub | Not in Teachmint's board | Built: own panel (tools drawer, Simulations hub); about 40 sims by subject and class with Offline/Online badges and filters; 15 PhET sims, Blockly, 6 Molecular Workbench activities, CircuitVerse, CircuitJS (GPL, separate program), JupyterLite (Python REPL + Pyodide) and TimelineJS bundled and served offline through the loopback server in the same viewer; online (same viewer, opened once online they are kept for offline use with a saved-copy notice in en/hi/kn): OSP (NC licences), LabXchange, ChemCollective, GeoGebra (not bundled: licence), Polypad, Wokwi, Mol*, EconGraphs, Pavlovia, LearningApps; native: Stroop, reaction time, memory span, macro money model, map lab (flutter_map), map quiz, key-dates timeline, LanguageTool check. Metadata (subject, gradeMin, gradeMax, tags, offline) for subject-context filtering | A/sim_hub/, assets/simhub/, docs/licensing/SIMULATIONS.md |
 | Pin a sim to a page | n/a | Built: pin per board page, reopen from the panel | A/sim_hub/sim_server.dart (SimPins) |
 | Sim picture to board | n/a | Built: Add to board with source and licence line (PhET sims via their own screenshot generator; other web pages may be blank on Android) | A/sim_hub/sim_hub_panel.dart |
 
+
+
+## 10. Noise meter
+
+| Feature | Teachmint | KINETIX | Files |
+|---|---|---|---|
+| Noise meter | Level bar with a limit | Built, measurement fixed: odd-sized microphone chunks shifted the 16-bit samples and read as loud static (now realigned); level shown in approximate dB (30 to 100, microphone not calibrated); loudest level so far with the time it was heard, one-per-second history graph with the limit line, alert (Too loud, red graph, count of times over), Reset; macOS microphone entitlement and usage text added. en/hi/kn strings. Tests: test/toolkit_test.dart | A/toolkit/noise_source.dart, toolkit_controller.dart, toolkit_layer.dart |

@@ -360,6 +360,45 @@
   "tkNoiseNoMic": "This board has no microphone.",
   "tkNoiseUnavailable": "The noise meter cannot use the microphone now. Turn off class audio or recording and try again.",
   "tkNoiseLocal": "Only the sound level is measured, on this board. Nothing is recorded.",
+  "tkNoiseNow": "Now: {db} dB",
+  "@tkNoiseNow": {
+    "placeholders": {
+      "db": {
+        "type": "String"
+      }
+    }
+  },
+  "tkNoiseMax": "Loudest so far: {db} dB at {time}",
+  "@tkNoiseMax": {
+    "placeholders": {
+      "db": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tkNoiseMaxNone": "Loudest so far: nothing yet",
+  "tkNoiseReset": "Reset",
+  "tkNoiseGraph": "Last two minutes",
+  "tkNoiseAlerts": "Over the limit {count} times",
+  "@tkNoiseAlerts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tkNoiseApprox": "An approximate level: the board microphone is not calibrated.",
+  "tkLimitDb": "Limit: {db} dB",
+  "@tkLimitDb": {
+    "placeholders": {
+      "db": {
+        "type": "String"
+      }
+    }
+  },
   "tkDragToReveal": "Drag to reveal",
   "tkRevealAll": "Reveal all",
   "tkRemoveShade": "Remove shade",

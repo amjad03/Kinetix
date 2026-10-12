@@ -42,6 +42,13 @@ double pcm16Level(Uint8List pcm) {
   return ((db + 60) / 60).clamp(0.0, 1.0);
 }
 
+/// The level as an approximate sound level in dB for display: 0 is 30 dB (a quiet room), 1 is
+/// 100 dB. A phone or board microphone is not calibrated, so it is a guide, not a measurement.
+double levelToDb(double level) => 30 + level.clamp(0.0, 1.0) * 70;
+
+/// The slider's value for a level in dB.
+double dbToLevel(double db) => ((db - 30) / 70).clamp(0.0, 1.0);
+
 /// The board's microphone through the `record` package's PCM stream. Automatic gain and noise
 /// suppression are off, so a loud class reads as loud.
 class MicNoiseSource implements NoiseSource {
@@ -74,7 +81,14 @@ class MicNoiseSource implements NoiseSource {
     final buffer = BytesBuilder(copy: false);
     _sub = pcm.listen((chunk) {
       buffer.add(chunk);
-      if (buffer.length >= 5334) out.add(pcm16Level(buffer.takeBytes()));
+      if (buffer.length >= 5334) {
+        // Chunks can end in the middle of a 16-bit sample; keep the odd byte for the next reading
+        // so samples never shift (a shifted stream reads as loud static).
+        final all = buffer.takeBytes();
+        final even = all.length - all.length % 2;
+        out.add(pcm16Level(Uint8List.sublistView(all, 0, even)));
+        if (even < all.length) buffer.addByte(all.last);
+      }
     }, onError: (Object _) {});
     return out.stream;
   }

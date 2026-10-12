@@ -209,6 +209,54 @@ void main() {
       expect(k.spinnerOptions, isNull, reason: 'back to the four groups');
     });
 
+    test('pcm16Level ignores nothing but a half sample: odd chunks are realigned and dB maps to the slider', () {
+      final loud = Uint8List(1000);
+      final bd = ByteData.view(loud.buffer);
+      for (var i = 0; i < 500; i++) {
+        bd.setInt16(i * 2, i.isEven ? 16384 : -16384, Endian.little);
+      }
+      expect(pcm16Level(loud), closeTo((20 * math.log(0.5) / math.ln10 + 60) / 60, 0.01));
+      expect(pcm16Level(Uint8List(1000)), 0);
+      expect(levelToDb(0), 30);
+      expect(levelToDb(1), 100);
+      expect(dbToLevel(levelToDb(0.4)), closeTo(0.4, 1e-9));
+    });
+
+    test('the noise meter keeps the loudest level and when it was, a history, alert counts, and resets', () async {
+      var t = DateTime(2026, 10, 12, 9, 0, 0);
+      final mic = FakeNoise();
+      final k = ToolkitController(roster: () => const [], noiseSource: mic, now: () => t);
+      k.show(ToolkitItem.noise);
+      await pumpEventQueue();
+      expect(k.noiseMaxAt, isNull);
+      for (var i = 0; i < 3; i++) {
+        mic.levels.add(0.2);
+        await pumpEventQueue();
+        t = t.add(const Duration(seconds: 1));
+      }
+      final peakAt = t;
+      for (var i = 0; i < 12; i++) {
+        mic.levels.add(0.95);
+        await pumpEventQueue();
+      }
+      t = t.add(const Duration(seconds: 1));
+      for (var i = 0; i < 12; i++) {
+        mic.levels.add(0.1);
+        await pumpEventQueue();
+      }
+      expect(k.noiseMax, greaterThan(0.9));
+      expect(k.noiseMaxAt!.isBefore(peakAt), isFalse);
+      expect(k.noiseHistory.length, greaterThanOrEqualTo(3));
+      expect(k.noiseAlerts, 1, reason: 'one rise above the limit');
+      expect(k.noiseDb, lessThan(levelToDb(k.noiseMax)));
+      k.resetNoise();
+      expect(k.noiseMax, 0);
+      expect(k.noiseMaxAt, isNull);
+      expect(k.noiseHistory, isEmpty);
+      expect(k.noiseAlerts, 0);
+      k.dispose();
+    });
+
     test('the noise meter smooths the level, and stops the microphone when closed', () async {
       final mic = FakeNoise();
       final k = ToolkitController(roster: () => const [], noiseSource: mic);
