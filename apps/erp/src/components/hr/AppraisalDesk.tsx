@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { closeCycle, createCycle, finaliseAppraisal, hodReview, saveSelfAppraisal } from '@/app/(dashboard)/hr/talent-actions';
@@ -167,7 +168,7 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
               <TableBody>
                 {appraisals.map((a) => (
                   <TableRow key={a.id}>
-                    <TableCell>{a.fullName}</TableCell>
+                    <TableCell><Link className="text-primary underline-offset-4 hover:underline" href={`/hr/appraisal/${a.id}`}>{a.fullName}</Link></TableCell>
                     <TableCell>
                       <StatusPill tone={TONE[a.status]}>{t(`hl.appr.status.${a.status}` as MessageKey)}</StatusPill>
                     </TableCell>

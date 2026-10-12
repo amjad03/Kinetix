@@ -11,6 +11,7 @@ import { departments, designations, staffProfiles } from '../db/schema.js';
 import { requireDay, requireMonth } from './dates.js';
 import { HR_ROLES, PAYROLL_ROLES, STAFF_ROLES, requireVersion } from './hr.access.js';
 import { bankAad, HrService, NO_SECRETS_KEY } from './hr.service.js';
+import { formatSeries, takeNumbers } from './hr-settings.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const Paise = z.number().int().min(0).max(100_000_000_00);
@@ -19,7 +20,8 @@ const Uan = z.string().trim().regex(/^\d{12}$/, 'UAN has 12 digits');
 
 const DesignationBody = z.object({ name: z.string().trim().min(1).max(80), grade: z.string().trim().max(20).nullable().optional() });
 const ProfileBody = z.object({
-  employeeCode: z.string().trim().min(1).max(30),
+  /** Leave empty on a new record to take the next number from the employee numbering series. */
+  employeeCode: z.string().trim().max(30).default(''),
   departmentId: z.uuid().nullable().optional(),
   designationId: z.uuid().nullable().optional(),
   employmentType: z.enum(['permanent', 'contract', 'probation', 'visiting']).default('permanent'),
@@ -109,8 +111,15 @@ export class HrController {
       if (b.dateOfJoining && b.dateOfLeaving && b.dateOfLeaving < b.dateOfJoining) throw new BadRequestException('The leaving date is before the joining date');
       await this.assertRefs(tx, b);
       const { expectedVersion: _v, ...fields } = b;
+      let employeeCode = b.employeeCode || (before.version === 0 ? '' : (before.employeeCode ?? ''));
+      if (!employeeCode) {
+        if (before.version !== 0) throw new BadRequestException('Enter the employee code');
+        const { series, first } = await takeNumbers(tx, p.tenantId, 'employeeSeries', 1);
+        employeeCode = formatSeries(series, new Date(), first);
+      }
       const values = {
         ...fields,
+        employeeCode,
         departmentId: b.departmentId ?? null,
         designationId: b.designationId ?? null,
         dateOfJoining: b.dateOfJoining ?? null,
@@ -128,7 +137,7 @@ export class HrController {
         if ((e as { code?: string; cause?: { code?: string } }).cause?.code === '23505' || (e as { code?: string }).code === '23505') throw new ConflictException('That employee code is already in use');
         throw e;
       }
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: before.version === 0 ? 'hr.staff_created' : 'hr.staff_updated', subjectType: 'user', subjectId: userId, data: { employeeCode: b.employeeCode, status: b.status, taxRegime: b.taxRegime } });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: before.version === 0 ? 'hr.staff_created' : 'hr.staff_updated', subjectType: 'user', subjectId: userId, data: { employeeCode, status: b.status, taxRegime: b.taxRegime } });
       return this.hr.profile(tx, userId);
     });
   }

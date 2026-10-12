@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { addTraining, removeTraining, verifyTraining } from '@/app/(dashboard)/hr/talent-actions';
@@ -121,7 +122,7 @@ export function TrainingDesk({ records, summary, staff, isHr, meId }: { records:
                 <TableRow key={r.id}>
                   {isHr && <TableCell>{r.fullName}</TableCell>}
                   <TableCell>
-                    {r.title}
+                    <Link className="text-primary underline-offset-4 hover:underline" href={`/hr/training/${r.id}`}>{r.title}</Link>
                     <div className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                       {t(`hl.train.kind.${r.kind}` as MessageKey)}
                       {r.organiser ? ` · ${r.organiser}` : ''}

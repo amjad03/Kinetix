@@ -106,6 +106,7 @@ export interface LeaveType {
   annualDays: number;
   accrual: LeaveAccrual;
   carryForwardMax: number;
+  encashable?: boolean;
   active: boolean;
 }
 
@@ -120,7 +121,7 @@ export interface LeaveBalance {
   available: number;
 }
 
-export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type LeaveStatus = 'pending' | 'recommended' | 'approved' | 'rejected' | 'cancelled';
 
 export interface LeaveRequest {
   id: string;
@@ -136,6 +137,9 @@ export interface LeaveRequest {
   decidedBy: { id: string; fullName: string } | null;
   decidedAt: string | null;
   decisionNote: string | null;
+  recommendedBy?: { id: string; fullName: string } | null;
+  recommendedAt?: string | null;
+  recommendNote?: string | null;
   createdAt: string;
 }
 
@@ -144,7 +148,7 @@ export interface Holiday {
   title: string;
 }
 
-export type OpeningStatus = 'open' | 'on_hold' | 'closed';
+export type OpeningStatus = 'requested' | 'rejected' | 'open' | 'on_hold' | 'closed';
 export type ApplicantStage = 'applied' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected' | 'withdrawn';
 
 export interface JobOpening {
@@ -158,6 +162,9 @@ export interface JobOpening {
   closesOn: string | null;
   /** Applicants per stage. */
   pipeline: Partial<Record<ApplicantStage, number>>;
+  justification?: string;
+  approvedAt?: string | null;
+  decisionNote?: string | null;
   createdAt: string;
 }
 
@@ -230,7 +237,7 @@ export interface TallyLedgers {
   otherDeductions: string;
 }
 
-export type PayrollRunStatus = 'draft' | 'approved' | 'locked';
+export type PayrollRunStatus = 'draft' | 'verified' | 'approved' | 'locked';
 
 export interface PayrollRunSummary {
   id: string;
@@ -245,6 +252,9 @@ export interface PayrollRunSummary {
   createdAt: string;
   approvedAt: string | null;
   lockedAt: string | null;
+  verifiedAt?: string | null;
+  bankFileAt?: string | null;
+  publishedAt?: string | null;
 }
 
 export interface PayslipLine {
@@ -255,6 +265,7 @@ export interface PayslipLine {
 
 export interface Payslip {
   id: string;
+  payslipNo?: string | null;
   runId: string;
   month: string;
   runStatus: PayrollRunStatus;

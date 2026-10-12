@@ -299,7 +299,8 @@ describe('quality and HR depth: criteria trees, evidence engine, CQI loop, workl
       expect(slip.earnings.find((e) => e.code === 'ARR')!.amountPaise).toBe(R(20_000));
       expect(slip.grossPaise).toBe(R(70_000 + 5_769 + 20_000));
       expect(slip.deductions.find((d) => d.code === 'REC')!.amountPaise).toBe(R(1_000));
-      const approved = (await post('principal', `/v1/payroll/runs/${run.id}/approve`, { expectedVersion: run.version }).expect(200)).body;
+      const verified = (await post('accountant', `/v1/payroll/runs/${run.id}/verify`, { expectedVersion: run.version }).expect(200)).body;
+      const approved = (await post('principal', `/v1/payroll/runs/${run.id}/approve`, { expectedVersion: verified.version }).expect(200)).body;
       await post('principal', `/v1/payroll/runs/${run.id}/lock`, { expectedVersion: approved.version }).expect(200);
       await post('accountant', '/v1/hr/payroll/adjustments', { userId: ids.teacher, kind: 'bonus', payMonth: '2026-10', amountPaise: R(500), reason: 'Late' }).expect(409); // locked month
       expect((await get('accountant', '/v1/hr/payroll/adjustments?month=2026-10').expect(200)).body.filter((a: { runId: string | null }) => a.runId === run.id)).toHaveLength(3);

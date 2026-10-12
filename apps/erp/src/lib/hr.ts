@@ -16,12 +16,23 @@ export function shiftMonth(ym: string, by: number): string {
   return `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`;
 }
 
-export const RUN_TONE: Record<PayrollRunStatus, 'default' | 'warning' | 'success'> = { draft: 'default', approved: 'warning', locked: 'success' };
-export const LEAVE_TONE: Record<LeaveStatus, 'default' | 'warning' | 'success' | 'error'> = { pending: 'warning', approved: 'success', rejected: 'error', cancelled: 'default' };
+export const RUN_TONE: Record<PayrollRunStatus, 'default' | 'info' | 'warning' | 'success'> = { draft: 'default', verified: 'info', approved: 'warning', locked: 'success' };
+export const LEAVE_TONE: Record<LeaveStatus, 'default' | 'info' | 'warning' | 'success' | 'error'> = { pending: 'warning', recommended: 'info', approved: 'success', rejected: 'error', cancelled: 'default' };
 
-/** What a person can still do to a run: draft → approve; approved → lock or reopen; locked → nothing. */
-export function runActions(status: PayrollRunStatus, canApprove: boolean): { recompute: boolean; approve: boolean; lock: boolean; reopen: boolean; exports: boolean } {
-  return { recompute: status === 'draft', approve: status === 'draft' && canApprove, lock: status === 'approved' && canApprove, reopen: status === 'approved' && canApprove, exports: status !== 'draft' };
+/**
+ * What a person can still do to a run: draft → verify (payroll staff) → approve → lock (principal) → publish payslips.
+ * A verified or approved run can be reopened; draft and verified runs can be recomputed.
+ */
+export function runActions(status: PayrollRunStatus, canApprove: boolean, published = false): { recompute: boolean; verify: boolean; approve: boolean; lock: boolean; reopen: boolean; publish: boolean; exports: boolean } {
+  return {
+    recompute: status === 'draft' || status === 'verified',
+    verify: status === 'draft',
+    approve: status === 'verified' && canApprove,
+    lock: status === 'approved' && canApprove,
+    reopen: (status === 'verified' || status === 'approved') && canApprove,
+    publish: status === 'locked' && !published,
+    exports: status === 'approved' || status === 'locked',
+  };
 }
 
 export type StatutoryKind = 'pf' | 'esi' | 'pt' | 'tds';

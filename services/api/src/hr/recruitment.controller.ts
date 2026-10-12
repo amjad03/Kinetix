@@ -53,6 +53,9 @@ export class RecruitmentController {
       status: o.status as JobOpening['status'],
       closesOn: o.closesOn,
       pipeline: Object.fromEntries(counts.filter((c) => c.openingId === o.id).map((c) => [c.stage, c.n])),
+      justification: o.justification,
+      approvedAt: o.approvedAt?.toISOString() ?? null,
+      decisionNote: o.decisionNote,
       createdAt: o.createdAt.toISOString(),
     }));
   }
