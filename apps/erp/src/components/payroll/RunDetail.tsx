@@ -1,19 +1,20 @@
 'use client';
-import { DataTable, StatusPill } from '@/components/ui';
+import Link from 'next/link';
+import { DataTable } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { runAction } from '@/app/(dashboard)/payroll/actions';
-import { pillTone, useNotice } from '@/components/hr/Common';
+import { useNotice } from '@/components/hr/Common';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { downloadUrl, RUN_TONE, runActions, type StatutoryKind } from '@/lib/hr';
+import { downloadUrl, runActions, type StatutoryKind } from '@/lib/hr';
 import { formatRupees } from '@/lib/money';
 import type { PayrollRunDetail } from '@/lib/hr-types';
 
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@/components/kx';
 import { Download } from 'lucide-react';
-type Step = 'recompute' | 'approve' | 'lock' | 'reopen';
+type Step = 'recompute' | 'verify' | 'approve' | 'lock' | 'reopen' | 'publish';
 
 export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canApprove: boolean }) {
   const { t } = useI18n();
@@ -21,7 +22,7 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
   const { run: call, view } = useNotice();
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState<Step | null>(null);
-  const can = runActions(run.status, canApprove);
+  const can = runActions(run.status, canApprove, !!run.publishedAt);
 
   const go = (step: Step) =>
     start(async () => {
@@ -35,12 +36,12 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
     <>
       {view}
       <div className="flex flex-row gap-2 flex-wrap items-center mb-6">
-        <StatusPill tone={pillTone(RUN_TONE[run.status])}>{t(`pay.status.${run.status}` as MessageKey)}</StatusPill>
-        <div className="flex-1" />
         {can.recompute && <Button variant="outlined" disabled={pending} onClick={() => go('recompute')}>{t('pay.recompute')}</Button>}
         {can.reopen && <Button variant="outlined" disabled={pending} onClick={() => setConfirm('reopen')}>{t('pay.reopen')}</Button>}
+        {can.verify && <Button variant="contained" disabled={pending || run.payslips.length === 0} onClick={() => setConfirm('verify')}>{t('pay.verify')}</Button>}
         {can.approve && <Button variant="contained" disabled={pending || run.payslips.length === 0} onClick={() => setConfirm('approve')}>{t('pay.approve')}</Button>}
         {can.lock && <Button variant="contained" disabled={pending} onClick={() => setConfirm('lock')}>{t('pay.lock')}</Button>}
+        {can.publish && <Button variant="contained" disabled={pending} onClick={() => setConfirm('publish')}>{t('pay.publish')}</Button>}
       </div>
       <StatGrid min={140}>
         <StatTile label={t('pay.staff')} value={run.staffCount} />
@@ -74,7 +75,8 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
           rowId={(p) => String(p.id)}
           exportName="run-payslips"
           columns={[
-            { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (p) => p.user.fullName, cell: (p) => `${p.user.fullName} ${p.user.employeeCode ? ` · ${p.user.employeeCode}` : ''}` },
+            { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (p) => p.user.fullName, cell: (p) => <Link className="text-primary underline-offset-4 hover:underline" href={`/payroll/payslips/${p.id}`}>{`${p.user.fullName}${p.user.employeeCode ? ` · ${p.user.employeeCode}` : ''}`}</Link> },
+            { id: 'cn', header: t('hf.payslipNo'), sort: (p) => p.payslipNo ?? '', cell: (p) => p.payslipNo ?? '–' },
             { id: 'c1', header: t('pay.lop'), align: 'right', sort: (p) => p.lopDays, cell: (p) => p.lopDays },
             { id: 'c2', header: t('pay.gross'), align: 'right', sort: (p) => p.grossPaise, cell: (p) => formatRupees(p.grossPaise) },
             { id: 'c3', header: t('pay.deductions'), align: 'right', sort: (p) => p.deductionsPaise, cell: (p) => formatRupees(p.deductionsPaise) },

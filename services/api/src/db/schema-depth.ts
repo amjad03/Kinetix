@@ -211,6 +211,7 @@ export const payrollAdjustments = pgTable(
     reason: text('reason').notNull().default(''),
     status: text('status').notNull().default('pending'), // pending | approved | rejected
     runId: uuid('run_id').references(() => payrollRuns.id, { onDelete: 'set null' }),
+    loanId: uuid('loan_id'),
     createdBy: by('created_by'),
     decidedBy: by('decided_by'),
     decidedAt: timestamp('decided_at', { withTimezone: true }),

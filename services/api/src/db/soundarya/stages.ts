@@ -12,7 +12,7 @@ import { governanceDepth } from './governance-depth.js';
 import { exams } from './exams.js';
 import { obe, questionBank, studentAccounts, surveys } from './outcomes.js';
 import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from './quality.js';
-import { payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
+import { hrWorkflows, payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
 import { assistSamples } from './assist.js';
 import { gapClose } from './gap-close.js';
 import { integrationSamples } from './integration-samples.js';
@@ -41,6 +41,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['inventory and procurement', inventory],
   ['fixed assets', assets],
   ['staff attendance and leave', staffAttendanceAndLeave],
+  ['HR workflows: settings, loans, encashment, service book', hrWorkflows],
   ['salary structures and payroll runs', payroll],
   ['recruitment', recruitment],
   ['admissions: enquiries, campaigns, cycles, merit list', admissions],

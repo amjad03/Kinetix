@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -5930,9 +5937,130 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot reach the server'**
   String get connectionFailed;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Loans and advances'**
+  String get loansTitle;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for a salary advance or loan'**
+  String get loansBody;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'You have no loans or advances.'**
+  String get loansEmpty;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get loanRequest;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Salary advance'**
+  String get loanKindAdvance;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Staff loan'**
+  String get loanKindLoan;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (₹)'**
+  String get loanAmount;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly instalments'**
+  String get loanInstallments;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'First recovery month'**
+  String get loanStartMonth;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get loanPurpose;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to the principal for approval'**
+  String get loanSent;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount, the instalments and the purpose.'**
+  String get loanInvalid;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding {amount}'**
+  String loanOutstanding(String amount);
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} × {count} months'**
+  String loanEmi(String amount, int count);
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting approval'**
+  String get loanStatusPending;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Approved, recovering'**
+  String get loanStatusApproved;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get loanStatusRejected;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get loanStatusCancelled;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Fully recovered'**
+  String get loanStatusClosed;
+
+  /// Loans and advances (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended, awaiting principal'**
+  String get leaveStatusRecommended;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -5941,7 +6069,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

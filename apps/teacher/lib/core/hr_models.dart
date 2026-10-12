@@ -45,7 +45,7 @@ class LeaveBalanceInfo {
   final double opening, accrued, used, pending, available;
 }
 
-enum LeaveStatus { pending, approved, rejected, cancelled }
+enum LeaveStatus { pending, recommended, approved, rejected, cancelled }
 
 class LeaveRequestInfo {
   const LeaveRequestInfo({
@@ -121,6 +121,37 @@ class PayslipLineInfo {
 
   final String name;
   final int amountPaise;
+}
+
+/// A salary advance or staff loan; approved ones are recovered through payroll.
+class LoanInfo {
+  const LoanInfo({required this.id, required this.loanNo, required this.kind, required this.amountPaise, required this.installments, required this.emiPaise, required this.startMonth, required this.purpose, required this.status, required this.outstandingPaise});
+
+  factory LoanInfo.fromJson(Map<String, dynamic> j) => LoanInfo(
+    id: j['id'] as String,
+    loanNo: j['loanNo'] as String,
+    kind: j['kind'] as String,
+    amountPaise: (j['amountPaise'] as num).toInt(),
+    installments: (j['installments'] as num).toInt(),
+    emiPaise: (j['emiPaise'] as num).toInt(),
+    startMonth: j['startMonth'] as String,
+    purpose: j['purpose'] as String? ?? '',
+    status: j['status'] as String,
+    outstandingPaise: (j['outstandingPaise'] as num).toInt(),
+  );
+
+  final String id;
+  final String loanNo;
+  /// advance | loan
+  final String kind;
+  final int amountPaise;
+  final int installments;
+  final int emiPaise;
+  final String startMonth;
+  final String purpose;
+  /// pending | approved | rejected | cancelled | closed
+  final String status;
+  final int outstandingPaise;
 }
 
 class PayslipInfo {

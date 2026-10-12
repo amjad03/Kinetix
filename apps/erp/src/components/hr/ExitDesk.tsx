@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { acceptResignation, recordResignation, relieveEmployee, saveSettlement, setClearance, withdrawResignation } from '@/app/(dashboard)/hr/talent-actions';
@@ -24,7 +25,7 @@ function Case({ s, run, pending }: { s: SeparationDetail; run: (fn: () => Promis
     <div className="rounded-[12px] border bg-card p-5" data-testid="exit-case">
       <div className="flex flex-row justify-between items-start gap-4 flex-wrap">
         <div>
-          <p className="text-sm leading-[21px] font-semibold">{s.fullName}</p>
+          <p className="text-sm leading-[21px] font-semibold"><Link className="text-primary underline-offset-4 hover:underline" href={`/hr/exit/${s.id}`}>{s.fullName}</Link></p>
           <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('hl.exit.col.resigned')}: {formatDate(s.resignedOn, 'dayMonth', locale)} · {t('hl.exit.col.lastDay')}: {formatDate(s.lastWorkingDay, 'dayMonth', locale)}
           </p>

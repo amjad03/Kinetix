@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { DataTable } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { downloadUrl } from '@/lib/hr';
@@ -17,7 +18,7 @@ export function MyPayslipsTable({ rows }: { rows: Payslip[] }) {
       exportName="my-payslips"
       initialSort={{ id: 'month', dir: 'desc' }}
       columns={[
-        { id: 'month', header: t('pay.month'), rowHeader: true, sort: (p) => p.month, csv: (p) => p.month, cell: (p) => fmt.month(`${p.month}-01`) },
+        { id: 'month', header: t('pay.month'), rowHeader: true, sort: (p) => p.month, csv: (p) => p.month, cell: (p) => <Link className="text-primary underline-offset-4 hover:underline" href={`/payroll/payslips/${p.id}`}>{fmt.month(`${p.month}-01`)}</Link> },
         { id: 'gross', header: t('pay.gross'), align: 'right', sort: (p) => p.grossPaise / 100, cell: (p) => fmt.rupees(p.grossPaise) },
         { id: 'deductions', header: t('pay.deductions'), align: 'right', sort: (p) => p.deductionsPaise / 100, cell: (p) => fmt.rupees(p.deductionsPaise) },
         { id: 'net', header: t('pay.net'), align: 'right', sort: (p) => p.netPaise / 100, cell: (p) => fmt.rupees(p.netPaise) },

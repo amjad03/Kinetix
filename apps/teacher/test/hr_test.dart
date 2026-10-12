@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_teacher/core/hr_models.dart';
 import 'package:kinetix_teacher/features/hr/check_in_screen.dart';
 import 'package:kinetix_teacher/features/hr/leave_screen.dart';
+import 'package:kinetix_teacher/features/hr/loans_screen.dart';
 import 'package:kinetix_teacher/features/hr/payslips_screen.dart';
 
 import 'fake_api.dart';
@@ -153,5 +154,22 @@ void main() {
     expect(find.text(strings('hi').payslipsEmpty), findsOneWidget);
     expect(strings('kn').leaveTitle, isNot(strings('en').leaveTitle));
     expect(find.byType(CheckInScreen), findsNothing);
+  });
+
+  testWidgets('requests a salary advance and lists it as awaiting approval', (tester) async {
+    phone(tester);
+    await tester.pumpWidget(localizedApp(home: LoansScreen(api: api, now: DateTime(2026, 10, 20))));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('loansEmpty')), findsOneWidget);
+    await tapAndSettle(tester, find.byKey(const Key('requestLoan')));
+    await tapAndSettle(tester, find.byKey(const Key('submitLoan')));
+    expect(find.text('Enter an amount, the instalments and the purpose.'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('loanAmount')), '15000');
+    await tester.enterText(find.byKey(const Key('loanPurpose')), 'School fees');
+    await tapAndSettle(tester, find.byKey(const Key('submitLoan')));
+    expect(api.calls, contains('requestLoan advance 1500000 3 2026-11'));
+    expect(find.textContaining('Awaiting approval'), findsOneWidget);
+    expect(strings('hi').loansTitle, isNot(strings('en').loansTitle));
+    expect(leaveStatusText(strings('kn'), LeaveStatus.recommended), strings('kn').leaveStatusRecommended);
   });
 }

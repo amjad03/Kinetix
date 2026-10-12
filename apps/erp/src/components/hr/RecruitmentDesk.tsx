@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import { useState, useTransition } from 'react';
 import { addApplicant, moveApplicant, saveOpening } from '@/app/(dashboard)/hr/actions';
@@ -46,6 +47,7 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
                                   {o.department.name}
                                 </div>
                               )}</>) },
+            { id: 'cr', header: '', csv: false, cell: (o) => <Link className="text-sm text-primary underline-offset-4 hover:underline" href={`/hr/recruitment/${o.id}`} onClick={(e) => e.stopPropagation()}>{t('hf.openRecord')}</Link> },
             { id: 'c1', header: t('hr.rec.positions'), align: 'right', sort: (o) => o.positions, cell: (o) => o.positions },
             { id: 'c2', header: t('hr.f.status'), sort: (o) => t(`hr.rec.status.${o.status}` as MessageKey), cell: (o) => t(`hr.rec.status.${o.status}` as MessageKey) },
             { id: 'c3', header: t('hr.rec.pipeline'), csv: false, cell: (o) => (<>{STAGES.filter((s) => o.pipeline[s]).map((s) => (

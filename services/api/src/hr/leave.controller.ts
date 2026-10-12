@@ -21,6 +21,8 @@ const TypeBody = z.object({
   accrual: z.enum(['yearly', 'monthly']),
   carryForwardMax: Days,
   active: z.boolean().default(true),
+  /** Omitted: left as it is. */
+  encashable: z.boolean().optional(),
 });
 const ApplyBody = z.object({ leaveTypeId: z.uuid(), fromDate: Day, toDate: Day, halfDay: z.boolean().default(false), reason: z.string().trim().max(500).default('') });
 const DecideBody = z.object({ note: z.string().trim().max(500).optional() });

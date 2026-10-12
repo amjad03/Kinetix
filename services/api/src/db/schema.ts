@@ -445,6 +445,11 @@ export const deviceProfiles = pgTable(
     pinSetAt: timestamp('pin_set_at', { withTimezone: true }),
     failedAttempts: integer('failed_attempts').notNull().default(0),
     lockedAt: timestamp('locked_at', { withTimezone: true }),
+    verifiedBy: uuid('verified_by').references(() => users.id, { onDelete: 'set null' }),
+    verifiedAt: timestamp('verified_at', { withTimezone: true }),
+    bankFileAt: timestamp('bank_file_at', { withTimezone: true }),
+    publishedBy: uuid('published_by').references(() => users.id, { onDelete: 'set null' }),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
     lastUsedAt: timestamp('last_used_at', { withTimezone: true }).notNull().defaultNow(),
     createdAt: createdAt(),
   },
@@ -2751,6 +2756,7 @@ export const leaveTypes = pgTable(
     annualDays: numeric('annual_days', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
     accrual: text('accrual').notNull().default('yearly'), // yearly | monthly
     carryForwardMax: numeric('carry_forward_max', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
+    encashable: boolean('encashable').notNull().default(false),
     active: boolean('active').notNull().default(true),
   },
   (t) => [uniqueIndex('leave_types_code_uq').on(t.tenantId, t.code)],
@@ -2784,6 +2790,9 @@ export const leaveRequests = pgTable(
     status: text('status').notNull().default('pending'), // pending | approved | rejected | cancelled
     decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
+    recommendedBy: uuid('recommended_by').references(() => users.id, { onDelete: 'set null' }),
+    recommendedAt: timestamp('recommended_at', { withTimezone: true }),
+    recommendNote: text('recommend_note'),
     decisionNote: text('decision_note'),
     createdAt: createdAt(),
   },
@@ -2798,7 +2807,11 @@ export const jobOpenings = pgTable('job_openings', {
   designationId: uuid('designation_id').references(() => designations.id, { onDelete: 'set null' }),
   positions: smallint('positions').notNull().default(1),
   description: text('description').notNull().default(''),
-  status: text('status').notNull().default('open'), // open | on_hold | closed
+  status: text('status').notNull().default('open'), // requested | rejected | open | on_hold | closed
+  justification: text('justification').notNull().default(''),
+  approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'set null' }),
+  approvedAt: timestamp('approved_at', { withTimezone: true }),
+  decisionNote: text('decision_note'),
   closesOn: date('closes_on'),
   createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: createdAt(),
@@ -2914,6 +2927,7 @@ export const payslips = pgTable(
     employeePfPaise: bigint('employee_pf_paise', { mode: 'number' }).notNull(),
     tdsPaise: bigint('tds_paise', { mode: 'number' }).notNull(),
     data: jsonb('data').notNull(),
+    payslipNo: text('payslip_no'),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('payslips_run_user_uq').on(t.runId, t.userId), index('payslips_user_idx').on(t.userId)],
@@ -3019,6 +3033,10 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'hr_settings',
+  'staff_loans',
+  'leave_encashments',
+  'service_book_entries',
   'settlement_batches',
   'settlement_lines',
   'acct_accounts',

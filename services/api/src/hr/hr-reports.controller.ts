@@ -1,0 +1,160 @@
+import { BadRequestException, Controller, Get, Param, Query } from '@nestjs/common';
+import { sql, type SQL } from 'drizzle-orm';
+import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
+import type { UserPrincipal } from '../auth/principal.js';
+import { audit } from '../common/audit.js';
+import { DbService } from '../db/db.service.js';
+import { PAYROLL_ROLES } from './hr.access.js';
+import { LeaveService } from './leave.service.js';
+
+export const HR_REPORTS = ['staff-strength', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition'] as const;
+export type HrReport = (typeof HR_REPORTS)[number];
+
+type Row = Record<string, string | number | null>;
+const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+/** Indian financial year of a month or date: 2026-05 → 2026 (April 2026 to March 2027). */
+export const fyOf = (ym: string) => (Number(ym.slice(5, 7)) >= 4 ? Number(ym.slice(0, 4)) : Number(ym.slice(0, 4)) - 1);
+
+/**
+ * HR and payroll reports. Each returns `{ columns, rows }` with stable column keys; the ERP labels them.
+ * Filters: `month` (YYYY-MM), `fy` (start year), `year`, `departmentId`.
+ */
+@Controller('v1/hr/reports')
+export class HrReportsController {
+  constructor(
+    private readonly db: DbService,
+    private readonly leave: LeaveService,
+  ) {}
+
+  @Get(':kind')
+  @Auth('user', PAYROLL_ROLES)
+  report(@CurrentPrincipal() p: UserPrincipal, @Param('kind') kind: string, @Query() q: Record<string, string | undefined>) {
+    if (!HR_REPORTS.includes(kind as HrReport)) throw new BadRequestException('Unknown report');
+    const today = new Date().toISOString().slice(0, 10);
+    const month = q.month && MONTH.test(q.month) ? q.month : today.slice(0, 7);
+    const fy = q.fy && /^\d{4}$/.test(q.fy) ? Number(q.fy) : fyOf(month);
+    const year = q.year && /^\d{4}$/.test(q.year) ? Number(q.year) : Number(today.slice(0, 4));
+    const dept = q.departmentId && /^[0-9a-f-]{36}$/.test(q.departmentId) ? q.departmentId : null;
+    const deptCond = (col: SQL) => (dept ? sql`and ${col} = ${dept}::uuid` : sql``);
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const run = async (query: SQL): Promise<Row[]> => (await tx.execute<Row>(query)).rows;
+      const slips = (extra: SQL) => sql`
+        select s.data->'user'->>'employeeCode' as code, s.data->'user'->>'fullName' as name, s.data->'user'->>'department' as department, ${extra}
+        from payslips s join payroll_runs r on r.id = s.run_id left join staff_profiles sp on sp.user_id = s.user_id
+        where r.month = ${month} ${deptCond(sql`sp.department_id`)} order by 2`;
+      let columns: string[];
+      let rows: Row[];
+      switch (kind as HrReport) {
+        case 'staff-strength':
+          columns = ['department', 'designation', 'permanent', 'contract', 'probation', 'visiting', 'female', 'male', 'total'];
+          rows = await run(sql`
+            select coalesce(d.name, '—') as department, coalesce(g.name, '—') as designation,
+              count(*) filter (where sp.employment_type = 'permanent')::int as permanent, count(*) filter (where sp.employment_type = 'contract')::int as contract,
+              count(*) filter (where sp.employment_type = 'probation')::int as probation, count(*) filter (where sp.employment_type = 'visiting')::int as visiting,
+              count(*) filter (where sp.gender = 'female')::int as female, count(*) filter (where sp.gender = 'male')::int as male, count(*)::int as total
+            from staff_profiles sp left join departments d on d.id = sp.department_id left join designations g on g.id = sp.designation_id
+            where sp.status <> 'exited' ${deptCond(sql`sp.department_id`)} group by 1, 2 order by 1, 2`);
+          break;
+        case 'attendance-register':
+          columns = ['code', 'name', 'department', 'present', 'halfDay', 'absent', 'onLeave', 'marked', 'lateIns'];
+          rows = await run(sql`
+            select sp.employee_code as code, u.full_name as name, coalesce(d.name, '') as department,
+              count(a.*) filter (where a.status = 'present')::int as present, count(a.*) filter (where a.status = 'half_day')::int as "halfDay",
+              count(a.*) filter (where a.status = 'absent')::int as absent, count(a.*) filter (where a.status = 'on_leave')::int as "onLeave", count(a.*)::int as marked,
+              count(a.*) filter (where a.check_in_at is not null and (a.check_in_at at time zone 'Asia/Kolkata')::time > ((coalesce(hs.attendance->>'officeStart', '09:00'))::time + make_interval(mins => coalesce((hs.attendance->>'graceMinutes')::int, 0))))::int as "lateIns"
+            from staff_profiles sp join users u on u.id = sp.user_id left join departments d on d.id = sp.department_id
+            left join hr_settings hs on hs.tenant_id = sp.tenant_id
+            left join staff_attendance a on a.user_id = sp.user_id and to_char(a.date, 'YYYY-MM') = ${month}
+            where sp.status <> 'exited' ${deptCond(sql`sp.department_id`)} group by 1, 2, 3 order by 2`);
+          break;
+        case 'leave-register':
+          columns = ['code', 'name', 'leaveType', 'fromDate', 'toDate', 'days', 'status', 'decidedBy'];
+          rows = await run(sql`
+            select sp.employee_code as code, u.full_name as name, t.name as "leaveType", r.from_date::text as "fromDate", r.to_date::text as "toDate", r.days::float as days, r.status, coalesce(db.full_name, '') as "decidedBy"
+            from leave_requests r join users u on u.id = r.user_id join leave_types t on t.id = r.leave_type_id left join staff_profiles sp on sp.user_id = r.user_id left join users db on db.id = r.decided_by
+            where extract(year from r.from_date) = ${year} ${deptCond(sql`sp.department_id`)} order by r.from_date desc`);
+          break;
+        case 'leave-balances': {
+          columns = ['code', 'name', 'leaveType', 'opening', 'accrued', 'used', 'pending', 'available'];
+          const staff = await run(sql`select sp.user_id as id, sp.employee_code as code, u.full_name as name from staff_profiles sp join users u on u.id = sp.user_id where sp.status <> 'exited' ${deptCond(sql`sp.department_id`)} order by 3`);
+          rows = [];
+          for (const s of staff) for (const b of await this.leave.balances(tx, p.tenantId, String(s.id), year)) if (b.leaveType.paid) rows.push({ code: s.code, name: s.name, leaveType: b.leaveType.name, opening: b.opening, accrued: b.accrued, used: b.used, pending: b.pending, available: b.available });
+          break;
+        }
+        case 'payroll-register':
+          columns = ['code', 'name', 'department', 'paidDays', 'grossPaise', 'pfPaise', 'esiPaise', 'ptPaise', 'tdsPaise', 'deductionsPaise', 'netPaise'];
+          rows = await run(slips(sql`(s.data->>'paidDays')::float as "paidDays", s.gross_paise as "grossPaise", s.employee_pf_paise as "pfPaise", coalesce((s.data->>'esiPaise')::bigint, 0) as "esiPaise", s.pt_paise as "ptPaise", s.tds_paise as "tdsPaise", s.deductions_paise as "deductionsPaise", s.net_paise as "netPaise"`));
+          break;
+        case 'salary-statement':
+          columns = ['code', 'name', 'department', 'months', 'grossPaise', 'pfPaise', 'ptPaise', 'tdsPaise', 'netPaise'];
+          rows = await run(sql`
+            select s.data->'user'->>'employeeCode' as code, s.data->'user'->>'fullName' as name, max(s.data->'user'->>'department') as department, count(*)::int as months,
+              sum(s.gross_paise)::bigint as "grossPaise", sum(s.employee_pf_paise)::bigint as "pfPaise", sum(s.pt_paise)::bigint as "ptPaise", sum(s.tds_paise)::bigint as "tdsPaise", sum(s.net_paise)::bigint as "netPaise"
+            from payslips s join payroll_runs r on r.id = s.run_id left join staff_profiles sp on sp.user_id = s.user_id
+            where r.status = 'locked' and r.month >= ${`${fy}-04`} and r.month <= ${`${fy + 1}-03`} ${deptCond(sql`sp.department_id`)} group by 1, 2 order by 2`);
+          break;
+        case 'pf':
+          columns = ['code', 'name', 'uan', 'pfWagePaise', 'pfPaise', 'epfPaise', 'epsPaise'];
+          rows = (await run(slips(sql`s.data->>'uan' as uan, coalesce((s.data->>'pfWagePaise')::bigint, 0) as "pfWagePaise", s.employee_pf_paise as "pfPaise", coalesce((s.data->'employer'->>'epfPaise')::bigint, 0) as "epfPaise", coalesce((s.data->'employer'->>'epsPaise')::bigint, 0) as "epsPaise"`))).filter((r) => Number(r.pfPaise) > 0);
+          break;
+        case 'esi':
+          columns = ['code', 'name', 'esiNumber', 'grossPaise', 'esiPaise', 'esiEmployerPaise'];
+          rows = (await run(slips(sql`s.data->>'esiNumber' as "esiNumber", s.gross_paise as "grossPaise", coalesce((s.data->>'esiPaise')::bigint, 0) as "esiPaise", coalesce((s.data->'employer'->>'esiPaise')::bigint, 0) as "esiEmployerPaise"`))).filter((r) => Number(r.esiPaise) > 0);
+          break;
+        case 'pt':
+          columns = ['code', 'name', 'department', 'grossPaise', 'ptPaise'];
+          rows = await run(slips(sql`s.gross_paise as "grossPaise", s.pt_paise as "ptPaise"`));
+          break;
+        case 'tds':
+          columns = ['code', 'name', 'pan', 'taxableGrossPaise', 'tdsPaise'];
+          rows = await run(slips(sql`s.data->>'pan' as pan, s.taxable_gross_paise as "taxableGrossPaise", s.tds_paise as "tdsPaise"`));
+          break;
+        case 'bank-transfer':
+          columns = ['code', 'name', 'bank', 'ifsc', 'account', 'netPaise'];
+          rows = await run(slips(sql`coalesce(sp.bank_name, '') as bank, coalesce(sp.bank_ifsc, '') as ifsc, case when sp.bank_account_last4 is null then 'Missing' else 'XXXX' || sp.bank_account_last4 end as account, s.net_paise as "netPaise"`));
+          break;
+        case 'form16':
+          columns = ['code', 'name', 'pan', 'regime', 'months', 'taxableGrossPaise', 'tdsPaise'];
+          rows = await run(sql`
+            select s.data->'user'->>'employeeCode' as code, s.data->'user'->>'fullName' as name, max(s.data->>'pan') as pan, max(s.data->>'taxRegime') as regime, count(*)::int as months,
+              sum(s.taxable_gross_paise)::bigint as "taxableGrossPaise", sum(s.tds_paise)::bigint as "tdsPaise"
+            from payslips s join payroll_runs r on r.id = s.run_id left join staff_profiles sp on sp.user_id = s.user_id
+            where r.status = 'locked' and r.month >= ${`${fy}-04`} and r.month <= ${`${fy + 1}-03`} ${deptCond(sql`sp.department_id`)} group by 1, 2 order by 2`);
+          break;
+        case 'appraisal-summary':
+          columns = ['period', 'code', 'name', 'department', 'status', 'finalScore', 'grade'];
+          rows = await run(sql`
+            select c.period, sp.employee_code as code, u.full_name as name, coalesce(d.name, '') as department, a.status, a.final_score::float as "finalScore", coalesce(a.grade, '') as grade
+            from appraisals a join appraisal_cycles c on c.id = a.cycle_id join users u on u.id = a.user_id left join staff_profiles sp on sp.user_id = a.user_id left join departments d on d.id = sp.department_id
+            where c.id = coalesce(${q.cycleId && /^[0-9a-f-]{36}$/.test(q.cycleId) ? q.cycleId : null}::uuid, (select id from appraisal_cycles order by opens_on desc limit 1)) ${deptCond(sql`sp.department_id`)} order by a.final_score desc nulls last, 3`);
+          break;
+        case 'fdp-summary':
+          columns = ['code', 'name', 'department', 'programmes', 'hours', 'verified'];
+          rows = await run(sql`
+            select sp.employee_code as code, u.full_name as name, coalesce(d.name, '') as department, count(t.*)::int as programmes, coalesce(sum(t.hours), 0)::float as hours, count(t.*) filter (where t.verified)::int as verified
+            from staff_profiles sp join users u on u.id = sp.user_id left join departments d on d.id = sp.department_id
+            left join training_records t on t.user_id = sp.user_id and t.starts_on >= ${`${fy}-04-01`}::date and t.starts_on <= ${`${fy + 1}-03-31`}::date
+            where sp.status <> 'exited' ${deptCond(sql`sp.department_id`)} group by 1, 2, 3 order by 5 desc, 2`);
+          break;
+        case 'attrition':
+          columns = ['department', 'opening', 'joined', 'left', 'closing', 'attritionPct'];
+          rows = (
+            await run(sql`
+            select coalesce(d.name, '—') as department,
+              count(*) filter (where sp.date_of_joining < ${`${fy}-04-01`}::date and (sp.date_of_leaving is null or sp.date_of_leaving >= ${`${fy}-04-01`}::date))::int as opening,
+              count(*) filter (where sp.date_of_joining between ${`${fy}-04-01`}::date and ${`${fy + 1}-03-31`}::date)::int as joined,
+              count(*) filter (where sp.date_of_leaving between ${`${fy}-04-01`}::date and ${`${fy + 1}-03-31`}::date)::int as "left",
+              count(*) filter (where sp.date_of_joining <= ${`${fy + 1}-03-31`}::date and (sp.date_of_leaving is null or sp.date_of_leaving > ${`${fy + 1}-03-31`}::date))::int as closing
+            from staff_profiles sp left join departments d on d.id = sp.department_id where true ${deptCond(sql`sp.department_id`)} group by 1 order by 1`)
+          ).map((r) => {
+            const avg = (Number(r.opening) + Number(r.closing)) / 2;
+            return { ...r, attritionPct: avg ? Math.round((Number(r.left) / avg) * 1000) / 10 : 0 };
+          });
+          break;
+      }
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hr.report_viewed', subjectType: 'hr_report', data: { kind, month, fy, year, dept } });
+      return { kind, filters: { month, fy, year, departmentId: dept }, columns, rows: rows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' && /Paise$/.test(k) ? Number(v) : v]))) };
+    });
+  }
+}

@@ -8,7 +8,7 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
-import { payrollSettings, salaryComponents, tenants } from '../db/schema.js';
+import { payrollRuns, payrollSettings, salaryComponents, tenants } from '../db/schema.js';
 import { monthEnd } from './dates.js';
 import { bankTransferCsv, statutoryCsv, tallyXml, type StatRow } from './exports.js';
 import { PAYROLL_APPROVERS, PAYROLL_ROLES, STAFF_ROLES, hasAnyRole } from './hr.access.js';
@@ -148,6 +148,22 @@ export class PayrollController {
     return this.db.withTenant(p.tenantId, (tx) => this.payroll.recompute(tx, p, id, b.expectedVersion));
   }
 
+  /** HR or accounts confirm the figures before the principal approves. */
+  @Post('runs/:id/verify')
+  @HttpCode(200)
+  @Auth('user', PAYROLL_ROLES)
+  verify(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(VersionBody)) b: z.infer<typeof VersionBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.payroll.transition(tx, p, id, 'verify', b.expectedVersion));
+  }
+
+  /** Numbers the payslips of a locked run and makes them visible to staff (with a notification each). */
+  @Post('runs/:id/publish')
+  @HttpCode(200)
+  @Auth('user', PAYROLL_ROLES)
+  publish(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(VersionBody)) b: z.infer<typeof VersionBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.payroll.transition(tx, p, id, 'publish', b.expectedVersion));
+  }
+
   @Post('runs/:id/approve')
   @HttpCode(200)
   @Auth('user', PAYROLL_APPROVERS)
@@ -184,6 +200,7 @@ export class PayrollController {
         if (!prof?.bankAccountEnc || !prof.bankIfsc) missing.push(d.user.fullName);
         else ok.push({ name: prof.bankAccountHolder ?? d.user.fullName, account: this.hr.accountNumber(p.tenantId, d.user.id, prof.bankAccountEnc), ifsc: prof.bankIfsc, netPaise: d.netPaise, narration: `Salary ${monthLabel(run.month)}` });
       }
+      await tx.update(payrollRuns).set({ bankFileAt: new Date() }).where(eq(payrollRuns.id, id));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.export_bank', subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version, rows: ok.length, missing: missing.length } });
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="bank-transfer-${run.month}.csv"`);

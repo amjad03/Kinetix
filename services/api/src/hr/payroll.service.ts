@@ -14,6 +14,7 @@ import { HrService } from './hr.service.js';
 import { requireVersion } from './hr.access.js';
 import { computePayslip, daysInMonth, fyStart, type StructureLine } from './payroll-math.js';
 import { monthLabel } from './payslip-pdf.js';
+import { formatSeries, takeNumbers } from './hr-settings.js';
 import type { TallyTotals } from './exports.js';
 
 export const DEFAULT_COMPONENTS = [
@@ -124,7 +125,7 @@ export class PayrollService {
 
     // Approved overtime, arrears, bonuses and recoveries for this month go onto the payslip in full.
     const adjRows = await tx.select().from(payrollAdjustments).where(and(eq(payrollAdjustments.payMonth, month), eq(payrollAdjustments.status, 'approved'), or(isNull(payrollAdjustments.runId), eq(payrollAdjustments.runId, run.id))));
-    const ADJ_NAME: Record<string, [string, string]> = { overtime: ['OT', 'Overtime'], arrear: ['ARR', 'Arrears'], bonus: ['BONUS', 'Bonus'], recovery: ['REC', 'Recovery'] };
+    const ADJ_NAME: Record<string, [string, string]> = { overtime: ['OT', 'Overtime'], arrear: ['ARR', 'Arrears'], bonus: ['BONUS', 'Bonus'], recovery: ['REC', 'Recovery'], encashment: ['LENC', 'Leave encashment'] };
 
     await tx.delete(payslips).where(eq(payslips.runId, run.id));
     const skipped: Run['skipped'] = [];
@@ -154,7 +155,7 @@ export class PayrollService {
         ptSlabs: settings.ptSlabs,
         staff: { regime: prof.taxRegime as 'new', pfEnabled: prof.pfEnabled, esiEnabled: prof.esiEnabled, ptEnabled: prof.ptEnabled, tax80cPaise: prof.tax80cPaise, taxOtherDeductionsPaise: prof.taxOtherDeductionsPaise },
         ytd: { grossTaxablePaise: y?.taxable ?? 0, ptPaise: y?.pt ?? 0, employeePfPaise: y?.pf ?? 0, tdsPaise: y?.tds ?? 0 },
-        extras: adjRows.filter((a) => a.userId === s.userId).map((a) => ({ code: ADJ_NAME[a.kind]?.[0] ?? 'ADJ', name: ADJ_NAME[a.kind]?.[1] ?? 'Adjustment', amountPaise: a.amountPaise, taxable: true, recovery: a.kind === 'recovery' })),
+        extras: adjRows.filter((a) => a.userId === s.userId).map((a) => ({ code: a.loanId ? 'LADV' : (ADJ_NAME[a.kind]?.[0] ?? 'ADJ'), name: a.loanId ? 'Loan / advance recovery' : (ADJ_NAME[a.kind]?.[1] ?? 'Adjustment'), amountPaise: a.amountPaise, taxable: true, recovery: a.kind === 'recovery' })),
       });
       const employerCost = c.grossPaise + c.employer.epfPaise + c.employer.epsPaise + c.employer.esiPaise;
       const data: StoredPayslip = {
@@ -214,6 +215,9 @@ export class PayrollService {
       createdAt: x.r.createdAt.toISOString(),
       approvedAt: x.r.approvedAt?.toISOString() ?? null,
       lockedAt: x.r.lockedAt?.toISOString() ?? null,
+      verifiedAt: x.r.verifiedAt?.toISOString() ?? null,
+      bankFileAt: x.r.bankFileAt?.toISOString() ?? null,
+      publishedAt: x.r.publishedAt?.toISOString() ?? null,
     }));
   }
 
@@ -231,6 +235,7 @@ export class PayrollService {
     const d = row.data as StoredPayslip;
     return {
       id: row.id,
+      payslipNo: row.payslipNo,
       runId: run.id,
       month: run.month,
       runStatus: run.status as Payslip['runStatus'],
@@ -259,24 +264,40 @@ export class PayrollService {
   async recompute(tx: Tx, p: UserPrincipal, id: string, expected?: number): Promise<PayrollRunDetail> {
     const [run] = await tx.select().from(payrollRuns).where(eq(payrollRuns.id, id)).for('update');
     if (!run) throw new NotFoundException('Payroll run not found');
-    if (run.status !== 'draft') throw new ConflictException('Only a draft run can be recomputed');
+    if (run.status !== 'draft' && run.status !== 'verified') throw new ConflictException('Only a draft run can be recomputed');
     requireVersion(run.version, expected);
+    // Recomputing changes the figures, so a verified run goes back to draft to be checked again.
+    if (run.status === 'verified') await tx.update(payrollRuns).set({ status: 'draft', verifiedBy: null, verifiedAt: null }).where(eq(payrollRuns.id, id));
     await this.compute(tx, p.tenantId, run);
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.run_recomputed', subjectType: 'payroll_run', subjectId: id, data: { month: run.month } });
     return this.detail(tx, id);
   }
 
-  /** draft → approved (approve), approved → locked (lock), approved → draft (reopen). */
-  async transition(tx: Tx, p: UserPrincipal, id: string, action: 'approve' | 'lock' | 'reopen', expected: number): Promise<PayrollRunDetail> {
+  /**
+   * prepare (draft) → verify (verified, HR or accounts) → approve (approved, principal) → lock (locked) → publish payslips.
+   * Reopen sends a verified or approved run back to draft.
+   */
+  async transition(tx: Tx, p: UserPrincipal, id: string, action: 'verify' | 'approve' | 'lock' | 'reopen' | 'publish', expected: number): Promise<PayrollRunDetail> {
     const [run] = await tx.select().from(payrollRuns).where(eq(payrollRuns.id, id)).for('update');
     if (!run) throw new NotFoundException('Payroll run not found');
-    const from = action === 'approve' ? 'draft' : 'approved';
-    if (run.status !== from) throw new ConflictException(`A ${run.status} run cannot be ${{ approve: 'approved', lock: 'locked', reopen: 'reopened' }[action]}`);
+    const from = { verify: ['draft'], approve: ['verified'], lock: ['approved'], reopen: ['verified', 'approved'], publish: ['locked'] }[action];
+    const verb = { verify: 'verified', approve: 'approved', lock: 'locked', reopen: 'reopened', publish: 'published' }[action];
+    if (!from.includes(run.status)) throw new ConflictException(run.status === 'draft' && action === 'approve' ? 'Verify the run before approving it' : `A ${run.status} run cannot be ${verb}`);
     requireVersion(run.version, expected);
     const now = new Date();
-    if (action === 'approve') {
+    if (action === 'verify') {
       const [n] = await tx.select({ n: sql<number>`count(*)::int` }).from(payslips).where(eq(payslips.runId, id));
       if (n.n === 0) throw new ConflictException('This run has no payslips');
+      await tx.update(payrollRuns).set({ status: 'verified', verifiedBy: p.userId, verifiedAt: now, version: run.version + 1 }).where(eq(payrollRuns.id, id));
+    } else if (action === 'publish') {
+      if (run.publishedAt) throw new ConflictException('These payslips are already published');
+      const rows = await tx.select({ userId: payslips.userId, id: payslips.id }).from(payslips).where(eq(payslips.runId, id)).orderBy(asc(payslips.createdAt), asc(payslips.id));
+      const { series, first } = await takeNumbers(tx, p.tenantId, 'payslipSeries', rows.length);
+      const on = new Date(`${monthEnd(run.month)}T00:00:00Z`);
+      for (const [i, r] of rows.entries()) await tx.update(payslips).set({ payslipNo: formatSeries(series, on, first + i) }).where(eq(payslips.id, r.id));
+      await tx.update(payrollRuns).set({ publishedBy: p.userId, publishedAt: now, version: run.version + 1 }).where(eq(payrollRuns.id, id));
+      for (const r of rows) await this.notifications.notifyUsers(tx, [r.userId], { kind: 'payslip', text: texts.payslipReady({ month: monthLabel(run.month) }), data: { payslipId: r.id, month: run.month }, dedupeKey: `payslip:${r.id}` });
+    } else if (action === 'approve') {
       await tx.update(payrollRuns).set({ status: 'approved', approvedBy: p.userId, approvedAt: now, version: run.version + 1 }).where(eq(payrollRuns.id, id));
     } else if (action === 'lock') {
       // TDS projections build on the year to date, which only counts locked runs: lock in order.
@@ -285,25 +306,24 @@ export class PayrollService {
       await tx.update(payrollRuns).set({ status: 'locked', lockedBy: p.userId, lockedAt: now, version: run.version + 1 }).where(eq(payrollRuns.id, id));
       const rows = await tx.select({ userId: payslips.userId, id: payslips.id }).from(payslips).where(eq(payslips.runId, id));
       await this.events.emit(tx, p.tenantId, { type: DomainEvents.PayrollLocked, aggregateType: 'payroll_run', aggregateId: id, actorId: p.userId, payload: { month: run.month, payslips: rows.length } });
-      for (const r of rows) await this.notifications.notifyUsers(tx, [r.userId], { kind: 'payslip', text: texts.payslipReady({ month: monthLabel(run.month) }), data: { payslipId: r.id, month: run.month }, dedupeKey: `payslip:${r.id}` });
     } else {
-      await tx.update(payrollRuns).set({ status: 'draft', approvedBy: null, approvedAt: null, version: run.version + 1 }).where(eq(payrollRuns.id, id));
+      await tx.update(payrollRuns).set({ status: 'draft', verifiedBy: null, verifiedAt: null, approvedBy: null, approvedAt: null, version: run.version + 1 }).where(eq(payrollRuns.id, id));
     }
-    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: { approve: 'payroll.run_approved', lock: 'payroll.run_locked', reopen: 'payroll.run_reopened' }[action], subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version } });
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `payroll.run_${verb}`, subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version } });
     return this.detail(tx, id);
   }
 
   // ----- payslips and exports -----------------------------------------------------------------------
 
   async myPayslips(tx: Tx, userId: string): Promise<Payslip[]> {
-    const rows = await tx.select({ s: payslips, r: payrollRuns }).from(payslips).innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId)).where(and(eq(payslips.userId, userId), eq(payrollRuns.status, 'locked'))).orderBy(desc(payrollRuns.month));
+    const rows = await tx.select({ s: payslips, r: payrollRuns }).from(payslips).innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId)).where(and(eq(payslips.userId, userId), eq(payrollRuns.status, 'locked'), sql`${payrollRuns.publishedAt} is not null`)).orderBy(desc(payrollRuns.month));
     return rows.map((x) => this.payslipView(x.s, x.r));
   }
 
   /** A payslip for its owner (locked runs only) or payroll staff (any run). */
   async payslip(tx: Tx, id: string, viewer: { userId: string; payroll: boolean }): Promise<{ payslip: Payslip; institution: string }> {
     const [x] = await tx.select({ s: payslips, r: payrollRuns, institution: tenants.name }).from(payslips).innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId)).innerJoin(tenants, eq(tenants.id, payslips.tenantId)).where(eq(payslips.id, id));
-    if (!x || (!viewer.payroll && (x.s.userId !== viewer.userId || x.r.status !== 'locked'))) throw new NotFoundException('Payslip not found');
+    if (!x || (!viewer.payroll && (x.s.userId !== viewer.userId || x.r.status !== 'locked' || !x.r.publishedAt))) throw new NotFoundException('Payslip not found');
     return { payslip: this.payslipView(x.s, x.r), institution: x.institution };
   }
 
@@ -329,7 +349,7 @@ export class PayrollService {
 
   async exportRows(tx: Tx, tenantId: string, id: string) {
     const run = await this.run(tx, id);
-    if (run.status === 'draft') throw new ConflictException('Approve the run before exporting');
+    if (run.status === 'draft' || run.status === 'verified') throw new ConflictException('Approve the run before exporting');
     const settings = await this.hr.settings(tx, tenantId);
     const rows = await tx.select().from(payslips).where(eq(payslips.runId, id));
     const profiles = new Map((await tx.select().from(staffProfiles)).map((r) => [r.userId, r]));

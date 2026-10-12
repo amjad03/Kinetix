@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import { useState, useTransition } from 'react';
 import { addLeaveType, decideLeave, getBalances } from '@/app/(dashboard)/hr/actions';
@@ -48,13 +49,13 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
             rowId={(r) => String(r.id)}
             exportName="leave-requests"
             columns={[
-              { id: 'c0', header: t('hr.leave.applicant'), rowHeader: true, sort: (r) => r.user.fullName, cell: (r) => r.user.fullName },
+              { id: 'c0', header: t('hr.leave.applicant'), rowHeader: true, sort: (r) => r.user.fullName, cell: (r) => <Link className="font-medium text-primary underline-offset-4 hover:underline" href={`/hr/leave/${r.id}`}>{r.user.fullName}</Link> },
               { id: 'c1', header: t('hr.leave.type'), sort: (r) => r.leaveType.name, cell: (r) => r.leaveType.name },
               { id: 'c2', header: t('hr.leave.dates'), sort: (r) => range(r), cell: (r) => range(r) },
               { id: 'c3', header: t('hr.leave.days'), align: 'right', sort: (r) => r.days, cell: (r) => r.days },
               { id: 'c4', header: t('hr.leave.reason'), sort: (r) => r.reason || '–', cell: (r) => r.reason || '–' },
               { id: 'c5', header: t('hr.f.status'), sort: (r) => r.status, cell: (r) => (<><StatusPill tone={pillTone(LEAVE_TONE[r.status])}>{t(`hr.leave.status.${r.status}` as MessageKey)}</StatusPill></>) },
-              { id: 'c6', header: '', align: 'right', csv: false, cell: (r) => (<>{r.status === 'pending' && (
+              { id: 'c6', header: '', align: 'right', csv: false, cell: (r) => (<>{(r.status === 'pending' || r.status === 'recommended') && (
                                     <>
                                       <Button size="small" onClick={() => { setNote(''); setDeciding({ r, decision: 'reject' }); }}>
                                         {t('hr.leave.reject')}
