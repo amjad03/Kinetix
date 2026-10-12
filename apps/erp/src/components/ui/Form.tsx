@@ -1,6 +1,6 @@
 'use client';
 
-import { cloneElement, useId, type ReactElement, type ReactNode } from 'react';
+import { cloneElement, useId, type HTMLAttributes, type ReactElement, type ReactNode } from 'react';
 import { Checkbox, FormControlLabel, FormHelperText, MenuItem, Switch, TextField, type TextFieldProps } from '@/components/kx';
 import { cn } from '@/lib/utils';
 
@@ -51,10 +51,54 @@ export function FormField({
   );
 }
 
-/** An input and its button on one row: the button lines up with the control, not with the label above it. */
-export function FieldRow({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap items-start gap-3 [&>button]:mt-[26px] [&>button]:shrink-0">{children}</div>;
+/**
+ * Inputs and their buttons on one row (FormRow pattern, docs/product/ERP_UI_PATTERNS.md).
+ * Controls and buttons share one 40px height, and buttons line up with the control, not with the
+ * label above it (the label row is 20px + 6px gap, so a labelled row pushes direct buttons, links,
+ * text and checkboxes down by 26px). Helper text under a field does not move the buttons.
+ * `labelled={false}` for rows whose fields have no visible label (toolbars, search boxes).
+ */
+export function FormRow({
+  children,
+  labelled = true,
+  component: Tag = 'div',
+  className,
+  ...rest
+}: { children: ReactNode; labelled?: boolean; component?: 'div' | 'form'; className?: string } & Omit<HTMLAttributes<HTMLElement>, 'children'> & { method?: string; action?: string }) {
+  return (
+    <Tag
+      {...(rest as HTMLAttributes<HTMLElement>)}
+      data-form-row=""
+      className={cn(
+        'kx-form-row flex flex-wrap gap-3 [&>button]:shrink-0',
+        labelled
+          ? 'items-start [&>.kx-form-row-actions]:pt-[26px] [&>a]:mt-[26px] [&>button]:mt-[26px] [&>label]:mt-[26px] [&>label]:min-h-10 [&>p]:mt-[26px] [&>p]:leading-10'
+          : 'items-center',
+        className,
+      )}
+    >
+      {children}
+    </Tag>
+  );
 }
+
+/** A group of buttons inside a FormRow (kept together when the row wraps). */
+export function FormRowActions({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn('kx-form-row-actions flex shrink-0 flex-wrap items-center gap-2', className)}>{children}</div>;
+}
+
+/** One field that fills the row and its button(s): "Code on the label [Look up]". */
+export function InlineField({ children, actions, labelled = true, className }: { children: ReactNode; actions: ReactNode; labelled?: boolean; className?: string }) {
+  return (
+    <FormRow labelled={labelled} className={className}>
+      <div className="min-w-[200px] flex-1">{children}</div>
+      <FormRowActions>{actions}</FormRowActions>
+    </FormRow>
+  );
+}
+
+/** @deprecated Use FormRow. */
+export const FieldRow = FormRow;
 
 export type TextInputProps = TextFieldProps & { helper?: ReactNode };
 

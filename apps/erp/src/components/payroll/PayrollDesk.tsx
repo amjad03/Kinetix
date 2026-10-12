@@ -1,5 +1,5 @@
 'use client';
-import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput, FormRow } from '@/components/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -51,7 +51,7 @@ function Runs({ runs, thisMonth }: { runs: PayrollRunSummary[]; thisMonth: strin
   return (
     <>
       {view}
-      <div className="flex gap-3 items-center flex-wrap mb-4">
+      <FormRow className="gap-3 mb-4">
         <FormField label={t('pay.month')}>
           <TextInput type="month" value={month} onChange={(e) => setMonth(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: thisMonth } }} />
         </FormField>
@@ -68,7 +68,7 @@ function Runs({ runs, thisMonth }: { runs: PayrollRunSummary[]; thisMonth: strin
         >
           {t('pay.newRun')}
         </Button>
-      </div>
+      </FormRow>
       {runs.length === 0 ? (
         <EmptyState icon={<ReceiptLongOutlined />} title={t('pay.noRuns')}>
           {t('pay.noRunsBody')}
@@ -220,7 +220,7 @@ function Components({ components }: { components: SalaryComponent[] }) {
           { id: 'c4', header: t('pay.co.taxable'), sort: (c) => c.kind === 'earning' ? (c.taxable ? t('hr.yes') : t('hr.no')) : '–', cell: (c) => c.kind === 'earning' ? (c.taxable ? t('hr.yes') : t('hr.no')) : '–' },
         ]}
       />
-      <div className="flex flex-row gap-3 items-center flex-wrap mt-6">
+      <FormRow className="gap-3 mt-6">
         <FormField label={t('hr.leave.code')}>
           <TextInput className="w-[120px]" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
         </FormField>
@@ -248,7 +248,7 @@ function Components({ components }: { components: SalaryComponent[] }) {
         >
           {t('hr.add')}
         </Button>
-      </div>
+      </FormRow>
     </>
   );
 }

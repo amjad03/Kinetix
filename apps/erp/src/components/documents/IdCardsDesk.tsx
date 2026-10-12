@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { docDownload } from '@/lib/documents';
 
@@ -19,7 +19,7 @@ export function IdCardsDesk({ classes, canStudents }: { classes: { id: string; n
           {t('doc.id.students')}
         </h2>
         {canStudents ? (
-          <div className="flex gap-3 flex-wrap">
+          <FormRow className="gap-3">
             <FormField label={t('doc.class')}>
               <TextInput className="min-w-[240px]" select value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
                 {classes.map((c) => (
@@ -32,7 +32,7 @@ export function IdCardsDesk({ classes, canStudents }: { classes: { id: string; n
             <Button variant="contained" startIcon={<BadgeOutlined />} disabled={!sectionId} href={docDownload.students(sectionId || 'none')} target="_blank">
               {t('doc.id.open')}
             </Button>
-          </div>
+          </FormRow>
         ) : (
           <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('doc.id.notAllowed')}

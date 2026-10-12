@@ -1,5 +1,5 @@
 'use client';
-import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput, FormRow } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { importAttendance, markAttendance } from '@/app/(dashboard)/hr/actions';
@@ -39,7 +39,7 @@ export function AttendanceDesk({ date, today, timeZone, rows }: { date: string; 
   return (
     <>
       {view}
-      <div className="flex flex-wrap gap-3 items-center mb-4">
+      <FormRow className="gap-3 mb-4">
         <FormField label={t('hr.att.date')}>
           <TextInput type="date" value={date} onChange={(e) => e.target.value && router.push(`/hr/attendance?date=${e.target.value}`)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today } }} />
         </FormField>
@@ -51,7 +51,7 @@ export function AttendanceDesk({ date, today, timeZone, rows }: { date: string; 
         <Button variant="contained" onClick={save} disabled={pending || dirty === 0}>
           {t('hr.att.saveAll')}
         </Button>
-      </div>
+      </FormRow>
       <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground mb-4">
         {t('hr.att.importHelp')}
       </p>

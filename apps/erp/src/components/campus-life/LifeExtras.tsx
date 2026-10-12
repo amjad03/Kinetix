@@ -5,7 +5,7 @@ import {
 } from '@/app/(dashboard)/campus-life/extras-actions';
 import { ActionButton, FormDialog, Grid, Pill } from '@/components/ops/kit';
 import { FileFormDialog, SectionHead, useLoad } from '@/components/pathways-b/common';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { CampusEvent, ClubMember, Committee, Meeting } from '@/lib/clife';
@@ -140,7 +140,7 @@ export function CommitteeExtras({ committee, meetings, toast }: { committee: Com
       />
       <SectionHead title={t('pwb.cm.pack')} />
       <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('pwb.cm.packHelp')}</p>
-      <div className="flex flex-row gap-3 flex-wrap items-end">
+      <FormRow className="gap-3">
         <FormField label={t('pwb.cm.packFrom')}>
           <TextInput type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
         </FormField>
@@ -148,7 +148,7 @@ export function CommitteeExtras({ committee, meetings, toast }: { committee: Com
           <TextInput type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
         </FormField>
         <Button variant="contained" href={downloadPath('report-pack', committee.id, { from: range.from, to: range.to })} disabled={!range.from || !range.to} data-testid="pwb-pack">{t('pwb.cm.packDownload')}</Button>
-      </div>
+      </FormRow>
       {adding && (
         <FileFormDialog
           title={t('pwb.cm.addEvidence')}

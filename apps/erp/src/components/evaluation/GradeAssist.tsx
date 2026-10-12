@@ -1,7 +1,7 @@
 'use client';
 import { useState, useTransition } from 'react';
 import { decideGrade, suggestGrade } from '@/app/(dashboard)/evaluation/desk/actions';
-import { StatusPill, TextInput } from '@/components/ui';
+import { StatusPill, TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { GradeDraft } from '@/lib/staff-changes';
 
@@ -98,7 +98,7 @@ export function GradeAssist({ allocationId, questionId, questionNo, maxMarks, on
               <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {draft.rationale}
               </p>
-              <div className="flex flex-row gap-2 items-center flex-wrap">
+              <FormRow className="gap-2">
                 <Button size="small" variant="contained" disabled={pending || draft.preview} onClick={() => decide('accept')}>
                   {t('as.ga.accept')}
                 </Button>
@@ -109,7 +109,7 @@ export function GradeAssist({ allocationId, questionId, questionNo, maxMarks, on
                 <Button size="small" color="inherit" disabled={pending} onClick={() => decide('reject')}>
                   {t('as.ga.reject')}
                 </Button>
-              </div>
+              </FormRow>
             </div>
           )}
         </div>

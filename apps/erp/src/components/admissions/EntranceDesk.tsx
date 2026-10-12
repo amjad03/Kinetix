@@ -13,7 +13,7 @@ import {
   type SeatRow,
 } from '@/app/(dashboard)/admissions/deep-actions';
 import { SectionTitle } from '@/components/PageHeader';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { formatDate } from '@/lib/dates';
 
@@ -162,7 +162,7 @@ export function EntranceDesk({ tests, cycles }: { tests: EntranceTestRow[]; cycl
           </div>
           {open === x.id && (
             <div className="mt-4">
-              <div className="flex flex-row gap-2 items-end mb-4 flex-wrap gap-y-2">
+              <FormRow className="gap-2 mb-4">
                 <FormField label={t('ent.hallName')}>
                   <TextInput value={newHall.name} onChange={(e) => setNewHall({ ...newHall, name: e.target.value })} />
                 </FormField>
@@ -172,7 +172,7 @@ export function EntranceDesk({ tests, cycles }: { tests: EntranceTestRow[]; cycl
                 <Button size="small" variant="outlined" disabled={pending || !newHall.name.trim()} onClick={() => run(() => addEntranceHall(x.id, newHall.name, Number(newHall.capacity)), undefined, () => setNewHall({ name: '', capacity: '40' }))}>
                   {t('ent.addHall')}
                 </Button>
-              </div>
+              </FormRow>
               <Table size="small">
                 <TableHead>
                   <TableRow>
@@ -243,7 +243,7 @@ export function EntranceDesk({ tests, cycles }: { tests: EntranceTestRow[]; cycl
           <p className="text-[13px] leading-[19px] text-muted-foreground mb-3">
             {t('quota.help')}
           </p>
-          <div className="flex flex-row gap-2 items-end flex-wrap gap-y-2">
+          <FormRow className="gap-2">
             <FormField label={t('ent.cycle')}>
               <TextInput className="min-w-[240px]" select value={quotaCycle} onChange={(e) => openQuotas(e.target.value)}>
                 {cycles.map((c) => (
@@ -258,7 +258,7 @@ export function EntranceDesk({ tests, cycles }: { tests: EntranceTestRow[]; cycl
                 {t('quota.load')}
               </Button>
             )}
-          </div>
+          </FormRow>
           {quota && (
             <div className="mt-4">
               <p className="text-[13px] leading-[19px] mb-2">

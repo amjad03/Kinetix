@@ -1,6 +1,6 @@
 'use client';
 import { useId, useState, useTransition } from 'react';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { saveBoardKiosk } from '@/app/(dashboard)/settings/actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -95,7 +95,7 @@ export function KioskSection({ initial }: { initial: BoardKiosk }) {
               {t('kiosk.pinNotSet')}
             </Alert>
           )}
-          <div className="flex items-start gap-3 mt-4 flex-wrap">
+          <FormRow className="gap-3 mt-4">
             <FormField label={k.pinSet ? t('kiosk.newPin') : t('kiosk.pinLabel')}>
               <TextInput className="w-[220px]"
                 type="password"
@@ -118,15 +118,15 @@ export function KioskSection({ initial }: { initial: BoardKiosk }) {
                 slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 8, 'data-testid': 'kiosk-pin-confirm' } }}
               />
             </FormField>
-            <Button className="mt-[2px]" variant="contained" onClick={savePin} disabled={pending || !typed || problem !== null} data-testid="kiosk-pin-save">
+            <Button variant="contained" onClick={savePin} disabled={pending || !typed || problem !== null} data-testid="kiosk-pin-save">
               {pending ? <CircularProgress size={20} color="inherit" aria-label={t('common.saving')} /> : k.pinSet ? t('kiosk.changePin') : t('kiosk.setPin')}
             </Button>
             {k.pinSet && (
-              <Button className="mt-[2px]" color="error" onClick={() => run({ pin: null }, t('kiosk.pinRemoved'))} disabled={pending} data-testid="kiosk-pin-remove">
+              <Button color="error" onClick={() => run({ pin: null }, t('kiosk.pinRemoved'))} disabled={pending} data-testid="kiosk-pin-remove">
                 {t('kiosk.removePin')}
               </Button>
             )}
-          </div>
+          </FormRow>
         </div>
       </Card>
       <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast(null)} message={toast} />

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { addPaper, approvalStep, completeRevaluation, decideRevaluation, generateSeating, issueHallTickets, removePaper, sessionStep, setApprovalRequired } from '@/app/(dashboard)/exams/actions';
-import { DataTable, FormField, StatGrid, StatTile, StatusPill, TextInput } from '@/components/ui';
+import { DataTable, FormField, StatGrid, StatTile, StatusPill, TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { exportHref, nextStep, type ExamSessionDetail, type ResultRow, type Revaluation } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
@@ -176,7 +176,7 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
             {t('exm.seatingHelp')}
           </p>
           {halls.map((h, i) => (
-            <div className="flex gap-2 mb-2" key={i}>
+            <FormRow className="gap-2 mb-2" key={i}>
               <FormField label={t('exm.f.hall')}>
                 <TextInput className="min-w-[180px]" select value={h.roomId} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, roomId: e.target.value } : x)))}>
                   {structure.rooms.map((r) => (
@@ -192,7 +192,7 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
               <Button size="small" onClick={() => setHalls(halls.filter((_, j) => j !== i))} disabled={halls.length === 1}>
                 {t('exm.remove')}
               </Button>
-            </div>
+            </FormRow>
           ))}
           <div className="flex gap-2 flex-wrap">
             <Button size="small" onClick={() => setHalls([...halls, { roomId: structure.rooms[0]?.id ?? '', capacity: '30' }])}>
@@ -288,14 +288,14 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
                                     </>
                                   )}
                                   {canManage && r.status === 'accepted' && s.status === 'published' && (
-                                    <div className="flex gap-2 justify-end">
+                                    <FormRow className="gap-2 justify-end">
                                       <FormField label={t('exm.newMarks')}>
                                         <TextInput className="w-[120px]" type="number" value={newMarks[r.id] ?? ''} onChange={(e) => setNewMarks({ ...newMarks, [r.id]: e.target.value })} />
                                       </FormField>
                                       <Button size="small" disabled={pending || (newMarks[r.id] ?? '') === ''} onClick={() => run(() => completeRevaluation(s.id, r.id, Number(newMarks[r.id])), t('exm.rv.completed'))}>
                                         {t('exm.regrade')}
                                       </Button>
-                                    </div>
+                                    </FormRow>
                                   )}</>) },
             ]}
           />

@@ -2,7 +2,7 @@
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { enrollApplicant, recordApplicationFee, reviewDocument, setApplicationStatus } from '@/app/(dashboard)/admissions/actions';
 import { sendWaiver } from '@/app/(dashboard)/workflows/bound-actions';
 import { SendForApproval } from '@/components/pathways-b/SendForApproval';
@@ -58,7 +58,7 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
             <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
               {t('adm.review.enrol')}
             </h6>
-            <div className="flex flex-row gap-2 items-center flex-wrap gap-y-2">
+            <FormRow className="gap-2">
               <FormField label={t('adm.review.class')}>
                 <TextInput className="min-w-[200px]" select value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
                   <MenuItem value="">{t('adm.review.autoClass')}</MenuItem>
@@ -75,7 +75,7 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
               <Button variant="contained" disabled={pending} onClick={() => run(() => enrollApplicant(app.id, sectionId || undefined, override))}>
                 {t('adm.review.enrolNow')}
               </Button>
-            </div>
+            </FormRow>
           </div>
         )}
         {app.studentId && (
@@ -150,7 +150,7 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
             </div>
           ))}
         {app.feeStatus === 'pending' && (
-          <div className="flex flex-row gap-2 mt-3 flex-wrap gap-y-2 items-center">
+          <FormRow className="gap-2 mt-3">
             <FormField label={t('adm.fee.method')}>
               <TextInput className="min-w-[140px]" select value={method} onChange={(e) => setMethod(e.target.value as CounterMethod)}>
                 {PAY_METHODS.map((m) => (
@@ -172,7 +172,7 @@ export function ApplicationReview({ app, classes, canWaive, flows }: { app: Appl
               </Button>
             )}
             <SendForApproval flow={BOUND_FLOWS[3]} flows={flows} sourceId={app.id} fields={[{ name: 'reason', label: t('adm.field.reason'), required: true }]} onSend={(v) => sendWaiver(app.id, v)} />
-          </div>
+          </FormRow>
         )}
       </div>
 

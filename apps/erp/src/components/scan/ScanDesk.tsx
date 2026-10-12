@@ -4,6 +4,7 @@ import { lookupCode, type ScanResult } from '@/app/(dashboard)/scan/actions';
 import { useI18n } from '@/i18n/client';
 
 import { Alert, Button, Card, CardContent, TextField } from '@/components/kx';
+import { InlineField } from '@/components/ui';
 type Detector = { detect(v: HTMLVideoElement): Promise<{ rawValue: string }[]> };
 type DetectorCtor = new (o: { formats: string[] }) => Detector;
 
@@ -73,10 +74,9 @@ export function ScanDesk() {
   return (
     <div className="flex flex-col gap-4 max-w-[560px]">
       <form onSubmit={(e) => { e.preventDefault(); look(code); }}>
-        <div className="flex flex-row gap-2">
+        <InlineField actions={<Button type="submit" variant="contained" disabled={pending}>{t('scan.lookup')}</Button>}>
           <TextField autoFocus fullWidth size="small" label={t('scan.code')} value={code} onChange={(e) => setCode(e.target.value)} slotProps={{ htmlInput: { maxLength: 120 } }} />
-          <Button type="submit" variant="contained" disabled={pending}>{t('scan.lookup')}</Button>
-        </div>
+        </InlineField>
       </form>
       {supported ? (
         <Button variant="outlined" onClick={() => setCamera((c) => !c)}>{camera ? t('scan.stopCamera') : t('scan.useCamera')}</Button>

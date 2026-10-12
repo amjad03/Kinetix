@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { createGradeScale, saveScheme } from '@/app/(dashboard)/exams/actions';
 import { useI18n } from '@/i18n/client';
 import { schemeProblem, weightTotal, type GradeScale, type PassRules, type Scheme, type SchemeComponent, type SchemePresets } from '@/lib/exams';
@@ -160,7 +160,7 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
           <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
             {t('exm.scale.title')}
           </h2>
-          <div className="flex gap-2 flex-wrap">
+          <FormRow className="gap-2">
             <FormField label={t('exm.f.name')}>
               <TextInput value={scaleName} onChange={(e) => setScaleName(e.target.value)} />
             </FormField>
@@ -176,7 +176,7 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
             <Button variant="outlined" disabled={pending} onClick={() => run(() => createGradeScale({ name: scaleName, preset: scalePreset }), t('exm.scale.created'), () => setScaleName(''))}>
               {t('exm.scale.add')}
             </Button>
-          </div>
+          </FormRow>
         </Card>
       )}
     </>

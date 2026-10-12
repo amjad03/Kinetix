@@ -10,7 +10,7 @@ import {
   type SubstitutionRow,
 } from '@/app/(dashboard)/timetable/substitution-actions';
 import { SectionTitle } from '@/components/PageHeader';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
@@ -50,14 +50,14 @@ export function SubstitutionsPanel({ today }: { today: string }) {
           {error}
         </Alert>
       )}
-      <div className="flex flex-row gap-2 items-end mb-4">
+      <FormRow className="gap-2 mb-4">
         <FormField label={t('sub.date')}>
           <TextInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </FormField>
         <Button variant="outlined" size="small" disabled={pending || !date} onClick={() => go(() => reload(date))}>
           {t('sub.show')}
         </Button>
-      </div>
+      </FormRow>
 
       {needed && (
         <div className="flex flex-col gap-3">

@@ -5,7 +5,7 @@ import { bulkIssue, classStudents, decideCertificate, requestCertificate } from 
 import { sendCertificate } from '@/app/(dashboard)/workflows/bound-actions';
 import { SendForApproval } from '@/components/pathways-b/SendForApproval';
 import { BOUND_FLOWS } from '@/lib/pathways-b';
-import { DataTable, FormField, TextInput } from '@/components/ui';
+import { DataTable, FormField, TextInput, FormRow } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -37,7 +37,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
   return (
     <>
       {view}
-      <div className="flex gap-3 flex-wrap items-center mb-4">
+      <FormRow className="gap-3 mb-4">
         <FormField label={t('hr.f.status')}>
           <TextInput className="min-w-[180px]" select value={status} onChange={(e) => router.push(e.target.value ? `/documents?status=${e.target.value}` : '/documents')}>
             <MenuItem value="">{t('doc.allStatuses')}</MenuItem>
@@ -57,7 +57,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
         <Button variant="contained" startIcon={<Add />} onClick={() => setCreating(true)}>
           {t('doc.newRequest')}
         </Button>
-      </div>
+      </FormRow>
       {requests.length === 0 ? (
         <EmptyState icon={<WorkspacePremiumOutlined />} title={t('doc.none')}>
           {t('doc.noneBody')}

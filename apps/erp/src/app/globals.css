@@ -201,3 +201,15 @@
     box-shadow: 0 0 0 6px rgba(217, 48, 37, 0);
   }
 }
+
+/* Workspace tabs: the right-edge drop zone appears only while a tab is dragged (wide screens). */
+body[data-tab-drag] .kx-split-drop { display: flex; }
+
+/* FormRow (components/ui/Form.tsx): inputs, selects and buttons on one row share a 40px height,
+   whatever the display density. Repeated class for specificity over the density rules in tokens.css. */
+body .kx-form-row.kx-form-row :is(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='hidden']), select, [role='combobox'], [data-slot='select-trigger'], .kx-field-box) {
+  height: 2.5rem;
+}
+body .kx-form-row.kx-form-row .kx-field-box input { height: 100%; }
+body .kx-form-row.kx-form-row > :is(button, a),
+body .kx-form-row.kx-form-row > .kx-form-row-actions > :is(button, a) { height: 2.5rem; }

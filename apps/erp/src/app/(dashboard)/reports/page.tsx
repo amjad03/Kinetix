@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { TextInput } from '@/components/ui';
+import { TextInput, FormRow } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { ClassEngagementTable } from '@/components/reports/ClassEngagementTable';
@@ -59,14 +59,14 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           {t('rb.title')}
         </LinkButton>
       </div>
-      <form className="flex gap-3 flex-wrap items-center mb-6" method="get">
+      <FormRow component="form" className="gap-3 mb-6" method="get">
         <TextInput type="date" name="from" label={t('reports.from')} defaultValue={from ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
         <TextInput type="date" name="to" label={t('reports.to')} defaultValue={to ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
         {sp.report && <input type="hidden" name="report" value={sp.report} />}
         <Button type="submit" variant="outlined">
           {t('reports.apply')}
         </Button>
-      </form>
+      </FormRow>
 
       {kpis?.error !== undefined && <ErrorState message={kpis.error} />}
       {k && (

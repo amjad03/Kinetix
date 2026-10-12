@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { activateCoSet, addCo, newCoSet, removeCo, saveMatrix } from '@/app/(dashboard)/obe/actions';
 import { TableFrame } from '@/components/DataTable';
 import { useRun } from '@/components/exams/useRun';
@@ -97,7 +97,7 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
           </span>
           {canEdit && draft && (
             <>
-              <div className="flex gap-2 flex-wrap mt-4">
+              <FormRow className="gap-2 mt-4">
                 <FormField label={t('exm.f.code')}>
                   <TextInput className="w-[100px]" value={co.code} onChange={(e) => setCo({ ...co, code: e.target.value })} />
                 </FormField>
@@ -110,7 +110,7 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
                 <Button variant="outlined" disabled={pending} onClick={() => run(() => addCo(matrix.set.id, co), t('obe.added'), () => setCo({ code: '', statement: '', bloomLevel: '' }))}>
                   {t('obe.addCo')}
                 </Button>
-              </div>
+              </FormRow>
               <div className="flex gap-2 mt-4">
                 <Button variant="contained" disabled={pending} onClick={() => run(() => saveMatrix(matrix.set.id, cells), t('obe.matrixSaved'))}>
                   {t('obe.saveMatrix')}

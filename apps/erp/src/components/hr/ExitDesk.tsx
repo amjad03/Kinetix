@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { acceptResignation, recordResignation, relieveEmployee, saveSettlement, setClearance, withdrawResignation } from '@/app/(dashboard)/hr/talent-actions';
 import { SectionTitle } from '@/components/PageHeader';
-import { FormField, StatusPill, TextInput, type Tone } from '@/components/ui';
+import { FormField, StatusPill, TextInput, type Tone, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { formatDate } from '@/lib/dates';
@@ -41,14 +41,14 @@ function Case({ s, run, pending }: { s: SeparationDetail; run: (fn: () => Promis
       </div>
 
       {s.status === 'submitted' && (
-        <div className="flex flex-row gap-3 mt-4 items-end flex-wrap">
+        <FormRow className="gap-3 mt-4">
           <FormField label={t('hl.exit.lastDay')}>
             <TextInput type="date" value={lwd} onChange={(e) => setLwd(e.target.value)} />
           </FormField>
           <Button variant="contained" disabled={pending} onClick={() => run(() => acceptResignation(s.id, lwd))}>
             {t('hl.exit.accept')}
           </Button>
-        </div>
+        </FormRow>
       )}
 
       {(s.status === 'clearance' || s.status === 'settled' || s.status === 'relieved') && (

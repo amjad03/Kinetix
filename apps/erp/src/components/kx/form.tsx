@@ -250,7 +250,7 @@ export function TextField({
   } else {
     const input = <input ref={inputRef} type={type} autoComplete={autoComplete} {...(common as HTMLAttributes<HTMLInputElement>)} className={cn(boxed ? 'h-full min-w-0 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed' : cn(fieldClass, h), (html.className as string) ?? '')} />;
     control = boxed ? (
-      <div ref={boxRef} className={cn(fieldClass, h, 'flex items-center px-0 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50', error && 'border-destructive', disabled && 'opacity-50', inputBoxClass)}>
+      <div ref={boxRef} className={cn('kx-field-box', fieldClass, h, 'flex items-center px-0 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50', error && 'border-destructive', disabled && 'opacity-50', inputBoxClass)}>
         {startAdornment}
         {input}
         {endAdornment}

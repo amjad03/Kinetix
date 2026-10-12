@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { changeStudentSection, changeStudentStatus, linkGuardian, readmitStudent, unlinkGuardian } from '@/app/(dashboard)/students/actions';
 import { ReasonDialog } from '@/components/admissions/ReasonDialog';
 import { SectionTitle } from '@/components/PageHeader';
@@ -55,7 +55,7 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
             )}
           </div>
           {classes.length > 0 && !['transferred', 'alumni', 'dropped', 'expelled', 'deceased'].includes(s.status) && (
-            <div className="flex flex-row gap-2 mt-4 items-center flex-wrap gap-y-2">
+            <FormRow className="gap-2 mt-4">
               <FormField label={t('stu.moveClass')}>
                 <TextInput className="min-w-[220px]" select value={target} onChange={(e) => setTarget(e.target.value)}>
                   {classes.map((c) => (
@@ -68,7 +68,7 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
               <Button variant="outlined" size="small" disabled={!target || pending} onClick={() => setDialog({ kind: 'section', sectionId: target })}>
                 {t('stu.moveClassGo')}
               </Button>
-            </div>
+            </FormRow>
           )}
         </div>
       )}

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useTransition } from 'react';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { addVideo, deleteVideo, editVideo, getTopicVideos, importPlaylist, previewPlaylist, reorderVideos } from '@/app/(dashboard)/platform/concept-videos/actions';
 import { useI18n } from '@/i18n/client';
 import { filterChapters, formatDuration, importItems, initialChoices, isPlaylistLink, move, thumbnail, watchUrl, youtubeId, type ImportChoice } from '@/lib/concept-videos';
@@ -370,7 +370,7 @@ function AddVideoForm({ courseId, topicId, defaultLanguage, onAdded }: { courseI
         <TextInput className="flex-[2_1_220px]" value={title} onChange={(e) => setTitle(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
       </FormField>
       <LanguageSelect value={language} onChange={setLanguage} />
-      <Button className="mt-0.5" type="submit" variant="contained" startIcon={pending ? <CircularProgress size={16} color="inherit" /> : <Add />} disabled={!id || pending}>
+      <Button type="submit" variant="contained" startIcon={pending ? <CircularProgress size={16} color="inherit" /> : <Add />} disabled={!id || pending}>
         {t('pv.addVideo')}
       </Button>
       {error && (
@@ -445,7 +445,7 @@ function ImportDialog({ chapter, courseId, defaultLanguage, available, onClose }
           </Alert>
         ) : (
           <div className="flex flex-col gap-4">
-            <form className="flex gap-3 flex-wrap items-start"
+            <FormRow component="form" className="gap-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 start(async () => {
@@ -460,10 +460,10 @@ function ImportDialog({ chapter, courseId, defaultLanguage, available, onClose }
               <FormField label={t('pv.import.link')}>
                 <TextInput className="flex-[1_1_320px]" value={url} onChange={(e) => setUrl(e.target.value)} />
               </FormField>
-              <Button className="mt-0.5" type="submit" variant="outlined" disabled={!url.trim() || pending}>
+              <Button type="submit" variant="outlined" disabled={!url.trim() || pending}>
                 {t('pv.import.find')}
               </Button>
-            </form>
+            </FormRow>
             {error && <Alert severity="error">{error}</Alert>}
             {preview && preview.videos.length === 0 && <p className="text-sm leading-[21px] text-muted-foreground">{t('pv.import.empty')}</p>}
             {preview && preview.videos.length > 0 && (

@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { addOnboardingItem, loadOnboarding, startOnboarding, tickOnboarding } from '@/app/(dashboard)/hr/talent-actions';
 import { SectionTitle } from '@/components/PageHeader';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { formatDate } from '@/lib/dates';
 import type { OnboardingItem, OnboardingProgress } from '@/lib/hr-lifecycle';
@@ -93,14 +93,14 @@ export function OnboardingDesk({ progress, staff }: { progress: OnboardingProgre
                   </div>
                 </div>
               ))}
-              <div className="flex flex-row gap-2 mt-3 items-end">
+              <FormRow className="gap-2 mt-3">
                 <FormField label={t('hl.onb.itemTitle')}>
                   <TextInput value={extra} onChange={(e) => setExtra(e.target.value)} />
                 </FormField>
                 <Button disabled={pending || extra.trim().length < 3} onClick={() => run(() => addOnboardingItem(p.userId, extra), async () => { setExtra(''); await reload(p.userId); })}>
                   {t('hl.onb.addItem')}
                 </Button>
-              </div>
+              </FormRow>
             </div>
           )}
         </div>

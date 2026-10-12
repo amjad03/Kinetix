@@ -1,7 +1,7 @@
 'use client';
 import { useRef, useState, type PointerEvent } from 'react';
 import { addAnnotation, removeAnnotation } from '@/app/(dashboard)/evaluation/desk/actions';
-import { TextInput } from '@/components/ui';
+import { TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { ANNOTATION_TOOLS, extendStroke, inkAnnotation, newAnnotation, onPage, pointOnPage, strokePath, type Annotation, type AnnotationKind, type Point, type Stroke } from '@/lib/annotations';
@@ -165,7 +165,7 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
         </span>
       )}
       {pendingComment && (
-        <div className="flex flex-row gap-2 items-start">
+        <FormRow className="gap-2">
           <TextInput label={t('ev.ann.commentLabel')} value={text} onChange={(e) => setText(e.target.value)} fullWidth autoFocus slotProps={{ htmlInput: { maxLength: 500, 'data-testid': 'ann-comment' } }} />
           <Button
             variant="contained"
@@ -180,7 +180,7 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
           >
             {t('ev.ann.commentAdd')}
           </Button>
-        </div>
+        </FormRow>
       )}
       {error && (
         <p className="text-[13px] leading-[19px] text-red-ink" role="alert">

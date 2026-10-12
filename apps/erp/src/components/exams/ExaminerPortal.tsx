@@ -5,6 +5,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
 import { Alert, Button, Card, TextField } from '@/components/kx';
+import { FormRow } from '@/components/ui';
 /** The invite page: send a code to the registered phone, enter it, and the portal opens. */
 export function InviteLogin({ slug, token, who, phone, role, institution }: { slug: string; token: string; who: string; phone: string; role: string; institution: string }) {
   const { t } = useI18n();
@@ -52,13 +53,13 @@ function ScriptRow({ s }: { s: PortalScript }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   return (
-    <div className="flex flex-row gap-2 items-center py-1">
+    <FormRow className="gap-2 py-1">
       <p className="text-sm leading-[21px] w-[110px] font-mono">{s.scriptCode}</p>
       <p className="text-[13px] leading-[19px] w-[70px]">/ {s.maxMarks}</p>
       <TextField className="w-[110px]" size="small" type="number" label={t('uni.portal.marks')} value={marks} onChange={(e) => setMarks(e.target.value)} error={!!error} helperText={error ?? undefined} />
       <TextField size="small" label={t('uni.portal.remarks')} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
       <Button size="small" variant={s.status === 'valued' ? 'outlined' : 'contained'} disabled={pending || marks === ''} onClick={() => start(async () => { const r = await valueScript(s.id, Number(marks), remarks); setError(r.ok ? null : r.error); })}>{t('uni.portal.save')}</Button>
-    </div>
+    </FormRow>
   );
 }
 

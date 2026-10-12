@@ -2,7 +2,7 @@
 import { useState, useTransition } from 'react';
 import { addBuilding, addFloor, placeRoom } from '@/app/(dashboard)/settings/institution/actions';
 import { SectionTitle } from '@/components/PageHeader';
-import { Card, EmptyState, FormGrid, SelectInput, TextInput, useToast } from '@/components/ui';
+import { Card, EmptyState, FormGrid, SelectInput, TextInput, useToast, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { BuildingsTree } from '@/lib/institution';
 
@@ -66,13 +66,13 @@ export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
                   {f.rooms.length === 0 ? <p className="text-[13px] leading-[19px] text-muted-foreground">{t('bld.noRooms')}</p> : f.rooms.map((r) => <Chip key={r.id} size="small" variant="outlined" label={r.name} />)}
                 </div>
               ))}
-              <div className="flex flex-row mt-4 gap-3 items-end flex-wrap">
+              <FormRow className="mt-4 gap-3">
                 <TextInput label={t('bld.level')} value={d.level} inputMode="numeric" onChange={(e) => setFloorDraft({ ...floorDraft, [b.id]: { ...d, level: e.target.value.replace(/[^\d-]/g, '').slice(0, 3) } })} />
                 <TextInput label={t('bld.floorLabel')} value={d.label} onChange={(e) => setFloorDraft({ ...floorDraft, [b.id]: { ...d, label: e.target.value } })} />
                 <Button variant="outlined" disabled={pending || d.level === '' || !d.label.trim() || Number.isNaN(Number(d.level))} onClick={() => run(() => addFloor(b.id, { level: Number(d.level), label: d.label }), () => setFloorDraft({ ...floorDraft, [b.id]: { level: '', label: '' } }))}>
                   {t('bld.addFloor')}
                 </Button>
-              </div>
+              </FormRow>
             </Card>
           );
         })
@@ -83,13 +83,13 @@ export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
           <SectionTitle>{t('bld.unplaced')}</SectionTitle>
           <Card className="p-5">
             {tree.unplacedRooms.map((r) => (
-              <div className="flex flex-row items-end gap-3 mb-3 flex-wrap" key={r.id}>
+              <FormRow className="gap-3 mb-3" key={r.id}>
                 <p className="text-sm leading-[21px] min-w-[160px]">{r.name}</p>
                 <SelectInput className="min-w-[240px]" label={t('bld.chooseFloor')} value={placing[r.id] ?? ''} options={floors} onChange={(e) => setPlacing({ ...placing, [r.id]: e.target.value })} />
                 <Button variant="outlined" disabled={pending || !placing[r.id]} onClick={() => run(() => placeRoom(r.id, placing[r.id]))}>
                   {t('bld.place')}
                 </Button>
-              </div>
+              </FormRow>
             ))}
           </Card>
         </>
