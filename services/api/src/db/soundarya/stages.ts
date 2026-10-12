@@ -23,6 +23,7 @@ import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 import { depthSamples } from './depth.js';
 import { accreditationSamples } from './accreditation.js';
 import { migrationAndExaminer } from './migration-examiner.js';
+import { examOffice } from './exam-office.js';
 import { gatewayBooksSamples } from './gateway-books.js';
 
 /** The seed stages in order; each fills one family of modules. */
@@ -83,6 +84,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['projects, careers, thesis, student life, communication and parent visibility', pathwaySamples],
   ['accreditation: NAAC entries, DVV, IQAC workspace and teacher evidence', accreditationSamples],
   ['data migration history, university templates, transcripts and the external examiner portal', migrationAndExaminer],
+  ['exam office: workflow stages, exam fees, paper attendance, moderation, revaluation fees and a sealed paper', examOffice],
   ['books, gateway settlements, Tally mapping, single sign-on and online-class attendance', gatewayBooksSamples],
   ['DigiLocker settings, APAAR ids, devices, tags, LTI platform and early alerts', integrationSamples],
   ['academics desk: settings, approval requests, locked marks and lesson plans to review', academicsCore],

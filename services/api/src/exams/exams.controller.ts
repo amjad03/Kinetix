@@ -1,6 +1,7 @@
 import { feedCalendar } from '../scheduling/calendar-feed.js';
 import { ENV, type Env } from '../config/env.js';
 import { hallTicketCode } from './hall-ticket-code.js';
+import { hallTicketNumbers } from '../exam-office/settings.js';
 import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
@@ -291,9 +292,14 @@ export class ExamSessionsController {
           if (!blocks.has(r.id) && reg?.status !== 'registered') blocks.set(r.id, reg ? `Not eligible: ${reg.reasons.join('; ')}` : 'Not registered for this examination');
         }
       }
+      // New tickets take the exam office's numbering series when one is set; existing tickets keep their number.
+      const have = new Set((await tx.select({ studentId: hallTickets.studentId }).from(hallTickets).where(eq(hallTickets.sessionId, id))).map((x) => x.studentId));
+      const fresh = roster.filter((r) => !have.has(r.id));
+      const series = await hallTicketNumbers(tx, fresh.length, new Date());
+      const numberOf = new Map(fresh.map((r, i) => [r.id, series?.[i] ?? `HT-${id.slice(0, 6).toUpperCase()}-${r.rollNo}`]));
       for (const r of roster) {
         const v = { blocked: blocks.has(r.id), blockedReason: blocks.get(r.id) ?? null };
-        await tx.insert(hallTickets).values({ tenantId: p.tenantId, sessionId: id, studentId: r.id, ticketNo: `HT-${id.slice(0, 6).toUpperCase()}-${r.rollNo}`, ...v }).onConflictDoUpdate({ target: [hallTickets.sessionId, hallTickets.studentId], set: v });
+        await tx.insert(hallTickets).values({ tenantId: p.tenantId, sessionId: id, studentId: r.id, ticketNo: numberOf.get(r.id) ?? `HT-${id.slice(0, 6).toUpperCase()}-${r.rollNo}`, ...v }).onConflictDoUpdate({ target: [hallTickets.sessionId, hallTickets.studentId], set: v });
       }
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.halltickets.issued', subjectType: 'exam_session', subjectId: id, data: { issued: roster.length - blocks.size, blocked: blocks.size } });
       return { issued: roster.length - blocks.size, blocked: blocks.size };

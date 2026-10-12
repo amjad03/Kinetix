@@ -92,6 +92,12 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !UUID.test(termId)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/early-years/students/${id}/learning-story.pdf?termId=${termId}`;
   }
+  // A candidate's hall ticket: ?kind=exam-hall-ticket&id=<session>&student=<student>
+  if (kind === 'exam-hall-ticket') {
+    const student = req.nextUrl.searchParams.get('student') ?? '';
+    if (!UUID.test(id) || !UUID.test(student)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/exam-sessions/${id}/hall-tickets/${student}/pdf`;
+  }
   // The seating chart of one hall for one sitting: ?kind=seating-chart&id=<session>&slot=<n>&room=<hall>
   if (kind === 'seating-chart') {
     const slot = req.nextUrl.searchParams.get('slot') ?? '';

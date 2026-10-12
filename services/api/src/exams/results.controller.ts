@@ -12,6 +12,8 @@ import { examPapers, examResultLines, examResults, examSeats, examSessions, hall
 import { marksCardPdf, transcriptPdf, type ResultData, type StudentHeader } from './documents.js';
 import { ExamsService } from './exams.service.js';
 import { ADMIN } from './schemes.controller.js';
+import { REVAL_KINDS, revalFee } from '../exam-office/exam-office.logic.js';
+import { loadOfficeSettings } from '../exam-office/settings.js';
 
 const MANAGE: RoleName[] = [...ADMIN, 'hod'];
 const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
@@ -28,7 +30,7 @@ export async function studentHeader(tx: Tx, tenantId: string, studentId: string)
   return { institution: t?.name ?? '', ...s };
 }
 
-const RevalBody = z.object({ sessionId: z.uuid(), subjectId: z.uuid(), reason: z.string().trim().min(3).max(500) });
+const RevalBody = z.object({ sessionId: z.uuid(), subjectId: z.uuid(), reason: z.string().trim().min(3).max(500), kind: z.enum(REVAL_KINDS).default('revaluation') });
 const DecideBody = z.object({ accept: z.boolean(), note: z.string().trim().max(500).optional() });
 const CompleteBody = z.object({ marks: z.number().min(0) });
 
@@ -132,6 +134,8 @@ export class ResultsController {
       await assertCanSeeStudent(tx, p, studentId, MANAGE);
       const s = await this.exams.session(tx, body.sessionId);
       if (s.status !== 'published') throw new ConflictException(s.status === 'locked' ? 'The revaluation window is closed' : 'Results are not published');
+      const cfg = await loadOfficeSettings(tx);
+      if (s.publishedAt && Date.now() > new Date(s.publishedAt).getTime() + cfg.revaluation.windowDays * 86_400_000) throw new ConflictException('The revaluation window is closed');
       const [line] = await tx
         .select({ percent: examResultLines.percent })
         .from(examResultLines)
@@ -140,7 +144,7 @@ export class ResultsController {
       if (!line) throw new BadRequestException('The student has no result in that subject');
       const open = await tx.select({ id: revaluationRequests.id }).from(revaluationRequests).where(and(eq(revaluationRequests.sessionId, body.sessionId), eq(revaluationRequests.studentId, studentId), eq(revaluationRequests.subjectId, body.subjectId), inArray(revaluationRequests.status, ['requested', 'accepted'])));
       if (open.length) throw new ConflictException('A revaluation request for this subject is already open');
-      const [row] = await tx.insert(revaluationRequests).values({ tenantId: p.tenantId, ...body, studentId, previousPercent: line.percent, requestedBy: p.userId }).returning();
+      const [row] = await tx.insert(revaluationRequests).values({ tenantId: p.tenantId, ...body, feePaise: revalFee(cfg.revaluation, body.kind), studentId, previousPercent: line.percent, requestedBy: p.userId }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'revaluation.requested', subjectType: 'revaluation', subjectId: row.id, data: { studentId, subjectId: body.subjectId } });
       return row;
     });
