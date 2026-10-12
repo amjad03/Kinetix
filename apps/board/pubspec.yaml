@@ -106,6 +106,47 @@ flutter:
     - assets/simhub/jupyterlite/build/
     - assets/simhub/jupyterlite/build/repl/
     - assets/simhub/jupyterlite/build/schemas/
+    - assets/simhub/jupyterlite/build/schemas/@jupyter-notebook/application-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyter-notebook/console-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyter-notebook/help-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyter-notebook/notebook-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyter-notebook/tree-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/application-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/apputils-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/cell-toolbar-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/celltags-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/codemirror-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/completer-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/console-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/csvviewer-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/docmanager-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/documentsearch-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/filebrowser-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/fileeditor-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/help-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/htmlviewer-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/imageviewer-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/inspector-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/launcher-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/logconsole-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/lsp-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/mainmenu-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/markdownviewer-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/mathjax-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/metadataform-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/notebook-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/running-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/settingeditor-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/shortcuts-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/statusbar-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/terminal-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/toc-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/tooltip-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/translation-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlab/workspaces-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlite/application-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlite/apputils-extension/
+    - assets/simhub/jupyterlite/build/schemas/@jupyterlite/repl-extension/
     - assets/simhub/jupyterlite/build/themes/@jupyterlab/theme-light-extension/
     - assets/simhub/jupyterlite/extensions/@jupyterlite/pyodide-kernel-extension/
     - assets/simhub/jupyterlite/extensions/@jupyterlite/pyodide-kernel-extension/static/

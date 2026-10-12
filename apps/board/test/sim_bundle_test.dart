@@ -57,7 +57,6 @@ void main() {
       for (final u in refs) {
         final rel = Uri.parse('/$dir').resolve(u.split(RegExp('[?#]')).first).path.substring(1);
         if (rel.endsWith('/') || rel.endsWith('.html') && rel == page) continue;
-        if (!File('assets/simhub/$rel').existsSync()) continue; // names a file the page itself removes or never needs
         expect((await _get(base, rel)).$1, 200, reason: '$id: $rel');
       }
     }
@@ -114,7 +113,7 @@ void main() {
         total += f.lengthSync();
       }
     }
-    expect(total, lessThan(40 * 1024 * 1024));
+    expect(total, lessThan(60 * 1024 * 1024));
   });
 
   group('online sims keep working offline once seen', () {

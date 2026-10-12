@@ -150,6 +150,7 @@ class _SimHubPanelState extends State<SimHubPanel> {
     widget.controller.addListener(_changed);
     // Warm up the loopback server while the list is on screen so a tapped tile opens at once.
     if (!Platform.environment.containsKey('FLUTTER_TEST')) unawaited(SimAssetServer.start());
+    SimWarmView.prepare();
     SimPins.load().then((p) {
       if (mounted) setState(() => _pins = p);
     });
@@ -232,6 +233,27 @@ class _SimHubPanelState extends State<SimHubPanel> {
   }
 }
 
+/// One web view created and started while the hub list is on screen, so the first tile opens
+/// without the web view start-up delay. [take] hands it over; the next [prepare] makes another.
+class SimWarmView {
+  static PhetWebView? _view;
+
+  /// Creates the spare view (nothing where there is no web view, as in tests).
+  static void prepare() {
+    _view ??= PhetWebView.create();
+    final v = _view;
+    if (v != null) unawaited(v.load(Uri.parse('about:blank')));
+  }
+
+  static PhetWebView? take() {
+    final v = _view;
+    _view = null;
+    return v;
+  }
+
+  static bool get ready => _view != null;
+}
+
 class _OpenSim extends StatefulWidget {
   const _OpenSim({required this.entry, required this.controller, required this.pinned, required this.onPin});
   final SimEntry entry;
@@ -273,7 +295,7 @@ class _OpenSimState extends State<_OpenSim> {
       if (_online != true && !_visited!.has(e.id)) return _refresh();
       _fromCache = _online != true;
     }
-    final view = PhetWebView.create();
+    final view = SimWarmView.take() ?? PhetWebView.create();
     if (view == null) {
       _viewerMissing = true;
       return _refresh();
