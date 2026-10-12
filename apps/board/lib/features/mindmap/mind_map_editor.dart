@@ -1,78 +1,41 @@
-import 'package:flutter/gestures.dart' show DragStartBehavior;
+import 'dart:async';
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter/gestures.dart' show DragStartBehavior, PointerScrollEvent;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show HardwareKeyboard, KeyDownEvent, LogicalKeyboardKey;
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/feature_strings.dart';
+import '../insert/device_files.dart';
 import 'mind_map.dart';
+import 'mind_map_paint.dart';
+import 'mind_map_strings.dart';
+
+export 'mind_map_strings.dart';
 
 FeatureStrings mindMapStrings(BuildContext context) => FeatureStrings(boardLang(context), mindMapStringTable);
 
-const mindMapStringTable = <String, Map<String, String>>{
-  'en': {
-    'title': 'Mind map',
-    'topic': 'Main topic',
-    'idea': 'New idea',
-    'addChild': 'Add branch',
-    'addSibling': 'Add beside',
-    'edit': 'Rename',
-    'delete': 'Delete',
-    'collapse': 'Fold',
-    'expand': 'Unfold',
-    'autoLayout': 'Tidy up',
-    'place': 'Put on board',
-    'placed': 'Mind map added to the board',
-    'hint': 'Tap an idea, then add branches. Drag ideas to move them.',
-    'ok': 'OK',
-    'cancel': 'Cancel',
-    'text': 'Idea text',
-  },
-  'hi': {
-    'title': 'माइंड मैप',
-    'topic': 'मुख्य विषय',
-    'idea': 'नया विचार',
-    'addChild': 'शाखा जोड़ें',
-    'addSibling': 'बगल में जोड़ें',
-    'edit': 'नाम बदलें',
-    'delete': 'हटाएँ',
-    'collapse': 'समेटें',
-    'expand': 'खोलें',
-    'autoLayout': 'व्यवस्थित करें',
-    'place': 'बोर्ड पर रखें',
-    'placed': 'माइंड मैप बोर्ड पर जोड़ दिया गया',
-    'hint': 'किसी विचार को छुएँ, फिर शाखाएँ जोड़ें। विचारों को खींचकर हिलाएँ।',
-    'ok': 'ठीक है',
-    'cancel': 'रद्द करें',
-    'text': 'विचार का पाठ',
-  },
-  'kn': {
-    'title': 'ಮೈಂಡ್ ಮ್ಯಾಪ್',
-    'topic': 'ಮುಖ್ಯ ವಿಷಯ',
-    'idea': 'ಹೊಸ ಆಲೋಚನೆ',
-    'addChild': 'ಕೊಂಬೆ ಸೇರಿಸಿ',
-    'addSibling': 'ಪಕ್ಕದಲ್ಲಿ ಸೇರಿಸಿ',
-    'edit': 'ಹೆಸರು ಬದಲಿಸಿ',
-    'delete': 'ಅಳಿಸಿ',
-    'collapse': 'ಮಡಚಿ',
-    'expand': 'ಬಿಡಿಸಿ',
-    'autoLayout': 'ಸರಿಪಡಿಸಿ',
-    'place': 'ಬೋರ್ಡ್‌ಗೆ ಹಾಕಿ',
-    'placed': 'ಮೈಂಡ್ ಮ್ಯಾಪ್ ಬೋರ್ಡ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ',
-    'hint': 'ಆಲೋಚನೆಯನ್ನು ಒತ್ತಿ, ನಂತರ ಕೊಂಬೆಗಳನ್ನು ಸೇರಿಸಿ. ಎಳೆದು ಸರಿಸಿ.',
-    'ok': 'ಸರಿ',
-    'cancel': 'ರದ್ದು',
-    'text': 'ಆಲೋಚನೆಯ ಪಠ್ಯ',
-  },
-};
+/// Asks the teacher for a picture (null when they cancel).
+typedef MindPicturePicker = Future<Uint8List?> Function();
 
-/// The mind map tool: a radial map of ideas (centre topic, branches, sub-branches) laid out for
-/// you, in a colour per branch, that folds, grows and drags. It is not a flowchart: no shapes or
-/// connectors to place. "Put on board" writes it to the board as blocks and curved branches.
+Future<Uint8List?> _devicePicture() async => (await PlatformFiles().pickPicture())?.bytes;
+
+/// The mind map tool: a radial map of ideas that is laid out again after every edit, in a colour
+/// per branch (or per idea), with shapes, icons and pictures; folds, grows by keyboard or button,
+/// re-parents by dragging one idea onto another, zooms and pans, and undoes. "Put on board" writes
+/// it as editable blocks and curved branches, or as a picture.
 class MindMapEditor extends StatefulWidget {
-  const MindMapEditor({super.key, required this.wb, this.initial});
+  const MindMapEditor({super.key, required this.wb, this.initial, this.pickPicture});
 
   final WhiteboardController wb;
   final MindMap? initial;
+
+  /// How a picture is chosen (the device's file dialog unless a test supplies one).
+  final MindPicturePicker? pickPicture;
 
   /// Opens the editor over the board.
   static Future<void> open(BuildContext context, WhiteboardController wb) =>
@@ -85,7 +48,17 @@ class MindMapEditor extends StatefulWidget {
 class _MindMapEditorState extends State<MindMapEditor> {
   MindMap? _map;
   String _selected = 'n0';
-  Offset _pan = Offset.zero;
+  final _undo = <MindMap>[];
+  var _zoom = 1.0;
+  var _pan = Offset.zero;
+  var _fit = true, _checkFit = false;
+  var _rev = 0;
+  Map<String, Offset>? _layout;
+  int _layoutRev = -1;
+  String? _dragId;
+  var _dragDelta = Offset.zero;
+  final _images = <String, ui.Image>{};
+  final _imageSource = <String, Uint8List>{};
 
   MindMap get map => _map!;
 
@@ -95,21 +68,162 @@ class _MindMapEditorState extends State<MindMapEditor> {
     _map ??= widget.initial ?? MindMap(mindMapStrings(context)['topic']);
   }
 
-  Future<void> _rename(MindNode n) async {
-    final text = await showDialog<String>(context: context, builder: (_) => _RenameDialog(initial: n.text));
-    if (text != null && text.trim().isNotEmpty) setState(() => n.text = text.trim());
+  /// Runs an edit that can be undone; the map is laid out again afterwards.
+  void _edit(void Function() f) {
+    _undo.add(map.clone());
+    if (_undo.length > 80) _undo.removeAt(0);
+    setState(() {
+      f();
+      _rev++;
+      _checkFit = true;
+    });
   }
 
-  void _drag(MindNode n, Offset d) {
-    // A branch takes its sub-branches with it.
-    void move(MindNode x) {
-      x.nudge += d;
-      for (final c in x.children) {
-        move(c);
+  @visibleForTesting
+  void undo() {
+    if (_undo.isEmpty) return;
+    setState(() {
+      _map = _undo.removeLast();
+      if (map.find(_selected) == null) _selected = map.root.id;
+      _rev++;
+      _checkFit = true;
+    });
+  }
+
+  Map<String, Offset> get _base {
+    if (_layoutRev != _rev || _layout == null) {
+      _layout = map.layout();
+      _layoutRev = _rev;
+    }
+    return _layout!;
+  }
+
+  void _addChild() {
+    final text = mindMapStrings(context)['idea'];
+    _edit(() => _selected = map.addChild(_selected, text)!.id);
+  }
+
+  void _addSibling() {
+    final text = mindMapStrings(context)['idea'];
+    _edit(() => _selected = map.addSibling(_selected, text)!.id);
+  }
+
+  void _delete() {
+    if (_selected == map.root.id) return;
+    _edit(() {
+      final p = map.parentOf(_selected)?.id ?? map.root.id;
+      map.remove(_selected);
+      _selected = p;
+    });
+  }
+
+  void _toggle(String id) => _edit(() => map.toggle(id));
+
+  Future<void> _rename(MindNode n) async {
+    final text = await showDialog<String>(context: context, builder: (_) => _RenameDialog(initial: n.text));
+    if (text != null && text.trim().isNotEmpty && mounted) _edit(() => n.text = text.trim());
+  }
+
+  Future<void> _pickColor(MindNode n) async {
+    final r = await showDialog<(Color?, bool)>(context: context, builder: (_) => _ColorDialog(map: map, node: n));
+    if (r != null && mounted) _edit(() => map.setColor(n.id, r.$1, branch: r.$2));
+  }
+
+  Future<void> _choose(String title, List<Widget> Function(void Function(Object?) pick) items) async {
+    final s = mindMapStrings(context);
+    await showDialog<void>(
+      context: context,
+      builder: (dc) => AlertDialog(
+        title: Text(title),
+        content: SingleChildScrollView(child: Wrap(spacing: 8, runSpacing: 8, children: items((v) => Navigator.pop(dc, v)))),
+        actions: [TextButton(onPressed: () => Navigator.pop(dc), child: Text(s['cancel']))],
+      ),
+    );
+  }
+
+  Future<void> _shape(MindNode n) async {
+    final s = mindMapStrings(context);
+    MindShape? chosen;
+    await _choose(s['shape'], (pick) => [
+      for (final sh in MindShape.values)
+        ChoiceChip(key: Key('mm-shape-${sh.name}'), label: Text(s['shape_${sh.name}']), selected: n.shape == sh, onSelected: (_) {
+          chosen = sh;
+          pick(sh);
+        }),
+    ]);
+    if (chosen != null && mounted) _edit(() => n.shape = chosen!);
+  }
+
+  Future<void> _icon(MindNode n) async {
+    final s = mindMapStrings(context);
+    var done = false;
+    int? chosen;
+    await _choose(s['icon'], (pick) => [
+      ActionChip(key: const Key('mm-icon-none'), label: Text(s['iconNone']), onPressed: () {
+        done = true;
+        pick(null);
+      }),
+      for (final (i, ic) in mindIcons.indexed)
+        IconButton.outlined(key: Key('mm-icon-$i'), icon: Icon(ic), onPressed: () {
+          done = true;
+          chosen = i;
+          pick(i);
+        }),
+    ]);
+    if (done && mounted) _edit(() => n.icon = chosen);
+  }
+
+  Future<void> _themeDialog() async {
+    final s = mindMapStrings(context);
+    int? chosen;
+    await _choose(s['theme'], (pick) => [
+      for (final (i, t) in mindThemes.indexed)
+        InkWell(
+          key: Key('mm-theme-${t.key}'),
+          onTap: () {
+            chosen = i;
+            pick(i);
+          },
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(border: Border.all(color: i == map.themeIndex ? Colors.black : Colors.black26, width: i == map.themeIndex ? 3 : 1), borderRadius: BorderRadius.circular(10)),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Row(mainAxisSize: MainAxisSize.min, children: [for (final c in [t.root, ...t.branches.take(4)]) Container(width: 16, height: 16, margin: const EdgeInsets.all(1), color: c)]),
+              const SizedBox(height: 4),
+              Text(s['theme_${t.key}']),
+            ]),
+          ),
+        ),
+    ]);
+    if (chosen != null && mounted) _edit(() => map.themeIndex = chosen!);
+  }
+
+  Future<void> _pickImage(MindNode n) async {
+    final bytes = await (widget.pickPicture ?? _devicePicture)();
+    if (bytes != null && mounted) _edit(() => n.image = bytes);
+  }
+
+  /// Decodes pictures that are new so they can be painted.
+  void _syncImages() {
+    for (final n in map.visible) {
+      final b = n.image;
+      if (b == null) {
+        _images.remove(n.id)?.dispose();
+        _imageSource.remove(n.id);
+      } else if (!identical(_imageSource[n.id], b)) {
+        _imageSource[n.id] = b;
+        unawaited(() async {
+          try {
+            final codec = await ui.instantiateImageCodec(b, targetWidth: 160);
+            final img = (await codec.getNextFrame()).image;
+            if (!mounted || !identical(_imageSource[n.id], b)) return;
+            setState(() => _images[n.id] = img);
+          } catch (_) {
+            // A broken picture just shows as a tinted square.
+          }
+        }());
       }
     }
-
-    setState(() => move(n));
   }
 
   void _place() {
@@ -118,174 +232,298 @@ class _MindMapEditorState extends State<MindMapEditor> {
     Navigator.pop(context);
   }
 
+  Future<void> _placePicture() async {
+    final msg = mindMapStrings(context)['placed'];
+    final nav = Navigator.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final png = await mindMapPng(map, images: _images);
+    final at = map.layout();
+    final b = map.boundsOf(at).inflate(40);
+    widget.wb.insert([ImageElement(id: newElementId(), rect: b, bytes: png)]);
+    messenger?.showSnackBar(SnackBar(content: Text(msg)));
+    nav.pop();
+  }
+
+  void _zoomBy(double f) => setState(() => _zoom = (_zoom * f).clamp(0.25, 3.0));
+
+  KeyEventResult _key(FocusNode _, KeyEvent e) {
+    if (e is! KeyDownEvent) return KeyEventResult.ignored;
+    final k = e.logicalKey;
+    final sel = map.find(_selected) ?? map.root;
+    final cmd = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
+    if (cmd && k == LogicalKeyboardKey.keyZ) {
+      undo();
+    } else if (k == LogicalKeyboardKey.tab) {
+      _addChild();
+    } else if (k == LogicalKeyboardKey.enter || k == LogicalKeyboardKey.numpadEnter) {
+      _addSibling();
+    } else if (k == LogicalKeyboardKey.delete || k == LogicalKeyboardKey.backspace) {
+      _delete();
+    } else if (k == LogicalKeyboardKey.f2) {
+      unawaited(_rename(sel));
+    } else if (k == LogicalKeyboardKey.space) {
+      if (sel.children.isNotEmpty) _toggle(sel.id);
+    } else if (k == LogicalKeyboardKey.arrowLeft) {
+      final p = map.parentOf(sel.id);
+      if (p != null) setState(() => _selected = p.id);
+    } else if (k == LogicalKeyboardKey.arrowRight) {
+      if (sel.children.isNotEmpty && !sel.collapsed) setState(() => _selected = sel.children.first.id);
+    } else if (k == LogicalKeyboardKey.arrowUp || k == LogicalKeyboardKey.arrowDown) {
+      final sibs = map.parentOf(sel.id)?.children;
+      if (sibs != null) {
+        final i = sibs.indexOf(sel) + (k == LogicalKeyboardKey.arrowDown ? 1 : -1);
+        if (i >= 0 && i < sibs.length) setState(() => _selected = sibs[i].id);
+      }
+    } else {
+      return KeyEventResult.ignored;
+    }
+    return KeyEventResult.handled;
+  }
+
+  /// The idea (not [id] or under it) whose box holds the map point [p].
+  MindNode? _dropTarget(String id, Offset p, Map<String, Offset> at) {
+    for (final n in map.visible) {
+      if (n.id == id || map.isInside(n.id, id)) continue;
+      if (map.rectOf(n, at[n.id]!).contains(p)) return n;
+    }
+    return null;
+  }
+
+  @override
+  void dispose() {
+    for (final i in _images.values) {
+      i.dispose();
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = mindMapStrings(context);
     final sel = map.find(_selected) ?? map.root;
-    final canCollapse = sel.children.isNotEmpty;
-    return Scaffold(
-      key: const Key('mind-map'),
-      appBar: AppBar(
-        title: Text(s['title']),
-        leading: IconButton(key: const Key('mm-close'), icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
-        actions: [
-          FilledButton.icon(key: const Key('mm-place'), onPressed: _place, icon: const Icon(Icons.dashboard_customize_outlined), label: Text(s['place'])),
-          const SizedBox(width: Kx.s12),
-        ],
-      ),
-      body: Column(
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.all(Kx.s8),
-            child: Row(
-              children: [
-                _action(const Key('mm-add-child'), Icons.subdirectory_arrow_right, s['addChild'], () => setState(() => _selected = map.addChild(sel.id, s['idea'])!.id)),
-                _action(const Key('mm-add-sibling'), Icons.add_circle_outline, s['addSibling'], () => setState(() => _selected = map.addSibling(sel.id, s['idea'])!.id)),
-                _action(const Key('mm-edit'), Icons.edit_outlined, s['edit'], () => _rename(sel)),
-                _action(const Key('mm-collapse'), sel.collapsed ? Icons.unfold_more : Icons.unfold_less, sel.collapsed ? s['expand'] : s['collapse'], canCollapse ? () => setState(() => map.toggle(sel.id)) : null),
-                _action(const Key('mm-delete'), Icons.delete_outline, s['delete'], sel == map.root ? null : () => setState(() {
-                  _selected = map.parentOf(sel.id)?.id ?? map.root.id;
-                  map.remove(sel.id);
-                })),
-                _action(const Key('mm-auto'), Icons.auto_fix_high_outlined, s['autoLayout'], () => setState(() {
-                  map.autoLayout();
-                  _pan = Offset.zero;
-                })),
-                Padding(padding: const EdgeInsets.only(left: Kx.s8), child: Text(s['hint'], style: context.text.bodySmall)),
-              ],
+    _syncImages();
+    return Focus(
+      autofocus: true,
+      onKeyEvent: _key,
+      child: Scaffold(
+        key: const Key('mind-map'),
+        appBar: AppBar(
+          title: Text(s['title']),
+          leading: IconButton(key: const Key('mm-close'), icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+          actions: [
+            FilledButton.icon(key: const Key('mm-place'), onPressed: _place, icon: const Icon(Icons.dashboard_customize_outlined), label: Text(s['place'])),
+            const SizedBox(width: Kx.s12),
+          ],
+        ),
+        body: Column(
+          children: [
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.all(Kx.s8),
+              child: Row(
+                children: [
+                  _action(const Key('mm-undo'), Icons.undo, s['undo'], _undo.isEmpty ? null : undo),
+                  _action(const Key('mm-add-child'), Icons.subdirectory_arrow_right, s['addChild'], _addChild),
+                  _action(const Key('mm-add-sibling'), Icons.add_circle_outline, s['addSibling'], _addSibling),
+                  _action(const Key('mm-edit'), Icons.edit_outlined, s['edit'], () => _rename(sel)),
+                  _action(const Key('mm-collapse'), sel.collapsed ? Icons.unfold_more : Icons.unfold_less, sel.collapsed ? s['expand'] : s['collapse'], sel.children.isNotEmpty ? () => _toggle(sel.id) : null),
+                  _action(const Key('mm-delete'), Icons.delete_outline, s['delete'], sel == map.root ? null : _delete),
+                  _action(const Key('mm-color'), Icons.palette_outlined, s['color'], () => _pickColor(sel)),
+                  _action(const Key('mm-shape'), Icons.category_outlined, s['shape'], () => _shape(sel)),
+                  _action(const Key('mm-icon'), Icons.emoji_objects_outlined, s['icon'], () => _icon(sel)),
+                  _action(const Key('mm-image'), Icons.image_outlined, s['image'], () => _pickImage(sel)),
+                  if (sel.image != null) _action(const Key('mm-image-remove'), Icons.hide_image_outlined, s['imageRemove'], () => _edit(() => sel.image = null)),
+                  _action(const Key('mm-theme'), Icons.color_lens_outlined, s['theme'], _themeDialog),
+                  _action(const Key('mm-zoom-out'), Icons.zoom_out, s['zoomOut'], () => _zoomBy(1 / 1.25)),
+                  _action(const Key('mm-zoom-in'), Icons.zoom_in, s['zoomIn'], () => _zoomBy(1.25)),
+                  _action(const Key('mm-auto'), Icons.fit_screen_outlined, s['autoLayout'], () => setState(() => _fit = true)),
+                  _action(const Key('mm-place-picture'), Icons.photo_outlined, s['placePicture'], _placePicture),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, box) {
-                final centre = Offset(box.maxWidth / 2, box.maxHeight / 2) + _pan;
-                final at = map.layout();
-                return GestureDetector(
-                  key: const Key('mm-canvas'),
-                  behavior: HitTestBehavior.opaque,
-                  dragStartBehavior: DragStartBehavior.down,
-                  onPanUpdate: (d) => setState(() => _pan += d.delta),
-                  onTap: () => setState(() => _selected = map.root.id),
-                  child: ClipRect(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(child: CustomPaint(painter: _BranchPainter(map, at, centre))),
-                        for (final n in map.nodes)
-                          if (at[n.id] case final p?) _nodeWidget(context, n, centre + p),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+            Padding(padding: const EdgeInsets.symmetric(horizontal: Kx.s12), child: Align(alignment: Alignment.centerLeft, child: Text(s['hint'], style: context.text.bodySmall))),
+            const Divider(height: 1),
+            Expanded(child: LayoutBuilder(builder: (context, box) => _canvas(context, box))),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _canvas(BuildContext context, BoxConstraints box) {
+    final base = _base;
+    final bounds = map.boundsOf(base);
+    final size = Size(box.maxWidth, box.maxHeight);
+    if (_fit) {
+      _zoom = math.min(size.width / (bounds.width + 100), size.height / (bounds.height + 100)).clamp(0.25, 1.4);
+      _pan = -bounds.center * _zoom;
+      _fit = false;
+      _checkFit = false;
+    } else if (_checkFit) {
+      _checkFit = false;
+      final view = Rect.fromLTWH(0, 0, size.width, size.height);
+      final o = Offset(size.width / 2, size.height / 2) + _pan;
+      final screen = Rect.fromLTRB(o.dx + bounds.left * _zoom, o.dy + bounds.top * _zoom, o.dx + bounds.right * _zoom, o.dy + bounds.bottom * _zoom);
+      if (!view.contains(screen.topLeft) || !view.contains(screen.bottomRight)) {
+        _zoom = math.min(_zoom, math.min(size.width / (bounds.width + 100), size.height / (bounds.height + 100))).clamp(0.25, 1.4);
+        _pan = -bounds.center * _zoom;
+      }
+    }
+    final origin = Offset(size.width / 2, size.height / 2) + _pan;
+    final id = _dragId;
+    final at = {...base};
+    String? dropOn;
+    if (id != null) {
+      void move(MindNode n) {
+        at[n.id] = base[n.id]! + _dragDelta;
+        if (!n.collapsed) n.children.forEach(move);
+      }
+
+      move(map.find(id)!);
+      dropOn = _dropTarget(id, at[id]!, base)?.id;
+    }
+    Offset screen(Offset p) => origin + p * _zoom;
+    Rect screenRect(Rect r) => Rect.fromPoints(screen(r.topLeft), screen(r.bottomRight));
+    return Listener(
+      onPointerSignal: (e) {
+        if (e is PointerScrollEvent) _zoomBy(e.scrollDelta.dy < 0 ? 1.1 : 1 / 1.1);
+      },
+      child: GestureDetector(
+        key: const Key('mm-canvas'),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _selected = map.root.id),
+        onScaleStart: (_) => _baseZoom = _zoom,
+        onScaleUpdate: (d) => setState(() {
+          _pan += d.focalPointDelta;
+          if (d.scale != 1) _zoom = (_baseZoom * d.scale).clamp(0.25, 3.0);
+        }),
+        child: ClipRect(
+          child: Stack(
+            children: [
+              Positioned.fill(child: CustomPaint(painter: MindMapPainter(map, at, origin, _zoom, selected: _selected, dropOn: dropOn, dragging: id, images: _images, revision: _rev))),
+              for (final n in map.visible)
+                Positioned.fromRect(
+                  key: ValueKey('mm-pos-${n.id}'),
+                  rect: screenRect(map.rectOf(n, at[n.id]!)),
+                  child: Semantics(
+                    label: n.text,
+                    button: true,
+                    selected: n.id == _selected,
+                    child: GestureDetector(
+                      key: Key('mm-node-${n.id}'),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => setState(() => _selected = n.id),
+                      onDoubleTap: () => _rename(n),
+                      onLongPress: () => _rename(n),
+                      dragStartBehavior: DragStartBehavior.down,
+                      onPanStart: n == map.root ? null : (_) => setState(() {
+                        _dragId = n.id;
+                        _dragDelta = Offset.zero;
+                        _selected = n.id;
+                      }),
+                      onPanUpdate: n == map.root ? null : (d) => setState(() => _dragDelta += d.delta / _zoom),
+                      onPanEnd: n == map.root ? null : (_) => _endDrag(n, base),
+                      onPanCancel: () => setState(() => _dragId = null),
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                ),
+              for (final n in map.visible)
+                if (n.children.isNotEmpty)
+                  Positioned.fromRect(
+                    key: ValueKey('mm-fold-${n.id}'),
+                    rect: Rect.fromCenter(center: screen(foldBadgeCentre(map.rectOf(n, at[n.id]!))), width: 30, height: 30),
+                    child: Semantics(
+                      label: mindMapStrings(context)[n.collapsed ? 'expand' : 'collapse'],
+                      button: true,
+                      child: GestureDetector(key: Key('mm-toggle-${n.id}'), behavior: HitTestBehavior.opaque, onTap: () => _toggle(n.id), child: const SizedBox.expand()),
+                    ),
+                  ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  var _baseZoom = 1.0;
+
+  void _endDrag(MindNode n, Map<String, Offset> base) {
+    final target = _dropTarget(n.id, base[n.id]! + _dragDelta, base);
+    setState(() => _dragId = null);
+    if (target != null && map.canReparent(n.id, target.id)) _edit(() => map.reparent(n.id, target.id));
   }
 
   Widget _action(Key key, IconData icon, String label, VoidCallback? onTap) => Padding(
     padding: const EdgeInsets.only(right: Kx.s8),
     child: OutlinedButton.icon(key: key, onPressed: onTap, icon: Icon(icon, size: 18), label: Text(label)),
   );
-
-  Widget _nodeWidget(BuildContext context, MindNode n, Offset centre) {
-    final r = map.rectOf(n, centre);
-    final color = map.colorOf(n.id);
-    final isRoot = n == map.root;
-    final selected = n.id == _selected;
-    final s = mindMapStrings(context);
-    return Positioned.fromRect(
-      key: ValueKey('mm-pos-${n.id}'),
-      rect: r,
-      child: GestureDetector(
-        key: Key('mm-node-${n.id}'),
-        onTap: () => setState(() => _selected = n.id),
-        onLongPress: () => _rename(n),
-        // Moves from the first touch, with no slop to cross first.
-        dragStartBehavior: DragStartBehavior.down,
-        onPanUpdate: (d) => _drag(n, d.delta),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: isRoot ? 0.2 : 0.12),
-                  borderRadius: BorderRadius.circular(isRoot ? 40 : 26),
-                  border: Border.all(color: color, width: selected ? 4 : 2),
-                ),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(n.text, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: (isRoot ? context.text.titleMedium : context.text.bodyMedium)?.copyWith(fontWeight: FontWeight.w600)),
-                  ),
-                ),
-              ),
-            ),
-            if (n.children.isNotEmpty)
-              Positioned(
-                // Inside the box, so it can be tapped (hits outside a box do not reach it).
-                right: 2,
-                top: 2,
-                child: Semantics(
-                  label: n.collapsed ? s['expand'] : s['collapse'],
-                  button: true,
-                  child: GestureDetector(
-                    key: Key('mm-toggle-${n.id}'),
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => setState(() => map.toggle(n.id)),
-                    child: CircleAvatar(radius: 13, backgroundColor: color, foregroundColor: Colors.white, child: Text(n.collapsed ? '+${n.children.length}' : '−', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-/// The curved branches, thick near the centre and thinner outward, each in its branch's colour.
-class _BranchPainter extends CustomPainter {
-  _BranchPainter(this.map, this.at, this.centre);
-
+/// Pick a colour for an idea or its whole branch.
+class _ColorDialog extends StatefulWidget {
+  const _ColorDialog({required this.map, required this.node});
   final MindMap map;
-  final Map<String, Offset> at;
-  final Offset centre;
+  final MindNode node;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    void branches(MindNode n, int depth) {
-      if (n.collapsed || !at.containsKey(n.id)) return;
-      for (final c in n.children) {
-        if (!at.containsKey(c.id)) continue;
-        final a = centre + at[n.id]!, b = centre + at[c.id]!;
-        final mid = Offset.lerp(a, b, 0.5)!;
-        // Bend towards the centre side so branches sweep out like a tree's.
-        final ctrl = Offset(mid.dx, a.dy);
-        final path = Path()
-          ..moveTo(a.dx, a.dy)
-          ..quadraticBezierTo(ctrl.dx, ctrl.dy, b.dx, b.dy);
-        canvas.drawPath(
-          path,
-          Paint()
-            ..color = map.colorOf(c.id)
-            ..style = PaintingStyle.stroke
-            ..strokeCap = StrokeCap.round
-            ..strokeWidth = (7 - depth * 2).clamp(2, 7).toDouble(),
-        );
-        branches(c, depth + 1);
-      }
-    }
+  State<_ColorDialog> createState() => _ColorDialogState();
+}
 
-    branches(map.root, 0);
+class _ColorDialogState extends State<_ColorDialog> {
+  var _branch = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = mindMapStrings(context);
+    final colors = [widget.map.theme.root, ...widget.map.theme.branches, ...mindExtraColors];
+    final current = widget.map.colorOf(widget.node.id);
+    return AlertDialog(
+      title: Text(s['color']),
+      content: SizedBox(
+        width: 360,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SegmentedButton<bool>(
+                key: const Key('mm-color-scope'),
+                segments: [
+                  ButtonSegment(value: false, label: Text(s['colorNode'], key: const Key('mm-color-scope-node'))),
+                  ButtonSegment(value: true, label: Text(s['colorBranch'], key: const Key('mm-color-scope-branch'))),
+                ],
+                selected: {_branch},
+                onSelectionChanged: (v) => setState(() => _branch = v.first),
+              ),
+              const SizedBox(height: Kx.s12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final (i, c) in colors.indexed)
+                    InkWell(
+                      key: Key('mm-color-$i'),
+                      customBorder: const CircleBorder(),
+                      onTap: () => Navigator.pop(context, (c, _branch)),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(color: c, shape: BoxShape.circle, border: Border.all(color: c == current ? Colors.black : Colors.black26, width: c == current ? 3 : 1)),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(key: const Key('mm-color-reset'), onPressed: () => Navigator.pop(context, (null, _branch)), child: Text(s['colorReset'])),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(s['cancel'])),
+      ],
+    );
   }
-
-  @override
-  bool shouldRepaint(_BranchPainter old) => true;
 }
 
 /// Asks for an idea's new words; owns its text controller so it is disposed with the dialog.
@@ -311,7 +549,7 @@ class _RenameDialogState extends State<_RenameDialog> {
     final s = mindMapStrings(context);
     return AlertDialog(
       title: Text(s['edit']),
-      content: TextField(key: const Key('mm-text-field'), controller: _c, autofocus: true, decoration: InputDecoration(labelText: s['text']), onSubmitted: (v) => Navigator.pop(context, v)),
+      content: TextField(key: const Key('mm-text-field'), controller: _c, autofocus: true, minLines: 1, maxLines: 4, decoration: InputDecoration(labelText: s['text'])),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text(s['cancel'])),
         FilledButton(key: const Key('mm-text-ok'), onPressed: () => Navigator.pop(context, _c.text), child: Text(s['ok'])),
