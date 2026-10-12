@@ -17,6 +17,7 @@ import { AccreditationModule } from './accreditation/accreditation.module.js';
 import { ObeModule } from './obe/obe.module.js';
 import { MarksModule } from './marks/marks.module.js';
 import { MessagesModule } from './messages/messages.module.js';
+import { ChatModule } from './chat/chat.module.js';
 import { PushModule } from './push/push.module.js';
 import { RecordingsModule } from './recordings/recordings.module.js';
 import { StorageModule } from './storage/storage.module.js';
@@ -168,6 +169,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     AccreditationModule,
     GradingAssistModule,
     MessagesModule,
+    ChatModule,
     CodeModule,
     HrModule,
     LmsModule,

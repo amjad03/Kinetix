@@ -166,6 +166,10 @@ const EnvSchema = z.object({
   /** Scheduled reports are emailed by POSTing JSON to this relay (SES/Postmark lambda, n8n…); unset: only logged. */
   MAIL_WEBHOOK_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
   MAIL_FROM: z.string().default('reports@kinetix.local'),
+  /** Inbound email/WhatsApp replies to external chat threads: the relay sends `x-kinetix-inbound-secret`. Unset: inbound is off. */
+  CHAT_INBOUND_SECRET: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(16).optional()),
+  /** Replies to external chat emails go to reply+<token>@ this domain. */
+  CHAT_REPLY_DOMAIN: z.string().default('reply.kinetix.local'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
