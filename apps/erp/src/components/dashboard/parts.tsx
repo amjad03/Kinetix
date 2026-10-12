@@ -1,12 +1,5 @@
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
-import CheckCircleOutline from '@mui/icons-material/CheckCircleOutlined';
-import ChevronRight from '@mui/icons-material/ChevronRight';
-import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
-import ReportProblemOutlined from '@mui/icons-material/ReportProblemOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { LinkBox } from '@/components/ui/LinkBox';
+import { ArrowRight, CalendarCheck, CircleCheck, ChevronRight, Megaphone, TriangleAlert } from 'lucide-react';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { LinkButton } from '@/components/LinkButton';
 import { EmptyState } from '@/components/States';
@@ -16,8 +9,9 @@ import type { Fmt } from '@/i18n/format';
 import type { TFunction } from '@/i18n/translate';
 import type { CalendarEvent } from '@/lib/calendar';
 import type { Priority, SentBroadcast } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
-const link = { color: 'inherit', textDecoration: 'none' } as const;
+const ICON_CHIP = 'grid size-[34px] shrink-0 place-items-center rounded-[10px] [&_svg]:!size-4';
 
 export interface Task {
   key: string;
@@ -36,26 +30,26 @@ export function PendingTasks({ tasks, t }: { tasks: Task[]; t: TFunction }) {
   return (
     <Card title={t('dash.pending')} subtitle={open ? t('dash.pendingOpen', { n: open }) : undefined} padded={false} testId="pending-tasks">
       {shown.length === 0 || open === 0 ? (
-        <Box sx={{ px: 2.5, pb: 2.5 }}>
-          <EmptyState dense icon={<CheckCircleOutline />} title={t('dash.pendingNone')}>
+        <div className="px-[18px] pb-[18px]">
+          <EmptyState dense icon={<CircleCheck />} title={t('dash.pendingNone')}>
             {t('dash.pendingNoneHelp')}
           </EmptyState>
-        </Box>
+        </div>
       ) : (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+        <ul className="m-0 list-none p-0">
           {shown.map((x) => (
-            <Box component="li" key={x.key} sx={{ borderTop: 1, borderColor: 'm3.outlineVariant' }}>
-              <LinkBox href={x.href} data-testid={`task-${x.key}`} sx={{ ...link, display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.5, '&:hover': { bgcolor: 'action.hover' } }}>
-                <Box aria-hidden sx={{ display: 'grid', placeItems: 'center', width: 36, height: 36, borderRadius: '10px', bgcolor: 'm3.surfaceContainer', color: 'm3.onSurfaceVariant', '& svg': { fontSize: 20 } }}>
+            <li key={x.key} className="border-t">
+              <Link href={x.href} data-testid={`task-${x.key}`} className="flex items-center gap-3 px-[18px] py-3 text-inherit no-underline hover:bg-muted">
+                <span aria-hidden className={cn(ICON_CHIP, 'bg-muted text-muted-foreground')}>
                   {x.icon}
-                </Box>
-                <Typography sx={{ flex: 1, fontSize: '0.875rem', fontWeight: 500 }}>{x.label}</Typography>
+                </span>
+                <span className="flex-1 text-[13.5px] font-[550]">{x.label}</span>
                 <CountBadge count={x.count ?? 0} tone={(x.count ?? 0) === 0 ? 'neutral' : (x.tone ?? 'info')} showZero />
-                <ChevronRight aria-hidden sx={{ fontSize: 20, color: 'text.secondary' }} />
-              </LinkBox>
-            </Box>
+                <ChevronRight aria-hidden className="size-4 text-muted-foreground" />
+              </Link>
+            </li>
           ))}
-        </Box>
+        </ul>
       )}
     </Card>
   );
@@ -65,27 +59,26 @@ export interface QuickAction {
   href: string;
   label: string;
   icon: ReactNode;
-  /** AI actions are marigold. */
+  /** AI actions are amber. */
   ai?: boolean;
 }
 
 export function QuickActions({ actions, t, wide = true }: { actions: QuickAction[]; t: TFunction; wide?: boolean }) {
   if (actions.length === 0) return null;
   return (
-    <Card title={t('dash.quick')} sx={wide ? { gridColumn: { lg: '1 / -1', xl: 'auto' } } : undefined} testId="quick-actions">
-      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 1.5, gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(3, minmax(0, 1fr))', xl: 'repeat(2, minmax(0, 1fr))' } }}>
+    <Card title={t('dash.quick')} className={wide ? 'lg:col-span-full xl:col-span-1' : undefined} testId="quick-actions">
+      <ul className="m-0 grid list-none grid-cols-2 gap-2.5 p-0 sm:grid-cols-3 xl:grid-cols-2">
         {actions.map((a) => (
           <li key={a.href + a.label}>
-            <LinkBox
-              href={a.href}
-              sx={{ ...link, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center', p: 1.5, minHeight: 92, borderRadius: '12px', border: 1, borderColor: 'm3.outlineVariant', fontSize: '0.8125rem', fontWeight: 500, '&:hover': { borderColor: a.ai ? 'm3.tertiary' : 'm3.primary', bgcolor: 'action.hover' } }}
-            >
-              <Box aria-hidden sx={{ display: 'grid', placeItems: 'center', width: 40, height: 40, borderRadius: '12px', bgcolor: a.ai ? 'm3.tertiaryContainer' : 'm3.primaryContainer', color: a.ai ? 'm3.onTertiaryContainer' : 'm3.onPrimaryContainer', '& svg': { fontSize: 22 } }}>{a.icon}</Box>
+            <Link href={a.href} className="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl border p-3 text-center text-[13px] font-[550] text-inherit no-underline transition-colors hover:border-border-strong hover:bg-muted">
+              <span aria-hidden className={cn(ICON_CHIP, 'size-9', a.ai ? 'bg-amber-soft text-amber-ink' : 'bg-teal-soft text-teal-ink')}>
+                {a.icon}
+              </span>
               {a.label}
-            </LinkBox>
+            </Link>
           </li>
         ))}
-      </Box>
+      </ul>
     </Card>
   );
 }
@@ -99,7 +92,7 @@ export function Announcements({ items, t, fmt, canOpen }: { items: SentBroadcast
       padded={false}
       action={
         canOpen ? (
-          <LinkButton href="/messages" size="small" endIcon={<ArrowForward />}>
+          <LinkButton href="/messages" size="small" variant="outlined" endIcon={<ArrowRight />}>
             {t('dash.viewAll')}
           </LinkButton>
         ) : undefined
@@ -107,75 +100,69 @@ export function Announcements({ items, t, fmt, canOpen }: { items: SentBroadcast
       testId="announcements"
     >
       {items.length === 0 ? (
-        <Box sx={{ px: 2.5, pb: 2.5 }}>
-          <EmptyState dense icon={<CampaignOutlined />} title={t('dash.announcementsNone')} />
-        </Box>
+        <div className="px-[18px] pb-[18px]">
+          <EmptyState dense icon={<Megaphone />} title={t('dash.announcementsNone')} />
+        </div>
       ) : (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+        <ul className="m-0 list-none p-0">
           {items.map((m) => (
-            <Box component="li" key={m.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, px: 2.5, py: 1.5, borderTop: 1, borderColor: 'm3.outlineVariant' }}>
-              <Box aria-hidden sx={{ display: 'grid', placeItems: 'center', width: 36, height: 36, borderRadius: '10px', flexShrink: 0, bgcolor: m.priority === 'info' ? 'm3.primaryContainer' : m.priority === 'important' ? 'kx.warningContainer' : 'm3.errorContainer', color: m.priority === 'info' ? 'm3.onPrimaryContainer' : m.priority === 'important' ? 'kx.onWarningContainer' : 'm3.onErrorContainer', '& svg': { fontSize: 20 } }}>
-                {m.priority === 'info' ? <CampaignOutlined /> : <ReportProblemOutlined />}
-              </Box>
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }} noWrap>
-                  {m.title}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {fmt.relative(m.createdAt)}
-                </Typography>
-              </Box>
+            <li key={m.id} className="flex items-start gap-3 border-t px-[18px] py-3">
+              <span aria-hidden className={cn(ICON_CHIP, m.priority === 'info' ? 'bg-blue-soft text-blue-ink' : m.priority === 'important' ? 'bg-amber-soft text-amber-ink' : 'bg-red-soft text-red-ink')}>
+                {m.priority === 'info' ? <Megaphone /> : <TriangleAlert />}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="m-0 truncate text-[13.5px] font-[550]">{m.title}</p>
+                <span className="text-[12.5px] text-muted-foreground">{fmt.relative(m.createdAt)}</span>
+              </div>
               {m.priority !== 'info' && <StatusPill tone={PRIORITY_TONE[m.priority]}>{t(`msg.pri.${m.priority}` as never)}</StatusPill>}
-            </Box>
+            </li>
           ))}
-        </Box>
+        </ul>
       )}
     </Card>
   );
 }
 
-export function UpcomingEvents({ events, t, fmt, locale }: { events: CalendarEvent[]; t: TFunction; fmt: Fmt; locale: string }) {
+/** Upcoming calendar events as date tiles (redesign: month in orange over the day). */
+export function UpcomingEvents({ events, t, fmt, locale, grid }: { events: CalendarEvent[]; t: TFunction; fmt: Fmt; locale: string; grid?: boolean }) {
   const month = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' });
   return (
     <Card
       title={t('dash.events')}
-      padded={false}
+      subtitle={grid ? t('home.eventsSub') : undefined}
+      padded={!!grid}
       action={
-        <LinkButton href="/calendar" size="small" endIcon={<ArrowForward />}>
+        <LinkButton href="/calendar" size="small" variant="outlined" endIcon={<ArrowRight />}>
           {t('dash.viewCalendar')}
         </LinkButton>
       }
       testId="upcoming-events"
     >
       {events.length === 0 ? (
-        <Box sx={{ px: 2.5, pb: 2.5 }}>
-          <EmptyState dense icon={<EventAvailableOutlined />} title={t('dash.eventsNone')} />
-        </Box>
+        <div className={grid ? undefined : 'px-[18px] pb-[18px]'}>
+          <EmptyState dense icon={<CalendarCheck />} title={t('dash.eventsNone')} />
+        </div>
       ) : (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+        <ul className={cn('m-0 list-none p-0', grid && 'grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(210px,1fr))]')}>
           {events.map((e) => {
             const d = new Date(`${e.startsOn}T00:00:00Z`);
             return (
-              <Box component="li" key={e.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.25, borderTop: 1, borderColor: 'm3.outlineVariant' }}>
-                <Box aria-hidden sx={{ width: 44, flexShrink: 0, textAlign: 'center', borderRadius: '10px', bgcolor: 'm3.surfaceContainer', py: 0.5 }}>
-                  <Typography sx={{ fontSize: '1.0625rem', fontWeight: 700, lineHeight: '20px', fontVariantNumeric: 'tabular-nums' }}>{d.getUTCDate()}</Typography>
-                  <Typography variant="caption" sx={{ textTransform: 'uppercase', color: 'text.secondary', fontWeight: 600, fontSize: '0.6875rem' }}>
-                    {month.format(d)}
-                  </Typography>
-                </Box>
-                <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }} noWrap>
-                    {e.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
+              <li key={e.id} className={cn('flex items-center gap-3', grid ? 'rounded-xl border p-3' : 'border-t px-[18px] py-2.5')}>
+                <span aria-hidden className="w-[46px] shrink-0 rounded-[10px] border bg-background py-1 text-center">
+                  <small className="block text-[10.5px] font-semibold text-orange-ink uppercase">{month.format(d)}</small>
+                  <b className="block text-lg leading-tight tabular-nums">{d.getUTCDate()}</b>
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 truncate text-[13.5px] font-[550]">{e.title}</p>
+                  <span className="text-[12.5px] text-muted-foreground">
                     {e.startsOn === e.endsOn ? fmt.date(e.startsOn, 'weekday') : `${fmt.date(e.startsOn, 'dayMonth')} – ${fmt.date(e.endsOn, 'dayMonth')}`}
-                  </Typography>
-                </Box>
-                <StatusPill tone={e.kind === 'holiday' ? 'success' : e.kind === 'exam' ? 'warning' : 'info'}>{t(`cal.kind.${e.kind}` as never)}</StatusPill>
-              </Box>
+                  </span>
+                </div>
+                {!grid && <StatusPill tone={e.kind === 'holiday' ? 'success' : e.kind === 'exam' ? 'warning' : 'info'}>{t(`cal.kind.${e.kind}` as never)}</StatusPill>}
+              </li>
             );
           })}
-        </Box>
+        </ul>
       )}
     </Card>
   );
@@ -183,17 +170,5 @@ export function UpcomingEvents({ events, t, fmt, locale }: { events: CalendarEve
 
 /** The grid the dashboard rows sit in. */
 export function Row({ children, cols = 3 }: { children: ReactNode; cols?: 2 | 3 }) {
-  return (
-    <Box
-      sx={{
-        display: 'grid',
-        gap: 2.5,
-        mt: 2.5,
-        alignItems: 'start',
-        gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))', xl: `repeat(${cols}, minmax(0, 1fr))` },
-      }}
-    >
-      {children}
-    </Box>
-  );
+  return <div className={cn('mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-2', cols === 3 && 'xl:grid-cols-3')}>{children}</div>;
 }

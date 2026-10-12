@@ -14,7 +14,7 @@ import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import PersonOffOutlined from '@mui/icons-material/PersonOffOutlined';
 import QuizOutlined from '@mui/icons-material/QuizOutlined';
 import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
-import { MiniBar, SegmentBar } from '@/components/Bars';
+import { SegmentBar } from '@/components/Bars';
 import { ClassTimeline } from '@/components/ClassTimeline';
 import { HolidayBanner } from '@/components/HolidayBanner';
 import { LinkButton } from '@/components/LinkButton';
@@ -30,19 +30,22 @@ import { percentChange, pointsChange, type DashboardRollup } from '@/lib/dashboa
 import { schoolNowTime } from '@/lib/school';
 import type { ClassesDay, Me, Overview, SentBroadcast } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
-import { PerformanceCard } from './PerformanceCard';
-import { Announcements, PendingTasks, QuickActions, Row, UpcomingEvents, type QuickAction, type Task } from './parts';
+import { AttentionInbox, ChartCard, FeeBars, MiniMeter, TrendLine, type InboxItem } from './home';
+import { Announcements, QuickActions, Row, UpcomingEvents, type QuickAction, type Task } from './parts';
+import { Sparkline } from '@/components/ui/Charts';
+import type { FeeSummary } from '@/lib/types';
 
 /** The principal's and administrator's overview: KPIs with trend, the day's classes, performance, what needs a decision. */
 export async function PrincipalDashboard({ me, date, today }: { me: Me; date: string; today: string }) {
   const i18n = await getI18n();
   const { t, fmt, locale } = i18n;
-  const [ov, day, roll, bc, cal] = await Promise.all([
+  const [ov, day, roll, bc, cal, feeSum] = await Promise.all([
     load(() => api<Overview>(`/v1/admin/overview?date=${date}`)),
     load(() => api<ClassesDay>(`/v1/admin/classes?date=${date}`)),
     load(() => api<DashboardRollup>('/v1/admin/dashboard')),
     load(() => api<SentBroadcast[]>('/v1/broadcasts')),
     load(() => api<CalendarList>(`/v1/calendar?from=${today}&to=${addDays(today, 60)}`)),
+    canSee(me.roles, 'fees') ? load(() => api<FeeSummary>('/v1/fees/summary')) : Promise.resolve(null),
   ]);
   const isToday = date === today;
   const holiday = ov.data?.holiday ?? day.data?.holiday ?? null;
@@ -68,27 +71,68 @@ export async function PrincipalDashboard({ me, date, today }: { me: Me; date: st
 
   const monthFmt = new Intl.DateTimeFormat(locale === 'en' ? 'en-IN' : locale, { month: 'short', timeZone: 'UTC' });
   const perf = r?.performance ?? null;
+  const KIND: Record<string, Pick<InboxItem, 'kind' | 'tone'>> = {
+    leave: { kind: 'approval', tone: 'amber' },
+    papers: { kind: 'approval', tone: 'blue' },
+    fees: { kind: 'alert', tone: 'red' },
+    obe: { kind: 'task', tone: 'amber' },
+    admissions: { kind: 'approval', tone: 'blue' },
+  };
+  const inbox: InboxItem[] = tasks
+    .filter((x) => (x.count ?? 0) > 0)
+    .map((x) => ({ key: x.key, ...KIND[x.key], icon: x.icon, title: `${fmt.number(x.count ?? 0)} · ${x.label}`, action: t(KIND[x.key].kind === 'approval' ? 'home.review' : 'home.open'), href: x.href }))
+    .sort((a, b) => (a.kind === 'alert' ? -1 : 0) - (b.kind === 'alert' ? -1 : 0));
+  const lakh = (p: number) => Math.round(p / 1e5) / 100;
+  const feeRows = (feeSum?.data?.classes ?? [])
+    .filter((c) => c.billedPaise > 0)
+    .slice(0, 10)
+    .map((c) => ({ id: c.sectionId, label: c.className, collected: lakh(c.collectedPaise), outstanding: lakh(c.outstandingPaise) }));
 
   return (
     <>
       {holiday && <HolidayBanner title={holiday.title} date={date} />}
       {roll.error !== undefined && ov.error !== undefined ? <ErrorState message={ov.error} /> : <Kpis o={ov.data} r={r} isToday={isToday} fmt={fmt} t={t} roles={roles} />}
 
-      <Row cols={3}>
+      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <ChartCard title={t('home.attTrend')} subtitle={t('home.attTrendSub')} className="xl:col-span-2" testId="attendance-trend">
+          {perf && perf.some((p) => p.attendance !== null) ? (
+            <TrendLine labels={perf.map((p) => monthFmt.format(new Date(`${p.month}-01T00:00:00Z`)))} values={perf.map((p) => p.attendance)} href="/attendance" ariaLabel={t('home.attTrend')} targetLabel={t('home.min75')} />
+          ) : roll.error !== undefined ? (
+            <ErrorState message={roll.error} />
+          ) : (
+            <EmptyState dense icon={<GradingOutlined />} title={t('dash.perf.none')} />
+          )}
+        </ChartCard>
+        <AttentionInbox items={inbox} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+        {feeSum && (
+          <ChartCard title={t('home.feeChart')} subtitle={t('home.feeChartSub')} testId="fee-chart">
+            {feeRows.length ? (
+              <FeeBars rows={feeRows} ariaLabel={t('home.feeChart')} collectedLabel={t('home.collected')} outstandingLabel={t('home.outstanding')} />
+            ) : feeSum.error !== undefined ? (
+              <ErrorState message={feeSum.error} />
+            ) : (
+              <EmptyState dense icon={<PaymentsOutlined />} title={t('setup.ghost.fees')} actions={<LinkButton href="/fees" variant="outlined" size="small">{t('setup.setUp')}</LinkButton>} />
+            )}
+          </ChartCard>
+        )}
         <Card
           title={isToday ? t('today.todaysClasses') : t('today.classes')}
-          subtitle={t('dash.scheduleSub')}
+          subtitle={t('home.classesSub')}
           padded={false}
-          testId="schedule-card" sx={{ gridRow: { lg: 'span 2', xl: 'auto' } }}
+          testId="schedule-card"
+          className={feeSum ? 'xl:col-span-2' : 'xl:col-span-3'}
           action={
             day.data?.classes.length ? (
-              <LinkButton href={hrefFor('/classes', date, today)} endIcon={<ArrowForward />} size="small">
+              <LinkButton href={hrefFor('/classes', date, today)} variant="outlined" endIcon={<ArrowForward />} size="small">
                 {t('today.allClasses')}
               </LinkButton>
             ) : undefined
           }
         >
-          <div style={{ padding: '4px 20px 20px', maxHeight: 560, overflowY: 'auto' }}>
+          <div className="max-h-[420px] overflow-y-auto px-[18px] pb-[18px]">
             {day.error !== undefined ? (
               <ErrorState message={day.error} />
             ) : day.data.classes.length === 0 && holiday ? (
@@ -100,23 +144,15 @@ export async function PrincipalDashboard({ me, date, today }: { me: Me; date: st
             )}
           </div>
         </Card>
-        {perf ? (
-          <PerformanceCard
-            labels={perf.map((p) => monthFmt.format(new Date(`${p.month}-01T00:00:00Z`)))}
-            attendance={perf.map((p) => p.attendance)}
-            internalMarks={perf.map((p) => p.internalMarks)}
-            coAttainment={perf.map((p) => p.coAttainment)}
-          />
-        ) : (
-          <Card title={t('dash.perf.title')}>{roll.error !== undefined ? <ErrorState message={roll.error} /> : <EmptyState dense icon={<GradingOutlined />} title={t('dash.perf.none')} />}</Card>
-        )}
-        <QuickActions actions={actions} t={t} wide={false} />
-      </Row>
+      </div>
 
-      <Row cols={3}>
+      <div className="mt-4">
+        <UpcomingEvents grid events={(cal.data?.events ?? []).filter((e) => e.endsOn >= today).slice(0, 5)} t={t} fmt={fmt} locale={locale === 'en' ? 'en-IN' : locale} />
+      </div>
+
+      <Row cols={2}>
         <Announcements items={(bc.data ?? []).slice(0, 4)} t={t} fmt={fmt} canOpen={canSee(roles, 'school')} />
-        <PendingTasks tasks={tasks} t={t} />
-        <UpcomingEvents events={(cal.data?.events ?? []).filter((e) => e.endsOn >= today).slice(0, 5)} t={t} fmt={fmt} locale={locale === 'en' ? 'en-IN' : locale} />
+        <QuickActions actions={actions} t={t} wide={false} />
       </Row>
     </>
   );
@@ -148,7 +184,7 @@ function Kpis({ o, r, isToday, fmt, t, roles }: { o: Overview | undefined; r: Da
           label={t('today.stat.attendance')}
           value={rate === null ? '—' : `${rate}%`}
           trend={isToday ? { delta: pointsChange(r?.attendance?.today, r?.attendance?.previous), label: t('dash.vsLastWeek'), suffix: t('dash.pts') } : undefined}
-          bar={rate === null ? undefined : <MiniBar value={rate} color={rate >= 90 ? 'var(--kx-success)' : rate >= 75 ? 'var(--kx-accent)' : 'var(--kx-danger)'} />}
+          spark={r?.performance && r.performance.some((p) => p.attendance !== null) ? <Sparkline values={r.performance.map((p) => p.attendance)} width={88} height={30} label={t('home.attTrend')} /> : undefined}
           caption={!a || a.periodsDue === 0 ? t('today.stat.noPeriods') : t('today.stat.periodsTaken', { taken: a.periodsTaken, due: a.periodsDue })}
           href="/attendance"
         />
@@ -160,6 +196,7 @@ function Kpis({ o, r, isToday, fmt, t, roles }: { o: Overview | undefined; r: Da
             value={fmt.rupeesShort(r.fees.collected)}
             trend={{ delta: percentChange(r.fees.collected, r.fees.previous), label: t('dash.vsLastMonth') }}
             caption={t('dash.kpi.feesCaption', { out: fmt.rupeesShort(r.fees.outstanding), n: r.fees.overdueInvoices })}
+            spark={r.fees.collected + r.fees.outstanding > 0 ? <MiniMeter value={(r.fees.collected / (r.fees.collected + r.fees.outstanding)) * 100} /> : undefined}
             href="/fees"
           />
         )}
