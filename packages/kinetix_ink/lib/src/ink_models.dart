@@ -212,6 +212,41 @@ class Stroke extends BoardElement {
     return pts;
   }
 
+  /// What is left of this freehand stroke after rubbing out the disc of radius [r] at [c]: the
+  /// pieces on either side of the cut (each a new stroke in the same style), none when all of it
+  /// was under the eraser, or null when the eraser missed it. Strokes drawn as shapes are not
+  /// cut (erase them whole).
+  List<Stroke>? erasedAround(Offset c, double r) {
+    if (points.isEmpty || !hitBy(c, r)) return null;
+    // Points close enough that a cut falls between two of them is exact to within a pixel or two.
+    final step = math.max(1.0, r / 3);
+    final dense = <InkPoint>[points.first];
+    for (var i = 1; i < points.length; i++) {
+      final a = points[i - 1], b = points[i];
+      final n = (Offset(b.x - a.x, b.y - a.y).distance / step).ceil();
+      for (var k = 1; k <= n; k++) {
+        final t = k / n;
+        dense.add(InkPoint(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.pressure + (b.pressure - a.pressure) * t));
+      }
+    }
+    final pieces = <Stroke>[];
+    var run = <InkPoint>[];
+    void close() {
+      if (run.length >= 2) pieces.add(copyWith(id: newElementId(), points: run));
+      run = [];
+    }
+
+    for (final p in dense) {
+      if ((p.offset - c).distance <= r) {
+        close();
+      } else {
+        run.add(p);
+      }
+    }
+    close();
+    return pieces;
+  }
+
   Stroke copyWith({
     String? id,
     InkStyle? style,

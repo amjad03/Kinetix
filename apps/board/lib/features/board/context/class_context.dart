@@ -1,3 +1,5 @@
+import 'package:kinetix_ink/kinetix_ink.dart' show InkDomain;
+
 import '../kit/subjects.dart';
 
 /// Whether the drawer, Insert menu and simulation picker open showing every tool. Off on a device; the
@@ -215,3 +217,14 @@ bool insertRelevant(ToolProfile p, String id) => showsEverything(p) || !_gatedIn
 
 /// Whether the built-in simulation named [name] (`SimKind.name`) belongs to [p].
 bool simRelevant(ToolProfile p, String name) => showsEverything(p) || p.sims.isEmpty || p.sims.contains(name);
+
+/// How the AI pen should read handwriting in a lesson of [s]: digits and operators in maths and
+/// the sciences that write equations, formulas in chemistry, letters and punctuation in languages,
+/// every symbol in computer science.
+InkDomain inkDomainOf(Subject s) => switch (s) {
+  Subject.maths || Subject.statistics || Subject.physics || Subject.commerce => InkDomain.maths,
+  Subject.chemistry => InkDomain.chemistry,
+  Subject.english || Subject.languages => InkDomain.language,
+  Subject.computer => InkDomain.code,
+  _ => InkDomain.general,
+};

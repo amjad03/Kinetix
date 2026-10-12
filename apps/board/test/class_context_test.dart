@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_ink/kinetix_ink.dart' show InkDomain;
 import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/features/board/context/class_context.dart';
 import 'package:kinetix_board/features/board/context/context_switcher.dart';
@@ -13,6 +14,16 @@ void main() {
   tearDown(() => showAllToolsByDefault = true);
 
   ToolProfile p(Subject s, int grade) => toolProfileFor(s, gradeBandOf(grade: grade));
+
+  test('the AI pen reads by subject: digits in maths, formulas in chemistry, punctuation in languages, symbols in code', () {
+    expect(inkDomainOf(Subject.maths), InkDomain.maths);
+    expect(inkDomainOf(Subject.physics), InkDomain.maths);
+    expect(inkDomainOf(Subject.chemistry), InkDomain.chemistry);
+    expect(inkDomainOf(Subject.english), InkDomain.language);
+    expect(inkDomainOf(Subject.languages), InkDomain.language);
+    expect(inkDomainOf(Subject.computer), InkDomain.code);
+    expect(inkDomainOf(Subject.art), InkDomain.general);
+  });
 
   test('grade bands from the class grade and the programme', () {
     expect(gradeBandOf(grade: 0), GradeBand.early);

@@ -601,6 +601,7 @@ class _BoardScreenState extends State<BoardScreen> {
     if (_pen.mode != board.aiPenMode) _pen.mode = board.aiPenMode;
     _pen
       ..language = board.textAiLanguage
+      ..domain = inkDomainOf(_ctx.subject)
       ..textFont = board.textAiFont
       ..snapShapes = board.snapShapes
       ..convertShapes = board.aiPenConvert.contains('shapes')
@@ -646,6 +647,7 @@ class _BoardScreenState extends State<BoardScreen> {
   /// A new subject or class on top: the paper, tools and kit follow it.
   void _onContextPicked() {
     if (!mounted) return;
+    _syncPen();
     setState(() {});
     if (_wb.isBlank) _wb.background = _themed(_style.paper);
   }
@@ -2596,6 +2598,7 @@ class _BoardScreenState extends State<BoardScreen> {
       BoardPopover.pen => PenPopover(wb: _wb, board: board, memory: _penMemory, primary: _primary),
       BoardPopover.erase => ErasePopover(
         wb: _wb,
+        onConfigChanged: board.saveInputConfig,
         onSlideClear: () {
           close();
           _wb.clearPage();

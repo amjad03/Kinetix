@@ -1166,6 +1166,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sizeLarge => 'Large';
 
   @override
+  String get eraserMode => 'Eraser type';
+
+  @override
+  String get eraserModeStroke => 'Whole stroke';
+
+  @override
+  String get eraserModeArea => 'Area (rub out part)';
+
+  @override
+  String get eraserOffsetX => 'Eraser shift, across';
+
+  @override
+  String get eraserOffsetY => 'Eraser shift, up or down';
+
+  @override
+  String get eraserOffsetHint =>
+      'Moves the eraser away from your finger or pen so you can see what you rub out. Saved on this device.';
+
+  @override
+  String get eraserOffsetReset => 'No shift';
+
+  @override
+  String screenshotSavedTo(String where) {
+    return 'Picture saved to $where';
+  }
+
+  @override
   String get eraseTip =>
       'Tip: on an interactive panel, rub with your palm to erase.';
 

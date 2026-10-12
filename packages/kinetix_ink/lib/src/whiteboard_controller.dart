@@ -727,16 +727,16 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   /// Clears the page, keeping an imported page under the ink.
   void clearPage() {
-    final kept = page.elements.where((e) => !_selectable(e) || page.locked.contains(e.id)).toList();
+    final kept = page.elements.where((e) => _isBackdrop(e) || page.locked.contains(e.id)).toList();
     if (page.elements.length == kept.length) return;
     setElements(kept);
   }
 
   /// Whether the open page has anything [clearPage] would take.
-  bool get canClearPage => page.elements.any((e) => _selectable(e) && !page.locked.contains(e.id));
+  bool get canClearPage => page.elements.any((e) => !_isBackdrop(e) && !page.locked.contains(e.id));
 
   /// Whether any page has anything [clearAllPages] would take.
-  bool get canClearAllPages => _pages.any((p) => p.elements.any((e) => _selectable(e) && !p.locked.contains(e.id)));
+  bool get canClearAllPages => _pages.any((p) => p.elements.any((e) => !_isBackdrop(e) && !p.locked.contains(e.id)));
 
   /// Clears every page (keeping imported pages under the ink); each page's undo brings its
   /// own back. Returns an undo for them all at once (for the "Undo" of a message).
@@ -744,7 +744,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _finishGestures();
     final cleared = <WhiteboardPage, _Snapshot>{};
     for (final p in _pages) {
-      final kept = p.elements.where((e) => !_selectable(e) || p.locked.contains(e.id)).toList();
+      final kept = p.elements.where((e) => _isBackdrop(e) || p.locked.contains(e.id)).toList();
       if (p.elements.length == kept.length) continue;
       final snap = _Snapshot(p.elements, p.groups, p.locked);
       final stack = _undo.putIfAbsent(p.id, () => []);
@@ -829,7 +829,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (_tool != BoardTool.select) tool = BoardTool.select;
     select({
       for (final e in page.elements)
-        if (_selectable(e)) e.id,
+        if (!_isBackdrop(e)) e.id,
     });
   }
 
@@ -1322,6 +1322,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   final Map<int, (Offset, Offset)> _rulerEdge = {};
   final Map<int, double> _eraseRadius = {};
   _Snapshot? _eraseSnapshot;
+  bool _eraseChanged = false;
   final Set<int> _erasing = {};
 
   // One selecting pointer at a time.
@@ -1454,7 +1455,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
         _erasing.add(pointer);
         // A palm rubs out a wide band, like a duster.
         _eraseRadius[pointer] = palm ? math.max(eraserRadius / scale, contactRadius * 1.5) : eraserRadius / scale;
-        _eraseAt(at, pointer);
+        _eraseAt(at + inputConfig.eraser.offset / _scale, pointer);
       case BoardTool.laser:
         _addLaser(at);
       case BoardTool.select:
@@ -1507,7 +1508,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
           ..clear()
           ..addAll(shapePoints(ShapeKind.circle, _shapeStart[pointer]!, at));
       case BoardTool.eraser:
-        _eraseAt(at, pointer);
+        _eraseAt(at + inputConfig.eraser.offset / _scale, pointer);
       case BoardTool.laser:
         _addLaser(at);
       case BoardTool.select:
@@ -1599,20 +1600,52 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   /// so a hand resting on them cannot wipe them.
   static bool _erasable(BoardElement e) => e is Stroke || e is PolygonElement || e is TextElement || e is MathElement;
 
-  /// Imported pages ([ImageElement.backdrop]) stay put under the ink: taps, loops and Select
-  /// all pass over them.
-  static bool _selectable(BoardElement e) => !(e is ImageElement && e.backdrop);
+  /// An imported PDF page or slide ([ImageElement.backdrop]): an ordinary picture the teacher can
+  /// tap to select, move, scale, turn or delete. It lies under the ink, so a loop or Select all
+  /// takes it only when the loop goes round the whole page (otherwise round some ink on it
+  /// would grab the page too), and Clear page keeps it.
+  static bool _isBackdrop(BoardElement e) => e is ImageElement && e.backdrop;
+
+  /// Whether the loop [poly] goes round most of [r].
+  static bool _loopCovers(Rect r, List<Offset> poly) {
+    final probes = [for (var i = 1; i < 4; i++) for (var j = 1; j < 4; j++) Offset(r.left + r.width * i / 4, r.top + r.height * j / 4)];
+    return probes.where((p) => _insideLoop(p, poly)).length >= 8;
+  }
 
   void _eraseAt(Offset c, int pointer) {
     final r = _eraseRadius[pointer] ?? eraserRadius / _scale;
-    final hit = <String>{
+    final area = inputConfig.eraser.mode == EraserMode.area;
+    final hit = <String>{};
+    final cut = <String, List<Stroke>>{};
+    for (final e in page.elements) {
+      if (!_erasable(e) || page.locked.contains(e.id) || !e.hitTest(c, r)) continue;
+      // Area mode rubs out only the part of a freehand stroke under the eraser; everything else
+      // (shapes, text, equations) goes whole, as with the stroke eraser.
+      final pieces = area && e is Stroke && e.shape == null ? e.erasedAround(c, r) : null;
+      if (pieces == null) {
+        hit.add(e.id);
+      } else {
+        cut[e.id] = pieces;
+      }
+    }
+    if (hit.isEmpty && cut.isEmpty) return;
+    page.elements = [
       for (final e in page.elements)
-        if (_erasable(e) && !page.locked.contains(e.id) && e.hitTest(c, r)) e.id,
-    };
-    if (hit.isEmpty) return;
-    page.elements = page.elements.where((e) => !hit.contains(e.id)).toList();
+        if (cut.containsKey(e.id)) ...cut[e.id]! else if (!hit.contains(e.id)) e,
+    ];
+    final gone = {...hit, ...cut.keys};
+    for (final entry in cut.entries) {
+      // A cut stroke's pieces stay in the group it was in.
+      final g = page.groups.remove(entry.key);
+      if (g != null) {
+        for (final x in entry.value) {
+          page.groups[x.id] = g;
+        }
+      }
+    }
     page.groups.removeWhere((k, _) => hit.contains(k));
-    _selection.removeAll(hit);
+    _selection.removeAll(gone);
+    _eraseChanged = true;
     committed.value++;
   }
 
@@ -1622,7 +1655,9 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (_erasing.isNotEmpty) return;
     final before = _eraseSnapshot;
     _eraseSnapshot = null;
-    if (before != null && before.elements.length != page.elements.length) _push(before);
+    final changed = _eraseChanged;
+    _eraseChanged = false;
+    if (before != null && changed) _push(before);
   }
 
   void _finishSelect() {
@@ -1630,7 +1665,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (_lasso.isNotEmpty) {
       if (_lassoSpan() * _scale < 8 && down != null) {
         // A tap: the topmost thing under it (with its group), or nothing.
-        final hit = page.elements.reversed.where((e) => _selectable(e) && e.hitTest(down, 8 / _scale)).firstOrNull;
+        final hit = page.elements.reversed.where((e) => e.hitTest(down, 8 / _scale)).firstOrNull;
         _selection.clear();
         if (hit != null) _selection.addAll(page.expandGroups({hit.id}));
         _tapped(hit);
@@ -1644,7 +1679,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       _push(_moveSnapshot!);
     } else if (!_selectMoved && down != null) {
       // A tap inside the selection's box: pick what is under it (with its group).
-      final hit = page.elements.reversed.where((e) => _selectable(e) && e.hitTest(down, 8 / _scale)).firstOrNull;
+      final hit = page.elements.reversed.where((e) => e.hitTest(down, 8 / _scale)).firstOrNull;
       // A second tap on the one selected shape shows its points to edit.
       final again = hit != null && _selection.length == 1 && _selection.single == hit.id;
       if (again && hasShapeHandles(hit) && !editsByEnds(hit) && !isLocked(hit.id)) _editPointsId = hit.id;
@@ -1693,7 +1728,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (_area(poly) < box.width * box.height * 0.25) poly = [box.topLeft, box.topRight, box.bottomRight, box.bottomLeft];
     final picked = <String>{};
     for (final e in page.elements) {
-      if (!_selectable(e)) continue;
+      if (_isBackdrop(e) && !_loopCovers(e.bounds, poly)) continue;
       final samples = switch (e) {
         Stroke(:final points) => [for (var i = 0; i < points.length; i += math.max(1, points.length ~/ 12)) points[i].offset],
         _ => [e.bounds.center, e.bounds.topLeft, e.bounds.bottomRight, e.bounds.topRight, e.bounds.bottomLeft],

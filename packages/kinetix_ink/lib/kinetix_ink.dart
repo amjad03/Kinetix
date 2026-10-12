@@ -21,6 +21,7 @@ export 'src/pen/ai_pen.dart';
 export 'src/pen/gestures.dart';
 export 'src/pen/handwriting.dart';
 export 'src/pen/ink_model.dart';
+export 'src/pen/ink_vocabulary.dart';
 export 'src/pen/ink_parser.dart';
 export 'src/pen/math_ink.dart';
 export 'src/pen/shape_fit.dart' show Fit, FitKind, fitAs, fitClosed, fitLine, tidyFit;

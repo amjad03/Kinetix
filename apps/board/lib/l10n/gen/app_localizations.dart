@@ -2074,6 +2074,54 @@ abstract class AppLocalizations {
   /// **'Large'**
   String get sizeLarge;
 
+  /// No description provided for @eraserMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Eraser type'**
+  String get eraserMode;
+
+  /// No description provided for @eraserModeStroke.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole stroke'**
+  String get eraserModeStroke;
+
+  /// No description provided for @eraserModeArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Area (rub out part)'**
+  String get eraserModeArea;
+
+  /// No description provided for @eraserOffsetX.
+  ///
+  /// In en, this message translates to:
+  /// **'Eraser shift, across'**
+  String get eraserOffsetX;
+
+  /// No description provided for @eraserOffsetY.
+  ///
+  /// In en, this message translates to:
+  /// **'Eraser shift, up or down'**
+  String get eraserOffsetY;
+
+  /// No description provided for @eraserOffsetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves the eraser away from your finger or pen so you can see what you rub out. Saved on this device.'**
+  String get eraserOffsetHint;
+
+  /// No description provided for @eraserOffsetReset.
+  ///
+  /// In en, this message translates to:
+  /// **'No shift'**
+  String get eraserOffsetReset;
+
+  /// No description provided for @screenshotSavedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture saved to {where}'**
+  String screenshotSavedTo(String where);
+
   /// No description provided for @eraseTip.
   ///
   /// In en, this message translates to:

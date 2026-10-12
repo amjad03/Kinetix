@@ -183,9 +183,12 @@ class _WidthChip extends StatelessWidget {
 
 /// Erase: eraser size and clearing the page.
 class ErasePopover extends StatefulWidget {
-  const ErasePopover({super.key, required this.wb, required this.onClear, this.onSlideClear});
+  const ErasePopover({super.key, required this.wb, required this.onClear, this.onSlideClear, this.onConfigChanged});
 
   final WhiteboardController wb;
+
+  /// Called after the eraser type or shift changes, to save it with the device's pen setup.
+  final VoidCallback? onConfigChanged;
 
   /// Clears the page at once after the deliberate slide (spec §21), with Undo.
   final VoidCallback? onSlideClear;
@@ -197,6 +200,13 @@ class ErasePopover extends StatefulWidget {
 }
 
 class _ErasePopoverState extends State<ErasePopover> {
+  InputConfig get cfg => widget.wb.inputConfig;
+
+  void _setEraser(EraserConfig v) {
+    setState(() => widget.wb.update(() => cfg.eraser = v));
+    widget.onConfigChanged?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
     final wb = widget.wb;
@@ -240,6 +250,45 @@ class _ErasePopoverState extends State<ErasePopover> {
             children: [
               for (final (v, name) in [(10.0, l.sizeSmall), (18.0, l.sizeMedium), (36.0, l.sizeLarge)])
                 ChoiceChip(label: Text(name), selected: wb.eraserRadius == v, onSelected: (_) => setState(() => wb.update(() => wb.eraserRadius = v))),
+            ],
+          ),
+          const SizedBox(height: Kx.s12),
+          Text(l.eraserMode, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
+          const SizedBox(height: Kx.s8),
+          Wrap(
+            spacing: Kx.s8,
+            children: [
+              for (final (m, name) in [(EraserMode.stroke, l.eraserModeStroke), (EraserMode.area, l.eraserModeArea)])
+                ChoiceChip(
+                  key: Key('eraser-mode-${m.name}'),
+                  label: Text(name),
+                  selected: cfg.eraser.mode == m,
+                  onSelected: (_) => _setEraser(cfg.eraser.copyWith(mode: m)),
+                ),
+            ],
+          ),
+          const SizedBox(height: Kx.s12),
+          for (final (key, label, value, horizontal) in [
+            ('eraser-offset-x', l.eraserOffsetX, cfg.eraser.offset.dx, true),
+            ('eraser-offset-y', l.eraserOffsetY, cfg.eraser.offset.dy, false),
+          ]) ...[
+            Text(label, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
+            Slider(
+              key: Key(key),
+              min: -EraserConfig.maxOffset,
+              max: EraserConfig.maxOffset,
+              divisions: 24,
+              label: value.round().toString(),
+              value: value.clamp(-EraserConfig.maxOffset, EraserConfig.maxOffset),
+              onChanged: (v) => _setEraser(cfg.eraser.copyWith(offset: horizontal ? Offset(v, cfg.eraser.offset.dy) : Offset(cfg.eraser.offset.dx, v))),
+            ),
+          ],
+          Row(
+            children: [
+              Expanded(
+                child: Text(l.eraserOffsetHint, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
+              ),
+              TextButton(key: const Key('eraser-offset-reset'), onPressed: cfg.eraser.offset == Offset.zero ? null : () => _setEraser(cfg.eraser.copyWith(offset: Offset.zero)), child: Text(l.eraserOffsetReset)),
             ],
           ),
           const SizedBox(height: Kx.s8),

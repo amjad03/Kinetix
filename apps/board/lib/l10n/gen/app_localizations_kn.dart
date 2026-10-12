@@ -1157,6 +1157,33 @@ class AppLocalizationsKn extends AppLocalizations {
   String get sizeLarge => 'ದೊಡ್ಡ';
 
   @override
+  String get eraserMode => 'ರಬ್ಬರ್ ವಿಧ';
+
+  @override
+  String get eraserModeStroke => 'ಪೂರ್ಣ ಗೆರೆ';
+
+  @override
+  String get eraserModeArea => 'ಪ್ರದೇಶ (ಭಾಗ ಅಳಿಸಿ)';
+
+  @override
+  String get eraserOffsetX => 'ರಬ್ಬರ್ ಸರಿಸುವಿಕೆ, ಅಡ್ಡ';
+
+  @override
+  String get eraserOffsetY => 'ರಬ್ಬರ್ ಸರಿಸುವಿಕೆ, ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ';
+
+  @override
+  String get eraserOffsetHint =>
+      'ಅಳಿಸುವುದು ಕಾಣುವಂತೆ ರಬ್ಬರ್ ಅನ್ನು ಬೆರಳು ಅಥವಾ ಪೆನ್‌ನಿಂದ ದೂರ ಇಡುತ್ತದೆ. ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get eraserOffsetReset => 'ಸರಿಸುವಿಕೆ ಇಲ್ಲ';
+
+  @override
+  String screenshotSavedTo(String where) {
+    return 'ಚಿತ್ರವನ್ನು ಇಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ: $where';
+  }
+
+  @override
   String get eraseTip =>
       'ಸಲಹೆ: ಇಂಟರಾಕ್ಟಿವ್ ಪ್ಯಾನಲ್‌ನಲ್ಲಿ ಅಳಿಸಲು ಅಂಗೈಯಿಂದ ಉಜ್ಜಿ.';
 

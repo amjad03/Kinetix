@@ -32,6 +32,25 @@ class TouchCalibration {
   }
 }
 
+/// How the eraser works: whole strokes ([EraserMode.stroke]) or only the part under it
+/// ([EraserMode.area]), and where it sits relative to the touch point so a finger or pen tip does
+/// not hide what is being rubbed out.
+enum EraserMode { stroke, area }
+
+class EraserConfig {
+  const EraserConfig({this.mode = EraserMode.stroke, this.offset = Offset.zero});
+
+  final EraserMode mode;
+
+  /// Shift from the touch point, in screen pixels (x right, y down).
+  final Offset offset;
+
+  EraserConfig copyWith({EraserMode? mode, Offset? offset}) => EraserConfig(mode: mode ?? this.mode, offset: offset ?? this.offset);
+
+  /// Largest shift either way, in screen pixels.
+  static const maxOffset = 120.0;
+}
+
 /// Active stylus settings: pressure, eraser end and what the barrel buttons do.
 class StylusConfig {
   const StylusConfig({this.pressure = true, this.eraserEnd = true, this.primaryButton = ButtonAction.erase, this.secondaryButton = ButtonAction.undo});
@@ -92,6 +111,7 @@ class InputConfig extends ChangeNotifier {
   TouchCalibration _calibration;
   StylusConfig _stylus;
   DualPens _dual;
+  EraserConfig _eraser = const EraserConfig();
 
   /// Contact radius (logical pixels). At or below [penMax] a touch is a pen; at or above
   /// [palmMin] a palm; between, a finger. 0 = unset. With [autoLearn] the screen's own finger
@@ -102,6 +122,7 @@ class InputConfig extends ChangeNotifier {
   TouchCalibration get calibration => _calibration;
   StylusConfig get stylus => _stylus;
   DualPens get dual => _dual;
+  EraserConfig get eraser => _eraser;
 
   set calibration(TouchCalibration v) {
     _calibration = v;
@@ -110,6 +131,11 @@ class InputConfig extends ChangeNotifier {
 
   set stylus(StylusConfig v) {
     _stylus = v;
+    notifyListeners();
+  }
+
+  set eraser(EraserConfig v) {
+    _eraser = v;
     notifyListeners();
   }
 
@@ -166,9 +192,17 @@ class InputConfig extends ChangeNotifier {
     'first': _dual.first.toARGB32(),
     'second': _dual.second.toARGB32(),
     'tipSplit': _dual.tipSplit,
+    'eraserMode': _eraser.mode.name,
+    'eraserOffset': [_eraser.offset.dx, _eraser.offset.dy],
   };
 
   String encode() => jsonEncode(toJson());
+
+  static Offset _eraserOffset(Object? v) {
+    if (v is! List || v.length != 2) return Offset.zero;
+    double c(Object? x) => ((x as num?)?.toDouble() ?? 0).clamp(-EraserConfig.maxOffset, EraserConfig.maxOffset);
+    return Offset(c(v[0]), c(v[1]));
+  }
 
   /// Reads what [encode] wrote; defaults for anything missing or unreadable.
   static InputConfig decode(String? raw) {
@@ -194,6 +228,10 @@ class InputConfig extends ChangeNotifier {
           first: Color((m['first'] as num?)?.toInt() ?? 0xFF1A73E8),
           second: Color((m['second'] as num?)?.toInt() ?? 0xFFD93025),
           tipSplit: (m['tipSplit'] as num?)?.toDouble() ?? 0,
+        )
+        .._eraser = EraserConfig(
+          mode: EraserMode.values.asNameMap()[m['eraserMode']] ?? EraserMode.stroke,
+          offset: _eraserOffset(m['eraserOffset']),
         );
     } catch (_) {}
     return c;

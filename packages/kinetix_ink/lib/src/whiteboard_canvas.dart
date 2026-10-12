@@ -1087,7 +1087,8 @@ class _ActivePainter extends CustomPainter {
       if (deg > 180) deg -= 360;
       _pill(canvas, '$deg°', view.toScreen(contentBounds(selected).topCenter) - const Offset(0, 104));
     }
-    final hover = s._hover;
+    final touch = s._hover;
+    final hover = touch == null ? null : touch + c.inputConfig.eraser.offset;
     if (c.tool == BoardTool.eraser && hover != null) {
       canvas.drawCircle(hover, c.eraserRadius, Paint()..color = const Color(0x22000000));
       canvas.drawCircle(

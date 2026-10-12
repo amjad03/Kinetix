@@ -15,6 +15,7 @@ import 'ink_model.dart';
 import 'ink_parser.dart';
 import 'math_ink.dart';
 import 'shape_fit.dart';
+import 'ink_vocabulary.dart';
 import 'symbol_recognizer.dart';
 
 /// The AI pen: write or draw as with the pen; a moment later rough shapes become clean shapes,
@@ -163,6 +164,10 @@ class AiPenController extends ChangeNotifier {
 
   /// The language words are read in (en, hi, kn).
   String language = 'en';
+
+  /// What the class is writing (maths, chemistry, a language, code): seeds the handwriting model
+  /// and ranks its readings so the subject's digits and symbols are read, not guessed.
+  InkDomain domain = InkDomain.general;
 
   /// Text AI's font for converted words (Kalam, the teacher's own); null: the board's font.
   BoardFont? textFont;
@@ -574,13 +579,16 @@ class AiPenController extends ChangeNotifier {
   Future<List<String>> _readWords(List<Stroke> cluster, Rect box, String context) async {
     final reader = _reader;
     final model = InkModels.text(language);
-    if (reader == null || !await _ready(model)) return _handwriting.recognize(cluster, language: language, preContext: context);
+    final seeded = context.isEmpty ? InkVocabulary.seed(domain) : context;
+    if (reader == null || !await _ready(model)) {
+      return InkVocabulary.refine(await _handwriting.recognize(cluster, language: language, preContext: seeded), domain);
+    }
     Future<List<String>> read(String m) async {
       try {
         return await reader.readInk(
           timedInk(cluster, strokeTimes, origin: box.topLeft),
           m,
-          preContext: context.length > 20 ? context.substring(context.length - 20) : context,
+          preContext: seeded.length > 20 ? seeded.substring(seeded.length - 20) : seeded,
           writingArea: Size(box.width + 20, box.height + 20),
         );
       } catch (_) {
@@ -588,10 +596,10 @@ class AiPenController extends ChangeNotifier {
       }
     }
 
-    final words = await read(model);
+    final words = InkVocabulary.refine(await read(model), domain);
     final en = InkModels.text('en');
     if (model != en && (words.isEmpty || looksMathy(words.first)) && await _ready(en)) {
-      final latin = await read(en);
+      final latin = InkVocabulary.refine(await read(en), domain);
       if (latin.isNotEmpty && looksMathy(latin.first)) return [...latin, ...words];
     }
     return words;
@@ -629,8 +637,11 @@ class AiPenController extends ChangeNotifier {
     }
     // Words the recogniser read as maths ("2x+5=1S"): through the solver's parser.
     final fromWords = <(String, String)>[];
+    // In a language, chemistry or code lesson symbols are punctuation, formulas and code: kept as
+    // typed text, never rewritten as an equation.
+    final plainText = domain == InkDomain.language || domain == InkDomain.chemistry || domain == InkDomain.code;
     for (final w in clean) {
-      if (!looksMathy(w)) continue;
+      if (plainText || !looksMathy(w)) continue;
       final fixed = mathFix(w);
       final tex = MathTex.fromText(fixed);
       if (tex != null && !fromWords.any((x) => x.$1 == tex)) fromWords.add((tex, fixed));
@@ -640,7 +651,7 @@ class AiPenController extends ChangeNotifier {
     final wordy = clean.isNotEmpty && RegExp(r'[A-Za-z\u0900-\u0DFF]{3,}').hasMatch(clean.first) && !looksMathy(clean.first);
     final structured = _hasStrongLayout(maths.row) || (_hasLayout(maths.row) && !wordy);
     final wordsSayMaths = clean.isNotEmpty && looksMathy(clean.first) && fromWords.isNotEmpty;
-    final inkSaysMaths = maths.looksLikeMaths && (maths.confidence >= minMathsConfidence || structured);
+    final inkSaysMaths = (!plainText || structured) && maths.looksLikeMaths && (maths.confidence >= minMathsConfidence || structured);
     // A word reader that reads words wins, unless the ink is laid out as maths (a fraction, a
     // root, a power), which no word reader understands.
     final isMaths = wordsSayMaths || (inkSaysMaths && (clean.isEmpty || structured || looksMathy(clean.first)));

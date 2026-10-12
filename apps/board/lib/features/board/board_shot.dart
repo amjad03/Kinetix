@@ -1,22 +1,23 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/picture_saver.dart';
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
 import 'panel/panel_host.dart';
 
 /// Screenshot: a picture (PNG) of what the board shows, to save on the device or share.
 abstract final class BoardShot {
-  /// Saves [png] as [name] where the teacher picks (Android's Files, Windows' Save dialog);
-  /// false when they cancel. Tests replace it.
-  static Future<bool> Function(String name, Uint8List png) save = (name, png) async =>
-      await FilePicker.saveFile(fileName: name, bytes: png, mimeType: 'image/png', type: FileType.image) != null;
+  static final PictureSaver saver = PictureSaver();
+
+  /// Saves [png] as [name]: the gallery on Android, the Downloads folder on a computer; false
+  /// when nothing was saved. Throws when the device refuses. Tests replace it.
+  static Future<bool> Function(String name, Uint8List png) save = (name, png) => saver.savePng(name, png);
 
   /// Opens the device's share sheet with [png]. Tests replace it.
   static Future<void> Function(String name, Uint8List png) share = (name, png) =>
@@ -68,7 +69,11 @@ abstract final class BoardShot {
               onPressed: () async {
                 Navigator.pop(dialog);
                 try {
-                  if (await save(name, png) && context.mounted) showBoardMessage(context, l.screenshotSaved);
+                  saver.savedTo = null;
+                  if (await save(name, png) && context.mounted) {
+                    final where = saver.savedTo;
+                    showBoardMessage(context, where == null ? l.screenshotSaved : l.screenshotSavedTo(where));
+                  }
                 } catch (e) {
                   if (context.mounted) showBoardMessage(context, l.screenshotFailed('$e'));
                 }

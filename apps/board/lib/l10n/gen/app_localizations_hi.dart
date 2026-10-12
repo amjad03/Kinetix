@@ -1151,6 +1151,33 @@ class AppLocalizationsHi extends AppLocalizations {
   String get sizeLarge => 'बड़ा';
 
   @override
+  String get eraserMode => 'रबर का प्रकार';
+
+  @override
+  String get eraserModeStroke => 'पूरी रेखा';
+
+  @override
+  String get eraserModeArea => 'क्षेत्र (हिस्सा मिटाएँ)';
+
+  @override
+  String get eraserOffsetX => 'रबर की खिसकान, आड़ी';
+
+  @override
+  String get eraserOffsetY => 'रबर की खिसकान, ऊपर या नीचे';
+
+  @override
+  String get eraserOffsetHint =>
+      'रबर को उँगली या पेन से दूर रखता है ताकि मिटता हुआ दिखे। इस डिवाइस पर सहेजा जाता है।';
+
+  @override
+  String get eraserOffsetReset => 'कोई खिसकान नहीं';
+
+  @override
+  String screenshotSavedTo(String where) {
+    return 'तस्वीर यहाँ सहेजी गई: $where';
+  }
+
+  @override
   String get eraseTip =>
       'सुझाव: इंटरैक्टिव पैनल पर मिटाने के लिए हथेली से रगड़ें।';
 
