@@ -182,6 +182,13 @@ export class NotificationsService {
   }
 
   /** Fees issued to students: their guardians and the students themselves. */
+  /** An exam office notice (timetable published, exam fee raised, hall ticket withheld…) for students and their families. */
+  async examNotice(tx: Tx, studentIds: string[], n: { kind: 'marks' | 'fee' | 'calendar' | 'certificate'; text: Localized; data: Record<string, string>; dedupeKey: string }): Promise<void> {
+    if (studentIds.length === 0) return;
+    const ids = uuidList(studentIds);
+    await this.insertFor(tx, sql`select g.user_id from guardians g where g.student_id in (${ids}) union select s.user_id from students s where s.id in (${ids}) and s.user_id is not null`, n, { replace: true });
+  }
+
   async feeIssued(tx: Tx, f: { batchId: string; title: string; amountPaise: number; dueOn: string; studentIds: string[] }): Promise<void> {
     if (f.studentIds.length === 0) return;
     const ids = uuidList(f.studentIds);
@@ -221,6 +228,11 @@ export class NotificationsService {
         dedupeKey: `fee-paid:${p.paymentId}`,
       },
     );
+  }
+
+  /** A fees-desk decision about one student (concession, refund, cheque bounce, write-off): the family and the student are told. */
+  async feeDeskNotice(tx: Tx, studentId: string, n: { text: Localized; data: Record<string, string>; dedupeKey: string }): Promise<void> {
+    await this.insertFor(tx, this.studentAndFamily(studentId), { kind: 'fee', ...n });
   }
 
   /** HR, payroll and document events for specific users (idempotent per user and dedupe key). */

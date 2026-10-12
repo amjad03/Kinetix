@@ -52,6 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'grp.academics',
     icon: 'academics',
     items: [
+      { href: '/academics', label: 'nav.academics', section: 'academics', icon: 'classes' },
       { href: '/classes', label: 'nav.classes', section: 'school', icon: 'classes' },
       { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: 'syllabus' },
       { href: '/curriculum', label: 'nav.curriculum', section: 'curriculum', icon: 'syllabus' },
@@ -91,6 +92,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'exams',
     items: [
       { href: '/exams', label: 'nav.exams', section: 'exams', icon: 'exams' },
+      { href: '/exams/office', label: 'nav.examOffice', section: 'exams', icon: 'exams' },
       { href: '/evaluation', label: 'nav.evaluation', section: 'evaluation', icon: 'exams' },
       { href: '/evaluation/desk', label: 'nav.evaluationDesk', section: 'evaluationDesk', icon: 'exams' },
       { href: '/exams/university', label: 'nav.universityFormats', section: 'exams', icon: 'exams' },
@@ -132,6 +134,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'finance',
     items: [
       { href: '/fees', label: 'nav.fees', section: 'fees', icon: 'finance' },
+      { href: '/accounts', label: 'nav.accountsDesk', section: 'finance', icon: 'finance' },
       { href: '/scholarships', label: 'nav.scholarships', section: 'finance', icon: 'finance' },
       { href: '/budgets', label: 'nav.budgets', section: 'finance', icon: 'finance' },
       { href: '/gl-export', label: 'nav.glExport', section: 'finance', icon: 'finance' },

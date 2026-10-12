@@ -77,6 +77,15 @@ export const feeStructures = pgTable('fee_structures', {
   items: jsonb('items').$type<FeeItem[]>().notNull().default([]),
   dueInDays: integer('due_in_days').notNull().default(30),
   active: boolean('active').notNull().default(true),
+  /** draft, pending (sent for approval), approved, rejected or published. Only published plans are issued. */
+  status: text('status').notNull().default('published'),
+  academicYear: text('academic_year'),
+  submittedBy: userRef('submitted_by'),
+  submittedAt: timestamp('submitted_at', { withTimezone: true }),
+  decidedBy: userRef('decided_by'),
+  decidedAt: timestamp('decided_at', { withTimezone: true }),
+  decisionNote: text('decision_note'),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
   createdBy: userRef('created_by'),
   createdAt: createdAt(),
 });

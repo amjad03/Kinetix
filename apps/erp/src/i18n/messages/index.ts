@@ -2,6 +2,7 @@ import type { Locale } from '../locales';
 import common from './common';
 import admin from './admin';
 import syllabus from './syllabus';
+import academics from './academics';
 import library from './library';
 import fees from './fees';
 import boards from './boards';
@@ -67,11 +68,13 @@ import governDepth from './govern-depth';
 import university from './university';
 import redesign from './redesign';
 import admissionsExamsFlow from './admissions-exams-flow';
+import examOffice from './exam-office';
 import homes from './homes';
 import roster from './roster';
 import workspace from './workspace';
+import feeDesk from './fee-desk';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk } as const;
 
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.
 // See docs/i18n/erp.md for how to add strings.

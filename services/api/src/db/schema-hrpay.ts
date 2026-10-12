@@ -1,4 +1,4 @@
-// HR and payroll workflows (migration 0130): module settings, loans and advances, leave encashment and the service book.
+// HR and payroll workflows (migration 0133): module settings, loans and advances, leave encashment and the service book.
 // Kept apart from schema.ts, which these tables reference.
 import { sql } from 'drizzle-orm';
 import { bigint, date, index, jsonb, numeric, pgTable, smallint, text, timestamp, uuid } from 'drizzle-orm/pg-core';

@@ -211,7 +211,7 @@ export interface StudentProfile {
   program: { id: string; name: string; termCount: number };
   finalTerm: boolean;
   allowedStatuses: StudentStatus[];
-  guardians: { id: string; fullName: string; phone: string | null; email: string | null; relation: string; isPrimary: boolean; isEmergencyContact: boolean }[];
+  guardians: { id: string; userId?: string; fullName: string; phone: string | null; email: string | null; relation: string; isPrimary: boolean; isEmergencyContact: boolean }[];
   application: { id: string; applicationNo: string; cycleName: string } | null;
   timeline: LifecycleEventRow[];
 }

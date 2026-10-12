@@ -9,6 +9,7 @@ import { DomainEvents, EventBus } from '../events/events.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import type { RoleName } from '../auth/principal.js';
 import { postFeeReceipt } from '../books/books.service.js';
+import { receiptNumber } from '../fee-accounts/fee-accounts.service.js';
 
 export const FEE_ROLES: RoleName[] = ['tenant_admin', 'principal', 'accountant'];
 
@@ -60,7 +61,7 @@ export class FeesService {
       .values({ tenantId: payment.tenantId, financialYear: fy, lastNo: 1 })
       .onConflictDoUpdate({ target: [receiptCounters.tenantId, receiptCounters.financialYear], set: { lastNo: sql`${receiptCounters.lastNo} + 1` } })
       .returning();
-    const receiptNo = `RCPT/${fy}/${String(counter.lastNo).padStart(5, '0')}`;
+    const receiptNo = await receiptNumber(tx, counter.lastNo, today);
 
     const [paid] = await tx
       .update(feePayments)
