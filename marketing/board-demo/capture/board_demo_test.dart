@@ -121,6 +121,15 @@ Map<String, dynamic>? aiAnswer(String path) {
         {'question': 'Why does a swimming pool look shallower than it is?', 'marks': 2},
       ],
     }),
+    '/v1/ai/lecture' => wrap('lecture', {
+      'outline': ['What refraction is', 'Why light bends: speed changes', 'Laws of refraction', 'Refractive index n = sin i / sin r'],
+      'explanation': 'Light travels at different speeds in different materials. When it crosses from air into glass it slows down, so it bends towards the normal.',
+      'examples': ['A pencil looks bent in a glass of water', 'A pool looks shallower than it is'],
+      'analogies': ['A shopping trolley rolling from a smooth floor onto carpet turns as one wheel slows first'],
+      'boardPlan': ['Draw the slab and the normal', 'Mark i and r', 'Write n = sin i / sin r'],
+      'activities': ['Trace rays through a glass slab with pins'],
+      'recap': 'Light bends when its speed changes; n = sin i / sin r.',
+    }),
     '/v1/ai/read-board' => wrap('readBoard', {
       'text': 'Refraction of light. Light bends towards the normal entering glass. n = sin i / sin r',
       'math': [r'n = \frac{\sin i}{\sin r}'],
@@ -182,6 +191,9 @@ void main() {
         final salt = List<int>.generate(16, (i) => i * 7 + 3);
         final hash = pbkdf2Sha256(utf8.encode(pin), salt, 2000, 32);
         return http.Response(jsonEncode({'pin': {'algo': KioskPin.pbkdf2Sha256, 'iterations': 2000, 'salt': base64.encode(salt), 'hash': base64.encode(hash)}}), 200, headers: {'content-type': 'application/json'});
+      }
+      if (req.method == 'POST' && RegExp(r'^/v1/whiteboards/[^/]+/export$').hasMatch(req.url.path)) {
+        return http.Response(jsonEncode({'path': '/s/refraction-10b.pdf'}), 200, headers: {'content-type': 'application/json'});
       }
       final ai = aiAnswer(req.url.path);
       if (ai != null) {

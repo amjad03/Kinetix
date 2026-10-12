@@ -48,3 +48,50 @@ the depth of each feature was uneven, and a 12–15-year-old should be able to f
 - Pauses in the narration: under 1 s, except under chapter cards (music hit).
 - Language: short sentences a 12–15-year-old understands. Name the feature and say what it does for the
   teacher or the student.
+
+# v4: what top launch films do, and the rules v4 adopts
+
+v3 scored 8.5/10, but viewers felt that most beats were out of sync even though the v3 audit passed every beat.
+That audit checked when pixels changed, not what a viewer sees when they hear the word (see SYNC_AUDIT.md, *Perceptual audit*).
+Studied: Apple keynote product demos, Linear and Arc launch films, Stripe and Figma feature videos, Loom-style walkthroughs, and
+the guides at [moonb.io](https://www.moonb.io/blog/product-launch-video), [videojeeves](https://www.videojeeves.com/blog/how-to-make-a-saas-product-demo-video/)
+and [bluecarrot.io](https://bluecarrot.io/blog/saas-demo-videos-effective-examples-and-best-practices/).
+
+## Editing rules taken from them
+
+1. **One idea per shot.** Apple and Linear never show two new things at once. One feature fills the frame for 2–4 s, and each
+   cut brings in the next one. *v4:* the 2×2 montages (in v3 a tile was a quarter of the window and looked like its neighbours)
+   become sequential full-window shots, one feature each, at least 1.7 s apiece.
+2. **Isolate the UI and make it big.** Launch films lift a single control or card out of the interface and scale it up over
+   a dimmed background, so a viewer on a phone can read it. *v4:* small UI changes are lifted out as live pop-out cards at
+   up to 2.1×, with the rest of the window dimmed.
+3. **The picture leads the word.** In keynote demos the thing is already on screen when the presenter names it. People
+   forgive a picture that arrives ~0.2 s early, but they notice one that arrives late. *v4:* every act is settled 0.2 s
+   before the first syllable of its anchor word. The camera is still by then.
+4. **The camera never moves during an action.** Pans and zooms happen between ideas, never while something changes on
+   screen. *v4:* each beat has one framing, reached in the first 0.5 s, before any action.
+5. **Cursor/stylus emphasis.** Choreographed pointer movement synced to UI reactions guides the eye, and the pointer
+   pauses briefly before a click. *v4:* the real stylus is drawn with a tap ripple, and a click sounds on contact.
+6. **Sound design is part of the sync.** Arc, Linear and Apple films put soft UI clicks, whooshes on transitions and small
+   "pops" when a card appears exactly on the visual event. This makes the timing feel tight even with the sound low. *v4:*
+   generated SFX are placed on frame-accurate events (taps, pen strokes, pop-outs, shot cuts, chapter cards) under a ducked bed.
+7. **Text reinforces, never competes.** Big on-screen words are 2–5 words long. Captions show the words being spoken now,
+   with the current word highlighted. *v4:* captions show only the piece being spoken, larger, on a dark plate.
+8. **Explain the category before the product.** Consumer launch films (Apple, Arc) open with a 15–25 s explainer
+   of the problem in simple pictures. *v4:* an animated opener shows a chalkboard turning into a giant tablet ("that's a
+   smart board"), then the teacher's dozen jobs, then the KINETIX logo.
+9. **A person to follow.** Story-driven demos follow one user through one day. *v4:* Ms Kavya (teacher) and Aarav (a
+   Class 10 B student) are introduced as characters. Aarav's speech bubbles give the student's view at the live-answer,
+   homework and sync moments.
+10. **Before / after.** Show the old way next to the new way, with a number (Stripe, Superhuman). *v4:* three comparison
+    cards (lesson planning, attendance, homework).
+11. **Know where you are.** Long demos show progress. *v4:* a labelled chapter progress bar sits along the bottom.
+12. **End on a fast recap, then one line.** *v4:* one hero shot per pillar (one per anchor word), then the end card.
+
+## Pacing targets (v4)
+
+- Each beat: ≥2 s on screen; the result of each act is held ≥1.5 s. Hero features (ink, AI lesson builder, live
+  answers, 3D/labs) get 3–6 beats; minor features get one full-window shot.
+- Anchor spacing inside a beat: ≥0.9 s, and ≥1.7 s for montage shots. The solver inserts pauses before an anchor (≤0.3 s inside
+  a sentence, ≤0.7 s at a full stop). If an action still can't land in time, it speeds the capture up to 3×.
+- Language: short clauses, and every anchor starts a clause. Each feature gets one sentence saying what it is and why it helps.
