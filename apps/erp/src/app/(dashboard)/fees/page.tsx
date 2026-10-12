@@ -1,57 +1,72 @@
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
-import { FeeClassesTable } from '@/components/fees/FeeClassesTable';
+import { FeesBoard, type SettlementBatchRow } from '@/components/fees/FeesBoard';
+import { FeesNav } from '@/components/fees/FeesNav';
 import { IssueFeeButton } from '@/components/fees/IssueFeeDialog';
-import { LinkButton } from '@/components/LinkButton';
-import { PageHeader, SectionTitle } from '@/components/PageHeader';
+import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
-import { feeClasses } from '@/lib/fees';
 import { formatRupees } from '@/lib/money';
-import { schoolToday } from '@/lib/school';
+import { defaulters, lastMonths, receiptsFromVouchers, type Receipt } from '@/lib/roster';
+import { schoolToday, TIMEZONE } from '@/lib/school';
 import { getI18n } from '@/i18n/server';
-import type { FeeSummary } from '@/lib/types';
+import type { FeeInvoice, FeeSummary, Structure } from '@/lib/types';
 
-import { ArrowRight as ArrowForward, Banknote as PaymentsOutlined, ChevronRight, ReceiptText as ReceiptLongOutlined } from 'lucide-react';
+import { Banknote as PaymentsOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: (await getI18n()).t('nav.fees') };
+  return { title: (await getI18n()).t('fo.title') };
 }
 
 const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0);
+const MONTHS = 6;
+
+interface PaymentRow {
+  id: string;
+  receiptNo: string | null;
+  amountPaise: number;
+  method: string;
+  paidAt: string;
+  student: { fullName: string };
+  className: string;
+}
+
+/** Paid receipts of the last six months: GET /v1/fees/payments, or the GL journal on an API without it. */
+async function recentReceipts(today: string, months: string[]): Promise<Receipt[]> {
+  const day = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+  try {
+    const rows = await api<PaymentRow[]>(`/v1/fees/payments?months=${MONTHS}`);
+    return rows.map((p) => ({ id: p.id, receiptNo: p.receiptNo ?? p.id.slice(0, 8), amountPaise: p.amountPaise, method: p.method, day: day(p.paidAt), student: p.student.fullName, className: p.className }));
+  } catch {
+    const gl = await api<{ vouchers: Parameters<typeof receiptsFromVouchers>[0] }>(`/v1/finance/gl?from=${months[0]}-01&to=${today}`);
+    return receiptsFromVouchers(gl.vouchers);
+  }
+}
 
 export default async function FeesPage() {
   await requireSection('fees');
-  const [summary, classes] = await Promise.all([load(() => api<FeeSummary>('/v1/fees/summary')), load(feeClasses)]);
   const today = schoolToday();
+  const months = lastMonths(today, MONTHS);
+  const [summary, structure, due, receipts, batches, unsettled, exceptions] = await Promise.all([
+    load(() => api<FeeSummary>('/v1/fees/summary')),
+    load(() => api<Structure>('/v1/admin/structure')),
+    load(() => api<FeeInvoice[]>('/v1/fees/invoices?status=due')),
+    load(() => recentReceipts(today, months)),
+    load(() => api<SettlementBatchRow[]>('/v1/fees/settlements')),
+    load(() => api<unknown[]>('/v1/fees/settlements/unsettled')),
+    load(() => api<unknown[]>('/v1/fees/settlements/exceptions')),
+  ]);
   const s = summary.data;
   const { t, fmt } = await getI18n();
+  const year = structure.data?.academicYears.find((y) => y.isCurrent)?.label ?? '';
+  const classes = (structure.data?.sections ?? []).map((x) => ({ id: x.id, name: x.displayName, students: x.students }));
   /** The exact amount, when the tile shows it shortened (₹9.26 L). */
   const exact = (paise: number) => (fmt.rupeesShort(paise) === formatRupees(paise) ? '' : ` · ${formatRupees(paise)}`);
 
   return (
     <>
-      <PageHeader
-        title={t('nav.fees')}
-        subtitle={t('fees.subtitle')}
-        actions={
-          <>
-            <LinkButton href="/fees/invoices" variant="outlined" startIcon={<ReceiptLongOutlined />}>
-              {t('fees.invoices')}
-            </LinkButton>
-            <LinkButton href="/fees/bank-transfers" variant="outlined">
-              {t('pd.link.transfers')}
-            </LinkButton>
-            <LinkButton href="/fees/plans" variant="outlined">
-              {t('dx.link.fees')}
-            </LinkButton>
-            <LinkButton href="/fees/sponsors" variant="outlined">
-              {t('pd.link.sponsors')}
-            </LinkButton>
-            <IssueFeeButton classes={classes.data ?? []} today={today} />
-          </>
-        }
-      />
+      <PageHeader title={t('fo.title')} subtitle={year ? t('fo.subtitle', { year }) : t('fees.subtitle')} actions={<IssueFeeButton classes={classes} today={today} />} />
+      <FeesNav value="overview" />
       {summary.error !== undefined ? (
         <ErrorState message={summary.error} />
       ) : s!.classes.length === 0 ? (
@@ -69,12 +84,7 @@ export default async function FeesPage() {
               bar={<MiniBar value={pct(s!.collectedPaise, s!.billedPaise)} color="kx.success" label={t('fees.collectedBar')} />}
               testId="fee-collected"
             />
-            <StatTile
-              label={t('fees.outstanding')}
-              value={fmt.rupeesShort(s!.outstandingPaise)}
-              caption={`${t('fees.openInvoices', { n: s!.openInvoices })}${exact(s!.outstandingPaise)}`}
-              testId="fee-outstanding"
-            />
+            <StatTile label={t('fees.outstanding')} value={fmt.rupeesShort(s!.outstandingPaise)} caption={`${t('fees.openInvoices', { n: s!.openInvoices })}${exact(s!.outstandingPaise)}`} testId="fee-outstanding" />
             <StatTile
               label={t('fees.overdue')}
               value={fmt.rupeesShort(s!.overduePaise)}
@@ -83,48 +93,15 @@ export default async function FeesPage() {
               testId="fee-overdue"
             />
           </StatGrid>
-
-          <SectionTitle
-            action={
-              <LinkButton href="/fees/invoices" endIcon={<ArrowForward />} size="small">
-                {t('fees.allInvoices')}
-              </LinkButton>
-            }
-          >
-            {t('fees.byClass')}
-          </SectionTitle>
-          <div className="hidden md:block">
-            <FeeClassesTable rows={s!.classes} />
-          </div>
-          {/* Phones: one card per class instead of a wide table. */}
-          <div className="grid md:hidden gap-3" data-testid="fee-classes-list">
-            {s!.classes.map((c) => (
-              <div className="border border-border rounded-[12px] p-4" key={c.sectionId}>
-                <div className="flex items-baseline justify-between gap-2">
-                  <h6 className="text-base leading-6 tracking-[0.1px] font-medium">
-                    {c.className}
-                  </h6>
-                  {c.overdue > 0 && (
-                    <p className="text-[13px] leading-[19px] text-red-ink whitespace-nowrap">
-                      {t('fees.amountOverdue', { amount: formatRupees(c.overduePaise) })}
-                    </p>
-                  )}
-                </div>
-                <p className="text-[13px] leading-[19px] mt-1">
-                  {t('fees.amountOutstanding', { amount: formatRupees(c.outstandingPaise) })}
-                </p>
-                <div className="my-2">
-                  <MiniBar value={pct(c.collectedPaise, c.billedPaise)} color="kx.success" label={t('fees.pctCollected', { p: pct(c.collectedPaise, c.billedPaise).toFixed(0) })} />
-                </div>
-                <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
-                  {t('fees.collectedOf', { collected: formatRupees(c.collectedPaise), billed: formatRupees(c.billedPaise), open: c.open })}
-                </p>
-                <LinkButton className="mt-2 -ml-2" href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />}>
-                  {t('fees.invoices')}
-                </LinkButton>
-              </div>
-            ))}
-          </div>
+          <FeesBoard
+            billedPaise={s!.billedPaise}
+            collectedPaise={s!.collectedPaise}
+            classes={s!.classes.map((c) => ({ id: c.sectionId, label: c.className, collected: c.collectedPaise / 1e7, outstanding: c.outstandingPaise / 1e7 }))}
+            months={months}
+            receipts={receipts.data ?? null}
+            defaulters={due.data ? defaulters(due.data, today) : null}
+            settlements={batches.data ? { batches: batches.data, unsettled: unsettled.data?.length ?? 0, exceptions: exceptions.data?.length ?? 0 } : null}
+          />
         </>
       )}
     </>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DepthDesk } from '@/components/depth/DepthDesk';
+import { FeesNav } from '@/components/fees/FeesNav';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
@@ -163,6 +164,7 @@ export default async function FeePlansPage() {
   return (
     <>
       <PageHeader title={t('dx.fee.title')} subtitle={t('dx.fee.subtitle')} />
+      <FeesNav value="plans" />
       <DepthDesk panels={panels} />
     </>
   );

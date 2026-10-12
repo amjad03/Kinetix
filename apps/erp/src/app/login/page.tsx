@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { safeReturnPath } from '@/lib/return-path';
 import { SESSION_COOKIE, TENANT_COOKIE } from '@/lib/config';
 import { getI18n } from '@/i18n/server';
 import type { MessageKey } from '@/i18n/messages';
@@ -19,7 +20,7 @@ const NOTICES: Record<string, { severity: 'info' | 'warning'; text: MessageKey }
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reason?: string; next?: string }> }) {
   const jar = await cookies();
   const { reason, next } = await searchParams;
-  if (jar.get(SESSION_COOKIE) && !reason) redirect('/');
+  if (jar.get(SESSION_COOKIE) && !reason) redirect(safeReturnPath(next) ?? '/');
   const { t } = await getI18n();
   const notice = reason ? NOTICES[reason] : undefined;
   const tenant = jar.get(TENANT_COOKIE)?.value ?? '';

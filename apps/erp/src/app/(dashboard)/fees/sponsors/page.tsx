@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { SponsorDesk } from '@/components/fees/SponsorDesk';
+import { FeesNav } from '@/components/fees/FeesNav';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
@@ -28,6 +29,7 @@ export default async function SponsorsPage() {
   return (
     <>
       <PageHeader title={t('pd.sponsors.title')} subtitle={t('pd.sponsors.subtitle')} />
+      <FeesNav value="sponsors" />
       {failed !== undefined ? <ErrorState message={failed} /> : <SponsorDesk sponsors={sponsors.data!} invoices={invoices.data!} outstanding={outstanding.data!} students={[...seen.values()]} />}
     </>
   );
