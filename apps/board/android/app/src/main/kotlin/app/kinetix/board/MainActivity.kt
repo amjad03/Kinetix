@@ -30,6 +30,18 @@ class MainActivity : FlutterActivity() {
                 result.error("kiosk", e.message, null)
             }
         }
+        // Screenshots into the gallery (GallerySaver.kt).
+        val gallery = GallerySaver(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/gallery").setMethodCallHandler { call, result ->
+            try {
+                when (call.method) {
+                    "savePng" -> result.success(gallery.savePng(call.argument<String>("name")!!, call.argument<ByteArray>("bytes")!!))
+                    else -> result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("gallery", e.message, null)
+            }
+        }
         // Projector mode: the board on a second display (Projector.kt).
         val presenter = Presenter(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/presenter").setMethodCallHandler { call, result ->

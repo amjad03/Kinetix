@@ -22,7 +22,7 @@ void main() {
       expect(board.elementsOf(3), isEmpty, reason: 'the page that was after it moves along');
     });
 
-    test('a tap, a loop and Select all pass over the backdrop; the ink on it is picked', () {
+    test('a tap picks the page like any picture; a loop round some ink or Select all leaves it', () {
       final board = WhiteboardController()..addPages([[backdrop()]]);
       board.tool = BoardTool.pen;
       board.pointerDown(1, InkPoint(100, 100));
@@ -30,20 +30,46 @@ void main() {
       board.pointerMove(1, InkPoint(200, 140));
       board.pointerUp(1);
       final ink = board.elements.whereType<Stroke>().single;
+      final page = board.elements.whereType<ImageElement>().single;
       board.tool = BoardTool.select;
       board.pointerDown(2, InkPoint(800, 600));
       board.pointerUp(2);
-      expect(board.selection, isEmpty);
+      expect(board.selection, {page.id});
+      board.clearSelection();
       board.selectAll();
       expect(board.selection, {ink.id});
       board.clearSelection();
-      // A loop around everything.
+      // A loop round the ink only.
+      board.pointerDown(3, InkPoint(60, 60));
+      for (final p in const [Offset(260, 60), Offset(260, 200), Offset(60, 200), Offset(60, 60)]) {
+        board.pointerMove(3, InkPoint(p.dx, p.dy));
+      }
+      board.pointerUp(3);
+      expect(board.selection, {ink.id});
+      board.clearSelection();
+      // A loop round everything takes the page too.
       board.pointerDown(3, InkPoint(-10, -10));
       for (final p in const [Offset(1700, -10), Offset(1700, 1000), Offset(-10, 1000), Offset(-10, -10)]) {
         board.pointerMove(3, InkPoint(p.dx, p.dy));
       }
       board.pointerUp(3);
-      expect(board.selection, {ink.id});
+      expect(board.selection, {ink.id, page.id});
+    });
+
+    test('an imported page can be moved, scaled, turned and deleted, and each undoes', () {
+      final board = WhiteboardController()..addPages([[backdrop()]]);
+      final id = board.elements.single.id;
+      board.select({id});
+      board.transformSelection((e) => e.translated(const Offset(40, 30)));
+      expect((board.elements.single as ImageElement).rect.topLeft, const Offset(40, 30));
+      board.transformSelection((e) => e.scaled(const Offset(40, 30), 0.5, 0.5));
+      expect((board.elements.single as ImageElement).rect.width, closeTo(800, 0.5));
+      board.transformSelection((e) => e.rotated(const Offset(440, 255), 0.5));
+      expect((board.elements.single as ImageElement).rotation, closeTo(0.5, 0.01));
+      board.deleteSelection();
+      expect(board.elements, isEmpty);
+      board.undo();
+      expect(board.elements.single, isA<ImageElement>());
     });
 
     test('Clear page keeps the backdrop; the eraser leaves it alone', () {

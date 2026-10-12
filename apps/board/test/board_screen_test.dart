@@ -234,6 +234,25 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('the eraser popover sets area mode and a shift, saved with the pen setup', (tester) async {
+      await pump(tester);
+      await tester.tap(find.byKey(const Key('tool-erase')));
+      await tester.pump();
+      await tapKey(tester, 'tool-erase');
+      final wb = whiteboard(tester);
+      expect(wb.inputConfig.eraser.mode, EraserMode.stroke);
+      await tester.tap(find.byKey(const Key('eraser-mode-area')));
+      await tester.pump();
+      expect(wb.inputConfig.eraser.mode, EraserMode.area);
+      final slider = find.byKey(const Key('eraser-offset-y'));
+      await tester.ensureVisible(slider);
+      await tester.drag(slider, const Offset(-200, 0));
+      await tester.pump();
+      expect(wb.inputConfig.eraser.offset.dy, lessThan(0));
+      expect(InputConfig.decode(wb.inputConfig.encode()).eraser.mode, EraserMode.area);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('select, then the actions under the selection', (tester) async {
       await pump(tester);
       await stroke(tester, const Offset(500, 400));

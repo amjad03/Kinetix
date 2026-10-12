@@ -9,6 +9,8 @@
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <!-- Kiosk mode: open the board again after a reboot or power cut (docs/hardware/kiosk-mode.md). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Screenshots into Pictures/KINETIX: only Android 9 and older need it (10+ use MediaStore). -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <application
         android:label="KINETIX Board"
         android:name="${applicationName}"
