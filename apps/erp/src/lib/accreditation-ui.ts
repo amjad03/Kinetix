@@ -47,3 +47,14 @@ export function cycleOptions(current: string): { value: string; label: string }[
   });
   return out.some((o) => o.value === current) ? out : [{ value: current, label: current }, ...out];
 }
+
+export type EvidenceStatus = 'uploaded' | 'auto' | 'review' | 'missing';
+
+/** Where a metric's evidence stands: filled from ERP data, uploaded and complete, partly there, or nothing yet. */
+export function evidenceStatus(m: AccMetric): EvidenceStatus {
+  if (m.source === 'auto' && m.value !== null) return 'auto';
+  if (m.complete) return 'uploaded';
+  if (m.value !== null || m.evidence > 0 || m.score !== null) return 'review';
+  return 'missing';
+}
+

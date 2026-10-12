@@ -7,6 +7,9 @@ import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import type { Panel } from '@/lib/depth';
 import { safe } from '@/lib/depth-ui';
+import { MiniMeter } from '@/components/dashboard/home';
+import { StatGrid, StatTile } from '@/components/ui/StatTile';
+import { BadgeCheck, FileStack, Hourglass, UsersRound } from 'lucide-react';
 
 interface Mine {
   id: string;
@@ -34,6 +37,8 @@ export default async function MyEvidencePage() {
   const data = await load(async () => ({ mine: await api<Mine[]>('/v1/accreditation/my-evidence'), all: await safe(api<Everyone[]>('/v1/accreditation/faculty-evidence'), null) }));
   if (data.error !== undefined) return <ErrorState message={data.error} />;
   const { mine, all } = data.data;
+  const verified = mine.filter((m) => m.verified).length;
+  const pending = (all ?? []).filter((m) => !m.verified).length;
   const kinds = Object.fromEntries(KINDS.map((k) => [k, t(`acc.kind.${k}`)]));
   const cols: Panel['columns'] = [
     { key: 'kind', label: t('acc.c.kind'), kind: 'pill', words: kinds },
@@ -81,6 +86,12 @@ export default async function MyEvidencePage() {
   return (
     <>
       <PageHeader title={t('acc.title.mine')} subtitle={t('acc.sub.mine')} />
+      <StatGrid min={200}>
+        <StatTile testId="ev-mine" icon={<FileStack />} label={t('acc.mine.kMine')} value={mine.length} caption={t('acc.mine.kMineCaption', { n: new Set(mine.map((m) => m.kind)).size })} />
+        <StatTile testId="ev-verified" icon={<BadgeCheck />} label={t('acc.mine.kVerified')} value={verified} spark={mine.length > 0 ? <MiniMeter value={(verified / mine.length) * 100} /> : undefined} caption={t('acc.mine.kVerifiedCaption', { n: mine.length - verified })} />
+        {all && <StatTile testId="ev-all" icon={<UsersRound />} label={t('acc.mine.kAll')} value={all.length} caption={t('acc.mine.kAllCaption', { n: new Set(all.map((m) => m.teacher)).size })} />}
+        {all && <StatTile testId="ev-pending" icon={<Hourglass />} label={t('acc.mine.kPending')} value={pending} tone={pending > 0 ? 'warning' : 'default'} caption={t('acc.mine.kPendingCaption')} />}
+      </StatGrid>
       <MyEvidenceUpload kinds={KINDS.map((k) => ({ value: k, label: kinds[k] }))} />
       <DepthDesk panels={panels} />
     </>

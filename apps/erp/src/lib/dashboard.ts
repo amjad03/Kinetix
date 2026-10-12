@@ -15,7 +15,7 @@ export interface DashboardRollup {
   performance: { month: string; attendance: number | null; internalMarks: number | null; coAttainment: number | null }[] | null;
 }
 
-export type Persona = 'principal' | 'hod' | 'accountant' | 'admissions' | 'hr';
+export type Persona = 'principal' | 'hod' | 'accountant' | 'admissions' | 'hr' | 'exams';
 
 /** The dashboard a person gets: the most senior of their roles. */
 export function personaFor(roles: readonly RoleName[]): Persona | null {
@@ -24,6 +24,7 @@ export function personaFor(roles: readonly RoleName[]): Persona | null {
   if (roles.includes('accountant')) return 'accountant';
   if (roles.includes('admissions_officer')) return 'admissions';
   if (roles.includes('hr_manager')) return 'hr';
+  if (roles.includes('exam_controller')) return 'exams';
   return null;
 }
 

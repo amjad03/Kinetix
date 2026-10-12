@@ -26,6 +26,7 @@ import { RadioGroup as ShadRadioGroup, RadioGroupItem } from '@/components/shadc
 import { Slider as ShadSlider } from '@/components/shadcn/slider';
 import { Switch as ShadSwitch } from '@/components/shadcn/switch';
 import { cn } from '@/lib/utils';
+import { KxSelect, optionsOf } from './select';
 
 type Rest = { className?: string; children?: ReactNode; [prop: string]: unknown };
 type AnyChange = (e: ChangeEvent<HTMLInputElement>) => void;
@@ -50,6 +51,8 @@ const labelClass = 'text-[13px] leading-5 font-medium text-foreground';
 
 type ItemCtxT = { kind: 'native' } | { kind: 'multi'; selected: unknown[]; toggle: (v: unknown) => void } | null;
 const ItemCtx = createContext<ItemCtxT>(null);
+
+const isMenuItem = (el: ReactElement) => el.type === MenuItem;
 
 /** An option in a select, an item in a menu. */
 export function MenuItem({ value, children, onClick, disabled, selected, className, divider, dense: _d, ...rest }: Rest & { value?: unknown; onClick?: (e: MouseEvent<HTMLElement>) => void; disabled?: boolean; selected?: boolean; divider?: boolean; dense?: boolean }) {
@@ -224,13 +227,22 @@ export function TextField({
         </MultiSelect>
       );
     } else {
+      const { id: _id, name: _nm, disabled: _ds, required: _rq, placeholder: _ph, onChange: _oc, value: _vl, defaultValue: _dv, readOnly: _ro, onBlur: _ob, onFocus: _of, onKeyDown: _ok, className: _cl, ...attrs } = common;
       control = (
-        <span className="relative flex">
-          <select ref={inputRef as Ref<HTMLSelectElement>} {...(common as HTMLAttributes<HTMLSelectElement>)} {...selectAttrs(slotProps?.select)} className={cn(fieldClass, h, 'appearance-none pr-8', !value && value !== 0 && 'text-muted-foreground')}>
-            <ItemCtx.Provider value={{ kind: 'native' }}>{children}</ItemCtx.Provider>
-          </select>
-          <ChevronDown aria-hidden className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-        </span>
+        <KxSelect
+          options={optionsOf(children, isMenuItem, textOf)}
+          id={id}
+          name={name}
+          value={value}
+          defaultValue={defaultValue}
+          onChange={onChange}
+          disabled={disabled}
+          required={required}
+          placeholder={placeholder}
+          inputRef={inputRef as Ref<HTMLElement>}
+          triggerClass={h}
+          attrs={{ ...attrs, ...selectAttrs(slotProps?.select) }}
+        />
       );
     }
   } else if (multiline) {
@@ -356,13 +368,21 @@ export function Select({
       </MultiSelect>
     );
   }
+  const { name, required, placeholder, defaultValue, ...attrs } = { ...(inputProps as object), ...rest } as Record<string, unknown>;
   return (
-    <span className={cn('relative flex', className)}>
-      <select id={id} aria-labelledby={labelId} value={(value ?? '') as string} onChange={onChange as never} disabled={disabled} className={cn(fieldClass, 'h-9 appearance-none pr-8')} {...(inputProps as object)} {...(rest as HTMLAttributes<HTMLSelectElement>)}>
-        <ItemCtx.Provider value={{ kind: 'native' }}>{children}</ItemCtx.Provider>
-      </select>
-      <ChevronDown aria-hidden className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-    </span>
+    <KxSelect
+      options={optionsOf(children, isMenuItem, textOf)}
+      id={id}
+      name={name as string | undefined}
+      value={value}
+      defaultValue={defaultValue}
+      onChange={onChange}
+      disabled={disabled}
+      required={required as boolean | undefined}
+      placeholder={placeholder as string | undefined}
+      className={className}
+      attrs={{ 'aria-labelledby': labelId, ...attrs }}
+    />
   );
 }
 

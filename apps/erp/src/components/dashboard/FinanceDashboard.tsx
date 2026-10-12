@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { MiniBar } from '@/components/Bars';
 import { LinkButton } from '@/components/LinkButton';
 import { EmptyState, ErrorState } from '@/components/States';
 import { Card } from '@/components/ui/Card';
@@ -10,101 +9,125 @@ import { daysBetween } from '@/lib/dates';
 import { percentChange, type DashboardRollup } from '@/lib/dashboard';
 import type { FeeInvoice, FeeSummary, Me } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
-import { PendingTasks, QuickActions, Row } from './parts';
+import { AttentionInbox, ChartCard, DrillBars, FeeBars, MiniBars, MiniMeter, type InboxItem } from './home';
+import { QuickActions, Row } from './parts';
 
-import { ArrowRight as ArrowForward, Banknote as PaymentsOutlined, Clock as ScheduleOutlined, FileText as RequestQuoteOutlined, Folders as FolderCopyOutlined, Percent as PercentOutlined, ReceiptText as ReceiptLongOutlined, Wallet as AccountBalanceWalletOutlined } from 'lucide-react';
-/** The accounts office: money collected and owed, who to chase, and where fees stand by class. */
+import { ArrowRight as ArrowForward, Banknote as PaymentsOutlined, Clock as ScheduleOutlined, FileText as RequestQuoteOutlined, Folders as FolderCopyOutlined, Landmark, ReceiptText as ReceiptLongOutlined, TriangleAlert, Users, Wallet as AccountBalanceWalletOutlined } from 'lucide-react';
+
+interface Unsettled {
+  id: string;
+  amountPaise: number;
+  paidAt: string;
+}
+
+/** The office and accounts home: money collected and owed, who to chase, gateway money not yet in the bank, and dues by class and age. */
 export async function FinanceDashboard({ me, today }: { me: Me; today: string }) {
   const { t, fmt } = await getI18n();
-  const [sum, roll, inv] = await Promise.all([
+  const [sum, roll, inv, uns, exc] = await Promise.all([
     load(() => api<FeeSummary>('/v1/fees/summary')),
     load(() => api<DashboardRollup>('/v1/admin/dashboard')),
     load(() => api<FeeInvoice[]>('/v1/fees/invoices?status=due')),
+    load(() => api<Unsettled[]>('/v1/fees/settlements/unsettled?olderThanDays=0')),
+    load(() => api<unknown[]>('/v1/fees/settlements/exceptions')),
   ]);
   if (sum.error !== undefined) return <ErrorState message={sum.error} />;
   const s = sum.data;
   const f = roll.data?.fees;
   const overdue = (inv.data ?? []).filter((i) => i.dueOn < today).sort((a, b) => a.dueOn.localeCompare(b.dueOn));
+  const defaulters = new Set(overdue.map((i) => i.student.id)).size;
+  const late30 = new Set(overdue.filter((i) => daysBetween(i.dueOn, today) > 30).map((i) => i.student.id)).size;
   const rate = s.billedPaise > 0 ? Math.round((s.collectedPaise / s.billedPaise) * 1000) / 10 : null;
-  const classes = [...s.classes].filter((c) => c.billedPaise > 0).sort((a, b) => b.overduePaise - a.overduePaise).slice(0, 6);
+  const unsettled = uns.data ?? [];
+  const unsettledPaise = unsettled.reduce((a, x) => a + x.amountPaise, 0);
+  const exceptions = exc.data?.length ?? 0;
   const roles = me.roles;
+  const lakh = (p: number) => Math.round(p / 1e5) / 100;
+
+  // Overdue money by how late it is: the ageing buckets the office chases first.
+  const AGE: { id: string; from: number; to: number }[] = [
+    { id: '1-30', from: 1, to: 30 },
+    { id: '31-60', from: 31, to: 60 },
+    { id: '61-90', from: 61, to: 90 },
+    { id: '90+', from: 91, to: Infinity },
+  ];
+  const ageing = AGE.map((b) => ({
+    id: b.id,
+    label: t('dash.fin.ageBucket', { range: b.id }),
+    value: lakh(overdue.filter((i) => { const d = daysBetween(i.dueOn, today); return d >= b.from && d <= b.to; }).reduce((a, i) => a + i.amountPaise - i.paidPaise, 0)),
+    href: '/fees/invoices?status=overdue',
+  }));
+  const feeRows = s.classes
+    .filter((c) => c.billedPaise > 0)
+    .sort((a, b) => b.outstandingPaise - a.outstandingPaise)
+    .slice(0, 10)
+    .map((c) => ({ id: c.sectionId, label: c.className, collected: lakh(c.collectedPaise), outstanding: lakh(c.outstandingPaise) }));
+
+  const inbox = (
+    [
+    defaulters > 0 && { key: 'defaulters', kind: 'alert', tone: 'red', icon: <Users />, title: t('dash.fin.inbox.defaulters', { n: defaulters }), detail: t('dash.fin.inbox.defaultersSub', { amount: fmt.rupeesShort(s.overduePaise) }), action: t('home.review'), href: '/fees/invoices?status=overdue' },
+    unsettled.length > 0 && { key: 'unsettled', kind: 'alert', tone: 'amber', icon: <Landmark />, title: t('dash.fin.inbox.unsettled', { n: unsettled.length }), detail: fmt.rupeesShort(unsettledPaise), action: t('home.open'), href: '/settlements' },
+    exceptions > 0 && { key: 'exceptions', kind: 'task', tone: 'amber', icon: <TriangleAlert />, title: t('dash.fin.inbox.exceptions', { n: exceptions }), action: t('home.open'), href: '/settlements' },
+    s.openInvoices > 0 && { key: 'open', kind: 'task', tone: 'blue', icon: <ReceiptLongOutlined />, title: `${fmt.number(s.openInvoices)} · ${t('dash.task.openInvoices')}`, action: t('home.open'), href: '/fees/invoices' },
+    ] as (InboxItem | false)[]
+  ).filter((x): x is InboxItem => !!x);
 
   return (
     <>
       <StatGrid min={200}>
-        <StatTile testId="stat-collected" icon={<PaymentsOutlined />} label={t('dash.fin.collected')} value={f ? fmt.rupeesShort(f.collected) : fmt.rupeesShort(s.collectedPaise)} trend={f ? { delta: percentChange(f.collected, f.previous), label: t('dash.vsLastMonth') } : undefined} caption={f ? t('dash.fin.collectedCaption') : t('dash.fin.collectedAll')} href="/fees" />
-        <StatTile testId="stat-rate" icon={<PercentOutlined />} label={t('dash.fin.rate')} value={rate === null ? '—' : `${rate}%`} bar={rate === null ? undefined : <MiniBar value={rate} color="var(--kx-accent)" />} caption={t('dash.fin.rateCaption', { billed: fmt.rupeesShort(s.billedPaise) })} />
-        <StatTile testId="stat-outstanding" icon={<AccountBalanceWalletOutlined />} label={t('dash.fin.outstanding')} value={fmt.rupeesShort(s.outstandingPaise)} caption={t('dash.fin.openInvoices', { n: s.openInvoices })} href="/fees/invoices" />
-        <StatTile testId="stat-overdue" icon={<ScheduleOutlined />} label={t('dash.fin.overdue')} value={s.overdueInvoices} unit={t('dash.fin.overdueUnit')} tone={s.overdueInvoices > 0 ? 'warning' : 'default'} caption={t('dash.fin.overdueAmount', { amount: fmt.rupeesShort(s.overduePaise) })} href="/fees/invoices?status=overdue" />
+        <StatTile testId="stat-collected" icon={<PaymentsOutlined />} label={t('dash.fin.collected')} value={fmt.rupeesShort(f ? f.collected : s.collectedPaise)} trend={f ? { delta: percentChange(f.collected, f.previous), label: t('dash.vsLastMonth') } : undefined} spark={rate === null ? undefined : <MiniMeter value={rate} />} caption={rate === null ? t('dash.fin.collectedAll') : t('dash.fin.ofBilled', { pct: rate, billed: fmt.rupeesShort(s.billedPaise) })} href="/fees" />
+        <StatTile testId="stat-outstanding" icon={<AccountBalanceWalletOutlined />} label={t('dash.fin.outstanding')} value={fmt.rupeesShort(s.outstandingPaise)} spark={<MiniMeter value={s.billedPaise > 0 ? (s.overduePaise / s.billedPaise) * 100 : 0} tone="amber" />} caption={t('dash.fin.openInvoices', { n: s.openInvoices })} href="/fees/invoices" />
+        <StatTile testId="stat-defaulters" icon={<Users />} label={t('dash.fin.defaulters')} value={defaulters} tone={defaulters > 0 ? 'warning' : 'default'} spark={overdue.length > 0 ? <MiniBars values={ageing.map((a) => a.value)} label={t('dash.fin.ageing')} /> : undefined} caption={t('dash.fin.late30', { n: late30 })} href="/fees/invoices?status=overdue" />
+        <StatTile testId="stat-unsettled" icon={<Landmark />} label={t('dash.fin.unsettled')} value={fmt.rupeesShort(unsettledPaise)} caption={uns.error !== undefined ? '—' : t('dash.fin.unsettledCaption', { n: unsettled.length })} href="/settlements" />
       </StatGrid>
 
-      <Row cols={3}>
-        <Card title={t('dash.fin.followUps')} subtitle={t('dash.fin.followUpsSub')} padded={false} action={<LinkButton href="/fees/invoices?status=overdue" size="small" endIcon={<ArrowForward />}>{t('dash.viewAll')}</LinkButton>} testId="overdue-list">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <ChartCard title={t('home.feeChart')} subtitle={t('home.feeChartSub')} className="xl:col-span-2" testId="fee-chart">
+          {feeRows.length ? <FeeBars rows={feeRows} ariaLabel={t('home.feeChart')} collectedLabel={t('home.collected')} outstandingLabel={t('home.outstanding')} /> : <EmptyState dense icon={<PaymentsOutlined />} title={t('dash.fin.noClasses')} />}
+        </ChartCard>
+        <AttentionInbox items={inbox} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <ChartCard title={t('dash.fin.ageing')} subtitle={t('dash.fin.ageingSub')} testId="ageing-chart">
+          {overdue.length ? <DrillBars rows={ageing} ariaLabel={t('dash.fin.ageing')} money /> : <EmptyState dense icon={<ScheduleOutlined />} title={t('dash.fin.noOverdue')} />}
+        </ChartCard>
+        <Card className="xl:col-span-2" title={t('dash.fin.followUps')} subtitle={t('dash.fin.followUpsSub')} padded={false} action={<LinkButton href="/fees/invoices?status=overdue" size="small" endIcon={<ArrowForward />}>{t('dash.viewAll')}</LinkButton>} testId="overdue-list">
           {overdue.length === 0 ? (
             <div className="px-5 pb-5">
               <EmptyState dense icon={<ReceiptLongOutlined />} title={t('dash.fin.noOverdue')} />
             </div>
           ) : (
-            <ul className="list-none m-0 p-0">
-              {overdue.slice(0, 7).map((i) => (
-                <li className="flex items-center gap-3 px-5 py-2.5 border-t border-border" key={i.id}>
+            <ul className="m-0 list-none p-0">
+              {overdue.slice(0, 6).map((i) => (
+                <li className="flex items-center gap-3 border-t px-5 py-2.5" key={i.id}>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[0.875rem] font-semibold">
-                      <Link href={`/students/${i.student.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <p className="m-0 truncate text-sm font-semibold">
+                      <Link href={`/students/${i.student.id}`} className="text-inherit no-underline hover:underline">
                         {i.student.fullName}
                       </Link>
                     </p>
-                    <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground truncate">
+                    <p className="m-0 truncate text-xs text-muted-foreground">
                       {i.className} · {i.title}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[0.875rem] font-bold tabular-nums">{fmt.rupees(i.amountPaise - i.paidPaise)}</p>
-                    <span className="text-xs leading-4 tracking-[0.3px] text-red-ink">
-                      {t('dash.fin.daysLate', { n: daysBetween(i.dueOn, today) })}
-                    </span>
+                    <p className="m-0 text-sm font-bold tabular-nums">{fmt.rupees(i.amountPaise - i.paidPaise)}</p>
+                    <span className="text-xs text-red-ink">{t('dash.fin.daysLate', { n: daysBetween(i.dueOn, today) })}</span>
                   </div>
                 </li>
               ))}
             </ul>
           )}
         </Card>
-        <Card title={t('dash.fin.byClass')} subtitle={t('dash.fin.byClassSub')} testId="fees-by-class">
-          {classes.length === 0 ? (
-            <EmptyState dense icon={<PaymentsOutlined />} title={t('dash.fin.noClasses')} />
-          ) : (
-            <ul className="list-none m-0 p-0 grid gap-4">
-              {classes.map((c) => {
-                const pct = c.billedPaise > 0 ? (c.collectedPaise / c.billedPaise) * 100 : 0;
-                return (
-                  <li key={c.sectionId}>
-                    <div className="flex justify-between gap-2 mb-1">
-                      <p className="text-[0.8125rem] font-semibold">{c.className}</p>
-                      <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground tabular-nums">
-                        {t('dash.fin.classLine', { pct: Math.round(pct), out: fmt.rupeesShort(c.outstandingPaise) })}
-                      </span>
-                    </div>
-                    <MiniBar value={pct} color={pct >= 90 ? 'var(--kx-success)' : pct >= 60 ? 'var(--kx-accent)' : 'var(--kx-warning)'} label={`${c.className}: ${Math.round(pct)}%`} />
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Card>
-        <PendingTasks
-          t={t}
-          tasks={[
-            { key: 'fees', label: t('dash.task.fees'), count: s.overdueInvoices, href: '/fees/invoices?status=overdue', icon: <ScheduleOutlined />, tone: 'warning' },
-            { key: 'open', label: t('dash.task.openInvoices'), count: s.openInvoices, href: '/fees/invoices', icon: <ReceiptLongOutlined /> },
-          ]}
-        />
-      </Row>
+      </div>
+
       <Row cols={3}>
         <QuickActions
           t={t}
           actions={[
             { href: '/fees', label: t('dash.qa.issueFee'), icon: <PaymentsOutlined /> },
             { href: '/fees/invoices', label: t('dash.qa.invoices'), icon: <ReceiptLongOutlined /> },
+            { href: '/settlements', label: t('dash.fin.settlements'), icon: <Landmark /> },
             ...(canSee(roles, 'payroll') ? [{ href: '/payroll', label: t('dash.qa.payroll'), icon: <RequestQuoteOutlined /> }] : []),
             ...(canSee(roles, 'documents') ? [{ href: '/documents', label: t('dash.qa.documents'), icon: <FolderCopyOutlined /> }] : []),
           ]}

@@ -71,7 +71,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <LinkTabs value={view} label={t('dash.views')} items={views.map((v) => ({ value: v, label: t(VIEW_LABEL[v]), href: href(v) }))} />
         </div>
       )}
-      {view === 'exams' ? (
+      {view === 'exams' || (view === 'overview' && persona === 'exams') ? (
         <ExamsDashboard today={today} />
       ) : view === 'finance' || (view === 'overview' && persona === 'accountant') ? (
         <FinanceDashboard me={me} today={today} />
