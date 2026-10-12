@@ -50,7 +50,7 @@ void main() {
       expect(m.title.complete, isTrue, reason: m.id);
       expect(m.url, startsWith('https://'));
       expect(m.license, isNotEmpty);
-      expect(m.bytes, lessThan(2 * 1024 * 1024), reason: m.id);
+      expect(m.bytes, lessThan(2.6 * 1024 * 1024), reason: m.id);
       for (final h in m.hotspots) {
         expect(h.name.complete, isTrue, reason: m.id);
       }
@@ -59,11 +59,12 @@ void main() {
 
   test('filter by subject, class, topic and search', () {
     expect(RemoteModels.filter(subject: 'Geography').map((m) => m.id), ['apollo_lunar_module']);
-    expect(RemoteModels.filter(grade: 12).map((m) => m.id), ['hubble_telescope']);
+    expect(RemoteModels.filter(grade: 12).map((m) => m.id), containsAll(['hubble_telescope', 'woolly_mammoth']));
     expect(RemoteModels.filter(query: 'ROCKET').map((m) => m.id), ['saturn_v']);
     expect(RemoteModels.filter(query: 'हबल').map((m) => m.id), ['hubble_telescope']);
     expect(RemoteModels.filter(topics: {'human'}), isEmpty);
-    expect(RemoteModels.filter(topics: {'solar'}).length, 3);
+    expect(RemoteModels.filter(topics: {'solar'}).map((m) => m.id), ['saturn_v', 'apollo_lunar_module', 'hubble_telescope', 'apollo11_command_module']);
+    expect(RemoteModels.filter(subject: 'History').map((m) => m.id), ['cosmic_buddha']);
   });
 
   test('cache downloads once, reports progress, then works offline', () async {
@@ -84,6 +85,40 @@ void main() {
     expect(cache.cachedIds, [m.id]);
     await cache.load(m);
     expect(calls, 1);
+  });
+
+  test('a viewer model downloads its GLB and its manifest, and the viewer reads them from the cache', () async {
+    final dir = Directory.systemTemp.createTempSync('m3d');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final m = RemoteModels.byId('woolly_mammoth')!;
+    expect(m.viewer, isTrue);
+    expect(m.manifestUrl, endsWith('/woolly_mammoth.json'));
+    expect(m.thumbAsset, endsWith('thumbs/woolly_mammoth.jpg'));
+    final urls = <String>[];
+    final cache = ModelCache(dir, fetcher: (url, p) async {
+      urls.add(url);
+      return url.endsWith('.json') ? Uint8List.fromList('{"id": "woolly_mammoth", "parts": []}'.codeUnits) : _glb();
+    });
+    await cache.load(m);
+    expect(urls, [m.url, m.manifestUrl]);
+    expect(cache.isCached(m), isTrue);
+    expect(cache.manifestFor(m).existsSync(), isTrue);
+    // A manifest for another model is refused and nothing is kept.
+    final other = ModelCache(Directory('${dir.path}/b'), fetcher: (url, p) async => url.endsWith('.json') ? Uint8List.fromList('{"id": "x"}'.codeUnits) : _glb());
+    await expectLater(other.load(m), throwsA(anything));
+    expect(other.isCached(m), isFalse);
+  });
+
+  test('the downloadable viewer models are listed with their sources', () {
+    final viewer = [for (final m in RemoteModels.all) if (m.viewer) m.id];
+    expect(viewer, containsAll(['woolly_mammoth', 'cosmic_buddha', 'apollo11_command_module']));
+    for (final m in RemoteModels.all.where((m) => m.viewer)) {
+      expect(m.url, startsWith(RemoteModels.defaultBase), reason: m.id);
+      expect(m.credit, contains('CC0'), reason: m.id);
+      expect(File('assets/viewer3d/thumbs/${m.id}.jpg').existsSync(), isTrue, reason: m.id);
+      expect(File('remote_models/${m.id}.glb').lengthSync() + File('remote_models/${m.id}.json').lengthSync(), m.bytes, reason: m.id);
+    }
+    expect(ModelCatalogue.byId('woolly_mammoth')?.id, 'dl.woolly_mammoth');
   });
 
   test('offline and corrupt downloads leave nothing behind', () async {

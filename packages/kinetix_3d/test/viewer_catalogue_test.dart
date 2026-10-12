@@ -43,7 +43,7 @@ void main() {
       expect(File('$_assets/thumbs/${m.id}.jpg').existsSync(), isTrue, reason: '${m.id} picture');
       expect(m.classes, isNotEmpty, reason: m.id);
       expect(m.keywords, isNotEmpty, reason: m.id);
-      expect(['Biology', 'Physics', 'Chemistry', 'Geography', 'Space', 'Maths'], contains(m.subject), reason: m.id);
+      expect(['Biology', 'Physics', 'Chemistry', 'Geography', 'History', 'Space', 'Engineering', 'Maths'], contains(m.subject), reason: m.id);
     }
   });
 

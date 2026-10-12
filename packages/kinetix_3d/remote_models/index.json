@@ -1,0 +1,113 @@
+{
+ "version": 1,
+ "models": [
+  {
+   "id": "woolly_mammoth",
+   "subject": "Biology",
+   "title": {
+    "en": "Woolly mammoth skeleton",
+    "hi": "ऊनी मैमथ का कंकाल",
+    "kn": "ಉಣ್ಣೆಯ ಮ್ಯಾಮತ್ ಅಸ್ಥಿಪಂಜರ"
+   },
+   "summary": {
+    "en": "A relative of today's elephants that lived in the cold grasslands of the last Ice Age and died out about 4,000 years ago. Fossils like this show how living things change and become extinct.",
+    "hi": "आज के हाथियों का संबंधी, जो पिछले हिमयुग के ठंडे घास के मैदानों में रहता था और लगभग 4,000 वर्ष पहले विलुप्त हो गया। ऐसे जीवाश्म दिखाते हैं कि जीव कैसे बदलते और विलुप्त होते हैं।",
+    "kn": "ಇಂದಿನ ಆನೆಗಳ ಸಂಬಂಧಿ; ಕೊನೆಯ ಹಿಮಯುಗದ ತಣ್ಣನೆಯ ಹುಲ್ಲುಗಾವಲುಗಳಲ್ಲಿ ಬದುಕಿ ಸುಮಾರು 4,000 ವರ್ಷಗಳ ಹಿಂದೆ ಅಳಿದುಹೋಯಿತು. ಇಂತಹ ಪಳೆಯುಳಿಕೆಗಳು ಜೀವಿಗಳು ಹೇಗೆ ಬದಲಾಗುತ್ತವೆ ಮತ್ತು ಅಳಿಯುತ್ತವೆ ಎಂದು ತೋರಿಸುತ್ತವೆ."
+   },
+   "keywords": [
+    "mammoth",
+    "woolly mammoth",
+    "fossil",
+    "extinct",
+    "extinction",
+    "ice age",
+    "evolution",
+    "elephant",
+    "skeleton",
+    "heredity and evolution",
+    "conservation"
+   ],
+   "classes": [
+    8,
+    10,
+    12
+   ],
+   "topic": "life",
+   "license": "CC0",
+   "credit": "Woolly mammoth, Smithsonian National Museum of Natural History, Smithsonian Open Access (CC0)",
+   "bytes": 524832
+  },
+  {
+   "id": "cosmic_buddha",
+   "subject": "History",
+   "title": {
+    "en": "The Cosmic Buddha (sculpture)",
+    "hi": "कॉस्मिक बुद्ध (मूर्ति)",
+    "kn": "ಕಾಸ್ಮಿಕ್ ಬುದ್ಧ (ಶಿಲ್ಪ)"
+   },
+   "summary": {
+    "en": "A stone Buddha from 6th-century China, about 1.5 m tall. Buddhism began in India and travelled along trade routes to China and beyond; the robe is carved with scenes of its teaching.",
+    "hi": "6वीं शताब्दी के चीन की पत्थर की बुद्ध प्रतिमा, लगभग 1.5 मीटर ऊँची। बौद्ध धर्म भारत में आरंभ हुआ और व्यापार मार्गों से चीन और आगे तक फैला; वस्त्र पर इसकी शिक्षाओं के दृश्य उकेरे हैं।",
+    "kn": "6ನೇ ಶತಮಾನದ ಚೀನಾದ ಕಲ್ಲಿನ ಬುದ್ಧ ಪ್ರತಿಮೆ, ಸುಮಾರು 1.5 ಮೀ ಎತ್ತರ. ಬೌದ್ಧ ಧರ್ಮ ಭಾರತದಲ್ಲಿ ಆರಂಭವಾಗಿ ವ್ಯಾಪಾರ ಮಾರ್ಗಗಳ ಮೂಲಕ ಚೀನಾ ಮತ್ತು ಮುಂದಕ್ಕೆ ಹರಡಿತು; ವಸ್ತ್ರದ ಮೇಲೆ ಅದರ ಬೋಧನೆಯ ದೃಶ್ಯಗಳನ್ನು ಕೆತ್ತಲಾಗಿದೆ."
+   },
+   "keywords": [
+    "buddha",
+    "buddhism",
+    "sculpture",
+    "silk route",
+    "religion",
+    "art",
+    "ancient history",
+    "new questions and ideas",
+    "buildings paintings and books",
+    "statue"
+   ],
+   "classes": [
+    6,
+    7,
+    12
+   ],
+   "topic": "monument",
+   "license": "CC0",
+   "credit": "Buddha draped in robes portraying the Realms of Desire, National Museum of Asian Art, Smithsonian Open Access (CC0)",
+   "bytes": 919241
+  },
+  {
+   "id": "apollo11_command_module",
+   "subject": "Space",
+   "title": {
+    "en": "Apollo 11 command module",
+    "hi": "अपोलो 11 कमांड मॉड्यूल",
+    "kn": "ಅಪೊಲೊ 11 ಕಮಾಂಡ್ ಮಾಡ್ಯೂಲ್"
+   },
+   "summary": {
+    "en": "The capsule that took the first people to land on the Moon there and back in July 1969. Its heat shield, scorched on the way back, protected the crew from the heat of falling through the air.",
+    "hi": "वह कैप्सूल जो जुलाई 1969 में चंद्रमा पर उतरने वाले पहले लोगों को वहाँ ले गया और वापस लाया। लौटते समय झुलसी इसकी ऊष्मा-ढाल ने हवा में गिरते समय की गर्मी से दल को बचाया।",
+    "kn": "ಜುಲೈ 1969ರಲ್ಲಿ ಚಂದ್ರನ ಮೇಲೆ ಇಳಿದ ಮೊದಲ ಮಾನವರನ್ನು ಅಲ್ಲಿಗೆ ಕರೆದೊಯ್ದು ಮರಳಿ ತಂದ ಕ್ಯಾಪ್ಸೂಲ್. ಹಿಂದಿರುಗುವಾಗ ಸುಟ್ಟ ಇದರ ಉಷ್ಣ ಕವಚ, ಗಾಳಿಯಲ್ಲಿ ಬೀಳುವಾಗಿನ ಶಾಖದಿಂದ ಸಿಬ್ಬಂದಿಯನ್ನು ರಕ್ಷಿಸಿತು."
+   },
+   "keywords": [
+    "apollo",
+    "apollo 11",
+    "moon landing",
+    "spacecraft",
+    "command module",
+    "armstrong",
+    "space exploration",
+    "friction",
+    "heat shield",
+    "satellites",
+    "chandrayaan"
+   ],
+   "classes": [
+    6,
+    8,
+    9,
+    11
+   ],
+   "topic": "solar",
+   "license": "CC0",
+   "credit": "Command Module, Apollo 11, Smithsonian National Air and Space Museum, Smithsonian Open Access (CC0)",
+   "bytes": 1123227
+  }
+ ]
+}

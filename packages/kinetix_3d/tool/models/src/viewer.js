@@ -358,17 +358,32 @@ labelLayer.addEventListener('pointerup', (e) => {
 function frontMaterial(info) {
   // Rock and soil are matte; tissue and plastic-like models keep a sheen.
   const matte = info.matte ?? manifest?.matte;
+  // Machine parts are metal: they mirror the room around them.
+  const metal = info.metal ? 0.8 : 0;
   return new THREE.MeshPhysicalMaterial({
     color: new THREE.Color(info.color),
-    roughness: matte ? 0.9 : info.group === 'valves' ? 0.6 : 0.42,
-    metalness: 0,
-    clearcoat: matte ? 0 : 0.55,
+    roughness: matte ? 0.9 : metal ? 0.34 : info.group === 'valves' ? 0.6 : 0.42,
+    metalness: metal,
+    clearcoat: matte || metal ? 0 : 0.55,
     clearcoatRoughness: 0.3,
     transparent: !!info.opacity,
     opacity: info.opacity || 1,
     depthWrite: !info.opacity,
     ...clip,
   });
+}
+
+/**
+ * A part taken from someone else's model keeps its own look (photo texture,
+ * vertex colours); it is cut like the rest and fades the same way.
+ */
+function fileMaterial(src, info) {
+  const m = src.clone();
+  Object.assign(m, clip);
+  m.side = THREE.FrontSide;
+  if (info.opacity) Object.assign(m, { transparent: true, opacity: info.opacity, depthWrite: false });
+  m.needsUpdate = true;
+  return m;
 }
 
 /** The inside of a part, seen only where it is cut: a flat, darker colour. */
@@ -412,7 +427,8 @@ async function load(id) {
     const geometry = src.geometry;
     const group = new THREE.Group();
     group.name = info.id;
-    const front = new THREE.Mesh(geometry, src.userData.material || frontMaterial(info));
+    const own = info.material === 'file' && src.material;
+    const front = new THREE.Mesh(geometry, src.userData.material || (own ? fileMaterial(src.material, info) : frontMaterial(info)));
     front.userData.part = info.id;
     front.renderOrder = info.opacity ? 2 : 0;
     const back = new THREE.Mesh(geometry, backMaterial(info));
@@ -423,7 +439,8 @@ async function load(id) {
     group.visible = !info.hidden;
     root.add(group);
     const pivot = new THREE.Box3().setFromObject(front).getCenter(new THREE.Vector3());
-    parts.set(info.id, { info, group, front, back, base: pivot, restColor: front.material.color.clone() });
+    // A textured part glows in its label colour when picked (its own colour is white).
+    parts.set(info.id, { info, group, front, back, base: pivot, restColor: own ? new THREE.Color(info.color) : front.material.color.clone() });
     if (info.glow) setGlow(parts.get(info.id), 0);
     if (src.userData.animate) parts.get(info.id).animate = src.userData.animate;
   }
@@ -1081,12 +1098,61 @@ function tickAnimation(now) {
     particles.instanceMatrix.needsUpdate = true;
   } else if (a.kind === 'orbit') {
     // Parts with "spin": {axis, speed (degrees a second), centre} turn about the centre.
+    // Parts with "drive" move with a crank turning at the animation's speed (a machine).
+    const crank = (a.speed ?? 90) * t;
     for (const p of parts.values()) {
       const sp = p.info.spin;
-      if (!sp) continue;
-      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...sp.axis).normalize(), (sp.speed * t * Math.PI) / 180);
-      p.orbit = { q, centre: new THREE.Vector3(...(sp.centre || [0, 0, 0])) };
+      if (sp) {
+        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...sp.axis).normalize(), (sp.speed * t * Math.PI) / 180);
+        p.orbit = { q, centre: new THREE.Vector3(...(sp.centre || [0, 0, 0])) };
+      } else if (p.info.drive) {
+        p.orbit = drive(p.info.drive, crank);
+        if (p.info.drive.glow) {
+          p.animGlow = p.orbit.glow;
+          setGlow(p, glowFor(p));
+        }
+      }
     }
+  }
+}
+
+/**
+ * Where a machine part is when the crank has turned [deg] degrees from top
+ * dead centre (a four-stroke cycle is 720). A drive is {type, ...}:
+ * spin {axis, centre, ratio}; slider {axis, r, l} (a piston: crank radius r,
+ * rod length l); rod {axis, dir, pin, r, l} (the connecting rod, turning about
+ * the piston pin); valve {axis, lift, open: [from, to]} (pushed open in that
+ * part of the cycle); glow {open: [from, to]} (a spark).
+ */
+function drive(d, deg) {
+  const th = ((deg * (d.ratio ?? 1) + (d.phase ?? 0)) * Math.PI) / 180;
+  const none = new THREE.Quaternion();
+  const zero = new THREE.Vector3();
+  const stroke = (a) => d.r * Math.cos(a) + Math.sqrt(d.l * d.l - (d.r * Math.sin(a)) ** 2);
+  const bump = () => {
+    const c = (((deg + (d.phase ?? 0)) % 720) + 720) % 720;
+    const [a, b] = d.open || [0, 0];
+    return c >= a && c <= b ? Math.sin((Math.PI * (c - a)) / (b - a)) : 0;
+  };
+  switch (d.type) {
+    case 'spin':
+      return { q: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...d.axis).normalize(), th), centre: new THREE.Vector3(...(d.centre || [0, 0, 0])), shift: zero };
+    case 'slider':
+      return { q: none, centre: zero, shift: new THREE.Vector3(...d.axis).normalize().multiplyScalar(stroke(th) - stroke(0)) };
+    case 'rod': {
+      const phi = Math.asin((d.r * Math.sin(th)) / d.l);
+      return {
+        q: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...d.axis).normalize(), phi),
+        centre: new THREE.Vector3(...d.pin),
+        shift: new THREE.Vector3(...d.dir).normalize().multiplyScalar(stroke(th) - stroke(0)),
+      };
+    }
+    case 'valve':
+      return { q: none, centre: zero, shift: new THREE.Vector3(...d.axis).normalize().multiplyScalar(d.lift * bump()) };
+    case 'glow':
+      return { q: none, centre: zero, shift: zero, glow: bump() };
+    default:
+      return { q: none, centre: zero, shift: zero };
   }
 }
 
@@ -1862,6 +1928,7 @@ function render(now) {
       p.group.quaternion.copy(p.orbit.q);
       p.group.scale.setScalar(1);
       p.group.position.copy(p.orbit.centre).sub(p.orbit.centre.clone().applyQuaternion(p.orbit.q)).add(off);
+      if (p.orbit.shift) p.group.position.add(p.orbit.shift);
       continue;
     }
     if (p.info.hinge) {

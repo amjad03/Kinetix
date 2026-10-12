@@ -228,6 +228,79 @@
    "order": 6
   },
   {
+   "id": "skull",
+   "subject": "Biology",
+   "title": {
+    "en": "Human skull",
+    "hi": "मानव खोपड़ी",
+    "kn": "ಮಾನವ ತಲೆಬುರುಡೆ"
+   },
+   "summary": {
+    "en": "Twenty-two bones locked together by fixed joints (sutures) protect the brain and shape the face. Only the lower jaw moves.",
+    "hi": "बाईस हड्डियाँ अचल जोड़ों (सीवन) से आपस में जुड़कर मस्तिष्क की रक्षा करती हैं और चेहरे को आकार देती हैं। केवल निचला जबड़ा हिलता है।",
+    "kn": "ಇಪ್ಪತ್ತೆರಡು ಮೂಳೆಗಳು ಅಚಲ ಕೀಲುಗಳಿಂದ (ಹೊಲಿಗೆಗಳು) ಒಂದಾಗಿ ಸೇರಿ ಮಿದುಳನ್ನು ರಕ್ಷಿಸುತ್ತವೆ ಮತ್ತು ಮುಖಕ್ಕೆ ಆಕಾರ ನೀಡುತ್ತವೆ. ಕೆಳದವಡೆ ಮಾತ್ರ ಚಲಿಸುತ್ತದೆ."
+   },
+   "keywords": [
+    "skull",
+    "cranium",
+    "jaw",
+    "mandible",
+    "maxilla",
+    "skeleton",
+    "bones",
+    "head",
+    "sutures",
+    "fixed joints",
+    "immovable joints",
+    "body movements",
+    "locomotion and movement",
+    "skeletal system"
+   ],
+   "classes": [
+    6,
+    7,
+    11
+   ],
+   "order": 6.5
+  },
+  {
+   "id": "teeth",
+   "subject": "Biology",
+   "title": {
+    "en": "Human teeth",
+    "hi": "मानव दाँत",
+    "kn": "ಮಾನವ ಹಲ್ಲುಗಳು"
+   },
+   "summary": {
+    "en": "Adults have up to 32 permanent teeth of four kinds: incisors cut, canines tear, premolars and molars crush and grind. Each sits in a socket in the jaw bone, held by its roots.",
+    "hi": "वयस्कों के 32 तक स्थायी दाँत चार प्रकार के होते हैं: कृंतक काटते हैं, रदनक फाड़ते हैं, अग्रचर्वणक और चर्वणक कुचलते और पीसते हैं। हर दाँत जबड़े की हड्डी के गड्ढे में अपनी जड़ों से टिका रहता है।",
+    "kn": "ವಯಸ್ಕರಿಗೆ ನಾಲ್ಕು ಬಗೆಯ 32ರವರೆಗೆ ಶಾಶ್ವತ ಹಲ್ಲುಗಳಿವೆ: ಬಾಚಿಹಲ್ಲುಗಳು ಕತ್ತರಿಸುತ್ತವೆ, ಕೋರೆಹಲ್ಲುಗಳು ಹರಿಯುತ್ತವೆ, ಮುಂದವಡೆ ಮತ್ತು ದವಡೆ ಹಲ್ಲುಗಳು ಜಜ್ಜಿ ಅರೆಯುತ್ತವೆ. ಪ್ರತಿ ಹಲ್ಲು ತನ್ನ ಬೇರುಗಳಿಂದ ದವಡೆ ಮೂಳೆಯ ಗುಳಿಯಲ್ಲಿ ಕುಳಿತಿದೆ."
+   },
+   "keywords": [
+    "teeth",
+    "tooth",
+    "incisor",
+    "canine",
+    "premolar",
+    "molar",
+    "dentition",
+    "digestion",
+    "mouth",
+    "jaw",
+    "types of teeth",
+    "food and digestion",
+    "nutrition in animals",
+    "dental care"
+   ],
+   "classes": [
+    4,
+    5,
+    7,
+    10
+   ],
+   "order": 6.6
+  },
+  {
    "id": "neuron",
    "subject": "Biology",
    "title": {
@@ -257,6 +330,42 @@
     11
    ],
    "order": 7
+  },
+  {
+   "id": "microscope",
+   "subject": "Biology",
+   "title": {
+    "en": "Compound microscope",
+    "hi": "संयुक्त सूक्ष्मदर्शी",
+    "kn": "ಸಂಯುಕ್ತ ಸೂಕ್ಷ್ಮದರ್ಶಕ"
+   },
+   "summary": {
+    "en": "Two sets of lenses, the objective and the eyepiece, magnify a thin specimen lit from below up to about 1,000 times, enough to see cells.",
+    "hi": "लेंसों के दो समूह, अभिदृश्यक और नेत्रिका, नीचे से प्रकाशित पतले नमूने को लगभग 1,000 गुना तक बड़ा दिखाते हैं, कोशिकाएँ देखने के लिए पर्याप्त।",
+    "kn": "ಎರಡು ಮಸೂರ ಸಮೂಹಗಳು, ವಸ್ತುಮಸೂರ ಮತ್ತು ನೇತ್ರಮಸೂರ, ಕೆಳಗಿನಿಂದ ಬೆಳಗಿದ ತೆಳು ಮಾದರಿಯನ್ನು ಸುಮಾರು 1,000 ಪಟ್ಟು ದೊಡ್ಡದಾಗಿ ತೋರಿಸುತ್ತವೆ; ಜೀವಕೋಶಗಳನ್ನು ನೋಡಲು ಸಾಕು."
+   },
+   "keywords": [
+    "microscope",
+    "compound microscope",
+    "lens",
+    "magnification",
+    "cell",
+    "the fundamental unit of life",
+    "cell structure and functions",
+    "eyepiece",
+    "objective",
+    "stage",
+    "slide",
+    "microorganisms",
+    "lab equipment"
+   ],
+   "classes": [
+    6,
+    8,
+    9,
+    11
+   ],
+   "order": 7.5
   },
   {
    "id": "animal_cell",
@@ -461,6 +570,42 @@
    "order": 11
   },
   {
+   "id": "virus",
+   "subject": "Biology",
+   "title": {
+    "en": "Coronavirus (SARS-CoV-2)",
+    "hi": "कोरोनावायरस (SARS-CoV-2)",
+    "kn": "ಕೊರೊನಾವೈರಸ್ (SARS-CoV-2)"
+   },
+   "summary": {
+    "en": "The virus that causes COVID-19, about 100 nanometres across. Spike proteins on its fatty envelope grip our cells so the virus can get in and make copies of itself.",
+    "hi": "COVID-19 फैलाने वाला विषाणु, लगभग 100 नैनोमीटर चौड़ा। इसके वसा-आवरण पर लगे स्पाइक प्रोटीन हमारी कोशिकाओं को पकड़ते हैं ताकि विषाणु अंदर जाकर अपनी प्रतियाँ बना सके।",
+    "kn": "COVID-19 ಉಂಟುಮಾಡುವ ವೈರಸ್, ಸುಮಾರು 100 ನ್ಯಾನೋಮೀಟರ್ ಅಗಲ. ಇದರ ಕೊಬ್ಬಿನ ಹೊದಿಕೆಯ ಮೇಲಿನ ಸ್ಪೈಕ್ ಪ್ರೋಟೀನ್‌ಗಳು ನಮ್ಮ ಜೀವಕೋಶಗಳನ್ನು ಹಿಡಿದು ವೈರಸ್ ಒಳಹೊಕ್ಕು ತನ್ನ ನಕಲುಗಳನ್ನು ಮಾಡುವಂತೆ ಮಾಡುತ್ತವೆ."
+   },
+   "keywords": [
+    "virus",
+    "coronavirus",
+    "covid",
+    "covid-19",
+    "sars-cov-2",
+    "spike protein",
+    "microbes",
+    "microorganisms",
+    "disease",
+    "pathogen",
+    "vaccine",
+    "rna virus",
+    "why do we fall ill"
+   ],
+   "classes": [
+    8,
+    9,
+    11,
+    12
+   ],
+   "order": 12
+  },
+  {
    "id": "electric_motor",
    "subject": "Physics",
    "title": {
@@ -619,6 +764,43 @@
     6,
     7,
     10
+   ],
+   "order": 3
+  },
+  {
+   "id": "lens_bench",
+   "subject": "Physics",
+   "title": {
+    "en": "Lenses on an optical bench",
+    "hi": "प्रकाशीय बेंच पर लेंस",
+    "kn": "ಆಪ್ಟಿಕಲ್ ಬೆಂಚ್ ಮೇಲೆ ಮಸೂರಗಳು"
+   },
+   "summary": {
+    "en": "A candle 30 cm from a lens of focal length 10 cm. The convex lens bends the light together to a real, upside-down image on the screen; the concave lens spreads it out, so the image seems to come from behind the lens.",
+    "hi": "10 सेमी फ़ोकस दूरी वाले लेंस से 30 सेमी दूर एक मोमबत्ती। उत्तल लेंस प्रकाश को मोड़कर पर्दे पर वास्तविक, उलटा प्रतिबिंब बनाता है; अवतल लेंस प्रकाश को फैलाता है, इसलिए प्रतिबिंब लेंस के पीछे से आता लगता है।",
+    "kn": "10 ಸೆಂಮೀ ನಾಭಿದೂರದ ಮಸೂರದಿಂದ 30 ಸೆಂಮೀ ದೂರದಲ್ಲಿ ಒಂದು ಮೇಣದಬತ್ತಿ. ಪೀನ ಮಸೂರ ಬೆಳಕನ್ನು ಒಟ್ಟುಗೂಡಿಸಿ ಪರದೆಯ ಮೇಲೆ ನೈಜ, ತಲೆಕೆಳಗಾದ ಪ್ರತಿಬಿಂಬ ಮಾಡುತ್ತದೆ; ನಿಮ್ನ ಮಸೂರ ಬೆಳಕನ್ನು ಹರಡುತ್ತದೆ, ಆದ್ದರಿಂದ ಪ್ರತಿಬಿಂಬ ಮಸೂರದ ಹಿಂದಿನಿಂದ ಬಂದಂತೆ ಕಾಣುತ್ತದೆ."
+   },
+   "keywords": [
+    "lens",
+    "convex lens",
+    "concave lens",
+    "optics",
+    "ray diagram",
+    "image formation",
+    "focal length",
+    "light",
+    "refraction",
+    "real image",
+    "virtual image",
+    "lens formula",
+    "magnification",
+    "light reflection and refraction"
+   ],
+   "classes": [
+    7,
+    8,
+    10,
+    12
    ],
    "order": 3
   },
@@ -856,6 +1038,84 @@
    "order": 5
   },
   {
+   "id": "lab_apparatus",
+   "subject": "Chemistry",
+   "title": {
+    "en": "Laboratory apparatus",
+    "hi": "प्रयोगशाला के उपकरण",
+    "kn": "ಪ್ರಯೋಗಾಲಯದ ಉಪಕರಣಗಳು"
+   },
+   "summary": {
+    "en": "The glassware and stands of a school laboratory at real size: titration with a burette and a conical flask, measuring liquids, test tubes, and heating a beaker over a Bunsen burner.",
+    "hi": "विद्यालय प्रयोगशाला के काँच के उपकरण और स्टैंड असली आकार में: ब्यूरेट और शंक्वाकार फ्लास्क से अनुमापन, द्रव मापना, परखनलियाँ, और बुनसेन बर्नर पर बीकर गर्म करना।",
+    "kn": "ಶಾಲಾ ಪ್ರಯೋಗಾಲಯದ ಗಾಜಿನ ಉಪಕರಣಗಳು ಮತ್ತು ಸ್ಟ್ಯಾಂಡ್‌ಗಳು ನೈಜ ಗಾತ್ರದಲ್ಲಿ: ಬ್ಯೂರೆಟ್ ಮತ್ತು ಶಂಕುವಿನಾಕಾರದ ಫ್ಲಾಸ್ಕ್‌ನಿಂದ ಅನುಮಾಪನ, ದ್ರವ ಅಳೆಯುವುದು, ಪರೀಕ್ಷಾ ನಳಿಕೆಗಳು ಮತ್ತು ಬುನ್ಸೆನ್ ಬರ್ನರ್ ಮೇಲೆ ಬೀಕರ್ ಕಾಯಿಸುವುದು."
+   },
+   "keywords": [
+    "beaker",
+    "flask",
+    "conical flask",
+    "test tube",
+    "burette",
+    "bunsen burner",
+    "retort stand",
+    "measuring cylinder",
+    "tripod",
+    "wire gauze",
+    "lab equipment",
+    "titration",
+    "apparatus",
+    "laboratory",
+    "acids bases and salts"
+   ],
+   "classes": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "order": 6
+  },
+  {
+   "id": "globe",
+   "subject": "Geography",
+   "title": {
+    "en": "Globe",
+    "hi": "ग्लोब",
+    "kn": "ಗ್ಲೋಬ್"
+   },
+   "summary": {
+    "en": "A model of the Earth on a tilted axis, made from NASA satellite pictures. Find the equator, the tropics, the poles and India, and turn it to see day move round the world.",
+    "hi": "झुके अक्ष पर पृथ्वी का मॉडल, नासा के उपग्रह चित्रों से बना। भूमध्य रेखा, कर्क और मकर रेखाएँ, ध्रुव और भारत खोजिए, और घुमाकर देखिए दिन कैसे पृथ्वी पर घूमता है।",
+    "kn": "ಓರೆಯಾದ ಅಕ್ಷದ ಮೇಲೆ ಭೂಮಿಯ ಮಾದರಿ, ನಾಸಾ ಉಪಗ್ರಹ ಚಿತ್ರಗಳಿಂದ ಮಾಡಿದ್ದು. ಸಮಭಾಜಕ ವೃತ್ತ, ಕರ್ಕಾಟಕ ಮತ್ತು ಮಕರ ವೃತ್ತಗಳು, ಧ್ರುವಗಳು ಮತ್ತು ಭಾರತವನ್ನು ಹುಡುಕಿ; ತಿರುಗಿಸಿ ಹಗಲು ಭೂಮಿಯ ಸುತ್ತ ಹೇಗೆ ಸಾಗುತ್ತದೆ ನೋಡಿ."
+   },
+   "keywords": [
+    "globe",
+    "earth",
+    "equator",
+    "latitude",
+    "longitude",
+    "axis",
+    "poles",
+    "tropic of cancer",
+    "tropic of capricorn",
+    "prime meridian",
+    "continents",
+    "oceans",
+    "globe latitudes and longitudes",
+    "the earth in the solar system",
+    "map"
+   ],
+   "classes": [
+    5,
+    6,
+    7,
+    9
+   ],
+   "order": 1
+  },
+  {
    "id": "earth_layers",
    "subject": "Geography",
    "title": {
@@ -892,6 +1152,46 @@
    "order": 2
   },
   {
+   "id": "landforms",
+   "subject": "Geography",
+   "title": {
+    "en": "Landforms",
+    "hi": "भू-आकृतियाँ",
+    "kn": "ಭೂರೂಪಗಳು"
+   },
+   "summary": {
+    "en": "Real places made from satellite height measurements: a mountain, a valley, a plateau and a delta. Turn each one and compare how the land rises and falls.",
+    "hi": "उपग्रह से मापी गई ऊँचाइयों से बने असली स्थान: एक पर्वत, एक घाटी, एक पठार और एक डेल्टा। हर एक को घुमाकर देखिए कि भूमि कैसे उठती और गिरती है।",
+    "kn": "ಉಪಗ್ರಹ ಎತ್ತರ ಮಾಪನಗಳಿಂದ ಮಾಡಿದ ನೈಜ ಸ್ಥಳಗಳು: ಒಂದು ಪರ್ವತ, ಒಂದು ಕಣಿವೆ, ಒಂದು ಪ್ರಸ್ಥಭೂಮಿ ಮತ್ತು ಒಂದು ಮುಖಜಭೂಮಿ. ಪ್ರತಿಯೊಂದನ್ನೂ ತಿರುಗಿಸಿ ಭೂಮಿ ಹೇಗೆ ಏರಿಳಿಯುತ್ತದೆ ಹೋಲಿಸಿ."
+   },
+   "keywords": [
+    "landform",
+    "landforms",
+    "mountain",
+    "valley",
+    "plateau",
+    "delta",
+    "river",
+    "relief",
+    "physical features",
+    "himalaya",
+    "deccan plateau",
+    "meghalaya",
+    "cherrapunji",
+    "sundarbans",
+    "major landforms of the earth",
+    "physical features of india",
+    "contour"
+   ],
+   "classes": [
+    5,
+    6,
+    7,
+    9
+   ],
+   "order": 3
+  },
+  {
    "id": "volcano",
    "subject": "Geography",
    "title": {
@@ -922,6 +1222,145 @@
     11
    ],
    "order": 3
+  },
+  {
+   "id": "taj_mahal",
+   "subject": "History",
+   "title": {
+    "en": "Taj Mahal, Agra",
+    "hi": "ताजमहल, आगरा",
+    "kn": "ತಾಜ್ ಮಹಲ್, ಆಗ್ರಾ"
+   },
+   "summary": {
+    "en": "The white marble tomb that Mughal emperor Shah Jahan built for Mumtaz Mahal (1632-1653). A simplified model at true proportions: 73 m to the top of the dome, minarets 40 m.",
+    "hi": "मुग़ल बादशाह शाहजहाँ द्वारा मुमताज़ महल के लिए बनवाया गया सफ़ेद संगमरमर का मक़बरा (1632-1653)। सही अनुपात में सरल मॉडल: गुंबद के शिखर तक 73 मी, मीनारें 40 मी।",
+    "kn": "ಮೊಘಲ್ ಚಕ್ರವರ್ತಿ ಷಹಜಹಾನ್ ಮುಮ್ತಾಜ್ ಮಹಲ್‌ಗಾಗಿ ನಿರ್ಮಿಸಿದ ಬಿಳಿ ಅಮೃತಶಿಲೆಯ ಸಮಾಧಿ (1632-1653). ನಿಜ ಅನುಪಾತದ ಸರಳ ಮಾದರಿ: ಗುಮ್ಮಟದ ತುದಿಗೆ 73 ಮೀ, ಮಿನಾರುಗಳು 40 ಮೀ."
+   },
+   "keywords": [
+    "taj mahal",
+    "mughal",
+    "shah jahan",
+    "mumtaz mahal",
+    "monument",
+    "architecture",
+    "agra",
+    "tomb",
+    "marble",
+    "world heritage",
+    "rulers and buildings",
+    "mughal empire",
+    "dome",
+    "minaret"
+   ],
+   "classes": [
+    7,
+    8,
+    12
+   ],
+   "order": 1
+  },
+  {
+   "id": "qutub_minar",
+   "subject": "History",
+   "title": {
+    "en": "Qutub Minar, Delhi",
+    "hi": "क़ुतुब मीनार, दिल्ली",
+    "kn": "ಕುತುಬ್ ಮಿನಾರ್, ದೆಹಲಿ"
+   },
+   "summary": {
+    "en": "The tallest brick-and-stone minaret of its time, 72.5 m high, begun by Qutb-ud-din Aibak around 1199 and finished by Iltutmish; the top storeys were rebuilt by Firoz Shah Tughlaq. A simplified model at true proportions.",
+    "hi": "अपने समय की सबसे ऊँची पत्थर की मीनार, 72.5 मी ऊँची, लगभग 1199 में क़ुतुबुद्दीन ऐबक ने शुरू की और इल्तुतमिश ने पूरी की; ऊपरी मंज़िलें फ़िरोज़ शाह तुग़लक ने फिर से बनवाईं। सही अनुपात में सरल मॉडल।",
+    "kn": "ತನ್ನ ಕಾಲದ ಅತಿ ಎತ್ತರದ ಕಲ್ಲಿನ ಮಿನಾರು, 72.5 ಮೀ ಎತ್ತರ; ಸುಮಾರು 1199ರಲ್ಲಿ ಕುತುಬುದ್ದೀನ್ ಐಬಕ್ ಆರಂಭಿಸಿ ಇಲ್ತುತ್ಮಿಷ್ ಪೂರ್ಣಗೊಳಿಸಿದ; ಮೇಲಿನ ಅಂತಸ್ತುಗಳನ್ನು ಫಿರೋಜ್ ಶಾ ತುಘಲಕ್ ಮರುನಿರ್ಮಿಸಿದ. ನಿಜ ಅನುಪಾತದ ಸರಳ ಮಾದರಿ."
+   },
+   "keywords": [
+    "qutub minar",
+    "qutb minar",
+    "delhi sultanate",
+    "aibak",
+    "iltutmish",
+    "monument",
+    "minaret",
+    "architecture",
+    "delhi",
+    "world heritage",
+    "towns traders and craftspersons",
+    "the delhi sultans"
+   ],
+   "classes": [
+    6,
+    7,
+    12
+   ],
+   "order": 2
+  },
+  {
+   "id": "india_gate",
+   "subject": "History",
+   "title": {
+    "en": "India Gate, New Delhi",
+    "hi": "इंडिया गेट, नई दिल्ली",
+    "kn": "ಇಂಡಿಯಾ ಗೇಟ್, ನವದೆಹಲಿ"
+   },
+   "summary": {
+    "en": "A 42 m war memorial arch to about 84,000 soldiers of the Indian Army who died in the First World War and other wars of 1914-1921; their names are carved on its walls. A simplified model at true proportions.",
+    "hi": "प्रथम विश्व युद्ध और 1914-1921 के अन्य युद्धों में शहीद भारतीय सेना के लगभग 84,000 सैनिकों की स्मृति में 42 मी ऊँचा युद्ध स्मारक मेहराब; उनके नाम इसकी दीवारों पर उकेरे हैं। सही अनुपात में सरल मॉडल।",
+    "kn": "ಮೊದಲ ಮಹಾಯುದ್ಧ ಮತ್ತು 1914-1921ರ ಇತರ ಯುದ್ಧಗಳಲ್ಲಿ ಮಡಿದ ಭಾರತೀಯ ಸೇನೆಯ ಸುಮಾರು 84,000 ಸೈನಿಕರ ಸ್ಮರಣೆಯ 42 ಮೀ ಎತ್ತರದ ಯುದ್ಧ ಸ್ಮಾರಕ ಕಮಾನು; ಅವರ ಹೆಸರುಗಳನ್ನು ಇದರ ಗೋಡೆಗಳ ಮೇಲೆ ಕೆತ್ತಲಾಗಿದೆ. ನಿಜ ಅನುಪಾತದ ಸರಳ ಮಾದರಿ."
+   },
+   "keywords": [
+    "india gate",
+    "war memorial",
+    "world war",
+    "first world war",
+    "delhi",
+    "new delhi",
+    "monument",
+    "lutyens",
+    "arch",
+    "amar jawan jyoti",
+    "colonialism",
+    "architecture"
+   ],
+   "classes": [
+    8,
+    10,
+    12
+   ],
+   "order": 3
+  },
+  {
+   "id": "konark",
+   "subject": "History",
+   "title": {
+    "en": "Sun Temple, Konark",
+    "hi": "सूर्य मंदिर, कोणार्क",
+    "kn": "ಸೂರ್ಯ ದೇವಾಲಯ, ಕೋನಾರ್ಕ್"
+   },
+   "summary": {
+    "en": "A 13th-century temple to Surya built as his giant stone chariot, with 24 carved wheels and seven horses. The wheels are also sundials: the shadow of the spokes tells the time. A simplified model.",
+    "hi": "13वीं शताब्दी का सूर्य मंदिर जो उनके विशाल पत्थर के रथ के रूप में बना है, 24 नक्काशीदार पहियों और सात घोड़ों के साथ। पहिये धूपघड़ी भी हैं: तीलियों की छाया समय बताती है। सरल मॉडल।",
+    "kn": "13ನೇ ಶತಮಾನದ ಸೂರ್ಯ ದೇವಾಲಯ, ಅವನ ದೈತ್ಯ ಕಲ್ಲಿನ ರಥದಂತೆ ನಿರ್ಮಿತ; 24 ಕೆತ್ತಿದ ಚಕ್ರಗಳು ಮತ್ತು ಏಳು ಕುದುರೆಗಳು. ಚಕ್ರಗಳು ಸೂರ್ಯಗಡಿಯಾರಗಳೂ ಹೌದು: ಕಡ್ಡಿಗಳ ನೆರಳು ಸಮಯ ತಿಳಿಸುತ್ತದೆ. ಸರಳ ಮಾದರಿ."
+   },
+   "keywords": [
+    "konark",
+    "sun temple",
+    "odisha",
+    "temple architecture",
+    "monument",
+    "chariot",
+    "sundial",
+    "kalinga architecture",
+    "eastern ganga dynasty",
+    "world heritage",
+    "konark wheel",
+    "temples"
+   ],
+   "classes": [
+    6,
+    7,
+    9,
+    12
+   ],
+   "order": 4
   },
   {
    "id": "solar_system",
@@ -988,6 +1427,76 @@
    ],
    "classes": [
     6,
+    9,
+    11
+   ],
+   "order": 2
+  },
+  {
+   "id": "engine",
+   "subject": "Engineering",
+   "title": {
+    "en": "Four-stroke petrol engine",
+    "hi": "चार-स्ट्रोक पेट्रोल इंजन",
+    "kn": "ನಾಲ್ಕು-ಸ್ಟ್ರೋಕ್ ಪೆಟ್ರೋಲ್ ಎಂಜಿನ್"
+   },
+   "summary": {
+    "en": "Fuel burns inside the cylinder and pushes the piston down; the connecting rod and crankshaft turn that push into turning. Each cycle has four strokes: intake, compression, power and exhaust.",
+    "hi": "ईंधन सिलिंडर के भीतर जलकर पिस्टन को नीचे धकेलता है; संयोजी छड़ और क्रैंकशाफ़्ट इस धक्के को घूर्णन में बदलते हैं। हर चक्र में चार स्ट्रोक: चूषण, संपीडन, शक्ति और निष्कासन।",
+    "kn": "ಇಂಧನ ಸಿಲಿಂಡರ್ ಒಳಗೆ ಉರಿದು ಪಿಸ್ಟನ್ ಅನ್ನು ಕೆಳಗೆ ತಳ್ಳುತ್ತದೆ; ಸಂಪರ್ಕ ದಂಡ ಮತ್ತು ಕ್ರ್ಯಾಂಕ್‌ಶಾಫ್ಟ್ ಆ ತಳ್ಳುವಿಕೆಯನ್ನು ತಿರುಗುವಿಕೆಯಾಗಿ ಬದಲಿಸುತ್ತವೆ. ಪ್ರತಿ ಚಕ್ರದಲ್ಲಿ ನಾಲ್ಕು ಸ್ಟ್ರೋಕ್‌ಗಳು: ಸೇವನೆ, ಸಂಪೀಡನ, ಶಕ್ತಿ ಮತ್ತು ನಿಷ್ಕಾಸ."
+   },
+   "keywords": [
+    "engine",
+    "petrol engine",
+    "piston",
+    "crankshaft",
+    "internal combustion",
+    "four stroke",
+    "valves",
+    "spark plug",
+    "heat engine",
+    "combustion",
+    "connecting rod",
+    "machines",
+    "energy conversion"
+   ],
+   "classes": [
+    9,
+    10,
+    11,
+    12
+   ],
+   "order": 1
+  },
+  {
+   "id": "gears",
+   "subject": "Engineering",
+   "title": {
+    "en": "Gears and gear train",
+    "hi": "गियर और गियर-गाड़ी",
+    "kn": "ಗೇರ್‌ಗಳು ಮತ್ತು ಗೇರ್ ಸರಣಿ"
+   },
+   "summary": {
+    "en": "Meshing gears turn in opposite directions. A gear with twice the teeth turns half as fast but with twice the turning force: the speed ratio is the ratio of the teeth.",
+    "hi": "आपस में फँसे गियर उलटी दिशाओं में घूमते हैं। दुगुने दाँतों वाला गियर आधी गति से पर दुगुने घूर्णन बल से घूमता है: गति अनुपात दाँतों का अनुपात है।",
+    "kn": "ಹೊಂದಿಕೊಂಡ ಗೇರ್‌ಗಳು ವಿರುದ್ಧ ದಿಕ್ಕುಗಳಲ್ಲಿ ತಿರುಗುತ್ತವೆ. ಎರಡರಷ್ಟು ಹಲ್ಲುಗಳ ಗೇರ್ ಅರ್ಧ ವೇಗದಲ್ಲಿ ಆದರೆ ಎರಡರಷ್ಟು ತಿರುಗುಬಲದಿಂದ ತಿರುಗುತ್ತದೆ: ವೇಗ ಅನುಪಾತ ಹಲ್ಲುಗಳ ಅನುಪಾತ."
+   },
+   "keywords": [
+    "gear",
+    "gears",
+    "gear ratio",
+    "gear train",
+    "machines",
+    "speed ratio",
+    "torque",
+    "simple machines",
+    "bicycle",
+    "mechanical advantage",
+    "rotation"
+   ],
+   "classes": [
+    7,
+    8,
     9,
     11
    ],
