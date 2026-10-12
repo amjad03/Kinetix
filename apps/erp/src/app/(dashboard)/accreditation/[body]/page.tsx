@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { DepthDesk } from '@/components/depth/DepthDesk';
+import { AccreditationBoard } from '@/components/accreditation/AccreditationBoard';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { UrlSelect } from '@/components/UrlSelect';
@@ -9,7 +9,7 @@ import { api, load, requireSection } from '@/lib/api';
 import type { Panel } from '@/lib/depth';
 import { dl, opt, safe } from '@/lib/depth-ui';
 import { MetricEvidenceUpload } from '@/components/accreditation/UploadButtons';
-import { cycleOptions, type AccOverview, type DvvRow } from '@/lib/accreditation-ui';
+import { cycleOptions, evidenceStatus, type AccOverview, type DvvRow } from '@/lib/accreditation-ui';
 
 const BODIES = ['naac', 'nba', 'nirf'] as const;
 type Body = (typeof BODIES)[number];
@@ -24,7 +24,7 @@ export default async function AccreditationPage({ params, searchParams }: { para
   if (!BODIES.includes(body as Body)) notFound();
   const b = body as Body;
   await requireSection('accreditation');
-  const { t, fmt } = await getI18n();
+  const { t } = await getI18n();
   const sp = await searchParams;
   const data = await load(async () => {
     const q = sp.cycle ? `?cycle=${encodeURIComponent(sp.cycle)}` : '';
@@ -48,48 +48,27 @@ export default async function AccreditationPage({ params, searchParams }: { para
             { label: t('acc.dl.nirf'), href: dl('accreditation', 'nirf', `&cycle=${ov.cycle}`) },
             { label: t('acc.dl.aishe'), href: dl('accreditation', 'aishe') },
           ];
-  const stats = [{ label: t('acc.complete'), value: `${ov.completeness.complete}/${ov.completeness.total} (${fmt.number(ov.completeness.percent, { maximumFractionDigits: 1 })}%)` }];
-  if (ov.estimate) {
-    stats.push({ label: t('acc.predicted'), value: ov.estimate.estimate === null ? '-' : `${fmt.number(ov.estimate.estimate, { maximumFractionDigits: 2 })} (${ov.estimate.grade})` });
-    stats.push({ label: t('acc.floor'), value: `${fmt.number(ov.estimate.floor, { maximumFractionDigits: 2 })} (${ov.estimate.floorGrade})` });
-  }
   const panels: Panel[] = [
-    {
-      id: 'groups',
-      title: t(`acc.groups.${b}`),
-      hint: t(`acc.hint.${b}`),
-      empty: t('acc.none'),
-      stats,
-      downloads,
-      columns: [
-        { key: 'id', label: t('acc.c.group') },
-        { key: 'title', label: t('acc.c.title') },
-        { key: 'weight', label: t('acc.c.weight'), kind: 'num' },
-        { key: 'metrics', label: t('acc.c.metrics'), kind: 'num' },
-        { key: 'complete', label: t('acc.c.complete'), kind: 'num' },
-        { key: 'scored', label: t('acc.c.scored'), kind: 'num' },
-        { key: 'mean', label: t('acc.c.mean'), kind: 'num' },
-      ],
-      rows: ov.groups.map((g) => ({ ...g })),
-    },
     {
       id: 'metrics',
       title: t('acc.metrics'),
-      hint: t('acc.metricsHint'),
+      hint: `${t('acc.metricsHint')} ${t(`acc.hint.${b}`)}`,
       empty: t('acc.none'),
+      downloads,
       columns: [
         { key: 'code', label: t('acc.c.code') },
         { key: 'kind', label: t('acc.c.kind'), kind: 'pill', words: { QnM: t('acc.kind.qnm'), QlM: t('acc.kind.qlm') }, tones: { QnM: 'info', QlM: 'neutral' } },
         { key: 'title', label: t('acc.c.title') },
         { key: 'value', label: t('acc.c.value'), kind: 'num' },
         { key: 'unit', label: t('acc.c.unit') },
+        { key: 'status', label: t('acc.b.evidence'), kind: 'pill', words: { uploaded: t('acc.ev.uploaded'), auto: t('acc.ev.auto'), review: t('acc.ev.review'), missing: t('acc.ev.missing') }, tones: { uploaded: 'success', auto: 'info', review: 'warning', missing: 'danger' } },
         { key: 'source', label: t('acc.c.source'), kind: 'pill', words: { auto: t('acc.src.auto'), manual: t('acc.src.manual'), none: t('acc.src.none') }, tones: { auto: 'success', manual: 'info', none: 'warning' } },
         { key: 'score', label: t('acc.c.points'), kind: 'num' },
         { key: 'evidence', label: t('acc.c.evidence'), kind: 'num' },
         { key: 'complete', label: t('acc.c.done'), kind: 'yes' },
         { key: 'tpl', label: t('acc.c.template'), kind: 'link', href: dl('accreditation', `tmpl-${b}-{code}`), words: { link: t('acc.template') } },
       ],
-      rows: ov.metrics.map((m) => ({ ...m, id: m.code, tpl: m.code })),
+      rows: ov.metrics.map((m) => ({ ...m, id: m.code, tpl: m.code, status: evidenceStatus(m) })),
       actions: [
         { label: t('acc.a.figure'), method: 'PUT', path: base, body: cyc, show: { key: 'kind', is: ['QnM'] }, fields: [{ name: 'value', label: t('acc.c.value'), type: 'number', required: true }, { name: 'note', label: t('acc.f.note'), type: 'text' }] },
         { label: t('acc.a.narrative'), method: 'PUT', path: base, body: cyc, show: { key: 'kind', is: ['QlM'] }, fields: [{ name: 'textValue', label: t('acc.f.narrative'), type: 'textarea', required: true }] },
@@ -136,7 +115,7 @@ export default async function AccreditationPage({ params, searchParams }: { para
       <div style={{ marginBottom: 16 }}>
         <MetricEvidenceUpload body={b} cycle={ov.cycle} codes={ov.metrics.map((m) => m.code)} />
       </div>
-      <DepthDesk panels={panels} />
+      <AccreditationBoard ov={ov} metrics={panels[0]} extra={panels.slice(1)} />
     </>
   );
 }

@@ -7,7 +7,7 @@ export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
-  dashboard: ['principal', 'tenant_admin', 'hod', 'accountant', 'admissions_officer', 'hr_manager'],
+  dashboard: ['principal', 'tenant_admin', 'hod', 'accountant', 'admissions_officer', 'hr_manager', 'exam_controller'],
   // Today, Classes, Attendance, Homework, Messages: v1/admin/*
   school: ['principal', 'tenant_admin', 'hod'],
   // lms.controller.ts: teachers of the class manage in the Teacher App; the ERP is for heads of department and leaders

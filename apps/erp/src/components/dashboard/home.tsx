@@ -4,7 +4,7 @@ import { Eye } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, XAxis, YAxis } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/shadcn/chart';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -174,5 +174,32 @@ export function MiniMeter({ value, tone = 'teal' }: { value: number; tone?: 'tea
     <span aria-hidden className="block h-1.5 w-20 overflow-hidden rounded-full bg-muted">
       <i className={cn('block h-full rounded-full', tone === 'teal' ? 'bg-teal' : tone === 'amber' ? 'bg-amber' : 'bg-red')} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
     </span>
+  );
+}
+
+/**
+ * One bar per row with an optional reference line (bars under it turn amber); a click opens the
+ * row's own page (the drill-down).
+ */
+export function DrillBars({ rows, ariaLabel, unit = '', refValue, refLabel, max, money }: { rows: { id: string; label: string; value: number; href: string }[]; ariaLabel: string; unit?: string; refValue?: number; refLabel?: string; max?: number; money?: boolean }) {
+  const router = useRouter();
+  const config: ChartConfig = { value: { label: ariaLabel, color: 'var(--chart-1)' } };
+  const show = (v: number) => (money ? `₹${v.toFixed(2)} L` : `${Math.round(v * 10) / 10}${unit}`);
+  const tilt = rows.length > 5;
+  return (
+    <ChartContainer config={config} className="aspect-auto h-[240px] w-full" role="img" aria-label={ariaLabel}>
+      <BarChart data={rows} margin={{ left: -16, right: 4, top: 8 }}>
+        <CartesianGrid vertical={false} stroke="var(--border)" />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={4} fontSize={11} interval={0} angle={tilt ? -35 : 0} textAnchor={tilt ? 'end' : 'middle'} height={tilt ? 56 : 30} tickFormatter={(l: string) => (l.length > 11 ? `${l.slice(0, 10)}…` : l)} />
+        <YAxis domain={[0, max ?? 'auto']} tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v: number) => (money ? v.toFixed(1) : `${v}${unit}`)} />
+        {refValue !== undefined && <ReferenceLine y={refValue} stroke="var(--amber)" strokeDasharray="4 4" label={refLabel ? { value: refLabel, position: 'insideTopRight', fontSize: 11, fill: 'var(--amber-ink)' } : undefined} />}
+        <ChartTooltip content={<ChartTooltipContent formatter={(v) => show(Number(v))} />} />
+        <Bar dataKey="value" radius={[4, 4, 0, 0]} className="cursor-pointer" onClick={(d: { payload?: { href: string } }) => d.payload && router.push(d.payload.href)}>
+          {rows.map((r) => (
+            <Cell key={r.id} fill={refValue !== undefined && r.value < refValue ? 'var(--amber)' : 'var(--color-value)'} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ChartContainer>
   );
 }

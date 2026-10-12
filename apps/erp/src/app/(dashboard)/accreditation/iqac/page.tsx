@@ -8,6 +8,9 @@ import { api, load, requireSection } from '@/lib/api';
 import type { Panel } from '@/lib/depth';
 import { dl } from '@/lib/depth-ui';
 import { cycleOptions } from '@/lib/accreditation-ui';
+import { MiniMeter } from '@/components/dashboard/home';
+import { StatGrid, StatTile } from '@/components/ui/StatTile';
+import { Award, CalendarCheck, ListTodo, MessageSquareText } from 'lucide-react';
 
 interface Meeting {
   id: string;
@@ -49,7 +52,7 @@ const STAKEHOLDERS = ['students', 'teachers', 'employers', 'alumni', 'parents'] 
 
 export default async function IqacPage({ searchParams }: { searchParams: Promise<{ cycle?: string }> }) {
   await requireSection('accreditation');
-  const { t } = await getI18n();
+  const { t, fmt } = await getI18n();
   const sp = await searchParams;
   const data = await load(async () => {
     const [meetings, practices, analysis] = await Promise.all([api<Meeting[]>('/v1/accreditation/iqac/meetings'), api<Practice[]>('/v1/accreditation/iqac/practices'), api<Analysis[]>('/v1/accreditation/iqac/feedback-analysis')]);
@@ -63,6 +66,8 @@ export default async function IqacPage({ searchParams }: { searchParams: Promise
   const { meetings, practices, analysis, reports, cycle } = data.data;
   const status = { open: t('acc.st.open'), done: t('acc.st.done'), analysed: t('acc.st.analysed'), action_planned: t('acc.st.planned'), action_taken: t('acc.st.taken') };
   const actionRows = meetings.flatMap((m) => m.actions.map((a) => ({ ...a, meeting: m.title })));
+  const openActions = actionRows.filter((a) => a.status !== 'done').length;
+  const last = meetings.map((m) => m.meetingOn).sort().at(-1);
   const panels: Panel[] = [
     {
       id: 'meetings',
@@ -195,6 +200,12 @@ export default async function IqacPage({ searchParams }: { searchParams: Promise
   return (
     <>
       <PageHeader title={t('acc.title.iqac')} subtitle={t('acc.sub.iqac')} actions={<UrlSelect label={t('acc.cycle')} param="cycle" value={cycle} options={cycleOptions(cycle)} minWidth={160} />} />
+      <StatGrid min={200}>
+        <StatTile testId="iqac-meetings" icon={<CalendarCheck />} label={t('acc.iqac.kMeetings')} value={meetings.length} caption={last ? t('acc.iqac.kLast', { date: fmt.date(last, 'dayMonth') }) : t('acc.iqac.noMeetings')} />
+        <StatTile testId="iqac-actions" icon={<ListTodo />} label={t('acc.iqac.kActions')} value={openActions} tone={openActions > 0 ? 'warning' : 'default'} spark={actionRows.length > 0 ? <MiniMeter value={((actionRows.length - openActions) / actionRows.length) * 100} tone={openActions > 0 ? 'amber' : 'teal'} /> : undefined} caption={t('acc.iqac.kActionsCaption', { done: actionRows.length - openActions, total: actionRows.length })} />
+        <StatTile testId="iqac-practices" icon={<Award />} label={t('acc.iqac.kPractices')} value={practices.length} caption={t('acc.iqac.kPracticesCaption')} />
+        <StatTile testId="iqac-feedback" icon={<MessageSquareText />} label={t('acc.iqac.kFeedback')} value={reports.length} caption={t('acc.iqac.kFeedbackCaption', { n: analysis.reduce((a, x) => a + x.responses, 0) })} />
+      </StatGrid>
       <DepthDesk panels={panels} />
     </>
   );
