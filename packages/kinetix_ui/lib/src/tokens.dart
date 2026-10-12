@@ -28,6 +28,24 @@ abstract final class Kx {
   static const Color success = Color(0xFF15803D);
   static const Color warning = Color(0xFFB45309);
 
+  /// [c] (an accent such as a tool colour) moved toward black or white, whichever way [bg] needs,
+  /// until it reads on [bg] at [min]:1 (WCAG AA for text and icons). Colours that already read
+  /// are returned as they are, so one accent works in the light and dark themes.
+  static Color readable(Color c, Color bg, [double min = 4.5]) {
+    double ratio(Color a, Color b) {
+      final la = a.computeLuminance(), lb = b.computeLuminance();
+      return (la > lb ? la + 0.05 : lb + 0.05) / (la > lb ? lb + 0.05 : la + 0.05);
+    }
+
+    if (ratio(c, bg) >= min) return c;
+    final toward = bg.computeLuminance() > 0.5 ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
+    for (var t = 0.05; t < 1; t += 0.05) {
+      final n = Color.lerp(c, toward, t)!;
+      if (ratio(n, bg) >= min) return n;
+    }
+    return toward;
+  }
+
   // Motion
   /// Material 3 emphasized easing: quick start, long gentle settle. For things that move into place.
   static const Curve emphasized = Cubic(0.2, 0, 0, 1);

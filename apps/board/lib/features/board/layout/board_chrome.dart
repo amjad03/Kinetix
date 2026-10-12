@@ -425,7 +425,7 @@ class GoLiveChip extends StatelessWidget {
     final l = context.l10n;
     return ActionChip(
       key: const Key('go-live'),
-      avatar: Icon(board.classLive ? Icons.stop_circle_outlined : Icons.sensors, size: 18, color: Kx.live),
+      avatar: Icon(board.classLive ? Icons.stop_circle_outlined : Icons.sensors, size: 18, color: Kx.readable(Kx.live, Theme.of(context).colorScheme.surfaceContainerHigh)),
       label: Text(
         !board.classLive
             ? l.goLive

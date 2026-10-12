@@ -210,7 +210,7 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
                   return Material(
                     key: ValueKey('anim-tile-${a.id}'),
                     color: c.surface,
-                    shape: RoundedRectangleBorder(borderRadius: Kx.radiusLg, side: const BorderSide(color: KxColor.line)),
+                    shape: RoundedRectangleBorder(borderRadius: Kx.radiusLg, side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
                       onTap: () => setState(() => _open = a),
@@ -273,7 +273,7 @@ class _Drop extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(left: Kx.s12, right: Kx.s4),
-      decoration: BoxDecoration(color: KxColor.rail, borderRadius: Kx.radiusXl),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHigh, borderRadius: Kx.radiusXl),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String?>(
           value: items.containsKey(value) ? value : null,
