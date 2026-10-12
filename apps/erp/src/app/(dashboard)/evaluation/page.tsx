@@ -1,3 +1,4 @@
+import { ExamsTabs } from '@/components/exams/ExamsTabs';
 import type { Metadata } from 'next';
 import { EvaluationDesk } from '@/components/evaluation/EvaluationDesk';
 import { SessionPapers, SessionPicker } from '@/components/evaluation/Pickers';
@@ -17,10 +18,15 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** On-screen evaluation: pick a session, then a paper, then work its scripts. */
 export default async function EvaluationPage({ searchParams }: { searchParams: Promise<{ session?: string; paper?: string }> }) {
-  await requireSection('evaluation');
+  const me = await requireSection('evaluation');
   const { session, paper } = await searchParams;
   const { t } = await getI18n();
-  const header = <PageHeader title={t('nav.evaluation')} subtitle={t('ev.subtitle')} />;
+  const header = (
+    <>
+      <PageHeader title={t('nav.evaluation')} subtitle={t('ev.subtitle')} />
+      <ExamsTabs current="evaluation" roles={me?.roles} />
+    </>
+  );
 
   if (session && UUID.test(session) && paper && UUID.test(paper)) {
     const [overview, staff] = await Promise.all([load(() => api<EvalOverview>(`/v1/evaluation/papers/${paper}`)), load(() => api<StaffMember[]>('/v1/admin/staff'))]);

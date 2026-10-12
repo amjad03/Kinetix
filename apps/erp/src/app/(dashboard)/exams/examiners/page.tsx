@@ -1,3 +1,4 @@
+import { ExamsTabs } from '@/components/exams/ExamsTabs';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { ClaimRow, ExaminerRow, ExaminersDesk, PaperRow } from '@/components/exams/ExaminersDesk';
@@ -32,6 +33,7 @@ export default async function ExaminersPage() {
   return (
     <>
       <PageHeader title={t('nav.examiners')} subtitle={t('uni.ex.subtitle')} />
+      <ExamsTabs current="examiners" roles={me?.roles} />
       <ExaminersDesk
         examiners={examiners}
         papers={papers}

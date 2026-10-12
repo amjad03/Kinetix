@@ -1,3 +1,4 @@
+import { ExamsTabs } from '@/components/exams/ExamsTabs';
 import type { Metadata } from 'next';
 import { SchemeEditor } from '@/components/exams/SchemeEditor';
 import { LinkButton } from '@/components/LinkButton';
@@ -32,6 +33,7 @@ export default async function SchemesPage({ searchParams }: { searchParams: Prom
         </LinkButton>
       </div>
       <PageHeader title={t('exm.schemes')} subtitle={t('exm.schemesSubtitle')} />
+      <ExamsTabs current="schemes" roles={me?.roles} />
     </>
   );
   if (structure.error !== undefined || scales.error !== undefined || presets.error !== undefined)

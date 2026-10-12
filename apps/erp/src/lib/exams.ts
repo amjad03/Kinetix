@@ -70,10 +70,16 @@ export interface ExamPaper {
   endsAt: string;
   maxMarks: number;
   assessmentId: string | null;
+  /** Valuation progress: marks entered, active students in the section, and the marks workflow stage. */
+  entered?: number;
+  enrolled?: number;
+  markStatus?: MarkStatus | null;
 }
 export interface ExamSessionDetail extends ExamSession {
   papers: ExamPaper[];
   stats: { students: number; passed: number; passPercent: number | null; averageSgpa: number | null };
+  /** Pass counts per subject once results are processed. */
+  subjects?: { subjectId: string; subject: string; students: number; passed: number }[];
 }
 export interface ResultRow {
   id: string;

@@ -64,6 +64,12 @@ export async function setApprovalRequired(sessionId: string, required: boolean) 
   return post(`/v1/exam-sessions/${sessionId}/approval-required`, { required }, [`/exams/${sessionId}`], 'PUT');
 }
 
+/** Sends processed results through the institution's "result_publish" approval route (the workflow inbox). */
+export async function requestPublishApproval(sessionId: string) {
+  if (!UUID.test(sessionId)) return bad('exm.err.session.pick');
+  return post(`/v1/exam-sessions/${sessionId}/request-publish`, undefined, [`/exams/${sessionId}`, '/exams']);
+}
+
 /** Asks for approval, approves, or returns the processed results with a note. */
 export async function approvalStep(sessionId: string, step: 'request-approval' | 'approve' | 'return', note?: string) {
   if (!UUID.test(sessionId)) return bad('exm.err.session.pick');

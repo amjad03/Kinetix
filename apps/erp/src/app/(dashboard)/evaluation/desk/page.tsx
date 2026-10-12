@@ -1,3 +1,4 @@
+import { ExamsTabs } from '@/components/exams/ExamsTabs';
 import type { Metadata } from 'next';
 import { MyScripts, ScriptMarking } from '@/components/evaluation/ExaminerDesk';
 import { PageHeader } from '@/components/PageHeader';
@@ -15,10 +16,15 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The examiner's desk: the scripts allocated to the signed-in examiner, then one script to value. */
 export default async function ExaminerDeskPage({ searchParams }: { searchParams: Promise<{ allocation?: string }> }) {
-  await requireSection('evaluationDesk');
+  const me = await requireSection('evaluationDesk');
   const { allocation } = await searchParams;
   const { t } = await getI18n();
-  const header = <PageHeader title={t('nav.evaluationDesk')} subtitle={t('ev.desk.subtitle')} />;
+  const header = (
+    <>
+      <PageHeader title={t('nav.evaluationDesk')} subtitle={t('ev.desk.subtitle')} />
+      <ExamsTabs current="desk" roles={me?.roles} />
+    </>
+  );
 
   if (allocation && UUID.test(allocation)) {
     const [detail, marks] = await Promise.all([load(() => api<AllocationDetail>(`/v1/evaluation/allocations/${allocation}`)), load(() => api<AnnotationSet>(`/v1/evaluation/allocations/${allocation}/annotations`))]);

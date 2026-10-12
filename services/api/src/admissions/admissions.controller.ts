@@ -307,6 +307,7 @@ export class AdmissionsController {
           submittedAt: applications.submittedAt,
           cycleId: applications.cycleId,
           cycleName: admissionCycles.name,
+          category: applications.category,
         })
         .from(applications)
         .innerJoin(admissionCycles, eq(admissionCycles.id, applications.cycleId))

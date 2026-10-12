@@ -1,3 +1,4 @@
+import { ExamsTabs } from '@/components/exams/ExamsTabs';
 import type { Metadata } from 'next';
 import { AssessmentsTable } from '@/components/results/ResultsTables';
 import { LinkButton } from '@/components/LinkButton';
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ResultsPage({ searchParams }: { searchParams: Promise<{ class?: string }> }) {
-  await requireSection('results');
+  const me = await requireSection('results');
   const sp = await searchParams;
   const classes = await load(resultClasses);
   const list = classes.data ?? [];
@@ -36,6 +37,7 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
           ) : undefined
         }
       />
+      <ExamsTabs current="results" roles={me?.roles} />
       {classes.error !== undefined ? (
         <ErrorState message={classes.error} />
       ) : !klass ? (
