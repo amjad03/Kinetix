@@ -97,6 +97,7 @@ flutter:
     # Simulations hub (lib/features/sim_hub): bundled offline sims, see docs/licensing/SIMULATIONS.md.
     - assets/simhub/phet/
     - assets/simhub/blockly/
+    - assets/simhub/jsxgraph/
     - assets/simhub/blockly/media/
     - assets/simhub/circuitverse/
     - assets/simhub/circuitverse/assets/

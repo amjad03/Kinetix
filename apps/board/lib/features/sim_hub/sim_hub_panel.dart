@@ -148,6 +148,8 @@ class _SimHubPanelState extends State<SimHubPanel> {
     _subject = simSubjects.contains(s) ? s : null;
     _grade = widget.grade;
     widget.controller.addListener(_changed);
+    // Warm up the loopback server while the list is on screen so a tapped tile opens at once.
+    if (!Platform.environment.containsKey('FLUTTER_TEST')) unawaited(SimAssetServer.start());
     SimPins.load().then((p) {
       if (mounted) setState(() => _pins = p);
     });
@@ -216,9 +218,9 @@ class _SimHubPanelState extends State<SimHubPanel> {
               key: Key('sim-${e.id}'),
               title: Text(e.title),
               subtitle: Text('${e.subject} · ${e.gradeMin == e.gradeMax ? 'class ${e.gradeMin}' : 'classes ${e.gradeMin}-${e.gradeMax == 13 ? 'college' : e.gradeMax}'} · ${e.source} · ${e.licence}'),
-              leading: Icon(e.offline ? Icons.download_done : Icons.cloud_outlined, color: Kx.readable(e.offline ? Colors.green : Colors.blueGrey, Theme.of(context).scaffoldBackgroundColor)),
+              leading: e.thumb != null ? ClipRRect(borderRadius: BorderRadius.circular(6), child: Image.asset(e.thumb!, key: Key('thumb-${e.id}'), width: 72, height: 48, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox(width: 72, height: 48))) : Icon(e.offline ? Icons.download_done : Icons.cloud_outlined, color: Kx.readable(e.offline ? Colors.green : Colors.blueGrey, Theme.of(context).scaffoldBackgroundColor)),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                Chip(label: Text(e.offline ? 'Offline' : 'Online'), visualDensity: VisualDensity.compact),
+                Chip(label: Text(e.offline ? 'Offline' : 'Online only'), visualDensity: VisualDensity.compact),
                 IconButton(key: Key('pin-${e.id}'), icon: Icon(isPinned ? Icons.push_pin : Icons.push_pin_outlined), tooltip: 'Pin to this page', onPressed: () => _togglePin(e)),
               ]),
               onTap: () => widget.controller.openSim(e.id),

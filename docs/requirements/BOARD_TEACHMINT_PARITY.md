@@ -136,3 +136,6 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Feature | Teachmint | KINETIX | Files |
 |---|---|---|---|
 | Noise meter | Level bar with a limit | Built, measurement fixed: odd-sized microphone chunks shifted the 16-bit samples and read as loud static (now realigned); level shown in approximate dB (30 to 100, microphone not calibrated); loudest level so far with the time it was heard, one-per-second history graph with the limit line, alert (Too loud, red graph, count of times over), Reset; macOS microphone entitlement and usage text added. en/hi/kn strings. Tests: test/toolkit_test.dart | A/toolkit/noise_source.dart, toolkit_controller.dart, toolkit_layer.dart |
+
+## Simulations hub update
+- Every open-licence simulation is bundled and opens from one tap on a tile, offline, full panel, no web chrome: 51 PhET sims, JSXGraph (open GeoGebra alternative), Blockly, CircuitJS, CircuitVerse, JupyterLite, TimelineJS and Molecular Workbench. Tiles show the PhET thumbnail and can be pinned to a board page. The loopback server is warmed up when the list opens. GeoGebra, Wokwi, Polypad, LabXchange, ChemCollective and Open Source Physics stay online-only, labelled "online" in the title and "Online only" badge (docs/licensing/SIMULATIONS.md). Tests: test/sim_bundle_test.dart.

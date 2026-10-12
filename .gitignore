@@ -29,3 +29,6 @@ packages/kinetix_cs/assets/runner/pyodide/*
 
 # PhET catalogue build cache (tools/phet/build-catalogue.mjs)
 tools/phet/.cache/
+
+# bundled sims ship their own build/ folders
+!apps/board/assets/simhub/**/build/

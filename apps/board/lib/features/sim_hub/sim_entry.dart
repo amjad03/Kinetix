@@ -63,11 +63,17 @@ class SimEntry {
     'licence': licence,
   };
 
+  /// The PhET picture shown on the tile, if this is a PhET sim.
+  String? get thumb => source == 'PhET' && asset != null ? 'assets/phet/thumbs/${id.substring(5)}.jpg' : null;
+
+  /// Redistribution is not allowed, so the sim is only opened online from its own site.
+  bool get online => kind == SimKindOf.online;
+
   bool coversGrade(int g) => g >= gradeMin && g <= gradeMax;
 }
 
 /// Subjects in the order the hub lists them.
-const simSubjects = ['physics', 'chemistry', 'biology', 'maths', 'electronics', 'cs', 'economics', 'psychology', 'geography', 'history', 'language', 'general'];
+const simSubjects = ['physics', 'chemistry', 'biology', 'earth', 'maths', 'electronics', 'cs', 'economics', 'psychology', 'geography', 'history', 'language', 'general'];
 
 const _phetCredit = 'PhET Interactive Simulations, University of Colorado Boulder, CC BY 4.0';
 
@@ -147,6 +153,42 @@ final List<SimEntry> simCatalogue = List.unmodifiable([
   _phet('molecule-polarity', 'Molecule Polarity', 'chemistry', 11, 13, ['bonding']),
   _phet('natural-selection', 'Natural Selection', 'biology', 9, 12, ['evolution', 'genetics']),
   _phet('fractions-intro', 'Fractions: Intro', 'maths', 3, 7, ['fractions']),
+  _phet('faradays-law', "Faraday's Law", 'physics', 9, 13, ['magnetism', 'induction']),
+  _phet('magnet-and-compass', 'Magnet and Compass', 'physics', 6, 10, ['magnetism']),
+  _phet('balloons-and-static-electricity', 'Balloons and Static Electricity', 'physics', 5, 9, ['static', 'charge']),
+  _phet('john-travoltage', 'John Travoltage', 'physics', 6, 10, ['static', 'charge']),
+  _phet('charges-and-fields', 'Charges and Fields', 'physics', 10, 13, ['electric-field']),
+  _phet('ohms-law', "Ohm's Law", 'physics', 8, 12, ['circuits', 'ohm']),
+  _phet('energy-forms-and-changes', 'Energy Forms and Changes', 'physics', 6, 10, ['energy', 'heat']),
+  _phet('friction', 'Friction', 'physics', 6, 10, ['force', 'heat']),
+  _phet('hookes-law', "Hooke's Law", 'physics', 8, 12, ['springs', 'force']),
+  _phet('masses-and-springs', 'Masses and Springs', 'physics', 9, 13, ['springs', 'oscillation']),
+  _phet('gravity-force-lab', 'Gravity Force Lab', 'physics', 8, 12, ['gravity']),
+  _phet('collision-lab', 'Collision Lab', 'physics', 10, 13, ['momentum', 'collisions']),
+  _phet('vector-addition', 'Vector Addition', 'physics', 9, 13, ['vectors']),
+  _phet('bending-light', 'Bending Light', 'physics', 8, 12, ['optics', 'refraction']),
+  _phet('geometric-optics', 'Geometric Optics', 'physics', 9, 13, ['optics', 'lens']),
+  _phet('color-vision', 'Color Vision', 'physics', 7, 12, ['light', 'colour']),
+  _phet('waves-intro', 'Waves Intro', 'physics', 6, 10, ['waves', 'sound', 'light']),
+  _phet('sound-waves', 'Sound Waves', 'physics', 8, 12, ['sound', 'waves']),
+  _phet('blackbody-spectrum', 'Blackbody Spectrum', 'physics', 11, 13, ['radiation']),
+  _phet('greenhouse-effect', 'Greenhouse Effect', 'earth', 8, 13, ['climate', 'earth']),
+  _phet('plinko-probability', 'Plinko Probability', 'maths', 9, 13, ['probability', 'statistics']),
+  _phet('reactants-products-and-leftovers', 'Reactants, Products and Leftovers', 'chemistry', 9, 12, ['stoichiometry']),
+  _phet('molarity', 'Molarity', 'chemistry', 10, 13, ['solutions']),
+  _phet('acid-base-solutions', 'Acid-Base Solutions', 'chemistry', 9, 13, ['acid', 'base']),
+  _phet('isotopes-and-atomic-mass', 'Isotopes and Atomic Mass', 'chemistry', 9, 13, ['isotope', 'atom']),
+  _phet('molecule-shapes', 'Molecule Shapes', 'chemistry', 10, 13, ['bonding', 'vsepr']),
+  _phet('area-builder', 'Area Builder', 'maths', 3, 7, ['area']),
+  _phet('graphing-lines', 'Graphing Lines', 'maths', 7, 10, ['algebra', 'graphs']),
+  _phet('graphing-quadratics', 'Graphing Quadratics', 'maths', 9, 12, ['algebra', 'graphs']),
+  _phet('equality-explorer', 'Equality Explorer', 'maths', 5, 9, ['algebra', 'equations']),
+  _phet('function-builder', 'Function Builder', 'maths', 6, 10, ['functions']),
+  _phet('arithmetic', 'Arithmetic', 'maths', 2, 6, ['multiplication']),
+  _phet('build-a-fraction', 'Build a Fraction', 'maths', 3, 7, ['fractions']),
+  _phet('least-squares-regression', 'Least-Squares Regression', 'maths', 9, 13, ['statistics', 'regression']),
+  _phet('gene-expression-essentials', 'Gene Expression Essentials', 'biology', 10, 13, ['dna', 'genetics']),
+  _phet('neuron', 'Neuron', 'biology', 9, 13, ['nerves']),
   // Bundled web sims, served from the loopback server like PhET (docs/licensing/SIMULATIONS.md).
   _bundled('mw-gas-pressure', 'Molecular Workbench: volume and pressure of a gas', 'chemistry', 8, 13, 'mw/index.html#interactives/sam/gas-laws/3-volume-pressure-relationship.json', 'Concord Consortium', 'MIT (framework), CC BY (activity)', ['molecules', 'gas', 'pressure'], note: _mwCredit),
   _bundled('mw-gas-temperature', 'Molecular Workbench: temperature and volume of a gas', 'chemistry', 8, 13, 'mw/index.html#interactives/sam/gas-laws/4-temperature-volume-relationship.json', 'Concord Consortium', 'MIT (framework), CC BY (activity)', ['molecules', 'gas', 'temperature'], note: _mwCredit),
@@ -158,14 +200,16 @@ final List<SimEntry> simCatalogue = List.unmodifiable([
   _bundled('circuitverse', 'CircuitVerse (digital logic simulator)', 'electronics', 9, 13, 'circuitverse/index.html', 'CircuitVerse', 'MIT', ['logic', 'digital'], note: 'CircuitVerse, MIT licence.'),
   _bundled('jupyterlite', 'JupyterLite (Python in the board)', 'cs', 9, 13, 'jupyterlite/repl/index.html?kernel=python&toolbar=1', 'JupyterLite, Pyodide', 'BSD-3-Clause; Pyodide MPL-2.0', ['python', 'console'], note: 'JupyterLite (BSD-3) with Pyodide (MPL-2.0). Extra Python packages need internet.'),
   _bundled('timelinejs', 'TimelineJS (timelines)', 'history', 6, 13, 'timelinejs/index.html', 'Knight Lab', 'MPL-2.0', ['timeline'], note: 'TimelineJS, Knight Lab, MPL-2.0.'),
+  _bundled('jsxgraph-geometry', 'JSXGraph: dynamic geometry (open alternative to GeoGebra)', 'maths', 6, 13, 'jsxgraph/index.html#geometry', 'JSXGraph', 'MIT / LGPL-3.0', ['geometry', 'triangle', 'construction'], note: 'JSXGraph 1.9.2, MIT or LGPL-3.0.'),
+  _bundled('jsxgraph-graph', 'JSXGraph: function graphs with sliders (open alternative to GeoGebra)', 'maths', 8, 13, 'jsxgraph/index.html#graph', 'JSXGraph', 'MIT / LGPL-3.0', ['graphing', 'algebra', 'functions'], note: 'JSXGraph 1.9.2, MIT or LGPL-3.0.'),
   // Online physics, chemistry, maths and electronics.
   _web('phet-all', 'PhET: all simulations (online catalogue)', 'physics', 1, 13, 'https://phet.colorado.edu/en/simulations/filter?type=html', 'PhET', 'CC BY 4.0', ['phet', 'catalogue'], note: _phetCredit),
-  _web('osp', 'Open Source Physics (EJS web sims)', 'physics', 9, 13, 'https://www.compadre.org/osp/EJSS/', 'Open Source Physics / ComPADRE', 'Per item, mostly CC BY-NC-SA', ['osp', 'ejs'], note: 'Non-commercial licences: not bundled. Opened online and kept for offline use after the first visit.'),
-  _web('labxchange', 'LabXchange', 'biology', 9, 13, 'https://www.labxchange.org/', 'LabXchange (Harvard)', 'Per item, mostly CC BY', ['lab', 'virtual']),
-  _web('chemcollective', 'ChemCollective virtual lab', 'chemistry', 9, 13, 'https://chemcollective.org/vlabs', 'ChemCollective (Carnegie Mellon)', 'CC BY-NC-SA', ['titration', 'virtual-lab']),
-  _web('geogebra', 'GeoGebra', 'maths', 1, 13, 'https://www.geogebra.org/classic', 'GeoGebra', 'Non-commercial only', ['geometry', 'graphing', 'algebra'], note: 'Free for non-commercial use. Commercial use needs a GeoGebra licence. Not bundled.'),
-  _web('polypad', 'Mathigon Polypad', 'maths', 1, 12, 'https://mathigon.org/polypad', 'Mathigon', 'Free to use online', ['manipulatives', 'tiles']),
-  _web('wokwi', 'Wokwi (Arduino and ESP32)', 'electronics', 8, 13, 'https://wokwi.com/', 'Wokwi', 'Free tier', ['arduino', 'microcontroller']),
+  _web('osp', 'Open Source Physics (EJS web sims) [online, non-commercial licence]', 'physics', 9, 13, 'https://www.compadre.org/osp/EJSS/', 'Open Source Physics / ComPADRE', 'Per item, mostly CC BY-NC-SA', ['osp', 'ejs'], note: 'Non-commercial licences: not bundled. Opened online and kept for offline use after the first visit.'),
+  _web('labxchange', 'LabXchange [online, not redistributable]', 'biology', 9, 13, 'https://www.labxchange.org/', 'LabXchange (Harvard)', 'Per item, mostly CC BY', ['lab', 'virtual']),
+  _web('chemcollective', 'ChemCollective virtual lab [online, non-commercial licence]', 'chemistry', 9, 13, 'https://chemcollective.org/vlabs', 'ChemCollective (Carnegie Mellon)', 'CC BY-NC-SA', ['titration', 'virtual-lab']),
+  _web('geogebra', 'GeoGebra [online, non-commercial licence]', 'maths', 1, 13, 'https://www.geogebra.org/classic', 'GeoGebra', 'Non-commercial only', ['geometry', 'graphing', 'algebra'], note: 'Free for non-commercial use. Commercial use needs a GeoGebra licence. Not bundled.'),
+  _web('polypad', 'Mathigon Polypad [online, not redistributable]', 'maths', 1, 12, 'https://mathigon.org/polypad', 'Mathigon', 'Free to use online', ['manipulatives', 'tiles']),
+  _web('wokwi', 'Wokwi (Arduino and ESP32) [online, not redistributable]', 'electronics', 8, 13, 'https://wokwi.com/', 'Wokwi', 'Free tier', ['arduino', 'microcontroller']),
   _web('molstar', '3D molecules (Mol* viewer)', 'biology', 9, 13, 'https://molstar.org/viewer/', 'Mol* / RCSB PDB', 'MIT; PDB data CC0', ['3d', 'protein', 'molecules']),
   _native('model3d', '3D biology models (board 3D viewer)', 'biology', 5, 12, 'KINETIX 3D viewer', 'Open models, see 3D credits', ['3d', 'anatomy']),
   // Economics.
