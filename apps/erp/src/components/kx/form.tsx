@@ -293,7 +293,7 @@ function MultiSelect({ id, value, onChange, renderValue, disabled, labelledBy, c
         </button>
       </P.Trigger>
       <P.Portal>
-        <P.Content id={`${id}-list`} align="start" sideOffset={4} role="listbox" aria-multiselectable className="z-50 max-h-80 min-w-[var(--radix-popover-trigger-width)] overflow-y-auto rounded-[12px] border bg-popover p-1.5 text-popover-foreground shadow-[0_20px_50px_-12px_rgba(16,24,40,.25)]">
+        <P.Content id={`${id}-list`} align="start" sideOffset={4} collisionPadding={8} role="listbox" aria-multiselectable className="z-50 max-h-80 min-w-[var(--radix-popover-trigger-width)] overflow-y-auto rounded-[12px] border bg-popover p-1.5 text-popover-foreground shadow-[0_20px_50px_-12px_rgba(16,24,40,.25)]">
           <ItemCtx.Provider value={{ kind: 'multi', selected: value, toggle }}>{children}</ItemCtx.Provider>
         </P.Content>
       </P.Portal>
@@ -595,7 +595,6 @@ export function Autocomplete<T, M extends boolean | undefined = false>({
         setActive(0);
         setOpen(true);
       },
-      onFocus: () => setOpen(true),
       onClick: () => setOpen(true),
       onBlur: () => {
         setOpen(false);
@@ -618,6 +617,7 @@ export function Autocomplete<T, M extends boolean | undefined = false>({
         <P.Content
           align="start"
           sideOffset={4}
+          collisionPadding={8}
           onOpenAutoFocus={(e) => e.preventDefault()}
           onCloseAutoFocus={(e) => e.preventDefault()}
           onInteractOutside={(e) => anchorRef.current?.contains(e.target as Node) && e.preventDefault()}

@@ -73,6 +73,7 @@ export function Menu({ anchorEl, open, onClose, anchorOrigin, children, classNam
         <P.Content
           align={align}
           sideOffset={4}
+          collisionPadding={8}
           role="menu"
           onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
             if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
