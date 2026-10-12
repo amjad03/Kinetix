@@ -1,7 +1,5 @@
 'use client';
-
-import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { ActionResult } from '@/lib/types';
 
 /** Loads a read-only value for a dialog or tab and reloads it after a change. */
@@ -9,8 +7,8 @@ export function useRead<T>(load: () => Promise<ActionResult<T>>) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const run = useCallback(load, []);
+  // The first loader is kept for the life of the component.
+  const [run] = useState(() => load);
   useEffect(() => {
     let live = true;
     void run().then((r) => {
@@ -29,13 +27,13 @@ export function useRead<T>(load: () => Promise<ActionResult<T>>) {
 
 /** A small heading inside a dialog or tab. */
 export const Heading = ({ children }: { children: ReactNode }) => (
-  <Typography variant="h6" sx={{ fontSize: '1.0625rem', mt: 3, mb: 1, '&:first-of-type': { mt: 0 } }}>
+  <h6 className="font-medium tracking-[0.1px] text-[1.0625rem] mt-6 mb-2 first-of-type:mt-0">
     {children}
-  </Typography>
+  </h6>
 );
 
 /** The error of a read, or nothing. */
-export const ReadError = ({ message }: { message: string | null }) => (message ? <Typography color="error" role="alert">{message}</Typography> : null);
+export const ReadError = ({ message }: { message: string | null }) => (message ? <p className="text-sm leading-[21px] text-red-ink" role="alert">{message}</p> : null);
 
 /** What a file input gives, as base64 (without the data: prefix). */
 export function readBase64(file: File): Promise<string> {

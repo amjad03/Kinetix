@@ -1,8 +1,4 @@
 'use client';
-
-import Add from '@mui/icons-material/Add';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { createTask, setTaskStatus } from '@/app/(dashboard)/tasks/actions';
 import { ActionButton, FormDialog, Grid, Pill, Tabbed, useToast, type Col } from '@/components/ops/kit';
@@ -10,12 +6,14 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { dueState, nextStatuses, type TaskRow } from '@/lib/work';
 
+import { Button } from '@/components/kx';
+import { Plus as Add } from 'lucide-react';
 /** "My tasks" and "Assigned by me", with a new-task dialog and status buttons. */
 export function TaskDesk({ mine, assigned, people }: { mine: TaskRow[]; assigned: TaskRow[]; people: { id: string; fullName: string }[] }) {
   const { t, fmt } = useI18n();
   const [open, setOpen] = useState(false);
   const [toast, toastNode] = useToast();
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
 
   const cols = (who: 'ownerName' | 'assigneeName'): Col<TaskRow>[] => [
     { label: t('wk.tk.col.title'), cell: (x) => x.title },
@@ -38,11 +36,11 @@ export function TaskDesk({ mine, assigned, people }: { mine: TaskRow[]; assigned
 
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+      <div className="flex justify-end mb-6">
         <Button variant="contained" startIcon={<Add />} onClick={() => setOpen(true)}>
         {t('wk.tk.new')}
       </Button>
-      </Box>
+      </div>
       <Tabbed
         label={t('nav.tasks')}
         initial="mine"

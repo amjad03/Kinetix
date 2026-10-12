@@ -1,9 +1,5 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   addAction, addActivity, addClub, addCommittee, addCommitteeMember, addEvent, addMeeting, checkIn, clubActivities, clubMembers, committeeMeetings, committeeMembers, decideMember, endTenure, eventRegistrations, eventStep, eventSummary, markAttendance, meetingActions, saveMinutes, setActionStatus, setMemberRole,
 } from '@/app/(dashboard)/campus-life/actions';
@@ -18,13 +14,14 @@ import {
 } from '@/lib/clife';
 import type { ActionResult } from '@/lib/types';
 
+import { Button } from '@/components/kx';
 /** Loads a read-only list for a dialog and reloads it after a change. */
 function useRead<T>(load: () => Promise<ActionResult<T>>) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const run = useCallback(load, []);
+  // The first loader is kept for the life of the component.
+  const [run] = useState(() => load);
   useEffect(() => {
     let live = true;
     void run().then((r) => {
@@ -209,8 +206,8 @@ function ClubDialog({ club, onClose, toast }: { club: Club; onClose: () => void;
   const active = (members.data ?? []).filter((m) => m.status === 'active');
   return (
     <InfoDialog title={club.name} onClose={onClose}>
-      {members.error && <Typography color="error">{members.error}</Typography>}
-      <Typography variant="h6" sx={{ fontSize: '1.0625rem', mb: 1 }}>{t('cl.members')}</Typography>
+      {members.error && <p className="text-sm leading-[21px] text-red-ink">{members.error}</p>}
+      <h6 className="font-medium tracking-[0.1px] text-[1.0625rem] mb-2">{t('cl.members')}</h6>
       <Grid
         testId="cl-members"
         empty={t('cl.noMembers')}
@@ -234,10 +231,10 @@ function ClubDialog({ club, onClose, toast }: { club: Club; onClose: () => void;
           },
         ]}
       />
-      <Stack sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", mt: 3, mb: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: '1.0625rem' }}>{t('cl.activities')}</Typography>
+      <div className="flex flex-row items-center justify-between mt-6 mb-2">
+        <h6 className="font-medium tracking-[0.1px] text-[1.0625rem]">{t('cl.activities')}</h6>
         <Button variant="outlined" size="small" onClick={() => setSub('activity')}>{t('cl.addActivity')}</Button>
-      </Stack>
+      </div>
       <Grid
         testId="cl-activities"
         empty={t('cl.noActivities')}
@@ -283,7 +280,7 @@ function AttendanceDialog({ activity, members, onClose }: { activity: ClubActivi
   const [err, setErr] = useState<string | null>(null);
   return (
     <InfoDialog title={`${t('cl.markAttendance')} · ${activity.title}`} onClose={() => onClose()}>
-      <Stack>
+      <div className="flex flex-col">
         {members.map((m) => (
           <CheckboxField
             key={m.studentId}
@@ -297,10 +294,9 @@ function AttendanceDialog({ activity, members, onClose }: { activity: ClubActivi
             })}
           />
         ))}
-      </Stack>
-      {err && <Typography color="error">{err}</Typography>}
-      <Button
-        sx={{ mt: 2 }}
+      </div>
+      {err && <p className="text-sm leading-[21px] text-red-ink">{err}</p>}
+      <Button className="mt-4"
         variant="contained"
         disabled={picked.size === 0}
         onClick={async () => {
@@ -332,11 +328,11 @@ function CommitteeDialog({ committee, onClose, toast }: { committee: Committee; 
   };
   return (
     <InfoDialog title={committee.name} onClose={onClose}>
-      {committee.description && <Typography sx={{ mb: 2 }}>{committee.description}</Typography>}
-      <Stack sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: '1.0625rem' }}>{t('cl.cmMembers')}</Typography>
+      {committee.description && <p className="text-sm leading-[21px] mb-4">{committee.description}</p>}
+      <div className="flex flex-row items-center justify-between mb-2">
+        <h6 className="font-medium tracking-[0.1px] text-[1.0625rem]">{t('cl.cmMembers')}</h6>
         <Button variant="outlined" size="small" onClick={() => setSub('member')}>{t('cl.addMember')}</Button>
-      </Stack>
+      </div>
       <Grid
         testId="cl-cm-members"
         empty={t('cl.noMembers')}
@@ -348,10 +344,10 @@ function CommitteeDialog({ committee, onClose, toast }: { committee: Committee; 
           { label: '', cell: (m) => (m.current ? <Button size="small" onClick={() => setSub({ end: m })}>{t('cl.endTenure')}</Button> : <Pill label={t('cl.ended')} />) },
         ]}
       />
-      <Stack sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", mt: 3, mb: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: '1.0625rem' }}>{t('cl.meetings')}</Typography>
+      <div className="flex flex-row items-center justify-between mt-6 mb-2">
+        <h6 className="font-medium tracking-[0.1px] text-[1.0625rem]">{t('cl.meetings')}</h6>
         <Button variant="outlined" size="small" onClick={() => setSub('meeting')}>{t('cl.addMeeting')}</Button>
-      </Stack>
+      </div>
       <Grid
         testId="cl-meetings"
         empty={t('cl.noMeetings')}
@@ -460,11 +456,11 @@ function EventDialog({ event, onClose, toast }: { event: CampusEvent; onClose: (
   return (
     <InfoDialog title={event.title} onClose={onClose}>
       {s && (
-        <Typography sx={{ mb: 2 }} data-testid="cl-event-summary">
+        <p className="text-sm leading-[21px] mb-4" data-testid="cl-event-summary">
           {t('cl.summary', { registered: s.registered, waitlisted: s.waitlisted, attended: s.attended, percent: s.attendancePercent })}
           {s.averageRating !== null && ` · ${t('cl.rating', { avg: s.averageRating, n: s.feedbackCount })}`}
           {event.feePaise > 0 && ` · ${t('cl.expectedFees', { amount: fmt.rupees(s.expectedFeePaise) })}`}
-        </Typography>
+        </p>
       )}
       <Grid
         testId="cl-registrations"

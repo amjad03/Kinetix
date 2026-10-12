@@ -1,9 +1,5 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { addMap, addSkill, openPassport, recordEvidence, removeMap, revokePassport, skillDetail, skillEvidence, tagItem, untag, verifyPassport } from '@/app/(dashboard)/skills/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
@@ -11,13 +7,14 @@ import type { MessageKey } from '@/i18n/messages';
 import { MAP_KINDS, SDG_ITEM_TYPES, SKILL_CATEGORIES, type ManualEvidence, type Passport, type SdgDashboard, type SdgGoal, type Skill, type SkillDetail } from '@/lib/skills';
 import type { ActionResult } from '@/lib/types';
 
+import { Button } from '@/components/kx';
 /** Loads a read-only value for a dialog and reloads it after a change. */
 function useRead<T>(load: () => Promise<ActionResult<T>>) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const run = useCallback(load, []);
+  // The first loader is kept for the life of the component.
+  const [run] = useState(() => load);
   useEffect(() => {
     let live = true;
     void run().then((r) => {
@@ -81,7 +78,7 @@ export function SkillsDesk({ skills, sdg, initialTab }: { skills: Skill[]; sdg: 
             label: t('sk.tab.passport'),
             node: (
               <>
-                <Typography sx={{ mb: 2 }}>{t('sk.pp.intro')}</Typography>
+                <p className="text-sm leading-[21px] mb-4">{t('sk.pp.intro')}</p>
                 <Bar><Button variant="contained" onClick={() => setDlg('passport')}>{t('sk.pp.open')}</Button></Bar>
               </>
             ),
@@ -167,11 +164,11 @@ function SkillDialog({ skill, onClose, toast }: { skill: Skill; onClose: () => v
   };
   return (
     <InfoDialog title={`${skill.code} - ${skill.name}`} onClose={onClose}>
-      {detail.error && <Typography color="error">{detail.error}</Typography>}
-      <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: '1.0625rem' }}>{t('sk.mapped')}</Typography>
+      {detail.error && <p className="text-sm leading-[21px] text-red-ink">{detail.error}</p>}
+      <div className="flex flex-row items-center justify-between mb-2">
+        <h6 className="font-medium tracking-[0.1px] text-[1.0625rem]">{t('sk.mapped')}</h6>
         <Button variant="outlined" size="small" onClick={() => setSub('map')}>{t('sk.addMap')}</Button>
-      </Stack>
+      </div>
       <Grid
         testId="sk-maps"
         empty={t('sk.noMaps')}
@@ -182,10 +179,10 @@ function SkillDialog({ skill, onClose, toast }: { skill: Skill; onClose: () => v
           { label: '', cell: (m) => <ActionButton tone="error" label={t('sk.remove')} run={() => removeMap(skill.id, m.id)} onDone={refresh} /> },
         ]}
       />
-      <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', mt: 3, mb: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: '1.0625rem' }}>{t('sk.evidenceList')}</Typography>
+      <div className="flex flex-row items-center justify-between mt-6 mb-2">
+        <h6 className="font-medium tracking-[0.1px] text-[1.0625rem]">{t('sk.evidenceList')}</h6>
         <Button variant="outlined" size="small" onClick={() => setSub('evidence')}>{t('sk.recordEvidence')}</Button>
-      </Stack>
+      </div>
       <Grid
         testId="sk-evidence"
         empty={t('sk.noEvidence')}
@@ -199,7 +196,7 @@ function SkillDialog({ skill, onClose, toast }: { skill: Skill; onClose: () => v
       {sub === 'map' && (
         <FormDialog
           title={t('sk.addMap')}
-          intro={<Typography variant="body2">{t('sk.refHint')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('sk.refHint')}</p>}
           onSubmit={(v) => addMap(skill.id, v)}
           onClose={(m) => {
             setSub(null);
@@ -214,7 +211,7 @@ function SkillDialog({ skill, onClose, toast }: { skill: Skill; onClose: () => v
       {sub === 'evidence' && (
         <FormDialog
           title={t('sk.recordEvidence')}
-          intro={<Typography variant="body2">{t('sk.evidenceIntro')}</Typography>}
+          intro={<p className="text-[13px] leading-[19px]">{t('sk.evidenceIntro')}</p>}
           onSubmit={(v) => recordEvidence(skill.id, v)}
           onClose={(m) => {
             setSub(null);
@@ -242,16 +239,16 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
   const d = pp.data;
   return (
     <InfoDialog title={d ? `${d.student.fullName} (${d.student.rollNo})` : t('sk.tab.passport')} onClose={onClose}>
-      {pp.error && <Typography color="error">{pp.error}</Typography>}
+      {pp.error && <p className="text-sm leading-[21px] text-red-ink">{pp.error}</p>}
       {d && (
         <>
-          <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+          <div className="flex flex-row items-center gap-2 flex-wrap mb-4">
             <Pill warn={!d.verification.verified} label={d.verification.verified && d.verification.verifiedAt ? t('sk.pp.verified', { date: fmt.date(d.verification.verifiedAt.slice(0, 10), 'short') }) : t('sk.pp.unverified')} />
             <ActionButton label={t('sk.pp.verify')} run={() => verifyPassport(studentId)} onDone={refresh} />
             {d.verification.verified && <ActionButton tone="error" label={t('sk.pp.revoke')} run={() => revokePassport(studentId)} onDone={refresh} />}
             <Button size="small" component="a" href={`/api/download?kind=passport&id=${studentId}`}>{t('sk.pp.download')}</Button>
-          </Stack>
-          <Typography variant="h6" sx={{ fontSize: '1.0625rem', mb: 1 }}>{t('sk.pp.skills')}</Typography>
+          </div>
+          <h6 className="font-medium tracking-[0.1px] text-[1.0625rem] mb-2">{t('sk.pp.skills')}</h6>
           <Grid
             testId="sk-passport-skills"
             empty={t('sk.pp.noLevel')}
@@ -265,7 +262,7 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
           />
           {d.ksa && d.ksa.length > 0 && (
             <>
-              <Typography variant="h6" sx={{ fontSize: '1.0625rem', mt: 3, mb: 1 }}>{t('sk.pp.ksa')}</Typography>
+              <h6 className="font-medium tracking-[0.1px] text-[1.0625rem] mt-6 mb-2">{t('sk.pp.ksa')}</h6>
               <Grid
                 testId="sk-passport-ksa"
                 empty={t('sk.pp.none')}
@@ -278,7 +275,7 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
               />
             </>
           )}
-          <Typography variant="h6" sx={{ fontSize: '1.0625rem', mt: 3, mb: 1 }}>{t('sk.pp.certificates')}</Typography>
+          <h6 className="font-medium tracking-[0.1px] text-[1.0625rem] mt-6 mb-2">{t('sk.pp.certificates')}</h6>
           <Grid
             empty={t('sk.pp.none')}
             rows={d.certificates}
@@ -287,7 +284,7 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
               { label: t('ops.f.date'), cell: (c) => fmt.date(c.issuedOn, 'short'), sort: (c) => c.issuedOn },
             ]}
           />
-          <Typography variant="h6" sx={{ fontSize: '1.0625rem', mt: 3, mb: 1 }}>{t('sk.pp.clubs')}</Typography>
+          <h6 className="font-medium tracking-[0.1px] text-[1.0625rem] mt-6 mb-2">{t('sk.pp.clubs')}</h6>
           <Grid
             empty={t('sk.pp.none')}
             rows={d.activities.clubs}
@@ -296,7 +293,7 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
               { label: t('cl.points'), cell: (c) => c.points, num: true },
             ]}
           />
-          <Typography variant="h6" sx={{ fontSize: '1.0625rem', mt: 3, mb: 1 }}>{t('sk.pp.events')}</Typography>
+          <h6 className="font-medium tracking-[0.1px] text-[1.0625rem] mt-6 mb-2">{t('sk.pp.events')}</h6>
           <Grid
             empty={t('sk.pp.none')}
             rows={d.activities.events}

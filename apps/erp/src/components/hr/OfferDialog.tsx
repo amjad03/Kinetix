@@ -1,13 +1,4 @@
 'use client';
-
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { issueOffer, loadOffers, setOfferStatus } from '@/app/(dashboard)/hr/talent-actions';
 import { FormField, StatusPill, TextInput } from '@/components/ui';
@@ -15,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { JobApplicant } from '@/lib/hr-types';
 
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } from '@/components/kx';
 type OfferRow = { id: string; offerNo: string; status: string; joiningOn: string; annualCtcPaise: number };
 
 /** Issue an offer letter to a recruitment applicant, download it, and record the candidate's answer. */
@@ -29,8 +21,14 @@ export function OfferDialog({ applicant, onClose }: { applicant: JobApplicant; o
     if (res.ok) setOffers(res.data);
   }, [applicant.id]);
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    let live = true;
+    void loadOffers(applicant.id).then((res) => {
+      if (live && res.ok) setOffers(res.data);
+    });
+    return () => {
+      live = false;
+    };
+  }, [applicant.id]);
   const live = offers.find((o) => o.status === 'issued');
   return (
     <Dialog open onClose={pending ? undefined : onClose} fullWidth maxWidth="sm">
@@ -38,11 +36,11 @@ export function OfferDialog({ applicant, onClose }: { applicant: JobApplicant; o
         {t('hl.offer.issue')}: {applicant.fullName}
       </DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
-          {error && <Typography color="error">{error}</Typography>}
+        <div className="flex flex-col gap-4 pt-2">
+          {error && <p className="text-sm leading-[21px] text-red-ink">{error}</p>}
           {offers.map((o) => (
-            <Stack key={o.id} direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-              <Typography sx={{ fontWeight: 600 }}>{o.offerNo}</Typography>
+            <div className="flex flex-row gap-3 items-center flex-wrap" key={o.id}>
+              <p className="text-sm leading-[21px] font-semibold">{o.offerNo}</p>
               <StatusPill>{t(`hl.offer.status.${o.status}` as MessageKey)}</StatusPill>
               <Link href={`/api/download?kind=offer-letter&id=${o.id}`} underline="hover">
                 {t('hl.offer.pdf')}
@@ -64,7 +62,7 @@ export function OfferDialog({ applicant, onClose }: { applicant: JobApplicant; o
                     {t(st === 'accepted' ? 'hl.offer.accept' : st === 'declined' ? 'hl.offer.decline' : 'hl.offer.withdraw')}
                   </Button>
                 ))}
-            </Stack>
+            </div>
           ))}
           {!live && (
             <>
@@ -82,7 +80,7 @@ export function OfferDialog({ applicant, onClose }: { applicant: JobApplicant; o
               </FormField>
             </>
           )}
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('hr.close')}</Button>

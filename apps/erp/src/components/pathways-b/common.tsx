@@ -1,24 +1,20 @@
 'use client';
-
-import UploadFile from '@mui/icons-material/UploadFile';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { FormDialog, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { BLOB_TYPES, fileProblem, readPicked, sizeLabel, type PickedFile } from '@/lib/pathways-b';
 import type { ActionResult } from '@/lib/types';
 
+import { Alert, Button } from '@/components/kx';
+import { FileUp as UploadFile } from 'lucide-react';
 /** Loads a read-only list for a dialog on demand, and reloads it after a change. */
 export function useLoad<T>(load: () => Promise<ActionResult<T>>) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const run = useCallback(load, []);
+  // The first loader is kept for the life of the component.
+  const [run] = useState(() => load);
   useEffect(() => {
     let live = true;
     void run().then((r) => {
@@ -38,10 +34,10 @@ export function useLoad<T>(load: () => Promise<ActionResult<T>>) {
 /** A heading with an action beside it, inside a dialog or a tab. */
 export function SectionHead({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap', mt: 3, mb: 1 }}>
-      <Typography variant="h6" sx={{ fontSize: '1.0625rem' }}>{title}</Typography>
-      {children && <Stack direction="row" spacing={1}>{children}</Stack>}
-    </Stack>
+    <div className="flex flex-row items-center justify-between gap-2 flex-wrap mt-6 mb-2">
+      <h6 className="font-medium tracking-[0.1px] text-[1.0625rem]">{title}</h6>
+      {children && <div className="flex flex-row gap-2">{children}</div>}
+    </div>
   );
 }
 

@@ -11,6 +11,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.campusLife') };
 }
 
+/** Published and not yet over. */
+function isUpcoming(e: CampusEvent) {
+  return e.status === 'published' && Date.parse(e.endsAt) > Date.now();
+}
+
 export default async function CampusLifePage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   await requireSection('campusLife');
   const { tab } = await searchParams;
@@ -25,7 +30,7 @@ export default async function CampusLifePage({ searchParams }: { searchParams: P
   const c = clubs.data!;
   const cm = committees.data!;
   const ev = events.data!;
-  const upcoming = ev.filter((e) => e.status === 'published' && Date.parse(e.endsAt) > Date.now());
+  const upcoming = ev.filter(isUpcoming);
   return (
     <>
       <PageHeader title={t('nav.campusLife')} subtitle={t('cl.subtitle')} />
