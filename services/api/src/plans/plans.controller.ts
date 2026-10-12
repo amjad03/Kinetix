@@ -231,7 +231,7 @@ export class PlansController {
       if (slot.dayOfWeek !== isoWeekday(date)) throw new BadRequestException('This period is not on that day');
       await this.assertTopicsIn(tx, b.topicIds, slot.subjectId);
       const content: LessonPlanContent = b.content;
-      const v = { topicIds: b.topicIds, content, aiDrafted: b.aiDrafted, teacherId: p.userId, updatedAt: new Date(), reviewedAt: null, reviewedBy: null, reviewRemark: null };
+      const v = { topicIds: b.topicIds, content, aiDrafted: b.aiDrafted, teacherId: p.userId, updatedAt: new Date(), reviewedAt: null, reviewedBy: null, reviewRemark: null, status: 'draft' as const, submittedAt: null };
       const [row] = await tx
         .insert(lessonPlans)
         .values({ tenantId: p.tenantId, sectionId: slot.sectionId, subjectId: slot.subjectId, timetableSlotId: slot.id, date, ...v })

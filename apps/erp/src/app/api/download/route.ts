@@ -105,6 +105,20 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !/^\d{4}-\d{2}$/.test(fy)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/hr/payroll/form16/${id}?fy=${fy}`;
   }
+  // Academics reports as PDF or Excel: ?kind=acad-report&report=<kind>&format=pdf|xlsx plus the report's own filters.
+  if (kind === 'acad-report') {
+    const sp = req.nextUrl.searchParams;
+    const report = sp.get('report') ?? '';
+    const format = sp.get('format') === 'pdf' ? 'pdf' : 'xlsx';
+    if (!/^[a-z-]{3,30}$/.test(report)) return new Response('Not found', { status: 404 });
+    const keep = new URLSearchParams({ format });
+    const ok: Record<string, RegExp> = { date: /^\d{4}-\d{2}-\d{2}$/, from: /^\d{4}-\d{2}-\d{2}$/, to: /^\d{4}-\d{2}-\d{2}$/, month: /^\d{4}-\d{2}$/, by: /^(class|teacher|room)$/, sectionId: UUID, subjectId: UUID, termId: UUID, id: UUID };
+    for (const [k, re] of Object.entries(ok)) {
+      const v = sp.get(k);
+      if (v && re.test(v)) keep.set(k, v);
+    }
+    FIXED[kind] = `/v1/academics/reports/${report}/export?${keep.toString()}`;
+  }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.
   const validId = kind === 'asset-tags' ? id.split(',').every((x) => UUID.test(x)) : UUID.test(id);

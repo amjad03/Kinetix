@@ -52,6 +52,7 @@ import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { ConnectorsModule } from './connectors/connectors.module.js';
 import { WelfareModule } from './welfare/welfare.module.js';
+import { AcademicsModule } from './academics/academics.module.js';
 import { AttendanceGovernanceModule } from './attendance-governance/governance.module.js';
 import { InstitutionModule } from './institution/institution.module.js';
 import { TrustModule } from './trust/trust.module.js';
@@ -177,6 +178,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     IntegrationsModule,
     ResearchModule,
     WelfareModule,
+    AcademicsModule,
     AttendanceGovernanceModule,
     InstitutionModule,
     TrustModule,
