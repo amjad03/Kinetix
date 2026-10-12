@@ -182,13 +182,15 @@ export function RunRecord({ run, canApprove, activity }: { run: PayrollRunDetail
         { label: t('pay.cost'), value: formatRupees(run.employerCostPaise) },
       ]}
       secondary={<LinkButton href="/payroll">{t('pay.back')}</LinkButton>}
-      overview={<RunDetail run={run} canApprove={canApprove} />}
-      activity={activity}
-      aside={
-        <Card title={t('hf.workflow')}>
-          <WorkflowStepper steps={steps} label={t('hf.workflow')} />
-        </Card>
+      overview={
+        <div className="space-y-6">
+          <Card title={t('hf.workflow')}>
+            <WorkflowStepper steps={steps} label={t('hf.workflow')} />
+          </Card>
+          <RunDetail run={run} canApprove={canApprove} />
+        </div>
       }
+      activity={activity}
     />
   );
 }

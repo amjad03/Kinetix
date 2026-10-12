@@ -169,7 +169,7 @@ function OpeningDialog({ opening, departments, onClose, run }: { opening: JobOpe
           disabled={pending || !valid}
           onClick={() =>
             start(async () => {
-              const r = await run(() => saveOpening(opening?.id ?? null, { ...f, positions: n }), t('hr.saved'));
+              const r = await run(() => saveOpening(opening?.id ?? null, { ...f, status: f.status === 'requested' || f.status === 'rejected' ? 'on_hold' : f.status, positions: n }), t('hr.saved'));
               if (r.ok) onClose();
             })
           }

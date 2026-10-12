@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { runAction } from '@/app/(dashboard)/payroll/actions';
 import { useNotice } from '@/components/hr/Common';
-import { StatGrid, StatTile } from '@/components/StatTile';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { downloadUrl, runActions, type StatutoryKind } from '@/lib/hr';
@@ -43,13 +42,6 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
         {can.lock && <Button variant="contained" disabled={pending} onClick={() => setConfirm('lock')}>{t('pay.lock')}</Button>}
         {can.publish && <Button variant="contained" disabled={pending} onClick={() => setConfirm('publish')}>{t('pay.publish')}</Button>}
       </div>
-      <StatGrid min={140}>
-        <StatTile label={t('pay.staff')} value={run.staffCount} />
-        <StatTile label={t('pay.gross')} value={formatRupees(run.grossPaise)} />
-        <StatTile label={t('pay.deductions')} value={formatRupees(run.deductionsPaise)} />
-        <StatTile label={t('pay.net')} value={formatRupees(run.netPaise)} />
-        <StatTile label={t('pay.cost')} value={formatRupees(run.employerCostPaise)} />
-      </StatGrid>
 
       {can.exports && (
         <div className="flex flex-row gap-2 flex-wrap mt-6">

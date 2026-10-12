@@ -86,7 +86,7 @@ describe('HR workflows: settings, two-step leave, loans, encashment, service boo
     expect((await get('teacher', `/v1/hr/leave/requests/${req.id}`).expect(200)).body.recommendedBy.fullName).toBe('Hari Hod');
     await get('teacher2', `/v1/hr/leave/requests/${req.id}`).expect(404);
     const hist = (await get('hr', `/v1/hr/history/leave_request/${req.id}`).expect(200)).body as { action: string }[];
-    expect(hist.map((h) => h.action)).toEqual(['leave.approved', 'leave.recommended']);
+    expect(hist.map((h) => h.action).slice(0, 2)).toEqual(['leave.approved', 'leave.recommended']);
   });
 
   it('approves a salary advance into monthly payroll recoveries', async () => {

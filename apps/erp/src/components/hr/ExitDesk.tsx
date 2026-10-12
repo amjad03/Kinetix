@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { acceptResignation, recordResignation, relieveEmployee, saveSettlement, setClearance, withdrawResignation } from '@/app/(dashboard)/hr/talent-actions';
