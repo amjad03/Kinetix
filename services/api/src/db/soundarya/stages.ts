@@ -16,6 +16,7 @@ import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from
 import { hrWorkflows, payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
 import { assistSamples } from './assist.js';
 import { gapClose } from './gap-close.js';
+import { campusOpsDepth } from './campus-ops-depth.js';
 import { integrationSamples } from './integration-samples.js';
 import { pathwaySamples } from './pathways.js';
 import { rolesAndRights } from './access.js';
@@ -90,5 +91,6 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['books, gateway settlements, Tally mapping, single sign-on and online-class attendance', gatewayBooksSamples],
   ['fees and accounts desk: structures, concessions, cheques, refunds, write-offs, vouchers and cash closing', feeAccountsSamples],
   ['DigiLocker settings, APAAR ids, devices, tags, LTI platform and early alerts', integrationSamples],
+  ['module settings and library stock verification', campusOpsDepth],
   ['academics desk: settings, approval requests, locked marks and lesson plans to review', academicsCore],
 ];

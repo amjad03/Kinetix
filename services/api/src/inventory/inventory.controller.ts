@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { readSettings } from '../campus-ops/settings.js';
 import { nextNumber, orConflict, Paise } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -319,7 +320,7 @@ export class InventoryController {
         const lines = await tx.select().from(invPoLines).where(eq(invPoLines.poId, id));
         const expected = lines.reduce((t, l) => t + l.receivedQty * l.unitPricePaise, 0);
         if (expected === 0) throw new ConflictException('Nothing has been received against this order yet');
-        const matched = b.amountPaise === expected;
+        const matched = Math.abs(b.amountPaise - expected) <= Number((await readSettings(tx, p.tenantId, 'procurement')).rules.invoiceTolerancePaise);
         const [inv] = await tx
           .insert(invInvoices)
           .values({ tenantId: p.tenantId, poId: id, vendorId: po.vendorId, invoiceNo: b.invoiceNo, amountPaise: b.amountPaise, expectedPaise: expected, status: matched ? 'matched' : 'mismatch', note: matched ? null : `Invoice differs from received goods by ${b.amountPaise - expected} paise`, createdBy: p.userId })
@@ -456,6 +457,11 @@ export class InventoryController {
       if (!store) throw new BadRequestException('Store not found');
       const asked = await tx.select().from(invRequisitionLines).where(eq(invRequisitionLines.requisitionId, req.id));
       const prices = await tx.select().from(invQuoteLines).where(eq(invQuoteLines.quoteId, q.id));
+      const pr = (await readSettings(tx, p.tenantId, 'procurement')).rules;
+      if (q.totalPaise > Number(pr.quotesRequiredAbovePaise)) {
+        const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(invQuotes).where(eq(invQuotes.rfqId, id));
+        if (n < Number(pr.minQuotes)) throw new ConflictException(`Orders above ₹${(Number(pr.quotesRequiredAbovePaise) / 100).toFixed(0)} need ${String(pr.minQuotes)} quotations; this request has ${n}`);
+      }
       const number = await nextNumber(tx, p.tenantId, 'PO');
       const [po] = await tx.insert(invPurchaseOrders).values({ tenantId: p.tenantId, number, requisitionId: req.id, vendorId: q.vendorId, storeId: b.storeId, departmentId: b.departmentId ?? null, totalPaise: q.totalPaise, createdBy: p.userId }).returning();
       await tx.insert(invPoLines).values(asked.map((a) => ({ tenantId: p.tenantId, poId: po.id, itemId: a.itemId, qty: a.qty, unitPricePaise: prices.find((x) => x.itemId === a.itemId)!.unitPricePaise })));
@@ -535,7 +541,7 @@ export class InventoryController {
     if (!store || !item) throw new NotFoundException('Store or item not found');
     await tx.insert(invStock).values({ tenantId: p.tenantId, storeId: m.storeId, itemId: m.itemId }).onConflictDoNothing();
     const [row] = await tx.select().from(invStock).where(and(eq(invStock.storeId, m.storeId), eq(invStock.itemId, m.itemId))).for('update');
-    if (row.qty + m.delta < 0) throw new ConflictException(`Only ${row.qty} of ${item.name} in this store`);
+    if (row.qty + m.delta < 0 && !(await readSettings(tx, p.tenantId, 'inventory')).rules.allowNegativeStock) throw new ConflictException(`Only ${row.qty} of ${item.name} in this store`);
     await tx.update(invStock).set({ qty: row.qty + m.delta }).where(eq(invStock.id, row.id));
     const [mv] = await tx.insert(invStockMoves).values({ tenantId: p.tenantId, storeId: m.storeId, itemId: m.itemId, delta: m.delta, kind: m.kind, refType: m.refType, refId: m.refId, issuedTo: m.issuedTo, note: m.note, createdBy: p.userId }).returning();
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `inventory.stock_${m.kind}`, subjectType: 'inv_item', subjectId: m.itemId, data: { storeId: m.storeId, delta: m.delta } });

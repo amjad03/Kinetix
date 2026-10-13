@@ -262,7 +262,7 @@ class GatePass {
   final String destination;
   final DateTime expectedBackAt;
 
-  /// requested, issued, out, returned, rejected or cancelled.
+  /// requested, approved, issued, out, returned, rejected or cancelled.
   final String status;
 }
 
@@ -310,6 +310,19 @@ class MealMark {
 
   /// breakfast, lunch, snacks or dinner.
   final String meal;
+}
+
+/// One dish on the canteen menu (`GET /v1/canteen/items`).
+class CanteenDish {
+  const CanteenDish({required this.id, required this.name, required this.pricePaise, required this.available});
+
+  factory CanteenDish.fromJson(Map<String, dynamic> j) =>
+      CanteenDish(id: j['id'] as String, name: j['name'] as String? ?? '', pricePaise: (j['pricePaise'] as num?)?.toInt() ?? 0, available: j['available'] as bool? ?? true);
+
+  final String id;
+  final String name;
+  final int pricePaise;
+  final bool available;
 }
 
 class WalletView {

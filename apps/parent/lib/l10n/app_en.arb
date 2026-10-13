@@ -2088,25 +2088,70 @@
   "repairDone": "Fixed",
   "repairClosed": "Checked and closed",
   "repairDueOn": "Due {date}",
-  "@repairDueOn": {"placeholders": {"date": {}}},
+  "@repairDueOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "repairFixedOn": "Fixed {date}",
-  "@repairFixedOn": {"placeholders": {"date": {}}},
+  "@repairFixedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "instalmentsButton": "Instalments",
   "instalmentsTitle": "Fee instalments",
   "instalmentsNone": "This fee is not split into instalments.",
   "instalmentN": "Instalment {n}",
-  "@instalmentN": {"placeholders": {"n": {}}},
+  "@instalmentN": {
+    "placeholders": {
+      "n": {}
+    }
+  },
   "instalmentDueOn": "Due {date}",
-  "@instalmentDueOn": {"placeholders": {"date": {}}},
+  "@instalmentDueOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "instalmentPaid": "Paid",
   "instalmentPartial": "Part paid",
   "instalmentDue": "Due",
   "instalmentOverdue": "Overdue",
   "instalmentsSummary": "{paid} paid of {total}",
-  "@instalmentsSummary": {"placeholders": {"paid": {}, "total": {}}},
+  "@instalmentsSummary": {
+    "placeholders": {
+      "paid": {},
+      "total": {}
+    }
+  },
   "libraryRenew": "Renew",
   "libraryRenewed": "Renewed. The new due date is shown.",
   "testConnection": "Test connection",
   "connectionOk": "Server reachable",
-  "connectionFailed": "Cannot reach the server"
+  "connectionFailed": "Cannot reach the server",
+  "outPasses": "Out-passes",
+  "outPassAsk": "Ask for an out-pass",
+  "outPassNone": "No out-passes yet",
+  "outPassBack": "Back by {when}",
+  "@outPassBack": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "outPassReason": "Reason",
+  "outPassDestination": "Going to",
+  "outPassDays": "Days away",
+  "outPassSent": "Out-pass request sent to the warden",
+  "outPassRequested": "Waiting",
+  "outPassApproved": "Approved",
+  "outPassIssued": "Issued",
+  "outPassOut": "Out",
+  "outPassReturned": "Back",
+  "outPassRejected": "Rejected",
+  "outPassCancelled": "Cancelled",
+  "canteenMenu": "Canteen menu",
+  "dishSoldOut": "Not available today"
 }

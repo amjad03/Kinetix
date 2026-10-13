@@ -51,6 +51,15 @@ void main() {
     expect(find.descendant(of: find.byKey(const Key('mealList')), matching: find.text('Lunch')), findsOneWidget);
   });
 
+  testWidgets('shows the canteen menu with what is not available today', (tester) async {
+    await pump(tester);
+    expect(api.calls, contains('canteenMenu'));
+    await tester.scrollUntilVisible(find.byKey(const Key('canteenMenu')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.descendant(of: find.byKey(const Key('canteenMenu')), matching: find.text('Masala dosa')), findsOneWidget);
+    expect(find.text('Not available today'), findsOneWidget);
+    expect(CanteenDish.fromJson({'id': 'd', 'name': 'Idli', 'pricePaise': 3000}).available, isTrue);
+  });
+
   testWidgets('tops up through the demo checkout and shows the new balance', (tester) async {
     await pump(tester);
     await tester.tap(find.byKey(const Key('walletTopUp')));

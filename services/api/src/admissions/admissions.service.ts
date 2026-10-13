@@ -21,6 +21,7 @@ import {
 import { createHash, randomBytes } from 'node:crypto';
 import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
+import { readSettings } from '../campus-ops/settings.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import type { Tx } from '../db/db.service.js';
 import { academicYears, admissionCycles, admissionQuotas, applicationDocuments, applications, enquiries, entranceSeats, entranceTests, meritLists, programs, sections, students, userRoles, users } from '../db/schema.js';
@@ -185,6 +186,15 @@ export class AdmissionsService {
         if (!seatAvailable(cycle.seats, await this.seatQuotas(tx, cycle.id), await this.heldByCategory(tx, cycle.id), category)) {
           throw new ConflictException(category ? `No seat is left for the ${category} category` : 'No general seats are left in this cycle');
         }
+      }
+      const ar = (await readSettings(tx, a.tenantId, 'admissions')).rules;
+      if (ar.documentsBeforeOffer) {
+        const docs = await tx.select({ status: applicationDocuments.status }).from(applicationDocuments).where(eq(applicationDocuments.applicationId, a.id));
+        if (docs.some((d) => d.status !== 'verified')) throw new BadRequestException('Verify the applicant\'s documents before offering a seat');
+      }
+      if (ar.interviewRequired) {
+        const [{ n }] = (await tx.execute<{ n: number }>(sql`select count(*)::int as n from admission_interviews where application_id = ${a.id}::uuid`)).rows;
+        if (!n) throw new BadRequestException('Interview the applicant before offering a seat');
       }
       offerExpiresOn = addDays(await this.lifecycle.today(tx), cycle.offerValidDays);
     }
@@ -420,7 +430,7 @@ export class AdmissionsService {
     const a = await this.application(tx, id, true);
     if (a.status !== 'accepted') throw new BadRequestException(a.status === 'enrolled' ? 'This applicant is already enrolled' : 'Only an accepted offer can be enrolled');
     const cycle = await this.cycle(tx, a.cycleId);
-    if (!['none', 'paid', 'waived'].includes(a.feeStatus)) throw new BadRequestException('The application fee has not been paid');
+    if ((await readSettings(tx, a.tenantId, 'admissions')).rules.admissionFeeBeforeEnrolment && !['none', 'paid', 'waived'].includes(a.feeStatus)) throw new BadRequestException('The application fee has not been paid');
     const gaps = await this.documentGaps(tx, a, cycle);
     if (gaps.length) throw new BadRequestException(`Documents outstanding: ${gaps.join(', ')}`);
     // One person, one record: a likely duplicate stops enrolment until the office says why it is not.

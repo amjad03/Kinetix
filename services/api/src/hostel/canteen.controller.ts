@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { readSettings } from '../campus-ops/settings.js';
 import { orConflict } from '../common/ops.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
@@ -179,9 +180,18 @@ export class CanteenController {
         });
         delta = -items.reduce((t, i) => t + i.qty * i.pricePaise, 0);
       }
+      const cr = (await readSettings(tx, p.tenantId, 'canteen')).rules;
+      if (kind === 'topup' && delta < Number(cr.minTopupPaise)) throw new BadRequestException(`The smallest top-up is ₹${(Number(cr.minTopupPaise) / 100).toFixed(2)}`);
+      if (kind === 'order') {
+        const [{ spent }] = await tx
+          .select({ spent: sql<number>`coalesce(-sum(${canteenWalletTxns.deltaPaise}), 0)::int` })
+          .from(canteenWalletTxns)
+          .where(and(eq(canteenWalletTxns.studentId, studentId), eq(canteenWalletTxns.kind, 'order'), sql`(${canteenWalletTxns.createdAt} at time zone 'Asia/Kolkata')::date = (now() at time zone 'Asia/Kolkata')::date`));
+        if (Number(cr.dailySpendLimitPaise) > 0 && spent - delta > Number(cr.dailySpendLimitPaise)) throw new ConflictException(`This would pass today's spend limit of ₹${(Number(cr.dailySpendLimitPaise) / 100).toFixed(2)}`);
+      }
       await tx.insert(canteenWallets).values({ tenantId: p.tenantId, studentId }).onConflictDoNothing();
       const [w] = await tx.select().from(canteenWallets).where(eq(canteenWallets.studentId, studentId)).for('update');
-      if (w.balancePaise + delta < 0) throw new ConflictException(`Not enough balance (₹${(w.balancePaise / 100).toFixed(2)})`);
+      if (w.balancePaise + delta < 0 && !(kind === 'order' && cr.allowNegativeBalance)) throw new ConflictException(`Not enough balance (₹${(w.balancePaise / 100).toFixed(2)})`);
       await tx.update(canteenWallets).set({ balancePaise: sql`${canteenWallets.balancePaise} + ${delta}`, updatedAt: new Date() }).where(eq(canteenWallets.id, w.id));
       const [txn] = await tx.insert(canteenWalletTxns).values({ tenantId: p.tenantId, studentId, deltaPaise: delta, kind, items, idempotencyKey: key, createdBy: p.userId }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `canteen.${kind}`, subjectType: 'canteen_wallet_txn', subjectId: txn.id, data: { studentId, deltaPaise: delta } });

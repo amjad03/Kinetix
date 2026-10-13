@@ -25,6 +25,7 @@ class WalletScreen extends StatefulWidget {
 class _WalletScreenState extends State<WalletScreen> {
   HostelView? _hostel;
   WalletView? _wallet;
+  List<CanteenDish> _menu = const [];
   ApiException? _error;
   String? _busy;
 
@@ -46,6 +47,12 @@ class _WalletScreenState extends State<WalletScreen> {
       }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
+    }
+    try {
+      final menu = await widget.api.canteenMenu();
+      if (mounted) setState(() => _menu = menu);
+    } on ApiException {
+      // The menu is a nice-to-have; the wallet still shows without it.
     }
   }
 
@@ -177,6 +184,27 @@ class _WalletScreenState extends State<WalletScreen> {
                       ],
                     ),
                   ),
+                  if (_menu.isNotEmpty) ...[
+                    const SizedBox(height: Kx.s16),
+                    Text(l.canteenMenu, style: context.text.titleMedium),
+                    const SizedBox(height: Kx.s8),
+                    KxCard(
+                      key: const Key('canteenMenu'),
+                      child: Column(
+                        children: [
+                          for (final d in _menu)
+                            ListTile(
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.lunch_dining_outlined),
+                              title: Text(d.name),
+                              subtitle: d.available ? null : Text(l.dishSoldOut),
+                              trailing: Text(Fmt.rupees(d.pricePaise)),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: Kx.s16),
                   Text(l.walletMeals, style: context.text.titleMedium),
                   const SizedBox(height: Kx.s8),

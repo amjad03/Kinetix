@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics' | 'chat';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics' | 'chat' | 'campusOps';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -55,6 +55,7 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   assets: ['store_keeper', 'principal', 'tenant_admin'],
   // admissions.controller.ts ADMISSIONS_ROLES
   admissions: ['principal', 'tenant_admin', 'admissions_officer'],
+  campusOps: ['principal', 'tenant_admin', 'admissions_officer', 'librarian', 'hostel_warden', 'transport_manager', 'canteen_manager', 'store_keeper', 'accountant'],
   // students.controller.ts PROFILE_ROLES (status changes and promotion are principal and admin only: LIFECYCLE_ROLES)
   students: ['principal', 'tenant_admin', 'admissions_officer', 'hod', 'accountant'],
   // exams.controller.ts / schemes.controller.ts / results.controller.ts: principal and administrator manage, heads of department read and verify

@@ -1,4 +1,6 @@
 'use client';
+
+import { recordHref } from '@/lib/campus-ops';
 import { useState } from 'react';
 import { allocateAsset, disposeAsset, loadAsset, logMaintenance, postDepreciation, registerAsset, returnAsset } from '@/app/(dashboard)/assets/actions';
 import { assetTagsUrl } from '@/lib/documents';
@@ -56,6 +58,7 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
           label={t('nav.assets')}
           rows={assets}
           rowId={(a) => a.id}
+          rowHref={(a) => recordHref('asset', a.id)}
           selectable
           exportName="assets"
           bulkActions={[{ id: 'tags', label: t('as.printTags'), icon: <PrintOutlined />, onClick: (rows) => void window.open(assetTagsUrl(rows.map((r) => r.id)), '_blank') }]}

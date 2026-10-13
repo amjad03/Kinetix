@@ -14,10 +14,9 @@ import { chapters, libraryBooks, libraryLoans, students, tenants, topics } from 
 import { libraryEresourceAccess, libraryEresources, libraryReservations, resourceTopicLinks } from '../db/schema-depth.js';
 import { addDays } from '../teacher/teacher.service.js';
 import { LIBRARY_ROLES } from './library.controller.js';
-import { copiesHeld, copiesOut, expireHolds, MAX_RENEWALS, promoteNext } from './reservations.js';
+import { readSettings, ruleNumber } from '../campus-ops/settings.js';
+import { copiesHeld, copiesOut, expireHolds, promoteNext } from './reservations.js';
 
-const LOAN_DAYS = 14;
-const FINE_PAISE_PER_DAY = 200;
 const SEAT_WINDOW_MINUTES = 30;
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);
 
@@ -51,12 +50,13 @@ export class LibraryDepthController {
       if (!loan) throw new NotFoundException('Loan not found');
       await assertCanSeeStudent(tx, p, loan.studentId, LIBRARY_ROLES);
       if (loan.returnedAt) throw new ConflictException('This book has already been returned');
-      if (loan.renewCount >= MAX_RENEWALS) throw new ConflictException(`A loan can be renewed ${MAX_RENEWALS} times`);
+      const rules = (await readSettings(tx, p.tenantId, 'library')).rules;
+      if (loan.renewCount >= Number(rules.maxRenewals)) throw new ConflictException(`A loan can be renewed ${String(rules.maxRenewals)} times`);
       const today = await this.today(tx);
       if (loan.dueOn < today) throw new ConflictException('Overdue books cannot be renewed; return the book at the desk');
       const [waiting] = await tx.select({ id: libraryReservations.id }).from(libraryReservations).where(and(eq(libraryReservations.bookId, loan.bookId), sql`${libraryReservations.status} in ('waiting', 'ready')`)).limit(1);
       if (waiting) throw new ConflictException('Another student has reserved this book');
-      const [row] = await tx.update(libraryLoans).set({ dueOn: addDays(loan.dueOn > today ? loan.dueOn : today, LOAN_DAYS), renewCount: loan.renewCount + 1 }).where(eq(libraryLoans.id, id)).returning();
+      const [row] = await tx.update(libraryLoans).set({ dueOn: addDays(loan.dueOn > today ? loan.dueOn : today, Number(rules.loanDays)), renewCount: loan.renewCount + 1 }).where(eq(libraryLoans.id, id)).returning();
       await auditUser(tx, p, 'library.renewed', 'library_loan', id, { renewCount: row.renewCount });
       return row;
     });
@@ -143,7 +143,7 @@ export class LibraryDepthController {
       const [book] = await tx.select().from(libraryBooks).where(eq(libraryBooks.id, loan.bookId)).for('update');
       const charge = b.amountPaise ?? (kind === 'lost' ? book.pricePaise : 0);
       if (kind === 'lost' && charge <= 0) throw new BadRequestException('Give the charge for the lost book (or record the book\'s price)');
-      const late = Math.max(0, daysBetween(loan.dueOn, await this.today(tx))) * FINE_PAISE_PER_DAY;
+      const late = Math.max(0, daysBetween(loan.dueOn, await this.today(tx))) * (await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'));
       const [row] = await tx.update(libraryLoans).set({ returnedAt: this.clock.now(), finePaise: late + charge, condition: kind, conditionNote: b.note }).where(eq(libraryLoans.id, id)).returning();
       if (kind === 'lost') await tx.update(libraryBooks).set({ copies: Math.max(0, book.copies - 1) }).where(eq(libraryBooks.id, book.id));
       else await promoteNext(tx, book.id, this.clock.now());

@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// No description provided for @today.
   ///
@@ -5204,9 +5211,112 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot reach the server'**
   String get connectionFailed;
+
+  /// No description provided for @outPasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Out-passes'**
+  String get outPasses;
+
+  /// No description provided for @outPassAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for an out-pass'**
+  String get outPassAsk;
+
+  /// No description provided for @outPassNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No out-passes yet'**
+  String get outPassNone;
+
+  /// No description provided for @outPassBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back by {when}'**
+  String outPassBack(String when);
+
+  /// No description provided for @outPassReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get outPassReason;
+
+  /// No description provided for @outPassDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Going to'**
+  String get outPassDestination;
+
+  /// No description provided for @outPassDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days away'**
+  String get outPassDays;
+
+  /// No description provided for @outPassSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Out-pass request sent to the warden'**
+  String get outPassSent;
+
+  /// No description provided for @outPassRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get outPassRequested;
+
+  /// No description provided for @outPassApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get outPassApproved;
+
+  /// No description provided for @outPassIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued'**
+  String get outPassIssued;
+
+  /// No description provided for @outPassOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Out'**
+  String get outPassOut;
+
+  /// No description provided for @outPassReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get outPassReturned;
+
+  /// No description provided for @outPassRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get outPassRejected;
+
+  /// No description provided for @outPassCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get outPassCancelled;
+
+  /// No description provided for @canteenMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Canteen menu'**
+  String get canteenMenu;
+
+  /// No description provided for @dishSoldOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available today'**
+  String get dishSoldOut;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -5215,7 +5325,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
