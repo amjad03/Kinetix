@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { readSettings } from '../campus-ops/settings.js';
 import { Day, etaMinutes, haversineM, orConflict, Paise } from '../common/ops.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { Clock, localParts } from '../common/time.js';
@@ -50,7 +51,7 @@ const RouteBody = z.object({ name: z.string().trim().min(1).max(80), vehicleId: 
 const RoutePatch = z.object({ name: z.string().trim().min(1).max(80).optional(), vehicleId: z.uuid().nullable().optional(), driverId: z.uuid().nullable().optional(), monthlyFeePaise: Paise.optional(), active: z.boolean().optional() });
 const StopBody = z.object({ name: z.string().trim().min(1).max(100), lat: Lat, lng: Lng, pickupTime: Hhmm.optional(), seq: z.number().int().min(1).max(200).optional() });
 const AssignBody = z.object({ studentId: z.uuid(), routeId: z.uuid(), stopId: z.uuid(), startsOn: Day.optional() });
-const FeeBody = z.object({ title: z.string().trim().min(1).max(120), dueOn: Day, routeId: z.uuid().optional() });
+const FeeBody = z.object({ title: z.string().trim().min(1).max(120), dueOn: Day.optional(), routeId: z.uuid().optional() });
 const ExpenseBody = z
   .object({ vehicleId: z.uuid(), kind: z.enum(['fuel', 'repair', 'toll', 'other']), spentOn: Day, amountPaise: Paise.min(100), litres: z.number().positive().max(2000).optional(), odometerKm: z.number().int().min(0).max(5_000_000).optional(), note: z.string().trim().max(200).default('') })
   .refine((e) => e.kind !== 'fuel' || e.litres != null, { message: 'Give the litres filled', path: ['litres'] });
@@ -65,6 +66,14 @@ const PingBody = z.object({ lat: Lat, lng: Lng, speedKmh: z.number().min(0).max(
  * fans it out over the realtime gateway to the families riding the route, tells a stop's
  * families when the bus is close, and keeps the trip log.
  */
+/** The next date falling on `day` of the month (1-28), today included: fees charged on the 12th with day 10 fall due on the 10th of next month. */
+export function nextDueDay(today: string, day: number): string {
+  const [y, m, d] = today.split('-').map(Number);
+  const dd = Math.min(Math.max(Math.trunc(day) || 1, 1), 28);
+  const [yy, mm] = d <= dd ? [y, m] : m === 12 ? [y + 1, 1] : [y, m + 1];
+  return `${yy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+}
+
 @Controller('v1/transport')
 export class TransportController {
   constructor(
@@ -114,19 +123,20 @@ export class TransportController {
     });
   }
 
-  /** Vehicle papers and licences that expire within 30 days (or already have). */
+  /** Vehicle papers and licences that expire within the warning window set in transport settings (or already have). */
   @Get('compliance')
   @Auth('user', TRANSPORT_ROLES)
   compliance(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = await this.today(tx);
-      const limit = sql`(${today}::date + 30)`;
+      const warn = Number((await readSettings(tx, p.tenantId, 'transport')).rules.docExpiryWarnDays);
+      const limit = sql`(${today}::date + ${warn}::int)`;
       const v = await tx.select().from(transportVehicles).where(sql`${transportVehicles.status} <> 'retired' and (${transportVehicles.insuranceExpiresOn} <= ${limit} or ${transportVehicles.fitnessExpiresOn} <= ${limit} or ${transportVehicles.pucExpiresOn} <= ${limit})`);
       const d = await tx.select().from(transportDrivers).where(sql`${transportDrivers.active} and ${transportDrivers.licenseExpiresOn} <= ${limit}`);
       return {
         today,
         items: [
-          ...v.flatMap((x) => (['insuranceExpiresOn', 'fitnessExpiresOn', 'pucExpiresOn'] as const).filter((k) => x[k] && x[k]! <= addDays(today, 30)).map((k) => ({ kind: k.replace('ExpiresOn', ''), subject: x.regNo, expiresOn: x[k]!, expired: x[k]! < today }))),
+          ...v.flatMap((x) => (['insuranceExpiresOn', 'fitnessExpiresOn', 'pucExpiresOn'] as const).filter((k) => x[k] && x[k]! <= addDays(today, warn)).map((k) => ({ kind: k.replace('ExpiresOn', ''), subject: x.regNo, expiresOn: x[k]!, expired: x[k]! < today }))),
           ...d.map((x) => ({ kind: 'licence', subject: x.fullName, expiresOn: x.licenseExpiresOn!, expired: x.licenseExpiresOn! < today })),
         ].sort((a, b) => a.expiresOn.localeCompare(b.expiresOn)),
       };
@@ -271,8 +281,9 @@ export class TransportController {
         .from(transportAssignments)
         .innerJoin(transportRoutes, eq(transportRoutes.id, transportAssignments.routeId))
         .where(and(isNull(transportAssignments.endedOn), b.routeId ? eq(transportAssignments.routeId, b.routeId) : undefined));
-      const res = await this.fees.chargeStudents(tx, p, b.title, b.dueOn, rows);
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.fees_charged', data: { ...b, ...res } });
+      const dueOn = b.dueOn ?? nextDueDay(await this.today(tx), Number((await readSettings(tx, p.tenantId, 'transport')).rules.feeDueDay));
+      const res = await this.fees.chargeStudents(tx, p, b.title, dueOn, rows);
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.fees_charged', data: { ...b, dueOn, ...res } });
       return res;
     });
   }

@@ -1277,5 +1277,8 @@
   "acadDocCannotOpen": "ಈ ಫೋನ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಬಲ್ಲ ಆ್ಯಪ್ ಇಲ್ಲ.",
   "testConnection": "ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ",
   "connectionOk": "ಸರ್ವರ್ ಲಭ್ಯವಿದೆ",
-  "connectionFailed": "ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ"
+  "connectionFailed": "ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ",
+  "gatePassApproved": "ಅನುಮೋದಿತ",
+  "canteenMenu": "ಕ್ಯಾಂಟೀನ್ ಮೆನು",
+  "dishSoldOut": "ಇಂದು ಲಭ್ಯವಿಲ್ಲ"
 }

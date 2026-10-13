@@ -27,6 +27,7 @@ class BoardingScreen extends StatefulWidget {
 class _BoardingScreenState extends State<BoardingScreen> {
   BoardingView? _boarding;
   WalletView? _wallet;
+  List<CanteenDish> _menu = const [];
   ApiException? _error;
   String? _busy;
 
@@ -48,7 +49,69 @@ class _BoardingScreenState extends State<BoardingScreen> {
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
     }
+    try {
+      final menu = await widget.api.canteenMenu();
+      if (mounted) setState(() => _menu = menu);
+    } on ApiException {
+      // The menu is a nice-to-have; the wallet still shows without it.
+    }
   }
+
+  /// Asks the warden for an out-pass: reason, where to, and how many days away.
+  Future<void> _askOutPass() async {
+    final l = context.l10n;
+    final reason = TextEditingController();
+    final destination = TextEditingController();
+    var days = 1;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, set) => AlertDialog(
+          title: Text(l.outPassAsk),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(key: const Key('outPassReason'), controller: reason, decoration: InputDecoration(labelText: l.outPassReason)),
+              const SizedBox(height: Kx.s12),
+              TextField(key: const Key('outPassDestination'), controller: destination, decoration: InputDecoration(labelText: l.outPassDestination)),
+              const SizedBox(height: Kx.s12),
+              DropdownButtonFormField<int>(
+                key: const Key('outPassDays'),
+                initialValue: days,
+                decoration: InputDecoration(labelText: l.outPassDays),
+                items: [for (var d = 1; d <= 7; d++) DropdownMenuItem(value: d, child: Text('$d'))],
+                onChanged: (v) => set(() => days = v ?? 1),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+            FilledButton(key: const Key('outPassSend'), onPressed: () => Navigator.pop(ctx, reason.text.trim().isNotEmpty), child: Text(l.send)),
+          ],
+        ),
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      final back = DateTime.now().add(Duration(days: days));
+      await widget.api.requestOutPass(widget.child.id, reason: reason.text.trim(), destination: destination.text.trim(), expectedBackAt: DateTime(back.year, back.month, back.day, 18));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.outPassSent)));
+      await _load();
+    } on ApiException catch (e) {
+      if (mounted) await _problem(l.outPassAsk, e.message);
+    }
+  }
+
+  String _passStatus(AppLocalizations l, String status) => switch (status) {
+    'requested' => l.outPassRequested,
+    'approved' => l.outPassApproved,
+    'issued' => l.outPassIssued,
+    'out' => l.outPassOut,
+    'returned' => l.outPassReturned,
+    'rejected' => l.outPassRejected,
+    _ => l.outPassCancelled,
+  };
 
   Future<void> _problem(String title, String message) => showDialog<void>(
     context: context,
@@ -175,6 +238,35 @@ class _BoardingScreenState extends State<BoardingScreen> {
                     ),
                   ],
                 ],
+                if (b != null && b.resident) ...[
+                  const SizedBox(height: Kx.s16),
+                  Row(
+                    children: [
+                      Expanded(child: Text(l.outPasses, style: context.text.titleMedium)),
+                      TextButton.icon(key: const Key('askOutPass'), onPressed: _askOutPass, icon: const Icon(Icons.add), label: Text(l.outPassAsk)),
+                    ],
+                  ),
+                  const SizedBox(height: Kx.s8),
+                  KxCard(
+                    key: const Key('outPasses'),
+                    child: b.passes.isEmpty
+                        ? Text(l.outPassNone, style: context.text.bodyMedium)
+                        : Column(
+                            children: [
+                              for (final p in b.passes)
+                                ListTile(
+                                  key: Key('pass-${p.id}'),
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.badge_outlined),
+                                  title: Text(p.destination.isEmpty ? p.reason : '${p.reason} · ${p.destination}'),
+                                  subtitle: Text(l.outPassBack(context.fmt.messageDay(p.expectedBackAt, DateTime.now()))),
+                                  trailing: Text(_passStatus(l, p.status), style: context.text.labelLarge),
+                                ),
+                            ],
+                          ),
+                  ),
+                ],
                 if (w != null) ...[
                   const SizedBox(height: Kx.s24),
                   Text(l.canteenWallet, style: context.text.titleMedium),
@@ -199,6 +291,27 @@ class _BoardingScreenState extends State<BoardingScreen> {
                       ],
                     ),
                   ),
+                  if (_menu.isNotEmpty) ...[
+                    const SizedBox(height: Kx.s16),
+                    Text(l.canteenMenu, style: context.text.titleMedium),
+                    const SizedBox(height: Kx.s8),
+                    KxCard(
+                      key: const Key('canteenMenu'),
+                      child: Column(
+                        children: [
+                          for (final d in _menu)
+                            ListTile(
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.lunch_dining_outlined),
+                              title: Text(d.name),
+                              subtitle: d.available ? null : Text(l.dishSoldOut),
+                              trailing: Text(Fmt.rupees(d.pricePaise)),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: Kx.s16),
                   Text(l.recentMeals, style: context.text.titleMedium),
                   const SizedBox(height: Kx.s8),

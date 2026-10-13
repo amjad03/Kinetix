@@ -964,5 +964,22 @@
   "libraryRenewed": "नवीनीकृत। नई देय तिथि दिखाई गई है।",
   "testConnection": "कनेक्शन जाँचें",
   "connectionOk": "सर्वर उपलब्ध है",
-  "connectionFailed": "सर्वर तक नहीं पहुँच सका"
+  "connectionFailed": "सर्वर तक नहीं पहुँच सका",
+  "outPasses": "बाहर-पास",
+  "outPassAsk": "बाहर-पास माँगें",
+  "outPassNone": "अभी कोई बाहर-पास नहीं",
+  "outPassBack": "{when} तक वापसी",
+  "outPassReason": "कारण",
+  "outPassDestination": "कहाँ जा रहे हैं",
+  "outPassDays": "कितने दिन",
+  "outPassSent": "बाहर-पास का अनुरोध वार्डन को भेजा गया",
+  "outPassRequested": "प्रतीक्षा में",
+  "outPassApproved": "स्वीकृत",
+  "outPassIssued": "जारी",
+  "outPassOut": "बाहर",
+  "outPassReturned": "लौट आए",
+  "outPassRejected": "अस्वीकृत",
+  "outPassCancelled": "रद्द",
+  "canteenMenu": "कैंटीन मेनू",
+  "dishSoldOut": "आज उपलब्ध नहीं"
 }

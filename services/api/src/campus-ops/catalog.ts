@@ -41,7 +41,7 @@ export const NUMBERING: Record<OpsModule, string[]> = {
 
 export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
   admissions: {
-    rules: { documentsBeforeOffer: true, interviewRequired: false, offerValidDays: 7, admissionFeeBeforeEnrolment: true },
+    rules: { documentsBeforeOffer: false, interviewRequired: false, offerValidDays: 7, admissionFeeBeforeEnrolment: true },
     templates: { offerLetter: 'Dear {name}, you have been offered a seat in {program}. Please pay the admission fee by {due}.', rejectionNote: 'Thank you for applying. We are unable to offer you a seat this year.' },
     defaults: { counsellorFollowUpDays: 2, enquirySource: 'walk_in' },
   },
@@ -61,7 +61,7 @@ export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
     defaults: { direction: 'to_campus' },
   },
   canteen: {
-    rules: { minTopupPaise: 10000, allowNegativeBalance: false, dailySpendLimitPaise: 30000 },
+    rules: { minTopupPaise: 0, allowNegativeBalance: false, dailySpendLimitPaise: 0 },
     templates: { lowBalance: '{name}, your canteen balance is ₹{balance}. Please top up.' },
     defaults: { lowBalancePaise: 5000 },
   },

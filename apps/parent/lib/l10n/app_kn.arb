@@ -964,5 +964,22 @@
   "libraryRenewed": "ನವೀಕರಿಸಲಾಗಿದೆ. ಹೊಸ ಗಡುವು ತೋರಿಸಲಾಗಿದೆ.",
   "testConnection": "ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ",
   "connectionOk": "ಸರ್ವರ್ ಲಭ್ಯವಿದೆ",
-  "connectionFailed": "ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ"
+  "connectionFailed": "ಸರ್ವರ್ ತಲುಪಲು ಆಗಲಿಲ್ಲ",
+  "outPasses": "ಹೊರಹೋಗುವ ಪಾಸ್‌ಗಳು",
+  "outPassAsk": "ಹೊರಹೋಗುವ ಪಾಸ್ ಕೇಳಿ",
+  "outPassNone": "ಇನ್ನೂ ಯಾವುದೇ ಪಾಸ್ ಇಲ್ಲ",
+  "outPassBack": "{when} ಒಳಗೆ ಹಿಂದಿರುಗುವುದು",
+  "outPassReason": "ಕಾರಣ",
+  "outPassDestination": "ಎಲ್ಲಿಗೆ",
+  "outPassDays": "ಎಷ್ಟು ದಿನ",
+  "outPassSent": "ಪಾಸ್ ವಿನಂತಿಯನ್ನು ವಾರ್ಡನ್‌ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "outPassRequested": "ಕಾಯುತ್ತಿದೆ",
+  "outPassApproved": "ಅನುಮೋದಿತ",
+  "outPassIssued": "ನೀಡಲಾಗಿದೆ",
+  "outPassOut": "ಹೊರಗೆ",
+  "outPassReturned": "ಮರಳಿದ್ದಾರೆ",
+  "outPassRejected": "ತಿರಸ್ಕೃತ",
+  "outPassCancelled": "ರದ್ದಾಗಿದೆ",
+  "canteenMenu": "ಕ್ಯಾಂಟೀನ್ ಮೆನು",
+  "dishSoldOut": "ಇಂದು ಲಭ್ಯವಿಲ್ಲ"
 }

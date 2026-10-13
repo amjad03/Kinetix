@@ -37,6 +37,7 @@ void main() {
     expect(find.descendant(of: find.byKey(const Key('nightRoll')), matching: find.text('Present')), findsOneWidget);
     expect(find.byKey(const Key('walletBalance')), findsOneWidget);
     expect(find.text('₹250'), findsOneWidget);
+    await tester.scrollUntilVisible(find.byKey(const Key('mealList')), 200, scrollable: find.byType(Scrollable).last);
     expect(find.descendant(of: find.byKey(const Key('mealList')), matching: find.text('Lunch')), findsOneWidget);
   });
 
@@ -66,6 +67,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(api.calls.where((c) => c.startsWith('walletCheckout')), isEmpty);
     expect(find.byKey(const Key('walletAmount')), findsOneWidget);
+  });
+
+  testWidgets('asks the warden for an out-pass and shows it waiting; shows the canteen menu', (tester) async {
+    final (api, _) = await pumpApp(tester);
+    await openBoarding(tester);
+    expect(find.text('No out-passes yet'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('canteenMenu')), matching: find.text('Masala dosa')), findsOneWidget);
+    expect(find.text('Not available today'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('askOutPass')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('outPassReason')), 'Cousin wedding');
+    await tester.enterText(find.byKey(const Key('outPassDestination')), 'Mysuru');
+    await tester.tap(find.byKey(const Key('outPassSend')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('requestOutPass c1 Cousin wedding'));
+    expect(find.text('Cousin wedding · Mysuru'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('outPasses')), matching: find.text('Waiting')), findsOneWidget);
+  });
+
+  test('parses out-passes and canteen dishes', () {
+    final b = BoardingView.fromJson({
+      'resident': true,
+      'passes': [
+        {'id': 'p1', 'reason': 'Home', 'destination': '', 'expectedBackAt': '2026-10-14T12:30:00.000Z', 'status': 'approved'},
+      ],
+    });
+    expect((b.passes.single.status, b.passes.single.reason), ('approved', 'Home'));
+    expect(CanteenDish.fromJson({'id': 'd', 'name': 'Idli', 'pricePaise': 3000, 'available': false}).available, isFalse);
   });
 
   testWidgets('with online payment off the wallet says so', (tester) async {

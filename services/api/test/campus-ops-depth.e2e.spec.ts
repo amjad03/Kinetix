@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { REPORTS } from '../src/campus-ops/catalog.js';
+import { nextDueDay } from '../src/transport/transport.controller.js';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
 
 describe('campus operations depth: module settings, record views, reports, library stock verification', () => {
@@ -74,6 +75,66 @@ describe('campus operations depth: module settings, record views, reports, libra
     expect(pdf.headers['content-type']).toBe('application/pdf');
     await http().get('/v1/ops-reports/library.stock?from=yesterday').set(as('principal')).expect(400);
     await http().get('/v1/ops-reports/library.stock').set(as('teacher')).expect(403);
+  });
+
+  it('enforces hostel, canteen, transport, stores and purchasing settings', async () => {
+    const put = (m: string, body: object) => http().put(`/v1/module-settings/${m}`).set(as('principal')).send(body).expect(200);
+    const post = (path: string, body: object, who = 'principal') => http().post(path).set(as(who)).send(body);
+    tokens.student = await login(t.studentUser.email!);
+    const s = t.students[2];
+
+    // Hostel: longest leave, and requests approved without the warden when the rule is off.
+    const blk = (await post('/v1/hostel/blocks', { name: 'Block A' }).expect(201)).body;
+    await post(`/v1/hostel/blocks/${blk.id}/rooms`, { number: '101', beds: 2 }).expect(201);
+    const beds = (await http().get('/v1/hostel/beds?free=true').set(as('principal')).expect(200)).body;
+    await post('/v1/hostel/allotments', { studentId: s.id, bedId: beds[0].bedId }).expect(201);
+    const back = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
+    await post('/v1/hostel/gate-passes', { studentId: s.id, reason: 'Home', expectedBackAt: back(9) }).expect(400);
+    expect((await post('/v1/hostel/gate-passes/requests', { studentId: s.id, reason: 'Home', expectedBackAt: back(2) }, 'student').expect(201)).body.status).toBe('requested');
+    await put('hostel', { rules: { outpassNeedsApproval: false, maxLeaveDays: 10 } });
+    expect((await post('/v1/hostel/gate-passes/requests', { studentId: s.id, reason: 'Wedding', expectedBackAt: back(8) }, 'student').expect(201)).body.status).toBe('approved');
+
+    // Canteen: smallest top-up, daily spend limit, negative balance.
+    const dosa = (await post('/v1/canteen/items', { name: 'Dosa', pricePaise: 4000 }).expect(201)).body;
+    await put('canteen', { rules: { minTopupPaise: 10000, dailySpendLimitPaise: 6000 } });
+    await post('/v1/canteen/wallet/topup', { studentId: s.id, amountPaise: 5000, idempotencyKey: 'topup-small-1' }).expect(400);
+    await post('/v1/canteen/wallet/topup', { studentId: s.id, amountPaise: 10000, idempotencyKey: 'topup-ok-0001' }).expect(201);
+    await post('/v1/canteen/orders', { studentId: s.id, idempotencyKey: 'order-one-001', items: [{ itemId: dosa.id, qty: 1 }] }).expect(201);
+    await post('/v1/canteen/orders', { studentId: s.id, idempotencyKey: 'order-two-001', items: [{ itemId: dosa.id, qty: 1 }] }).expect(409); // ₹80 > ₹60 a day
+    await put('canteen', { rules: { dailySpendLimitPaise: 0, allowNegativeBalance: true } });
+    expect((await post('/v1/canteen/orders', { studentId: s.id, idempotencyKey: 'order-three-1', items: [{ itemId: dosa.id, qty: 4 }] }).expect(201)).body.balancePaise).toBe(-10000);
+
+    // Transport: fee due day and the document warning window.
+    await post('/v1/transport/vehicles', { regNo: 'KA01AB1234', capacity: 40, insuranceExpiresOn: '2026-11-25' }).expect(201);
+    const listed = async () => (await http().get('/v1/transport/compliance').set(as('principal')).expect(200)).body.items.length as number;
+    expect(await listed()).toBe(0);
+    await put('transport', { rules: { docExpiryWarnDays: 60 } });
+    expect(await listed()).toBe(1);
+    await post('/v1/transport/fees', { title: 'Bus fee October' }).expect(201);
+    expect(nextDueDay('2026-10-12', 10)).toBe('2026-11-10');
+    expect(nextDueDay('2026-12-12', 31)).toBe('2026-12-28');
+
+    // Stores: negative stock only when allowed.
+    const store = (await post('/v1/inventory/stores', { name: 'Main' }).expect(201)).body;
+    const ink = (await post('/v1/inventory/items', { sku: 'INK', name: 'Ink' }).expect(201)).body;
+    await post('/v1/inventory/stock/out', { storeId: store.id, itemId: ink.id, qty: 2, note: 'Spilt' }).expect(409);
+    await put('inventory', { rules: { allowNegativeStock: true } });
+    await post('/v1/inventory/stock/out', { storeId: store.id, itemId: ink.id, qty: 2, note: 'Spilt' }).expect(201);
+
+    // Purchasing: quotations needed above a value, and the invoice match tolerance.
+    await put('procurement', { rules: { quotesRequiredAbovePaise: 1000, minQuotes: 2, invoiceTolerancePaise: 500 } });
+    const req = (await post('/v1/inventory/requisitions', { reason: 'Ink', lines: [{ itemId: ink.id, qty: 10 }] }, 'teacher').expect(201)).body;
+    await http().post(`/v1/inventory/requisitions/${req.id}/decision`).set(as('principal')).send({ approve: true }).expect(200);
+    const rfq = (await post('/v1/inventory/rfqs', { requisitionId: req.id }).expect(201)).body;
+    const v1 = (await post('/v1/inventory/vendors', { name: 'Ink House' }).expect(201)).body.id;
+    const v2 = (await post('/v1/inventory/vendors', { name: 'Pen World' }).expect(201)).body.id;
+    const q1 = (await post(`/v1/inventory/rfqs/${rfq.id}/quotes`, { vendorId: v1, lines: [{ itemId: ink.id, unitPricePaise: 1500 }] }).expect(201)).body;
+    await post(`/v1/inventory/rfqs/${rfq.id}/award`, { quoteId: q1.id, storeId: store.id }).expect(409);
+    await post(`/v1/inventory/rfqs/${rfq.id}/quotes`, { vendorId: v2, lines: [{ itemId: ink.id, unitPricePaise: 1700 }] }).expect(201);
+    const po = (await http().post(`/v1/inventory/rfqs/${rfq.id}/award`).set(as('principal')).send({ quoteId: q1.id, storeId: store.id })).body;
+    const full = (await http().get(`/v1/inventory/purchase-orders/${po.id}`).set(as('principal')).expect(200)).body;
+    await post(`/v1/inventory/purchase-orders/${po.id}/receipts`, { idempotencyKey: 'grn-ink-0001', lines: full.lines.map((l: { id: string; qty: number }) => ({ poLineId: l.id, qty: l.qty })) }).expect(201);
+    expect((await post(`/v1/inventory/purchase-orders/${po.id}/invoices`, { invoiceNo: 'INK-1', amountPaise: 15300 }).expect(201)).body.status).toBe('matched'); // ₹3 off, within ₹5
   });
 
   it('verifies library stock: scans copies and closes with the shortfall', async () => {

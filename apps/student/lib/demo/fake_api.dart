@@ -1270,6 +1270,14 @@ class FakeStudentApi implements StudentApi {
     return WalletView(balancePaise: walletBalancePaise, meals: walletMeals, onlinePayments: onlinePayments);
   }
 
+  List<CanteenDish> canteenDishes = const [CanteenDish(id: 'd1', name: 'Masala dosa', pricePaise: 40_00, available: true), CanteenDish(id: 'd2', name: 'Lemon rice', pricePaise: 35_00, available: false)];
+
+  @override
+  Future<List<CanteenDish>> canteenMenu() async {
+    calls.add('canteenMenu');
+    return canteenDishes;
+  }
+
   @override
   Future<TopUpCheckout> walletCheckout(String studentId, int amountPaise) async {
     calls.add('walletCheckout $studentId $amountPaise');
