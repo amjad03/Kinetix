@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Bars, Kpi, V2Card } from '@/components/analytics/V2Card';
+import { Kpi, V2Card } from '@/components/analytics/V2Card';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
-import { DonutChart, LineChart } from '@/components/ui/Charts';
+import { DonutChart, LineChart, Sparkline } from '@/components/ui/Charts';
+import { FeeBars, MiniBars, MiniMeter } from '@/components/dashboard/home';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import type { DashboardRollup } from '@/lib/dashboard';
@@ -35,13 +36,16 @@ export default async function AnalyticsPage() {
     { key: 'v2.an.p.admissions', n: r.pending.admissionsReview, href: '/admissions' },
   ].filter((x) => x.n !== null) as { key: Parameters<typeof t>[0]; n: number; href: string }[];
   const classes = [...(f?.classes ?? [])].sort((a, b) => b.outstandingPaise - a.outstandingPaise).slice(0, 6);
+  const lakh = (p: number) => Math.round(p / 1e5) / 100;
+  const attSeries = perf.map((p) => p.attendance);
+  const marks = perf.map((p) => p.internalMarks).filter((v): v is number => v !== null);
   return (
     <div className="grid gap-5" data-testid="analytics">
       <PageHeader title={t('v2.an.title')} subtitle={t('v2.an.subtitle')} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Kpi icon="students" label={t('v2.an.students')} value={r.students?.total ?? '–'} caption={r.students ? t('v2.an.joined', { n: r.students.joined }) : undefined} />
-        <Kpi icon="attendance" label={t('v2.an.attendance')} value={r.attendance?.today === null || !r.attendance ? '–' : `${r.attendance.today}%`} caption={r.attendance?.previous != null ? t('v2.an.prev', { v: `${r.attendance.previous}%` }) : undefined} />
-        <Kpi icon="finance" label={t('v2.an.collected')} value={r.fees ? formatRupees(r.fees.collected) : '–'} caption={r.fees ? t('v2.an.prev', { v: formatRupees(r.fees.previous) }) : undefined} />
+        <Kpi icon="students" label={t('v2.an.students')} value={r.students?.total ?? '–'} caption={r.students ? t('v2.an.joined', { n: r.students.joined }) : undefined} viz={marks.length > 1 ? <MiniBars values={marks} label={t('v2.an.marks')} /> : undefined} />
+        <Kpi icon="attendance" label={t('v2.an.attendance')} value={r.attendance?.today === null || !r.attendance ? '–' : `${r.attendance.today}%`} caption={r.attendance?.previous != null ? t('v2.an.prev', { v: `${r.attendance.previous}%` }) : undefined} viz={attSeries.some((v) => v !== null) ? <Sparkline values={attSeries} width={72} height={28} label={t('v2.an.attendance')} /> : undefined} />
+        <Kpi icon="finance" label={t('v2.an.collected')} value={r.fees ? formatRupees(r.fees.collected) : '–'} caption={r.fees ? t('v2.an.prev', { v: formatRupees(r.fees.previous) }) : undefined} viz={collectedPct !== null ? <span className="block w-16"><MiniMeter value={collectedPct} /></span> : undefined} />
         <Kpi icon="hr" label={t('v2.an.staff')} value={r.staff?.total ?? '–'} caption={r.fees ? t('v2.an.overdue', { n: r.fees.overdueInvoices }) : undefined} />
       </div>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -85,7 +89,11 @@ export default async function AnalyticsPage() {
       </div>
       <div className="grid gap-5 lg:grid-cols-2">
         <V2Card title={t('v2.an.classDues')} icon="classes">
-          {classes.length === 0 ? <p className="text-sm text-muted-foreground">{t('v2.an.noData')}</p> : <Bars tone="bg-amber-500" rows={classes.map((c) => ({ label: c.className, value: Math.round(c.outstandingPaise / 100000) / 100, caption: t('v2.an.lakh') }))} />}
+          {classes.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('v2.an.noData')}</p>
+          ) : (
+            <FeeBars rows={classes.map((c) => ({ id: c.sectionId, label: c.className, collected: lakh(c.collectedPaise), outstanding: lakh(c.outstandingPaise) }))} ariaLabel={t('v2.an.classDues')} collectedLabel={t('v2.an.collected')} outstandingLabel={t('v2.an.outstanding')} />
+          )}
         </V2Card>
         <V2Card title={t('v2.an.pending')} icon="tasks">
           <ul className="divide-y">

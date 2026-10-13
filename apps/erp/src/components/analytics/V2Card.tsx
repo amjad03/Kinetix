@@ -17,15 +17,16 @@ export function V2Card({ title, icon, action, children, className = '' }: { titl
 }
 
 /** A KPI tile: coloured icon, label, big number and a caption. */
-export function Kpi({ icon, label, value, caption }: { icon: NavIcon; label: string; value: ReactNode; caption?: ReactNode }) {
+export function Kpi({ icon, label, value, caption, viz }: { icon: NavIcon; label: string; value: ReactNode; caption?: ReactNode; viz?: ReactNode }) {
   return (
     <div className="flex min-w-0 items-start gap-3 rounded-xl border bg-card p-4 shadow-card" data-testid="kpi">
       <NavTile icon={icon} size="md" />
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="truncate text-xs font-medium text-muted-foreground">{label}</div>
         <div className="mt-0.5 text-[22px] leading-tight font-semibold tabular-nums">{value}</div>
         {caption && <div className="mt-0.5 truncate text-xs text-muted-foreground">{caption}</div>}
       </div>
+      {viz && <div className="shrink-0 self-end">{viz}</div>}
     </div>
   );
 }
