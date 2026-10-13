@@ -247,7 +247,10 @@ class _BoardScreenState extends State<BoardScreen> {
     unawaited(loadCustomBoardFont(board));
     presentationHost = _showPresentation;
     _phet.addListener(_onPhetChanged);
-    _simHub.openModel3d = () => _openSplit(SplitContent.model3d);
+    // Opening or closing a sim in the hub shows or hides the panel's "Add to board".
+    _simHub
+      ..addListener(_onPhetChanged)
+      ..openModel3d = () => _openSplit(SplitContent.model3d);
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
     // Someone asked to cast, or a screen was approved: the Cast tab opens for the teacher.
@@ -480,6 +483,9 @@ class _BoardScreenState extends State<BoardScreen> {
     if (PanelHost.active == _pushInPanel) PanelHost.active = null;
     board.removeListener(_onBoardChanged);
     _phet
+      ..removeListener(_onPhetChanged)
+      ..dispose();
+    _simHub
       ..removeListener(_onPhetChanged)
       ..dispose();
     board.projector.attach(null);
@@ -1755,6 +1761,7 @@ class _BoardScreenState extends State<BoardScreen> {
     }
   }
 
+  /// The PhET tab or the Simulations hub opened or closed a sim.
   void _onPhetChanged() {
     if (mounted) setState(() {});
   }

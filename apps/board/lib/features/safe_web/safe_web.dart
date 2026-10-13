@@ -182,7 +182,7 @@ abstract final class SafeWebPolicy {
   }
 }
 
-/// The browser's page view: Android's WebView or WebView2 on Windows; [create] gives null where
+/// The browser's page view: Android's WebView (WKWebView on macOS) or WebView2 on Windows; [create] gives null where
 /// there is none (tests, Linux). Every navigation is checked against the allowed sites.
 abstract class SafeWebView {
   Future<void> load(Uri page);
@@ -197,7 +197,7 @@ abstract class SafeWebView {
     if (debugOverride != null) return debugOverride!(allow: allow, onBlocked: onBlocked, onPage: onPage);
     if (Platform.environment.containsKey('FLUTTER_TEST')) return null;
     if (Platform.isWindows) return _WindowsSafeView(allow, onBlocked, onPage);
-    if (Platform.isAndroid || Platform.isIOS) return WebViewPlatform.instance == null ? null : _AndroidSafeView(allow, onBlocked, onPage);
+    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) return WebViewPlatform.instance == null ? null : _AndroidSafeView(allow, onBlocked, onPage);
     return null;
   }
 }

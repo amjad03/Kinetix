@@ -109,6 +109,20 @@ void main() {
     expect(other.isCached(m), isFalse);
   });
 
+  test('the app\'s cache folder, set after start-up, is where downloads go and where the viewer reads', () {
+    final before = RemoteModels.cacheDir;
+    addTearDown(() => RemoteModels.cacheDir = before);
+    final early = RemoteModels.cache;
+    expect(early.dir.path, before.path);
+    final dir = Directory.systemTemp.createTempSync('m3d');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    RemoteModels.cacheDir = Directory('${dir.path}/models3d');
+    expect(RemoteModels.cache.dir.path, '${dir.path}/models3d');
+    Directory('${dir.path}/models3d').createSync();
+    File('${dir.path}/models3d/woolly_mammoth.glb').writeAsBytesSync(_glb());
+    expect(RemoteModels.cachedFile('woolly_mammoth.glb')?.path, RemoteModels.cache.fileFor(RemoteModels.byId('woolly_mammoth')!).path);
+  });
+
   test('the downloadable viewer models are listed with their sources', () {
     final viewer = [for (final m in RemoteModels.all) if (m.viewer) m.id];
     expect(viewer, containsAll(['woolly_mammoth', 'cosmic_buddha', 'apollo11_command_module']));

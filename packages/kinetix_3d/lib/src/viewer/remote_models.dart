@@ -128,7 +128,17 @@ class RemoteModels {
   static const all = <RemoteModelInfo>[..._nasaModels, ..._remoteModels];
 
   /// Where downloaded models are kept. The app points this at its support directory at start-up.
-  static Directory cacheDir = Directory('${Directory.systemTemp.path}/kinetix_models');
+  static Directory get cacheDir => _cacheDir;
+  static Directory _cacheDir = Directory('${Directory.systemTemp.path}/kinetix_models');
+
+  /// A cache made before the app set the folder would keep downloading to the old one while the
+  /// viewer read from the new one, so a new folder starts a new cache.
+  static set cacheDir(Directory dir) {
+    if (dir.path == _cacheDir.path) return;
+    _cacheDir = dir;
+    _cache = null;
+  }
+
   static ModelCache? _cache;
   static ModelCache get cache => _cache ??= ModelCache(cacheDir);
 

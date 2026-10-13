@@ -174,7 +174,8 @@ class _SimHubPanelState extends State<SimHubPanel> {
   @override
   Widget build(BuildContext context) {
     final open = widget.controller.open;
-    if (open != null) return _OpenSim(entry: open, controller: widget.controller, pinned: _pins?.isPinned(widget.page(), open.id) ?? false, onPin: () => _togglePin(open));
+    // Keyed by the sim, so opening another one (a pin, search) starts its own page.
+    if (open != null) return _OpenSim(key: ValueKey(open.id), entry: open, controller: widget.controller, pinned: _pins?.isPinned(widget.page(), open.id) ?? false, onPin: () => _togglePin(open));
     final shown = filterSims(subject: _subject, grade: _grade, query: _query, offlineOnly: _offlineOnly);
     final pinned = [for (final id in _pins?.forPage(widget.page()) ?? const <String>[]) if (simById(id) != null) simById(id)!];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -255,7 +256,7 @@ class SimWarmView {
 }
 
 class _OpenSim extends StatefulWidget {
-  const _OpenSim({required this.entry, required this.controller, required this.pinned, required this.onPin});
+  const _OpenSim({super.key, required this.entry, required this.controller, required this.pinned, required this.onPin});
   final SimEntry entry;
   final SimHubController controller;
   final bool pinned;
@@ -295,6 +296,8 @@ class _OpenSimState extends State<_OpenSim> {
       if (_online != true && !_visited!.has(e.id)) return _refresh();
       _fromCache = _online != true;
     }
+    // Closed (back, another sim) while the online check ran: nothing to show.
+    if (!mounted) return;
     final view = SimWarmView.take() ?? PhetWebView.create();
     if (view == null) {
       _viewerMissing = true;
@@ -302,7 +305,9 @@ class _OpenSimState extends State<_OpenSim> {
     }
     _web = view;
     widget.controller._view = view;
-    await view.load(e.kind == SimKindOf.bundled ? await SimAssetServer.pageFor(e.asset!) : Uri.parse(e.url!));
+    final page = e.kind == SimKindOf.bundled ? await SimAssetServer.pageFor(e.asset!) : Uri.parse(e.url!);
+    if (!mounted) return;
+    await view.load(page);
     if (e.kind == SimKindOf.online && _online == true) await _visited?.mark(e.id);
     _refresh();
   }
@@ -313,7 +318,10 @@ class _OpenSimState extends State<_OpenSim> {
 
   @override
   void dispose() {
-    _web?.dispose();
+    final web = _web;
+    web?.dispose();
+    // "Add to board" must not picture a page that is no longer open.
+    if (web != null && widget.controller._view == web) widget.controller._view = null;
     super.dispose();
   }
 

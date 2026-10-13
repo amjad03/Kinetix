@@ -19,7 +19,8 @@ bool get _testing => Platform.environment.containsKey('FLUTTER_TEST');
 
 bool engineAvailable() {
   if (_testing) return false;
-  if (Platform.isAndroid || Platform.isIOS) return WebViewPlatform.instance != null;
+  // macOS boards (and teachers trying the board on a Mac) get WKWebView through webview_flutter.
+  if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) return WebViewPlatform.instance != null;
   return Platform.isWindows;
 }
 
@@ -74,17 +75,22 @@ class ViewerServer {
   }
 }
 
-/// Android (and iOS): the system WebView through webview_flutter.
+/// Android, iOS and macOS: the system WebView through webview_flutter.
 class _WebViewEngine extends QueuedEngine {
-  late final WebViewController _controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setBackgroundColor(_background)
-    ..addJavaScriptChannel('KX', onMessageReceived: (m) => receive(m.message))
-    ..setNavigationDelegate(NavigationDelegate(
-      onWebResourceError: (e) {
-        if (e.isForMainFrame ?? true) receive(ViewerEvent({'event': 'error', 'message': e.description}));
-      },
-    ));
+  late final WebViewController _controller = _created();
+
+  WebViewController _created() {
+    final c = WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted);
+    // WKWebView on macOS has no background colour setting (it throws); the page paints its own.
+    if (!Platform.isMacOS) c.setBackgroundColor(_background);
+    return c
+      ..addJavaScriptChannel('KX', onMessageReceived: (m) => receive(m.message))
+      ..setNavigationDelegate(NavigationDelegate(
+        onWebResourceError: (e) {
+          if (e.isForMainFrame ?? true) receive(ViewerEvent({'event': 'error', 'message': e.description}));
+        },
+      ));
+  }
 
   @override
   Future<void> open(String modelId, {required String lang}) async {
