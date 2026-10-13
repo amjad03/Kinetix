@@ -28,6 +28,7 @@ export function ReportPage<T>({
   rowId,
   exports,
   summary,
+  rowHref,
 }: {
   /** Stable id for presets, e.g. 'fees.collection'. */
   reportId: string;
@@ -41,6 +42,8 @@ export function ReportPage<T>({
   exports?: { pdf?: string; xlsx?: string };
   /** Totals or stat tiles above the table. */
   summary?: ReactNode;
+  /** Opens a row's record page (and offers "Open in new tab"). */
+  rowHref?: (row: T) => string | undefined;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -137,7 +140,7 @@ export function ReportPage<T>({
         </FormRow>
       </Card>
       {summary}
-      <DataTable columns={columns} rows={rows} rowId={rowId} label={title} />
+      <DataTable columns={columns} rows={rows} rowId={rowId} label={title} rowHref={rowHref} />
     </div>
   );
 }

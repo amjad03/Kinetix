@@ -13,6 +13,7 @@ import { EvaluationModule } from './evaluation/evaluation.module.js';
 import { ExamsModule } from './exams/exams.module.js';
 import { GradingAssistModule } from './grading-assist/grading-assist.module.js';
 import { AccreditationModule } from './accreditation/accreditation.module.js';
+import { QualityHubModule } from './quality-hub/quality-hub.module.js';
 import { ObeModule } from './obe/obe.module.js';
 import { MarksModule } from './marks/marks.module.js';
 import { MessagesModule } from './messages/messages.module.js';
@@ -162,6 +163,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     DpdpModule,
     ObeModule,
     AccreditationModule,
+    QualityHubModule,
     GradingAssistModule,
     MessagesModule,
     CodeModule,
