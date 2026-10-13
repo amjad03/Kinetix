@@ -93,7 +93,7 @@ export function RecordView({ data }: { data: OpsRecord }) {
           )}
           <Card title={t('cops.overview')}>
             <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-              {fieldsOf(r).map(([k, v]) => (
+              {fieldsOf(r).filter(([k]) => k !== 'status' && k !== 'stage').map(([k, v]) => (
                 <div key={k} className="grid gap-1">
                   <dt className="text-xs text-muted-foreground">{field(k)}</dt>
                   <dd className="text-sm break-words">{value(k, v)}</dd>

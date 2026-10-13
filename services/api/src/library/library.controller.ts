@@ -159,7 +159,7 @@ export class LibraryController {
   @Auth('user', LIBRARY_ROLES)
   fines(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) =>
-      this.loanRows(tx, await this.today(tx, await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay')))
+      this.loanRows(tx, await this.today(tx), await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'))
         .where(and(sql`${libraryLoans.finePaise} > 0`, isNull(libraryLoans.finePaidAt)))
         .orderBy(desc(libraryLoans.returnedAt)),
     );
@@ -177,7 +177,7 @@ export class LibraryController {
         await tx.update(libraryLoans).set({ finePaidAt: this.clock.now() }).where(eq(libraryLoans.id, id));
         await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library.fine_paid', subjectType: 'library_loan', subjectId: id, data: { finePaise: loan.finePaise } });
       }
-      const [row] = await this.loanRows(tx, await this.today(tx, await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'))).where(eq(libraryLoans.id, id));
+      const [row] = await this.loanRows(tx, await this.today(tx), await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay')).where(eq(libraryLoans.id, id));
       return row;
     });
   }

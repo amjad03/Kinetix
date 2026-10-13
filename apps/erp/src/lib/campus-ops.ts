@@ -132,17 +132,20 @@ export const ACTIONS: Partial<Record<RecordKind, RecordAction[]>> = {
 export const actionsFor = (kind: RecordKind, status: string | undefined) => (ACTIONS[kind] ?? []).filter((a) => status !== undefined && a.when.includes(status));
 
 const HIDDEN = /^(id|tenant_id|.*_id|created_by|updated_by|.*_hash|version|data|payload|summary|search|.*_json)$/;
+const UUID_V = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** A field worth showing: not an internal id or a bare user/record id, not empty, not nested. */
+const shown = (k: string, v: unknown) => !HIDDEN.test(k) && v !== null && v !== '' && typeof v !== 'object' && !(typeof v === 'string' && UUID_V.test(v));
 const PRIORITY = ['number', 'application_no', 'applicant_name', 'name', 'title', 'reg_no', 'tag', 'sku', 'status', 'stage', 'category', 'amount_paise', 'total_paise', 'cost_paise', 'price_paise', 'monthly_fee_paise', 'copies', 'author', 'phone', 'email', 'due_on', 'issued_at', 'expected_back_at', 'destination', 'reason', 'invoice_no', 'location', 'purchased_on', 'capacity', 'created_at'];
 
 /** Up to `max` facts for the header strip: known important fields first, then any other plain field. */
 export function factsOf(r: Record<string, unknown>, max = 6, skip: string[] = []): [string, unknown][] {
-  const plain = Object.entries(r).filter(([k, v]) => !HIDDEN.test(k) && !skip.includes(k) && v !== null && v !== '' && typeof v !== 'object');
+  const plain = Object.entries(r).filter(([k, v]) => shown(k, v) && !skip.includes(k));
   const rank = (k: string) => (PRIORITY.includes(k) ? PRIORITY.indexOf(k) : PRIORITY.length);
   return plain.sort(([a], [b]) => rank(a) - rank(b)).slice(0, max);
 }
 
 /** All plain fields, for the overview. */
-export const fieldsOf = (r: Record<string, unknown>) => Object.entries(r).filter(([k, v]) => !HIDDEN.test(k) && v !== null && v !== '' && typeof v !== 'object');
+export const fieldsOf = (r: Record<string, unknown>) => Object.entries(r).filter(([k, v]) => shown(k, v));
 
 /** Display text for one field: paise as rupees, timestamps as dates, booleans as yes/no keys. */
 export function formatField(key: string, v: unknown, yesNo: [string, string] = ['Yes', 'No']): string {

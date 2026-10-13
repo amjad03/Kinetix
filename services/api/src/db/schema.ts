@@ -7667,6 +7667,8 @@ export const libraryStockCheckItems = pgTable(
     scannedAt: timestamp('scanned_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex('library_stock_check_items_uq').on(t.checkId, t.bookId)],
+);
+
 // ---- Exam office (0131): the session workflow, paper attendance, exam fees, moderation and settings ----
 
 /** One step of an exam session's workflow (setup, timetable, registration … supplementary): done, pending approval or rejected. */
