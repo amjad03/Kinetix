@@ -172,6 +172,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/transport', label: 'nav.transport', section: 'transport', icon: 'transport' },
       { href: '/hostel', label: 'nav.hostel', section: 'hostel', icon: 'hostel' },
       { href: '/canteen', label: 'nav.canteen', section: 'canteen', icon: 'canteen' },
+      { href: '/ops-reports', label: 'nav.campusOps', section: 'campusOps', icon: 'reports' },
       { href: '/campus-life', label: 'nav.campusLife', section: 'campusLife', icon: 'campusLife' },
       { href: '/skills', label: 'nav.skills', section: 'skills', icon: 'skills' },
       { href: '/projects', label: 'nav.projects', section: 'projects', icon: 'research' },

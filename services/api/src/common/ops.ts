@@ -1,8 +1,9 @@
 import { ConflictException } from '@nestjs/common';
-import { sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { defaultSeries, formatSeries, type Series } from '../campus-ops/settings.js';
 import type { Tx } from '../db/db.service.js';
-import { docCounters } from '../db/schema.js';
+import { docCounters, moduleSettings } from '../db/schema.js';
 
 export const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 export const Paise = z.number().int().min(0).max(100_000_000_00);
@@ -18,14 +19,15 @@ export async function orConflict<T>(message: string, fn: () => Promise<T>): Prom
   }
 }
 
-/** The next number of a per-institution series: `REQ-0001`. */
+/** The next number of a per-institution series: `REQ-0001`, or the format set on the module's settings page (`PO/{FY}/00042`). */
 export async function nextNumber(tx: Tx, tenantId: string, kind: string): Promise<string> {
   const [c] = await tx
     .insert(docCounters)
     .values({ tenantId, kind, lastNo: 1 })
     .onConflictDoUpdate({ target: [docCounters.tenantId, docCounters.kind], set: { lastNo: sql`${docCounters.lastNo} + 1` } })
     .returning();
-  return `${kind}-${String(c.lastNo).padStart(4, '0')}`;
+  const [set] = await tx.select({ s: sql<Series | null>`${moduleSettings.numbering} -> ${kind}` }).from(moduleSettings).where(and(eq(moduleSettings.tenantId, tenantId), sql`${moduleSettings.numbering} ? ${kind}`)).limit(1);
+  return formatSeries(set?.s ?? defaultSeries(kind), c.lastNo);
 }
 
 /** Great-circle distance in metres. */

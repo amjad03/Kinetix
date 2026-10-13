@@ -3019,6 +3019,9 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'module_settings',
+  'library_stock_checks',
+  'library_stock_check_items',
   'settlement_batches',
   'settlement_lines',
   'acct_accounts',
@@ -7562,4 +7565,52 @@ export const leadSpend = pgTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('lead_spend_uq').on(t.tenantId, t.channel, t.day)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Admissions and campus operations depth (migration 0130): module settings, library stock verification
+// ---------------------------------------------------------------------------------------------
+
+/** One module's configuration: rules, templates and defaults (`settings`) and its numbering series keyed by document kind (`numbering`). */
+export const moduleSettings = pgTable(
+  'module_settings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    module: text('module').notNull(),
+    settings: jsonb('settings').notNull().default({}),
+    numbering: jsonb('numbering').notNull().default({}),
+    updatedBy: uuid('updated_by').references(() => users.id),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('module_settings_uq').on(t.tenantId, t.module)],
+);
+
+/** A library stock verification: open while copies are scanned, closed with the shortfall summary. */
+export const libraryStockChecks = pgTable('library_stock_checks', {
+  id: id(),
+  tenantId: tenantId(),
+  number: text('number').notNull(),
+  status: text('status').$type<'open' | 'closed' | 'cancelled'>().notNull().default('open'),
+  note: text('note').notNull().default(''),
+  startedBy: uuid('started_by').references(() => users.id),
+  closedBy: uuid('closed_by').references(() => users.id),
+  closedAt: timestamp('closed_at', { withTimezone: true }),
+  summary: jsonb('summary'),
+  createdAt: createdAt(),
+});
+
+/** Copies of one title found on the shelf during a stock verification. */
+export const libraryStockCheckItems = pgTable(
+  'library_stock_check_items',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    checkId: uuid('check_id').notNull().references(() => libraryStockChecks.id, { onDelete: 'cascade' }),
+    bookId: uuid('book_id').notNull().references(() => libraryBooks.id, { onDelete: 'cascade' }),
+    found: integer('found').notNull().default(1),
+    scannedBy: uuid('scanned_by').references(() => users.id),
+    scannedAt: timestamp('scanned_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('library_stock_check_items_uq').on(t.checkId, t.bookId)],
 );

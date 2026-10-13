@@ -59,6 +59,17 @@ export async function GET(req: NextRequest) {
     if (!range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/finance/gl.${GL[kind]}?from=${range[0]}&to=${range[1]}`;
   }
+  // An admissions / campus-operations report: ?kind=ops-report&id=<library.circulation>&format=pdf|xlsx&from=&to=&status=
+  if (kind === 'ops-report') {
+    const format = req.nextUrl.searchParams.get('format') ?? '';
+    const status = req.nextUrl.searchParams.get('status') ?? '';
+    if (!/^[a-z]+\.[a-z]+$/.test(id) || !['pdf', 'xlsx', 'csv'].includes(format) || !/^[a-z_]{0,40}$/.test(status)) return new Response('Not found', { status: 404 });
+    const q = new URLSearchParams({ format });
+    if (range[0] && /^\d{4}-\d{2}-\d{2}$/.test(range[0])) q.set('from', range[0]);
+    if (range[1] && /^\d{4}-\d{2}-\d{2}$/.test(range[1])) q.set('to', range[1]);
+    if (status) q.set('status', status);
+    FIXED[kind] = `/v1/ops-reports/${id}?${q.toString()}`;
+  }
   // A committee's report pack for a date range: ?kind=report-pack&id=<committee>&from=&to=
   if (kind === 'report-pack') {
     if (!UUID.test(id) || !range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });

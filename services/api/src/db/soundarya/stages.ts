@@ -15,6 +15,7 @@ import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from
 import { payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
 import { assistSamples } from './assist.js';
 import { gapClose } from './gap-close.js';
+import { campusOpsDepth } from './campus-ops-depth.js';
 import { integrationSamples } from './integration-samples.js';
 import { pathwaySamples } from './pathways.js';
 import { rolesAndRights } from './access.js';
@@ -84,4 +85,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['data migration history, university templates, transcripts and the external examiner portal', migrationAndExaminer],
   ['books, gateway settlements, Tally mapping, single sign-on and online-class attendance', gatewayBooksSamples],
   ['DigiLocker settings, APAAR ids, devices, tags, LTI platform and early alerts', integrationSamples],
+  ['module settings and library stock verification', campusOpsDepth],
 ];
