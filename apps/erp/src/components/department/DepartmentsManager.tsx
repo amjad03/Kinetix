@@ -12,6 +12,7 @@ import { useI18n } from '@/i18n/client';
 
 import { Alert, Autocomplete, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, MenuItem, Snackbar, Tooltip, Typography } from '@/components/kx';
 import { ChartLine as InsightsOutlined, Pencil as EditOutlined, Plus as Add, Trash2 as DeleteOutlined, UsersRound as GroupsOutlined } from 'lucide-react';
+import { naturalCompare } from '@/lib/natural';
 export interface SubjectOption {
   id: string;
   code: string;
@@ -244,7 +245,7 @@ function EditDialog({
   const people = useMemo(() => {
     const all = new Map(staff.map((s) => [s.id, { id: s.id, fullName: s.fullName }]));
     for (const s of dept.staff) if (!all.has(s.id)) all.set(s.id, s);
-    return [...all.values()].sort((a, b) => a.fullName.localeCompare(b.fullName));
+    return [...all.values()].sort((a, b) => naturalCompare(a.fullName, b.fullName));
   }, [staff, dept.staff]);
   const headOptions = useMemo(() => {
     // Keep a current head who has since lost the HOD role selectable, so the form shows them.

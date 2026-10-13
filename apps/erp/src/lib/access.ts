@@ -3,7 +3,11 @@
 
 import type { RoleName } from './types';
 
+<<<<<<< HEAD
 export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'qualityHub';
+=======
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics' | 'chat' | 'campusOps';
+>>>>>>> claude/kinetix-ecosystem-overview-lpphjn
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -55,6 +59,7 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   assets: ['store_keeper', 'principal', 'tenant_admin'],
   // admissions.controller.ts ADMISSIONS_ROLES
   admissions: ['principal', 'tenant_admin', 'admissions_officer'],
+  campusOps: ['principal', 'tenant_admin', 'admissions_officer', 'librarian', 'hostel_warden', 'transport_manager', 'canteen_manager', 'store_keeper', 'accountant'],
   // students.controller.ts PROFILE_ROLES (status changes and promotion are principal and admin only: LIFECYCLE_ROLES)
   students: ['principal', 'tenant_admin', 'admissions_officer', 'hod', 'accountant'],
   // exams.controller.ts / schemes.controller.ts / results.controller.ts: principal and administrator manage, heads of department read and verify
@@ -73,6 +78,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   integrations: ['principal', 'tenant_admin'],
   // early-alerts.controller.ts WORKERS: heads, counsellors and mentors see (teachers use the Teacher App) the students they are responsible for
   earlyAlerts: ['principal', 'tenant_admin', 'hod', 'counsellor', 'mentor'],
+  // academics/requests.controller.ts ACAD_STAFF; teachers use the Teacher App. Accounts and the library clear TC requests here.
+  academics: ['principal', 'tenant_admin', 'hod', 'admissions_officer', 'accountant', 'librarian'],
   // alumni-giving.controller.ts GIVING_ROLES (volunteering tab: alumni relations only)
   alumni: ['principal', 'tenant_admin', 'placement_officer', 'accountant'],
   // obe.controller.ts MANAGE: principal, administrator and heads of department
@@ -104,6 +111,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   careers: ['principal', 'tenant_admin', 'placement_officer', 'hod'],
   // comms.controller.ts BROADCAST_ROLES (templates, audiences, scheduled campaigns)
   comms: ['principal', 'tenant_admin', 'hod'],
+  // chat.controller.ts: every staff role (not families)
+  chat: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
   // research.controller.ts RESEARCH_VIEW_ROLES
   research: ['principal', 'tenant_admin', 'research_coordinator', 'hod'],
   // welfare.access.ts GRIEVANCE_STAFF and COMMITTEE_ROLES (committee matters show only to committee members)
@@ -252,6 +261,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'timetable';
     case 'conversations':
       return 'conversations';
+    case 'chat':
+      return 'chat';
     case 'department':
       return 'department';
     case 'departments':
@@ -273,6 +284,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'assets';
     case 'admissions':
       return 'admissions';
+    case 'analytics':
+      return pathname.startsWith('/analytics/campaigns') ? 'admissions' : 'dashboard';
     case 'students':
       return 'students';
     case 'exams':
@@ -302,6 +315,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'earlyAlerts';
     case 'course-registration':
       return 'courseRegistration';
+    case 'academics':
+      return 'academics';
     case 'documents':
       return 'documents';
     case 'skills':

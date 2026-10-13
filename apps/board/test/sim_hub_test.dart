@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:kinetix_board/features/board/kit/key_dates_data.dart';
+import 'package:kinetix_board/features/phet/phet_view.dart';
 import 'package:kinetix_board/features/sim_hub/native/map_sims.dart';
 import 'package:kinetix_board/features/sim_hub/native/other_sims.dart';
 import 'package:kinetix_board/features/sim_hub/native/psych_tests.dart';
@@ -138,6 +140,46 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('macro-mult')), findsOneWidget);
     });
+
+    testWidgets('opening another sim while one is open shows the new one and lets the old page go', (tester) async {
+      final views = <_FakeWebView>[];
+      PhetWebView.debugOverride = () => (views..add(_FakeWebView())).last;
+      addTearDown(() => PhetWebView.debugOverride = null);
+      SimAssetServer.loader = (key) async => File(key).readAsBytes();
+      await tester.runAsync(SimAssetServer.start);
+
+      final c = SimHubController()..openSim('macro-money');
+      await tester.pumpWidget(_host(SimHubPanel(controller: c, page: () => 0)));
+      await tester.pumpAndSettle();
+      c.openSim('pebl-stroop');
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('stroop-word')), findsOneWidget, reason: 'not the money model left from before');
+      expect(find.byKey(const Key('macro-mult')), findsNothing);
+
+      _FakeWebView showing(String path) => views.singleWhere((v) => v.loaded.any((u) => u.path == path));
+      // The page address waits on the real loopback server.
+      Future<void> settle() async {
+        await tester.pump();
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+        await tester.pumpAndSettle();
+      }
+
+      c.openSim('circuitjs');
+      await settle();
+      final first = showing('/circuitjs/index.html');
+      c.openSim('jsxgraph-geometry');
+      await settle();
+      expect(first.disposed, isTrue);
+      final second = showing('/jsxgraph/index.html');
+      expect(second.loaded.last.fragment, 'geometry');
+      expect(second.disposed, isFalse);
+
+      // Back to the list: the closed page is not pictured by Add to board.
+      c.close();
+      await tester.pumpAndSettle();
+      expect(second.disposed, isTrue);
+      expect(await c.capture(), isNull);
+    });
   });
 
   group('native sims', () {
@@ -239,4 +281,22 @@ void main() {
       expect(find.text('India becomes independent'), findsOneWidget);
     });
   });
+}
+
+/// Stands in for the platform web view: remembers what it was asked to load.
+class _FakeWebView implements PhetWebView {
+  final loaded = <Uri>[];
+  bool disposed = false;
+
+  @override
+  Future<void> load(Uri page) async => loaded.add(page);
+
+  @override
+  Widget view() => const Text('web page', key: Key('fake-web'));
+
+  @override
+  Future<Uint8List?> screenshot() async => disposed ? null : Uint8List(0);
+
+  @override
+  void dispose() => disposed = true;
 }

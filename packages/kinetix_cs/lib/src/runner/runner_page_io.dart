@@ -13,7 +13,7 @@ bool get _testing => Platform.environment.containsKey('FLUTTER_TEST');
 
 RunnerPage? createRunnerPage() {
   if (_testing) return null;
-  if (Platform.isAndroid || Platform.isIOS) return WebViewPlatform.instance == null ? null : _AndroidPage();
+  if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) return WebViewPlatform.instance == null ? null : _AndroidPage();
   if (Platform.isWindows) return _WindowsPage();
   return null;
 }

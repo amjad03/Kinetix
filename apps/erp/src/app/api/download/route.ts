@@ -59,6 +59,17 @@ export async function GET(req: NextRequest) {
     if (!range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/finance/gl.${GL[kind]}?from=${range[0]}&to=${range[1]}`;
   }
+  // An admissions / campus-operations report: ?kind=ops-report&id=<library.circulation>&format=pdf|xlsx&from=&to=&status=
+  if (kind === 'ops-report') {
+    const format = req.nextUrl.searchParams.get('format') ?? '';
+    const status = req.nextUrl.searchParams.get('status') ?? '';
+    if (!/^[a-z]+\.[a-z]+$/.test(id) || !['pdf', 'xlsx', 'csv'].includes(format) || !/^[a-z_]{0,40}$/.test(status)) return new Response('Not found', { status: 404 });
+    const q = new URLSearchParams({ format });
+    if (range[0] && /^\d{4}-\d{2}-\d{2}$/.test(range[0])) q.set('from', range[0]);
+    if (range[1] && /^\d{4}-\d{2}-\d{2}$/.test(range[1])) q.set('to', range[1]);
+    if (status) q.set('status', status);
+    FIXED[kind] = `/v1/ops-reports/${id}?${q.toString()}`;
+  }
   // A committee's report pack for a date range: ?kind=report-pack&id=<committee>&from=&to=
   if (kind === 'report-pack') {
     if (!UUID.test(id) || !range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
@@ -80,6 +91,12 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(test) || !UUID.test(app)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/admissions/entrance-tests/${test}/hall-ticket/${app}`;
   }
+  // A staff-chat attachment: ?kind=chat-file&id=<thread>&msg=<message>
+  if (kind === 'chat-file') {
+    const msg = req.nextUrl.searchParams.get('msg') ?? '';
+    if (!UUID.test(id) || !UUID.test(msg)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/chat/threads/${id}/messages/${msg}/attachment`;
+  }
   // One scanned page of the examiner's own script: ?kind=eval-page&id=<allocation>&index=<page>
   if (kind === 'eval-page') {
     const index = req.nextUrl.searchParams.get('index') ?? '';
@@ -91,6 +108,12 @@ export async function GET(req: NextRequest) {
   if (kind === 'learning-story') {
     if (!UUID.test(id) || !UUID.test(termId)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/early-years/students/${id}/learning-story.pdf?termId=${termId}`;
+  }
+  // A candidate's hall ticket: ?kind=exam-hall-ticket&id=<session>&student=<student>
+  if (kind === 'exam-hall-ticket') {
+    const student = req.nextUrl.searchParams.get('student') ?? '';
+    if (!UUID.test(id) || !UUID.test(student)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/exam-sessions/${id}/hall-tickets/${student}/pdf`;
   }
   // The seating chart of one hall for one sitting: ?kind=seating-chart&id=<session>&slot=<n>&room=<hall>
   if (kind === 'seating-chart') {
@@ -105,6 +128,7 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !/^\d{4}-\d{2}$/.test(fy)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/hr/payroll/form16/${id}?fy=${fy}`;
   }
+<<<<<<< HEAD
   // A quality-hub report as PDF or Excel with its filters: ?kind=qh-report&id=placements.offers&format=pdf&from=&to=&status=
   if (kind === 'qh-report') {
     const q = req.nextUrl.searchParams;
@@ -113,6 +137,21 @@ export async function GET(req: NextRequest) {
     if (!/^[a-z]+\.[a-z]+$/.test(id) || !['pdf', 'xlsx'].includes(format) || ![from, to].every((d) => d === '' || /^\d{4}-\d{2}-\d{2}$/.test(d)) || !/^[a-z_]{0,30}$/.test(status)) return new Response('Not found', { status: 404 });
     const params = new URLSearchParams({ format, ...(from ? { from } : {}), ...(to ? { to } : {}), ...(status ? { status } : {}) });
     FIXED[kind] = `/v1/quality-hub/reports/${id}?${params.toString()}`;
+=======
+  // Academics reports as PDF or Excel: ?kind=acad-report&report=<kind>&format=pdf|xlsx plus the report's own filters.
+  if (kind === 'acad-report') {
+    const sp = req.nextUrl.searchParams;
+    const report = sp.get('report') ?? '';
+    const format = sp.get('format') === 'pdf' ? 'pdf' : 'xlsx';
+    if (!/^[a-z-]{3,30}$/.test(report)) return new Response('Not found', { status: 404 });
+    const keep = new URLSearchParams({ format });
+    const ok: Record<string, RegExp> = { date: /^\d{4}-\d{2}-\d{2}$/, from: /^\d{4}-\d{2}-\d{2}$/, to: /^\d{4}-\d{2}-\d{2}$/, month: /^\d{4}-\d{2}$/, by: /^(class|teacher|room)$/, sectionId: UUID, subjectId: UUID, termId: UUID, id: UUID };
+    for (const [k, re] of Object.entries(ok)) {
+      const v = sp.get(k);
+      if (v && re.test(v)) keep.set(k, v);
+    }
+    FIXED[kind] = `/v1/academics/reports/${report}/export?${keep.toString()}`;
+>>>>>>> claude/kinetix-ecosystem-overview-lpphjn
   }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.

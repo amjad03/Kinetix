@@ -15,10 +15,26 @@ const EnvSchema = z.object({
    */
   AI_BASE_URL: z.url().optional(),
   AI_MODEL: z.string().default('kinetix-llm'),
+  /**
+   * More models on the same server (AI_BASE_URL), comma-separated, tried in order when the one
+   * before is busy or has used its daily allowance. Gemini's free tier allows about 20 requests a
+   * day per model, so a demo lists several (docs/demo/GEMINI_FREE_AI.md).
+   */
+  AI_FALLBACK_MODELS: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? '').split(',').map((m) => m.trim()).filter(Boolean)),
   AI_API_KEY: z.string().optional(),
   AI_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
   /** Whether the primary model reads images (readBoard). */
   AI_VISION: z.stringbool().default(true),
+  /**
+   * How hard a thinking model reasons before it answers (OpenAI `reasoning_effort`). Unset: not
+   * sent, except to Google Gemini, which gets `low` (fast, and accurate enough for class work).
+   */
+  AI_REASONING_EFFORT: z.enum(['none', 'low', 'medium', 'high']).optional(),
+  /** Tries again after this many "busy" replies (429, 503), waiting a little longer each time. */
+  AI_RETRIES: z.coerce.number().int().min(0).max(5).default(2),
   /**
    * Pay-per-use Indian API used when the primary is down, overloaded or not configured
    * (connection errors, timeouts, 5xx, 429; never on a 4xx). `none` or `sarvam`.
@@ -166,6 +182,10 @@ const EnvSchema = z.object({
   /** Scheduled reports are emailed by POSTing JSON to this relay (SES/Postmark lambda, n8n…); unset: only logged. */
   MAIL_WEBHOOK_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
   MAIL_FROM: z.string().default('reports@kinetix.local'),
+  /** Inbound email/WhatsApp replies to external chat threads: the relay sends `x-kinetix-inbound-secret`. Unset: inbound is off. */
+  CHAT_INBOUND_SECRET: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(16).optional()),
+  /** Replies to external chat emails go to reply+<token>@ this domain. */
+  CHAT_REPLY_DOMAIN: z.string().default('reply.kinetix.local'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

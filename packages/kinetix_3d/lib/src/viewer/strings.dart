@@ -79,6 +79,12 @@ class Viewer3dStrings {
   String get allSubjects => _t('allSubjects');
   String classes(List<int> c) => c.isEmpty ? '' : _t('classes').replaceAll('{list}', c.join(', '));
   String get noMatch => _t('noMatch');
+  String downloading(String name) => _t('downloading').replaceAll('{name}', name);
+  String needsDownload(int bytes) => _t('needsDownload').replaceAll('{mb}', (bytes / 1e6).toStringAsFixed(1));
+  String get downloadFailed => _t('downloadFailed');
+  String download(int bytes) => _t('download').replaceAll('{mb}', (bytes / 1e6).toStringAsFixed(1));
+  String get assemble => _t('assemble');
+  String get explode => _t('explode');
   String get write => _t('write');
   String get toolPin => _t('toolPin');
   String get toolSurface => _t('toolSurface');
@@ -159,7 +165,11 @@ class Viewer3dStrings {
       'ಮಾನವ ದೇಹರಚನೆ ಮಾದರಿಗಳು: BodyParts3D, © The Database Center for Life Science (DBCLS), CC BY 4.0',
     ],
     'earthCredit': ['Coastlines: Natural Earth (public domain)', 'तटरेखाएँ: Natural Earth (सार्वजनिक डोमेन)', 'ಕರಾವಳಿ ರೇಖೆಗಳು: Natural Earth (ಸಾರ್ವಜನಿಕ ಡೊಮೇನ್)'],
-    'madeByKinetix': ['The other models are built in code by KINETIX.', 'बाकी मॉडल KINETIX ने कोड से बनाए हैं।', 'ಉಳಿದ ಮಾದರಿಗಳನ್ನು KINETIX ಕೋಡ್‌ನಲ್ಲಿ ನಿರ್ಮಿಸಿದೆ.'],
+    'madeByKinetix': [
+      'Other models come from NIH 3D (NIAID, CC BY 4.0), NASA (public domain), the Smithsonian (CC0) and Poly Pizza (CC BY 3.0), each named under it; the rest are built in code by KINETIX.',
+      'अन्य मॉडल NIH 3D (NIAID, CC BY 4.0), नासा (सार्वजनिक), स्मिथसोनियन (CC0) और Poly Pizza (CC BY 3.0) से हैं, हर मॉडल के नीचे नाम लिखा है; बाकी KINETIX ने कोड से बनाए हैं।',
+      'ಇತರ ಮಾದರಿಗಳು NIH 3D (NIAID, CC BY 4.0), ನಾಸಾ (ಸಾರ್ವಜನಿಕ), ಸ್ಮಿತ್‌ಸೋನಿಯನ್ (CC0) ಮತ್ತು Poly Pizza (CC BY 3.0) ಇಂದ ಬಂದಿವೆ, ಪ್ರತಿಯೊಂದರ ಕೆಳಗೆ ಹೆಸರಿದೆ; ಉಳಿದವನ್ನು KINETIX ಕೋಡ್‌ನಲ್ಲಿ ನಿರ್ಮಿಸಿದೆ.',
+    ],
     'close': ['Close', 'बंद करें', 'ಮುಚ್ಚಿ'],
     'tabParts': ['Parts', 'भाग', 'ಭಾಗಗಳು'],
     'tabCut': ['Cut', 'काटें', 'ಕತ್ತರಿಸಿ'],
@@ -253,5 +263,17 @@ class Viewer3dStrings {
     'subjectSpace': ['Space', 'अंतरिक्ष', 'ಬಾಹ್ಯಾಕಾಶ'],
     'subjectMaths': ['Maths', 'गणित', 'ಗಣಿತ'],
     'subjectScience': ['Science', 'विज्ञान', 'ವಿಜ್ಞಾನ'],
+    'subjectHistory': ['History', 'इतिहास', 'ಇತಿಹಾಸ'],
+    'subjectEngineering': ['Engineering', 'अभियांत्रिकी', 'ಎಂಜಿನಿಯರಿಂಗ್'],
+    'downloading': ['Downloading {name}', '{name} डाउनलोड हो रहा है', '{name} ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ'],
+    'needsDownload': [
+      'This model needs a one-time download ({mb} MB). Connect to the internet and try again.',
+      'इस मॉडल को एक बार डाउनलोड करना होगा ({mb} MB)। इंटरनेट से जुड़ें और फिर से कोशिश करें।',
+      'ಈ ಮಾದರಿಯನ್ನು ಒಮ್ಮೆ ಡೌನ್‌ಲೋಡ್ ಮಾಡಬೇಕು ({mb} MB). ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    ],
+    'downloadFailed': ['The model could not be downloaded.', 'मॉडल डाउनलोड नहीं हो सका।', 'ಮಾದರಿಯನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.'],
+    'download': ['Download ({mb} MB)', 'डाउनलोड ({mb} MB)', 'ಡೌನ್‌ಲೋಡ್ ({mb} MB)'],
+    'assemble': ['Together', 'जुड़ा हुआ', 'ಜೋಡಿಸಿದ'],
+    'explode': ['Apart', 'अलग-अलग', 'ಬೇರೆಬೇರೆ'],
   };
 }

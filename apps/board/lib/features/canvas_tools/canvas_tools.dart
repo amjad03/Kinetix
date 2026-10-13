@@ -40,6 +40,8 @@ class CanvasTools {
     }
   }();
 
+  /// Puts a tool of [kind] on the board at once. The first tool after the app starts appears
+  /// before the saved calibration has been read; the board then resizes it to true size.
   static void _open(WhiteboardController wb, GeoKind kind) {
     unawaited(loadCalibration());
     wb.addGeoTool(kind);

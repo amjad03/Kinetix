@@ -9,7 +9,8 @@ void main() {
 
   group('imported pages (backdrops)', () {
     test('addPages puts one page each after the open page and opens the first', () {
-      final board = WhiteboardController()..addPage(force: true);
+      final board = WhiteboardController()..add(TextElement(id: 't', position: Offset.zero, text: 'notes', color: const Color(0xFF000000), fontSize: 20, size: const Size(60, 20)));
+      board.addPage(force: true);
       board.goToPage(0);
       board.addPages([
         [backdrop()],
@@ -20,6 +21,22 @@ void main() {
       expect(board.elements.single, isA<ImageElement>());
       expect(board.elementsOf(2).single, isA<ImageElement>());
       expect(board.elementsOf(3), isEmpty, reason: 'the page that was after it moves along');
+    });
+
+    test('a blank open page takes the first imported page, so no empty page is left in front; undo gives it back', () {
+      final board = WhiteboardController();
+      board.addPages([
+        [backdrop()],
+        [backdrop()],
+        [backdrop()],
+      ]);
+      expect(board.pageCount, 3);
+      expect(board.pageIndex, 0);
+      for (var i = 0; i < 3; i++) {
+        expect(board.elementsOf(i).single, isA<ImageElement>(), reason: 'page ${i + 1}');
+      }
+      board.undo();
+      expect(board.elements, isEmpty, reason: 'the import on the blank page is one undo step');
     });
 
     test('a tap picks the page like any picture; a loop round some ink or Select all leaves it', () {

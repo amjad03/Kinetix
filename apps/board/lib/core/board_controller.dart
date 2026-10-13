@@ -317,6 +317,10 @@ class BoardController extends ChangeNotifier {
   Map<String, dynamic>? examRoom;
   Timer? _roomTimer;
 
+  /// Whether the room is being watched ([startRoomWatch]): a teacher signing in then gets their
+  /// timetabled period at once, not up to a minute later.
+  bool _roomWatching = false;
+
   /// Asks the cloud what is on in this room now: the next period for the signed-in teacher, and any exam. Runs every minute.
   Future<void> refreshRoom() async {
     final api = this.api;
@@ -345,6 +349,7 @@ class BoardController extends ChangeNotifier {
 
   /// Starts the minute-by-minute room check (call once the board is enrolled).
   void startRoomWatch() {
+    _roomWatching = true;
     _roomTimer?.cancel();
     // Under `flutter test` nothing may keep a timer running; tests call [refreshRoom] themselves.
     if (!Platform.environment.containsKey('FLUTTER_TEST')) _roomTimer = Timer.periodic(const Duration(minutes: 1), (_) => unawaited(refreshRoom()));
@@ -368,6 +373,15 @@ class BoardController extends ChangeNotifier {
 
   bool get isEnrolled => api != null;
   bool get isSignedIn => session != null;
+
+  /// The server this board is registered with (Board settings → This board); null in a demo
+  /// build or before it is set up.
+  String? get serverUrl => _demo ? null : api?.baseUrl;
+
+  /// Board settings → This board → Set up again, for a board moved to another network or server
+  /// (it would keep calling the old address): it forgets the server and its device token, signs
+  /// the teacher out and shows the set-up screen. Settings and saved boards stay on the device.
+  Future<void> setUpAgain() => _unpair();
 
   static const _lockedKey = 'deviceLocked';
 
@@ -990,6 +1004,8 @@ class BoardController extends ChangeNotifier {
     unawaited(_loadRoster());
     unawaited(recordings.kick()); // recordings this teacher made earlier on this board
     unawaited(_applyTeacherSettings());
+    // The class on the timetable now opens straight away (or is offered, when another is open).
+    if (_roomWatching) unawaited(refreshRoom());
   }
 
   /// Name of the teacher who last tapped at the sign-in reader beside this board, when a reader is fitted.

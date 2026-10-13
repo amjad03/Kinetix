@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_board/features/board/board_autosave.dart';
 import 'package:kinetix_board/features/board/context/class_context.dart';
 import 'package:kinetix_board/features/help/tour.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_sounds.dart';
@@ -15,6 +16,9 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
     // The drawer, Insert menu and simulations open showing every tool (test/class_context_test.dart turns narrowing on).
     showAllToolsByDefault = true;
     ToolkitSounds.instance = SilentSounds();
+    // Autosave writes to memory, not a file, and a board a test opens never brings back the
+    // one before it (test/autosave_test.dart sets a store that does).
+    BoardAutosave.defaultStore = _WriteOnlyAutosave();
   });
   await testMain();
 }
@@ -24,4 +28,10 @@ class SilentSounds implements ToolkitSounds {
   final played = <String>[];
   @override
   Future<void> play(String id) async => played.add(id);
+}
+
+/// Autosave in tests: kept in memory, never read back.
+class _WriteOnlyAutosave extends MemoryAutosaveStore {
+  @override
+  Future<String?> read() async => null;
 }

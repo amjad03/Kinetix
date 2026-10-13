@@ -110,23 +110,30 @@ String contextLabel(BuildContext context, ClassContext c) {
 
 /// The top bar's subject and class chip: tap it to pick what is being taught.
 class ContextChip extends StatelessWidget {
-  const ContextChip({super.key, required this.ctx, required this.pick});
+  const ContextChip({super.key, required this.ctx, required this.pick, this.compact = false});
 
   final ClassContext Function() ctx;
   final ContextOverride pick;
+
+  /// The subject's icon only, its name in the tooltip (a phone's top bar, beside the class).
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final s = contextStrings(context);
     return ListenableBuilder(
       listenable: pick,
-      builder: (context, _) => ActionChip(
-        key: const Key('ctx-chip'),
-        avatar: Icon(subjectStyles[ctx().subject]!.icon, size: 18),
-        tooltip: s['chipTip'],
-        label: Text(contextLabel(context, ctx())),
-        onPressed: () => showDialog<void>(context: context, builder: (_) => ContextPicker(ctx: ctx, pick: pick)),
-      ),
+      builder: (context, _) {
+        final icon = Icon(subjectStyles[ctx().subject]!.icon, size: 18);
+        final label = contextLabel(context, ctx());
+        return ActionChip(
+          key: const Key('ctx-chip'),
+          avatar: compact ? null : icon,
+          tooltip: compact ? '$label · ${s['chipTip']}' : s['chipTip'],
+          label: compact ? icon : Text(label),
+          onPressed: () => showDialog<void>(context: context, builder: (_) => ContextPicker(ctx: ctx, pick: pick)),
+        );
+      },
     );
   }
 }

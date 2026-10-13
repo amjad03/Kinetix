@@ -12,6 +12,7 @@ const leaveApproverRoles = {'hod', 'principal', 'tenant_admin', 'hr_manager'};
 
 String leaveStatusText(AppLocalizations l, LeaveStatus s) => switch (s) {
   LeaveStatus.pending => l.leaveStatusPending,
+  LeaveStatus.recommended => l.leaveStatusRecommended,
   LeaveStatus.approved => l.leaveStatusApproved,
   LeaveStatus.rejected => l.leaveStatusRejected,
   LeaveStatus.cancelled => l.leaveStatusCancelled,

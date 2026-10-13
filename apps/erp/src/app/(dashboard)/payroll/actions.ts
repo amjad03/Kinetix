@@ -17,7 +17,7 @@ export async function createRun(month: string): Promise<ActionResult<PayrollRunD
 }
 
 /** recompute needs no version; approve, lock and reopen send the one the person was looking at. */
-export async function runAction(id: string, action: 'recompute' | 'approve' | 'lock' | 'reopen', version: number): Promise<ActionResult<PayrollRunDetail>> {
+export async function runAction(id: string, action: 'recompute' | 'verify' | 'approve' | 'lock' | 'reopen' | 'publish', version: number): Promise<ActionResult<PayrollRunDetail>> {
   if (!UUID.test(id)) return { ok: false, error: (await getI18n()).t('error.generic') };
   const res = await act(() => api<PayrollRunDetail>(`/v1/payroll/runs/${id}/${action}`, { method: 'POST', body: { expectedVersion: version } }));
   if (res.ok) {

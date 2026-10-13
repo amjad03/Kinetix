@@ -41,6 +41,13 @@ final _full = <String, Future<void> Function(Shot s)>{
   'profile': (s) => s.tap('profile-button'),
   'classrooms': (s) => s.profile('menu-classrooms'),
   'training': (s) => s.profile('menu-training'),
+  'noise-meter': (s) => s.tool('toolkit-noise'),
+  'periodic-table': (s) => s.tool('periodic-table'),
+  'key-dates': (s) => s.tool('timeline'),
+  'seat-plan-drawer': (s) => s.tool('seating-chart'),
+  'tools-drawer': (s) => s.tap('tool-tools'),
+  'pen': (s) => s.tap('tool-pen'),
+  'insert': (s) => s.tap('tool-insert'),
 };
 
 void main() {

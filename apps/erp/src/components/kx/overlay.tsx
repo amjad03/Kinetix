@@ -2,7 +2,7 @@
 
 import { Check } from 'lucide-react';
 import { Dialog as D, Popover as P } from 'radix-ui';
-import { createContext, createElement, useContext, type ElementType, type HTMLAttributes, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
+import { createContext, createElement, useContext, useEffect, useRef, type ElementType, type HTMLAttributes, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { cloneElement, mapChildren } from './button';
 
@@ -97,11 +97,37 @@ type TabsCtxT = { value: unknown; onChange?: (e: MouseEvent<HTMLElement>, v: nev
 const TabsCtx = createContext<TabsCtxT | null>(null);
 
 export function Tabs({ value, onChange, className, children, variant: _v, scrollButtons: _s, allowScrollButtonsMobile: _a, centered, ...rest }: Rest & { value: unknown; onChange?: (e: MouseEvent<HTMLElement>, v: never) => void; variant?: string; scrollButtons?: unknown; allowScrollButtonsMobile?: boolean; centered?: boolean }) {
+  const list = useRef<HTMLDivElement>(null);
+  // Keep the selected tab in view when the row is wider than its box.
+  useEffect(() => {
+    const el = list.current;
+    const on = el?.querySelector<HTMLElement>('[role=tab][aria-selected=true]');
+    if (!el || !on) return;
+    if (on.offsetLeft < el.scrollLeft || on.offsetLeft + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = on.offsetLeft - 16;
+  }, [value]);
+  // Fade the edge that has more tabs past it, so a cut-off row reads as scrollable.
+  useEffect(() => {
+    const el = list.current;
+    if (!el) return;
+    const mark = () => {
+      el.dataset.moreRight = String(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+      el.dataset.moreLeft = String(el.scrollLeft > 2);
+    };
+    mark();
+    el.addEventListener('scroll', mark, { passive: true });
+    const ro = new ResizeObserver(mark);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', mark);
+      ro.disconnect();
+    };
+  }, []);
   return (
     <TabsCtx.Provider value={{ value, onChange }}>
       <div
+        ref={list}
         role="tablist"
-        className={cn('flex min-h-11 gap-1 overflow-x-auto border-b [scrollbar-width:none]', centered && 'justify-center', className)}
+        className={cn('flex min-w-0 max-w-full gap-1 overflow-x-auto overscroll-x-contain border-b data-[more-right=true]:[mask-image:linear-gradient(to_right,black_calc(100%-40px),transparent)] data-[more-left=true]:[mask-image:linear-gradient(to_right,transparent,black_40px)] data-[more-left=true]:data-[more-right=true]:[mask-image:linear-gradient(to_right,transparent,black_40px,black_calc(100%-40px),transparent)] [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]', centered && 'justify-center', className)}
         onKeyDown={(e) => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
           const tabs = [...e.currentTarget.querySelectorAll<HTMLElement>('[role=tab]')];
@@ -137,7 +163,7 @@ export function Tab({ value, label, icon, iconPosition: _p, component, href, __i
         ctx?.onChange?.(e, v as never);
       },
       className: cn(
-        '-mb-px inline-flex min-h-11 shrink-0 items-center gap-2 border-b-[3px] border-transparent px-4 text-sm font-semibold whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-selected:border-teal aria-selected:text-foreground [&_svg]:size-[18px]',
+        '-mb-px inline-flex min-h-10 shrink-0 items-center gap-1.5 border-b-2 border-transparent px-3 text-[13.5px] font-[550] whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-selected:border-teal aria-selected:text-foreground [&_svg]:size-[18px]',
         className,
       ),
       ...rest,

@@ -147,7 +147,7 @@ class _Model3dLibraryState extends State<Model3dLibrary> {
 
   Widget _card(BuildContext context, ModelEntry e, String lang, Viewer3dStrings s) {
     final cs = Theme.of(context).colorScheme;
-    final thumb = e.info?.thumbAsset;
+    final thumb = e.info?.thumbAsset ?? e.remote?.thumbAsset;
     return Card(
       key: ValueKey('model3d-pick-${e.id}'),
       clipBehavior: Clip.antiAlias,

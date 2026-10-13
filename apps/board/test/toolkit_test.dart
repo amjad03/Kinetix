@@ -521,7 +521,8 @@ void main() {
       expect(remote.slide, (index: 2, count: 3));
       expect(remote.nextSlide(), isFalse, reason: 'the deck ends; pages go on with page.next');
       expect(remote.previousSlide(), isTrue);
-      expect(wb.pageIndex, 2);
+      // The blank page took the first slide, so the deck is pages 1 to 3 and slide 2 is page 2.
+      expect(wb.pageIndex, 1);
       remote.dispose();
       await Future<void>.delayed(const Duration(seconds: 2));
       k.dispose();

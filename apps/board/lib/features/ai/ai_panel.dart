@@ -248,7 +248,7 @@ class _AiHomeState extends State<_AiHome> {
           group(l.aiGroupTeach, [
             tool(Icons.co_present_outlined, l.aiLessonPlan, ToolPalette.ai, AiView.lessonPlan),
             tool(Icons.functions, l.aiMathSolver, ToolPalette.maths, AiView.math),
-            open(Icons.view_in_ar_outlined, l.ai3dModels, ToolPalette.geometry, SplitContent.model3d),
+            open(Icons.view_in_ar_outlined, l.ai3dModels, ToolPalette.science, SplitContent.model3d),
             tool(Icons.document_scanner_outlined, l.aiReadBoard, ToolPalette.ai, AiView.readBoard),
             tool(Icons.ads_click, SbStrings.of(context)('selectAsk'), ToolPalette.ai, AiView.selectAsk),
           ]),
@@ -310,7 +310,7 @@ class _ExplanationCard extends StatelessWidget {
           const SizedBox(height: Kx.s12),
           Padding(
             padding: const EdgeInsets.only(right: Kx.s8),
-            child: Text(e.answer, style: TextStyle(fontSize: ClassType.lead, height: 1.45, color: c.onSurface)),
+            child: AiText(e.answer, style: TextStyle(fontSize: ClassType.lead, height: 1.45, color: c.onSurface)),
           ),
           if (e.keyPoints.isNotEmpty) ...[
             AiSectionLabel(l.aiKeyPoints),
@@ -325,7 +325,7 @@ class _ExplanationCard extends StatelessWidget {
                       child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: aiAccent, shape: BoxShape.circle)),
                     ),
                     const SizedBox(width: Kx.s12),
-                    Expanded(child: Text(p, style: const TextStyle(fontSize: ClassType.body, height: 1.4))),
+                    Expanded(child: AiText(p, style: const TextStyle(fontSize: ClassType.body, height: 1.4))),
                   ],
                 ),
               ),

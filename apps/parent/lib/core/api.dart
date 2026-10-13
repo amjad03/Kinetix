@@ -140,6 +140,12 @@ abstract class ParentApi {
   /// The hostel bed and the recent night roll calls (`GET /v1/hostel/students/:id`).
   Future<BoardingView> boarding(String childId);
 
+  /// Asks the warden for an out-pass for a hostel resident (`POST /v1/hostel/gate-passes/requests`).
+  Future<void> requestOutPass(String childId, {required String reason, required String destination, required DateTime expectedBackAt});
+
+  /// What the canteen sells today (`GET /v1/canteen/items`).
+  Future<List<CanteenDish>> canteenMenu();
+
   /// The canteen wallet, recent meals and whether online top-up is available (`GET /v1/canteen/students/:id`).
   Future<WalletView> wallet(String childId);
 
@@ -486,6 +492,17 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<BoardingView> boarding(String childId) async => BoardingView.fromJson(await _send('GET', '/v1/hostel/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<void> requestOutPass(String childId, {required String reason, required String destination, required DateTime expectedBackAt}) async => _send(
+    'POST',
+    '/v1/hostel/gate-passes/requests',
+    body: {'studentId': childId, 'reason': reason, 'destination': destination, 'expectedBackAt': expectedBackAt.toUtc().toIso8601String()},
+  );
+
+  @override
+  Future<List<CanteenDish>> canteenMenu() async =>
+      [for (final d in (await _send('GET', '/v1/canteen/items') as List)) CanteenDish.fromJson((d as Map).cast<String, dynamic>())];
 
   @override
   Future<WalletView> wallet(String childId) async => WalletView.fromJson(await _send('GET', '/v1/canteen/students/$childId') as Map<String, dynamic>);

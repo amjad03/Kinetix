@@ -8,7 +8,7 @@ const t = (en, hi, kn) => ({ en, hi, kn });
 
 export default {
   id: 'plant_cell',
-  version: 1,
+  version: 2,
   order: 9,
   source: 'procedural',
   subject: 'Biology',
@@ -20,7 +20,7 @@ export default {
     'ಪ್ರಾಣಿ ಕೋಶದಂತೆಯೇ, ಆದರೆ ಪೊರೆಯ ಹೊರಗೆ ಗಟ್ಟಿಯಾದ ಕೋಶಭಿತ್ತಿ, ರಸ ತುಂಬಿದ ದೊಡ್ಡ ರಸದಾನಿ ಮತ್ತು ಸೂರ್ಯನ ಬೆಳಕಿನಿಂದ ಆಹಾರ ತಯಾರಿಸುವ ಹರಿತ್ತಿನ ಕಣಗಳು.',
   ),
   keywords: ['plant cell', 'cell', 'cell wall', 'chloroplast', 'vacuole', 'the fundamental unit of life', 'cell structure', 'organelles'],
-  credit: 'Model built by KINETIX',
+  credit: 'Simplified model built by KINETIX',
   groups: [
     { id: 'outside', name: t('Boundary', 'सीमा', 'ಗಡಿ') },
     { id: 'control', name: t('Control centre', 'नियंत्रण केंद्र', 'ನಿಯಂತ್ರಣ ಕೇಂದ್ರ') },
@@ -31,6 +31,7 @@ export default {
     const W = 0.24, H = 0.15, D = 0.12;
     const wall = new RoundedBoxGeometry(W, H, D, 6, 0.018);
     const membrane = new RoundedBoxGeometry(W - 0.012, H - 0.012, D - 0.012, 6, 0.015);
+    const cytoplasm = new RoundedBoxGeometry(W - 0.0135, H - 0.0135, D - 0.0135, 6, 0.014);
     const vac = new RoundedBoxGeometry(W * 0.58, H * 0.6, D * 0.6, 6, 0.03);
     vac.translate(0.02, 0, 0);
     const nuc = [-0.082, 0.02, 0.01];
@@ -54,6 +55,7 @@ export default {
     return {
       cell_wall: wall,
       membrane,
+      cytoplasm,
       vacuole: vac,
       nucleus: blob(THREE, nuc, 0.022, 0.02, 0.02, 8),
       nucleolus: blob(THREE, [nuc[0] + 0.004, nuc[1] + 0.003, nuc[2]], 0.007, 0.007, 0.007, 4),
@@ -71,9 +73,14 @@ export default {
       info: t('A stiff wall of cellulose outside the membrane. It gives the plant cell its fixed shape and support.', 'झिल्ली के बाहर सेल्यूलोज़ की कठोर भित्ति। यह पादप कोशिका को निश्चित आकार और सहारा देती है।', 'ಪೊರೆಯ ಹೊರಗಿನ ಸೆಲ್ಯುಲೋಸ್‌ನ ಗಟ್ಟಿ ಗೋಡೆ. ಸಸ್ಯ ಕೋಶಕ್ಕೆ ನಿಶ್ಚಿತ ಆಕಾರ ಮತ್ತು ಆಧಾರ ನೀಡುತ್ತದೆ.'),
     },
     {
-      id: 'membrane', group: 'outside', color: '#e6d18a', opacity: 0.18,
+      id: 'membrane', group: 'outside', color: '#e6d18a', opacity: 0.18, inside: '#f4f1cf',
       name: t('Cell membrane', 'कोशिका झिल्ली', 'ಕೋಶ ಪೊರೆ'),
       info: t('Just inside the wall; it controls what enters and leaves the cell.', 'भित्ति के ठीक अंदर; यह नियंत्रित करती है कि कोशिका में क्या आए और क्या जाए।', 'ಭಿತ್ತಿಯ ಒಳಗೆ; ಕೋಶದೊಳಗೆ ಏನು ಬರಬೇಕು, ಏನು ಹೋಗಬೇಕು ಎಂಬುದನ್ನು ನಿಯಂತ್ರಿಸುತ್ತದೆ.'),
+    },
+    {
+      id: 'cytoplasm', group: 'outside', color: '#eef3d2', opacity: 0.3, cap: false, minor: true,
+      name: t('Cytoplasm', 'कोशिकाद्रव्य', 'ಕೋಶದ್ರವ್ಯ'),
+      info: t('The jelly that fills the cell round the organelles; many of the cell\'s chemical reactions happen in it.', 'कोशिकांगों के चारों ओर कोशिका में भरी जेली; कोशिका की बहुत-सी रासायनिक अभिक्रियाएँ इसी में होती हैं।', 'ಅಂಗಕಗಳ ಸುತ್ತ ಕೋಶದಲ್ಲಿ ತುಂಬಿರುವ ಜೆಲ್ಲಿ; ಕೋಶದ ಅನೇಕ ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು ಇದರಲ್ಲೇ ನಡೆಯುತ್ತವೆ.'),
     },
     {
       id: 'vacuole', group: 'organelles', color: '#8fcbea', opacity: 0.45,

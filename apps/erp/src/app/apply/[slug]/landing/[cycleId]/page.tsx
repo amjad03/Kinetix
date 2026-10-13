@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Logo } from '@/components/Logo';
 import { ErrorState } from '@/components/States';
@@ -72,7 +71,7 @@ export default async function LandingPage({ params }: { params: Promise<{ slug: 
             <p className="text-[13px] leading-[19px]">{p.cycle.applicationFeePaise > 0 ? t('g1.land.fee', { amount: fmt.rupees(p.cycle.applicationFeePaise) }) : t('g1.land.free')}</p>
           </div>
           {open && (
-            <Button className="mt-6" style={{ backgroundColor: pal(p.accentColour) }} component={Link} href={`/apply/${slug}`} variant="contained" size="large" data-testid="landing-apply">
+            <Button className="mt-6" style={{ backgroundColor: pal(p.accentColour) }} href={`/apply/${slug}`} variant="contained" size="large" data-testid="landing-apply">
               {t('g1.land.apply')}
             </Button>
           )}

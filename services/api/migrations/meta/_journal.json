@@ -860,7 +860,49 @@
       "idx": 122,
       "version": "7",
       "when": 1791410923229,
-      "tag": "0130_module_settings",
+      "tag": "0130_academics_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 123,
+      "version": "7",
+      "when": 1791410924229,
+      "tag": "0131_exam_office",
+      "breakpoints": true
+    },
+    {
+      "idx": 124,
+      "version": "7",
+      "when": 1791410925229,
+      "tag": "0132_fee_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 125,
+      "version": "7",
+      "when": 1791410926229,
+      "tag": "0133_hr_payroll_workflows",
+      "breakpoints": true
+    },
+    {
+      "idx": 126,
+      "version": "7",
+      "when": 1791411026229,
+      "tag": "0134_staff_chat",
+      "breakpoints": true
+    },
+    {
+      "idx": 127,
+      "version": "7",
+      "when": 1791411027229,
+      "tag": "0135_campus_ops_depth",
+      "breakpoints": true
+    },
+    {
+      "idx": 128,
+      "version": "7",
+      "when": 1791411028229,
+      "tag": "0136_module_settings",
       "breakpoints": true
     }
   ]

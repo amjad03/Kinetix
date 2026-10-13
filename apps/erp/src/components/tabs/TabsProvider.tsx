@@ -130,7 +130,7 @@ export function TabsProvider({ groups, userKey, children }: { groups: NavGroup[]
   useEffect(() => {
     const back = M.restore(read(storeKey), liveUrl);
     if (back) {
-      const withCurrent = back.tabs.some((x) => x.url === liveUrl) ? back : { ...back, ...M.replaceActive({ ...back, activeId: '' }, liveUrl, describe(liveUrl).title, describe(liveUrl).icon) };
+      const withCurrent = back.tabs.some((x) => M.sameUrl(x.url, liveUrl)) ? back : { ...back, ...M.replaceActive({ ...back, activeId: '' }, liveUrl, describe(liveUrl).title, describe(liveUrl).icon) };
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from storage
       setState(withCurrent);
     }
@@ -186,6 +186,12 @@ export function TabsProvider({ groups, userKey, children }: { groups: NavGroup[]
   const open = useCallback(
     (url: string, opts?: { side?: boolean }) => {
       const cur = stateRef.current;
+      const existing = M.findTab(cur, url);
+      if (existing) {
+        // Already open: focus that tab instead of opening the page twice.
+        if (existing.id !== cur.activeId) leave(M.activate(cur, existing.id), existing.url);
+        return;
+      }
       const d = describe(url);
       const next = M.openTab(cur, { url, ...d });
       if (!next) {

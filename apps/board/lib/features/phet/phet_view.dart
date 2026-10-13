@@ -51,7 +51,7 @@ class PhetServer {
       Uri.parse('${await start(dir)}/${id}_all.html?locale=${Uri.encodeQueryComponent(locale)}');
 }
 
-/// A sim's page in the panel: Android's WebView (webview_flutter) or Edge WebView2 on Windows
+/// A sim's page in the panel: Android's WebView or macOS WKWebView (webview_flutter), or Edge WebView2 on Windows
 /// (webview_windows). [create] gives null where there is none (tests, Linux).
 abstract class PhetWebView {
   Future<void> load(Uri page);
@@ -68,7 +68,7 @@ abstract class PhetWebView {
     if (debugOverride != null) return debugOverride!();
     if (Platform.environment.containsKey('FLUTTER_TEST')) return null;
     if (Platform.isWindows) return _WindowsView();
-    if (Platform.isAndroid || Platform.isIOS) return WebViewPlatform.instance == null ? null : _AndroidView();
+    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) return WebViewPlatform.instance == null ? null : _AndroidView();
     return null;
   }
 }
@@ -90,9 +90,13 @@ Uint8List? _decodeShot(Object? result) {
 }
 
 class _AndroidView implements PhetWebView {
-  final _controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setBackgroundColor(const Color(0xFF000000));
+  _AndroidView() {
+    _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    // WKWebView on macOS has no background colour setting (it throws).
+    if (!Platform.isMacOS) _controller.setBackgroundColor(const Color(0xFF000000));
+  }
+
+  final _controller = WebViewController();
 
   @override
   Future<void> load(Uri page) => _controller.loadRequest(page);

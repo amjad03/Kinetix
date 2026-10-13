@@ -16,8 +16,42 @@ class NightMark {
   bool get absent => status == 'absent';
 }
 
+/// An out-pass (gate pass) for a hostel resident: asked for by the family or issued by the warden.
+class OutPass {
+  const OutPass({required this.id, required this.reason, required this.destination, required this.expectedBackAt, required this.status});
+
+  factory OutPass.fromJson(Map<String, dynamic> j) => OutPass(
+    id: j['id'] as String,
+    reason: j['reason'] as String? ?? '',
+    destination: j['destination'] as String? ?? '',
+    expectedBackAt: DateTime.parse(j['expectedBackAt'] as String).toLocal(),
+    status: j['status'] as String? ?? 'requested',
+  );
+
+  final String id;
+  final String reason;
+  final String destination;
+  final DateTime expectedBackAt;
+
+  /// requested, approved, issued, out, returned, rejected or cancelled.
+  final String status;
+}
+
+/// One dish on the canteen menu (`GET /v1/canteen/items`).
+class CanteenDish {
+  const CanteenDish({required this.id, required this.name, required this.pricePaise, required this.available});
+
+  factory CanteenDish.fromJson(Map<String, dynamic> j) =>
+      CanteenDish(id: j['id'] as String, name: j['name'] as String? ?? '', pricePaise: (j['pricePaise'] as num?)?.toInt() ?? 0, available: j['available'] as bool? ?? true);
+
+  final String id;
+  final String name;
+  final int pricePaise;
+  final bool available;
+}
+
 class BoardingView {
-  const BoardingView({required this.resident, this.block, this.room, this.bed, this.nights = const []});
+  const BoardingView({required this.resident, this.block, this.room, this.bed, this.nights = const [], this.passes = const []});
 
   factory BoardingView.fromJson(Map<String, dynamic> j) {
     final bed = (j['bed'] as Map?)?.cast<String, dynamic>();
@@ -27,9 +61,11 @@ class BoardingView {
       room: bed?['room'] as String?,
       bed: bed?['bed'] as String?,
       nights: [for (final n in (j['nights'] as List? ?? const [])) NightMark.fromJson((n as Map).cast<String, dynamic>())],
+      passes: [for (final p in (j['passes'] as List? ?? const [])) OutPass.fromJson((p as Map).cast<String, dynamic>())],
     );
   }
 
+  final List<OutPass> passes;
   final bool resident;
   final String? block;
   final String? room;

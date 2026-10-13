@@ -89,4 +89,84 @@ void main() {
     expect(find.text(ToolStrings('en').t('drawEdge')), findsOneWidget, reason: 'long-press shows the label');
     expect(b.elements.whereType<Stroke>().length, 1, reason: 'a long-press only labels');
   });
+
+  test('calibrating keeps the tools on the board true size: a 20 cm ruler still reads 20 cm', () {
+    final b = WhiteboardController();
+    addTearDown(b.dispose);
+    b.addGeoTool(GeoKind.ruler);
+    final compass = b.addGeoTool(GeoKind.compass);
+    b.updateGeoTool(compass.copyWith(size: 5 * 40));
+    expect(GeoCalibration.format(b.geoTools.value.first.size), '20.0 cm');
+    // The saved calibration arrives (or the teacher calibrates): 50 px to the cm.
+    GeoCalibration.pxPerCm.value = 50;
+    expect(b.geoTools.value.first.size, closeTo(1000, 1e-9));
+    expect(GeoCalibration.format(b.geoTools.value.first.size), '20.0 cm');
+    expect(GeoCalibration.format(b.geoTools.value.last.size), '5.0 cm', reason: 'the compass keeps its radius in cm');
+  });
+
+  Widget host(WhiteboardController b) => MaterialApp(home: Scaffold(body: SizedBox(width: 1600, height: 1000, child: GeoToolsOverlay(controller: b))));
+
+  testWidgets('the turn dot turns a ruler in 15° steps about its middle', (tester) async {
+    final b = WhiteboardController();
+    addTearDown(b.dispose);
+    final t = b.addGeoTool(GeoKind.ruler);
+    await tester.pumpWidget(host(b));
+    final dot = t.toBoard(geoRotateHandle(t));
+    // Swing the dot a quarter turn round the ruler's middle.
+    final a = math.atan2((dot - t.center).dy, (dot - t.center).dx) + math.pi / 2;
+    final to = t.center + Offset(math.cos(a), math.sin(a)) * (dot - t.center).distance;
+    await tester.dragFrom(dot, to - dot);
+    await tester.pump();
+    final turned = b.geoTools.value.single;
+    expect(turned.angleDegrees.round() % 15, 0, reason: 'snapped to 15°');
+    expect(turned.angleDegrees, closeTo(90, 0.001));
+    expect(turned.center, t.center, reason: 'turning does not move it');
+  });
+
+  testWidgets('the protractor arm reads whole degrees where it is dragged, and Draw rules that ray', (tester) async {
+    final b = WhiteboardController();
+    addTearDown(b.dispose);
+    final t = b.addGeoTool(GeoKind.protractor);
+    await tester.pumpWidget(host(b));
+    const want = 135 * math.pi / 180;
+    final to = t.center + Offset(math.cos(want), -math.sin(want)) * t.size * 0.85;
+    await tester.dragFrom(t.armTip, to - t.armTip);
+    await tester.pump();
+    final p = b.geoTools.value.single;
+    expect(p.armDegrees, closeTo(135, 1e-9));
+    await tester.tap(find.byKey(Key('geo-draw-${p.id}')));
+    await tester.pump();
+    final ray = b.elements.whereType<Stroke>().single;
+    final d = ray.points.last.offset - ray.points.first.offset;
+    expect(degrees360(math.atan2(-d.dy, d.dx)), closeTo(135, 1e-6));
+  });
+
+  testWidgets('compass: pull the pencil out for the radius, swing it for an arc, Circle for a full turn', (tester) async {
+    final b = WhiteboardController();
+    addTearDown(b.dispose);
+    final t = b.addGeoTool(GeoKind.compass);
+    await tester.pumpWidget(host(b));
+    // Along the leg: the radius grows to where the finger is.
+    await tester.dragFrom(t.pencil, const Offset(80, 0));
+    await tester.pump();
+    var c = b.geoTools.value.single;
+    expect(c.size, closeTo(t.size + 80, 2));
+    expect(b.elements, isEmpty, reason: 'setting the radius draws nothing');
+    // Round the needle: an arc at that radius.
+    final from = c.pencil;
+    final to = c.center + Offset(math.cos(math.pi / 3), math.sin(math.pi / 3)) * c.size;
+    await tester.dragFrom(from, to - from);
+    await tester.pump();
+    final arc = b.elements.whereType<Stroke>().single;
+    expect(arc.shape, isNull, reason: 'an arc is pen ink');
+    for (final p in arc.points) {
+      expect((p.offset - c.center).distance, closeTo(c.size, 0.5));
+    }
+    c = b.geoTools.value.single;
+    await tester.tap(find.byKey(Key('geo-circle-${c.id}')));
+    await tester.pump();
+    final circle = b.elements.whereType<Stroke>().last;
+    expect(circle.shape, ShapeKind.circle);
+    expect((circle.points.first.offset - circle.points.last.offset).distance, lessThan(1e-6), reason: 'a closed circle');
+  });
 }

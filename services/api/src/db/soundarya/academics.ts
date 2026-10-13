@@ -1,3 +1,4 @@
+import { PROFILE } from './data.js';
 /** Attendance, internal assessments, homework, the LMS and lesson plans for the running semester. */
 import type { Ctx, SectionRef } from './ctx.js';
 import { addDays, at, J, weekday } from './kit.js';
@@ -12,7 +13,7 @@ interface Slot {
 }
 
 /** Sections whose internal assessments are created with the exam session (they feed its results). */
-export const EXAM_SECTIONS = new Set(['BCM:3', 'BBA:3', 'BCA:3']);
+export const EXAM_SECTIONS = new Set(PROFILE === 'school' ? ['SEC:10', 'SEC:9', 'MID:8', 'SCI:12', 'COM:12'] : ['BCM:3', 'BBA:3', 'BCA:3']);
 
 export async function attendance(c: Ctx): Promise<void> {
   const { kit: k, r } = c;

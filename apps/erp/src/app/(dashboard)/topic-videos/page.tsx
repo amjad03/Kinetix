@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
 import { ApprovalQueue } from '@/components/topic-videos/ApprovalQueue';
@@ -43,7 +42,7 @@ export default async function TopicVideosPage() {
           <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
             {courses.data.map((c) => (
               <Card key={c.id}>
-                <CardActionArea className="p-4" component={Link} href={`/topic-videos/${c.id}`}>
+                <CardActionArea className="p-4" href={`/topic-videos/${c.id}`}>
                   <p className="text-sm leading-[21px] font-medium">{c.title}</p>
                   <p className="text-[13px] leading-[19px] text-muted-foreground">
                     {c.curriculumCode} · {t('pv.term', { n: c.term })}

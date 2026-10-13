@@ -168,7 +168,7 @@ export function TableContainer({ component = 'div', className, ...rest }: Rest &
 export function Table({ size = 'medium', stickyHeader, className, ...rest }: Rest & { size?: 'small' | 'medium'; stickyHeader?: boolean }) {
   return (
     <SizeCtx.Provider value={size}>
-      <table className={cn('w-full border-collapse text-[13px]', stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:bg-card', className)} {...(rest as HTMLAttributes<HTMLTableElement>)} />
+      <table className={cn('w-full border-collapse text-[13.5px]', stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:bg-card', className)} {...(rest as HTMLAttributes<HTMLTableElement>)} />
     </SizeCtx.Provider>
   );
 }
@@ -196,8 +196,8 @@ export function TableCell({ align, padding, component, variant, className, ...re
     scope: head && tag === 'th' ? 'col' : undefined,
     className: cn(
       'border-b text-left align-middle',
-      padding === 'none' ? 'p-0' : padding === 'checkbox' ? 'w-12 px-2' : small ? 'px-3 py-2' : 'px-4 py-3',
-      head && 'text-xs font-medium whitespace-nowrap text-muted-foreground',
+      padding === 'none' ? 'p-0' : padding === 'checkbox' ? 'w-12 px-2' : small ? 'px-3 py-2' : head ? 'px-3.5 py-2.5' : 'px-3.5 py-3',
+      head && 'text-[12.5px] font-[550] whitespace-nowrap text-muted-foreground',
       align === 'right' && 'text-right',
       align === 'center' && 'text-center',
       className,

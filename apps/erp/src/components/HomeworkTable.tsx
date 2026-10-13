@@ -3,6 +3,7 @@ import { useI18n } from '@/i18n/client';
 import { daysBetween } from '@/lib/dates';
 import type { HomeworkRow } from '@/lib/types';
 import { DataTable, StatusPill, type Column } from '@/components/ui';
+import { naturalCompare } from '@/lib/natural';
 
 /** Recent homework as a searchable, sortable table with CSV export. */
 export function HomeworkTable({ rows, today, timezone }: { rows: HomeworkRow[]; today: string; timezone: string }) {
@@ -68,7 +69,7 @@ export function HomeworkTable({ rows, today, timezone }: { rows: HomeworkRow[]; 
     { id: 'due', header: t('hw.col.due'), sort: (h) => h.dueOn ?? '', csv: (h) => h.dueOn ?? '', cell: due },
   ];
 
-  const uniq = (pick: (h: HomeworkRow) => string) => [...new Set(rows.map(pick))].sort((a, b) => a.localeCompare(b)).map((v) => ({ value: v, label: v }));
+  const uniq = (pick: (h: HomeworkRow) => string) => [...new Set(rows.map(pick))].sort((a, b) => naturalCompare(a, b)).map((v) => ({ value: v, label: v }));
 
   return (
     <DataTable

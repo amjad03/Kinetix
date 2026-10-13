@@ -1,6 +1,6 @@
 {
  "id": "plant_cell",
- "version": 1,
+ "version": 2,
  "subject": "Biology",
  "order": 9,
  "file": "plant_cell.glb",
@@ -29,7 +29,7 @@
   9,
   11
  ],
- "credit": "Model built by KINETIX",
+ "credit": "Simplified model built by KINETIX",
  "size": 0.24,
  "groups": [
   {
@@ -144,6 +144,7 @@
    "group": "outside",
    "color": "#e6d18a",
    "opacity": 0.18,
+   "inside": "#f4f1cf",
    "name": {
     "en": "Cell membrane",
     "hi": "कोशिका झिल्ली",
@@ -212,6 +213,89 @@
      0.099,
      0.054,
      -0.054
+    ]
+   ],
+   "explode": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "id": "cytoplasm",
+   "group": "outside",
+   "color": "#eef3d2",
+   "opacity": 0.3,
+   "minor": true,
+   "cap": false,
+   "name": {
+    "en": "Cytoplasm",
+    "hi": "कोशिकाद्रव्य",
+    "kn": "ಕೋಶದ್ರವ್ಯ"
+   },
+   "info": {
+    "en": "The jelly that fills the cell round the organelles; many of the cell's chemical reactions happen in it.",
+    "hi": "कोशिकांगों के चारों ओर कोशिका में भरी जेली; कोशिका की बहुत-सी रासायनिक अभिक्रियाएँ इसी में होती हैं।",
+    "kn": "ಅಂಗಕಗಳ ಸುತ್ತ ಕೋಶದಲ್ಲಿ ತುಂಬಿರುವ ಜೆಲ್ಲಿ; ಕೋಶದ ಅನೇಕ ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು ಇದರಲ್ಲೇ ನಡೆಯುತ್ತವೆ."
+   },
+   "centroid": [
+    0,
+    0,
+    0
+   ],
+   "anchor": [
+    -0.0993,
+    0.0542,
+    0.0532
+   ],
+   "anchors": [
+    [
+     0,
+     1,
+     0,
+     -0.0993,
+     0.0683,
+     -0.0393
+    ],
+    [
+     0,
+     -1,
+     0,
+     -0.0993,
+     -0.0683,
+     0.0393
+    ],
+    [
+     -1,
+     0,
+     0,
+     -0.1133,
+     0.0542,
+     -0.0393
+    ],
+    [
+     1,
+     0,
+     0,
+     0.1133,
+     0.0542,
+     0.0393
+    ],
+    [
+     0,
+     0,
+     1,
+     -0.0993,
+     0.0542,
+     0.0532
+    ],
+    [
+     0,
+     0,
+     -1,
+     0.0993,
+     0.0542,
+     -0.0532
     ]
    ],
    "explode": [

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ENV, type Env } from '../config/env.js';
 import { ContentModule } from '../content/content.module.js';
 import { DbService } from '../db/db.service.js';
@@ -8,7 +8,7 @@ import { TutorController } from './tutor.controller.js';
 import { InsightsController } from './insights.controller.js';
 import { PastExamsController } from './past-exams.js';
 import { AsrGateway, NoSpeechToText, OpenAiCompatibleAsr, SarvamAsr, SpeechToText } from './asr.js';
-import { AiService, LLM_PROVIDER, providerFromEnv } from './ai.service.js';
+import { AiService, describeProvider, LLM_PROVIDER, providerFromEnv } from './ai.service.js';
 import { CircuitBreaker } from './providers.js';
 
 /** Local first: the self-hosted speech server (ASR_BASE_URL), then Sarvam; capped and metered per institution. */
@@ -30,7 +30,15 @@ export function speechToTextFromEnv(env: Env, db: DbService): SpeechToText {
   imports: [ContentModule],
   providers: [
     AiService,
-    { provide: LLM_PROVIDER, inject: [ENV], useFactory: (env: Env) => providerFromEnv(env) },
+    {
+      provide: LLM_PROVIDER,
+      inject: [ENV],
+      useFactory: (env: Env) => {
+        const provider = providerFromEnv(env);
+        new Logger('AiModule').log(describeProvider(env, provider));
+        return provider;
+      },
+    },
     { provide: SpeechToText, inject: [ENV, DbService], useFactory: speechToTextFromEnv },
   ],
   controllers: [AiController, PastExamsController, InsightsController, TutorController, AiAdminController],

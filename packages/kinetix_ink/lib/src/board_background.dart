@@ -446,8 +446,8 @@ void _paintWorld(Canvas canvas, double scale) {
   }
 }
 
-/// No outline is bundled (no public-domain one of a size the board can ship was available):
-/// a frame with a note, so the page still works as a map area to draw on.
+/// No outline is bundled (no public-domain one with the official boundary was available), so
+/// the paper is not offered; a board saved with it shows a titled frame to draw the map in.
 void _paintMapPlaceholder(Canvas canvas, double scale, String title) {
   const frame = Rect.fromLTWH(160, 90, 1600, 900);
   final p = Paint()
@@ -455,8 +455,7 @@ void _paintMapPlaceholder(Canvas canvas, double scale, String title) {
     ..strokeWidth = 2 / scale
     ..style = PaintingStyle.stroke;
   canvas.drawRRect(RRect.fromRectAndRadius(frame, const Radius.circular(24)), p);
-  _label(canvas, title, frame.center - const Offset(0, 24), size: 40, centre: true);
-  _label(canvas, 'Outline not bundled yet: draw or add a picture', frame.center + const Offset(0, 30), size: 22, centre: true);
+  _label(canvas, title, Offset(frame.center.dx, frame.top + 48), size: 32, centre: true);
 }
 
 /// Paints a fixed-size page of paper from (0, 0), for viewers and page pictures.

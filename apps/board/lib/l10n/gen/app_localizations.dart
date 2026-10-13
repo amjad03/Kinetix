@@ -3196,6 +3196,18 @@ abstract class AppLocalizations {
   /// **'The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.'**
   String get aiErrOffline;
 
+  /// No description provided for @aiErrBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI is busy right now. Try again in a minute.'**
+  String get aiErrBusy;
+
+  /// No description provided for @aiErrNothingOnPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing could be read on those pages. Write on the board first, or choose other pages.'**
+  String get aiErrNothingOnPages;
+
   /// Question sent to KINETIX AI, in the AI language.
   ///
   /// In en, this message translates to:
@@ -7803,6 +7815,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter a server address like https://api.kinetix.in'**
   String get invalidServer;
+
+  /// Board settings section: the server the board is registered with, and Set up again.
+  ///
+  /// In en, this message translates to:
+  /// **'This board'**
+  String get thisBoardTitle;
+
+  /// No description provided for @thisBoardServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered as {name} with {server}'**
+  String thisBoardServer(String name, String server);
+
+  /// No description provided for @setUpAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up again'**
+  String get setUpAgain;
+
+  /// No description provided for @setUpAgainHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (KINETIX ERP → Boards). Settings and saved boards stay on this device.'**
+  String get setUpAgainHint;
+
+  /// No description provided for @setUpAgainKiosk.
+  ///
+  /// In en, this message translates to:
+  /// **'Kiosk mode is on. To set the board up again, IT first holds the clock for 3 seconds and enters the IT PIN.'**
+  String get setUpAgainKiosk;
+
+  /// No description provided for @setUpAgainTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up this board again?'**
+  String get setUpAgainTitle;
+
+  /// No description provided for @setUpAgainBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The board stops using {server} and the teacher is signed out. Then enter the server address and a new enrolment code from KINETIX ERP (Boards → New enrolment code).'**
+  String setUpAgainBody(String server);
 }
 
 class _AppLocalizationsDelegate

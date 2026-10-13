@@ -1,4 +1,6 @@
 'use client';
+import Link from 'next/link';
+import { recordHref } from '@/lib/campus-ops';
 import { useState } from 'react';
 import { addExpense, addGpsSource, reportIncident, resolveIncident, revokeGpsSource, addDriver, addRoute, addStop, addVehicle, chargeFees, endSeat, loadRoute, loadTrip, seatStudent, setRouteActive, updateRoute } from '@/app/(dashboard)/transport/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -55,7 +57,7 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, ex
   const live = trips.filter((x) => x.trip.status === 'running');
 
   const routeCols = [
-    { label: t('ops.f.name'), cell: (r: TRoute) => <>{r.name} {!r.active && <Pill label={t('ops.st.inactive')} />}</> },
+    { label: t('ops.f.name'), cell: (r: TRoute) => <><Link className="font-medium text-primary hover:underline" href={recordHref('route', r.id)}>{r.name}</Link> {!r.active && <Pill label={t('ops.st.inactive')} />}</> },
     { label: t('tr.vehicle'), cell: (r: TRoute) => r.regNo ?? t('ops.none') },
     { label: t('tr.driver'), cell: (r: TRoute) => r.driverName ?? t('ops.none') },
     { label: t('tr.stops'), cell: (r: TRoute) => r.stops, num: true },
@@ -115,7 +117,7 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, ex
                   empty={t('tr.noVehicles')}
                   rows={vehicles}
                   cols={[
-                    { label: t('tr.regNo'), cell: (v) => v.regNo },
+                    { label: t('tr.regNo'), cell: (v) => <Link className="font-medium text-primary hover:underline" href={recordHref('vehicle', v.id)}>{v.regNo}</Link> },
                     { label: t('tr.model'), cell: (v) => v.model || t('ops.none') },
                     { label: t('tr.capacity'), cell: (v) => v.capacity, num: true },
                     { label: t('ops.f.status'), cell: (v) => <Pill label={st(t, v.status)} /> },

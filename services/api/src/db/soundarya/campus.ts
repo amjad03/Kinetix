@@ -1,3 +1,4 @@
+import { PROFILE } from './data.js';
 /** Library, hostel and mess, canteen, transport, inventory and fixed assets. */
 import type { Ctx } from './ctx.js';
 import { addDays, at, J, rupees } from './kit.js';
@@ -66,7 +67,7 @@ export async function hostelAndCanteen(c: Ctx): Promise<void> {
   await k.ins('canteen_items', [['Filter coffee', 15], ['Masala tea', 12], ['Veg sandwich', 35], ['Samosa (2)', 25], ['Masala dosa', 50], ['Veg meals', 70], ['Curd rice', 40], ['Fresh lime soda', 25], ['Gobi manchurian', 60]].map(([name, price]) => ({ name, pricePaise: rupees(price as number), available: true })), { returning: false });
   const buyers = c.students.filter((_, i) => i % 8 === 1).slice(0, 36);
   await k.ins('canteen_wallets', buyers.map((st, i) => ({ studentId: st.id, balancePaise: rupees(40 + ((i * 37) % 360)) })), { returning: false });
-  await k.ins('canteen_topups', buyers.slice(0, 14).map((st, i) => ({ studentId: st.id, amountPaise: rupees(i % 2 ? 500 : 300), provider: 'counter', providerOrderId: `CTN-${9100 + i}`, providerPaymentId: `CASH-${1200 + i}`, status: 'paid', payerUserId: canteen, paidAt: at(addDays(c.today, -(i + 2)), '09:30') })), { returning: false });
+  await k.ins('canteen_topups', buyers.slice(0, 14).map((st, i) => ({ studentId: st.id, amountPaise: rupees(i % 2 ? 500 : 300), provider: 'counter', providerOrderId: `${PROFILE === 'school' ? 'svn-' : ''}CTN-${9100 + i}`, providerPaymentId: `CASH-${1200 + i}`, status: 'paid', payerUserId: canteen, paidAt: at(addDays(c.today, -(i + 2)), '09:30') })), { returning: false });
   await k.ins('canteen_wallet_txns', buyers.slice(0, 14).flatMap((st, i) => [{ studentId: st.id, deltaPaise: rupees(i % 2 ? 500 : 300), kind: 'topup', createdBy: canteen, idempotencyKey: `seed-top-${i}` }, { studentId: st.id, deltaPaise: -rupees(35 + (i % 4) * 15), kind: 'purchase', items: J([{ name: 'Veg sandwich', qty: 1 }]), createdBy: canteen, idempotencyKey: `seed-buy-${i}` }]), { returning: false });
 }
 
@@ -106,7 +107,7 @@ export async function transport(c: Ctx): Promise<void> {
   }
   await k.ins('transport_expenses', vehicles.flatMap((v, i) => [{ vehicleId: v.id, kind: 'fuel', spentOn: addDays(c.today, -3 - i), amountPaise: rupees(5200 + i * 700), litres: (55 + i * 6).toFixed(1), odometerKm: 41200 + i * 5200, note: 'Diesel at Peenya bunk', createdBy: mgr }, { vehicleId: v.id, kind: i % 2 ? 'repair' : 'toll', spentOn: addDays(c.today, -12 - i), amountPaise: rupees(i % 2 ? 8400 : 640), note: i % 2 ? 'Brake pad replacement' : 'FASTag recharge', createdBy: mgr }]), { returning: false });
   await k.ins('transport_incidents', [{ vehicleId: vehicles[1].id, kind: 'delay', severity: 'low', description: 'Route 2 reached the campus 25 minutes late due to a waterlogged underpass at Rajajinagar.', occurredAt: at(addDays(c.today, -9), '08:50'), status: 'resolved', resolution: 'Diverted via Nagasandra; parents informed on the app.', reportedBy: c.byEmail.driver2.id, resolvedAt: at(addDays(c.today, -9), '12:00') }, { vehicleId: vehicles[3].id, kind: 'breakdown', severity: 'medium', description: 'Force Traveller developed a clutch fault on the Hebbal flyover.', occurredAt: at(addDays(c.today, -2), '07:40'), status: 'open', reportedBy: c.byEmail.driver1.id }], { returning: false });
-  await k.ins('transport_gps_sources', { name: 'Route 1 bus tracker (demo)', tokenHash: 'demo-token-hash-not-a-real-credential', active: false }, { returning: false });
+  await k.ins('transport_gps_sources', { name: 'Route 1 bus tracker (demo)', tokenHash: `${PROFILE === 'school' ? 'svn-' : ''}demo-token-hash-not-a-real-credential`, active: false }, { returning: false });
 }
 
 export async function inventory(c: Ctx): Promise<void> {

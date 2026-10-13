@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../board/chrome.dart';
 import 'document_import.dart';
@@ -29,6 +30,9 @@ Future<bool> _openInPresenter(String name, Uint8List bytes) async {
     final r = await Process.run('cmd', ['/c', 'start', '', file.path]);
     return r.exitCode == 0;
   }
+  // A Mac or Linux board: the deck opens in Keynote, PowerPoint or LibreOffice, whichever
+  // opens .pptx there (false when none does).
+  if (Platform.isMacOS || Platform.isLinux) return launchUrl(Uri.file(file.path));
   return false;
 }
 

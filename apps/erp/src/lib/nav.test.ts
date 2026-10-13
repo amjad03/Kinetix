@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { SECTION_ROLES } from './access';
-import { crumbsFor, findNav, NAV_GROUPS, navSections, visibleGroups } from './nav';
+import { crumbsFor, findNav, tidyCrumbs, NAV_GROUPS, navSections, visibleGroups } from './nav';
 
 const hrefs = (roles: string[], platform = false) => visibleGroups(roles as never, platform).flatMap((g) => g.items.map((i) => i.href));
 
 describe('navigation groups', () => {
   it('shows a role only the pages access.ts lets it open', () => {
-    expect([...hrefs(['accountant'])].sort()).toEqual(['/', '/alumni', '/budgets', '/calendar', '/delegations', '/documents', '/fees', '/books', '/gl-export', '/payroll', '/payroll/payslips', '/reports', '/scholarships', '/settlements', '/students', '/tally', '/tasks', '/workflows'].sort());
+    expect([...hrefs(['accountant'])].sort()).toEqual(['/', '/academics', '/analytics', '/chat', '/alumni', '/budgets', '/calendar', '/delegations', '/documents', '/fees', '/accounts', '/books', '/gl-export', '/ops-reports', '/payroll', '/payroll/payslips', '/payroll/loans', '/reports', '/scholarships', '/settlements', '/students', '/tally', '/tasks', '/workflows'].sort());
     expect(hrefs(['accountant'])).not.toContain('/settings');
-    expect([...hrefs(['librarian'])].sort()).toEqual(['/calendar', '/delegations', '/library', '/payroll/payslips', '/tasks', '/workflows'].sort());
+    expect([...hrefs(['librarian'])].sort()).toEqual(['/academics', '/calendar', '/chat', '/delegations', '/library', '/ops-reports', '/payroll/payslips', '/payroll/loans', '/tasks', '/workflows'].sort());
     expect(hrefs(['principal'])).toContain('/obe');
     expect(hrefs(['principal'])).not.toContain('/platform/concept-videos');
     expect(hrefs(['principal'], true)).toContain('/platform/concept-videos');
@@ -16,7 +16,7 @@ describe('navigation groups', () => {
 
   it('drops groups with nothing to show and keeps the product order', () => {
     const ids = visibleGroups(['hr_manager']).map((g) => g.id);
-    expect(ids).toEqual(['dashboard', 'students', 'hr', 'reports', 'work']);
+    expect(ids).toEqual(['dashboard', 'students', 'hr', 'communication', 'reports', 'work']);
     const all = visibleGroups(['principal'], true).map((g) => g.id);
     expect(all[0]).toBe('dashboard');
     expect(all[all.length - 1]).toBe('settings');
@@ -68,5 +68,13 @@ describe('sidebar sections', () => {
   it('drops sections a role cannot open', () => {
     const secs = navSections(visibleGroups(['librarian']));
     expect(secs.some((s) => s.id === 'exams')).toBe(false);
+  });
+});
+
+describe('tidyCrumbs', () => {
+  it('collapses repeated crumbs and names the record', () => {
+    const trail = [{ text: 'Dashboard', href: '/' }, { text: 'Students' }, { text: 'Students', href: '/students' }, { text: 'Details' }];
+    expect(tidyCrumbs(trail)).toEqual([{ text: 'Dashboard', href: '/' }, { text: 'Students', href: '/students' }, { text: 'Details' }]);
+    expect(tidyCrumbs(trail, 'Aarav Sharma').map((c) => c.text)).toEqual(['Dashboard', 'Students', 'Aarav Sharma']);
   });
 });

@@ -1,5 +1,7 @@
 'use client';
+import Link from 'next/link';
 import { useRef, useState } from 'react';
+import { recordHref } from '@/lib/campus-ops';
 import { addItem, addQuote, addStore, addVendor, approveInvoice, awardQuote, createPo, decideRequisition, loadPo, loadRfq, markInvoicePaid, moveStock, openRfq, raiseRequisition, receiveGoods, recordInvoice, returnFromIssue, returnToVendor, transferStock } from '@/app/(dashboard)/inventory/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
@@ -127,7 +129,7 @@ export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoic
                   empty={t('inv.noReqs')}
                   rows={reqs}
                   cols={[
-                    { label: t('inv.number'), cell: (r) => r.number },
+                    { label: t('inv.number'), cell: (r) => <Link className="font-medium text-primary hover:underline" href={recordHref('requisition', r.id)}>{r.number}</Link> },
                     { label: t('inv.lines'), cell: (r) => r.lines.map((l) => `${l.item} × ${l.qty}`).join(', ') },
                     { label: t('ho.reason'), cell: (r) => r.reason || t('ops.none') },
                     { label: t('ops.f.status'), cell: (r) => <Pill label={st(t, r.status)} /> },
@@ -156,7 +158,7 @@ export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoic
                   empty={t('inv.noPos')}
                   rows={pos}
                   cols={[
-                    { label: t('inv.number'), cell: (p) => p.number },
+                    { label: t('inv.number'), cell: (p) => <Link className="font-medium text-primary hover:underline" href={recordHref('purchase-order', p.id)}>{p.number}</Link> },
                     { label: t('inv.vendor'), cell: (p) => p.vendor },
                     { label: t('ops.f.amount'), cell: (p) => fmt.rupees(p.totalPaise), num: true },
                     { label: t('ops.f.status'), cell: (p) => <Pill label={st(t, p.status)} /> },
@@ -209,7 +211,7 @@ export function InventoryDesk({ items, stores, stock, vendors, reqs, pos, invoic
                   empty={t('inv.rfq.none')}
                   rows={rfqs}
                   cols={[
-                    { label: t('inv.number'), cell: (r) => r.number },
+                    { label: t('inv.number'), cell: (r) => <Link className="font-medium text-primary hover:underline" href={recordHref('rfq', r.id)}>{r.number}</Link> },
                     { label: t('inv.lines'), cell: (r) => reqOf(r.requisitionId)?.lines.map((l) => `${l.item} × ${l.qty}`).join(', ') ?? '' },
                     { label: t('ops.f.status'), cell: (r) => <Pill label={st(t, r.status)} /> },
                     {

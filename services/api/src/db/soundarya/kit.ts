@@ -50,6 +50,12 @@ const camelRow = (r: Row): Row => {
   return o;
 };
 
+let readPool: pg.Pool | null = null;
+/** Sets the app-role pool used for tenant-scoped reads (see `q`). */
+export function setReadPool(p: pg.Pool | null): void {
+  readPool = p;
+}
+
 export function makeKit(pool: pg.Pool, tenantId: string) {
   /**
    * Inserts rows (adding tenant_id unless `noTenant`) and returns the inserted rows.
@@ -73,7 +79,26 @@ export function makeKit(pool: pg.Pool, tenantId: string) {
     return out;
   }
   const one = async <T = Row>(table: string, row: Row, o: { noTenant?: boolean } = {}) => (await ins<T>(table, row, o))[0];
-  const q = async <T = Row>(sql: string, params: unknown[] = []) => (await pool.query(sql, params)).rows.map(camelRow) as T[];
+  const q = async <T = Row>(sql: string, params: unknown[] = []) => {
+    // Reads go through the app role with the tenant set, so row-level security keeps them to this tenant
+    // (the owner role bypasses it, and the database may hold other demo institutions).
+    if (readPool && tenantId && /^\s*select\b/i.test(sql)) {
+      const client = await readPool.connect();
+      try {
+        await client.query('begin');
+        await client.query("select set_config('app.tenant_id', $1, true)", [tenantId]);
+        const res = await client.query(sql, params);
+        await client.query('commit');
+        return res.rows.map(camelRow) as T[];
+      } catch (e) {
+        await client.query('rollback');
+        throw e;
+      } finally {
+        client.release();
+      }
+    }
+    return (await pool.query(sql, params)).rows.map(camelRow) as T[];
+  };
   return { ins, one, q, tenantId, pool };
 }
 export type Kit = ReturnType<typeof makeKit>;

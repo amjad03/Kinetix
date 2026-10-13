@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { readSettings } from '../campus-ops/settings.js';
 import { Day, orConflict, Paise } from '../common/ops.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { Clock, localParts } from '../common/time.js';
@@ -322,6 +323,8 @@ export class HostelController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.assertResident(tx, b.studentId);
       if (new Date(b.expectedBackAt) <= this.clock.now()) throw new BadRequestException('The expected return time has passed');
+      const hr = (await readSettings(tx, p.tenantId, 'hostel')).rules;
+      if (new Date(b.expectedBackAt).getTime() - this.clock.now().getTime() > Number(hr.maxLeaveDays) * 86_400_000) throw new BadRequestException(`A pass can cover at most ${String(hr.maxLeaveDays)} days`);
       const [pass] = await tx.insert(hostelGatePasses).values({ tenantId: p.tenantId, ...b, expectedBackAt: new Date(b.expectedBackAt), issuedBy: p.userId }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.pass_issued', subjectType: 'hostel_gate_pass', subjectId: pass.id, data: { studentId: b.studentId } });
       return pass;
@@ -363,7 +366,9 @@ export class HostelController {
       await assertCanSeeStudent(tx, p, b.studentId, []);
       await this.assertResident(tx, b.studentId);
       if (new Date(b.expectedBackAt) <= this.clock.now()) throw new BadRequestException('The expected return time has passed');
-      const [pass] = await tx.insert(hostelGatePasses).values({ tenantId: p.tenantId, ...b, expectedBackAt: new Date(b.expectedBackAt), status: 'requested', issuedBy: p.userId }).returning();
+      const hr = (await readSettings(tx, p.tenantId, 'hostel')).rules;
+      if (new Date(b.expectedBackAt).getTime() - this.clock.now().getTime() > Number(hr.maxLeaveDays) * 86_400_000) throw new BadRequestException(`A pass can cover at most ${String(hr.maxLeaveDays)} days`);
+      const [pass] = await tx.insert(hostelGatePasses).values({ tenantId: p.tenantId, ...b, expectedBackAt: new Date(b.expectedBackAt), status: hr.outpassNeedsApproval ? 'requested' : 'approved', issuedBy: p.userId }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.pass_requested', subjectType: 'hostel_gate_pass', subjectId: pass.id, data: { studentId: b.studentId } });
       return pass;
     });

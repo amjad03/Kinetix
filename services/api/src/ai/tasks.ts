@@ -248,8 +248,8 @@ export type TaskName = keyof typeof TaskInputs;
 export type TaskInput<T extends TaskName> = z.infer<(typeof TaskInputs)[T]>;
 export type TaskOutput<T extends TaskName> = z.infer<(typeof TaskOutputs)[T]>;
 
-/** Bump when a template changes; it is logged with every output and part of the cache key. */
-export const PROMPT_VERSION = 'v2';
+/** Bump when a template changes; it is logged with every output and part of the cache key. v4: no greetings, flash-card answers. */
+export const PROMPT_VERSION = 'v4';
 
 export type ChatContent = string | ({ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } })[];
 
@@ -259,25 +259,27 @@ export interface ChatMessage {
   content: ChatContent;
 }
 
-function systemPrompt(g: Grounding, language: Language): string {
+function systemPrompt(g: Grounding, language: Language, task: TaskName): string {
   const audience =
     g.institutionKind === 'school'
       ? 'Students are under 18. Keep every example age-appropriate. Never include violence, sexual content, self-harm, drugs, gambling, hate or politics.'
       : 'Students are adults at an Indian college. Keep content professional and suitable for a classroom.';
   const lines = [
-    'You are KINETIX AI, a teaching assistant for Indian classrooms.',
+    'You are KINETIX AI, a teaching assistant for Indian classrooms. Your answers are shown on the classroom board to the whole class.',
     `Institution: ${g.institution}.`,
     g.className ? `Class: ${g.className}.` : null,
     g.subjectName ? `Subject: ${g.subjectName}.` : null,
     'Follow the Indian syllabus (NCERT / CBSE / the state board named) for this class and level. Use Indian examples, names and rupees (₹) where examples help.',
     'Pitch the language to the class named above: simple words for lower classes, precise terms for senior classes.',
+    'Begin with the content itself: no greeting or sign-off, and do not address the class or name the institution or class in the text.',
     'Accuracy first. For maths, physics, chemistry and any numerical question, work step by step: state the formula, substitute the values with units, calculate carefully, check the result, then give the final answer on its own last line starting "Answer:".',
-    'Write maths as plain text with Unicode (x², √, ×, ÷, ≤, π, fractions as a/b). Do not use LaTeX, dollar signs or markdown.',
+    task === 'readBoard'
+      ? 'In "text", write what is on the board as plain text. In "math", write each expression in LaTeX without $ signs.'
+      : 'Write maths as plain text with Unicode (x², x³, √, ×, ÷, ±, ≤, ≥, π, θ, °, H₂O, fractions as a/b). Do not use LaTeX (no backslashes), dollar signs or markdown (no **, # or * bullets).',
     'Never invent facts, dates, names, formulas or figures. If the question is ambiguous, state the assumption you made. When you are unsure of something, begin that sentence with "Not sure:" and say what to verify in the textbook.',
     audience,
-    `Write in ${LANGUAGE_NAMES[language]}${language === 'en' ? '' : ' (use the native script)'}.`,
-    'If you are not sure a fact is correct, say so rather than guessing.',
-    'Reply with one JSON object only, no markdown fences, matching the shape described by the user.',
+    `Write in ${LANGUAGE_NAMES[language]}${language === 'en' ? '' : ' (use the native script; keep numbers, units and formulas as they are)'}.`,
+    'Reply with one JSON object only, no markdown fences, matching the shape described by the user. Inside the JSON strings use \\n for a new line. Leave out a key rather than set it to null.',
   ];
   if (g.notes?.length) lines.push('Base the answer on these syllabus notes:', ...g.notes.map((n) => `- ${n}`));
   const l = g.lesson;
@@ -338,7 +340,7 @@ const SELECT_ASK: Record<TaskInput<'selectAsk'>['action'], string> = {
   solve: 'Solve this step by step; put each step in "items"',
   translate: 'Translate this',
   example: 'Give worked examples of this; one per item',
-  quiz: 'Write quick check questions on this; one per item, each with its answer',
+  quiz: 'Write quick check questions on this (flash cards): one per item, each written as the question, then " Answer: " and its answer; put a one-line summary in "answer"',
   homework: 'Write homework questions on this; one per item, with marks',
   diagram: 'Describe a clear diagram to draw on the board for this; one drawing step per item',
   boardReady: 'Rewrite this as short board-ready notes (headings and bullet points); one line per item',
@@ -359,7 +361,7 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
   const ask = (() => {
     switch (task) {
       case 'explain':
-        return `Explain for the class${i.level ? ` (${i.level})` : ''}: ${i.question}\nIf it is a problem to solve, give numbered steps and end with "Answer: …". If it is a concept, give a definition, a short explanation and one example from daily life in India.`;
+        return `Explain for the class${i.level ? ` (${i.level})` : ''}: ${i.question}\nIf it is a problem to solve, give numbered steps (one per line) and end with "Answer: …". If it asks for a fact, a name, a value or a word, give it in the first sentence, then a short explanation. If it is a concept, give a definition, a short explanation and one example from daily life in India. Keep it short enough to read on the board (about 150 words unless the steps need more).`;
       case 'quiz': {
         const types = i.types as string[];
         const kinds = types.length === 1 && types[0] === 'mcq' ? 'multiple-choice questions' : `questions mixing these types: ${types.join(', ')}`;
@@ -376,7 +378,7 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
       case 'selectAsk':
         return `${SELECT_ASK[i.action as keyof typeof SELECT_ASK]}${i.action === 'translate' ? ` into ${LANGUAGE_NAMES[(i.targetLanguage as Language) ?? 'hi']}` : ''}${i.level ? ` (${i.level})` : ''}. The teacher selected on the board:\n\"\"\"\n${i.content}\n\"\"\"`;
       case 'lessonPlan':
-        return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}.`;
+        return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}. The classroom has a KINETIX interactive board (not a chalkboard).`;
       case 'gradeAssist': {
         const rubric = (i.rubric as { criterion: string; marks: number }[]).map((r, n) => `${n + 1}. ${r.criterion} (${r.marks} marks)`).join('\n');
         return `Suggest marks out of ${i.maxMarks} for a student's answer, strictly by this rubric. Award marks only for what the answer actually says; do not give credit for what it might have meant. You are drafting for an examiner who will decide.\nQuestion: ${i.question}\nRubric:\n${rubric}\nStudent answer:\n"""\n${i.answerText}\n"""`;
@@ -424,7 +426,7 @@ export function buildMessages<T extends TaskName>(task: T, input: TaskInput<T>, 
         ]
       : userPrompt(task, input);
   return [
-    { role: 'system', content: systemPrompt(g, language) },
+    { role: 'system', content: systemPrompt(g, language, task) },
     { role: 'user', content: user },
   ];
 }
@@ -438,6 +440,44 @@ export function requestText(input: unknown): string {
     return [...earlier, rest.question].join(' ');
   }
   return JSON.stringify(rest);
+}
+
+const MAX_TOKENS: Record<TaskName, number> = {
+  explain: 1500,
+  quiz: 2500,
+  homework: 2500,
+  lessonPlan: 1500,
+  summarize: 1200,
+  readBoard: 1500,
+  boardSummary: 1800,
+  lecture: 2500,
+  selectAsk: 1500,
+  financeInsight: 1200,
+  admissionsInsight: 1200,
+  hrInsight: 1200,
+  syllabusImport: 4000,
+  careerCoach: 1200,
+  gradeAssist: 1200,
+  qualityInsight: 1200,
+  researchInsight: 1200,
+  careerInsight: 1200,
+  parentInsight: 1200,
+  tutor: 1500,
+};
+
+/** Room for the reply: quizzes and homework grow with the number of questions; Hindi and Kannada take more tokens. */
+export function maxTokensFor(task: TaskName, input: unknown): number {
+  const i = input as { count?: number; language?: Language };
+  const perQuestion = task === 'quiz' ? 260 : task === 'homework' ? 360 : 0;
+  const base = Math.max(MAX_TOKENS[task], perQuestion * (i.count ?? 0) + 400);
+  return i.language && i.language !== 'en' ? Math.round(base * 1.5) : base;
+}
+
+/** Sampling temperature: low where there is one right answer, a little higher where variety helps (quizzes, lessons). */
+export function temperatureFor(task: TaskName): number {
+  if (task === 'summarize' || task === 'readBoard' || task === 'gradeAssist' || task === 'syllabusImport') return 0.1;
+  if (task === 'explain' || task === 'selectAsk' || task === 'tutor') return 0.3;
+  return 0.5;
 }
 
 /** Rejects outputs that are well-formed JSON but wrong for the request. */
@@ -488,7 +528,91 @@ export function fitGrade(input: TaskInput<'gradeAssist'>, out: TaskOutput<'grade
   return { criteria, total, rationale: out.rationale };
 }
 
-/** Fixes what a model reliably gets slightly wrong: lesson-plan steps always add up to the chosen length. */
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** Keys whose values are numbers; models in JSON mode sometimes send them as text ("2", "10 min"). */
+const NUMBER_KEYS = new Set(['marks', 'minutes', 'awarded', 'total', 'credits', 'hours', 'term']);
+
+function tidyJson(v: unknown, key?: string): unknown {
+  if (Array.isArray(v)) return v.filter((x) => x !== null).map((x) => tidyJson(x));
+  if (isRecord(v)) return Object.fromEntries(Object.entries(v).filter(([, x]) => x !== null).map(([k, x]) => [k, tidyJson(x, k)]));
+  if (typeof v === 'string' && key && NUMBER_KEYS.has(key)) {
+    const n = /^\s*(\d+(?:\.\d+)?)\s*(?:min(?:ute)?s?|marks?|hrs?|hours?)?\s*$/i.exec(v);
+    return n ? Number(n[1]) : v;
+  }
+  return v;
+}
+
+/** A quiz answer given as a letter ("B"), an option's text, "2" or true/false, as the option's index. */
+function answerIndex(q: Record<string, unknown>): Record<string, unknown> {
+  const a = q.answer;
+  const options = Array.isArray(q.options) ? q.options.map((o) => String(o).trim().toLowerCase()) : [];
+  if (q.type === 'trueFalse' && options.length === 0) q.options = ['True', 'False'];
+  if (typeof a === 'boolean') return { ...q, answer: a ? 0 : 1 };
+  if (typeof a !== 'string') return q;
+  const t = a.trim();
+  if (/^\d$/.test(t)) return { ...q, answer: Number(t) };
+  const letter = /^\(?([A-Da-d])\)?[.)]?$/.exec(t);
+  if (letter && q.type !== 'fillBlank' && q.type !== 'shortAnswer') return { ...q, answer: letter[1].toUpperCase().charCodeAt(0) - 65 };
+  const i = (q.type === 'trueFalse' && options.length === 0 ? ['true', 'false'] : options).indexOf(t.toLowerCase());
+  if (i >= 0) return { ...q, answer: i };
+  // Fill in the blank and short answer keep the expected answer in answerText.
+  const { answer: _a, ...rest } = q;
+  return { ...rest, answerText: q.answerText ?? t };
+}
+
+/**
+ * Fixes slips a model makes in JSON mode before the shape is checked, so a slip costs no second
+ * request: nulls are dropped (the shapes want an absent key), numbers sent as text become
+ * numbers, and a quiz answer given as a letter, an option's text or true/false becomes the index.
+ */
+export function normaliseReply(task: TaskName, raw: unknown): unknown {
+  const v = tidyJson(raw);
+  if (task === 'quiz' && isRecord(v) && Array.isArray(v.questions)) v.questions = v.questions.map((q) => (isRecord(q) ? answerIndex(q) : q));
+  return v;
+}
+
+/** Shortens the list or text at [path] to [max] items or characters. */
+function cutAt(root: unknown, path: PropertyKey[], max: number) {
+  if (!path.length) return;
+  let parent: unknown = root;
+  for (const k of path.slice(0, -1)) parent = (parent as Record<PropertyKey, unknown>)?.[k];
+  const last = path[path.length - 1];
+  const holder = parent as Record<PropertyKey, unknown> | undefined;
+  const v = holder?.[last];
+  if (Array.isArray(v)) holder![last] = v.slice(0, max);
+  else if (typeof v === 'string') holder![last] = v.slice(0, max).trim();
+}
+
+/**
+ * Checks a reply against the task's shape. Lists and texts longer than the shape allows are cut
+ * (a sixth key point is dropped, not refused); anything else wrong is reported.
+ */
+export function parseTaskOutput(task: TaskName, value: unknown): z.ZodSafeParseResult<unknown> {
+  const schema = TaskOutputs[task] as z.ZodType;
+  let parsed = schema.safeParse(value);
+  for (let n = 0; n < 3 && !parsed.success; n++) {
+    const tooBig = parsed.error.issues.filter((i) => i.code === 'too_big' && (i.origin === 'array' || i.origin === 'string'));
+    if (!tooBig.length) break;
+    for (const i of tooBig) cutAt(value, i.path, Number((i as { maximum: number | bigint }).maximum));
+    parsed = schema.safeParse(value);
+  }
+  return parsed;
+}
+
+/** Every string in a reply with LaTeX turned into Unicode maths and markdown removed. */
+function cleanTexts<V>(v: V): V {
+  if (typeof v === 'string') return cleanAnswerText(v) as V;
+  if (Array.isArray(v)) return v.map((x) => cleanTexts(x)) as V;
+  if (isRecord(v)) return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cleanTexts(x)])) as V;
+  return v;
+}
+
+/**
+ * Fixes what a model reliably gets slightly wrong: LaTeX and markdown in answers (the board shows
+ * plain text, so maths becomes Unicode: x², √, ×), repeated points, lesson-plan steps that do not
+ * add up to the chosen length, and marks outside the rubric.
+ */
 export function postProcess<T extends TaskName>(task: T, input: TaskInput<T>, out: TaskOutput<T>): TaskOutput<T> {
   if (task === 'explain') {
     const e = out as TaskOutput<'explain'>;
@@ -498,17 +622,20 @@ export function postProcess<T extends TaskName>(task: T, input: TaskInput<T>, ou
     const e = out as TaskOutput<'selectAsk'>;
     return { ...e, title: cleanAnswerText(e.title), answer: cleanAnswerText(e.answer), items: tidyList(e.items) } as TaskOutput<T>;
   }
+  if (task === 'tutor') {
+    const e = out as TaskOutput<'tutor'>;
+    return { answer: cleanAnswerText(e.answer), keyPoints: tidyList(e.keyPoints), nextSteps: tidyList(e.nextSteps), followUps: tidyList(e.followUps) } as TaskOutput<T>;
+  }
   if (task === 'readBoard') {
     const e = out as TaskOutput<'readBoard'>;
-    return { text: cleanOcrText(e.text), math: [...new Set(e.math.map((m) => m.replace(/^\$+|\$+$/g, '').trim()).filter(Boolean))] } as TaskOutput<T>;
+    // The maths list stays LaTeX (the board draws it); only stray $ and \( \) delimiters go.
+    const tex = e.math.map((m) => m.trim().replace(/^\$+|\$+$/g, '').replace(/^\\[([]|\\[)\]]$/g, '').trim()).filter(Boolean);
+    return { text: cleanOcrText(e.text), math: [...new Set(tex)] } as TaskOutput<T>;
   }
-  if (task === 'quiz') {
-    const e = out as TaskOutput<'quiz'>;
-    return { ...e, questions: e.questions.map((q) => ({ ...q, question: cleanAnswerText(q.question), explanation: q.explanation ? cleanAnswerText(q.explanation) : q.explanation })) } as TaskOutput<T>;
-  }
-  if (task === 'gradeAssist') return fitGrade(input as TaskInput<'gradeAssist'>, out as TaskOutput<'gradeAssist'>) as TaskOutput<T>;
-  if (task !== 'lessonPlan') return out;
-  const plan = out as TaskOutput<'lessonPlan'>;
+  if (task === 'syllabusImport') return out;
+  if (task === 'gradeAssist') return fitGrade(input as TaskInput<'gradeAssist'>, cleanTexts(out as TaskOutput<'gradeAssist'>)) as TaskOutput<T>;
+  if (task !== 'lessonPlan') return cleanTexts(out);
+  const plan = cleanTexts(out as TaskOutput<'lessonPlan'>);
   const fitted = fitMinutes(plan.steps.map((s) => s.minutes), (input as TaskInput<'lessonPlan'>).minutes);
   return { ...plan, steps: plan.steps.map((s, i) => ({ ...s, minutes: fitted[i] })) } as TaskOutput<T>;
 }

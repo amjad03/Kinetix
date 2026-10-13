@@ -1,6 +1,9 @@
-// DNA, built in code, in two versions: the double helix, and the same
-// ladder untwisted flat with its top unzipping (as when DNA copies itself),
-// so the pairing A–T and G–C is easy to see.
+// DNA in three versions: the double helix and the same ladder untwisted
+// flat with its top unzipping (as when DNA copies itself), built in code so
+// the pairing A–T and G–C is easy to see; and every atom of a real piece of
+// DNA, the B-DNA dodecamer CGCGAATTCGCG measured by X-ray crystallography
+// (PDB 1BNA, RCSB Protein Data Bank), as balls and sticks.
+import { readFileSync } from 'node:fs';
 import { taperTube, curveThrough, rod, blob } from '../lib/shapes.mjs';
 
 const t = (en, hi, kn) => ({ en, hi, kn });
@@ -80,11 +83,102 @@ const partsOf = (suffix, variant) =>
     info: words[`${id}_info`],
   }));
 
-const both = (...ids) => ids.flatMap((id) => [id, `${id}_l`]);
+const both = (...ids) => ids.flatMap((id) => [id, `${id}_l`, `${id}_a`]);
+
+// ------------------------------------------------------------------ PDB 1BNA
+
+const PDB = { file: 'pdb/1bna.pdb', url: 'https://files.rcsb.org/download/1BNA.pdb' };
+const SUGAR = new Set(["C1'", "C2'", "C3'", "C4'", "C5'", "O3'", "O4'", "O5'"]);
+const PHOSPHATE = new Set(['P', 'OP1', 'OP2']);
+// One ångström in the model's units: a base pair rises 3.4 Å, as the helix version's 0.0078.
+const ANGSTROM = 0.0023;
+
+/** The atoms of the PDB file: {name, base (A/T/G/C), chain, res, p: [x, y, z], el}. */
+function readPdb(text) {
+  return text
+    .split('\n')
+    .filter((l) => l.startsWith('ATOM'))
+    .map((l) => ({
+      name: l.slice(12, 16).trim(),
+      base: l.slice(17, 20).trim().replace('D', ''),
+      chain: l[21],
+      res: Number(l.slice(22, 26)),
+      p: [Number(l.slice(30, 38)), Number(l.slice(38, 46)), Number(l.slice(46, 54))],
+      el: l.slice(76, 78).trim(),
+    }));
+}
+
+/** The atoms turned so the helix axis (their longest spread) is upright, centred, in model units. */
+function upright(atoms) {
+  const n = atoms.length;
+  const c = [0, 1, 2].map((k) => atoms.reduce((a, x) => a + x.p[k], 0) / n);
+  const cov = [0, 1, 2].map((i) => [0, 1, 2].map((j) => atoms.reduce((a, x) => a + (x.p[i] - c[i]) * (x.p[j] - c[j]), 0) / n));
+  // The main axis by power iteration.
+  let v = [0.3, 0.9, 0.2];
+  for (let k = 0; k < 60; k++) {
+    const w = [0, 1, 2].map((i) => cov[i][0] * v[0] + cov[i][1] * v[1] + cov[i][2] * v[2]);
+    const l = Math.hypot(...w);
+    v = w.map((x) => x / l);
+  }
+  // A frame with v as y.
+  const up = v;
+  let side = Math.abs(up[0]) < 0.9 ? [1, 0, 0] : [0, 0, 1];
+  const dot = side[0] * up[0] + side[1] * up[1] + side[2] * up[2];
+  side = side.map((x, i) => x - dot * up[i]);
+  const sl = Math.hypot(...side);
+  side = side.map((x) => x / sl);
+  const fwd = [up[1] * side[2] - up[2] * side[1], up[2] * side[0] - up[0] * side[2], up[0] * side[1] - up[1] * side[0]];
+  return atoms.map((a) => {
+    const d = a.p.map((x, i) => x - c[i]);
+    const along = (u) => (d[0] * u[0] + d[1] * u[1] + d[2] * u[2]) * ANGSTROM;
+    return { ...a, q: [along(side), along(up), along(fwd)] };
+  });
+}
+
+/** The part an atom belongs to in the atoms version. */
+const atomPart = (a) => (SUGAR.has(a.name) || PHOSPHATE.has(a.name) ? (a.chain === 'A' ? 'strand_1_a' : 'strand_2_a') : `${BASE_ID[a.base]}_a`);
+
+/** Balls and sticks for every atom of PDB 1BNA, by part; hydrogen bonds as dashes. */
+function atomModel(THREE) {
+  const dir = process.env.SOURCES || new URL('../sources/', import.meta.url).pathname;
+  const atoms = upright(readPdb(readFileSync(`${dir}/${PDB.file}`, 'utf8')));
+  const out = {};
+  const add = (id, g) => (out[id] ||= []).push(g);
+  // Balls: a little under half the atom's size, phosphorus bigger.
+  for (const a of atoms) {
+    const r = (a.el === 'P' ? 0.62 : 0.42) * ANGSTROM;
+    add(atomPart(a), new THREE.IcosahedronGeometry(r, 1).translate(...a.q));
+  }
+  // Sticks: atoms closer than 1.9 Å are bonded; each half takes its atom's colour.
+  for (let i = 0; i < atoms.length; i++) {
+    for (let j = i + 1; j < atoms.length; j++) {
+      const a = atoms[i], b = atoms[j];
+      const d = Math.hypot(a.p[0] - b.p[0], a.p[1] - b.p[1], a.p[2] - b.p[2]);
+      if (d > 1.9) continue;
+      const mid = a.q.map((x, k) => (x + b.q[k]) / 2);
+      add(atomPart(a), rod(THREE, a.q, mid, 0.17 * ANGSTROM, 8));
+      add(atomPart(b), rod(THREE, mid, b.q, 0.17 * ANGSTROM, 8));
+    }
+  }
+  // Hydrogen bonds: N or O of a base on one strand within 2.6-3.2 Å of one on the other.
+  const polar = atoms.filter((a) => !SUGAR.has(a.name) && !PHOSPHATE.has(a.name) && (a.el === 'N' || a.el === 'O'));
+  for (const a of polar.filter((x) => x.chain === 'A')) {
+    for (const b of polar.filter((x) => x.chain === 'B')) {
+      const d = Math.hypot(a.p[0] - b.p[0], a.p[1] - b.p[1], a.p[2] - b.p[2]);
+      if (d < 2.6 || d > 3.2) continue;
+      // Three short dashes, clear of the balls.
+      for (const [s, e] of [[0.22, 0.36], [0.43, 0.57], [0.64, 0.78]]) {
+        const at = (f) => a.q.map((x, k) => x + (b.q[k] - x) * f);
+        add('h_bonds_a', rod(THREE, at(s), at(e), 0.1 * ANGSTROM, 6));
+      }
+    }
+  }
+  return out;
+}
 
 export default {
   id: 'dna',
-  version: 1,
+  version: 2,
   order: 11,
   source: 'procedural',
   subject: 'Biology',
@@ -96,7 +190,8 @@ export default {
     'ಎರಡು ಎಳೆಗಳು ಜೋಡಿ ಸುರುಳಿಯಾಗಿ ಹೆಣೆದಿವೆ. ಕ್ಷಾರಗಳು A ಯನ್ನು T ಯೊಂದಿಗೆ, G ಯನ್ನು C ಯೊಂದಿಗೆ ಜೋಡಿಸುತ್ತವೆ; ಹಾಗಾಗಿ ಪ್ರತಿ ಎಳೆ ಇನ್ನೊಂದನ್ನು ಮರುನಿರ್ಮಿಸುವ ಸಂಕೇತ ಹೊಂದಿದೆ.',
   ),
   keywords: ['dna', 'double helix', 'genes', 'heredity', 'nucleotide', 'base pairing', 'replication', 'molecular basis of inheritance', 'chromosome', 'adenine', 'thymine', 'guanine', 'cytosine'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by KINETIX; atoms from PDB 1BNA (Drew, Wing, Takano, Broka, Tanaka, Itakura, Dickerson, 1981), RCSB Protein Data Bank, CC0',
+  sources: { pdb: PDB },
   groups: [
     { id: 'backbone', name: t('Backbones', 'आधार सूत्र', 'ಬೆನ್ನೆಲುಬುಗಳು') },
     { id: 'bases', name: t('Bases', 'क्षारक', 'ಕ್ಷಾರಗಳು') },
@@ -104,6 +199,7 @@ export default {
   variants: [
     { id: 'helix', name: t('Double helix', 'द्विकुंडली', 'ಜೋಡಿ ಸುರುಳಿ') },
     { id: 'ladder', name: t('Untwisted, unzipping', 'खुली सीढ़ी, खुलते सूत्र', 'ಬಿಚ್ಚಿದ ಏಣಿ, ತೆರೆಯುವ ಎಳೆಗಳು') },
+    { id: 'atoms', name: t('Every atom (real DNA, X-ray)', 'हर परमाणु (वास्तविक डीएनए, एक्स-किरण)', 'ಪ್ರತಿ ಪರಮಾಣು (ನೈಜ ಡಿಎನ್‌ಎ, ಎಕ್ಸ್-ಕಿರಣ)') },
   ],
   build(THREE) {
     // The helix.
@@ -146,9 +242,9 @@ export default {
       for (const [id, list] of Object.entries(m.bases)) out[id + suffix] = list;
       out[`h_bonds${suffix}`] = m.bonds;
     }
-    return out;
+    return { ...out, ...atomModel(THREE) };
   },
-  parts: [...partsOf('', 'helix'), ...partsOf('_l', 'ladder')],
+  parts: [...partsOf('', 'helix'), ...partsOf('_l', 'ladder'), ...partsOf('_a', 'atoms')],
   views: [
     { id: 'front', name: t('Front', 'सामने से', 'ಮುಂಭಾಗ'), dir: [0, 0.1, 1] },
     { id: 'end', name: t('Down the helix', 'कुंडली के अक्ष से', 'ಸುರುಳಿಯ ಅಕ್ಷದಿಂದ'), dir: [0, 1, 0.05] },

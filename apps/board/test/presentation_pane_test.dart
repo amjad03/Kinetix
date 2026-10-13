@@ -59,16 +59,18 @@ void main() {
     expect(p.index, 0);
     await tester.tap(find.byKey(const Key('ppt-add-1')));
     await tester.pump();
-    expect(wb.pageCount, 2);
+    // The blank board's open page takes it.
+    expect(wb.pageCount, 1);
+    expect(wb.elements.single, isA<ImageElement>());
     await tester.tap(find.byKey(const Key('ppt-add-all')));
     await tester.pump();
-    expect(wb.pageCount, 5);
+    expect(wb.pageCount, 4);
     await tester.tap(find.byKey(const Key('ppt-chip-0')));
     await tester.tap(find.byKey(const Key('ppt-chip-2')));
     await tester.pump();
     await tester.tap(find.byKey(const Key('ppt-add-selected')));
     await tester.pump();
-    expect(wb.pageCount, 7);
+    expect(wb.pageCount, 6);
     expect(p.selected, isEmpty);
     await tester.tap(find.byKey(const Key('ppt-present')));
     await tester.pump();

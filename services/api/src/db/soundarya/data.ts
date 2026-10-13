@@ -1,8 +1,8 @@
 /** Static content of the Soundarya demo: programmes, NEP papers, people's names. All people are fictional. */
 
-export const DOMAIN = 'soundarya.demo.kinetix.in';
+/** Which demo institution to build: the Soundarya college (default) or the K-12 school (SEED_PROFILE=school). */
+export const PROFILE: 'college' | 'school' = process.env.SEED_PROFILE === 'school' ? 'school' : 'college';
 export const PASSWORD = 'kinetix123';
-export const SLUG = 'soundarya';
 
 export type Dept = 'Management Studies' | 'Commerce' | 'Computer Applications' | 'Aviation Studies' | 'Languages' | 'Mathematics and Statistics';
 export const DEPARTMENTS: Dept[] = ['Management Studies', 'Commerce', 'Computer Applications', 'Aviation Studies', 'Languages', 'Mathematics and Statistics'];
@@ -10,13 +10,13 @@ export const DEPARTMENTS: Dept[] = ['Management Studies', 'Commerce', 'Computer 
 export interface ProgramDef {
   code: string;
   name: string;
-  level: 'ug' | 'pg';
+  level: 'ug' | 'pg' | 'k12';
   terms: number;
   /** Semester fee in rupees. */
   feeInr: number;
   dept: Dept;
-  /** Sections for odd semesters: [term, size]. */
-  classes: [number, number][];
+  /** Sections for odd semesters: [term, size, number of sections (default 1)]. */
+  classes: [number, number, number?][];
   /** Students of this programme who live in the hostel (percent). */
   papers: Record<number, [string, number, Dept?][]>;
 }
@@ -27,7 +27,7 @@ const DF: [string, number, Dept] = ['Digital Fluency', 2, 'Computer Applications
 const CI: [string, number, Dept] = ['Constitution of India', 2, 'Languages'];
 const L3: [string, number, Dept] = ['English III: Professional Communication', 3, 'Languages'];
 
-export const PROGRAMS: ProgramDef[] = [
+const C_PROGRAMS: ProgramDef[] = [
   {
     code: 'BBA', name: 'BBA', level: 'ug', terms: 6, feeInr: 42000, dept: 'Management Studies',
     classes: [[1, 30], [3, 28], [5, 24]],
@@ -97,7 +97,7 @@ export interface StaffDef {
   /** Basic monthly pay in rupees. */
   basic: number;
 }
-export const STAFF: StaffDef[] = [
+const C_STAFF: StaffDef[] = [
   { name: 'Dr. Savitha Hegde', email: 'principal', roles: ['principal'], designation: 'Principal', gender: 'female', basic: 95000, lang: 'en' },
   { name: 'Mahesh Gowda', email: 'admin', roles: ['tenant_admin'], designation: 'Administrative Officer', gender: 'male', basic: 52000, lang: 'kn' },
   { name: 'Rekha Shenoy', email: 'accounts', roles: ['accountant'], designation: 'Accounts Manager', gender: 'female', basic: 48000 },
@@ -155,4 +155,147 @@ export const STAFF: StaffDef[] = [
 ];
 
 /** Which logins are shown in the logins document (email prefixes). */
-export const LOGIN_STAFF = ['principal', 'admin', 'accounts', 'library', 'hr', 'counsellor', 'controller', 'iqac', 'hod.commerce', 'hod.computers', 'deepa.nair', 'sudhir.kamath', 'sowmya.reddy'];
+const C_LOGIN_STAFF = ['principal', 'admin', 'accounts', 'library', 'hr', 'counsellor', 'controller', 'iqac', 'hod.commerce', 'hod.computers', 'deepa.nair', 'sudhir.kamath', 'sowmya.reddy'];
+
+// ---------------------------------------------------------------------------------------------
+// K-12 school profile (SEED_PROFILE=school): Sri Vidya Niketan Public School, CBSE, Bengaluru.
+// Departments reuse the college's internal keys and are renamed after seeding (SCHOOL_DEPT_NAMES).
+// Programmes are school stages; the term number is the class (1 to 12).
+// ---------------------------------------------------------------------------------------------
+export const SCHOOL_DEPT_NAMES: Record<Dept, string> = {
+  'Aviation Studies': 'Science',
+  'Mathematics and Statistics': 'Mathematics',
+  Languages: 'Languages',
+  'Management Studies': 'Social Science',
+  'Computer Applications': 'Computer Science',
+  Commerce: 'Commerce',
+};
+type Paper = [string, number, Dept?];
+const SC: Dept = 'Aviation Studies';
+const MA: Dept = 'Mathematics and Statistics';
+const LA: Dept = 'Languages';
+const SS: Dept = 'Management Studies';
+const CS: Dept = 'Computer Applications';
+const range = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+const papersFor = (classes: number[], f: (c: number) => Paper[]) => Object.fromEntries(classes.map((c) => [c, f(c)]));
+const S_PROGRAMS: ProgramDef[] = [
+  {
+    code: 'PRI', name: 'Primary', level: 'k12', terms: 5, feeInr: 28000, dept: LA,
+    classes: [[1, 20, 2], [2, 20, 2], [3, 20, 2], [4, 20, 2], [5, 20, 2]],
+    papers: papersFor(range(1, 5), (c) => [['English', 7, LA], ['Kannada', 5, LA], ...(c >= 3 ? [['Hindi', 3, LA] as Paper] : []), ['Mathematics', 7, MA], ['Environmental Studies', 5, SC], ['Computer Basics', 2, CS]]),
+  },
+  {
+    code: 'MID', name: 'Middle School', level: 'k12', terms: 8, feeInr: 34000, dept: SS,
+    classes: [[6, 20, 2], [7, 20, 2], [8, 20, 2]],
+    papers: papersFor(range(6, 8), () => [['English', 5, LA], ['Kannada', 4, LA], ['Hindi', 3, LA], ['Mathematics', 6, MA], ['Science', 6, SC], ['Social Science', 5, SS], ['Computer Science', 2, CS]]),
+  },
+  {
+    code: 'SEC', name: 'Secondary', level: 'k12', terms: 10, feeInr: 38000, dept: SC,
+    classes: [[9, 22, 2], [10, 22, 2]],
+    papers: papersFor(range(9, 10), () => [['English', 5, LA], ['Kannada', 4, LA], ['Hindi', 3, LA], ['Mathematics', 6, MA], ['Science', 6, SC], ['Social Science', 5, SS], ['Information Technology', 2, CS]]),
+  },
+  {
+    code: 'SCI', name: 'Senior Secondary Science', level: 'k12', terms: 12, feeInr: 52000, dept: SC,
+    classes: [[11, 24], [12, 22]],
+    papers: papersFor(range(11, 12), () => [['English', 4, LA], ['Physics', 6, SC], ['Chemistry', 6, SC], ['Mathematics', 6, MA], ['Biology', 5, SC], ['Computer Science', 4, CS]]),
+  },
+  {
+    code: 'COM', name: 'Senior Secondary Commerce', level: 'k12', terms: 12, feeInr: 46000, dept: 'Commerce',
+    classes: [[11, 22], [12, 20]],
+    papers: papersFor(range(11, 12), () => [['English', 4, LA], ['Accountancy', 6, 'Commerce'], ['Business Studies', 6, 'Commerce'], ['Economics', 6, SS], ['Applied Mathematics', 5, MA], ['Informatics Practices', 4, CS]]),
+  },
+];
+const S_STAFF: StaffDef[] = [
+  { name: 'Mrs. Lalitha Raghavan', email: 'principal', roles: ['principal'], designation: 'Principal', gender: 'female', basic: 90000 },
+  { name: 'Venkatesh Murthy', email: 'admin', roles: ['tenant_admin'], designation: 'Administrative Officer', gender: 'male', basic: 48000, lang: 'kn' },
+  { name: 'Geetha Shenoy', email: 'accounts', roles: ['accountant'], designation: 'Accounts Officer', gender: 'female', basic: 42000 },
+  { name: 'Sunil Kamath', email: 'library', roles: ['librarian'], designation: 'Librarian', gender: 'male', basic: 36000 },
+  { name: 'Asha Rajan', email: 'hr', roles: ['hr_manager'], designation: 'HR Executive', gender: 'female', basic: 45000 },
+  { name: 'Ms. Nirmala Iyer', email: 'counsellor', roles: ['counsellor', 'placement_officer'], designation: 'School Counsellor', gender: 'female', basic: 42000 },
+  { name: 'Pradeep Naik', email: 'admissions', roles: ['admissions_officer'], designation: 'Admissions Officer', gender: 'male', basic: 34000 },
+  { name: 'Mr. Gopal Hegde', email: 'controller', roles: ['exam_controller'], designation: 'Examination In-charge', gender: 'male', basic: 62000 },
+  { name: 'Mrs. Shantala Kulkarni', email: 'coordinator', roles: ['quality_officer', 'research_coordinator'], designation: 'Academic Coordinator', gender: 'female', basic: 66000 },
+  { name: 'Ravi Poojary', email: 'warden', roles: ['hostel_warden'], designation: 'Hostel Warden', gender: 'male', basic: 28000 },
+  { name: 'Basavaraj Biradar', email: 'transport', roles: ['transport_manager'], designation: 'Transport In-charge', gender: 'male', basic: 32000 },
+  { name: 'Kamala Setty', email: 'stores', roles: ['store_keeper'], designation: 'Store Keeper', gender: 'female', basic: 24000 },
+  { name: 'Mr. Imran Khan', email: 'grievance', roles: ['grievance_officer', 'icc_member'], designation: 'Grievance and POCSO Officer', gender: 'male', basic: 52000 },
+  { name: 'Nagaraj Urs', email: 'driver1', roles: ['driver'], designation: 'Bus Driver', gender: 'male', basic: 21000 },
+  { name: 'Siddappa Nayak', email: 'driver2', roles: ['driver'], designation: 'Bus Driver', gender: 'male', basic: 21000 },
+  { name: 'Canteen Office', email: 'canteen', roles: ['canteen_manager'], designation: 'Canteen Manager', gender: 'male', basic: 22000 },
+  // Heads of department (teach too)
+  { name: 'Dr. Meera Kulkarni', email: 'hod.science', roles: ['teacher', 'hod'], dept: SC, designation: 'Head of Department (PGT)', gender: 'female', basic: 72000 },
+  { name: 'Mr. Prakash Rao', email: 'hod.maths', roles: ['teacher', 'hod'], dept: MA, designation: 'Head of Department (PGT)', gender: 'male', basic: 70000 },
+  { name: 'Mrs. Padma Joshi', email: 'hod.languages', roles: ['teacher', 'hod'], dept: LA, designation: 'Head of Department (PGT)', gender: 'female', basic: 66000, lang: 'kn' },
+  { name: 'Mr. Anil Prabhu', email: 'hod.social', roles: ['teacher', 'hod'], dept: SS, designation: 'Head of Department (PGT)', gender: 'male', basic: 66000 },
+  { name: 'Mrs. Sujatha Rao', email: 'hod.computers', roles: ['teacher', 'hod'], dept: CS, designation: 'Head of Department (PGT)', gender: 'female', basic: 64000 },
+  { name: 'Mr. Ramesh Bhat', email: 'hod.commerce', roles: ['teacher', 'hod'], dept: 'Commerce', designation: 'Head of Department (PGT)', gender: 'male', basic: 64000 },
+  // Science
+  { name: 'Mrs. Kavya Shetty', email: 'kavya.shetty', roles: ['teacher'], dept: SC, designation: 'Trained Graduate Teacher', gender: 'female', basic: 48000 },
+  { name: 'Mr. Harish Gowda', email: 'harish.gowda', roles: ['teacher'], dept: SC, designation: 'Post Graduate Teacher', gender: 'male', basic: 55000 },
+  { name: 'Mrs. Rashmi Desai', email: 'rashmi.desai', roles: ['teacher'], dept: SC, designation: 'Post Graduate Teacher', gender: 'female', basic: 54000 },
+  { name: 'Ms. Shruthi Menon', email: 'shruthi.menon', roles: ['teacher'], dept: SC, designation: 'Trained Graduate Teacher', gender: 'female', basic: 46000 },
+  { name: 'Mr. Naveen Patil', email: 'naveen.patil', roles: ['teacher'], dept: SC, designation: 'Trained Graduate Teacher', gender: 'male', basic: 46000 },
+  { name: 'Mrs. Deepika Nair', email: 'deepika.nair', roles: ['teacher'], dept: SC, designation: 'Primary Teacher', gender: 'female', basic: 38000 },
+  // Mathematics
+  { name: 'Mr. Kiran Acharya', email: 'kiran.acharya', roles: ['teacher'], dept: MA, designation: 'Post Graduate Teacher', gender: 'male', basic: 54000 },
+  { name: 'Mrs. Vidya Hegde', email: 'vidya.hegde', roles: ['teacher'], dept: MA, designation: 'Trained Graduate Teacher', gender: 'female', basic: 47000 },
+  { name: 'Ms. Pooja Kamath', email: 'pooja.kamath', roles: ['teacher'], dept: MA, designation: 'Trained Graduate Teacher', gender: 'female', basic: 45000 },
+  { name: 'Mrs. Sunanda Pai', email: 'sunanda.pai', roles: ['teacher'], dept: MA, designation: 'Primary Teacher', gender: 'female', basic: 38000 },
+  { name: 'Mr. Manoj Swamy', email: 'manoj.swamy', roles: ['teacher'], dept: MA, designation: 'Primary Teacher', gender: 'male', basic: 37000 },
+  // Languages
+  { name: 'Mrs. Esther Mathew', email: 'esther.mathew', roles: ['teacher'], dept: LA, designation: 'Post Graduate Teacher (English)', gender: 'female', basic: 52000 },
+  { name: 'Ms. Ananya Fernandes', email: 'ananya.fernandes', roles: ['teacher'], dept: LA, designation: 'Trained Graduate Teacher (English)', gender: 'female', basic: 45000 },
+  { name: 'Mrs. Latha Gowda', email: 'latha.gowda', roles: ['teacher'], dept: LA, designation: 'Primary Teacher (English)', gender: 'female', basic: 38000 },
+  { name: 'Mrs. Vasudha Murthy', email: 'vasudha.murthy', roles: ['teacher'], dept: LA, designation: 'Trained Graduate Teacher (Kannada)', gender: 'female', basic: 44000, lang: 'kn' },
+  { name: 'Mr. Shivakumar Hiremath', email: 'shivakumar.hiremath', roles: ['teacher'], dept: LA, designation: 'Primary Teacher (Kannada)', gender: 'male', basic: 37000, lang: 'kn' },
+  { name: 'Mr. Rajiv Sharma', email: 'rajiv.sharma', roles: ['teacher'], dept: LA, designation: 'Trained Graduate Teacher (Hindi)', gender: 'male', basic: 44000, lang: 'hi' },
+  { name: 'Mrs. Nisha Gupta', email: 'nisha.gupta', roles: ['teacher'], dept: LA, designation: 'Primary Teacher (Hindi)', gender: 'female', basic: 37000, lang: 'hi' },
+  // Social Science
+  { name: 'Mrs. Deepa Nair', email: 'deepa.nair', roles: ['teacher'], dept: SS, designation: 'Trained Graduate Teacher', gender: 'female', basic: 47000 },
+  { name: 'Mr. Girish Patil', email: 'girish.patil', roles: ['teacher'], dept: SS, designation: 'Post Graduate Teacher (Economics)', gender: 'male', basic: 52000 },
+  { name: 'Mrs. Nalini Bhat', email: 'nalini.bhat', roles: ['teacher'], dept: SS, designation: 'Trained Graduate Teacher', gender: 'female', basic: 45000 },
+  // Computer Science
+  { name: 'Mrs. Sowmya Reddy', email: 'sowmya.reddy', roles: ['teacher'], dept: CS, designation: 'Post Graduate Teacher', gender: 'female', basic: 52000 },
+  { name: 'Mr. Faisal Ahmed', email: 'faisal.ahmed', roles: ['teacher'], dept: CS, designation: 'Computer Teacher', gender: 'male', basic: 42000 },
+  // Commerce
+  { name: 'Mr. Sudhir Kamath', email: 'sudhir.kamath', roles: ['teacher'], dept: 'Commerce', designation: 'Post Graduate Teacher (Accountancy)', gender: 'male', basic: 54000 },
+  { name: 'Mrs. Harini Acharya', email: 'harini.acharya', roles: ['teacher'], dept: 'Commerce', designation: 'Post Graduate Teacher (Business Studies)', gender: 'female', basic: 52000 },
+];
+/** College login prefixes used by the shared seed stages, pointed at a school colleague. */
+export const ALIASES: Record<string, string> = PROFILE === 'school'
+  ? { iqac: 'coordinator', research: 'coordinator', placements: 'counsellor', 'hod.management': 'hod.social', 'hod.aviation': 'hod.science' }
+  : {};
+
+export interface SpecialStudent { name: string; female: boolean; prog: string; term: number }
+export interface Institution {
+  slug: string; domain: string; name: string; kind: 'school' | 'college'; shortName: string; address: string; affiliation: string; scheme: string;
+  campus: string; codePrefix: string;
+  /** Strong student (father has a login) and weak-attendance student (mother has a login, with a younger sibling). */
+  strong: SpecialStudent & { login: string; parentLogin: string; parentName: string; teacher: string };
+  weak: SpecialStudent & { login: string; parentLogin: string; parentName: string; teacher: string };
+  sibling: SpecialStudent;
+}
+const COLLEGE: Institution = {
+  slug: 'soundarya', domain: 'soundarya.demo.kinetix.in', name: 'Soundarya Institute of Management and Science', kind: 'college', shortName: 'SIMS',
+  address: 'Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru 560073', affiliation: 'Bengaluru City University', scheme: 'NEP semester scheme',
+  campus: 'Soundarya Nagar Campus', codePrefix: 'SIMS',
+  strong: { name: 'Sahana Gowda', female: true, prog: 'BCM', term: 3, login: 'student.bcom', parentLogin: 'parent.bcom', parentName: 'Basavaraj Gowda', teacher: 'sudhir.kamath' },
+  weak: { name: 'Vignesh Naik', female: false, prog: 'BCA', term: 3, login: 'student.bca', parentLogin: 'parent.bca', parentName: 'Revathi Naik', teacher: 'sowmya.reddy' },
+  sibling: { name: 'Chaitra Naik', female: true, prog: 'BBA', term: 1 },
+};
+const SCHOOL: Institution = {
+  slug: 'vidyaniketan', domain: 'vidyaniketan.demo.kinetix.in', name: 'Sri Vidya Niketan Public School', kind: 'school', shortName: 'SVNPS',
+  address: '14th Cross, 2nd Stage, Basaveshwaranagar, Bengaluru 560079', affiliation: 'CBSE (Affiliation No. 830999)', scheme: 'CBSE, classes 1 to 12',
+  campus: 'Basaveshwaranagar Campus', codePrefix: 'SVN',
+  strong: { name: 'Ananya Rao', female: true, prog: 'SEC', term: 10, login: 'student.class10', parentLogin: 'parent.class10', parentName: 'Suresh Rao', teacher: 'sudhir.kamath' },
+  weak: { name: 'Rohan Shetty', female: false, prog: 'MID', term: 7, login: 'student.class7', parentLogin: 'parent.class7', parentName: 'Lakshmi Shetty', teacher: 'sowmya.reddy' },
+  sibling: { name: 'Diya Shetty', female: true, prog: 'PRI', term: 3 },
+};
+export const INST: Institution = PROFILE === 'school' ? SCHOOL : COLLEGE;
+export const DOMAIN = INST.domain;
+export const SLUG = INST.slug;
+export const PROGRAMS: ProgramDef[] = PROFILE === 'school' ? S_PROGRAMS : C_PROGRAMS;
+export const STAFF: StaffDef[] = PROFILE === 'school' ? S_STAFF : C_STAFF;
+export const LOGIN_STAFF = PROFILE === 'school'
+  ? ['principal', 'admin', 'accounts', 'library', 'hr', 'counsellor', 'controller', 'coordinator', 'hod.science', 'hod.maths', 'kavya.shetty', 'sudhir.kamath', 'sowmya.reddy']
+  : C_LOGIN_STAFF;

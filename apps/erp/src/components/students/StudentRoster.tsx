@@ -18,6 +18,7 @@ import { STUDENT_STATUSES } from '@/lib/admissions';
 import { FEE_STATES, initials, type RosterRow } from '@/lib/roster';
 import { AttendanceBar, FeeBadge } from './RosterBits';
 import { StudentSheet } from './StudentSheet';
+import { naturalCompare } from '@/lib/natural';
 
 const PER_PAGE = 25;
 const ALL = '_all';
@@ -34,10 +35,10 @@ export function StudentRoster({ rows, initialQuery = '', canRemind, showFees, sh
   const [open, setOpen] = useState<RosterRow | null>(null);
   const [pending, start] = useTransition();
 
-  const programs = useMemo(() => [...new Map(rows.filter((r) => r.programId).map((r) => [r.programId!, r.programName])).entries()].sort((a, b) => a[1].localeCompare(b[1])), [rows]);
+  const programs = useMemo(() => [...new Map(rows.filter((r) => r.programId).map((r) => [r.programId!, r.programName])).entries()].sort((a, b) => naturalCompare(a[1], b[1])), [rows]);
   const inProg = useMemo(() => rows.filter((r) => f.prog === ALL || r.programId === f.prog), [rows, f.prog]);
   const terms = useMemo(() => [...new Set(inProg.map((r) => r.term).filter((x): x is number => x !== null))].sort((a, b) => a - b), [inProg]);
-  const sections = useMemo(() => [...new Map(inProg.filter((r) => f.sem === ALL || String(r.term) === f.sem).map((r) => [r.sectionId, r.className])).entries()].sort((a, b) => a[1].localeCompare(b[1])), [inProg, f.sem]);
+  const sections = useMemo(() => [...new Map(inProg.filter((r) => f.sem === ALL || String(r.term) === f.sem).map((r) => [r.sectionId, r.className])).entries()].sort((a, b) => naturalCompare(a[1], b[1])), [inProg, f.sem]);
   const statuses = useMemo(() => STUDENT_STATUSES.filter((s) => s !== 'applicant' && rows.some((r) => r.status === s)), [rows]);
 
   const list = useMemo(() => {

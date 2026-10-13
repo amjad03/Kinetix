@@ -13,6 +13,7 @@ import '../hr/appraisal_screen.dart';
 import '../hr/check_in_screen.dart';
 import '../hr/leave_screen.dart';
 import '../hr/my_evidence_screen.dart';
+import '../hr/loans_screen.dart';
 import '../hr/payslips_screen.dart';
 import '../ai/ai_copilot_screen.dart';
 import '../insights/section_insights_screen.dart';
@@ -271,6 +272,14 @@ class ProfileTab extends StatelessWidget {
               subtitle: Text(l.payslipsBody),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PayslipsScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openLoans'),
+              leading: const Icon(Icons.account_balance_wallet_outlined),
+              title: Text(l.loansTitle),
+              subtitle: Text(l.loansBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => LoansScreen(api: state.api))),
             ),
             ListTile(
               key: const Key('openEvidence'),

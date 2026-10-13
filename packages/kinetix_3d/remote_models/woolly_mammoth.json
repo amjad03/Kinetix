@@ -1,0 +1,161 @@
+{
+ "id": "woolly_mammoth",
+ "version": 1,
+ "subject": "Biology",
+ "file": "woolly_mammoth.glb",
+ "title": {
+  "en": "Woolly mammoth skeleton",
+  "hi": "ऊनी मैमथ का कंकाल",
+  "kn": "ಉಣ್ಣೆಯ ಮ್ಯಾಮತ್ ಅಸ್ಥಿಪಂಜರ"
+ },
+ "summary": {
+  "en": "A relative of today's elephants that lived in the cold grasslands of the last Ice Age and died out about 4,000 years ago. Fossils like this show how living things change and become extinct.",
+  "hi": "आज के हाथियों का संबंधी, जो पिछले हिमयुग के ठंडे घास के मैदानों में रहता था और लगभग 4,000 वर्ष पहले विलुप्त हो गया। ऐसे जीवाश्म दिखाते हैं कि जीव कैसे बदलते और विलुप्त होते हैं।",
+  "kn": "ಇಂದಿನ ಆನೆಗಳ ಸಂಬಂಧಿ; ಕೊನೆಯ ಹಿಮಯುಗದ ತಣ್ಣನೆಯ ಹುಲ್ಲುಗಾವಲುಗಳಲ್ಲಿ ಬದುಕಿ ಸುಮಾರು 4,000 ವರ್ಷಗಳ ಹಿಂದೆ ಅಳಿದುಹೋಯಿತು. ಇಂತಹ ಪಳೆಯುಳಿಕೆಗಳು ಜೀವಿಗಳು ಹೇಗೆ ಬದಲಾಗುತ್ತವೆ ಮತ್ತು ಅಳಿಯುತ್ತವೆ ಎಂದು ತೋರಿಸುತ್ತವೆ."
+ },
+ "keywords": [
+  "mammoth",
+  "woolly mammoth",
+  "fossil",
+  "extinct",
+  "extinction",
+  "ice age",
+  "evolution",
+  "elephant",
+  "skeleton",
+  "heredity and evolution",
+  "conservation"
+ ],
+ "classes": [
+  8,
+  10,
+  12
+ ],
+ "credit": "Woolly mammoth, Smithsonian National Museum of Natural History, Smithsonian Open Access (CC0)",
+ "size": 0.6,
+ "groups": [
+  {
+   "id": "fossil",
+   "name": {
+    "en": "Fossil skeleton",
+    "hi": "जीवाश्म कंकाल",
+    "kn": "ಪಳೆಯುಳಿಕೆ ಅಸ್ಥಿಪಂಜರ"
+   }
+  }
+ ],
+ "parts": [
+  {
+   "id": "skeleton",
+   "group": "fossil",
+   "color": "#b49a74",
+   "name": {
+    "en": "Woolly mammoth (Mammuthus primigenius)",
+    "hi": "ऊनी मैमथ (मैमथस प्रिमिजेनियस)",
+    "kn": "ಉಣ್ಣೆಯ ಮ್ಯಾಮತ್ (ಮ್ಯಾಮತಸ್ ಪ್ರಿಮಿಜೀನಿಯಸ್)"
+   },
+   "info": {
+    "en": "About 3 metres tall at the shoulder, with long curved tusks for clearing snow and fighting, and a thick coat of hair against the cold.",
+    "hi": "कंधे तक लगभग 3 मीटर ऊँचा, बर्फ़ हटाने और लड़ने के लिए लंबे मुड़े दाँत, और ठंड से बचाने वाले घने बाल।",
+    "kn": "ಭುಜದವರೆಗೆ ಸುಮಾರು 3 ಮೀಟರ್ ಎತ್ತರ; ಹಿಮ ಸರಿಸಲು ಮತ್ತು ಹೋರಾಡಲು ಉದ್ದನೆಯ ಬಾಗಿದ ದಂತಗಳು, ಚಳಿಯಿಂದ ರಕ್ಷಿಸುವ ದಪ್ಪ ಕೂದಲು."
+   },
+   "centroid": [
+    0.0037,
+    0.0499,
+    -0.0302
+   ],
+   "anchor": [
+    -0.0016,
+    0.0619,
+    0.1554
+   ],
+   "anchors": [
+    [
+     0,
+     1,
+     0,
+     0.0047,
+     0.1603,
+     -0.0192
+    ],
+    [
+     0,
+     -1,
+     0,
+     -0.0124,
+     -0.1862,
+     -0.0363
+    ],
+    [
+     -1,
+     0,
+     0,
+     -0.0583,
+     0.0596,
+     0.0104
+    ],
+    [
+     1,
+     0,
+     0,
+     0.0647,
+     0.0491,
+     -0.0405
+    ],
+    [
+     0,
+     0,
+     1,
+     -0.0016,
+     0.0619,
+     0.1554
+    ],
+    [
+     0,
+     0,
+     -1,
+     0.0036,
+     -0.0136,
+     -0.2809
+    ]
+   ],
+   "explode": [
+    0,
+    0.0001,
+    0
+   ]
+  }
+ ],
+ "views": [
+  {
+   "id": "side",
+   "name": {
+    "en": "Side",
+    "hi": "बगल से",
+    "kn": "ಪಕ್ಕದಿಂದ"
+   },
+   "dir": [
+    1,
+    0.2,
+    0.45
+   ]
+  },
+  {
+   "id": "front",
+   "name": {
+    "en": "Front",
+    "hi": "सामने से",
+    "kn": "ಮುಂಭಾಗ"
+   },
+   "dir": [
+    0,
+    0.15,
+    1
+   ]
+  }
+ ],
+ "slices": [],
+ "animations": [],
+ "remote": true,
+ "topic": "life",
+ "license": "CC0"
+}

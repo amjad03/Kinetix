@@ -22,7 +22,7 @@ class SimAssetServer {
     return 'http://127.0.0.1:${server.port}';
   }
 
-  static final _path = RegExp(r'^[A-Za-z0-9_\-]+(/[A-Za-z0-9_\-.$@]+)*\.(html|js|mjs|css|png|jpg|jpeg|svg|gif|ico|mp3|ogg|wav|json|txt|ipynb|woff|woff2|ttf|wasm|zip|whl|csv)$');
+  static final _path = RegExp(r'^[A-Za-z0-9_\-]+(/[A-Za-z0-9_\-.$@]+)*\.(html|js|mjs|css|png|jpg|jpeg|svg|gif|ico|cur|mp3|ogg|wav|json|txt|ipynb|woff|woff2|ttf|eot|wasm|zip|whl|csv)$');
 
   static String contentType(String path) => switch (path.substring(path.lastIndexOf('.') + 1)) {
     'html' => 'text/html; charset=utf-8',
@@ -36,11 +36,13 @@ class SimAssetServer {
     'wav' => 'audio/wav',
     'mjs' => 'application/javascript; charset=utf-8',
     'jpg' || 'jpeg' => 'image/jpeg',
-    'ico' => 'image/x-icon',
+    // Blockly's drag cursors are .cur files.
+    'ico' || 'cur' => 'image/x-icon',
     'txt' || 'csv' => 'text/plain; charset=utf-8',
     'woff' => 'font/woff',
     'woff2' => 'font/woff2',
     'ttf' => 'font/ttf',
+    'eot' => 'application/vnd.ms-fontobject',
     'wasm' => 'application/wasm',
     'zip' || 'whl' => 'application/zip',
     'json' || 'ipynb' => 'application/json',

@@ -1,5 +1,7 @@
 'use client';
+import Link from 'next/link';
 import { useState } from 'react';
+import { recordHref } from '@/lib/campus-ops';
 import { addBlock, addToWaitlist, allotFromWaitlist, cancelWaiting, markNight, transferRoom, addPlan, addRoom, allot, chargeHostelFees, chargeMessFees, issuePass, passStep, setComplaintStatus, setMenu, signInVisitor, signOutVisitor, subscribeMess, vacate } from '@/app/(dashboard)/hostel/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
@@ -85,7 +87,7 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
                   tint={(p) => p.overdue}
                   cols={[
                     { label: t('ops.f.student'), cell: (p) => p.studentName },
-                    { label: t('ho.reason'), cell: (p) => p.pass.reason },
+                    { label: t('ho.reason'), cell: (p) => <Link className="font-medium text-primary hover:underline" href={recordHref('gate-pass', p.pass.id)}>{p.pass.reason}</Link> },
                     { label: t('ho.destination'), cell: (p) => p.pass.destination || t('ops.none') },
                     { label: t('ho.expectedBack'), cell: (p) => fmt.dateTime(p.pass.expectedBackAt) },
                     { label: t('ops.f.status'), cell: (p) => <Pill warn={p.overdue} label={p.overdue ? t('ho.overdueChip') : st(t, p.pass.status)} /> },
@@ -175,7 +177,7 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
                 empty={t('ho.noComplaints')}
                 rows={complaints}
                 cols={[
-                  { label: t('ho.category'), cell: (c) => st(t, c.category) },
+                  { label: t('ho.category'), cell: (c) => <Link className="font-medium text-primary hover:underline" href={recordHref('hostel-complaint', c.id)}>{st(t, c.category)}</Link> },
                   { label: t('ho.description'), cell: (c) => c.description },
                   { label: t('ops.f.status'), cell: (c) => <Pill label={st(t, c.status)} /> },
                   { label: t('ho.raised'), cell: (c) => fmt.dateTime(c.createdAt) },

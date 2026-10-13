@@ -2,6 +2,7 @@ import type { Locale } from '../locales';
 import common from './common';
 import admin from './admin';
 import syllabus from './syllabus';
+import academics from './academics';
 import library from './library';
 import fees from './fees';
 import boards from './boards';
@@ -20,10 +21,12 @@ import terms from './terms';
 import payments from './payments';
 import platform from './platform';
 import ops from './ops';
+import campusOps from './campus-ops';
 import admissions from './admissions';
 import admissionsGrowth from './admissions-growth';
 import admissionsDepth from './admissions-depth';
 import hrLifecycle from './hr-lifecycle';
+import hrFlow from './hr-flow';
 import assist from './assist';
 import ui from './ui';
 import dashboard from './dashboard';
@@ -65,13 +68,22 @@ import gatewayBooks from './gateway-books';
 import governDepth from './govern-depth';
 import university from './university';
 import redesign from './redesign';
+import v2 from './v2';
 import admissionsExamsFlow from './admissions-exams-flow';
+import examOffice from './exam-office';
 import homes from './homes';
 import roster from './roster';
 import workspace from './workspace';
+<<<<<<< HEAD
 import qualityHub from './quality-hub';
 
 export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, qualityHub } as const;
+=======
+import feeDesk from './fee-desk';
+import ease from './ease';
+
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk, v2, ease, campusOps } as const;
+>>>>>>> claude/kinetix-ecosystem-overview-lpphjn
 
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.
 // See docs/i18n/erp.md for how to add strings.

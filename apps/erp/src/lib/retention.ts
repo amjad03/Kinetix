@@ -1,3 +1,4 @@
+import { naturalCompare } from './natural';
 // Recording retention: GET /v1/admin/recordings/retention and the grace period setting
 // (recordingRetentionGraceDays in PUT /v1/admin/settings). Recordings are deleted after their
 // semester ends plus the grace period, unless the teacher keeps them.
@@ -34,7 +35,7 @@ export function parseGraceDays(value: string): number | null {
 
 /** Classes with recordings due for deletion in the next 30 days first, then by name. */
 export function expiringFirst(classes: RetentionClass[]): RetentionClass[] {
-  return [...classes].sort((a, b) => b.expiringSoon - a.expiringSoon || a.sectionName.localeCompare(b.sectionName));
+  return [...classes].sort((a, b) => b.expiringSoon - a.expiringSoon || naturalCompare(a.sectionName, b.sectionName));
 }
 
 /** Recordings deleted in the next 30 days, across classes. */

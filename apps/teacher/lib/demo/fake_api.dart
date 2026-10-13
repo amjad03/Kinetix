@@ -867,6 +867,19 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<List<PayslipInfo>> myPayslips() async => payslipList;
 
+  List<LoanInfo> loanList = [];
+
+  @override
+  Future<List<LoanInfo>> myLoans() async => loanList;
+
+  @override
+  Future<LoanInfo> requestLoan({required String kind, required int amountPaise, required int installments, required String startMonth, required String purpose}) async {
+    calls.add('requestLoan $kind $amountPaise $installments $startMonth');
+    final l = LoanInfo(id: 'ln${loanList.length + 1}', loanNo: 'ADV/2026-27/000${loanList.length + 1}', kind: kind, amountPaise: amountPaise, installments: installments, emiPaise: (amountPaise / installments).ceil(), startMonth: startMonth, purpose: purpose, status: 'pending', outstandingPaise: 0);
+    loanList = [l, ...loanList];
+    return l;
+  }
+
   @override
   Future<List<EvidenceInfo>> myEvidence() async => evidenceList;
 

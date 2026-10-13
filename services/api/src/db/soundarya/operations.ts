@@ -3,7 +3,7 @@ import type { UserPrincipal } from '../../auth/principal.js';
 import { ConnectorsService } from '../../connectors/connectors.service.js';
 import { WorkflowsService } from '../../workflows/workflows.service.js';
 import { bufferStream, ObjectStorage } from '../../storage/storage.service.js';
-import { FEMALE, MALE, SURNAMES } from './data.js';
+import { DOMAIN, FEMALE, INST, MALE, SURNAMES } from './data.js';
 import type { Ctx } from './ctx.js';
 import { addDays, at, J, rupees } from './kit.js';
 import { service, withTenant } from './nest.js';
@@ -46,8 +46,8 @@ export async function tasksAndWorkflows(c: Ctx): Promise<void> {
     { who: commerce[1], type: 'event_permission', title: 'Industry visit to a manufacturing unit in Peenya', payload: { event: 'Industry visit for BCom Sem 5', date: addDays(c.today, 21), participants: 45 }, steps: ['approve'], hod: 'hod.commerce' },
     { who: mgmt[0], type: 'event_permission', title: 'Management fest Vyapara: budget and permission', payload: { event: 'Vyapara inter-college fest', date: addDays(c.today, 14), participants: 280 }, steps: ['approve', 'approve'], hod: 'hod.management' },
     { who: mgmt[1], type: 'on_duty', title: 'BCU valuation duty, 14 to 16 October', payload: { purpose: 'Semester valuation at BCU camp', date: addDays(c.today, 5) }, steps: ['approve'], hod: 'hod.management' },
-    { who: commerce[2], type: 'on_duty', title: 'FDP on NEP curriculum, Mysuru', payload: { purpose: 'Faculty development programme', date: addDays(c.today, 9) }, steps: ['reject'], hod: 'hod.commerce' },
-    { who: comp[2], type: 'event_permission', title: 'Hackathon night in the lab', payload: { event: '12-hour hackathon', date: addDays(c.today, 30), participants: 60 }, steps: ['return'], hod: 'hod.computers' },
+    { who: commerce[2 % commerce.length], type: 'on_duty', title: 'FDP on NEP curriculum, Mysuru', payload: { purpose: 'Faculty development programme', date: addDays(c.today, 9) }, steps: ['reject'], hod: 'hod.commerce' },
+    { who: comp[2 % comp.length], type: 'event_permission', title: 'Hackathon night in the lab', payload: { event: '12-hour hackathon', date: addDays(c.today, 30), participants: 60 }, steps: ['return'], hod: 'hod.computers' },
     { who: mgmt[2], type: 'purchase_approval', title: 'Case study subscription for MBA', amount: 18000, payload: { item: 'Harvard-style case collection' }, steps: ['cancel'], hod: 'hod.management' },
   ];
   for (const q of reqs) {
@@ -126,15 +126,15 @@ export async function communication(c: Ctx): Promise<void> {
   await k.ins('notifications', n, { returning: false });
 
   // A parent and a teacher talking about Vignesh and Sahana.
-  const vig = c.students.find((s) => s.name === 'Vignesh Naik')!;
-  const sah = c.students.find((s) => s.name === 'Sahana Gowda')!;
-  const pairs: [typeof vig, string, string][] = [[vig, 'parent.bca', 'sowmya.reddy'], [sah, 'parent.bcom', 'sudhir.kamath']];
+  const vig = c.students.find((s) => s.name === INST.weak.name)!;
+  const sah = c.students.find((s) => s.name === INST.strong.name)!;
+  const pairs: [typeof vig, string, string][] = [[vig, INST.weak.parentLogin, INST.weak.teacher], [sah, INST.strong.parentLogin, INST.strong.teacher]];
   for (const [st, parent, teacher] of pairs) {
-    const family = (await k.q<{ id: string }>('select id from users where email = $1', [`${parent}@soundarya.demo.kinetix.in`]))[0].id;
+    const family = (await k.q<{ id: string }>('select id from users where email = $1', [`${parent}@${DOMAIN}`]))[0].id;
     const conv = await k.one<{ id: string }>('conversations', { studentId: st.id, staffId: c.byEmail[teacher].id, familyId: family, lastMessageAt: at(addDays(c.today, -1), '18:10'), staffReadAt: at(addDays(c.today, -1), '18:15') });
     const low = st.presence < 0.7;
     await k.ins('messages', [
-      { conversationId: conv.id, senderId: c.byEmail[teacher].id, body: low ? 'Good evening. Vignesh’s attendance is 66 percent this semester. Is everything fine at home? He needs to be above 75 percent for the exams.' : 'Sahana has done very well in the model exam. She is among the top five in the class.', createdAt: at(addDays(c.today, -2), '17:30') },
+      { conversationId: conv.id, senderId: c.byEmail[teacher].id, body: low ? `Good evening. ${st.name.split(' ')[0]}’s attendance is 66 percent this term. Is everything fine at home? He needs to be above 75 percent for the exams.` : `${st.name.split(' ')[0]} has done very well in the model exam. She is among the top five in the class.`, createdAt: at(addDays(c.today, -2), '17:30') },
       { conversationId: conv.id, senderId: family, body: low ? 'Thank you for informing us. He had dengue last month. We will make sure he attends regularly now. Can he get notes for the days he missed?' : 'Thank you ma’am and sir. We are very happy. We will keep encouraging her.', createdAt: at(addDays(c.today, -1), '18:10') },
     ], { returning: false });
   }
@@ -268,7 +268,7 @@ export async function lifecycle(c: Ctx): Promise<void> {
     { studentId: mba.students[2].id, kind: 'status', fromStatus: 'active', toStatus: 'on_leave', reason: 'Medical leave for surgery', effectiveOn: '2026-09-10', actorId: principal, approverId: c.byEmail['hod.management'].id, returnOn: '2026-11-15' },
     { studentId: bav.students[4].id, kind: 'status', fromStatus: 'active', toStatus: 'detained', reason: 'Attendance shortage in the previous semester', effectiveOn: '2026-08-05', actorId: principal },
     { studentId: mcm.students[0].id, kind: 'section', fromSectionId: mcm.id, toSectionId: mcm.id, reason: 'Roll number corrected', effectiveOn: '2026-08-12', actorId: principal },
-    { studentId: c.students.find((s) => s.name === 'Vignesh Naik')!.id, kind: 'guardian', reason: 'Guardian phone number updated', effectiveOn: '2026-09-03', actorId: principal },
+    { studentId: c.students.find((s) => s.name === INST.weak.name)!.id, kind: 'guardian', reason: 'Guardian phone number updated', effectiveOn: '2026-09-03', actorId: principal },
   );
   await k.ins('student_lifecycle_events', history, { returning: false });
 }

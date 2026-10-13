@@ -880,6 +880,27 @@ class FakeParentApi implements ParentApi {
     return boardingView;
   }
 
+  List<CanteenDish> canteenDishes = const [CanteenDish(id: 'd1', name: 'Masala dosa', pricePaise: 40_00, available: true), CanteenDish(id: 'd2', name: 'Lemon rice', pricePaise: 35_00, available: false)];
+
+  @override
+  Future<void> requestOutPass(String childId, {required String reason, required String destination, required DateTime expectedBackAt}) async {
+    calls.add('requestOutPass $childId $reason');
+    boardingView = BoardingView(
+      resident: boardingView.resident,
+      block: boardingView.block,
+      room: boardingView.room,
+      bed: boardingView.bed,
+      nights: boardingView.nights,
+      passes: [OutPass(id: 'p${boardingView.passes.length + 1}', reason: reason, destination: destination, expectedBackAt: expectedBackAt, status: 'requested'), ...boardingView.passes],
+    );
+  }
+
+  @override
+  Future<List<CanteenDish>> canteenMenu() async {
+    calls.add('canteenMenu');
+    return canteenDishes;
+  }
+
   @override
   Future<WalletView> wallet(String childId) async {
     calls.add('wallet $childId');

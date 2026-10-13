@@ -31,6 +31,7 @@ import {
   yearPlans,
 } from '../db/schema.js';
 import { decidePromotion, evaluateBoardPass, masteryFromLevel, masteryFromPct, readiness, type BoardSubjectMarks } from './school-rules.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const STAFF: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher'];
 const LEADS: RoleName[] = ['tenant_admin', 'principal', 'hod'];
@@ -478,7 +479,7 @@ export class SchoolLearningController {
         .innerJoin(students, eq(students.id, promotionDecisions.studentId))
         .innerJoin(sections, eq(sections.id, students.sectionId))
         .where(and(eq(promotionDecisions.academicYearId, academicYearId), sectionId ? eq(students.sectionId, z.uuid().parse(sectionId)) : undefined, status && ['pending', 'approved', 'rejected'].includes(status) ? eq(promotionDecisions.status, status as 'pending') : undefined))
-        .orderBy(asc(sections.displayName), asc(students.rollNo));
+        .orderBy(...naturalAsc(sections.displayName), asc(students.rollNo));
       return rows.map((r) => ({ ...r.d, fullName: r.fullName, rollNo: r.rollNo, section: r.section }));
     });
   }

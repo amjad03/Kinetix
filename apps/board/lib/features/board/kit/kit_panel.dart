@@ -266,38 +266,67 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
     ElementCategory.unknown: Color(0xFFB0BEC5),
   };
 
+  /// The element last tapped, marked in the table.
+  int? _pickedZ;
+
+  /// The periodic table: each cell has its atomic number and symbol, coloured by family; the
+  /// tapped element is outlined. Cells keep a finger's size on a phone (the table then scrolls
+  /// sideways) and grow with a panel.
   Widget _periodic() => LayoutBuilder(
     builder: (context, c) {
-      final cell = (c.maxWidth - 24) / 18;
+      final cell = math.max(34.0, (c.maxWidth - 24) / 18);
+      final table = SizedBox(
+        width: cell * 18,
+        height: cell * 10.4,
+        child: Stack(
+          children: [
+            for (final e in elements)
+              Positioned(
+                left: (e.col - 1) * cell,
+                top: (e.row - 1) * cell + (e.row >= 9 ? cell * 0.4 : 0),
+                width: cell - 1,
+                height: cell - 1,
+                child: GestureDetector(
+                  key: Key('element-${e.symbol}'),
+                  onTap: () {
+                    setState(() => _pickedZ = e.z);
+                    _elementSheet(e);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _catColors[e.cat],
+                      borderRadius: BorderRadius.circular(2),
+                      border: _pickedZ == e.z ? Border.all(color: const Color(0xFF1B1F24), width: math.max(2, cell * 0.06)) : null,
+                    ),
+                    child: Stack(
+                      children: [
+                        if (cell >= 40)
+                          Positioned(
+                            left: 3,
+                            top: 1,
+                            child: Text('${e.z}', style: TextStyle(fontSize: cell * 0.2, color: const Color(0xFF1B1F24))),
+                          ),
+                        Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: cell >= 40 ? cell * 0.12 : 0),
+                            child: Text(
+                              e.symbol,
+                              style: TextStyle(fontSize: cell * (cell >= 40 ? 0.38 : 0.42), fontWeight: FontWeight.w600, color: const Color(0xFF1B1F24)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
       return ListView(
         padding: const EdgeInsets.all(Kx.s12),
         children: [
-          SizedBox(
-            height: cell * 10.4,
-            child: Stack(
-              children: [
-                for (final e in elements)
-                  Positioned(
-                    left: (e.col - 1) * cell,
-                    top: (e.row - 1) * cell + (e.row >= 9 ? cell * 0.4 : 0),
-                    width: cell - 1,
-                    height: cell - 1,
-                    child: GestureDetector(
-                      key: Key('element-${e.symbol}'),
-                      onTap: () => _elementSheet(e),
-                      child: Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(color: _catColors[e.cat], borderRadius: BorderRadius.circular(2)),
-                        child: Text(
-                          e.symbol,
-                          style: TextStyle(fontSize: cell * 0.42, fontWeight: FontWeight.w600, color: const Color(0xFF1B1F24)),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          SingleChildScrollView(key: const Key('periodic-table'), scrollDirection: Axis.horizontal, child: table),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -309,7 +338,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
                   children: [
                     Container(width: 10, height: 10, color: e.value),
                     const SizedBox(width: 4),
-                    Text(e.key.label, style: context.text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
+                    Text(e.key.labelIn(Localizations.localeOf(context).languageCode), style: context.text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
                   ],
                 ),
             ],
@@ -335,7 +364,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('${e.z}  ${e.symbol}  ·  ${e.name}', style: context.text.headlineSmall),
-              Text('${e.mass} · ${e.cat.label}', style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+              Text('${e.mass} · ${e.cat.labelIn(Localizations.localeOf(context).languageCode)}', style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
               const SizedBox(height: Kx.s16),
               Wrap(
                 spacing: 8,

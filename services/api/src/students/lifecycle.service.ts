@@ -5,6 +5,7 @@ import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { academicYears, certificateTemplates, certificates, guardians, programs, promotionBatches, sections, studentLifecycleEvents, students, tenants, userRoles, users } from '../db/schema.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 export interface LifecycleActor {
   tenantId: string;
@@ -184,7 +185,7 @@ export class LifecycleService {
       .from(students)
       .innerJoin(sections, eq(sections.id, students.sectionId))
       .where(inArray(students.status, ['on_leave', 'suspended']))
-      .orderBy(asc(sections.displayName), asc(students.rollNo));
+      .orderBy(...naturalAsc(sections.displayName), asc(students.rollNo));
     if (rows.length === 0) return [];
     const events = await tx
       .select({ studentId: studentLifecycleEvents.studentId, toStatus: studentLifecycleEvents.toStatus, returnOn: studentLifecycleEvents.returnOn, effectiveOn: studentLifecycleEvents.effectiveOn, reason: studentLifecycleEvents.reason })

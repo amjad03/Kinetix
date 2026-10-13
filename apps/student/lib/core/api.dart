@@ -175,6 +175,9 @@ abstract class StudentApi {
   /// The canteen wallet and recent meals (`GET /v1/canteen/students/:id`).
   Future<WalletView> wallet(String studentId);
 
+  /// What the canteen sells today (`GET /v1/canteen/items`).
+  Future<List<CanteenDish>> canteenMenu();
+
   /// Starts an online top-up (503 when the institution takes no online payments).
   Future<TopUpCheckout> walletCheckout(String studentId, int amountPaise);
 
@@ -701,6 +704,10 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<WalletView> wallet(String studentId) async => WalletView.fromJson(await _send('GET', '/v1/canteen/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<List<CanteenDish>> canteenMenu() async =>
+      [for (final d in (await _send('GET', '/v1/canteen/items') as List)) CanteenDish.fromJson((d as Map).cast<String, dynamic>())];
 
   @override
   Future<TopUpCheckout> walletCheckout(String studentId, int amountPaise) async =>

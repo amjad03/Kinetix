@@ -1,4 +1,4 @@
-// Module settings for the quality, outcomes and engagement group (migration 0130): numbering series,
+// Module settings for the quality, outcomes and engagement group (migration 0136): numbering series,
 // rules, message templates and defaults per module, stored as one JSON document per module.
 import { sql } from 'drizzle-orm';
 import { jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';

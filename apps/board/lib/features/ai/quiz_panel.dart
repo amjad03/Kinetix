@@ -176,7 +176,7 @@ class _QuestionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$number. ${q.question}', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w500, height: 1.35)),
+          AiText('$number. ${q.question}', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w500, height: 1.35)),
           const SizedBox(height: Kx.s8),
           for (var o = 0; o < q.options.length; o++)
             Padding(
@@ -200,7 +200,7 @@ class _QuestionCard extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 3),
-                      child: Text(q.options[o], style: TextStyle(fontSize: 17, fontWeight: o == q.answer ? FontWeight.w600 : FontWeight.w400)),
+                      child: AiText(q.options[o], style: TextStyle(fontSize: 17, fontWeight: o == q.answer ? FontWeight.w600 : FontWeight.w400)),
                     ),
                   ),
                 ],
@@ -208,7 +208,7 @@ class _QuestionCard extends StatelessWidget {
             ),
           if (q.explanation.isNotEmpty) ...[
             const SizedBox(height: Kx.s8),
-            Text(
+            AiText(
               context.l10n.quizAnswerExplanation(optionLetter(q.answer), q.explanation),
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),

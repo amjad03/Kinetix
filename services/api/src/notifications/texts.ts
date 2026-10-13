@@ -45,6 +45,15 @@ export const texts = {
         body: `${dateIn(l, p.from)} - ${dateIn(l, p.to)}${p.note ? `. ${p.note}` : ''}`,
       };
     }),
+  leaveRecommended: (p: { name: string; from: string; to: string; days: number }) =>
+    all((l) => ({ title: l === 'hi' ? `${p.name} का अवकाश अनुशंसित, स्वीकृति शेष` : l === 'kn' ? `${p.name} ರಜೆ ಶಿಫಾರಸು, ಅನುಮೋದನೆ ಬಾಕಿ` : `Leave recommended for ${p.name}, awaiting approval`, body: `${dateIn(l, p.from)} - ${dateIn(l, p.to)} (${p.days})` })),
+  /** A loan, advance, leave encashment or requisition was decided. */
+  hrRequestDecided: (p: { what: 'loan' | 'advance' | 'encashment' | 'requisition'; approved: boolean; detail: string }) =>
+    all((l) => {
+      const what = { en: { loan: 'loan', advance: 'salary advance', encashment: 'leave encashment', requisition: 'staff requisition' }, hi: { loan: 'ऋण', advance: 'वेतन अग्रिम', encashment: 'अवकाश नकदीकरण', requisition: 'स्टाफ़ माँग' }, kn: { loan: 'ಸಾಲ', advance: 'ವೇತನ ಮುಂಗಡ', encashment: 'ರಜೆ ನಗದೀಕರಣ', requisition: 'ಸಿಬ್ಬಂದಿ ಬೇಡಿಕೆ' } }[l][p.what];
+      const verdict = l === 'hi' ? (p.approved ? 'स्वीकृत' : 'अस्वीकृत') : l === 'kn' ? (p.approved ? 'ಅನುಮೋದಿಸಲಾಗಿದೆ' : 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ') : p.approved ? 'approved' : 'not approved';
+      return { title: l === 'en' ? `Your ${what} request was ${verdict}` : `${what}: ${verdict}`, body: p.detail };
+    }),
   payslipReady: (p: { month: string }) =>
     all((l) => ({ title: l === 'hi' ? 'वेतन पर्ची उपलब्ध' : l === 'kn' ? 'ವೇತನ ಚೀಟಿ ಲಭ್ಯ' : 'Your payslip is ready', body: p.month })),
   certificateIssued: (p: { title: string; serialNo: string }) =>

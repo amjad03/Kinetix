@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import { useEffect, useState, useTransition } from 'react';
 import { addDesignation, getProfile, saveBank, saveProfile, type ProfileInput } from '@/app/(dashboard)/hr/actions';
@@ -38,7 +39,7 @@ export function StaffDirectory({ staff, designations, departments }: { staff: St
         exportName="staff"
         columns={[
           { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (s) => s.fullName, cell: (s) => (<><p className="text-[13px] leading-[19px] font-medium">
-                            {s.fullName}
+                            <Link className="text-primary underline-offset-4 hover:underline" href={`/hr/staff/${s.userId}`}>{s.fullName}</Link>
                           </p>
                           <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                             {s.email ?? s.phone ?? ''}

@@ -8,6 +8,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../../core/api_client.dart';
 import '../../../core/board_controller.dart';
+import '../../../core/models.dart' show SessionContext;
 import '../../../demo/demo.dart';
 import '../sb_strings.dart';
 import '../../../l10n/l10n.dart';
@@ -301,6 +302,13 @@ class _ClassBarState extends State<ClassBar> {
     // One floating pill, like search, the clock and the profile at the top right; its chips
     // sit flat inside it.
     final chips = ChipTheme.of(context).copyWith(side: BorderSide.none, backgroundColor: Colors.transparent, shape: const StadiumBorder());
+    return LayoutBuilder(builder: (context, box) => _bar(context, board, s, l, ls, marked, left, gap, chips, box.maxWidth));
+  }
+
+  Widget _bar(BuildContext context, BoardController board, SessionContext? s, AppLocalizations l, LayoutStrings ls, int marked, int? left, Widget gap, ChipThemeData chips, double room) {
+    // On a phone the class name gives way so the subject chip beside it stays in sight
+    // (about 120 px for the avatar, the chips' padding and the subject's icon).
+    final classMax = widget.phone ? (room.isFinite ? (room - 120).clamp(60.0, 150.0) : 150.0) : (room < 1000 ? 220.0 : 320.0);
     return SingleChildScrollView(
       key: const Key('class-bar'),
       scrollDirection: Axis.horizontal,
@@ -327,7 +335,7 @@ class _ClassBarState extends State<ClassBar> {
                   avatar: KxAvatar(name: s.teacherName, size: 24),
                   tooltip: ls.switchClass,
                   label: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: widget.phone ? 150 : 320),
+                    constraints: BoxConstraints(maxWidth: classMax),
                     child: Text(s.classLabel ?? s.teacherName, overflow: TextOverflow.ellipsis),
                   ),
                   onPressed: widget.onSwitchClass,

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useActionState, useState } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { signOut } from '@/app/login/actions';
-import { LogoMark } from '@/components/Logo';
+import { AuthShell } from '@/components/auth/AuthShell';
 import { useI18n } from '@/i18n/client';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password';
 import { changePassword, type ChangePasswordState } from './actions';
@@ -30,12 +30,18 @@ export function ChangePasswordForm({ forced, hasPassword, emailName, next, back 
   ];
 
   return (
-    <main className="min-h-[100dvh] grid place-items-center bg-muted p-4">
-      <div className="w-full max-w-[1040px] bg-card rounded-[28px] p-6 sm:p-10 grid grid-cols-[1fr] md:grid-cols-[1fr_1fr] gap-x-12 gap-y-6"
-      >
+    <AuthShell title={forced ? t('v2.auth.setupArt') : t('account.password.title')} lead={t('v2.auth.setupArtLead')} cardTitle={t('v2.auth.setupCard')} cardText={t('v2.auth.setupCardText')}>
         <div>
-          <LogoMark size={48} />
-          <h1 className="font-display mt-6 text-[2rem] md:text-[2.25rem] leading-[44px]">
+          {forced && (
+            <ol className="mb-4 flex gap-2 text-xs font-medium" aria-label={t('v2.auth.setupSteps')} data-testid="setup-steps">
+              {[t('v2.auth.step1'), t('v2.auth.step2'), t('v2.auth.step3')].map((s, i) => (
+                <li key={s} className={i === 0 ? 'flex-1 rounded-full bg-teal-soft px-2 py-1 text-center text-teal-ink' : 'flex-1 rounded-full bg-muted px-2 py-1 text-center text-muted-foreground'}>
+                  {i + 1}. {s}
+                </li>
+              ))}
+            </ol>
+          )}
+          <h1 className="m-0 text-[26px] font-semibold tracking-tight">
             {forced ? t('account.password.forcedTitle') : t('account.password.title')}
           </h1>
           <p className="text-sm leading-[21px] mt-4 text-muted-foreground max-w-[420px]">
@@ -93,7 +99,6 @@ export function ChangePasswordForm({ forced, hasPassword, emailName, next, back 
             </div>
           </div>
         </form>
-      </div>
-    </main>
+    </AuthShell>
   );
 }

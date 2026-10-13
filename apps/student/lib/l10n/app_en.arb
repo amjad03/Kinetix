@@ -2886,5 +2886,8 @@
   "acadDocCannotOpen": "No app on this phone can open the file.",
   "testConnection": "Test connection",
   "connectionOk": "Server reachable",
-  "connectionFailed": "Cannot reach the server"
+  "connectionFailed": "Cannot reach the server",
+  "gatePassApproved": "Approved",
+  "canteenMenu": "Canteen menu",
+  "dishSoldOut": "Not available today"
 }

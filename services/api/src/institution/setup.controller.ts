@@ -15,6 +15,7 @@ import { addDays } from '../teacher/teacher.service.js';
 import { invalidateModuleGate } from './module-gate.interceptor.js';
 import { GOVERNANCE_MODELS, GOVERNANCE_RULES, INSTITUTION_TYPES, PRESETS, presetByKey, STRUCTURE_MODELS, type GovernanceModel } from './presets.js';
 import { TOGGLE_MODULES } from './institution.controller.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const opt = (max: number) => z.string().trim().max(max).nullable().optional();
 const TermKey = z.string().regex(/^[a-z][a-zA-Z0-9.]{1,60}$/);
@@ -216,7 +217,7 @@ export class InstitutionSetupController {
   @Auth('user', STAFF_ADMIN_ROLES)
   overrides(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const progs = await tx.select({ id: programs.id, name: programs.name }).from(programs).orderBy(asc(programs.name));
+      const progs = await tx.select({ id: programs.id, name: programs.name }).from(programs).orderBy(...naturalAsc(programs.name));
       const rows = await tx.select().from(attendanceOverrides);
       return progs.map((g) => {
         const o = rows.find((r) => r.programId === g.id);

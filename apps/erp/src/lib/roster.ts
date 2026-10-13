@@ -1,5 +1,6 @@
 import type { StudentRow } from './admissions';
 import type { FeeInvoice, Structure } from './types';
+import { naturalCompare } from '@/lib/natural';
 
 /** Where a student stands on fees: the worst open invoice wins. `none` = nothing billed yet. */
 export type FeeState = 'overdue' | 'due' | 'partial' | 'paid' | 'none';
@@ -109,7 +110,7 @@ export function defaulters(invoices: readonly FeeInvoice[], today: string): Defa
     if (i.dueOn < d.oldestDue) d.oldestDue = i.dueOn;
     by.set(i.student.id, d);
   }
-  return [...by.values()].sort((a, b) => b.overduePaise - a.overduePaise || a.fullName.localeCompare(b.fullName));
+  return [...by.values()].sort((a, b) => b.overduePaise - a.overduePaise || naturalCompare(a.fullName, b.fullName));
 }
 
 /** GL receipt vouchers as receipts (the fallback when the payments list is not available). */
@@ -121,5 +122,5 @@ export function receiptsFromVouchers(vouchers: readonly { date: string; type: st
       const m = /\sfrom\s(.+)$/.exec(v.narration);
       return { id: null, receiptNo: v.number, amountPaise: debit?.debitPaise ?? 0, method: debit && /cash/i.test(debit.ledger) ? 'cash' : 'bank', day: v.date, student: m?.[1] ?? '', className: null };
     })
-    .sort((a, b) => b.day.localeCompare(a.day) || b.receiptNo.localeCompare(a.receiptNo));
+    .sort((a, b) => naturalCompare(b.day, a.day) || naturalCompare(b.receiptNo, a.receiptNo));
 }

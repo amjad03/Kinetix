@@ -1,4 +1,6 @@
 'use client';
+
+import { recordHref } from '@/lib/campus-ops';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { addBook, findStudents, issueBook, markFinePaid, returnBook } from '@/app/(dashboard)/library/actions';
@@ -195,6 +197,7 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
               label={t('nav.library')}
               rows={rows}
               rowId={(l) => l.id}
+              rowHref={(l) => recordHref('loan', l.id)}
               exportName="library-loans"
               rowTone={(l) => (l.overdue ? 'danger' : undefined)}
               rowAttrs={(l) => ({ 'data-testid': 'loan-row', 'data-overdue': l.overdue ? 'true' : undefined })}
@@ -488,6 +491,7 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
               label={t('nav.library')}
               rows={rows}
               rowId={(b) => b.id}
+              rowHref={(b) => recordHref('book', b.id)}
               exportName="library-books"
               rowAttrs={() => ({ 'data-testid': 'book-row' })}
               columns={[

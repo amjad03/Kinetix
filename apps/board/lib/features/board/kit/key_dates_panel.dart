@@ -21,6 +21,7 @@ const keyDatesStringTable = <String, Map<String, String>>{
     'anyDay': 'Any day',
     'count': '{n} events',
     'none': 'No event matches.',
+    'widened': 'None with these filters, so showing every region and subject.',
     'pick': 'Pick events for a timeline',
     'draw': 'Draw timeline ({n})',
     'ancient': 'Before 500 BCE',
@@ -42,6 +43,7 @@ const keyDatesStringTable = <String, Map<String, String>>{
     'anyDay': 'कोई भी दिन',
     'count': '{n} घटनाएँ',
     'none': 'कोई घटना नहीं मिली।',
+    'widened': 'इन फ़िल्टर में कुछ नहीं मिला, इसलिए सभी क्षेत्र और विषय दिखाए जा रहे हैं।',
     'pick': 'समयरेखा के लिए घटनाएँ चुनें',
     'draw': 'समयरेखा बनाएँ ({n})',
     'ancient': '500 ई.पू. से पहले',
@@ -63,6 +65,7 @@ const keyDatesStringTable = <String, Map<String, String>>{
     'anyDay': 'ಯಾವುದೇ ದಿನ',
     'count': '{n} ಘಟನೆಗಳು',
     'none': 'ಯಾವ ಘಟನೆಯೂ ಹೊಂದುತ್ತಿಲ್ಲ.',
+    'widened': 'ಈ ಫಿಲ್ಟರ್‌ಗಳಲ್ಲಿ ಏನೂ ಸಿಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಎಲ್ಲ ಪ್ರದೇಶ ಮತ್ತು ವಿಷಯಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.',
     'pick': 'ಕಾಲರೇಖೆಗೆ ಘಟನೆಗಳನ್ನು ಆರಿಸಿ',
     'draw': 'ಕಾಲರೇಖೆ ಬರೆಯಿರಿ ({n})',
     'ancient': 'ಕ್ರಿ.ಪೂ. 500ಕ್ಕೆ ಮೊದಲು',
@@ -124,20 +127,28 @@ class _KeyDatesPanelState extends State<KeyDatesPanel> {
     super.dispose();
   }
 
-  List<HistoryEvent> _list() {
+  /// The events to show, and whether the filters were dropped to find any: a search for
+  /// "Newton" with India picked, or a day with nothing in India, shows the world's instead of
+  /// "No event matches".
+  (List<HistoryEvent>, bool) _list() {
     final d = _data;
-    if (d == null) return const [];
+    if (d == null) return (const [], false);
     if (_onThisDay) {
       final t = widget.today ?? DateTime.now();
-      return d.onThisDay(t.month, t.day).where((e) => (_region == null || e.region == _region || (_region == 'india' && e.region == 'karnataka')) && (_topic == null || e.topic == _topic)).toList();
+      final all = d.onThisDay(t.month, t.day);
+      final kept = all.where((e) => (_region == null || e.region == _region || (_region == 'india' && e.region == 'karnataka')) && (_topic == null || e.topic == _topic)).toList();
+      return kept.isEmpty && all.isNotEmpty ? (all, true) : (kept, false);
     }
-    return d.search(query: _q.text, region: _region, topic: _topic, era: _era);
+    final found = d.search(query: _q.text, region: _region, topic: _topic, era: _era);
+    if (found.isNotEmpty || _q.text.trim().isEmpty || (_region == null && _topic == null && _era == null)) return (found, false);
+    final any = d.search(query: _q.text);
+    return (any, any.isNotEmpty);
   }
 
   @override
   Widget build(BuildContext context) {
     final s = keyDatesStrings(context);
-    final list = _list();
+    final (list, widened) = _list();
     Widget chip(String key, String label, bool selected, VoidCallback onTap) =>
         ChoiceChip(key: Key(key), label: Text(label), selected: selected, onSelected: (_) => setState(onTap), visualDensity: VisualDensity.compact);
     return Column(
@@ -213,6 +224,11 @@ class _KeyDatesPanelState extends State<KeyDatesPanel> {
                     child: Text(s.n('count', list.length), key: const Key('dates-count'), style: context.text.labelMedium),
                   ),
                 ),
+                if (widened)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(Kx.s12, 0, Kx.s12, 4),
+                    child: Text(s['widened'], key: const Key('dates-widened'), style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
+                  ),
               ],
             ),
           ),

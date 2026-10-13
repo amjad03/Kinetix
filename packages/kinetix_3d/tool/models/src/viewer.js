@@ -143,13 +143,17 @@ function setClipUnion(on) {
   if (on === unionClip) return;
   unionClip = on;
   root.traverse((o) => {
-    const m = o.material;
-    if (m && (m.clippingPlanes === planes || m.clippingPlanes === slackPlanes)) {
-      m.clipIntersection = !on;
-      m.needsUpdate = true;
+    for (const m of materialsOf(o)) {
+      if (m.clippingPlanes === planes || m.clippingPlanes === slackPlanes) {
+        m.clipIntersection = !on;
+        m.needsUpdate = true;
+      }
     }
   });
 }
+
+/** An object's materials as a list (a part with several textures has one per texture). */
+const materialsOf = (o) => (!o.material ? [] : Array.isArray(o.material) ? o.material : [o.material]);
 
 /** part id -> {info, group (Group), front (Mesh), back (Mesh), material, base (Vector3 pivot)} */
 const parts = new Map();
@@ -358,17 +362,33 @@ labelLayer.addEventListener('pointerup', (e) => {
 function frontMaterial(info) {
   // Rock and soil are matte; tissue and plastic-like models keep a sheen.
   const matte = info.matte ?? manifest?.matte;
+  // Machine parts are metal: they mirror the room around them.
+  const metal = info.metal ? 0.8 : 0;
   return new THREE.MeshPhysicalMaterial({
     color: new THREE.Color(info.color),
-    roughness: matte ? 0.9 : info.group === 'valves' ? 0.6 : 0.42,
-    metalness: 0,
-    clearcoat: matte ? 0 : 0.55,
+    roughness: matte ? 0.9 : metal ? 0.34 : info.group === 'valves' ? 0.6 : 0.42,
+    metalness: metal,
+    clearcoat: matte || metal ? 0 : 0.55,
     clearcoatRoughness: 0.3,
     transparent: !!info.opacity,
     opacity: info.opacity || 1,
     depthWrite: !info.opacity,
     ...clip,
   });
+}
+
+/**
+ * A part taken from someone else's model keeps its own look (photo texture,
+ * vertex colours); it is cut like the rest and fades the same way.
+ */
+function fileMaterial(src, info) {
+  if (Array.isArray(src)) return src.map((m) => fileMaterial(m, info));
+  const m = src.clone();
+  Object.assign(m, clip);
+  m.side = THREE.FrontSide;
+  if (info.opacity) Object.assign(m, { transparent: true, opacity: info.opacity, depthWrite: false });
+  m.needsUpdate = true;
+  return m;
 }
 
 /** The inside of a part, seen only where it is cut: a flat, darker colour. */
@@ -400,6 +420,12 @@ async function load(id) {
     gltf.scene.traverse((o) => {
       if (o.isMesh) scenes[o.name] = o;
     });
+    // A part drawn with several textures is one node with a primitive per texture,
+    // which the loader makes a group of meshes: make it one mesh again.
+    for (const info of manifest.parts) {
+      const g = scenes[info.id] ? null : gltf.scene.getObjectByName(info.id);
+      if (g) scenes[info.id] = combinedMesh(g);
+    }
   }
   modelSize = manifest.size || 0.1;
   placeSlack();
@@ -412,7 +438,8 @@ async function load(id) {
     const geometry = src.geometry;
     const group = new THREE.Group();
     group.name = info.id;
-    const front = new THREE.Mesh(geometry, src.userData.material || frontMaterial(info));
+    const own = info.material === 'file' && src.material;
+    const front = new THREE.Mesh(geometry, src.userData.material || (own ? fileMaterial(src.material, info) : frontMaterial(info)));
     front.userData.part = info.id;
     front.renderOrder = info.opacity ? 2 : 0;
     const back = new THREE.Mesh(geometry, backMaterial(info));
@@ -423,7 +450,8 @@ async function load(id) {
     group.visible = !info.hidden;
     root.add(group);
     const pivot = new THREE.Box3().setFromObject(front).getCenter(new THREE.Vector3());
-    parts.set(info.id, { info, group, front, back, base: pivot, restColor: front.material.color.clone() });
+    // A textured part glows in its label colour when picked (its own colour is white).
+    parts.set(info.id, { info, group, front, back, base: pivot, restColor: own ? new THREE.Color(info.color) : front.material.color.clone() });
     if (info.glow) setGlow(parts.get(info.id), 0);
     if (src.userData.animate) parts.get(info.id).animate = src.userData.animate;
   }
@@ -434,6 +462,61 @@ async function load(id) {
   resize();
   view(manifest.views?.[0]?.dir || [0, 0, 1], true);
   send({ event: 'loaded', model: id, parts: manifest.parts.map((p) => p.id) });
+}
+
+/**
+ * One mesh from a group of meshes (a part with a primitive per texture): one
+ * geometry in world space, in plain floats, with a draw group and a material
+ * for each piece.
+ */
+function combinedMesh(group) {
+  const pieces = [];
+  group.traverse((o) => {
+    if (o.isMesh) pieces.push(o);
+  });
+  if (!pieces.length) return null;
+  const names = ['position', 'normal', 'uv', 'color'];
+  const has = Object.fromEntries(names.map((n) => [n, pieces.some((p) => p.geometry.attributes[n])]));
+  const size = { position: 3, normal: 3, uv: 2, color: 4 };
+  const geometry = new THREE.BufferGeometry();
+  const arrays = Object.fromEntries(names.filter((n) => has[n]).map((n) => [n, []]));
+  const index = [];
+  const materials = [];
+  let offset = 0;
+  for (const [i, p] of pieces.entries()) {
+    const g = p.geometry.clone();
+    // Quantized attributes become plain floats before the piece's own transform is applied.
+    for (const n of names) {
+      const a = g.attributes[n];
+      if (!a) continue;
+      const out = new Float32Array(a.count * a.itemSize);
+      for (let v = 0; v < a.count; v++) for (let k = 0; k < a.itemSize; k++) out[v * a.itemSize + k] = a.getComponent(v, k);
+      g.setAttribute(n, new THREE.BufferAttribute(out, a.itemSize));
+    }
+    g.applyMatrix4(p.matrixWorld);
+    const count = g.attributes.position.count;
+    for (const n of Object.keys(arrays)) {
+      const a = g.attributes[n];
+      for (let v = 0; v < count; v++) {
+        for (let k = 0; k < size[n]; k++) {
+          // A piece without colours is white; one without texture coordinates sits at 0, 0.
+          arrays[n].push(a ? (k < a.itemSize ? a.getComponent(v, k) : 1) : n === 'color' ? 1 : 0);
+        }
+      }
+    }
+    const start = index.length;
+    if (g.index) for (let t = 0; t < g.index.count; t++) index.push(g.index.getX(t) + offset);
+    else for (let t = 0; t < count; t++) index.push(t + offset);
+    geometry.addGroup(start, index.length - start, i);
+    materials.push(p.material);
+    offset += count;
+  }
+  for (const [n, list] of Object.entries(arrays)) geometry.setAttribute(n, new THREE.Float32BufferAttribute(list, size[n]));
+  geometry.setIndex(index);
+  if (!has.normal) geometry.computeVertexNormals();
+  const mesh = new THREE.Mesh(geometry, materials);
+  mesh.name = group.name;
+  return mesh;
 }
 
 /** Crisp edges on shapes with flat faces (maths solids). */
@@ -695,10 +778,11 @@ function glowFor(p) {
 function setGlow(p, amount) {
   // A scene's parts glow through their materials' highlight, set each frame.
   if (p.scene) return;
-  const m = p.front.material;
-  if (!m.emissive) return;
-  // A part that gives light (the Sun, lava) always glows at least this much.
-  m.emissive.copy(p.restColor).multiplyScalar(Math.max(amount, p.info.glow || 0));
+  for (const m of materialsOf(p.front)) {
+    if (!m.emissive) continue;
+    // A part that gives light (the Sun, lava) always glows at least this much.
+    m.emissive.copy(p.restColor).multiplyScalar(Math.max(amount, p.info.glow || 0));
+  }
 }
 
 function stopAutoRotate() {
@@ -991,11 +1075,12 @@ function stopAnimation() {
     p.group.scale.setScalar(1);
     p.group.quaternion.identity();
     p.group.visible = shouldShow(p);
-    const m = p.front.material;
-    m.transparent = !!p.info.opacity;
-    m.opacity = p.info.opacity || 1;
-    m.depthWrite = !p.info.opacity;
-    m.needsUpdate = true;
+    for (const m of materialsOf(p.front)) {
+      m.transparent = !!p.info.opacity;
+      m.opacity = p.info.opacity || 1;
+      m.depthWrite = !p.info.opacity;
+      m.needsUpdate = true;
+    }
     p.back.visible = true;
     p.animGlow = 0;
     setGlow(p, glowFor(p));
@@ -1016,20 +1101,20 @@ function showFlowStep(step) {
     const blood = p.info.group === 'blood';
     const lit = s.highlight?.includes(id);
     p.group.visible = blood ? s.show?.includes(id) : (shouldShow(p) || lit) && (!p.info.variant || p.info.variant === state.variant);
-    const m = p.front.material;
-    if (tour) {
-      // A tour lights up parts in turn; the rest fade back but stay solid enough to place them.
-      m.transparent = !lit;
-      m.depthWrite = !!lit;
-      m.opacity = lit ? 1 : 0.22;
-      p.back.visible = !!lit;
-    } else {
-      m.transparent = true;
-      m.depthWrite = false;
-      m.opacity = blood ? p.info.opacity || 0.55 : lit ? 0.5 : 0.16;
-      p.back.visible = false;
+    for (const m of materialsOf(p.front)) {
+      if (tour) {
+        // A tour lights up parts in turn; the rest fade back but stay solid enough to place them.
+        m.transparent = !lit;
+        m.depthWrite = !!lit;
+        m.opacity = lit ? 1 : 0.22;
+      } else {
+        m.transparent = true;
+        m.depthWrite = false;
+        m.opacity = blood ? p.info.opacity || 0.55 : lit ? 0.5 : 0.16;
+      }
+      m.needsUpdate = true;
     }
-    m.needsUpdate = true;
+    p.back.visible = tour && !!lit;
     p.animGlow = lit ? (tour ? 0.25 : 0.45) : 0;
     setGlow(p, glowFor(p));
   }
@@ -1081,12 +1166,61 @@ function tickAnimation(now) {
     particles.instanceMatrix.needsUpdate = true;
   } else if (a.kind === 'orbit') {
     // Parts with "spin": {axis, speed (degrees a second), centre} turn about the centre.
+    // Parts with "drive" move with a crank turning at the animation's speed (a machine).
+    const crank = (a.speed ?? 90) * t;
     for (const p of parts.values()) {
       const sp = p.info.spin;
-      if (!sp) continue;
-      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...sp.axis).normalize(), (sp.speed * t * Math.PI) / 180);
-      p.orbit = { q, centre: new THREE.Vector3(...(sp.centre || [0, 0, 0])) };
+      if (sp) {
+        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...sp.axis).normalize(), (sp.speed * t * Math.PI) / 180);
+        p.orbit = { q, centre: new THREE.Vector3(...(sp.centre || [0, 0, 0])) };
+      } else if (p.info.drive) {
+        p.orbit = drive(p.info.drive, crank);
+        if (p.info.drive.glow) {
+          p.animGlow = p.orbit.glow;
+          setGlow(p, glowFor(p));
+        }
+      }
     }
+  }
+}
+
+/**
+ * Where a machine part is when the crank has turned [deg] degrees from top
+ * dead centre (a four-stroke cycle is 720). A drive is {type, ...}:
+ * spin {axis, centre, ratio}; slider {axis, r, l} (a piston: crank radius r,
+ * rod length l); rod {axis, dir, pin, r, l} (the connecting rod, turning about
+ * the piston pin); valve {axis, lift, open: [from, to]} (pushed open in that
+ * part of the cycle); glow {open: [from, to]} (a spark).
+ */
+function drive(d, deg) {
+  const th = ((deg * (d.ratio ?? 1) + (d.phase ?? 0)) * Math.PI) / 180;
+  const none = new THREE.Quaternion();
+  const zero = new THREE.Vector3();
+  const stroke = (a) => d.r * Math.cos(a) + Math.sqrt(d.l * d.l - (d.r * Math.sin(a)) ** 2);
+  const bump = () => {
+    const c = (((deg + (d.phase ?? 0)) % 720) + 720) % 720;
+    const [a, b] = d.open || [0, 0];
+    return c >= a && c <= b ? Math.sin((Math.PI * (c - a)) / (b - a)) : 0;
+  };
+  switch (d.type) {
+    case 'spin':
+      return { q: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...d.axis).normalize(), th), centre: new THREE.Vector3(...(d.centre || [0, 0, 0])), shift: zero };
+    case 'slider':
+      return { q: none, centre: zero, shift: new THREE.Vector3(...d.axis).normalize().multiplyScalar(stroke(th) - stroke(0)) };
+    case 'rod': {
+      const phi = Math.asin((d.r * Math.sin(th)) / d.l);
+      return {
+        q: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...d.axis).normalize(), phi),
+        centre: new THREE.Vector3(...d.pin),
+        shift: new THREE.Vector3(...d.dir).normalize().multiplyScalar(stroke(th) - stroke(0)),
+      };
+    }
+    case 'valve':
+      return { q: none, centre: zero, shift: new THREE.Vector3(...d.axis).normalize().multiplyScalar(d.lift * bump()) };
+    case 'glow':
+      return { q: none, centre: zero, shift: zero, glow: bump() };
+    default:
+      return { q: none, centre: zero, shift: zero };
   }
 }
 
@@ -1862,6 +1996,7 @@ function render(now) {
       p.group.quaternion.copy(p.orbit.q);
       p.group.scale.setScalar(1);
       p.group.position.copy(p.orbit.centre).sub(p.orbit.centre.clone().applyQuaternion(p.orbit.q)).add(off);
+      if (p.orbit.shift) p.group.position.add(p.orbit.shift);
       continue;
     }
     if (p.info.hinge) {

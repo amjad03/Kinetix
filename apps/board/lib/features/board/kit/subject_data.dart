@@ -159,7 +159,39 @@ extension ElementCategoryX on ElementCategory {
         ElementCategory.actinide => 'Actinide',
         ElementCategory.unknown => 'Properties not yet known',
       };
+
+  /// The family's name in [lang] ('en', 'hi' or 'kn'; English for any other).
+  String labelIn(String lang) => _categoryNames[lang]?[this] ?? label;
 }
+
+const _categoryNames = <String, Map<ElementCategory, String>>{
+  'hi': {
+    ElementCategory.alkali: 'क्षार धातु',
+    ElementCategory.alkaline: 'क्षारीय मृदा धातु',
+    ElementCategory.transition: 'संक्रमण धातु',
+    ElementCategory.postTransition: 'संक्रमणोत्तर धातु',
+    ElementCategory.metalloid: 'उपधातु',
+    ElementCategory.nonmetal: 'अधातु',
+    ElementCategory.halogen: 'हैलोजन',
+    ElementCategory.noble: 'उत्कृष्ट गैस',
+    ElementCategory.lanthanide: 'लैंथेनाइड',
+    ElementCategory.actinide: 'ऐक्टिनाइड',
+    ElementCategory.unknown: 'गुण अभी ज्ञात नहीं',
+  },
+  'kn': {
+    ElementCategory.alkali: 'ಕ್ಷಾರ ಲೋಹ',
+    ElementCategory.alkaline: 'ಕ್ಷಾರೀಯ ಭೂ ಲೋಹ',
+    ElementCategory.transition: 'ಸಂಕ್ರಮಣ ಲೋಹ',
+    ElementCategory.postTransition: 'ಸಂಕ್ರಮಣೋತ್ತರ ಲೋಹ',
+    ElementCategory.metalloid: 'ಲೋಹಾಭ',
+    ElementCategory.nonmetal: 'ಅಲೋಹ',
+    ElementCategory.halogen: 'ಹ್ಯಾಲೋಜನ್',
+    ElementCategory.noble: 'ಉದಾತ್ತ ಅನಿಲ',
+    ElementCategory.lanthanide: 'ಲ್ಯಾಂಥನೈಡ್',
+    ElementCategory.actinide: 'ಆಕ್ಟಿನೈಡ್',
+    ElementCategory.unknown: 'ಗುಣಗಳು ಇನ್ನೂ ತಿಳಿದಿಲ್ಲ',
+  },
+};
 
 class ChemElement {
   final int z;

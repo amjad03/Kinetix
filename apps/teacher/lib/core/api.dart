@@ -100,6 +100,9 @@ abstract class TeacherApi {
   Future<AttendanceDayInfo> checkIn();
   Future<AttendanceDayInfo> checkOut();
   Future<List<PayslipInfo>> myPayslips();
+  /// The caller's own loans and salary advances, and asking for one (the principal approves).
+  Future<List<LoanInfo>> myLoans();
+  Future<LoanInfo> requestLoan({required String kind, required int amountPaise, required int installments, required String startMonth, required String purpose});
   Future<Uint8List> payslipPdf(String id);
   /// The teacher's own accreditation evidence, and adding one (with an optional photo of the certificate).
   Future<List<EvidenceInfo>> myEvidence();
@@ -502,7 +505,10 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<List<LeaveRequestInfo>> pendingLeaveRequests() async =>
-      [for (final e in await _send('GET', '/v1/hr/leave/requests?status=pending') as List) LeaveRequestInfo.fromJson(e as Map<String, dynamic>)];
+      [
+        for (final s in ['pending', 'recommended'])
+          for (final e in await _send('GET', '/v1/hr/leave/requests?status=$s') as List) LeaveRequestInfo.fromJson(e as Map<String, dynamic>),
+      ];
 
   @override
   Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason}) async =>
@@ -528,6 +534,13 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<List<PayslipInfo>> myPayslips() async =>
       [for (final e in await _send('GET', '/v1/payroll/payslips/me') as List) PayslipInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<List<LoanInfo>> myLoans() async => [for (final e in await _send('GET', '/v1/hr/loans?mine=1') as List) LoanInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<LoanInfo> requestLoan({required String kind, required int amountPaise, required int installments, required String startMonth, required String purpose}) async =>
+      LoanInfo.fromJson(await _send('POST', '/v1/hr/loans', body: {'kind': kind, 'amountPaise': amountPaise, 'installments': installments, 'startMonth': startMonth, 'purpose': purpose}) as Map<String, dynamic>);
 
   @override
   Future<List<EvidenceInfo>> myEvidence() async =>

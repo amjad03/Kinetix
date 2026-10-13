@@ -3,6 +3,7 @@ import { AdminModule } from './admin/admin.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
 import { FeesModule } from './fees/fees.module.js';
+import { CampusOpsModule } from './campus-ops/campus-ops.module.js';
 import { HostelModule } from './hostel/hostel.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { TransportModule } from './transport/transport.module.js';
@@ -11,12 +12,15 @@ import { DelegationModule } from './delegation/delegation.module.js';
 import { DpdpModule } from './dpdp/dpdp.module.js';
 import { EvaluationModule } from './evaluation/evaluation.module.js';
 import { ExamsModule } from './exams/exams.module.js';
+import { ExamOfficeModule } from './exam-office/exam-office.module.js';
 import { GradingAssistModule } from './grading-assist/grading-assist.module.js';
 import { AccreditationModule } from './accreditation/accreditation.module.js';
 import { QualityHubModule } from './quality-hub/quality-hub.module.js';
 import { ObeModule } from './obe/obe.module.js';
 import { MarksModule } from './marks/marks.module.js';
 import { MessagesModule } from './messages/messages.module.js';
+import { ChatModule } from './chat/chat.module.js';
+import { ProfilesModule } from './profiles/profiles.controller.js';
 import { PushModule } from './push/push.module.js';
 import { RecordingsModule } from './recordings/recordings.module.js';
 import { StorageModule } from './storage/storage.module.js';
@@ -49,10 +53,12 @@ import { SsoModule } from './sso/sso.module.js';
 import { CurriculumModule } from './curriculum/curriculum.module.js';
 import { PathwaysModule } from './pathways/pathways.module.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
+import { FeeAccountsModule } from './fee-accounts/fee-accounts.module.js';
 import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { ConnectorsModule } from './connectors/connectors.module.js';
 import { WelfareModule } from './welfare/welfare.module.js';
+import { AcademicsModule } from './academics/academics.module.js';
 import { AttendanceGovernanceModule } from './attendance-governance/governance.module.js';
 import { InstitutionModule } from './institution/institution.module.js';
 import { TrustModule } from './trust/trust.module.js';
@@ -156,8 +162,10 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     TransportModule,
     HostelModule,
     InventoryModule,
+    CampusOpsModule,
     MarksModule,
     ExamsModule,
+    ExamOfficeModule,
     EvaluationModule,
     DelegationModule,
     DpdpModule,
@@ -166,6 +174,8 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     QualityHubModule,
     GradingAssistModule,
     MessagesModule,
+    ChatModule,
+    ProfilesModule,
     CodeModule,
     HrModule,
     LmsModule,
@@ -177,8 +187,10 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     PathwaysModule,
     PlacementsModule,
     IntegrationsModule,
+    FeeAccountsModule,
     ResearchModule,
     WelfareModule,
+    AcademicsModule,
     AttendanceGovernanceModule,
     InstitutionModule,
     TrustModule,

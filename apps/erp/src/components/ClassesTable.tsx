@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 
 import { Button, Chip, FormControl, InputLabel, MenuItem, Select } from '@/components/kx';
 import { Check, FilterX as FilterAltOffOutlined } from 'lucide-react';
+import { naturalCompare } from '@/lib/natural';
 const ALL = '';
 
 export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; initialStatus?: ClassStatus }) {
@@ -20,8 +21,8 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
   const [section, setSection] = useState(ALL);
   const [teacher, setTeacher] = useState(ALL);
 
-  const sections = useMemo(() => [...new Map(classes.map((c) => [c.section.id, c.section.displayName])).entries()].sort((a, b) => a[1].localeCompare(b[1])), [classes]);
-  const teachers = useMemo(() => [...new Map(classes.map((c) => [c.teacher.id, c.teacher.fullName])).entries()].sort((a, b) => a[1].localeCompare(b[1])), [classes]);
+  const sections = useMemo(() => [...new Map(classes.map((c) => [c.section.id, c.section.displayName])).entries()].sort((a, b) => naturalCompare(a[1], b[1])), [classes]);
+  const teachers = useMemo(() => [...new Map(classes.map((c) => [c.teacher.id, c.teacher.fullName])).entries()].sort((a, b) => naturalCompare(a[1], b[1])), [classes]);
   const counts = useMemo(() => {
     const m = new Map<ClassStatus, number>();
     for (const c of classes) if ((!section || c.section.id === section) && (!teacher || c.teacher.id === teacher)) m.set(c.status, (m.get(c.status) ?? 0) + 1);

@@ -9,7 +9,7 @@ import 'scenes.dart';
 
 /// The three.js viewer (assets/viewer3d) as seen from the app: open a model, send it
 /// commands ([ViewerCommands]), hear what happens ([ViewerEvent]: a part tapped, the part
-/// under the laser, a snapshot ready). On Android it runs in a WebView (webview_flutter),
+/// under the laser, a snapshot ready). On Android and macOS it runs in a WebView (webview_flutter),
 /// on Windows in WebView2 (webview_windows), both fed by a small server on 127.0.0.1.
 /// Where neither is available (tests, Linux, the web) [create] gives null and the app
 /// falls back to the pure-Dart renderer or a parts list.

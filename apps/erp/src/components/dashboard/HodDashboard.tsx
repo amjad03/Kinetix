@@ -17,6 +17,7 @@ import { AttentionInbox, ChartCard, DrillBars, MiniMeter, type InboxItem } from 
 import { QuickActions, Row } from './parts';
 
 import { ArrowRight as ArrowForward, BookMarked as ClassOutlined, BookOpenText as MenuBookOutlined, CalendarX as EventBusyOutlined, ChartLine as InsightsOutlined, Clapperboard as VideoLibraryOutlined, ClipboardCheck as GradingOutlined, FileQuestion as QuizOutlined, IdCard as BadgeOutlined, ListChecks as FactCheckOutlined, Target as TrackChangesOutlined, TriangleAlert, Users as PeopleAltOutlined } from 'lucide-react';
+import { naturalCompare } from '@/lib/natural';
 
 /** Weighted mean of a percentage over rows, weighted by `w` (rows with no value or weight are skipped). */
 function mean<T>(rows: T[], v: (r: T) => number | null | undefined, w: (r: T) => number) {
@@ -62,7 +63,7 @@ export async function HodDashboard({ me, today }: { me: Me; today: string }) {
   const sections = [...new Map(classes.map((c) => [c.sectionId, c.section])).entries()]
     .map(([id, label]) => ({ id, label, value: mean(classes.filter((c) => c.sectionId === id), (c) => c.attendancePercent, (c) => c.attendanceTaken) }))
     .filter((r): r is { id: string; label: string; value: number } => r.value !== null)
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) => naturalCompare(a.label, b.label))
     .map((r) => ({ ...r, href: '/attendance' }));
   const low = sections.filter((s) => s.value < 75);
   const subjects = [...new Map(classes.map((c) => [c.subjectId, c.subject])).entries()]

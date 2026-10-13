@@ -9,6 +9,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { academicTerms, academicYears, programs } from '../db/schema.js';
 import { assertTermFits } from './terms.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -56,7 +57,7 @@ async function listTerms(tx: Tx) {
     })
     .from(academicTerms)
     .innerJoin(academicYears, eq(academicYears.id, academicTerms.academicYearId))
-    .orderBy(asc(academicTerms.startsOn), asc(academicTerms.name));
+    .orderBy(asc(academicTerms.startsOn), ...naturalAsc(academicTerms.name));
   const ids = [...new Set(rows.flatMap((r) => r.programIds ?? []))];
   const names = ids.length ? new Map((await tx.select({ id: programs.id, name: programs.name }).from(programs).where(inArray(programs.id, ids))).map((r) => [r.id, r.name])) : new Map<string, string>();
   return rows.map((r) => ({ ...r, programs: r.programIds?.map((id) => names.get(id) ?? '') ?? null }));

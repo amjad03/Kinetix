@@ -1318,6 +1318,8 @@ export const feeInvoices = pgTable(
     /** Invoices issued together to a class share a batch. */
     batchId: uuid('batch_id').notNull(),
     title: text('title').notNull(),
+    /** INV/<FY>/<n> from the invoice numbering series, given the first time the accounts desk lists it. */
+    invoiceNo: text('invoice_no'),
     amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
     paidPaise: bigint('paid_paise', { mode: 'number' }).notNull().default(0),
     dueOn: date('due_on').notNull(),
@@ -1472,6 +1474,9 @@ export const assessments = pgTable(
     verifiedAt: timestamp('verified_at', { withTimezone: true }),
     moderatedBy: uuid('moderated_by').references(() => users.id),
     moderatedAt: timestamp('moderated_at', { withTimezone: true }),
+    /** Locked by the head after verification: no edits or reopening until unlocked (migration 0131). */
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lockedBy: uuid('locked_by').references(() => users.id),
   },
   (t) => [index('assessments_section_idx').on(t.sectionId, t.heldOn)],
 );
@@ -1717,6 +1722,9 @@ export const lessonPlans = pgTable(
     reviewedBy: uuid('reviewed_by').references(() => users.id),
     reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
     reviewRemark: text('review_remark'),
+    /** draft → submitted (teacher) → approved | returned (head of department). Editing makes it a draft again. */
+    status: text('status').$type<'draft' | 'submitted' | 'approved' | 'returned'>().notNull().default('draft'),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -2299,6 +2307,10 @@ export const revaluationRequests = pgTable('revaluation_requests', {
   decidedBy: uuid('decided_by').references(() => users.id),
   createdAt: createdAt(),
   decidedAt: timestamp('decided_at', { withTimezone: true }),
+  /** revaluation, retotalling or photocopy (a copy of the answer script). */
+  kind: text('kind').notNull().default('revaluation'),
+  /** The fee charged when the request was made (from the exam office settings). */
+  feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0),
 });
 
 // On-screen evaluation (spec §24), exam controller depth (§23) and results depth (§25).
@@ -2751,6 +2763,7 @@ export const leaveTypes = pgTable(
     annualDays: numeric('annual_days', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
     accrual: text('accrual').notNull().default('yearly'), // yearly | monthly
     carryForwardMax: numeric('carry_forward_max', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
+    encashable: boolean('encashable').notNull().default(false),
     active: boolean('active').notNull().default(true),
   },
   (t) => [uniqueIndex('leave_types_code_uq').on(t.tenantId, t.code)],
@@ -2784,6 +2797,9 @@ export const leaveRequests = pgTable(
     status: text('status').notNull().default('pending'), // pending | approved | rejected | cancelled
     decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
+    recommendedBy: uuid('recommended_by').references(() => users.id, { onDelete: 'set null' }),
+    recommendedAt: timestamp('recommended_at', { withTimezone: true }),
+    recommendNote: text('recommend_note'),
     decisionNote: text('decision_note'),
     createdAt: createdAt(),
   },
@@ -2798,7 +2814,11 @@ export const jobOpenings = pgTable('job_openings', {
   designationId: uuid('designation_id').references(() => designations.id, { onDelete: 'set null' }),
   positions: smallint('positions').notNull().default(1),
   description: text('description').notNull().default(''),
-  status: text('status').notNull().default('open'), // open | on_hold | closed
+  status: text('status').notNull().default('open'), // requested | rejected | open | on_hold | closed
+  justification: text('justification').notNull().default(''),
+  approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'set null' }),
+  approvedAt: timestamp('approved_at', { withTimezone: true }),
+  decisionNote: text('decision_note'),
   closesOn: date('closes_on'),
   createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: createdAt(),
@@ -2892,6 +2912,11 @@ export const payrollRuns = pgTable(
     approvedAt: timestamp('approved_at', { withTimezone: true }),
     lockedBy: uuid('locked_by').references(() => users.id, { onDelete: 'set null' }),
     lockedAt: timestamp('locked_at', { withTimezone: true }),
+    verifiedBy: uuid('verified_by').references(() => users.id, { onDelete: 'set null' }),
+    verifiedAt: timestamp('verified_at', { withTimezone: true }),
+    bankFileAt: timestamp('bank_file_at', { withTimezone: true }),
+    publishedBy: uuid('published_by').references(() => users.id, { onDelete: 'set null' }),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('payroll_runs_month_uq').on(t.tenantId, t.month)],
@@ -2914,6 +2939,7 @@ export const payslips = pgTable(
     employeePfPaise: bigint('employee_pf_paise', { mode: 'number' }).notNull(),
     tdsPaise: bigint('tds_paise', { mode: 'number' }).notNull(),
     data: jsonb('data').notNull(),
+    payslipNo: text('payslip_no'),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('payslips_run_user_uq').on(t.runId, t.userId), index('payslips_user_idx').on(t.userId)],
@@ -3019,6 +3045,23 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'module_settings',
+  'library_stock_checks',
+  'library_stock_check_items',
+  'hr_settings',
+  'staff_loans',
+  'leave_encashments',
+  'service_book_entries',
+  'fee_concessions',
+  'fee_cheques',
+  'fee_refund_requests',
+  'fee_write_offs',
+  'acct_voucher_requests',
+  'fee_cash_closings',
+  'acct_period_closes',
+  'fee_accounts_settings',
+  'academic_settings',
+  'academic_requests',
   'settlement_batches',
   'settlement_lines',
   'acct_accounts',
@@ -3533,6 +3576,7 @@ export const TENANT_TABLES = [
   'ai_eval_runs',
   'integrity_checks',
   'integrity_matches',
+  'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -7128,6 +7172,19 @@ export const extQuestionPapers = pgTable(
     content: text('content').notNull().default(''),
     status: text('status').notNull().default('draft'),
     scrutinyNote: text('scrutiny_note'),
+    /** Paper code printed on the paper (QP-2026-…); set by the exam office. */
+    code: text('code'),
+    version: integer('version').notNull().default(1),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'set null' }),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    /** SHA-256 of the content when locked: proves the released paper is the one approved. */
+    contentHash: text('content_hash'),
+    /** The earliest moment the sealed paper may be opened (usually 30 minutes before the exam). */
+    releaseAt: timestamp('release_at', { withTimezone: true }),
+    releasedBy: uuid('released_by').references(() => users.id, { onDelete: 'set null' }),
+    releasedAt: timestamp('released_at', { withTimezone: true }),
     updatedAt: updatedAt(),
     createdAt: createdAt(),
   },
@@ -7563,4 +7620,192 @@ export const leadSpend = pgTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('lead_spend_uq').on(t.tenantId, t.channel, t.day)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Admissions and campus operations depth (migration 0135): module settings, library stock verification
+// ---------------------------------------------------------------------------------------------
+
+/** One module's configuration: rules, templates and defaults (`settings`) and its numbering series keyed by document kind (`numbering`). */
+export const moduleSettings = pgTable(
+  'module_settings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    module: text('module').notNull(),
+    settings: jsonb('settings').notNull().default({}),
+    numbering: jsonb('numbering').notNull().default({}),
+    updatedBy: uuid('updated_by').references(() => users.id),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('module_settings_uq').on(t.tenantId, t.module)],
+);
+
+/** A library stock verification: open while copies are scanned, closed with the shortfall summary. */
+export const libraryStockChecks = pgTable('library_stock_checks', {
+  id: id(),
+  tenantId: tenantId(),
+  number: text('number').notNull(),
+  status: text('status').$type<'open' | 'closed' | 'cancelled'>().notNull().default('open'),
+  note: text('note').notNull().default(''),
+  startedBy: uuid('started_by').references(() => users.id),
+  closedBy: uuid('closed_by').references(() => users.id),
+  closedAt: timestamp('closed_at', { withTimezone: true }),
+  summary: jsonb('summary'),
+  createdAt: createdAt(),
+});
+
+/** Copies of one title found on the shelf during a stock verification. */
+export const libraryStockCheckItems = pgTable(
+  'library_stock_check_items',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    checkId: uuid('check_id').notNull().references(() => libraryStockChecks.id, { onDelete: 'cascade' }),
+    bookId: uuid('book_id').notNull().references(() => libraryBooks.id, { onDelete: 'cascade' }),
+    found: integer('found').notNull().default(1),
+    scannedBy: uuid('scanned_by').references(() => users.id),
+    scannedAt: timestamp('scanned_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('library_stock_check_items_uq').on(t.checkId, t.bookId)],
+);
+
+// ---- Exam office (0131): the session workflow, paper attendance, exam fees, moderation and settings ----
+
+/** One step of an exam session's workflow (setup, timetable, registration … supplementary): done, pending approval or rejected. */
+export const examSessionStages = pgTable(
+  'exam_session_stages',
+  {
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    stage: text('stage').notNull(),
+    /** done, pending (waiting for an approver) or rejected */
+    status: text('status').notNull(),
+    actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
+    note: text('note'),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.stage] })],
+);
+
+/** Whether a candidate sat a paper: present, absent or debarred (booked for malpractice). */
+export const examAttendance = pgTable(
+  'exam_attendance',
+  {
+    tenantId: tenantId(),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    status: text('status').notNull().default('present'),
+    bookletNo: text('booklet_no'),
+    markedBy: uuid('marked_by').notNull().references(() => users.id),
+    markedAt: timestamp('marked_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.paperId, t.studentId] })],
+);
+
+/** The examination fee a registered candidate owes for a session: due, paid or waived. */
+export const examFeeDues = pgTable(
+  'exam_fee_dues',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    papers: integer('papers').notNull().default(0),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    status: text('status').notNull().default('due'),
+    receiptNo: text('receipt_no'),
+    note: text('note'),
+    settledBy: uuid('settled_by').references(() => users.id, { onDelete: 'set null' }),
+    settledAt: timestamp('settled_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('exam_fee_dues_uq').on(t.sessionId, t.studentId)],
+);
+
+/** A moderation of one paper's marks (add marks or scale by a percent): proposed, approved by a second person, then applied. */
+export const examModerations = pgTable(
+  'exam_moderations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    /** add (marks to every candidate) or scale (percent) */
+    kind: text('kind').notNull(),
+    value: numeric('value', { precision: 6, scale: 2, mode: 'number' }).notNull(),
+    reason: text('reason').notNull(),
+    /** proposed, approved, rejected or applied */
+    status: text('status').notNull().default('proposed'),
+    proposedBy: uuid('proposed_by').notNull().references(() => users.id),
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    appliedCount: integer('applied_count').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index('exam_moderations_session_idx').on(t.sessionId, t.status)],
+);
+
+/** The exam office's settings: numbering series, grading default, grace and moderation rules, revaluation and exam fees. */
+export const examOfficeSettings = pgTable('exam_office_settings', {
+  tenantId: uuid('tenant_id').primaryKey().references(() => tenants.id, { onDelete: 'cascade' }),
+  settings: jsonb('settings').notNull().default(sql`'{}'::jsonb`),
+  updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+  updatedAt: updatedAt(),
+});
+// ---------------------------------------------------------------------------------------------
+// Academics core: module settings and approval requests (migration 0130, src/academics)
+// ---------------------------------------------------------------------------------------------
+
+/** One row per tenant and settings kind (numbering, attendance, assessment, timetable, registration). */
+export const academicSettings = pgTable(
+  'academic_settings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    kind: text('kind').notNull(),
+    value: jsonb('value').$type<Record<string, unknown>>().notNull(),
+    updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('academic_settings_kind_uq').on(t.tenantId, t.kind)],
+);
+
+export interface AcademicRequestStep {
+  key: string;
+  state: 'done' | 'current' | 'upcoming' | 'rejected' | 'skipped';
+  by?: string | null;
+  byName?: string | null;
+  at?: string | null;
+  note?: string | null;
+}
+
+/**
+ * A request that needs approval before it changes academic records: admission handover, section
+ * change, withdrawal / TC, timetable change and substitution. Steps follow ACADEMIC_WORKFLOWS.
+ */
+export const academicRequests = pgTable(
+  'academic_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    number: text('number').notNull(),
+    kind: text('kind').notNull(),
+    studentId: uuid('student_id').references(() => students.id),
+    title: text('title').notNull(),
+    reason: text('reason').notNull().default(''),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
+    /** pending | approved | rejected | cancelled */
+    status: text('status').notNull().default('pending'),
+    steps: jsonb('steps').$type<AcademicRequestStep[]>().notNull(),
+    /** What the approval produced, e.g. the TC number or the new roll number. */
+    outcome: jsonb('outcome').$type<Record<string, unknown>>(),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    version: integer('version').notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('academic_requests_status_idx').on(t.tenantId, t.status, t.kind), uniqueIndex('academic_requests_number_uq').on(t.tenantId, t.number)],
 );

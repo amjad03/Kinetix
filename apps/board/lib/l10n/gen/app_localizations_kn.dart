@@ -1805,6 +1805,14 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಬೋರ್ಡ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದೆ. KINETIX AI ಬಳಸಲು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ. ಗಣಿತ ಸಾಲ್ವರ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
 
   @override
+  String get aiErrBusy =>
+      'KINETIX AI ಈಗ ಕಾರ್ಯನಿರತವಾಗಿದೆ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get aiErrNothingOnPages =>
+      'ಆ ಪುಟಗಳಲ್ಲಿ ಏನನ್ನೂ ಓದಲಾಗಲಿಲ್ಲ. ಮೊದಲು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಬರೆಯಿರಿ, ಅಥವಾ ಬೇರೆ ಪುಟಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ.';
+
+  @override
   String aiExplainTopic(String topic) {
     return '$topic ವಿವರಿಸಿ';
   }
@@ -2579,7 +2587,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get planTopics => 'ವಿಷಯಗಳು';
 
   @override
-  String get planOpenInBooks => 'Books ನಲ್ಲಿ ತೆರೆಯಿರಿ';
+  String get planOpenInBooks => 'ಪುಸ್ತಕದಲ್ಲಿ ತೆರೆಯಿರಿ';
 
   @override
   String planStepsOf(int planned, int length) {
@@ -4400,4 +4408,31 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get invalidServer =>
       'ಸರ್ವರ್ ವಿಳಾಸ ನಮೂದಿಸಿ, ಉದಾ. https://api.kinetix.in';
+
+  @override
+  String get thisBoardTitle => 'ಈ ಬೋರ್ಡ್';
+
+  @override
+  String thisBoardServer(String name, String server) {
+    return '$name ಹೆಸರಿನಲ್ಲಿ $server ನಲ್ಲಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get setUpAgain => 'ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸಿ';
+
+  @override
+  String get setUpAgainHint =>
+      'ಬೇರೆ ನೆಟ್‌ವರ್ಕ್ ಅಥವಾ ಸರ್ವರ್‌ಗೆ ಸ್ಥಳಾಂತರಿಸಿದ್ದೀರಾ? ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸಿ, ನಂತರ ಹೊಸ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (KINETIX ERP → ಬೋರ್ಡ್‌ಗಳು) ನಮೂದಿಸಿ. ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಉಳಿಸಿದ ಬೋರ್ಡ್‌ಗಳು ಈ ಸಾಧನದಲ್ಲೇ ಇರುತ್ತವೆ.';
+
+  @override
+  String get setUpAgainKiosk =>
+      'ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಆನ್ ಆಗಿದೆ. ಬೋರ್ಡ್ ಅನ್ನು ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸಲು IT ಮೊದಲು ಗಡಿಯಾರವನ್ನು 3 ಸೆಕೆಂಡು ಒತ್ತಿ ಹಿಡಿದು IT PIN ನಮೂದಿಸಬೇಕು.';
+
+  @override
+  String get setUpAgainTitle => 'ಈ ಬೋರ್ಡ್ ಅನ್ನು ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸುವುದೇ?';
+
+  @override
+  String setUpAgainBody(String server) {
+    return 'ಬೋರ್ಡ್ $server ಬಳಸುವುದನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ ಮತ್ತು ಶಿಕ್ಷಕರು ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ. ನಂತರ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು KINETIX ERP ಯಿಂದ ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (ಬೋರ್ಡ್‌ಗಳು → ಹೊಸ ನೋಂದಣಿ ಕೋಡ್) ನಮೂದಿಸಿ.';
+  }
 }
