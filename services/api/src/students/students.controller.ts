@@ -8,7 +8,7 @@ import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { Day, Phone } from '../common/zod-fields.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
-import { admissionCycles, applications, guardians, programs, promotionBatches, sections, studentLifecycleEvents, students, users } from '../db/schema.js';
+import { admissionCycles, applications, guardians, healthProfiles, programs, promotionBatches, sections, studentLifecycleEvents, students, users } from '../db/schema.js';
 import { LifecycleService } from './lifecycle.service.js';
 import { naturalAsc } from '../common/natural-order.js';
 
@@ -128,11 +128,12 @@ export class StudentsController {
         .orderBy(desc(guardians.isPrimary), asc(guardians.createdAt));
       const [app] = ctx.student.applicationId
         ? await tx
-            .select({ id: applications.id, applicationNo: applications.applicationNo, cycleName: admissionCycles.name, submittedAt: applications.submittedAt })
+            .select({ id: applications.id, applicationNo: applications.applicationNo, cycleName: admissionCycles.name, submittedAt: applications.submittedAt, dateOfBirth: applications.dateOfBirth, gender: applications.gender, phone: applications.phone, email: applications.email })
             .from(applications)
             .innerJoin(admissionCycles, eq(admissionCycles.id, applications.cycleId))
             .where(eq(applications.id, ctx.student.applicationId))
         : [];
+      const [health] = await tx.select({ bloodGroup: healthProfiles.bloodGroup }).from(healthProfiles).where(eq(healthProfiles.studentId, id));
       const [prog] = await tx.select({ level: programs.level }).from(programs).where(eq(programs.id, ctx.programId));
       return {
         id: ctx.student.id,
@@ -146,7 +147,8 @@ export class StudentsController {
         finalTerm: ctx.finalTerm,
         allowedStatuses: this.lifecycle.allowedStatuses(ctx.student.status, ctx.finalTerm),
         guardians: guardianRows,
-        application: app ?? null,
+        application: app ? { id: app.id, applicationNo: app.applicationNo, cycleName: app.cycleName, submittedAt: app.submittedAt } : null,
+        about: { dateOfBirth: app?.dateOfBirth ?? null, gender: app?.gender ?? null, phone: app?.phone ?? null, email: app?.email ?? null, bloodGroup: health?.bloodGroup ?? null },
         timeline,
       };
     });

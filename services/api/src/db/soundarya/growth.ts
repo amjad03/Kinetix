@@ -9,7 +9,7 @@ import { APPRAISAL_CATEGORIES, gradeFor, percentOf, type AppraisalScores } from 
 import { ONBOARDING_CHECKLIST } from '../../hr/onboarding-checklist.js';
 import { applications, entranceQuestions } from '../schema.js';
 import type { Ctx } from './ctx.js';
-import { DOMAIN } from './data.js';
+import { DOMAIN, PROFILE } from './data.js';
 import { addDays, J, rupees } from './kit.js';
 import { service, withTenant } from './nest.js';
 
@@ -65,7 +65,7 @@ export async function admissionsGrowth(c: Ctx): Promise<void> {
   }
 
   // Commissions on enrolled students of this year's intake: some paid out, some still owed.
-  const enrolled = await k.q<{ id: string }>("select id from applications where tenant_id = $1 and application_no like 'BBA26-%' and student_id is not null order by application_no limit 8", [c.tenantId]);
+  const enrolled = await k.q<{ id: string }>("select id from applications where tenant_id = $1 and application_no like $2 and student_id is not null order by application_no limit 8", [c.tenantId, `${PROFILE === 'school' ? 'ADM' : 'BBA'}26-%`]);
   for (const [i, a] of enrolled.entries()) {
     const agent = made[i % made.length];
     await k.q('update applications set agent_id = $2 where id = $1', [a.id, agent.id]);
