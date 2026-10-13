@@ -2,6 +2,7 @@
 
 import type { MessageKey } from '@/i18n/messages';
 import type { Structure, TimetableSlot } from './types';
+import { naturalCompare } from './natural';
 
 export const DAY_NAMES = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const DAY_SHORT = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -32,7 +33,7 @@ export function weekGrid(slots: TimetableSlot[]): WeekGrid {
     const key = `${hm(s.startsAt)}-${hm(s.endsAt)}`;
     if (!cols.has(key)) cols.set(key, { key, startsAt: hm(s.startsAt), endsAt: hm(s.endsAt) });
   }
-  const columns = [...cols.values()].sort((a, b) => a.startsAt.localeCompare(b.startsAt) || a.endsAt.localeCompare(b.endsAt));
+  const columns = [...cols.values()].sort((a, b) => naturalCompare(a.startsAt, b.startsAt) || naturalCompare(a.endsAt, b.endsAt));
   const days = [1, 2, 3, 4, 5, 6];
   if (slots.some((s) => s.dayOfWeek === 7)) days.push(7);
   const rows = days.map((day) => {

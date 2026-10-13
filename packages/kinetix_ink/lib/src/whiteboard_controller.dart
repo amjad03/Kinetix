@@ -273,6 +273,7 @@ class _Gesture {
 class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   WhiteboardController({this.palmMode = PalmMode.ignore}) {
     _pages.add(WhiteboardPage());
+    GeoCalibration.pxPerCm.addListener(_geoCalibrated);
   }
 
   final List<WhiteboardPage> _pages = [];
@@ -331,13 +332,23 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   }
 
   /// Adds [pages] after the open page (an imported PDF or slide deck, one board page each)
-  /// and opens the first of them.
+  /// and opens the first of them. A blank open page takes the first one itself (one undo step),
+  /// so an import never leaves an empty page in front of it (spec 11.2: no blank page spawns
+  /// another).
   void addPages(List<List<BoardElement>> pages) {
     if (pages.isEmpty) return;
     _finishGestures();
-    page.view = _autoView ? null : view.value;
-    _pages.insertAll(_index + 1, [for (final els in pages) WhiteboardPage(elements: List.of(els), background: page.background)]);
-    _index++;
+    var rest = pages;
+    if (page.elements.isEmpty) {
+      _push(_snap);
+      page.elements = List.of(pages.first);
+      page.view = null;
+      rest = pages.sublist(1);
+    } else {
+      page.view = _autoView ? null : view.value;
+    }
+    _pages.insertAll(_index + 1, [for (final els in rest) WhiteboardPage(elements: List.of(els), background: page.background)]);
+    if (rest.length == pages.length) _index++;
     _selection.clear();
     _showPage();
     _changed();
@@ -363,12 +374,16 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       return;
     }
     _finishGestures();
+    // The open page keeps its view when another page goes.
+    page.view = _autoView ? null : view.value;
     final was = page.background;
     final removed = _pages.removeAt(i);
     _undo.remove(removed.id);
     _redo.remove(removed.id);
-    if (_index >= _pages.length) _index = _pages.length - 1;
+    // A page before the open one moves it back one; deleting the open (last) page opens the
+    // one before it.
     if (i < _index) _index--;
+    if (_index >= _pages.length) _index = _pages.length - 1;
     _paperChanged(was, page.background);
     _selection.clear();
     _showPage();
@@ -446,7 +461,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     final was = page.background;
     page.background = b;
     _paperChanged(was, b);
-    _changed(content: false);
+    // The finished ink repaints too: black ink is drawn white on a dark paper ([inkColorFor]).
+    _changed(content: false, repaint: true);
   }
 
   /// Sets every page's paper at once.
@@ -456,7 +472,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       p.background = b;
     }
     _paperChanged(was, b);
-    _changed(content: false);
+    _changed(content: false, repaint: true);
   }
 
   /// The pen keeps its logical colour across papers: black ink is drawn white on a dark board
@@ -474,7 +490,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       if (p.background == from) p.background = to;
     }
     _paperChanged(was, page.background);
-    _changed(content: false);
+    _changed(content: false, repaint: true);
   }
 
   // --- Tools --------------------------------------------------------------------------------
@@ -1263,6 +1279,19 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     return t;
   }
 
+  /// The calibration the tools on the board were sized with.
+  double _geoPxPerCm = GeoCalibration.pxPerCm.value;
+
+  /// The screen was calibrated (or the saved calibration arrived): the tools on the board keep
+  /// their real size, so a 20 cm ruler still reads 20 cm on the new scale.
+  void _geoCalibrated() {
+    final px = GeoCalibration.pxPerCm.value;
+    final k = px / _geoPxPerCm;
+    _geoPxPerCm = px;
+    if (!k.isFinite || k <= 0 || (k - 1).abs() < 1e-9 || geoTools.value.isEmpty) return;
+    geoTools.value = [for (final t in geoTools.value) t.copyWith(size: t.size * k)];
+  }
+
   void updateGeoTool(GeoTool t) {
     geoTools.value = [for (final x in geoTools.value) x.id == t.id ? t : x];
   }
@@ -1909,6 +1938,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   @override
   void dispose() {
+    GeoCalibration.pxPerCm.removeListener(_geoCalibrated);
     committed.dispose();
     view.dispose();
     ruler.dispose();

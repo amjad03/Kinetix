@@ -108,3 +108,29 @@ class _BoardMathState extends State<BoardMath> {
     );
   }
 }
+
+/// One LaTeX expression typeset for reading in a panel (an AI answer, handwriting read from the
+/// board). When it cannot be typeset the LaTeX source is shown instead, so nothing is lost.
+class TexView extends StatelessWidget {
+  const TexView(this.tex, {super.key, this.fontSize = 20, this.color, this.display = false});
+
+  final String tex;
+  final double fontSize;
+
+  /// Defaults to the surrounding text colour.
+  final Color? color;
+
+  /// Display style (fractions full size), for an expression on its own line.
+  final bool display;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = this.color ?? DefaultTextStyle.of(context).style.color;
+    return Math.tex(
+      tex,
+      mathStyle: display ? MathStyle.display : MathStyle.text,
+      textStyle: TextStyle(fontSize: fontSize, color: color),
+      onErrorFallback: (_) => Text(tex, style: TextStyle(fontSize: fontSize * 0.8, color: color, fontFamily: 'monospace')),
+    );
+  }
+}

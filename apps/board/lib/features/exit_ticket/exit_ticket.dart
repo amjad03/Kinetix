@@ -7,7 +7,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart' show AiLanguage;
 import '../../l10n/feature_strings.dart';
-import '../assessment/assessment.dart' show AssessmentGenerator, AssessmentKind, assessmentStrings;
+import '../assessment/assessment.dart' show Assessment, AssessmentGenerator, AssessmentKind, assessmentStrings;
 import '../board/chrome.dart' show showBoardMessage;
 import '../class_check/class_poll.dart';
 import '../extras/board_table.dart';
@@ -31,6 +31,7 @@ const exitStringTable = <String, Map<String, String>>{
     'remove': 'Remove',
     'start': 'Start the exit ticket',
     'needQuestion': 'Write at least one question first.',
+    'suggestFailed': 'Questions could not be suggested just now. Write your own, or try again.',
     'running': 'Question {n} of {total}',
     'answered': '{n} of {total} answered',
     'next': 'Next question',
@@ -64,6 +65,7 @@ const exitStringTable = <String, Map<String, String>>{
     'remove': 'हटाएँ',
     'start': 'एग्ज़िट टिकट शुरू करें',
     'needQuestion': 'पहले कम से कम एक प्रश्न लिखें।',
+    'suggestFailed': 'अभी प्रश्न सुझाए नहीं जा सके। अपने प्रश्न लिखें, या फिर से कोशिश करें।',
     'running': 'प्रश्न {n} / {total}',
     'answered': '{total} में से {n} ने उत्तर दिया',
     'next': 'अगला प्रश्न',
@@ -97,6 +99,7 @@ const exitStringTable = <String, Map<String, String>>{
     'remove': 'ತೆಗೆಯಿರಿ',
     'start': 'ಎಕ್ಸಿಟ್ ಟಿಕೆಟ್ ಆರಂಭಿಸಿ',
     'needQuestion': 'ಮೊದಲು ಕನಿಷ್ಠ ಒಂದು ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ.',
+    'suggestFailed': 'ಈಗ ಪ್ರಶ್ನೆಗಳನ್ನು ಸೂಚಿಸಲಾಗಲಿಲ್ಲ. ನಿಮ್ಮದೇ ಬರೆಯಿರಿ, ಅಥವಾ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
     'running': 'ಪ್ರಶ್ನೆ {n} / {total}',
     'answered': '{total} ರಲ್ಲಿ {n} ಉತ್ತರಿಸಿದ್ದಾರೆ',
     'next': 'ಮುಂದಿನ ಪ್ರಶ್ನೆ',
@@ -219,7 +222,18 @@ class ExitTicketPanelState extends State<ExitTicketPanel> {
     });
     final lang = AiLanguage.values.firstWhere((l) => l.name == s.lang, orElse: () => AiLanguage.en);
     final gen = widget.generator ?? AssessmentGenerator.forBoard(widget.board, language: lang);
-    final r = await gen.generate(AssessmentKind.exitTicket, _topic.text, a);
+    final Assessment r;
+    try {
+      r = await gen.generate(AssessmentKind.exitTicket, _topic.text, a);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _error = s['suggestFailed'];
+        });
+      }
+      return;
+    }
     if (!mounted) return;
     setState(() {
       for (final q in questions) {
@@ -259,14 +273,24 @@ class ExitTicketPanelState extends State<ExitTicketPanel> {
     await polls[0].start();
   }
 
+  /// Moving on to the next question; a second tap meanwhile (a panel's double touch) is ignored.
+  bool _stepping = false;
+
   Future<void> _next() async {
-    await polls[_at].close();
-    if (_at < polls.length - 1) {
-      setState(() => _at++);
-      await polls[_at].start();
-    } else {
-      setState(() => _phase = _Phase.done);
-      unawaited(_saveTicket());
+    if (_stepping || _phase != _Phase.run) return;
+    _stepping = true;
+    try {
+      await polls[_at].close();
+      if (!mounted) return;
+      if (_at < polls.length - 1) {
+        setState(() => _at++);
+        await polls[_at].start();
+      } else {
+        setState(() => _phase = _Phase.done);
+        unawaited(_saveTicket());
+      }
+    } finally {
+      _stepping = false;
     }
   }
 

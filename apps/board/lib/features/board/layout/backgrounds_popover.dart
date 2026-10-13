@@ -34,7 +34,8 @@ const templateBackgrounds = [
   BoardBackground.footballField,
   BoardBackground.cricketField,
   BoardBackground.worldMap,
-  BoardBackground.indiaMap,
+  // The India map stays out of the list until an outline with the official boundary is
+  // bundled; a board saved with it still opens.
   BoardBackground.ledger,
   BoardBackground.journal,
   BoardBackground.chalkboard,

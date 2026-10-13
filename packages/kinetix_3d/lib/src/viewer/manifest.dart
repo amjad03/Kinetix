@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'remote_models.dart' show RemoteModels;
+
 /// Where the three.js viewer and its models live in this package's assets.
 const viewerAssets = 'assets/viewer3d';
 
@@ -32,13 +34,20 @@ class LocalText {
 }
 
 /// Reads one of the viewer's files from the bundle. Apps see a package's assets under
-/// `packages/kinetix_3d/`; the package's own tests see them at the plain path.
+/// `packages/kinetix_3d/`; the package's own tests see them at the plain path. A model that
+/// is not bundled comes from the downloaded models ([RemoteModels.cacheDir]).
 Future<ByteData> loadViewerAsset(String path, [AssetBundle? bundle]) async {
   final b = bundle ?? rootBundle;
   try {
     return await b.load('packages/kinetix_3d/$viewerAssets/$path');
   } catch (_) {
-    return b.load('$viewerAssets/$path');
+    try {
+      return await b.load('$viewerAssets/$path');
+    } catch (_) {
+      final cached = path.startsWith('models/') ? RemoteModels.cachedFile(path.substring(7)) : null;
+      if (cached == null) rethrow;
+      return ByteData.sublistView(await cached.readAsBytes());
+    }
   }
 }
 

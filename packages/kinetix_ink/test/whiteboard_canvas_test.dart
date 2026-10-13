@@ -171,6 +171,31 @@ void main() {
     expect(board.view.value.offset, const Offset(0, -100));
   });
 
+  testWidgets('finished ink repaints when the paper changes: black ink turns white on a dark board at once', (tester) async {
+    await pump(tester);
+    await stroke(tester, const Offset(200, 200), by: const Offset(400, 0));
+    expect(board.elements, hasLength(1));
+
+    /// The colour of the screen at [p], as composited (the finished-ink layer as last painted).
+    Future<Color> pixel(Offset p) async {
+      final image = (await tester.runAsync(() => captureImage(tester.element(find.byType(WhiteboardCanvas)))))!;
+      final bytes = (await tester.runAsync(() => image.toByteData()))!;
+      final i = (p.dy.round() * image.width + p.dx.round()) * 4;
+      final c = Color.fromARGB(bytes.getUint8(i + 3), bytes.getUint8(i), bytes.getUint8(i + 1), bytes.getUint8(i + 2));
+      image.dispose();
+      return c;
+    }
+
+    expect((await pixel(const Offset(400, 200))).computeLuminance(), lessThan(0.1), reason: 'black ink on white paper');
+    board.background = BoardBackground.chalkboard;
+    await tester.pump();
+    expect((await pixel(const Offset(400, 200))).computeLuminance(), greaterThan(0.6), reason: 'the same ink drawn white on the chalkboard, not left black');
+    expect((await pixel(const Offset(400, 300))).computeLuminance(), lessThan(0.2), reason: 'the paper itself is dark');
+    board.background = BoardBackground.plain;
+    await tester.pump();
+    expect((await pixel(const Offset(400, 200))).computeLuminance(), lessThan(0.1));
+  });
+
   testWidgets('the laser draws nothing and its trail fades away', (tester) async {
     await pump(tester);
     var now = 0;

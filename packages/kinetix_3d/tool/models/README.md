@@ -13,6 +13,10 @@ BP3D=/path/to/bodyparts3d node build_models.mjs [id ...]
                                  #                    and lib/src/viewer/catalogue_data.dart (the app's list)
 node dev_server.mjs              # the viewer on http://127.0.0.1:3681/index.html?model=heart
                                  # and /__thumbs: the library's pictures -> assets/viewer3d/thumbs/<id>.jpg
+                                 # and /__shots?ids=a,b&views=front&labels=all&variant=v&anim=run&thumb=1:
+                                 #   pictures for checking by eye -> $SNAP_DIR/<id>-<view>.png (open it in
+                                 #   headless Chrome; &thumb=1 also writes the library picture)
+node inspect_source.mjs file.glb # what is inside a source model (pieces, triangles, materials)
 node make_land_mask.mjs ne_50m_land.geojson
                                  # Natural Earth coastlines -> data/land_mask.txt (already in the repo)
 ```
@@ -79,3 +83,34 @@ layers, the volcano's ash and lava). Also available:
 
 The build centres the model, simplifies each part, and writes label
 anchors, take-apart directions and flow paths into the manifest.
+
+## Models made from other people's files (recipes/virus.mjs, recipes/skull.mjs…)
+A recipe with `sources: {name: {file, url}}` downloads each file once into
+`sources/` (or `$SOURCES`, not kept in git) and `import(k)` returns each
+part as a mesh made with `lib/importer.mjs` (`k.readSource`, `worldPrimitives`,
+`pick`, `join`, `place`, `orient`, `splitByColour`, `clipRich`, `piecesRich`,
+`simplifyRich`, `fromThree`). GLB/glTF (with Draco or meshopt), STL, OBJ and
+text PLY are read; a source can be one file inside a zip (`zip: 'path/in/zip'`).
+`joinTextures` keeps a part made of pieces with different pictures (NASA's
+spacecraft): the GLB has one primitive per picture in the part's node and the
+viewer joins them into one mesh with a material per picture. A part keeps its texture (made at most `maxTexture`, 1024 by
+default, pixels across) or vertex colours, and its manifest says
+`material: 'file'` so the viewer draws it with them; plain parts are painted
+in the recipe's colour as before. `size` sets the model's longest side in
+metres. Record every source in docs/licensing/3D_MODELS.md and the credits.
+
+- `lib/terrain.mjs`: real landforms from the open Terrain Tiles (heights,
+  SRTM/GMTED2010) as a block with rock layers round the sides.
+- `lib/architecture.mjs`: arched wall panels, onion domes, chhatris, fluted
+  storeys, spoked wheels and stepped roofs for the (simplified) monuments.
+- `crease` (degrees, per recipe or part): parts made in code keep their hard
+  edges instead of being smoothed. `metal: true` draws a part as metal.
+- `drive` (per part) moves a machine with the crank of an `orbit` animation
+  (its `speed` in degrees a second): `spin`, `slider` (a piston), `rod` (the
+  connecting rod), `valve` (opens over a part of the 720° cycle) and `glow`.
+- `get animations()`, `get views()`, `get slices()`: worked out from the
+  sources at build time (the ear's sound path, the stomach's own flat plane).
+- `remote: true` (with `topic` and `license`): the model is written to
+  `remote_models/` instead of the app's assets and downloaded on first use
+  (`RemoteModels`, lib/src/viewer/remote_catalogue_data.dart, written by
+  write_catalogue.mjs); its library picture stays in the app.

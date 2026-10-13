@@ -16,17 +16,19 @@ void main() {
   });
 
   test('the new models are found by subject and class', () {
-    expect(ids(subject: 'physics', level: '10'), containsAll(['proc.optics-convex', 'proc.optics-concave']));
-    expect(ids(subject: 'engineering'), containsAll(['proc.gears', 'proc.engine']));
-    expect(ids(subject: 'history', level: '7'), containsAll(['proc.taj-mahal', 'proc.qutub-minar', 'proc.konark']));
-    expect(ids(subject: 'history', level: '7'), isNot(contains('proc.india-gate')));
-    expect(ids(subject: 'geography', category: 'landforms'), containsAll(['proc.globe', 'proc.landforms']));
-    expect(ids(subject: 'biology', category: 'humanBody'), containsAll(['proc.teeth', 'proc.skull']));
-    expect(ids(subject: 'chemistry'), contains('proc.lab-apparatus'));
+    expect(ids(subject: 'physics', level: '10'), contains('lens_bench'));
+    expect(ids(subject: 'engineering'), containsAll(['gears', 'engine']));
+    expect(ids(subject: 'history', level: '7'), containsAll(['taj_mahal', 'qutub_minar', 'konark']));
+    expect(ids(subject: 'history', level: '7'), isNot(contains('india_gate')));
+    expect(ids(subject: 'geography', category: 'landforms'), containsAll(['globe', 'landforms']));
+    expect(ids(subject: 'biology', category: 'humanBody'), containsAll(['teeth', 'skull']));
+    expect(ids(subject: 'chemistry'), contains('lab_apparatus'));
   });
 
   test('downloadable models appear in the same picker', () {
-    expect(ids(subject: 'physics'), contains('dl.hubble_telescope'));
+    expect(ids(subject: 'physics'), containsAll(['dl.hubble_telescope', 'dl.saturn_v']));
+    expect(ids(subject: 'biology', category: 'humanBody'), containsAll(['ear', 'kidney', 'dl.liver', 'dl.stomach', 'dl.tooth', 'dl.skin']));
+    expect(ids(subject: 'biology'), containsAll(['dl.bacteria', 'dl.mitochondrion']));
   });
 
   test('the profiles carry the new model topics', () {

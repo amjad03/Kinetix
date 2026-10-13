@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_board/features/sim_hub/sim_entry.dart';
@@ -12,7 +14,15 @@ import 'support/board_fonts.dart';
 // The bundled web sims (docs/licensing/SIMULATIONS.md) are served by the loopback server and
 // every file their start page names is served too, so they load with no internet.
 
-const _bundledWeb = ['circuitverse', 'jupyterlite', 'circuitjs', 'timelinejs', 'mw-gas-pressure', 'mw-phase-change', 'mw-diffusion', 'mw-oil-water', 'jsxgraph-geometry', 'jsxgraph-graph'];
+/// Every bundled sim that is more than one PhET page, straight from the catalogue.
+final _bundledWeb = [for (final e in simCatalogue) if (e.kind == SimKindOf.bundled && e.source != 'PhET') e.id];
+
+/// The folders pubspec.yaml puts in the app (Flutter takes the files of each listed folder, not
+/// its subfolders), so a file the test server finds on disk is also in the installed app.
+Set<String> _declaredAssetDirs() => {
+  for (final l in File('pubspec.yaml').readAsLinesSync())
+    if (RegExp(r'^\s+- assets/.*/$').hasMatch(l)) l.trim().substring(2),
+};
 
 Future<(int, List<int>, String?)> _get(String base, String path) async {
   final r = await (await HttpClient().getUrl(Uri.parse('$base/$path'))).close();
@@ -25,6 +35,8 @@ Future<(int, List<int>, String?)> _get(String base, String path) async {
 
 void main() {
   test('every bundled web sim is in the catalogue, offline, with its licence text shipped', () {
+    expect(_bundledWeb, containsAll(['circuitverse', 'jupyterlite', 'circuitjs', 'timelinejs', 'blockly', 'jsxgraph-geometry', 'jsxgraph-graph']));
+    expect(_bundledWeb.where((id) => id.startsWith('mw-')), hasLength(6));
     for (final id in _bundledWeb) {
       final e = simById(id)!;
       expect(e.kind, SimKindOf.bundled, reason: id);
@@ -59,7 +71,101 @@ void main() {
         if (rel.endsWith('/') || rel.endsWith('.html') && rel == page) continue;
         expect((await _get(base, rel)).$1, 200, reason: '$id: $rel');
       }
+      // Molecular Workbench: the activity named after # and the models and pictures it loads.
+      final hash = asset.contains('#') ? asset.substring(asset.indexOf('#') + 1) : '';
+      if (hash.endsWith('.json')) {
+        final interactive = await _get(base, '$dir$hash');
+        expect(interactive.$1, 200, reason: '$id: $hash');
+        final models = (jsonDecode(utf8.decode(interactive.$2))['models'] as List).cast<Map<String, dynamic>>();
+        expect(models, isNotEmpty, reason: id);
+        for (final m in models) {
+          final url = '$dir${m['url']}';
+          final model = await _get(base, Uri.encodeFull(url).replaceAll(r'$', '%24'));
+          expect(model.$1, 200, reason: '$id: $url');
+          final mapping = ((m['viewOptions'] as Map?)?['imageMapping'] as Map?) ?? const {};
+          final images = ((jsonDecode(utf8.decode(model.$2)) as Map)['viewOptions'] as Map?)?['images'] as List? ?? const [];
+          for (final img in images.cast<Map<String, dynamic>>()) {
+            final name = mapping[img['imageUri']] ?? img['imageUri'] as String;
+            final at = '${url.substring(0, url.lastIndexOf('/') + 1)}$name';
+            expect((await _get(base, at)).$1, 200, reason: '$id: picture $at');
+          }
+        }
+      }
     }
+  });
+
+  test('JupyterLite starts Python with no internet: Pyodide and every package the kernel installs are in the bundle', () async {
+    SimAssetServer.loader = (key) async => File(key).readAsBytes();
+    final base = await SimAssetServer.start();
+    HttpOverrides.global = null;
+    const root = 'jupyterlite';
+    final config = jsonDecode(File('assets/simhub/$root/jupyter-lite.json').readAsStringSync())['jupyter-config-data'] as Map<String, dynamic>;
+    // Where the kernel loads Pyodide from, as the REPL page resolves it.
+    final pyodideUrl = (config['litePluginSettings'] as Map)['@jupyterlite/pyodide-kernel-extension:kernel']['pyodideUrl'] as String;
+    final pyodide = Uri.parse('/$root/repl/').resolve(pyodideUrl).path.substring(1);
+    expect(pyodide, '$root/pyodide/pyodide.mjs');
+    final pyDir = pyodide.substring(0, pyodide.lastIndexOf('/') + 1);
+    for (final f in ['pyodide.mjs', 'pyodide.asm.mjs', 'pyodide.asm.wasm', 'python_stdlib.zip', 'pyodide-lock.json']) {
+      expect((await _get(base, '$pyDir$f')).$1, 200, reason: f);
+    }
+    final lock = (jsonDecode(File('assets/simhub/${pyDir}pyodide-lock.json').readAsStringSync())['packages'] as Map).cast<String, Map<String, dynamic>>();
+    String norm(String n) => n.toLowerCase().replaceAll(RegExp('[-_.]+'), '-');
+    final locked = {for (final e in lock.entries) norm(e.key): e.value};
+    // piplite's own index, next to the kernel extension.
+    const pypi = '$root/extensions/@jupyterlite/pyodide-kernel-extension/static/pypi/';
+    final index = (jsonDecode(File('assets/simhub/${pypi}all.json').readAsStringSync()) as Map).cast<String, Map<String, dynamic>>();
+    final indexed = {for (final e in index.entries) norm(e.key): e.value};
+
+    // The packages the kernel's worker installs at start (initKernel), read from the worker itself.
+    final worker = Directory('assets/simhub/${pypi.replaceFirst('pypi/', '')}').listSync().whereType<File>().map((f) => f.readAsStringSync()).firstWhere((js) => js.contains('initKernel'));
+    final start = RegExp(r'for\(let \w+ of\[([^\]]+)\]\)\w+\.includes').firstMatch(worker)!.group(1)!;
+    final wanted = [for (final m in RegExp(r'"([^"]+)"').allMatches(start)) m.group(1)!];
+    expect(wanted, containsAll(['comm', 'pyodide-kernel', 'ipython']));
+
+    final seen = <String>{};
+    Future<void> needs(String name, String why) async {
+      final n = norm(name);
+      if (!seen.add(n)) return;
+      final fromIndex = indexed[n];
+      if (fromIndex != null) {
+        final release = (fromIndex['releases'] as Map).values.last as List;
+        final file = (release.first as Map)['url'] as String;
+        final got = await _get(base, '$pypi${file.replaceFirst('./', '')}');
+        expect(got.$1, 200, reason: '$name ($why) is in the piplite index but its wheel is missing');
+        // Its own requirements come from the wheel.
+        final wheel = ZipDecoder().decodeBytes(got.$2);
+        final meta = wheel.files.firstWhere((f) => f.name.endsWith('.dist-info/METADATA')).content;
+        for (final l in utf8.decode(meta).split('\n')) {
+          final m = RegExp(r'^Requires-Dist: ([A-Za-z0-9_.\-]+)\s*(?:\(|[<>=!~;]|$)').firstMatch(l.trim());
+          if (m != null && !l.contains('extra ==') && !l.contains('sys_platform')) await needs(m.group(1)!, name);
+        }
+        return;
+      }
+      final fromLock = locked[n];
+      expect(fromLock, isNotNull, reason: '$name ($why) is neither in the bundle nor in Pyodide: the kernel would fetch it from PyPI');
+      expect((await _get(base, '$pyDir${fromLock!['file_name']}')).$1, 200, reason: '$name ($why): ${fromLock['file_name']} is not bundled');
+      for (final d in (fromLock['depends'] as List).cast<String>()) {
+        await needs(d, name);
+      }
+    }
+
+    for (final w in ['micropip', 'piplite', ...wanted]) {
+      await needs(w, 'kernel start');
+    }
+  });
+
+  test('every file of the bundled sims is in the app and served with a type', () {
+    final dirs = _declaredAssetDirs();
+    final missing = <String>{}, refused = <String>[];
+    for (final f in Directory('assets/simhub').listSync(recursive: true).whereType<File>()) {
+      final rel = f.path.substring('assets/simhub/'.length);
+      if (rel.split('/').last.startsWith('.')) continue;
+      if (!dirs.contains('${f.parent.path}/')) missing.add('${f.parent.path}/');
+      if (!SimAssetServer.allowed(rel)) refused.add(rel);
+    }
+    expect(missing, isEmpty, reason: 'folders to list in pubspec.yaml');
+    expect(refused, isEmpty, reason: 'names or types the loopback server refuses');
+    expect(SimAssetServer.contentType('blockly/media/handopen.cur'), 'image/x-icon');
   });
 
   test('files with dollar signs in their names, wasm and fonts are served with the right type', () async {

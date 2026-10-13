@@ -64,113 +64,128 @@ class InsertPopover extends StatelessWidget {
       return showAll || f == null || k is! ValueKey<String> || f(k.value);
     }
 
-    final cats = [for (final c in categories) if (vis(c.key)) c];
-    final more = [for (final e in extras) if (vis(e.key)) e];
+    final cats = [
+      for (final c in categories)
+        if (vis(c.key)) c,
+    ];
+    final more = [
+      for (final e in extras)
+        if (vis(e.key)) e,
+    ];
+    // On a panel the list runs in two columns, so Insert with every tool shown fits above the
+    // toolbar of a 1080p board without scrolling.
+    final wide = MediaQuery.sizeOf(context).width >= 1200;
+    final width = wide ? 760.0 : 400.0;
     return ListenableBuilder(
       listenable: wb,
-      builder: (context, _) => PopoverCard(
-        title: l.toolInsert,
-        width: 400,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (cats.isNotEmpty) ...[
-              Wrap(
-                spacing: Kx.s8,
-                runSpacing: Kx.s8,
+      builder: (context, _) {
+        final items = <Widget>[
+          if (vis(const Key('insert-equation')))
+            KxMenuItem(key: const Key('insert-equation'), icon: Icons.functions, title: l.stEquation, hint: l.insertEquationHint, selected: wb.tool == BoardTool.math, onTap: () => then(onEquation)),
+          for (final k in [NoteKind.note, NoteKind.card, if (!primary) NoteKind.code, NoteKind.answer])
+            KxMenuItem(
+              key: Key('insert-${k.name}'),
+              icon: noteIcon(k),
+              title: noteName(l, k),
+              hint: switch (k) {
+                NoteKind.answer => l.insertAnswerHint,
+                _ => l.tapToPlace,
+              },
+              selected: wb.tool == BoardTool.note && wb.noteKind == k,
+              onTap: () => then(() => wb.setNoteKind(k)),
+            ),
+          if (wb.tool == BoardTool.note && wb.noteKind == NoteKind.note)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(46, 0, 0, Kx.s8),
+              child: Wrap(
+                spacing: 8,
                 children: [
-                  for (final c in cats)
-                    SizedBox(
-                      width: 84,
-                      height: 84,
-                      child: Material(
-                        color: context.colors.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(Kx.rMd),
-                        child: InkWell(
-                          key: c.key,
-                          borderRadius: BorderRadius.circular(Kx.rMd),
-                          onTap: () => then(c.onTap),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(c.icon, size: 30),
-                              const SizedBox(height: 4),
-                              Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.labelMedium),
-                            ],
-                          ),
+                  for (final c in noteColors)
+                    InkResponse(
+                      onTap: () => wb.setNoteKind(NoteKind.note, color: c),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: c,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: c == wb.noteColor ? context.colors.primary : context.colors.outlineVariant, width: c == wb.noteColor ? 3 : 1),
                         ),
                       ),
                     ),
                 ],
               ),
-              const Divider(height: Kx.s24),
-            ],
-            if (vis(const Key('insert-equation')))
-              KxMenuItem(
-              key: const Key('insert-equation'),
-              icon: Icons.functions,
-              title: l.stEquation,
-              hint: l.insertEquationHint,
-              selected: wb.tool == BoardTool.math,
-              onTap: () => then(onEquation),
             ),
-            for (final k in [NoteKind.note, NoteKind.card, if (!primary) NoteKind.code, NoteKind.answer])
-              KxMenuItem(
-                key: Key('insert-${k.name}'),
-                icon: noteIcon(k),
-                title: noteName(l, k),
-                hint: switch (k) {
-                  NoteKind.answer => l.insertAnswerHint,
-                  _ => l.tapToPlace,
-                },
-                selected: wb.tool == BoardTool.note && wb.noteKind == k,
-                onTap: () => then(() => wb.setNoteKind(k)),
-              ),
-            if (wb.tool == BoardTool.note && wb.noteKind == NoteKind.note)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(46, 0, 0, Kx.s8),
-                child: Wrap(
-                  spacing: 8,
+          if (!primary && vis(const Key('insert-graph'))) KxMenuItem(key: const Key('insert-graph'), icon: Icons.show_chart, title: l.stGraph, hint: l.graphHint, onTap: () => then(onGraph)),
+          if (vis(const Key('insert-model3d')))
+            KxMenuItem(key: const Key('insert-model3d'), icon: Icons.view_in_ar_outlined, title: l.splitModel3d, hint: l.insertModelHint, onTap: () => then(onModel3d)),
+          if (vis(const Key('insert-lab'))) KxMenuItem(key: const Key('insert-lab'), icon: Icons.science_outlined, title: l.splitLab, hint: l.insertModelHint, onTap: () => then(onLab)),
+          for (final e in more) KxMenuItem(key: e.key, icon: e.icon, title: e.title, hint: e.hint, onTap: () => then(e.onTap)),
+          if (!primary)
+            KxMenuItem(
+              key: const Key('insert-laser'),
+              icon: Icons.flare,
+              title: l.toolLaser,
+              hint: l.laserHint,
+              selected: wb.tool == BoardTool.laser,
+              onTap: () => then(() => wb.tool = BoardTool.laser),
+            ),
+          if (wb.canPaste) KxMenuItem(icon: Icons.content_paste, title: l.paste, onTap: () => then(wb.paste)),
+        ];
+        return PopoverCard(
+          title: l.toolInsert,
+          width: width,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (cats.isNotEmpty) ...[
+                Wrap(
+                  spacing: Kx.s8,
+                  runSpacing: Kx.s8,
                   children: [
-                    for (final c in noteColors)
-                      InkResponse(
-                        onTap: () => wb.setNoteKind(NoteKind.note, color: c),
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: c,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: c == wb.noteColor ? context.colors.primary : context.colors.outlineVariant, width: c == wb.noteColor ? 3 : 1),
+                    for (final c in cats)
+                      SizedBox(
+                        width: 84,
+                        height: 84,
+                        child: Material(
+                          color: context.colors.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(Kx.rMd),
+                          child: InkWell(
+                            key: c.key,
+                            borderRadius: BorderRadius.circular(Kx.rMd),
+                            onTap: () => then(c.onTap),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(c.icon, size: 30),
+                                const SizedBox(height: 4),
+                                Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.labelMedium),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                   ],
                 ),
-              ),
-            if (!primary && vis(const Key('insert-graph'))) KxMenuItem(key: const Key('insert-graph'), icon: Icons.show_chart, title: l.stGraph, hint: l.graphHint, onTap: () => then(onGraph)),
-            if (vis(const Key('insert-model3d'))) KxMenuItem(key: const Key('insert-model3d'), icon: Icons.view_in_ar_outlined, title: l.splitModel3d, hint: l.insertModelHint, onTap: () => then(onModel3d)),
-            if (vis(const Key('insert-lab'))) KxMenuItem(key: const Key('insert-lab'), icon: Icons.science_outlined, title: l.splitLab, hint: l.insertModelHint, onTap: () => then(onLab)),
-            for (final e in more) KxMenuItem(key: e.key, icon: e.icon, title: e.title, hint: e.hint, onTap: () => then(e.onTap)),
-            if (!primary)
-              KxMenuItem(
-                key: const Key('insert-laser'),
-                icon: Icons.flare,
-                title: l.toolLaser,
-                hint: l.laserHint,
-                selected: wb.tool == BoardTool.laser,
-                onTap: () => then(() => wb.tool = BoardTool.laser),
-              ),
-            if (wb.canPaste) KxMenuItem(icon: Icons.content_paste, title: l.paste, onTap: () => then(wb.paste)),
-            if (relevant != null && onToggleAll != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(key: const Key('insert-show-all'), onPressed: onToggleAll, child: Text(showAll ? contextStrings(context)['showRelevant'] : contextStrings(context)['showAll'])),
-              ),
-          ],
-        ),
-      ),
+                const Divider(height: Kx.s24),
+              ],
+              if (wide)
+                Wrap(
+                  spacing: Kx.s8,
+                  children: [for (final w in items) SizedBox(width: (width - Kx.s8) / 2, child: w)],
+                )
+              else
+                ...items,
+              if (relevant != null && onToggleAll != null)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(key: const Key('insert-show-all'), onPressed: onToggleAll, child: Text(showAll ? contextStrings(context)['showRelevant'] : contextStrings(context)['showAll'])),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

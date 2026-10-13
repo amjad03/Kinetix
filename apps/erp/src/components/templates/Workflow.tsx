@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, Circle, X } from 'lucide-react';
-import { useState, useTransition, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useTransition, type ReactNode } from 'react';
 import { TextField } from '@/components/kx';
 import { Button } from '@/components/shadcn/button';
 import { Card, useToastOptional } from '@/components/ui';
@@ -20,42 +20,53 @@ export interface WorkflowStep {
   note?: string;
 }
 
-/** Where a record is in its approval chain: horizontal on wide screens, a vertical list on phones. */
+/**
+ * Where a record is in its approval chain: one compact, horizontally scrollable row of dots and short
+ * labels that scrolls itself to the current step. Who/when/note shows under the row for the current
+ * step only; the other steps carry it in their tooltip.
+ */
 export function WorkflowStepper({ steps, label }: { steps: WorkflowStep[]; label?: string }) {
   const { t, fmt } = useI18n();
+  const row = useRef<HTMLOListElement>(null);
+  const focus = steps.find((s) => s.state === 'current' || s.state === 'rejected');
+  const focusId = focus?.id;
+  useEffect(() => {
+    const ol = row.current;
+    const li = focusId ? ol?.querySelector<HTMLElement>(`[data-step="${CSS.escape(focusId)}"]`) : null;
+    if (ol && li) ol.scrollLeft = Math.max(0, li.offsetLeft - (ol.clientWidth - li.offsetWidth) / 2);
+  }, [focusId, steps.length]);
+  const detail = (s: WorkflowStep) => [s.by, s.at && fmt.dateTime(s.at), s.note && `“${s.note}”`].filter(Boolean).join(' · ');
   return (
-    <ol aria-label={label ?? t('tpl.steps')} className="grid gap-4 md:flex md:gap-0" data-testid="workflow-stepper">
-      {steps.map((s, i) => {
-        const Icon = s.state === 'done' ? Check : s.state === 'rejected' ? X : Circle;
-        return (
-          <li key={s.id} aria-current={s.state === 'current' ? 'step' : undefined} className="relative flex gap-3 md:flex-1 md:flex-col md:gap-2">
-            {i < steps.length - 1 && <span aria-hidden className={cn('absolute top-8 left-[15px] h-[calc(100%-16px)] w-px md:top-[15px] md:left-8 md:h-px md:w-[calc(100%-32px)]', s.state === 'done' ? 'bg-primary' : 'bg-border')} />}
-            <span
-              className={cn(
-                'relative z-[1] flex size-8 shrink-0 items-center justify-center rounded-full border-2 bg-background',
-                s.state === 'done' && 'border-primary bg-primary text-primary-foreground',
-                s.state === 'current' && 'border-primary text-primary',
-                s.state === 'rejected' && 'border-red bg-red text-white',
-                (s.state === 'upcoming' || s.state === 'skipped') && 'text-muted-foreground',
-              )}
-            >
-              <Icon aria-hidden className={cn('size-4', s.state === 'current' && 'fill-current size-2.5')} />
-            </span>
-            <div className="min-w-0 md:pr-3">
-              <p className={cn('text-sm font-semibold', s.state === 'upcoming' && 'text-muted-foreground')}>{s.label}</p>
-              {(s.by || s.at) && (
-                <p className="text-xs text-muted-foreground">
-                  {s.by}
-                  {s.by && s.at && ' · '}
-                  {s.at && fmt.dateTime(s.at)}
-                </p>
-              )}
-              {s.note && <p className="mt-1 text-xs text-muted-foreground">“{s.note}”</p>}
-            </div>
-          </li>
-        );
-      })}
-    </ol>
+    <div className="min-w-0" data-testid="workflow-stepper-wrap">
+      <ol ref={row} aria-label={label ?? t('tpl.steps')} className="flex min-w-0 items-center overflow-x-auto pb-1 [scrollbar-width:thin]" data-testid="workflow-stepper">
+        {steps.map((s, i) => {
+          const Icon = s.state === 'done' ? Check : s.state === 'rejected' ? X : Circle;
+          const info = detail(s);
+          return (
+            <li key={s.id} data-step={s.id} aria-current={s.state === 'current' ? 'step' : undefined} title={info ? `${s.label} — ${info}` : s.label} className="flex shrink-0 items-center">
+              {i > 0 && <span aria-hidden className={cn('mx-2 h-px w-5 shrink-0', steps[i - 1].state === 'done' ? 'bg-primary' : 'bg-border')} />}
+              <span
+                className={cn(
+                  'flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] bg-background',
+                  s.state === 'done' && 'border-primary bg-primary text-primary-foreground',
+                  s.state === 'current' && 'border-primary text-primary',
+                  s.state === 'rejected' && 'border-red bg-red text-white',
+                  (s.state === 'upcoming' || s.state === 'skipped') && 'text-muted-foreground',
+                )}
+              >
+                <Icon aria-hidden className={cn('size-3', s.state === 'current' && 'size-2 fill-current')} />
+              </span>
+              <span className={cn('ml-1.5 max-w-[11rem] truncate text-[12.5px] whitespace-nowrap', s.state === 'current' || s.state === 'rejected' ? 'font-semibold text-foreground' : 'text-muted-foreground', s.state === 'done' && 'text-foreground')}>{s.label}</span>
+            </li>
+          );
+        })}
+      </ol>
+      {focus && detail(focus) && (
+        <p className="mt-1.5 truncate text-xs text-muted-foreground" data-testid="workflow-current">
+          <span className="font-medium text-foreground">{focus.label}</span> · {detail(focus)}
+        </p>
+      )}
+    </div>
   );
 }
 

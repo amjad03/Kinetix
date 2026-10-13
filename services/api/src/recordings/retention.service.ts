@@ -9,6 +9,7 @@ import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { addDays } from '../teacher/teacher.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 export const RETENTION = 'recording.retention';
 
@@ -154,7 +155,7 @@ export class RetentionService implements OnModuleInit {
       .from(recordings)
       .innerJoin(sections, eq(sections.id, recordings.sectionId))
       .groupBy(recordings.sectionId, sections.displayName)
-      .orderBy(sections.displayName);
+      .orderBy(...naturalAsc(sections.displayName));
     const noTermWhere = and(eq(recordings.keep, false), sql`${recordingTermId} is null`);
     const [{ noTermCount }] = await tx.select({ noTermCount: sql<number>`count(*)::int` }).from(recordings).where(noTermWhere);
     const noTerm = await tx

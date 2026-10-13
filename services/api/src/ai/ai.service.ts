@@ -15,6 +15,7 @@ import { ContentService } from '../content/content.service.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { aiActions, aiCache, aiUsage, sections, subjects, tenants } from '../db/schema.js';
 import {
+  AiBlockedError,
   AiUnavailableError,
   CircuitBreaker,
   FallbackProvider,
@@ -22,17 +23,22 @@ import {
   parseJsonReply,
   PreviewProvider,
   SarvamProvider,
+  withBackoff,
+  type BackoffPolicy,
   type LlmProvider,
 } from './providers.js';
 import { allText, unsafeTerm } from './safety.js';
 import {
   buildMessages,
   checkOutput,
+  maxTokensFor,
+  normaliseReply,
   PROMPT_VERSION,
   postProcess,
+  temperatureFor,
   previewOutput,
   requestText,
-  TaskOutputs,
+  parseTaskOutput,
   type Grounding,
   type Language,
   type TaskInput,
@@ -43,12 +49,17 @@ import {
 export const LLM_PROVIDER = Symbol('LLM_PROVIDER');
 
 /**
- * Local first: the self-hosted model (AI_BASE_URL), then the pay-per-use fallback. One of them
- * alone is used as is; with neither, the labelled previews.
+ * Local first: the self-hosted model (AI_BASE_URL) and its AI_FALLBACK_MODELS, then the pay-per-use
+ * fallback. One of them alone is used as is; with neither, the labelled previews.
  */
 export function providerFromEnv(env: Env): LlmProvider {
   const chain: LlmProvider[] = [];
-  if (env.AI_BASE_URL) chain.push(new OpenAiCompatibleProvider(env.AI_BASE_URL, env.AI_MODEL, env.AI_API_KEY, env.AI_TIMEOUT_MS, env.AI_VISION));
+  if (env.AI_BASE_URL) {
+    // The main model, then the same server's other models (each has its own free daily allowance on Gemini).
+    for (const model of new Set([env.AI_MODEL, ...env.AI_FALLBACK_MODELS])) {
+      chain.push(new OpenAiCompatibleProvider(env.AI_BASE_URL, model, env.AI_API_KEY, env.AI_TIMEOUT_MS, env.AI_VISION, { reasoningEffort: env.AI_REASONING_EFFORT }));
+    }
+  }
   if (env.AI_FALLBACK_PROVIDER === 'sarvam' && env.SARVAM_API_KEY) {
     chain.push(
       new SarvamProvider(env.SARVAM_API_KEY, env.SARVAM_LLM_MODEL, { inputPerM: env.SARVAM_INR_PER_M_INPUT, outputPerM: env.SARVAM_INR_PER_M_OUTPUT }, env.AI_TIMEOUT_MS, env.SARVAM_BASE_URL),
@@ -57,6 +68,18 @@ export function providerFromEnv(env: Env): LlmProvider {
   if (chain.length === 0) return new PreviewProvider();
   if (chain.length === 1) return chain[0];
   return new FallbackProvider(chain.map((provider) => ({ provider, breaker: new CircuitBreaker(env.AI_BREAKER_FAILURES, env.AI_BREAKER_COOLDOWN_S * 1000) })));
+}
+
+/**
+ * The line the API logs at start-up: which model answers, or that answers are previews. After
+ * editing .env, `grep "KINETIX AI:" /tmp/kinetix-api.log` shows whether the running API has it.
+ */
+export function describeProvider(env: Env, p: LlmProvider): string {
+  if (p.preview) return 'KINETIX AI: labelled preview answers (no AI_BASE_URL or AI_FALLBACK_PROVIDER in .env)';
+  const parts: string[] = [];
+  if (env.AI_BASE_URL) parts.push(`${[...new Set([env.AI_MODEL, ...env.AI_FALLBACK_MODELS])].join(', then ')} at ${new URL(env.AI_BASE_URL).host}`);
+  if (env.AI_FALLBACK_PROVIDER === 'sarvam' && env.SARVAM_API_KEY) parts.push(`Sarvam AI (${env.SARVAM_LLM_MODEL})`);
+  return `KINETIX AI: ${parts.join(', then ')}`;
 }
 
 /** Who is asking, and about which class. */
@@ -87,9 +110,10 @@ export interface AiResponse<T extends TaskName> {
   };
 }
 
-const MAX_TOKENS: Record<TaskName, number> = { explain: 1200, quiz: 2500, homework: 2500, lessonPlan: 1500, summarize: 1200, readBoard: 1500, boardSummary: 1500, lecture: 2200, selectAsk: 1500, financeInsight: 1200, admissionsInsight: 1200, hrInsight: 1200, syllabusImport: 4000, careerCoach: 1200, gradeAssist: 1200, qualityInsight: 1200, researchInsight: 1200, careerInsight: 1200, parentInsight: 1200, tutor: 1500 };
 const CACHE_DAYS = 30;
 const BLOCKED = "KINETIX AI can't help with that request. Try rephrasing it for the classroom.";
+/** The model server is rate-limiting or overloaded (429, 503) even after waiting and trying again. */
+export const AI_BUSY = 'KINETIX AI is busy right now. Try again in a minute.';
 
 type Outcome = (typeof aiUsage.$inferInsert)['outcome'];
 
@@ -201,6 +225,7 @@ export class AiService {
     let outcome: Outcome = 'ok';
     let detail: string | undefined;
     let result: TaskOutput<T> | undefined;
+    let busy = false;
     try {
       result = await this.generate(task, input, grounding, usage);
       const bad = unsafeTerm(allText(result), grounding.institutionKind === 'school');
@@ -209,7 +234,8 @@ export class AiService {
         detail = `output: ${bad}`;
       }
     } catch (e) {
-      outcome = e instanceof AiUnavailableError ? 'unavailable' : 'invalid';
+      outcome = e instanceof AiUnavailableError ? 'unavailable' : e instanceof AiBlockedError ? 'blocked' : 'invalid';
+      busy = e instanceof AiUnavailableError && e.busy;
       detail = (e as Error).message.slice(0, 500);
       this.log.warn(`AI ${task} failed: ${detail}`);
     }
@@ -227,27 +253,42 @@ export class AiService {
       this.log.log(`AI ${task} served by ${usage.provider} (${usage.model}): ${usage.promptTokens}+${usage.completionTokens} tokens, about ₹${usage.costInr.toFixed(4)}`);
     }
 
-    if (outcome === 'unavailable') throw new ServiceUnavailableException('KINETIX AI is not reachable right now. Try again in a minute.');
+    if (outcome === 'unavailable') throw new ServiceUnavailableException(busy ? AI_BUSY : 'KINETIX AI is not reachable right now. Try again in a minute.');
     if (outcome === 'invalid') throw new BadGatewayException('KINETIX AI could not produce a usable answer. Try again or rephrase.');
     if (outcome === 'blocked') throw new UnprocessableEntityException(BLOCKED);
     return { task, result: result!, meta: { ...meta, provider: usage.provider, model: usage.model, cached: false } };
   }
 
-  /** Calls the model; if the reply is not the right JSON, tells it what was wrong once. */
+  /** Busy-server retries: about 1.5 s, then 3 s; never a wait over 15 s, so the board hears back within its minute. */
+  private get backoff(): BackoffPolicy {
+    return { retries: this.env.AI_RETRIES, baseMs: 1500, maxWaitMs: 15_000 };
+  }
+
+  /**
+   * Calls the model (waiting and asking again while the server is busy); if the reply is not the
+   * right JSON, tells it what was wrong once; a reply cut off at the token limit is asked for
+   * again with twice the room.
+   */
   private async generate<T extends TaskName>(task: T, input: TaskInput<T>, g: Grounding, usage: Usage): Promise<TaskOutput<T>> {
     // A text-only provider (e.g. the Sarvam fallback on its own) cannot read the board.
     if (task === 'readBoard' && this.provider.vision === false) throw new AiUnavailableError('No vision model is configured', false);
     const messages = buildMessages(task, input, g);
+    let maxTokens = maxTokensFor(task, input);
     for (let attempt = 0; ; attempt++) {
-      const reply = await this.provider.complete(messages, { maxTokens: MAX_TOKENS[task], temperature: task === 'summarize' || task === 'readBoard' ? 0.1 : 0.5 });
+      const reply = await withBackoff(
+        () => this.provider.complete(messages, { maxTokens, temperature: temperatureFor(task) }),
+        this.backoff,
+        (e, wait, n) => this.log.warn(`AI ${task}: the model server is busy (${e.status}); asking again in ${(wait / 1000).toFixed(1)} s (${n} of ${this.env.AI_RETRIES})`),
+      );
       usage.promptTokens += reply.promptTokens;
       usage.completionTokens += reply.completionTokens;
       usage.provider = reply.provider ?? usage.provider;
       usage.model = reply.model ?? usage.model;
       if (reply.costInr !== undefined) usage.costInr = (usage.costInr ?? 0) + reply.costInr;
+      const cutOff = reply.finishReason === 'length';
       let problem: string;
       try {
-        const parsed = TaskOutputs[task].safeParse(parseJsonReply(reply.text));
+        const parsed = parseTaskOutput(task, normaliseReply(task, parseJsonReply(reply.text)));
         if (parsed.success) {
           const out = parsed.data as TaskOutput<T>;
           const wrong = checkOutput(task, input, out);
@@ -260,7 +301,11 @@ export class AiService {
       } catch (e) {
         problem = (e as Error).message;
       }
-      if (attempt >= 1) throw new Error(`Invalid ${task} reply: ${problem}`);
+      if (attempt >= 1) throw new Error(`Invalid ${task} reply${cutOff ? ' (cut off at the token limit)' : ''}: ${problem}`);
+      if (cutOff) {
+        maxTokens *= 2;
+        continue;
+      }
       messages.push({ role: 'assistant', content: reply.text }, { role: 'user', content: `That reply was not valid (${problem}). Send the corrected JSON object only.` });
     }
   }

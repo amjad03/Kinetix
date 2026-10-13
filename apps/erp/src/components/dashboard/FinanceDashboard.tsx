@@ -13,6 +13,7 @@ import { AttentionInbox, ChartCard, DrillBars, FeeBars, MiniBars, MiniMeter, typ
 import { QuickActions, Row } from './parts';
 
 import { ArrowRight as ArrowForward, Banknote as PaymentsOutlined, Clock as ScheduleOutlined, FileText as RequestQuoteOutlined, Folders as FolderCopyOutlined, Landmark, ReceiptText as ReceiptLongOutlined, TriangleAlert, Users, Wallet as AccountBalanceWalletOutlined } from 'lucide-react';
+import { naturalCompare } from '@/lib/natural';
 
 interface Unsettled {
   id: string;
@@ -33,7 +34,7 @@ export async function FinanceDashboard({ me, today }: { me: Me; today: string })
   if (sum.error !== undefined) return <ErrorState message={sum.error} />;
   const s = sum.data;
   const f = roll.data?.fees;
-  const overdue = (inv.data ?? []).filter((i) => i.dueOn < today).sort((a, b) => a.dueOn.localeCompare(b.dueOn));
+  const overdue = (inv.data ?? []).filter((i) => i.dueOn < today).sort((a, b) => naturalCompare(a.dueOn, b.dueOn));
   const defaulters = new Set(overdue.map((i) => i.student.id)).size;
   const late30 = new Set(overdue.filter((i) => daysBetween(i.dueOn, today) > 30).map((i) => i.student.id)).size;
   const rate = s.billedPaise > 0 ? Math.round((s.collectedPaise / s.billedPaise) * 1000) / 10 : null;

@@ -14,6 +14,7 @@ import { OFFICE_ROLES } from './documents.access.js';
 import { type CardData, feeReceiptPdf, idCardsPdf } from './pdfs.js';
 import { idCardCode } from './render.js';
 import { STAFF_ROLES } from '../hr/hr.access.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const pdfHeaders = (res: Response, name: string) => {
   res.setHeader('Content-Type', 'application/pdf');
@@ -43,7 +44,7 @@ export class IdCardsController {
       .innerJoin(sections, eq(sections.id, students.sectionId))
       .innerJoin(academicYears, eq(academicYears.id, sections.academicYearId))
       .where(and(where, eq(students.status, 'active')))
-      .orderBy(asc(sections.displayName), asc(students.rollNo));
+      .orderBy(...naturalAsc(sections.displayName), asc(students.rollNo));
     return rows.map((r) => ({ institution: t.name, kind: 'student' as const, name: r.name, lines: [['Class', r.className], ['Roll No', r.rollNo], ['Year', r.year]] as [string, string][], qrUrl: `${this.verifyBase}/id/${t.slug}/${idCardCode(this.secret, tenantId, 'student', r.id)}` }));
   }
 

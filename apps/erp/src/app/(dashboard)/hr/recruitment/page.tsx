@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RequisitionButton } from '@/components/hr/HrFlow';
 import { HR_TABS, SectionTabs } from '@/components/hr/Common';
 import { RecruitmentDesk } from '@/components/hr/RecruitmentDesk';
 import { PageHeader } from '@/components/PageHeader';
@@ -32,7 +33,7 @@ export default async function RecruitmentPage({ searchParams }: { searchParams: 
   });
   return (
     <>
-      <PageHeader title={t('nav.hr')} subtitle={t('hr.rec.subtitle')} />
+      <PageHeader title={t('nav.hr')} subtitle={t('hr.rec.subtitle')} actions={data.error === undefined ? <RequisitionButton departments={data.data.departments.map((d) => ({ id: d.id, name: d.name }))} /> : undefined} />
       <SectionTabs tabs={HR_TABS} label="nav.hr" />
       {data.error !== undefined ? <ErrorState message={data.error} /> : <RecruitmentDesk openings={data.data.openings} applicants={data.data.applicants} selected={selected} departments={data.data.departments.map((d) => ({ id: d.id, name: d.name }))} />}
     </>

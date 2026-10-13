@@ -8,6 +8,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { homeFor } from '@/lib/access';
 import { crumbsFor, visibleGroups } from '@/lib/nav';
+import { setRecordsOwner } from '@/lib/recents';
 import type { SetupSummary } from '@/lib/setup';
 import type { Workspace } from '@/lib/workspaces';
 import { AppSidebar } from './shell/AppSidebar';
@@ -62,6 +63,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const { t } = useI18n();
+  setRecordsOwner(user.email ?? user.fullName);
   const pathname = usePathname();
   const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin, disabledModules, workspace), [user.roles, user.platformAdmin, disabledModules, workspace]);
   const crumbs = useMemo(() => crumbsFor(groups, pathname), [groups, pathname]);
@@ -82,7 +84,7 @@ export function AppShell({
           {t('shell.skip')}
         </a>
         <SidebarProvider defaultOpen={sidebarOpen} className="kx-shell">
-          <AppSidebar groups={groups} pathname={pathname} school={school} roleText={roleText} workspace={workspace} home={home} setup={setup} />
+          <AppSidebar groups={groups} pathname={pathname} school={school} roleText={roleText} workspace={workspace} home={home} setup={setup} userKey={user.email ?? user.fullName} />
           <SidebarInset className="min-w-0 bg-background">
             <TabsProvider groups={groups} userKey={user.email ?? user.fullName}>
               <TopBar user={user} roleText={roleText} groups={groups} crumbs={crumbs} years={years} yearId={yearId} notices={notices} unread={unread} density={density} />

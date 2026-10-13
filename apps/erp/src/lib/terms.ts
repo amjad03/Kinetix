@@ -1,6 +1,7 @@
 // Academic terms (semesters): GET /v1/terms, POST / PUT / DELETE /v1/admin/terms.
 // Lesson recordings are kept until their term ends, plus the grace period in Settings.
 import { isIsoDate } from './dates';
+import { naturalCompare } from './natural';
 
 export interface Term {
   id: string;
@@ -49,5 +50,5 @@ export function termProblem(i: TermInput, terms: Term[] = [], selfId?: string): 
 
 /** The term in progress on a date, else the next one to start. */
 export function currentTerm(terms: Term[], today: string): Term | undefined {
-  return terms.find((t) => t.startsOn <= today && today <= t.endsOn) ?? [...terms].filter((t) => t.startsOn > today).sort((a, b) => a.startsOn.localeCompare(b.startsOn))[0];
+  return terms.find((t) => t.startsOn <= today && today <= t.endsOn) ?? [...terms].filter((t) => t.startsOn > today).sort((a, b) => naturalCompare(a.startsOn, b.startsOn))[0];
 }

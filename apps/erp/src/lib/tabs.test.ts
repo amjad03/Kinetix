@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activate, closeOthers, closeTab, cycle, EMPTY_TABS, MAX_TABS, moveTab, openTab, replaceActive, restore, togglePin, type TabsState } from './tabs';
+import { activate, closeOthers, closeTab, cycle, EMPTY_TABS, MAX_TABS, moveTab, normalizeUrl, openTab, replaceActive, restore, togglePin, type TabsState } from './tabs';
 
 const base = (): TabsState => {
   let s = replaceActive(EMPTY_TABS, '/', 'Home', 'dashboard');
@@ -64,5 +64,17 @@ describe('workspace tabs', () => {
     expect(back.tabs.find((t) => t.id === back.activeId)?.url).toBe('/students');
     expect(restore('{nope', '/')).toBeNull();
     expect(restore(JSON.stringify({ tabs: [{ id: 'a', url: '//evil.example' }] }), '/')).toBeNull();
+  });
+
+  it('never opens the same page twice', () => {
+    const s = base();
+    expect(normalizeUrl('/students/?b=2&a=1#x')).toBe('/students?a=1&b=2');
+    const again = openTab(s, { url: '/students/', title: 'Students', icon: 'students' })!;
+    expect(again.tabs).toHaveLength(3);
+    expect(again.tabs.find((t) => t.id === again.activeId)?.url).toBe('/students');
+    const folded = replaceActive(s, '/students', 'Students', 'students');
+    expect(folded.tabs.filter((t) => t.url === '/students')).toHaveLength(1);
+    const raw = JSON.stringify({ tabs: [{ id: 'a', url: '/x?b=1&a=2' }, { id: 'b', url: '/x?a=2&b=1' }, { id: 'c', url: '/y' }] });
+    expect(restore(raw, '/y')!.tabs.map((t) => t.id)).toEqual(['a', 'c']);
   });
 });

@@ -66,22 +66,30 @@ class SpeechVoiceInput extends VoiceInput {
     final locale = await _locale(language);
     _last = '';
     _reported = false;
-    await _speech.listen(
-      onResult: (r) {
-        _last = r.recognizedWords;
-        if (r.finalResult) _reported = true;
-        onWords(r.recognizedWords, r.finalResult);
-      },
-      listenOptions: SpeechListenOptions(
-        localeId: locale,
-        onDevice: true,
-        partialResults: true,
-        cancelOnError: true,
-        listenMode: ListenMode.dictation,
-        listenFor: const Duration(seconds: 60),
-        pauseFor: const Duration(seconds: 3),
-      ),
-    );
+    try {
+      await _speech.listen(
+        onResult: (r) {
+          _last = r.recognizedWords;
+          if (r.finalResult) _reported = true;
+          onWords(r.recognizedWords, r.finalResult);
+        },
+        listenOptions: SpeechListenOptions(
+          localeId: locale,
+          onDevice: true,
+          partialResults: true,
+          cancelOnError: true,
+          listenMode: ListenMode.dictation,
+          listenFor: const Duration(seconds: 60),
+          pauseFor: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      // A desktop or emulator without a recogniser, or a microphone held by something else.
+      debugPrint('Speech recognition could not listen: $e');
+      _reported = true;
+      onProblem(VoiceProblem.unavailable);
+      return false;
+    }
     return true;
   }
 
@@ -91,9 +99,7 @@ class SpeechVoiceInput extends VoiceInput {
     try {
       final all = await _speech.locales();
       String norm(String s) => s.replaceAll('-', '_').toLowerCase();
-      return all.where((l) => norm(l.localeId) == norm(want)).firstOrNull?.localeId ??
-          all.where((l) => norm(l.localeId).startsWith('${language.name}_')).firstOrNull?.localeId ??
-          want;
+      return all.where((l) => norm(l.localeId) == norm(want)).firstOrNull?.localeId ?? all.where((l) => norm(l.localeId).startsWith('${language.name}_')).firstOrNull?.localeId ?? want;
     } catch (_) {
       return want;
     }
@@ -128,8 +134,14 @@ class SpeechVoiceInput extends VoiceInput {
   }
 
   @override
-  Future<void> stop() => _speech.stop();
+  Future<void> stop() async {
+    try {
+      await _speech.stop();
+    } catch (_) {
+      // Nothing was listening.
+    }
+  }
 
   @override
-  void dispose() => unawaited(_speech.cancel());
+  void dispose() => unawaited(_speech.cancel().catchError((Object _) {}));
 }

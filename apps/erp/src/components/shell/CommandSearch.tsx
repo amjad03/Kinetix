@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  BadgeCheck, BarChart3, BookOpen, CalendarDays, FileText, MessageSquare, Network, PlayCircle, Receipt, Search, Users, type LucideIcon,
+  BadgeCheck, BarChart3, BookOpen, CalendarDays, ClipboardCheck, Clock, FileText, MessageSquare, Network, PlayCircle, Receipt, Search, Star, UserPlus, Users, Wallet, type LucideIcon,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -11,6 +11,8 @@ import { useI18n } from '@/i18n/client';
 import type { SearchHit } from '@/lib/insights';
 import type { NavGroup } from '@/lib/nav';
 import { groupHits, isQuestion, safeHitUrl, type AskAnswer } from '@/lib/search';
+import { quickActionsFor, type QuickAction } from '@/lib/quick-actions';
+import { useRecords } from '@/lib/recents';
 import { matchesQuery } from '@/lib/table';
 import { NAV_ICONS } from './nav-icons';
 
@@ -27,6 +29,8 @@ const TYPE_ICONS: Record<SearchHit['type'], LucideIcon> = {
   students: Users, staff: BadgeCheck, courses: BookOpen, topics: PlayCircle, documents: FileText, events: CalendarDays, fees: Receipt, messages: MessageSquare, knowledge: Network, reports: BarChart3,
 };
 
+export const ACTION_ICONS: Record<QuickAction['icon'], LucideIcon> = { fee: Wallet, attendance: ClipboardCheck, admission: UserPlus, leave: CalendarDays };
+
 /**
  * Global search (⌘K / Ctrl K): any page the person may open and, from two letters on, records from
  * GET /v1/search (through /api/search), scoped by role on the API. A question ("ask …") gets an answer.
@@ -37,6 +41,7 @@ export function CommandSearch({ groups }: { groups: NavGroup[] }) {
   const [open, setOpen] = useState(false);
   const [newTab, setNewTab] = useState(false);
   const tabs = useTabs();
+  const { recent, favs } = useRecords();
   const [q, setQ] = useState('');
   const [found, setFound] = useState<SearchHit[]>([]);
   const [loading, setLoading] = useState(false);
@@ -109,14 +114,18 @@ export function CommandSearch({ groups }: { groups: NavGroup[] }) {
     const pageGroup = t('shell.searchPages');
     const pages = groups.flatMap((g) => g.items.map((i) => ({ key: i.href, href: i.href, label: t(i.label), hint: t(g.label), icon: NAV_ICONS[i.icon], group: pageGroup })));
     const matched = term ? pages.filter((p) => matchesQuery(`${p.label} ${p.hint}`, term)) : pages.slice(0, 8);
+    const hit = (h: Hit) => !term || matchesQuery(`${h.label} ${h.hint}`, term);
+    const actions: Hit[] = quickActionsFor(groups).map((a) => ({ key: `act:${a.id}`, href: a.href, label: t(a.label), hint: t('ez.actions'), icon: ACTION_ICONS[a.icon], group: t('ez.actions') })).filter(hit);
+    const favHits: Hit[] = favs.map((r) => ({ key: `fav:${r.href}`, href: r.href, label: r.title, hint: r.kind ?? '', icon: Star, group: t('ez.favourites') })).filter(hit);
+    const recentHits: Hit[] = recent.filter((r) => !favs.some((f) => f.href === r.href)).slice(0, term ? 8 : 5).map((r) => ({ key: `rec:${r.href}`, href: r.href, label: r.title, hint: r.kind ?? '', icon: Clock, group: t('ez.recent') })).filter(hit);
     const records: Hit[] = groupHits(term.length >= 2 && open ? found : []).flatMap((g) =>
       g.hits.flatMap((h) => {
         const href = safeHitUrl(h.url);
         return href ? [{ key: `${h.type}:${h.id}`, href, label: h.title, hint: h.subtitle, icon: TYPE_ICONS[h.type] ?? FileText, group: t(`search.type.${h.type}`) }] : [];
       }),
     );
-    return [...records, ...matched];
-  }, [groups, term, t, found, open]);
+    return term ? [...records, ...favHits, ...recentHits, ...actions, ...matched] : [...actions, ...favHits, ...recentHits, ...matched];
+  }, [groups, term, t, found, open, recent, favs]);
 
   const sections = useMemo(() => {
     const out: { group: string; hits: Hit[] }[] = [];

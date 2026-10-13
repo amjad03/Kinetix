@@ -7,7 +7,7 @@ import { audit } from '../common/audit.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessments, assessmentSchemes, examPapers, examSessions, marks, schemeComponents, students, subjects, users } from '../db/schema.js';
+import { academicSettings, assessments, assessmentSchemes, examPapers, examSessions, marks, schemeComponents, students, subjects, users } from '../db/schema.js';
 import { headedDepartmentIds, headsSubject } from '../departments/departments.controller.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { isSchoolAdmin, parseDate, TeacherService } from '../teacher/teacher.service.js';
@@ -253,6 +253,10 @@ export class AssessmentsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const a = await this.load(tx, id);
       await this.assertTeaches(tx, p, a.sectionId);
+      if (!a.publishedAt && !a.lockedAt) {
+        const [rule] = await tx.select({ value: academicSettings.value }).from(academicSettings).where(eq(academicSettings.kind, 'assessment'));
+        if (rule?.value?.lockBeforePublish === true) throw new ConflictException('The head of department must verify and lock the marks before they are published');
+      }
       if (!a.publishedAt) {
         const [{ n }] = await tx
           .select({ n: sql<number>`count(*)::int` })
@@ -282,6 +286,7 @@ export class AssessmentsController {
         heldOn: assessments.heldOn,
         publishedAt: assessments.publishedAt,
         markStatus: assessments.markStatus,
+        lockedAt: assessments.lockedAt,
         componentId: assessments.componentId,
         sectionId: assessments.sectionId,
         subject: { id: subjects.id, name: subjects.name },
@@ -322,6 +327,7 @@ export class AssessmentsController {
 
   /** Marks cannot change once handed over, nor after the exam they belong to has its results published. */
   private async assertEditable(tx: Tx, a: typeof assessments.$inferSelect, allowWorkflow = false) {
+    if (a.lockedAt) throw new ConflictException('The marks are locked; ask the head of department to unlock them');
     if (!allowWorkflow && a.markStatus !== 'draft') throw new ConflictException('The marks are submitted; ask the head of department to reopen them');
     const [paper] = await tx.select({ status: examSessions.status }).from(examPapers).innerJoin(examSessions, eq(examSessions.id, examPapers.sessionId)).where(eq(examPapers.assessmentId, a.id));
     if (paper && (paper.status === 'published' || paper.status === 'locked' || paper.status === 'processed')) throw new ConflictException('Results are already processed for this exam; use revaluation to correct a mark');

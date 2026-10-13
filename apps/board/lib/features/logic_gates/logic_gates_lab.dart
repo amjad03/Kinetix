@@ -96,7 +96,8 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
   Offset _grab = Offset.zero;
   String? _wireFrom;
 
-  static const _pinHit = 16.0;
+  /// How near a finger must land to take a pin (a fingertip on a panel, not a mouse point).
+  static const _pinHit = 22.0;
 
   @override
   void dispose() {
@@ -130,17 +131,35 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
     setState(() => _selected = c.add(k, _spot(k) , gate: gate).id);
   }
 
-  /// The output pin of a part at [p], if any.
-  LogicPart? _outAt(Offset p) => c.parts.reversed.where((x) => x.hasOutput && (x.outPin - p).distance <= _pinHit).firstOrNull;
+  /// The output pin nearest [p], if one is in reach.
+  LogicPart? _outAt(Offset p) {
+    LogicPart? best;
+    var bestD = _pinHit;
+    for (final x in c.parts.reversed) {
+      final d = (x.outPin - p).distance;
+      if (x.hasOutput && d <= bestD) {
+        best = x;
+        bestD = d;
+      }
+    }
+    return best;
+  }
 
+  /// The input pin nearest [p], if one is in reach (a gate's two inputs are close together).
   ({LogicPart part, int pin})? _inAt(Offset p, {String? except}) {
+    ({LogicPart part, int pin})? best;
+    var bestD = _pinHit;
     for (final x in c.parts.reversed) {
       if (x.id == except) continue;
       for (var i = 0; i < x.inputCount; i++) {
-        if ((x.inPin(i) - p).distance <= _pinHit) return (part: x, pin: i);
+        final d = (x.inPin(i) - p).distance;
+        if (d < bestD) {
+          best = (part: x, pin: i);
+          bestD = d;
+        }
       }
     }
-    return null;
+    return best;
   }
 
   LogicPart? _bodyAt(Offset p) => c.parts.reversed.where((x) => x.rect.contains(p)).firstOrNull;
@@ -148,7 +167,9 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
   void _start(Offset p) {
     // Pick up a wire from a connected input pin, or start one from an output pin.
     final inPin = _inAt(p);
-    if (inPin != null) {
+    final outPin = _outAt(p);
+    // Where an output and an input pin are both in reach, the nearer one is meant.
+    if (inPin != null && (outPin == null || (inPin.part.inPin(inPin.pin) - p).distance <= (outPin.outPin - p).distance)) {
       final from = c.detach(inPin.part.id, inPin.pin);
       if (from != null) {
         setState(() {
@@ -159,7 +180,7 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
         return;
       }
     }
-    final out = _outAt(p);
+    final out = outPin;
     if (out != null) {
       setState(() {
         _drag = _Drag.wire;
@@ -184,7 +205,9 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
       case _Drag.wire:
         setState(() => _dragAt = p);
       case _Drag.move:
-        setState(() => c.part(_dragPart!)?.pos = p - _grab);
+        // Kept on the circuit board: a part dragged past the edge would be lost.
+        final to = p - _grab;
+        setState(() => c.part(_dragPart!)?.pos = Offset(to.dx.clamp(0, double.infinity), to.dy.clamp(0, double.infinity)));
       case _Drag.none:
         break;
     }
@@ -229,47 +252,44 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
   Widget build(BuildContext context) {
     final s = logicStrings(context);
     final v = c.evaluate();
+    final parts = [
+      for (final g in GateType.values)
+        Padding(
+          padding: const EdgeInsets.only(right: 6),
+          child: OutlinedButton(key: Key('lg-add-${g.name}'), onPressed: () => _add(PartKind.gate, gate: g), child: Text(gateName(g))),
+        ),
+      _btn(const Key('lg-add-input'), Icons.toggle_on_outlined, s['input'], () => _add(PartKind.input)),
+      _btn(const Key('lg-add-clock'), Icons.schedule, s['clock'], () => _add(PartKind.clock)),
+      _btn(const Key('lg-add-led'), Icons.lightbulb_outline, s['led'], () => _add(PartKind.led)),
+    ];
+    final actions = [
+      _btn(const Key('lg-step'), Icons.skip_next, s['step'], () => setState(c.tick)),
+      _btn(const Key('lg-run'), _clock == null ? Icons.play_arrow : Icons.pause, _clock == null ? s['run'] : s['stop'], _toggleClock),
+      _btn(const Key('lg-table'), Icons.table_chart_outlined, s['table'], () => setState(() => _showTable = !_showTable)),
+      _btn(const Key('lg-to-board'), Icons.dashboard_customize_outlined, s['toBoard'], _tableToBoard),
+      _btn(const Key('lg-delete'), Icons.delete_outline, s['delete'], _selected == null ? null : () => setState(() {
+        c.remove(_selected!);
+        _selected = null;
+      })),
+      _btn(const Key('lg-clear'), Icons.clear_all, s['clear'], () => setState(() {
+        c.parts.clear();
+        c.wires.clear();
+        _selected = null;
+      })),
+    ];
+    // Every button in sight where there is room (a panel, a tablet); a phone scrolls each row
+    // sideways so the circuit keeps its room.
+    Widget row(List<Widget> children, EdgeInsets padding) => LayoutBuilder(
+      builder: (context, box) => box.maxWidth >= 600 && MediaQuery.sizeOf(context).height >= 600
+          ? Padding(padding: padding, child: Wrap(runSpacing: 6, children: children))
+          : SingleChildScrollView(scrollDirection: Axis.horizontal, padding: padding, child: Row(children: children)),
+    );
     return Column(
       key: const Key('logic-gates'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.all(Kx.s8),
-          child: Row(
-            children: [
-              for (final g in GateType.values)
-                Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: OutlinedButton(key: Key('lg-add-${g.name}'), onPressed: () => _add(PartKind.gate, gate: g), child: Text(gateName(g))),
-                ),
-              _btn(const Key('lg-add-input'), Icons.toggle_on_outlined, s['input'], () => _add(PartKind.input)),
-              _btn(const Key('lg-add-clock'), Icons.schedule, s['clock'], () => _add(PartKind.clock)),
-              _btn(const Key('lg-add-led'), Icons.lightbulb_outline, s['led'], () => _add(PartKind.led)),
-            ],
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: Kx.s8),
-          child: Row(
-            children: [
-              _btn(const Key('lg-step'), Icons.skip_next, s['step'], () => setState(c.tick)),
-              _btn(const Key('lg-run'), _clock == null ? Icons.play_arrow : Icons.pause, _clock == null ? s['run'] : s['stop'], _toggleClock),
-              _btn(const Key('lg-table'), Icons.table_chart_outlined, s['table'], () => setState(() => _showTable = !_showTable)),
-              _btn(const Key('lg-to-board'), Icons.dashboard_customize_outlined, s['toBoard'], _tableToBoard),
-              _btn(const Key('lg-delete'), Icons.delete_outline, s['delete'], _selected == null ? null : () => setState(() {
-                c.remove(_selected!);
-                _selected = null;
-              })),
-              _btn(const Key('lg-clear'), Icons.clear_all, s['clear'], () => setState(() {
-                c.parts.clear();
-                c.wires.clear();
-                _selected = null;
-              })),
-            ],
-          ),
-        ),
+        row(parts, const EdgeInsets.all(Kx.s8)),
+        row(actions, const EdgeInsets.symmetric(horizontal: Kx.s8)),
         Padding(padding: const EdgeInsets.all(Kx.s8), child: Text(s['hint'], style: context.text.bodySmall)),
         const Divider(height: 1),
         Expanded(

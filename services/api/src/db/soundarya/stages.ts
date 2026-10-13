@@ -2,6 +2,7 @@ import type { Ctx } from './ctx.js';
 import { assessmentsAndHomework, attendance, lessonPlans, lms } from './academics.js';
 import { assets, hostelAndCanteen, inventory, library, transport } from './campus.js';
 import { attendanceGovernance } from './attendance-gov.js';
+import { academicsCore } from './academics-core.js';
 import { admissions } from './admissions.js';
 import { admissionsGrowth, hrLifecycle } from './growth.js';
 import { alumni, campusLife, mentoring, placements, skills } from './engagement.js';
@@ -12,7 +13,7 @@ import { governanceDepth } from './governance-depth.js';
 import { exams } from './exams.js';
 import { obe, questionBank, studentAccounts, surveys } from './outcomes.js';
 import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from './quality.js';
-import { payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
+import { hrWorkflows, payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
 import { assistSamples } from './assist.js';
 import { gapClose } from './gap-close.js';
 import { campusOpsDepth } from './campus-ops-depth.js';
@@ -23,7 +24,9 @@ import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 import { depthSamples } from './depth.js';
 import { accreditationSamples } from './accreditation.js';
 import { migrationAndExaminer } from './migration-examiner.js';
+import { examOffice } from './exam-office.js';
 import { gatewayBooksSamples } from './gateway-books.js';
+import { feeAccountsSamples } from './fee-accounts.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -42,6 +45,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['inventory and procurement', inventory],
   ['fixed assets', assets],
   ['staff attendance and leave', staffAttendanceAndLeave],
+  ['HR workflows: settings, loans, encashment, service book', hrWorkflows],
   ['salary structures and payroll runs', payroll],
   ['recruitment', recruitment],
   ['admissions: enquiries, campaigns, cycles, merit list', admissions],
@@ -83,7 +87,10 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['projects, careers, thesis, student life, communication and parent visibility', pathwaySamples],
   ['accreditation: NAAC entries, DVV, IQAC workspace and teacher evidence', accreditationSamples],
   ['data migration history, university templates, transcripts and the external examiner portal', migrationAndExaminer],
+  ['exam office: workflow stages, exam fees, paper attendance, moderation, revaluation fees and a sealed paper', examOffice],
   ['books, gateway settlements, Tally mapping, single sign-on and online-class attendance', gatewayBooksSamples],
+  ['fees and accounts desk: structures, concessions, cheques, refunds, write-offs, vouchers and cash closing', feeAccountsSamples],
   ['DigiLocker settings, APAAR ids, devices, tags, LTI platform and early alerts', integrationSamples],
   ['module settings and library stock verification', campusOpsDepth],
+  ['academics desk: settings, approval requests, locked marks and lesson plans to review', academicsCore],
 ];

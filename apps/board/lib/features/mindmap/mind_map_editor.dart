@@ -317,11 +317,11 @@ class _MindMapEditorState extends State<MindMapEditor> {
         ),
         body: Column(
           children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.all(Kx.s8),
-              child: Row(
-                children: [
+            // Every action in sight where there is room; a phone (upright or on its side) scrolls
+            // the row sideways so the map keeps its height.
+            LayoutBuilder(
+              builder: (context, box) {
+                final actions = <Widget>[
                   _action(const Key('mm-undo'), Icons.undo, s['undo'], _undo.isEmpty ? null : undo),
                   _action(const Key('mm-add-child'), Icons.subdirectory_arrow_right, s['addChild'], _addChild),
                   _action(const Key('mm-add-sibling'), Icons.add_circle_outline, s['addSibling'], _addSibling),
@@ -338,8 +338,11 @@ class _MindMapEditorState extends State<MindMapEditor> {
                   _action(const Key('mm-zoom-in'), Icons.zoom_in, s['zoomIn'], () => _zoomBy(1.25)),
                   _action(const Key('mm-auto'), Icons.fit_screen_outlined, s['autoLayout'], () => setState(() => _fit = true)),
                   _action(const Key('mm-place-picture'), Icons.photo_outlined, s['placePicture'], _placePicture),
-                ],
-              ),
+                ];
+                return box.maxWidth >= 600 && MediaQuery.sizeOf(context).height >= 600
+                    ? Padding(padding: const EdgeInsets.all(Kx.s8), child: Wrap(runSpacing: Kx.s8, children: actions))
+                    : SingleChildScrollView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.all(Kx.s8), child: Row(children: actions));
+              },
             ),
             Padding(padding: const EdgeInsets.symmetric(horizontal: Kx.s12), child: Align(alignment: Alignment.centerLeft, child: Text(s['hint'], style: context.text.bodySmall))),
             const Divider(height: 1),

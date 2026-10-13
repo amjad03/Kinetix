@@ -5,6 +5,7 @@ import { errorText } from '@/i18n/errors';
 import type { TFunction } from '@/i18n/translate';
 import { addDays, isIsoDate, isoWeekday } from './dates';
 import type { PlanProgress, PlanStatus, YearPlan, YearPlanItem } from './types';
+import { naturalCompare } from './natural';
 
 /** The API keeps review remarks to this many characters. */
 export const REMARK_MAX = 1000;
@@ -91,7 +92,7 @@ export function planWeeks(plan: Pick<YearPlan, 'items' | 'startsOn' | 'endsOn' |
   }
   if (!byWeek.has(thisWeek) && today >= plan.startsOn && today <= plan.endsOn) byWeek.set(thisWeek, []);
   return [...byWeek.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => naturalCompare(a, b))
     .map(([weekOf, items]) => ({ weekOf, thisWeek: weekOf === thisWeek, past: weekOf < thisWeek, items }));
 }
 

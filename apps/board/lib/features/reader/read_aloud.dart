@@ -263,6 +263,7 @@ class ReaderController extends ChangeNotifier {
   void setSlow(bool v) {
     slow = v;
     _changed();
+    unawaited(applyVoice());
   }
 
   void _applyVoice() {
@@ -287,6 +288,13 @@ class ReaderController extends ChangeNotifier {
   void setVoiceName(String? name) {
     voiceName = name;
     _changed();
+    unawaited(applyVoice());
+  }
+
+  /// A new speed, pitch, voice or language is heard at once: the paragraph being read starts
+  /// again with it (the engine takes them only when it starts speaking).
+  Future<void> applyVoice() async {
+    if (playing) await jump(index);
   }
 
   /// Lists the device's voices for the reading language of the current paragraph.
@@ -303,13 +311,19 @@ class ReaderController extends ChangeNotifier {
     languageOverride = lang;
     voiceName = null;
     await loadVoices();
+    await applyVoice();
   }
 
   /// Says [text] once with the chosen voice, speed and pitch (to try them).
   Future<void> preview(String text) async {
     await _voice.stop();
     _applyVoice();
-    await _voice.speak(text, languageOverride ?? readerLang(text), rate);
+    final lang = languageOverride ?? readerLang(text);
+    if (!await _voice.speak(text, lang, rate)) {
+      // No voice (or no speech engine at all): the banner says so rather than staying silent.
+      missingVoice = lang;
+      _changed();
+    }
   }
 
   void touchLook(void Function(ReaderLook l) change) {
@@ -506,10 +520,10 @@ class _ImmersiveReaderState extends State<ImmersiveReader> {
   /// Voice, speed, pitch, font, spacing and syllables.
   Widget _settings(BuildContext context, FeatureStrings rs) {
     final voices = _r.voiceList;
-    Widget slider(String key, String label, double v, double min, double max, ValueChanged<double> on) => Row(
+    Widget slider(String key, String label, double v, double min, double max, ValueChanged<double> on, {ValueChanged<double>? end}) => Row(
       children: [
         SizedBox(width: 120, child: Text(label)),
-        Expanded(child: Slider(key: Key(key), value: v.clamp(min, max), min: min, max: max, onChanged: on)),
+        Expanded(child: Slider(key: Key(key), value: v.clamp(min, max), min: min, max: max, onChanged: on, onChangeEnd: end)),
       ],
     );
     return ConstrainedBox(
@@ -554,8 +568,8 @@ class _ImmersiveReaderState extends State<ImmersiveReader> {
                 ),
               ],
             ),
-            slider('reader-rate', rs['speed'], _r.rate, 0.1, 0.9, _r.setRate),
-            slider('reader-pitch', rs['pitch'], _r.pitch, 0.5, 2, _r.setPitch),
+            slider('reader-rate', rs['speed'], _r.rate, 0.1, 0.9, _r.setRate, end: (_) => unawaited(_r.applyVoice())),
+            slider('reader-pitch', rs['pitch'], _r.pitch, 0.5, 2, _r.setPitch, end: (_) => unawaited(_r.applyVoice())),
             Wrap(
               spacing: Kx.s12,
               crossAxisAlignment: WrapCrossAlignment.center,

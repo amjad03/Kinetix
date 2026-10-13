@@ -100,7 +100,7 @@ class ConceptVideoPlayer extends StatelessWidget {
     final override = surfaceOverride;
     if (override != null) return override(video);
     final html = playerHtml(video.youtubeVideoId, language: video.language);
-    if (!kIsWeb && Platform.isAndroid) return _AndroidPlayer(html: html);
+    if (!kIsWeb && (Platform.isAndroid || Platform.isMacOS)) return _AndroidPlayer(html: html);
     if (!kIsWeb && Platform.isWindows) return _WindowsPlayer(html: html);
     return _Unsupported();
   }
@@ -126,7 +126,7 @@ class _Unsupported extends StatelessWidget {
 bool playerMayNavigate(String url, {required bool mainFrame}) =>
     !mainFrame || url.startsWith(playerOrigin) || url == 'about:blank';
 
-/// Android panels: the system WebView.
+/// Android panels (and macOS, through WKWebView): the system WebView.
 class _AndroidPlayer extends StatefulWidget {
   const _AndroidPlayer({required this.html});
   final String html;
@@ -147,7 +147,8 @@ class _AndroidPlayerState extends State<_AndroidPlayer> {
     final platform = _controller.platform;
     if (platform is AndroidWebViewController) unawaited(platform.setMediaPlaybackRequiresUserGesture(false));
     unawaited(_controller.setJavaScriptMode(JavaScriptMode.unrestricted));
-    unawaited(_controller.setBackgroundColor(Colors.black));
+    // WKWebView on macOS has no background colour setting (it throws).
+    if (!Platform.isMacOS) unawaited(_controller.setBackgroundColor(Colors.black));
     unawaited(
       _controller.setNavigationDelegate(
         NavigationDelegate(

@@ -10,7 +10,7 @@ assets/viewer3d/CREDITS.txt, which is bundled with the app.
 ------------------------------------
 
 The heart, brain, digestive system, lungs (respiratory system), eye, excretory
-system and skeleton models are made from BodyParts3D,
+system, skeleton, skull and teeth models are made from BodyParts3D,
 (c) The Database Center for Life Science (DBCLS), licensed under
 Creative Commons Attribution 4.0 International
 (https://creativecommons.org/licenses/by/4.0/).
@@ -19,7 +19,7 @@ Source: https://dbarchive.biosciencedbc.jp/en/bodyparts3d/
 KINETIX simplified the meshes, cut vessels short, split the ventricle wall into
 left, right and septum, and added names, notes and animations in English, Hindi
 and Kannada (tool/models/recipes). The model files derived from BodyParts3D
-(assets/viewer3d/models/{heart,brain,digestive,lungs,eye,excretory,skeleton}.*)
+(assets/viewer3d/models/{heart,brain,digestive,lungs,eye,excretory,skeleton,skull,teeth}.*)
 are shared under the same licence, CC BY 4.0.
 
 
@@ -60,14 +60,52 @@ The coastlines on the Earth models (Earth's layers, seasons) come from
 Natural Earth (https://www.naturalearthdata.com), which is in the public domain.
 
 
-4. Built by KINETIX
+4. Other people's models and pictures
+-------------------------------------
+
+- Coronavirus (assets/viewer3d/models/virus.*): "SARS-CoV-2 Virion (PathogenAR
+  Version)", NIAID, NIH 3D entry 3DPX-014820 (https://3d.nih.gov/entries/3DPX-014820),
+  Creative Commons Attribution 4.0 International. KINETIX split it by colour into
+  the envelope and the two forms of the spike protein and simplified it.
+- Globe (globe.*): NASA Earth Observatory, Blue Marble: Next Generation
+  (Reto Stöckli), public domain.
+- Landforms (landforms.*): heights from Terrain Tiles on AWS
+  (https://registry.opendata.aws/terrain-tiles/), containing SRTM and GMTED2010
+  data courtesy of the U.S. Geological Survey and NASA, and ETOPO1 (NOAA), public
+  domain; the delta picture is from NASA Worldview/GIBS (MODIS Aqua), public domain.
+- Compound microscope (microscope.*): "Omax compound microscope" by 3Donimus,
+  from Poly Pizza (https://poly.pizza/m/dcuaH6bEkwn), Creative Commons
+  Attribution 3.0. KINETIX removed the display stand and cord and grouped the
+  pieces into named parts.
+- Inner ear (ear.*: cochlea, vestibule, semicircular canals): micro-CT surface of
+  specimen F07, "Human Bony Labyrinth: Co-Registered CT and micro-CT Images, Surface
+  Models and Anatomical Landmarks", W. Wimmer, L. Anschuetz, S. Weder, F. Wagner,
+  H. Delingette, M. Caversaccio (2019), https://doi.org/10.5281/zenodo.3355272,
+  Creative Commons Attribution 4.0 International. KINETIX simplified it, split it into
+  three parts and placed it in the ear with the BodyParts3D pinna.
+- DNA atoms (dna.*, "every atom"): PDB entry 1BNA (Drew, Wing, Takano, Broka, Tanaka,
+  Itakura, Dickerson, 1981), RCSB Protein Data Bank (https://www.rcsb.org), CC0.
+- Downloaded on first use (remote_models/, not in the app): woolly mammoth,
+  Cosmic Buddha and Apollo 11 command module from Smithsonian Open Access
+  (https://3d.si.edu), CC0; Saturn V, Apollo Lunar Module and Hubble from NASA 3D
+  Resources (https://github.com/nasa/NASA-3D-Resources), public domain, split into
+  named parts with their own pictures; liver and stomach from BodyParts3D (CC BY 4.0).
+
+The full list with links is in docs/licensing/3D_MODELS.md.
+
+
+5. Built by KINETIX
 -------------------
 
 All other models (cells, neuron, flower, DNA, electric motor, prism, bar
 magnet, atoms, molecules, solids and nets, Earth's layers, volcano, solar
 system, seasons, atomic orbitals, hybridisation, crystal lattices, electric
-circuit, AC generator, transformer, simple machines, ear, nephron) are built
+circuit, AC generator, transformer, simple machines, nephron, engine,
+gears, lens bench, laboratory apparatus, the middle ear, the inside of the
+kidney, the downloadable tooth, skin, bacterium and mitochondrion, and the
+simplified Taj Mahal, Qutub Minar, India Gate and Konark Sun Temple) are built
 in code by KINETIX (tool/models/recipes) and use no downloaded assets.
 
-The build tools (tool/models) use three.js, esbuild, glTF-Transform and
-meshoptimizer as development dependencies only (see tool/models/package.json).
+The build tools (tool/models) use three.js, esbuild, glTF-Transform,
+meshoptimizer, draco3dgltf and sharp as development dependencies only (see
+tool/models/package.json).

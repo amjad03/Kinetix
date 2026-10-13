@@ -3484,5 +3484,98 @@
   "earlyAlertWatch": "Keep an eye",
   "testConnection": "Test connection",
   "connectionOk": "Server reachable",
-  "connectionFailed": "Cannot reach the server"
+  "connectionFailed": "Cannot reach the server",
+  "loansTitle": "Loans and advances",
+  "@loansTitle": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loansBody": "Ask for a salary advance or loan",
+  "@loansBody": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loansEmpty": "You have no loans or advances.",
+  "@loansEmpty": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanRequest": "Request",
+  "@loanRequest": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanKindAdvance": "Salary advance",
+  "@loanKindAdvance": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanKindLoan": "Staff loan",
+  "@loanKindLoan": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanAmount": "Amount (₹)",
+  "@loanAmount": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanInstallments": "Monthly instalments",
+  "@loanInstallments": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanStartMonth": "First recovery month",
+  "@loanStartMonth": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanPurpose": "Purpose",
+  "@loanPurpose": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanSent": "Sent to the principal for approval",
+  "@loanSent": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanInvalid": "Enter an amount, the instalments and the purpose.",
+  "@loanInvalid": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanOutstanding": "Outstanding {amount}",
+  "@loanOutstanding": {
+    "description": "Loans and advances (Profile → Work).",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "loanEmi": "{amount} × {count} months",
+  "@loanEmi": {
+    "description": "Loans and advances (Profile → Work).",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loanStatusPending": "Awaiting approval",
+  "@loanStatusPending": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanStatusApproved": "Approved, recovering",
+  "@loanStatusApproved": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanStatusRejected": "Not approved",
+  "@loanStatusRejected": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanStatusCancelled": "Withdrawn",
+  "@loanStatusCancelled": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "loanStatusClosed": "Fully recovered",
+  "@loanStatusClosed": {
+    "description": "Loans and advances (Profile → Work)."
+  },
+  "leaveStatusRecommended": "Recommended, awaiting principal",
+  "@leaveStatusRecommended": {
+    "description": "Loans and advances (Profile → Work)."
+  }
 }

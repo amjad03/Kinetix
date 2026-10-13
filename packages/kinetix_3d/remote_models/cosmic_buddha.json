@@ -1,0 +1,161 @@
+{
+ "id": "cosmic_buddha",
+ "version": 1,
+ "subject": "History",
+ "file": "cosmic_buddha.glb",
+ "title": {
+  "en": "The Cosmic Buddha (sculpture)",
+  "hi": "कॉस्मिक बुद्ध (मूर्ति)",
+  "kn": "ಕಾಸ್ಮಿಕ್ ಬುದ್ಧ (ಶಿಲ್ಪ)"
+ },
+ "summary": {
+  "en": "A stone Buddha from 6th-century China, about 1.5 m tall. Buddhism began in India and travelled along trade routes to China and beyond; the robe is carved with scenes of its teaching.",
+  "hi": "6वीं शताब्दी के चीन की पत्थर की बुद्ध प्रतिमा, लगभग 1.5 मीटर ऊँची। बौद्ध धर्म भारत में आरंभ हुआ और व्यापार मार्गों से चीन और आगे तक फैला; वस्त्र पर इसकी शिक्षाओं के दृश्य उकेरे हैं।",
+  "kn": "6ನೇ ಶತಮಾನದ ಚೀನಾದ ಕಲ್ಲಿನ ಬುದ್ಧ ಪ್ರತಿಮೆ, ಸುಮಾರು 1.5 ಮೀ ಎತ್ತರ. ಬೌದ್ಧ ಧರ್ಮ ಭಾರತದಲ್ಲಿ ಆರಂಭವಾಗಿ ವ್ಯಾಪಾರ ಮಾರ್ಗಗಳ ಮೂಲಕ ಚೀನಾ ಮತ್ತು ಮುಂದಕ್ಕೆ ಹರಡಿತು; ವಸ್ತ್ರದ ಮೇಲೆ ಅದರ ಬೋಧನೆಯ ದೃಶ್ಯಗಳನ್ನು ಕೆತ್ತಲಾಗಿದೆ."
+ },
+ "keywords": [
+  "buddha",
+  "buddhism",
+  "sculpture",
+  "silk route",
+  "religion",
+  "art",
+  "ancient history",
+  "new questions and ideas",
+  "buildings paintings and books",
+  "statue"
+ ],
+ "classes": [
+  6,
+  7,
+  12
+ ],
+ "credit": "Buddha draped in robes portraying the Realms of Desire, National Museum of Asian Art, Smithsonian Open Access (CC0)",
+ "size": 0.5,
+ "groups": [
+  {
+   "id": "statue",
+   "name": {
+    "en": "Statue",
+    "hi": "प्रतिमा",
+    "kn": "ಪ್ರತಿಮೆ"
+   }
+  }
+ ],
+ "parts": [
+  {
+   "id": "statue",
+   "group": "statue",
+   "color": "#9b9488",
+   "material": "file",
+   "name": {
+    "en": "Buddha in carved robes",
+    "hi": "उकेरे वस्त्रों में बुद्ध",
+    "kn": "ಕೆತ್ತಿದ ವಸ್ತ್ರಗಳಲ್ಲಿ ಬುದ್ಧ"
+   },
+   "info": {
+    "en": "Carved in limestone in about 550–577 CE; the head and hands were lost long ago. Look closely at the robe: rows of tiny figures show the different worlds of Buddhist belief.",
+    "hi": "लगभग 550–577 ई. में चूना पत्थर में उकेरी गई; सिर और हाथ बहुत पहले टूटकर खो गए। वस्त्र को ध्यान से देखें: छोटी आकृतियों की पंक्तियाँ बौद्ध मान्यता के विभिन्न लोकों को दिखाती हैं।",
+    "kn": "ಸುಮಾರು ಕ್ರಿ.ಶ. 550–577ರಲ್ಲಿ ಸುಣ್ಣದಕಲ್ಲಿನಲ್ಲಿ ಕೆತ್ತಲಾಗಿದೆ; ತಲೆ ಮತ್ತು ಕೈಗಳು ಬಹಳ ಹಿಂದೆಯೇ ಕಳೆದುಹೋಗಿವೆ. ವಸ್ತ್ರವನ್ನು ಗಮನಿಸಿ: ಸಣ್ಣ ಆಕೃತಿಗಳ ಸಾಲುಗಳು ಬೌದ್ಧ ನಂಬಿಕೆಯ ವಿವಿಧ ಲೋಕಗಳನ್ನು ತೋರಿಸುತ್ತವೆ."
+   },
+   "centroid": [
+    -0.0018,
+    -0.0033,
+    -0.0004
+   ],
+   "anchor": [
+    0.0408,
+    -0.0055,
+    0.0754
+   ],
+   "anchors": [
+    [
+     0,
+     1,
+     0,
+     -0.0045,
+     0.2375,
+     -0.0087
+    ],
+    [
+     0,
+     -1,
+     0,
+     -0.0185,
+     -0.2157,
+     0.0178
+    ],
+    [
+     -1,
+     0,
+     0,
+     -0.0812,
+     0.0101,
+     -0.038
+    ],
+    [
+     1,
+     0,
+     0,
+     0.083,
+     0.0435,
+     0.0416
+    ],
+    [
+     0,
+     0,
+     1,
+     0.0408,
+     -0.0055,
+     0.0754
+    ],
+    [
+     0,
+     0,
+     -1,
+     -0.0462,
+     0.0461,
+     -0.0748
+    ]
+   ],
+   "explode": [
+    0,
+    0.0001,
+    0
+   ]
+  }
+ ],
+ "views": [
+  {
+   "id": "front",
+   "name": {
+    "en": "Front",
+    "hi": "सामने से",
+    "kn": "ಮುಂಭಾಗ"
+   },
+   "dir": [
+    0,
+    0.1,
+    1
+   ]
+  },
+  {
+   "id": "side",
+   "name": {
+    "en": "Side",
+    "hi": "बगल से",
+    "kn": "ಪಕ್ಕದಿಂದ"
+   },
+   "dir": [
+    1,
+    0.1,
+    0.4
+   ]
+  }
+ ],
+ "slices": [],
+ "animations": [],
+ "remote": true,
+ "topic": "monument",
+ "license": "CC0"
+}

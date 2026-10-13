@@ -1,6 +1,6 @@
 // Screenshots of every screen, panel, popover, dialog and sheet of the board, at the sizes it
-// runs at (a 1080p and a 4K panel, a phone upright and on its side), in its three themes and in
-// English, Hindi and Kannada, for reviewing the layout by eye.
+// runs at (a 1080p and a 4K panel, a tablet, a laptop, a phone upright and on its side), in its
+// three themes and in English, Hindi and Kannada, for reviewing the layout by eye.
 //
 //   KINETIX_SCREENS=1 flutter test test/screens/screens_test.dart
 //
@@ -53,6 +53,9 @@ const sizes = [
   ScreenSize('4k', Size(1920, 1080), 2),
   ScreenSize('phone', Size(390, 844), 2, EdgeInsets.only(top: 32, bottom: 16)),
   ScreenSize('phone-land', Size(844, 390), 2, EdgeInsets.only(left: 32, top: 24, bottom: 12)),
+  // A tablet on its side (iPad Air) and a laptop (the Mac and Windows board).
+  ScreenSize('tablet', Size(1180, 820), 2, EdgeInsets.only(top: 24, bottom: 20)),
+  ScreenSize('desktop', Size(1440, 900), 2),
 ];
 
 /// What a scene sees: the tester, the board and how to reach its controls.
@@ -138,10 +141,17 @@ final scenes = <Scene>[
   const Scene('guest', _none, signedIn: false),
   const Scene('enroll', null, enrolled: false),
   Scene('toolbar-left', _none, before: (b) => b.setToolbarDock(ToolbarDock.left), panelOnly: true),
+  Scene('toolbar-right', _none, before: (b) => b.setToolbarDock(ToolbarDock.right), panelOnly: true),
   Scene('toolbar-collapsed', _none, before: (b) => b.setToolbarCollapsed(true), panelOnly: true),
+  Scene('ui-hidden', (s) => s.tap('hide-ui'), panelOnly: true),
   Scene('pen', (s) async {
     await s.tap('tool-pen');
     if (!s.has('pen-popover')) await s.tap('tool-pen');
+  }),
+  Scene('pen-config', (s) async {
+    await s.tap('tool-pen');
+    if (!s.has('pen-popover')) await s.tap('tool-pen');
+    await s.tap('pen-config-open');
   }),
   Scene('ai-pen', (s) async {
     await s.tap('tool-ai-pen');
@@ -210,6 +220,19 @@ final scenes = <Scene>[
   Scene('graphs', (s) => s.tool('graphs')),
   Scene('timer', (s) => s.tool('toolkit-timer')),
   Scene('picker', (s) => s.tool('toolkit-picker')),
+  Scene('noise-meter', (s) => s.tool('toolkit-noise')),
+  Scene('sim-hub', (s) => s.tool('simhub')),
+  Scene('models3d', (s) => s.tool('models3d')),
+  Scene('mind-map', (s) => s.tool('mindmap')),
+  Scene('organisers', (s) => s.tool('organisers')),
+  Scene('logic-gates', (s) => s.tool('logic-gates')),
+  Scene('seat-plan', (s) => s.tool('seating-chart')),
+  Scene('exit-ticket', (s) => s.tool('exit-ticket')),
+  Scene('dictionary', (s) => s.tool('dictionary')),
+  Scene('periodic-table', (s) => s.tool('periodic-table')),
+  Scene('key-dates', (s) => s.tool('timeline')),
+  Scene('classrooms', (s) => s.profile('menu-classrooms')),
+  Scene('training', (s) => s.profile('menu-training')),
   Scene('selection', (s) async {
     s.wb.tool = BoardTool.select;
     s.wb.selectAll();
@@ -222,7 +245,7 @@ final scenes = <Scene>[
 ];
 
 /// Ink, a heading and a shape on the page, so the board shows how they look on its paper.
-void _sampleContent(WhiteboardController wb) {
+void sampleContent(WhiteboardController wb) {
   Stroke line(List<Offset> pts, Color c, [double w = 4]) =>
       Stroke(id: newElementId(), style: InkStyle(tool: InkTool.pen, color: c, width: w), points: [for (final p in pts) InkPoint(p.dx, p.dy)]);
   final wave = [for (var x = 0; x <= 60; x++) Offset(160 + x * 8.0, 330 + 40 * (x % 12 < 6 ? (x % 6) / 6 : 1 - (x % 6) / 6))];
@@ -265,12 +288,13 @@ void main() {
   final onlyLangs = _filter('KINETIX_SCREENS_LANGS');
   final onlyScenes = _filter('KINETIX_SCREENS_ONLY');
 
-  // English everywhere; Hindi and Kannada on a 1080p panel and a phone, in the light theme.
+  // English everywhere; Hindi and Kannada on a 1080p panel, a tablet and a phone, light and dark.
   final variants = <(ScreenSize, BoardTheme, String)>[
     for (final s in sizes)
       for (final t in [BoardTheme.light, BoardTheme.dark, BoardTheme.chalkboard]) (s, t, 'en'),
-    for (final s in sizes.where((s) => s.name == 'panel' || s.name == 'phone'))
-      for (final lang in ['hi', 'kn']) (s, BoardTheme.light, lang),
+    for (final s in sizes.where((s) => s.name == 'panel' || s.name == 'phone' || s.name == 'tablet'))
+      for (final t in [BoardTheme.light, BoardTheme.dark])
+        for (final lang in ['hi', 'kn']) (s, t, lang),
   ];
 
   for (final (screen, theme, lang) in variants) {
@@ -331,7 +355,7 @@ void main() {
         }
         if (scene.enrolled) {
           ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first)).removeCurrentSnackBar();
-          if (scene.content && find.byType(WhiteboardCanvas).evaluate().isNotEmpty) _sampleContent(s.wb);
+          if (scene.content && find.byType(WhiteboardCanvas).evaluate().isNotEmpty) sampleContent(s.wb);
           await s.settle();
           if (scene.open != null) {
             try {

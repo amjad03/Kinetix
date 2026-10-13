@@ -117,13 +117,19 @@ class ToolkitController extends ChangeNotifier {
     _changed();
   }
 
+  /// Adds [d] to the countdown, running or paused. Counting up, the target moves on by [d] and
+  /// the time gone stays; counting down, the ring grows to fit when the time left passes it.
   void addTime(Duration d) {
     if (_timerEnd != null) {
       _timerEnd = _timerEnd!.add(d);
     } else {
       _timerPaused += d;
     }
-    if (_timerPaused > timerTotal && _timerEnd == null) timerTotal = _timerPaused;
+    if (timerCountUp) {
+      timerTotal += d;
+    } else if (timerLeft > timerTotal) {
+      timerTotal = timerLeft;
+    }
     timerDone = false;
     _changed();
   }
@@ -154,7 +160,11 @@ class ToolkitController extends ChangeNotifier {
   bool timerMini = false;
 
   /// What the timer shows: the time left, or the time gone when counting up.
-  Duration get timerShown => timerCountUp ? timerTotal - timerLeft : timerLeft;
+  Duration get timerShown {
+    if (!timerCountUp) return timerLeft;
+    final gone = timerTotal - timerLeft;
+    return gone.isNegative ? Duration.zero : gone;
+  }
 
   void setTimerOptions({bool? countUp, String? sound, bool? mini}) {
     if (countUp != null) timerCountUp = countUp;
@@ -464,7 +474,14 @@ class ToolkitController extends ChangeNotifier {
         await source.stop();
         return;
       }
-      _noiseSub = levels.listen(_noiseReading);
+      // A microphone that fails while listening (unplugged, taken by a call) says so, never throws.
+      _noiseSub = levels.listen(
+        _noiseReading,
+        onError: (Object _) {
+          noiseProblem = NoiseProblem.unavailable;
+          _changed();
+        },
+      );
     } on NoiseUnavailable catch (e) {
       noiseProblem = e.problem;
       _changed();

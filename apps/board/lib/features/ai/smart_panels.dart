@@ -19,7 +19,7 @@ Widget _section(BuildContext context, String title, List<String> lines, {Key? ke
       children: [
         Text(title, style: context.text.titleMedium),
         const SizedBox(height: Kx.s4),
-        for (final line in lines) Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('• $line', style: context.text.bodyLarge)),
+        for (final line in lines) Padding(padding: const EdgeInsets.only(bottom: 4), child: AiText('• $line', style: context.text.bodyLarge)),
       ],
     ),
   );
@@ -274,9 +274,9 @@ class SelectAskPanel extends StatelessWidget {
               if (r != null && !t.loading) ...[
                 Text(r.title, style: context.text.titleLarge),
                 const SizedBox(height: Kx.s8),
-                Text(r.answer, key: const Key('sa-answer'), style: context.text.bodyLarge),
+                AiText(r.answer, key: const Key('sa-answer'), style: context.text.bodyLarge),
                 const SizedBox(height: Kx.s8),
-                for (final (i, item) in r.items.indexed) Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('${i + 1}. $item')),
+                for (final (i, item) in r.items.indexed) Padding(padding: const EdgeInsets.only(bottom: 4), child: AiText('${i + 1}. $item')),
                 const SizedBox(height: Kx.s8),
                 Text(s('aiDraft'), style: context.text.bodySmall),
                 const SizedBox(height: Kx.s8),

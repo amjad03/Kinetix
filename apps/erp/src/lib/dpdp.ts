@@ -1,3 +1,4 @@
+import { naturalCompare } from './natural';
 // Shapes of the DPDP request queue (v1/dpdp) and delegated approvals (v1/delegations).
 
 export type DpdpKind = 'export' | 'correction' | 'erasure';
@@ -23,7 +24,7 @@ export interface GrievanceOfficer {
 }
 
 /** Requests an administrator still has to work, oldest first. */
-export const openRequests = (rows: readonly DpdpRow[]) => rows.filter((r) => r.status === 'pending').sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+export const openRequests = (rows: readonly DpdpRow[]) => rows.filter((r) => r.status === 'pending').sort((a, b) => naturalCompare(a.createdAt, b.createdAt));
 
 /** Days a request has waited; the Act expects an answer within 30 days. */
 export function waitingDays(createdAt: string, now: Date): number {

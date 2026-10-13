@@ -1,4 +1,30 @@
 {
+  "comm": {
+    "releases": {
+      "0.2.999": [
+        {
+          "comment_text": "",
+          "digests": {
+            "md5": "8382606a8ca797af9aee7036c1a25212",
+            "sha256": "f7a7956f210afdc7b853b2ffd0a524f219dbae08366b42566e713e3e0c0c9af1"
+          },
+          "downloads": -1,
+          "filename": "comm-0.2.999-py3-none-any.whl",
+          "has_sig": false,
+          "md5_digest": "8382606a8ca797af9aee7036c1a25212",
+          "packagetype": "bdist_wheel",
+          "python_version": "py3",
+          "requires_python": ">=3.8",
+          "size": 2767,
+          "upload_time": "2026-10-13T00:00:00.000000Z",
+          "upload_time_iso_8601": "2026-10-13T00:00:00.000000Z",
+          "url": "./comm-0.2.999-py3-none-any.whl",
+          "yanked": false,
+          "yanked_reason": null
+        }
+      ]
+    }
+  },
   "ipykernel": {
     "releases": {
       "6.9.2": [

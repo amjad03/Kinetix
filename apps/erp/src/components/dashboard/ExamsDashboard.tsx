@@ -12,6 +12,7 @@ import { AttentionInbox, ChartCard, DrillBars, MiniBars, MiniMeter, type InboxIt
 import { QuickActions, Row } from './parts';
 
 import { ArrowRight as ArrowForward, CalendarClock, ClipboardCheck as GradingOutlined, FileQuestion as QuizOutlined, ListChecks as FactCheckOutlined, Percent, RefreshCcwDot as PublishedWithChangesOutlined, Stamp, Target as TrackChangesOutlined, TriangleAlert } from 'lucide-react';
+import { naturalCompare } from '@/lib/natural';
 
 const TONE: Record<ExamSession['status'], Tone> = { draft: 'neutral', scheduled: 'info', processed: 'warning', published: 'success', locked: 'neutral' };
 const ORDER: ExamSession['status'][] = ['draft', 'scheduled', 'processed', 'published', 'locked'];
@@ -33,10 +34,10 @@ export async function ExamsDashboard({ today }: { today: string }) {
   const processed = all.filter((s) => s.status === 'processed');
   const awaiting = all.filter((s) => s.approvalRequestedAt && !s.approvedAt && s.status === 'processed');
   const p = roll.data?.pending;
-  const list = [...all].sort((a, b) => b.startsOn.localeCompare(a.startsOn)).slice(0, 6);
+  const list = [...all].sort((a, b) => naturalCompare(b.startsOn, a.startsOn)).slice(0, 6);
 
   // The latest session with results: pass percentage overall and by subject.
-  const latest = [...all].filter((s) => s.status !== 'draft' && s.status !== 'scheduled').sort((a, b) => b.endsOn.localeCompare(a.endsOn))[0];
+  const latest = [...all].filter((s) => s.status !== 'draft' && s.status !== 'scheduled').sort((a, b) => naturalCompare(b.endsOn, a.endsOn))[0];
   const res = latest ? await load(() => api<ResultRow[]>(`/v1/exam-sessions/${latest.id}/results`)) : null;
   const rows = res?.data ?? [];
   const lines = rows.flatMap((r) => r.lines);

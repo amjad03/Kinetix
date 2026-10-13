@@ -7,6 +7,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
+import '../enrollment/set_up_again.dart';
 import '../kiosk/kiosk_ui.dart';
 import '../profiles/profiles_ui.dart';
 import '../projector/projector_ui.dart';
@@ -372,6 +373,7 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
           ([l.projectorTitle], [ProjectorSettingsSection(projector: board.projector)]),
           ([l.profilesTitle, l.switchTeacher], [ProfileSettingsSection(board: board)]),
           ([l.kioskTitle], [KioskSettingsSection(kiosk: board.kiosk)]),
+          if (board.serverUrl != null) ([l.thisBoardTitle, l.setUpAgain, l.enrollServer], [ThisBoardSection(board: board)]),
         ];
         final shown = matching(sections, (s) => s.$1, _q);
         final c = context.colors;

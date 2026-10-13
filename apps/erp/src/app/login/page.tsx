@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { AuthShell } from '@/components/auth/AuthShell';
 import { safeReturnPath } from '@/lib/return-path';
 import { SESSION_COOKIE, TENANT_COOKIE } from '@/lib/config';
 import { getI18n } from '@/i18n/server';
@@ -17,20 +18,15 @@ const NOTICES: Record<string, { severity: 'info' | 'warning'; text: MessageKey }
   'signed-out': { severity: 'info', text: 'login.signedOut' },
 };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reason?: string; next?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reason?: string; next?: string; mode?: string }> }) {
   const jar = await cookies();
-  const { reason, next } = await searchParams;
+  const { reason, next, mode } = await searchParams;
   if (jar.get(SESSION_COOKIE) && !reason) redirect(safeReturnPath(next) ?? '/');
   const { t } = await getI18n();
   const notice = reason ? NOTICES[reason] : undefined;
-  const tenant = jar.get(TENANT_COOKIE)?.value ?? '';
   return (
-    <>
-      <LoginForm defaultTenant={jar.get(TENANT_COOKIE)?.value ?? ''} notice={notice ? { severity: notice.severity, text: t(notice.text) } : undefined} next={next} />
-      <form action="/login/sso" method="get" style={{ textAlign: 'center', marginTop: 16 }}>
-        <input type="hidden" name="tenant" value={tenant} />
-        {tenant && <button type="submit">{t('gb.sso.signIn')}</button>}
-      </form>
-    </>
+    <AuthShell title={t('v2.auth.artTitle')} lead={t('v2.auth.artLead')} cardTitle={t('v2.auth.artCard')} cardText={t('v2.auth.artCardText')}>
+      <LoginForm defaultTenant={jar.get(TENANT_COOKIE)?.value ?? ''} notice={notice ? { severity: notice.severity, text: t(notice.text) } : undefined} next={next} mode={mode === 'otp' ? 'otp' : 'password'} />
+    </AuthShell>
   );
 }

@@ -34,8 +34,27 @@ function ordered(tabs: WorkTab[]): WorkTab[] {
   return [...tabs.filter((t) => t.pinned), ...tabs.filter((t) => !t.pinned)];
 }
 
-/** Opens `url` in a new tab after the active one; `null` when the limit is reached. */
+/** One spelling per page: no trailing slash, query keys sorted, empty query and hash dropped. */
+export function normalizeUrl(url: string): string {
+  const noHash = url.split('#')[0];
+  const q = noHash.indexOf('?');
+  let path = q < 0 ? noHash : noHash.slice(0, q);
+  if (path.length > 1) path = path.replace(/\/+$/, '') || '/';
+  const params = new URLSearchParams(q < 0 ? '' : noHash.slice(q + 1));
+  const pairs = [...params.entries()].sort(([a, x], [b, y]) => (a === b ? (x < y ? -1 : x > y ? 1 : 0) : a < b ? -1 : 1));
+  const qs = new URLSearchParams(pairs).toString();
+  return qs ? `${path}?${qs}` : path;
+}
+
+export const sameUrl = (a: string, b: string) => normalizeUrl(a) === normalizeUrl(b);
+
+/** The open tab already showing `url`, if any. */
+export const findTab = (s: TabsState, url: string): WorkTab | undefined => s.tabs.find((t) => sameUrl(t.url, url));
+
+/** Opens `url` in a new tab after the active one, or focuses the tab already showing it; `null` when the limit is reached. */
 export function openTab(s: TabsState, tab: Omit<WorkTab, 'id'> & { id?: string }): TabsState | null {
+  const existing = findTab(s, tab.url);
+  if (existing) return activate(s, existing.id);
   if (s.tabs.length >= MAX_TABS) return null;
   const t: WorkTab = { ...tab, id: tab.id ?? newTabId() };
   const at = s.tabs.findIndex((x) => x.id === s.activeId);
@@ -51,8 +70,11 @@ export function replaceActive(s: TabsState, url: string, title: string, icon: st
     const t: WorkTab = { id: newTabId(), url, title, icon };
     return { ...s, tabs: [...s.tabs, t].slice(-MAX_TABS), activeId: t.id };
   }
-  if (active.url === url && active.title === title) return s;
-  return { ...s, tabs: s.tabs.map((t) => (t.id === active.id ? { ...t, url, title, icon, scrollY: 0 } : t)) };
+  // Another tab already shows this page: fold it into the active one, so the page is open once.
+  const dup = s.tabs.find((t) => t.id !== active.id && sameUrl(t.url, url));
+  if (active.url === url && active.title === title && !dup) return s;
+  const tabs = s.tabs.filter((t) => t !== dup).map((t) => (t.id === active.id ? { ...t, url, title, icon, scrollY: active.url === url ? t.scrollY : 0, pinned: t.pinned || !!dup?.pinned } : t));
+  return { ...s, tabs: ordered(tabs), splitId: dup && s.splitId === dup.id ? null : s.splitId };
 }
 
 export function activate(s: TabsState, id: string): TabsState {
@@ -119,9 +141,10 @@ export function restore(raw: string | null, url: string): TabsState | null {
     const tabs = (Array.isArray(v.tabs) ? v.tabs : [])
       .filter((t): t is WorkTab => !!t && typeof t.id === 'string' && typeof t.url === 'string' && t.url.startsWith('/') && !t.url.startsWith('//'))
       .map((t) => ({ id: t.id, url: t.url, title: String(t.title ?? ''), icon: String(t.icon ?? ''), pinned: !!t.pinned, scrollY: Number(t.scrollY) || 0 }))
+      .filter((t, i, all) => all.findIndex((o) => sameUrl(o.url, t.url)) === i)
       .slice(0, MAX_TABS);
     if (!tabs.length) return null;
-    const match = tabs.find((t) => t.url === url) ?? tabs.find((t) => t.id === v.activeId);
+    const match = tabs.find((t) => sameUrl(t.url, url)) ?? tabs.find((t) => t.id === v.activeId);
     const ratio = typeof v.ratio === 'number' && v.ratio >= 0.25 && v.ratio <= 0.75 ? v.ratio : 0.5;
     const splitId = typeof v.splitId === 'string' && tabs.some((t) => t.id === v.splitId) && v.splitId !== match?.id ? v.splitId : null;
     return { tabs: ordered(tabs), activeId: match?.id ?? tabs[0].id, splitId, ratio };

@@ -289,6 +289,10 @@ describe('HR and payroll', () => {
       await post('accountant', `/v1/payroll/runs/${aprilRun.id}/approve`, { expectedVersion: aprilRun.version }).expect(403);
       await post('hr', `/v1/payroll/runs/${aprilRun.id}/lock`, { expectedVersion: aprilRun.version }).expect(403);
       await get('hr', `/v1/payroll/runs/${aprilRun.id}/tally.xml`).expect(409); // still a draft
+      expect((await post('principal', `/v1/payroll/runs/${aprilRun.id}/approve`, { expectedVersion: aprilRun.version }).expect(409)).body.message).toBe('Verify the run before approving it');
+      await post('teacher', `/v1/payroll/runs/${aprilRun.id}/verify`, { expectedVersion: aprilRun.version }).expect(403);
+      aprilRun = (await post('hr', `/v1/payroll/runs/${aprilRun.id}/verify`, { expectedVersion: aprilRun.version }).expect(200)).body;
+      await get('hr', `/v1/payroll/runs/${aprilRun.id}/tally.xml`).expect(409); // verified, not yet approved
       await post('principal', `/v1/payroll/runs/${aprilRun.id}/approve`, { expectedVersion: aprilRun.version + 5 }).expect(409);
       const approved = (await post('principal', `/v1/payroll/runs/${aprilRun.id}/approve`, { expectedVersion: aprilRun.version }).expect(200)).body;
       expect(approved).toMatchObject({ status: 'approved', version: aprilRun.version + 1 });
@@ -297,6 +301,10 @@ describe('HR and payroll', () => {
       const locked = (await post('principal', `/v1/payroll/runs/${aprilRun.id}/lock`, { expectedVersion: approved.version }).expect(200)).body;
       expect(locked.status).toBe('locked');
       await post('principal', `/v1/payroll/runs/${aprilRun.id}/reopen`, { expectedVersion: locked.version }).expect(409);
+      const published = (await post('hr', `/v1/payroll/runs/${aprilRun.id}/publish`, { expectedVersion: locked.version }).expect(200)).body;
+      expect(published.publishedAt).toBeTruthy();
+      expect(published.payslips.every((s: { payslipNo: string }) => /^PS\/2026-27\/\d{5}$/.test(s.payslipNo))).toBe(true);
+      await post('hr', `/v1/payroll/runs/${aprilRun.id}/publish`, { expectedVersion: published.version }).expect(409);
       await put('hr', '/v1/hr/attendance', { date: '2026-04-06', entries: [{ userId: ids.teacher, status: 'absent' }] }).expect(409); // locked month
       expect(await audited('payroll.run_approved')).toBe(1);
       expect(await audited('payroll.run_locked')).toBe(1);
@@ -306,10 +314,13 @@ describe('HR and payroll', () => {
       const may = (await post('accountant', '/v1/payroll/runs', { month: '2026-05' }).expect(201)).body;
       expect(slip(may, ids.teacher).deductions.find((d) => d.code === 'TDS')?.amountPaise).toBe(R(24_375));
       const oct = (await post('accountant', '/v1/payroll/runs', { month: '2026-10' }).expect(201)).body;
-      const octApproved = (await post('principal', `/v1/payroll/runs/${oct.id}/approve`, { expectedVersion: oct.version }).expect(200)).body;
+      const octV = (await post('hr', `/v1/payroll/runs/${oct.id}/verify`, { expectedVersion: oct.version }).expect(200)).body;
+      const octApproved = (await post('principal', `/v1/payroll/runs/${oct.id}/approve`, { expectedVersion: octV.version }).expect(200)).body;
       expect((await post('principal', `/v1/payroll/runs/${oct.id}/lock`, { expectedVersion: octApproved.version }).expect(409)).body.message).toBe('Lock 2026-05 first');
-      const mayApproved = (await post('principal', `/v1/payroll/runs/${may.id}/approve`, { expectedVersion: may.version }).expect(200)).body;
-      await post('principal', `/v1/payroll/runs/${may.id}/lock`, { expectedVersion: mayApproved.version }).expect(200);
+      const mayV = (await post('hr', `/v1/payroll/runs/${may.id}/verify`, { expectedVersion: may.version }).expect(200)).body;
+      const mayApproved = (await post('principal', `/v1/payroll/runs/${may.id}/approve`, { expectedVersion: mayV.version }).expect(200)).body;
+      const mayLocked = (await post('principal', `/v1/payroll/runs/${may.id}/lock`, { expectedVersion: mayApproved.version }).expect(200)).body;
+      await post('hr', `/v1/payroll/runs/${may.id}/publish`, { expectedVersion: mayLocked.version }).expect(200);
       await post('principal', `/v1/payroll/runs/${oct.id}/reopen`, { expectedVersion: octApproved.version }).expect(200);
       await owner.query('delete from payroll_runs where id = $1', [oct.id]);
     });
@@ -336,6 +347,7 @@ describe('HR and payroll', () => {
     });
 
     it('exports bank, statutory and Tally files from an approved run, audited', async () => {
+      octRun = (await post('hr', `/v1/payroll/runs/${octRun.id}/verify`, { expectedVersion: octRun.version }).expect(200)).body;
       const approved = (await post('principal', `/v1/payroll/runs/${octRun.id}/approve`, { expectedVersion: octRun.version }).expect(200)).body;
       const bank = await get('accountant', `/v1/payroll/runs/${octRun.id}/bank-transfer.csv`).expect(200);
       expect(bank.headers['content-type']).toContain('text/csv');
@@ -355,12 +367,15 @@ describe('HR and payroll', () => {
       expect(await audited('payroll.export_tally')).toBe(1);
       const reopened = (await post('principal', `/v1/payroll/runs/${octRun.id}/reopen`, { expectedVersion: approved.version }).expect(200)).body;
       expect(reopened.status).toBe('draft');
-      octRun = (await post('principal', `/v1/payroll/runs/${octRun.id}/approve`, { expectedVersion: reopened.version }).expect(200)).body;
+      const reverified = (await post('hr', `/v1/payroll/runs/${octRun.id}/verify`, { expectedVersion: reopened.version }).expect(200)).body;
+      octRun = (await post('principal', `/v1/payroll/runs/${octRun.id}/approve`, { expectedVersion: reverified.version }).expect(200)).body;
     });
 
     it('publishes payslips to their owners when the run is locked, with a PDF', async () => {
       expect((await get('teacher', '/v1/payroll/payslips/me').expect(200)).body.map((p: { month: string }) => p.month)).toEqual(['2026-05', '2026-04']);
       const locked = (await post('principal', `/v1/payroll/runs/${octRun.id}/lock`, { expectedVersion: octRun.version }).expect(200)).body;
+      expect((await get('teacher', '/v1/payroll/payslips/me').expect(200)).body).toHaveLength(2); // locked, not yet published
+      await post('hr', `/v1/payroll/runs/${octRun.id}/publish`, { expectedVersion: locked.version }).expect(200);
       const mine = (await get('teacher', '/v1/payroll/payslips/me').expect(200)).body as { id: string; month: string; runStatus: string }[];
       expect(mine.map((p) => p.month)).toEqual(['2026-10', '2026-05', '2026-04']);
       const pdf = await get('teacher', `/v1/payroll/payslips/${mine[0].id}/pdf`).buffer(true).parse((res, cb) => {

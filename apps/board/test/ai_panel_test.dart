@@ -12,6 +12,7 @@ import 'package:kinetix_board/features/ai/ai_controller.dart';
 import 'package:kinetix_board/features/ai/ai_widgets.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_board/features/board/panel/split_panel.dart';
+import 'package:kinetix_ink/kinetix_ink.dart' show TexView;
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'support/layout.dart';
@@ -214,6 +215,10 @@ void main() {
         await ask(tester, 'Question ${e.key}');
         expect(find.text(e.value), findsOneWidget, reason: '${e.key}');
       }
+      // The model server (Gemini's free tier) stayed busy after the API waited and asked again.
+      override = (_) async => http.Response(jsonEncode({'message': 'KINETIX AI is busy right now. Try again in a minute.', 'statusCode': 503, 'code': 'AI_BUSY'}), 503);
+      await ask(tester, 'Busy question');
+      expect(find.text('KINETIX AI is busy right now. Try again in a minute.'), findsOneWidget);
       override = (_) async => throw http.ClientException('Network is unreachable');
       await ask(tester, 'Offline question');
       expect(find.textContaining('The board is offline'), findsOneWidget);
@@ -432,7 +437,8 @@ void main() {
       final image = bodyOf(calls('/v1/ai/read-board').single)['image'] as String;
       expect(base64Decode(image).sublist(1, 4), 'PNG'.codeUnits);
       expect(find.text('Goodwill = Super profit × 3'), findsOneWidget);
-      expect(find.text('G = SP \\times 3'), findsOneWidget);
+      // The maths is typeset from its LaTeX.
+      expect(tester.widget<TexView>(find.byKey(const Key('reading-math-0'))).tex, 'G = SP \\times 3');
 
       await tapKey(tester, 'reading-ask');
       expect(bodyOf(calls('/v1/ai/explain').single)['question'], 'Explain this from the board: Goodwill = Super profit × 3');

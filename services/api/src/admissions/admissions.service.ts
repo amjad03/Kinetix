@@ -31,6 +31,7 @@ import { LifecycleService } from '../students/lifecycle.service.js';
 import { addDays, auditActor, type Actor } from './enquiries.service.js';
 import { accrueCommission } from './agents.service.js';
 import { INTERVIEW_SCORE_FIELD, interviewResults } from './interviews.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 export type Cycle = typeof admissionCycles.$inferSelect;
 export type Application = typeof applications.$inferSelect;
@@ -433,7 +434,7 @@ export class AdmissionsService {
       .select()
       .from(sections)
       .where(and(eq(sections.programId, cycle.programId), eq(sections.academicYearId, cycle.academicYearId), eq(sections.term, cycle.entryTerm)))
-      .orderBy(asc(sections.name));
+      .orderBy(...naturalAsc(sections.name));
     let section = input.sectionId ? candidates.find((s) => s.id === input.sectionId) : undefined;
     if (input.sectionId && !section) throw new BadRequestException("That class is not one of this cycle's classes");
     if (!section) {

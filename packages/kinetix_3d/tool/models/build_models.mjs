@@ -5,15 +5,18 @@
 // the geometry facts the viewer needs: label anchors, take-apart
 // directions, flow paths). BP3D is the folder with the BodyParts3D zips
 // (isa_/partof_BP3D_4.0_obj_99.zip) from dbarchive.biosciencedbc.jp.
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readBp3d, merge, weld, simplify, clip, bounds, centroid, triangles, openEdges, translate, cutPlane, components, compact } from './lib/mesh.mjs';
+import { readBp3d, merge, weld, simplify, clip, bounds, centroid, triangles, openEdges, translate, scale, cutPlane, components, compact } from './lib/mesh.mjs';
 import { writeGlb } from './lib/glb.mjs';
+import * as importer from './lib/importer.mjs';
+import { existsSync, statSync } from 'node:fs';
 import { envelope } from './lib/volume.mjs';
 import { writeCatalogue } from './write_catalogue.mjs';
 import * as THREE from 'three';
-import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /** A three.js geometry (or a list of them) as a plain mesh. */
 function fromGeometry(g) {
@@ -28,6 +31,26 @@ function fromGeometry(g) {
   const merged = mergeVertices(mergeGeometries(clean), 1e-6);
   const pos = merged.attributes.position.array;
   return { positions: new Float32Array(pos), indices: new Uint32Array(merged.index.array) };
+}
+
+/**
+ * A part made in code with hard edges kept: faces meeting at more than
+ * [angle] get their own normals (a machined box stays a box, not a pillow).
+ */
+function creased(g, angle) {
+  const list = Array.isArray(g) ? g : [g];
+  const clean = list.map((x) => {
+    const y = x.index ? x.toNonIndexed() : x.clone();
+    for (const k of Object.keys(y.attributes)) if (k !== 'position') y.deleteAttribute(k);
+    return y;
+  });
+  const c = mergeVertices(toCreasedNormals(mergeVertices(mergeGeometries(clean), 1e-6), angle), 1e-6);
+  return {
+    positions: Float32Array.from(c.attributes.position.array),
+    normals: Float32Array.from(c.attributes.normal.array),
+    indices: Uint32Array.from(c.index.array),
+    material: { name: 'made', color: [1, 1, 1, 1], roughness: 0.5, metalness: 0 },
+  };
 }
 
 /** Signed volume: negative when the triangles face inwards. */
@@ -50,6 +73,8 @@ function outward(m) {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const out = join(here, '../../assets/viewer3d/models');
+// Models downloaded on first use (recipe.remote): not in the app, served from here.
+const remoteOut = join(here, '../../remote_models');
 
 /** Every vertex of [m] as [x, y, z]. */
 const vertices = (m) => Array.from({ length: m.positions.length / 3 }, (_, i) => [m.positions[i * 3], m.positions[i * 3 + 1], m.positions[i * 3 + 2]]);
@@ -159,10 +184,25 @@ async function build(recipe, bp3d) {
     console.log(`  envelope ${id}: ${triangles(env[id])} triangles, ${Date.now() - t1} ms`);
   }
   const raw = {};
+  const rich = {};
   // Models built in code: the recipe makes each part's geometry with three.js.
   if (recipe.build) {
     const made = await recipe.build(THREE);
-    for (const [id, g] of Object.entries(made)) raw[id] = fromGeometry(g);
+    for (const [id, g] of Object.entries(made)) {
+      raw[id] = fromGeometry(g);
+      // Machines keep their hard edges ([crease]: the angle in degrees).
+      const crease = recipe.parts.find((p) => p.id === id)?.crease ?? recipe.crease;
+      if (crease) rich[id] = creased(g, (crease * Math.PI) / 180);
+    }
+  }
+  // Models made from other people's files (recipe.sources): each part keeps
+  // its own look (texture, vertex colours), see lib/importer.mjs.
+  if (recipe.import) {
+    const made = await recipe.import({ ...importer, THREE, source: (name) => sourceFile(recipe, name) });
+    for (const [id, r] of Object.entries(made)) {
+      rich[id] = r;
+      raw[id] = importer.plain(r);
+    }
   }
   for (const [name, s] of Object.entries(recipe.splits || {})) {
     const parts = split(s.envelope ? env[s.envelope] : load(s.file), Object.fromEntries(Object.entries(s.near).map(([id, fs]) => [id, merge(fs.map(load))])), s.both);
@@ -174,7 +214,7 @@ async function build(recipe, bp3d) {
     if (p.envelope) raw[p.id] = env[p.envelope];
     if (p.scaleOf) continue;
     if (!raw[p.id]) throw new Error(`${recipe.id}: part ${p.id} has no geometry`);
-    if (recipe.build) continue; // made in code: keep every piece
+    if (recipe.build || recipe.import) continue; // made in code or imported: keep every piece
     // Drop specks: a few stray triangles far from the part in the source data.
     const pieces = components(raw[p.id]);
     raw[p.id] = merge(pieces.filter((c) => triangles(c) >= (p.minPiece ?? 20)));
@@ -230,16 +270,32 @@ async function build(recipe, bp3d) {
   const whole = merge(recipe.parts.filter((p) => !p.hidden).map((p) => raw[p.id]));
   const b = bounds(whole);
   const shift = b.center.map((v) => -v);
-  const size = Math.max(...b.size);
+  // Imported models come in any unit: [recipe.size] is the longest side wanted, in metres.
+  const k = recipe.size ? recipe.size / Math.max(...b.size) : 1;
+  const size = Math.max(...b.size) * k;
+  /** A point in the recipe's own coordinates, moved and scaled with the model. */
+  const toModel = (v, i) => (v + shift[i]) * k;
   // 3. Simplify each part.
   const parts = [];
   for (const p of recipe.parts) {
-    let m = translate(raw[p.id], shift);
+    let m = scale(translate(raw[p.id], shift), k);
     const before = triangles(m);
-    // Shapes made in code are kept as made, unless a part asks for fewer
-    // triangles (the Earth's coastlines are fine, its oceans need not be).
-    if (!recipe.build || p.detail) m = await simplify(m, p.detail ?? recipe.detail ?? 0.5, p.error ?? 0.002);
-    parts.push({ ...p, mesh: m, before });
+    let r = rich[p.id];
+    if (r) {
+      // A part with several textures is a list of rich meshes, each moved and simplified alike.
+      const detail = p.detail ?? recipe.detail ?? 1;
+      const one = async (x) => {
+        x = importer.place(x, { scale: k, translate: shift.map((v) => v * k) });
+        return detail < 1 ? importer.simplifyRich(x, detail, p.error ?? recipe.error ?? 0.002) : x;
+      };
+      r = Array.isArray(r) ? await Promise.all(r.map(one)) : await one(r);
+      m = importer.plain(r);
+    } else if (!recipe.build || p.detail) {
+      // Shapes made in code are kept as made, unless a part asks for fewer
+      // triangles (the Earth's coastlines are fine, its oceans need not be).
+      m = await simplify(m, p.detail ?? recipe.detail ?? 0.5, p.error ?? 0.002);
+    }
+    parts.push({ ...p, mesh: m, rich: r, before });
   }
   // 4. Geometry facts for the viewer.
   const facts = {};
@@ -251,18 +307,18 @@ async function build(recipe, bp3d) {
     // faces the camera best.
     let anchors = Object.values(dirs).map((d) => [...d, ...r3(frontAnchor(p.mesh, d))]);
     // Or one fixed point for the label (a ray's label in open air, say).
-    const at = p.labelAt && r3(p.labelAt.map((v, k) => v + shift[k]));
+    const at = p.labelAt && r3(p.labelAt.map(toModel));
     if (at) anchors = Object.values(dirs).map((d) => [...d, ...at]);
     facts[p.id] = { centroid: r3(c), anchor: at || r3(anchor), anchors, explode: r3(p.explode ?? out) };
   }
   const point = (ref) => {
     // A point given in the recipe's own coordinates moves with the model when it is centred.
-    if (Array.isArray(ref)) return r3(ref.map((v, k) => v + shift[k]));
+    if (Array.isArray(ref)) return r3(ref.map(toModel));
     // {ref: 'part@front', add: [x, y, z]}: a point moved by [add] metres.
     if (typeof ref === 'object') return r3(point(ref.ref).map((v, k) => v + (ref.add?.[k] ?? 0)));
     const [id, where] = ref.split('@');
     if (id.startsWith('file:')) {
-      const m = translate(load(id.slice(5)), shift);
+      const m = scale(translate(load(id.slice(5)), shift), k);
       return r3(where ? extreme(m, dirs[where]) : centroid(m));
     }
     const part = parts.find((p) => p.id === id);
@@ -274,9 +330,13 @@ async function build(recipe, bp3d) {
     steps: a.steps?.map((s) => ({ ...s, paths: s.paths?.map((path) => path.map(point)) })),
   }));
   // 5. Write.
-  const glb = await writeGlb(parts.map((p) => ({ id: p.id, mesh: p.mesh, color: p.color })));
-  mkdirSync(out, { recursive: true });
-  writeFileSync(join(out, `${recipe.id}.glb`), glb);
+  const glb = await writeGlb(
+    parts.map((p) => ({ id: p.id, mesh: p.mesh, color: p.color, rich: p.rich, maxTexture: p.maxTexture })),
+    { maxTexture: recipe.maxTexture ?? 1024 },
+  );
+  const dest = recipe.remote ? remoteOut : out;
+  mkdirSync(dest, { recursive: true });
+  writeFileSync(join(dest, `${recipe.id}.glb`), glb);
   const manifest = {
     id: recipe.id,
     version: recipe.version ?? 1,
@@ -304,8 +364,23 @@ async function build(recipe, bp3d) {
       ...(p.matte !== undefined ? { matte: p.matte } : {}),
       ...(p.variant ? { variant: p.variant } : {}),
       // Hinge points and orbit centres move with the model when it is centred.
-      ...(p.spin ? { spin: { ...p.spin, centre: r3((p.spin.centre || [0, 0, 0]).map((v, k) => v + shift[k])) } } : {}),
-      ...(p.hinge ? { hinge: { ...p.hinge, point: r3(p.hinge.point.map((v, k) => v + shift[k])), axis: r3(p.hinge.axis), angle: round(p.hinge.angle) } } : {}),
+      ...(p.spin ? { spin: { ...p.spin, centre: r3((p.spin.centre || [0, 0, 0]).map(toModel)) } } : {}),
+      // A machine part's drive: points move and lengths scale with the model.
+      ...(p.drive
+        ? {
+            drive: {
+              ...p.drive,
+              ...(p.drive.centre ? { centre: r3(p.drive.centre.map(toModel)) } : {}),
+              ...(p.drive.pin ? { pin: r3(p.drive.pin.map(toModel)) } : {}),
+              ...(p.drive.r ? { r: round(p.drive.r * k), l: round(p.drive.l * k) } : {}),
+              ...(p.drive.lift ? { lift: round(p.drive.lift * k) } : {}),
+            },
+          }
+        : {}),
+      ...(p.metal ? { metal: true } : {}),
+      ...(p.hinge ? { hinge: { ...p.hinge, point: r3(p.hinge.point.map(toModel)), axis: r3(p.hinge.axis), angle: round(p.hinge.angle) } } : {}),
+      // Parts from other people's models are drawn with their own texture and colours.
+      ...(p.rich && importer.richList(p.rich).some((x) => x.material.texture || x.colors) ? { material: 'file' } : {}),
       name: p.name,
       info: p.info,
       ...facts[p.id],
@@ -318,34 +393,72 @@ async function build(recipe, bp3d) {
     // The version the library's picture shows.
     ...(recipe.thumb ? { thumb: recipe.thumb } : {}),
     // Lit by a sun at this point (space models).
-    ...(recipe.light ? { light: r3(recipe.light.map((v, k) => v + shift[k])) } : {}),
+    ...(recipe.light ? { light: r3(recipe.light.map(toModel)) } : {}),
     views: recipe.views,
     // A cut can pass through a part's middle ("through": part id).
     slices: recipe.slices?.map(({ through, ...sl }) => {
-      if (sl.anchors) sl = { ...sl, anchors: Object.fromEntries(Object.entries(sl.anchors).map(([id, v]) => [id, v && r3(v.map((x, k) => x + shift[k]))])) };
+      if (sl.anchors) sl = { ...sl, anchors: Object.fromEntries(Object.entries(sl.anchors).map(([id, v]) => [id, v && r3(v.map(toModel))])) };
       if (!through) return sl;
       const n = sl.normal, c = facts[through].centroid, l = Math.hypot(...n);
       return { ...sl, offset: round((n[0] * c[0] + n[1] * c[1] + n[2] * c[2]) / l) };
     }),
     animations,
   };
-  writeFileSync(join(out, `${recipe.id}.json`), JSON.stringify(manifest, null, 1) + '\n');
+  if (recipe.remote) Object.assign(manifest, { remote: true, topic: recipe.topic, license: recipe.license });
+  writeFileSync(join(dest, `${recipe.id}.json`), JSON.stringify(manifest, null, 1) + '\n');
   const tris = parts.reduce((a, p) => a + triangles(p.mesh), 0);
   console.log(`${recipe.id}: ${parts.length} parts, ${tris} triangles, ${(glb.length / 1024).toFixed(0)} KB, ${Date.now() - t0} ms`);
   for (const p of parts) console.log(`  ${p.id.padEnd(22)} ${String(p.before).padStart(6)} -> ${String(triangles(p.mesh)).padStart(6)} tris, open edges ${openEdges(p.mesh)}`);
 }
 
 /** models/index.json: the library the app lists, from every manifest. */
-function writeIndex() {
-  const models = readdirSync(out)
+function writeIndex(dir = out) {
+  mkdirSync(dir, { recursive: true });
+  const models = readdirSync(dir)
     .filter((f) => f.endsWith('.json') && f !== 'index.json')
-    .map((f) => JSON.parse(readFileSync(join(out, f), 'utf8')))
+    .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')))
     .sort((a, b) => subjects.indexOf(a.subject) - subjects.indexOf(b.subject) || (a.order ?? 99) - (b.order ?? 99) || a.id.localeCompare(b.id))
-    .map((m) => ({ id: m.id, subject: m.subject, title: m.title, summary: m.summary, keywords: m.keywords, classes: m.classes, ...(m.order ? { order: m.order } : {}) }));
-  writeFileSync(join(out, 'index.json'), JSON.stringify({ version: 1, models }, null, 1) + '\n');
+    .map((m) => ({
+      id: m.id, subject: m.subject, title: m.title, summary: m.summary, keywords: m.keywords, classes: m.classes, ...(m.order ? { order: m.order } : {}),
+      // Downloads: what the app shows before fetching.
+      ...(m.remote ? { topic: m.topic, license: m.license, credit: m.credit, bytes: statSync(join(dir, m.file)).size + statSync(join(dir, `${m.id}.json`)).size } : {}),
+    }));
+  writeFileSync(join(dir, 'index.json'), JSON.stringify({ version: 1, models }, null, 1) + '\n');
   console.log(`index: ${models.length} models`);
 }
-const subjects = ['Biology', 'Physics', 'Chemistry', 'Geography', 'Space', 'Maths'];
+const subjects = ['Biology', 'Physics', 'Chemistry', 'Geography', 'History', 'Space', 'Engineering', 'Maths'];
+
+/**
+ * A recipe's source file ([recipe.sources][name]: {file, url}) in $SOURCES
+ * (default: tool/models/sources, not kept in git), downloaded the first time.
+ */
+async function fetchSources(recipe) {
+  const dir = process.env.SOURCES || join(here, 'sources');
+  mkdirSync(dir, { recursive: true });
+  for (const s of Object.values(recipe.sources || {})) {
+    const path = join(dir, s.file);
+    if (existsSync(path)) continue;
+    console.log(`  downloading ${s.url}`);
+    const res = await fetch(s.url, { headers: { 'user-agent': 'Mozilla/5.0 (KINETIX model build)' } });
+    if (!res.ok) throw new Error(`${recipe.id}: ${s.url}: HTTP ${res.status}`);
+    mkdirSync(dirname(path), { recursive: true });
+    if (s.zip) {
+      // A file inside a zip (a dataset with many files): keep only that one.
+      const zip = `${path}.download.zip`;
+      writeFileSync(zip, Buffer.from(await res.arrayBuffer()));
+      writeFileSync(path, execFileSync('unzip', ['-p', zip, s.zip], { maxBuffer: 1 << 30 }));
+      rmSync(zip);
+    } else {
+      writeFileSync(path, Buffer.from(await res.arrayBuffer()));
+    }
+  }
+}
+
+function sourceFile(recipe, name) {
+  const s = recipe.sources?.[name];
+  if (!s) throw new Error(`${recipe.id}: no source ${name}`);
+  return join(process.env.SOURCES || join(here, 'sources'), s.file);
+}
 
 const bp3d = process.env.BP3D;
 const wanted = process.argv.slice(2);
@@ -353,8 +466,10 @@ for (const f of readdirSync(join(here, 'recipes')).filter((f) => f.endsWith('.mj
   const recipe = (await import(join(here, 'recipes', f))).default;
   if (wanted.length && !wanted.includes(recipe.id)) continue;
   if (recipe.source === 'bp3d' && !bp3d) throw new Error('Set BP3D to the folder with the BodyParts3D zips');
+  await fetchSources(recipe);
   await build(recipe, bp3d);
 }
 writeIndex();
+writeIndex(remoteOut);
 // The same list for the app's Dart catalogue.
 writeCatalogue();

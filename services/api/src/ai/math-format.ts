@@ -40,15 +40,46 @@ export function latexToUnicode(src: string): string {
   return s.replace(/[{}]/g, '').replace(/[ \t]+/g, ' ').trim();
 }
 
-/** Replaces every $…$, $$…$$, \(…\) and \[…\] in a reply with Unicode maths; removes markdown emphasis and fences. */
+/**
+ * LaTeX written without $ delimiters (\frac{1}{2}, 3 \times 4, x^{2}, x^2). Only the commands in
+ * the tables above are changed, so any other backslash is left as it is.
+ */
+export function bareLatexToUnicode(text: string): string {
+  let s = text;
+  for (let n = 0; n < 6 && /\\[dt]?frac\s*\{/.test(s); n++) {
+    s = s.replace(/\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, (_, a: string, b: string) => `${wrap(a.trim())}/${wrap(b.trim())}`);
+  }
+  s = s.replace(/\\sqrt\s*\{([^{}]*)\}/g, (_, a: string) => `√${wrap(a)}`);
+  s = s.replace(/\\(?:text|mathrm|mathbf|operatorname|mbox)\s*\{([^{}]*)\}/g, '$1');
+  s = s.replace(/\\(?:left|right)(?![A-Za-z])\s*/g, '');
+  s = s.replace(/\\([A-Za-z]+)(?![A-Za-z])/g, (m, name: string) => GREEK[name] ?? SYMBOLS[name] ?? m);
+  s = s.replace(/([\w)\]])\^\{([0-9n+-]{1,4})\}/g, (_, b: string, e: string) => b + mapAll(e, SUP));
+  s = s.replace(/([A-Za-z0-9)\]])\^([+-]?[0-9]{1,3})(?!\d|\.\d)/g, (_, b: string, e: string) => b + mapAll(e, SUP));
+  // Chemical formulas and indices: H_2O, x_{12}.
+  s = s.replace(/([A-Za-z)\]])_\{([0-9]{1,3})\}/g, (_, b: string, e: string) => b + mapAll(e, SUB));
+  s = s.replace(/([A-Z][a-z]?|[a-z])_([0-9]{1,2})(?!\d)/g, (_, b: string, e: string) => b + mapAll(e, SUB));
+  return s;
+}
+
+/**
+ * Replaces every $…$, $$…$$, \(…\) and \[…\] in a reply with Unicode maths, and LaTeX written
+ * without delimiters too; removes markdown (fences, bold, italics, headings, inline code) and
+ * turns markdown bullets into "•".
+ */
 export function cleanAnswerText(text: string): string {
   let s = text.replace(/\r\n?/g, '\n');
+  // A newline the model escaped twice arrives as the two characters \n.
+  s = s.replace(/\\n(?![a-z])/g, '\n');
   s = s.replace(/```[a-z]*\n?([\s\S]*?)```/g, '$1');
   s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, m: string) => latexToUnicode(m));
   s = s.replace(/\\\[([\s\S]+?)\\\]/g, (_, m: string) => latexToUnicode(m));
   s = s.replace(/\\\(([\s\S]+?)\\\)/g, (_, m: string) => latexToUnicode(m));
   s = s.replace(/(?<![\w\\])\$([^$\n]{1,200}?)\$(?!\w)/g, (_, m: string) => latexToUnicode(m));
-  s = s.replace(/\*\*([^*\n]+)\*\*/g, '$1').replace(/^#{1,6}\s+/gm, '');
+  s = bareLatexToUnicode(s);
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '$1').replace(/__([^_\n]+)__/g, '$1').replace(/^#{1,6}\s+/gm, '');
+  s = s.replace(/^([ \t]*)[*-][ \t]+(?=\S)/gm, '$1• ');
+  s = s.replace(/(?<![\w*])\*(?![\s*])([^*\n]+?)(?<![\s*])\*(?![\w*])/g, '$1');
+  s = s.replace(/`([^`\n]+)`/g, '$1');
   return s.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 

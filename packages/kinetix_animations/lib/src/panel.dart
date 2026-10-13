@@ -182,7 +182,7 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
             key: const ValueKey('anim-class'),
             hint: ui3('Class', lang),
             value: _level,
-            items: {for (final l in _levels) l: l},
+            items: {for (final l in _levels) l: '${ui3('Class', lang)} ${l.replaceAll('Class ', '')}'},
             allLabel: ui3('All', lang),
             onChanged: (v) => setState(() => _level = v),
           )),
@@ -221,7 +221,7 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(a.title.of(lang), maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                             Text(
-                              '${ui3(a.subject, lang)} · ${a.levels.first}${a.levels.length > 1 ? '–${a.levels.last.replaceAll('Class ', '')}' : ''}',
+                              '${ui3(a.subject, lang)} · ${ui3('Class', lang)} ${a.levels.first.replaceAll('Class ', '')}${a.levels.length > 1 ? '–${a.levels.last.replaceAll('Class ', '')}' : ''}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),

@@ -5,7 +5,9 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { DelegationService } from '../delegation/delegation.service.js';
 import type { Tx } from '../db/db.service.js';
+import { leaveEncashments } from '../db/schema-hrpay.js';
 import { leaveBalances, leaveRequests, leaveTypes, staffProfiles, users } from '../db/schema.js';
+import { hrModuleSettings } from './hr-settings.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { texts } from '../notifications/texts.js';
 import { HrService } from './hr.service.js';
@@ -21,7 +23,7 @@ export const DEFAULT_LEAVE_TYPES = [
 ] as const;
 
 type TypeRow = typeof leaveTypes.$inferSelect;
-const typeView = (t: TypeRow): LeaveType => ({ id: t.id, code: t.code, name: t.name, paid: t.paid, annualDays: t.annualDays, accrual: t.accrual as LeaveType['accrual'], carryForwardMax: t.carryForwardMax, active: t.active });
+const typeView = (t: TypeRow): LeaveType => ({ id: t.id, code: t.code, name: t.name, paid: t.paid, annualDays: t.annualDays, accrual: t.accrual as LeaveType['accrual'], carryForwardMax: t.carryForwardMax, active: t.active, encashable: t.encashable });
 
 @Injectable()
 export class LeaveService {
@@ -44,11 +46,13 @@ export class LeaveService {
     const reqs = await tx
       .select({ typeId: leaveRequests.leaveTypeId, status: leaveRequests.status, days: leaveRequests.days })
       .from(leaveRequests)
-      .where(and(eq(leaveRequests.userId, userId), inArray(leaveRequests.status, ['approved', 'pending']), gte(leaveRequests.fromDate, `${year}-01-01`), lte(leaveRequests.fromDate, `${year}-12-31`)));
+      .where(and(eq(leaveRequests.userId, userId), inArray(leaveRequests.status, ['approved', 'pending', 'recommended']), gte(leaveRequests.fromDate, `${year}-01-01`), lte(leaveRequests.fromDate, `${year}-12-31`)));
+    // Encashed days leave the balance: approved ones as used, pending ones as pending.
+    const enc = await tx.select({ typeId: leaveEncashments.leaveTypeId, status: leaveEncashments.status, days: leaveEncashments.days }).from(leaveEncashments).where(and(eq(leaveEncashments.userId, userId), eq(leaveEncashments.year, year), inArray(leaveEncashments.status, ['approved', 'pending'])));
     const today = await this.hr.today(tx);
     return types.map((t) => {
-      const sum = (st: string) => reqs.filter((r) => r.typeId === t.id && r.status === st).reduce((s, r) => s + r.days, 0);
-      const b = { opening: opening.get(t.id) ?? 0, accrued: accruedDays({ annualDays: t.annualDays, accrual: t.accrual as 'yearly' }, year, today, prof?.joined ?? null), used: sum('approved'), pending: sum('pending') };
+      const sum = (...st: string[]) => [...reqs, ...enc].filter((r) => r.typeId === t.id && st.includes(r.status)).reduce((s, r) => s + r.days, 0);
+      const b = { opening: opening.get(t.id) ?? 0, accrued: accruedDays({ annualDays: t.annualDays, accrual: t.accrual as 'yearly' }, year, today, prof?.joined ?? null), used: sum('approved'), pending: sum('pending', 'recommended') };
       return { leaveType: { id: t.id, code: t.code, name: t.name, paid: t.paid }, year, ...b, available: t.paid ? availableDays(b) : 0 };
     });
   }
@@ -79,14 +83,15 @@ export class LeaveService {
 
   private select(tx: Tx) {
     return tx
-      .select({ r: leaveRequests, t: leaveTypes, u: { id: users.id, fullName: users.fullName }, d: { id: sql<string | null>`d.id`, fullName: sql<string | null>`d.full_name` } })
+      .select({ r: leaveRequests, t: leaveTypes, u: { id: users.id, fullName: users.fullName }, d: { id: sql<string | null>`d.id`, fullName: sql<string | null>`d.full_name` }, rb: { id: sql<string | null>`rb.id`, fullName: sql<string | null>`rb.full_name` } })
       .from(leaveRequests)
       .innerJoin(leaveTypes, eq(leaveTypes.id, leaveRequests.leaveTypeId))
       .innerJoin(users, eq(users.id, leaveRequests.userId))
-      .leftJoin(sql`users d`, sql`d.id = ${leaveRequests.decidedBy}`);
+      .leftJoin(sql`users d`, sql`d.id = ${leaveRequests.decidedBy}`)
+      .leftJoin(sql`users rb`, sql`rb.id = ${leaveRequests.recommendedBy}`);
   }
 
-  private view(x: { r: typeof leaveRequests.$inferSelect; t: TypeRow; u: { id: string; fullName: string }; d: { id: string | null; fullName: string | null } }): LeaveRequest {
+  private view(x: { r: typeof leaveRequests.$inferSelect; t: TypeRow; u: { id: string; fullName: string }; d: { id: string | null; fullName: string | null }; rb: { id: string | null; fullName: string | null } }): LeaveRequest {
     return {
       id: x.r.id,
       user: x.u,
@@ -100,6 +105,9 @@ export class LeaveService {
       decidedBy: x.d.id ? { id: x.d.id, fullName: x.d.fullName! } : null,
       decidedAt: x.r.decidedAt?.toISOString() ?? null,
       decisionNote: x.r.decisionNote,
+      recommendedBy: x.rb.id ? { id: x.rb.id, fullName: x.rb.fullName! } : null,
+      recommendedAt: x.r.recommendedAt?.toISOString() ?? null,
+      recommendNote: x.r.recommendNote,
       createdAt: x.r.createdAt.toISOString(),
     };
   }
@@ -146,7 +154,7 @@ export class LeaveService {
     const [overlap] = await tx
       .select({ id: leaveRequests.id })
       .from(leaveRequests)
-      .where(and(eq(leaveRequests.userId, p.userId), inArray(leaveRequests.status, ['pending', 'approved']), lte(leaveRequests.fromDate, body.toDate), gte(leaveRequests.toDate, body.fromDate)));
+      .where(and(eq(leaveRequests.userId, p.userId), inArray(leaveRequests.status, ['pending', 'recommended', 'approved']), lte(leaveRequests.fromDate, body.toDate), gte(leaveRequests.toDate, body.fromDate)));
     if (overlap) throw new ConflictException('You already have leave on some of these dates');
     if (type.paid) {
       const bal = (await this.balances(tx, p.tenantId, p.userId, Number(body.fromDate.slice(0, 4)))).find((b) => b.leaveType.id === type.id);
@@ -175,12 +183,14 @@ export class LeaveService {
     if (!req) throw new NotFoundException('Leave request not found');
     if (req.userId === p.userId) throw new ForbiddenException('You cannot decide your own leave');
     let onBehalfOf: string | null = null;
+    let asHr = isHr(p);
     if (!isHr(p) && !(await this.headedStaff(tx, p.userId)).includes(req.userId)) {
       // Not mine to decide, unless a colleague who can has delegated their approvals to me for these dates.
       for (const d of await this.delegation.activeDelegators(tx, p.userId, 'leave')) {
         if (d.id === req.userId) continue;
         if (d.roles.some((r) => HR_ROLES.includes(r)) || (await this.headedStaff(tx, d.id)).includes(req.userId)) {
           onBehalfOf = d.id;
+          asHr = d.roles.some((r) => HR_ROLES.includes(r));
           break;
         }
       }
@@ -189,7 +199,17 @@ export class LeaveService {
         throw new NotFoundException('Leave request not found');
       }
     }
-    if (req.status !== 'pending') throw new ConflictException(`This request is already ${req.status}`);
+    // With two approval levels the head of department recommends and the principal or HR approves.
+    const twoLevel = (await hrModuleSettings(tx, p.tenantId)).leaveLevels === 2;
+    if (!(req.status === 'pending' || (req.status === 'recommended' && asHr))) throw new ConflictException(req.status === 'recommended' ? 'This request is waiting for the principal or HR' : `This request is already ${req.status}`);
+    if (status === 'approved' && twoLevel && !asHr) {
+      await tx.update(leaveRequests).set({ status: 'recommended', recommendedBy: p.userId, recommendedAt: new Date(), recommendNote: note }).where(eq(leaveRequests.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'leave.recommended', subjectType: 'leave_request', subjectId: id, data: { applicant: req.userId, from: req.fromDate, to: req.toDate, days: req.days, ...(onBehalfOf ? { onBehalfOf } : {}) } });
+      const [me] = await tx.select({ fullName: users.fullName }).from(users).where(eq(users.id, req.userId));
+      const hr = await tx.execute<{ id: string }>(sql`select distinct user_id as id from user_roles where role in ('hr_manager', 'principal', 'tenant_admin')`);
+      await this.notifications.notifyUsers(tx, hr.rows.map((r) => r.id).filter((x) => x !== req.userId), { kind: 'leave', text: texts.leaveRecommended({ name: me?.fullName ?? '', from: req.fromDate, to: req.toDate, days: req.days }), data: { leaveRequestId: id }, dedupeKey: `leave-rec:${id}` });
+      return this.get(tx, id);
+    }
     if (status === 'approved') {
       await this.hr.assertMonthOpen(tx, req.fromDate);
       await this.hr.assertMonthOpen(tx, req.toDate);

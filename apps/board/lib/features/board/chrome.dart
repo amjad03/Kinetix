@@ -228,7 +228,8 @@ class PopoverScroll extends StatelessWidget {
 
   final Widget child;
 
-  /// Starts scrolled to the bottom (popovers that open above the toolbar).
+  /// Starts scrolled to the bottom. Popovers taller than their room start at the top, so their
+  /// title and first controls show (the rest scrolls up from under the toolbar).
   final bool reverse;
 
   @override

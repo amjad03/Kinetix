@@ -1814,6 +1814,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.';
 
   @override
+  String get aiErrBusy =>
+      'KINETIX AI is busy right now. Try again in a minute.';
+
+  @override
+  String get aiErrNothingOnPages =>
+      'Nothing could be read on those pages. Write on the board first, or choose other pages.';
+
+  @override
   String aiExplainTopic(String topic) {
     return 'Explain $topic';
   }
@@ -4412,4 +4420,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get invalidServer =>
       'Enter a server address like https://api.kinetix.in';
+
+  @override
+  String get thisBoardTitle => 'This board';
+
+  @override
+  String thisBoardServer(String name, String server) {
+    return 'Registered as $name with $server';
+  }
+
+  @override
+  String get setUpAgain => 'Set up again';
+
+  @override
+  String get setUpAgainHint =>
+      'Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (KINETIX ERP → Boards). Settings and saved boards stay on this device.';
+
+  @override
+  String get setUpAgainKiosk =>
+      'Kiosk mode is on. To set the board up again, IT first holds the clock for 3 seconds and enters the IT PIN.';
+
+  @override
+  String get setUpAgainTitle => 'Set up this board again?';
+
+  @override
+  String setUpAgainBody(String server) {
+    return 'The board stops using $server and the teacher is signed out. Then enter the server address and a new enrolment code from KINETIX ERP (Boards → New enrolment code).';
+  }
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { ProjectWorkspace } from '@/components/projects/ProjectWorkspace';
 import { ErrorState } from '@/components/States';
@@ -25,7 +24,7 @@ export default async function ProjectWorkspacePage({ params, searchParams }: { p
       <PageHeader
         title={`${w.project.code}: ${w.project.title}`}
         subtitle={t('prj.ws.subtitle', { pi: w.project.pi })}
-        actions={<Button component={Link} href="/projects" variant="outlined">{t('prj.back')}</Button>}
+        actions={<Button href="/projects" variant="outlined">{t('prj.back')}</Button>}
       />
       <ProjectWorkspace ws={w} initialTab={tab ?? 'overview'} />
     </>

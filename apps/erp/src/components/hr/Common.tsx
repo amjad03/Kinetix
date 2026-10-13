@@ -34,6 +34,8 @@ export const HR_TABS: { href: string; label: MessageKey }[] = [
   { href: '/hr/faculty', label: 'dx.link.faculty' },
   { href: '/hr/transfers', label: 'as.tab.transfers' },
   { href: '/hr/exit', label: 'hl.tab.exit' },
+  { href: '/hr/reports', label: 'hf.tab.reports' },
+  { href: '/hr/settings', label: 'hf.tab.settings' },
 ];
 
 /** Runs a server action and shows its outcome: a toast on success, an inline error on failure. */

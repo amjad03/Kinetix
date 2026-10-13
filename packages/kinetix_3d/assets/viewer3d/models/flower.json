@@ -1,6 +1,6 @@
 {
  "id": "flower",
- "version": 1,
+ "version": 2,
  "subject": "Biology",
  "order": 10,
  "file": "flower.glb",
@@ -37,7 +37,7 @@
   10,
   12
  ],
- "credit": "Model built by KINETIX",
+ "credit": "Simplified model built by KINETIX",
  "size": 0.1538,
  "groups": [
   {

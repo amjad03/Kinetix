@@ -8,6 +8,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { academicDocRequests, examResultLines, examResults, examSessions, guardians, legacyMarks, programs, sections, students, subjects, tenants } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { consolidate, DEFAULT_CLASSES, docCode, docPdf, DOC_TITLE, importedTerm, serialFor, type DocKind, type DocSnapshot, type TermBlock } from './academic-docs.logic.js';
+import { certificateSerial } from '../exam-office/settings.js';
 
 /** Staff who decide and issue. */
 export const DOC_ADMIN: RoleName[] = ['tenant_admin', 'principal', 'exam_controller'];
@@ -137,7 +138,7 @@ export class AcademicDocsService {
       const snap = await this.snapshot(tx, p.tenantId, r.studentId);
       const now = new Date();
       const [{ n }] = await tx.select({ n: count() }).from(academicDocRequests).where(and(eq(academicDocRequests.kind, r.kind), isNotNull(academicDocRequests.serialNo)));
-      const serial = serialFor(r.kind as DocKind, now.getUTCFullYear(), Number(n) + 1);
+      const serial = (await certificateSerial(tx, now)) ?? serialFor(r.kind as DocKind, now.getUTCFullYear(), Number(n) + 1);
       const [row] = await tx
         .update(academicDocRequests)
         .set({ status: 'issued', issuedAt: now, serialNo: serial, verifyToken: docCode(this.env.JWT_SECRET, p.tenantId, serial), snapshot: snap })

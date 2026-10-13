@@ -52,6 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'grp.academics',
     icon: 'academics',
     items: [
+      { href: '/academics', label: 'nav.academics', section: 'academics', icon: 'classes' },
       { href: '/classes', label: 'nav.classes', section: 'school', icon: 'classes' },
       { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: 'syllabus' },
       { href: '/curriculum', label: 'nav.curriculum', section: 'curriculum', icon: 'syllabus' },
@@ -91,6 +92,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'exams',
     items: [
       { href: '/exams', label: 'nav.exams', section: 'exams', icon: 'exams' },
+      { href: '/exams/office', label: 'nav.examOffice', section: 'exams', icon: 'exams' },
       { href: '/evaluation', label: 'nav.evaluation', section: 'evaluation', icon: 'exams' },
       { href: '/evaluation/desk', label: 'nav.evaluationDesk', section: 'evaluationDesk', icon: 'exams' },
       { href: '/exams/university', label: 'nav.universityFormats', section: 'exams', icon: 'exams' },
@@ -132,6 +134,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'finance',
     items: [
       { href: '/fees', label: 'nav.fees', section: 'fees', icon: 'finance' },
+      { href: '/accounts', label: 'nav.accountsDesk', section: 'finance', icon: 'finance' },
       { href: '/scholarships', label: 'nav.scholarships', section: 'finance', icon: 'finance' },
       { href: '/budgets', label: 'nav.budgets', section: 'finance', icon: 'finance' },
       { href: '/gl-export', label: 'nav.glExport', section: 'finance', icon: 'finance' },
@@ -149,6 +152,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/hr/appraisal', label: 'nav.appraisal', section: 'appraisal', icon: 'hr' },
       { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: 'payroll' },
       { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: 'payslips' },
+      { href: '/payroll/loans', label: 'hf.loan.title', section: 'payslips', icon: 'payroll' },
     ],
   },
   {
@@ -194,6 +198,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'grp.communication',
     icon: 'communication',
     items: [
+      { href: '/chat', label: 'nav.chat', section: 'chat', icon: 'conversations' },
       { href: '/messages', label: 'nav.messages', section: 'school', icon: 'messages' },
       { href: '/conversations', label: 'nav.conversations', section: 'conversations', icon: 'conversations' },
       { href: '/communication', label: 'nav.comms', section: 'comms', icon: 'messages' },
@@ -204,6 +209,8 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'grp.reports',
     icon: 'reports',
     items: [
+      { href: '/analytics', label: 'v2.an.title', section: 'dashboard', icon: 'reports' },
+      { href: '/analytics/campaigns', label: 'v2.cp.title', section: 'admissions', icon: 'admissions' },
       { href: '/reports', label: 'nav.reports', section: 'reports', icon: 'reports' },
       { href: '/department', label: 'nav.department', section: 'department', icon: 'department' },
       { href: '/ai', label: 'nav.ai', section: 'ai', icon: 'ai' },
@@ -289,6 +296,24 @@ export function crumbsFor(groups: readonly NavGroup[], pathname: string): Crumb[
   const deeper = pathname !== hit.item.href && pathname.replace(/\/$/, '') !== hit.item.href;
   out.push({ label: hit.item.label, href: deeper ? hit.item.href : undefined });
   if (deeper) out.push({ label: 'ui.crumb.details' });
+  return out;
+}
+
+/**
+ * Breadcrumbs as shown: consecutive crumbs that read the same collapse into one (a "Students" group
+ * holding a "Students" page), and a record page's own name replaces the generic "Details".
+ */
+export function tidyCrumbs(trail: { text: string; href?: string }[], recordTitle?: string | null): { text: string; href?: string }[] {
+  const out: { text: string; href?: string }[] = [];
+  for (const c of trail) {
+    const last = out[out.length - 1];
+    if (last && last.text.trim().toLowerCase() === c.text.trim().toLowerCase()) {
+      out[out.length - 1] = { text: c.text, href: c.href ?? last.href };
+      continue;
+    }
+    out.push(c);
+  }
+  if (recordTitle && out.length > 1) out[out.length - 1] = { text: recordTitle };
   return out;
 }
 

@@ -98,6 +98,7 @@ import 'context/class_context.dart';
 import 'context/context_switcher.dart';
 import '../language_kit/language_kit.dart' show LanguageKitPanel, LanguageTab;
 import '../extras/extras_hooks.dart';
+import 'board_autosave.dart';
 import 'board_shot.dart';
 import 'calculator.dart';
 import '../insert/presentation_pane.dart';
@@ -203,6 +204,12 @@ class _BoardScreenState extends State<BoardScreen> {
     ..onTimeUp = () => mounted ? showBoardMessage(context, context.l10n.timesUp) : null;
   bool _signInOpen = false;
   Size _canvasSize = const Size(1920, 1080);
+
+  /// The board kept on this device a moment after each change (board_autosave.dart).
+  late final BoardAutosave _autosave = BoardAutosave(wb: _wb, snapshot: () => _wb.toSaved(_canvasSize).withModel3dNotes(_modelNotes.toJson()));
+
+  /// Writes the autosave at once when the app is put away (Home, another app, the lid closed).
+  late final AppLifecycleListener _lifecycle;
   String? _boardTitle;
   String? _lastSessionId;
   bool? _lastPrimary;
@@ -230,7 +237,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// Whether the tools drawer and Insert menu show every tool, not just this subject's and grade's.
   bool _showAllTools = showAllToolsByDefault;
-  Widget get _contextChip => ContextChip(ctx: () => _ctx, pick: _ctxPick);
+  Widget _contextChip({bool compact = false}) => ContextChip(ctx: () => _ctx, pick: _ctxPick, compact: compact);
 
   @override
   void initState() {
@@ -240,7 +247,10 @@ class _BoardScreenState extends State<BoardScreen> {
     unawaited(loadCustomBoardFont(board));
     presentationHost = _showPresentation;
     _phet.addListener(_onPhetChanged);
-    _simHub.openModel3d = () => _openSplit(SplitContent.model3d);
+    // Opening or closing a sim in the hub shows or hides the panel's "Add to board".
+    _simHub
+      ..addListener(_onPhetChanged)
+      ..openModel3d = () => _openSplit(SplitContent.model3d);
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
     // Someone asked to cast, or a screen was approved: the Cast tab opens for the teacher.
@@ -290,6 +300,35 @@ class _BoardScreenState extends State<BoardScreen> {
     DemoClassSwitcher.attach(board, _onDemoClass);
     // A board that starts in the dark or chalkboard theme starts on that theme's paper.
     _followTheme();
+    void flush() => unawaited(_autosave.flush());
+    _lifecycle = AppLifecycleListener(onInactive: flush, onHide: flush, onPause: flush, onDetach: flush);
+    unawaited(_restoreAutosave());
+  }
+
+  /// The board autosave kept last time (the app crashed, the power went, the app was closed)
+  /// comes back, with "Start fresh" beside the message.
+  Future<void> _restoreAutosave() async {
+    final saved = await _autosave.start();
+    if (saved == null || !mounted || !_wb.isBlank) return;
+    _wb.load(saved);
+    // White paper and the dark board are the theme's: shown as this theme has it.
+    for (final p in const [BoardBackground.plain, BoardBackground.night]) {
+      if (_theme != BoardTheme.chalkboard) _wb.replaceBackground(p, themePaper(_theme));
+    }
+    _setModelNotes(saved.model3dNotes);
+    final s = SbStrings.of(context);
+    showBoardMessage(
+      context,
+      s('autosaveBack'),
+      action: (
+        s('autosaveFresh'),
+        () {
+          if (!mounted) return;
+          _wb.load(SavedBoard(background: themePaper(_theme), canvas: _canvasSize, pages: const [[]]));
+          _setModelNotes(const {});
+        },
+      ),
+    );
   }
 
   /// The Pen button goes back to the last pen type; a page with other paper tells the live
@@ -432,6 +471,9 @@ class _BoardScreenState extends State<BoardScreen> {
 
   @override
   void dispose() {
+    _lifecycle.dispose();
+    // What is waiting is written before the board goes.
+    unawaited(_autosave.dispose());
     _ctxPick.dispose();
     _zones.dispose();
     if (presentationHost == _showPresentation) presentationHost = null;
@@ -441,6 +483,9 @@ class _BoardScreenState extends State<BoardScreen> {
     if (PanelHost.active == _pushInPanel) PanelHost.active = null;
     board.removeListener(_onBoardChanged);
     _phet
+      ..removeListener(_onPhetChanged)
+      ..dispose();
+    _simHub
       ..removeListener(_onPhetChanged)
       ..dispose();
     board.projector.attach(null);
@@ -1398,7 +1443,7 @@ class _BoardScreenState extends State<BoardScreen> {
   List<DrawerTool> _drawerTools(AppLocalizations l) {
     final s = LayoutStrings(Localizations.localeOf(context).languageCode);
     final runner = _subjectTools;
-    const geo = ToolPalette.geometry, maths = ToolPalette.maths, sci = ToolPalette.science, com = ToolPalette.commerce, cs = ToolPalette.cs, cls = ToolPalette.classroom;
+    const geo = ToolPalette.geometry, maths = ToolPalette.maths, sci = ToolPalette.science, com = ToolPalette.commerce, cs = ToolPalette.cs, cls = ToolPalette.classroom, lang = ToolPalette.language;
     void subject(SubjectTool t) => unawaited(runner.run(t, _menuAnchor));
     return [
       // Geometry
@@ -1438,7 +1483,7 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('constants', Icons.pin_outlined, l.kitTabName(KitTab.constants), [ToolGroup.science], sci, _run(() => _kitAt(KitTab.constants))),
       DrawerTool('sims', Icons.science, l.simTitle, [ToolGroup.science, ToolGroup.maths], sci, _run(() => unawaited(_openSim()))),
       DrawerTool('phet', Icons.science, PhetStrings(s.lang).title, [ToolGroup.science, ToolGroup.maths], sci, _run(() => _show(PanelKind.phet))),
-      DrawerTool('simhub', Icons.biotech, 'Simulations hub', [ToolGroup.science, ToolGroup.maths, ToolGroup.commerce], sci, _run(() => _show(PanelKind.simHub))),
+      DrawerTool('simhub', Icons.biotech, simHubStrings(s.lang)['title'], [ToolGroup.science, ToolGroup.maths, ToolGroup.commerce], sci, _run(() => _show(PanelKind.simHub))),
       DrawerTool('labs', Icons.biotech_outlined, LayoutStrings.of(context).tabLabs, [ToolGroup.science], sci, _run(() => _openSplit(SplitContent.lab))),
       DrawerTool('models3d', Icons.view_in_ar_outlined, l.splitModel3d, [ToolGroup.science, ToolGroup.geometry], sci, _run(() => _openSplit(SplitContent.model3d))),
       DrawerTool('circuit', Icons.electrical_services, l.subjectToolName(SubjectTool.circuit), [ToolGroup.science], sci, _run(() => subject(SubjectTool.circuit))),
@@ -1465,7 +1510,7 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('todays-plan', Icons.event_note_outlined, l.toolTodaysPlan, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.plan))),
       DrawerTool('concept-videos', Icons.smart_display_outlined, l.toolConceptVideos, [ToolGroup.classroom, ToolGroup.science], cls, _run(() => _show(PanelKind.videos))),
       // The offline dictionary (language kit), not the kit's word wall of picture words.
-      DrawerTool('dictionary', Icons.menu_book_outlined, s.dictionary, [ToolGroup.classroom, ToolGroup.language], cls, _run(() => _openPage(s.dictionary, Icons.menu_book_outlined, (_) => LanguageKitPanel(key: const ValueKey(LanguageTab.dictionary), board: board, wb: _wb)))),
+      DrawerTool('dictionary', Icons.menu_book_outlined, s.dictionary, [ToolGroup.classroom, ToolGroup.language], lang, _run(() => _openPage(s.dictionary, Icons.menu_book_outlined, (_) => LanguageKitPanel(key: const ValueKey(LanguageTab.dictionary), board: board, wb: _wb)))),
       DrawerTool('mindmap', Icons.bubble_chart_outlined, contextStrings(context)['mindmap'], [ToolGroup.classroom, ToolGroup.language], cls, _run(() => unawaited(MindMapEditor.open(context, _wb)))),
       DrawerTool('timeline', Icons.timeline, l.kitTabName(KitTab.dates), [ToolGroup.classroom], cls, _run(() => _kitAt(KitTab.dates))),
       DrawerTool('read-aloud', Icons.record_voice_over_outlined, l.readerTitle, [ToolGroup.classroom], cls, _run(_readPage)),
@@ -1716,6 +1761,7 @@ class _BoardScreenState extends State<BoardScreen> {
     }
   }
 
+  /// The PhET tab or the Simulations hub opened or closed a sim.
   void _onPhetChanged() {
     if (mounted) setState(() {});
   }
@@ -1974,8 +2020,10 @@ class _BoardScreenState extends State<BoardScreen> {
   WhiteboardCanvasLabels _canvasLabels(AppLocalizations l) =>
       WhiteboardCanvasLabels(typeHint: l.typeHint, hideRuler: l.hideRuler, hideProtractor: l.hideProtractor, turn: l.turn);
 
-  /// The toolbar sits above the corners (a narrow board, or one beside the panel).
-  bool _toolbarRaised = false;
+  /// How far the bottom toolbar sits above the corner bars: 0 between them, one row up (beside
+  /// the quick group and Hide/Switch) on a narrower board, two rows up when even that is too
+  /// narrow. Popovers open above it.
+  double _toolbarLift = 0;
 
   /// The toolbar's size across its dock (height at the bottom, width at an edge).
   double get _toolbarDepth => _primary ? 92 : 76;
@@ -2143,7 +2191,9 @@ class _BoardScreenState extends State<BoardScreen> {
     final ts = ToolbarStrings.of(context);
     final tool = _wb.tool;
     final chromePaper = context.colors.brightness == Brightness.dark ? BoardBackground.night : BoardBackground.plain;
-    BarItem kit(ToolkitItem t) => BarItem(Key('tbar-${t.name}'), toolkitIcon(t), toolkitName(l, t), _run(() => _showKit(t)), selected: _kit.isOpen(t));
+    // Subject tools carry their colour from the tools drawer (ToolPalette); the board's own
+    // tools (pen, eraser, undo …) stay in the toolbar's ink.
+    BarItem kit(ToolkitItem t) => BarItem(Key('tbar-${t.name}'), toolkitIcon(t), toolkitName(l, t), _run(() => _showKit(t)), selected: _kit.isOpen(t), color: toolkitColor(t));
     return {
       'pen': BarItem(
         const Key('tool-pen'),
@@ -2170,7 +2220,7 @@ class _BoardScreenState extends State<BoardScreen> {
           l.toolLaser,
           _run(() => _wb.tool = tool == BoardTool.laser ? BoardTool.pen : BoardTool.laser),
           selected: tool == BoardTool.laser,
-          color: tool == BoardTool.laser ? null : const Color(0xFFD93025),
+          color: tool == BoardTool.laser ? null : ToolPalette.classroom,
         ),
       'highlighter': BarItem(const Key('tool-highlighter'), Icons.border_color_outlined, l.highlighter, () => _onToolButton(BoardTool.highlighter), selected: tool == BoardTool.highlighter),
       'eraser': BarItem(const Key('tool-erase'), Icons.auto_fix_normal, s.eraser, () => _onToolButton(BoardTool.eraser), selected: tool == BoardTool.eraser || _popover == BoardPopover.erase),
@@ -2190,19 +2240,19 @@ class _BoardScreenState extends State<BoardScreen> {
         () => _toggle(BoardPopover.insert),
         selected: _popover == BoardPopover.insert || tool == BoardTool.note || tool == BoardTool.math,
       ),
-      'ruler': BarItem(const Key('tbar-ruler'), Icons.straighten, l.toolRuler, _run(() => CanvasTools.openRuler(context, _wb))),
-      'protractor': BarItem(const Key('tbar-protractor'), Icons.architecture, l.toolProtractor, _run(() => CanvasTools.openProtractor(context, _wb))),
-      'calculator': BarItem(const Key('tbar-calculator'), Icons.calculate_outlined, l.toolCalculator, _run(() => unawaited(_calculator()))),
+      'ruler': BarItem(const Key('tbar-ruler'), Icons.straighten, l.toolRuler, _run(() => CanvasTools.openRuler(context, _wb)), color: ToolPalette.geometry),
+      'protractor': BarItem(const Key('tbar-protractor'), Icons.architecture, l.toolProtractor, _run(() => CanvasTools.openProtractor(context, _wb)), color: ToolPalette.geometry),
+      'calculator': BarItem(const Key('tbar-calculator'), Icons.calculate_outlined, l.toolCalculator, _run(() => unawaited(_calculator())), color: ToolPalette.maths),
       'timer': kit(ToolkitItem.timer),
       'stopwatch': kit(ToolkitItem.stopwatch),
       'picker': kit(ToolkitItem.picker),
       'spotlight': kit(ToolkitItem.spotlight),
-      'apps': BarItem(const Key('tbar-apps'), Icons.apps, SbStrings.of(context)('apps'), _run(_openClassroomApps)),
-      'screenshot': BarItem(const Key('tbar-screenshot'), Icons.photo_camera_outlined, l.toolScreenshot, _run(() => unawaited(BoardShot.take(context, _captureScreen)))),
-      'models3d': BarItem(const Key('tbar-models3d'), Icons.view_in_ar_outlined, l.splitModel3d, _run(() => _openSplit(SplitContent.model3d))),
-      'labs': BarItem(const Key('tbar-labs'), Icons.biotech_outlined, s.tabLabs, _run(() => _openSplit(SplitContent.lab))),
-      'sims': BarItem(const Key('tbar-sims'), Icons.science, l.simTitle, _run(() => unawaited(_openSim()))),
-      'animations': BarItem(const Key('tbar-animations'), Icons.animation, s.tabAnimations, _run(() => _show(PanelKind.animations))),
+      'apps': BarItem(const Key('tbar-apps'), Icons.apps, SbStrings.of(context)('apps'), _run(_openClassroomApps), color: ToolPalette.classroom),
+      'screenshot': BarItem(const Key('tbar-screenshot'), Icons.photo_camera_outlined, l.toolScreenshot, _run(() => unawaited(BoardShot.take(context, _captureScreen))), color: ToolPalette.classroom),
+      'models3d': BarItem(const Key('tbar-models3d'), Icons.view_in_ar_outlined, l.splitModel3d, _run(() => _openSplit(SplitContent.model3d)), color: ToolPalette.science),
+      'labs': BarItem(const Key('tbar-labs'), Icons.biotech_outlined, s.tabLabs, _run(() => _openSplit(SplitContent.lab)), color: ToolPalette.science),
+      'sims': BarItem(const Key('tbar-sims'), Icons.science, l.simTitle, _run(() => unawaited(_openSim())), color: ToolPalette.science),
+      'animations': BarItem(const Key('tbar-animations'), Icons.animation, s.tabAnimations, _run(() => _show(PanelKind.animations)), color: ToolPalette.science),
       'ai': BarItem(
         const Key('panel-ai'),
         Icons.auto_awesome,
@@ -2214,12 +2264,12 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
       'search': BarItem(const Key('tbar-search'), Icons.search, ts.search, _run(_openSearch)),
       'record': BarItem(const Key('tbar-record'), _capture == null ? Icons.fiber_manual_record_outlined : Icons.stop_circle_outlined, ts.record, _run(() => unawaited(_toggleRecording())), selected: _capture != null),
-      'eye-comfort': BarItem(const Key('tbar-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort)),
+      'eye-comfort': BarItem(const Key('tbar-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort), color: ToolPalette.classroom),
       // Every tile of Tools too (the document camera, safe web, captions, seating, groups, the
       // magnifier, notes, exit tickets, the language kit, organisers, clocks, the scoreboard ...),
       // so any of them can sit on the bar.
       for (final t in _drawerTools(l))
-        if (!_drawerOnCatalog.contains(t.id)) 'drawer:${t.id}': BarItem(Key('tbar-drawer-${t.id}'), t.icon, t.label, t.onTap),
+        if (!_drawerOnCatalog.contains(t.id)) 'drawer:${t.id}': BarItem(Key('tbar-drawer-${t.id}'), t.icon, t.label, t.onTap, color: t.color),
     };
   }
 
@@ -2289,24 +2339,38 @@ class _BoardScreenState extends State<BoardScreen> {
       onEndClass: () => unawaited(_endClass()),
     );
     final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 840.0 : 1040.0));
-    _toolbarRaised = width - leftRoom - rightRoom < toolbarW;
+    // Too wide for the room between the corners (a tablet, a laptop, a board beside the panel):
+    // up one row, between the quick group and Hide/Switch that sit over the corners, when it
+    // fits there at three quarters of its size or more; else above them too.
+    final cornerRow = (_primary ? 88.0 : (compact ? 68.0 : 72.0)) + Kx.s8;
+    const quickRow = Kx.boardTarget + 12 + Kx.s8;
+    const quickRoom = Kx.s12 + 5 * Kx.boardTarget + 12 + Kx.s8, extrasRoom = Kx.s12 + 2 * Kx.boardTarget + 12 + Kx.s8;
+    final upLeft = swapped ? extrasRoom : quickRoom, upRight = swapped ? quickRoom : extrasRoom;
+    _toolbarLift = width - leftRoom - rightRoom >= toolbarW
+        ? 0
+        : (width - upLeft - upRight >= toolbarW * 0.75 ? cornerRow : cornerRow + quickRow);
+    final (barLeft, barRight) = _toolbarLift == 0 ? (leftRoom, rightRoom) : (_toolbarLift == cornerRow ? (upLeft, upRight) : (Kx.s12, Kx.s12));
     return [
+      // The class bar takes the room search, the clock and the profile leave (on a tablet the
+      // subject shows as its icon); it scrolls sideways when even that is short.
       Positioned(
         left: Kx.s12,
         top: Kx.s8,
-        right: 380,
-        child: BoardChromeTheme(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: ClassBar(contextChip: _contextChip, board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance),
-          ),
-        ),
-      ),
-      Positioned(
         right: Kx.s12,
-        top: Kx.s8,
         child: BoardChromeTheme(
-          child: TopRightBar(board: board, onSearch: _openSearch, onProfile: () => _toggle(BoardPopover.profile), profileOpen: _popover == BoardPopover.profile),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ClassBar(contextChip: _contextChip(compact: width < 1300), board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance),
+                ),
+              ),
+              const SizedBox(width: Kx.s8),
+              TopRightBar(board: board, onSearch: _openSearch, onProfile: () => _toggle(BoardPopover.profile), profileOpen: _popover == BoardPopover.profile),
+            ],
+          ),
         ),
       ),
       if (!_bottomChromeHidden) ...[
@@ -2334,10 +2398,7 @@ class _BoardScreenState extends State<BoardScreen> {
           ),
         ),
         if (dock == ToolbarDock.bottom)
-          if (!_toolbarRaised)
-            Positioned(left: leftRoom, right: rightRoom, bottom: Kx.s12, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
-          else
-            Positioned(left: Kx.s12, right: Kx.s12, bottom: Kx.s12 + 76 + Kx.s8, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
+          Positioned(left: barLeft, right: barRight, bottom: Kx.s12 + _toolbarLift, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
         else
           Positioned(
             left: dock == ToolbarDock.left ? Kx.s12 : null,
@@ -2397,7 +2458,7 @@ class _BoardScreenState extends State<BoardScreen> {
         child: BoardChromeTheme(
           child: Row(
             children: [
-              Expanded(child: ClassBar(contextChip: _contextChip, board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance, phone: true)),
+              Expanded(child: ClassBar(contextChip: _contextChip(compact: true), board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance, phone: true)),
               const SizedBox(width: Kx.s4),
               TopRightBar(board: board, onSearch: _openSearch, onProfile: () => _toggle(BoardPopover.profile), phone: true, onMenu: () => _toggle(BoardPopover.menu)),
             ],
@@ -2620,7 +2681,9 @@ class _BoardScreenState extends State<BoardScreen> {
         relevant: (id) => toolRelevant(_ctx.profile, id),
         contextLabel: contextLabel(context, _ctx),
         width: 680,
-        maxHeight: math.max(160, screen.height - (phone ? 300 : 360)),
+        // The grid scrolls inside the room above the toolbar, so the filters and search stay
+        // in sight (about 250 px for the title, filters, search and margins).
+        maxHeight: math.max(160, phone ? screen.height - 300 : screen.height - 64 - (dock == ToolbarDock.bottom ? Kx.s12 + _toolbarDepth + Kx.s8 + _toolbarLift : Kx.s12) - 250),
       ),
       BoardPopover.insert => InsertPopover(
         wb: _wb,
@@ -2702,14 +2765,14 @@ class _BoardScreenState extends State<BoardScreen> {
         bottom: safe.bottom + 52 + 2 * Kx.s8,
         child: Align(
           alignment: _popover == BoardPopover.menu || _popover == BoardPopover.profile ? Alignment.topRight : Alignment.bottomCenter,
-          child: PopoverScroll(reverse: _popover != BoardPopover.menu && _popover != BoardPopover.profile, child: themed),
+          child: PopoverScroll(child: themed),
         ),
       );
     }
     // Beside the control that opened it.
     switch (_popover!) {
       case BoardPopover.menu || BoardPopover.background || BoardPopover.eyeComfort:
-        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomLeft, child: PopoverScroll(reverse: true, child: themed)));
+        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomLeft, child: PopoverScroll(child: themed)));
       case BoardPopover.profile:
         return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: Kx.s12, child: Align(alignment: Alignment.topRight, child: PopoverScroll(child: themed)));
       default:
@@ -2722,8 +2785,8 @@ class _BoardScreenState extends State<BoardScreen> {
             right: Kx.s12,
             top: 64,
             // Above the toolbar, wherever it sits (between the corners or raised above them).
-            bottom: Kx.s12 + _toolbarDepth + Kx.s8 + (_toolbarRaised ? 76 + Kx.s8 : 0),
-            child: Align(alignment: Alignment.bottomCenter, child: PopoverScroll(reverse: true, child: themed)),
+            bottom: Kx.s12 + _toolbarDepth + Kx.s8 + _toolbarLift,
+            child: Align(alignment: Alignment.bottomCenter, child: PopoverScroll(child: themed)),
           ),
         };
     }

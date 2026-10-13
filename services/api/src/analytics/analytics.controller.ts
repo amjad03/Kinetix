@@ -15,6 +15,7 @@ import { FRAMEWORKS, type Framework } from './accreditation.js';
 import { reportsFor } from './catalogue.js';
 import { classroomAnalytics, drilldown, institutionKpis, LEVELS, METRICS, rows as sqlRows, type Metric } from './queries.js';
 import { FORMATS, FREQUENCIES, nextRun, ParamsSchema, ReportsService, type ReportParams } from './reports.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const MGMT: RoleName[] = ['tenant_admin', 'principal'];
 const ACADEMIC: RoleName[] = [...MGMT, 'hod'];
@@ -56,8 +57,8 @@ export class AnalyticsController {
   filters(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => ({
       campuses: await tx.select({ id: campuses.id, name: campuses.name }).from(campuses).orderBy(asc(campuses.name)),
-      programs: await tx.select({ id: programs.id, campusId: programs.campusId, name: programs.name }).from(programs).orderBy(asc(programs.name)),
-      sections: await tx.select({ id: sections.id, programId: sections.programId, name: sections.displayName }).from(sections).orderBy(asc(sections.displayName)),
+      programs: await tx.select({ id: programs.id, campusId: programs.campusId, name: programs.name }).from(programs).orderBy(...naturalAsc(programs.name)),
+      sections: await tx.select({ id: sections.id, programId: sections.programId, name: sections.displayName }).from(sections).orderBy(...naturalAsc(sections.displayName)),
     }));
   }
 

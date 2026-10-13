@@ -26,9 +26,13 @@ class _StudentBuzzersState extends State<StudentBuzzers> {
   @override
   void initState() {
     super.initState();
+    // Buzzes already in when the panel opens are not news: the bell is for new ones.
+    _seen = _count(widget.board.buzzerState.value);
     widget.board.buzzerState.addListener(_changed);
     unawaited(_load());
   }
+
+  static int _count(Map<String, dynamic>? st) => ((st?['presses'] as List?) ?? const []).length;
 
   @override
   void dispose() {
@@ -38,7 +42,9 @@ class _StudentBuzzersState extends State<StudentBuzzers> {
 
   Future<void> _load() async {
     try {
-      widget.board.buzzerState.value = await widget.board.api!.buzzer();
+      final st = await widget.board.api!.buzzer();
+      _seen = _count(st);
+      widget.board.buzzerState.value = st;
     } catch (_) {
       // Offline: the panel waits for the next push.
     }
@@ -46,7 +52,7 @@ class _StudentBuzzersState extends State<StudentBuzzers> {
 
   /// The bell rings for the first buzz of a round.
   void _changed() {
-    final n = ((widget.board.buzzerState.value?['presses'] as List?) ?? const []).length;
+    final n = _count(widget.board.buzzerState.value);
     if (_seen == 0 && n > 0) unawaited((widget.sounds ?? ToolkitSounds.instance).play('bell'));
     _seen = n;
   }

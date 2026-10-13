@@ -16,6 +16,35 @@ export interface LoginState {
   /** Set after a correct password for a user with two-step sign-in: the form then asks for the code. */
   mfaToken?: string;
   fields?: { tenant: string; login: string };
+  /** One-time code by SMS: set once the code was sent to this phone. */
+  otpPhone?: string;
+}
+
+/** Sign in with a one-time code by SMS: first send the code, then exchange it for a session. */
+export async function otpSignIn(_prev: LoginState, form: FormData): Promise<LoginState> {
+  const { t } = await getI18n();
+  const tenant = String(form.get('tenant') ?? '').trim().toLowerCase();
+  const phone = String(form.get('phone') ?? '').trim();
+  const code = String(form.get('code') ?? '').trim();
+  const fields = { tenant, login: phone };
+  if (!tenant || !phone) return { error: t('login.missing'), fields };
+  if (!form.get('code')) {
+    try {
+      await api('/v1/auth/otp/request', { method: 'POST', body: { tenant, phone }, anonymous: true });
+    } catch (e) {
+      return { error: e instanceof ApiError ? errorText(e, t) : t('login.failed'), fields };
+    }
+    return { otpPhone: phone, fields };
+  }
+  if (code.length < 4) return { otpPhone: phone, fields, error: t('v2.auth.otpIncomplete') };
+  let res: LoginResponse;
+  try {
+    res = await api<LoginResponse>('/v1/auth/otp/verify', { method: 'POST', body: { tenant, phone, code }, anonymous: true });
+  } catch (e) {
+    return { otpPhone: phone, fields, error: e instanceof ApiError ? errorText(e, t) : t('login.failed') };
+  }
+  (await cookies()).set(TENANT_COOKIE, tenant, { httpOnly: true, sameSite: 'lax', secure: secureCookies(), path: '/', maxAge: 365 * 86_400 });
+  return finish(res, form);
 }
 
 export async function signIn(_prev: LoginState, form: FormData): Promise<LoginState> {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kinetix_ink/kinetix_ink.dart' show TexView;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
@@ -76,10 +77,28 @@ class ReadBoardPanel extends StatelessWidget {
                       ),
                       if (r.result.math.isNotEmpty) ...[
                         AiSectionLabel(l.readMathsFound),
-                        for (final m in r.result.math)
+                        // Typeset as written; a long expression scrolls sideways. The copy button takes the LaTeX.
+                        for (final (i, m) in r.result.math.indexed)
                           Padding(
                             padding: const EdgeInsets.only(bottom: Kx.s8),
-                            child: SelectableText(m, style: TextStyle(fontFamily: 'monospace', fontSize: ClassType.small, color: c.onSurface)),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: TexView(m, key: Key('reading-math-$i'), fontSize: ClassType.lead, color: c.onSurface, display: true),
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: l.copyText,
+                                  icon: const Icon(Icons.copy, size: 20),
+                                  onPressed: () {
+                                    Clipboard.setData(ClipboardData(text: m));
+                                    showBoardMessage(context, l.copied);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                       ],
                       const SizedBox(height: Kx.s16),

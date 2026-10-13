@@ -8,7 +8,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { boardSessions, chapters, courses, curricula, subjects, topics } from '../db/schema.js';
 import { ContentService } from './content.service.js';
-import { licenceAllows, topicLicensed } from './licensing.js';
+import { curriculumFits, licenceAllows, topicLicensed } from './licensing.js';
 
 const EDITORS: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
 
@@ -34,14 +34,14 @@ export class ContentController {
   @Get('curricula')
   @Auth(['user', 'board'])
   curricula(@CurrentPrincipal() p: UserPrincipal | BoardPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(curricula).orderBy(asc(curricula.name)));
+    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(curricula).where(curriculumFits(curricula.code)).orderBy(asc(curricula.name)));
   }
 
   @Get('courses')
   @Auth(['user', 'board'])
   courses(@CurrentPrincipal() p: UserPrincipal | BoardPrincipal, @Query('curriculum') curriculum?: string, @Query('term') term?: string) {
     return this.db.withTenant(p.tenantId, (tx) => {
-      const conds = [curriculum ? eq(courses.curriculumCode, curriculum) : undefined, term ? eq(courses.term, Number(term)) : undefined, licenceAllows('course', courses.id)];
+      const conds = [curriculum ? eq(courses.curriculumCode, curriculum) : undefined, term ? eq(courses.term, Number(term)) : undefined, licenceAllows('course', courses.id), curriculumFits(courses.curriculumCode)];
       return tx
         .select({ id: courses.id, curriculumCode: courses.curriculumCode, code: courses.code, title: courses.title, term: courses.term, reviewed: courses.reviewed })
         .from(courses)
@@ -54,7 +54,9 @@ export class ContentController {
   @Auth(['user', 'board'])
   course(@CurrentPrincipal() p: UserPrincipal | BoardPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const outline = await this.content.outline(tx, id);
+      // Another kind of institution's course (an MBA paper for a school) is not in this library.
+      const [fits] = await tx.select({ id: courses.id }).from(courses).where(and(eq(courses.id, id), curriculumFits(courses.curriculumCode)));
+      const outline = fits ? await this.content.outline(tx, id) : null;
       if (!outline) throw new NotFoundException('Course not found');
       return outline;
     });
@@ -101,7 +103,7 @@ export class ContentController {
         .from(topics)
         .innerJoin(chapters, eq(chapters.id, topics.chapterId))
         .innerJoin(courses, eq(courses.id, chapters.courseId))
-        .where(and(eq(topics.id, id), topicLicensed(topics.id, courses.id)));
+        .where(and(eq(topics.id, id), topicLicensed(topics.id, courses.id), curriculumFits(courses.curriculumCode)));
       if (!t) throw new NotFoundException('Topic not found');
       return t;
     });
@@ -120,7 +122,7 @@ export class ContentController {
         .from(topics)
         .innerJoin(chapters, eq(chapters.id, topics.chapterId))
         .innerJoin(courses, eq(courses.id, chapters.courseId))
-        .where(and(or(ilike(topics.title, like), ilike(topics.summary, like), ilike(chapters.title, like)), courseId ? eq(courses.id, courseId) : undefined, topicLicensed(topics.id, courses.id)))
+        .where(and(or(ilike(topics.title, like), ilike(topics.summary, like), ilike(chapters.title, like)), courseId ? eq(courses.id, courseId) : undefined, topicLicensed(topics.id, courses.id), curriculumFits(courses.curriculumCode)))
         .orderBy(asc(courses.title), asc(chapters.position), asc(topics.position))
         .limit(25),
     );

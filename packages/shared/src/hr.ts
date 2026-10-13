@@ -110,6 +110,8 @@ export interface LeaveType {
   accrual: LeaveAccrual;
   carryForwardMax: number;
   active: boolean;
+  /** Unused days can be paid out (leave encashment). */
+  encashable?: boolean;
 }
 
 export interface LeaveBalance {
@@ -123,7 +125,7 @@ export interface LeaveBalance {
   available: number;
 }
 
-export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type LeaveStatus = 'pending' | 'recommended' | 'approved' | 'rejected' | 'cancelled';
 
 export interface LeaveRequest {
   id: string;
@@ -138,6 +140,10 @@ export interface LeaveRequest {
   status: LeaveStatus;
   decidedBy: { id: string; fullName: string } | null;
   decidedAt: string | null;
+  /** The head of department's recommendation when leave needs two approvals. */
+  recommendedBy?: { id: string; fullName: string } | null;
+  recommendedAt?: string | null;
+  recommendNote?: string | null;
   decisionNote: string | null;
   createdAt: string;
 }
@@ -147,7 +153,7 @@ export interface Holiday {
   title: string;
 }
 
-export type OpeningStatus = 'open' | 'on_hold' | 'closed';
+export type OpeningStatus = 'requested' | 'rejected' | 'open' | 'on_hold' | 'closed';
 export type ApplicantStage = 'applied' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected' | 'withdrawn';
 
 export interface JobOpening {
@@ -162,6 +168,10 @@ export interface JobOpening {
   /** Applicants per stage. */
   pipeline: Partial<Record<ApplicantStage, number>>;
   createdAt: string;
+  /** Why the post is needed (requisitions). */
+  justification?: string;
+  approvedAt?: string | null;
+  decisionNote?: string | null;
 }
 
 export interface JobApplicant {
@@ -233,7 +243,7 @@ export interface TallyLedgers {
   otherDeductions: string;
 }
 
-export type PayrollRunStatus = 'draft' | 'approved' | 'locked';
+export type PayrollRunStatus = 'draft' | 'verified' | 'approved' | 'locked';
 
 export interface PayrollRunSummary {
   id: string;
@@ -248,6 +258,9 @@ export interface PayrollRunSummary {
   createdAt: string;
   approvedAt: string | null;
   lockedAt: string | null;
+  verifiedAt?: string | null;
+  bankFileAt?: string | null;
+  publishedAt?: string | null;
 }
 
 export interface PayslipLine {
@@ -258,6 +271,8 @@ export interface PayslipLine {
 
 export interface Payslip {
   id: string;
+  /** Assigned when the run's payslips are published. */
+  payslipNo?: string | null;
   runId: string;
   month: string;
   runStatus: PayrollRunStatus;

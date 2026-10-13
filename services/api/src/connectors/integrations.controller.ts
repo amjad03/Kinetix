@@ -11,6 +11,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { classMeetings, connectors, feeInvoices, sections, sponsorInvoices, sponsors, students, tenants, timetableSlots } from '../db/schema.js';
 import { BI_DATASETS, ConnectorAdapters, toCsv, type BiDataset } from './adapters.js';
 import { ConnectorsService } from './connectors.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const ADMIN: RoleName[] = ['tenant_admin'];
 const LIBRARY: RoleName[] = ['tenant_admin', 'principal', 'librarian'];
@@ -133,7 +134,7 @@ export class ConnectorIntegrationsController {
 
   private async dataset(tx: Tx, d: BiDataset): Promise<string> {
     if (d === 'students') {
-      const rows = await tx.select({ rollNo: students.rollNo, name: students.fullName, className: sections.displayName, status: students.status, enrolledOn: students.enrolledOn }).from(students).innerJoin(sections, eq(sections.id, students.sectionId)).orderBy(asc(sections.displayName), asc(students.rollNo)).limit(50_000);
+      const rows = await tx.select({ rollNo: students.rollNo, name: students.fullName, className: sections.displayName, status: students.status, enrolledOn: students.enrolledOn }).from(students).innerJoin(sections, eq(sections.id, students.sectionId)).orderBy(...naturalAsc(sections.displayName), asc(students.rollNo)).limit(50_000);
       return toCsv(['roll_no', 'name', 'class', 'status', 'enrolled_on'], rows.map((r) => [r.rollNo, r.name, r.className, r.status, r.enrolledOn]));
     }
     if (d === 'fee_invoices') {

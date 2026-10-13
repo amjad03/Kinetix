@@ -12,6 +12,7 @@ import { assessments, conceptVideos, homework, lmsAnnouncements, lmsCourses, lms
 import { worksheets } from '../db/schema-g1.js';
 import { csv } from '../hr/exports.js';
 import { LMS_STAFF, LmsService } from './lms.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const CourseBody = z.object({ sectionId: z.uuid(), subjectId: z.uuid(), title: z.string().trim().min(1).max(120).optional(), description: z.string().trim().max(1000).default('') });
 const CoursePatch = z.object({ title: z.string().trim().min(1).max(120).optional(), description: z.string().trim().max(1000).optional(), status: z.enum(['draft', 'published']).optional() });
@@ -67,7 +68,7 @@ export class LmsController {
         .innerJoin(subjects, eq(subjects.id, lmsCourses.subjectId))
         .innerJoin(sections, eq(sections.id, lmsCourses.sectionId))
         .where(sectionId ? eq(lmsCourses.sectionId, z.uuid().parse(sectionId)) : undefined)
-        .orderBy(asc(sections.displayName), asc(subjects.name));
+        .orderBy(...naturalAsc(sections.displayName), asc(subjects.name));
       const out = [];
       for (const r of rows) if (await this.lms.canManage(tx, p, r.c)) out.push({ ...r.c, subject: r.subject, section: r.section });
       return out;

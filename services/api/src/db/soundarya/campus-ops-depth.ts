@@ -1,5 +1,5 @@
 /**
- * Samples for the admissions and campus-operations depth layer (migration 0130): module settings with Soundarya's own
+ * Samples for the admissions and campus-operations depth layer (migration 0135): module settings with Soundarya's own
  * rules and numbering series, and last term's library stock verification with a small shortfall.
  */
 import type { Ctx } from './ctx.js';

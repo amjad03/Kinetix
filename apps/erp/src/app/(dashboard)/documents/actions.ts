@@ -6,6 +6,7 @@ import { act, api } from '@/lib/api';
 import type { VaultVersion } from '@/lib/pathways-b';
 import type { ActionResult } from '@/lib/types';
 import type { CertificateKind, CertificateRequest, CertificateTemplate, VaultDocument } from '@/lib/hr-types';
+import { naturalCompare } from '@/lib/natural';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const bad = async (): Promise<ActionResult<never>> => ({ ok: false, error: (await getI18n()).t('error.generic') });
@@ -55,7 +56,7 @@ export async function classStudents(sectionId: string): Promise<ActionResult<{ i
   const res = await act(() => api<{ student: { id: string; fullName: string; rollNo: string } }[]>(`/v1/fees/invoices?sectionId=${sectionId}`));
   if (!res.ok) return res;
   const seen = new Map(res.data.map((r) => [r.student.id, `${r.student.rollNo} · ${r.student.fullName}`]));
-  return { ok: true, data: [...seen].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)) };
+  return { ok: true, data: [...seen].map(([id, name]) => ({ id, name })).sort((a, b) => naturalCompare(a.name, b.name)) };
 }
 
 export async function listVault(ownerType: 'student' | 'staff', ownerId: string): Promise<ActionResult<VaultDocument[]>> {

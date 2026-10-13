@@ -207,7 +207,7 @@ void main() {
       expect(find.text('Could not open that picture.'), findsOneWidget);
     });
 
-    testWidgets('a PowerPoint becomes pages after this one, under the ink', (tester) async {
+    testWidgets('a PowerPoint becomes board pages, the first on the blank open page, under the ink', (tester) async {
       final wb = await pumpBoard(tester);
       final renderer = PageRenderer.instance = FakeRenderer(3);
       files.document = PickedFile('plants.pptx', _deck());
@@ -218,8 +218,9 @@ void main() {
       expect(wb.pageCount, 1);
       await tester.tap(find.byKey(const Key('ppt-add-all')));
       await tester.pumpAndSettle();
-      expect(wb.pageCount, 4);
-      expect(wb.pageIndex, 1);
+      // The blank page the board opened on takes the first slide: no empty page in front.
+      expect(wb.pageCount, 3);
+      expect(wb.pageIndex, 0);
       expect((wb.elements.single as ImageElement).backdrop, isTrue);
     });
 
@@ -261,7 +262,7 @@ void main() {
       expect(wb.pageCount, 1);
       await tester.tap(find.byKey(const Key('ppt-add-all')));
       await tester.pumpAndSettle();
-      expect(wb.pageCount, 3);
+      expect(wb.pageCount, 2);
     });
   });
 }
