@@ -8,6 +8,7 @@ import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import '../board/layout/layout_strings.dart';
+import '../board/layout/tool_palette.dart';
 import 'noise_source.dart';
 import 'toolkit_controller.dart';
 import '../board/panel/panel_host.dart';
@@ -37,11 +38,11 @@ IconData toolkitIcon(ToolkitItem t) => switch (t) {
 
 /// A toolkit item's tile colour in the Tools popover.
 Color toolkitColor(ToolkitItem t) => switch (t) {
-  ToolkitItem.timer || ToolkitItem.stopwatch => const Color(0xFF8AB4F8),
-  ToolkitItem.picker || ToolkitItem.dice || ToolkitItem.spinner => const Color(0xFFFDD663),
-  ToolkitItem.noise => const Color(0xFF81C995),
-  ToolkitItem.curtain => const Color(0xFFDADCE0),
-  ToolkitItem.spotlight => const Color(0xFFFCAD70),
+  ToolkitItem.timer || ToolkitItem.stopwatch => ToolPalette.maths,
+  ToolkitItem.picker || ToolkitItem.dice || ToolkitItem.spinner => ToolPalette.primary,
+  ToolkitItem.noise => ToolPalette.science,
+  ToolkitItem.curtain => ToolPalette.classroom,
+  ToolkitItem.spotlight => ToolPalette.commerce,
 };
 
 /// The open toolkit cards over the board, which the teacher can drag out of the way, and the

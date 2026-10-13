@@ -338,7 +338,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
                   children: [
                     Container(width: 10, height: 10, color: e.value),
                     const SizedBox(width: 4),
-                    Text(e.key.label, style: context.text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
+                    Text(e.key.labelIn(Localizations.localeOf(context).languageCode), style: context.text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
                   ],
                 ),
             ],
@@ -364,7 +364,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('${e.z}  ${e.symbol}  ·  ${e.name}', style: context.text.headlineSmall),
-              Text('${e.mass} · ${e.cat.label}', style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+              Text('${e.mass} · ${e.cat.labelIn(Localizations.localeOf(context).languageCode)}', style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
               const SizedBox(height: Kx.s16),
               Wrap(
                 spacing: 8,

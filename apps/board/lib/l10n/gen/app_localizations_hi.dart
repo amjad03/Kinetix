@@ -2579,7 +2579,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get planTopics => 'विषय-वस्तु';
 
   @override
-  String get planOpenInBooks => 'Books में खोलें';
+  String get planOpenInBooks => '\"किताबें\" में खोलें';
 
   @override
   String planStepsOf(int planned, int length) {

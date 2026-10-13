@@ -362,7 +362,8 @@ class _Swatch extends StatelessWidget {
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(color: colour, shape: BoxShape.circle, border: Border.all(color: Colors.black26)),
-        child: selected ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+        // Dark on a light colour (chalk white, yellow, cyan), white on a dark one.
+        child: selected ? Icon(Icons.check, size: 16, color: colour.computeLuminance() > 0.179 ? const Color(0xFF1B1F24) : Colors.white) : null,
       ),
     ),
   );

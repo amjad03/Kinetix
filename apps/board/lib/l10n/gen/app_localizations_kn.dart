@@ -2587,7 +2587,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get planTopics => 'ವಿಷಯಗಳು';
 
   @override
-  String get planOpenInBooks => 'Books ನಲ್ಲಿ ತೆರೆಯಿರಿ';
+  String get planOpenInBooks => 'ಪುಸ್ತಕದಲ್ಲಿ ತೆರೆಯಿರಿ';
 
   @override
   String planStepsOf(int planned, int length) {

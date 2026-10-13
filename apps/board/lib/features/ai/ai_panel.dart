@@ -248,7 +248,7 @@ class _AiHomeState extends State<_AiHome> {
           group(l.aiGroupTeach, [
             tool(Icons.co_present_outlined, l.aiLessonPlan, ToolPalette.ai, AiView.lessonPlan),
             tool(Icons.functions, l.aiMathSolver, ToolPalette.maths, AiView.math),
-            open(Icons.view_in_ar_outlined, l.ai3dModels, ToolPalette.geometry, SplitContent.model3d),
+            open(Icons.view_in_ar_outlined, l.ai3dModels, ToolPalette.science, SplitContent.model3d),
             tool(Icons.document_scanner_outlined, l.aiReadBoard, ToolPalette.ai, AiView.readBoard),
             tool(Icons.ads_click, SbStrings.of(context)('selectAsk'), ToolPalette.ai, AiView.selectAsk),
           ]),

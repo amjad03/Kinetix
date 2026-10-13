@@ -252,47 +252,44 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
   Widget build(BuildContext context) {
     final s = logicStrings(context);
     final v = c.evaluate();
+    final parts = [
+      for (final g in GateType.values)
+        Padding(
+          padding: const EdgeInsets.only(right: 6),
+          child: OutlinedButton(key: Key('lg-add-${g.name}'), onPressed: () => _add(PartKind.gate, gate: g), child: Text(gateName(g))),
+        ),
+      _btn(const Key('lg-add-input'), Icons.toggle_on_outlined, s['input'], () => _add(PartKind.input)),
+      _btn(const Key('lg-add-clock'), Icons.schedule, s['clock'], () => _add(PartKind.clock)),
+      _btn(const Key('lg-add-led'), Icons.lightbulb_outline, s['led'], () => _add(PartKind.led)),
+    ];
+    final actions = [
+      _btn(const Key('lg-step'), Icons.skip_next, s['step'], () => setState(c.tick)),
+      _btn(const Key('lg-run'), _clock == null ? Icons.play_arrow : Icons.pause, _clock == null ? s['run'] : s['stop'], _toggleClock),
+      _btn(const Key('lg-table'), Icons.table_chart_outlined, s['table'], () => setState(() => _showTable = !_showTable)),
+      _btn(const Key('lg-to-board'), Icons.dashboard_customize_outlined, s['toBoard'], _tableToBoard),
+      _btn(const Key('lg-delete'), Icons.delete_outline, s['delete'], _selected == null ? null : () => setState(() {
+        c.remove(_selected!);
+        _selected = null;
+      })),
+      _btn(const Key('lg-clear'), Icons.clear_all, s['clear'], () => setState(() {
+        c.parts.clear();
+        c.wires.clear();
+        _selected = null;
+      })),
+    ];
+    // Every button in sight where there is room (a panel, a tablet); a phone scrolls each row
+    // sideways so the circuit keeps its room.
+    Widget row(List<Widget> children, EdgeInsets padding) => LayoutBuilder(
+      builder: (context, box) => box.maxWidth >= 600 && MediaQuery.sizeOf(context).height >= 600
+          ? Padding(padding: padding, child: Wrap(runSpacing: 6, children: children))
+          : SingleChildScrollView(scrollDirection: Axis.horizontal, padding: padding, child: Row(children: children)),
+    );
     return Column(
       key: const Key('logic-gates'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.all(Kx.s8),
-          child: Row(
-            children: [
-              for (final g in GateType.values)
-                Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: OutlinedButton(key: Key('lg-add-${g.name}'), onPressed: () => _add(PartKind.gate, gate: g), child: Text(gateName(g))),
-                ),
-              _btn(const Key('lg-add-input'), Icons.toggle_on_outlined, s['input'], () => _add(PartKind.input)),
-              _btn(const Key('lg-add-clock'), Icons.schedule, s['clock'], () => _add(PartKind.clock)),
-              _btn(const Key('lg-add-led'), Icons.lightbulb_outline, s['led'], () => _add(PartKind.led)),
-            ],
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: Kx.s8),
-          child: Row(
-            children: [
-              _btn(const Key('lg-step'), Icons.skip_next, s['step'], () => setState(c.tick)),
-              _btn(const Key('lg-run'), _clock == null ? Icons.play_arrow : Icons.pause, _clock == null ? s['run'] : s['stop'], _toggleClock),
-              _btn(const Key('lg-table'), Icons.table_chart_outlined, s['table'], () => setState(() => _showTable = !_showTable)),
-              _btn(const Key('lg-to-board'), Icons.dashboard_customize_outlined, s['toBoard'], _tableToBoard),
-              _btn(const Key('lg-delete'), Icons.delete_outline, s['delete'], _selected == null ? null : () => setState(() {
-                c.remove(_selected!);
-                _selected = null;
-              })),
-              _btn(const Key('lg-clear'), Icons.clear_all, s['clear'], () => setState(() {
-                c.parts.clear();
-                c.wires.clear();
-                _selected = null;
-              })),
-            ],
-          ),
-        ),
+        row(parts, const EdgeInsets.all(Kx.s8)),
+        row(actions, const EdgeInsets.symmetric(horizontal: Kx.s8)),
         Padding(padding: const EdgeInsets.all(Kx.s8), child: Text(s['hint'], style: context.text.bodySmall)),
         const Divider(height: 1),
         Expanded(

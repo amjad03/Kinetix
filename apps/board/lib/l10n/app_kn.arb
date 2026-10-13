@@ -723,7 +723,7 @@
   "planNone": "ಈ ಅವಧಿಗೆ ಪಾಠ ಯೋಜನೆ ಇಲ್ಲ. Teacher app ನಲ್ಲಿ ಯೋಜಿಸಿ.",
   "planAiDrafted": "KINETIX AI ಮೂಲಕ ಕರಡು ಮಾಡಲಾಗಿದೆ",
   "planTopics": "ವಿಷಯಗಳು",
-  "planOpenInBooks": "Books ನಲ್ಲಿ ತೆರೆಯಿರಿ",
+  "planOpenInBooks": "ಪುಸ್ತಕದಲ್ಲಿ ತೆರೆಯಿರಿ",
   "planStepsOf": "ಹಂತಗಳು · {length} ರಲ್ಲಿ {planned} ನಿಮಿ",
   "planStartTimer": "ಹಂತ ಟೈಮರ್ ಪ್ರಾರಂಭಿಸಿ",
   "planResumeTimer": "ಮುಂದುವರಿಸಿ",

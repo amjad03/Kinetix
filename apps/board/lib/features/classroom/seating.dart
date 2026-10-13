@@ -707,12 +707,15 @@ class _Desk extends StatelessWidget {
         borderRadius: Kx.radiusMd,
         border: Border.all(color: highlight ? c.primary : (accent ?? c.outlineVariant), width: highlight || accent != null ? 2 : 1),
       ),
-      child: Text(
-        name ?? empty,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: name == null ? c.onSurfaceVariant : c.onSecondaryContainer, fontWeight: FontWeight.w600),
+      // Smaller type on a narrow desk (a phone), so a name breaks between words, not inside one.
+      child: LayoutBuilder(
+        builder: (context, box) => Text(
+          name ?? empty,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: box.maxWidth.isFinite ? (box.maxWidth / 5.2).clamp(10.0, 14.0) : 14, height: 1.15, color: name == null ? c.onSurfaceVariant : c.onSecondaryContainer, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/painting.dart' show FontWeight, TextAlign, TextDirection, TextPainter, TextSpan, TextStyle, TextWidthBasis;
 import 'package:flutter/widgets.dart' show IconData;
 import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:kinetix_ui/kinetix_ui.dart' show KxFonts;
 
 /// The outline of an idea's box.
 enum MindShape { rounded, pill, rectangle, ellipse }
@@ -254,7 +255,7 @@ class MindMap {
 
   /// The words of [n] wrapped to fit (never cut short).
   TextPainter textOf(MindNode n) => TextPainter(
-    text: TextSpan(text: n.text, style: TextStyle(fontSize: fontSizeOf(n.id), fontWeight: FontWeight.w700, height: 1.2)),
+    text: TextSpan(text: n.text, style: TextStyle(fontFamily: KxFonts.board, fontFamilyFallback: KxFonts.fallback, fontSize: fontSizeOf(n.id), fontWeight: FontWeight.w700, height: 1.2)),
     textDirection: TextDirection.ltr,
     textAlign: TextAlign.center,
     textWidthBasis: TextWidthBasis.longestLine,

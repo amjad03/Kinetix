@@ -11,6 +11,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 
 import '../../l10n/feature_strings.dart';
 import '../board/chrome.dart' show showBoardMessage;
+import '../board/side_panel.dart' show PanelPage;
 import '../phet/phet_view.dart';
 import 'native/map_sims.dart';
 import 'native/other_sims.dart';
@@ -18,21 +19,114 @@ import 'native/psych_tests.dart';
 import 'sim_entry.dart';
 import 'sim_server.dart';
 
-/// The hub's viewer notices for sims loaded from the web.
+/// The hub's words: its filters, list, viewer notices and subjects.
 FeatureStrings simHubStrings(String lang) => FeatureStrings(lang, simHubStringTable);
 
 const simHubStringTable = <String, Map<String, String>>{
   'en': {
+    'title': 'Simulations hub',
+    'subject': 'Subject',
+    'allSubjects': 'All subjects',
+    'class': 'Class',
+    'allClasses': 'All classes',
+    'classN': 'Class {n}',
+    'classRange': 'Class {a}–{b}',
+    'college': 'College',
+    'search': 'Search',
+    'worksOffline': 'Works offline',
+    'pinnedHere': 'Pinned to this page:',
+    'offline': 'Offline',
+    'onlineOnly': 'Online only',
+    'pin': 'Pin to this page',
+    'noViewer': 'This panel cannot show web simulations.',
+    'viewerBeside': 'The 3D viewer is open beside the board.',
+    'noPicture': 'Could not picture the simulation',
+    'pictureAdded': 'Picture of the simulation added to the board',
+    'physics': 'Physics',
+    'chemistry': 'Chemistry',
+    'biology': 'Biology',
+    'earth': 'Earth science',
+    'maths': 'Maths',
+    'electronics': 'Electronics',
+    'cs': 'Computer science',
+    'economics': 'Economics',
+    'psychology': 'Psychology',
+    'geography': 'Geography',
+    'history': 'History',
+    'language': 'Language',
+    'general': 'General',
     'saved': 'Saved for offline',
     'offlineSaved': 'No internet. Showing the copy saved when this simulation was last opened online ({date}).',
     'offlineNever': '{title} is an online simulation and the board has no internet. Open it once while connected and it is kept for offline use, or choose one of the Offline sims.',
   },
   'hi': {
+    'title': 'सिमुलेशन हब',
+    'subject': 'विषय',
+    'allSubjects': 'सभी विषय',
+    'class': 'कक्षा',
+    'allClasses': 'सभी कक्षाएँ',
+    'classN': 'कक्षा {n}',
+    'classRange': 'कक्षा {a}–{b}',
+    'college': 'कॉलेज',
+    'search': 'खोजें',
+    'worksOffline': 'ऑफ़लाइन चलते हैं',
+    'pinnedHere': 'इस पेज पर पिन:',
+    'offline': 'ऑफ़लाइन',
+    'onlineOnly': 'केवल ऑनलाइन',
+    'pin': 'इस पेज पर पिन करें',
+    'noViewer': 'यह पैनल वेब सिमुलेशन नहीं दिखा सकता।',
+    'viewerBeside': '3D व्यूअर बोर्ड के बगल में खुला है।',
+    'noPicture': 'सिमुलेशन का चित्र नहीं बन सका',
+    'pictureAdded': 'सिमुलेशन का चित्र बोर्ड पर जोड़ा गया',
+    'physics': 'भौतिकी',
+    'chemistry': 'रसायन विज्ञान',
+    'biology': 'जीव विज्ञान',
+    'earth': 'पृथ्वी विज्ञान',
+    'maths': 'गणित',
+    'electronics': 'इलेक्ट्रॉनिकी',
+    'cs': 'कंप्यूटर विज्ञान',
+    'economics': 'अर्थशास्त्र',
+    'psychology': 'मनोविज्ञान',
+    'geography': 'भूगोल',
+    'history': 'इतिहास',
+    'language': 'भाषा',
+    'general': 'सामान्य',
     'saved': 'ऑफ़लाइन के लिए सहेजा गया',
     'offlineSaved': 'इंटरनेट नहीं है। यह सिमुलेशन पिछली बार ऑनलाइन खुलने पर सहेजी गई प्रति में दिख रहा है ({date})।',
     'offlineNever': '{title} ऑनलाइन सिमुलेशन है और बोर्ड पर इंटरनेट नहीं है। इसे एक बार इंटरनेट से जुड़कर खोलें, फिर यह ऑफ़लाइन के लिए सहेज लिया जाता है, या कोई ऑफ़लाइन सिमुलेशन चुनें।',
   },
   'kn': {
+    'title': 'ಸಿಮ್ಯುಲೇಶನ್ ಹಬ್',
+    'subject': 'ವಿಷಯ',
+    'allSubjects': 'ಎಲ್ಲ ವಿಷಯಗಳು',
+    'class': 'ತರಗತಿ',
+    'allClasses': 'ಎಲ್ಲ ತರಗತಿಗಳು',
+    'classN': 'ತರಗತಿ {n}',
+    'classRange': 'ತರಗತಿ {a}–{b}',
+    'college': 'ಕಾಲೇಜು',
+    'search': 'ಹುಡುಕಿ',
+    'worksOffline': 'ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಕೆಲಸ ಮಾಡುವವು',
+    'pinnedHere': 'ಈ ಪುಟಕ್ಕೆ ಪಿನ್ ಮಾಡಿದವು:',
+    'offline': 'ಆಫ್‌ಲೈನ್',
+    'onlineOnly': 'ಆನ್‌ಲೈನ್ ಮಾತ್ರ',
+    'pin': 'ಈ ಪುಟಕ್ಕೆ ಪಿನ್ ಮಾಡಿ',
+    'noViewer': 'ಈ ಪ್ಯಾನೆಲ್ ವೆಬ್ ಸಿಮ್ಯುಲೇಶನ್‌ಗಳನ್ನು ತೋರಿಸಲಾರದು.',
+    'viewerBeside': '3D ವೀಕ್ಷಕ ಬೋರ್ಡ್‌ನ ಪಕ್ಕದಲ್ಲಿ ತೆರೆದಿದೆ.',
+    'noPicture': 'ಸಿಮ್ಯುಲೇಶನ್‌ನ ಚಿತ್ರ ತೆಗೆಯಲಾಗಲಿಲ್ಲ',
+    'pictureAdded': 'ಸಿಮ್ಯುಲೇಶನ್‌ನ ಚಿತ್ರವನ್ನು ಬೋರ್ಡ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ',
+    'physics': 'ಭೌತಶಾಸ್ತ್ರ',
+    'chemistry': 'ರಸಾಯನಶಾಸ್ತ್ರ',
+    'biology': 'ಜೀವಶಾಸ್ತ್ರ',
+    'earth': 'ಭೂ ವಿಜ್ಞಾನ',
+    'maths': 'ಗಣಿತ',
+    'electronics': 'ಎಲೆಕ್ಟ್ರಾನಿಕ್ಸ್',
+    'cs': 'ಕಂಪ್ಯೂಟರ್ ವಿಜ್ಞಾನ',
+    'economics': 'ಅರ್ಥಶಾಸ್ತ್ರ',
+    'psychology': 'ಮನೋವಿಜ್ಞಾನ',
+    'geography': 'ಭೂಗೋಳ',
+    'history': 'ಇತಿಹಾಸ',
+    'language': 'ಭಾಷೆ',
+    'general': 'ಸಾಮಾನ್ಯ',
     'saved': 'ಆಫ್‌ಲೈನ್‌ಗಾಗಿ ಉಳಿಸಲಾಗಿದೆ',
     'offlineSaved': 'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಈ ಸಿಮ್ಯುಲೇಶನ್ ಕೊನೆಯ ಬಾರಿ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ತೆರೆದಾಗ ಉಳಿಸಿದ ಪ್ರತಿಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ ({date}).',
     'offlineNever': '{title} ಆನ್‌ಲೈನ್ ಸಿಮ್ಯುಲೇಶನ್ ಆಗಿದ್ದು ಬೋರ್ಡ್‌ಗೆ ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಸಂಪರ್ಕದಲ್ಲಿರುವಾಗ ಒಮ್ಮೆ ತೆರೆದರೆ ಅದು ಆಫ್‌ಲೈನ್‌ಗಾಗಿ ಉಳಿಯುತ್ತದೆ, ಅಥವಾ ಆಫ್‌ಲೈನ್ ಸಿಮ್ ಆರಿಸಿ.',
@@ -96,7 +190,7 @@ Future<void> addSimShotToBoard(BuildContext context, WhiteboardController wb, Si
   final png = await c.capture();
   if (!context.mounted) return;
   if (png == null || sim == null) {
-    showBoardMessage(context, 'Could not picture the simulation');
+    showBoardMessage(context, simHubStrings(boardLang(context))['noPicture']);
     return;
   }
   var w = 560.0, h = 360.0;
@@ -113,7 +207,7 @@ Future<void> addSimShotToBoard(BuildContext context, WhiteboardController wb, Si
     ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: png),
     TextElement(id: newElementId(), position: Offset(0, h + 6), text: credit, color: dark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack, fontSize: 14, size: measureBoardText(credit, 14)),
   ]);
-  if (context.mounted) showBoardMessage(context, 'Picture of the simulation added to the board');
+  if (context.mounted) showBoardMessage(context, simHubStrings(boardLang(context))['pictureAdded']);
 }
 
 /// The Simulations hub: sims by subject and class, bundled ones that work offline, online ones
@@ -178,34 +272,38 @@ class _SimHubPanelState extends State<SimHubPanel> {
     if (open != null) return _OpenSim(key: ValueKey(open.id), entry: open, controller: widget.controller, pinned: _pins?.isPinned(widget.page(), open.id) ?? false, onPin: () => _togglePin(open));
     final shown = filterSims(subject: _subject, grade: _grade, query: _query, offlineOnly: _offlineOnly);
     final pinned = [for (final id in _pins?.forPage(widget.page()) ?? const <String>[]) if (simById(id) != null) simById(id)!];
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    final hs = simHubStrings(boardLang(context));
+    String grade(int g) => g == 13 ? hs['college'] : hs.n('classN', g);
+    String grades(SimEntry e) => e.gradeMin == e.gradeMax ? grade(e.gradeMin) : hs['classRange'].replaceAll('{a}', '${e.gradeMin}').replaceAll('{b}', e.gradeMax == 13 ? hs['college'] : '${e.gradeMax}');
+    // Headed like the drawer's other tools in the panel; an open simulation has its own title row.
+    return PanelPage(icon: Icons.biotech, title: hs['title'], child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s8),
         child: Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
           DropdownButton<String?>(
             key: const Key('hub-subject'),
             value: _subject,
-            hint: const Text('Subject'),
-            items: [const DropdownMenuItem(value: null, child: Text('All subjects')), for (final s in simSubjects) DropdownMenuItem(value: s, child: Text(s))],
+            hint: Text(hs['subject']),
+            items: [DropdownMenuItem(value: null, child: Text(hs['allSubjects'])), for (final s in simSubjects) DropdownMenuItem(value: s, child: Text(hs[s]))],
             onChanged: (v) => setState(() => _subject = v),
           ),
           DropdownButton<int?>(
             key: const Key('hub-grade'),
             value: _grade,
-            hint: const Text('Class'),
-            items: [const DropdownMenuItem(value: null, child: Text('All classes')), for (var g = 1; g <= 13; g++) DropdownMenuItem(value: g, child: Text(g == 13 ? 'College' : 'Class $g'))],
+            hint: Text(hs['class']),
+            items: [DropdownMenuItem(value: null, child: Text(hs['allClasses'])), for (var g = 1; g <= 13; g++) DropdownMenuItem(value: g, child: Text(grade(g)))],
             onChanged: (v) => setState(() => _grade = v),
           ),
-          SizedBox(width: 180, child: TextField(key: const Key('hub-search'), decoration: const InputDecoration(hintText: 'Search', isDense: true, prefixIcon: Icon(Icons.search)), onChanged: (v) => setState(() => _query = v))),
-          FilterChip(key: const Key('hub-offline'), label: const Text('Works offline'), selected: _offlineOnly, onSelected: (v) => setState(() => _offlineOnly = v)),
+          SizedBox(width: 180, child: TextField(key: const Key('hub-search'), decoration: InputDecoration(hintText: hs['search'], isDense: true, prefixIcon: const Icon(Icons.search)), onChanged: (v) => setState(() => _query = v))),
+          FilterChip(key: const Key('hub-offline'), label: Text(hs['worksOffline']), selected: _offlineOnly, onSelected: (v) => setState(() => _offlineOnly = v)),
         ]),
       ),
       if (pinned.isNotEmpty)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
           child: Wrap(spacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
             const Icon(Icons.push_pin, size: 16),
-            const Text('Pinned to this page:'),
+            Text(hs['pinnedHere']),
             for (final e in pinned) ActionChip(key: Key('pinned-${e.id}'), label: Text(e.title), onPressed: () => widget.controller.openSim(e.id)),
           ]),
         ),
@@ -219,18 +317,18 @@ class _SimHubPanelState extends State<SimHubPanel> {
             return ListTile(
               key: Key('sim-${e.id}'),
               title: Text(e.title),
-              subtitle: Text('${e.subject} · ${e.gradeMin == e.gradeMax ? 'class ${e.gradeMin}' : 'classes ${e.gradeMin}-${e.gradeMax == 13 ? 'college' : e.gradeMax}'} · ${e.source} · ${e.licence}'),
+              subtitle: Text('${hs[e.subject]} · ${grades(e)} · ${e.source} · ${e.licence}'),
               leading: e.thumb != null ? ClipRRect(borderRadius: BorderRadius.circular(6), child: Image.asset(e.thumb!, key: Key('thumb-${e.id}'), width: 72, height: 48, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox(width: 72, height: 48))) : Icon(e.offline ? Icons.download_done : Icons.cloud_outlined, color: Kx.readable(e.offline ? Colors.green : Colors.blueGrey, Theme.of(context).scaffoldBackgroundColor)),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                Chip(label: Text(e.offline ? 'Offline' : 'Online only'), visualDensity: VisualDensity.compact),
-                IconButton(key: Key('pin-${e.id}'), icon: Icon(isPinned ? Icons.push_pin : Icons.push_pin_outlined), tooltip: 'Pin to this page', onPressed: () => _togglePin(e)),
+                Chip(label: Text(e.offline ? hs['offline'] : hs['onlineOnly']), visualDensity: VisualDensity.compact),
+                IconButton(key: Key('pin-${e.id}'), icon: Icon(isPinned ? Icons.push_pin : Icons.push_pin_outlined), tooltip: hs['pin'], onPressed: () => _togglePin(e)),
               ]),
               onTap: () => widget.controller.openSim(e.id),
             );
           },
         ),
       ),
-    ]);
+    ]));
   }
 }
 
@@ -332,7 +430,7 @@ class _OpenSimState extends State<_OpenSim> {
       return _Message(icon: Icons.cloud_off, text: hs['offlineNever'].replaceAll('{title}', e.title), key: const Key('hub-offline-msg'));
     }
     if (e.kind == SimKindOf.online && _online == null) return const Center(child: CircularProgressIndicator());
-    if (_viewerMissing) return const _Message(icon: Icons.web_asset_off, text: 'This panel cannot show web simulations.', key: Key('hub-no-viewer'));
+    if (_viewerMissing) return _Message(icon: Icons.web_asset_off, text: hs['noViewer'], key: const Key('hub-no-viewer'));
     switch (e.kind) {
       case SimKindOf.native:
         return switch (e.id) {
@@ -344,7 +442,7 @@ class _OpenSimState extends State<_OpenSim> {
           'geo-quiz' => const GeoQuiz(),
           'timeline' => const KeyDatesTimeline(),
           'grammar' => const GrammarCheck(),
-          _ => const _Message(icon: Icons.view_in_ar, text: 'The 3D viewer is open beside the board.'),
+          _ => _Message(icon: Icons.view_in_ar, text: hs['viewerBeside']),
         };
       case SimKindOf.bundled || SimKindOf.online:
         return _web?.view() ?? const SizedBox.shrink();
@@ -358,7 +456,7 @@ class _OpenSimState extends State<_OpenSim> {
       Row(children: [
         IconButton(key: const Key('hub-back'), icon: const Icon(Icons.arrow_back), onPressed: widget.controller.close),
         Expanded(child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
-        IconButton(key: const Key('hub-pin'), icon: Icon(widget.pinned ? Icons.push_pin : Icons.push_pin_outlined), tooltip: 'Pin to this page', onPressed: widget.onPin),
+        IconButton(key: const Key('hub-pin'), icon: Icon(widget.pinned ? Icons.push_pin : Icons.push_pin_outlined), tooltip: simHubStrings(boardLang(context))['pin'], onPressed: widget.onPin),
       ]),
       if (_fromCache)
         Padding(
