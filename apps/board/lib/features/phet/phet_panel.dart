@@ -464,6 +464,12 @@ class _SimPage extends StatelessWidget {
             ],
           ),
         ),
+        // Named in the board's language, but PhET has the sim itself in English only.
+        if (sim.localeFor(s.lang) != s.lang)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s4),
+            child: Text(s.inEnglish, key: Key('phet-in-english-$id'), style: Theme.of(context).textTheme.bodySmall),
+          ),
         Expanded(
           child: done
               ? RepaintBoundary(

@@ -3,6 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'native_strings.dart';
+
 /// The Stroop test's colours: the word names one colour and is inked in another.
 const stroopColors = <String, Color>{'RED': Color(0xFFD32F2F), 'GREEN': Color(0xFF388E3C), 'BLUE': Color(0xFF1976D2), 'YELLOW': Color(0xFFF9A825)};
 
@@ -77,22 +79,29 @@ class _StroopState extends State<StroopTest> {
 
   @override
   Widget build(BuildContext context) {
+    final s = NativeSimStrings.of(context);
     if (_i >= _trials.length) {
       return _Result(
-        lines: ['Correct: $_correct of ${_trials.length}', 'Same word and ink: ${meanMs(_congruent).round()} ms', 'Different word and ink: ${meanMs(_incongruent).round()} ms', 'The slower different-ink time is the Stroop effect.'],
+        lines: [
+          s.f('stroopCorrect', {'a': _correct, 'b': _trials.length}),
+          s.f('stroopSame', {'n': meanMs(_congruent).round()}),
+          s.f('stroopDiff', {'n': meanMs(_incongruent).round()}),
+          s['stroopEffect'],
+        ],
         onAgain: _again,
       );
     }
     final t = _trials[_i];
+    // The colour words are in the board's language, so the test works for every class.
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text('Tap the colour of the ink, not the word  (${_i + 1}/${_trials.length})'),
+        Text(s.f('stroopPrompt', {'i': _i + 1, 'n': _trials.length})),
         const SizedBox(height: 24),
-        Text(t.word, key: const Key('stroop-word'), style: TextStyle(fontSize: 72, fontWeight: FontWeight.bold, color: stroopColors[t.ink])),
+        Text(s.colour(t.word), key: const Key('stroop-word'), style: TextStyle(fontSize: 72, fontWeight: FontWeight.bold, color: stroopColors[t.ink])),
         const SizedBox(height: 24),
         Wrap(spacing: 12, children: [
-          for (final e in stroopColors.entries) FilledButton(key: Key('stroop-${e.key}'), style: FilledButton.styleFrom(backgroundColor: e.value), onPressed: () => _answer(e.key), child: Text(e.key)),
+          for (final e in stroopColors.entries) FilledButton(key: Key('stroop-${e.key}'), style: FilledButton.styleFrom(backgroundColor: e.value), onPressed: () => _answer(e.key), child: Text(s.colour(e.key))),
         ]),
       ],
     );
@@ -155,14 +164,15 @@ class _ReactionState extends State<ReactionTest> {
 
   @override
   Widget build(BuildContext context) {
+    final s = NativeSimStrings.of(context);
     if (_times.length >= widget.rounds) {
-      return _Result(lines: ['Mean reaction time: ${meanMs(_times).round()} ms', 'Rounds: ${_times.join(', ')} ms'], onAgain: () => setState(_times.clear));
+      return _Result(lines: [s.f('reactionMean', {'n': meanMs(_times).round()}), s.f('reactionRounds', {'n': _times.join(', ')})], onAgain: () => setState(_times.clear));
     }
     final (color, text) = switch (_phase) {
-      _Phase.idle => (Colors.blueGrey, 'Tap to start. Round ${_times.length + 1} of ${widget.rounds}'),
-      _Phase.waiting => (Colors.red, 'Wait for green...'),
-      _Phase.go => (Colors.green, 'TAP NOW'),
-      _Phase.early => (Colors.orange, 'Too early. Tap to try again'),
+      _Phase.idle => (Colors.blueGrey, s.f('reactionStart', {'a': _times.length + 1, 'b': widget.rounds})),
+      _Phase.waiting => (Colors.red, s['reactionWait']),
+      _Phase.go => (Colors.green, s['reactionGo']),
+      _Phase.early => (Colors.orange, s['reactionEarly']),
     };
     return GestureDetector(
       key: const Key('reaction-area'),
@@ -243,9 +253,10 @@ class _SpanState extends State<MemorySpanTest> {
 
   @override
   Widget build(BuildContext context) {
+    final s = NativeSimStrings.of(context);
     if (_over) {
       return _Result(
-        lines: ['Your memory span is $_best digits', 'The sequence was ${_seq.join(' ')}'],
+        lines: [s.f('spanResult', {'n': _best}), s.f('spanSequence', {'n': _seq.join(' ')})],
         onAgain: () => setState(() {
           _over = false;
           _n = widget.start;
@@ -255,13 +266,13 @@ class _SpanState extends State<MemorySpanTest> {
       );
     }
     return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text('Remember the digits ($_n)'),
+      Text(s.f('spanRemember', {'n': _n})),
       const SizedBox(height: 16),
       SizedBox(height: 90, child: Center(child: Text(!_asking && _shown >= 0 && _shown < _seq.length ? '${_seq[_shown]}' : (_asking ? '?' : ''), key: const Key('span-digit'), style: const TextStyle(fontSize: 72, fontWeight: FontWeight.bold)))),
       if (_asking) ...[
         SizedBox(width: 240, child: TextField(key: const Key('span-input'), controller: _field, keyboardType: TextInputType.number, autofocus: true, textAlign: TextAlign.center, onSubmitted: (_) => _submit())),
         const SizedBox(height: 8),
-        FilledButton(key: const Key('span-submit'), onPressed: _submit, child: const Text('Check')),
+        FilledButton(key: const Key('span-submit'), onPressed: _submit, child: Text(s['check'])),
       ],
     ]);
   }
@@ -276,7 +287,7 @@ class _Result extends StatelessWidget {
     child: Column(mainAxisSize: MainAxisSize.min, children: [
       for (final l in lines) Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Text(l, style: const TextStyle(fontSize: 20))),
       const SizedBox(height: 12),
-      FilledButton(key: const Key('psych-again'), onPressed: onAgain, child: const Text('Try again')),
+      FilledButton(key: const Key('psych-again'), onPressed: onAgain, child: Text(NativeSimStrings.of(context)['tryAgain'])),
     ]),
   );
 }

@@ -22,7 +22,7 @@ bridge	पुल	ಸೇತುವೆ
 brother	भाई	ಸಹೋದರ
 build	बनाना	ಕಟ್ಟು
 bus	बस	ಬಸ್ಸು
-butterfly	तितली	ಚಿಟ್ಟೆ
+butterfly	तितली	ಚಿಟ್ಟೆ	noun	an insect with large, often brightly coloured wings that flies by day	A butterfly sat on the flower.
 buy	खरीदना	ಕೊಳ್ಳು
 call	बुलाना	ಕರೆ
 cat	बिल्ली	ಬೆಕ್ಕು
@@ -89,7 +89,7 @@ gift	उपहार	ಉಡುಗೊರೆ
 girl	लड़की	ಹುಡುಗಿ
 give	देना	ಕೊಡು
 glass	काँच	ಗಾಜು
-go	जाना	ಹೋಗು
+go	जाना	ಹೋಗು	verb	move or travel from one place to another	We go to school by bus.
 gold	सोना	ಚಿನ್ನ
 good	अच्छा	ಒಳ್ಳೆಯ
 government	सरकार	ಸರ್ಕಾರ
@@ -142,7 +142,7 @@ medicine	दवा	ಔಷಧ
 milk	दूध	ಹಾಲು
 mirror	दर्पण	ಕನ್ನಡಿ
 mother	माता	ತಾಯಿ
-mountain	पर्वत	ಪರ್ವತ
+mountain	पर्वत	ಪರ್ವತ	noun	a mass of land that rises far above the land around it, higher than a hill	Mount Everest is the highest mountain in the world.
 mouth	मुँह	ಬಾಯಿ
 music	संगीत	ಸಂಗೀತ
 name	नाम	ಹೆಸರು
@@ -151,12 +151,12 @@ night	रात	ರಾತ್ರಿ
 north	उत्तर	ಉತ್ತರ
 nose	नाक	ಮೂಗು
 number	संख्या	ಸಂಖ್ಯೆ
-ocean	महासागर	ಸಾಗರ
+ocean	महासागर	ಸಾಗರ	noun	a very large body of salt water; one of the great divisions of the sea	The Indian Ocean lies to the south of India.
 open	खोलना	ತೆರೆ
 paper	कागज़	ಕಾಗದ
-parent	माता-पिता	ಪೋಷಕ
+parent	माता-पिता	ಪೋಷಕ	noun	a father or a mother	Each parent signed the report card.
 pen	कलम	ಲೇಖನಿ
-pencil	पेंसिल	ಪೆನ್ಸಿಲ್
+pencil	पेंसिल	ಪೆನ್ಸಿಲ್	noun	a thin stick of graphite in a wooden case, used for writing and drawing	Sharpen your pencil before the test.
 people	लोग	ಜನರು
 picture	चित्र	ಚಿತ್ರ
 plant	पौधा	ಸಸ್ಯ
@@ -178,9 +178,9 @@ season	मौसम	ಋತು
 seed	बीज	ಬೀಜ
 shop	दुकान	ಅಂಗಡಿ
 sing	गाना	ಹಾಡು
-sister	बहन	ಸಹೋದರಿ
+sister	बहन	ಸಹೋದರಿ	noun	a girl or woman who has the same parents as another person	My sister is in Class 5.
 sit	बैठना	ಕುಳಿತುಕೊ
-sky	आसमान	ಆಕಾಶ
+sky	आसमान	ಆಕಾಶ	noun	the space above the earth, seen as a blue dome by day	The sky is clear tonight.
 sleep	सोना	ನಿದ್ರೆ
 snow	बर्फ़	ಹಿಮ
 soil	मिट्टी	ಮಣ್ಣು
@@ -196,7 +196,7 @@ street	गली	ಬೀದಿ
 student	विद्यार्थी	ವಿದ್ಯಾರ್ಥಿ
 sugar	चीनी	ಸಕ್ಕರೆ
 table	मेज़	ಮೇಜು
-tall	ऊँचा	ಎತ್ತರ
+tall	ऊँचा	ಎತ್ತರ	adjective	of more than average height	The tall boy sits at the back.
 tea	चाय	ಚಹಾ
 temple	मंदिर	ದೇವಸ್ಥಾನ
 thing	चीज़	ವಸ್ತು
@@ -208,10 +208,10 @@ tooth	दाँत	ಹಲ್ಲು
 town	कस्बा	ಪಟ್ಟಣ
 train	रेलगाड़ी	ರೈಲು
 travel	यात्रा	ಪ್ರಯಾಣ
-triangle	त्रिभुज	ತ್ರಿಕೋನ
+triangle	त्रिभुज	ತ್ರಿಕೋನ	noun	a flat shape with three straight sides and three angles	A triangle has three angles.
 truth	सत्य	ಸತ್ಯ
-valley	घाटी	ಕಣಿವೆ
-vegetable	सब्ज़ी	ತರಕಾರಿ
+valley	घाटी	ಕಣಿವೆ	noun	a long low stretch of land between hills or mountains, often with a river	A river flows through the valley.
+vegetable	सब्ज़ी	ತರಕಾರಿ	noun	a plant or part of a plant eaten as food, such as a carrot or spinach	Eat a green vegetable every day.
 voice	आवाज़	ಧ್ವನಿ
 wall	दीवार	ಗೋಡೆ
 war	युद्ध	ಯುದ್ಧ

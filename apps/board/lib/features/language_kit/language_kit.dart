@@ -47,6 +47,10 @@ const languageStringTable = <String, Map<String, String>>{
     'example': 'Example',
     'synonyms': 'Synonyms',
     'pronounce': 'Hear it',
+    'inHindi': 'In Hindi',
+    'inKannada': 'In Kannada',
+    'onlyEnglish': 'English only: this word has no Hindi or Kannada meaning in the offline list yet.',
+    'onlyEnglishHere': 'English only: this word has no meaning in this language in the offline list yet.',
     'noVoice': 'This board has no voice for that language. Install it in the device text-to-speech settings.',
   },
   'hi': {
@@ -78,6 +82,10 @@ const languageStringTable = <String, Map<String, String>>{
     'example': 'उदाहरण',
     'synonyms': 'पर्यायवाची',
     'pronounce': 'उच्चारण सुनें',
+    'inHindi': 'हिंदी में',
+    'inKannada': 'कन्नड़ में',
+    'onlyEnglish': 'केवल अंग्रेज़ी: इस शब्द का हिंदी या कन्नड़ अर्थ अभी ऑफ़लाइन सूची में नहीं है।',
+    'onlyEnglishHere': 'केवल अंग्रेज़ी: इस शब्द का हिंदी अर्थ अभी ऑफ़लाइन सूची में नहीं है, इसलिए अंग्रेज़ी अर्थ दिखाया गया है।',
     'noVoice': 'इस बोर्ड पर उस भाषा की आवाज़ नहीं है। डिवाइस की टेक्स्ट-टू-स्पीच सेटिंग में इसे जोड़ें।',
   },
   'kn': {
@@ -109,6 +117,10 @@ const languageStringTable = <String, Map<String, String>>{
     'example': 'ಉದಾಹರಣೆ',
     'synonyms': 'ಸಮಾನಾರ್ಥಕ',
     'pronounce': 'ಉಚ್ಚಾರಣೆ ಕೇಳಿ',
+    'inHindi': 'ಹಿಂದಿಯಲ್ಲಿ',
+    'inKannada': 'ಕನ್ನಡದಲ್ಲಿ',
+    'onlyEnglish': 'ಇಂಗ್ಲಿಷ್ ಮಾತ್ರ: ಈ ಪದದ ಹಿಂದಿ ಅಥವಾ ಕನ್ನಡ ಅರ್ಥ ಇನ್ನೂ ಆಫ್‌ಲೈನ್ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲ.',
+    'onlyEnglishHere': 'ಇಂಗ್ಲಿಷ್ ಮಾತ್ರ: ಈ ಪದದ ಕನ್ನಡ ಅರ್ಥ ಇನ್ನೂ ಆಫ್‌ಲೈನ್ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಇಂಗ್ಲಿಷ್ ಅರ್ಥ ತೋರಿಸಲಾಗಿದೆ.',
     'noVoice': 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಆ ಭಾಷೆಯ ಧ್ವನಿ ಇಲ್ಲ. ಸಾಧನದ ಟೆಕ್ಸ್ಟ್-ಟು-ಸ್ಪೀಚ್ ಸೆಟ್ಟಿಂಗ್‌ನಲ್ಲಿ ಸೇರಿಸಿ.',
   },
 };
@@ -293,13 +305,39 @@ class _DictionaryState extends State<_Dictionary> {
                 ),
               ],
             ),
+            // The word in Hindi and Kannada, the board's language first; or a plain note that
+            // the offline list has only the English meaning.
             if (e.hi != null || e.kn != null)
               Wrap(
                 spacing: Kx.s8,
+                runSpacing: Kx.s4,
                 children: [
-                  if (e.hi != null) ActionChip(key: Key('dictionary-hi-${e.word}'), avatar: const Icon(Icons.volume_up_outlined, size: 16), label: Text(e.hi!), onPressed: () => unawaited(_speak(e.hi!))),
-                  if (e.kn != null) ActionChip(key: Key('dictionary-kn-${e.word}'), avatar: const Icon(Icons.volume_up_outlined, size: 16), label: Text(e.kn!), onPressed: () => unawaited(_speak(e.kn!))),
+                  for (final (lang, word) in [('hi', e.hi), ('kn', e.kn)]..sort((a, b) => a.$1 == s.lang ? -1 : (b.$1 == s.lang ? 1 : 0)))
+                    if (word != null)
+                      ActionChip(
+                        key: Key('dictionary-$lang-${e.word}'),
+                        avatar: const Icon(Icons.volume_up_outlined, size: 16),
+                        label: Text('${s[lang == 'hi' ? 'inHindi' : 'inKannada']}: $word', style: lang == s.lang ? const TextStyle(fontWeight: FontWeight.w700) : null),
+                        onPressed: () => unawaited(_speak(word)),
+                      ),
                 ],
+              ),
+            if ((s.lang == 'hi' && e.hi == null) || (s.lang == 'kn' && e.kn == null) || (e.hi == null && e.kn == null))
+              Padding(
+                padding: const EdgeInsets.only(top: Kx.s4),
+                child: Row(
+                  children: [
+                    Icon(Icons.translate, size: 16, color: c.onSurfaceVariant),
+                    const SizedBox(width: Kx.s4),
+                    Expanded(
+                      child: Text(
+                        s[s.lang == 'en' ? 'onlyEnglish' : 'onlyEnglishHere'],
+                        key: Key('dictionary-only-english-${e.word}'),
+                        style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant, fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             for (final (i, sense) in e.senses.indexed)
               Padding(

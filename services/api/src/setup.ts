@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { Logger } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ErrorCodeFilter } from './common/error-codes.js';
@@ -23,6 +26,30 @@ export function configureApp(app: NestExpressApplication): void {
   app.useBodyParser('json', { limit: '8mb' });
   // Bulk import (import/): a CSV body, kept as bytes so the import can refuse text that is not UTF-8.
   app.useBodyParser('raw', { type: ['text/csv', 'application/csv', 'application/vnd.ms-excel'], limit: '6mb' });
+  serveModels(app, env);
   // Every error carries a stable `code` the apps can translate.
   app.useGlobalFilters(new ErrorCodeFilter(app.get(HttpAdapterHost).httpAdapter));
+}
+
+/**
+ * The downloadable 3D models at /assets/models/<id>.glb and <id>.json, public like the GitHub
+ * copy they mirror, so boards on a school network fetch them from their own server first.
+ */
+export function serveModels(app: NestExpressApplication, env: Env): void {
+  const dir = resolve(process.cwd(), env.MODELS_DIR);
+  if (!existsSync(dir)) {
+    new Logger('Models').warn(`3D models folder ${dir} not found; boards will download models from GitHub (set MODELS_DIR)`);
+    return;
+  }
+  app.useStaticAssets(dir, {
+    prefix: '/assets/models/',
+    index: false,
+    dotfiles: 'deny',
+    maxAge: '7d',
+    setHeaders: (res, path) => {
+      if (path.endsWith('.glb')) res.setHeader('Content-Type', 'model/gltf-binary');
+      // The board's model viewer runs in a WebView on another origin.
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    },
+  });
 }

@@ -34,8 +34,8 @@ const templateBackgrounds = [
   BoardBackground.footballField,
   BoardBackground.cricketField,
   BoardBackground.worldMap,
-  // The India map stays out of the list until an outline with the official boundary is
-  // bundled; a board saved with it still opens.
+  // India with the Survey of India boundary (packages/kinetix_ink/tool/india_outline.py).
+  BoardBackground.indiaMap,
   BoardBackground.ledger,
   BoardBackground.journal,
   BoardBackground.chalkboard,

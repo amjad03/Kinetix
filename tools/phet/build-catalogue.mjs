@@ -148,6 +148,8 @@ function levelRange(levels, id) {
 }
 
 const classification = JSON.parse(readFileSync(join(here, 'classification.json'), 'utf8'));
+// KINETIX's own Hindi and Kannada titles, used only where PhET has no translation of its own.
+const ourTitles = existsSync(join(here, 'titles.json')) ? JSON.parse(readFileSync(join(here, 'titles.json'), 'utf8')) : {};
 const sizes = existsSync(join(here, 'sizes.json')) ? JSON.parse(readFileSync(join(here, 'sizes.json'), 'utf8')) : {};
 
 let found;
@@ -175,7 +177,10 @@ const sims = ids.map((id, k) => {
   if (!SUBJECTS.includes(c.subject)) throw new Error(`${id}: unknown subject ${c.subject}`);
   return {
     id,
-    title: Object.fromEntries(LOCALES.filter((l) => s.titles[l]).map((l) => [l, s.titles[l]])),
+    // A "translation" still in English (PhET's hi for Calculus Grapher) counts as none.
+    title: Object.fromEntries(
+      LOCALES.map((l) => [l, l !== 'en' && !/[ऀ-ॿಀ-೿]/.test(s.titles[l] ?? '') ? (ourTitles[id]?.[l] ?? s.titles[l]) : s.titles[l]]).filter(([, t]) => t),
+    ),
     subject: c.subject,
     topics: c.topics,
     levels,

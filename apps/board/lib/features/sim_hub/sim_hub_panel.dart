@@ -272,7 +272,8 @@ class _SimHubPanelState extends State<SimHubPanel> {
     if (open != null) return _OpenSim(key: ValueKey(open.id), entry: open, controller: widget.controller, pinned: _pins?.isPinned(widget.page(), open.id) ?? false, onPin: () => _togglePin(open));
     final shown = filterSims(subject: _subject, grade: _grade, query: _query, offlineOnly: _offlineOnly);
     final pinned = [for (final id in _pins?.forPage(widget.page()) ?? const <String>[]) if (simById(id) != null) simById(id)!];
-    final hs = simHubStrings(boardLang(context));
+    final lang = boardLang(context);
+    final hs = simHubStrings(lang);
     String grade(int g) => g == 13 ? hs['college'] : hs.n('classN', g);
     String grades(SimEntry e) => e.gradeMin == e.gradeMax ? grade(e.gradeMin) : hs['classRange'].replaceAll('{a}', '${e.gradeMin}').replaceAll('{b}', e.gradeMax == 13 ? hs['college'] : '${e.gradeMax}');
     // Headed like the drawer's other tools in the panel; an open simulation has its own title row.
@@ -304,7 +305,7 @@ class _SimHubPanelState extends State<SimHubPanel> {
           child: Wrap(spacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
             const Icon(Icons.push_pin, size: 16),
             Text(hs['pinnedHere']),
-            for (final e in pinned) ActionChip(key: Key('pinned-${e.id}'), label: Text(e.title), onPressed: () => widget.controller.openSim(e.id)),
+            for (final e in pinned) ActionChip(key: Key('pinned-${e.id}'), label: Text(e.titleIn(lang)), onPressed: () => widget.controller.openSim(e.id)),
           ]),
         ),
       Expanded(
@@ -316,8 +317,10 @@ class _SimHubPanelState extends State<SimHubPanel> {
             final isPinned = _pins?.isPinned(widget.page(), e.id) ?? false;
             return ListTile(
               key: Key('sim-${e.id}'),
-              title: Text(e.title),
-              subtitle: Text('${hs[e.subject]} · ${grades(e)} · ${e.source} · ${e.licence}'),
+              title: Text(e.titleIn(lang)),
+              // What it does, then where it is from.
+              subtitle: Text('${e.descriptionIn(lang)}\n${hs[e.subject]} · ${grades(e)} · ${e.source} · ${e.licence}', key: Key('sim-desc-${e.id}')),
+              isThreeLine: true,
               leading: e.thumb != null ? ClipRRect(borderRadius: BorderRadius.circular(6), child: Image.asset(e.thumb!, key: Key('thumb-${e.id}'), width: 72, height: 48, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox(width: 72, height: 48))) : Icon(e.offline ? Icons.download_done : Icons.cloud_outlined, color: Kx.readable(e.offline ? Colors.green : Colors.blueGrey, Theme.of(context).scaffoldBackgroundColor)),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 Chip(label: Text(e.offline ? hs['offline'] : hs['onlineOnly']), visualDensity: VisualDensity.compact),
@@ -427,7 +430,7 @@ class _OpenSimState extends State<_OpenSim> {
     final e = widget.entry;
     final hs = simHubStrings(boardLang(context));
     if (e.kind == SimKindOf.online && _online == false && !_fromCache) {
-      return _Message(icon: Icons.cloud_off, text: hs['offlineNever'].replaceAll('{title}', e.title), key: const Key('hub-offline-msg'));
+      return _Message(icon: Icons.cloud_off, text: hs['offlineNever'].replaceAll('{title}', e.titleIn(boardLang(context))), key: const Key('hub-offline-msg'));
     }
     if (e.kind == SimKindOf.online && _online == null) return const Center(child: CircularProgressIndicator());
     if (_viewerMissing) return _Message(icon: Icons.web_asset_off, text: hs['noViewer'], key: const Key('hub-no-viewer'));
@@ -455,7 +458,7 @@ class _OpenSimState extends State<_OpenSim> {
     return Column(children: [
       Row(children: [
         IconButton(key: const Key('hub-back'), icon: const Icon(Icons.arrow_back), onPressed: widget.controller.close),
-        Expanded(child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+        Expanded(child: Text(e.titleIn(boardLang(context)), key: const Key('hub-title'), style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
         IconButton(key: const Key('hub-pin'), icon: Icon(widget.pinned ? Icons.push_pin : Icons.push_pin_outlined), tooltip: simHubStrings(boardLang(context))['pin'], onPressed: widget.onPin),
       ]),
       if (_fromCache)

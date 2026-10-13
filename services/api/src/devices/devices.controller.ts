@@ -204,6 +204,9 @@ export class DevicesController {
         // Teacher profile: Schedule a Training and the institution's What's New items.
         training: st.boardTraining ?? null,
         whatsNew: st.boardWhatsNew ?? [],
+        // Where to download 3D models from: the institution's server, else the deployment's
+        // (MODELS_BASE_URL); null = the board's own API server, then GitHub.
+        modelsBase: st.boardModelsBase ?? this.env.MODELS_BASE_URL ?? null,
       };
     });
   }

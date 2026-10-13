@@ -50,8 +50,10 @@ void main() {
           expect(PhetCatalogue.levelOrder, contains(l), reason: s.id);
         }
         expect(s.locales, contains('en'), reason: s.id);
+        // Named in Hindi and Kannada: PhET's own title where PhET has the sim in that language,
+        // KINETIX's (tools/phet/titles.json) where it does not (the sim then opens in English).
         for (final l in ['hi', 'kn']) {
-          if (s.titles.containsKey(l)) expect(s.locales, contains(l), reason: '${s.id} has a $l title');
+          expect(s.titles[l], isNotNull, reason: '${s.id} has a $l title');
         }
         expect(s.sizeBytes, greaterThan(0));
         if (s.thumb != null) expect(File(s.thumb!).existsSync(), isTrue, reason: s.thumb);
@@ -77,8 +79,8 @@ void main() {
       expect(s.localeFor('hi'), 'hi');
       expect(s.title('hi'), isNot(s.title('en')));
       final noKn = _catalogue.sims.firstWhere((x) => !x.locales.contains('kn'));
-      expect(noKn.localeFor('kn'), 'en');
-      expect(noKn.title('kn'), noKn.titles['en']);
+      expect(noKn.localeFor('kn'), 'en', reason: 'the sim itself opens in English');
+      expect(noKn.title('kn'), isNot(noKn.titles['en']), reason: 'but is named in Kannada');
     });
 
     test('filters by subject, topic and class', () {

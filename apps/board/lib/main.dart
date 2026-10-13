@@ -15,6 +15,7 @@ import 'demo/demo.dart';
 import 'demo/demo_server.dart';
 import 'features/board/board_screen.dart';
 import 'features/board/chrome.dart';
+import 'features/board/model_server.dart';
 import 'features/broadcast/broadcast_overlay.dart';
 import 'features/comfort/eye_comfort.dart';
 import 'features/concept_videos/concept_video_suggestions.dart';
@@ -39,6 +40,8 @@ void main() {
   // The picture library's credits on the licence page.
   registerPictureLibraryLicence();
   final board = Demo.enabled ? demoBoard(DemoBoardServer()) : (BoardController()..start());
+  // 3D models download from this board's own server, the institution's or the KINETIX API first.
+  unawaited(ModelServer.attach(board));
   // Back in front (from Android settings, or the user unpinned the screen): kiosk mode locks
   // again if it should be on (docs/hardware/kiosk-mode.md).
   AppLifecycleListener(onResume: () => unawaited(board.kiosk.refresh()));

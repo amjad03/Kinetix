@@ -30,9 +30,10 @@ const keyDatesStringTable = <String, Map<String, String>>{
     'early': '1500 to 1800',
     'modern': '1800 to 1947',
     'contemporary': 'After 1947',
+    'english': 'Events not yet translated are shown in English.',
   },
   'hi': {
-    'search': 'घटना या वर्ष खोजें (1857, BCE, पानीपत)',
+    'search': 'घटना या वर्ष खोजें (1857, ई.पू., पानीपत)',
     'all': 'सभी',
     'india': 'भारत',
     'world': 'विश्व',
@@ -52,9 +53,10 @@ const keyDatesStringTable = <String, Map<String, String>>{
     'early': '1500 से 1800',
     'modern': '1800 से 1947',
     'contemporary': '1947 के बाद',
+    'english': 'जिन घटनाओं का हिंदी अनुवाद अभी नहीं है, वे अंग्रेज़ी में दिखाई गई हैं।',
   },
   'kn': {
-    'search': 'ಘಟನೆ ಅಥವಾ ವರ್ಷ ಹುಡುಕಿ (1857, BCE, ಪಾಣಿಪತ್)',
+    'search': 'ಘಟನೆ ಅಥವಾ ವರ್ಷ ಹುಡುಕಿ (1857, ಕ್ರಿ.ಪೂ., ಪಾಣಿಪತ್)',
     'all': 'ಎಲ್ಲ',
     'india': 'ಭಾರತ',
     'world': 'ವಿಶ್ವ',
@@ -74,6 +76,7 @@ const keyDatesStringTable = <String, Map<String, String>>{
     'early': '1500 ರಿಂದ 1800',
     'modern': '1800 ರಿಂದ 1947',
     'contemporary': '1947ರ ನಂತರ',
+    'english': 'ಇನ್ನೂ ಕನ್ನಡಕ್ಕೆ ಅನುವಾದವಾಗದ ಘಟನೆಗಳನ್ನು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ.',
   },
 };
 
@@ -148,6 +151,7 @@ class _KeyDatesPanelState extends State<KeyDatesPanel> {
   @override
   Widget build(BuildContext context) {
     final s = keyDatesStrings(context);
+    final lang = boardLang(context);
     final (list, widened) = _list();
     Widget chip(String key, String label, bool selected, VoidCallback onTap) =>
         ChoiceChip(key: Key(key), label: Text(label), selected: selected, onSelected: (_) => setState(onTap), visualDensity: VisualDensity.compact);
@@ -229,6 +233,12 @@ class _KeyDatesPanelState extends State<KeyDatesPanel> {
                     padding: const EdgeInsets.fromLTRB(Kx.s12, 0, Kx.s12, 4),
                     child: Text(s['widened'], key: const Key('dates-widened'), style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
                   ),
+                // The most-taught 300 are in Hindi and Kannada; the rest say they are in English.
+                if (lang != 'en' && list.any((e) => !e.hasLanguage(lang)))
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(Kx.s12, 0, Kx.s12, 4),
+                    child: Text(s['english'], key: const Key('dates-english-note'), style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
+                  ),
               ],
             ),
           ),
@@ -248,8 +258,8 @@ class _KeyDatesPanelState extends State<KeyDatesPanel> {
                       dense: true,
                       value: _picked.contains(d),
                       onChanged: (v) => setState(() => v == true ? _picked.add(d) : _picked.remove(d)),
-                      title: Text(d.text),
-                      subtitle: Text(d.when, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      title: Text(d.textIn(lang)),
+                      subtitle: Text(d.whenIn(lang), style: const TextStyle(fontWeight: FontWeight.w700)),
                     );
                   },
                 ),
@@ -261,7 +271,7 @@ class _KeyDatesPanelState extends State<KeyDatesPanel> {
             onPressed: _picked.isEmpty
                 ? null
                 : () {
-                    final ev = [for (final d in _picked.toList()..sort((a, b) => a.year.compareTo(b.year))) (d.when, d.text)];
+                    final ev = [for (final d in _picked.toList()..sort((a, b) => a.year.compareTo(b.year))) (d.whenIn(lang), d.textIn(lang))];
                     widget.onDraw(ev);
                     setState(_picked.clear);
                   },

@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/feature_strings.dart';
 import '../../board/kit/key_dates_data.dart';
+import 'native_strings.dart';
 
 /// One round of the money-creation process: a deposit, what the bank lends, what it keeps.
 class BankRound {
@@ -39,18 +41,20 @@ class _MacroState extends State<MacroMoneySim> {
 
   @override
   Widget build(BuildContext context) {
+    final s = NativeSimStrings.of(context);
     final rounds = moneyRounds(_deposit, _rr);
     final total = _deposit * moneyMultiplier(_rr);
+    Widget cell(String t) => Padding(padding: const EdgeInsets.all(4), child: Text(t));
     return ListView(padding: const EdgeInsets.all(12), children: [
-      Text('Initial deposit: Rs ${_deposit.round()}'),
+      Text(s.f('macroDeposit', {'n': _deposit.round()})),
       Slider(key: const Key('macro-deposit'), value: _deposit, min: 100, max: 10000, divisions: 99, onChanged: (v) => setState(() => _deposit = v)),
-      Text('Reserve ratio: ${(_rr * 100).round()}%'),
+      Text(s.f('macroRatio', {'n': (_rr * 100).round()})),
       Slider(key: const Key('macro-rr'), value: _rr, min: 0.02, max: 0.5, divisions: 48, onChanged: (v) => setState(() => _rr = v)),
-      Text('Money multiplier: ${moneyMultiplier(_rr).toStringAsFixed(1)}', key: const Key('macro-mult'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-      Text('Money the banks can create in all: Rs ${total.round()}  (Rs ${(total - _deposit).round()} newly created)'),
+      Text(s.f('macroMultiplier', {'n': moneyMultiplier(_rr).toStringAsFixed(1)}), key: const Key('macro-mult'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      Text(s.f('macroTotal', {'a': total.round(), 'b': (total - _deposit).round()})),
       const SizedBox(height: 8),
       Table(border: TableBorder.all(color: Colors.black26), children: [
-        const TableRow(children: [Padding(padding: EdgeInsets.all(4), child: Text('Round')), Padding(padding: EdgeInsets.all(4), child: Text('Deposit')), Padding(padding: EdgeInsets.all(4), child: Text('Lent')), Padding(padding: EdgeInsets.all(4), child: Text('Reserve'))]),
+        TableRow(children: [for (final k in ['macroRound', 'macroDepositCol', 'macroLent', 'macroReserve']) cell(s[k])]),
         for (var i = 0; i < rounds.length; i++)
           TableRow(children: [for (final t in ['${i + 1}', rounds[i].deposit.toStringAsFixed(0), rounds[i].lent.toStringAsFixed(0), rounds[i].reserve.toStringAsFixed(0)]) Padding(padding: const EdgeInsets.all(4), child: Text(t))]),
       ]),
@@ -80,25 +84,31 @@ class _TimelineState extends State<KeyDatesTimeline> {
     future: _data,
     builder: (context, snap) {
       if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+      final s = NativeSimStrings.of(context);
+      final lang = boardLang(context);
       final events = snap.data!.search(query: _q, region: _region == 'all' ? null : _region, topic: _topic);
       return Column(children: [
         Padding(
           padding: const EdgeInsets.all(8),
           child: Wrap(spacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
             SegmentedButton<String>(
-              segments: const [ButtonSegment(value: 'india', label: Text('India')), ButtonSegment(value: 'world', label: Text('World')), ButtonSegment(value: 'all', label: Text('All'))],
+              segments: [for (final r in ['india', 'world', 'all']) ButtonSegment(value: r, label: Text(s[r]))],
               selected: {_region},
               onSelectionChanged: (s) => setState(() => _region = s.first),
             ),
-            ChoiceChip(label: const Text('Science'), selected: _topic == 'science', onSelected: (v) => setState(() => _topic = v ? 'science' : null)),
-            SizedBox(width: 200, child: TextField(key: const Key('timeline-search'), decoration: const InputDecoration(hintText: 'Search or year', isDense: true), onChanged: (v) => setState(() => _q = v))),
-            Text('${events.length} events'),
+            ChoiceChip(label: Text(s['science']), selected: _topic == 'science', onSelected: (v) => setState(() => _topic = v ? 'science' : null)),
+            SizedBox(width: 200, child: TextField(key: const Key('timeline-search'), decoration: InputDecoration(hintText: s['timelineSearch'], isDense: true), onChanged: (v) => setState(() => _q = v))),
+            Text(s.f('timelineCount', {'n': events.length})),
           ]),
         ),
         Expanded(
           child: ListView.builder(
             itemCount: events.length,
-            itemBuilder: (_, i) => ListTile(dense: true, leading: SizedBox(width: 90, child: Text(events[i].when, style: const TextStyle(fontWeight: FontWeight.bold))), title: Text(events[i].text)),
+            itemBuilder: (_, i) => ListTile(
+              dense: true,
+              leading: SizedBox(width: 90, child: Text(events[i].whenIn(lang), style: const TextStyle(fontWeight: FontWeight.bold))),
+              title: Text(events[i].textIn(lang)),
+            ),
           ),
         ),
       ]);
@@ -137,6 +147,8 @@ class GrammarCheck extends StatefulWidget {
 class _GrammarState extends State<GrammarCheck> {
   final _text = TextEditingController();
   List<GrammarMatch>? _matches;
+
+  /// What went wrong, as a string key: no internet, or the service did not answer.
   String? _error;
   bool _busy = false;
 
@@ -148,11 +160,15 @@ class _GrammarState extends State<GrammarCheck> {
     try {
       final c = widget.client ?? http.Client();
       final r = await c.post(Uri.parse(languageToolUrl), body: {'text': _text.text, 'language': 'en-US'}).timeout(const Duration(seconds: 12));
-      if (r.statusCode != 200) throw http.ClientException('HTTP ${r.statusCode}');
-      _matches = parseLanguageTool(r.body);
+      if (r.statusCode != 200) {
+        _matches = null;
+        _error = 'grammarFailed';
+      } else {
+        _matches = parseLanguageTool(r.body);
+      }
     } catch (_) {
       _matches = null;
-      _error = 'Grammar check needs internet. Connect the board and try again.';
+      _error = 'grammarOffline';
     }
     if (mounted) setState(() => _busy = false);
   }
@@ -164,14 +180,17 @@ class _GrammarState extends State<GrammarCheck> {
   }
 
   @override
-  Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(12), children: [
-    const Text('Online: the text is sent to api.languagetool.org to be checked.', style: TextStyle(fontStyle: FontStyle.italic)),
-    TextField(key: const Key('grammar-text'), controller: _text, maxLines: 6, decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Type or paste English text')),
+  Widget build(BuildContext context) {
+    final s = NativeSimStrings.of(context);
+    return ListView(padding: const EdgeInsets.all(12), children: [
+    Text(s['grammarOnline'], style: const TextStyle(fontStyle: FontStyle.italic)),
+    TextField(key: const Key('grammar-text'), controller: _text, maxLines: 6, decoration: InputDecoration(border: const OutlineInputBorder(), hintText: s['grammarHint'])),
     const SizedBox(height: 8),
-    Align(alignment: Alignment.centerLeft, child: FilledButton(key: const Key('grammar-check'), onPressed: _busy ? null : _check, child: Text(_busy ? 'Checking...' : 'Check'))),
-    if (_error != null) Padding(padding: const EdgeInsets.all(8), child: Text(_error!, key: const Key('grammar-error'), style: const TextStyle(color: Colors.red))),
-    if (_matches != null && _matches!.isEmpty) const Padding(padding: EdgeInsets.all(8), child: Text('No problems found.', key: Key('grammar-clean'))),
+    Align(alignment: Alignment.centerLeft, child: FilledButton(key: const Key('grammar-check'), onPressed: _busy ? null : _check, child: Text(_busy ? s['grammarChecking'] : s['check']))),
+    if (_error != null) Padding(padding: const EdgeInsets.all(8), child: Text(s[_error!], key: const Key('grammar-error'), style: const TextStyle(color: Colors.red))),
+    if (_matches != null && _matches!.isEmpty) Padding(padding: const EdgeInsets.all(8), child: Text(s['grammarClean'], key: const Key('grammar-clean'))),
     for (final m in _matches ?? const <GrammarMatch>[])
       ListTile(title: Text(m.message), subtitle: Text('"${_text.text.substring(m.offset.clamp(0, _text.text.length), (m.offset + m.length).clamp(0, _text.text.length))}"  ->  ${m.suggestions.join(', ')}')),
   ]);
+  }
 }

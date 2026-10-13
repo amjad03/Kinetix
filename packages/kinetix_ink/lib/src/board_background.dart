@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'india_outline.g.dart';
 import 'ink_models.dart';
 import 'world_land.g.dart';
 
@@ -269,7 +270,7 @@ void paintBoardBackground(Canvas canvas, Rect area, BoardBackground background, 
     case BoardBackground.worldMap:
       _paintWorld(canvas, scale);
     case BoardBackground.indiaMap:
-      _paintMapPlaceholder(canvas, scale, 'India map');
+      _paintIndia(canvas, scale);
     case BoardBackground.plain ||
         BoardBackground.chalkboard ||
         BoardBackground.paperCream ||
@@ -399,9 +400,9 @@ void _paintBasketball(Canvas canvas, double scale) {
   }
 }
 
-/// The continents (Natural Earth 1:110m, public domain), decoded once.
-final List<Path> _worldLand = () {
-  final b = base64Decode(worldLandData);
+/// Polygons packed as uint16 count, then count × (uint16 x, uint16 y) in 1/[scale] board units.
+List<Path> _decodePolygons(String data, [int scale = 1]) {
+  final b = base64Decode(data);
   final d = ByteData.sublistView(b);
   final paths = <Path>[];
   var i = 0;
@@ -410,13 +411,29 @@ final List<Path> _worldLand = () {
     i += 2;
     final path = Path();
     for (var k = 0; k < n; k++, i += 4) {
-      final x = d.getUint16(i, Endian.little).toDouble(), y = d.getUint16(i + 2, Endian.little).toDouble();
+      final x = d.getUint16(i, Endian.little) / scale, y = d.getUint16(i + 2, Endian.little) / scale;
       k == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
     }
     paths.add(path..close());
   }
   return paths;
-}();
+}
+
+/// The continents (Natural Earth 1:110m, public domain), decoded once.
+final List<Path> _worldLand = _decodePolygons(worldLandData);
+
+/// India as the Survey of India shows it: all of Jammu and Kashmir and Ladakh (Gilgit-Baltistan,
+/// Aksai Chin, the Shaksgam valley), Arunachal Pradesh, the Andaman and Nicobar Islands and
+/// Lakshadweep (datameet's india-composite, CC0; packages/kinetix_ink/tool/india_outline.py
+/// checks the boundary and writes india_outline.g.dart). Decoded once.
+final List<Path> indiaOutline = _decodePolygons(indiaOutlineData, indiaOutlineScale);
+
+/// Where longitude [lon] and latitude [lat] fall on the India map paper.
+Offset indiaMapPoint(double lon, double lat) {
+  const f = indiaOutlineFrame, b = indiaOutlineBounds;
+  final k = f.height / (b.north - b.south);
+  return Offset(f.left + (lon - b.west) * math.cos(22 * math.pi / 180) * k, f.top + (b.north - lat) * k);
+}
 
 void _paintWorld(Canvas canvas, double scale) {
   const frame = Rect.fromLTWH(160, 224, 1600, 631);
@@ -446,16 +463,39 @@ void _paintWorld(Canvas canvas, double scale) {
   }
 }
 
-/// No outline is bundled (no public-domain one with the official boundary was available), so
-/// the paper is not offered; a board saved with it shows a titled frame to draw the map in.
-void _paintMapPlaceholder(Canvas canvas, double scale, String title) {
+/// The India map paper: India's outline with the official boundary, lines of latitude and
+/// longitude every 5° and the Tropic of Cancer dashed, for the class to mark states, rivers and
+/// places on.
+void _paintIndia(Canvas canvas, double scale) {
   const frame = Rect.fromLTWH(160, 90, 1600, 900);
-  final p = Paint()
-    ..color = const Color(0x553A4A5A)
-    ..strokeWidth = 2 / scale
+  canvas.drawRect(frame, Paint()..color = const Color(0x142F6FB5));
+  final grid = Paint()
+    ..color = const Color(0x222F6FB5)
+    ..strokeWidth = 1 / scale
     ..style = PaintingStyle.stroke;
-  canvas.drawRRect(RRect.fromRectAndRadius(frame, const Radius.circular(24)), p);
-  _label(canvas, title, Offset(frame.center.dx, frame.top + 48), size: 32, centre: true);
+  canvas.save();
+  canvas.clipRect(frame);
+  for (var lon = 60; lon <= 105; lon += 5) {
+    canvas.drawLine(indiaMapPoint(lon.toDouble(), 45), indiaMapPoint(lon.toDouble(), 0), grid);
+  }
+  for (var lat = 5; lat <= 40; lat += 5) {
+    canvas.drawLine(Offset(frame.left, indiaMapPoint(80, lat.toDouble()).dy), Offset(frame.right, indiaMapPoint(80, lat.toDouble()).dy), grid);
+  }
+  // The Tropic of Cancer (23.44°N), dashed.
+  final tropic = indiaMapPoint(80, 23.44).dy;
+  _dashedH(canvas, frame, tropic, 24, grid..color = const Color(0x552F6FB5));
+  canvas.restore();
+  final land = Paint()..color = const Color(0x33E39A2D);
+  final border = Paint()
+    ..color = const Color(0xAA5A4630)
+    ..strokeWidth = 1.6 / scale
+    ..style = PaintingStyle.stroke
+    ..strokeJoin = StrokeJoin.round;
+  for (final p in indiaOutline) {
+    canvas
+      ..drawPath(p, land)
+      ..drawPath(p, border);
+  }
 }
 
 /// Paints a fixed-size page of paper from (0, 0), for viewers and page pictures.

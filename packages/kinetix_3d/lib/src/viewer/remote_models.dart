@@ -64,6 +64,13 @@ class RemoteModelInfo {
 
   String get manifestUrl => url.replaceFirst(RegExp(r'\.glb$'), '.json');
 
+  /// The model's file name on any model server (`saturn_v.glb`).
+  String get fileName => url.substring(url.lastIndexOf('/') + 1);
+
+  /// Where to fetch the model from, in order: the servers set in [RemoteModels.servers] (a
+  /// school's own server, the KINETIX API's /assets/models), then [url] (GitHub).
+  List<String> get urls => [for (final b in RemoteModels.servers) '$b/$fileName', url];
+
   /// The library picture, bundled so the library looks the same offline.
   String get thumbAsset => 'packages/kinetix_3d/$viewerAssets/thumbs/$id.jpg';
 }
@@ -73,8 +80,30 @@ class RemoteModels {
   RemoteModels._();
 
   /// Where tool/models puts the downloadable models (packages/kinetix_3d/remote_models in
-  /// the KINETIX repository); a school server can serve the same files and set this.
+  /// the KINETIX repository on GitHub): the last place a model is fetched from.
   static const defaultBase = 'https://raw.githubusercontent.com/amjad03/Kinetix/refs/heads/claude/kinetix-ecosystem-overview-lpphjn/packages/kinetix_3d/remote_models';
+
+  /// Model servers tried before GitHub, in order: the board's own setting, the institution's
+  /// (from the API's board config) and the KINETIX API's /assets/models. Each serves the
+  /// files of packages/kinetix_3d/remote_models under the same names.
+  static List<String> get servers => _servers;
+  static List<String> _servers = const [];
+  static set servers(List<String> list) {
+    final out = <String>[];
+    for (final s in list) {
+      final b = cleanServer(s);
+      if (b != null && b != defaultBase && !out.contains(b)) out.add(b);
+    }
+    _servers = List.unmodifiable(out);
+  }
+
+  /// [url] as a model server address (http or https, no trailing slash), or null.
+  static String? cleanServer(String? url) {
+    final t = (url ?? '').trim().replaceAll(RegExp(r'/+$'), '');
+    final u = Uri.tryParse(t);
+    if (t.isEmpty || u == null || !(u.scheme == 'http' || u.scheme == 'https') || u.host.isEmpty) return null;
+    return t;
+  }
 
   /// Every downloadable model: the viewer models tool/models makes, NASA's spacecraft among
   /// them (remote_catalogue_data.dart, written by tool/models/write_catalogue.mjs).
@@ -175,26 +204,44 @@ class ModelCache {
   File manifestFor(RemoteModelInfo m) => File('${dir.path}/${m.id}.json');
   bool isCached(RemoteModelInfo m) => fileFor(m).existsSync() && (!m.viewer || manifestFor(m).existsSync());
 
-  /// The model's bytes: from the cache, else downloaded (and kept). Throws [OfflineException] offline.
+  /// The model's bytes: from the cache, else downloaded (and kept). Each of [RemoteModelInfo.urls]
+  /// is tried in turn: a server that is down, lacks the model or sends something that is not
+  /// the model (a sign-in page) hands over to the next, GitHub last. Throws [OfflineException]
+  /// when no server could be reached.
   Future<Uint8List> load(RemoteModelInfo m, {void Function(int received, int total)? onProgress}) async {
     final f = fileFor(m);
     if (isCached(m)) return f.readAsBytes();
-    final bytes = await _fetch(m.url, onProgress ?? (_, _) {});
-    // Reject anything that is not a readable model before keeping it.
-    if (m.viewer) {
-      if (!looksLikeGlb(bytes)) throw GlbFormatException('not a GLB file');
-    } else {
-      GlbLoader.parse(bytes);
+    Object? error;
+    var reached = false;
+    for (final url in m.urls) {
+      try {
+        final bytes = await _fetch(url, onProgress ?? (_, _) {});
+        reached = true;
+        // Reject anything that is not a readable model before keeping it.
+        if (m.viewer) {
+          if (!looksLikeGlb(bytes)) throw GlbFormatException('not a GLB file');
+        } else {
+          GlbLoader.parse(bytes);
+        }
+        Uint8List? manifest;
+        if (m.viewer) {
+          manifest = await _fetch(url.replaceFirst(RegExp(r'\.glb$'), '.json'), (_, _) {});
+          final j = jsonDecode(utf8.decode(manifest));
+          if (j is! Map || j['id'] != m.id) throw const FormatException('not the model\'s manifest');
+        }
+        dir.createSync(recursive: true);
+        if (manifest != null) await _keep(manifestFor(m), manifest);
+        await _keep(f, bytes);
+        return bytes;
+      } on OfflineException catch (e) {
+        error = e;
+      } catch (e) {
+        reached = true;
+        error = e;
+      }
     }
-    dir.createSync(recursive: true);
-    if (m.viewer) {
-      final manifest = await _fetch(m.manifestUrl, (_, _) {});
-      final j = jsonDecode(utf8.decode(manifest));
-      if (j is! Map || j['id'] != m.id) throw const FormatException('not the model\'s manifest');
-      await _keep(manifestFor(m), manifest);
-    }
-    await _keep(f, bytes);
-    return bytes;
+    if (!reached) throw const OfflineException();
+    throw error ?? const OfflineException();
   }
 
   Future<void> _keep(File f, Uint8List bytes) async {

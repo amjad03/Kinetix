@@ -1,0 +1,182 @@
+{
+ "calculus-grapher": {
+  "hi": "कलन ग्राफर",
+  "kn": "ಕಲನಶಾಸ್ತ್ರ ಗ್ರಾಫರ್"
+ },
+ "circuit-construction-kit-black-box-study": {
+  "hi": "परिपथ निर्माण किट: ब्लैक बॉक्स अध्ययन",
+  "kn": "ಸರ್ಕ್ಯೂಟ್ ನಿರ್ಮಾಣ ಕಿಟ್: ಬ್ಲ್ಯಾಕ್ ಬಾಕ್ಸ್ ಅಧ್ಯಯನ"
+ },
+ "collision-lab": {
+  "kn": "ಡಿಕ್ಕಿ ಪ್ರಯೋಗಾಲಯ"
+ },
+ "coulombs-law": {
+  "kn": "ಕೂಲಂಬ್ ನಿಯಮ"
+ },
+ "curve-fitting": {
+  "kn": "ವಕ್ರರೇಖೆ ಹೊಂದಿಸುವಿಕೆ"
+ },
+ "energy-forms-and-changes": {
+  "kn": "ಶಕ್ತಿಯ ರೂಪಗಳು ಮತ್ತು ಬದಲಾವಣೆಗಳು"
+ },
+ "energy-skate-park": {
+  "kn": "ಶಕ್ತಿ ಸ್ಕೇಟ್ ಪಾರ್ಕ್"
+ },
+ "equality-explorer": {
+  "kn": "ಸಮಾನತೆ ಎಕ್ಸ್‌ಪ್ಲೋರರ್"
+ },
+ "equality-explorer-basics": {
+  "kn": "ಸಮಾನತೆ ಎಕ್ಸ್‌ಪ್ಲೋರರ್: ಮೂಲಭೂತ ಅಂಶಗಳು"
+ },
+ "equality-explorer-two-variables": {
+  "kn": "ಸಮಾನತೆ ಎಕ್ಸ್‌ಪ್ಲೋರರ್: ಎರಡು ಚರಗಳು"
+ },
+ "faradays-electromagnetic-lab": {
+  "kn": "ಫ್ಯಾರಡೆಯ ವಿದ್ಯುತ್ಕಾಂತೀಯ ಪ್ರಯೋಗಾಲಯ"
+ },
+ "fluid-pressure-and-flow": {
+  "hi": "द्रव दाब और प्रवाह",
+  "kn": "ದ್ರವದ ಒತ್ತಡ ಮತ್ತು ಹರಿವು"
+ },
+ "fourier-making-waves": {
+  "kn": "ಫೋರಿಯರ್: ಅಲೆಗಳನ್ನು ಸೃಷ್ಟಿಸುವುದು"
+ },
+ "fractions-mixed-numbers": {
+  "kn": "ಭಿನ್ನರಾಶಿಗಳು: ಮಿಶ್ರ ಸಂಖ್ಯೆಗಳು"
+ },
+ "function-builder": {
+  "kn": "ಫಂಕ್ಷನ್ ಬಿಲ್ಡರ್"
+ },
+ "function-builder-basics": {
+  "kn": "ಫಂಕ್ಷನ್ ಬಿಲ್ಡರ್: ಮೂಲಭೂತ ಅಂಶಗಳು"
+ },
+ "gas-properties": {
+  "kn": "ಅನಿಲದ ಗುಣಲಕ್ಷಣಗಳು"
+ },
+ "gases-intro": {
+  "kn": "ಅನಿಲಗಳ ಪರಿಚಯ"
+ },
+ "gene-expression-essentials": {
+  "kn": "ಜೀನ್ ಅಭಿವ್ಯಕ್ತಿಯ ಅಗತ್ಯ ಅಂಶಗಳು"
+ },
+ "generator": {
+  "kn": "ಜನರೇಟರ್"
+ },
+ "graphing-lines": {
+  "kn": "ರೇಖೆಗಳ ನಕ್ಷೆ ರಚನೆ"
+ },
+ "graphing-quadratics": {
+  "kn": "ವರ್ಗ ಸಮೀಕರಣಗಳ ನಕ್ಷೆ ರಚನೆ"
+ },
+ "graphing-slope-intercept": {
+  "kn": "ಇಳಿಜಾರು-ಅಂತಃಖಂಡ ನಕ್ಷೆ"
+ },
+ "gravity-force-lab-basics": {
+  "kn": "ಗುರುತ್ವಾಕರ್ಷಣ ಬಲದ ಪ್ರಯೋಗಾಲಯ: ಮೂಲಭೂತ ಅಂಶಗಳು"
+ },
+ "greenhouse-effect": {
+  "kn": "ಹಸಿರುಮನೆ ಪರಿಣಾಮ"
+ },
+ "john-travoltage": {
+  "hi": "जॉन ट्रैवोल्टेज"
+ },
+ "keplers-laws": {
+  "kn": "ಕೆಪ್ಲರ್ ನಿಯಮಗಳು"
+ },
+ "magnet-and-compass": {
+  "kn": "ಕಾಂತ ಮತ್ತು ದಿಕ್ಸೂಚಿ"
+ },
+ "magnets-and-electromagnets": {
+  "kn": "ಕಾಂತಗಳು ಮತ್ತು ವಿದ್ಯುತ್ಕಾಂತಗಳು"
+ },
+ "masses-and-springs": {
+  "kn": "ರಾಶಿಗಳು ಮತ್ತು ಸ್ಪ್ರಿಂಗ್‌ಗಳು"
+ },
+ "masses-and-springs-basics": {
+  "kn": "ರಾಶಿಗಳು ಮತ್ತು ಸ್ಪ್ರಿಂಗ್‌ಗಳು: ಮೂಲಭೂತ ಅಂಶಗಳು"
+ },
+ "mean-share-and-balance": {
+  "kn": "ಸರಾಸರಿ: ಹಂಚಿಕೆ ಮತ್ತು ಸಮತೋಲನ"
+ },
+ "membrane-transport": {
+  "kn": "ಪೊರೆ ಸಾಗಾಣಿಕೆ"
+ },
+ "molarity": {
+  "kn": "ಮೋಲಾರಿಟಿ"
+ },
+ "molecule-polarity": {
+  "kn": "ಅಣುವಿನ ಧ್ರುವೀಯತೆ"
+ },
+ "molecule-shapes-basics": {
+  "kn": "ಅಣುವಿನ ಆಕಾರಗಳು: ಮೂಲಭೂತ ಅಂಶಗಳು"
+ },
+ "my-solar-system": {
+  "kn": "ನನ್ನ ಸೌರವ್ಯೂಹ"
+ },
+ "natural-selection": {
+  "kn": "ನೈಸರ್ಗಿಕ ಆಯ್ಕೆ"
+ },
+ "normal-modes": {
+  "kn": "ಸಾಮಾನ್ಯ ಕಂಪನ ವಿಧಗಳು"
+ },
+ "number-compare": {
+  "hi": "संख्या तुलना",
+  "kn": "ಸಂಖ್ಯೆಗಳ ಹೋಲಿಕೆ"
+ },
+ "number-line-distance": {
+  "kn": "ಸಂಖ್ಯಾ ರೇಖೆ: ದೂರ"
+ },
+ "number-line-operations": {
+  "kn": "ಸಂಖ್ಯಾ ರೇಖೆ: ಕ್ರಿಯೆಗಳು"
+ },
+ "number-pairs": {
+  "kn": "ಸಂಖ್ಯಾ ಜೋಡಿಗಳು"
+ },
+ "number-play": {
+  "kn": "ಸಂಖ್ಯಾ ಆಟ"
+ },
+ "pendulum-lab": {
+  "kn": "ಲೋಲಕ ಪ್ರಯೋಗಾಲಯ"
+ },
+ "plinko-probability": {
+  "kn": "ಪ್ಲಿಂಕೋ ಸಂಭವನೀಯತೆ"
+ },
+ "projectile-data-lab": {
+  "kn": "ಪ್ರಕ್ಷೇಪಕ ದತ್ತಾಂಶ ಪ್ರಯೋಗಾಲಯ"
+ },
+ "projectile-motion": {
+  "kn": "ಪ್ರಕ್ಷೇಪಕ ಚಲನೆ"
+ },
+ "projectile-sampling-distributions": {
+  "kn": "ಪ್ರಕ್ಷೇಪಕ ಮಾದರಿ ವಿತರಣೆಗಳು"
+ },
+ "proportion-playground": {
+  "kn": "ಅನುಪಾತ ಆಟದ ಮೈದಾನ"
+ },
+ "quadrilateral": {
+  "kn": "ಚತುರ್ಭುಜ"
+ },
+ "quantum-coin-toss": {
+  "kn": "ಕ್ವಾಂಟಮ್ ನಾಣ್ಯ ಟಾಸ್"
+ },
+ "quantum-measurement": {
+  "hi": "क्वांटम मापन",
+  "kn": "ಕ್ವಾಂಟಮ್ ಅಳತೆ"
+ },
+ "quantum-wave-interference": {
+  "hi": "क्वांटम तरंग व्यतिकरण",
+  "kn": "ಕ್ವಾಂಟಮ್ ತರಂಗ ವ್ಯತೀಕರಣ"
+ },
+ "ratio-and-proportion": {
+  "kn": "ಅನುಪಾತ ಮತ್ತು ಸಮಾನುಪಾತ"
+ },
+ "sound-waves": {
+  "kn": "ಶಬ್ದ ತರಂಗಗಳು"
+ },
+ "vector-addition": {
+  "kn": "ಸದಿಶ ಸಂಕಲನ"
+ },
+ "wave-interference": {
+  "kn": "ತರಂಗ ವ್ಯತೀಕರಣ"
+ }
+}

@@ -10,14 +10,15 @@ import { Alert, Button, Card, IconButton, Snackbar } from '@/components/kx';
 import { GraduationCap as SchoolOutlined, Plus as AddOutlined, Trash2 as DeleteOutline } from 'lucide-react';
 /**
  * Settings → Smartboard: the training link and contact behind the board's "Schedule a Training",
- * the institution's What's New announcements, and the past-exam question bank that is the only
- * source of Quiz AI's exam-frequency badges.
+ * the institution's What's New announcements, the school server boards download 3D models from,
+ * and the past-exam question bank that is the only source of Quiz AI's exam-frequency badges.
  */
 export function BoardContentSection({ initial }: { initial: InstitutionSettings }) {
   const { t } = useI18n();
   const [url, setUrl] = useState(initial.boardTraining?.url ?? '');
   const [contact, setContact] = useState(initial.boardTraining?.contact ?? '');
   const [items, setItems] = useState<WhatsNewItem[]>(initial.boardWhatsNew ?? []);
+  const [modelsBase, setModelsBase] = useState(initial.boardModelsBase ?? '');
   const [csv, setCsv] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export function BoardContentSection({ initial }: { initial: InstitutionSettings 
   const save = () => {
     setError(null);
     start(async () => {
-      const res = await saveBoardContent({ training: { url, contact }, whatsNew: items });
+      const res = await saveBoardContent({ training: { url, contact }, whatsNew: items, modelsBase });
       if (!res.ok) return setError(res.error);
       setToast(t('settings.saved'));
     });
@@ -64,6 +65,12 @@ export function BoardContentSection({ initial }: { initial: InstitutionSettings 
           <TextInput label={t('boardContent.trainingUrl')} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" slotProps={{ htmlInput: { 'data-testid': 'training-url' } }} />
           <TextInput label={t('boardContent.contact')} value={contact} onChange={(e) => setContact(e.target.value)} slotProps={{ htmlInput: { 'data-testid': 'training-contact' } }} />
         </div>
+
+        <h6 className="text-base leading-6 font-medium tracking-[0.1px]">{t('boardContent.models')}</h6>
+        <p className="text-[13px] leading-[19px] text-muted-foreground">
+          {t('boardContent.modelsHelp')}
+        </p>
+        <TextInput label={t('boardContent.modelsUrl')} value={modelsBase} onChange={(e) => setModelsBase(e.target.value)} placeholder="http://" slotProps={{ htmlInput: { 'data-testid': 'models-base' } }} />
 
         <h6 className="text-base leading-6 font-medium tracking-[0.1px]">{t('boardContent.whatsNew')}</h6>
         <p className="text-[13px] leading-[19px] text-muted-foreground">

@@ -1,3 +1,5 @@
+import 'sim_text.dart';
+
 /// How a hub entry runs.
 enum SimKindOf {
   /// An HTML5 sim shipped in assets/simhub and served from the board's loopback server (works offline).
@@ -44,6 +46,12 @@ class SimEntry {
 
   /// A licence or availability note shown under the sim.
   final String? note;
+
+  /// The title in [lang] ('en', 'hi' or 'kn'); product names stay as they are.
+  String titleIn(String lang) => simTitles[id]?[lang] ?? title;
+
+  /// What the sim does, in one line, in [lang].
+  String descriptionIn(String lang) => simDescriptions[id]?[lang] ?? simDescriptions[id]?['en'] ?? '';
 
   /// Works with no internet.
   bool get offline => kind != SimKindOf.online && !needsNet;
@@ -242,15 +250,18 @@ final List<SimEntry> simCatalogue = List.unmodifiable([
 ]);
 
 /// What a subject-context registry asks the catalogue: a subject, a class, a search word, offline only.
+/// The search word matches the title and description in English, Hindi or Kannada, the tags
+/// and the source.
 List<SimEntry> filterSims({String? subject, int? grade, String query = '', bool offlineOnly = false, List<SimEntry>? from}) {
   final q = query.trim().toLowerCase();
+  bool hit(SimEntry e) =>
+      e.title.toLowerCase().contains(q) ||
+      e.tags.any((t) => t.contains(q)) ||
+      e.source.toLowerCase().contains(q) ||
+      [for (final l in ['en', 'hi', 'kn']) ...[?simTitles[e.id]?[l], ?simDescriptions[e.id]?[l]]].any((t) => t.toLowerCase().contains(q));
   return [
     for (final e in from ?? simCatalogue)
-      if ((subject == null || e.subject == subject) &&
-          (grade == null || e.coversGrade(grade)) &&
-          (!offlineOnly || e.offline) &&
-          (q.isEmpty || e.title.toLowerCase().contains(q) || e.tags.any((t) => t.contains(q)) || e.source.toLowerCase().contains(q)))
-        e,
+      if ((subject == null || e.subject == subject) && (grade == null || e.coversGrade(grade)) && (!offlineOnly || e.offline) && (q.isEmpty || hit(e))) e,
   ];
 }
 

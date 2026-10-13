@@ -19,6 +19,8 @@ export interface InstitutionSettings {
   boardTraining?: { url?: string | null; contact?: string | null } | null;
   /** Institution announcements in the board's What's New, newest first. */
   boardWhatsNew?: WhatsNewItem[];
+  /** A school server boards download 3D models from first; null = the KINETIX server. */
+  boardModelsBase?: string | null;
 }
 
 export interface WhatsNewItem {

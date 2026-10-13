@@ -116,7 +116,7 @@ void main() {
       await tester.enterText(find.byKey(const Key('dictionary-search')), 'apple');
       await tester.pump();
       expect(find.byKey(const Key('dictionary-hi-apple')), findsOneWidget);
-      expect(find.text('ಸೇಬು'), findsOneWidget);
+      expect(find.text('In Kannada: ಸೇಬು'), findsOneWidget);
       await tester.tap(find.byKey(const Key('dictionary-say-apple')));
       await tester.pump();
       expect(tester.takeException(), isNull);
