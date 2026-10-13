@@ -16,9 +16,15 @@ const EVT = 'kx:records-changed';
 const MAX_RECENT = 8;
 const MAX_FAV = 12;
 
+let owner = '';
+/** Records are remembered per signed-in person (set by the app shell), so another account never sees them. */
+export function setRecordsOwner(key: string) {
+  owner = key;
+}
+
 function read(key: string): RecordRef[] {
   try {
-    const v = JSON.parse(localStorage.getItem(key) ?? '[]') as unknown;
+    const v = JSON.parse(localStorage.getItem(key + owner) ?? '[]') as unknown;
     return Array.isArray(v) ? (v as RecordRef[]).filter((r) => r && typeof r.href === 'string' && r.href.startsWith('/') && typeof r.title === 'string') : [];
   } catch {
     return [];
@@ -27,7 +33,7 @@ function read(key: string): RecordRef[] {
 
 function write(key: string, rows: RecordRef[]) {
   try {
-    localStorage.setItem(key, JSON.stringify(rows));
+    localStorage.setItem(key + owner, JSON.stringify(rows));
   } catch {
     /* storage blocked */
   }
