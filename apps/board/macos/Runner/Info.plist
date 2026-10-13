@@ -30,6 +30,8 @@
 	<string>NSApplication</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>KINETIX uses the microphone for the noise meter (only the sound level is measured), class audio and lesson recording.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>KINETIX turns speech into live captions, voice commands and spoken questions for KINETIX AI.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>KINETIX uses the camera for the document camera.</string>
 	<key>NSLocalNetworkUsageDescription</key>

@@ -98,6 +98,7 @@ import 'context/class_context.dart';
 import 'context/context_switcher.dart';
 import '../language_kit/language_kit.dart' show LanguageKitPanel, LanguageTab;
 import '../extras/extras_hooks.dart';
+import 'board_autosave.dart';
 import 'board_shot.dart';
 import 'calculator.dart';
 import '../insert/presentation_pane.dart';
@@ -203,6 +204,12 @@ class _BoardScreenState extends State<BoardScreen> {
     ..onTimeUp = () => mounted ? showBoardMessage(context, context.l10n.timesUp) : null;
   bool _signInOpen = false;
   Size _canvasSize = const Size(1920, 1080);
+
+  /// The board kept on this device a moment after each change (board_autosave.dart).
+  late final BoardAutosave _autosave = BoardAutosave(wb: _wb, snapshot: () => _wb.toSaved(_canvasSize).withModel3dNotes(_modelNotes.toJson()));
+
+  /// Writes the autosave at once when the app is put away (Home, another app, the lid closed).
+  late final AppLifecycleListener _lifecycle;
   String? _boardTitle;
   String? _lastSessionId;
   bool? _lastPrimary;
@@ -290,6 +297,35 @@ class _BoardScreenState extends State<BoardScreen> {
     DemoClassSwitcher.attach(board, _onDemoClass);
     // A board that starts in the dark or chalkboard theme starts on that theme's paper.
     _followTheme();
+    void flush() => unawaited(_autosave.flush());
+    _lifecycle = AppLifecycleListener(onInactive: flush, onHide: flush, onPause: flush, onDetach: flush);
+    unawaited(_restoreAutosave());
+  }
+
+  /// The board autosave kept last time (the app crashed, the power went, the app was closed)
+  /// comes back, with "Start fresh" beside the message.
+  Future<void> _restoreAutosave() async {
+    final saved = await _autosave.start();
+    if (saved == null || !mounted || !_wb.isBlank) return;
+    _wb.load(saved);
+    // White paper and the dark board are the theme's: shown as this theme has it.
+    for (final p in const [BoardBackground.plain, BoardBackground.night]) {
+      if (_theme != BoardTheme.chalkboard) _wb.replaceBackground(p, themePaper(_theme));
+    }
+    _setModelNotes(saved.model3dNotes);
+    final s = SbStrings.of(context);
+    showBoardMessage(
+      context,
+      s('autosaveBack'),
+      action: (
+        s('autosaveFresh'),
+        () {
+          if (!mounted) return;
+          _wb.load(SavedBoard(background: themePaper(_theme), canvas: _canvasSize, pages: const [[]]));
+          _setModelNotes(const {});
+        },
+      ),
+    );
   }
 
   /// The Pen button goes back to the last pen type; a page with other paper tells the live
@@ -432,6 +468,9 @@ class _BoardScreenState extends State<BoardScreen> {
 
   @override
   void dispose() {
+    _lifecycle.dispose();
+    // What is waiting is written before the board goes.
+    unawaited(_autosave.dispose());
     _ctxPick.dispose();
     _zones.dispose();
     if (presentationHost == _showPresentation) presentationHost = null;

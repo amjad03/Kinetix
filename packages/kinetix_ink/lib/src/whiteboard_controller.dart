@@ -331,13 +331,23 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   }
 
   /// Adds [pages] after the open page (an imported PDF or slide deck, one board page each)
-  /// and opens the first of them.
+  /// and opens the first of them. A blank open page takes the first one itself (one undo step),
+  /// so an import never leaves an empty page in front of it (spec 11.2: no blank page spawns
+  /// another).
   void addPages(List<List<BoardElement>> pages) {
     if (pages.isEmpty) return;
     _finishGestures();
-    page.view = _autoView ? null : view.value;
-    _pages.insertAll(_index + 1, [for (final els in pages) WhiteboardPage(elements: List.of(els), background: page.background)]);
-    _index++;
+    var rest = pages;
+    if (page.elements.isEmpty) {
+      _push(_snap);
+      page.elements = List.of(pages.first);
+      page.view = null;
+      rest = pages.sublist(1);
+    } else {
+      page.view = _autoView ? null : view.value;
+    }
+    _pages.insertAll(_index + 1, [for (final els in rest) WhiteboardPage(elements: List.of(els), background: page.background)]);
+    if (rest.length == pages.length) _index++;
     _selection.clear();
     _showPage();
     _changed();
@@ -363,12 +373,16 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       return;
     }
     _finishGestures();
+    // The open page keeps its view when another page goes.
+    page.view = _autoView ? null : view.value;
     final was = page.background;
     final removed = _pages.removeAt(i);
     _undo.remove(removed.id);
     _redo.remove(removed.id);
-    if (_index >= _pages.length) _index = _pages.length - 1;
+    // A page before the open one moves it back one; deleting the open (last) page opens the
+    // one before it.
     if (i < _index) _index--;
+    if (_index >= _pages.length) _index = _pages.length - 1;
     _paperChanged(was, page.background);
     _selection.clear();
     _showPage();
@@ -446,7 +460,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     final was = page.background;
     page.background = b;
     _paperChanged(was, b);
-    _changed(content: false);
+    // The finished ink repaints too: black ink is drawn white on a dark paper ([inkColorFor]).
+    _changed(content: false, repaint: true);
   }
 
   /// Sets every page's paper at once.
@@ -456,7 +471,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       p.background = b;
     }
     _paperChanged(was, b);
-    _changed(content: false);
+    _changed(content: false, repaint: true);
   }
 
   /// The pen keeps its logical colour across papers: black ink is drawn white on a dark board
@@ -474,7 +489,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       if (p.background == from) p.background = to;
     }
     _paperChanged(was, page.background);
-    _changed(content: false);
+    _changed(content: false, repaint: true);
   }
 
   // --- Tools --------------------------------------------------------------------------------

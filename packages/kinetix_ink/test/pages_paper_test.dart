@@ -53,6 +53,26 @@ void main() {
     expect(wb.pages.last.elements.single.id, 'a');
   });
 
+  test('deleting a page before the open one keeps the open page on screen', () {
+    TextElement note(String id) => TextElement(id: id, position: Offset.zero, text: id, color: const Color(0xFF000000), fontSize: 20, size: const Size(40, 20));
+    final wb = WhiteboardController()..add(note('a'));
+    wb.addPage();
+    wb.add(note('b'));
+    wb.addPage();
+    wb.add(note('c'));
+    expect(wb.pageIndex, 2);
+    wb.deletePage(0);
+    expect(wb.pageCount, 2);
+    expect(wb.elements.single.id, 'c', reason: 'page "c" was open and stays open');
+    wb.deletePage(1);
+    expect(wb.elements.single.id, 'b', reason: 'deleting the open last page opens the one before it');
+    wb.addPage();
+    wb.add(note('d'));
+    wb.goToPage(0);
+    wb.deletePage(0);
+    expect(wb.elements.single.id, 'd', reason: 'deleting the open first page opens the next');
+  });
+
   test('pen nibs, pressure and smoothing are kept', () {
     final wb = WhiteboardController()
       ..penNib = PenNib.dashed

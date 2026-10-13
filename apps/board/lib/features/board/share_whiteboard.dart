@@ -11,6 +11,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/board_controller.dart';
+import '../../l10n/l10n.dart';
 import 'chrome.dart';
 import 'layout/page_overview.dart' show PdfBranding, boardPdf, sharePdf;
 import 'panel/panel_host.dart';
@@ -146,7 +147,7 @@ class _ShareDialogState extends State<_ShareDialog> {
                           link == null ? null : () => _open(Uri(scheme: 'mailto', query: _query({'subject': s('emailSubject', {'t': widget.title}), 'body': s('emailBody', {'u': link})}))),
                         ),
                         action(const Key('share-copy'), Icons.link, s('copyLink'), link == null ? null : () => _copy(link)),
-                        action(const Key('share-other'), Icons.ios_share, s('moreApps'), _pdf == null ? null : () => unawaited(sharePdf(_fileName, _pdf!))),
+                        action(const Key('share-other'), Icons.ios_share, s('moreApps'), _pdf == null ? null : () => unawaited(_sharePdf(_pdf!))),
                         if (_note != null) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(s(_note!), key: const Key('share-note'))),
                       ],
                     ),
@@ -188,7 +189,16 @@ class _ShareDialogState extends State<_ShareDialog> {
       }
     }
     final pdf = _pdf;
-    if (pdf != null) await sharePdf(_fileName, pdf);
+    if (pdf != null) await _sharePdf(pdf);
+  }
+
+  /// The share sheet with the PDF; a device that cannot share says so.
+  Future<void> _sharePdf(Uint8List pdf) async {
+    try {
+      await sharePdf(_fileName, pdf);
+    } catch (e) {
+      if (mounted) showBoardMessage(context, context.l10n.couldNotShare('$e'));
+    }
   }
 
   Future<void> _open(Uri u) async {

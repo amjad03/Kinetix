@@ -18,6 +18,8 @@ class SbStrings {
   static const _strings = <String, Map<String, String>>{
     'en': {
       'pptAddSelected': 'Add selected ({n})',
+      'autosaveBack': 'Your board from last time is back',
+      'autosaveFresh': 'Start fresh',
       'switch': 'Switch',
       'hide': 'Hide',
       'restore': 'Show tools',
@@ -222,6 +224,8 @@ class SbStrings {
     },
     'hi': {
       'pptAddSelected': 'चुने हुए जोड़ें ({n})',
+      'autosaveBack': 'पिछली बार का आपका बोर्ड वापस आ गया है',
+      'autosaveFresh': 'नया शुरू करें',
       'switch': 'बदलें',
       'hide': 'छिपाएँ',
       'restore': 'टूल दिखाएँ',
@@ -291,6 +295,8 @@ class SbStrings {
     },
     'kn': {
       'pptAddSelected': 'ಆಯ್ದವನ್ನು ಸೇರಿಸಿ ({n})',
+      'autosaveBack': 'ಕಳೆದ ಬಾರಿಯ ನಿಮ್ಮ ಬೋರ್ಡ್ ಮರಳಿ ಬಂದಿದೆ',
+      'autosaveFresh': 'ಹೊಸದಾಗಿ ಆರಂಭಿಸಿ',
       'switch': 'ಬದಲಿಸಿ',
       'hide': 'ಮರೆಮಾಡಿ',
       'restore': 'ಉಪಕರಣ ತೋರಿಸಿ',
