@@ -124,7 +124,7 @@ export class WorkflowsController {
       const { expectedVersion: _v, ...patch } = b;
       void _v;
       if (patch.steps) await this.checkNamedUsers(tx, patch.steps);
-      const [row] = await tx.update(workflowDefinitions).set({ ...patch, version: cur.version + 1, updatedAt: new Date() }).where(eq(workflowDefinitions.id, id)).returning();
+      const [row] = await tx.update(workflowDefinitions).set({ ...patch, ...(patch.steps ? { graph: null, draft: null } : {}), version: cur.version + 1, updatedAt: new Date() }).where(eq(workflowDefinitions.id, id)).returning();
       await auditUser(tx, p, 'workflow.definition_updated', 'workflow_definition', id);
       return row;
     });

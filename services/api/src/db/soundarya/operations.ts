@@ -2,6 +2,7 @@
 import type { UserPrincipal } from '../../auth/principal.js';
 import { ConnectorsService } from '../../connectors/connectors.service.js';
 import { WorkflowsService } from '../../workflows/workflows.service.js';
+import { builderSeedRows } from '../../workflows/builder-seeds.js';
 import { bufferStream, ObjectStorage } from '../../storage/storage.service.js';
 import { DOMAIN, FEMALE, INST, MALE, SURNAMES } from './data.js';
 import type { Ctx } from './ctx.js';
@@ -34,6 +35,8 @@ export async function tasksAndWorkflows(c: Ctx): Promise<void> {
     },
   ]);
   void defs;
+  // The builder's three demo workflows (editable on the canvas).
+  await k.ins('workflow_definitions', builderSeedRows().map((d) => ({ ...d, fields: J(d.fields), steps: J(d.steps), notifyRules: J(d.notifyRules), graph: J(d.graph), publishedAt: new Date(), createdBy: principal.id })), { returning: false });
   const asUser = (u: { id: string }, roles: UserPrincipal['roles']): UserPrincipal => ({ kind: 'user', tenantId: c.tenantId, userId: u.id, roles });
   const teachers = c.teachers.filter((t) => !t.email.startsWith('hod.'));
   const commerce = teachers.filter((t) => t.dept === 'Commerce');

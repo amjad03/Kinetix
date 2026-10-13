@@ -4,6 +4,7 @@
  * Every table except `tenants` carries `tenant_id`. Row-level security policies live in the
  * hand-written migration `migrations/0001_rls.sql` (Drizzle cannot express FORCE RLS).
  */
+import type { BuilderGraph, NotifyRule } from '../workflows/builder-graph.js';
 import { sql } from 'drizzle-orm';
 import {
   type AnyPgColumn,
@@ -5737,6 +5738,13 @@ export const workflowDefinitions = pgTable(
     steps: jsonb('steps').$type<WorkflowStepDefinition[]>().notNull().default([]),
     active: boolean('active').notNull().default(true),
     version: integer('version').notNull().default(0),
+    /** Builder (0136): the module it belongs to, the published and draft graphs, notify rules and the published version. */
+    module: text('module').notNull().default('general'),
+    graph: jsonb('graph').$type<BuilderGraph>(),
+    draft: jsonb('draft').$type<BuilderGraph>(),
+    notifyRules: jsonb('notify_rules').$type<NotifyRule[]>().notNull().default([]),
+    publishedVersion: integer('published_version').notNull().default(1),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
     createdBy: uuid('created_by').references(() => users.id),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -5776,7 +5784,7 @@ export const workflowRequests = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index('workflow_requests_requester_idx').on(t.tenantId, t.requesterId), index('workflow_requests_inbox_idx').on(t.tenantId, t.status, t.approverUserId)],
+  (t) => [index('workflow_requests_requester_idx').on(t.tenantId, t.requesterId), index('workflow_requests_inbox_idx').on(t.tenantId, t.status, t.approverUserId), index('workflow_requests_definition_idx').on(t.tenantId, t.definitionId, t.createdAt)],
 );
 
 

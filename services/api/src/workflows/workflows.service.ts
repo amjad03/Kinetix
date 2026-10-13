@@ -10,11 +10,21 @@ import { DomainEvents, EventBus } from '../events/events.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
+import { ruleApplies, type NotifyRule } from './builder-graph.js';
 import { applicableSteps, parallelOutcome, slaAction, stepApprovers, validatePayload, type Approver, type FormField, type StepDef } from './workflow-rules.js';
 
 export const WORKFLOW_SLA = 'workflows.sla';
 
 export type Definition = typeof workflowDefinitions.$inferSelect;
+
+/** The message bodies of the builder's notification templates. */
+const TEMPLATE_TEXT: Record<string, (title: string, event: string) => string> = {
+  request_received: (title) => `We received your request: ${title}`,
+  decision: (title, event) => `${title}: ${event}`,
+  approved: (title) => `${title} was approved`,
+  rejected: (title) => `${title} was not approved`,
+  generic: (title, event) => `Update on ${title} (${event})`,
+};
 export type WorkflowRequest = typeof workflowRequests.$inferSelect;
 type ActionKind = (typeof workflowActions.$inferInsert)['action'];
 type ApprovalRow = typeof workflowStepApprovals.$inferSelect;
@@ -81,7 +91,9 @@ export class WorkflowsService implements OnModuleInit {
     await this.log(tx, req, 'submitted', input.requesterId, null, '');
     await this.logSkipped(tx, req, steps.skipped);
     await audit(tx, { tenantId: input.tenantId, actorType: 'user', actorId: input.requesterId, action: 'workflow.submitted', subjectType: 'workflow_request', subjectId: req.id, data: { requestType: def.requestType, amount: input.amount ?? null } });
-    return this.enter(tx, req, 0, input.requesterId);
+    const entered = await this.enter(tx, req, 0, input.requesterId);
+    await this.fireRules(tx, def.notifyRules, entered, 'submitted');
+    return entered;
   }
 
   /** The requester changes a returned request and sends it through the route again. */
@@ -402,7 +414,22 @@ export class WorkflowsService implements OnModuleInit {
       payload: { requestId: req.id, requestType: req.requestType, status, requesterId: req.requesterId, amount: req.amount, payload: req.payload, sourceModule: req.sourceModule, sourceId: req.sourceId, comment },
     });
     if (actorId !== req.requesterId) await this.notify(tx, row, `Your request was ${status}`, comment ? `${row.title}: ${comment}` : row.title);
+    if (status !== 'cancelled') {
+      const [def] = await tx.select({ notifyRules: workflowDefinitions.notifyRules }).from(workflowDefinitions).where(eq(workflowDefinitions.id, req.definitionId));
+      await this.fireRules(tx, def?.notifyRules ?? [], row, status);
+    }
     return row;
+  }
+
+  /** The notify steps of the builder: tell the requester or a role when a request is submitted or decided. */
+  private async fireRules(tx: Tx, rules: NotifyRule[], req: WorkflowRequest, event: 'submitted' | 'approved' | 'rejected') {
+    for (const [i, r] of rules.entries()) {
+      if (!(r.when === event || (r.when === 'decided' && event !== 'submitted'))) continue;
+      if (!ruleApplies(r, req.amount, req.payload)) continue;
+      const people = r.to === 'requester' ? [req.requesterId] : [...new Set((await tx.select({ id: userRoles.userId }).from(userRoles).where(eq(userRoles.role, r.to as RoleName))).map((u) => u.id))];
+      const body = TEMPLATE_TEXT[r.template] ? TEMPLATE_TEXT[r.template](req.title, event) : req.title;
+      await this.notifications.notifyUsers(tx, people, { kind: 'task', text: { title: r.name, body }, data: { requestId: req.id, channels: r.channels.join(',') }, dedupeKey: `workflow:rule:${req.id}:${event}:${i}` });
+    }
   }
 
   private async notify(tx: Tx, req: WorkflowRequest, title: string, body: string) {
