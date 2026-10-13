@@ -17,6 +17,7 @@ Password for every demo login: `kinetix123`.
 4. Open the ERP in Chrome at `http://localhost:3000` (on another laptop: `http://<Mac IP>:3000`). Use a wide window (side-by-side tabs need it).
 5. In each app (smartboard, teacher, parent, student) set **Server address** to `http://<Mac IP>:4000` if the IP changed since the last time.
 6. Optional reset of the data: `cd services/api && pnpm db:seed:soundarya` (college) and `pnpm db:seed:school` (school). Each replaces only its own institution and takes about 1 to 2 minutes. Do not run it during the demo.
+7. Real AI answers on the board (free, Google Gemini): put `AI_BASE_URL`, `AI_MODEL` and `AI_API_KEY` in `services/api/.env` as in `docs/demo/GEMINI_FREE_AI.md`. After pulling new code, rebuild the API once (`cd services/api && pnpm build`; the start script only builds when there is no build), then start as usual. On the board, ask the questions you will demo once beforehand: repeats come from the cache, instantly and without using the free allowance.
 
 ## 2. Logins
 
@@ -81,4 +82,6 @@ Parent app: sign in as `parent.class7@vidyaniketan.demo.kinetix.in` (two childre
 - **Signed out on another laptop over Wi-Fi**: the start script sets `KINETIX_INSECURE_COOKIES=1` so sign-in works over plain http on the LAN; start the ERP with the script, not with `next start` by hand.
 - **Board shows "Invalid or expired enrolment code"**: codes are single-use and expire; issue a new one in the ERP.
 - **Everything is slow**: close other apps (8 GB Mac); do not run builds or tests during the demo.
+- **AI answers say "Preview"**: the AI settings are missing from `services/api/.env` or the API was not restarted. **"KINETIX AI is busy right now"**: Gemini's free limit for the minute (wait a minute) or the day. More in `docs/demo/GEMINI_FREE_AI.md`.
+- **`pnpm build` stops with "JavaScript heap out of memory"**: `NODE_OPTIONS=--max-old-space-size=3072 pnpm build` with other apps closed.
 - Stop everything after the demo: `scripts/demo-stop.sh`.
