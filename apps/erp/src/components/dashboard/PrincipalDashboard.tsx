@@ -14,7 +14,7 @@ import { percentChange, pointsChange, type DashboardRollup } from '@/lib/dashboa
 import { schoolNowTime } from '@/lib/school';
 import type { ClassesDay, Me, Overview, SentBroadcast } from '@/lib/types';
 import { getI18n } from '@/i18n/server';
-import { AttentionInbox, ChartCard, FeeBars, MiniMeter, TrendLine, type InboxItem } from './home';
+import { AttentionInbox, ChartCard, FeeBars, MiniBars, MiniMeter, TrendLine, type InboxItem } from './home';
 import { Announcements, QuickActions, Row, UpcomingEvents, type QuickAction, type Task } from './parts';
 import { Sparkline } from '@/components/ui/Charts';
 import type { FeeSummary } from '@/lib/types';
@@ -152,17 +152,6 @@ function Kpis({ o, r, isToday, fmt, t, roles }: { o: Overview | undefined; r: Da
     <>
       <StatGrid min={190}>
         <StatTile testId="stat-students" icon={<GroupsOutlined />} label={t('dash.kpi.students')} value={r?.students ? fmt.number(r.students.total) : '—'} caption={r?.students ? t('dash.kpi.joined', { n: r.students.joined }) : undefined} trend={r?.students && r.students.prevJoined > 0 ? { delta: percentChange(r.students.joined, r.students.prevJoined), label: t('dash.vsLastMonth') } : undefined} href={canSee(roles as never, 'students') ? '/students' : undefined} />
-        <StatTile testId="stat-faculty" icon={<BadgeOutlined />} label={t('dash.kpi.faculty')} value={r?.staff ? fmt.number(r.staff.total) : '—'} caption={t('dash.kpi.facultyCaption')} href={canSee(roles as never, 'hr') ? '/hr' : undefined} />
-        <StatTile
-          testId="stat-classes"
-          icon={<ClassOutlined />}
-          label={t('today.stat.classes')}
-          value={held}
-          unit={t('today.stat.classesUnit', { n: c?.scheduled ?? 0 })}
-          bar={c && <SegmentBar label={t('today.stat.classesBar', { taught: c.taught, live: c.live, notStarted: c.notStarted, missed: c.missed, upcoming: c.upcoming })} parts={[{ value: c.taught, color: 'var(--kx-success)' }, { value: c.live, color: 'var(--kx-live)' }, { value: c.notStarted + c.missed, color: 'var(--kx-danger)' }, { value: c.upcoming, color: 'var(--kx-line)' }]} />}
-          caption={!c || c.scheduled === 0 ? t('today.stat.nothingScheduled') : [c.live && t('today.stat.live', { n: c.live }), t('today.stat.missed', { n: c.missed + c.notStarted }), c.upcoming && t('today.stat.upcoming', { n: c.upcoming })].filter(Boolean).join(' · ')}
-          href="/classes"
-        />
         <StatTile
           testId="stat-attendance"
           icon={<FactCheckOutlined />}
@@ -185,9 +174,37 @@ function Kpis({ o, r, isToday, fmt, t, roles }: { o: Overview | undefined; r: Da
             href="/fees"
           />
         )}
+        {(() => {
+          const pts = (r?.performance ?? []).map((p) => p.internalMarks).filter((v): v is number => v !== null);
+          if (pts.length === 0) return null;
+          const last = pts[pts.length - 1];
+          return (
+            <StatTile
+              testId="stat-results"
+              icon={<GradingOutlined />}
+              label={t('dash.perf.internal')}
+              value={`${Math.round(last * 10) / 10}%`}
+              trend={pts.length > 1 ? { delta: pointsChange(last, pts[pts.length - 2]), label: t('dash.vsLastMonth'), suffix: t('dash.pts') } : undefined}
+              spark={<MiniBars values={pts} label={t('dash.perf.internal')} />}
+              caption={t('dash.perf.subtitle')}
+              href="/results"
+            />
+          );
+        })()}
       </StatGrid>
       <div style={{ height: 16 }} />
-      <StatGrid min={190}>
+      <StatGrid min={170}>
+        <StatTile testId="stat-faculty" icon={<BadgeOutlined />} label={t('dash.kpi.faculty')} value={r?.staff ? fmt.number(r.staff.total) : '—'} caption={t('dash.kpi.facultyCaption')} href={canSee(roles as never, 'hr') ? '/hr' : undefined} />
+        <StatTile
+          testId="stat-classes"
+          icon={<ClassOutlined />}
+          label={t('today.stat.classes')}
+          value={held}
+          unit={t('today.stat.classesUnit', { n: c?.scheduled ?? 0 })}
+          bar={c && <SegmentBar label={t('today.stat.classesBar', { taught: c.taught, live: c.live, notStarted: c.notStarted, missed: c.missed, upcoming: c.upcoming })} parts={[{ value: c.taught, color: 'var(--kx-success)' }, { value: c.live, color: 'var(--kx-live)' }, { value: c.notStarted + c.missed, color: 'var(--kx-danger)' }, { value: c.upcoming, color: 'var(--kx-line)' }]} />}
+          caption={!c || c.scheduled === 0 ? t('today.stat.nothingScheduled') : [c.live && t('today.stat.live', { n: c.live }), t('today.stat.missed', { n: c.missed + c.notStarted }), c.upcoming && t('today.stat.upcoming', { n: c.upcoming })].filter(Boolean).join(' · ')}
+          href="/classes"
+        />
         <StatTile testId="stat-absent" icon={<PersonOffOutlined />} label={t('today.stat.absent')} value={a?.absentStudents ?? 0} unit={t.plural('today.stat.student', a?.absentStudents ?? 0)} caption={!a || a.marked === 0 ? t('today.stat.noAttendance') : t('today.stat.absentLate', { absent: a.absent, late: a.late })} />
         <StatTile testId="stat-homework" icon={<AssignmentOutlined />} label={t('today.stat.homework')} value={o?.homeworkAssigned ?? 0} unit={t('today.stat.homeworkUnit')} caption={t.plural('today.stat.assignments', o?.homeworkAssigned ?? 0)} />
         <StatTile testId="stat-boards" icon={<CastForEducationOutlined />} label={t('today.stat.boards')} value={o?.boards.online ?? 0} unit={t('today.stat.boardsUnit', { n: o?.boards.total ?? 0 })} caption={`${t('today.stat.inClass', { n: o?.boards.inClass ?? 0 })}${isToday ? '' : ` ${t('today.stat.rightNow')}`}`} />
