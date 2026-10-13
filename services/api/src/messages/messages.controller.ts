@@ -12,6 +12,7 @@ import { conversations, guardians, messages, sections, students, subjects, tenan
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { isSchoolAdmin } from '../teacher/teacher.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const StartBody = z.object({ studentId: z.uuid(), withUserId: z.uuid() });
 const SendBody = z.object({ body: z.string().trim().min(1).max(2000) });
@@ -88,7 +89,7 @@ export class ConversationsController {
       .leftJoin(guardians, eq(guardians.studentId, students.id))
       .leftJoin(users, eq(users.id, guardians.userId))
       .where(and(inArray(students.sectionId, sectionIds), eq(students.status, 'active')))
-      .orderBy(asc(sections.displayName), asc(students.rollNo));
+      .orderBy(...naturalAsc(sections.displayName), asc(students.rollNo));
     const byStudent = new Map<string, { student: { id: string; fullName: string; rollNo: string; className: string }; guardians: { id: string; fullName: string; relation: string }[] }>();
     for (const r of rows) {
       const e = byStudent.get(r.studentId) ?? { student: { id: r.studentId, fullName: r.fullName, rollNo: r.rollNo, className: r.className }, guardians: [] };

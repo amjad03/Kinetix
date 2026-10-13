@@ -24,6 +24,7 @@ import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { addDays, isoWeekday, parseDate } from '../teacher/teacher.service.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 export const DASHBOARD_ROLES: RoleName[] = ['principal', 'tenant_admin', 'hod'];
 
@@ -52,7 +53,7 @@ export class AdminController {
       programs: await tx
         .select({ id: programs.id, name: programs.name, level: programs.level, campusId: programs.campusId, termCount: programs.termCount })
         .from(programs)
-        .orderBy(asc(programs.name)),
+        .orderBy(...naturalAsc(programs.name)),
       sections: await tx
         .select({
           id: sections.id,
@@ -63,7 +64,7 @@ export class AdminController {
           students: sql<number>`(select count(*)::int from students s where s.section_id = "sections"."id" and s.status = 'active')`,
         })
         .from(sections)
-        .orderBy(asc(sections.displayName)),
+        .orderBy(...naturalAsc(sections.displayName)),
       rooms: await tx.select({ id: rooms.id, name: rooms.name, campusId: rooms.campusId }).from(rooms).orderBy(asc(rooms.name)),
       subjects: await tx
         .select({ id: subjects.id, code: subjects.code, name: subjects.name, programId: subjects.programId, term: subjects.term, courseId: subjects.courseId })
@@ -147,7 +148,7 @@ export class AdminController {
         .from(sections)
         .leftJoin(attendanceRecords, and(eq(attendanceRecords.sectionId, sections.id), eq(attendanceRecords.date, day)))
         .groupBy(sections.id, sections.displayName)
-        .orderBy(asc(sections.displayName));
+        .orderBy(...naturalAsc(sections.displayName));
       const absentees = await tx
         .select({
           studentId: students.id,
@@ -165,7 +166,7 @@ export class AdminController {
         .leftJoin(timetableSlots, eq(timetableSlots.id, attendanceRecords.timetableSlotId))
         .leftJoin(subjects, eq(subjects.id, timetableSlots.subjectId))
         .where(and(eq(attendanceRecords.date, day), eq(attendanceRecords.status, 'absent')))
-        .orderBy(asc(sections.displayName), asc(timetableSlots.startsAt), asc(students.rollNo));
+        .orderBy(...naturalAsc(sections.displayName), asc(timetableSlots.startsAt), asc(students.rollNo));
       return { date: day, sections: perSection, absentees };
     });
   }
@@ -298,7 +299,7 @@ export class AdminController {
       .innerJoin(users, eq(users.id, timetableSlots.teacherId))
       .leftJoin(rooms, eq(rooms.id, timetableSlots.roomId))
       .where(and(eq(timetableSlots.dayOfWeek, isoWeekday(day)), isNull(timetableSlots.archivedAt)))
-      .orderBy(asc(timetableSlots.startsAt), asc(sections.displayName));
+      .orderBy(asc(timetableSlots.startsAt), ...naturalAsc(sections.displayName));
     // Classes cancelled by a holiday are not due (and not "missed").
     const holidays = await this.calendar.holidays(tx, day, day);
     const slots = all.filter((s) => !holidays.on(day, s.programId)).map(({ programId: _p, ...s }) => s);

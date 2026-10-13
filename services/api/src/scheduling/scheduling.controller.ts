@@ -29,6 +29,7 @@ import {
 } from '../db/schema.js';
 import { feedCalendar } from './calendar-feed.js';
 import { frequencyStatus, generateTimetable, isLatePunch, rollUp, splitYear, TERM_PRESETS, type Busy, type Demand } from './scheduling-logic.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const PresetBody = z.object({ academicYearId: z.uuid(), preset: z.enum(['semester', 'trimester', 'quarter', 'annual']), programIds: z.array(z.uuid()).min(1).max(100).nullable().optional() });
 const FrequencyBody = z.object({ minPerWeek: z.number().int().min(0).max(40), maxPerWeek: z.number().int().min(1).max(40), maxPerDay: z.number().int().min(1).max(10) }).refine((b) => b.minPerWeek <= b.maxPerWeek, { message: 'The minimum cannot exceed the maximum', path: ['minPerWeek'] });
@@ -312,7 +313,7 @@ export class SchedulingController {
         .from(sections)
         .innerJoin(pucCombinations, eq(pucCombinations.id, sections.combinationId))
         .where(eq(sections.academicYearId, academicYearId))
-        .orderBy(asc(sections.displayName));
+        .orderBy(...naturalAsc(sections.displayName));
       return rows;
     });
   }

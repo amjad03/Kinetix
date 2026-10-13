@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { Socket } from 'socket.io-client';
 import request from 'supertest';
@@ -38,6 +39,8 @@ describe('content library', () => {
   beforeAll(async () => {
     t = await createTenant(owner);
     other = await createTenant(owner);
+    // The first institution also runs a school wing (no board named), so it sees the K-12 boards too.
+    await drizzle(owner, { schema }).insert(schema.programs).values({ tenantId: t.tenantId, campusId: t.campus.id, name: 'High School', level: 'k12', termCount: 12 });
     app = await createApp(new FixedClock(nextMondayIst('10:30')), (b) => b.overrideProvider(LLM_PROVIDER).useValue(llm));
     tokens = {
       teacher: await login(t.slug, t.teacher.email!),
@@ -60,7 +63,8 @@ describe('content library', () => {
 
   it('serves the global library to every institution', async () => {
     const curricula = await http().get('/v1/content/curricula').set(auth('otherTeacher')).expect(200);
-    expect(curricula.body.map((c: { code: string }) => c.code)).toEqual(expect.arrayContaining(['cbse', 'bu-ug']));
+    expect(curricula.body.map((c: { code: string }) => c.code)).toEqual(expect.arrayContaining(['bu-ug']));
+    expect(curricula.body.map((c: { code: string }) => c.code)).not.toContain('cbse'); // an undergraduate college
     const outline = await http().get(`/v1/content/courses/${courseId}`).set(auth('otherTeacher')).expect(200);
     expect(outline.body.chapters.map((c: { title: string }) => c.title)).toContain('Valuation of Goodwill');
     expect(outline.body.reviewed).toBe(false);
@@ -159,5 +163,27 @@ describe('content library', () => {
     expect(kn).toMatchObject({ title: 'ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು ಮತ್ತು ಸಮೀಕರಣಗಳು', notes: expect.any(Array), hook: expect.any(String) });
     await http().post('/v1/ai/explain').set(auth('teacher')).send({ question: 'Explain balancing equations', topicId: ka, language: 'kn' }).expect(200);
     expect(llm.prompts.at(-1)![0].content).toContain(`- ${kn.notes[0]}`);
+  });
+
+  it('shows each institution only the curricula that fit it', async () => {
+    const db = drizzle(owner, { schema });
+    // A CBSE school (named in its profile) with K-12 programmes and no curriculum codes.
+    const school = await createTenant(owner);
+    await db.update(schema.tenants).set({ kind: 'school', settings: { profile: { affiliation: 'CBSE (Affiliation No. 1)' } } as never }).where(eq(schema.tenants.id, school.tenantId));
+    await db.update(schema.programs).set({ level: 'k12', name: 'Secondary' }).where(eq(schema.programs.id, school.program.id));
+    // A college whose programme names its curriculum.
+    const college = await createTenant(owner);
+    await db.update(schema.programs).set({ level: 'pg', name: 'MBA', curriculumCode: 'bu-pg' }).where(eq(schema.programs.id, college.program.id));
+    const schoolTok = await login(school.slug, school.teacher.email!);
+    const collegeTok = await login(college.slug, college.teacher.email!);
+    const codes = async (tok: string) => [...new Set(((await http().get('/v1/content/courses').set({ authorization: `Bearer ${tok}` }).expect(200)).body as { curriculumCode: string }[]).map((c) => c.curriculumCode))].sort();
+
+    expect(await codes(schoolTok)).toEqual(['cbse', 'early-years']);
+    expect(await codes(collegeTok)).toEqual(['bu-pg']);
+    const curricula = (await http().get('/v1/content/curricula').set({ authorization: `Bearer ${schoolTok}` }).expect(200)).body as { code: string }[];
+    expect(curricula.map((c) => c.code).sort()).toEqual(['cbse', 'early-years']);
+    // An MBA/BCom course is not in the school's library, by id or by search.
+    await http().get(`/v1/content/courses/${courseId}`).set({ authorization: `Bearer ${schoolTok}` }).expect(404);
+    expect((await http().get('/v1/content/search?q=goodwill').set({ authorization: `Bearer ${schoolTok}` }).expect(200)).body).toEqual([]);
   });
 });

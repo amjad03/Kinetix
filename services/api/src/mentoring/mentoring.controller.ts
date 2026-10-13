@@ -14,6 +14,7 @@ import { TeacherService } from '../teacher/teacher.service.js';
 import { found, hasRole } from '../placements/placements.access.js';
 import { MENTORING_ADMIN, MENTOR_CANDIDATE_ROLES, NOTES_ROLES } from './mentoring-rules.js';
 import { MentoringService } from './mentoring.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const READERS: RoleName[] = [...MENTORING_ADMIN, 'teacher', 'counsellor'];
 const day = z.iso.date();
@@ -122,7 +123,7 @@ export class MentoringController {
         .innerJoin(sections, eq(sections.id, students.sectionId))
         .innerJoin(users, eq(users.id, mentorAssignments.mentorUserId))
         .where(and(isNull(mentorAssignments.endedOn), mentor ? eq(mentorAssignments.mentorUserId, mentor) : undefined, sectionId ? eq(students.sectionId, sectionId) : undefined))
-        .orderBy(asc(sections.displayName), asc(students.rollNo));
+        .orderBy(...naturalAsc(sections.displayName), asc(students.rollNo));
     });
   }
 

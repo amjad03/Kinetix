@@ -35,6 +35,7 @@ import { FEE_ROLES, FeesService } from './fees.service.js';
 import { PAYMENTS_NOT_CONFIGURED, PaymentGateway } from './payment-gateway.service.js';
 import { WalletTopupService } from './wallet-topup.service.js';
 import type { PaymentProvider } from './payment-provider.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const Paise = z.number().int().min(100).max(100_000_000_00);
@@ -109,7 +110,7 @@ export class FeesController {
         .innerJoin(students, eq(students.id, feeInvoices.studentId))
         .innerJoin(sections, eq(sections.id, feeInvoices.sectionId))
         .where(and(sectionId ? eq(feeInvoices.sectionId, sectionId) : undefined, st.data ? eq(feeInvoices.status, st.data) : undefined))
-        .orderBy(asc(feeInvoices.dueOn), asc(sections.displayName), asc(students.rollNo))
+        .orderBy(asc(feeInvoices.dueOn), ...naturalAsc(sections.displayName), asc(students.rollNo))
         .limit(2000),
     );
   }
@@ -408,7 +409,7 @@ export async function feeSummary(tx: Tx) {
     .innerJoin(sections, eq(sections.id, feeInvoices.sectionId))
     .where(ne(feeInvoices.status, 'cancelled'))
     .groupBy(sections.id, sections.displayName)
-    .orderBy(asc(sections.displayName));
+    .orderBy(...naturalAsc(sections.displayName));
   const total = (k: 'billedPaise' | 'collectedPaise' | 'overdue' | 'overduePaise' | 'open') => rows.reduce((s, r) => s + Number(r[k]), 0);
   return {
     billedPaise: total('billedPaise'),

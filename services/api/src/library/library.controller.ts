@@ -13,6 +13,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { addDays } from '../teacher/teacher.service.js';
 import { libraryReservations } from '../db/schema-depth.js';
 import { copiesHeld, promoteNext } from './reservations.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 export const LIBRARY_ROLES: RoleName[] = ['librarian', 'tenant_admin', 'principal'];
 /** Default loan period and late fine; per-institution settings later. */
@@ -146,7 +147,7 @@ export class LibraryController {
         .from(students)
         .innerJoin(sections, eq(sections.id, students.sectionId))
         .where(and(eq(students.status, 'active'), or(ilike(students.fullName, like), ilike(students.rollNo, like), ilike(sections.displayName, like))))
-        .orderBy(asc(sections.displayName), asc(students.rollNo))
+        .orderBy(...naturalAsc(sections.displayName), asc(students.rollNo))
         .limit(50),
     );
   }

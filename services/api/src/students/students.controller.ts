@@ -10,6 +10,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { admissionCycles, applications, guardians, programs, promotionBatches, sections, studentLifecycleEvents, students, users } from '../db/schema.js';
 import { LifecycleService } from './lifecycle.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 /** Who may change a student's status, class or promotion. */
 export const LIFECYCLE_ROLES: RoleName[] = ['tenant_admin', 'principal'];
@@ -72,7 +73,7 @@ export class StudentsController {
             sectionId && z.uuid().safeParse(sectionId).success ? eq(students.sectionId, sectionId) : undefined,
           ),
         )
-        .orderBy(asc(sections.displayName), asc(students.rollNo))
+        .orderBy(...naturalAsc(sections.displayName), asc(students.rollNo))
         .limit(5000),
     );
   }

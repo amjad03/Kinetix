@@ -17,6 +17,7 @@ import { attendanceLocked } from '../attendance-governance/attendance-rules.js';
 import { attendanceSettings } from '../attendance-governance/eligibility.js';
 import { isoWeekday, isSchoolAdmin, parseDate, TeacherService } from './teacher.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
+import { naturalCompare } from '../common/natural-order.js';
 
 /** Teaching staff plus admins, who can look at (and correct) any class. */
 const CLASS_ROLES: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
@@ -169,7 +170,9 @@ export class TeacherController {
         .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
         .innerJoin(subjects, eq(subjects.id, timetableSlots.subjectId))
         .where(eq(timetableSlots.teacherId, p.userId))
-        .orderBy(asc(sections.displayName), asc(subjects.name)),
+        // DISTINCT can only order by selected columns, so the natural class order is applied here.
+        .orderBy(asc(sections.displayName), asc(subjects.name))
+        .then((rows) => rows.sort((a, b) => naturalCompare(a.section.displayName, b.section.displayName))),
     );
   }
 

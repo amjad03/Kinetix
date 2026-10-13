@@ -33,6 +33,7 @@ import {
 import { addDays, isSchoolAdmin, isoWeekday, parseDate } from '../teacher/teacher.service.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 /** Who can open a department view: its head, or the principal and administrator for any. */
 const VIEW_ROLES: RoleName[] = ['hod', 'principal', 'tenant_admin'];
@@ -258,7 +259,7 @@ export class DepartmentsController {
         .innerJoin(subjects, eq(subjects.id, assessments.subjectId))
         .innerJoin(users, eq(users.id, assessments.createdBy))
         .where(and(inArray(assessments.subjectId, subjectIds), gte(assessments.heldOn, from), sql`${assessments.heldOn} <= ${to}`))
-        .orderBy(desc(assessments.heldOn), asc(sections.displayName));
+        .orderBy(desc(assessments.heldOn), ...naturalAsc(sections.displayName));
 
       const taughtBySlot = new Map<string, number>();
       for (const r of taughtRows) if (r.slotId) taughtBySlot.set(r.slotId, (taughtBySlot.get(r.slotId) ?? 0) + 1);

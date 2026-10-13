@@ -9,6 +9,7 @@ import { ParentVisibilityService } from '../parent/parent-visibility.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { healthProfiles, healthVaccinations, healthVisits, sections, students } from '../db/schema.js';
 import { HEALTH_STAFF, SchoolLifeService } from './school-life.service.js';
+import { naturalAsc } from '../common/natural-order.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-20');
 const List = z.array(z.string().trim().min(1).max(100)).max(30).default([]);
@@ -65,7 +66,7 @@ export class HealthRecordsController {
   @Get('sections')
   @Auth('user', HEALTH_STAFF)
   sections(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) => tx.select({ id: sections.id, displayName: sections.displayName }).from(sections).orderBy(asc(sections.displayName)));
+    return this.db.withTenant(p.tenantId, (tx) => tx.select({ id: sections.id, displayName: sections.displayName }).from(sections).orderBy(...naturalAsc(sections.displayName)));
   }
 
   @Get('students/:id')
