@@ -105,12 +105,29 @@ export function Tabs({ value, onChange, className, children, variant: _v, scroll
     if (!el || !on) return;
     if (on.offsetLeft < el.scrollLeft || on.offsetLeft + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = on.offsetLeft - 16;
   }, [value]);
+  // Fade the edge that has more tabs past it, so a cut-off row reads as scrollable.
+  useEffect(() => {
+    const el = list.current;
+    if (!el) return;
+    const mark = () => {
+      el.dataset.moreRight = String(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+      el.dataset.moreLeft = String(el.scrollLeft > 2);
+    };
+    mark();
+    el.addEventListener('scroll', mark, { passive: true });
+    const ro = new ResizeObserver(mark);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', mark);
+      ro.disconnect();
+    };
+  }, []);
   return (
     <TabsCtx.Provider value={{ value, onChange }}>
       <div
         ref={list}
         role="tablist"
-        className={cn('flex min-w-0 max-w-full gap-1 overflow-x-auto overscroll-x-contain border-b [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]', centered && 'justify-center', className)}
+        className={cn('flex min-w-0 max-w-full gap-1 overflow-x-auto overscroll-x-contain border-b data-[more-right=true]:[mask-image:linear-gradient(to_right,black_calc(100%-40px),transparent)] data-[more-left=true]:[mask-image:linear-gradient(to_right,transparent,black_40px)] data-[more-left=true]:data-[more-right=true]:[mask-image:linear-gradient(to_right,transparent,black_40px,black_calc(100%-40px),transparent)] [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]', centered && 'justify-center', className)}
         onKeyDown={(e) => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
           const tabs = [...e.currentTarget.querySelectorAll<HTMLElement>('[role=tab]')];
