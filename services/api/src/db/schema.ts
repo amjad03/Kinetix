@@ -715,6 +715,80 @@ export const exitTickets = pgTable(
   (t) => [index('exit_tickets_section_idx').on(t.sectionId, t.createdAt)],
 );
 
+/** A 3D model a teacher asked for from the board's 3D library ("Request a 3D model"); the content team reads them per school. */
+export const modelRequests = pgTable(
+  'model_requests',
+  {
+    /** Chosen by the board, so a request replayed from its offline outbox is kept once. */
+    id: uuid('id').primaryKey(),
+    tenantId: tenantId(),
+    campusId: uuid('campus_id').references(() => campuses.id),
+    deviceId: uuid('device_id').references(() => devices.id),
+    teacherId: uuid('teacher_id').references(() => users.id),
+    name: text('name').notNull(),
+    subject: text('subject'),
+    /** The class it is for ('1' to '12', or a college year), as the teacher picked it. */
+    classLevel: text('class_level'),
+    note: text('note'),
+    status: text('status').notNull().default('open'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('model_requests_tenant_idx').on(t.tenantId, t.createdAt)],
+);
+
+/**
+ * A Live Quiz: the game-show quiz the teacher runs on the board (one question at a time, a
+ * countdown, points for right and fast answers, a leaderboard and a podium). Kept per class.
+ */
+export const quizGames = pgTable(
+  'quiz_games',
+  {
+    /** Chosen by the board, so a retried create starts one game. */
+    id: uuid('id').primaryKey(),
+    tenantId: tenantId(),
+    boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    teacherId: uuid('teacher_id').notNull().references(() => users.id),
+    title: text('title').notNull(),
+    /** The questions in order: kind (mcq | tf), text, options, the right option's index and the seconds it is open. */
+    questions: jsonb('questions').$type<{ kind: 'mcq' | 'tf'; question: string; options: string[]; correct: number; seconds: 10 | 20 | 30 }[]>().notNull(),
+    /** Students without phones answer with printed answer cards. */
+    cards: boolean('cards').notNull().default(false),
+    /** lobby | question | reveal | finished */
+    status: text('status').notNull().default('lobby'),
+    /** The open or last revealed question; -1 before the first. */
+    currentIndex: integer('current_index').notNull().default(-1),
+    openedAt: timestamp('opened_at', { withTimezone: true }),
+    closesAt: timestamp('closes_at', { withTimezone: true }),
+    /** The final leaderboard, kept when the game finishes. */
+    standings: jsonb('standings').$type<{ studentId: string; name: string; rollNo: string | null; score: number; correct: number; streak: number; rank: number }[]>(),
+    createdAt: createdAt(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+  },
+  (t) => [index('quiz_games_section_idx').on(t.sectionId, t.createdAt), index('quiz_games_session_idx').on(t.boardSessionId)],
+);
+
+/** One student's answer to one Live Quiz question. App answers are final; a card read again replaces its earlier answer. */
+export const quizGameAnswers = pgTable(
+  'quiz_game_answers',
+  {
+    tenantId: tenantId(),
+    gameId: uuid('game_id').notNull().references(() => quizGames.id, { onDelete: 'cascade' }),
+    questionIndex: integer('question_index').notNull(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    choice: integer('choice').notNull(),
+    source: pollAnswerSource('source').notNull(),
+    /** Since the question opened (app answers); null for cards, which score without the speed bonus. */
+    elapsedMs: integer('elapsed_ms'),
+    correct: boolean('correct').notNull(),
+    /** Set when the question is revealed: speed points plus the streak bonus. */
+    points: integer('points').notNull().default(0),
+    answeredAt: timestamp('answered_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.gameId, t.questionIndex, t.studentId] })],
+);
+
 /** One student's answer to a poll; a later answer replaces an earlier one. */
 export const pollResponses = pgTable(
   'poll_responses',
@@ -3156,6 +3230,8 @@ export const TENANT_TABLES = [
   'module_settings',
   'faculty_evidence',
   'exit_tickets',
+  'model_requests',
+  'quiz_games', 'quiz_game_answers',
   'migration_mappings', 'migration_batches', 'migration_batch_records', 'legacy_marks', 'legacy_attendance', 'legacy_fee_entries', 'university_templates', 'tabulation_registers',
   'academic_doc_requests', 'ext_examiners', 'ext_examiner_assignments', 'ext_valuation_scripts', 'ext_question_papers', 'ext_remuneration_claims',
   'poll_responses',

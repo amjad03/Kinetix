@@ -7,6 +7,8 @@ import '../chrome.dart';
 import '../editors.dart';
 import 'builders.dart';
 import 'cs/cs_kit.dart';
+import 'eee/eee_strings.dart';
+import 'eee/eee_symbols.dart';
 import 'college/college_builders.dart' show blankSheet;
 import 'college/law_reader.dart';
 import 'college/sheet_editor.dart';
@@ -82,8 +84,14 @@ class SubjectToolRunner {
             wb.tool = wb.tool == BoardTool.compass ? BoardTool.pen : BoardTool.compass;
         }
       case SubjectTool.circuit:
-        final c = await _menu<Circuit>(anchor, [for (final c in Circuit.values) (Icons.electrical_services, circuitName(l, c), c, false)]);
-        if (c != null) wb.insert(circuitSymbol(c, _ink));
+        // The textbook set, then the IEC / IS symbols of the electrical kit.
+        final e = eeeStrings(context);
+        final c = await _menu<Object>(anchor, [
+          for (final c in Circuit.values) (Icons.electrical_services, circuitName(l, c), c, false),
+          for (final c in EeeSymbol.values) (Icons.electric_bolt_outlined, e['sym.${c.name}'], c, false),
+        ]);
+        if (c is Circuit) wb.insert(circuitSymbol(c, _ink));
+        if (c is EeeSymbol) wb.insert(eeeSymbol(c, _ink));
       case SubjectTool.atom:
         final z = await _menu<int>(anchor, [
           for (var z = 1; z <= elementSymbols.length; z++) (Icons.blur_circular, '${elementSymbols[z - 1]}  ·  ${elementNames[z - 1]}', z, false),

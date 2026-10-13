@@ -736,6 +736,48 @@ function view(dir, instant = false) {
   flight = { from: camera.position.clone(), to, target: controls.target.clone(), t0: performance.now() };
 }
 
+/** The box of the parts in view (only [id] when it is one of them), where take-apart puts them. */
+function shownBox(id) {
+  const box = new THREE.Box3();
+  const one = id ? parts.get(id) : null;
+  for (const p of one && isShown(one) ? [one] : visibleParts()) {
+    if (!p.box) p.box = new THREE.Box3().setFromBufferAttribute(p.front.geometry.attributes.position).applyMatrix4(p.front.matrix);
+    box.union(p.box.clone().translate(p.explodeOffset || new THREE.Vector3()));
+  }
+  return box;
+}
+
+/**
+ * Recenter: flies the camera to fit the parts in view (the picked part, if
+ * one is picked) and turns round their middle, looking from where it looks
+ * now. Unlike reset it keeps Hide, Show only this, the cut and take-apart.
+ */
+function recenter() {
+  if (sceneRt?.active) return sceneRt.viewFrom(heading());
+  if (hasHinges()) return view(heading());
+  const box = shownBox(state.picked);
+  if (box.isEmpty()) return;
+  stopAutoRotate();
+  const center = box.getCenter(new THREE.Vector3());
+  const d = new THREE.Vector3(...heading());
+  const up = Math.abs(d.y) > 0.95 ? new THREE.Vector3(0, 0, -1) : new THREE.Vector3(0, 1, 0);
+  const right = new THREE.Vector3().crossVectors(up, d).normalize();
+  const top = new THREE.Vector3().crossVectors(d, right).normalize();
+  let w = 0, h = 0, depth = 0;
+  for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+    const v = new THREE.Vector3(x, y, z).sub(center);
+    w = Math.max(w, Math.abs(v.dot(right)) * 2);
+    h = Math.max(h, Math.abs(v.dot(top)) * 2);
+    depth = Math.max(depth, v.dot(d));
+  }
+  const tan = Math.tan((camera.fov * Math.PI) / 360);
+  const size = Math.max(h, w / camera.aspect, modelSize * 0.05);
+  const room = state.labels === 'all' ? 1.35 : 1;
+  const fit = Math.max((size * 0.6 * room) / tan, (size * 0.45) / tan + depth);
+  // [from] and [to] are from the point looked at; [center] is where that point flies to.
+  flight = { from: camera.position.clone().sub(controls.target), to: d.multiplyScalar(fit), target: controls.target.clone(), center, t0: performance.now() };
+}
+
 // ------------------------------------------------------------------ interaction
 
 function pickables() {
@@ -1987,7 +2029,9 @@ function render(now) {
     const r = flight.from.length() + (flight.to.length() - flight.from.length()) * e;
     const dir = flight.from.clone().normalize().lerp(flight.to.clone().normalize(), e).normalize();
     camera.position.copy(dir.multiplyScalar(r));
-    controls.target.lerpVectors(flight.target, new THREE.Vector3(), e);
+    // A recenter flies round the middle of what is shown, not the model's.
+    if (flight.center) camera.position.add(new THREE.Vector3().lerpVectors(flight.target, flight.center, e));
+    controls.target.lerpVectors(flight.target, flight.center || new THREE.Vector3(), e);
     if (u >= 1) flight = null;
   }
   for (const p of parts.values()) {
@@ -2120,6 +2164,7 @@ const commands = {
     if (sceneRt?.active) sceneRt.reset();
     else view(manifest.views?.[0]?.dir || [0, 0, 1]);
   },
+  recenter: () => recenter(),
   explode: (c) => {
     state.explode = Math.max(0, Math.min(1, c.amount));
     applyExplode();

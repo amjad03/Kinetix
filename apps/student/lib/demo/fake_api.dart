@@ -11,6 +11,7 @@ import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/alumni.dart';
 import '../core/buzzer.dart';
+import '../core/live_quiz.dart';
 import '../core/academic_docs.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
@@ -2252,6 +2253,29 @@ class FakeStudentApi implements StudentApi {
     final stored = q.numeric ? '${num.parse(answer)}' : answer;
     q.myAnswer = stored;
     return stored;
+  }
+
+  /// The Live Quiz running in the class (GET /v1/student/quiz-game); answers land in
+  /// [quizAnswers] and [quiz]'s `myChoice`. [quizTimeUp] makes the next answer late.
+  StudentQuizGame quiz = const StudentQuizGame();
+  final quizAnswers = <String, int>{};
+  bool quizTimeUp = false;
+
+  @override
+  Future<StudentQuizGame> quizGame() async {
+    calls.add('quizGame');
+    return quiz;
+  }
+
+  @override
+  Future<int> answerQuizGame(String gameId, int index, int choice) async {
+    calls.add('quizAnswer $gameId $index $choice');
+    if (quizTimeUp) throw ApiException(400, 'Time is up for this question');
+    final had = quizAnswers['$gameId/$index'];
+    if (had != null) return had;
+    quizAnswers['$gameId/$index'] = choice;
+    quiz = StudentQuizGame(game: quiz.game, status: quiz.status, myChoice: choice, score: quiz.score);
+    return choice;
   }
 
   // ── Calendar ──────────────────────────────────────────────────────────────────────────────

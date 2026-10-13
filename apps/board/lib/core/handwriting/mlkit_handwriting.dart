@@ -6,7 +6,8 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 /// Handwriting on Android panels and phones: Google ML Kit Digital Ink, on the device itself.
 ///
 /// It reads words, digits and symbols in English (en-US), Hindi (hi-IN) and Kannada (kn-IN), and
-/// drawn shapes with ML Kit's shapes model ([InkModels.shapes]). Each model (a few MB to about
+/// drawn shapes with ML Kit's shapes model ([InkModels.shapes]) and sketches with its AutoDraw model
+/// ([InkModels.autodraw], for the board's "Did you mean" icons). Each model (a few MB to about
 /// 20 MB) downloads once from Google: the first time the AI pen is used, from Board settings, or
 /// by itself on a demo board; after that it works with no network, and no ink ever leaves the
 /// device. ML Kit says itself whether it has a model for a tag ("No model was found" for one it
@@ -95,11 +96,11 @@ class MlKitHandwriting implements HandwritingRecognizer, InkModelReader {
     }
     final recognizer = _recognizers[model] ??= mlkit.DigitalInkRecognizer(languageCode: model);
     try {
-      final shapes = model == InkModels.shapes;
+      // The shapes and sketch (AutoDraw) models take no writing context.
+      final drawing = model.startsWith('zxx-Zsym');
       final result = await recognizer.recognize(
         mk,
-        // The shapes model takes no writing context.
-        context: shapes
+        context: drawing
             ? null
             : mlkit.DigitalInkRecognitionContext(
                 preContext: preContext.length > 20 ? preContext.substring(preContext.length - 20) : preContext,

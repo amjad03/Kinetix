@@ -31,6 +31,7 @@ Future<List<String>> missingAiPenModels(InkModelReader reader, String language) 
 /// A model's name for the teacher: "English handwriting", "Shapes".
 String aiPenModelName(AppLocalizations l, String model) {
   if (model == InkModels.shapes) return l.aiPenModelShapes;
+  if (model == InkModels.autodraw) return l.sketchModelName;
   final code = textAiLanguages.keys.firstWhere((c) => InkModels.text(c) == model, orElse: () => 'en');
   return l.aiPenModelHandwriting(textAiLanguages[code]!);
 }
@@ -78,12 +79,15 @@ Future<bool> offerAiPenModels(BuildContext context, HandwritingRecognizer handwr
 
 /// Asks to download the AI pen's [models], then downloads them one by one with a bar and
 /// "Downloading English handwriting (1 of 2)…". ML Kit does not say how far along a model is, so
-/// the bar runs until each one is done.
+/// the bar runs until each one is done. [title] and [body] say what the models are for (the AI
+/// pen's, by default).
 class AiPenModelsDialog extends StatefulWidget {
-  const AiPenModelsDialog({super.key, required this.reader, required this.models});
+  const AiPenModelsDialog({super.key, required this.reader, required this.models, this.title, this.body});
 
   final InkModelReader reader;
   final List<String> models;
+  final String? title;
+  final String? body;
 
   @override
   State<AiPenModelsDialog> createState() => _AiPenModelsDialogState();
@@ -128,21 +132,25 @@ class _AiPenModelsDialogState extends State<AiPenModelsDialog> {
     return AlertDialog(
       key: const Key('ai-pen-models'),
       icon: const Icon(Icons.auto_fix_high),
-      title: Text(l.aiPenModelsTitle),
+      title: Text(widget.title ?? l.aiPenModelsTitle),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l.aiPenModelsBody),
+            Text(widget.body ?? l.aiPenModelsBody),
             const SizedBox(height: Kx.s12),
             for (final m in widget.models)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: Kx.s4),
                 child: Row(
                   children: [
-                    Icon(m == InkModels.shapes ? Icons.category_outlined : Icons.draw_outlined, size: 20),
+                    Icon(switch (m) {
+                      InkModels.shapes => Icons.category_outlined,
+                      InkModels.autodraw => Icons.emoji_objects_outlined,
+                      _ => Icons.draw_outlined,
+                    }, size: 20),
                     const SizedBox(width: Kx.s8),
                     Expanded(child: Text(aiPenModelName(l, m))),
                     if (step != null && widget.models.indexOf(m) < step) Icon(Icons.check_circle, size: 18, color: context.colors.primary),

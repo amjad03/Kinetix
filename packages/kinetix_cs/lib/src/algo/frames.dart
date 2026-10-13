@@ -19,10 +19,14 @@ class Say {
 enum Mark { none, compare, swap, sorted, pivot, found, active, visited, dim }
 
 class AlgoFrame {
-  const AlgoFrame(this.view, this.say);
+  const AlgoFrame(this.view, this.say, {this.stats = const {}});
 
   final AlgoView view;
   final Say say;
+
+  /// Running counters the class watches: comparisons and swaps (sorting and searching),
+  /// writes (counting sort), MST weight. Keys are CsStrings keys (`stat_comparisons`).
+  final Map<String, int> stats;
 }
 
 sealed class AlgoView {
@@ -32,7 +36,7 @@ sealed class AlgoView {
 /// An array as bars (sorting) or boxes (searching), with marks and named pointers (i, j, lo,
 /// hi, mid).
 class ArrayView extends AlgoView {
-  const ArrayView(this.values, {this.marks = const {}, this.pointers = const {}, this.bars = true, this.split});
+  const ArrayView(this.values, {this.marks = const {}, this.pointers = const {}, this.bars = true, this.split, this.aux, this.auxBase = 0, this.auxMarks = const {}});
 
   final List<int> values;
   final Map<int, Mark> marks;
@@ -41,6 +45,33 @@ class ArrayView extends AlgoView {
 
   /// Merge sort's sub-array [start, end) being worked on, shaded.
   final (int, int)? split;
+
+  /// Counting sort's count array (index i counts the value [auxBase] + i), drawn below.
+  final List<int>? aux;
+  final int auxBase;
+  final Map<int, Mark> auxMarks;
+}
+
+/// A circular queue: [slots] (null = free), [front] and [rear] indexes, drawn as a ring.
+class RingView extends AlgoView {
+  const RingView(this.slots, {required this.front, required this.rear, required this.count, this.marks = const {}});
+
+  final List<int?> slots;
+  final int front;
+  final int rear;
+  final int count;
+  final Map<int, Mark> marks;
+}
+
+/// A binary heap: the array and the complete tree it stands for (children of i at 2i+1 and
+/// 2i+2); [size] items are in the heap, the rest (heap sort's sorted tail) are greyed.
+class HeapView extends AlgoView {
+  const HeapView(this.values, {required this.size, this.min = false, this.marks = const {}});
+
+  final List<int> values;
+  final int size;
+  final bool min;
+  final Map<int, Mark> marks;
 }
 
 enum LineKind { stack, queue, linkedList }

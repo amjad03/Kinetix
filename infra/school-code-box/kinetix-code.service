@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<!-- Announces the school code box on the network, so boards find it with Settings → School
+     code box → Find. Linux PCs: sudo cp kinetix-code.service /etc/avahi/services/
+     (docs/operations/school-code-box.md). -->
+<service-group>
+  <name replace-wildcards="yes">KINETIX code box on %h</name>
+  <service>
+    <type>_kinetix-code._tcp</type>
+    <port>8181</port>
+    <txt-record>path=/health</txt-record>
+  </service>
+</service-group>

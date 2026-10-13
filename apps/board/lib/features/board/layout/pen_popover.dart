@@ -10,6 +10,8 @@ import '../../../core/board_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../ai_pen_ui.dart' show SnapShapesSwitch;
 import '../chrome.dart';
+import '../../sketch/sketch_bar.dart' show SketchSuggestSwitch;
+import '../../sketch/sketch_recognizer.dart' show sketchRecognizerFor;
 import '../popovers.dart' show highlighterPalette, inkPalette;
 import 'layout_strings.dart';
 import 'pen_modes.dart';
@@ -339,6 +341,8 @@ class _PenPopoverState extends State<PenPopover> {
                 ),
               ],
               if (wb.tool == BoardTool.pen) SnapShapesSwitch(board: board),
+              // Only where there is a sketch model (Android); elsewhere the bar never shows.
+              if (wb.tool == BoardTool.pen && sketchRecognizerFor(board.handwriting).available) SketchSuggestSwitch(board: board, available: true),
             ],
           ),
         );

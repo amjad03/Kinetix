@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KINETIX code runner</title>
 <!-- Runs Python (Pyodide) and JavaScript for the code lab, in a Web Worker so Stop can end
-     any program. Served from the app on 127.0.0.1; nothing is fetched from the internet.
+     any program. Served from the app on 127.0.0.1 (Python under py/); nothing is fetched from the internet.
      The protocol is described in lib/src/runner/protocol.dart (RunnerSession). -->
 </head>
 <body style="background:#1e2430">
@@ -44,6 +44,11 @@
     },
     // Starts Python early, while the teacher is still typing.
     warm: function () { worker('python'); },
+    // Drops the Python worker, so Python fetched since is picked up by the next run.
+    reset: function () {
+      if (workers.python) { workers.python.terminate(); delete workers.python; }
+      if (current && current.kind === 'python') current = null;
+    },
   };
   send({ event: 'ready' });
 })();

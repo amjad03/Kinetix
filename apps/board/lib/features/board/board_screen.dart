@@ -59,6 +59,21 @@ import 'chrome.dart';
 import 'classroom_tools.dart';
 import 'editors.dart';
 import 'insert_popover.dart';
+import 'kit/college/biz/biz_samples.dart' show bizPanel;
+import 'kit/civil/civil_kit.dart';
+import 'kit/civil/civil_strings.dart';
+import 'kit/civil/is_codes.dart';
+import 'kit/aiml/aiml_kit.dart';
+import 'kit/chem/chem_kit.dart';
+import 'kit/ece/ece_kit.dart';
+import 'kit/ece/ece_strings.dart';
+import 'kit/eee/eee_kit.dart';
+import 'kit/eee/eee_strings.dart';
+import 'kit/ev/ev_kit.dart';
+import 'kit/mech/mech_kit.dart';
+import 'kit/mech/mech_strings.dart';
+import 'kit/college/biz/biz_strings.dart';
+import 'kit/college/biz/kit_editors.dart';
 import 'kit/college/sheet_editor.dart';
 import 'kit/kit_panel.dart';
 import 'kit/subject_tools.dart';
@@ -71,6 +86,8 @@ import 'layout/page_overview.dart';
 import 'layout/toolbar_layout.dart';
 import 'layout/pen_popover.dart';
 import 'layout/tools_drawer.dart';
+import 'layout/top_actions.dart';
+import '../search/model_request.dart';
 import 'layout/ui_strings.dart';
 import 'live_stream.dart';
 import 'panel/badges_panel.dart';
@@ -85,7 +102,9 @@ import 'selection_actions.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
 import '../../demo/demo_class_switcher.dart' show DemoClassSwitcher;
-import '../../demo/demo_classes.dart' show DemoClass;
+import '../../demo/demo_classes.dart' show DemoClass, DemoClasses;
+import '../curriculum/curriculum_picker.dart';
+import '../curriculum/curriculum_registry.dart';
 import '../classroom_plus/break_reminder.dart';
 import '../classroom_plus/recording_notice.dart';
 import '../classroom_plus/voice_commands.dart';
@@ -103,6 +122,9 @@ import 'board_shot.dart';
 import 'calculator.dart';
 import '../insert/presentation_pane.dart';
 import '../safe_web/safe_web.dart';
+import '../sketch/sketch_bar.dart';
+import '../sketch/sketch_recognizer.dart';
+import '../sketch/sketch_suggest.dart';
 import 'layout/pen_modes.dart';
 import 'classroom_apps.dart';
 import 'classroom_profile_strings.dart';
@@ -150,6 +172,9 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// The AI pen: shapes, maths and words from what the teacher writes.
   late final AiPenController _pen;
+
+  /// The "Did you mean" bar: clean icons for what the pen draws (lib/features/sketch).
+  late final SketchSuggestController _sketch;
 
   /// The model or lab view in the split pane, for a picture of it.
   final _splitKey = GlobalKey();
@@ -233,16 +258,75 @@ class _BoardScreenState extends State<BoardScreen> {
   /// The teacher's own pick of subject and class (top bar chip); the timetable decides until they pick.
   final _ctxPick = ContextOverride();
   ClassContext get _ctx => resolveClassContext(board.session, _ctxPick);
-  SubjectStyle get _style => subjectStyles[_ctx.subject]!;
+  SubjectStyle get _style => _ctx.curriculum?.style ?? subjectStyles[_ctx.subject]!;
+
+  /// The subject the libraries and catalogues filter by: the teacher's pick of class and subject,
+  /// else the timetable's.
+  String? get _subjectName => _ctxPick.curriculum != null ? _ctx.curriculum?.filterName : board.session?.subjectName;
 
   /// Whether the tools drawer and Insert menu show every tool, not just this subject's and grade's.
   bool _showAllTools = showAllToolsByDefault;
-  Widget _contextChip({bool compact = false}) => ContextChip(ctx: () => _ctx, pick: _ctxPick, compact: compact);
+  Widget _contextChip({bool compact = false}) => ContextChip(ctx: () => _ctx, pick: _ctxPick, compact: compact, onTap: () => unawaited(_openCurriculumPicker()));
+
+  /// The class and subject picker (lib/features/curriculum): the top bar's class chip, the demo
+  /// switcher, Tools → This subject's kits, and a demo board's start.
+  Future<void> _openCurriculumPicker() async {
+    setState(() => _popover = null);
+    await showCurriculumPicker(
+      context,
+      ctx: () => _ctx,
+      pick: _ctxPick,
+      timetable: CurriculumRegistry.match(board.session),
+      demoClasses: Demo.enabled ? [for (final c in DemoClasses.all) (c.id, '${c.section} · ${c.subject}')] : const [],
+      onDemoClass: (id) => DemoClassSwitcher.switchTo(board, id),
+      onPicked: _onCurriculumPicked,
+    );
+  }
+
+  /// A class and subject were picked: the board remembers it, and the next page is on its paper
+  /// (this page when it is still empty).
+  void _onCurriculumPicked(String? id) {
+    board.setCurriculumPick(id);
+    if (id == null || !mounted) return;
+    if (_wb.canAddPage) _wb.addPage();
+    _wb.background = _themed(_style.paper);
+    showBoardMessage(context, context.l10n.curSet(contextLabel(context, _ctx)));
+  }
+
+  /// Tools → This subject's kits: what the picked class and subject brings, else the picker.
+  void _openSubjectKits() {
+    final c = _ctx.curriculum;
+    if (c == null) return unawaited(_openCurriculumPicker());
+    final l = context.l10n;
+    final labels = {for (final t in _drawerTools(l)) t.id: t.label};
+    _openPage(l.curKits, Icons.backpack_outlined, (_) => CurriculumKitsPanel(choice: c, toolLabel: (id) => labels[id], onOpen: _openCurriculumFeature, onChange: () => unawaited(_openCurriculumPicker())));
+  }
+
+  void _openCurriculumFeature(CurriculumFeature f) {
+    switch (f.kind) {
+      case FeatureKind.tool:
+        _runDrawerTool(f.ref);
+      case FeatureKind.kit:
+        _openKit(f.kitTab);
+      case FeatureKind.lab:
+        _openSplit(SplitContent.lab, f.ref);
+      case FeatureKind.model:
+        _openSplit(SplitContent.model3d, f.ref);
+      case FeatureKind.phet:
+        _openPhet(f.ref);
+      case FeatureKind.sim:
+        unawaited(_openSim(SimKind.values.asNameMap()[f.ref]));
+      case FeatureKind.upcoming:
+        break;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     board.addListener(_onBoardChanged);
+    // The class and subject last picked on this board, until a timetabled period says otherwise.
+    if (board.curriculumPick case final id? when board.session == null || Demo.enabled) _ctxPick.setCurriculum(id);
     _ctxPick.addListener(_onContextPicked);
     unawaited(loadCustomBoardFont(board));
     presentationHost = _showPresentation;
@@ -284,6 +368,8 @@ class _BoardScreenState extends State<BoardScreen> {
     _pen = AiPenController(_wb, handwriting: board.handwriting)
       ..onNotice = _aiPenNotice
       ..onLetterSize = (px) => board.saveLetterSize(board.session?.teacherId, px);
+    // After the AI pen, so it listens to the pen alongside it.
+    _sketch = SketchSuggestController(_wb, sketchRecognizerFor(board.handwriting));
     _applyClass();
     // A demo board fetches the English and shape models by itself when it is online.
     if (Demo.enabled) unawaited(autoDownloadDemoModels(board.handwriting, onReady: _pen.modelsChanged));
@@ -297,9 +383,14 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelHost.active = _pushInPanel;
     // The classroom extras (lib/features/extras) and the demo class switcher.
     initBoardExtras();
-    DemoClassSwitcher.attach(board, _onDemoClass);
+    DemoClassSwitcher.attach(board, _onDemoClass, openCurriculum: () => unawaited(_openCurriculumPicker()));
     // A board that starts in the dark or chalkboard theme starts on that theme's paper.
     _followTheme();
+    if (_ctxPick.curriculum != null && _wb.isBlank) _wb.background = _themed(_style.paper);
+    // A demo board opens on the class and subject picker.
+    if (Demo.enabled && curriculumPickerAtDemoStart) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? unawaited(_openCurriculumPicker()) : null);
+    }
     void flush() => unawaited(_autosave.flush());
     _lifecycle = AppLifecycleListener(onInactive: flush, onHide: flush, onPause: flush, onDetach: flush);
     unawaited(_restoreAutosave());
@@ -393,7 +484,7 @@ class _BoardScreenState extends State<BoardScreen> {
     openPhet: _openPhet,
     openAnimations: (topic) => topic == null
         ? _show(PanelKind.animations)
-        : _openPage(LayoutStrings.of(context).tabAnimations, Icons.animation, (c) => animationsPanel(c, wb: _wb, subject: board.session?.subjectName, topic: topic)),
+        : _openPage(LayoutStrings.of(context).tabAnimations, Icons.animation, (c) => animationsPanel(c, wb: _wb, subject: _subjectName, topic: topic)),
     openKit: _openKit,
     openVideos: () => _show(PanelKind.videos),
     openPlan: () => _show(PanelKind.plan),
@@ -503,6 +594,7 @@ class _BoardScreenState extends State<BoardScreen> {
     _zones.removeListener(_onZonesChanged);
     _secondPen.dispose();
     _secondWb.dispose();
+    _sketch.dispose();
     _pen.dispose();
     _wb.dispose();
     _images.dispose();
@@ -640,10 +732,22 @@ class _BoardScreenState extends State<BoardScreen> {
     if (mounted) setState(() {});
   }
 
+  /// The bar's "Download": the sketch model, with the AI pen's download dialog; then the
+  /// drawing that asked is read.
+  Future<void> _downloadSketchModel() async {
+    final ok = await offerSketchModel(context, board.handwriting);
+    if (ok) {
+      await _sketch.modelReady();
+    } else {
+      _sketch.dismiss();
+    }
+  }
+
   /// The AI pen's settings from Board settings. Primary boards have no AI pen (tidying shapes
   /// stays, as an option of the pen).
   void _syncPen() {
     if (_pen.mode != board.aiPenMode) _pen.mode = board.aiPenMode;
+    _sketch.enabled = board.sketchSuggest;
     _pen
       ..language = board.textAiLanguage
       ..domain = inkDomainOf(_ctx.subject)
@@ -854,7 +958,13 @@ class _BoardScreenState extends State<BoardScreen> {
   SubjectToolRunner get _subjectTools =>
       SubjectToolRunner(context: context, wb: _wb, style: _style, primary: _primary, board: board, onOpenKit: (tab) => _openKit(tab));
 
-  /// Edits a selected equation, note, text or spreadsheet.
+  /// The chart pad: a chart from typed, pasted, imported or sample data, put on the board.
+  Future<void> _chartPad() async {
+    final k = await editKit(context, bizPanel(KitKind.chart, _style.accent));
+    if (k != null && mounted) _wb.insert([k]);
+  }
+
+  /// Edits a selected equation, note, text, spreadsheet or business panel.
   Future<void> _editElement(BoardElement e) async {
     switch (e) {
       case MathElement():
@@ -869,8 +979,11 @@ class _BoardScreenState extends State<BoardScreen> {
         _wb.clearSelection();
         _canvasKey.currentState?.startText(e.position, existing: e);
       case SheetElement():
-        final s = await editSheet(context, e);
+        final s = await editSheet(context, e, onChart: (k) => _wb.insert([k]));
         if (s != null) _wb.replace(s);
+      case KitElement():
+        final k = await editKit(context, e);
+        if (k != null) _wb.replace(k);
       default:
         break;
     }
@@ -1283,7 +1396,7 @@ class _BoardScreenState extends State<BoardScreen> {
     // The summary, with the share sheet (WhatsApp) for the notes link and the board PDF.
     if (ended != null && ended['notesSaved'] == true && mounted) {
       final bytes = pdfBytes;
-      await showEndSummary(context, board, ended, pdf: bytes == null ? null : () async => bytes, pdfName: 'KINETIX $title.pdf');
+      await showEndSummary(context, board, ended, pdf: bytes == null ? null : () async => bytes, pdfName: 'Zynetix $title.pdf');
     }
   }
 
@@ -1459,7 +1572,7 @@ class _BoardScreenState extends State<BoardScreen> {
         s.graphTemplates,
         [ToolGroup.maths, ToolGroup.geometry, ToolGroup.science, ToolGroup.commerce],
         maths,
-        _run(() => _openPage(s.graphTemplates, Icons.show_chart, (_) => CanvasTools.graphTemplatesPanel(controller: _wb, subject: board.session?.subjectName))),
+        _run(() => _openPage(s.graphTemplates, Icons.show_chart, (_) => CanvasTools.graphTemplatesPanel(controller: _wb, subject: _subjectName))),
       ),
       DrawerTool(
         'flowchart',
@@ -1493,6 +1606,29 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('spreadsheet', Icons.table_chart_outlined, s.spreadsheet, [ToolGroup.commerce, ToolGroup.maths], com, _run(() => subject(SubjectTool.sheet))),
       DrawerTool('accounts', Icons.account_balance_outlined, l.kitTabName(KitTab.accounts), [ToolGroup.commerce], com, _run(() => _kitAt(KitTab.accounts))),
       DrawerTool('finance', Icons.savings_outlined, l.kitTabName(KitTab.finance), [ToolGroup.commerce], com, _run(() => _kitAt(KitTab.finance))),
+      DrawerTool('chart-pad', Icons.insert_chart_outlined, bizStrings(context)['chartPad'], [ToolGroup.commerce, ToolGroup.maths], com, _run(() => unawaited(_chartPad()))),
+      // Civil engineering
+      DrawerTool('civil-kit', Icons.foundation, civilStrings(context)['kitTitle'], [ToolGroup.science, ToolGroup.maths], sci, _run(() => _civil(CivilSection.beams))),
+      DrawerTool('beam-solver', Icons.horizontal_rule, civilStrings(context)['beamSolver'], [ToolGroup.science], sci, _run(() => _civil(CivilSection.beams))),
+      DrawerTool('truss-solver', Icons.change_history, civilStrings(context)['trussSolver'], [ToolGroup.science], sci, _run(() => _civil(CivilSection.trusses))),
+      DrawerTool('survey-pad', Icons.explore_outlined, civilStrings(context)['surveyPad'], [ToolGroup.maths, ToolGroup.geometry], maths, _run(() => _civil(CivilSection.survey))),
+      DrawerTool('is-codes', Icons.menu_book_outlined, civilStrings(context)['codes'], [ToolGroup.science], sci, _run(() => unawaited(openIsCodes(context, _wb, _style.accent, _boardInk)))),
+      // Mechanical engineering
+      DrawerTool('mech-kit', Icons.precision_manufacturing_outlined, mechStrings(context)['kitTitle'], [ToolGroup.science, ToolGroup.geometry], sci, _run(() => _mech(MechSection.drawing))),
+      DrawerTool('eng-drawing', Icons.grid_4x4, mechStrings(context)['drawingTool'], [ToolGroup.geometry, ToolGroup.science], geo, _run(() => _mech(MechSection.drawing))),
+      DrawerTool('pv-ts-charts', Icons.area_chart_outlined, mechStrings(context)['thermoTool'], [ToolGroup.science], sci, _run(() => _mech(MechSection.thermo))),
+      DrawerTool('fbd', Icons.open_with, mechStrings(context)['fbdTool'], [ToolGroup.science], sci, _run(() => _mech(MechSection.fbd))),
+      // Electrical engineering
+      DrawerTool('eee-kit', Icons.electric_bolt_outlined, eeeStrings(context)['kitTitle'], [ToolGroup.science], sci, _run(() => _eee(EeeSection.symbols))),
+      DrawerTool('phasor', Icons.rotate_right, eeeStrings(context)['phasorTool'], [ToolGroup.science, ToolGroup.maths], sci, _run(() => _eee(EeeSection.rlc))),
+      DrawerTool('single-line-diagram', Icons.electrical_services, eeeStrings(context)['sldTool'], [ToolGroup.science], sci, _run(() => _eee(EeeSection.singleLine))),
+      DrawerTool('waveform-gen', Icons.waves, eeeStrings(context)['waveTool'], [ToolGroup.science, ToolGroup.maths], sci, _run(() => _eee(EeeSection.waveform))),
+      // Electronics and communication
+      DrawerTool('ece-kit', Icons.developer_board_outlined, eceStrings(context)['kitTitle'], [ToolGroup.science, ToolGroup.cs], sci, _run(() => _ece(EceSection.logic))),
+      DrawerTool('signal-plotter', Icons.graphic_eq, eceStrings(context)['signalTool'], [ToolGroup.science, ToolGroup.maths], sci, _run(() => _ece(EceSection.signal))),
+      DrawerTool('bode-plot', Icons.show_chart, eceStrings(context)['bodeTool'], [ToolGroup.science, ToolGroup.maths], sci, _run(() => _ece(EceSection.bode))),
+      DrawerTool('timing-diagram', Icons.stacked_line_chart, eceStrings(context)['timingTool'], [ToolGroup.science, ToolGroup.cs], sci, _run(() => _ece(EceSection.timing))),
+      DrawerTool('mcu-pins', Icons.memory, eceStrings(context)['pinsTool'], [ToolGroup.science, ToolGroup.cs], sci, _run(() => _ece(EceSection.pins))),
       // CS
       DrawerTool('code-lab', Icons.terminal, s.codeLab, [ToolGroup.cs], cs, _run(() => subject(SubjectTool.codeLab))),
       DrawerTool('code', Icons.code, l.subjectToolName(SubjectTool.code), [ToolGroup.cs], cs, _run(() => subject(SubjectTool.code))),
@@ -1501,6 +1637,9 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('logic-gates', Icons.memory_outlined, contextStrings(context)['logicGates'], [ToolGroup.cs, ToolGroup.science], cs, _run(() => _openPage(contextStrings(context)['logicGates'], Icons.memory_outlined, (_) => LogicGatesLab(wb: _wb)))),
       DrawerTool('logic', Icons.developer_board, l.kitTabName(KitTab.logic), [ToolGroup.cs], cs, _run(() => _kitAt(KitTab.logic))),
       DrawerTool('binary', Icons.looks_one_outlined, l.kitTabName(KitTab.binary), [ToolGroup.cs, ToolGroup.maths], cs, _run(() => _kitAt(KitTab.binary))),
+      ...aimlDrawerTools(context, wb: _wb, accent: _style.accent, color: cs, openPage: _openPage, run: (f) => _run(f)()),
+      ...chemDrawerTools(context, wb: _wb, accent: _style.accent, color: sci, openPage: _openPage, run: (f) => _run(f)(), onOpenModel: (id) => _openSplit(SplitContent.model3d, id)),
+      ...evDrawerTools(context, wb: _wb, accent: _style.accent, color: sci, openPage: _openPage, run: (f) => _run(f)(), onOpenModel: (id) => _openSplit(SplitContent.model3d, id)),
       // Class
       for (final t in ToolkitItem.values) DrawerTool('toolkit-${t.name}', toolkitIcon(t), toolkitName(l, t), [ToolGroup.classroom], toolkitColor(t), () => _showKit(t)),
       DrawerTool('badges', Icons.emoji_events_outlined, s.badges, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.badges))),
@@ -1519,6 +1658,7 @@ class _BoardScreenState extends State<BoardScreen> {
       if (!_primary) DrawerTool('move', Icons.pan_tool_outlined, l.toolMove, [ToolGroup.classroom], cls, _run(() => _wb.tool = BoardTool.hand)),
       DrawerTool('eye-comfort', Icons.visibility_outlined, l.toolEyeComfort, [ToolGroup.classroom], cls, () => setState(() => _popover = BoardPopover.eyeComfort)),
       DrawerTool('screenshot', Icons.photo_camera_outlined, l.toolScreenshot, [ToolGroup.classroom], cls, _run(() => unawaited(BoardShot.take(context, _captureScreen)))),
+      DrawerTool('subject-kits', Icons.backpack_outlined, l.curKits, [ToolGroup.classroom], cls, _run(_openSubjectKits)),
       DrawerTool('touch-lock', Icons.lock_outline, l.toolTouchLock, [ToolGroup.classroom], cls, _run(() => setState(() => _touchLocked = true))),
       ...extraDrawerTools(context, _extras, run: (f) => _run(f)()),
     ];
@@ -1539,7 +1679,9 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   /// Tools that lead their group for the period's subject.
-  List<String> get _preferredTools => switch (_style.subject) {
+  List<String> get _preferredTools => [...?_ctx.curriculum?.quickTools, ..._subjectPreferred];
+
+  List<String> get _subjectPreferred => switch (_style.subject) {
     Subject.commerce || Subject.management || Subject.law => const ['spreadsheet', 'formulas', 'accounts'],
     Subject.maths || Subject.statistics => const ['graphs', 'calculator', 'formulas'],
     Subject.physics => const ['physics-formulas', 'sims', 'labs'],
@@ -1564,7 +1706,7 @@ class _BoardScreenState extends State<BoardScreen> {
           ToolEntry(Icons.title, l.toolText, _style.accent, () => _onToolButton(BoardTool.text)),
           ToolEntry(Icons.interests_outlined, l.toolShapes, _style.accent, () => setState(() => _popover = BoardPopover.shapes)),
           ToolEntry(Icons.texture, l.toolTheme, _style.accent, () => setState(() => _popover = BoardPopover.background)),
-          ToolEntry(Icons.photo_library_outlined, l.libTitle, _style.accent, () => unawaited(insertLibraryPicture(context, _wb, subject: board.session?.subjectName))),
+          ToolEntry(Icons.photo_library_outlined, l.libTitle, _style.accent, () => unawaited(insertLibraryPicture(context, _wb, subject: _subjectName))),
           for (final t in _drawerTools(l)) ToolEntry(t.icon, t.label, t.color, t.onTap),
         ],
         kitTabs: kitTabsFor(_style, primary: _primary),
@@ -1708,6 +1850,35 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   /// A tool's content in the panel (graph templates and the like).
+  /// The civil engineering kit as a side page, [first] section on top.
+  void _civil(CivilSection first) => _openPage(
+    civilStrings(context)['kitTitle'],
+    Icons.foundation,
+    (_) => CivilKitPanel(key: ValueKey(first), wb: _wb, board: board, accent: _style.accent, ink: _boardInk, first: first, onOpenModel: (id) => _openSplit(SplitContent.model3d, id)),
+  );
+
+  /// The mechanical engineering kit as a side page, [first] section on top.
+  void _mech(MechSection first) => _openPage(
+    mechStrings(context)['kitTitle'],
+    Icons.precision_manufacturing_outlined,
+    (_) => MechKitPanel(key: ValueKey(first), wb: _wb, accent: _style.accent, first: first, onOpenModel: (id) => _openSplit(SplitContent.model3d, id), onPaper: _setBackground),
+  );
+
+  /// The electrical engineering kit as a side page, [first] section on top.
+  void _ece(EceSection first) => _openPage(
+    eceStrings(context)['kitTitle'],
+    Icons.developer_board_outlined,
+    (_) => EceKitPanel(key: ValueKey(first), wb: _wb, accent: _style.accent, first: first, onOpenLab: () => _runDrawerTool('logic-gates')),
+  );
+
+  void _eee(EeeSection first) => _openPage(
+    eeeStrings(context)['kitTitle'],
+    Icons.electric_bolt_outlined,
+    (_) => EeeKitPanel(key: ValueKey(first), wb: _wb, accent: _style.accent, ink: _boardInk, first: first, onOpenModel: (id) => _openSplit(SplitContent.model3d, id)),
+  );
+
+  Color get _boardInk => _wb.background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
+
   void _openPage(String title, IconData icon, WidgetBuilder builder) {
     _page = (title: title, icon: icon, builder: builder);
     _show(PanelKind.page);
@@ -1829,12 +2000,13 @@ class _BoardScreenState extends State<BoardScreen> {
       secondBoard: _secondBoard(),
       snapshotKey: _splitKey,
       onSnapshot: _snapshotSplit,
+      onRequestModel: () => unawaited(requestModel3d(context, board, subject: modelSubjectKey(_ctx.subject), classLevel: modelLevelKey(_ctx.grade))),
     ),
     PanelKind.videos => ConceptVideosTab(board: board, onAddNote: _addVideoNote),
-    PanelKind.animations => animationsPanel(context, wb: _wb, subject: board.session?.subjectName),
+    PanelKind.animations => animationsPanel(context, wb: _wb, subject: _subjectName),
     PanelKind.badges => BadgesPanel(board: board),
-    PanelKind.phet => PhetPanel(downloads: phetDownloadsFor(board), controller: _phet, subject: board.session?.subjectName),
-    PanelKind.simHub => SimHubPanel(controller: _simHub, page: () => _wb.pageIndex, subject: board.session?.subjectName),
+    PanelKind.phet => PhetPanel(downloads: phetDownloadsFor(board), controller: _phet, subject: _subjectName),
+    PanelKind.simHub => SimHubPanel(controller: _simHub, page: () => _wb.pageIndex, subject: _subjectName),
     PanelKind.sim => SimWindow(
       sim: _sim ?? ActiveSim.of(SimKind.values.first),
       onChanged: (s) => setState(() => _sim = s),
@@ -2083,6 +2255,12 @@ class _BoardScreenState extends State<BoardScreen> {
             child: AiPenOverlay(wb: _wb, pen: _pen, onSolve: _solveMath, onMessage: (m) => showBoardMessage(context, m)),
           ),
         ),
+        // "Did you mean": icons for a sketch drawn with the pen (none where there is no sketch model).
+        Positioned.fill(
+          child: BoardChromeTheme(
+            child: SketchSuggestOverlay(wb: _wb, sketch: _sketch, onDownload: () => unawaited(_downloadSketchModel())),
+          ),
+        ),
         // The class toolkit: its cards, the screen shade and the spotlight (under the toolbars).
         Positioned.fill(
           child: ToolkitLayer(kit: _kit, insets: _wb.safeInsets, onAnswer: board.session == null ? null : board.recordAnswer),
@@ -2278,12 +2456,34 @@ class _BoardScreenState extends State<BoardScreen> {
   static const _drawerOnCatalog = {'calibrate', 'ruler', 'protractor', 'calculator', 'sims', 'labs', 'models3d', 'laser', 'move', 'eye-comfort', 'screenshot', 'toolkit-timer', 'toolkit-stopwatch', 'toolkit-picker', 'toolkit-spotlight'};
 
   /// The ids on the bar for a phone or a panel: the teacher's own, or the default.
-  List<String> _layoutIds({required bool phone, Map<String, BarItem>? catalog}) => ToolbarLayouts.clean(
-    phone ? board.toolbarPhone : board.toolbarPanel,
-    (catalog ?? _catalog()).keys,
-    max: ToolbarLayouts.maxFor(phone: phone),
-    fallback: ToolbarLayouts.defaults(phone: phone, primary: _primary),
-  );
+  List<String> _layoutIds({required bool phone, Map<String, BarItem>? catalog}) {
+    final cat = catalog ?? _catalog();
+    return ToolbarLayouts.clean(
+      phone ? board.toolbarPhone : board.toolbarPanel,
+      cat.keys,
+      max: ToolbarLayouts.maxFor(phone: phone),
+      fallback: _subjectBar(ToolbarLayouts.defaults(phone: phone, primary: _primary), cat, phone: phone),
+    );
+  }
+
+  /// A panel's default toolbar with the picked class and subject's two tools before Tools (in
+  /// place of the laser and redo, which stay in More).
+  List<String> _subjectBar(List<String> ids, Map<String, BarItem> cat, {required bool phone}) {
+    final c = _ctx.curriculum;
+    if (c == null || phone) return ids;
+    final extra = <String>[
+      for (final t in c.toolbar)
+        if (cat.containsKey(t)) t else if (cat.containsKey('drawer:$t')) 'drawer:$t',
+    ].where((t) => !ids.contains(t)).toList();
+    if (extra.isEmpty) return ids;
+    final out = [...ids];
+    for (final drop in const ['laser', 'redo']) {
+      if (out.length + extra.length > ToolbarLayouts.panelMax) out.remove(drop);
+    }
+    final at = out.indexOf('tools');
+    out.insertAll(at < 0 ? out.length : at, extra.take(ToolbarLayouts.panelMax - out.length));
+    return out;
+  }
 
   /// The tools on the bar, in order.
   List<(String, BarItem)> _layoutItems({required bool phone}) {
@@ -2368,6 +2568,10 @@ class _BoardScreenState extends State<BoardScreen> {
                 ),
               ),
               const SizedBox(width: Kx.s8),
+              // Labels while the class bar is short (no class yet) or the board is very wide;
+              // a class's bar (Go live, attendance, time left, audio) keeps its room otherwise.
+              _topActions(labels: width >= (board.session == null ? 1400 : 2200), showZoom: width >= 900),
+              const SizedBox(width: Kx.s8),
               TopRightBar(board: board, onSearch: _openSearch, onProfile: () => _toggle(BoardPopover.profile), profileOpen: _popover == BoardPopover.profile),
             ],
           ),
@@ -2415,6 +2619,21 @@ class _BoardScreenState extends State<BoardScreen> {
     ];
   }
 
+  /// The top bar: Live Quiz, Live Class, Share and Record, and the zoom (top_actions.dart).
+  Widget _topActions({required bool labels, bool showZoom = true, bool collapsed = false}) => TopActionBar(
+    board: board,
+    wb: _wb,
+    recording: _capture != null,
+    labels: labels,
+    showZoom: showZoom,
+    collapsed: collapsed,
+    onLiveQuiz: () => unawaited(openLiveQuiz(context, _classCheck)),
+    onLiveClass: () => unawaited(toggleLiveClass(context, board)),
+    onShareBoard: () => unawaited(_shareWhiteboard()),
+    onCast: () => _show(PanelKind.cast),
+    onRecord: () => unawaited(_toggleRecording()),
+  );
+
   /// The phone bar's tools in the teacher's order (⋯ holds what does not fit and the rest).
   List<BarItem> _barItems() => [for (final (_, i) in _layoutItems(phone: true)) i];
 
@@ -2460,6 +2679,9 @@ class _BoardScreenState extends State<BoardScreen> {
             children: [
               Expanded(child: ClassBar(contextChip: _contextChip(compact: true), board: board, onSignIn: _signIn, onSwitchClass: _signIn, onAttendance: _attendance, phone: true)),
               const SizedBox(width: Kx.s4),
+              // Live Quiz, Live Class, Share and Record behind one button, so nothing floats over the board.
+              _topActions(labels: false, showZoom: false, collapsed: true),
+              const SizedBox(width: Kx.s4),
               TopRightBar(board: board, onSearch: _openSearch, onProfile: () => _toggle(BoardPopover.profile), phone: true, onMenu: () => _toggle(BoardPopover.menu)),
             ],
           ),
@@ -2473,6 +2695,7 @@ class _BoardScreenState extends State<BoardScreen> {
         ),
       if (recording != null)
         Positioned(left: Kx.s8 + safe.left, top: safe.top + 56, child: BoardChromeTheme(child: FittedBox(child: recording))),
+
       if (!_bottomChromeHidden)
         Positioned(
           left: Kx.s8 + safe.left,
@@ -2699,7 +2922,7 @@ class _BoardScreenState extends State<BoardScreen> {
         onToggleAll: () => setState(() => _showAllTools = !_showAllTools),
         extras: [
           InsertExtra(key: const Key('insert-text'), icon: Icons.title, title: l.toolText, hint: l.tapToPlace, onTap: () => _wb.tool = BoardTool.text),
-          ...insertExtras(context, wb: _wb, subject: board.session?.subjectName, onSimulation: () => unawaited(_openSim())),
+          ...insertExtras(context, wb: _wb, subject: _subjectName, onSimulation: () => unawaited(_openSim())),
           InsertExtra(
             key: const Key('insert-background'),
             icon: Icons.texture,

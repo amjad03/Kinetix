@@ -170,7 +170,11 @@ class TeachGraph {
       edges.add((a, b, int.tryParse(m[3] ?? '') ?? 1));
       n = math.max(n, math.max(a, b) + 1);
     }
-    return TeachGraph(n, edges, directed: directed);
+    // A letter on its own is a node without edges yet ("A-B 4, C").
+    for (final m in RegExp(r'(?<![A-Za-z])[A-Za-z](?![A-Za-z])').allMatches(s)) {
+      n = math.max(n, m[0]!.toUpperCase().codeUnitAt(0) - 64);
+    }
+    return TeachGraph(math.min(n, 26), edges, directed: directed);
   }
 
   GraphView view({Map<int, Mark> marks = const {}, Map<int, Mark> edgeMarks = const {}, List<int?> dist = const [], List<int> frontier = const [], List<int> output = const []}) =>

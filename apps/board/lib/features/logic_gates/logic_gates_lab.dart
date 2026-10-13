@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
@@ -8,74 +9,22 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../l10n/feature_strings.dart';
 import '../board/chrome.dart' show showBoardMessage;
 import '../extras/board_table.dart';
-import 'logic_circuit.dart';
+import 'logic_strings.dart';
 
-FeatureStrings logicStrings(BuildContext context) => FeatureStrings(boardLang(context), logicStringTable);
+export 'logic_strings.dart';
 
-const logicStringTable = <String, Map<String, String>>{
-  'en': {
-    'title': 'Logic gates',
-    'input': 'Switch',
-    'clock': 'Clock',
-    'led': 'LED',
-    'step': 'Clock step',
-    'run': 'Run clock',
-    'stop': 'Stop clock',
-    'table': 'Truth table',
-    'canvas': 'Circuit',
-    'delete': 'Delete part',
-    'clear': 'Clear',
-    'toBoard': 'Truth table to board',
-    'placed': 'Truth table added to the board',
-    'hint': 'Drag from a round pin on the right of a part to a pin on the left of another to wire them. Tap a switch to flip it.',
-    'tooMany': 'The truth table needs 4 inputs or fewer, and at least one LED.',
-    'tableHint': 'The row for the switches now is highlighted.',
-  },
-  'hi': {
-    'title': 'लॉजिक गेट',
-    'input': 'स्विच',
-    'clock': 'क्लॉक',
-    'led': 'एलईडी',
-    'step': 'क्लॉक का एक चरण',
-    'run': 'क्लॉक चलाएँ',
-    'stop': 'क्लॉक रोकें',
-    'table': 'सत्यता सारणी',
-    'canvas': 'परिपथ',
-    'delete': 'हिस्सा हटाएँ',
-    'clear': 'साफ़ करें',
-    'toBoard': 'सत्यता सारणी बोर्ड पर',
-    'placed': 'सत्यता सारणी बोर्ड पर जोड़ दी गई',
-    'hint': 'किसी हिस्से के दाएँ गोल पिन से दूसरे के बाएँ पिन तक खींचकर तार जोड़ें। स्विच को छूकर पलटें।',
-    'tooMany': 'सत्यता सारणी के लिए 4 या कम इनपुट और कम से कम एक एलईडी चाहिए।',
-    'tableHint': 'अभी के स्विच वाली पंक्ति चिह्नित है।',
-  },
-  'kn': {
-    'title': 'ಲಾಜಿಕ್ ಗೇಟ್‌ಗಳು',
-    'input': 'ಸ್ವಿಚ್',
-    'clock': 'ಕ್ಲಾಕ್',
-    'led': 'ಎಲ್‌ಇಡಿ',
-    'step': 'ಕ್ಲಾಕ್ ಹಂತ',
-    'run': 'ಕ್ಲಾಕ್ ಓಡಿಸಿ',
-    'stop': 'ಕ್ಲಾಕ್ ನಿಲ್ಲಿಸಿ',
-    'table': 'ಸತ್ಯ ಕೋಷ್ಟಕ',
-    'canvas': 'ಸರ್ಕ್ಯೂಟ್',
-    'delete': 'ಭಾಗ ಅಳಿಸಿ',
-    'clear': 'ಅಳಿಸಿ',
-    'toBoard': 'ಸತ್ಯ ಕೋಷ್ಟಕ ಬೋರ್ಡ್‌ಗೆ',
-    'placed': 'ಸತ್ಯ ಕೋಷ್ಟಕವನ್ನು ಬೋರ್ಡ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ',
-    'hint': 'ಒಂದು ಭಾಗದ ಬಲದ ಸುತ್ತಿನ ಪಿನ್‌ನಿಂದ ಇನ್ನೊಂದರ ಎಡ ಪಿನ್‌ಗೆ ಎಳೆದು ತಂತಿ ಜೋಡಿಸಿ. ಸ್ವಿಚ್ ಒತ್ತಿ ಬದಲಿಸಿ.',
-    'tooMany': 'ಸತ್ಯ ಕೋಷ್ಟಕಕ್ಕೆ 4 ಅಥವಾ ಕಡಿಮೆ ಇನ್‌ಪುಟ್ ಮತ್ತು ಕನಿಷ್ಠ ಒಂದು ಎಲ್‌ಇಡಿ ಬೇಕು.',
-    'tableHint': 'ಈಗಿನ ಸ್ವಿಚ್‌ಗಳ ಸಾಲು ಗುರುತಾಗಿದೆ.',
-  },
-};
-
-/// Interactive logic gates: drop gates, switches, a clock and LEDs on the circuit board, wire
-/// them by dragging from a part's output pin to another's input pin, flip the switches and watch the
-/// signals (green is 1) and LEDs follow at once. A truth table shows every case and can go on the board.
+/// Interactive logic gates: drop gates (2 to 8 inputs), switches, clocks, LEDs, 7-segment
+/// displays and flip-flops on the circuit board, or a ready circuit (adders, MUX/DEMUX,
+/// encoder/decoder, counters, a shift register), or type an expression to have it built; wire
+/// them by dragging from a part's output pin to another's input pin, flip the switches, step or
+/// run the clock and watch the signals (green is 1). Below: the truth table, the expression of
+/// each output with its minimal SOP/POS and K-map, and the timing diagram of the clocked run;
+/// each can go on the board, and the circuit itself as a live panel that opens here again.
 class LogicGatesLab extends StatefulWidget {
-  const LogicGatesLab({super.key, required this.wb, this.circuit});
+  const LogicGatesLab({super.key, this.wb, this.circuit});
 
-  final WhiteboardController wb;
+  /// Where the board buttons put things (none when the lab edits a board panel).
+  final WhiteboardController? wb;
   final LogicCircuit? circuit;
 
   @override
@@ -84,17 +33,22 @@ class LogicGatesLab extends StatefulWidget {
 
 enum _Drag { none, move, wire }
 
+enum _Pane { none, table, algebra, timing }
+
 class _LogicGatesLabState extends State<LogicGatesLab> {
   late final LogicCircuit c = widget.circuit ?? LogicCircuit();
   String? _selected;
-  bool _showTable = false;
+  _Pane _pane = _Pane.none;
   Timer? _clock;
+  int _out = 0;
+  int _cycles = 8;
+  final _expr = TextEditingController();
 
   _Drag _drag = _Drag.none;
   String? _dragPart;
   Offset _dragAt = Offset.zero;
   Offset _grab = Offset.zero;
-  String? _wireFrom;
+  ({String id, int pin})? _wireFrom;
 
   /// How near a finger must land to take a pin (a fingertip on a panel, not a mouse point).
   static const _pinHit = 22.0;
@@ -102,6 +56,7 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
   @override
   void dispose() {
     _clock?.cancel();
+    _expr.dispose();
     super.dispose();
   }
 
@@ -116,41 +71,65 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
     });
   }
 
-  /// A free spot for a new part: down the left for inputs, middle for gates, right for LEDs.
+  /// A free spot for a new part: down the left for inputs, middle for gates, right for outputs.
   Offset _spot(PartKind k) {
     final same = c.parts.where((p) => p.kind == k).length;
     final x = switch (k) {
       PartKind.input || PartKind.clock => 24.0,
-      PartKind.gate => 220.0 + (same % 3) * 140,
-      PartKind.led => 640.0,
+      PartKind.gate || PartKind.flipFlop => 220.0 + (same % 3) * 140,
+      PartKind.led || PartKind.segment7 => 640.0,
     };
     return Offset(x, 30 + (same % 6) * 90.0 + (k == PartKind.clock ? 30 : 0));
   }
 
-  void _add(PartKind k, {GateType? gate}) {
-    setState(() => _selected = c.add(k, _spot(k) , gate: gate).id);
+  void _add(PartKind k, {GateType? gate, FlipFlopType? flipFlop}) {
+    setState(() => _selected = c.add(k, _spot(k), gate: gate, flipFlop: flipFlop).id);
+  }
+
+  void _load(LogicCircuit other) {
+    _clock?.cancel();
+    setState(() {
+      _clock = null;
+      c.replaceWith(other);
+      _selected = null;
+      _out = 0;
+    });
+  }
+
+  void _build() {
+    final s = logicStrings(context);
+    try {
+      final p = parseLogic(_expr.text);
+      final vars = p.expr.variables..sort();
+      if (vars.length > 8) throw const FormatException('Too many variables');
+      _load(circuitFromExpr(p.expr, vars: vars, output: p.output ?? 'Q1')..title = _expr.text.trim());
+    } on FormatException {
+      showBoardMessage(context, s['badExpr']);
+    }
   }
 
   /// The output pin nearest [p], if one is in reach.
-  LogicPart? _outAt(Offset p) {
-    LogicPart? best;
+  ({LogicPart part, int pin})? _outAt(Offset p) {
+    ({LogicPart part, int pin})? best;
     var bestD = _pinHit;
     for (final x in c.parts.reversed) {
-      final d = (x.outPin - p).distance;
-      if (x.hasOutput && d <= bestD) {
-        best = x;
-        bestD = d;
+      for (var k = 0; k < x.outputCount; k++) {
+        final d = (x.outPinAt(k) - p).distance;
+        if (d <= bestD) {
+          best = (part: x, pin: k);
+          bestD = d;
+        }
       }
     }
     return best;
   }
 
-  /// The input pin nearest [p], if one is in reach (a gate's two inputs are close together).
+  /// The input pin nearest [p], if one is in reach (a gate's inputs are close together).
   ({LogicPart part, int pin})? _inAt(Offset p, {String? except}) {
     ({LogicPart part, int pin})? best;
     var bestD = _pinHit;
     for (final x in c.parts.reversed) {
-      if (x.id == except) continue;
+      if (x.id == except && x.kind != PartKind.flipFlop) continue;
       for (var i = 0; i < x.inputCount; i++) {
         final d = (x.inPin(i) - p).distance;
         if (d < bestD) {
@@ -169,22 +148,21 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
     final inPin = _inAt(p);
     final outPin = _outAt(p);
     // Where an output and an input pin are both in reach, the nearer one is meant.
-    if (inPin != null && (outPin == null || (inPin.part.inPin(inPin.pin) - p).distance <= (outPin.outPin - p).distance)) {
-      final from = c.detach(inPin.part.id, inPin.pin);
-      if (from != null) {
+    if (inPin != null && (outPin == null || (inPin.part.inPin(inPin.pin) - p).distance <= (outPin.part.outPinAt(outPin.pin) - p).distance)) {
+      final w = c.detachWire(inPin.part.id, inPin.pin);
+      if (w != null) {
         setState(() {
           _drag = _Drag.wire;
-          _wireFrom = from;
+          _wireFrom = (id: w.from, pin: w.fromPin);
           _dragAt = p;
         });
         return;
       }
     }
-    final out = outPin;
-    if (out != null) {
+    if (outPin != null) {
       setState(() {
         _drag = _Drag.wire;
-        _wireFrom = out.id;
+        _wireFrom = (id: outPin.part.id, pin: outPin.pin);
         _dragAt = p;
       });
       return;
@@ -214,9 +192,10 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
   }
 
   void _end(Offset p) {
-    if (_drag == _Drag.wire && _wireFrom != null) {
-      final target = _inAt(p, except: _wireFrom);
-      if (target != null) c.connect(_wireFrom!, target.part.id, target.pin);
+    final from = _wireFrom;
+    if (_drag == _Drag.wire && from != null) {
+      final target = _inAt(p, except: from.id);
+      if (target != null) c.connect(from.id, target.part.id, target.pin, fromPin: from.pin);
     }
     setState(() {
       _drag = _Drag.none;
@@ -229,29 +208,49 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
     final body = _bodyAt(p);
     setState(() {
       _selected = body?.id;
-      if (body != null && (body.kind == PartKind.input || body.kind == PartKind.clock)) body.value = !body.value;
+      if (body != null && (body.kind == PartKind.input || body.kind == PartKind.clock)) c.flip(body);
     });
   }
 
+  Color get _accent => Theme.of(context).colorScheme.primary;
+
   void _tableToBoard() {
     final s = logicStrings(context);
-    final rows = c.truthTable();
+    final wb = widget.wb;
+    final rows = c.truthTable(maxInputs: 6);
+    if (wb == null) return;
     if (rows.isEmpty || c.leds.isEmpty) {
       showBoardMessage(context, s['tooMany']);
       return;
     }
-    final ink = widget.wb.background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
-    widget.wb.insert(boardTable([
+    final ink = wb.background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
+    wb.insert(boardTable([
       [for (final i in c.inputs) i.label, for (final l in c.leds) l.label],
       for (final r in rows) [for (final b in [...r.ins, ...r.outs]) b ? '1' : '0'],
     ], ink, size: 26, header: const Color(0x334F8CFF)));
     showBoardMessage(context, s['placed']);
   }
 
+  void _circuitToBoard() {
+    widget.wb?.insert([KitElement.sized(kind: KitKind.logicCircuit, data: c.toJson(), color: _accent)]);
+    showBoardMessage(context, logicStrings(context)['circuitPlaced']);
+  }
+
+  void _timingToBoard() {
+    widget.wb?.insert([KitElement.sized(kind: KitKind.timing, data: simulateTiming(c, cycles: _cycles, title: c.title.isEmpty ? 'Timing diagram' : c.title).toJson(), color: _accent)]);
+    showBoardMessage(context, logicStrings(context)['timingPlaced']);
+  }
+
+  void _pick(_Pane p) => setState(() => _pane = _pane == p ? _Pane.none : p);
+
   @override
   Widget build(BuildContext context) {
     final s = logicStrings(context);
     final v = c.evaluate();
+    final scheme = Theme.of(context).colorScheme;
+    final sel = _selected == null ? null : c.part(_selected!);
+    final grows = sel != null && sel.kind == PartKind.gate && gateGrows(sel.gate!);
+    final hasBoard = widget.wb != null;
     final parts = [
       for (final g in GateType.values)
         Padding(
@@ -261,22 +260,65 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
       _btn(const Key('lg-add-input'), Icons.toggle_on_outlined, s['input'], () => _add(PartKind.input)),
       _btn(const Key('lg-add-clock'), Icons.schedule, s['clock'], () => _add(PartKind.clock)),
       _btn(const Key('lg-add-led'), Icons.lightbulb_outline, s['led'], () => _add(PartKind.led)),
+      _btn(const Key('lg-add-seg'), Icons.looks_one_outlined, s['segment'], () => _add(PartKind.segment7)),
+      Padding(
+        padding: const EdgeInsets.only(right: 6),
+        child: PopupMenuButton<FlipFlopType>(
+          key: const Key('lg-add-ff'),
+          tooltip: s['flipFlop'],
+          onSelected: (t) => _add(PartKind.flipFlop, flipFlop: t),
+          itemBuilder: (_) => [for (final t in FlipFlopType.values) PopupMenuItem(key: Key('lg-add-ff-${t.name}'), value: t, child: Text('${flipFlopName(t)} ${s['flipFlop']}'))],
+          child: _menuFace(Icons.memory, s['flipFlop']),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(right: 6),
+        child: PopupMenuButton<LogicPreset>(
+          key: const Key('lg-presets'),
+          tooltip: s['presets'],
+          onSelected: (p) => _load(logicPreset(p)),
+          itemBuilder: (_) => [for (final p in LogicPreset.values) PopupMenuItem(key: Key('lg-preset-${p.name}'), value: p, child: Text(logicPresetName(p)))],
+          child: _menuFace(Icons.auto_awesome_mosaic_outlined, s['presets']),
+        ),
+      ),
     ];
     final actions = [
       _btn(const Key('lg-step'), Icons.skip_next, s['step'], () => setState(c.tick)),
       _btn(const Key('lg-run'), _clock == null ? Icons.play_arrow : Icons.pause, _clock == null ? s['run'] : s['stop'], _toggleClock),
-      _btn(const Key('lg-table'), Icons.table_chart_outlined, s['table'], () => setState(() => _showTable = !_showTable)),
-      _btn(const Key('lg-to-board'), Icons.dashboard_customize_outlined, s['toBoard'], _tableToBoard),
+      _btn(const Key('lg-reset'), Icons.restart_alt, s['reset'], () => setState(c.reset)),
+      _iconBtn(const Key('lg-in-minus'), Icons.remove, s['inputsLess'], grows && sel.inputCount > 2 ? () => setState(() => c.setInputs(sel.id, sel.inputCount - 1)) : null),
+      _iconBtn(const Key('lg-in-plus'), Icons.add, s['inputsMore'], grows && sel.inputCount < maxGateInputs ? () => setState(() => c.setInputs(sel.id, sel.inputCount + 1)) : null),
+      _btn(const Key('lg-table'), Icons.table_chart_outlined, s['table'], () => _pick(_Pane.table), on: _pane == _Pane.table),
+      _btn(const Key('lg-algebra'), Icons.functions, s['algebra'], () => _pick(_Pane.algebra), on: _pane == _Pane.algebra),
+      _btn(const Key('lg-timing'), Icons.stacked_line_chart, s['timing'], () => _pick(_Pane.timing), on: _pane == _Pane.timing),
+      if (hasBoard) ...[
+        _btn(const Key('lg-to-board'), Icons.dashboard_customize_outlined, s['toBoard'], _tableToBoard),
+        _btn(const Key('lg-circuit-to-board'), Icons.developer_board, s['circuitToBoard'], c.parts.isEmpty ? null : _circuitToBoard),
+        _btn(const Key('lg-timing-to-board'), Icons.timeline, s['timingToBoard'], c.parts.isEmpty ? null : _timingToBoard),
+      ],
       _btn(const Key('lg-delete'), Icons.delete_outline, s['delete'], _selected == null ? null : () => setState(() {
         c.remove(_selected!);
         _selected = null;
       })),
-      _btn(const Key('lg-clear'), Icons.clear_all, s['clear'], () => setState(() {
-        c.parts.clear();
-        c.wires.clear();
-        _selected = null;
-      })),
+      _btn(const Key('lg-clear'), Icons.clear_all, s['clear'], () => _load(LogicCircuit())),
     ];
+    final exprRow = Padding(
+      padding: const EdgeInsets.fromLTRB(Kx.s8, Kx.s8, Kx.s8, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              key: const Key('lg-expr'),
+              controller: _expr,
+              decoration: InputDecoration(isDense: true, labelText: s['expr'], hintText: s['exprHint']),
+              onSubmitted: (_) => _build(),
+            ),
+          ),
+          const SizedBox(width: Kx.s8),
+          FilledButton.icon(key: const Key('lg-build'), onPressed: _build, icon: const Icon(Icons.build_outlined, size: 18), label: Text(s['build'])),
+        ],
+      ),
+    );
     // Every button in sight where there is room (a panel, a tablet); a phone scrolls each row
     // sideways so the circuit keeps its room.
     Widget row(List<Widget> children, EdgeInsets padding) => LayoutBuilder(
@@ -284,12 +326,14 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
           ? Padding(padding: padding, child: Wrap(runSpacing: 6, children: children))
           : SingleChildScrollView(scrollDirection: Axis.horizontal, padding: padding, child: Row(children: children)),
     );
+    final pal = LogicPalette(ink: scheme.onSurface, surface: scheme.surface, body: scheme.surfaceContainerHigh, raised: scheme.surfaceContainerHighest, primary: scheme.primary);
     return Column(
       key: const Key('logic-gates'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         row(parts, const EdgeInsets.all(Kx.s8)),
         row(actions, const EdgeInsets.symmetric(horizontal: Kx.s8)),
+        exprRow,
         Padding(padding: const EdgeInsets.all(Kx.s8), child: Text(s['hint'], style: context.text.bodySmall)),
         const Divider(height: 1),
         Expanded(
@@ -306,23 +350,40 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
               onPanEnd: (_) => _end(_dragAt),
               child: CustomPaint(
                 size: Size.infinite,
-                painter: _CircuitPainter(c, v, _selected, _wireFrom == null ? null : (c.part(_wireFrom!)!.outPin, _dragAt), Theme.of(context).colorScheme),
+                painter: _CircuitPainter(c, v, _selected, switch (_wireFrom) {
+                  final f? when c.part(f.id) != null => (c.part(f.id)!.outPinAt(f.pin), _dragAt),
+                  _ => null,
+                }, pal),
               ),
             ),
           ),
         ),
-        if (_showTable) Expanded(flex: 2, child: _tableView(context, s, v)),
+        if (_pane != _Pane.none) const Divider(height: 1),
+        if (_pane == _Pane.table) Expanded(flex: 2, child: _tableView(context, s)),
+        if (_pane == _Pane.algebra) Expanded(flex: 2, child: _algebraView(context, s)),
+        if (_pane == _Pane.timing) Expanded(flex: 2, child: _timingView(context, s)),
       ],
     );
   }
 
-  Widget _btn(Key key, IconData icon, String label, VoidCallback? onTap) => Padding(
-    padding: const EdgeInsets.only(right: 6),
-    child: OutlinedButton.icon(key: key, onPressed: onTap, icon: Icon(icon, size: 18), label: Text(label)),
+  Widget _menuFace(IconData icon, String label) => IgnorePointer(
+    child: OutlinedButton.icon(onPressed: () {}, icon: Icon(icon, size: 18), label: Text('$label ▾')),
   );
 
-  Widget _tableView(BuildContext context, FeatureStrings s, Map<String, bool> v) {
-    final rows = c.truthTable();
+  Widget _btn(Key key, IconData icon, String label, VoidCallback? onTap, {bool on = false}) => Padding(
+    padding: const EdgeInsets.only(right: 6),
+    child: on
+        ? FilledButton.tonalIcon(key: key, onPressed: onTap, icon: Icon(icon, size: 18), label: Text(label))
+        : OutlinedButton.icon(key: key, onPressed: onTap, icon: Icon(icon, size: 18), label: Text(label)),
+  );
+
+  Widget _iconBtn(Key key, IconData icon, String tip, VoidCallback? onTap) => Padding(
+    padding: const EdgeInsets.only(right: 6),
+    child: IconButton.outlined(key: key, tooltip: tip, onPressed: onTap, icon: Icon(icon, size: 18)),
+  );
+
+  Widget _tableView(BuildContext context, FeatureStrings s) {
+    final rows = c.truthTable(maxInputs: 6);
     if (rows.isEmpty || c.leds.isEmpty) return Center(key: const Key('lg-table-empty'), child: Text(s['tooMany']));
     final now = [for (final i in c.inputs) i.value];
     String bit(bool b) => b ? '1' : '0';
@@ -332,127 +393,176 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DataTable(
-            columns: [for (final p in [...c.inputs, ...c.leds]) DataColumn(label: Text(p.label, style: const TextStyle(fontWeight: FontWeight.bold)))],
-            rows: [
-              for (final (i, r) in rows.indexed)
-                DataRow(
-                  selected: [for (var k = 0; k < now.length; k++) now[k] == r.ins[k]].every((x) => x),
-                  cells: [for (final (k, b) in [...r.ins, ...r.outs].indexed) DataCell(Text(bit(b), key: k == 0 ? ValueKey('lg-row-$i') : null))],
-                ),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: [for (final p in [...c.inputs, ...c.leds]) DataColumn(label: Text(p.label, style: const TextStyle(fontWeight: FontWeight.bold)))],
+              rows: [
+                for (final (i, r) in rows.indexed)
+                  DataRow(
+                    selected: [for (var k = 0; k < now.length; k++) now[k] == r.ins[k]].every((x) => x),
+                    cells: [for (final (k, b) in [...r.ins, ...r.outs].indexed) DataCell(Text(bit(b), key: k == 0 ? ValueKey('lg-row-$i') : null))],
+                  ),
+              ],
+            ),
           ),
           Text(s['tableHint'], style: context.text.bodySmall),
         ],
       ),
     );
   }
+
+  static const _groupColors = [Color(0xFF1565C0), Color(0xFFC62828), Color(0xFF2E7D32), Color(0xFF8E24AA), Color(0xFFEF6C00), Color(0xFF00838F), Color(0xFF6D4C41), Color(0xFFAD1457)];
+
+  Widget _algebraView(BuildContext context, FeatureStrings s) {
+    final leds = c.leds;
+    if (leds.isEmpty) return Center(key: const Key('lg-algebra-empty'), child: Text(s['noOutputs']));
+    final led = leds[_out.clamp(0, leds.length - 1)];
+    final vars = [for (final p in c.inputs) p.label];
+    final n = vars.length;
+    final tableOk = n >= 1 && n <= 6;
+    final ms = tableOk ? c.mintermsOf(led) : <int>{};
+    final terms = tableOk ? minimise(n, ms) : const <Implicant>[];
+    final sop = tableOk ? sopText(terms, vars, allOnes: ms.length == 1 << n) : '—';
+    final pos = tableOk ? posText(n, ms, vars) : '—';
+    final mono = context.text.bodyLarge?.copyWith(fontWeight: FontWeight.w600);
+    Widget line(String k, String label, String value) => Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text.rich(TextSpan(children: [TextSpan(text: '$label:  ', style: context.text.bodySmall), TextSpan(text: value, style: mono)]), key: Key(k)),
+    );
+    return SingleChildScrollView(
+      key: const Key('lg-algebra-view'),
+      padding: const EdgeInsets.all(Kx.s12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (leds.length > 1)
+            Wrap(
+              spacing: 6,
+              children: [
+                Text('${s['output']}: '),
+                for (final (i, l) in leds.indexed) ChoiceChip(key: Key('lg-out-$i'), label: Text(l.label), selected: led == l, onSelected: (_) => setState(() => _out = i)),
+              ],
+            ),
+          line('lg-expr-wiring', s['fromWiring'], '${led.label} = ${c.expressionOf(led.id)}'),
+          line('lg-expr-sop', s['minimalSop'], '${led.label} = $sop'),
+          line('lg-expr-pos', s['minimalPos'], '${led.label} = $pos'),
+          if (tableOk) line('lg-minterms', s['minterms'], 'Σm(${(ms.toList()..sort()).join(', ')})'),
+          const SizedBox(height: Kx.s8),
+          Text(s['kmap'], style: context.text.titleSmall),
+          const SizedBox(height: Kx.s8),
+          if (n < 2 || n > 4) Text(s['kmapNeeds'], key: const Key('lg-kmap-none')) else _kmap(context, s, n, vars, ms, terms),
+        ],
+      ),
+    );
+  }
+
+  Widget _kmap(BuildContext context, FeatureStrings s, int n, List<String> vars, Set<int> ms, List<Implicant> terms) {
+    final (rows, cols) = kmapShape(n);
+    final rowBits = n ~/ 2, colBits = n - rowBits;
+    final rowL = kmapLabels(rowBits), colL = kmapLabels(colBits);
+    final scheme = Theme.of(context).colorScheme;
+    const cell = 52.0;
+    Widget box(Widget child, {Color? fill, List<Color> rings = const []}) {
+      Widget w = Container(width: cell, height: cell, alignment: Alignment.center, decoration: BoxDecoration(color: fill, border: Border.all(color: scheme.outlineVariant)), child: child);
+      for (final (i, r) in rings.indexed) {
+        w = Stack(alignment: Alignment.center, children: [w, IgnorePointer(child: Container(width: cell - 6 - i * 8, height: cell - 6 - i * 8, decoration: BoxDecoration(border: Border.all(color: r, width: 2.5), borderRadius: BorderRadius.circular(8))))]);
+      }
+      return w;
+    }
+
+    final corner = '${vars.take(rowBits).join()}\\${vars.skip(rowBits).join()}';
+    return Column(
+      key: const Key('lg-kmap'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            children: [
+              Row(children: [box(Text(corner, style: context.text.labelSmall)), for (final l in colL) box(Text(l, style: const TextStyle(fontWeight: FontWeight.bold)))]),
+              for (var r = 0; r < rows; r++)
+                Row(
+                  children: [
+                    box(Text(rowL[r], style: const TextStyle(fontWeight: FontWeight.bold))),
+                    for (var col = 0; col < cols; col++)
+                      () {
+                        final m = kmapMinterm(n, r, col);
+                        final rings = [for (final (i, t) in terms.indexed) if (t.covers(m)) _groupColors[i % _groupColors.length]];
+                        return KeyedSubtree(
+                          key: Key('lg-kmap-$m'),
+                          child: box(Text(ms.contains(m) ? '1' : '0', style: TextStyle(fontWeight: ms.contains(m) ? FontWeight.bold : FontWeight.normal)), fill: ms.contains(m) ? scheme.primaryContainer.withValues(alpha: 0.5) : null, rings: rings),
+                        );
+                      }(),
+                  ],
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: Kx.s12,
+          children: [for (final (i, t) in terms.indexed) Text(t.term(vars), style: TextStyle(color: _groupColors[i % _groupColors.length], fontWeight: FontWeight.bold))],
+        ),
+        Text(s['groups'], style: context.text.bodySmall),
+      ],
+    );
+  }
+
+  Widget _timingView(BuildContext context, FeatureStrings s) {
+    final d = simulateTiming(c, cycles: _cycles, title: c.title.isEmpty ? 'Timing diagram' : c.title);
+    final e = KitElement.sized(kind: KitKind.timing, data: d.toJson(), color: _accent);
+    return Column(
+      key: const Key('lg-timing-view'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Kx.s12),
+          child: Row(
+            children: [
+              Text('${s['cycles']}: $_cycles'),
+              Expanded(child: Slider(key: const Key('lg-cycles'), value: _cycles.toDouble(), min: 2, max: 32, divisions: 30, onChanged: (x) => setState(() => _cycles = x.round()))),
+            ],
+          ),
+        ),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final n = e.naturalSize;
+              final k = math.min(box.maxWidth / n.width, box.maxHeight / n.height);
+              return Center(child: CustomPaint(size: Size(n.width * k, n.height * k), painter: _KitPainter(e)));
+            },
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-/// Draws the wires (green for 1, grey for 0), then the parts with their gate symbols, pins and LEDs.
+/// A board panel drawn at a given size (the lab's timing diagram).
+class _KitPainter extends CustomPainter {
+  _KitPainter(this.e);
+  final KitElement e;
+
+  @override
+  void paint(Canvas canvas, Size size) => paintKit(canvas, e.copyWith(rect: Offset.zero & size));
+
+  @override
+  bool shouldRepaint(_KitPainter old) => old.e.data != e.data;
+}
+
+/// The circuit board: the shared circuit painter in the theme's colours.
 class _CircuitPainter extends CustomPainter {
-  _CircuitPainter(this.c, this.v, this.selected, this.rubber, this.scheme);
+  _CircuitPainter(this.c, this.v, this.selected, this.rubber, this.pal);
 
   final LogicCircuit c;
   final Map<String, bool> v;
   final String? selected;
   final (Offset, Offset)? rubber;
-  final ColorScheme scheme;
-
-  static const on = Color(0xFF2E9E4F), off = Color(0xFF8A8F98);
+  final LogicPalette pal;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    void wire(Offset a, Offset b, Color color) {
-      final dx = (b.dx - a.dx).abs().clamp(30, 200) / 2;
-      final path = Path()
-        ..moveTo(a.dx, a.dy)
-        ..cubicTo(a.dx + dx, a.dy, b.dx - dx, b.dy, b.dx, b.dy);
-      canvas.drawPath(path, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 4..strokeCap = StrokeCap.round);
-    }
-
-    for (final w in c.wires) {
-      final a = c.part(w.from), b = c.part(w.to);
-      if (a == null || b == null) continue;
-      wire(a.outPin, b.inPin(w.pin), (v[w.from] ?? false) ? on : off);
-    }
-    if (rubber case (final a, final b)) wire(a, b, scheme.primary);
-    for (final p in c.parts) {
-      _part(canvas, p, v[p.id] ?? false);
-    }
-  }
-
-  void _part(Canvas canvas, LogicPart p, bool high) {
-    final line = Paint()..color = scheme.onSurface..style = PaintingStyle.stroke..strokeWidth = 3;
-    final r = p.rect;
-    final sel = p.id == selected;
-    if (sel) canvas.drawRRect(RRect.fromRectAndRadius(r.inflate(8), const Radius.circular(10)), Paint()..color = scheme.primary.withValues(alpha: 0.18));
-    switch (p.kind) {
-      case PartKind.gate:
-        _gate(canvas, p, line);
-      case PartKind.input:
-      case PartKind.clock:
-        final body = RRect.fromRectAndRadius(r, const Radius.circular(22));
-        canvas.drawRRect(body, Paint()..color = high ? on : scheme.surfaceContainerHighest);
-        canvas.drawRRect(body, line);
-        _text(canvas, '${p.label} ${high ? 1 : 0}', r.center, high ? Colors.white : scheme.onSurface, 16);
-      case PartKind.led:
-        canvas.drawCircle(r.center, 18, Paint()..color = high ? const Color(0xFFFFC107) : scheme.surfaceContainerHighest);
-        if (high) canvas.drawCircle(r.center, 26, Paint()..color = const Color(0x55FFC107));
-        canvas.drawCircle(r.center, 18, line);
-        _text(canvas, p.label, r.center + const Offset(0, 34), scheme.onSurface, 13);
-    }
-    final pin = Paint()..color = scheme.primary;
-    for (var i = 0; i < p.inputCount; i++) {
-      canvas.drawCircle(p.inPin(i), 6, pin);
-    }
-    if (p.hasOutput) canvas.drawCircle(p.outPin, 6, pin);
-  }
-
-  void _gate(Canvas canvas, LogicPart p, Paint line) {
-    final r = p.rect;
-    final g = p.gate!;
-    final inverted = g == GateType.nand || g == GateType.nor || g == GateType.xnor || g == GateType.not;
-    final bodyRight = inverted ? r.right - 10 : r.right;
-    final path = Path();
-    switch (g) {
-      case GateType.and || GateType.nand:
-        path
-          ..moveTo(r.left, r.top)
-          ..lineTo((r.left + bodyRight) / 2, r.top)
-          ..arcToPoint(Offset((r.left + bodyRight) / 2, r.bottom), radius: Radius.circular(r.height / 2))
-          ..lineTo(r.left, r.bottom)
-          ..close();
-      case GateType.or || GateType.nor || GateType.xor || GateType.xnor:
-        path
-          ..moveTo(r.left, r.top)
-          ..quadraticBezierTo((r.left + bodyRight) / 2 + 8, r.top, bodyRight, r.center.dy)
-          ..quadraticBezierTo((r.left + bodyRight) / 2 + 8, r.bottom, r.left, r.bottom)
-          ..quadraticBezierTo(r.left + 18, r.center.dy, r.left, r.top)
-          ..close();
-      case GateType.not || GateType.buffer:
-        path
-          ..moveTo(r.left, r.top + 6)
-          ..lineTo(bodyRight, r.center.dy)
-          ..lineTo(r.left, r.bottom - 6)
-          ..close();
-    }
-    canvas.drawPath(path, Paint()..color = scheme.surfaceContainerHigh);
-    canvas.drawPath(path, line);
-    if (g == GateType.xor || g == GateType.xnor) {
-      canvas.drawPath(Path()..moveTo(r.left - 8, r.top)..quadraticBezierTo(r.left + 10, r.center.dy, r.left - 8, r.bottom), line);
-    }
-    if (inverted) {
-      canvas.drawCircle(Offset(r.right - 5, r.center.dy), 5, Paint()..color = scheme.surface);
-      canvas.drawCircle(Offset(r.right - 5, r.center.dy), 5, line);
-    }
-    _text(canvas, gateName(g), r.center + const Offset(-2, 0), scheme.onSurface, g == GateType.buffer || g == GateType.xnor ? 10 : 12);
-  }
-
-  void _text(Canvas canvas, String t, Offset centre, Color color, double size) {
-    final tp = TextPainter(text: TextSpan(text: t, style: TextStyle(color: color, fontSize: size, fontWeight: FontWeight.w600)), textDirection: TextDirection.ltr)..layout();
-    tp.paint(canvas, centre - Offset(tp.width / 2, tp.height / 2));
-  }
+  void paint(Canvas canvas, Size size) => paintLogicParts(canvas, c, v, pal, selected: selected, rubber: rubber);
 
   @override
   bool shouldRepaint(_CircuitPainter old) => true;

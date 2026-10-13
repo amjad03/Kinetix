@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'KINETIX Board';
+  String get appTitle => 'Zynetix';
 
   @override
   String get cancel => 'Cancel';
@@ -2653,14 +2653,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kioskSettingsHint =>
-      'Keeps students in KINETIX Board and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.';
+      'Keeps students in Zynetix and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.';
 
   @override
-  String get kioskStatusLocked => 'On: this device is locked to KINETIX Board.';
+  String get kioskStatusLocked => 'On: this device is locked to Zynetix.';
 
   @override
   String get kioskStatusPinned =>
-      'On: screen pinning. For a full lock, make KINETIX Board the device owner (see the kiosk guide).';
+      'On: screen pinning. For a full lock, make Zynetix the device owner (see the kiosk guide).';
 
   @override
   String get kioskStatusOff => 'Off';
@@ -4447,4 +4447,410 @@ class AppLocalizationsEn extends AppLocalizations {
   String setUpAgainBody(String server) {
     return 'The board stops using $server and the teacher is signed out. Then enter the server address and a new enrolment code from KINETIX ERP (Boards → New enrolment code).';
   }
+
+  @override
+  String get topLiveQuiz => 'Live Quiz';
+
+  @override
+  String get topLiveQuizTooltip => 'Ask the class a quiz question';
+
+  @override
+  String get topLiveClass => 'Live Class';
+
+  @override
+  String get topLiveClassTooltip =>
+      'Go live: the class sees the board and hears you';
+
+  @override
+  String get topLiveNow => 'Live';
+
+  @override
+  String get topLiveNeedsSignIn => 'Sign in to go live with your class';
+
+  @override
+  String get topShare => 'Share';
+
+  @override
+  String get topShareBoard => 'Share board notes';
+
+  @override
+  String get topShareBoardHint => 'PDF, link, QR code or WhatsApp';
+
+  @override
+  String get topCastScreen => 'Cast a screen';
+
+  @override
+  String get topCastScreenHint => 'Show a laptop or phone on the board';
+
+  @override
+  String topCasting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count screens cast',
+      one: '1 screen cast',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get topRecording => 'Recording';
+
+  @override
+  String get topRecordTooltip => 'Record the lesson: the board and your voice';
+
+  @override
+  String get topStopRecordingTooltip => 'Stop recording';
+
+  @override
+  String topZoomTooltip(int percent) {
+    return 'Zoom $percent%. Tap for 100%';
+  }
+
+  @override
+  String get topBarLabel => 'Class actions';
+
+  @override
+  String get model3dReady => 'Ready';
+
+  @override
+  String get model3dSaved => 'Saved offline';
+
+  @override
+  String model3dCloud(String size) {
+    return 'Online · $size';
+  }
+
+  @override
+  String get model3dDownload => 'Download for offline use';
+
+  @override
+  String model3dDownloading(int percent) {
+    return 'Downloading $percent%';
+  }
+
+  @override
+  String model3dDownloadFailed(String name) {
+    return 'Could not download $name. Check the internet and try again.';
+  }
+
+  @override
+  String model3dDownloadAll(String size) {
+    return 'Download all for offline ($size)';
+  }
+
+  @override
+  String get model3dAllSaved => 'Every model works offline';
+
+  @override
+  String get model3dRequest => 'Request a 3D model';
+
+  @override
+  String get model3dRequestHint =>
+      'Tell us which model you need. The content team sees every request from your school.';
+
+  @override
+  String get model3dRequestName => 'Model name';
+
+  @override
+  String get model3dRequestNameHint => 'For example: muscular system';
+
+  @override
+  String get model3dRequestNameNeeded => 'Enter the model\'s name';
+
+  @override
+  String get model3dRequestSubject => 'Subject';
+
+  @override
+  String get model3dRequestClass => 'Class';
+
+  @override
+  String get model3dRequestAny => 'Any';
+
+  @override
+  String get model3dRequestNote => 'Note (optional)';
+
+  @override
+  String get model3dRequestSend => 'Send request';
+
+  @override
+  String get model3dRequestSent =>
+      'Request sent. If the board is offline it goes when the board is back online.';
+
+  @override
+  String get model3dRequestNeedsSignIn => 'Sign in to request a model.';
+
+  @override
+  String get model3dRequestFailed => 'Could not send the request. Try again.';
+
+  @override
+  String get sketchSuggestTitle => 'Did you mean?';
+
+  @override
+  String sketchSuggestUse(String name) {
+    return 'Use $name';
+  }
+
+  @override
+  String get sketchSuggestSwitch => 'Suggest icons for sketches';
+
+  @override
+  String get sketchSuggestSwitchHint =>
+      'After you draw with the pen, pick a clean icon to take the drawing\'s place. Drawings are recognised on this board; no ink leaves it.';
+
+  @override
+  String get sketchSuggestUnavailable =>
+      'Sketch icons work on Android panels, where the board can recognise drawings.';
+
+  @override
+  String get sketchModelName => 'Sketches';
+
+  @override
+  String get sketchModelTitle => 'Set up sketch icons?';
+
+  @override
+  String get sketchModelBody =>
+      'Zynetix recognises what you draw on this device. Download the sketch model once (a few MB); after that it works with no internet, and no ink leaves the device.';
+
+  @override
+  String get sketchModelDownload => 'Download sketch icons';
+
+  @override
+  String get quizSetupHint =>
+      'Pick or write questions. Students answer in the Student App, or hold up answer cards.';
+
+  @override
+  String get quizTopic => 'Topic';
+
+  @override
+  String get quizMakeQuestions => 'Make questions';
+
+  @override
+  String get quizFromBank => 'Saved questions';
+
+  @override
+  String get quizNoSuggestions => 'No saved questions for this class yet';
+
+  @override
+  String get quizAddQuestion => 'Add a question';
+
+  @override
+  String get quizQuestionLabel => 'Question';
+
+  @override
+  String quizOptionHint(String letter) {
+    return 'Answer $letter';
+  }
+
+  @override
+  String get quizRightAnswer => 'Right answer';
+
+  @override
+  String get quizAddThis => 'Add to the game';
+
+  @override
+  String quizQuestionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count questions',
+      one: '1 question',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get quizSeconds => 'Time for each question';
+
+  @override
+  String quizSecondsValue(int n) {
+    return '$n s';
+  }
+
+  @override
+  String get quizUseCards => 'Answer cards too';
+
+  @override
+  String get quizUseCardsHint =>
+      'Students without phones hold up their cards; scan them before you show the answer. Cards score without the speed bonus.';
+
+  @override
+  String get quizStartGame => 'Start the game';
+
+  @override
+  String get quizNeedsQuestion => 'Add at least one question';
+
+  @override
+  String quizQuestionOf(int n, int total) {
+    return 'Question $n of $total';
+  }
+
+  @override
+  String get quizJoinApp => 'Open the Student App to play';
+
+  @override
+  String get quizJoinCards => 'No phone? Hold up your answer card';
+
+  @override
+  String get quizBegin => 'Start';
+
+  @override
+  String get quizShowAnswer => 'Show the answer';
+
+  @override
+  String get quizTimeUp => 'Time\'s up';
+
+  @override
+  String get quizNext => 'Next';
+
+  @override
+  String get quizNextQuestion => 'Next question';
+
+  @override
+  String get quizFinalResults => 'Final results';
+
+  @override
+  String get quizLeaderboard => 'Leaderboard';
+
+  @override
+  String get quizWinners => 'Winners';
+
+  @override
+  String quizPoints(int n) {
+    return '$n pts';
+  }
+
+  @override
+  String quizStreak(int n) {
+    return '$n in a row';
+  }
+
+  @override
+  String get quizEndGame => 'End the game';
+
+  @override
+  String get quizSaved => 'Saved to the class results';
+
+  @override
+  String get quizNotSaved =>
+      'Not saved: no class open on the server. Answer cards only.';
+
+  @override
+  String get quizServerRetry =>
+      'Could not reach the server. Tap again to try once more.';
+
+  @override
+  String get quizNoAnswers => 'No one answered';
+
+  @override
+  String quizAnsweredCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count answered',
+      one: '1 answered',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get curTitle => 'Choose class and subject';
+
+  @override
+  String get curSchool => 'School';
+
+  @override
+  String get curCollege => 'College';
+
+  @override
+  String get curPostgrad => 'Postgraduate';
+
+  @override
+  String curClassN(int n) {
+    return 'Class $n';
+  }
+
+  @override
+  String curSemN(int n) {
+    return 'Sem $n';
+  }
+
+  @override
+  String get curPickSubject => 'Pick a subject';
+
+  @override
+  String get curBack => 'Back';
+
+  @override
+  String curFromTimetable(String label) {
+    return 'From the timetable: $label';
+  }
+
+  @override
+  String get curUseTimetable => 'Use the timetable';
+
+  @override
+  String get curOtherSubject => 'Other subject or class';
+
+  @override
+  String get curDemoDay => 'Classes of the demo day';
+
+  @override
+  String get curKits => 'This subject\'s kits';
+
+  @override
+  String get curInUpdate => 'Coming in an update';
+
+  @override
+  String get curChange => 'Change class or subject';
+
+  @override
+  String curSet(String label) {
+    return 'Board set up for $label';
+  }
+
+  @override
+  String get curToolsKits => 'Tools and kits';
+
+  @override
+  String get curLabsSims => 'Labs and simulations';
+
+  @override
+  String get curModels => '3D models';
+
+  @override
+  String get curSoonBeam => 'Beam BMD and SFD';
+
+  @override
+  String get curSoonDrawing => 'Engineering drawing grid';
+
+  @override
+  String get curSoonPvTs => 'P-V and T-S charts';
+
+  @override
+  String get curSoonFbd => 'Free-body diagrams';
+
+  @override
+  String get curSoonPhasor => 'Phasor diagrams';
+
+  @override
+  String get curSoonSld => 'Single-line diagram';
+
+  @override
+  String get curSoonWaveform => 'Waveform generator';
+
+  @override
+  String get curSoonSignal => 'Signal, FFT and Bode plotter';
+
+  @override
+  String get curSoonMcu => 'Microcontroller pin diagrams';
+
+  @override
+  String get curSoonNn => 'Neural network builder';
+
+  @override
+  String get curSoonPfd => 'Process flow diagram kit';
+
+  @override
+  String get curSoonEv => 'EV diagrams';
 }

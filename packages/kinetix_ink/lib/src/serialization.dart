@@ -258,6 +258,14 @@ Map<String, dynamic> encodeElement(BoardElement e, {Object? Function(Uint8List b
     if (e.rotation != 0) 'a': _round3(e.rotation),
   },
   SheetElement() => encodeSheet(e),
+  KitElement() => {
+    't': 'kit',
+    'r': _rect(e.rect),
+    'k': e.kind.name,
+    'd': e.data,
+    'c': e.color.toARGB32(),
+    if (e.rotation != 0) 'a': _round3(e.rotation),
+  },
   FlowNodeElement() => {
     't': 'flow',
     'id': e.id,
@@ -325,6 +333,7 @@ Map<String, dynamic> encodeSheet(SheetElement e) {
     if (e.formats.any((f) => f != SheetFormat.general)) 'fm': [for (final f in e.formats) f.name],
     if (e.widths.any((w) => w != SheetElement.defaultColumnWidth)) 'cw': [for (final w in e.widths) _round1(w)],
     if (!e.header) 'h': false,
+    if (e.cellFormats.isNotEmpty) 'cf': [for (final en in e.cellFormats.entries) ...[en.key, en.value.name]],
     if (e.chart != null) 'ch': {'k': e.chart!.kind.name, 'l': e.chart!.labels, 'v': e.chart!.values},
     'out': [for (var r = 0; r < e.rows; r++) for (var c = 0; c < e.cols; c++) displaySheetCell(e, r, c)],
     if (chart != null) 'cv': {'l': chart.labels, 'v': chart.values},
@@ -487,12 +496,28 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
           header: j['h'] != false,
           chart: kind == null ? null : SheetChart(kind: kind, labels: '${ch['l'] ?? ''}', values: '${ch['v'] ?? ''}'),
           rotation: angle,
+          cellFormats: _readCellFormats(j['cf']),
         );
+      case 'kit':
+        final rect = _readRect(j['r']);
+        final kind = KitKind.values.asNameMap()[j['k']];
+        final data = j['d'];
+        if (rect == null || kind == null || data is! Map) return null;
+        return KitElement(id: id, rect: rect, kind: kind, data: Map<String, Object?>.from(data), color: color(), rotation: angle);
     }
   } on Object {
     // A malformed element from a newer or broken writer: skip it, keep the board.
   }
   return null;
+}
+
+/// A sheet's own cell formats, saved as a flat list of index, format-name pairs.
+Map<int, SheetFormat> _readCellFormats(Object? j) {
+  if (j is! List) return const {};
+  return {
+    for (var i = 0; i + 1 < j.length; i += 2)
+      if (j[i] is num && SheetFormat.values.asNameMap()[j[i + 1]] != null) (j[i] as num).toInt(): SheetFormat.values.asNameMap()[j[i + 1]]!,
+  };
 }
 
 /// Coloured sides saved as a flat list of index, colour pairs.

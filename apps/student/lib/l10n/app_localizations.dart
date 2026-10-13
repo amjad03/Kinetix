@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// No description provided for @today.
   ///
@@ -7785,10 +7778,171 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not available today'**
   String get dishSoldOut;
+
+  /// No description provided for @liveQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Quiz'**
+  String get liveQuiz;
+
+  /// No description provided for @liveQuizTapToJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher started a game. Tap to play'**
+  String get liveQuizTapToJoin;
+
+  /// No description provided for @liveQuizPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher started a Live Quiz on the board. Join now to play.'**
+  String get liveQuizPromptBody;
+
+  /// No description provided for @liveQuizJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get liveQuizJoin;
+
+  /// No description provided for @liveQuizNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get liveQuizNotNow;
+
+  /// No description provided for @liveQuizQuestionOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n} of {total}'**
+  String liveQuizQuestionOf(int n, int total);
+
+  /// No description provided for @liveQuizWaitingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your teacher to start the game'**
+  String get liveQuizWaitingStart;
+
+  /// No description provided for @liveQuizReadBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the question on the board, then tap your answer'**
+  String get liveQuizReadBoard;
+
+  /// No description provided for @liveQuizOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer {letter}: {option}'**
+  String liveQuizOption(Object letter, Object option);
+
+  /// No description provided for @liveQuizAnswerSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer sent'**
+  String get liveQuizAnswerSent;
+
+  /// No description provided for @liveQuizWaitReveal.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch the board for the right answer'**
+  String get liveQuizWaitReveal;
+
+  /// No description provided for @liveQuizTimeUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Time is up'**
+  String get liveQuizTimeUp;
+
+  /// No description provided for @liveQuizNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer did not go through. Try again.'**
+  String get liveQuizNotSent;
+
+  /// No description provided for @liveQuizCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct!'**
+  String get liveQuizCorrect;
+
+  /// No description provided for @liveQuizWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Not this time'**
+  String get liveQuizWrong;
+
+  /// No description provided for @liveQuizNoAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'You did not answer'**
+  String get liveQuizNoAnswer;
+
+  /// No description provided for @liveQuizPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'+{n} points'**
+  String liveQuizPoints(int n);
+
+  /// No description provided for @liveQuizScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score: {n}'**
+  String liveQuizScore(int n);
+
+  /// No description provided for @liveQuizRank.
+  ///
+  /// In en, this message translates to:
+  /// **'You are number {n}'**
+  String liveQuizRank(int n);
+
+  /// No description provided for @liveQuizStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} right in a row'**
+  String liveQuizStreak(int n);
+
+  /// No description provided for @liveQuizWaitNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the next question'**
+  String get liveQuizWaitNext;
+
+  /// No description provided for @liveQuizOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Quiz over'**
+  String get liveQuizOver;
+
+  /// No description provided for @liveQuizFinalRank.
+  ///
+  /// In en, this message translates to:
+  /// **'You came number {n}'**
+  String liveQuizFinalRank(int n);
+
+  /// No description provided for @liveQuizFinalCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'{correct} of {count} right'**
+  String liveQuizFinalCorrect(int correct, int count);
+
+  /// No description provided for @liveQuizCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher ended the game'**
+  String get liveQuizCancelled;
+
+  /// No description provided for @liveQuizTopPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Top of the class'**
+  String get liveQuizTopPlayers;
+
+  /// No description provided for @liveQuizDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get liveQuizDone;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -7797,8 +7951,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

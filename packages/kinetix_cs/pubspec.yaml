@@ -8,6 +8,8 @@ environment:
   flutter: ">=3.35.0"
 
 dependencies:
+  # Checks the SHA-256 of Python's files when they are fetched (python_runtime.dart).
+  crypto: ^3.0.6
   flutter:
     sdk: flutter
   http: ^1.6.0
@@ -18,6 +20,8 @@ dependencies:
     path: ../kinetix_labs
   kinetix_ui:
     path: ../kinetix_ui
+  # Finds the school code box on the network (mDNS, pure Dart, BSD-3, by the Flutter team).
+  multicast_dns: ^0.3.3
   # SQL runs on SQLite on the device (the library is bundled by the package's build hook).
   sqlite3: ^3.7.0
   # Python (Pyodide) and JavaScript run in the system WebView on Android and WebView2 on

@@ -237,6 +237,9 @@ class AssessmentGenerator {
     );
   }
 
+  /// Up to [count] multiple-choice questions on [topic] and where they came from (the Live Quiz uses them too).
+  Future<(List<QuizQuestion>, QuestionSource)> choices(String topic, int count) => _choices(topic, count);
+
   Future<(List<QuizQuestion>, QuestionSource)> _choices(String topic, int count) async {
     (List<QuizQuestion>, QuestionSource)? local() {
       final b = bank?.call(topic) ?? const [];

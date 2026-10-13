@@ -443,7 +443,7 @@ class SeatingChartPanelState extends State<SeatingChartPanel> {
     final image = await boundary.toImage(pixelRatio: 2);
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     if (data == null) return;
-    await SeatingShare.share('KINETIX seating plan.png', data.buffer.asUint8List(), 'image/png');
+    await SeatingShare.share('Zynetix seating plan.png', data.buffer.asUint8List(), 'image/png');
   }
 
   void toBoard() {

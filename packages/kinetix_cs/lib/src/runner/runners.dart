@@ -4,7 +4,9 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
+import 'code_box.dart';
 import 'protocol.dart';
+import 'python_runtime.dart';
 import 'runner_page.dart';
 import 'sql_runner.dart';
 
@@ -47,6 +49,11 @@ class WebRunner implements CodeRunner {
       await _open();
       _page.eval('kx.warm()');
     } catch (_) {}
+  }
+
+  /// Drops the page's Python, so Python downloaded since is used by the next run.
+  void reset() {
+    if (_page != null && _opening != null) _page.eval('kx.reset()');
   }
 
   @override
@@ -122,34 +129,80 @@ class ServerRunner implements CodeRunner {
   void dispose() => stop();
 }
 
-/// The code lab's runner: each language where it runs (the decision is HYBRID: Python,
-/// JavaScript and SQL on the device, offline; C, C++ and Java on the server in India).
+/// Where [l] can run, best first: on the device when it runs there ([deviceReady]), then the
+/// school code box when it runs [l] ([boxLanguages], null: no box), then the KINETIX server
+/// for C, C++ and Java ([hasServer]). Empty: nowhere, and [whyNot] says what to do.
+List<RunPlace> routeFor(CodeLanguage l, {required bool deviceReady, Set<CodeLanguage>? boxLanguages, bool hasServer = false}) => [
+  if (l.onDevice && deviceReady) RunPlace.device,
+  if (boxLanguages?.contains(l) ?? false) RunPlace.box,
+  if (hasServer && !l.onDevice) RunPlace.server,
+];
+
+/// Why [l] cannot run anywhere: 'needsPython' (get Python for offline use, or a code box),
+/// 'noWebView' (JavaScript on a device without a WebView), or 'needsBox' (C, C++, Java).
+String whyNot(CodeLanguage l, {required bool webView}) => switch (l) {
+  CodeLanguage.python when webView => 'needsPython',
+  CodeLanguage.python || CodeLanguage.javascript => 'noWebView',
+  _ => 'needsBox',
+};
+
+/// The code lab's runner. Each run goes to the first place in [routeFor] that can take it and
+/// falls back to the next when that one cannot be reached: Python, JavaScript and SQL on the
+/// device (offline), C, C++ and Java on the school code box on the local network, then the
+/// KINETIX server. The result says where it ran ([RunResult.place]).
 class HybridRunner implements CodeRunner {
-  HybridRunner({required this.web, required this.sql, this.server});
+  HybridRunner({required this.web, required this.sql, this.server, this.box, this.python});
 
   final WebRunner web;
   final SqlRunner sql;
 
-  /// Null when the app has no server (demo mode): C, C++ and Java are then unavailable.
+  /// Null when the app has no server (demo mode).
   final ServerRunner? server;
+
+  /// Null when the app does not look for a school code box.
+  final CodeBoxRunner? box;
+
+  /// Where Python comes from on the device (null: assume the page has it).
+  final PythonRuntime? python;
   CodeRunner? _active;
 
-  CodeRunner? runnerFor(CodeLanguage l) => switch (l) {
-    CodeLanguage.python || CodeLanguage.javascript => web,
-    CodeLanguage.sql => sql,
-    _ => server,
+  /// Whether [l] can run on the device now.
+  Future<bool> deviceReady(CodeLanguage l) async => switch (l) {
+    CodeLanguage.sql => true,
+    CodeLanguage.javascript => web.available,
+    CodeLanguage.python => web.available && (python == null || await python!.locate() != null),
+    _ => false,
+  };
+
+  /// The places [l] would run, in order.
+  Future<List<RunPlace>> plan(CodeLanguage l) async =>
+      routeFor(l, deviceReady: await deviceReady(l), boxLanguages: box == null ? null : await box!.languages(), hasServer: server != null);
+
+  CodeRunner _runner(RunPlace p, CodeLanguage l) => switch (p) {
+    RunPlace.device => l == CodeLanguage.sql ? sql : web,
+    RunPlace.box => box!,
+    RunPlace.server => server!,
   };
 
   @override
   Future<RunResult> run(RunRequest r) async {
-    final runner = runnerFor(r.language);
-    if (runner == null) return const RunResult(status: RunStatus.unavailable, message: 'noServer');
-    _active = runner;
-    try {
-      return await runner.run(r);
-    } finally {
-      if (_active == runner) _active = null;
+    RunResult? last, keyRefused;
+    for (final place in await plan(r.language)) {
+      final runner = _active = _runner(place, r.language);
+      try {
+        final res = await runner.run(r);
+        if (res.status != RunStatus.unavailable) return res.at(place);
+        last = res;
+        if (res.message == 'boxKey') keyRefused = res;
+      } finally {
+        if (_active == runner) _active = null;
+      }
     }
+    // A wrong box key and signing in are things the teacher can fix now; anything else is
+    // the code box or Python.
+    if (keyRefused != null) return keyRefused;
+    if (last?.message == 'signIn' && box == null) return last!;
+    return RunResult(status: RunStatus.unavailable, message: whyNot(r.language, webView: web.available));
   }
 
   bool get running => _active != null;
@@ -162,5 +215,6 @@ class HybridRunner implements CodeRunner {
     web.dispose();
     sql.dispose();
     server?.dispose();
+    box?.dispose();
   }
 }

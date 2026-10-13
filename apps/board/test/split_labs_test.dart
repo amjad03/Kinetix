@@ -48,6 +48,8 @@ void main() {
       await tapBoard(tester, 'panel-tab-model3d');
       expect(find.byKey(const Key('catalogue-model3d')), findsOneWidget);
       await tester.scrollUntilVisible(find.byKey(const Key('pick-solid.cone')), 200, scrollable: find.descendant(of: find.byKey(const Key('catalogue-model3d')), matching: find.byType(Scrollable)).first);
+      // The models are a grid of tall tiles: let the scroll to the tile lay out before tapping it.
+      await tester.pump();
       await tester.tap(find.byKey(const Key('pick-solid.cone')));
       await settle(tester);
       expect(find.byType(SolidExplorer), findsOneWidget);

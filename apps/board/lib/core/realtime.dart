@@ -14,6 +14,7 @@ abstract final class RealtimeEvents {
   static const liveAudioState = 'live.audio.state';
   static const liveAudio = 'live.audio';
   static const pollAnswered = 'poll.answered';
+  static const gameAnswered = 'game.answered';
   static const remoteCommand = 'remote.command';
   static const remoteState = 'remote.state';
   static const castPending = 'cast.pending';

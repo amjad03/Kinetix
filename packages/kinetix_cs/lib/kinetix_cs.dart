@@ -4,10 +4,15 @@
 library;
 
 export 'src/algo/frames.dart';
+export 'src/algo/more.dart';
 export 'src/algo/sorting.dart';
 export 'src/algo/structures.dart';
 export 'src/algo/trees_graphs.dart';
+export 'src/runner/code_box.dart';
+export 'src/runner/code_box_mdns.dart';
+export 'src/runner/issues.dart';
 export 'src/runner/protocol.dart';
+export 'src/runner/python_runtime.dart';
 export 'src/runner/runner_page.dart';
 export 'src/runner/runners.dart';
 export 'src/runner/sample_databases.dart';
@@ -23,4 +28,5 @@ export 'src/ui/code_lab.dart';
 export 'src/ui/diagrams.dart';
 export 'src/ui/draw.dart';
 export 'src/ui/elements_view.dart';
+export 'src/ui/pseudocode.dart';
 export 'src/ui/sims.dart';

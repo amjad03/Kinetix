@@ -1,0 +1,86 @@
+# KINETIX school code box: compiles and runs the code lab's C, C++ and Java (and Python and
+# SQL) for the boards on the school network, with no internet needed
+# (docs/operations/school-code-box.md). On any spare PC with Docker, from the repo root:
+#
+#   docker compose -f infra/school-code-box/docker-compose.yml up -d --build
+#
+# Then on each board: Settings → School code box → Find (or type this PC's address).
+#
+# Two containers share a Unix socket:
+#   runner   services/code-runner/server.mjs: NO network at all, read-only, non-root, no
+#            capabilities, seccomp (no sockets but the Unix one), memory/CPU/process caps, and
+#            per-program limits (docs/operations/code-runner.md).
+#   gateway  services/code-runner/gateway.mjs: the only thing on the network (port 8181);
+#            checks the box key, limits runs per board, serves Python's files to the boards.
+# Settings go in a .env file next to this one (see .env.example).
+
+name: kinetix-code-box
+
+services:
+  runner:
+    image: kinetix-code-box:${KINETIX_TAG:-local}
+    build:
+      context: ../..
+      dockerfile: services/code-runner/Dockerfile
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+        EXTRA_PACKAGES: python3 sqlite3
+    network_mode: none
+    read_only: true
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=../docker/code-runner-seccomp.json
+    tmpfs:
+      - /tmp:rw,exec,nosuid,nodev,size=256m,mode=1777
+    environment:
+      CODE_RUNNER_SOCKET: /run/kx-runner/runner.sock
+      CODE_RUNNER_TOKEN: ${CODE_RUNNER_TOKEN:-school-box-runner-token}
+      # Programs at once (one per CPU core is a good start), and how many may wait.
+      RUN_CONCURRENCY: ${RUN_CONCURRENCY:-2}
+      RUN_QUEUE: ${RUN_QUEUE:-32}
+    volumes:
+      - runner-sock:/run/kx-runner
+    mem_limit: ${RUNNER_MEMORY:-1g}
+    memswap_limit: ${RUNNER_MEMORY:-1g}
+    cpus: ${RUNNER_CPUS:-2}
+    pids_limit: 256
+    ulimits:
+      nofile: { soft: 1024, hard: 1024 }
+    restart: unless-stopped
+
+  gateway:
+    image: kinetix-code-box:${KINETIX_TAG:-local}
+    command: ["node", "gateway.mjs"]
+    depends_on: [runner]
+    read_only: true
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "${CODE_BOX_PORT:-8181}:8181"
+    environment:
+      GATEWAY_PORT: "8181"
+      CODE_RUNNER_SOCKET: /run/kx-runner/runner.sock
+      CODE_RUNNER_TOKEN: ${CODE_RUNNER_TOKEN:-school-box-runner-token}
+      # Boards need this key (Settings → School code box → Key). Empty: any board on the network.
+      CODE_BOX_KEY: ${CODE_BOX_KEY:-}
+      CODE_BOX_NAME: ${CODE_BOX_NAME:-School code box}
+      RUN_PER_MINUTE: ${RUN_PER_MINUTE:-30}
+      PYODIDE_DIR: /srv/pyodide
+    volumes:
+      - runner-sock:/run/kx-runner
+      # Python for the boards (./fetch-pyodide.sh puts it here); optional.
+      - ./pyodide:/srv/pyodide:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:8181/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    mem_limit: 256m
+    restart: unless-stopped
+
+volumes:
+  runner-sock:

@@ -10,7 +10,7 @@ class AppLocalizationsKn extends AppLocalizations {
   AppLocalizationsKn([String locale = 'kn']) : super(locale);
 
   @override
-  String get appTitle => 'KINETIX Board';
+  String get appTitle => 'Zynetix';
 
   @override
   String get cancel => 'ರದ್ದುಮಾಡಿ';
@@ -2639,14 +2639,14 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get kioskSettingsHint =>
-      'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು KINETIX Board ನಲ್ಲೇ ಇರಿಸುತ್ತದೆ ಮತ್ತು ವಿದ್ಯುತ್ ಹೋದ ನಂತರ ಅದನ್ನು ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ. ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇದನ್ನು KINETIX ERP → ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆನ್ ಮಾಡಿ IT PIN ಹೊಂದಿಸುತ್ತದೆ.';
+      'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು Zynetix ನಲ್ಲೇ ಇರಿಸುತ್ತದೆ ಮತ್ತು ವಿದ್ಯುತ್ ಹೋದ ನಂತರ ಅದನ್ನು ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ. ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇದನ್ನು KINETIX ERP → ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆನ್ ಮಾಡಿ IT PIN ಹೊಂದಿಸುತ್ತದೆ.';
 
   @override
-  String get kioskStatusLocked => 'ಆನ್: ಈ ಸಾಧನ KINETIX Board ಗೆ ಲಾಕ್ ಆಗಿದೆ.';
+  String get kioskStatusLocked => 'ಆನ್: ಈ ಸಾಧನ Zynetix ಗೆ ಲಾಕ್ ಆಗಿದೆ.';
 
   @override
   String get kioskStatusPinned =>
-      'ಆನ್: ಸ್ಕ್ರೀನ್ ಪಿನ್ನಿಂಗ್. ಪೂರ್ಣ ಲಾಕ್‌ಗಾಗಿ KINETIX Board ಅನ್ನು ಡಿವೈಸ್ ಓನರ್ ಮಾಡಿ (ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿ ನೋಡಿ).';
+      'ಆನ್: ಸ್ಕ್ರೀನ್ ಪಿನ್ನಿಂಗ್. ಪೂರ್ಣ ಲಾಕ್‌ಗಾಗಿ Zynetix ಅನ್ನು ಡಿವೈಸ್ ಓನರ್ ಮಾಡಿ (ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿ ನೋಡಿ).';
 
   @override
   String get kioskStatusOff => 'ಆಫ್';
@@ -4435,4 +4435,413 @@ class AppLocalizationsKn extends AppLocalizations {
   String setUpAgainBody(String server) {
     return 'ಬೋರ್ಡ್ $server ಬಳಸುವುದನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ ಮತ್ತು ಶಿಕ್ಷಕರು ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ. ನಂತರ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು KINETIX ERP ಯಿಂದ ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (ಬೋರ್ಡ್‌ಗಳು → ಹೊಸ ನೋಂದಣಿ ಕೋಡ್) ನಮೂದಿಸಿ.';
   }
+
+  @override
+  String get topLiveQuiz => 'ಲೈವ್ ಕ್ವಿಜ್';
+
+  @override
+  String get topLiveQuizTooltip => 'ತರಗತಿಗೆ ಕ್ವಿಜ್ ಪ್ರಶ್ನೆ ಕೇಳಿ';
+
+  @override
+  String get topLiveClass => 'ಲೈವ್ ತರಗತಿ';
+
+  @override
+  String get topLiveClassTooltip =>
+      'ಲೈವ್ ಹೋಗಿ: ತರಗತಿ ಬೋರ್ಡ್ ನೋಡುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮನ್ನು ಕೇಳುತ್ತದೆ';
+
+  @override
+  String get topLiveNow => 'ಲೈವ್';
+
+  @override
+  String get topLiveNeedsSignIn =>
+      'ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಲೈವ್ ಹೋಗಲು ಸೈನ್ ಇನ್ ಮಾಡಿ';
+
+  @override
+  String get topShare => 'ಹಂಚಿಕೊಳ್ಳಿ';
+
+  @override
+  String get topShareBoard => 'ಬೋರ್ಡ್ ಟಿಪ್ಪಣಿಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ';
+
+  @override
+  String get topShareBoardHint => 'PDF, ಲಿಂಕ್, QR ಕೋಡ್ ಅಥವಾ ವಾಟ್ಸ್‌ಆ್ಯಪ್';
+
+  @override
+  String get topCastScreen => 'ಪರದೆ ಕ್ಯಾಸ್ಟ್ ಮಾಡಿ';
+
+  @override
+  String get topCastScreenHint =>
+      'ಲ್ಯಾಪ್‌ಟಾಪ್ ಅಥವಾ ಫೋನ್ ಅನ್ನು ಬೋರ್ಡ್‌ನಲ್ಲಿ ತೋರಿಸಿ';
+
+  @override
+  String topCasting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಪರದೆಗಳು ಕ್ಯಾಸ್ಟ್ ಆಗುತ್ತಿವೆ',
+      one: '1 ಪರದೆ ಕ್ಯಾಸ್ಟ್ ಆಗುತ್ತಿದೆ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get topRecording => 'ರೆಕಾರ್ಡ್ ಆಗುತ್ತಿದೆ';
+
+  @override
+  String get topRecordTooltip =>
+      'ಪಾಠವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ: ಬೋರ್ಡ್ ಮತ್ತು ನಿಮ್ಮ ಧ್ವನಿ';
+
+  @override
+  String get topStopRecordingTooltip => 'ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ';
+
+  @override
+  String topZoomTooltip(int percent) {
+    return 'ಜೂಮ್ $percent%. 100% ಗಾಗಿ ಟ್ಯಾಪ್ ಮಾಡಿ';
+  }
+
+  @override
+  String get topBarLabel => 'ತರಗತಿ ಕ್ರಿಯೆಗಳು';
+
+  @override
+  String get model3dReady => 'ಸಿದ್ಧ';
+
+  @override
+  String get model3dSaved => 'ಆಫ್‌ಲೈನ್ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String model3dCloud(String size) {
+    return 'ಆನ್‌ಲೈನ್ · $size';
+  }
+
+  @override
+  String get model3dDownload => 'ಆಫ್‌ಲೈನ್ ಬಳಕೆಗಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
+
+  @override
+  String model3dDownloading(int percent) {
+    return 'ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ $percent%';
+  }
+
+  @override
+  String model3dDownloadFailed(String name) {
+    return '$name ಡೌನ್‌ಲೋಡ್ ಆಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  }
+
+  @override
+  String model3dDownloadAll(String size) {
+    return 'ಎಲ್ಲವನ್ನೂ ಆಫ್‌ಲೈನ್‌ಗಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ ($size)';
+  }
+
+  @override
+  String get model3dAllSaved => 'ಪ್ರತಿ ಮಾದರಿಯೂ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತದೆ';
+
+  @override
+  String get model3dRequest => '3D ಮಾದರಿಗಾಗಿ ವಿನಂತಿಸಿ';
+
+  @override
+  String get model3dRequestHint =>
+      'ನಿಮಗೆ ಯಾವ ಮಾದರಿ ಬೇಕು ಎಂದು ತಿಳಿಸಿ. ನಿಮ್ಮ ಶಾಲೆಯ ಪ್ರತಿ ವಿನಂತಿಯನ್ನು ವಿಷಯ ತಂಡ ನೋಡುತ್ತದೆ.';
+
+  @override
+  String get model3dRequestName => 'ಮಾದರಿಯ ಹೆಸರು';
+
+  @override
+  String get model3dRequestNameHint => 'ಉದಾಹರಣೆ: ಸ್ನಾಯು ವ್ಯವಸ್ಥೆ';
+
+  @override
+  String get model3dRequestNameNeeded => 'ಮಾದರಿಯ ಹೆಸರು ಬರೆಯಿರಿ';
+
+  @override
+  String get model3dRequestSubject => 'ವಿಷಯ';
+
+  @override
+  String get model3dRequestClass => 'ತರಗತಿ';
+
+  @override
+  String get model3dRequestAny => 'ಯಾವುದಾದರೂ';
+
+  @override
+  String get model3dRequestNote => 'ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get model3dRequestSend => 'ವಿನಂತಿ ಕಳುಹಿಸಿ';
+
+  @override
+  String get model3dRequestSent =>
+      'ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಿದೆ. ಬೋರ್ಡ್ ಆಫ್‌ಲೈನ್ ಇದ್ದರೆ, ಅದು ಮತ್ತೆ ಆನ್‌ಲೈನ್ ಆದಾಗ ಹೋಗುತ್ತದೆ.';
+
+  @override
+  String get model3dRequestNeedsSignIn => 'ಮಾದರಿಗಾಗಿ ವಿನಂತಿಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+
+  @override
+  String get model3dRequestFailed => 'ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get sketchSuggestTitle => 'ನೀವು ಇದನ್ನು ಅರ್ಥೈಸಿದ್ದೀರಾ?';
+
+  @override
+  String sketchSuggestUse(String name) {
+    return '$name ಬಳಸಿ';
+  }
+
+  @override
+  String get sketchSuggestSwitch => 'ಚಿತ್ರಗಳಿಗೆ ಐಕಾನ್‌ಗಳನ್ನು ಸೂಚಿಸಿ';
+
+  @override
+  String get sketchSuggestSwitchHint =>
+      'ಪೆನ್‌ನಿಂದ ಬಿಡಿಸಿದ ನಂತರ, ಆ ಚಿತ್ರದ ಸ್ಥಳದಲ್ಲಿ ಇಡಲು ಅಚ್ಚುಕಟ್ಟಾದ ಐಕಾನ್ ಆಯ್ಕೆಮಾಡಿ. ಚಿತ್ರಗಳನ್ನು ಈ ಬೋರ್ಡ್‌ನಲ್ಲೇ ಗುರುತಿಸಲಾಗುತ್ತದೆ; ಯಾವ ಬರಹವೂ ಹೊರಹೋಗುವುದಿಲ್ಲ.';
+
+  @override
+  String get sketchSuggestUnavailable =>
+      'ಚಿತ್ರ ಐಕಾನ್‌ಗಳು Android ಪ್ಯಾನೆಲ್‌ಗಳಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತವೆ, ಅಲ್ಲಿ ಬೋರ್ಡ್ ಚಿತ್ರಗಳನ್ನು ಗುರುತಿಸಬಲ್ಲದು.';
+
+  @override
+  String get sketchModelName => 'ಚಿತ್ರಗಳು';
+
+  @override
+  String get sketchModelTitle => 'ಚಿತ್ರ ಐಕಾನ್‌ಗಳನ್ನು ಸಿದ್ಧಪಡಿಸುವುದೇ?';
+
+  @override
+  String get sketchModelBody =>
+      'Zynetix ನೀವು ಬಿಡಿಸುವುದನ್ನು ಈ ಸಾಧನದಲ್ಲೇ ಗುರುತಿಸುತ್ತದೆ. ಚಿತ್ರ ಮಾದರಿಯನ್ನು ಒಮ್ಮೆ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (ಕೆಲವು MB); ನಂತರ ಅದು ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ, ಯಾವ ಬರಹವೂ ಸಾಧನದಿಂದ ಹೊರಹೋಗುವುದಿಲ್ಲ.';
+
+  @override
+  String get sketchModelDownload => 'ಚಿತ್ರ ಐಕಾನ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
+
+  @override
+  String get quizSetupHint =>
+      'ಪ್ರಶ್ನೆಗಳನ್ನು ಆರಿಸಿ ಅಥವಾ ಬರೆಯಿರಿ. ವಿದ್ಯಾರ್ಥಿಗಳು Student App ನಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ, ಅಥವಾ ಉತ್ತರ ಕಾರ್ಡ್ ಎತ್ತಿ ತೋರಿಸುತ್ತಾರೆ.';
+
+  @override
+  String get quizTopic => 'ವಿಷಯ';
+
+  @override
+  String get quizMakeQuestions => 'ಪ್ರಶ್ನೆಗಳನ್ನು ರಚಿಸಿ';
+
+  @override
+  String get quizFromBank => 'ಉಳಿಸಿದ ಪ್ರಶ್ನೆಗಳು';
+
+  @override
+  String get quizNoSuggestions => 'ಈ ತರಗತಿಗೆ ಇನ್ನೂ ಉಳಿಸಿದ ಪ್ರಶ್ನೆಗಳಿಲ್ಲ';
+
+  @override
+  String get quizAddQuestion => 'ಪ್ರಶ್ನೆ ಸೇರಿಸಿ';
+
+  @override
+  String get quizQuestionLabel => 'ಪ್ರಶ್ನೆ';
+
+  @override
+  String quizOptionHint(String letter) {
+    return 'ಉತ್ತರ $letter';
+  }
+
+  @override
+  String get quizRightAnswer => 'ಸರಿಯಾದ ಉತ್ತರ';
+
+  @override
+  String get quizAddThis => 'ಆಟಕ್ಕೆ ಸೇರಿಸಿ';
+
+  @override
+  String quizQuestionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಪ್ರಶ್ನೆಗಳು',
+      one: '1 ಪ್ರಶ್ನೆ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get quizSeconds => 'ಪ್ರತಿ ಪ್ರಶ್ನೆಯ ಸಮಯ';
+
+  @override
+  String quizSecondsValue(int n) {
+    return '$n ಸೆ.';
+  }
+
+  @override
+  String get quizUseCards => 'ಉತ್ತರ ಕಾರ್ಡ್‌ಗಳೂ';
+
+  @override
+  String get quizUseCardsHint =>
+      'ಫೋನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗಳು ತಮ್ಮ ಕಾರ್ಡ್ ಎತ್ತುತ್ತಾರೆ; ಉತ್ತರ ತೋರಿಸುವ ಮೊದಲು ಅವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ. ಕಾರ್ಡ್‌ಗಳಿಗೆ ವೇಗದ ಬೋನಸ್ ಇಲ್ಲ.';
+
+  @override
+  String get quizStartGame => 'ಆಟ ಪ್ರಾರಂಭಿಸಿ';
+
+  @override
+  String get quizNeedsQuestion => 'ಕನಿಷ್ಠ ಒಂದು ಪ್ರಶ್ನೆ ಸೇರಿಸಿ';
+
+  @override
+  String quizQuestionOf(int n, int total) {
+    return 'ಪ್ರಶ್ನೆ $n / $total';
+  }
+
+  @override
+  String get quizJoinApp => 'ಆಡಲು Student App ತೆರೆಯಿರಿ';
+
+  @override
+  String get quizJoinCards => 'ಫೋನ್ ಇಲ್ಲವೇ? ನಿಮ್ಮ ಉತ್ತರ ಕಾರ್ಡ್ ಎತ್ತಿ';
+
+  @override
+  String get quizBegin => 'ಪ್ರಾರಂಭಿಸಿ';
+
+  @override
+  String get quizShowAnswer => 'ಉತ್ತರ ತೋರಿಸಿ';
+
+  @override
+  String get quizTimeUp => 'ಸಮಯ ಮುಗಿಯಿತು';
+
+  @override
+  String get quizNext => 'ಮುಂದೆ';
+
+  @override
+  String get quizNextQuestion => 'ಮುಂದಿನ ಪ್ರಶ್ನೆ';
+
+  @override
+  String get quizFinalResults => 'ಅಂತಿಮ ಫಲಿತಾಂಶ';
+
+  @override
+  String get quizLeaderboard => 'ಲೀಡರ್‌ಬೋರ್ಡ್';
+
+  @override
+  String get quizWinners => 'ವಿಜೇತರು';
+
+  @override
+  String quizPoints(int n) {
+    return '$n ಅಂಕ';
+  }
+
+  @override
+  String quizStreak(int n) {
+    return 'ಸತತ $n';
+  }
+
+  @override
+  String get quizEndGame => 'ಆಟ ಮುಗಿಸಿ';
+
+  @override
+  String get quizSaved => 'ತರಗತಿಯ ಫಲಿತಾಂಶಗಳಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get quizNotSaved =>
+      'ಉಳಿಸಿಲ್ಲ: ಸರ್ವರ್‌ನಲ್ಲಿ ಯಾವುದೇ ತರಗತಿ ತೆರೆದಿಲ್ಲ. ಉತ್ತರ ಕಾರ್ಡ್‌ಗಳು ಮಾತ್ರ.';
+
+  @override
+  String get quizServerRetry =>
+      'ಸರ್ವರ್ ಸಂಪರ್ಕಿಸಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಇನ್ನೊಮ್ಮೆ ಟ್ಯಾಪ್ ಮಾಡಿ.';
+
+  @override
+  String get quizNoAnswers => 'ಯಾರೂ ಉತ್ತರಿಸಲಿಲ್ಲ';
+
+  @override
+  String quizAnsweredCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಉತ್ತರಿಸಿದ್ದಾರೆ',
+      one: '1 ಉತ್ತರಿಸಿದ್ದಾರೆ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get curTitle => 'ತರಗತಿ ಮತ್ತು ವಿಷಯ ಆರಿಸಿ';
+
+  @override
+  String get curSchool => 'ಶಾಲೆ';
+
+  @override
+  String get curCollege => 'ಕಾಲೇಜು';
+
+  @override
+  String get curPostgrad => 'ಸ್ನಾತಕೋತ್ತರ';
+
+  @override
+  String curClassN(int n) {
+    return 'ತರಗತಿ $n';
+  }
+
+  @override
+  String curSemN(int n) {
+    return 'ಸೆಮ್ $n';
+  }
+
+  @override
+  String get curPickSubject => 'ವಿಷಯ ಆರಿಸಿ';
+
+  @override
+  String get curBack => 'ಹಿಂದೆ';
+
+  @override
+  String curFromTimetable(String label) {
+    return 'ವೇಳಾಪಟ್ಟಿಯಿಂದ: $label';
+  }
+
+  @override
+  String get curUseTimetable => 'ವೇಳಾಪಟ್ಟಿ ಬಳಸಿ';
+
+  @override
+  String get curOtherSubject => 'ಬೇರೆ ವಿಷಯ ಅಥವಾ ತರಗತಿ';
+
+  @override
+  String get curDemoDay => 'ಡೆಮೊ ದಿನದ ತರಗತಿಗಳು';
+
+  @override
+  String get curKits => 'ಈ ವಿಷಯದ ಕಿಟ್‌ಗಳು';
+
+  @override
+  String get curInUpdate => 'ಮುಂದಿನ ಅಪ್‌ಡೇಟ್‌ನಲ್ಲಿ ಬರಲಿದೆ';
+
+  @override
+  String get curChange => 'ತರಗತಿ ಅಥವಾ ವಿಷಯ ಬದಲಿಸಿ';
+
+  @override
+  String curSet(String label) {
+    return '$labelಗಾಗಿ ಬೋರ್ಡ್ ಸಿದ್ಧ';
+  }
+
+  @override
+  String get curToolsKits => 'ಉಪಕರಣಗಳು ಮತ್ತು ಕಿಟ್‌ಗಳು';
+
+  @override
+  String get curLabsSims => 'ಪ್ರಯೋಗಾಲಯಗಳು ಮತ್ತು ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು';
+
+  @override
+  String get curModels => '3D ಮಾದರಿಗಳು';
+
+  @override
+  String get curSoonBeam => 'ಬೀಮ್ BMD ಮತ್ತು SFD';
+
+  @override
+  String get curSoonDrawing => 'ಎಂಜಿನಿಯರಿಂಗ್ ಡ್ರಾಯಿಂಗ್ ಗ್ರಿಡ್';
+
+  @override
+  String get curSoonPvTs => 'P-V ಮತ್ತು T-S ಚಾರ್ಟ್‌ಗಳು';
+
+  @override
+  String get curSoonFbd => 'ಮುಕ್ತ-ಕಾಯ ರೇಖಾಚಿತ್ರಗಳು';
+
+  @override
+  String get curSoonPhasor => 'ಫೇಸರ್ ರೇಖಾಚಿತ್ರಗಳು';
+
+  @override
+  String get curSoonSld => 'ಸಿಂಗಲ್-ಲೈನ್ ರೇಖಾಚಿತ್ರ';
+
+  @override
+  String get curSoonWaveform => 'ತರಂಗರೂಪ ಜನರೇಟರ್';
+
+  @override
+  String get curSoonSignal => 'ಸಿಗ್ನಲ್, FFT ಮತ್ತು ಬೋಡೆ ಪ್ಲಾಟರ್';
+
+  @override
+  String get curSoonMcu => 'ಮೈಕ್ರೋಕಂಟ್ರೋಲರ್ ಪಿನ್ ರೇಖಾಚಿತ್ರಗಳು';
+
+  @override
+  String get curSoonNn => 'ನ್ಯೂರಲ್ ನೆಟ್‌ವರ್ಕ್ ಬಿಲ್ಡರ್';
+
+  @override
+  String get curSoonPfd => 'ಪ್ರಕ್ರಿಯೆ ಹರಿವು ರೇಖಾಚಿತ್ರ ಕಿಟ್';
+
+  @override
+  String get curSoonEv => 'EV ರೇಖಾಚಿತ್ರಗಳು';
 }

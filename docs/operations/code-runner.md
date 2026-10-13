@@ -8,7 +8,7 @@ The code lab on the Board and in the Student App runs programs in two places (de
 | Python | On the device: Pyodide (CPython in WebAssembly) in a WebView, in a Web Worker | No |
 | JavaScript | On the device: the WebView's engine, in a Web Worker | No |
 | SQL | On the device: SQLite (`sqlite3` package), in an isolate, with the students, employees and library sample databases | No |
-| C, C++, Java | On the institution's **code runner**, in India, through `POST /v1/code/run` | Yes |
+| C, C++, Java | On the **school code box** on the local network ([school-code-box.md](school-code-box.md)), else the institution's **code runner**, in India, through `POST /v1/code/run` | School network, or internet |
 
 Nothing a student types leaves India: on-device languages never leave the device, and the
 runner is in ap-south-1 (or the college's own server). Code is not stored; the API logs only
@@ -20,7 +20,11 @@ the institution, language, status and time.
   127.0.0.1 only (the 3D viewer's pattern, `RunnerServer`). Stop ends the worker; a run is
   stopped after 10 s (Python's first start-up of a few seconds is not counted) or 64 KB of
   output.
-- **Pyodide is not committed.** `packages/kinetix_cs/tool/fetch_pyodide.sh` downloads
+- **Python's source**: the Board app's bundled Pyodide (JupyterLite's,
+  `apps/board/assets/simhub/jupyterlite/pyodide/`), else a copy fetched once and kept on the
+  device (`PythonRuntime`, pinned SHA-256 per file; from the school code box, then jsDelivr),
+  else the one below. The runner page gets it from the app's 127.0.0.1 server under `py/`.
+- **Pyodide is not committed** to kinetix_cs. `packages/kinetix_cs/tool/fetch_pyodide.sh` downloads
   Pyodide 0.27.7's *core* (interpreter and standard library, no numpy) with a pinned SHA-256
   into `assets/runner/pyodide/`. Run it before every release build of the Board and the
   Student App (mobile-release.md). Size: 13.8 MB on disk (wasm 10.1 MB, stdlib 2.4 MB),

@@ -86,7 +86,9 @@ import { DevicesModule } from './devices/devices.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PairingModule } from './pairing/pairing.module.js';
 import { ExitTicketsModule } from './exit-tickets/exit-tickets.module.js';
+import { ModelRequestsModule } from './model-requests/model-requests.module.js';
 import { PollsModule } from './polls/polls.module.js';
+import { QuizGamesModule } from './quiz-games/quiz-games.module.js';
 import { BadgesModule } from './badges/badges.module.js';
 import { ParentModule } from './parent/parent.module.js';
 import { RealtimeModule } from './realtime/realtime.module.js';
@@ -133,7 +135,9 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     DevicesModule,
     PairingModule,
     PollsModule,
+    QuizGamesModule,
     ExitTicketsModule,
+    ModelRequestsModule,
     BadgesModule,
     RemoteModule,
     CastModule,

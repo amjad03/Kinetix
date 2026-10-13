@@ -12,7 +12,7 @@
     <!-- Screenshots into Pictures/KINETIX: only Android 9 and older need it (10+ use MediaStore). -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <application
-        android:label="KINETIX Board"
+        android:label="Zynetix"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:networkSecurityConfig="${networkSecurityConfig}">
@@ -65,7 +65,7 @@
         <receiver
             android:name=".KioskAdminReceiver"
             android:exported="true"
-            android:label="KINETIX Board kiosk"
+            android:label="Zynetix kiosk"
             android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"

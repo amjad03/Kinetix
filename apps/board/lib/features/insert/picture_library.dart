@@ -285,6 +285,6 @@ class _PictureLibraryDialogState extends State<PictureLibraryDialog> {
 /// Registers the library's credits with the app's licence page.
 void registerPictureLibraryLicence() {
   LicenseRegistry.addLicense(() async* {
-    yield LicenseEntryWithLineBreaks(['KINETIX picture library', 'Microsoft Fluent Emoji', 'Wikimedia Commons'], await rootBundle.loadString('assets/library/CREDITS.txt'));
+    yield LicenseEntryWithLineBreaks(['Zynetix picture library', 'Microsoft Fluent Emoji', 'Wikimedia Commons'], await rootBundle.loadString('assets/library/CREDITS.txt'));
   });
 }

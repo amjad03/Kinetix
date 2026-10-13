@@ -149,7 +149,9 @@ void main() {
       expect(wb.elements, isEmpty);
       await tapKey(tester, 'page-overview');
       await tapKey(tester, 'zoom-in');
-      expect(find.text('125%'), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('zoom-reset')), matching: find.text('125%')), findsOneWidget);
+      // The top bar shows the zoom too.
+      expect(find.descendant(of: find.byKey(const Key('top-zoom')), matching: find.text('125%')), findsOneWidget);
     });
 
     testWidgets('on a panel three fingers write three strokes at once', (tester) async {

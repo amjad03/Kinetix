@@ -15,19 +15,25 @@ function lines(stdin) {
   return function () { return i < all.length ? all[i++] : null; };
 }
 
+var MISSING = 'python_missing';
+
+// Python comes from the app's server under py/: a copy downloaded once and kept on the device,
+// or one bundled in the app (py/info.json says whether it is pyodide.mjs or pyodide.js).
 function loadPython() {
   if (pyodideReady) return pyodideReady;
   self.postMessage({ event: 'loading', text: 'python' });
-  pyodideReady = new Promise(function (resolve, reject) {
-    try {
-      importScripts('pyodide/pyodide.js');
-    } catch (e) {
-      reject(new Error('Python is not installed on this device (see tool/fetch_pyodide.sh).'));
-      return;
-    }
-    // eslint-disable-next-line no-undef
-    loadPyodide({ indexURL: './pyodide/' }).then(function (py) { self.postMessage({ event: 'loaded' }); resolve(py); }, reject);
-  });
+  var base = new URL('py/', self.location.href).href;
+  pyodideReady = fetch('py/info.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (info) {
+      if (info.kind === 'mjs') return import(base + 'pyodide.mjs').then(function (m) { return m.loadPyodide; });
+      if (info.kind === 'js') { importScripts(base + 'pyodide.js'); return self.loadPyodide; }
+      var e = new Error('Python is not on this device yet.'); e.code = MISSING; throw e;
+    })
+    .then(function (load) { return load({ indexURL: base }); })
+    .then(function (py) { self.postMessage({ event: 'loaded' }); return py; });
+  // A failed start is not kept: the next run tries again (e.g. after "Get Python").
+  pyodideReady.catch(function () { pyodideReady = null; });
   return pyodideReady;
 }
 
@@ -52,6 +58,8 @@ function runPython(job) {
       self.postMessage({ id: job.id, event: 'done', status: 'runtime_error', ms: Date.now() - t0 });
     }
   }, function (e) {
+    self.postMessage({ event: 'loaded' });
+    if (e && e.code === MISSING) { self.postMessage({ id: job.id, event: 'done', status: 'unavailable', reason: MISSING, ms: 0 }); return; }
     out(job.id, 'err', String(e.message || e) + '\n');
     self.postMessage({ id: job.id, event: 'done', status: 'runtime_error', ms: Date.now() - t0 });
   });
@@ -76,7 +84,9 @@ function runJs(job) {
     if (result && typeof result.then === 'function') result.then(finish, function (e) { printErr(String(e)); self.postMessage({ id: job.id, event: 'done', status: 'runtime_error', ms: Date.now() - t0 }); });
     else finish();
   } catch (e) {
-    printErr((e && e.name ? e.name + ': ' : '') + (e && e.message ? e.message : String(e)));
+    // The program starts on line 4 of the function new Function builds (V8's stack).
+    var at = /<anonymous>:(\d+):(\d+)/.exec(String(e && e.stack));
+    printErr((e && e.name ? e.name + ': ' : '') + (e && e.message ? e.message : String(e)) + (at && at[1] > 3 ? '\n    at line ' + (at[1] - 3) + ':' + at[2] : ''));
     self.postMessage({ id: job.id, event: 'done', status: 'runtime_error', ms: Date.now() - t0 });
   }
 }

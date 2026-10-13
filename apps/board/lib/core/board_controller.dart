@@ -177,6 +177,10 @@ class BoardController extends ChangeNotifier {
   /// smartboard will show. The phone's own setting, not a teacher's.
   bool panelPreview = false;
 
+  /// The class and subject last picked on this board (features/curriculum: `class-7/science`),
+  /// or null to follow the timetable.
+  String? curriculumPick;
+
   /// Several people write at once (two fingers then write, not move the board). Null follows
   /// the touch surface: panels and IR frames are multi-touch, tablets single.
   bool? multiTouch;
@@ -448,6 +452,8 @@ class BoardController extends ChangeNotifier {
       measureUnit = MeasureUnit.values.asNameMap()[await _store.setting('measureUnit')] ?? MeasureUnit.cm;
       fingerTaps = await _store.setting('fingerTaps') != 'false';
       panelPreview = await _store.setting('panelPreview') == 'true';
+      final pick = await _store.setting('curriculum');
+      curriculumPick = pick == null || pick.isEmpty ? null : pick;
     } catch (e) {
       debugPrint('Board settings unreadable, using defaults: $e');
     }
@@ -630,6 +636,12 @@ class BoardController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Remembers the class and subject picked on this board (null: follow the timetable).
+  void setCurriculumPick(String? id) {
+    curriculumPick = id;
+    unawaited(_store.setSetting('curriculum', id ?? '').catchError((Object e) => debugPrint('Setting not saved: $e')));
+  }
+
   void setTouchProfile(TouchProfile p) {
     touchProfile = p;
     unawaited(_store.setSetting('touchProfile', p.name));
@@ -714,6 +726,12 @@ class BoardController extends ChangeNotifier {
     unawaited(_saveTeacherSetting('aiPenLanguage', l.name));
     notifyListeners();
   }
+
+  /// The "Did you mean" bar: icons offered for what the pen draws (on unless switched off; kept
+  /// with the smartboard preferences, per teacher). See lib/features/sketch.
+  bool get sketchSuggest => sbPref('sketchSuggest') != 'false';
+
+  void setSketchSuggest(bool on) => setSbPref('sketchSuggest', on ? null : 'false');
 
   void setSnapShapes(bool on) {
     snapShapes = on;
@@ -927,7 +945,7 @@ class BoardController extends ChangeNotifier {
       notifyListeners();
     });
     rt.on(RealtimeEvents.liveSnapshotRequest, (_) => onLiveSnapshotRequest?.call());
-    for (final event in [RealtimeEvents.pollAnswered, RealtimeEvents.remoteCommand]) {
+    for (final event in [RealtimeEvents.pollAnswered, RealtimeEvents.gameAnswered, RealtimeEvents.remoteCommand]) {
       rt.on(event, (e) {
         if (!classEvents.isClosed) classEvents.add((event, e));
       });

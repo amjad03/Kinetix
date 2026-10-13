@@ -9,6 +9,7 @@ import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
 import 'layout/ui_strings.dart';
+import '../sketch/sketch_bar.dart';
 
 /// The AI pen on the board screen: its icon, its options, the Convert button for ink waiting to
 /// be converted, the readings of something it converted, and its part of Board settings.
@@ -438,9 +439,16 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
   /// The shapes model, where the recogniser has one (ML Kit).
   InkModelReader? get _shapes => hw is InkModelReader ? hw as InkModelReader : null;
 
-  /// A row's key: the language code, or "shapes".
-  Future<HandwritingModelState> _state(String id) => id == 'shapes' ? _shapes!.modelStateOf(InkModels.shapes) : hw.modelState(id);
-  List<String> get _rows => [for (final l in BoardLanguage.values) l.name, if (_shapes != null) 'shapes'];
+  /// The sketch model for the "Did you mean" icons, where the recogniser has one (ML Kit).
+  bool get _sketches => _shapes != null && hw.engine == 'mlkit';
+
+  /// A row's key: the language code, "shapes" or "sketches".
+  Future<HandwritingModelState> _state(String id) => switch (id) {
+    'shapes' => _shapes!.modelStateOf(InkModels.shapes),
+    'sketches' => _shapes!.modelStateOf(InkModels.autodraw),
+    _ => hw.modelState(id),
+  };
+  List<String> get _rows => [for (final l in BoardLanguage.values) l.name, if (_shapes != null) 'shapes', if (_sketches) 'sketches'];
 
   @override
   void initState() {
@@ -459,7 +467,11 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
 
   Future<void> _download(String id) async {
     setState(() => _downloading.add(id));
-    final ok = id == 'shapes' ? await _shapes!.downloadModel(InkModels.shapes) : await hw.prepare(id);
+    final ok = switch (id) {
+      'shapes' => await _shapes!.downloadModel(InkModels.shapes),
+      'sketches' => await _shapes!.downloadModel(InkModels.autodraw),
+      _ => await hw.prepare(id),
+    };
     if (!mounted) return;
     if (!ok) showBoardMessage(context, context.l10n.aiPenDownloadFailed);
     final s = await _state(id);
@@ -474,7 +486,11 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
   /// across the row) or can be downloaded.
   Widget _model(BuildContext context, String lang) {
     final l = context.l10n;
-    final label = lang == 'shapes' ? l.aiPenModelShapes : BoardLanguage.values.byName(lang).label;
+    final label = switch (lang) {
+      'shapes' => l.aiPenModelShapes,
+      'sketches' => l.sketchModelName,
+      _ => BoardLanguage.values.byName(lang).label,
+    };
     final c = context.colors;
     final small = context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant);
     final downloading = _downloading.contains(lang) || _states[lang] == HandwritingModelState.downloading;
@@ -551,6 +567,7 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
           for (final id in _rows) _model(context, id),
         const SizedBox(height: Kx.s8),
         SnapShapesSwitch(board: widget.board),
+        SketchSuggestSwitch(board: widget.board, available: _sketches),
         MeasureShapesSwitch(board: widget.board),
       ],
     );

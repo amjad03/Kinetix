@@ -99,7 +99,7 @@ bool Show(const std::string& id) {
     project.set_dart_entrypoint("projectorMain");
     auto window = std::make_unique<ProjectorWindow>(project);
     // Created at the monitor's corner, then made borderless and stretched over it.
-    if (!window->Create(L"KINETIX Projector", Win32Window::Point(m.rect.left, m.rect.top), Win32Window::Size(800, 600))) return false;
+    if (!window->Create(L"Zynetix Projector", Win32Window::Point(m.rect.left, m.rect.top), Win32Window::Size(800, 600))) return false;
     HWND hwnd = window->GetHandle();
     const LONG_PTR style = ::GetWindowLongPtr(hwnd, GWL_STYLE);
     ::SetWindowLongPtr(hwnd, GWL_STYLE, (style & ~static_cast<LONG_PTR>(WS_OVERLAPPEDWINDOW)) | WS_POPUP);

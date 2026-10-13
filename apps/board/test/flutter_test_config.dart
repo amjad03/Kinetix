@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_board/features/board/board_autosave.dart';
 import 'package:kinetix_board/features/board/context/class_context.dart';
+import 'package:kinetix_board/features/curriculum/curriculum_picker.dart';
 import 'package:kinetix_board/features/help/tour.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_sounds.dart';
 
@@ -15,6 +16,8 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
     BoardTour.autoStart = false;
     // The drawer, Insert menu and simulations open showing every tool (test/class_context_test.dart turns narrowing on).
     showAllToolsByDefault = true;
+    // A demo board does not open on the class and subject picker (test/curriculum_picker_test.dart turns it on).
+    curriculumPickerAtDemoStart = false;
     ToolkitSounds.instance = SilentSounds();
     // Autosave writes to memory, not a file, and a board a test opens never brings back the
     // one before it (test/autosave_test.dart sets a store that does).

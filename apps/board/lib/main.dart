@@ -86,7 +86,7 @@ class KinetixBoardApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) => MaterialApp(
-        title: 'KINETIX Board',
+        title: 'Zynetix',
         debugShowCheckedModeBanner: false,
         theme: KinetixTheme.light(),
         locale: controller.language.locale,

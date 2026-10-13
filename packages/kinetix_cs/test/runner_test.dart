@@ -191,18 +191,29 @@ void main() {
     for (final l in CodeLanguage.values) {
       final r = await h.run(RunRequest(l, l == CodeLanguage.sql ? 'SELECT 1 AS x;' : 'x'));
       expect(r.status, RunStatus.ok, reason: l.name);
+      expect(r.place, l.onDevice ? RunPlace.device : RunPlace.server, reason: l.name);
     }
     expect(calls, ['c', 'cpp', 'java']);
     expect(page.evals.where((e) => e.startsWith('kx.run(')).length, 2);
     final offline = HybridRunner(web: WebRunner(page: page), sql: SqlRunner());
-    expect((await offline.run(const RunRequest(CodeLanguage.java, 'x'))).message, 'noServer');
+    expect((await offline.run(const RunRequest(CodeLanguage.java, 'x'))).message, 'needsBox');
   });
 
   test('every language has samples, and the SQL ones run on their database', () {
     for (final l in CodeLanguage.values) {
       expect(samplesFor(l).length, greaterThanOrEqualTo(3), reason: l.name);
     }
-    for (final s in samplesFor(CodeLanguage.sql)) {
+    // Subjects bring their own samples first, and open in their language.
+    expect(languageForSubject('dbms'), CodeLanguage.sql);
+    expect(languageForSubject('c-programming'), CodeLanguage.c);
+    expect(languageForSubject('nope'), isNull);
+    expect(samplesFor(CodeLanguage.sql, subject: 'dbms').first.key, 'sampleGroupBy');
+    for (final list in subjectSamples.values) {
+      for (final x in list) {
+        expect(CsStrings.words.containsKey(x.key), isTrue, reason: x.key);
+      }
+    }
+    for (final s in {...samplesFor(CodeLanguage.sql), ...subjectSamples.values.expand((l) => l).where((s) => s.language == CodeLanguage.sql)}) {
       final (out, status) = runSql(s.code, database: s.database);
       expect(status, RunStatus.ok, reason: '${s.key}: ${out.$2}');
       expect(out.$1, contains('in set'));

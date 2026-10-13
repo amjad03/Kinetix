@@ -13,7 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Zynetix</string>
+	<key>CFBundleDisplayName</key>
+	<string>Zynetix</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -29,13 +31,13 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>KINETIX uses the microphone for the noise meter (only the sound level is measured), class audio and lesson recording.</string>
+	<string>Zynetix uses the microphone for the noise meter (only the sound level is measured), class audio and lesson recording.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>KINETIX turns speech into live captions, voice commands and spoken questions for KINETIX AI.</string>
+	<string>Zynetix turns speech into live captions, voice commands and spoken questions for KINETIX AI.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>KINETIX uses the camera for the document camera.</string>
+	<string>Zynetix uses the camera for the document camera.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>KINETIX connects to phones and tablets in the classroom to show their screens on the board.</string>
+	<string>Zynetix connects to phones and tablets in the classroom to show their screens on the board.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
@@ -44,6 +46,7 @@
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_kinetix._tcp</string>
+		<string>_kinetix-code._tcp</string>
 	</array>
 </dict>
 </plist>

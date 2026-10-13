@@ -156,6 +156,10 @@ void main() {
     await pumpPanel(tester, Align(alignment: Alignment.topLeft, child: ContextChip(ctx: now, pick: pick)));
     await tester.tap(find.byKey(const Key('ctx-chip')));
     await tester.pumpAndSettle();
+    // The class and subject picker (test/curriculum_picker_test.dart) leads to any subject and grade.
+    await tester.ensureVisible(find.byKey(const Key('cur-other')));
+    await tester.tap(find.byKey(const Key('cur-other')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('ctx-subject-physics')));
     await tester.tap(find.byKey(const Key('ctx-grade-9')));
     await tester.pump();

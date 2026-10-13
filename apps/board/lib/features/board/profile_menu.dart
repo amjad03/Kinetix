@@ -20,6 +20,7 @@ import 'sb_strings.dart';
 import 'panel/panel_host.dart';
 import 'layout/ui_strings.dart';
 import '../../l10n/feature_strings.dart';
+import 'kit/cs/code_box_settings.dart';
 import 'model_server.dart';
 
 /// The menu that opens from the avatar in the bottom-left corner.
@@ -175,7 +176,7 @@ class ProfileMenu extends StatelessWidget {
               kiosk: board.kiosk,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s8),
-                child: Text('KINETIX Board 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                child: Text('Zynetix 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
               ),
             ),
           ],
@@ -378,6 +379,10 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
           (
             [for (final k in ['title', 'hint', 'field']) modelServerStrings(boardLang(context))[k], '3D'],
             [const ModelServerSection()],
+          ),
+          (
+            [for (final k in ['title', 'field', 'python']) codeBoxStrings(boardLang(context))[k], 'C++', 'Java', 'Python'],
+            [CodeBoxSection(board: board)],
           ),
           if (board.serverUrl != null) ([l.thisBoardTitle, l.setUpAgain, l.enrollServer], [ThisBoardSection(board: board)]),
         ];

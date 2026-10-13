@@ -156,14 +156,22 @@ void main() {
     expect(notes.first.text, contains('input("Your name: ")'));
     expect(notes.last.top, greaterThan(notes.first.rect.bottom));
 
-    // C needs the server: without one, the lab says so.
+    expect(find.textContaining('Ran: On this board, offline'), findsOneWidget);
+
+    // C needs the school code box: without one (or a server), the lab says so and how to set it up.
     await tester.tap(find.text('C').first);
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
     await tester.pump();
-    expect(find.text("Runs on the college's server in India"), findsOneWidget);
+    expect(find.text('Cannot run here yet'), findsOneWidget);
     await tester.tap(find.byKey(const Key('code-run')));
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
     await tester.pump();
-    expect(find.textContaining('C, C++ and Java run on the KINETIX server'), findsOneWidget);
+    expect(find.textContaining('C needs the school code box'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('code-box-help')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('infra/school-code-box/docker-compose.yml'), findsOneWidget);
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('SQL'));
     await tester.pump();
@@ -196,4 +204,10 @@ const _defaults = <AlgoKind, (String, String)>{
   AlgoKind.bfs: ('A-B, A-C, B-D', 'A'),
   AlgoKind.dfs: ('A-B, A-C, B-D', 'B'),
   AlgoKind.dijkstra: ('A-B 4, A-C 1, C-B 2', 'A'),
+  AlgoKind.counting: ('4 2 2 8 3 3 1', ''),
+  AlgoKind.cqueue: ('enqueue 1; enqueue 2; dequeue; enqueue 3; enqueue 4; enqueue 5; peek', '3'),
+  AlgoKind.binheap: ('40 20 60 10', 'insert 70; extract; extract; extract; extract; extract; extract'),
+  AlgoKind.prim: ('A-B 4, A-C 1, C-B 2, D', 'A'),
+  AlgoKind.kruskal: ('A-B 4, A-C 1, C-B 2', ''),
+  AlgoKind.topo: ('A->B, B->C, C->A', ''),
 };

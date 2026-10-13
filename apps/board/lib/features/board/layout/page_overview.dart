@@ -65,7 +65,7 @@ class _PageOverviewState extends State<PageOverview> {
     final l = context.l10n;
     try {
       final pdf = await boardPdf(widget.wb, widget.canvas);
-      final name = 'KINETIX board ${DateFormat('yyyy-MM-dd HH.mm').format(DateTime.now())}.pdf';
+      final name = 'Zynetix board ${DateFormat('yyyy-MM-dd HH.mm').format(DateTime.now())}.pdf';
       await sharePdf(name, pdf);
       if (mounted) showBoardMessage(context, s.exportedPdf);
     } catch (e) {

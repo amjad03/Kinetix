@@ -10,6 +10,8 @@ import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../exams/exams_tab.dart';
 import '../learn/learn_tab.dart';
+import '../live/live_quiz_controller.dart';
+import '../live/live_quiz_screen.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
 import '../privacy/privacy.dart';
@@ -39,6 +41,10 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
   late final messages = MessagesController(widget.state.api, meId: widget.state.me!.id);
   late final consent = ConsentController(widget.state.api, widget.state.student!.id);
 
+  /// The Live Quiz in the class: its events come over the realtime connection.
+  late final quiz = LiveQuizController(widget.state.api);
+  bool _quizOpen = false;
+
   /// New messages over the realtime connection (colleges, where students write to teachers).
   MessageFeed? _feed;
   final _learn = GlobalKey<LearnTabState>();
@@ -60,6 +66,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     updates.addListener(_onUpdates);
+    quiz.addListener(_onQuiz);
     widget.state.pendingPushTap.addListener(_openPushTap);
     _pushes = widget.state.messaging.onForegroundMessage.listen((_) {
       if (!updates.loading) updates.load();
@@ -69,6 +76,8 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
       // The socket brings new messages (colleges) and questions asked on the board (everyone).
       if (mounted) _startFeed();
     });
+    // A game may already be running in the class (the app opened mid-lesson).
+    quiz.refresh();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // A tapped notification that opened the app (or arrived before sign-in) first.
       await _openPushTap();
@@ -108,7 +117,9 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
       onReconnected: () {
         if (messages.available) messages.load();
         study.loadQuestion();
+        quiz.refresh();
       },
+      onQuiz: (s) => quiz.handle(s.event),
       onPoll: study.loadQuestion,
       onBadge: (b) {
         study.loadBadges();
@@ -122,6 +133,8 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     updates.removeListener(_onUpdates);
+    quiz.removeListener(_onQuiz);
+    quiz.dispose();
     widget.state.pendingPushTap.removeListener(_openPushTap);
     _pushes?.cancel();
     _feed?.dispose();
@@ -138,6 +151,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     if (s != AppLifecycleState.resumed) return;
     study.loadLive();
     study.loadQuestion();
+    quiz.refresh();
     if (!updates.loading) updates.load();
     if (messages.available) messages.load();
     _feed?.resume();
@@ -147,6 +161,19 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
   void _onUpdates() {
     final fresh = updates.items.where((n) => n.kind == NotificationKind.live && n.unread && _seenLive.add(n.id)).toList();
     if (fresh.isNotEmpty) study.loadLive();
+  }
+
+  /// A game started in the class: asked once whether to join it (unless already playing).
+  Future<void> _onQuiz() async {
+    if (!quiz.takePrompt() || _quizOpen || !mounted) return;
+    if (await askToJoinLiveQuiz(context, quiz) && mounted && quiz.active) await _openQuiz();
+  }
+
+  Future<void> _openQuiz() async {
+    if (_quizOpen) return;
+    _quizOpen = true;
+    await LiveQuizScreen.open(context, quiz);
+    _quizOpen = false;
   }
 
   void _go(int i) => setState(() => _tab = i);
@@ -184,6 +211,8 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
             onOpenUpdates: _openUpdates,
             onOpenExams: () => _go(2),
             onOpenMore: () => _go(_moreTab),
+            quiz: quiz,
+            onOpenQuiz: _openQuiz,
           ),
         ),
         LearnTab(key: _learn, state: widget.state, study: study),

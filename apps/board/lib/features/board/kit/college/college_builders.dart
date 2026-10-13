@@ -217,7 +217,7 @@ SheetElement _scheduleIII(Color accent) {
 
 enum Frame {
   swot, pestle, porter, bcg, ansoff, valueChain, mckinsey7s, maslow, marketingMix4p, marketingMix7p, decisionTree, fishbone, mindMap, caseStudy, //
-  caseBrief, irac, argumentMap,
+  caseBrief, irac, argumentMap, businessModelCanvas,
 }
 
 /// Notes in a grid, [cols] across, each headed by its title.
@@ -399,6 +399,22 @@ List<BoardElement> frame(Frame f, Color ink, Color accent) {
         _title('IRAC', accent),
         ..._noteGrid(['Issue: what is the legal question?', 'Rule: which law, section or precedent?', 'Application: apply the rule to the facts', 'Conclusion: the answer'], 1, w: 900, h: 130),
       ];
+    case Frame.businessModelCanvas:
+      // Osterwalder's nine blocks: five columns over the costs and revenues.
+      const w = 236.0, gap = 14.0, h = 520.0, half = (h - gap) / 2;
+      Rect col(int i, {int part = 0}) => Rect.fromLTWH(i * (w + gap), part == 2 ? half + gap : 0, w, part == 0 ? h : half);
+      return [
+        _title('Business Model Canvas', accent),
+        _note('Key partners\n• ', col(0), noteColors[3], fontSize: 18),
+        _note('Key activities\n• ', col(1, part: 1), noteColors[1], fontSize: 18),
+        _note('Key resources\n• ', col(1, part: 2), noteColors[1], fontSize: 18),
+        _note('Value propositions\n• ', col(2), noteColors[2], fontSize: 18),
+        _note('Customer relationships\n• ', col(3, part: 1), noteColors[4], fontSize: 18),
+        _note('Channels\n• ', col(3, part: 2), noteColors[4], fontSize: 18),
+        _note('Customer segments\n• ', col(4), noteColors[0], fontSize: 18),
+        _note('Cost structure\n• ', Rect.fromLTWH(0, h + gap, 2.5 * w + 2 * gap, 180), noteColors[5], fontSize: 18),
+        _note('Revenue streams\n• ', Rect.fromLTWH(2.5 * w + 3 * gap, h + gap, 2.5 * w + 2 * gap, 180), noteColors[6], fontSize: 18),
+      ];
     case Frame.argumentMap:
       const claim = Rect.fromLTWH(300, 0, 400, 110);
       final reasons = [const Rect.fromLTWH(0, 200, 300, 140), const Rect.fromLTWH(350, 200, 300, 140), const Rect.fromLTWH(700, 200, 300, 140)];
@@ -415,6 +431,99 @@ List<BoardElement> frame(Frame f, Color ink, Color accent) {
         _text('Authority: statute / precedent for each reason', const Offset(0, 420), ink, size: 16),
       ];
   }
+}
+
+/// The frames that come with a filled-in example, and the example: a title and, note by note
+/// in the order [frame] makes them, what is written under each heading. The examples are
+/// illustrative (generic Indian businesses), for discussion in class.
+const frameSamples = <Frame, (String, List<String>)>{
+  Frame.swot: ('SWOT analysis: a dairy cooperative brand (example)', [
+    '• Trusted brand, lakhs of farmer members\n• Wide cold-chain distribution\n• Low-cost, high-volume model',
+    '• Thin margins (farmer-first pricing)\n• Depends on milk procurement and the monsoon\n• Small premium and export range',
+    '• Demand for protein and value-added dairy\n• Cheese, ice cream, ready-to-drink\n• Quick-commerce and exports',
+    '• Private and global dairy brands\n• Plant-based milks\n• Feed prices and cattle disease',
+  ]),
+  Frame.pestle: ('PESTLE analysis: an electric two-wheeler maker (example)', [
+    '• Central EV subsidies\n• State EV policies, road-tax waivers',
+    '• Fuel prices; cheaper running cost\n• Vehicle-loan interest rates',
+    '• Young urban riders\n• Delivery and gig workers',
+    '• Falling battery cost\n• Charging and battery swapping',
+    '• Battery safety standards\n• Production-linked incentive rules',
+    '• City air-quality targets\n• Battery recycling',
+  ]),
+  Frame.porter: ('Porter’s five forces: Indian mobile telecom (example)', [
+    '• Three private operators and BSNL\n• Price war since 2016',
+    '• Low: spectrum and network cost thousands of crores',
+    '• Few network-equipment vendors\n• Spectrum sold by government',
+    '• High: easy number portability\n• Very price-sensitive users',
+    '• Calls and messages over the internet\n• Wi-Fi at home and work',
+  ]),
+  Frame.ansoff: ('Ansoff matrix: a packaged-tea brand (example)', [
+    '• Festive offers, bigger packs in present towns',
+    '• Green tea, iced tea in bottles',
+    '• Rural markets; exports to the Gulf',
+    '• A chain of tea cafés',
+  ]),
+  Frame.valueChain: ('Value chain: a direct-to-consumer apparel brand (example)', [
+    'planning and finance on cloud tools',
+    'hiring designers, training packers',
+    'website, app, size recommendation',
+    'cotton fabric from Tiruppur mills',
+    '• Fabric checks at the warehouse',
+    '• Cut, stitch, quality check',
+    '• Courier partners, cash on delivery',
+    '• Social media, influencers',
+    '• Easy returns, chat support',
+  ]),
+  Frame.marketingMix4p: ('Marketing mix (4 Ps): an instant-noodles brand (example)', [
+    '• Two-minute noodles; masala and atta variants',
+    '• Small packs at low prices for reach',
+    '• Kirana stores, supermarkets, quick-commerce',
+    '• TV ads, sampling in hostels and schools',
+  ]),
+  Frame.marketingMix7p: ('Marketing mix (7 Ps): a café chain (example)', [
+    '• Coffee, snacks, Wi-Fi, a place to sit',
+    '• ₹150–₹300 a visit; combo offers',
+    '• High streets, malls, highways',
+    '• App loyalty points, social media',
+    '• Friendly, trained baristas',
+    '• Order at the counter, ready in five minutes',
+    '• Décor, branded cups, music',
+  ]),
+  Frame.businessModelCanvas: ('Business Model Canvas: a food-delivery app (example)', [
+    '• Restaurants and cloud kitchens\n• Delivery partners\n• Payment gateways',
+    '• Matching orders to riders\n• Restaurant onboarding',
+    '• App and data\n• Rider network, brand',
+    '• Food from many restaurants at the door in 30 minutes\n• Tracking, offers, easy payment',
+    '• Ratings and reviews\n• Membership plan, support chat',
+    '• App, website\n• Social media, ads',
+    '• Busy urban professionals and students\n• Restaurants that want more orders',
+    '• Rider pay and incentives\n• Discounts, marketing\n• Technology and support',
+    '• Commission from restaurants\n• Delivery fees, membership\n• Ads in the app',
+  ]),
+};
+
+/// [f] filled in with its example from [frameSamples] (as it is when it has none).
+List<BoardElement> sampleFrame(Frame f, Color ink, Color accent) {
+  final els = frame(f, ink, accent);
+  final sample = frameSamples[f];
+  if (sample == null) return els;
+  final (title, texts) = sample;
+  var i = 0, titled = false;
+  return [
+    for (final e in els)
+      if (!titled && e is TextElement && (titled = true))
+        _title(title, accent, y: e.position.dy, x: e.position.dx)
+      else if (e is NoteElement && i < texts.length)
+        e.copyWith(text: _fillNote(e.text, texts[i++]))
+      else
+        e,
+  ];
+}
+
+String _fillNote(String note, String text) {
+  final nl = note.indexOf('\n');
+  return nl < 0 ? '${note.trimRight()} $text' : '${note.substring(0, nl)}\n$text';
 }
 
 /// Where a line from [r]'s centre toward [to] leaves [r].

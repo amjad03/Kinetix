@@ -319,6 +319,11 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
         if (e.data['id'] case final String id) _editPin(id);
       case 'error':
         debugPrint('3D viewer: ${e.message}');
+        if (e.message?.contains('unknown command recenter') ?? false) {
+          _recenterByView = true;
+          _recenter();
+          return;
+        }
         if (e.data['noViewer'] == true) {
           setState(() => _noViewer = true);
         } else if (!_loaded) {
@@ -564,6 +569,13 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     setState(() => _turning = on);
     _send(ViewerCommands.autoRotate(on));
   }
+
+  /// Recenter: fits what is shown without undoing Hide, Show only this, a cut or take-apart.
+  void _recenter() => _send(_recenterByView ? ViewerCommands.view(_model?.views.firstOrNull?.dir ?? const [0, 0, 1]) : ViewerCommands.recenter());
+
+  /// The viewer page predates `recenter` (an app built before viewer.js was rebuilt): frame
+  /// the shown parts from the model's first view instead, which keeps them as they are too.
+  bool _recenterByView = false;
 
   void _reset() {
     setState(() {
@@ -1002,7 +1014,9 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(color: cs.surfaceContainer, border: Border(bottom: BorderSide(color: cs.outlineVariant))),
-      child: Row(children: [
+      // The tools keep their size while they fit; on the narrowest phones they scale down a
+      // little rather than overflow.
+      child: LayoutBuilder(builder: (context, box) => Row(children: [
         if (widget.showTitle)
           Expanded(
             child: Padding(
@@ -1012,6 +1026,15 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
           )
         else
           const Spacer(),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: math.max(0, box.maxWidth - (widget.showTitle ? 96 : 0))),
+          child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight, child: Row(mainAxisSize: MainAxisSize.min, children: _tools(m, s, wide, density))),
+        ),
+      ])),
+    );
+  }
+
+  List<Widget> _tools(ViewerManifest m, Viewer3dStrings s, bool wide, VisualDensity? density) => [
         _labelSwitch(s, wide),
         const SizedBox(width: 4),
         IconButton(
@@ -1032,6 +1055,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
           icon: const Icon(Icons.highlight_outlined),
           onPressed: _loaded ? () => _setLaser(!_laser) : null,
         ),
+        IconButton(key: const ValueKey('model3d-recenter'), tooltip: s.recenter, visualDensity: density, icon: const Icon(Icons.filter_center_focus), onPressed: _loaded ? _recenter : null),
         IconButton(key: const ValueKey('model3d-reset'), tooltip: s.startAgain, visualDensity: density, icon: const Icon(Icons.restart_alt), onPressed: _loaded ? _reset : null),
         IconButton(key: const ValueKey('model3d-about'), tooltip: s.about, visualDensity: density, icon: const Icon(Icons.info_outline), onPressed: () => showModel3dCredits(context, model: m, lang: _lang)),
         if (_onSnapshot != null) ...[
@@ -1050,9 +1074,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
                   icon: Icon(_placed ? Icons.check : Icons.add_photo_alternate_outlined),
                 ),
         ],
-      ]),
-    );
-  }
+      ];
 
   Widget _labelSwitch(Viewer3dStrings s, bool wide) {
     final cs = Theme.of(context).colorScheme;

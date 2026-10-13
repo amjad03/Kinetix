@@ -1,17 +1,20 @@
 // KINETIX code runner: compiles and runs C, C++ and Java for the code lab, behind the API
-// (POST /v1/code/run). It is the only thing in its container, which has no network, a
+// (POST /v1/code/run) or, on a school's own code box, behind gateway.mjs on the school
+// network (infra/school-code-box/). Where the image has them (the school box's build adds
+// python3 and sqlite3), it runs Python and SQL too. It is the only thing in its container, which has no network, a
 // read-only file system except /tmp, a non-root user, no capabilities and a seccomp profile
 // (docker-compose.yml, infra/docker/code-runner-seccomp.json, docs/operations/code-runner.md).
 // Each program also runs under its own limits: CPU time, wall time, memory, processes, open
 // files, file size, and output. No dependencies; Node 22.
 //
-// Protocol: POST /run {language: c|cpp|java, source, stdin} →
+// Protocol: POST /run {language: c|cpp|java|python|sql, source, stdin} →
 //   {status: ok|compile_error|runtime_error|timeout|memory_limit|output_limit, stdout, stderr,
 //    compileOutput, exitCode, timeMs}
 // GET /health → {ok, languages}. 503 {status: 'busy'} when the queue is full.
 // Listens on CODE_RUNNER_SOCKET (a Unix socket, the default in compose) or PORT.
 
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { chmod, chown, mkdtemp, rm, unlink, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
@@ -44,7 +47,21 @@ export const LIMITS = {
   queue: num(env.RUN_QUEUE, 16),
 };
 
-const LANGUAGES = ['c', 'cpp', 'java'];
+/** Always there; Python and SQL when the image has python3 and sqlite3 (the school box). */
+const BASE_LANGUAGES = ['c', 'cpp', 'java'];
+const OPTIONAL = { python: '/usr/bin/python3', sql: '/usr/bin/sqlite3' };
+
+/**
+ * The languages this runner runs: RUN_LANGUAGES (comma-separated) when set, else C, C++, Java
+ * and whichever of Python and SQL are installed. [exists] is for tests.
+ */
+export function detectLanguages(list = env.RUN_LANGUAGES, exists = existsSync) {
+  const known = [...BASE_LANGUAGES, ...Object.keys(OPTIONAL)];
+  if (list) return list.split(',').map((l) => l.trim()).filter((l) => known.includes(l));
+  return [...BASE_LANGUAGES, ...Object.entries(OPTIONAL).filter(([, bin]) => exists(bin)).map(([l]) => l)];
+}
+
+const LANGUAGES = detectLanguages();
 
 /** A small JVM that fits in JAVA_ADDRESS_MB of address space and starts fast. */
 const JVM = ['-XX:CompressedClassSpaceSize=64m', '-XX:ReservedCodeCacheSize=32m', '-XX:MaxMetaspaceSize=128m', '-XX:+UseSerialGC', '-XX:TieredStopAtLevel=1', '-XX:-UsePerfData'];
@@ -115,7 +132,18 @@ export async function runJob({ language, source, stdin = '' }) {
   if (jobUser.uid !== undefined) await chown(dir, jobUser.uid, jobUser.gid);
   try {
     let file, compile, run;
-    if (language === 'java') {
+    let input = stdin;
+    if (language === 'python') {
+      // Isolated mode (no user site, no PYTHON* variables), no .pyc files.
+      file = 'main.py';
+      run = ['python3', ['-I', '-B', file]];
+    } else if (language === 'sql') {
+      // The program on stdin, in a fresh in-memory database; -safe turns off the dot-commands
+      // that run commands or touch files.
+      file = 'main.sql';
+      run = ['sqlite3', ['-safe', '-bail', '-batch', '-header', '-box', ':memory:']];
+      input = source;
+    } else if (language === 'java') {
       // The public class names the file (Main by default).
       const cls = /public\s+(?:final\s+)?class\s+([A-Za-z_]\w*)/.exec(source)?.[1] ?? 'Main';
       file = `${cls}.java`;
@@ -130,22 +158,24 @@ export async function runJob({ language, source, stdin = '' }) {
     await writeFile(join(dir, file), source);
     if (jobUser.uid !== undefined) await chown(join(dir, file), jobUser.uid, jobUser.gid);
     const big = LIMITS.javaAddressMb * 1024 * 1024;
-    const c = await exec(compile[0], compile[1], { cwd: dir, cpu: LIMITS.compileSeconds, wallMs: LIMITS.compileSeconds * 2000, as: big, nofile: 256, outputBytes: LIMITS.outputBytes });
-    if (c.code !== 0) {
-      const msg = c.why === 'wall' || c.signal === 'SIGXCPU' ? 'The compiler took too long.' : c.stderr + c.stdout;
-      return out({ status: 'compile_error', compileOutput: msg, exitCode: c.code, timeMs: c.ms });
+    if (compile) {
+      const c = await exec(compile[0], compile[1], { cwd: dir, cpu: LIMITS.compileSeconds, wallMs: LIMITS.compileSeconds * 2000, as: big, nofile: 256, outputBytes: LIMITS.outputBytes });
+      if (c.code !== 0) {
+        const msg = c.why === 'wall' || c.signal === 'SIGXCPU' ? 'The compiler took too long.' : c.stderr + c.stdout;
+        return out({ status: 'compile_error', compileOutput: msg, exitCode: c.code, timeMs: c.ms });
+      }
     }
     const java = language === 'java';
     const r = await exec(run[0], run[1], {
       cwd: dir,
-      stdin,
+      stdin: input,
       cpu: LIMITS.cpuSeconds,
       wallMs: LIMITS.wallMs + (java ? 1500 : 0),
       as: java ? big : LIMITS.memoryBytes,
       nofile: java ? 256 : 64,
       outputBytes: LIMITS.outputBytes,
     });
-    const memory = /OutOfMemoryError|std::bad_alloc|Cannot allocate memory/.test(r.stderr) || (java && /Could not reserve enough space/.test(r.stdout + r.stderr));
+    const memory = /OutOfMemoryError|std::bad_alloc|Cannot allocate memory|MemoryError/.test(r.stderr) || (java && /Could not reserve enough space/.test(r.stdout + r.stderr));
     const status =
       r.why === 'output' ? 'output_limit'
       : r.why === 'wall' || r.signal === 'SIGXCPU' || (r.signal === 'SIGKILL' && r.ms >= LIMITS.cpuSeconds * 1000) ? 'timeout'

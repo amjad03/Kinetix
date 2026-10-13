@@ -7,6 +7,10 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../../../l10n/l10n.dart';
 import '../builders.dart' show timeline;
 import '../subjects.dart';
+import 'biz/biz_samples.dart';
+import 'biz/biz_strings.dart';
+import 'biz/kit_editors.dart';
+import 'biz/market_data.dart';
 import 'calculator_dialog.dart';
 import 'college_builders.dart';
 import 'finance.dart';
@@ -31,12 +35,46 @@ class CollegeKitTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final b = bizStrings(context);
     Widget section(String t) => Padding(padding: const EdgeInsets.fromLTRB(4, Kx.s16, 4, Kx.s8), child: Text(t, style: context.text.titleSmall));
-    Widget item(String key, IconData icon, String label, VoidCallback onTap) => Card(
+    Widget item(String key, IconData icon, String label, VoidCallback onTap, {VoidCallback? onSample}) => Card(
       margin: const EdgeInsets.only(bottom: Kx.s8),
-      child: ListTile(key: Key('college-$key'), leading: Icon(icon, color: accent), title: Text(label), trailing: const Icon(Icons.add), onTap: onTap),
+      child: ListTile(
+        key: Key('college-$key'),
+        leading: Icon(icon, color: accent),
+        title: Text(label),
+        trailing: onSample == null
+            ? const Icon(Icons.add)
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(key: Key('college-$key-sample'), tooltip: b['example'], onPressed: onSample, icon: const Icon(Icons.lightbulb_outline)),
+                  Tooltip(message: b['blank'], child: const Icon(Icons.add)),
+                ],
+              ),
+        onTap: onTap,
+      ),
     );
     void put(List<BoardElement> els) => wb.insert(els);
+    Widget frameItem(Frame f, String label) => item(
+      f.name,
+      Icons.dashboard_outlined,
+      label,
+      () => put(frame(f, ink, accent)),
+      onSample: frameSamples.containsKey(f) ? () => put(sampleFrame(f, ink, accent)) : null,
+    );
+    Future<void> live(KitElement blank) async {
+      final k = await editKit(context, blank);
+      if (k != null) put([k]);
+    }
+
+    Widget liveItem(KitKind kind, IconData icon, String label) => item(
+      'live-${kind.name}',
+      icon,
+      label,
+      () => live(bizPanel(kind, accent)),
+      onSample: kind == KitKind.chart ? null : () => put([bizPanel(kind, accent, sample: true)]),
+    );
     Future<void> calc(CalcSpec spec) async {
       final els = await showCalculator(context, spec, ink: ink, accent: accent);
       if (els != null && els.isNotEmpty) put(els);
@@ -62,6 +100,20 @@ class CollegeKitTab extends StatelessWidget {
       ],
       KitTab.finance => [
         for (final (key, icon, label, spec) in financeCalculators(l, onOpenLab: onOpenLab)) item(key, icon, label, () => calc(spec)),
+        section(b['financePad']),
+        for (final (t, label) in [
+          (FinanceTemplate.npv, b['tplNpv']),
+          (FinanceTemplate.ratios, b['tplRatios']),
+          (FinanceTemplate.breakEven, b['tplBreakEven']),
+          (FinanceTemplate.slm, b['tplSlm']),
+          (FinanceTemplate.wdv, b['tplWdv']),
+          (FinanceTemplate.loan, b['tplLoan']),
+        ])
+          item('pad-${t.name}', Icons.functions, label, () => put([financeTemplate(t, accent)])),
+        section(b['chartPad']),
+        liveItem(KitKind.breakEven, Icons.stacked_line_chart, b['breakEvenLive']),
+        item('chart-pad', Icons.insert_chart_outlined, b['chartPad'], () => live(bizPanel(KitKind.chart, accent))),
+        item('market-data', Icons.show_chart, b['marketData'], () => live(KitElement.sized(kind: KitKind.chart, data: marketDatasets.first.chart.toJson(), color: accent))),
       ],
       KitTab.management => [
         section(l.mgStrategy),
@@ -73,11 +125,15 @@ class CollegeKitTab extends StatelessWidget {
           (Frame.ansoff, l.mgAnsoff),
           (Frame.valueChain, l.mgValueChain),
           (Frame.mckinsey7s, l.mg7s),
+          (Frame.businessModelCanvas, b['bmc']),
         ])
-          item(f.name, Icons.dashboard_outlined, label, () => put(frame(f, ink, accent))),
+          frameItem(f, label),
+        section(b['liveTemplates']),
+        liveItem(KitKind.bcg, Icons.bubble_chart_outlined, b['bcgLive']),
+        liveItem(KitKind.decisionTree, Icons.account_tree_outlined, b['treeLive']),
+        liveItem(KitKind.breakEven, Icons.stacked_line_chart, b['breakEvenLive']),
         section(l.mgMarketing),
-        for (final (f, label) in [(Frame.maslow, l.mgMaslow), (Frame.marketingMix4p, l.mg4p), (Frame.marketingMix7p, l.mg7p)])
-          item(f.name, Icons.dashboard_outlined, label, () => put(frame(f, ink, accent))),
+        for (final (f, label) in [(Frame.maslow, l.mgMaslow), (Frame.marketingMix4p, l.mg4p), (Frame.marketingMix7p, l.mg7p)]) frameItem(f, label),
         section(l.mgProjects),
         item('gantt', Icons.view_timeline_outlined, l.mgGantt, () => calc(projectSpec(l, gantt: true))),
         item('pert', Icons.account_tree_outlined, l.mgPert, () => calc(projectSpec(l, gantt: false))),

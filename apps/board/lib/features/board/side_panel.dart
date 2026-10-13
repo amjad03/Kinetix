@@ -114,6 +114,7 @@ class SplitPanel extends StatelessWidget {
     this.onItem,
     this.onSnapshot,
     this.snapshotKey,
+    this.onRequestModel,
   });
 
   final SplitContent? content;
@@ -134,6 +135,9 @@ class SplitPanel extends StatelessWidget {
 
   /// Marks the model or lab view, for the picture ([RepaintBoundary]).
   final GlobalKey? snapshotKey;
+
+  /// "Request a 3D model" under the 3D library's search (search/model_request.dart).
+  final VoidCallback? onRequestModel;
 
   @override
   Widget build(BuildContext context) {
@@ -174,6 +178,7 @@ class SplitPanel extends StatelessWidget {
                     initialSubject: kind == SplitContent.model3d ? catalogueSubject : null,
                     initialLevel: kind == SplitContent.model3d ? catalogueLevel : null,
                     onPick: (id) => onItem?.call(id, null),
+                    onRequestModel: kind == SplitContent.model3d ? onRequestModel : null,
                   )
                 : RepaintBoundary(
                     key: snapshotKey,
