@@ -1,4 +1,5 @@
 import { Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -242,6 +243,7 @@ export class CareersController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const me = await this.svc.ownStudent(tx, p);
       if (!me) throw new ForbiddenException('Only students can request a mentor');
+      if (!(await qualitySettings(tx, p.tenantId, 'alumni')).rules.mentorshipEnabled) throw new ConflictException('Alumni mentoring is switched off');
       const a = found((await tx.select().from(alumniProfiles).where(eq(alumniProfiles.id, b.alumniId)))[0], 'Alumni profile');
       if (!a.directoryVisible || !a.mentorAvailable) throw new ConflictException('This alumnus is not taking mentees');
       const [open] = await tx.select({ id: mentoringRequests.id }).from(mentoringRequests).where(and(eq(mentoringRequests.studentId, me.id), eq(mentoringRequests.alumniId, b.alumniId), eq(mentoringRequests.status, 'pending')));

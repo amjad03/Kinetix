@@ -1,4 +1,5 @@
 import { Body, ConflictException, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { quietHoursProblem } from '../quality-hub/settings.catalogue.js';
 import { asc, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, BROADCAST_ROLES, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -138,6 +139,10 @@ export class CommsController {
     const now = this.clock.now();
     const sendAt = b.sendAt ?? now;
     const row = await this.db.withTenant(p.tenantId, async (tx) => {
+      if (b.sendAt) {
+        const quiet = await quietHoursProblem(tx, p.tenantId, b.sendAt);
+        if (quiet) throw new ConflictException(quiet);
+      }
       const [t] = await tx.select().from(messageTemplates).where(eq(messageTemplates.id, b.templateId));
       if (!t || !t.active) throw new NotFoundException('Template not found');
       const [a] = await tx.select().from(audienceRules).where(eq(audienceRules.id, b.audienceId));

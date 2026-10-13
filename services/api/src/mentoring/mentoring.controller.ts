@@ -1,4 +1,5 @@
 import { Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { menteeCapProblem } from '../quality-hub/settings.catalogue.js';
 import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -56,6 +57,8 @@ export class MentoringController {
   private async assign(tx: Tx, p: UserPrincipal, studentId: string, mentorUserId: string, today: string) {
     const open = await this.svc.openAssignment(tx, studentId);
     if (open?.mentorUserId === mentorUserId) return open;
+    const full = await menteeCapProblem(tx, p.tenantId, mentorUserId);
+    if (full) throw new ConflictException(full);
     if (open) await tx.update(mentorAssignments).set({ endedOn: today }).where(eq(mentorAssignments.id, open.id));
     const [row] = await tx.insert(mentorAssignments).values({ tenantId: p.tenantId, studentId, mentorUserId, startedOn: today, assignedBy: p.userId }).returning();
     await auditUser(tx, p, 'mentoring.assigned', 'mentor_assignment', row.id, { studentId, mentorUserId });

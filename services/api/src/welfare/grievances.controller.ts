@@ -12,6 +12,7 @@ import { grievanceEvents, grievanceTickets, userRoles } from '../db/schema.js';
 import { found, hasRole } from '../placements/placements.access.js';
 import { COMMITTEE_ROLES, GRIEVANCE_STAFF } from './welfare.access.js';
 import { WelfareService } from './welfare.service.js';
+import { fillTemplate, qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { COMMITTEE_STAGES, OPEN_STATUSES, type Committee, type Severity, canAdvanceStage, canMoveTicket, canReopen, committeeFor, effectiveSeverity, escalate, isOverdue, slaDueAt } from './welfare-rules.js';
 
 type Ticket = typeof grievanceTickets.$inferSelect;
@@ -95,9 +96,13 @@ export class GrievancesController {
       const committee = committeeFor(b.category, b.committee as Committee | undefined);
       const severity = effectiveSeverity(b.category, b.severity);
       const now = this.svc.now();
+      // Module settings: anonymity and the response deadline for each severity.
+      const set = await qualitySettings(tx, p.tenantId, 'grievances');
+      if (b.anonymous && !set.rules.allowAnonymous) throw new BadRequestException('This institution does not accept anonymous grievances');
+      const slaHours = Number(set.rules[`sla${severity[0].toUpperCase()}${severity.slice(1)}Hours`]);
       const [t] = await tx
         .insert(grievanceTickets)
-        .values({ tenantId: p.tenantId, ticketNo: await nextNumber(tx, p.tenantId, 'GRV'), category: b.category, severity, subject: b.subject, description: b.description, anonymous: b.anonymous, committee, committeeStage: committee ? 'received' : null, raisedBy: p.userId, studentId, slaDueAt: slaDueAt(now, severity) })
+        .values({ tenantId: p.tenantId, ticketNo: await nextNumber(tx, p.tenantId, 'GRV'), category: b.category, severity, subject: b.subject, description: b.description, anonymous: b.anonymous, committee, committeeStage: committee ? 'received' : null, raisedBy: p.userId, studentId, slaDueAt: Number.isFinite(slaHours) ? new Date(now.getTime() + slaHours * 3_600_000) : slaDueAt(now, severity) })
         .returning();
       await tx.insert(grievanceEvents).values({ tenantId: p.tenantId, ticketId: t.id, actorUserId: p.userId, actorRole: 'reporter', kind: 'raised', visibility: 'public', body: '' });
       // An anonymous report is audited without the reporter's identity.
@@ -240,7 +245,7 @@ export class GrievancesController {
       const [row] = await tx.update(grievanceTickets).set({ status: 'resolved', resolution: b.resolution, resolvedAt: this.svc.now(), version: t.version + 1 }).where(eq(grievanceTickets.id, id)).returning();
       await this.event(tx, p, t, viewer, 'resolved', b.resolution);
       await auditUser(tx, p, 'grievance.resolved', 'grievance', id);
-      await this.svc.notify(tx, [t.raisedBy], 'grievance', 'Your grievance was resolved', `${t.ticketNo}. Please rate how it went.`, `grievance:resolved:${id}`, { ticketId: id });
+      await this.svc.notify(tx, [t.raisedBy], 'grievance', 'Your grievance was resolved', fillTemplate((await qualitySettings(tx, p.tenantId, 'grievances')).templates.resolved, { ticketNo: t.ticketNo }), `grievance:resolved:${id}`, { ticketId: id });
       return present(row, viewer);
     });
   }

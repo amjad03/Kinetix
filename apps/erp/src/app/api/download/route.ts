@@ -128,6 +128,15 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !/^\d{4}-\d{2}$/.test(fy)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/hr/payroll/form16/${id}?fy=${fy}`;
   }
+  // A quality-hub report as PDF or Excel with its filters: ?kind=qh-report&id=placements.offers&format=pdf&from=&to=&status=
+  if (kind === 'qh-report') {
+    const q = req.nextUrl.searchParams;
+    const format = q.get('format') ?? '';
+    const [from, to, status] = ['from', 'to', 'status'].map((k) => q.get(k) ?? '');
+    if (!/^[a-z]+\.[a-z]+$/.test(id) || !['pdf', 'xlsx'].includes(format) || ![from, to].every((d) => d === '' || /^\d{4}-\d{2}-\d{2}$/.test(d)) || !/^[a-z_]{0,30}$/.test(status)) return new Response('Not found', { status: 404 });
+    const params = new URLSearchParams({ format, ...(from ? { from } : {}), ...(to ? { to } : {}), ...(status ? { status } : {}) });
+    FIXED[kind] = `/v1/quality-hub/reports/${id}?${params.toString()}`;
+  }
   // Academics reports as PDF or Excel: ?kind=acad-report&report=<kind>&format=pdf|xlsx plus the report's own filters.
   if (kind === 'acad-report') {
     const sp = req.nextUrl.searchParams;

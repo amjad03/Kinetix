@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 import type { CertificateKind, CertificateRequest, CertificateStatus, CertificateSubject, CertificateTemplate } from '@kinetix/shared';
 import { and, asc, desc, eq, inArray, or, sql } from 'drizzle-orm';
@@ -191,7 +192,9 @@ export class CertificatesService {
     const [c] = await tx.select().from(certificates).where(eq(certificates.id, id)).for('update');
     if (!c) throw new NotFoundException('Certificate not found');
     if (c.status === 'issued') return (await this.views(tx, [c]))[0];
-    if (c.status !== 'approved') throw new ConflictException(`A ${c.status} request cannot be issued`);
+    // A request is approved first unless the document settings allow issuing straight from the request.
+    const direct = c.status === 'requested' && !(await qualitySettings(tx, p.tenantId, 'documents')).rules.approvalBeforeIssue;
+    if (c.status !== 'approved' && !direct) throw new ConflictException(`A ${c.status} request cannot be issued`);
     const [tmpl] = await tx.select().from(certificateTemplates).where(eq(certificateTemplates.id, c.templateId));
     const today = await this.today(tx);
     const fy = financialYear(today);

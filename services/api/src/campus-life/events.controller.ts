@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { and, asc, desc, eq, gt, inArray, ne, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -19,7 +20,7 @@ const Base = z.object({
   description: z.string().trim().max(4000).default(''),
   eventType: z.enum(TYPES).default('other'),
   venue: z.string().trim().max(200).default(''),
-  capacity: z.number().int().min(1).max(100000),
+  capacity: z.number().int().min(1).max(100000).optional(),
   startsAt: z.coerce.date(),
   endsAt: z.coerce.date(),
   audience: z.enum(['all', 'students', 'parents', 'staff']).default('all'),
@@ -46,8 +47,9 @@ export class EventsController {
   create(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(EventBody)) b: z.infer<typeof EventBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { publish, ...rest } = b;
-      const [row] = await tx.insert(campusEvents).values({ tenantId: p.tenantId, createdBy: p.userId, status: publish ? 'published' : 'draft', ...rest }).returning();
-      await auditUser(tx, p, 'event.created', 'event', row.id, { title: b.title, capacity: b.capacity });
+      const capacity = b.capacity ?? Number((await qualitySettings(tx, p.tenantId, 'events')).defaults.defaultCapacity);
+      const [row] = await tx.insert(campusEvents).values({ tenantId: p.tenantId, createdBy: p.userId, status: publish ? 'published' : 'draft', ...rest, capacity }).returning();
+      await auditUser(tx, p, 'event.created', 'event', row.id, { title: b.title, capacity });
       return row;
     });
   }

@@ -23,6 +23,7 @@ import { rolesAndRights } from './access.js';
 import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 import { depthSamples } from './depth.js';
 import { accreditationSamples } from './accreditation.js';
+import { qualityHubSettings } from './quality-hub.js';
 import { migrationAndExaminer } from './migration-examiner.js';
 import { examOffice } from './exam-office.js';
 import { gatewayBooksSamples } from './gateway-books.js';
@@ -86,6 +87,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['setup, rules, learning support, rubrics, forums, reattempts and integrity (requirements gap close)', gapClose],
   ['projects, careers, thesis, student life, communication and parent visibility', pathwaySamples],
   ['accreditation: NAAC entries, DVV, IQAC workspace and teacher evidence', accreditationSamples],
+  ['quality group module settings', qualityHubSettings],
   ['data migration history, university templates, transcripts and the external examiner portal', migrationAndExaminer],
   ['exam office: workflow stages, exam fees, paper attendance, moderation, revaluation fees and a sealed paper', examOffice],
   ['books, gateway settlements, Tally mapping, single sign-on and online-class attendance', gatewayBooksSamples],

@@ -112,6 +112,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/accreditation/nirf', label: 'nav.accNirf', section: 'accreditation', icon: 'obe' },
       { href: '/accreditation/iqac', label: 'nav.accIqac', section: 'accreditation', icon: 'obe' },
       { href: '/accreditation/my-evidence', label: 'nav.accMine', section: 'facultyEvidence', icon: 'obe' },
+      { href: '/quality/reports', label: 'nav.qhReports', section: 'qualityHub', icon: 'obe' },
+      { href: '/quality/settings', label: 'nav.qhSettings', section: 'qualityHub', icon: 'obe' },
     ],
   },
   {

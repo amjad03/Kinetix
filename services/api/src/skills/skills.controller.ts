@@ -1,4 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { and, asc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -15,7 +16,7 @@ import { EVENT_TYPES, MAP_KINDS, SKILL_CATEGORIES, type MapKind } from './skills
 const SkillBody = z.object({ code: z.string().trim().min(2).max(40), name: z.string().trim().min(2).max(120), category: z.enum(SKILL_CATEGORIES).default('skill'), description: z.string().trim().max(2000).default('') });
 const SkillPatch = z.object({ name: z.string().trim().min(2).max(120), category: z.enum(SKILL_CATEGORIES), description: z.string().trim().max(2000), active: z.boolean() }).partial();
 const MapBody = z.object({ kind: z.enum(MAP_KINDS), ref: z.string().trim().max(80).optional() });
-const EvidenceBody = z.object({ studentId: z.uuid(), level: z.number().int().min(1).max(5), title: z.string().trim().min(2).max(160), note: z.string().trim().max(2000).default('') });
+const EvidenceBody = z.object({ studentId: z.uuid(), level: z.number().int().min(1).max(10), title: z.string().trim().min(2).max(160), note: z.string().trim().max(2000).default('') });
 
 /** Sources that need no reference (all placements, all internships, all research projects). */
 const NO_REF: MapKind[] = ['placement', 'internship', 'research'];
@@ -102,6 +103,8 @@ export class SkillsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       found((await tx.select({ id: skills.id }).from(skills).where(and(eq(skills.id, id), eq(skills.active, true))))[0], 'Skill');
       found((await tx.select({ id: students.id }).from(students).where(eq(students.id, b.studentId)))[0], 'Student');
+      const maxLevel = Number((await qualitySettings(tx, p.tenantId, 'skills')).rules.maxLevel);
+      if (b.level > maxLevel) throw new BadRequestException(`Levels go up to ${maxLevel}`);
       const [row] = await tx.insert(skillEvidence).values({ tenantId: p.tenantId, skillId: id, ...b, recordedBy: p.userId }).returning();
       await auditUser(tx, p, 'skill.evidence_recorded', 'skill', id, { studentId: b.studentId, level: b.level });
       return row;

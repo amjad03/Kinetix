@@ -3150,6 +3150,7 @@ export const TENANT_TABLES = [
   'iqac_actions',
   'iqac_practices',
   'iqac_feedback_reports',
+  'module_settings',
   'faculty_evidence',
   'exit_tickets',
   'migration_mappings', 'migration_batches', 'migration_batch_records', 'legacy_marks', 'legacy_attendance', 'legacy_fee_entries', 'university_templates', 'tabulation_registers',
