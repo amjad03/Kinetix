@@ -109,7 +109,7 @@ export function QualityRecord({ record }: { record: QhRecord }) {
       subtitle={
         <span className="text-sm text-muted-foreground">
           {t(`qh.e.${record.entity}` as MessageKey)}
-          {record.createdAt && ` · ${t('qh.created', { date: fmt.date(record.createdAt.slice(0, 10)) })}`}
+          {record.createdAt && ` · ${t('qh.created', { date: fmt.date(record.createdAt.slice(0, 10), 'short') })}`}
         </span>
       }
       facts={record.facts.map((f) => ({ label: t(fieldKey(f.key)), value: cellNode(i, f.key, f.kind, f.value) }))}

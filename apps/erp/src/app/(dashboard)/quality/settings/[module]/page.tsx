@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 /** One module's numbering series, rules, message templates and defaults. */
 export default async function QualityModuleSettingsPage({ params }: { params: Params }) {
   const { module } = await params;
-  if (!isQhModule(module) || !QH_SETTINGS_MODULES.includes(module)) notFound();
+  if (!isQhModule(module) || !(QH_SETTINGS_MODULES as readonly string[]).includes(module)) notFound();
   await requireSection('qualityHub');
   if ((await isSchool()) && COLLEGE_ONLY_MODULES.includes(module)) notFound();
   const data = await load(() => api<QhSettingsView>(`/v1/quality-hub/settings/${module}`));

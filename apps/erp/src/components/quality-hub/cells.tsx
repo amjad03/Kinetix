@@ -16,7 +16,7 @@ export function cellText(i: Pick<I18n, 't' | 'fmt'>, kind: FactKind, v: CellValu
   if (v === null) return '';
   switch (kind) {
     case 'date':
-      return i.fmt.date(String(v));
+      return i.fmt.date(String(v), 'short');
     case 'datetime':
       return i.fmt.dateTime(String(v));
     case 'paise':
@@ -28,7 +28,8 @@ export function cellText(i: Pick<I18n, 't' | 'fmt'>, kind: FactKind, v: CellValu
     case 'bool':
       return v ? i.t('qh.yes') : i.t('qh.no');
     default:
-      return String(v);
+      // Codes such as "staff_conduct" read as words; names and free text are shown as they are.
+      return /^[a-z]+(_[a-z]+)*$/.test(String(v)) ? String(v).replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase()) : String(v);
   }
 }
 

@@ -72,7 +72,7 @@ export const REPORTS = {
     columns: [['ticket_no', 'text'], ['category', 'text'], ['severity', 'text'], ['raised_on', 'date'], ['resolved_on', 'date'], ['hours', 'number'], ['within_sla', 'bool'], ['rating', 'number'], ['status', 'text']],
     // Committee (ICC / anti-ragging) cases are counted but not described: the subject is left out.
     base: `select g.id, g.ticket_no, case when g.committee is null then g.category else 'committee' end as category, g.severity, g.created_at::date as raised_on, g.resolved_at::date as resolved_on,
-             case when g.resolved_at is null then null else round(extract(epoch from (g.resolved_at - g.created_at)) / 3600)::int end as hours,
+             case when g.resolved_at is null then null else greatest(0, round(extract(epoch from (g.resolved_at - g.created_at)) / 3600))::int end as hours,
              case when g.resolved_at is null then null else g.resolved_at <= g.sla_due_at end as within_sla, g.rating, g.status, g.created_at::date as _on
            from grievance_tickets g`,
   },
@@ -195,9 +195,10 @@ export function reportQuery(id: ReportId, f: ReportFilters): SQL {
       select area, metric, value from (${sql.raw(summaryWithPeriod())}) q`;
   }
   const status = def.statuses && f.status && def.statuses.includes(f.status) ? f.status : null;
+  // Reports without a status column (sessions, publications, alumni, skills) are filtered by period only.
+  const byStatus = def.statuses ? sql`and (${status}::text is null or q.status = ${status}::text)` : sql``;
   return sql`select * from (${sql.raw(def.base)}) q
-    where (${from}::date is null or q._on >= ${from}::date) and (${to}::date is null or q._on <= ${to}::date)
-      and (${status}::text is null or q.status = ${status}::text)
+    where (${from}::date is null or q._on >= ${from}::date) and (${to}::date is null or q._on <= ${to}::date) ${byStatus}
     order by q._on desc nulls last limit 5000`;
 }
 

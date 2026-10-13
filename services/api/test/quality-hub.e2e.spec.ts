@@ -135,6 +135,8 @@ describe('quality hub: module settings, record pages and reports', () => {
     const sum = (await get('principal', '/v1/quality-hub/reports/accreditation.summary?from=2026-04-01&to=2027-03-31').expect(200)).body;
     expect(sum.rows.find((r: { metric: string }) => r.metric === 'grievances_received').value).toBe(3);
     await get('po', '/v1/quality-hub/reports/grievances.register').expect(404);
+    // Reports without a status column still filter by period.
+    for (const r of ['skills.evidence', 'mentoring.sessions', 'research.publications', 'alumni.directory']) await get('principal', `/v1/quality-hub/reports/${r}?from=2026-01-01`).expect(200);
     await get('po', '/v1/quality-hub/reports/placements.drives?from=2026-13-40').expect(400);
     await get('po', '/v1/quality-hub/reports/placements.drives?format=doc').expect(400);
     // Another tenant's report does not see this tenant's drive.
