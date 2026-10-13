@@ -5,6 +5,7 @@ import { api, getMe } from '@/lib/api';
 import { SESSION_COOKIE } from '@/lib/config';
 import { createFormat, type I18n } from './format';
 import { applyTerminology } from './terminology';
+import { applySchoolWording, isSchoolModel } from './school-wording';
 import { fromAcceptLanguage, isLocale, LANG_COOKIE, type Locale } from './locales';
 import { MESSAGES } from './messages';
 import { createT } from './translate';
@@ -28,18 +29,29 @@ export const getLocale = cache(async (): Promise<Locale> => {
   return fromAcceptLanguage((await headers()).get('accept-language')) ?? 'en';
 });
 
-/** The institution's own wording for what the ERP calls things (empty when signed out or on any failure). */
-export const getTerminology = cache(async (): Promise<Record<string, string>> => {
-  if (!(await cookies()).get(SESSION_COOKIE)) return {};
+/** The institution's capabilities that shape wording (empty when signed out or on any failure). */
+const getWordingProfile = cache(async (): Promise<{ terminology: Record<string, string>; academicModel?: string }> => {
+  if (!(await cookies()).get(SESSION_COOKIE)) return { terminology: {} };
   try {
-    return (await api<{ terminology?: Record<string, string> }>('/v1/institution/capabilities')).terminology ?? {};
+    const c = await api<{ terminology?: Record<string, string>; academicModel?: string }>('/v1/institution/capabilities');
+    return { terminology: c.terminology ?? {}, academicModel: c.academicModel };
   } catch {
-    return {};
+    return { terminology: {} };
   }
 });
 
-/** The dictionary for this request: the language's strings with the institution's wording on top. */
-export const getMessages = cache(async () => applyTerminology(MESSAGES[await getLocale()], await getTerminology()));
+/** The institution's own wording for what the ERP calls things (empty when signed out or on any failure). */
+export const getTerminology = cache(async (): Promise<Record<string, string>> => (await getWordingProfile()).terminology);
+
+/** True for a school tenant: Class / Section / Term / Subject instead of Programme / Semester / Course. */
+export const isSchoolTenant = cache(async (): Promise<boolean> => isSchoolModel((await getWordingProfile()).academicModel));
+
+/** The dictionary for this request: the language's strings, school wording for a school, the institution's wording on top. */
+export const getMessages = cache(async () => {
+  const locale = await getLocale();
+  const base = (await isSchoolTenant()) ? applySchoolWording(MESSAGES[locale], locale) : MESSAGES[locale];
+  return applyTerminology(base, await getTerminology());
+});
 
 /** `t()` and formatters for server components and server actions. */
 export const getI18n = cache(async (): Promise<I18n> => {
