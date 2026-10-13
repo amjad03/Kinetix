@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetix ERP Redesign</title>
+<style>
+:root{
+  --bg:#f7f7f8;--card:#fff;--border:#ececee;--border-strong:#dcdce1;--text:#18181b;--muted:#5d5e66;--faint:#8b8c94;
+  --primary:#18181b;--primary-fg:#fff;--hover:#f3f3f5;--active:#ededf0;
+  --teal:#0f9488;--teal-ink:#0f766e;--teal-soft:#e3f5f2;--teal-2:#7dd3c8;
+  --amber:#f59e0b;--amber-ink:#a35c06;--amber-soft:#fdf2d6;
+  --orange:#f97316;--orange-ink:#c2410c;--orange-soft:#ffeddc;
+  --slate:#94a3b8;--slate-ink:#475569;--slate-soft:#eef1f5;
+  --red:#ef4444;--red-ink:#b91c1c;--red-soft:#fde6e6;
+  --green:#22c55e;--green-ink:#15803d;--green-soft:#dcf5e5;
+  --blue-ink:#1d4ed8;--blue-soft:#e0eafe;
+  --ring:#0f9488;--shadow:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.03);
+  --shadow-lg:0 20px 50px -12px rgba(16,24,40,.25);
+  --r:14px;--r-sm:10px;--sbw:264px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c0c0e;--card:#151518;--border:#26262c;--border-strong:#34343b;--text:#f4f4f5;--muted:#a6a6b0;--faint:#7c7c86;
+  --primary:#f4f4f5;--primary-fg:#18181b;--hover:#1e1e23;--active:#26262c;
+  --teal:#14b8a6;--teal-ink:#5eead4;--teal-soft:rgba(20,184,166,.15);--teal-2:#0f766e;
+  --amber-ink:#fcd34d;--amber-soft:rgba(245,158,11,.16);--orange-ink:#fdba74;--orange-soft:rgba(249,115,22,.16);
+  --slate-ink:#cbd5e1;--slate-soft:rgba(148,163,184,.14);--red-ink:#fca5a5;--red-soft:rgba(239,68,68,.16);
+  --green-ink:#86efac;--green-soft:rgba(34,197,94,.15);--blue-ink:#93c5fd;--blue-soft:rgba(59,130,246,.16);
+  --shadow:none;--shadow-lg:0 20px 50px -12px rgba(0,0,0,.6);color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0c0c0e;--card:#151518;--border:#26262c;--border-strong:#34343b;--text:#f4f4f5;--muted:#a6a6b0;--faint:#7c7c86;
+  --primary:#f4f4f5;--primary-fg:#18181b;--hover:#1e1e23;--active:#26262c;
+  --teal:#14b8a6;--teal-ink:#5eead4;--teal-soft:rgba(20,184,166,.15);--teal-2:#0f766e;
+  --amber-ink:#fcd34d;--amber-soft:rgba(245,158,11,.16);--orange-ink:#fdba74;--orange-soft:rgba(249,115,22,.16);
+  --slate-ink:#cbd5e1;--slate-soft:rgba(148,163,184,.14);--red-ink:#fca5a5;--red-soft:rgba(239,68,68,.16);
+  --green-ink:#86efac;--green-soft:rgba(34,197,94,.15);--blue-ink:#93c5fd;--blue-soft:rgba(59,130,246,.16);
+  --shadow:none;--shadow-lg:0 20px 50px -12px rgba(0,0,0,.6);color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Noto Sans Kannada",sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,select{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:6px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--primary);color:var(--primary-fg);padding:8px 12px;border-radius:8px}
+.skip:focus{top:12px}
+.ic{flex:none;display:inline-block;vertical-align:middle}
+
+/* layout */
+.app{display:grid;grid-template-columns:var(--sbw) minmax(0,1fr);min-height:100vh;transition:grid-template-columns .2s}
+.app.collapsed{--sbw:72px}
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:40}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;height:60px;padding:0 20px;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.content{padding:24px;max-width:1440px;width:100%;margin:0 auto}
+.scrim{position:fixed;inset:0;background:rgba(10,10,12,.45);z-index:35;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.scrim.top{z-index:65}
+
+/* sidebar */
+.sb-head{padding:14px 12px 8px;position:relative}
+.org{display:flex;align-items:center;gap:10px;width:100%;padding:8px;border:1px solid var(--border);border-radius:12px;background:var(--card);cursor:pointer;text-align:left}
+.org:hover{background:var(--hover)}
+.logo{width:32px;height:32px;border-radius:9px;background:var(--primary);color:var(--primary-fg);display:grid;place-items:center;font-weight:700;flex:none}
+.org-t{min-width:0;flex:1}
+.org-t b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org-t span{display:block;font-size:12px;color:var(--muted)}
+.sb-nav{padding:4px 12px 12px;flex:1}
+.grp{margin-top:10px}
+.grp-h{display:flex;align-items:center;width:100%;padding:6px 8px;border:0;background:none;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-radius:6px}
+.grp-h:hover{color:var(--text)}
+.grp-h .ic{margin-left:auto;transition:transform .15s}
+.grp.closed .grp-h .ic{transform:rotate(-90deg)}
+.grp.closed .grp-items{display:none}
+.nav-i{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;margin:1px 0;border:0;background:none;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:500;text-align:left;position:relative}
+.nav-i:hover{background:var(--hover);color:var(--text)}
+.nav-i.on{background:var(--active);color:var(--text);font-weight:600}
+.nav-i.on::before{content:"";position:absolute;left:-12px;top:7px;bottom:7px;width:3px;border-radius:0 3px 3px 0;background:var(--teal)}
+.nav-i .lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nbadge{font-size:11px;font-weight:600;padding:0 7px;border-radius:99px;background:var(--red-soft);color:var(--red-ink)}
+.sb-foot{padding:12px;border-top:1px solid var(--border)}
+.setup-mini{display:block;width:100%;text-align:left;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--bg);cursor:pointer}
+.setup-mini:hover{border-color:var(--border-strong)}
+.app.collapsed .lbl,.app.collapsed .grp-h span,.app.collapsed .org-t,.app.collapsed .org .ic,.app.collapsed .nbadge,.app.collapsed .setup-mini,.app.collapsed .grp-h .ic{display:none}
+.app.collapsed .nav-i{justify-content:center;padding:9px}
+.app.collapsed .grp-h{justify-content:center;height:12px;padding:0}
+.app.collapsed .grp-h::after{content:"";width:16px;height:1px;background:var(--border-strong)}
+.app.collapsed .org{justify-content:center;padding:6px}
+.app.collapsed .grp.closed .grp-items{display:block}
+.pop{position:absolute;z-index:60;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;min-width:220px}
+.pop[hidden]{display:none}
+.pop-i{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;background:none;border-radius:8px;cursor:pointer;text-align:left}
+.pop-i:hover,.pop-i:focus-visible{background:var(--hover)}
+.pop-i.on{background:var(--active);font-weight:600}
+.pop-h{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 10px 4px}
+.sb-head .pop{left:12px;right:12px;top:66px}
+
+/* topbar */
+.ibtn{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:10px;border:1px solid transparent;background:none;cursor:pointer;color:var(--muted);position:relative;flex:none}
+.ibtn:hover{background:var(--hover);color:var(--text)}
+.ibtn.bordered{border-color:var(--border);background:var(--card)}
+.dot{position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--orange);border:2px solid var(--card)}
+.crumb{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;white-space:nowrap;min-width:0}
+.crumb b{color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.search{display:flex;align-items:center;gap:8px;height:36px;padding:0 10px;width:min(340px,32vw);margin-left:auto;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--muted);cursor:pointer}
+.search:hover{border-color:var(--border-strong)}
+.search span{flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+kbd{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:3px 6px;border:1px solid var(--border);border-bottom-width:2px;border-radius:6px;color:var(--muted);background:var(--bg)}
+.seg{display:inline-flex;padding:3px;border:1px solid var(--border);border-radius:10px;background:var(--card);gap:2px}
+.seg button{border:0;background:none;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--muted);white-space:nowrap}
+.seg button.on{background:var(--active);color:var(--text);font-weight:600}
+.seg button:hover{color:var(--text)}
+.tb-wrap{position:relative}
+.tb-wrap .pop{right:0;top:44px}
+.avatar{display:inline-grid;place-items:center;border-radius:50%;font-weight:600;flex:none;width:32px;height:32px;font-size:12px}
+.av-0{background:#d7f2ee;color:#0b5e57}.av-1{background:#fdecc8;color:#7a4405}.av-2{background:#e3e8f0;color:#334155}
+.av-3{background:#ffe2cc;color:#9a3412}.av-4{background:#dde7fd;color:#1e3a8a}.av-5{background:#f9dde7;color:#9d174d}
+[data-theme="dark"] .av-0,[data-theme="dark"] .av-1,[data-theme="dark"] .av-2,[data-theme="dark"] .av-3,[data-theme="dark"] .av-4,[data-theme="dark"] .av-5{filter:saturate(.9) brightness(.9)}
+
+/* components */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.ph h1{font-size:24px;line-height:1.25;margin:0;font-weight:650;letter-spacing:-.015em}
+.ph p{margin:4px 0 0;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-weight:550;white-space:nowrap;font-size:13.5px}
+.btn:hover{background:var(--hover)}
+.btn.pri{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.btn.pri:hover{opacity:.9}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}
+.btn.ghost{border-color:transparent;background:none}
+.btn.ghost:hover{background:var(--hover)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px 0}
+.card-h h2,.card-h h3{font-size:15px;margin:0;font-weight:600}
+.card-h p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.card-b{padding:16px 18px 18px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.s2{grid-column:span 2}.s3{grid-column:span 3}
+.mt{margin-top:16px}
+.kpi{padding:16px 18px;cursor:pointer;text-align:left;width:100%;display:block;border:1px solid var(--border);transition:border-color .15s, transform .15s}
+.kpi:hover{border-color:var(--border-strong)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:13px;font-weight:500}
+.kpi-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.kpi-v{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:10px}
+.kpi-v b{font-size:28px;line-height:1.1;font-weight:650;letter-spacing:-.02em}
+.kpi-sub{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.trend{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;padding:1px 7px;border-radius:99px}
+.trend.up{background:var(--green-soft);color:var(--green-ink)}
+.trend.down{background:var(--red-soft);color:var(--red-ink)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:550;padding:2px 9px;border-radius:99px;white-space:nowrap;line-height:1.5}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8}
+.pill.nodot::before{display:none}
+.p-green{background:var(--green-soft);color:var(--green-ink)}
+.p-red{background:var(--red-soft);color:var(--red-ink)}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink)}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink)}
+.p-slate{background:var(--slate-soft);color:var(--slate-ink)}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink)}
+.p-orange{background:var(--orange-soft);color:var(--orange-ink)}
+.live::before{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.chip{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:6px;border:1px solid var(--border-strong);color:var(--muted);background:var(--card);white-space:nowrap}
+.bar{height:6px;border-radius:99px;background:var(--hover);overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--teal)}
+.bar.amber i{background:var(--amber)}.bar.red i{background:var(--red)}.bar.slate i{background:var(--slate)}
+.att{display:flex;align-items:center;gap:8px;min-width:120px}
+.att .bar{flex:1}
+.att span{font-variant-numeric:tabular-nums;font-size:12.5px;width:34px;text-align:right}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tabs button{border:0;background:none;padding:10px 12px;cursor:pointer;color:var(--muted);font-weight:550;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button:hover{color:var(--text)}
+.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--text)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.empty{display:grid;place-items:center;text-align:center;padding:40px 20px;color:var(--muted)}
+.empty .em-ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:var(--bg);border:1px dashed var(--border-strong);margin-bottom:12px;color:var(--muted)}
+.empty h3{margin:0 0 4px;color:var(--text);font-size:16px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.num{font-variant-numeric:tabular-nums}
+.callout{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--teal-soft);color:var(--text);border:1px solid color-mix(in srgb,var(--teal) 25%,transparent)}
+.callout .ic{color:var(--teal-ink);margin-top:2px}
+
+/* table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;font-weight:600;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--card)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--hover)}
+tr.sel td{background:var(--teal-soft)}
+.who{display:flex;align-items:center;gap:10px}
+.who b{display:block;font-weight:550}
+.who small{display:block;color:var(--muted);font-size:12px}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--teal);cursor:pointer}
+.field{display:flex;align-items:center;gap:8px;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--muted)}
+.field input{border:0;outline:0;background:none;color:var(--text);width:100%;min-width:0}
+.field:focus-within{border-color:var(--ring);box-shadow:0 0 0 3px var(--teal-soft)}
+select.sel{height:36px;padding:0 30px 0 10px;border:1px solid var(--border);border-radius:10px;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8c94' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;-webkit-appearance:none;appearance:none;cursor:pointer}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+.filters .field{flex:1 1 220px;max-width:320px}
+.bulk{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--primary);color:var(--primary-fg);border-radius:0;flex-wrap:wrap}
+.bulk .btn{background:transparent;color:inherit;border-color:color-mix(in srgb,var(--primary-fg) 30%,transparent)}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-top:1px solid var(--border);flex-wrap:wrap}
+.pager .pg{display:flex;gap:4px}
+.pager .pg button{min-width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer}
+.pager .pg button.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.pager .pg button[disabled]{opacity:.4;cursor:not-allowed}
+
+/* charts */
+.chart{width:100%;position:relative}
+.chart svg{display:block;overflow:visible}
+.grid-l{stroke:var(--border);stroke-width:1}
+.axis{fill:var(--muted);font-size:11px}
+.vlab{fill:var(--text);font-size:11px;font-weight:600}
+.halo{paint-order:stroke;stroke:var(--card);stroke-width:4px;stroke-linejoin:round;font-weight:600}
+.f-teal{fill:var(--teal)}.f-teal2{fill:var(--teal-2)}.f-amber{fill:var(--amber)}.f-orange{fill:var(--orange)}.f-slate{fill:var(--slate)}.f-track{fill:var(--hover)}
+.s-teal{stroke:var(--teal)}.s-amber{stroke:var(--amber)}.s-slate{stroke:var(--slate)}.s-track{stroke:var(--hover)}.s-orange{stroke:var(--orange)}
+.hitg{cursor:pointer;outline:none}
+.hitg .hov{fill:var(--text);opacity:0}
+.hitg:hover .hov,.hitg:focus-visible .hov{opacity:.05}
+.hitg:focus-visible .bfill{stroke:var(--text);stroke-width:2}
+.pt .pdot{opacity:0;transition:opacity .1s}
+.pt:hover .pdot,.pt:focus-visible .pdot{opacity:1}
+.pt:focus-visible .pdot{stroke:var(--text)}
+.tip{position:absolute;pointer-events:none;background:var(--primary);color:var(--primary-fg);font-size:12px;padding:5px 8px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-120%);opacity:0;transition:opacity .1s;z-index:5}
+.hint{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.hrow{display:grid;grid-template-columns:minmax(110px,1.3fr) 2fr 70px;align-items:center;gap:12px;padding:8px 6px;border-radius:8px;cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.hrow:hover{background:var(--hover)}
+.hrow .bar{height:8px}
+.hrow .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+
+/* inbox */
+.inb{display:flex;gap:12px;align-items:flex-start;padding:12px 18px;border-top:1px solid var(--border)}
+.inb:first-child{border-top:0}
+.inb-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none}
+.t-amber{background:var(--amber-soft);color:var(--amber-ink)}.t-red{background:var(--red-soft);color:var(--red-ink)}.t-blue{background:var(--blue-soft);color:var(--blue-ink)}.t-teal{background:var(--teal-soft);color:var(--teal-ink)}.t-slate{background:var(--slate-soft);color:var(--slate-ink)}
+.inb-t{flex:1;min-width:0}
+.inb-t b{display:block;font-weight:550;font-size:13.5px}
+.inb-t span{display:block;color:var(--muted);font-size:12.5px}
+.ev{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px}
+.ev-d{width:46px;text-align:center;border-radius:10px;background:var(--bg);border:1px solid var(--border);padding:4px 0;flex:none}
+.ev-d small{display:block;font-size:10.5px;font-weight:600;text-transform:uppercase;color:var(--orange-ink)}
+.ev-d b{display:block;font-size:18px;line-height:1.1}
+
+/* stepper */
+.stepper{display:flex;gap:0;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.step{flex:1 0 118px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;border:0;background:none;cursor:pointer;text-align:left;padding:4px 8px 4px 0;position:relative;color:var(--muted)}
+.step .sn{display:flex;align-items:center;width:100%}
+.step .sd{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:650;border:1.5px solid var(--border-strong);background:var(--card);flex:none;z-index:1}
+.step .sl{flex:1;height:2px;background:var(--border);margin-left:6px}
+.step.done .sd{background:var(--teal);border-color:var(--teal);color:#fff}
+.step.done .sl{background:var(--teal)}
+.step.cur .sd{border-color:var(--text);color:var(--text);box-shadow:0 0 0 4px var(--active)}
+.step.cur{color:var(--text)}
+.step b{font-size:12.5px;font-weight:600;color:inherit}
+.step small{font-size:12px;font-variant-numeric:tabular-nums}
+.step:last-child .sl{display:none}
+.kanban{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(200px,1fr);gap:12px;overflow-x:auto;padding-bottom:6px}
+.kcol{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px;min-width:0}
+.kcol.cur{border-color:var(--text)}
+.kcol-h{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:8px}
+.kcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 10px;margin-top:6px;font-size:12.5px}
+.kcard b{font-weight:550;display:block}
+.gate{display:flex;gap:14px;padding:14px 18px;border-top:1px solid var(--border);align-items:flex-start}
+.gate:first-child{border-top:0}
+.gate .gd{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--border-strong);flex:none;font-size:12px;font-weight:650;color:var(--muted)}
+.gate.done .gd{background:var(--teal);border-color:var(--teal);color:#fff}
+.gate.cur .gd{border-color:var(--text);color:var(--text);box-shadow:0 0 0 4px var(--active)}
+.gate.lock{opacity:.6}
+.gate-b{flex:1;min-width:0}
+.gate-b b{font-weight:600}
+.ring-card{padding:14px;display:flex;gap:12px;align-items:center;cursor:pointer;text-align:left;width:100%;border:1px solid var(--border)}
+.ring-card:hover{border-color:var(--border-strong)}
+.ring-card.on{border-color:var(--text);box-shadow:0 0 0 3px var(--active)}
+.ck{display:flex;gap:14px;padding:16px 18px;border-top:1px solid var(--border);align-items:flex-start}
+.ck:first-child{border-top:0}
+.ck-d{width:26px;height:26px;border-radius:50%;border:1.5px dashed var(--border-strong);display:grid;place-items:center;flex:none;color:var(--muted)}
+.ck.done .ck-d{background:var(--teal);border:0;color:#fff}
+.ck.done .ck-t b{text-decoration:line-through;color:var(--muted)}
+.ck-t{flex:1;min-width:0}
+.ghost-card{border:1px dashed var(--border-strong);border-radius:var(--r);padding:16px 18px;background:repeating-linear-gradient(135deg,transparent 0 10px,color-mix(in srgb,var(--hover) 60%,transparent) 10px 20px)}
+
+/* drawer & modal */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);background:var(--card);border-left:1px solid var(--border);z-index:70;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.drawer.on{transform:none}
+.dr-h{padding:18px 20px 0;display:flex;gap:14px;align-items:flex-start}
+.dr-b{padding:18px 20px;overflow-y:auto;flex:1}
+.dr-f{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.kv div small{display:block;color:var(--muted);font-size:12px}
+.kv div b{font-weight:550}
+.tl{position:relative;padding-left:22px}
+.tl::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--border)}
+.tl-i{position:relative;padding-bottom:16px}
+.tl-i::before{content:"";position:absolute;left:-21px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--card);border:2px solid var(--teal)}
+.modal{position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;padding:12vh 16px 16px;background:rgba(10,10,12,.45)}
+.modal.on{display:flex}
+.cmdk{width:min(600px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden}
+.cmdk .field{border:0;border-bottom:1px solid var(--border);border-radius:0;height:52px;padding:0 16px;box-shadow:none}
+.cmdk-l{max-height:min(420px,55vh);overflow-y:auto;padding:6px}
+.cmdk-l .pop-i[aria-selected="true"]{background:var(--active)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:12px;font-weight:500;opacity:0;transition:.2s;z-index:90;pointer-events:none;max-width:calc(100vw - 32px)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* responsive */
+@media (max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.s3{grid-column:span 2}}
+@media (max-width:1023px){
+  .app,.app.collapsed{grid-template-columns:minmax(0,1fr);--sbw:280px}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:280px;transform:translateX(-100%);transition:transform .22s;box-shadow:var(--shadow-lg)}
+  .app.mob-open .sidebar{transform:none}
+  .app.collapsed .lbl,.app.collapsed .grp-h span,.app.collapsed .org-t,.app.collapsed .org .ic,.app.collapsed .nbadge,.app.collapsed .setup-mini{display:revert}
+  .search{width:auto;flex:0 0 auto;padding:0;justify-content:center;width:36px;border-color:transparent;background:none}
+  .search span:not([data-icon]),.search kbd{display:none}
+}
+@media (max-width:760px){
+  .g4,.g3,.g2{grid-template-columns:minmax(0,1fr)}
+  .s2,.s3{grid-column:auto}
+  .content{padding:16px}
+  .topbar{padding:0 10px;gap:4px}
+  .ph h1{font-size:20px}
+  .kv{grid-template-columns:minmax(0,1fr)}
+  .tb-lang{display:none}
+  .crumb .crumb-root{display:none}
+  .hide-sm{display:none}
+  .card-h{padding:14px 14px 0}.card-b{padding:14px}
+  .inb{padding:12px 14px}
+  .filters{padding:12px}
+  .filters .field{max-width:none;flex-basis:100%}
+  .filters select.sel{flex:1 1 40%}
+  .hrow{grid-template-columns:minmax(90px,1fr) 1.4fr 56px;gap:8px}
+}
+@media (min-width:761px){.show-sm{display:none}}
+@media (max-width:1500px){.hide-md{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sb-head">
+      <button class="org" id="orgBtn" aria-haspopup="true" aria-expanded="false" aria-controls="rolePop">
+        <span class="logo" aria-hidden="true">K</span>
+        <span class="org-t"><b>Soundarya Institute</b><span id="roleLabel">Principal</span></span>
+        <span class="ic-wrap" data-icon="chevrons"></span>
+      </button>
+      <div class="pop" id="rolePop" hidden role="menu" aria-label="View as role"></div>
+    </div>
+    <nav class="sb-nav" id="sbNav"></nav>
+    <div class="sb-foot" id="sbFoot"></div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div class="main">
+    <header class="topbar">
+      <button class="ibtn" id="sbToggle" aria-label="Toggle sidebar" data-icon="panel"></button>
+      <div class="crumb"><span class="crumb-root">Kinetix</span><span class="crumb-root" aria-hidden="true">/</span><b id="crumb">Home</b></div>
+      <button class="search" id="searchBtn" aria-label="Search (Command K)"><span data-icon="search"></span><span>Search students, pages…</span><kbd>⌘K</kbd></button>
+      <div class="seg tb-lang" role="group" aria-label="Language" id="langSeg"></div>
+      <div class="tb-wrap">
+        <button class="ibtn" id="notifBtn" aria-label="Notifications, 5 unread" aria-haspopup="true" aria-expanded="false"><span data-icon="bell"></span><span class="dot"></span></button>
+        <div class="pop" id="notifPop" hidden style="width:min(340px,calc(100vw - 24px))"></div>
+      </div>
+      <button class="ibtn" id="themeBtn" aria-label="Toggle dark mode"></button>
+      <div class="tb-wrap">
+        <button class="ibtn" id="profBtn" aria-label="Profile menu" aria-haspopup="true" aria-expanded="false"><span class="avatar av-0" id="meAv" style="width:30px;height:30px">SR</span></button>
+        <div class="pop" id="profPop" hidden></div>
+      </div>
+    </header>
+    <main class="content" id="content" tabindex="-1"></main>
+  </div>
+</div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle" aria-hidden="true"></aside>
+<div class="modal" id="cmdk" role="dialog" aria-modal="true" aria-label="Command palette">
+  <div class="cmdk">
+    <label class="field"><span data-icon="search"></span><input id="cmdkIn" placeholder="Search students, pages, actions…" aria-label="Search" autocomplete="off"><kbd>Esc</kbd></label>
+    <div class="cmdk-l" id="cmdkList" role="listbox"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- icons ---------- */
+const ICONS={
+home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+users:'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 4a4 4 0 0 1 0 8M22 21v-1a6 6 0 0 0-4-5.6"/>',
+userplus:'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M19 8v6M16 11h6"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/>',
+calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+filecheck:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>',
+award:'<circle cx="12" cy="8" r="6"/><path d="M8.2 13.2 7 22l5-3 5 3-1.2-8.8"/>',
+wallet:'<path d="M20 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/>',
+receipt:'<path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>',
+sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/>',
+moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
+panel:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>',
+chevdown:'<path d="m6 9 6 6 6-6"/>',chevright:'<path d="m9 18 6-6-6-6"/>',chevleft:'<path d="m15 18-6-6 6-6"/>',
+chevrons:'<path d="m7 15 5 5 5-5M7 9l5-5 5 5"/>',
+x:'<path d="M18 6 6 18M6 6l12 12"/>',
+filter:'<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>',
+download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+more:'<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+check:'<path d="M20 6 9 17l-5-5"/>',
+clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+cap:'<path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+board:'<path d="M2 3h20M3 3v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3M12 16v5M8 21h8"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+arrow:'<path d="M5 12h14M12 5l7 7-7 7"/>',
+up:'<path d="M7 17 17 7M8 7h9v9"/>',down:'<path d="M7 7l10 10M17 8v9H8"/>',
+chart:'<path d="M3 3v18h18M7 16v-4M12 16V8M17 16v-7"/>',
+layers:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>',
+inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+bus:'<rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16M8 19v2M16 19v2M8 15h.01M16 15h.01"/>',
+globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
+logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+sparkle:'<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/>',
+bank:'<path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>',
+eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>'
+};
+const I=(n,s=16,sw=2)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const lakh=n=>'₹'+(n/1e5).toFixed(2)+' L';
+const initials=n=>n.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.|Mrs\.)\s*/,'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const hash=s=>[...s].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
+const av=(n,size=32)=>`<span class="avatar av-${hash(n)%6}" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.38)}px" aria-hidden="true">${initials(n)}</span>`;
+const trend=(v,inv)=>`<span class="trend ${(v>=0)!==!!inv?'up':'down'}">${I(v>=0?'up':'down',12,2.4)}${v>=0?'+':'−'}${Math.abs(v)}%</span>`;
+const pill=(t,c)=>`<span class="pill p-${c}">${t}</span>`;
+let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646};
+const pick=a=>a[Math.floor(rnd()*a.length)];
+
+/* ---------- i18n ---------- */
+const T={
+ en:{overview:'Overview',academics:'Academics',exams:'Exams',finance:'Finance',campus:'Campus',accreditation:'Accreditation',admin:'Admin',hello:'Good morning',attention:'Needs your attention'},
+ hi:{overview:'अवलोकन',academics:'शैक्षणिक',exams:'परीक्षा',finance:'वित्त',campus:'परिसर',accreditation:'प्रत्यायन',admin:'प्रशासन',hello:'नमस्ते',attention:'आपका ध्यान चाहिए'},
+ kn:{overview:'ಅವಲೋಕನ',academics:'ಶೈಕ್ಷಣಿಕ',exams:'ಪರೀಕ್ಷೆಗಳು',finance:'ಹಣಕಾಸು',campus:'ಕ್ಯಾಂಪಸ್',accreditation:'ಮಾನ್ಯತೆ',admin:'ಆಡಳಿತ',hello:'ನಮಸ್ಕಾರ',attention:'ನಿಮ್ಮ ಗಮನ ಬೇಕಾದವು'}
+};
+
+/* ---------- data ---------- */
+const FN=['Aarav','Ananya','Bhavana','Chandan','Deeksha','Darshan','Divya','Gagan','Harini','Ishaan','Kavya','Karthik','Lavanya','Manoj','Meghana','Nikhil','Pooja','Pranav','Rakshitha','Rahul','Sahana','Sandeep','Shreya','Sinchana','Tejas','Varsha','Vinay','Yashas','Zoya','Faiz','Ayesha','Joel','Neha','Arjun','Spoorthi','Keerthana','Abhishek','Bhoomika','Chethan','Nandini','Akshatha','Rohan','Samarth','Tanvi','Vaishnavi'];
+const LN=['Rao','Shetty','Gowda','Hegde','Nair','Kulkarni','Bhat','Iyer','Reddy','Patil','Naik','Pai','Kamath','Dsouza','Khan','Prasad','Murthy','Acharya','Joshi','Menon'];
+const PROGS=[{c:'BCOM',n:'B.Com',w:.34,sems:[1,3,5]},{c:'BCA',n:'BCA',w:.26,sems:[1,3,5]},{c:'BBA',n:'BBA',w:.18,sems:[1,3,5]},{c:'BSC',n:'B.Sc (PCM)',w:.14,sems:[1,3,5]},{c:'MCOM',n:'M.Com',w:.08,sems:[1,3]}];
+const STUDENTS=[];
+(function gen(){
+  const counters={};
+  for(let i=0;i<319;i++){
+    let r=rnd(),p=PROGS[0];for(const q of PROGS){if(r<q.w){p=q;break}r-=q.w}
+    const sem=pick(p.sems),sec=p.c==='MCOM'?'A':(rnd()<.5?'A':'B');
+    const yr={1:25,3:24,5:23}[sem];const key=p.c+sem;counters[key]=(counters[key]||0)+1;
+    let att=Math.round(92-Math.pow(rnd(),2.2)*34+rnd()*6);att=Math.min(99,Math.max(56,att));
+    STUDENTS.push({id:i,name:pick(FN)+' '+pick(LN),roll:`SI${yr}${p.c}${String(counters[key]).padStart(3,'0')}`,prog:p.n,pc:p.c,sem,sec,att,fee:'Paid',due:0,status:att<65?'Detained':(rnd()<.03?'On leave':'Active'),cat:pick(['GM','GM','GM','2A','2B','3A','3B','SC','ST','Cat-I'])});
+  }
+  const order=STUDENTS.map(s=>s.id).sort(()=>rnd()-.5);
+  order.forEach((id,k)=>{const s=STUDENTS[id];
+    if(k<15){s.fee='Overdue';s.due=3500+Math.round(rnd()*30)*100}
+    else if(k<37){s.fee='Due';s.due=2000+Math.round(rnd()*35)*100}
+    else if(k<97){s.fee='Partial';s.due=1000+Math.round(rnd()*20)*100}});
+  const dd=order.slice(0,37).map(i=>STUDENTS[i]),sum=dd.reduce((a,s)=>a+s.due,0);dd.forEach(s=>s.due=Math.round(s.due*141000/sum/100)*100);dd[0].due+=141000-dd.reduce((a,s)=>a+s.due,0);
+})();
+const FEE_C={Paid:'green',Partial:'blue',Due:'amber',Overdue:'red'};
+const ST_C={Active:'teal',Detained:'red','On leave':'slate'};
+const ATT30=(()=>{const a=[];for(let i=0;i<30;i++){let v=86+Math.sin(i/2.3)*2.4+(rnd()-.5)*3;if(i%7==0)v-=3.5;a.push(+v.toFixed(1))}a[29]=86.4;return a})();
+const DAYS30=(()=>{const a=[],d=new Date(2026,9,12);for(let i=29;i>=0;i--){const x=new Date(d);x.setDate(d.getDate()-i);a.push(x.getDate()+' '+x.toLocaleString('en',{month:'short'}))}return a})();
+const FEE_M={labels:['Jun','Jul','Aug','Sep','Oct','Nov'],values:[0.92,0.71,0.48,0.39,0.86,0.43],target:[0.95,0.80,0.60,0.55,1.20,1.10]};
+
+/* ---------- nav ---------- */
+const NAV=[
+ {g:'overview',items:[['home','Home','home'],['reports','Reports','chart']]},
+ {g:'academics',items:[['students','Students','users'],['admissions','Admissions','userplus'],['attendance','Attendance','clipboard'],['timetable','Timetable','calendar'],['faculty','Faculty & staff','user'],['courses','Courses & syllabus','book']]},
+ {g:'exams',items:[['exams','Exams & results','filecheck'],['halltickets','Hall tickets','file'],['valuation','Valuation','layers']]},
+ {g:'finance',items:[['fees','Fees & accounts','wallet'],['receipts','Receipts','receipt'],['payroll','Payroll','bank']]},
+ {g:'campus',items:[['boards','Smart boards','board'],['library','Library','book'],['transport','Hostel & transport','bus']]},
+ {g:'accreditation',items:[['naac','NAAC','award'],['nirf','NIRF','chart']]},
+ {g:'admin',items:[['setup','College setup','sliders'],['roles','Users & roles','shield'],['settings','Settings','building']]}
+];
+const ROLES={
+ principal:{label:'Principal',name:'Dr. Savitha R.',nav:'*',badge:5},
+ exam:{label:'Exam controller',name:'Prof. Ramesh Kulkarni',nav:['home','reports','students','timetable','exams','halltickets','valuation','naac'],badge:4},
+ accounts:{label:'Office & Accounts',name:'Mr. Prakash Hegde',nav:['home','reports','students','admissions','fees','receipts','payroll','transport'],badge:4},
+ hod:{label:'HoD · Computer Science',name:'Dr. Anitha Shenoy',nav:['home','reports','students','attendance','timetable','faculty','courses','exams','valuation','boards','naac'],badge:4},
+ faculty:{label:'Faculty · Commerce',name:'Prof. Deepa Nair',nav:['home','students','attendance','timetable','courses','exams','boards','library'],badge:4}
+};
+const PAGE_TITLE={};NAV.forEach(g=>g.items.forEach(i=>PAGE_TITLE[i[0]]=i[1]));
+const S={role:'principal',page:'home',lang:'en',closed:new Set(),st:{q:'',prog:'',sem:'',sec:'',status:'',fee:'',page:1,sel:new Set()},admStep:4,admProg:'BCA',gate:2,setupDone:new Set([0,1]),naacC:null,inboxTab:'all',reminded:new Set()};
+const t=k=>(T[S.lang]||T.en)[k]||T.en[k];
+const allowed=id=>ROLES[S.role].nav==='*'||ROLES[S.role].nav.includes(id);
+
+function renderSidebar(){
+  $('#roleLabel').textContent=ROLES[S.role].label;
+  $('#sbNav').innerHTML=NAV.map(g=>{
+    const items=g.items.filter(i=>allowed(i[0]));if(!items.length)return'';
+    const closed=S.closed.has(g.g);
+    return `<div class="grp ${closed?'closed':''}"><button class="grp-h" data-grp="${g.g}" aria-expanded="${!closed}"><span>${t(g.g)}</span>${I('chevdown',14)}</button><div class="grp-items">${items.map(([id,l,ic])=>`<button class="nav-i ${S.page===id?'on':''}" data-nav="${id}" title="${l}" ${S.page===id?'aria-current="page"':''}>${I(ic,17)}<span class="lbl">${l}</span>${id==='home'?`<span class="nbadge" aria-label="${ROLES[S.role].badge} items need attention">${ROLES[S.role].badge}</span>`:''}</button>`).join('')}</div></div>`}).join('');
+  const done=S.setupDone.size;
+  $('#sbFoot').innerHTML=allowed('setup')?`<button class="setup-mini" data-nav="setup"><div class="row between small"><b>College setup</b><span class="muted num">${done}/6</span></div><div class="bar" style="margin-top:8px"><i style="width:${done/6*100}%"></i></div><div class="small muted" style="margin-top:6px">Next: ${['Institution profile','Programmes','Staff import','Students import','Timetable','Fee structure'].find((x,i)=>!S.setupDone.has(i))||'All done'}</div></button>`:`<div class="row small muted">${av(ROLES[S.role].name,28)}<span class="lbl">${ROLES[S.role].name}</span></div>`;
+  $('#rolePop').innerHTML=`<div class="pop-h">View as (prototype)</div>`+Object.entries(ROLES).map(([k,r])=>`<button class="pop-i ${S.role===k?'on':''}" role="menuitemradio" aria-checked="${S.role===k}" data-role="${k}">${av(r.name,26)}<span><b style="display:block;font-weight:550">${r.label}</b><span class="small muted">${r.name}</span></span></button>`).join('');
+  $('#meAv').textContent=initials(ROLES[S.role].name);$('#meAv').className='avatar av-'+hash(ROLES[S.role].name)%6;
+}
+function renderTop(){
+  $('#langSeg').innerHTML=[['en','EN'],['hi','हिं'],['kn','ಕನ್ನಡ']].map(([k,l])=>`<button data-lang="${k}" class="${S.lang===k?'on':''}" aria-pressed="${S.lang===k}">${l}</button>`).join('');
+  const dark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);
+  $('#themeBtn').innerHTML=I(dark?'sun':'moon',18);$('#themeBtn').setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+  $('#notifPop').innerHTML=`<div class="row between" style="padding:6px 10px"><b>Notifications</b><button class="btn ghost sm" data-toast="All marked as read">Mark all read</button></div>`+[
+   ['Results for BCA Sem 5 are moderated','2 min ago','filecheck','blue'],['₹42,300 settlement delayed by gateway','1 h ago','bank','amber'],['Prof. Kiran M applied for leave (14–16 Oct)','3 h ago','calendar','slate'],['NAAC metric 3.3.1 evidence rejected by IQAC','Yesterday','award','red'],['Board in Room 204 went offline','Yesterday','board','red']
+  ].map(([a,b,ic,c])=>`<button class="pop-i"><span class="inb-ic t-${c}" style="width:30px;height:30px">${I(ic,15)}</span><span><span style="display:block">${a}</span><span class="small muted">${b}</span></span></button>`).join('');
+  $('#profPop').innerHTML=`<div style="padding:8px 10px" class="row">${av(ROLES[S.role].name,34)}<div><b style="display:block">${ROLES[S.role].name}</b><span class="small muted">${ROLES[S.role].label}</span></div></div><div class="pop-h">Switch role</div>`+Object.entries(ROLES).map(([k,r])=>`<button class="pop-i ${S.role===k?'on':''}" data-role="${k}">${I('user',15)}${r.label}</button>`).join('')+`<div class="pop-h show-sm">Language</div><div class="show-sm" style="padding:4px 10px 8px"><div class="seg">${[['en','EN'],['hi','हिं'],['kn','ಕನ್ನಡ']].map(([k,l])=>`<button data-lang="${k}" class="${S.lang===k?'on':''}">${l}</button>`).join('')}</div></div><button class="pop-i" data-toast="Signed out (prototype)">${I('logout',15)}Sign out</button>`;
+}
+
+/* ---------- charts ---------- */
+const CH={};let chId=0;
+function chart(spec){const id='c'+(++chId);CH[id]=spec;return `<div class="chart" data-chart="${id}" style="height:${spec.h||220}px"></div>`}
+function hydrate(){$$('[data-chart]').forEach(el=>{const s=CH[el.dataset.chart];if(!s)return;const w=Math.max(260,el.clientWidth);el.innerHTML=(s.type==='line'?lineSVG:barSVG)(s,w)+'<div class="tip"></div>'})}
+function lineSVG(o,w){
+  const h=o.h||220,p={l:34,r:10,t:14,b:26},iw=w-p.l-p.r,ih=h-p.t-p.b,n=o.values.length;
+  const x=i=>p.l+i*iw/(n-1),y=v=>p.t+ih-(v-o.min)/(o.max-o.min)*ih;
+  let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(o.label)}"><defs><linearGradient id="g${w}${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--teal);stop-opacity:.22"/><stop offset="1" style="stop-color:var(--teal);stop-opacity:0"/></linearGradient></defs>`;
+  for(let k=0;k<=4;k++){const v=o.min+(o.max-o.min)*k/4,yy=y(v);s+=`<line x1="${p.l}" x2="${w-p.r}" y1="${yy}" y2="${yy}" class="grid-l"/><text x="${p.l-8}" y="${yy+4}" class="axis" text-anchor="end">${Math.round(v)}${o.unit||''}</text>`}
+  const pts=o.values.map((v,i)=>[x(i),y(v)]);
+  let d='M'+pts[0][0]+' '+pts[0][1];for(let i=1;i<n;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],cx=(x0+x1)/2;d+=` C${cx} ${y0} ${cx} ${y1} ${x1} ${y1}`}
+  s+=`<path d="${d} L${x(n-1)} ${p.t+ih} L${p.l} ${p.t+ih}Z" fill="url(#g${w}${n})"/>`;
+  if(o.target!=null){const ty=y(o.target);s+=`<line x1="${p.l}" x2="${w-p.r}" y1="${ty}" y2="${ty}" class="s-amber" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${w-p.r}" y="${ty-6}" class="axis halo" text-anchor="end">${o.targetLabel}</text>`}
+  s+=`<path d="${d}" fill="none" class="s-teal" stroke-width="2.25"/>`;
+  const step=Math.ceil(n/(iw/58));
+  o.labels.forEach((l,i)=>{if(i%step===0||i===n-1&&n<10)s+=`<text x="${x(i)}" y="${h-6}" class="axis" text-anchor="middle">${l}</text>`});
+  pts.forEach(([px,py],i)=>{s+=`<g class="pt hitg" tabindex="0" role="button" data-drill="${o.drill}:${o.labels[i]}" data-tip="${o.labels[i]} · ${o.values[i]}${o.unit||''}" aria-label="${o.labels[i]}: ${o.values[i]}${o.unit||''}. Open details"><rect x="${px-iw/n/2}" y="${p.t}" width="${iw/n}" height="${ih}" fill="transparent"/><circle class="pdot f-teal" cx="${px}" cy="${py}" r="4.5" style="stroke:var(--card);stroke-width:2"/></g>`});
+  return s+'</svg>';
+}
+function barSVG(o,w){
+  const h=o.h||220,slot0=(w-44)/o.values.length,tilt=slot0<56&&o.labels.some(l=>l.length>5),p={l:o.noAxis?6:38,r:6,t:20,b:tilt?46:28},iw=w-p.l-p.r,ih=h-p.t-p.b,n=o.values.length;
+  const max=o.max||Math.max(...o.values,...(o.target||[]))*1.1,y=v=>p.t+ih-v/max*ih,slot=iw/n,bw=Math.min(44,slot*(o.target?.62:.58));
+  let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(o.label)}">`;
+  if(!o.noAxis)for(let k=0;k<=4;k++){const v=max*k/4,yy=y(v);s+=`<line x1="${p.l}" x2="${w-p.r}" y1="${yy}" y2="${yy}" class="grid-l"/><text x="${p.l-8}" y="${yy+4}" class="axis" text-anchor="end">${o.axisFmt?o.axisFmt(v):Math.round(v)}</text>`}
+  if(o.ref!=null){const ry=y(o.ref);s+=`<line x1="${p.l}" x2="${w-p.r}" y1="${ry}" y2="${ry}" class="s-amber" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${w-p.r}" y="${ry-6}" class="axis halo" text-anchor="end">${o.refLabel}</text>`}
+  const showLab=slot>34;
+  o.values.forEach((v,i)=>{const cx=p.l+slot*i+slot/2,bx=cx-bw/2,yy=y(v),cls=o.colorFn?o.colorFn(v,i):'f-teal';
+    s+=`<g class="hitg" tabindex="0" role="button" data-drill="${o.drill}:${o.labels[i]}" data-tip="${o.labels[i]} · ${o.fmt?o.fmt(v):v}" aria-label="${o.labels[i]}: ${o.fmt?o.fmt(v):v}. Open details"><rect class="hov" x="${p.l+slot*i+2}" y="${p.t-14}" width="${slot-4}" height="${ih+14}" rx="8"/>`;
+    if(o.target){const ty=y(o.target[i]);s+=`<rect x="${bx}" y="${ty}" width="${bw}" height="${p.t+ih-ty}" rx="6" class="f-track"/>`}
+    s+=`<rect class="bfill ${cls}" x="${bx}" y="${yy}" width="${bw}" height="${Math.max(2,p.t+ih-yy)}" rx="6"/>`;
+    if(showLab)s+=`<text x="${cx}" y="${yy-6}" class="vlab" text-anchor="middle">${o.fmt?o.fmt(v):v}</text>`;
+    s+=tilt?`<text x="${cx+4}" y="${p.t+ih+14}" class="axis" text-anchor="end" transform="rotate(-35 ${cx+4} ${p.t+ih+14})">${o.labels[i]}</text></g>`:`<text x="${cx}" y="${h-8}" class="axis" text-anchor="middle">${o.labels[i]}</text></g>`});
+  return s+'</svg>';
+}
+const hbars=(rows,drill)=>rows.map(r=>`<button class="hrow" data-drill="${drill}:${r[0]}"><span class="small" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="font-weight:550">${r[0]}</b>${r[3]?`<br><span class="muted">${r[3]}</span>`:''}</span><span class="bar ${r[2]||''}"><i style="width:${Math.min(100,r[1])}%"></i></span><span class="v">${r[4]||r[1]+'%'}</span></button>`).join('');
+function ring(pct,size=56,sw=6,cls='s-teal',label){const r=(size-sw)/2,c=2*Math.PI*r;return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${pct}% complete" style="flex:none"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" class="s-track" stroke-width="${sw}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" class="${cls}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c*pct/100} ${c}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="50%" y="50%" dy=".35em" text-anchor="middle" style="fill:var(--text);font-size:${size*.24}px;font-weight:650">${label??pct+'%'}</text></svg>`}
+function spark(vals,cls='s-teal',w=96,h=34){const mn=Math.min(...vals),mx=Math.max(...vals),pts=vals.map((v,i)=>`${(i*(w-4)/(vals.length-1)+2).toFixed(1)},${(h-3-(v-mn)/(mx-mn||1)*(h-6)).toFixed(1)}`).join(' ');return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}" fill="none" class="${cls}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+function minibars(vals,w=96,h=34){const mx=Math.max(...vals),bw=w/vals.length;return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${vals.map((v,i)=>`<rect x="${i*bw+1.5}" y="${h-v/mx*h}" width="${bw-3}" height="${v/mx*h}" rx="2" class="${i===vals.length-1?'f-teal':'f-teal2'}"/>`).join('')}</svg>`}
+function minibar(pct){return `<div style="width:96px"><div class="bar" style="height:8px"><i style="width:${pct}%"></i></div><div class="small muted" style="text-align:right;margin-top:4px">${pct}%</div></div>`}
+
+/* ---------- role home data ---------- */
+const CLASSES=[
+ ['09:00','B.Com 3A','Corporate Accounting','Prof. Deepa Nair','R-201','Done','slate'],
+ ['10:00','BCA 5A','Software Engineering','Dr. Anitha Shenoy','Lab-2','Live','green'],
+ ['10:00','BBA 3B','Marketing Management','Prof. Kiran M','R-104','Live','green'],
+ ['10:00','B.Sc 1A','Mechanics','Dr. Suresh Bhat','Phy Lab','Board offline','red'],
+ ['11:15','B.Com 5B','Income Tax','Prof. Deepa Nair','R-204','Next','blue'],
+ ['11:15','M.Com 1A','Advanced Cost Accounting','Dr. Savitha R.','Seminar Hall','Next','blue']
+];
+const EVENTS=[['14','Oct','IQAC meeting — AQAR review','10:30 · Board room'],['17','Oct','Parent–teacher meeting (B.Com)','09:30 · Auditorium'],['21','Oct','Fee due — 2nd instalment','All UG programmes'],['01','Nov','Kannada Rajyotsava','Holiday · cultural programme'],['10','Nov','IA-3 begins','All programmes']];
+const HOME={
+ principal:{sub:'Monday, 12 October 2026 · Odd semester, week 11',quick:['Approve leave','calendar','leaves'],
+  kpis:[{k:'students',l:'Total students',v:'319',ic:'users',t:4.2,s:'+13 this semester',viz:minibars([281,290,296,301,306,312,319])},
+        {k:'attendance',l:'Attendance today',v:'86.4%',ic:'clipboard',t:1.8,s:'276 of 319 present',viz:spark(ATT30.slice(-10))},
+        {k:'fees',l:'Fees collected',v:'₹3.79 L',ic:'wallet',t:12.6,s:'of ₹5.20 L target',viz:minibar(73)},
+        {k:'results',l:'Results pass %',v:'81.2%',ic:'award',t:-4.2,s:'Odd sem 2025–26',viz:spark([86,84,85,83,84.8,81.2],'s-amber')}],
+  c1:{title:'Attendance trend',sub:'College-wide, last 30 days · click a day to see sections',spec:{type:'line',values:ATT30,labels:DAYS30,min:70,max:98,unit:'%',target:75,targetLabel:'75% minimum',drill:'day',label:'Attendance trend line chart',h:240}},
+  c2:{title:'Fee collection by month',sub:'₹ lakh · grey = monthly target',spec:{type:'bar',values:FEE_M.values,labels:FEE_M.labels,target:FEE_M.target,fmt:v=>v.toFixed(2),axisFmt:v=>v.toFixed(1),drill:'month',label:'Fee collection by month',h:240}},
+  inbox:[['approval','calendar','amber','4 leave requests awaiting approval','Oldest: Prof. Kiran M · 2 days','Review','leaves'],
+   ['alert','alert','red','3 sections below 75% attendance','B.Com 3B 68% · BBA 5A 71% · B.Sc 1A 73%','View','lowatt'],
+   ['alert','wallet','red','37 fee defaulters · ₹1.41 L outstanding','15 overdue more than 30 days','View','defaulters'],
+   ['task','award','amber','NAAC: 12 metrics missing evidence','Criteria 3 & 7 · AQAR due 15 Dec','Fix','nav:naac'],
+   ['approval','filecheck','blue','BCA Sem 5 results need your sign-off','Moderated · awaiting HoD & controller','Open','nav:exams']],
+  t2:'classes'},
+ exam:{sub:'Odd semester end exams (Sep–Oct 2026) · valuation phase',quick:['Open moderation','layers','nav:exams'],
+  kpis:[{k:'reg',l:'Exam registration',v:'96.3%',ic:'clipboard',t:2.1,s:'307 of 319 students',viz:minibar(96)},
+        {k:'hall',l:'Hall tickets issued',v:'288',ic:'file',t:5.4,s:'31 blocked (fees/attendance)',viz:minibars([120,190,240,270,288])},
+        {k:'val',l:'Valuation progress',v:'64%',ic:'layers',t:9.8,s:'1,842 of 2,880 scripts',viz:spark([12,22,31,40,52,58,64])},
+        {k:'mod',l:'Moderation pending',v:'3 papers',ic:'alert',t:-2.0,inv:1,s:'Oldest: 4 days',viz:minibars([6,5,5,4,3])}],
+  c1:{title:'Valuation progress by paper',sub:'Click a paper to see valuers',hb:'paper'},
+  c2:{title:'Pass % by subject',sub:'Provisional · amber = below 75%',spec:{type:'bar',values:[94,91,72,68,84,88,79,74],labels:['Kannada','English','Corp. Accts','Bus. Stats','Python','Soft. Engg','Fin. Mgmt','Physics'],max:100,fmt:v=>v+'%',ref:75,refLabel:'75% target',colorFn:v=>v<75?'f-amber':'f-teal',drill:'subject',label:'Pass percentage by subject',h:240,short:(l,s)=>s<60?l.slice(0,5):l}},
+  inbox:[['alert','file','red','31 hall tickets blocked','22 fee dues · 9 attendance shortage','Review','halls'],['task','layers','amber','3 papers pending moderation','BSC305, BCA505, MCM301','Open','nav:exams'],['alert','user','amber','2 valuers have not uploaded marks','Due today 5:00 PM','Remind','valuers'],['approval','filecheck','blue','9 revaluation requests','Fee received for 7','Review','reval']],
+  t2:'halls'},
+ accounts:{sub:'Fee term: Jun–Nov 2026 · 2nd instalment due 21 Oct',quick:['New receipt','receipt','toast:Receipt form opened (prototype)'],
+  kpis:[{k:'fees',l:'Collected this term',v:'₹3.79 L',ic:'wallet',t:12.6,s:'73% of ₹5.20 L',viz:minibar(73)},
+        {k:'out',l:'Outstanding',v:'₹1.41 L',ic:'alert',t:-6.3,inv:1,s:'from 37 defaulters',viz:spark([2.1,1.9,1.8,1.6,1.5,1.41],'s-amber')},
+        {k:'def',l:'Defaulters',v:'37',ic:'users',t:-4.2,inv:1,s:'15 overdue > 30 days',viz:minibars([52,48,44,41,37])},
+        {k:'settle',l:'Unsettled (gateway)',v:'₹42,300',ic:'bank',t:-1.2,inv:1,s:'2 batches · T+2',viz:spark([12,30,18,42,20,42.3],'s-slate')}],
+  c1:{title:'Fee collection by month',sub:'₹ lakh · grey = monthly target · click a month',spec:{type:'bar',values:FEE_M.values,labels:FEE_M.labels,target:FEE_M.target,fmt:v=>v.toFixed(2),axisFmt:v=>v.toFixed(1),drill:'month',label:'Fee collection by month',h:240}},
+  c2:{title:'Collection by mode',sub:'This term',hb:'mode'},
+  inbox:[['alert','wallet','red','37 defaulters — send reminders','SMS + WhatsApp in Kannada/English','Send','defaulters'],['alert','bank','amber','2 gateway settlements pending','₹42,300 · expected 14 Oct','Track','nav:fees'],['approval','receipt','blue','5 cancelled receipts need approval','Raised by front office','Review','cancelled'],['task','filecheck','amber','SSP scholarship reconciliation','62 students · state portal','Start','toast:Reconciliation started (prototype)']],
+  t2:'receipts'},
+ hod:{sub:'Department of Computer Science · BCA · 112 students',quick:['Approve leave','calendar','leaves'],
+  kpis:[{k:'students',l:'Department students',v:'112',ic:'users',t:3.1,s:'BCA Sem 1, 3, 5',viz:minibars([98,102,106,109,112])},
+        {k:'attendance',l:'Attendance today',v:'84.1%',ic:'clipboard',t:-1.3,s:'94 of 112 present',viz:spark(ATT30.slice(-10).map(v=>v-2))},
+        {k:'syl',l:'Syllabus coverage',v:'68%',ic:'book',t:5.0,s:'Expected 72% by week 11',viz:minibar(68)},
+        {k:'ia',l:'Internal marks submitted',v:'9 / 12',ic:'filecheck',t:8.0,s:'3 courses pending',viz:minibar(75)}],
+  c1:{title:'Department attendance',sub:'Last 30 days · click a day',spec:{type:'line',values:ATT30.map(v=>+(v-2.2).toFixed(1)),labels:DAYS30,min:70,max:98,unit:'%',target:75,targetLabel:'75% minimum',drill:'day',label:'Department attendance',h:240}},
+  c2:{title:'Attendance by section',sub:'This month · click a section',spec:{type:'bar',values:[88,85,79,72,86,83],labels:['BCA 1A','BCA 1B','BCA 3A','BCA 3B','BCA 5A','BCA 5B'],max:100,fmt:v=>v+'%',ref:75,refLabel:'75%',colorFn:v=>v<75?'f-amber':'f-teal',drill:'section',label:'Attendance by section',h:240}},
+  inbox:[['approval','calendar','amber','2 faculty leave requests','Prof. Arun (15 Oct), Ms. Ruchi (17–18 Oct)','Review','leaves'],['alert','alert','red','BCA 3B below 75% attendance','11 students at risk of detention','View','lowatt'],['task','filecheck','amber','3 courses missing IA-2 marks','Python, DBMS, Statistics','Remind','iamarks'],['alert','calendar','blue','Timetable clash on Thursday','Lab-2 double-booked 2:00 PM','Fix','toast:Opened timetable (prototype)']],
+  t2:'classes'},
+ faculty:{sub:'4 classes today · next: B.Com 5B Income Tax at 11:15',quick:['Take attendance','clipboard','take'],
+  kpis:[{k:'cls',l:'Classes today',v:'4',ic:'calendar',t:0,s:'1 done · 3 remaining',viz:minibars([3,4,2,4,4])},
+        {k:'mark',l:'Attendance to mark',v:'1',ic:'clipboard',t:-50,inv:1,s:'B.Com 3A (09:00)',viz:minibar(75)},
+        {k:'ia',l:'IA marks due',v:'1 course',ic:'filecheck',t:0,s:'Cost Accounting · Fri 16 Oct',viz:minibar(40)},
+        {k:'myatt',l:'My classes attendance',v:'88%',ic:'users',t:2.3,s:'Across 4 sections',viz:spark([84,85,87,86,88])}],
+  c1:{title:'My sections · attendance',sub:'This month · click a section to see students',spec:{type:'bar',values:[91,73,88,90],labels:['B.Com 3A','B.Com 3B','B.Com 5B','M.Com 1A'],max:100,fmt:v=>v+'%',ref:75,refLabel:'75%',colorFn:v=>v<75?'f-amber':'f-teal',drill:'section',label:'My sections attendance',h:240}},
+  c2:{title:'Syllabus coverage',sub:'Units completed vs plan',hb:'syllabus'},
+  inbox:[['task','clipboard','red','Mark attendance for B.Com 3A','Class ended 09:55 — 2 taps on the board','Mark','take'],['task','filecheck','amber','Enter IA-2 marks · Cost Accounting','Due Fri 16 Oct · 58 students','Enter','toast:Marks entry opened (prototype)'],['alert','alert','amber','5 students below 75% in B.Com 3B','Parents not yet notified','Notify','lowatt'],['task','book','blue','Update lesson plan — Unit 4','Income Tax · B.Com 5B','Update','toast:Lesson plan opened (prototype)']],
+  t2:'classes'}
+};
+const HB={
+ paper:[['BCA501 Software Engg',100,'','62 scripts','62/62'],['BCM301 Corp. Accounting',71,'amber','118 scripts','84/118'],['BBA503 Financial Mgmt',66,'amber','54 scripts','36/54'],['BSC305 Electromagnetism',100,'','46 scripts','46/46'],['BCA503 Python',100,'','62 scripts','62/62'],['BCM305 Business Stats',55,'red','118 scripts','65/118'],['MCM301 Adv. Cost Accts',100,'','26 scripts','26/26']],
+ mode:[['UPI',58,'','212 payments','₹2.20 L'],['Cash (counter)',21,'slate','96 payments','₹0.80 L'],['NEFT / RTGS',14,'slate','18 payments','₹0.53 L'],['Card',7,'slate','14 payments','₹0.26 L']],
+ syllabus:[['Corporate Accounting · 3A',78,'','Unit 4 of 5'],['Corporate Accounting · 3B',64,'amber','Unit 3 of 5'],['Income Tax · 5B',70,'','Unit 4 of 6'],['Adv. Cost Accounting · M.Com',82,'','Unit 5 of 6']]
+};
+
+/* ---------- pages ---------- */
+function pageHead(title,sub,actions=''){return `<div class="ph"><div><h1>${title}</h1>${sub?`<p>${sub}</p>`:''}</div><div class="actions">${actions}</div></div>`}
+function kpiCard(k){return `<button class="card kpi" data-drill="kpi:${k.k}" aria-label="${k.l}: ${k.v}. Open details"><div class="kpi-top"><span>${k.l}</span><span class="kpi-ic">${I(k.ic,15)}</span></div><div class="kpi-v"><b class="num">${k.v}</b>${k.viz}</div><div class="kpi-sub">${k.t?trend(k.t,k.inv):''}<span>${k.s}</span></div></button>`}
+function actTarget(a){return a.startsWith('nav:')?`data-nav="${a.slice(4)}"`:a.startsWith('toast:')?`data-toast="${esc(a.slice(6))}"`:`data-drill="${a}"`}
+function inboxCard(h){
+  const items=h.inbox.filter(i=>S.inboxTab==='all'||i[0]===S.inboxTab);
+  return `<div class="card" id="inboxCard"><div class="card-h"><div><h2>${t('attention')}</h2><p>${h.inbox.length} items · sorted by urgency</p></div><span class="nbadge">${h.inbox.length}</span></div>
+  <div style="padding:10px 18px 0"><div class="seg" role="tablist" aria-label="Filter inbox">${[['all','All'],['approval','Approvals'],['alert','Alerts'],['task','Tasks']].map(([k,l])=>`<button role="tab" aria-selected="${S.inboxTab===k}" class="${S.inboxTab===k?'on':''}" data-inbox="${k}">${l}</button>`).join('')}</div></div>
+  <div style="margin-top:8px">${items.length?items.map(i=>`<div class="inb"><span class="inb-ic t-${i[2]}">${I(i[1],16)}</span><div class="inb-t"><b>${i[3]}</b><span>${i[4]}</span></div><button class="btn sm" ${actTarget(i[6])}>${i[5]}</button></div>`).join(''):`<div class="empty" style="padding:24px"><span class="em-ic">${I('check',20)}</span><b>All clear</b><span class="small">Nothing in this category.</span></div>`}</div></div>`}
+function classesCard(){
+  const mine=S.role==='faculty',rows=mine?[['09:00','B.Com 3A','Corporate Accounting','Attendance not marked','R-201','Mark now','red'],['11:15','B.Com 5B','Income Tax','62 students','R-204','Next','blue'],['14:00','M.Com 1A','Adv. Cost Accounting','26 students','Seminar Hall','Later','slate'],['15:00','B.Com 3B','Corporate Accounting','58 students','R-203','Later','slate']]:S.role==='hod'?CLASSES.filter(c=>c[1].startsWith('BCA')).concat([['11:15','BCA 3B','Python Programming','Prof. Arun K','Lab-1','Next','blue'],['12:15','BCA 1A','C Programming','Ms. Ruchi Pai','Lab-2','Next','blue']]):CLASSES;
+  return `<div class="card"><div class="card-h"><div><h2>${mine?'My classes today':'Today’s classes'}</h2><p>${mine?'Tap a class to take attendance on the board or phone':'Live status from classroom boards · refreshed 1 min ago'}</p></div><button class="btn sm" data-nav="timetable">Timetable</button></div>
+  <div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Class</th><th>Subject</th><th class="hide-sm">${mine?'Students':'Faculty'}</th><th class="hide-md">Room</th><th>${mine?'Status':'Board'}</th></tr></thead><tbody>${rows.map(r=>`<tr class="click" tabindex="0" data-drill="class:${r[1]}"><td class="num muted">${r[0]}</td><td><b style="font-weight:550">${r[1]}</b></td><td>${r[2]}</td><td class="hide-sm">${mine?`<span class="muted">${r[3]}</span>`:`<span class="who">${av(r[3],24)}${r[3]}</span>`}</td><td class="hide-md muted">${r[4]}</td><td>${pill(r[5],r[6]).replace('class="pill',r[5]==='Live'?'class="pill live':'class="pill')}</td></tr>`).join('')}</tbody></table></div></div></div>`}
+function hallCard(){const blk=STUDENTS.filter(s=>s.fee==='Overdue'||s.att<70).slice(0,6);return `<div class="card"><div class="card-h"><div><h2>Blocked hall tickets</h2><p>Release after fee clearance or condonation approval</p></div><button class="btn sm" data-drill="halls">View all 31</button></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Student</th><th>Programme</th><th>Reason</th><th></th></tr></thead><tbody>${blk.map(s=>`<tr class="click" tabindex="0" data-student="${s.id}"><td><span class="who">${av(s.name,28)}<span><b>${s.name}</b><small>${s.roll}</small></span></span></td><td>${s.prog} ${s.sem}${s.sec}</td><td>${s.fee==='Overdue'?pill('Fee overdue '+inr(s.due),'red'):pill('Attendance '+s.att+'%','amber')}</td><td><button class="btn sm" data-toast="Hall ticket released for ${esc(s.name)}">Release</button></td></tr>`).join('')}</tbody></table></div></div></div>`}
+const RECEIPTS=STUDENTS.slice(3,15).map((s,i)=>({no:'RCPT/26/'+(4812-i),s,amt:[4500,2500,6800,3200,5000,7500,2500,4200,3600,8000,2800,5400][i],mode:['UPI','Cash','UPI','Card','NEFT','UPI','Cash','UPI','UPI','NEFT','Cash','UPI'][i],time:['10:42','10:31','10:12','09:58','09:47','09:30','Yesterday','Yesterday','Yesterday','10 Oct','10 Oct','09 Oct'][i],st:i===4?'Pending':'Success'}));
+function receiptsCard(n=6){return `<div class="card"><div class="card-h"><div><h2>Recent receipts</h2><p>Auto-reconciled with gateway settlements</p></div><button class="btn sm" data-nav="fees">All receipts</button></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Receipt</th><th>Student</th><th>Mode</th><th style="text-align:right">Amount</th><th class="hide-sm">Time</th><th>Status</th></tr></thead><tbody>${RECEIPTS.slice(0,n).map(r=>`<tr class="click" tabindex="0" data-student="${r.s.id}"><td class="num muted">${r.no}</td><td><span class="who">${av(r.s.name,26)}<span><b>${r.s.name}</b><small>${r.s.prog} ${r.s.sem}${r.s.sec}</small></span></span></td><td><span class="chip">${r.mode}</span></td><td class="num" style="text-align:right;font-weight:600">${inr(r.amt)}</td><td class="muted hide-sm">${r.time}</td><td>${pill(r.st,r.st==='Success'?'green':'amber')}</td></tr>`).join('')}</tbody></table></div></div></div>`}
+function eventsCard(){return `<div class="card"><div class="card-h"><div><h2>Upcoming events</h2><p>From the college calendar</p></div><button class="btn sm" data-toast="Calendar opened (prototype)">Calendar</button></div><div class="card-b"><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">${EVENTS.map(e=>`<div class="ev"><div class="ev-d"><small>${e[1]}</small><b>${e[0]}</b></div><div style="min-width:0"><b style="font-weight:550;display:block">${e[2]}</b><span class="small muted">${e[3]}</span></div></div>`).join('')}</div></div></div>`}
+function chartCard(c,extra=''){return `<div class="card ${extra}"><div class="card-h"><div><h2>${c.title}</h2><p>${c.sub}</p></div><span class="hint hide-sm">${I('eye',14)}Click to drill down</span></div><div class="card-b">${c.spec?chart(c.spec):`<div>${hbars(HB[c.hb],c.hb)}</div>`}</div></div>`}
+
+function pHome(){
+  const h=HOME[S.role],r=ROLES[S.role];const first=r.name.split(' ').slice(0,2).join(' ');
+  return pageHead(`${t('hello')}, ${first}`,h.sub,`<button class="btn" data-toast="Report downloaded (prototype)">${I('download',15)}<span class="hide-sm">Report</span></button><button class="btn pri" ${actTarget(h.quick[2])}>${I(h.quick[1],15)}${h.quick[0]}</button>`)+
+  `<div class="grid g4">${h.kpis.map(kpiCard).join('')}</div>
+  <div class="grid g3 mt">${chartCard(h.c1,'s2')}${inboxCard(h)}</div>
+  <div class="grid g3 mt">${chartCard(h.c2)}<div class="s2">${h.t2==='classes'?classesCard():h.t2==='halls'?hallCard():receiptsCard()}</div></div>
+  <div class="mt">${eventsCard()}</div>`;
+}
+
+/* students */
+function filteredStudents(){const f=S.st,q=f.q.toLowerCase();return STUDENTS.filter(s=>(!q||s.name.toLowerCase().includes(q)||s.roll.toLowerCase().includes(q))&&(!f.prog||s.pc===f.prog)&&(!f.sem||s.sem==f.sem)&&(!f.sec||s.sec===f.sec)&&(!f.status||s.status===f.status)&&(!f.fee||s.fee===f.fee)&&(S.role!=='hod'||s.pc==='BCA')&&(S.role!=='faculty'||s.pc==='BCOM'||s.pc==='MCOM'))}
+function pStudents(){
+  const sel=(k,label,opts)=>`<select class="sel" data-f="${k}" aria-label="${label}"><option value="">${label}: All</option>${opts.map(o=>`<option value="${o[0]}" ${S.st[k]==o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
+  return pageHead('Students',S.role==='hod'?'Department of Computer Science':S.role==='faculty'?'Students in your sections':'319 enrolled · Odd semester 2026–27',`<button class="btn" data-toast="Exported 319 rows to Excel (prototype)">${I('download',15)}<span class="hide-sm">Export</span></button><button class="btn pri" data-nav="admissions">${I('plus',15)}Add student</button>`)+
+  `<div class="card"><div class="filters"><label class="field">${I('search',15)}<input id="stQ" placeholder="Search name or roll no." value="${esc(S.st.q)}" aria-label="Search students"></label>
+  ${sel('prog','Programme',PROGS.map(p=>[p.c,p.n]))}${sel('sem','Semester',[[1,'Sem 1'],[3,'Sem 3'],[5,'Sem 5']])}${sel('sec','Section',[['A','A'],['B','B']])}${sel('status','Status',[['Active','Active'],['On leave','On leave'],['Detained','Detained']])}${sel('fee','Fees',[['Paid','Paid'],['Partial','Partial'],['Due','Due'],['Overdue','Overdue']])}
+  <button class="btn ghost sm" data-act="clearf">Clear</button></div><div id="stTable"></div></div>`;
+}
+function renderStudentTable(){
+  const el=$('#stTable');if(!el)return;const list=filteredStudents(),per=10,pages=Math.max(1,Math.ceil(list.length/per));S.st.page=Math.min(S.st.page,pages);
+  const rows=list.slice((S.st.page-1)*per,S.st.page*per),allSel=rows.length&&rows.every(s=>S.st.sel.has(s.id));
+  const n=S.st.sel.size;
+  el.innerHTML=(n?`<div class="bulk" role="region" aria-label="Bulk actions"><b>${n} selected</b><button class="btn sm" data-toast="Reminder sent to ${n} parents (prototype)">${I('send',14)}Send reminder</button><button class="btn sm" data-toast="Hall tickets generated for ${n} (prototype)">${I('file',14)}Hall tickets</button><button class="btn sm" data-toast="Exported ${n} rows">${I('download',14)}Export</button><button class="btn sm" data-act="clearsel" style="margin-left:auto">${I('x',14)}Clear</button></div>`:'')+
+  (list.length?`<div class="tbl-wrap"><table><thead><tr><th style="width:36px"><input type="checkbox" data-act="selall" ${allSel?'checked':''} aria-label="Select all on page"></th><th>Student</th><th>Roll no.</th><th>Programme</th><th>Attendance</th><th>Fees</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(s=>`<tr class="click ${S.st.sel.has(s.id)?'sel':''}" tabindex="0" data-student="${s.id}"><td><input type="checkbox" data-sel="${s.id}" ${S.st.sel.has(s.id)?'checked':''} aria-label="Select ${s.name}"></td><td><span class="who">${av(s.name)}<span><b>${s.name}</b><small>${s.cat==='GM'?'General merit':'Category '+s.cat}</small></span></span></td><td class="num muted">${s.roll}</td><td>${s.prog} · Sem ${s.sem}${s.sec}</td><td><div class="att"><div class="bar ${s.att<75?(s.att<65?'red':'amber'):''}"><i style="width:${s.att}%"></i></div><span>${s.att}%</span></div></td><td>${pill(s.fee+(s.due?' · '+inr(s.due):''),FEE_C[s.fee])}</td><td>${pill(s.status,ST_C[s.status])}</td><td><button class="ibtn" aria-label="Open ${s.name}" data-student="${s.id}">${I('chevright',16)}</button></td></tr>`).join('')}</tbody></table></div>
+  <div class="pager"><span class="small muted">Showing ${(S.st.page-1)*per+1}–${Math.min(S.st.page*per,list.length)} of ${list.length}</span><div class="pg">${pgBtns(S.st.page,pages)}</div></div>`
+  :`<div class="empty"><span class="em-ic">${I('search',22)}</span><h3>No students match these filters</h3><p class="small">Try removing a filter or searching by roll number.</p><button class="btn" data-act="clearf">Clear filters</button></div>`);
+}
+function pgBtns(p,n){const b=[];b.push(`<button data-pg="${p-1}" ${p<=1?'disabled':''} aria-label="Previous page">${I('chevleft',14)}</button>`);const set=new Set([1,n,p-1,p,p+1].filter(x=>x>=1&&x<=n));let last=0;[...set].sort((a,b)=>a-b).forEach(x=>{if(x-last>1)b.push('<span class="muted" style="padding:0 4px;align-self:center">…</span>');b.push(`<button data-pg="${x}" class="${x===p?'on':''}" ${x===p?'aria-current="page"':''}>${x}</button>`);last=x});b.push(`<button data-pg="${p+1}" ${p>=n?'disabled':''} aria-label="Next page">${I('chevright',14)}</button>`);return b.join('')}
+
+/* admissions */
+const ADM=[['Enquiry',842],['Application',516],['Documents',431],['Entrance / Index mark',398],['Rank list',380],['Seat allotment',214],['Fee',168],['Enrolled',152]];
+const ADM_HELP=['Capture walk-ins, website and WhatsApp enquiries. Auto-reply with programme brochure.','Applicants fill the form online; incomplete forms get a reminder after 48 h.','Verify SSLC/PUC marks cards, caste & income certificates. 23 need re-upload.','Index mark = PUC aggregate (or entrance score) as per university norms. 18 marks pending entry.','Generate category-wise merit list, check for ties, then publish to applicants.','Allot seats per reservation matrix (GM / SC / ST / Cat-I / 2A / 2B / 3A / 3B) and management quota.','Collect admission fee online or at counter; seat lapses after 72 h if unpaid.','Generate roll numbers, ID cards and section allocation; push to university portal.'];
+function pAdmissions(){
+  const cur=S.admStep;
+  const names=['Ishaan Rao','Meghana Gowda','Faiz Khan','Sahana Bhat','Joel Dsouza','Tanvi Hegde','Gagan Naik','Bhoomika Pai','Rohan Shetty','Keerthana Iyer','Vinay Patil','Ayesha Khan','Darshan Murthy','Spoorthi Rao','Arjun Menon','Varsha Kamath'];
+  return pageHead('Admissions 2026–27','Guided pipeline · from first enquiry to enrolment',`<button class="btn" data-toast="Admission form link copied">${I('send',15)}<span class="hide-sm">Share form link</span></button><button class="btn pri" data-toast="New enquiry form opened (prototype)">${I('plus',15)}New enquiry</button>`)+
+  `<div class="card"><div class="card-b"><div class="stepper" role="list" aria-label="Admission workflow">${ADM.map((a,i)=>`<button role="listitem" class="step ${i<cur?'done':i===cur?'cur':''}" data-adm="${i}" aria-current="${i===cur?'step':'false'}"><span class="sn"><span class="sd">${i<cur?I('check',14,3):i+1}</span><span class="sl"></span></span><b>${a[0]}</b><small>${a[1].toLocaleString('en-IN')}</small></button>`).join('')}</div>
+  <div class="callout mt">${I('sparkle',18)}<div><b>Step ${cur+1} of 8 · ${ADM[cur][0]}</b><div class="small" style="margin-top:2px">${ADM_HELP[cur]}</div><div class="row wrap" style="margin-top:10px;gap:8px">${cur===4?`<button class="btn pri sm" data-toast="Rank list published to 380 applicants via SMS">${I('send',14)}Publish rank list</button><button class="btn sm" data-adm="5">Next: seat allotment ${I('arrow',14)}</button>`:`<button class="btn pri sm" data-adm="${Math.min(7,cur+1)}">Continue to ${ADM[Math.min(7,cur+1)][0]} ${I('arrow',14)}</button>`}</div></div></div></div></div>
+  <div class="card mt"><div class="card-h"><div><h2>Pipeline</h2><p>Drop-off between stages · click a column to jump to that step</p></div></div><div class="card-b"><div class="kanban">${ADM.map((a,i)=>`<div class="kcol ${i===cur?'cur':''}" role="button" tabindex="0" data-adm="${i}"><div class="kcol-h"><span>${a[0]}</span><span class="chip num">${a[1]}</span></div>${i?`<div class="small muted">${Math.round(a[1]/ADM[i-1][1]*100)}% from previous</div>`:'<div class="small muted">All sources</div>'}${names.slice(i*2,i*2+2).map((n,j)=>`<div class="kcard"><div class="row">${av(n,22)}<b>${n}</b></div><div class="muted" style="margin-top:4px">${pick(['BCA','B.Com','BBA','B.Sc'])} · ${['Walk-in','Website','WhatsApp','Referral'][(i+j)%4]}</div></div>`).join('')}<div class="small muted" style="margin-top:8px">+${(a[1]-2).toLocaleString('en-IN')} more</div></div>`).join('')}</div></div></div>
+  <div class="card mt"><div class="card-h"><div><h2>Rank list · ${({BCA:'BCA',BCOM:'B.Com',BBA:'BBA',BSC:'B.Sc (PCM)'})[S.admProg]}</h2><p>Provisional merit list · 60 seats · reservation as per state norms</p></div><div class="seg" role="tablist" aria-label="Programme">${[['BCA','BCA'],['BCOM','B.Com'],['BBA','BBA'],['BSC','B.Sc']].map(([k,l])=>`<button role="tab" aria-selected="${S.admProg===k}" class="${S.admProg===k?'on':''}" data-admprog="${k}">${l}</button>`).join('')}</div></div>
+  <div class="card-b"><div class="row wrap" style="gap:6px;margin-bottom:12px"><span class="small muted">Seat matrix:</span>${[['GM',30],['SC',9],['ST',2],['Cat-I',2],['2A',9],['2B',2],['3A',2],['3B',3],['Mgmt',1]].map(([c,n])=>`<span class="chip">${c} · ${n}</span>`).join('')}</div>
+  <div class="tbl-wrap"><table><thead><tr><th>Rank</th><th>Applicant</th><th>Board</th><th style="text-align:right">Index mark</th><th>Category</th><th>Quota</th><th>Status</th></tr></thead><tbody>${rankRows().join('')}</tbody></table></div></div></div>`;
+}
+function rankRows(){seed=hash(S.admProg)+5;const out=[];let m=97.8;for(let i=0;i<10;i++){m-=rnd()*1.3;const n=pick(FN)+' '+pick(LN),cat=i<4?'GM':pick(['GM','2A','SC','3B','Cat-I','2B','3A','ST']),q=i===8?'Management':'Government';const st=i<6?['Allotted','green']:i<8?['Offered','blue']:['Waitlist','slate'];out.push(`<tr><td class="num"><b>#${i+1}</b></td><td><span class="who">${av(n,28)}<span><b>${n}</b><small>APP-26-${1040+i*7}</small></span></span></td><td>${pick(['Karnataka PUC','CBSE','ISC','Karnataka PUC'])}</td><td class="num" style="text-align:right;font-weight:600">${m.toFixed(2)}%</td><td><span class="chip" style="${cat!=='GM'?'border-color:var(--teal);color:var(--teal-ink)':''}">${cat}</span></td><td>${q==='Management'?pill(q,'orange'):'<span class="muted">Government</span>'}</td><td>${pill(...st)}</td></tr>`)}return out}
+
+/* exams */
+const GATES=[['All answer scripts valued','186 of 186 BCA Sem 5 scripts · 6 valuers','',''],['Moderation complete','BCA501, BCA503, BCA505 moderated by board of examiners','',''],['Grace marks & condonation applied','Per university regulation 7.4 · auto-calculated, review 12 cases','',''],['HoD verification','4 departments verify subject-wise results','Approval gate','Dr. Anitha Shenoy +3'],['Exam controller approval','Locks marks; changes need revaluation','Approval gate','Prof. Ramesh Kulkarni'],['Principal sign-off','Final approval before publication','Approval gate','Dr. Savitha R.'],['Publish results','Students & parents (app + SMS), upload to university portal','','']];
+function pExams(){
+  const papers=[['BCA501','Software Engineering','BCA 5',62,62,'Dr. Anitha Shenoy','Moderated','green'],['BCM301','Corporate Accounting','B.Com 3',118,84,'Prof. Deepa Nair','In valuation','slate'],['BBA503','Financial Management','BBA 5',54,36,'Prof. Kiran M','In valuation','slate'],['BSC305','Electromagnetism','B.Sc 3',46,46,'Dr. Suresh Bhat','Pending','amber'],['BCA503','Python Programming','BCA 5',62,62,'Prof. Arun K','Moderated','green'],['BCM305','Business Statistics','B.Com 3',118,65,'Ms. Ruchi Pai','In valuation','slate'],['MCM301','Adv. Cost Accounting','M.Com 3',26,26,'Dr. Savitha R.','Pending','amber']];
+  return pageHead('Exams & results','Odd semester end exams · Sep–Oct 2026',`<button class="btn" data-toast="Hall tickets PDF generated (prototype)">${I('file',15)}<span class="hide-sm">Hall tickets</span></button><button class="btn pri" data-gotogate="1">${I('filecheck',15)}Publish results</button>`)+
+  `<div class="grid g4">${HOME.exam.kpis.map(kpiCard).join('')}</div>
+  <div class="grid g2 mt"><div class="card"><div class="card-h"><div><h2>Valuation & moderation by paper</h2><p>Click a row to see valuers and pending scripts</p></div></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Paper</th><th>Progress</th><th>Moderation</th></tr></thead><tbody>${papers.map(p=>{const pc=Math.round(p[4]/p[3]*100);return `<tr class="click" tabindex="0" data-drill="paper:${p[0]} ${p[1]}"><td style="white-space:normal;min-width:150px"><b style="font-weight:550">${p[0]}</b> <span class="muted">${p[1]}</span><div class="small muted">${p[2]} · ${p[5]}</div></td><td style="min-width:140px"><div class="att"><div class="bar"><i style="width:${pc}%"></i></div><span>${pc}%</span></div><div class="small muted num">${p[4]}/${p[3]} scripts</div></td><td>${pill(p[6],p[7])}</td></tr>`}).join('')}</tbody></table></div></div></div>
+  ${chartCard(HOME.exam.c2)}</div>
+  <div class="card mt" id="gates"><div class="card-h"><div><h2>Publish results · BCA Semester 5</h2><p>Each gate must pass before the next unlocks · every approval is logged</p></div>${pill(`${S.gate} of ${GATES.length} complete`,S.gate>=GATES.length?'green':'blue')}</div>
+  <div class="card-b" style="padding:8px 0 4px">${GATES.map((g,i)=>{const st=i<S.gate?'done':i===S.gate?'cur':'lock';return `<div class="gate ${st}"><span class="gd">${st==='done'?I('check',14,3):st==='lock'?I('lock',13):i+1}</span><div class="gate-b"><div class="row wrap" style="gap:8px"><b>${g[0]}</b>${g[2]?`<span class="chip">${I('shield',12)}&nbsp;${g[2]}</span>`:''}</div><div class="small muted">${g[1]}</div>${g[3]?`<div class="row small muted" style="margin-top:6px">${av(g[3],20)}Approver: ${g[3]}</div>`:''}</div>${st==='done'?pill('Done','green'):st==='cur'?`<button class="btn pri sm" data-gate="${i}">${g[2]?'Approve':i===GATES.length-1?'Publish':'Mark complete'}</button>`:'<span class="small muted">Locked</span>'}</div>`}).join('')}</div></div>`;
+}
+
+/* NAAC */
+const CRIT=[['C1','Curricular Aspects',82,'8/10 metrics'],['C2','Teaching–Learning & Evaluation',74,'11/15'],['C3','Research, Innovations & Extension',41,'5/12'],['C4','Infrastructure & Learning Resources',88,'7/8'],['C5','Student Support & Progression',69,'6/9'],['C6','Governance, Leadership & Mgmt',77,'7/9'],['C7','Institutional Values & Best Practices',58,'3/5']];
+const METRICS=[['1.1.1','C1','Curricula developed/adopted have relevance to local needs','QlM','Provided','Uploaded','green','Dr. Anitha Shenoy'],['1.3.2','C1','Number of value-added courses offered','QnM','14','Uploaded','green','Prof. Kiran M'],['2.1.1','C2','Enrolment percentage','QnM','92.4%','Uploaded','green','Office'],['2.2.1','C2','Student – full-time teacher ratio','QnM','22:1','Needs review','amber','Office'],['2.6.3','C2','Pass percentage of students','QnM','81.2%','Auto from Kinetix','teal','Exam cell'],['3.2.1','C3','Papers published per teacher in UGC-CARE journals','QnM','—','Missing','red','Research cell'],['3.3.1','C3','Extension and outreach programmes','QnM','6','Rejected by IQAC','red','NSS officer'],['3.4.1','C3','Collaborative activities / MoUs','QnM','—','Missing','red','Principal'],['4.1.3','C4','Classrooms with ICT facilities','QnM','24 of 26','Auto from Kinetix','teal','IT admin'],['5.1.1','C5','Students benefited by scholarships','QnM','62','Uploaded','green','Accounts'],['5.2.1','C5','Placement of outgoing students','QnM','—','Missing','red','Placement cell'],['6.3.3','C6','Professional development programmes','QnM','4','Needs review','amber','IQAC'],['7.1.1','C7','Gender equity measures','QlM','—','Missing','red','Women’s cell'],['7.2.1','C7','Two best practices','QlM','Draft','Needs review','amber','IQAC']];
+function gauge(v){const cx=130,cy=132,r=90,pt=a=>[cx+r*Math.cos(a),cy-r*Math.sin(a)],arc=(a0,a1,cls,sw)=>{const [x0,y0]=pt(Math.PI*(1-a0/4)),[x1,y1]=pt(Math.PI*(1-a1/4));return `<path d="M${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1}" fill="none" class="${cls}" stroke-width="${sw}" stroke-linecap="round"/>`};
+  const [nx,ny]=pt(Math.PI*(1-v/4));
+  const ticks=[[1.5,'C'],[2.0,'B'],[2.5,'B+'],[3.0,'A'],[3.5,'A++']].map(([b,l])=>{const a=Math.PI*(1-b/4),[x,y]=[cx+(r+22)*Math.cos(a),cy-(r+22)*Math.sin(a)+3];return `<text x="${x}" y="${y}" class="axis" text-anchor="middle" style="font-size:10px">${l}</text>`}).join('');
+  return `<svg viewBox="0 0 260 172" width="100%" style="max-width:320px;display:block;margin:0 auto" role="img" aria-label="Predicted CGPA ${v} out of 4, grade B++">${arc(0,4,'s-track',14)}${arc(0,v,'s-teal',14)}${arc(3.01,4,'s-amber',3)}${ticks}<circle cx="${nx}" cy="${ny}" r="9" style="fill:var(--card);stroke:var(--text);stroke-width:3"/><text x="${cx}" y="${cy-14}" text-anchor="middle" style="fill:var(--text);font-size:34px;font-weight:700">${v.toFixed(2)}</text><text x="${cx}" y="${cy+30}" text-anchor="middle" class="axis" style="font-size:12px">Predicted grade B++ · out of 4.00</text></svg>`}
+function pNaac(){
+  const rows=METRICS.filter(m=>!S.naacC||m[1]===S.naacC);
+  return pageHead('NAAC accreditation','Cycle 2 · SSR target March 2027 · AQAR 2025–26 due 15 Dec',`<button class="btn" data-toast="SSR draft exported (prototype)">${I('download',15)}<span class="hide-sm">Export SSR draft</span></button><button class="btn pri" data-toast="Tasks assigned to 6 owners via app + email">${I('send',15)}Assign missing</button>`)+
+  `<div class="grid g3"><div class="card s2"><div class="card-h"><div><h2>Criteria completeness</h2><p>Click a criterion to filter the metric table</p></div>${S.naacC?`<button class="btn sm" data-naac="">Show all</button>`:''}</div><div class="card-b"><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">${CRIT.map(c=>`<button class="card ring-card ${S.naacC===c[0]?'on':''}" data-naac="${c[0]}" aria-pressed="${S.naacC===c[0]}">${ring(c[2],54,6,c[2]<50?'s-orange':c[2]<70?'s-amber':'s-teal')}<span style="min-width:0"><span class="small muted">${c[0]} · ${c[3]} metrics</span><b style="display:block;font-weight:550;font-size:13px;line-height:1.3">${c[1]}</b></span></button>`).join('')}</div></div></div>
+  <div class="card"><div class="card-h"><div><h2>Predicted CGPA</h2><p>Based on data captured so far</p></div></div><div class="card-b">${gauge(2.86)}<div class="callout mt" style="background:var(--amber-soft);border-color:transparent">${I('sparkle',16)}<div class="small"><b>+0.15 to reach A (3.01).</b> Biggest levers: C3 research metrics (+0.08) and C7 best practices (+0.05).</div></div></div></div></div>
+  <div class="grid g3 mt"><div class="card s2" id="metricTbl"><div class="card-h"><div><h2>Metrics & evidence${S.naacC?' · '+S.naacC:''}</h2><p>${rows.length} metrics · values marked “Auto” are pulled live from Kinetix</p></div></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Metric</th><th>Description</th><th>Type</th><th>Value</th><th>Evidence</th><th class="hide-sm">Owner</th></tr></thead><tbody>${rows.map(m=>`<tr><td class="num"><b>${m[0]}</b></td><td style="white-space:normal;min-width:220px">${m[2]}</td><td><span class="chip">${m[3]}</span></td><td class="num">${m[4]}</td><td>${pill(m[5],m[6])}</td><td class="hide-sm"><span class="who">${av(m[7],22)}<span class="small">${m[7]}</span></span></td></tr>`).join('')}</tbody></table></div></div></div>
+  <div class="card"><div class="card-h"><div><h2>Missing data</h2><p>12 items block the SSR</p></div></div><div style="margin-top:8px">${[['3.2.1 Publications list (2021–26)','Research cell · 8 faculty yet to submit','red'],['3.4.1 MoU copies & activity reports','Principal’s office','red'],['5.2.1 Placement offer letters','Placement cell · 41 students','red'],['7.1.1 Gender audit report','Women’s cell','amber'],['3.3.1 Re-upload outreach photos (geo-tagged)','Rejected: missing dates','amber']].map(m=>`<div class="inb"><span class="inb-ic t-${m[2]}">${I('alert',15)}</span><div class="inb-t"><b>${m[0]}</b><span>${m[1]}</span></div><button class="btn sm" data-toast="Reminder sent">Remind</button></div>`).join('')}</div></div></div>`;
+}
+
+/* fees */
+function pFees(){
+  const def=STUDENTS.filter(s=>s.fee==='Overdue'||s.fee==='Due').sort((a,b)=>b.due-a.due);
+  return pageHead('Fees & accounts','Term Jun–Nov 2026 · 2nd instalment due 21 Oct',`<button class="btn" data-toast="Day book exported (prototype)">${I('download',15)}<span class="hide-sm">Day book</span></button><button class="btn pri" data-toast="Receipt form opened (prototype)">${I('plus',15)}New receipt</button>`)+
+  `<div class="grid g4">${HOME.accounts.kpis.map(kpiCard).join('')}</div>
+  <div class="grid g3 mt"><div class="card s2"><div class="card-h"><div><h2>Collection vs target</h2><p>₹ lakh by month · grey = target · click a month for receipts</p></div><div class="legend"><span><i style="background:var(--teal)"></i>Collected</span><span><i style="background:var(--hover);border:1px solid var(--border-strong)"></i>Target</span></div></div><div class="card-b">${chart(HOME.accounts.c1.spec)}</div></div>
+  <div class="card"><div class="card-h"><div><h2>By programme</h2><p>Collected / expected this term</p></div></div><div class="card-b">${hbars([['B.Com',81,'','109 students','₹1.32 L'],['BCA',76,'','83 students','₹1.04 L'],['BBA',64,'amber','57 students','₹0.61 L'],['B.Sc (PCM)',69,'amber','45 students','₹0.48 L'],['M.Com',88,'','25 students','₹0.34 L']],'prog')}</div></div></div>
+  <div class="grid g2 mt"><div class="card"><div class="card-h"><div><h2>Defaulters</h2><p>${def.length} students · ${lakh(def.reduce((a,s)=>a+s.due,0))} outstanding</p></div><button class="btn sm" data-toast="Reminders sent to ${def.length} parents (SMS + WhatsApp)">${I('send',14)}Remind all</button></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Student</th><th style="text-align:right">Due</th><th>Status</th><th></th></tr></thead><tbody>${def.slice(0,7).map(s=>`<tr class="click" tabindex="0" data-student="${s.id}"><td><span class="who">${av(s.name,28)}<span><b>${s.name}</b><small>${s.prog} ${s.sem}${s.sec} · ${s.roll}</small></span></span></td><td class="num" style="text-align:right;font-weight:600">${inr(s.due)}</td><td>${pill(s.fee,FEE_C[s.fee])}</td><td><button class="btn sm" data-remind="${s.id}">${S.reminded.has(s.id)?I('check',13)+'Sent':'Remind'}</button></td></tr>`).join('')}</tbody></table></div></div></div>
+  <div class="card"><div class="card-h"><div><h2>Gateway settlements</h2><p>Online payments → college bank account</p></div>${pill('2 pending','amber')}</div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Batch</th><th style="text-align:right">Amount</th><th class="hide-sm">UTR</th><th>Status</th></tr></thead><tbody>${[['12 Oct','34 txns',22800,'—','Processing','blue'],['11 Oct','21 txns',19500,'—','Pending','amber'],['10 Oct','48 txns',61200,'SBIN526283041','Settled','green'],['09 Oct','39 txns',47900,'SBIN526282115','Settled','green'],['08 Oct','12 txns',15400,'SBIN526281007','Settled','green']].map(r=>`<tr><td><b style="font-weight:550">${r[0]}</b><div class="small muted">${r[1]}</div></td><td class="num" style="text-align:right;font-weight:600">${inr(r[2])}</td><td class="num muted small hide-sm">${r[3]}</td><td>${pill(r[4],r[5])}</td></tr>`).join('')}</tbody></table></div><div class="callout mt" style="background:var(--bg);border-color:var(--border)">${I('clock',16)}<div class="small">Settlement cycle T+2 working days. 11 Oct batch is a Sunday collection — expected 14 Oct.</div></div></div></div></div>
+  <div class="mt">${receiptsCard(8)}</div>`;
+}
+
+/* setup */
+const SETUP=[['Institution profile','Name, affiliation (university), AISHE code, logo, academic year','building','5 min'],['Programmes & courses','Pick from university syllabus library — BCA, B.Com, BBA, B.Sc…','book','10 min'],['Import staff','Upload Excel or add manually; we send invites by SMS','user','10 min'],['Import students','Excel template with roll no., programme, section, guardian phone','users','15 min'],['Timetable','Drag-and-drop builder; detects room & faculty clashes','calendar','30 min'],['Fee structure','Fee heads, instalments, concessions & online payment setup','wallet','15 min']];
+function pSetup(){
+  const d=S.setupDone.size,pct=Math.round(d/6*100),next=SETUP.findIndex((x,i)=>!S.setupDone.has(i));
+  return pageHead('Set up your college','What a brand-new college sees on day one · about 90 minutes in total','<button class="btn" data-toast="Help call booked (prototype)">'+I('phone',15)+'Book a setup call</button>')+
+  `<div class="grid g3"><div class="card s2"><div class="card-h"><div><h2>Setup checklist</h2><p>Finish these to unlock attendance, fees and reports</p></div>${ring(pct,52,6,'s-teal')}</div><div style="margin-top:10px">${SETUP.map((s,i)=>{const done=S.setupDone.has(i);return `<div class="ck ${done?'done':''}"><span class="ck-d">${done?I('check',14,3):I(s[2],13)}</span><div class="ck-t"><b>${s[0]}</b><div class="small muted">${s[1]}</div>${i===next?`<div class="row wrap" style="margin-top:10px;gap:8px"><button class="btn pri sm" data-setup="${i}">${I(i===2||i===3?'upload':'arrow',14)}${i===2||i===3?'Upload Excel':'Start'}</button>${i===2||i===3?`<button class="btn sm" data-toast="Template downloaded (prototype)">${I('download',14)}Template</button>`:''}</div>`:''}</div><span class="small muted hide-sm">${done?'Done':s[3]}</span>${done?`<button class="btn ghost sm" data-setup="${i}" aria-label="Undo ${s[0]}">Undo</button>`:i!==next?`<button class="btn sm" data-setup="${i}">Mark done</button>`:''}</div>`}).join('')}</div></div>
+  <div class="card"><div class="card-h"><div><h2>Progress</h2><p>${d} of 6 steps complete</p></div></div><div class="card-b"><div class="bar" style="height:10px"><i style="width:${pct}%"></i></div><p class="small muted">${d===6?'All set — your dashboard is live.':`Next up: <b style="color:var(--text)">${SETUP[next][0]}</b>`}</p><div class="callout">${I('sparkle',16)}<div class="small">Migrating from another ERP? Upload its student export — we map columns automatically.</div></div></div></div></div>
+  <h2 style="font-size:15px;margin:28px 0 12px">Your dashboard (empty until data arrives)</h2>
+  <div class="grid g4">${[['Students','Import students to see totals','users',3],['Attendance today','Starts after timetable is set','clipboard',4],['Fees collected','Add a fee structure','wallet',5],['Results','Appears after first exam','award',-1]].map(k=>`<div class="ghost-card"><div class="kpi-top"><span>${k[0]}</span><span class="kpi-ic">${I(k[2],15)}</span></div><b style="display:block;font-size:28px;margin-top:8px;color:var(--faint)">—</b><div class="small muted" style="margin-top:6px">${k[1]}</div>${k[3]>=0&&!S.setupDone.has(k[3])?`<button class="btn sm" style="margin-top:10px" data-setup-go="${k[3]}">Set up ${I('arrow',13)}</button>`:''}</div>`).join('')}</div>
+  <div class="card mt"><div class="empty"><span class="em-ic">${I('users',24)}</span><h3>No students yet</h3><p class="small" style="max-width:420px;margin:0 auto 14px">Import your student list from Excel, or add students one by one. You can also pull admitted students from the Admissions module.</p><div class="row wrap" style="justify-content:center"><button class="btn pri" data-setup="3">${I('upload',15)}Import from Excel</button><button class="btn" data-toast="Add student form opened (prototype)">${I('plus',15)}Add manually</button><button class="btn ghost" data-toast="Template downloaded (prototype)">${I('download',15)}Template</button></div></div></div>`;
+}
+function pStub(id){const title=PAGE_TITLE[id]||id;return pageHead(title,'Not designed in this prototype')+`<div class="card"><div class="empty"><span class="em-ic">${I('layers',24)}</span><h3>${title} isn’t part of this prototype</h3><p class="small" style="max-width:440px;margin:0 auto 14px">This shows the shared empty-state pattern: say what the page is for, why it’s empty, and give one clear next step.</p><button class="btn pri" data-nav="home">${I('home',15)}Back to home</button></div></div>`}
+const PAGES={home:pHome,students:pStudents,admissions:pAdmissions,exams:pExams,naac:pNaac,fees:pFees,setup:pSetup};
+
+/* ---------- drill-down ---------- */
+function drill(key){
+  const KM={reg:'halls',val:'paper:All papers',mod:'paper:Moderation pending',settle:'month:Oct',syl:'syllabus',ia:'iamarks',cls:'class:Today',mark:'take',myatt:'section:My sections',results:'subject:All subjects'};
+  if(key.startsWith('kpi:')&&KM[key.slice(4)])key=KM[key.slice(4)];
+  const [type,...rest]=key.split(':'),arg=rest.join(':');seed=hash(key);
+  const sample=(n,f)=>STUDENTS.slice().sort(()=>rnd()-.5).filter(f||(()=>true)).slice(0,n);
+  const stRow=(s,right)=>`<tr class="click" tabindex="0" data-student="${s.id}"><td><span class="who">${av(s.name,28)}<span><b>${s.name}</b><small>${s.prog} ${s.sem}${s.sec} · ${s.roll}</small></span></span></td><td style="text-align:right">${right}</td></tr>`;
+  const tbl=(h,rows)=>`<div class="tbl-wrap"><table><thead><tr>${h.map((x,i)=>`<th ${i===h.length-1&&i?'style="text-align:right"':''}>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  let title,sub,body;
+  if(type==='day'||type==='kpi'&&arg==='attendance'){title='Attendance · '+(arg==='attendance'?'Today':arg);sub='Section-wise · sorted lowest first';const secs=['B.Com 3B','BBA 5A','B.Sc 1A','BCA 3B','B.Com 1A','BCA 5A','B.Com 5B','M.Com 1A','BBA 1B','BCA 1A'];body=tbl(['Section','Present','Attendance'],secs.map((s,i)=>{const v=Math.round(66+i*2.6+rnd()*3);return `<tr><td><b style="font-weight:550">${s}</b></td><td class="num muted">${Math.round(v*.6)}/60</td><td style="text-align:right"><div class="att" style="justify-content:flex-end"><div class="bar ${v<75?'amber':''}" style="max-width:120px"><i style="width:${v}%"></i></div><span>${v}%</span></div></td></tr>`}))}
+  else if(type==='month'||type==='kpi'&&arg==='fees'){title='Fee receipts · '+(arg==='fees'?'This term':arg+' 2026');sub='Largest first · click a student to open profile';body=tbl(['Student','Amount'],sample(10).map(s=>stRow(s,`<b class="num">${inr(2000+Math.round(rnd()*60)*100)}</b><div class="small muted">${pick(['UPI','Cash','NEFT','Card'])}</div>`)))}
+  else if(type==='defaulters'||type==='kpi'&&(arg==='def'||arg==='out')){const d=STUDENTS.filter(s=>s.fee==='Overdue'||s.fee==='Due').sort((a,b)=>b.due-a.due);title='Fee defaulters';sub=`${d.length} students · ${lakh(d.reduce((a,s)=>a+s.due,0))} outstanding`;body=tbl(['Student','Due'],d.slice(0,15).map(s=>stRow(s,`<b class="num">${inr(s.due)}</b><div>${pill(s.fee,FEE_C[s.fee])}</div>`)))}
+  else if(type==='lowatt'||type==='section'||type==='class'){title=type==='class'?arg+' · attendance':type==='section'?arg+' · students':'Students below 75%';sub='Sorted by attendance · parents can be notified in one tap';body=tbl(['Student','Attendance'],sample(12,s=>s.att<82).sort((a,b)=>a.att-b.att).map(s=>stRow(s,`<div class="att" style="justify-content:flex-end"><div class="bar ${s.att<75?(s.att<65?'red':'amber'):''}" style="max-width:100px"><i style="width:${s.att}%"></i></div><span>${s.att}%</span></div>`)))}
+  else if(type==='leaves'){title='Leave requests';sub='Approve or reject; substitutes are suggested automatically';body=[['Prof. Kiran M','14–16 Oct · Casual leave','Sub: Prof. Deepa Nair'],['Prof. Arun K','15 Oct · Duty leave (university BoS)','Sub: Ms. Ruchi Pai'],['Ms. Ruchi Pai','17–18 Oct · Medical leave','Sub: needs assignment'],['Dr. Suresh Bhat','20 Oct · Casual leave','Sub: Prof. Arun K']].map(l=>`<div class="ev" style="margin-bottom:8px">${av(l[0],36)}<div style="flex:1;min-width:0"><b style="font-weight:550">${l[0]}</b><div class="small muted">${l[1]} · ${l[2]}</div></div><button class="btn sm" data-toast="Rejected">Reject</button><button class="btn pri sm" data-toast="Approved · ${l[0]} notified">Approve</button></div>`).join('')}
+  else if(type==='subject'){title=arg+' · students who did not pass';sub='Eligible for supplementary exam in Dec';body=tbl(['Student','Marks'],sample(10).map(s=>stRow(s,`<b class="num">${24+Math.round(rnd()*10)}/100</b>`)))}
+  else if(type==='paper'){title=arg;sub='Valuers and pending scripts';body=tbl(['Valuer','Scripts'],[['Dr. Anitha Shenoy',40,40],['Prof. Arun K',38,30],['Ms. Ruchi Pai',40,14]].map(v=>`<tr><td><span class="who">${av(v[0],26)}${v[0]}</span></td><td style="text-align:right"><div class="att" style="justify-content:flex-end"><div class="bar" style="max-width:100px"><i style="width:${v[2]/v[1]*100}%"></i></div><span style="width:50px">${v[2]}/${v[1]}</span></div></td></tr>`))}
+  else if(type==='halls'||type==='kpi'&&arg==='hall'){title='Blocked hall tickets';sub='31 students';body=tbl(['Student','Reason'],STUDENTS.filter(s=>s.fee==='Overdue'||s.att<70).slice(0,14).map(s=>stRow(s,s.fee==='Overdue'?pill('Fee '+inr(s.due),'red'):pill('Att. '+s.att+'%','amber'))))}
+  else if(type==='kpi'&&arg==='students'||type==='prog'){title='Students by programme';sub='Click to open the filtered list';body=PROGS.map(p=>{const n=STUDENTS.filter(s=>s.pc===p.c).length;return `<button class="hrow" data-nav-filter="${p.c}"><b style="font-weight:550">${p.n}</b><span class="bar"><i style="width:${n/319*100*2.5}%"></i></span><span class="v">${n}</span></button>`}).join('')}
+  else if(type==='take'){title='Take attendance · B.Com 3A';sub='09:00 Corporate Accounting · tap to mark absent';body=`<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${sample(18,s=>s.pc==='BCOM').map(s=>`<button class="btn" style="justify-content:flex-start;height:auto;padding:8px" aria-pressed="true" data-att-toggle>${av(s.name,24)}<span style="overflow:hidden;text-overflow:ellipsis">${s.name.split(' ')[0]}</span></button>`).join('')}</div><button class="btn pri mt" data-toast="Attendance saved · 17/18 present" data-close>Save attendance</button>`}
+  else {title=({mode:'Payments by mode',syllabus:'Syllabus coverage',iamarks:'IA-2 marks pending',valuers:'Valuers pending upload',reval:'Revaluation requests',cancelled:'Cancelled receipts'})[type]||(PAGE_TITLE[arg]||'Details');sub=arg||'Click a student to open their profile';const det={mode:()=>pill(pick(['UPI','Cash','NEFT','Card']),'slate'),syllabus:()=>pill('Unit '+(2+Math.floor(rnd()*4)),'teal'),iamarks:()=>pill('Not entered','amber'),valuers:()=>pill('Upload pending','amber'),reval:()=>pill(pick(['Fee paid','Fee pending']),'blue'),cancelled:()=>pill('Awaiting approval','amber')}[type]||(()=>pill(pick(['Pending','In review']),'slate'));body=tbl(['Student','Status'],sample(8).map(s=>stRow(s,det())))}
+  openDrawer(`<div class="dr-h"><div style="flex:1;min-width:0"><span class="small muted">Drill-down</span><h2 id="drTitle" style="margin:2px 0 0;font-size:18px">${esc(title)}</h2><p class="small muted" style="margin:2px 0 0">${sub}</p></div><button class="ibtn bordered" data-close aria-label="Close">${I('x',16)}</button></div><div class="dr-b">${body}</div><div class="dr-f"><button class="btn" data-toast="Exported (prototype)">${I('download',14)}Export</button><button class="btn pri" data-close>Done</button></div>`);
+}
+
+/* ---------- student drawer ---------- */
+let curStudent=null,curTab='Overview';
+function openStudent(id){curStudent=STUDENTS[id];curTab='Overview';renderStudentDrawer()}
+function renderStudentDrawer(){
+  const s=curStudent;seed=s.id*97+3;
+  const tabs=['Overview','Attendance','Marks','Fees','Documents','Timeline'];
+  let b='';
+  if(curTab==='Overview')b=`<div class="grid g2" style="gap:10px;margin-bottom:18px">${[['Attendance',s.att+'%',s.att<75?'amber':'teal'],['Fees',s.fee,FEE_C[s.fee]],['CGPA',(6.2+rnd()*3).toFixed(2),'slate'],['Backlogs',s.att<70?'1':'0','slate']].map(k=>`<div class="ev" style="display:block"><span class="small muted">${k[0]}</span><div style="font-size:20px;font-weight:650">${k[1]}</div></div>`).join('')}</div><div class="kv">${[['Roll number',s.roll],['Programme',s.prog+' · Sem '+s.sem+s.sec],['Category',s.cat==='GM'?'General merit':s.cat],['Admission','Jul 20'+(s.sem===5?'24':s.sem===3?'25':'26')],['Guardian','Mr. '+pick(FN)+' '+s.name.split(' ')[1]],['Guardian phone','+91 98•• ••'+(1000+s.id)],['Mentor','Prof. Deepa Nair'],['Mother tongue',pick(['Kannada','Tulu','Konkani','Hindi','Malayalam'])]].map(k=>`<div><small>${k[0]}</small><b>${k[1]}</b></div>`).join('')}</div>`;
+  if(curTab==='Attendance'){const subs=['Corporate Accounting','Income Tax','Business Law','Kannada','English','Costing'];b=`<p class="small muted" style="margin-top:0">Monthly attendance · minimum 75% for exam eligibility</p>${chart({type:'bar',values:[s.att+4,s.att+1,s.att-3,s.att].map(v=>Math.min(100,v)),labels:['Jul','Aug','Sep','Oct'],max:100,fmt:v=>v+'%',ref:75,refLabel:'75%',colorFn:v=>v<75?'f-amber':'f-teal',drill:'section',label:'Monthly attendance',h:180})}<div class="mt">${hbars(subs.map(x=>{const v=Math.min(100,Math.round(s.att+(rnd()-.5)*14));return [x,v,v<75?'amber':'']}),'subject')}</div>`}
+  if(curTab==='Marks')b=`<div class="tbl-wrap"><table><thead><tr><th>Course</th><th>IA-1</th><th>IA-2</th><th>Sem</th><th>Grade</th></tr></thead><tbody>${['Corporate Accounting','Income Tax','Business Law','Kannada','English','Costing'].map(c=>{const sm=45+Math.round(rnd()*50);return `<tr><td>${c}</td><td class="num">${12+Math.round(rnd()*8)}/20</td><td class="num">${12+Math.round(rnd()*8)}/20</td><td class="num"><b>${sm}</b>/100</td><td>${pill(sm>=85?'O':sm>=75?'A+':sm>=60?'A':sm>=50?'B':'C',sm>=60?'teal':sm>=50?'slate':'amber')}</td></tr>`}).join('')}</tbody></table></div>`;
+  if(curTab==='Fees')b=`<div class="ev" style="display:block;margin-bottom:14px"><div class="row between"><span class="small muted">Term fee ₹24,000</span>${pill(s.fee,FEE_C[s.fee])}</div><div class="bar" style="height:8px;margin:10px 0 6px"><i style="width:${(24000-s.due)/240}%"></i></div><div class="row between small"><span>Paid ${inr(24000-s.due)}</span><b>${s.due?'Due '+inr(s.due):'Fully paid'}</b></div></div><div class="tbl-wrap"><table><thead><tr><th>Instalment</th><th>Due date</th><th style="text-align:right">Amount</th><th>Status</th></tr></thead><tbody>${[['1st instalment','15 Jul',12000,'Paid','green'],['2nd instalment','21 Oct',12000,s.due?(s.fee==='Overdue'?'Overdue':'Due'):'Paid',s.due?FEE_C[s.fee]:'green']].map(r=>`<tr><td>${r[0]}</td><td class="muted">${r[1]}</td><td class="num" style="text-align:right">${inr(r[2])}</td><td>${pill(r[3],r[4])}</td></tr>`).join('')}</tbody></table></div>${s.due?`<button class="btn pri mt" data-toast="Payment link sent to guardian by SMS">${I('send',14)}Send payment link</button>`:''}`;
+  if(curTab==='Documents')b=[['SSLC marks card','Verified','green'],['PUC / 12th marks card','Verified','green'],['Transfer certificate','Pending','amber'],['Caste certificate',s.cat==='GM'?'Not required':'Verified',s.cat==='GM'?'slate':'green'],['Income certificate','Expired','red'],['Aadhaar (masked)','Verified','green'],['Passport photo','Verified','green']].map(d=>`<div class="ev" style="margin-bottom:8px"><span class="kpi-ic">${I('file',15)}</span><div style="flex:1"><b style="font-weight:550">${d[0]}</b></div>${pill(d[1],d[2])}</div>`).join('');
+  if(curTab==='Timeline')b=`<div class="tl">${[['Today','Marked present · Corporate Accounting'],['10 Oct','Fee reminder sent to guardian (SMS, Kannada)'],['02 Oct','IA-2 marks published · 16/20 average'],['18 Sep','Library book returned late · ₹10 fine'],['15 Jul','1st instalment paid · UPI · RCPT/26/1182'],['01 Jul','Promoted to Semester '+s.sem]].map(e=>`<div class="tl-i"><span class="small muted">${e[0]}</span><div>${e[1]}</div></div>`).join('')}</div>`;
+  openDrawer(`<div class="dr-h">${av(s.name,52)}<div style="flex:1;min-width:0"><h2 id="drTitle" style="margin:0;font-size:18px">${s.name}</h2><div class="small muted">${s.roll} · ${s.prog} Sem ${s.sem}${s.sec}</div><div class="row wrap" style="gap:6px;margin-top:6px">${pill(s.status,ST_C[s.status])}${pill('Fees: '+s.fee,FEE_C[s.fee])}${s.att<75?pill('Attendance shortage','amber'):''}</div></div><button class="ibtn bordered" data-close aria-label="Close">${I('x',16)}</button></div><div class="tabs" role="tablist" style="padding:0 20px;margin-top:14px">${tabs.map(x=>`<button role="tab" aria-selected="${x===curTab}" data-stab="${x}">${x}</button>`).join('')}</div><div class="dr-b" role="tabpanel" aria-label="${curTab}">${b}</div><div class="dr-f"><button class="btn" data-toast="Message sent to guardian (prototype)">${I('phone',14)}Contact guardian</button><button class="btn pri" data-toast="Edit form opened (prototype)">Edit profile</button></div>`,true);
+}
+let lastFocus=null;
+function openDrawer(html,keepFocus){const d=$('#drawer');if(!d.classList.contains('on'))lastFocus=document.activeElement;d.innerHTML=html;d.classList.add('on');d.setAttribute('aria-hidden','false');$('#scrim').classList.add('on','top');hydrate();if(!keepFocus||!d.contains(document.activeElement))(keepFocus&&$('[aria-selected="true"]',d)||$('[data-close]',d)).focus()}
+function closeDrawer(){const d=$('#drawer');d.classList.remove('on');d.setAttribute('aria-hidden','true');$('#scrim').classList.remove('top');if(!$('#app').classList.contains('mob-open'))$('#scrim').classList.remove('on');lastFocus&&lastFocus.focus&&lastFocus.focus()}
+
+/* ---------- routing ---------- */
+function go(page,push=true){
+  if(!allowed(page))page='home';S.page=page;if(push&&location.hash!=='#/'+page)history.replaceState(null,'','#/'+page);
+  chId=0;for(const k in CH)delete CH[k];
+  $('#content').innerHTML=(PAGES[page]||pStub.bind(null,page))(page);
+  $('#crumb').textContent=PAGE_TITLE[page]||'Home';document.title=(PAGE_TITLE[page]||'Home')+' · Kinetix';
+  renderSidebar();if(page==='students')renderStudentTable();hydrate();
+  $('#app').classList.remove('mob-open');if(!$('#drawer').classList.contains('on'))$('#scrim').classList.remove('on');
+}
+function rerender(){const y=scrollY;go(S.page,false);scrollTo(0,y)}
+let toastT;function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2200)}
+function closePops(except){$$('.pop').forEach(p=>{if(p!==except){p.hidden=true}});$$('[aria-haspopup]').forEach(b=>{if(!except||b.getAttribute('aria-controls')!==except.id)b.setAttribute('aria-expanded','false')})}
+function togglePop(btn,pop){const open=pop.hidden;closePops();pop.hidden=!open;btn.setAttribute('aria-expanded',open);if(open){const f=$('button',pop);f&&f.focus()}}
+
+/* command palette */
+let cmdSel=0,cmdItems=[];
+function renderCmd(){const q=$('#cmdkIn').value.toLowerCase().trim();
+  const pages=Object.entries(PAGE_TITLE).filter(([id,l])=>allowed(id)&&(!q||l.toLowerCase().includes(q))).map(([id,l])=>({k:'nav',id,l,ic:'arrow',g:'Pages'}));
+  const st=q?STUDENTS.filter(s=>s.name.toLowerCase().includes(q)||s.roll.toLowerCase().includes(q)).slice(0,6).map(s=>({k:'st',id:s.id,l:s.name,sub:s.roll+' · '+s.prog,g:'Students'})):[];
+  const acts=[{k:'act',l:'Switch to dark / light mode',ic:'moon',g:'Actions',fn:toggleTheme},{k:'act',l:'Send fee reminders to defaulters',ic:'send',g:'Actions',fn:()=>toast('Reminders queued (prototype)')}].filter(a=>!q||a.l.toLowerCase().includes(q));
+  cmdItems=[...st,...pages,...acts];cmdSel=Math.min(cmdSel,Math.max(0,cmdItems.length-1));let g='';
+  $('#cmdkList').innerHTML=cmdItems.length?cmdItems.map((it,i)=>{const h=it.g!==g?`<div class="pop-h">${it.g}</div>`:'';g=it.g;return h+`<button class="pop-i" role="option" aria-selected="${i===cmdSel}" data-cmd="${i}">${it.k==='st'?av(it.l,24):I(it.ic,15)}<span style="flex:1">${it.l}${it.sub?` <span class="small muted">${it.sub}</span>`:''}</span>${i===cmdSel?'<kbd>↵</kbd>':''}</button>`}).join(''):`<div class="empty" style="padding:24px"><b>No results</b><span class="small">Try a roll number like SI24BCOM012</span></div>`}
+function openCmd(){lastFocus=document.activeElement;$('#cmdk').classList.add('on');$('#cmdkIn').value='';cmdSel=0;renderCmd();$('#cmdkIn').focus()}
+function closeCmd(){$('#cmdk').classList.remove('on');lastFocus&&lastFocus.focus()}
+function runCmd(i){const it=cmdItems[i];if(!it)return;closeCmd();if(it.k==='nav')go(it.id);else if(it.k==='st')openStudent(it.id);else it.fn()}
+function toggleTheme(){const r=document.documentElement,dark=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('kx-theme',r.dataset.theme)}catch(e){}renderTop()}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('button,[data-drill],[data-student],[data-adm],[role=button],a');
+  if(!e.target.closest('.pop')&&!e.target.closest('[aria-haspopup]'))closePops();
+  if(!el)return;const d=el.dataset;
+  if(el.id==='sbToggle'){if(innerWidth<1024){$('#app').classList.toggle('mob-open');$('#scrim').classList.toggle('on',$('#app').classList.contains('mob-open'))}else $('#app').classList.toggle('collapsed');setTimeout(hydrate,220);return}
+  if(el.id==='orgBtn'){if($('#app').classList.contains('collapsed')&&innerWidth>=1024)$('#app').classList.remove('collapsed');togglePop(el,$('#rolePop'));return}
+  if(el.id==='notifBtn')return togglePop(el,$('#notifPop'));
+  if(el.id==='profBtn')return togglePop(el,$('#profPop'));
+  if(el.id==='themeBtn')return toggleTheme();
+  if(el.id==='searchBtn')return openCmd();
+  if(d.cmd!=null)return runCmd(+d.cmd);
+  if(d.role){S.role=d.role;S.inboxTab='all';S.st.sel.clear();closePops();go(allowed(S.page)?S.page:'home');toast('Viewing as '+ROLES[d.role].label);return}
+  if(d.lang){S.lang=d.lang;renderTop();rerender();return}
+  if(d.grp){S.closed.has(d.grp)?S.closed.delete(d.grp):S.closed.add(d.grp);renderSidebar();return}
+  if(d.close!=null&&!d.toast){closeDrawer();return}
+  if(d.toast!=null){toast(d.toast);if(d.close!=null)closeDrawer();return}
+  if(d.navFilter){closeDrawer();S.st.prog=d.navFilter;S.st.page=1;go('students');return}
+  if(d.nav){closeDrawer();go(d.nav);$('#content').focus({preventScroll:true});scrollTo(0,0);return}
+  if(d.stab){curTab=d.stab;renderStudentDrawer();return}
+  if(d.inbox){S.inboxTab=d.inbox;$('#inboxCard').outerHTML=inboxCard(HOME[S.role]);$(`[data-inbox="${d.inbox}"]`).focus();return}
+  if(d.pg){S.st.page=+d.pg;renderStudentTable();return}
+  if(d.act==='clearf'){Object.assign(S.st,{q:'',prog:'',sem:'',sec:'',status:'',fee:'',page:1});rerender();return}
+  if(d.act==='clearsel'){S.st.sel.clear();renderStudentTable();return}
+  if(el.type==='checkbox')return;
+  if(d.adm!=null){S.admStep=+d.adm;rerender();return}
+  if(d.admprog){S.admProg=d.admprog;rerender();return}
+  if(d.gate!=null){S.gate=Math.min(GATES.length,+d.gate+1);toast(S.gate>=GATES.length?'Results published to 319 students':`“${GATES[+d.gate][0]}” recorded`);rerender();return}
+  if(d.gotogate!=null){$('#gates').scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(d.naac!=null){S.naacC=S.naacC===d.naac?null:(d.naac||null);rerender();return}
+  if(d.setup!=null){const i=+d.setup;S.setupDone.has(i)?S.setupDone.delete(i):S.setupDone.add(i);toast(S.setupDone.has(i)?SETUP[i][0]+' completed':'Marked as not done');rerender();return}
+  if(d.setupGo!=null){$('.ck .btn.pri')&&$('.ck .btn.pri').scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(d.remind){S.reminded.add(+d.remind);toast('Reminder sent to guardian');rerender();return}
+  if(d.attToggle!=null){const on=el.getAttribute('aria-pressed')==='true';el.setAttribute('aria-pressed',!on);el.style.opacity=on?.45:1;el.style.textDecoration=on?'line-through':'';return}
+  if(e.target.closest('input[type=checkbox]'))return;
+  if(d.student!=null){e.stopPropagation();openStudent(+d.student);return}
+  if(d.drill){drill(d.drill);return}
+});
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.dataset.f){S.st[el.dataset.f]=el.value;S.st.page=1;renderStudentTable()}
+  if(el.dataset.sel!=null){const id=+el.dataset.sel;el.checked?S.st.sel.add(id):S.st.sel.delete(id);renderStudentTable();const c=$(`[data-sel="${id}"]`);c&&c.focus()}
+  if(el.dataset.act==='selall'){const list=filteredStudents().slice((S.st.page-1)*10,S.st.page*10);list.forEach(s=>el.checked?S.st.sel.add(s.id):S.st.sel.delete(s.id));renderStudentTable();$('[data-act="selall"]').focus()}
+});
+document.addEventListener('input',e=>{if(e.target.id==='stQ'){S.st.q=e.target.value;S.st.page=1;renderStudentTable()}if(e.target.id==='cmdkIn'){cmdSel=0;renderCmd()}});
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#cmdk').classList.contains('on')?closeCmd():openCmd();return}
+  if($('#cmdk').classList.contains('on')){if(e.key==='Escape')closeCmd();else if(e.key==='ArrowDown'){e.preventDefault();cmdSel=Math.min(cmdItems.length-1,cmdSel+1);renderCmd()}else if(e.key==='ArrowUp'){e.preventDefault();cmdSel=Math.max(0,cmdSel-1);renderCmd()}else if(e.key==='Enter'){e.preventDefault();runCmd(cmdSel)}return}
+  if(e.key==='Escape'){if($('#drawer').classList.contains('on'))closeDrawer();else if($('#app').classList.contains('mob-open')){$('#app').classList.remove('mob-open');$('#scrim').classList.remove('on')}closePops();return}
+  const el=e.target;if((e.key==='Enter'||e.key===' ')&&el.matches('tr[tabindex],[role=button]:not(button),g[tabindex]')){e.preventDefault();el.dispatchEvent(new MouseEvent('click',{bubbles:true}))}
+  if(e.key==='Tab'&&$('#drawer').classList.contains('on')){const f=$$('#drawer button,#drawer [tabindex="0"]').filter(x=>x.offsetParent);if(!f.length)return;if(e.shiftKey&&document.activeElement===f[0]){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&document.activeElement===f[f.length-1]){e.preventDefault();f[0].focus()}}
+});
+$('#scrim').addEventListener('click',()=>{closeDrawer();$('#app').classList.remove('mob-open');$('#scrim').classList.remove('on')});
+$('#cmdk').addEventListener('click',e=>{if(e.target.id==='cmdk')closeCmd()});
+/* chart tooltip */
+document.addEventListener('mouseover',e=>{const g=e.target.closest('.hitg');const ch=e.target.closest('.chart');if(!ch)return;const tip=$('.tip',ch);if(!tip)return;if(!g){tip.style.opacity=0;return}const r=ch.getBoundingClientRect(),b=g.getBoundingClientRect();tip.textContent=g.dataset.tip;tip.style.left=Math.min(r.width-40,Math.max(40,b.left-r.left+b.width/2))+'px';tip.style.top=(g.classList.contains('pt')?($('.pdot',g).getBoundingClientRect().top-r.top):($('.bfill',g).getBoundingClientRect().top-r.top))+'px';tip.style.opacity=1});
+document.addEventListener('mouseout',e=>{const ch=e.target.closest('.chart');if(ch&&!ch.contains(e.relatedTarget)){const t=$('.tip',ch);t&&(t.style.opacity=0)}});
+let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(hydrate,120)});
+addEventListener('hashchange',()=>{const p=location.hash.replace('#/','');if(p&&p!==S.page)go(p,false)});
+
+/* init */
+try{const th=localStorage.getItem('kx-theme');if(th)document.documentElement.dataset.theme=th}catch(e){}
+$$('[data-icon]').forEach(el=>{el.innerHTML=I(el.dataset.icon,el.dataset.icon==='chevrons'?14:18);if(el.dataset.icon==='chevrons')el.style.color='var(--muted)'});
+renderTop();go(location.hash.replace('#/','')||'home',false);
+</script>
+</body>
+</html>
