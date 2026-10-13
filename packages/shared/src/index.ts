@@ -36,6 +36,14 @@ export const RealtimeEvents = {
   PollClosed: 'poll.closed',
   /** Server → board: someone answered; the new tally ({@link PollAnsweredEvent}). */
   PollAnswered: 'poll.answered',
+  /** Server → students of the class: a Live Quiz question is open ({@link GameQuestionEvent}). */
+  GameQuestion: 'game.question',
+  /** Server → board: a student answered the open Live Quiz question ({@link GameAnsweredEvent}). */
+  GameAnswered: 'game.answered',
+  /** Server → each student of the class: the right answer, the tally and the top 5 ({@link GameRevealEvent}). */
+  GameReveal: 'game.reveal',
+  /** Server → each student of the class: the Live Quiz is over, with the podium ({@link GameEndedEvent}). */
+  GameEnded: 'game.ended',
   /** Teacher App → server: use the phone as a remote for this board ({@link RemoteAttachAck}). */
   RemoteAttach: 'remote.attach',
   /** Teacher App → server → board: one remote command ({@link RemoteCommand}). */
@@ -582,3 +590,4 @@ export * from './admissions.js';
 export * from './hr.js';
 export * from './cast.js';
 export * from './fleet.js';
+export * from './quiz-games.js';

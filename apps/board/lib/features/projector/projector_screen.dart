@@ -103,7 +103,7 @@ class _Waiting extends StatelessWidget {
     key: Key('projector-waiting'),
     color: Colors.white,
     child: Center(
-      child: Text('KINETIX', style: TextStyle(fontSize: 64, fontWeight: FontWeight.w700, letterSpacing: 8, color: Color(0xFF1B1F24))),
+      child: Text('Zynetix', style: TextStyle(fontSize: 64, fontWeight: FontWeight.w700, letterSpacing: 8, color: Color(0xFF1B1F24))),
     ),
   );
 }
@@ -142,7 +142,7 @@ class _ProjectorAppState extends State<ProjectorApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'KINETIX Projector',
+    title: 'Zynetix Projector',
     home: Scaffold(backgroundColor: Colors.white, body: ProjectorView(feed: _feed)),
   );
 }

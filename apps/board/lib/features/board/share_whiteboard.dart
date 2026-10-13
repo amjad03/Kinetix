@@ -105,7 +105,7 @@ class _ShareDialogState extends State<_ShareDialog> {
     }
   }
 
-  String get _fileName => 'KINETIX ${widget.title} ${DateFormat('yyyy-MM-dd').format(DateTime.now())}.pdf';
+  String get _fileName => 'Zynetix ${widget.title} ${DateFormat('yyyy-MM-dd').format(DateTime.now())}.pdf';
 
   @override
   Widget build(BuildContext context) {

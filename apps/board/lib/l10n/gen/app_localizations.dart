@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// Product name; stays in English.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX Board'**
+  /// **'Zynetix'**
   String get appTitle;
 
   /// No description provided for @cancel.
@@ -4531,19 +4531,19 @@ abstract class AppLocalizations {
   /// No description provided for @kioskSettingsHint.
   ///
   /// In en, this message translates to:
-  /// **'Keeps students in KINETIX Board and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.'**
+  /// **'Keeps students in Zynetix and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.'**
   String get kioskSettingsHint;
 
   /// No description provided for @kioskStatusLocked.
   ///
   /// In en, this message translates to:
-  /// **'On: this device is locked to KINETIX Board.'**
+  /// **'On: this device is locked to Zynetix.'**
   String get kioskStatusLocked;
 
   /// No description provided for @kioskStatusPinned.
   ///
   /// In en, this message translates to:
-  /// **'On: screen pinning. For a full lock, make KINETIX Board the device owner (see the kiosk guide).'**
+  /// **'On: screen pinning. For a full lock, make Zynetix the device owner (see the kiosk guide).'**
   String get kioskStatusPinned;
 
   /// No description provided for @kioskStatusOff.
@@ -7857,6 +7857,690 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The board stops using {server} and the teacher is signed out. Then enter the server address and a new enrolment code from KINETIX ERP (Boards → New enrolment code).'**
   String setUpAgainBody(String server);
+
+  /// Board top bar: opens the live quiz launcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Quiz'**
+  String get topLiveQuiz;
+
+  /// No description provided for @topLiveQuizTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the class a quiz question'**
+  String get topLiveQuizTooltip;
+
+  /// Board top bar: the class watches the board and hears the teacher on their phones.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Class'**
+  String get topLiveClass;
+
+  /// No description provided for @topLiveClassTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Go live: the class sees the board and hears you'**
+  String get topLiveClassTooltip;
+
+  /// Board top bar: Live Class while the class is live.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get topLiveNow;
+
+  /// No description provided for @topLiveNeedsSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to go live with your class'**
+  String get topLiveNeedsSignIn;
+
+  /// No description provided for @topShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get topShare;
+
+  /// No description provided for @topShareBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Share board notes'**
+  String get topShareBoard;
+
+  /// No description provided for @topShareBoardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF, link, QR code or WhatsApp'**
+  String get topShareBoardHint;
+
+  /// No description provided for @topCastScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Cast a screen'**
+  String get topCastScreen;
+
+  /// No description provided for @topCastScreenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a laptop or phone on the board'**
+  String get topCastScreenHint;
+
+  /// No description provided for @topCasting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 screen cast} other{{count} screens cast}}'**
+  String topCasting(int count);
+
+  /// Board top bar: Record while a lesson is being recorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get topRecording;
+
+  /// No description provided for @topRecordTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Record the lesson: the board and your voice'**
+  String get topRecordTooltip;
+
+  /// No description provided for @topStopRecordingTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop recording'**
+  String get topStopRecordingTooltip;
+
+  /// No description provided for @topZoomTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom {percent}%. Tap for 100%'**
+  String topZoomTooltip(int percent);
+
+  /// Accessibility label of the board's top action bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Class actions'**
+  String get topBarLabel;
+
+  /// 3D library badge: the model comes with the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get model3dReady;
+
+  /// 3D library badge: the model was downloaded and works offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved offline'**
+  String get model3dSaved;
+
+  /// 3D library badge: the model is downloaded on first use.
+  ///
+  /// In en, this message translates to:
+  /// **'Online · {size}'**
+  String model3dCloud(String size);
+
+  /// No description provided for @model3dDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download for offline use'**
+  String get model3dDownload;
+
+  /// No description provided for @model3dDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {percent}%'**
+  String model3dDownloading(int percent);
+
+  /// No description provided for @model3dDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not download {name}. Check the internet and try again.'**
+  String model3dDownloadFailed(String name);
+
+  /// No description provided for @model3dDownloadAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Download all for offline ({size})'**
+  String model3dDownloadAll(String size);
+
+  /// No description provided for @model3dAllSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Every model works offline'**
+  String get model3dAllSaved;
+
+  /// No description provided for @model3dRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a 3D model'**
+  String get model3dRequest;
+
+  /// No description provided for @model3dRequestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us which model you need. The content team sees every request from your school.'**
+  String get model3dRequestHint;
+
+  /// No description provided for @model3dRequestName.
+  ///
+  /// In en, this message translates to:
+  /// **'Model name'**
+  String get model3dRequestName;
+
+  /// No description provided for @model3dRequestNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: muscular system'**
+  String get model3dRequestNameHint;
+
+  /// No description provided for @model3dRequestNameNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the model\'s name'**
+  String get model3dRequestNameNeeded;
+
+  /// No description provided for @model3dRequestSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get model3dRequestSubject;
+
+  /// No description provided for @model3dRequestClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get model3dRequestClass;
+
+  /// No description provided for @model3dRequestAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get model3dRequestAny;
+
+  /// No description provided for @model3dRequestNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get model3dRequestNote;
+
+  /// No description provided for @model3dRequestSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get model3dRequestSend;
+
+  /// No description provided for @model3dRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. If the board is offline it goes when the board is back online.'**
+  String get model3dRequestSent;
+
+  /// No description provided for @model3dRequestNeedsSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to request a model.'**
+  String get model3dRequestNeedsSignIn;
+
+  /// No description provided for @model3dRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the request. Try again.'**
+  String get model3dRequestFailed;
+
+  /// No description provided for @sketchSuggestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you mean?'**
+  String get sketchSuggestTitle;
+
+  /// No description provided for @sketchSuggestUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {name}'**
+  String sketchSuggestUse(String name);
+
+  /// No description provided for @sketchSuggestSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest icons for sketches'**
+  String get sketchSuggestSwitch;
+
+  /// No description provided for @sketchSuggestSwitchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'After you draw with the pen, pick a clean icon to take the drawing\'s place. Drawings are recognised on this board; no ink leaves it.'**
+  String get sketchSuggestSwitchHint;
+
+  /// No description provided for @sketchSuggestUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Sketch icons work on Android panels, where the board can recognise drawings.'**
+  String get sketchSuggestUnavailable;
+
+  /// No description provided for @sketchModelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sketches'**
+  String get sketchModelName;
+
+  /// No description provided for @sketchModelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up sketch icons?'**
+  String get sketchModelTitle;
+
+  /// No description provided for @sketchModelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Zynetix recognises what you draw on this device. Download the sketch model once (a few MB); after that it works with no internet, and no ink leaves the device.'**
+  String get sketchModelBody;
+
+  /// No description provided for @sketchModelDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download sketch icons'**
+  String get sketchModelDownload;
+
+  /// Live Quiz setup: what the dialog is for.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick or write questions. Students answer in the Student App, or hold up answer cards.'**
+  String get quizSetupHint;
+
+  /// Live Quiz setup: the topic to make questions on.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic'**
+  String get quizTopic;
+
+  /// Live Quiz setup: makes questions on the topic (AI, the board's notes or the class bank).
+  ///
+  /// In en, this message translates to:
+  /// **'Make questions'**
+  String get quizMakeQuestions;
+
+  /// Live Quiz setup: questions from the question bank and ones asked in this class before.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved questions'**
+  String get quizFromBank;
+
+  /// Live Quiz setup: the server had no saved questions.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved questions for this class yet'**
+  String get quizNoSuggestions;
+
+  /// Live Quiz setup: writes a new question.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a question'**
+  String get quizAddQuestion;
+
+  /// Live Quiz question editor: the question text.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get quizQuestionLabel;
+
+  /// Live Quiz question editor: one answer's text.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer {letter}'**
+  String quizOptionHint(String letter);
+
+  /// Live Quiz question editor: which answer is right.
+  ///
+  /// In en, this message translates to:
+  /// **'Right answer'**
+  String get quizRightAnswer;
+
+  /// Live Quiz question editor: keeps the question.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to the game'**
+  String get quizAddThis;
+
+  /// Live Quiz: how many questions the game has.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 question} other{{count} questions}}'**
+  String quizQuestionCount(int count);
+
+  /// Live Quiz setup: the countdown per question.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for each question'**
+  String get quizSeconds;
+
+  /// Live Quiz setup: a countdown length in seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} s'**
+  String quizSecondsValue(int n);
+
+  /// Live Quiz setup: students without phones answer with printed cards.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer cards too'**
+  String get quizUseCards;
+
+  /// Live Quiz setup: how answer cards work in the game.
+  ///
+  /// In en, this message translates to:
+  /// **'Students without phones hold up their cards; scan them before you show the answer. Cards score without the speed bonus.'**
+  String get quizUseCardsHint;
+
+  /// Live Quiz setup: opens the game on the board.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the game'**
+  String get quizStartGame;
+
+  /// Live Quiz setup: the game has no questions yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one question'**
+  String get quizNeedsQuestion;
+
+  /// Live Quiz: which question is on the board.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n} of {total}'**
+  String quizQuestionOf(int n, int total);
+
+  /// Live Quiz lobby: how students with phones join.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the Student App to play'**
+  String get quizJoinApp;
+
+  /// Live Quiz lobby: how students without phones join.
+  ///
+  /// In en, this message translates to:
+  /// **'No phone? Hold up your answer card'**
+  String get quizJoinCards;
+
+  /// Live Quiz lobby: opens the first question.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get quizBegin;
+
+  /// Live Quiz: ends the countdown and shows the right answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the answer'**
+  String get quizShowAnswer;
+
+  /// Live Quiz: the countdown has ended.
+  ///
+  /// In en, this message translates to:
+  /// **'Time\'s up'**
+  String get quizTimeUp;
+
+  /// Live Quiz: from the answer to the leaderboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get quizNext;
+
+  /// Live Quiz leaderboard: opens the next question.
+  ///
+  /// In en, this message translates to:
+  /// **'Next question'**
+  String get quizNextQuestion;
+
+  /// Live Quiz: shows the podium after the last question.
+  ///
+  /// In en, this message translates to:
+  /// **'Final results'**
+  String get quizFinalResults;
+
+  /// Live Quiz: the top 5 between questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get quizLeaderboard;
+
+  /// Live Quiz: the podium at the end.
+  ///
+  /// In en, this message translates to:
+  /// **'Winners'**
+  String get quizWinners;
+
+  /// Live Quiz: a player's score.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} pts'**
+  String quizPoints(int n);
+
+  /// Live Quiz leaderboard: right answers in a row.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} in a row'**
+  String quizStreak(int n);
+
+  /// Live Quiz: ends the game early and shows the podium.
+  ///
+  /// In en, this message translates to:
+  /// **'End the game'**
+  String get quizEndGame;
+
+  /// Live Quiz: the server keeps this game for the class.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to the class results'**
+  String get quizSaved;
+
+  /// Live Quiz: the board runs the game on its own.
+  ///
+  /// In en, this message translates to:
+  /// **'Not saved: no class open on the server. Answer cards only.'**
+  String get quizNotSaved;
+
+  /// Live Quiz: the server did not take the last step (next question or show the answer); the board waits for the teacher to try again.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server. Tap again to try once more.'**
+  String get quizServerRetry;
+
+  /// Live Quiz: the leaderboard or podium is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No one answered'**
+  String get quizNoAnswers;
+
+  /// Live Quiz: how many have answered, when the board does not know the class size (a guest board).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 answered} other{{count} answered}}'**
+  String quizAnsweredCount(int count);
+
+  /// Class and subject picker: its title.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose class and subject'**
+  String get curTitle;
+
+  /// Class and subject picker: the school classes (1 to 12).
+  ///
+  /// In en, this message translates to:
+  /// **'School'**
+  String get curSchool;
+
+  /// Class and subject picker: the college programmes (MBA, B.E./B.Tech).
+  ///
+  /// In en, this message translates to:
+  /// **'College'**
+  String get curCollege;
+
+  /// Class and subject picker: the postgraduate programmes (M.Tech).
+  ///
+  /// In en, this message translates to:
+  /// **'Postgraduate'**
+  String get curPostgrad;
+
+  /// A school class by its number, in the picker and the top bar ("Class 7 · Science").
+  ///
+  /// In en, this message translates to:
+  /// **'Class {n}'**
+  String curClassN(int n);
+
+  /// A college semester, short, in the picker and the top bar ("B.E. Civil · Sem 5 · Structural Analysis").
+  ///
+  /// In en, this message translates to:
+  /// **'Sem {n}'**
+  String curSemN(int n);
+
+  /// Class and subject picker: the second step's hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a subject'**
+  String get curPickSubject;
+
+  /// Class and subject picker: back to the classes.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get curBack;
+
+  /// Class and subject picker: the class the timetable has now, one tap to use it.
+  ///
+  /// In en, this message translates to:
+  /// **'From the timetable: {label}'**
+  String curFromTimetable(String label);
+
+  /// Class and subject picker: forget the teacher's pick and follow the timetable again.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the timetable'**
+  String get curUseTimetable;
+
+  /// Class and subject picker: opens the plain subject and grade chooser (LKG/UKG, art, law ...).
+  ///
+  /// In en, this message translates to:
+  /// **'Other subject or class'**
+  String get curOtherSubject;
+
+  /// Class and subject picker on a demo board: the sample classes with their rosters and plans.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes of the demo day'**
+  String get curDemoDay;
+
+  /// Tools drawer tile and panel: the tools, kits, labs, sims and 3D models of the class and subject picked.
+  ///
+  /// In en, this message translates to:
+  /// **'This subject\'s kits'**
+  String get curKits;
+
+  /// A subject kit that is not on the board yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming in an update'**
+  String get curInUpdate;
+
+  /// Button: opens the class and subject picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Change class or subject'**
+  String get curChange;
+
+  /// Message after picking a class and subject.
+  ///
+  /// In en, this message translates to:
+  /// **'Board set up for {label}'**
+  String curSet(String label);
+
+  /// Subject kits panel: section of tools and kits.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools and kits'**
+  String get curToolsKits;
+
+  /// Subject kits panel: section of labs and simulations.
+  ///
+  /// In en, this message translates to:
+  /// **'Labs and simulations'**
+  String get curLabsSims;
+
+  /// Subject kits panel: section of 3D models.
+  ///
+  /// In en, this message translates to:
+  /// **'3D models'**
+  String get curModels;
+
+  /// Engineering kit: bending moment and shear force diagrams of a beam.
+  ///
+  /// In en, this message translates to:
+  /// **'Beam BMD and SFD'**
+  String get curSoonBeam;
+
+  /// Engineering kit: drawing sheet with projections.
+  ///
+  /// In en, this message translates to:
+  /// **'Engineering drawing grid'**
+  String get curSoonDrawing;
+
+  /// Thermodynamics kit: pressure-volume and temperature-entropy charts.
+  ///
+  /// In en, this message translates to:
+  /// **'P-V and T-S charts'**
+  String get curSoonPvTs;
+
+  /// Mechanics kit: free-body diagrams.
+  ///
+  /// In en, this message translates to:
+  /// **'Free-body diagrams'**
+  String get curSoonFbd;
+
+  /// Electrical kit: phasor diagrams.
+  ///
+  /// In en, this message translates to:
+  /// **'Phasor diagrams'**
+  String get curSoonPhasor;
+
+  /// Power systems kit: single-line diagram symbols.
+  ///
+  /// In en, this message translates to:
+  /// **'Single-line diagram'**
+  String get curSoonSld;
+
+  /// Electronics kit: sine, square and triangle waves.
+  ///
+  /// In en, this message translates to:
+  /// **'Waveform generator'**
+  String get curSoonWaveform;
+
+  /// Signals kit: time signals, spectrum and Bode plots.
+  ///
+  /// In en, this message translates to:
+  /// **'Signal, FFT and Bode plotter'**
+  String get curSoonSignal;
+
+  /// Electronics kit: pin-outs of common microcontrollers.
+  ///
+  /// In en, this message translates to:
+  /// **'Microcontroller pin diagrams'**
+  String get curSoonMcu;
+
+  /// AI and ML kit: build a neural network layer by layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Neural network builder'**
+  String get curSoonNn;
+
+  /// Chemical engineering kit: process flow diagram symbols.
+  ///
+  /// In en, this message translates to:
+  /// **'Process flow diagram kit'**
+  String get curSoonPfd;
+
+  /// Electric vehicle kit: drivetrain, battery and charging diagrams.
+  ///
+  /// In en, this message translates to:
+  /// **'EV diagrams'**
+  String get curSoonEv;
 }
 
 class _AppLocalizationsDelegate

@@ -45,10 +45,17 @@ tooth, skin, bacterium and mitochondrion built in code by KINETIX.
 
 The cells, neuron, shapes, atoms, molecules, solar system, Earth's layers,
 volcano, orbitals, hybridisation, crystal lattices, electric circuit, AC
-generator, transformer, simple machines, nephron, engine, gears, lens
-bench and laboratory apparatus are built in code by KINETIX, and so are the
+generator, transformer, simple machines, nephron, engine, gears, helical
+and bevel gears, cam and follower, lens bench, laboratory apparatus, RCC
+frame building, truss, arch, suspension and cable-stayed bridges and
+footing types, the DC machine, three-phase induction motor, single- and
+three-phase transformers and alternator are built in code by KINETIX, and so are the
 simplified Taj Mahal, Qutub Minar, India Gate and Konark Sun Temple, the
-middle ear and the inside of the kidney.
+middle ear and the inside of the kidney. The chemical engineering models
+(alcohols, acids and sugars; CSTR, plug flow and packed bed reactors; shell-
+and-tube heat exchanger; tray distillation column) and the electric-vehicle
+models (battery pack, PMSM traction motor, drivetrain) are built in code by
+KINETIX too.
 
 The viewer uses three.js (https://threejs.org), MIT License:
 

@@ -1,28 +1,39 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import '../algo/frames.dart';
+import '../algo/more.dart';
 import '../algo/sorting.dart';
 import '../algo/structures.dart';
 import '../algo/trees_graphs.dart';
 import '../strings.dart';
 import 'draw.dart';
 import 'elements_view.dart';
+import 'pseudocode.dart';
 
-enum AlgoKind { bubble, insertion, selection, merge, quick, heap, linear, binary, stack, queue, list, hash, bst, bfs, dfs, dijkstra }
+enum AlgoKind { bubble, insertion, selection, merge, quick, heap, linear, binary, stack, queue, list, hash, bst, bfs, dfs, dijkstra, counting, cqueue, binheap, prim, kruskal, topo }
+
+/// The graph algorithms (their input is an edge list the teacher can add to).
+const graphKinds = {AlgoKind.bfs, AlgoKind.dfs, AlgoKind.dijkstra, AlgoKind.prim, AlgoKind.kruskal, AlgoKind.topo};
 
 /// The kit's list: groups of algorithms, in teaching order.
 const algoGroups = <String, List<AlgoKind>>{
-  'grpSorting': [AlgoKind.bubble, AlgoKind.insertion, AlgoKind.selection, AlgoKind.merge, AlgoKind.quick, AlgoKind.heap],
+  'grpSorting': [AlgoKind.bubble, AlgoKind.insertion, AlgoKind.selection, AlgoKind.merge, AlgoKind.quick, AlgoKind.heap, AlgoKind.counting],
   'grpSearching': [AlgoKind.linear, AlgoKind.binary],
-  'grpStructures': [AlgoKind.stack, AlgoKind.queue, AlgoKind.list, AlgoKind.hash],
-  'grpTrees': [AlgoKind.bst, AlgoKind.bfs, AlgoKind.dfs, AlgoKind.dijkstra],
+  'grpStructures': [AlgoKind.stack, AlgoKind.queue, AlgoKind.cqueue, AlgoKind.list, AlgoKind.hash],
+  'grpTrees': [AlgoKind.bst, AlgoKind.binheap],
+  'grpGraphs': [AlgoKind.bfs, AlgoKind.dfs, AlgoKind.dijkstra, AlgoKind.prim, AlgoKind.kruskal, AlgoKind.topo],
 };
 
 IconData algoIcon(AlgoKind k) => switch (k) {
-  AlgoKind.bubble || AlgoKind.insertion || AlgoKind.selection || AlgoKind.merge || AlgoKind.quick || AlgoKind.heap => Icons.bar_chart,
+  AlgoKind.bubble || AlgoKind.insertion || AlgoKind.selection || AlgoKind.merge || AlgoKind.quick || AlgoKind.heap || AlgoKind.counting => Icons.bar_chart,
+  AlgoKind.cqueue => Icons.donut_large,
+  AlgoKind.binheap => Icons.change_history,
+  AlgoKind.prim || AlgoKind.kruskal => Icons.share_outlined,
+  AlgoKind.topo => Icons.low_priority,
   AlgoKind.linear || AlgoKind.binary => Icons.search,
   AlgoKind.stack => Icons.layers_outlined,
   AlgoKind.queue => Icons.view_week_outlined,
@@ -51,11 +62,20 @@ List<AlgoFrame> algoFrames(AlgoKind kind, {String values = '', String extra = ''
     AlgoKind.list => linkedListSteps(v, Op.parseAll(extra)),
     AlgoKind.hash => hashSteps(v, size: (_ints(extra).firstOrNull ?? 7).clamp(2, 13), probing: Probing.values[option.clamp(0, 2)]),
     AlgoKind.bst => bstSteps(v, deletes: _ints(extra), traversal: Traversal.values[option.clamp(0, 3)]),
-    AlgoKind.bfs || AlgoKind.dfs || AlgoKind.dijkstra => () {
-      final g = TeachGraph.parse(values);
+    AlgoKind.counting => countingSortSteps(v.where((x) => x >= -50 && x <= 99).toList()),
+    AlgoKind.cqueue => circularQueueSteps(Op.parseAll(values), capacity: (_ints(extra).firstOrNull ?? 5).clamp(2, 12)),
+    AlgoKind.binheap => heapSteps(v, ops: Op.parseAll(extra), min: option.clamp(0, 3).isOdd, heapify: option >= 2),
+    AlgoKind.bfs || AlgoKind.dfs || AlgoKind.dijkstra || AlgoKind.prim || AlgoKind.kruskal || AlgoKind.topo => () {
+      final g = TeachGraph.parse(values, directed: kind == AlgoKind.topo || (option == 1 && kind != AlgoKind.prim && kind != AlgoKind.kruskal));
       if (g.n == 0) return const <AlgoFrame>[];
       final start = ((extra.trim().isEmpty ? 'A' : extra.trim()).toUpperCase().codeUnitAt(0) - 65).clamp(0, g.n - 1);
-      return kind == AlgoKind.dijkstra ? dijkstraSteps(g, start) : traverseGraphSteps(g, start, bfs: kind == AlgoKind.bfs);
+      return switch (kind) {
+        AlgoKind.dijkstra => dijkstraSteps(g, start),
+        AlgoKind.prim => primSteps(g, start),
+        AlgoKind.kruskal => kruskalSteps(g),
+        AlgoKind.topo => topoSortSteps(g),
+        _ => traverseGraphSteps(g, start, bfs: kind == AlgoKind.bfs),
+      };
     }(),
   };
 }
@@ -68,7 +88,13 @@ List<AlgoFrame> algoFrames(AlgoKind kind, {String values = '', String extra = ''
   AlgoKind.list => ('values', '10 20 30', 'operations', 'insertHead 5; insertAt 15 2; delete 20; search 30', const []),
   AlgoKind.hash => ('values', '23 43 13 27 37 16', 'tableSize', '7', const ['probe_linear', 'probe_quadratic', 'probe_chaining']),
   AlgoKind.bst => ('values', '50 30 70 20 40 60 80', 'deletes', '30', const ['trav_inorder', 'trav_preorder', 'trav_postorder', 'trav_level']),
-  AlgoKind.bfs || AlgoKind.dfs || AlgoKind.dijkstra => ('edges', 'A-B 4, A-C 2, B-C 1, B-D 5, C-D 8, C-E 10, D-E 2, D-F 6, E-F 2', 'startAt', 'A', const []),
+  AlgoKind.bfs || AlgoKind.dfs || AlgoKind.dijkstra => ('edges', 'A-B 4, A-C 2, B-C 1, B-D 5, C-D 8, C-E 10, D-E 2, D-F 6, E-F 2', 'startAt', 'A', const ['graph_undirected', 'graph_directed']),
+  AlgoKind.prim => ('edges', 'A-B 4, A-C 2, B-C 1, B-D 5, C-D 8, C-E 10, D-E 2, D-F 6, E-F 2', 'startAt', 'A', const []),
+  AlgoKind.kruskal => ('edges', 'A-B 4, A-C 2, B-C 1, B-D 5, C-D 8, C-E 10, D-E 2, D-F 6, E-F 2', null, '', const []),
+  AlgoKind.topo => ('edges', 'A->C, B->C, B->D, C->E, D->F, E->F, F->G', null, '', const []),
+  AlgoKind.cqueue => ('operations', 'enqueue 10; enqueue 20; enqueue 30; dequeue; dequeue; enqueue 40; enqueue 50; enqueue 60; enqueue 70; enqueue 80', 'capacity', '5', const []),
+  AlgoKind.binheap => ('values', '40 20 60 10 50 30', 'operations', 'insert 70; extract; extract', const ['heap_maxInsert', 'heap_minInsert', 'heap_maxHeapify', 'heap_minHeapify']),
+  AlgoKind.counting => ('values', '4 2 2 8 3 3 1', null, '', const []),
   _ => ('values', '38 27 43 3 9 82 10', null, '', const []),
 };
 
@@ -94,6 +120,9 @@ class _AlgoPlayerState extends State<AlgoPlayer> {
   int _i = 0;
   Timer? _timer;
   double _speed = 1;
+  bool _showCode = true;
+  late final Pseudocode _code = pseudocodeFor(widget.kind);
+  final _from = TextEditingController(), _to = TextEditingController(), _weight = TextEditingController(text: '1');
 
   @override
   void initState() {
@@ -106,6 +135,9 @@ class _AlgoPlayerState extends State<AlgoPlayer> {
     _timer?.cancel();
     _values.dispose();
     _extra.dispose();
+    _from.dispose();
+    _to.dispose();
+    _weight.dispose();
     super.dispose();
   }
 
@@ -143,6 +175,66 @@ class _AlgoPlayerState extends State<AlgoPlayer> {
 
   String _caption(CsStrings s, AlgoFrame f) => s.t(f.say.key, f.say.args);
 
+  /// The graph's node count as typed (letters A, B, …).
+  int get _nodes => TeachGraph.parse(_values.text).n;
+
+  void _appendGraph(String part) {
+    final t = _values.text.trim();
+    _values.text = t.isEmpty ? part : '$t, $part';
+    _build();
+  }
+
+  void _addNode() {
+    if (_nodes < 26) _appendGraph(String.fromCharCode(65 + _nodes));
+  }
+
+  void _addEdge() {
+    final a = _from.text.trim().toUpperCase(), b = _to.text.trim().toUpperCase();
+    if (!RegExp(r'^[A-Z]$').hasMatch(a) || !RegExp(r'^[A-Z]$').hasMatch(b) || a == b) return;
+    final w = int.tryParse(_weight.text.trim()) ?? 1;
+    final directed = widget.kind == AlgoKind.topo || (_option == 1 && _spec.$5.length == 2);
+    _appendGraph('$a${directed ? '->' : '-'}$b${w == 1 ? '' : ' $w'}');
+  }
+
+  void _removeEdge() {
+    final edges = RegExp(r'[A-Za-z]\s*-?>?\s*[A-Za-z]\s*\d*').allMatches(_values.text).toList();
+    if (edges.isEmpty) return;
+    final last = edges.last;
+    _values.text = (_values.text.substring(0, last.start) + _values.text.substring(last.end)).replaceAll(RegExp(r'(,\s*)+$'), '').replaceAll(RegExp(r',\s*,'), ',').trim();
+    _build();
+  }
+
+  /// The pseudocode as a card for the board, the current line marked.
+  List<BoardElement> _codeCard(AlgoFrame f) {
+    final at = _code.lineFor(f);
+    return [codeCard([for (final (i, l) in _code.lines.indexed) '${i == at ? '▶ ' : '  '}$l'].join('\n'), fontSize: 18)];
+  }
+
+  Widget _pseudocode(CsStrings s, AlgoFrame? f) {
+    final at = f == null ? null : _code.lineFor(f);
+    return DecoratedBox(
+      key: const Key('algo-pseudocode'),
+      decoration: BoxDecoration(color: const Color(0xFFF7F8FA), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x22000000))),
+      child: ListView(
+        padding: const EdgeInsets.all(10),
+        children: [
+          Text(s.t('pseudocode'), style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 6),
+          for (final (i, l) in _code.lines.indexed)
+            Container(
+              key: i == at ? const Key('algo-line-current') : null,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(color: i == at ? widget.accent.withValues(alpha: 0.18) : null, borderRadius: BorderRadius.circular(6)),
+              child: Text(
+                l,
+                style: TextStyle(fontFamily: 'monospace', fontSize: 14, fontWeight: i == at ? FontWeight.w700 : FontWeight.w400, color: const Color(0xFF1B1F24)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = CsStrings.of(context);
@@ -177,16 +269,54 @@ class _AlgoPlayerState extends State<AlgoPlayer> {
             FilledButton.tonal(key: const Key('algo-apply'), onPressed: _build, child: Text(s.t('apply'))),
           ],
         ),
+        if (graphKinds.contains(widget.kind)) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            key: const Key('algo-graph-edit'),
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              OutlinedButton.icon(key: const Key('algo-add-node'), onPressed: _addNode, icon: const Icon(Icons.add_circle_outline), label: Text(s.t('addNode'))),
+              for (final (key, c, label, w) in [('algo-from', _from, 'edgeFrom', 64.0), ('algo-to', _to, 'edgeTo', 64.0), ('algo-weight', _weight, 'edgeWeight', 80.0)])
+                SizedBox(width: w, child: TextField(key: Key(key), controller: c, decoration: InputDecoration(labelText: s.t(label), isDense: true))),
+              OutlinedButton.icon(key: const Key('algo-add-edge'), onPressed: _addEdge, icon: const Icon(Icons.timeline), label: Text(s.t('addEdge'))),
+              TextButton.icon(key: const Key('algo-remove-edge'), onPressed: _removeEdge, icon: const Icon(Icons.undo), label: Text(s.t('removeEdge'))),
+            ],
+          ),
+        ],
         const SizedBox(height: 12),
         Expanded(
-          child: DecoratedBox(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x22000000))),
-            child: frame == null ? Center(child: Text(s.t('badInput'))) : ElementsView(frameElements(frame)),
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final drawing = DecoratedBox(
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x22000000))),
+                child: frame == null ? Center(child: Text(s.t('badInput'))) : ElementsView(frameElements(frame)),
+              );
+              if (!_showCode) return drawing;
+              if (box.maxWidth < 720) {
+                return Column(children: [Expanded(flex: 3, child: drawing), const SizedBox(height: 8), Expanded(flex: 2, child: _pseudocode(s, frame))]);
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [Expanded(child: drawing), const SizedBox(width: 12), SizedBox(width: math.min(380, box.maxWidth * 0.34), child: _pseudocode(s, frame))],
+              );
+            },
           ),
         ),
         const SizedBox(height: 8),
         if (frame != null)
           Text(_caption(s, frame), key: const Key('algo-caption'), style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
+        if (frame != null && frame.stats.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              [for (final MapEntry(:key, :value) in frame.stats.entries) '${s.t(key)}: $value'].join('   ·   '),
+              key: const Key('algo-stats'),
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -224,12 +354,26 @@ class _AlgoPlayerState extends State<AlgoPlayer> {
               },
               itemBuilder: (_) => [for (final v in const [0.5, 1.0, 2.0, 4.0]) PopupMenuItem(value: v, child: Text('${v}x'))],
             ),
+            IconButton(
+              key: const Key('algo-code'),
+              tooltip: s.t('pseudocode'),
+              isSelected: _showCode,
+              icon: const Icon(Icons.code),
+              onPressed: () => setState(() => _showCode = !_showCode),
+            ),
             const SizedBox(width: 8),
             FilledButton.icon(
               key: const Key('algo-put'),
               icon: const Icon(Icons.add_to_photos_outlined),
               label: Text(s.t('putStep')),
-              onPressed: frame == null ? null : () => widget.onInsert(frameElements(frame, caption: _caption(s, frame))),
+              onPressed: frame == null
+                  ? null
+                  : () {
+                      final step = frameElements(frame, caption: _caption(s, frame));
+                      if (!_showCode) return widget.onInsert(step);
+                      final b = contentBounds(step);
+                      widget.onInsert([...step, ...placed(_codeCard(frame), Offset(b.right + 48, b.top))]);
+                    },
             ),
           ],
         ),

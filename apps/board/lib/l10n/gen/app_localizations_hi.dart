@@ -10,7 +10,7 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get appTitle => 'KINETIX Board';
+  String get appTitle => 'Zynetix';
 
   @override
   String get cancel => 'रद्द करें';
@@ -2631,14 +2631,14 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get kioskSettingsHint =>
-      'विद्यार्थियों को KINETIX Board में ही रखता है और बिजली जाने के बाद इसे फिर खोल देता है। आपकी संस्था इसे KINETIX ERP → सेटिंग्स में चालू करती है और IT PIN तय करती है।';
+      'विद्यार्थियों को Zynetix में ही रखता है और बिजली जाने के बाद इसे फिर खोल देता है। आपकी संस्था इसे KINETIX ERP → सेटिंग्स में चालू करती है और IT PIN तय करती है।';
 
   @override
-  String get kioskStatusLocked => 'चालू: यह डिवाइस KINETIX Board पर लॉक है।';
+  String get kioskStatusLocked => 'चालू: यह डिवाइस Zynetix पर लॉक है।';
 
   @override
   String get kioskStatusPinned =>
-      'चालू: स्क्रीन पिनिंग। पूरे लॉक के लिए KINETIX Board को डिवाइस ओनर बनाएँ (कियोस्क गाइड देखें)।';
+      'चालू: स्क्रीन पिनिंग। पूरे लॉक के लिए Zynetix को डिवाइस ओनर बनाएँ (कियोस्क गाइड देखें)।';
 
   @override
   String get kioskStatusOff => 'बंद';
@@ -4425,4 +4425,413 @@ class AppLocalizationsHi extends AppLocalizations {
   String setUpAgainBody(String server) {
     return 'बोर्ड $server का इस्तेमाल बंद कर देगा और शिक्षक साइन आउट हो जाएँगे। फिर सर्वर का पता और KINETIX ERP से नया पंजीकरण कोड (बोर्ड → नया पंजीकरण कोड) लिखें।';
   }
+
+  @override
+  String get topLiveQuiz => 'लाइव क्विज़';
+
+  @override
+  String get topLiveQuizTooltip => 'कक्षा से क्विज़ का प्रश्न पूछें';
+
+  @override
+  String get topLiveClass => 'लाइव कक्षा';
+
+  @override
+  String get topLiveClassTooltip =>
+      'लाइव जाएँ: कक्षा बोर्ड देखती है और आपको सुनती है';
+
+  @override
+  String get topLiveNow => 'लाइव';
+
+  @override
+  String get topLiveNeedsSignIn =>
+      'अपनी कक्षा के साथ लाइव जाने के लिए साइन इन करें';
+
+  @override
+  String get topShare => 'साझा करें';
+
+  @override
+  String get topShareBoard => 'बोर्ड नोट्स साझा करें';
+
+  @override
+  String get topShareBoardHint => 'PDF, लिंक, QR कोड या व्हाट्सऐप';
+
+  @override
+  String get topCastScreen => 'स्क्रीन कास्ट करें';
+
+  @override
+  String get topCastScreenHint => 'लैपटॉप या फ़ोन को बोर्ड पर दिखाएँ';
+
+  @override
+  String topCasting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count स्क्रीन कास्ट हो रही हैं',
+      one: '1 स्क्रीन कास्ट हो रही है',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get topRecording => 'रिकॉर्ड हो रहा है';
+
+  @override
+  String get topRecordTooltip => 'पाठ रिकॉर्ड करें: बोर्ड और आपकी आवाज़';
+
+  @override
+  String get topStopRecordingTooltip => 'रिकॉर्डिंग रोकें';
+
+  @override
+  String topZoomTooltip(int percent) {
+    return 'ज़ूम $percent%। 100% के लिए टैप करें';
+  }
+
+  @override
+  String get topBarLabel => 'कक्षा के काम';
+
+  @override
+  String get model3dReady => 'तैयार';
+
+  @override
+  String get model3dSaved => 'ऑफ़लाइन सहेजा गया';
+
+  @override
+  String model3dCloud(String size) {
+    return 'ऑनलाइन · $size';
+  }
+
+  @override
+  String get model3dDownload => 'ऑफ़लाइन उपयोग के लिए डाउनलोड करें';
+
+  @override
+  String model3dDownloading(int percent) {
+    return 'डाउनलोड हो रहा है $percent%';
+  }
+
+  @override
+  String model3dDownloadFailed(String name) {
+    return '$name डाउनलोड नहीं हो सका। इंटरनेट जाँचें और फिर कोशिश करें।';
+  }
+
+  @override
+  String model3dDownloadAll(String size) {
+    return 'सभी ऑफ़लाइन के लिए डाउनलोड करें ($size)';
+  }
+
+  @override
+  String get model3dAllSaved => 'हर मॉडल ऑफ़लाइन चलता है';
+
+  @override
+  String get model3dRequest => '3D मॉडल का अनुरोध करें';
+
+  @override
+  String get model3dRequestHint =>
+      'बताएँ कि आपको कौन-सा मॉडल चाहिए। सामग्री टीम आपके स्कूल का हर अनुरोध देखती है।';
+
+  @override
+  String get model3dRequestName => 'मॉडल का नाम';
+
+  @override
+  String get model3dRequestNameHint => 'उदाहरण: मांसपेशी तंत्र';
+
+  @override
+  String get model3dRequestNameNeeded => 'मॉडल का नाम लिखें';
+
+  @override
+  String get model3dRequestSubject => 'विषय';
+
+  @override
+  String get model3dRequestClass => 'कक्षा';
+
+  @override
+  String get model3dRequestAny => 'कोई भी';
+
+  @override
+  String get model3dRequestNote => 'टिप्पणी (वैकल्पिक)';
+
+  @override
+  String get model3dRequestSend => 'अनुरोध भेजें';
+
+  @override
+  String get model3dRequestSent =>
+      'अनुरोध भेजा गया। बोर्ड ऑफ़लाइन हो तो यह बोर्ड के ऑनलाइन आने पर जाएगा।';
+
+  @override
+  String get model3dRequestNeedsSignIn =>
+      'मॉडल का अनुरोध करने के लिए साइन इन करें।';
+
+  @override
+  String get model3dRequestFailed => 'अनुरोध नहीं भेजा जा सका। फिर कोशिश करें।';
+
+  @override
+  String get sketchSuggestTitle => 'क्या आपका मतलब यह था?';
+
+  @override
+  String sketchSuggestUse(String name) {
+    return '$name लगाएँ';
+  }
+
+  @override
+  String get sketchSuggestSwitch => 'चित्रों के लिए आइकन सुझाएँ';
+
+  @override
+  String get sketchSuggestSwitchHint =>
+      'पेन से कुछ बनाने के बाद, उसकी जगह लगाने के लिए एक साफ़ आइकन चुनें। चित्र इसी बोर्ड पर पहचाने जाते हैं; कोई स्याही बाहर नहीं जाती।';
+
+  @override
+  String get sketchSuggestUnavailable =>
+      'चित्र आइकन Android पैनल पर काम करते हैं, जहाँ बोर्ड चित्र पहचान सकता है।';
+
+  @override
+  String get sketchModelName => 'चित्र';
+
+  @override
+  String get sketchModelTitle => 'चित्र आइकन सेट करें?';
+
+  @override
+  String get sketchModelBody =>
+      'Zynetix आपके बनाए चित्र इसी डिवाइस पर पहचानता है। चित्र मॉडल एक बार डाउनलोड करें (कुछ MB); उसके बाद यह बिना इंटरनेट के काम करता है, और कोई स्याही डिवाइस से बाहर नहीं जाती।';
+
+  @override
+  String get sketchModelDownload => 'चित्र आइकन डाउनलोड करें';
+
+  @override
+  String get quizSetupHint =>
+      'प्रश्न चुनें या लिखें। छात्र Student App में उत्तर देते हैं, या उत्तर कार्ड ऊपर उठाते हैं।';
+
+  @override
+  String get quizTopic => 'विषय';
+
+  @override
+  String get quizMakeQuestions => 'प्रश्न बनाएँ';
+
+  @override
+  String get quizFromBank => 'सहेजे गए प्रश्न';
+
+  @override
+  String get quizNoSuggestions =>
+      'इस कक्षा के लिए अभी कोई सहेजा गया प्रश्न नहीं है';
+
+  @override
+  String get quizAddQuestion => 'प्रश्न जोड़ें';
+
+  @override
+  String get quizQuestionLabel => 'प्रश्न';
+
+  @override
+  String quizOptionHint(String letter) {
+    return 'उत्तर $letter';
+  }
+
+  @override
+  String get quizRightAnswer => 'सही उत्तर';
+
+  @override
+  String get quizAddThis => 'खेल में जोड़ें';
+
+  @override
+  String quizQuestionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count प्रश्न',
+      one: '1 प्रश्न',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get quizSeconds => 'हर प्रश्न का समय';
+
+  @override
+  String quizSecondsValue(int n) {
+    return '$n से.';
+  }
+
+  @override
+  String get quizUseCards => 'उत्तर कार्ड भी';
+
+  @override
+  String get quizUseCardsHint =>
+      'जिन छात्रों के पास फ़ोन नहीं है वे अपने कार्ड उठाते हैं; उत्तर दिखाने से पहले उन्हें स्कैन करें। कार्ड को गति बोनस नहीं मिलता।';
+
+  @override
+  String get quizStartGame => 'खेल शुरू करें';
+
+  @override
+  String get quizNeedsQuestion => 'कम से कम एक प्रश्न जोड़ें';
+
+  @override
+  String quizQuestionOf(int n, int total) {
+    return 'प्रश्न $n / $total';
+  }
+
+  @override
+  String get quizJoinApp => 'खेलने के लिए Student App खोलें';
+
+  @override
+  String get quizJoinCards => 'फ़ोन नहीं है? अपना उत्तर कार्ड उठाएँ';
+
+  @override
+  String get quizBegin => 'शुरू करें';
+
+  @override
+  String get quizShowAnswer => 'उत्तर दिखाएँ';
+
+  @override
+  String get quizTimeUp => 'समय समाप्त';
+
+  @override
+  String get quizNext => 'आगे';
+
+  @override
+  String get quizNextQuestion => 'अगला प्रश्न';
+
+  @override
+  String get quizFinalResults => 'अंतिम परिणाम';
+
+  @override
+  String get quizLeaderboard => 'लीडरबोर्ड';
+
+  @override
+  String get quizWinners => 'विजेता';
+
+  @override
+  String quizPoints(int n) {
+    return '$n अंक';
+  }
+
+  @override
+  String quizStreak(int n) {
+    return 'लगातार $n';
+  }
+
+  @override
+  String get quizEndGame => 'खेल समाप्त करें';
+
+  @override
+  String get quizSaved => 'कक्षा के परिणामों में सहेजा गया';
+
+  @override
+  String get quizNotSaved =>
+      'सहेजा नहीं गया: सर्वर पर कोई कक्षा खुली नहीं है। केवल उत्तर कार्ड।';
+
+  @override
+  String get quizServerRetry =>
+      'सर्वर से संपर्क नहीं हो सका। फिर से कोशिश करने के लिए दोबारा टैप करें।';
+
+  @override
+  String get quizNoAnswers => 'किसी ने उत्तर नहीं दिया';
+
+  @override
+  String quizAnsweredCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ने उत्तर दिया',
+      one: '1 ने उत्तर दिया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get curTitle => 'कक्षा और विषय चुनें';
+
+  @override
+  String get curSchool => 'स्कूल';
+
+  @override
+  String get curCollege => 'कॉलेज';
+
+  @override
+  String get curPostgrad => 'स्नातकोत्तर';
+
+  @override
+  String curClassN(int n) {
+    return 'कक्षा $n';
+  }
+
+  @override
+  String curSemN(int n) {
+    return 'सेम $n';
+  }
+
+  @override
+  String get curPickSubject => 'विषय चुनें';
+
+  @override
+  String get curBack => 'वापस';
+
+  @override
+  String curFromTimetable(String label) {
+    return 'समय-सारणी से: $label';
+  }
+
+  @override
+  String get curUseTimetable => 'समय-सारणी लगाएँ';
+
+  @override
+  String get curOtherSubject => 'कोई और विषय या कक्षा';
+
+  @override
+  String get curDemoDay => 'डेमो दिवस की कक्षाएँ';
+
+  @override
+  String get curKits => 'इस विषय के किट';
+
+  @override
+  String get curInUpdate => 'अगले अपडेट में आएगा';
+
+  @override
+  String get curChange => 'कक्षा या विषय बदलें';
+
+  @override
+  String curSet(String label) {
+    return 'बोर्ड $label के लिए तैयार';
+  }
+
+  @override
+  String get curToolsKits => 'टूल और किट';
+
+  @override
+  String get curLabsSims => 'लैब और सिमुलेशन';
+
+  @override
+  String get curModels => '3D मॉडल';
+
+  @override
+  String get curSoonBeam => 'बीम BMD और SFD';
+
+  @override
+  String get curSoonDrawing => 'इंजीनियरिंग ड्रॉइंग ग्रिड';
+
+  @override
+  String get curSoonPvTs => 'P-V और T-S चार्ट';
+
+  @override
+  String get curSoonFbd => 'मुक्त-पिंड आरेख';
+
+  @override
+  String get curSoonPhasor => 'फेज़र आरेख';
+
+  @override
+  String get curSoonSld => 'सिंगल-लाइन आरेख';
+
+  @override
+  String get curSoonWaveform => 'तरंग-रूप जनरेटर';
+
+  @override
+  String get curSoonSignal => 'सिग्नल, FFT और बोडे प्लॉटर';
+
+  @override
+  String get curSoonMcu => 'माइक्रोकंट्रोलर पिन आरेख';
+
+  @override
+  String get curSoonNn => 'न्यूरल नेटवर्क बिल्डर';
+
+  @override
+  String get curSoonPfd => 'प्रोसेस फ़्लो आरेख किट';
+
+  @override
+  String get curSoonEv => 'EV आरेख';
 }

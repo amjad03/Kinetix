@@ -11,6 +11,7 @@ import 'board_background.dart';
 import 'graph_expr.dart';
 import 'ink_canvas.dart';
 import 'ink_models.dart';
+import 'kit_painting.dart';
 import 'sheet_painting.dart';
 
 /// Words painted on the board by the ink engine itself. Apps set them in the teacher's
@@ -187,6 +188,8 @@ void paintElement(
       paintNote(canvas, e);
     case SheetElement():
       paintSheet(canvas, e);
+    case KitElement():
+      paintKit(canvas, e);
     case FlowNodeElement():
       paintFlowNode(canvas, e, background);
     case FlowLinkElement():

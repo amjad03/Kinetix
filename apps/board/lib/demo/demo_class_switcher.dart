@@ -19,18 +19,22 @@ import 'demo_strings.dart';
 abstract final class DemoClassSwitcher {
   static BoardController? _board;
   static void Function(DemoClass c)? _onSwitched;
+  static VoidCallback? _openCurriculum;
 
-  /// The board screen lends its board, and what to do once a class opens (a clean page and
-  /// the class's panel).
-  static void attach(BoardController board, void Function(DemoClass c) onSwitched) {
+  /// The board screen lends its board, what to do once a class opens (a clean page and the
+  /// class's panel), and its class and subject picker (lib/features/curriculum), which the
+  /// timetable dialog offers too.
+  static void attach(BoardController board, void Function(DemoClass c) onSwitched, {VoidCallback? openCurriculum}) {
     _board = board;
     _onSwitched = onSwitched;
+    _openCurriculum = openCurriculum;
   }
 
   static void detach(BoardController board) {
     if (_board != board) return;
     _board = null;
     _onSwitched = null;
+    _openCurriculum = null;
   }
 
   /// The class open on the demo board, if the demo server is running.
@@ -57,7 +61,19 @@ abstract final class DemoClassSwitcher {
           icon: const Icon(Icons.swap_horiz),
           title: Text(demoStrings(dialog)['switcher']),
           content: SizedBox(width: 560, child: DemoTimetable(onPick: (id) => Navigator.pop(dialog, id))),
-          actions: [TextButton(onPressed: () => Navigator.pop(dialog), child: Text(dialog.l10n.close))],
+          actions: [
+            if (_openCurriculum case final curriculum?)
+              TextButton.icon(
+                key: const Key('demo-open-curriculum'),
+                onPressed: () {
+                  Navigator.pop(dialog);
+                  curriculum();
+                },
+                icon: const Icon(Icons.school_outlined),
+                label: Text(dialog.l10n.curTitle),
+              ),
+            TextButton(onPressed: () => Navigator.pop(dialog), child: Text(dialog.l10n.close)),
+          ],
         ),
       ),
     );

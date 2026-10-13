@@ -6,9 +6,15 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../../../core/board_controller.dart';
+import '../../../../l10n/feature_strings.dart';
 import '../../chrome.dart';
+import '../../profile_menu.dart' show showBoardSettings;
 import '../subjects.dart';
 import '../../panel/panel_host.dart';
+import 'code_box_settings.dart';
+import 'cs_diagram_editor.dart';
+import 'cs_diagram_samples.dart';
+import 'cs_diagram_strings.dart';
 
 /// The Computer Science kit (BCA/MCA and school computer science): the code lab, algorithm
 /// and data-structure animations, CS labs (numbers, logic, networks, OS, DBMS) and diagram
@@ -94,8 +100,14 @@ Future<void> showCsDialog(BuildContext context, String title, Widget Function(vo
   if (els != null && els.isNotEmpty) wb.insert(els);
 }
 
-/// The code lab over the board: C, C++ and Java go to the API with the board's class session.
-Future<void> openCodeLab(BuildContext context, {required WhiteboardController wb, required Color accent, BoardController? board}) {
+/// The code lab over the board. Python, JavaScript and SQL run on the board, offline; C, C++
+/// and Java on the school code box (Board settings → School code box), else the API with the
+/// board's class session. The class picked on the board (`be-cse/dbms`) chooses the samples.
+Future<void> openCodeLab(BuildContext context, {required WhiteboardController wb, required Color accent, BoardController? board}) async {
+  await CodeBoxSettings.attach(board);
+  if (!context.mounted) return;
+  final pick = board?.curriculumPick;
+  final subject = pick == null || !pick.contains('/') ? null : pick.substring(pick.lastIndexOf('/') + 1);
   final server = ServerRunner(
     endpoint: () {
       final api = board?.api;
@@ -103,7 +115,13 @@ Future<void> openCodeLab(BuildContext context, {required WhiteboardController wb
     },
     headers: () async => {if (board?.api?.sessionToken case final t?) 'authorization': 'Bearer $t'},
   );
-  return showCsDialog(context, CsStrings.of(context).t('codeLab'), (close) => CodeLab(server: server, accent: accent, onInsert: close), wb);
+  final settings = board == null ? null : () => showBoardSettings(context, board, query: codeBoxStrings(boardLang(context))['title']);
+  return showCsDialog(
+    context,
+    CsStrings.of(context).t('codeLab'),
+    (close) => CodeLab(server: server, box: CodeBox.shared, python: PythonRuntime.shared, subject: subject, onOpenSettings: settings, accent: accent, onInsert: close),
+    wb,
+  );
 }
 
 /// Flowchart, UML and ER parts, and connectors between two selected shapes.
@@ -157,9 +175,40 @@ class _Diagrams extends StatelessWidget {
       if (els.isNotEmpty) wb.insert(els, at: contentBounds(els).topLeft);
     }
 
+    final ds = csDiagramStrings(context);
+    Future<void> live(CsDiagram d) async {
+      final k = await editCsDiagram(context, csDiagramPanel(d, accent));
+      if (k != null) wb.insert([k]);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Padding(padding: const EdgeInsets.fromLTRB(4, Kx.s8, 4, Kx.s4), child: Text(ds['section'], style: context.text.titleSmall)),
+        Padding(padding: const EdgeInsets.fromLTRB(4, 0, 4, Kx.s8), child: Text(ds['sectionHint'], style: context.text.bodySmall)),
+        for (final t in CsDiagramType.values)
+          Card(
+            margin: const EdgeInsets.only(bottom: Kx.s8),
+            child: Padding(
+              padding: const EdgeInsets.all(Kx.s8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(ds['type.${t.name}'], style: context.text.labelLarge),
+                  const SizedBox(height: Kx.s8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final x in CsDiagramSample.values.where((x) => sampleType(x) == t))
+                        ActionChip(key: Key('csd-sample-${x.name}'), avatar: Icon(Icons.schema_outlined, size: 18, color: accent), label: Text(ds['sample.${x.name}']), onPressed: () => live(sampleDiagram(x))),
+                      ActionChip(key: Key('csd-new-${t.name}'), avatar: Icon(Icons.add, size: 18, color: accent), label: Text(ds['new']), onPressed: () => live(blankDiagram(t))),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         group(s.t('flowchart'), [
           for (final (p, key, icon) in const [
             (FlowPart.startEnd, 'flow_startEnd', Icons.circle_outlined),

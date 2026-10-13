@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import 'live_quiz.dart';
+
 /// Event names from packages/shared (RealtimeEvents).
 abstract final class LiveEvents {
   static const watch = 'live.watch';
@@ -13,6 +15,11 @@ abstract final class LiveEvents {
 
   /// To every socket of a user: a new message in one of their conversations.
   static const messageNew = 'message.new';
+
+  /// Live Quiz, server → each student of the class (payloads in live_quiz.dart).
+  static const gameQuestion = 'game.question';
+  static const gameReveal = 'game.reveal';
+  static const gameEnded = 'game.ended';
 }
 
 /// What arrives on a live-class connection.
@@ -82,6 +89,13 @@ class LiveBadgeAwarded extends LiveSignal {
   /// The API value (KxBadge.fromApi).
   final String badge;
   final String teacher;
+}
+
+/// A Live Quiz question opened, its answer was shown, or the game ended.
+class LiveQuizSignal extends LiveSignal {
+  const LiveQuizSignal(this.event);
+
+  final QuizEvent event;
 }
 
 /// The connection dropped; the client keeps trying to reconnect on its own.
@@ -228,6 +242,17 @@ class SocketLiveConnection implements LiveConnection {
         _add(LiveBadgeAwarded(badge: b['badge'] as String, teacher: '${(b['awardedBy'] as Map?)?['fullName'] ?? ''}'));
       }
     });
+    void quiz(String event, QuizEvent Function(Map<String, dynamic>) parse) => socket.on(event, (d) {
+      if (d is! Map || d['gameId'] is! String) return;
+      try {
+        _add(LiveQuizSignal(parse(d.cast<String, dynamic>())));
+      } on Object {
+        // A payload this version cannot read: the app catches up from the REST rejoin.
+      }
+    });
+    quiz(LiveEvents.gameQuestion, QuizQuestion.fromJson);
+    quiz(LiveEvents.gameReveal, QuizReveal.fromJson);
+    quiz(LiveEvents.gameEnded, QuizEnd.fromJson);
     for (final event in ['poll.opened', 'poll.closed']) {
       socket.on(event, (_) => _add(const LivePollChanged()));
     }

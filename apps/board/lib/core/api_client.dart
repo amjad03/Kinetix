@@ -124,6 +124,10 @@ class ApiClient {
   /// "Go live": opens (or closes) the board to the class's students in the Student App.
   Future<void> setClassLive(bool on) async => _send('POST', '/v1/sessions/current/live', body: {'on': on});
 
+  /// "Request a 3D model" (3D library): kept in the outbox while offline; the board picks [id], so a replay saves once.
+  Future<void> requestModel(String id, {required String name, String? subject, String? classLevel, String? note}) =>
+      _sendOrDefer('PUT', '/v1/model-requests/$id', body: {'name': name, 'subject': ?subject, 'classLevel': ?classLevel, 'note': ?note});
+
   Future<WhiteboardSummary> saveWhiteboard(String id, {required String title, required SavedBoard board, required bool share}) async {
     final body = {...board.toJson(), 'title': title, 'share': share};
     try {
@@ -438,6 +442,28 @@ class ApiClient {
 
   /// The answer cards of the class open on the board (card number → student).
   Future<Map<String, dynamic>> answerCards() async => await _send('GET', '/v1/answer-cards/current') as Map<String, dynamic>;
+
+  // --- Live Quiz (features/live_quiz; the contract is in services/api/src/quiz-games) ---------
+
+  /// Starts a game in the class on the board ([id] chosen here, so a retry starts one game).
+  Future<Map<String, dynamic>> createQuizGame(String id, Map<String, dynamic> body) async => await _send('PUT', '/v1/quiz-games/$id', body: body) as Map<String, dynamic>;
+
+  /// Opens question [index] (`phase` question) or reveals it (`phase` reveal); the server scores it.
+  Future<Map<String, dynamic>> advanceQuizGame(String id, String phase, int index) async =>
+      await _send('POST', '/v1/quiz-games/$id/advance', body: {'phase': phase, 'index': index}) as Map<String, dynamic>;
+
+  /// Answers read from answer cards for the open question: `{cardNo, choice}` each.
+  Future<Map<String, dynamic>> quizGameCards(String id, int index, List<Map<String, int>> answers) async =>
+      await _send('POST', '/v1/quiz-games/$id/cards', body: {'index': index, 'answers': answers}) as Map<String, dynamic>;
+
+  Future<Map<String, dynamic>> finishQuizGame(String id) async => await _send('POST', '/v1/quiz-games/$id/finish') as Map<String, dynamic>;
+
+  /// Questions for a game: the subject's question bank and questions asked in this class before.
+  Future<List<Map<String, dynamic>>> quizQuestions({String? topic}) async {
+    final q = topic == null || topic.trim().isEmpty ? '' : '?topic=${Uri.encodeQueryComponent(topic.trim())}';
+    final res = await _send('GET', '/v1/quiz-games/questions$q') as Map<String, dynamic>;
+    return (res['questions'] as List? ?? const []).cast<Map<String, dynamic>>();
+  }
 
   // --- Phone remote (features/remote) ---------------------------------------------------------
 

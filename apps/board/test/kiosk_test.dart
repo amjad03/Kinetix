@@ -380,7 +380,7 @@ void main() {
       final k = await pump(tester, platform: platform);
       expect(k.active, isTrue);
       expect(find.byKey(const Key('kiosk-status')), findsOneWidget);
-      expect(find.text('On: screen pinning. For a full lock, make KINETIX Board the device owner (see the kiosk guide).'), findsOneWidget);
+      expect(find.text('On: screen pinning. For a full lock, make Zynetix the device owner (see the kiosk guide).'), findsOneWidget);
 
       await hold(tester, const Duration(seconds: 1));
       expect(find.byKey(const Key('kiosk-dialog')), findsNothing);

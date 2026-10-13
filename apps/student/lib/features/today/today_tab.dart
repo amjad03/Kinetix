@@ -24,6 +24,8 @@ import '../library/library.dart';
 import '../live/buzzer_card.dart';
 import '../live/live_class_screen.dart';
 import '../live/live_question.dart';
+import '../live/live_quiz_controller.dart';
+import '../live/live_quiz_screen.dart';
 import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
@@ -47,6 +49,8 @@ class TodayTab extends StatefulWidget {
     this.onOpenUpdates,
     this.onOpenExams,
     this.onOpenMore,
+    this.quiz,
+    this.onOpenQuiz,
   });
 
   final StudyController study;
@@ -72,6 +76,10 @@ class TodayTab extends StatefulWidget {
   final VoidCallback? onOpenUpdates;
   final VoidCallback? onOpenExams;
   final VoidCallback? onOpenMore;
+
+  /// The Live Quiz in the class, and opening it (a banner while a game runs).
+  final LiveQuizController? quiz;
+  final VoidCallback? onOpenQuiz;
 
   @override
   State<TodayTab> createState() => _TodayTabState();
@@ -105,11 +113,12 @@ class _TodayTabState extends State<TodayTab> {
     final onAsk = widget.onAsk;
     final onOpenTopic = widget.onOpenTopic;
     return ListenableBuilder(
-      listenable: Listenable.merge([study, ?messages]),
+      listenable: Listenable.merge([study, ?messages, ?widget.quiz]),
       builder: (context, _) {
         final summary = study.summary;
         final live = study.live;
         final cards = <Widget>[
+          if (widget.quiz case final quiz? when quiz.active) LiveQuizBanner(quiz: quiz, onOpen: widget.onOpenQuiz ?? () => LiveQuizScreen.open(context, quiz)),
           if (study.question case final question?) LiveQuestionBanner(study: study, question: question),
           if (live != null) LiveNowBanner(live: live, onWatch: () => LiveClassScreen.open(context, study, live)),
           BuzzerCard(api: study.api),

@@ -24,7 +24,7 @@ abstract final class BoardShot {
       SharePlus.instance.share(ShareParams(files: [XFile.fromData(png, name: name, mimeType: 'image/png')], fileNameOverrides: [name]));
 
   /// The file name: the board and the time.
-  static String fileName(DateTime at) => 'KINETIX board ${DateFormat('yyyy-MM-dd HH.mm').format(at)}.png';
+  static String fileName(DateTime at) => 'Zynetix board ${DateFormat('yyyy-MM-dd HH.mm').format(at)}.png';
 
   /// Renders the picture with [capture], then offers Save and Share over a preview.
   static Future<void> take(BuildContext context, Future<Uint8List> Function() capture) async {

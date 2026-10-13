@@ -35,6 +35,7 @@ class Viewer3dStrings {
   String get laser => _t('laser');
   String get laserHint => _t('laserHint');
   String get startAgain => _t('startAgain');
+  String get recenter => _t('recenter');
   String get putOnBoard => _t('putOnBoard');
   String get onBoard => _t('onBoard');
   String get snapshotFailed => _t('snapshotFailed');
@@ -153,6 +154,7 @@ class Viewer3dStrings {
     'laser': ['Laser pointer', 'लेज़र पॉइंटर', 'ಲೇಸರ್ ಪಾಯಿಂಟರ್'],
     'laserHint': ['Point with one finger; turn the model with two.', 'एक उंगली से इंगित करें; दो उंगलियों से मॉडल घुमाएँ।', 'ಒಂದು ಬೆರಳಿನಿಂದ ತೋರಿಸಿ; ಎರಡು ಬೆರಳಿನಿಂದ ಮಾದರಿ ತಿರುಗಿಸಿ.'],
     'startAgain': ['Start again', 'फिर से शुरू करें', 'ಮತ್ತೆ ಆರಂಭಿಸಿ'],
+    'recenter': ['Recenter: fit what is shown', 'बीच में लाएँ: जो दिख रहा है उसे पूरा दिखाएँ', 'ಮಧ್ಯಕ್ಕೆ ತನ್ನಿ: ಕಾಣುತ್ತಿರುವುದನ್ನು ಪೂರ್ತಿ ತೋರಿಸಿ'],
     'putOnBoard': ['Put on board', 'बोर्ड पर लगाएँ', 'ಬೋರ್ಡ್‌ಗೆ ಹಾಕಿ'],
     'onBoard': ['On the board', 'बोर्ड पर लग गया', 'ಬೋರ್ಡ್‌ನಲ್ಲಿದೆ'],
     'snapshotFailed': ['Could not take a picture of the model.', 'मॉडल की तस्वीर नहीं ली जा सकी।', 'ಮಾದರಿಯ ಚಿತ್ರ ತೆಗೆಯಲಾಗಲಿಲ್ಲ.'],

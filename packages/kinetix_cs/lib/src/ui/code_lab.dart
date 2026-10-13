@@ -5,7 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../runner/code_box.dart';
+import '../runner/issues.dart';
 import '../runner/protocol.dart';
+import '../runner/python_runtime.dart';
 import '../runner/runners.dart';
 import '../runner/sample_databases.dart';
 import '../runner/samples.dart';
@@ -23,12 +26,38 @@ List<BoardElement> codeLabElements(CodePut put, {required String code, required 
 ], gap: 16);
 
 /// The code lab: an editor with colouring, input, Run/Stop, the output, sample programs, a
-/// text size for the class, and "Put on board". Python, JavaScript and SQL run on the device;
-/// C, C++ and Java on the server ([server], null when the app has none).
+/// text size for the class, and "Put on board". Python, JavaScript and SQL run on the device,
+/// offline; C, C++ and Java on the school code box ([box]) or else the KINETIX server
+/// ([server]); each run says where it ran (HybridRunner).
 class CodeLab extends StatefulWidget {
-  const CodeLab({super.key, this.server, this.onInsert, this.initialLanguage = CodeLanguage.python, this.accent = const Color(0xFF006879), this.webRunner});
+  const CodeLab({
+    super.key,
+    this.server,
+    this.box,
+    this.python,
+    this.subject,
+    this.onOpenSettings,
+    this.onInsert,
+    this.initialLanguage = CodeLanguage.python,
+    this.accent = const Color(0xFF006879),
+    this.webRunner,
+    this.initialSample,
+  });
 
   final ServerRunner? server;
+
+  /// The school code box to use (null: none is looked for).
+  final CodeBox? box;
+
+  /// Where Python comes from on this device (null: PythonRuntime.shared).
+  final PythonRuntime? python;
+
+  /// The curriculum subject (CurriculumSubject id, e.g. `dbms`): its samples come first, and
+  /// its language is the first one shown.
+  final String? subject;
+
+  /// Opens the app's settings at the code box (null: the button is hidden).
+  final VoidCallback? onOpenSettings;
 
   /// Null where there is no board (the Student App): the button is then hidden.
   final void Function(List<BoardElement> elements)? onInsert;
@@ -38,15 +67,29 @@ class CodeLab extends StatefulWidget {
   /// Tests pass a WebRunner with a fake page.
   final WebRunner? webRunner;
 
+  /// Code to open with instead of the first sample (e.g. CREATE TABLEs from an ER diagram).
+  final Sample? initialSample;
+
   @override
   State<CodeLab> createState() => _CodeLabState();
 }
 
 class _CodeLabState extends State<CodeLab> {
-  late final HybridRunner _runner = HybridRunner(web: widget.webRunner ?? WebRunner(), sql: SqlRunner(), server: widget.server);
-  late CodeLanguage _lang = widget.initialLanguage;
+  late final PythonRuntime _python = widget.python ?? PythonRuntime.shared;
+  late final HybridRunner _runner = HybridRunner(
+    web: widget.webRunner ?? WebRunner(),
+    sql: SqlRunner(),
+    server: widget.server,
+    box: widget.box == null ? null : CodeBoxRunner(widget.box),
+    // A test's fake page has Python; a real one asks the runtime.
+    python: widget.webRunner == null ? _python : null,
+  );
+  late CodeLanguage _lang = widget.initialSample?.language ?? languageForSubject(widget.subject) ?? widget.initialLanguage;
+  List<RunPlace>? _plan;
+  List<CodeIssue> _issues = const [];
   late final _code = CodeEditingController(language: _lang.id);
   final _stdin = TextEditingController();
+  final _editorFocus = FocusNode();
   String? _database = 'students';
   double _font = 18;
   bool _running = false;
@@ -57,19 +100,42 @@ class _CodeLabState extends State<CodeLab> {
   @override
   void initState() {
     super.initState();
-    _sample(samplesFor(_lang).first);
+    _sample(widget.initialSample ?? samplesFor(_lang, subject: widget.subject).first);
+    _python.state.addListener(_pythonChanged);
+    unawaited(_replan());
     _loading = _runner.web.loading.listen((t) {
       if (mounted) setState(() => _startingPython = t.isNotEmpty);
     });
     if (_lang == CodeLanguage.python) unawaited(_runner.web.warm());
   }
 
+  /// Where the current language would run, for the chip.
+  Future<void> _replan() async {
+    final l = _lang;
+    final p = await _runner.plan(l);
+    if (mounted && l == _lang) setState(() => _plan = p);
+  }
+
+  void _pythonChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _getPython() async {
+    if (await _python.download()) {
+      _runner.web.reset();
+      if (mounted) setState(() => _result = null);
+      await _replan();
+    }
+  }
+
   @override
   void dispose() {
+    _python.state.removeListener(_pythonChanged);
     _loading?.cancel();
     _runner.dispose();
     _code.dispose();
     _stdin.dispose();
+    _editorFocus.dispose();
     super.dispose();
   }
 
@@ -80,8 +146,10 @@ class _CodeLabState extends State<CodeLab> {
       _lang = l;
       _code.language = l.id;
       _result = null;
+      _plan = null;
     });
-    _sample(samplesFor(l).first);
+    _sample(samplesFor(l, subject: widget.subject).first);
+    unawaited(_replan());
     if (l == CodeLanguage.python) unawaited(_runner.web.warm());
   }
 
@@ -91,6 +159,7 @@ class _CodeLabState extends State<CodeLab> {
       _stdin.text = s.stdin;
       if (s.language == CodeLanguage.sql) _database = s.database;
       _result = null;
+      _issues = const [];
     });
   }
 
@@ -102,18 +171,68 @@ class _CodeLabState extends State<CodeLab> {
     setState(() {
       _running = true;
       _result = null;
+      _issues = const [];
     });
-    final r = await _runner.run(RunRequest(_lang, _code.text, stdin: _stdin.text, database: _database));
+    final source = _code.text;
+    final r = await _runner.run(RunRequest(_lang, source, stdin: _stdin.text, database: _database));
     if (!mounted) return;
     setState(() {
       _running = false;
       _startingPython = false;
       _result = r;
+      _issues = r.ok ? const [] : issuesOf(_lang, r, source: source);
     });
+    if (r.status == RunStatus.unavailable || r.place != null) unawaited(_replan());
   }
+
+  /// Puts the cursor at the start of [line] in the editor.
+  void _goToLine(int line) {
+    final at = offsetOfLine(_code.text, line);
+    final end = _code.text.indexOf('\n', at);
+    _code.selection = TextSelection(baseOffset: at, extentOffset: end < 0 ? _code.text.length : end);
+    _editorFocus.requestFocus();
+  }
+
+  String _place(CsStrings s, RunPlace? p) => switch (p) {
+    RunPlace.device => s.t('place_device'),
+    RunPlace.box => [s.t('place_box'), if (widget.box?.current.value?.host case final h?) '($h)'].join(' '),
+    RunPlace.server => s.t('place_server'),
+    null => s.t('place_none'),
+  };
+
+  void _boxHelp(CsStrings s) => showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(s.t('boxHelpTitle')),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final (i, k) in ['boxHelp1', 'boxHelp2', 'boxHelp3'].indexed)
+              Padding(padding: const EdgeInsets.only(bottom: 10), child: SelectableText('${i + 1}. ${s.t(k)}')),
+          ],
+        ),
+      ),
+      actions: [
+        if (widget.onOpenSettings != null)
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              widget.onOpenSettings!();
+            },
+            child: Text(s.t('openSettings')),
+          ),
+        FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(s.t('close'))),
+      ],
+    ),
+  );
 
   String _why(CsStrings s, RunResult r) {
     final m = r.message ?? '';
+    if (m == 'needsBox') return s.t('why_needsBox', [_lang.label]);
+    if (m == 'needsPython') return s.t('why_needsPython');
+    if (m == 'boxKey') return s.t('why_boxKey');
     if (m.startsWith('signIn')) return s.t('why_signIn');
     if (m.startsWith('noServer')) return s.t('why_noServer');
     if (m.startsWith('noWebView')) return s.t('why_noWebView');
@@ -156,8 +275,14 @@ class _CodeLabState extends State<CodeLab> {
                   ),
                 ),
                 Chip(
-                  avatar: Icon(_lang.onDevice ? Icons.offline_bolt_outlined : Icons.cloud_outlined, size: 18),
-                  label: Text(s.t(_lang.onDevice ? 'onDevice' : 'onServer')),
+                  key: const Key('code-place'),
+                  avatar: Icon(switch (_plan?.firstOrNull) {
+                    RunPlace.device => Icons.offline_bolt_outlined,
+                    RunPlace.box => Icons.dns_outlined,
+                    RunPlace.server => Icons.cloud_outlined,
+                    null => _plan == null ? Icons.hourglass_empty : Icons.block,
+                  }, size: 18),
+                  label: Text(_plan == null ? s.t(_lang.onDevice ? 'onDevice' : 'onServer') : _place(s, _plan!.firstOrNull)),
                 ),
               ],
             ),
@@ -170,7 +295,7 @@ class _CodeLabState extends State<CodeLab> {
                   key: const Key('code-samples'),
                   tooltip: s.t('samples'),
                   onSelected: _sample,
-                  itemBuilder: (_) => [for (final x in samplesFor(_lang)) PopupMenuItem(value: x, child: Text(s.t(x.key)))],
+                  itemBuilder: (_) => [for (final x in samplesFor(_lang, subject: widget.subject)) PopupMenuItem(value: x, child: Text(s.t(x.key)))],
                   child: Chip(avatar: const Icon(Icons.library_books_outlined, size: 18), label: Text(s.t('samples'))),
                 ),
                 if (_lang == CodeLanguage.sql) ...[
@@ -201,6 +326,7 @@ class _CodeLabState extends State<CodeLab> {
                 child: TextField(
                   key: const Key('code-editor'),
                   controller: _code,
+                  focusNode: _editorFocus,
                   expands: true,
                   maxLines: null,
                   style: mono.copyWith(color: CodeTheme.dark.plain),
@@ -266,9 +392,31 @@ class _CodeLabState extends State<CodeLab> {
                 if (r != null) ...[
                   Text(s.t('status_${r.status.wire}'), key: const Key('code-status'), style: TextStyle(color: statusColor, fontWeight: FontWeight.w700)),
                   if (r.timeMs > 0) Text('  ·  ${s.t('timeMs', [r.timeMs])}'),
+                  if (r.place != null) Flexible(child: Text('  ·  ${s.t('ranOn', [_place(s, r.place)])}', key: const Key('code-ran-on'), overflow: TextOverflow.ellipsis)),
                 ],
               ],
             ),
+            if (r?.status == RunStatus.unavailable && (r!.message == 'needsPython' || r.message == 'needsBox' || r.message == 'boxKey'))
+              Padding(padding: const EdgeInsets.only(top: 4), child: _actions(s, r)),
+            if (_issues.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Wrap(
+                  key: const Key('code-issues'),
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(s.t('issues')),
+                    for (final i in _issues)
+                      ActionChip(
+                        avatar: Icon(i.error ? Icons.error_outline : Icons.warning_amber, size: 16, color: i.error ? const Color(0xFFD93025) : const Color(0xFFB06000)),
+                        label: Text(s.t('issueLine', [i.line, i.message.length > 70 ? '${i.message.substring(0, 70)}…' : i.message])),
+                        onPressed: () => _goToLine(i.line),
+                      ),
+                  ],
+                ),
+              ),
             const SizedBox(height: 4),
             Expanded(
               flex: 2,
@@ -281,6 +429,35 @@ class _CodeLabState extends State<CodeLab> {
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+extension on _CodeLabState {
+  /// "Get Python for offline use" and the code box's setup, under a run that could not happen.
+  Widget _actions(CsStrings s, RunResult r) {
+    final py = _python.state.value;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (r.message == 'needsPython' && _python.canDownload)
+          py.status == PythonStatus.downloading
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(width: 120, child: LinearProgressIndicator(value: py.progress)),
+                    const SizedBox(width: 8),
+                    Text(s.t('gettingPython', [(py.progress * 100).round()])),
+                  ],
+                )
+              : FilledButton.icon(key: const Key('code-get-python'), onPressed: _getPython, icon: const Icon(Icons.download), label: Text(s.t('getPython'))),
+        if (r.message == 'needsPython' && py.status == PythonStatus.failed) Text(s.t('pythonFailed'), style: const TextStyle(color: Color(0xFFD93025))),
+        if (r.message == 'needsPython' && py.status == PythonStatus.ready) Text(s.t('pythonReady')),
+        if (r.message != 'needsPython' || !_python.canDownload)
+          OutlinedButton.icon(key: const Key('code-box-help'), onPressed: () => _boxHelp(s), icon: const Icon(Icons.help_outline), label: Text(s.t('boxHelp'))),
       ],
     );
   }

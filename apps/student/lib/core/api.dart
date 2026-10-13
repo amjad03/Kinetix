@@ -12,6 +12,7 @@ import '../l10n/l10n.dart';
 import 'academic_docs.dart';
 import 'alumni.dart';
 import 'buzzer.dart';
+import 'live_quiz.dart';
 import 'campus.dart';
 import 'campus_life.dart';
 import 'campus_services.dart';
@@ -239,6 +240,13 @@ abstract class StudentApi {
 
   /// Answers it (MCQ: the option's index; numeric: the number). Returns the answer as stored.
   Future<String> answerQuestion(String id, String answer);
+
+  /// The Live Quiz running in the student's class, to join it late or after a reconnect.
+  Future<StudentQuizGame> quizGame();
+
+  /// Answers question [index] of a Live Quiz (the option's index). The first answer is final:
+  /// returns the one the server kept. 400 once time is up.
+  Future<int> answerQuizGame(String gameId, int index, int choice);
 
   /// The academic calendar for the student's class between [from] and [to] (default: today
   /// and the next 90 days).
@@ -856,6 +864,13 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<String> answerQuestion(String id, String answer) async =>
       (await _send('POST', '/v1/polls/$id/answer', body: {'answer': answer}) as Map<String, dynamic>)['answer'] as String;
+
+  @override
+  Future<StudentQuizGame> quizGame() async => StudentQuizGame.fromJson(_map(await _send('GET', '/v1/student/quiz-game')));
+
+  @override
+  Future<int> answerQuizGame(String gameId, int index, int choice) async =>
+      (_map(await _send('POST', '/v1/quiz-games/$gameId/answer', body: {'index': index, 'choice': choice}))['choice'] as num).toInt();
 
   @override
   Future<CalendarRange> calendar({DateTime? from, DateTime? to}) async {

@@ -448,7 +448,7 @@ void main() {
         await tester.tap(find.byKey(const Key('seating-save')));
         await Future<void>.delayed(const Duration(milliseconds: 300));
       });
-      expect(shared, ['KINETIX seating plan.png']);
+      expect(shared, ['Zynetix seating plan.png']);
       expect(state.listing(), isNotEmpty);
       expect(tester.takeException(), isNull);
     });

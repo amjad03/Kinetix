@@ -54,6 +54,8 @@ void main() {
     final list = find.descendant(of: find.byKey(const Key('catalogue-model3d')), matching: find.byType(Scrollable)).first;
     await tester.scrollUntilVisible(find.byKey(const Key('pick-orbitals')), 300, scrollable: list);
     await tester.scrollUntilVisible(find.byKey(const Key('pick-heart')), -300, scrollable: list);
+    // The models are a grid of tall tiles: let the scroll to the tile lay out before tapping it.
+    await tester.pump();
     await tester.tap(find.byKey(const Key('pick-heart')));
     await tester.pump();
     await tester.pump();

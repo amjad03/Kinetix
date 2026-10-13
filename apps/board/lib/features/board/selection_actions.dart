@@ -76,7 +76,7 @@ class SelectionActions extends StatelessWidget {
     final compact = size.width < compactWidth;
     final single = els.length == 1 ? els.single : null;
     final link = single is ImageElement ? single.link : null;
-    final editable = single is MathElement || single is NoteElement || single is TextElement || single is SheetElement;
+    final editable = single is MathElement || single is NoteElement || single is TextElement || single is SheetElement || single is KitElement;
     final readings = single == null ? null : onReadings?.call(single);
     final locked = wb.selectionLocked;
     final strokes = els.any((e) => e is Stroke && e.style.tool != InkTool.highlighter);

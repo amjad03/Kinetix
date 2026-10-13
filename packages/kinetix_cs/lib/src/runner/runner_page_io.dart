@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_windows/webview_windows.dart' as win;
 
+import 'python_runtime.dart';
 import 'runner_page.dart';
 
 /// Under `flutter test` there is no WebView, whatever the host.
@@ -18,8 +19,9 @@ RunnerPage? createRunnerPage() {
   return null;
 }
 
-/// Serves assets/runner (the page, its worker and Pyodide) on 127.0.0.1 only, never the school
-/// network, as the 3D viewer's server does (kinetix_3d engine_io.dart). One for the app.
+/// Serves assets/runner (the page and its worker) and Python (/py/: Pyodide from
+/// [PythonRuntime.shared], downloaded or bundled) on 127.0.0.1 only, never the school network,
+/// as the 3D viewer's server does (kinetix_3d engine_io.dart). One for the app.
 class RunnerServer {
   static Future<String>? _base;
 
@@ -34,6 +36,7 @@ class RunnerServer {
   static const _types = {
     'html': 'text/html; charset=utf-8',
     'js': 'text/javascript; charset=utf-8',
+    'mjs': 'text/javascript; charset=utf-8',
     'json': 'application/json; charset=utf-8',
     'wasm': 'application/wasm',
     'zip': 'application/zip',
@@ -44,11 +47,32 @@ class RunnerServer {
     try {
       final path = Uri.decodeComponent(req.uri.path).replaceFirst(RegExp(r'^/+'), '');
       if (path.contains('..')) throw const FileSystemException('outside the runner');
+      if (path.startsWith('py/')) return await _python(res, path.substring(3));
       final data = await rootBundle.load('packages/kinetix_cs/assets/runner/${path.isEmpty ? 'index.html' : path}');
       res.headers.contentType = ContentType.parse(_types[path.split('.').last] ?? 'application/octet-stream');
       res.add(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
     } catch (_) {
       res.statusCode = HttpStatus.notFound;
+    }
+    await res.close();
+  }
+
+  /// Python for the worker: py/info.json says which kind there is ({kind: js|mjs|null}).
+  static Future<void> _python(HttpResponse res, String name) async {
+    final py = PythonRuntime.shared;
+    final source = await py.locate();
+    if (name == 'info.json') {
+      res.headers.contentType = ContentType.parse(_types['json']!);
+      res.headers.set('cache-control', 'no-store');
+      res.write('{"kind": ${source == null ? 'null' : source.module ? '"mjs"' : '"js"'}}');
+    } else {
+      final bytes = await source?.read(name);
+      if (bytes == null) {
+        res.statusCode = HttpStatus.notFound;
+      } else {
+        res.headers.contentType = ContentType.parse(_types[name.split('.').last] ?? 'application/octet-stream');
+        res.add(bytes);
+      }
     }
     await res.close();
   }

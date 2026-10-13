@@ -67,7 +67,7 @@ class ServerConfigErrorApp extends StatelessWidget {
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text('KINETIX cannot start: ${error.message}', textAlign: TextAlign.center),
+              child: Text('Zynetix cannot start: ${error.message}', textAlign: TextAlign.center),
             ),
           ),
         ),

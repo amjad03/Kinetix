@@ -7,8 +7,9 @@ part of 'ink_models.dart';
 /// as 18%.
 enum SheetFormat { general, number, inr, lakh, crore, percent }
 
-/// A chart drawn under a sheet's grid from two of its ranges.
-enum SheetChartKind { bar, line, pie }
+/// A chart drawn under a sheet's grid from two of its ranges (for a scatter, the labels range
+/// holds the x values).
+enum SheetChartKind { bar, line, pie, scatter }
 
 class SheetChart {
   const SheetChart({required this.kind, required this.labels, required this.values});
@@ -42,7 +43,12 @@ class SheetElement extends BoardElement {
     this.header = true,
     this.chart,
     this.rotation = 0,
-  }) : cells = List.unmodifiable(List.generate(rows * cols, (i) => i < cells.length ? cells[i] : '')),
+    Map<int, SheetFormat>? cellFormats,
+  }) : cellFormats = Map.unmodifiable({
+         for (final e in (cellFormats ?? const <int, SheetFormat>{}).entries)
+           if (e.key >= 0 && e.key < rows * cols) e.key: e.value,
+       }),
+       cells = List.unmodifiable(List.generate(rows * cols, (i) => i < cells.length ? cells[i] : '')),
        formats = List.unmodifiable(List.generate(cols, (c) => formats != null && c < formats.length ? formats[c] : SheetFormat.general)),
        widths = List.unmodifiable(List.generate(cols, (c) => widths != null && c < widths.length ? widths[c] : defaultColumnWidth));
 
@@ -56,8 +62,9 @@ class SheetElement extends BoardElement {
     List<double>? widths,
     bool header = true,
     SheetChart? chart,
+    Map<int, SheetFormat>? cellFormats,
   }) {
-    final s = SheetElement(id: newElementId(), rect: Rect.zero, rows: rows, cols: cols, cells: cells, color: color, formats: formats, widths: widths, header: header, chart: chart);
+    final s = SheetElement(id: newElementId(), rect: Rect.zero, rows: rows, cols: cols, cells: cells, color: color, formats: formats, widths: widths, header: header, chart: chart, cellFormats: cellFormats);
     return s.copyWith(rect: Offset.zero & s.naturalSize);
   }
 
@@ -77,6 +84,12 @@ class SheetElement extends BoardElement {
   final Color color;
   final List<SheetFormat> formats;
   final List<double> widths;
+
+  /// Cells shown in their own format rather than their column's, by index (row × cols + col).
+  final Map<int, SheetFormat> cellFormats;
+
+  /// How the cell [r], [c] shows its number: its own format, else its column's.
+  SheetFormat formatAt(int r, int c) => cellFormats[r * cols + c] ?? formats[c];
 
   /// The first row is a heading (bold, tinted).
   final bool header;
@@ -112,6 +125,7 @@ class SheetElement extends BoardElement {
     SheetChart? chart,
     bool clearChart = false,
     double? rotation,
+    Map<int, SheetFormat>? cellFormats,
   }) => SheetElement(
     id: id ?? this.id,
     rect: rect ?? this.rect,
@@ -124,7 +138,15 @@ class SheetElement extends BoardElement {
     header: header ?? this.header,
     chart: clearChart ? null : (chart ?? this.chart),
     rotation: rotation ?? this.rotation,
+    cellFormats: cellFormats ?? (rows == null && cols == null ? this.cellFormats : null),
   );
+
+  /// The same sheet with the cell [r], [c] in format [f] (null: its column's).
+  SheetElement withCellFormat(int r, int c, SheetFormat? f) {
+    final next = Map.of(cellFormats);
+    f == null ? next.remove(r * cols + c) : next[r * cols + c] = f;
+    return copyWith(cellFormats: next);
+  }
 
   /// The same sheet with [r], [c] set to [text].
   SheetElement withCell(int r, int c, String text) {
@@ -139,8 +161,12 @@ class SheetElement extends BoardElement {
     rows = rows.clamp(1, maxRows);
     cols = cols.clamp(1, maxCols);
     final next = [for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) cell(r, c)];
+    final fmts = <int, SheetFormat>{
+      for (final e in cellFormats.entries)
+        if (e.key ~/ this.cols < rows && e.key % this.cols < cols) (e.key ~/ this.cols) * cols + e.key % this.cols: e.value,
+    };
     final k = scale;
-    final s = SheetElement(id: id, rect: rect, rows: rows, cols: cols, cells: next, color: color, formats: formats, widths: widths, header: header, chart: chart, rotation: rotation);
+    final s = SheetElement(id: id, rect: rect, rows: rows, cols: cols, cells: next, color: color, formats: formats, widths: widths, header: header, chart: chart, rotation: rotation, cellFormats: fmts);
     return s.relaidOut(k);
   }
 

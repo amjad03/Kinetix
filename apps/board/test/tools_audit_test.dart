@@ -15,7 +15,6 @@ import 'package:kinetix_board/features/captions/live_captions.dart';
 import 'package:kinetix_board/features/classroom/seating.dart';
 import 'package:kinetix_board/features/classroom_plus/voice_commands.dart';
 import 'package:kinetix_board/features/exit_ticket/exit_ticket.dart';
-import 'package:kinetix_board/features/logic_gates/logic_circuit.dart';
 import 'package:kinetix_board/features/logic_gates/logic_gates_lab.dart';
 import 'package:kinetix_board/features/reader/read_aloud.dart';
 import 'package:kinetix_board/features/reader/reader_settings.dart';

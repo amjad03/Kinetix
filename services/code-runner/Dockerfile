@@ -10,17 +10,20 @@ ARG NODE_IMAGE=node:22-bookworm-slim
 
 # hadolint ignore=DL3006
 FROM ${NODE_IMAGE}
+# The school code box adds Python and SQL (infra/school-code-box: "python3 sqlite3", about
+# 40 MB more); the cloud image leaves it empty (C, C++ and Java only).
+ARG EXTRA_PACKAGES=""
 # gcc/g++ 12 and OpenJDK 17 (Debian bookworm). util-linux gives prlimit; tini reaps
 # zombies left by programs that fork.
 RUN --mount=type=secret,id=extra_ca,required=false \
     apt-get update \
- && apt-get install -y --no-install-recommends gcc g++ libc6-dev openjdk-17-jdk-headless util-linux tini \
+ && apt-get install -y --no-install-recommends gcc g++ libc6-dev openjdk-17-jdk-headless util-linux tini ${EXTRA_PACKAGES} \
  && rm -rf /var/lib/apt/lists/* \
  && groupadd --system --gid 10001 runner \
  && useradd --system --uid 10001 --gid runner --home-dir /tmp --shell /usr/sbin/nologin runner \
  && mkdir -p /run/kx-runner && chown runner:runner /run/kx-runner
 WORKDIR /srv
-COPY services/code-runner/server.mjs ./
+COPY services/code-runner/server.mjs services/code-runner/gateway.mjs ./
 USER 10001:10001
 ENV NODE_ENV=production CODE_RUNNER_SOCKET=/run/kx-runner/runner.sock
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \

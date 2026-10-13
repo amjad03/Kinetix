@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../../core/models.dart';
 import '../../../l10n/feature_strings.dart';
 import '../../../l10n/l10n.dart';
+import '../../curriculum/curriculum_labels.dart';
+import '../../curriculum/curriculum_picker.dart';
+import '../../curriculum/curriculum_registry.dart';
 import '../kit/subjects.dart';
 import 'class_context.dart';
 
@@ -63,28 +68,54 @@ const contextStringTable = <String, Map<String, String>>{
   },
 };
 
-/// The teacher's own pick of subject and class, which wins over the timetable until cleared.
+/// The teacher's own pick of subject and class, which wins over the timetable until cleared:
+/// a class and subject of the curriculum (lib/features/curriculum), or any subject and grade.
 class ContextOverride extends ChangeNotifier {
   Subject? subject;
   int? grade;
 
-  bool get active => subject != null || grade != null;
+  /// A [CurriculumChoice.id] (`class-7/science`).
+  String? curriculum;
+
+  bool get active => subject != null || grade != null || curriculum != null;
 
   void set({Subject? subject, int? grade}) {
     if (subject != null) this.subject = subject;
     if (grade != null) this.grade = grade;
+    curriculum = null;
+    notifyListeners();
+  }
+
+  /// Picks the curriculum's class and subject [id] (one the registry knows).
+  void setCurriculum(String id) {
+    if (CurriculumRegistry.choice(id) == null) return;
+    curriculum = id;
+    subject = null;
+    grade = null;
     notifyListeners();
   }
 
   void clear() {
     subject = null;
     grade = null;
+    curriculum = null;
     notifyListeners();
   }
 }
 
 /// What is being taught now: the teacher's pick, else the live session's class and subject from the timetable.
 ClassContext resolveClassContext(SessionContext? session, ContextOverride pick) {
+  if (CurriculumRegistry.choice(pick.curriculum) case final c?) {
+    final school = c.level.stage == CurriculumStage.school;
+    return ClassContext(
+      subject: c.subject.base,
+      grade: c.level.grade,
+      band: school ? gradeBandOf(grade: c.level.grade, level: 'k12') : GradeBand.college,
+      sectionName: session?.sectionName,
+      source: ContextSource.teacher,
+      curriculum: c,
+    );
+  }
   final subject = pick.subject ?? subjectOf(session?.subjectName);
   final grade = pick.grade ?? session?.classTerm;
   return ClassContext(
@@ -93,11 +124,14 @@ ClassContext resolveClassContext(SessionContext? session, ContextOverride pick) 
     band: gradeBandOf(grade: grade, level: pick.grade != null ? 'k12' : session?.programLevel),
     sectionName: session?.sectionName,
     source: pick.active ? ContextSource.teacher : (session?.periodLabel != null ? ContextSource.timetable : ContextSource.live),
+    curriculum: pick.active ? null : CurriculumRegistry.match(session),
   );
 }
 
-/// "Maths · Class 7" for the top bar.
+/// "Maths · Class 7" for the top bar; "Class 7 · Science" or "B.E. Civil · Sem 5 · Structural
+/// Analysis" for a class and subject of the curriculum.
 String contextLabel(BuildContext context, ClassContext c) {
+  if (c.curriculum case final cur?) return curriculumLabel(context.l10n, cur);
   final s = contextStrings(context);
   final grade = switch (c.band) {
     GradeBand.college => s['college'],
@@ -110,10 +144,13 @@ String contextLabel(BuildContext context, ClassContext c) {
 
 /// The top bar's subject and class chip: tap it to pick what is being taught.
 class ContextChip extends StatelessWidget {
-  const ContextChip({super.key, required this.ctx, required this.pick, this.compact = false});
+  const ContextChip({super.key, required this.ctx, required this.pick, this.compact = false, this.onTap});
 
   final ClassContext Function() ctx;
   final ContextOverride pick;
+
+  /// Opens the board's class and subject picker; without it the chip opens a plain one.
+  final VoidCallback? onTap;
 
   /// The subject's icon only, its name in the tooltip (a phone's top bar, beside the class).
   final bool compact;
@@ -131,7 +168,7 @@ class ContextChip extends StatelessWidget {
           avatar: compact ? null : icon,
           tooltip: compact ? '$label · ${s['chipTip']}' : s['chipTip'],
           label: compact ? icon : Text(label),
-          onPressed: () => showDialog<void>(context: context, builder: (_) => ContextPicker(ctx: ctx, pick: pick)),
+          onPressed: onTap ?? () => unawaited(showCurriculumPicker(context, ctx: ctx, pick: pick)),
         );
       },
     );

@@ -6,7 +6,7 @@ import 'live.dart';
 /// the connection live classes use) and reports `message.new`. Socket.IO reconnects with
 /// backoff (1 s → 30 s); after a reconnect [onReconnected] catches up on anything missed.
 class MessageFeed {
-  MessageFeed({required this.connector, required this.baseUrl, required this.token, required this.onMessage, this.onReconnected, this.onPoll, this.onBadge});
+  MessageFeed({required this.connector, required this.baseUrl, required this.token, required this.onMessage, this.onReconnected, this.onPoll, this.onBadge, this.onQuiz});
 
   final LiveConnector connector;
   final String baseUrl;
@@ -19,6 +19,9 @@ class MessageFeed {
 
   /// A teacher awarded the student a badge.
   final void Function(LiveBadgeAwarded badge)? onBadge;
+
+  /// A Live Quiz question opened, was revealed, or the game ended.
+  final void Function(LiveQuizSignal quiz)? onQuiz;
 
   LiveConnection? _conn;
   StreamSubscription<LiveSignal>? _sub;
@@ -45,6 +48,8 @@ class MessageFeed {
           onPoll?.call();
         case LiveBadgeAwarded():
           onBadge?.call(s);
+        case LiveQuizSignal():
+          onQuiz?.call(s);
         case LiveDisconnected():
           connected = false;
         case LiveRejected():

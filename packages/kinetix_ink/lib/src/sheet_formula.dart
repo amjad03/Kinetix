@@ -129,20 +129,130 @@ List<(int, int)>? parseRange(String range) {
   ];
 }
 
+// --- Finance functions ---------------------------------------------------------------------------
+
+/// Net present value at [rate] a period of [values], the first at the end of period 1.
+double sheetNpv(double rate, List<double> values) {
+  var v = 0.0;
+  for (var t = 0; t < values.length; t++) {
+    v += values[t] / math.pow(1 + rate, t + 1);
+  }
+  return v;
+}
+
+/// The rate a period at which [values] (the first at time 0) have a nil NPV: Newton's method
+/// from [guess], then bisection between −99% and 1000%. Null when there is none (no change of
+/// sign in the cash flows, or no root found).
+double? sheetIrr(List<double> values, {double guess = 0.1}) {
+  if (values.length < 2 || !values.any((v) => v > 0) || !values.any((v) => v < 0)) return null;
+  double f(double r) {
+    var s = 0.0;
+    for (var t = 0; t < values.length; t++) {
+      s += values[t] / math.pow(1 + r, t);
+    }
+    return s;
+  }
+
+  double df(double r) {
+    var s = 0.0;
+    for (var t = 1; t < values.length; t++) {
+      s -= t * values[t] / math.pow(1 + r, t + 1);
+    }
+    return s;
+  }
+
+  var r = guess;
+  for (var i = 0; i < 60; i++) {
+    final d = df(r);
+    if (d == 0 || !d.isFinite) break;
+    final next = r - f(r) / d;
+    if (!next.isFinite || next <= -1) break;
+    if ((next - r).abs() < 1e-12) return next;
+    r = next;
+  }
+  if (r > -1 && f(r).abs() < 1e-7) return r;
+  var lo = -0.99, hi = 10.0;
+  if (f(lo).sign == f(hi).sign) return null;
+  for (var i = 0; i < 300; i++) {
+    final mid = (lo + hi) / 2;
+    if (f(lo).sign == f(mid).sign) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+  return (lo + hi) / 2;
+}
+
+/// The payment a period on a loan of [pv] over [nper] periods at [rate] (negative: paid out).
+/// [type] 1 pays at the start of each period.
+double sheetPmt(double rate, double nper, double pv, {double fv = 0, double type = 0}) {
+  if (nper == 0) throw const _SheetError('#NUM!');
+  if (rate == 0) return -(pv + fv) / nper;
+  final f = math.pow(1 + rate, nper);
+  return -(rate * (fv + pv * f)) / ((1 + rate * type) * (f - 1));
+}
+
+/// The future value after [nper] payments of [pmt] at [rate], starting from [pv].
+double sheetFv(double rate, double nper, double pmt, {double pv = 0, double type = 0}) {
+  if (rate == 0) return -(pv + pmt * nper);
+  final f = math.pow(1 + rate, nper);
+  return -(pv * f + pmt * (1 + rate * type) * (f - 1) / rate);
+}
+
+/// The present value of [nper] payments of [pmt] at [rate], plus [fv] at the end.
+double sheetPv(double rate, double nper, double pmt, {double fv = 0, double type = 0}) {
+  if (rate == 0) return -(fv + pmt * nper);
+  final f = math.pow(1 + rate, nper);
+  return -(fv + pmt * (1 + rate * type) * (f - 1) / rate) / f;
+}
+
+// --- Copying formulas ---------------------------------------------------------------------------
+
+/// What was typed in a cell, moved [dr] rows and [dc] columns as a fill handle copies it:
+/// relative references shift (B2 → B3), `$`-fixed parts stay; a reference pushed off the top
+/// or left becomes #REF!. Words and numbers are copied as they are.
+String shiftFormula(String raw, int dr, int dc) {
+  if (!raw.trimLeft().startsWith('=')) return raw;
+  return raw.replaceAllMapped(RegExp(r'(?<![A-Za-z0-9_$])(\$?)([A-Za-z]{1,2})(\$?)(\d{1,4})(?![A-Za-z0-9_(])'), (m) {
+    final ref = parseCellRef(m[0]!);
+    if (ref == null) return m[0]!;
+    final r = m[3]!.isEmpty ? ref.$1 + dr : ref.$1, c = m[1]!.isEmpty ? ref.$2 + dc : ref.$2;
+    if (r < 0 || c < 0) return '#REF!';
+    return '${m[1]}${columnName(c)}${m[3]}${r + 1}';
+  });
+}
+
+/// [s] with the cell [r], [c] copied (as [shiftFormula] moves it) into each of [targets].
+SheetElement fillSheetCells(SheetElement s, int r, int c, Iterable<(int, int)> targets) {
+  final src = s.cell(r, c);
+  final own = s.cellFormats[r * s.cols + c];
+  final next = List.of(s.cells);
+  final fmts = Map.of(s.cellFormats);
+  for (final (tr, tc) in targets) {
+    if (tr < 0 || tc < 0 || tr >= s.rows || tc >= s.cols || (tr == r && tc == c)) continue;
+    next[tr * s.cols + tc] = shiftFormula(src, tr - r, tc - c);
+    own == null ? fmts.remove(tr * s.cols + tc) : fmts[tr * s.cols + tc] = own;
+  }
+  return s.copyWith(cells: next, cellFormats: fmts);
+}
+
 // --- Evaluation -------------------------------------------------------------------------------
 
 final _cache = Expando<List<SheetValue>>('sheetValues');
 
 /// Every cell of [s] worked out, row by row. Formulas start with `=` and may use + − × ÷ ^,
 /// %, brackets, comparisons (= <> < > <= >=), cell references (B3, \$B\$3), ranges (B2:B6) and
-/// SUM, AVERAGE, MIN, MAX, COUNT, ROUND, ABS, SQRT, IF. Errors: #REF! (outside the sheet),
+/// SUM, AVERAGE, MIN, MAX, COUNT, ROUND, ABS, SQRT, IF, AND, OR, NOT, POWER and the finance
+/// functions NPV, IRR, PMT, FV, PV (as a spreadsheet works them: rates per period, money paid
+/// out negative). Errors: #NUM! (no IRR), #REF! (outside the sheet),
 /// #DIV/0!, #CYCLE! (a formula that needs itself), #VALUE! (words in a sum), #ERR! (cannot read).
 List<SheetValue> evaluateSheet(SheetElement s) => _cache[s] ??= _Evaluator(s).all();
 
 /// The cell [r], [c] of [s] as shown on the board (formatted by its column).
 String displaySheetCell(SheetElement s, int r, int c) {
   final v = evaluateSheet(s)[r * s.cols + c];
-  if (v.number != null) return formatSheetNumber(v.number!, s.formats[c]);
+  if (v.number != null) return formatSheetNumber(v.number!, s.formatAt(r, c));
   return v.toString();
 }
 
@@ -382,6 +492,27 @@ class _Parser {
         return (one(0) * p).roundToDouble() / p;
       case 'IF':
         return one(0) != 0 ? one(1) : (args.length > 2 ? one(2) : 0);
+      case 'POWER':
+        return math.pow(one(0), one(1)).toDouble();
+      case 'AND':
+        return all.isNotEmpty && all.every((v) => v != 0) ? 1 : 0;
+      case 'OR':
+        return all.any((v) => v != 0) ? 1 : 0;
+      case 'NOT':
+        return one(0) == 0 ? 1 : 0;
+      case 'NPV':
+        // NPV(rate, value1, …): every value a period later, the first at the end of period 1.
+        return sheetNpv(one(0), [for (final a in args.skip(1)) ...a]);
+      case 'IRR':
+        final irr = sheetIrr(args.isEmpty ? const [] : args[0], guess: args.length > 1 ? one(1) : 0.1);
+        if (irr == null) throw const _SheetError('#NUM!');
+        return irr;
+      case 'PMT':
+        return sheetPmt(one(0), one(1), one(2), fv: args.length > 3 ? one(3) : 0, type: args.length > 4 ? one(4) : 0);
+      case 'FV':
+        return sheetFv(one(0), one(1), one(2), pv: args.length > 3 ? one(3) : 0, type: args.length > 4 ? one(4) : 0);
+      case 'PV':
+        return sheetPv(one(0), one(1), one(2), fv: args.length > 3 ? one(3) : 0, type: args.length > 4 ? one(4) : 0);
     }
     throw const _SheetError('#ERR!');
   }

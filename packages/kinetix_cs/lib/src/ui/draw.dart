@@ -92,6 +92,8 @@ List<BoardElement> frameElements(AlgoFrame f, {String? caption}) {
     TreeView v => _tree(v),
     GraphView v => _graph(v),
     HashView v => _hash(v),
+    RingView v => _ring(v),
+    HeapView v => _heap(v),
   };
   return stack([
     if (caption != null) [text(caption, Offset.zero, size: 24, bold: true)],
@@ -138,6 +140,90 @@ List<BoardElement> _array(ArrayView v) {
     }
   }
   out.addAll(_pointerLabels(v.pointers, xOf, v.bars ? maxH + 34 : w + 28));
+  if (v.aux case final aux?) {
+    // The count array below, each box headed by the value it counts.
+    final top = (v.bars ? maxH : w) + 100.0;
+    out.add(text('count', Offset(-4, top - 34), color: const Color(0xFF5F6368), size: 16, bold: true));
+    for (var i = 0; i < aux.length; i++) {
+      final m = v.auxMarks[i];
+      final r = Rect.fromLTWH(i * 48.0, top, 44, 44);
+      out
+        ..add(box(r, fill: m == null ? const Color(0x11000000) : markColor(m).withValues(alpha: 0.8), width: 2))
+        ..add(text('${aux[i]}', r.center, size: 20, bold: true, center: true))
+        ..add(text('${v.auxBase + i}', Offset(r.center.dx, top + 60), color: const Color(0xFF5F6368), size: 15, center: true));
+    }
+  }
+  return out;
+}
+
+List<BoardElement> _ring(RingView v) {
+  final out = <BoardElement>[];
+  final n = v.slots.length;
+  const c = Offset(170, 170), radius = 120.0, cell = 30.0;
+  for (var i = 0; i < n; i++) {
+    final a = -math.pi / 2 + 2 * math.pi * i / n;
+    final p = c + Offset(math.cos(a), math.sin(a)) * radius;
+    final m = v.marks[i];
+    final filled = v.slots[i] != null;
+    out
+      ..add(circle(p, cell, fill: m != null ? markColor(m).withValues(alpha: 0.8) : (filled ? const Color(0x33188038) : const Color(0xFFFFFFFF)), width: 2))
+      ..add(text(filled ? '${v.slots[i]}' : '', p, size: 20, bold: true, center: true))
+      ..add(text('$i', c + Offset(math.cos(a), math.sin(a)) * (radius + 52), color: const Color(0xFF5F6368), size: 15, center: true));
+  }
+  Offset at(int i, double r) {
+    final a = -math.pi / 2 + 2 * math.pi * i / n;
+    return c + Offset(math.cos(a), math.sin(a)) * r;
+  }
+
+  if (v.count > 0) {
+    out
+      ..add(arrow(at(v.front, 40), at(v.front, radius - cell - 4), color: markColor(Mark.active)))
+      ..add(text('front', at(v.front, 40) + const Offset(0, 14), color: markColor(Mark.active), size: 16, bold: true, center: true));
+  }
+  out
+    ..add(arrow(at(v.rear, radius + 84), at(v.rear, radius + cell + 4), color: markColor(Mark.pivot)))
+    ..add(text('rear', at(v.rear, radius + 98), color: markColor(Mark.pivot), size: 16, bold: true, center: true))
+    ..add(text('count = ${v.count}/$n', const Offset(0, 400), size: 20, bold: true));
+  return out;
+}
+
+List<BoardElement> _heap(HeapView v) {
+  final out = <BoardElement>[];
+  final n = v.values.length;
+  if (n == 0) return [text('(empty)', Offset.zero, color: const Color(0xFF5F6368), size: 22)];
+  // The tree: x from the in-order rank of the complete tree, y from the depth.
+  final pos = <int, Offset>{};
+  var rank = 0;
+  void lay(int i, int depth) {
+    if (i >= v.size) return;
+    lay(2 * i + 1, depth + 1);
+    pos[i] = Offset(rank++ * 62.0, depth * 84.0);
+    lay(2 * i + 2, depth + 1);
+  }
+
+  lay(0, 0);
+  for (final i in pos.keys) {
+    for (final ch in [2 * i + 1, 2 * i + 2]) {
+      if (pos[ch] case final q?) out.add(line(pos[i]!, q, color: const Color(0xFF5F6368), width: 2));
+    }
+  }
+  for (final MapEntry(key: i, value: p) in pos.entries) {
+    final m = v.marks[i];
+    out
+      ..add(circle(p, 26, fill: m == null ? const Color(0xFFFFFFFF) : markColor(m).withValues(alpha: 0.85), width: 2))
+      ..add(text('${v.values[i]}', p, size: 20, bold: true, center: true));
+  }
+  // The array below the tree.
+  final top = pos.values.map((p) => p.dy).fold(0.0, math.max) + 70;
+  out.add(text(v.min ? 'min-heap' : 'max-heap', Offset(-26, top - 4), color: const Color(0xFF5F6368), size: 16, bold: true));
+  for (var i = 0; i < n; i++) {
+    final m = v.marks[i];
+    final r = Rect.fromLTWH(-26 + i * 50.0, top + 24, 46, 46);
+    out
+      ..add(box(r, fill: i >= v.size ? markColor(Mark.sorted).withValues(alpha: 0.4) : (m == null ? const Color(0x11000000) : markColor(m).withValues(alpha: 0.8)), width: 2))
+      ..add(text('${v.values[i]}', r.center, size: 20, bold: true, center: true))
+      ..add(text('$i', Offset(r.center.dx, r.bottom + 14), color: const Color(0xFF5F6368), size: 14, center: true));
+  }
   return out;
 }
 

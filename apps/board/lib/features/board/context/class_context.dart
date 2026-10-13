@@ -1,5 +1,6 @@
 import 'package:kinetix_ink/kinetix_ink.dart' show InkDomain;
 
+import '../../curriculum/curriculum_registry.dart';
 import '../kit/subjects.dart';
 
 /// Whether the drawer, Insert menu and simulation picker open showing every tool. Off on a device; the
@@ -27,7 +28,7 @@ GradeBand gradeBandOf({int? grade, String? level}) {
 
 /// What the board is teaching right now. Everything on the board that has a choice of tools asks this.
 class ClassContext {
-  const ClassContext({required this.subject, required this.band, this.grade, this.sectionName, this.source = ContextSource.timetable});
+  const ClassContext({required this.subject, required this.band, this.grade, this.sectionName, this.source = ContextSource.timetable, this.curriculum});
 
   final Subject subject;
   final GradeBand band;
@@ -35,15 +36,20 @@ class ClassContext {
   final String? sectionName;
   final ContextSource source;
 
+  /// The class and subject from the curriculum (lib/features/curriculum): picked by the
+  /// teacher, or the one the timetabled class matches. Null when neither is known.
+  final CurriculumChoice? curriculum;
+
   ClassContext copyWith({Subject? subject, int? grade, ContextSource? source}) => ClassContext(
     subject: subject ?? this.subject,
     band: grade == null ? band : gradeBandOf(grade: grade),
     grade: grade ?? this.grade,
     sectionName: sectionName,
     source: source ?? this.source,
+    curriculum: curriculum,
   );
 
-  ToolProfile get profile => toolProfileFor(subject, band);
+  ToolProfile get profile => curriculumProfile(toolProfileFor(subject, band), curriculum);
 }
 
 /// What shows for one subject at one grade band; everything else sits behind "Show all tools".
@@ -77,7 +83,7 @@ const alwaysTools = <String>{
   'toolkit-timer', 'toolkit-stopwatch', 'toolkit-picker', 'toolkit-dice', 'toolkit-spinner', 'toolkit-noise', 'toolkit-curtain', 'toolkit-spotlight', //
   'badges', 'quick-quiz', 'ask-class', 'attendance', 'todays-plan', 'read-aloud', 'second-board', 'laser', 'move', 'eye-comfort', 'screenshot', 'touch-lock', //
   'demo-classes', 'this-class', 'doc-camera', 'safe-web', 'live-captions', 'magnifier', 'seating-chart', 'group-maker', 'teacher-notes', 'scoreboard', 'buzzer', //
-  'zones', 'diagnostics', 'exam-clock', 'exam-room', 'exit-ticket', 'concept-videos', 'mindmap', 'dictionary', 'worksheet', 'voice-commands',
+  'zones', 'subject-kits', 'diagnostics', 'exam-clock', 'exam-room', 'exit-ticket', 'concept-videos', 'mindmap', 'dictionary', 'worksheet', 'voice-commands',
 };
 
 const _languageTools = {'language-kit', 'phonics', 'grammar-tables', 'vocab-cards', 'live-captions'};
@@ -117,7 +123,7 @@ ToolProfile toolProfileFor(Subject s, GradeBand b) {
     case Subject.physics:
       tools = {'physics-formulas', 'constants', 'sims', 'phet', 'labs', 'circuit', 'equation', 'graphs', 'graph-plotter', 'calculator', 'models3d', 'ruler', 'protractor'};
       if (b == GradeBand.middle) tools.removeAll({'equation', 'graph-plotter'});
-      if (b == GradeBand.seniorSecondary || college) tools.add('logic-gates');
+      if (b == GradeBand.seniorSecondary || college) tools.addAll({'logic-gates', 'fbd'});
       insert = {'insert-equation', 'insert-graph', 'insert-model3d', 'insert-lab', 'insert-simulation', 'insert-cat-geometry'};
       sims = {'pendulum', 'projectile', 'wave', 'grapher'};
       models = {'physics', 'machine', 'optics'};
@@ -203,6 +209,20 @@ ToolProfile toolProfileFor(Subject s, GradeBand b) {
     templates: templates,
     keyDates: keyDates,
     dictionaryFirst: dictFirst,
+  );
+}
+
+/// [p] with what the curriculum [c] brings: its tools (and the subject kits tile) and its sims.
+ToolProfile curriculumProfile(ToolProfile p, CurriculumChoice? c) {
+  if (c == null || showsEverything(p)) return p;
+  return ToolProfile(
+    tools: {...p.tools, ...c.quickTools, 'subject-kits'},
+    insert: p.insert,
+    sims: p.sims.isEmpty ? p.sims : {...p.sims, ...c.sims},
+    models: p.models,
+    templates: p.templates,
+    keyDates: p.keyDates,
+    dictionaryFirst: p.dictionaryFirst,
   );
 }
 

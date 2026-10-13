@@ -18,6 +18,10 @@ abstract final class InkModels {
   /// Shapes: rectangle, triangle, ellipse, line, arrow and the like.
   static const shapes = 'zxx-Zsym-x-shapes';
 
+  /// Sketches (AutoDraw): what a drawing is of, such as a cat, a house or the sun, for the
+  /// board's "Did you mean" icons.
+  static const autodraw = 'zxx-Zsym-x-autodraw';
+
   /// Text (with digits and symbols) in a board language.
   static String text(String language) => switch (language) {
     'hi' => 'hi-IN',

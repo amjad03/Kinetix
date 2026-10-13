@@ -56,8 +56,20 @@ enum RunStatus {
   static RunStatus fromWire(String? s) => values.firstWhere((v) => v.wire == s, orElse: () => RunStatus.runtimeError);
 }
 
+/// Where a program ran, shown next to its output.
+enum RunPlace {
+  /// On this board or phone, offline (Python, JavaScript, SQL).
+  device,
+
+  /// On the school's code box on the local network (services/code-runner, docs/operations/school-code-box.md).
+  box,
+
+  /// On the KINETIX server through the API (POST /v1/code/run).
+  server,
+}
+
 class RunResult {
-  const RunResult({required this.status, this.stdout = '', this.stderr = '', this.compileOutput = '', this.exitCode, this.timeMs = 0, this.message});
+  const RunResult({required this.status, this.stdout = '', this.stderr = '', this.compileOutput = '', this.exitCode, this.timeMs = 0, this.message, this.place});
 
   factory RunResult.fromJson(Map<String, dynamic> j) => RunResult(
     status: RunStatus.fromWire(j['status'] as String?),
@@ -79,6 +91,12 @@ class RunResult {
 
   /// A short note for the teacher when the run could not happen at all.
   final String? message;
+
+  /// Where it ran (null when it could not run anywhere).
+  final RunPlace? place;
+
+  /// This result, marked as having run at [p].
+  RunResult at(RunPlace p) => RunResult(status: status, stdout: stdout, stderr: stderr, compileOutput: compileOutput, exitCode: exitCode, timeMs: timeMs, message: message, place: p);
 
   bool get ok => status == RunStatus.ok;
 
@@ -105,7 +123,9 @@ const deviceOutputLimit = 64 * 1024;
 /// in. To the page: `kx.run({id, lang, code, stdin})` and `kx.stop(id)`. From the page, JSON
 /// messages: `{event: ready}` once Pyodide or the JS worker is up, `{event: loading, text}`
 /// while Python loads, `{id, event: out|err, text}` as the program prints, and
-/// `{id, event: done, status, ms}` at the end (status ok, runtime_error or stopped).
+/// `{id, event: done, status, ms}` at the end (status ok, runtime_error or stopped; unavailable
+/// with `reason: python_missing` when Python is not on this device yet). `kx.reset()` drops the
+/// Python worker, so a Python fetched since starts fresh.
 class RunnerSession {
   RunnerSession(this._eval, {this.timeLimit = deviceTimeLimit, this.startLimit = const Duration(seconds: 60), this.outputLimit = deviceOutputLimit});
 
@@ -174,18 +194,18 @@ class RunnerSession {
           _finish(RunStatus.outputLimit);
         }
       case 'done':
-        _finish(RunStatus.fromWire(m['status'] as String?), ms: (m['ms'] as num?)?.toInt());
+        _finish(RunStatus.fromWire(m['status'] as String?), ms: (m['ms'] as num?)?.toInt(), message: m['reason'] == 'python_missing' ? 'needsPython' : null);
     }
   }
 
-  void _finish(RunStatus status, {int? ms}) {
+  void _finish(RunStatus status, {int? ms, String? message}) {
     final run = _current;
     if (run == null) return;
     _current = null;
     run.timer?.cancel();
     String cap(String s) => s.length > outputLimit ? s.substring(0, outputLimit) : s;
     run.done.complete(
-      RunResult(status: status, stdout: cap(run.out.toString()), stderr: cap(run.err.toString()), timeMs: ms ?? run.watch.elapsedMilliseconds),
+      RunResult(status: status, stdout: cap(run.out.toString()), stderr: cap(run.err.toString()), timeMs: ms ?? run.watch.elapsedMilliseconds, message: message),
     );
   }
 

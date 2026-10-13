@@ -36,7 +36,7 @@ class _Sorter {
   int comparisons = 0, swaps = 0;
 
   void add(Map<int, Mark> marks, Say say, {Map<String, int> pointers = const {}, (int, int)? split}) {
-    frames.add(AlgoFrame(ArrayView(List.of(a), marks: {for (final i in sorted) i: Mark.sorted, ...marks}, pointers: pointers, split: split), say));
+    frames.add(AlgoFrame(ArrayView(List.of(a), marks: {for (final i in sorted) i: Mark.sorted, ...marks}, pointers: pointers, split: split), say, stats: {'stat_comparisons': comparisons, 'stat_swaps': swaps}));
   }
 
   bool less(int i, int j, {Map<String, int> pointers = const {}}) {
@@ -191,7 +191,12 @@ class _Sorter {
 List<AlgoFrame> searchSteps(SearchAlgo algo, List<int> input, int target) {
   final a = algo == SearchAlgo.binary ? (List.of(input)..sort()) : List.of(input);
   final out = <AlgoFrame>[];
-  void add(Map<int, Mark> m, Say s, [Map<String, int> p = const {}]) => out.add(AlgoFrame(ArrayView(a, marks: m, pointers: p, bars: false), s));
+  var comparisons = 0;
+  void add(Map<int, Mark> m, Say s, [Map<String, int> p = const {}]) {
+    if (s.key == 'compare') comparisons++;
+    out.add(AlgoFrame(ArrayView(a, marks: m, pointers: p, bars: false), s, stats: {'stat_comparisons': comparisons}));
+  }
+
   add({}, Say(algo == SearchAlgo.binary ? 'binaryStart' : 'linearStart', [target]));
   if (algo == SearchAlgo.linear) {
     for (var i = 0; i < a.length; i++) {

@@ -4,7 +4,9 @@ import 'dart:ui' show PointMode;
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import 'biz_models.dart';
 import 'ink_models.dart';
+import 'kit_painting.dart' show paintChart;
 import 'sheet_formula.dart';
 
 /// Colours for chart slices and bars, readable on white.
@@ -105,6 +107,10 @@ void paintSheetChart(Canvas canvas, SheetElement s, Rect area) {
     return;
   }
   final kind = s.chart!.kind;
+  if (kind == SheetChartKind.scatter) {
+    paintChart(canvas, ChartData(kind: KitChartKind.scatter, labels: labels, series: [ChartSeries('', values)]), area, s.color);
+    return;
+  }
   if (kind == SheetChartKind.pie) {
     final total = values.where((v) => v > 0).fold(0.0, (a, b) => a + b);
     if (total <= 0) return;

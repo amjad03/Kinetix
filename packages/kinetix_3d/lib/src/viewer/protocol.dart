@@ -37,6 +37,10 @@ abstract final class ViewerCommands {
   static Map<String, dynamic> view(List<double> dir) => {'cmd': 'view', 'dir': dir};
   static Map<String, dynamic> reset() => {'cmd': 'reset'};
 
+  /// Fits the parts in view (the picked one, if any) and turns round their middle, keeping
+  /// what is hidden or isolated, the cut and take-apart (unlike [reset]).
+  static Map<String, dynamic> recenter() => {'cmd': 'recenter'};
+
   /// Takes the model apart: 0 together, 1 fully apart (solids unfold into nets).
   static Map<String, dynamic> explode(double amount) => {'cmd': 'explode', 'amount': amount.clamp(0.0, 1.0)};
 
@@ -170,7 +174,7 @@ abstract final class ViewerCommands {
 
   /// Every command name the page understands (kept in step with viewer.js by a test).
   static const names = {
-    'lang', 'labels', 'pick', 'view', 'reset', 'explode', 'slice', 'cut', 'annotate', 'hide', 'variant', 'animate', 'step', 'autoRotate', 'snapshot',
+    'lang', 'labels', 'pick', 'view', 'reset', 'recenter', 'explode', 'slice', 'cut', 'annotate', 'hide', 'variant', 'animate', 'step', 'autoRotate', 'snapshot',
     'mirror', 'laser', 'orbit', 'partAt', 'frames', 'locate', 'debug', 'state', 'scene', 'quality',
   };
 
