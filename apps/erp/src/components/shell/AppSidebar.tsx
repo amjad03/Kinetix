@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronsUpDown, Check, Star } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, Check, History, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
@@ -13,6 +13,7 @@ import {
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { isActivePath, navSections, type NavGroup } from '@/lib/nav';
+import { useRecords } from '@/lib/recents';
 import type { SetupSummary } from '@/lib/setup';
 import { WORKSPACES, type Workspace } from '@/lib/workspaces';
 import { cn } from '@/lib/utils';
@@ -86,6 +87,8 @@ export function AppSidebar({
     }
   };
   const allItems = groups.flatMap((g) => g.items.map((i) => ({ ...i, groupLabel: g.solo || g.items.length === 1 ? g.label : i.label })));
+  const { recent, favs: favRecords } = useRecords();
+  const recentRecords = recent.filter((r) => !favRecords.some((f) => f.href === r.href)).slice(0, 4);
   const favItems = favs.map((h) => allItems.find((i) => i.href === h)).filter((i): i is (typeof allItems)[number] => !!i);
   const favAction = (href: string, label: string) => (
     <SidebarMenuAction showOnHover onClick={() => toggleFav(href)} aria-label={t(favs.includes(href) ? 'shell.fav.remove' : 'shell.fav.add', { name: label })} data-testid="fav-toggle">
@@ -148,7 +151,7 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="gap-0 px-1">
-        {favItems.length > 0 && (
+        {(favItems.length > 0 || (!collapsed && favRecords.length > 0)) && (
           <SidebarGroup className="py-1" data-testid="nav-favourites">
             <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-[.06em] text-muted-foreground">{t('shell.fav.title')}</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -167,6 +170,37 @@ export function AppSidebar({
                     </SidebarMenuItem>
                   );
                 })}
+                {!collapsed &&
+                  favRecords.map((r) => (
+                    <SidebarMenuItem key={'favr' + r.href}>
+                      <SidebarMenuButton asChild isActive={pathname === r.href} tooltip={r.title} className={cn('font-medium text-sidebar-foreground', TILE_BTN, ACTIVE_BAR)}>
+                        <Link href={r.href} onClick={done}>
+                          <Star className="size-4 fill-amber-400 text-amber-500" />
+                          <span className="truncate">{r.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        {!collapsed && recentRecords.length > 0 && (
+          <SidebarGroup className="py-1" data-testid="nav-recent">
+            <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-[.06em] text-muted-foreground">{t('ez.recent')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {recentRecords.map((r) => (
+                  <SidebarMenuItem key={'rec' + r.href}>
+                    <SidebarMenuButton asChild isActive={pathname === r.href} tooltip={r.title} className={cn('text-sidebar-foreground', TILE_BTN, ACTIVE_BAR)}>
+                      <Link href={r.href} onClick={done}>
+                        <History className="size-4 text-muted-foreground" />
+                        <span className="truncate">{r.title}</span>
+                        {r.kind && <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{r.kind}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

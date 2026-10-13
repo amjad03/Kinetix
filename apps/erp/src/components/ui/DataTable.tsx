@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Download, FilterX, Search, SearchX, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Download, FilterX, MoreHorizontal, Search, SearchX, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { EmptyState } from '@/components/States';
@@ -239,7 +239,9 @@ export function DataTable<T>({
   if (rows.length === 0 && empty) return <>{empty}</>;
 
   const nBulk = selectedRows.length;
-  const colSpan = columns.length + (selectable ? 1 : 0);
+  // Rows that open a record get a ⋯ button with the same menu as right-click (Open in new tab, side by side).
+  const rowMenu = !!rowHref && !onRowClick;
+  const colSpan = columns.length + (selectable ? 1 : 0) + (rowMenu ? 1 : 0);
   const cellPad = dense ? 'px-1.5' : 'px-3.5';
   const showBar = nBulk > 0 || !(bare && !exportName);
   return (
@@ -370,6 +372,7 @@ export function DataTable<T>({
                 </TableHead>
               );
             })}
+            {rowMenu && <TableHead className="w-10 border-b border-border px-1" aria-label={t('ez.rowMenu')} />}
           </TableRow>
         </TableHeader>
         <TableBody ref={bodyRef} className="[&_tr:last-child>*]:border-b-0">
@@ -423,6 +426,26 @@ export function DataTable<T>({
                       </TableCell>
                     );
                   })}
+                  {rowMenu && (
+                    <TableCell className="w-10 border-b border-border px-1 text-right">
+                      {rowHref(r) && (
+                        <button
+                          type="button"
+                          aria-label={t('ez.rowMenu')}
+                          aria-haspopup="menu"
+                          data-testid="row-menu"
+                          className="inline-grid size-7 place-items-center rounded-md text-muted-foreground opacity-60 hover:bg-background hover:text-foreground hover:opacity-100 focus-visible:opacity-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const b = e.currentTarget.getBoundingClientRect();
+                            e.currentTarget.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: b.left - 160, clientY: b.bottom + 4 }));
+                          }}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </button>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })
