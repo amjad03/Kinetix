@@ -1,4 +1,5 @@
 'use client';
+import { BriefcaseBusiness, Building2, Cake, CalendarDays, CircleCheck, Clock, IdCard, Mail, Phone, School, UserRound } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { HrApproval, LOAN_TONE, ServiceBook } from '@/components/hr/HrFlow';
 import { LinkButton } from '@/components/LinkButton';
@@ -16,7 +17,7 @@ import { formatRupees } from '@/lib/money';
 
 function useFmt() {
   const { t, locale } = useI18n();
-  return { t, locale, d: (x: string | null | undefined) => (x ? formatDate(x, 'long', locale) : '–'), m: (ym: string) => formatMonth(`${ym}-01`, locale) };
+  return { t, locale, d: (x: string | null | undefined) => (x ? formatDate(x, 'day', locale) : '–'), m: (ym: string) => formatMonth(`${ym}-01`, locale) };
 }
 
 function Details({ items }: { items: [string, ReactNode][] }) {
@@ -130,35 +131,100 @@ function StaffTabs(o: StaffOverview, { t, m }: ReturnType<typeof useFmt>) {
 
 export function StaffRecord({ s, book, leave, loans, training, activity, canAdd, overview }: { s: StaffProfile; book: ServiceBookEntry[]; leave: LeaveRequest[]; loans: StaffLoan[]; training: TrainingRecord[]; activity: ActivityItem[]; canAdd: boolean; overview?: StaffOverview | null }) {
   const fmt = useFmt();
-  const { t, d } = fmt;
+  const { t, d, locale } = fmt;
+  const sd = (x: string | null | undefined) => (x ? formatDate(x, 'day', locale) : '–');
   return (
     <RecordPage
-      profile={{ cover: 'violet', chips: s.roles.map((r) => t(`role.${r}` as MessageKey)) }}
+      profile={{
+        kind: t('pf.kindStaff'),
+        chips: s.roles.map((r) => t(`role.${r}` as MessageKey)),
+        meta: [
+          ...(s.designation ? [{ icon: <BriefcaseBusiness aria-hidden />, text: s.designation.name }] : []),
+          ...(s.department ? [{ icon: <Building2 aria-hidden />, text: s.department.name }] : []),
+          ...(s.dateOfJoining ? [{ icon: <CalendarDays aria-hidden />, text: t('pf.joined', { date: sd(s.dateOfJoining) }) }] : []),
+        ],
+        about: [
+          {
+            title: t('pf.about'),
+            rows: [
+              { icon: <UserRound aria-hidden />, label: t('pf.fullName'), value: s.fullName },
+              { icon: <CircleCheck aria-hidden />, label: t('pf.status'), value: s.status ? t(`hr.status.${s.status}` as MessageKey) : '–' },
+              { icon: <IdCard aria-hidden />, label: t('pf.code'), value: s.employeeCode ?? '–' },
+              { icon: <BriefcaseBusiness aria-hidden />, label: t('pf.designation'), value: s.designation?.name ?? '–' },
+              { icon: <Building2 aria-hidden />, label: t('pf.department'), value: s.department?.name ?? '–' },
+              { icon: <Cake aria-hidden />, label: t('pf.dob'), value: sd(s.dateOfBirth) },
+              { icon: <CalendarDays aria-hidden />, label: t('hf.staff.joined'), value: sd(s.dateOfJoining) },
+              { icon: <Clock aria-hidden />, label: t('hf.staff.type'), value: s.employmentType ? t(`hf.emp.${s.employmentType}` as MessageKey) : '–' },
+            ],
+          },
+          {
+            title: t('pf.contacts'),
+            rows: [
+              { icon: <Phone aria-hidden />, label: t('pf.phone'), value: s.phone ?? '–' },
+              { icon: <Mail aria-hidden />, label: t('pf.email'), value: s.email ?? '–' },
+            ],
+          },
+        ],
+        side: overview
+          ? [
+              {
+                title: t('v2.prof.classes'),
+                content: overview.classes.length ? (
+                  <ul className="grid gap-2">
+                    {overview.classes.slice(0, 5).map((c) => (
+                      <li key={c.sectionId + c.subject} className="flex items-center gap-3 text-sm">
+                        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted [&_svg]:size-4"><School aria-hidden /></span>
+                        <span className="min-w-0 flex-1">
+                          <a className="block truncate font-medium hover:underline" href={`/academics/sections/${c.sectionId}`}>{c.section}</a>
+                          <span className="block truncate text-xs text-muted-foreground">{c.subject}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t('v2.prof.noClasses')}</p>
+                ),
+              },
+              {
+                title: t('pf.mentees'),
+                content: overview.mentees.length ? (
+                  <ul className="grid gap-2">
+                    {overview.mentees.slice(0, 5).map((m) => (
+                      <li key={m.studentId}>
+                        <a href={`/students/${m.studentId}`} className="flex items-center gap-3 text-sm hover:underline">
+                          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-xs font-semibold">{m.fullName.split(' ').map((x) => x[0]).slice(0, 2).join('')}</span>
+                          <span className="min-w-0">
+                            <b className="block truncate font-medium">{m.fullName}</b>
+                            <span className="block truncate text-xs text-muted-foreground">{m.section}</span>
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t('v2.prof.noMentees')}</p>
+                ),
+              },
+            ]
+          : undefined,
+      }}
       title={s.fullName}
-      subtitle={[s.employeeCode, s.designation?.name, s.department?.name].filter(Boolean).join(' · ')}
       status={s.status ? { label: t(`hr.status.${s.status}` as MessageKey), tone: STAFF_TONE[s.status] } : undefined}
-      facts={[
-        { label: t('hr.staff.code'), value: s.employeeCode ?? '–' },
-        { label: t('hr.f.department'), value: s.department?.name ?? '–' },
-        { label: t('hr.f.designation'), value: s.designation?.name ?? '–' },
-        { label: t('hf.staff.joined'), value: d(s.dateOfJoining) },
-        { label: t('hf.staff.type'), value: s.employmentType ? t(`hf.emp.${s.employmentType}` as MessageKey) : '–' },
-        { label: t('hf.staff.statutory'), value: [s.pfEnabled && 'PF', s.esiEnabled && 'ESI', s.ptEnabled && 'PT'].filter(Boolean).join(' · ') || '–' },
-      ]}
+      facts={[]}
       secondary={<LinkButton href="/hr">{t('hf.backToStaff')}</LinkButton>}
       overview={
-        <Details
-          items={[
-            [t('hf.staff.email'), s.email ?? '–'],
-            [t('hf.staff.phone'), s.phone ?? '–'],
-            [t('hf.staff.dob'), d(s.dateOfBirth)],
-            [t('hf.staff.left'), d(s.dateOfLeaving)],
-            ['PAN', s.pan ?? '–'],
-            ['UAN', s.uan ?? '–'],
-            [t('hf.staff.regime'), t(`hf.regime.${s.taxRegime}` as MessageKey)],
-            [t('hf.staff.bank'), s.bank ? `${s.bank.bankName} · XXXX${s.bank.accountLast4}` : '–'],
-          ]}
-        />
+        <Card>
+          <Details
+            items={[
+              [t('hf.staff.left'), sd(s.dateOfLeaving)],
+              ['PAN', s.pan ?? '–'],
+              ['UAN', s.uan ?? '–'],
+              [t('hf.staff.regime'), t(`hf.regime.${s.taxRegime}` as MessageKey)],
+              [t('hf.staff.bank'), s.bank ? `${s.bank.bankName} · XXXX${s.bank.accountLast4}` : '–'],
+              [t('hf.staff.statutory'), [s.pfEnabled && 'PF', s.esiEnabled && 'ESI', s.ptEnabled && 'PT'].filter(Boolean).join(' · ') || '–'],
+            ]}
+          />
+        </Card>
       }
       related={[
         ...(overview ? StaffTabs(overview, fmt) : []),

@@ -213,6 +213,8 @@ export interface StudentProfile {
   allowedStatuses: StudentStatus[];
   guardians: { id: string; userId?: string; fullName: string; phone: string | null; email: string | null; relation: string; isPrimary: boolean; isEmergencyContact: boolean }[];
   application: { id: string; applicationNo: string; cycleName: string } | null;
+  /** Personal details from the admission form and the health profile (null when not recorded). */
+  about?: { dateOfBirth: string | null; gender: string | null; phone: string | null; email: string | null; bloodGroup: string | null };
   timeline: LifecycleEventRow[];
 }
 export interface PromotionResult {

@@ -1,5 +1,6 @@
 'use client';
 
+import { Building2, CircleCheck, Clock, FileText, Mail, Phone, Receipt, School, UserRound, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { MessageKey } from '@/i18n/messages';
 import { useState } from 'react';
@@ -178,6 +179,52 @@ export function GuardianRecordView({ g }: { g: GuardianRecord }) {
   ];
   return (
     <RecordPage
+      profile={{
+        kind: t('pf.kindGuardian'),
+        meta: [
+          { icon: <Users aria-hidden />, text: `${t('acad.guardian')} · ${t('acad.children')}: ${fmt.number(g.children.length)}` },
+          ...(g.phone ? [{ icon: <Phone aria-hidden />, text: g.phone }] : []),
+          ...(g.email ? [{ icon: <Mail aria-hidden />, text: g.email }] : []),
+        ],
+        about: [
+          {
+            title: t('pf.about'),
+            rows: [
+              { icon: <UserRound aria-hidden />, label: t('pf.fullName'), value: g.fullName },
+              { icon: <CircleCheck aria-hidden />, label: t('pf.status'), value: t(`acad.user.${g.status}` as MessageKey) },
+              { icon: <Receipt aria-hidden />, label: t('acad.feesDue'), value: `₹${fmt.number(Number(g.fees.duePaise) / 100)}` },
+              { icon: <FileText aria-hidden />, label: t('acad.openInvoices'), value: fmt.number(g.fees.openInvoices) },
+            ],
+          },
+          {
+            title: t('pf.contacts'),
+            rows: [
+              { icon: <Phone aria-hidden />, label: t('pf.phone'), value: g.phone ?? '—' },
+              { icon: <Mail aria-hidden />, label: t('pf.email'), value: g.email ?? '—' },
+            ],
+          },
+        ],
+        side: [
+          {
+            title: t('acad.children'),
+            content: (
+              <ul className="grid gap-2">
+                {g.children.map((c) => (
+                  <li key={c.id}>
+                    <a href={`/students/${c.id}`} className="flex items-center gap-3 text-sm hover:underline">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-xs font-semibold">{c.fullName.split(' ').map((w) => w[0]).slice(0, 2).join('')}</span>
+                      <span className="min-w-0">
+                        <b className="block truncate font-medium">{c.fullName}</b>
+                        <span className="block truncate text-xs text-muted-foreground">{c.section} · {c.relation}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ),
+          },
+        ],
+      }}
       title={g.fullName}
       subtitle={t('acad.guardian')}
       status={{ label: t(`acad.user.${g.status}` as MessageKey), tone: g.status === 'active' ? 'success' : 'neutral' }}
@@ -216,6 +263,32 @@ export function TeacherRecordView({ x }: { x: TeacherRecord }) {
   const maxDay = Math.max(x.limits.perDay, ...x.byDay.map((d) => d.periods), 1);
   return (
     <RecordPage
+      profile={{
+        kind: t('pf.kindStaff'),
+        meta: [
+          { icon: <Building2 aria-hidden />, text: x.departments ?? t('acad.teacher') },
+          { icon: <Clock aria-hidden />, text: `${t('acad.col.periods')}: ${fmt.number(x.weekly)} / ${fmt.number(x.limits.perWeek)}` },
+        ],
+        about: [
+          {
+            title: t('pf.about'),
+            rows: [
+              { icon: <UserRound aria-hidden />, label: t('pf.fullName'), value: x.fullName },
+              { icon: <Building2 aria-hidden />, label: t('pf.department'), value: x.departments ?? '—' },
+              { icon: <Clock aria-hidden />, label: t('acad.col.periods'), value: `${fmt.number(x.weekly)} / ${fmt.number(x.limits.perWeek)}` },
+              { icon: <School aria-hidden />, label: t('acad.col.sections'), value: fmt.number(new Set(x.slots.map((s) => s.sectionId)).size) },
+              { icon: <FileText aria-hidden />, label: t('acad.marksOpen'), value: fmt.number(x.marksPending.length) },
+            ],
+          },
+          {
+            title: t('pf.contacts'),
+            rows: [
+              { icon: <Phone aria-hidden />, label: t('pf.phone'), value: x.phone ?? '—' },
+              { icon: <Mail aria-hidden />, label: t('pf.email'), value: x.email ?? '—' },
+            ],
+          },
+        ],
+      }}
       title={x.fullName}
       subtitle={x.departments ?? t('acad.teacher')}
       status={over ? { label: t('acad.status.over'), tone: 'danger' } : { label: t('acad.status.ok'), tone: 'success' }}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SECTION_ROLES } from './access';
-import { crumbsFor, findNav, NAV_GROUPS, navSections, visibleGroups } from './nav';
+import { crumbsFor, findNav, tidyCrumbs, NAV_GROUPS, navSections, visibleGroups } from './nav';
 
 const hrefs = (roles: string[], platform = false) => visibleGroups(roles as never, platform).flatMap((g) => g.items.map((i) => i.href));
 
@@ -68,5 +68,13 @@ describe('sidebar sections', () => {
   it('drops sections a role cannot open', () => {
     const secs = navSections(visibleGroups(['librarian']));
     expect(secs.some((s) => s.id === 'exams')).toBe(false);
+  });
+});
+
+describe('tidyCrumbs', () => {
+  it('collapses repeated crumbs and names the record', () => {
+    const trail = [{ text: 'Dashboard', href: '/' }, { text: 'Students' }, { text: 'Students', href: '/students' }, { text: 'Details' }];
+    expect(tidyCrumbs(trail)).toEqual([{ text: 'Dashboard', href: '/' }, { text: 'Students', href: '/students' }, { text: 'Details' }]);
+    expect(tidyCrumbs(trail, 'Aarav Sharma').map((c) => c.text)).toEqual(['Dashboard', 'Students', 'Aarav Sharma']);
   });
 });

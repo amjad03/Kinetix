@@ -9,6 +9,11 @@ import type { Messages } from './messages';
  */
 const WORDS: Record<Locale, [RegExp, string][]> = {
   en: [
+    [/\bPrograms? and classes\b/g, 'Classes and sections'],
+    [/\bPrograms\b/g, 'Classes'],
+    [/\bprograms\b/g, 'classes'],
+    [/\bProgram\b/g, 'Class'],
+    [/\bprogram\b/g, 'class'],
     [/\bProgrammes\b/g, 'Classes'],
     [/\bprogrammes\b/g, 'classes'],
     [/\bProgramme\b/g, 'Class'],

@@ -3,8 +3,8 @@
 import { useColorScheme } from '@/theme/ThemeRegistry';
 import { Bell, Check, KeyRound, Languages, LogOut, Monitor, Moon, Rows3, ShieldCheck, Sun } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Fragment, useTransition } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Fragment, useEffect, useMemo, useState, useTransition } from 'react';
 import { setLanguage } from '@/app/language/actions';
 import { signOut } from '@/app/login/actions';
 import { markNotificationsRead, setAcademicYear, setDensity } from '@/app/shell/actions';
@@ -20,9 +20,12 @@ import { SidebarTrigger } from '@/components/shadcn/sidebar';
 import { useI18n } from '@/i18n/client';
 import { BCP47, LANGUAGE_NAMES, LOCALES, type Locale } from '@/i18n/locales';
 import type { Crumb, NavGroup } from '@/lib/nav';
+import { tidyCrumbs } from '@/lib/nav';
+import { getLastRecord } from '@/lib/recents';
 import { cn } from '@/lib/utils';
 import { initials } from '../initials';
 import { CommandSearch } from './CommandSearch';
+import { QuickAccess } from './QuickAccess';
 
 export interface ShellNotice {
   id: string;
@@ -74,6 +77,14 @@ export function TopBar({
   const [busy, start] = useTransition();
   const { mode, systemMode, setMode } = useColorScheme();
   const dark = (mode === 'system' ? systemMode : mode) === 'dark';
+  const pathname = usePathname();
+  const [record, setRecord] = useState<{ path: string; title: string | null } | null>(() => getLastRecord());
+  useEffect(() => {
+    const on = (e: Event) => setRecord((e as CustomEvent<{ path: string; title: string | null }>).detail);
+    window.addEventListener('kx:record', on);
+    return () => window.removeEventListener('kx:record', on);
+  }, []);
+  const trail = useMemo(() => tidyCrumbs(crumbs.map((c) => ({ text: t(c.label), href: c.href })), record?.path === pathname ? record.title : null), [crumbs, t, record, pathname]);
   const current = years.find((y) => y.id === yearId) ?? years.find((y) => y.isCurrent) ?? years[0];
   const changeLang = (l: Locale) => {
     if (l === locale) return;
@@ -87,21 +98,21 @@ export function TopBar({
     <header className="kx-chrome sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur-md md:px-5">
       <SidebarTrigger aria-label={t('shell.toggleSidebar')} className="size-9 text-muted-foreground" />
       <Separator orientation="vertical" className="mr-1 hidden data-[orientation=vertical]:h-5 md:block" />
-      {crumbs.length > 0 && (
+      {trail.length > 0 && (
         <Breadcrumb className="hidden min-w-0 md:block">
           <BreadcrumbList className="flex-nowrap text-[13px]">
-            {crumbs.map((c, i) => (
-              <Fragment key={`${c.label}-${i}`}>
+            {trail.map((c, i) => (
+              <Fragment key={`${c.text}-${i}`}>
                 {i > 0 && <BreadcrumbSeparator />}
                 <BreadcrumbItem className="min-w-0">
-                  {i === crumbs.length - 1 ? (
-                    <BreadcrumbPage className="truncate font-semibold">{t(c.label)}</BreadcrumbPage>
+                  {i === trail.length - 1 ? (
+                    <BreadcrumbPage className="max-w-[260px] truncate font-semibold">{c.text}</BreadcrumbPage>
                   ) : c.href ? (
                     <BreadcrumbLink asChild>
-                      <Link href={c.href}>{t(c.label)}</Link>
+                      <Link href={c.href}>{c.text}</Link>
                     </BreadcrumbLink>
                   ) : (
-                    <span className="truncate">{t(c.label)}</span>
+                    <span className="truncate">{c.text}</span>
                   )}
                 </BreadcrumbItem>
               </Fragment>
@@ -110,6 +121,7 @@ export function TopBar({
         </Breadcrumb>
       )}
       <CommandSearch groups={groups} />
+      <QuickAccess groups={groups} />
 
       {current && (
         <DropdownMenu>

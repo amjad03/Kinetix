@@ -2,59 +2,62 @@ import type { ReactNode } from 'react';
 import { initials } from '@/components/initials';
 import { StatusPill, type Tone } from '@/components/ui';
 
-const COVERS = {
-  teal: 'from-teal-500 via-teal-700 to-indigo-900',
-  violet: 'from-violet-500 via-indigo-700 to-slate-900',
-  blue: 'from-sky-500 via-blue-700 to-indigo-900',
-  pink: 'from-pink-500 via-fuchsia-700 to-indigo-900',
-} as const;
-export type ProfileCover = keyof typeof COVERS;
+/** Kept for callers that still name a colour; the cover is now one neutral pattern for every profile. */
+export type ProfileCover = 'teal' | 'violet' | 'blue' | 'pink';
+
+export interface ProfileMeta {
+  icon: ReactNode;
+  text: ReactNode;
+}
 
 /**
- * Profile header (redesign v2, AdminCN profile style): a gradient cover, the avatar overlapping it,
- * name, status and chips, the actions, and the key facts in a row.
+ * Profile header (AdminCN user-profile style): a short, quiet patterned cover, a square rounded avatar
+ * overlapping its bottom-left corner, then the name, status and a row of small icon facts beside the
+ * avatar, with the primary action on the right of that row.
  */
-export function ProfileHeader({ title, subtitle, status, chips = [], facts = [], actions, cover = 'teal' }: { title: string; subtitle?: ReactNode; status?: { label: string; tone?: Tone }; chips?: string[]; facts?: { label: string; value: ReactNode }[]; actions?: ReactNode; cover?: ProfileCover }) {
+export function ProfileHeader({ title, status, meta = [], chips = [], actions, extra }: { title: string; status?: { label: string; tone?: Tone }; meta?: ProfileMeta[]; chips?: string[]; actions?: ReactNode; extra?: ReactNode }) {
   return (
     <section className="overflow-hidden rounded-xl border bg-card shadow-card" data-testid="profile-header">
-      <div className={`relative h-28 bg-gradient-to-br md:h-36 ${COVERS[cover]}`} aria-hidden>
-        <svg className="absolute inset-0 size-full opacity-30" viewBox="0 0 600 140" preserveAspectRatio="none">
-          {[0, 1, 2, 3].map((i) => (
-            <path key={i} d={`M-20 ${30 + i * 30} C 150 ${0 + i * 30}, 380 ${90 + i * 30}, 620 ${20 + i * 30}`} fill="none" stroke="white" strokeOpacity={0.25 - i * 0.04} strokeWidth={10 - i * 2} />
-          ))}
-        </svg>
-      </div>
-      <div className="px-5 pb-5 md:px-6">
-        <div className="relative -mt-10 flex flex-wrap items-end gap-4 md:-mt-12">
-          <span className="grid size-20 shrink-0 place-items-center rounded-full border-4 border-card bg-teal-soft text-2xl font-semibold text-teal-ink md:size-24 md:text-3xl">{initials(title) || '?'}</span>
-          <div className="min-w-0 flex-1 pb-1">
-            <h1 className="m-0 truncate text-xl font-semibold tracking-tight md:text-2xl">{title}</h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              {status && <StatusPill tone={status.tone}>{status.label}</StatusPill>}
-              {subtitle}
+      <div
+        aria-hidden
+        className="h-[110px] bg-muted/50 dark:bg-muted/30"
+        style={{
+          backgroundImage: 'linear-gradient(to right, var(--border) 1px, transparent 1px), linear-gradient(to bottom, var(--border) 1px, transparent 1px)',
+          backgroundSize: '22px 22px',
+          maskImage: 'linear-gradient(to bottom, #000 30%, rgba(0,0,0,.55))',
+        }}
+      />
+      <div className="flex flex-wrap items-start gap-x-4 gap-y-3 px-4 pb-5 md:px-6">
+        <span className="-mt-11 grid size-[88px] shrink-0 place-items-center rounded-2xl border-4 border-card bg-teal-soft text-[28px] font-semibold text-teal-ink shadow-sm" data-testid="profile-avatar">
+          {initials(title) || '?'}
+        </span>
+        <div className="min-w-0 flex-1 basis-56 pt-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="m-0 text-xl leading-tight font-[650] tracking-[-0.015em] md:text-[22px]">{title}</h1>
+            {status && <StatusPill tone={status.tone}>{status.label}</StatusPill>}
+            {extra}
+          </div>
+          {meta.length > 0 && (
+            <ul className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground" data-testid="profile-meta">
+              {meta.map((m, i) => (
+                <li key={i} className="flex min-w-0 items-center gap-1.5 whitespace-nowrap [&_svg]:size-3.5 [&_svg]:shrink-0">
+                  {m.icon}
+                  <span>{m.text}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {chips.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {chips.map((c) => (
+                <span key={c} className="rounded-md border bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                  {c}
+                </span>
+              ))}
             </div>
-          </div>
-          {actions && <div className="flex flex-wrap gap-2 pb-1">{actions}</div>}
+          )}
         </div>
-        {chips.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {chips.map((c) => (
-              <span key={c} className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                {c}
-              </span>
-            ))}
-          </div>
-        )}
-        {facts.length > 0 && (
-          <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-4 sm:grid-cols-3 lg:grid-cols-6">
-            {facts.map((f) => (
-              <div key={f.label} className="min-w-0">
-                <dt className="text-xs font-medium text-muted-foreground">{f.label}</dt>
-                <dd className="mt-1 truncate text-sm font-semibold">{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
+        {actions && <div className="flex flex-wrap items-center gap-2 pt-3">{actions}</div>}
       </div>
     </section>
   );

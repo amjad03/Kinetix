@@ -298,6 +298,24 @@ export function crumbsFor(groups: readonly NavGroup[], pathname: string): Crumb[
   return out;
 }
 
+/**
+ * Breadcrumbs as shown: consecutive crumbs that read the same collapse into one (a "Students" group
+ * holding a "Students" page), and a record page's own name replaces the generic "Details".
+ */
+export function tidyCrumbs(trail: { text: string; href?: string }[], recordTitle?: string | null): { text: string; href?: string }[] {
+  const out: { text: string; href?: string }[] = [];
+  for (const c of trail) {
+    const last = out[out.length - 1];
+    if (last && last.text.trim().toLowerCase() === c.text.trim().toLowerCase()) {
+      out[out.length - 1] = { text: c.text, href: c.href ?? last.href };
+      continue;
+    }
+    out.push(c);
+  }
+  if (recordTitle && out.length > 1) out[out.length - 1] = { text: recordTitle };
+  return out;
+}
+
 /** The sidebar's top-level sections (the redesign): each holds whole groups, in this order. */
 export const NAV_SECTIONS: readonly { id: string; label: MessageKey; groups: readonly string[] }[] = [
   { id: 'overview', label: 'sec.overview', groups: ['dashboard', 'reports', 'work', 'communication'] },

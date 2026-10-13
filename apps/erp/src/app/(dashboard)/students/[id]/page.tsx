@@ -16,10 +16,10 @@ import { statusTone, type AuditRow, type RequestRow } from '@/lib/academics';
 import { formatDate, formatMonth } from '@/lib/dates';
 import { formatRupees } from '@/lib/money';
 import type { Structure } from '@/lib/types';
-import { getI18n } from '@/i18n/server';
+import { getI18n, isSchoolTenant } from '@/i18n/server';
 
 import { Alert } from '@/components/kx';
-import { ArrowLeft as ArrowBack } from 'lucide-react';
+import { ArrowLeft as ArrowBack, BookOpen, Cake, CalendarDays, CircleCheck, Droplet, Hash, IdCard, Mail, Phone, School, UserRound, Users } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('stu.profile') };
 }
@@ -72,21 +72,89 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
   const empty = (k: MessageKey) => <p className="text-sm text-muted-foreground">{t(k)}</p>;
   const reqRows = requests.data ?? [];
   const onRolls = ['active', 'enrolled', 'on_leave', 'detained'].includes(s.status);
+  const school = await isSchoolTenant();
+  const short = (d: string) => formatDate(d, 'day', locale);
+  const ab = s.about;
+  const primaryG = s.guardians.find((g) => g.isPrimary) ?? s.guardians[0];
+  const none = <span className="font-normal text-muted-foreground">{t('pf.none')}</span>;
   return (
     <>
       {back}
       <RecordPage
-        profile={{ cover: 'blue', chips: [s.program.name, s.section.displayName, ...(a?.mentor ? [t('v2.prof.mentorChip', { name: a.mentor.fullName })] : [])] }}
+        profile={{
+          kind: t('pf.kindStudent'),
+          meta: [
+            { icon: <School aria-hidden />, text: s.section.displayName },
+            { icon: <Hash aria-hidden />, text: t('stu.rollNo', { roll: s.rollNo }) },
+            ...(school ? [] : [{ icon: <BookOpen aria-hidden />, text: s.program.name }]),
+            ...(s.enrolledOn ? [{ icon: <CalendarDays aria-hidden />, text: t('pf.joined', { date: short(s.enrolledOn) }) }] : []),
+          ],
+          about: [
+            {
+              title: t('pf.about'),
+              rows: [
+                { icon: <UserRound aria-hidden />, label: t('pf.fullName'), value: s.fullName },
+                { icon: <CircleCheck aria-hidden />, label: t('pf.status'), value: t(`acad.stu.${s.status}` as MessageKey) },
+                { icon: <School aria-hidden />, label: t('pf.classRoll'), value: <><NextLink className="underline-offset-2 hover:underline" href={`/academics/sections/${s.section.id}`}>{s.section.displayName}</NextLink> · {s.rollNo}</> },
+                { icon: <BookOpen aria-hidden />, label: school ? t('pf.stage') : t('acad.col.program'), value: s.program.name },
+                ...(s.application ? [{ icon: <IdCard aria-hidden />, label: t('pf.admissionNo'), value: <NextLink className="underline-offset-2 hover:underline" href={`/admissions/applications/${s.application.id}`}>{s.application.applicationNo}</NextLink> }] : []),
+                { icon: <Cake aria-hidden />, label: t('pf.dob'), value: ab?.dateOfBirth ? short(ab.dateOfBirth) : none },
+                ...(ab?.gender ? [{ icon: <UserRound aria-hidden />, label: t('pf.gender'), value: <span className="capitalize">{ab.gender}</span> }] : []),
+                { icon: <Droplet aria-hidden />, label: t('pf.blood'), value: ab?.bloodGroup ?? none },
+                { icon: <CalendarDays aria-hidden />, label: t('acad.joined'), value: s.enrolledOn ? short(s.enrolledOn) : none },
+              ],
+            },
+            {
+              title: t('pf.contacts'),
+              rows: [
+                { icon: <Phone aria-hidden />, label: t('pf.phone'), value: ab?.phone ?? primaryG?.phone ?? none },
+                { icon: <Mail aria-hidden />, label: t('pf.email'), value: ab?.email ?? primaryG?.email ?? none },
+              ],
+            },
+            {
+              title: t('pf.guardians'),
+              rows: s.guardians.length
+                ? s.guardians.map((g) => ({ icon: <Users aria-hidden />, label: g.relation, value: <>{g.fullName}{g.phone ? <span className="text-muted-foreground"> · {g.phone}</span> : null}</> }))
+                : [{ icon: <Users aria-hidden />, label: t('pf.guardians'), value: none }],
+            },
+          ],
+          side: [
+            {
+              title: t('pf.guardians'),
+              content: s.guardians.length ? (
+                <ul className="grid gap-2">
+                  {s.guardians.map((g) => (
+                    <li key={g.id} className="flex items-center gap-3">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-xs font-semibold">{g.fullName.split(' ').map((w) => w[0]).slice(0, 2).join('')}</span>
+                      <span className="min-w-0 flex-1">
+                        {g.userId ? <NextLink className="block truncate text-sm font-medium hover:underline" href={`/academics/guardians/${g.userId}`}>{g.fullName}</NextLink> : <b className="block truncate text-sm font-medium">{g.fullName}</b>}
+                        <span className="text-xs text-muted-foreground capitalize">{g.relation}{g.isPrimary ? ` · ${t('acad.primary')}` : ''}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                empty('pf.noGuardians')
+              ),
+            },
+            {
+              title: t('pf.mentor'),
+              content: a?.mentor ? (
+                <NextLink href={`/hr/staff/${a.mentor.id}`} className="flex items-center gap-3 hover:underline">
+                  <span className="grid size-9 place-items-center rounded-lg bg-violet-500/12 text-xs font-semibold text-violet-700 dark:text-violet-300">{a.mentor.fullName.replace(/^(Dr|Prof|Mr|Mrs|Ms)\.?\s+/i, '').split(' ').map((w) => w[0]).slice(0, 2).join('')}</span>
+                  <span className="min-w-0">
+                    <b className="block truncate text-sm font-medium">{a.mentor.fullName}</b>
+                    <span className="text-xs text-muted-foreground">{t('v2.prof.mentorSince', { date: short(a.mentor.startedOn) })}</span>
+                  </span>
+                </NextLink>
+              ) : (
+                empty('v2.prof.noMentor')
+              ),
+            },
+          ],
+        }}
         title={s.fullName}
-        subtitle={`${s.section.displayName} · ${t('stu.rollNo', { roll: s.rollNo })} · ${s.program.name}`}
         status={{ label: t(`acad.stu.${s.status}` as MessageKey), tone: statusTone(s.status) }}
-        facts={[
-          { label: t('acad.col.section'), value: <NextLink className="underline" href={`/academics/sections/${s.section.id}`}>{s.section.displayName}</NextLink> },
-          { label: t('acad.col.rollNo'), value: s.rollNo },
-          { label: t('acad.col.program'), value: s.program.name },
-          { label: t('acad.joined'), value: s.enrolledOn ? formatDate(s.enrolledOn, 'long', locale) : '—' },
-          { label: t('acad.children'), value: String(s.guardians.length) },
-        ]}
         primary={onRolls ? <LinkButton variant="contained" href={`/academics?new=section_change&section=${s.section.id}&student=${s.id}`}>{t('acad.kind.section_change')}</LinkButton> : undefined}
         secondary={onRolls ? <LinkButton variant="outlined" href={`/academics?new=withdrawal&section=${s.section.id}&student=${s.id}`}>{t('acad.kind.withdrawal')}</LinkButton> : undefined}
         overview={
@@ -96,20 +164,8 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
                 {t('stu.finalTerm')}
               </Alert>
             )}
-            <div className="grid grid-cols-[1fr] lg:grid-cols-[1fr_1fr] gap-6">
-              <div>
-                <div className="rounded-[12px] border bg-card p-5">
-                  <SectionTitle flush>{t('stu.admission')}</SectionTitle>
-                  <p className="text-[13px] leading-[19px]">{s.enrolledOn ? t('stu.joined', { date: formatDate(s.enrolledOn, 'long', locale) }) : t('stu.noJoinDate')}</p>
-                  {s.application && (
-                    <p className="text-[13px] leading-[19px] mt-1">
-                      <NextLink className="underline" href={`/admissions/applications/${s.application.id}`}>
-                        {s.application.applicationNo}
-                      </NextLink>{' '}
-                      · {s.application.cycleName}
-                    </p>
-                  )}
-                </div>
+            <div className="grid grid-cols-[1fr] gap-6 lg:grid-cols-[1fr_1.55fr]">
+              <div className="min-w-0">
                 <StudentActions student={s} canChange={canChange} canGuardians classes={sameProgram} />
               </div>
               <div className="rounded-[12px] border bg-card p-5">
@@ -199,32 +255,13 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
                       {invoices.map((x) => (
                         <li key={x.id} className="flex flex-wrap items-center gap-3 py-2.5 text-sm">
                           <span className="min-w-0 flex-1 truncate font-medium">{x.title}</span>
-                          <span className="text-muted-foreground">{formatDate(x.dueOn, 'long', locale)}</span>
+                          <span className="text-muted-foreground">{short(x.dueOn)}</span>
                           <span className="tabular-nums">{formatRupees(x.paidPaise)} / {formatRupees(x.amountPaise)}</span>
                           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${x.status === 'paid' ? 'bg-green-soft text-green-ink' : 'bg-amber-soft text-amber-ink'}`}>{x.status}</span>
                         </li>
                       ))}
                     </ul>
                   )}
-              </div>
-            ),
-          },
-          {
-            value: 'mentor',
-            label: t('v2.prof.mentor'),
-            content: (
-              <div className={box}>
-                {a?.mentor ? (
-                  <NextLink href={`/hr/staff/${a.mentor.id}`} className="flex items-center gap-3 hover:underline">
-                    <span className="grid size-10 place-items-center rounded-full bg-violet-500/12 font-semibold text-violet-700">{a.mentor.fullName.replace(/^(Dr|Prof|Mr|Mrs|Ms)\.?\s+/i, '').split(' ').map((w) => w[0]).slice(0, 2).join('')}</span>
-                    <span>
-                      <b className="block">{a.mentor.fullName}</b>
-                      <span className="text-xs text-muted-foreground">{t('v2.prof.mentorSince', { date: formatDate(a.mentor.startedOn, 'long', locale) })}</span>
-                    </span>
-                  </NextLink>
-                ) : (
-                  empty('v2.prof.noMentor')
-                )}
               </div>
             ),
           },
