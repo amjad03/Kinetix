@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { AppShell } from '@/components/AppShell';
+import { COLLEGE_ONLY_SECTIONS } from '@/lib/quality-hub';
 import { Logo } from '@/components/Logo';
 import { ErrorState } from '@/components/States';
 import { api, getMe, load } from '@/lib/api';
@@ -45,7 +46,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       ? load(() => api<{ academicYears: { id: string; label: string; isCurrent: boolean }[] }>('/v1/admin/structure'))
       : Promise.resolve(null),
     load(() => api<Notifications>('/v1/notifications?limit=10')),
-    load(() => api<{ disabledModules: string[]; academicModel?: string }>('/v1/institution/capabilities')),
+    load(() => api<{ disabledModules: string[]; academicModel?: string; tenantKind?: string | null }>('/v1/institution/capabilities')),
     canSee(roles, 'institutionSetup') ? loadSetup() : Promise.resolve(null),
   ]);
   const years = structure?.data?.academicYears ?? [];
@@ -60,7 +61,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       yearId={yearId}
       notices={notes.data?.items ?? []}
       unread={notes.data?.unread ?? 0}
-      disabledModules={caps.data?.disabledModules ?? []}
+      disabledModules={[...(caps.data?.disabledModules ?? []), ...(caps.data?.tenantKind === 'school' ? COLLEGE_ONLY_SECTIONS : [])]}
       workspace={isWorkspace(wsCookie) ? wsCookie : 'all'}
       sidebarOpen={(await cookies()).get('sidebar_state')?.value !== 'false'}
       setup={setupSteps ? summarize(setupSteps) : null}

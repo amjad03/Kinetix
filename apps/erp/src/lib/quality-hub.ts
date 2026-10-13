@@ -53,7 +53,7 @@ export interface QhSettings {
 }
 export interface QhSettingsView {
   module: QhModule;
-  catalogue: { numbering: Record<string, Series>; rules: RuleDef[]; templates: Record<string, string>; defaults: RuleDef[] };
+  catalogue: { numbering: string[]; rules: RuleDef[]; templates: Record<string, string>; defaults: RuleDef[] };
   settings: QhSettings;
   updatedAt: string | null;
   updatedBy: string | null;
@@ -64,6 +64,11 @@ export const QH_MODULES = ['obe', 'accreditation', 'feedback', 'mentoring', 'gri
 export type QhModule = (typeof QH_MODULES)[number];
 export const QH_ENTITIES = ['grievance', 'discipline', 'drive', 'proposal', 'project', 'patent', 'survey', 'feedbackReport', 'gapAction', 'event', 'campaign', 'certificate', 'mentoringRequest'] as const;
 export type QhEntity = (typeof QH_ENTITIES)[number];
+/** College-only areas a school does not see: accreditation (NAAC/NBA/NIRF/AISHE), placements, alumni and research. */
+export const COLLEGE_ONLY_SECTIONS = ['accreditation', 'facultyEvidence', 'placements', 'alumni', 'research'];
+export const COLLEGE_ONLY_MODULES: readonly QhModule[] = ['accreditation', 'placements', 'alumni', 'research'];
+/** Modules with a settings page (accreditation is configured from the IQAC workspace). */
+export const QH_SETTINGS_MODULES = QH_MODULES.filter((m) => m !== 'accreditation');
 export const isQhModule = (m: string): m is QhModule => (QH_MODULES as readonly string[]).includes(m);
 export const isQhEntity = (e: string): e is QhEntity => (QH_ENTITIES as readonly string[]).includes(e);
 

@@ -897,13 +897,6 @@
       "when": 1791411027229,
       "tag": "0135_campus_ops_depth",
       "breakpoints": true
-    },
-    {
-      "idx": 128,
-      "version": "7",
-      "when": 1791411028229,
-      "tag": "0136_module_settings",
-      "breakpoints": true
     }
   ]
 }

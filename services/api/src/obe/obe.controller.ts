@@ -1,4 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
@@ -407,6 +408,10 @@ export class ObeController {
   @Auth('user', MANAGE)
   updateAction(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ActionUpdate)) body: z.infer<typeof ActionUpdate>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
+      if (body.status === 'done' && (await qualitySettings(tx, p.tenantId, 'obe')).rules.requireRootCause) {
+        const [cur] = await tx.select({ rootCause: improvementActions.rootCause }).from(improvementActions).where(eq(improvementActions.id, id));
+        if (cur && !cur.rootCause?.trim()) throw new ConflictException('Record the root cause before closing this action');
+      }
       const [row] = await tx.update(improvementActions).set({ ...body, ...(body.status ? { closedAt: body.status === 'done' ? new Date() : null } : {}) }).where(eq(improvementActions.id, id)).returning();
       if (!row) throw new NotFoundException('Action not found');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.action.updated', subjectType: 'improvement_action', subjectId: id, data: { status: body.status } });

@@ -52,15 +52,15 @@ export function QualitySettings({ view }: { view: QhSettingsView }) {
   const c = view.catalogue;
   const sections: SettingsSection[] = [];
   if (c.rules.length) sections.push({ id: 'rules', kind: 'rules', description: t('qh.rulesHelp'), content: <FormGrid>{c.rules.map((d) => ruleField('rules', d))}</FormGrid> });
-  if (Object.keys(c.numbering).length)
+  if (c.numbering.length)
     sections.push({
       id: 'numbering',
       kind: 'numbering',
       description: t('qh.numberingHelp'),
       content: (
         <div className="grid gap-6">
-          {Object.keys(c.numbering).map((key) => (
-            <NumberingSeriesField key={key} label={t(k(key))} value={s.numbering[key] ?? c.numbering[key]} onChange={(v) => !ro && edit({ ...s, numbering: { ...s.numbering, [key]: v } })} />
+          {c.numbering.map((key) => (
+            <NumberingSeriesField key={key} label={t(k(key))} value={s.numbering[key]} onChange={(v) => !ro && edit({ ...s, numbering: { ...s.numbering, [key]: v } })} />
           ))}
         </div>
       ),

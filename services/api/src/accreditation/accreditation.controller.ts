@@ -1,4 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import type { Response } from 'express';
@@ -470,6 +471,10 @@ export class AccreditationController {
   updateFeedbackReport(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(FeedbackPatch)) v: z.infer<typeof FeedbackPatch>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const status = v.status ?? (v.actionTaken ? 'action_taken' : undefined);
+      if (status === 'action_taken' && (await qualitySettings(tx, p.tenantId, 'feedback')).rules.actionTextRequired) {
+        const [cur] = await tx.select({ a: iqacFeedbackReports.actionTaken }).from(iqacFeedbackReports).where(eq(iqacFeedbackReports.id, id));
+        if (cur && !(v.actionTaken ?? cur.a).trim()) throw new BadRequestException('Describe the action taken');
+      }
       const [r] = await tx.update(iqacFeedbackReports).set({ ...v, ...(status ? { status } : {}) }).where(eq(iqacFeedbackReports.id, id)).returning();
       if (!r) throw new NotFoundException('Report not found');
       await auditUser(tx, p, 'iqac.feedback_report_updated', 'iqac_feedback_report', id, { status: r.status });

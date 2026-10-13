@@ -1,39 +1,59 @@
-/** Module settings for the quality group: Soundarya's own numbering, deadlines and messages where they differ from the standard. */
-import { effectiveSettings, type QualityModule } from '../../quality-hub/settings.catalogue.js';
+/**
+ * Module settings for the quality group where the demo institution differs from the standard: its own
+ * ticket and project numbering, grievance deadlines, quiet hours and certificate approval. The school
+ * profile leaves out the college-only modules (placements, alumni, research).
+ */
+import { effectiveSettings, type SettingsModule } from '../../quality-hub/settings.catalogue.js';
 import type { Ctx } from './ctx.js';
+import { INST } from './data.js';
 import { J } from './kit.js';
 
 export async function qualityHubSettings(c: Ctx): Promise<void> {
   const principal = c.byEmail.principal.id;
-  const own = (module: QualityModule, change: (s: ReturnType<typeof effectiveSettings>) => void) => {
+  const school = INST.kind === 'school';
+  const own = (module: SettingsModule, change: (s: ReturnType<typeof effectiveSettings>) => void) => {
     const s = effectiveSettings(module, null);
     change(s);
-    return { module, settings: J(s), updatedBy: principal };
+    const numbering = Object.fromEntries(Object.entries(s.numbering).map(([k, v]) => [k, { prefix: v.prefix, pad: v.pad, suffix: v.suffix ?? '' }]));
+    return { module, settings: J({ rules: s.rules, templates: s.templates, defaults: s.defaults }), numbering: J(numbering), updatedBy: principal };
   };
-  await c.kit.ins(
-    'module_settings',
-    [
-      own('grievances', (s) => {
-        s.numbering.ticket = { prefix: 'SIMS/GRV/{FY}/', next: 61, pad: 4 };
-        s.rules.slaHours = 48;
-        s.templates.received = 'Soundarya: your grievance {ticketNo} is with the grievance cell. We will reply within {slaHours} hours.';
-      }),
-      own('placements', (s) => {
-        s.numbering.drive = { prefix: 'SIMS/PD/{FY}/', next: 9, pad: 3 };
-        s.rules.minCgpa = 5.5;
-        s.rules.maxBacklogs = 1;
-      }),
-      own('accreditation', (s) => {
-        s.numbering.atr = { prefix: 'SIMS/IQAC/ATR/{FY}/', next: 4, pad: 3 };
-      }),
-      own('documents', (s) => {
-        s.numbering.certificate = { prefix: 'SIMS/CERT/{FY}/', next: 128, pad: 5 };
-        s.rules.turnaroundDays = 2;
-      }),
-      own('communication', (s) => {
-        s.templates.footer = 'Sent by Soundarya Institute of Management and Science. Reply STOP to opt out of SMS.';
-      }),
-    ],
-    { returning: false },
-  );
+  const rows = [
+    own('grievances', (s) => {
+      s.numbering.GRV = { prefix: `${INST.codePrefix}/GRV/{FY}/`, pad: 4, suffix: '' };
+      s.rules.slaHighHours = 36;
+      s.rules.slaMediumHours = 72;
+      s.rules.allowAnonymous = !school;
+      s.templates.resolved = `${INST.shortName}: grievance {ticketNo} is resolved. Please rate how it went.`;
+    }),
+    own('communication', (s) => {
+      s.rules.quietHoursOn = true;
+      s.rules.quietHoursStart = 21;
+      s.rules.quietHoursEnd = 7;
+    }),
+    own('documents', (s) => {
+      s.rules.approvalBeforeIssue = true;
+    }),
+    own('mentoring', (s) => {
+      s.rules.menteesPerMentor = school ? 40 : 30;
+    }),
+    own('events', (s) => {
+      s.defaults.defaultCapacity = school ? 300 : 150;
+    }),
+    own('feedback', (s) => {
+      s.defaults.anonymousByDefault = true;
+    }),
+    ...(school
+      ? []
+      : [
+          own('placements', (s) => {
+            s.defaults.minCgpa = 5.5;
+            s.defaults.maxBacklogs = 1;
+            s.rules.offerResponseDays = 5;
+          }),
+          own('research', (s) => {
+            s.numbering.PRJ = { prefix: `${INST.codePrefix}/RP/{FY}/`, pad: 3, suffix: '' };
+          }),
+        ]),
+  ];
+  await c.kit.ins('module_settings', rows, { returning: false });
 }

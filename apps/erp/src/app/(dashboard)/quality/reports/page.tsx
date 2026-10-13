@@ -5,7 +5,13 @@ import { ErrorState } from '@/components/States';
 import { Card } from '@/components/ui';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
-import { QH_MODULES, REPORT_IDS, reportKey, type QhModule } from '@/lib/quality-hub';
+import { COLLEGE_ONLY_MODULES, QH_MODULES, REPORT_IDS, reportKey, type QhModule } from '@/lib/quality-hub';
+
+/** Schools do not see the college-only modules (accreditation, placements, alumni, research). */
+async function isSchool() {
+  const c = await load(() => api<{ tenantKind?: string | null }>('/v1/institution/capabilities'));
+  return c.error === undefined && c.data.tenantKind === 'school';
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.qhReports') };
@@ -23,7 +29,8 @@ export default async function QualityReportsPage() {
   const { t } = await getI18n();
   const data = await load(() => api<ReportRow[]>('/v1/quality-hub/reports'));
   if (data.error !== undefined) return <ErrorState message={data.error} />;
-  const mine = data.data.filter((r) => (REPORT_IDS as readonly string[]).includes(r.id));
+  const school = await isSchool();
+  const mine = data.data.filter((r) => (REPORT_IDS as readonly string[]).includes(r.id) && !(school && COLLEGE_ONLY_MODULES.includes(r.module)));
   const modules = QH_MODULES.filter((m) => mine.some((r) => r.module === m));
   return (
     <div className="grid gap-6">

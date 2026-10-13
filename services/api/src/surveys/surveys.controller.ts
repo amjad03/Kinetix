@@ -1,4 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { asc, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
@@ -34,7 +35,7 @@ const CreateBody = z
     description: z.string().trim().max(2000).default(''),
     audience: z.enum(['students', 'section', 'staff', 'guardians']),
     sectionId: z.uuid().optional(),
-    anonymous: z.boolean().default(false),
+    anonymous: z.boolean().optional(),
     opensAt: z.coerce.date().optional(),
     closesAt: z.coerce.date().optional(),
     /** Opens by itself at opensAt. */
@@ -92,7 +93,7 @@ export class SurveysController {
       }
       const [s] = await tx
         .insert(surveys)
-        .values({ tenantId: p.tenantId, title: b.title, description: b.description, audience: b.audience, sectionId: b.audience === 'section' ? b.sectionId : null, anonymous: b.anonymous, opensAt: b.opensAt ?? null, closesAt: b.closesAt ?? null, autoPublish: b.autoPublish, repeatEveryDays: b.repeatEveryDays ?? null, seriesKey: b.seriesKey ?? (b.repeatEveryDays ? b.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 60) : null), createdBy: p.userId })
+        .values({ tenantId: p.tenantId, title: b.title, description: b.description, audience: b.audience, sectionId: b.audience === 'section' ? b.sectionId : null, anonymous: b.anonymous ?? Boolean((await qualitySettings(tx, p.tenantId, 'feedback')).defaults.anonymousByDefault), opensAt: b.opensAt ?? null, closesAt: b.closesAt ?? null, autoPublish: b.autoPublish, repeatEveryDays: b.repeatEveryDays ?? null, seriesKey: b.seriesKey ?? (b.repeatEveryDays ? b.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 60) : null), createdBy: p.userId })
         .returning();
       const qs = await tx
         .insert(surveyQuestions)
@@ -110,7 +111,7 @@ export class SurveysController {
         await tx.update(surveyQuestions).set({ showIf: cond }).where(eq(surveyQuestions.id, qs[i].id));
         qs[i].showIf = cond;
       }
-      await auditUser(tx, p, 'survey.created', 'survey', s.id, { audience: b.audience, anonymous: b.anonymous });
+      await auditUser(tx, p, 'survey.created', 'survey', s.id, { audience: b.audience, anonymous: s.anonymous });
       return { ...s, questions: qs.sort((a, c) => a.ord - c.ord) };
     });
   }

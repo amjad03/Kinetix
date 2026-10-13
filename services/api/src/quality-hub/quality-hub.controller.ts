@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Put, Query, Res } from '@nestjs/common';
-import { sql, type SQL } from 'drizzle-orm';
+import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Put, Query, Res } from '@nestjs/common';
+import { inArray, sql, type SQL } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -7,11 +7,13 @@ import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
-import { moduleSettings } from '../db/schema-quality-hub.js';
+import { docCounters, moduleSettings } from '../db/schema.js';
+import type { Tx } from '../db/db.service.js';
+import type { Series } from '../campus-ops/settings.js';
 import { RECORDS, isRecordEntity, stepStates, type RecordDef } from './records.catalogue.js';
 import { headerOf, normalise, reportPdf, reportXlsx } from './report-files.js';
 import { REPORTS, isReportId, reportQuery, type ReportDef } from './reports.catalogue.js';
-import { QUALITY_MODULES, SETTINGS_CATALOGUE, SettingsBody, effectiveSettings, settingsProblems, type ModuleSettings, type QualityModule } from './settings.catalogue.js';
+import { SETTINGS_CATALOGUE, SETTINGS_MODULES, SettingsBody, effectiveSettings, qualitySettings, settingsProblems, type SettingsModule } from './settings.catalogue.js';
 
 /** Who may read a module's settings: the leadership and each module's owner. */
 const SETTINGS_READ: RoleName[] = ['tenant_admin', 'principal', 'quality_officer', 'hod', 'placement_officer', 'research_coordinator', 'grievance_officer'];
@@ -43,35 +45,56 @@ export class QualityHubController {
   @Get('settings')
   @Auth('user', SETTINGS_READ)
   modules() {
-    return QUALITY_MODULES.map((m) => ({ module: m, catalogue: SETTINGS_CATALOGUE[m] }));
+    return SETTINGS_MODULES.map((m) => ({ module: m, catalogue: SETTINGS_CATALOGUE[m] }));
   }
 
   @Get('settings/:module')
   @Auth('user', SETTINGS_READ)
   getSettings(@CurrentPrincipal() p: UserPrincipal, @Param('module') m: string) {
-    const mod = this.module(m);
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const [row] = (await tx.execute<{ settings: Partial<ModuleSettings>; updated_at: Date; updated_by: string | null }>(sql`select settings, updated_at, (select full_name from users x where x.id = s.updated_by) as updated_by from module_settings s where module = ${mod}`)).rows;
-      return { module: mod, catalogue: SETTINGS_CATALOGUE[mod], settings: effectiveSettings(mod, row?.settings ?? null), updatedAt: row?.updated_at ?? null, updatedBy: row?.updated_by ?? null, canEdit: has(p, SETTINGS_WRITE) };
-    });
+    const mod = this.settingsModule(m);
+    return this.db.withTenant(p.tenantId, (tx) => this.presentSettings(tx, p, mod));
   }
 
   @Put('settings/:module')
   @Auth('user', SETTINGS_WRITE)
-  putSettings(@CurrentPrincipal() p: UserPrincipal, @Param('module') m: string, @Body(new ZodBody(SettingsBody)) b: ModuleSettings) {
-    const mod = this.module(m);
+  putSettings(@CurrentPrincipal() p: UserPrincipal, @Param('module') m: string, @Body(new ZodBody(SettingsBody)) b: z.infer<typeof SettingsBody>) {
+    const mod = this.settingsModule(m);
     const problems = settingsProblems(mod, b);
     if (problems.length) throw new BadRequestException(problems.join('; '));
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const before = (await tx.execute<{ settings: Partial<ModuleSettings> }>(sql`select settings from module_settings where module = ${mod}`)).rows[0]?.settings ?? null;
+      const before = await this.presentSettings(tx, p, mod);
+      const next = effectiveSettings(mod, b, Object.fromEntries(Object.entries(b.numbering).map(([k, s]) => [k, { prefix: s.prefix, pad: s.pad, suffix: s.suffix }])));
+      const numbering: Record<string, Series> = {};
+      for (const k of SETTINGS_CATALOGUE[mod].numbering) {
+        const s = next.numbering[k];
+        numbering[k] = { prefix: s.prefix, pad: s.pad, suffix: s.suffix ?? '' };
+        // Moving the next number forward (never back, which would reissue numbers) resets the counter.
+        const want = b.numbering[k]?.next;
+        const had = before.settings.numbering[k].next ?? 1;
+        if (want !== undefined && want !== had) {
+          if (want < had) throw new ConflictException(`${k} numbers up to ${had - 1} are already used`);
+          await tx.insert(docCounters).values({ tenantId: p.tenantId, kind: k, lastNo: want - 1 }).onConflictDoUpdate({ target: [docCounters.tenantId, docCounters.kind], set: { lastNo: want - 1 } });
+        }
+      }
+      const settings = { rules: next.rules, templates: next.templates, defaults: next.defaults };
       await tx
         .insert(moduleSettings)
-        .values({ tenantId: p.tenantId, module: mod, settings: b, updatedBy: p.userId })
-        .onConflictDoUpdate({ target: [moduleSettings.tenantId, moduleSettings.module], set: { settings: b, updatedBy: p.userId, updatedAt: new Date() } });
-      const changed = (['numbering', 'rules', 'templates', 'defaults'] as const).filter((g) => JSON.stringify(effectiveSettings(mod, before)[g]) !== JSON.stringify(effectiveSettings(mod, b)[g]));
+        .values({ tenantId: p.tenantId, module: mod, settings, numbering, updatedBy: p.userId })
+        .onConflictDoUpdate({ target: [moduleSettings.tenantId, moduleSettings.module], set: { settings, numbering, updatedBy: p.userId, updatedAt: new Date() } });
+      const changed = (['rules', 'templates', 'defaults'] as const).filter((g) => JSON.stringify(before.settings[g]) !== JSON.stringify(next[g]));
       await auditUser(tx, p, 'module_settings.updated', 'module_settings', undefined, { module: mod, changed });
-      return { module: mod, settings: effectiveSettings(mod, b) };
+      return this.presentSettings(tx, p, mod);
     });
+  }
+
+  /** Effective settings with each series' next number from its counter. */
+  private async presentSettings(tx: Tx, p: UserPrincipal, mod: SettingsModule) {
+    const [row] = (await tx.execute<{ updated_at: Date; updated_by: string | null }>(sql`select updated_at, (select full_name from users x where x.id = s.updated_by) as updated_by from module_settings s where module = ${mod}`)).rows;
+    const settings = await qualitySettings(tx, p.tenantId, mod);
+    const kinds = SETTINGS_CATALOGUE[mod].numbering;
+    const counters = kinds.length ? await tx.select().from(docCounters).where(inArray(docCounters.kind, kinds)) : [];
+    for (const k of kinds) settings.numbering[k] = { ...settings.numbering[k], next: (counters.find((c) => c.kind === k)?.lastNo ?? 0) + 1 };
+    return { module: mod, catalogue: SETTINGS_CATALOGUE[mod], settings, updatedAt: row?.updated_at ?? null, updatedBy: row?.updated_by ?? null, canEdit: has(p, SETTINGS_WRITE) };
   }
 
   // ---- record pages -----------------------------------------------------------------------------
@@ -158,8 +181,8 @@ export class QualityHubController {
     return undefined;
   }
 
-  private module(m: string): QualityModule {
-    if (!(QUALITY_MODULES as readonly string[]).includes(m)) throw new NotFoundException('Module not found');
-    return m as QualityModule;
+  private settingsModule(m: string): SettingsModule {
+    if (!(SETTINGS_MODULES as readonly string[]).includes(m)) throw new NotFoundException('Module not found');
+    return m as SettingsModule;
   }
 }

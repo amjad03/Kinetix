@@ -1,4 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -36,8 +37,8 @@ const DriveBody = z.object({
   description: z.string().trim().max(4000).default(''),
   driveDate: Day.optional(),
   registrationClosesOn: Day.optional(),
-  minCgpa: z.number().min(0).max(10).default(0),
-  maxBacklogs: z.number().int().min(0).max(50).default(0),
+  minCgpa: z.number().min(0).max(10).optional(),
+  maxBacklogs: z.number().int().min(0).max(50).optional(),
   programIds: z.array(z.uuid()).max(50).default([]),
   expectedVersion: z.number().int().optional(),
 });
@@ -106,7 +107,9 @@ export class PlacementsController {
       const company = found((await tx.select().from(placementCompanies).where(eq(placementCompanies.id, b.companyId)))[0], 'Company');
       if (company.status === 'blacklisted') throw new ConflictException('That company is blacklisted');
       const { expectedVersion: _v, ...values } = b;
-      const [row] = await tx.insert(placementDrives).values({ tenantId: p.tenantId, createdBy: p.userId, ...values }).returning();
+      // Eligibility limits left out of the form come from the placement settings.
+      const set = await qualitySettings(tx, p.tenantId, 'placements');
+      const [row] = await tx.insert(placementDrives).values({ tenantId: p.tenantId, createdBy: p.userId, ...values, minCgpa: b.minCgpa ?? Number(set.defaults.minCgpa), maxBacklogs: b.maxBacklogs ?? Number(set.defaults.maxBacklogs) }).returning();
       await auditUser(tx, p, 'placement.drive_created', 'drive', row.id, { title: b.title });
       return row;
     });
@@ -218,8 +221,11 @@ export class PlacementsController {
         if (last?.result !== 'pass') throw new ConflictException('The student has not cleared the final round');
       }
       const offeredOn = await this.svc.today(tx);
+      // Without a deadline the student has the settings' number of days to respond.
+      const respondDays = Number((await qualitySettings(tx, p.tenantId, 'placements')).rules.offerResponseDays);
+      const respondBy = b.respondBy ?? (respondDays > 0 ? new Date(Date.parse(`${offeredOn}T00:00:00Z`) + respondDays * 86_400_000).toISOString().slice(0, 10) : undefined);
       const [row] = await orConflict('This student already has an offer from this drive', () =>
-        tx.insert(placementOffers).values({ tenantId: p.tenantId, driveId: id, registrationId: reg.id, studentId: reg.studentId, roleTitle: b.roleTitle ?? drive.roleTitle, ctcLpa: b.ctcLpa ?? drive.ctcLpa, offeredOn, respondBy: b.respondBy }).returning(),
+        tx.insert(placementOffers).values({ tenantId: p.tenantId, driveId: id, registrationId: reg.id, studentId: reg.studentId, roleTitle: b.roleTitle ?? drive.roleTitle, ctcLpa: b.ctcLpa ?? drive.ctcLpa, offeredOn, respondBy }).returning(),
       );
       await tx.update(driveRegistrations).set({ status: 'selected' }).where(eq(driveRegistrations.id, reg.id));
       await auditUser(tx, p, 'placement.offer_made', 'offer', row.id, { driveId: id, studentId: reg.studentId, ctcLpa: row.ctcLpa });

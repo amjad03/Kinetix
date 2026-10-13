@@ -5,7 +5,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as s from '../src/db/schema.js';
 import { stepStates } from '../src/quality-hub/records.catalogue.js';
-import { settingsProblems, effectiveSettings } from '../src/quality-hub/settings.catalogue.js';
+import { effectiveSettings, inQuietHours, settingsProblems } from '../src/quality-hub/settings.catalogue.js';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
 
 describe('quality hub: module settings, record pages and reports', () => {
@@ -46,32 +46,52 @@ describe('quality hub: module settings, record pages and reports', () => {
     await owner.end();
   });
 
-  it('serves defaults, saves overrides with an audit row, and rejects unknown keys and out-of-range values', async () => {
+  it('serves defaults, saves overrides with an audit row, rejects bad values, and the grievance desk applies them', async () => {
     const d = (await get('principal', '/v1/quality-hub/settings/grievances').expect(200)).body;
-    expect(d.settings.rules.slaHours).toBe(72);
-    expect(d.settings.numbering.ticket.prefix).toBe('GRV/{FY}/');
+    expect(d.settings.rules.slaHighHours).toBe(48);
+    expect(d.settings.numbering.GRV).toMatchObject({ prefix: 'GRV-', pad: 4, next: 1 });
     expect(d.canEdit).toBe(true);
-    const body = { ...d.settings, rules: { ...d.settings.rules, slaHours: 48 }, numbering: { ticket: { prefix: 'GR/{FY}/', next: 41, pad: 5 } } };
+    const body = { ...d.settings, rules: { ...d.settings.rules, slaHighHours: 10, allowAnonymous: false }, templates: { resolved: 'Done: {ticketNo}' }, numbering: { GRV: { prefix: 'GR/', next: 41, pad: 5 } } };
     await put('principal', '/v1/quality-hub/settings/grievances', body).expect(200);
     const again = (await get('gro', '/v1/quality-hub/settings/grievances').expect(200)).body;
-    expect(again.settings.rules.slaHours).toBe(48);
-    expect(again.settings.numbering.ticket.next).toBe(41);
+    expect(again.settings.rules.slaHighHours).toBe(10);
+    expect(again.settings.numbering.GRV.next).toBe(41);
     expect(again.updatedBy).toBeTruthy();
     expect(again.canEdit).toBe(false);
     const n = (await owner.query("select count(*)::int as n from audit_log where tenant_id = $1 and action = 'module_settings.updated'", [t.tenantId])).rows[0].n;
     expect(n).toBe(1);
-    await put('principal', '/v1/quality-hub/settings/grievances', { ...body, rules: { slaHours: 1 } }).expect(400);
+    // Enforced: the ticket number, the deadline for its severity and the anonymity rule.
+    const raised = (await post('teacher', '/v1/grievances', { category: 'academic', severity: 'high', subject: 'Projector broken', description: 'The projector in room 1 has not worked for a week' }).expect(201)).body;
+    expect(raised.ticketNo).toBe('GR/00041');
+    expect(raised.slaDueAt).toBe('2026-10-20T14:30:00.000Z');
+    await post('teacher', '/v1/grievances', { category: 'academic', subject: 'Anonymous', description: 'Something I would rather not sign', anonymous: true }).expect(400);
+    // Numbers already used cannot be reissued; unknown keys and out-of-range values are refused.
+    await put('principal', '/v1/quality-hub/settings/grievances', { ...body, numbering: { GRV: { prefix: 'GR/', next: 5, pad: 5 } } }).expect(409);
+    await put('principal', '/v1/quality-hub/settings/grievances', { ...body, rules: { slaHighHours: 0 } }).expect(400);
     await put('principal', '/v1/quality-hub/settings/grievances', { ...body, rules: { colour: 3 } }).expect(400);
     await put('gro', '/v1/quality-hub/settings/grievances', body).expect(403);
     await get('teacher', '/v1/quality-hub/settings/grievances').expect(403);
-    await get('principal', '/v1/quality-hub/settings/nope').expect(404);
-    // Another institution still sees the defaults.
-    expect((await get('other', '/v1/quality-hub/settings/grievances').expect(200)).body.settings.rules.slaHours).toBe(72);
+    await get('principal', '/v1/quality-hub/settings/accreditation').expect(404);
+    // Another institution still has the defaults.
+    expect((await get('other', '/v1/quality-hub/settings/grievances').expect(200)).body.settings.rules.slaHighHours).toBe(48);
+  });
+
+  it('applies event, skills and placement settings in those modules', async () => {
+    const s = (await get('principal', '/v1/quality-hub/settings/events').expect(200)).body.settings;
+    await put('principal', '/v1/quality-hub/settings/events', { ...s, defaults: { defaultCapacity: 42 } }).expect(200);
+    const ev = (await post('principal', '/v1/campus-life/events', { title: 'Science fair', startsAt: '2026-11-10T04:30:00Z', endsAt: '2026-11-10T08:30:00Z' }).expect(201)).body;
+    expect(ev.capacity).toBe(42);
+    const k = (await get('principal', '/v1/quality-hub/settings/skills').expect(200)).body.settings;
+    await put('principal', '/v1/quality-hub/settings/skills', { ...k, rules: { maxLevel: 11 } }).expect(400);
+    const pl = (await get('principal', '/v1/quality-hub/settings/placements').expect(200)).body.settings;
+    await put('principal', '/v1/quality-hub/settings/placements', { ...pl, defaults: { minCgpa: 6.5, maxBacklogs: 2 } }).expect(200);
   });
 
   it('builds a drive record page with facts, related lists, workflow position and its audit history', async () => {
     const company = (await post('principal', '/v1/placements/companies', { name: 'Infosys', sector: 'IT' }).expect(201)).body;
     const drive = (await post('principal', '/v1/placements/drives', { companyId: company.id, title: 'Campus hiring 2026', roleTitle: 'Systems engineer', ctcLpa: 4.5, driveDate: '2026-11-02' }).expect(201)).body;
+    // The placement settings' defaults filled the eligibility the form left out.
+    expect(drive).toMatchObject({ minCgpa: 6.5, maxBacklogs: 2 });
     await post('principal', `/v1/placements/drives/${drive.id}/status`, { status: 'open' }).expect(200);
     const r = (await get('po', `/v1/quality-hub/records/drive/${drive.id}`).expect(200)).body;
     expect(r.title).toBe('Infosys · Campus hiring 2026');
@@ -113,7 +133,7 @@ describe('quality hub: module settings, record pages and reports', () => {
     const pdf = await get('principal', '/v1/quality-hub/reports/grievances.register?format=pdf').buffer(true).expect(200);
     expect(pdf.headers['content-type']).toBe('application/pdf');
     const sum = (await get('principal', '/v1/quality-hub/reports/accreditation.summary?from=2026-04-01&to=2027-03-31').expect(200)).body;
-    expect(sum.rows.find((r: { metric: string }) => r.metric === 'grievances_received').value).toBe(2);
+    expect(sum.rows.find((r: { metric: string }) => r.metric === 'grievances_received').value).toBe(3);
     await get('po', '/v1/quality-hub/reports/grievances.register').expect(404);
     await get('po', '/v1/quality-hub/reports/placements.drives?from=2026-13-40').expect(400);
     await get('po', '/v1/quality-hub/reports/placements.drives?format=doc').expect(400);
@@ -125,7 +145,10 @@ describe('quality hub: module settings, record pages and reports', () => {
     expect(stepStates({ steps: ['a', 'b', 'c'], off: ['x'] }, 'c').map((s) => s.state)).toEqual(['done', 'done', 'done']);
     expect(stepStates({ steps: ['a', 'b', 'c'], off: ['x'] }, 'x').map((s) => s.state)).toEqual(['done', 'rejected']);
     expect(stepStates({ steps: ['a', 'b', 'c'], off: [], aliases: { e: 'b' } }, 'e').map((s) => s.state)).toEqual(['done', 'current', 'upcoming']);
-    expect(settingsProblems('obe', effectiveSettings('obe', null))).toEqual([]);
-    expect(settingsProblems('obe', { ...effectiveSettings('obe', null), templates: { other: 'x' } })).toEqual(['Unknown template other']);
+    const obe = effectiveSettings('obe', null);
+    expect(settingsProblems('obe', { ...obe, numbering: {} })).toEqual([]);
+    expect(settingsProblems('obe', { ...obe, numbering: {}, templates: { other: 'x' } })).toEqual(['Unknown template other']);
+    expect(effectiveSettings('grievances', { rules: { slaLowHours: -4 } }).rules.slaLowHours).toBe(240);
+    expect([inQuietHours(22, 21, 7), inQuietHours(6, 21, 7), inQuietHours(12, 21, 7), inQuietHours(13, 12, 14), inQuietHours(9, 9, 9)]).toEqual([true, true, false, true, false]);
   });
 });
