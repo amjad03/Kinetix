@@ -91,11 +91,18 @@ class LogicCircuit {
   LogicPart? part(String id) => parts.where((p) => p.id == id).firstOrNull;
 
   LogicPart add(PartKind kind, Offset pos, {GateType? gate}) {
-    final n = parts.where((p) => p.kind == kind).length;
+    // The first free name, so a switch added after A was deleted is not a second B.
+    final used = {for (final p in parts) p.label};
+    String first(String Function(int n) name) {
+      for (var n = 0;; n++) {
+        if (!used.contains(name(n))) return name(n);
+      }
+    }
+
     final label = switch (kind) {
-      PartKind.input => String.fromCharCode(0x41 + n % 26),
-      PartKind.led => 'Q${n + 1}',
-      PartKind.clock => 'CLK${n == 0 ? '' : n + 1}',
+      PartKind.input => first((n) => n < 26 ? String.fromCharCode(0x41 + n) : 'X${n - 25}'),
+      PartKind.led => first((n) => 'Q${n + 1}'),
+      PartKind.clock => first((n) => 'CLK${n == 0 ? '' : n + 1}'),
       PartKind.gate => '',
     };
     final p = LogicPart(id: 'p${_next++}', kind: kind, gate: gate, pos: pos, label: label);

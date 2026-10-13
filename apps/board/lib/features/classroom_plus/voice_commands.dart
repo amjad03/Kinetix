@@ -211,6 +211,9 @@ class _VoiceCommandDialogState extends State<VoiceCommandDialog> {
   final VoiceInput _voice = VoiceInput.create();
   String _heard = '';
   bool _listening = true, _failed = false;
+
+  /// Why listening stopped: no recogniser at all, or none for this language.
+  VoiceProblem? _problem;
   final _log = <(bool, String)>[];
   Timer? _timer;
   int _gen = 0;
@@ -224,21 +227,36 @@ class _VoiceCommandDialogState extends State<VoiceCommandDialog> {
   Future<void> _listen() async {
     if (!mounted || !_listening) return;
     final g = ++_gen;
-    final ok = await _voice.listen(
-      widget.language,
-      onWords: (w, d) {
-        if (g == _gen) _words(w, d);
-      },
-      onProblem: (p) {
-        if (g != _gen) return;
-        if (p == VoiceProblem.noSpeech) {
-          _again();
-        } else {
-          _fail();
-        }
-      },
-    );
-    if (!ok) _fail();
+    bool ok;
+    try {
+      ok = await _voice.listen(
+        widget.language,
+        onWords: (w, d) {
+          if (g == _gen) _words(w, d);
+        },
+        onProblem: (p) {
+          if (g != _gen) return;
+          if (p == VoiceProblem.noSpeech) {
+            _again();
+          } else {
+            _fail(p);
+          }
+        },
+      );
+    } catch (_) {
+      ok = false;
+    }
+    if (!ok && g == _gen) _fail(_problem ?? VoiceProblem.unavailable);
+  }
+
+  /// Listens again after a problem (the microphone came back, a language model was added).
+  void _retry() {
+    setState(() {
+      _listening = true;
+      _failed = false;
+      _problem = null;
+    });
+    unawaited(_listen());
   }
 
   void _again() {
@@ -246,11 +264,12 @@ class _VoiceCommandDialogState extends State<VoiceCommandDialog> {
     _timer = Timer(const Duration(milliseconds: 300), () => unawaited(_listen()));
   }
 
-  void _fail() {
+  void _fail(VoiceProblem p) {
     if (!mounted) return;
     setState(() {
       _listening = false;
       _failed = true;
+      _problem = p;
     });
   }
 
@@ -296,7 +315,17 @@ class _VoiceCommandDialogState extends State<VoiceCommandDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (_listening) Text(s['voiceListening'], key: const Key('voice-listening'), style: context.text.titleMedium),
-              if (_failed) Text(s['voiceUnavailable'], key: const Key('voice-result'), style: context.text.bodyLarge?.copyWith(color: c.error)),
+              if (_failed) ...[
+                Text(
+                  s[_problem == VoiceProblem.language ? 'voiceLanguageMissing' : 'voiceUnavailable'],
+                  key: const Key('voice-failed'),
+                  style: context.text.bodyLarge?.copyWith(color: c.error),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(key: const Key('voice-retry'), onPressed: _retry, icon: const Icon(Icons.mic), label: Text(s['voiceRetry'])),
+                ),
+              ],
               if (_heard.isNotEmpty) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text('“$_heard”', key: const Key('voice-heard'), style: context.text.titleLarge)),
               for (final (i, (ok, text)) in _log.indexed)
                 Padding(

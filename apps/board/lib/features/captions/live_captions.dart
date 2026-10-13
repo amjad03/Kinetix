@@ -114,16 +114,24 @@ class CaptionsController extends ChangeNotifier {
     if (!on) return;
     _lineStarted = null;
     final g = ++_gen;
-    final ok = await _input!.listen(
-      language,
-      onWords: (w, d) {
-        if (g == _gen) _onWords(w, d);
-      },
-      onProblem: (p) {
-        if (g == _gen) _onProblem(p);
-      },
-    );
+    bool ok;
+    try {
+      ok = await _input!.listen(
+        language,
+        onWords: (w, d) {
+          if (g == _gen) _onWords(w, d);
+        },
+        onProblem: (p) {
+          if (g == _gen) _onProblem(p);
+        },
+      );
+    } catch (_) {
+      // A board with no speech engine (a desktop, an emulator): say so instead of hanging on "Listening…".
+      ok = false;
+      if (on && g == _gen) problem ??= VoiceProblem.unavailable;
+    }
     if (!ok && on && g == _gen) {
+      problem ??= VoiceProblem.unavailable;
       on = false;
       notifyListeners();
     }

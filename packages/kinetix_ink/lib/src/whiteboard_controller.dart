@@ -273,6 +273,7 @@ class _Gesture {
 class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   WhiteboardController({this.palmMode = PalmMode.ignore}) {
     _pages.add(WhiteboardPage());
+    GeoCalibration.pxPerCm.addListener(_geoCalibrated);
   }
 
   final List<WhiteboardPage> _pages = [];
@@ -1278,6 +1279,19 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     return t;
   }
 
+  /// The calibration the tools on the board were sized with.
+  double _geoPxPerCm = GeoCalibration.pxPerCm.value;
+
+  /// The screen was calibrated (or the saved calibration arrived): the tools on the board keep
+  /// their real size, so a 20 cm ruler still reads 20 cm on the new scale.
+  void _geoCalibrated() {
+    final px = GeoCalibration.pxPerCm.value;
+    final k = px / _geoPxPerCm;
+    _geoPxPerCm = px;
+    if (!k.isFinite || k <= 0 || (k - 1).abs() < 1e-9 || geoTools.value.isEmpty) return;
+    geoTools.value = [for (final t in geoTools.value) t.copyWith(size: t.size * k)];
+  }
+
   void updateGeoTool(GeoTool t) {
     geoTools.value = [for (final x in geoTools.value) x.id == t.id ? t : x];
   }
@@ -1924,6 +1938,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   @override
   void dispose() {
+    GeoCalibration.pxPerCm.removeListener(_geoCalibrated);
     committed.dispose();
     view.dispose();
     ruler.dispose();

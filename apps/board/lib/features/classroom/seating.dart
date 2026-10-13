@@ -366,6 +366,12 @@ class SeatingChartPanelState extends State<SeatingChartPanel> {
     _save();
   }
 
+  /// Changes the grid to [rows] by [cols] and keeps it for the class.
+  void resize(int rows, int cols) {
+    setState(() => plan.resize(rows, cols));
+    _save();
+  }
+
   void arrange(SeatArrange mode) {
     setState(() => plan.arrange(mode, info, _names, widget.random));
     _save();
@@ -508,23 +514,23 @@ class SeatingChartPanelState extends State<SeatingChartPanel> {
                       Text(t.n('colsN', plan.cols)),
                       IconButton.outlined(
                         key: const Key('seating-cols-minus'),
-                        onPressed: plan.cols <= 2 ? null : () => setState(() => plan.resize(plan.rows, plan.cols - 1)),
+                        onPressed: plan.cols <= 2 ? null : () => resize(plan.rows, plan.cols - 1),
                         icon: const Icon(Icons.remove),
                       ),
                       IconButton.outlined(
                         key: const Key('seating-cols-plus'),
-                        onPressed: plan.cols >= 10 ? null : () => setState(() => plan.resize(plan.rows, plan.cols + 1)),
+                        onPressed: plan.cols >= 10 ? null : () => resize(plan.rows, plan.cols + 1),
                         icon: const Icon(Icons.add),
                       ),
                       Text(t.n('rowsN', plan.rows)),
                       IconButton.outlined(
                         key: const Key('seating-rows-minus'),
-                        onPressed: plan.rows <= 1 || plan.seats.length - plan.cols < plan.seats.whereType<String>().length ? null : () => setState(() => plan.resize(plan.rows - 1, plan.cols)),
+                        onPressed: plan.rows <= 1 || plan.seats.length - plan.cols < plan.seats.whereType<String>().length ? null : () => resize(plan.rows - 1, plan.cols),
                         icon: const Icon(Icons.remove),
                       ),
                       IconButton.outlined(
                         key: const Key('seating-rows-plus'),
-                        onPressed: plan.rows >= 12 ? null : () => setState(() => plan.resize(plan.rows + 1, plan.cols)),
+                        onPressed: plan.rows >= 12 ? null : () => resize(plan.rows + 1, plan.cols),
                         icon: const Icon(Icons.add),
                       ),
                       PopupMenuButton<SeatArrange>(

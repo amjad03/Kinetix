@@ -9,44 +9,18 @@ import '../../l10n/l10n.dart';
 import 'chrome.dart';
 import 'panel/panel_host.dart';
 
-/// The index just after the bracket that closes the one opened at [open] in [s].
-int _closing(String s, int open) {
-  var depth = 0;
-  for (var i = open; i < s.length; i++) {
-    if (s[i] == '(') depth++;
-    if (s[i] == ')' && --depth == 0) return i + 1;
-  }
-  return s.length;
-}
-
-/// Sine, cosine and tangent take degrees (and their inverses give degrees) by working in
-/// radians underneath: `sin(30)` becomes `sin((30)*pi/180)`.
-String _degrees(String s) => _deg(s).replaceAll('#', '');
-
-// The '#' marks calls already turned, so the loop does not meet them again.
-String _deg(String s) {
-  var out = s;
-  while (true) {
-    final m = RegExp(r'(?<![a-z#])(asin|acos|atan|sin|cos|tan)\(').firstMatch(out);
-    if (m == null) return out;
-    final open = m.end - 1, close = _closing(out, open);
-    if (close <= open + 1 || out[close - 1] != ')') return out;
-    final inner = _deg(out.substring(open + 1, close - 1));
-    final name = m[1]!;
-    final rep = name.startsWith('a') ? '($name#($inner)*180/pi)' : '$name#(($inner)*pi/180)';
-    out = out.replaceRange(m.start, close, rep);
-  }
-}
-
-/// 5! and 0! (whole numbers up to 170).
-String _factorials(String s) => s.replaceAllMapped(RegExp(r'(\d+)!'), (m) {
+/// 5! and 0! (whole numbers up to 170; 2.5! is left for the sum to refuse).
+String _factorials(String s) => s.replaceAllMapped(RegExp(r'(?<![\d.])(\d+)!'), (m) {
   final n = int.parse(m[1]!);
   if (n > 170) return 'x';
   var f = 1.0;
   for (var i = 2; i <= n; i++) {
     f *= i;
   }
-  return '$f';
+  // Bracketed, and 25! (1.55e+25) as 1.55*10^(+25): a bare "e" would read as Euler's number.
+  final t = '$f';
+  final at = t.indexOf('e');
+  return at < 0 ? '($t)' : '(${t.substring(0, at)}*10^(${t.substring(at + 1)}))';
 });
 
 /// The value of a calculator sum (+ − × ÷ ^ % √ π e, brackets, sin cos tan and their inverses,
@@ -56,8 +30,8 @@ double? evaluateSum(String sum, {bool degrees = false}) {
   var s = sum.replaceAll('√', 'sqrt').replaceAllMapped(RegExp(r'(\d+(?:\.\d+)?)%'), (m) => '(${m[1]}/100)').trim();
   if (s.isEmpty) return null;
   s = _factorials(s);
-  if (degrees) s = _degrees(s);
-  final f = compileGraph(s);
+  // In degrees, cos(90) is 0 and tan(90) has no value (not 6e-17 and 1.6e16).
+  final f = compileGraph(s, degrees: degrees);
   final v = f?.call(0);
   return v == null || v.isNaN || v.isInfinite ? null : v;
 }
@@ -66,7 +40,11 @@ double? evaluateSum(String sum, {bool degrees = false}) {
 String formatResult(double v) {
   if (v == v.roundToDouble() && v.abs() < 1e15) return v.toInt().toString();
   final t = v.toStringAsPrecision(10);
-  return t.contains('e') ? t : t.replaceFirst(RegExp(r'\.?0+$'), '');
+  if (!t.contains('e')) return t.replaceFirst(RegExp(r'\.?0+$'), '');
+  // 1.500000000e-7 reads 1.5e-7.
+  final at = t.indexOf('e');
+  final mantissa = t.substring(0, at);
+  return '${mantissa.contains('.') ? mantissa.replaceFirst(RegExp(r'\.?0+$'), '') : mantissa}${t.substring(at)}';
 }
 
 /// How the calculator is laid out for the room it has: one column on a phone, wider keys on a
@@ -144,7 +122,7 @@ class _BoardCalculatorState extends State<BoardCalculator> {
           _last = _answer;
         }
       case 'Ans':
-        _append(_last ?? '0');
+        _append(_inSum(_last ?? '0'));
       case 'x²':
         _append('^2');
       case '10^':
@@ -159,11 +137,17 @@ class _BoardCalculatorState extends State<BoardCalculator> {
   /// After an answer, an operator carries on from it and anything else starts afresh.
   void _append(String k) {
     if (_answer != null) {
-      _sum = '+−×÷^%!'.contains(k[0]) ? '$_answer$k' : k;
+      _sum = '+−×÷^%!'.contains(k[0]) ? '${_inSum(_answer!)}$k' : k;
       _answer = null;
     } else {
       _sum += k;
     }
+  }
+
+  /// An answer as part of the next sum: 1.5e-7 as 1.5×10^(-7), since "e" is Euler's number.
+  static String _inSum(String answer) {
+    final at = answer.indexOf('e');
+    return at < 0 ? answer : '${answer.substring(0, at)}×10^(${answer.substring(at + 1)})';
   }
 
   String _label(String k) => switch (k) {

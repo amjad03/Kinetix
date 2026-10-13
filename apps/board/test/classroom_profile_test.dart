@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kinetix_board/features/board/classroom_profile_strings.dart';
 import 'package:kinetix_board/features/board/classroom_profile_ui.dart';
 import 'package:kinetix_board/features/classroom_plus/student_buzzers.dart';
+import 'package:kinetix_board/features/toolkit/toolkit_sounds.dart';
 
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
@@ -19,6 +20,7 @@ import 'support/panel_harness.dart';
 void main() {
   final calls = <String>[];
   var buzzerLocked = true;
+  var buzzerPresses = <Map<String, dynamic>>[];
   var trainings = <Map<String, dynamic>>[];
   final slotAt = DateTime.now().add(const Duration(days: 1)).toUtc().toIso8601String();
 
@@ -56,7 +58,7 @@ void main() {
           ];
           return jsonResponse(trainings.first, 201);
         case '/v1/classroom/buzzer':
-          return jsonResponse({'open': true, 'locked': buzzerLocked, 'roundNo': 1, 'presses': []});
+          return jsonResponse({'open': true, 'locked': buzzerLocked, 'roundNo': 1, 'presses': buzzerPresses});
         case '/v1/classroom/buzzer/lock':
           buzzerLocked = (jsonDecode(req.body) as Map)['locked'] as bool;
           return jsonResponse({'open': true, 'locked': buzzerLocked, 'roundNo': 1, 'presses': []});
@@ -84,6 +86,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     calls.clear();
     buzzerLocked = true;
+    buzzerPresses = [];
     trainings = [];
   });
 
@@ -154,6 +157,31 @@ void main() {
     board.dispose();
   });
 
+  testWidgets('the bell rings for a new round\'s first buzz, not for buzzes already in when the panel opens', (tester) async {
+    final board = await signedIn();
+    final bells = _Bells();
+    buzzerPresses = [
+      {'rank': 1, 'name': 'Asha', 'studentId': 'u1'},
+    ];
+    await pumpPanel(tester, SingleChildScrollView(child: StudentBuzzers(board: board, sounds: bells)), size: panelSize);
+    expect(find.text('Asha'), findsOneWidget);
+    expect(bells.played, isEmpty, reason: 'opening the panel mid-round is not a buzz');
+    // Next question: the round is reset, then its first buzz arrives.
+    board.buzzerState.value = {'open': true, 'locked': false, 'roundNo': 2, 'presses': <Map<String, dynamic>>[]};
+    await tester.pump();
+    board.buzzerState.value = {
+      'open': true,
+      'locked': false,
+      'roundNo': 2,
+      'presses': [
+        {'rank': 1, 'name': 'Ravi', 'studentId': 'u2'},
+      ],
+    };
+    await tester.pump();
+    expect(bells.played, ['bell']);
+    board.dispose();
+  });
+
   testWidgets('End class summary offers WhatsApp through the share sheet with the notes link', (tester) async {
     final board = await signedIn();
     String? shared;
@@ -171,4 +199,11 @@ void main() {
     expect(shared, 'Class notes: http://test/v1/class-notes/t.abc');
     board.dispose();
   });
+}
+
+/// Records the sounds the buzzer asked for.
+class _Bells implements ToolkitSounds {
+  final played = <String>[];
+  @override
+  Future<void> play(String id) async => played.add(id);
 }

@@ -6,10 +6,14 @@ import 'dart:math' as math;
 /// (base 10), exp. Angles are radians, as graphs are drawn. The ERP has the same evaluator
 /// (apps/erp/src/lib/live/graph.ts).
 ///
+/// With [degrees] (the calculator's Deg mode) sin, cos and tan take degrees and their inverses
+/// give degrees, exactly at the angles a class meets: cos 90 is 0, sin 30 is 0.5 and tan 90 has
+/// no value.
+///
 /// Returns null when the expression cannot be read.
-double Function(double x)? compileGraph(String expression) {
+double Function(double x)? compileGraph(String expression, {bool degrees = false}) {
   try {
-    final p = _Parser(expression.replaceAll('×', '*').replaceAll('÷', '/').replaceAll('−', '-').replaceAll('π', 'pi').toLowerCase());
+    final p = _Parser(expression.replaceAll('×', '*').replaceAll('÷', '/').replaceAll('−', '-').replaceAll('π', 'pi').toLowerCase(), degrees: degrees);
     final f = p.expression();
     p.skipSpace();
     if (!p.done) return null;
@@ -22,9 +26,10 @@ double Function(double x)? compileGraph(String expression) {
 typedef _F = double Function(double x);
 
 class _Parser {
-  _Parser(this.s);
+  _Parser(this.s, {this.degrees = false});
 
   final String s;
+  final bool degrees;
   int i = 0;
 
   bool get done => i >= s.length;
@@ -129,7 +134,7 @@ class _Parser {
         if (word == 'x') return (x) => x;
         if (word == 'pi') return (_) => math.pi;
         if (word == 'e') return (_) => math.e;
-        final fn = _functions[word]!;
+        final fn = (degrees ? _degreeFunctions[word] : null) ?? _functions[word]!;
         final arg = power(); // sin x and sin(x); write sin(2x) for the sine of 2x
         return (x) => fn(arg(x));
       }
@@ -156,4 +161,26 @@ class _Parser {
     'log': (v) => math.log(v) / math.ln10,
     'exp': math.exp,
   };
+
+  static final _degreeFunctions = <String, double Function(double)>{
+    'sin': (d) => _snapTrig(d, math.sin(d * math.pi / 180)),
+    'cos': (d) => _snapTrig(d, math.cos(d * math.pi / 180)),
+    'tan': (d) {
+      // tan 90, tan 270 …: no value.
+      if (d % 180 == 90) return double.nan;
+      final v = math.tan(d * math.pi / 180);
+      return d % 45 == 0 ? v.roundToDouble() : v;
+    },
+    'asin': (v) => math.asin(v) * 180 / math.pi,
+    'acos': (v) => math.acos(v) * 180 / math.pi,
+    'atan': (v) => math.atan(v) * 180 / math.pi,
+  };
+
+  /// At a whole multiple of 30° sin and cos that should be 0, ±½ or ±1 are exactly that
+  /// (radians leave cos 90° as 6e-17); √3/2 and the rest are left as they are.
+  static double _snapTrig(double degrees, double v) {
+    if (degrees % 30 != 0) return v;
+    final r = (v * 2).roundToDouble() / 2;
+    return (v - r).abs() < 1e-12 ? r : v;
+  }
 }

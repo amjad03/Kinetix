@@ -96,7 +96,8 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
   Offset _grab = Offset.zero;
   String? _wireFrom;
 
-  static const _pinHit = 16.0;
+  /// How near a finger must land to take a pin (a fingertip on a panel, not a mouse point).
+  static const _pinHit = 22.0;
 
   @override
   void dispose() {
@@ -130,17 +131,35 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
     setState(() => _selected = c.add(k, _spot(k) , gate: gate).id);
   }
 
-  /// The output pin of a part at [p], if any.
-  LogicPart? _outAt(Offset p) => c.parts.reversed.where((x) => x.hasOutput && (x.outPin - p).distance <= _pinHit).firstOrNull;
+  /// The output pin nearest [p], if one is in reach.
+  LogicPart? _outAt(Offset p) {
+    LogicPart? best;
+    var bestD = _pinHit;
+    for (final x in c.parts.reversed) {
+      final d = (x.outPin - p).distance;
+      if (x.hasOutput && d <= bestD) {
+        best = x;
+        bestD = d;
+      }
+    }
+    return best;
+  }
 
+  /// The input pin nearest [p], if one is in reach (a gate's two inputs are close together).
   ({LogicPart part, int pin})? _inAt(Offset p, {String? except}) {
+    ({LogicPart part, int pin})? best;
+    var bestD = _pinHit;
     for (final x in c.parts.reversed) {
       if (x.id == except) continue;
       for (var i = 0; i < x.inputCount; i++) {
-        if ((x.inPin(i) - p).distance <= _pinHit) return (part: x, pin: i);
+        final d = (x.inPin(i) - p).distance;
+        if (d < bestD) {
+          best = (part: x, pin: i);
+          bestD = d;
+        }
       }
     }
-    return null;
+    return best;
   }
 
   LogicPart? _bodyAt(Offset p) => c.parts.reversed.where((x) => x.rect.contains(p)).firstOrNull;
@@ -148,7 +167,9 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
   void _start(Offset p) {
     // Pick up a wire from a connected input pin, or start one from an output pin.
     final inPin = _inAt(p);
-    if (inPin != null) {
+    final outPin = _outAt(p);
+    // Where an output and an input pin are both in reach, the nearer one is meant.
+    if (inPin != null && (outPin == null || (inPin.part.inPin(inPin.pin) - p).distance <= (outPin.outPin - p).distance)) {
       final from = c.detach(inPin.part.id, inPin.pin);
       if (from != null) {
         setState(() {
@@ -159,7 +180,7 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
         return;
       }
     }
-    final out = _outAt(p);
+    final out = outPin;
     if (out != null) {
       setState(() {
         _drag = _Drag.wire;
@@ -184,7 +205,9 @@ class _LogicGatesLabState extends State<LogicGatesLab> {
       case _Drag.wire:
         setState(() => _dragAt = p);
       case _Drag.move:
-        setState(() => c.part(_dragPart!)?.pos = p - _grab);
+        // Kept on the circuit board: a part dragged past the edge would be lost.
+        final to = p - _grab;
+        setState(() => c.part(_dragPart!)?.pos = Offset(to.dx.clamp(0, double.infinity), to.dy.clamp(0, double.infinity)));
       case _Drag.none:
         break;
     }
