@@ -222,16 +222,19 @@ export function WorkflowBuilder({ initial }: { initial: WorkflowDetail }) {
         {n.type === 'condition' && (
           <>
             {edge(lane, i, true)}
-            <div className="relative grid grid-cols-2 gap-10 border-t-2 border-border pt-5">
+            <div className="relative grid grid-cols-2 gap-10 pt-5 pb-5">
+              <i aria-hidden className="absolute top-0 right-[calc(25%-10px)] left-[calc(25%-10px)] h-5 rounded-t-xl border-2 border-b-0 border-border" />
               {(['yes', 'no'] as const).map((b) => (
                 <div key={b} className="flex flex-col items-center">
                   <span className={`mb-2 rounded-full px-2 text-[11.5px] font-semibold ${b === 'yes' ? 'bg-green-soft text-green-ink' : 'bg-red-soft text-red-ink'} ${path?.some((p) => p.nodeId === n.id && p.branch === b) ? 'ring-2 ring-green-ink' : ''}`}>{t(`wb.${b}`)}</span>
                   {seq(n[b], { parent: n.id, branch: b })}
                   {edge({ parent: n.id, branch: b }, n[b].length)}
+                  <span aria-hidden className="w-0.5 flex-1 bg-border" />
                 </div>
               ))}
+              <i aria-hidden className="absolute right-[calc(25%-10px)] bottom-0 left-[calc(25%-10px)] h-5 rounded-b-xl border-2 border-t-0 border-border" />
             </div>
-            <div className="h-0 w-1/2 border-t-2 border-border" />
+            
           </>
         )}
       </Fragment>

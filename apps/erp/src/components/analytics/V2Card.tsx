@@ -63,8 +63,8 @@ export function ColumnBars({ rows, unit = '', max: fixedMax, label, legend, test
           <div key={r.label} className="flex h-full min-w-0 flex-1 flex-col justify-end">
             <span className="mb-1 text-center text-[11px] font-semibold tabular-nums text-muted-foreground">{r.a === null ? '–' : `${r.a}${unit}`}</span>
             <div className="flex h-full items-end justify-center gap-[3px]">
-              <i className={`block w-full max-w-[22px] rounded-t-[5px] ${r.highlight ? 'bg-primary' : 'bg-primary/60'}`} style={{ height: `${((r.a ?? 0) / max) * 100}%` }} title={`${r.label}: ${r.a ?? '–'}${unit}`} />
-              {r.b !== undefined && <i className="block w-full max-w-[22px] rounded-t-[5px] bg-teal/50" style={{ height: `${((r.b ?? 0) / max) * 100}%` }} title={`${r.label}: ${r.b ?? '–'}${unit}`} />}
+              <i className="block w-full max-w-[22px] rounded-t-[5px]" style={{ height: `${((r.a ?? 0) / max) * 100}%`, background: 'var(--chart-1)', opacity: r.highlight ? 1 : 0.7 }} title={`${r.label}: ${r.a ?? '–'}${unit}`} />
+              {r.b !== undefined && <i className="block w-full max-w-[22px] rounded-t-[5px]" style={{ height: `${((r.b ?? 0) / max) * 100}%`, background: 'var(--chart-2)' }} title={`${r.label}: ${r.b ?? '–'}${unit}`} />}
             </div>
           </div>
         ))}
@@ -78,8 +78,8 @@ export function ColumnBars({ rows, unit = '', max: fixedMax, label, legend, test
       </div>
       {legend && (
         <figcaption className="flex gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><i className="size-2.5 rounded-sm bg-primary/60" />{legend[0]}</span>
-          <span className="flex items-center gap-1.5"><i className="size-2.5 rounded-sm bg-teal/50" />{legend[1]}</span>
+          <span className="flex items-center gap-1.5"><i className="size-2.5 rounded-sm" style={{ background: 'var(--chart-1)' }} />{legend[0]}</span>
+          <span className="flex items-center gap-1.5"><i className="size-2.5 rounded-sm" style={{ background: 'var(--chart-2)' }} />{legend[1]}</span>
         </figcaption>
       )}
     </figure>
