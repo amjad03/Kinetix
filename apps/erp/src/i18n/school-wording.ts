@@ -35,13 +35,14 @@ const WORDS: Record<Locale, [RegExp, string][]> = {
 };
 
 const CLASS_KEYS: Record<Locale, Record<string, string>> = {
-  en: { 'exm.sessionSubtitle': 'Class {term}', 'exm.f.term': 'Class', 'xo.c.term': 'Class', 'ro.f.semester': 'Class' },
+  en: { 'exm.sessionSubtitle': 'Class {term}', 'exm.f.term': 'Grade', 'xo.c.term': 'Grade', 'ro.f.semester': 'Grade' },
   hi: { 'exm.sessionSubtitle': 'कक्षा {term}', 'exm.f.term': 'कक्षा', 'xo.c.term': 'कक्षा', 'ro.f.semester': 'कक्षा' },
   kn: { 'exm.sessionSubtitle': 'ತರಗತಿ {term}', 'exm.f.term': 'ತರಗತಿ', 'xo.c.term': 'ತರಗತಿ', 'ro.f.semester': 'ತರಗತಿ' },
 };
 
-export function isSchoolModel(model: string | null | undefined): boolean {
-  return model === 'school';
+/** A school: the tenant's kind (set at onboarding) or its academic model says so. */
+export function isSchoolModel(model: string | null | undefined, tenantKind?: string | null): boolean {
+  return tenantKind === 'school' || model === 'school';
 }
 
 export function applySchoolWording(messages: Messages, locale: Locale): Messages {

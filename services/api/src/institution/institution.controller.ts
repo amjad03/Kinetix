@@ -7,7 +7,7 @@ import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { invalidateModuleGate } from './module-gate.interceptor.js';
-import { buildingFloors, buildings, campuses, institutionProfiles, rooms } from '../db/schema.js';
+import { buildingFloors, buildings, campuses, institutionProfiles, rooms, tenants } from '../db/schema.js';
 
 /** ERP sections an institution may switch off (they disappear from the navigation). */
 export const TOGGLE_MODULES = ['hostel', 'transport', 'canteen', 'library', 'placements', 'research', 'obe', 'courseRegistration', 'earlyYears', 'alumni', 'inventory', 'assets', 'skills', 'campusLife', 'mentoring', 'workflows'] as const;
@@ -52,7 +52,9 @@ export class InstitutionController {
   capabilities(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const r = await readProfile(tx);
+      const [tenant] = await tx.select({ kind: tenants.kind }).from(tenants).where(eq(tenants.id, p.tenantId));
       return {
+        tenantKind: tenant?.kind ?? null,
         academicModel: r?.academicModel ?? 'school',
         boardOrUniversity: r?.boardOrUniversity ?? null,
         disabledModules: r?.disabledModules ?? [],

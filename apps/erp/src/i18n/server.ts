@@ -30,11 +30,11 @@ export const getLocale = cache(async (): Promise<Locale> => {
 });
 
 /** The institution's capabilities that shape wording (empty when signed out or on any failure). */
-const getWordingProfile = cache(async (): Promise<{ terminology: Record<string, string>; academicModel?: string }> => {
+const getWordingProfile = cache(async (): Promise<{ terminology: Record<string, string>; academicModel?: string; tenantKind?: string | null }> => {
   if (!(await cookies()).get(SESSION_COOKIE)) return { terminology: {} };
   try {
-    const c = await api<{ terminology?: Record<string, string>; academicModel?: string }>('/v1/institution/capabilities');
-    return { terminology: c.terminology ?? {}, academicModel: c.academicModel };
+    const c = await api<{ terminology?: Record<string, string>; academicModel?: string; tenantKind?: string | null }>('/v1/institution/capabilities');
+    return { terminology: c.terminology ?? {}, academicModel: c.academicModel, tenantKind: c.tenantKind };
   } catch {
     return { terminology: {} };
   }
@@ -44,7 +44,7 @@ const getWordingProfile = cache(async (): Promise<{ terminology: Record<string, 
 export const getTerminology = cache(async (): Promise<Record<string, string>> => (await getWordingProfile()).terminology);
 
 /** True for a school tenant: Class / Section / Term / Subject instead of Programme / Semester / Course. */
-export const isSchoolTenant = cache(async (): Promise<boolean> => isSchoolModel((await getWordingProfile()).academicModel));
+export const isSchoolTenant = cache(async (): Promise<boolean> => isSchoolModel((await getWordingProfile()).academicModel, (await getWordingProfile()).tenantKind));
 
 /** The dictionary for this request: the language's strings, school wording for a school, the institution's wording on top. */
 export const getMessages = cache(async () => {
