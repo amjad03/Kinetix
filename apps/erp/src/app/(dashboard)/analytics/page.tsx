@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Kpi, V2Card } from '@/components/analytics/V2Card';
+import { ColumnBars, Kpi, V2Card } from '@/components/analytics/V2Card';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { DonutChart, LineChart, Sparkline } from '@/components/ui/Charts';
 import { FeeBars, MiniBars, MiniMeter } from '@/components/dashboard/home';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
+import type { AdmissionsByMonth, AttendanceWeek, HealthRows } from '@/lib/analytics-cards';
 import type { DashboardRollup } from '@/lib/dashboard';
 import { formatMonth } from '@/lib/dates';
 import { formatRupees } from '@/lib/money';
@@ -22,7 +23,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AnalyticsPage() {
   await requireSection('dashboard');
   const { t, locale } = await getI18n();
-  const [roll, fees] = await Promise.all([load(() => api<DashboardRollup>('/v1/admin/dashboard')), load(() => api<FeeSummary>('/v1/fees/summary'))]);
+  const [roll, fees, adm, health, week] = await Promise.all([
+    load(() => api<DashboardRollup>('/v1/admin/dashboard')),
+    load(() => api<FeeSummary>('/v1/fees/summary')),
+    load(() => api<AdmissionsByMonth>('/v1/admin/analytics/admissions')),
+    load(() => api<HealthRows>('/v1/admin/analytics/health')),
+    load(() => api<AttendanceWeek>('/v1/admin/analytics/attendance-week')),
+  ]);
   if (roll.error !== undefined) return <ErrorState message={roll.error} />;
   const r = roll.data;
   const f = fees.data;
@@ -86,6 +93,71 @@ export default async function AnalyticsPage() {
             <p className="text-sm text-muted-foreground">{t('v2.an.noData')}</p>
           )}
         </V2Card>
+      </div>
+      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        {adm.data && (
+          <V2Card title={t('an2.admissions')} icon="admissions" action={<span className="text-xs text-muted-foreground">{t('an2.admissionsSub', { r: adm.data.received, c: adm.data.confirmed })}</span>}>
+            <ColumnBars
+              testId="an-admissions"
+              label={t('an2.admissions')}
+              legend={[t('an2.received'), t('an2.confirmed')]}
+              rows={adm.data.months.map((m, i) => ({ label: formatMonth(`${m.month}-01`, locale).split(' ')[0], a: m.received, b: m.confirmed, highlight: i === adm.data!.months.length - 1 }))}
+            />
+          </V2Card>
+        )}
+        {health.data && (
+          <V2Card title={t(health.data.kind === 'class' ? 'an2.healthClass' : 'an2.health')} icon={health.data.kind === 'class' ? 'classes' : 'department'}>
+            <p className="-mt-3 mb-3 text-xs text-muted-foreground">{t('an2.healthSub')}</p>
+            {health.data.rows.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t('an2.noData')}</p>
+            ) : (
+              <ul className="grid gap-3" data-testid="an-health">
+                {health.data.rows.slice(0, 8).map((r) => (
+                  <li key={r.id} className="grid gap-1.5">
+                    <div className="flex items-baseline gap-2 text-sm">
+                      <b className="min-w-0 flex-1 truncate font-semibold">{health.data!.kind === 'class' ? t('an2.class', { n: r.name }) : r.name}</b>
+                      <b className="tabular-nums">{r.score ?? '–'}</b>
+                    </div>
+                    <span className="h-2 overflow-hidden rounded-full bg-muted">
+                      <i className={`block h-full rounded-full ${r.score === null ? '' : r.score >= 80 ? 'bg-teal' : r.score >= 65 ? 'bg-amber' : 'bg-red'}`} style={{ width: `${r.score ?? 0}%` }} />
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {r.attendance !== null && t('an2.att', { v: r.attendance })}
+                      {r.attendance !== null && r.results !== null && ' · '}
+                      {r.results !== null && t('an2.res', { v: r.results })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </V2Card>
+        )}
+        {week.data && (
+          <V2Card title={t('an2.week')} icon="attendance" action={week.data.average !== null ? <b className="rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums">{t('an2.avg', { v: week.data.average })}</b> : undefined}>
+            <div className="grid gap-3" data-testid="an-week">
+              <div className="flex items-center gap-3 text-sm">
+                <span className="min-w-0 flex-1">
+                  <b className="block">{t('an2.today')}</b>
+                  <span className="text-xs text-muted-foreground">{t('an2.todayOf', { p: week.data.today.present, t: week.data.today.total })}</span>
+                </span>
+                <b className="tabular-nums">{week.data.today.rate === null ? '–' : `${week.data.today.rate}%`}</b>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="min-w-0 flex-1">
+                  <b className="block">{t('an2.below')}</b>
+                  <span className="text-xs text-muted-foreground">{t('an2.belowSub')}</span>
+                </span>
+                <b className="tabular-nums">{week.data.below75}</b>
+              </div>
+              <ColumnBars
+                label={t('an2.week')}
+                unit="%"
+                max={100}
+                rows={week.data.days.map((d) => ({ label: new Date(`${d.date}T00:00:00`).toLocaleDateString(locale, { weekday: 'short' }), a: d.rate === null ? null : Math.round(d.rate), highlight: d.date === week.data!.today.date }))}
+              />
+            </div>
+          </V2Card>
+        )}
       </div>
       <div className="grid gap-5 lg:grid-cols-2">
         <V2Card title={t('v2.an.classDues')} icon="classes">

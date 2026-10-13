@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
@@ -25,7 +26,17 @@ export default async function WorkflowsPage() {
   if (failed !== undefined) return <ErrorState message={failed} />;
   return (
     <>
-      <PageHeader title={t('nav.workflows')} subtitle={t('wf.subtitle')} />
+      <PageHeader
+        title={t('nav.workflows')}
+        subtitle={t('wf.subtitle')}
+        actions={
+          isAdmin ? (
+            <Link href="/workflows/builder" className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium hover:bg-muted" data-testid="wb-open">
+              {t('wb.openBuilder')}
+            </Link>
+          ) : undefined
+        }
+      />
       <StatGrid min={140}>
         <StatTile label={t('wf.stat.inbox')} value={inbox.data!.length} tone={inbox.data!.length ? 'warning' : 'default'} testId="wf-inbox-count" />
         <StatTile label={t('wf.stat.mine')} value={mine.data!.filter((r) => r.status === 'pending' || r.status === 'returned').length} testId="wf-open-count" />

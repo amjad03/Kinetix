@@ -52,3 +52,36 @@ export function Bars({ rows, unit = '', tone = 'bg-teal' }: { rows: { label: str
     </ul>
   );
 }
+
+/** Vertical columns with labels under them: one or two series (the second drawn lighter beside the first). */
+export function ColumnBars({ rows, unit = '', max: fixedMax, label, legend, testId }: { rows: { label: string; a: number | null; b?: number | null; highlight?: boolean }[]; unit?: string; max?: number; label: string; legend?: [string, string]; testId?: string }) {
+  const max = fixedMax ?? Math.max(1, ...rows.flatMap((r) => [r.a ?? 0, r.b ?? 0]));
+  return (
+    <figure className="m-0 grid gap-2" role="img" aria-label={label} data-testid={testId}>
+      <div className="flex h-[170px] items-end gap-2 border-b pb-px">
+        {rows.map((r) => (
+          <div key={r.label} className="flex h-full min-w-0 flex-1 flex-col justify-end">
+            <span className="mb-1 text-center text-[11px] font-semibold tabular-nums text-muted-foreground">{r.a === null ? '–' : `${r.a}${unit}`}</span>
+            <div className="flex h-full items-end justify-center gap-[3px]">
+              <i className={`block w-full max-w-[22px] rounded-t-[5px] ${r.highlight ? 'bg-primary' : 'bg-primary/60'}`} style={{ height: `${((r.a ?? 0) / max) * 100}%` }} title={`${r.label}: ${r.a ?? '–'}${unit}`} />
+              {r.b !== undefined && <i className="block w-full max-w-[22px] rounded-t-[5px] bg-teal/50" style={{ height: `${((r.b ?? 0) / max) * 100}%` }} title={`${r.label}: ${r.b ?? '–'}${unit}`} />}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        {rows.map((r) => (
+          <span key={r.label} className="min-w-0 flex-1 truncate text-center text-[11px] text-muted-foreground">
+            {r.label}
+          </span>
+        ))}
+      </div>
+      {legend && (
+        <figcaption className="flex gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5"><i className="size-2.5 rounded-sm bg-primary/60" />{legend[0]}</span>
+          <span className="flex items-center gap-1.5"><i className="size-2.5 rounded-sm bg-teal/50" />{legend[1]}</span>
+        </figcaption>
+      )}
+    </figure>
+  );
+}
