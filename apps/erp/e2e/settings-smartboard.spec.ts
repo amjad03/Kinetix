@@ -5,7 +5,7 @@ import { open } from './helpers';
 // Signed in as the principal (principal.setup.ts). The test puts the training link and announcements back.
 test.describe.configure({ mode: 'serial' });
 
-test('the principal sets the training link and an announcement, and they are kept after a reload', async ({ page }) => {
+test('the principal sets the training link, the 3D model server and an announcement, and they are kept after a reload', async ({ page }) => {
   const errors = watchErrors(page);
   await open(page, '/settings');
   const card = page.getByTestId('board-content');
@@ -14,6 +14,7 @@ test('the principal sets the training link and an announcement, and they are kep
 
   await card.getByTestId('training-url').fill('https://training.demo.kinetix.in/book');
   await card.getByTestId('training-contact').fill('Front office, ext 12');
+  await card.getByTestId('models-base').fill('http://10.0.0.5/models');
   await card.getByTestId('whats-new-add').click();
   await card.getByLabel('Title').first().fill('New smartboard timetable');
   await card.getByLabel('Message').first().fill('Check the board profile for your periods.');
@@ -24,16 +25,19 @@ test('the principal sets the training link and an announcement, and they are kep
   const again = page.getByTestId('board-content');
   await expect(again.getByTestId('training-url')).toHaveValue('https://training.demo.kinetix.in/book');
   await expect(again.getByTestId('training-contact')).toHaveValue('Front office, ext 12');
+  await expect(again.getByTestId('models-base')).toHaveValue('http://10.0.0.5/models');
   await expect(again.getByLabel('Title').first()).toHaveValue('New smartboard timetable');
 
   // Put it back.
   await again.getByTestId('training-url').fill('');
   await again.getByTestId('training-contact').fill('');
+  await again.getByTestId('models-base').fill('');
   while ((await again.getByRole('button', { name: 'Remove' }).count()) > 0) await again.getByRole('button', { name: 'Remove' }).first().click();
   await again.getByTestId('board-content-save').click();
   await expect(page.getByText('Setting saved')).toBeVisible();
   await page.reload({ waitUntil: 'networkidle' });
   await expect(page.getByTestId('board-content').getByTestId('training-url')).toHaveValue('');
+  await expect(page.getByTestId('board-content').getByTestId('models-base')).toHaveValue('');
   await expect(page.getByTestId('board-content').getByLabel('Title')).toHaveCount(0);
   expect(errors).toEqual([]);
 });

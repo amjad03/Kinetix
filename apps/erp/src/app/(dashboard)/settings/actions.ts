@@ -65,14 +65,19 @@ export async function testRazorpay(): Promise<ActionResult<RazorpayTestResult>> 
   return act(() => api<RazorpayTestResult>('/v1/admin/payments/razorpay/test', { method: 'POST' }));
 }
 
-/** Board training link and contact, and the What's New announcements (shown on every board). */
-export async function saveBoardContent(input: { training: { url: string; contact: string }; whatsNew: WhatsNewItem[] }): Promise<ActionResult<InstitutionSettings>> {
+/** Board training link and contact, the What's New announcements (shown on every board) and the school's 3D model server. */
+export async function saveBoardContent(input: { training: { url: string; contact: string }; whatsNew: WhatsNewItem[]; modelsBase?: string }): Promise<ActionResult<InstitutionSettings>> {
   const url = input.training.url.trim();
   const contact = input.training.contact.trim();
+  const modelsBase = (input.modelsBase ?? '').trim().replace(/\/+$/, '');
   if (url && !/^https?:\/\/\S+$/.test(url)) return { ok: false, error: (await getI18n()).t('boardContent.badUrl') };
+  if (modelsBase && !/^https?:\/\/\S+$/.test(modelsBase)) return { ok: false, error: (await getI18n()).t('boardContent.badModelsUrl') };
   const whatsNew = input.whatsNew.filter((w) => w.title.trim()).map((w) => ({ title: w.title.trim(), body: w.body.trim(), at: w.at }));
   const res = await act(() =>
-    api<InstitutionSettings>('/v1/admin/settings', { method: 'PUT', body: { boardTraining: url || contact ? { url: url || null, contact: contact || null } : null, boardWhatsNew: whatsNew } }),
+    api<InstitutionSettings>('/v1/admin/settings', {
+      method: 'PUT',
+      body: { boardTraining: url || contact ? { url: url || null, contact: contact || null } : null, boardWhatsNew: whatsNew, ...(input.modelsBase !== undefined ? { boardModelsBase: modelsBase || null } : {}) },
+    }),
   );
   if (res.ok) revalidatePath('/settings');
   return res;

@@ -273,21 +273,27 @@ List<BoardElement> grammarLegend(Color ink) {
 NoteElement wordCard(String word, Color accent) =>
     NoteElement(id: newElementId(), rect: const Rect.fromLTWH(0, 0, 320, 160), text: word, color: accent, kind: NoteKind.card);
 
-/// An element's card from the periodic table.
-List<BoardElement> elementCard({required int z, required String symbol, required String name, required String mass, required Color color}) {
+/// An element's card from the periodic table: number, symbol, name, mass and, when given, the
+/// electron configuration along the bottom.
+List<BoardElement> elementCard({required int z, required String symbol, required String name, required String mass, required Color color, String? configuration}) {
   const ink = Color(0xFF1B1F24);
+  final w = configuration == null ? 200.0 : math.max(220.0, measureBoardText(configuration, 18).width + 28);
   return [
-    _shape(ShapeKind.rectangle, Offset.zero, const Offset(200, 220), ink, fill: color),
+    _shape(ShapeKind.rectangle, Offset.zero, Offset(w, configuration == null ? 220 : 250), ink, fill: color),
     _text('$z', const Offset(12, 8), ink, size: 26, bold: true),
-    _text(symbol, const Offset(100, 92), ink, size: 72, bold: true, center: true),
-    _text(name, const Offset(100, 160), ink, size: 22, center: true),
-    _text(mass, const Offset(100, 192), ink, size: 20, center: true),
+    _text(symbol, Offset(w / 2, 92), ink, size: 72, bold: true, center: true),
+    _text(name, Offset(w / 2, 160), ink, size: 22, center: true),
+    _text(mass, Offset(w / 2, 192), ink, size: 20, center: true),
+    if (configuration != null) _text(configuration, Offset(w / 2, 224), ink, size: 18, center: true),
   ];
 }
 
 /// Typed text, wrapped, for inserting from the kit.
 TextElement boardText(String text, Color ink, {double size = 26, bool bold = false, BoardFont font = BoardFont.inter}) =>
     _text(wrapWords(text, 48), Offset.zero, ink, size: size, bold: bold, font: font);
+
+/// Several lines as one text, each wrapped on its own (a facts card).
+TextElement boardLines(List<String> lines, Color ink, {double size = 22}) => _text(lines.map((l) => wrapWords(l, 48)).join('\n'), Offset.zero, ink, size: size);
 
 /// An equation from the kit.
 MathElement boardMath(String tex, Color color, {double fontSize = 40}) =>

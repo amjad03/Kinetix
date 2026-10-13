@@ -20,7 +20,9 @@ class DictEntry {
 /// The board's offline dictionary: about nine thousand common English words with meanings,
 /// examples and synonyms from Princeton WordNet 3.0 (assets/dictionary/wordnet.tsv, WordNet
 /// licence, see assets/dictionary/LICENSE.txt), and Hindi and Kannada for the commonest words
-/// (assets/dictionary/hi_kn.tsv plus the language kit's word list). Works with no network.
+/// (assets/dictionary/hi_kn.tsv plus the language kit's word list; a word of hi_kn.tsv that
+/// WordNet's list leaves out carries its own part of speech, meaning and example there, so every
+/// word with Hindi and Kannada is in the dictionary). Works with no network.
 class OfflineDictionary {
   OfflineDictionary._(this.entries, this._byWord, this._native);
 
@@ -43,9 +45,12 @@ class OfflineDictionary {
   /// Builds the dictionary from the two tab-separated files.
   static OfflineDictionary parse(String wordnet, String hiKn) {
     final tr = <String, (String, String)>{for (final w in basicWords) w.en: (w.hi, w.kn)};
+    // `word<TAB>Hindi<TAB>Kannada`, then part of speech, meaning and example for a word WordNet's list lacks.
+    final own = <String, DictSense>{};
     for (final line in hiKn.split('\n')) {
       final p = line.split('\t');
       if (p.length >= 3) tr[p[0].trim()] = (p[1].trim(), p[2].trim());
+      if (p.length >= 5) own[p[0].trim()] = DictSense(pos: p[3].trim(), gloss: p[4].trim(), example: p.length > 5 ? p[5].trim() : '');
     }
     final entries = <DictEntry>[];
     final seen = <String>{};
@@ -65,7 +70,7 @@ class OfflineDictionary {
     }
     // Words of the language kit's list that WordNet's list leaves out.
     for (final w in basicWords) {
-      if (seen.contains(w.en)) continue;
+      if (!seen.add(w.en)) continue;
       entries.add(
         DictEntry(
           word: w.en,
@@ -74,6 +79,10 @@ class OfflineDictionary {
           kn: w.kn,
         ),
       );
+    }
+    // And the words of hi_kn.tsv it leaves out, with their own meaning.
+    for (final e in own.entries) {
+      if (seen.add(e.key)) entries.add(DictEntry(word: e.key, senses: [e.value], hi: tr[e.key]?.$1, kn: tr[e.key]?.$2));
     }
     entries.sort((a, b) => a.word.compareTo(b.word));
     final native = <String, String>{};

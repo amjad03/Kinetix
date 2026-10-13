@@ -26,6 +26,9 @@ class PhetStrings {
   String get cancel => t('cancel');
   String get open => t('open');
   String get delete => t('delete');
+
+  /// Under a sim PhET has not translated into the board's language.
+  String get inEnglish => t('inEnglish');
   String get downloaded => t('downloaded');
   String get storage => t('storage');
   String get noneMatch => t('noneMatch');
@@ -61,6 +64,7 @@ class PhetStrings {
       'cancel': 'Cancel',
       'open': 'Open',
       'delete': 'Delete',
+      'inEnglish': 'PhET has this simulation in English only, so it opens in English.',
       'downloaded': 'Downloaded',
       'storage': 'Storage',
       'used': '{size} used on this board',
@@ -131,6 +135,7 @@ class PhetStrings {
       'cancel': 'रद्द करें',
       'open': 'खोलें',
       'delete': 'हटाएँ',
+      'inEnglish': 'PhET में यह सिमुलेशन केवल अंग्रेज़ी में है, इसलिए यह अंग्रेज़ी में खुलता है।',
       'downloaded': 'डाउनलोड हो गया',
       'storage': 'स्टोरेज',
       'used': 'इस बोर्ड पर {size} इस्तेमाल',
@@ -201,6 +206,7 @@ class PhetStrings {
       'cancel': 'ರದ್ದುಮಾಡಿ',
       'open': 'ತೆರೆಯಿರಿ',
       'delete': 'ಅಳಿಸಿ',
+      'inEnglish': 'PhET ನಲ್ಲಿ ಈ ಸಿಮ್ಯುಲೇಶನ್ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಮಾತ್ರ ಇದೆ, ಆದ್ದರಿಂದ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೆರೆಯುತ್ತದೆ.',
       'downloaded': 'ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ',
       'storage': 'ಸಂಗ್ರಹಣೆ',
       'used': 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ {size} ಬಳಕೆ',

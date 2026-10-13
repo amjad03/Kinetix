@@ -19,6 +19,8 @@ import 'chrome.dart';
 import 'sb_strings.dart';
 import 'panel/panel_host.dart';
 import 'layout/ui_strings.dart';
+import '../../l10n/feature_strings.dart';
+import 'model_server.dart';
 
 /// The menu that opens from the avatar in the bottom-left corner.
 class ProfileMenu extends StatelessWidget {
@@ -373,6 +375,10 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
           ([l.projectorTitle], [ProjectorSettingsSection(projector: board.projector)]),
           ([l.profilesTitle, l.switchTeacher], [ProfileSettingsSection(board: board)]),
           ([l.kioskTitle], [KioskSettingsSection(kiosk: board.kiosk)]),
+          (
+            [for (final k in ['title', 'hint', 'field']) modelServerStrings(boardLang(context))[k], '3D'],
+            [const ModelServerSection()],
+          ),
           if (board.serverUrl != null) ([l.thisBoardTitle, l.setUpAgain, l.enrollServer], [ThisBoardSection(board: board)]),
         ];
         final shown = matching(sections, (s) => s.$1, _q);

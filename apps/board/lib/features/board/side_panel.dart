@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:kinetix_3d/kinetix_3d.dart';
 import 'package:kinetix_labs/kinetix_labs.dart';
 
+import '../../l10n/feature_strings.dart';
 import '../../l10n/l10n.dart';
 import '../search/catalogue_browser.dart';
 import '../search/catalogue_facets.dart';
@@ -154,8 +155,8 @@ class SplitPanel extends StatelessWidget {
       final title = id == null
           ? null
           : current == SplitContent.model3d
-          ? ModelCatalogue.byId(id)?.title
-          : LabCatalogue.byId(id)?.title;
+          ? ModelCatalogue.byId(id)?.titleIn(boardLang(context))
+          : LabCatalogue.byId(id)?.titleIn(LabLang.values.firstWhere((l) => l.name == boardLang(context), orElse: () => LabLang.en));
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

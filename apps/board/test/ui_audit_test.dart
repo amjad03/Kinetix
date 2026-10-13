@@ -128,7 +128,7 @@ Set<String> _allowed() {
 /// Content that is English by nature, allowed only on its own screen.
 final _content = <String, List<String>>{
   'dictionary': ['assets/dictionary/hi_kn.tsv', 'assets/dictionary/wordnet.tsv'],
-  'key-dates': ['assets/history/key_dates.tsv', 'lib/features/board/kit/subject_data.dart'],
+  'key-dates': ['assets/history/key_dates.tsv', 'assets/history/key_dates_hi_kn.tsv', 'lib/features/board/kit/subject_data.dart'],
 };
 
 /// Every word in Latin script on screen (text, text fields, tooltips) that [allowed] does not
@@ -140,6 +140,8 @@ Map<String, String> latinOnScreen(Set<String> allowed) {
     for (final n in _names) {
       t = t.replaceAll(n, ' ');
     }
+    // Web addresses are data (a school's model server), the same in every language.
+    t = t.replaceAll(RegExp(r'https?://\S*'), ' ');
     for (final w in _words(t)) {
       if (w.length >= 3 && !allowed.contains(w)) found[w] = text!.length > 80 ? '${text.substring(0, 80)}…' : text;
     }

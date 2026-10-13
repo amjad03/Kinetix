@@ -156,6 +156,49 @@ void main() {
     expect(ModelCatalogue.byId('woolly_mammoth')?.id, 'dl.woolly_mammoth');
   });
 
+  test('a school server or the KINETIX API is tried before GitHub; a bad or missing copy hands over to the next', () async {
+    addTearDown(() => RemoteModels.servers = const []);
+    RemoteModels.servers = ['http://10.0.0.5/models/', ' https://kinetix.school.in/assets/models ', 'not a url', 'ftp://x/y', RemoteModels.defaultBase, 'http://10.0.0.5/models'];
+    expect(RemoteModels.servers, ['http://10.0.0.5/models', 'https://kinetix.school.in/assets/models']);
+    final m = RemoteModels.byId('woolly_mammoth')!;
+    expect(m.urls, ['http://10.0.0.5/models/woolly_mammoth.glb', 'https://kinetix.school.in/assets/models/woolly_mammoth.glb', m.url]);
+    final manifest = Uint8List.fromList('{"id": "woolly_mammoth"}'.codeUnits);
+
+    // The school server is down and the API sends a sign-in page: GitHub's copy is kept.
+    final dir = Directory.systemTemp.createTempSync('m3d');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final asked = <String>[];
+    final cache = ModelCache(dir, fetcher: (url, p) async {
+      asked.add(url);
+      if (url.startsWith('http://10.0.0.5')) throw const OfflineException();
+      if (url.startsWith('https://kinetix.school.in')) return Uint8List.fromList('<html>Sign in</html>'.codeUnits);
+      return url.endsWith('.json') ? manifest : _glb();
+    });
+    await cache.load(m);
+    expect(asked, ['http://10.0.0.5/models/woolly_mammoth.glb', 'https://kinetix.school.in/assets/models/woolly_mammoth.glb', m.url, m.manifestUrl]);
+    expect(cache.isCached(m), isTrue);
+
+    // The first server has it: the GLB and its manifest both come from there, GitHub is not asked.
+    final dir2 = Directory.systemTemp.createTempSync('m3d');
+    addTearDown(() => dir2.deleteSync(recursive: true));
+    final asked2 = <String>[];
+    await ModelCache(dir2, fetcher: (url, p) async {
+      asked2.add(url);
+      return url.endsWith('.json') ? manifest : _glb();
+    }).load(m);
+    expect(asked2, ['http://10.0.0.5/models/woolly_mammoth.glb', 'http://10.0.0.5/models/woolly_mammoth.json']);
+
+    // Every server unreachable: offline. Reached but none has it: that error, nothing kept.
+    final dir3 = Directory.systemTemp.createTempSync('m3d');
+    addTearDown(() => dir3.deleteSync(recursive: true));
+    await expectLater(ModelCache(dir3, fetcher: (_, _) async => throw const OfflineException()).load(m), throwsA(isA<OfflineException>()));
+    await expectLater(
+      ModelCache(dir3, fetcher: (url, _) async => url.startsWith('http://10.0.0.5') ? throw const OfflineException() : throw HttpException('HTTP 404', uri: Uri.parse(url))).load(m),
+      throwsA(isA<HttpException>()),
+    );
+    expect(ModelCache(dir3).isCached(m), isFalse);
+  });
+
   test('offline and corrupt downloads leave nothing behind', () async {
     final dir = Directory.systemTemp.createTempSync('m3d');
     addTearDown(() => dir.deleteSync(recursive: true));

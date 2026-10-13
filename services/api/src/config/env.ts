@@ -108,6 +108,17 @@ const EnvSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
+  /**
+   * The downloadable 3D models (packages/kinetix_3d/remote_models), served at /assets/models so
+   * boards fetch them from this server before GitHub. Relative to the working directory.
+   */
+  MODELS_DIR: z.string().default('../../packages/kinetix_3d/remote_models'),
+  /**
+   * Where boards download 3D models from when the institution has not set its own
+   * (Settings → Smartboard): a CDN or school server with the same files. Absent: each board
+   * uses this API's /assets/models, then GitHub.
+   */
+  MODELS_BASE_URL: z.url().optional(),
   /** Base of the QR verification links on certificates and ID cards: <this>/<institution slug>/<token>. */
   VERIFY_BASE_URL: z.url().default('http://localhost:3000/verify'),
   /**

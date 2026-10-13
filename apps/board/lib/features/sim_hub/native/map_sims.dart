@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'native_strings.dart';
+
 const _osm = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const _carto = 'https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png';
 
@@ -41,20 +43,26 @@ class _MapLabState extends State<MapLab> {
   });
 
   @override
-  Widget build(BuildContext context) => Column(children: [
+  Widget build(BuildContext context) {
+    final s = NativeSimStrings.of(context);
+    return Column(children: [
     Wrap(spacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
       SegmentedButton<_Tool>(
-        segments: const [ButtonSegment(value: _Tool.pan, label: Text('Pan')), ButtonSegment(value: _Tool.marker, label: Text('Marker')), ButtonSegment(value: _Tool.measure, label: Text('Measure'))],
+        segments: [
+          ButtonSegment(value: _Tool.pan, label: Text(s['mapPan'])),
+          ButtonSegment(value: _Tool.marker, label: Text(s['mapMarker'])),
+          ButtonSegment(value: _Tool.measure, label: Text(s['mapMeasure'])),
+        ],
         selected: {_tool},
         onSelectionChanged: (s) => setState(() => _tool = s.first),
       ),
-      FilterChip(key: const Key('layer-base'), label: Text(_streets ? 'Streets' : 'Plain'), selected: _streets, onSelected: (v) => setState(() => _streets = v)),
-      FilterChip(key: const Key('layer-markers'), label: Text('Markers (${_markers.length})'), selected: _showMarkers, onSelected: (v) => setState(() => _showMarkers = v)),
-      FilterChip(key: const Key('layer-measure'), label: Text('Distance ${pathKm(_path).toStringAsFixed(1)} km'), selected: _showMeasure, onSelected: (v) => setState(() => _showMeasure = v)),
+      FilterChip(key: const Key('layer-base'), label: Text(_streets ? s['mapStreets'] : s['mapPlain']), selected: _streets, onSelected: (v) => setState(() => _streets = v)),
+      FilterChip(key: const Key('layer-markers'), label: Text(s.f('mapMarkers', {'n': _markers.length})), selected: _showMarkers, onSelected: (v) => setState(() => _showMarkers = v)),
+      FilterChip(key: const Key('layer-measure'), label: Text(s.f('mapDistance', {'n': pathKm(_path).toStringAsFixed(1)})), selected: _showMeasure, onSelected: (v) => setState(() => _showMeasure = v)),
       TextButton(key: const Key('map-clear'), onPressed: () => setState(() {
         _markers.clear();
         _path.clear();
-      }), child: const Text('Clear')),
+      }), child: Text(s['mapClear'])),
     ]),
     Expanded(
       child: FlutterMap(
@@ -69,6 +77,7 @@ class _MapLabState extends State<MapLab> {
       ),
     ),
   ]);
+  }
 }
 
 /// A place to find on the map.
@@ -106,7 +115,9 @@ class GeoQuiz extends StatefulWidget {
 
 class _GeoQuizState extends State<GeoQuiz> {
   int _i = 0, _score = 0;
-  String? _feedback;
+
+  /// The last answer: how far off it was and whether it was close enough.
+  ({int km, bool right})? _feedback;
   LatLng? _answer;
 
   void _tap(TapPosition _, LatLng p) {
@@ -115,12 +126,9 @@ class _GeoQuizState extends State<GeoQuiz> {
     final km = geoErrorKm(q, p);
     setState(() {
       _answer = q.at;
-      if (km <= q.toleranceKm) {
-        _score++;
-        _feedback = 'Correct, ${km.round()} km away';
-      } else {
-        _feedback = 'Not quite, ${km.round()} km away. The red pin is ${q.name}';
-      }
+      final right = km <= q.toleranceKm;
+      if (right) _score++;
+      _feedback = (km: km.round(), right: right);
     });
   }
 
@@ -132,18 +140,29 @@ class _GeoQuizState extends State<GeoQuiz> {
 
   @override
   Widget build(BuildContext context) {
+    final s = NativeSimStrings.of(context);
     final done = _i >= geoQuestions.length;
+    final f = _feedback;
+    // The question just answered (the next one only shows after Next).
+    final asked = geoQuestions[_i.clamp(0, geoQuestions.length - 1)];
     return Column(children: [
       Padding(
         padding: const EdgeInsets.all(8),
         child: Row(children: [
-          Expanded(child: Text(done ? 'Score: $_score of ${geoQuestions.length}' : 'Find: ${geoQuestions[_i].name}   (score $_score)', key: const Key('geo-prompt'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-          if (_feedback != null) Flexible(child: Text(_feedback!, key: const Key('geo-feedback'))),
-          if (_answer != null) TextButton(key: const Key('geo-next'), onPressed: _next, child: const Text('Next')),
+          Expanded(
+            child: Text(
+              done ? s.f('quizScore', {'a': _score, 'b': geoQuestions.length}) : s.f('quizFind', {'a': s.place(geoQuestions[_i].name), 'b': _score}),
+              key: const Key('geo-prompt'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          if (f != null)
+            Flexible(child: Text(f.right ? s.f('quizCorrect', {'n': f.km}) : s.f('quizWrong', {'a': f.km, 'b': s.place(asked.name)}), key: const Key('geo-feedback'))),
+          if (_answer != null) TextButton(key: const Key('geo-next'), onPressed: _next, child: Text(s['quizNext'])),
           if (done) TextButton(key: const Key('geo-restart'), onPressed: () => setState(() {
             _i = 0;
             _score = 0;
-          }), child: const Text('Play again')),
+          }), child: Text(s['quizAgain'])),
         ]),
       ),
       Expanded(

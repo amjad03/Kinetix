@@ -2325,7 +2325,8 @@
    "id": "calculus-grapher",
    "title": {
     "en": "Calculus Grapher",
-    "hi": "Calculus Grapher"
+    "hi": "कलन ग्राफर",
+    "kn": "ಕಲನಶಾಸ್ತ್ರ ಗ್ರಾಫರ್"
    },
    "subject": "maths",
    "topics": [
@@ -2939,7 +2940,9 @@
   {
    "id": "circuit-construction-kit-black-box-study",
    "title": {
-    "en": "Circuit Construction Kit: Black Box Study"
+    "en": "Circuit Construction Kit: Black Box Study",
+    "hi": "परिपथ निर्माण किट: ब्लैक बॉक्स अध्ययन",
+    "kn": "ಸರ್ಕ್ಯೂಟ್ ನಿರ್ಮಾಣ ಕಿಟ್: ಬ್ಲ್ಯಾಕ್ ಬಾಕ್ಸ್ ಅಧ್ಯಯನ"
    },
    "subject": "physics",
    "topics": [
@@ -3210,7 +3213,8 @@
    "id": "collision-lab",
    "title": {
     "en": "Collision Lab",
-    "hi": "टकराव की प्रयोगशाला"
+    "hi": "टकराव की प्रयोगशाला",
+    "kn": "ಡಿಕ್ಕಿ ಪ್ರಯೋಗಾಲಯ"
    },
    "subject": "physics",
    "topics": [
@@ -3559,7 +3563,8 @@
    "id": "coulombs-law",
    "title": {
     "en": "Coulomb's Law",
-    "hi": "कूलंब का नियम"
+    "hi": "कूलंब का नियम",
+    "kn": "ಕೂಲಂಬ್ ನಿಯಮ"
    },
    "subject": "physics",
    "topics": [
@@ -3665,7 +3670,8 @@
    "id": "curve-fitting",
    "title": {
     "en": "Curve Fitting",
-    "hi": "वक्र समंजन"
+    "hi": "वक्र समंजन",
+    "kn": "ವಕ್ರರೇಖೆ ಹೊಂದಿಸುವಿಕೆ"
    },
    "subject": "maths",
    "topics": [
@@ -3982,7 +3988,8 @@
    "id": "energy-forms-and-changes",
    "title": {
     "en": "Energy Forms and Changes",
-    "hi": "ऊर्जा के रूप और परिवर्तन"
+    "hi": "ऊर्जा के रूप और परिवर्तन",
+    "kn": "ಶಕ್ತಿಯ ರೂಪಗಳು ಮತ್ತು ಬದಲಾವಣೆಗಳು"
    },
    "subject": "physics",
    "topics": [
@@ -4098,7 +4105,8 @@
    "id": "energy-skate-park",
    "title": {
     "en": "Energy Skate Park",
-    "hi": "स्केट पार्क ऊर्जा"
+    "hi": "स्केट पार्क ऊर्जा",
+    "kn": "ಶಕ್ತಿ ಸ್ಕೇಟ್ ಪಾರ್ಕ್"
    },
    "subject": "physics",
    "topics": [
@@ -4327,7 +4335,8 @@
    "id": "equality-explorer",
    "title": {
     "en": "Equality Explorer",
-    "hi": "समानता का पता करें"
+    "hi": "समानता का पता करें",
+    "kn": "ಸಮಾನತೆ ಎಕ್ಸ್‌ಪ್ಲೋರರ್"
    },
    "subject": "maths",
    "topics": [
@@ -4432,7 +4441,8 @@
    "id": "equality-explorer-basics",
    "title": {
     "en": "Equality Explorer: Basics",
-    "hi": "समानता का पता करें : मूल बातें"
+    "hi": "समानता का पता करें : मूल बातें",
+    "kn": "ಸಮಾನತೆ ಎಕ್ಸ್‌ಪ್ಲೋರರ್: ಮೂಲಭೂತ ಅಂಶಗಳು"
    },
    "subject": "maths",
    "topics": [
@@ -4533,7 +4543,8 @@
    "id": "equality-explorer-two-variables",
    "title": {
     "en": "Equality Explorer: Two Variables",
-    "hi": "समानता का पता करें : दो चरांको के"
+    "hi": "समानता का पता करें : दो चरांको के",
+    "kn": "ಸಮಾನತೆ ಎಕ್ಸ್‌ಪ್ಲೋರರ್: ಎರಡು ಚರಗಳು"
    },
    "subject": "maths",
    "topics": [
@@ -4736,7 +4747,8 @@
    "id": "faradays-electromagnetic-lab",
    "title": {
     "en": "Faraday's Electromagnetic Lab",
-    "hi": "फैराडे की विद्युत चुम्बकीय प्रयोगशाला"
+    "hi": "फैराडे की विद्युत चुम्बकीय प्रयोगशाला",
+    "kn": "ಫ್ಯಾರಡೆಯ ವಿದ್ಯುತ್ಕಾಂತೀಯ ಪ್ರಯೋಗಾಲಯ"
    },
    "subject": "physics",
    "topics": [
@@ -4937,7 +4949,9 @@
   {
    "id": "fluid-pressure-and-flow",
    "title": {
-    "en": "Fluid Pressure and Flow"
+    "en": "Fluid Pressure and Flow",
+    "hi": "द्रव दाब और प्रवाह",
+    "kn": "ದ್ರವದ ಒತ್ತಡ ಮತ್ತು ಹರಿವು"
    },
    "subject": "physics",
    "topics": [
@@ -5177,7 +5191,8 @@
    "id": "fourier-making-waves",
    "title": {
     "en": "Fourier: Making Waves",
-    "hi": "फ़ूरियर: तरंग बनाना"
+    "hi": "फ़ूरियर: तरंग बनाना",
+    "kn": "ಫೋರಿಯರ್: ಅಲೆಗಳನ್ನು ಸೃಷ್ಟಿಸುವುದು"
    },
    "subject": "physics",
    "topics": [
@@ -5602,7 +5617,8 @@
    "id": "fractions-mixed-numbers",
    "title": {
     "en": "Fractions: Mixed Numbers",
-    "hi": "भिन्न: मिश्रित संख्याएँ"
+    "hi": "भिन्न: मिश्रित संख्याएँ",
+    "kn": "ಭಿನ್ನರಾಶಿಗಳು: ಮಿಶ್ರ ಸಂಖ್ಯೆಗಳು"
    },
    "subject": "maths",
    "topics": [
@@ -5827,7 +5843,8 @@
    "id": "function-builder",
    "title": {
     "en": "Function Builder",
-    "hi": "फलन निर्माण"
+    "hi": "फलन निर्माण",
+    "kn": "ಫಂಕ್ಷನ್ ಬಿಲ್ಡರ್"
    },
    "subject": "maths",
    "topics": [
@@ -5935,7 +5952,8 @@
    "id": "function-builder-basics",
    "title": {
     "en": "Function Builder: Basics",
-    "hi": "फलन निर्माता : अवधारणा"
+    "hi": "फलन निर्माता : अवधारणा",
+    "kn": "ಫಂಕ್ಷನ್ ಬಿಲ್ಡರ್: ಮೂಲಭೂತ ಅಂಶಗಳು"
    },
    "subject": "maths",
    "topics": [
@@ -6032,7 +6050,8 @@
    "id": "gas-properties",
    "title": {
     "en": "Gas Properties",
-    "hi": "गैस गुणधर्म"
+    "hi": "गैस गुणधर्म",
+    "kn": "ಅನಿಲದ ಗುಣಲಕ್ಷಣಗಳು"
    },
    "subject": "chemistry",
    "topics": [
@@ -6152,7 +6171,8 @@
    "id": "gases-intro",
    "title": {
     "en": "Gases Intro",
-    "hi": "गैसों का परिचय"
+    "hi": "गैसों का परिचय",
+    "kn": "ಅನಿಲಗಳ ಪರಿಚಯ"
    },
    "subject": "chemistry",
    "topics": [
@@ -6264,7 +6284,8 @@
    "id": "gene-expression-essentials",
    "title": {
     "en": "Gene Expression Essentials",
-    "hi": "मौलिक जीन अभिव्यक्ति"
+    "hi": "मौलिक जीन अभिव्यक्ति",
+    "kn": "ಜೀನ್ ಅಭಿವ್ಯಕ್ತಿಯ ಅಗತ್ಯ ಅಂಶಗಳು"
    },
    "subject": "biology",
    "topics": [
@@ -6364,7 +6385,8 @@
    "id": "generator",
    "title": {
     "en": "Generator",
-    "hi": "जनरेटर / विद्युत जनित्र"
+    "hi": "जनरेटर / विद्युत जनित्र",
+    "kn": "ಜನರೇಟರ್"
    },
    "subject": "physics",
    "topics": [
@@ -6644,7 +6666,8 @@
    "id": "graphing-lines",
    "title": {
     "en": "Graphing Lines",
-    "hi": "रेखाओं का आलेख"
+    "hi": "रेखाओं का आलेख",
+    "kn": "ರೇಖೆಗಳ ನಕ್ಷೆ ರಚನೆ"
    },
    "subject": "maths",
    "topics": [
@@ -6753,7 +6776,8 @@
    "id": "graphing-quadratics",
    "title": {
     "en": "Graphing Quadratics",
-    "hi": "द्विघात का आलेख"
+    "hi": "द्विघात का आलेख",
+    "kn": "ವರ್ಗ ಸಮೀಕರಣಗಳ ನಕ್ಷೆ ರಚನೆ"
    },
    "subject": "maths",
    "topics": [
@@ -6852,7 +6876,8 @@
    "id": "graphing-slope-intercept",
    "title": {
     "en": "Graphing Slope-Intercept",
-    "hi": "आलेख :  ढाल -अंतःखंड"
+    "hi": "आलेख :  ढाल -अंतःखंड",
+    "kn": "ಇಳಿಜಾರು-ಅಂತಃಖಂಡ ನಕ್ಷೆ"
    },
    "subject": "maths",
    "topics": [
@@ -7189,7 +7214,8 @@
    "id": "gravity-force-lab-basics",
    "title": {
     "en": "Gravity Force Lab: Basics",
-    "hi": "गुरुत्वाकर्षण बल प्रयोगशाला: मूल बातें"
+    "hi": "गुरुत्वाकर्षण बल प्रयोगशाला: मूल बातें",
+    "kn": "ಗುರುತ್ವಾಕರ್ಷಣ ಬಲದ ಪ್ರಯೋಗಾಲಯ: ಮೂಲಭೂತ ಅಂಶಗಳು"
    },
    "subject": "physics",
    "topics": [
@@ -7290,7 +7316,8 @@
    "id": "greenhouse-effect",
    "title": {
     "en": "Greenhouse Effect",
-    "hi": "हरित गृह प्रभाव"
+    "hi": "हरित गृह प्रभाव",
+    "kn": "ಹಸಿರುಮನೆ ಪರಿಣಾಮ"
    },
    "subject": "earth-science",
    "topics": [
@@ -7619,6 +7646,7 @@
    "id": "john-travoltage",
    "title": {
     "en": "John Travoltage",
+    "hi": "जॉन ट्रैवोल्टेज",
     "kn": "ಜಾನ್ ಟ್ರಾವೋಲ್ಟೇಜ್"
    },
    "subject": "physics",
@@ -7733,7 +7761,8 @@
    "id": "keplers-laws",
    "title": {
     "en": "Kepler's Laws",
-    "hi": "केप्लर के नियम"
+    "hi": "केप्लर के नियम",
+    "kn": "ಕೆಪ್ಲರ್ ನಿಯಮಗಳು"
    },
    "subject": "physics",
    "topics": [
@@ -7904,7 +7933,8 @@
    "id": "magnet-and-compass",
    "title": {
     "en": "Magnet and Compass",
-    "hi": "चुंबक और कम्पास"
+    "hi": "चुंबक और कम्पास",
+    "kn": "ಕಾಂತ ಮತ್ತು ದಿಕ್ಸೂಚಿ"
    },
    "subject": "physics",
    "topics": [
@@ -7982,7 +8012,8 @@
    "id": "magnets-and-electromagnets",
    "title": {
     "en": "Magnets and Electromagnets",
-    "hi": "चुंबक व विद्युत चुंबक"
+    "hi": "चुंबक व विद्युत चुंबक",
+    "kn": "ಕಾಂತಗಳು ಮತ್ತು ವಿದ್ಯುತ್ಕಾಂತಗಳು"
    },
    "subject": "physics",
    "topics": [
@@ -8160,7 +8191,8 @@
    "id": "masses-and-springs",
    "title": {
     "en": "Masses and Springs",
-    "hi": "द्रव्यमान और स्प्रिंग्स"
+    "hi": "द्रव्यमान और स्प्रिंग्स",
+    "kn": "ರಾಶಿಗಳು ಮತ್ತು ಸ್ಪ್ರಿಂಗ್‌ಗಳು"
    },
    "subject": "physics",
    "topics": [
@@ -8269,7 +8301,8 @@
    "id": "masses-and-springs-basics",
    "title": {
     "en": "Masses and Springs: Basics",
-    "hi": "द्रव्यमान और स्प्रिंग्स: अवधारणा"
+    "hi": "द्रव्यमान और स्प्रिंग्स: अवधारणा",
+    "kn": "ರಾಶಿಗಳು ಮತ್ತು ಸ್ಪ್ರಿಂಗ್‌ಗಳು: ಮೂಲಭೂತ ಅಂಶಗಳು"
    },
    "subject": "physics",
    "topics": [
@@ -8372,7 +8405,8 @@
    "id": "mean-share-and-balance",
    "title": {
     "en": "Mean: Share and Balance",
-    "hi": "माध्य: सांझा एवं शेष"
+    "hi": "माध्य: सांझा एवं शेष",
+    "kn": "ಸರಾಸರಿ: ಹಂಚಿಕೆ ಮತ್ತು ಸಮತೋಲನ"
    },
    "subject": "maths",
    "topics": [
@@ -8454,7 +8488,8 @@
    "id": "membrane-transport",
    "title": {
     "en": "Membrane Transport",
-    "hi": "झिल्ली परिवहन"
+    "hi": "झिल्ली परिवहन",
+    "kn": "ಪೊರೆ ಸಾಗಾಣಿಕೆ"
    },
    "subject": "biology",
    "topics": [
@@ -8588,7 +8623,8 @@
    "id": "molarity",
    "title": {
     "en": "Molarity",
-    "hi": "मोलरता या मोलर सान्द्रता"
+    "hi": "मोलरता या मोलर सान्द्रता",
+    "kn": "ಮೋಲಾರಿಟಿ"
    },
    "subject": "chemistry",
    "topics": [
@@ -8702,7 +8738,8 @@
    "id": "molecule-polarity",
    "title": {
     "en": "Molecule Polarity",
-    "hi": "अणु ध्रुवीयता"
+    "hi": "अणु ध्रुवीयता",
+    "kn": "ಅಣುವಿನ ಧ್ರುವೀಯತೆ"
    },
    "subject": "chemistry",
    "topics": [
@@ -8920,7 +8957,8 @@
    "id": "molecule-shapes-basics",
    "title": {
     "en": "Molecule Shapes: Basics",
-    "hi": "अणु आकृतियाँ- मूल अवधारणाएँ"
+    "hi": "अणु आकृतियाँ- मूल अवधारणाएँ",
+    "kn": "ಅಣುವಿನ ಆಕಾರಗಳು: ಮೂಲಭೂತ ಅಂಶಗಳು"
    },
    "subject": "chemistry",
    "topics": [
@@ -9135,7 +9173,8 @@
    "id": "my-solar-system",
    "title": {
     "en": "My Solar System",
-    "hi": "मेरा सौर मंडल"
+    "hi": "मेरा सौर मंडल",
+    "kn": "ನನ್ನ ಸೌರವ್ಯೂಹ"
    },
    "subject": "physics",
    "topics": [
@@ -9228,7 +9267,8 @@
    "id": "natural-selection",
    "title": {
     "en": "Natural Selection",
-    "hi": "प्राकृतिक वरण"
+    "hi": "प्राकृतिक वरण",
+    "kn": "ನೈಸರ್ಗಿಕ ಆಯ್ಕೆ"
    },
    "subject": "biology",
    "topics": [
@@ -9441,7 +9481,8 @@
    "id": "normal-modes",
    "title": {
     "en": "Normal Modes",
-    "hi": "सामान्य अवस्थाएँ"
+    "hi": "सामान्य अवस्थाएँ",
+    "kn": "ಸಾಮಾನ್ಯ ಕಂಪನ ವಿಧಗಳು"
    },
    "subject": "physics",
    "topics": [
@@ -9526,7 +9567,9 @@
   {
    "id": "number-compare",
    "title": {
-    "en": "Number Compare"
+    "en": "Number Compare",
+    "hi": "संख्या तुलना",
+    "kn": "ಸಂಖ್ಯೆಗಳ ಹೋಲಿಕೆ"
    },
    "subject": "maths",
    "topics": [
@@ -9619,7 +9662,8 @@
    "id": "number-line-distance",
    "title": {
     "en": "Number Line: Distance",
-    "hi": "संख्या रेखा: दूरी"
+    "hi": "संख्या रेखा: दूरी",
+    "kn": "ಸಂಖ್ಯಾ ರೇಖೆ: ದೂರ"
    },
    "subject": "maths",
    "topics": [
@@ -9809,7 +9853,8 @@
    "id": "number-line-operations",
    "title": {
     "en": "Number Line: Operations",
-    "hi": "संख्या रेखा :  संक्रियाएँ"
+    "hi": "संख्या रेखा :  संक्रियाएँ",
+    "kn": "ಸಂಖ್ಯಾ ರೇಖೆ: ಕ್ರಿಯೆಗಳು"
    },
    "subject": "maths",
    "topics": [
@@ -9903,7 +9948,8 @@
    "id": "number-pairs",
    "title": {
     "en": "Number Pairs",
-    "hi": "संख्या युग्म"
+    "hi": "संख्या युग्म",
+    "kn": "ಸಂಖ್ಯಾ ಜೋಡಿಗಳು"
    },
    "subject": "maths",
    "topics": [
@@ -9956,7 +10002,8 @@
    "id": "number-play",
    "title": {
     "en": "Number Play",
-    "hi": "अंकों का खेल"
+    "hi": "अंकों का खेल",
+    "kn": "ಸಂಖ್ಯಾ ಆಟ"
    },
    "subject": "maths",
    "topics": [
@@ -10168,7 +10215,8 @@
    "id": "pendulum-lab",
    "title": {
     "en": "Pendulum Lab",
-    "hi": "लोलक प्रयोगशाला"
+    "hi": "लोलक प्रयोगशाला",
+    "kn": "ಲೋಲಕ ಪ್ರಯೋಗಾಲಯ"
    },
    "subject": "physics",
    "topics": [
@@ -10519,7 +10567,8 @@
    "id": "plinko-probability",
    "title": {
     "en": "Plinko Probability",
-    "hi": "प्लिंको संभाव्यता"
+    "hi": "प्लिंको संभाव्यता",
+    "kn": "ಪ್ಲಿಂಕೋ ಸಂಭವನೀಯತೆ"
    },
    "subject": "maths",
    "topics": [
@@ -10617,7 +10666,8 @@
    "id": "projectile-data-lab",
    "title": {
     "en": "Projectile Data Lab",
-    "hi": "प्रक्षेप्य डेटा लैब"
+    "hi": "प्रक्षेप्य डेटा लैब",
+    "kn": "ಪ್ರಕ್ಷೇಪಕ ದತ್ತಾಂಶ ಪ್ರಯೋಗಾಲಯ"
    },
    "subject": "maths",
    "topics": [
@@ -10685,7 +10735,8 @@
    "id": "projectile-motion",
    "title": {
     "en": "Projectile Motion",
-    "hi": "प्रक्षेप्य गति"
+    "hi": "प्रक्षेप्य गति",
+    "kn": "ಪ್ರಕ್ಷೇಪಕ ಚಲನೆ"
    },
    "subject": "physics",
    "topics": [
@@ -10792,7 +10843,8 @@
    "id": "projectile-sampling-distributions",
    "title": {
     "en": "Projectile Sampling Distributions",
-    "hi": "प्रक्षेप्य प्रतिचयन वितरण"
+    "hi": "प्रक्षेप्य प्रतिचयन वितरण",
+    "kn": "ಪ್ರಕ್ಷೇಪಕ ಮಾದರಿ ವಿತರಣೆಗಳು"
    },
    "subject": "maths",
    "topics": [
@@ -10854,7 +10906,8 @@
    "id": "proportion-playground",
    "title": {
     "en": "Proportion Playground",
-    "hi": "समानुपात का खेलमैदान"
+    "hi": "समानुपात का खेलमैदान",
+    "kn": "ಅನುಪಾತ ಆಟದ ಮೈದಾನ"
    },
    "subject": "maths",
    "topics": [
@@ -10955,7 +11008,8 @@
    "id": "quadrilateral",
    "title": {
     "en": "Quadrilateral",
-    "hi": "चतुर्भुज"
+    "hi": "चतुर्भुज",
+    "kn": "ಚತುರ್ಭುಜ"
    },
    "subject": "maths",
    "topics": [
@@ -11027,7 +11081,8 @@
    "id": "quantum-coin-toss",
    "title": {
     "en": "Quantum Coin Toss",
-    "hi": "क्वांटम सिक्का उछाल"
+    "hi": "क्वांटम सिक्का उछाल",
+    "kn": "ಕ್ವಾಂಟಮ್ ನಾಣ್ಯ ಟಾಸ್"
    },
    "subject": "physics",
    "topics": [
@@ -11080,7 +11135,9 @@
   {
    "id": "quantum-measurement",
    "title": {
-    "en": "Quantum Measurement"
+    "en": "Quantum Measurement",
+    "hi": "क्वांटम मापन",
+    "kn": "ಕ್ವಾಂಟಮ್ ಅಳತೆ"
    },
    "subject": "physics",
    "topics": [
@@ -11135,7 +11192,9 @@
   {
    "id": "quantum-wave-interference",
    "title": {
-    "en": "Quantum Wave Interference"
+    "en": "Quantum Wave Interference",
+    "hi": "क्वांटम तरंग व्यतिकरण",
+    "kn": "ಕ್ವಾಂಟಮ್ ತರಂಗ ವ್ಯತೀಕರಣ"
    },
    "subject": "physics",
    "topics": [
@@ -11174,7 +11233,8 @@
    "id": "ratio-and-proportion",
    "title": {
     "en": "Ratio and Proportion",
-    "hi": "अनुपात एवं समानुपात"
+    "hi": "अनुपात एवं समानुपात",
+    "kn": "ಅನುಪಾತ ಮತ್ತು ಸಮಾನುಪಾತ"
    },
    "subject": "maths",
    "topics": [
@@ -11620,7 +11680,8 @@
    "id": "sound-waves",
    "title": {
     "en": "Sound Waves",
-    "hi": "ध्वनि तरंग"
+    "hi": "ध्वनि तरंग",
+    "kn": "ಶಬ್ದ ತರಂಗಗಳು"
    },
    "subject": "physics",
    "topics": [
@@ -12270,7 +12331,8 @@
    "id": "vector-addition",
    "title": {
     "en": "Vector Addition",
-    "hi": "सदिशों का योग"
+    "hi": "सदिशों का योग",
+    "kn": "ಸದಿಶ ಸಂಕಲನ"
    },
    "subject": "physics",
    "topics": [
@@ -12487,7 +12549,8 @@
    "id": "wave-interference",
    "title": {
     "en": "Wave Interference",
-    "hi": "तरंग व्यतिकरण"
+    "hi": "तरंग व्यतिकरण",
+    "kn": "ತರಂಗ ವ್ಯತೀಕರಣ"
    },
    "subject": "physics",
    "topics": [

@@ -68,6 +68,8 @@ export interface TenantSettings {
   boardKiosk?: BoardKioskSettings;
   /** Teacher profile → Schedule a Training: the link its QR opens and who to contact (spec §8). */
   boardTraining?: { url?: string | null; contact?: string | null } | null;
+  /** Where the institution's boards download 3D models from (a school server); null = the API's own /assets/models. */
+  boardModelsBase?: string | null;
   /** Institution announcements shown in the board's What's New, newest first. */
   boardWhatsNew?: { title: string; body: string; at: string }[];
 }

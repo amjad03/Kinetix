@@ -123,6 +123,20 @@ class ModelEntry {
 }
 
 /// Every built-in model: solids drawn here, and the three.js viewer's models (no downloads).
+/// The solids' names in English, Hindi and Kannada (NCERT's words).
+const solidTitles = <SolidKind, LocalText>{
+  SolidKind.cube: LocalText({'en': 'Cube', 'hi': 'घन', 'kn': 'ಘನ'}),
+  SolidKind.cuboid: LocalText({'en': 'Cuboid', 'hi': 'घनाभ', 'kn': 'ಆಯತಘನ'}),
+  SolidKind.sphere: LocalText({'en': 'Sphere', 'hi': 'गोला', 'kn': 'ಗೋಳ'}),
+  SolidKind.hemisphere: LocalText({'en': 'Hemisphere', 'hi': 'अर्धगोला', 'kn': 'ಅರ್ಧಗೋಳ'}),
+  SolidKind.cylinder: LocalText({'en': 'Cylinder', 'hi': 'बेलन', 'kn': 'ಸಿಲಿಂಡರ್'}),
+  SolidKind.cone: LocalText({'en': 'Cone', 'hi': 'शंकु', 'kn': 'ಶಂಕು'}),
+  SolidKind.frustum: LocalText({'en': 'Frustum of a cone', 'hi': 'शंकु का छिन्नक', 'kn': 'ಶಂಕುವಿನ ಛಿನ್ನಕ'}),
+  SolidKind.squarePyramid: LocalText({'en': 'Square pyramid', 'hi': 'वर्ग पिरामिड', 'kn': 'ಚೌಕ ಪಿರಮಿಡ್'}),
+  SolidKind.triangularPrism: LocalText({'en': 'Triangular prism', 'hi': 'त्रिभुजाकार प्रिज़्म', 'kn': 'ತ್ರಿಕೋನ ಪಟ್ಟಕ'}),
+  SolidKind.tetrahedron: LocalText({'en': 'Regular tetrahedron', 'hi': 'समचतुष्फलक', 'kn': 'ಸಮಚತುರ್ಮುಖಿ'}),
+};
+
 Model3D _convex(String lang) => ProceduralModels.optics(lang, convex: true);
 Model3D _concave(String lang) => ProceduralModels.optics(lang, convex: false);
 
@@ -132,6 +146,7 @@ abstract final class ModelCatalogue {
       ModelEntry(
         id: k.id,
         title: k.title,
+        titles: solidTitles[k],
         subjects: const ['Maths'],
         levels: k == SolidKind.triangularPrism || k == SolidKind.squarePyramid || k == SolidKind.tetrahedron
             ? const ['Class 8', 'Class 10']

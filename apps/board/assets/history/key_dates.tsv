@@ -849,7 +849,7 @@
 1679	8	7	world	history	The brigantine Le Griffon becomes the first ship to sail the upper Great Lakes of North America.
 1680	1	2	world	history	Trunajaya rebellion: Amangkurat II of Mataram and his bodyguards execute the rebel leader Trunajaya.
 1682	8	24	world	history	William Penn receives the area that is now the state of Delaware, and adds it to his colony of Pennsylvania.
-1683	6	23	india	history	William Penn signs a friendship treaty with Lenape Indians in Pennsylvania.
+1683	6	23	world	history	William Penn signs a friendship treaty with Lenape Indians in Pennsylvania.
 1683	9	17	world	history	Antonie van Leeuwenhoek writes a letter to the Royal Society describing "animalcules", later known as protozoa.
 1683	10	3	world	history	Qing dynasty naval commander Shi Lang receives the surrender of the Tungning kingdom on Taiwan after the Battle of Penghu.
 1683	10	9	world	history	Allied Imperial and Polish-Lithuanian forces defeat the retreating Ottoman forces in the battle of Parkany.
@@ -933,7 +933,7 @@
 1740	10	20	world	history	France, Prussia, Bavaria and Saxony refuse to honour the Pragmatic Sanction, and the War of the Austrian Succession begins.
 1741	3	18	world	history	New York governor George Clarke's complex at Fort George is burned in an arson attack, starting the New York Conspiracy of 1741.
 1741	4	10	world	history	War of the Austrian Succession: Prussia gains control of Silesia at the Battle of Mollwitz.
-1741	5	20	india	history	The Battle of Cartagena de Indias ends in a Spanish victory and the British begin withdrawal towards Jamaica with substantial losses.
+1741	5	20	world	history	The Battle of Cartagena de Indias ends in a Spanish victory and the British begin withdrawal towards Jamaica with substantial losses.
 1741	7	31	world	history	Charles Albert of Bavaria invades Upper Austria and Bohemia.
 1742	2	16	world	history	Spencer Compton, Earl of Wilmington, becomes British Prime Minister.
 1742	4	13	world	history	George Frideric Handel's oratorio Messiah makes its world premiere in Dublin, Ireland.
@@ -949,7 +949,7 @@
 1752	0	0	world	science	Benjamin Franklin shows lightning is electrical (June)
 1752	9	2	world	history	Great Britain, along with its overseas possessions, adopts the Gregorian calendar.
 1753	5	1	world	history	Publication of Species Plantarum by Linnaeus, and the formal start date of plant taxonomy adopted by the International Code of Botanical Nomenclature.
-1754	7	3	india	history	French and Indian War: George Washington surrenders Fort Necessity to French forces.
+1754	7	3	world	history	French and Indian War: George Washington surrenders Fort Necessity to French forces.
 1755	7	25	world	history	British governor Charles Lawrence and the Nova Scotia Council order the deportation of the Acadians.
 1755	8	10	world	history	Under the direction of Charles Lawrence, the British begin to forcibly deport the Acadians from Nova Scotia to the Thirteen Colonies and France.
 1756	2	7	world	history	Guaraní War: The leader of the Guaraní rebels, Sepé Tiaraju, is killed in a skirmish with Spanish and Portuguese troops.
@@ -963,14 +963,14 @@
 1757	11	5	world	history	Seven Years' War: Frederick the Great defeats the allied armies of France and the Holy Roman Empire at the Battle of Rossbach.
 1757	12	31	world	history	Empress Elizabeth I of Russia issues her ukase incorporating Königsberg into Russia.
 1758	1	24	world	history	During the Seven Years' War the leading burghers of Königsberg submit to Elizabeth of Russia, thus forming Russian Prussia (until 1763).
-1758	5	21	india	history	Ten-year-old Mary Campbell is abducted in Pennsylvania by Lenape during the French and Indian War. She is returned six and a half years later.
-1758	6	12	india	history	French and Indian War: Siege of Louisbourg: James Wolfe's attack at Louisbourg, Nova Scotia, commences.
+1758	5	21	world	history	Ten-year-old Mary Campbell is abducted in Pennsylvania by Lenape during the French and Indian War. She is returned six and a half years later.
+1758	6	12	world	history	French and Indian War: Siege of Louisbourg: James Wolfe's attack at Louisbourg, Nova Scotia, commences.
 1758	6	23	world	history	Seven Years' War: Battle of Krefeld: British, Hanoverian, and Prussian forces defeat French troops at Krefeld in Germany.
 1758	7	8	world	history	French forces hold Fort Carillon against the British at Ticonderoga, New York.
-1758	7	26	india	history	French and Indian War: The Siege of Louisbourg ends with British forces defeating the French and taking control of the Gulf of Saint Lawrence.
-1758	8	29	india	history	The Treaty of Easton establishes the first American Indian reservation, at Indian Mills, New Jersey, for the Lenape.
+1758	7	26	world	history	French and Indian War: The Siege of Louisbourg ends with British forces defeating the French and taking control of the Gulf of Saint Lawrence.
+1758	8	29	world	history	The Treaty of Easton establishes the first American Indian reservation, at Indian Mills, New Jersey, for the Lenape.
 1758	10	14	world	history	Seven Years' War: Frederick the Great suffers a rare defeat at the Battle of Hochkirch.
-1759	7	25	india	history	French and Indian War: In Western New York, British forces capture Fort Niagara from the French, who subsequently abandon Fort Rouillé.
+1759	7	25	world	history	French and Indian War: In Western New York, British forces capture Fort Niagara from the French, who subsequently abandon Fort Rouillé.
 1759	8	18	world	history	Beginning of the battle of Lagos, in which a British fleet defeats a French fleet trying to slip through Gibraltar.
 1759	12	31	world	history	Arthur Guinness signs a 9,000-year lease at £45 per annum and starts brewing Guinness.
 1760	1	9	world	history	Ahmad Shah Durrani defeats the Marathas in the Battle of Barari Ghat.
@@ -985,7 +985,7 @@
 1762	5	5	world	history	Russia and Prussia sign the Treaty of St. Petersburg.
 1762	6	6	world	history	Seven Years' War: British forces begin the Siege of Havana and temporarily capture the city.
 1763	7	31	world	history	Odawa Chief Pontiac's forces defeat British troops at the Battle of Bloody Run during Pontiac's War.
-1763	8	5	india	history	Pontiac's War: Battle of Bushy Run: British forces led by Henry Bouquet defeat Chief Pontiac's Indians at Bushy Run.
+1763	8	5	world	history	Pontiac's War: Battle of Bushy Run: British forces led by Henry Bouquet defeat Chief Pontiac's Indians at Bushy Run.
 1763	9	1	world	history	Catherine the Great, Empress of Russia, endorses Ivan Betskoy's plans for a Foundling Home in Moscow.
 1763	9	14	world	history	Seneca warriors defeat British forces at the Battle of Devil's Hole during Pontiac's War.
 1764	0	0	india	history	Battle of Buxar
@@ -1098,13 +1098,13 @@
 1790	12	6	world	history	The U.S. Congress moves from New York City to Philadelphia.
 1790	12	22	world	history	The Turkish fortress of Izmail is stormed and captured by Alexander Suvorov and his Russian armies.
 1790	12	26	world	history	Louis XVI of France gives his public assent to Civil Constitution of the Clergy during the French Revolution.
-1791	1	2	india	history	Northwest Indian War: The Big Bottom massacre is committed by Lenape and Wyandot warriors in the Ohio Country, North America.
-1791	1	10	india	history	The Siege of Dunlap's Station begins near Cincinnati during the Northwest Indian War.
+1791	1	2	world	history	Northwest Indian War: The Big Bottom massacre is committed by Lenape and Wyandot warriors in the Ohio Country, North America.
+1791	1	10	world	history	The Siege of Dunlap's Station begins near Cincinnati during the Northwest Indian War.
 1791	1	25	world	history	The British Parliament passes the Constitutional Act of 1791 and splits the old Province of Quebec into Upper Canada and Lower Canada.
 1791	5	15	world	history	French Revolution: Maximilien Robespierre proposes the Self-denying Ordinance.
 1791	7	6	world	history	At Padua, the Emperor Leopold II calls on the monarchs of Europe to join him in demanding the king of France Louis XVI's freedom.
 1791	7	14	world	history	Beginning of Priestley Riots (to 17 July) in Birmingham targeting Joseph Priestley as a supporter of the French Revolution.
-1791	8	7	india	history	American troops destroy the Miami town of Kenapacomaqua near the site of present-day Logansport, Indiana in the Northwest Indian War.
+1791	8	7	world	history	American troops destroy the Miami town of Kenapacomaqua near the site of present-day Logansport, Indiana in the Northwest Indian War.
 1791	9	14	world	history	The Papal States lose Avignon to Revolutionary France.
 1791	9	30	world	history	France's National Constituent Assembly is dissolved, to be replaced the next day by the National Legislative Assembly.
 1791	10	14	world	history	The revolutionary group the United Irishmen is formed in Belfast, Ireland leading to the Irish Rebellion of 1798.
@@ -1126,7 +1126,7 @@
 1795	2	7	world	history	The 11th Amendment to the United States Constitution is ratified.
 1795	3	3	world	history	The Fédon Rebellion breaks out in Grenada, the rebels seizing Grenville and later Gouyave.
 1795	3	11	world	history	The Battle of Kharda is fought between the Maratha Confederacy and the Nizam of Hyderabad, resulting in Maratha victory.
-1795	8	3	india	history	Treaty of Greenville is signed, ending the Northwest Indian War in the Ohio Country.
+1795	8	3	world	history	Treaty of Greenville is signed, ending the Northwest Indian War in the Ohio Country.
 1795	12	28	world	history	Construction of Yonge Street, formerly recognized as the longest street in the world, begins in York, Upper Canada (present-day Toronto).
 1796	2	1	world	history	The capital of Upper Canada is moved from Newark to York.
 1796	5	14	world	science	Edward Jenner gives the first smallpox vaccine (14 May)
@@ -1243,13 +1243,13 @@
 1814	3	31	world	history	The Sixth Coalition occupies Paris after Napoleon's Grande Armée capitulates.
 1814	4	10	world	science	Allied forces under the Duke of Wellington attack Toulouse held by Marshall Soult, driving out the French after fierce fighting.
 1814	7	3	world	history	War of 1812: American forces capture Fort Erie from British troops in Upper Canada.
-1814	8	9	india	history	American Indian Wars: The Creek sign the Treaty of Fort Jackson, giving up huge parts of Alabama and Georgia.
+1814	8	9	world	history	American Indian Wars: The Creek sign the Treaty of Fort Jackson, giving up huge parts of Alabama and Georgia.
 1814	8	24	world	history	British troops capture Washington, D.C. and set the Presidential Mansion, Capitol, Navy Yard and many other public buildings ablaze.
 1814	11	28	world	history	The Times of London becomes the first newspaper to be produced on a steam-powered printing press, built by the German team of Koenig & Bauer.
 1815	1	8	world	history	War of 1812: Battle of New Orleans: Andrew Jackson leads American forces in victory over the British.
 1815	1	13	world	history	War of 1812: British troops capture Fort Peter in St. Marys, Georgia, the only battle of the war to take place in the state.
 1815	1	15	world	history	War of 1812: American frigate USS President, commanded by Commodore Stephen Decatur, is captured by a squadron of four British frigates.
-1815	5	30	india	history	The East Indiaman Arniston is wrecked during a storm at Waenhuiskrans, near Cape Agulhas, in present-day South Africa, with the loss of 372 lives.
+1815	5	30	world	history	The East Indiaman Arniston is wrecked during a storm at Waenhuiskrans, near Cape Agulhas, in present-day South Africa, with the loss of 372 lives.
 1815	6	18	world	history	Battle of Waterloo (18 June)
 1815	10	15	world	history	Napoleon begins his exile on Saint Helena in the South Atlantic Ocean.
 1816	1	9	world	history	Humphry Davy tests his safety lamp for miners at Hebburn Colliery.
@@ -1300,7 +1300,7 @@
 1829	8	3	world	history	The Treaty of Lewistown is signed by the Shawnee and Seneca peoples, exchanging land in Ohio for land west of the Mississippi River.
 1829	9	14	world	history	The Ottoman Empire signs the Treaty of Adrianople with Russia, thus ending the Russo-Turkish War.
 1829	10	8	world	history	Stephenson's Rocket wins the Rainhill Trials.
-1830	5	28	india	history	U.S. President Andrew Jackson signs the Indian Removal Act which denies Native Americans their land rights and forcibly relocates them.
+1830	5	28	world	history	U.S. President Andrew Jackson signs the Indian Removal Act which denies Native Americans their land rights and forcibly relocates them.
 1830	8	2	world	history	July Revolution: Charles X of France abdicates the throne in favor of his grandson Henri.
 1831	0	0	world	science	Michael Faraday discovers electromagnetic induction
 1831	3	10	world	history	The French Foreign Legion is created by Louis Philippe, the King of France, from the foreign regiments of the Kingdom of France.
@@ -1352,7 +1352,7 @@
 1842	3	30	world	history	Ether anesthesia is used for the first time, in an operation by the American surgeon Dr. Crawford Long.
 1842	5	16	world	history	The first major wagon train heading for the Pacific Northwest sets out on the Oregon Trail from Elm Grove, Missouri, with 100 pioneers.
 1842	5	30	world	history	John Francis attempts to murder Queen Victoria as she drives down Constitution Hill in London with Prince Albert.
-1842	8	14	india	history	American Indian Wars: Second Seminole War ends, with the Seminoles forced from Florida.
+1842	8	14	world	history	American Indian Wars: Second Seminole War ends, with the Seminoles forced from Florida.
 1843	2	25	world	history	Lord George Paulet occupies the Kingdom of Hawaii in the name of Great Britain in the Paulet affair.
 1843	9	3	world	history	King Otto of Greece is forced to grant a constitution following an uprising in Athens.
 1843	9	13	world	history	The Greek Army rebels (OS date: September 3) against the autocratic rule of king Otto of Greece, demanding the granting of a constitution.
@@ -1612,8 +1612,8 @@
 1876	4	22	world	history	The first National League baseball game is played at the Jefferson Street Grounds in Philadelphia.
 1876	8	13	world	history	A performance of Wagner's Das Rheingold opens the first Ring cycle at the first Bayreuth Festival.
 1877	1	8	world	history	Crazy Horse and his warriors fight their last battle against the United States Cavalry at Wolf Mountain, Montana Territory.
-1877	5	5	india	history	American Indian Wars: Sitting Bull leads his band of Lakota into Canada to avoid harassment by the United States Army under Colonel Nelson Miles.
-1877	8	9	india	history	American Indian Wars: Battle of the Big Hole: A small band of Nez Percé Indians clash with the United States Army.
+1877	5	5	world	history	American Indian Wars: Sitting Bull leads his band of Lakota into Canada to avoid harassment by the United States Army under Colonel Nelson Miles.
+1877	8	9	world	history	American Indian Wars: Battle of the Big Hole: A small band of Nez Percé Indians clash with the United States Army.
 1877	8	18	world	science	American astronomer Asaph Hall discovers Phobos, one of Mars's moons.
 1877	11	24	world	history	Anna Sewell's animal welfare novel Black Beauty is published.
 1878	1	4	world	history	Russo-Turkish War (1877–78): Sofia is liberated from Ottoman rule.
@@ -1857,7 +1857,7 @@
 1907	6	18	world	history	Most resistance societies in Santiago return to work, bringing an end to the 1907 Chilean general strike.
 1907	8	1	world	history	The start of the first Scout camp on Brownsea Island, the origin of the worldwide Scouting movement.
 1907	8	9	world	history	The first Boy Scout encampment concludes at Brownsea Island in southern England.
-1907	11	16	india	history	Indian Territory and Oklahoma Territory join to form Oklahoma, which is admitted as the 46th U.S. state.
+1907	11	16	world	history	Indian Territory and Oklahoma Territory join to form Oklahoma, which is admitted as the 46th U.S. state.
 1907	12	6	world	history	A coal mine explosion at Monongah, West Virginia, kills 362 workers.
 1907	12	21	world	history	The Chilean Army commits a massacre of at least 2,000 striking saltpeter miners in Iquique, Chile.
 1908	1	15	world	history	The Alpha Kappa Alpha sorority becomes the first Greek-letter organization founded and established by African American college women.
@@ -1891,7 +1891,7 @@
 1911	0	0	world	science	Rutherford proposes the nucleus of the atom
 1911	1	3	world	history	A gun battle in the East End of London leaves two dead. It sparked a political row over the involvement of then-Home Secretary Winston Churchill.
 1911	1	3	world	history	A magnitude 7.7 earthquake destroys the city of Almaty in Russian Turkestan.
-1911	1	5	india	history	Kappa Alpha Psi, the world's third-oldest and largest black fraternity, is founded at Indiana University.
+1911	1	5	world	history	Kappa Alpha Psi, the world's third-oldest and largest black fraternity, is founded at Indiana University.
 1911	1	14	world	history	Roald Amundsen's South Pole expedition makes landfall on the eastern edge of the Ross Ice Shelf.
 1911	1	29	world	history	Mexican Revolution: Mexicali is captured by the Mexican Liberal Party, igniting the Magonista rebellion of 1911.
 1911	1	30	world	history	The destroyer USS Terry makes the first airplane rescue at sea saving the life of Douglas McCurdy 16 kilometres (10 miles) from Havana, Cuba.
@@ -2144,7 +2144,7 @@
 1924	12	20	world	history	Adolf Hitler is released from Landsberg Prison.
 1925	1	30	world	history	The Government of Turkey expels Patriarch Constantine VI from Istanbul.
 1925	2	2	world	history	Serum run to Nome: Dog sleds reach Nome, Alaska with diphtheria serum, inspiring the Iditarod race.
-1925	3	18	india	history	The 1925 Tri-State tornado hits the Midwestern states of Missouri, Illinois, and Indiana, killing 695 people.
+1925	3	18	world	history	The 1925 Tri-State tornado hits the Midwestern states of Missouri, Illinois, and Indiana, killing 695 people.
 1925	5	14	world	history	Mrs Dalloway, one of Virginia Woolf's earliest and best-known novels, is published.
 1925	5	16	world	history	The first modern performance of Claudio Monteverdi's opera Il ritorno d'Ulisse in patria occurred in Paris.
 1925	5	25	world	history	Scopes Trial: John T. Scopes is indicted for teaching human evolution in Tennessee.
@@ -2632,7 +2632,7 @@
 1945	6	18	world	history	William Joyce ("Lord Haw-Haw") is charged with treason for his pro-German propaganda broadcasting during World War II.
 1945	6	19	world	history	The Smoke Tragedy leaves 355 workers dead in the underground copper mine of El Teniente, Chile.
 1945	6	24	world	history	The first Victory Day Parade takes place on Red Square in Moscow, Soviet Union, symbolizing the victory of the Soviet Union over Nazi Germany.
-1945	7	26	india	science	World War II: The USS Indianapolis arrives at Tinian with components and enriched uranium for the Little Boy nuclear bomb.
+1945	7	26	world	science	World War II: The USS Indianapolis arrives at Tinian with components and enriched uranium for the Little Boy nuclear bomb.
 1945	7	26	world	history	The Labour Party wins the United Kingdom general election of July 5 by a landslide, removing Winston Churchill from power.
 1945	7	28	world	history	A U.S. Army B-25 bomber crashes into the 79th floor of the Empire State Building killing 14 and injuring 26.
 1945	7	31	world	history	Pierre Laval, the fugitive former leader of Vichy France, surrenders to Allied soldiers in Austria.
@@ -2660,7 +2660,7 @@
 1946	5	21	world	science	Physicist Louis Slotin is fatally irradiated in a criticality incident during an experiment with the demon core at Los Alamos National Laboratory.
 1946	6	18	world	history	Dr. Ram Manohar Lohia, a Socialist, calls for a Direct Action Day against the Portuguese in Goa.
 1946	7	7	world	history	Howard Hughes nearly dies when his XF-11 reconnaissance aircraft prototype crashes in a Beverly Hills neighborhood.
-1946	8	3	india	history	Santa Claus Land, the world's first themed amusement park, opens in Santa Claus, Indiana, United States.
+1946	8	3	world	history	Santa Claus Land, the world's first themed amusement park, opens in Santa Claus, Indiana, United States.
 1946	8	23	world	history	Ordinance No. 46 of the British Military Government constitutes the German Länder (states) of Hanover and Schleswig-Holstein.
 1946	8	28	world	history	The Workers' Party of North Korea, predecessor of the ruling Workers' Party of Korea, is founded at a congress held in Pyongyang, North Korea.
 1946	9	19	world	history	The Council of Europe is founded following a speech by Winston Churchill at the University of Zurich.
@@ -2947,7 +2947,7 @@
 1960	2	3	world	history	British Prime Minister Harold Macmillan speaks of "a wind of change", signalling that his Government is likely to support decolonisation.
 1960	2	26	world	history	A Kyiv-bound Aeroflot airliner crashes on approach to Snilow Airport in Lviv, killing 32 of the 33 people on board.
 1960	2	26	world	history	A New York-bound Alitalia airliner crashes into a cemetery in Shannon, Ireland, shortly after takeoff, killing 34 of the 52 persons on board.
-1960	3	17	india	history	Northwest Airlines Flight 710 explodes and crashes near Cannelton, Indiana, killing 63.
+1960	3	17	world	history	Northwest Airlines Flight 710 explodes and crashes near Cannelton, Indiana, killing 63.
 1960	4	4	world	history	France agrees to grant independence to the Mali Federation, a union of Senegal and French Sudan.
 1960	4	19	world	history	Students in South Korea hold a nationwide pro-democracy protest against president Syngman Rhee, eventually forcing him to resign.
 1960	4	26	world	history	Forced out by the April Revolution, President of South Korea Syngman Rhee resigns after 12 years of dictatorial rule.
@@ -3329,7 +3329,7 @@
 1973	1	20	world	history	Amílcar Cabral, leader of the independence movement in Guinea-Bissau and Cape Verde, is assassinated in Conakry, Guinea.
 1973	1	22	world	history	A chartered Boeing 707 explodes in flames upon landing at Kano Airport, Nigeria, killing 176.
 1973	1	29	world	history	EgyptAir Flight 741 crashes into the Kyrenia Mountains in Cyprus, killing 37 people.
-1973	2	27	india	history	The American Indian Movement occupies Wounded Knee in protest of the federal government.
+1973	2	27	world	history	The American Indian Movement occupies Wounded Knee in protest of the federal government.
 1973	3	29	world	history	Operation Barrel Roll, a covert American bombing campaign in Laos to stop communist infiltration of South Vietnam, ends.
 1973	3	29	world	history	Vietnam War: The last United States combat soldiers leave South Vietnam.
 1973	4	4	world	history	A Lockheed C-141 Starlifter, dubbed the Hanoi Taxi, makes the last flight of Operation Homecoming.
@@ -3834,7 +3834,7 @@
 1990	5	20	world	history	The first post-Communist presidential and parliamentary elections are held in Romania.
 1990	5	30	world	history	Croatian Parliament is constituted after the first free, multi-party elections, today celebrated as the National Day of Croatia.
 1990	6	1	world	science	Cold War: George H. W. Bush and Mikhail Gorbachev sign a treaty to end chemical weapon production.
-1990	6	2	india	history	The Lower Ohio Valley tornado outbreak spawns 66 confirmed tornadoes in Illinois, Indiana, Kentucky, and Ohio, killing 12.
+1990	6	2	world	history	The Lower Ohio Valley tornado outbreak spawns 66 confirmed tornadoes in Illinois, Indiana, Kentucky, and Ohio, killing 12.
 1990	6	22	world	history	Cold War: Checkpoint Charlie is dismantled in Berlin.
 1990	7	8	world	history	West Germany win the FIFA World Cup final against defending champions Argentina, with Andreas Brehme scoring the game's only goal.
 1990	7	27	world	history	The Jamaat al Muslimeen attempt a coup d'état in Trinidad and Tobago.
@@ -3981,7 +3981,7 @@
 1993	7	22	world	history	Great Flood of 1993: Levees near Kaskaskia, Illinois rupture, forcing the entire town to evacuate by barges operated by the Army Corps of Engineers.
 1993	7	23	world	history	China Northwest Airlines Flight 2119 crashes during takeoff from Yinchuan Xihuayuan Airport in Yinchuan, Ningxia, China, killing 55 people.
 1993	7	29	world	history	The Supreme Court of Israel acquits alleged Nazi death camp guard John Demjanjuk of all charges and he is set free.
-1993	8	7	india	history	Ada Deer, a Menominee activist, is sworn in as the head of the Bureau of Indian Affairs.
+1993	8	7	world	history	Ada Deer, a Menominee activist, is sworn in as the head of the Bureau of Indian Affairs.
 1993	8	28	world	history	A Tajikistan Airlines Yakovlev Yak-40 crashes during takeoff from Khorog Airport in Tajikistan, killing 82.
 1993	9	9	world	history	Israeli–Palestinian peace process: The Palestine Liberation Organization officially recognizes Israel as a legitimate state.
 1993	9	24	world	history	The Cambodian monarchy is restored, with Norodom Sihanouk as king.
@@ -4092,7 +4092,7 @@
 1996	9	24	world	science	Representatives of 71 nations sign the Comprehensive Nuclear-Test-Ban Treaty at the United Nations.
 1996	11	5	world	history	Pakistani President Farooq Leghari dismisses the government of Prime Minister Benazir Bhutto and dissolves the National Assembly.
 1996	11	7	world	history	ADC Airlines Flight 086 crashes into the Lagos Lagoon in Epe, Lagos State, Nigeria, killing all 144 people on board.
-1996	11	23	india	history	Ethiopian Airlines Flight 961 is hijacked, then crashes into the Indian Ocean off the coast of Comoros after running out of fuel, killing 125.
+1996	11	23	world	history	Ethiopian Airlines Flight 961 is hijacked, then crashes into the Indian Ocean off the coast of Comoros after running out of fuel, killing 125.
 1996	12	27	world	history	Taliban forces retake the strategic Bagram Airfield which solidifies their buffer zone around Kabul, Afghanistan.
 1997	1	9	world	history	Comair Flight 3272 crashes in Raisinville Township in Monroe County, Michigan, killing 29 people.
 1997	1	19	world	history	Yasser Arafat returns to Hebron after more than 30 years and joins celebrations over the handover of the last Israeli-controlled West Bank city.
@@ -4287,7 +4287,7 @@
 2002	7	15	world	history	"American Taliban" John Walker Lindh pleads guilty to supplying aid to the enemy and possession of explosives during the commission of a felony.
 2002	7	28	world	history	Nine coal miners trapped in the flooded Quecreek Mine in Somerset County, Pennsylvania, are rescued after 77 hours underground.
 2002	8	19	world	history	Khankala Mi-26 crash: A Russian Mil Mi-26 helicopter carrying troops is hit by a Chechen missile outside Grozny, killing 118 soldiers.
-2002	9	4	india	history	The Oakland Athletics win their 20th consecutive game, an American League record, until the Cleveland Indians surpassed it in 2017.
+2002	9	4	world	history	The Oakland Athletics win their 20th consecutive game, an American League record, until the Cleveland Indians surpassed it in 2017.
 2002	10	7	world	science	The Space Shuttle Atlantis launches on STS-112 to continue assembly of the International Space Station.
 2002	10	11	world	history	A bomb attack in a Myyrmanni shopping mall in Vantaa, Finland kills seven.
 2002	10	20	world	history	Top Gear, the revived popular British TV motoring magazine, premieres on BBC.
@@ -4764,7 +4764,7 @@
 2016	10	7	world	history	In the wake of Hurricane Matthew, the death toll rises to over 800.
 2016	10	9	world	science	The Arakan Rohingya Salvation Army launches its first attack on Myanmar security forces along the Bangladesh–Myanmar border.
 2016	10	13	world	history	The Maldives announces its decision to withdraw from the Commonwealth of Nations.
-2016	11	2	india	history	The Chicago Cubs defeat the Cleveland Indians in the World Series, ending the longest Major League Baseball championship drought at 108 years.
+2016	11	2	world	history	The Chicago Cubs defeat the Cleveland Indians in the World Series, ending the longest Major League Baseball championship drought at 108 years.
 2016	11	6	world	science	Syrian civil war: The Syrian Democratic Forces launch an offensive to capture the ISIL-held city of Raqqa.
 2016	11	28	world	history	LaMia Flight 2933 crashes near Medellín, Colombia, killing 71 of 77 people on board, including members of the Brazilian football club Chapecoense
 2016	12	2	world	history	Thirty-six people die in a fire at a converted Oakland, California, warehouse serving as an artist collective.

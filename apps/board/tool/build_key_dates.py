@@ -26,7 +26,9 @@ for f in glob.glob(here + '/otd/*.json'):
     ev.sort(key=lambda e: -len(e.get('pages', [])))
     for e in ev[:int(sys.argv[2])]:
         t = e['text'].replace('\t', ' ').strip()
-        region = 'india' if re.search(r'India|Indian|Delhi|Mumbai|Bombay|Calcutta|Madras|Karnataka|Bangalore|Mysore', t) else 'world'
+        # 'Indian' also names Native Americans, Indiana and the Indian Ocean: those are world events.
+        u = t.replace('Indian Ocean', '')
+        region = 'india' if re.search(r'India|Indian|Delhi|Mumbai|Bombay|Calcutta|Madras|Karnataka|Bangalore|Mysore|Calicut|Ladakh|Kashmir', u) and not re.search(r'Indiana|Indianapolis|American Indian|French and Indian|(?<!Sino-)Indian Wars?\b|Northwest Indian|Indian Removal|Indian Territory|Indian Affairs|Indian Mills|Indian Movement|Cleveland Indians|Indians at|Nez Percé Indians|Lenape|East Indiaman|Cartagena de Indias', u) else 'world'
         topic = 'science' if sci.search(t) else 'history'
         rows.append((e['year'], m, d, region, topic, t))
         n += 1

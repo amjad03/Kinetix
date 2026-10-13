@@ -25,8 +25,12 @@ which is not kept in git. Add every new model here before adding it to the catal
 ## Downloaded on demand (not bundled)
 
 Cached to the app's model cache on first use; progress, an offline notice and Try again are
-shown (en/hi/kn). Viewer models (processed by tool/models into `packages/kinetix_3d/remote_models/`,
-served from `RemoteModels.defaultBase`) open in the three.js viewer with labels, cuts, take-apart and
+shown (en/hi/kn). Viewer models (processed by tool/models into `packages/kinetix_3d/remote_models/`)
+are fetched from, in order: the board's own model server (Board settings → 3D model downloads), the
+institution's (ERP Settings → Smartboard, `boardModelsBase`, or the API's `MODELS_BASE_URL`), the
+KINETIX API's `/assets/models` (services/api serves `MODELS_DIR`, by default this folder), and last
+the copy on GitHub (`RemoteModels.defaultBase`). A school server only needs the same files under
+the same names. They open in the three.js viewer with labels, cuts, take-apart and
 notes. NASA's files are viewer models too: a part made of pieces with different pictures keeps one
 primitive per picture in its node (lib/importer.mjs `joinTextures`), which the viewer joins again.
 
