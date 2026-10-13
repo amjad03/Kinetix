@@ -240,7 +240,7 @@ export function DataTable<T>({
 
   const nBulk = selectedRows.length;
   const colSpan = columns.length + (selectable ? 1 : 0);
-  const cellPad = dense ? 'px-1.5' : 'px-3';
+  const cellPad = dense ? 'px-1.5' : 'px-3.5';
   const showBar = nBulk > 0 || !(bare && !exportName);
   return (
     <div data-testid={testId} className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
@@ -350,7 +350,7 @@ export function DataTable<T>({
                   key={c.id}
                   aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : c.sort ? 'none' : undefined}
                   style={{ width: c.width }}
-                  className={cn('h-auto border-b border-border py-2.5 text-xs font-semibold whitespace-nowrap text-muted-foreground', cellPad, ALIGN[c.align ?? 'left'], c.hideBelow && HIDE[c.hideBelow])}
+                  className={cn('h-auto border-b border-border bg-muted/40 py-2.5 text-[12.5px] font-[550] whitespace-nowrap text-muted-foreground', cellPad, ALIGN[c.align ?? 'left'], c.hideBelow && HIDE[c.hideBelow])}
                 >
                   {c.sort ? (
                     <button
@@ -412,7 +412,7 @@ export function DataTable<T>({
                     </TableCell>
                   )}
                   {columns.map((c) => {
-                    const cls = cn('border-b border-border py-2.5 align-middle', cellPad, ALIGN[c.align ?? 'left'], c.hideBelow && HIDE[c.hideBelow]);
+                    const cls = cn('border-b border-border text-[13.5px] align-middle', dense ? 'py-2' : 'py-3', cellPad, ALIGN[c.align ?? 'left'], c.hideBelow && HIDE[c.hideBelow]);
                     return c.rowHeader ? (
                       <th key={c.id} scope="row" className={cn(cls, 'font-semibold')}>
                         {c.cell(r)}

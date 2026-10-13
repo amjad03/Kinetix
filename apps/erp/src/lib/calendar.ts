@@ -1,5 +1,6 @@
 // The academic calendar (GET /v1/calendar): holidays, exam days and events, shown as a month.
 import { addDays, isIsoDate, isoWeekday } from './dates';
+import { naturalCompare } from './natural';
 
 export type CalendarKind = 'holiday' | 'exam' | 'event';
 export const CALENDAR_KINDS: CalendarKind[] = ['holiday', 'exam', 'event'];
@@ -78,7 +79,7 @@ export function gridRange(month: string): { from: string; to: string } {
 /** Entries on a date, holidays first. */
 export function eventsOn(date: string, events: CalendarEvent[]): CalendarEvent[] {
   const order: Record<CalendarKind, number> = { holiday: 0, exam: 1, event: 2 };
-  return events.filter((e) => e.startsOn <= date && date <= e.endsOn).sort((a, b) => order[a.kind] - order[b.kind] || a.title.localeCompare(b.title));
+  return events.filter((e) => e.startsOn <= date && date <= e.endsOn).sort((a, b) => order[a.kind] - order[b.kind] || naturalCompare(a.title, b.title));
 }
 
 /** Entries overlapping a month. */
@@ -96,7 +97,7 @@ export function eventDays(e: { startsOn: string; endsOn: string }): number {
 /** Entries grouped by the month they start in ("2026-10" → […]), in date order. */
 export function groupByMonth(events: CalendarEvent[]): [string, CalendarEvent[]][] {
   const map = new Map<string, CalendarEvent[]>();
-  for (const e of [...events].sort((a, b) => a.startsOn.localeCompare(b.startsOn) || a.title.localeCompare(b.title))) {
+  for (const e of [...events].sort((a, b) => naturalCompare(a.startsOn, b.startsOn) || naturalCompare(a.title, b.title))) {
     const m = e.startsOn.slice(0, 7);
     map.set(m, [...(map.get(m) ?? []), e]);
   }

@@ -5,6 +5,7 @@ import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import type { ApplicationDetail, StudentProfile } from '@/lib/admissions';
 import type { ActionResult } from '@/lib/types';
+import { naturalCompare } from '@/lib/natural';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const bad = async (): Promise<ActionResult<never>> => ({ ok: false, error: (await getI18n()).t('adm.err.invalid') });
@@ -65,7 +66,7 @@ export async function sheetDocuments(applicationId: string): Promise<ActionResul
     const specs = a.cycle.documents.length ? a.cycle.documents : a.documents.map((d) => ({ key: d.docKey, label: d.docKey, required: false }));
     return {
       docs: specs.map((s) => {
-        const up = a.documents.filter((d) => d.docKey === s.key).sort((x, y) => y.uploadedAt.localeCompare(x.uploadedAt))[0];
+        const up = a.documents.filter((d) => d.docKey === s.key).sort((x, y) => naturalCompare(y.uploadedAt, x.uploadedAt))[0];
         return { key: s.key, label: s.label, required: s.required, status: up ? up.status : 'missing' };
       }),
     };

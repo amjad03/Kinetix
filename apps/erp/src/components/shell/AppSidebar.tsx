@@ -92,7 +92,7 @@ export function AppSidebar({
       <Star className={cn(favs.includes(href) && 'fill-amber-400 text-amber-500')} />
     </SidebarMenuAction>
   );
-  const TILE_BTN = 'group-data-[collapsible=icon]:p-1! gap-2.5';
+  const TILE_BTN = 'h-[34px] py-[5px] text-[13.5px] group-data-[collapsible=icon]:p-1! gap-2.5';
   const sections = navSections(groups);
   const toggleSection = (id: string) => {
     const next = closed.includes(id) ? closed.filter((x) => x !== id) : [...closed, id];

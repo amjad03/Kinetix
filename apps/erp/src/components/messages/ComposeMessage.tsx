@@ -10,6 +10,7 @@ import { Alert, Autocomplete, Button, ButtonBase, Card, Chip, CircularProgress, 
 import { CircleCheck as CheckCircle, OctagonAlert as ReportOutlined, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { pal } from '@/lib/sx';
+import { naturalCompare } from '@/lib/natural';
 type Mode = 'all' | 'programs' | 'classes';
 
 interface Option {
@@ -43,7 +44,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
     () =>
       structure.sections
         .map((s) => ({ id: s.id, label: s.displayName, group: programName.get(s.programId) ?? t('msg.group.other') }))
-        .sort((a, b) => a.group.localeCompare(b.group) || a.label.localeCompare(b.label)),
+        .sort((a, b) => naturalCompare(a.group, b.group) || naturalCompare(a.label, b.label)),
     [structure.sections, programName, t],
   );
 

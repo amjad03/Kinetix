@@ -32,7 +32,7 @@ export function TabBar() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- mount gate
   useEffect(() => setMounted(true), []);
   if (!api || api.state.tabs.length === 0) return null;
-  if (!mounted) return <div className="kx-tabbar sticky top-[60px] z-20 h-[45px] border-b bg-background/95" data-testid="tab-bar" aria-hidden />;
+  if (!mounted) return <div className="kx-tabbar sticky top-14 z-20 h-[43px] border-b bg-background/95" data-testid="tab-bar" aria-hidden />;
   const { state } = api;
   const active = state.tabs.find((x) => x.id === state.activeId) ?? state.tabs[0];
   const many = state.tabs.length > 1;
@@ -67,7 +67,7 @@ export function TabBar() {
   );
 
   return (
-    <div className="kx-tabbar sticky top-[60px] z-20 border-b bg-background/95 px-4 backdrop-blur md:px-6" data-testid="tab-bar">
+    <div className="kx-tabbar sticky top-14 z-20 border-b bg-background/95 px-4 backdrop-blur md:px-6" data-testid="tab-bar">
       {/* Phones: one compact switcher. */}
       <div className="flex h-11 items-center md:hidden">
         <DropdownMenu>
@@ -108,7 +108,7 @@ export function TabBar() {
       </div>
 
       {/* Tablets and up: the strip. */}
-      <div role="tablist" aria-label={t('tabs.bar')} className="hidden h-11 items-end gap-1 overflow-x-auto [scrollbar-width:none] md:flex">
+      <div role="tablist" aria-label={t('tabs.bar')} className="hidden h-[42px] items-end gap-1 overflow-x-auto [scrollbar-width:none] md:flex">
         {state.tabs.map((tab, i) => {
           const on = tab.id === state.activeId;
           const side = tab.id === state.splitId && api.wide;
@@ -145,7 +145,7 @@ export function TabBar() {
               }}
               onAuxClick={(e) => e.button === 1 && !tab.pinned && api.close(tab.id)}
               className={cn(
-                'group relative flex h-9 max-w-[220px] min-w-0 shrink-0 items-center rounded-t-lg border border-b-0 text-[13px] transition-colors',
+                'group relative flex h-[34px] max-w-[200px] min-w-0 shrink-0 items-center rounded-t-lg border border-b-0 text-[13px] transition-colors',
                 on ? 'border-border bg-card font-semibold text-foreground shadow-[0_1px_0_var(--color-card)]' : 'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground',
                 side && !on && 'border-dashed border-border bg-card/60',
                 over === tab.id && 'ring-2 ring-primary/40',

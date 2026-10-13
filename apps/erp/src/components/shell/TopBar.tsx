@@ -84,7 +84,7 @@ export function TopBar({
   };
 
   return (
-    <header className="kx-chrome sticky top-0 z-30 flex h-[60px] shrink-0 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur-md md:px-5">
+    <header className="kx-chrome sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur-md md:px-5">
       <SidebarTrigger aria-label={t('shell.toggleSidebar')} className="size-9 text-muted-foreground" />
       <Separator orientation="vertical" className="mr-1 hidden data-[orientation=vertical]:h-5 md:block" />
       {crumbs.length > 0 && (

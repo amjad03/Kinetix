@@ -15,6 +15,7 @@ import { useI18n } from '@/i18n/client';
 import { formatDate } from '@/lib/dates';
 import { initials, monthlyTotals, type Defaulter, type Receipt } from '@/lib/roster';
 import { cn } from '@/lib/utils';
+import { naturalSortBy } from '@/lib/natural';
 
 export interface SettlementBatchRow {
   id: string;
@@ -100,7 +101,7 @@ export function FeesBoard({ billedPaise, collectedPaise, classes, months, receip
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Panel title={t('fo.byClass.title')} subtitle={t('fo.byClass.sub')} className="lg:col-span-2" testId="fee-by-class">
-          <FeeBars rows={classes} ariaLabel={t('fo.byClass.title')} collectedLabel={t('fees.collected')} outstandingLabel={t('fees.outstanding')} />
+          <FeeBars rows={naturalSortBy(classes, (c) => c.label)} ariaLabel={t('fo.byClass.title')} collectedLabel={t('fees.collected')} outstandingLabel={t('fees.outstanding')} />
         </Panel>
         <Panel
           title={t('fo.set.title')}

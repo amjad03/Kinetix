@@ -1,4 +1,5 @@
 import type { AiUsage } from './types';
+import { naturalCompare } from './natural';
 
 export const TASK_LABEL: Record<string, string> = {
   explain: 'Explain',
@@ -38,7 +39,7 @@ export function summarizeUsage(u: AiUsage): { tasks: TaskUsage[]; total: Omit<Ta
     t[OUTCOME_GROUP[r.outcome] ?? 'failed'] += r.requests;
     byTask.set(r.task, t);
   }
-  const tasks = [...byTask.values()].sort((a, b) => b.requests - a.requests || a.label.localeCompare(b.label));
+  const tasks = [...byTask.values()].sort((a, b) => b.requests - a.requests || naturalCompare(a.label, b.label));
   const total = tasks.reduce(
     (s, t) => ({ requests: s.requests + t.requests, answered: s.answered + t.answered, blocked: s.blocked + t.blocked, failed: s.failed + t.failed, tokens: s.tokens + t.tokens }),
     { requests: 0, answered: 0, blocked: 0, failed: 0, tokens: 0 },
