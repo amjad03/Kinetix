@@ -1651,6 +1651,11 @@ class AppLocalizationsHi extends AppLocalizations {
   String get enrollServer => 'सर्वर';
 
   @override
+  String enrollKeyLost(String server) {
+    return 'यह बोर्ड $server से जोड़ा गया था, पर इस कंप्यूटर ने उसकी कुंजी नहीं रखी। फिर से जोड़ने के लिए नया पंजीकरण कोड लिखें; इसकी सेटिंग्स और सहेजे गए बोर्ड यहीं हैं।';
+  }
+
+  @override
   String get enrollRegistering => 'पंजीकरण हो रहा है…';
 
   @override

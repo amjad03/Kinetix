@@ -16,7 +16,8 @@ class EnrollScreen extends StatefulWidget {
 }
 
 class _EnrollScreenState extends State<EnrollScreen> {
-  final _server = TextEditingController(text: defaultServerUrl);
+  /// The server this board was set up with when it lost its key, else this build's server.
+  late final _server = TextEditingController(text: widget.controller.lostKeyServer ?? defaultServerUrl);
   final _code = TextEditingController();
   String? _error;
   bool _busy = false;
@@ -73,6 +74,15 @@ class _EnrollScreenState extends State<EnrollScreen> {
                       l.enrollHint,
                       style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                     ),
+                    if (widget.controller.lostKeyServer case final server?) ...[
+                      const SizedBox(height: Kx.s12),
+                      Container(
+                        key: const Key('enroll-key-lost'),
+                        padding: const EdgeInsets.all(Kx.s12),
+                        decoration: BoxDecoration(color: c.secondaryContainer, borderRadius: Kx.radiusMd),
+                        child: Text(l.enrollKeyLost(server), style: context.text.bodyMedium?.copyWith(color: c.onSecondaryContainer)),
+                      ),
+                    ],
                     const SizedBox(height: Kx.s24),
                     TextField(
                       key: const Key('enroll-code'),

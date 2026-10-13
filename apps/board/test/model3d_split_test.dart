@@ -54,6 +54,9 @@ void main() {
     final list = find.descendant(of: find.byKey(const Key('catalogue-model3d')), matching: find.byType(Scrollable)).first;
     await tester.scrollUntilVisible(find.byKey(const Key('pick-orbitals')), 300, scrollable: list);
     await tester.scrollUntilVisible(find.byKey(const Key('pick-heart')), -300, scrollable: list);
+    // The 3D solids come first, so the heart can be built just above the list's top edge.
+    await tester.ensureVisible(find.byKey(const Key('pick-heart')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('pick-heart')));
     await tester.pump();
     await tester.pump();

@@ -9,13 +9,22 @@ Two demo institutions live in the dev database `kinetix_show`:
 
 Password for every demo login: `kinetix123`.
 
+Demo builds in `dist/` (the Mac's Wi-Fi address on 13 October 2026 was `192.168.31.129`). Build them with nothing else running and at least 4 GB free on the disk (the board APK is about 285 MB; a build needs several times that), one at a time, then delete `apps/board/build`:
+
+| File | Build (in `apps/board`) | Notes |
+|---|---|---|
+| `kinetix-board.apk` | `KINETIX_TEST_SIGNING=true flutter build apk --release --dart-define=KINETIX_API_URL=http://192.168.31.129:4000 -Pkinetix.lanHttp=true`, then move `build/app/outputs/flutter-apk/app-release.apk` to `dist/kinetix-board.apk` | Test-signed release, plain http allowed on the LAN. On another network: board Settings > This board > Set up again, then the new address. |
+| `KINETIX Board.app` | `flutter build macos --release --dart-define=KINETIX_API_URL=http://localhost:4000`, then replace `dist/KINETIX Board.app` with `build/macos/Build/Products/Release/KINETIX Board.app` | The Mac board. Builds before 13 October 2026 could not keep their board key (macOS data protection keychain, unavailable to an ad-hoc signed app), so they came back to the set-up screen after every launch instead of connecting to `localhost:4000`. A new build keeps the key in the login keychain: set it up once (the server is filled in; issue an enrolment code in the ERP under **Boards**) and it reconnects on every launch. If macOS asks whether KINETIX Board may use the keychain, choose **Always Allow**. |
+
+AI on the board: Google Gemini `gemini-3.8-flash`, falling back to `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-flash-lite-latest` and `gemini-3.1-flash-lite` (the key and the model list are in `services/api/.env`, never in the repository). The API reads `.env` only when it starts: **restart it after any change** with `scripts/demo-stop.sh && scripts/demo-start.sh`.
+
 ## 1. Before the demo (15 minutes before)
 
 1. Plug in the Mac, join the venue Wi-Fi (the same network as the smartboard and the phones), turn off sleep (System Settings > Lock Screen > never while on power).
 2. In Terminal: `cd ~/Downloads/Kinetix && scripts/demo-start.sh`. It starts Postgres if needed, builds if a build is missing, runs the migrations, starts the API on port 4000 and the ERP on port 3000, and prints the Mac's Wi-Fi address and the URLs.
 3. Check: `node scripts/demo-api-check.mjs` (board enrolment, teacher pairing, PIN, attendance, parent, student sign-in; prints "All API checks passed") and, if there is time, `node scripts/demo-crawl.mjs` (loads every sidebar page for both institutions; only `/topic-videos` used to fail and is fixed).
 4. Open the ERP in Chrome at `http://localhost:3000` (on another laptop: `http://<Mac IP>:3000`). Use a wide window (side-by-side tabs need it).
-5. In each app (smartboard, teacher, parent, student) set **Server address** to `http://<Mac IP>:4000` if the IP changed since the last time.
+5. In each app (smartboard, teacher, parent, student) set **Server address** to `http://<Mac IP>:4000` if the IP changed since the last time (the builds above used `192.168.31.129`; check with `ipconfig getifaddr en0`).
 6. Optional reset of the data: `cd services/api && pnpm db:seed:soundarya` (college) and `pnpm db:seed:school` (school). Each replaces only its own institution and takes about 1 to 2 minutes. Do not run it during the demo.
 7. Real AI answers on the board (free, Google Gemini): put `AI_BASE_URL`, `AI_MODEL` (`gemini-3.8-flash`; `gemini-flash-latest` if that name is ever retired), `AI_FALLBACK_MODELS` (the free tier gives each model only 20 requests a day) and `AI_API_KEY` in `services/api/.env` as in `docs/demo/GEMINI_FREE_AI.md`. The API reads `.env` only when it starts: after editing it, restart with `scripts/demo-stop.sh && scripts/demo-start.sh`. After pulling new code, rebuild the API once (`cd services/api && pnpm build`; the start script only builds when there is no build), then start as usual. Check: `grep "KINETIX AI:" /tmp/kinetix-api.log | tail -1` names the models (`KINETIX AI: gemini-3.8-flash, then gemini-3.7-flash, then … at generativelanguage.googleapis.com`); "labelled preview answers" means the API started before the AI lines were added. On the board, ask the questions you will demo once beforehand: repeats come from the cache, instantly and without using the free allowance.
 
