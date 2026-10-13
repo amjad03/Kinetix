@@ -374,6 +374,15 @@ class BoardController extends ChangeNotifier {
   bool get isEnrolled => api != null;
   bool get isSignedIn => session != null;
 
+  /// The server this board is registered with (Board settings → This board); null in a demo
+  /// build or before it is set up.
+  String? get serverUrl => _demo ? null : api?.baseUrl;
+
+  /// Board settings → This board → Set up again, for a board moved to another network or server
+  /// (it would keep calling the old address): it forgets the server and its device token, signs
+  /// the teacher out and shows the set-up screen. Settings and saved boards stay on the device.
+  Future<void> setUpAgain() => _unpair();
+
   static const _lockedKey = 'deviceLocked';
 
   Future<void> start() async {

@@ -4398,4 +4398,31 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get invalidServer => 'सर्वर का पता लिखें, जैसे https://api.kinetix.in';
+
+  @override
+  String get thisBoardTitle => 'यह बोर्ड';
+
+  @override
+  String thisBoardServer(String name, String server) {
+    return '$name के नाम से $server पर पंजीकृत';
+  }
+
+  @override
+  String get setUpAgain => 'फिर से सेट अप करें';
+
+  @override
+  String get setUpAgainHint =>
+      'दूसरे नेटवर्क या सर्वर पर ले गए? फिर से सेट अप करें, फिर नया सर्वर पता और नया पंजीकरण कोड (KINETIX ERP → बोर्ड) लिखें। सेटिंग्स और सहेजे गए बोर्ड इसी डिवाइस पर रहते हैं।';
+
+  @override
+  String get setUpAgainKiosk =>
+      'कियोस्क मोड चालू है। बोर्ड को फिर से सेट अप करने के लिए IT पहले घड़ी को 3 सेकंड दबाकर रखे और IT PIN लिखे।';
+
+  @override
+  String get setUpAgainTitle => 'इस बोर्ड को फिर से सेट अप करें?';
+
+  @override
+  String setUpAgainBody(String server) {
+    return 'बोर्ड $server का इस्तेमाल बंद कर देगा और शिक्षक साइन आउट हो जाएँगे। फिर सर्वर का पता और KINETIX ERP से नया पंजीकरण कोड (बोर्ड → नया पंजीकरण कोड) लिखें।';
+  }
 }

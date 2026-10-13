@@ -18,12 +18,12 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Two-finger tap = undo | Two-finger tap undoes last action | Built on main and split second board (same WhiteboardCanvas); tools_test second-board, whiteboard_canvas_test "two fingers undo" | INK/pen/gestures.dart |
 | Undo / redo | Toolbar buttons | Built | INK/whiteboard_controller.dart |
 | Version history / autosave | Whiteboards saved in "Your Whiteboards" | Built: cloud save and version history when signed in. Autosave (was missing): the board is kept on the device 2 s after each change and when the app is put away, and comes back on the next start (crash, power cut, window closed) with "Start fresh" beside the message; End class and New clear it at once; works in guest and demo mode; en/hi/kn (autosave_test, teacher_walkthrough_test) | B/version_history.dart, B/board_autosave.dart, A/profiles/profile_boards.dart |
-| Clear all | In eraser settings with confirm | Built | B/layout/pen_popover.dart |
+| Clear all | In eraser settings with confirm | Built: the eraser card opens at its top, so on a phone on its side Clear page is reached by scrolling the card (clear_board_test at 390×844, 844×390 and 1920×1080) | B/popovers.dart, B/layout/pen_popover.dart |
 
 ## 2. Pens and configuration
 | Feature | Teachmint behaviour | KINETIX status | Files |
 |---|---|---|---|
-| Pen module: Solid, Highlighter, Two Side, Text AI, Shape AI | 5-way pen popover (doc 12) | Built | B/layout/pen_modes.dart, B/layout/pen_popover.dart |
+| Pen module: Solid, Highlighter, Two Side, Text AI, Shape AI | 5-way pen popover (doc 12) | Built. Fixed: the pen popover opens at its top, and picking the AI pen left its options (convert, when, language) below the fold on a 1080p panel; picking it now scrolls them into view (ai_pen_test) | B/layout/pen_modes.dart, B/layout/pen_popover.dart |
 | Solid pen size and colour | Size slider, colour swatches | Built | B/layout/pen_popover.dart |
 | Single / Multi Touch toggle | Multi: several students write simultaneously, low latency | Built: phone no longer excluded (multiWriter = panel/IFP, Multi Touch on, or zones active); per-pointer writing tested in whiteboard_canvas_test "on a panel every finger writes its own line" | A/../core/board_controller.dart, B/layout/pen_popover.dart |
 | Highlighter | Size, opacity, colour, smooth, palm-compatible | Built | B/layout/pen_popover.dart, INK/ink_canvas.dart |
@@ -121,7 +121,7 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Share whiteboard | Email, WhatsApp, QR | Built: WhatsApp opens, else the Android share sheet with the PDF; QR beside the buttons; a share sheet that fails now says so instead of failing silently | B/share_whiteboard.dart |
 | WhatsApp share sheet | Pages, PDF, message, send to number/groups | Built: Android share sheet carries the PDF and notes link | B/share_whiteboard.dart, core/api_client.dart |
 | End class | Quick-group End Class, saves recording and summary | Built: notes, publish to students, session closed, summary with WhatsApp share | B/layout/board_chrome.dart, A/profiles/profiles_controller.dart |
-| Settings / configurations | Board settings sheet | Built | B/profile_menu.dart |
+| Settings / configurations | Board settings sheet | Built. Added: This board shows the server the board is registered with and **Set up again** (asks first) for a board taken to another network or server, which otherwise kept calling the old address with no way to change it; it forgets the server and token, signs the teacher out and opens the set-up screen, keeping settings and saved boards; under kiosk mode IT unlocks with the IT PIN first; en/hi/kn (set_up_again_test) | B/profile_menu.dart, A/enrollment/set_up_again.dart |
 
 ## 9. Simulations hub
 | Feature | Teachmint behaviour | KINETIX status | Files |

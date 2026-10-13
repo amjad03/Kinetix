@@ -110,6 +110,9 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const Key('tool-erase')));
         await tester.pumpAndSettle();
+        // The card opens at its top; on a phone on its side Clear page is further down.
+        await tester.ensureVisible(find.byKey(const Key('clear-page')));
+        await tester.pumpAndSettle();
         await tester.tap(find.byKey(const Key('clear-page')));
         await tester.pumpAndSettle();
         expect(find.text('Clear this page?'), findsOneWidget);

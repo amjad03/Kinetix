@@ -2470,5 +2470,15 @@
   "testConnection": "Test connection",
   "connectionOk": "Server reachable",
   "connectionFailed": "Cannot reach the server",
-  "invalidServer": "Enter a server address like https://api.kinetix.in"
+  "invalidServer": "Enter a server address like https://api.kinetix.in",
+  "thisBoardTitle": "This board",
+  "@thisBoardTitle": {"description": "Board settings section: the server the board is registered with, and Set up again."},
+  "thisBoardServer": "Registered as {name} with {server}",
+  "@thisBoardServer": {"placeholders": {"name": {"type": "String"}, "server": {"type": "String"}}},
+  "setUpAgain": "Set up again",
+  "setUpAgainHint": "Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (KINETIX ERP → Boards). Settings and saved boards stay on this device.",
+  "setUpAgainKiosk": "Kiosk mode is on. To set the board up again, IT first holds the clock for 3 seconds and enters the IT PIN.",
+  "setUpAgainTitle": "Set up this board again?",
+  "setUpAgainBody": "The board stops using {server} and the teacher is signed out. Then enter the server address and a new enrolment code from KINETIX ERP (Boards → New enrolment code).",
+  "@setUpAgainBody": {"placeholders": {"server": {"type": "String"}}}
 }

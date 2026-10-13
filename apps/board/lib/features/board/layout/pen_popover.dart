@@ -75,6 +75,10 @@ class _PenPopoverState extends State<PenPopover> {
   /// Two Side's settings are open (the pen keeps writing meanwhile).
   bool _twoSide = false;
 
+  /// The end of the AI pen's options, brought into view when the AI pen is picked: the popover
+  /// opens at its top, and on a panel or a phone on its side they would be below the fold.
+  final _aiOptionsEnd = GlobalKey();
+
   WhiteboardController get wb => widget.wb;
   bool get _hl => wb.tool == BoardTool.highlighter;
   Color get _colour => _hl ? wb.highlighterColor : wb.penColor;
@@ -100,6 +104,7 @@ class _PenPopoverState extends State<PenPopover> {
         wb.tool = BoardTool.highlighter;
       case PenType.aiPen:
         wb.tool = BoardTool.aiPen;
+        if (!ai) WidgetsBinding.instance.addPostFrameCallback((_) => _showAiOptions());
       case PenType.calligraphy || PenType.dashed || PenType.arrow:
         wb.penNib = switch (t) {
           PenType.calligraphy => PenNib.calligraphy,
@@ -112,6 +117,12 @@ class _PenPopoverState extends State<PenPopover> {
         wb.tool = BoardTool.laser;
     }
     wb.update(() {});
+  }
+
+  void _showAiOptions() {
+    final c = _aiOptionsEnd.currentContext;
+    if (!mounted || c == null) return;
+    Scrollable.ensureVisible(c, duration: Kx.fast, alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd);
   }
 
   void _set({Color? colour, double? width}) {
@@ -316,12 +327,15 @@ class _PenPopoverState extends State<PenPopover> {
                   onSelectionChanged: (v) => board.setAiPenMode(v.single),
                 ),
                 const SizedBox(height: Kx.s8),
-                SegmentedButton<BoardLanguage>(
-                  key: const Key('ai-pen-language'),
-                  showSelectedIcon: false,
-                  segments: [for (final lang in BoardLanguage.values) ButtonSegment(value: lang, label: Text(lang.label))],
-                  selected: {board.aiPenLanguage},
-                  onSelectionChanged: (v) => board.setAiPenLanguage(v.single),
+                KeyedSubtree(
+                  key: _aiOptionsEnd,
+                  child: SegmentedButton<BoardLanguage>(
+                    key: const Key('ai-pen-language'),
+                    showSelectedIcon: false,
+                    segments: [for (final lang in BoardLanguage.values) ButtonSegment(value: lang, label: Text(lang.label))],
+                    selected: {board.aiPenLanguage},
+                    onSelectionChanged: (v) => board.setAiPenLanguage(v.single),
+                  ),
                 ),
               ],
               if (wb.tool == BoardTool.pen) SnapShapesSwitch(board: board),

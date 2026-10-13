@@ -4408,4 +4408,31 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get invalidServer =>
       'ಸರ್ವರ್ ವಿಳಾಸ ನಮೂದಿಸಿ, ಉದಾ. https://api.kinetix.in';
+
+  @override
+  String get thisBoardTitle => 'ಈ ಬೋರ್ಡ್';
+
+  @override
+  String thisBoardServer(String name, String server) {
+    return '$name ಹೆಸರಿನಲ್ಲಿ $server ನಲ್ಲಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get setUpAgain => 'ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸಿ';
+
+  @override
+  String get setUpAgainHint =>
+      'ಬೇರೆ ನೆಟ್‌ವರ್ಕ್ ಅಥವಾ ಸರ್ವರ್‌ಗೆ ಸ್ಥಳಾಂತರಿಸಿದ್ದೀರಾ? ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸಿ, ನಂತರ ಹೊಸ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (KINETIX ERP → ಬೋರ್ಡ್‌ಗಳು) ನಮೂದಿಸಿ. ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಉಳಿಸಿದ ಬೋರ್ಡ್‌ಗಳು ಈ ಸಾಧನದಲ್ಲೇ ಇರುತ್ತವೆ.';
+
+  @override
+  String get setUpAgainKiosk =>
+      'ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಆನ್ ಆಗಿದೆ. ಬೋರ್ಡ್ ಅನ್ನು ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸಲು IT ಮೊದಲು ಗಡಿಯಾರವನ್ನು 3 ಸೆಕೆಂಡು ಒತ್ತಿ ಹಿಡಿದು IT PIN ನಮೂದಿಸಬೇಕು.';
+
+  @override
+  String get setUpAgainTitle => 'ಈ ಬೋರ್ಡ್ ಅನ್ನು ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸುವುದೇ?';
+
+  @override
+  String setUpAgainBody(String server) {
+    return 'ಬೋರ್ಡ್ $server ಬಳಸುವುದನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ ಮತ್ತು ಶಿಕ್ಷಕರು ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ. ನಂತರ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು KINETIX ERP ಯಿಂದ ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (ಬೋರ್ಡ್‌ಗಳು → ಹೊಸ ನೋಂದಣಿ ಕೋಡ್) ನಮೂದಿಸಿ.';
+  }
 }
