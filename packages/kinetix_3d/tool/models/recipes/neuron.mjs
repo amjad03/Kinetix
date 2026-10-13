@@ -7,7 +7,7 @@ const t = (en, hi, kn) => ({ en, hi, kn });
 
 export default {
   id: 'neuron',
-  version: 1,
+  version: 2,
   order: 7,
   source: 'procedural',
   subject: 'Biology',
@@ -19,7 +19,7 @@ export default {
     'ಸಂದೇಶಗಳನ್ನು ವಿದ್ಯುತ್ ಆವೇಗಗಳಾಗಿ ಒಯ್ಯುವ ಕೋಶ. ಡೆಂಡ್ರೈಟ್‌ಗಳು ಸ್ವೀಕರಿಸುತ್ತವೆ, ಆಕ್ಸಾನ್ ಕಳುಹಿಸುತ್ತದೆ, ತುದಿಗಳು ಮುಂದಿನ ಕೋಶಕ್ಕೆ ದಾಟಿಸುತ್ತವೆ.',
   ),
   keywords: ['neuron', 'nerve cell', 'nervous system', 'nerve impulse', 'synapse', 'axon', 'dendrite', 'control and coordination', 'neural control'],
-  credit: 'Model built by KINETIX',
+  credit: 'Simplified model built by KINETIX',
   groups: [
     { id: 'cell', name: t('The cell', 'कोशिका', 'ಕೋಶ') },
     { id: 'axon', name: t('Axon', 'तंत्रिकाक्ष (एक्सॉन)', 'ಆಕ್ಸಾನ್') },

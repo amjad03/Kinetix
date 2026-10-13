@@ -228,6 +228,42 @@
    "order": 6
   },
   {
+   "id": "kidney",
+   "subject": "Biology",
+   "title": {
+    "en": "Kidney (inside)",
+    "hi": "वृक्क (भीतरी संरचना)",
+    "kn": "ಮೂತ್ರಪಿಂಡ (ಒಳರಚನೆ)"
+   },
+   "summary": {
+    "en": "A kidney cut open along its length: the cortex outside, the cone-shaped pyramids of the medulla, and the calyces and pelvis that collect urine into the ureter. About a million nephrons filter the blood.",
+    "hi": "लंबाई में काटा गया वृक्क: बाहर वल्कुट, मध्यांश के शंकु जैसे पिरामिड, और वे केलिक्स व श्रोणि जो मूत्र को मूत्रवाहिनी में इकट्ठा करते हैं। लगभग दस लाख नेफ्रॉन रक्त छानते हैं।",
+    "kn": "ಉದ್ದಕ್ಕೆ ಕತ್ತರಿಸಿದ ಮೂತ್ರಪಿಂಡ: ಹೊರಗೆ ಕಾರ್ಟೆಕ್ಸ್, ಮೆಡುಲ್ಲಾದ ಶಂಕುವಿನಾಕಾರದ ಪಿರಮಿಡ್‌ಗಳು, ಮತ್ತು ಮೂತ್ರವನ್ನು ಮೂತ್ರನಾಳಕ್ಕೆ ಸಂಗ್ರಹಿಸುವ ಕ್ಯಾಲಿಕ್ಸ್‌ಗಳು ಮತ್ತು ಪೆಲ್ವಿಸ್. ಸುಮಾರು ಹತ್ತು ಲಕ್ಷ ನೆಫ್ರಾನ್‌ಗಳು ರಕ್ತವನ್ನು ಸೋಸುತ್ತವೆ."
+   },
+   "keywords": [
+    "kidney",
+    "kidneys",
+    "cortex",
+    "medulla",
+    "renal pyramid",
+    "renal pelvis",
+    "calyx",
+    "excretion",
+    "excretory system",
+    "urine",
+    "ureter",
+    "life processes",
+    "excretory products and their elimination",
+    "longitudinal section of kidney"
+   ],
+   "classes": [
+    7,
+    10,
+    11
+   ],
+   "order": 6.5
+  },
+  {
    "id": "skull",
    "subject": "Biology",
    "title": {
@@ -407,9 +443,9 @@
     "kn": "ಮಾನವ ಕಿವಿ"
    },
    "summary": {
-    "en": "The outer ear collects sound, the middle ear's three tiny bones pass the vibrations on, and the inner ear turns them into nerve signals. The inner ear also senses balance.",
-    "hi": "बाहरी कान ध्वनि इकट्ठा करता है, मध्य कान की तीन छोटी हड्डियाँ कंपन आगे बढ़ाती हैं, और आंतरिक कान उन्हें तंत्रिका संकेतों में बदलता है। आंतरिक कान संतुलन भी पहचानता है।",
-    "kn": "ಹೊರಕಿವಿ ಶಬ್ದವನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ, ಮಧ್ಯಕಿವಿಯ ಮೂರು ಸಣ್ಣ ಮೂಳೆಗಳು ಕಂಪನಗಳನ್ನು ಮುಂದೆ ಸಾಗಿಸುತ್ತವೆ, ಒಳಕಿವಿ ಅವುಗಳನ್ನು ನರ ಸಂಕೇತಗಳಾಗಿ ಬದಲಿಸುತ್ತದೆ. ಒಳಕಿವಿ ಸಮತೋಲನವನ್ನೂ ಗ್ರಹಿಸುತ್ತದೆ."
+    "en": "The outer ear collects sound, the middle ear's three tiny bones pass the vibrations on, and the inner ear turns them into nerve signals. The inner ear also senses balance. Shown at its true size: the whole inner ear is smaller than a pea.",
+    "hi": "बाहरी कान ध्वनि इकट्ठा करता है, मध्य कान की तीन छोटी हड्डियाँ कंपन आगे बढ़ाती हैं, और आंतरिक कान उन्हें तंत्रिका संकेतों में बदलता है। आंतरिक कान संतुलन भी पहचानता है। वास्तविक आकार में: पूरा आंतरिक कान एक मटर से भी छोटा है।",
+    "kn": "ಹೊರಕಿವಿ ಶಬ್ದವನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ, ಮಧ್ಯಕಿವಿಯ ಮೂರು ಸಣ್ಣ ಮೂಳೆಗಳು ಕಂಪನಗಳನ್ನು ಮುಂದೆ ಸಾಗಿಸುತ್ತವೆ, ಒಳಕಿವಿ ಅವುಗಳನ್ನು ನರ ಸಂಕೇತಗಳಾಗಿ ಬದಲಿಸುತ್ತದೆ. ಒಳಕಿವಿ ಸಮತೋಲನವನ್ನೂ ಗ್ರಹಿಸುತ್ತದೆ. ನಿಜವಾದ ಗಾತ್ರದಲ್ಲಿ: ಇಡೀ ಒಳಕಿವಿ ಒಂದು ಬಟಾಣಿಗಿಂತ ಚಿಕ್ಕದು."
    },
    "keywords": [
     "ear",
@@ -424,7 +460,10 @@
     "sense organs",
     "structure of the ear",
     "neural control and coordination",
-    "auditory nerve"
+    "auditory nerve",
+    "malleus",
+    "incus",
+    "stapes"
    ],
    "classes": [
     8,

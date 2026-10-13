@@ -19,7 +19,7 @@ export function wobbly(THREE, r, amount = 0.06, seed = 1, detail = 20) {
 
 export default {
   id: 'animal_cell',
-  version: 1,
+  version: 2,
   order: 8,
   source: 'procedural',
   subject: 'Biology',
@@ -31,7 +31,7 @@ export default {
     'ಜೀವದ ಘಟಕ. ತೆಳುವಾದ ಪೊರೆ ಕೋಶದ್ರವ್ಯವನ್ನು ಹಿಡಿದಿದೆ; ಅದರಲ್ಲಿ ಕೋಶಕೇಂದ್ರ ಮತ್ತು ಅನೇಕ ಸಣ್ಣ ಅಂಗಕಗಳು ತಮ್ಮ ತಮ್ಮ ಕೆಲಸ ಮಾಡುತ್ತವೆ.',
   ),
   keywords: ['animal cell', 'cell', 'cell structure', 'organelles', 'the fundamental unit of life', 'cell the unit of life', 'mitochondria', 'nucleus', 'golgi'],
-  credit: 'Model built by KINETIX',
+  credit: 'Simplified model built by KINETIX',
   groups: [
     { id: 'outside', name: t('Boundary', 'सीमा', 'ಗಡಿ') },
     { id: 'control', name: t('Control centre', 'नियंत्रण केंद्र', 'ನಿಯಂತ್ರಣ ಕೇಂದ್ರ') },
@@ -51,6 +51,7 @@ export default {
     const vac = Array.from({ length: 3 }, () => blob(THREE, placeIn(rnd, [0.07, 0.05, 0.055], avoid, 0.012), 0.009, 0.008, 0.008, 3));
     return {
       membrane: wobbly(THREE, R, 0.05, 2),
+      cytoplasm: wobbly(THREE, R.map((r) => r * 0.985), 0.05, 2),
       nucleus: blob(THREE, nuc, 0.03, 0.028, 0.029, 10),
       nucleolus: blob(THREE, [nuc[0] + 0.006, nuc[1] + 0.004, nuc[2]], 0.01, 0.009, 0.009, 5),
       rough_er: [...rough.tubes],
@@ -65,9 +66,14 @@ export default {
   },
   parts: [
     {
-      id: 'membrane', group: 'outside', color: '#f2c2a6', opacity: 0.22,
+      id: 'membrane', group: 'outside', color: '#f2c2a6', opacity: 0.22, inside: '#fbe9dc',
       name: t('Cell membrane', 'कोशिका झिल्ली', 'ಕೋಶ ಪೊರೆ'),
       info: t('A thin, flexible boundary that lets some substances in and out and keeps others back.', 'एक पतली, लचीली सीमा जो कुछ पदार्थों को अंदर-बाहर जाने देती है और कुछ को रोकती है।', 'ಕೆಲವು ವಸ್ತುಗಳನ್ನು ಒಳಗೆ-ಹೊರಗೆ ಬಿಡುವ, ಇನ್ನು ಕೆಲವನ್ನು ತಡೆಯುವ ತೆಳು, ಬಾಗುವ ಗಡಿ.'),
+    },
+    {
+      id: 'cytoplasm', group: 'outside', color: '#f7e7d6', opacity: 0.3, cap: false, minor: true,
+      name: t('Cytoplasm', 'कोशिकाद्रव्य', 'ಕೋಶದ್ರವ್ಯ'),
+      info: t('The jelly that fills the cell round the organelles; many of the cell\'s chemical reactions happen in it.', 'कोशिकांगों के चारों ओर कोशिका में भरी जेली; कोशिका की बहुत-सी रासायनिक अभिक्रियाएँ इसी में होती हैं।', 'ಅಂಗಕಗಳ ಸುತ್ತ ಕೋಶದಲ್ಲಿ ತುಂಬಿರುವ ಜೆಲ್ಲಿ; ಕೋಶದ ಅನೇಕ ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು ಇದರಲ್ಲೇ ನಡೆಯುತ್ತವೆ.'),
     },
     {
       id: 'nucleus', group: 'control', color: '#8b68c2', opacity: 0.7,

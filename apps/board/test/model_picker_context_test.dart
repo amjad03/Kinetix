@@ -26,7 +26,9 @@ void main() {
   });
 
   test('downloadable models appear in the same picker', () {
-    expect(ids(subject: 'physics'), contains('dl.hubble_telescope'));
+    expect(ids(subject: 'physics'), containsAll(['dl.hubble_telescope', 'dl.saturn_v']));
+    expect(ids(subject: 'biology', category: 'humanBody'), containsAll(['ear', 'kidney', 'dl.liver', 'dl.stomach', 'dl.tooth', 'dl.skin']));
+    expect(ids(subject: 'biology'), containsAll(['dl.bacteria', 'dl.mitochondrion']));
   });
 
   test('the profiles carry the new model topics', () {

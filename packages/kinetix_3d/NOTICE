@@ -77,10 +77,19 @@ Natural Earth (https://www.naturalearthdata.com), which is in the public domain.
   from Poly Pizza (https://poly.pizza/m/dcuaH6bEkwn), Creative Commons
   Attribution 3.0. KINETIX removed the display stand and cord and grouped the
   pieces into named parts.
+- Inner ear (ear.*: cochlea, vestibule, semicircular canals): micro-CT surface of
+  specimen F07, "Human Bony Labyrinth: Co-Registered CT and micro-CT Images, Surface
+  Models and Anatomical Landmarks", W. Wimmer, L. Anschuetz, S. Weder, F. Wagner,
+  H. Delingette, M. Caversaccio (2019), https://doi.org/10.5281/zenodo.3355272,
+  Creative Commons Attribution 4.0 International. KINETIX simplified it, split it into
+  three parts and placed it in the ear with the BodyParts3D pinna.
+- DNA atoms (dna.*, "every atom"): PDB entry 1BNA (Drew, Wing, Takano, Broka, Tanaka,
+  Itakura, Dickerson, 1981), RCSB Protein Data Bank (https://www.rcsb.org), CC0.
 - Downloaded on first use (remote_models/, not in the app): woolly mammoth,
   Cosmic Buddha and Apollo 11 command module from Smithsonian Open Access
   (https://3d.si.edu), CC0; Saturn V, Apollo Lunar Module and Hubble from NASA 3D
-  Resources (https://github.com/nasa/NASA-3D-Resources), public domain.
+  Resources (https://github.com/nasa/NASA-3D-Resources), public domain, split into
+  named parts with their own pictures; liver and stomach from BodyParts3D (CC BY 4.0).
 
 The full list with links is in docs/licensing/3D_MODELS.md.
 
@@ -91,10 +100,11 @@ The full list with links is in docs/licensing/3D_MODELS.md.
 All other models (cells, neuron, flower, DNA, electric motor, prism, bar
 magnet, atoms, molecules, solids and nets, Earth's layers, volcano, solar
 system, seasons, atomic orbitals, hybridisation, crystal lattices, electric
-circuit, AC generator, transformer, simple machines, ear, nephron, engine,
-gears, lens bench, laboratory apparatus, and the simplified Taj Mahal, Qutub
-Minar, India Gate and Konark Sun Temple) are built in code by KINETIX
-(tool/models/recipes) and use no downloaded assets.
+circuit, AC generator, transformer, simple machines, nephron, engine,
+gears, lens bench, laboratory apparatus, the middle ear, the inside of the
+kidney, the downloadable tooth, skin, bacterium and mitochondrion, and the
+simplified Taj Mahal, Qutub Minar, India Gate and Konark Sun Temple) are built
+in code by KINETIX (tool/models/recipes) and use no downloaded assets.
 
 The build tools (tool/models) use three.js, esbuild, glTF-Transform,
 meshoptimizer, draco3dgltf and sharp as development dependencies only (see

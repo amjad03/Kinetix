@@ -88,9 +88,12 @@ anchors, take-apart directions and flow paths into the manifest.
 A recipe with `sources: {name: {file, url}}` downloads each file once into
 `sources/` (or `$SOURCES`, not kept in git) and `import(k)` returns each
 part as a mesh made with `lib/importer.mjs` (`k.readSource`, `worldPrimitives`,
-`pick`, `join`, `place`, `splitByColour`, `clipRich`, `piecesRich`,
-`simplifyRich`, `fromThree`). GLB/glTF (with Draco or meshopt), STL and OBJ
-are read. A part keeps its texture (made at most `maxTexture`, 1024 by
+`pick`, `join`, `place`, `orient`, `splitByColour`, `clipRich`, `piecesRich`,
+`simplifyRich`, `fromThree`). GLB/glTF (with Draco or meshopt), STL, OBJ and
+text PLY are read; a source can be one file inside a zip (`zip: 'path/in/zip'`).
+`joinTextures` keeps a part made of pieces with different pictures (NASA's
+spacecraft): the GLB has one primitive per picture in the part's node and the
+viewer joins them into one mesh with a material per picture. A part keeps its texture (made at most `maxTexture`, 1024 by
 default, pixels across) or vertex colours, and its manifest says
 `material: 'file'` so the viewer draws it with them; plain parts are painted
 in the recipe's colour as before. `size` sets the model's longest side in
@@ -105,6 +108,8 @@ metres. Record every source in docs/licensing/3D_MODELS.md and the credits.
 - `drive` (per part) moves a machine with the crank of an `orbit` animation
   (its `speed` in degrees a second): `spin`, `slider` (a piston), `rod` (the
   connecting rod), `valve` (opens over a part of the 720° cycle) and `glow`.
+- `get animations()`, `get views()`, `get slices()`: worked out from the
+  sources at build time (the ear's sound path, the stomach's own flat plane).
 - `remote: true` (with `topic` and `license`): the model is written to
   `remote_models/` instead of the app's assets and downloaded on first use
   (`RemoteModels`, lib/src/viewer/remote_catalogue_data.dart, written by

@@ -76,56 +76,9 @@ class RemoteModels {
   /// the KINETIX repository); a school server can serve the same files and set this.
   static const defaultBase = 'https://raw.githubusercontent.com/amjad03/Kinetix/refs/heads/claude/kinetix-ecosystem-overview-lpphjn/packages/kinetix_3d/remote_models';
 
-  static const _nasa = 'https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models';
-  static const _nasaCredit = 'NASA 3D Resources, public domain (NASA media usage guidelines)';
-
-  /// NASA's own files, shown as they come by the Dart renderer with [ModelHotspot]s.
-  static const _nasaModels = <RemoteModelInfo>[
-    RemoteModelInfo(
-      id: 'saturn_v',
-      title: LocalText({'en': 'Saturn V rocket', 'hi': 'सैटर्न V रॉकेट', 'kn': 'ಸ್ಯಾಟರ್ನ್ V ರಾಕೆಟ್'}),
-      subject: 'Physics',
-      topic: 'solar',
-      classes: [8, 9, 11],
-      url: '$_nasa/Saturn%20V/Saturn%20V.glb',
-      bytes: 927212,
-      license: 'Public domain',
-      credit: _nasaCredit,
-      keywords: ['rocket', 'launch', 'newton third law', 'space', 'stages'],
-      hotspots: [
-        ModelHotspot(LocalText({'en': 'Command module', 'hi': 'कमांड मॉड्यूल', 'kn': 'ಕಮಾಂಡ್ ಮಾಡ್ಯೂಲ್'}), 0, 0.95, 0),
-        ModelHotspot(LocalText({'en': 'Engines', 'hi': 'इंजन', 'kn': 'ಎಂಜಿನ್‌ಗಳು'}), 0, -0.95, 0),
-      ],
-    ),
-    RemoteModelInfo(
-      id: 'apollo_lunar_module',
-      title: LocalText({'en': 'Apollo Lunar Module', 'hi': 'अपोलो चंद्र मॉड्यूल', 'kn': 'ಅಪೊಲೊ ಚಂದ್ರ ಮಾಡ್ಯೂಲ್'}),
-      subject: 'Geography',
-      topic: 'solar',
-      classes: [6, 7, 8],
-      url: '$_nasa/Apollo%20Lunar%20Module/Apollo%20Lunar%20Module.glb',
-      bytes: 716840,
-      license: 'Public domain',
-      credit: _nasaCredit,
-      keywords: ['moon', 'lander', 'apollo', 'space exploration'],
-    ),
-    RemoteModelInfo(
-      id: 'hubble_telescope',
-      title: LocalText({'en': 'Hubble Space Telescope', 'hi': 'हबल अंतरिक्ष दूरबीन', 'kn': 'ಹಬಲ್ ಬಾಹ್ಯಾಕಾಶ ದೂರದರ್ಶಕ'}),
-      subject: 'Physics',
-      topic: 'solar',
-      classes: [8, 10, 12],
-      url: '$_nasa/Hubble%20Space%20Telescope%20(A)/Hubble%20Space%20Telescope%20(A).glb',
-      bytes: 1694988,
-      license: 'Public domain',
-      credit: _nasaCredit,
-      keywords: ['telescope', 'optics', 'mirror', 'space', 'astronomy'],
-    ),
-  ];
-
-  /// Every downloadable model: NASA's, and the viewer models tool/models makes
-  /// (remote_catalogue_data.dart, written by tool/models/write_catalogue.mjs).
-  static const all = <RemoteModelInfo>[..._nasaModels, ..._remoteModels];
+  /// Every downloadable model: the viewer models tool/models makes, NASA's spacecraft among
+  /// them (remote_catalogue_data.dart, written by tool/models/write_catalogue.mjs).
+  static const all = _remoteModels;
 
   /// Where downloaded models are kept. The app points this at its support directory at start-up.
   static Directory get cacheDir => _cacheDir;

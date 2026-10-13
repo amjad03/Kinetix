@@ -44,6 +44,24 @@ Mesh _shift(Mesh m, double dx) => Mesh(
       normals: m.normals,
     );
 
+/// A plain GLB shown by the Dart renderer with hotspots (no downloadable model is one now, but
+/// a school server can still list one).
+const _plain = RemoteModelInfo(
+  id: 'plain_rocket',
+  title: LocalText({'en': 'Rocket', 'hi': 'रॉकेट', 'kn': 'ರಾಕೆಟ್'}),
+  subject: 'Physics',
+  topic: 'solar',
+  classes: [8],
+  url: 'https://example.org/rocket.glb',
+  bytes: 1000,
+  license: 'Public domain',
+  credit: 'Test',
+  hotspots: [
+    ModelHotspot(LocalText({'en': 'Command module', 'hi': 'कमांड मॉड्यूल', 'kn': 'ಕಮಾಂಡ್ ಮಾಡ್ಯೂಲ್'}), 0, 0.95, 0),
+    ModelHotspot(LocalText({'en': 'Engines', 'hi': 'इंजन', 'kn': 'ಎಂಜಿನ್‌ಗಳು'}), 0, -0.95, 0),
+  ],
+);
+
 void main() {
   test('every downloadable model has three languages, a licence and an https url', () {
     for (final m in RemoteModels.all) {
@@ -62,8 +80,9 @@ void main() {
     expect(RemoteModels.filter(grade: 12).map((m) => m.id), containsAll(['hubble_telescope', 'woolly_mammoth']));
     expect(RemoteModels.filter(query: 'ROCKET').map((m) => m.id), ['saturn_v']);
     expect(RemoteModels.filter(query: 'हबल').map((m) => m.id), ['hubble_telescope']);
-    expect(RemoteModels.filter(topics: {'human'}), isEmpty);
-    expect(RemoteModels.filter(topics: {'solar'}).map((m) => m.id), ['saturn_v', 'apollo_lunar_module', 'hubble_telescope', 'apollo11_command_module']);
+    expect(RemoteModels.filter(topics: {'human'}).map((m) => m.id), ['stomach', 'liver', 'tooth', 'skin']);
+    expect(RemoteModels.filter(topics: {'cell'}).map((m) => m.id), ['bacteria', 'mitochondrion']);
+    expect(RemoteModels.filter(topics: {'solar'}).map((m) => m.id), ['saturn_v', 'hubble_telescope', 'apollo_lunar_module', 'apollo11_command_module']);
     expect(RemoteModels.filter(subject: 'History').map((m) => m.id), ['cosmic_buddha']);
   });
 
@@ -76,7 +95,7 @@ void main() {
       p(10, 20);
       return _glb();
     });
-    final m = RemoteModels.all.first;
+    const m = _plain;
     expect(cache.isCached(m), isFalse);
     var seen = 0;
     await cache.load(m, onProgress: (a, b) => seen = a);
@@ -125,10 +144,12 @@ void main() {
 
   test('the downloadable viewer models are listed with their sources', () {
     final viewer = [for (final m in RemoteModels.all) if (m.viewer) m.id];
-    expect(viewer, containsAll(['woolly_mammoth', 'cosmic_buddha', 'apollo11_command_module']));
+    expect(viewer, [for (final m in RemoteModels.all) m.id]);
+    expect(viewer, containsAll(['woolly_mammoth', 'cosmic_buddha', 'apollo11_command_module', 'saturn_v', 'apollo_lunar_module', 'hubble_telescope', 'liver', 'stomach', 'tooth', 'skin', 'bacteria', 'mitochondrion']));
     for (final m in RemoteModels.all.where((m) => m.viewer)) {
       expect(m.url, startsWith(RemoteModels.defaultBase), reason: m.id);
-      expect(m.credit, contains('CC0'), reason: m.id);
+      expect(['CC0', 'Public domain', 'CC BY 4.0', 'Same as the app'], contains(m.license), reason: m.id);
+      expect(m.credit, isNotEmpty, reason: m.id);
       expect(File('assets/viewer3d/thumbs/${m.id}.jpg').existsSync(), isTrue, reason: m.id);
       expect(File('remote_models/${m.id}.glb').lengthSync() + File('remote_models/${m.id}.json').lengthSync(), m.bytes, reason: m.id);
     }
@@ -138,7 +159,7 @@ void main() {
   test('offline and corrupt downloads leave nothing behind', () async {
     final dir = Directory.systemTemp.createTempSync('m3d');
     addTearDown(() => dir.deleteSync(recursive: true));
-    final m = RemoteModels.all.first;
+    const m = _plain;
     final off = ModelCache(dir, fetcher: (_, _) async => throw const OfflineException());
     await expectLater(off.load(m), throwsA(isA<OfflineException>()));
     final bad = ModelCache(dir, fetcher: (_, _) async => Uint8List.fromList([1, 2, 3, 4]));
@@ -148,7 +169,7 @@ void main() {
 
   test('hotspots become labels in the chosen language; explode moves parts apart', () {
     final model = GlbLoader.load(_glb(), title: 't');
-    final l = withHotspots(model, RemoteModels.byId('saturn_v')!, 'hi');
+    final l = withHotspots(model, _plain, 'hi');
     expect(l.labels.map((x) => x.text), ['कमांड मॉड्यूल', 'इंजन']);
     final two = Model3D(title: 't', parts: [
       model.parts.first,

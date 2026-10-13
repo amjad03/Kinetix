@@ -17,6 +17,7 @@ import draco3d from 'draco3dgltf';
 export async function readSource(file) {
   if (/\.stl$/i.test(file)) return stlDocument(readFileSync(file));
   if (/\.obj$/i.test(file)) return objDocument(file);
+  if (/\.ply$/i.test(file)) return plyDocument(readFileSync(file, 'latin1'));
   await MeshoptDecoder.ready;
   const io = new NodeIO()
     .registerExtensions(ALL_EXTENSIONS)
@@ -116,7 +117,7 @@ export function pick(prims, test) {
   return prims.filter(f);
 }
 
-const sameTexture = (a, b) => a?.source === b?.source || (a?.data && b?.data && a.data.length === b.data.length && Buffer.compare(Buffer.from(a.data), Buffer.from(b.data)) === 0);
+const sameTexture = (a, b) => (a?.source && a.source === b?.source) || (a?.data && b?.data && a.data.length === b.data.length && Buffer.compare(Buffer.from(a.data), Buffer.from(b.data)) === 0);
 
 /**
  * One mesh from several primitives. Plain-coloured materials that differ are
@@ -157,6 +158,27 @@ export function join(prims) {
   return { positions, normals, uvs, colors, indices, material };
 }
 
+/**
+ * Primitives with different textures as one part: a list of rich meshes, one
+ * per texture, plus one for the plain-coloured ones (their colours kept as
+ * vertex colours). The GLB keeps one primitive per texture in the part's node.
+ */
+export function joinTextures(prims) {
+  if (!prims.length) throw new Error('joinTextures: nothing to join');
+  const sets = [];
+  for (const p of prims) {
+    const tex = p.material.texture;
+    let set = sets.find((s) => (tex ? s.tex && sameTexture(s.tex, tex) : !s.tex));
+    if (!set) sets.push((set = { tex, list: [] }));
+    set.list.push(tex ? p : { ...p, uvs: undefined });
+  }
+  const out = sets.map((s) => join(s.list));
+  return out.length === 1 ? out[0] : out;
+}
+
+/** A rich part (one mesh, or one per texture) as a list. */
+export const richList = (r) => (Array.isArray(r) ? r : [r]);
+
 /** Moves a rich mesh: optional [rotate] (degrees about x, then y, then z), [scale], then [translate]. */
 export function place(m, { rotate = [0, 0, 0], scale = 1, translate = [0, 0, 0] } = {}) {
   const [ax, ay, az] = rotate.map((d) => (d * Math.PI) / 180);
@@ -184,6 +206,32 @@ export function place(m, { rotate = [0, 0, 0], scale = 1, translate = [0, 0, 0] 
   }
   let indices = m.indices;
   if (s[0] * s[1] * s[2] < 0) {
+    indices = new Uint32Array(m.indices);
+    for (let i = 0; i < indices.length; i += 3) [indices[i + 1], indices[i + 2]] = [indices[i + 2], indices[i + 1]];
+  }
+  return { ...m, positions, normals, indices };
+}
+
+/**
+ * Moves a rich mesh into another frame: each point p becomes
+ * [scale] × ((p − origin)·axes[0], ·axes[1], ·axes[2]) + [translate]. The axes
+ * are unit vectors at right angles (a scan's anatomy turned upright).
+ */
+export function orient(m, { origin = [0, 0, 0], axes, scale = 1, translate = [0, 0, 0] }) {
+  const positions = new Float32Array(m.positions.length);
+  const normals = m.normals ? new Float32Array(m.normals.length) : undefined;
+  const dot = (a, i, u) => a[i] * u[0] + a[i + 1] * u[1] + a[i + 2] * u[2];
+  const rel = new Float32Array(3);
+  for (let i = 0; i < positions.length; i += 3) {
+    for (let k = 0; k < 3; k++) rel[k] = m.positions[i + k] - origin[k];
+    for (let k = 0; k < 3; k++) positions[i + k] = dot(rel, 0, axes[k]) * scale + translate[k];
+    if (normals) for (let k = 0; k < 3; k++) normals[i + k] = dot(m.normals, i, axes[k]);
+  }
+  // A mirroring frame turns the triangles inside out.
+  const [a, b, c] = axes;
+  const det = a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0]);
+  let indices = m.indices;
+  if (det < 0) {
     indices = new Uint32Array(m.indices);
     for (let i = 0; i < indices.length; i += 3) [indices[i + 1], indices[i + 2]] = [indices[i + 2], indices[i + 1]];
   }
@@ -303,7 +351,19 @@ export function mergeRich(list) {
 }
 
 /** The plain {positions, indices} the rest of the build measures. */
-export const plain = (m) => ({ positions: m.positions, indices: m.indices });
+export function plain(m) {
+  if (!Array.isArray(m)) return { positions: m.positions, indices: m.indices };
+  const nv = m.reduce((a, x) => a + x.positions.length, 0), ni = m.reduce((a, x) => a + x.indices.length, 0);
+  const positions = new Float32Array(nv), indices = new Uint32Array(ni);
+  let vo = 0, io = 0;
+  for (const x of m) {
+    positions.set(x.positions, vo);
+    for (let i = 0; i < x.indices.length; i++) indices[io + i] = x.indices[i] + vo / 3;
+    vo += x.positions.length;
+    io += x.indices.length;
+  }
+  return { positions, indices };
+}
 
 /** A rich mesh from a three.js BufferGeometry (made in code) with a material. */
 export function fromThree(g, material) {
@@ -369,6 +429,29 @@ export function stlDocument(buf) {
   }
   const positions = new Float32Array(pos);
   return docFromMeshes([{ name: 'stl', positions, indices: Uint32Array.from({ length: positions.length / 3 }, (_, i) => i) }]);
+}
+
+/** PLY in text form (a scan's surface): its vertices and faces, one mesh. */
+export function plyDocument(text) {
+  const lines = text.split('\n');
+  let nv = 0, nf = 0, i = 0;
+  for (; i < lines.length; i++) {
+    const t = lines[i].trim().split(/\s+/);
+    if (t[0] === 'element' && t[1] === 'vertex') nv = Number(t[2]);
+    if (t[0] === 'element' && t[1] === 'face') nf = Number(t[2]);
+    if (t[0] === 'end_header') break;
+  }
+  const positions = new Float32Array(nv * 3);
+  for (let v = 0; v < nv; v++) {
+    const t = lines[++i].trim().split(/\s+/);
+    for (let k = 0; k < 3; k++) positions[v * 3 + k] = Number(t[k]);
+  }
+  const idx = [];
+  for (let f = 0; f < nf; f++) {
+    const t = lines[++i].trim().split(/\s+/).map(Number);
+    for (let k = 2; k < t[0]; k++) idx.push(t[1], t[k], t[k + 1]);
+  }
+  return docFromMeshes([{ name: 'ply', positions, indices: new Uint32Array(idx) }]);
 }
 
 /** OBJ with its MTL: one mesh per material (diffuse colour and map_Kd texture). */

@@ -143,13 +143,17 @@ function setClipUnion(on) {
   if (on === unionClip) return;
   unionClip = on;
   root.traverse((o) => {
-    const m = o.material;
-    if (m && (m.clippingPlanes === planes || m.clippingPlanes === slackPlanes)) {
-      m.clipIntersection = !on;
-      m.needsUpdate = true;
+    for (const m of materialsOf(o)) {
+      if (m.clippingPlanes === planes || m.clippingPlanes === slackPlanes) {
+        m.clipIntersection = !on;
+        m.needsUpdate = true;
+      }
     }
   });
 }
+
+/** An object's materials as a list (a part with several textures has one per texture). */
+const materialsOf = (o) => (!o.material ? [] : Array.isArray(o.material) ? o.material : [o.material]);
 
 /** part id -> {info, group (Group), front (Mesh), back (Mesh), material, base (Vector3 pivot)} */
 const parts = new Map();
@@ -378,6 +382,7 @@ function frontMaterial(info) {
  * vertex colours); it is cut like the rest and fades the same way.
  */
 function fileMaterial(src, info) {
+  if (Array.isArray(src)) return src.map((m) => fileMaterial(m, info));
   const m = src.clone();
   Object.assign(m, clip);
   m.side = THREE.FrontSide;
@@ -415,6 +420,12 @@ async function load(id) {
     gltf.scene.traverse((o) => {
       if (o.isMesh) scenes[o.name] = o;
     });
+    // A part drawn with several textures is one node with a primitive per texture,
+    // which the loader makes a group of meshes: make it one mesh again.
+    for (const info of manifest.parts) {
+      const g = scenes[info.id] ? null : gltf.scene.getObjectByName(info.id);
+      if (g) scenes[info.id] = combinedMesh(g);
+    }
   }
   modelSize = manifest.size || 0.1;
   placeSlack();
@@ -451,6 +462,61 @@ async function load(id) {
   resize();
   view(manifest.views?.[0]?.dir || [0, 0, 1], true);
   send({ event: 'loaded', model: id, parts: manifest.parts.map((p) => p.id) });
+}
+
+/**
+ * One mesh from a group of meshes (a part with a primitive per texture): one
+ * geometry in world space, in plain floats, with a draw group and a material
+ * for each piece.
+ */
+function combinedMesh(group) {
+  const pieces = [];
+  group.traverse((o) => {
+    if (o.isMesh) pieces.push(o);
+  });
+  if (!pieces.length) return null;
+  const names = ['position', 'normal', 'uv', 'color'];
+  const has = Object.fromEntries(names.map((n) => [n, pieces.some((p) => p.geometry.attributes[n])]));
+  const size = { position: 3, normal: 3, uv: 2, color: 4 };
+  const geometry = new THREE.BufferGeometry();
+  const arrays = Object.fromEntries(names.filter((n) => has[n]).map((n) => [n, []]));
+  const index = [];
+  const materials = [];
+  let offset = 0;
+  for (const [i, p] of pieces.entries()) {
+    const g = p.geometry.clone();
+    // Quantized attributes become plain floats before the piece's own transform is applied.
+    for (const n of names) {
+      const a = g.attributes[n];
+      if (!a) continue;
+      const out = new Float32Array(a.count * a.itemSize);
+      for (let v = 0; v < a.count; v++) for (let k = 0; k < a.itemSize; k++) out[v * a.itemSize + k] = a.getComponent(v, k);
+      g.setAttribute(n, new THREE.BufferAttribute(out, a.itemSize));
+    }
+    g.applyMatrix4(p.matrixWorld);
+    const count = g.attributes.position.count;
+    for (const n of Object.keys(arrays)) {
+      const a = g.attributes[n];
+      for (let v = 0; v < count; v++) {
+        for (let k = 0; k < size[n]; k++) {
+          // A piece without colours is white; one without texture coordinates sits at 0, 0.
+          arrays[n].push(a ? (k < a.itemSize ? a.getComponent(v, k) : 1) : n === 'color' ? 1 : 0);
+        }
+      }
+    }
+    const start = index.length;
+    if (g.index) for (let t = 0; t < g.index.count; t++) index.push(g.index.getX(t) + offset);
+    else for (let t = 0; t < count; t++) index.push(t + offset);
+    geometry.addGroup(start, index.length - start, i);
+    materials.push(p.material);
+    offset += count;
+  }
+  for (const [n, list] of Object.entries(arrays)) geometry.setAttribute(n, new THREE.Float32BufferAttribute(list, size[n]));
+  geometry.setIndex(index);
+  if (!has.normal) geometry.computeVertexNormals();
+  const mesh = new THREE.Mesh(geometry, materials);
+  mesh.name = group.name;
+  return mesh;
 }
 
 /** Crisp edges on shapes with flat faces (maths solids). */
@@ -712,10 +778,11 @@ function glowFor(p) {
 function setGlow(p, amount) {
   // A scene's parts glow through their materials' highlight, set each frame.
   if (p.scene) return;
-  const m = p.front.material;
-  if (!m.emissive) return;
-  // A part that gives light (the Sun, lava) always glows at least this much.
-  m.emissive.copy(p.restColor).multiplyScalar(Math.max(amount, p.info.glow || 0));
+  for (const m of materialsOf(p.front)) {
+    if (!m.emissive) continue;
+    // A part that gives light (the Sun, lava) always glows at least this much.
+    m.emissive.copy(p.restColor).multiplyScalar(Math.max(amount, p.info.glow || 0));
+  }
 }
 
 function stopAutoRotate() {
@@ -1008,11 +1075,12 @@ function stopAnimation() {
     p.group.scale.setScalar(1);
     p.group.quaternion.identity();
     p.group.visible = shouldShow(p);
-    const m = p.front.material;
-    m.transparent = !!p.info.opacity;
-    m.opacity = p.info.opacity || 1;
-    m.depthWrite = !p.info.opacity;
-    m.needsUpdate = true;
+    for (const m of materialsOf(p.front)) {
+      m.transparent = !!p.info.opacity;
+      m.opacity = p.info.opacity || 1;
+      m.depthWrite = !p.info.opacity;
+      m.needsUpdate = true;
+    }
     p.back.visible = true;
     p.animGlow = 0;
     setGlow(p, glowFor(p));
@@ -1033,20 +1101,20 @@ function showFlowStep(step) {
     const blood = p.info.group === 'blood';
     const lit = s.highlight?.includes(id);
     p.group.visible = blood ? s.show?.includes(id) : (shouldShow(p) || lit) && (!p.info.variant || p.info.variant === state.variant);
-    const m = p.front.material;
-    if (tour) {
-      // A tour lights up parts in turn; the rest fade back but stay solid enough to place them.
-      m.transparent = !lit;
-      m.depthWrite = !!lit;
-      m.opacity = lit ? 1 : 0.22;
-      p.back.visible = !!lit;
-    } else {
-      m.transparent = true;
-      m.depthWrite = false;
-      m.opacity = blood ? p.info.opacity || 0.55 : lit ? 0.5 : 0.16;
-      p.back.visible = false;
+    for (const m of materialsOf(p.front)) {
+      if (tour) {
+        // A tour lights up parts in turn; the rest fade back but stay solid enough to place them.
+        m.transparent = !lit;
+        m.depthWrite = !!lit;
+        m.opacity = lit ? 1 : 0.22;
+      } else {
+        m.transparent = true;
+        m.depthWrite = false;
+        m.opacity = blood ? p.info.opacity || 0.55 : lit ? 0.5 : 0.16;
+      }
+      m.needsUpdate = true;
     }
-    m.needsUpdate = true;
+    p.back.visible = tour && !!lit;
     p.animGlow = lit ? (tour ? 0.25 : 0.45) : 0;
     setGlow(p, glowFor(p));
   }

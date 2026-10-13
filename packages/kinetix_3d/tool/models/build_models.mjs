@@ -5,7 +5,8 @@
 // the geometry facts the viewer needs: label anchors, take-apart
 // directions, flow paths). BP3D is the folder with the BodyParts3D zips
 // (isa_/partof_BP3D_4.0_obj_99.zip) from dbarchive.biosciencedbc.jp.
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readBp3d, merge, weld, simplify, clip, bounds, centroid, triangles, openEdges, translate, scale, cutPlane, components, compact } from './lib/mesh.mjs';
@@ -281,9 +282,13 @@ async function build(recipe, bp3d) {
     const before = triangles(m);
     let r = rich[p.id];
     if (r) {
-      r = importer.place(r, { scale: k, translate: shift.map((v) => v * k) });
+      // A part with several textures is a list of rich meshes, each moved and simplified alike.
       const detail = p.detail ?? recipe.detail ?? 1;
-      if (detail < 1) r = await importer.simplifyRich(r, detail, p.error ?? recipe.error ?? 0.002);
+      const one = async (x) => {
+        x = importer.place(x, { scale: k, translate: shift.map((v) => v * k) });
+        return detail < 1 ? importer.simplifyRich(x, detail, p.error ?? recipe.error ?? 0.002) : x;
+      };
+      r = Array.isArray(r) ? await Promise.all(r.map(one)) : await one(r);
       m = importer.plain(r);
     } else if (!recipe.build || p.detail) {
       // Shapes made in code are kept as made, unless a part asks for fewer
@@ -375,7 +380,7 @@ async function build(recipe, bp3d) {
       ...(p.metal ? { metal: true } : {}),
       ...(p.hinge ? { hinge: { ...p.hinge, point: r3(p.hinge.point.map(toModel)), axis: r3(p.hinge.axis), angle: round(p.hinge.angle) } } : {}),
       // Parts from other people's models are drawn with their own texture and colours.
-      ...(p.rich && (p.rich.material.texture || p.rich.colors) ? { material: 'file' } : {}),
+      ...(p.rich && importer.richList(p.rich).some((x) => x.material.texture || x.colors) ? { material: 'file' } : {}),
       name: p.name,
       info: p.info,
       ...facts[p.id],
@@ -437,7 +442,15 @@ async function fetchSources(recipe) {
     const res = await fetch(s.url, { headers: { 'user-agent': 'Mozilla/5.0 (KINETIX model build)' } });
     if (!res.ok) throw new Error(`${recipe.id}: ${s.url}: HTTP ${res.status}`);
     mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, Buffer.from(await res.arrayBuffer()));
+    if (s.zip) {
+      // A file inside a zip (a dataset with many files): keep only that one.
+      const zip = `${path}.download.zip`;
+      writeFileSync(zip, Buffer.from(await res.arrayBuffer()));
+      writeFileSync(path, execFileSync('unzip', ['-p', zip, s.zip], { maxBuffer: 1 << 30 }));
+      rmSync(zip);
+    } else {
+      writeFileSync(path, Buffer.from(await res.arrayBuffer()));
+    }
   }
 }
 

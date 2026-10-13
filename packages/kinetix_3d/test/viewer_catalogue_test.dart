@@ -110,13 +110,36 @@ void main() {
   });
 
   test('the new models for higher classes are there, with procedural credits', () {
-    for (final id in ['orbitals', 'hybridisation', 'crystal_lattices', 'electric_circuit', 'ac_generator', 'transformer', 'simple_machines', 'ear', 'nephron']) {
+    for (final id in ['orbitals', 'hybridisation', 'crystal_lattices', 'electric_circuit', 'ac_generator', 'transformer', 'simple_machines', 'nephron']) {
       final m = ViewerModelInfo.byId(id);
       expect(m, isNotNull, reason: id);
       expect(m!.fromBodyParts3D, isFalse, reason: id);
     }
     expect(ViewerModelInfo.byId('orbitals')!.variants, containsAll(['s1', 'px', 'dz2']));
     expect(ViewerModelInfo.byId('crystal_lattices')!.variants, ['sc', 'bcc', 'fcc', 'nacl']);
+  });
+
+  test('the ear, kidney and DNA are made from real data, with every part a class names', () {
+    final ear = ViewerModelInfo.byId('ear')!;
+    expect(ear.fromBodyParts3D, isTrue);
+    expect(ear.credit, contains('micro-CT'));
+    final earParts = ViewerManifest.fromJson(_json('$_assets/models/ear.json'));
+    for (final id in ['pinna', 'ear_canal', 'eardrum', 'malleus', 'incus', 'stapes', 'cochlea', 'vestibule', 'semicircular_canals', 'auditory_nerve', 'eustachian_tube']) {
+      expect(earParts.part(id), isNotNull, reason: id);
+    }
+    expect(ViewerModelInfo.byId('kidney')!.fromBodyParts3D, isTrue);
+    final kidney = ViewerManifest.fromJson(_json('$_assets/models/kidney.json'));
+    for (final id in ['cortex', 'medulla', 'pelvis', 'nephron', 'renal_artery', 'renal_vein', 'ureter']) {
+      expect(kidney.part(id), isNotNull, reason: id);
+    }
+    expect(kidney.slices, isNotEmpty);
+    final dna = ViewerModelInfo.byId('dna')!;
+    expect(dna.variants, ['helix', 'ladder', 'atoms']);
+    expect(dna.credit, contains('PDB 1BNA'));
+    // Models built in code where no open model exists say they are simplified.
+    for (final id in ['animal_cell', 'plant_cell', 'flower', 'neuron']) {
+      expect(ViewerModelInfo.byId(id)!.credit, startsWith('Simplified'), reason: id);
+    }
   });
 
   test('the Earth shows its five layers, named and explained in English, Hindi and Kannada', () {
@@ -203,6 +226,7 @@ void main() {
     expect(ViewerModelInfo.bestFor('Packing efficiency of a face centred cubic unit cell')?.id, 'crystal_lattices');
     expect(ViewerModelInfo.bestFor('How does a step up transformer work?')?.id, 'transformer');
     expect(ViewerModelInfo.bestFor('Structure of a nephron')?.id, 'nephron');
+    expect(ViewerModelInfo.bestFor('Longitudinal section of kidney')?.id, 'kidney');
     expect(ViewerModelInfo.bestFor('Heartily welcome'), isNull);
   });
 }
