@@ -9,9 +9,9 @@ import type { Grounding } from './tasks.js';
 
 const g: Grounding = { institution: 'Demo School', institutionKind: 'school', className: 'Class 10 A', subjectName: 'Maths' };
 
-describe('board answer prompts (v3)', () => {
+describe('board answer prompts (v4)', () => {
   it('tell the model to work step by step, cite uncertainty, and not use LaTeX or markdown', () => {
-    expect(PROMPT_VERSION).toBe('v3');
+    expect(PROMPT_VERSION).toBe('v4');
     const [system, user] = buildMessages('explain', TaskInputs.explain.parse({ question: 'Solve 2x+3=9', level: 'Class 8 CBSE Maths' }), g);
     const text = String(system.content);
     expect(text).toContain('Class 10 A');
@@ -19,8 +19,17 @@ describe('board answer prompts (v3)', () => {
     expect(text).toContain('Not sure:');
     expect(text).toContain('Do not use LaTeX');
     expect(text).toContain('no **, # or * bullets');
+    // Gemini opened answers with "Hello Class 8 A!" and named the school inside lesson steps.
+    expect(text).toContain('no greeting or sign-off');
     expect(String(user.content)).toContain('Class 8 CBSE Maths');
     expect(String(user.content)).toContain('in the first sentence');
+  });
+
+  it('asks for flash cards with the answer on each card, and a lesson for the interactive board', () => {
+    const [, cards] = buildMessages('selectAsk', TaskInputs.selectAsk.parse({ action: 'quiz', content: 'The nucleus controls the cell.' }), g);
+    expect(String(cards.content)).toContain('" Answer: "');
+    const [, plan] = buildMessages('lessonPlan', TaskInputs.lessonPlan.parse({ topic: 'Fractions', minutes: 40 }), g);
+    expect(String(plan.content)).toContain('KINETIX interactive board');
   });
 
   it('asks in the chosen language', () => {
@@ -206,29 +215,30 @@ describe('board evaluation, mocked Gemini (no key needed)', () => {
       return x.id.startsWith('s') ? '```json\n' + reply + '\n```' : reply;
     };
     gemini.failures = [429]; // the first question meets the per-minute limit and is asked again after 1 s
-    const provider = new OpenAiCompatibleProvider(gemini.url, 'gemini-2.5-flash', FakeGemini.KEY, 5000, true, { reasoningEffort: 'low' });
+    const provider = new OpenAiCompatibleProvider(gemini.url, 'gemini-3.8-flash', FakeGemini.KEY, 5000, true, { reasoningEffort: 'low' });
     const result = await runBoardEval(provider);
     expect(result.missed).toEqual([]);
     expect(result.right).toBe(40);
     expect(gemini.requests).toHaveLength(41);
     const sent = gemini.requests[0].body;
-    expect(sent).toMatchObject({ model: 'gemini-2.5-flash', response_format: { type: 'json_object' }, reasoning_effort: 'low', max_tokens: 1500 + 1024, temperature: 0.3 });
+    expect(sent).toMatchObject({ model: 'gemini-3.8-flash', response_format: { type: 'json_object' }, reasoning_effort: 'low', max_tokens: 1500 + 1024, temperature: 0.3 });
     expect(gemini.requests[0].headers.authorization).toBe(`Bearer ${FakeGemini.KEY}`);
   }, 30_000);
 });
 
 /**
  * Live accuracy check against the configured provider (AI_BASE_URL, AI_MODEL, AI_API_KEY), e.g.
- * Gemini's free tier. Skipped when no provider is configured. Needs at least 80 % right. Spaced
- * for free tiers by AI_EVAL_PACE_MS (7 s for Gemini). `pnpm ai:eval` prints each answer instead.
+ * Gemini's free tier. Runs only with AI_LIVE_EVAL=1 (40 requests: two days of one Gemini model's
+ * free allowance). Needs at least 80 % right. Spaced for free tiers by AI_EVAL_PACE_MS (13 s for
+ * Gemini). `pnpm ai:eval` prints each answer instead, and uses AI_FALLBACK_MODELS.
  */
 const baseUrl = process.env.AI_BASE_URL;
-describe.skipIf(!baseUrl)('board accuracy (live provider)', () => {
+describe.skipIf(!baseUrl || process.env.AI_LIVE_EVAL !== '1')('board accuracy (live provider)', () => {
   it('answers at least 80% of the evaluation questions correctly', async () => {
     const provider = new OpenAiCompatibleProvider(baseUrl!, process.env.AI_MODEL ?? 'kinetix-llm', process.env.AI_API_KEY || undefined, 60_000, false, {
       reasoningEffort: process.env.AI_REASONING_EFFORT as ReasoningEffort | undefined,
     });
-    const pace = Number(process.env.AI_EVAL_PACE_MS ?? (isGemini(baseUrl!) ? 7000 : 0));
+    const pace = Number(process.env.AI_EVAL_PACE_MS ?? (isGemini(baseUrl!) ? 13_000 : 0));
     const result = await runBoardEval(provider, { paceMs: pace });
     console.log(`Board evaluation: ${result.right}/${result.total}; missed ${result.missed.map((m) => `${m.id} (${m.reason}${m.answer ? `: ${m.answer}` : ''})`).join('; ') || 'none'}`);
     expect(result.right / result.total, `missed: ${result.missed.map((m) => m.id).join(', ')}`).toBeGreaterThanOrEqual(0.8);

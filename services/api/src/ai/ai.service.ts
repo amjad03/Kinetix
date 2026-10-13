@@ -49,13 +49,16 @@ import {
 export const LLM_PROVIDER = Symbol('LLM_PROVIDER');
 
 /**
- * Local first: the self-hosted model (AI_BASE_URL), then the pay-per-use fallback. One of them
- * alone is used as is; with neither, the labelled previews.
+ * Local first: the self-hosted model (AI_BASE_URL) and its AI_FALLBACK_MODELS, then the pay-per-use
+ * fallback. One of them alone is used as is; with neither, the labelled previews.
  */
 export function providerFromEnv(env: Env): LlmProvider {
   const chain: LlmProvider[] = [];
   if (env.AI_BASE_URL) {
-    chain.push(new OpenAiCompatibleProvider(env.AI_BASE_URL, env.AI_MODEL, env.AI_API_KEY, env.AI_TIMEOUT_MS, env.AI_VISION, { reasoningEffort: env.AI_REASONING_EFFORT }));
+    // The main model, then the same server's other models (each has its own free daily allowance on Gemini).
+    for (const model of new Set([env.AI_MODEL, ...env.AI_FALLBACK_MODELS])) {
+      chain.push(new OpenAiCompatibleProvider(env.AI_BASE_URL, model, env.AI_API_KEY, env.AI_TIMEOUT_MS, env.AI_VISION, { reasoningEffort: env.AI_REASONING_EFFORT }));
+    }
   }
   if (env.AI_FALLBACK_PROVIDER === 'sarvam' && env.SARVAM_API_KEY) {
     chain.push(
@@ -65,6 +68,18 @@ export function providerFromEnv(env: Env): LlmProvider {
   if (chain.length === 0) return new PreviewProvider();
   if (chain.length === 1) return chain[0];
   return new FallbackProvider(chain.map((provider) => ({ provider, breaker: new CircuitBreaker(env.AI_BREAKER_FAILURES, env.AI_BREAKER_COOLDOWN_S * 1000) })));
+}
+
+/**
+ * The line the API logs at start-up: which model answers, or that answers are previews. After
+ * editing .env, `grep "KINETIX AI:" /tmp/kinetix-api.log` shows whether the running API has it.
+ */
+export function describeProvider(env: Env, p: LlmProvider): string {
+  if (p.preview) return 'KINETIX AI: labelled preview answers (no AI_BASE_URL or AI_FALLBACK_PROVIDER in .env)';
+  const parts: string[] = [];
+  if (env.AI_BASE_URL) parts.push(`${[...new Set([env.AI_MODEL, ...env.AI_FALLBACK_MODELS])].join(', then ')} at ${new URL(env.AI_BASE_URL).host}`);
+  if (env.AI_FALLBACK_PROVIDER === 'sarvam' && env.SARVAM_API_KEY) parts.push(`Sarvam AI (${env.SARVAM_LLM_MODEL})`);
+  return `KINETIX AI: ${parts.join(', then ')}`;
 }
 
 /** Who is asking, and about which class. */

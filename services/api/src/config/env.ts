@@ -15,6 +15,15 @@ const EnvSchema = z.object({
    */
   AI_BASE_URL: z.url().optional(),
   AI_MODEL: z.string().default('kinetix-llm'),
+  /**
+   * More models on the same server (AI_BASE_URL), comma-separated, tried in order when the one
+   * before is busy or has used its daily allowance. Gemini's free tier allows about 20 requests a
+   * day per model, so a demo lists several (docs/demo/GEMINI_FREE_AI.md).
+   */
+  AI_FALLBACK_MODELS: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? '').split(',').map((m) => m.trim()).filter(Boolean)),
   AI_API_KEY: z.string().optional(),
   AI_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
   /** Whether the primary model reads images (readBoard). */

@@ -30,7 +30,7 @@ describe('KINETIX AI on Google Gemini (OpenAI-compatible endpoint)', () => {
     await gemini.start();
     t = await createTenant(owner);
     app = await createApp(clock, (b) =>
-      b.overrideProvider(LLM_PROVIDER).useValue(new OpenAiCompatibleProvider(gemini.url, 'gemini-2.5-flash', FakeGemini.KEY, 10_000, true, { reasoningEffort: 'low' })),
+      b.overrideProvider(LLM_PROVIDER).useValue(new OpenAiCompatibleProvider(gemini.url, 'gemini-3.8-flash', FakeGemini.KEY, 10_000, true, { reasoningEffort: 'low' })),
     );
     tokens = { teacher: await login(t.teacher.email!), student: await login(t.studentUser.email!) };
     const paired = await pairBoard(app, t, tokens.teacher);
@@ -55,8 +55,8 @@ describe('KINETIX AI on Google Gemini (OpenAI-compatible endpoint)', () => {
     gemini.replies.push(JSON.stringify({ answer: '**Step 1:** Subtract 7: $3x = 15$\n*   Divide by 3: x = \\frac{15}{3}\nAnswer: $x = 5$', keyPoints: ['Do the same to *both* sides'], followUps: null }));
     const res = await post('board', '/v1/ai/explain', { question: 'Solve 3x + 7 = 22', level: 'Class 8 CBSE Maths' }).expect(200);
     expect(res.body.result).toEqual({ answer: 'Step 1: Subtract 7: 3x = 15\n• Divide by 3: x = 15/3\nAnswer: x = 5', keyPoints: ['Do the same to both sides'], followUps: [] });
-    expect(res.body.meta).toMatchObject({ provider: 'openai-compatible', model: 'gemini-2.5-flash', preview: false, cached: false });
-    expect(sent()).toMatchObject({ model: 'gemini-2.5-flash', response_format: { type: 'json_object' }, reasoning_effort: 'low', max_tokens: 1500 + 1024, temperature: 0.3 });
+    expect(res.body.meta).toMatchObject({ provider: 'openai-compatible', model: 'gemini-3.8-flash', preview: false, cached: false });
+    expect(sent()).toMatchObject({ model: 'gemini-3.8-flash', response_format: { type: 'json_object' }, reasoning_effort: 'low', max_tokens: 1500 + 1024, temperature: 0.3 });
     expect(gemini.requests[0].headers.authorization).toBe(`Bearer ${FakeGemini.KEY}`);
     expect(sent().messages[0].content).toContain('Do not use LaTeX');
   });

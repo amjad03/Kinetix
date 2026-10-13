@@ -248,8 +248,8 @@ export type TaskName = keyof typeof TaskInputs;
 export type TaskInput<T extends TaskName> = z.infer<(typeof TaskInputs)[T]>;
 export type TaskOutput<T extends TaskName> = z.infer<(typeof TaskOutputs)[T]>;
 
-/** Bump when a template changes; it is logged with every output and part of the cache key. */
-export const PROMPT_VERSION = 'v3';
+/** Bump when a template changes; it is logged with every output and part of the cache key. v4: no greetings, flash-card answers. */
+export const PROMPT_VERSION = 'v4';
 
 export type ChatContent = string | ({ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } })[];
 
@@ -271,6 +271,7 @@ function systemPrompt(g: Grounding, language: Language, task: TaskName): string 
     g.subjectName ? `Subject: ${g.subjectName}.` : null,
     'Follow the Indian syllabus (NCERT / CBSE / the state board named) for this class and level. Use Indian examples, names and rupees (₹) where examples help.',
     'Pitch the language to the class named above: simple words for lower classes, precise terms for senior classes.',
+    'Begin with the content itself: no greeting or sign-off, and do not address the class or name the institution or class in the text.',
     'Accuracy first. For maths, physics, chemistry and any numerical question, work step by step: state the formula, substitute the values with units, calculate carefully, check the result, then give the final answer on its own last line starting "Answer:".',
     task === 'readBoard'
       ? 'In "text", write what is on the board as plain text. In "math", write each expression in LaTeX without $ signs.'
@@ -339,7 +340,7 @@ const SELECT_ASK: Record<TaskInput<'selectAsk'>['action'], string> = {
   solve: 'Solve this step by step; put each step in "items"',
   translate: 'Translate this',
   example: 'Give worked examples of this; one per item',
-  quiz: 'Write quick check questions on this; one per item, each with its answer',
+  quiz: 'Write quick check questions on this (flash cards): one per item, each written as the question, then " Answer: " and its answer; put a one-line summary in "answer"',
   homework: 'Write homework questions on this; one per item, with marks',
   diagram: 'Describe a clear diagram to draw on the board for this; one drawing step per item',
   boardReady: 'Rewrite this as short board-ready notes (headings and bullet points); one line per item',
@@ -377,7 +378,7 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
       case 'selectAsk':
         return `${SELECT_ASK[i.action as keyof typeof SELECT_ASK]}${i.action === 'translate' ? ` into ${LANGUAGE_NAMES[(i.targetLanguage as Language) ?? 'hi']}` : ''}${i.level ? ` (${i.level})` : ''}. The teacher selected on the board:\n\"\"\"\n${i.content}\n\"\"\"`;
       case 'lessonPlan':
-        return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}.`;
+        return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}. The classroom has a KINETIX interactive board (not a chalkboard).`;
       case 'gradeAssist': {
         const rubric = (i.rubric as { criterion: string; marks: number }[]).map((r, n) => `${n + 1}. ${r.criterion} (${r.marks} marks)`).join('\n');
         return `Suggest marks out of ${i.maxMarks} for a student's answer, strictly by this rubric. Award marks only for what the answer actually says; do not give credit for what it might have meant. You are drafting for an examiner who will decide.\nQuestion: ${i.question}\nRubric:\n${rubric}\nStudent answer:\n"""\n${i.answerText}\n"""`;

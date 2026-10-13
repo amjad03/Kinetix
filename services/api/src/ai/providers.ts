@@ -72,6 +72,18 @@ export function retryAfter(headers: Headers, body: string): number | undefined {
   return delay ? Math.ceil(Number(delay[1]) * 1000) : undefined;
 }
 
+/**
+ * For a Google quota error (429): which limit was hit, its size and the wait Google asks for, e.g.
+ * "GenerateRequestsPerMinutePerProjectPerModel-FreeTier, limit 5, retry in 37s".
+ */
+export function quotaSummary(body: string): string | undefined {
+  const id = /"quotaId"\s*:\s*"([^"]+)"/.exec(body)?.[1];
+  if (!id) return undefined;
+  const value = /"quotaValue"\s*:\s*"?(\d+)/.exec(body)?.[1];
+  const delay = /"retryDelay"\s*:\s*"(\d+(?:\.\d+)?s)"/.exec(body)?.[1];
+  return [id, value && `limit ${value}`, delay && `retry in ${delay}`].filter(Boolean).join(', ');
+}
+
 /** Turns a failed fetch or a non-2xx response into an AiUnavailableError. */
 export async function checkedFetch(what: string, url: string, init: RequestInit): Promise<Response> {
   let res: Response;
@@ -82,8 +94,16 @@ export async function checkedFetch(what: string, url: string, init: RequestInit)
   }
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    const detail = body.replace(/\s+/g, ' ').trim().slice(0, 300);
-    throw new AiUnavailableError(`${what} returned ${res.status}${detail ? `: ${detail}` : ''}`, retryableStatus(res.status), res.status, retryAfter(res.headers, body));
+    // Google wraps the reason in {"error": {"message": …}}: the message alone reads better in the log.
+    const message = /"message"\s*:\s*"((?:[^"\\]|\\.)*)"/.exec(body)?.[1];
+    const detail = (message ?? body).replace(/\s+/g, ' ').trim().slice(0, 300);
+    const quota = quotaSummary(body);
+    throw new AiUnavailableError(
+      `${what} returned ${res.status}${quota ? ` (${quota})` : ''}${detail ? `: ${detail}` : ''}`,
+      retryableStatus(res.status),
+      res.status,
+      retryAfter(res.headers, body),
+    );
   }
   return res;
 }
@@ -142,7 +162,7 @@ function readCompletion(what: string, body: ChatBody): Omit<Completion, 'provide
 
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
-/** Thinking tokens a Gemini 2.5 model may spend at each effort; they count against max_tokens. */
+/** Thinking tokens a Gemini (3.x Flash) model may spend at each effort; they count against max_tokens. */
 const THINKING_TOKENS: Record<ReasoningEffort, number> = { none: 0, low: 1024, medium: 8192, high: 24576 };
 
 /** Google's OpenAI-compatible Gemini endpoint (https://generativelanguage.googleapis.com/v1beta/openai). */
@@ -304,7 +324,9 @@ export interface ChainLink<P> {
  * Runs `call` on each eligible link in turn: skips links whose breaker is open (unless all are),
  * moves on after a retryable failure, and stops at the first non-retryable one.
  */
-export async function runChain<P extends { name: string }, R>(links: ChainLink<P>[], call: (p: P) => Promise<R>, log: Logger, what: string): Promise<R> {
+export async function runChain<P extends { name: string; model?: string }, R>(links: ChainLink<P>[], call: (p: P) => Promise<R>, log: Logger, what: string): Promise<R> {
+  // Several links may be the same kind of server with different models (AI_FALLBACK_MODELS): name both.
+  const label = (p: P) => (p.model ? `${p.name} (${p.model})` : p.name);
   if (!links.length) throw new AiUnavailableError(`No ${what} server can take this request`, false);
   const closed = links.filter((l) => !l.breaker.open);
   const order = closed.length ? closed : links;
@@ -318,7 +340,7 @@ export async function runChain<P extends { name: string }, R>(links: ChainLink<P
       last = e;
       if (!(e instanceof AiUnavailableError) || !e.retryable) throw e;
       link.breaker.failure();
-      if (i < order.length - 1) log.warn(`${what} ${link.provider.name} failed (${e.message.slice(0, 200)}); falling back to ${order[i + 1].provider.name}`);
+      if (i < order.length - 1) log.warn(`${what} ${label(link.provider)} failed (${e.message.slice(0, 200)}); falling back to ${label(order[i + 1].provider)}`);
     }
   }
   throw last;

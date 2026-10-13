@@ -52,15 +52,22 @@ Without these settings every AI answer is a sample marked **Preview**.
 
    ```
    AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-   AI_MODEL=gemini-2.5-flash
+   AI_MODEL=gemini-3.8-flash
+   AI_FALLBACK_MODELS=gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash,gemini-flash-lite-latest,gemini-3.1-flash-lite
    AI_API_KEY=<your key>
    ```
 
+   The free tier gives each model only 20 requests a day; the fallback models take over when one
+   is used up (about 120 a day in all). `gemini-2.5-flash` is retired for new keys;
+   `gemini-flash-latest` is the alias for the current Flash model if `gemini-3.8-flash` is ever
+   retired.
+
 3. Restart the API (`scripts/demo-stop.sh && scripts/demo-start.sh`, or stop `pnpm start` and run
-   it again).
+   it again): it reads `.env` only when it starts. `grep "KINETIX AI:" /tmp/kinetix-api.log | tail -1`
+   must name the model, not "labelled preview answers".
 4. **Rehearse every AI question you will ask** (section 6, 10:00-13:00) on the board once: repeats come
    from the cache instantly and do not use the free allowance. If you run out,
-   `AI_MODEL=gemini-2.5-flash-lite` has higher free limits. Details: [GEMINI_FREE_AI.md](GEMINI_FREE_AI.md).
+   add more models to `AI_FALLBACK_MODELS`. Details: [GEMINI_FREE_AI.md](GEMINI_FREE_AI.md).
 
 ## 4. Logins (school `vidyaniketan`, password `kinetix123` for all)
 
