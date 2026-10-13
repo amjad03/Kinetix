@@ -1805,6 +1805,14 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಬೋರ್ಡ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದೆ. KINETIX AI ಬಳಸಲು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ. ಗಣಿತ ಸಾಲ್ವರ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
 
   @override
+  String get aiErrBusy =>
+      'KINETIX AI ಈಗ ಕಾರ್ಯನಿರತವಾಗಿದೆ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get aiErrNothingOnPages =>
+      'ಆ ಪುಟಗಳಲ್ಲಿ ಏನನ್ನೂ ಓದಲಾಗಲಿಲ್ಲ. ಮೊದಲು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಬರೆಯಿರಿ, ಅಥವಾ ಬೇರೆ ಪುಟಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ.';
+
+  @override
   String aiExplainTopic(String topic) {
     return '$topic ವಿವರಿಸಿ';
   }

@@ -20,6 +20,13 @@ const EnvSchema = z.object({
   /** Whether the primary model reads images (readBoard). */
   AI_VISION: z.stringbool().default(true),
   /**
+   * How hard a thinking model reasons before it answers (OpenAI `reasoning_effort`). Unset: not
+   * sent, except to Google Gemini, which gets `low` (fast, and accurate enough for class work).
+   */
+  AI_REASONING_EFFORT: z.enum(['none', 'low', 'medium', 'high']).optional(),
+  /** Tries again after this many "busy" replies (429, 503), waiting a little longer each time. */
+  AI_RETRIES: z.coerce.number().int().min(0).max(5).default(2),
+  /**
    * Pay-per-use Indian API used when the primary is down, overloaded or not configured
    * (connection errors, timeouts, 5xx, 429; never on a 4xx). `none` or `sarvam`.
    */

@@ -310,7 +310,7 @@ class _ExplanationCard extends StatelessWidget {
           const SizedBox(height: Kx.s12),
           Padding(
             padding: const EdgeInsets.only(right: Kx.s8),
-            child: Text(e.answer, style: TextStyle(fontSize: ClassType.lead, height: 1.45, color: c.onSurface)),
+            child: AiText(e.answer, style: TextStyle(fontSize: ClassType.lead, height: 1.45, color: c.onSurface)),
           ),
           if (e.keyPoints.isNotEmpty) ...[
             AiSectionLabel(l.aiKeyPoints),
@@ -325,7 +325,7 @@ class _ExplanationCard extends StatelessWidget {
                       child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: aiAccent, shape: BoxShape.circle)),
                     ),
                     const SizedBox(width: Kx.s12),
-                    Expanded(child: Text(p, style: const TextStyle(fontSize: ClassType.body, height: 1.4))),
+                    Expanded(child: AiText(p, style: const TextStyle(fontSize: ClassType.body, height: 1.4))),
                   ],
                 ),
               ),

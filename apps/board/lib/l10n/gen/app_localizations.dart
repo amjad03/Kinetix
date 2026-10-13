@@ -3196,6 +3196,18 @@ abstract class AppLocalizations {
   /// **'The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.'**
   String get aiErrOffline;
 
+  /// No description provided for @aiErrBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI is busy right now. Try again in a minute.'**
+  String get aiErrBusy;
+
+  /// No description provided for @aiErrNothingOnPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing could be read on those pages. Write on the board first, or choose other pages.'**
+  String get aiErrNothingOnPages;
+
   /// Question sent to KINETIX AI, in the AI language.
   ///
   /// In en, this message translates to:

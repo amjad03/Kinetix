@@ -87,8 +87,9 @@ Status legend: Built / Partial (gap) / Missing / Broken (user-reported defect). 
 | Quiz source: topic / Scan the Board (all pages or selected) | Both modes | Built | A/ai/quiz_setup.dart |
 | Quiz explanation, Add to Board, exam importance | AI explains answer | Built | A/ai/quiz_panel.dart |
 | Homework AI | Formats, marks, diagrams | Built | A/ai/homework_panel.dart |
-| AI answer accuracy | Grounded, class/board aware | Built: prompt v2 (class, step-by-step, uncertainty, language), Unicode maths clean-up, 40-question eval set | A/ai/ai_controller.dart, services/api |
-| Context-aware (board, selection) | Reads board | Built | A/ai/read_board_panel.dart |
+| AI answer accuracy | Grounded, class/board aware | Built: prompt v3 (class, step-by-step, uncertainty, language, fact in the first sentence, no LaTeX/markdown); every task's text cleaned to Unicode maths (LaTeX with or without $, H_2O, x^2, markdown bullets); JSON-mode slips fixed before the shape check (nulls, numbers as text, quiz answer letters, unescaped LaTeX backslashes, over-long lists). Runs on any OpenAI-compatible server, including Google Gemini's free tier (AI_BASE_URL/AI_MODEL/AI_API_KEY; reasoning_effort low, room for thinking tokens, a cut-off reply asked again with twice the room; docs/demo/GEMINI_FREE_AI.md). 40-question eval (`pnpm ai:eval`): 40/40 on the mocked Gemini run; live Gemini run pending a key. test/ai-gemini.e2e.spec.ts drives every board AI endpoint through a Gemini stand-in | A/ai/ai_controller.dart, services/api/src/ai |
+| Context-aware (board, selection) | Reads board | Built: the page goes to the vision model as a PNG data URL; the maths found is typeset (TexView) with a copy-LaTeX button | A/ai/read_board_panel.dart |
+| AI errors and offline | Friendly messages | Built: a busy model (429/503) is waited out by the API (Gemini's retryDelay, else 1.5 s then 3 s; a daily quota is not waited for), then the board says "KINETIX AI is busy right now" (code AI_BUSY); refused, quota, unusable, unreachable, timeout, offline and an empty Scan Board each have their own words in en/hi/kn; LaTeX left in an answer is typeset (AiText). ai_text_test, ai_panel_test "each error code" | A/ai/ai_controller.dart, A/ai/ai_widgets.dart, services/api/src/ai/providers.ts |
 
 ## 7. Insert, split-screen, PDF/PPT
 | Feature | Teachmint behaviour | KINETIX status | Files |

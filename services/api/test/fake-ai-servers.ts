@@ -71,6 +71,63 @@ export class FakePrimary extends FakeServer {
   }
 }
 
+/** A Gemini reply: the message content and why it stopped ("stop", "length", "content_filter"). */
+export type GeminiReply = string | { content: string | null; finish_reason: string };
+
+/**
+ * Google Gemini's OpenAI-compatible endpoint as its documentation describes it: POST
+ * /v1beta/openai/chat/completions with a Bearer API key, errors in Google's form (a list holding one
+ * error; a 429 carries its quota id and a retryDelay), finish_reason on every choice. `failures` are
+ * answered first, then the queued `replies`, then `answer(request)`. With `noThinking` it turns
+ * down reasoning_effort the way a model without thinking does.
+ */
+export class FakeGemini extends FakeServer {
+  static readonly KEY = 'test-gemini-key';
+  requests: { headers: IncomingMessage['headers']; body: any }[] = [];
+  failures: (429 | 503 | 'perDay')[] = [];
+  replies: GeminiReply[] = [];
+  answer: (body: any) => GeminiReply = () => '{}';
+  noThinking = false;
+
+  get url() {
+    return `${this.origin}/v1beta/openai`;
+  }
+
+  /** The text of the last user message in a request (the parts' text for an image request). */
+  static userText(body: any): string {
+    const c = [...body.messages].reverse().find((m: { role: string }) => m.role === 'user')?.content;
+    return typeof c === 'string' ? c : (c as { type: string; text?: string }[]).map((p) => p.text ?? '').join('\n');
+  }
+
+  protected async handle(req: IncomingMessage, res: ServerResponse, raw: Buffer): Promise<unknown> {
+    const error = (code: number, status: string, message: string, details?: unknown[]) => json(res, code, [{ error: { code, message, status, ...(details ? { details } : {}) } }]);
+    if (req.method !== 'POST' || req.url !== '/v1beta/openai/chat/completions') return error(404, 'NOT_FOUND', 'Not found');
+    if (req.headers.authorization !== `Bearer ${FakeGemini.KEY}`) return error(400, 'INVALID_ARGUMENT', 'API key not valid. Please pass a valid API key.');
+    const body = JSON.parse(raw.toString());
+    this.requests.push({ headers: req.headers, body });
+    if (this.noThinking && 'reasoning_effort' in body) return error(400, 'INVALID_ARGUMENT', 'Thinking is not supported by this model.');
+    const fail = this.failures.shift();
+    if (fail === 429 || fail === 'perDay') {
+      const quotaId = fail === 429 ? 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier' : 'GenerateRequestsPerDayPerProjectPerModel-FreeTier';
+      return error(429, 'RESOURCE_EXHAUSTED', 'You exceeded your current quota, please check your plan and billing details.', [
+        { '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: [{ quotaMetric: 'generativelanguage.googleapis.com/generate_content_free_tier_requests', quotaId }] },
+        ...(fail === 429 ? [{ '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '1s' }] : []),
+      ]);
+    }
+    if (fail === 503) return error(503, 'UNAVAILABLE', 'The model is overloaded. Please try again later.');
+    const next = this.replies.shift() ?? this.answer(body);
+    const { content, finish_reason } = typeof next === 'string' ? { content: next, finish_reason: 'stop' } : next;
+    return json(res, 200, {
+      id: 'gemini-1',
+      object: 'chat.completion',
+      created: 0,
+      model: body.model,
+      choices: [{ index: 0, message: { role: 'assistant', content }, finish_reason }],
+      usage: { prompt_tokens: 80, completion_tokens: 60, total_tokens: 140 },
+    });
+  }
+}
+
 /**
  * Sarvam AI as its SDK describes it: `api-subscription-key` auth, `/v1/chat/completions`,
  * `/speech-to-text` (REST, short clips) and the batch job API with presigned (Azure-style)

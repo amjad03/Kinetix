@@ -202,7 +202,7 @@ describe('KINETIX AI gateway', () => {
     model.replies.push(JSON.stringify({ answer: 'ಸದ್ಭಾವನೆ ಒಂದು ಅಮೂರ್ತ ಆಸ್ತಿ.', keyPoints: ['ಅಮೂರ್ತ ಆಸ್ತಿ'], followUps: [] }));
     const res = await http().post('/v1/ai/explain').set(auth('student')).send({ question: 'What is goodwill?', language: 'kn' }).expect(200);
     expect(res.body.result.answer).toContain('ಸದ್ಭಾವನೆ');
-    expect(model.requests[0].messages[0].content).toContain('Write in Kannada (use the native script).');
+    expect(model.requests[0].messages[0].content).toContain('Write in Kannada (use the native script;');
 
     await http().post('/v1/ai/quiz').set(auth('student')).send({ topic: 'Goodwill' }).expect(403);
     await http().post('/v1/ai/homework').set(auth('parent')).send({ topic: 'Goodwill' }).expect(403);

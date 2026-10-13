@@ -516,6 +516,8 @@
   "aiErrGeneric": "कुछ गड़बड़ हो गई ({status})। फिर से कोशिश करें।",
   "aiErrTimeout": "KINETIX AI बहुत समय ले रहा है। एक मिनट बाद फिर कोशिश करें।",
   "aiErrOffline": "बोर्ड ऑफ़लाइन है। KINETIX AI इस्तेमाल करने के लिए इंटरनेट से जोड़ें। गणित सॉल्वर ऑफ़लाइन भी चलता है।",
+  "aiErrBusy": "KINETIX AI अभी व्यस्त है। एक मिनट बाद फिर कोशिश करें।",
+  "aiErrNothingOnPages": "उन पन्नों पर कुछ पढ़ा नहीं जा सका। पहले बोर्ड पर लिखें, या दूसरे पन्ने चुनें।",
   "aiExplainTopic": "{topic} समझाइए",
   "aiExplainFromBoard": "बोर्ड पर लिखे इस भाग को समझाइए: {text}",
   "quizNeedsSignIn": "KINETIX AI से क्विज़ बनाने के लिए Teacher App से साइन इन करें।",

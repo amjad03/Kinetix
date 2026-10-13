@@ -1814,6 +1814,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.';
 
   @override
+  String get aiErrBusy =>
+      'KINETIX AI is busy right now. Try again in a minute.';
+
+  @override
+  String get aiErrNothingOnPages =>
+      'Nothing could be read on those pages. Write on the board first, or choose other pages.';
+
+  @override
   String aiExplainTopic(String topic) {
     return 'Explain $topic';
   }

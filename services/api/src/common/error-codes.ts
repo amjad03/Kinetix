@@ -65,6 +65,8 @@ export const ERROR_CODES: Record<string, string> = {
   'This is not your class': 'LIVE_NOT_YOUR_CLASS',
   'This student hands in their own homework': 'SUBMISSION_STUDENT_ONLY',
   'KINETIX AI is turned off for this student (consent was withdrawn)': 'CONSENT_WITHDRAWN',
+  // The model server (Gemini, vLLM, Sarvam) kept answering 429 or 503 (ai/ai.service.ts AI_BUSY).
+  'KINETIX AI is busy right now. Try again in a minute.': 'AI_BUSY',
   // Fees: online payments go to the institution's own Razorpay account (fees/).
   'Online payment is not available yet. Please pay at the fees counter.': 'PAYMENTS_NOT_CONFIGURED',
   'Enter the key secret and the webhook secret': 'PAYMENTS_KEYS_REQUIRED',

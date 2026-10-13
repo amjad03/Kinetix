@@ -1799,6 +1799,14 @@ class AppLocalizationsHi extends AppLocalizations {
       'बोर्ड ऑफ़लाइन है। KINETIX AI इस्तेमाल करने के लिए इंटरनेट से जोड़ें। गणित सॉल्वर ऑफ़लाइन भी चलता है।';
 
   @override
+  String get aiErrBusy =>
+      'KINETIX AI अभी व्यस्त है। एक मिनट बाद फिर कोशिश करें।';
+
+  @override
+  String get aiErrNothingOnPages =>
+      'उन पन्नों पर कुछ पढ़ा नहीं जा सका। पहले बोर्ड पर लिखें, या दूसरे पन्ने चुनें।';
+
+  @override
   String aiExplainTopic(String topic) {
     return '$topic समझाइए';
   }

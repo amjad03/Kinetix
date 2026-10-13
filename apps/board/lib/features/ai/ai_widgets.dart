@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kinetix_ink/kinetix_ink.dart' show TexView;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
@@ -182,6 +183,51 @@ class AiLoading extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// LaTeX in AI text: $$…$$, \[…\], \(…\) and $…$. A price is not maths: "$5 and $6" stays text.
+final _latex = RegExp(r'\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|(?<![\w\\])\$([^$\n]{1,200}?)\$(?!\w)');
+
+/// [text] as plain runs and LaTeX runs (without their delimiters), in order.
+List<({String text, bool math})> splitMath(String text) {
+  final out = <({String text, bool math})>[];
+  var at = 0;
+  for (final m in _latex.allMatches(text)) {
+    final tex = (m.group(1) ?? m.group(2) ?? m.group(3) ?? m.group(4) ?? '').trim();
+    if (tex.isEmpty) continue;
+    if (m.start > at) out.add((text: text.substring(at, m.start), math: false));
+    out.add((text: tex, math: true));
+    at = m.end;
+  }
+  if (at < text.length) out.add((text: text.substring(at), math: false));
+  return out;
+}
+
+/// AI text in a panel. KINETIX AI sends maths as plain Unicode (x², √, ×); LaTeX that an answer
+/// still carries (an offline sample, an answer saved before) is typeset rather than shown raw.
+class AiText extends StatelessWidget {
+  const AiText(this.text, {super.key, this.style});
+
+  final String text;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = splitMath(text);
+    if (!parts.any((p) => p.math)) return Text(text, style: style);
+    final base = DefaultTextStyle.of(context).style.merge(style);
+    return Text.rich(
+      TextSpan(
+        children: [
+          for (final p in parts)
+            p.math
+                ? WidgetSpan(alignment: PlaceholderAlignment.middle, child: TexView(p.text, fontSize: base.fontSize ?? 16, color: base.color))
+                : TextSpan(text: p.text),
+        ],
+      ),
+      style: style,
+    );
+  }
 }
 
 /// A section label inside a result card.

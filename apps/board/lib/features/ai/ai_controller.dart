@@ -55,10 +55,17 @@ class AiTask<T> extends ChangeNotifier {
   var _ticket = 0;
 }
 
+/// Scan Board or Summary found nothing written on the chosen pages.
+class NothingOnBoard implements Exception {
+  const NothingOnBoard();
+}
+
 /// A message for the class, for each way an AI request can fail. Messages written by the
 /// server (refusals, bad input) are shown as they come.
 String aiErrorMessage(AppLocalizations l, Object e) {
   if (e is ApiException) {
+    // The model server (e.g. Gemini's free tier) is rate-limiting or overloaded; the API already waited and asked again.
+    if (e.code == 'AI_BUSY') return l.aiErrBusy;
     final server = e.message.startsWith('Request failed') ? null : e.message;
     return switch (e.status) {
       401 || 403 => l.aiErrSignInAgain,
@@ -71,6 +78,8 @@ String aiErrorMessage(AppLocalizations l, Object e) {
     };
   }
   if (e is TimeoutException) return l.aiErrTimeout;
+  // Scan Board / Summary found nothing written on the chosen pages.
+  if (e is NothingOnBoard) return l.aiErrNothingOnPages;
   return l.aiErrOffline;
 }
 
@@ -313,7 +322,7 @@ class AiController extends ChangeNotifier {
     final read = readPages;
     if (pages == null || read == null) return null;
     final text = (await read(pages)).trim();
-    if (text.isEmpty) throw const FormatException('Nothing could be read on those pages');
+    if (text.isEmpty) throw const NothingOnBoard();
     return text.length > 20000 ? text.substring(0, 20000) : text;
   }
 

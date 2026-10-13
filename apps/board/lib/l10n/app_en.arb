@@ -1049,6 +1049,8 @@
   },
   "aiErrTimeout": "KINETIX AI is taking too long. Try again in a minute.",
   "aiErrOffline": "The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.",
+  "aiErrBusy": "KINETIX AI is busy right now. Try again in a minute.",
+  "aiErrNothingOnPages": "Nothing could be read on those pages. Write on the board first, or choose other pages.",
   "aiExplainTopic": "Explain {topic}",
   "@aiExplainTopic": {
     "description": "Question sent to KINETIX AI, in the AI language.",
