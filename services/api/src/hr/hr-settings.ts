@@ -9,7 +9,7 @@ export const DEFAULT_HR_SETTINGS: HrModuleSettings = {
   payslipSeries: { prefix: 'PS/{FY}/', next: 1, digits: 5, suffix: '' },
   leaveLevels: 1,
   encashment: { maxDaysPerYear: 15, minBalanceAfter: 0 },
-  attendance: { officeStart: '09:00', graceMinutes: 10, halfDayAfterMinutes: 120, minHoursFullDay: 6 },
+  attendance: { officeStart: '09:00', graceMinutes: 10, halfDayAfterMinutes: 120, minHoursFullDay: 6, officeEnd: '17:00', lateMarksPerHalfDay: 3 },
   loans: { maxInstallments: 24, maxAdvancePaise: 5_000_000, maxLoanPaise: 50_000_000 },
 };
 
@@ -25,7 +25,7 @@ export async function hrModuleSettings(tx: Tx, tenantId: string): Promise<HrModu
   await tx.insert(hrSettings).values({ tenantId, ...DEFAULT_HR_SETTINGS }).onConflictDoNothing();
   const [row] = await tx.select().from(hrSettings).where(eq(hrSettings.tenantId, tenantId));
   const { tenantId: _t, updatedAt: _u, ...rest } = row;
-  return rest;
+  return { ...rest, attendance: { ...DEFAULT_HR_SETTINGS.attendance, ...rest.attendance } };
 }
 
 /** Takes `count` numbers from a series and returns the first; the row lock keeps numbers unique. */

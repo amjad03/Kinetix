@@ -29,12 +29,16 @@ describe('payroll access', () => {
 
 describe('runs', () => {
   it('allows only the next step of draft → approved → locked', () => {
-    expect(runActions('draft', true)).toEqual({ recompute: true, verify: true, approve: false, lock: false, reopen: false, publish: false, exports: false });
+    expect(runActions('draft', true)).toEqual({ recompute: true, verify: true, approve: false, lock: false, reopen: false, publish: false, exports: false, reverse: false });
     expect(runActions('verified', false)).toMatchObject({ recompute: true, approve: false, reopen: false });
     expect(runActions('verified', true)).toMatchObject({ approve: true, reopen: true, exports: false });
-    expect(runActions('approved', true)).toEqual({ recompute: false, verify: false, approve: false, lock: true, reopen: true, publish: false, exports: true });
-    expect(runActions('locked', true)).toEqual({ recompute: false, verify: false, approve: false, lock: false, reopen: false, publish: true, exports: true });
+    expect(runActions('approved', true)).toEqual({ recompute: false, verify: false, approve: false, lock: true, reopen: true, publish: false, exports: true, reverse: false });
+    expect(runActions('locked', true)).toEqual({ recompute: false, verify: false, approve: false, lock: false, reopen: false, publish: true, exports: true, reverse: true });
     expect(runActions('locked', true, true).publish).toBe(false);
+    expect(runActions('locked', false).reverse).toBe(false);
+    expect(runActions('reversed', true)).toEqual({ recompute: false, verify: false, approve: false, lock: false, reopen: false, publish: false, exports: false, reverse: false });
+    expect(downloadUrl.q24(2026, 4, 2)).toBe('/api/download?kind=q24&fy=2026&quarter=4&annexure=2');
+    expect(downloadUrl.ecr('r1')).toBe('/api/download?kind=ecr&id=r1');
   });
   it('shifts months across years', () => {
     expect(shiftMonth('2026-01', -1)).toBe('2025-12');

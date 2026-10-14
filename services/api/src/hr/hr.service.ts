@@ -11,6 +11,8 @@ import { STAFF_ROLES } from './hr.access.js';
 import { parseBiometricCsv } from './biometric-csv.js';
 import { eachDay, monthEnd, monthStart } from './dates.js';
 import { lopDays } from './lop.js';
+import { dayFromPunches, DEFAULT_ATTENDANCE_RULES, fullRules, lateLop, type FullAttendanceRules } from './attendance-rules.js';
+import { hrModuleSettings } from './hr-settings.js';
 import { KARNATAKA_PT } from './payroll-math.js';
 
 export const DEFAULT_LEDGERS = {
@@ -23,6 +25,8 @@ export const DEFAULT_LEDGERS = {
   tdsPayable: 'TDS on Salary Payable',
   salaryPayable: 'Salary Payable',
   otherDeductions: 'Staff Recoveries',
+  lwfPayable: 'Labour Welfare Fund Payable',
+  employerLwfExpense: 'Employer LWF Contribution',
 };
 
 export const bankAad = (tenantId: string, userId: string) => `${tenantId}:staff.${userId}.bank_account`;
@@ -61,6 +65,7 @@ export class HrService {
       ptSlabs: r.ptSlabs as PayrollSettings['ptSlabs'],
       weeklyOffs: r.weeklyOffs,
       ledgers: { ...DEFAULT_LEDGERS, ...(r.ledgers as object) } as PayrollSettings['ledgers'],
+      lwf: r.lwf,
     };
   }
 
@@ -158,13 +163,21 @@ export class HrService {
 
   // ----- attendance ------------------------------------------------------------------------------
 
+  /** The institution's attendance rules (late arrival, half day, office hours). */
+  async attendanceRules(tx: Tx, tenantId: string): Promise<FullAttendanceRules> {
+    return fullRules((await hrModuleSettings(tx, tenantId)).attendance as Partial<FullAttendanceRules>);
+  }
+
   async checkIn(tx: Tx, tenantId: string, userId: string) {
     const today = await this.today(tx);
     const now = this.clock.now();
+    const tz = await this.timezone(tx);
+    const rules = await this.attendanceRules(tx, tenantId);
+    const mark = dayFromPunches(rules, localParts(now, tz).time.slice(0, 5), null);
     const [existing] = await tx.select().from(staffAttendance).where(and(eq(staffAttendance.userId, userId), eq(staffAttendance.date, today)));
     if (existing?.status === 'on_leave') throw new ConflictException('You are marked on leave today');
-    if (!existing) await tx.insert(staffAttendance).values({ tenantId, userId, date: today, status: 'present', checkInAt: now, source: 'app', markedBy: userId });
-    else if (!existing.checkInAt) await tx.update(staffAttendance).set({ checkInAt: now, status: existing.status === 'absent' ? 'present' : existing.status, updatedAt: now }).where(and(eq(staffAttendance.userId, userId), eq(staffAttendance.date, today)));
+    if (!existing) await tx.insert(staffAttendance).values({ tenantId, userId, date: today, status: mark.status, checkInAt: now, source: 'app', markedBy: userId, lateMinutes: mark.lateMinutes });
+    else if (!existing.checkInAt) await tx.update(staffAttendance).set({ checkInAt: now, lateMinutes: mark.lateMinutes, status: existing.status === 'absent' ? mark.status : existing.status, updatedAt: now }).where(and(eq(staffAttendance.userId, userId), eq(staffAttendance.date, today)));
     return this.day(tx, userId, today);
   }
 
@@ -172,18 +185,24 @@ export class HrService {
     const today = await this.today(tx);
     const [existing] = await tx.select().from(staffAttendance).where(and(eq(staffAttendance.userId, userId), eq(staffAttendance.date, today)));
     if (!existing?.checkInAt) throw new ConflictException('Check in first');
-    await tx.update(staffAttendance).set({ checkOutAt: this.clock.now(), updatedAt: this.clock.now() }).where(and(eq(staffAttendance.userId, userId), eq(staffAttendance.date, today)));
+    const now = this.clock.now();
+    const tz = await this.timezone(tx);
+    const rules = await this.attendanceRules(tx, existing.tenantId);
+    const mark = dayFromPunches(rules, localParts(existing.checkInAt, tz).time.slice(0, 5), localParts(now, tz).time.slice(0, 5));
+    // A day marked by hand or regularised keeps its status; the punches still record the early departure.
+    const status = existing.source === 'manual' || existing.regularised ? existing.status : mark.status;
+    await tx.update(staffAttendance).set({ checkOutAt: now, earlyMinutes: mark.earlyMinutes, status, updatedAt: now }).where(and(eq(staffAttendance.userId, userId), eq(staffAttendance.date, today)));
     return this.day(tx, userId, today);
   }
 
   async day(tx: Tx, userId: string, date: string) {
     const [r] = await tx.select().from(staffAttendance).where(and(eq(staffAttendance.userId, userId), eq(staffAttendance.date, date)));
-    return r ? { date, status: r.status, checkInAt: r.checkInAt?.toISOString() ?? null, checkOutAt: r.checkOutAt?.toISOString() ?? null, source: r.source, note: r.note } : null;
+    return r ? { date, status: r.status, checkInAt: r.checkInAt?.toISOString() ?? null, checkOutAt: r.checkOutAt?.toISOString() ?? null, source: r.source, note: r.note, lateMinutes: r.lateMinutes, earlyMinutes: r.earlyMinutes, regularised: r.regularised } : null;
   }
 
   async month(tx: Tx, userId: string, ym: string) {
     const rows = await tx.select().from(staffAttendance).where(and(eq(staffAttendance.userId, userId), gte(staffAttendance.date, monthStart(ym)), lte(staffAttendance.date, monthEnd(ym)))).orderBy(asc(staffAttendance.date));
-    return rows.map((r) => ({ date: r.date, status: r.status, checkInAt: r.checkInAt?.toISOString() ?? null, checkOutAt: r.checkOutAt?.toISOString() ?? null, source: r.source, note: r.note }));
+    return rows.map((r) => ({ date: r.date, status: r.status, checkInAt: r.checkInAt?.toISOString() ?? null, checkOutAt: r.checkOutAt?.toISOString() ?? null, source: r.source, note: r.note, lateMinutes: r.lateMinutes, earlyMinutes: r.earlyMinutes, regularised: r.regularised }));
   }
 
   async dayRows(tx: Tx, date: string): Promise<StaffAttendanceRow[]> {
@@ -203,6 +222,8 @@ export class HrService {
         checkOutAt: m?.checkOutAt?.toISOString() ?? null,
         source: (m?.source as StaffAttendanceRow['source']) ?? null,
         onLeave: onLeave.has(s.u.id),
+        lateMinutes: m?.lateMinutes ?? null,
+        earlyMinutes: m?.earlyMinutes ?? null,
       };
     });
   }
@@ -229,6 +250,7 @@ export class HrService {
     const people = codes.length ? await tx.select({ userId: staffProfiles.userId, code: staffProfiles.employeeCode }).from(staffProfiles).where(inArray(staffProfiles.employeeCode, codes)) : [];
     const byCode = new Map(people.map((p) => [p.code, p.userId]));
     const tz = await this.timezone(tx);
+    const rules = await this.attendanceRules(tx, tenantId);
     const locked = new Set((await tx.select({ month: payrollRuns.month }).from(payrollRuns).where(eq(payrollRuns.status, 'locked'))).map((r) => r.month));
     let imported = 0;
     for (const d of parsed.days) {
@@ -237,12 +259,13 @@ export class HrService {
       else if (locked.has(d.date.slice(0, 7))) errors.push({ line: d.line, error: LOCKED_MONTH });
       else {
         const at = (t: string) => zonedToInstant(d.date, t, tz);
-        const values = { tenantId, userId, date: d.date, status: 'present', checkInAt: at(d.inTime), checkOutAt: d.outTime ? at(d.outTime) : null, source: 'biometric', markedBy: by };
+        const mark = dayFromPunches(rules, d.inTime.slice(0, 5), d.outTime ? d.outTime.slice(0, 5) : null);
+        const values = { tenantId, userId, date: d.date, status: mark.status, checkInAt: at(d.inTime), checkOutAt: d.outTime ? at(d.outTime) : null, source: 'biometric', markedBy: by, lateMinutes: mark.lateMinutes, earlyMinutes: mark.earlyMinutes };
         // Never overwrite what a person marked by hand.
         const done = await tx
           .insert(staffAttendance)
           .values(values)
-          .onConflictDoUpdate({ target: [staffAttendance.userId, staffAttendance.date], set: { status: 'present', checkInAt: values.checkInAt, checkOutAt: values.checkOutAt, source: 'biometric', updatedAt: this.clock.now() }, setWhere: sql`${staffAttendance.source} <> 'manual'` })
+          .onConflictDoUpdate({ target: [staffAttendance.userId, staffAttendance.date], set: { status: sql`case when ${staffAttendance.regularised} then ${staffAttendance.status} else ${mark.status} end`, checkInAt: values.checkInAt, checkOutAt: values.checkOutAt, lateMinutes: mark.lateMinutes, earlyMinutes: mark.earlyMinutes, source: 'biometric', updatedAt: this.clock.now() }, setWhere: sql`${staffAttendance.source} <> 'manual'` })
           .returning({ userId: staffAttendance.userId });
         if (done.length) imported++;
         else errors.push({ line: d.line, error: 'Already marked by hand; left as it is' });
@@ -262,11 +285,15 @@ export class HrService {
       .from(leaveRequests)
       .innerJoin(leaveTypes, eq(leaveTypes.id, leaveRequests.leaveTypeId))
       .where(and(eq(leaveRequests.status, 'approved'), lte(leaveRequests.fromDate, to), gte(leaveRequests.toDate, from)));
-    const profiles = await tx.select({ userId: staffProfiles.userId, joined: staffProfiles.dateOfJoining, left: staffProfiles.dateOfLeaving }).from(staffProfiles);
+    const profiles = await tx.select({ userId: staffProfiles.userId, joined: staffProfiles.dateOfJoining, left: staffProfiles.dateOfLeaving, tenantId: staffProfiles.tenantId }).from(staffProfiles);
+    const rules = profiles.length ? await this.attendanceRules(tx, profiles[0].tenantId) : DEFAULT_ATTENDANCE_RULES;
     const out = new Map<string, number>();
     for (const p of profiles) {
+      // Late arrivals (past the grace period, not regularised) on days counted present cost half a day per N marks.
+      const lates = marks.filter((m) => m.userId === p.userId && (m.lateMinutes ?? 0) > 0 && m.status === 'present' && !m.regularised).length;
       out.set(
         p.userId,
+        lateLop(lates, rules.lateMarksPerHalfDay) +
         lopDays({
           month: ym,
           weeklyOffs: settings.weeklyOffs,

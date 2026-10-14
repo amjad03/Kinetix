@@ -13,11 +13,13 @@ import { pillTone, useNotice } from './Common';
 
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Tab, Tabs } from '@/components/kx';
 import { CalendarDays, Palmtree, Plus as Add } from 'lucide-react';
-type Tab_ = 'requests' | 'balances' | 'types' | 'holidays';
+export type Tab_ = 'requests' | 'balances' | 'types' | 'holidays';
 
-export function LeaveDesk({ requests, types, holidays, staff }: { requests: LeaveRequest[]; types: LeaveType[]; holidays: Holiday[]; staff: StaffSummary[] }) {
+/** Leave balances and holidays (the requests and leave types are record kit lists on the leave page). `only` shows one part without the tab bar. */
+export function LeaveDesk({ requests, types, holidays, staff, only }: { requests: LeaveRequest[]; types: LeaveType[]; holidays: Holiday[]; staff: StaffSummary[]; only?: Tab_ }) {
   const { t, locale } = useI18n();
-  const [tab, setTab] = useState<Tab_>('requests');
+  const [picked, setTab] = useState<Tab_>('requests');
+  const tab = only ?? picked;
   const { run, view } = useNotice();
   const [pending, start] = useTransition();
   const [deciding, setDeciding] = useState<{ r: LeaveRequest; decision: 'approve' | 'reject' } | null>(null);
@@ -31,12 +33,14 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
   return (
     <>
       {view}
+      {!only && (
       <Tabs className="mb-4" value={tab} onChange={(_, v: Tab_) => setTab(v)} aria-label={t('hr.tab.leave')} variant="scrollable" scrollButtons={false}>
         <Tab value="requests" label={t('hr.leave.tab.requests', { n: open })} />
         <Tab value="balances" label={t('hr.leave.tab.balances')} />
         <Tab value="types" label={t('hr.leave.tab.types')} />
         <Tab value="holidays" label={t('hr.leave.tab.holidays')} />
       </Tabs>
+      )}
 
       {tab === 'requests' &&
         (requests.length === 0 ? (

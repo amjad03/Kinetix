@@ -4,16 +4,19 @@ import { FormField, StatusPill, TextInput, type Column } from '@/components/ui';
 import { RecordsTable } from '@/components/records/RecordsTable';
 import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
 import { useEffect, useState, useTransition } from 'react';
-import { addDesignation, getProfile, saveBank, saveProfile, type ProfileInput } from '@/app/(dashboard)/hr/actions';
+import { getProfile, saveBank, saveProfile, type ProfileInput } from '@/app/(dashboard)/hr/actions';
+import { LinkButton } from '@/components/LinkButton';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { paiseToInput, rupeesToPaise } from '@/lib/money';
 import type { Designation, EmploymentType, StaffProfile, StaffStatus, StaffSummary } from '@/lib/hr-types';
 import { useNotice } from './Common';
+import { useKitActions } from './HrList';
+import { STAFF_PARAMS } from './hr-lists';
 
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Switch } from '@/components/kx';
-import { Pencil as EditOutlined, Plus as Add } from 'lucide-react';
+import { Pencil as EditOutlined } from 'lucide-react';
 const TYPES: EmploymentType[] = ['permanent', 'contract', 'probation', 'visiting'];
 const STATUSES: StaffStatus[] = ['active', 'on_notice', 'exited'];
 
@@ -55,8 +58,7 @@ const summaryOf = (r: StaffRow): StaffSummary => ({
 export function StaffDirectory({ meta, page, state, designations, departments }: { meta: RecordMeta; page: RecordsPage<StaffRow>; state: ListState; designations: Designation[]; departments: { id: string; name: string }[] }) {
   const { t, fmt } = useI18n();
   const [editing, setEditing] = useState<StaffSummary | null>(null);
-  const [adding, setAdding] = useState(false);
-  const { run, view } = useNotice();
+  const { view } = useNotice();
   const s = (x: Row) => x as StaffRow;
   const columns: Column<Row>[] = [
     {
@@ -82,67 +84,36 @@ export function StaffDirectory({ meta, page, state, designations, departments }:
     { id: 'roles', header: t('rk.col.roles'), defaultHidden: true, cell: (x) => (s(x).roles ?? '').split(', ').filter(Boolean).map((r) => t(`role.${r}` as MessageKey)).join(', ') },
     { id: 'account', header: t('rk.col.account'), sortKey: 'account', defaultHidden: true, cell: (x) => <StatusPill tone={s(x).accountStatus === 'active' ? 'success' : 'neutral'}>{t(`rk.o.staff.accountStatus.${s(x).accountStatus === 'active' ? 'active' : 'disabled'}` as MessageKey)}</StatusPill> },
     { id: 'joined', header: t('rk.col.joined'), sortKey: 'joined', defaultHidden: true, cell: (x) => (s(x).dateOfJoining ? fmt.date(s(x).dateOfJoining!) : '–') },
+    { id: 'category', header: t('hk.d.staffCategory'), defaultHidden: true, cell: (x) => (x.staffCategory ? t(`hk.cat.${String(x.staffCategory)}` as MessageKey) : '–') },
+    { id: 'cadre', header: t('hk.d.cadre'), defaultHidden: true, cell: (x) => (x.cadre ? t(`hk.cadre.${String(x.cadre)}` as MessageKey) : '–') },
+    { id: 'phd', header: t('hk.d.phd'), defaultHidden: true, cell: (x) => (x.phdStatus ? t(`hk.phd.${String(x.phdStatus)}` as MessageKey) : '–') },
+    { id: 'netSet', header: t('hk.d.netSet'), defaultHidden: true, cell: (x) => (x.netSet ? t(`hk.net.${String(x.netSet)}` as MessageKey) : '–') },
   ];
+  const kit = useKitActions('staff', meta, state, { params: STAFF_PARAMS }, { designations: designations.map((d) => ({ value: d.id, label: d.name })) });
   return (
     <>
       {view}
       <p className="mb-3 text-[13px] leading-[19px] text-muted-foreground">{t('hr.staff.designationsLine', { n: designations.length })}</p>
       <RecordsTable
-        meta={meta}
+        meta={kit.shownMeta}
         page={page}
         state={state}
         label={t('nav.hr')}
+        extraBulkActions={kit.bulkActions}
         columns={columns}
         rowHref={(x) => `/hr/staff/${x.id}`}
         testId="staff-table"
         toolbar={
-          <Button variant="outlined" startIcon={<Add />} onClick={() => setAdding(true)}>
-            {t('hr.staff.newDesignation')}
-          </Button>
+          <LinkButton href="/hr/designations" variant="outlined">
+            {t('rk.entity.designations')}
+          </LinkButton>
         }
-        extraRowActions={(x) => [{ id: 'hr-record', label: t('rk.hrRecord'), icon: <EditOutlined />, onSelect: () => setEditing(summaryOf(x as StaffRow)) }]}
+        extraRowActions={(x) => [{ id: 'hr-record', label: t('rk.hrRecord'), icon: <EditOutlined />, onSelect: () => setEditing(summaryOf(x as StaffRow)) }, ...kit.rowActions(x)]}
         empty={<EmptyState icon={<EditOutlined />} title={t('hr.staff.empty')} />}
       />
+      {kit.dialogs}
       {editing && <ProfileDialog person={editing} designations={designations} departments={departments} onClose={() => setEditing(null)} />}
-      {adding && <DesignationDialog onClose={() => setAdding(false)} run={run} />}
     </>
-  );
-}
-
-function DesignationDialog({ onClose, run }: { onClose: () => void; run: ReturnType<typeof useNotice>['run'] }) {
-  const { t } = useI18n();
-  const [name, setName] = useState('');
-  const [grade, setGrade] = useState('');
-  const [pending, start] = useTransition();
-  return (
-    <Dialog open onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>{t('hr.staff.newDesignation')}</DialogTitle>
-      <DialogContent>
-        <div className="flex flex-col gap-4 pt-2">
-          <FormField label={t('hr.staff.designationName')}>
-            <TextInput value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-          </FormField>
-          <FormField label={t('hr.staff.grade')}>
-            <TextInput value={grade} onChange={(e) => setGrade(e.target.value)} />
-          </FormField>
-        </div>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t('hr.cancel')}</Button>
-        <Button
-          variant="contained"
-          disabled={pending || !name.trim()}
-          onClick={() =>
-            start(async () => {
-              const r = await run(() => addDesignation(name, grade), t('hr.saved'));
-              if (r.ok) onClose();
-            })
-          }
-        >
-          {t('hr.save')}
-        </Button>
-      </DialogActions>
-    </Dialog>
   );
 }
 

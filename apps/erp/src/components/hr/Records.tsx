@@ -2,6 +2,8 @@
 import { BriefcaseBusiness, Building2, Cake, CalendarDays, CircleCheck, Clock, IdCard, Mail, Phone, School, UserRound } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { HrApproval, LOAN_TONE, ServiceBook } from '@/components/hr/HrFlow';
+import { LeaveExtras } from '@/components/hr/LeaveExtras';
+import { HrList, type HrListData } from '@/components/hr/HrList';
 import { LinkButton } from '@/components/LinkButton';
 import { RunDetail } from '@/components/payroll/RunDetail';
 import { RecordPage, WorkflowStepper, type ActivityItem, type RecordDocument } from '@/components/templates';
@@ -211,7 +213,12 @@ export function StaffRecord({ s, book, leave, loans, training, activity, canAdd,
       title={s.fullName}
       status={s.status ? { label: t(`hr.status.${s.status}` as MessageKey), tone: STAFF_TONE[s.status] } : undefined}
       facts={[]}
-      secondary={<LinkButton href="/hr">{t('hf.backToStaff')}</LinkButton>}
+      secondary={
+        <>
+          <LinkButton href={`/hr/staff/${s.userId}/faculty`} variant="outlined">{t('hk.fp.open')}</LinkButton>
+          <LinkButton href="/hr">{t('hf.backToStaff')}</LinkButton>
+        </>
+      }
       overview={
         <Card>
           <Details
@@ -297,7 +304,7 @@ export function StaffRecord({ s, book, leave, loans, training, activity, canAdd,
 
 const LEAVE_PILL: Record<string, Tone> = { pending: 'warning', recommended: 'info', approved: 'success', rejected: 'danger', cancelled: 'neutral' };
 
-export function LeaveRecord({ r, twoLevel, canDecide, activity }: { r: LeaveRequest; twoLevel: boolean; canDecide: boolean; activity: ActivityItem[] }) {
+export function LeaveRecord({ r, twoLevel, canDecide, activity, canManage = false, canRevoke = false }: { r: LeaveRequest; twoLevel: boolean; canDecide: boolean; activity: ActivityItem[]; canManage?: boolean; canRevoke?: boolean }) {
   const { t, d } = useFmt();
   const steps = leaveSteps(r, twoLevel, { applied: t('hf.step.applied'), hod: t('hf.step.hod'), approval: t('hf.step.principal') });
   return (
@@ -311,11 +318,16 @@ export function LeaveRecord({ r, twoLevel, canDecide, activity }: { r: LeaveRequ
         { label: t('hf.leave.paid'), value: t(r.leaveType.paid ? 'hf.yes' : 'hf.no') },
         { label: t('hf.appliedOn'), value: formatDateTime(r.createdAt) },
       ]}
+      primary={<LeaveExtras r={r} canManage={canManage} canRevoke={canRevoke} />}
       secondary={<LinkButton href="/hr/leave">{t('hr.tab.leave')}</LinkButton>}
       overview={
         <Details
           items={[
             [t('hr.leave.reason'), r.reason || '–'],
+            [t('hk.leave.delegate'), r.delegate?.fullName ?? '–'],
+            [t('hk.leave.appliedBy'), r.appliedBy?.fullName ?? r.user.fullName],
+            [t('hk.leave.document'), r.documentName ?? '–'],
+            ...(r.revokedReason ? ([[t('hk.leave.revokedReason'), r.revokedReason]] as [string, string][]) : []),
             [t('hf.step.hod'), r.recommendedBy ? `${r.recommendedBy.fullName}${r.recommendNote ? ` · ${r.recommendNote}` : ''}` : '–'],
             [t('hf.decidedBy'), r.decidedBy ? `${r.decidedBy.fullName}${r.decisionNote ? ` · ${r.decisionNote}` : ''}` : '–'],
           ]}
@@ -327,7 +339,7 @@ export function LeaveRecord({ r, twoLevel, canDecide, activity }: { r: LeaveRequ
   );
 }
 
-const RUN_PILL: Record<string, Tone> = { draft: 'neutral', verified: 'info', approved: 'warning', locked: 'success' };
+const RUN_PILL: Record<string, Tone> = { draft: 'neutral', verified: 'info', approved: 'warning', locked: 'success', reversed: 'danger' };
 
 export function RunRecord({ run, canApprove, activity }: { run: PayrollRunDetail; canApprove: boolean; activity: ActivityItem[] }) {
   const { t, m } = useFmt();
@@ -336,7 +348,7 @@ export function RunRecord({ run, canApprove, activity }: { run: PayrollRunDetail
     <RecordPage
       title={t('pay.run.title', { month: m(run.month) })}
       status={{ label: t(`pay.status.${run.status}` as MessageKey), tone: RUN_PILL[run.status] }}
-      subtitle={run.publishedAt ? t('hf.run.published') : undefined}
+      subtitle={[run.kind === 'supplementary' ? t('hk.run.supplementary') : null, run.publishedAt ? t('hf.run.published') : null, run.status === 'reversed' && run.reversalReason ? `${t('hk.run.reversedBecause')}: ${run.reversalReason}` : null, run.note || null].filter(Boolean).join(' · ') || undefined}
       facts={[
         { label: t('pay.staff'), value: run.staffCount },
         { label: t('pay.gross'), value: formatRupees(run.grossPaise) },
@@ -397,7 +409,7 @@ export function PayslipRecord({ p, activity }: { p: Payslip; activity: ActivityI
 const OPENING_PILL: Record<string, Tone> = { requested: 'warning', rejected: 'danger', open: 'success', on_hold: 'warning', closed: 'neutral' };
 const STAGES = ['applied', 'screening', 'interview', 'offer', 'hired'];
 
-export function OpeningRecord({ o, applicants, canDecide, activity }: { o: JobOpening; applicants: JobApplicant[]; canDecide: boolean; activity: ActivityItem[] }) {
+export function OpeningRecord({ o, applicants, canDecide, activity, applicantsList }: { o: JobOpening; applicants: JobApplicant[]; canDecide: boolean; activity: ActivityItem[]; applicantsList?: HrListData }) {
   const { t, d } = useFmt();
   const reqSteps = linearSteps(['raised', 'approved', 'posted'], o.status === 'requested' ? 'raised' : o.status === 'rejected' ? 'rejected' : 'posted', (s) => t(`hf.req.step.${s}` as MessageKey), ['rejected']);
   return (
@@ -418,7 +430,9 @@ export function OpeningRecord({ o, applicants, canDecide, activity }: { o: JobOp
           value: 'applicants',
           label: t('hf.rec.applicants'),
           count: applicants.length,
-          content: (
+          content: applicantsList ? (
+            <HrList entity="job-applicants" data={applicantsList} createDefaults={{ openingId: o.id }} />
+          ) : (
             <DataTable
               label={t('hf.rec.applicants')}
               rows={applicants}
@@ -427,14 +441,13 @@ export function OpeningRecord({ o, applicants, canDecide, activity }: { o: JobOp
               exportName="applicants"
               columns={[
                 { id: 'n', header: t('hl.staff'), rowHeader: true, sort: (a) => a.fullName, cell: (a) => a.fullName },
-                { id: 'c', header: t('hf.staff.email'), sort: (a) => a.email ?? '', cell: (a) => a.email ?? a.phone ?? '–' },
                 { id: 's', header: t('hf.rec.stage'), sort: (a) => STAGES.indexOf(a.stage), cell: (a) => <StatusPill>{t(`hr.rec.stage.${a.stage}` as MessageKey)}</StatusPill> },
-                { id: 'd', header: t('hf.appliedOn'), sort: (a) => a.createdAt, cell: (a) => d(a.createdAt.slice(0, 10)) },
               ]}
             />
           ),
         },
       ]}
+      initialTab={applicantsList ? 'applicants' : undefined}
       activity={activity}
       aside={o.status === 'requested' || o.status === 'rejected' || o.approvedAt ? <HrApproval kind="requisition" id={o.id} steps={reqSteps} canDecide={canDecide && o.status === 'requested'} title={t('hf.req.approval')} /> : undefined}
     />
@@ -480,7 +493,7 @@ export function CandidateRecord({ a, opening, offers }: { a: JobApplicant; openi
   );
 }
 
-const APPR_ORDER = ['draft', 'self_submitted', 'hod_reviewed', 'finalised'];
+const APPR_ORDER = ['draft', 'self_submitted', 'hod_reviewed', 'committee_reviewed', 'finalised'];
 
 export function AppraisalRecord({ a, cats, period, activity }: { a: Appraisal; cats: AppraisalCategory[]; period: string; activity: ActivityItem[] }) {
   const { t } = useFmt();
@@ -492,6 +505,8 @@ export function AppraisalRecord({ a, cats, period, activity }: { a: Appraisal; c
       facts={[
         { label: t('hl.appr.col.self'), value: `${a.selfPercent}%` },
         { label: t('hl.appr.col.hod'), value: `${a.hodPercent}%` },
+        { label: t('hk.appr.committee'), value: a.committeeScore == null ? '–' : `${a.committeeScore}%` },
+        { label: t('hk.appr.feedback'), value: a.studentFeedbackScore == null ? '–' : `${a.studentFeedbackScore}%` },
         { label: t('hl.appr.col.final'), value: a.finalScore ?? '–' },
         { label: t('hl.appr.col.grade'), value: a.grade ?? '–' },
       ]}
@@ -511,7 +526,7 @@ export function AppraisalRecord({ a, cats, period, activity }: { a: Appraisal; c
               { id: 'e', header: t('hf.appr.evidence'), cell: (c) => a.selfScores[c.key]?.evidence ?? '–' },
             ]}
           />
-          <Details items={[[t('hf.appr.hodRemarks'), a.hodRemarks || '–'], [t('hf.appr.principalRemarks'), a.principalRemarks || '–']]} />
+          <Details items={[[t('hf.appr.hodRemarks'), a.hodRemarks || '–'], [t('hk.appr.committeeRemarks'), a.committeeRemarks || '–'], [t('hf.appr.principalRemarks'), a.principalRemarks || '–']]} />
         </div>
       }
       activity={activity}
@@ -586,7 +601,7 @@ export function ExitRecord({ s, activity }: { s: SeparationDetail; activity: Act
           ),
         },
       ]}
-      documents={s.status === 'relieved' ? [{ id: 'rl', name: t('hf.exit.relievingLetter'), href: `/api/download?kind=relieving-letter&id=${s.id}` }] : []}
+      documents={s.status === 'relieved' ? [{ id: 'rl', name: t('hf.exit.relievingLetter'), href: `/api/download?kind=relieving-letter&id=${s.id}` }, { id: 'ex', name: t('hk.link.experience'), href: `/api/download?kind=experience-cert&id=${s.id}` }] : []}
       activity={activity}
       aside={
         <Card title={t('hf.workflow')}>

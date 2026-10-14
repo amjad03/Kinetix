@@ -77,6 +77,9 @@ export interface StaffAttendanceRow {
   source: StaffAttendanceSource | null;
   /** An approved leave covers this day. */
   onLeave: boolean;
+  /** Minutes late past the start (beyond the grace period) and minutes left before the end of the day. */
+  lateMinutes?: number | null;
+  earlyMinutes?: number | null;
 }
 
 export interface AttendanceImportResult {
@@ -140,6 +143,13 @@ export interface LeaveRequest {
   recommendedBy?: { id: string; fullName: string } | null;
   recommendedAt?: string | null;
   recommendNote?: string | null;
+  /** HR applied on the staff member's behalf. */
+  appliedBy?: { id: string; fullName: string } | null;
+  /** The colleague deciding the applicant's approvals while they are away. */
+  delegate?: { id: string; fullName: string } | null;
+  hasDocument?: boolean;
+  documentName?: string | null;
+  revokedReason?: string | null;
   createdAt: string;
 }
 
@@ -223,6 +233,8 @@ export interface PayrollSettings {
   /** 0 = Sunday … 6 = Saturday. */
   weeklyOffs: number[];
   ledgers: TallyLedgers;
+  /** Karnataka Labour Welfare Fund: a fixed contribution in the months listed (December). */
+  lwf?: { enabled: boolean; employeePaise: number; employerPaise: number; months: number[] };
 }
 
 export interface TallyLedgers {
@@ -235,9 +247,11 @@ export interface TallyLedgers {
   tdsPayable: string;
   salaryPayable: string;
   otherDeductions: string;
+  lwfPayable?: string;
+  employerLwfExpense?: string;
 }
 
-export type PayrollRunStatus = 'draft' | 'verified' | 'approved' | 'locked';
+export type PayrollRunStatus = 'draft' | 'verified' | 'approved' | 'locked' | 'reversed';
 
 export interface PayrollRunSummary {
   id: string;
@@ -255,6 +269,12 @@ export interface PayrollRunSummary {
   verifiedAt?: string | null;
   bankFileAt?: string | null;
   publishedAt?: string | null;
+  /** A supplementary run pays arrears or a late joiner after the month's regular run. */
+  kind?: 'regular' | 'supplementary';
+  seq?: number;
+  note?: string | null;
+  reversedAt?: string | null;
+  reversalReason?: string | null;
 }
 
 export interface PayslipLine {

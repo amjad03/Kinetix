@@ -124,3 +124,56 @@ PDFs come from the small built-in writer `src/common/pdf.ts` (Helvetica, English
 `/v1/payroll`: `settings`, `components`, `structures/:userId`, `runs`, `runs/:id`,
 `runs/:id/{recompute,approve,lock,reopen}`, `runs/:id/{bank-transfer.csv,statutory.csv,tally.xml}`,
 `payslips/me`, `payslips/:id`, `payslips/:id/pdf`.
+
+## Depth (migrations 0165–0167)
+
+**Staff master (0165).** `staff_profiles` gains category (teaching or non-teaching), cadre, post
+(sanctioned, self-financing, guest), social category, religion, blood group, marital status, father's
+or spouse's name, disability, address, emergency contact, Aadhaar (AES-GCM, only the last four
+digits are shown), Ph.D. and NET/SET with years, pay scale and level, confirmation date, retirement
+age and the LWF flag. `GET|PUT /v1/hr/staff/:userId/details` reads and writes them with the worked-out
+retirement date, service years, prior teaching experience and publication counts. New tables
+`staff_experience`, `staff_publications` and `staff_documents` (with scans) sit beside
+`staff_qualifications`. Staff keep their own rows; HR verifies them, and a non-HR edit clears the
+verification. Designations carry a cadre, a category and an order.
+
+**Leave and attendance (0166).** Leave types gain a kind (regular, unpaid, duty, vacation,
+compensatory off, maternity and others) and rules: the most days at a time, the notice period, a
+supporting document for more than 2 days, gender, the sandwich rule, half days and credit
+validity. HR can apply on someone's behalf. An applicant can name a delegate, who decides
+requests in their place while the leave is approved. Approved leave can be withdrawn with a
+reason, and substitutes can be arranged for its periods. Compensatory off is credited for a
+holiday worked once it is approved. Attendance records late and early minutes against the
+office hours (`officeStart`, `officeEnd`, grace), and every `lateMarksPerHalfDay` late marks in a
+month cost half a day of pay. `attendance_regularisations` correct a day once approved.
+
+**Recruitment.** Applicants carry screening details and a résumé. `job_interviews` are scheduled
+with up to three panel members. Panel members score each criterion out of 10 at `/hr/interviews`,
+and an interview is completed once the whole panel has scored. `POST /v1/hr/applicants/:id/hire`
+creates the user, role, staff profile, service book entry and joining checklist, and closes a
+filled opening. It also produces the appointment letter.
+
+**Appraisal.** After the HoD's review, HR records a committee score with the student feedback
+average (`PUT /v1/hr/appraisals/:id/committee`). The principal then finalises; without their own
+figure, the committee's score stands.
+
+**Payroll (0167).** A salary component can be a percentage of another one (DA as a percentage of
+basic), with its rate history kept in `salary_component_rates`. When a rate is revised back to a
+locked month, the difference is paid as arrears. A supplementary run, for chosen staff, follows the
+month's locked regular run. A locked run is reversed only in order, latest first; its adjustments
+are released for the next run. The Karnataka LWF is deducted in December (₹50 employee, ₹100
+employer) and appears in the run's files. Other files are the EPFO ECR 2.0 text
+(`runs/:id/ecr.txt`), Form 24Q annexures I and II (`/v1/payroll/24q.csv`), and a PT return by
+slab, an LWF statement, staff by category, the 1:2:6 cadre ratio, the student-to-faculty ratio,
+the NAAC teacher list and publications under `/v1/hr/reports/:kind`.
+
+**Record kit.** All of these lists are `/v1/records/:entity` entities, each with add, edit,
+recycle bin, bulk actions, import and export, history and saved views. The entities are
+`staff-qualifications`, `staff-experience`, `staff-publications`, `staff-documents`,
+`designations`, `leave-types`, `leave-requests`, `comp-off-credits`,
+`attendance-regularisations`, `job-openings`, `job-applicants`, `job-interviews`,
+`salary-components`, `payroll-adjustments`, `staff-loans`, `tds-challans`, `training-records`,
+`appraisal-cycles`, `service-book`, `leave-encashments`, `onboarding-items`, `separations`,
+`staff-transfers`, `delegations` and `payroll-runs`. The staff list adds the bulk actions
+increment and promote. In the ERP, `components/hr/HrList.tsx` renders all of them from
+`components/hr/hr-lists.tsx`. End-to-end tests: `test/hr-depth-kit.e2e.spec.ts`.

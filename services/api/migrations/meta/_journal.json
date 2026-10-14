@@ -974,6 +974,27 @@
       "when": 1791506006000,
       "tag": "0148_record_imports",
       "breakpoints": true
+    },
+    {
+      "idx": 155,
+      "version": "7",
+      "when": 1791506023000,
+      "tag": "0165_staff_master_depth",
+      "breakpoints": true
+    },
+    {
+      "idx": 156,
+      "version": "7",
+      "when": 1791506024000,
+      "tag": "0166_hr_leave_attendance_recruitment",
+      "breakpoints": true
+    },
+    {
+      "idx": 157,
+      "version": "7",
+      "when": 1791506025000,
+      "tag": "0167_payroll_depth",
+      "breakpoints": true
     }
   ]
 }

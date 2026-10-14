@@ -11,6 +11,17 @@ import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from
 import { OptionalRef, Text, uuidEq } from '../records/helpers.js';
 import { formatSeries, takeNumbers } from './hr-settings.js';
 import { HR_ROLES } from './hr.access.js';
+import { HrService } from './hr.service.js';
+import { staffPayActions } from './payroll.records.js';
+import { PayrollService } from './payroll.service.js';
+import { choiceFilter, labelOf, opts } from './kit-shared.js';
+import { CADRES, STAFF_CATEGORIES } from './staff-depth.records.js';
+
+const GENDERS = opts([['female', 'Female'], ['male', 'Male'], ['other', 'Other']]);
+export const SOCIAL = opts([['general', 'General'], ['ews', 'EWS'], ['obc', 'OBC'], ['sc', 'SC'], ['st', 'ST']]);
+export const PHD = opts([['none', 'No Ph.D.'], ['pursuing', 'Pursuing'], ['submitted', 'Thesis submitted'], ['awarded', 'Awarded']]);
+export const NET_SET = opts([['none', 'None'], ['net', 'NET'], ['net_jrf', 'NET with JRF'], ['set', 'SET'], ['slet', 'SLET']]);
+const POSTS = opts([['sanctioned', 'Sanctioned post'], ['self_financing', 'Self-financing'], ['guest', 'Guest faculty']]);
 
 /** Roles that make someone staff (not a student, parent, alumnus or outside reviewer). */
 export const STAFF_KIT_ROLES = roleName.enumValues.filter((r) => !['student', 'guardian', 'alumni', 'external_examiner', 'accreditation_reviewer'].includes(r)) as RoleName[];
@@ -69,6 +80,8 @@ export class StaffRecords implements OnModuleInit {
   constructor(
     private readonly registry: RecordRegistry,
     private readonly imports: ImportService,
+    private readonly hr: HrService,
+    private readonly payroll: PayrollService,
   ) {}
 
   onModuleInit(): void {
@@ -121,6 +134,13 @@ export class StaffRecords implements OnModuleInit {
           employmentType: staffProfiles.employmentType,
           staffStatus: staffProfiles.status,
           dateOfJoining: staffProfiles.dateOfJoining,
+          staffCategory: staffProfiles.staffCategory,
+          cadre: staffProfiles.cadre,
+          gender: staffProfiles.gender,
+          socialCategory: staffProfiles.socialCategory,
+          phdStatus: staffProfiles.phdStatus,
+          netSet: staffProfiles.netSet,
+          postType: staffProfiles.postType,
         },
         joins: (q) => q.leftJoin(staffProfiles, eq(staffProfiles.userId, users.id)).leftJoin(departments, eq(departments.id, staffProfiles.departmentId)).leftJoin(designations, eq(designations.id, staffProfiles.designationId)),
         search: [users.fullName, users.email, users.phone, staffProfiles.employeeCode],
@@ -131,6 +151,13 @@ export class StaffRecords implements OnModuleInit {
           role: { label: 'Role', options: ROLE_LABELS, where: (v) => ((STAFF_KIT_ROLES as string[]).includes(v) ? sql`exists (select 1 from user_roles ur where ur.user_id = ${users.id} and ur.role::text = ${v})` : undefined) },
           account: { label: 'Account', options: ACCOUNT, where: (v) => (v === 'active' || v === 'disabled' ? eq(users.status, v) : undefined) },
           employment: { label: 'Employment', options: EMPLOYMENT, where: (v) => (EMPLOYMENT.some((o) => o.value === v) ? eq(staffProfiles.status, v) : undefined) },
+          category: choiceFilter('Category', STAFF_CATEGORIES, staffProfiles.staffCategory),
+          cadre: choiceFilter('Cadre', CADRES, staffProfiles.cadre),
+          gender: choiceFilter('Gender', GENDERS, staffProfiles.gender),
+          social: choiceFilter('Social category', SOCIAL, staffProfiles.socialCategory),
+          phd: choiceFilter('Ph.D.', PHD, staffProfiles.phdStatus),
+          netSet: choiceFilter('NET / SET', NET_SET, staffProfiles.netSet),
+          post: choiceFilter('Post', POSTS, staffProfiles.postType),
         },
         sorts: { name: users.fullName, code: staffProfiles.employeeCode, department: departments.name, designation: designations.name, joined: staffProfiles.dateOfJoining, account: users.status },
         defaultSort: { id: 'name', dir: 'asc' },
@@ -181,6 +208,7 @@ export class StaffRecords implements OnModuleInit {
         return u.id;
       },
       move: { label: 'Move to department', options: departmentOptions, apply: (ctx, id, to) => this.setDepartment(ctx, id, to) },
+      actions: staffPayActions(this.hr, this.payroll),
       remove: {
         guard: async (ctx, id) => (id === ctx.p.userId ? 'You cannot delete your own account' : null),
       },
@@ -195,6 +223,12 @@ export class StaffRecords implements OnModuleInit {
         { key: 'staffStatus', header: 'Employment', value: (r) => EMPLOYMENT.find((o) => o.value === r.staffStatus)?.label ?? '' },
         { key: 'accountStatus', header: 'Account' },
         { key: 'dateOfJoining', header: 'Joined on' },
+        { key: 'staffCategory', header: 'Category', value: (r) => labelOf(STAFF_CATEGORIES, r.staffCategory) },
+        { key: 'cadre', header: 'Cadre', value: (r) => labelOf(CADRES, r.cadre) },
+        { key: 'gender', header: 'Gender', value: (r) => labelOf(GENDERS, r.gender) },
+        { key: 'socialCategory', header: 'Social category', value: (r) => labelOf(SOCIAL, r.socialCategory) },
+        { key: 'phdStatus', header: 'Ph.D.', value: (r) => labelOf(PHD, r.phdStatus) },
+        { key: 'netSet', header: 'NET / SET', value: (r) => labelOf(NET_SET, r.netSet) },
       ],
       import: {
         columns: [

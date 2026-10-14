@@ -27,6 +27,10 @@ export interface AttendanceRules {
   graceMinutes: number;
   halfDayAfterMinutes: number;
   minHoursFullDay: number;
+  /** When the working day ends (HH:MM); early departures are measured from it. */
+  officeEnd?: string;
+  /** Every this many late arrivals in a month cost half a day's pay (0: none). */
+  lateMarksPerHalfDay?: number;
 }
 export interface LoanRules {
   maxInstallments: number;
@@ -66,6 +70,9 @@ export const staffLoans = pgTable(
     decidedAt: ts('decided_at'),
     decisionNote: text('decision_note'),
     createdBy: by('created_by'),
+    /** Closed early: the rest was paid off outside payroll. */
+    closedAt: ts('closed_at'),
+    closeNote: text('close_note'),
     createdAt: createdAt(),
   },
   (t) => [index('staff_loans_user_idx').on(t.userId, t.status)],

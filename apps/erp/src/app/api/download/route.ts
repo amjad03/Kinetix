@@ -41,6 +41,13 @@ const TARGETS: Record<string, (id: string) => string> = {
   'committee-evidence': (id) => `/v1/campus-life/evidence/${id}/download`,
   'event-media': (id) => `/v1/campus-life/media/${id}/file`,
   'grievance-evidence': (id) => `/v1/grievances/evidence/${id}/download`,
+  'staff-doc': (id) => `/v1/hr/staff-documents/${id}/file`,
+  'leave-doc': (id) => `/v1/hr/leave/requests/${id}/document`,
+  resume: (id) => `/v1/hr/applicants/${id}/resume`,
+  'appointment-letter': (id) => `/v1/hr/applicants/${id}/appointment-letter`,
+  'experience-cert': (id) => `/v1/hr/separations/${id}/experience-certificate`,
+  lwf: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=lwf`,
+  ecr: (id) => `/v1/payroll/runs/${id}/ecr.txt`,
 };
 
 /**
@@ -91,6 +98,15 @@ export async function GET(req: NextRequest) {
     const target = file ? `/v1/accreditation/evidence/${file[1]}/download` : tmpl && tmplFw ? `/v1/accreditation/${tmplFw}/metrics/${tmpl[2]}/template.xlsx${q}` : (per[id] ?? legacy[id]);
     if (!target) return new Response('Not found', { status: 404 });
     FIXED[kind] = target;
+  }
+  // Form 24Q: ?kind=q24&fy=2026&quarter=1..4&annexure=1|2
+  if (kind === 'q24') {
+    const sp = req.nextUrl.searchParams;
+    const fy = sp.get('fy') ?? '';
+    const quarter = sp.get('quarter') ?? '';
+    const annexure = sp.get('annexure') ?? '1';
+    if (!/^\d{4}$/.test(fy) || !/^[1-4]$/.test(quarter) || !/^[12]$/.test(annexure)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/payroll/24q.csv?fy=${fy}&quarter=${quarter}&annexure=${annexure}`;
   }
   if (kind === 'hall-ticket') {
     const test = req.nextUrl.searchParams.get('test') ?? '';

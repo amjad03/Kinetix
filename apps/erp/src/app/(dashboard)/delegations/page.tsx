@@ -1,25 +1,24 @@
 import type { Metadata } from 'next';
-import { DelegationDesk } from '@/components/delegations/DelegationDesk';
+import { HrList } from '@/components/hr/HrList';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
-import { api, load, requireSection } from '@/lib/api';
+import { requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
-import type { DelegationRow } from '@/lib/dpdp';
+import { loadRecords } from '@/lib/records-server';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.delegations') };
 }
 
-/** Delegated approvals: who I handed my leave and workflow approvals to, and what was handed to me. */
-export default async function DelegationsPage() {
+/** Delegated approvals: who I handed my leave and workflow approvals to, and what was handed to me (administrators see all). */
+export default async function DelegationsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireSection('delegations');
   const { t } = await getI18n();
-  const [rows, colleagues] = await Promise.all([load(() => api<DelegationRow[]>('/v1/delegations')), load(() => api<{ id: string; fullName: string }[]>('/v1/delegations/colleagues'))]);
-  const failed = rows.error ?? colleagues.error;
+  const list = await loadRecords('delegations', await searchParams);
   return (
     <>
       <PageHeader title={t('nav.delegations')} subtitle={t('dg.subtitle')} />
-      {failed !== undefined ? <ErrorState message={failed} /> : <DelegationDesk rows={rows.data!} colleagues={colleagues.data!} today={new Date().toISOString().slice(0, 10)} />}
+      {list.error !== undefined ? <ErrorState message={list.error} /> : <HrList entity="delegations" data={list.data} />}
     </>
   );
 }
