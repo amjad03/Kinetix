@@ -30,6 +30,9 @@ export interface AuditSearch {
   from?: string;
   to?: string;
   page?: string;
+  /** Words in the actor's name or email, or in the action. */
+  q?: string;
+  tab?: string;
 }
 
 /** The filters of the audit page as an API query; anything malformed is dropped rather than sent. */
@@ -45,7 +48,27 @@ export function auditParams(sp: AuditSearch): URLSearchParams {
   if (sp.actorId && UUID.test(sp.actorId)) q.set('actorId', sp.actorId);
   if (sp.from && DAY.test(sp.from)) q.set('from', sp.from);
   if (sp.to && DAY.test(sp.to)) q.set('to', sp.to);
+  const words = sp.q?.trim();
+  if (words && words.length <= 100) q.set('q', words);
   return q;
+}
+
+/** "fees.invoice_created" → "fees": the area of the product an action belongs to. */
+export const auditArea = (action: string) => action.split('.')[0];
+
+/** The field-by-field changes an audit entry recorded (`data.changes`), if any. */
+export function auditChanges(data: unknown): { field: string; before: unknown; after: unknown }[] {
+  const c = data && typeof data === 'object' ? (data as { changes?: unknown }).changes : undefined;
+  if (!c || typeof c !== 'object') return [];
+  return Object.entries(c as Record<string, { before?: unknown; after?: unknown }>).map(([field, v]) => ({ field, before: v?.before ?? null, after: v?.after ?? null }));
+}
+
+/** An audit value as short text for the diff view. */
+export function auditValue(v: unknown): string {
+  if (v === null || v === undefined || v === '') return '—';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  return JSON.stringify(v);
 }
 
 export const auditPageNo = (page: string | undefined): number => (page && /^\d{1,5}$/.test(page) && Number(page) >= 1 ? Number(page) : 1);

@@ -31,7 +31,7 @@ export function SecurityAdmin({ features, requiredRoles, assignableRoles }: { fe
   return (
     <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}
-      <Card className="p-6">
+      <Card className="p-5">
         <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
           {t('security.policy')}
         </h2>
@@ -48,7 +48,7 @@ export function SecurityAdmin({ features, requiredRoles, assignableRoles }: { fe
           {t('security.policy.save')}
         </Button>
       </Card>
-      <Card className="p-6">
+      <Card className="p-5">
         <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
           {t('security.features')}
         </h2>

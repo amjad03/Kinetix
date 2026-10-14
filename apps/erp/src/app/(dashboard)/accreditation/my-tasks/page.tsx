@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
-import { ErrorState } from '@/components/States';
+import { ClipboardList } from 'lucide-react';
+import { EmptyState, ErrorState } from '@/components/States';
 import { Card, StatusPill } from '@/components/ui';
 import { getI18n } from '@/i18n/server';
 import type { MessageKey } from '@/i18n/messages';
@@ -33,7 +34,13 @@ export default async function MyTasksPage() {
   await requireSection('facultyEvidence');
   const { t, fmt } = await getI18n();
   const data = await load(() => api<MyTask[]>('/v1/accreditation/my-tasks'));
-  if (data.error !== undefined) return <ErrorState message={data.error} />;
+  if (data.error !== undefined)
+    return (
+      <>
+        <PageHeader title={t('acx.my.title')} subtitle={t('acx.my.sub')} />
+        <ErrorState message={data.error} />
+      </>
+    );
   const tasks = data.data;
   const today = new Date().toISOString().slice(0, 10);
   return (
@@ -41,7 +48,7 @@ export default async function MyTasksPage() {
       <PageHeader title={t('acx.my.title')} subtitle={t('acx.my.sub')} />
       <Card padded={false} testId="acx-my-tasks">
         {tasks.length === 0 ? (
-          <p className="m-0 px-[18px] py-6 text-center text-[13px] text-muted-foreground">{t('acx.my.none')}</p>
+          <EmptyState icon={<ClipboardList />} title={t('acx.my.none')} />
         ) : (
           <ul className="m-0 list-none p-0">
             {tasks.map((x) => {
@@ -72,11 +79,11 @@ export default async function MyTasksPage() {
               return (
                 <li key={x.id} className="border-t first:border-t-0">
                   {href ? (
-                    <NextLink href={href} className="flex items-center gap-3 px-[18px] py-3 text-foreground no-underline hover:bg-accent/50">
+                    <NextLink href={href} className="flex items-center gap-3 px-5 py-3 text-foreground no-underline hover:bg-accent/50">
                       {body}
                     </NextLink>
                   ) : (
-                    <div className="flex items-center gap-3 px-[18px] py-3">{body}</div>
+                    <div className="flex items-center gap-3 px-5 py-3">{body}</div>
                   )}
                 </li>
               );

@@ -21,7 +21,13 @@ export default async function AccreditationHub() {
   await requireSection('accreditation');
   const { t } = await getI18n();
   const data = await load(async () => ({ list: await api<FrameworkSummary[]>('/v1/accreditation/frameworks'), mine: await safe(api<{ id: string; status: string }[]>('/v1/accreditation/my-tasks'), []) }));
-  if (data.error !== undefined) return <ErrorState message={data.error} />;
+  if (data.error !== undefined)
+    return (
+      <>
+        <PageHeader title={t('acx.h.title')} subtitle={t('acx.h.sub')} />
+        <ErrorState message={data.error} />
+      </>
+    );
   const { list, mine } = data.data;
   const open = mine.filter((x) => x.status !== 'approved').length;
   return (

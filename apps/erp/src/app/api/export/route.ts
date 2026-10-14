@@ -15,11 +15,13 @@ const ALLOWED = [
   /^\/v1\/analytics\/reports\/[a-z_.]{3,60}\/export\?format=(csv|pdf)(&(campusId|programId|sectionId|from|to|by)=[0-9A-Za-z-]{1,40})*$/,
   /^\/v1\/analytics\/accreditation\/(naac|nirf|aishe)\?format=zip$/,
   // Audit log (filters only) and an alumni donation receipt.
-  /^\/v1\/audit\/export(\?[\w.*:%=&-]{0,500})?$/,
+  /^\/v1\/audit\/export(\?[\w.*:%=&+-]{0,500})?$/,
   new RegExp(`^/v1/alumni/donations/${UUID}/receipt$`, 'i'),
   // The proof a guardian attached to a bank-transfer payment.
   new RegExp(`^/v1/fees/bank-transfers/${UUID}/proof$`, 'i'),
   new RegExp(`^/v1/obe/programs/${UUID}/report\\.(csv|pdf)\\?academicYearId=${UUID}(&framework=(nba|naac))?$`, 'i'),
+  // Settings > Backups and export: a full export of the institution's data.
+  new RegExp(`^/v1/admin/data-exports/${UUID}/download$`, 'i'),
 ];
 
 /** Streams a CSV or PDF from KINETIX Cloud with the signed-in user's token (it never reaches the browser). */
@@ -32,7 +34,9 @@ export async function GET(req: NextRequest) {
   if (!token) return new Response('Sign in again', { status: 401 });
   let res: Response;
   try {
-    res = await fetch(`${API_URL}${path}`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: AbortSignal.timeout(30_000) });
+    // A full data export can be large: give its download longer than a report.
+    const big = path.startsWith('/v1/admin/data-exports/');
+    res = await fetch(`${API_URL}${path}`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: AbortSignal.timeout(big ? 15 * 60_000 : 30_000) });
   } catch {
     return new Response("Can't reach KINETIX Cloud", { status: 502 });
   }

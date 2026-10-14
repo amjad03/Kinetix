@@ -20,6 +20,8 @@ const Filters = z.object({
   action: z.string().trim().min(1).max(120).optional(),
   subjectType: z.string().trim().min(1).max(80).optional(),
   subjectId: z.uuid().optional(),
+  /** Words in the actor's name or email, or in the action. */
+  q: z.string().trim().min(1).max(100).optional(),
   from: Day.optional(),
   to: Day.optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
@@ -47,6 +49,7 @@ export class AuditController {
       f.action ? (f.action.endsWith('*') ? like(auditLog.action, `${f.action.slice(0, -1).replace(/[\\%_]/g, '\\$&')}%`) : eq(auditLog.action, f.action)) : undefined,
       f.subjectType ? eq(auditLog.subjectType, f.subjectType) : undefined,
       f.subjectId ? eq(auditLog.subjectId, f.subjectId) : undefined,
+      f.q ? sql`(${auditLog.action} ilike ${`%${f.q}%`} or exists (select 1 from users au where au.id = ${auditLog.actorId} and (au.full_name ilike ${`%${f.q}%`} or au.email ilike ${`%${f.q}%`})))` : undefined,
       f.from ? gte(auditLog.at, new Date(`${f.from}T00:00:00Z`)) : undefined,
       next ? lt(auditLog.at, next) : undefined,
     );
@@ -82,6 +85,20 @@ export class AuditController {
   @Auth('user', AUDIT_ROLES)
   actions(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => (await tx.execute(sql`select distinct action from audit_log order by action limit 500`)).rows.map((r) => (r as { action: string }).action));
+  }
+
+  /** The people who appear in the log as actors, for the filter box. */
+  @Get('actors')
+  @Auth('user', AUDIT_ROLES)
+  actors(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) =>
+      tx
+        .select({ id: users.id, name: users.fullName })
+        .from(users)
+        .where(sql`exists (select 1 from audit_log a where a.actor_id = ${sql.raw('"users"."id"')})`)
+        .orderBy(users.fullName)
+        .limit(1000),
+    );
   }
 
   /** The same filters as a CSV download (at most 50,000 rows). */

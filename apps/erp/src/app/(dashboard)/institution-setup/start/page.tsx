@@ -1,4 +1,4 @@
-import { ArrowRight, Award, Building2, Landmark, BookOpen, CalendarDays, Check, ClipboardCheck, Download, Plus, Sparkles, Upload, User, Users, Wallet, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Award, Building2, Landmark, BookOpen, CalendarDays, CalendarRange, Check, ClipboardCheck, Download, Plus, Sparkles, Upload, User, Users, Wallet, type LucideIcon } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LinkButton } from '@/components/LinkButton';
@@ -14,9 +14,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('setup.title') };
 }
 
-const ICON: Record<SetupStepId, LucideIcon> = { profile: Building2, affiliation: Landmark, programmes: BookOpen, staff: User, students: Users, timetable: CalendarDays, fees: Wallet };
+const ICON: Record<SetupStepId, LucideIcon> = { profile: Building2, year: CalendarRange, affiliation: Landmark, programmes: BookOpen, staff: User, students: Users, timetable: CalendarDays, fees: Wallet };
 
-/** Day one for a new college: a seven-step checklist worked out from the data that exists, and the empty dashboard it unlocks. */
+/** Day one for a new college: an eight-step checklist worked out from the data that exists, and the empty dashboard it unlocks. */
 export default async function SetupStartPage() {
   const me = await requireSection('institutionSetup');
   if (!me) return null;

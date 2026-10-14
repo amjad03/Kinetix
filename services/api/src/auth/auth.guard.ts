@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { Clock } from '../common/time.js';
 import { DbService } from '../db/db.service.js';
-import { boardSessions, devices } from '../db/schema.js';
+import { boardSessions, devices, users } from '../db/schema.js';
 import { userSessions } from '../db/schema-foundation.js';
 import { currentContext } from '../observability/request-context.js';
 import { ALLOW_MFA_SETUP_META, ALLOW_PASSWORD_CHANGE_META, AUTH_META, type AuthRequirement } from './auth.decorators.js';
@@ -62,8 +62,9 @@ export class AuthGuard implements CanActivate {
   private async assertSessionActive(tenantId: string, userId: string, sessionId: string): Promise<void> {
     const now = this.clock.now();
     const ok = await this.db.withTenant(tenantId, async (tx) => {
-      const [s] = await tx.select({ revokedAt: userSessions.revokedAt, seen: userSessions.lastSeenAt }).from(userSessions).where(and(eq(userSessions.id, sessionId), eq(userSessions.userId, userId)));
-      if (!s || s.revokedAt) return false;
+      const [s] = await tx.select({ revokedAt: userSessions.revokedAt, seen: userSessions.lastSeenAt, status: users.status }).from(userSessions).innerJoin(users, eq(users.id, userSessions.userId)).where(and(eq(userSessions.id, sessionId), eq(userSessions.userId, userId)));
+      // A disabled account stops working at once, even with a token signed before it was disabled.
+      if (!s || s.revokedAt || s.status === 'disabled') return false;
       if (now.getTime() - s.seen.getTime() > 60_000) await tx.update(userSessions).set({ lastSeenAt: now }).where(eq(userSessions.id, sessionId));
       return true;
     });
