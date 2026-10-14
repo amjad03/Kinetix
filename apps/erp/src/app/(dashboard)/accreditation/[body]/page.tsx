@@ -1,121 +1,109 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { AccreditationBoard } from '@/components/accreditation/AccreditationBoard';
+import { Archive, FileSpreadsheet, FileStack, FolderArchive, ListChecks } from 'lucide-react';
+import { BenchmarksDesk, type BenchRow } from '@/components/accreditation/BenchmarksDesk';
+import { CriteriaTree } from '@/components/accreditation/CriteriaTree';
+import { DvvDesk } from '@/components/accreditation/DvvDesk';
+import { Readiness } from '@/components/accreditation/Readiness';
+import { TasksDesk } from '@/components/accreditation/TasksDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { UrlSelect } from '@/components/UrlSelect';
+import { FormRow, LinkTabs } from '@/components/ui';
 import { getI18n } from '@/i18n/server';
-import { api, load, requireSection } from '@/lib/api';
-import type { Panel } from '@/lib/depth';
-import { dl, opt, safe } from '@/lib/depth-ui';
-import { MetricEvidenceUpload } from '@/components/accreditation/UploadButtons';
-import { cycleOptions, evidenceStatus, type AccOverview, type DvvRow } from '@/lib/accreditation-ui';
+import type { MessageKey } from '@/i18n/messages';
+import { api, ApiError, load, requireSection } from '@/lib/api';
+import { safe } from '@/lib/depth-ui';
+import { accDownload, cycleOptions, exportsOf, type DvvRow, type People, type Readiness as ReadinessData } from '@/lib/accreditation-ui';
 
-const BODIES = ['naac', 'nba', 'nirf'] as const;
-type Body = (typeof BODIES)[number];
+const TABS = ['readiness', 'criteria', 'tasks', 'dvv', 'benchmarks'] as const;
+type Tab = (typeof TABS)[number];
+const FW = /^[a-z0-9-]{3,30}$/;
+const MANAGE = ['tenant_admin', 'principal', 'quality_officer', 'hod'];
+const ADMIN = ['tenant_admin', 'principal', 'quality_officer'];
+const EXPORT_ICON = { ssr: FolderArchive, aqar: FileStack, xlsx: FileSpreadsheet, pack: Archive, dvv: ListChecks } as const;
+
+interface TreeMetric {
+  code: string;
+  title: string;
+  unit: string;
+  bench: number | null;
+  defaultBench: number | null;
+  dir: 'high' | 'low';
+}
+interface Tree {
+  criteria: { indicators: { metrics: TreeMetric[] }[] }[];
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ body: string }> }): Promise<Metadata> {
   const { body } = await params;
-  return { title: (await getI18n()).t(`acc.title.${body as Body}`) };
+  return { title: `${(await getI18n()).t('acx.h.title')} · ${body.toUpperCase()}` };
 }
 
-export default async function AccreditationPage({ params, searchParams }: { params: Promise<{ body: string }>; searchParams: Promise<{ cycle?: string }> }) {
+/** One framework: readiness, the criteria tree, tasks, DVV and benchmarks, with the official exports. */
+export default async function FrameworkPage({ params, searchParams }: { params: Promise<{ body: string }>; searchParams: Promise<{ cycle?: string; tab?: string }> }) {
   const { body } = await params;
-  if (!BODIES.includes(body as Body)) notFound();
-  const b = body as Body;
-  await requireSection('accreditation');
+  if (!FW.test(body)) notFound();
+  const me = await requireSection('accreditation');
   const { t } = await getI18n();
   const sp = await searchParams;
+  const tab: Tab = TABS.includes(sp.tab as Tab) ? (sp.tab as Tab) : 'readiness';
+  const canManage = !!me?.roles.some((r) => MANAGE.includes(r));
+  const canAdmin = !!me?.roles.some((r) => ADMIN.includes(r));
+  const q = sp.cycle && /^\d{4}-\d{2}$/.test(sp.cycle) ? `?cycle=${sp.cycle}` : '';
   const data = await load(async () => {
-    const q = sp.cycle ? `?cycle=${encodeURIComponent(sp.cycle)}` : '';
-    const ov = await api<AccOverview>(`/v1/accreditation/${b}/overview${q}`);
-    const dvv = b === 'naac' ? await safe(api<DvvRow[]>(`/v1/accreditation/dvv?cycle=${ov.cycle}`), []) : [];
-    return { ov, dvv };
+    try {
+      return { r: await api<ReadinessData>(`/v1/accreditation/${body}/readiness${q}`) };
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) return null;
+      throw e;
+    }
   });
   if (data.error !== undefined) return <ErrorState message={data.error} />;
-  const { ov, dvv } = data.data;
-  const base = `/v1/accreditation/${b}/metrics/{code}`;
-  const cyc = { cycle: ov.cycle };
-  const downloads =
-    b === 'naac'
-      ? [{ label: t('acc.dl.naac'), href: dl('accreditation', 'naac', `&cycle=${ov.cycle}`) }]
-      : b === 'nba'
-        ? [
-            { label: t('acc.dl.nba1'), href: dl('accreditation', 'nba1', `&cycle=${ov.cycle}`) },
-            { label: t('acc.dl.nba2'), href: dl('accreditation', 'nba2', `&cycle=${ov.cycle}`) },
-          ]
-        : [
-            { label: t('acc.dl.nirf'), href: dl('accreditation', 'nirf', `&cycle=${ov.cycle}`) },
-            { label: t('acc.dl.aishe'), href: dl('accreditation', 'aishe') },
-          ];
-  const panels: Panel[] = [
-    {
-      id: 'metrics',
-      title: t('acc.metrics'),
-      hint: `${t('acc.metricsHint')} ${t(`acc.hint.${b}`)}`,
-      empty: t('acc.none'),
-      downloads,
-      columns: [
-        { key: 'code', label: t('acc.c.code') },
-        { key: 'kind', label: t('acc.c.kind'), kind: 'pill', words: { QnM: t('acc.kind.qnm'), QlM: t('acc.kind.qlm') }, tones: { QnM: 'info', QlM: 'neutral' } },
-        { key: 'title', label: t('acc.c.title') },
-        { key: 'value', label: t('acc.c.value'), kind: 'num' },
-        { key: 'unit', label: t('acc.c.unit') },
-        { key: 'status', label: t('acc.b.evidence'), kind: 'pill', words: { uploaded: t('acc.ev.uploaded'), auto: t('acc.ev.auto'), review: t('acc.ev.review'), missing: t('acc.ev.missing') }, tones: { uploaded: 'success', auto: 'info', review: 'warning', missing: 'danger' } },
-        { key: 'source', label: t('acc.c.source'), kind: 'pill', words: { auto: t('acc.src.auto'), manual: t('acc.src.manual'), none: t('acc.src.none') }, tones: { auto: 'success', manual: 'info', none: 'warning' } },
-        { key: 'score', label: t('acc.c.points'), kind: 'num' },
-        { key: 'evidence', label: t('acc.c.evidence'), kind: 'num' },
-        { key: 'complete', label: t('acc.c.done'), kind: 'yes' },
-        { key: 'tpl', label: t('acc.c.template'), kind: 'link', href: dl('accreditation', `tmpl-${b}-{code}`), words: { link: t('acc.template') } },
-      ],
-      rows: ov.metrics.map((m) => ({ ...m, id: m.code, tpl: m.code, status: evidenceStatus(m) })),
-      actions: [
-        { label: t('acc.a.figure'), method: 'PUT', path: base, body: cyc, show: { key: 'kind', is: ['QnM'] }, fields: [{ name: 'value', label: t('acc.c.value'), type: 'number', required: true }, { name: 'note', label: t('acc.f.note'), type: 'text' }] },
-        { label: t('acc.a.narrative'), method: 'PUT', path: base, body: cyc, show: { key: 'kind', is: ['QlM'] }, fields: [{ name: 'textValue', label: t('acc.f.narrative'), type: 'textarea', required: true }] },
-        { label: t('acc.a.marking'), method: 'PUT', path: base, body: cyc, fields: [{ name: 'selfScore', label: t('acc.f.marking'), type: 'number', required: true, hint: t('acc.f.markingHint') }] },
-        { label: t('acc.a.evidence'), path: `${base}/evidence`, body: cyc, fields: [{ name: 'title', label: t('acc.c.title'), type: 'text', required: true }, { name: 'url', label: t('acc.f.link'), type: 'text' }, { name: 'note', label: t('acc.f.note'), type: 'text' }] },
-      ],
-    },
+  if (!data.data) notFound();
+  const { r } = data.data;
+  const fw = r.framework.key;
+  const cyc = `cycle=${r.cycle}`;
+  const extra =
+    tab === 'tasks'
+      ? { people: canManage ? await safe(api<People>('/v1/accreditation/people'), null) : null }
+      : tab === 'dvv'
+        ? { dvv: await safe(api<DvvRow[]>(`/v1/accreditation/dvv?framework=${fw}&${cyc}`), []) }
+        : tab === 'benchmarks'
+          ? { tree: await safe(api<Tree>(`/v1/accreditation/frameworks/${fw}`), null) }
+          : {};
+  const scopes = [
+    ...r.criteria.map((c) => ({ value: c.id, label: c.id === 'EP' ? t('acx.r.ep') : `${t('acx.r.criterion')} ${c.id}: ${c.title}` })),
+    ...r.metrics.map((m) => ({ value: m.code, label: `${m.code} ${m.title.length > 80 ? `${m.title.slice(0, 80)}…` : m.title}` })),
   ];
-  if (b === 'naac') {
-    panels.push({
-      id: 'dvv',
-      title: t('acc.dvv'),
-      hint: t('acc.dvvHint'),
-      empty: t('acc.dvvNone'),
-      columns: [
-        { key: 'metricCode', label: t('acc.c.code') },
-        { key: 'query', label: t('acc.c.query') },
-        { key: 'response', label: t('acc.c.response') },
-        { key: 'status', label: t('acc.c.status'), kind: 'pill', words: { open: t('acc.st.open'), answered: t('acc.st.answered'), closed: t('acc.st.closed') }, tones: { open: 'warning', answered: 'info', closed: 'success' } },
-      ],
-      rows: dvv.map((d) => ({ ...d })),
-      actions: [
-        { label: t('acc.a.respond'), method: 'PUT', path: '/v1/accreditation/dvv/{id}', fields: [{ name: 'response', label: t('acc.c.response'), type: 'textarea', required: true }] },
-        { label: t('acc.a.close'), method: 'PUT', path: '/v1/accreditation/dvv/{id}', body: { status: 'closed' }, show: { key: 'status', is: ['answered'] } },
-      ],
-      forms: [
-        {
-          id: 'dvv-new',
-          title: t('acc.dvvNew'),
-          submit: t('acc.add'),
-          path: '/v1/accreditation/dvv',
-          extra: cyc,
-          fields: [
-            { name: 'metricCode', label: t('acc.c.code'), type: 'select', required: true, options: opt(ov.metrics, (m) => m.code, (m) => m.code) },
-            { name: 'query', label: t('acc.c.query'), type: 'textarea', required: true },
-          ],
-        },
-      ],
-    });
-  }
+  const benchRows: BenchRow[] = (extra.tree?.criteria ?? []).flatMap((c) => c.indicators.flatMap((k) => k.metrics)).filter((m) => m.defaultBench !== null).map((m) => ({ code: m.code, title: m.title, unit: m.unit, bench: m.bench, catalogue: m.defaultBench, dir: m.dir }));
+  const tabs = TABS.filter((x) => x !== 'benchmarks' || r.framework.scoring !== 'none').map((x) => ({ value: x, label: t(`acx.tab.${x}` as MessageKey), href: `/accreditation/${body}?${cyc}&tab=${x}` }));
+
   return (
     <>
-      <PageHeader title={t(`acc.title.${b}`)} subtitle={t(`acc.sub.${b}`)} actions={<UrlSelect label={t('acc.cycle')} param="cycle" value={ov.cycle} options={cycleOptions(ov.cycle)} minWidth={160} />} />
-      <div style={{ marginBottom: 16 }}>
-        <MetricEvidenceUpload body={b} cycle={ov.cycle} codes={ov.metrics.map((m) => m.code)} />
+      <PageHeader title={r.framework.title} subtitle={`${r.framework.variant} · ${t('acx.f.period', { from: r.window[0], to: r.window[r.window.length - 1] })}`} actions={<UrlSelect label={t('acx.f.cycle')} param="cycle" value={r.cycle} options={cycleOptions(r.cycle)} minWidth={150} testId="acx-cycle" />} />
+      <FormRow labelled={false} className="mb-4 items-end" data-testid="acx-exports">
+        {exportsOf(r.framework)
+          .filter((x) => canAdmin || x === 'xlsx' || x === 'dvv')
+          .map((x) => {
+            const Icon = EXPORT_ICON[x];
+            return (
+              <a key={x} href={accDownload(fw, x, r.cycle)} className="inline-flex h-9 items-center gap-1.5 rounded-md border bg-card px-3 text-[13px] font-medium text-foreground no-underline shadow-xs hover:bg-accent" data-testid={`acx-export-${x}`}>
+                <Icon className="size-4 text-muted-foreground" aria-hidden />
+                {t((x === 'xlsx' ? `acx.x.xlsx.${r.framework.body}` : `acx.x.${x}`) as MessageKey)}
+              </a>
+            );
+          })}
+        <span className="ml-auto max-w-[520px] text-xs text-muted-foreground">{r.framework.source}</span>
+      </FormRow>
+      <div className="mb-4">
+        <LinkTabs value={tab} label={t('acx.f.views')} items={tabs} />
       </div>
-      <AccreditationBoard ov={ov} metrics={panels[0]} extra={panels.slice(1)} />
+      {tab === 'readiness' && <Readiness r={r} fw={fw} canManage={canManage} />}
+      {tab === 'criteria' && <CriteriaTree fw={fw} cycle={r.cycle} scoring={r.framework.scoring} criteria={r.criteria} metrics={r.metrics} />}
+      {tab === 'tasks' && <TasksDesk fw={fw} cycle={r.cycle} tasks={r.tasks} people={extra.people ?? null} scopes={scopes} canManage={canManage} />}
+      {tab === 'dvv' && <DvvDesk fw={fw} cycle={r.cycle} rows={extra.dvv ?? []} codes={r.metrics.map((m) => ({ value: m.code, label: m.code }))} canManage={canAdmin} />}
+      {tab === 'benchmarks' && (canAdmin ? <BenchmarksDesk fw={fw} rows={benchRows} /> : <p className="text-[13px] text-muted-foreground">{t('acx.s.adminOnly')}</p>)}
     </>
   );
 }
