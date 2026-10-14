@@ -392,3 +392,24 @@ export const acctBankLines = pgTable(
   },
   (t) => [index('acct_bank_lines_statement_idx').on(t.statementId), index('acct_bank_lines_status_idx').on(t.tenantId, t.accountId, t.status), uniqueIndex('acct_bank_lines_voucher_uq').on(t.voucherId).where(sql`voucher_id is not null`)],
 );
+
+/**
+ * The principal letting a student's hall ticket, result or transfer certificate through although fee dues hold it
+ * (migration 0181). Active until revoked; each grant and revoke is audited.
+ */
+export const feeHoldOverrides = pgTable(
+  'fee_hold_overrides',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: studentRef(),
+    /** hallTicket | results | tc */
+    purpose: text('purpose').notNull(),
+    reason: text('reason').notNull(),
+    grantedBy: userRef('granted_by'),
+    revokedAt: ts('revoked_at'),
+    revokedBy: userRef('revoked_by'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('fee_hold_overrides_student_idx').on(t.studentId, t.purpose)],
+);

@@ -242,6 +242,12 @@ describe('exam cell', () => {
     await http().post(`/v1/academic-docs/requests/${dup.id}/pay`).set(as('principal')).send({ paymentRef: 'RCPT-2026-77' }).expect(200);
     dupSerial = (await http().post(`/v1/academic-docs/requests/${dup.id}/issue`).set(as('principal')).expect(200)).body.serialNo;
     expect(dupSerial).toMatch(/-DUP$/);
+    // The duplicate's PDF carries a DUPLICATE watermark (kept in the register for reprints); the original's does not.
+    await http().get(`/v1/academic-docs/requests/${dup.id}/document.pdf`).set(as('principal')).expect(200);
+    const mark = async (id: string) => (await owner.query("select payload -> 'doc' ->> 'watermark' as w from issued_documents where source_type = 'academic_doc' and source_id = $1", [id])).rows[0]?.w ?? null;
+    expect(await mark(dup.id)).toBe('DUPLICATE');
+    await http().get(`/v1/academic-docs/requests/${docId}/document.pdf`).set(as('principal')).expect(200);
+    expect(await mark(docId)).toBeNull();
     expect((await http().get('/v1/records/academic-doc-requests?f.reissue=yes').set(as('principal')).expect(200)).body.rows.map((r: { id: string }) => r.id)).toEqual([docId]);
 
     const corr = (await http().post('/v1/records/record-corrections').set(as('principal')).send({ studentId: t.students[A].id, field: 'full_name', requestedValue: 'Student Alpha', reason: 'Spelt as in the SSLC marks card', documentRef: 'SSLC marks card 2021/123456' }).expect(201)).body;
@@ -276,13 +282,16 @@ describe('exam cell', () => {
       return d.id as string;
     };
     const before = await issueTranscript();
-    const body = { studentId: t.students[A].id, sourceInstitution: 'St Joseph College, Mysuru', sourceCourse: 'BC204 Financial Accounting', term: 2, credits: 4, grade: 'a', gradePoint: 9 };
+    const body = { studentId: t.students[A].id, source: 'institution', provider: 'St Joseph College, Mysuru', courseTitle: 'BC204 Financial Accounting', term: 2, credits: 4, grade: 'a', gradePoint: 9 };
+    const act = (action: string, id: string, params: Record<string, string> = {}) => http().post('/v1/records/credit-transfers/bulk').set(as('principal')).send({ op: 'action', action, target: { ids: [id] }, params }).expect(200);
     await http().post('/v1/records/credit-transfers').set(as('teacher')).send(body).expect(403);
-    expect((await http().post('/v1/records/credit-transfers').set(as('principal')).send({ ...body, subjectId: t.subject.id }).expect(409)).body.message).toMatch(/already passed/);
+    expect((await http().post('/v1/records/credit-transfers').set(as('principal')).send({ ...body, mappedSubjectId: t.subject.id }).expect(409)).body.message).toMatch(/already passed/);
     await http().post('/v1/records/credit-transfers').set(as('principal')).send({ ...body, gradePoint: 11 }).expect(400);
     const ct = (await http().post('/v1/records/credit-transfers').set(as('principal')).send(body).expect(201)).body;
-    expect((await http().get(`/v1/records/credit-transfers/${ct.id}`).set(as('principal')).expect(200)).body).toMatchObject({ grade: 'A', credits: 4, gradePoint: 9, subjectId: null });
-    // The transcript issued before no longer matches the record.
+    expect((await http().get(`/v1/records/credit-transfers/${ct.id}`).set(as('principal')).expect(200)).body).toMatchObject({ grade: 'A', credits: 4, gradePoint: 9, mappedSubjectId: null, status: 'pending' });
+    // A request awaiting a decision counts nowhere; approving it dates the transcript issued before.
+    expect((await owner.query('select superseded_reason from academic_doc_requests where id = $1', [before])).rows[0].superseded_reason).toBeNull();
+    expect((await act('approve', ct.id)).body.succeeded).toBe(1);
     expect((await owner.query('select superseded_reason from academic_doc_requests where id = $1', [before])).rows[0].superseded_reason).toBe('Transferred credits changed');
 
     const after = await issueTranscript();
@@ -291,18 +300,20 @@ describe('exam cell', () => {
     expect(snap.terms[0].lines[0]).toMatchObject({ subject: 'BC204 Financial Accounting', grade: 'A', gradePoint: 9, passed: true });
     expect(snap.cgpa).toBeGreaterThan(8.2); // 8.2 here, 9 brought in
 
-    const sheet = 'Roll no,From institution,Course there,Term,Credits,Grade,Grade point\r\nR2,Govt First Grade College,GF101 English,1,3,B,7\r\nR3,Govt First Grade College,GF102 Kannada,1,3,B,11\r\nR9,Govt First Grade College,GF103 Hindi,1,3,B,7\r\n';
+    const sheet = 'Roll number,Source,Course,Offered by,Counts in term,Credits,Grade,Grade point\r\nR2,institution,GF101 English,Govt First Grade College,1,3,B,7\r\nR3,institution,GF102 Kannada,Govt First Grade College,1,3,B,11\r\nR9,institution,GF103 Hindi,Govt First Grade College,1,3,B,7\r\n';
     const check = (await http().post('/v1/records/credit-transfers/import').set(as('principal')).attach('file', Buffer.from(sheet), 'credits.csv').expect(200)).body;
     expect(check).toMatchObject({ status: 'validated', totals: { rows: 3, created: 1, error: 2 } });
     const done = (await http().post(`/v1/records/credit-transfers/import/${check.id}/commit`).set(as('principal')).send({ skipErrors: true }).expect(200)).body;
     expect(done).toMatchObject({ committed: true, totals: { created: 1, error: 2 } });
     const list = (await http().get('/v1/records/credit-transfers?f.institution=Govt%20First%20Grade%20College').set(as('principal')).expect(200)).body;
-    expect(list.rows.map((r: { rollNo: string; sourceCourse: string }) => `${r.rollNo} ${r.sourceCourse}`)).toEqual(['R2 GF101 English']);
+    expect(list.rows.map((r: { rollNo: string; courseTitle: string; status: string }) => `${r.rollNo} ${r.courseTitle} ${r.status}`)).toEqual(['R2 GF101 English pending']);
     expect((await http().get('/v1/records/credit-transfers').set(as('outsider')).expect(200)).body.total).toBe(0);
 
-    await http().delete(`/v1/records/credit-transfers/${ct.id}`).set(as('principal')).expect(200);
+    // An approved credit is not deleted; revoking it takes it out of the CGPA and dates the transcript.
+    await http().delete(`/v1/records/credit-transfers/${ct.id}`).set(as('principal')).expect(403);
+    expect((await act('revoke', ct.id, { note: 'Equivalence order withdrawn' })).body.succeeded).toBe(1);
     expect((await owner.query('select superseded_at from academic_doc_requests where id = $1', [after])).rows[0].superseded_at).not.toBeNull();
-    expect(await actions()).toEqual(expect.arrayContaining(['credit_transfer.created', 'credit_transfer.deleted']));
+    expect(await actions()).toEqual(expect.arrayContaining(['credit_transfer.created', 'credit_transfer.approved', 'credit_transfer.revoked']));
   });
 
   it('runs a valuation camp: bundles, issue, day counts, return, hand-over and close', async () => {

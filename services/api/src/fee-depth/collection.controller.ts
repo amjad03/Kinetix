@@ -10,7 +10,9 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { feeCarryForwards, feeChallans, feeGovtScholarships, feeInvoiceLines, feeReceipts, feeReminderRuns } from '../db/schema-fee-depth.js';
 import { feeInvoices, feePayments, sections, students, tenants, users } from '../db/schema.js';
-import { feeReceiptPdf } from '../documents/pdfs.js';
+import { rupees, rupeeWords, studentBlock } from '../documents/doc-data.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { longDate } from '../documents/render.js';
 import { chainOf, decideOnChain } from '../fee-accounts/chains.js';
 import { assertPeriodOpen, approverIds, deskTexts, nextNumber, settingsOf } from '../fee-accounts/fee-accounts.service.js';
 import { fyOf } from '../fee-accounts/fee-accounts.logic.js';
@@ -56,6 +58,7 @@ export class CollectionController {
     private readonly collection: CollectionService,
     private readonly duesSvc: DuesService,
     private readonly notifications: NotificationsService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   private async ask(tx: Tx, role: string, what: string, number: string, id: string, except: string) {
@@ -147,24 +150,39 @@ export class CollectionController {
       const duplicate = r.printCount > 1;
       if (duplicate) await auditUser(tx, p, 'fee_receipt.duplicate_printed', 'fee_receipt', id, { copy: r.printCount });
       const towards = v.items.map((i) => `${i.head} ₹${(i.amountPaise / 100).toLocaleString('en-IN')}`).join('; ') + (v.advancePaise ? `; Advance ₹${(v.advancePaise / 100).toLocaleString('en-IN')}` : '');
-      const label = v.status === 'cancelled' ? ' (CANCELLED)' : v.status === 'bounced' ? ' (CHEQUE RETURNED)' : duplicate ? ' (DUPLICATE)' : '';
+      const watermark = v.status === 'cancelled' ? 'CANCELLED' : v.status === 'bounced' ? 'CHEQUE RETURNED' : duplicate ? 'DUPLICATE' : undefined;
+      const paidOn = longDate(v.date);
+      const out = await this.engine.produce(tx, p, {
+        docType: 'fee_receipt',
+        title: 'Fee Receipt',
+        subject: { type: 'student', id: v.student.id, name: v.student.fullName },
+        source: { type: 'fee_receipt', id: v.id },
+        serial: v.receiptNo,
+        data: {
+          ...(await studentBlock(tx, v.student.id)),
+          receipt: {
+            no: v.receiptNo,
+            date: paidOn,
+            mode: v.modes.map((m) => m.method).join(' + '),
+            reference: v.modes.map((m) => m.chequeNo ?? m.reference).filter(Boolean).join(', ') || '—',
+            amount: rupees(v.totalPaise),
+            amountWords: rupeeWords(v.totalPaise),
+            balance: rupees(v.balancePaise),
+            towards: towards.slice(0, 160),
+            period: '',
+            receivedBy: 'Accounts office',
+            total: rupees(v.totalPaise),
+          },
+          fee: { lines: v.items.map((i, n) => ({ no: n + 1, head: i.head, amount: rupees(i.amountPaise) })) },
+          doc: { issuedOn: paidOn },
+        },
+        keyFields: [{ label: 'Receipt number', value: v.receiptNo }, { label: 'Received from', value: `${v.student.fullName} (${v.student.rollNo})` }, { label: 'Amount', value: rupees(v.totalPaise) }, { label: 'Paid on', value: paidOn }],
+        photo: null,
+        watermark,
+      });
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="${v.receiptNo.replace(/\//g, '-')}${duplicate ? '-duplicate' : ''}.pdf"`);
-      return new StreamableFile(
-        feeReceiptPdf({
-          institution: v.institution,
-          receiptNo: `${v.receiptNo}${label}`,
-          studentName: v.student.fullName,
-          rollNo: v.student.rollNo,
-          className: v.student.section,
-          invoiceTitle: towards.slice(0, 160),
-          amountPaise: v.totalPaise,
-          balancePaise: v.balancePaise,
-          method: v.modes.map((m) => m.method).join(' + '),
-          reference: v.modes.map((m) => m.chequeNo ?? m.reference).filter(Boolean).join(', ') || null,
-          paidOn: v.date,
-        }),
-      );
+      return new StreamableFile(out.pdf);
     });
   }
 

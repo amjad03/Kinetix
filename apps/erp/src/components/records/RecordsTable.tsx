@@ -13,7 +13,7 @@ import { bulkTarget, exportHref, listSearch, type BulkReport, type ListState, ty
 import { ActionDialog, type ActionParam } from './ActionDialog';
 import { BulkEditDialog } from './BulkEditDialog';
 import { BulkReportDialog } from './BulkReportDialog';
-import { ActionInputs, actionParams, inputsReady } from './ActionInputs';
+import { ActionInputs, actionParams as inputParams, inputsReady } from './ActionInputs';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ImportWizard } from './ImportWizard';
 import { MoveDialog } from './MoveDialog';
@@ -390,7 +390,7 @@ export function RecordsTable({
           disabled={!inputsReady(o.action.inputs, actionValues)}
           onClose={() => setOpen(null)}
           onConfirm={() =>
-            void runBulk({ op: 'action', action: o.action.key, target: targetOf(o.sel), ...(o.action.inputs?.length ? { params: actionParams(o.action.inputs, actionValues) } : {}) }, tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label)).then((e) => e && toast.error(e))
+            void runBulk({ op: 'action', action: o.action.key, target: targetOf(o.sel), ...(o.action.inputs?.length ? { params: inputParams(o.action.inputs, actionValues) } : {}) }, tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label)).then((e) => e && toast.error(e))
           }
         >
           <p className="m-0">{tr(t, `rk.actionHelp.${entity}.${o.action.key}`, t('rk.action.body'))}</p>

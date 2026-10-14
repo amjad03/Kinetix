@@ -21,6 +21,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { parseDate } from '../teacher/teacher.service.js';
 import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
 import { hallTicketData } from './documents.js';
+import { FeeHoldsService } from '../fee-depth/fee-holds.js';
 import { DocumentEngine } from '../documents/document-engine.service.js';
 import { studentBlock } from '../documents/doc-data.js';
 import { ExamsService, type SessionRow } from './exams.service.js';
@@ -82,6 +83,7 @@ export class ExamSessionsController {
     private readonly tasks: TasksService,
     private readonly workflows: WorkflowsService,
     private readonly engine: DocumentEngine,
+    private readonly holds: FeeHoldsService,
   ) {}
 
   @Post()
@@ -286,6 +288,14 @@ export class ExamSessionsController {
           if (!blocks.has(r.id) && reg?.status !== 'registered') blocks.set(r.id, reg ? `Not eligible: ${reg.reasons.join('; ')}` : 'Not registered for this examination');
         }
       }
+      // Overdue fees hold the ticket back when the institution says so, unless the principal has let it through.
+      if (await this.holds.enabled(tx, p.tenantId, 'hallTicket')) {
+        for (const r of roster) {
+          if (blocks.has(r.id)) continue;
+          const h = await this.holds.check(tx, p.tenantId, r.id, 'hallTicket');
+          if (h.held && !h.overridden) blocks.set(r.id, h.message!);
+        }
+      }
       // New tickets take the exam office's numbering series when one is set; existing tickets keep their number.
       const have = new Set((await tx.select({ studentId: hallTickets.studentId }).from(hallTickets).where(eq(hallTickets.sessionId, id))).map((x) => x.studentId));
       const fresh = roster.filter((r) => !have.has(r.id));
@@ -318,6 +328,8 @@ export class ExamSessionsController {
       const [t] = await tx.select().from(hallTickets).where(and(eq(hallTickets.sessionId, id), eq(hallTickets.studentId, studentId)));
       if (!t) throw new NotFoundException('No hall ticket issued');
       if (t.blocked) throw new ForbiddenException(`Hall ticket withheld: ${t.blockedReason ?? 'contact the examination office'}`);
+      // Dues that fell overdue after the tickets went out hold it back too.
+      await this.holds.assertClear(tx, p.tenantId, studentId, 'hallTicket');
       const [st] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.id, studentId));
       const papers = await tx
         .select({ examDate: examPapers.examDate, startsAt: examPapers.startsAt, endsAt: examPapers.endsAt, subject: subjects.name, code: subjects.code, room: rooms.name, seat: examSeats.seatNo })

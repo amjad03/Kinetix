@@ -1,8 +1,9 @@
 import { governedParams, overlayPassRules } from '../governance/rule-params.js';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, ne, sql } from 'drizzle-orm';
+import { creditTransfers } from '../db/schema-academic-ops.js';
 import type { Tx } from '../db/db.service.js';
-import { assessments, assessmentSchemes, creditTransfers, examPapers, examResultLines, examResults, examSessions, gradeScales, marks, schemeComponents, students, subjects, supplementaryRegistrations } from '../db/schema.js';
+import { assessments, assessmentSchemes, examPapers, examResultLines, examResults, examSessions, gradeScales, marks, schemeComponents, students, subjects, supplementaryRegistrations } from '../db/schema.js';
 import { pickAttempt } from '../exam-cell/exam-cell.logic.js';
 import { cellSettings } from '../exam-cell/settings.js';
 import { cgpa, sgpa, subjectResult, type ComponentEvidence, type GradeScaleRules, type PassRules, type SchemeComponent, type SubjectResult } from './grading.js';
@@ -207,10 +208,12 @@ export class ExamsService {
       const line = { subjectId: r.subjectId, term: r.term, credits: r.credits, points: r.passed ? r.credits * r.gp : 0, passed: r.passed, gradePoint: r.gp, percent: r.percent };
       kept.set(r.subjectId, pickAttempt(kept.get(r.subjectId), line, policy));
     }
-    // Credits accepted from another institution (transfer, lateral entry) count towards the CGPA like a pass.
-    for (const c of await tx.select().from(creditTransfers).where(eq(creditTransfers.studentId, studentId))) {
-      const key = c.subjectId ?? `transfer:${c.id}`;
-      if (!kept.has(key)) kept.set(key, { subjectId: key, term: c.term, credits: c.credits, points: c.credits * c.gradePoint, passed: true, gradePoint: c.gradePoint, percent: 0 });
+    // Approved credit transfers (another institution, ABC, MOOCs) count towards the CGPA like a pass; a pass-only
+    // credit (no grade point) is earned but left out of the grade-point average.
+    for (const c of await tx.select().from(creditTransfers).where(and(eq(creditTransfers.studentId, studentId), eq(creditTransfers.status, 'approved'), isNotNull(creditTransfers.gradePoint)))) {
+      const key = c.mappedSubjectId ?? `transfer:${c.id}`;
+      const gp = c.gradePoint ?? 0;
+      if (!kept.has(key)) kept.set(key, { subjectId: key, term: c.term ?? 0, credits: c.credits, points: c.credits * gp, passed: true, gradePoint: gp, percent: 0 });
     }
     return [...kept.values()];
   }

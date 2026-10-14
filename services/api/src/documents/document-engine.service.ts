@@ -16,7 +16,18 @@ import { longDate } from './render.js';
 export interface ProduceInput extends Omit<IssueInput, 'template'> {
   /** The subject's photo (JPEG or PNG) for ID cards, hall tickets and marks cards; loaded from the subject when omitted. */
   photo?: Buffer | null;
+  /**
+   * A word stamped diagonally across every side, e.g. DUPLICATE for a copy issued in place of a lost original or
+   * CANCELLED for a cancelled receipt. Kept in the record's data (doc.watermark), so reprints carry it too.
+   */
+  watermark?: string;
 }
+
+/** The watermark a document was issued with, from its stored data. */
+const watermarkOf = (data: DocData): string | null => {
+  const w = (data.doc as DocData | undefined)?.watermark;
+  return typeof w === 'string' && w ? w : null;
+};
 
 export interface Produced {
   pdf: Buffer;
@@ -104,12 +115,15 @@ export class DocumentEngine {
   /** Records and renders one document. */
   async produce(tx: Tx, actor: Actor, input: ProduceInput): Promise<Produced> {
     const tpl = await this.templates.resolve(tx, input.docType);
-    const record = await this.issued.issue(tx, actor, { ...input, template: { ref: tpl.ref, version: tpl.version } });
+    const { watermark, photo: given, ...rest } = input;
+    const body: DocData = watermark ? { ...rest.data, doc: { ...((rest.data.doc as DocData | undefined) ?? {}), watermark } } : rest.data;
+    const record = await this.issued.issue(tx, actor, { ...rest, data: body, template: { ref: tpl.ref, version: tpl.version } });
     const tz = await this.tz(tx);
-    const photo = input.photo === undefined ? await this.photoFor(tx, input.subject) : input.photo;
+    const photo = given === undefined ? await this.photoFor(tx, input.subject) : given;
     const ctx = await this.branding.renderContext(tx, photo);
-    const data = await this.fullData(tx, input.data, input.title, record, tz);
-    return { pdf: renderPdf(tpl.layout, [{ data, ctx }], { title: `${input.title} ${record.serial}`, author: String((data.institution as DocData).name ?? ''), subject: input.subject.name ?? undefined }), record };
+    const data = await this.fullData(tx, body, input.title, record, tz);
+    const layout = watermark ? stamped(tpl.layout, watermark) : tpl.layout;
+    return { pdf: renderPdf(layout, [{ data, ctx }], { title: `${input.title} ${record.serial}`, author: String((data.institution as DocData).name ?? ''), subject: input.subject.name ?? undefined }), record };
   }
 
   /** ID cards (or any card type) for many people, imposed ten to an A4 sheet; each card is recorded. */
@@ -138,7 +152,9 @@ export class DocumentEngine {
     const photo = await this.photoFor(tx, { type: r.subjectType as IssueInput['subject']['type'], id: r.subjectId });
     const ctx = await this.branding.renderContext(tx, photo);
     const data = await this.fullData(tx, r.payload as DocData, r.title, record, tz);
-    return { pdf: renderPdf(r.status === 'valid' ? tpl.layout : stamped(tpl.layout, r.status.toUpperCase()), [{ data, ctx }], { title: `${r.title} ${r.serial}` }), serial: r.serial };
+    const wm = watermarkOf(r.payload as DocData);
+    const base = wm ? stamped(tpl.layout, wm) : tpl.layout;
+    return { pdf: renderPdf(r.status === 'valid' ? base : stamped(base, r.status.toUpperCase()),[{ data, ctx }], { title: `${r.title} ${r.serial}` }), serial: r.serial };
   }
 
   /** A report's PDF with a cover page in front (the institution's report cover template). */
@@ -189,14 +205,14 @@ export class DocumentEngine {
   }
 }
 
-/** The layout with a large diagonal stamp across every side (REVOKED, SUPERSEDED). */
+/** The layout with a large diagonal stamp across every side (DUPLICATE, REVOKED, SUPERSEDED). */
 function stamped(layout: DocLayout, word: string): DocLayout {
   const { w, h } = pageSizeMm(layout.page);
   return {
     ...layout,
     sides: layout.sides.map((s) => ({
       ...s,
-      elements: [...s.elements, { id: 'status-stamp', type: 'watermark' as const, x: 0, y: 0, w, h, text: word, angleDeg: -32, repeat: 'none' as const, opacity: 0.5, style: { font: 'body' as const, sizePt: Math.min(w, h) * 0.45, weight: 700 as const, color: 'accent', align: 'center' as const, lineHeight: 1, letterSpacingPt: 4 } }],
+      elements: [...s.elements, { id: `stamp-${word.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, type: 'watermark' as const, x: 0, y: 0, w, h, text: word, angleDeg: -32, repeat: 'none' as const, opacity: 0.5, style: { font: 'body' as const, sizePt: Math.min(w, h) * 0.45, weight: 700 as const, color: 'accent', align: 'center' as const, lineHeight: 1, letterSpacingPt: 4 } }],
     })),
   };
 }

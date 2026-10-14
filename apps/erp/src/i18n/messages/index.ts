@@ -89,30 +89,20 @@ import communication from './communication';
 import studentInfo from './student-info';
 import admissionsDesk from './admissions-desk';
 
-
-
 import researchDepth from './research-depth';
 import obeDepth from './obe-depth';
 import iqacDepth from './iqac-depth';
 import recordsDepth from './records-depth';
 
-
 import feeDepth from './fee-depth';
-
-
 
 import attendanceDesk from './attendance-desk';
 import academicPlanning from './academic-planning';
 
 export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, accreditationHub, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk, v2, ease, campusOps, qualityHub, workflowBuilder, affiliation, records, reportStudio, communication, docDesigns, examCell, studentInfo, admissionsDesk, researchDepth, obeDepth, iqacDepth, recordsDepth, feeDepth, docEditor, attendanceDesk, academicPlanning } as const;
 
-
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.
 // See docs/i18n/erp.md for how to add strings.
-
-
-
-
 
 type Areas = typeof AREAS;
 type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
@@ -120,8 +110,12 @@ type English = UnionToIntersection<Areas[keyof Areas]['en']>;
 
 export type MessageKey = keyof English & string;
 export type Messages = Record<MessageKey, string>;
-/** Keys with `_one` / `_other` forms, for `t.plural`. */
-export type PluralKey = MessageKey extends infer K ? (K extends `${infer B}_one` ? B : never) : never;
+type PluralOf<K> = K extends `${infer B}_one` ? B : never;
+/**
+ * Keys with `_one` / `_other` forms, for `t.plural`. Worked out area by area: over the whole dictionary at once the
+ * key union is too large for TypeScript to match against a template, and the type silently becomes `never`.
+ */
+export type PluralKey = { [A in keyof Areas]: PluralOf<keyof Areas[A]['en'] & string> }[keyof Areas];
 
 function merge(locale: Locale): Messages {
   return Object.assign({}, ...Object.values(AREAS).map((a) => a[locale])) as Messages;

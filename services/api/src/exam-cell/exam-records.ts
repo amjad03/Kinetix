@@ -3,7 +3,7 @@ import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { STAFF_ADMIN_ROLES, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { Tx } from '../db/db.service.js';
-import { academicDocRequests, academicYears, creditTransfers, examPapers, examResultLines, examResults, examSessions, invigilationDuties, malpracticeCases, pastExamQuestions, programs, revaluationRequests, rooms, students, subjects, users } from '../db/schema.js';
+import { academicDocRequests, academicYears, examPapers, examResultLines, examResults, examSessions, invigilationDuties, malpracticeCases, pastExamQuestions, programs, revaluationRequests, rooms, students, subjects, users } from '../db/schema.js';
 import { DOC_KINDS, DOC_TITLE, type DocKind } from '../academic-docs/academic-docs.logic.js';
 import { AcademicDocsService } from '../academic-docs/academic-docs.service.js';
 import { REVAL_KINDS, revalFee } from '../exam-office/exam-office.logic.js';
@@ -15,7 +15,6 @@ import { copyName, Int, OptionalRef, OptionalText, Ref, Text, uuidEq } from '../
 import { eachRow } from '../records/import.js';
 import { assertInSession, auditCell, CELL, CELL_READ, hasResults, loadSession, sessionOptions } from './common.js';
 import { invigilatorOptions } from './halls.js';
-import { supersedeDocuments } from './result-runs.js';
 import { studentOptions } from './withholds.js';
 
 const DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-11-05');
@@ -454,146 +453,7 @@ export function docRequestsEntity(docs: AcademicDocsService): RecordEntity {
   };
 }
 
-// ---- transferred credits ---------------------------------------------------------------------
-
-const Credits = z.coerce.number().min(0.5, 'Credits are at least 0.5').max(40, 'Credits are at most 40').multipleOf(0.5, 'Credits go in steps of 0.5');
-const GradePoint = z.coerce.number().min(0, 'A grade point is from 0 to 10').max(10, 'A grade point is from 0 to 10');
-const Grade = z.string().trim().min(1, 'Give the grade').max(4, 'A grade is at most 4 characters');
-
-/** A course already passed here cannot also be brought in from elsewhere. */
-async function assertNotEarned(tx: Tx, studentId: string, subjectId: string | null, exceptId?: string) {
-  if (!subjectId) return;
-  const [here] = await tx.select({ s: examResultLines.subjectId }).from(examResultLines).innerJoin(examResults, eq(examResults.id, examResultLines.resultId)).where(and(eq(examResults.studentId, studentId), eq(examResultLines.subjectId, subjectId), eq(examResultLines.passed, true))).limit(1);
-  if (here) throw new ConflictException('The student has already passed this course here');
-  const [twice] = await tx.select({ id: creditTransfers.id }).from(creditTransfers).where(and(eq(creditTransfers.studentId, studentId), eq(creditTransfers.subjectId, subjectId), exceptId ? ne(creditTransfers.id, exceptId) : sql`true`)).limit(1);
-  if (twice) throw new ConflictException('Credits for this course are already transferred');
-}
-
-/** Changing an accepted credit changes the CGPA, so any issued transcript goes out of date. */
-const transferField = (key: 'credits' | 'grade' | 'gradePoint' | 'term' | 'subjectId') => async (ctx: KitCtx, id: string, value: unknown) => {
-  const [row] = await ctx.tx.select().from(creditTransfers).where(eq(creditTransfers.id, id));
-  if (!row) throw new NotFoundException('Transferred credit not found');
-  const next = key === 'grade' ? String(value).trim().toUpperCase() : key === 'subjectId' ? ((value as string | null) ?? null) : Number(value);
-  if (key === 'subjectId') await assertNotEarned(ctx.tx, row.studentId, next as string | null, id);
-  if (row[key] === next) return;
-  await ctx.tx.update(creditTransfers).set({ [key]: next }).where(eq(creditTransfers.id, id));
-  await supersedeDocuments(ctx.tx, row.studentId, 'Transferred credits changed');
-};
-
-export function creditTransfersEntity(): RecordEntity {
-  const studentByRoll = async (tx: Tx, roll: string) => {
-    const [st] = await tx.select({ id: students.id }).from(students).where(sql`lower(${students.rollNo}) = ${lc(roll)}`).limit(1);
-    return st?.id ?? fail('No student with this roll number', roll);
-  };
-  const subjectByCode = async (tx: Tx, code: string) => {
-    const [sub] = await tx.select({ id: subjects.id }).from(subjects).where(sql`lower(${subjects.code}) = ${lc(code)}`).limit(1);
-    return sub?.id ?? fail('No subject with this code', code);
-  };
-  return {
-    key: 'credit-transfers',
-    module: 'exams',
-    table: creditTransfers,
-    subjectType: 'credit_transfer',
-    roles: { read: CELL_READ, write: CELL },
-    label: (r) => `${String(r.rollNo ?? '')} ${String(r.studentName ?? '')}: ${String(r.sourceCourse ?? '')} (${String(r.sourceInstitution ?? '')})`.trim(),
-    list: {
-      select: { id: creditTransfers.id, studentId: creditTransfers.studentId, studentName: students.fullName, rollNo: students.rollNo, sourceInstitution: creditTransfers.sourceInstitution, sourceCourse: creditTransfers.sourceCourse, subjectId: creditTransfers.subjectId, subjectCode: subjects.code, subjectName: subjects.name, term: creditTransfers.term, credits: creditTransfers.credits, grade: creditTransfers.grade, gradePoint: creditTransfers.gradePoint, note: creditTransfers.note, createdAt: creditTransfers.createdAt },
-      joins: (q) => q.innerJoin(students, eq(students.id, creditTransfers.studentId)).leftJoin(subjects, eq(subjects.id, creditTransfers.subjectId)),
-      search: [students.fullName, students.rollNo, creditTransfers.sourceInstitution, creditTransfers.sourceCourse, subjects.code],
-      filters: {
-        institution: { label: 'From institution', options: async (ctx) => (await ctx.tx.selectDistinct({ i: creditTransfers.sourceInstitution }).from(creditTransfers).orderBy(asc(creditTransfers.sourceInstitution))).map((r) => ({ value: r.i, label: r.i })), where: (v) => eq(creditTransfers.sourceInstitution, v) },
-        equivalent: { label: 'Equivalent course', options: [{ value: 'yes', label: 'Mapped to a course' }, { value: 'no', label: 'Credit only' }], where: (v) => (v === 'yes' ? sql`${creditTransfers.subjectId} is not null` : v === 'no' ? sql`${creditTransfers.subjectId} is null` : undefined) },
-      },
-      sorts: { student: students.fullName, institution: creditTransfers.sourceInstitution, term: creditTransfers.term, credits: creditTransfers.credits, added: creditTransfers.createdAt },
-      defaultSort: { id: 'added', dir: 'desc' },
-      tiebreak: [creditTransfers.sourceCourse],
-    },
-    fields: {
-      studentId: { label: 'Student', type: 'select', schema: Ref, column: creditTransfers.studentId, required: true, edit: false, options: studentOptions },
-      sourceInstitution: { label: 'From institution', type: 'text', schema: Text(200), column: creditTransfers.sourceInstitution, required: true, bulk: true, help: 'The college or university where the credits were earned' },
-      sourceCourse: { label: 'Course there', type: 'text', schema: Text(160), column: creditTransfers.sourceCourse, required: true, help: 'Code and name of the course as on their marks card' },
-      subjectId: { label: 'Counts as', type: 'select', schema: OptionalRef, apply: transferField('subjectId'), options: subjectOptions, help: 'The course here it replaces; leave empty to count it as credit only' },
-      term: { label: 'Term', type: 'number', schema: Int(1, 20), apply: transferField('term'), required: true },
-      credits: { label: 'Credits', type: 'number', schema: Credits, apply: transferField('credits'), required: true },
-      grade: { label: 'Grade', type: 'text', schema: Grade, apply: transferField('grade'), required: true },
-      gradePoint: { label: 'Grade point', type: 'number', schema: GradePoint, apply: transferField('gradePoint'), required: true, help: 'On the 10-point scale used here' },
-      note: { label: 'Note', type: 'textarea', schema: OptionalText(300), column: creditTransfers.note, help: 'E.g. the order number of the equivalence committee' },
-    },
-    create: async (ctx, v) => {
-      const studentId = String(v.studentId);
-      const subjectId = (v.subjectId as string | null) ?? null;
-      await assertNotEarned(ctx.tx, studentId, subjectId);
-      const [row] = await ctx.tx.insert(creditTransfers).values({ tenantId: ctx.p.tenantId, studentId, sourceInstitution: String(v.sourceInstitution), sourceCourse: String(v.sourceCourse), subjectId, term: Number(v.term), credits: Number(v.credits), grade: String(v.grade).trim().toUpperCase(), gradePoint: Number(v.gradePoint), note: (v.note as string | null) ?? null, createdBy: ctx.p.userId }).returning({ id: creditTransfers.id });
-      await supersedeDocuments(ctx.tx, studentId, 'Transferred credits changed');
-      return row.id;
-    },
-    remove: {
-      // Runs in the delete's transaction just before the row goes: the student's issued transcripts no longer match.
-      guard: async (ctx, id) => {
-        const [row] = await ctx.tx.select({ studentId: creditTransfers.studentId }).from(creditTransfers).where(eq(creditTransfers.id, id));
-        if (row) await supersedeDocuments(ctx.tx, row.studentId, 'Transferred credits changed');
-        return null;
-      },
-    },
-    columns: [
-      { key: 'rollNo', header: 'Roll no' },
-      { key: 'studentName', header: 'Student' },
-      { key: 'sourceInstitution', header: 'From institution' },
-      { key: 'sourceCourse', header: 'Course there' },
-      { key: 'subjectCode', header: 'Counts as' },
-      { key: 'term', header: 'Term' },
-      { key: 'credits', header: 'Credits' },
-      { key: 'grade', header: 'Grade' },
-      { key: 'gradePoint', header: 'Grade point' },
-      { key: 'note', header: 'Note' },
-    ],
-    import: {
-      columns: [
-        { key: 'roll_no', header: 'Roll no', required: true, help: "The student's roll number here", example: '22BCOM014' },
-        { key: 'source_institution', header: 'From institution', required: true, help: 'Where the credits were earned', example: 'St Joseph College, Mysuru' },
-        { key: 'source_course', header: 'Course there', required: true, help: 'Code and name on their marks card', example: 'BC204 Financial Accounting II' },
-        { key: 'subject_code', header: 'Counts as (subject code)', help: 'The course here it replaces; leave empty for credit only', example: 'BCOM-2.1' },
-        { key: 'term', header: 'Term', required: true, help: 'The term here it counts in', example: '2' },
-        { key: 'credits', header: 'Credits', required: true, help: 'Credits accepted', example: '4' },
-        { key: 'grade', header: 'Grade', required: true, help: 'Grade as awarded there', example: 'A' },
-        { key: 'grade_point', header: 'Grade point', required: true, help: 'On the 10-point scale used here', example: '8' },
-        { key: 'note', header: 'Note', help: 'E.g. the equivalence order number', example: 'EQ/2026/14' },
-      ],
-      key: ['roll_no', 'source_institution', 'source_course'],
-      exists: async (ctx, r) => !!(await ctx.tx.select({ id: creditTransfers.id }).from(creditTransfers).innerJoin(students, eq(students.id, creditTransfers.studentId)).where(and(sql`lower(${students.rollNo}) = ${lc(r.get('roll_no'))}`, sql`lower(${creditTransfers.sourceInstitution}) = ${lc(r.get('source_institution'))}`, sql`lower(${creditTransfers.sourceCourse}) = ${lc(r.get('source_course'))}`)).limit(1))[0],
-      run: async (ctx, rows) =>
-        eachRow(ctx.tx, rows, async (tx, r) => {
-          const studentId = await studentByRoll(tx, required(r, 'roll_no'));
-          const sourceInstitution = required(r, 'source_institution').slice(0, 200);
-          const sourceCourse = required(r, 'source_course').slice(0, 160);
-          const code = r.get('subject_code');
-          const subjectId = code ? await subjectByCode(tx, code) : null;
-          const term = int(required(r, 'term'), 1, 20, 'The term is a whole number from 1 to 20');
-          const credits = Credits.safeParse(required(r, 'credits'));
-          if (!credits.success) fail(credits.error.issues[0].message, r.get('credits'));
-          const gradePoint = GradePoint.safeParse(required(r, 'grade_point'));
-          if (!gradePoint.success) fail(gradePoint.error.issues[0].message, r.get('grade_point'));
-          const grade = required(r, 'grade').toUpperCase();
-          if (grade.length > 4) fail('A grade is at most 4 characters', grade);
-          const values = { subjectId, term, credits: credits.data!, grade, gradePoint: gradePoint.data!, note: r.get('note') || null };
-          const [found] = await tx.select().from(creditTransfers).where(and(eq(creditTransfers.studentId, studentId), sql`lower(${creditTransfers.sourceInstitution}) = ${lc(sourceInstitution)}`, sql`lower(${creditTransfers.sourceCourse}) = ${lc(sourceCourse)}`)).limit(1);
-          if (!found) {
-            await assertNotEarned(tx, studentId, subjectId);
-            await tx.insert(creditTransfers).values({ tenantId: ctx.p.tenantId, studentId, sourceInstitution, sourceCourse, createdBy: ctx.p.userId, ...values });
-            await supersedeDocuments(tx, studentId, 'Transferred credits changed');
-            return outcome(true, false, [sourceInstitution, sourceCourse]);
-          }
-          const changed = found.subjectId !== subjectId || found.term !== term || found.credits !== values.credits || found.grade !== grade || found.gradePoint !== values.gradePoint || found.note !== values.note;
-          if (changed) {
-            if (found.subjectId !== subjectId) await assertNotEarned(tx, studentId, subjectId, found.id);
-            await tx.update(creditTransfers).set(values).where(eq(creditTransfers.id, found.id));
-            await supersedeDocuments(tx, studentId, 'Transferred credits changed');
-          }
-          return outcome(false, changed, [sourceInstitution, sourceCourse]);
-        }),
-    },
-  };
-}
+// Transferred credits are one register with academic planning: `credit-transfers` in academic-planning/planning.records.ts.
 
 @Injectable()
 export class ExamRecords implements OnModuleInit {
@@ -608,6 +468,5 @@ export class ExamRecords implements OnModuleInit {
     this.registry.register(dutiesEntity());
     this.registry.register(pastQuestionsEntity());
     this.registry.register(docRequestsEntity(this.docs));
-    this.registry.register(creditTransfersEntity());
   }
 }

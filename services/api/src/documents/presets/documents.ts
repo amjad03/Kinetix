@@ -229,7 +229,8 @@ function letterCertificate(docType: DocType, st: PresetStyle, salutation: string
   return layout(docType, A4P, [{ id: 'page', label: 'Page', elements: b.elements }], st, 'Formal certificate text with place, date and the principal’s signature');
 }
 
-function transferCertificate(st: PresetStyle): DocLayout {
+/** Certificates made of a list of particulars and a certifying line: transfer and migration certificates. */
+function particularsCertificate(docType: DocType, st: PresetStyle, description: string): DocLayout {
   const t = THEMES[st];
   const { b, content: c, signs } = portraitChrome(st, 210, 297);
   const listH = c.h - 20;
@@ -238,7 +239,7 @@ function transferCertificate(st: PresetStyle): DocLayout {
   b.text('certified', { x: c.x, y: c.y + listH + 2, w: c.w, h: 12 }, '{{doc.body}}', style(st === 'modern' || st === 'minimal' ? 'body' : 'heading', 9, { lineHeight: 1.45, align: 'justify' }), { markdown: true, maxLines: 3, flowAfter: 'particulars' });
   b.text('dated', { x: c.x, y: c.y + c.h - 4, w: 120, h: 5 }, 'Place: {{institution.city}}     Date of issue: {{doc.issuedOn}}', style('body', 8.5), { maxLines: 1 });
   signatures(b, t, ['principal'], signs.x, signs.y, signs.w, signs.h);
-  return layout('transfer_certificate', A4P, [{ id: 'page', label: 'Page', elements: b.elements }], st, 'Transfer certificate with the full list of particulars and the principal’s signature');
+  return layout(docType, A4P, [{ id: 'page', label: 'Page', elements: b.elements }], st, description);
 }
 
 /** Landscape certificates: course completion and merit / participation. */
@@ -425,7 +426,10 @@ export const PAGE_PRESETS: Partial<Record<DocType, (st: PresetStyle) => DocLayou
   fee_invoice: feeInvoice,
   bonafide_certificate: (st) => letterCertificate('bonafide_certificate', st, null),
   conduct_certificate: (st) => letterCertificate('conduct_certificate', st, 'To whom it may concern'),
-  transfer_certificate: transferCertificate,
+  transfer_certificate: (st) => particularsCertificate('transfer_certificate', st, 'Transfer certificate with the full list of particulars and the principal’s signature'),
+  migration_certificate: (st) => particularsCertificate('migration_certificate', st, 'Migration certificate: the student’s particulars and the institution’s no-objection to migrating'),
+  medium_of_instruction_certificate: (st) => letterCertificate('medium_of_instruction_certificate', st, 'To whom it may concern'),
+  degree_certificate: (st) => displayCertificate('degree_certificate', st, { heading: '{{doc.title}}', lead: 'This is to certify that', name: '{{student.name}}', citation: '{{degree.citation}}', footnote: 'Register number {{student.registerNo}}  ·  {{degree.convocation}}  ·  {{institution.city}}', signers: ['principal', 'controller'] }),
   course_completion_certificate: (st) => displayCertificate('course_completion_certificate', st, { heading: '{{doc.title}}', lead: 'This is to certify that', name: '{{student.name}}', citation: '{{award.citation}}', footnote: 'Awarded on {{doc.issuedOn}}  ·  {{institution.city}}', signers: ['principal', 'registrar'] }),
   generic_certificate: (st) => displayCertificate('generic_certificate', st, { heading: '{{award.title}}', lead: 'This certificate is proudly presented to', name: '{{award.recipient}}', citation: '{{award.citation}}', footnote: '{{award.event}}  ·  {{award.date}}', signers: ['principal', 'controller'] }),
   salary_slip: salarySlip,

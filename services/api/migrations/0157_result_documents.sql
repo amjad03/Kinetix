@@ -66,21 +66,49 @@ DO $$ BEGIN
     GRANT SELECT, INSERT, UPDATE, DELETE ON "verification_requests" TO kinetix_app;
   END IF;
 END $$;--> statement-breakpoint
+-- credit_transfers is one table shared with academic planning (0153): a credit transfer request (ABC, SWAYAM, NPTEL,
+-- another MOOC or another institution) that, once approved, counts in course registration, the CGPA and the
+-- transcript. This block works whether or not 0153 ran first, and on a database where an earlier draft of this
+-- migration created the table with the exam cell's column names.
 CREATE TABLE IF NOT EXISTS "credit_transfers" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
-  "student_id" uuid NOT NULL REFERENCES "students"("id"),
-  "source_institution" text NOT NULL,
-  "source_course" text NOT NULL,
-  "subject_id" uuid REFERENCES "subjects"("id"),
-  "term" smallint NOT NULL,
+  "student_id" uuid NOT NULL REFERENCES "students"("id") ON DELETE CASCADE,
+  "source" text NOT NULL,
+  "course_title" text NOT NULL,
   "credits" numeric(4, 1) NOT NULL,
-  "grade" text NOT NULL,
-  "grade_point" numeric(4, 2) NOT NULL,
-  "note" text,
-  "created_by" uuid NOT NULL REFERENCES "users"("id"),
   "created_at" timestamp with time zone DEFAULT now() NOT NULL
 );--> statement-breakpoint
+DO $$ BEGIN
+  IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'credit_transfers' AND column_name = 'source_institution') THEN
+    ALTER TABLE "credit_transfers" RENAME COLUMN "source_institution" TO "provider";
+    ALTER TABLE "credit_transfers" RENAME COLUMN "source_course" TO "course_title";
+    ALTER TABLE "credit_transfers" RENAME COLUMN "subject_id" TO "mapped_subject_id";
+    ALTER TABLE "credit_transfers" ALTER COLUMN "term" DROP NOT NULL;
+    ALTER TABLE "credit_transfers" ALTER COLUMN "grade" SET DEFAULT '';
+    ALTER TABLE "credit_transfers" ALTER COLUMN "grade_point" DROP NOT NULL;
+    ALTER TABLE "credit_transfers" ALTER COLUMN "created_by" DROP NOT NULL;
+    -- Those rows were entered by the exam cell and already counted: they stand approved.
+    ALTER TABLE "credit_transfers" ADD COLUMN "source" text DEFAULT 'institution' NOT NULL;
+    ALTER TABLE "credit_transfers" ADD COLUMN "status" text DEFAULT 'approved' NOT NULL;
+    ALTER TABLE "credit_transfers" ALTER COLUMN "source" DROP DEFAULT;
+    ALTER TABLE "credit_transfers" ALTER COLUMN "status" SET DEFAULT 'pending';
+  END IF;
+END $$;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "provider" text DEFAULT '' NOT NULL;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "external_ref" text DEFAULT '' NOT NULL;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "grade" text DEFAULT '' NOT NULL;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "grade_point" numeric(4, 2);--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "completed_on" date;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "term" smallint;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "mapped_subject_id" uuid REFERENCES "subjects"("id") ON DELETE SET NULL;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "status" text DEFAULT 'pending' NOT NULL;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "decided_by" uuid REFERENCES "users"("id") ON DELETE SET NULL;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "decided_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "decision_note" text;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "note" text;--> statement-breakpoint
+ALTER TABLE "credit_transfers" ADD COLUMN IF NOT EXISTS "created_by" uuid REFERENCES "users"("id") ON DELETE SET NULL;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "credit_transfers_status_idx" ON "credit_transfers" ("tenant_id", "status");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "credit_transfers_student_idx" ON "credit_transfers" ("student_id");--> statement-breakpoint
 ALTER TABLE "credit_transfers" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP POLICY IF EXISTS tenant_isolation ON "credit_transfers";--> statement-breakpoint

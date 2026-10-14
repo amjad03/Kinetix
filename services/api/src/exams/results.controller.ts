@@ -14,6 +14,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, marks, programs, revaluationRequests, rooms, sections, students, subjects, tenants } from '../db/schema.js';
 import { marksCardData, transcriptData, type ResultData, type StudentHeader } from './documents.js';
+import { FeeHoldsService } from '../fee-depth/fee-holds.js';
 import { DocumentEngine } from '../documents/document-engine.service.js';
 import { studentBlock } from '../documents/doc-data.js';
 import { ExamsService } from './exams.service.js';
@@ -47,7 +48,15 @@ export class ResultsController {
     private readonly db: DbService,
     private readonly exams: ExamsService,
     private readonly engine: DocumentEngine,
+    private readonly holds: FeeHoldsService,
   ) {}
+
+  /** For the student or family (not staff): fee dues hold the results back when the institution says so. */
+  private async feeHold(tx: Tx, p: UserPrincipal, studentId: string): Promise<string | null> {
+    if (p.roles.some((r) => STAFF.includes(r))) return null;
+    const h = await this.holds.check(tx, p.tenantId, studentId, 'results');
+    return h.held && !h.overridden ? h.message : null;
+  }
 
   @Get('results/students/:studentId')
   @Auth('user')
@@ -56,6 +65,8 @@ export class ResultsController {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
       const held = await withheldSessions(tx, studentId);
       const all = await this.published(tx, studentId);
+      const fees = await this.feeHold(tx, p, studentId);
+      if (fees) for (const t of all) if (!held.has(t.sessionId)) held.set(t.sessionId, fees);
       // A withheld result shows as withheld, never its figures.
       const terms = all.map((t) => (held.has(t.sessionId) ? { sessionId: t.sessionId, sessionName: t.sessionName, term: t.term, withheld: true, withheldReason: held.get(t.sessionId)!, sgpa: null, cgpa: null, creditsAttempted: null, creditsEarned: null, outcome: 'withheld', lines: [] } : { ...t, withheld: false }));
       const open = all.filter((t) => !held.has(t.sessionId));
@@ -119,6 +130,9 @@ export class ResultsController {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
       const term = (await this.published(tx, studentId)).find((t) => t.sessionId === sessionId);
       if (!term) throw new NotFoundException('No published result for that session');
+      if ((await withheldSessions(tx, studentId)).has(sessionId)) throw new ForbiddenException('This result is withheld. Contact the examination office.');
+      const fees = await this.feeHold(tx, p, studentId);
+      if (fees) throw new ForbiddenException(fees);
       const block = await studentBlock(tx, studentId);
       const h = await studentHeader(tx, p.tenantId, studentId);
       const out = await this.engine.produce(tx, p, {
@@ -130,8 +144,6 @@ export class ResultsController {
         keyFields: [{ label: 'Candidate', value: `${h.name} (${h.rollNo})` }, { label: 'Examination', value: `${term.sessionName}, semester ${term.term}` }, { label: 'SGPA', value: term.sgpa.toFixed(2) }, { label: 'CGPA', value: term.cgpa.toFixed(2) }, { label: 'Result', value: term.outcome === 'pass' ? 'Pass' : 'Not passed' }],
       });
       return out.pdf;
-      if ((await withheldSessions(tx, studentId)).has(sessionId)) throw new ForbiddenException('This result is withheld. Contact the examination office.');
-      return marksCardPdf(await studentHeader(tx, p.tenantId, studentId), term);
     });
     this.send(res, pdf, 'marks-card.pdf');
   }
@@ -141,6 +153,8 @@ export class ResultsController {
   async transcript(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string, @Res() res: Response) {
     const pdf = await this.db.withTenant(p.tenantId, async (tx) => {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
+      const fees = await this.feeHold(tx, p, studentId);
+      if (fees) throw new ForbiddenException(fees);
       const held = await withheldSessions(tx, studentId);
       const terms = (await this.published(tx, studentId)).filter((t) => !held.has(t.sessionId));
       if (terms.length === 0) throw new NotFoundException('No published results yet');

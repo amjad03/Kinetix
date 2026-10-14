@@ -8,7 +8,8 @@ import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';
 import { regulations } from '../db/schema-curriculum.js';
 import { creditTransfers, electiveBaskets, electiveBasketSubjects, facultyAllocations, periodStructures, specialClasses, subjectRequisites, workingDaySwaps, type BellPeriod } from '../db/schema-academic-ops.js';
-import { academicYears, programs, rooms, sections, students, subjects, timetableSlots, userRoles, users } from '../db/schema.js';
+import { academicYears, examResultLines, examResults, programs, rooms, sections, students, subjects, timetableSlots, userRoles, users } from '../db/schema.js';
+import { supersedeDocuments } from '../exam-cell/result-runs.js';
 import { fail, int, lc, outcome, required } from '../import/row-helpers.js';
 import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from '../records/entity.js';
 import { copyName, DateText, Int, OptionalRef, OptionalText, Ref, Text, uuidEq } from '../records/helpers.js';
@@ -16,7 +17,9 @@ import { eachRow } from '../records/import.js';
 import { addDays } from '../teacher/teacher.service.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
-import { parseDays, parsePeriods, periodsText, WEEKDAYS } from './planning-rules.js';
+import { parseDays, parsePeriods, periodsText, TRANSFER_SOURCES, WEEKDAYS } from './planning-rules.js';
+
+export { TRANSFER_SOURCES };
 
 /**
  * Academic planning as record kit entities (docs/requirements/RECORD_DEPTH_KIT.md): elective baskets, prerequisites
@@ -50,13 +53,6 @@ export const BASKET_KINDS: FieldOption[] = [
   { value: 'skill', label: 'Skill enhancement' },
   { value: 'value_added', label: 'Value added' },
 ];
-export const TRANSFER_SOURCES: FieldOption[] = [
-  { value: 'abc', label: 'Academic Bank of Credits' },
-  { value: 'swayam', label: 'SWAYAM' },
-  { value: 'nptel', label: 'NPTEL' },
-  { value: 'mooc', label: 'Other MOOC' },
-  { value: 'institution', label: 'Another institution' },
-];
 export const ALLOCATION_ROLES: FieldOption[] = [
   { value: 'primary', label: 'Course teacher' },
   { value: 'co_teacher', label: 'Co-teacher' },
@@ -78,6 +74,7 @@ const DECISION: FieldOption[] = [
   { value: 'pending', label: 'Awaiting decision' },
   { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Declined' },
+  { value: 'revoked', label: 'Revoked' },
 ];
 const REQUISITE_KINDS: FieldOption[] = [
   { value: 'prerequisite', label: 'Prerequisite' },
@@ -424,25 +421,51 @@ export class PlanningRecords implements OnModuleInit {
 
   // ---- credit transfers -----------------------------------------------------------------------------
 
+  /**
+   * One register for credits earned elsewhere, shared by academic planning and the exam cell (results desk): ABC,
+   * SWAYAM, NPTEL, other MOOCs and courses at another institution (transfer, lateral entry). A transfer is a request;
+   * once approved it counts as passing the mapped course in course registration, its credits (with the grade point,
+   * when given) count in the CGPA, and it leads the transcript. Approving or revoking one dates issued transcripts.
+   */
   private transfers(): RecordEntity {
     const t = creditTransfers;
     const mapped = sql<string | null>`(select s.code || ' ' || s.name from subjects s where s.id = ${t.mappedSubjectId})`;
-    const pending = (column: keyof typeof creditTransfers.$inferInsert) => async (ctx: KitCtx, id: string, value: unknown) => {
-      const [cur] = await ctx.tx.select({ status: t.status }).from(t).where(eq(t.id, id));
-      if (cur?.status !== 'pending') throw new ConflictException('Only a transfer awaiting a decision can be changed');
-      await ctx.tx.update(t).set({ [column]: value }).where(eq(t.id, id));
+    const mappedCode = sql<string | null>`(select s.code from subjects s where s.id = ${t.mappedSubjectId})`;
+    /** A course already passed here, or already counted by another approved transfer, cannot be brought in again. */
+    const assertNotEarned = async (tx: KitCtx['tx'], studentId: string, subjectId: string | null, exceptId?: string) => {
+      if (!subjectId) return;
+      const [here] = await tx
+        .select({ s: examResultLines.subjectId })
+        .from(examResultLines)
+        .innerJoin(examResults, eq(examResults.id, examResultLines.resultId))
+        .where(and(eq(examResults.studentId, studentId), eq(examResultLines.subjectId, subjectId), eq(examResultLines.passed, true)))
+        .limit(1);
+      if (here) throw new ConflictException('The student has already passed this course here');
+      const [dup] = await tx
+        .select({ id: t.id })
+        .from(t)
+        .where(and(eq(t.studentId, studentId), eq(t.mappedSubjectId, subjectId), eq(t.status, 'approved'), exceptId ? ne(t.id, exceptId) : undefined))
+        .limit(1);
+      if (dup) throw new ConflictException('Another approved transfer already counts for this course');
     };
-    const decide = async (ctx: KitCtx, id: string, status: 'approved' | 'rejected', note: string | null) => {
+    const pending = (column: keyof typeof creditTransfers.$inferInsert) => async (ctx: KitCtx, id: string, value: unknown) => {
+      const [cur] = await ctx.tx.select({ status: t.status, studentId: t.studentId }).from(t).where(eq(t.id, id));
+      if (!cur) throw new NotFoundException('Credit transfer not found');
+      if (cur.status !== 'pending') throw new ConflictException('Only a transfer awaiting a decision can be changed');
+      if (column === 'mappedSubjectId') await assertNotEarned(ctx.tx, cur.studentId, (value as string | null) ?? null, id);
+      await ctx.tx.update(t).set({ [column]: column === 'grade' ? String(value ?? '').trim().toUpperCase() : value }).where(eq(t.id, id));
+    };
+    const decide = async (ctx: KitCtx, id: string, status: 'approved' | 'rejected' | 'revoked', note: string | null) => {
       const [cur] = await ctx.tx.select().from(t).where(eq(t.id, id)).for('update');
       if (!cur) throw new NotFoundException('Credit transfer not found');
-      if (cur.status !== 'pending') throw new ConflictException(`This transfer is already ${cur.status}`);
-      if (status === 'rejected' && !note) throw new BadRequestException('Give a reason for declining');
-      if (status === 'approved' && cur.mappedSubjectId) {
-        const [dup] = await ctx.tx.select({ id: t.id }).from(t).where(and(eq(t.studentId, cur.studentId), eq(t.mappedSubjectId, cur.mappedSubjectId), eq(t.status, 'approved')));
-        if (dup) throw new ConflictException('Another approved transfer already counts for this course');
-      }
+      const from = status === 'revoked' ? 'approved' : 'pending';
+      if (cur.status !== from) throw new ConflictException(status === 'revoked' ? 'Only an approved transfer can be revoked' : `This transfer is already ${cur.status}`);
+      if (status !== 'approved' && !note) throw new BadRequestException('Give a reason');
+      if (status === 'approved') await assertNotEarned(ctx.tx, cur.studentId, cur.mappedSubjectId, id);
       await ctx.tx.update(t).set({ status, decidedBy: ctx.p.userId, decidedAt: this.clock.now(), decisionNote: note }).where(eq(t.id, id));
-      await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: `credit_transfer.${status}`, subjectType: 'credit_transfer', subjectId: id, changes: { status: { before: 'pending', after: status } }, data: { note } });
+      await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: `credit_transfer.${status}`, subjectType: 'credit_transfer', subjectId: id, changes: { status: { before: from, after: status } }, data: { note } });
+      // An approved credit counts in the CGPA and the transcript, so issued transcripts no longer match.
+      if (status !== 'rejected') await supersedeDocuments(ctx.tx, cur.studentId, 'Transferred credits changed');
     };
     return {
       key: 'credit-transfers',
@@ -464,12 +487,15 @@ export class PlanningRecords implements OnModuleInit {
           externalRef: t.externalRef,
           credits: t.credits,
           grade: t.grade,
+          gradePoint: t.gradePoint,
           completedOn: t.completedOn,
           term: t.term,
           mappedSubjectId: t.mappedSubjectId,
           mapped,
+          mappedCode,
           status: t.status,
           decisionNote: t.decisionNote,
+          note: t.note,
           createdAt: t.createdAt,
         },
         joins: (q) => q.innerJoin(students, eq(students.id, t.studentId)).innerJoin(sections, eq(sections.id, students.sectionId)),
@@ -477,48 +503,59 @@ export class PlanningRecords implements OnModuleInit {
         filters: {
           status: { label: 'Status', options: DECISION, where: (v) => (DECISION.some((o) => o.value === v) ? eq(t.status, v) : undefined) },
           source: { label: 'Source', options: TRANSFER_SOURCES, where: (v) => (TRANSFER_SOURCES.some((o) => o.value === v) ? eq(t.source, v) : undefined) },
+          institution: { label: 'Offered by', options: async (ctx) => (await ctx.tx.selectDistinct({ i: t.provider }).from(t).where(ne(t.provider, '')).orderBy(asc(t.provider))).map((r) => ({ value: r.i, label: r.i })), where: (v) => eq(t.provider, v) },
+          equivalent: { label: 'Equivalent course', options: [{ value: 'yes', label: 'Mapped to a course' }, { value: 'no', label: 'Credit only' }], where: (v) => (v === 'yes' ? sql`${t.mappedSubjectId} is not null` : v === 'no' ? sql`${t.mappedSubjectId} is null` : undefined) },
           class: { label: 'Class', options: sectionOptions, where: (v) => uuidEq(students.sectionId, v) },
         },
-        sorts: { student: students.fullName, course: t.courseTitle, credits: t.credits, completed: t.completedOn, status: t.status, created: t.createdAt },
+        sorts: { student: students.fullName, course: t.courseTitle, institution: t.provider, term: t.term, credits: t.credits, completed: t.completedOn, status: t.status, created: t.createdAt },
         defaultSort: { id: 'created', dir: 'desc' },
+        tiebreak: [t.courseTitle],
         scope: (ctx) => (isHeadOrAdmin(ctx) ? undefined : sql`exists (select 1 from timetable_slots ts where ts.section_id = ${students.sectionId} and ts.teacher_id = ${ctx.p.userId}::uuid)`),
       },
       fields: {
         studentId: { label: 'Student', type: 'select', schema: Ref, column: t.studentId, options: studentOptions, required: true, edit: false },
         source: { label: 'Source', type: 'select', schema: Text(20), options: TRANSFER_SOURCES, required: true, apply: pending('source') },
-        courseTitle: { label: 'Course', type: 'text', schema: Text(200), required: true, apply: pending('courseTitle') },
+        courseTitle: { label: 'Course', type: 'text', schema: Text(200), required: true, apply: pending('courseTitle'), help: 'Code and name of the course as on the certificate or marks card' },
         provider: { label: 'Offered by', type: 'text', schema: OptionalText(200).transform((v) => v ?? ''), apply: pending('provider'), help: 'The university, institution or MOOC platform' },
         externalRef: { label: 'Certificate or ABC reference', type: 'text', schema: OptionalText(120).transform((v) => v ?? ''), apply: pending('externalRef') },
         credits: { label: 'Credits', type: 'number', schema: Decimal(0.5, 40), required: true, apply: pending('credits') },
         grade: { label: 'Grade', type: 'text', schema: OptionalText(20).transform((v) => v ?? ''), apply: pending('grade') },
+        gradePoint: { label: 'Grade point', type: 'number', schema: OptionalDecimal(0, 10), apply: pending('gradePoint'), help: 'On the 10-point scale used here; leave empty for a pass-only credit, which stays out of the CGPA' },
         completedOn: { label: 'Completed on', type: 'date', schema: DateText, apply: pending('completedOn') },
         term: { label: 'Counts in term', type: 'number', schema: OptionalInt(1, 20), apply: pending('term') },
-        mappedSubjectId: { label: 'Counts as course', type: 'select', schema: OptionalRef, options: subjectOptions, apply: pending('mappedSubjectId'), help: 'The programme course it replaces, if any' },
+        mappedSubjectId: { label: 'Counts as course', type: 'select', schema: OptionalRef, options: subjectOptions, apply: pending('mappedSubjectId'), help: 'The programme course it replaces; leave empty to count it as credit only' },
+        note: { label: 'Note', type: 'textarea', schema: OptionalText(300), column: t.note, help: 'E.g. the order number of the equivalence committee' },
       },
       create: async (ctx, v) => {
+        const studentId = String(v.studentId);
+        const mappedSubjectId = (v.mappedSubjectId as string | null) ?? null;
+        await assertNotEarned(ctx.tx, studentId, mappedSubjectId);
         const [row] = await ctx.tx
           .insert(t)
           .values({
             tenantId: ctx.p.tenantId,
-            studentId: String(v.studentId),
+            studentId,
             source: String(v.source),
             courseTitle: String(v.courseTitle),
             provider: String(v.provider ?? ''),
             externalRef: String(v.externalRef ?? ''),
             credits: Number(v.credits),
-            grade: String(v.grade ?? ''),
+            grade: String(v.grade ?? '').trim().toUpperCase(),
+            gradePoint: (v.gradePoint as number | null) ?? null,
             completedOn: (v.completedOn as string | null) ?? null,
             term: (v.term as number | null) ?? null,
-            mappedSubjectId: (v.mappedSubjectId as string | null) ?? null,
+            mappedSubjectId,
+            note: (v.note as string | null) ?? null,
             createdBy: ctx.p.userId,
           })
           .returning({ id: t.id });
         return row.id;
       },
-      remove: { guard: async (ctx, id) => ((await ctx.tx.select({ s: t.status }).from(t).where(eq(t.id, id)))[0]?.s === 'approved' ? 'An approved transfer counts towards results; decline it with a new entry instead' : null) },
+      remove: { guard: async (ctx, id) => ((await ctx.tx.select({ s: t.status }).from(t).where(eq(t.id, id)))[0]?.s === 'approved' ? 'An approved transfer counts towards results; revoke it instead' : null) },
       actions: {
         approve: { label: 'Approve', inputs: [{ key: 'note', label: 'Note', type: 'textarea' }], params: z.object({ note: z.string().trim().max(500).optional() }), apply: (ctx, id, p) => decide(ctx, id, 'approved', (p as { note?: string }).note || null) },
         reject: { label: 'Decline', tone: 'danger', inputs: [{ key: 'note', label: 'Reason', type: 'textarea', required: true }], params: z.object({ note: z.string().trim().min(3).max(500) }), apply: (ctx, id, p) => decide(ctx, id, 'rejected', (p as { note: string }).note) },
+        revoke: { label: 'Revoke', tone: 'danger', inputs: [{ key: 'note', label: 'Reason', type: 'textarea', required: true }], params: z.object({ note: z.string().trim().min(3).max(500) }), apply: (ctx, id, p) => decide(ctx, id, 'revoked', (p as { note: string }).note) },
       },
       columns: [
         { key: 'rollNo', header: 'Roll no' },
@@ -530,10 +567,12 @@ export class PlanningRecords implements OnModuleInit {
         { key: 'externalRef', header: 'Reference' },
         { key: 'credits', header: 'Credits' },
         { key: 'grade', header: 'Grade' },
+        { key: 'gradePoint', header: 'Grade point' },
         { key: 'completedOn', header: 'Completed on' },
         { key: 'term', header: 'Term' },
         { key: 'mapped', header: 'Counts as' },
         { key: 'status', header: 'Status', value: (r) => labelOf(DECISION, r.status) },
+        { key: 'note', header: 'Note' },
       ],
       import: {
         columns: [
@@ -544,8 +583,11 @@ export class PlanningRecords implements OnModuleInit {
           { key: 'reference', header: 'Certificate or ABC reference', example: 'NPTEL24CS12S' },
           { key: 'credits', header: 'Credits', required: true, example: '3' },
           { key: 'grade', header: 'Grade', example: 'Elite' },
+          { key: 'grade_point', header: 'Grade point', help: 'On the 10-point scale here; empty for a pass-only credit', example: '8' },
+          { key: 'term', header: 'Counts in term', help: 'A whole number from 1 to 20', example: '2' },
           { key: 'completed_on', header: 'Completed on', help: 'YYYY-MM-DD', example: '2026-10-20' },
           { key: 'course_code', header: 'Counts as course code', help: "Optional: a course of the student's programme" },
+          { key: 'note', header: 'Note', help: 'E.g. the equivalence order number', example: 'EQ/2026/14' },
         ],
         key: ['roll_no', 'source', 'course'],
         exists: async (ctx, r) => {
@@ -560,19 +602,24 @@ export class PlanningRecords implements OnModuleInit {
             if (!st) fail('No student with this roll number', roll);
             const source = lc(required(r, 'source'));
             if (!TRANSFER_SOURCES.some((s) => s.value === source)) fail('Unknown source', source);
-            const credits = Number(required(r, 'credits'));
-            if (!Number.isFinite(credits) || credits <= 0 || credits > 40) fail('Credits must be a number from 0.5 to 40', r.get('credits'));
+            const credits = Decimal(0.5, 40).safeParse(required(r, 'credits'));
+            if (!credits.success) fail('Credits must be a number from 0.5 to 40 with at most one decimal place', r.get('credits'));
+            const gp = r.get('grade_point') ? z.coerce.number().min(0).max(10).safeParse(r.get('grade_point')) : null;
+            if (gp && !gp.success) fail('A grade point is from 0 to 10', r.get('grade_point'));
+            const term = r.get('term') ? int(r.get('term'), 1, 20, 'The term is a whole number from 1 to 20') : null;
             const completedOn = r.get('completed_on') || null;
             if (completedOn && !/^\d{4}-\d{2}-\d{2}$/.test(completedOn)) fail('Give dates as YYYY-MM-DD', completedOn);
             const mappedSubjectId = r.get('course_code') ? (await subjectByCode(c, r.get('course_code'), st!.programId)).id : null;
-            const course = required(r, 'course');
-            const values = { provider: r.get('provider'), externalRef: r.get('reference'), credits, grade: r.get('grade'), completedOn, mappedSubjectId };
+            const course = required(r, 'course').slice(0, 200);
+            const values = { provider: r.get('provider').slice(0, 200), externalRef: r.get('reference').slice(0, 120), credits: credits.data!, grade: r.get('grade').toUpperCase().slice(0, 20), gradePoint: gp?.data ?? null, term, completedOn, mappedSubjectId, note: r.get('note') || null };
             const [found] = await tx.select().from(t).where(and(eq(t.studentId, st!.id), eq(t.source, source), sql`lower(${t.courseTitle}) = ${lc(course)}`)).limit(1);
             if (found) {
               if (found.status !== 'pending') return outcome(false, false, [roll, course]);
+              await assertNotEarned(tx, st!.id, mappedSubjectId, found.id);
               await tx.update(t).set(values).where(eq(t.id, found.id));
               return outcome(false, true, [roll, course]);
             }
+            await assertNotEarned(tx, st!.id, mappedSubjectId);
             await tx.insert(t).values({ tenantId: ctx.p.tenantId, studentId: st!.id, source, courseTitle: course, createdBy: ctx.p.userId, ...values });
             return outcome(true, false, [roll, course]);
           }),
