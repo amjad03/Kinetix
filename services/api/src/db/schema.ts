@@ -1441,6 +1441,23 @@ export const libraryBooks = pgTable(
     barcode: text('barcode'),
     /** What a lost book costs the borrower, in paise. */
     pricePaise: integer('price_paise').notNull().default(0),
+    // Catalogue details (migration 0168).
+    publisher: text('publisher').notNull().default(''),
+    edition: text('edition').notNull().default(''),
+    pubYear: smallint('pub_year'),
+    language: text('language').notNull().default(''),
+    subject: text('subject').notNull().default(''),
+    /** Dewey Decimal Classification number, e.g. "657.95". */
+    ddc: text('ddc').notNull().default(''),
+    keywords: text('keywords').notNull().default(''),
+    pages: integer('pages'),
+    /** book | reference | thesis | cd | map | other */
+    material: text('material').notNull().default('book'),
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+    /** active | withdrawn */
+    status: text('status').notNull().default('active'),
+    /** The MARC21 record it was imported from, as tag → values. */
+    marc: jsonb('marc').$type<Record<string, string[]>>(),
     createdAt: createdAt(),
   },
   (t) => [index('library_books_title_idx').on(t.tenantId, t.title)],
@@ -1452,7 +1469,8 @@ export const libraryLoans = pgTable(
     id: id(),
     tenantId: tenantId(),
     bookId: uuid('book_id').notNull().references(() => libraryBooks.id),
-    studentId: uuid('student_id').notNull().references(() => students.id),
+    /** The student borrower; null for staff and external members (then `memberId`). */
+    studentId: uuid('student_id').references(() => students.id),
     issuedAt: timestamp('issued_at', { withTimezone: true }).notNull().defaultNow(),
     dueOn: date('due_on').notNull(),
     returnedAt: timestamp('returned_at', { withTimezone: true }),
@@ -1465,6 +1483,21 @@ export const libraryLoans = pgTable(
     /** lost | damaged, with the note and the charge. */
     condition: text('condition'),
     conditionNote: text('condition_note'),
+    // Members, copies and branches (migration 0168; foreign keys to schema-lht tables).
+    memberId: uuid('member_id'),
+    copyId: uuid('copy_id'),
+    branchId: uuid('branch_id'),
+    returnedBranchId: uuid('returned_branch_id'),
+    /** Part of the fine forgiven by an approved waiver. */
+    fineWaivedPaise: bigint('fine_waived_paise', { mode: 'number' }).notNull().default(0),
+    /** The fee invoice title the fine was sent to (collected with fees). */
+    fineInvoiceTitle: text('fine_invoice_title'),
+    /** A semester-long book bank loan. */
+    bookBank: boolean('book_bank').notNull().default(false),
+    /** desk | self | kiosk | sip2 */
+    via: text('via').notNull().default('desk'),
+    /** desk | dropbox | kiosk | self */
+    returnedVia: text('returned_via'),
   },
   (t) => [index('library_loans_student_idx').on(t.studentId, t.returnedAt), index('library_loans_book_idx').on(t.bookId, t.returnedAt)],
 );
@@ -3730,6 +3763,10 @@ export const TENANT_TABLES = [
   'integrity_matches',
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
   'affiliation_settings', 'programme_affiliations',
+  // Library, hostel and transport depth (0168-0170).
+  'library_branches', 'library_budgets', 'library_acquisitions', 'library_copies', 'library_member_categories', 'library_members', 'library_fine_waivers', 'library_periodicals', 'library_periodical_issues', 'library_repository', 'library_repository_access', 'library_ill', 'library_gate_log', 'library_alert_subscriptions', 'library_clearances',
+  'hostels', 'hostel_room_types', 'hostel_applications', 'hostel_bed_holds', 'hostel_requests', 'hostel_deposits', 'hostel_settlements', 'hostel_staff', 'hostel_duties', 'hostel_sickbay', 'hostel_late_entries', 'hostel_incidents', 'hostel_room_assets', 'mess_leaves', 'mess_bills',
+  'transport_change_requests', 'transport_maintenance', 'transport_route_overrides', 'transport_pickup_persons', 'transport_handovers', 'transport_driver_duty',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -3748,6 +3785,15 @@ export const transportVehicles = pgTable(
     insuranceExpiresOn: date('insurance_expires_on'),
     fitnessExpiresOn: date('fitness_expires_on'),
     pucExpiresOn: date('puc_expires_on'),
+    // Migration 0170.
+    permitExpiresOn: date('permit_expires_on'),
+    roadTaxExpiresOn: date('road_tax_expires_on'),
+    /** diesel | petrol | cng | electric */
+    fuelType: text('fuel_type').notNull().default('diesel'),
+    /** own | contract */
+    ownership: text('ownership').notNull().default('own'),
+    /** The GPS tracker's id or SIM, for the vendor feed. */
+    gpsDevice: text('gps_device').notNull().default(''),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('transport_vehicles_reg_uq').on(t.tenantId, t.regNo)],
@@ -3764,6 +3810,10 @@ export const transportDrivers = pgTable('transport_drivers', {
   licenseNo: text('license_no'),
   licenseExpiresOn: date('license_expires_on'),
   active: boolean('active').notNull().default(true),
+  /** In the spare pool: covers routes whose driver is absent (migration 0170). */
+  isSpare: boolean('is_spare').notNull().default(false),
+  badgeNo: text('badge_no').notNull().default(''),
+  policeVerifiedOn: date('police_verified_on'),
   createdAt: createdAt(),
 });
 
@@ -3777,6 +3827,7 @@ export const transportRoutes = pgTable(
     driverId: uuid('driver_id').references(() => transportDrivers.id),
     monthlyFeePaise: integer('monthly_fee_paise').notNull().default(0),
     active: boolean('active').notNull().default(true),
+    code: text('code').notNull().default(''),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('transport_routes_name_uq').on(t.tenantId, t.name)],
@@ -3793,6 +3844,11 @@ export const transportStops = pgTable(
     lat: numeric('lat', { precision: 9, scale: 6, mode: 'number' }).notNull(),
     lng: numeric('lng', { precision: 9, scale: 6, mode: 'number' }).notNull(),
     pickupTime: text('pickup_time'),
+    // Migration 0170: the stop's own monthly fee (null = the route's), drop time, landmark and the manual order trips follow.
+    feePaise: bigint('fee_paise', { mode: 'number' }),
+    dropTime: text('drop_time'),
+    landmark: text('landmark').notNull().default(''),
+    sortOrder: integer('sort_order').notNull().default(0),
   },
   (t) => [uniqueIndex('transport_stops_seq_uq').on(t.routeId, t.seq)],
 );
@@ -3803,11 +3859,17 @@ export const transportAssignments = pgTable(
   {
     id: id(),
     tenantId: tenantId(),
-    studentId: uuid('student_id').notNull().references(() => students.id),
+    /** The student rider; null for a member of staff (then `staffUserId`). */
+    studentId: uuid('student_id').references(() => students.id),
     routeId: uuid('route_id').notNull().references(() => transportRoutes.id),
     stopId: uuid('stop_id').notNull().references(() => transportStops.id),
     startsOn: date('starts_on').notNull(),
     endedOn: date('ended_on'),
+    staffUserId: uuid('staff_user_id').references(() => users.id, { onDelete: 'cascade' }),
+    /** student | staff */
+    kind: text('kind').notNull().default('student'),
+    /** A fee agreed for this rider instead of the stop's or route's. */
+    feePaise: bigint('fee_paise', { mode: 'number' }),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('transport_assignments_active_uq').on(t.studentId).where(sql`ended_on is null`), index('transport_assignments_route_idx').on(t.routeId)],
@@ -3845,6 +3907,13 @@ export const transportTripEvents = pgTable(
     kind: text('kind').notNull(),
     stopId: uuid('stop_id').references(() => transportStops.id),
     at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+    // Alerts (overspeed, deviation) carry where and how fast, and who acknowledged them (migration 0170).
+    lat: numeric('lat', { precision: 9, scale: 6, mode: 'number' }),
+    lng: numeric('lng', { precision: 9, scale: 6, mode: 'number' }),
+    speedKmh: numeric('speed_kmh', { precision: 6, scale: 1, mode: 'number' }),
+    detail: text('detail'),
+    acknowledgedBy: uuid('acknowledged_by').references(() => users.id, { onDelete: 'set null' }),
+    acknowledgedAt: timestamp('acknowledged_at', { withTimezone: true }),
   },
   (t) => [index('transport_trip_events_trip_idx').on(t.tripId, t.at)],
 );
@@ -3855,8 +3924,19 @@ export const transportTripEvents = pgTable(
 
 export const hostelBlocks = pgTable(
   'hostel_blocks',
-  { id: id(), tenantId: tenantId(), name: text('name').notNull(), gender: text('gender').notNull().default('mixed'), createdAt: createdAt() },
-  (t) => [uniqueIndex('hostel_blocks_name_uq').on(t.tenantId, t.name)],
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    gender: text('gender').notNull().default('mixed'),
+    createdAt: createdAt(),
+    /** The hostel the block belongs to (migration 0169; foreign key to hostels in schema-lht). */
+    hostelId: uuid('hostel_id'),
+    /** Terms (years) allowed in the block; empty = any. */
+    allowedTerms: smallint('allowed_terms').array().notNull().default(sql`'{}'::smallint[]`),
+    sortOrder: integer('sort_order').notNull().default(0),
+  },
+  (t) => [uniqueIndex('hostel_blocks_name_uq').on(t.tenantId, t.hostelId, t.name)],
 );
 
 export const hostelRooms = pgTable(
@@ -3868,6 +3948,11 @@ export const hostelRooms = pgTable(
     number: text('number').notNull(),
     floor: integer('floor').notNull().default(0),
     monthlyFeePaise: integer('monthly_fee_paise').notNull().default(0),
+    // Migration 0169.
+    roomTypeId: uuid('room_type_id'),
+    /** available | maintenance | closed */
+    status: text('status').notNull().default('available'),
+    note: text('note').notNull().default(''),
   },
   (t) => [uniqueIndex('hostel_rooms_number_uq').on(t.blockId, t.number)],
 );
@@ -3894,6 +3979,8 @@ export const hostelAllotments = pgTable(
     startsOn: date('starts_on').notNull(),
     vacatedOn: date('vacated_on'),
     createdBy: uuid('created_by').notNull().references(() => users.id),
+    vacateReason: text('vacate_reason').notNull().default(''),
+    createdAt: createdAt(),
   },
   (t) => [
     uniqueIndex('hostel_allotments_student_uq').on(t.studentId).where(sql`vacated_on is null`),
@@ -3916,6 +4003,10 @@ export const hostelGatePasses = pgTable(
     inAt: timestamp('in_at', { withTimezone: true }),
     issuedBy: uuid('issued_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    /** The family's say on a pass the student asked for: pending | approved | rejected (null = not needed). */
+    parentStatus: text('parent_status'),
+    parentDecidedBy: uuid('parent_decided_by').references(() => users.id, { onDelete: 'set null' }),
+    parentDecidedAt: timestamp('parent_decided_at', { withTimezone: true }),
   },
   (t) => [index('hostel_gate_passes_student_idx').on(t.studentId, t.createdAt)],
 );
@@ -3977,7 +4068,19 @@ export const hostelComplaints = pgTable(
 
 export const messPlans = pgTable(
   'mess_plans',
-  { id: id(), tenantId: tenantId(), name: text('name').notNull(), monthlyFeePaise: integer('monthly_fee_paise').notNull(), meals: jsonb('meals').$type<string[]>().notNull().default([]), active: boolean('active').notNull().default(true) },
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    monthlyFeePaise: integer('monthly_fee_paise').notNull(),
+    meals: jsonb('meals').$type<string[]>().notNull().default([]),
+    active: boolean('active').notNull().default(true),
+    // Mess billing (migration 0169): fixed a month or per day, with a rebate for leave of at least `rebateMinDays` days.
+    billing: text('billing').notNull().default('fixed'),
+    perDayPaise: bigint('per_day_paise', { mode: 'number' }).notNull().default(0),
+    rebateMinDays: smallint('rebate_min_days').notNull().default(3),
+    rebatePerDayPaise: bigint('rebate_per_day_paise', { mode: 'number' }).notNull().default(0),
+  },
   (t) => [uniqueIndex('mess_plans_name_uq').on(t.tenantId, t.name)],
 );
 
@@ -5041,6 +5144,16 @@ export const transportIncidents = pgTable('transport_incidents', {
   resolution: text('resolution'),
   reportedBy: uuid('reported_by').notNull().references(() => users.id),
   resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+  // The insurance claim (migration 0170).
+  insurer: text('insurer').notNull().default(''),
+  claimNo: text('claim_no').notNull().default(''),
+  claimAmountPaise: bigint('claim_amount_paise', { mode: 'number' }).notNull().default(0),
+  /** none | filed | settled | rejected */
+  claimStatus: text('claim_status').notNull().default('none'),
+  claimFiledOn: date('claim_filed_on'),
+  settledPaise: bigint('settled_paise', { mode: 'number' }).notNull().default(0),
+  injuries: text('injuries').notNull().default(''),
+  policeReport: text('police_report').notNull().default(''),
   createdAt: createdAt(),
 });
 

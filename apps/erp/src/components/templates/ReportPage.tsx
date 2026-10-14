@@ -75,7 +75,7 @@ export function ReportPage<T>({
   const withQuery = (href: string) => (query ? `${href}${href.includes('?') ? '&' : '?'}${query}` : href);
 
   return (
-    <div className="grid gap-6" data-testid="report-page">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6" data-testid="report-page">
       <PageHeader
         title={title}
         subtitle={subtitle}

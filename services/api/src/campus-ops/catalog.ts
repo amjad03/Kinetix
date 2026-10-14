@@ -30,8 +30,8 @@ export const MODULE_ROLES: Record<OpsModule, RoleName[]> = {
 /** The document kinds whose numbers `nextNumber` issues, by the module whose settings page owns the series. */
 export const NUMBERING: Record<OpsModule, string[]> = {
   admissions: [],
-  library: ['LSC'],
-  hostel: [],
+  library: ['LSC', 'ACC', 'MEM', 'ACQ'],
+  hostel: ['HAP'],
   transport: [],
   canteen: [],
   inventory: ['TRF', 'RTN'],
@@ -46,17 +46,17 @@ export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
     defaults: { counsellorFollowUpDays: 2, enquirySource: 'walk_in' },
   },
   library: {
-    rules: { loanDays: 14, finePaisePerDay: 200, maxRenewals: 2, maxBooksPerStudent: 4, holdDays: 3 },
+    rules: { loanDays: 14, finePaisePerDay: 200, maxRenewals: 2, maxBooksPerStudent: 4, holdDays: 3, blockIssueAtFinePaise: 10000, bookBankDays: 150, cardReissueFeePaise: 5000, claimAfterDays: 15 },
     templates: { overdueReminder: '{name}, "{title}" was due on {due}. Please return it to avoid further fines.' },
     defaults: { stockCheckScope: 'all' },
   },
   hostel: {
-    rules: { outpassNeedsApproval: true, curfew: '21:00', maxLeaveDays: 7, parentNotifiedOnOut: true },
+    rules: { outpassNeedsApproval: true, curfew: '21:00', maxLeaveDays: 7, parentNotifiedOnOut: true, outpassNeedsParentApproval: false, lateEntryEscalateAfter: 3, lateEntryWindowDays: 30, cautionDepositPaise: 500000, allotWeightDistance: 1, allotWeightMerit: 1, allotWeightSeniority: 1 },
     templates: { outpassSlip: 'Out-pass for {name} ({room}) to {destination}, back by {back}.' },
     defaults: { messPlan: '', vacateNoticeDays: 15 },
   },
   transport: {
-    rules: { passValidMonths: 12, feeDueDay: 10, overspeedKmh: 50, docExpiryWarnDays: 30 },
+    rules: { passValidMonths: 12, feeDueDay: 10, overspeedKmh: 50, docExpiryWarnDays: 30, deviationMeters: 500, handoverOtpMinutes: 30, alertGapMinutes: 10 },
     templates: { busPass: '{name} · Route {route} · Stop {stop} · valid till {until}' },
     defaults: { direction: 'to_campus' },
   },
@@ -210,6 +210,172 @@ export const REPORTS: Record<string, ReportDef> = {
     columns: [['vehicle', 'Vehicle'], ['kind', 'Kind'], ['entries', 'Entries'], ['amount', 'Amount (₹)']],
     sql: `select v.reg_no as vehicle, e.kind, count(*)::int as entries, round(sum(e.amount_paise) / 100.0, 2) as amount from transport_expenses e join transport_vehicles v on v.id = e.vehicle_id
           where e.spent_on between ${D} and ${T} and $3::text is null group by v.reg_no, e.kind order by v.reg_no, e.kind`,
+    filters: ['from', 'to'],
+  },
+  // ---- library, hostel and transport registers (0168-0170) ----
+  'library.accession': {
+    module: 'library',
+    columns: [['accessionNo', 'Accession no.'], ['title', 'Title'], ['author', 'Author'], ['callNo', 'Call no.'], ['branch', 'Branch'], ['status', 'Status'], ['acquired', 'Acquired'], ['source', 'Source'], ['vendor', 'Vendor'], ['invoice', 'Invoice'], ['price', 'Price (₹)']],
+    sql: `select c.accession_no as "accessionNo", b.title, b.author, coalesce(b.call_no, '') as "callNo", coalesce(br.name, '') as branch, c.status, coalesce(c.acquired_on::text, '') as acquired, c.source, c.vendor, c.invoice_no as invoice, round(c.price_paise / 100.0, 2) as price
+          from library_copies c join library_books b on b.id = c.book_id left join library_branches br on br.id = c.branch_id
+          where coalesce(c.acquired_on, c.created_at::date) between ${D} and ${T} and ($3::text is null or c.status = $3) order by length(c.accession_no), c.accession_no limit 20000`,
+    filters: ['from', 'to', 'status'],
+  },
+  'library.overdue': {
+    module: 'library',
+    columns: [['title', 'Title'], ['accessionNo', 'Accession no.'], ['borrower', 'Borrower'], ['card', 'Card'], ['dueOn', 'Due'], ['daysOverdue', 'Days overdue'], ['phone', 'Phone']],
+    sql: `select b.title, coalesce(c.accession_no, '') as "accessionNo", coalesce(m.full_name, s.full_name) as borrower, coalesce(m.card_no, '') as card, l.due_on::text as "dueOn", (current_date - l.due_on)::int as "daysOverdue", coalesce(m.phone, '') as phone
+          from library_loans l join library_books b on b.id = l.book_id left join library_copies c on c.id = l.copy_id left join library_members m on m.id = l.member_id left join students s on s.id = l.student_id
+          where l.returned_at is null and l.due_on < current_date and $1::date is null and $2::date is null and $3::text is null order by l.due_on`,
+    filters: [],
+  },
+  'library.most-borrowed': {
+    module: 'library',
+    columns: [['title', 'Title'], ['author', 'Author'], ['issues', 'Times issued'], ['borrowers', 'Borrowers'], ['copies', 'Copies']],
+    sql: `select b.title, b.author, count(l.id)::int as issues, count(distinct coalesce(l.member_id, l.student_id))::int as borrowers, b.copies
+          from library_loans l join library_books b on b.id = l.book_id where l.issued_at::date between ${D} and ${T} and $3::text is null group by b.id order by issues desc, b.title limit 200`,
+    filters: ['from', 'to'],
+  },
+  'library.circulation-stats': {
+    module: 'library',
+    columns: [['month', 'Month'], ['issued', 'Issued'], ['returned', 'Returned'], ['renewed', 'Renewals'], ['borrowers', 'Borrowers'], ['fines', 'Fines (₹)']],
+    sql: `with m as (select generate_series(date_trunc('month', coalesce($1::date, current_date - 335)), date_trunc('month', least(coalesce($2::date, current_date), current_date)), interval '1 month')::date as d where $3::text is null)
+          select to_char(m.d, 'YYYY-MM') as month,
+            (select count(*)::int from library_loans l where date_trunc('month', l.issued_at)::date = m.d) as issued,
+            (select count(*)::int from library_loans l where date_trunc('month', l.returned_at)::date = m.d) as returned,
+            (select coalesce(sum(l.renew_count), 0)::int from library_loans l where date_trunc('month', l.issued_at)::date = m.d) as renewed,
+            (select count(distinct coalesce(l.member_id, l.student_id))::int from library_loans l where date_trunc('month', l.issued_at)::date = m.d) as borrowers,
+            (select round(coalesce(sum(l.fine_paise), 0) / 100.0, 2) from library_loans l where date_trunc('month', l.returned_at)::date = m.d) as fines
+          from m order by m.d`,
+    filters: ['from', 'to'],
+  },
+  'library.footfall': {
+    module: 'library',
+    columns: [['day', 'Day'], ['visits', 'Visits'], ['members', 'Members'], ['visitors', 'Visitors'], ['minutes', 'Average minutes']],
+    sql: `select to_char(g.in_at at time zone 'Asia/Kolkata', 'YYYY-MM-DD') as day, count(*)::int as visits, count(distinct g.member_id)::int as members, count(*) filter (where g.member_id is null)::int as visitors,
+            coalesce(round(avg(extract(epoch from (g.out_at - g.in_at)) / 60) filter (where g.out_at is not null)), 0)::int as minutes
+          from library_gate_log g where (g.in_at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and $3::text is null group by 1 order by 1 desc`,
+    filters: ['from', 'to'],
+  },
+  'library.naac': {
+    module: 'library',
+    columns: [['year', 'Financial year'], ['booksAdded', 'Copies added'], ['booksSpend', 'Books (₹)'], ['journals', 'Journals subscribed'], ['journalsSpend', 'Journals (₹)'], ['eresources', 'E-resources'], ['eresourceOpens', 'E-resource uses'], ['footfallPerDay', 'Readers a day'], ['issuesPerDay', 'Books issued a day']],
+    sql: `with y as (select distinct case when extract(month from d) >= 4 then extract(year from d)::int else extract(year from d)::int - 1 end as fy
+                     from generate_series(coalesce($1::date, current_date - 1095), least(coalesce($2::date, current_date), current_date), interval '1 month') d where $3::text is null)
+          select y.fy || '-' || lpad(((y.fy + 1) % 100)::text, 2, '0') as year,
+            (select count(*)::int from library_copies c where coalesce(c.acquired_on, c.created_at::date) between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "booksAdded",
+            (select round(coalesce(sum(c.price_paise), 0) / 100.0, 2) from library_copies c where coalesce(c.acquired_on, c.created_at::date) between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "booksSpend",
+            (select count(*)::int from library_periodicals p where p.subscription_from <= make_date(y.fy + 1, 3, 31) and coalesce(p.subscription_to, '2999-12-31') >= make_date(y.fy, 4, 1)) as journals,
+            (select round(coalesce(sum(p.cost_paise), 0) / 100.0, 2) from library_periodicals p where p.subscription_from between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "journalsSpend",
+            (select count(*)::int from library_eresources e where e.created_at::date <= make_date(y.fy + 1, 3, 31)) as eresources,
+            (select count(*)::int from library_eresource_access a where a.accessed_at::date between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "eresourceOpens",
+            (select round(count(*)::numeric / greatest(count(distinct (g.in_at at time zone 'Asia/Kolkata')::date), 1), 1) from library_gate_log g where (g.in_at at time zone 'Asia/Kolkata')::date between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "footfallPerDay",
+            (select round(count(*)::numeric / greatest(count(distinct (l.issued_at at time zone 'Asia/Kolkata')::date), 1), 1) from library_loans l where (l.issued_at at time zone 'Asia/Kolkata')::date between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "issuesPerDay"
+          from y order by y.fy desc`,
+    filters: ['from', 'to'],
+  },
+  'library.withdrawals': {
+    module: 'library',
+    columns: [['accessionNo', 'Accession no.'], ['title', 'Title'], ['author', 'Author'], ['withdrawnOn', 'Withdrawn on'], ['reason', 'Reason'], ['price', 'Price (₹)']],
+    sql: `select c.accession_no as "accessionNo", b.title, b.author, c.withdrawn_on::text as "withdrawnOn", c.withdrawn_reason as reason, round(c.price_paise / 100.0, 2) as price
+          from library_copies c join library_books b on b.id = c.book_id where c.status = 'withdrawn' and c.withdrawn_on between ${D} and ${T} and $3::text is null order by c.withdrawn_on desc`,
+    filters: ['from', 'to'],
+  },
+  'hostel.vacancy': {
+    module: 'hostel',
+    columns: [['hostel', 'Hostel'], ['block', 'Block'], ['room', 'Room'], ['type', 'Room type'], ['gender', 'For'], ['free', 'Free beds'], ['fee', 'Fee a month (₹)']],
+    sql: `select coalesce(h.name, '') as hostel, k.name as block, r.number as room, coalesce(t.name, '') as type, coalesce(nullif(k.gender, 'mixed'), h.gender, 'mixed') as gender,
+            (count(b.id) - count(a.id))::int as free, round(r.monthly_fee_paise / 100.0, 2) as fee
+          from hostel_rooms r join hostel_blocks k on k.id = r.block_id left join hostels h on h.id = k.hostel_id left join hostel_room_types t on t.id = r.room_type_id
+          left join hostel_beds b on b.room_id = r.id left join hostel_allotments a on a.bed_id = b.id and a.vacated_on is null
+          where r.status = 'available' and $1::date is null and $2::date is null and $3::text is null group by h.name, h.gender, k.name, k.gender, r.number, t.name, r.monthly_fee_paise having count(b.id) > count(a.id) order by h.name, k.name, r.number`,
+    filters: [],
+  },
+  'hostel.fee-dues': {
+    module: 'hostel',
+    columns: [['student', 'Student'], ['rollNo', 'Roll no.'], ['title', 'Fee'], ['dueOn', 'Due'], ['amount', 'Amount (₹)'], ['paid', 'Paid (₹)'], ['balance', 'Balance (₹)']],
+    sql: `select s.full_name as student, s.roll_no as "rollNo", i.title, i.due_on::text as "dueOn", round(i.amount_paise / 100.0, 2) as amount, round(i.paid_paise / 100.0, 2) as paid, round((i.amount_paise - i.paid_paise) / 100.0, 2) as balance
+          from fee_invoices i join students s on s.id = i.student_id where (i.title ilike 'hostel%' or i.title ilike 'mess%') and i.amount_paise > i.paid_paise and i.due_on between ${D} and ${T} and $3::text is null order by i.due_on, s.full_name`,
+    filters: ['from', 'to'],
+  },
+  'hostel.night-absent': {
+    module: 'hostel',
+    columns: [['night', 'Night'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['place', 'Block · Room']],
+    sql: `select n.night::text as night, s.full_name as student, s.roll_no as "rollNo",
+            coalesce((select k.name || ' · ' || r.number from hostel_allotments a join hostel_beds b on b.id = a.bed_id join hostel_rooms r on r.id = b.room_id join hostel_blocks k on k.id = r.block_id where a.student_id = s.id and a.starts_on <= n.night and (a.vacated_on is null or a.vacated_on >= n.night) limit 1), '') as place
+          from hostel_night_attendance n join students s on s.id = n.student_id where n.status = 'absent' and n.night between ${D} and ${T} and $3::text is null order by n.night desc, s.full_name`,
+    filters: ['from', 'to'],
+  },
+  'hostel.residents': {
+    module: 'hostel',
+    columns: [['hostel', 'Hostel'], ['block', 'Block'], ['room', 'Room'], ['bed', 'Bed'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['since', 'Since']],
+    sql: `select coalesce(h.name, '') as hostel, k.name as block, r.number as room, b.label as bed, s.full_name as student, s.roll_no as "rollNo", a.starts_on::text as since
+          from hostel_allotments a join students s on s.id = a.student_id join hostel_beds b on b.id = a.bed_id join hostel_rooms r on r.id = b.room_id join hostel_blocks k on k.id = r.block_id left join hostels h on h.id = k.hostel_id
+          where a.vacated_on is null and $1::date is null and $2::date is null and $3::text is null order by h.name, k.name, r.number, b.label`,
+    filters: [],
+  },
+  'hostel.late-entries': {
+    module: 'hostel',
+    columns: [['at', 'Came in'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['minutes', 'Minutes late'], ['reason', 'Reason'], ['escalated', 'Escalated']],
+    sql: `select to_char(e.entered_at at time zone 'Asia/Kolkata', 'YYYY-MM-DD HH24:MI') as at, s.full_name as student, s.roll_no as "rollNo", e.minutes_late as minutes, e.reason, case when e.escalated then 'yes' else '' end as escalated
+          from hostel_late_entries e join students s on s.id = e.student_id where (e.entered_at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and $3::text is null order by e.entered_at desc`,
+    filters: ['from', 'to'],
+  },
+  'hostel.mess-bills': {
+    module: 'hostel',
+    columns: [['month', 'Month'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['days', 'Days'], ['rebateDays', 'Rebate days'], ['gross', 'Gross (₹)'], ['rebate', 'Rebate (₹)'], ['net', 'Net (₹)'], ['status', 'Status']],
+    sql: `select b.month, s.full_name as student, s.roll_no as "rollNo", b.days, b.rebate_days as "rebateDays", round(b.gross_paise / 100.0, 2) as gross, round(b.rebate_paise / 100.0, 2) as rebate, round(b.net_paise / 100.0, 2) as net, b.status
+          from mess_bills b join students s on s.id = b.student_id where to_date(b.month || '-01', 'YYYY-MM-DD') between date_trunc('month', ${D}::date) and ${T} and ($3::text is null or b.status = $3) order by b.month desc, s.full_name`,
+    filters: ['from', 'to', 'status'],
+  },
+  'transport.stop-list': {
+    module: 'transport',
+    columns: [['route', 'Route'], ['stop', 'Stop'], ['pickup', 'Pick-up'], ['drop', 'Drop'], ['rider', 'Rider'], ['rollNo', 'Roll no.'], ['className', 'Class']],
+    sql: `select r.name as route, st.name as stop, coalesce(st.pickup_time, '') as pickup, coalesce(st.drop_time, '') as drop, coalesce(s.full_name, u.full_name) as rider, coalesce(s.roll_no, '') as "rollNo", coalesce(sec.display_name, 'Staff') as "className"
+          from transport_assignments a join transport_routes r on r.id = a.route_id join transport_stops st on st.id = a.stop_id left join students s on s.id = a.student_id left join sections sec on sec.id = s.section_id left join users u on u.id = a.staff_user_id
+          where a.ended_on is null and $1::date is null and $2::date is null and $3::text is null order by r.name, st.sort_order, st.seq, rider`,
+    filters: [],
+  },
+  'transport.expiry-calendar': {
+    module: 'transport',
+    columns: [['due', 'Due'], ['subject', 'Vehicle or driver'], ['document', 'Paper'], ['daysLeft', 'Days left']],
+    sql: `select due::text as due, subject, document, (due - current_date)::int as "daysLeft" from (
+            select insurance_expires_on as due, reg_no as subject, 'insurance' as document from transport_vehicles where status <> 'retired'
+            union all select fitness_expires_on, reg_no, 'fitness' from transport_vehicles where status <> 'retired'
+            union all select puc_expires_on, reg_no, 'puc' from transport_vehicles where status <> 'retired'
+            union all select permit_expires_on, reg_no, 'permit' from transport_vehicles where status <> 'retired'
+            union all select road_tax_expires_on, reg_no, 'road_tax' from transport_vehicles where status <> 'retired'
+            union all select license_expires_on, full_name, 'licence' from transport_drivers where active
+          ) x where due is not null and due between ${D} and ${T} and $3::text is null order by due, subject`,
+    filters: ['from', 'to'],
+  },
+  'transport.fee-dues': {
+    module: 'transport',
+    columns: [['route', 'Route'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['title', 'Fee'], ['dueOn', 'Due'], ['balance', 'Balance (₹)']],
+    sql: `select coalesce((select r.name from transport_assignments a join transport_routes r on r.id = a.route_id where a.student_id = s.id order by a.ended_on nulls first, a.starts_on desc limit 1), '') as route,
+            s.full_name as student, s.roll_no as "rollNo", i.title, i.due_on::text as "dueOn", round((i.amount_paise - i.paid_paise) / 100.0, 2) as balance
+          from fee_invoices i join students s on s.id = i.student_id where i.title ilike 'transport%' and i.amount_paise > i.paid_paise and i.due_on between ${D} and ${T} and $3::text is null order by route, s.full_name`,
+    filters: ['from', 'to'],
+  },
+  'transport.maintenance': {
+    module: 'transport',
+    columns: [['vehicle', 'Vehicle'], ['kind', 'Work'], ['dueOn', 'Due'], ['doneOn', 'Done'], ['cost', 'Cost (₹)'], ['vendor', 'Workshop'], ['status', 'Status']],
+    sql: `select v.reg_no as vehicle, m.kind, coalesce(m.due_on::text, '') as "dueOn", coalesce(m.done_on::text, '') as "doneOn", round(m.cost_paise / 100.0, 2) as cost, m.vendor, m.status
+          from transport_maintenance m join transport_vehicles v on v.id = m.vehicle_id where coalesce(m.done_on, m.due_on, m.created_at::date) between ${D} and ${T} and ($3::text is null or m.status = $3) order by coalesce(m.due_on, m.done_on) desc`,
+    filters: ['from', 'to', 'status'],
+  },
+  'transport.incidents': {
+    module: 'transport',
+    columns: [['at', 'When'], ['vehicle', 'Vehicle'], ['kind', 'Kind'], ['severity', 'Severity'], ['description', 'What happened'], ['status', 'Status'], ['claim', 'Claim'], ['claimed', 'Claimed (₹)'], ['settled', 'Settled (₹)']],
+    sql: `select to_char(i.occurred_at at time zone 'Asia/Kolkata', 'YYYY-MM-DD') as at, coalesce(v.reg_no, '') as vehicle, i.kind, i.severity, i.description, i.status, i.claim_status as claim, round(i.claim_amount_paise / 100.0, 2) as claimed, round(i.settled_paise / 100.0, 2) as settled
+          from transport_incidents i left join transport_vehicles v on v.id = i.vehicle_id where (i.occurred_at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and ($3::text is null or i.status = $3) order by i.occurred_at desc`,
+    filters: ['from', 'to', 'status'],
+  },
+  'transport.alerts': {
+    module: 'transport',
+    columns: [['at', 'When'], ['route', 'Route'], ['kind', 'Alert'], ['speed', 'Speed (km/h)'], ['detail', 'Detail']],
+    sql: `select to_char(e.at at time zone 'Asia/Kolkata', 'YYYY-MM-DD HH24:MI') as at, r.name as route, e.kind, coalesce(e.speed_kmh, 0) as speed, coalesce(e.detail, '') as detail
+          from transport_trip_events e join transport_trips t on t.id = e.trip_id join transport_routes r on r.id = t.route_id where e.kind in ('overspeed', 'deviation') and (e.at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and $3::text is null order by e.at desc limit 5000`,
     filters: ['from', 'to'],
   },
   'canteen.sales': {

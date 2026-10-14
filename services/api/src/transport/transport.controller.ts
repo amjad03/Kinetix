@@ -16,6 +16,9 @@ import { students, tenants, transportExpenses, transportGpsSources, transportInc
 import { FeesService } from '../fees/fees.service.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { GPS_ADAPTERS } from './gps-adapter.js';
+import { usersWithRoles } from '../common/lht-kit.js';
+import { transportRouteOverrides } from '../db/schema-lht.js';
+import { offRouteM } from './transport-rules.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 
@@ -131,12 +134,12 @@ export class TransportController {
       const today = await this.today(tx);
       const warn = Number((await readSettings(tx, p.tenantId, 'transport')).rules.docExpiryWarnDays);
       const limit = sql`(${today}::date + ${warn}::int)`;
-      const v = await tx.select().from(transportVehicles).where(sql`${transportVehicles.status} <> 'retired' and (${transportVehicles.insuranceExpiresOn} <= ${limit} or ${transportVehicles.fitnessExpiresOn} <= ${limit} or ${transportVehicles.pucExpiresOn} <= ${limit})`);
+      const v = await tx.select().from(transportVehicles).where(sql`${transportVehicles.status} <> 'retired' and (${transportVehicles.insuranceExpiresOn} <= ${limit} or ${transportVehicles.fitnessExpiresOn} <= ${limit} or ${transportVehicles.pucExpiresOn} <= ${limit} or ${transportVehicles.permitExpiresOn} <= ${limit} or ${transportVehicles.roadTaxExpiresOn} <= ${limit})`);
       const d = await tx.select().from(transportDrivers).where(sql`${transportDrivers.active} and ${transportDrivers.licenseExpiresOn} <= ${limit}`);
       return {
         today,
         items: [
-          ...v.flatMap((x) => (['insuranceExpiresOn', 'fitnessExpiresOn', 'pucExpiresOn'] as const).filter((k) => x[k] && x[k]! <= addDays(today, warn)).map((k) => ({ kind: k.replace('ExpiresOn', ''), subject: x.regNo, expiresOn: x[k]!, expired: x[k]! < today }))),
+          ...v.flatMap((x) => (['insuranceExpiresOn', 'fitnessExpiresOn', 'pucExpiresOn', 'permitExpiresOn', 'roadTaxExpiresOn'] as const).filter((k) => x[k] && x[k]! <= addDays(today, warn)).map((k) => ({ kind: k.replace('ExpiresOn', ''), subject: x.regNo, expiresOn: x[k]!, expired: x[k]! < today }))),
           ...d.map((x) => ({ kind: 'licence', subject: x.fullName, expiresOn: x.licenseExpiresOn!, expired: x.licenseExpiresOn! < today })),
         ].sort((a, b) => a.expiresOn.localeCompare(b.expiresOn)),
       };
@@ -203,7 +206,7 @@ export class TransportController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [route] = await tx.select().from(transportRoutes).where(eq(transportRoutes.id, id));
       if (!route) throw new NotFoundException('Route not found');
-      const stops = await tx.select().from(transportStops).where(eq(transportStops.routeId, id)).orderBy(asc(transportStops.seq));
+      const stops = await tx.select().from(transportStops).where(eq(transportStops.routeId, id)).orderBy(asc(transportStops.sortOrder), asc(transportStops.seq));
       const riders = await tx
         .select({ studentId: students.id, fullName: students.fullName, rollNo: students.rollNo, stopId: transportAssignments.stopId })
         .from(transportAssignments)
@@ -221,8 +224,10 @@ export class TransportController {
       this.db.withTenant(p.tenantId, async (tx) => {
         const [route] = await tx.select({ id: transportRoutes.id }).from(transportRoutes).where(eq(transportRoutes.id, id)).for('update');
         if (!route) throw new NotFoundException('Route not found');
-        const [{ max }] = await tx.select({ max: sql<number>`coalesce(max(${transportStops.seq}), 0)::int` }).from(transportStops).where(eq(transportStops.routeId, id));
-        const [s] = await tx.insert(transportStops).values({ tenantId: p.tenantId, routeId: id, ...b, seq: b.seq ?? max + 1 }).returning();
+        const [{ max, ord }] = await tx.select({ max: sql<number>`coalesce(max(${transportStops.seq}), 0)::int`, ord: sql<number>`coalesce(max(${transportStops.sortOrder}), 0)::int` }).from(transportStops).where(eq(transportStops.routeId, id));
+        const seq = b.seq ?? max + 1;
+        // A stop given its number goes in that place in the running order; otherwise at the end.
+        const [s] = await tx.insert(transportStops).values({ tenantId: p.tenantId, routeId: id, ...b, seq, sortOrder: b.seq ? seq * 10 : ord + 10 }).returning();
         await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.stop_added', subjectType: 'transport_stop', subjectId: s.id });
         return s;
       }),
@@ -276,11 +281,14 @@ export class TransportController {
   @Auth('user', TRANSPORT_ROLES)
   charge(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(FeeBody)) b: z.infer<typeof FeeBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const rows = await tx
-        .select({ studentId: transportAssignments.studentId, amountPaise: transportRoutes.monthlyFeePaise })
+      // Students only (staff pay through payroll); a seat's own fee, else its stop's, else the route's.
+      const seats = await tx
+        .select({ studentId: transportAssignments.studentId, amountPaise: sql<number>`coalesce(${transportAssignments.feePaise}, ${transportStops.feePaise}, ${transportRoutes.monthlyFeePaise})`.mapWith(Number) })
         .from(transportAssignments)
         .innerJoin(transportRoutes, eq(transportRoutes.id, transportAssignments.routeId))
-        .where(and(isNull(transportAssignments.endedOn), b.routeId ? eq(transportAssignments.routeId, b.routeId) : undefined));
+        .innerJoin(transportStops, eq(transportStops.id, transportAssignments.stopId))
+        .where(and(isNull(transportAssignments.endedOn), sql`${transportAssignments.studentId} is not null`, b.routeId ? eq(transportAssignments.routeId, b.routeId) : undefined));
+      const rows = seats.map((s) => ({ studentId: s.studentId!, amountPaise: s.amountPaise }));
       const dueOn = b.dueOn ?? nextDueDay(await this.today(tx), Number((await readSettings(tx, p.tenantId, 'transport')).rules.feeDueDay));
       const res = await this.fees.chargeStudents(tx, p, b.title, dueOn, rows);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.fees_charged', data: { ...b, dueOn, ...res } });
@@ -301,7 +309,7 @@ export class TransportController {
         .innerJoin(transportDrivers, and(eq(transportDrivers.id, transportRoutes.driverId), eq(transportDrivers.userId, p.userId)))
         .leftJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId))
         .where(eq(transportRoutes.active, true));
-      const withStops = await Promise.all(routes.map(async (r) => ({ ...r, stops: await tx.select().from(transportStops).where(eq(transportStops.routeId, r.id)).orderBy(asc(transportStops.seq)) })));
+      const withStops = await Promise.all(routes.map(async (r) => ({ ...r, stops: await tx.select().from(transportStops).where(eq(transportStops.routeId, r.id)).orderBy(asc(transportStops.sortOrder), asc(transportStops.seq)) })));
       const [trip] = await tx.select().from(transportTrips).where(and(eq(transportTrips.driverUserId, p.userId), eq(transportTrips.status, 'running')));
       return { routes: withStops, trip: trip ?? null };
     });
@@ -366,6 +374,8 @@ export class TransportController {
         }
       }
       await tx.update(transportTrips).set({ lastStopSeq: reached, lastLat: b.lat, lastLng: b.lng, lastSpeedKmh: b.speedKmh ?? null, lastPingAt: now, pings: sql`${transportTrips.pings} + 1` }).where(eq(transportTrips.id, id));
+      // The route is checked from the first stop on (before it the bus is still coming from the depot).
+      await this.alerts(tx, tenantId, trip.id, route.name, here, b.speedKmh ?? null, reached > 0 ? stops : [], now);
       const people = await tx.execute<{ user_id: string }>(sql`
         select g.user_id from guardians g join transport_assignments a on a.student_id = g.student_id where a.route_id = ${trip.routeId}::uuid and a.ended_on is null
         union select s.user_id from students s join transport_assignments a on a.student_id = s.id where a.route_id = ${trip.routeId}::uuid and a.ended_on is null and s.user_id is not null
@@ -448,7 +458,7 @@ export class TransportController {
         .leftJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId))
         .where(and(eq(transportAssignments.studentId, studentId), isNull(transportAssignments.endedOn)));
       if (!a) return { assigned: false as const };
-      const stops = await tx.select({ id: transportStops.id, name: transportStops.name, seq: transportStops.seq, lat: transportStops.lat, lng: transportStops.lng }).from(transportStops).where(eq(transportStops.routeId, a.routeId)).orderBy(asc(transportStops.seq));
+      const stops = await tx.select({ id: transportStops.id, name: transportStops.name, seq: transportStops.seq, lat: transportStops.lat, lng: transportStops.lng }).from(transportStops).where(eq(transportStops.routeId, a.routeId)).orderBy(asc(transportStops.sortOrder), asc(transportStops.seq));
       const [trip] = await tx.select().from(transportTrips).where(and(eq(transportTrips.routeId, a.routeId), eq(transportTrips.status, 'running')));
       let bus: null | { tripId: string; lat: number; lng: number; speedKmh: number | null; at: Date | null; etaMinutes: number | null; stopsAway: number } = null;
       if (trip?.lastLat != null && trip.lastLng != null) {
@@ -614,7 +624,16 @@ export class TransportController {
       if (!src) throw new UnauthorizedException('Bad token');
       const out: { tripId: string; fix: { lat: number; lng: number; speedKmh?: number } }[] = [];
       for (const fix of adapter.parse(body)) {
-        const [t] = await tx.select({ id: transportTrips.id }).from(transportTrips).innerJoin(transportRoutes, eq(transportRoutes.id, transportTrips.routeId)).innerJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId)).where(and(eq(transportTrips.status, 'running'), eq(transportVehicles.regNo, fix.vehicle)));
+        // The route's own vehicle (by registration or tracker id), or a substitute vehicle running the route today.
+        const sameVehicle = sql`(${transportVehicles.regNo} = ${fix.vehicle} or upper(${transportVehicles.gpsDevice}) = ${fix.vehicle})`;
+        let [t] = await tx.select({ id: transportTrips.id }).from(transportTrips).innerJoin(transportRoutes, eq(transportRoutes.id, transportTrips.routeId)).innerJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId)).where(and(eq(transportTrips.status, 'running'), sameVehicle));
+        if (!t)
+          [t] = await tx
+            .select({ id: transportTrips.id })
+            .from(transportTrips)
+            .innerJoin(transportRouteOverrides, eq(transportRouteOverrides.routeId, transportTrips.routeId))
+            .innerJoin(transportVehicles, eq(transportVehicles.id, transportRouteOverrides.substituteVehicleId))
+            .where(and(eq(transportTrips.status, 'running'), sameVehicle, sql`(${transportTrips.startedAt} at time zone 'Asia/Kolkata')::date between ${transportRouteOverrides.fromOn} and ${transportRouteOverrides.untilOn}`));
         if (t) out.push({ tripId: t.id, fix });
       }
       return out;
@@ -625,8 +644,36 @@ export class TransportController {
 
   // --- helpers -----------------------------------------------------------------------------
 
+  /**
+   * Over-speed (above the limit in transport settings) and route deviation (farther than the allowed distance from
+   * every leg of the route): logged on the trip and sent to the transport office, at most once per kind every few minutes.
+   */
+  private async alerts(tx: Tx, tenantId: string, tripId: string, routeName: string, here: { lat: number; lng: number }, speedKmh: number | null, stops: { lat: number; lng: number }[], now: Date) {
+    const rules = (await readSettings(tx, tenantId, 'transport')).rules;
+    const found: { kind: 'overspeed' | 'deviation'; detail: string }[] = [];
+    if (speedKmh != null && Number(rules.overspeedKmh) > 0 && speedKmh > Number(rules.overspeedKmh)) found.push({ kind: 'overspeed', detail: `${speedKmh} km/h (limit ${String(rules.overspeedKmh)})` });
+    const off = offRouteM(here, stops);
+    if (off != null && Number(rules.deviationMeters) > 0 && off > Number(rules.deviationMeters)) found.push({ kind: 'deviation', detail: `${Math.round(off)} m off the route` });
+    if (!found.length) return;
+    const gap = new Date(now.getTime() - (Number(rules.alertGapMinutes) || 10) * 60_000).toISOString();
+    const managers = await usersWithRoles(tx, TRANSPORT_ROLES);
+    for (const a of found) {
+      const [recent] = await tx.select({ id: transportTripEvents.id }).from(transportTripEvents).where(and(eq(transportTripEvents.tripId, tripId), eq(transportTripEvents.kind, a.kind), sql`${transportTripEvents.at} > ${gap}::timestamptz`)).limit(1);
+      if (recent) continue;
+      const [e] = await tx.insert(transportTripEvents).values({ tenantId, tripId, kind: a.kind, at: now, lat: here.lat, lng: here.lng, speedKmh, detail: a.detail }).returning({ id: transportTripEvents.id });
+      const words = a.kind === 'overspeed' ? { en: 'over-speeding', hi: 'तेज़ गति से चल रहा है', kn: 'ಅತಿ ವೇಗದಲ್ಲಿ ಓಡುತ್ತಿದೆ' } : { en: 'off its route', hi: 'मार्ग से हट गया है', kn: 'ಮಾರ್ಗದಿಂದ ಹೊರಗಿದೆ' };
+      await this.notifications.notifyUsers(tx, managers, {
+        kind: 'transport',
+        text: { en: { title: `Route ${routeName}: bus ${words.en}`, body: a.detail }, hi: { title: `मार्ग ${routeName}: बस ${words.hi}`, body: a.detail }, kn: { title: `ಮಾರ್ಗ ${routeName}: ಬಸ್ ${words.kn}`, body: a.detail } },
+        data: { tripId, alertId: e.id },
+        dedupeKey: `transport-alert:${e.id}`,
+      });
+    }
+  }
+
+  /** The route's stops in running order (the manual order kept on the stops list), reversed for the drop run. */
   private async orderedStops(tx: Tx, routeId: string, direction: string) {
-    return tx.select().from(transportStops).where(eq(transportStops.routeId, routeId)).orderBy(direction === 'drop' ? desc(transportStops.seq) : asc(transportStops.seq));
+    return tx.select().from(transportStops).where(eq(transportStops.routeId, routeId)).orderBy(...(direction === 'drop' ? [desc(transportStops.sortOrder), desc(transportStops.seq)] : [asc(transportStops.sortOrder), asc(transportStops.seq)]));
   }
 
   private async assertRefs(tx: Tx, b: { vehicleId?: string | null; driverId?: string | null }) {
