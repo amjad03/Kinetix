@@ -4,15 +4,17 @@ import { api, load } from './api';
 import type { DashboardRollup } from './dashboard';
 import { schoolToday } from './school';
 import { setupSteps, type SetupStep } from './setup';
+import type { AffiliationOverview } from './affiliation';
 import type { ClassesDay, FeeSummary, Structure } from './types';
 
 /** Loads the facts behind the setup checklist (best effort: a failed call counts as "not done"). */
 export const loadSetup = cache(async (): Promise<SetupStep[]> => {
-  const [st, roll, fees, day] = await Promise.all([
+  const [st, roll, fees, day, aff] = await Promise.all([
     load(() => api<Structure>('/v1/admin/structure')),
     load(() => api<DashboardRollup>('/v1/admin/dashboard')),
     load(() => api<FeeSummary>('/v1/fees/summary')),
     load(() => api<ClassesDay>(`/v1/admin/classes?date=${schoolToday()}`)),
+    load(() => api<AffiliationOverview>('/v1/affiliation')),
   ]);
   const s = st.data;
   return setupSteps({
@@ -24,5 +26,6 @@ export const loadSetup = cache(async (): Promise<SetupStep[]> => {
     staff: roll.data?.staff?.total,
     classesScheduled: day.data?.classes.length,
     feesBilledPaise: fees.data?.billedPaise,
+    affiliated: !!aff.data?.selected,
   });
 });

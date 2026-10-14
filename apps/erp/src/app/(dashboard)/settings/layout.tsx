@@ -6,7 +6,7 @@ import { canSee } from '@/lib/access';
 import { NAV_GROUPS, type NavItem } from '@/lib/nav';
 
 const GROUPS: { label: MessageKey; hrefs: string[] }[] = [
-  { label: 'v2.set.g.institution', hrefs: ['/settings', '/settings/institution', '/settings/buildings', '/institution-setup', '/sso'] },
+  { label: 'v2.set.g.institution', hrefs: ['/settings', '/settings/institution', '/settings/affiliation', '/settings/buildings', '/institution-setup', '/sso'] },
   { label: 'v2.set.g.automation', hrefs: ['/workflows', '/delegations'] },
   { label: 'v2.set.g.data', hrefs: ['/connectors', '/integrations', '/import', '/import/migration'] },
   { label: 'v2.set.g.compliance', hrefs: ['/audit', '/governance/rules', '/governance/incidents', '/governance/retention', '/dpdp', '/integrity', '/ai/audit', '/ai/evals'] },

@@ -1,12 +1,24 @@
 import { count, isNotNull } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
 import { academicDocRequests, examOfficeSettings, hallTickets } from '../db/schema.js';
-import { formatSeries, withDefaults, type OfficeSettings } from './exam-office.logic.js';
+import { resolveAffiliation } from '../affiliation/resolve.js';
+import type { ProfileRules } from '../affiliation/rules.js';
+import { DEFAULT_SETTINGS, formatSeries, withDefaults, type OfficeSettings } from './exam-office.logic.js';
 
-/** The exam office settings of the tenant in `tx` (defaults filled in), and whether the office has saved any. */
+/** The office defaults under an affiliation profile: its grace rule and revaluation window replace the generic ones. */
+export function profileOfficeDefaults(rules: ProfileRules): OfficeSettings {
+  return {
+    ...DEFAULT_SETTINGS,
+    grace: rules.grace.enabled ? { maxPerSubject: rules.grace.maxPerSubject, maxTotal: rules.grace.maxTotal, onlyToPass: rules.grace.allOrNothing } : { ...DEFAULT_SETTINGS.grace, maxPerSubject: 0, maxTotal: 0 },
+    revaluation: { ...DEFAULT_SETTINGS.revaluation, windowDays: rules.revaluation.windowDays ?? DEFAULT_SETTINGS.revaluation.windowDays },
+  };
+}
+
+/** The exam office settings of the tenant in `tx` (defaults filled in, from the affiliation profile when there is one), and whether the office has saved any. */
 export async function officeSettings(tx: Tx): Promise<{ settings: OfficeSettings; configured: boolean }> {
   const [row] = await tx.select({ settings: examOfficeSettings.settings }).from(examOfficeSettings);
-  return { settings: withDefaults(row?.settings), configured: !!row };
+  const affiliation = await resolveAffiliation(tx, null);
+  return { settings: withDefaults(row?.settings, affiliation ? profileOfficeDefaults(affiliation.rules) : DEFAULT_SETTINGS), configured: !!row };
 }
 
 export const loadOfficeSettings = async (tx: Tx) => (await officeSettings(tx)).settings;

@@ -9,7 +9,26 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { assessmentSchemes, gradeScales, schemeComponents, subjects } from '../db/schema.js';
 import { headsSubject } from '../departments/departments.controller.js';
 import { isSchoolAdmin } from '../teacher/teacher.service.js';
-import { GRADE_SCALE_PRESETS, SCHEME_PRESETS, validateBands, validateWeights } from './grading.js';
+import { GRADE_SCALE_PRESETS, SCHEME_PRESETS, validateBands, validateWeights, type GradeScaleRules } from './grading.js';
+import { passOf, presetComponents, scaleOf } from '../affiliation/maths.js';
+import { resolveAffiliation } from '../affiliation/resolve.js';
+
+/** The key under which the institution's affiliation profile appears among the presets. */
+export const AFFILIATION_PRESET = 'affiliation';
+
+/** Presets from the institution's affiliation profile (its grade scale, theory and practical layouts), or none. */
+async function affiliationPresets(tx: Tx) {
+  const a = await resolveAffiliation(tx, null);
+  if (!a) return null;
+  const name = `${a.profile.shortName} ${a.scheme.name}`;
+  const scale = { name, ...scaleOf(a.rules) };
+  const credits = a.rules.credits.perTermTypical ? 4 : 1;
+  const schemes: Record<string, { name: string; components: ReturnType<typeof presetComponents>; pass: ReturnType<typeof passOf>; credits: number }> = {
+    [AFFILIATION_PRESET]: { name: `${name}: theory`, components: presetComponents(a.rules), pass: passOf(a.rules), credits },
+  };
+  if (a.rules.assessment.practicalComponents) schemes[`${AFFILIATION_PRESET}-practical`] = { name: `${name}: practical`, components: presetComponents(a.rules, 'practical'), pass: passOf(a.rules), credits: credits === 4 ? 2 : 1 };
+  return { profile: { code: a.profile.code, scheme: a.scheme.code, name, ruleAuthority: a.scheme.ruleAuthority }, scale, schemes };
+}
 
 export const ADMIN: RoleName[] = ['tenant_admin', 'principal', 'exam_controller'];
 const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
@@ -42,11 +61,18 @@ const SchemeBody = z.object({
 export class SchemesController {
   constructor(private readonly db: DbService) {}
 
-  /** Ready-made grade scales and component layouts (Bangalore University NEP, UGC, CBSE) to copy from. */
+  /**
+   * Ready-made grade scales and component layouts (Bangalore University NEP, UGC, CBSE) to copy from; the
+   * institution's affiliation profile comes first under the key "affiliation" when one is selected.
+   */
   @Get('scheme-presets')
   @Auth('user', STAFF)
-  presets() {
-    return { gradeScales: GRADE_SCALE_PRESETS, schemes: SCHEME_PRESETS };
+  presets(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const a = await affiliationPresets(tx);
+      if (!a) return { gradeScales: GRADE_SCALE_PRESETS, schemes: SCHEME_PRESETS, affiliation: null };
+      return { gradeScales: { [AFFILIATION_PRESET]: a.scale, ...GRADE_SCALE_PRESETS }, schemes: { ...a.schemes, ...SCHEME_PRESETS }, affiliation: a.profile };
+    });
   }
 
   @Get('grade-scales')
@@ -58,11 +84,13 @@ export class SchemesController {
   @Post('grade-scales')
   @Auth('user', ADMIN)
   createScale(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ScaleBody)) body: z.infer<typeof ScaleBody>) {
-    const rules = body.rules ?? (body.preset ? GRADE_SCALE_PRESETS[body.preset] : undefined);
-    if (!rules) throw new BadRequestException('Give the grade bands or a preset');
-    const err = validateBands(rules.bands);
-    if (err) throw new BadRequestException(err);
     return this.db.withTenant(p.tenantId, async (tx) => {
+      const fromProfile = body.preset === AFFILIATION_PRESET ? (await affiliationPresets(tx))?.scale : undefined;
+      if (body.preset === AFFILIATION_PRESET && !fromProfile) throw new BadRequestException('Choose the university or board the institution is affiliated to first');
+      const rules: GradeScaleRules | undefined = body.rules ?? fromProfile ?? (body.preset ? GRADE_SCALE_PRESETS[body.preset] : undefined);
+      if (!rules) throw new BadRequestException('Give the grade bands or a preset');
+      const err = validateBands(rules.bands);
+      if (err) throw new BadRequestException(err);
       if (body.isDefault) await tx.update(gradeScales).set({ isDefault: false });
       const [row] = await tx.insert(gradeScales).values({ tenantId: p.tenantId, name: body.name, rules: { bands: rules.bands, pointsMode: rules.pointsMode, decimals: rules.decimals }, isDefault: body.isDefault }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'gradescale.created', subjectType: 'grade_scale', subjectId: row.id, data: { name: body.name } });

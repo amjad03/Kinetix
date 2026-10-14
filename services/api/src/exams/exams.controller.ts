@@ -521,7 +521,7 @@ export class ExamSessionsController {
       .where(and(eq(examResults.sessionId, sessionId), sectionId ? eq(students.sectionId, sectionId) : sql`true`))
       .orderBy(asc(students.rollNo));
     const lines = rows.length
-      ? await tx.select({ resultId: examResultLines.resultId, code: subjects.code, subject: subjects.name, credits: examResultLines.credits, percent: examResultLines.percent, grade: examResultLines.grade, gradePoint: examResultLines.gradePoint, passed: examResultLines.passed }).from(examResultLines).innerJoin(subjects, eq(subjects.id, examResultLines.subjectId)).where(inArray(examResultLines.resultId, rows.map((r) => r.id)))
+      ? await tx.select({ resultId: examResultLines.resultId, code: subjects.code, subject: subjects.name, credits: examResultLines.credits, percent: examResultLines.percent, grade: examResultLines.grade, gradePoint: examResultLines.gradePoint, passed: examResultLines.passed, reasons: examResultLines.reasons, grace: examResultLines.grace }).from(examResultLines).innerJoin(subjects, eq(subjects.id, examResultLines.subjectId)).where(inArray(examResultLines.resultId, rows.map((r) => r.id)))
       : [];
     return rows.map((r) => ({ ...r, lines: lines.filter((l) => l.resultId === r.id) }));
   }

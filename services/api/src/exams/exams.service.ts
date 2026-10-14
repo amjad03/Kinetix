@@ -4,6 +4,8 @@ import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
 import { assessments, assessmentSchemes, examPapers, examResultLines, examResults, examSessions, gradeScales, marks, schemeComponents, students, subjects } from '../db/schema.js';
 import { cgpa, sgpa, subjectResult, type ComponentEvidence, type GradeScaleRules, type PassRules, type SchemeComponent, type SubjectResult } from './grading.js';
+import { applyGrace, examPassed, passOf, scaleOf } from '../affiliation/maths.js';
+import { resolveAffiliation, type ResolvedAffiliation } from '../affiliation/resolve.js';
 
 export type SessionRow = typeof examSessions.$inferSelect;
 
@@ -24,6 +26,8 @@ export interface ProcessedStudent {
   creditsEarned: number;
   creditPoints: number;
   outcome: 'pass' | 'fail';
+  /** The affiliation profile the result was graded under, or null without one. */
+  rulesRef: ResolvedAffiliation['ref'] | null;
 }
 
 /** Loads schemes and marks, runs the grading maths and stores results. The maths is in grading.ts. */
@@ -35,12 +39,25 @@ export class ExamsService {
     return s;
   }
 
-  async scheme(tx: Tx, subjectId: string, academicYearId: string): Promise<SchemeBundle | null> {
+  /**
+   * A subject's scheme for the year. Under an affiliating university's (or board's) profile the profile's grade
+   * scale and pass rules replace the scheme's own (the university decides them, not the college); with an
+   * autonomous profile, or none, the scheme's stand. An approved `grading/pass-mark` rule overlays either.
+   */
+  async scheme(tx: Tx, subjectId: string, academicYearId: string, affiliation?: ResolvedAffiliation | null): Promise<SchemeBundle | null> {
     const [sc] = await tx.select().from(assessmentSchemes).where(and(eq(assessmentSchemes.subjectId, subjectId), eq(assessmentSchemes.academicYearId, academicYearId)));
     if (!sc) return null;
     const [scale] = await tx.select().from(gradeScales).where(eq(gradeScales.id, sc.gradeScaleId));
     const comps = await tx.select().from(schemeComponents).where(eq(schemeComponents.schemeId, sc.id)).orderBy(asc(schemeComponents.ord));
-    return { subjectId, credits: sc.credits, pass: overlayPassRules(sc.passRules as PassRules, await governedParams(tx, 'grading', 'pass-mark')), scale: scale.rules as GradeScaleRules, components: comps.map((c) => ({ id: c.id, code: c.code, name: c.name, kind: c.kind, weight: c.weight })) };
+    const university = affiliation?.scheme.ruleAuthority === 'university' ? affiliation.rules : null;
+    const pass = university ? passOf(university) : (sc.passRules as PassRules);
+    return {
+      subjectId,
+      credits: sc.credits,
+      pass: overlayPassRules(pass, await governedParams(tx, 'grading', 'pass-mark')),
+      scale: university ? scaleOf(university) : (scale.rules as GradeScaleRules),
+      components: comps.map((c) => ({ id: c.id, code: c.code, name: c.name, kind: c.kind, weight: c.weight })),
+    };
   }
 
   /** Problems that stop a session from being processed (missing schemes, unlinked or unverified marks). */
@@ -68,9 +85,11 @@ export class ExamsService {
     const papers = await tx.select().from(examPapers).where(eq(examPapers.sessionId, s.id));
     const sectionIds = [...new Set(papers.map((p) => p.sectionId))];
     const roster = await tx.select({ id: students.id, sectionId: students.sectionId }).from(students).where(and(inArray(students.sectionId, sectionIds), eq(students.status, 'active'), onlyStudent ? eq(students.id, onlyStudent) : sql`true`));
+    const affiliation = await resolveAffiliation(tx, s.programId);
+    const rules = affiliation?.rules ?? null;
     const bundles = new Map<string, SchemeBundle>();
     for (const p of papers) if (!bundles.has(p.subjectId)) {
-      const b = await this.scheme(tx, p.subjectId, s.academicYearId);
+      const b = await this.scheme(tx, p.subjectId, s.academicYearId, affiliation);
       if (!b) throw new ConflictException('A subject has no assessment scheme');
       bundles.set(p.subjectId, b);
     }
@@ -86,7 +105,7 @@ export class ExamsService {
     const subjectIds = [...bundles.keys()].filter((id) => papers.some((p) => p.subjectId === id));
     const out: ProcessedStudent[] = [];
     for (const st of roster) {
-      const lines = subjectIds
+      const graded = subjectIds
         .filter((sub) => papers.some((p) => p.subjectId === sub && p.sectionId === st.sectionId))
         .map((sub) => {
           const b = bundles.get(sub)!;
@@ -97,28 +116,33 @@ export class ExamsService {
               return { scored: m ? (m.moderated ?? m.marks) : null, max: a.max, absent: m?.absent ?? false };
             }),
           }));
-          return { subjectId: sub, credits: b.credits, result: subjectResult(b.components, evidence, b.pass, b.scale) };
+          return { subjectId: sub, credits: b.credits, pass: b.pass, scale: b.scale, components: b.components, result: profileChecks(subjectResult(b.components, evidence, b.pass, b.scale), b.scale, rules) };
         });
-      const decimals = bundles.get(subjectIds[0])?.scale.decimals ?? 2;
-      const term = sgpa(lines.map((l) => ({ credits: l.credits, gradePoint: l.result.gradePoint, passed: l.result.passed })), decimals);
+      const lines = rules ? applyGrace(graded, rules.grace) : graded;
+      const decimals = rules?.gpa.decimals ?? bundles.get(subjectIds[0])?.scale.decimals ?? 2;
+      const gpaOpts = { rounding: rules?.gpa.rounding ?? ('half_up' as const), includeFailedCredits: rules?.gpa.includeFailedCredits ?? true };
+      const term = sgpa(lines.map((l) => ({ credits: l.credits, gradePoint: l.result.gradePoint, passed: l.result.passed })), decimals, gpaOpts);
       const prior = await this.priorLines(tx, s, st.id);
       const all = [...prior.filter((p) => !lines.some((l) => l.subjectId === p.subjectId)), ...lines.map((l) => ({ subjectId: l.subjectId, term: s.term, credits: l.credits, points: l.result.passed ? l.credits * l.result.gradePoint : 0 }))];
       const byTerm = new Map<number, { creditsAttempted: number; creditPoints: number }>();
       for (const l of all) {
         const t = byTerm.get(l.term) ?? { creditsAttempted: 0, creditPoints: 0 };
-        t.creditsAttempted += l.credits;
+        // Regulations that leave failed subjects out of the average leave them out of CGPA too.
+        if (gpaOpts.includeFailedCredits || l.points > 0) t.creditsAttempted += l.credits;
         t.creditPoints += l.points;
         byTerm.set(l.term, t);
       }
+      const passed = rules ? examPassed(rules, lines.map((l) => l.result)).passed : lines.every((l) => l.result.passed);
       out.push({
         studentId: st.id,
-        lines,
+        lines: lines.map((l) => ({ subjectId: l.subjectId, credits: l.credits, result: l.result })),
         sgpa: term.sgpa,
-        cgpa: cgpa([...byTerm.values()], decimals),
+        cgpa: cgpa([...byTerm.values()], decimals, gpaOpts.rounding),
         creditsAttempted: term.creditsAttempted,
         creditsEarned: term.creditsEarned,
         creditPoints: term.creditPoints,
-        outcome: lines.every((l) => l.result.passed) ? 'pass' : 'fail',
+        outcome: passed ? 'pass' : 'fail',
+        rulesRef: affiliation?.ref ?? null,
       });
     }
     return out;
@@ -144,11 +168,11 @@ export class ExamsService {
     for (const r of results) {
       const [row] = await tx
         .insert(examResults)
-        .values({ tenantId, sessionId: s.id, studentId: r.studentId, sgpa: r.sgpa, cgpa: r.cgpa, creditsAttempted: r.creditsAttempted, creditsEarned: r.creditsEarned, creditPoints: r.creditPoints, outcome: r.outcome })
+        .values({ tenantId, sessionId: s.id, studentId: r.studentId, sgpa: r.sgpa, cgpa: r.cgpa, creditsAttempted: r.creditsAttempted, creditsEarned: r.creditsEarned, creditPoints: r.creditPoints, outcome: r.outcome, rulesRef: r.rulesRef })
         .returning({ id: examResults.id });
       if (r.lines.length)
         await tx.insert(examResultLines).values(
-          r.lines.map((l) => ({ tenantId, resultId: row.id, subjectId: l.subjectId, credits: l.credits, percent: l.result.percent, grade: l.result.grade, gradePoint: l.result.gradePoint, passed: l.result.passed, reasons: l.result.reasons, components: l.result.components })),
+          r.lines.map((l) => ({ tenantId, resultId: row.id, subjectId: l.subjectId, credits: l.credits, percent: l.result.percent, grade: l.result.grade, gradePoint: l.result.gradePoint, passed: l.result.passed, reasons: l.result.reasons, components: l.result.components, grace: l.result.grace })),
         );
     }
   }
@@ -172,4 +196,22 @@ export class ExamsService {
     }
     return new Map([...latest].map(([sid, m]) => [sid, [...m.values()].map(({ studentId: _s, ...l }) => l)]));
   }
+}
+
+/**
+ * What a profile adds to a subject's result: absent in the external examination fails (shown with the profile's
+ * absent grade), and internal marks below the eligibility minimum make the candidate not eligible (NE).
+ */
+export function profileChecks(r: SubjectResult, scale: GradeScaleRules, rules: ResolvedAffiliation['rules'] | null): SubjectResult {
+  if (!rules) return r;
+  const reasons = [...r.reasons];
+  if (r.externalAbsent && !reasons.includes('absent')) reasons.push('absent');
+  const ia = r.components.filter((c) => c.kind === 'internal');
+  const iaWeight = ia.reduce((x, c) => x + c.weight, 0);
+  const min = rules.pass.internalEligibilityPercent;
+  if (min !== null && iaWeight > 0 && ia.every((c) => c.fraction !== null) && (ia.reduce((x, c) => x + c.weighted, 0) / iaWeight) * 100 + 1e-9 < min && !reasons.includes('not_eligible')) reasons.push('not_eligible');
+  if (reasons.length === r.reasons.length) return r;
+  const failBand = [...scale.bands].sort((a, b) => a.minPercent - b.minPercent).find((b) => !b.pass);
+  const grade = reasons.includes('absent') ? rules.grading.absentGrade : reasons.includes('not_eligible') ? 'NE' : (failBand?.grade ?? r.grade);
+  return { ...r, reasons, passed: false, gradePoint: 0, grade };
 }
