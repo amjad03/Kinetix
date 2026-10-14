@@ -1,64 +1,70 @@
 import type { Metadata } from 'next';
-import { ApplicationsTable } from '@/components/admissions/AdmissionsTables';
+import { UserCheck } from 'lucide-react';
 import { AdmissionsTabs } from '@/components/admissions/AdmissionsTabs';
-import { LinkButton } from '@/components/LinkButton';
+import { KitList } from '@/components/admissions/KitList';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
-import { UrlSelect } from '@/components/UrlSelect';
-import { api, load, requireSection } from '@/lib/api';
-import { APPLICATION_STATUSES, type ApplicationRow, type CycleRow } from '@/lib/admissions';
+import type { Tone } from '@/components/ui';
+import { requireSection } from '@/lib/api';
+import { APPLICATION_STATUSES, applicationTone } from '@/lib/admissions';
+import { loadRecords } from '@/lib/records-server';
 import type { MessageKey } from '@/i18n/messages';
 import { getI18n } from '@/i18n/server';
 
-import { UserCheck as HowToRegOutlined } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('adm.tab.applications') };
 }
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const TONE: Record<string, Tone> = { default: 'neutral', info: 'info', success: 'success', warning: 'warning', error: 'danger' };
 
-export default async function ApplicationsPage({ searchParams }: { searchParams: Promise<{ cycle?: string; status?: string; q?: string }> }) {
+/**
+ * Applications as a record kit list: search, filters (cycle, status, fee, quota, admission type, nationality,
+ * documents to verify), counter applications and their import, bulk review, reject, reopen and withdraw with a
+ * reason, export, history and saved views. A row opens the application's review page.
+ */
+export default async function ApplicationsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireSection('admissions');
   const sp = await searchParams;
-  const cycle = sp.cycle && UUID.test(sp.cycle) ? sp.cycle : '';
-  const status = (APPLICATION_STATUSES as readonly string[]).includes(sp.status ?? '') ? (sp.status as string) : '';
-  const q = new URLSearchParams();
-  if (cycle) q.set('cycleId', cycle);
-  if (status) q.set('status', status);
-  if (sp.q?.trim()) q.set('q', sp.q.trim().slice(0, 60));
-  const [apps, cycles] = await Promise.all([load(() => api<ApplicationRow[]>(`/v1/admissions/applications?${q}`)), load(() => api<CycleRow[]>('/v1/admissions/cycles'))]);
+  // Old links used ?cycle= and ?status=; they become the list's filters.
+  const legacy = { ...(typeof sp.cycle === 'string' && { 'f.cycle': sp.cycle }), ...(typeof sp.status === 'string' && { 'f.status': sp.status }) };
+  const loaded = await loadRecords('applications', { ...sp, ...legacy });
   const { t } = await getI18n();
-  const keep = (over: Record<string, string>) => {
-    const p = new URLSearchParams({ ...(cycle ? { cycle } : {}), ...(status ? { status } : {}), ...over });
-    for (const [k, v] of [...p]) if (!v) p.delete(k);
-    const s = p.toString();
-    return `/admissions/applications${s ? `?${s}` : ''}`;
-  };
+  const statusLabels = Object.fromEntries(APPLICATION_STATUSES.map((s) => [s, t(`adm.app.${s}` as MessageKey)]));
+  const statusTones = Object.fromEntries(APPLICATION_STATUSES.map((s) => [s, TONE[applicationTone(s)]]));
+  const reason = (label: MessageKey) => [{ key: 'reason', label: t(label), type: 'textarea' as const, required: true, min: 3 }];
   return (
     <>
       <PageHeader title={t('adm.tab.applications')} subtitle={t('adm.apps.subtitle')} />
       <AdmissionsTabs current="applications" />
-      <div className="mb-4 flex flex-wrap items-end gap-3">
-        <UrlSelect label={t('adm.cycle')} param="cycle" value={cycle} options={[{ value: '', label: t('adm.allCycles') }, ...(cycles.data ?? []).map((c) => ({ value: c.id, label: c.name }))]} />
-        <div className="flex flex-wrap gap-1.5 [&>a]:h-9">
-          <LinkButton size="small" href={keep({ status: '' })} variant={status ? 'outlined' : 'contained'}>
-            {t('adm.allStatuses')}
-          </LinkButton>
-          {APPLICATION_STATUSES.map((s) => (
-            <LinkButton key={s} size="small" href={keep({ status: s })} variant={status === s ? 'contained' : 'outlined'}>
-              {t(`adm.app.${s}` as MessageKey)}
-            </LinkButton>
-          ))}
-        </div>
-      </div>
-      {apps.error !== undefined ? (
-        <ErrorState message={apps.error} />
-      ) : apps.data!.length === 0 ? (
-        <EmptyState icon={<HowToRegOutlined />} title={t('adm.apps.none')} testId="no-applications">
-          {t('adm.apps.noneBody')}
-        </EmptyState>
+      {loaded.error !== undefined ? (
+        <ErrorState message={loaded.error} />
       ) : (
-        <ApplicationsTable rows={apps.data!} />
+        <KitList
+          meta={loaded.data.meta}
+          page={loaded.data.page}
+          state={loaded.data.state}
+          label={t('adm.tab.applications')}
+          rowHref="/admissions/applications/{id}"
+          columns={[
+            { key: 'applicantName', header: t('adm.col.applicant'), sortKey: 'name', rowHeader: true, sub: 'applicationNo' },
+            { key: 'cycleName', header: t('adm.cycle'), sortKey: 'cycle', hideBelow: 'md' },
+            { key: 'status', header: t('adm.col.status'), sortKey: 'status', kind: 'pill', labels: statusLabels, tones: statusTones },
+            { key: 'feeStatus', header: t('adm.col.fee'), hideBelow: 'lg', labels: Object.fromEntries(['none', 'pending', 'paid', 'waived'].map((s) => [s, t(`adm.fee.${s}` as MessageKey)])) },
+            { key: 'quota', header: t('adk.col.quota'), hideBelow: 'lg', labels: Object.fromEntries(['merit', 'management', 'nri', 'sports', 'pwd', 'other'].map((s) => [s, t(`adk.quota.${s}` as MessageKey)])) },
+            { key: 'admissionType', header: t('adk.col.admissionType'), defaultHidden: true, labels: Object.fromEntries(['regular', 'lateral', 'transfer'].map((s) => [s, t(`si.o.admissionType.${s}` as MessageKey)])) },
+            { key: 'nationality', header: t('adk.col.nationality'), defaultHidden: true, labels: Object.fromEntries(['indian', 'nri', 'foreign'].map((s) => [s, t(`adk.nationality.${s}` as MessageKey)])) },
+            { key: 'meritScore', header: t('adm.col.merit'), sortKey: 'merit', kind: 'number', hideBelow: 'md' },
+            { key: 'docsPending', header: t('adk.col.docsPending'), kind: 'number', defaultHidden: true },
+            { key: 'submittedAt', header: t('adm.col.submitted'), sortKey: 'submitted', kind: 'date', hideBelow: 'sm' },
+          ]}
+          rowActionKeys={['review', 'reject', 'reopen', 'withdraw']}
+          actionParams={{ reject: reason('adk.why.reject'), reopen: reason('adk.why.reopen'), withdraw: reason('adk.why.withdraw') }}
+          empty={
+            <EmptyState icon={<UserCheck />} title={t('adm.apps.none')} testId="no-applications">
+              {t('adm.apps.noneBody')}
+            </EmptyState>
+          }
+        />
       )}
     </>
   );

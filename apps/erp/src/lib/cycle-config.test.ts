@@ -28,6 +28,18 @@ describe('cycle configuration lines', () => {
     expect(parseQuestions('a_k | A | text\na_k | B | text')).toMatchObject({ ok: false, error: expect.stringContaining('twice') });
   });
 
+  it('asks NRI and foreign applicants for their own documents', () => {
+    expect(parseDocuments('passport | Passport | y | NRI\nvisa | Visa | y | foreign\nmarks | Marks | y | all')).toEqual({
+      ok: true,
+      value: [
+        { key: 'passport', label: 'Passport', required: true, for: 'nri' },
+        { key: 'visa', label: 'Visa', required: true, for: 'foreign' },
+        { key: 'marks', label: 'Marks', required: true },
+      ],
+    });
+    expect(parseDocuments('passport | Passport | y | martians')).toMatchObject({ ok: false, line: 1 });
+  });
+
   it('parses rule pairs', () => {
     expect(parsePairs('marks_12th 40\nentrance 2.5')).toEqual({ ok: true, value: [{ field: 'marks_12th', value: 40 }, { field: 'entrance', value: 2.5 }] });
     expect(parsePairs('marks 40 extra')).toMatchObject({ ok: false, line: 1 });

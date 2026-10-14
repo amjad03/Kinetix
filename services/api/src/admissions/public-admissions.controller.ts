@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, ForbiddenException, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Res, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { validateAnswers, type AdmissionDocumentSpec, type AdmissionFormField } from '@kinetix/shared';
+import { documentsFor, NATIONALITIES, validateAnswers, type AdmissionDocumentSpec, type AdmissionFormField } from '@kinetix/shared';
 import { timingSafeEqual } from 'node:crypto';
 import { and, desc, eq, notInArray, sql } from 'drizzle-orm';
 import { Readable } from 'node:stream';
@@ -11,6 +11,7 @@ import { RateLimiter } from '../common/rate-limiter.js';
 import { ZodBody } from '../common/zod-body.js';
 import { Day, Phone } from '../common/zod-fields.js';
 import { DbService, type Tx } from '../db/db.service.js';
+import { applicationDrafts } from '../db/schema-sis.js';
 import { admissionCycles, applicationDocuments, applicationPayments, applications, enquiries, programs, tenants } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { ApplicationFeesService } from '../fees/application-fees.service.js';
@@ -44,6 +45,9 @@ const EnquiryBody = z.object({
   utmCampaign: z.string().trim().max(80).optional(),
   /** The code of the agent or partner who sent the family. */
   referralCode: z.string().trim().max(30).optional(),
+  /** Where the family lives (counsellors can be assigned by place). */
+  city: z.string().trim().max(80).optional(),
+  region: z.string().trim().max(80).optional(),
   /** A hidden field real visitors never fill: bots do. */
   website: z.string().max(200).optional(),
 });
@@ -58,6 +62,12 @@ const ApplyBody = z.object({
   guardianEmail: z.email().max(200).optional(),
   guardianRelation: z.string().trim().min(2).max(40).default('parent'),
   answers: z.record(z.string().max(60), z.union([z.string().max(500), z.number()])).default({}),
+  /** NRI and foreign applicants are asked for their own document set (passport, visa, equivalence). */
+  nationality: z.enum(NATIONALITIES).default('indian'),
+  /** A lateral entry (into a later term) or a transfer from another institution. */
+  admissionType: z.enum(['regular', 'lateral', 'transfer']).default('regular'),
+  /** The saved draft this application came from (it is marked submitted). */
+  draftId: z.uuid().optional(),
   website: z.string().max(200).optional(),
 });
 const ConfirmBody = z.object({ paymentId: z.uuid(), providerPaymentId: z.string().min(1).max(100), signature: z.string().min(1).max(200) });
@@ -160,12 +170,13 @@ export class PublicAdmissionsController {
       const applicationNo = await this.svc.nextApplicationNo(tx, cycle);
       // The enquiry that led here (same phone, still open) moves to "applied".
       const [enq] = await tx.select({ id: enquiries.id }).from(enquiries).where(and(sql`${enquiries.phone} in (${body.phone}, ${body.guardianPhone})`, notInArray(enquiries.stage, ['converted', 'lost']))).orderBy(desc(enquiries.createdAt)).limit(1);
-      const { website: _w, ...rest } = body;
+      const { website: _w, draftId, ...rest } = body;
       const [a] = await tx
         .insert(applications)
         .values({ ...rest, tenantId: t.id, cycleId, applicationNo, enquiryId: enq?.id ?? null, accessTokenHash: hashToken(token), feeStatus: cycle.applicationFeePaise > 0 ? 'pending' : 'none', email: body.email ?? null, guardianEmail: body.guardianEmail ?? null, gender: body.gender ?? null, dateOfBirth: body.dateOfBirth ?? null })
         .returning();
       if (enq) await tx.update(enquiries).set({ stage: 'applied', applicationId: a.id, updatedAt: new Date() }).where(eq(enquiries.id, enq.id));
+      if (draftId) await tx.update(applicationDrafts).set({ submittedApplicationId: a.id, updatedAt: new Date() }).where(and(eq(applicationDrafts.id, draftId), eq(applicationDrafts.cycleId, cycleId), sql`${applicationDrafts.submittedApplicationId} is null`));
       await audit(tx, { tenantId: t.id, actorType: 'system', action: 'admissions.application.submitted.v1', subjectType: 'application', subjectId: a.id, data: { applicationNo, cycleId, by: 'applicant' } });
       // With no fee due the application goes straight to review; otherwise when the fee is paid it waits for staff.
       return { id: a.id, applicationNo, token, feeDuePaise: cycle.applicationFeePaise, status: a.status, feeStatus: a.feeStatus };
@@ -256,7 +267,7 @@ export class PublicAdmissionsController {
         receiptNo: paid?.receiptNo ?? null,
         meritRank: ['offered', 'waitlisted', 'accepted', 'enrolled'].includes(a.status) ? a.meritRank : null,
         offerExpiresOn: a.status === 'offered' ? a.offerExpiresOn : null,
-        documents: cfg.documents.map((d: AdmissionDocumentSpec) => {
+        documents: documentsFor(cfg.documents, a.nationality).map((d: AdmissionDocumentSpec) => {
           const got = docs.find((x) => x.docKey === d.key);
           return { key: d.key, label: d.label, required: d.required, uploaded: !!got, fileName: got?.fileName ?? null, status: got?.status ?? null, reviewNote: got?.reviewNote ?? null };
         }),

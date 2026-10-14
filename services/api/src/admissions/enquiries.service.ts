@@ -5,6 +5,7 @@ import type { SQL } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
 import { admissionAgents, admissionCampaigns, enquiries, enquiryActivities, programs, userRoles, users } from '../db/schema.js';
+import { assignByRules } from './desk/assignment.js';
 import { leadScore } from './lead-score.js';
 
 export const COUNSELLOR_ROLES = ['admissions_officer', 'principal', 'tenant_admin'] as const;
@@ -20,7 +21,7 @@ export const auditActor = (a: Actor) => ({ tenantId: a.tenantId, actorType: (a.u
 /** The admissions pipeline: enquiries from the public form, walk-ins and calls, owned by counsellors. */
 @Injectable()
 export class EnquiriesService {
-  async create(tx: Tx, actor: Actor, input: { name: string; phone: string; email?: string | null; programId?: string | null; source: EnquirySource; message?: string | null; counsellorId?: string | null; nextFollowUpOn?: string | null; campaignId?: string | null; utmSource?: string | null; utmMedium?: string | null; utmCampaign?: string | null; referralCode?: string | null }, today: string) {
+  async create(tx: Tx, actor: Actor, input: { name: string; phone: string; email?: string | null; programId?: string | null; source: EnquirySource; message?: string | null; counsellorId?: string | null; nextFollowUpOn?: string | null; campaignId?: string | null; utmSource?: string | null; utmMedium?: string | null; utmCampaign?: string | null; referralCode?: string | null; city?: string | null; region?: string | null }, today: string) {
     const agentId = await this.resolveAgent(tx, input.referralCode ?? null);
     const campaignId = await this.resolveCampaign(tx, input.campaignId ?? null, input.utmCampaign ?? null);
     if (input.programId) {
@@ -38,8 +39,10 @@ export class EnquiriesService {
       return { enquiry: dup, duplicate: true };
     }
     let counsellorId = input.counsellorId ?? null;
+    const source = agentId ? 'referral' : input.source;
     if (counsellorId) await this.assertCounsellor(tx, counsellorId);
-    else counsellorId = await this.leastLoadedCounsellor(tx);
+    // The institution's assignment rules (programme, source, place) first; otherwise whoever has the fewest open enquiries.
+    else counsellorId = (await assignByRules(tx, { programId: input.programId ?? null, source, city: input.city ?? null, region: input.region ?? null })) ?? (await this.leastLoadedCounsellor(tx));
     const [row] = await tx
       .insert(enquiries)
       .values({
@@ -48,11 +51,14 @@ export class EnquiriesService {
         phone: input.phone,
         email: input.email ?? null,
         programId: input.programId ?? null,
-        source: agentId ? 'referral' : input.source,
+        source,
         agentId,
         campaignId,
         utmSource: input.utmSource?.trim().slice(0, 80) || null,
         utmMedium: input.utmMedium?.trim().slice(0, 80) || null,
+        utmCampaign: input.utmCampaign?.trim().slice(0, 80) || null,
+        city: input.city?.trim().slice(0, 80) || null,
+        region: input.region?.trim().slice(0, 80) || null,
         message: input.message ?? null,
         counsellorId,
         createdBy: actor.userId,

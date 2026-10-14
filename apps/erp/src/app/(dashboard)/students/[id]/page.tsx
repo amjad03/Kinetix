@@ -9,6 +9,9 @@ import { SectionTitle } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { LifecycleTimeline } from '@/components/students/LifecycleTimeline';
 import { StudentActions } from '@/components/students/StudentActions';
+import { StudentClearancesTab } from '@/components/students/StudentClearancesTab';
+import { StudentDetailsTab } from '@/components/students/StudentDetailsTab';
+import type { ChangeRequest, Clearance, StudentDetails } from '@/lib/student-info';
 import { ApiError, api, load, requireSection } from '@/lib/api';
 import { canChangeLifecycle } from '@/lib/access';
 import type { StudentProfile } from '@/lib/admissions';
@@ -26,9 +29,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default async function StudentPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function StudentPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
   const me = await requireSection('students');
   const { id } = await params;
+  const { tab } = await searchParams;
   if (!UUID.test(id)) notFound();
   const { t, locale } = await getI18n();
   const res = await load(async () => {
@@ -58,6 +62,12 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
   const canChange = me ? canChangeLifecycle(me.roles) : false;
   const structure = canChange ? await load(() => api<Structure>('/v1/admin/structure')) : undefined;
   const sameProgram = (structure?.data?.sections ?? []).filter((x) => x.programId === s.program.id && x.id !== s.section.id).map((x) => ({ id: x.id, name: x.displayName }));
+  const roles = me?.roles ?? [];
+  const [details, changeRequests, clearances] = await Promise.all([
+    load(() => api<StudentDetails>(`/v1/students/${id}/details`)),
+    load(() => api<ChangeRequest[]>(`/v1/students/${id}/change-requests`)),
+    load(() => api<Clearance[]>(`/v1/students/${id}/clearances`)),
+  ]);
   const [requests, activity, att, marks, fees] = await Promise.all([
     load(() => api<RequestRow[]>(`/v1/academics/requests?studentId=${id}`)),
     load(() => api<AuditRow[]>(`/v1/academics/activity/${id}`)),
@@ -75,6 +85,10 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
   const school = await isSchoolTenant();
   const short = (d: string) => formatDate(d, 'day', locale);
   const ab = s.about;
+  // The student's own profile details win over what the application said.
+  const prof = Object.fromEntries((details.data?.fields ?? []).map((f) => [f.key, f.value])) as Record<string, string | null>;
+  const dob = prof.dateOfBirth ?? ab?.dateOfBirth ?? null;
+  const gender = prof.gender ?? ab?.gender ?? null;
   const primaryG = s.guardians.find((g) => g.isPrimary) ?? s.guardians[0];
   const none = <span className="font-normal text-muted-foreground">{t('pf.none')}</span>;
   return (
@@ -98,8 +112,9 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
                 { icon: <School aria-hidden />, label: t('pf.classRoll'), value: <><NextLink className="underline-offset-2 hover:underline" href={`/academics/sections/${s.section.id}`}>{s.section.displayName}</NextLink> · {s.rollNo}</> },
                 { icon: <BookOpen aria-hidden />, label: school ? t('pf.stage') : t('acad.col.program'), value: s.program.name },
                 ...(s.application ? [{ icon: <IdCard aria-hidden />, label: t('pf.admissionNo'), value: <NextLink className="underline-offset-2 hover:underline" href={`/admissions/applications/${s.application.id}`}>{s.application.applicationNo}</NextLink> }] : []),
-                { icon: <Cake aria-hidden />, label: t('pf.dob'), value: ab?.dateOfBirth ? short(ab.dateOfBirth) : none },
-                ...(ab?.gender ? [{ icon: <UserRound aria-hidden />, label: t('pf.gender'), value: <span className="capitalize">{ab.gender}</span> }] : []),
+                ...(prof.admissionNo ? [{ icon: <Hash aria-hidden />, label: t('si.f.admissionNo'), value: prof.admissionNo }] : []),
+                { icon: <Cake aria-hidden />, label: t('pf.dob'), value: dob ? short(dob) : none },
+                ...(gender ? [{ icon: <UserRound aria-hidden />, label: t('pf.gender'), value: ['male', 'female', 'other'].includes(gender) ? t(`si.o.gender.${gender}` as MessageKey) : <span className="capitalize">{gender}</span> }] : []),
                 { icon: <Droplet aria-hidden />, label: t('pf.blood'), value: ab?.bloodGroup ?? none },
                 { icon: <CalendarDays aria-hidden />, label: t('acad.joined'), value: s.enrolledOn ? short(s.enrolledOn) : none },
               ],
@@ -175,7 +190,24 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
             </div>
           </>
         }
+        initialTab={tab === 'details' || tab === 'clearances' ? tab : undefined}
         related={[
+          {
+            value: 'details',
+            label: t('si.tab.details'),
+            count: (changeRequests.data ?? []).filter((r) => r.status === 'pending').length || undefined,
+            content: details.data ? (
+              <StudentDetailsTab details={details.data} requests={changeRequests.data ?? []} canDecide={roles.some((r) => ['tenant_admin', 'principal', 'admissions_officer'].includes(r))} />
+            ) : (
+              <ErrorState message={details.error ?? ''} />
+            ),
+          },
+          {
+            value: 'clearances',
+            label: t('si.tab.clearances'),
+            count: (clearances.data ?? []).length,
+            content: <StudentClearancesTab studentId={s.id} clearances={clearances.data ?? []} canStart={roles.some((r) => ['tenant_admin', 'principal', 'admissions_officer'].includes(r))} />,
+          },
           {
             value: 'guardians',
             label: t('acad.guardians'),

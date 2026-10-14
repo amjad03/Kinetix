@@ -151,7 +151,7 @@ function CycleDialog({ programs, years, today, onClose }: Props & { onClose: () 
               <TextInput helperText={t('adm.cycle.questionsHelp')} value={f.questions} onChange={set('questions')} multiline minRows={3} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
             </FormField>
             <FormField label={t('adm.cycle.documents')}>
-              <TextInput helperText={t('adm.cycle.documentsHelp')} value={f.documents} onChange={set('documents')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
+              <TextInput helperText={`${t('adm.cycle.documentsHelp')} · ${t('adk.cycle.docsFor')}`} value={f.documents} onChange={set('documents')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
             </FormField>
             <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] gap-4">
               <FormField label={t('adm.cycle.minimums')}>

@@ -6,6 +6,7 @@ import {
   allocateSeats,
   APPLICATION_REASON_REQUIRED,
   canMoveApplication,
+  documentsFor,
   ENTRANCE_SCORE_FIELD,
   eligibilityFailures,
   meritScore,
@@ -29,6 +30,7 @@ import { studentPriorEducation } from '../db/schema-g1.js';
 import { feedCalendar } from '../scheduling/calendar-feed.js';
 import { findDuplicates } from './dedupe.js';
 import { LifecycleService } from '../students/lifecycle.service.js';
+import { StudentInfoService } from '../students/student-info.service.js';
 import { addDays, auditActor, type Actor } from './enquiries.service.js';
 import { accrueCommission } from './agents.service.js';
 import { INTERVIEW_SCORE_FIELD, interviewResults } from './interviews.service.js';
@@ -86,6 +88,7 @@ export class AdmissionsService {
   constructor(
     private readonly lifecycle: LifecycleService,
     private readonly events: EventBus,
+    private readonly info: StudentInfoService,
   ) {}
 
   // ---- cycles ------------------------------------------------------------------------------
@@ -313,8 +316,8 @@ export class AdmissionsService {
   async documentGaps(tx: Tx, a: Application, cycle: Cycle): Promise<string[]> {
     const docs = await tx.select().from(applicationDocuments).where(eq(applicationDocuments.applicationId, a.id));
     const by = new Map(docs.map((d) => [d.docKey, d]));
-    return cycleConfig(cycle)
-      .documents.filter((d) => d.required)
+    return documentsFor(cycleConfig(cycle).documents, a.nationality)
+      .filter((d) => d.required)
       .flatMap((d) => {
         const got = by.get(d.key);
         return !got ? [`${d.label} not uploaded`] : got.status !== 'verified' ? [`${d.label} not verified`] : [];
@@ -443,7 +446,7 @@ export class AdmissionsService {
     const candidates = await tx
       .select()
       .from(sections)
-      .where(and(eq(sections.programId, cycle.programId), eq(sections.academicYearId, cycle.academicYearId), eq(sections.term, cycle.entryTerm)))
+      .where(and(eq(sections.programId, cycle.programId), eq(sections.academicYearId, cycle.academicYearId), eq(sections.term, a.entryTermOverride ?? cycle.entryTerm)))
       .orderBy(...naturalAsc(sections.name));
     let section = input.sectionId ? candidates.find((s) => s.id === input.sectionId) : undefined;
     if (input.sectionId && !section) throw new BadRequestException("That class is not one of this cycle's classes");
@@ -474,6 +477,7 @@ export class AdmissionsService {
     await this.lifecycle.addEvent(tx, actor, { studentId: st.id, kind: 'status', fromStatus: 'applicant', toStatus: 'enrolled', toSectionId: section.id, reason: `Admitted: ${a.applicationNo}`, effectiveOn: today, data: { applicationId: a.id, rollNo } });
     await this.lifecycle.linkGuardian(tx, actor, st.id, { fullName: a.guardianName, phone: a.guardianPhone, email: a.guardianEmail, relation: a.guardianRelation, isPrimary: true, isEmergencyContact: true });
     if (input.activate) await this.lifecycle.changeStatus(tx, actor, st.id, 'active', { reason: 'Joined the class', effectiveOn: today });
+    await this.info.seedFromApplication(tx, actor, st.id, { dateOfBirth: a.dateOfBirth, gender: a.gender, category: categoryOf(a), admissionType: a.admissionType, nationality: a.nationality });
 
     await tx.update(applications).set({ status: 'enrolled', studentId: st.id, statusReason: null, updatedAt: new Date() }).where(eq(applications.id, id));
     if (a.enquiryId) await tx.update(enquiries).set({ stage: 'converted', applicationId: a.id, updatedAt: new Date() }).where(eq(enquiries.id, a.enquiryId));

@@ -200,7 +200,7 @@ describe('admission depth: index marks, rank lists, seat matrix, CAP rounds, age
     await http().post(hook(web)).set('x-lead-key', web.secret).send({ submissionId: 'S3', name: 'Late', phone: '9810000009' }).expect(404);
 
     const enq = (await http().get('/v1/admissions/enquiries').set(as('officer')).expect(200)).body as { name: string; source: string }[];
-    expect(enq.filter((e) => ['Web Lead', 'Meta Lead', 'Google Lead'].includes(e.name)).map((e) => e.source).sort()).toEqual(['campaign', 'campaign', 'web']);
+    expect(enq.filter((e) => ['Web Lead', 'Meta Lead', 'Google Lead'].includes(e.name)).map((e) => e.source).sort()).toEqual(['google', 'meta', 'web']);
 
     // Spend and ROI: one enrolment from the Meta channel.
     await owner.query(`update enquiries set stage = 'converted' where tenant_id = $1 and name = 'Meta Lead'`, [t.tenantId]);

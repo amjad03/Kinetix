@@ -9,6 +9,7 @@ import { Button } from '@/components/shadcn/button';
 import { DataTable, useToast, type BulkAction, type Column, type Density, type RowAction, type SelectionInfo } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { bulkTarget, exportHref, listSearch, type BulkReport, type ListState, type RecordMeta, type RecordsPage, type Row, type SavedViewState } from '@/lib/records';
+import { ActionDialog, type ActionParam } from './ActionDialog';
 import { BulkEditDialog } from './BulkEditDialog';
 import { BulkReportDialog } from './BulkReportDialog';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -100,6 +101,8 @@ export function RecordsTable({
   extraParams = {},
   viewsPage,
   testId,
+  actionParams = {},
+  rowActionKeys = [],
 }: {
   meta: RecordMeta;
   page: RecordsPage<Row>;
@@ -124,6 +127,10 @@ export function RecordsTable({
   /** The saved views' page key (default: the entity). */
   viewsPage?: string;
   testId?: string;
+  /** Values a module action asks for before it runs, by action key (a reason, a template). */
+  actionParams?: Record<string, ActionParam[]>;
+  /** Module actions also offered in each row's menu (for one record). */
+  rowActionKeys?: string[];
 }) {
   const { t } = useI18n();
   const toast = useToast();
@@ -210,6 +217,10 @@ export function RecordsTable({
     if (canEdit) out.push({ id: 'edit', label: t('rk.edit'), icon: <Pencil />, onSelect: (r) => setOpen({ kind: 'form', row: r }) });
     if (meta.can.duplicate) out.push({ id: 'duplicate', label: t('rk.duplicate'), icon: <Copy />, onSelect: duplicate });
     if (meta.can.move && meta.move) out.push({ id: 'move', label: tr(t, `rk.move.${entity}`, meta.move.label), icon: <ArrowRightLeft />, onSelect: (r) => setOpen({ kind: 'move', rows: [r] }) });
+    for (const key of rowActionKeys) {
+      const a = meta.actions.find((x) => x.key === key);
+      if (a) out.push({ id: `action-${key}`, label: tr(t, `rk.action.${entity}.${key}`, a.label), tone: a.tone ?? undefined, onSelect: (r) => setOpen({ kind: 'action', action: a, sel: { all: false, count: 1, target: { ids: [r.id] } } }) });
+    }
     out.push(...(extraRowActions?.(row) ?? []));
     out.push({ id: 'history', label: t('rk.history'), icon: <History />, onSelect: (r) => setOpen({ kind: 'history', row: r }) });
     if (meta.can.write) out.push({ id: 'delete', label: t('rk.delete'), icon: <Trash2 />, tone: 'danger', separator: true, onSelect: (r) => setOpen({ kind: 'delete', row: r }) });
@@ -344,7 +355,21 @@ export function RecordsTable({
           <p className="m-0">{t('rk.bulkDelete.body')}</p>
         </ConfirmDialog>
       )}
-      {o?.kind === 'action' && (
+      {o?.kind === 'action' && actionParams[o.action.key] && (
+        <ActionDialog
+          title={t('rk.action.title', { action: tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label), n: o.sel.count })}
+          confirmLabel={tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label)}
+          tone={o.action.tone ?? undefined}
+          count={o.sel.count}
+          params={actionParams[o.action.key]}
+          busy={busy}
+          onClose={() => setOpen(null)}
+          onConfirm={(params) => void runBulk({ op: 'action', action: o.action.key, target: targetOf(o.sel), params }, tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label)).then((e) => e && toast.error(e))}
+        >
+          <p className="m-0">{tr(t, `rk.actionHelp.${entity}.${o.action.key}`, t('rk.action.body'))}</p>
+        </ActionDialog>
+      )}
+      {o?.kind === 'action' && !actionParams[o.action.key] && (
         <ConfirmDialog
           title={t('rk.action.title', { action: tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label), n: o.sel.count })}
           confirmLabel={tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label)}

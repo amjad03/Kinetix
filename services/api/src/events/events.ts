@@ -37,6 +37,9 @@ export const DomainEvents = {
   IncidentReported: 'governance.incident_reported',
   RuleApproved: 'governance.rule_approved',
   InvoiceIssued: 'billing.invoice_issued',
+  // Admissions desk: an approved cancellation (the refund owed) and an approved programme change.
+  AdmissionCancelled: 'admissions.admission_cancelled',
+  ProgrammeChanged: 'admissions.programme_changed',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

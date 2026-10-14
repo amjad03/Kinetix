@@ -9,6 +9,8 @@ import { RecordsTable } from '@/components/records/RecordsTable';
 import { Avatar, AvatarFallback } from '@/components/shadcn/avatar';
 import { useToast, type Column } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
+import type { MessageKey } from '@/i18n/messages';
+import { CLEARANCE_PURPOSES } from '@/lib/student-info';
 import type { StudentStatus } from '@/lib/admissions';
 import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
 import { initials, type FeeState, type RosterRow } from '@/lib/roster';
@@ -26,6 +28,10 @@ export type StudentKitRow = Row & {
   programName: string;
   term: number;
   guardianCount: number;
+  admissionNo: string | null;
+  registerNo: string | null;
+  gender: string | null;
+  category: string | null;
   attendancePct: number | null;
   fee: FeeState | null;
   duePaise: number;
@@ -91,6 +97,10 @@ export function StudentRecords({ meta, page, state, showFees, showAttendance, ca
       ...(showAttendance ? [{ id: 'attendance', header: t('ro.col.attendance'), hideBelow: 'md' as const, cell: (x: Row) => <AttendanceBar pct={r(x).attendancePct} /> }] : []),
       ...(showFees ? [{ id: 'fees', header: t('ro.col.fees'), cell: (x: Row) => <FeeBadge state={r(x).fee} /> }] : []),
       { id: 'guardians', header: t('rk.col.guardians'), align: 'right', defaultHidden: true, cell: (x) => r(x).guardianCount },
+      { id: 'admissionNo', header: t('si.col.admissionNo'), sortKey: 'admissionNo', defaultHidden: true, cell: (x) => r(x).admissionNo ?? <span className="text-muted-foreground">—</span> },
+      { id: 'registerNo', header: t('si.col.registerNo'), defaultHidden: true, cell: (x) => r(x).registerNo ?? <span className="text-muted-foreground">—</span> },
+      { id: 'gender', header: t('si.f.gender'), defaultHidden: true, cell: (x) => (r(x).gender ? t(`si.o.gender.${r(x).gender}` as MessageKey) : <span className="text-muted-foreground">—</span>) },
+      { id: 'category', header: t('si.f.category'), defaultHidden: true, cell: (x) => (r(x).category ? t(`si.o.category.${r(x).category}` as MessageKey) : <span className="text-muted-foreground">—</span>) },
       { id: 'status', header: t('ro.col.status'), sortKey: 'status', hideBelow: 'md', cell: (x) => <StatusPill kind="student" status={r(x).status} /> },
     ];
   }, [t, showFees, showAttendance]);
@@ -111,6 +121,8 @@ export function StudentRecords({ meta, page, state, showFees, showAttendance, ca
         ]}
         extraBulkActions={canRemind ? [{ id: 'remind', label: t('ro.remind'), icon: <Send />, onClick: (rows) => remind(rows.map((x) => x.id)) }] : []}
         testId="students-records"
+        rowActionKeys={['clearance']}
+        actionParams={{ clearance: [{ key: 'purpose', label: t('si.clr.purpose'), type: 'select', required: true, options: CLEARANCE_PURPOSES.map((p) => ({ value: p, label: t(`si.clr.purpose.${p}` as MessageKey) })) }] }}
       />
       {open && <StudentSheet key={open.id} row={open} onClose={() => setOpen(null)} canRemind={canRemind} showFees={showFees} showAttendance={showAttendance} />}
     </>

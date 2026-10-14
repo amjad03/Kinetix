@@ -149,7 +149,8 @@ function NewEnquiry({ programs, onClose }: { programs: Props['programs']; onClos
   );
 }
 
-function EnquiryDesk({ id, counsellors, today, onClose }: { id: string; counsellors: Counsellor[]; today: string; onClose: () => void }) {
+/** One enquiry: who, what they asked, counsellor, stage moves and the follow-up trail. */
+export function EnquiryDesk({ id, counsellors, today, onClose }: { id: string; counsellors: Counsellor[]; today: string; onClose: () => void }) {
   const { t, locale } = useI18n();
   const router = useRouter();
   const [e, setE] = useState<EnquiryDetail | null>(null);

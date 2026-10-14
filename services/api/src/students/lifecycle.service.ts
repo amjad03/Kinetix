@@ -213,7 +213,7 @@ export class LifecycleService {
    */
   async changeSection(tx: Tx, actor: LifecycleActor, studentId: string, sectionId: string, reason: string, opts: { anyProgram?: boolean } = {}) {
     const ctx = await this.load(tx, studentId, true);
-    if (!['enrolled', 'active', 'on_leave', 'detained', 'promoted'].includes(ctx.student.status)) throw new BadRequestException('This student is no longer on the roll');
+    if (!['enrolled', 'active', 'on_leave', 'detained', 'promoted', 'long_absent'].includes(ctx.student.status)) throw new BadRequestException('This student is no longer on the roll');
     if (sectionId === ctx.student.sectionId) throw new BadRequestException('The student is already in this class');
     const [target] = await tx.select().from(sections).where(eq(sections.id, sectionId));
     if (!target) throw new NotFoundException('Class not found');

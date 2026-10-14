@@ -3,6 +3,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { runPromotion } from '@/app/(dashboard)/students/actions';
+import { promotionEligibility } from '@/app/(dashboard)/students/info-actions';
+import { CheckboxField } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { PromotionResult } from '@/lib/admissions';
 
@@ -22,7 +24,7 @@ export interface PromotionClass {
  * preview the outcome, then run it. Students not active (on leave, detained) are skipped.
  */
 export function PromotionTool({ classes }: { classes: PromotionClass[] }) {
-  const { t } = useI18n();
+  const { t, fmt } = useI18n();
   const router = useRouter();
   const [label, setLabel] = useState('');
   const [targets, setTargets] = useState<Record<string, string>>(() => {
@@ -41,11 +43,37 @@ export function PromotionTool({ classes }: { classes: PromotionClass[] }) {
   const [done, setDone] = useState<PromotionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  // Held back: who misses the attendance or fee rule, found per class, and the ones the office chooses to detain.
+  const [minPct, setMinPct] = useState('75');
+  const [maxDues, setMaxDues] = useState('0');
+  const [held, setHeld] = useState<{ studentId: string; fullName: string; rollNo: string; className: string; reasons: string[] }[] | null>(null);
+  const [detain, setDetain] = useState<Record<string, boolean>>({});
   const mappings = Object.entries(targets).filter(([, v]) => v).map(([from, to]) => ({ fromSectionId: from, toSectionId: to === 'graduate' ? null : to }));
+  const findHeld = () =>
+    start(async () => {
+      setError(null);
+      const out: NonNullable<typeof held> = [];
+      for (const m of mappings) {
+        const res = await promotionEligibility(m.fromSectionId, Number(minPct) || 0, Number(maxDues) || 0);
+        if (!res.ok) return setError(res.error);
+        for (const s of res.data.students) {
+          if (s.eligible) continue;
+          const reasons = [
+            s.attendancePct !== null && s.attendancePct < (Number(minPct) || 0) ? t('si.promo.lowAttendance', { pct: s.attendancePct, min: Number(minPct) || 0 }) : null,
+            s.duesPaise > Math.round((Number(maxDues) || 0) * 100) ? t('si.promo.feesOwing', { amount: fmt.rupees(s.duesPaise) }) : null,
+          ].filter((x): x is string => !!x);
+          out.push({ studentId: s.studentId, fullName: s.fullName, rollNo: s.rollNo, className: res.data.className, reasons });
+        }
+      }
+      setHeld(out);
+      setDetain(Object.fromEntries(out.map((s) => [s.studentId, true])));
+      setPreview(null);
+    });
+  const detained = (held ?? []).filter((s) => detain[s.studentId]).map((s) => ({ studentId: s.studentId, reason: s.reasons.join('; ') }));
   const go = (dryRun: boolean) =>
     start(async () => {
       setError(null);
-      const res = await runPromotion({ label, mappings, dryRun });
+      const res = await runPromotion({ label, mappings, detain: detained, dryRun });
       if (!res.ok) return setError(res.error);
       if (dryRun) setPreview(res.data);
       else {
@@ -96,6 +124,44 @@ export function PromotionTool({ classes }: { classes: PromotionClass[] }) {
             </div>
           ))}
         </div>
+      </div>
+      <div className="rounded-[12px] border bg-card p-5">
+        <p className="mb-1 text-[15px] font-semibold">{t('si.promo.heldTitle')}</p>
+        <p className="mb-4 text-[13px] text-muted-foreground">{t('si.promo.heldHelp')}</p>
+        <div className="flex flex-wrap items-end gap-3">
+          <FormField label={t('si.promo.minAttendance')}>
+            <TextInput value={minPct} onChange={(e) => setMinPct(e.target.value.replace(/[^\d.]/g, ''))} className="w-[140px]" inputMode="decimal" />
+          </FormField>
+          <FormField label={t('si.promo.maxDues')}>
+            <TextInput value={maxDues} onChange={(e) => setMaxDues(e.target.value.replace(/[^\d.]/g, ''))} className="w-[160px]" inputMode="decimal" />
+          </FormField>
+          <Button variant="outlined" disabled={pending || mappings.length === 0} onClick={findHeld} data-testid="find-held">
+            {t('si.promo.find')}
+          </Button>
+        </div>
+        {held && (
+          <div className="mt-4 grid gap-1">
+            {held.length === 0 ? (
+              <p className="text-[13px]">{t('si.promo.allEligible')}</p>
+            ) : (
+              held.map((s) => (
+                <CheckboxField
+                  key={s.studentId}
+                  checked={!!detain[s.studentId]}
+                  onChange={(v) => {
+                    setDetain({ ...detain, [s.studentId]: v });
+                    setPreview(null);
+                  }}
+                  label={
+                    <span>
+                      <b className="font-[550]">{s.fullName}</b> <span className="text-muted-foreground">({s.rollNo}, {s.className})</span> · {s.reasons.join('; ')}
+                    </span>
+                  }
+                />
+              ))
+            )}
+          </div>
+        )}
       </div>
       <div className="flex flex-row gap-2">
         <Button variant="outlined" disabled={pending || mappings.length === 0 || label.trim().length < 3} onClick={() => go(true)}>

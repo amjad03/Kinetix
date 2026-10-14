@@ -3,8 +3,11 @@ import { getI18n } from '@/i18n/server';
 
 const TABS = [
   { href: '/admissions', key: 'pipeline', label: 'adm.tab.pipeline' },
+  { href: '/admissions/enquiries', key: 'enquiries', label: 'adk.tab.enquiries' },
   { href: '/admissions/applications', key: 'applications', label: 'adm.tab.applications' },
   { href: '/admissions/cycles', key: 'cycles', label: 'adm.tab.cycles' },
+  { href: '/admissions/office', key: 'office', label: 'adk.tab.office' },
+  { href: '/admissions/reports', key: 'reports', label: 'adk.tab.reports' },
   { href: '/admissions/entrance', key: 'entrance', label: 'adm.tab.entrance' },
   { href: '/admissions/campaigns', key: 'campaigns', label: 'adm.tab.campaigns' },
   { href: '/admissions/interviews', key: 'interviews', label: 'adm.tab.interviews' },
