@@ -13,6 +13,8 @@ export interface RelativeSettings {
   /** The profile the rule comes from, when there is one. */
   profile: string | null;
   minClassSize: number;
+  /** The regulation's own smallest class (used when the institution sets none). */
+  regulationMinClassSize: number;
   maxShift: number;
   bands: RelativeBand[];
 }
@@ -38,6 +40,7 @@ export async function relativeSettings(tx: Tx, programId: string | null): Promis
     allowed,
     profile: aff ? `${aff.ref.profile}/${aff.ref.scheme}` : null,
     minClassSize: stored.minClassSize ?? scale.minClassSize,
+    regulationMinClassSize: scale.minClassSize,
     maxShift: scale.maxShift,
     bands: scale.bands,
   };

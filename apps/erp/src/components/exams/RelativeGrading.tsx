@@ -38,7 +38,7 @@ export function CurveSettingsCard({ settings, canEdit }: { settings: RelativeSet
         <div className="grid gap-3">
           <SwitchField label={t('rg.enabled')} checked={enabled} onChange={setEnabled} disabled={!canEdit || pending} />
           <div className="max-w-[16rem]">
-            <TextInput label={t('rg.minClass')} type="number" value={min} onChange={(e) => setMin(e.target.value)} disabled={!canEdit || pending} helper={t('rg.minClassHelp', { n: String(settings.minClassSize) })} fullWidth />
+            <TextInput label={t('rg.minClass')} type="number" value={min} onChange={(e) => setMin(e.target.value)} disabled={!canEdit || pending} helper={t('rg.minClassHelp', { n: String(settings.regulationMinClassSize) })} fullWidth />
           </div>
           <p className="m-0 text-[13px] text-muted-foreground">{t('rg.howItWorks', { shift: String(settings.maxShift) })}</p>
           {error && (
@@ -66,11 +66,26 @@ export function CurveSubjects({ data, canApply }: { data: CurveSession; canApply
   const { t, fmt } = useI18n();
   const [open, setOpen] = useState<SubjectRow | null>(null);
   const columns: Column<SubjectRow>[] = [
-    { id: 'code', header: t('rg.col.code'), cell: (r) => r.code, sort: (r) => r.code },
-    { id: 'name', header: t('rg.col.subject'), rowHeader: true, cell: (r) => <span className="font-medium">{r.name}</span>, sort: (r) => r.name },
+    { id: 'code', header: t('rg.col.code'), cell: (r) => r.code, sort: (r) => r.code, hideBelow: 'sm' },
+    {
+      id: 'name',
+      header: t('rg.col.subject'),
+      rowHeader: true,
+      cell: (r) => (
+        <span className="font-medium">
+          {r.name}
+          <span className="block text-xs font-normal text-muted-foreground sm:hidden">
+            {r.code} · {r.applied ? t('rg.onCurve') : t('rg.absolute')}
+          </span>
+        </span>
+      ),
+      sort: (r) => r.name,
+      csv: (r) => r.name,
+    },
     {
       id: 'state',
       header: t('rg.col.grading'),
+      hideBelow: 'sm',
       cell: (r) => (r.applied ? <StatusPill tone="info">{t('rg.onCurve')}</StatusPill> : <StatusPill tone="neutral">{t('rg.absolute')}</StatusPill>),
       sort: (r) => (r.applied ? 1 : 0),
       csv: (r) => (r.applied ? 'curve' : 'absolute'),

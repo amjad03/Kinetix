@@ -11,10 +11,8 @@ import { Card, DataTable, useToastOptional } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { DECISIONS, MODULE_HOME, MOVES, fieldKey, statusKey, statusTone, type QhMove, type QhRecord } from '@/lib/quality-hub';
+import { actionText } from '@/components/records/text';
 import { cellNode, qhColumns } from './cells';
-
-/** An audit action such as "grievance.resolved" as a readable line. */
-const actionText = (a: string) => a.replace(/[._]/g, ' ');
 
 /**
  * One record of the quality group on the RecordPage template: status, key facts, the module's next
@@ -53,7 +51,7 @@ export function QualityRecord({ record }: { record: QhRecord }) {
   const press = (m: QhMove) => (m.note ? (setAsking(m), setError(null)) : run(m));
 
   const steps: WorkflowStep[] = record.steps.map((s) => ({ id: s.status, label: t(statusKey(s.status)), state: s.state }));
-  const activity: ActivityItem[] = record.activity.map((a) => ({ id: a.id, at: a.at, actor: a.actor, action: actionText(a.action) }));
+  const activity: ActivityItem[] = record.activity.map((a) => ({ id: a.id, at: a.at, actor: a.actor, action: actionText(t, a.action) }));
 
   const actionButtons = moves.length > 0 && (
     <>

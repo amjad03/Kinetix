@@ -18,7 +18,7 @@ export default async function EquivalencesPage({ searchParams }: { searchParams:
   const list = await loadRecords('curriculum-equivalences', await searchParams);
   return (
     <>
-      <PageHeader title={t('nav.curriculum')} subtitle={t('ra.eqSubtitle')} />
+      <PageHeader title={t('rk.entity.curriculum-equivalences')} subtitle={t('ra.eqSubtitle')} />
       <CurriculumTabs current="equivalences" />
       {list.error !== undefined ? <ErrorState message={list.error} /> : <EquivalencesDesk list={list.data} />}
     </>

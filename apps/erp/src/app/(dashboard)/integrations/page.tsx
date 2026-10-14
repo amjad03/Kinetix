@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { INTEGRATION_VIEWS, IntegrationsDesk, type IntegrationView } from '@/components/integrations/IntegrationsDesk';
+import { IntegrationsDesk } from '@/components/integrations/IntegrationsDesk';
+import { INTEGRATION_VIEWS, type IntegrationView } from '@/lib/integration-views';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { LinkTabs } from '@/components/ui';

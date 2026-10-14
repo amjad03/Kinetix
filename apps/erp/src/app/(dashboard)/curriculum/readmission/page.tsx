@@ -39,7 +39,7 @@ export default async function ReadmissionPage({ searchParams }: { searchParams: 
   const plan = student && sp.term && Number.isInteger(term) && term >= 1 ? await load(() => api<ReadmissionPlan>(`/v1/readmissions/students/${student}/preview?rejoinedOn=${on}&rejoinTerm=${term}`)) : null;
   return (
     <>
-      <PageHeader title={t('nav.curriculum')} subtitle={t('ra.subtitle')} />
+      <PageHeader title={t('ra.title')} subtitle={t('ra.subtitle')} />
       <CurriculumTabs current="readmission" />
       <div className="grid gap-6">
         {!student ? (
@@ -103,7 +103,11 @@ export default async function ReadmissionPage({ searchParams }: { searchParams: 
                 </Button>
               </form>
             </Card>
-            {plan?.error !== undefined && plan && <ErrorState message={plan.error} />}
+            {plan?.error !== undefined && plan && (
+              <p role="alert" className="m-0 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100" data-testid="ra-plan-error">
+                {plan.error}
+              </p>
+            )}
             {plan?.data && <ReadmissionPlanView plan={plan.data} canApply={canReadmit(me?.roles ?? [])} />}
             <section className="grid gap-2">
               <h2 className="m-0 text-base font-semibold">{t('ra.history')}</h2>

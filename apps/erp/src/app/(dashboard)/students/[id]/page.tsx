@@ -3,6 +3,7 @@ import type { MessageKey } from '@/i18n/messages';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { RequestList } from '@/components/academics/shared';
+import { actionText } from '@/components/records/text';
 import { RecordPage } from '@/components/templates';
 import { LinkButton } from '@/components/LinkButton';
 import { SectionTitle } from '@/components/PageHeader';
@@ -187,7 +188,7 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
             <div className="grid grid-cols-[1fr] gap-6 lg:grid-cols-[1fr_1.55fr]">
               <div className="min-w-0">
                 <StudentActions student={s} canChange={canChange} canGuardians classes={sameProgram} />
-                {canReadmit(roles) && !school && (
+                {canReadmit(roles) && (
                   <NextLink className="mt-3 inline-block text-sm underline underline-offset-2" href={`/curriculum/readmission?student=${s.id}`} data-testid="stu-readmission">
                     {t('ra.fromProfile')}
                   </NextLink>
@@ -319,7 +320,7 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
         activity={(activity.data ?? []).map((a) => {
           const key = `acad.audit.${a.action}`;
           const label = t(key as MessageKey);
-          return { id: String(a.id), at: a.at, actor: a.actor ?? t('acad.system'), action: label === key ? a.action.replace(/[._]/g, ' ') : label };
+          return { id: String(a.id), at: a.at, actor: a.actor ?? t('acad.system'), action: label === key ? actionText(t, a.action) : label };
         })}
       />
     </>

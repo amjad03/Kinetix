@@ -9,10 +9,8 @@ import { ActionButton, FormDialog, useToast, type Field } from '@/components/ops
 import { KitList, type ColSpec } from '@/components/registers/KitList';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
+import type { IntegrationView } from '@/lib/integration-views';
 import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
-
-export const INTEGRATION_VIEWS = ['digilocker-documents', 'access-devices', 'lti-tools', 'scorm-packages', 'api-tokens'] as const;
-export type IntegrationView = (typeof INTEGRATION_VIEWS)[number];
 
 const docTone = (v: string) => (v === 'issued' ? 'success' : v === 'failed' ? 'danger' : 'warning');
 const COLUMNS: Record<IntegrationView, ColSpec[]> = {

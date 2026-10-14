@@ -13,6 +13,7 @@ export interface RelativeSettings {
   allowed: boolean;
   profile: string | null;
   minClassSize: number;
+  regulationMinClassSize: number;
   maxShift: number;
   bands: RelativeBand[];
   stored?: { enabled: boolean; minClassSize: number | null };
