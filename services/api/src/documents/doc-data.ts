@@ -105,6 +105,10 @@ export function certificateDocType(kind: CertificateKind): DocType {
       return 'conduct_certificate';
     case 'course_completion':
       return 'course_completion_certificate';
+    case 'migration':
+      return 'migration_certificate';
+    case 'medium_of_instruction':
+      return 'medium_of_instruction_certificate';
     default:
       return 'generic_certificate';
   }

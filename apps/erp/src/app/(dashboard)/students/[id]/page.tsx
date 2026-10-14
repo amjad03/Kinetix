@@ -11,6 +11,8 @@ import { LifecycleTimeline } from '@/components/students/LifecycleTimeline';
 import { StudentActions } from '@/components/students/StudentActions';
 import { StudentClearancesTab } from '@/components/students/StudentClearancesTab';
 import { StudentDetailsTab } from '@/components/students/StudentDetailsTab';
+import { FeeHoldPanel } from '@/components/fee-depth/FeeHolds';
+import { canOverrideFeeHold, FEE_HOLD_READERS, type FeeHoldStatus } from '@/lib/fee-holds';
 import type { ChangeRequest, Clearance, StudentDetails } from '@/lib/student-info';
 import { ApiError, api, load, requireSection } from '@/lib/api';
 import { canChangeLifecycle } from '@/lib/access';
@@ -68,6 +70,8 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
     load(() => api<ChangeRequest[]>(`/v1/students/${id}/change-requests`)),
     load(() => api<Clearance[]>(`/v1/students/${id}/clearances`)),
   ]);
+  // Holds for unpaid fees (hall ticket, result, TC), for the roles that may see them.
+  const holds = (me?.roles ?? []).some((r) => FEE_HOLD_READERS.includes(r)) ? await load(() => api<FeeHoldStatus>(`/v1/fee-holds/${id}`)) : null;
   const [requests, activity, att, marks, fees] = await Promise.all([
     load(() => api<RequestRow[]>(`/v1/academics/requests?studentId=${id}`)),
     load(() => api<AuditRow[]>(`/v1/academics/activity/${id}`)),
@@ -190,7 +194,7 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
             </div>
           </>
         }
-        initialTab={tab === 'details' || tab === 'clearances' ? tab : undefined}
+        initialTab={tab === 'details' || tab === 'clearances' || tab === 'fees' ? tab : undefined}
         related={[
           {
             value: 'details',
@@ -278,6 +282,8 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
             label: t('v2.prof.fees'),
             count: invoices.length,
             content: (
+              <div className="grid gap-4">
+              {holds?.data && <FeeHoldPanel studentId={s.id} status={holds.data} canOverride={canOverrideFeeHold(roles)} canSettings={roles.some((r) => ['principal', 'tenant_admin', 'accountant'].includes(r))} />}
               <div className={box}>
                 {fees.data && <p className="mb-3 text-sm">{t('v2.prof.feesDue', { amount: formatRupees(fees.data.duePaise) })}</p>}
                 {invoices.length === 0
@@ -294,6 +300,7 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
                       ))}
                     </ul>
                   )}
+              </div>
               </div>
             ),
           },

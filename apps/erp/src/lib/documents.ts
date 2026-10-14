@@ -7,7 +7,7 @@ export const VAULT_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 
 export const CERT_STATUSES: CertificateStatus[] = ['requested', 'approved', 'issued', 'rejected', 'revoked'];
 export const CERT_TONE: Record<CertificateStatus, 'default' | 'warning' | 'success' | 'error' | 'info'> = { requested: 'warning', approved: 'info', issued: 'success', rejected: 'error', revoked: 'error' };
-export const CERT_KINDS: CertificateKind[] = ['transfer_certificate', 'bonafide', 'conduct', 'study', 'course_completion', 'fee_receipt', 'experience', 'custom'];
+export const CERT_KINDS: CertificateKind[] = ['transfer_certificate', 'bonafide', 'conduct', 'study', 'course_completion', 'fee_receipt', 'experience', 'migration', 'medium_of_instruction', 'custom'];
 
 /** The placeholders a template body may use ({{fields.<key>}} are the template's own fields). */
 export const PLACEHOLDERS = ['institution', 'name', 'rollNo', 'className', 'program', 'academicYear', 'employeeCode', 'designation', 'department', 'dateOfJoining', 'purpose', 'serialNo', 'issuedOn'];

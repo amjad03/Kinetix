@@ -314,7 +314,7 @@ export interface PayrollRunDetail extends PayrollRunSummary {
 // Documents and certificates
 // ---------------------------------------------------------------------------------------------
 
-export type CertificateKind = 'transfer_certificate' | 'bonafide' | 'conduct' | 'study' | 'course_completion' | 'fee_receipt' | 'experience' | 'custom';
+export type CertificateKind = 'transfer_certificate' | 'bonafide' | 'conduct' | 'study' | 'course_completion' | 'fee_receipt' | 'experience' | 'migration' | 'medium_of_instruction' | 'custom';
 export type CertificateSubject = 'student' | 'staff';
 export type CertificateStatus = 'requested' | 'approved' | 'rejected' | 'issued' | 'revoked';
 

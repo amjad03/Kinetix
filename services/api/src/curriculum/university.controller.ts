@@ -1,4 +1,5 @@
-import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, Inject, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Res } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, Inject, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
+import type { DocData } from '@kinetix/shared';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
@@ -12,11 +13,14 @@ import { ZodBody } from '../common/zod-body.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
-import { examResults, examSessions, institutionProfiles, programs, sections, students, tenants } from '../db/schema.js';
+import { examResults, examSessions, institutionProfiles, issuedDocuments, programs, sections, students, tenants } from '../db/schema.js';
+import { studentBlock } from '../documents/doc-data.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { IssuedDocsService } from '../documents/issued-docs.service.js';
+import { longDate } from '../documents/render.js';
 import { GOVERNANCE_RULES, type GovernanceModel } from '../institution/presets.js';
 import { AFFILIATION_MODELS, affiliatedInstitutions, convocationCandidates, convocations } from '../db/schema-curriculum.js';
 import { found } from '../placements/placements.access.js';
-import { degreeCertificatePdf } from './documents.js';
 
 const ADMINS: RoleName[] = ['tenant_admin', 'principal', 'university_admin'];
 const REGISTRAR: RoleName[] = [...ADMINS, 'exam_controller'];
@@ -47,6 +51,19 @@ const InstitutionPatch = z.object({ active: z.boolean().optional(), affiliationV
 const ConvocationBody = z.object({ name: z.string().trim().min(3).max(150), heldOn: Day, graduationYear: z.number().int().min(1990).max(2100), programId: z.uuid().optional() });
 const CandidateBody = z.object({ studentId: z.uuid() });
 const RegisterBody = z.object({ studentId: z.uuid().optional() });
+/** A batch to build the eligible list from: the year the students were admitted, or one class. */
+const EligibleBody = z.object({ batchYear: z.number().int().min(1990).max(2100).optional(), sectionId: z.uuid().optional() }).default({});
+/** In absentia: also confer the degree on eligible graduates who did not register to attend. */
+const IssueBody = z.object({ inAbsentia: z.boolean().default(false) }).default({ inAbsentia: false });
+
+/** The class a CGPA is awarded in, on the common ten-point scale. */
+export function degreeClass(cgpa: number | null): string {
+  if (cgpa === null) return '';
+  if (cgpa >= 7.5) return 'First Class with Distinction';
+  if (cgpa >= 6) return 'First Class';
+  if (cgpa >= 5) return 'Second Class';
+  return 'Pass Class';
+}
 
 /** Affiliated institutions and convocation: eligible graduates, registration and degree certificates with a public check. */
 @Controller('v1/university')
@@ -54,7 +71,42 @@ export class UniversityController {
   constructor(
     private readonly db: DbService,
     @Inject(ENV) private readonly env: Env,
+    private readonly engine: DocumentEngine,
+    private readonly issuedDocs: IssuedDocsService,
   ) {}
+
+  /** What a degree certificate binds to (the template engine's degree_certificate type), for its register entry. */
+  private async degreeDoc(tx: Tx, cand: typeof convocationCandidates.$inferSelect, c: typeof convocations.$inferSelect) {
+    const block = await studentBlock(tx, cand.studentId);
+    const st = block.student as DocData;
+    const name = String(st.name ?? '');
+    const cgpa = cand.cgpa === null ? null : Number(cand.cgpa);
+    const klass = degreeClass(cgpa);
+    const [prof] = await tx.select({ board: institutionProfiles.boardOrUniversity }).from(institutionProfiles);
+    const degree = {
+      name: cand.degreeTitle,
+      classification: klass,
+      cgpa: cgpa === null ? '' : cgpa.toFixed(2),
+      convocation: `${c.name}, ${longDate(c.heldOn)}`,
+      university: prof?.board ?? '',
+      citation: `having fulfilled the requirements of the programme, has been admitted to the degree of **${cand.degreeTitle}**${klass ? ` in **${klass}**` : ''}${cgpa === null ? '' : ` (CGPA ${cgpa.toFixed(2)})`}.`,
+    };
+    return {
+      docType: 'degree_certificate' as const,
+      title: 'Degree Certificate',
+      subject: { type: 'student' as const, id: cand.studentId, name },
+      source: { type: 'convocation_candidate', id: cand.id },
+      serial: cand.certificateNo!,
+      data: { student: { ...st, registerNo: String(st.admissionNo || st.rollNo || '') }, degree, doc: { title: 'Degree Certificate', certificateNo: cand.certificateNo!, issuedOn: longDate(c.heldOn) } },
+      keyFields: [
+        { label: 'Degree', value: cand.degreeTitle },
+        { label: 'Awarded to', value: name },
+        { label: 'Certificate number', value: cand.certificateNo! },
+        { label: 'Conferred on', value: longDate(c.heldOn) },
+        ...(klass ? [{ label: 'Class', value: klass }] : []),
+      ],
+    };
+  }
 
   // ---- Affiliated institutions ----
 
@@ -140,16 +192,17 @@ export class UniversityController {
   @Post('convocations/:id/eligible')
   @HttpCode(200)
   @Auth('user', REGISTRAR)
-  generate(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+  generate(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(EligibleBody)) b: z.infer<typeof EligibleBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const c = found((await tx.select().from(convocations).where(eq(convocations.id, id)))[0], 'Convocation');
       if (c.status === 'held') throw new ConflictException('This convocation has been held');
+      const batch = and(b.sectionId ? eq(students.sectionId, b.sectionId) : undefined, b.batchYear ? sql`extract(year from ${students.enrolledOn}) = ${b.batchYear}` : undefined);
       const pool = await tx
         .select({ id: students.id, programName: programs.name })
         .from(students)
         .innerJoin(sections, eq(sections.id, students.sectionId))
         .innerJoin(programs, eq(programs.id, sections.programId))
-        .where(and(c.programId ? eq(programs.id, c.programId) : undefined, inArray(students.status, ['active', 'alumni', 'promoted']), sql`(${sections.term} >= ${programs.termCount} or ${students.status} = 'alumni')`));
+        .where(and(c.programId ? eq(programs.id, c.programId) : undefined, batch, inArray(students.status, ['active', 'alumni', 'promoted']), sql`(${sections.term} >= ${programs.termCount} or ${students.status} = 'alumni')`));
       if (!pool.length) return { added: 0, eligible: 0 };
       const results = await tx
         .select({ studentId: examResults.studentId, cgpa: examResults.cgpa, outcome: examResults.outcome, at: examResults.computedAt })
@@ -163,7 +216,7 @@ export class UniversityController {
         return r && r.outcome === 'pass' ? [{ tenantId: p.tenantId, convocationId: id, studentId: s.id, cgpa: r.cgpa, degreeTitle: s.programName }] : [];
       });
       const added = rows.length ? await tx.insert(convocationCandidates).values(rows).onConflictDoNothing().returning({ id: convocationCandidates.id }) : [];
-      await auditUser(tx, p, 'convocation.eligible_generated', 'convocation', id, { eligible: rows.length, added: added.length });
+      await auditUser(tx, p, 'convocation.eligible_generated', 'convocation', id, { eligible: rows.length, added: added.length, batchYear: b.batchYear ?? null, sectionId: b.sectionId ?? null });
       return { added: added.length, eligible: rows.length };
     });
   }
@@ -246,11 +299,14 @@ export class UniversityController {
     });
   }
 
-  /** Numbers and issues the degree for every registered graduate, then marks the convocation as held. */
+  /**
+   * Numbers and issues the degree for every registered graduate (and, in absentia, every eligible one), records each
+   * in the register of issued documents through the template engine, then marks the convocation as held.
+   */
   @Post('convocations/:id/issue')
   @HttpCode(200)
   @Auth('user', ADMINS)
-  issue(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+  issue(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(IssueBody)) b: z.infer<typeof IssueBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const c = found((await tx.select().from(convocations).where(eq(convocations.id, id)))[0], 'Convocation');
       if (c.status === 'held') throw new ConflictException('Degrees were already issued for this convocation');
@@ -260,42 +316,74 @@ export class UniversityController {
         .select({ id: convocationCandidates.id })
         .from(convocationCandidates)
         .innerJoin(students, eq(students.id, convocationCandidates.studentId))
-        .where(and(eq(convocationCandidates.convocationId, id), eq(convocationCandidates.status, 'registered')))
+        .where(and(eq(convocationCandidates.convocationId, id), inArray(convocationCandidates.status, b.inAbsentia ? ['registered', 'eligible'] : ['registered'])))
         .orderBy(asc(students.fullName));
-      if (!todo.length) throw new BadRequestException('No registered graduates to issue degrees to');
+      if (!todo.length) throw new BadRequestException(b.inAbsentia ? 'No eligible graduates to issue degrees to' : 'No registered graduates to issue degrees to');
       const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(convocationCandidates).where(and(sql`${convocationCandidates.certificateNo} like ${`DEG-${c.graduationYear}-%`}`));
       let seq = n;
       for (const t of todo) {
         seq += 1;
-        await tx.update(convocationCandidates).set({ status: 'degree_issued', certificateNo: `DEG-${c.graduationYear}-${String(seq).padStart(4, '0')}`, issuedAt: new Date() }).where(eq(convocationCandidates.id, t.id));
+        const [cand] = await tx.update(convocationCandidates).set({ status: 'degree_issued', certificateNo: `DEG-${c.graduationYear}-${String(seq).padStart(4, '0')}`, issuedAt: new Date() }).where(eq(convocationCandidates.id, t.id)).returning();
+        await this.issuedDocs.issue(tx, { tenantId: p.tenantId, userId: p.userId }, await this.degreeDoc(tx, cand, c));
       }
       await tx.update(convocations).set({ status: 'held' }).where(eq(convocations.id, id));
-      await auditUser(tx, p, 'convocation.degrees_issued', 'convocation', id, { issued: todo.length });
+      await auditUser(tx, p, 'convocation.degrees_issued', 'convocation', id, { issued: todo.length, inAbsentia: b.inAbsentia });
       return { issued: todo.length };
     });
   }
 
-  /** The degree certificate with its QR. Staff, or the graduate. */
+  /**
+   * The register of degrees conferred: every certificate number with the graduate, degree, class and convocation,
+   * newest first; `?year=` narrows to a graduation year and `?convocationId=` to one convocation.
+   */
+  @Get('degrees')
+  @Auth('user', VIEW)
+  degrees(@CurrentPrincipal() p: UserPrincipal, @Query('year') year?: string, @Query('convocationId') convocationId?: string) {
+    const y = year && /^\d{4}$/.test(year) ? Number(year) : undefined;
+    const cid = convocationId && z.uuid().safeParse(convocationId).success ? convocationId : undefined;
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx
+        .select({
+          candidateId: convocationCandidates.id,
+          convocationId: convocations.id,
+          convocation: convocations.name,
+          heldOn: convocations.heldOn,
+          graduationYear: convocations.graduationYear,
+          certificateNo: convocationCandidates.certificateNo,
+          studentId: students.id,
+          name: students.fullName,
+          rollNo: students.rollNo,
+          degreeTitle: convocationCandidates.degreeTitle,
+          cgpa: convocationCandidates.cgpa,
+          registeredAt: convocationCandidates.registeredAt,
+          issuedAt: convocationCandidates.issuedAt,
+          registerStatus: sql<string | null>`(select d.status from ${issuedDocuments} d where d.source_type = 'convocation_candidate' and d.source_id = ${convocationCandidates.id}::text order by d.issued_at desc limit 1)`,
+        })
+        .from(convocationCandidates)
+        .innerJoin(convocations, eq(convocations.id, convocationCandidates.convocationId))
+        .innerJoin(students, eq(students.id, convocationCandidates.studentId))
+        .where(and(eq(convocationCandidates.status, 'degree_issued'), y ? eq(convocations.graduationYear, y) : undefined, cid ? eq(convocations.id, cid) : undefined))
+        .orderBy(desc(convocations.heldOn), asc(convocationCandidates.certificateNo))
+        .limit(5000);
+      return rows.map(({ registeredAt, ...r }) => ({ ...r, cgpa: r.cgpa === null ? null : Number(r.cgpa), classification: degreeClass(r.cgpa === null ? null : Number(r.cgpa)), inAbsentia: !registeredAt }));
+    });
+  }
+
+  /** The degree certificate in the institution's template, from its register entry (QR to the public check). Staff, or the graduate. */
   @Get('convocations/:id/candidates/:candidateId/certificate.pdf')
   @Auth('user', ['student', ...VIEW])
   async certificate(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Param('candidateId', ParseUUIDPipe) candidateId: string, @Res() res: Response) {
     const pdf = await this.db.withTenant(p.tenantId, async (tx) => {
       const cand = found((await tx.select().from(convocationCandidates).where(and(eq(convocationCandidates.id, candidateId), eq(convocationCandidates.convocationId, id))))[0], 'Candidate');
-      const [st] = await tx.select({ name: students.fullName, userId: students.userId }).from(students).where(eq(students.id, cand.studentId));
+      const [st] = await tx.select({ userId: students.userId }).from(students).where(eq(students.id, cand.studentId));
       if (!p.roles.some((r) => VIEW.includes(r)) && st.userId !== p.userId) throw new NotFoundException('Candidate not found');
       if (cand.status !== 'degree_issued' || !cand.certificateNo) throw new ConflictException('The degree has not been issued yet');
       const c = found((await tx.select().from(convocations).where(eq(convocations.id, id)))[0], 'Convocation');
-      const [t] = await tx.select({ name: tenants.name, slug: tenants.slug }).from(tenants);
-      return degreeCertificatePdf({
-        institution: t.name,
-        student: st.name,
-        degree: cand.degreeTitle,
-        cgpa: cand.cgpa,
-        certificateNo: cand.certificateNo,
-        conferredOn: c.heldOn,
-        convocation: c.name,
-        verifyUrl: `${this.env.VERIFY_BASE_URL.replace(/\/$/, '')}/degree/${t.slug}/${encodeURIComponent(degreeCode(this.env.JWT_SECRET, p.tenantId, cand.certificateNo))}`,
-      });
+      await auditUser(tx, p, 'convocation.certificate_downloaded', 'convocation', id, { studentId: cand.studentId, certificateNo: cand.certificateNo });
+      const [rec] = await this.issuedDocs.list(tx, { sourceType: 'convocation_candidate', sourceId: cand.id });
+      if (rec) return (await this.engine.reprint(tx, rec.id)).pdf;
+      // Issued before degrees were recorded in the register: record it now under its own number.
+      return (await this.engine.produce(tx, { tenantId: p.tenantId, userId: p.userId }, await this.degreeDoc(tx, cand, c))).pdf;
     });
     res.setHeader('content-type', 'application/pdf');
     res.setHeader('content-disposition', 'inline; filename="degree-certificate.pdf"');

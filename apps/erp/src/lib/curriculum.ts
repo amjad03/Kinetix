@@ -86,6 +86,48 @@ export interface ConvocationRow {
   registered: number;
 }
 
+export type CandidateStatus = 'eligible' | 'registered' | 'withheld' | 'degree_issued';
+
+/** GET /v1/university/convocations/:id: the convocation and its graduates. */
+export interface ConvocationDetail {
+  id: string;
+  name: string;
+  heldOn: string;
+  graduationYear: number;
+  programId: string | null;
+  status: ConvocationRow['status'];
+  candidates: { id: string; studentId: string; name: string; rollNo: string; className: string; status: CandidateStatus; cgpa: number | null; degreeTitle: string; certificateNo: string | null }[];
+}
+
+/** GET /v1/university/degrees: one degree conferred, in the register. */
+export interface DegreeRow {
+  candidateId: string;
+  convocationId: string;
+  convocation: string;
+  heldOn: string;
+  graduationYear: number;
+  certificateNo: string;
+  studentId: string;
+  name: string;
+  rollNo: string;
+  degreeTitle: string;
+  cgpa: number | null;
+  classification: string;
+  inAbsentia: boolean;
+  issuedAt: string | null;
+  registerStatus: 'valid' | 'revoked' | 'superseded' | null;
+}
+
+/** Which steps a graduate's row offers: staff register an eligible graduate, withhold one not yet conferred, download an issued degree. */
+export function candidateSteps(status: CandidateStatus, convocation: ConvocationRow['status']): ('register' | 'withhold' | 'download')[] {
+  if (status === 'degree_issued') return ['download'];
+  if (convocation === 'held') return [];
+  const out: ('register' | 'withhold' | 'download')[] = [];
+  if (status === 'eligible' && convocation === 'registration_open') out.push('register');
+  if (status !== 'withheld') out.push('withhold');
+  return out;
+}
+
 /** What the next step on a version is, given its status and whether the user may approve. */
 export function nextStep(status: VersionStatus, canApprove: boolean): 'approve' | 'activate' | 'revise' | null {
   if (status === 'draft') return canApprove ? 'approve' : null;

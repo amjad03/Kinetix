@@ -45,9 +45,11 @@ export class CertificatesService {
     this.verifyBase = env.VERIFY_BASE_URL.replace(/\/$/, '');
   }
 
+  /** The institution's templates; a kind it has none of (a new institution, or a kind added later) gets the default one. */
   async templates(tx: Tx, tenantId: string): Promise<Tmpl[]> {
-    const any = await tx.select({ id: certificateTemplates.id }).from(certificateTemplates).limit(1);
-    if (!any.length) await tx.insert(certificateTemplates).values(DEFAULT_TEMPLATES.map((t) => ({ ...t, tenantId })));
+    const have = new Set((await tx.select({ kind: certificateTemplates.kind }).from(certificateTemplates)).map((r) => r.kind));
+    const missing = DEFAULT_TEMPLATES.filter((t) => !have.has(t.kind));
+    if (missing.length) await tx.insert(certificateTemplates).values(missing.map((t) => ({ ...t, tenantId })));
     return tx.select().from(certificateTemplates).orderBy(asc(certificateTemplates.name));
   }
 

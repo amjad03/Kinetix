@@ -127,6 +127,12 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(test) || !UUID.test(app)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/admissions/entrance-tests/${test}/hall-ticket/${app}`;
   }
+  // A degree certificate: ?kind=degree&id=<convocation>&candidate=<candidate>
+  if (kind === 'degree') {
+    const candidate = req.nextUrl.searchParams.get('candidate') ?? '';
+    if (!UUID.test(id) || !UUID.test(candidate)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/university/convocations/${id}/candidates/${candidate}/certificate.pdf`;
+  }
   // A staff-chat attachment: ?kind=chat-file&id=<thread>&msg=<message>
   if (kind === 'chat-file') {
     const msg = req.nextUrl.searchParams.get('msg') ?? '';

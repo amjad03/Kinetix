@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { UniversityDesk } from '@/components/university/UniversityDesk';
@@ -24,7 +25,15 @@ export default async function UniversityPage({ searchParams }: { searchParams: P
   const failed = institutions.error ?? convocations.error ?? structure.error;
   return (
     <>
-      <PageHeader title={t('nav.university')} subtitle={t('un.subtitle')} />
+      <PageHeader
+        title={t('nav.university')}
+        subtitle={t('un.subtitle')}
+        actions={
+          <LinkButton href="/university/degrees" variant="outlined">
+            {t('un.reg.title')}
+          </LinkButton>
+        }
+      />
       {failed !== undefined ? (
         <ErrorState message={failed} />
       ) : (

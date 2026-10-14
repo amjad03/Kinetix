@@ -183,14 +183,27 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/early-alerts', label: 'nav.earlyAlerts', section: 'earlyAlerts', icon: 'grievances' },
     ],
   },
-  { id: 'library', label: 'grp.library', icon: 'library', items: [{ href: '/library', label: 'nav.library', section: 'library', icon: 'library' }] },
+  {
+    id: 'library',
+    label: 'grp.library',
+    icon: 'library',
+    items: [
+      { href: '/library', label: 'nav.library', section: 'library', icon: 'library' },
+      { href: '/library/desk', label: 'lht.desk.library', section: 'library', icon: 'library' },
+      { href: '/library/records', label: 'lht.records.library', section: 'library', icon: 'documents' },
+    ],
+  },
   {
     id: 'campus',
     label: 'grp.campus',
     icon: 'campus',
     items: [
       { href: '/transport', label: 'nav.transport', section: 'transport', icon: 'transport' },
+      { href: '/transport/desk', label: 'lht.desk.transport', section: 'transport', icon: 'transport' },
+      { href: '/transport/records', label: 'lht.records.transport', section: 'transport', icon: 'documents' },
       { href: '/hostel', label: 'nav.hostel', section: 'hostel', icon: 'hostel' },
+      { href: '/hostel/desk', label: 'lht.desk.hostel', section: 'hostel', icon: 'hostel' },
+      { href: '/hostel/records', label: 'lht.records.hostel', section: 'hostel', icon: 'documents' },
       { href: '/canteen', label: 'nav.canteen', section: 'canteen', icon: 'canteen' },
       { href: '/ops-reports', label: 'nav.campusOps', section: 'campusOps', icon: 'reports' },
       { href: '/campus-life', label: 'nav.campusLife', section: 'campusLife', icon: 'campusLife' },

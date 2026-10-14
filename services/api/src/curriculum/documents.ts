@@ -101,38 +101,3 @@ export function reportCardPdf(d: ReportCardData): Buffer {
   pdf.text('Principal', A4.w - MARGIN, y + 12, { size: 9, align: 'right' });
   return pdf.build();
 }
-
-export interface DegreeData {
-  institution: string;
-  student: string;
-  degree: string;
-  cgpa: number | null;
-  certificateNo: string;
-  conferredOn: string;
-  convocation: string;
-  verifyUrl: string;
-}
-
-/** A degree certificate (landscape) with a QR that opens the public check. */
-export function degreeCertificatePdf(d: DegreeData): Buffer {
-  const W = A4.h;
-  const H = A4.w;
-  const pdf = new Pdf(`Degree certificate ${d.certificateNo}`);
-  pdf.addPage(W, H);
-  pdf.rect(24, 24, W - 48, H - 48, { stroke: '#1e3a8a', lineWidth: 3 });
-  pdf.rect(32, 32, W - 64, H - 64, { stroke: '#1e3a8a', lineWidth: 0.8 });
-  pdf.text(d.institution, W / 2, 90, { size: 24, bold: true, align: 'center', color: '#1e3a8a' });
-  pdf.text('DEGREE CERTIFICATE', W / 2, 125, { size: 14, bold: true, align: 'center' });
-  pdf.text('This is to certify that', W / 2, 175, { size: 12, align: 'center' });
-  pdf.text(d.student, W / 2, 210, { size: 24, bold: true, align: 'center' });
-  pdf.text('has been admitted to the degree of', W / 2, 245, { size: 12, align: 'center' });
-  pdf.text(d.degree, W / 2, 275, { size: 18, bold: true, align: 'center' });
-  if (d.cgpa !== null) pdf.text(`with a Cumulative Grade Point Average of ${d.cgpa.toFixed(2)}`, W / 2, 300, { size: 12, align: 'center' });
-  pdf.text(`Conferred at ${d.convocation} on ${d.conferredOn}`, W / 2, 330, { size: 11, align: 'center' });
-  pdf.text(`Certificate no. ${d.certificateNo}`, 60, H - 70, { size: 10 });
-  pdf.line(W / 2 - 80, H - 90, W / 2 + 80, H - 90);
-  pdf.text('Registrar', W / 2, H - 76, { size: 10, align: 'center' });
-  pdf.qr(d.verifyUrl, W - 150, H - 150, 90);
-  pdf.text('Scan to verify', W - 105, H - 52, { size: 8, align: 'center' });
-  return pdf.build();
-}
