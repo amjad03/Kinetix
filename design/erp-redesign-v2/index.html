@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetix ERP v2</title>
+<style>
+:root{
+  --bg:#f7f7f8;--card:#fff;--border:#ececee;--border-strong:#dcdce1;--text:#18181b;--muted:#5d5e66;--faint:#8b8c94;
+  --primary:#18181b;--primary-fg:#fff;--hover:#f3f3f5;--active:#ededf0;
+  --teal:#0f9488;--teal-ink:#0f766e;--teal-soft:#e3f5f2;
+  --amber:#f59e0b;--amber-ink:#a35c06;--amber-soft:#fdf2d6;
+  --orange:#f97316;--orange-ink:#c2410c;--orange-soft:#ffeddc;
+  --red:#ef4444;--red-ink:#b91c1c;--red-soft:#fde6e6;
+  --green:#22c55e;--green-ink:#15803d;--green-soft:#dcf5e5;
+  --blue:#3b82f6;--blue-ink:#1d4ed8;--blue-soft:#e0eafe;
+  --violet:#7c3aed;--violet-ink:#6d28d9;--violet-soft:#ede7fe;
+  --pink:#db2777;--pink-ink:#be185d;--pink-soft:#fce4ef;
+  --sky:#0284c7;--sky-ink:#0369a1;--sky-soft:#dff1fb;
+  --indigo:#4f46e5;--indigo-ink:#4338ca;--indigo-soft:#e5e7fd;
+  --lime:#65a30d;--lime-ink:#4d7c0f;--lime-soft:#ecf6d8;
+  --slate:#64748b;--slate-ink:#475569;--slate-soft:#eef1f5;
+  --ring:#0f9488;--shadow:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.03);
+  --shadow-lg:0 20px 50px -12px rgba(16,24,40,.25);
+  --r:14px;--r-sm:10px;--sbw:264px;--dot:#d9d9de;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c0c0e;--card:#151518;--border:#26262c;--border-strong:#34343b;--text:#f4f4f5;--muted:#a6a6b0;--faint:#7c7c86;
+  --primary:#f4f4f5;--primary-fg:#18181b;--hover:#1e1e23;--active:#26262c;
+  --teal:#14b8a6;--teal-ink:#5eead4;--teal-soft:rgba(20,184,166,.15);
+  --amber-ink:#fcd34d;--amber-soft:rgba(245,158,11,.16);--orange-ink:#fdba74;--orange-soft:rgba(249,115,22,.16);
+  --red-ink:#fca5a5;--red-soft:rgba(239,68,68,.16);--green-ink:#86efac;--green-soft:rgba(34,197,94,.15);
+  --blue:#60a5fa;--blue-ink:#93c5fd;--blue-soft:rgba(59,130,246,.18);--violet:#a78bfa;--violet-ink:#c4b5fd;--violet-soft:rgba(139,92,246,.18);
+  --pink:#f472b6;--pink-ink:#f9a8d4;--pink-soft:rgba(236,72,153,.17);--sky:#38bdf8;--sky-ink:#7dd3fc;--sky-soft:rgba(14,165,233,.17);
+  --indigo:#818cf8;--indigo-ink:#a5b4fc;--indigo-soft:rgba(99,102,241,.18);--lime:#a3e635;--lime-ink:#bef264;--lime-soft:rgba(132,204,22,.15);
+  --slate:#94a3b8;--slate-ink:#cbd5e1;--slate-soft:rgba(148,163,184,.14);
+  --shadow:none;--shadow-lg:0 20px 50px -12px rgba(0,0,0,.6);--dot:#2a2a31;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0c0c0e;--card:#151518;--border:#26262c;--border-strong:#34343b;--text:#f4f4f5;--muted:#a6a6b0;--faint:#7c7c86;
+  --primary:#f4f4f5;--primary-fg:#18181b;--hover:#1e1e23;--active:#26262c;
+  --teal:#14b8a6;--teal-ink:#5eead4;--teal-soft:rgba(20,184,166,.15);
+  --amber-ink:#fcd34d;--amber-soft:rgba(245,158,11,.16);--orange-ink:#fdba74;--orange-soft:rgba(249,115,22,.16);
+  --red-ink:#fca5a5;--red-soft:rgba(239,68,68,.16);--green-ink:#86efac;--green-soft:rgba(34,197,94,.15);
+  --blue:#60a5fa;--blue-ink:#93c5fd;--blue-soft:rgba(59,130,246,.18);--violet:#a78bfa;--violet-ink:#c4b5fd;--violet-soft:rgba(139,92,246,.18);
+  --pink:#f472b6;--pink-ink:#f9a8d4;--pink-soft:rgba(236,72,153,.17);--sky:#38bdf8;--sky-ink:#7dd3fc;--sky-soft:rgba(14,165,233,.17);
+  --indigo:#818cf8;--indigo-ink:#a5b4fc;--indigo-soft:rgba(99,102,241,.18);--lime:#a3e635;--lime-ink:#bef264;--lime-soft:rgba(132,204,22,.15);
+  --slate:#94a3b8;--slate-ink:#cbd5e1;--slate-soft:rgba(148,163,184,.14);
+  --shadow:none;--shadow-lg:0 20px 50px -12px rgba(0,0,0,.6);--dot:#2a2a31;color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:6px}
+.ic{flex:none;display:inline-block;vertical-align:middle}
+.muted{color:var(--muted)}.faint{color:var(--faint)}.sm{font-size:12.5px}.xs{font-size:11.5px}.b{font-weight:600}
+.row{display:flex;align-items:center;gap:8px}.row.wrap{flex-wrap:wrap}.sp{flex:1}.col{display:flex;flex-direction:column}
+.num{font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+
+/* tones: tile / pill colours */
+.t-violet{--tc:var(--violet);--ts:var(--violet-soft);--ti:var(--violet-ink)}
+.t-orange{--tc:var(--orange);--ts:var(--orange-soft);--ti:var(--orange-ink)}
+.t-sky{--tc:var(--sky);--ts:var(--sky-soft);--ti:var(--sky-ink)}
+.t-amber{--tc:var(--amber);--ts:var(--amber-soft);--ti:var(--amber-ink)}
+.t-teal{--tc:var(--teal);--ts:var(--teal-soft);--ti:var(--teal-ink)}
+.t-blue{--tc:var(--blue);--ts:var(--blue-soft);--ti:var(--blue-ink)}
+.t-pink{--tc:var(--pink);--ts:var(--pink-soft);--ti:var(--pink-ink)}
+.t-green{--tc:var(--green);--ts:var(--green-soft);--ti:var(--green-ink)}
+.t-indigo{--tc:var(--indigo);--ts:var(--indigo-soft);--ti:var(--indigo-ink)}
+.t-red{--tc:var(--red);--ts:var(--red-soft);--ti:var(--red-ink)}
+.t-lime{--tc:var(--lime);--ts:var(--lime-soft);--ti:var(--lime-ink)}
+.t-slate{--tc:var(--slate);--ts:var(--slate-soft);--ti:var(--slate-ink)}
+.tile{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--ts);color:var(--tc);flex:none}
+.tile.lg{width:40px;height:40px;border-radius:11px}
+.tile.md{width:34px;height:34px;border-radius:10px}
+.pill{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--ts,var(--hover));color:var(--ti,var(--muted));white-space:nowrap}
+.pill .d{width:6px;height:6px;border-radius:50%;background:var(--tc,var(--faint))}
+.delta{font-size:12.5px;font-weight:600;white-space:nowrap}.delta.up{color:var(--green-ink)}.delta.dn{color:var(--red-ink)}
+
+/* layout */
+.app{display:grid;grid-template-columns:var(--sbw) minmax(0,1fr);height:100vh;transition:grid-template-columns .2s}
+.app.collapsed{--sbw:72px}
+.sidebar{height:100vh;overflow-y:auto;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:40}
+.main{min-width:0;display:flex;flex-direction:column;height:100vh}
+.topbar{display:flex;align-items:center;gap:8px;height:56px;padding:0 16px;background:var(--card);border-bottom:1px solid var(--border);flex:none}
+.scrim{position:fixed;inset:0;background:rgba(10,10,12,.45);z-index:35;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* sidebar */
+.sb-head{padding:14px 12px 6px;position:relative}
+.org{display:flex;align-items:center;gap:10px;width:100%;padding:8px;border:1px solid var(--border);border-radius:12px;background:var(--card);cursor:pointer;text-align:left}
+.org:hover{background:var(--hover)}
+.logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#0f9488,#4f46e5);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.org-t{min-width:0;flex:1}
+.org-t b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org-t span{display:block;font-size:12px;color:var(--muted)}
+.sb-nav{padding:2px 12px 12px;flex:1}
+.grp{margin-top:12px}
+.grp-h{display:flex;align-items:center;width:100%;padding:4px 8px;border:0;background:none;cursor:pointer;font-size:11.5px;font-weight:500;color:var(--faint);border-radius:6px}
+.grp-h:hover{color:var(--text)}
+.grp-h .ic{margin-left:auto;transition:transform .15s;opacity:0}
+.grp-h:hover .ic,.grp.closed .grp-h .ic{opacity:1}
+.grp.closed .grp-h .ic{transform:rotate(-90deg)}
+.grp.closed .grp-items{display:none}
+.nav-i{display:flex;align-items:center;gap:10px;width:100%;padding:5px 8px;margin:1px 0;border:0;background:none;border-radius:9px;cursor:pointer;color:var(--text);font-weight:500;text-align:left;position:relative;font-size:13.5px}
+.nav-i:hover{background:var(--hover)}
+.nav-i.on{background:var(--active);font-weight:600}
+.nav-i .lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-i .tile{width:24px;height:24px;border-radius:7px}
+.nav-sub{margin:2px 0 4px 20px;padding-left:12px;border-left:1px solid var(--border)}
+.nav-sub .nav-i{padding:5px 8px;color:var(--muted);font-size:13px}
+.nav-sub .nav-i.on{color:var(--text)}
+.nbadge{font-size:11px;font-weight:600;min-width:20px;text-align:center;padding:0 6px;border-radius:99px;background:var(--red-soft);color:var(--red-ink)}
+.fav-i .av{width:22px;height:22px;font-size:10px}
+.fav-i .meta{font-size:11.5px;color:var(--faint);font-weight:400}
+.sb-foot{padding:10px 12px;border-top:1px solid var(--border);position:relative}
+.me{display:flex;align-items:center;gap:10px;width:100%;padding:6px;border:0;border-radius:10px;background:none;cursor:pointer;text-align:left}
+.me:hover{background:var(--hover)}
+.app.collapsed .lbl,.app.collapsed .grp-h span,.app.collapsed .org-t,.app.collapsed .org>.ic,.app.collapsed .nbadge,.app.collapsed .me .org-t,.app.collapsed .me>.ic,.app.collapsed .grp-h .ic,.app.collapsed .nav-sub,.app.collapsed .fav-i .meta{display:none}
+.app.collapsed .nav-i{justify-content:center;padding:6px}
+.app.collapsed .grp-h{justify-content:center;height:10px;padding:0}
+.app.collapsed .grp-h::after{content:"";width:16px;height:1px;background:var(--border-strong)}
+.app.collapsed .org{justify-content:center;padding:6px}
+.app.collapsed .grp.closed .grp-items{display:block}
+.pop{position:absolute;z-index:80;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;min-width:220px}
+.pop-i{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;background:none;border-radius:8px;cursor:pointer;text-align:left;font-size:13.5px}
+.pop-i:hover,.pop-i:focus-visible{background:var(--hover)}
+.pop-h{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 10px 4px}
+.pop-sep{height:1px;background:var(--border);margin:6px 0}
+
+/* topbar */
+.ibtn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;border:1px solid transparent;background:none;cursor:pointer;color:var(--muted);position:relative;flex:none}
+.ibtn:hover{background:var(--hover);color:var(--text)}
+.ibtn.bd{border-color:var(--border);background:var(--card)}
+.ibtn.sm{width:28px;height:28px;border-radius:8px}
+.ibtn.on{background:var(--active);color:var(--text)}
+.dot{position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--orange);border:2px solid var(--card)}
+.crumb{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13.5px;white-space:nowrap;min-width:0}
+.crumb b{color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.vsep{width:1px;height:20px;background:var(--border);flex:none}
+.search{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;width:min(300px,30vw);margin-left:auto;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--muted);cursor:pointer}
+.search span{flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+kbd{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:3px 6px;border:1px solid var(--border);border-bottom-width:2px;border-radius:6px;color:var(--muted);background:var(--card)}
+.av{display:inline-grid;place-items:center;border-radius:50%;font-weight:600;flex:none;width:32px;height:32px;font-size:12px;position:relative}
+.av.s{width:26px;height:26px;font-size:10.5px}.av.l{width:40px;height:40px;font-size:14px}
+.av-0{background:#d7f2ee;color:#0b5e57}.av-1{background:#fdecc8;color:#7a4405}.av-2{background:#e3e8f0;color:#334155}
+.av-3{background:#ffe2cc;color:#9a3412}.av-4{background:#dde7fd;color:#1e3a8a}.av-5{background:#f9dde7;color:#9d174d}.av-6{background:#ebe3fd;color:#5b21b6}
+:root[data-theme="dark"] .av{filter:saturate(.85) brightness(.88)}
+.av .on-d{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--card)}
+.stack{display:flex}.stack .av{border:2px solid var(--card);margin-left:-8px}.stack .av:first-child{margin-left:0}
+
+/* tab bar (browser style) */
+.tabbar{display:flex;align-items:flex-end;gap:2px;height:42px;padding:0 10px;background:var(--bg);border-bottom:1px solid var(--border);flex:none;position:relative}
+.tabs{display:flex;align-items:flex-end;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:none;flex:0 1 auto}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;gap:8px;height:34px;padding:0 6px 0 10px;min-width:120px;max-width:200px;border:1px solid transparent;border-bottom:0;border-radius:10px 10px 0 0;background:none;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;position:relative;flex:none}
+.tab:hover{background:var(--hover);color:var(--text)}
+.tab.on{background:var(--card);border-color:var(--border);color:var(--text);font-weight:600}
+.tab.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--card)}
+.tab.split{box-shadow:inset 0 2px 0 var(--violet)}
+.tab .tile{width:20px;height:20px;border-radius:6px}
+.tab .t{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.tab .x{display:grid;place-items:center;width:20px;height:20px;border-radius:6px;color:var(--faint)}
+.tab .x:hover{background:var(--active);color:var(--text)}
+.tabbar .ibtn{margin-bottom:4px}
+.tabbar-r{margin-left:auto;display:flex;gap:2px;padding-left:8px}
+
+/* workspace + panes */
+.ws{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr)}
+.ws.split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.pane{min-width:0;min-height:0;overflow:auto;position:relative;container-type:inline-size}
+.ws.split .pane+.pane{border-left:1px solid var(--border)}
+.pane-h{display:none;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--card);position:sticky;top:0;z-index:5;font-size:12.5px;color:var(--muted)}
+.ws.split .pane-h{display:flex}
+.page{padding:24px;max-width:1440px;margin:0 auto}
+.page.fill{padding:0;max-width:none;height:100%;display:flex;flex-direction:column}
+.pane-c:has(>.page.fill){height:100%}
+.ws.split .pane-c:has(>.page.fill){height:calc(100% - 41px)}
+
+/* components */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.ph h1{font-size:24px;line-height:1.25;margin:0;font-weight:650;letter-spacing:-.015em}
+.ph p{margin:4px 0 0;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-weight:550;white-space:nowrap;font-size:13.5px;text-decoration:none}
+.btn:hover{background:var(--hover)}
+.btn.pri{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.btn.pri:hover{opacity:.9}
+.btn.acc{background:#4f46e5;color:#fff;border-color:#4f46e5}
+.btn.acc:hover{opacity:.92}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}
+.btn.ghost{border-color:transparent;background:none}
+.btn.ghost:hover{background:var(--hover)}
+.btn.danger{color:var(--red-ink);border-color:color-mix(in srgb,var(--red) 35%,var(--border))}
+.btn.block{width:100%;height:40px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px 0}
+.card-h h3{font-size:15px;margin:0;font-weight:600}
+.card-h p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.card-b{padding:16px 20px 20px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.span2{grid-column:span 2}.span3{grid-column:span 3}.span4{grid-column:span 4}
+.input{height:38px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);width:100%;min-width:0}
+.input:focus{outline:none;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 18%,transparent)}
+textarea.input{height:auto;padding:10px 12px;resize:vertical}
+select.input{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 16px,calc(100% - 11px) 16px;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.lab{font-size:13px;font-weight:550}
+.field .hint{font-size:12px;color:var(--faint)}
+.inwrap{position:relative;display:flex;align-items:center}
+.inwrap .ic{position:absolute;left:11px;color:var(--faint);pointer-events:none}
+.inwrap .input{padding-left:34px}
+.inwrap .suf{position:absolute;right:6px}
+.seg{display:inline-flex;padding:3px;border:1px solid var(--border);border-radius:10px;background:var(--bg);gap:2px}
+.seg button{border:0;background:none;padding:4px 10px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--muted);white-space:nowrap}
+.seg button.on{background:var(--card);color:var(--text);font-weight:600;box-shadow:var(--shadow),0 0 0 1px var(--border)}
+.utabs{display:flex;gap:4px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.utabs button{border:0;background:none;padding:10px 12px;cursor:pointer;color:var(--muted);font-weight:550;font-size:13.5px;position:relative;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.utabs button:hover{color:var(--text)}
+.utabs button.on{color:var(--text)}
+.utabs button.on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:2px;background:var(--text)}
+.utabs .cnt{font-size:11px;padding:0 6px;border-radius:99px;background:var(--hover);color:var(--muted)}
+.sw{position:relative;width:36px;height:20px;border-radius:99px;background:var(--border-strong);border:0;cursor:pointer;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.sw.on{background:var(--teal)}.sw.on::after{transform:translateX(16px)}
+.chk{width:16px;height:16px;accent-color:var(--teal)}
+.tbl-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;font-weight:550;color:var(--muted);font-size:12.5px;padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap;background:color-mix(in srgb,var(--bg) 55%,var(--card))}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr:hover td{background:var(--hover)}
+.tbl tr.click{cursor:pointer}
+.tbl .r{text-align:right}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--border)}
+.pager{display:flex;align-items:center;gap:6px;padding:12px 16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.pg{min-width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:12.5px}
+.pg.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.list-i{display:flex;align-items:center;gap:12px;padding:10px 0}
+.list-i+.list-i{border-top:1px dashed var(--border)}
+.prog{height:6px;border-radius:99px;background:var(--hover);overflow:hidden}
+.prog i{display:block;height:100%;border-radius:99px;background:var(--tc,var(--teal))}
+.empty{display:grid;place-items:center;text-align:center;padding:60px 20px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;font-weight:550;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;z-index:200;box-shadow:var(--shadow-lg);display:flex;gap:8px;align-items:center;max-width:calc(100vw - 32px)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);background:var(--card);border-left:1px solid var(--border);z-index:90;transform:translateX(100%);transition:transform .22s;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.drawer.on{transform:none}
+.drawer-h{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border)}
+.drawer-b{padding:18px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:14px}
+.drawer-f{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.dscrim{position:fixed;inset:0;background:rgba(10,10,12,.4);z-index:85;opacity:0;pointer-events:none;transition:.2s}
+.dscrim.on{opacity:1;pointer-events:auto}
+.cmdk{position:fixed;inset:0;z-index:150;display:grid;place-items:start center;padding-top:12vh;background:rgba(10,10,12,.4)}
+.cmdk-box{width:min(560px,calc(100vw - 32px));background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden}
+.cmdk-box input{width:100%;border:0;border-bottom:1px solid var(--border);padding:14px 16px;background:none;font-size:15px;outline:none}
+.cmdk-list{max-height:50vh;overflow:auto;padding:6px}
+
+/* charts */
+.bars{display:flex;align-items:flex-end;gap:10px;height:var(--bh,180px)}
+.bars .bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
+.bars .bv{font-size:11.5px;font-weight:600;color:var(--muted)}
+.bars .bar{width:100%;max-width:44px;border-radius:8px;background:color-mix(in srgb,var(--tc,var(--indigo)) 22%,transparent);height:var(--h);transition:height .4s}
+.bars .bc.hi .bar{background:var(--tc,var(--indigo))}
+.bars .bc.hi .bv{color:var(--text)}
+.bars .bl{font-size:11.5px;color:var(--faint)}
+.bars.thin .bar{max-width:12px;border-radius:99px}
+.bars.stack .bar{display:flex;flex-direction:column;justify-content:flex-end;background:none;gap:3px}
+.bars.stack .bar i{display:block;border-radius:5px;background:var(--tc)}
+.bars.stack .bar i+i{background:color-mix(in srgb,var(--tc) 35%,transparent)}
+.spark{width:100%;height:auto;display:block;overflow:visible}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:8px;height:8px;border-radius:3px;background:var(--tc)}
+.kpi .big{font-size:22px;font-weight:650;letter-spacing:-.01em}
+.axis{display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-top:6px}
+</style>
+<style>
+/* chat */
+.chat{position:relative;display:grid;grid-template-columns:340px minmax(0,1fr) 300px;height:100%;min-height:0;background:var(--card)}
+.chat.noinfo{grid-template-columns:340px minmax(0,1fr)}
+.chat.noinfo .c-info{display:none}
+.c-list{border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.c-list-h{padding:16px 16px 0;display:flex;flex-direction:column;gap:12px}
+.c-list .utabs{padding:0 8px}
+.c-list .utabs button{padding:10px 8px;font-size:13px}
+.c-scroll{overflow:auto;flex:1;padding:6px 8px 12px}
+.c-sec{display:flex;align-items:center;font-size:11.5px;font-weight:600;color:var(--faint);padding:10px 8px 4px;text-transform:uppercase;letter-spacing:.05em;gap:6px}
+.conv{display:flex;gap:12px;width:100%;padding:10px 8px;border:0;background:none;border-radius:10px;cursor:pointer;text-align:left;align-items:flex-start}
+.conv:hover{background:var(--hover)}
+.conv.on{background:var(--active)}
+.conv .mid{flex:1;min-width:0}
+.conv .nm{display:flex;align-items:center;gap:6px;font-weight:600;font-size:13.5px}
+.conv .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv .pv{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.conv.unread .pv{color:var(--text);font-weight:500}
+.conv .rt{display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:11.5px;color:var(--faint);flex:none}
+.ucnt{min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--primary);color:var(--primary-fg);font-size:10.5px;font-weight:700;display:grid;place-items:center}
+.ext{font-size:10.5px;font-weight:600;padding:0 6px;border-radius:5px;background:var(--amber-soft);color:var(--amber-ink)}
+.c-main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.c-head{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.c-msgs{flex:1;overflow:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+.day{align-self:center;font-size:11.5px;color:var(--faint);background:var(--card);border:1px solid var(--border);padding:2px 10px;border-radius:99px}
+.msg{display:flex;gap:10px;max-width:72%;align-items:flex-end}
+.msg.me{align-self:flex-end;flex-direction:row-reverse}
+.bub{background:var(--card);border:1px solid var(--border);padding:9px 12px;border-radius:14px 14px 14px 4px;font-size:13.5px}
+.msg.me .bub{background:var(--primary);color:var(--primary-fg);border-color:var(--primary);border-radius:14px 14px 4px 14px}
+.bub .who{font-size:12px;font-weight:600;margin-bottom:2px;color:var(--violet-ink)}
+.meta-l{font-size:11px;color:var(--faint);margin-top:4px;display:flex;gap:4px;align-items:center}
+.msg.me .meta-l{justify-content:flex-end}
+.tick.read{color:var(--sky)}
+.att{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--card);margin-top:6px;color:var(--text);min-width:220px}
+.msg.me .att{border-color:transparent}
+.att-img{width:240px;max-width:100%;aspect-ratio:16/10;border-radius:10px;margin-top:6px;display:block}
+.typing{display:flex;gap:4px;padding:12px 14px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--faint);animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.c-comp{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.c-comp .input{border-radius:12px;height:40px}
+.c-info{border-left:1px solid var(--border);overflow:auto;padding:20px 18px;display:flex;flex-direction:column;gap:18px}
+.c-info h4{margin:0 0 8px;font-size:12px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
+.c-back{display:none}
+
+/* profile */
+.cover{height:180px;border-radius:var(--r) var(--r) 0 0;position:relative;overflow:hidden;background:var(--cv)}
+.cover>svg{position:absolute;inset:0;width:100%;height:100%}
+.prof-h{display:flex;align-items:flex-start;gap:20px;padding:16px 24px 22px;position:relative;flex-wrap:wrap}
+.prof-av{margin-top:-72px;width:120px;height:120px;border-radius:22px;border:4px solid var(--card);font-size:38px;font-weight:700;display:grid;place-items:center;flex:none}
+.prof-h h2{margin:0;font-size:24px;font-weight:650;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.facts{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:6px}
+.facts span{display:inline-flex;align-items:center;gap:6px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;font-size:13.5px;align-items:center}
+.kv dt{color:var(--muted);display:flex;align-items:center;gap:8px}
+.kv dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.sec-t{font-size:11.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px}
+.sec-t:first-child{margin-top:0}
+.tl{position:relative;padding-left:26px;display:flex;flex-direction:column;gap:20px}
+.tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--border)}
+.tl-i{position:relative}
+.tl-i::before{content:"";position:absolute;left:-24px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--tc,var(--text));box-shadow:0 0 0 3px var(--card)}
+.tl-i .h{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.tl-i .h b{font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;font-size:12.5px;background:var(--card);margin-top:8px}
+.heat{display:grid;grid-template-columns:repeat(var(--cols,22),minmax(0,1fr));gap:4px}
+.heat i{aspect-ratio:1;border-radius:4px;background:var(--hover)}
+.heat i.p{background:color-mix(in srgb,var(--teal) 70%,transparent)}.heat i.l{background:var(--amber)}.heat i.a{background:var(--red)}.heat i.h{background:var(--border)}
+.doc{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+.doc:hover{border-color:var(--border-strong)}
+
+/* settings */
+.set{display:grid;grid-template-columns:220px minmax(0,1fr) 280px;gap:20px;align-items:start}
+.set-nav{position:sticky;top:0;padding:8px}
+.set-nav .h{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:10px 10px 4px}
+.set-nav button{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border:0;background:none;border-radius:8px;cursor:pointer;text-align:left;color:var(--muted);font-weight:500;font-size:13.5px}
+.set-nav button:hover{background:var(--hover);color:var(--text)}
+.set-nav button.on{background:var(--active);color:var(--text);font-weight:600}
+.set-sec{display:flex;flex-direction:column;gap:16px}
+.set-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--border)}
+.set-row:first-child{border-top:0;padding-top:0}
+.set-row .t{flex:1;min-width:0}
+.set-row .t b{display:block;font-weight:550}
+.set-row .t span{font-size:12.5px;color:var(--muted)}
+.savebar{position:sticky;bottom:16px;margin-top:16px;display:flex;align-items:center;gap:10px;padding:10px 12px 10px 16px;border-radius:12px;background:var(--primary);color:var(--primary-fg);box-shadow:var(--shadow-lg)}
+.savebar .btn{border-color:transparent}
+.intg{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--border);border-radius:12px}
+.perm td,.perm th{text-align:center}.perm td:first-child,.perm th:first-child{text-align:left}
+
+/* workflow builder */
+.wf{display:flex;flex-direction:column;height:100%;min-height:0}
+.wf-top{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--card);flex-wrap:wrap}
+.wf-body{flex:1;min-height:0;display:flex;position:relative}
+.canvas{flex:1;overflow:auto;position:relative;background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.2px,transparent 1.2px);background-size:18px 18px;cursor:grab}
+.canvas-in{transform-origin:top center;padding:40px 20px 120px;display:flex;flex-direction:column;align-items:center;min-width:720px;transition:transform .15s}
+.node{width:260px;display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--border);background:var(--card);border-radius:12px;cursor:pointer;box-shadow:var(--shadow);text-align:left;position:relative}
+.node:hover{border-color:var(--border-strong)}
+.node.sel{border-color:var(--indigo);box-shadow:0 0 0 3px color-mix(in srgb,var(--indigo) 22%,transparent)}
+.node .k{font-size:11px;color:var(--faint);font-weight:550;text-transform:uppercase;letter-spacing:.05em}
+.node .n{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node .warn{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.edge{width:2px;height:40px;background:var(--border-strong);position:relative}
+.edge::after{content:"";position:absolute;bottom:-1px;left:-4px;border:5px solid transparent;border-top-color:var(--border-strong);border-bottom:0}
+.edge .add{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;border:1px solid var(--border-strong);background:var(--card);display:grid;place-items:center;cursor:pointer;opacity:0;transition:.15s;color:var(--muted);padding:0}
+.edge:hover .add,.edge .add:focus-visible{opacity:1}
+.branch{display:grid;grid-template-columns:1fr 1fr;gap:40px;position:relative;padding-top:20px}
+.branch{padding-bottom:20px}.branch::after{content:"";position:absolute;bottom:0;left:calc(25% - 10px);right:calc(25% - 10px);height:20px;border:2px solid var(--border-strong);border-top:0;border-radius:0 0 12px 12px}
+.branch::before{content:"";position:absolute;top:0;left:calc(25% - 10px);right:calc(25% - 10px);height:20px;border:2px solid var(--border-strong);border-bottom:0;border-radius:12px 12px 0 0}
+.branch>div{display:flex;flex-direction:column;align-items:center}
+.branch>div::after{content:"";flex:1;width:2px;background:var(--border-strong);min-height:0}
+.branch.merge{height:20px;padding:0}.branch.merge::before{top:auto;bottom:0;border:2px solid var(--border-strong);border-top:0;border-radius:0 0 12px 12px}
+.branch.merge>div::after{display:none}
+.blabel{font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:99px;margin-bottom:8px}
+.wf-panel{width:340px;border-left:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;min-height:0}
+.wf-panel .drawer-b{gap:14px}
+.zoom{position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);z-index:3}
+.minimap{position:absolute;left:16px;bottom:16px;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:6px 10px;z-index:3}
+
+/* auth */
+.auth{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:var(--card);overflow:auto;z-index:300}
+.auth-l{display:flex;flex-direction:column;padding:28px 40px;min-height:100vh}
+.auth-form{width:100%;max-width:400px;margin:auto;display:flex;flex-direction:column;gap:16px;padding:32px 0}
+.auth-form h1{font-size:26px;margin:0;font-weight:650;letter-spacing:-.015em}
+.auth-form .sub{color:var(--muted);margin:-8px 0 4px}
+.auth-r{padding:16px;min-height:100vh;position:sticky;top:0}
+.auth-art{height:100%;border-radius:22px;position:relative;overflow:hidden;background:#101826;color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:40px}
+.auth-art svg.bg{position:absolute;inset:0;width:100%;height:100%}
+.auth-art>*{position:relative}
+.auth-art h2{font-size:34px;line-height:1.15;margin:0;font-weight:650;letter-spacing:-.02em;max-width:460px}
+.auth-art p{color:rgba(255,255,255,.75);max-width:460px}
+.glass{background:rgba(255,255,255,.92);color:#18181b;border-radius:16px;padding:20px;max-width:440px}
+.glass p{color:#5d5e66;margin:6px 0 0}
+.or{display:flex;align-items:center;gap:12px;color:var(--faint);font-size:12.5px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--border)}
+.otp{display:flex;gap:10px}
+.otp input{width:48px;height:54px;text-align:center;font-size:20px;font-weight:600;border:1px solid var(--border-strong);border-radius:12px;background:var(--card);min-width:0;flex:1;max-width:56px}
+.otp input:focus{outline:none;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 18%,transparent)}
+.steps{display:flex;gap:8px}
+.steps i{flex:1;height:4px;border-radius:99px;background:var(--border)}
+.steps i.on{background:var(--teal)}
+.link{color:var(--text);font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;background:none;border:0;padding:0}
+.chooser{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.chooser button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--card);cursor:pointer;text-align:left}
+.chooser button.on{border-color:var(--teal);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 18%,transparent)}
+
+/* responsive */
+@media (max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g6{grid-template-columns:repeat(3,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.span3,.span4{grid-column:1/-1}}
+@media (max-width:900px){
+  .app,.app.collapsed{grid-template-columns:minmax(0,1fr);--sbw:280px}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:280px;transform:translateX(-100%);transition:transform .22s}
+  .app.mob .sidebar{transform:none}
+  .app.collapsed .lbl,.app.collapsed .org-t,.app.collapsed .nbadge,.app.collapsed .nav-sub,.app.collapsed .me .org-t,.app.collapsed .fav-i .meta{display:revert}
+  .ws.split{grid-template-columns:minmax(0,1fr)}.ws.split .pane+.pane{display:none}.ws.split .pane-h{display:none}.ws.split .pane-c:has(>.page.fill){height:100%}
+  .auth{grid-template-columns:minmax(0,1fr)}.auth-r{display:none}.auth-l{padding:20px}
+  .set{grid-template-columns:minmax(0,1fr)}.set-nav{position:static;display:flex;overflow-x:auto;gap:4px;padding:0;scrollbar-width:none}.set-nav .h{display:none}.set-nav button{width:auto;white-space:nowrap}
+  .search{width:auto;margin-left:auto}.search span,.search kbd{display:none}
+  .hide-m{display:none!important}
+}
+@media (max-width:720px){
+  .page{padding:16px}
+  .g2,.g3,.g4{grid-template-columns:minmax(0,1fr)}.g6{grid-template-columns:repeat(2,minmax(0,1fr))}.span2{grid-column:auto}
+  .g4.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ph h1{font-size:21px}
+  .prof-h{padding:12px 16px 18px;gap:14px}.prof-av{margin-top:-56px;width:92px;height:92px;font-size:30px;border-radius:18px}.cover{height:130px}
+  .tab{min-width:44px;max-width:150px}
+  .topbar{padding:0 10px;gap:4px}
+  .crumb .hide-s{display:none}
+  .otp{gap:6px}.otp input{height:48px}
+  .drawer-f{flex-wrap:wrap}
+}
+@container (max-width:1150px){.chat,.chat.noinfo{grid-template-columns:300px minmax(0,1fr)}.chat .c-info{display:flex;position:absolute;right:0;top:0;bottom:0;width:min(320px,100%);background:var(--card);z-index:20;box-shadow:var(--shadow-lg);transform:translateX(105%);transition:transform .2s}.chat.info .c-info{transform:none}
+  .set{grid-template-columns:200px minmax(0,1fr)}.set-aside{display:none}}
+@container (max-width:900px){.wf-panel{position:absolute;right:0;top:0;bottom:0;z-index:4;box-shadow:var(--shadow-lg)}}
+@container (max-width:640px){.chat,.chat.noinfo{grid-template-columns:minmax(0,1fr)}.chat .c-main{display:none}.chat.open .c-main{display:flex}.chat.open .c-list{display:none}.c-back{display:inline-grid}.msg{max-width:88%}.c-msgs{padding:16px 12px}
+  .wf-panel{width:100%;top:auto;height:62%;border-left:0;border-top:1px solid var(--border);border-radius:16px 16px 0 0}.canvas-in{min-width:0}.node{width:200px}.node .tile{display:none}.branch{gap:12px}.branch::before,.branch::after{left:calc(25% - 3px);right:calc(25% - 3px)}.wf-top .btn span{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="dscrim" id="dscrim" data-act="closeDrawer"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"></aside>
+<script>
+const ICONS={
+home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+users:'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 4a4 4 0 0 1 0 8M22 21v-1a6 6 0 0 0-4-5.6"/>',
+userplus:'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M19 8v6M16 11h6"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/>',
+calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+filecheck:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>',
+award:'<circle cx="12" cy="8" r="6"/><path d="M8.2 13.2 7 22l5-3 5 3-1.2-8.8"/>',
+wallet:'<path d="M20 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/>',
+receipt:'<path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>',
+sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/>',
+moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
+panel:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>',
+chevdown:'<path d="m6 9 6 6 6-6"/>',chevright:'<path d="m9 18 6-6-6-6"/>',chevleft:'<path d="m15 18-6-6 6-6"/>',
+chevrons:'<path d="m7 15 5 5 5-5M7 9l5-5 5 5"/>',
+x:'<path d="M18 6 6 18M6 6l12 12"/>',
+filter:'<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>',
+download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+more:'<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+check:'<path d="M20 6 9 17l-5-5"/>',
+clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+cap:'<path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+board:'<path d="M2 3h20M3 3v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3M12 16v5M8 21h8"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+arrow:'<path d="M5 12h14M12 5l7 7-7 7"/>',
+up:'<path d="M7 17 17 7M8 7h9v9"/>',down:'<path d="M7 7l10 10M17 8v9H8"/>',
+chart:'<path d="M3 3v18h18M7 16v-4M12 16V8M17 16v-7"/>',
+layers:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>',
+inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+bus:'<rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16M8 19v2M16 19v2M8 15h.01M16 15h.01"/>',
+globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
+logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+sparkle:'<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/>',
+bank:'<path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>',
+eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>'
+};
+Object.assign(ICONS,{
+message:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+clip:'<path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/>',
+smile:'<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
+mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 19v3"/>',
+video:'<path d="m22 8-6 4 6 4z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+pin:'<path d="M12 17v5M9 10.8V4h6v6.8l3 3.2v2H6v-2z"/>',
+checks:'<path d="M18 6 7 17l-5-5M22 10l-7.5 7.5L13 16"/>',
+image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
+star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+workflow:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M6.5 10v4a3 3 0 0 0 3 3H14"/>',
+zap:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
+branch:'<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10a6 6 0 0 1-6 6H6"/>',
+play:'<path d="m6 3 14 9-14 9z"/>',
+copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>',
+edit:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+key:'<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/>',
+plug:'<path d="M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z"/>',
+card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/>',
+megaphone:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+trend:'<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
+trenddn:'<path d="m22 17-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/>',
+map:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+split:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/>',
+refresh:'<path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M3 21v-5h5"/>',
+zoomin:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/>',
+zoomout:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M8 11h6"/>',
+max:'<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>',
+history:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>',
+at:'<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
+belloff:'<path d="M8.7 3A6 6 0 0 1 18 8a21 21 0 0 0 .6 5M17 17H3s3-2 3-9a4.7 4.7 0 0 1 .3-2M10.3 21a1.9 1.9 0 0 0 3.4 0M2 2l20 20"/>',
+heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/>',
+brief:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+id:'<rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M14 10h4M14 14h4M5 17a3 3 0 0 1 6 0"/>',
+grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+sort:'<path d="M3 6h18M6 12h12M10 18h4"/>',
+minus:'<path d="M5 12h14"/>',
+smartphone:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>',
+fingerprint:'<path d="M12 10a2 2 0 0 0-2 2c0 1.6-.3 3.1-1 4.5M14 13.1c0 2-.4 4-1.1 5.9M17.3 20.5c.4-1.2.7-2.5.7-3.9M2 12a10 10 0 0 1 18-6M2 16h.01M21.8 16c.2-2 .1-5.4 0-6M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .3-2M8.6 22c.6-1.4 1.1-3 1.3-4.5M9 6.8A6 6 0 0 1 18 12v.5"/>',
+mapPin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+cal2:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>',
+external:'<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+percent:'<path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+});
+const I=(n,s=16,sw=2)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const GOOGLE=`<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.3H12v4.3h5.9a5 5 0 0 1-2.2 3.3v2.8h3.5c2.1-1.9 3.3-4.8 3.3-8.1z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.3 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.6H2.1v2.9A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.7 14.1a6.6 6.6 0 0 1 0-4.2V7H2.1a11 11 0 0 0 0 10z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2A11 11 0 0 0 2.1 7l3.6 2.9C6.6 7.4 9.1 5.4 12 5.4z"/></svg>`;
+const MSFT=`<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="#F25022" d="M1 1h10.5v10.5H1z"/><path fill="#7FBA00" d="M12.5 1H23v10.5H12.5z"/><path fill="#00A4EF" d="M1 12.5h10.5V23H1z"/><path fill="#FFB900" d="M12.5 12.5H23V23H12.5z"/></svg>`;
+
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const lakh=n=>n>=1e7?'₹'+(n/1e7).toFixed(2)+' Cr':'₹'+(n/1e5).toFixed(n>=1e6?1:2)+' L';
+const ini=n=>n.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.|Mrs\.)\s*/,'').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const avc=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%7;return 'av-'+h};
+const AV=(n,cls='',online)=>`<span class="av ${avc(n)} ${cls}" title="${esc(n)}">${ini(n)}${online?'<i class="on-d"></i>':''}</span>`;
+const pill=(t,tone='slate',dot=true)=>`<span class="pill t-${tone}">${dot?'<i class="d"></i>':''}${t}</span>`;
+const tile=(ic,tone,cls='')=>`<span class="tile t-${tone} ${cls}">${I(ic,cls==='lg'?20:cls==='md'?17:14)}</span>`;
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let toastT;function toast(m){const t=$('#toast');t.innerHTML=I('check',15)+esc(m);t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
+
+/* charts */
+function bars(vals,labels,o={}){const{hi=-1,fmt=v=>v,h=180,thin=false,tone='indigo',show=true,stack}=o;const m=Math.max(...vals.map((v,i)=>v+(stack?stack[i]:0)));
+  return `<div class="bars ${thin?'thin':''} ${stack?'stack':''} t-${tone}" style="--bh:${h}px">${vals.map((v,i)=>`<div class="bc ${i===hi?'hi':''}">${show?`<span class="bv">${fmt(v)}</span>`:''}<div class="bar" style="--h:${Math.max(3,(v+(stack?stack[i]:0))/m*(show||labels?80:100))}%">${stack?`<i style="height:${v/(v+stack[i])*100}%"></i><i style="flex:1"></i>`:''}</div>${labels?`<span class="bl">${labels[i]}</span>`:''}</div>`).join('')}</div>`}
+function line(vals,o={}){const{w=300,h=90,tone='violet',area=true,dot=true,min}=o;const mx=Math.max(...vals),mn=min??Math.min(...vals)*.9,r=mx-mn||1;
+  const pts=vals.map((v,i)=>[i/(vals.length-1)*w,h-6-(v-mn)/r*(h-14)]);const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');const id='g'+Math.random().toString(36).slice(2,8);
+  return `<svg class="spark t-${tone}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="height:${h}px" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" style="stop-color:var(--tc);stop-opacity:.28"/><stop offset="1" style="stop-color:var(--tc);stop-opacity:0"/></linearGradient></defs>${area?`<path d="${d} L${w} ${h} L0 ${h}Z" fill="url(#${id})"/>`:''}<path d="${d}" fill="none" style="stroke:var(--tc)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`}
+function ring(p,o={}){const{s=88,sw=9,tone='pink',label}=o;const r=(s-sw)/2,c=2*Math.PI*r;
+  return `<div class="t-${tone}" style="position:relative;width:${s}px;height:${s}px;flex:none"><svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" style="transform:rotate(-90deg)" aria-hidden="true"><circle cx="${s/2}" cy="${s/2}" r="${r}" fill="none" style="stroke:var(--ts)" stroke-width="${sw}"/><circle cx="${s/2}" cy="${s/2}" r="${r}" fill="none" style="stroke:var(--tc)" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c*p/100} ${c}"/></svg><div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:650;font-size:${s>80?15:12}px;line-height:1.1">${label??p+'%'}</div></div>`}
+
+/* ---------- state ---------- */
+const S=Object.assign({theme:null,tabs:[{id:'t1',page:'analytics'},{id:'t2',page:'chat'},{id:'t3',page:'workflow'}],active:'t1',split:null,collapsed:false,view:'app',auth:'signin',closed:[]},store.get('kx2',{}));
+S.view=S.view||'app';
+const save=()=>store.set('kx2',{theme:S.theme,tabs:S.tabs,active:S.active,split:S.split,collapsed:S.collapsed,view:S.view,auth:S.auth,closed:S.closed});
+function applyTheme(){if(S.theme)document.documentElement.dataset.theme=S.theme;else document.documentElement.removeAttribute('data-theme')}
+const isDark=()=>S.theme?S.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+
+/* ---------- registry + nav ---------- */
+const PAGES={};
+const NAV=[
+  {g:'Favourites',fav:true,items:[['student','Ananya Rao','Student'],['teacher','Prof. Deepa Nair','Faculty'],['workflow','Fee concession','Workflow']]},
+  {g:'Dashboards',items:[['analytics','Analytics','chart','violet'],['campaigns','Campaigns','megaphone','orange'],['overview','Overview','home','sky']]},
+  {g:'Communicate',items:[['chat','Messages','message','teal',6],['notices','Notices','bell','amber']]},
+  {g:'People',items:[['student','Students','cap','blue'],['teacher','Faculty & staff','users','pink'],['admissions','Admissions','userplus','green']]},
+  {g:'Academics',items:[['attendance','Attendance','clipboard','lime'],['timetable','Timetable','cal2','indigo'],['exams','Exams & results','award','red']]},
+  {g:'Finance',items:[['fees','Fees & accounts','wallet','teal'],['payroll','Payroll','bank','amber']]},
+  {g:'Workspace',items:[['workflows','Workflows','workflow','orange',null,[['workflows','Workflows'],['workflow','Builder'],['runs','Workflow runs']]]]},
+  {g:'System',items:[['settings','Settings','settings','slate'],['auth','Auth screens','lock','violet']]},
+];
+const META={};NAV.forEach(g=>!g.fav&&g.items.forEach(i=>META[i[0]]={t:i[1],ic:i[2],tone:i[3]}));
+Object.assign(META,{workflow:{t:'Fee concession',ic:'workflow',tone:'orange'},runs:{t:'Workflow runs',ic:'history',tone:'orange'},student:{t:'Ananya Rao',ic:'cap',tone:'blue'},teacher:{t:'Prof. Deepa Nair',ic:'users',tone:'pink'},launcher:{t:'New tab',ic:'plus',tone:'slate'}});
+const GROUP_OF=p=>{for(const g of NAV){if(g.fav)continue;for(const i of g.items){if(i[0]===p||(i[5]||[]).some(s=>s[0]===p))return g.g}}return 'Kinetix'};
+
+/* ---------- shell ---------- */
+const root=$('#root');
+function render(){applyTheme();if(S.view==='auth'){renderAuth();return}
+  root.innerHTML=`<div class="app ${S.collapsed?'collapsed':''}" id="app">
+  <aside class="sidebar" id="sb" aria-label="Main navigation"></aside>
+  <div class="scrim" data-act="closeMob"></div>
+  <div class="main">
+    <header class="topbar">
+      <button class="ibtn" data-act="toggleSb" aria-label="Toggle sidebar">${I('panel',18)}</button>
+      <span class="vsep hide-m"></span>
+      <div class="crumb" id="crumb"></div>
+      <button class="search" data-act="cmdk">${I('search',15)}<span>Search students, staff, pages…</span><kbd>⌘K</kbd></button>
+      <button class="ibtn" data-act="theme" aria-label="Toggle theme">${I(isDark()?'sun':'moon',17)}</button>
+      <button class="ibtn hide-m" data-act="open" data-p="chat" aria-label="Messages">${I('message',17)}<i class="dot"></i></button>
+      <div style="position:relative"><button class="ibtn" data-act="pop" data-pop="notif" aria-label="Notifications">${I('bell',17)}<i class="dot"></i></button></div>
+    </header>
+    <div class="tabbar" role="tablist" aria-label="Open pages"><div class="tabs" id="tabs"></div>
+      <button class="ibtn sm" data-act="newTab" aria-label="New tab" title="New tab (Alt+T)">${I('plus',16)}</button>
+      <div class="tabbar-r"><button class="ibtn sm hide-m ${S.split?'on':''}" data-act="split" aria-label="Split view" title="Split view">${I('split',15)}</button>
+      <button class="ibtn sm" data-act="pop" data-pop="tabs" aria-label="All tabs">${I('chevdown',15)}</button></div></div>
+    <div class="ws" id="ws"></div>
+  </div></div>`;
+  renderSb();renderTabs();renderPanes();
+}
+function renderSb(){const act=curPage();
+  $('#sb').innerHTML=`<div class="sb-head"><button class="org" data-act="pop" data-pop="org"><span class="logo">S</span><span class="org-t"><b>Soundarya Institute</b><span>Kinetix ERP · Bengaluru</span></span>${I('chevrons',15)}</button></div>
+  <nav class="sb-nav">${NAV.map(g=>`<div class="grp" data-g="${g.g}"><button class="grp-h" data-act="grp"><span>${g.g}</span>${I('chevdown',13)}</button><div class="grp-items">${g.items.map(i=>g.fav
+    ?`<button class="nav-i fav-i" data-act="open" data-p="${i[0]}" title="${esc(i[1])}">${AV(i[1],'s')}<span class="lbl">${i[1]}</span><span class="meta lbl" style="flex:none">${i[2]}</span></button>`
+    :`<button class="nav-i ${act===i[0]||(i[5]&&i[5].some(s=>s[0]===act))?'on':''}" data-act="open" data-p="${i[0]}" title="${i[1]}">${tile(i[2],i[3])}<span class="lbl">${i[1]}</span>${i[4]?`<span class="nbadge">${i[4]}</span>`:''}${i[5]?I('chevright',14):''}</button>${i[5]&&i[5].some(s=>s[0]===act)?`<div class="nav-sub">${i[5].map(s=>`<button class="nav-i ${act===s[0]?'on':''}" data-act="open" data-p="${s[0]}"><span class="lbl">${s[1]}</span></button>`).join('')}</div>`:''}`).join('')}</div></div>`).join('')}</nav>
+  <div class="sb-foot"><button class="me" data-act="pop" data-pop="me">${AV('Dr. Savitha Hegde')}<span class="org-t"><b>Dr. Savitha</b><span>Principal</span></span>${I('chevrons',15)}</button></div>`;
+}
+const tabById=id=>S.tabs.find(t=>t.id===id);
+const curPage=()=>(tabById(S.active)||S.tabs[0]||{}).page;
+function renderTabs(){$('#tabs').innerHTML=S.tabs.map(t=>{const m=META[t.page]||{t:t.page,ic:'file',tone:'slate'};return `<div class="tab ${t.id===S.active?'on':''} ${t.id===S.split?'split':''}" role="tab" tabindex="0" aria-selected="${t.id===S.active}" data-act="tab" data-id="${t.id}" title="${esc(m.t)}">${tile(m.ic,m.tone)}<span class="t">${esc(m.t)}</span><span class="x" role="button" aria-label="Close ${esc(m.t)}" data-act="closeTab" data-id="${t.id}">${I('x',13)}</span></div>`}).join('');
+  const m=META[curPage()]||{};$('#crumb').innerHTML=`<span class="hide-s">${GROUP_OF(curPage())}</span><span class="hide-s">${I('chevright',13)}</span><b>${esc(m.t||'')}</b>`;
+  const on=$('.tab.on');on&&on.scrollIntoView({block:'nearest',inline:'nearest'});}
+const scrolls={};
+function renderPanes(){const ws=$('#ws');if(!ws)return;const split=S.split&&tabById(S.split)&&S.split!==S.active;ws.className='ws'+(split?' split':'');
+  ws.querySelectorAll('.pane').forEach(p=>scrolls[p.dataset.tab]=p.scrollTop);
+  const ids=[S.active].concat(split?[S.split]:[]);
+  ws.innerHTML=ids.map((id,ix)=>{const t=tabById(id);const m=META[t.page]||{};return `<section class="pane" data-tab="${id}" data-page="${t.page}"><div class="pane-h">${tile(m.ic||'file',m.tone||'slate')}<b style="color:var(--text)">${esc(m.t||'')}</b><span class="sp"></span>${ix?`<button class="btn sm ghost" data-act="swap">${I('refresh',13)}Swap</button><button class="ibtn sm" data-act="unsplit" aria-label="Close split">${I('x',14)}</button>`:'<span class="xs">Left</span>'}</div><div class="pane-c">${(PAGES[t.page]||PAGES._ph).r(t.page)}</div></section>`}).join('');
+  ws.querySelectorAll('.pane').forEach(p=>{const pg=PAGES[p.dataset.page];pg&&pg.init&&pg.init(p);if(scrolls[p.dataset.tab])p.scrollTop=scrolls[p.dataset.tab]});
+  save();}
+function rerender(page){$$('#ws .pane').forEach(p=>{if(!page||p.dataset.page===page){scrolls[p.dataset.tab]=p.scrollTop;const pg=PAGES[p.dataset.page]||PAGES._ph;$('.pane-c',p).innerHTML=pg.r(p.dataset.page);pg.init&&pg.init(p);p.scrollTop=scrolls[p.dataset.tab]||0}})}
+let tid=Date.now()%1e6;
+function openPage(p,newTab){if(p==='auth'){S.view='auth';S.auth='signin';save();render();return}
+  const ex=S.tabs.find(t=>t.page===p);
+  if(ex&&!newTab){S.active=ex.id}
+  else if(newTab||!tabById(S.active)){const t={id:'t'+(++tid),page:p};S.tabs.push(t);S.active=t.id}
+  else{tabById(S.active).page=p}
+  if(S.split===S.active)S.split=null;
+  closeMob();renderSb();renderTabs();renderPanes();}
+function closeTab(id){const i=S.tabs.findIndex(t=>t.id===id);if(i<0)return;S.closed.push(S.tabs[i].page);S.tabs.splice(i,1);
+  if(!S.tabs.length)S.tabs.push({id:'t'+(++tid),page:'launcher'});
+  if(S.split===id)S.split=null;
+  if(S.active===id)S.active=(S.tabs[i]||S.tabs[i-1]).id;
+  if(S.split===S.active)S.split=null;
+  renderSb();renderTabs();renderPanes();}
+function closeMob(){const a=$('#app');a&&a.classList.remove('mob');$('.scrim')&&$('.scrim').classList.remove('on')}
+
+/* drawer */
+function openDrawer(title,body,foot,sub){const d=$('#drawer');d.innerHTML=`<div class="drawer-h"><div class="sp"><b style="font-size:16px">${title}</b>${sub?`<div class="sm muted">${sub}</div>`:''}</div><button class="ibtn" data-act="closeDrawer" aria-label="Close">${I('x',17)}</button></div><div class="drawer-b">${body}</div>${foot?`<div class="drawer-f">${foot}</div>`:''}`;d.classList.add('on');d.setAttribute('aria-hidden','false');$('#dscrim').classList.add('on');setTimeout(()=>{const f=$('input,select,textarea,button',$('.drawer-b',d));f&&f.focus()},50)}
+function closeDrawer(){$('#drawer').classList.remove('on');$('#drawer').setAttribute('aria-hidden','true');$('#dscrim').classList.remove('on')}
+
+/* popovers */
+function closePops(){$$('.pop.live').forEach(p=>p.remove())}
+function showPop(anchor,html,align='left'){closePops();const r=anchor.getBoundingClientRect();const p=document.createElement('div');p.className='pop live';p.innerHTML=html;p.style.position='fixed';document.body.appendChild(p);
+  const w=p.offsetWidth,h=p.offsetHeight;let x=align==='right'?r.right-w:r.left;x=Math.max(8,Math.min(x,innerWidth-w-8));let y=r.bottom+6;if(y+h>innerHeight-8)y=Math.max(8,r.top-h-6);p.style.left=x+'px';p.style.top=y+'px';const f=$('button',p);f&&f.focus();return p}
+const POPS={
+  org:()=>`<div class="pop-h">Institutions</div><button class="pop-i" data-act="toast" data-m="Already on Soundarya Institute"><span class="logo" style="width:26px;height:26px;font-size:12px">S</span>Soundarya Institute ${I('check',14)}</button><button class="pop-i" data-act="toast" data-m="Switching to Soundarya PU College (prototype)"><span class="logo" style="width:26px;height:26px;font-size:12px;background:linear-gradient(135deg,#f97316,#db2777)">P</span>Soundarya PU College</button><div class="pop-sep"></div><button class="pop-i" data-act="open" data-p="settings">${I('settings',15)}Institution settings</button>`,
+  me:()=>`<div style="padding:8px 10px" class="row">${AV('Dr. Savitha Hegde')}<div><b>Dr. Savitha</b><div class="xs muted">principal@soundarya.edu.in</div></div></div><div class="pop-sep"></div><button class="pop-i" data-act="open" data-p="teacher">${I('user',15)}My profile</button><button class="pop-i" data-act="open" data-p="settings">${I('settings',15)}Settings</button><button class="pop-i" data-act="theme">${I(isDark()?'sun':'moon',15)}${isDark()?'Light':'Dark'} mode</button><div class="pop-sep"></div><button class="pop-i" data-act="signout">${I('logout',15)}Sign out</button>`,
+  notif:()=>`<div style="width:320px;max-width:calc(100vw - 32px)"><div class="pop-h">Notifications</div>${[['wallet','teal','Fee concession request from Rohan Shetty','2 min ago','workflow'],['message','sky','Prof. Deepa Nair mentioned you in IQAC committee','18 min ago','chat'],['alert','amber','14 students below 75% attendance in Sem 3','1 h ago','analytics'],['megaphone','orange','“Open Day 2026” campaign crossed 1,000 enquiries','3 h ago','campaigns']].map(n=>`<button class="pop-i" style="align-items:flex-start" data-act="open" data-p="${n[4]}">${tile(n[0],n[1],'md')}<span><span style="display:block">${n[2]}</span><span class="xs faint">${n[3]}</span></span></button>`).join('')}</div>`,
+  tabs:()=>`<div class="pop-h">Open tabs</div>${S.tabs.map(t=>{const m=META[t.page]||{};return `<button class="pop-i" data-act="tab" data-id="${t.id}">${tile(m.ic||'file',m.tone||'slate')}${esc(m.t||t.page)}${t.id===S.active?I('check',14):''}</button>`}).join('')}${S.closed.length?`<div class="pop-sep"></div><button class="pop-i" data-act="reopen">${I('history',15)}Reopen closed tab</button>`:''}<button class="pop-i" data-act="closeOthers">${I('x',15)}Close other tabs</button>`,
+};
+
+/* command palette */
+function cmdk(){const all=Object.keys(META).filter(k=>k!=='launcher');const el=document.createElement('div');el.className='cmdk';el.innerHTML=`<div class="cmdk-box" role="dialog" aria-label="Search"><input placeholder="Jump to a page, student or staff…" aria-label="Search"><div class="cmdk-list"></div></div>`;document.body.appendChild(el);
+  const inp=$('input',el),list=$('.cmdk-list',el);const draw=()=>{const q=inp.value.toLowerCase();list.innerHTML=all.filter(k=>META[k].t.toLowerCase().includes(q)).map(k=>`<button class="pop-i" data-act="open" data-p="${k}">${tile(META[k].ic,META[k].tone)}${META[k].t}<span class="sp"></span><span class="xs faint">${GROUP_OF(k)}</span></button>`).join('')||'<div class="empty">No matches</div>'};draw();inp.oninput=draw;inp.focus();
+  el.addEventListener('click',e=>{if(e.target===el||e.target.closest('[data-act]'))el.remove()});inp.onkeydown=e=>{if(e.key==='Escape')el.remove();if(e.key==='Enter'){const b=$('button',list);b&&b.click()}}}
+
+/* actions */
+const ACT={
+  open:(el,e)=>openPage(el.dataset.p,e&&(e.metaKey||e.ctrlKey)),
+  tab:el=>{const id=el.dataset.id;if(id===S.split){S.split=S.active}S.active=id;renderSb();renderTabs();renderPanes()},
+  closeTab:(el,e)=>{e.stopPropagation();closeTab(el.dataset.id)},
+  newTab:()=>openPage('launcher',true),
+  reopen:()=>{const p=S.closed.pop();p&&openPage(p,true)},
+  closeOthers:()=>{S.tabs=S.tabs.filter(t=>t.id===S.active);S.split=null;renderTabs();renderPanes()},
+  split:()=>{if(S.split){S.split=null}else{const o=S.tabs.filter(t=>t.id!==S.active).pop();if(o)S.split=o.id;else{const t={id:'t'+(++tid),page:'launcher'};S.tabs.push(t);S.split=t.id}}render()},
+  unsplit:()=>{S.split=null;render()},
+  swap:()=>{[S.active,S.split]=[S.split,S.active];renderSb();renderTabs();renderPanes()},
+  toggleSb:()=>{if(innerWidth<=900){$('#app').classList.add('mob');$('.scrim').classList.add('on')}else{S.collapsed=!S.collapsed;$('#app').classList.toggle('collapsed',S.collapsed);save()}},
+  closeMob,
+  grp:el=>el.closest('.grp').classList.toggle('closed'),
+  theme:()=>{S.theme=isDark()?'light':'dark';save();closePops();render()},
+  pop:(el)=>{if($('.pop.live')&&$('.pop.live').dataset.k===el.dataset.pop){closePops();return}const p=showPop(el,POPS[el.dataset.pop](),['notif','tabs'].includes(el.dataset.pop)?'right':'left');p.dataset.k=el.dataset.pop},
+  cmdk,
+  toast:el=>toast(el.dataset.m),
+  closeDrawer,
+  signout:()=>{S.view='auth';S.auth='signin';save();closePops();render()},
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!e.target.closest('.pop.live')&&!(el&&el.dataset.act==='pop'))closePops();
+  if(!el)return;const f=ACT[el.dataset.act];if(f){if(el.tagName==='A')e.preventDefault();f(el,e);if(el.closest('.pop.live')&&el.dataset.act!=='pop')closePops()}});
+document.addEventListener('auxclick',e=>{const el=e.target.closest('.tab');if(e.button===1&&el){e.preventDefault();closeTab(el.dataset.id)}});
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'&&S.view==='app'){e.preventDefault();cmdk()}
+  if(e.altKey&&e.code==='KeyT'&&S.view==='app'){e.preventDefault();ACT.newTab()}
+  if(e.altKey&&e.code==='KeyW'&&S.view==='app'){e.preventDefault();closeTab(S.active)}
+  if(e.key==='Escape'){closePops();closeDrawer();closeMob()}
+  if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('tab')){e.preventDefault();e.target.click()}});
+addEventListener('resize',()=>closePops());
+
+/* page scaffolding */
+const PH=(t,p,act='')=>`<div class="ph"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="actions">${act}</div></div>`;
+PAGES._ph={r:p=>{const m=META[p]||{t:p,ic:'file',tone:'slate'};return `<div class="page"><div class="card empty" style="min-height:60vh"><div>${tile(m.ic,m.tone,'lg')}<h2 style="margin:14px 0 6px;font-size:18px">${m.t}</h2><p style="max-width:420px;margin:0 auto 16px">This module keeps its v1 layout. The v2 prototype covers Analytics, Campaigns, Messages, Profiles, Settings, Workflows and the auth screens.</p><div class="actions" style="justify-content:center"><button class="btn" data-act="open" data-p="analytics">${I('chart',15)}Analytics</button><button class="btn" data-act="open" data-p="chat">${I('message',15)}Messages</button><button class="btn pri" data-act="open" data-p="workflow">${I('workflow',15)}Workflow builder</button></div></div></div></div>`}};
+PAGES.launcher={r:()=>`<div class="page" style="max-width:880px"><div style="text-align:center;margin:40px 0 28px"><h1 style="margin:0;font-size:24px">New tab</h1><p class="muted">Open a module in this tab. Ctrl/⌘-click any sidebar item to open it in a new tab.</p></div><div class="grid g4">${NAV.filter(g=>!g.fav).flatMap(g=>g.items).map(i=>`<button class="card" style="padding:16px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:12px" data-act="here" data-p="${i[0]}">${tile(i[2],i[3],'lg')}<b>${i[1]}</b></button>`).join('')}</div></div>`};
+ACT.here=(el)=>{const pane=el.closest('.pane');const t=tabById(pane.dataset.tab);if(el.dataset.p==='auth'){openPage('auth');return}t.page=el.dataset.p;renderSb();renderTabs();renderPanes()};
+
+/* ================= ANALYTICS (principal) ================= */
+const DUES=[['RC-24118','Rohan Shetty','B.Tech CSE · Sem 5',68500,'12 Oct 2026','Overdue','red'],['RC-24121','Meghana Iyer','BBA · Sem 3',42000,'15 Oct 2026','Due soon','amber'],['RC-24125','Faizan Ahmed','B.Com · Sem 1',38500,'18 Oct 2026','Instalment','blue'],['RC-24130','Kavya Reddy','B.Tech ECE · Sem 7',71200,'20 Oct 2026','Due soon','amber'],['RC-24133','Nikhil Gowda','MBA · Sem 1',96000,'05 Oct 2026','Overdue','red'],['RC-24137','Sneha Pillai','B.Sc · Sem 3',29800,'28 Oct 2026','Instalment','blue'],['RC-24140','Arjun Menon','B.Tech ME · Sem 3',64300,'30 Oct 2026','Concession','violet'],['RC-24144','Divya Bhat','BCA · Sem 5',35700,'02 Nov 2026','Instalment','blue'],['RC-24149','Ishaan Joshi','B.Tech CSE · Sem 1',88900,'08 Oct 2026','Overdue','red'],['RC-24152','Pooja Hegde','M.Com · Sem 3',41200,'10 Nov 2026','Concession','violet'],['RC-24156','Rahul Desai','BBA · Sem 5',39900,'14 Nov 2026','Instalment','blue']];
+const AN={q:'',per:5,pg:1,range:'30d'};
+PAGES.analytics={r:()=>{
+  const f=DUES.filter(d=>(d[1]+d[0]+d[2]).toLowerCase().includes(AN.q.toLowerCase()));const pages=Math.max(1,Math.ceil(f.length/AN.per));AN.pg=Math.min(AN.pg,pages);const rows=f.slice((AN.pg-1)*AN.per,AN.pg*AN.per);
+  return `<div class="page">${PH('Good afternoon, Dr. Savitha','Here is how Soundarya Institute is doing this term · AY 2026–27',`<div class="seg" role="group" aria-label="Range">${[['7d','7 days'],['30d','30 days'],['term','Term']].map(r=>`<button class="${AN.range===r[0]?'on':''}" data-act="anRange" data-v="${r[0]}">${r[1]}</button>`).join('')}</div><button class="btn">${I('download',15)}<span class="hide-m">Export</span></button>`)}
+  <div class="grid g6" style="grid-template-columns:repeat(4,minmax(0,1fr)) repeat(2,minmax(0,.8fr))" id="an-top">
+    <div class="card kpi"><div class="card-b"><div class="row"><span class="big num">₹3.84 Cr</span><span class="delta up">+11.4%</span></div><div class="muted sm">Fees collected (FY)</div><div style="margin-top:14px">${bars([42,55,38,61,48,66],null,{h:90,show:false,thin:true,tone:'teal',stack:[20,18,24,15,22,12]})}</div></div></div>
+    <div class="card kpi"><div class="card-b"><div class="b" style="font-size:15px">Admissions</div><div class="muted sm">This cycle</div><div style="margin:12px 0 8px">${bars([30,46,52,40,61,58,72,66,80],null,{h:70,show:false,thin:true,tone:'orange',hi:8})}</div><div class="row"><span class="big num">1,248</span><span class="delta up">+8.2%</span></div></div></div>
+    <div class="card kpi"><div class="card-b"><div class="b" style="font-size:15px">Attendance</div><div class="muted sm">Last 30 days</div><div style="margin:12px 0 8px">${line([84,86,83,88,85,89,87,90,88],{h:70,tone:'violet',area:false})}</div><div class="row"><span class="big num">87.6%</span><span class="delta up">+1.9%</span></div></div></div>
+    <div class="card kpi"><div class="card-b"><div class="b" style="font-size:15px">Placements</div><div class="muted sm">Batch 2026</div><div style="display:grid;place-items:center;margin:8px 0">${ring(72,{s:84,tone:'pink',label:'<span>412<br><span class="xs muted" style="font-weight:500">placed</span></span>'})}</div><div class="row"><span class="big num">72%</span><span class="delta up">+6%</span></div></div></div>
+    <div class="card kpi"><div class="card-b" style="display:flex;flex-direction:column;gap:6px;height:100%">${tile('wallet','green','lg')}<div class="b" style="margin-top:8px">Collected this month</div><div class="big num" style="font-size:19px">₹46.2 L</div><div class="sp"></div><span class="pill t-green" style="align-self:flex-start">+18.4%</span></div></div>
+    <div class="card kpi"><div class="card-b" style="display:flex;flex-direction:column;gap:6px;height:100%">${tile('trenddn','pink','lg')}<div class="b" style="margin-top:8px">Overdue dues</div><div class="big num" style="font-size:19px">₹18.7 L</div><div class="sp"></div><span class="pill t-red" style="align-self:flex-start">-4.1%</span></div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr);margin-top:16px" id="an-mid">
+    <div class="card"><div class="card-h"><div><h3>Admissions confirmed</h3><p>Monthly, AY 2026–27</p></div><button class="ibtn sm" aria-label="More">${I('more',16)}</button></div><div class="card-b">${bars([210,342,265,118,288,231,269,198],['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'],{hi:1,h:250,tone:'indigo'})}</div></div>
+    <div class="card"><div class="card-h"><div><h3>Term summary</h3><p>Internal assessment 1 · closed 26 Sep</p></div><button class="ibtn sm" aria-label="More">${I('more',16)}</button></div><div class="card-b">
+      <div class="grid g2" style="gap:12px;text-align:center">${[['award','orange','Pass rate','+4.6%','up'],['users','violet','Dropout','-1.2%','dn']].map(x=>`<div style="padding:16px 8px;border-radius:12px;background:var(--bg)">${tile(x[0],x[1],'md')}<div class="muted sm" style="margin-top:8px">${x[2]} vs last term</div><div class="big num" style="font-size:22px;font-weight:650">${x[3]}</div></div>`).join('')}</div>
+      <div style="margin-top:18px" class="row"><div><div class="muted sm">Results published</div><div class="big num" style="font-size:20px;font-weight:650">93.1%</div></div><span class="sp"></span><button class="btn pri sm" data-act="toast" data-m="Opening IA-1 report (prototype)">View report</button></div>
+      <div class="prog" style="margin-top:10px"><i style="width:93%"></i></div></div></div>
+    <div class="card"><div class="card-h"><div class="row">${tile('wallet','teal','md')}<div><h3>Fee collection</h3><p>This month</p></div></div><span class="pill t-green" style="margin-left:auto">On track</span></div><div class="card-b">
+      <div class="row"><span class="big num" style="font-size:26px;font-weight:650">₹46.2 L</span><span class="pill t-green" dot>+18%</span></div>
+      <div style="margin-top:12px">${[['Online (UPI / cards)','₹31.8 L','+22%','up'],['Counter & DD','₹9.6 L','-6%','dn'],['Concessions granted','₹4.8 L','+3%','up']].map(r=>`<div class="list-i" style="padding:8px 0"><span class="sm">${r[0]}</span><span class="sp"></span><b class="num sm">${r[1]}</b><span class="delta ${r[3]}" style="width:44px;text-align:right">${r[2]}</span></div>`).join('')}</div>
+      <div style="margin-top:8px">${line([12,18,15,24,21,30,28,36,33,42,39,46],{h:96,tone:'teal'})}</div><div class="axis"><span>1 Oct</span><span>7</span><span>13</span></div></div></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="card"><div class="card-h"><div><h3>Department health</h3><p>Attendance · results · feedback</p></div></div><div class="card-b">${[['CSE','Computer Science',92,'violet'],['ECE','Electronics',88,'sky'],['ME','Mechanical',79,'orange'],['MBA','Management',91,'pink'],['COM','Commerce',84,'teal']].map(d=>`<div class="list-i">${tile('building',d[3],'md')}<div class="sp"><div class="row"><b class="sm">${d[1]}</b><span class="sp"></span><span class="sm num b">${d[2]}</span></div><div class="prog t-${d[3]}" style="margin-top:6px"><i style="width:${d[2]}%"></i></div></div></div>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><div><h3>Weekly attendance</h3><p>All programmes, this week</p></div><span class="pill t-violet">87.6% avg</span></div><div class="card-b">
+      <div class="list-i" style="padding-top:0">${tile('clipboard','violet','md')}<div class="sp"><b class="sm">Present today</b><div class="xs muted">3,912 of 4,420 students</div></div><b class="num">88.5%</b></div>
+      <div class="list-i">${tile('alert','amber','md')}<div class="sp"><b class="sm">Below 75%</b><div class="xs muted">Shortage list ready to notify</div></div><b class="num">142</b></div>
+      <div style="margin-top:14px">${bars([86,89,84,91,88,79],['Mon','Tue','Wed','Thu','Fri','Sat'],{hi:3,h:150,tone:'violet',fmt:v=>v+'%'})}</div></div></div>
+    <div class="card" style="overflow:hidden;display:flex;flex-direction:column"><div style="height:150px;position:relative;background:linear-gradient(135deg,#0f9488,#4f46e5)"><svg viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true"><circle cx="330" cy="30" r="80" fill="rgba(255,255,255,.12)"/><circle cx="60" cy="160" r="90" fill="rgba(255,255,255,.08)"/><path d="M150 110 200 85l50 25-50 25z" fill="rgba(255,255,255,.9)"/><path d="M170 120v14c18 12 42 12 60 0v-14" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="4"/></svg><div style="position:absolute;left:16px;bottom:-22px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px 12px;text-align:center;box-shadow:var(--shadow)"><b style="font-size:18px;display:block;line-height:1.1">14</b><span class="xs muted">Nov</span></div></div>
+      <div class="card-b" style="padding-top:32px;display:flex;flex-direction:column;gap:10px;flex:1"><b>Graduation Day 2026 — 1,180 graduands, chief guest confirmed</b><div class="row wrap">${pill('Convocation','teal',false)}${pill('Main auditorium','slate',false)}${pill('VTU','indigo',false)}</div><div class="sp"></div><div class="row"><div class="stack">${['Prof. Deepa Nair','Dr. Ramesh Kulkarni','Anita Fernandes'].map(n=>AV(n,'s')).join('')}<span class="av s av-2">+9</span></div><span class="xs muted">organising committee</span><span class="sp"></span><button class="btn pri sm" data-act="open" data-p="chat">Open group</button></div></div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="toolbar"><b style="font-size:15px">Fee dues to follow up</b><span class="sp"></span><label class="sm muted hide-m" for="an-per">Show</label><select id="an-per" class="input" style="width:72px;height:32px" data-chg="anPer">${[5,10].map(n=>`<option ${AN.per===n?'selected':''}>${n}</option>`).join('')}</select><div class="inwrap" style="width:min(260px,100%)">${I('search',15)}<input class="input" style="height:32px" placeholder="Search student or receipt" value="${esc(AN.q)}" data-in="anQ" aria-label="Search dues"></div><button class="btn sm pri" data-act="remindAll">${I('send',14)}Remind all</button></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:36px"><input type="checkbox" class="chk" aria-label="Select all"></th><th>Receipt</th><th>Student</th><th>Programme</th><th class="r">Amount</th><th>Due date</th><th>Status</th><th class="r">Actions</th></tr></thead><tbody>${rows.map(d=>`<tr><td><input type="checkbox" class="chk" aria-label="Select ${d[1]}"></td><td class="muted num">#${d[0]}</td><td><div class="row">${AV(d[1],'s')}<b>${d[1]}</b></div></td><td class="muted">${d[2]}</td><td class="r num b">${inr(d[3])}</td><td class="muted">${d[4]}</td><td>${pill(d[5],d[6])}</td><td class="r"><button class="ibtn sm" aria-label="Send reminder to ${d[1]}" data-act="toast" data-m="Reminder sent to ${d[1]}'s parent via SMS & app">${I('bell',15)}</button><button class="ibtn sm" aria-label="View ${d[1]}" data-act="open" data-p="student">${I('eye',15)}</button><button class="ibtn sm" aria-label="More">${I('more',15)}</button></td></tr>`).join('')||`<tr><td colspan="8"><div class="empty">No dues match “${esc(AN.q)}”</div></td></tr>`}</tbody></table></div>
+    <div class="pager"><span>Showing ${f.length?(AN.pg-1)*AN.per+1:0} to ${Math.min(AN.pg*AN.per,f.length)} of ${f.length} entries</span><span class="sp"></span><button class="btn sm ghost" data-act="anPg" data-v="${AN.pg-1}" ${AN.pg<=1?'disabled':''}>${I('chevleft',14)}Previous</button>${Array.from({length:pages},(_,i)=>`<button class="pg ${AN.pg===i+1?'on':''}" data-act="anPg" data-v="${i+1}">${i+1}</button>`).join('')}<button class="btn sm ghost" data-act="anPg" data-v="${AN.pg+1}" ${AN.pg>=pages?'disabled':''}>Next${I('chevright',14)}</button></div></div>
+  </div>`},init:p=>{const fix=()=>{const w=p.clientWidth;const top=$('#an-top',p),mid=$('#an-mid',p);if(!top)return;top.style.gridTemplateColumns=w<720?'repeat(2,minmax(0,1fr))':w<1100?'repeat(3,minmax(0,1fr))':'repeat(4,minmax(0,1fr)) repeat(2,minmax(0,.8fr))';mid.style.gridTemplateColumns=w<720?'minmax(0,1fr)':w<1100?'repeat(2,minmax(0,1fr))':'minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr)';$$('.g3',p).forEach(g=>g.style.gridTemplateColumns=w<720?'minmax(0,1fr)':w<1100?'repeat(2,minmax(0,1fr))':'')};fix();onRS(p,fix)}};
+ACT.anRange=el=>{AN.range=el.dataset.v;rerender('analytics');toast('Range: '+el.textContent)};
+ACT.anPg=el=>{AN.pg=+el.dataset.v;rerender('analytics')};
+ACT.remindAll=()=>toast('Reminders queued for '+DUES.filter(d=>d[5]==='Overdue').length+' overdue students');
+const INP={anQ:(el)=>{const pane=el.closest('.pane');AN.q=el.value;AN.pg=1;rerender('analytics');const n=$('[data-in="anQ"]',pane||document);n&&(n.focus(),n.setSelectionRange(n.value.length,n.value.length))}};
+const CHG={anPer:el=>{AN.per=+el.value;AN.pg=1;rerender('analytics')}};
+document.addEventListener('input',e=>{const k=e.target.dataset.in;k&&INP[k]&&INP[k](e.target,e)});
+document.addEventListener('change',e=>{const k=e.target.dataset.chg;k&&CHG[k]&&CHG[k](e.target,e)});
+
+/* ================= CAMPAIGNS (admissions marketing) ================= */
+const CAMPS=[['Open Day 2026','WhatsApp · SMS','Class 12 leads, Bengaluru',18420,62,1146,'Live','green',74],['B.Tech early-bird scholarship','Email · Instagram','JEE / KCET aspirants',42800,38,612,'Live','green',58],['MBA weekend info session','Email','Working professionals',9650,44,188,'Scheduled','blue',0],['Alumni referral drive','WhatsApp','Alumni 2015–2024',6200,71,240,'Paused','amber',41],['PU colleges outreach — Mysuru','SMS · Visits','32 PU colleges',3400,0,96,'Draft','slate',0],['BCA/BSc results-day push','Google Ads','Search: BCA Bengaluru',0,0,334,'Completed','violet',100]];
+const CP={trend:'month'};
+PAGES.campaigns={r:()=>{const tr={week:[[120,180,150,240,210,300,280],['Mon','Tue','Wed','Thu','Fri','Sat','Sun']],month:[[620,840,780,1040,980,1320,1260,1480],['W1','W2','W3','W4','W5','W6','W7','W8']],year:[[1200,1800,2600,3900,4800,3100,2200,1600,900,700,1100,1500],['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']]}[CP.trend];
+  return `<div class="page">${PH('Admissions campaigns','Outreach, enquiries and conversions for the 2027 intake',`<button class="btn">${I('calendar',15)}<span class="hide-m">1 Sep – 13 Oct</span></button><button class="btn pri" data-act="newCamp">${I('plus',15)}New campaign</button>`)}
+  <div class="grid" style="grid-template-columns:repeat(4,minmax(0,1fr)) minmax(0,1.6fr)" id="cp-top">
+    ${[['inbox','orange','4,812','Enquiries','+38%','up','Last 30 days'],['filecheck','teal','1,926','Applications','+22%','up','Last 30 days'],['wallet','indigo','₹6.4 L','Ad spend','-16%','dn','This cycle'],['target','amber','68%','Seats filled','+12%','up','Of 1,840']].map(k=>`<div class="card"><div class="card-b" style="display:flex;flex-direction:column;gap:10px"><div class="row">${tile(k[0],k[1],'md')}<span class="sp"></span><span class="delta ${k[5]}">${k[4]} ${I(k[5]==='up'?'up':'down',13)}</span></div><div><div class="big num" style="font-size:22px;font-weight:650">${k[2]}</div><div class="muted sm">${k[3]}</div></div><span class="pill" style="align-self:flex-start">${k[6]}</span></div></div>`).join('')}
+    <div class="card" style="overflow:hidden"><div class="card-b" style="display:flex;gap:12px;height:100%"><div class="col" style="gap:6px;flex:1;min-width:0"><b style="font-size:15px">Counselling desk</b><span class="pill t-teal" style="align-self:flex-start">Walk-ins today</span><div class="sp"></div><div class="row"><span class="big num" style="font-size:24px;font-weight:650">86</span><span class="delta up">+9.2%</span></div></div>
+      <svg width="120" height="110" viewBox="0 0 120 110" aria-hidden="true" style="flex:none"><circle cx="60" cy="56" r="48" style="fill:var(--teal-soft)"/><circle cx="60" cy="44" r="16" style="fill:var(--card);stroke:var(--text)" stroke-width="2.5"/><path d="M30 100c4-22 56-22 60 0" style="fill:var(--card);stroke:var(--text)" stroke-width="2.5"/><path d="M44 40c4-12 28-12 32 0" fill="none" style="stroke:var(--text)" stroke-width="2.5"/><rect x="76" y="18" width="30" height="20" rx="6" style="fill:var(--amber)"/><path d="M84 38l-4 7 9-7" style="fill:var(--amber)"/></svg></div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:minmax(0,1.4fr) minmax(0,.9fr) minmax(0,1.1fr);margin-top:16px" id="cp-mid">
+    <div class="card"><div class="card-h"><div><h3>Enquiry trend</h3><p>All channels</p></div><div class="seg">${['week','month','year'].map(k=>`<button class="${CP.trend===k?'on':''}" data-act="cpTrend" data-v="${k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}</div></div><div class="card-b"><div class="row" style="margin-bottom:8px"><span class="big num" style="font-size:22px;font-weight:650">${tr[0].reduce((a,b)=>a+b,0).toLocaleString('en-IN')}</span><span class="delta up">+14.2%</span><span class="sp"></span><div class="legend"><span class="t-orange"><i></i>Enquiries</span></div></div>${line(tr[0],{h:200,tone:'orange'})}<div class="axis">${tr[1].map(l=>`<span>${l}</span>`).join('')}</div></div></div>
+    <div class="card"><div class="card-h"><div><h3>Channel report</h3><p>Cost per application</p></div><button class="ibtn sm" aria-label="More">${I('more',16)}</button></div><div class="card-b" style="display:flex;flex-direction:column;gap:10px">${[['message','green','WhatsApp','₹118'],['globe','blue','Google Ads','₹412'],['image','pink','Instagram','₹356'],['map','amber','Education fairs','₹640']].map(c=>`<div class="row" style="padding:12px;border-radius:12px;background:var(--bg)">${tile(c[0],c[1],'md')}<span class="sm b">${c[2]}</span><span class="sp"></span><b class="num">${c[3]}</b></div>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><div><h3>Monthly campaign state</h3><p>18,420 parents & students reached</p></div><button class="ibtn sm" aria-label="More">${I('more',16)}</button></div><div class="card-b">${[['send','violet','Sent','18,420','100%'],['checks','sky','Delivered','17,906','97.2%'],['eye','teal','Opened','11,102','62.0%'],['link','amber','Clicked','4,380','24.5%'],['filecheck','green','Applied','1,146','6.4%'],['belloff','red','Opted out','92','0.5%']].map(s=>`<div class="list-i" style="padding:8px 0">${tile(s[0],s[1])}<span class="sm">${s[2]}</span><span class="sp"></span><span class="num sm b">${s[3]}</span><span class="num xs muted" style="width:46px;text-align:right">${s[4]}</span></div>`).join('')}</div></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px" id="cp-bot">
+    <div class="card"><div class="card-h"><div><h3>Conversion</h3><p>Enquiry → admission</p></div></div><div class="card-b row" style="gap:20px">${ring(38,{s:110,sw:11,tone:'teal'})}<div class="col" style="gap:10px;flex:1">${[['Enquiry','4,812','orange'],['Counselled','2,904','amber'],['Applied','1,926','teal'],['Admitted','1,248','green']].map(f=>`<div><div class="row xs"><span class="muted">${f[0]}</span><span class="sp"></span><b class="num">${f[1]}</b></div><div class="prog t-${f[2]}" style="margin-top:4px"><i style="width:${parseInt(f[1].replace(',',''))/48.12}%"></i></div></div>`).join('')}</div></div></div>
+    <div class="card"><div class="card-h"><div><h3>Enquiries by programme</h3><p>Top five</p></div></div><div class="card-b">${bars([1420,980,760,640,510],['B.Tech','BBA','BCA','MBA','B.Com'],{h:170,tone:'pink',hi:0,fmt:v=>v.toLocaleString('en-IN')})}</div></div>
+    <div class="card"><div class="card-h"><div><h3>Message templates</h3><p>Approved for DLT / WhatsApp</p></div><button class="btn sm" data-act="toast" data-m="Template editor (prototype)">${I('plus',14)}New</button></div><div class="card-b">${[['Open Day invite','WhatsApp','green','Approved'],['Scholarship deadline','SMS','blue','Approved'],['Application incomplete nudge','Email','violet','In review'],['Fee payment link','SMS','blue','Approved']].map(t=>`<div class="list-i">${tile('mail',t[2])}<div class="sp"><b class="sm">${t[0]}</b><div class="xs muted">${t[1]}</div></div>${pill(t[3],t[3]==='Approved'?'green':'amber')}</div>`).join('')}</div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="toolbar"><b style="font-size:15px">Campaigns</b><span class="pill">${CAMPS.length}</span><span class="sp"></span><button class="btn sm">${I('filter',14)}Filter</button><button class="btn sm">${I('sort',14)}Sort</button></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Campaign</th><th>Channels</th><th>Audience</th><th class="r">Reached</th><th class="r">Open rate</th><th class="r">Applications</th><th>Progress</th><th>Status</th><th></th></tr></thead><tbody>${CAMPS.map((c,i)=>`<tr class="click" data-act="campDetail" data-i="${i}"><td><b>${c[0]}</b></td><td class="muted">${c[1]}</td><td class="muted">${c[2]}</td><td class="r num">${c[3].toLocaleString('en-IN')}</td><td class="r num">${c[4]?c[4]+'%':'—'}</td><td class="r num b">${c[5].toLocaleString('en-IN')}</td><td style="min-width:120px"><div class="prog t-${c[7]}"><i style="width:${c[8]}%"></i></div></td><td>${pill(c[6],c[7])}</td><td class="r">${I('chevright',15)}</td></tr>`).join('')}</tbody></table></div></div>
+  </div>`},init:p=>{const fix=()=>{const w=p.clientWidth,t=$('#cp-top',p),m=$('#cp-mid',p),b=$('#cp-bot',p);if(!t)return;t.style.gridTemplateColumns=w<720?'repeat(2,minmax(0,1fr))':w<1100?'repeat(2,minmax(0,1fr))':'repeat(4,minmax(0,1fr)) minmax(0,1.6fr)';t.lastElementChild.style.gridColumn=w<1100?'1/-1':'';m.style.gridTemplateColumns=w<720?'minmax(0,1fr)':w<1100?'repeat(2,minmax(0,1fr))':'minmax(0,1.4fr) minmax(0,.9fr) minmax(0,1.1fr)';m.firstElementChild.style.gridColumn=w<1100&&w>=720?'1/-1':'';b.style.gridTemplateColumns=w<720?'minmax(0,1fr)':w<1100?'repeat(2,minmax(0,1fr))':''};fix();onRS(p,fix)}};
+ACT.cpTrend=el=>{CP.trend=el.dataset.v;rerender('campaigns')};
+ACT.newCamp=()=>openDrawer('New campaign',`<div class="field"><label for="nc-n">Campaign name</label><input id="nc-n" class="input" placeholder="e.g. Open Day — Mangaluru"></div>
+  <div class="field"><span class="lab">Channels</span><div class="chooser">${[['message','green','WhatsApp','Template messages'],['smartphone','blue','SMS','DLT-registered'],['mail','violet','Email','Rich HTML'],['image','pink','Instagram','Paid social']].map((c,i)=>`<button type="button" class="${i<2?'on':''}" data-act="tgl">${tile(c[0],c[1],'md')}<b class="sm">${c[2]}</b><span class="xs muted">${c[3]}</span></button>`).join('')}</div></div>
+  <div class="field"><label for="nc-a">Audience</label><select id="nc-a" class="input"><option>Class 12 leads — Bengaluru (6,420)</option><option>KCET applicants (12,800)</option><option>Parents of enquired students (3,150)</option><option>Alumni 2015–2024 (9,700)</option></select></div>
+  <div class="field"><label for="nc-p">Programme focus</label><select id="nc-p" class="input"><option>All UG programmes</option><option>B.Tech</option><option>MBA</option><option>BCA / B.Sc</option></select></div>
+  <div class="grid g2" style="gap:12px"><div class="field"><label for="nc-d">Start</label><input id="nc-d" type="date" class="input" value="2026-10-20"></div><div class="field"><label for="nc-b">Budget (₹)</label><input id="nc-b" class="input" value="1,50,000"></div></div>
+  <div class="field"><label for="nc-m">Message</label><textarea id="nc-m" class="input" rows="4">Namaskara! Soundarya Institute invites you to Open Day on 2 Nov. Meet faculty, tour labs and get on-spot scholarship assessment. Reply YES to book a slot.</textarea><span class="hint">153 characters · 1 SMS credit</span></div>`,
+  `<button class="btn" data-act="closeDrawer">Cancel</button><button class="btn" data-act="toast" data-m="Saved as draft">Save draft</button><button class="btn pri" data-act="launchCamp">${I('send',14)}Schedule</button>`,'Reach prospective students and parents');
+ACT.tgl=el=>el.classList.toggle('on');
+ACT.launchCamp=()=>{const n=$('#nc-n').value.trim()||'Untitled campaign';CAMPS.unshift([n,'WhatsApp · SMS','Class 12 leads — Bengaluru',0,0,0,'Scheduled','blue',0]);closeDrawer();rerender('campaigns');toast('“'+n+'” scheduled for 20 Oct')};
+ACT.campDetail=el=>{const c=CAMPS[+el.dataset.i];openDrawer(esc(c[0]),`<div class="row wrap">${pill(c[6],c[7])}<span class="pill">${c[1]}</span></div><div class="grid g2" style="gap:12px">${[['Reached',c[3].toLocaleString('en-IN')],['Open rate',c[4]+'%'],['Applications',c[5]],['Cost / app',c[5]?'₹'+Math.round(64000/c[5]*3):'—']].map(k=>`<div class="card"><div class="card-b" style="padding:14px"><div class="xs muted">${k[0]}</div><div class="b num" style="font-size:20px">${k[1]}</div></div></div>`).join('')}</div><div><div class="lab" style="margin-bottom:8px">Daily applications</div>${bars([12,18,9,22,30,26,34],['M','T','W','T','F','S','S'],{h:140,tone:'orange',hi:6})}</div><div class="sm muted">Audience: ${c[2]}</div>`,`<button class="btn" data-act="toast" data-m="Campaign duplicated">${I('copy',14)}Duplicate</button><button class="btn pri" data-act="closeDrawer">Done</button>`,'Campaign details')};
+
+function onRS(p,fn){p._ro&&p._ro.disconnect();p._ro=new ResizeObserver(fn);p._ro.observe(p)}
+
+/* ================= CHAT ================= */
+const ME='Dr. Savitha Hegde';
+const CONVS=[
+ {id:'iqac',name:'IQAC committee',kind:'group',pinned:true,unread:3,time:'11:42',members:['Prof. Deepa Nair','Dr. Ramesh Kulkarni','Anita Fernandes','Prof. Imran Sheikh','Dr. Savitha Hegde','Lakshmi Prasad'],desc:'NAAC cycle-3 preparation. SSR drafts, criteria owners and evidence uploads.',msgs:[
+   ['d','Yesterday'],['Prof. Deepa Nair','Criterion 2 draft is uploaded. Need the faculty-student ratio for 2025–26 from the office.','16:05'],['Anita Fernandes','Sharing the numbers sheet now.','16:12',{f:'Faculty_ratio_2025-26.xlsx',s:'48 KB',t:'xls'}],
+   ['d','Today'],[ME,'Thanks all. Let us close Criteria 1–3 by Friday. Peer team visit is likely in the first week of December.','10:20','read'],['Dr. Ramesh Kulkarni','Labs photos for Criterion 4 are ready.','11:02',{img:1}],['Prof. Deepa Nair','@Dr. Savitha could you review the best-practices section once? I have kept it under 1,000 words.','11:42']]},
+ {id:'deepa',name:'Prof. Deepa Nair',kind:'staff',pinned:true,online:true,unread:0,time:'10:58',role:'Associate Professor · CSE',msgs:[['d','Today'],['Prof. Deepa Nair','Good morning ma\'am. The mentoring report for Sem 5 is done.','09:40'],[ME,'Great, please add the at-risk list too.','09:52','read'],['Prof. Deepa Nair','Added. 6 students flagged, parents to be called this week.','10:58',{f:'Mentoring_Sem5_CSE-A.pdf',s:'312 KB',t:'pdf'}]]},
+ {id:'vtu',name:'VTU Exam Section',kind:'external',ext:'University',pinned:true,unread:1,time:'09:15',role:'Belagavi · official',msgs:[['d','Today'],['VTU Exam Section','Circular: revised timetable for odd-semester theory exams is published. Colleges to acknowledge by 16 Oct.','09:15',{f:'VTU_Circular_ODD2026.pdf',s:'1.2 MB',t:'pdf'}]]},
+ {id:'cse5a',name:'CSE Sem 5 · Section A',kind:'group',unread:12,time:'Mon',members:['Prof. Deepa Nair','Ananya Rao','Rohan Shetty','Ishaan Joshi'],desc:'Class group with 64 students and 5 faculty.',msgs:[['d','Monday'],['Prof. Deepa Nair','Reminder: DBMS mini-project reviews start Thursday, 10 AM, Lab 3.','12:30'],['Ananya Rao','Ma\'am, can teams of 4 present together?','12:41'],['Prof. Deepa Nair','Yes, 15 minutes per team.','12:44']]},
+ {id:'rohanp',name:'Suresh Shetty',kind:'parent',unread:2,time:'Mon',role:'Parent of Rohan Shetty · CSE Sem 5',msgs:[['d','Monday'],['Suresh Shetty','Namaskara madam. I would like to request a concession on this term\'s fee. My business had a difficult year.','18:20'],['Suresh Shetty','I have applied in the parent app as well.','18:22']]},
+ {id:'ananya',name:'Ananya Rao',kind:'student',online:true,unread:0,time:'Sun',role:'Student · B.Tech CSE Sem 5',msgs:[['d','Sunday'],['Ananya Rao','Thank you for approving the hackathon leave, ma\'am!','19:10'],[ME,'All the best to the team. Make Soundarya proud.','19:30','read']]},
+ {id:'books',name:'Sapna Book House',kind:'external',ext:'Vendor',unread:0,time:'Sat',role:'Library vendor · Bengaluru',msgs:[['d','Saturday'],['Sapna Book House','Quotation for 420 titles attached. Delivery in 10 working days after PO.','11:00',{f:'Quotation_SBH_Q3.pdf',s:'220 KB',t:'pdf'}],[ME,'Forwarding to the library committee.','11:20','sent']]},
+ {id:'acc',name:'Accounts office',kind:'group',unread:0,time:'Fri',members:['Lakshmi Prasad','Anita Fernandes','Dr. Savitha Hegde'],desc:'Fee collection, concessions and payroll queries.',msgs:[['d','Friday'],['Lakshmi Prasad','October payroll is ready for your sign-off.','17:45']]},
+ {id:'trans',name:'KSRTC Contract Bus',kind:'external',ext:'Transport',unread:0,time:'Thu',role:'Route 7 & 9 operator',msgs:[['d','Thursday'],['KSRTC Contract Bus','Route 9 will run 15 minutes late on Friday due to road work.','08:10']]},
+];
+const CH={sel:'iqac',tab:'all',q:'',info:true,open:false,typing:false};
+const KIND={staff:['Staff','blue'],group:['Group','violet'],student:['Student','teal'],parent:['Parent','pink'],external:['External','amber']};
+function convRow(c){const last=c.msgs[c.msgs.length-1];const pv=last[0]==='d'?'':(last[0]===ME?'You: ':(c.kind==='group'?last[0].split(' ').slice(-1)[0]+': ':''))+(last[3]&&last[3].f?'📎 '+last[3].f:last[3]&&last[3].img?'Photo':last[1]);
+  return `<button class="conv ${c.id===CH.sel?'on':''} ${c.unread?'unread':''}" data-act="chSel" data-id="${c.id}">${c.kind==='group'?`<span class="av ${avc(c.name)}">${I('users',15)}</span>`:AV(c.name,'',c.online)}<span class="mid"><span class="nm"><span>${esc(c.name)}</span>${c.ext?`<span class="ext">${c.ext}</span>`:''}</span><span class="pv">${esc(pv)}</span></span><span class="rt"><span>${c.time}</span>${c.unread?`<span class="ucnt">${c.unread}</span>`:c.pinned?I('pin',13):''}</span></button>`}
+function attHtml(a,me){if(a.img)return `<svg class="att-img" viewBox="0 0 240 150" aria-label="Lab photo"><rect width="240" height="150" fill="#0f766e"/><rect x="20" y="70" width="80" height="50" rx="4" fill="#14b8a6"/><rect x="110" y="55" width="110" height="65" rx="4" fill="#5eead4"/><rect x="28" y="78" width="64" height="30" rx="2" fill="#0b3b37"/><rect x="118" y="63" width="94" height="40" rx="2" fill="#0b3b37"/><rect x="0" y="120" width="240" height="30" fill="#134e4a"/><circle cx="200" cy="28" r="14" fill="#fde68a"/></svg>`;
+  const tone=a.t==='pdf'?'red':a.t==='xls'?'green':'blue';return `<div class="att">${tile('file',tone,'md')}<div style="flex:1;min-width:0"><div class="sm b" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.f)}</div><div class="xs faint">${a.s} · ${a.t.toUpperCase()}</div></div><button class="ibtn sm" aria-label="Download ${esc(a.f)}" data-act="toast" data-m="Downloading ${esc(a.f)}" style="color:inherit">${I('download',15)}</button></div>`}
+PAGES.chat={r:()=>{const c=CONVS.find(x=>x.id===CH.sel)||CONVS[0];
+  const filt=CONVS.filter(x=>(CH.tab==='all'||(CH.tab==='unread'&&x.unread)||(CH.tab==='groups'&&x.kind==='group')||(CH.tab==='external'&&x.kind==='external'))&&x.name.toLowerCase().includes(CH.q.toLowerCase()));
+  const cnt={all:CONVS.length,unread:CONVS.filter(x=>x.unread).length,groups:CONVS.filter(x=>x.kind==='group').length,external:CONVS.filter(x=>x.kind==='external').length};
+  const sub=c.kind==='group'?`${c.members.length} members · ${c.members.filter((m,i)=>i%2==0).length} online`:c.online?'<span style="color:var(--green-ink)">Online</span>':c.role;
+  return `<div class="page fill"><div class="chat ${CH.info?'info':'noinfo'} ${CH.open?'open':''}">
+  <div class="c-list"><div class="c-list-h"><div class="row">${AV(ME,'s',true)}<b style="font-size:17px">Messages</b><span class="sp"></span><button class="ibtn sm bd" aria-label="New message" data-act="chNew">${I('edit',15)}</button></div><div class="inwrap">${I('search',15)}<input class="input" placeholder="Search conversations" value="${esc(CH.q)}" data-in="chQ" aria-label="Search conversations"></div></div>
+    <div class="utabs" role="tablist" style="margin-top:8px">${['all','unread','groups','external'].map(k=>`<button class="${CH.tab===k?'on':''}" data-act="chTab" data-v="${k}" role="tab">${k[0].toUpperCase()+k.slice(1)} <span class="cnt">${cnt[k]}</span></button>`).join('')}</div>
+    <div class="c-scroll">${filt.some(x=>x.pinned)?`<div class="c-sec">${I('pin',12)}Pinned</div>${filt.filter(x=>x.pinned).map(convRow).join('')}<div class="c-sec">Recent</div>`:''}${filt.filter(x=>!x.pinned).map(convRow).join('')||(!filt.length?'<div class="empty sm">Nothing here</div>':'')}</div></div>
+  <div class="c-main"><div class="c-head"><button class="ibtn sm c-back" data-act="chBack" aria-label="Back to conversations">${I('chevleft',18)}</button>${c.kind==='group'?`<span class="av ${avc(c.name)}">${I('users',15)}</span>`:AV(c.name,'',c.online)}<div style="min-width:0;flex:1"><div class="row"><b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.name)}</b>${pill(c.ext||KIND[c.kind][0],KIND[c.kind][1],false)}</div><div class="xs muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sub}</div></div>
+    <button class="ibtn hide-m" aria-label="Voice call" data-act="toast" data-m="Calling ${esc(c.name)} (prototype)">${I('phone',17)}</button><button class="ibtn hide-m" aria-label="Video call" data-act="toast" data-m="Starting video call (prototype)">${I('video',17)}</button><button class="ibtn ${CH.info?'on':''}" aria-label="Conversation info" data-act="chInfo">${I('info',17)}</button></div>
+    <div class="c-msgs" aria-live="polite">${c.kind==='external'?`<div class="day" style="background:var(--amber-soft);color:var(--amber-ink);border-color:transparent">${I('shield',12)} External contact — messages are logged for audit</div>`:''}${c.msgs.map(m=>m[0]==='d'?`<div class="day">${m[1]}</div>`:`<div class="msg ${m[0]===ME?'me':''}">${m[0]===ME?'':AV(m[0],'s')}<div><div class="bub">${c.kind==='group'&&m[0]!==ME?`<div class="who">${esc(m[0])}</div>`:''}${esc(m[1]).replace(/@Dr\. Savitha/,'<b style="color:var(--sky-ink)">@Dr. Savitha</b>')}${m[3]&&typeof m[3]==='object'?attHtml(m[3],m[0]===ME):''}</div><div class="meta-l">${m[2]}${m[0]===ME?`<span class="tick ${m[3]==='read'?'read':''}" title="${m[3]==='read'?'Read':'Delivered'}">${I(m[3]==='sent'?'check':'checks',14)}</span>`:''}</div></div></div>`).join('')}
+    ${CH.typing?`<div class="msg">${AV(c.kind==='group'?'Prof. Deepa Nair':c.name,'s')}<div class="bub typing" aria-label="typing"><i></i><i></i><i></i></div></div>`:''}</div>
+    <form class="c-comp" data-sub="chSend"><button type="button" class="ibtn" aria-label="Attach file" data-act="chAttach">${I('clip',17)}</button><input class="input" name="m" placeholder="Message ${esc(c.name)}…" autocomplete="off" aria-label="Message"><button type="button" class="ibtn hide-m" aria-label="Emoji" data-act="chEmoji">${I('smile',17)}</button><button class="btn pri" style="height:40px;border-radius:12px" aria-label="Send">${I('send',15)}<span class="hide-m">Send</span></button></form></div>
+  <aside class="c-info" aria-label="Conversation info"><div class="row"><b>${c.kind==='group'?'Group info':'Contact info'}</b><span class="sp"></span><button class="ibtn sm" data-act="chInfo" aria-label="Close info">${I('x',15)}</button></div>
+    <div style="text-align:center">${c.kind==='group'?`<span class="av l ${avc(c.name)}" style="width:72px;height:72px">${I('users',28)}</span>`:`<span class="av ${avc(c.name)}" style="width:72px;height:72px;font-size:24px">${ini(c.name)}</span>`}<div class="b" style="margin-top:10px;font-size:16px">${esc(c.name)}</div><div class="xs muted">${c.kind==='group'?c.members.length+' members':c.role}</div>
+      <div class="row" style="justify-content:center;margin-top:12px">${[['phone','Call'],['video','Video'],['belloff','Mute'],['search','Search']].map(a=>`<button class="ibtn bd" aria-label="${a[1]}" title="${a[1]}" data-act="toast" data-m="${a[1]} (prototype)">${I(a[0],16)}</button>`).join('')}</div></div>
+    ${c.desc?`<div><h4>About</h4><div class="sm muted">${c.desc}</div></div>`:''}
+    ${c.kind==='group'?`<div><h4>Members · ${c.members.length}</h4>${c.members.map((m,i)=>`<div class="list-i" style="padding:7px 0">${AV(m,'s',i%2==0)}<span class="sm sp">${m===ME?'You':m}</span>${i===0?pill('Admin','violet',false):''}</div>`).join('')}<button class="btn sm ghost" style="margin-top:6px" data-act="toast" data-m="Add members (prototype)">${I('userplus',14)}Add members</button></div>`:`<div><h4>Details</h4><dl class="kv" style="font-size:13px"><dt>${I('phone',14)}Phone</dt><dd>+91 98450 1${String(c.id.length*7).padStart(4,'2')}</dd><dt>${I('mail',14)}Email</dt><dd>${c.id}@${c.kind==='external'?'partner.in':'soundarya.edu.in'}</dd></dl></div>`}
+    <div><h4>Shared files</h4>${(c.msgs.filter(m=>m[3]&&m[3].f).map(m=>`<div class="list-i" style="padding:7px 0">${tile('file',m[3].t==='pdf'?'red':'green')}<span class="sm sp" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m[3].f}</span><span class="xs faint">${m[3].s}</span></div>`).join(''))||'<div class="sm faint">No files yet</div>'}</div>
+    <div class="set-row" style="border:0;padding:0"><div class="t"><b class="sm">Mute notifications</b></div><button class="sw" role="switch" aria-checked="false" aria-label="Mute" data-act="sw"></button></div>
+  </aside></div></div>`},init:p=>{const m=$('.c-msgs',p);m&&(m.scrollTop=m.scrollHeight)}};
+ACT.chSel=el=>{CH.sel=el.dataset.id;CH.open=true;CH.typing=false;const c=CONVS.find(x=>x.id===CH.sel);c.unread=0;if(el.closest(".pane").clientWidth<=1150)CH.info=false;rerender('chat')};
+ACT.chBack=()=>{CH.open=false;rerender('chat')};
+ACT.chTab=el=>{CH.tab=el.dataset.v;rerender('chat')};
+ACT.chInfo=()=>{CH.info=!CH.info;rerender('chat')};
+ACT.chAttach=()=>{const c=CONVS.find(x=>x.id===CH.sel);c.msgs.push([ME,'Sharing the circular for reference.',now(),{f:'Principal_Circular_14-10.pdf',s:'96 KB',t:'pdf'}]);rerender('chat');toast('File attached')};
+ACT.chEmoji=el=>{const i=$('input[name=m]',el.closest('form'));i.value+=' 🙏';i.focus()};
+ACT.chNew=()=>openDrawer('New message',`<div class="field"><label for="nm-to">To</label><div class="inwrap">${I('search',15)}<input id="nm-to" class="input" placeholder="Name, class, department or external contact"></div></div><div class="field"><span class="lab">Suggested</span>${[['Prof. Deepa Nair','Faculty · CSE'],['CSE Sem 5 · Section A','Class group'],['Parents — B.Tech Sem 1','Broadcast list · 412'],['Visvesvaraya Technological University','External · University']].map(s=>`<button class="pop-i" data-act="toast" data-m="Conversation with ${s[0]} (prototype)">${AV(s[0],'s')}<span><b class="sm" style="display:block">${s[0]}</b><span class="xs muted">${s[1]}</span></span></button>`).join('')}</div>`,null,'Staff, students, parents or external contacts');
+ACT.sw=el=>{el.classList.toggle('on');el.setAttribute('aria-checked',el.classList.contains('on'))};
+const now=()=>new Date().toTimeString().slice(0,5);
+const SUB={chSend:f=>{const v=f.m.value.trim();if(!v)return;const c=CONVS.find(x=>x.id===CH.sel);c.msgs.push([ME,v,now(),'sent']);c.time=now();CH.typing=true;rerender('chat');const pane=f.closest('.pane');
+  setTimeout(()=>{c.msgs[c.msgs.length-1][3]='read';rerender('chat')},900);
+  setTimeout(()=>{CH.typing=false;if(c.kind!=='external'||c.id==='vtu'){c.msgs.push([c.kind==='group'?c.members[0]:c.name,c.kind==='parent'?'Thank you madam, I will wait for the update.':c.kind==='external'?'Acknowledged. Thank you.':'Noted, ma\'am. Will do.',now()])}rerender('chat');$$('.c-comp input').forEach(i=>{if(i.closest('.pane')===document.querySelector(`.pane[data-tab="${pane&&pane.dataset.tab}"]`))i.focus()})},2600);
+  const i=$('input[name=m]',document.querySelector(`.pane[data-tab="${pane.dataset.tab}"]`));i&&i.focus()}};
+document.addEventListener('submit',e=>{const k=e.target.dataset.sub;if(k&&SUB[k]){e.preventDefault();SUB[k](e.target,e)}});
+INP.chQ=el=>{CH.q=el.value;const pane=el.closest('.pane');rerender('chat');const n=$('[data-in="chQ"]',pane);n.focus();n.setSelectionRange(n.value.length,n.value.length)};
+
+/* ================= PROFILES ================= */
+const PF={student:{tab:'profile'},teacher:{tab:'profile'}};
+const PROFILES={
+ student:{name:'Ananya Rao',role:'B.Tech Computer Science · Sem 5 · Section A',tone:'blue',cover:['#2563eb','#7c3aed'],facts:[['id','USN 1SI23CS014'],['mapPin','Jayanagar, Bengaluru'],['calendar','Joined Aug 2023']],badge:['Active','green'],
+  tabs:[['profile','Profile','user'],['academics','Academics','book'],['attendance','Attendance','clipboard'],['fees','Fees','wallet'],['documents','Documents','file'],['activity','Activity','history']],
+  about:[['user','Full name','Ananya Rao'],['cal2','Date of birth','14 Mar 2005'],['heart','Blood group','O+'],['globe','Languages','Kannada, English, Hindi'],['award','Category','General · Merit (KCET rank 4,812)']],
+  contact:[['phone','Phone','+91 98860 41275'],['mail','Email','ananya.rao@soundarya.edu.in'],['map','Address','No. 42, 9th Cross, Jayanagar 4th Block, Bengaluru 560011']],
+  people:[['Prof. Deepa Nair','Mentor · Associate Professor, CSE','teacher'],['Ramesh Rao','Father · +91 98450 22140',null],['Sudha Rao','Mother · +91 99001 77812',null]],
+  stats:[['CGPA','8.74','violet'],['Attendance','91.2%','teal'],['Credits','118 / 160','amber'],['Rank in class','4 / 64','pink']]},
+ teacher:{name:'Prof. Deepa Nair',role:'Associate Professor · Computer Science & Engineering',tone:'pink',cover:['#db2777','#f97316'],facts:[['id','Emp. SI-FAC-0142'],['brief','Faculty since 2014'],['mapPin','Block B, Room 214']],badge:['On campus','green'],
+  tabs:[['profile','Profile','user'],['classes','Classes','book'],['attendance','Attendance','clipboard'],['payroll','Payroll','bank'],['documents','Documents','file'],['activity','Activity','history']],
+  about:[['user','Full name','Deepa Nair'],['cap','Qualification','Ph.D. (Machine Learning), IISc'],['award','Specialisation','Data mining, DBMS'],['globe','Languages','Malayalam, Kannada, English'],['shield','Roles','Mentor, IQAC member, NBA coordinator']],
+  contact:[['phone','Phone','+91 98451 30297'],['mail','Email','deepa.nair@soundarya.edu.in'],['map','Cabin','Block B, Room 214 · Ext. 2214']],
+  people:[['Dr. Ramesh Kulkarni','Head of Department, CSE',null],['Ananya Rao','Mentee · CSE Sem 5','student'],['Rohan Shetty','Mentee · CSE Sem 5',null],['Ishaan Joshi','Mentee · CSE Sem 1',null]],
+  stats:[['Classes / week','16','violet'],['Mentees','22','teal'],['Feedback','4.7 / 5','amber'],['Publications','19','pink']]}};
+const TL={student:[['Fee instalment paid','₹68,500 via UPI · receipt RC-23992','2 days ago','teal',{f:'Receipt_RC-23992.pdf'}],['Mentoring meeting','With Prof. Deepa Nair — internship plan for summer','5 days ago','violet',{p:'Prof. Deepa Nair'}],['Hackathon leave approved','Smart India Hackathon, 3 days, approved by Principal','1 week ago','amber',null],['IA-1 results published','DBMS 46/50 · OS 41/50 · CN 44/50','2 weeks ago','blue',null]],
+ teacher:[['Marks uploaded','IA-1 DBMS, Sem 5 Sec A & B — 128 students','Today, 09:12','teal',{f:'IA1_DBMS_Sem5.xlsx'}],['Mentoring report submitted','6 at-risk students flagged, parents to be called','Yesterday','violet',{p:'Dr. Savitha Hegde'}],['Leave approved','Casual leave, 2 days (22–23 Oct) by HOD','3 days ago','amber',null],['Paper accepted','IEEE ICDM workshop — “Explainable attendance prediction”','2 weeks ago','pink',null]]};
+function timeline(k){return `<div class="tl">${TL[k].map(t=>`<div class="tl-i t-${t[3]}"><div class="h"><b>${t[0]}</b><span class="xs faint">${t[2]}</span></div><div class="sm muted" style="margin-top:2px">${t[1]}</div>${t[4]&&t[4].f?`<span class="chip">${tile('file','red')}${t[4].f}</span>`:''}${t[4]&&t[4].p?`<span class="chip">${AV(t[4].p,'s')}<span><b class="xs" style="display:block">${t[4].p}</b></span></span>`:''}</div>`).join('')}</div>`}
+function profBody(k){const P=PROFILES[k],tab=PF[k].tab;
+  if(tab==='profile')return `<div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)" data-prof-grid>
+    <div class="col" style="gap:16px"><div class="card"><div class="card-b"><div class="sec-t">About</div><dl class="kv">${P.about.map(a=>`<dt>${I(a[0],15)}${a[1]}</dt><dd>${a[2]}</dd>`).join('')}</dl><div class="sec-t">Contacts</div><dl class="kv">${P.contact.map(a=>`<dt>${I(a[0],15)}${a[1]}</dt><dd>${a[2]}</dd>`).join('')}</dl></div></div>
+      <div class="card"><div class="card-b"><div class="sec-t">${k==='student'?'Mentor & guardians':'Department & mentees'}</div>${P.people.map(p=>`<div class="list-i">${AV(p[0],'',p[2]==='teacher')}<div class="sp" style="min-width:0"><b class="sm">${p[0]}</b><div class="xs muted">${p[1]}</div></div>${p[2]?`<button class="btn sm" data-act="open" data-p="${p[2]}">View</button>`:`<button class="ibtn sm bd" aria-label="Message ${p[0]}" data-act="open" data-p="chat">${I('message',14)}</button>`}</div>`).join('')}</div></div></div>
+    <div class="col" style="gap:16px"><div class="grid g4" style="gap:12px">${P.stats.map(s=>`<div class="card"><div class="card-b" style="padding:14px 16px"><div class="xs muted">${s[0]}</div><div class="num" style="font-size:20px;font-weight:650;color:var(--${s[2]}-ink)">${s[1]}</div></div></div>`).join('')}</div>
+      <div class="card"><div class="card-h"><div class="row">${I('history',17)}<h3>Activity timeline</h3></div><button class="btn sm ghost" data-act="pfTab" data-k="${k}" data-v="activity">View all</button></div><div class="card-b">${timeline(k)}</div></div></div></div>`;
+  if(tab==='academics'||tab==='classes'){const rows=k==='student'?[['CS501','Database Management Systems',4,46,'A+','green'],['CS502','Operating Systems',4,41,'A','green'],['CS503','Computer Networks',3,44,'A','green'],['CS504','Software Engineering',3,37,'B+','blue'],['CS505','Elective: Cloud Computing',3,39,'A','green'],['HS501','Professional Ethics',1,28,'C','amber']]:[['CS501','DBMS','Sem 5 · A',64,'Mon 9:00, Wed 11:00','green'],['CS501','DBMS','Sem 5 · B',62,'Tue 10:00, Thu 9:00','green'],['CS5L1','DBMS Lab','Sem 5 · A',64,'Fri 14:00–17:00','blue'],['CS701','Data Mining','Sem 7 · A',58,'Mon 14:00, Thu 11:00','green'],['CS1P','Project mentoring','Sem 8',12,'Sat 10:00','violet']];
+    return `<div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)" data-prof-grid><div class="card"><div class="card-h"><div><h3>${k==='student'?'Current semester':'Teaching load · Odd sem 2026'}</h3><p>${k==='student'?'IA-1 marks out of 50':'16 contact hours per week'}</p></div></div><div class="card-b" style="padding:8px 0 0"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Code</th><th>${k==='student'?'Course':'Subject'}</th><th>${k==='student'?'Credits':'Section'}</th><th class="r">${k==='student'?'IA-1':'Students'}</th><th>${k==='student'?'Grade':'Slots'}</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="muted num">${r[0]}</td><td><b>${r[1]}</b></td><td class="muted">${r[2]}</td><td class="r num b">${r[3]}</td><td>${k==='student'?pill(r[4],r[5],false):`<span class="muted sm">${r[4]}</span>`}</td></tr>`).join('')}</tbody></table></div></div></div>
+      <div class="card"><div class="card-h"><div><h3>${k==='student'?'SGPA by semester':'Average class result'}</h3><p>${k==='student'?'CGPA 8.74':'Pass % per term'}</p></div></div><div class="card-b">${k==='student'?bars([8.2,8.6,8.9,9.1,8.9],['S1','S2','S3','S4','S5'],{h:200,hi:3,tone:'violet'}):bars([88,91,86,94,92],['2022','2023','2024','2025','2026'],{h:200,hi:3,tone:'pink',fmt:v=>v+'%'})}</div></div></div>`}
+  if(tab==='attendance'){let cells='';for(let i=0;i<110;i++){const r=(i*37+11)%23;cells+=`<i class="${i%7===6?'h':r===0?'a':r<2?'l':'p'}" title="Day ${i+1}"></i>`}
+    return `<div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)" data-prof-grid><div class="card"><div class="card-h"><div><h3>${k==='student'?'Daily attendance':'Days present'}</h3><p>This semester · since 1 Aug</p></div><div class="legend"><span class="t-teal"><i></i>Present</span><span class="t-amber"><i style="background:var(--amber)"></i>Leave</span><span class="t-red"><i style="background:var(--red)"></i>Absent</span></div></div><div class="card-b"><div class="heat" style="--cols:22">${cells}</div></div></div>
+      <div class="card"><div class="card-h"><div><h3>${k==='student'?'Subject-wise':'Leave balance'}</h3><p>${k==='student'?'Minimum 75% required':'Calendar year 2026'}</p></div></div><div class="card-b">${(k==='student'?[['DBMS',95,'teal'],['Operating Systems',92,'teal'],['Computer Networks',88,'teal'],['Software Engg.',84,'teal'],['Professional Ethics',72,'red']]:[['Casual leave',8,'violet',12],['Earned leave',14,'teal',30],['Duty leave',3,'amber',10],['Medical leave',0,'pink',10]]).map(s=>`<div style="margin-bottom:14px"><div class="row sm"><span>${s[0]}</span><span class="sp"></span><b class="num">${k==='student'?s[1]+'%':s[1]+' / '+s[3]}</b></div><div class="prog t-${s[2]}" style="margin-top:6px"><i style="width:${k==='student'?s[1]:s[1]/s[3]*100}%"></i></div></div>`).join('')}</div></div></div>`}
+  if(tab==='fees'||tab==='payroll'){const st=k==='student';const rows=st?[['Tuition fee — Sem 5',112000,'Paid','green','12 Aug 2026'],['Instalment 2',68500,'Paid','green','11 Oct 2026'],['Exam fee',3200,'Due','amber','25 Oct 2026'],['Transport — Route 7',18000,'Paid','green','12 Aug 2026'],['Merit concession',-15000,'Applied','violet','12 Aug 2026']]:[['September 2026',148260,'Paid','green','30 Sep'],['August 2026',148260,'Paid','green','31 Aug'],['July 2026',146900,'Paid','green','31 Jul'],['June 2026',146900,'Paid','green','30 Jun']];
+    return `<div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)" data-prof-grid><div class="col" style="gap:16px"><div class="card"><div class="card-b">${st?`<div class="xs muted">Total payable · AY 2026–27</div><div class="num" style="font-size:26px;font-weight:650">${inr(183700)}</div><div class="prog t-teal" style="margin:12px 0 8px"><i style="width:98%"></i></div><div class="row sm"><span class="muted">Paid ${inr(180500)}</span><span class="sp"></span><b style="color:var(--amber-ink)">Due ${inr(3200)}</b></div><button class="btn pri block" style="margin-top:14px" data-act="toast" data-m="Payment link sent to parent's phone">${I('send',15)}Send payment link</button>`:`<div class="xs muted">Net pay · September</div><div class="num" style="font-size:26px;font-weight:650">${inr(148260)}</div><div style="margin-top:12px">${[['Basic + AGP',122400],['DA',28150],['HRA',24480],['PF (employee)',-14688],['Professional tax',-200],['TDS',-11882]].map(r=>`<div class="list-i" style="padding:6px 0"><span class="sm muted">${r[0]}</span><span class="sp"></span><b class="num sm" style="color:${r[1]<0?'var(--red-ink)':'inherit'}">${r[1]<0?'−':''}${inr(Math.abs(r[1]))}</b></div>`).join('')}</div>`}</div></div>
+      <div class="card"><div class="card-h"><h3>${st?'Instalment plan':'Annual CTC'}</h3></div><div class="card-b">${st?`${bars([112000,68500,3200],['Aug','Oct','Jan'],{h:120,tone:'teal',hi:1,fmt:v=>lakh(v)})}`:`<div class="num" style="font-size:22px;font-weight:650">₹21.4 L</div><div class="xs muted">7th Pay Commission (AICTE) scale</div>`}</div></div></div>
+      <div class="card"><div class="card-h"><div><h3>${st?'Fee ledger':'Payslips'}</h3><p>${st?'Receipts and concessions':'Last 4 months'}</p></div><button class="btn sm">${I('download',14)}Statement</button></div><div class="card-b" style="padding:8px 0 0"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>${st?'Item':'Month'}</th><th>Date</th><th class="r">Amount</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td class="muted">${r[4]}</td><td class="r num b">${r[1]<0?'−':''}${inr(Math.abs(r[1]))}</td><td>${pill(r[2],r[3])}</td><td class="r"><button class="ibtn sm" aria-label="Download" data-act="toast" data-m="Downloading ${r[0]}">${I('download',15)}</button></td></tr>`).join('')}</tbody></table></div></div></div></div>`}
+  if(tab==='documents'){const docs=k==='student'?[['Class 12 marks card','PDF · 1.1 MB','Verified','green'],['KCET allotment order','PDF · 640 KB','Verified','green'],['Aadhaar (masked)','PDF · 220 KB','Verified','green'],['Transfer certificate','PDF · 410 KB','Verified','green'],['Income certificate','PDF · 380 KB','Pending','amber'],['Passport photo','JPG · 120 KB','Verified','green']]:[['Appointment order','PDF · 300 KB','Verified','green'],['Ph.D. degree certificate','PDF · 1.4 MB','Verified','green'],['PAN card','PDF · 180 KB','Verified','green'],['Experience letters','PDF · 2.0 MB','Verified','green'],['Form 16 (FY 2025–26)','PDF · 260 KB','New','blue'],['AICTE faculty ID','PDF · 150 KB','Pending','amber']];
+    return `<div class="card"><div class="toolbar"><b>Documents</b><span class="pill">${docs.length}</span><span class="sp"></span><button class="btn sm pri" data-act="toast" data-m="Upload dialog (prototype)">${I('upload',14)}Upload</button></div><div class="card-b"><div class="grid g3" data-doc-grid>${docs.map(d=>`<div class="doc"><div class="row">${tile('file',d[0].includes('photo')?'blue':'red','md')}<span class="sp"></span>${pill(d[2],d[3])}</div><div><b class="sm">${d[0]}</b><div class="xs muted">${d[1]}</div></div><div class="row"><button class="btn sm" data-act="toast" data-m="Previewing ${d[0]}">${I('eye',14)}View</button><button class="ibtn sm" aria-label="Download" data-act="toast" data-m="Downloading ${d[0]}">${I('download',15)}</button></div></div>`).join('')}</div></div></div>`}
+  return `<div class="card"><div class="card-h"><h3>Activity</h3><div class="seg"><button class="on">All</button><button>Academic</button><button>Finance</button></div></div><div class="card-b">${timeline(k)}<div style="margin-top:24px">${timeline(k)}</div></div></div>`}
+function profPage(k){const P=PROFILES[k];return `<div class="page"><div class="card" style="overflow:visible"><div class="cover" style="--cv:linear-gradient(120deg,${P.cover[0]},${P.cover[1]})"><svg viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${Array.from({length:14},(_,i)=>`<rect x="${(i*97)%780}" y="${(i*53)%160}" width="${24+i%3*14}" height="${24+i%3*14}" rx="6" fill="rgba(255,255,255,${.06+i%4*.03})"/>`).join('')}<circle cx="700" cy="20" r="110" fill="rgba(255,255,255,.08)"/></svg><button class="btn sm" style="position:absolute;right:14px;top:14px;background:rgba(255,255,255,.9);color:#18181b;border-color:transparent" data-act="toast" data-m="Change cover (prototype)">${I('image',14)}<span class="hide-m">Change cover</span></button></div>
+  <div class="prof-h"><span class="prof-av ${avc(P.name)}">${ini(P.name)}</span><div style="flex:1;min-width:220px;padding-bottom:4px"><h2>${P.name} ${pill(P.badge[0],P.badge[1])}</h2><div class="muted" style="margin-top:2px">${P.role}</div><div class="facts">${P.facts.map(f=>`<span>${I(f[0],14)}${f[1]}</span>`).join('')}</div></div>
+    <div class="actions"><button class="btn" data-act="open" data-p="chat">${I('message',15)}Message</button><button class="btn pri" data-act="toast" data-m="${k==='student'?'Report card generated':'Profile shared'}">${I(k==='student'?'file':'link',15)}${k==='student'?'Report card':'Share'}</button><button class="ibtn bd" aria-label="More">${I('more',16)}</button></div></div></div>
+  <div class="utabs" style="margin:20px 0 16px" role="tablist">${P.tabs.map(t=>`<button class="${PF[k].tab===t[0]?'on':''}" role="tab" data-act="pfTab" data-k="${k}" data-v="${t[0]}">${I(t[2],15)}${t[1]}</button>`).join('')}</div>${profBody(k)}</div>`}
+function profInit(p){const fix=()=>{const w=p.clientWidth;$$('[data-prof-grid]',p).forEach(g=>{g.dataset.c=g.dataset.c||g.style.gridTemplateColumns;g.style.gridTemplateColumns=w<1000?'minmax(0,1fr)':g.dataset.c});$$('[data-doc-grid]',p).forEach(g=>g.style.gridTemplateColumns=w<640?'minmax(0,1fr)':w<1000?'repeat(2,minmax(0,1fr))':'');$$('.g4',p).forEach(g=>g.style.gridTemplateColumns=w<560?'repeat(2,minmax(0,1fr))':'')};fix();onRS(p,fix)}
+PAGES.student={r:()=>profPage('student'),init:profInit};
+PAGES.teacher={r:()=>profPage('teacher'),init:profInit};
+ACT.pfTab=el=>{PF[el.dataset.k].tab=el.dataset.v;rerender(el.dataset.k)};
+
+/* ================= SETTINGS ================= */
+const ST={sec:'general',dirty:false,notif:{fee:[1,1,1],att:[1,0,1],adm:[1,1,0],wf:[1,0,0],exam:[1,1,1]},intg:{tally:1,razorpay:0,cashfree:1,msg91:1,wa:1,digilocker:0,gws:1,biometric:0}};
+const SNAV=[['Institution',[['general','General','building'],['academic','Academic year','calendar'],['branding','Branding','image']]],['People',[['members','Members','users'],['roles','Roles & permissions','shield']]],['Communication',[['notifications','Notifications','bell']]],['Developers',[['integrations','Integrations','plug'],['api','API keys','key']]],['Account',[['billing','Billing','card'],['security','Security','lock']]]];
+const MEMBERS=[['Dr. Savitha Hegde','principal@soundarya.edu.in','Principal','violet','Active'],['Prof. Deepa Nair','deepa.nair@soundarya.edu.in','Faculty · Mentor','blue','Active'],['Dr. Ramesh Kulkarni','hod.cse@soundarya.edu.in','HOD','teal','Active'],['Lakshmi Prasad','accounts@soundarya.edu.in','Accounts officer','amber','Active'],['Anita Fernandes','office@soundarya.edu.in','Office admin','pink','Active'],['Vikram Rao','vikram.rao@soundarya.edu.in','Librarian','slate','Invited']];
+function setRow(t,s,ctl){return `<div class="set-row"><div class="t"><b>${t}</b><span>${s}</span></div>${ctl}</div>`}
+const swt=(on,lbl,act='stSw',data='')=>`<button class="sw ${on?'on':''}" role="switch" aria-checked="${!!on}" aria-label="${lbl}" data-act="${act}" ${data}></button>`;
+function setSec(){const s=ST.sec;
+  if(s==='general')return `<div class="card"><div class="card-h"><div><h3>Institution logo</h3><p>Shown on receipts, ID cards and the parent app.</p></div></div><div class="card-b row wrap" style="gap:16px"><span class="logo" style="width:64px;height:64px;font-size:26px;border-radius:16px">S</span><div class="col" style="gap:8px"><div class="row"><button class="btn sm" data-act="toast" data-m="Upload (prototype)">${I('upload',14)}Upload</button><button class="btn sm ghost" data-act="stDirty">${I('trash',14)}Remove</button></div><span class="xs faint">SVG or PNG, at least 256 × 256 px</span></div></div></div>
+    <div class="card"><div class="card-h"><div><h3>Institution details</h3><p>As registered with the university and AICTE.</p></div></div><div class="card-b"><div class="grid g2" style="gap:14px">${[['Institution name','Soundarya Institute of Management & Science'],['Short code','SIMS-BLR'],['Affiliation','Visvesvaraya Technological University'],['AISHE code','C-48213'],['Email','office@soundarya.edu.in'],['Phone','+91 80 2839 4400']].map((f,i)=>`<div class="field"><label for="sg${i}">${f[0]}</label><input id="sg${i}" class="input" value="${f[1]}" data-in="stDirty"></div>`).join('')}<div class="field span2"><label for="sga">Address</label><textarea id="sga" class="input" rows="2" data-in="stDirty">Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru, Karnataka 560073</textarea></div></div></div></div>
+    <div class="card"><div class="card-h"><div><h3>Regional</h3><p>Formats used across Kinetix.</p></div></div><div class="card-b">${setRow('Currency format','Indian numbering — ₹12,34,567 and lakh / crore summaries',`<select class="input" style="width:160px" data-chg="stDirty"><option>₹ · en-IN</option><option>₹ · plain</option></select>`)}${setRow('Time zone','Asia/Kolkata (IST, UTC+5:30)',`<select class="input" style="width:160px" data-chg="stDirty"><option>Asia/Kolkata</option></select>`)}${setRow('Second language','Show labels in Kannada alongside English',swt(1,'Kannada labels'))}</div></div>
+    <div class="card" style="border-color:color-mix(in srgb,var(--red) 30%,var(--border))"><div class="card-h"><div><h3>Danger zone</h3><p>Archive this institution and all its records.</p></div></div><div class="card-b"><button class="btn danger" data-act="toast" data-m="Archiving needs owner confirmation via OTP">${I('trash',14)}Archive institution</button></div></div>`;
+  if(s==='academic')return `<div class="card"><div class="card-h"><div><h3>Academic year</h3><p>Current: AY 2026–27 · Odd semester</p></div><button class="btn sm pri" data-act="toast" data-m="New year wizard (prototype)">${I('plus',14)}New year</button></div><div class="card-b">${[['Odd semester','1 Aug 2026 – 15 Dec 2026','Current','green'],['Even semester','2 Jan 2027 – 31 May 2027','Upcoming','blue'],['Supplementary exams','Jun 2027','Planned','slate']].map(t=>`<div class="list-i">${tile('calendar','indigo','md')}<div class="sp"><b class="sm">${t[0]}</b><div class="xs muted">${t[1]}</div></div>${pill(t[2],t[3])}</div>`).join('')}</div></div>
+    <div class="card"><div class="card-b">${setRow('Attendance threshold','Students below this are flagged and parents notified',`<select class="input" style="width:110px" data-chg="stDirty"><option>75%</option><option>80%</option><option>85%</option></select>`)}${setRow('Lock attendance after','Faculty cannot edit attendance after this many days',`<select class="input" style="width:110px" data-chg="stDirty"><option>3 days</option><option>7 days</option></select>`)}${setRow('Grading scheme','VTU CBCS — 10-point scale',`<button class="btn sm">Configure</button>`)}</div></div>`;
+  if(s==='branding')return `<div class="card"><div class="card-h"><div><h3>Brand colour</h3><p>Used in the parent app, receipts and emails.</p></div></div><div class="card-b row wrap" style="gap:10px">${['#0f9488','#4f46e5','#db2777','#f97316','#16a34a','#0284c7','#18181b'].map((c,i)=>`<button aria-label="Colour ${c}" data-act="stColor" style="width:36px;height:36px;border-radius:10px;border:0;background:${c};cursor:pointer;box-shadow:${i===0?'0 0 0 2px var(--card),0 0 0 4px '+c:'none'}"></button>`).join('')}</div></div><div class="card"><div class="card-b">${setRow('Show Kinetix branding','“Powered by Kinetix” in the parent app footer',swt(0,'Kinetix branding'))}${setRow('Custom domain','erp.soundarya.edu.in',pill('Verified','green'))}</div></div>`;
+  if(s==='members')return `<div class="card"><div class="toolbar"><div class="inwrap" style="width:min(260px,100%)">${I('search',15)}<input class="input" style="height:32px" placeholder="Search members" aria-label="Search members"></div><span class="sp"></span><button class="btn sm pri" data-act="stInvite">${I('userplus',14)}Invite</button></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>${MEMBERS.map(m=>`<tr><td><div class="row">${AV(m[0],'s')}<div><b>${m[0]}</b><div class="xs muted">${m[1]}</div></div></div></td><td>${pill(m[2],m[3],false)}</td><td>${pill(m[4],m[4]==='Active'?'green':'amber')}</td><td class="r"><button class="ibtn sm" aria-label="More">${I('more',15)}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  if(s==='roles'){const mods=['Students','Attendance','Exams & results','Fees','Payroll','Messages','Workflows','Settings'];const roles=[['Principal',[3,3,3,3,3,3,3,3]],['HOD',[2,3,3,1,0,3,2,0]],['Faculty',[1,2,2,0,0,2,1,0]],['Accounts',[1,0,0,3,3,1,1,0]]];const L=['—','View','Edit','Full'];
+    return `<div class="card"><div class="card-h"><div><h3>Permissions matrix</h3><p>Click a cell to cycle access level.</p></div><button class="btn sm" data-act="toast" data-m="Custom role (prototype)">${I('plus',14)}Role</button></div><div class="card-b" style="padding:12px 0 0"><div class="tbl-wrap"><table class="tbl perm"><thead><tr><th>Module</th>${roles.map(r=>`<th>${r[0]}</th>`).join('')}</tr></thead><tbody>${mods.map((m,i)=>`<tr><td><b>${m}</b></td>${roles.map(r=>`<td><button class="pill t-${['slate','sky','amber','green'][r[1][i]]}" style="border:0;cursor:pointer" data-act="stPerm" data-l="${r[1][i]}">${L[r[1][i]]}</button></td>`).join('')}</tr>`).join('')}</tbody></table></div></div></div>`}
+  if(s==='notifications'){const ev=[['fee','Fee due & receipts','wallet','teal'],['att','Attendance shortage','clipboard','violet'],['adm','New admission enquiry','userplus','orange'],['wf','Workflow approvals','workflow','amber'],['exam','Results published','award','pink']];
+    return `<div class="card"><div class="card-h"><div><h3>Notification channels</h3><p>Choose how each event reaches staff, students and parents.</p></div></div><div class="card-b" style="padding:12px 0 0"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Event</th><th style="text-align:center">In-app</th><th style="text-align:center">SMS</th><th style="text-align:center">WhatsApp</th></tr></thead><tbody>${ev.map(e=>`<tr><td><div class="row">${tile(e[2],e[3])}<b>${e[1]}</b></div></td>${[0,1,2].map(j=>`<td style="text-align:center">${swt(ST.notif[e[0]][j],e[1]+' channel '+j,'stNotif',`data-k="${e[0]}" data-j="${j}"`)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div></div>
+    <div class="card"><div class="card-b">${setRow('Quiet hours','No SMS/WhatsApp to parents between 9 PM and 7 AM',swt(1,'Quiet hours'))}${setRow('Daily digest for principal','Summary at 7:30 AM: attendance, collections, approvals',swt(1,'Daily digest'))}</div></div>`}
+  if(s==='integrations'){const it=[['tally','Tally Prime','Accounts sync','bank','teal'],['cashfree','Cashfree Payments','Online fee collection','card','violet'],['razorpay','Razorpay','Online fee collection','card','blue'],['msg91','MSG91','SMS (DLT)','smartphone','orange'],['wa','WhatsApp Business','Templates & chat','message','green'],['digilocker','DigiLocker','Verified documents','shield','indigo'],['gws','Google Workspace','SSO & calendar','globe','red'],['biometric','eSSL biometric','Staff attendance','fingerprint','slate']];
+    return `<div class="grid g2" data-int-grid>${it.map(x=>`<div class="intg card"><div class="row">${tile(x[3],x[4],'lg')}<div class="sp"><b>${x[1]}</b><div class="xs muted">${x[2]}</div></div>${swt(ST.intg[x[0]],x[1],'stIntg',`data-k="${x[0]}"`)}</div><div class="row xs">${ST.intg[x[0]]?pill('Connected','green'):pill('Not connected','slate')}<span class="sp"></span><button class="btn sm ghost" data-act="toast" data-m="${x[1]} settings (prototype)">Configure${I('chevright',13)}</button></div></div>`).join('')}</div>`}
+  if(s==='api')return `<div class="card"><div class="card-h"><div><h3>API keys</h3><p>For the university portal sync and custom reports.</p></div><button class="btn sm pri" data-act="toast" data-m="Key created — copy it now, it will not be shown again">${I('plus',14)}Create key</button></div><div class="card-b">${[['University portal sync','kx_live_••••••••4f2a','Last used 2 h ago'],['Power BI reports','kx_live_••••••••91c0','Last used yesterday']].map(k=>`<div class="list-i">${tile('key','amber','md')}<div class="sp"><b class="sm">${k[0]}</b><div class="xs muted num">${k[1]} · ${k[2]}</div></div><button class="btn sm danger" data-act="toast" data-m="Key revoked">Revoke</button></div>`).join('')}</div></div>`;
+  if(s==='billing')return `<div class="card" style="overflow:hidden"><div class="card-b row wrap" style="gap:16px;background:linear-gradient(120deg,var(--teal-soft),var(--indigo-soft))"><div class="sp"><span class="pill t-teal">Current plan</span><div style="font-size:22px;font-weight:650;margin-top:8px">Kinetix Campus · Annual</div><div class="muted sm">Up to 6,000 students · all modules · renews 1 Jun 2027</div></div><div style="text-align:right"><div class="num" style="font-size:26px;font-weight:650">₹4.8 L<span class="sm muted"> / year</span></div><button class="btn pri sm" style="margin-top:8px" data-act="toast" data-m="Plans (prototype)">Change plan</button></div></div></div>
+    <div class="card"><div class="card-h"><div><h3>Usage</h3><p>This billing year</p></div></div><div class="card-b">${[['Students',4420,6000,'teal'],['SMS credits',182400,250000,'orange'],['Storage (GB)',148,500,'violet']].map(u=>`<div style="margin-bottom:14px"><div class="row sm"><span>${u[0]}</span><span class="sp"></span><b class="num">${u[1].toLocaleString('en-IN')} / ${u[2].toLocaleString('en-IN')}</b></div><div class="prog t-${u[3]}" style="margin-top:6px"><i style="width:${u[1]/u[2]*100}%"></i></div></div>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><h3>Invoices</h3></div><div class="tbl-wrap"><table class="tbl"><tbody>${[['INV-2026-061','1 Jun 2026','₹5,66,400','Paid'],['INV-2026-014','15 Feb 2026','₹48,380','Paid'],['INV-2025-058','1 Jun 2025','₹5,31,000','Paid']].map(v=>`<tr><td class="num b">${v[0]}</td><td class="muted">${v[1]}</td><td class="num">${v[2]} <span class="xs faint">incl. GST</span></td><td>${pill(v[3],'green')}</td><td class="r"><button class="ibtn sm" aria-label="Download invoice" data-act="toast" data-m="Downloading ${v[0]}">${I('download',15)}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  return `<div class="card"><div class="card-h"><div><h3>Sign-in & access</h3><p>Applies to all staff accounts.</p></div></div><div class="card-b">${setRow('Two-factor authentication','Require OTP for principal, HOD and accounts roles',swt(1,'2FA'))}${setRow('Single sign-on','Google Workspace (soundarya.edu.in)',pill('Enabled','green'))}${setRow('Session timeout','Sign out idle users after',`<select class="input" style="width:130px" data-chg="stDirty"><option>30 minutes</option><option>2 hours</option><option>8 hours</option></select>`)}${setRow('IP restriction for payroll','Only campus network can open Payroll',swt(0,'IP restriction'))}</div></div>
+    <div class="card"><div class="card-h"><div><h3>Active sessions</h3><p>Your signed-in devices</p></div><button class="btn sm danger" data-act="toast" data-m="Signed out of other sessions">Sign out others</button></div><div class="card-b">${[['Chrome on macOS','Bengaluru · this device','smartphone'],['Kinetix app on Android','Bengaluru · 2 h ago','smartphone']].map(d=>`<div class="list-i">${tile(d[2],'slate','md')}<div class="sp"><b class="sm">${d[0]}</b><div class="xs muted">${d[1]}</div></div></div>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><h3>Audit log</h3></div><div class="card-b">${timeline('teacher')}</div></div>`}
+PAGES.settings={r:()=>{const cur=SNAV.flatMap(g=>g[1]).find(x=>x[0]===ST.sec);return `<div class="page">${PH('Settings','Manage your institution, people and workspace preferences.')}<div class="set"><nav class="set-nav card" aria-label="Settings">${SNAV.map(g=>`<div class="h">${g[0]}</div>${g[1].map(i=>`<button class="${ST.sec===i[0]?'on':''}" data-act="stSec" data-v="${i[0]}">${I(i[2],15)}${i[1]}</button>`).join('')}`).join('')}</nav>
+  <div class="set-sec"><div><h2 style="margin:0;font-size:18px">${cur[1]}</h2></div>${setSec()}${ST.dirty?`<div class="savebar"><span class="sm sp">You have unsaved changes</span><button class="btn sm ghost" style="color:inherit" data-act="stDiscard">Discard</button><button class="btn sm" style="color:var(--text)" data-act="stSave">Save changes</button></div>`:''}</div>
+  <aside class="set-aside col" style="gap:16px"><div class="card"><div class="card-b"><b>Workspace</b><dl class="kv" style="margin-top:12px;font-size:13px"><dt>${I('shield',14)}Your role</dt><dd>${pill('Principal','violet',false)}</dd><dt>${I('users',14)}Members</dt><dd>214 staff</dd><dt>${I('cap',14)}Students</dt><dd>4,420</dd><dt>${I('calendar',14)}Year</dt><dd>AY 2026–27</dd></dl></div></div><div class="card"><div class="card-b"><b class="sm">Need help?</b><p class="sm muted" style="margin:4px 0 10px">Your Kinetix success manager is Kiran, available 9–6 IST.</p><button class="btn sm block" data-act="open" data-p="chat">${I('message',14)}Chat with support</button></div></div></aside></div></div>`},
+  init:p=>{const fix=()=>{const w=p.clientWidth,s=$('.set',p);if(!s)return;s.style.gridTemplateColumns=w<900?'minmax(0,1fr)':w<1150?'200px minmax(0,1fr)':'';$('.set-aside',p).style.display=w<1150?'none':'';const n=$('.set-nav',p);n.style.cssText=w<900?'position:static;display:flex;overflow-x:auto;gap:4px;padding:6px':'';$$('.h',n).forEach(h=>h.style.display=w<900?'none':'');$$('button',n).forEach(b=>{b.style.width=w<900?'auto':'';b.style.whiteSpace='nowrap'});$$('[data-int-grid]',p).forEach(g=>g.style.gridTemplateColumns=w<700?'minmax(0,1fr)':'');$$('.g2',p).forEach(g=>g.style.gridTemplateColumns=w<600?'minmax(0,1fr)':'')};fix();onRS(p,fix)}};
+ACT.stSec=el=>{ST.sec=el.dataset.v;rerender('settings')};
+ACT.stSw=el=>{ACT.sw(el);if(!ST.dirty){ST.dirty=true;rerender('settings')}};
+ACT.stDirty=()=>{if(!ST.dirty){ST.dirty=true;rerender('settings')}};
+INP.stDirty=el=>{if(!ST.dirty){ST.dirty=true;const id=el.id,pane=el.closest('.pane');rerender('settings');const n=$('#'+id,pane);n&&(n.focus())}};CHG.stDirty=INP.stDirty;
+ACT.stSave=()=>{ST.dirty=false;rerender('settings');toast('Settings saved')};
+ACT.stDiscard=()=>{ST.dirty=false;rerender('settings')};
+ACT.stNotif=el=>{const a=ST.notif[el.dataset.k];a[el.dataset.j]=a[el.dataset.j]?0:1;ST.dirty=true;rerender('settings')};
+ACT.stIntg=el=>{ST.intg[el.dataset.k]=ST.intg[el.dataset.k]?0:1;rerender('settings');toast(ST.intg[el.dataset.k]?'Connected':'Disconnected')};
+ACT.stPerm=el=>{const L=['—','View','Edit','Full'],T=['slate','sky','amber','green'];const n=(+el.dataset.l+1)%4;el.dataset.l=n;el.textContent=L[n];el.className='pill t-'+T[n];if(!ST.dirty){ST.dirty=true;const sb=document.createElement('div');sb.className='savebar';sb.innerHTML=`<span class="sm sp">You have unsaved changes</span><button class="btn sm ghost" style="color:inherit" data-act="stDiscard">Discard</button><button class="btn sm" style="color:var(--text)" data-act="stSave">Save changes</button>`;el.closest('.set-sec').appendChild(sb)}};
+ACT.stColor=el=>{$$('button',el.parentNode).forEach(b=>b.style.boxShadow='none');el.style.boxShadow='0 0 0 2px var(--card),0 0 0 4px '+el.style.background;ACT.stDirty()};
+ACT.stInvite=()=>openDrawer('Invite member',`<div class="field"><label for="iv-e">Email or phone</label><input id="iv-e" class="input" placeholder="name@soundarya.edu.in"></div><div class="field"><label for="iv-r">Role</label><select id="iv-r" class="input"><option>Faculty</option><option>HOD</option><option>Accounts</option><option>Office admin</option><option>Librarian</option></select></div><div class="field"><label for="iv-d">Department</label><select id="iv-d" class="input"><option>Computer Science</option><option>Electronics</option><option>Mechanical</option><option>Management</option></select></div>`,`<button class="btn" data-act="closeDrawer">Cancel</button><button class="btn pri" data-act="stInvSend">${I('send',14)}Send invite</button>`,'They will get an SMS and email to join');
+ACT.stInvSend=()=>{const v=$('#iv-e').value.trim()||'new.member@soundarya.edu.in';MEMBERS.push([v.split('@')[0].replace(/\./g,' ').replace(/\b\w/g,c=>c.toUpperCase()),v,$('#iv-r').value,'slate','Invited']);closeDrawer();rerender('settings');toast('Invite sent to '+v)};
+
+/* ================= WORKFLOWS ================= */
+const WFS=[['wf_1','Fee concession approval','Draft','amber','Today, 11:20','Dr. Savitha Hegde',4,0],['wf_2','Staff leave approval','Active','green','Yesterday','Dr. Ramesh Kulkarni',7,1284],['wf_3','Attendance shortage alert','Active','green','2 Oct 2026','Prof. Deepa Nair',3,8412],['wf_4','Admission enquiry follow-up','Active','green','28 Sep 2026','Anita Fernandes',5,4810],['wf_5','Library overdue reminder','Paused','slate','14 Sep 2026','Vikram Rao',2,2240],['wf_6','Transport fee waiver','Active','green','2 Sep 2026','Lakshmi Prasad',3,96],['wf_7','Hall ticket issue','Failed','red','30 Aug 2026','Exam cell',4,1102]];
+const WL={q:''};
+PAGES.workflows={r:()=>{const f=WFS.filter(w=>w[1].toLowerCase().includes(WL.q.toLowerCase()));return `<div class="page">${PH('Workflows','Automate approvals, reminders and alerts across Kinetix.',`<button class="btn" data-act="open" data-p="runs">${I('history',15)}Runs</button><button class="btn acc" data-act="open" data-p="workflow">${I('plus',15)}New workflow</button>`)}
+  <div class="grid g4 kpis">${[['Total workflows',WFS.length,'workflow','indigo'],['Active',WFS.filter(w=>w[2]==='Active').length,'play','green'],['Drafts',WFS.filter(w=>w[2]==='Draft').length,'edit','amber'],['Failed runs (7d)',3,'alert','red']].map(k=>`<div class="card"><div class="card-b row"><div class="sp"><div class="sm muted">${k[0]}</div><div class="num" style="font-size:24px;font-weight:650">${k[1]}</div></div>${tile(k[2],k[3],'lg')}</div></div>`).join('')}</div>
+  <div class="card" style="margin-top:16px"><div class="toolbar"><div class="inwrap" style="width:min(280px,100%)">${I('search',15)}<input class="input" style="height:32px" placeholder="Search workflows" value="${esc(WL.q)}" data-in="wlQ" aria-label="Search workflows"></div><span class="sp"></span><button class="btn sm">${I('filter',14)}Filter</button><button class="btn sm">${I('sort',14)}Sort</button></div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:36px"><input type="checkbox" class="chk" aria-label="Select all"></th><th>Name</th><th>Status</th><th>Last update</th><th>Created by</th><th class="r">Versions</th><th class="r">Runs</th><th></th></tr></thead><tbody>${f.map(w=>`<tr class="click" data-act="open" data-p="workflow"><td><input type="checkbox" class="chk" aria-label="Select ${w[1]}" onclick="event.stopPropagation()"></td><td><div class="row">${tile('workflow',['orange','violet','teal','sky','pink','green','red'][+w[0].slice(3)-1])}<b>${w[1]}</b></div></td><td>${pill(w[2],w[3])}</td><td class="muted">${w[4]}</td><td><div class="row">${AV(w[5],'s')}<span class="sm">${w[5]}</span></div></td><td class="r num">v${w[6]}</td><td class="r num">${w[7].toLocaleString('en-IN')}</td><td class="r">${I('chevright',15)}</td></tr>`).join('')}</tbody></table></div>
+  <div class="pager"><span>0 of ${f.length} row(s) selected</span><span class="sp"></span><span>Rows per page</span><select class="input" style="width:70px;height:30px"><option>10</option></select></div></div></div>`}};
+INP.wlQ=el=>{WL.q=el.value;const pane=el.closest('.pane');rerender('workflows');const n=$('[data-in="wlQ"]',pane);n.focus();n.setSelectionRange(n.value.length,n.value.length)};
+PAGES.runs={r:()=>`<div class="page">${PH('Workflow runs','Last 7 days')}<div class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Run</th><th>Workflow</th><th>Started</th><th>Duration</th><th>Status</th></tr></thead><tbody>${[['#R-90412','Staff leave approval','Today 10:14','2 h 10 m','Completed','green'],['#R-90411','Attendance shortage alert','Today 07:30','18 s','Completed','green'],['#R-90398','Hall ticket issue','Yesterday 16:02','4 s','Failed','red'],['#R-90377','Admission enquiry follow-up','Yesterday 11:40','—','Waiting','amber'],['#R-90352','Transport fee waiver','12 Oct 09:05','1 d 2 h','Completed','green']].map(r=>`<tr><td class="num b">${r[0]}</td><td>${r[1]}</td><td class="muted">${r[2]}</td><td class="muted num">${r[3]}</td><td>${pill(r[4],r[5])}</td></tr>`).join('')}</tbody></table></div></div></div>`};
+
+/* builder */
+const NT={trigger:['Trigger','zap','violet'],condition:['Condition','branch','amber'],approval:['Approval','shield','blue'],action:['Action','layers','teal'],notify:['Notify','send','pink'],delay:['Wait','clock','slate']};
+const WF={name:'Fee concession approval',status:'Draft',ver:4,zoom:1,sel:'n1',
+  main:[{id:'n1',t:'trigger',n:'Concession request submitted',d:'Parent app or office counter',cfg:{source:'Parent app, Office counter'}},
+        {id:'n2',t:'condition',n:'Amount above ₹25,000?',d:'concession.amount > 25000',cfg:{field:'Concession amount',op:'greater than',val:'25000'},yes:[{id:'n3',t:'approval',n:'HOD review',d:'Department head · 2 day SLA',cfg:{approver:'HOD of student\'s department',sla:'2 days'}},{id:'n4',t:'approval',n:'Principal approval',d:'Dr. Savitha · 3 day SLA',cfg:{approver:'Dr. Savitha (Principal)',sla:'3 days'}}],no:[{id:'n5',t:'approval',n:'Accounts officer review',d:'Lakshmi Prasad · 1 day SLA',cfg:{approver:'Accounts officer',sla:'1 day'}}]},
+        {id:'n6',t:'action',n:'Update fee ledger',d:'Apply concession to next instalment',cfg:{target:'Next unpaid instalment'},warn:1},
+        {id:'n7',t:'notify',n:'Notify parent & student',d:'SMS + app · template “Concession decision”',cfg:{channels:'SMS, App push',template:'Concession decision'}}]};
+let nid=8;
+function findNode(id,arr=WF.main){for(const n of arr){if(n.id===id)return n;if(n.t==='condition'){const r=findNode(id,n.yes)||findNode(id,n.no);if(r)return r}}return null}
+function findArr(id,arr=WF.main){const i=arr.findIndex(n=>n.id===id);if(i>=0)return[arr,i];for(const n of arr)if(n.t==='condition'){const r=findArr(id,n.yes)||findArr(id,n.no);if(r)return r}return null}
+function nodeHtml(n){const t=NT[n.t];return `<button class="node ${WF.sel===n.id?'sel':''}" data-act="wfSel" data-id="${n.id}">${tile(t[1],t[2],'md')}<span style="min-width:0;flex:1"><span class="k">${t[0]}</span><span class="n" style="display:block">${esc(n.n)}</span></span>${n.warn?'<i class="warn" title="Needs configuration"></i>':''}</button>`}
+const edge=(path,i)=>`<div class="edge"><button class="add" aria-label="Add step here" data-act="wfAddAt" data-path="${path}" data-i="${i}">${I('plus',12)}</button></div>`;
+function seq(arr,path){return arr.map((n,i)=>`${i?edge(path,i):''}${nodeHtml(n)}${n.t==='condition'?`<div class="edge" style="height:20px"></div><div class="branch"><div><span class="blabel" style="background:var(--green-soft);color:var(--green-ink)">Yes</span>${seq(n.yes,n.id+':yes')}${edge(n.id+':yes',n.yes.length)}</div><div><span class="blabel" style="background:var(--red-soft);color:var(--red-ink)">No</span>${seq(n.no,n.id+':no')}${edge(n.id+':no',n.no.length)}</div></div>`:''}`).join('')}
+function wfPanel(){const n=findNode(WF.sel);if(!n)return `<div class="drawer-b"><div class="empty">Select a step to edit it</div></div>`;const t=NT[n.t];
+  const fields={trigger:[['source','Source',['Parent app, Office counter','Parent app','Office counter','Student portal']]],condition:[['field','Field',['Concession amount','Family income','Category','Attendance %']],['op','Operator',['greater than','less than','equals']],['val','Value']],approval:[['approver','Approver',['HOD of student\'s department','Dr. Savitha (Principal)','Accounts officer','Mentor']],['sla','SLA',['1 day','2 days','3 days','5 days']]],action:[['target','Apply to',['Next unpaid instalment','All remaining instalments','Refund to wallet']]],notify:[['channels','Channels',['SMS, App push','SMS','WhatsApp','Email']],['template','Template',['Concession decision','Generic update']]],delay:[['wait','Wait for',['1 hour','1 day','3 days']]]}[n.t]||[];
+  return `<div class="drawer-h">${tile(t[1],t[2],'md')}<div class="sp" style="min-width:0"><div class="xs muted">${t[0]} · ${n.id}</div><b>${esc(n.n)}</b></div><button class="ibtn sm" data-act="wfClose" aria-label="Close panel">${I('x',16)}</button></div>
+  <div class="drawer-b"><div class="field"><label for="wf-n">Step name</label><input id="wf-n" class="input" value="${esc(n.n)}" data-in="wfName"></div><div class="field"><label for="wf-d">Description</label><textarea id="wf-d" class="input" rows="2" data-in="wfDesc">${esc(n.d)}</textarea></div>
+  ${fields.map(f=>`<div class="field"><label for="wf-${f[0]}">${f[1]}</label>${f[2]?`<select id="wf-${f[0]}" class="input" data-chg="wfCfg" data-k="${f[0]}">${f[2].map(o=>`<option ${n.cfg[f[0]]===o?'selected':''}>${o}</option>`).join('')}</select>`:`<input id="wf-${f[0]}" class="input" value="${esc(n.cfg[f[0]]||'')}" data-in="wfCfgI" data-k="${f[0]}">`}</div>`).join('')}
+  ${n.t==='approval'?`<div class="set-row" style="border:0;padding:0"><div class="t"><b class="sm">Escalate if SLA missed</b><span>Forward to the next approver automatically</span></div>${swt(1,'Escalate','sw')}</div><div class="set-row" style="padding:12px 0 0"><div class="t"><b class="sm">Allow comments</b><span>Approver must add a reason when rejecting</span></div>${swt(1,'Comments','sw')}</div>`:''}
+  ${n.warn?`<div class="row sm" style="padding:10px 12px;border-radius:10px;background:var(--orange-soft);color:var(--orange-ink)">${I('alert',15)}Choose the ledger account before activating.</div>`:''}</div>
+  <div class="drawer-f">${n.t!=='trigger'?`<button class="btn danger" data-act="wfDel">${I('trash',14)}Delete</button><span class="sp"></span>`:''}<button class="btn pri" data-act="wfDone">Done</button></div>`}
+PAGES.workflow={r:()=>`<div class="page fill"><div class="wf"><div class="wf-top"><button class="ibtn sm" data-act="open" data-p="workflows" aria-label="Back to workflows">${I('chevleft',18)}</button><b style="font-size:15px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(WF.name)}</b>${pill(WF.status,WF.status==='Active'?'green':'amber')}<span class="xs muted">v${WF.ver}</span><span class="sp"></span>
+  <div style="position:relative"><button class="btn sm acc" data-act="wfAddMenu">${I('plus',14)}Add a node</button></div><button class="btn sm ghost hide-m" data-act="open" data-p="runs">${I('play',13)}See runs</button><button class="btn sm ghost hide-m" data-act="wfDiscard">${I('history',14)}Discard draft</button><button class="btn sm" data-act="wfActivate">${I(WF.status==='Active'?'check':'zap',14)}${WF.status==='Active'?'Active':'Activate'}</button></div>
+  <div class="wf-body"><div style="flex:1;min-width:0;position:relative;display:flex"><div class="canvas" id="cv"><div class="canvas-in" style="transform:scale(${WF.zoom})">${seq(WF.main,'main')}${edge('main',WF.main.length)}<div class="xs faint" style="margin-top:6px">End</div></div></div>
+  <div class="minimap">${I('workflow',13)} ${countNodes()} steps · ${Math.round(WF.zoom*100)}%</div>
+  <div class="zoom"><button class="ibtn sm" aria-label="Zoom in" data-act="wfZoom" data-v="0.1">${I('plus',15)}</button><button class="ibtn sm" aria-label="Zoom out" data-act="wfZoom" data-v="-0.1">${I('minus',15)}</button><button class="ibtn sm" aria-label="Fit" data-act="wfZoom" data-v="0">${I('max',14)}</button></div></div>
+  ${WF.sel?`<aside class="wf-panel" aria-label="Edit step">${wfPanel()}</aside>`:''}</div></div></div>`,
+  init:p=>{const cv=$('.canvas',p);if(!cv)return;let d=null;cv.onpointerdown=e=>{if(e.target.closest('button'))return;d={x:e.clientX,y:e.clientY,l:cv.scrollLeft,t:cv.scrollTop};cv.style.cursor='grabbing'};cv.onpointermove=e=>{if(!d)return;cv.scrollLeft=d.l-(e.clientX-d.x);cv.scrollTop=d.t-(e.clientY-d.y)};cv.onpointerup=cv.onpointerleave=()=>{d=null;cv.style.cursor=''};
+    const c=$('.canvas-in',cv);cv.scrollLeft=(c.scrollWidth-cv.clientWidth)/2}};
+function countNodes(a=WF.main){return a.reduce((s,n)=>s+1+(n.t==='condition'?countNodes(n.yes)+countNodes(n.no):0),0)}
+ACT.wfSel=el=>{WF.sel=el.dataset.id;rerender('workflow')};
+ACT.wfClose=ACT.wfDone=()=>{WF.sel=null;rerender('workflow')};
+ACT.wfZoom=el=>{const v=+el.dataset.v;WF.zoom=v?Math.min(1.5,Math.max(.5,+(WF.zoom+v).toFixed(1))):1;rerender('workflow')};
+const NEWN={approval:['New approval','Pick an approver',{approver:'Mentor',sla:'2 days'}],notify:['Send notification','Choose channels',{channels:'SMS, App push',template:'Generic update'}],action:['Update record','Choose target',{target:'Next unpaid instalment'}],delay:['Wait','Pause before continuing',{wait:'1 day'}],condition:['New condition','Split the flow',{field:'Category',op:'equals',val:'SC/ST'}]};
+function addNode(type,path,i){const [k,br]=path.split(':');const arr=k==='main'?WF.main:findNode(k)[br];const n={id:'n'+(nid++),t:type,n:NEWN[type][0],d:NEWN[type][1],cfg:{...NEWN[type][2]}};if(type==='condition'){n.yes=[];n.no=[]}arr.splice(i,0,n);WF.sel=n.id;rerender('workflow');toast(NT[type][0]+' added')}
+function addMenu(anchor,path,i){showPop(anchor,`<div class="pop-h">Add step</div>${Object.keys(NEWN).map(k=>`<button class="pop-i" data-act="wfAdd" data-t="${k}" data-path="${path}" data-i="${i}">${tile(NT[k][1],NT[k][2])}${NT[k][0]}</button>`).join('')}`,'right')}
+ACT.wfAddMenu=el=>addMenu(el,'main',WF.main.length);
+ACT.wfAddAt=el=>addMenu(el,el.dataset.path,+el.dataset.i);
+ACT.wfAdd=el=>addNode(el.dataset.t,el.dataset.path,+el.dataset.i);
+ACT.wfDel=()=>{const r=findArr(WF.sel);if(r){r[0].splice(r[1],1);WF.sel=null;rerender('workflow');toast('Step deleted')}};
+ACT.wfActivate=()=>{const w=findNode('n6');if(w&&w.warn){WF.sel='n6';rerender('workflow');toast('Fix “Update fee ledger” before activating');return}WF.status='Active';WF.ver++;WFS[0][2]='Active';WFS[0][3]='green';rerender('workflow');toast('Workflow activated · v'+WF.ver)};
+ACT.wfDiscard=()=>toast('Draft changes discarded (prototype)');
+const liveNode=(el,fn)=>{const n=findNode(WF.sel);fn(n);$$(`.node[data-id="${n.id}"] .n`).forEach(x=>x.textContent=n.n);$$('.wf-panel .drawer-h b').forEach(x=>x.textContent=n.n)};
+INP.wfName=el=>liveNode(el,n=>n.n=el.value);INP.wfDesc=el=>liveNode(el,n=>n.d=el.value);
+INP.wfCfgI=el=>liveNode(el,n=>n.cfg[el.dataset.k]=el.value);
+CHG.wfCfg=el=>{liveNode(el,n=>{n.cfg[el.dataset.k]=el.value;if(n.id==='n6'){n.warn=0;rerender('workflow')}})};
+
+/* ================= AUTH ================= */
+const AU={mode:'email',showPw:false,sent:false,step:0,t:30,timer:null};
+function authArt(){const a={signin:['Welcome back to campus','Attendance, fees, results and every approval — one place for Soundarya\'s 4,400 students and 214 staff.','Sign in with your institution code','Your code is printed on your staff ID card. Ask the office if you have not received one.'],signup:['Bring your institution online','Set up Kinetix in an afternoon: import students, map fee heads and invite your faculty.','Free onboarding support','Our team migrates last year\'s data from spreadsheets or your old ERP at no cost.'],forgot:['Locked out? It happens.','We will send a reset code to the phone or email registered with your institution.','Check your SMS inbox','Codes arrive from KINETX. They expire in 10 minutes and work only once.'],otp:['One more step','A 6-digit code keeps payroll, results and student records safe.','Keep your account secure','Never share an OTP — Kinetix staff will never ask for it.'],setup:['Let\'s set up Soundarya','Three quick steps and your staff can start marking attendance today.','You can change this later','Everything here is editable from Settings.']}[S.auth];
+  return `<div class="auth-art"><svg class="bg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="aa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f9488"/><stop offset=".55" stop-color="#312e81"/><stop offset="1" stop-color="#111827"/></linearGradient></defs><rect width="600" height="800" fill="url(#aa)"/>${Array.from({length:9},(_,i)=>`<path d="M-50 ${120+i*70} C 150 ${40+i*70}, 350 ${220+i*70}, 650 ${100+i*70}" fill="none" stroke="rgba(255,255,255,${.05+i*.012})" stroke-width="${18-i}"/>`).join('')}<circle cx="520" cy="110" r="70" fill="rgba(255,255,255,.07)"/></svg>
+  <div><h2>${a[0]}</h2><p>${a[1]}</p></div><div class="glass"><div class="row"><b style="font-size:18px;flex:1">${a[2]}</b><span class="logo" style="width:40px;height:40px">S</span></div><p>${a[3]}</p><div class="row" style="margin-top:14px"><div class="stack">${['Prof. Deepa Nair','Dr. Ramesh Kulkarni','Anita Fernandes','Lakshmi Prasad'].map(n=>AV(n,'s')).join('')}</div><span class="xs" style="color:#5d5e66">214 staff signed in this week</span></div></div></div>`}
+function authForm(){const brand=`<div class="row"><span class="logo">K</span><b style="font-size:17px">Kinetix</b></div>`;
+  if(S.auth==='signin')return `${brand}<div><h1>Sign in to Kinetix</h1></div><p class="sub">Use your institution code and staff credentials.</p>
+   <div class="grid g2" style="gap:10px"><button class="btn" data-act="auSSO">${GOOGLE}Google</button><button class="btn" data-act="auSSO">${MSFT}Microsoft</button></div><div class="or">or continue with</div>
+   <form class="col" style="gap:14px" data-sub="auSignin"><div class="field"><label for="au-c">Institution code*</label><div class="inwrap">${I('building',15)}<input id="au-c" class="input" value="SIMS-BLR" required></div></div>
+   <div class="field"><div class="row"><span class="lab sp">Sign in with</span><div class="seg" role="group">${[['email','Email'],['phone','Phone']].map(m=>`<button type="button" class="${AU.mode===m[0]?'on':''}" data-act="auMode" data-v="${m[0]}">${m[1]}</button>`).join('')}</div></div><div class="inwrap">${I(AU.mode==='email'?'mail':'smartphone',15)}<input class="input" aria-label="${AU.mode==='email'?'Email address':'Phone number'}" ${AU.mode==='email'?'type="email" placeholder="you@soundarya.edu.in"':'type="tel" placeholder="+91 98xxx xxxxx"'} required></div></div>
+   <div class="field"><div class="row"><label for="au-p" class="sp">Password*</label><button type="button" class="link sm" data-act="auGo" data-v="forgot">Forgot password?</button></div><div class="inwrap">${I('lock',15)}<input id="au-p" class="input" type="${AU.showPw?'text':'password'}" placeholder="••••••••" required><button type="button" class="ibtn sm suf" data-act="auPw" aria-label="${AU.showPw?'Hide':'Show'} password">${I('eye',15)}</button></div></div>
+   <label class="row sm"><input type="checkbox" class="chk" checked> Keep me signed in on this device</label>
+   <button class="btn pri block">Sign in</button></form>
+   <button class="btn block" data-act="auGo" data-v="otp">${I('smartphone',15)}Sign in with OTP instead</button>
+   <p class="sm muted" style="text-align:center;margin:0">New institution? <button class="link" data-act="auGo" data-v="signup">Register</button> · <button class="link" data-act="auGo" data-v="setup">First-time setup</button></p>`;
+  if(S.auth==='signup')return `${brand}<div><h1>Register your institution</h1></div><p class="sub">Start a 30-day pilot. No card needed.</p><form class="col" style="gap:14px" data-sub="auSignup"><div class="grid g2" style="gap:12px"><div class="field"><label for="su-n">Your name*</label><input id="su-n" class="input" placeholder="Dr. Savitha Hegde" required></div><div class="field"><label for="su-r">Role</label><select id="su-r" class="input"><option>Principal</option><option>Director</option><option>Administrator</option></select></div></div><div class="field"><label for="su-i">Institution*</label><input id="su-i" class="input" placeholder="Soundarya Institute" required></div><div class="field"><label for="su-e">Work email*</label><input id="su-e" type="email" class="input" placeholder="principal@college.edu.in" required></div><div class="field"><label for="su-p">Mobile*</label><input id="su-p" type="tel" class="input" placeholder="+91" required></div><div class="field"><label for="su-pw">Password*</label><input id="su-pw" type="password" class="input" data-in="auStrength" required><div class="steps" id="pw-s"><i></i><i></i><i></i><i></i></div><span class="hint">8+ characters with a number and a symbol</span></div><label class="row sm" style="align-items:flex-start"><input type="checkbox" class="chk" required style="margin-top:3px"> I agree to the Kinetix terms and data processing agreement</label><button class="btn pri block">Create account</button></form><div class="or">or</div><button class="btn block" data-act="auSSO">${GOOGLE}Sign up with Google Workspace</button><p class="sm muted" style="text-align:center;margin:0">Already on Kinetix? <button class="link" data-act="auGo" data-v="signin">Sign in</button></p>`;
+  if(S.auth==='forgot')return `${brand}<div><h1>${AU.sent?'Check your phone':'Forgot password?'}</h1></div><p class="sub">${AU.sent?'We sent a 6-digit reset code to ******4127 and a link to d•••@soundarya.edu.in.':'Enter your institution code and registered email or phone.'}</p>${AU.sent?`<button class="btn pri block" data-act="auGo" data-v="otp">Enter reset code</button><button class="btn block" data-act="auResend">Resend</button>`:`<form class="col" style="gap:14px" data-sub="auForgot"><div class="field"><label for="fp-c">Institution code</label><input id="fp-c" class="input" value="SIMS-BLR"></div><div class="field"><label for="fp-e">Email or phone*</label><input id="fp-e" class="input" placeholder="you@soundarya.edu.in" required></div><button class="btn pri block">Send reset code</button></form>`}<button class="btn ghost" data-act="auGo" data-v="signin">${I('chevleft',15)}Back to sign in</button>`;
+  if(S.auth==='otp')return `${brand}<div><h1>Verify it's you</h1></div><p class="sub">Enter the 6-digit code sent to <b>+91 ******4127</b>.</p><form class="col" style="gap:16px" data-sub="auOtp"><div class="field"><div class="row"><span class="lab sp">Code*</span><button type="button" class="link sm" data-act="toast" data-m="Recovery codes (prototype)">Use a recovery code</button></div><div class="otp" role="group" aria-label="One-time password">${Array.from({length:6},(_,i)=>`<input inputmode="numeric" maxlength="1" aria-label="Digit ${i+1}" data-otp="${i}">`).join('')}</div></div><button class="btn pri block">Verify and continue</button></form><p class="sm muted" style="text-align:center;margin:0" id="otp-t">${AU.t>0?`Resend code in 0:${String(AU.t).padStart(2,'0')}`:`Didn't get it? <button class="link" data-act="auResend">Resend</button>`}</p><button class="btn ghost" data-act="auGo" data-v="signin">${I('chevleft',15)}Back to sign in</button>`;
+  const st=AU.step;return `${brand}<div class="steps">${[0,1,2].map(i=>`<i class="${i<=st?'on':''}"></i>`).join('')}</div><div><div class="xs muted">Step ${st+1} of 3</div><h1>${['Institution details','Academic year','Invite your team'][st]}</h1></div>
+   <form class="col" style="gap:14px" data-sub="auSetup">${st===0?`<div class="field"><label for="fs-n">Institution name</label><input id="fs-n" class="input" value="Soundarya Institute of Management & Science"></div><div class="field"><span class="lab">Type</span><div class="chooser">${[['cap','teal','Degree college','UG / PG'],['building','indigo','Engineering','AICTE / VTU'],['book','orange','PU college','Class 11–12'],['award','pink','University','Multi-campus']].map((c,i)=>`<button type="button" class="${i===1?'on':''}" data-act="auPick">${tile(c[0],c[1],'md')}<b class="sm">${c[2]}</b><span class="xs muted">${c[3]}</span></button>`).join('')}</div></div><div class="grid g2" style="gap:12px"><div class="field"><label for="fs-s">State</label><select id="fs-s" class="input"><option>Karnataka</option><option>Kerala</option><option>Tamil Nadu</option><option>Maharashtra</option></select></div><div class="field"><label for="fs-c">City</label><input id="fs-c" class="input" value="Bengaluru"></div></div>`
+   :st===1?`<div class="grid g2" style="gap:12px"><div class="field"><label for="fy-s">Year starts</label><select id="fy-s" class="input"><option>August</option><option>June</option><option>July</option></select></div><div class="field"><label for="fy-t">Terms</label><select id="fy-t" class="input"><option>2 semesters</option><option>3 trimesters</option><option>Annual</option></select></div></div><div class="field"><label for="fy-a">Attendance threshold</label><select id="fy-a" class="input"><option>75%</option><option>80%</option></select></div><div class="field"><label for="fy-f">Fee collection</label><select id="fy-f" class="input"><option>Online + counter</option><option>Counter only</option></select></div>`
+   :`${['Prof. Deepa Nair — deepa.nair@soundarya.edu.in','Lakshmi Prasad — accounts@soundarya.edu.in'].map(x=>`<div class="row" style="padding:10px 12px;border:1px solid var(--border);border-radius:10px">${AV(x.split(' — ')[0],'s')}<span class="sm sp" style="min-width:0;overflow:hidden;text-overflow:ellipsis">${x}</span>${I('check',15)}</div>`).join('')}<div class="field"><label for="fi-e">Add more (comma separated)</label><textarea id="fi-e" class="input" rows="3" placeholder="hod.cse@soundarya.edu.in, office@soundarya.edu.in"></textarea></div>`}
+   <div class="row">${st?`<button type="button" class="btn" data-act="auBack">${I('chevleft',15)}Back</button>`:''}<span class="sp"></span><button class="btn pri">${st<2?'Continue':'Finish setup'}${I('arrow',15)}</button></div></form><button class="link sm" style="align-self:center" data-act="auGo" data-v="signin">Skip for now</button>`}
+function renderAuth(){clearInterval(AU.timer);root.innerHTML=`<div class="auth"><div class="auth-l"><div class="row"><span class="sp"></span><div class="seg hide-m" role="group" aria-label="Auth screen">${[['signin','Sign in'],['signup','Sign up'],['forgot','Forgot'],['otp','OTP'],['setup','Setup']].map(x=>`<button class="${S.auth===x[0]?'on':''}" data-act="auGo" data-v="${x[0]}">${x[1]}</button>`).join('')}</div><button class="ibtn" data-act="theme" aria-label="Toggle theme">${I(isDark()?'sun':'moon',17)}</button><button class="btn sm" data-act="auEnter">${I('arrow',14)}<span>Open app</span></button></div><div class="auth-form">${authForm()}</div><div class="xs faint" style="text-align:center">© 2026 Kinetix · Made in Bengaluru · <a href="#" data-act="toast" data-m="Privacy policy (prototype)">Privacy</a></div></div><div class="auth-r">${authArt()}</div></div>`;
+  if(S.auth==='otp'){const ins=$$('[data-otp]');ins[0].focus();ins.forEach((inp,i)=>{inp.oninput=()=>{inp.value=inp.value.replace(/\D/g,'').slice(-1);if(inp.value&&ins[i+1])ins[i+1].focus()};inp.onkeydown=e=>{if(e.key==='Backspace'&&!inp.value&&ins[i-1])ins[i-1].focus()};inp.onpaste=e=>{const t=(e.clipboardData.getData('text')||'').replace(/\D/g,'');if(t){e.preventDefault();ins.forEach((x,j)=>x.value=t[j]||'');ins[Math.min(t.length,5)].focus()}}});
+    if(AU.t>0)AU.timer=setInterval(()=>{AU.t--;const el=$('#otp-t');if(!el){clearInterval(AU.timer);return}el.innerHTML=AU.t>0?`Resend code in 0:${String(AU.t).padStart(2,'0')}`:`Didn't get it? <button class="link" data-act="auResend">Resend</button>`;if(AU.t<=0)clearInterval(AU.timer)},1000)}}
+ACT.auGo=el=>{S.auth=el.dataset.v;if(S.auth==='otp')AU.t=30;if(S.auth==='forgot')AU.sent=false;if(S.auth==='setup')AU.step=0;save();renderAuth()};
+ACT.auMode=el=>{AU.mode=el.dataset.v;renderAuth()};
+ACT.auPw=el=>{AU.showPw=!AU.showPw;const i=$('#au-p');i.type=AU.showPw?'text':'password'};
+ACT.auSSO=()=>toast('Redirecting to your identity provider (prototype)');
+ACT.auEnter=()=>{S.view='app';save();render()};
+ACT.auResend=()=>{AU.t=30;toast('New code sent');if(S.auth==='otp')renderAuth()};
+ACT.auBack=()=>{AU.step--;renderAuth()};
+ACT.auPick=el=>{$$('button',el.parentNode).forEach(b=>b.classList.remove('on'));el.classList.add('on')};
+INP.auStrength=el=>{const v=el.value;const s=(v.length>=8)+/\d/.test(v)+/[^\w]/.test(v)+/[A-Z]/.test(v);$$('#pw-s i').forEach((i,j)=>{i.className=j<s?'on':'';i.style.background=j<s?['var(--red)','var(--amber)','var(--teal)','var(--green)'][s-1]:''})};
+Object.assign(SUB,{auSignin:()=>{toast('Signed in as Dr. Savitha');S.view='app';save();render()},auSignup:()=>{S.auth='otp';AU.t=30;save();renderAuth();toast('Verification code sent')},auForgot:()=>{AU.sent=true;renderAuth()},
+  auOtp:f=>{const v=$$('[data-otp]',f).map(i=>i.value).join('');if(v.length<6){toast('Enter all 6 digits');return}S.auth='setup';AU.step=0;save();renderAuth();toast('Verified')},
+  auSetup:()=>{if(AU.step<2){AU.step++;renderAuth()}else{S.view='app';save();render();toast('Setup complete — welcome to Kinetix')}}});
+
+/* boot */
+if(matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!S.theme)render()});
+render();
+</script>
+</body>
+</html>
