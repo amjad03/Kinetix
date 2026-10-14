@@ -64,7 +64,7 @@ Code: `services/api/src/accreditation/` (routes under `/v1/accreditation`). ERP:
 (`/accreditation`), one page per framework (`/accreditation/<framework>`: readiness, criteria and
 metrics, tasks, DVV, benchmarks), the metric workbench (`/accreditation/<framework>/metrics/<code>`)
 and `My accreditation tasks`. Migrations 0127, 0141 (catalogue keys, year-wise inputs and options,
-DVV detail, settings) and 0142 (tasks, comments).
+DVV detail, settings), 0142 (tasks, comments) and 0161 (IQAC depth, evidence tags and validity).
 
 ### Catalogue (`frameworks/`)
 
@@ -84,6 +84,11 @@ official order, the evidence documents asked for, and a benchmark or a marks fun
 | `nirf-college`, `nirf-university`, `nirf-engineering` (`nirf`), `nirf-management`, `nirf-pharmacy` | NIRF TLR (SS, FSR, FQE, FRU), RP (PU, QP, IPR, FPPP), GO (GPH, GUE, MS, GPHD), OI (RD, WD, ESCS, PCS), PR | NIRF methodology; category weights (college 40/15/25/10/10, others 30/30/20/10/10) |
 | `aishe-dcf2` (`aishe`) | AISHE DCF-II college form, blocks 1-9 | Not scored |
 | `udise-plus` (`udise`) | UDISE+ school profile and facilities, teacher profile, student profile | Not scored |
+| `nba-ug-eng-t1` | NBA SAR, UG engineering, Tier-I (autonomous / university departments), ten criteria 50/100/175/100/200/80/75/50/50/120 = 1000 | Tier-I SAR (GAPC); same formulas as Tier-II where the manual shares them, plus curriculum design, governance and the Tier-I outcome criteria |
+| `nba-pg-mgmt` (`nba-mba`, `nba-pgdm`) | NBA SAR, MBA / PGDM, ten criteria 50/100/100/125/100/250/100/75/50/50 = 1000 | Management SAR, February 2023 |
+| `aicte-eoa` (`aicte`) | AICTE extension of approval: institution, programmes and intake, faculty against norms (FSR 1:20, cadre 1:2:6), infrastructure, finance, committees and compliance, mandatory disclosure | Approval Process Handbook; not scored |
+| `ugc-disclosure` (`ugc`) | UGC public self-disclosure and annual returns: statutory cells and committees, grievance, anti-ragging, fee and refund, faculty, accreditation status | UGC public self-disclosure guidelines; not scored |
+| `cbse-oasis` (`cbse`) | CBSE OASIS / affiliation data for schools, sections A-F (school, land and building, staff, students and results, facilities, compliance) | CBSE Affiliation Bye-Laws 2018, Appendix IX mandatory public disclosure; not scored |
 
 NAAC metric numbering, types and template columns follow the manuals; the split of a key
 indicator's weightage across its metrics, the NBA marks inside a criterion and the college NIRF
@@ -147,6 +152,9 @@ day per task. Comments live in `accreditation_comments`.
 | `GET :fw/export.zip` | NAAC SSR: `Extended profile.xlsx`, `Criterion N/<metric>.xlsx` (data template in NAAC column order for every year, year-wise inputs, summary), `Summary.xlsx`, `DVV clarifications.xlsx`, `README.txt` |
 | `GET :fw/aqar.xlsx` | NAAC AQAR for one year: Part A, one sheet per criterion, the year's data templates |
 | `GET :fw/export.xlsx` | NBA SAR (criterion sheets, Tables 4.x and 5.x by CAY/CAYm1/CAYm2, CO-PO attainment and matrix); NIRF DCS sheets (sanctioned intake, total actual student strength, placement and higher studies, Ph.D., capital and operational expenditure, sponsored research, consultancy, executive development for management, PCS facilities, faculty details, IPR) with the score estimate; AISHE DCF-II blocks 1-9; UDISE+ profile, facilities, teacher profile, enrolment by class, student profile (SDMS), results |
+| `GET :fw/export.xlsx` (AICTE, UGC, CBSE) | AICTE: institution, norms check (required against available faculty and cadre), one sheet per block, `To complete by hand`; UGC: disclosure checklist; CBSE: Appendix IX disclosure sections A-E with the class X and XII result tables |
+| `GET :fw/evidence-repository?cycle&tag&q&expiring`, `PUT evidence/:id` | Every evidence line of a cycle across metrics with tags and valid-until, filtered by tag, text and expiry; edit tags and validity |
+| `GET iqac/summary?cycle` | IQAC composition against the NAAC member categories, meetings against the norm of four a year, action points, initiatives, feedback analysis by stakeholder, AQAR submissions |
 | `GET :fw/evidence-pack.zip` | Every evidence file in `Criterion N/<metric>/<year>/`, with `00 Evidence index.pdf` and `.csv` (200 MB cap; the index lists what was left out) |
 
 Where ERP records cannot fill an official template, the metric's rows are mapped from the source
@@ -155,7 +163,8 @@ entered or imported by the institution always win.
 
 ## Not built
 
-Custom report builder, charts inside PDFs, warehouse or BI connector. Accreditation: NBA SAR for
-Tier-I and for management programmes, AICTE approval-process returns, UGC returns and CBSE
-affiliation (OASIS) data are not seeded; AISHE and UDISE+ items the ERP does not record (social
-category of staff, disability, religion, Aadhaar, PEN) are listed as "To complete by hand".
+Custom report builder, charts inside PDFs, warehouse or BI connector. Accreditation: the AICTE,
+UGC and CBSE workbooks are the data for the official portals, not a portal upload; items the ERP
+does not record (AICTE land documents and bank guarantees, social category of staff, disability,
+religion, Aadhaar, PEN) are listed as "To complete by hand". NBA Tier-I and management marks inside
+a criterion are our reading of the SAR and can be overridden per institution.

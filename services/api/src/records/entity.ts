@@ -168,6 +168,11 @@ export interface RecordEntity {
   };
   import?: ImportSpec;
   actions?: Record<string, CustomAction>;
+  /**
+   * Rules across fields, checked after an add or an edit is written (still inside the transaction): a message refuses
+   * the change with a 400 ("The end date is before the start date"); null accepts it.
+   */
+  validate?: (ctx: KitCtx, id: string) => Promise<string | null>;
 }
 
 /** Every entity the kit serves, by key. Modules add theirs on start-up. */

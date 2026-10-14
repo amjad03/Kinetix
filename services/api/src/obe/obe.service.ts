@@ -4,6 +4,7 @@ import type { Tx } from '../db/db.service.js';
 import { isCorrect } from '../polls/polls.service.js';
 import { pollCoMap } from '../db/schema-assist.js';
 import { assessmentCoMap, assessments, attainmentSnapshots, coOutcomeMap, coSets, courseOutcomes, marks, obeConfigs, pollResponses, polls, obeSurveyRatings, obeSurveys, programOutcomes, programs, schemeComponents, sections, subjects, surveyAnswers, surveyQuestions, surveys as feedbackSurveys } from '../db/schema.js';
+import { obeTargets } from '../db/schema-obe-depth.js';
 import { combinedAttainment, DEFAULT_ATTAINMENT_CONFIG, directAttainment, gapFor, indirectAttainment, programOutcomeAttainment, type AttainmentConfig, type EvidenceItem, type SurveyEvidence } from './attainment.js';
 
 /** Feedback-survey ratings run 1 to 5; a survey needs this many answers on a CO before it counts. */
@@ -96,6 +97,8 @@ export class ObeService {
     const feedback = await this.feedbackEvidence(tx, cos.map((c) => c.id));
     const classroom = await this.classroomEvidence(tx, cos.map((c) => c.id), academicYearId);
     const previous = await this.latestBatch(tx, programId);
+    // Targets set for this year override the programme's target level (and, for a CO, the student threshold).
+    const targets = new Map((await tx.select().from(obeTargets).where(and(eq(obeTargets.programId, programId), eq(obeTargets.academicYearId, academicYearId)))).map((t) => [t.targetId, t]));
     const computedAt = new Date();
     const out: (typeof attainmentSnapshots.$inferInsert)[] = [];
 
@@ -116,11 +119,13 @@ export class ObeService {
           const scores = rows.filter((r) => r.assessmentId === a.id).map((r) => ({ studentId: r.studentId, scored: r.absent || r.v === null ? 0 : r.v * m.share, max: a.max * m.share }));
           return [{ sourceId: a.id, label: a.title, kind: a.componentKind ?? (a.kind === 'exam' ? 'external' : 'internal'), scores }];
         });
-      const direct = directAttainment([...items, ...(classroom.get(co.id) ?? [])], config);
+      const own = targets.get(co.id);
+      const coConfig = own?.thresholdPercent ? { ...config, studentThresholdPercent: own.thresholdPercent } : config;
+      const direct = directAttainment([...items, ...(classroom.get(co.id) ?? [])], coConfig);
       const indirect = indirectAttainment([...surveyEvidence((r) => r.coId === co.id), ...(feedback.get(co.id) ?? [])], config);
       const combined = combinedAttainment(direct.level, indirect.level, config);
       coLevel.set(co.id, combined);
-      const g = gapFor(combined, config.targetLevel, config.decimals);
+      const g = gapFor(combined, own?.targetLevel ?? config.targetLevel, config.decimals);
       out.push({ tenantId, programId, academicYearId, scope: 'co', targetId: co.id, code: `${subjectCode.get(subjectId)}/${co.code}`, subjectId, direct: direct.level, indirect: indirect.level, combined, target: g.target, gap: g.gap, met: g.met, detail: { byKind: direct.byKind, weakItems: direct.weakItems, surveys: indirect }, computedBy: userId, computedAt });
     }
 
@@ -131,7 +136,7 @@ export class ObeService {
       const agg = programOutcomeAttainment(mine.map((c) => ({ coId: c.coId, strength: c.strength, coAttainment: coLevel.get(c.coId) ?? null })), config);
       const indirect = indirectAttainment(surveyEvidence((r) => r.outcomeId === po.id), config);
       const combined = combinedAttainment(agg.level, indirect.level, config);
-      const g = gapFor(combined, config.targetLevel, config.decimals);
+      const g = gapFor(combined, targets.get(po.id)?.targetLevel ?? config.targetLevel, config.decimals);
       out.push({ tenantId, programId, academicYearId, scope: 'po', targetId: po.id, code: po.code, direct: agg.level, indirect: indirect.level, combined, target: g.target, gap: g.gap, met: g.met, detail: { coverage: agg.coverage, contributors: agg.contributors, kind: po.kind, contributions: mine.map((c) => ({ coId: c.coId, strength: c.strength, co: coLevel.get(c.coId) ?? null })), surveys: indirect }, computedBy: userId, computedAt });
     }
     if (out.length) await tx.insert(attainmentSnapshots).values(out);

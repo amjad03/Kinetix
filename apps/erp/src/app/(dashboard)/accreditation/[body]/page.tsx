@@ -4,6 +4,7 @@ import { Archive, FileSpreadsheet, FileStack, FolderArchive, ListChecks } from '
 import { BenchmarksDesk, type BenchRow } from '@/components/accreditation/BenchmarksDesk';
 import { CriteriaTree } from '@/components/accreditation/CriteriaTree';
 import { DvvDesk } from '@/components/accreditation/DvvDesk';
+import { EvidenceRepository, type RepoRow } from '@/components/accreditation/EvidenceRepository';
 import { Readiness } from '@/components/accreditation/Readiness';
 import { TasksDesk } from '@/components/accreditation/TasksDesk';
 import { PageHeader } from '@/components/PageHeader';
@@ -16,7 +17,7 @@ import { api, ApiError, load, requireSection } from '@/lib/api';
 import { safe } from '@/lib/depth-ui';
 import { accDownload, cycleOptions, exportsOf, type DvvRow, type People, type Readiness as ReadinessData } from '@/lib/accreditation-ui';
 
-const TABS = ['readiness', 'criteria', 'tasks', 'dvv', 'benchmarks'] as const;
+const TABS = ['readiness', 'criteria', 'tasks', 'dvv', 'evidence', 'benchmarks'] as const;
 type Tab = (typeof TABS)[number];
 const FW = /^[a-z0-9-]{3,30}$/;
 const MANAGE = ['tenant_admin', 'principal', 'quality_officer', 'hod'];
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ body: str
 }
 
 /** One framework: readiness, the criteria tree, tasks, DVV and benchmarks, with the official exports. */
-export default async function FrameworkPage({ params, searchParams }: { params: Promise<{ body: string }>; searchParams: Promise<{ cycle?: string; tab?: string }> }) {
+export default async function FrameworkPage({ params, searchParams }: { params: Promise<{ body: string }>; searchParams: Promise<{ cycle?: string; tab?: string; tag?: string; expiring?: string }> }) {
   const { body } = await params;
   if (!FW.test(body)) notFound();
   const me = await requireSection('accreditation');
@@ -71,7 +72,9 @@ export default async function FrameworkPage({ params, searchParams }: { params: 
         ? { dvv: await safe(api<DvvRow[]>(`/v1/accreditation/dvv?framework=${fw}&${cyc}`), []) }
         : tab === 'benchmarks'
           ? { tree: await safe(api<Tree>(`/v1/accreditation/frameworks/${fw}`), null) }
-          : {};
+          : tab === 'evidence'
+            ? { repo: await safe(api<{ rows: RepoRow[]; tags: string[] }>(`/v1/accreditation/${fw}/evidence-repository?${cyc}${sp.tag && /^[\w .-]{1,40}$/.test(sp.tag) ? `&tag=${encodeURIComponent(sp.tag)}` : ''}${sp.expiring && /^\d{1,4}$/.test(sp.expiring) ? `&expiring=${sp.expiring}` : ''}`), { rows: [], tags: [] }) }
+            : {};
   const scopes = [
     ...r.criteria.map((c) => ({ value: c.id, label: c.id === 'EP' ? t('acx.r.ep') : `${t('acx.r.criterion')} ${c.id}: ${c.title}` })),
     ...r.metrics.map((m) => ({ value: m.code, label: `${m.code} ${m.title.length > 80 ? `${m.title.slice(0, 80)}…` : m.title}` })),
@@ -103,6 +106,7 @@ export default async function FrameworkPage({ params, searchParams }: { params: 
       {tab === 'criteria' && <CriteriaTree fw={fw} cycle={r.cycle} scoring={r.framework.scoring} criteria={r.criteria} metrics={r.metrics} />}
       {tab === 'tasks' && <TasksDesk fw={fw} cycle={r.cycle} tasks={r.tasks} people={extra.people ?? null} scopes={scopes} canManage={canManage} />}
       {tab === 'dvv' && <DvvDesk fw={fw} cycle={r.cycle} rows={extra.dvv ?? []} codes={r.metrics.map((m) => ({ value: m.code, label: m.code }))} canManage={canAdmin} />}
+      {tab === 'evidence' && <EvidenceRepository fw={fw} cycle={r.cycle} rows={extra.repo?.rows ?? []} tags={extra.repo?.tags ?? []} tag={sp.tag ?? ''} expiring={sp.expiring ?? ''} canEdit={canAdmin} />}
       {tab === 'benchmarks' && (canAdmin ? <BenchmarksDesk fw={fw} rows={benchRows} /> : <p className="text-[13px] text-muted-foreground">{t('acx.s.adminOnly')}</p>)}
     </>
   );

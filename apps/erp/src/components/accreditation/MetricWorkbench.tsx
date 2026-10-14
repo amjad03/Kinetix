@@ -392,6 +392,16 @@ export function MetricWorkbench({ d, fw, me, people }: { d: MetricDetail; fw: st
                   <span className="min-w-0 flex-1">
                     <b className="block truncate">{e.title}</b>
                     <span className="block truncate text-xs text-muted-foreground">{[e.fileName, e.note].filter(Boolean).join(' · ') || e.url}</span>
+                    {(e.tags?.length || e.validUntil) && (
+                      <span className="mt-0.5 flex flex-wrap gap-1 text-xs">
+                        {e.tags?.map((tag) => (
+                          <span key={tag} className="rounded-full bg-slate-soft px-2 text-slate-ink">
+                            {tag}
+                          </span>
+                        ))}
+                        {e.validUntil && <span className={e.validUntil < new Date().toISOString().slice(0, 10) ? 'text-red-ink' : 'text-muted-foreground'}>{t('acx2.ev.valid', { date: fmt.date(e.validUntil, 'short') })}</span>}
+                      </span>
+                    )}
                   </span>
                   {e.fileName && (
                     <a href={accDownload(fw, `file-${e.id}`)} className="inline-flex h-8 items-center gap-1 rounded-md border bg-card px-2.5 text-[12.5px] no-underline hover:bg-accent" aria-label={`${t('acx.m.download')} ${e.title}`}>
@@ -546,6 +556,8 @@ export function MetricWorkbench({ d, fw, me, people }: { d: MetricDetail; fw: st
             ...(years.length > 1 ? [{ name: 'year', label: t('acx.m.year'), kind: 'select' as const, required: true, init: years.at(-1)!.year, options: years.map((y) => ({ value: y.year, label: y.year })) }] : []),
             { name: 'url', label: t('acx.m.link') },
             { name: 'note', label: t('acx.m.note') },
+            { name: 'tags', label: t('acx2.ev.tags') },
+            { name: 'validUntil', label: t('acx2.ev.validUntil'), kind: 'date' as const },
           ]}
           onSubmit={(v, file) => addEvidence(fw, m.code, d.cycle, v, file)}
           onClose={(msg) => {

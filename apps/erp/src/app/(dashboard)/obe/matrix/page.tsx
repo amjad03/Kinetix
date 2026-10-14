@@ -4,8 +4,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
-import type { CoSet, MatrixData } from '@/lib/obe';
-import type { Structure } from '@/lib/types';
+import type { CoSet, MatrixData, ObeStructure } from '@/lib/obe';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('obe.matrix') };
@@ -14,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function MatrixPage({ searchParams }: { searchParams: Promise<{ subjectId?: string; setId?: string }> }) {
   await requireSection('obe');
   const q = await searchParams;
-  const structure = await load(() => api<Structure>('/v1/admin/structure'));
+  const structure = await load(() => api<ObeStructure>('/v1/obe/structure'));
   const { t } = await getI18n();
   const head = <PageHeader title={t('obe.matrix')} subtitle={t('obe.matrixSubtitle')} />;
   if (structure.error !== undefined) return <>{head}<ErrorState message={structure.error} /></>;

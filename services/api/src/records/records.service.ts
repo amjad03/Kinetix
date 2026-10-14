@@ -192,6 +192,8 @@ export class RecordsService {
 
   async create(ctx: KitCtx, e: RecordEntity, body: Record<string, unknown>): Promise<Row> {
     this.assertWrite(ctx, e);
+    // A list whose records come only from the module's own steps has no Add.
+    if (!e.create && !Object.values(e.fields ?? {}).some((f) => f.create !== false)) throw new ForbiddenException('Records of this list are added from their own page');
     const values = await this.parseFields(ctx, e, body, 'create');
     const id = await guarded(async () => {
       if (e.create) return e.create(ctx, Object.fromEntries(values.map(([k, , v]) => [k, v])));
@@ -202,10 +204,17 @@ export class RecordsService {
       for (const [, f, v] of values) if (!f.column) await f.apply!(ctx, row.id, v);
       return row.id;
     });
+    await this.validate(ctx, e, id);
     if (e.order) await this.placeLast(ctx, e, id);
     const after = await this.get(ctx, e, id);
     await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: `${e.subjectType}.created`, subjectType: e.subjectType, subjectId: id, after: this.fieldValues(e, after), data: { label: e.label(after) } });
     return after;
+  }
+
+  /** The entity's rules across fields, once the values are written. */
+  private async validate(ctx: KitCtx, e: RecordEntity, id: string) {
+    const message = await e.validate?.(ctx, id);
+    if (message) throw new BadRequestException(message);
   }
 
   /** A new record of an orderable list goes after the others of its group. */
@@ -231,6 +240,7 @@ export class RecordsService {
     const before = await this.get(ctx, e, id);
     const values = await this.parseFields(ctx, e, body, mode);
     await guarded(() => this.writeFields(ctx, e, id, values));
+    await this.validate(ctx, e, id);
     const after = await this.get(ctx, e, id);
     const fields = values.map(([k]) => k);
     await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: `${e.subjectType}.updated`, subjectType: e.subjectType, subjectId: id, before: this.fieldValues(e, before), after: this.fieldValues(e, after), fields, data: { label: e.label(after), ...(mode === 'bulk' && { bulk: true }) } });

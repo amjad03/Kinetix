@@ -20,6 +20,7 @@ import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { AccreditationService } from './accreditation.service.js';
 import { packIndexCsv, packIndexPdf, safeName, type PackItem } from './evidence-pack.js';
+import { aicteReturn, cbseReturn, ugcReturn } from './exports-returns.js';
 import { aisheDcf, dvvSheet, naacAqar, naacSsr, nbaSar, nirfDcs, summarySheets, udise, type ExportCtx } from './exports.js';
 import { catalogueList, catalogueTree, metricsOf } from './frameworks/index.js';
 import type { FrameworkDef } from './frameworks/types.js';
@@ -53,7 +54,8 @@ const EntryBody = z.object({
   selfScore: z.number().min(0).max(1000).nullish(),
   note: z.string().max(2000).optional(),
 });
-const EvidenceBody = z.object({ cycle: CYCLE.optional(), year: YEAR.optional(), file: BlobBody.optional(), title: z.string().trim().min(2).max(200), url: z.url().optional(), note: z.string().trim().max(2000).optional() });
+const EvidenceBody = z.object({ cycle: CYCLE.optional(), year: YEAR.optional(), file: BlobBody.optional(), title: z.string().trim().min(2).max(200), url: z.url().optional(), note: z.string().trim().max(2000).optional(), tags: z.array(z.string().trim().min(1).max(40)).max(10).optional(), validUntil: DATE.nullish() });
+const EvidencePatch = z.object({ title: z.string().trim().min(2).max(200).optional(), note: z.string().trim().max(2000).nullish(), tags: z.array(z.string().trim().min(1).max(40)).max(10).optional(), validUntil: DATE.nullish() });
 const ImportBody = z.object({ cycle: CYCLE.optional(), year: YEAR.optional(), file: BlobBody });
 const DEVIATIONS = ['data_mismatch', 'documents_missing', 'formula', 'out_of_period', 'other'] as const;
 const DvvBody = z.object({ framework: z.string().max(40).optional(), cycle: CYCLE, metricCode: z.string().trim().min(1).max(24), query: z.string().trim().min(3).max(2000), deviation: z.enum(DEVIATIONS).default('other'), heiValue: Num.nullish(), dvvValue: Num.nullish(), dueOn: DATE.nullish() });
@@ -64,9 +66,9 @@ const TASK_STATUS = ['assigned', 'in_progress', 'submitted', 'approved', 'return
 const TaskBody = z.object({ cycle: CYCLE.optional(), scope: z.string().trim().min(1).max(24), departmentId: z.uuid().nullish(), ownerId: z.uuid().nullish(), reviewerId: z.uuid().nullish(), dueOn: DATE.nullish(), note: z.string().max(2000).default('') });
 const TaskPatch = z.object({ status: z.enum(TASK_STATUS).optional(), departmentId: z.uuid().nullish(), ownerId: z.uuid().nullish(), reviewerId: z.uuid().nullish(), dueOn: DATE.nullish(), note: z.string().max(2000).optional() });
 const CommentBody = z.object({ cycle: CYCLE.optional(), body: z.string().trim().min(1).max(4000) });
-const MeetingBody = z.object({ title: z.string().trim().min(2).max(200), meetingOn: DATE, agenda: z.string().max(4000).default(''), minutes: z.string().max(12000).default(''), attendees: z.string().max(2000).default('') });
-const ActionBody = z.object({ action: z.string().trim().min(2).max(1000), ownerName: z.string().trim().max(120).default(''), dueOn: DATE.nullish() });
-const ActionPatch = z.object({ status: z.enum(['open', 'done']).optional(), actionTaken: z.string().max(4000).optional() });
+const MeetingBody = z.object({ title: z.string().trim().min(2).max(200), meetingOn: DATE, agenda: z.string().max(4000).default(''), minutes: z.string().max(12000).default(''), attendees: z.string().max(2000).default(''), kind: z.enum(['regular', 'special']).default('regular'), status: z.enum(['scheduled', 'held', 'minutes_approved']).default('held'), venue: z.string().max(120).default(''), present: z.number().int().min(0).max(200).nullish() });
+const ActionBody = z.object({ action: z.string().trim().min(2).max(1000), ownerName: z.string().trim().max(120).default(''), dueOn: DATE.nullish(), ownerUserId: z.uuid().nullish(), departmentId: z.uuid().nullish(), criterion: z.enum(['1', '2', '3', '4', '5', '6', '7']).nullish(), priority: z.enum(['low', 'normal', 'high']).default('normal') });
+const ActionPatch = z.object({ status: z.enum(['open', 'in_progress', 'done', 'dropped']).optional(), actionTaken: z.string().max(4000).optional(), ownerUserId: z.uuid().nullish(), departmentId: z.uuid().nullish(), criterion: z.enum(['1', '2', '3', '4', '5', '6', '7']).nullish(), priority: z.enum(['low', 'normal', 'high']).optional(), dueOn: DATE.nullish() });
 const PracticeBody = z.object({ kind: z.enum(['best_practice', 'distinctiveness']), title: z.string().trim().min(2).max(200), year: z.string().max(20).default(''), objectives: z.string().max(4000).default(''), context: z.string().max(4000).default(''), practice: z.string().max(8000).default(''), evidence: z.string().max(4000).default(''), problems: z.string().max(4000).default('') });
 const FeedbackBody = z.object({ cycle: CYCLE, stakeholder: z.enum(['students', 'teachers', 'employers', 'alumni', 'parents']), summary: z.string().trim().min(3).max(4000), averageRating: z.number().min(0).max(10).nullish(), responses: z.number().int().min(0).max(32000).nullish(), actionTaken: z.string().max(4000).default('') });
 const FeedbackPatch = z.object({ actionTaken: z.string().max(4000).optional(), status: z.enum(['analysed', 'action_planned', 'action_taken']).optional(), summary: z.string().trim().min(3).max(4000).optional() });
@@ -233,8 +235,51 @@ export class AccreditationController {
       const es = await tx.select({ id: accreditationEntries.id, year: accreditationEntries.cycle }).from(accreditationEntries).where(and(eq(accreditationEntries.body, f.key), eq(accreditationEntries.metricCode, code), inArray(accreditationEntries.cycle, this.svc.yearsOf(f, m, c))));
       if (!es.length) return [];
       const yearOf = new Map(es.map((e) => [e.id, e.year]));
-      const rows = await tx.select({ id: obeEvidence.id, targetId: obeEvidence.targetId, title: obeEvidence.title, url: obeEvidence.url, note: obeEvidence.note, fileName: obeEvidence.fileName, createdAt: obeEvidence.createdAt }).from(obeEvidence).where(and(eq(obeEvidence.scope, 'metric'), inArray(obeEvidence.targetId, es.map((e) => e.id)))).orderBy(asc(obeEvidence.createdAt));
+      const rows = await tx.select({ id: obeEvidence.id, targetId: obeEvidence.targetId, title: obeEvidence.title, url: obeEvidence.url, note: obeEvidence.note, fileName: obeEvidence.fileName, tags: obeEvidence.tags, validUntil: obeEvidence.validUntil, createdAt: obeEvidence.createdAt }).from(obeEvidence).where(and(eq(obeEvidence.scope, 'metric'), inArray(obeEvidence.targetId, es.map((e) => e.id)))).orderBy(asc(obeEvidence.createdAt));
       return rows.map(({ targetId, ...r }) => ({ ...r, year: yearOf.get(targetId) ?? null }));
+    });
+  }
+
+  /**
+   * The evidence repository of a framework's period: every document with its metric, year, tags and validity, filtered
+   * by tag, by text, or to those expired or expiring within `expiring` days; with the tags in use for the filter.
+   */
+  @Get(':fw/evidence-repository')
+  @Auth('user', READ)
+  repository(@CurrentPrincipal() p: UserPrincipal, @Param('fw') fw: string, @Query('cycle') cycle?: string, @Query('tag') tag?: string, @Query('q') q?: string, @Query('expiring') expiring?: string) {
+    const f = this.svc.framework(fw);
+    const c = this.cycle(cycle);
+    const days = expiring && /^\d{1,4}$/.test(expiring) ? Number(expiring) : null;
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const window = this.svc.yearsOf(f, { years: f.years } as never, c);
+      const today = this.clock.now().toISOString().slice(0, 10);
+      const rows = (await tx.execute(sql`select v.id, e.metric_code as "metric", e.cycle as "year", v.title, v.url, v.note, v.file_name as "fileName", v.tags, v.valid_until::text as "validUntil", v.source, u.full_name as "uploadedBy", v.created_at as "createdAt"
+        from obe_evidence v join accreditation_entries e on e.id = v.target_id left join users u on u.id = v.uploaded_by
+        where v.scope = 'metric' and e.body = ${f.key} and e.cycle in (${sql.join(window.map((y) => sql`${y}`), sql`, `)})
+          ${tag ? sql`and ${tag.slice(0, 40).toLowerCase()} = any(v.tags)` : sql``}
+          ${q ? sql`and (v.title ilike ${`%${q.slice(0, 80)}%`} or coalesce(v.note, '') ilike ${`%${q.slice(0, 80)}%`} or e.metric_code ilike ${`${q.slice(0, 20)}%`})` : sql``}
+          ${days !== null ? sql`and v.valid_until is not null and v.valid_until <= ${today}::date + ${days}::int` : sql``}
+        order by e.metric_code, e.cycle, v.created_at`)).rows as { validUntil: string | null; tags: string[] }[];
+      const ms = metricsOf(f);
+      const tags = (await tx.execute(sql`select distinct unnest(v.tags) as t from obe_evidence v join accreditation_entries e on e.id = v.target_id where v.scope = 'metric' and e.body = ${f.key} order by 1`)).rows.map((r) => String((r as { t: string }).t));
+      return {
+        window,
+        tags,
+        rows: rows.map((r) => ({ ...r, metricTitle: ms.find((m) => m.code === (r as unknown as { metric: string }).metric)?.title ?? '', expired: !!r.validUntil && r.validUntil < today })),
+      };
+    });
+  }
+
+  /** Updates an evidence line's title, note, tags and validity. */
+  @Put('evidence/:id')
+  @Auth('user', ADMIN)
+  editEvidence(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(EvidencePatch)) v: z.infer<typeof EvidencePatch>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [before] = await tx.select().from(obeEvidence).where(and(eq(obeEvidence.id, id), eq(obeEvidence.scope, 'metric')));
+      if (!before) throw new NotFoundException('Evidence not found');
+      const [row] = await tx.update(obeEvidence).set({ ...v, ...(v.tags && { tags: [...new Set(v.tags.map((t) => t.toLowerCase()))] }) }).where(eq(obeEvidence.id, id)).returning();
+      await auditUser(tx, p, 'accreditation.evidence_updated', 'obe_evidence', id, { before: { title: before.title, tags: before.tags, validUntil: before.validUntil }, after: { title: row.title, tags: row.tags, validUntil: row.validUntil } });
+      return row;
     });
   }
 
@@ -251,7 +296,7 @@ export class AccreditationController {
     const blob = await this.storeBlob(p, v.file);
     return this.db.withTenant(p.tenantId, async (tx) => {
       const e = await this.svc.ensureEntry(tx, p, f, year, code);
-      const [row] = await tx.insert(obeEvidence).values({ tenantId: p.tenantId, programId: null, scope: 'metric', targetId: e.id, title: v.title, url: v.url ?? null, note: v.note ?? null, uploadedBy: p.userId, ...blob }).returning();
+      const [row] = await tx.insert(obeEvidence).values({ tenantId: p.tenantId, programId: null, scope: 'metric', targetId: e.id, title: v.title, url: v.url ?? null, note: v.note ?? null, tags: [...new Set((v.tags ?? []).map((t) => t.toLowerCase()))], validUntil: v.validUntil ?? null, uploadedBy: p.userId, ...blob }).returning();
       await auditUser(tx, p, 'accreditation.evidence_added', 'obe_evidence', row.id, { framework: f.key, year, code });
       return { ...row, year };
     });
@@ -607,12 +652,13 @@ export class AccreditationController {
     this.send(res, `${f.key}-aqar-${c}.xlsx`, XLSX_TYPE, buf);
   }
 
-  /** The framework's main workbook: NBA SAR tables, NIRF data capture sheets with the score estimate, AISHE DCF-II, UDISE+, or the NAAC summary. */
+  /** The framework's main workbook: NBA SAR tables, NIRF data capture sheets with the score estimate, AISHE DCF-II, UDISE+, AICTE, UGC and CBSE returns, or the NAAC summary. */
   @Get(':fw/export.xlsx')
   @Auth('user', READ)
   async exportXlsx(@CurrentPrincipal() p: UserPrincipal, @Param('fw') fw: string, @Res() res: Response, @Query('cycle') cycle?: string, @Query('tier') tier?: string) {
     const f = this.svc.framework(fw);
-    if (f.body === 'nba' && tier !== undefined && tier !== '2') throw new BadRequestException('The SAR catalogue is for Tier-II UG engineering programmes');
+    const tierOf = f.key === 'nba-ug-eng-t1' ? '1' : f.key === 'nba-ug-eng-t2' ? '2' : null;
+    if (f.body === 'nba' && tier !== undefined && tier !== tierOf) throw new BadRequestException(tierOf ? `This SAR catalogue is for Tier-${tierOf} UG engineering programmes` : 'Tiers apply to UG engineering programmes only');
     const c = this.cycle(cycle);
     const buf = await this.db.withTenant(p.tenantId, async (tx) => {
       const ctx = await this.exportCtx(tx, f, c);
@@ -621,6 +667,9 @@ export class AccreditationController {
       if (f.body === 'nirf') return nirfDcs(ctx);
       if (f.body === 'aishe') return aisheDcf(ctx, await this.profile(tx));
       if (f.body === 'udise') return udise(ctx, await this.profile(tx));
+      if (f.body === 'aicte') return aicteReturn(ctx, await this.profile(tx), this.rowsSourceOf(f));
+      if (f.body === 'ugc') return ugcReturn(ctx, await this.profile(tx), this.rowsSourceOf(f));
+      if (f.body === 'cbse') return cbseReturn(ctx, await this.profile(tx), this.rowsSourceOf(f));
       return xlsx(summarySheets(ctx, f.title), ctx.at);
     });
     this.send(res, `${f.key}-${c}.xlsx`, XLSX_TYPE, buf);
@@ -733,7 +782,7 @@ export class AccreditationController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [m] = await tx.select({ id: iqacMeetings.id }).from(iqacMeetings).where(eq(iqacMeetings.id, id));
       if (!m) throw new NotFoundException('Meeting not found');
-      const [r] = await tx.insert(iqacActions).values({ tenantId: p.tenantId, meetingId: id, action: v.action, ownerName: v.ownerName, dueOn: v.dueOn ?? null }).returning();
+      const [r] = await tx.insert(iqacActions).values({ tenantId: p.tenantId, meetingId: id, action: v.action, ownerName: v.ownerName, dueOn: v.dueOn ?? null, ownerUserId: v.ownerUserId ?? null, departmentId: v.departmentId ?? null, criterion: v.criterion ?? null, priority: v.priority }).returning();
       await auditUser(tx, p, 'iqac.action_added', 'iqac_action', r.id);
       return r;
     });
@@ -744,7 +793,11 @@ export class AccreditationController {
   @Auth('user', ADMIN)
   updateAction(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ActionPatch)) v: z.infer<typeof ActionPatch>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [r] = await tx.update(iqacActions).set({ ...v, ...(v.status === 'done' ? { closedAt: new Date() } : v.status === 'open' ? { closedAt: null } : {}) }).where(eq(iqacActions.id, id)).returning();
+      if (v.status === 'done') {
+        const [cur] = await tx.select({ t: iqacActions.actionTaken }).from(iqacActions).where(eq(iqacActions.id, id));
+        if (cur && !(v.actionTaken ?? cur.t).trim()) throw new BadRequestException('Describe the action taken before closing it');
+      }
+      const [r] = await tx.update(iqacActions).set({ ...v, ...(v.status === 'done' || v.status === 'dropped' ? { closedAt: new Date() } : v.status ? { closedAt: null } : {}) }).where(eq(iqacActions.id, id)).returning();
       if (!r) throw new NotFoundException('Action not found');
       await auditUser(tx, p, 'iqac.action_updated', 'iqac_action', id, { status: r.status });
       return r;
@@ -839,11 +892,15 @@ export class AccreditationController {
     const c = this.cycle(cycle);
     const d = await this.db.withTenant(p.tenantId, async (tx) => ({
       fb: await tx.select().from(iqacFeedbackReports).where(eq(iqacFeedbackReports.cycle, c)).orderBy(asc(iqacFeedbackReports.stakeholder)),
-      acts: (await tx.execute(sql`select m.title as meeting, m.meeting_on::text as on, a.action, a.owner_name, a.due_on::text as due, a.status, a.action_taken from iqac_actions a join iqac_meetings m on m.id = a.meeting_id order by m.meeting_on desc, a.created_at`)).rows as Record<string, string>[],
+      acts: (await tx.execute(sql`select m.title as meeting, m.meeting_on::text as on, a.action, coalesce(u.full_name, a.owner_name) as owner_name, coalesce(d.name, '') as department, coalesce(a.criterion, '') as criterion, a.priority, a.due_on::text as due, a.status, a.action_taken from iqac_actions a join iqac_meetings m on m.id = a.meeting_id left join users u on u.id = a.owner_user_id left join departments d on d.id = a.department_id order by m.meeting_on desc, a.created_at`)).rows as Record<string, string>[],
+      members: (await tx.execute(sql`select name, category, designation, coalesce(organisation, '') as organisation, term_from::text as "from", coalesce(term_to::text, '') as "to" from iqac_members where term_to is null or term_to >= ${`${c.slice(0, 4)}-06-01`}::date order by sort_order, name`)).rows as Record<string, string>[],
+      initiatives: (await tx.execute(sql`select title, kind, coalesce(criterion, '') as criterion, coalesce(planned_on::text, '') as planned, coalesce(held_on::text, '') as held, participants, status, coalesce(outcome, '') as outcome from iqac_initiatives where coalesce(held_on, planned_on) between ${`${c.slice(0, 4)}-06-01`}::date and ${`${Number(c.slice(0, 4)) + 1}-05-31`}::date order by coalesce(held_on, planned_on)`)).rows as Record<string, string>[],
     }));
     const sheets: Sheet[] = [
       { name: 'Feedback and action taken', rows: [[`Stakeholder feedback analysis and action taken report, cycle ${c}`], [], ['Stakeholder', 'Responses', 'Average rating', 'Analysis', 'Action taken', 'Status'], ...d.fb.map((f) => [f.stakeholder, f.responses, f.averageRating, f.summary, f.actionTaken, f.status])], widths: [14, 10, 12, 60, 60, 14] },
-      { name: 'IQAC actions', rows: [['Meeting', 'Date', 'Action', 'Owner', 'Due', 'Status', 'Action taken'], ...d.acts.map((a) => [a.meeting, a.on, a.action, a.owner_name, a.due, a.status, a.action_taken])], widths: [30, 12, 50, 20, 12, 10, 50] },
+      { name: 'IQAC actions', rows: [['Meeting', 'Date', 'Action', 'Owner', 'Department', 'Criterion', 'Priority', 'Due', 'Status', 'Action taken'], ...d.acts.map((a) => [a.meeting, a.on, a.action, a.owner_name, a.department, a.criterion, a.priority, a.due, a.status.replace('_', ' '), a.action_taken])], widths: [30, 12, 50, 20, 18, 10, 10, 12, 12, 50] },
+      { name: 'IQAC composition', rows: [['Name', 'Category', 'Designation', 'Organisation', 'Term from', 'Term to'], ...d.members.map((m) => [m.name, m.category.replace(/_/g, ' '), m.designation, m.organisation, m.from, m.to])], widths: [28, 18, 30, 30, 12, 12] },
+      { name: 'Quality initiatives', rows: [['Initiative', 'Kind', 'Criterion', 'Planned', 'Held', 'Participants', 'Status', 'Outcome'], ...d.initiatives.map((x) => [x.title, x.kind, x.criterion, x.planned, x.held, x.participants, x.status, x.outcome])], widths: [40, 14, 10, 12, 12, 12, 10, 60] },
     ];
     this.send(res, `iqac-atr-${c}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', xlsx(sheets, this.clock.now()));
   }

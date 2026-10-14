@@ -38,7 +38,7 @@ export async function loadMetric(fw: string, code: string, cycle: string) {
 /** Adds evidence (a link, a note or a file) to a metric for one academic year. */
 export async function addEvidence(fw: string, code: string, cycle: string, v: Record<string, string>, file: PickedFile | null) {
   if (!FW.test(fw) || !CODE.test(code)) return bad();
-  return send(`/v1/accreditation/${fw}/metrics/${encodeURIComponent(code)}/evidence`, { cycle, ...(v.year ? { year: v.year } : {}), title: v.title, ...(optStr(v.url) ? { url: v.url.trim() } : {}), ...(optStr(v.note) ? { note: v.note } : {}), ...blob(file) }, metricPage(fw, code));
+  return send(`/v1/accreditation/${fw}/metrics/${encodeURIComponent(code)}/evidence`, { cycle, ...(v.year ? { year: v.year } : {}), title: v.title, ...(optStr(v.url) ? { url: v.url.trim() } : {}), ...(optStr(v.note) ? { note: v.note } : {}), ...(optStr(v.tags) ? { tags: v.tags.split(',').map((x) => x.trim()).filter(Boolean).slice(0, 10) } : {}), ...(/^\d{4}-\d{2}-\d{2}$/.test(v.validUntil ?? '') ? { validUntil: v.validUntil } : {}), ...blob(file) }, metricPage(fw, code));
 }
 
 export async function removeEvidence(fw: string, code: string, id: string) {
@@ -105,4 +105,10 @@ export async function saveSettings(fw: string, bench: Record<string, number>) {
 /** A teacher's own evidence, with an optional file. */
 export async function addMyEvidence(v: Record<string, string>, file: PickedFile | null) {
   return send('/v1/accreditation/my-evidence', { kind: v.kind, title: v.title, venue: v.venue ?? '', ...(optNum(v.year) !== undefined ? { year: optNum(v.year) } : {}), ...(optStr(v.url) ? { url: v.url } : {}), ...blob(file) }, '/accreditation/my-evidence');
+}
+
+/** Changes an evidence line's tags and how long it is valid (the evidence repository). */
+export async function editEvidence(fw: string, id: string, v: Record<string, string>) {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return { ok: false as const, error: 'Not found' };
+  return send(`/v1/accreditation/evidence/${id}`, { tags: (v.tags ?? '').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 10), validUntil: /^\d{4}-\d{2}-\d{2}$/.test(v.validUntil ?? '') ? v.validUntil : null }, `/accreditation/${fw}`, 'PUT');
 }

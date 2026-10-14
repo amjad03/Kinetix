@@ -14,6 +14,7 @@ import { pollCoMap } from '../db/schema-assist.js';
 import { headsSubject } from '../departments/departments.controller.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
 import { trend, validateConfig, type AttainmentConfig } from './attainment.js';
+import { checkCo } from './bloom.js';
 import { ObeService } from './obe.service.js';
 
 /** OBE belongs to leadership and the quality officer (IQAC), not the exam cell. */
@@ -33,7 +34,7 @@ const ConfigBody = z.object({
   decimals: z.number().int().min(0).max(4),
 });
 const CoBody = z.object({ code: z.string().trim().min(1).max(16), statement: z.string().trim().min(3).max(1000), bloomLevel: z.string().trim().max(40).optional(), ord: z.number().int().min(0).max(100).default(0) });
-const MatrixBody = z.object({ cells: z.array(z.object({ coId: z.uuid(), outcomeId: z.uuid(), strength: z.number().int().min(0).max(3) })).max(2000) });
+const MatrixBody = z.object({ cells: z.array(z.object({ coId: z.uuid(), outcomeId: z.uuid(), strength: z.number().int().min(0).max(3), justification: z.string().trim().max(500).optional() })).max(2000) });
 const AssessmentMapBody = z.object({ maps: z.array(z.object({ coId: z.uuid(), share: z.number().gt(0).max(1) })).max(30) });
 const SurveyBody = z.object({ programId: z.uuid(), subjectId: z.uuid().optional(), academicYearId: z.uuid(), kind: z.enum(['course_exit', 'graduate_exit', 'alumni', 'employer']), title: z.string().trim().min(1).max(160), scaleMax: z.number().int().min(2).max(10).default(5), minResponses: z.number().int().min(1).max(1000).default(5), weight: z.number().gt(0).max(100).default(1) });
 const RatingsBody = z.object({ ratings: z.array(z.object({ coId: z.uuid().optional(), outcomeId: z.uuid().optional(), rating: z.number().min(0) })).min(1).max(3000) });
@@ -123,7 +124,7 @@ export class ObeController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const sets = await tx.select().from(coSets).where(eq(coSets.subjectId, subjectId)).orderBy(sql`${coSets.version} desc`);
       const cos = sets.length ? await tx.select().from(courseOutcomes).where(inArray(courseOutcomes.coSetId, sets.map((s) => s.id))).orderBy(asc(courseOutcomes.ord), asc(courseOutcomes.code)) : [];
-      return sets.map((s) => ({ ...s, outcomes: cos.filter((c) => c.coSetId === s.id) }));
+      return sets.map((s) => ({ ...s, outcomes: cos.filter((c) => c.coSetId === s.id).map((c) => ({ ...c, verbCheck: checkCo(c.statement, c.bloomLevel) })) }));
     });
   }
 
@@ -216,7 +217,7 @@ export class ObeController {
       const cos = await tx.select().from(courseOutcomes).where(eq(courseOutcomes.coSetId, id)).orderBy(asc(courseOutcomes.ord), asc(courseOutcomes.code));
       const cols = await tx.select().from(programOutcomes).where(and(eq(programOutcomes.programId, subject.programId), inArray(programOutcomes.kind, ['po', 'pso']))).orderBy(asc(programOutcomes.kind), asc(programOutcomes.ord), asc(programOutcomes.code));
       const cells = cos.length ? await tx.select().from(coOutcomeMap).where(inArray(coOutcomeMap.coId, cos.map((c) => c.id))) : [];
-      return { set, cos, outcomes: cols, cells: cells.map((c) => ({ coId: c.coId, outcomeId: c.outcomeId, strength: c.strength })) };
+      return { set, cos: cos.map((c) => ({ ...c, verbCheck: checkCo(c.statement, c.bloomLevel) })), outcomes: cols, cells: cells.map((c) => ({ coId: c.coId, outcomeId: c.outcomeId, strength: c.strength, justification: c.justification ?? '' })) };
     });
   }
 
@@ -233,7 +234,7 @@ export class ObeController {
       if (body.cells.some((c) => !coIds.has(c.coId) || !colIds.has(c.outcomeId))) throw new BadRequestException('The matrix has a CO or PO that does not belong here');
       if (cos.length) await tx.delete(coOutcomeMap).where(inArray(coOutcomeMap.coId, [...coIds]));
       const keep = body.cells.filter((c) => c.strength > 0);
-      if (keep.length) await tx.insert(coOutcomeMap).values(keep.map((c) => ({ tenantId: p.tenantId, ...c })));
+      if (keep.length) await tx.insert(coOutcomeMap).values(keep.map((c) => ({ tenantId: p.tenantId, coId: c.coId, outcomeId: c.outcomeId, strength: c.strength, justification: c.justification?.trim() || null })));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.matrix.saved', subjectType: 'co_set', subjectId: id, data: { cells: keep.length } });
       return { cells: keep.length };
     });
@@ -389,7 +390,7 @@ export class ObeController {
   @Auth('user', MANAGE)
   actions(@CurrentPrincipal() p: UserPrincipal, @Param('programId', ParseUUIDPipe) programId: string) {
     return this.db.withTenant(p.tenantId, (tx) =>
-      tx.select({ id: improvementActions.id, scope: improvementActions.scope, targetId: improvementActions.targetId, title: improvementActions.title, detail: improvementActions.detail, status: improvementActions.status, dueOn: improvementActions.dueOn, ownerId: improvementActions.ownerId, owner: users.fullName, closedAt: improvementActions.closedAt }).from(improvementActions).leftJoin(users, eq(users.id, improvementActions.ownerId)).where(eq(improvementActions.programId, programId)).orderBy(asc(improvementActions.createdAt)),
+      tx.select({ id: improvementActions.id, scope: improvementActions.scope, targetId: improvementActions.targetId, code: improvementActions.code, academicYearId: improvementActions.academicYearId, title: improvementActions.title, detail: improvementActions.detail, status: improvementActions.status, dueOn: improvementActions.dueOn, ownerId: improvementActions.ownerId, owner: users.fullName, closedAt: improvementActions.closedAt }).from(improvementActions).leftJoin(users, eq(users.id, improvementActions.ownerId)).where(eq(improvementActions.programId, programId)).orderBy(asc(improvementActions.createdAt)),
     );
   }
 

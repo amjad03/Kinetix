@@ -175,8 +175,11 @@ async function one1(tx: Tx, key: string): Promise<AutoValue> {
       const x = await one(tx, sql`select coalesce(sum(paid_paise), 0) / 1e7 as v, coalesce(sum(amount_paise), 0) / 1e7 as billed from fee_invoices where status <> 'cancelled'`);
       return { value: r1(x.v), text: `Fees collected ${r1(x.v)} lakhs against ${r1(x.billed)} lakhs billed.` };
     }
-    case 'iqac_meetings':
-      return { value: r1((await one(tx, sql`select count(*)::int as v from iqac_meetings`)).v), text: 'IQAC meetings minuted in the workspace' };
+    case 'iqac_meetings': {
+      const x = await one(tx, sql`select (select count(*)::int from iqac_meetings) as v, (select count(*)::int from iqac_actions where status = 'done') as done, (select count(*)::int from iqac_actions) as acts,
+        (select count(*)::int from iqac_initiatives where status = 'done') as ini, (select count(*)::int from iqac_members where term_to is null or term_to >= current_date) as members`);
+      return { value: r1(x.v), text: `IQAC meetings minuted in the workspace: ${x.v}; ${x.done} of ${x.acts} action points completed; ${x.ini} quality initiatives held; ${x.members} members in the current IQAC.` };
+    }
     case 'best_practices':
       return { value: r1((await one(tx, sql`select count(*)::int as v from iqac_practices where kind = 'best_practice'`)).v), text: 'Best practices written in the NAAC format' };
     case 'distinctiveness':
@@ -196,6 +199,21 @@ async function one1(tx: Tx, key: string): Promise<AutoValue> {
     case 'institution_profile': {
       const x = await one(tx, sql`select coalesce(p.legal_name, t.name) as name, coalesce(p.aishe_code, '') as aishe, coalesce(p.affiliation_body, '') as affiliation, coalesce(p.established_year::text, '') as est, concat_ws(', ', nullif(p.address_line, ''), nullif(p.city, ''), nullif(p.state, ''), nullif(p.pincode, '')) as address, coalesce(p.naac_grade, '') as grade from tenants t left join institution_profiles p on p.tenant_id = t.id limit 1`);
       return { value: null, text: [`${x.name}`, x.aishe ? `AISHE / UDISE code ${x.aishe}` : 'Code not recorded', x.address ? `${x.address}` : '', x.affiliation ? `affiliated to ${x.affiliation}` : '', x.est ? `established ${x.est}` : '', x.grade ? `NAAC grade ${x.grade}` : ''].filter(Boolean).join('; ') + '.' };
+    }
+    case 'peo_mission': {
+      const rows = await all(tx, sql`select pr.name as program, peo.code as peo, string_agg(mi.code || ' (' || m.strength || ')', ', ' order by mi.code) as missions, count(*) filter (where coalesce(m.justification, '') <> '')::int as justified, count(*)::int as cells
+        from peo_mission_map m join programs pr on pr.id = m.program_id join program_outcomes peo on peo.id = m.peo_id join program_outcomes mi on mi.id = m.mission_id group by pr.name, peo.code order by 1, 2`);
+      return { value: rows.length, text: rows.length ? `PEO-mission consistency: ${rows.map((r) => `${r.program} ${r.peo} serves ${r.missions}`).join('; ')}. ${rows.reduce((a, r) => a + Number(r.justified), 0)} of ${rows.reduce((a, r) => a + Number(r.cells), 0)} mappings are justified.` : 'The PEO-mission matrix has not been filled in OBE.' };
+    }
+    case 'research_facilities': {
+      const x = await one(tx, sql`select count(*)::int as n, count(*) filter (where status = 'working')::int as working, coalesce(string_agg(distinct nullif(category, ''), ', '), '') as cats,
+        coalesce((select round(sum(extract(epoch from u.ends_at - u.starts_at) / 3600)::numeric, 1) from research_equipment_usage u where u.status <> 'cancelled' and u.starts_at >= now() - interval '1 year'), 0) as hours,
+        coalesce((select sum(u.amount_paise) / 1e7 from research_equipment_usage u where u.status = 'billed' and u.user_kind = 'external' and u.starts_at >= now() - interval '1 year'), 0) as ext from research_equipment`);
+      return { value: r1(x.n), text: Number(x.n) ? `${x.n} central instruments (${x.working} working)${x.cats ? ` in ${x.cats}` : ''}; used ${x.hours} hours in the last year, with ${r1(x.ext)} lakhs billed to external users.` : 'No central instruments are registered in the research office.' };
+    }
+    case 'iqac_committee': {
+      const rows = await all(tx, sql`select category, count(*)::int as n from iqac_members where term_to is null or term_to >= current_date group by category order by category`);
+      return { value: rows.reduce((a, r) => a + Number(r.n), 0), text: rows.length ? `IQAC composition: ${rows.map((r) => `${r.n} ${String(r.category).replace(/_/g, ' ')}`).join(', ')}.` : 'The IQAC composition is not recorded.' };
     }
     default:
       return { value: null };

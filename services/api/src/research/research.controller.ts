@@ -11,13 +11,11 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { conferences, grantExpenses, patents, projectMembers, projectMilestones, publications, researchGrants, researchProjects, researchProposals, researchScholars, students, userRoles } from '../db/schema.js';
 import { checkVersion, found, hasRole } from '../placements/placements.access.js';
-import { canMoveProposal, ethicsBlocksApproval, grantBalance, normalizeDoi, researchKpis } from './research-rules.js';
+import { moveProposal } from './proposal-flow.js';
+import { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './roles.js';
+import { grantBalance, normalizeDoi, researchKpis } from './research-rules.js';
 
-/** Approve proposals, register projects, grants and scholars. */
-export const RESEARCH_ROLES: RoleName[] = ['tenant_admin', 'principal', 'research_coordinator'];
-export const RESEARCH_VIEW_ROLES: RoleName[] = [...RESEARCH_ROLES, 'hod'];
-/** Faculty who submit proposals and record their own publications. */
-export const FACULTY_ROLES: RoleName[] = [...RESEARCH_VIEW_ROLES, 'teacher'];
+export { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES };
 
 const Opt = (n: number) => z.string().trim().max(n).optional();
 const ProposalBody = z.object({
@@ -29,6 +27,8 @@ const ProposalBody = z.object({
   sponsorOrg: Opt(160),
   fundingSoughtPaise: Paise.default(0),
   ethicsRequired: z.boolean().default(false),
+  /** The funding call it answers. */
+  callId: z.uuid().optional(),
   expectedVersion: z.number().int().optional(),
 });
 const ProjectBody = z.object({ title: z.string().trim().min(1).max(200), kind: z.enum(['research', 'capstone', 'industry']).default('research'), piUserId: z.uuid(), departmentId: z.uuid().optional(), sponsorOrg: Opt(160), startsOn: Day, endsOn: Day.optional() });
@@ -155,22 +155,7 @@ export class ResearchController {
   }
 
   private moveProposal(p: UserPrincipal, id: string, to: string, decision?: { note?: string; startsOn?: string }, ownerOnly = false) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const cur = found((await tx.select().from(researchProposals).where(eq(researchProposals.id, id)).for('update'))[0], 'Proposal');
-      if (ownerOnly && cur.piUserId !== p.userId && !hasRole(p, RESEARCH_ROLES)) throw new NotFoundException('Proposal not found');
-      if (!canMoveProposal(cur.status, to)) throw new ConflictException(`A ${cur.status} proposal cannot become ${to}`);
-      if (to === 'approved' && ethicsBlocksApproval(cur)) throw new ConflictException('Ethics clearance is required before approval');
-      if (to === 'rejected' && !decision?.note) throw new BadRequestException('Give a reason for rejecting');
-      const [row] = await tx.update(researchProposals).set({ status: to, reviewNote: decision?.note ?? cur.reviewNote, decidedBy: decision ? p.userId : null, decidedAt: decision ? new Date() : null, version: cur.version + 1 }).where(eq(researchProposals.id, id)).returning();
-      let project = null;
-      if (to === 'approved') {
-        const code = await nextNumber(tx, p.tenantId, 'PRJ');
-        [project] = await tx.insert(researchProjects).values({ tenantId: p.tenantId, proposalId: id, code, title: cur.title, kind: cur.kind, piUserId: cur.piUserId, departmentId: cur.departmentId, sponsorOrg: cur.sponsorOrg, startsOn: decision?.startsOn ?? (await this.today(tx)) }).returning();
-        await tx.insert(projectMembers).values({ tenantId: p.tenantId, projectId: project.id, userId: cur.piUserId, role: 'supervisor' });
-      }
-      await auditUser(tx, p, `research.proposal_${to}`, 'proposal', id, { note: decision?.note, projectId: project?.id });
-      return { ...row, project };
-    });
+    return this.db.withTenant(p.tenantId, async (tx) => moveProposal(tx, p, id, to, await this.today(tx), decision, ownerOnly));
   }
 
   // ---- projects -----------------------------------------------------------------------------
@@ -452,7 +437,7 @@ export class ResearchController {
       const from = Number(fromQ ?? to - 4);
       if (![from, to].every((y) => Number.isInteger(y) && y >= 1950 && y <= 2100) || from > to) throw new BadRequestException('Bad year range');
       const range = (col: Parameters<typeof gte>[0]) => and(gte(col, `${from}-01-01`), lte(col, `${to}-12-31`));
-      const pubs = await tx.select({ kind: publications.kind, indexedIn: publications.indexedIn }).from(publications).where(and(gte(publications.year, from), lte(publications.year, to)));
+      const pubs = await tx.select({ kind: publications.kind, indexedIn: publications.indexedIn }).from(publications).where(and(gte(publications.year, from), lte(publications.year, to), sql`${publications.status} <> 'retracted'`));
       const grs = await tx.select({ sanctionedPaise: researchGrants.sanctionedPaise }).from(researchGrants).where(range(researchGrants.startsOn));
       const pats = await tx.select({ status: patents.status }).from(patents).where(range(patents.filedOn));
       const [{ n: awarded }] = await tx.select({ n: sql<number>`count(*)::int` }).from(researchScholars).where(and(eq(researchScholars.status, 'awarded'), range(researchScholars.completedOn)));

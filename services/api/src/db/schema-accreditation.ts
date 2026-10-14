@@ -1,7 +1,7 @@
 // Accreditation and statutory reporting tables (migrations 0127, 0141 and 0142): metric entries per framework and year, DVV
 // clarifications, framework settings, task assignment and comments, IQAC workspace and faculty evidence.
 import { sql } from 'drizzle-orm';
-import { boolean, date, index, jsonb, numeric, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, date, index, integer, jsonb, numeric, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { departments, tenants, users } from './schema.js';
 
 const id = () => uuid('id').primaryKey().default(sql`gen_random_uuid()`);
@@ -134,6 +134,11 @@ export const iqacMeetings = pgTable('iqac_meetings', {
   attendees: text('attendees').notNull().default(''),
   createdBy: by('created_by'),
   createdAt: createdAt(),
+  // Migration 0161.
+  kind: text('kind').notNull().default('regular'), // regular | special
+  status: text('status').notNull().default('held'), // scheduled | held | minutes_approved
+  venue: text('venue').notNull().default(''),
+  present: smallint('present'),
 });
 
 export const iqacActions = pgTable(
@@ -149,6 +154,11 @@ export const iqacActions = pgTable(
     actionTaken: text('action_taken').notNull().default(''),
     closedAt: timestamp('closed_at', { withTimezone: true }),
     createdAt: createdAt(),
+    // Migration 0161: who acts, for which department and NAAC criterion, and how urgent. Status: open | in_progress | done | dropped.
+    ownerUserId: by('owner_user_id'),
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+    criterion: text('criterion'),
+    priority: text('priority').notNull().default('normal'), // low | normal | high
   },
   (t) => [index('iqac_actions_meeting_idx').on(t.meetingId)],
 );
@@ -203,4 +213,54 @@ export const facultyEvidence = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('faculty_evidence_user_idx').on(t.userId)],
+);
+
+/** A member of the IQAC with the category NAAC lists (chairperson, management, teachers, experts, alumni ...) and the term. */
+export const iqacMembers = pgTable('iqac_members', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  userId: by('user_id'),
+  category: text('category').notNull(), // chairperson | coordinator | management | teacher | administrative | external_expert | alumni | student | employer | local_society
+  designation: text('designation').notNull().default(''),
+  organisation: text('organisation'),
+  email: text('email'),
+  phone: text('phone'),
+  termFrom: date('term_from').notNull(),
+  termTo: date('term_to'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: createdAt(),
+});
+
+/** A quality initiative of the year (IQAC calendar): workshops, audits, surveys, NIRF and AISHE participation. */
+export const iqacInitiatives = pgTable('iqac_initiatives', {
+  id: id(),
+  tenantId: tenantId(),
+  title: text('title').notNull(),
+  kind: text('kind').notNull().default('other'), // workshop | audit | survey | ranking | collaboration | orientation | award | other
+  criterion: text('criterion'),
+  plannedOn: date('planned_on'),
+  heldOn: date('held_on'),
+  participants: integer('participants'),
+  coordinatorUserId: by('coordinator_user_id'),
+  outcome: text('outcome'),
+  status: text('status').notNull().default('planned'), // planned | done | cancelled
+  createdAt: createdAt(),
+});
+
+/** The AQAR of a year: when it is due, when it went to NAAC, and NAAC's acknowledgement. */
+export const iqacAqarSubmissions = pgTable(
+  'iqac_aqar_submissions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    year: text('year').notNull(),
+    dueOn: date('due_on'),
+    submittedOn: date('submitted_on'),
+    reference: text('reference'),
+    status: text('status').notNull().default('preparing'), // preparing | submitted | accepted | returned
+    note: text('note'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('iqac_aqar_year_uq').on(t.tenantId, t.year)],
 );
