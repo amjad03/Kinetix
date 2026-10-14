@@ -974,6 +974,27 @@
       "when": 1791506006000,
       "tag": "0148_record_imports",
       "breakpoints": true
+    },
+    {
+      "idx": 161,
+      "version": "7",
+      "when": 1791506029000,
+      "tag": "0171_procurement_depth",
+      "breakpoints": true
+    },
+    {
+      "idx": 162,
+      "version": "7",
+      "when": 1791506030000,
+      "tag": "0172_assets_facilities",
+      "breakpoints": true
+    },
+    {
+      "idx": 163,
+      "version": "7",
+      "when": 1791506031000,
+      "tag": "0173_placements_depth",
+      "breakpoints": true
     }
   ]
 }

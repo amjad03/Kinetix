@@ -21,7 +21,7 @@ export const WORKSPACE_SECTIONS: Record<Exclude<Workspace, 'all'>, readonly Sect
   ],
   finance_ops: [
     ...COMMON,
-    'fees', 'finance', 'payroll', 'payslips', 'hr', 'appraisal', 'transport', 'hostel', 'canteen', 'library', 'inventory', 'assets', 'import', 'connectors', 'integrations', 'dpdp', 'reports', 'billing', 'governance',
+    'fees', 'finance', 'payroll', 'payslips', 'hr', 'appraisal', 'transport', 'hostel', 'canteen', 'library', 'inventory', 'assets', 'procurement', 'indents', 'facilities', 'import', 'connectors', 'integrations', 'dpdp', 'reports', 'billing', 'governance',
   ],
   quality: [
     ...COMMON,

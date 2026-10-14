@@ -41,6 +41,8 @@ const TARGETS: Record<string, (id: string) => string> = {
   'committee-evidence': (id) => `/v1/campus-life/evidence/${id}/download`,
   'event-media': (id) => `/v1/campus-life/media/${id}/file`,
   'grievance-evidence': (id) => `/v1/grievances/evidence/${id}/download`,
+  'placement-shortlist': (id) => `/v1/placements/drives/${id}/shortlist?format=csv`,
+  'placement-offer-letter': (id) => `/v1/placements/offers/${id}/letter`,
 };
 
 /**
@@ -169,6 +171,13 @@ export async function GET(req: NextRequest) {
       if (v && re.test(v)) keep.set(k, v);
     }
     FIXED[kind] = `/v1/academics/reports/${report}/export?${keep.toString()}`;
+  }
+  // A placement report (NIRF, NAAC 5.2, branch-wise…) for a year: ?kind=pl-report&id=<report>&format=csv|xlsx&year=
+  if (kind === 'pl-report') {
+    const format = req.nextUrl.searchParams.get('format') === 'csv' ? 'csv' : 'xlsx';
+    const year = req.nextUrl.searchParams.get('year') ?? '';
+    if (!/^[a-z]{3,20}$/.test(id) || !/^\d{4}$/.test(year)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/placements/reports/${id}?format=${format}&year=${year}`;
   }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.

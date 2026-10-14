@@ -207,7 +207,7 @@ export class CareersController {
   @Auth('user')
   events(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) =>
-      tx.select({ e: alumniEvents, rsvps: sql<number>`(select count(*)::int from alumni_event_rsvps r where r.event_id = ${alumniEvents.id})` }).from(alumniEvents).orderBy(desc(alumniEvents.startsOn)).then((rows) => rows.map((r) => ({ ...r.e, rsvps: r.rsvps }))),
+      tx.select({ e: alumniEvents, rsvps: sql<number>`(select count(*)::int from alumni_event_rsvps r where r.event_id = "alumni_events"."id")` }).from(alumniEvents).orderBy(desc(alumniEvents.startsOn)).then((rows) => rows.map((r) => ({ ...r.e, rsvps: r.rsvps }))),
     );
   }
 

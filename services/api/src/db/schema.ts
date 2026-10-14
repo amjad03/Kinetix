@@ -340,8 +340,13 @@ export const rooms = pgTable('rooms', {
   name: text('name').notNull(),
   /** Seats; null = not set, so no capacity check. */
   capacity: integer('capacity'),
-  /** 'classroom' | 'lab' | 'hall'. */
+  /** 'classroom' | 'lab' | 'hall' | 'seminar_hall' | 'auditorium' | 'staff_room' | 'other'. */
   kind: text('kind').notNull().default('classroom'),
+  /** Can be booked through Facilities (seminar hall, auditorium) (migration 0172). */
+  bookable: boolean('bookable').notNull().default(false),
+  /** Projector, AC, sound system and the like. */
+  facilities: text('facilities').notNull().default(''),
+  active: boolean('active').notNull().default(true),
 });
 
 export const timetableSlots = pgTable(
@@ -3730,6 +3735,12 @@ export const TENANT_TABLES = [
   'integrity_matches',
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
   'affiliation_settings', 'programme_affiliations',
+  // Procurement, assets and facilities depth (migrations 0171, 0172).
+  'inv_categories', 'inv_approved_vendors', 'inv_vendor_ratings', 'inv_rate_contracts', 'inv_approvals', 'inv_po_amendments', 'inv_debit_notes',
+  'inv_stock_verifications', 'inv_stock_verification_lines', 'inv_gate_entries', 'asset_transfers', 'asset_condemnations', 'facility_bookings', 'maintenance_tickets',
+  // Placements depth (migration 0173).
+  'placement_company_contacts', 'placement_optins', 'interview_slots', 'placement_trainings', 'placement_training_sessions', 'placement_training_attendance',
+  'placement_training_scores', 'student_progressions', 'alumni_job_posts', 'placement_feedback',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4040,7 +4051,22 @@ export const canteenWalletTxns = pgTable(
 // Inventory, procurement and assets (migrations 0063, 0064)
 // ---------------------------------------------------------------------------------------------
 
-export const invStores = pgTable('inv_stores', { id: id(), tenantId: tenantId(), name: text('name').notNull(), location: text('location').notNull().default('') }, (t) => [uniqueIndex('inv_stores_name_uq').on(t.tenantId, t.name)]);
+export const invStores = pgTable(
+  'inv_stores',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    location: text('location').notNull().default(''),
+    /** central, department or lab (migration 0171). */
+    kind: text('kind').notNull().default('central'),
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+    custodianUserId: uuid('custodian_user_id').references(() => users.id, { onDelete: 'set null' }),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('inv_stores_name_uq').on(t.tenantId, t.name)],
+);
 
 export const invItems = pgTable(
   'inv_items',
@@ -4053,6 +4079,12 @@ export const invItems = pgTable(
     unit: text('unit').notNull().default('nos'),
     reorderLevel: integer('reorder_level').notNull().default(0),
     active: boolean('active').notNull().default(true),
+    description: text('description').notNull().default(''),
+    /** How much to order when stock falls to the reorder level. */
+    reorderQty: integer('reorder_qty').notNull().default(0),
+    /** The unit price of the latest purchase order line, for indent estimates. */
+    lastPricePaise: bigint('last_price_paise', { mode: 'number' }).notNull().default(0),
+    createdAt: createdAt(),
   },
   (t) => [uniqueIndex('inv_items_sku_uq').on(t.tenantId, t.sku)],
 );
@@ -4082,6 +4114,8 @@ export const invStockMoves = pgTable(
     refType: text('ref_type'),
     refId: uuid('ref_id'),
     issuedTo: text('issued_to'),
+    /** The department stock was issued to (consumption by department). */
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
     note: text('note').notNull().default(''),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
@@ -4091,7 +4125,23 @@ export const invStockMoves = pgTable(
 
 export const invVendors = pgTable(
   'inv_vendors',
-  { id: id(), tenantId: tenantId(), name: text('name').notNull(), gstin: text('gstin'), phone: text('phone').notNull().default(''), email: text('email'), active: boolean('active').notNull().default(true) },
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    gstin: text('gstin'),
+    phone: text('phone').notNull().default(''),
+    email: text('email'),
+    active: boolean('active').notNull().default(true),
+    contactPerson: text('contact_person').notNull().default(''),
+    address: text('address').notNull().default(''),
+    pan: text('pan'),
+    /** A blacklisted vendor gets no new orders or quotations. */
+    blacklisted: boolean('blacklisted').notNull().default(false),
+    blacklistReason: text('blacklist_reason'),
+    blacklistedAt: timestamp('blacklisted_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
   (t) => [uniqueIndex('inv_vendors_name_uq').on(t.tenantId, t.name)],
 );
 
@@ -4108,6 +4158,14 @@ export const invRequisitions = pgTable(
     decidedBy: uuid('decided_by').references(() => users.id),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
     decisionNote: text('decision_note'),
+    /** The indenting department (its head approves first) and the estimate checked against its budget. */
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+    estimatedPaise: bigint('estimated_paise', { mode: 'number' }).notNull().default(0),
+    /** within, exceeded, no_budget or override (an approver went over the budget with a note). */
+    budgetStatus: text('budget_status'),
+    /** The approval step waiting: hod or principal; null once decided. */
+    step: text('step'),
+    neededBy: date('needed_by'),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('inv_requisitions_number_uq').on(t.tenantId, t.number)],
@@ -4119,6 +4177,7 @@ export const invRequisitionLines = pgTable('inv_requisition_lines', {
   requisitionId: uuid('requisition_id').notNull().references(() => invRequisitions.id, { onDelete: 'cascade' }),
   itemId: uuid('item_id').notNull().references(() => invItems.id),
   qty: integer('qty').notNull(),
+  estUnitPaise: bigint('est_unit_paise', { mode: 'number' }).notNull().default(0),
 });
 
 export const invPurchaseOrders = pgTable(
@@ -4137,6 +4196,22 @@ export const invPurchaseOrders = pgTable(
     departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    /** direct, quotation, rate_contract, gem or tender (migration 0171). */
+    purchaseMode: text('purchase_mode').notNull().default('direct'),
+    gemRef: text('gem_ref'),
+    tenderRef: text('tender_ref'),
+    /** not_required, pending, approved or rejected; goods are received only once it is not pending. */
+    approvalStatus: text('approval_status').notNull().default('not_required'),
+    approvedBy: uuid('approved_by').references(() => users.id),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    amendmentNo: integer('amendment_no').notNull().default(0),
+    /** Purchase committee minutes attached to the order. */
+    committeeMinutes: text('committee_minutes'),
+    committeeMetOn: date('committee_met_on'),
+    committeeMembers: text('committee_members'),
+    deliveryBy: date('delivery_by'),
+    terms: text('terms').notNull().default(''),
+    cancelReason: text('cancel_reason'),
   },
   (t) => [uniqueIndex('inv_po_number_uq').on(t.tenantId, t.number)],
 );
@@ -4160,6 +4235,9 @@ export const invGoodsReceipts = pgTable('inv_goods_receipts', {
   /** Receipts retried with the same key are applied once. */
   idempotencyKey: text('idempotency_key'),
   receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
+  number: text('number'),
+  /** The vendor's delivery challan. */
+  challanNo: text('challan_no'),
 }, (t) => [uniqueIndex('inv_grn_key_uq').on(t.tenantId, t.idempotencyKey)]);
 
 export const invGoodsReceiptLines = pgTable('inv_goods_receipt_lines', {
@@ -4168,6 +4246,9 @@ export const invGoodsReceiptLines = pgTable('inv_goods_receipt_lines', {
   receiptId: uuid('receipt_id').notNull().references(() => invGoodsReceipts.id, { onDelete: 'cascade' }),
   poLineId: uuid('po_line_id').notNull().references(() => invPoLines.id),
   qty: integer('qty').notNull(),
+  /** Delivered but refused at inspection: not taken into stock, and debited to the vendor. */
+  rejectedQty: integer('rejected_qty').notNull().default(0),
+  rejectReason: text('reject_reason'),
 });
 
 /** A vendor's invoice, matched to the PO and what was actually received (three-way match). */
@@ -4186,6 +4267,13 @@ export const invInvoices = pgTable(
     note: text('note'),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    invoiceDate: date('invoice_date'),
+    /** The payment voucher: number, date, mode and reference; debit notes adjusted reduce what is paid. */
+    voucherNo: text('voucher_no'),
+    paidOn: date('paid_on'),
+    paymentMode: text('payment_mode'),
+    paymentRef: text('payment_ref'),
+    debitPaise: bigint('debit_paise', { mode: 'number' }).notNull().default(0),
   },
   (t) => [uniqueIndex('inv_invoices_vendor_no_uq').on(t.tenantId, t.vendorId, t.invoiceNo)],
 );
@@ -4217,6 +4305,13 @@ export const assets = pgTable(
     roomId: uuid('room_id').references(() => rooms.id, { onDelete: 'set null' }),
     deviceId: uuid('device_id'),
     createdAt: createdAt(),
+    /** Owning department, supplier, order and invoice (migration 0172). */
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+    vendorId: uuid('vendor_id').references(() => invVendors.id, { onDelete: 'set null' }),
+    poId: uuid('po_id').references(() => invPurchaseOrders.id, { onDelete: 'set null' }),
+    invoiceNo: text('invoice_no'),
+    make: text('make'),
+    model: text('model'),
   },
   (t) => [uniqueIndex('assets_tag_uq').on(t.tenantId, t.tag)],
 );
@@ -4266,8 +4361,17 @@ export const placementCompanies = pgTable('placement_companies', {
   contactName: text('contact_name'),
   contactEmail: text('contact_email'),
   contactPhone: text('contact_phone'),
-  status: text('status').notNull().default('active'), // active | blacklisted
+  status: text('status').notNull().default('active'), // active | blacklisted | pending (self-registered, not yet verified)
   createdAt: createdAt(),
+  /** Companies of one group (a duplicate offer from the same group is refused) (migration 0173). */
+  groupName: text('group_name'),
+  city: text('city').notNull().default(''),
+  address: text('address').notNull().default(''),
+  description: text('description').notNull().default(''),
+  selfRegistered: boolean('self_registered').notNull().default(false),
+  /** The recruiter portal key (sha256 of the secret), issued when the company is verified. */
+  portalTokenHash: text('portal_token_hash'),
+  portalTokenAt: timestamp('portal_token_at', { withTimezone: true }),
 });
 
 export const placementDrives = pgTable('placement_drives', {
@@ -4291,6 +4395,15 @@ export const placementDrives = pgTable('placement_drives', {
   version: integer('version').notNull().default(0),
   createdBy: ref('created_by', () => users.id),
   createdAt: createdAt(),
+  /** regular | dream | super_dream: under the dream policy a placed student may still sit for a higher category. */
+  category: text('category').notNull().default('regular'),
+  /** Graduation years eligible; empty = any. */
+  batchYears: smallint('batch_years').array().notNull().default(sql`'{}'::smallint[]`),
+  registrationOpensOn: date('registration_opens_on'),
+  venue: text('venue').notNull().default(''),
+  skills: text('skills').notNull().default(''),
+  bond: text('bond').notNull().default(''),
+  postedByRecruiter: boolean('posted_by_recruiter').notNull().default(false),
 });
 
 export const driveRegistrations = pgTable('drive_registrations', {
@@ -4341,6 +4454,20 @@ export const placementOffers = pgTable('placement_offers', {
   respondedAt: timestamp('responded_at', { withTimezone: true }),
   declineReason: text('decline_reason'),
   createdAt: createdAt(),
+  /** The offer letter (stored file) (migration 0173). */
+  offerLetterKey: text('offer_letter_key'),
+  offerLetterName: text('offer_letter_name'),
+  revokedReason: text('revoked_reason'),
+  revokedOn: date('revoked_on'),
+  /** pending | joined | not_joined */
+  joiningStatus: text('joining_status').notNull().default('pending'),
+  joinedOn: date('joined_on'),
+  joiningNote: text('joining_note'),
+  /** Made while the student still had backlogs: holds until they are cleared. */
+  conditional: boolean('conditional').notNull().default(false),
+  conditionNote: text('condition_note'),
+  /** student (in the app) or office (recorded by the placement cell). */
+  respondedVia: text('responded_via'),
 });
 
 export const internships = pgTable('internships', {
@@ -4362,6 +4489,14 @@ export const internships = pgTable('internships', {
   employerFeedback: text('employer_feedback'),
   version: integer('version').notNull().default(0),
   createdAt: createdAt(),
+  /** Credits the internship earns and the course they map to (migration 0173). */
+  credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }),
+  creditSubjectId: uuid('credit_subject_id').references(() => subjects.id, { onDelete: 'set null' }),
+  /** The company confirmed the internship (offer or acceptance letter received). */
+  companyConfirmed: boolean('company_confirmed').notNull().default(false),
+  /** The industry supervisor's rating out of 5. */
+  supervisorRating: smallint('supervisor_rating'),
+  appliedOn: date('applied_on'),
 });
 
 export const internshipDiary = pgTable('internship_diary', {
@@ -4393,6 +4528,11 @@ export const alumniProfiles = pgTable('alumni_profiles', {
   directoryVisible: boolean('directory_visible').notNull().default(false),
   mentorAvailable: boolean('mentor_available').notNull().default(false),
   createdAt: createdAt(),
+  /** Checked against the institution's records by alumni relations (migration 0173). */
+  verified: boolean('verified').notNull().default(false),
+  verifiedBy: uuid('verified_by').references(() => users.id, { onDelete: 'set null' }),
+  verifiedAt: timestamp('verified_at', { withTimezone: true }),
+  linkedin: text('linkedin'),
 });
 
 export const alumniEvents = pgTable('alumni_events', {

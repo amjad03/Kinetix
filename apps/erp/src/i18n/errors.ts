@@ -77,6 +77,19 @@ const GENERIC_FALLBACK: Record<string, MessageKey> = {
   RESTORE_EXISTS: 'error.CONFLICT',
   DUPLICATE: 'error.RECORD_DUPLICATE',
   VIEW_NAME_TAKEN: 'error.RECORD_DUPLICATE',
+  // Purchase, facilities and placements: the message names the budget, vendor, room, slot or student.
+  BUDGET_EXCEEDED: 'ivd.e.budget',
+  VENDOR_NOT_APPROVED: 'ivd.e.vendorNotApproved',
+  VENDOR_BLACKLISTED: 'ivd.e.vendorBlacklisted',
+  PURCHASE_MODE: 'ivd.e.purchaseMode',
+  NO_RATE_CONTRACT: 'ivd.e.noRateContract',
+  BOOKING_CONFLICT: 'ivd.e.bookingConflict',
+  SLOT_CONFLICT: 'ivd.e.slotConflict',
+  SAME_GROUP_OFFER: 'ivd.e.sameGroup',
+  ALREADY_PLACED: 'ivd.e.alreadyPlaced',
+  DEBARRED: 'ivd.e.debarred',
+  NOT_OPTED_IN: 'ivd.e.notOptedIn',
+  NOT_ELIGIBLE: 'ivd.e.notEligible',
 };
 
 /**

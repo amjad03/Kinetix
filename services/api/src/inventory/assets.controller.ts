@@ -7,13 +7,15 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { qrSvg } from '../common/qr.js';
 import { assetTagsPdf } from '../documents/pdfs.js';
-import { bookValueAfter, Day, depreciationSchedule, nextNumber, Paise } from '../common/ops.js';
-import { depreciationLines, disposalLines } from '../finance/gl.js';
+import { bookValueAfter, Day, depreciationSchedule, Paise } from '../common/ops.js';
+import { depreciationLines } from '../finance/gl.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assetAllocations, assetGlPostings, assetMaintenance, assets, tenants } from '../db/schema.js';
-import { STORE_ROLES } from './inventory.controller.js';
+import { assetAllocations, assetGlPostings, assetMaintenance, assets, departments, invPurchaseOrders, invVendors, rooms, tenants } from '../db/schema.js';
+import { assetCondemnations, assetTransfers } from '../db/schema-procurement.js';
+import { AssetsService } from './assets.service.js';
+import { APPROVER_ROLES, STORE_ROLES } from './inventory.controller.js';
 
 const AssetBody = z
   .object({
@@ -26,6 +28,15 @@ const AssetBody = z
     usefulLifeYears: z.number().int().min(1).max(50),
     method: z.enum(['slm', 'wdv']).default('slm'),
     wdvRatePct: z.number().min(1).max(100).optional(),
+    departmentId: z.uuid().nullish(),
+    roomId: z.uuid().nullish(),
+    vendorId: z.uuid().nullish(),
+    poId: z.uuid().nullish(),
+    invoiceNo: z.string().trim().max(60).nullish(),
+    make: z.string().trim().max(80).nullish(),
+    model: z.string().trim().max(80).nullish(),
+    serialNo: z.string().trim().max(80).nullish(),
+    warrantyUntil: Day.nullish(),
   })
   .refine((a) => a.salvagePaise < a.costPaise, { message: 'Salvage value must be below cost', path: ['salvagePaise'] })
   .refine((a) => a.method !== 'wdv' || a.wdvRatePct != null, { message: 'Give the written-down rate', path: ['wdvRatePct'] });
@@ -34,6 +45,10 @@ const MaintBody = z.object({ kind: z.enum(['service', 'repair', 'inspection']), 
 const FyBody = z.object({ fiscalYear: z.string().regex(/^\d{4}-\d{2}$/, 'Use a financial year like 2026-27') });
 const fiscalYearOf = (day: string) => { const y = Number(day.slice(0, 4)) - (Number(day.slice(5, 7)) < 4 ? 1 : 0); return `${y}-${String((y + 1) % 100).padStart(2, '0')}`; };
 const DisposeBody = z.object({ disposedOn: Day, disposalPaise: Paise.default(0) });
+const TransferBody = z.object({ toLocation: z.string().trim().max(120).optional(), toRoomId: z.uuid().nullish(), toDepartmentId: z.uuid().nullish(), reason: z.string().trim().min(3).max(300), on: Day.optional() });
+const CondemnBody = z.object({ reason: z.string().trim().min(3).max(500), condition: z.string().trim().max(300).default('') });
+const CondemnDecision = z.object({ approve: z.boolean(), note: z.string().trim().max(500).optional() });
+const WriteOffBody = z.object({ disposalMode: z.enum(['auction', 'scrap', 'donate', 'buyback']), realisedPaise: Paise.default(0), on: Day.optional() });
 
 /**
  * Asset register: every asset gets a tag (printed as a QR label that opens the asset), can be
@@ -45,17 +60,38 @@ export class AssetsController {
   constructor(
     private readonly db: DbService,
     private readonly clock: Clock,
+    private readonly svc: AssetsService,
   ) {}
 
   @Post()
   @Auth('user', STORE_ROLES)
   create(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(AssetBody)) b: z.infer<typeof AssetBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const tag = await nextNumber(tx, p.tenantId, 'AST');
-      const [a] = await tx.insert(assets).values({ tenantId: p.tenantId, tag, ...b }).returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.registered', subjectType: 'asset', subjectId: a.id, data: { tag } });
-      return this.view(a);
-    });
+    return this.db.withTenant(p.tenantId, async (tx) => this.view(await this.svc.register(tx, p, b)));
+  }
+
+  /** Condemnation proposals and their decisions, newest first. */
+  @Get('condemnations')
+  @Auth('user', STORE_ROLES)
+  condemnations(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) =>
+      (await tx.select({ c: assetCondemnations, tag: assets.tag, name: assets.name }).from(assetCondemnations).innerJoin(assets, eq(assets.id, assetCondemnations.assetId)).orderBy(desc(assetCondemnations.createdAt)).limit(500)).map((r) => ({ ...r.c, tag: r.tag, name: r.name })),
+    );
+  }
+
+  /** The committee approves or rejects a condemnation proposal. */
+  @Post('condemnations/:id/decision')
+  @HttpCode(200)
+  @Auth('user', APPROVER_ROLES)
+  decideCondemnation(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CondemnDecision)) b: z.infer<typeof CondemnDecision>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.decide(tx, p, id, b));
+  }
+
+  /** Writes off an approved condemnation: the asset is disposed of at what it realised. */
+  @Post('condemnations/:id/write-off')
+  @HttpCode(200)
+  @Auth('user', STORE_ROLES)
+  writeOff(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(WriteOffBody)) b: z.infer<typeof WriteOffBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.writeOff(tx, p, id, b));
   }
 
   @Get()
@@ -199,18 +235,21 @@ export class AssetsController {
   @HttpCode(200)
   @Auth('user', STORE_ROLES)
   dispose(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(DisposeBody)) b: z.infer<typeof DisposeBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const a = await this.lock(tx, id);
-      if (a.status === 'disposed') throw new ConflictException('Already disposed of');
-      if (b.disposedOn < a.purchasedOn) throw new BadRequestException('Disposed before it was bought');
-      await tx.update(assetAllocations).set({ returnedOn: b.disposedOn }).where(and(eq(assetAllocations.assetId, id), isNull(assetAllocations.returnedOn)));
-      const [done] = await tx.update(assets).set({ status: 'disposed', disposedOn: b.disposedOn, disposalPaise: b.disposalPaise }).where(eq(assets.id, id)).returning();
-      const [acc] = await tx.select({ n: sql<number>`coalesce(sum((${assetGlPostings.lines}->0->>'debitPaise')::bigint), 0)::float8` }).from(assetGlPostings).where(and(eq(assetGlPostings.assetId, id), eq(assetGlPostings.kind, 'depreciation')));
-      const fy = fiscalYearOf(b.disposedOn);
-      await tx.insert(assetGlPostings).values({ tenantId: p.tenantId, assetId: id, kind: 'disposal', fiscalYear: fy, postedOn: b.disposedOn, voucherNo: `DSP-${a.tag}`, narration: `Disposal of ${a.name} (${a.tag})`, lines: disposalLines(a.costPaise, acc.n, b.disposalPaise), postedBy: p.userId });
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.disposed', subjectType: 'asset', subjectId: id, data: b });
-      return this.view(done);
-    });
+    return this.db.withTenant(p.tenantId, async (tx) => this.view(await this.svc.dispose(tx, p, id, b)));
+  }
+
+  /** Moves the asset to another place, room or department (the transfer register keeps where it was). */
+  @Post(':id/transfer')
+  @Auth('user', STORE_ROLES)
+  transfer(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(TransferBody)) b: z.infer<typeof TransferBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.transfer(tx, p, id, b));
+  }
+
+  /** Proposes the asset for condemnation (beyond repair, obsolete): the committee decides, then it is written off. */
+  @Post(':id/condemn')
+  @Auth('user', STORE_ROLES)
+  condemn(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CondemnBody)) b: z.infer<typeof CondemnBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.propose(tx, p, id, b));
   }
 
   // --- helpers -----------------------------------------------------------------------------
@@ -228,11 +267,14 @@ export class AssetsController {
   private async detail(tx: Tx, id: string) {
     const [a] = await tx.select().from(assets).where(eq(assets.id, id));
     if (!a) throw new NotFoundException('Asset not found');
-    const [allocations, maintenance] = await Promise.all([
+    const [allocations, maintenance, transfers, condemnations] = await Promise.all([
       tx.select().from(assetAllocations).where(eq(assetAllocations.assetId, id)).orderBy(desc(assetAllocations.allocatedOn)),
       tx.select().from(assetMaintenance).where(eq(assetMaintenance.assetId, id)).orderBy(desc(assetMaintenance.doneOn)),
+      tx.select().from(assetTransfers).where(eq(assetTransfers.assetId, id)).orderBy(desc(assetTransfers.transferredOn), desc(assetTransfers.createdAt)),
+      tx.select().from(assetCondemnations).where(eq(assetCondemnations.assetId, id)).orderBy(desc(assetCondemnations.createdAt)),
     ]);
-    return { ...this.view(a), qrSvg: qrSvg(`kinetix://asset/${a.tag}`), allocations, maintenance, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
+    const [names] = await tx.select({ room: rooms.name, department: departments.name, vendor: invVendors.name, po: invPurchaseOrders.number }).from(assets).leftJoin(rooms, eq(rooms.id, assets.roomId)).leftJoin(departments, eq(departments.id, assets.departmentId)).leftJoin(invVendors, eq(invVendors.id, assets.vendorId)).leftJoin(invPurchaseOrders, eq(invPurchaseOrders.id, assets.poId)).where(eq(assets.id, id));
+    return { ...this.view(a), ...names, qrSvg: qrSvg(`kinetix://asset/${a.tag}`), allocations, maintenance, transfers, condemnations, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
   }
 
   private async lock(tx: Tx, id: string) {

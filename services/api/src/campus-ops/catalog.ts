@@ -34,9 +34,9 @@ export const NUMBERING: Record<OpsModule, string[]> = {
   hostel: [],
   transport: [],
   canteen: [],
-  inventory: ['TRF', 'RTN'],
-  assets: ['AST'],
-  procurement: ['REQ', 'RFQ', 'PO'],
+  inventory: ['TRF', 'RTN', 'SV', 'GE'],
+  assets: ['AST', 'CND', 'MT', 'FB'],
+  procurement: ['REQ', 'RFQ', 'PO', 'GRN', 'DN', 'PV'],
 };
 
 export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
@@ -71,12 +71,15 @@ export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
     defaults: { unit: 'nos', category: 'general' },
   },
   assets: {
-    rules: { depreciationMethod: 'slm', capitaliseAbovePaise: 500000, amcReminderDays: 30, maintenanceEveryMonths: 6 },
+    // Maintenance tickets fall due this many hours after they are raised, by priority; bookings of halls wait for approval when bookingNeedsApproval is on.
+    rules: { depreciationMethod: 'slm', capitaliseAbovePaise: 500000, amcReminderDays: 30, maintenanceEveryMonths: 6, slaUrgentHours: 4, slaHighHours: 24, slaNormalHours: 72, slaLowHours: 168, bookingNeedsApproval: true },
     templates: { assetTag: '{tag} · {name} · {location}' },
     defaults: { usefulLifeYears: 5, salvagePct: 5 },
   },
   procurement: {
-    rules: { quotesRequiredAbovePaise: 2500000, minQuotes: 3, invoiceTolerancePaise: 100, approvalAbovePaise: 0 },
+    // Up to quotesRequiredAbovePaise an order may go direct to one vendor; above it quotations, a rate contract or GeM;
+    // above tenderAbovePaise a tender or GeM. Orders above approvalAbovePaise (0 = every order) wait for an approver.
+    rules: { quotesRequiredAbovePaise: 2500000, minQuotes: 3, invoiceTolerancePaise: 100, approvalAbovePaise: 5000000, tenderAbovePaise: 50000000, indentBudgetCheck: true },
     templates: { purchaseOrderTerms: 'Delivery within {days} days. Payment 30 days from a matched invoice.' },
     defaults: { paymentTermsDays: 30, deliveryDays: 15 },
   },
@@ -262,5 +265,126 @@ export const REPORTS: Record<string, ReportDef> = {
             round(coalesce((select sum(amount_paise) from inv_invoices i where i.vendor_id = v.id and i.status = 'paid' and i.created_at::date between ${D} and ${T}), 0) / 100.0, 2) as paid
           from inv_vendors v left join inv_purchase_orders po on po.vendor_id = v.id and po.created_at::date between ${D} and ${T} where $3::text is null group by v.id order by v.name`,
     filters: ['from', 'to'],
+  },
+  // ---- stores, procurement, assets and facilities depth (migrations 0171, 0172) ----
+  'inventory.stockRegister': {
+    module: 'inventory',
+    columns: [['store', 'Store'], ['sku', 'SKU'], ['item', 'Item'], ['unit', 'Unit'], ['opening', 'Opening'], ['received', 'Received'], ['issued', 'Issued and used'], ['closing', 'Closing'], ['value', 'Closing value (₹)']],
+    sql: `select st.name as store, i.sku, i.name as item, i.unit,
+            coalesce(sum(m.delta) filter (where m.created_at::date < ${D}), 0)::int as opening,
+            coalesce(sum(m.delta) filter (where m.delta > 0 and m.created_at::date between ${D} and ${T}), 0)::int as received,
+            coalesce(-sum(m.delta) filter (where m.delta < 0 and m.created_at::date between ${D} and ${T}), 0)::int as issued,
+            coalesce(sum(m.delta) filter (where m.created_at::date <= ${T}), 0)::int as closing,
+            round(coalesce(sum(m.delta) filter (where m.created_at::date <= ${T}), 0) * max(i.last_price_paise) / 100.0, 2) as value
+          from inv_stock_moves m join inv_items i on i.id = m.item_id join inv_stores st on st.id = m.store_id where $3::text is null group by st.name, i.id order by st.name, i.name`,
+    filters: ['from', 'to'],
+  },
+  'inventory.slowMoving': {
+    module: 'inventory',
+    columns: [['store', 'Store'], ['sku', 'SKU'], ['item', 'Item'], ['qty', 'In stock'], ['lastOut', 'Last issued'], ['value', 'Value (₹)']],
+    sql: `select st.name as store, i.sku, i.name as item, s.qty, coalesce((select max(m.created_at)::date::text from inv_stock_moves m where m.store_id = s.store_id and m.item_id = s.item_id and m.delta < 0), '') as "lastOut", round(s.qty * i.last_price_paise / 100.0, 2) as value
+          from inv_stock s join inv_items i on i.id = s.item_id join inv_stores st on st.id = s.store_id
+          where s.qty > 0 and not exists (select 1 from inv_stock_moves m where m.store_id = s.store_id and m.item_id = s.item_id and m.delta < 0 and m.created_at::date >= coalesce($1::date, current_date - 365)) and $2::date is null and $3::text is null order by value desc`,
+    filters: ['from'],
+  },
+  'inventory.consumption': {
+    module: 'inventory',
+    columns: [['department', 'Department'], ['sku', 'SKU'], ['item', 'Item'], ['qty', 'Quantity'], ['unit', 'Unit'], ['value', 'Value (₹)']],
+    sql: `select coalesce(d.name, m.issued_to, '') as department, i.sku, i.name as item, (-sum(m.delta))::int as qty, i.unit, round(-sum(m.delta) * max(i.last_price_paise) / 100.0, 2) as value
+          from inv_stock_moves m join inv_items i on i.id = m.item_id left join departments d on d.id = m.department_id
+          where m.kind = 'issue' and m.created_at::date between ${D} and ${T} and $3::text is null group by 1, i.id order by 1, i.name`,
+    filters: ['from', 'to'],
+  },
+  'inventory.verification': {
+    module: 'inventory',
+    columns: [['number', 'Verification'], ['store', 'Store'], ['item', 'Item'], ['book', 'Book'], ['counted', 'Counted'], ['difference', 'Difference'], ['value', 'Difference value (₹)'], ['remark', 'Remark']],
+    sql: `select v.number, st.name as store, i.name as item, l.book_qty as book, l.counted_qty as counted, (l.counted_qty - l.book_qty) as difference, round((l.counted_qty - l.book_qty) * i.last_price_paise / 100.0, 2) as value, l.remark
+          from inv_stock_verification_lines l join inv_stock_verifications v on v.id = l.verification_id join inv_items i on i.id = l.item_id join inv_stores st on st.id = v.store_id
+          where l.counted_qty is not null and v.created_at::date between ${D} and ${T} and ($3::text is null or v.status = $3) order by v.number, i.name`,
+    filters: ['from', 'to', 'status'],
+  },
+  'inventory.gate': {
+    module: 'inventory',
+    columns: [['number', 'Entry'], ['at', 'Date'], ['direction', 'Direction'], ['kind', 'Kind'], ['party', 'From or to'], ['description', 'What'], ['qty', 'Quantity'], ['vehicle', 'Vehicle'], ['expected', 'Expected back'], ['returned', 'Returned on'], ['status', 'Status']],
+    sql: `select number, to_char(created_at, 'YYYY-MM-DD HH24:MI') as at, direction, kind, party, description, qty, vehicle_no as vehicle, coalesce(expected_return_on::text, '') as expected, coalesce(returned_on::text, '') as returned, status
+          from inv_gate_entries where created_at::date between ${D} and ${T} and ${S} order by created_at desc limit 5000`,
+    filters: ['from', 'to', 'status'],
+  },
+  'procurement.register': {
+    module: 'procurement',
+    columns: [['number', 'PO'], ['date', 'Date'], ['vendor', 'Vendor'], ['gstin', 'GSTIN'], ['department', 'Department'], ['mode', 'Purchase mode'], ['reference', 'GeM or tender ref.'], ['total', 'Order value (₹)'], ['received', 'Received value (₹)'], ['invoiced', 'Invoiced (₹)'], ['paid', 'Paid (₹)'], ['status', 'Status']],
+    sql: `select po.number, to_char(po.created_at, 'YYYY-MM-DD') as date, v.name as vendor, coalesce(v.gstin, '') as gstin, coalesce(d.name, '') as department, po.purchase_mode as mode, coalesce(po.gem_ref, po.tender_ref, '') as reference, round(po.total_paise / 100.0, 2) as total,
+            round(coalesce((select sum(l.received_qty * l.unit_price_paise) from inv_po_lines l where l.po_id = po.id), 0) / 100.0, 2) as received,
+            round(coalesce((select sum(i.amount_paise) from inv_invoices i where i.po_id = po.id), 0) / 100.0, 2) as invoiced,
+            round(coalesce((select sum(i.amount_paise - i.debit_paise) from inv_invoices i where i.po_id = po.id and i.status = 'paid'), 0) / 100.0, 2) as paid, po.status
+          from inv_purchase_orders po join inv_vendors v on v.id = po.vendor_id left join departments d on d.id = po.department_id
+          where po.created_at::date between ${D} and ${T} and ($3::text is null or po.status = $3) order by po.created_at limit 5000`,
+    filters: ['from', 'to', 'status'],
+  },
+  'procurement.indents': {
+    module: 'procurement',
+    columns: [['number', 'Indent'], ['date', 'Date'], ['requester', 'Raised by'], ['department', 'Department'], ['estimate', 'Estimate (₹)'], ['budget', 'Budget'], ['status', 'Status']],
+    sql: `select r.number, to_char(r.created_at, 'YYYY-MM-DD') as date, u.full_name as requester, coalesce(d.name, '') as department, round(r.estimated_paise / 100.0, 2) as estimate, coalesce(r.budget_status, '') as budget, r.status
+          from inv_requisitions r join users u on u.id = r.requested_by left join departments d on d.id = r.department_id where r.created_at::date between ${D} and ${T} and ($3::text is null or r.status = $3) order by r.created_at desc limit 5000`,
+    filters: ['from', 'to', 'status'],
+  },
+  'procurement.debitNotes': {
+    module: 'procurement',
+    columns: [['number', 'Debit note'], ['date', 'Date'], ['vendor', 'Vendor'], ['po', 'PO'], ['amount', 'Amount (₹)'], ['reason', 'Reason'], ['status', 'Status']],
+    sql: `select n.number, to_char(n.created_at, 'YYYY-MM-DD') as date, v.name as vendor, po.number as po, round(n.amount_paise / 100.0, 2) as amount, n.reason, n.status
+          from inv_debit_notes n join inv_vendors v on v.id = n.vendor_id join inv_purchase_orders po on po.id = n.po_id where n.created_at::date between ${D} and ${T} and ($3::text is null or n.status = $3) order by n.created_at desc`,
+    filters: ['from', 'to', 'status'],
+  },
+  'assets.deadStock': {
+    module: 'assets',
+    columns: [['tag', 'Tag'], ['name', 'Article'], ['category', 'Category'], ['purchasedOn', 'Purchased'], ['supplier', 'Supplier'], ['invoice', 'Invoice no.'], ['cost', 'Cost (₹)'], ['department', 'Department'], ['location', 'Location'], ['status', 'Status'], ['writtenOff', 'Written off on']],
+    sql: `select a.tag, a.name, a.category, a.purchased_on::text as "purchasedOn", coalesce(v.name, '') as supplier, coalesce(a.invoice_no, '') as invoice, round(a.cost_paise / 100.0, 2) as cost, coalesce(d.name, '') as department, coalesce(r.name, a.location, '') as location, a.status, coalesce(a.disposed_on::text, '') as "writtenOff"
+          from assets a left join inv_vendors v on v.id = a.vendor_id left join departments d on d.id = a.department_id left join rooms r on r.id = a.room_id
+          where a.purchased_on between ${D} and ${T} and ($3::text is null or a.status = $3) order by a.category, a.tag`,
+    filters: ['from', 'to', 'status'],
+  },
+  'assets.naacInfra': {
+    module: 'assets',
+    columns: [['year', 'Financial year'], ['head', 'Head'], ['detail', 'Category'], ['amount', 'Amount (₹)']],
+    sql: `with spend as (
+            select a.purchased_on as on_date, 'Capital: infrastructure and equipment' as head, a.category as detail, a.cost_paise as paise from assets a
+            union all select m.done_on, 'Maintenance: repairs and servicing', a.category, m.cost_paise from asset_maintenance m join assets a on a.id = m.asset_id where m.cost_paise > 0
+            union all select c.starts_on, 'Maintenance: annual maintenance contracts', coalesce(a.category, 'General'), c.cost_paise from amc_contracts c left join assets a on a.id = c.asset_id where c.status = 'active' and c.cost_paise > 0
+            union all select t.resolved_at::date, 'Maintenance: buildings and facilities', t.category, t.cost_paise from maintenance_tickets t where t.resolved_at is not null and t.cost_paise > 0
+          )
+          select (extract(year from on_date)::int - case when extract(month from on_date) < 4 then 1 else 0 end)::text || '-' || lpad(((extract(year from on_date)::int - case when extract(month from on_date) < 4 then 1 else 0 end + 1) % 100)::text, 2, '0') as year,
+            head, detail, round(sum(paise) / 100.0, 2) as amount
+          from spend where on_date between ${D} and ${T} and $3::text is null group by 1, 2, 3 order by 1 desc, 2, 3`,
+    filters: ['from', 'to'],
+  },
+  'assets.transfers': {
+    module: 'assets',
+    columns: [['on', 'Date'], ['tag', 'Tag'], ['asset', 'Asset'], ['from', 'From'], ['to', 'To'], ['reason', 'Reason']],
+    sql: `select t.transferred_on::text as on, a.tag, a.name as asset, concat_ws(' · ', fd.name, fr.name, nullif(t.from_location, '')) as from, concat_ws(' · ', td.name, tr.name, nullif(t.to_location, '')) as to, t.reason
+          from asset_transfers t join assets a on a.id = t.asset_id left join rooms fr on fr.id = t.from_room_id left join rooms tr on tr.id = t.to_room_id left join departments fd on fd.id = t.from_department_id left join departments td on td.id = t.to_department_id
+          where t.transferred_on between ${D} and ${T} and $3::text is null order by t.transferred_on desc`,
+    filters: ['from', 'to'],
+  },
+  'assets.condemned': {
+    module: 'assets',
+    columns: [['number', 'Proposal'], ['tag', 'Tag'], ['asset', 'Asset'], ['cost', 'Cost (₹)'], ['reason', 'Reason'], ['status', 'Status'], ['mode', 'Disposed by'], ['realised', 'Realised (₹)'], ['on', 'Written off on']],
+    sql: `select c.number, a.tag, a.name as asset, round(a.cost_paise / 100.0, 2) as cost, c.reason, c.status, coalesce(c.disposal_mode, '') as mode, round(coalesce(c.realised_paise, 0) / 100.0, 2) as realised, coalesce(c.written_off_on::text, '') as on
+          from asset_condemnations c join assets a on a.id = c.asset_id where c.created_at::date between ${D} and ${T} and ($3::text is null or c.status = $3) order by c.created_at desc`,
+    filters: ['from', 'to', 'status'],
+  },
+  'assets.bookings': {
+    module: 'assets',
+    columns: [['number', 'Booking'], ['on', 'Date'], ['time', 'Time'], ['room', 'Room'], ['title', 'Event'], ['organiser', 'Organised by'], ['attendees', 'Attendance'], ['status', 'Status']],
+    sql: `select b.number, b.on_date::text as on, to_char(b.starts_at, 'HH24:MI') || '–' || to_char(b.ends_at, 'HH24:MI') as time, r.name as room, b.title, b.organiser, b.attendees, b.status
+          from facility_bookings b join rooms r on r.id = b.room_id where b.on_date between ${D} and ${T} and ($3::text is null or b.status = $3) order by b.on_date, b.starts_at`,
+    filters: ['from', 'to', 'status'],
+  },
+  'assets.tickets': {
+    module: 'assets',
+    columns: [['number', 'Ticket'], ['raised', 'Raised'], ['category', 'Category'], ['priority', 'Priority'], ['title', 'Problem'], ['where', 'Where'], ['status', 'Status'], ['due', 'Due'], ['resolved', 'Resolved'], ['sla', 'Deadline'], ['cost', 'Cost (₹)']],
+    sql: `select t.number, to_char(t.created_at, 'YYYY-MM-DD HH24:MI') as raised, t.category, t.priority, t.title, coalesce(r.name, nullif(t.location, ''), '') as where, t.status, to_char(t.due_at, 'YYYY-MM-DD HH24:MI') as due, coalesce(to_char(t.resolved_at, 'YYYY-MM-DD HH24:MI'), '') as resolved,
+            case when t.resolved_at is not null then (case when t.resolved_at <= t.due_at then 'met' else 'breached' end) when now() > t.due_at then 'breached' else 'open' end as sla, round(t.cost_paise / 100.0, 2) as cost
+          from maintenance_tickets t left join rooms r on r.id = t.room_id where t.created_at::date between ${D} and ${T} and ($3::text is null or t.status = $3) order by t.created_at desc limit 5000`,
+    filters: ['from', 'to', 'status'],
   },
 };
