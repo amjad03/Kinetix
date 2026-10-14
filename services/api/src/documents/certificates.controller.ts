@@ -6,14 +6,14 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
-import { localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
-import { certificateTemplates, tenants } from '../db/schema.js';
+import { certificateTemplates } from '../db/schema.js';
 import { CertificatesService, templateView } from './certificates.service.js';
 import { CERT_APPROVERS, hasRole, OFFICE_ROLES } from './documents.access.js';
-import { certificatePdf } from './pdfs.js';
-import { longDate } from './render.js';
+import { certificateDocType, citationFrom, emphasiseName, staffBlock, studentBlock } from './doc-data.js';
+import { DocumentEngine } from './document-engine.service.js';
+import { IssuedDocsService } from './issued-docs.service.js';
 
 const Fields = z.array(z.object({ key: z.string().regex(/^[A-Za-z][A-Za-z0-9]{0,29}$/, 'Use letters and digits'), label: z.string().trim().min(1).max(80), required: z.boolean() })).max(12);
 const TemplateBody = z.object({
@@ -43,6 +43,8 @@ export class CertificatesController {
   constructor(
     private readonly db: DbService,
     private readonly certs: CertificatesService,
+    private readonly engine: DocumentEngine,
+    private readonly issued: IssuedDocsService,
   ) {}
 
   @Get('templates')
@@ -138,7 +140,10 @@ export class CertificatesController {
     return this.db.withTenant(p.tenantId, (tx) => this.certs.bulkIssue(tx, p, b));
   }
 
-  /** The certificate as a PDF with its verification QR; revoked ones are stamped. */
+  /**
+   * The certificate as a PDF, in the institution's template for its kind, recorded in the register
+   * under the certificate's own QR token. A revoked certificate prints its record, which verifies as revoked.
+   */
   @Get('requests/:id/pdf')
   @Auth('user')
   pdf(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
@@ -148,11 +153,35 @@ export class CertificatesController {
       if (c.status !== 'issued' && c.status !== 'revoked') throw new NotFoundException('This certificate has not been issued');
       if (!hasRole(p, OFFICE_ROLES) && c.status === 'revoked') throw new ForbiddenException('This certificate was revoked');
       const [view] = await this.certs.views(tx, [c]);
-      const [tenant] = await tx.select({ name: tenants.name, tz: tenants.timezone }).from(tenants);
+      const [tmpl] = await tx.select().from(certificateTemplates).where(eq(certificateTemplates.id, c.templateId));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'certificate.downloaded', subjectType: 'certificate', subjectId: id, data: { serialNo: c.serialNo } });
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="${c.serialNo!.replace(/\//g, '-')}.pdf"`);
-      return new StreamableFile(certificatePdf({ institution: tenant.name, title: c.renderedTitle!, body: c.renderedBody!, serialNo: c.serialNo!, issuedOn: longDate(localParts(c.issuedAt!, tenant.tz).date), verifyUrl: view.verifyUrl!, revoked: c.status === 'revoked' }));
+      if (c.status === 'revoked') {
+        const [rec] = await this.issued.list(tx, { sourceType: 'certificate', sourceId: id });
+        if (rec) return new StreamableFile((await this.engine.reprint(tx, rec.id)).pdf);
+      }
+      const name = view.subject.name;
+      const subject = c.studentId ? await studentBlock(tx, c.studentId) : await staffBlock(tx, c.staffUserId!);
+      const body = c.renderedBody!;
+      const fields = (tmpl?.fields ?? []).map((f) => ({ label: f.label, value: c.fields[f.key] ?? '' })).filter((f) => f.value);
+      const docType = certificateDocType(tmpl?.kind as CertificateTemplate['kind']);
+      const tc = docType === 'transfer_certificate' ? [{ label: 'Name of the student', value: name }, ...(view.subject.detail ? [{ label: 'Class and roll number', value: view.subject.detail }] : []), ...fields] : fields;
+      const out = await this.engine.produce(tx, p, {
+        docType,
+        title: c.renderedTitle!,
+        subject: { type: c.studentId ? 'student' : 'staff', id: c.studentId ?? c.staffUserId, name },
+        source: { type: 'certificate', id },
+        serial: c.serialNo!,
+        token: c.verifyToken ?? undefined,
+        data: {
+          ...subject,
+          doc: { title: c.renderedTitle!, purpose: c.purpose, body: docType === 'transfer_certificate' ? 'Certified that the above particulars are true as per the records of the institution.' : emphasiseName(body, name), fields: tc, certificateNo: c.serialNo! },
+          award: { title: c.renderedTitle!, recipient: name, citation: emphasiseName(citationFrom(body, name), name), event: c.purpose, date: '', position: '' },
+        },
+        keyFields: [{ label: 'Certificate', value: c.renderedTitle! }, { label: 'Issued to', value: name }, { label: 'Certificate number', value: c.serialNo! }, ...fields.slice(0, 4)],
+      });
+      return new StreamableFile(out.pdf);
     });
   }
 }

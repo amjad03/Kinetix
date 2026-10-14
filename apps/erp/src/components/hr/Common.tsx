@@ -11,7 +11,8 @@ import { Alert, Snackbar } from '@/components/kx';
 export function SectionTabs({ tabs, label }: { tabs: { href: string; label: MessageKey }[]; label: MessageKey }) {
   const pathname = usePathname();
   const { t } = useI18n();
-  const current = tabs.find((x) => (x.href === tabs[0].href ? pathname === x.href : pathname.startsWith(x.href)))?.href ?? tabs[0].href;
+  // The longest matching tab wins, so /documents/templates/wording is not shown as /documents/templates.
+  const current = tabs.filter((x) => (x.href === tabs[0].href ? pathname === x.href : pathname.startsWith(x.href))).sort((a, b) => b.href.length - a.href.length)[0]?.href ?? tabs[0].href;
   return (
     <div className="mb-6">
       <LinkTabs value={current} label={t(label)} items={tabs.map((x) => ({ value: x.href, href: x.href, label: t(x.label) }))} />
@@ -66,6 +67,8 @@ export function useNotice() {
 export const DOC_TABS: { href: string; label: MessageKey }[] = [
   { href: '/documents', label: 'doc.tab.requests' },
   { href: '/documents/templates', label: 'doc.tab.templates' },
+  { href: '/documents/templates/wording', label: 'doc.tab.wording' },
   { href: '/documents/id-cards', label: 'doc.tab.idCards' },
+  { href: '/documents/issued', label: 'doc.tab.issued' },
   { href: '/documents/vault', label: 'doc.tab.vault' },
 ];

@@ -1,3 +1,4 @@
+import { IssuedDocsService } from '../documents/issued-docs.service.js';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { and, eq, inArray, sql, type SQL } from 'drizzle-orm';
@@ -79,6 +80,7 @@ export class ExamOfficeService {
     private readonly db: DbService,
     private readonly notes: NotificationsService,
     private readonly tasks: TasksService,
+    private readonly issued: IssuedDocsService,
   ) {}
 
   private async q<T = Row>(tx: Tx, query: SQL): Promise<T[]> {
@@ -723,6 +725,8 @@ export class ExamOfficeService {
     const blocked = action === 'block';
     if (h.blocked === blocked) throw new ConflictException(blocked ? 'The hall ticket is already withheld' : 'The hall ticket is already issued');
     await tx.update(hallTickets).set({ blocked, blockedReason: blocked ? note : null }).where(and(eq(hallTickets.sessionId, sid), eq(hallTickets.studentId, stid)));
+    // A withheld ticket already printed now verifies as revoked.
+    if (blocked) await this.issued.revokeSource(tx, p, 'hall_ticket', `${sid}:${stid}`, `Withheld: ${note}`);
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `exam.hall_ticket.${blocked ? 'withheld' : 'released'}`, subjectType: 'hall_ticket', subjectId: stid, data: { sessionId: sid, note } });
     const [s] = await tx.select({ name: examSessions.name }).from(examSessions).where(eq(examSessions.id, sid));
     await this.notes.examNotice(tx, [stid], {

@@ -3048,6 +3048,11 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'institution_branding',
+  'doc_templates',
+  'doc_template_versions',
+  'doc_template_defaults',
+  'issued_documents',
   'module_settings',
   'library_stock_checks',
   'library_stock_check_items',
@@ -7818,4 +7823,137 @@ export const academicRequests = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [index('academic_requests_status_idx').on(t.tenantId, t.status, t.kind), uniqueIndex('academic_requests_number_uq').on(t.tenantId, t.number)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Branding and the document engine (docs/architecture/documents-certificates.md)
+// ---------------------------------------------------------------------------------------------
+
+export interface BrandAssetRow {
+  key: string;
+  version: string;
+  contentType: string;
+  width: number;
+  height: number;
+}
+
+export interface SignatoryRow {
+  name: string;
+  designation: string;
+  signature?: BrandAssetRow | null;
+}
+
+/** An institution's look: palette, fonts, logos, seal and signatures. One row each. */
+export const institutionBranding = pgTable('institution_branding', {
+  id: id(),
+  tenantId: tenantId().unique(),
+  palette: jsonb('palette').$type<Record<string, string>>().notNull().default({}),
+  fonts: jsonb('fonts').$type<{ heading?: string; body?: string }>().notNull().default({}),
+  /** logo, logo_dark, emblem, seal, favicon. */
+  assets: jsonb('assets').$type<Record<string, BrandAssetRow>>().notNull().default({}),
+  /** principal, registrar, controller, finance, hr. */
+  signatories: jsonb('signatories').$type<Record<string, SignatoryRow>>().notNull().default({}),
+  tagline: text('tagline'),
+  gstin: text('gstin'),
+  updatedBy: uuid('updated_by').references(() => users.id),
+  updatedAt: updatedAt(),
+});
+
+/** An institution's document template: a layout (packages/shared doc-layout.ts) for one document type. */
+export const docTemplates = pgTable(
+  'doc_templates',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    docType: text('doc_type').notNull(),
+    name: text('name').notNull(),
+    /** The preset or template it was copied from. */
+    basedOn: text('based_on'),
+    style: text('style'),
+    layout: jsonb('layout').notNull(),
+    version: integer('version').notNull().default(1),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('doc_templates_type_idx').on(t.tenantId, t.docType)],
+);
+
+/** Every saved version of a template (the current one included). */
+export const docTemplateVersions = pgTable(
+  'doc_template_versions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    templateId: uuid('template_id').notNull().references(() => docTemplates.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    name: text('name').notNull(),
+    layout: jsonb('layout').notNull(),
+    note: text('note'),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('doc_template_versions_uq').on(t.templateId, t.version)],
+);
+
+/** The template a document type uses: a template id or a system preset id (`preset:<type>:<style>`). */
+export const docTemplateDefaults = pgTable(
+  'doc_template_defaults',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    docType: text('doc_type').notNull(),
+    templateRef: text('template_ref').notNull(),
+    updatedBy: uuid('updated_by').references(() => users.id),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('doc_template_defaults_uq').on(t.tenantId, t.docType)],
+);
+
+/**
+ * The register of issued documents: what was issued, to whom, the hash of its data signed with
+ * the institution's Ed25519 key, and its status. The QR on every document opens its record.
+ */
+export const issuedDocuments = pgTable(
+  'issued_documents',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    docType: text('doc_type').notNull(),
+    serial: text('serial').notNull(),
+    title: text('title').notNull(),
+    subjectType: text('subject_type').notNull(),
+    subjectId: uuid('subject_id'),
+    subjectName: text('subject_name'),
+    /** What the document was made from (a payment, a certificate request, a payslip…), for reissue. */
+    sourceType: text('source_type').notNull(),
+    sourceId: text('source_id').notNull(),
+    /** The fields the public verification page shows. */
+    keyFields: jsonb('key_fields').$type<{ label: string; value: string }[]>().notNull().default([]),
+    /** The data the document was rendered from. */
+    payload: jsonb('payload').notNull(),
+    payloadHash: text('payload_hash').notNull(),
+    signature: text('signature').notNull(),
+    keyId: text('key_id').notNull(),
+    publicKeyPem: text('public_key_pem').notNull(),
+    templateRef: text('template_ref'),
+    templateVersion: integer('template_version'),
+    /** valid | revoked | superseded */
+    status: text('status').notNull().default('valid'),
+    verifyToken: text('verify_token').notNull(),
+    issuedBy: uuid('issued_by').references(() => users.id),
+    issuedAt: timestamp('issued_at', { withTimezone: true }).notNull().defaultNow(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    revokedBy: uuid('revoked_by').references(() => users.id),
+    revokedReason: text('revoked_reason'),
+    supersededBy: uuid('superseded_by'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('issued_documents_serial_uq').on(t.tenantId, t.serial),
+    uniqueIndex('issued_documents_token_uq').on(t.verifyToken),
+    index('issued_documents_source_idx').on(t.tenantId, t.sourceType, t.sourceId),
+    index('issued_documents_type_idx').on(t.tenantId, t.docType, t.issuedAt),
+  ],
 );

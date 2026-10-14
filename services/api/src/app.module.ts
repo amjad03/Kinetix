@@ -76,6 +76,7 @@ import { CourseFilesModule } from './course-files/course-files.module.js';
 import { QuestionBankModule } from './question-bank/question-bank.module.js';
 import { AcademicAuditModule } from './academic-audit/academic-audit.module.js';
 import { SkillsModule } from './skills/skills.module.js';
+import { DocEngineModule } from './documents/doc-engine.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
@@ -209,6 +210,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     QuestionBankModule,
     AcademicAuditModule,
     SkillsModule,
+    DocEngineModule,
     DocumentsModule,
     PlatformModule,
     AnalyticsModule,

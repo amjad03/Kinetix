@@ -341,14 +341,26 @@ export interface CertificateRequest {
 }
 
 /** GET /v1/public/verify/:slug/:token (no sign-in). Reveals no more than the certificate shows. */
+/**
+ * The public answer for a document's QR. Documents in the register (see DocumentVerification in
+ * doc-layout.ts) add the document type, key fields, a signature check, the logo and palette.
+ */
 export interface CertificateVerification {
-  status: 'valid' | 'revoked' | 'not_found';
+  status: 'valid' | 'revoked' | 'superseded' | 'not_found';
   institution?: string;
   title?: string;
   serialNo?: string;
-  subjectName?: string;
+  subjectName?: string | null;
   issuedOn?: string;
   revokedOn?: string;
+  revokedReason?: string | null;
+  docType?: string;
+  fields?: { label: string; value: string }[];
+  signatureValid?: boolean;
+  keyId?: string;
+  fingerprint?: string;
+  logo?: string | null;
+  palette?: Record<string, string>;
 }
 
 export interface IdCardVerification {

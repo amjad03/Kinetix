@@ -40,6 +40,7 @@ import hr from './hr';
 import lms from './lms';
 import finance from './finance';
 import documents from './documents';
+import docDesigns from './doc-designs';
 import campus from './campus';
 import insights from './insights';
 import work from './work';
@@ -79,7 +80,7 @@ import ease from './ease';
 import qualityHub from './quality-hub';
 import workflowBuilder from './workflow-builder';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk, v2, ease, campusOps , qualityHub, workflowBuilder } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, docDesigns, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk, v2, ease, campusOps , qualityHub, workflowBuilder } as const;
 
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.
 // See docs/i18n/erp.md for how to add strings.

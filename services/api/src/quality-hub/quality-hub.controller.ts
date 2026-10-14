@@ -1,3 +1,4 @@
+import { DocumentEngine } from '../documents/document-engine.service.js';
 import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Put, Query, Res } from '@nestjs/common';
 import { inArray, sql, type SQL } from 'drizzle-orm';
 import type { Response } from 'express';
@@ -38,7 +39,10 @@ const bindId = (text: string, id: string): SQL => sql.join(text.split(':id').map
  */
 @Controller('v1/quality-hub')
 export class QualityHubController {
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly engine: DocumentEngine,
+  ) {}
 
   // ---- settings ---------------------------------------------------------------------------------
 
@@ -174,7 +178,11 @@ export class QualityHubController {
     if (format === 'json') return { id: rid, module: def.module, criterion: def.criterion ?? null, columns: def.columns, statuses: def.statuses ?? [], entity: def.entity ?? null, rows };
     const title = headerOf(rid.replace('.', ' '));
     const filters = [from && `From ${from}`, to && `to ${to}`, status && `Status ${status}`].filter(Boolean).join(' ') || 'All records';
-    const buf = format === 'xlsx' ? reportXlsx(title, def.columns, rows) : reportPdf({ title, institution, filters, criterion: def.criterion, columns: def.columns, rows });
+    // PDFs open with the institution's report cover page (document engine, recorded and verifiable).
+    const buf =
+      format === 'xlsx'
+        ? reportXlsx(title, def.columns, rows)
+        : await this.db.withTenant(p.tenantId, (tx) => this.engine.withCover(tx, p, reportPdf({ title, institution, filters, criterion: def.criterion, columns: def.columns, rows }), { title, subtitle: def.criterion ? `Criterion ${def.criterion}` : def.module, period: [from, to].filter(Boolean).join(' to ') || 'All dates', preparedBy: institution, filters, criterion: def.criterion ?? '', source: { type: 'report', id: `${rid}:${from ?? ''}:${to ?? ''}:${status ?? ''}:${rows.length}` } }));
     const type = format === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/pdf';
     res.set({ 'content-type': type, 'content-disposition': `attachment; filename="${rid}.${format}"`, 'x-content-type-options': 'nosniff', 'cache-control': 'private, no-store' });
     res.end(buf);

@@ -9,7 +9,8 @@ import { DbService } from '../db/db.service.js';
 import { AdmissionsService } from './admissions.service.js';
 import { ADMISSIONS_ROLES } from './admissions.controller.js';
 import { EnquiriesService } from './enquiries.service.js';
-import { EntranceService, hallTicketPdf } from './entrance.service.js';
+import { EntranceService, entranceTicketInput } from './entrance.service.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
 
 const Time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use a time like 09:30');
 const Hall = z.object({ name: z.string().trim().min(1).max(60), capacity: z.number().int().min(1).max(5000) });
@@ -49,6 +50,7 @@ export class EntranceController {
     private readonly entrance: EntranceService,
     private readonly svc: AdmissionsService,
     private readonly enquiries: EnquiriesService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   // ---- entrance tests ----------------------------------------------------------------------------
@@ -95,10 +97,13 @@ export class EntranceController {
   @Get('entrance-tests/:id/hall-ticket/:applicationId')
   @Auth('user', ADMISSIONS_ROLES)
   async hallTicket(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Param('applicationId', ParseUUIDPipe) applicationId: string, @Res({ passthrough: true }) res: Response) {
-    const data = await this.db.withTenant(p.tenantId, (tx) => this.entrance.ticket(tx, id, applicationId));
+    const { data, pdf } = await this.db.withTenant(p.tenantId, async (tx) => {
+      const data = await this.entrance.ticket(tx, id, applicationId);
+      return { data, pdf: (await this.engine.produce(tx, p, entranceTicketInput(data, applicationId))).pdf };
+    });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="hall-ticket-${data.applicationNo.replace(/\//g, '-')}.pdf"`);
-    return new StreamableFile(hallTicketPdf(data));
+    return new StreamableFile(pdf);
   }
 
   // ---- seat quotas -----------------------------------------------------------------------------------

@@ -7,12 +7,14 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { appraisalCycles, appraisals, departments, departmentStaff, jobApplicants, jobOpenings, offerLetters, onboardingItems, staffProfiles, tenants, trainingRecords, users } from '../db/schema.js';
+import { appraisalCycles, appraisals, departments, departmentStaff, jobApplicants, jobOpenings, offerLetters, onboardingItems, staffProfiles, trainingRecords, users } from '../db/schema.js';
 import { APPRAISAL_CATEGORIES, APPRAISAL_MAX, gradeFor, percentOf, scoreProblems } from './appraisal-math.js';
 import { addDays } from './dates.js';
 import { hasAnyRole, HR_ROLES, isHr, PAYROLL_APPROVERS, STAFF_ROLES } from './hr.access.js';
 import { HrService } from './hr.service.js';
-import { offerLetterPdf } from './letters-pdf.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { rupees, rupeeWords } from '../documents/doc-data.js';
+import { longDate } from './letters-pdf.js';
 import { ONBOARDING_CHECKLIST } from './onboarding-checklist.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
@@ -42,6 +44,7 @@ export class TalentController {
   constructor(
     private readonly db: DbService,
     private readonly hr: HrService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   private act = (p: UserPrincipal) => ({ tenantId: p.tenantId, actorType: 'user' as const, actorId: p.userId });
@@ -324,17 +327,25 @@ export class TalentController {
 
   @Get('offers/:id/pdf')
   @Auth('user', HR_ROLES)
-  async offerPdf(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
-    const data = await this.db.withTenant(p.tenantId, async (tx) => {
-      const r = await this.offerData(tx, id);
-      const [t] = await tx.select({ name: tenants.name }).from(tenants);
-      return { r, institution: t?.name ?? '' };
+  offerPdf(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { o, name, dept } = await this.offerData(tx, id);
+      const out = await this.engine.produce(tx, p, {
+        docType: 'offer_letter',
+        title: 'Offer of Appointment',
+        subject: { type: 'candidate', id: null, name },
+        source: { type: 'offer_letter', id },
+        serial: o.offerNo,
+        data: { offer: { no: o.offerNo, date: longDate(o.createdAt.toISOString().slice(0, 10)), candidateName: name, candidateAddress: '', position: o.position, department: dept ?? '', ctc: rupees(o.annualCtcPaise).replace(/\.00$/, ''), ctcWords: rupeeWords(o.annualCtcPaise), joiningDate: longDate(o.joiningOn), validUntil: longDate(o.validUntil), terms: o.terms } },
+        keyFields: [{ label: 'Offer number', value: o.offerNo }, { label: 'Candidate', value: name }, { label: 'Position', value: o.position }, { label: 'Joining on', value: longDate(o.joiningOn) }],
+        photo: null,
+      });
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="offer-${o.offerNo.replace(/\//g, '-')}.pdf"`);
+      return new StreamableFile(out.pdf);
     });
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="offer-${data.r.o.offerNo.replace(/\//g, '-')}.pdf"`);
-    const { o, name, dept } = data.r;
-    return new StreamableFile(offerLetterPdf({ institution: data.institution, offerNo: o.offerNo, issuedOn: o.createdAt.toISOString().slice(0, 10), candidateName: name, position: o.position, department: dept, annualCtcPaise: o.annualCtcPaise, joiningOn: o.joiningOn, validUntil: o.validUntil, terms: o.terms }));
   }
+
 
   // ---- onboarding checklist ----------------------------------------------------------------------------
 

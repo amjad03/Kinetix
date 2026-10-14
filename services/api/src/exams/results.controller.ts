@@ -9,7 +9,9 @@ import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, marks, programs, revaluationRequests, rooms, sections, students, subjects, tenants } from '../db/schema.js';
-import { marksCardPdf, transcriptPdf, type ResultData, type StudentHeader } from './documents.js';
+import { marksCardData, transcriptData, type ResultData, type StudentHeader } from './documents.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { studentBlock } from '../documents/doc-data.js';
 import { ExamsService } from './exams.service.js';
 import { ADMIN } from './schemes.controller.js';
 import { REVAL_KINDS, revalFee } from '../exam-office/exam-office.logic.js';
@@ -40,6 +42,7 @@ export class ResultsController {
   constructor(
     private readonly db: DbService,
     private readonly exams: ExamsService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   @Get('results/students/:studentId')
@@ -108,7 +111,17 @@ export class ResultsController {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
       const term = (await this.published(tx, studentId)).find((t) => t.sessionId === sessionId);
       if (!term) throw new NotFoundException('No published result for that session');
-      return marksCardPdf(await studentHeader(tx, p.tenantId, studentId), term);
+      const block = await studentBlock(tx, studentId);
+      const h = await studentHeader(tx, p.tenantId, studentId);
+      const out = await this.engine.produce(tx, p, {
+        docType: 'marks_card',
+        title: 'Statement of Marks',
+        subject: { type: 'student', id: studentId, name: h.name },
+        source: { type: 'marks_card', id: `${studentId}:${sessionId}` },
+        data: { ...block, ...marksCardData(term) },
+        keyFields: [{ label: 'Candidate', value: `${h.name} (${h.rollNo})` }, { label: 'Examination', value: `${term.sessionName}, semester ${term.term}` }, { label: 'SGPA', value: term.sgpa.toFixed(2) }, { label: 'CGPA', value: term.cgpa.toFixed(2) }, { label: 'Result', value: term.outcome === 'pass' ? 'Pass' : 'Not passed' }],
+      });
+      return out.pdf;
     });
     this.send(res, pdf, 'marks-card.pdf');
   }
@@ -121,7 +134,18 @@ export class ResultsController {
       const terms = await this.published(tx, studentId);
       if (terms.length === 0) throw new NotFoundException('No published results yet');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transcript.generated', subjectType: 'student', subjectId: studentId });
-      return transcriptPdf(await studentHeader(tx, p.tenantId, studentId), terms);
+      const h = await studentHeader(tx, p.tenantId, studentId);
+      const data = transcriptData(terms);
+      const tr = data.transcript as Record<string, unknown>;
+      const out = await this.engine.produce(tx, p, {
+        docType: 'transcript',
+        title: 'Consolidated Marks Memo',
+        subject: { type: 'student', id: studentId, name: h.name },
+        source: { type: 'transcript', id: studentId },
+        data: { ...(await studentBlock(tx, studentId)), ...data },
+        keyFields: [{ label: 'Candidate', value: `${h.name} (${h.rollNo})` }, { label: 'Programme', value: h.program }, { label: 'CGPA', value: String(tr.cgpa) }, { label: 'Credits earned', value: String(tr.creditsEarned) }],
+      });
+      return out.pdf;
     });
     this.send(res, pdf, 'transcript.pdf');
   }

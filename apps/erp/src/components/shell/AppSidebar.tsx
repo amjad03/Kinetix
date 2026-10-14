@@ -44,6 +44,7 @@ export function AppSidebar({
   groups,
   pathname,
   school,
+  schoolLogo = null,
   roleText,
   workspace,
   home,
@@ -53,6 +54,7 @@ export function AppSidebar({
   groups: NavGroup[];
   pathname: string;
   school: string;
+  schoolLogo?: string | null;
   roleText: string;
   workspace: Workspace;
   home: string;
@@ -117,7 +119,12 @@ export function AppSidebar({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" data-testid="workspace-switcher" aria-label={t('g1.ws.label')} className="rounded-xl border bg-card hover:bg-sidebar-accent group-data-[collapsible=icon]:border-0">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-primary text-sm font-bold text-primary-foreground">{school.trim().charAt(0).toUpperCase() || 'K'}</span>
+                  {schoolLogo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={schoolLogo} alt="" className="size-8 shrink-0 rounded-[9px] bg-white object-contain p-0.5" data-testid="school-logo" />
+                  ) : (
+                    <span className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-primary text-sm font-bold text-primary-foreground">{school.trim().charAt(0).toUpperCase() || 'K'}</span>
+                  )}
                   <span className="grid min-w-0 flex-1 text-left leading-tight">
                     <b className="truncate text-[13px] text-foreground" data-testid="school-name">
                       {school}

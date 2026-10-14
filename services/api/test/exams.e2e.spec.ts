@@ -1,7 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
+import { createApp, createTenant, FixedClock, ownerPool, pdfText } from './helpers.js';
 import * as s from '../src/db/schema.js';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
@@ -123,7 +123,7 @@ describe('assessment schemes, exams and results', () => {
     const pdf = await http().get(`/v1/exam-sessions/${sessionId}/hall-tickets/${t.students[A].id}/pdf`).set(as('parentA')).buffer().parse((res, cb) => { const d: Buffer[] = []; res.on('data', (c) => d.push(c)); res.on('end', () => cb(null, Buffer.concat(d))); }).expect(200);
     expect(pdf.headers['content-type']).toBe('application/pdf');
     expect((pdf.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
-    expect((pdf.body as Buffer).toString('latin1')).toContain('Corporate Accounting');
+    expect(pdfText(pdf.body as Buffer)).toContain('Corporate Accounting');
     await http().get(`/v1/exam-sessions/${sessionId}/hall-tickets/${t.students[A].id}/pdf`).set(as('parentB')).expect(404); // not their child
     await http().get(`/v1/exam-sessions/${sessionId}/hall-tickets/${t.students[C].id}/pdf`).set(as('student')).expect(403); // withheld
     // The student's own view: the timetable, the hall ticket and whether it is withheld.
@@ -181,9 +181,9 @@ describe('assessment schemes, exams and results', () => {
 
     const bin = (res: request.Response, cb: (e: Error | null, b: Buffer) => void) => { const d: Buffer[] = []; res.on('data', (c: Buffer) => d.push(c)); res.on('end', () => cb(null, Buffer.concat(d))); };
     const card = await http().get(`/v1/results/students/${t.students[A].id}/marks-card.pdf?sessionId=${sessionId}`).set(as('parentA')).buffer().parse(bin).expect(200);
-    expect((card.body as Buffer).toString('latin1')).toContain('SGPA: 7.70');
+    expect(pdfText(card.body as Buffer)).toMatch(/SGPA 7.70/i);
     const tr = await http().get(`/v1/results/students/${t.students[A].id}/transcript.pdf`).set(as('parentA')).buffer().parse(bin).expect(200);
-    expect((tr.body as Buffer).toString('latin1')).toContain('Overall CGPA: 7.70');
+    expect(pdfText(tr.body as Buffer)).toMatch(/Cumulative GPA 7.70/i);
     await http().get(`/v1/results/students/${t.students[A].id}/transcript.pdf`).set(as('parentB')).expect(404);
   });
 

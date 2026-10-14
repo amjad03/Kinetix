@@ -8,6 +8,7 @@ import argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
+import { inflateSync } from 'node:zlib';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/setup.js';
@@ -143,4 +144,34 @@ export async function pairBoard(app: INestApplication, t: { enrollmentCode: stri
   const claimed = new Promise<PairingClaimedEvent>((r) => socket.once(RealtimeEvents.PairingClaimed, r));
   await http().post('/v1/pairing/claim').set('authorization', `Bearer ${teacherToken}`).send({ code }).expect(200);
   return { boardToken: (await claimed).sessionToken, deviceToken, socket };
+}
+
+/**
+ * The text of a PDF from the document engine: its content streams are compressed and its text is
+ * glyph ids, so read the ActualText spans the engine writes for every run (plus any plain strings).
+ */
+export function pdfText(pdf: Buffer): string {
+  const out: string[] = [];
+  const src = pdf.toString('latin1');
+  const re = /stream\r?\n/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src))) {
+    const dict = src.slice(Math.max(0, src.lastIndexOf('<<', m.index)), m.index);
+    const len = Number(/\/Length (\d+)/.exec(dict)?.[1] ?? NaN);
+    if (!Number.isFinite(len)) continue;
+    const body = pdf.subarray(m.index + m[0].length, m.index + m[0].length + len);
+    let text = body.toString('latin1');
+    if (dict.includes('/FlateDecode')) {
+      try {
+        text = inflateSync(body).toString('latin1');
+      } catch {
+        continue;
+      }
+    }
+    for (const a of text.matchAll(/\/ActualText <FEFF([0-9A-Fa-f]*)>|\(((?:\\.|[^\\)])*)\) Tj/g)) {
+      if (a[1] !== undefined) out.push(Buffer.from(a[1], 'hex').swap16().toString('utf16le'));
+      else out.push(a[2].replace(/\\(.)/g, '$1'));
+    }
+  }
+  return out.join(' ').replace(/\s+/g, ' ');
 }

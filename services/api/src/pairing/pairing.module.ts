@@ -3,5 +3,5 @@ import { OfflinePairingController, SigningKeys } from './offline-pairing.control
 import { PairingController } from './pairing.controller.js';
 import { PairingService } from './pairing.service.js';
 
-@Module({ controllers: [PairingController, OfflinePairingController], providers: [PairingService, SigningKeys], exports: [PairingService] })
+@Module({ controllers: [PairingController, OfflinePairingController], providers: [PairingService, SigningKeys], exports: [PairingService, SigningKeys] })
 export class PairingModule {}

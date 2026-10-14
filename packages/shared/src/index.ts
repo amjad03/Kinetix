@@ -582,3 +582,5 @@ export * from './admissions.js';
 export * from './hr.js';
 export * from './cast.js';
 export * from './fleet.js';
+export * from './doc-layout.js';
+export * from './doc-samples.js';

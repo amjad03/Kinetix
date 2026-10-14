@@ -1,6 +1,6 @@
+import type { ProduceInput } from '../documents/document-engine.service.js';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, eq, inArray, notInArray, sql } from 'drizzle-orm';
-import { A4, Pdf } from '../common/pdf-doc.js';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
 import { admissionCycles, applications, entranceHalls, entranceSeats, entranceTests, tenants } from '../db/schema.js';
@@ -24,32 +24,21 @@ export interface HallTicketData {
   seatNo: number;
 }
 
-/** A one-page hall ticket: who, when, where and the seat, with a QR of the application number. */
-export function hallTicketPdf(t: HallTicketData): Buffer {
-  const pdf = new Pdf(`Hall ticket ${t.applicationNo}`).addPage();
-  pdf.rect(28, 28, A4.w - 56, 430, { stroke: '#1f3a5f', lineWidth: 1.5 });
-  pdf.text(t.institution, A4.w / 2, 70, { size: 18, bold: true, align: 'center', color: '#1f3a5f' });
-  pdf.text(`${t.testName.toUpperCase()} - HALL TICKET`, A4.w / 2, 100, { size: 13, bold: true, align: 'center' });
-  pdf.text(t.cycleName, A4.w / 2, 118, { size: 10, align: 'center', color: '#555555' });
-  pdf.line(60, 130, A4.w - 60, 130, { color: '#1f3a5f', width: 1 });
-  const rows: [string, string][] = [
-    ['Candidate', t.applicantName],
-    ['Application no.', t.applicationNo],
-    ['Date', t.testDate],
-    ['Reporting time', t.startsAt.slice(0, 5)],
-    ['Duration', `${t.durationMinutes} minutes`],
-    ['Venue', t.venue ?? t.institution],
-    ['Hall', t.hall],
-    ['Seat no.', String(t.seatNo)],
-  ];
-  rows.forEach(([k, v], i) => {
-    const y = 165 + i * 28;
-    pdf.text(k, 70, y, { size: 10, color: '#555555' });
-    pdf.text(v, 200, y, { size: 12, bold: k === 'Seat no.' || k === 'Hall' });
-  });
-  pdf.qr(t.applicationNo, A4.w - 190, 160, 110);
-  pdf.paragraph('Bring this hall ticket and a photo ID. Reach the hall 30 minutes before the start. Phones and smart watches are not allowed.', 70, 410, A4.w - 140, { size: 9, color: '#555555', leading: 13 });
-  return pdf.build();
+/** An entrance-test hall ticket for the document engine (hall ticket template, candidate as the subject). */
+export function entranceTicketInput(t: HallTicketData, applicationId: string): ProduceInput {
+  return {
+    docType: 'hall_ticket',
+    title: 'Hall Ticket',
+    subject: { type: 'candidate', id: null, name: t.applicantName },
+    source: { type: 'entrance_hall_ticket', id: applicationId },
+    data: {
+      student: { name: t.applicantName, rollNo: t.applicationNo, className: t.cycleName, program: t.testName, admissionNo: t.applicationNo },
+      exam: { session: `${t.testName}, ${t.cycleName}`, ticketNo: t.applicationNo, centre: t.venue ?? t.institution, reportingTime: `${t.startsAt.slice(0, 5)} (${t.durationMinutes} minutes)`, instructions: 'Report at the venue 30 minutes before the test with this hall ticket and a photo identity card. Electronic devices are not allowed in the hall.' },
+      papers: [{ date: t.testDate, day: '', time: t.startsAt.slice(0, 5), code: '', subject: t.testName, room: t.hall, seat: String(t.seatNo) }],
+    },
+    keyFields: [{ label: 'Candidate', value: t.applicantName }, { label: 'Application number', value: t.applicationNo }, { label: 'Test', value: t.testName }, { label: 'Date', value: t.testDate }],
+    photo: null,
+  };
 }
 
 /** Entrance tests: scheduling, halls with capacity, seat allocation, hall tickets and score entry. */

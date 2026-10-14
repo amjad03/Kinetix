@@ -18,7 +18,8 @@ import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { AdmissionsService, cycleConfig, hashToken, newToken, type Application } from './admissions.service.js';
 import { EnquiriesService } from './enquiries.service.js';
-import { EntranceService, hallTicketPdf } from './entrance.service.js';
+import { EntranceService, entranceTicketInput } from './entrance.service.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
 import { OnlineTestService } from './online-test.service.js';
 
 const MAX_DOC_BYTES = 5 * 1024 * 1024;
@@ -83,6 +84,7 @@ export class PublicAdmissionsController {
     private readonly storage: ObjectStorage,
     private readonly scans: UploadScanService,
     private readonly limiter: RateLimiter,
+    private readonly engine: DocumentEngine,
   ) {}
 
   private async tenant(slug: string) {
@@ -218,13 +220,14 @@ export class PublicAdmissionsController {
   @Get('applications/:id/hall-ticket')
   async hallTicket(@Param('slug') slug: string, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response, @Headers('x-application-token') token?: string) {
     const t = await this.tenant(slug);
-    const data = await this.db.withTenant(t.id, async (tx) => {
+    const pdf = await this.db.withTenant(t.id, async (tx) => {
       await this.mine(tx, id, token);
-      return this.entrance.ticketForApplicant(tx, id);
+      const data = await this.entrance.ticketForApplicant(tx, id);
+      return (await this.engine.produce(tx, { tenantId: t.id, userId: null }, entranceTicketInput(data, id))).pdf;
     });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename="hall-ticket.pdf"');
-    return new StreamableFile(hallTicketPdf(data));
+    return new StreamableFile(pdf);
   }
 
   /** Where the application stands, for the applicant's tracking page. */

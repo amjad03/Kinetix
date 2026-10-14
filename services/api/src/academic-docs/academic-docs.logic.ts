@@ -1,5 +1,4 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { PdfWriter } from '../common/pdf.js';
 
 export const DOC_KINDS = ['transcript', 'provisional_certificate', 'grade_card'] as const;
 export type DocKind = (typeof DOC_KINDS)[number];
@@ -96,65 +95,4 @@ export function parseDocCode(secret: string, tenantId: string, code: string): st
   const expected = Buffer.from(mac(secret, tenantId, serial));
   const given = Buffer.from(m[2]!);
   return given.length === expected.length && timingSafeEqual(given, expected) ? serial : null;
-}
-
-const header = (pdf: PdfWriter, h: StudentHeader, title: string, serial: string, issuedOn: string) => {
-  pdf.text(h.institution, { size: 16, bold: true, align: 'center' });
-  pdf.text(title, { size: 12, bold: true, align: 'center' });
-  pdf.text(`Serial no: ${serial}    Date of issue: ${issuedOn}`, { size: 9, align: 'center' });
-  pdf.rule();
-  pdf.text(`Name: ${h.name}`, { bold: true });
-  pdf.text(`Roll no: ${h.rollNo}      Class: ${h.className}      Programme: ${h.program}`);
-  pdf.gap(4);
-  pdf.rule();
-};
-
-const footer = (pdf: PdfWriter, verifyUrl: string) => {
-  pdf.gap(10);
-  pdf.qr(verifyUrl, 80);
-  pdf.text('Scan the code to check that this document is genuine.', { size: 9, stay: true });
-  pdf.gap(88);
-  pdf.text('Controller of Examinations', { align: 'right' });
-};
-
-const termRows = (pdf: PdfWriter, t: TermBlock) => {
-  const xs = [0, 70, 270, 320, 370, 420, 470];
-  pdf.row(['Code', 'Subject', 'Credits', 'Marks %', 'Grade', 'Points', 'Result'], xs, { bold: true });
-  pdf.rule();
-  for (const l of t.lines) pdf.row([l.code, l.subject, String(l.credits), l.percent === null ? '-' : l.percent.toFixed(2), l.grade, l.gradePoint.toFixed(2), l.passed ? 'Pass' : 'Fail'], xs);
-  pdf.rule();
-};
-
-/** The issued document as a PDF with a signed QR to the public verification page. */
-export function docPdf(kind: DocKind, s: DocSnapshot, serial: string, issuedOn: string, verifyUrl: string): Buffer {
-  const pdf = new PdfWriter();
-  header(pdf, s.header, DOC_TITLE[kind], serial, issuedOn);
-  if (kind === 'transcript') {
-    for (const t of s.terms) {
-      pdf.gap(6);
-      pdf.text(t.label, { bold: true });
-      termRows(pdf, t);
-      pdf.text(`SGPA ${t.sgpa.toFixed(2)}    Credits earned ${t.creditsEarned}/${t.creditsAttempted}`);
-    }
-    pdf.gap(10);
-    pdf.text(`Cumulative CGPA: ${s.cgpa.toFixed(2)}    Credits earned: ${s.creditsEarned}/${s.creditsAttempted}`, { bold: true, size: 12 });
-  } else if (kind === 'grade_card') {
-    const xs = [0, 250, 330, 410];
-    pdf.row(['Semester', 'SGPA', 'Credits earned', 'Credits attempted'], xs, { bold: true });
-    pdf.rule();
-    for (const t of s.terms) pdf.row([t.label, t.sgpa.toFixed(2), String(t.creditsEarned), String(t.creditsAttempted)], xs);
-    pdf.rule();
-    pdf.text(`CGPA: ${s.cgpa.toFixed(2)}    Credits earned: ${s.creditsEarned}/${s.creditsAttempted}`, { bold: true, size: 12 });
-    pdf.text(`Result: ${s.outcome === 'passed' ? `PASSED${s.classLabel ? ` - ${s.classLabel}` : ''}` : 'NOT YET COMPLETE'}`, { bold: true });
-  } else {
-    pdf.gap(10);
-    pdf.paragraph(
-      `This is to certify that ${s.header.name} (roll no ${s.header.rollNo}) has ${s.outcome === 'passed' ? 'successfully completed' : 'appeared in the examinations of'} the ${s.header.program} programme of this institution, with a cumulative grade point average of ${s.cgpa.toFixed(2)} and ${s.creditsEarned} credits earned${s.outcome === 'passed' && s.classLabel ? `, placed in ${s.classLabel}` : ''}.`,
-      { size: 11 },
-    );
-    pdf.gap(8);
-    pdf.paragraph('This certificate is provisional. It is issued on the request of the student until the degree certificate is awarded by the university, and is valid for that purpose only.', { size: 10 });
-  }
-  footer(pdf, verifyUrl);
-  return pdf.build();
 }

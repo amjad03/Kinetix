@@ -1,8 +1,6 @@
 import { feedCalendar } from '../scheduling/calendar-feed.js';
-import { ENV, type Env } from '../config/env.js';
-import { hallTicketCode } from './hall-ticket-code.js';
 import { hallTicketNumbers } from '../exam-office/settings.js';
-import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
@@ -15,19 +13,18 @@ import { toCsv } from '../common/pdf.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, institutionProfiles, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, tenants, examRegistrationWindows, examRegistrations, users } from '../db/schema.js';
-import type { Readable } from 'node:stream';
-import { ObjectStorage } from '../storage/storage.service.js';
+import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, institutionProfiles, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, examRegistrationWindows, examRegistrations } from '../db/schema.js';
 import { WorkflowsService } from '../workflows/workflows.service.js';
 import { workflowDefinitions, workflowRequests } from '../db/schema.js';
 import { GOVERNANCE_RULES, type GovernanceModel } from '../institution/presets.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { parseDate } from '../teacher/teacher.service.js';
 import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
-import { hallTicketPdf } from './documents.js';
+import { hallTicketData } from './documents.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { studentBlock } from '../documents/doc-data.js';
 import { ExamsService, type SessionRow } from './exams.service.js';
 import { allocateSeats, overlaps, slotGroups } from './seating.js';
-import { studentHeader } from './results.controller.js';
 import { ADMIN } from './schemes.controller.js';
 
 const MANAGE: RoleName[] = [...ADMIN, 'hod'];
@@ -54,12 +51,6 @@ const PaperBody = z.object({
 const SeatingBody = z.object({ halls: z.array(z.object({ roomId: z.uuid(), capacity: z.number().int().min(1).max(2000) })).min(1).max(40) });
 const TicketsBody = z.object({ blocks: z.array(z.object({ studentId: z.uuid(), reason: z.string().trim().min(1).max(200) })).max(500).default([]), /** Also withhold tickets from students under the attendance threshold (after condonation). */ blockByAttendance: z.boolean().default(false) });
 
-async function readAll(stream: Readable): Promise<Buffer> {
-  const chunks: Buffer[] = [];
-  for await (const c of stream) chunks.push(Buffer.from(c));
-  return Buffer.concat(chunks);
-}
-
 /** An affiliated college does not own its exams: the affiliating university publishes results, so publishing here is refused. */
 export async function assertOwnsExams(tx: Tx): Promise<void> {
   const [prof] = await tx.select({ g: institutionProfiles.governanceModel }).from(institutionProfiles);
@@ -85,9 +76,8 @@ export class ExamSessionsController {
     private readonly notifications: NotificationsService,
     private readonly events: EventBus,
     private readonly tasks: TasksService,
-    @Inject(ENV) private readonly env: Env,
-    private readonly storage: ObjectStorage,
     private readonly workflows: WorkflowsService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   @Post()
@@ -326,18 +316,25 @@ export class ExamSessionsController {
       if (t.blocked) throw new ForbiddenException(`Hall ticket withheld: ${t.blockedReason ?? 'contact the examination office'}`);
       const [st] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.id, studentId));
       const papers = await tx
-        .select({ examDate: examPapers.examDate, startsAt: examPapers.startsAt, endsAt: examPapers.endsAt, subject: subjects.name, room: rooms.name, seat: examSeats.seatNo })
+        .select({ examDate: examPapers.examDate, startsAt: examPapers.startsAt, endsAt: examPapers.endsAt, subject: subjects.name, code: subjects.code, room: rooms.name, seat: examSeats.seatNo })
         .from(examPapers)
         .innerJoin(subjects, eq(subjects.id, examPapers.subjectId))
         .leftJoin(examSeats, and(eq(examSeats.paperId, examPapers.id), eq(examSeats.studentId, studentId)))
         .leftJoin(rooms, eq(rooms.id, examSeats.roomId))
         .where(and(eq(examPapers.sessionId, id), eq(examPapers.sectionId, st.sectionId)))
         .orderBy(asc(examPapers.examDate), asc(examPapers.startsAt));
-      const [tenant] = await tx.select({ slug: tenants.slug }).from(tenants).where(eq(tenants.id, p.tenantId));
-      const verifyUrl = `${this.env.VERIFY_BASE_URL.replace(/\/$/, '')}/hallticket/${tenant.slug}/${encodeURIComponent(hallTicketCode(this.env.JWT_SECRET, p.tenantId, t.ticketNo))}`;
-      const [ph] = await tx.select({ key: users.photoKey }).from(students).innerJoin(users, eq(users.id, students.userId)).where(eq(students.id, studentId));
-      const photo = ph?.key ? await readAll((await this.storage.get(ph.key)).stream).catch(() => null) : null;
-      return hallTicketPdf({ ...(await studentHeader(tx, p.tenantId, studentId)), sessionName: s.name, ticketNo: t.ticketNo, verifyUrl, photo, papers: papers.map((x) => ({ date: x.examDate, time: `${x.startsAt}-${x.endsAt}`, subject: x.subject, room: x.room, seat: x.seat })) });
+      const block = await studentBlock(tx, studentId);
+      const name = String((block.student as Record<string, unknown>).name ?? '');
+      const out = await this.engine.produce(tx, p, {
+        docType: 'hall_ticket',
+        title: 'Hall Ticket',
+        subject: { type: 'student', id: studentId, name },
+        source: { type: 'hall_ticket', id: `${id}:${studentId}` },
+        serial: t.ticketNo,
+        data: { ...block, ...hallTicketData({ sessionName: s.name, ticketNo: t.ticketNo, papers: papers.map((x) => ({ date: x.examDate, time: `${x.startsAt.slice(0, 5)} - ${x.endsAt.slice(0, 5)}`, subject: x.subject, code: x.code ?? '', room: x.room, seat: x.seat })) }) },
+        keyFields: [{ label: 'Candidate', value: name }, { label: 'Hall ticket number', value: t.ticketNo }, { label: 'Examination', value: s.name }],
+      });
+      return out.pdf;
     });
     res.setHeader('content-type', 'application/pdf');
     res.setHeader('content-disposition', 'inline; filename="hall-ticket.pdf"');
