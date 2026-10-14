@@ -1578,11 +1578,12 @@ class FakeStudentApi implements StudentApi {
   /// Empty at a school.
   late List<ContactGroup> contactGroups = [
     ContactGroup(
+      office: true,
       studentId: 's1',
       studentName: 'Aarav Patel',
       className: 'BCom Sem 3 A',
       staff: [
-        StaffContact(id: 't1', fullName: 'Anita Sharma', subjects: ['Corporate Accounting', 'Cost Accounting']),
+        StaffContact(id: 't1', fullName: 'Anita Sharma', subjects: ['Corporate Accounting', 'Cost Accounting'], classTeacher: true),
       ],
     ),
   ];
@@ -1598,12 +1599,37 @@ class FakeStudentApi implements StudentApi {
       id: id,
       student: Person(id: 's1', fullName: 'Aarav Patel'),
       className: 'BCom Sem 3 A',
-      staff: Person(id: 't1', fullName: 'Anita Sharma'),
+      staff: id == officeThreadId ? Person(id: 'o1', fullName: 'Front office') : Person(id: 't1', fullName: 'Anita Sharma'),
       family: Person(id: profile.id, fullName: profile.fullName),
       lastMessage: list.lastOrNull?.body,
       lastMessageAt: list.lastOrNull?.createdAt,
       unread: list.where((m) => m.senderId != profile.id && (read == null || m.createdAt.isAfter(read))).length,
+      office: id == officeThreadId,
+      status: threadStatus[id] ?? ThreadStatus.open,
     );
+  }
+
+  /// The thread with the office.
+  static const officeThreadId = 'office1';
+
+  /// Closed or resolved threads (open when absent).
+  final threadStatus = <String, ThreadStatus>{};
+
+  /// Files sent in conversations, by message id.
+  final messageFiles = <String, Uint8List>{};
+
+  /// Office hours shown when the student writes outside them (null = none set).
+  ({String start, String end})? officeHoursOutside;
+
+  /// The student's own messages: read when the other side has replied since, else delivered.
+  List<ChatMessage> _ticked(List<ChatMessage> list) {
+    final lastReply = list.where((m) => m.senderId != profile.id).map((m) => m.createdAt).fold<DateTime?>(null, (a, b) => a == null || b.isAfter(a) ? b : a);
+    return [
+      for (final m in list)
+        m.senderId == profile.id && !m.system
+            ? ChatMessage(id: m.id, senderId: m.senderId, senderName: m.senderName, body: m.body, createdAt: m.createdAt, attachment: m.attachment, tick: lastReply != null && !lastReply.isBefore(m.createdAt) ? MessageTick.read : MessageTick.delivered)
+            : m,
+    ];
   }
 
   @override
@@ -1629,16 +1655,129 @@ class FakeStudentApi implements StudentApi {
   Future<MessagePage> messages(String conversationId, {DateTime? before}) async {
     calls.add('messages $conversationId');
     if (!chats.containsKey(conversationId)) throw ApiException(404, 'Conversation not found');
-    return MessagePage(conversation: _summary(conversationId), messages: [...chats[conversationId]!]);
+    final status = threadStatus[conversationId] ?? ThreadStatus.open;
+    return MessagePage(
+      conversation: _summary(conversationId),
+      messages: _ticked(chats[conversationId]!),
+      canWrite: status != ThreadStatus.closed,
+      afterHours: officeHoursOutside != null,
+      officeHours: officeHoursOutside,
+    );
   }
 
   @override
-  Future<ChatMessage> sendMessage(String conversationId, String body) async {
-    calls.add('send $conversationId $body');
-    final m = ChatMessage(id: 'm${DateTime.now().microsecondsSinceEpoch}', senderId: profile.id, body: body, createdAt: DateTime.now());
+  Future<ChatMessage> sendMessage(String conversationId, String body, {UploadFile? attachment}) async {
+    calls.add('send $conversationId $body${attachment == null ? '' : ' +${attachment.name}'}');
+    if (threadStatus[conversationId] == ThreadStatus.closed) throw ApiException(409, 'This conversation was closed by the institution');
+    if (threadStatus[conversationId] == ThreadStatus.resolved) threadStatus.remove(conversationId);
+    final id = 'm${DateTime.now().microsecondsSinceEpoch}';
+    if (attachment != null) messageFiles[id] = attachment.bytes;
+    final m = ChatMessage(
+      id: id,
+      senderId: profile.id,
+      body: body,
+      createdAt: DateTime.now(),
+      attachment: attachment == null ? null : AttachedFile(id: id, name: attachment.name, type: attachment.mime, size: attachment.bytes.length),
+      tick: MessageTick.sent,
+    );
     chats.putIfAbsent(conversationId, () => []).add(m);
     _readAt[conversationId] = m.createdAt;
     return m;
+  }
+
+  @override
+  Future<Uint8List> messageFile(String conversationId, String messageId) async {
+    calls.add('messageFile $conversationId $messageId');
+    final f = messageFiles[messageId];
+    if (f == null) throw ApiException(404, 'No attachment');
+    return f;
+  }
+
+  @override
+  Future<Conversation> startOfficeConversation(String studentId) async {
+    calls.add('startOffice $studentId');
+    chats.putIfAbsent(officeThreadId, () => []);
+    return _summary(officeThreadId);
+  }
+
+  // ── Announcements ─────────────────────────────────────────────────────────────────────────
+
+  /// The inbox, newest first; the first is important, asks for acknowledgement and has a PDF.
+  late List<Announcement> announcementList = [
+    Announcement(
+      id: 'an1',
+      title: 'School closed on Friday',
+      body: 'Due to heavy rain the campus will be **closed on Friday**.\n\n- Online classes run as usual\n- Buses do not run\n\nDetails: [circular](https://example.com/circular)',
+      important: true,
+      requiresAck: true,
+      canAcknowledge: true,
+      sentAt: DateTime.now().subtract(const Duration(hours: 2)),
+      expiresAt: DateTime.now().add(const Duration(days: 2)),
+      senderName: 'Dr. Meera Iyer',
+      attachments: const [AttachedFile(id: 'f1', name: 'circular.pdf', type: 'application/pdf', size: 48213)],
+      pinned: true,
+    ),
+    Announcement(
+      id: 'an2',
+      title: 'Library timings',
+      body: 'The library is open from 8 am to 6 pm on weekdays.',
+      important: false,
+      requiresAck: false,
+      canAcknowledge: false,
+      sentAt: DateTime.now().subtract(const Duration(days: 3)),
+      senderName: 'Office',
+      attachments: const [],
+      readAt: DateTime.now().subtract(const Duration(days: 2)),
+      pinned: false,
+    ),
+  ];
+
+  Announcement _withState(Announcement a, {DateTime? readAt, DateTime? acknowledgedAt}) => Announcement(
+    id: a.id,
+    title: a.title,
+    body: a.body,
+    important: a.important,
+    requiresAck: a.requiresAck,
+    canAcknowledge: a.canAcknowledge,
+    sentAt: a.sentAt,
+    expiresAt: a.expiresAt,
+    senderName: a.senderName,
+    attachments: a.attachments,
+    readAt: readAt ?? a.readAt,
+    acknowledgedAt: acknowledgedAt ?? a.acknowledgedAt,
+    pinned: a.important && (acknowledgedAt ?? a.acknowledgedAt) == null && (a.expiresAt == null || a.expiresAt!.isAfter(DateTime.now())),
+  );
+
+  @override
+  Future<AnnouncementInbox> announcements() async {
+    calls.add('announcements');
+    final items = [...announcementList.where((a) => a.pinned), ...announcementList.where((a) => !a.pinned)];
+    return AnnouncementInbox(unread: items.where((a) => a.unread).length, items: items);
+  }
+
+  Announcement _mark(String id, {bool ack = false}) {
+    final i = announcementList.indexWhere((a) => a.id == id);
+    if (i < 0) throw ApiException(404, 'Message not found');
+    final now = DateTime.now();
+    return announcementList[i] = _withState(announcementList[i], readAt: announcementList[i].readAt ?? now, acknowledgedAt: ack ? now : null);
+  }
+
+  @override
+  Future<Announcement> markAnnouncementRead(String id) async {
+    calls.add('announcementRead $id');
+    return _mark(id);
+  }
+
+  @override
+  Future<Announcement> acknowledgeAnnouncement(String id) async {
+    calls.add('announcementAck $id');
+    return _mark(id, ack: true);
+  }
+
+  @override
+  Future<Uint8List> announcementFile(String id, String fileId) async {
+    calls.add('announcementFile $id $fileId');
+    return Uint8List.fromList(utf8.encode('%PDF-1.4\n%%EOF'));
   }
 
   @override

@@ -8,6 +8,7 @@ import '../../core/message_feed.dart';
 import '../../core/models.dart';
 import '../../core/study.dart';
 import '../../l10n/l10n.dart';
+import '../announcements/announcements.dart';
 import '../exams/exams_tab.dart';
 import '../learn/learn_tab.dart';
 import '../messages/messages_controller.dart';
@@ -36,6 +37,7 @@ class StudentShell extends StatefulWidget {
 class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver {
   late final study = StudyController(widget.state.api, widget.state.student!, liveConnector: widget.state.liveConnector)..load();
   late final updates = UpdatesController(widget.state.api)..load();
+  late final announcements = AnnouncementsController(widget.state.api)..load();
   late final messages = MessagesController(widget.state.api, meId: widget.state.me!.id);
   late final consent = ConsentController(widget.state.api, widget.state.student!.id);
 
@@ -63,6 +65,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     widget.state.pendingPushTap.addListener(_openPushTap);
     _pushes = widget.state.messaging.onForegroundMessage.listen((_) {
       if (!updates.loading) updates.load();
+      if (!announcements.loading) announcements.load();
     });
     messages.realtime = () => _feed?.connected ?? false;
     messages.start().then((_) {
@@ -92,7 +95,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
       if (tap.kind == 'message' && messages.available) return MessagesScreen.open(context, messages);
       return _openUpdates();
     }
-    await UpdatesTab.openNotification(context, n, controller: updates, study: study, messages: messages);
+    await UpdatesTab.openNotification(context, n, controller: updates, study: study, messages: messages, announcements: announcements);
   }
 
   void _startFeed() {
@@ -110,6 +113,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
         study.loadQuestion();
       },
       onPoll: study.loadQuestion,
+      onAnnouncement: announcements.load,
       onBadge: (b) {
         study.loadBadges();
         final badge = KxBadge.fromApi(b.badge);
@@ -127,6 +131,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     _feed?.dispose();
     study.dispose();
     updates.dispose();
+    announcements.dispose();
     messages.dispose();
     consent.dispose();
     super.dispose();
@@ -139,6 +144,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     study.loadLive();
     study.loadQuestion();
     if (!updates.loading) updates.load();
+    if (!announcements.loading) announcements.load();
     if (messages.available) messages.load();
     _feed?.resume();
   }
@@ -154,7 +160,8 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
   /// The notifications, as a page of their own (fresh on every visit: they arrive while the app is open).
   void _openUpdates() {
     if (!updates.loading) updates.load();
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => Scaffold(body: UpdatesTab(controller: updates, study: study, messages: messages))));
+    if (!announcements.loading) announcements.load();
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => Scaffold(body: UpdatesTab(controller: updates, study: study, messages: messages, announcements: announcements))));
   }
 
   void _ask() {
@@ -169,13 +176,13 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
       index: _tab,
       children: [
         ListenableBuilder(
-          listenable: updates,
+          listenable: Listenable.merge([updates, announcements]),
           builder: (context, _) => TodayTab(
             study: study,
             me: widget.state.me!,
             messages: messages,
             prefs: widget.state.prefs,
-            unread: updates.unread,
+            unread: updates.unread + announcements.unread,
             onAsk: _ask,
             onOpenTopic: (id) {
               _go(_learnTab);

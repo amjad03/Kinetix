@@ -33,8 +33,14 @@ class FakeRealtime implements TeacherRealtime {
   Stream<MessageNew> get messages => _messages.stream;
   @override
   Stream<void> get reconnected => _reconnected.stream;
+  final _announcements = StreamController<void>.broadcast();
+  @override
+  Stream<void> get announcements => _announcements.stream;
   @override
   void connect({required String baseUrl, required String token}) => connectedWith = '$baseUrl $token';
+
+  /// Delivers `announcement.new`.
+  void announce() => _announcements.add(null);
   @override
   void disconnect() => disconnects++;
 
@@ -633,18 +639,136 @@ class FakeTeacherApi implements TeacherApi {
     return ChatPage(threads.firstWhere((t) => t.id == id), page);
   }
 
+  /// Files sent in conversations, by message id.
+  final messageFiles = <String, Uint8List>{};
+
   @override
-  Future<ChatMessage> sendMessage(String conversationId, String body) async {
-    calls.add('send $conversationId $body');
+  Future<ChatMessage> sendMessage(String conversationId, String body, {ChatUpload? attachment}) async {
+    calls.add('send $conversationId $body${attachment == null ? '' : ' +${attachment.name}'}');
     if (sendFails) throw ApiException(0, "Can't reach KINETIX.");
+    final id = 'm${chat[conversationId]!.length + 100}';
+    if (attachment != null) messageFiles[id] = attachment.bytes;
     final m = ChatMessage(
-      id: 'm${chat[conversationId]!.length + 100}',
+      id: id,
       senderId: profile.id,
       body: body,
       createdAt: DateTime(2026, 10, 4, 12),
+      attachment: attachment == null ? null : AttachedFile(id: id, name: attachment.name, type: attachment.mime, size: attachment.bytes.length),
+      tick: MessageTick.sent,
     );
     chat[conversationId]!.add(m);
     return m;
+  }
+
+  @override
+  Future<Uint8List> messageFile(String conversationId, String messageId) async {
+    calls.add('messageFile $conversationId $messageId');
+    final f = messageFiles[messageId];
+    if (f == null) throw ApiException(404, 'No attachment');
+    return f;
+  }
+
+  /// Staff close, reopen and resolve threads; a system line records who did it.
+  @override
+  Future<Conversation> setConversationStatus(String id, ThreadStatus status) async {
+    calls.add('status $id ${status.name}');
+    final t = threads.firstWhere((t) => t.id == id).copyWith(status: status);
+    threads = [for (final x in threads) x.id == id ? t : x];
+    final verb = switch (status) {
+      ThreadStatus.closed => 'Closed',
+      ThreadStatus.resolved => 'Marked resolved',
+      ThreadStatus.open => 'Reopened',
+    };
+    chat[id]!.add(ChatMessage(id: 'sys${chat[id]!.length + 200}', senderId: profile.id, body: '$verb by ${profile.fullName}', createdAt: DateTime(2026, 10, 4, 12, 30), system: true));
+    return t;
+  }
+
+  @override
+  Future<Conversation> muteConversation(String id, bool muted) async {
+    calls.add('mute $id $muted');
+    final t = threads.firstWhere((t) => t.id == id).copyWith(muted: muted);
+    threads = [for (final x in threads) x.id == id ? t : x];
+    return t;
+  }
+
+  // ── Announcements ─────────────────────────────────────────────────────────────────────────
+
+  /// The inbox, newest first; the first is important, asks for acknowledgement and has a PDF.
+  late List<Announcement> announcementList = [
+    Announcement(
+      id: 'an1',
+      title: 'School closed on Friday',
+      body: 'Due to heavy rain the campus will be **closed on Friday**.\n\n- Online classes run as usual\n- Buses do not run\n\nDetails: [circular](https://example.com/circular)',
+      important: true,
+      requiresAck: true,
+      canAcknowledge: true,
+      sentAt: DateTime.now().subtract(const Duration(hours: 2)),
+      expiresAt: DateTime.now().add(const Duration(days: 2)),
+      senderName: 'Dr. Meera Iyer',
+      attachments: const [AttachedFile(id: 'f1', name: 'circular.pdf', type: 'application/pdf', size: 48213)],
+      pinned: true,
+    ),
+    Announcement(
+      id: 'an2',
+      title: 'Library timings',
+      body: 'The library is open from 8 am to 6 pm on weekdays.',
+      important: false,
+      requiresAck: false,
+      canAcknowledge: false,
+      sentAt: DateTime.now().subtract(const Duration(days: 3)),
+      senderName: 'Office',
+      attachments: const [],
+      readAt: DateTime.now().subtract(const Duration(days: 2)),
+      pinned: false,
+    ),
+  ];
+
+  Announcement _withState(Announcement a, {DateTime? readAt, DateTime? acknowledgedAt}) => Announcement(
+    id: a.id,
+    title: a.title,
+    body: a.body,
+    important: a.important,
+    requiresAck: a.requiresAck,
+    canAcknowledge: a.canAcknowledge,
+    sentAt: a.sentAt,
+    expiresAt: a.expiresAt,
+    senderName: a.senderName,
+    attachments: a.attachments,
+    readAt: readAt ?? a.readAt,
+    acknowledgedAt: acknowledgedAt ?? a.acknowledgedAt,
+    pinned: a.important && (acknowledgedAt ?? a.acknowledgedAt) == null && (a.expiresAt == null || a.expiresAt!.isAfter(DateTime.now())),
+  );
+
+  @override
+  Future<AnnouncementInbox> announcements() async {
+    // Not logged in [calls]: the shell loads it at sign-in for the More badge.
+    final items = [...announcementList.where((a) => a.pinned), ...announcementList.where((a) => !a.pinned)];
+    return AnnouncementInbox(unread: items.where((a) => a.unread).length, items: items);
+  }
+
+  Announcement _mark(String id, {bool ack = false}) {
+    final i = announcementList.indexWhere((a) => a.id == id);
+    if (i < 0) throw ApiException(404, 'Message not found');
+    final now = DateTime.now();
+    return announcementList[i] = _withState(announcementList[i], readAt: announcementList[i].readAt ?? now, acknowledgedAt: ack ? now : null);
+  }
+
+  @override
+  Future<Announcement> markAnnouncementRead(String id) async {
+    calls.add('announcementRead $id');
+    return _mark(id);
+  }
+
+  @override
+  Future<Announcement> acknowledgeAnnouncement(String id) async {
+    calls.add('announcementAck $id');
+    return _mark(id, ack: true);
+  }
+
+  @override
+  Future<Uint8List> announcementFile(String id, String fileId) async {
+    calls.add('announcementFile $id $fileId');
+    return Uint8List.fromList(utf8.encode('%PDF-1.4\n%%EOF'));
   }
 
   @override

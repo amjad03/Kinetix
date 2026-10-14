@@ -6,6 +6,9 @@ library;
 import 'dart:typed_data';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
+
+import 'communication.dart';
+export 'communication.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
 
 /// "10:00:00" → a wall-clock time from the timetable (local to the institution).
@@ -357,7 +360,7 @@ class StudentSummary {
   List<RecordingInfo> get recordingsMissedFirst => [...recordings.where((r) => r.missed), ...recordings.where((r) => !r.missed)];
 }
 
-enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, live, broadcast, calendar, other }
+enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, live, broadcast, announcement, calendar, other }
 
 class AppNotification {
   AppNotification({
@@ -383,6 +386,7 @@ class AppNotification {
       'message' => NotificationKind.message,
       'live' => NotificationKind.live,
       'broadcast' => NotificationKind.broadcast,
+      'announcement' => NotificationKind.announcement,
       'calendar' => NotificationKind.calendar,
       _ => NotificationKind.other,
     },
@@ -417,6 +421,7 @@ class AppNotification {
   String? get paymentId => data['paymentId'] as String?;
   String? get assessmentId => data['assessmentId'] as String?;
   String? get conversationId => data['conversationId'] as String?;
+  String? get announcementId => data['announcementId'] as String?;
 
   /// A live class started (`live`).
   String? get sessionId => data['sessionId'] as String?;
@@ -1009,22 +1014,26 @@ class Person {
 
 /// A teacher the student can write to, with what they teach the class.
 class StaffContact {
-  StaffContact({required this.id, required this.fullName, required this.subjects});
+  StaffContact({required this.id, required this.fullName, required this.subjects, this.classTeacher = false});
 
   factory StaffContact.fromJson(Map<String, dynamic> j) => StaffContact(
     id: j['id'] as String,
     fullName: j['fullName'] as String,
     subjects: [for (final s in (j['subjects'] as List? ?? const [])) '$s'],
+    classTeacher: j['classTeacher'] as bool? ?? false,
   );
 
   final String id;
   final String fullName;
   final List<String> subjects;
+
+  /// The class teacher of the child's class (listed first).
+  final bool classTeacher;
 }
 
 /// A student and the teachers of their class (`GET /v1/conversations/contacts`).
 class ContactGroup {
-  ContactGroup({required this.studentId, required this.studentName, required this.className, required this.staff});
+  ContactGroup({required this.studentId, required this.studentName, required this.className, required this.staff, this.office = false});
 
   factory ContactGroup.fromJson(Map<String, dynamic> j) {
     final st = (j['student'] as Map).cast<String, dynamic>();
@@ -1033,6 +1042,7 @@ class ContactGroup {
       studentName: st['fullName'] as String,
       className: st['className'] as String? ?? '',
       staff: [for (final s in (j['staff'] as List? ?? const [])) StaffContact.fromJson(s as Map<String, dynamic>)],
+      office: j['office'] as bool? ?? false,
     );
   }
 
@@ -1040,6 +1050,9 @@ class ContactGroup {
   final String studentName;
   final String className;
   final List<StaffContact> staff;
+
+  /// The office takes messages about this child too.
+  final bool office;
 }
 
 /// A thread between the student (or their family) and one teacher.
@@ -1053,6 +1066,8 @@ class Conversation {
     required this.unread,
     this.lastMessage,
     this.lastMessageAt,
+    this.office = false,
+    this.status = ThreadStatus.open,
   });
 
   factory Conversation.fromJson(Map<String, dynamic> j) => Conversation(
@@ -1064,6 +1079,8 @@ class Conversation {
     lastMessage: j['lastMessage'] as String?,
     lastMessageAt: _instant(j['lastMessageAt']),
     unread: (j['unread'] as num?)?.toInt() ?? 0,
+    office: j['kind'] == 'office',
+    status: ThreadStatus.parse(j['status']),
   );
 
   final String id;
@@ -1074,35 +1091,87 @@ class Conversation {
   final String? lastMessage;
   final DateTime? lastMessageAt;
   int unread;
+
+  /// A thread with the office (staff = whoever it is assigned to) rather than one teacher.
+  final bool office;
+  final ThreadStatus status;
 }
 
+/// open; closed (the institution closed it: no replies until reopened); resolved (writing reopens it).
+enum ThreadStatus {
+  open,
+  closed,
+  resolved;
+
+  static ThreadStatus parse(Object? v) => switch (v) {
+    'closed' => ThreadStatus.closed,
+    'resolved' => ThreadStatus.resolved,
+    _ => ThreadStatus.open,
+  };
+}
+
+/// The sender's tick on their own message: sent, delivered to the other side's app, or read.
+enum MessageTick { sent, delivered, read }
+
 class ChatMessage {
-  ChatMessage({required this.id, required this.senderId, required this.body, required this.createdAt});
+  ChatMessage({required this.id, required this.senderId, required this.body, required this.createdAt, this.senderName = '', this.system = false, this.attachment, this.tick});
 
   factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
     id: j['id'] as String,
     senderId: j['senderId'] as String,
-    body: j['body'] as String,
+    senderName: j['senderName'] as String? ?? '',
+    body: j['body'] as String? ?? '',
     createdAt: _instant(j['createdAt']) ?? DateTime.now(),
+    system: j['kind'] == 'system',
+    attachment: j['attachment'] is Map ? AttachedFile.fromJson((j['attachment'] as Map).cast<String, dynamic>(), id: j['id'] as String) : null,
+    tick: switch (j['status']) {
+      'read' => MessageTick.read,
+      'delivered' => MessageTick.delivered,
+      'sent' => MessageTick.sent,
+      _ => null,
+    },
   );
 
   final String id;
   final String senderId;
+  final String senderName;
   final String body;
   final DateTime createdAt;
+
+  /// "Closed by …", "Assigned to …": shown centred, not as a bubble.
+  final bool system;
+
+  /// A photo or PDF sent with the message.
+  final AttachedFile? attachment;
+
+  /// On the user's own messages: sent, delivered or read.
+  final MessageTick? tick;
 }
 
 /// A page of a conversation, oldest first.
 class MessagePage {
-  MessagePage({required this.conversation, required this.messages});
+  MessagePage({required this.conversation, required this.messages, this.canWrite = true, this.afterHours = false, this.officeHours});
 
-  factory MessagePage.fromJson(Map<String, dynamic> j) => MessagePage(
-    conversation: Conversation.fromJson((j['conversation'] as Map).cast<String, dynamic>()),
-    messages: [for (final m in (j['messages'] as List? ?? const [])) ChatMessage.fromJson(m as Map<String, dynamic>)],
-  );
+  factory MessagePage.fromJson(Map<String, dynamic> j) {
+    final h = j['officeHours'];
+    return MessagePage(
+      conversation: Conversation.fromJson((j['conversation'] as Map).cast<String, dynamic>()),
+      messages: [for (final m in (j['messages'] as List? ?? const [])) ChatMessage.fromJson(m as Map<String, dynamic>)],
+      canWrite: j['canWrite'] as bool? ?? true,
+      afterHours: j['afterHours'] as bool? ?? false,
+      officeHours: h is Map ? (start: '${h['start']}', end: '${h['end']}') : null,
+    );
+  }
 
   final Conversation conversation;
   final List<ChatMessage> messages;
+
+  /// False when the institution closed the thread.
+  final bool canWrite;
+
+  /// Writing now is outside office hours: the app shows when replies come.
+  final bool afterHours;
+  final ({String start, String end})? officeHours;
 }
 
 // ── Live class ──────────────────────────────────────────────────────────────────────────────────

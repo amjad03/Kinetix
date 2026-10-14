@@ -102,7 +102,9 @@ class ThreadTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            KxAvatar(name: t.staff.fullName, size: 44),
+            t.office
+                ? CircleAvatar(radius: 22, backgroundColor: c.tertiaryContainer, child: Icon(Icons.apartment, color: c.onTertiaryContainer))
+                : KxAvatar(name: t.staff.fullName, size: 44),
             const SizedBox(width: Kx.s16),
             Expanded(
               child: Column(
@@ -112,7 +114,7 @@ class ThreadTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          t.staff.fullName,
+                          t.office ? context.l10n.chatOffice : t.staff.fullName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: context.text.titleSmall?.copyWith(fontWeight: unread ? FontWeight.w700 : FontWeight.w500),
@@ -126,7 +128,12 @@ class ThreadTile extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    '${context.l10n.aboutName(t.student.fullName.split(' ').first)} · ${t.className}',
+                    [
+                      context.l10n.aboutName(t.student.fullName.split(' ').first),
+                      t.className,
+                      if (t.status == ThreadStatus.closed) context.l10n.chatStatusClosed,
+                      if (t.status == ThreadStatus.resolved) context.l10n.chatStatusResolved,
+                    ].join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant),
@@ -192,10 +199,12 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
     controller.loadContacts();
   }
 
-  Future<void> _start(ChildContacts child, StaffContact teacher) async {
-    setState(() => _opening = teacher.id);
+  Future<void> _start(ChildContacts child, StaffContact? teacher) async {
+    setState(() => _opening = teacher?.id ?? 'office');
     try {
-      final conv = await controller.api.startConversation(childId: child.studentId, teacherId: teacher.id);
+      final conv = teacher == null
+          ? await controller.api.startOfficeConversation(child.studentId)
+          : await controller.api.startConversation(childId: child.studentId, teacherId: teacher.id);
       if (!mounted) return;
       final c = controller;
       await Navigator.of(context).pushReplacement(
@@ -279,12 +288,27 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
                     style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ),
+              if (child.office)
+                ListTile(
+                  key: const Key('pickOffice'),
+                  leading: CircleAvatar(backgroundColor: c.tertiaryContainer, child: Icon(Icons.apartment, color: c.onTertiaryContainer)),
+                  title: Text(context.l10n.chatOffice),
+                  subtitle: Text(context.l10n.chatOfficeHint),
+                  trailing: _opening == 'office'
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.chevron_right),
+                  enabled: _opening == null,
+                  onTap: () => _start(child, null),
+                ),
               for (final t in child.staff)
                 ListTile(
                   key: Key('pickTeacher-${t.id}'),
                   leading: KxAvatar(name: t.fullName),
                   title: Text(t.fullName),
-                  subtitle: Text(t.subjects.isEmpty ? context.l10n.teacher : t.subjects.join(' · ')),
+                  subtitle: Text([
+                    if (t.classTeacher) context.l10n.chatClassTeacher,
+                    ...t.subjects,
+                  ].join(' · ').ifEmpty(context.l10n.teacher)),
                   trailing: _opening == t.id
                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.chevron_right),
@@ -297,4 +321,8 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
       ),
     );
   }
+}
+
+extension on String {
+  String ifEmpty(String other) => isEmpty ? other : this;
 }

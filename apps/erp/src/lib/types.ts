@@ -444,29 +444,6 @@ export interface TimetableSlot {
 
 // ---- Parent–teacher conversations (v1/conversations?all=true, read-only for leaders) ----
 
-export interface ConversationSummary {
-  id: string;
-  student: { id: string; fullName: string };
-  className: string;
-  staff: { id: string; fullName: string };
-  family: { id: string; fullName: string };
-  lastMessageAt: string | null;
-  /** Always null in the leaders' list: message text shows only when a thread is opened (audited). */
-  lastMessage: string | null;
-}
-
-export interface ConversationMessage {
-  id: string;
-  senderId: string;
-  body: string;
-  createdAt: string;
-}
-
-export interface ConversationThread {
-  conversation: ConversationSummary;
-  messages: ConversationMessage[];
-}
-
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
 
 // ---- Departments (v1/departments, v1/admin/departments) ----

@@ -30,6 +30,12 @@ export const RealtimeEvents = {
   LiveAudio: 'live.audio',
   /** Server → users in the conversation: a new message ({@link MessageNewEvent}); refetch it. */
   MessageNew: 'message.new',
+  /** Server → users in the conversation: one side read up to `at` ({@link MessageReadEvent}); update the ticks. */
+  MessageRead: 'message.read',
+  /** Server → the conversation's people: it was closed, reopened, resolved or reassigned; refetch it. */
+  ConversationChanged: 'conversation.changed',
+  /** Server → recipients in the apps: a new announcement ({@link AnnouncementNewEvent}); refetch the inbox. */
+  AnnouncementNew: 'announcement.new',
   /** Server → students of the class: the teacher asked a question on the board ({@link PollView}). */
   PollOpened: 'poll.opened',
   /** Server → students of the class and the board: the question is closed ({@link PollClosedEvent}). */
@@ -170,6 +176,18 @@ export interface MessageNewEvent {
   conversationId: string;
   messageId: string;
   senderId: string;
+}
+
+export interface MessageReadEvent {
+  conversationId: string;
+  /** Which side read: the family or the staff side. */
+  side: 'family' | 'staff';
+  at: string;
+}
+
+export interface AnnouncementNewEvent {
+  announcementId: string;
+  priority: 'normal' | 'important';
 }
 
 /**

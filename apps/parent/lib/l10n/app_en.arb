@@ -2153,5 +2153,82 @@
   "outPassRejected": "Rejected",
   "outPassCancelled": "Cancelled",
   "canteenMenu": "Canteen menu",
-  "dishSoldOut": "Not available today"
+  "dishSoldOut": "Not available today",
+  "inboxTitle": "Announcements",
+  "inboxEmpty": "No announcements yet. Notices from your institution appear here.",
+  "inboxPinned": "Pinned",
+  "inboxEarlier": "Earlier",
+  "inboxImportant": "Important",
+  "inboxAckNeeded": "Please acknowledge",
+  "inboxFileCount": "{count, plural, =1{1 file} other{{count} files}}",
+  "@inboxFileCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inboxFileFailed": "Could not open the file. Install an app that opens photos or PDFs.",
+  "inboxFrom": "From {name}",
+  "@inboxFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxUntil": "Until {when}",
+  "@inboxUntil": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxFiles": "Files",
+  "inboxAcknowledgedOn": "You acknowledged this on {when}",
+  "@inboxAcknowledgedOn": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxAckPrompt": "Let the institution know you have read this.",
+  "inboxAcknowledge": "Acknowledge",
+  "inboxUnread": "{count, plural, =1{1 unread} other{{count} unread}}",
+  "@inboxUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inboxAllRead": "All read",
+  "chatCamera": "Take a photo",
+  "chatGallery": "Choose a photo",
+  "chatPdf": "Choose a PDF",
+  "chatAttach": "Attach a photo or PDF",
+  "chatFileType": "Send a photo (JPEG or PNG) or a PDF.",
+  "chatFileTooBig": "Files can be up to 4 MB.",
+  "chatOffice": "Office",
+  "chatTickSent": "Sent",
+  "chatTickDelivered": "Delivered",
+  "chatTickRead": "Read",
+  "chatStatusClosed": "Closed",
+  "chatStatusResolved": "Resolved",
+  "chatAfterHours": "We reply between {start} and {end}. Your message has been delivered.",
+  "@chatAfterHours": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "chatClosedFamily": "The institution closed this conversation. Start a new one from Messages if you need help.",
+  "chatOfficeHint": "Fees, certificates, transport and anything else",
+  "chatClassTeacher": "Class teacher"
 }

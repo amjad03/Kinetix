@@ -26,6 +26,9 @@ abstract class TeacherRealtime {
   /// The connection came back after a drop; events in between were missed.
   Stream<void> get reconnected;
 
+  /// A new announcement from the institution (`announcement.new`).
+  Stream<void> get announcements;
+
   void connect({required String baseUrl, required String token});
   void disconnect();
 }
@@ -36,6 +39,8 @@ class NoRealtime implements TeacherRealtime {
   Stream<MessageNew> get messages => const Stream.empty();
   @override
   Stream<void> get reconnected => const Stream.empty();
+  @override
+  Stream<void> get announcements => const Stream.empty();
   @override
   void connect({required String baseUrl, required String token}) {}
   @override
@@ -49,6 +54,7 @@ class SocketRealtime implements TeacherRealtime {
 
   final _messages = StreamController<MessageNew>.broadcast();
   final _reconnected = StreamController<void>.broadcast();
+  final _announcements = StreamController<void>.broadcast();
   io.Socket? _socket;
   bool _wasConnected = false;
 
@@ -56,6 +62,8 @@ class SocketRealtime implements TeacherRealtime {
   Stream<MessageNew> get messages => _messages.stream;
   @override
   Stream<void> get reconnected => _reconnected.stream;
+  @override
+  Stream<void> get announcements => _announcements.stream;
 
   @override
   void connect({required String baseUrl, required String token}) {
@@ -82,12 +90,21 @@ class SocketRealtime implements TeacherRealtime {
           }
         }
       })
+      // The family read the thread, or another member of staff closed or reassigned it: open
+      // threads refetch as for a new message (no message id, so nothing is skipped).
+      ..on('message.read', (d) => _changed(d))
+      ..on('conversation.changed', (d) => _changed(d))
+      ..on('announcement.new', (_) => _announcements.add(null))
       ..onConnect((_) {
         if (_wasConnected) _reconnected.add(null);
         _wasConnected = true;
       })
       ..connect();
     _socket = socket;
+  }
+
+  void _changed(Object? d) {
+    if (d is Map && d['conversationId'] is String) _messages.add(MessageNew(conversationId: d['conversationId'] as String, messageId: '', senderId: ''));
   }
 
   @override

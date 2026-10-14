@@ -75,6 +75,13 @@ class LivePollChanged extends LiveSignal {
   const LivePollChanged();
 }
 
+/// A new announcement from the institution (`announcement.new`); the inbox refetches.
+class LiveAnnouncement extends LiveSignal {
+  const LiveAnnouncement(this.announcementId);
+
+  final String announcementId;
+}
+
 /// A teacher awarded this student a badge (`badge.awarded`): show it and refresh the badges.
 class LiveBadgeAwarded extends LiveSignal {
   const LiveBadgeAwarded({required this.badge, required this.teacher});
@@ -221,6 +228,15 @@ class SocketLiveConnection implements LiveConnection {
       if (d is Map && d['conversationId'] is String) {
         _add(LiveMessageNew(conversationId: '${d['conversationId']}', messageId: '${d['messageId']}', senderId: '${d['senderId']}'));
       }
+    });
+    // The teacher read the thread, or closed, reopened or reassigned it: open threads refetch as for a new message.
+    for (final event in const ['message.read', 'conversation.changed']) {
+      socket.on(event, (d) {
+        if (d is Map && d['conversationId'] is String) _add(LiveMessageNew(conversationId: '${d['conversationId']}', messageId: '', senderId: ''));
+      });
+    }
+    socket.on('announcement.new', (d) {
+      if (d is Map && d['announcementId'] is String) _add(LiveAnnouncement('${d['announcementId']}'));
     });
     socket.on('badge.awarded', (d) {
       final b = d is Map ? d['badge'] : null;

@@ -97,6 +97,18 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !UUID.test(msg)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/chat/threads/${id}/messages/${msg}/attachment`;
   }
+  // A family-chat attachment: ?kind=conversation-file&id=<conversation>&msg=<message>
+  if (kind === 'conversation-file') {
+    const msg = req.nextUrl.searchParams.get('msg') ?? '';
+    if (!UUID.test(id) || !UUID.test(msg)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/conversations/${id}/messages/${msg}/attachment`;
+  }
+  // An announcement attachment: ?kind=announcement-file&id=<announcement>&file=<attachment>
+  if (kind === 'announcement-file') {
+    const file = req.nextUrl.searchParams.get('file') ?? '';
+    if (!UUID.test(id) || !UUID.test(file)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/announcements/${id}/attachments/${file}`;
+  }
   // One scanned page of the examiner's own script: ?kind=eval-page&id=<allocation>&index=<page>
   if (kind === 'eval-page') {
     const index = req.nextUrl.searchParams.get('index') ?? '';

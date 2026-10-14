@@ -9,6 +9,7 @@ import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../core/realtime.dart';
 import '../../widgets/common.dart';
+import '../announcements/announcements.dart';
 import 'chat_screen.dart';
 import 'new_message_screen.dart';
 
@@ -78,11 +79,14 @@ class MessagesController extends ChangeNotifier {
 }
 
 class MessagesTab extends StatelessWidget {
-  const MessagesTab({super.key, required this.controller, required this.myId, this.profileButton});
+  const MessagesTab({super.key, required this.controller, required this.myId, this.profileButton, this.announcements});
 
   final MessagesController controller;
   final String myId;
   final Widget? profileButton;
+
+  /// The institution's announcements, opened from the card at the top.
+  final AnnouncementsController? announcements;
 
   Future<void> _open(BuildContext context, Conversation c) => open(context, controller, c, myId);
 
@@ -106,7 +110,7 @@ class MessagesTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: controller,
+      listenable: Listenable.merge([controller, ?announcements]),
       builder: (context, _) {
         final l = context.l10n;
         final items = controller.items;
@@ -116,6 +120,7 @@ class MessagesTab extends StatelessWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar.large(title: Text(l.navMessages), actions: [?profileButton]),
+              if (announcements case final a?) SliverToBoxAdapter(child: AnnouncementsCard(controller: a)),
               if (controller.error != null)
                 SliverPadding(
                   padding: const EdgeInsets.all(Kx.s16),
@@ -167,7 +172,9 @@ class ConversationTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            KxAvatar(name: conv.family.name),
+            conv.office
+                ? CircleAvatar(radius: 20, backgroundColor: c.tertiaryContainer, child: Icon(Icons.apartment, color: c.onTertiaryContainer))
+                : KxAvatar(name: conv.family.name),
             const SizedBox(width: Kx.s16),
             Expanded(
               child: Column(
@@ -193,7 +200,13 @@ class ConversationTile extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    l.conversationAbout(conv),
+                    [
+                      l.conversationAbout(conv),
+                      if (conv.office) l.chatOffice,
+                      if (conv.status == ThreadStatus.closed) l.chatStatusClosed,
+                      if (conv.status == ThreadStatus.resolved) l.chatStatusResolved,
+                      if (conv.muted) l.chatMuted,
+                    ].join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),

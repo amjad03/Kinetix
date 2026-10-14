@@ -66,7 +66,7 @@ class OtpChallenge {
 }
 
 /// Everything the Student App asks of the KINETIX Cloud API. Tests use a fake.
-abstract class StudentApi {
+abstract class StudentApi implements AnnouncementSource {
   String get baseUrl;
   set baseUrl(String value);
 
@@ -219,7 +219,14 @@ abstract class StudentApi {
 
   /// Up to 50 messages, oldest first; [before] pages back.
   Future<MessagePage> messages(String conversationId, {DateTime? before});
-  Future<ChatMessage> sendMessage(String conversationId, String body);
+  /// Text, a photo or PDF ([attachment]), or both.
+  Future<ChatMessage> sendMessage(String conversationId, String body, {UploadFile? attachment});
+
+  /// A photo or PDF sent in a conversation.
+  Future<Uint8List> messageFile(String conversationId, String messageId);
+
+  /// Opens (or returns) the thread with the office about [studentId].
+  Future<Conversation> startOfficeConversation(String studentId);
   Future<void> markConversationRead(String conversationId);
 
   /// The class being taught live right now, or null.
@@ -825,8 +832,34 @@ class HttpStudentApi implements StudentApi {
   }
 
   @override
-  Future<ChatMessage> sendMessage(String conversationId, String body) async =>
-      ChatMessage.fromJson(await _send('POST', '/v1/conversations/$conversationId/messages', body: {'body': body}) as Map<String, dynamic>);
+  Future<ChatMessage> sendMessage(String conversationId, String body, {UploadFile? attachment}) async => ChatMessage.fromJson(
+    await _send('POST', '/v1/conversations/$conversationId/messages', body: {
+      'body': body,
+      if (attachment != null) 'attachment': {'filename': attachment.name, 'contentType': attachment.mime, 'contentBase64': base64Encode(attachment.bytes)},
+    }) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<Uint8List> messageFile(String conversationId, String messageId) => _download('/v1/conversations/$conversationId/messages/$messageId/attachment');
+
+  @override
+  Future<Conversation> startOfficeConversation(String studentId) async =>
+      Conversation.fromJson(await _send('POST', '/v1/conversations', body: {'studentId': studentId, 'office': true}) as Map<String, dynamic>);
+
+  @override
+  Future<AnnouncementInbox> announcements() async =>
+      AnnouncementInbox.fromJson(await _send('GET', '/v1/announcements/inbox?app=student') as Map<String, dynamic>);
+
+  @override
+  Future<Announcement> markAnnouncementRead(String id) async =>
+      Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/read') as Map<String, dynamic>);
+
+  @override
+  Future<Announcement> acknowledgeAnnouncement(String id) async =>
+      Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/ack') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> announcementFile(String id, String fileId) => _download('/v1/announcements/inbox/$id/attachments/$fileId');
 
   @override
   Future<void> markConversationRead(String conversationId) async => _send('POST', '/v1/conversations/$conversationId/read');

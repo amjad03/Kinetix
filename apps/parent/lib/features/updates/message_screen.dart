@@ -21,7 +21,7 @@ class MessageScreen extends StatelessWidget {
     final n = notification;
     final l = context.l10n;
     final from = switch (n.kind) {
-      NotificationKind.broadcast => l.fromCollege,
+      NotificationKind.broadcast || NotificationKind.announcement => l.fromCollege,
       NotificationKind.absence => l.attendance,
       NotificationKind.homework => l.homework,
       NotificationKind.boardShared => l.classBoard,

@@ -4501,4 +4501,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dishSoldOut => 'Not available today';
+
+  @override
+  String get inboxTitle => 'Announcements';
+
+  @override
+  String get inboxEmpty =>
+      'No announcements yet. Notices from your institution appear here.';
+
+  @override
+  String get inboxPinned => 'Pinned';
+
+  @override
+  String get inboxEarlier => 'Earlier';
+
+  @override
+  String get inboxImportant => 'Important';
+
+  @override
+  String get inboxAckNeeded => 'Please acknowledge';
+
+  @override
+  String inboxFileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files',
+      one: '1 file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inboxFileFailed =>
+      'Could not open the file. Install an app that opens photos or PDFs.';
+
+  @override
+  String inboxFrom(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String inboxUntil(String when) {
+    return 'Until $when';
+  }
+
+  @override
+  String get inboxFiles => 'Files';
+
+  @override
+  String inboxAcknowledgedOn(String when) {
+    return 'You acknowledged this on $when';
+  }
+
+  @override
+  String get inboxAckPrompt => 'Let the institution know you have read this.';
+
+  @override
+  String get inboxAcknowledge => 'Acknowledge';
+
+  @override
+  String inboxUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unread',
+      one: '1 unread',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inboxAllRead => 'All read';
+
+  @override
+  String get chatCamera => 'Take a photo';
+
+  @override
+  String get chatGallery => 'Choose a photo';
+
+  @override
+  String get chatPdf => 'Choose a PDF';
+
+  @override
+  String get chatAttach => 'Attach a photo or PDF';
+
+  @override
+  String get chatFileType => 'Send a photo (JPEG or PNG) or a PDF.';
+
+  @override
+  String get chatFileTooBig => 'Files can be up to 4 MB.';
+
+  @override
+  String get chatOffice => 'Office';
+
+  @override
+  String get chatTickSent => 'Sent';
+
+  @override
+  String get chatTickDelivered => 'Delivered';
+
+  @override
+  String get chatTickRead => 'Read';
+
+  @override
+  String get chatStatusClosed => 'Closed';
+
+  @override
+  String get chatStatusResolved => 'Resolved';
+
+  @override
+  String chatAfterHours(String start, String end) {
+    return 'We reply between $start and $end. Your message has been delivered.';
+  }
+
+  @override
+  String get chatClosedFamily =>
+      'The institution closed this conversation. Start a new one from Messages if you need help.';
+
+  @override
+  String get chatOfficeHint =>
+      'Fees, certificates, transport and anything else';
+
+  @override
+  String get chatClassTeacher => 'Class teacher';
 }

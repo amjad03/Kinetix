@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Mailer } from '../analytics/mailer.js';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
+import { audit } from '../common/audit.js';
 import { BlobBody, putBlob, sendBlob } from '../common/blob.js';
 import { ZodBody } from '../common/zod-body.js';
 import { WhatsAppSender } from '../comms/channels.js';
@@ -100,6 +101,7 @@ export class ChatController {
         if (existing) return this.summary(tx, p, existing.id);
         const [t] = await tx.insert(chatThreads).values({ tenantId: p.tenantId, kind: 'direct', createdBy: p.userId }).returning();
         await tx.insert(chatMembers).values([p.userId, body.userId].map((userId) => ({ tenantId: p.tenantId, threadId: t.id, userId, role: userId === p.userId ? 'owner' : 'member' })));
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'chat.thread_started', subjectType: 'chat_thread', subjectId: t.id, data: { kind: 'direct' } });
         return this.summary(tx, p, t.id);
       }
       const others = [...new Set(body.userIds)].filter((u) => u !== p.userId);
@@ -119,6 +121,7 @@ export class ChatController {
         })
         .returning();
       await tx.insert(chatMembers).values([p.userId, ...others].map((userId) => ({ tenantId: p.tenantId, threadId: t.id, userId, role: userId === p.userId ? 'owner' : 'member' })));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'chat.thread_started', subjectType: 'chat_thread', subjectId: t.id, data: { kind: body.kind, members: others.length } });
       return this.summary(tx, p, t.id);
     });
   }
@@ -272,6 +275,7 @@ export class ChatController {
       if (t.kind === 'direct') throw new BadRequestException('Start a group to add more people');
       await this.assertStaffUsers(tx, body.userIds);
       await tx.insert(chatMembers).values(body.userIds.map((userId) => ({ tenantId: p.tenantId, threadId: id, userId }))).onConflictDoNothing();
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'chat.members_added', subjectType: 'chat_thread', subjectId: id, data: { userIds: body.userIds } });
       return this.summary(tx, p, id);
     });
   }

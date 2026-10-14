@@ -7,6 +7,7 @@ import '../../core/app_state.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../core/push.dart';
+import '../announcements/announcements.dart';
 import '../calendar/calendar_screen.dart';
 import '../driver/driver_screen.dart';
 import '../homework/homework_tab.dart';
@@ -36,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late final marks = MarksController(widget.state.api);
   // Loaded up front so the Messages badge shows unread threads.
   late final messages = MessagesController(widget.state.api)..load();
+  // The institution's announcements for staff, shown at the top of Messages.
+  late final announcements = AnnouncementsController(widget.state.api)..load();
   late final recordings = RecordingsController(widget.state.api);
   // Families write any time: new messages arrive over the realtime connection; as a fallback
   // (offline, or events missed while the app was in the background) the list is also refreshed
@@ -50,12 +53,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _lifecycle;
-    // Loaded up front (these are lazy): homework feeds the quick action as well as its page.
+    // Loaded up front (these are lazy): homework feeds the quick action as well as its page, and
+    // announcements the card on Messages.
     homework;
+    announcements;
     final live = widget.state.realtime;
     _subscriptions
       ..add(live.messages.listen(messages.messageArrived))
-      ..add(live.reconnected.listen((_) => _refreshMessages()));
+      ..add(live.reconnected.listen((_) => _refreshMessages()))
+      ..add(live.announcements.listen((_) => announcements.load()));
     final token = widget.state.api.token;
     if (token != null) live.connect(baseUrl: widget.state.api.baseUrl, token: token);
     // A push tapped before this screen existed (it launched the app) waits in pushTap.
@@ -79,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (id != null) {
       unawaited(api.markNotificationRead(id).then((_) {}, onError: (_) {}));
       // Pushes carry only the notification id and kind; the conversation is in the notification.
-      if (tap.kind == 'message' && data['conversationId'] == null) {
+      if ((tap.kind == 'message' && data['conversationId'] == null) || (tap.kind == 'announcement' && data['announcementId'] == null)) {
         try {
           final n = (await api.notifications()).where((n) => n.id == id).firstOrNull;
           if (n != null) data = {...data, ...n.data};
@@ -101,6 +107,17 @@ class _HomeScreenState extends State<HomeScreen> {
         if (find() == null) await messages.load();
         final c = find();
         if (c != null && mounted) await MessagesTab.open(context, messages, c, widget.state.me!.id);
+      case 'announcement':
+        _go(_moreTab);
+        final announcementId = data['announcementId'];
+        await announcements.load();
+        final a = announcementId == null ? null : announcements.byId(announcementId);
+        if (!mounted) return;
+        if (a != null) {
+          await AnnouncementDetailScreen.open(context, announcements, a);
+        } else {
+          await AnnouncementsScreen.open(context, announcements);
+        }
       case 'homework':
         _go(_moreTab);
         _openHomework();
@@ -124,7 +141,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _refreshMessages() => messages.refresh();
+  void _refreshMessages() {
+    messages.refresh();
+    if (!announcements.loading) announcements.load();
+  }
 
   @override
   void dispose() {
@@ -138,6 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
     homework.dispose();
     marks.dispose();
     messages.dispose();
+    announcements.dispose();
     recordings.dispose();
     super.dispose();
   }
@@ -186,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openMessages() {
     _push(
       Scaffold(
-        body: MessagesTab(controller: messages, myId: widget.state.me!.id),
+        body: MessagesTab(controller: messages, myId: widget.state.me!.id, announcements: announcements),
         floatingActionButton: FloatingActionButton.extended(
           key: const Key('newMessageFab'),
           onPressed: () => MessagesTab.compose(context, messages, widget.state.me!.id),

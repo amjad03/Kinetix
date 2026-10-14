@@ -52,7 +52,7 @@ class ApiException implements Exception {
 }
 
 /// Everything the Teacher App asks of the KINETIX Cloud API. Tests use a fake.
-abstract class TeacherApi {
+abstract class TeacherApi implements AnnouncementSource {
   String get baseUrl;
   set baseUrl(String value);
 
@@ -305,7 +305,17 @@ abstract class TeacherApi {
 
   /// Up to [ChatPage.pageSize] messages, oldest first; [before] pages back.
   Future<ChatPage> conversationMessages(String id, {DateTime? before});
-  Future<ChatMessage> sendMessage(String conversationId, String body);
+  /// Text, a photo ([attachment]), or both.
+  Future<ChatMessage> sendMessage(String conversationId, String body, {ChatUpload? attachment});
+
+  /// A photo or PDF sent in a conversation.
+  Future<Uint8List> messageFile(String conversationId, String messageId);
+
+  /// Close (the family cannot write), reopen, or mark resolved.
+  Future<Conversation> setConversationStatus(String id, ThreadStatus status);
+
+  /// No push notifications for this thread.
+  Future<Conversation> muteConversation(String id, bool muted);
   Future<void> markConversationRead(String id);
 
   /// Students (with their guardians) in the classes this teacher teaches, or in one class.
@@ -1031,8 +1041,37 @@ class HttpTeacherApi implements TeacherApi {
   );
 
   @override
-  Future<ChatMessage> sendMessage(String conversationId, String body) async =>
-      ChatMessage.fromJson(await _send('POST', '/v1/conversations/$conversationId/messages', body: {'body': body}));
+  Future<ChatMessage> sendMessage(String conversationId, String body, {ChatUpload? attachment}) async => ChatMessage.fromJson(
+    await _send('POST', '/v1/conversations/$conversationId/messages', body: {
+      'body': body,
+      if (attachment != null) 'attachment': {'filename': attachment.name, 'contentType': attachment.mime, 'contentBase64': base64Encode(attachment.bytes)},
+    }),
+  );
+
+  @override
+  Future<Uint8List> messageFile(String conversationId, String messageId) async =>
+      (await _request('GET', '/v1/conversations/$conversationId/messages/$messageId/attachment', timeout: const Duration(seconds: 60))).bodyBytes;
+
+  @override
+  Future<Conversation> setConversationStatus(String id, ThreadStatus status) async =>
+      Conversation.fromJson(await _send('POST', '/v1/conversations/$id/status', body: {'status': status.name}));
+
+  @override
+  Future<Conversation> muteConversation(String id, bool muted) async =>
+      Conversation.fromJson(await _send('POST', '/v1/conversations/$id/mute', body: {'muted': muted}));
+
+  @override
+  Future<AnnouncementInbox> announcements() async => AnnouncementInbox.fromJson(await _send('GET', '/v1/announcements/inbox?app=teacher'));
+
+  @override
+  Future<Announcement> markAnnouncementRead(String id) async => Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/read'));
+
+  @override
+  Future<Announcement> acknowledgeAnnouncement(String id) async => Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/ack'));
+
+  @override
+  Future<Uint8List> announcementFile(String id, String fileId) async =>
+      (await _request('GET', '/v1/announcements/inbox/$id/attachments/$fileId', timeout: const Duration(seconds: 60))).bodyBytes;
 
   @override
   Future<void> markConversationRead(String id) async => _send('POST', '/v1/conversations/$id/read');

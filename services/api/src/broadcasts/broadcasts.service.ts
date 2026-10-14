@@ -18,6 +18,8 @@ export interface CreateBroadcast {
   requiresAck: boolean;
   /** Minutes until the message stops being shown to boards that come online late. */
   ttlMinutes: number;
+  /** Also tell students and families of the classes in their apps (default). Announcements reach the apps themselves. */
+  notifyFamilies?: boolean;
 }
 
 @Injectable()
@@ -62,7 +64,7 @@ export class BroadcastsService {
       data: { priority: b.priority, audience: input.audience, devices: deviceIds.length },
     });
 
-    await this.notifications.broadcastSent(tx, { id: b.id, title: b.title, body: b.body, audience: input.audience });
+    if (input.notifyFamilies !== false) await this.notifications.broadcastSent(tx, { id: b.id, title: b.title, body: b.body, audience: input.audience });
 
     const message = await this.message(tx, b.id);
     return { message, deviceIds };

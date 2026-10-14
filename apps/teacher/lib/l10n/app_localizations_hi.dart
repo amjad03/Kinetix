@@ -3408,4 +3408,145 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get leaveStatusRecommended => 'अनुशंसित, प्राचार्य की स्वीकृति शेष';
+
+  @override
+  String get inboxTitle => 'सूचनाएँ';
+
+  @override
+  String get inboxEmpty =>
+      'अभी कोई सूचना नहीं। आपके संस्थान की सूचनाएँ यहाँ दिखेंगी।';
+
+  @override
+  String get inboxPinned => 'पिन की गई';
+
+  @override
+  String get inboxEarlier => 'पहले की';
+
+  @override
+  String get inboxImportant => 'ज़रूरी';
+
+  @override
+  String get inboxAckNeeded => 'कृपया पावती दें';
+
+  @override
+  String inboxFileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count फ़ाइलें',
+      one: '1 फ़ाइल',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inboxFileFailed =>
+      'फ़ाइल नहीं खुली। फ़ोटो या PDF खोलने वाला ऐप इंस्टॉल करें।';
+
+  @override
+  String inboxFrom(String name) {
+    return '$name की ओर से';
+  }
+
+  @override
+  String inboxUntil(String when) {
+    return '$when तक';
+  }
+
+  @override
+  String get inboxFiles => 'फ़ाइलें';
+
+  @override
+  String inboxAcknowledgedOn(String when) {
+    return 'आपने $when को पावती दी';
+  }
+
+  @override
+  String get inboxAckPrompt => 'संस्थान को बताएँ कि आपने इसे पढ़ लिया है।';
+
+  @override
+  String get inboxAcknowledge => 'पावती दें';
+
+  @override
+  String inboxUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count अपठित',
+      one: '1 अपठित',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inboxAllRead => 'सब पढ़ लिया';
+
+  @override
+  String get chatCamera => 'फ़ोटो लें';
+
+  @override
+  String get chatGallery => 'फ़ोटो चुनें';
+
+  @override
+  String get chatPdf => 'PDF चुनें';
+
+  @override
+  String get chatAttach => 'फ़ोटो या PDF जोड़ें';
+
+  @override
+  String get chatFileType => 'फ़ोटो (JPEG या PNG) या PDF भेजें।';
+
+  @override
+  String get chatFileTooBig => 'फ़ाइलें 4 MB तक हो सकती हैं।';
+
+  @override
+  String get chatOffice => 'कार्यालय';
+
+  @override
+  String get chatTickSent => 'भेजा गया';
+
+  @override
+  String get chatTickDelivered => 'पहुँचा';
+
+  @override
+  String get chatTickRead => 'पढ़ा गया';
+
+  @override
+  String get chatStatusClosed => 'बंद';
+
+  @override
+  String get chatStatusResolved => 'सुलझी';
+
+  @override
+  String get chatClose => 'बातचीत बंद करें';
+
+  @override
+  String get chatReopen => 'बातचीत फिर खोलें';
+
+  @override
+  String get chatResolve => 'सुलझी मानें';
+
+  @override
+  String get chatMute => 'सूचनाएँ बंद करें';
+
+  @override
+  String get chatUnmute => 'सूचनाएँ चालू करें';
+
+  @override
+  String get chatMuted => 'मौन';
+
+  @override
+  String get chatClosedStaff =>
+      'बंद: दोबारा खोलने तक परिवार जवाब नहीं दे सकता।';
+
+  @override
+  String get chatPhotoOnly => 'भेजने के लिए फ़ोटो चुनें';
+
+  @override
+  String chatOfficeThread(String name) {
+    return 'कार्यालय · $name';
+  }
+
+  @override
+  String get chatClassTeacher => 'कक्षा शिक्षक';
 }

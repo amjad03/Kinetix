@@ -9,6 +9,7 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import '../announcements/announcements.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
 import '../calendar/calendar_screen.dart';
@@ -26,11 +27,14 @@ import 'updates_controller.dart';
 
 /// Notifications grouped Today / Earlier. Tapping one marks it read and opens what it is about.
 class UpdatesTab extends StatelessWidget {
-  const UpdatesTab({super.key, required this.controller, required this.family, required this.messages, this.now});
+  const UpdatesTab({super.key, required this.controller, required this.family, required this.messages, this.announcements, this.now});
 
   final UpdatesController controller;
   final FamilyController family;
   final MessagesController messages;
+
+  /// The institution's announcements, opened from the card at the top.
+  final AnnouncementsController? announcements;
 
   /// For tests; defaults to the device clock.
   final DateTime Function()? now;
@@ -45,6 +49,7 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.marks => Icons.grading,
     NotificationKind.message => Icons.forum,
     NotificationKind.broadcast => Icons.campaign,
+    NotificationKind.announcement => Icons.campaign,
     NotificationKind.calendar => Icons.event,
     NotificationKind.transport => Icons.directions_bus,
     NotificationKind.hostel => Icons.apartment,
@@ -58,6 +63,7 @@ class UpdatesTab extends StatelessWidget {
     required UpdatesController controller,
     required FamilyController family,
     required MessagesController messages,
+    AnnouncementsController? announcements,
   }) async {
     controller.markRead(n);
     final api = family.api;
@@ -119,6 +125,12 @@ class UpdatesTab extends StatelessWidget {
         if (family.children.isEmpty) await family.load();
         final kid = family.byId(n.studentId) ?? family.selected;
         if (kid != null && context.mounted) return BoardingScreen.open(context, family.api, kid);
+      case NotificationKind.announcement:
+        if (announcements != null && n.announcementId != null) {
+          if (announcements.byId(n.announcementId!) == null) await announcements.load();
+          final a = announcements.byId(n.announcementId!);
+          if (a != null && context.mounted) return AnnouncementDetailScreen.open(context, announcements, a);
+        }
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;
@@ -130,7 +142,7 @@ class UpdatesTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: controller,
+      listenable: Listenable.merge([controller, ?announcements]),
       builder: (context, _) {
         final today = (now ?? DateTime.now)();
         final items = controller.items;
@@ -142,7 +154,7 @@ class UpdatesTab extends StatelessWidget {
           n: n,
           today: today,
           child: multipleChildren ? _childFor(n) : null,
-          onTap: () => openNotification(context, n, controller: controller, family: family, messages: messages),
+          onTap: () => openNotification(context, n, controller: controller, family: family, messages: messages, announcements: announcements),
         );
 
         return RefreshIndicator(
@@ -164,6 +176,7 @@ class UpdatesTab extends StatelessWidget {
                   const SizedBox(width: Kx.s8),
                 ],
               ),
+              if (announcements case final a?) SliverToBoxAdapter(child: AnnouncementsCard(controller: a)),
               if (controller.error != null)
                 SliverPadding(
                   padding: const EdgeInsets.all(Kx.s16),

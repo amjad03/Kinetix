@@ -227,7 +227,7 @@ void main() {
       await tester.tap(find.byKey(const Key('newMessage')));
       await tester.pumpAndSettle();
       expect(find.text("Aarav's teachers · BCom Sem 3 A"), findsOneWidget);
-      expect(find.text('Corporate Accounting · Cost Accounting'), findsOneWidget);
+      expect(find.text('Class teacher · Corporate Accounting · Cost Accounting'), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('pickChild-c2')));
       await tester.pumpAndSettle();
