@@ -111,6 +111,7 @@ export async function GET(req: NextRequest) {
     if (id === 'nirf-rp') FIXED[kind] = `/v1/research/reports/nirf-rp.xlsx${/^\d{4}$/.test(toYear) ? `?toYear=${toYear}` : ''}`;
     else if (id === 'profile') FIXED[kind] = `/v1/research/reports/faculty-profile.xlsx${UUID.test(user) ? `?userId=${user}` : ''}`;
     else return new Response('Not found', { status: 404 });
+  }
   // Form 24Q: ?kind=q24&fy=2026&quarter=1..4&annexure=1|2
   if (kind === 'q24') {
     const sp = req.nextUrl.searchParams;
@@ -206,6 +207,7 @@ export async function GET(req: NextRequest) {
     const format = sp.get('format') === 'pdf' ? 'pdf' : 'xlsx';
     if (!UUID.test(id) || !/^\d{4}-\d{2}$/.test(month) || (subjectId && !UUID.test(subjectId))) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/attendance-desk/register?sectionId=${id}&month=${month}&format=${format}${subjectId ? `&subjectId=${subjectId}` : ''}`;
+  }
   // A placement report (NIRF, NAAC 5.2, branch-wise…) for a year: ?kind=pl-report&id=<report>&format=csv|xlsx&year=
   if (kind === 'pl-report') {
     const format = req.nextUrl.searchParams.get('format') === 'csv' ? 'csv' : 'xlsx';
