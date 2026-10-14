@@ -13,6 +13,7 @@ import { StudentClearancesTab } from '@/components/students/StudentClearancesTab
 import { StudentDetailsTab } from '@/components/students/StudentDetailsTab';
 import { FeeHoldPanel } from '@/components/fee-depth/FeeHolds';
 import { canOverrideFeeHold, FEE_HOLD_READERS, type FeeHoldStatus } from '@/lib/fee-holds';
+import { canReadmit } from '@/lib/relative-grading';
 import type { ChangeRequest, Clearance, StudentDetails } from '@/lib/student-info';
 import { ApiError, api, load, requireSection } from '@/lib/api';
 import { canChangeLifecycle } from '@/lib/access';
@@ -186,6 +187,11 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
             <div className="grid grid-cols-[1fr] gap-6 lg:grid-cols-[1fr_1.55fr]">
               <div className="min-w-0">
                 <StudentActions student={s} canChange={canChange} canGuardians classes={sameProgram} />
+                {canReadmit(roles) && !school && (
+                  <NextLink className="mt-3 inline-block text-sm underline underline-offset-2" href={`/curriculum/readmission?student=${s.id}`} data-testid="stu-readmission">
+                    {t('ra.fromProfile')}
+                  </NextLink>
+                )}
               </div>
               <div className="rounded-[12px] border bg-card p-5">
                 <SectionTitle flush>{t('stu.timeline')}</SectionTitle>

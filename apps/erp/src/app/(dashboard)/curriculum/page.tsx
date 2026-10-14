@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { CurriculumDesk } from '@/components/curriculum/CurriculumDesk';
+import { CurriculumTabs } from '@/components/curriculum/CurriculumTabs';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
@@ -29,6 +30,7 @@ export default async function CurriculumPage({ searchParams }: { searchParams: P
   return (
     <>
       <PageHeader title={t('nav.curriculum')} subtitle={t('cu.subtitle')} />
+      <CurriculumTabs current="versions" />
       {failed !== undefined ? (
         <ErrorState message={failed} />
       ) : (

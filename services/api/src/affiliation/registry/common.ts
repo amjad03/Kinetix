@@ -17,6 +17,25 @@ export const KARNATAKA_BANDS: ProfileRules['grading']['bands'] = [
   { grade: 'F', minPercent: 0, gradePoint: 0, pass: false },
 ];
 
+/**
+ * UGC CBCS (2015) guidelines: relative grading by the class's mean and standard deviation for classes large enough to
+ * have a distribution; the bottom pass grade P starts at the absolute pass mark.
+ */
+export const UGC_RELATIVE: NonNullable<ProfileRules['grading']['relative']> = {
+  allowed: true,
+  minClassSize: 30,
+  maxShift: 5,
+  bands: [
+    { grade: 'O', gradePoint: 10, minZ: 1.5 },
+    { grade: 'A+', gradePoint: 9, minZ: 1 },
+    { grade: 'A', gradePoint: 8, minZ: 0.5 },
+    { grade: 'B+', gradePoint: 7, minZ: 0 },
+    { grade: 'B', gradePoint: 6, minZ: -0.5 },
+    { grade: 'C', gradePoint: 5, minZ: -1 },
+    { grade: 'P', gradePoint: 4, minZ: -1.5 },
+  ],
+};
+
 /** The UGC CBCS (2015) model bands. */
 export const UGC_BANDS: ProfileRules['grading']['bands'] = [
   { grade: 'O', minPercent: 90, gradePoint: 10, pass: true },
@@ -144,7 +163,7 @@ export function ugcCbcs(): ProfileRules {
       practical: { internal: 50, external: 50 },
     },
     pass: { minExternalPercent: 40 },
-    grading: { bands: UGC_BANDS, pointsMode: 'band' },
+    grading: { bands: UGC_BANDS, pointsMode: 'band', relative: UGC_RELATIVE },
     percentage: { basis: 'cgpa', cgpaMultiplier: 10, cgpaSubtract: 0 },
     classification: {
       basis: 'cgpa',

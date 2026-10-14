@@ -909,10 +909,11 @@ export class ExamOfficeService {
         if (!s) throw new BadRequestException('Grade scale not found');
         await tx.update(gradeScales).set({ isDefault: sql`${gradeScales.id} = ${next.defaultGradeScaleId}::uuid` });
       }
-      // The exam cell's own rules live in the same row under `cell` (src/exam-cell/settings.ts) and are kept.
+      // The exam cell's own rules (`cell`, src/exam-cell/settings.ts) and relative grading (`relativeGrading`,
+      // src/exams/relative-grading.store.ts) live in the same row and are kept.
       const [raw] = await tx.select({ settings: examOfficeSettings.settings }).from(examOfficeSettings);
-      const cell = (raw?.settings as { cell?: unknown } | undefined)?.cell;
-      const stored = cell === undefined ? next : { ...next, cell };
+      const kept = (raw?.settings as { cell?: unknown; relativeGrading?: unknown } | undefined) ?? {};
+      const stored = { ...next, ...(kept.cell === undefined ? {} : { cell: kept.cell }), ...(kept.relativeGrading === undefined ? {} : { relativeGrading: kept.relativeGrading }) };
       await tx.insert(examOfficeSettings).values({ tenantId: p.tenantId, settings: stored, updatedBy: p.userId }).onConflictDoUpdate({ target: examOfficeSettings.tenantId, set: { settings: stored, updatedBy: p.userId, updatedAt: new Date() } });
       const changes: Record<string, { before: unknown; after: unknown }> = {};
       for (const k of Object.keys(next) as (keyof OfficeSettings)[]) if (JSON.stringify(before[k]) !== JSON.stringify(next[k])) changes[k] = { before: before[k], after: next[k] };

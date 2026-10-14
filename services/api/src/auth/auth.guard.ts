@@ -7,7 +7,7 @@ import { boardSessions, devices, userRoles, users } from '../db/schema.js';
 import { userSessions } from '../db/schema-foundation.js';
 import { currentContext } from '../observability/request-context.js';
 import { ALLOW_MFA_SETUP_META, ALLOW_PASSWORD_CHANGE_META, AUTH_META, type AuthRequirement } from './auth.decorators.js';
-import type { Principal } from './principal.js';
+import type { Principal, RoleName } from './principal.js';
 
 export const PASSWORD_CHANGE_REQUIRED = 'Change your temporary password first';
 import { TokensService } from './tokens.service.js';
@@ -115,7 +115,7 @@ export class AuthGuard implements CanActivate {
 }
 
 /** Roles that are not staff: never campus-limited. */
-const NOT_STAFF = ['student', 'guardian', 'alumni', 'external_examiner'] as const;
+const NOT_STAFF: RoleName[] = ['student', 'guardian', 'alumni', 'external_examiner'];
 
 /**
  * The campuses a member of staff is limited to: when every one of their roles is tied to a campus (user_roles.campus_id), those

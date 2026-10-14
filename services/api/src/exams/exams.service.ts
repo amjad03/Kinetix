@@ -9,6 +9,8 @@ import { cellSettings } from '../exam-cell/settings.js';
 import { cgpa, sgpa, subjectResult, type ComponentEvidence, type GradeScaleRules, type PassRules, type SchemeComponent, type SubjectResult } from './grading.js';
 import { applyGrace, examPassed, passOf, scaleOf } from '../affiliation/maths.js';
 import { resolveAffiliation, type ResolvedAffiliation } from '../affiliation/resolve.js';
+import { gradeOnCurve } from './relative-grading.js';
+import { appliedCuts } from './relative-grading.store.js';
 
 export type SessionRow = typeof examSessions.$inferSelect;
 
@@ -135,6 +137,8 @@ export class ExamsService {
     const sessionAssessments = new Set(papers.map((p) => p.assessmentId).filter((x): x is string => !!x));
     const subjectIds = [...bundles.keys()];
     const policy = await attemptPolicy(tx);
+    // Subjects graded on the class's curve (relative grading, where the regulation allows it and the office turned it on).
+    const curves = await appliedCuts(tx, s.id, s.programId);
     const out: ProcessedStudent[] = [];
     for (const st of roster) {
       const mine = registered.get(st.id);
@@ -163,7 +167,9 @@ export class ExamsService {
           const result = markCodes(profileChecks(subjectResult(b.components, evidence, b.pass, b.scale), b.scale, rules), codes);
           return { subjectId: sub, credits: b.credits, pass: b.pass, scale: b.scale, components: b.components, result };
         });
-      const lines = rules ? applyGrace(graded, rules.grace) : graded;
+      const absolute = rules ? applyGrace(graded, rules.grace) : graded;
+      // A passing candidate of a curved subject gets the grade of the curve; a fail stays a fail.
+      const lines = curves.size ? absolute.map((l) => (curves.has(l.subjectId) && l.result.passed ? { ...l, result: { ...l.result, ...gradeOnCurve(l.result.percent, curves.get(l.subjectId)!) } } : l)) : absolute;
       const decimals = rules?.gpa.decimals ?? bundles.get(subjectIds[0])?.scale.decimals ?? 2;
       const gpaOpts = { rounding: rules?.gpa.rounding ?? ('half_up' as const), includeFailedCredits: rules?.gpa.includeFailedCredits ?? true };
       const term = sgpa(lines.map((l) => ({ credits: l.credits, gradePoint: l.result.gradePoint, passed: l.result.passed })), decimals, gpaOpts);

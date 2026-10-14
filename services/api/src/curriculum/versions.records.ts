@@ -1,8 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { asc, desc, sql } from 'drizzle-orm';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
+import { asc, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { programs } from '../db/schema.js';
-import { curriculumVersions, regulations } from '../db/schema-curriculum.js';
+import { curriculumEquivalences, curriculumVersions, regulations } from '../db/schema-curriculum.js';
 import { qualified } from '../campus-life/kit-shared.js';
 import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from '../records/entity.js';
 import { choices, kitEntity, parseParams, rowOf } from '../research/kit.js';
@@ -26,6 +26,7 @@ export class CurriculumRecords implements OnModuleInit {
 
   onModuleInit(): void {
     this.registry.register(versionsEntity());
+    this.registry.register(equivalencesEntity());
   }
 }
 
@@ -102,3 +103,51 @@ export function versionsEntity(): RecordEntity {
   return e;
 }
 
+const versionOptions = async (ctx: KitCtx): Promise<FieldOption[]> =>
+  (await ctx.tx.select({ id: curriculumVersions.id, label: curriculumVersions.label, year: curriculumVersions.regulationYear, no: curriculumVersions.versionNo, program: programs.name }).from(curriculumVersions).innerJoin(programs, eq(programs.id, curriculumVersions.programId)).orderBy(asc(programs.name), desc(curriculumVersions.regulationYear), desc(curriculumVersions.versionNo))).map((v) => ({ value: v.id, label: `${v.year} v${v.no}: ${v.label}`, group: v.program }));
+const versionByLabel = async (ctx: KitCtx, text: string) => (await ctx.tx.select({ id: curriculumVersions.id }).from(curriculumVersions).where(sql`lower(${curriculumVersions.label}) = ${text.toLowerCase()}`).limit(1))[0]?.id ?? null;
+
+/**
+ * Equivalences between two curriculum versions: a subject of the old version (by code) counted as a subject of the new
+ * one, for students who rejoin or move to the version in force. Kept by the academic office; imported from Excel.
+ */
+export function equivalencesEntity(): RecordEntity {
+  const e = kitEntity({
+    key: 'curriculum-equivalences',
+    module: 'curriculum',
+    table: curriculumEquivalences,
+    subjectType: 'curriculum_equivalence',
+    roles: { read: READERS, write: EDITORS },
+    title: 'fromCode',
+    label: (r) => `${String(r.fromCode)} = ${String(r.toCode)}`,
+    fields: {
+      fromVersionId: { label: 'Old version', kind: 'ref', column: curriculumEquivalences.fromVersionId, options: versionOptions, required: true, filter: true, lookup: versionByLabel, bulk: true },
+      fromCode: { label: 'Old subject code', kind: 'text', column: curriculumEquivalences.fromCode, required: true, max: 40, example: 'BC101' },
+      toVersionId: { label: 'New version', kind: 'ref', column: curriculumEquivalences.toVersionId, options: versionOptions, required: true, filter: true, lookup: versionByLabel, bulk: true },
+      toCode: { label: 'New subject code', kind: 'text', column: curriculumEquivalences.toCode, required: true, max: 40, example: 'BCN101' },
+      note: { label: 'Note', kind: 'text', column: curriculumEquivalences.note, max: 300 },
+    },
+    extra: {
+      fromVersion: sql<string | null>`(select cv.regulation_year || ' v' || cv.version_no || ': ' || cv.label from curriculum_versions cv where cv.id = ${qualified('curriculum_equivalences', 'from_version_id')})`,
+      toVersion: sql<string | null>`(select cv.regulation_year || ' v' || cv.version_no || ': ' || cv.label from curriculum_versions cv where cv.id = ${qualified('curriculum_equivalences', 'to_version_id')})`,
+      fromName: sql<string | null>`(select cs.name from curriculum_subjects cs where cs.version_id = ${qualified('curriculum_equivalences', 'from_version_id')} and cs.code = ${qualified('curriculum_equivalences', 'from_code')})`,
+      toName: sql<string | null>`(select cs.name from curriculum_subjects cs where cs.version_id = ${qualified('curriculum_equivalences', 'to_version_id')} and cs.code = ${qualified('curriculum_equivalences', 'to_code')})`,
+    },
+    search: [curriculumEquivalences.fromCode, curriculumEquivalences.toCode, curriculumEquivalences.note],
+    defaultSort: { id: 'fromCode', dir: 'asc' },
+    importKey: ['fromVersionId', 'fromCode', 'toVersionId', 'toCode'],
+    exportExtra: [
+      { key: 'fromName', header: 'Old subject' },
+      { key: 'toName', header: 'New subject' },
+    ],
+  });
+  e.fields!.note.schema = e.fields!.note.schema.transform((v: unknown) => (v ?? '') as string);
+  e.check = async (ctx, id) => {
+    const r = await rowOf(ctx, curriculumEquivalences, id);
+    if (r.fromVersionId === r.toVersionId) throw new BadRequestException('Choose two different versions');
+    const has = async (versionId: unknown, code: unknown) => (await ctx.tx.execute<{ n: number }>(sql`select count(*)::int as n from curriculum_subjects where version_id = ${String(versionId)}::uuid and code = ${String(code)}`)).rows[0].n > 0;
+    if (!(await has(r.fromVersionId, r.fromCode))) throw new BadRequestException(`The old version has no subject ${String(r.fromCode)}`);
+    if (!(await has(r.toVersionId, r.toCode))) throw new BadRequestException(`The new version has no subject ${String(r.toCode)}`);
+  };
+  return e;
+}

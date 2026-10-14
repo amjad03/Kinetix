@@ -109,6 +109,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/results', label: 'nav.results', section: 'results', icon: 'results' },
       { href: '/exams/cell', label: 'nav.examCell', section: 'exams', icon: 'exams' },
       { href: '/exams/results-desk', label: 'nav.resultsDesk', section: 'exams', icon: 'results' },
+      { href: '/exams/relative-grading', label: 'nav.relativeGrading', section: 'exams', icon: 'results' },
     ],
   },
   {

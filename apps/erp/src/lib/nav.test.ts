@@ -25,6 +25,13 @@ describe('navigation groups', () => {
     expect(findNav(visibleGroups(['librarian']), '/library/records')?.item.label).toBe('lht.records.library');
   });
 
+  it('lists relative grading for the exam office and heads of department, not for teachers', () => {
+    expect(hrefs(['exam_controller'])).toContain('/exams/relative-grading');
+    expect(hrefs(['hod'])).toContain('/exams/relative-grading');
+    expect(hrefs(['teacher'])).not.toContain('/exams/relative-grading');
+    expect(findNav(visibleGroups(['principal']), '/exams/relative-grading')?.item.label).toBe('nav.relativeGrading');
+  });
+
   it('drops groups with nothing to show and keeps the product order', () => {
     const ids = visibleGroups(['hr_manager']).map((g) => g.id);
     expect(ids).toEqual(['dashboard', 'students', 'hr', 'communication', 'reports', 'work']);

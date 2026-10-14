@@ -1,7 +1,7 @@
 // Curriculum versions, school report cards, PUC, competencies, houses and university basics (migration 0114). Kept apart from schema.ts, which they reference.
 import { sql } from 'drizzle-orm';
 import { type AnyPgColumn, boolean, date, index, integer, jsonb, numeric, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
-import { academicYears, programs, students, tenants, users } from './schema.js';
+import { academicYears, examSessions, programs, students, subjects, tenants, users } from './schema.js';
 
 const id = () => uuid('id').primaryKey().default(sql`gen_random_uuid()`);
 const tenantId = () => uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' });
@@ -340,4 +340,76 @@ export const convocationCandidates = pgTable(
     issuedAt: timestamp('issued_at', { withTimezone: true }),
   },
   (t) => [uniqueIndex('convocation_candidates_uq').on(t.convocationId, t.studentId)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Relative grading and the re-admission scheme (migration 0183)
+// ---------------------------------------------------------------------------------------------
+
+/** One grade of relative grading: the grade starts at this many percent (mean + z × standard deviation + shift). */
+export interface RelativeCut {
+  grade: string;
+  points: number;
+  minPercent: number;
+}
+
+/** A subject of an exam session graded on the class's curve: its statistics, the moderation shift and the cut-offs. */
+export const examRelativeGrades = pgTable(
+  'exam_relative_grades',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id, { onDelete: 'cascade' }),
+    candidates: integer('candidates').notNull(),
+    mean: num('mean', 6, 2).notNull(),
+    sd: num('sd', 6, 2).notNull(),
+    /** Moderation: marks (percent points) added to every cut-off, negative to lower them. */
+    shift: num('shift', 5, 2).notNull().default(0),
+    cuts: jsonb('cuts').$type<RelativeCut[]>().notNull(),
+    note: text('note').notNull().default(''),
+    appliedBy: uuid('applied_by').references(() => users.id, { onDelete: 'set null' }),
+    appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('exam_relative_grades_uq').on(t.sessionId, t.subjectId)],
+);
+
+/** A subject of one curriculum version counted as a subject of another (for students moving between versions). */
+export const curriculumEquivalences = pgTable(
+  'curriculum_equivalences',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    fromVersionId: uuid('from_version_id').notNull().references(() => curriculumVersions.id, { onDelete: 'cascade' }),
+    fromCode: text('from_code').notNull(),
+    toVersionId: uuid('to_version_id').notNull().references(() => curriculumVersions.id, { onDelete: 'cascade' }),
+    toCode: text('to_code').notNull(),
+    note: text('note').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('curriculum_equivalences_uq').on(t.fromVersionId, t.fromCode, t.toVersionId, t.toCode)],
+);
+
+/** A student rejoining after a break, on the curriculum version in force at rejoining. */
+export const studentReadmissions = pgTable(
+  'student_readmissions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    rejoinedOn: date('rejoined_on').notNull(),
+    rejoinTerm: smallint('rejoin_term').notNull(),
+    fromVersionId: uuid('from_version_id').references(() => curriculumVersions.id, { onDelete: 'set null' }),
+    toVersionId: uuid('to_version_id').notNull().references(() => curriculumVersions.id, { onDelete: 'cascade' }),
+    /** The affiliation profile and scheme in force at rejoining (profile, scheme, version), when there is one. */
+    scheme: jsonb('scheme').$type<Record<string, unknown>>().notNull().default({}),
+    /** Subjects passed under the old version that count, each with the new version's subject they stand for. */
+    credited: jsonb('credited').$type<{ fromCode: string; fromName: string; toCode: string; toName: string; credits: number; grade: string | null }[]>().notNull().default([]),
+    /** Subjects of the new version up to the rejoining term that the student has not covered. */
+    toTake: jsonb('to_take').$type<{ code: string; name: string; term: number; credits: number }[]>().notNull().default([]),
+    note: text('note').notNull().default(''),
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('student_readmissions_student_idx').on(t.studentId)],
 );
