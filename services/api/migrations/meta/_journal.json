@@ -904,6 +904,20 @@
       "when": 1791500000000,
       "tag": "0136_workflow_builder",
       "breakpoints": true
+    },
+    {
+      "idx": 137,
+      "version": "7",
+      "when": 1791500009000,
+      "tag": "0145_report_studio",
+      "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1791500010000,
+      "tag": "0146_report_dashboards",
+      "breakpoints": true
     }
   ]
 }

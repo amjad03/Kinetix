@@ -54,12 +54,3 @@ describe('money', () => {
     expect(rupees(150050)).toBe(1501);
   });
 });
-
-describe('report charts', () => {
-  it('draws the first numeric column against the first column', async () => {
-    const { chartOf } = await import('./govern');
-    const data = { columns: [{ key: 'class', label: 'Class' }, { key: 'note', label: 'Note' }, { key: 'n', label: 'Students', kind: 'int' }], rows: [{ class: 'A', note: 'x', n: 30 }, { class: 'B', note: 'y', n: 45 }], truncated: false };
-    expect(chartOf(data)).toEqual({ label: 'Class', measure: 'Students', bars: [{ name: 'A', value: 30 }, { name: 'B', value: 45 }] });
-    expect(chartOf({ columns: [{ key: 'a', label: 'A' }], rows: [{ a: 'x' }], truncated: false })).toBeNull();
-  });
-});

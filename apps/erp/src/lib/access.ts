@@ -169,8 +169,9 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   earlyYears: ['principal', 'tenant_admin', 'hod'],
   // school-life/school-life.service.ts HEALTH_STAFF (no nurse role yet; teachers never see health records)
   health: ['principal', 'tenant_admin', 'counsellor'],
-  // analytics.controller.ts ANALYTICS_ROLES: each report then checks its own roles (the catalogue lists only the caller's)
-  reports: ['principal', 'tenant_admin', 'hod', 'accountant', 'hr_manager'],
+  // analytics semantic.ts STUDIO_ROLES (every role with a dataset in the report studio); each report then checks its own roles.
+  // Teachers report in the Teacher App, so the ERP leaves them out.
+  reports: ['principal', 'tenant_admin', 'hod', 'accountant', 'hr_manager', 'exam_controller', 'admissions_officer', 'librarian', 'hostel_warden', 'transport_manager', 'store_keeper', 'placement_officer'],
 };
 
 /** Everyone who can use some part of the ERP. */

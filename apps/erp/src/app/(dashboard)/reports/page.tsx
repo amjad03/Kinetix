@@ -10,6 +10,8 @@ import { EmptyState, ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import { accreditationPath, isDay, type ClassroomAnalytics, type Kpis, type ReportMeta, type ReportResult, type Schedule } from '@/lib/insights';
+import { OVERVIEW_ROLES, ReportsTabs } from '@/components/reports/studio/ReportsTabs';
+import { redirect } from 'next/navigation';
 
 import { Button, Card } from '@/components/kx';
 import { FileDown as FileDownloadOutlined, Inbox as InboxOutlined } from 'lucide-react';
@@ -30,6 +32,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const to = isDay(sp.to) ? sp.to : undefined;
   const range = new URLSearchParams([...(from ? [['from', from]] : []), ...(to ? [['to', to]] : [])]).toString();
   const roles = me?.roles ?? [];
+  // The overview (KPIs and the classic catalogue) is for leaders, accounts and HR; everyone else starts in the library.
+  if (me && !roles.some((r) => OVERVIEW_ROLES.includes(r))) redirect('/reports/library');
   const leader = roles.includes('principal') || roles.includes('tenant_admin');
   const academic = leader || roles.includes('hod');
 
@@ -37,6 +41,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   if (catalogue.error !== undefined) return (
     <>
       <PageHeader title={t('reports.title')} />
+      <ReportsTabs active="overview" />
       <ErrorState message={catalogue.error} />
     </>
   );
@@ -54,11 +59,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader title={t('reports.title')} subtitle={t('reports.subtitle')} />
-      <div className="mb-4">
-        <LinkButton href="/reports/custom" variant="outlined" data-testid="custom-reports-link">
-          {t('rb.title')}
-        </LinkButton>
-      </div>
+      <ReportsTabs active="overview" />
       <FormRow component="form" className="gap-3 mb-6" method="get">
         <TextInput type="date" name="from" label={t('reports.from')} defaultValue={from ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
         <TextInput type="date" name="to" label={t('reports.to')} defaultValue={to ?? ''} slotProps={{ inputLabel: { shrink: true } }} />

@@ -7,13 +7,13 @@ import { PdfWriter, toCsv } from '../common/pdf.js';
 import { Clock, localParts, zonedToInstant } from '../common/time.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { customReports, tenants, userRoles, users } from '../db/schema.js';
+import { tenants, userRoles, users } from '../db/schema.js';
 import { reportRuns, reportSchedules } from '../db/schema-foundation.js';
 import { reportRunsTotal } from '../observability/metrics.js';
 import { buildPack, type Framework, type Pack } from './accreditation.js';
 import { exportCell, reportByKey, type ReportData, type ReportDef, type RunCtx } from './catalogue.js';
-import { DefinitionSchema, datasetByKey, runCustomReport } from './custom-reports.js';
 import { Mailer } from './mailer.js';
+import { StudioService } from './studio.service.js';
 import { addDays, resolveRange } from './queries.js';
 import { zip } from './zip.js';
 
@@ -84,6 +84,7 @@ export class ReportsService implements OnApplicationBootstrap, BeforeApplication
     private readonly mailer: Mailer,
     private readonly clock: Clock,
     @Inject(ENV) private readonly env: Env,
+    private readonly studio: StudioService,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -179,17 +180,19 @@ export class ReportsService implements OnApplicationBootstrap, BeforeApplication
 
   private async dueLoop(): Promise<number> {
     const due = await this.db.system
-      .select({ id: reportSchedules.id, tenantId: reportSchedules.tenantId })
+      .select({ id: reportSchedules.id, tenantId: reportSchedules.tenantId, key: reportSchedules.reportKey })
       .from(reportSchedules)
       .where(and(eq(reportSchedules.active, true), lte(reportSchedules.nextRunAt, this.clock.now())))
       .orderBy(asc(reportSchedules.nextRunAt))
       .limit(50);
     let n = 0;
-    for (const d of due) if (await this.runSchedule(d.tenantId, d.id)) n++;
+    for (const d of due) if (await this.runSchedule(d.tenantId, d.id, d.key)) n++;
     return n;
   }
 
-  private async runSchedule(tenantId: string, id: string): Promise<boolean> {
+  private async runSchedule(tenantId: string, id: string, key: string): Promise<boolean> {
+    // Saved and library reports of the report studio keep their own timing, recipients and formats.
+    if (key.startsWith('custom.') || key.startsWith('lib.')) return (await this.studio.runSchedule(tenantId, id)).ok;
     const now = this.clock.now();
     // Claim and advance in one transaction so a second instance skips it; the delivery follows, its outcome recorded after.
     const claimed = await this.db.withTenant(tenantId, async (tx) => {
@@ -203,7 +206,6 @@ export class ReportsService implements OnApplicationBootstrap, BeforeApplication
     });
     if (!claimed) return false;
     const { s, roles, creatorActive } = claimed;
-    if (s.reportKey.startsWith('custom.')) return this.runCustomSchedule(tenantId, id, s, roles, creatorActive);
     const def = reportByKey(s.reportKey);
     try {
       if (!def) throw new Error('The report no longer exists');
@@ -228,34 +230,6 @@ export class ReportsService implements OnApplicationBootstrap, BeforeApplication
     } catch (e) {
       this.log.warn(`Scheduled report ${s.reportKey} (${id}) failed: ${(e as Error).message}`);
       await this.db.withTenant(tenantId, (tx) => this.recordRun(tx, tenantId, { scheduleId: id, key: s.reportKey, params: s.params as ReportParams, format: s.format, rows: 0, status: 'failed', error: (e as Error).message }));
-      return false;
-    }
-  }
-
-  /** A scheduled custom report: run as its creator (who must still hold a role the dataset allows), emailed as CSV. */
-  private async runCustomSchedule(tenantId: string, id: string, s: typeof reportSchedules.$inferSelect, roles: RoleName[], creatorActive: boolean): Promise<boolean> {
-    try {
-      const out = await this.db.withTenant(tenantId, async (tx) => {
-        const [r] = await tx.select().from(customReports).where(eq(customReports.id, s.reportKey.slice('custom.'.length)));
-        const ds = r && datasetByKey(r.dataset);
-        if (!r || !ds) throw new Error('The report no longer exists');
-        if (!creatorActive || !ds.roles.some((x) => roles.includes(x))) {
-          await tx.update(reportSchedules).set({ active: false }).where(eq(reportSchedules.id, id));
-          await audit(tx, { tenantId, actorType: 'system', action: 'report.schedule_disabled', subjectType: 'report_schedule', subjectId: id, data: { reason: 'creator lost access' } });
-          throw new Error('The person who scheduled this report no longer has access to it; the schedule was switched off');
-        }
-        const data = await runCustomReport(tx, { tenantId, userId: s.createdBy, roles }, ds, DefinitionSchema.parse(r.definition));
-        return { name: r.name, data, today: localParts(this.clock.now(), await this.tenantTimezone(tx)).date };
-      });
-      await this.mailer.send({ to: s.recipients, subject: `KINETIX report: ${out.name} (${out.today})`, text: `Your scheduled report "${out.name}" is attached (${out.data.rows.length} rows).\n\nSchedule: ${s.frequency}. To change or stop it, open Reports and analytics in the ERP.`, attachments: [{ filename: `custom-report-${out.today}.csv`, contentType: 'text/csv', content: renderCsv(out.data) }] });
-      await this.db.withTenant(tenantId, async (tx) => {
-        await this.recordRun(tx, tenantId, { scheduleId: id, key: s.reportKey, params: {}, format: 'csv', rows: out.data.rows.length, status: 'ok', deliveredTo: s.recipients });
-        await audit(tx, { tenantId, actorType: 'system', action: 'report.scheduled_sent', subjectType: 'report_schedule', subjectId: id, data: { report: s.reportKey, recipients: s.recipients.length, rows: out.data.rows.length } });
-      });
-      return true;
-    } catch (e) {
-      this.log.warn(`Scheduled custom report ${s.reportKey} (${id}) failed: ${(e as Error).message}`);
-      await this.db.withTenant(tenantId, (tx) => this.recordRun(tx, tenantId, { scheduleId: id, key: s.reportKey, params: {}, format: 'csv', rows: 0, status: 'failed', error: (e as Error).message }));
       return false;
     }
   }

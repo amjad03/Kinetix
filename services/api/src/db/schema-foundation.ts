@@ -132,8 +132,16 @@ export const reportSchedules = pgTable('report_schedules', {
   reportKey: text('report_key').notNull(),
   params: jsonb('params').$type<Record<string, string>>().notNull().default({}),
   frequency: text('frequency').notNull(), // daily | weekly | monthly
-  format: text('format').notNull().default('csv'), // csv | pdf
+  format: text('format').notNull().default('csv'), // csv | pdf | xlsx
   recipients: jsonb('recipients').$type<string[]>().notNull().default([]),
+  /** Report studio schedules: a name, people by role or by id, and when and how to run. */
+  name: text('name').notNull().default(''),
+  recipientRoles: jsonb('recipient_roles').$type<string[]>().notNull().default([]),
+  recipientUserIds: jsonb('recipient_user_ids').$type<string[]>().notNull().default([]),
+  options: jsonb('options').$type<Record<string, unknown>>().notNull().default({}),
+  lastStatus: text('last_status'),
+  lastError: text('last_error'),
+  failureCount: integer('failure_count').notNull().default(0),
   nextRunAt: timestamp('next_run_at', { withTimezone: true }).notNull(),
   lastRunAt: timestamp('last_run_at', { withTimezone: true }),
   active: boolean('active').notNull().default(true),

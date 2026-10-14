@@ -269,7 +269,6 @@ export default area(
     'ask.more': 'and {n} more',
     'ask.open': 'Open the full list',
 
-    'rb.chart': 'Chart: {measure}',
 
     'shell.density': 'Display density',
     'shell.densityComfortable': 'Comfortable spacing: switch to compact',
@@ -542,7 +541,6 @@ export default area(
       'ask.more': 'और {n}',
       'ask.open': 'पूरी सूची खोलें',
 
-      'rb.chart': 'चार्ट: {measure}',
 
       'shell.density': 'प्रदर्शन घनत्व',
       'shell.densityComfortable': 'आरामदायक दूरी: सघन पर जाएँ',
@@ -814,7 +812,6 @@ export default area(
       'ask.more': 'ಮತ್ತು {n} ಇನ್ನಷ್ಟು',
       'ask.open': 'ಪೂರ್ಣ ಪಟ್ಟಿ ತೆರೆಯಿರಿ',
 
-      'rb.chart': 'ಚಾರ್ಟ್: {measure}',
 
       'shell.density': 'ಪ್ರದರ್ಶನ ಸಾಂದ್ರತೆ',
       'shell.densityComfortable': 'ಆರಾಮದಾಯಕ ಅಂತರ: ಸಾಂದ್ರಕ್ಕೆ ಬದಲಿಸಿ',
