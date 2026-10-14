@@ -15,16 +15,16 @@ export const ENQUIRY_STAGE_MOVES: Record<EnquiryStage, readonly EnquiryStage[]> 
   deferred: ['contacted', 'counselling', 'lost'],
 };
 
-export const ENQUIRY_SOURCES = ['web', 'walk_in', 'phone', 'campaign', 'referral'] as const;
+export const ENQUIRY_SOURCES = ['web', 'walk_in', 'phone', 'campaign', 'referral', 'whatsapp', 'fair', 'meta', 'google', 'email'] as const;
 export const ACTIVITY_KINDS = ['call', 'visit', 'email', 'sms', 'whatsapp', 'note'] as const;
 export const APPLICATION_STATUSES = ['submitted', 'under_review', 'eligible', 'ineligible', 'waitlisted', 'offered', 'accepted', 'declined', 'rejected', 'enrolled', 'withdrawn', 'correction_requested'] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
 /** Moves that need a written reason (APPLICATION_REASON_REQUIRED). */
 export const APPLICATION_REASON_REQUIRED: readonly string[] = ['rejected', 'ineligible', 'withdrawn', 'eligible', 'correction_requested'];
-export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred'] as const;
+export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred', 'long_absent'] as const;
 export type StudentStatus = (typeof STUDENT_STATUSES)[number];
 /** Changes that need a written reason (STUDENT_REASON_REQUIRED). */
-export const STUDENT_REASON_REQUIRED: readonly string[] = ['on_leave', 'detained', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred'];
+export const STUDENT_REASON_REQUIRED: readonly string[] = ['on_leave', 'detained', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred', 'long_absent'];
 /** Statuses that ask when the student returns (a leave of absence needs it; a suspension may have it). */
 export const STUDENT_RETURN_STATUSES: readonly string[] = ['on_leave', 'suspended', 'deferred'];
 /** Statuses a student can be readmitted from. */
@@ -34,7 +34,7 @@ export type Tone = 'default' | 'info' | 'success' | 'warning' | 'error';
 export const applicationTone = (s: string): Tone =>
   s === 'enrolled' || s === 'accepted' ? 'success' : s === 'offered' || s === 'eligible' ? 'info' : s === 'rejected' || s === 'ineligible' || s === 'declined' || s === 'withdrawn' ? 'error' : s === 'waitlisted' || s === 'correction_requested' ? 'warning' : 'default';
 export const studentTone = (s: string): Tone =>
-  s === 'active' || s === 'enrolled' ? 'success' : s === 'on_leave' || s === 'detained' || s === 'promoted' || s === 'suspended' || s === 'deferred' ? 'warning' : s === 'transferred' || s === 'dropped' || s === 'expelled' || s === 'deceased' ? 'error' : s === 'alumni' ? 'info' : 'default';
+  s === 'active' || s === 'enrolled' ? 'success' : s === 'on_leave' || s === 'detained' || s === 'promoted' || s === 'suspended' || s === 'deferred' || s === 'long_absent' ? 'warning' : s === 'transferred' || s === 'dropped' || s === 'expelled' || s === 'deceased' ? 'error' : s === 'alumni' ? 'info' : 'default';
 
 export interface Enquiry {
   id: string;
@@ -80,6 +80,8 @@ export interface DocSpec {
   key: string;
   label: string;
   required: boolean;
+  /** Only NRI, foreign or Indian applicants are asked for it (default: everyone). */
+  for?: 'all' | 'indian' | 'nri' | 'foreign';
 }
 export interface CycleRow {
   id: string;
@@ -143,6 +145,11 @@ export interface ApplicationDetail extends Omit<ApplicationRow, 'cycleName'> {
   statusReason: string | null;
   offerExpiresOn: string | null;
   studentId: string | null;
+  /** regular | lateral | transfer, and the term a lateral or transfer applicant joins. */
+  admissionType: string;
+  entryTermOverride: number | null;
+  nationality: string;
+  quota: string;
   eligibilityNotes: string[];
   eligibilityCheck: string[];
   liveMeritScore: number;

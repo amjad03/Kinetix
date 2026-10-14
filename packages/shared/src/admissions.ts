@@ -6,7 +6,7 @@
 // Enquiries
 // ---------------------------------------------------------------------------------------------
 
-export const ENQUIRY_SOURCES = ['web', 'walk_in', 'phone', 'campaign', 'referral', 'import'] as const;
+export const ENQUIRY_SOURCES = ['web', 'walk_in', 'phone', 'campaign', 'referral', 'import', 'whatsapp', 'fair', 'meta', 'google', 'email'] as const;
 export type EnquirySource = (typeof ENQUIRY_SOURCES)[number];
 
 /** The pipeline, in board order. `converted` is set by enrollment, not by hand. */
@@ -55,6 +55,19 @@ export interface AdmissionDocumentSpec {
   key: string;
   label: string;
   required: boolean;
+  /** Who is asked for it: everyone (default), or only Indian, NRI or foreign applicants (passport, visa, equivalence). */
+  for?: DocumentAudience;
+}
+
+export const DOCUMENT_AUDIENCES = ['all', 'indian', 'nri', 'foreign'] as const;
+export type DocumentAudience = (typeof DOCUMENT_AUDIENCES)[number];
+export const NATIONALITIES = ['indian', 'nri', 'foreign'] as const;
+export type Nationality = (typeof NATIONALITIES)[number];
+
+/** The documents an applicant of this nationality is asked for. */
+export function documentsFor<T extends AdmissionDocumentSpec>(docs: readonly T[], nationality: string | null | undefined): T[] {
+  const n = (nationality ?? 'indian') as Nationality;
+  return docs.filter((d) => !d.for || d.for === 'all' || d.for === n);
 }
 
 export interface EligibilityRules {
@@ -206,7 +219,7 @@ export function rankMerit<T extends { id: string; score: number; submittedAt: Da
 // Student lifecycle
 // ---------------------------------------------------------------------------------------------
 
-export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred'] as const;
+export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred', 'long_absent'] as const;
 export type StudentStatus = (typeof STUDENT_STATUSES)[number];
 
 /**
@@ -217,7 +230,7 @@ export type StudentStatus = (typeof STUDENT_STATUSES)[number];
 export const STUDENT_TRANSITIONS: Record<StudentStatus, readonly StudentStatus[]> = {
   applicant: ['enrolled', 'dropped', 'deferred'],
   enrolled: ['active', 'transferred', 'dropped', 'deferred'],
-  active: ['on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased'],
+  active: ['on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased', 'long_absent'],
   on_leave: ['active', 'transferred', 'dropped', 'deceased'],
   detained: ['active', 'transferred', 'dropped', 'deceased'],
   promoted: ['active', 'transferred', 'dropped', 'deceased'],
@@ -229,10 +242,12 @@ export const STUDENT_TRANSITIONS: Record<StudentStatus, readonly StudentStatus[]
   deceased: [],
   /** Admission held over to a later intake: the student returns to enrolled or active on the date given. */
   deferred: ['enrolled', 'active', 'dropped', 'transferred'],
+  /** Not attending for a long stretch without leave (UDISE+ "long absentee"): still on the roll, followed up, then back or out. */
+  long_absent: ['active', 'dropped', 'transferred', 'deceased'],
 };
 
 /** Changes that need a written reason (they are on the student's permanent record). */
-export const STUDENT_REASON_REQUIRED: readonly StudentStatus[] = ['on_leave', 'detained', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred'];
+export const STUDENT_REASON_REQUIRED: readonly StudentStatus[] = ['on_leave', 'detained', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred', 'long_absent'];
 
 /** Changes that record who approved them (the approver defaults to the person making the change). */
 export const STUDENT_APPROVER_STATUSES: readonly StudentStatus[] = ['deferred', 'on_leave', 'suspended', 'expelled', 'dropped', 'transferred', 'deceased'];

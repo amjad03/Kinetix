@@ -1875,7 +1875,7 @@ export const lessonPlans = pgTable(
 // Admissions CRM (docs/architecture/admissions-lifecycle.md)
 // ---------------------------------------------------------------------------------------------
 
-export const enquirySource = pgEnum('enquiry_source', ['web', 'walk_in', 'phone', 'campaign', 'referral', 'import']);
+export const enquirySource = pgEnum('enquiry_source', ['web', 'walk_in', 'phone', 'campaign', 'referral', 'import', 'whatsapp', 'fair', 'meta', 'google', 'email']);
 export const enquiryStage = pgEnum('enquiry_stage', ['new', 'contacted', 'counselling', 'applied', 'converted', 'lost', 'deferred']);
 export const enquiryActivityKind = pgEnum('enquiry_activity_kind', ['call', 'visit', 'email', 'sms', 'whatsapp', 'note']);
 
@@ -1903,6 +1903,12 @@ export const enquiries = pgTable(
     campaignId: uuid('campaign_id').references((): AnyPgColumn => admissionCampaigns.id, { onDelete: 'set null' }),
     utmSource: text('utm_source'),
     utmMedium: text('utm_medium'),
+    utmCampaign: text('utm_campaign'),
+    /** Where the family lives, for counsellor assignment by region and the funnel by place. */
+    city: text('city'),
+    region: text('region'),
+    /** When two enquiries were the same family, the one this was merged into (this one is then closed as lost). */
+    mergedIntoId: uuid('merged_into_id'),
     /** Rule-based lead score (admissions/lead-score.ts), recomputed whenever the enquiry changes. */
     leadScore: integer('lead_score').notNull().default(0),
     /** The agent or partner whose referral code the family used. */
@@ -2024,6 +2030,14 @@ export const applications = pgTable(
     correctionNotes: jsonb('correction_notes').$type<{ at: string; by: string | null; notes: string; items: string[] }[]>().notNull().default([]),
     correctionDueOn: date('correction_due_on'),
     agentId: uuid('agent_id').references((): AnyPgColumn => admissionAgents.id, { onDelete: 'set null' }),
+    /** regular | lateral (into a later term) | transfer (from another institution) */
+    admissionType: text('admission_type').notNull().default('regular'),
+    /** The term joined for a lateral or transfer admission (null: the cycle's entry term). */
+    entryTermOverride: smallint('entry_term_override'),
+    /** indian | nri | foreign: decides the document set asked for. */
+    nationality: text('nationality').notNull().default('indian'),
+    /** The seat quota applied for: merit (default), management, nri, sports and the like. */
+    quota: text('quota').notNull().default('merit'),
     studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: updatedAt(),
@@ -3751,6 +3765,8 @@ export const TENANT_TABLES = [
   'affiliation_settings', 'programme_affiliations',
   'result_withholds', 'grace_applications', 'mark_entry_checks', 'valuation_camps', 'valuation_bundles', 'valuation_daily_counts', 'answer_sheet_accounts', 'invigilation_swaps', 'exam_reschedules', 'result_runs', 'result_revisions',
   'record_corrections', 'verification_requests', 'credit_transfers',
+  'student_profiles', 'student_custom_fields', 'student_change_requests', 'student_clearances', 'student_clearance_items',
+  'admission_assignment_rules', 'admission_requests', 'admission_refund_slabs', 'admission_custody_items', 'application_drafts',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -6587,8 +6603,10 @@ export const agentCommissions = pgTable(
     agentId: uuid('agent_id').notNull().references(() => admissionAgents.id),
     applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
     amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
-    status: text('status').notNull().default('accrued'), // accrued | paid
+    status: text('status').notNull().default('accrued'), // accrued | paid | clawed_back
     paidOn: date('paid_on'),
+    /** Set when the student withdrew and the commission was taken back (from the next payout if already paid). */
+    clawedBackAt: timestamp('clawed_back_at', { withTimezone: true }),
     note: text('note'),
     createdAt: createdAt(),
   },

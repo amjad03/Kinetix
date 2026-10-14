@@ -36,16 +36,20 @@ export function parseQuestions(text: string): Parsed<FormField[]> {
   return dup ? { ok: false, error: `The key "${dup.key}" is used twice`, line: out.lastIndexOf(dup) + 1 } : { ok: true, value: out };
 }
 
-/** `marksheet | Previous marksheet | y` */
+const AUDIENCES = ['all', 'indian', 'nri', 'foreign'] as const;
+
+/** `marksheet | Previous marksheet | y`, and optionally who is asked for it: `passport | Passport | y | nri`. */
 export function parseDocuments(text: string): Parsed<DocSpec[]> {
   const out: DocSpec[] = [];
   let n = 0;
   for (const line of lines(text)) {
     n++;
-    const [key, label, required] = line.split('|').map((x) => x.trim());
+    const [key, label, required, audience] = line.split('|').map((x) => x.trim());
     if (!KEY.test(key ?? '')) return { ok: false, error: `"${key ?? ''}" is not a valid key`, line: n };
     if (!label) return { ok: false, error: 'Missing the label', line: n };
-    out.push({ key, label, required: required === undefined ? true : yes(required) });
+    const who = (audience || 'all').toLowerCase();
+    if (!(AUDIENCES as readonly string[]).includes(who)) return { ok: false, error: `Ask for it from ${AUDIENCES.join(', ')}`, line: n };
+    out.push({ key, label, required: required === undefined ? true : yes(required), ...(who !== 'all' && { for: who as DocSpec['for'] }) });
   }
   return { ok: true, value: out };
 }

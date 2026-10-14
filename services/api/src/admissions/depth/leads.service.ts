@@ -134,7 +134,7 @@ export class LeadsService {
     const res = await this.enquiries.create(
       tx,
       { tenantId: c.tenantId, userId: null },
-      { name: read.name, phone, email: read.email, programId: c.programId, source: c.kind === 'website' ? 'web' : 'campaign', message: read.message, campaignId: c.campaignId, utmSource: channel, utmMedium: c.kind === 'website' ? 'form' : 'lead_ad', utmCampaign: read.utmCampaign },
+      { name: read.name, phone, email: read.email, programId: c.programId, source: c.kind === 'website' ? 'web' : c.kind === 'meta' ? 'meta' : 'google', message: read.message, campaignId: c.campaignId, utmSource: channel, utmMedium: c.kind === 'website' ? 'form' : 'lead_ad', utmCampaign: read.utmCampaign },
       today,
     );
     await log(read.externalId, res.duplicate ? 'duplicate' : 'ok', res.enquiry.id, null);

@@ -27,14 +27,37 @@ export interface ApplyInput {
   guardianEmail?: string;
   guardianRelation: string;
   answers: Record<string, string | number>;
+  /** indian | nri | foreign: decides the documents asked for. */
+  nationality?: string;
+  /** regular | lateral | transfer */
+  admissionType?: string;
+  /** The saved draft this application came from. */
+  draftId?: string;
   website?: string;
+}
+
+/** A saved application: what has been typed so far and the step reached. */
+export interface DraftInput {
+  applicantName?: string;
+  phone?: string;
+  step: number;
+  data: Record<string, unknown>;
+}
+
+/** Saves the form to come back to later: the first save starts a draft (its secret token comes back once). */
+export async function saveApplicationDraft(slug: string, cycleId: string, draft: { id: string; token: string } | null, input: DraftInput): Promise<ActionResult<{ id: string; token?: string; expiresAt: string }>> {
+  if (!SLUG.test(slug) || !UUID.test(cycleId) || (draft && (!UUID.test(draft.id) || draft.token.length < 10 || draft.token.length > 100))) return bad();
+  if (JSON.stringify(input.data).length > 20_000) return bad();
+  if (draft) return act(() => api<{ id: string; expiresAt: string }>(`${base(slug)}/drafts/${draft.id}`, { method: 'PUT', body: input, headers: { 'x-draft-token': draft.token }, anonymous: true }));
+  return act(() => api<{ id: string; token: string; expiresAt: string }>(`${base(slug)}/cycles/${cycleId}/drafts`, { method: 'POST', body: input, anonymous: true }));
 }
 
 /** Submits the application. The applicant's secret token comes back once, in the tracking link. */
 export async function submitApplication(slug: string, cycleId: string, input: ApplyInput): Promise<ActionResult<{ id: string; token: string; applicationNo: string; feeDuePaise: number }>> {
   if (!SLUG.test(slug) || !UUID.test(cycleId)) return bad();
   const clean = (v?: string) => (v?.trim() ? v.trim() : undefined);
-  const body = { ...input, dateOfBirth: clean(input.dateOfBirth), gender: clean(input.gender), email: clean(input.email), guardianEmail: clean(input.guardianEmail) };
+  if (input.draftId && !UUID.test(input.draftId)) return bad();
+  const body = { ...input, dateOfBirth: clean(input.dateOfBirth), gender: clean(input.gender), email: clean(input.email), guardianEmail: clean(input.guardianEmail), nationality: clean(input.nationality), admissionType: clean(input.admissionType) };
   return act(() => api(`${base(slug)}/cycles/${cycleId}/applications`, { method: 'POST', body, anonymous: true }));
 }
 

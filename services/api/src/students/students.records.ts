@@ -3,11 +3,14 @@ import { STUDENT_STATUSES, type StudentStatus } from '@kinetix/shared';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { programOptions, sectionOptions } from '../admin/structure.records.js';
+import { studentProfiles } from '../db/schema-sis.js';
 import { academicYears, programs, sections, students } from '../db/schema.js';
-import { ImportService } from '../import/import.service.js';
-import { RecordRegistry, type FieldOption, type RecordEntity } from '../records/entity.js';
-import { DateText, Ref, Text, uuidEq } from '../records/helpers.js';
+import { errorRow, ImportService, type RowResult } from '../import/import.service.js';
+import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from '../records/entity.js';
+import { DateText, OptionalText, Ref, Text, uuidEq } from '../records/helpers.js';
 import { LifecycleService } from './lifecycle.service.js';
+import { CATEGORIES, GENDERS } from './student-info.logic.js';
+import { CLEARANCE_PURPOSES, StudentInfoService } from './student-info.service.js';
 import { LIFECYCLE_ROLES, PROFILE_ROLES } from './students.controller.js';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -23,12 +26,17 @@ const STATUS_LABELS: Record<string, string> = {
   expelled: 'Expelled',
   deceased: 'Deceased',
   deferred: 'Deferred',
+  long_absent: 'Long absent',
 };
 const STATUS_OPTIONS: FieldOption[] = STUDENT_STATUSES.filter((s) => s !== 'applicant').map((s) => ({ value: s, label: STATUS_LABELS[s] ?? s }));
 const LANGUAGES = ['en', 'hi', 'kn'];
+/** Import columns that fill the student's profile: column → profile field. */
+const PROFILE_IMPORT = [['admission_no', 'admissionNo'], ['register_no', 'registerNo'], ['date_of_birth', 'dateOfBirth'], ['gender', 'gender'], ['category', 'category'], ['religion', 'religion']] as const;
 const RELATIONS = ['father', 'mother', 'guardian', 'grandparent', 'sibling'];
 
 const guardianCount = sql<number>`(select count(*)::int from guardians g where g.student_id = ${students.id})`;
+const GENDER_OPTIONS: FieldOption[] = GENDERS.map((g) => ({ value: g, label: g[0].toUpperCase() + g.slice(1) }));
+const CATEGORY_OPTIONS: FieldOption[] = CATEGORIES.map((c) => ({ value: c, label: c === 'general' || c === 'other' ? c[0].toUpperCase() + c.slice(1) : c.toUpperCase() }));
 
 /**
  * Students as a record kit entity — the template other modules copy. Class changes and status changes go through
@@ -41,7 +49,13 @@ export class StudentRecords implements OnModuleInit {
     private readonly registry: RecordRegistry,
     private readonly lifecycle: LifecycleService,
     private readonly imports: ImportService,
+    private readonly info: StudentInfoService,
   ) {}
+
+  /** A profile detail set from the list (add, edit, bulk edit), through the profile's own checks and history. */
+  private profileField(key: string) {
+    return async (ctx: KitCtx, id: string, value: unknown) => void (await this.info.updateDetails(ctx.tx, ctx.p, id, { values: { [key]: (value as string | null) ?? null } }, { skipRoleCheck: true, via: 'list' }));
+  }
 
   onModuleInit(): void {
     this.registry.register(this.entity());
@@ -70,17 +84,30 @@ export class StudentRecords implements OnModuleInit {
           enrolledOn: students.enrolledOn,
           hasLogin: sql<boolean>`${students.userId} is not null`,
           guardianCount,
+          admissionNo: studentProfiles.admissionNo,
+          registerNo: studentProfiles.registerNo,
+          gender: studentProfiles.gender,
+          category: studentProfiles.category,
+          dateOfBirth: studentProfiles.dateOfBirth,
           updatedAt: students.updatedAt,
         },
-        joins: (q) => q.innerJoin(sections, eq(sections.id, students.sectionId)).innerJoin(programs, eq(programs.id, sections.programId)).innerJoin(academicYears, eq(academicYears.id, sections.academicYearId)),
-        search: [students.fullName, students.rollNo, sections.displayName],
+        joins: (q) =>
+          q
+            .innerJoin(sections, eq(sections.id, students.sectionId))
+            .innerJoin(programs, eq(programs.id, sections.programId))
+            .innerJoin(academicYears, eq(academicYears.id, sections.academicYearId))
+            .leftJoin(studentProfiles, eq(studentProfiles.studentId, students.id)),
+        search: [students.fullName, students.rollNo, sections.displayName, studentProfiles.admissionNo, studentProfiles.registerNo],
         filters: {
           section: { label: 'Class', options: sectionOptions, where: (v) => uuidEq(students.sectionId, v) },
           programme: { label: 'Programme', options: programOptions, where: (v) => uuidEq(sections.programId, v) },
           term: { label: 'Term', where: (v) => (/^\d{1,2}$/.test(v) ? eq(sections.term, Number(v)) : undefined) },
           status: { label: 'Status', options: STATUS_OPTIONS, where: (v) => ((STUDENT_STATUSES as readonly string[]).includes(v) ? eq(students.status, v) : undefined) },
+          gender: { label: 'Gender', options: GENDER_OPTIONS, where: (v) => ((GENDERS as readonly string[]).includes(v) ? eq(studentProfiles.gender, v) : undefined) },
+          category: { label: 'Category', options: CATEGORY_OPTIONS, where: (v) => ((CATEGORIES as readonly string[]).includes(v) ? eq(studentProfiles.category, v) : undefined) },
+          admissionNo: { label: 'Admission number', options: [{ value: 'missing', label: 'No admission number' }, { value: 'set', label: 'Has an admission number' }], where: (v) => (v === 'missing' ? sql`${studentProfiles.admissionNo} is null` : v === 'set' ? sql`${studentProfiles.admissionNo} is not null` : undefined) },
         },
-        sorts: { name: students.fullName, roll: students.rollNo, class: sections.displayName, programme: programs.name, status: students.status, enrolled: students.enrolledOn },
+        sorts: { name: students.fullName, roll: students.rollNo, class: sections.displayName, programme: programs.name, status: students.status, enrolled: students.enrolledOn, admissionNo: studentProfiles.admissionNo, dob: studentProfiles.dateOfBirth },
         defaultSort: { id: 'class', dir: 'asc' },
         tiebreak: [students.rollNo],
       },
@@ -100,6 +127,11 @@ export class StudentRecords implements OnModuleInit {
           help: 'Changed through the student lifecycle rules',
           apply: async (ctx, id, value) => void (await this.lifecycle.changeStatus(ctx.tx, ctx.p, id, value as StudentStatus, { reason: 'Changed in bulk edit' })),
         },
+        admissionNo: { label: 'Admission number', type: 'text', schema: OptionalText(40), apply: this.profileField('admissionNo'), help: 'Unique in the institution' },
+        registerNo: { label: 'University register number', type: 'text', schema: OptionalText(40), apply: this.profileField('registerNo') },
+        dateOfBirth: { label: 'Date of birth', type: 'date', schema: DateText, apply: this.profileField('dateOfBirth') },
+        gender: { label: 'Gender', type: 'select', schema: z.enum(GENDERS).nullable(), options: GENDER_OPTIONS, bulk: true, apply: this.profileField('gender') },
+        category: { label: 'Category', type: 'select', schema: z.enum(CATEGORIES).nullable(), options: CATEGORY_OPTIONS, bulk: true, apply: this.profileField('category') },
       },
       move: {
         label: 'Move to class',
@@ -115,6 +147,21 @@ export class StudentRecords implements OnModuleInit {
           apply: (ctx, id, params) => {
             const p = params as { label: string; toSectionId?: string };
             return this.lifecycle.promoteOne(ctx.tx, ctx.p, id, p.label, p.toSectionId);
+          },
+        },
+        admissionNo: {
+          label: 'Give admission numbers',
+          roles: ['tenant_admin', 'principal', 'admissions_officer'],
+          apply: (ctx, id) => this.info.assignAdmissionNo(ctx.tx, ctx.p, id),
+        },
+        clearance: {
+          label: 'Start no-dues clearance',
+          roles: ['tenant_admin', 'principal', 'admissions_officer'],
+          params: z.object({ purpose: z.enum(CLEARANCE_PURPOSES).default('tc') }),
+          apply: async (ctx, id, params) => {
+            const c = await this.info.raiseClearance(ctx.tx, ctx.p, id, { purpose: (params as { purpose: string }).purpose });
+            const waiting = c.items.filter((i) => i.status !== 'cleared').map((i) => i.label);
+            return waiting.length ? `Waiting on ${waiting.join(', ')}` : 'Cleared';
           },
         },
       },
@@ -134,6 +181,11 @@ export class StudentRecords implements OnModuleInit {
         { key: 'term', header: 'Term' },
         { key: 'status', header: 'Status', value: (r) => STATUS_LABELS[String(r.status)] ?? String(r.status) },
         { key: 'enrolledOn', header: 'Enrolled on' },
+        { key: 'admissionNo', header: 'Admission no' },
+        { key: 'registerNo', header: 'Register no' },
+        { key: 'gender', header: 'Gender' },
+        { key: 'category', header: 'Category' },
+        { key: 'dateOfBirth', header: 'Date of birth' },
         { key: 'guardianCount', header: 'Guardians' },
         { key: 'hasLogin', header: 'Has a login' },
       ],
@@ -153,11 +205,39 @@ export class StudentRecords implements OnModuleInit {
           { key: 'guardian2_phone', header: 'Guardian 2 phone' },
           { key: 'guardian2_relation', header: 'Guardian 2 relation', options: RELATIONS },
           { key: 'guardian2_language', header: 'Guardian 2 language', options: LANGUAGES },
+          { key: 'admission_no', header: 'Admission number', help: 'Optional: unique in the institution' },
+          { key: 'register_no', header: 'University register number' },
+          { key: 'date_of_birth', header: 'Date of birth', help: 'Like 2008-06-15', example: '2008-06-15' },
+          { key: 'gender', header: 'Gender', options: [...GENDERS] },
+          { key: 'category', header: 'Category', options: [...CATEGORIES] },
+          { key: 'religion', header: 'Religion' },
         ],
         key: ['roll_no'],
         exists: async (ctx, r) => !!(await ctx.tx.select({ id: students.id }).from(students).where(eq(students.rollNo, r.get('roll_no'))).limit(1))[0],
         // The bulk importer's student rows (families, logins, roll numbers) are the one place students are imported.
-        run: (ctx, rows) => this.imports.applyRows(ctx.tx, ctx.p, 'students', rows),
+        run: async (ctx, rows) => {
+          const out: RowResult[] = [];
+          for (const r of rows) {
+            try {
+              out.push(
+                await ctx.tx.transaction(async (sp) => {
+                  const [one] = await this.imports.applyRows(sp, ctx.p, 'students', [r]);
+                  if (one.status === 'error') return one;
+                  // The profile details on the same row go through the profile's checks (unique admission number and so on).
+                  const values = Object.fromEntries(PROFILE_IMPORT.map(([col, key]) => [key, r.get(col)]).filter(([, v]) => v !== ''));
+                  if (!Object.keys(values).length) return one;
+                  const [st] = await sp.select({ id: students.id }).from(students).where(eq(students.rollNo, r.get('roll_no'))).limit(1);
+                  const result = { changed: false };
+                  if (st) await this.info.updateDetails(sp, ctx.p, st.id, { values }, { skipRoleCheck: true, via: 'import', result });
+                  return result.changed && one.status === 'skipped' ? { ...one, status: 'updated' as const } : one;
+                }),
+              );
+            } catch (e) {
+              out.push(errorRow(r.line, e));
+            }
+          }
+          return out;
+        },
       },
     };
   }

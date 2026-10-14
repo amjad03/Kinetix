@@ -49,9 +49,10 @@ export async function unlinkGuardian(id: string, guardianId: string): Promise<Ac
   return res;
 }
 
-export async function runPromotion(input: { label: string; mappings: { fromSectionId: string; toSectionId: string | null }[]; dryRun: boolean }): Promise<ActionResult<PromotionResult>> {
+export async function runPromotion(input: { label: string; mappings: { fromSectionId: string; toSectionId: string | null }[]; detain?: { studentId: string; reason: string }[]; dryRun: boolean }): Promise<ActionResult<PromotionResult>> {
   if (input.mappings.some((m) => !UUID.test(m.fromSectionId) || (m.toSectionId !== null && !UUID.test(m.toSectionId)))) return bad();
-  const res = await act(() => api<PromotionResult>('/v1/students/promotions', { method: 'POST', body: { label: input.label.trim(), mappings: input.mappings, dryRun: input.dryRun } }));
+  if ((input.detain ?? []).some((d) => !UUID.test(d.studentId))) return bad();
+  const res = await act(() => api<PromotionResult>('/v1/students/promotions', { method: 'POST', body: { label: input.label.trim(), mappings: input.mappings, detain: input.detain ?? [], dryRun: input.dryRun } }));
   if (res.ok && !input.dryRun) refresh();
   return res;
 }

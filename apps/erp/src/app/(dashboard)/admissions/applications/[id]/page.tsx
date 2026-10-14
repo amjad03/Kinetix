@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { ApplicationDeskPanel } from '@/components/admissions/ApplicationDeskPanel';
 import { ApplicationReview } from '@/components/admissions/ApplicationReview';
+import type { ApplicationDesk } from '@/lib/admissions-desk';
 import { StatusPill } from '@/components/admissions/Chips';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
@@ -50,8 +52,11 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
     );
   }
   const a = app.data;
-  const structure = a.status === 'accepted' ? await load(() => api<Structure>('/v1/admin/structure')) : undefined;
-  const classes = (structure?.data?.sections ?? []).filter((s) => s.programId === a.cycle.programId && s.term === a.cycle.entryTerm).map((s) => ({ id: s.id, name: s.displayName, term: s.term }));
+  const [structure, desk] = await Promise.all([load(() => api<Structure>('/v1/admin/structure')), load(() => api<ApplicationDesk>(`/v1/admissions/applications/${id}/desk`))]);
+  // A lateral or transfer applicant joins a later term than the cycle's.
+  const joinTerm = a.entryTermOverride ?? a.cycle.entryTerm;
+  const classes = a.status === 'accepted' ? (structure.data?.sections ?? []).filter((s) => s.programId === a.cycle.programId && s.term === joinTerm).map((s) => ({ id: s.id, name: s.displayName, term: s.term })) : [];
+  const termCount = structure.data?.programs.find((p) => p.id === a.cycle.programId)?.termCount ?? 1;
   const answer = (k: string) => a.answers[k];
   return (
     <>
@@ -112,7 +117,14 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
             ))}
           </div>
         </div>
-        <ApplicationReview app={a} classes={classes} canWaive={me?.roles.some((r) => r === 'principal' || r === 'tenant_admin') ?? false} flows={await loadFlows()} />
+        <ApplicationReview app={{ ...a, cycle: { ...a.cycle, documents: a.cycle.documents.filter((d) => !d.for || d.for === 'all' || d.for === a.nationality) } }} classes={classes} canWaive={me?.roles.some((r) => r === 'principal' || r === 'tenant_admin') ?? false} flows={await loadFlows()} />
+      </div>
+      <div className="mt-6">
+        {desk.error !== undefined ? (
+          <ErrorState message={desk.error} />
+        ) : (
+          <ApplicationDeskPanel applicationId={a.id} status={a.status} desk={desk.data} kind={{ admissionType: a.admissionType, entryTermOverride: a.entryTermOverride, nationality: a.nationality }} termCount={termCount} />
+        )}
       </div>
     </>
   );

@@ -5,7 +5,7 @@ export default area(
   {
     'adm.subtitle': 'Enquiries, applications, merit lists and offers: from first call to enrolled student',
     'adm.system': 'System',
-    'adm.tab.pipeline': 'Enquiries',
+    'adm.tab.pipeline': 'Pipeline',
     'adm.tab.applications': 'Applications',
     'adm.tab.cycles': 'Intakes',
     'adm.err.invalid': 'That request is not valid. Reload the page and try again.',
@@ -296,7 +296,7 @@ export default area(
     hi: {
       'adm.subtitle': 'पूछताछ, आवेदन, मेरिट सूची और प्रस्ताव: पहली कॉल से दाख़िले तक',
       'adm.system': 'सिस्टम',
-      'adm.tab.pipeline': 'पूछताछ',
+      'adm.tab.pipeline': 'प्रवेश पाइपलाइन',
       'adm.tab.applications': 'आवेदन',
       'adm.tab.cycles': 'प्रवेश चक्र',
       'adm.err.invalid': 'यह अनुरोध मान्य नहीं है। पेज रीलोड करके फिर कोशिश करें।',
@@ -586,7 +586,7 @@ export default area(
     kn: {
       'adm.subtitle': 'ವಿಚಾರಣೆ, ಅರ್ಜಿ, ಮೆರಿಟ್ ಪಟ್ಟಿ ಮತ್ತು ಆಫರ್‌ಗಳು: ಮೊದಲ ಕರೆಯಿಂದ ದಾಖಲಾತಿವರೆಗೆ',
       'adm.system': 'ಸಿಸ್ಟಮ್',
-      'adm.tab.pipeline': 'ವಿಚಾರಣೆಗಳು',
+      'adm.tab.pipeline': 'ಪ್ರವೇಶ ಹಂತಗಳು',
       'adm.tab.applications': 'ಅರ್ಜಿಗಳು',
       'adm.tab.cycles': 'ಪ್ರವೇಶ ಚಕ್ರಗಳು',
       'adm.err.invalid': 'ಈ ಕೋರಿಕೆ ಮಾನ್ಯವಲ್ಲ. ಪುಟವನ್ನು ಮರುಲೋಡ್ ಮಾಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',

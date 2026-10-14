@@ -44,9 +44,13 @@ describe('record depth kit', () => {
   it('describes a list and pages, searches, filters and sorts it on the server', async () => {
     const meta = (await http().get('/v1/records/students/meta').set(as('principal')).expect(200)).body;
     expect(meta).toMatchObject({ key: 'students', module: 'students', can: { write: true, import: true, move: true, duplicate: true } });
-    expect(meta.fields.map((f: { key: string }) => f.key)).toEqual(['fullName', 'rollNo', 'sectionId', 'enrolledOn', 'status']);
+    expect(meta.fields.map((f: { key: string }) => f.key)).toEqual(['fullName', 'rollNo', 'sectionId', 'enrolledOn', 'status', 'admissionNo', 'registerNo', 'dateOfBirth', 'gender', 'category']);
     expect(meta.move.options).toEqual(expect.arrayContaining([{ value: t.section.id, label: 'BCom Sem 3 A', group: 'BCom' }]));
-    expect(meta.actions).toEqual([{ key: 'promote', label: 'Promote to next class', tone: null }]);
+    expect(meta.actions).toEqual([
+      { key: 'promote', label: 'Promote to next class', tone: null },
+      { key: 'admissionNo', label: 'Give admission numbers', tone: null },
+      { key: 'clearance', label: 'Start no-dues clearance', tone: null },
+    ]);
 
     const page = (await http().get('/v1/records/students?pageSize=2&sort=roll:desc').set(as('principal')).expect(200)).body;
     expect(page).toMatchObject({ total: 3, page: 1, pageSize: 2 });

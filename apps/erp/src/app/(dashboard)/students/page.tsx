@@ -3,6 +3,7 @@ import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
 import { StudentRecords, type StudentKitRow } from '@/components/students/StudentRecords';
+import { StudentsTabs } from '@/components/students/StudentsTabs';
 import { api, requireSection } from '@/lib/api';
 import { canChangeLifecycle, canSee } from '@/lib/access';
 import { loadRecords } from '@/lib/records-server';
@@ -57,6 +58,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
           ) : undefined
         }
       />
+      <StudentsTabs current="list" />
       {loaded.error !== undefined ? (
         <ErrorState message={loaded.error} />
       ) : (

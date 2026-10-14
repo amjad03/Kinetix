@@ -52,7 +52,7 @@ describe('student lifecycle', () => {
     expect(p).toMatchObject({ status: 'active', finalTerm: false, section: { displayName: 'BCom Sem 3 A' } });
     expect(p.timeline.map((e: { fromStatus: string; toStatus: string; reason: string | null }) => [e.fromStatus, e.toStatus, e.reason])).toEqual([['on_leave', 'active', null], ['active', 'on_leave', 'Medical leave for a term']]);
     expect(p.timeline[0].actorName).toBe(t.principal.fullName);
-    expect(p.allowedStatuses).toEqual(['on_leave', 'detained', 'promoted', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased']);
+    expect(p.allowedStatuses).toEqual(['on_leave', 'detained', 'promoted', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased', 'long_absent']);
     expect((await owner.query(`select count(*)::int as n from audit_log where subject_id = $1 and action = 'students.status_changed.v1'`, [s1.id])).rows[0].n).toBe(2);
   });
 

@@ -316,15 +316,19 @@ export class DepthService {
     const rows = await tx.select().from(agentCommissions).where(and(inArray(agentCommissions.id, input.commissionIds), eq(agentCommissions.agentId, agentId)));
     if (rows.length !== new Set(input.commissionIds).size) throw new BadRequestException('Some commissions do not belong to this agent');
     if (rows.some((r) => r.status !== 'accrued')) throw new ConflictException('Some commissions are already paid');
-    const gross = rows.reduce((n, r) => n + r.amountPaise, 0);
+    // Commissions paid for students who later withdrew are recovered from this payout.
+    const recover = await tx.select().from(agentCommissions).where(and(eq(agentCommissions.agentId, agentId), eq(agentCommissions.status, 'clawback_due')));
+    const gross = rows.reduce((n, r) => n + r.amountPaise, 0) - recover.reduce((n, r) => n + r.amountPaise, 0);
+    if (gross <= 0) throw new ConflictException('Commissions to recover from this agent are more than the commissions due: nothing to pay');
     // Tax deducted at source: the body's rate, else the rate on the agent's own rule, else on an institution-wide rule.
     const all = ((await this.rules(tx)) as CommissionRule[]).filter((r) => r.active);
     const ruleBps = (all.find((r) => r.agentId === agentId && r.tdsBps > 0) ?? all.find((r) => !r.agentId && r.tdsBps > 0))?.tdsBps ?? 0;
     const tds = tdsOn(gross, input.tdsBps ?? ruleBps);
     await tx.update(agentCommissions).set({ status: 'paid', paidOn: input.paidOn, note: input.reference ?? null }).where(inArray(agentCommissions.id, rows.map((r) => r.id)));
+    if (recover.length) await tx.update(agentCommissions).set({ status: 'clawed_back' }).where(inArray(agentCommissions.id, recover.map((r) => r.id)));
     const [p] = await tx
       .insert(agentPayouts)
-      .values({ tenantId: actor.tenantId, agentId, grossPaise: gross, tdsPaise: tds, netPaise: gross - tds, commissionIds: rows.map((r) => r.id), paidOn: input.paidOn, reference: input.reference ?? null, createdBy: actor.userId })
+      .values({ tenantId: actor.tenantId, agentId, grossPaise: gross, tdsPaise: tds, netPaise: gross - tds, commissionIds: [...rows.map((r) => r.id), ...recover.map((r) => r.id)], paidOn: input.paidOn, reference: input.reference ?? null, createdBy: actor.userId })
       .returning();
     await audit(tx, { ...auditActor(actor), action: 'admissions.agent_payout.v1', subjectType: 'admission_agent', subjectId: agentId, data: { payoutId: p.id, grossPaise: gross, tdsPaise: tds } });
     return p;

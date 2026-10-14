@@ -1,6 +1,6 @@
 import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 import { BadRequestException, Body, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, Res } from '@nestjs/common';
-import { APPLICATION_MOVES, ENQUIRY_ACTIVITY_KINDS, ENQUIRY_SOURCES, ENQUIRY_STAGES, eligibilityFailures, meritScore, type ApplicationStatus } from '@kinetix/shared';
+import { APPLICATION_MOVES, DOCUMENT_AUDIENCES, ENQUIRY_ACTIVITY_KINDS, ENQUIRY_SOURCES, ENQUIRY_STAGES, eligibilityFailures, meritScore, type ApplicationStatus } from '@kinetix/shared';
 import { and, asc, desc, eq, ilike, inArray, lte, notInArray, or, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
@@ -30,7 +30,7 @@ const FormField = z.object({
   min: z.number().optional(),
   max: z.number().optional(),
 });
-const DocSpec = z.object({ key: Key, label: z.string().trim().min(1).max(120), required: z.boolean().default(true) });
+const DocSpec = z.object({ key: Key, label: z.string().trim().min(1).max(120), required: z.boolean().default(true), for: z.enum(DOCUMENT_AUDIENCES).default('all') });
 const CycleBase = z.object({
   programId: Id,
   academicYearId: Id,
@@ -55,7 +55,8 @@ const CycleBase = z.object({
   meritRules: z.array(z.object({ field: z.string(), weight: z.number().min(0).max(1000) })).max(20).default([]),
 });
 // A patch must not apply the create defaults to fields it leaves out.
-const CyclePatch = z.object(Object.fromEntries(Object.entries(CycleBase.omit({ programId: true, academicYearId: true }).shape).map(([k, v]) => [k, (v as z.ZodType).optional()]))) as unknown as z.ZodType<Partial<Omit<z.infer<typeof CycleBase>, 'programId' | 'academicYearId'>>>;
+// (A default inside an optional still fills a missing field in zod 4, so the defaults are taken off first.)
+const CyclePatch = z.object(Object.fromEntries(Object.entries(CycleBase.omit({ programId: true, academicYearId: true }).shape).map(([k, v]) => [k, (v instanceof z.ZodDefault ? (v.unwrap() as z.ZodType) : (v as z.ZodType)).optional()]))) as unknown as z.ZodType<Partial<Omit<z.infer<typeof CycleBase>, 'programId' | 'academicYearId'>>>;
 
 const EnquiryCreate = z.object({
   name: z.string().trim().min(2).max(120),
@@ -71,6 +72,8 @@ const EnquiryCreate = z.object({
   utmMedium: z.string().trim().max(80).optional(),
   utmCampaign: z.string().trim().max(80).optional(),
   referralCode: z.string().trim().max(30).optional(),
+  city: z.string().trim().max(80).optional(),
+  region: z.string().trim().max(80).optional(),
 });
 const EnquiryPatch = z.object({ name: z.string().trim().min(2).max(120).optional(), phone: Phone.optional(), email: z.email().max(200).nullable().optional(), programId: Id.nullable().optional(), message: z.string().trim().max(1000).nullable().optional(), nextFollowUpOn: Day.nullable().optional() });
 const StageBody = z.object({ stage: z.enum(ENQUIRY_STAGES), reason: z.string().trim().max(500).optional() });
