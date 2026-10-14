@@ -1,7 +1,12 @@
 /// Mirrors the Teacher App DTOs in packages/shared/src/index.ts.
 library;
 
+import 'dart:typed_data';
+
 import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
+
+import 'communication.dart';
+export 'communication.dart';
 
 /// "10:00:00" → minutes since midnight.
 int _minutes(String hhmmss) {
@@ -642,6 +647,9 @@ class Conversation {
     this.lastMessageAt,
     this.lastMessage,
     this.unread = 0,
+    this.office = false,
+    this.status = ThreadStatus.open,
+    this.muted = false,
   });
 
   factory Conversation.fromJson(Map<String, dynamic> j) {
@@ -655,6 +663,9 @@ class Conversation {
       lastMessageAt: j['lastMessageAt'] == null ? null : DateTime.parse(j['lastMessageAt'] as String).toLocal(),
       lastMessage: j['lastMessage'] as String?,
       unread: j['unread'] as int? ?? 0,
+      office: j['kind'] == 'office',
+      status: ThreadStatus.parse(j['status']),
+      muted: j['muted'] as bool? ?? false,
     );
   }
 
@@ -667,10 +678,17 @@ class Conversation {
   final String? lastMessage;
   final int unread;
 
+  /// A thread with the office (any office staff may answer; [staff] is who it is assigned to).
+  final bool office;
+  final ThreadStatus status;
+
+  /// No push notifications for new messages.
+  final bool muted;
+
   /// At colleges an adult student may write for themselves.
   bool get withStudent => family.name == student.name;
 
-  Conversation copyWith({int? unread, String? lastMessage, DateTime? lastMessageAt}) => Conversation(
+  Conversation copyWith({int? unread, String? lastMessage, DateTime? lastMessageAt, ThreadStatus? status, bool? muted}) => Conversation(
     id: id,
     student: student,
     className: className,
@@ -679,23 +697,70 @@ class Conversation {
     lastMessage: lastMessage ?? this.lastMessage,
     lastMessageAt: lastMessageAt ?? this.lastMessageAt,
     unread: unread ?? this.unread,
+    office: office,
+    status: status ?? this.status,
+    muted: muted ?? this.muted,
   );
 }
 
+/// open; closed (the family cannot write until it is reopened); resolved (a family message reopens it).
+enum ThreadStatus {
+  open,
+  closed,
+  resolved;
+
+  static ThreadStatus parse(Object? v) => switch (v) {
+    'closed' => ThreadStatus.closed,
+    'resolved' => ThreadStatus.resolved,
+    _ => ThreadStatus.open,
+  };
+}
+
+/// On the staff side's own messages: sent, delivered to the family's app, or read.
+enum MessageTick { sent, delivered, read }
+
 class ChatMessage {
-  ChatMessage({required this.id, required this.senderId, required this.body, required this.createdAt});
+  ChatMessage({required this.id, required this.senderId, required this.body, required this.createdAt, this.senderName = '', this.system = false, this.attachment, this.tick});
 
   factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
     id: j['id'] as String,
     senderId: j['senderId'] as String,
-    body: j['body'] as String,
+    senderName: j['senderName'] as String? ?? '',
+    body: j['body'] as String? ?? '',
     createdAt: DateTime.parse(j['createdAt'] as String).toLocal(),
+    system: j['kind'] == 'system',
+    attachment: j['attachment'] is Map ? AttachedFile.fromJson((j['attachment'] as Map).cast<String, dynamic>(), id: j['id'] as String) : null,
+    tick: switch (j['status']) {
+      'read' => MessageTick.read,
+      'delivered' => MessageTick.delivered,
+      'sent' => MessageTick.sent,
+      _ => null,
+    },
   );
 
   final String id;
   final String senderId;
+  final String senderName;
   final String body;
   final DateTime createdAt;
+
+  /// "Closed by …", "Assigned to …": shown centred, not as a bubble.
+  final bool system;
+
+  /// A photo or PDF sent with the message.
+  final AttachedFile? attachment;
+
+  /// On the staff side's messages: sent, delivered or read.
+  final MessageTick? tick;
+}
+
+/// A photo to send in a chat.
+class ChatUpload {
+  const ChatUpload({required this.name, required this.mime, required this.bytes});
+
+  final String name;
+  final String mime;
+  final Uint8List bytes;
 }
 
 /// One page of a thread, oldest first.

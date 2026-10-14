@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
+import '../../core/files.dart';
 import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
@@ -13,12 +15,31 @@ import '../../widgets/common.dart';
 
 /// A message on screen: sent, still sending, or failed to send.
 class ChatBubble {
-  ChatBubble(this.message, {this.sending = false, this.failed = false});
+  ChatBubble(this.message, {this.sending = false, this.failed = false, this.upload});
 
   final ChatMessage message;
   bool sending;
   bool failed;
+
+  /// The photo going with it, kept for a retry.
+  final ChatUpload? upload;
 }
+
+/// Picks a photo to send (camera or gallery), scaled for a chat.
+typedef PickChatPhoto = Future<ChatUpload?> Function(ImageSource source);
+
+/// The photo picker chats use; tests replace it.
+PickChatPhoto chatPhotoPicker = pickChatPhoto;
+
+Future<ChatUpload?> pickChatPhoto(ImageSource source) async {
+  final x = await ImagePicker().pickImage(source: source, maxWidth: 2000, maxHeight: 2000, imageQuality: 80);
+  if (x == null) return null;
+  final name = x.name.toLowerCase().endsWith('.png') ? x.name : (x.name.contains('.') ? '${x.name.substring(0, x.name.lastIndexOf('.'))}.jpg' : '${x.name}.jpg');
+  return ChatUpload(name: name, mime: name.endsWith('.png') ? 'image/png' : 'image/jpeg', bytes: await x.readAsBytes());
+}
+
+/// The largest file a chat message takes (services/api common/blob.ts).
+const chatMaxBytes = 4000000;
 
 /// One thread with a family: newest at the bottom, pull down for earlier messages.
 class ChatController extends ChangeNotifier {
@@ -67,7 +88,18 @@ class ChatController extends ChangeNotifier {
         for (final m in page.messages)
           if (!have.contains(m.id)) m,
       ];
-      if (fresh.isEmpty) return false;
+      // Ticks change on messages already shown (the family read them).
+      final byId = {for (final m in page.messages) m.id: m};
+      var ticked = false;
+      for (final (i, b) in bubbles.indexed) {
+        final now = byId[b.message.id];
+        if (now != null && !b.sending && !b.failed && now.tick != b.message.tick) {
+          bubbles[i] = ChatBubble(now);
+          ticked = true;
+        }
+      }
+      final changed = page.conversation.status != conversation.status || page.conversation.muted != conversation.muted;
+      if (fresh.isEmpty && !ticked && !changed) return false;
       final pending = [
         for (final b in bubbles)
           if (b.sending || b.failed) b,
@@ -112,8 +144,19 @@ class ChatController extends ChangeNotifier {
   }
 
   /// Shows the message straight away and sends it; a failed one can be retried.
-  Future<void> send(String body) async {
-    final b = ChatBubble(ChatMessage(id: 'local-${_localId++}', senderId: myId, body: body, createdAt: DateTime.now()), sending: true);
+  Future<void> send(String body, {ChatUpload? upload}) async {
+    final id = 'local-${_localId++}';
+    final b = ChatBubble(
+      ChatMessage(
+        id: id,
+        senderId: myId,
+        body: body,
+        createdAt: DateTime.now(),
+        attachment: upload == null ? null : AttachedFile(id: id, name: upload.name, type: upload.mime, size: upload.bytes.length),
+      ),
+      sending: true,
+      upload: upload,
+    );
     bubbles.add(b);
     notifyListeners();
     await _deliver(b);
@@ -129,10 +172,10 @@ class ChatController extends ChangeNotifier {
 
   Future<void> _deliver(ChatBubble b) async {
     try {
-      final sent = await api.sendMessage(conversation.id, b.message.body);
+      final sent = await api.sendMessage(conversation.id, b.message.body, attachment: b.upload);
       final i = bubbles.indexOf(b);
       if (i >= 0) bubbles[i] = ChatBubble(sent);
-      conversation = conversation.copyWith(lastMessage: sent.body, lastMessageAt: sent.createdAt, unread: 0);
+      conversation = conversation.copyWith(lastMessage: sent.body.isEmpty ? sent.attachment?.name : sent.body, lastMessageAt: sent.createdAt, unread: 0);
     } on ApiException {
       b
         ..sending = false
@@ -140,10 +183,22 @@ class ChatController extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// Close, reopen or resolve the thread (the system line comes with the refresh).
+  Future<void> setStatus(ThreadStatus status) async {
+    conversation = (await api.setConversationStatus(conversation.id, status)).copyWith(unread: 0);
+    notifyListeners();
+    await refresh();
+  }
+
+  Future<void> setMuted(bool muted) async {
+    conversation = (await api.muteConversation(conversation.id, muted)).copyWith(unread: 0);
+    notifyListeners();
+  }
 }
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.api, required this.conversation, required this.myId, this.onChanged, this.live});
+  const ChatScreen({super.key, required this.api, required this.conversation, required this.myId, this.onChanged, this.live, this.openFile = openWithSystem});
 
   final TeacherApi api;
   final Conversation conversation;
@@ -155,6 +210,8 @@ class ChatScreen extends StatefulWidget {
   /// New messages as they arrive; the thread fetches the ones sent in it.
   final Stream<MessageNew>? live;
 
+  final OpenFile openFile;
+
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
@@ -165,6 +222,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final _scroll = ScrollController();
   final _bottom = GlobalKey();
   StreamSubscription<MessageNew>? _live;
+
+  /// A photo waiting to go with the next message.
+  ChatUpload? _photo;
 
   @override
   void initState() {
@@ -193,19 +253,90 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _send() async {
     final body = _text.text.trim();
-    if (body.isEmpty) return;
+    final photo = _photo;
+    if (body.isEmpty && photo == null) return;
     _text.clear();
+    setState(() => _photo = null);
     if (_scroll.hasClients) _scroll.jumpTo(0);
-    await controller.send(body);
+    await controller.send(body, upload: photo);
     _changed();
+  }
+
+  void _snack(String text) => ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(text)));
+
+  Future<void> _attach() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(key: const Key('attachCamera'), leading: const Icon(Icons.photo_camera_outlined), title: Text(context.l10n.chatCamera), onTap: () => Navigator.pop(context, ImageSource.camera)),
+            ListTile(key: const Key('attachGallery'), leading: const Icon(Icons.photo_library_outlined), title: Text(context.l10n.chatGallery), onTap: () => Navigator.pop(context, ImageSource.gallery)),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+    final photo = await chatPhotoPicker(source);
+    if (photo == null || !mounted) return;
+    if (photo.bytes.length > chatMaxBytes) return _snack(context.l10n.chatFileTooBig);
+    setState(() => _photo = photo);
+  }
+
+  Future<void> _openFile(ChatMessage m) async {
+    final f = m.attachment;
+    if (f == null || m.id.startsWith('local-')) return;
+    try {
+      final bytes = await widget.api.messageFile(controller.conversation.id, m.id);
+      final ok = await widget.openFile(bytes, f.name, f.type);
+      if (!ok && mounted) _snack(context.l10n.inboxFileFailed);
+    } on ApiException catch (e) {
+      if (mounted) _snack(context.l10n.errorText(e));
+    }
+  }
+
+  Future<void> _act(Future<void> Function() action) async {
+    try {
+      await action();
+      _changed();
+    } on ApiException catch (e) {
+      if (mounted) _snack(context.l10n.errorText(e));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    return ListenableBuilder(listenable: controller, builder: (context, _) => _scaffold(context, c));
+  }
+
+  Widget _scaffold(BuildContext context, ColorScheme c) {
     final conv = controller.conversation;
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          PopupMenuButton<String>(
+            key: const Key('threadMenu'),
+            onSelected: (v) => _act(switch (v) {
+              'close' => () => controller.setStatus(ThreadStatus.closed),
+              'reopen' => () => controller.setStatus(ThreadStatus.open),
+              'resolve' => () => controller.setStatus(ThreadStatus.resolved),
+              _ => () => controller.setMuted(!conv.muted),
+            }),
+            itemBuilder: (context) => [
+              if (conv.status == ThreadStatus.open) ...[
+                PopupMenuItem(key: const Key('threadResolve'), value: 'resolve', child: Text(context.l10n.chatResolve)),
+                PopupMenuItem(key: const Key('threadClose'), value: 'close', child: Text(context.l10n.chatClose)),
+              ] else
+                PopupMenuItem(key: const Key('threadReopen'), value: 'reopen', child: Text(context.l10n.chatReopen)),
+              PopupMenuItem(key: const Key('threadMute'), value: 'mute', child: Text(conv.muted ? context.l10n.chatUnmute : context.l10n.chatMute)),
+            ],
+          ),
+        ],
         titleSpacing: 0,
         title: Row(
           children: [
@@ -217,7 +348,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   Text(conv.family.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.titleMedium),
                   Text(
-                    context.l10n.conversationAbout(conv),
+                    [
+                      context.l10n.conversationAbout(conv),
+                      if (conv.office) context.l10n.chatOffice,
+                      if (conv.status == ThreadStatus.resolved) context.l10n.chatStatusResolved,
+                    ].join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
@@ -244,11 +379,32 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   );
                 }
-                return _Messages(controller: controller, scroll: _scroll, bottomKey: _bottom);
+                return _Messages(controller: controller, scroll: _scroll, bottomKey: _bottom, onOpenFile: _openFile);
               },
             ),
           ),
-          _Composer(controller: _text, recipient: conv.family.name, onSend: _send),
+          if (conv.status == ThreadStatus.closed)
+            Container(
+              key: const Key('threadClosedNote'),
+              width: double.infinity,
+              color: c.surfaceContainerHigh,
+              padding: const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s8),
+              child: Text(context.l10n.chatClosedStaff, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+            ),
+          if (_photo != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Kx.s12, Kx.s8, Kx.s12, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: InputChip(
+                  key: const Key('pendingAttachment'),
+                  avatar: const Icon(Icons.image_outlined),
+                  label: Text(_photo!.name, overflow: TextOverflow.ellipsis),
+                  onDeleted: () => setState(() => _photo = null),
+                ),
+              ),
+            ),
+          _Composer(controller: _text, recipient: conv.family.name, onSend: _send, onAttach: _attach, hasPhoto: _photo != null),
         ],
       ),
     );
@@ -256,11 +412,12 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class _Messages extends StatelessWidget {
-  const _Messages({required this.controller, required this.scroll, required this.bottomKey});
+  const _Messages({required this.controller, required this.scroll, required this.bottomKey, required this.onOpenFile});
 
   final ChatController controller;
   final ScrollController scroll;
   final Key bottomKey;
+  final ValueChanged<ChatMessage> onOpenFile;
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +450,8 @@ class _Messages extends StatelessWidget {
                 final next = k < items.length - 1 ? items[k + 1].message : null;
                 final m = b.message;
                 final newDay = prev == null || !DateUtils.isSameDay(prev.createdAt, m.createdAt);
-                final mine = m.senderId == controller.myId;
+                // Staff side: the teacher's own messages, and office colleagues' in an office thread.
+                final mine = m.senderId == controller.myId || (controller.conversation.office && m.senderId != controller.conversation.family.id);
                 final grouped = next != null && next.senderId == m.senderId && DateUtils.isSameDay(next.createdAt, m.createdAt);
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -305,7 +463,14 @@ class _Messages extends StatelessWidget {
                           child: Pill(fmt.chatDay(m.createdAt, now), background: c.surfaceContainerHigh, foreground: c.onSurfaceVariant),
                         ),
                       ),
-                    _BubbleView(bubble: b, mine: mine, grouped: grouped, onRetry: b.failed ? () => controller.retry(b) : null),
+                    if (m.system)
+                      Padding(
+                        key: Key('system-${m.id}'),
+                        padding: const EdgeInsets.symmetric(vertical: Kx.s8),
+                        child: Text('${m.body} · ${fmt.time(m.createdAt)}', textAlign: TextAlign.center, style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+                      )
+                    else
+                      _BubbleView(bubble: b, mine: mine, grouped: grouped, onRetry: b.failed ? () => controller.retry(b) : null, onOpenFile: () => onOpenFile(m)),
                   ],
                 );
               },
@@ -354,7 +519,7 @@ class _Top extends StatelessWidget {
 }
 
 class _BubbleView extends StatelessWidget {
-  const _BubbleView({required this.bubble, required this.mine, required this.grouped, this.onRetry});
+  const _BubbleView({required this.bubble, required this.mine, required this.grouped, this.onRetry, this.onOpenFile});
 
   final ChatBubble bubble;
   final bool mine;
@@ -362,6 +527,7 @@ class _BubbleView extends StatelessWidget {
   /// The next message is from the same person, so this one sits closer to it.
   final bool grouped;
   final VoidCallback? onRetry;
+  final VoidCallback? onOpenFile;
 
   @override
   Widget build(BuildContext context) {
@@ -406,11 +572,39 @@ class _BubbleView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: 1,
-                    child: Text(m.body, style: context.text.bodyLarge?.copyWith(color: bubble.failed ? c.onErrorContainer : fg)),
-                  ),
+                  if (m.attachment != null)
+                    InkWell(
+                      key: Key('messageFile-${m.id}'),
+                      onTap: onOpenFile,
+                      borderRadius: Kx.radiusMd,
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: Kx.s4),
+                        padding: const EdgeInsets.all(Kx.s8),
+                        decoration: BoxDecoration(color: c.surface.withValues(alpha: mine ? 0.9 : 0.6), borderRadius: Kx.radiusMd),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(m.attachment!.isPdf ? Icons.picture_as_pdf_outlined : Icons.image_outlined, color: c.primary),
+                            const SizedBox(width: Kx.s8),
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(m.attachment!.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.bodyMedium?.copyWith(color: c.onSurface)),
+                                  Text(m.attachment!.sizeLabel, style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (m.body.isNotEmpty)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: 1,
+                      child: Text(m.body, style: context.text.bodyLarge?.copyWith(color: bubble.failed ? c.onErrorContainer : fg)),
+                    ),
                   const SizedBox(height: 2),
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -423,6 +617,20 @@ class _BubbleView extends StatelessWidget {
                           style: context.text.labelSmall?.copyWith(color: bubble.failed ? c.onErrorContainer : fg.withValues(alpha: 0.72)),
                         ),
                       ),
+                      if (mine && m.tick != null && !bubble.sending && !bubble.failed) ...[
+                        const SizedBox(width: Kx.s4),
+                        Icon(
+                          m.tick == MessageTick.sent ? Icons.done : Icons.done_all,
+                          key: Key('tick-${m.id}-${m.tick!.name}'),
+                          size: 14,
+                          semanticLabel: switch (m.tick!) {
+                            MessageTick.sent => l.chatTickSent,
+                            MessageTick.delivered => l.chatTickDelivered,
+                            MessageTick.read => l.chatTickRead,
+                          },
+                          color: m.tick == MessageTick.read ? Colors.lightBlueAccent : fg.withValues(alpha: 0.72),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -436,16 +644,18 @@ class _BubbleView extends StatelessWidget {
 }
 
 class _Composer extends StatelessWidget {
-  const _Composer({required this.controller, required this.recipient, required this.onSend});
+  const _Composer({required this.controller, required this.recipient, required this.onSend, required this.onAttach, required this.hasPhoto});
 
   final TextEditingController controller;
   final String recipient;
   final VoidCallback onSend;
+  final VoidCallback onAttach;
+  final bool hasPhoto;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final canSend = controller.text.trim().isNotEmpty;
+    final canSend = controller.text.trim().isNotEmpty || hasPhoto;
     return Material(
       color: c.surfaceContainer,
       child: SafeArea(
@@ -455,6 +665,7 @@ class _Composer extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              IconButton(key: const Key('attachFile'), tooltip: context.l10n.chatAttach, onPressed: onAttach, icon: const Icon(Icons.add_photo_alternate_outlined)),
               Expanded(
                 child: TextField(
                   key: const Key('messageField'),

@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       };
       cleanup = close;
       socket.on('ready', () => send({ type: 'ready' }));
-      for (const ev of ['chat.message', 'chat.typing', 'chat.read']) socket.on(ev, (e: Record<string, unknown>) => send({ type: ev, threadId: e?.threadId ?? null, userId: e?.userId ?? e?.senderId ?? null, name: e?.name ?? null }));
+      for (const ev of ['chat.message', 'chat.typing', 'chat.read', 'message.new', 'message.read', 'conversation.changed']) socket.on(ev, (e: Record<string, unknown>) => send({ type: ev, threadId: e?.threadId ?? e?.conversationId ?? null, userId: e?.userId ?? e?.senderId ?? null, name: e?.name ?? null, side: e?.side ?? null }));
       socket.on('error', (e: { message?: string }) => {
         if (e?.message === 'unauthorized') close();
       });

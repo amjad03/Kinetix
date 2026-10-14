@@ -75,6 +75,17 @@ export interface TenantSettings {
   boardWhatsNew?: { title: string; body: string; at: string }[];
   /** Days deleted records stay in the recycle bin before they are purged (default 90, 1–3650). */
   recycleBinRetentionDays?: number;
+  /** Family chat (Communication > Conversations). */
+  chat?: ChatSettings;
+}
+
+export interface ChatSettings {
+  /** Students may chat with their own teachers. Absent = on for colleges and universities, off for schools. */
+  studentChat?: boolean;
+  /** Outside these hours families are told when to expect a reply. Times are HH:MM in the institution's time zone; days 1 = Monday … 7 = Sunday. */
+  officeHours?: { start: string; end: string; days: number[] } | null;
+  /** Who answers office threads. Empty = principals and administrators. */
+  officeUserIds?: string[];
 }
 
 export interface BoardKioskSettings {
@@ -234,6 +245,8 @@ export const sections = pgTable('sections', {
   combinationId: uuid('combination_id'),
   /** Manual order within the program, year and term (record depth kit reorder). */
   sortOrder: integer('sort_order').notNull().default(0),
+  /** The teacher families write to first about this class (migration 0138). */
+  classTeacherId: uuid('class_teacher_id').references((): AnyPgColumn => users.id, { onDelete: 'set null' }),
 });
 
 export const subjects = pgTable('subjects', {
@@ -804,7 +817,7 @@ export const guardians = pgTable(
   ],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel', 'leave', 'payslip', 'certificate', 'placement', 'grievance', 'welfare', 'survey', 'task']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel', 'leave', 'payslip', 'certificate', 'placement', 'grievance', 'welfare', 'survey', 'task', 'announcement']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -1531,9 +1544,20 @@ export const conversations = pgTable(
     lastMessageAt: timestamp('last_message_at', { withTimezone: true }),
     staffReadAt: timestamp('staff_read_at', { withTimezone: true }),
     familyReadAt: timestamp('family_read_at', { withTimezone: true }),
+    /** teacher: with a class or subject teacher. office: with the front office (staffId = whoever it is assigned to). */
+    kind: text('kind').$type<'teacher' | 'office'>().notNull().default('teacher'),
+    /** open | closed (the family cannot write) | resolved (a new family message reopens it). */
+    status: text('status').$type<'open' | 'closed' | 'resolved'>().notNull().default('open'),
+    /** The staff side gets no push for new messages. */
+    staffMuted: boolean('staff_muted').notNull().default(false),
+    /** When each side's app last fetched the thread: messages before it show as delivered. */
+    staffDeliveredAt: timestamp('staff_delivered_at', { withTimezone: true }),
+    familyDeliveredAt: timestamp('family_delivered_at', { withTimezone: true }),
+    statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
+    statusChangedBy: uuid('status_changed_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('conversations_trio_uq').on(t.studentId, t.staffId, t.familyId), index('conversations_staff_idx').on(t.staffId, t.lastMessageAt)],
+  (t) => [uniqueIndex('conversations_trio_uq').on(t.studentId, t.staffId, t.familyId, t.kind), index('conversations_staff_idx').on(t.staffId, t.lastMessageAt), index('conversations_family_idx').on(t.familyId, t.lastMessageAt)],
 );
 
 export const messages = pgTable(
@@ -1544,10 +1568,107 @@ export const messages = pgTable(
     conversationId: uuid('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
     senderId: uuid('sender_id').notNull().references(() => users.id),
     body: text('body').notNull(),
+    /** text: written by a person. system: "Closed by …", "Assigned to …" (senderId = who did it). */
+    kind: text('kind').$type<'text' | 'system'>().notNull().default('text'),
+    /** A photo or PDF, scanned before it is stored. */
+    attachmentKey: text('attachment_key'),
+    attachmentName: text('attachment_name'),
+    attachmentType: text('attachment_type'),
+    attachmentSize: integer('attachment_size'),
     createdAt: createdAt(),
   },
   (t) => [index('messages_conversation_idx').on(t.conversationId, t.createdAt)],
 );
+
+// ---------------------------------------------------------------------------------------------
+// Announcements (migration 0137): boards + Teacher, Student and Parent apps
+// ---------------------------------------------------------------------------------------------
+
+export type AnnouncementChannel = 'boards' | 'teacher' | 'student' | 'parent';
+
+/** Who an announcement is for. Picked people narrow nothing else: they are added as they are. */
+export interface AnnouncementAudience {
+  scope: 'all' | 'departments' | 'programs' | 'sections' | 'people';
+  departmentIds?: string[];
+  programIds?: string[];
+  sectionIds?: string[];
+  /** Picked staff, parents or student accounts. */
+  userIds?: string[];
+  /** Picked students: their own account (student app) and their guardians (parent app). */
+  studentIds?: string[];
+}
+
+export interface AnnouncementAttachment {
+  id: string;
+  key: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
+export const announcements = pgTable(
+  'announcements',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    senderId: uuid('sender_id').notNull().references(() => users.id),
+    title: text('title').notNull(),
+    /** Light markdown: **bold**, "- " and "1. " lists, [text](https://link). */
+    body: text('body').notNull(),
+    priority: text('priority').$type<'normal' | 'important'>().notNull().default('normal'),
+    channels: text('channels').array().$type<AnnouncementChannel[]>().notNull().default(sql`'{}'`),
+    audience: jsonb('audience').$type<AnnouncementAudience>().notNull(),
+    attachments: jsonb('attachments').$type<AnnouncementAttachment[]>().notNull().default([]),
+    requiresAck: boolean('requires_ack').notNull().default(false),
+    /** draft | scheduled | sent | recalled */
+    status: text('status').$type<'draft' | 'scheduled' | 'sent' | 'recalled'>().notNull().default('draft'),
+    sendAt: timestamp('send_at', { withTimezone: true }),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+    /** After this it is no longer pinned in the apps and leaves the boards. */
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    /** The board broadcast it went out as, when Boards was a channel. */
+    broadcastId: uuid('broadcast_id').references(() => broadcasts.id, { onDelete: 'set null' }),
+    recalledAt: timestamp('recalled_at', { withTimezone: true }),
+    lastRemindedAt: timestamp('last_reminded_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('announcements_status_idx').on(t.tenantId, t.status, t.sendAt)],
+);
+
+/** One row per person per app the announcement reached; read and acknowledgement are per person. */
+export const announcementRecipients = pgTable(
+  'announcement_recipients',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    announcementId: uuid('announcement_id').notNull().references(() => announcements.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    channel: text('channel').$type<Exclude<AnnouncementChannel, 'boards'>>().notNull(),
+    /** The recipient's app fetched its inbox after the send. */
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    acknowledgedAt: timestamp('acknowledged_at', { withTimezone: true }),
+    remindedAt: timestamp('reminded_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('announcement_recipients_uq').on(t.announcementId, t.userId, t.channel), index('announcement_recipients_user_idx').on(t.userId, t.channel)],
+);
+
+/** An institution's own templates for common notices (built-in ones live in code). */
+export const announcementTemplates = pgTable('announcement_templates', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  title: text('title').notNull(),
+  body: text('body').notNull(),
+  priority: text('priority').$type<'normal' | 'important'>().notNull().default('normal'),
+  requiresAck: boolean('requires_ack').notNull().default(false),
+  channels: text('channels').array().$type<AnnouncementChannel[]>().notNull().default(sql`'{}'`),
+  createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
 
 // ---------------------------------------------------------------------------------------------
 // Academic calendar, syllabus coverage, homework submissions, consent
@@ -3063,9 +3184,6 @@ export const vaultDocuments = pgTable(
 
 export const TENANT_TABLES = [
   'module_settings',
-  'chat_threads',
-  'chat_members',
-  'chat_messages',
   'library_stock_checks',
   'library_stock_check_items',
   'hr_settings',
@@ -3133,6 +3251,12 @@ export const TENANT_TABLES = [
   'sync_ops',
   'broadcasts',
   'broadcast_receipts',
+  'announcements',
+  'announcement_recipients',
+  'announcement_templates',
+  'chat_threads',
+  'chat_members',
+  'chat_messages',
   'homework',
   'guardians',
   'notifications',

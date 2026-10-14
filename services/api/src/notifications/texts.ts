@@ -332,6 +332,7 @@ export const LOCK_SCREEN: Record<string, Record<Lang, string>> = {
   board_shared: { en: 'Class board shared', hi: 'कक्षा का बोर्ड साझा किया गया', kn: 'ತರಗತಿಯ ಬೋರ್ಡ್ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ' },
   recording: { en: 'Lesson recording available', hi: 'पाठ की रिकॉर्डिंग उपलब्ध है', kn: 'ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್ ಲಭ್ಯವಿದೆ' },
   broadcast: { en: 'Message from your institution', hi: 'आपके संस्थान से संदेश', kn: 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯಿಂದ ಸಂದೇಶ' },
+  announcement: { en: 'Important notice from your institution', hi: 'आपके संस्थान से महत्वपूर्ण सूचना', kn: 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯಿಂದ ಪ್ರಮುಖ ಸೂಚನೆ' },
   fee: { en: 'Fees update', hi: 'फ़ीस की सूचना', kn: 'ಶುಲ್ಕದ ಸೂಚನೆ' },
   transport: { en: 'Bus update', hi: 'बस की सूचना', kn: 'ಬಸ್ ಸೂಚನೆ' },
   hostel: { en: 'Hostel update', hi: 'हॉस्टल की सूचना', kn: 'ಹಾಸ್ಟೆಲ್ ಸೂಚನೆ' },

@@ -39,6 +39,21 @@ class RealtimeAttendance extends RealtimeSignal {
   final List<String> studentIds;
 }
 
+/// A new announcement from the institution (`announcement.new`); the inbox refetches.
+class RealtimeAnnouncement extends RealtimeSignal {
+  const RealtimeAnnouncement(this.announcementId);
+
+  final String announcementId;
+}
+
+/// The other side read the conversation, or staff closed, reopened or reassigned it
+/// (`message.read`, `conversation.changed`); an open thread refetches for the new ticks or state.
+class RealtimeConversationChanged extends RealtimeSignal {
+  const RealtimeConversationChanged(this.conversationId);
+
+  final String conversationId;
+}
+
 /// The connection dropped; the client keeps trying to reconnect on its own.
 class RealtimeDisconnected extends RealtimeSignal {
   const RealtimeDisconnected();
@@ -98,6 +113,14 @@ class SocketRealtimeConnection implements RealtimeConnection {
         _add(RealtimeMessageNew(conversationId: '${d['conversationId']}', messageId: '${d['messageId']}', senderId: '${d['senderId']}'));
       }
     });
+    socket.on('announcement.new', (d) {
+      if (d is Map && d['announcementId'] is String) _add(RealtimeAnnouncement('${d['announcementId']}'));
+    });
+    for (final event in const ['message.read', 'conversation.changed']) {
+      socket.on(event, (d) {
+        if (d is Map && d['conversationId'] is String) _add(RealtimeConversationChanged('${d['conversationId']}'));
+      });
+    }
     socket.on('transport.position', (d) {
       if (d is! Map) return;
       try {
@@ -130,7 +153,7 @@ class SocketRealtimeConnection implements RealtimeConnection {
 /// New messages as they arrive: keeps the realtime connection open while signed in and reports
 /// `message.new`; after a reconnect [onReconnected] catches up on anything missed.
 class MessageFeed {
-  MessageFeed({required this.connector, required this.baseUrl, required this.token, required this.onMessage, this.onReconnected, this.onBusPosition, this.onAttendance});
+  MessageFeed({required this.connector, required this.baseUrl, required this.token, required this.onMessage, this.onReconnected, this.onBusPosition, this.onAttendance, this.onAnnouncement});
 
   final RealtimeConnector connector;
   final String baseUrl;
@@ -139,6 +162,9 @@ class MessageFeed {
   final void Function()? onReconnected;
   final void Function(BusPositionEvent event)? onBusPosition;
   final void Function(RealtimeAttendance event)? onAttendance;
+
+  /// A new announcement arrived.
+  final void Function()? onAnnouncement;
 
   RealtimeConnection? _conn;
   StreamSubscription<RealtimeSignal>? _sub;
@@ -165,6 +191,11 @@ class MessageFeed {
           onBusPosition?.call(s.event);
         case RealtimeAttendance():
           onAttendance?.call(s);
+        case RealtimeAnnouncement():
+          onAnnouncement?.call();
+        case RealtimeConversationChanged():
+          // Open threads and the list refetch as they do for a new message.
+          onMessage(RealtimeMessageNew(conversationId: s.conversationId, messageId: '', senderId: ''));
         case RealtimeDisconnected():
           connected = false;
         case RealtimeRejected():

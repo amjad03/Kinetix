@@ -6057,6 +6057,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recommended, awaiting principal'**
   String get leaveStatusRecommended;
+
+  /// No description provided for @inboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get inboxTitle;
+
+  /// No description provided for @inboxEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No announcements yet. Notices from your institution appear here.'**
+  String get inboxEmpty;
+
+  /// No description provided for @inboxPinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get inboxPinned;
+
+  /// No description provided for @inboxEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier'**
+  String get inboxEarlier;
+
+  /// No description provided for @inboxImportant.
+  ///
+  /// In en, this message translates to:
+  /// **'Important'**
+  String get inboxImportant;
+
+  /// No description provided for @inboxAckNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Please acknowledge'**
+  String get inboxAckNeeded;
+
+  /// No description provided for @inboxFileCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file} other{{count} files}}'**
+  String inboxFileCount(int count);
+
+  /// No description provided for @inboxFileFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the file. Install an app that opens photos or PDFs.'**
+  String get inboxFileFailed;
+
+  /// No description provided for @inboxFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {name}'**
+  String inboxFrom(String name);
+
+  /// No description provided for @inboxUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Until {when}'**
+  String inboxUntil(String when);
+
+  /// No description provided for @inboxFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get inboxFiles;
+
+  /// No description provided for @inboxAcknowledgedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'You acknowledged this on {when}'**
+  String inboxAcknowledgedOn(String when);
+
+  /// No description provided for @inboxAckPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the institution know you have read this.'**
+  String get inboxAckPrompt;
+
+  /// No description provided for @inboxAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledge'**
+  String get inboxAcknowledge;
+
+  /// No description provided for @inboxUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 unread} other{{count} unread}}'**
+  String inboxUnread(int count);
+
+  /// No description provided for @inboxAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'All read'**
+  String get inboxAllRead;
+
+  /// No description provided for @chatCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get chatCamera;
+
+  /// No description provided for @chatGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo'**
+  String get chatGallery;
+
+  /// No description provided for @chatPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a PDF'**
+  String get chatPdf;
+
+  /// No description provided for @chatAttach.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a photo or PDF'**
+  String get chatAttach;
+
+  /// No description provided for @chatFileType.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a photo (JPEG or PNG) or a PDF.'**
+  String get chatFileType;
+
+  /// No description provided for @chatFileTooBig.
+  ///
+  /// In en, this message translates to:
+  /// **'Files can be up to 4 MB.'**
+  String get chatFileTooBig;
+
+  /// No description provided for @chatOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Office'**
+  String get chatOffice;
+
+  /// No description provided for @chatTickSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get chatTickSent;
+
+  /// No description provided for @chatTickDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get chatTickDelivered;
+
+  /// No description provided for @chatTickRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get chatTickRead;
+
+  /// No description provided for @chatStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get chatStatusClosed;
+
+  /// No description provided for @chatStatusResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get chatStatusResolved;
+
+  /// No description provided for @chatClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close conversation'**
+  String get chatClose;
+
+  /// No description provided for @chatReopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen conversation'**
+  String get chatReopen;
+
+  /// No description provided for @chatResolve.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark resolved'**
+  String get chatResolve;
+
+  /// No description provided for @chatMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute notifications'**
+  String get chatMute;
+
+  /// No description provided for @chatUnmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute notifications'**
+  String get chatUnmute;
+
+  /// No description provided for @chatMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted'**
+  String get chatMuted;
+
+  /// No description provided for @chatClosedStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed: the family cannot reply until you reopen it.'**
+  String get chatClosedStaff;
+
+  /// No description provided for @chatPhotoOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo to send'**
+  String get chatPhotoOnly;
+
+  /// No description provided for @chatOfficeThread.
+  ///
+  /// In en, this message translates to:
+  /// **'Office · {name}'**
+  String chatOfficeThread(String name);
+
+  /// No description provided for @chatClassTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Class teacher'**
+  String get chatClassTeacher;
 }
 
 class _AppLocalizationsDelegate

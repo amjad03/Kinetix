@@ -13,7 +13,8 @@ void main() {
 
   testWidgets('groups updates into Today and Earlier with an unread badge', (tester) async {
     await pumpApp(tester);
-    expect(badgeLabel('2'), findsOneWidget);
+    // Two unread updates and one unread announcement on the bell.
+    expect(badgeLabel('3'), findsOneWidget);
     await openUpdates(tester);
     expect(find.descendant(of: find.byType(UpdatesTab), matching: find.text('Today')), findsOneWidget);
     expect(find.text('Earlier'), findsOneWidget);

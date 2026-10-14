@@ -30,6 +30,7 @@ import { StudentsModule } from './students/students.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { BoardProfilesModule } from './board-profiles/board-profiles.module.js';
 import { BroadcastsModule } from './broadcasts/broadcasts.module.js';
+import { AnnouncementsModule } from './announcements/announcements.module.js';
 import { ContentModule } from './content/content.module.js';
 import { DbModule } from './db/db.module.js';
 import { RedisModule } from './redis/redis.module.js';
@@ -144,6 +145,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     BoardSyncModule,
     BoardProfilesModule,
     BroadcastsModule,
+    AnnouncementsModule,
     SyncModule,
     NotificationsModule,
     WhiteboardsModule,

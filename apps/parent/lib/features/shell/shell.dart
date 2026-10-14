@@ -9,6 +9,7 @@ import '../../core/realtime.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../announcements/announcements.dart';
 import '../fees/fees_screen.dart';
 import '../home/home_tab.dart';
 import '../messages/messages_controller.dart';
@@ -33,6 +34,7 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
   late final family = FamilyController(widget.state.api, widget.state.prefs);
   late final updates = UpdatesController(widget.state.api)..load();
   late final messages = MessagesController(widget.state.api, meId: widget.state.me!.id)..load();
+  late final announcements = AnnouncementsController(widget.state.api)..load();
   int _tab = 0;
 
   /// New messages over the realtime connection.
@@ -58,12 +60,14 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
         onReconnected: messages.load,
         onBusPosition: family.busMoved,
         onAttendance: (_) => AttendanceLive.changed(),
+        onAnnouncement: announcements.load,
       )..start();
     }
     widget.state.pendingPushTap.addListener(_openPushTap);
     _pushes = widget.state.messaging.onForegroundMessage.listen((_) {
       if (!updates.loading) updates.load();
       if (!messages.loading) messages.load();
+      if (!announcements.loading) announcements.load();
     });
     // A tapped notification that opened the app (or arrived before sign-in) first.
     WidgetsBinding.instance.addPostFrameCallback((_) => _openPushTap());
@@ -89,7 +93,7 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
       _go(_moreTab);
       return MessagesTab.open(context, messages, family);
     }
-    await UpdatesTab.openNotification(context, n, controller: updates, family: family, messages: messages);
+    await UpdatesTab.openNotification(context, n, controller: updates, family: family, messages: messages, announcements: announcements);
   }
 
   /// Privacy choices still to make for any child (first sign-in after the notice, or a new
@@ -118,12 +122,14 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
     family.dispose();
     updates.dispose();
     messages.dispose();
+    announcements.dispose();
     super.dispose();
   }
 
   void _go(int i) {
     // Fresh on every visit: new notifications and replies arrive while the app is open.
     if (i == _updatesTab && _tab != _updatesTab && !updates.loading) updates.load();
+    if (i == _updatesTab && _tab != _updatesTab && !announcements.loading) announcements.load();
     if (i == _moreTab && _tab != _moreTab && !messages.loading) messages.load();
     setState(() => _tab = i);
   }
@@ -138,13 +144,13 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
         index: _tab,
         children: [
           HomeTab(family: family, me: widget.state.me!, updates: updates, onOpenUpdates: () => _go(_updatesTab)),
-          UpdatesTab(controller: updates, family: family, messages: messages),
+          UpdatesTab(controller: updates, family: family, messages: messages, announcements: announcements),
           _FeesTab(family: family),
           ProfileTab(state: widget.state, family: family, messages: messages),
         ],
       ),
       bottomNavigationBar: ListenableBuilder(
-        listenable: Listenable.merge([updates, messages]),
+        listenable: Listenable.merge([updates, messages, announcements]),
         builder: (context, _) => NavigationBar(
           selectedIndex: _tab,
           onDestinationSelected: _go,
@@ -152,8 +158,8 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
             NavigationDestination(key: const Key('navHome'), icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: l.navHome),
             NavigationDestination(
               key: const Key('navUpdates'),
-              icon: _badge(const Key('updatesBadge'), updates.unread, Icons.notifications_outlined),
-              selectedIcon: _badge(null, updates.unread, Icons.notifications),
+              icon: _badge(const Key('updatesBadge'), updates.unread + announcements.unread, Icons.notifications_outlined),
+              selectedIcon: _badge(null, updates.unread + announcements.unread, Icons.notifications),
               label: l.navUpdates,
             ),
             NavigationDestination(key: const Key('navFees'), icon: const Icon(Icons.account_balance_wallet_outlined), selectedIcon: const Icon(Icons.account_balance_wallet), label: l.navFees),

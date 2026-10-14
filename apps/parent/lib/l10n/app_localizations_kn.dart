@@ -3166,4 +3166,127 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get dishSoldOut => 'ಇಂದು ಲಭ್ಯವಿಲ್ಲ';
+
+  @override
+  String get inboxTitle => 'ಪ್ರಕಟಣೆಗಳು';
+
+  @override
+  String get inboxEmpty =>
+      'ಇನ್ನೂ ಪ್ರಕಟಣೆಗಳಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸೂಚನೆಗಳು ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.';
+
+  @override
+  String get inboxPinned => 'ಪಿನ್ ಮಾಡಿದವು';
+
+  @override
+  String get inboxEarlier => 'ಹಿಂದಿನವು';
+
+  @override
+  String get inboxImportant => 'ಮುಖ್ಯ';
+
+  @override
+  String get inboxAckNeeded => 'ದಯವಿಟ್ಟು ಸ್ವೀಕರಿಸಿ';
+
+  @override
+  String inboxFileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಫೈಲ್‌ಗಳು',
+      one: '1 ಫೈಲ್',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inboxFileFailed =>
+      'ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. ಫೋಟೋ ಅಥವಾ PDF ತೆರೆಯುವ ಆ್ಯಪ್ ಸ್ಥಾಪಿಸಿ.';
+
+  @override
+  String inboxFrom(String name) {
+    return '$name ಅವರಿಂದ';
+  }
+
+  @override
+  String inboxUntil(String when) {
+    return '$when ವರೆಗೆ';
+  }
+
+  @override
+  String get inboxFiles => 'ಫೈಲ್‌ಗಳು';
+
+  @override
+  String inboxAcknowledgedOn(String when) {
+    return 'ನೀವು $when ರಂದು ಸ್ವೀಕರಿಸಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get inboxAckPrompt => 'ನೀವು ಇದನ್ನು ಓದಿದ್ದೀರಿ ಎಂದು ಸಂಸ್ಥೆಗೆ ತಿಳಿಸಿ.';
+
+  @override
+  String get inboxAcknowledge => 'ಸ್ವೀಕರಿಸಿ';
+
+  @override
+  String inboxUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಓದದವು',
+      one: '1 ಓದದ್ದು',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inboxAllRead => 'ಎಲ್ಲವೂ ಓದಲಾಗಿದೆ';
+
+  @override
+  String get chatCamera => 'ಫೋಟೋ ತೆಗೆಯಿರಿ';
+
+  @override
+  String get chatGallery => 'ಫೋಟೋ ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get chatPdf => 'PDF ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get chatAttach => 'ಫೋಟೋ ಅಥವಾ PDF ಲಗತ್ತಿಸಿ';
+
+  @override
+  String get chatFileType => 'ಫೋಟೋ (JPEG ಅಥವಾ PNG) ಅಥವಾ PDF ಕಳುಹಿಸಿ.';
+
+  @override
+  String get chatFileTooBig => 'ಫೈಲ್‌ಗಳು 4 MB ವರೆಗೆ ಇರಬಹುದು.';
+
+  @override
+  String get chatOffice => 'ಕಚೇರಿ';
+
+  @override
+  String get chatTickSent => 'ಕಳುಹಿಸಲಾಗಿದೆ';
+
+  @override
+  String get chatTickDelivered => 'ತಲುಪಿದೆ';
+
+  @override
+  String get chatTickRead => 'ಓದಲಾಗಿದೆ';
+
+  @override
+  String get chatStatusClosed => 'ಮುಚ್ಚಿದೆ';
+
+  @override
+  String get chatStatusResolved => 'ಪರಿಹಾರವಾಗಿದೆ';
+
+  @override
+  String chatAfterHours(String start, String end) {
+    return 'ನಾವು $start ಮತ್ತು $end ನಡುವೆ ಉತ್ತರಿಸುತ್ತೇವೆ. ನಿಮ್ಮ ಸಂದೇಶ ತಲುಪಿದೆ.';
+  }
+
+  @override
+  String get chatClosedFamily =>
+      'ಸಂಸ್ಥೆ ಈ ಸಂಭಾಷಣೆಯನ್ನು ಮುಚ್ಚಿದೆ. ಸಹಾಯ ಬೇಕಿದ್ದರೆ ಸಂದೇಶಗಳಲ್ಲಿ ಹೊಸದನ್ನು ಆರಂಭಿಸಿ.';
+
+  @override
+  String get chatOfficeHint => 'ಶುಲ್ಕ, ಪ್ರಮಾಣಪತ್ರ, ಸಾರಿಗೆ ಮತ್ತು ಇತರ ಎಲ್ಲವೂ';
+
+  @override
+  String get chatClassTeacher => 'ತರಗತಿ ಶಿಕ್ಷಕ';
 }

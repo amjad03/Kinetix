@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
+import '../../core/attachments.dart';
+import '../../core/files.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
@@ -55,6 +57,13 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _sending = false;
   final _text = TextEditingController();
   final _scroll = ScrollController();
+
+  /// A photo or PDF waiting to go with the next message.
+  UploadFile? _file;
+
+  /// From the last page: whether the family may write, and the office hours note.
+  bool _canWrite = true;
+  ({String start, String end})? _afterHours;
   Timer? _poll;
   StreamSubscription<Object>? _incoming;
 
@@ -101,7 +110,12 @@ class _ChatScreenState extends State<ChatScreen> {
       final atBottom = !_scroll.hasClients || _scroll.position.extentAfter < 80;
       setState(() {
         _conversation = page.conversation;
+        // Ticks change on messages already shown: the newest page replaces them.
+        final fresh = {for (final m in page.messages) m.id};
+        _items.removeWhere((m) => fresh.contains(m.id));
         _merge(page.messages);
+        _canWrite = page.canWrite;
+        _afterHours = page.afterHours ? page.officeHours : null;
         if (first) _hasOlder = page.messages.length >= _pageSize;
         _loading = false;
         _error = null;
@@ -149,18 +163,60 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _send() async {
     final body = _text.text.trim();
-    if (body.isEmpty || _sending) return;
+    if ((body.isEmpty && _file == null) || _sending) return;
     setState(() => _sending = true);
     try {
-      final m = await api.sendMessage(widget.conversationId, body);
+      final m = await api.sendMessage(widget.conversationId, body, attachment: _file);
       if (!mounted) return;
       _text.clear();
-      setState(() => _merge([m]));
+      setState(() {
+        _file = null;
+        _merge([m]);
+      });
       _toBottom();
+      // Ticks and the office-hours note come with the page.
+      _loadLatest();
     } on ApiException catch (e) {
       if (mounted) _snack(context.l10n.couldNotSend(context.errorText(e)));
     } finally {
       if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  /// Chooses a photo (camera or gallery) or a PDF to send.
+  Future<void> _attach() async {
+    final source = await showModalBottomSheet<AttachmentSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(key: const Key('attachCamera'), leading: const Icon(Icons.photo_camera_outlined), title: Text(context.l10n.chatCamera), onTap: () => Navigator.pop(context, AttachmentSource.camera)),
+            ListTile(key: const Key('attachGallery'), leading: const Icon(Icons.photo_library_outlined), title: Text(context.l10n.chatGallery), onTap: () => Navigator.pop(context, AttachmentSource.gallery)),
+            ListTile(key: const Key('attachPdf'), leading: const Icon(Icons.picture_as_pdf_outlined), title: Text(context.l10n.chatPdf), onTap: () => Navigator.pop(context, AttachmentSource.pdf)),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+    final files = await AttachmentPicker.instance.pick(source, max: 1);
+    if (files.isEmpty || !mounted) return;
+    final f = files.first;
+    if (!const ['image/jpeg', 'image/png', 'application/pdf'].contains(f.mime)) return _snack(context.l10n.chatFileType);
+    if (f.bytes.length > chatMaxBytes) return _snack(context.l10n.chatFileTooBig);
+    setState(() => _file = f);
+  }
+
+  Future<void> _openFile(ChatMessage m) async {
+    final f = m.attachment;
+    if (f == null) return;
+    try {
+      final bytes = await api.messageFile(widget.conversationId, m.id);
+      final ok = await openWithSystem(bytes, f.name, f.type);
+      if (!ok && mounted) _snack(context.l10n.inboxFileFailed);
+    } on ApiException catch (e) {
+      if (mounted) _snack(context.errorText(e));
     }
   }
 
@@ -179,7 +235,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(conv?.staff.fullName ?? context.l10n.message, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(conv == null ? context.l10n.message : conv.office ? context.l10n.chatOffice : conv.staff.fullName, maxLines: 1, overflow: TextOverflow.ellipsis),
                   if (conv != null)
                     Text(
                       conv.className,
@@ -241,13 +297,41 @@ class _ChatScreenState extends State<ChatScreen> {
                         for (final (i, m) in _items.indexed) ...[
                           if (i == 0 || Fmt.daysBetween(_items[i - 1].createdAt, m.createdAt) != 0)
                             _DayChip(context.fmt.relativeDay(m.createdAt, now)),
-                          MessageBubble(message: m, mine: m.senderId == meId),
+                          if (m.system) _SystemLine(m) else MessageBubble(message: m, mine: m.senderId == meId, onOpenFile: () => _openFile(m)),
                         ],
                       ],
                     ),
                   ),
           ),
+          if (_afterHours != null)
+            Container(
+              key: const Key('afterHoursNote'),
+              width: double.infinity,
+              color: c.secondaryContainer,
+              padding: const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s8),
+              child: Text(context.l10n.chatAfterHours(_afterHours!.start, _afterHours!.end), style: context.text.bodySmall?.copyWith(color: c.onSecondaryContainer)),
+            ),
+          if (_file != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Kx.s12, Kx.s8, Kx.s12, 0),
+              child: InputChip(
+                key: const Key('pendingAttachment'),
+                avatar: Icon(_file!.isImage ? Icons.image_outlined : Icons.picture_as_pdf_outlined),
+                label: Text(_file!.name, overflow: TextOverflow.ellipsis),
+                onDeleted: () => setState(() => _file = null),
+              ),
+            ),
           const Divider(height: 1),
+          if (!_canWrite)
+            SafeArea(
+              top: false,
+              child: Padding(
+                key: const Key('chatClosed'),
+                padding: const EdgeInsets.all(Kx.s16),
+                child: Text(context.l10n.chatClosedFamily, textAlign: TextAlign.center, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+              ),
+            )
+          else
           SafeArea(
             top: false,
             child: Padding(
@@ -255,6 +339,12 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  IconButton(
+                    key: const Key('attachFile'),
+                    tooltip: context.l10n.chatAttach,
+                    onPressed: _loading || _error != null || _sending ? null : _attach,
+                    icon: const Icon(Icons.attach_file),
+                  ),
                   Expanded(
                     child: TextField(
                       key: const Key('messageField'),
@@ -287,7 +377,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     builder: (context, _) => IconButton.filled(
                       key: const Key('sendMessage'),
                       tooltip: context.l10n.send,
-                      onPressed: _text.text.trim().isEmpty || _sending ? null : _send,
+                      onPressed: (_text.text.trim().isEmpty && _file == null) || _sending ? null : _send,
                       icon: _sending
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                           : const Icon(Icons.send),
@@ -318,11 +408,35 @@ class _DayChip extends StatelessWidget {
 }
 
 /// A chat bubble: the student's on the right in the accent colour, the teacher's on the left.
+/// The largest file a chat message takes (services/api common/blob.ts).
+const chatMaxBytes = 4000000;
+
+/// "Closed by …", "Assigned to …": a centred line, not a bubble.
+class _SystemLine extends StatelessWidget {
+  const _SystemLine(this.message);
+
+  final ChatMessage message;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    key: Key('system-${message.id}'),
+    padding: const EdgeInsets.symmetric(vertical: Kx.s8),
+    child: Text(
+      '${message.body} · ${context.fmt.time(message.createdAt)}',
+      textAlign: TextAlign.center,
+      style: context.text.labelMedium?.copyWith(color: context.colors.onSurfaceVariant),
+    ),
+  );
+}
+
 class MessageBubble extends StatelessWidget {
-  const MessageBubble({super.key, required this.message, required this.mine});
+  const MessageBubble({super.key, required this.message, required this.mine, this.onOpenFile});
 
   final ChatMessage message;
   final bool mine;
+
+  /// Opens the message's photo or PDF.
+  final VoidCallback? onOpenFile;
 
   @override
   Widget build(BuildContext context) {
@@ -356,9 +470,55 @@ class MessageBubble extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(message.body, style: context.text.bodyLarge?.copyWith(color: fg)),
+                if (message.attachment != null)
+                  InkWell(
+                    key: Key('messageFile-${message.id}'),
+                    onTap: onOpenFile,
+                    borderRadius: Kx.radiusMd,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: Kx.s4),
+                      padding: const EdgeInsets.all(Kx.s8),
+                      decoration: BoxDecoration(color: c.surface.withValues(alpha: mine ? 0.9 : 0.6), borderRadius: Kx.radiusMd),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(message.attachment!.isPdf ? Icons.picture_as_pdf_outlined : Icons.image_outlined, color: c.primary),
+                          const SizedBox(width: Kx.s8),
+                          Flexible(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(message.attachment!.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.bodyMedium?.copyWith(color: c.onSurface)),
+                                Text(message.attachment!.sizeLabel, style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (message.body.isNotEmpty) Text(message.body, style: context.text.bodyLarge?.copyWith(color: fg)),
                 const SizedBox(height: 2),
-                Text(context.fmt.time(message.createdAt), style: context.text.labelSmall?.copyWith(color: fg.withValues(alpha: 0.75))),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(context.fmt.time(message.createdAt), style: context.text.labelSmall?.copyWith(color: fg.withValues(alpha: 0.75))),
+                    if (mine && message.tick != null) ...[
+                      const SizedBox(width: Kx.s4),
+                      Icon(
+                        message.tick == MessageTick.sent ? Icons.done : Icons.done_all,
+                        key: Key('tick-${message.id}-${message.tick!.name}'),
+                        size: 14,
+                        semanticLabel: switch (message.tick!) {
+                          MessageTick.sent => context.l10n.chatTickSent,
+                          MessageTick.delivered => context.l10n.chatTickDelivered,
+                          MessageTick.read => context.l10n.chatTickRead,
+                        },
+                        color: message.tick == MessageTick.read ? Colors.lightBlueAccent : fg.withValues(alpha: 0.75),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
           ),

@@ -137,7 +137,7 @@ class LiveClassController extends ChangeNotifier {
         error = message;
         errorCode = null;
         _set(LivePhase.failed);
-      case LiveMessageNew() || LivePollChanged() || LiveBadgeAwarded():
+      case LiveMessageNew() || LivePollChanged() || LiveBadgeAwarded() || LiveAnnouncement():
         // New messages are handled by the app's message feed.
         break;
     }

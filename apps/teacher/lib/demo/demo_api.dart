@@ -600,8 +600,17 @@ class DemoTeacherApi extends FakeTeacherApi {
   // --- Messages ----------------------------------------------------------------------------------
 
   @override
-  Future<ChatMessage> sendMessage(String conversationId, String body) async {
-    final m = ChatMessage(id: 'm${++_next}', senderId: profile.id, body: body, createdAt: _now);
+  Future<ChatMessage> sendMessage(String conversationId, String body, {ChatUpload? attachment}) async {
+    final id = 'm${++_next}';
+    if (attachment != null) messageFiles[id] = attachment.bytes;
+    final m = ChatMessage(
+      id: id,
+      senderId: profile.id,
+      body: body,
+      createdAt: _now,
+      attachment: attachment == null ? null : AttachedFile(id: id, name: attachment.name, type: attachment.mime, size: attachment.bytes.length),
+      tick: MessageTick.sent,
+    );
     chat[conversationId]!.add(m);
     threads = [
       for (final t in threads)
