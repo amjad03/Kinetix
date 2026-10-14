@@ -8,7 +8,9 @@ export interface RegistrationWindow {
   minAttendancePercent: number | null;
   blockOnFeeDues: boolean;
   maxBacklogs: number | null;
-  state: 'upcoming' | 'open' | 'closed';
+  /** Late registration (late fee, then the super-fine) until this day. */
+  lateUntil: string | null;
+  state: 'upcoming' | 'open' | 'late' | 'closed';
 }
 
 export interface RegistrationRow {

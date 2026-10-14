@@ -14,7 +14,8 @@ import { parseDate } from '../teacher/teacher.service.js';
 import { antiCollusionSeats, roomCapacity, type RoomLayout, type SeatCandidate } from './anti-collusion.js';
 import { seatingChartPdf } from './documents.js';
 import { ExamsService } from './exams.service.js';
-import { ineligibleReasons, windowState, type EligibilityFacts, type EligibilityRules } from './registration-rules.js';
+import { ineligibleReasons, type EligibilityFacts, type EligibilityRules } from './registration-rules.js';
+import { registrationState } from '../exam-cell/exam-cell.logic.js';
 import { slotGroups } from './seating.js';
 import { ADMIN } from './schemes.controller.js';
 
@@ -27,6 +28,8 @@ const WindowBody = z
     minAttendancePercent: z.number().min(0).max(100).nullable().default(null),
     blockOnFeeDues: z.boolean().default(true),
     maxBacklogs: z.number().int().min(0).max(50).nullable().default(null),
+    /** Late registration (late fee, then the super-fine slabs) until this day; null = none. */
+    lateUntil: z.string().nullable().default(null),
   });
 const RegisterBody = z.object({ studentId: z.uuid() });
 const OverrideBody = z.object({ reason: z.string().trim().min(5).max(300) });
@@ -54,10 +57,12 @@ export class ExamRegistrationController {
     const opensOn = parseDate(b.opensOn, 'opensOn');
     const closesOn = parseDate(b.closesOn, 'closesOn');
     if (closesOn < opensOn) throw new BadRequestException('The window cannot close before it opens');
+    const lateUntil = b.lateUntil ? parseDate(b.lateUntil, 'lateUntil') : null;
+    if (lateUntil && lateUntil <= closesOn) throw new BadRequestException('Late registration must end after the window closes');
     return this.db.withTenant(p.tenantId, async (tx) => {
       const s = await this.exams.session(tx, id);
       if (s.status === 'processed' || s.status === 'published' || s.status === 'locked') throw new ConflictException('Results are processed; registration can no longer change');
-      const v = { opensOn, closesOn, minAttendancePercent: b.minAttendancePercent, blockOnFeeDues: b.blockOnFeeDues, maxBacklogs: b.maxBacklogs };
+      const v = { opensOn, closesOn, minAttendancePercent: b.minAttendancePercent, blockOnFeeDues: b.blockOnFeeDues, maxBacklogs: b.maxBacklogs, lateUntil };
       const [row] = await tx.insert(examRegistrationWindows).values({ tenantId: p.tenantId, sessionId: id, createdBy: p.userId, ...v }).onConflictDoUpdate({ target: examRegistrationWindows.sessionId, set: v }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.registration.window_set', subjectType: 'exam_session', subjectId: id, data: v });
       return row;
@@ -71,7 +76,7 @@ export class ExamRegistrationController {
       await this.exams.session(tx, id);
       const [w] = await tx.select().from(examRegistrationWindows).where(eq(examRegistrationWindows.sessionId, id));
       if (!w) return null;
-      return { ...w, state: windowState(w, await this.today(tx)) };
+      return { ...w, state: registrationState(w, await this.today(tx)) };
     });
   }
 
@@ -95,8 +100,8 @@ export class ExamRegistrationController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await assertCanSeeStudent(tx, p, b.studentId, MANAGE);
       const w = await this.windowOf(tx, id);
-      const state = windowState(w, await this.today(tx));
-      if (state !== 'open') throw new ConflictException(state === 'upcoming' ? `Registration opens on ${w.opensOn}` : `Registration closed on ${w.closesOn}`);
+      const state = registrationState(w, await this.today(tx));
+      if (state !== 'open' && state !== 'late') throw new ConflictException(state === 'upcoming' ? `Registration opens on ${w.opensOn}` : `Registration closed on ${w.lateUntil ?? w.closesOn}`);
       await this.assertInSession(tx, id, b.studentId);
       const [prev] = await tx.select().from(examRegistrations).where(and(eq(examRegistrations.sessionId, id), eq(examRegistrations.studentId, b.studentId)));
       if (prev?.status === 'registered') return prev;

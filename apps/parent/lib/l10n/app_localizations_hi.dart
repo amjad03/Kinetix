@@ -3284,4 +3284,11 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get chatClassTeacher => 'कक्षा शिक्षक';
+
+  @override
+  String get resultWithheld => 'रोका गया';
+
+  @override
+  String get resultWithheldBody =>
+      'यह परिणाम परीक्षा कार्यालय ने रोका है। कारण और आगे क्या करें, जानने के लिए कार्यालय से संपर्क करें।';
 }

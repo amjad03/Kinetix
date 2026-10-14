@@ -242,13 +242,20 @@ class _TermCard extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(term.sessionName, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w600))),
-              Pill(term.passed ? l.resultPass : l.resultFail, background: term.passed ? good.bg : bad.bg, foreground: term.passed ? good.fg : bad.fg),
+              if (term.withheld)
+                Pill(l.resultWithheld, key: Key('withheld-${term.sessionId}'), background: bad.bg, foreground: bad.fg)
+              else
+                Pill(term.passed ? l.resultPass : l.resultFail, background: term.passed ? good.bg : bad.bg, foreground: term.passed ? good.fg : bad.fg),
             ],
           ),
           const SizedBox(height: Kx.s4),
-          Text(l.sgpaLine(term.sgpa.toStringAsFixed(2)), key: Key('sgpa-${term.sessionId}'), style: context.text.titleLarge?.copyWith(color: c.primary, fontWeight: FontWeight.w600)),
-          const SizedBox(height: Kx.s8),
-          for (final line in term.lines) _line(context, line),
+          if (term.withheld)
+            Text(l.resultWithheldBody, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant))
+          else ...[
+            Text(l.sgpaLine(term.sgpa.toStringAsFixed(2)), key: Key('sgpa-${term.sessionId}'), style: context.text.titleLarge?.copyWith(color: c.primary, fontWeight: FontWeight.w600)),
+            const SizedBox(height: Kx.s8),
+            for (final line in term.lines) _line(context, line),
+          ],
         ],
       ),
     );

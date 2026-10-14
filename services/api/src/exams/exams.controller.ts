@@ -25,6 +25,10 @@ import { DocumentEngine } from '../documents/document-engine.service.js';
 import { studentBlock } from '../documents/doc-data.js';
 import { ExamsService, type SessionRow } from './exams.service.js';
 import { allocateSeats, overlaps, slotGroups } from './seating.js';
+import { studentHeader } from './results.controller.js';
+import { diffResults } from '../exam-cell/exam-cell.logic.js';
+import { notifyResults } from '../exam-cell/notify.js';
+import { recordRun, shapeOfProcessed, shapeOfStored, storedResults } from '../exam-cell/result-runs.js';
 import { ADMIN } from './schemes.controller.js';
 
 const MANAGE: RoleName[] = [...ADMIN, 'hod'];
@@ -36,7 +40,7 @@ const SessionBody = z.object({
   programId: z.uuid(),
   term: z.number().int().min(1).max(20),
   name: z.string().trim().min(1).max(160),
-  kind: z.enum(['regular', 'supplementary']).default('regular'),
+  kind: z.enum(['regular', 'supplementary', 'improvement', 'special', 'practical', 'viva']).default('regular'),
   startsOn: z.string(),
   endsOn: z.string(),
 });
@@ -350,10 +354,13 @@ export class ExamSessionsController {
       const s = await this.exams.session(tx, id);
       if (s.status === 'draft') throw new ConflictException('Schedule the session first');
       if (s.status === 'published' || s.status === 'locked') throw new ConflictException('Results are already published; use revaluation to correct a result');
+      if (s.frozenAt) throw new ConflictException('The results are frozen; unfreeze them before processing again');
       const problems = await this.exams.blockers(tx, s);
       if (problems.length) throw new ConflictException({ message: 'The session cannot be processed yet', problems });
+      const before = await storedResults(tx, id);
       const results = await this.exams.compute(tx, s);
       await this.exams.store(tx, p.tenantId, s, results);
+      await recordRun(tx, p.tenantId, id, 'process', p.userId, { students: results.length, passed: results.filter((r) => r.outcome === 'pass').length, changes: diffResults(before.map(shapeOfStored), results.map(shapeOfProcessed)).length }, before);
       await tx.update(examSessions).set({ status: 'processed', processedAt: new Date() }).where(eq(examSessions.id, id));
       const passed = results.filter((r) => r.outcome === 'pass').length;
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.results.processed', subjectType: 'exam_session', subjectId: id, data: { students: results.length, passed } });
@@ -433,12 +440,14 @@ export class ExamSessionsController {
       const [sessionGate] = await tx.select({ required: examSessions.approvalRequired, approvedAt: examSessions.approvedAt }).from(examSessions).where(eq(examSessions.id, id));
       if (sessionGate?.required && !sessionGate.approvedAt) throw new ConflictException('These results need approval before they can be published. Request approval first.');
       const now = new Date();
-      await tx.update(examSessions).set({ status: 'published', publishedAt: now }).where(eq(examSessions.id, id));
+      await tx.update(examSessions).set({ status: 'published', publishedAt: now, frozenAt: s.frozenAt ?? now, frozenBy: s.frozenBy ?? p.userId }).where(eq(examSessions.id, id));
       await feedCalendar(tx, p.tenantId, p.userId);
       const papers = await tx.select().from(examPapers).where(eq(examPapers.sessionId, id));
       const aIds = papers.map((x) => x.assessmentId).filter((x): x is string => !!x);
       if (aIds.length) await tx.update(assessments).set({ publishedAt: now }).where(and(inArray(assessments.id, aIds), sql`${assessments.publishedAt} is null`));
       for (const sectionId of new Set(papers.map((x) => x.sectionId))) await this.notifications.marksPublished(tx, { id: `${id}:${sectionId}`, sectionId, title: 'Results', subjectName: s.name });
+      await notifyResults(tx, this.notifications, id, s.name);
+      await recordRun(tx, p.tenantId, id, 'publish', p.userId, { papers: papers.length });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.results.published', subjectType: 'exam_session', subjectId: id });
       await this.events.emit(tx, p.tenantId, { type: DomainEvents.ResultsPublished, aggregateType: 'exam_session', aggregateId: id, actorId: p.userId, payload: { name: s.name, papers: papers.length } });
       return { status: 'published' };

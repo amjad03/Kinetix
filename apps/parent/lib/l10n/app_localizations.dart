@@ -5505,6 +5505,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Class teacher'**
   String get chatClassTeacher;
+
+  /// Pill on a term result the exam office holds back.
+  ///
+  /// In en, this message translates to:
+  /// **'Withheld'**
+  String get resultWithheld;
+
+  /// Shown instead of the figures of a withheld result.
+  ///
+  /// In en, this message translates to:
+  /// **'This result is withheld by the examination office. Contact the office to know why and what to do.'**
+  String get resultWithheldBody;
 }
 
 class _AppLocalizationsDelegate

@@ -936,6 +936,10 @@ export const pastExamQuestions = pgTable(
     exam: text('exam').notNull(),
     year: integer('year').notNull(),
     marks: integer('marks'),
+    /** Unit or module of the syllabus, the question's number on the paper and the paper code (migration 0158). */
+    unit: text('unit'),
+    questionNo: text('question_no'),
+    paperCode: text('paper_code'),
     createdAt: createdAt(),
   },
   (t) => [index('past_exam_questions_subject_idx').on(t.subjectId)],
@@ -1520,6 +1524,8 @@ export const marks = pgTable(
     /** Set by moderation; the effective mark is the moderated one when present. */
     moderatedMarks: numeric('moderated_marks', { precision: 6, scale: 2, mode: 'number' }),
     moderationNote: text('moderation_note'),
+    /** Why there is no ordinary mark: MP (malpractice, the paper is cancelled) or NE (not eligible to sit); null otherwise (migration 0156). */
+    code: text('code').$type<'MP' | 'NE'>(),
     updatedAt: updatedAt(),
   },
   (t) => [primaryKey({ columns: [t.assessmentId, t.studentId] })],
@@ -2257,12 +2263,15 @@ export const schemeComponents = pgTable(
     kind: componentKind('kind').notNull(),
     weight: numeric('weight', { precision: 5, scale: 2, mode: 'number' }).notNull(),
     ord: smallint('ord').notNull().default(0),
+    /** Best-of-N: only the student's N best assessments of the component count (null = all of them, migration 0156). */
+    bestOf: smallint('best_of'),
   },
   (t) => [uniqueIndex('scheme_components_code_uq').on(t.schemeId, t.code)],
 );
 
 
-export const examSessionKind = pgEnum('exam_session_kind', ['regular', 'supplementary']);
+/** improvement, special (make-up), practical and viva sessions were added in migration 0156. */
+export const examSessionKind = pgEnum('exam_session_kind', ['regular', 'supplementary', 'improvement', 'special', 'practical', 'viva']);
 export const examSessionStatus = pgEnum('exam_session_status', ['draft', 'scheduled', 'processed', 'published', 'locked']);
 
 /** An examination session ("Semester 3 end exam, Nov 2026") with its schedule, seating and results. */
@@ -2287,6 +2296,9 @@ export const examSessions = pgTable('exam_sessions', {
   approvedBy: uuid('approved_by').references(() => users.id),
   approvedAt: timestamp('approved_at', { withTimezone: true }),
   approvalNote: text('approval_note'),
+  /** Frozen processed results cannot be re-processed until they are unfrozen (migration 0156). */
+  frozenAt: timestamp('frozen_at', { withTimezone: true }),
+  frozenBy: uuid('frozen_by').references(() => users.id, { onDelete: 'set null' }),
   createdBy: uuid('created_by').notNull().references(() => users.id),
   createdAt: createdAt(),
 });
@@ -2352,6 +2364,8 @@ export const examRegistrationWindows = pgTable(
     blockOnFeeDues: boolean('block_on_fee_dues').notNull().default(true),
     /** More failed subjects than this makes a student ineligible; null = not checked. */
     maxBacklogs: integer('max_backlogs'),
+    /** Late registration (with the late fee and super-fine slabs) is allowed until this day; null = none (migration 0156). */
+    lateUntil: date('late_until'),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
   },
@@ -3735,6 +3749,8 @@ export const TENANT_TABLES = [
   'integrity_matches',
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
   'affiliation_settings', 'programme_affiliations',
+  'result_withholds', 'grace_applications', 'mark_entry_checks', 'valuation_camps', 'valuation_bundles', 'valuation_daily_counts', 'answer_sheet_accounts', 'invigilation_swaps', 'exam_reschedules', 'result_runs', 'result_revisions',
+  'record_corrections', 'verification_requests', 'credit_transfers',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -6492,6 +6508,9 @@ export const evalAnnotations = pgTable(
     text: text('text'),
     /** Freehand ink: strokes of [x, y] points, each a fraction of the page (0 to 1). */
     strokes: jsonb('strokes').$type<[number, number][][]>(),
+    /** Pen colour (#rrggbb) and width in screen pixels of an ink stroke (migration 0158). */
+    color: text('color'),
+    width: numeric('width', { precision: 4, scale: 1, mode: 'number' }),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
   },
@@ -7315,6 +7334,16 @@ export const academicDocRequests = pgTable(
     verifyToken: text('verify_token'),
     /** The figures as issued, so a re-download never changes. */
     snapshot: jsonb('snapshot'),
+    /** A duplicate of a lost or damaged document (migration 0157): the original, the affidavit / FIR, the fee. */
+    duplicate: boolean('duplicate').notNull().default(false),
+    originalId: uuid('original_id'),
+    affidavitRef: text('affidavit_ref'),
+    firNo: text('fir_no'),
+    feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0),
+    paymentRef: text('payment_ref'),
+    /** Set when a correction or a later grade change makes this issued copy out of date; a fresh copy must be issued. */
+    supersededAt: timestamp('superseded_at', { withTimezone: true }),
+    supersededReason: text('superseded_reason'),
     createdAt: createdAt(),
   },
   (t) => [index('academic_doc_requests_student_idx').on(t.studentId), uniqueIndex('academic_doc_requests_serial_uq').on(t.tenantId, t.serialNo), uniqueIndex('academic_doc_requests_token_uq').on(t.verifyToken)],
@@ -8251,4 +8280,330 @@ export const issuedDocuments = pgTable(
     index('issued_documents_source_idx').on(t.tenantId, t.sourceType, t.sourceId),
     index('issued_documents_type_idx').on(t.tenantId, t.docType, t.issuedAt),
   ],
+// Exam cell depth (migrations 0156 and 0157, src/exam-cell): withheld results, grace applications,
+// double-entry mark checks, valuation camps, answer-sheet accounts, duty swaps, reschedules, result
+// runs and revisions, record corrections and verification requests.
+// ---------------------------------------------------------------------------------------------
+
+/** A candidate's result held back (malpractice, fees, documents…) until the office releases it. */
+export const resultWithholds = pgTable(
+  'result_withholds',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    /** malpractice, fees, documents, attendance, inquiry or other */
+    reason: text('reason').notNull(),
+    note: text('note'),
+    /** held or released */
+    status: text('status').notNull().default('held'),
+    heldBy: uuid('held_by').notNull().references(() => users.id),
+    heldAt: timestamp('held_at', { withTimezone: true }).notNull().defaultNow(),
+    releasedBy: uuid('released_by').references(() => users.id, { onDelete: 'set null' }),
+    releasedAt: timestamp('released_at', { withTimezone: true }),
+    releaseNote: text('release_note'),
+  },
+  (t) => [index('result_withholds_session_idx').on(t.sessionId, t.status), index('result_withholds_student_idx').on(t.studentId)],
+);
+
+/** A student's application for grace marks for sports, arts, NSS, NCC or similar, approved and then applied (locked). */
+export const graceApplications = pgTable(
+  'grace_applications',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    /** The subject the marks go to; null lets the office place them where they make the student pass. */
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    /** sports, arts, nss, ncc, cultural or other */
+    category: text('category').notNull(),
+    marksRequested: numeric('marks_requested', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+    marksApproved: numeric('marks_approved', { precision: 5, scale: 2, mode: 'number' }),
+    evidence: text('evidence').notNull().default(''),
+    /** requested, approved, rejected or applied (locked) */
+    status: text('status').notNull().default('requested'),
+    decisionNote: text('decision_note'),
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    appliedAt: timestamp('applied_at', { withTimezone: true }),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('grace_applications_session_idx').on(t.sessionId, t.status)],
+);
+
+/** Double entry of a candidate's marks on a paper: two people key them in; a mismatch must be resolved before the marks stand. */
+export const markEntryChecks = pgTable(
+  'mark_entry_checks',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    firstMarks: numeric('first_marks', { precision: 6, scale: 2, mode: 'number' }),
+    firstAbsent: boolean('first_absent').notNull().default(false),
+    firstBy: uuid('first_by').references(() => users.id, { onDelete: 'set null' }),
+    firstAt: timestamp('first_at', { withTimezone: true }),
+    secondMarks: numeric('second_marks', { precision: 6, scale: 2, mode: 'number' }),
+    secondAbsent: boolean('second_absent').notNull().default(false),
+    secondBy: uuid('second_by').references(() => users.id, { onDelete: 'set null' }),
+    secondAt: timestamp('second_at', { withTimezone: true }),
+    /** pending, matched, mismatch or resolved */
+    status: text('status').notNull().default('pending'),
+    resolvedMarks: numeric('resolved_marks', { precision: 6, scale: 2, mode: 'number' }),
+    resolvedAbsent: boolean('resolved_absent').notNull().default(false),
+    resolvedBy: uuid('resolved_by').references(() => users.id, { onDelete: 'set null' }),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    /** Set when the agreed marks were written into the paper's marks. */
+    postedAt: timestamp('posted_at', { withTimezone: true }),
+    note: text('note'),
+  },
+  (t) => [uniqueIndex('mark_entry_checks_uq').on(t.paperId, t.studentId)],
+);
+
+/** A central valuation camp for a session: where and when scripts are valued, under a chief examiner. */
+export const valuationCamps = pgTable(
+  'valuation_camps',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    venue: text('venue').notNull().default(''),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    chiefExaminerId: uuid('chief_examiner_id').references(() => users.id, { onDelete: 'set null' }),
+    /** open or closed */
+    status: text('status').notNull().default('open'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('valuation_camps_session_idx').on(t.sessionId)],
+);
+
+/** A packet of answer scripts of one paper handed to an examiner at a camp, and back. */
+export const valuationBundles = pgTable(
+  'valuation_bundles',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    campId: uuid('camp_id').notNull().references(() => valuationCamps.id, { onDelete: 'cascade' }),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    bundleNo: text('bundle_no').notNull(),
+    scripts: integer('scripts').notNull(),
+    examinerId: uuid('examiner_id').references(() => users.id, { onDelete: 'set null' }),
+    /** packed, issued, valued or returned */
+    status: text('status').notNull().default('packed'),
+    issuedAt: timestamp('issued_at', { withTimezone: true }),
+    returnedAt: timestamp('returned_at', { withTimezone: true }),
+    valued: integer('valued').notNull().default(0),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('valuation_bundles_no_uq').on(t.campId, t.bundleNo), index('valuation_bundles_examiner_idx').on(t.examinerId)],
+);
+
+/** Scripts an examiner valued from a bundle on one day of the camp. */
+export const valuationDailyCounts = pgTable(
+  'valuation_daily_counts',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    bundleId: uuid('bundle_id').notNull().references(() => valuationBundles.id, { onDelete: 'cascade' }),
+    day: date('day').notNull(),
+    scripts: integer('scripts').notNull(),
+    recordedBy: uuid('recorded_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('valuation_daily_counts_uq').on(t.bundleId, t.day)],
+);
+
+/** The answer-book account of one hall for one sitting: books received, issued, used, spoiled and returned, with the absentee and malpractice counts. */
+export const answerSheetAccounts = pgTable(
+  'answer_sheet_accounts',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    roomId: uuid('room_id').notNull().references(() => rooms.id),
+    examDate: date('exam_date').notNull(),
+    /** The sitting's start time (HH:MM). */
+    sitting: text('sitting').notNull(),
+    received: integer('received').notNull().default(0),
+    issued: integer('issued').notNull().default(0),
+    additional: integer('additional').notNull().default(0),
+    spoiled: integer('spoiled').notNull().default(0),
+    returned: integer('returned').notNull().default(0),
+    present: integer('present').notNull().default(0),
+    absent: integer('absent').notNull().default(0),
+    malpractice: integer('malpractice').notNull().default(0),
+    remarks: text('remarks'),
+    /** draft or submitted (by the chief superintendent) */
+    status: text('status').notNull().default('draft'),
+    submittedBy: uuid('submitted_by').references(() => users.id, { onDelete: 'set null' }),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('answer_sheet_accounts_uq').on(t.sessionId, t.roomId, t.examDate, t.sitting)],
+);
+
+/** An invigilator's request to hand a duty to a colleague; the exam office approves it. */
+export const invigilationSwaps = pgTable(
+  'invigilation_swaps',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    dutyId: uuid('duty_id').notNull().references(() => invigilationDuties.id, { onDelete: 'cascade' }),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    swapWith: uuid('swap_with').notNull().references(() => users.id),
+    reason: text('reason').notNull(),
+    /** requested, approved, rejected or cancelled */
+    status: text('status').notNull().default('requested'),
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('invigilation_swaps_duty_idx').on(t.dutyId)],
+);
+
+/** A paper moved to another day or time (postponement), with the notice sent to candidates. */
+export const examReschedules = pgTable(
+  'exam_reschedules',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    fromDate: date('from_date').notNull(),
+    fromStartsAt: time('from_starts_at').notNull(),
+    fromEndsAt: time('from_ends_at').notNull(),
+    toDate: date('to_date').notNull(),
+    toStartsAt: time('to_starts_at').notNull(),
+    toEndsAt: time('to_ends_at').notNull(),
+    reason: text('reason').notNull(),
+    notified: integer('notified').notNull().default(0),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('exam_reschedules_session_idx').on(t.sessionId)],
+);
+
+/** A result-processing run: a dry run (nothing saved), a processing, a freeze, an unfreeze, a publication or a rollback, with what changed. */
+export const resultRuns = pgTable(
+  'result_runs',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(),
+    /** Counts and the per-student differences against the stored results. */
+    summary: jsonb('summary').notNull().default(sql`'{}'::jsonb`),
+    /** The stored results before the run (processing and rollback only), so a rollback can put them back. */
+    snapshot: jsonb('snapshot'),
+    note: text('note'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('result_runs_session_idx').on(t.sessionId, t.createdAt)],
+);
+
+/** A change to a published result (revaluation, grade change, correction), versioned with the result before and after. */
+export const resultRevisions = pgTable(
+  'result_revisions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    version: integer('version').notNull(),
+    /** revaluation, grade_change, correction or grace */
+    kind: text('kind').notNull(),
+    reason: text('reason').notNull(),
+    before: jsonb('before').notNull(),
+    after: jsonb('after').notNull(),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('result_revisions_uq').on(t.sessionId, t.studentId, t.version)],
+);
+
+/** A request to correct a student's name, date of birth or parent's name on the record and the documents issued from it. */
+export const recordCorrections = pgTable(
+  'record_corrections',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    /** full_name, date_of_birth or guardian_name */
+    field: text('field').notNull(),
+    currentValue: text('current_value'),
+    requestedValue: text('requested_value').notNull(),
+    reason: text('reason').notNull(),
+    /** The supporting document: what it is and its number (birth certificate, SSLC marks card, gazette…). */
+    documentRef: text('document_ref').notNull(),
+    /** requested, approved, rejected or applied */
+    status: text('status').notNull().default('requested'),
+    decisionNote: text('decision_note'),
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    appliedAt: timestamp('applied_at', { withTimezone: true }),
+    /** Issued documents marked for reissue when the correction was applied. */
+    reissued: integer('reissued').notNull().default(0),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('record_corrections_student_idx').on(t.studentId)],
+);
+
+/** An employer's or another institution's request to verify a document the institution issued, with its fee. */
+export const verificationRequests = pgTable(
+  'verification_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    requesterName: text('requester_name').notNull(),
+    organisation: text('organisation').notNull(),
+    email: text('email').notNull(),
+    /** The document's serial number as printed. */
+    serialNo: text('serial_no').notNull(),
+    candidateName: text('candidate_name').notNull(),
+    feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0),
+    paymentRef: text('payment_ref'),
+    /** received, paid, verified, mismatch or rejected */
+    status: text('status').notNull().default('received'),
+    /** Filled when checked: the issued document it matched, if any. */
+    documentId: uuid('document_id'),
+    outcome: text('outcome'),
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('verification_requests_status_idx').on(t.tenantId, t.status)],
+);
+
+/** Credits a transfer or lateral-entry student earned elsewhere, accepted against a course here (credit equivalence). */
+export const creditTransfers = pgTable(
+  'credit_transfers',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    sourceInstitution: text('source_institution').notNull(),
+    sourceCourse: text('source_course').notNull(),
+    /** The course here it counts as; null keeps it as a credit with no equivalent course. */
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    term: smallint('term').notNull(),
+    credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }).notNull(),
+    grade: text('grade').notNull(),
+    gradePoint: numeric('grade_point', { precision: 4, scale: 2, mode: 'number' }).notNull(),
+    note: text('note'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('credit_transfers_student_idx').on(t.studentId)],
 );

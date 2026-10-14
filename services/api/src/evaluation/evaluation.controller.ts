@@ -44,8 +44,12 @@ const AnnotationBody = z.object({
   w: z.number().min(0).max(1).optional(),
   h: z.number().min(0).max(1).optional(),
   text: z.string().trim().max(500).optional(),
+  /** Ink only: the pen colour (#rrggbb) and its width in screen pixels. */
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a colour like #d81b60').optional(),
+  width: z.number().min(1).max(12).optional(),
 });
-const MAX_ANNOTATIONS = 400;
+/** A valuation may carry this many marks; each pen stroke is one, so the limit is generous. */
+const MAX_ANNOTATIONS = 1500;
 /** Examiners (and the exam cell, who moderate) may read the annotations of a script. */
 const EXAMINER: RoleName[] = [...TEACHING_ROLES, 'examiner', 'external_examiner'];
 const QuestionsBody = z.object({ questions: z.array(z.object({ no: z.string().trim().min(1).max(20), maxMarks: z.number().positive().max(1000) })).min(1).max(100) });
@@ -454,7 +458,7 @@ export class EvaluationExaminerController {
       const ink = b.kind === 'ink' ? inkShape(b.strokes!) : null;
       const [row] = await tx
         .insert(evalAnnotations)
-        .values({ tenantId: p.tenantId, scriptId: s.id, allocationId: id, pageIndex: b.pageIndex, kind: b.kind, x: ink ? ink.x : b.x, y: ink ? ink.y : b.y, w: ink ? ink.w : flat ? (b.w ?? 0) : 0, h: ink ? ink.h : flat ? (b.h ?? 0) : 0, text: b.kind === 'comment' ? (b.text ?? null) : null, strokes: ink ? ink.strokes : null, createdBy: p.userId })
+        .values({ tenantId: p.tenantId, scriptId: s.id, allocationId: id, pageIndex: b.pageIndex, kind: b.kind, x: ink ? ink.x : b.x, y: ink ? ink.y : b.y, w: ink ? ink.w : flat ? (b.w ?? 0) : 0, h: ink ? ink.h : flat ? (b.h ?? 0) : 0, text: b.kind === 'comment' ? (b.text ?? null) : null, strokes: ink ? ink.strokes : null, color: ink ? (b.color ?? '#d81b60').toLowerCase() : null, width: ink ? (b.width ?? 2) : null, createdBy: p.userId })
         .returning();
       return row;
     });

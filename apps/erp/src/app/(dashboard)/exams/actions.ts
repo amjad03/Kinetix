@@ -30,11 +30,11 @@ export async function saveScheme(input: { subjectId: string; academicYearId: str
   if (!UUID.test(input.subjectId) || !UUID.test(input.academicYearId) || !UUID.test(input.gradeScaleId)) return bad('exm.err.scheme.pick');
   const problem = schemeProblem(input);
   if (problem) return bad(`exm.err.scheme.${problem}`);
-  const components = input.components.map((c) => ({ code: c.code.trim(), name: c.name.trim(), kind: c.kind, weight: c.weight }));
+  const components = input.components.map((c) => ({ code: c.code.trim(), name: c.name.trim(), kind: c.kind, weight: c.weight, bestOf: c.bestOf && c.bestOf > 0 ? Math.trunc(c.bestOf) : null }));
   return post('/v1/schemes', { ...input, name: input.name.trim(), components }, ['/exams/schemes'], 'PUT');
 }
 
-export async function createSession(input: { academicYearId: string; programId: string; term: number; name: string; kind: 'regular' | 'supplementary'; startsOn: string; endsOn: string }) {
+export async function createSession(input: { academicYearId: string; programId: string; term: number; name: string; kind: 'regular' | 'supplementary' | 'improvement' | 'special' | 'practical' | 'viva'; startsOn: string; endsOn: string }) {
   if (!UUID.test(input.programId) || !UUID.test(input.academicYearId) || !Number.isInteger(input.term) || input.term < 1) return bad('exm.err.session.pick');
   if (!input.name.trim()) return bad('exm.err.session.name');
   if (!isIsoDate(input.startsOn) || !isIsoDate(input.endsOn) || input.endsOn < input.startsOn) return bad('exm.err.session.dates');
@@ -90,7 +90,9 @@ export async function saveRegistrationWindow(sessionId: string, v: Record<string
   if (attendance !== null && !(attendance >= 0 && attendance <= 100)) return bad('er.err.attendance');
   const backlogs = parseWhole(v.maxBacklogs, 0, 50);
   if (backlogs === undefined) return bad('er.err.backlogs');
-  return post(`/v1/exam-sessions/${sessionId}/registration-window`, { opensOn: v.opensOn, closesOn: v.closesOn, minAttendancePercent: attendance, blockOnFeeDues: v.blockOnFeeDues !== 'no', maxBacklogs: backlogs }, [`/exams/${sessionId}`], 'PUT');
+  const lateUntil = v.lateUntil?.trim() ? v.lateUntil.trim() : null;
+  if (lateUntil !== null && (!isIsoDate(lateUntil) || lateUntil <= v.closesOn)) return bad('er.err.late');
+  return post(`/v1/exam-sessions/${sessionId}/registration-window`, { opensOn: v.opensOn, closesOn: v.closesOn, minAttendancePercent: attendance, blockOnFeeDues: v.blockOnFeeDues !== 'no', maxBacklogs: backlogs, lateUntil }, [`/exams/${sessionId}`], 'PUT');
 }
 
 /** The controller registers an ineligible student anyway, with a reason that is kept on the record. */

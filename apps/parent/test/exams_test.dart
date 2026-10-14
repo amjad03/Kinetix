@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_parent/core/api.dart';
+import 'package:kinetix_parent/core/exam_models.dart';
 import 'package:kinetix_parent/features/exams/exams_screen.dart';
 import 'package:kinetix_parent/l10n/l10n.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -64,6 +65,20 @@ void main() {
     await tapShown(tester, find.byKey(const Key('hallTicket-ex1')));
     expect(find.text('Hall ticket withheld: Fee dues'), findsOneWidget);
     expect(opened, isEmpty);
+  });
+
+  testWidgets('a withheld result shows as withheld, never its figures', (tester) async {
+    api.examResultsByChild['c1'] = ExamResults.fromJson({
+      'cgpa': null,
+      'terms': [
+        {'sessionId': 'ex0', 'sessionName': 'Semester 2 end exam', 'term': 2, 'withheld': true, 'withheldReason': 'malpractice', 'sgpa': null, 'cgpa': null, 'outcome': 'withheld', 'lines': []},
+      ],
+    });
+    await pumpExams(tester);
+    expect(find.byKey(const Key('withheld-ex0')), findsOneWidget);
+    expect(find.text('Withheld'), findsOneWidget);
+    expect(find.byKey(const Key('sgpa-ex0')), findsNothing);
+    expect(find.textContaining('withheld by the examination office'), findsOneWidget);
   });
 
   testWidgets('results show CGPA and SGPA; revaluation needs a reason and is asked for once', (tester) async {

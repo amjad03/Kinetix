@@ -18,6 +18,9 @@ export interface Annotation {
   text: string | null;
   /** Freehand ink only: the pen strokes. */
   strokes?: Stroke[] | null;
+  /** Freehand ink only: the pen's colour (#rrggbb) and width in screen pixels. */
+  color?: string | null;
+  width?: number | null;
   /** The valuation round that drew it; set on earlier rounds shown read only to a third valuer. */
   round?: number;
 }
@@ -65,6 +68,8 @@ export interface NewAnnotation {
   h?: number;
   text?: string;
   strokes?: Stroke[];
+  color?: string;
+  width?: number;
 }
 
 /** The request body for a tool used from `start` to `end`, or null when it should not be saved (a highlight with no size, a comment with no text). */
@@ -108,10 +113,60 @@ export function thinStroke(stroke: Stroke): Stroke {
 }
 
 /** The request body for the strokes drawn so far, or null when there is nothing worth saving (a lone dot is dropped). */
-export function inkAnnotation(pageIndex: number, strokes: readonly Stroke[]): NewAnnotation | null {
+export function inkAnnotation(pageIndex: number, strokes: readonly Stroke[], pen?: Pen): NewAnnotation | null {
   const kept = strokes.filter((s) => s.length >= 2).slice(0, MAX_STROKES).map(thinStroke);
-  return kept.length ? { pageIndex, kind: 'ink', x: 0, y: 0, strokes: kept } : null;
+  if (!kept.length) return null;
+  return pen ? { pageIndex, kind: 'ink', x: 0, y: 0, strokes: kept, color: pen.color, width: pen.width } : { pageIndex, kind: 'ink', x: 0, y: 0, strokes: kept };
 }
+
+/** The examiner's pen: a colour of the palette and a width. */
+export interface Pen {
+  color: string;
+  width: number;
+}
+
+/** Pen colours: red (the usual valuer's ink), blue, green and black. */
+export const INK_COLOURS = [
+  { key: 'red', value: '#d81b60' },
+  { key: 'blue', value: '#1565c0' },
+  { key: 'green', value: '#2e7d32' },
+  { key: 'black', value: '#212121' },
+] as const;
+export const INK_WIDTHS = [2, 4] as const;
+export const DEFAULT_PEN: Pen = { color: INK_COLOURS[0].value, width: INK_WIDTHS[0] };
+
+/**
+ * Undo and redo of saved pen strokes on a page. Each stroke is saved as its own mark as the pen lifts, so undo
+ * deletes the last one the examiner drew (here, on this page) and keeps it to be drawn again by redo.
+ */
+export interface InkHistory {
+  /** Ids of saved strokes, oldest first. */
+  done: string[];
+  /** Strokes taken back, the last one first to come back. */
+  undone: NewAnnotation[];
+}
+export const emptyHistory = (): InkHistory => ({ done: [], undone: [] });
+
+/** After a new stroke is saved: it can be undone, and the redo list is cleared (a new branch). */
+export const afterDraw = (h: InkHistory, id: string): InkHistory => ({ done: [...h.done, id], undone: [] });
+
+/** The stroke undo takes back (the newest still on the page), or null when there is none. */
+export function undoTarget(h: InkHistory, marks: readonly Annotation[]): Annotation | null {
+  for (let i = h.done.length - 1; i >= 0; i--) {
+    const m = marks.find((a) => a.id === h.done[i]);
+    if (m) return m;
+  }
+  return null;
+}
+
+/** After the stroke was deleted: it leaves the undo list and becomes the next redo. */
+export function afterUndo(h: InkHistory, a: Annotation): InkHistory {
+  const body: NewAnnotation = { pageIndex: a.pageIndex, kind: 'ink', x: 0, y: 0, strokes: a.strokes ?? [], ...(a.color ? { color: a.color } : {}), ...(a.width ? { width: Number(a.width) } : {}) };
+  return { done: h.done.filter((id) => id !== a.id), undone: [body, ...h.undone] };
+}
+
+/** After a redo saved the stroke again under a new id. */
+export const afterRedo = (h: InkHistory, id: string): InkHistory => ({ done: [...h.done, id], undone: h.undone.slice(1) });
 
 /** An SVG path for a stroke in a 0 to 1 box. */
 export function strokePath(stroke: Stroke): string {

@@ -114,6 +114,9 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
             <FormField label={t('exm.f.weight')}>
               <TextInput className="w-[100px]" type="number" value={c.weight} onChange={(e) => upd(i, { weight: Number(e.target.value) })} disabled={!canEdit} />
             </FormField>
+            <FormField label={t('exm.f.bestOf')} helper={t('exm.f.bestOfHelp')}>
+              <TextInput className="w-[100px]" type="number" value={c.bestOf ?? ''} onChange={(e) => upd(i, { bestOf: e.target.value === '' ? null : Math.max(1, Math.trunc(Number(e.target.value))) })} disabled={!canEdit} slotProps={{ htmlInput: { min: 1, 'data-testid': `best-of-${i}` } }} />
+            </FormField>
             {canEdit && (
               <Button size="small" color="error" onClick={() => setComps(comps.filter((_, j) => j !== i))}>
                 {t('exm.remove')}

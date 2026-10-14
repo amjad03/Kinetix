@@ -7,7 +7,8 @@ import { audit } from '../common/audit.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { examPapers, examResultLines, examResultRules, examResults, examSessions, graceAwards, invigilationDuties, malpracticeCases, marks, rooms, sections, students, subjects, supplementaryRegistrations, users } from '../db/schema.js';
+import { examPapers, examResultLines, examResultRules, examResults, examSessions, graceAwards, invigilationDuties, malpracticeCases, marks, resultWithholds, rooms, sections, students, subjects, supplementaryRegistrations, users } from '../db/schema.js';
+import { REPEAT_KINDS } from './exams.service.js';
 import { parseDate } from '../teacher/teacher.service.js';
 import { ExamsService } from './exams.service.js';
 import { progression, rankDescending } from './ranks.js';
@@ -29,7 +30,15 @@ const DutyBody = z.object({
 const SubstituteBody = z.object({ staffId: z.uuid() });
 const SupplementaryBody = z.object({ studentId: z.uuid(), subjectIds: z.array(z.uuid()).min(1).max(20) });
 const MalpracticeBody = z.object({ studentId: z.uuid(), paperId: z.uuid().optional(), roomId: z.uuid().optional(), description: z.string().trim().min(3).max(2000) });
-const MalpracticeDecideBody = z.object({ outcome: z.enum(['penalised', 'dismissed']), penalty: z.string().trim().max(300).optional(), note: z.string().trim().max(500).optional() });
+const MalpracticeDecideBody = z.object({
+  outcome: z.enum(['penalised', 'dismissed']),
+  penalty: z.string().trim().max(300).optional(),
+  note: z.string().trim().max(500).optional(),
+  /** What the committee's penalty does to the marks: cancel the paper (MP), the whole examination, or debar (cancel and withhold). */
+  action: z.enum(['none', 'cancel_paper', 'cancel_session', 'debar']).default('none'),
+  /** Withhold the candidate's result until the office releases it. */
+  withhold: z.boolean().default(false),
+});
 const RulesBody = z.object({
   graceMaxPerSubject: z.number().min(0).max(50),
   graceMaxTotal: z.number().min(0).max(200),
@@ -159,15 +168,17 @@ export class ExamControllerDepthController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await assertCanSeeStudent(tx, p, body.studentId, MANAGE);
       const s = await this.exams.session(tx, id);
-      if (s.kind !== 'supplementary') throw new ConflictException('Registration is only for supplementary sessions');
+      if (!REPEAT_KINDS.includes(s.kind)) throw new ConflictException('Registration is only for supplementary, improvement and special sessions');
       if (s.status === 'processed' || s.status === 'published' || s.status === 'locked') throw new ConflictException('Registration is closed');
       const [st] = await tx.select({ programId: sections.programId }).from(students).innerJoin(sections, eq(sections.id, students.sectionId)).where(eq(students.id, body.studentId));
       if (st.programId !== s.programId) throw new BadRequestException('The student is not in this programme');
-      const failed = ((await this.exams.latestAttempts(tx, [body.studentId], s.programId)).get(body.studentId) ?? []).filter((l) => !l.passed);
+      // Supplementary and special (make-up) sessions are for subjects not passed; an improvement is for subjects passed.
+      const attempts = (await this.exams.latestAttempts(tx, [body.studentId], s.programId)).get(body.studentId) ?? [];
+      const failed = attempts.filter((l) => (s.kind === 'improvement' ? l.passed : !l.passed));
       const rows = [];
       for (const subjectId of new Set(body.subjectIds)) {
         const f = failed.find((x) => x.subjectId === subjectId);
-        if (!f) throw new BadRequestException('The student has not failed one of those subjects');
+        if (!f) throw new BadRequestException(s.kind === 'improvement' ? 'The student has not passed one of those subjects; register it in a supplementary session' : 'The student has not failed one of those subjects');
         const [dup] = await tx.select({ id: supplementaryRegistrations.id }).from(supplementaryRegistrations).where(and(eq(supplementaryRegistrations.sessionId, id), eq(supplementaryRegistrations.studentId, body.studentId), eq(supplementaryRegistrations.subjectId, subjectId)));
         if (dup) throw new ConflictException('Already registered for one of those subjects');
         const [row] = await tx.insert(supplementaryRegistrations).values({ tenantId: p.tenantId, sessionId: id, studentId: body.studentId, subjectId, failedInSessionId: f.sessionId, registeredBy: p.userId }).returning();
@@ -246,9 +257,16 @@ export class ExamControllerDepthController {
       if (!c) throw new NotFoundException('Case not found');
       if (c.status !== 'reported') throw new ConflictException('Already decided');
       if (body.outcome === 'penalised' && !body.penalty) throw new BadRequestException('Say what the penalty is');
+      if (body.outcome === 'dismissed' && (body.action !== 'none' || body.withhold)) throw new BadRequestException('A dismissed case carries no penalty');
+      if (body.action === 'cancel_paper' && !c.paperId) throw new BadRequestException('The case names no paper; cancel the whole examination instead');
       await tx.update(malpracticeCases).set({ status: body.outcome, penalty: body.outcome === 'penalised' ? body.penalty : null, decisionNote: body.note ?? null, decidedBy: p.userId, decidedAt: new Date() }).where(eq(malpracticeCases.id, id));
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `exam.malpractice.${body.outcome}`, subjectType: 'malpractice_case', subjectId: id, data: { studentId: c.studentId, penalty: body.penalty ?? null } });
-      return { status: body.outcome };
+      const cancelled = body.action === 'none' ? 0 : await cancelPapers(tx, p.tenantId, c.sessionId, c.studentId, body.action === 'cancel_paper' ? c.paperId : null);
+      if (body.withhold || body.action === 'debar') {
+        const [held] = await tx.select({ id: resultWithholds.id }).from(resultWithholds).where(and(eq(resultWithholds.sessionId, c.sessionId), eq(resultWithholds.studentId, c.studentId), eq(resultWithholds.status, 'held')));
+        if (!held) await tx.insert(resultWithholds).values({ tenantId: p.tenantId, sessionId: c.sessionId, studentId: c.studentId, reason: 'malpractice', note: body.penalty ?? body.note ?? null, heldBy: p.userId });
+      }
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `exam.malpractice.${body.outcome}`, subjectType: 'malpractice_case', subjectId: id, data: { studentId: c.studentId, penalty: body.penalty ?? null, action: body.action, papersCancelled: cancelled, withheld: body.withhold || body.action === 'debar' } });
+      return { status: body.outcome, papersCancelled: cancelled };
     });
   }
 }
@@ -424,4 +442,21 @@ export class ResultsDepthController {
     for (const sid of studentIds) out.push(...(await this.exams.compute(tx, s, sid)));
     return out;
   }
+}
+
+/**
+ * Cancels a candidate's paper (or every paper of the session when `paperId` is null) for malpractice: the external
+ * marks are coded MP, which fails the subject with the grade MP and no grace. Returns how many papers were cancelled.
+ */
+export async function cancelPapers(tx: Tx, tenantId: string, sessionId: string, studentId: string, paperId: string | null): Promise<number> {
+  const [st] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.id, studentId));
+  const regs = await tx.select({ subjectId: supplementaryRegistrations.subjectId }).from(supplementaryRegistrations).where(and(eq(supplementaryRegistrations.sessionId, sessionId), eq(supplementaryRegistrations.studentId, studentId)));
+  const papers = (await tx.select().from(examPapers).where(eq(examPapers.sessionId, sessionId))).filter((x) => (paperId ? x.id === paperId : x.sectionId === st.sectionId || regs.some((r) => r.subjectId === x.subjectId)));
+  let n = 0;
+  for (const x of papers) {
+    if (!x.assessmentId) continue;
+    await tx.insert(marks).values({ tenantId, assessmentId: x.assessmentId, studentId, marks: null, absent: false, code: 'MP', remark: 'Malpractice: paper cancelled' }).onConflictDoUpdate({ target: [marks.assessmentId, marks.studentId], set: { code: 'MP', remark: 'Malpractice: paper cancelled', updatedAt: new Date() } });
+    n++;
+  }
+  return n;
 }

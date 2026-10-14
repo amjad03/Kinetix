@@ -10,6 +10,8 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { TasksService } from '../tasks/tasks.service.js';
 import { APPROVAL_STAGES, currentStage, examFee, formatSeries, moderate, moderationProblem, passStats, QP_FLOW, stageBlocker, stageStates, STAGES, withDefaults, type OfficeSettings, type Stage, type StageFacts, type StageRow } from './exam-office.logic.js';
 import { officeSettings } from './settings.js';
+import { lateFeeFor } from '../exam-cell/exam-cell.logic.js';
+import { cellSettings } from '../exam-cell/settings.js';
 
 export const KINDS = ['session', 'paper', 'registration', 'hall_ticket', 'question_paper', 'script', 'examiner', 'result', 'revaluation', 'certificate'] as const;
 export type Kind = (typeof KINDS)[number];
@@ -592,7 +594,7 @@ export class ExamOfficeService {
         return { stage: 'timetable', status: action === 'approve' ? 'done' : 'rejected' };
       }
       case 'raise_fees':
-        return this.raiseFees(tx, p, id, f.kind === 'supplementary', f.name);
+        return this.raiseFees(tx, p, id, ['supplementary', 'improvement', 'special'].includes(f.kind), f.name);
       default:
         throw new BadRequestException('Unknown action');
     }
@@ -601,15 +603,20 @@ export class ExamOfficeService {
   /** Raises the exam fee for every registered candidate who has none yet (papers × rate, at least the minimum). */
   private async raiseFees(tx: Tx, p: UserPrincipal, id: string, supplementary: boolean, name: string) {
     const cfg = (await officeSettings(tx)).settings;
-    const regs = await this.q<{ student_id: string; papers: number; late: boolean }>(
+    const slabs = (await cellSettings(tx)).lateFeeSlabs;
+    const regs = await this.q<{ student_id: string; papers: number; days_late: number }>(
       tx,
       sql`select r.student_id, (select count(*) from exam_papers p where p.session_id = r.session_id and p.section_id = st.section_id)::int as papers,
-        coalesce(r.registered_at::date > (select w.closes_on from exam_registration_windows w where w.session_id = r.session_id), false) as late
+        coalesce((r.registered_at at time zone 'Asia/Kolkata')::date - (select w.closes_on from exam_registration_windows w where w.session_id = r.session_id), 0)::int as days_late
         from exam_registrations r join students st on st.id = r.student_id where r.session_id = ${id}::uuid and r.status = 'registered'
         and not exists (select 1 from exam_fee_dues f where f.session_id = r.session_id and f.student_id = r.student_id)`,
     );
     if (regs.length === 0) throw new ConflictException('Every registered candidate already has an exam fee');
-    for (const r of regs) await tx.insert(examFeeDues).values({ tenantId: p.tenantId, sessionId: id, studentId: r.student_id, papers: r.papers, amountPaise: examFee(cfg.examFees, r.papers, supplementary, r.late) });
+    // Late registrants pay the late fee: the office's one late fee, or the slab (super-fine) their lateness reaches.
+    for (const r of regs) {
+      const late = lateFeeFor(slabs, r.days_late, cfg.examFees.lateFeePaise);
+      await tx.insert(examFeeDues).values({ tenantId: p.tenantId, sessionId: id, studentId: r.student_id, papers: r.papers, amountPaise: examFee(cfg.examFees, r.papers, supplementary, false) + late.amountPaise, note: late.slab ? `Includes ${late.slab}` : late.amountPaise ? 'Includes the late fee' : null });
+    }
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.fees.raised', subjectType: 'exam_session', subjectId: id, data: { candidates: regs.length } });
     await this.notes.examNotice(tx, regs.map((r) => r.student_id), {
       kind: 'fee',
@@ -902,7 +909,11 @@ export class ExamOfficeService {
         if (!s) throw new BadRequestException('Grade scale not found');
         await tx.update(gradeScales).set({ isDefault: sql`${gradeScales.id} = ${next.defaultGradeScaleId}::uuid` });
       }
-      await tx.insert(examOfficeSettings).values({ tenantId: p.tenantId, settings: next, updatedBy: p.userId }).onConflictDoUpdate({ target: examOfficeSettings.tenantId, set: { settings: next, updatedBy: p.userId, updatedAt: new Date() } });
+      // The exam cell's own rules live in the same row under `cell` (src/exam-cell/settings.ts) and are kept.
+      const [raw] = await tx.select({ settings: examOfficeSettings.settings }).from(examOfficeSettings);
+      const cell = (raw?.settings as { cell?: unknown } | undefined)?.cell;
+      const stored = cell === undefined ? next : { ...next, cell };
+      await tx.insert(examOfficeSettings).values({ tenantId: p.tenantId, settings: stored, updatedBy: p.userId }).onConflictDoUpdate({ target: examOfficeSettings.tenantId, set: { settings: stored, updatedBy: p.userId, updatedAt: new Date() } });
       const changes: Record<string, { before: unknown; after: unknown }> = {};
       for (const k of Object.keys(next) as (keyof OfficeSettings)[]) if (JSON.stringify(before[k]) !== JSON.stringify(next[k])) changes[k] = { before: before[k], after: next[k] };
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam_office.settings.saved', subjectType: 'exam_office_settings', changes });

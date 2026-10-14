@@ -110,6 +110,7 @@ import { SearchModule } from './search/search.controller.js';
 import { GovernanceModule } from './governance/governance.module.js';
 import { BillingModule } from './billing/billing.module.js';
 import { IntegrityModule } from './integrity/integrity.module.js';
+import { ExamCellModule } from './exam-cell/exam-cell.module.js';
 
 @Module({
   imports: [
@@ -224,6 +225,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     GovernanceModule,
     BillingModule,
     IntegrityModule,
+    ExamCellModule,
   ],
 })
 export class AppModule {}

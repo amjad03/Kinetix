@@ -4625,4 +4625,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatClassTeacher => 'Class teacher';
+
+  @override
+  String get resultWithheld => 'Withheld';
+
+  @override
+  String get resultWithheldBody =>
+      'This result is withheld by the examination office. Contact the office to know why and what to do.';
 }

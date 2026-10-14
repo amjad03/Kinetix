@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { annotationCounts, boxBetween, extendStroke, inkAnnotation, MAX_STROKE_POINTS, newAnnotation, onPage, pointOnPage, strokePath, thinStroke, type Annotation, type Stroke } from './annotations';
+import { afterDraw, afterRedo, afterUndo, annotationCounts, boxBetween, emptyHistory, extendStroke, inkAnnotation, MAX_STROKE_POINTS, newAnnotation, onPage, pointOnPage, strokePath, thinStroke, undoTarget, type Annotation, type Stroke } from './annotations';
 
 const rect = { left: 100, top: 50, width: 400, height: 800 };
 
@@ -54,5 +54,22 @@ describe('freehand ink', () => {
     expect(body).toEqual({ pageIndex: 2, kind: 'ink', x: 0, y: 0, strokes: [[[0.1, 0.1], [0.2, 0.2]]] });
     expect(newAnnotation(0, 'ink', { x: 0.1, y: 0.1 }, { x: 0.2, y: 0.2 })).toBeNull();
     expect(strokePath([[0.1, 0.2], [0.3, 0.4]])).toBe('M0.1 0.2 L0.3 0.4');
+    expect(inkAnnotation(1, [[[0.1, 0.1], [0.2, 0.2]]], { color: '#1565c0', width: 4 })).toEqual({ pageIndex: 1, kind: 'ink', x: 0, y: 0, strokes: [[[0.1, 0.1], [0.2, 0.2]]], color: '#1565c0', width: 4 });
+  });
+
+  it('undoes the newest saved stroke still on the page and redoes it', () => {
+    const a = (id: string, color = '#d81b60'): Annotation => ({ id, pageIndex: 0, kind: 'ink', x: 0.1, y: 0.1, w: 0.1, h: 0.1, text: null, strokes: [[[0.1, 0.1], [0.2, 0.2]]], color, width: 2 });
+    let h = afterDraw(afterDraw(emptyHistory(), 's1'), 's2');
+    // s2 was removed by hand already: undo takes s1 back.
+    expect(undoTarget(h, [a('s1')])?.id).toBe('s1');
+    const target = undoTarget(h, [a('s1'), a('s2', '#1565c0')])!;
+    expect(target.id).toBe('s2');
+    h = afterUndo(h, target);
+    expect(h).toEqual({ done: ['s1'], undone: [{ pageIndex: 0, kind: 'ink', x: 0, y: 0, strokes: [[[0.1, 0.1], [0.2, 0.2]]], color: '#1565c0', width: 2 }] });
+    h = afterRedo(h, 's3');
+    expect(h).toEqual({ done: ['s1', 's3'], undone: [] });
+    expect(undoTarget(emptyHistory(), [a('x')])).toBeNull();
+    // A new stroke after an undo clears the redo list.
+    expect(afterDraw(afterUndo(h, a('s3')), 's4').undone).toEqual([]);
   });
 });

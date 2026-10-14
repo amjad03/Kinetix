@@ -36,7 +36,7 @@ export function ExamRegistrationPanel({ session, window: win, registrations, pla
                 {canManage && !closed && <Bar><Button variant="outlined" onClick={() => setDlg('window')} data-testid="er-set-window">{t('er.window.set')}</Button></Bar>}
                 {win ? (
                   <p className="text-sm leading-[21px] mb-3" data-testid="er-window">
-                    {t('er.window.summary', { from: fmt.date(win.opensOn), to: fmt.date(win.closesOn) })} <Pill label={t(`er.state.${win.state}` as MessageKey)} warn={win.state === 'closed'} />{' '}
+                    {t('er.window.summary', { from: fmt.date(win.opensOn), to: fmt.date(win.closesOn) })}{win.lateUntil ? ` ${t('er.window.late', { to: fmt.date(win.lateUntil) })}` : ''} <Pill label={t(`er.state.${win.state}` as MessageKey)} warn={win.state === 'closed' || win.state === 'late'} />{' '}
                     {[
                       win.minAttendancePercent !== null ? t('er.rule.attendance', { n: win.minAttendancePercent }) : null,
                       win.blockOnFeeDues ? t('er.rule.fees') : null,
@@ -118,6 +118,7 @@ export function ExamRegistrationPanel({ session, window: win, registrations, pla
             { name: 'minAttendancePercent', label: t('er.f.attendance'), init: win?.minAttendancePercent == null ? '' : String(win.minAttendancePercent) },
             { name: 'blockOnFeeDues', label: t('er.f.fees'), kind: 'select', init: win && !win.blockOnFeeDues ? 'no' : 'yes', options: [{ value: 'yes', label: t('wf.yes') }, { value: 'no', label: t('wf.no') }] },
             { name: 'maxBacklogs', label: t('er.f.backlogs'), init: win?.maxBacklogs == null ? '' : String(win.maxBacklogs) },
+            { name: 'lateUntil', label: t('er.f.lateUntil'), kind: 'date', init: win?.lateUntil ?? '' },
           ]}
         />
       )}

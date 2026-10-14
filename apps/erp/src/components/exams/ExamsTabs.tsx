@@ -14,6 +14,8 @@ const TABS: { key: string; href: string; label: MessageKey; section: Section }[]
   { key: 'evaluation', href: '/evaluation', label: 'axr.tab.evaluation', section: 'evaluation' },
   { key: 'desk', href: '/evaluation/desk', label: 'axr.tab.desk', section: 'evaluationDesk' },
   { key: 'results', href: '/results', label: 'axr.tab.results', section: 'results' },
+  { key: 'cell', href: '/exams/cell', label: 'nav.examCell', section: 'exams' },
+  { key: 'resultsDesk', href: '/exams/results-desk', label: 'nav.resultsDesk', section: 'exams' },
 ];
 
 /** The exams and results areas as link tabs, limited to what the signed-in roles can open. */
