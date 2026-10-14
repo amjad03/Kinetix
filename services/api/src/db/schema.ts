@@ -8118,6 +8118,9 @@ export const recordImports = pgTable(
     committedAt: timestamp('committed_at', { withTimezone: true }),
   },
   (t) => [index('record_imports_entity_idx').on(t.tenantId, t.entity, t.createdAt)],
+);
+
+// ---------------------------------------------------------------------------------------------
 // Branding and the document engine (docs/architecture/documents-certificates.md)
 // ---------------------------------------------------------------------------------------------
 
