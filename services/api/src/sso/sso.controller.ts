@@ -16,9 +16,10 @@ import { DbService } from '../db/db.service.js';
 import { ssoIdentities, ssoLoginTickets, ssoProviders, tenants, users } from '../db/schema.js';
 import { authorizationUrl, claimEmail, newNonce, newPkce, presetEndpoints, verifyIdToken } from './oidc.js';
 
-const ADMIN: ('tenant_admin' | 'principal')[] = ['tenant_admin', 'principal'];
-const aad = (tenantId: string) => `${tenantId}:sso.client_secret`;
-const domain = z.string().trim().toLowerCase().regex(/^[a-z0-9.-]+\.[a-z]{2,}$/, 'Enter a domain like college.edu');
+export const SSO_ADMIN: ('tenant_admin' | 'principal')[] = ['tenant_admin', 'principal'];
+const ADMIN = SSO_ADMIN;
+export const aad = (tenantId: string) => `${tenantId}:sso.client_secret`;
+export const domain = z.string().trim().toLowerCase().regex(/^[a-z0-9.-]+\.[a-z]{2,}$/, 'Enter a domain like college.edu');
 const redirect = z.string().trim().min(3).max(300);
 
 const ProviderBody = z.object({
@@ -53,6 +54,35 @@ export class SsoService {
     readonly clock: Clock,
   ) {
     this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`kinetix-sso:${env.JWT_SECRET}`).digest() }, 1);
+  }
+
+  /** A domain can belong to one institution only, or sign-in could not tell where a person belongs. */
+  async assertDomainsFree(tenantId: string, domains: string[], exceptId: string | undefined) {
+    const rows = await this.db.system.select({ id: ssoProviders.id, tenantId: ssoProviders.tenantId, d: ssoProviders.allowedDomains }).from(ssoProviders);
+    const clash = rows.find((r) => r.id !== exceptId && r.tenantId !== tenantId && r.d.some((x) => domains.includes(x)));
+    if (clash) throw new ConflictException('Another institution already uses one of those email domains');
+  }
+
+  /** Google and Microsoft come from presets; any other provider gives its endpoints, or its issuer for discovery. */
+  async endpoints(b: { kind: 'google' | 'microsoft' | 'generic'; directoryId?: string; issuer?: string; authorizationEndpoint?: string; tokenEndpoint?: string; jwksUri?: string }) {
+    if (b.kind !== 'generic') {
+      const ep = presetEndpoints(b.kind, b.directoryId);
+      return { issuer: b.issuer ?? ep.issuer, authorizationEndpoint: b.authorizationEndpoint ?? ep.authorizationEndpoint, tokenEndpoint: b.tokenEndpoint ?? ep.tokenEndpoint, jwksUri: b.jwksUri ?? ep.jwksUri };
+    }
+    if (!b.issuer) throw new BadRequestException('Enter the issuer address');
+    assertSafeUrl(b.issuer);
+    let { authorizationEndpoint, tokenEndpoint, jwksUri } = b;
+    if (!authorizationEndpoint || !tokenEndpoint || !jwksUri) {
+      const res = await fetch(`${b.issuer.replace(/\/$/, '')}/.well-known/openid-configuration`, { signal: AbortSignal.timeout(10_000) }).catch(() => null);
+      if (!res?.ok) throw new BadRequestException('Could not read the provider settings; enter the endpoints by hand');
+      const d = (await res.json()) as { authorization_endpoint?: string; token_endpoint?: string; jwks_uri?: string };
+      authorizationEndpoint ??= d.authorization_endpoint;
+      tokenEndpoint ??= d.token_endpoint;
+      jwksUri ??= d.jwks_uri;
+    }
+    if (!authorizationEndpoint || !tokenEndpoint || !jwksUri) throw new BadRequestException('The provider settings are incomplete');
+    for (const u of [authorizationEndpoint, tokenEndpoint, jwksUri]) assertSafeUrl(u);
+    return { issuer: b.issuer, authorizationEndpoint, tokenEndpoint, jwksUri };
   }
 
   /** Which institution's provider an address belongs to: the domain is claimed by exactly one institution. */
@@ -219,8 +249,8 @@ export class SsoAdminController {
   @Auth('user', ADMIN)
   async create(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ProviderBody)) b: z.infer<typeof ProviderBody>) {
     if (!b.clientSecret) throw new BadRequestException('Enter the client secret');
-    const ep = await this.endpoints(b);
-    await this.assertDomainsFree(p.tenantId, b.allowedDomains, undefined);
+    const ep = await this.sso.endpoints(b);
+    await this.sso.assertDomainsFree(p.tenantId, b.allowedDomains, undefined);
     return this.sso.db.withTenant(p.tenantId, async (tx) => {
       const [row] = await tx
         .insert(ssoProviders)
@@ -234,7 +264,7 @@ export class SsoAdminController {
   @Patch(':id')
   @Auth('user', ADMIN)
   async update(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ProviderBody.partial())) b: Partial<z.infer<typeof ProviderBody>>) {
-    if (b.allowedDomains) await this.assertDomainsFree(p.tenantId, b.allowedDomains, id);
+    if (b.allowedDomains) await this.sso.assertDomainsFree(p.tenantId, b.allowedDomains, id);
     return this.sso.db.withTenant(p.tenantId, async (tx) => {
       const [cur] = await tx.select().from(ssoProviders).where(eq(ssoProviders.id, id));
       if (!cur) throw new NotFoundException('Provider not found');
@@ -247,7 +277,7 @@ export class SsoAdminController {
       if (b.redirectAllowlist) set.redirectAllowlist = b.redirectAllowlist;
       if (b.enabled !== undefined) set.enabled = b.enabled;
       if (b.issuer || b.authorizationEndpoint || b.tokenEndpoint || b.jwksUri || b.directoryId !== undefined) {
-        const ep = await this.endpoints({ kind: cur.kind as 'google' | 'microsoft' | 'generic', issuer: b.issuer ?? cur.issuer, authorizationEndpoint: b.authorizationEndpoint ?? cur.authorizationEndpoint, tokenEndpoint: b.tokenEndpoint ?? cur.tokenEndpoint, jwksUri: b.jwksUri ?? cur.jwksUri, directoryId: b.directoryId });
+        const ep = await this.sso.endpoints({ kind: cur.kind as 'google' | 'microsoft' | 'generic', issuer: b.issuer ?? cur.issuer, authorizationEndpoint: b.authorizationEndpoint ?? cur.authorizationEndpoint, tokenEndpoint: b.tokenEndpoint ?? cur.tokenEndpoint, jwksUri: b.jwksUri ?? cur.jwksUri, directoryId: b.directoryId });
         Object.assign(set, { issuer: ep.issuer, authorizationEndpoint: ep.authorizationEndpoint, tokenEndpoint: ep.tokenEndpoint, jwksUri: ep.jwksUri });
       }
       const [row] = Object.keys(set).length ? await tx.update(ssoProviders).set(set).where(eq(ssoProviders.id, id)).returning() : [cur];
@@ -265,35 +295,6 @@ export class SsoAdminController {
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'sso.provider_removed', subjectType: 'sso_provider', subjectId: id });
       return { removed: true };
     });
-  }
-
-  /** A domain can belong to one institution only, or sign-in could not tell where a person belongs. */
-  private async assertDomainsFree(tenantId: string, domains: string[], exceptId: string | undefined) {
-    const rows = await this.sso.db.system.select({ id: ssoProviders.id, tenantId: ssoProviders.tenantId, d: ssoProviders.allowedDomains }).from(ssoProviders);
-    const clash = rows.find((r) => r.id !== exceptId && r.tenantId !== tenantId && r.d.some((x) => domains.includes(x)));
-    if (clash) throw new ConflictException('Another institution already uses one of those email domains');
-  }
-
-  /** Google and Microsoft come from presets; any other provider gives its endpoints, or its issuer for discovery. */
-  private async endpoints(b: { kind: 'google' | 'microsoft' | 'generic'; directoryId?: string; issuer?: string; authorizationEndpoint?: string; tokenEndpoint?: string; jwksUri?: string }) {
-    if (b.kind !== 'generic') {
-      const ep = presetEndpoints(b.kind, b.directoryId);
-      return { issuer: b.issuer ?? ep.issuer, authorizationEndpoint: b.authorizationEndpoint ?? ep.authorizationEndpoint, tokenEndpoint: b.tokenEndpoint ?? ep.tokenEndpoint, jwksUri: b.jwksUri ?? ep.jwksUri };
-    }
-    if (!b.issuer) throw new BadRequestException('Enter the issuer address');
-    assertSafeUrl(b.issuer);
-    let { authorizationEndpoint, tokenEndpoint, jwksUri } = b;
-    if (!authorizationEndpoint || !tokenEndpoint || !jwksUri) {
-      const res = await fetch(`${b.issuer.replace(/\/$/, '')}/.well-known/openid-configuration`, { signal: AbortSignal.timeout(10_000) }).catch(() => null);
-      if (!res?.ok) throw new BadRequestException('Could not read the provider settings; enter the endpoints by hand');
-      const d = (await res.json()) as { authorization_endpoint?: string; token_endpoint?: string; jwks_uri?: string };
-      authorizationEndpoint ??= d.authorization_endpoint;
-      tokenEndpoint ??= d.token_endpoint;
-      jwksUri ??= d.jwks_uri;
-    }
-    if (!authorizationEndpoint || !tokenEndpoint || !jwksUri) throw new BadRequestException('The provider settings are incomplete');
-    for (const u of [authorizationEndpoint, tokenEndpoint, jwksUri]) assertSafeUrl(u);
-    return { issuer: b.issuer, authorizationEndpoint, tokenEndpoint, jwksUri };
   }
 }
 

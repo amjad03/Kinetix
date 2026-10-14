@@ -1,49 +1,44 @@
 'use client';
 import { useState, useTransition } from 'react';
-import { allocate, createOffering, decide, loadRoster, saveWindow, setOfferingStatus } from '@/app/(dashboard)/course-registration/actions';
-import { ActionButton, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col } from '@/components/ops/kit';
+import { allocate, decide, loadRoster, saveWindow } from '@/app/(dashboard)/course-registration/actions';
+import { ActionButton, FormDialog, Grid, InfoDialog, Tabbed, useToast, type Col } from '@/components/ops/kit';
+import { KitList, type ColSpec } from '@/components/registers/KitList';
+import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { CATEGORIES, type ApprovalRow, type OfferingRow, type RosterRow, type WindowRow } from '@/lib/course-registration';
+import type { ApprovalRow, RosterRow, WindowRow } from '@/lib/course-registration';
 
 import { Button } from '@/components/kx';
-import { Plus as Add } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 type Option = { value: string; label: string };
 
-/** Offerings, approvals and the registration window of one term. */
-export function RegistrationDesk({ termId, offerings, windows, approvals, programs, subjects }: { termId: string; offerings: OfferingRow[]; windows: WindowRow[]; approvals: ApprovalRow[]; programs: Option[]; subjects: Option[] }) {
+const OFFERING_COLUMNS: ColSpec[] = [
+  { key: 'subjectId', from: 'subjectName', header: 'rk.f.course-offerings.subjectId', kind: 'strong', sortKey: 'subject' },
+  { key: 'subjectCode', header: 'rk.f.course-offerings.subjectCode', sortKey: false, hideBelow: 'sm' },
+  { key: 'category', header: 'rk.f.course-offerings.category', kind: 'choice' },
+  { key: 'credits', header: 'rk.f.course-offerings.credits', kind: 'number' },
+  { key: 'seatCap', header: 'rk.f.course-offerings.seatCap', kind: 'number' },
+  { key: 'registered', header: 'rk.f.course-offerings.registered', kind: 'number' },
+  { key: 'waitlisted', header: 'rk.f.course-offerings.waitlisted', kind: 'number', sortKey: false, hideBelow: 'md' },
+  { key: 'facultyId', from: 'facultyIdName', header: 'rk.f.course-offerings.facultyId', hideBelow: 'md' },
+  { key: 'feePaise', header: 'rk.f.course-offerings.feePaise', kind: 'money', hideBelow: 'lg' },
+  { key: 'status', header: 'rk.f.course-offerings.status', kind: 'choice', tone: (v) => (v === 'open' ? 'success' : 'neutral') },
+];
+
+/** Offerings (a record kit list), approvals and the registration window of one term. */
+export function RegistrationDesk({ termId, offerings, windows, approvals, programs }: { termId: string; offerings: { meta: RecordMeta; page: RecordsPage<Row>; state: ListState }; windows: WindowRow[]; approvals: ApprovalRow[]; programs: Option[] }) {
   const { t, fmt } = useI18n();
-  const [dialog, setDialog] = useState<'offer' | 'window' | null>(null);
+  const [dialog, setDialog] = useState<'window' | null>(null);
   const [roster, setRoster] = useState<{ title: string; rows: RosterRow[] } | null>(null);
   const [toast, toastNode] = useToast();
   const [, start] = useTransition();
 
-  const openRoster = (o: OfferingRow) =>
+  const openRoster = (o: Row) =>
     start(async () => {
-      const res = await loadRoster(o.id);
-      if (res.ok) setRoster({ title: `${o.subjectCode} ${o.subjectName}`, rows: res.data.students });
+      const res = await loadRoster(String(o.id));
+      if (res.ok) setRoster({ title: `${String(o.subjectCode)} ${String(o.subjectName)}`, rows: res.data.students });
       else toast(res.error);
     });
-
-  const offeringCols: Col<OfferingRow>[] = [
-    { label: t('cr.col.subject'), cell: (o) => `${o.subjectCode} ${o.subjectName}`, sort: (o) => o.subjectCode },
-    { label: t('cr.col.category'), cell: (o) => t(`cr.cat.${o.category}` as MessageKey) },
-    { label: t('cr.col.credits'), cell: (o) => o.credits, num: true },
-    { label: t('cr.col.seats'), cell: (o) => t('cr.seats', { filled: o.registered, cap: o.seatCap }), sort: (o) => o.registered },
-    { label: t('cr.col.faculty'), cell: (o) => o.facultyName ?? '-' },
-    { label: t('cr.col.status'), cell: (o) => <Pill label={t(`cr.status.${o.status}` as MessageKey)} warn={o.status === 'closed'} /> },
-    {
-      label: '',
-      cell: (o) => (
-        <>
-          {o.waitlisted > 0 && <span className="text-xs leading-4 tracking-[0.3px]">{t('cr.waiting', { n: o.waitlisted })} </span>}
-          {o.preferences > 0 && <span className="text-xs leading-4 tracking-[0.3px]">{t('cr.ranked', { n: o.preferences })} </span>}
-          <Button size="small" onClick={() => openRoster(o)}>{t('cr.roster')}</Button>
-          <ActionButton label={o.status === 'open' ? t('cr.close') : t('cr.reopen')} run={() => setOfferingStatus(o.id, o.status === 'open' ? 'closed' : 'open', o.version)} onDone={toast} />
-        </>
-      ),
-    },
-  ];
 
   const approvalCols: Col<ApprovalRow>[] = [
     { label: t('cr.col.student'), cell: (a) => a.studentName },
@@ -91,9 +86,6 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
   return (
     <>
       <div className="flex flex-row gap-2 mb-6 justify-end flex-wrap gap-y-2">
-        <Button variant="contained" startIcon={<Add />} onClick={() => setDialog('offer')}>
-          {t('cr.new')}
-        </Button>
         <Button variant="outlined" disabled={pending} onClick={runAllocate}>
           {t('cr.allocate')}
         </Button>
@@ -102,7 +94,21 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
         label={t('nav.courseRegistration')}
         initial="offerings"
         tabs={[
-          { id: 'offerings', label: t('cr.tab.offerings'), node: <Grid testId="cr-list" empty={t('cr.empty.offerings')} rows={offerings} cols={offeringCols} /> },
+          {
+            id: 'offerings',
+            label: t('cr.tab.offerings'),
+            node: (
+              <KitList
+                {...offerings}
+                label="cr.tab.offerings"
+                columns={OFFERING_COLUMNS}
+                extraParams={{ term: termId }}
+                rowActions={(o) => [{ id: 'roster', label: t('cr.roster'), onSelect: () => openRoster(o) }]}
+                empty={{ icon: <BookOpen />, title: 'cr.empty.offerings', body: 'kr.empty.course-offerings' }}
+                testId="cr-list"
+              />
+            ),
+          },
           { id: 'approvals', label: t('cr.tab.approvals'), node: <Grid testId="cr-approvals" empty={t('cr.empty.approvals')} rows={approvals} cols={approvalCols} /> },
           {
             id: 'window',
@@ -118,27 +124,6 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
           },
         ]}
       />
-      {dialog === 'offer' && (
-        <FormDialog
-          title={t('cr.new')}
-          onSubmit={(v) => createOffering(termId, v)}
-          onClose={(m) => {
-            setDialog(null);
-            if (m) toast(m);
-          }}
-          fields={[
-            { name: 'subjectId', label: t('cr.f.subject'), kind: 'select', required: true, options: subjects },
-            { name: 'category', label: t('cr.f.category'), kind: 'select', init: 'elective', options: CATEGORIES.map((c) => ({ value: c, label: t(`cr.cat.${c}` as MessageKey) })) },
-            { name: 'credits', label: t('cr.f.credits'), required: true, init: '3' },
-            { name: 'seatCap', label: t('cr.f.seatCap'), kind: 'number', required: true },
-            { name: 'fee', label: t('g1.cr.fee') },
-            { name: 'facultyId', label: t('cr.f.faculty'), kind: 'uuid' },
-            { name: 'slotIds', label: t('cr.f.slots') },
-            { name: 'semesters', label: t('cr.f.semesters') },
-            { name: 'prerequisiteSubjectId', label: t('cr.f.prerequisite'), kind: 'select', options: [{ value: '', label: t('cr.f.none') }, ...subjects] },
-          ]}
-        />
-      )}
       {dialog === 'window' && (
         <FormDialog
           title={t('cr.win.save')}

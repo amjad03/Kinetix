@@ -3,12 +3,7 @@
 import { send } from '@/lib/ops-server';
 
 const PAGE = '/integrations';
-const id = encodeURIComponent;
 type V = Record<string, string>;
-
-export async function pushDocument(docId: string) {
-  return send(`/v1/digilocker/documents/${id(docId)}/push`, undefined, PAGE);
-}
 
 export async function pushAllDocuments() {
   return send('/v1/digilocker/push-pending', undefined, PAGE);
@@ -26,8 +21,4 @@ export async function addDevice(v: V) {
 export async function createToken(v: V) {
   const scopes = (v.scopes ?? '').split('\n').map((s) => s.trim()).filter(Boolean);
   return send<{ token: string }>('/v1/api-tokens', { name: v.name, scopes }, PAGE);
-}
-
-export async function revokeToken(tokenId: string) {
-  return send(`/v1/api-tokens/${id(tokenId)}`, undefined, PAGE, 'DELETE');
 }

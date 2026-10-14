@@ -19,10 +19,10 @@ import { UploadScanService } from '../scanning/upload-scan.js';
 import { ContentSchema, type CurriculumContent, diffContent, proposalFlags } from './curriculum-logic.js';
 import { extractSyllabusText, UnsupportedSyllabusFile } from './syllabus-text.js';
 
-const EDITORS: RoleName[] = ['tenant_admin', 'principal', 'hod'];
+export const EDITORS: RoleName[] = ['tenant_admin', 'principal', 'hod'];
 /** The Board of Studies sign-off and activation. */
-const APPROVERS: RoleName[] = ['tenant_admin', 'principal'];
-const READERS: RoleName[] = [...EDITORS, 'teacher', 'quality_officer', 'exam_controller', 'university_admin', 'accreditation_reviewer'];
+export const APPROVERS: RoleName[] = ['tenant_admin', 'principal'];
+export const READERS: RoleName[] = [...EDITORS, 'teacher', 'quality_officer', 'exam_controller', 'university_admin', 'accreditation_reviewer'];
 const MAX_FILE = 15 * 1024 * 1024;
 
 const Year = z.number().int().min(1990).max(2100);
@@ -66,7 +66,7 @@ async function saveContent(tx: Tx, tenantId: string, versionId: string, content:
   }
 }
 
-async function createVersion(tx: Tx, p: UserPrincipal, b: { programId: string; regulationYear: number; label: string; regulationId?: string; cloneFromId?: string; source?: string; content?: CurriculumContent }) {
+export async function createVersion(tx: Tx, p: UserPrincipal, b: { programId: string; regulationYear: number; label: string; regulationId?: string; cloneFromId?: string; source?: string; content?: CurriculumContent }) {
   found((await tx.select({ id: programs.id }).from(programs).where(eq(programs.id, b.programId)))[0], 'Programme');
   if (b.regulationId) found((await tx.select({ id: regulations.id }).from(regulations).where(eq(regulations.id, b.regulationId)))[0], 'Regulation');
   const [{ n }] = await tx.select({ n: max(curriculumVersions.versionNo) }).from(curriculumVersions).where(and(eq(curriculumVersions.programId, b.programId), eq(curriculumVersions.regulationYear, b.regulationYear)));
@@ -82,6 +82,39 @@ async function createVersion(tx: Tx, p: UserPrincipal, b: { programId: string; r
   if (content) await saveContent(tx, p.tenantId, row.id, content);
   await auditUser(tx, p, 'curriculum.version_created', 'curriculum_version', row.id, { programId: b.programId, regulationYear: b.regulationYear, versionNo: row.versionNo });
   return row;
+}
+
+/** Board of Studies approval of a draft (an affiliated college cites the university's adoption). */
+export async function approveVersion(tx: Tx, p: UserPrincipal, id: string, b: { bosRef: string; universityRef?: string }) {
+  const v = found((await tx.select().from(curriculumVersions).where(eq(curriculumVersions.id, id)))[0], 'Version');
+  if (v.status !== 'draft') throw new ConflictException('Only a draft can be approved');
+  const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(curriculumSubjects).where(eq(curriculumSubjects.versionId, id));
+  if (!n) throw new BadRequestException('Add at least one subject before approval');
+  // An affiliated college follows the university's syllabus: it must cite the university's adoption.
+  const [prof] = await tx.select({ g: institutionProfiles.governanceModel }).from(institutionProfiles);
+  const rules = prof?.g ? GOVERNANCE_RULES[prof.g as GovernanceModel] : null;
+  if (rules?.requiresUniversityBosRef && !b.universityRef) throw new BadRequestException("Give the affiliating university's Board of Studies reference");
+  const [row] = await tx.update(curriculumVersions).set({ status: 'approved', bosRef: b.bosRef, universityRef: b.universityRef ?? null, approvedBy: p.userId, approvedAt: new Date() }).where(eq(curriculumVersions.id, id)).returning();
+  await auditUser(tx, p, 'curriculum.version_approved', 'curriculum_version', id, { bosRef: b.bosRef });
+  return row;
+}
+
+/** Makes an approved version the live one for its regulation year (the previous one is archived) and pins new entrants to it. */
+export async function activateVersion(tx: Tx, p: UserPrincipal, id: string, b: { effectiveFrom?: string }) {
+  const v = found((await tx.select().from(curriculumVersions).where(eq(curriculumVersions.id, id)))[0], 'Version');
+  if (v.status !== 'approved') throw new ConflictException('Only an approved version can be activated');
+  await tx.update(curriculumVersions).set({ status: 'archived' }).where(and(eq(curriculumVersions.programId, v.programId), eq(curriculumVersions.regulationYear, v.regulationYear), eq(curriculumVersions.status, 'active')));
+  const [row] = await tx.update(curriculumVersions).set({ status: 'active', activatedAt: new Date(), effectiveFrom: b.effectiveFrom ?? v.effectiveFrom ?? `${v.regulationYear}-06-01` }).where(eq(curriculumVersions.id, id)).returning();
+  // New entrants: first-term students of this programme, in an academic year starting in or after the regulation year, with no version yet.
+  const entrants = await tx
+    .select({ id: students.id })
+    .from(students)
+    .innerJoin(sections, eq(sections.id, students.sectionId))
+    .innerJoin(academicYears, eq(academicYears.id, sections.academicYearId))
+    .where(and(eq(sections.programId, v.programId), eq(sections.term, 1), gte(academicYears.startsOn, `${v.regulationYear}-01-01`), sql`not exists (select 1 from student_curriculum_pins sp where sp.student_id = ${students.id})`));
+  if (entrants.length) await tx.insert(studentCurriculumPins).values(entrants.map((s) => ({ tenantId: p.tenantId, studentId: s.id, versionId: id, pinnedBy: p.userId })));
+  await auditUser(tx, p, 'curriculum.version_activated', 'curriculum_version', id, { pinned: entrants.length });
+  return { ...row, pinnedNow: entrants.length };
 }
 
 /** Curriculum versions per programme and regulation year: draft, Board of Studies approval, activation, pinning and diffs. */
@@ -162,19 +195,7 @@ export class CurriculumController {
   @HttpCode(200)
   @Auth('user', APPROVERS)
   approve(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ApproveBody)) b: z.infer<typeof ApproveBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const v = found((await tx.select().from(curriculumVersions).where(eq(curriculumVersions.id, id)))[0], 'Version');
-      if (v.status !== 'draft') throw new ConflictException('Only a draft can be approved');
-      const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(curriculumSubjects).where(eq(curriculumSubjects.versionId, id));
-      if (!n) throw new BadRequestException('Add at least one subject before approval');
-      // An affiliated college follows the university's syllabus: it must cite the university's adoption.
-      const [prof] = await tx.select({ g: institutionProfiles.governanceModel }).from(institutionProfiles);
-      const rules = prof?.g ? GOVERNANCE_RULES[prof.g as GovernanceModel] : null;
-      if (rules?.requiresUniversityBosRef && !b.universityRef) throw new BadRequestException("Give the affiliating university's Board of Studies reference");
-      const [row] = await tx.update(curriculumVersions).set({ status: 'approved', bosRef: b.bosRef, universityRef: b.universityRef ?? null, approvedBy: p.userId, approvedAt: new Date() }).where(eq(curriculumVersions.id, id)).returning();
-      await auditUser(tx, p, 'curriculum.version_approved', 'curriculum_version', id, { bosRef: b.bosRef });
-      return row;
-    });
+    return this.db.withTenant(p.tenantId, (tx) => approveVersion(tx, p, id, b));
   }
 
   /** Makes an approved version the live one for its regulation year (the previous one is archived) and pins new entrants to it. */
@@ -182,22 +203,7 @@ export class CurriculumController {
   @HttpCode(200)
   @Auth('user', APPROVERS)
   activate(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ActivateBody)) b: z.infer<typeof ActivateBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const v = found((await tx.select().from(curriculumVersions).where(eq(curriculumVersions.id, id)))[0], 'Version');
-      if (v.status !== 'approved') throw new ConflictException('Only an approved version can be activated');
-      await tx.update(curriculumVersions).set({ status: 'archived' }).where(and(eq(curriculumVersions.programId, v.programId), eq(curriculumVersions.regulationYear, v.regulationYear), eq(curriculumVersions.status, 'active')));
-      const [row] = await tx.update(curriculumVersions).set({ status: 'active', activatedAt: new Date(), effectiveFrom: b.effectiveFrom ?? v.effectiveFrom ?? `${v.regulationYear}-06-01` }).where(eq(curriculumVersions.id, id)).returning();
-      // New entrants: first-term students of this programme, in an academic year starting in or after the regulation year, with no version yet.
-      const entrants = await tx
-        .select({ id: students.id })
-        .from(students)
-        .innerJoin(sections, eq(sections.id, students.sectionId))
-        .innerJoin(academicYears, eq(academicYears.id, sections.academicYearId))
-        .where(and(eq(sections.programId, v.programId), eq(sections.term, 1), gte(academicYears.startsOn, `${v.regulationYear}-01-01`), sql`not exists (select 1 from student_curriculum_pins sp where sp.student_id = ${students.id})`));
-      if (entrants.length) await tx.insert(studentCurriculumPins).values(entrants.map((s) => ({ tenantId: p.tenantId, studentId: s.id, versionId: id, pinnedBy: p.userId })));
-      await auditUser(tx, p, 'curriculum.version_activated', 'curriculum_version', id, { pinned: entrants.length });
-      return { ...row, pinnedNow: entrants.length };
-    });
+    return this.db.withTenant(p.tenantId, (tx) => activateVersion(tx, p, id, b));
   }
 
   /** Pins every student of the chosen sections to a version (those already pinned keep theirs unless `replace`). */

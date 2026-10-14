@@ -15,23 +15,7 @@ async function bad(): Promise<{ ok: false; error: string }> {
   return { ok: false, error: (await getI18n()).t('cu.err.input') };
 }
 
-/** A new draft version; with `cloneFromId` it starts as a copy of that version (a revision). */
-export async function createVersion(v: { programId: string; regulationYear: string; label: string; cloneFromId?: string }) {
-  const year = Number(v.regulationYear);
-  if (!UUID.test(v.programId) || !Number.isInteger(year) || !v.label.trim() || (v.cloneFromId && !UUID.test(v.cloneFromId))) return bad();
-  return send(`${base}/versions`, { programId: v.programId, regulationYear: year, label: v.label.trim(), ...(v.cloneFromId ? { cloneFromId: v.cloneFromId } : {}) }, PAGE);
-}
-
-export async function approveVersion(id: string, bosRef: string) {
-  if (!UUID.test(id) || !bosRef.trim()) return bad();
-  return send(`${base}/versions/${encodeURIComponent(id)}/approve`, { bosRef: bosRef.trim() }, PAGE);
-}
-
-export async function activateVersion(id: string) {
-  if (!UUID.test(id)) return bad();
-  return send(`${base}/versions/${encodeURIComponent(id)}/activate`, {}, PAGE);
-}
-
+/** The differences between two versions of a curriculum. */
 export async function compareVersions(from: string, to: string): Promise<ActionResult<CurriculumDiff>> {
   if (!UUID.test(from) || !UUID.test(to)) return bad();
   return read<CurriculumDiff>(`${base}/diff?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);

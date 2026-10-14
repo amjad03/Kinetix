@@ -6,6 +6,7 @@ import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { UrlSelect } from '@/components/UrlSelect';
 import { api, load, requireSection } from '@/lib/api';
+import { loadRecords } from '@/lib/records-server';
 import { getI18n } from '@/i18n/server';
 import type { ApprovalRow, OfferingRow, TermRow, WindowRow } from '@/lib/course-registration';
 import type { Structure } from '@/lib/types';
@@ -14,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.courseRegistration') };
 }
 
-export default async function CourseRegistrationPage({ searchParams }: { searchParams: Promise<{ term?: string }> }) {
+export default async function CourseRegistrationPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireSection('courseRegistration');
   const sp = await searchParams;
   const { t, fmt } = await getI18n();
@@ -33,7 +34,8 @@ export default async function CourseRegistrationPage({ searchParams }: { searchP
   const windows = await load(() => api<WindowRow[]>(`/v1/course-registration/windows?${q}`));
   const approvals = await load(() => api<ApprovalRow[]>(`/v1/course-registration/approvals?${q}`));
   const structure = await load(() => api<Structure>('/v1/admin/structure'));
-  if (offerings.error !== undefined || windows.error !== undefined || approvals.error !== undefined) return <ErrorState message={offerings.error ?? windows.error ?? approvals.error ?? ''} />;
+  const kit = await loadRecords('course-offerings', sp, { filters: { termId: term.id } });
+  if (offerings.error !== undefined || windows.error !== undefined || approvals.error !== undefined || kit.error !== undefined) return <ErrorState message={offerings.error ?? windows.error ?? approvals.error ?? kit.error ?? ''} />;
   const list = offerings.data;
   return (
     <>
@@ -47,7 +49,7 @@ export default async function CourseRegistrationPage({ searchParams }: { searchP
         <StatTile label={t('cr.stat.pending')} value={approvals.data.length} tone={approvals.data.length ? 'warning' : 'default'} />
         <StatTile label={t('cr.stat.waitlisted')} value={list.reduce((n, o) => n + o.waitlisted, 0)} />
       </StatGrid>
-      <RegistrationDesk termId={term.id} offerings={list} windows={windows.data} approvals={approvals.data} programs={(structure.data?.programs ?? []).map((p) => ({ value: p.id, label: p.name }))} subjects={(structure.data?.subjects ?? []).map((s) => ({ value: s.id, label: `${s.code} ${s.name}` }))} />
+      <RegistrationDesk termId={term.id} offerings={kit.data} windows={windows.data} approvals={approvals.data} programs={(structure.data?.programs ?? []).map((p) => ({ value: p.id, label: p.name }))} />
     </>
   );
 }

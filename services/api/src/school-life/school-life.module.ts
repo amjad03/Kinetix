@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { NotificationsModule } from '../notifications/notifications.module.js';
 import { DiaryController, DiaryService, ParentDiaryController, TeacherDiaryController } from './diary.controller.js';
+import { DiaryRecords } from './diary.records.js';
 import { EarlyYearsController, ParentEarlyYearsController } from './early-years.controller.js';
 import { HealthRecordsController, ParentHealthController } from './health.controller.js';
 import { PtmController } from './ptm.controller.js';
@@ -10,7 +11,7 @@ import { SchoolLifeService } from './school-life.service.js';
 @Module({
   imports: [NotificationsModule],
   controllers: [DiaryController, TeacherDiaryController, ParentDiaryController, PtmController, EarlyYearsController, ParentEarlyYearsController, HealthRecordsController, ParentHealthController],
-  providers: [SchoolLifeService, DiaryService],
+  providers: [SchoolLifeService, DiaryService, DiaryRecords],
   exports: [SchoolLifeService],
 })
 export class SchoolLifeModule {}

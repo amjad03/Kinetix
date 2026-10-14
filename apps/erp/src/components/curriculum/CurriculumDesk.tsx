@@ -1,37 +1,59 @@
 'use client';
 import { useState, useTransition } from 'react';
-import { activateVersion, approveVersion, compareVersions, createVersion, draftFromImport, uploadSyllabus } from '@/app/(dashboard)/curriculum/actions';
-import { Bar, FormDialog, Grid, InfoDialog, useToast, type Field } from '@/components/ops/kit';
+import { compareVersions, draftFromImport, uploadSyllabus } from '@/app/(dashboard)/curriculum/actions';
+import { FormDialog, Grid, InfoDialog, useToast, type Field } from '@/components/ops/kit';
+import { KitList, type ColSpec, type ParamAction } from '@/components/registers/KitList';
 import { SectionTitle } from '@/components/PageHeader';
-import { StatGrid, StatTile, StatusPill } from '@/components/ui';
+import { StatGrid, StatTile } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
-import type { MessageKey } from '@/i18n/messages';
-import { diffCount, nextStep, type CurriculumDiff, type ImportRow, type VersionRow } from '@/lib/curriculum';
+import { diffCount, type CurriculumDiff, type ImportRow, type VersionRow } from '@/lib/curriculum';
+import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
 
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@/components/kx';
-const TONE = { draft: 'warning', approved: 'info', active: 'success', archived: 'neutral' } as const;
+import { Library } from 'lucide-react';
+
+const STATUS_TONE = (v: string) => (v === 'active' ? 'success' : v === 'approved' ? 'info' : v === 'draft' ? 'warning' : 'neutral');
+const COLUMNS: ColSpec[] = [
+  { key: 'programId', from: 'programName', header: 'rk.f.curriculum-versions.programId' },
+  { key: 'regulationYear', header: 'rk.f.curriculum-versions.regulationYear', kind: 'number' },
+  { key: 'versionNo', header: 'rk.f.curriculum-versions.versionNo', kind: 'number' },
+  { key: 'label', header: 'rk.f.curriculum-versions.label', kind: 'strong' },
+  { key: 'status', header: 'rk.f.curriculum-versions.status', kind: 'choice', tone: STATUS_TONE },
+  { key: 'subjectCount', header: 'rk.f.curriculum-versions.subjectCount', kind: 'number', sortKey: false, hideBelow: 'sm' },
+  { key: 'pinnedStudents', header: 'rk.f.curriculum-versions.pinnedStudents', kind: 'number', sortKey: false, hideBelow: 'md' },
+  { key: 'effectiveFrom', header: 'rk.f.curriculum-versions.effectiveFrom', kind: 'date', hideBelow: 'md' },
+  { key: 'bosRef', header: 'rk.f.curriculum-versions.bosRef', sortKey: false, defaultHidden: true },
+];
+const ACTIONS: ParamAction[] = [
+  { key: 'approve', when: (r) => r.status === 'draft', fields: [{ name: 'bosRef', label: 'rk.in.curriculum-versions.bosRef', required: true }, { name: 'universityRef', label: 'rk.in.curriculum-versions.universityRef' }] },
+  { key: 'activate', when: (r) => r.status === 'approved', fields: [{ name: 'effectiveFrom', label: 'rk.in.curriculum-versions.effectiveFrom', type: 'date' }] },
+  { key: 'revise', when: (r) => r.status !== 'draft', fields: [{ name: 'label', label: 'rk.in.curriculum-versions.label', required: true }] },
+];
 
 type Dlg = { title: string; fields: Field[]; run: (v: Record<string, string>) => Promise<{ ok: true; data: unknown } | { ok: false; error: string }> };
 
-/** Curriculum versions per programme and regulation year: draft, Board of Studies approval, activation, revisions, diffs and the AI syllabus importer. */
-export function CurriculumDesk({ versions, imports, programs, canEdit, canApprove }: { versions: VersionRow[]; imports: ImportRow[]; programs: { id: string; name: string }[]; canEdit: boolean; canApprove: boolean }) {
+/**
+ * Curriculum versions per programme and regulation year as a record kit list (add a draft, name and date it, Board of
+ * Studies approval, activation and revisions as actions, history, delete a draft), with diffs against the previous
+ * version and the AI syllabus importer.
+ */
+export function CurriculumDesk({ versions, list, imports, programs, canEdit }: { versions: VersionRow[]; list: { meta: RecordMeta; page: RecordsPage<Row>; state: ListState }; imports: ImportRow[]; programs: { id: string; name: string }[]; canEdit: boolean }) {
   const { t } = useI18n();
   const [toast, toastNode] = useToast();
   const [dlg, setDlg] = useState<Dlg | null>(null);
   const [diff, setDiff] = useState<CurriculumDiff | null>(null);
   const [upload, setUpload] = useState(false);
   const [flags, setFlags] = useState<{ where: string; code: string; message: string }[] | null>(null);
-  const progOptions = programs.map((p) => ({ value: p.id, label: p.name }));
   const done = (m?: string) => {
     setDlg(null);
     if (m) toast(t('ops.saved'));
   };
   const count = (s: VersionRow['status']) => versions.filter((v) => v.status === s).length;
 
-  const compare = async (v: VersionRow) => {
-    const prev = versions.filter((x) => x.programId === v.programId && x.regulationYear === v.regulationYear && x.versionNo < v.versionNo).sort((a, b) => b.versionNo - a.versionNo)[0];
+  const compare = async (v: Row) => {
+    const prev = versions.filter((x) => x.programId === v.programId && x.regulationYear === v.regulationYear && x.versionNo < Number(v.versionNo)).sort((a, b) => b.versionNo - a.versionNo)[0];
     if (!prev) return toast(t('cu.diff.noPrev'));
-    const res = await compareVersions(prev.id, v.id);
+    const res = await compareVersions(prev.id, String(v.id));
     if (res.ok) setDiff(res.data);
     else toast(res.error);
   };
@@ -43,73 +65,24 @@ export function CurriculumDesk({ versions, imports, programs, canEdit, canApprov
         <StatTile label={t('cu.st.draft')} value={count('draft')} tone={count('draft') ? 'warning' : 'default'} testId="cu-draft" />
         <StatTile label={t('cu.st.approved')} value={count('approved')} testId="cu-approved" />
       </StatGrid>
-      {canEdit && (
-        <Bar>
-          <Button
-            variant="contained"
-            onClick={() =>
-              setDlg({
-                title: t('cu.new'),
-                fields: [
-                  { name: 'programId', label: t('cu.f.programme'), kind: 'select', options: progOptions, required: true },
-                  { name: 'regulationYear', label: t('cu.f.year'), kind: 'number', required: true, init: String(new Date().getFullYear()) },
-                  { name: 'label', label: t('cu.f.label'), required: true },
-                ],
-                run: (v) => createVersion({ programId: v.programId, regulationYear: v.regulationYear, label: v.label }),
-              })
-            }
-          >
-            {t('cu.new')}
-          </Button>
-          <Button variant="outlined" onClick={() => setUpload(true)}>
-            {t('cu.upload')}
-          </Button>
-        </Bar>
-      )}
-      <Grid
-        testId="cu-versions"
-        empty={t('cu.empty')}
-        rows={versions}
-        cols={[
-          { label: t('cu.col.programme'), cell: (v) => v.programName, sort: (v) => v.programName },
-          { label: t('cu.col.year'), cell: (v) => v.regulationYear, num: true, sort: (v) => v.regulationYear },
-          { label: t('cu.col.version'), cell: (v) => `v${v.versionNo}`, num: true, sort: (v) => v.versionNo },
-          { label: t('cu.col.label'), cell: (v) => v.label, sort: (v) => v.label },
-          { label: t('cu.col.status'), cell: (v) => <StatusPill tone={TONE[v.status]}>{t(`cu.st.${v.status}` as MessageKey)}</StatusPill>, sort: (v) => v.status },
-          { label: t('cu.col.subjects'), cell: (v) => v.subjectCount, num: true },
-          { label: t('cu.col.pinned'), cell: (v) => v.pinnedStudents, num: true },
-          {
-            label: '',
-            cell: (v) => {
-              const step = canEdit ? nextStep(v.status, canApprove) : null;
-              return (
-                <div className="flex flex-row gap-2">
-                  {step === 'approve' && (
-                    <Button size="small" onClick={() => setDlg({ title: t('cu.approve'), fields: [{ name: 'bosRef', label: t('cu.f.bos'), required: true }], run: (f) => approveVersion(v.id, f.bosRef) })}>
-                      {t('cu.approve')}
-                    </Button>
-                  )}
-                  {step === 'activate' && (
-                    <Button size="small" onClick={() => setDlg({ title: t('cu.activate'), fields: [], run: () => activateVersion(v.id) })}>
-                      {t('cu.activate')}
-                    </Button>
-                  )}
-                  {step === 'revise' && (
-                    <Button size="small" onClick={() => setDlg({ title: t('cu.revise'), fields: [{ name: 'label', label: t('cu.f.label'), required: true, init: `${v.label} (revision)` }], run: (f) => createVersion({ programId: v.programId, regulationYear: String(v.regulationYear), label: f.label, cloneFromId: v.id }) })}>
-                      {t('cu.revise')}
-                    </Button>
-                  )}
-                  {v.versionNo > 1 && (
-                    <Button size="small" onClick={() => compare(v)}>
-                      {t('cu.compare')}
-                    </Button>
-                  )}
-                </div>
-              );
-            },
-          },
-        ]}
-      />
+      <div className="mt-6">
+        <KitList
+          {...list}
+          label="nav.curriculum"
+          columns={COLUMNS}
+          paramActions={ACTIONS}
+          rowActions={(v) => (Number(v.versionNo) > 1 ? [{ id: 'compare', label: t('cu.compare'), onSelect: () => void compare(v) }] : [])}
+          toolbar={
+            canEdit ? (
+              <Button variant="outlined" onClick={() => setUpload(true)}>
+                {t('cu.upload')}
+              </Button>
+            ) : undefined
+          }
+          empty={{ icon: <Library />, title: 'cu.empty', body: 'kr.empty.curriculum-versions' }}
+          testId="cu-versions"
+        />
+      </div>
       {canEdit && (
         <>
           <SectionTitle>{t('cu.imports')}</SectionTitle>

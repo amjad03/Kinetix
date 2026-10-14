@@ -1,39 +1,11 @@
 'use server';
 
-import { getI18n } from '@/i18n/server';
 import { optStr as opt, read, send } from '@/lib/ops-server';
-import { parseCredits, parseIdList, parseIntList, type RosterRow } from '@/lib/course-registration';
+import type { RosterRow } from '@/lib/course-registration';
 
 const PAGE = '/course-registration';
 type V = Record<string, string>;
 const BASE = '/v1/course-registration';
-
-export async function createOffering(termId: string, v: V) {
-  const credits = parseCredits(v.credits ?? '');
-  if (credits === null) return { ok: false as const, error: (await getI18n()).t('cr.err.credits') };
-  const semesters = parseIntList(v.semesters ?? '');
-  if (semesters === null) return { ok: false as const, error: (await getI18n()).t('cr.err.semesters') };
-  return send(
-    `${BASE}/offerings`,
-    {
-      termId,
-      subjectId: v.subjectId,
-      category: v.category,
-      credits,
-      seatCap: Number(v.seatCap),
-      ...(v.fee?.trim() ? { feePaise: Math.round(Number(v.fee) * 100) } : {}),
-      facultyId: opt(v.facultyId) ?? null,
-      slotIds: parseIdList(v.slotIds ?? ''),
-      eligibleSemesters: semesters.length ? semesters : null,
-      prerequisiteSubjectId: opt(v.prerequisiteSubjectId) ?? null,
-    },
-    PAGE,
-  );
-}
-
-export async function setOfferingStatus(id: string, status: 'open' | 'closed', version: number) {
-  return send(`${BASE}/offerings/${encodeURIComponent(id)}`, { status, expectedVersion: version }, PAGE, 'PATCH');
-}
 
 export async function saveWindow(termId: string, v: V) {
   return send(
