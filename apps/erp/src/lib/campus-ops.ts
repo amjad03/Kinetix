@@ -167,9 +167,9 @@ export const RELATED_KIND: Record<string, RecordKind> = { applications: 'applica
 /** Reports each module offers (ids match the API catalogue). */
 export const MODULE_REPORTS: Record<OpsModule, string[]> = {
   admissions: ['admissions.register', 'admissions.funnel'],
-  library: ['library.circulation', 'library.fines', 'library.stock'],
-  hostel: ['hostel.occupancy', 'hostel.outpasses', 'hostel.complaints'],
-  transport: ['transport.riders', 'transport.compliance', 'transport.expenses'],
+  library: ['library.circulation', 'library.fines', 'library.stock', 'library.accession', 'library.overdue', 'library.most-borrowed', 'library.circulation-stats', 'library.footfall', 'library.naac', 'library.withdrawals'],
+  hostel: ['hostel.occupancy', 'hostel.outpasses', 'hostel.complaints', 'hostel.vacancy', 'hostel.fee-dues', 'hostel.night-absent', 'hostel.residents', 'hostel.late-entries', 'hostel.mess-bills'],
+  transport: ['transport.riders', 'transport.compliance', 'transport.expenses', 'transport.stop-list', 'transport.expiry-calendar', 'transport.fee-dues', 'transport.maintenance', 'transport.incidents', 'transport.alerts'],
   canteen: ['canteen.sales'],
   inventory: ['inventory.stock', 'inventory.ledger', 'inventory.stockRegister', 'inventory.slowMoving', 'inventory.consumption', 'inventory.verification', 'inventory.gate'],
   assets: ['assets.register', 'assets.maintenance', 'assets.deadStock', 'assets.naacInfra', 'assets.transfers', 'assets.condemned', 'assets.bookings', 'assets.tickets'],

@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
   if (kind === 'ops-report') {
     const format = req.nextUrl.searchParams.get('format') ?? '';
     const status = req.nextUrl.searchParams.get('status') ?? '';
-    if (!/^[a-z]+\.[a-z]+$/.test(id) || !['pdf', 'xlsx', 'csv'].includes(format) || !/^[a-z_]{0,40}$/.test(status)) return new Response('Not found', { status: 404 });
+    if (!/^[a-z]+\.[a-z]+(-[a-z]+)*$/.test(id) || !['pdf', 'xlsx', 'csv'].includes(format) || !/^[a-z_]{0,40}$/.test(status)) return new Response('Not found', { status: 404 });
     const q = new URLSearchParams({ format });
     if (range[0] && /^\d{4}-\d{2}-\d{2}$/.test(range[0])) q.set('from', range[0]);
     if (range[1] && /^\d{4}-\d{2}-\d{2}$/.test(range[1])) q.set('to', range[1]);
