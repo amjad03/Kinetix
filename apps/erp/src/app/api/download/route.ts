@@ -75,13 +75,20 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/campus-life/committees/${id}/report-pack?from=${range[0]}&to=${range[1]}`;
   }
-  // Accreditation exports: ?kind=accreditation&id=<naac|nba1|nba2|nirf|aishe|atr|tmpl-naac-2.6.3>&cycle=2026-27
+  // Accreditation exports: ?kind=accreditation&fw=<framework>&id=<ssr|aqar|xlsx|pack|dvv|tmpl-2.6.3|file-<evidence>>&cycle=2026-27,
+  // plus the older ids without a framework (naac, nba2, nirf, aishe, atr, tmpl-naac-2.6.3).
   if (kind === 'accreditation') {
-    const cycle = req.nextUrl.searchParams.get('cycle') ?? '';
+    const sp = req.nextUrl.searchParams;
+    const cycle = sp.get('cycle') ?? '';
     const q = /^\d{4}(-\d{2,4})?$/.test(cycle) ? `?cycle=${cycle}` : '';
-    const tmpl = /^tmpl-(naac|nba|nirf)-([A-Za-z0-9.]+)$/.exec(id);
-    const files: Record<string, string> = { naac: `/v1/accreditation/naac/export.zip${q}`, nba1: `/v1/accreditation/nba/export.xlsx${q}${q ? '&' : '?'}tier=1`, nba2: `/v1/accreditation/nba/export.xlsx${q}${q ? '&' : '?'}tier=2`, nirf: `/v1/accreditation/nirf/export.xlsx${q}`, aishe: '/v1/accreditation/aishe/export.xlsx', atr: `/v1/accreditation/iqac/atr.xlsx${q}` };
-    const target = tmpl ? `/v1/accreditation/${tmpl[1]}/metrics/${tmpl[2]}/template.xlsx` : files[id];
+    const fwParam = sp.get('fw') ?? '';
+    const fw = /^[a-z0-9-]{3,30}$/.test(fwParam) ? fwParam : '';
+    const tmpl = /^tmpl-(?:(naac|nba|nirf)-)?([A-Za-z0-9.-]{1,24})$/.exec(id);
+    const file = /^file-([0-9a-f-]{36})$/i.exec(id);
+    const legacy: Record<string, string> = { naac: `/v1/accreditation/naac/export.zip${q}`, nba2: `/v1/accreditation/nba/export.xlsx${q}`, nirf: `/v1/accreditation/nirf/export.xlsx${q}`, aishe: '/v1/accreditation/aishe/export.xlsx', atr: `/v1/accreditation/iqac/atr.xlsx${q}` };
+    const per: Record<string, string> = fw ? { ssr: `/v1/accreditation/${fw}/export.zip${q}`, aqar: `/v1/accreditation/${fw}/aqar.xlsx${q}`, xlsx: `/v1/accreditation/${fw}/export.xlsx${q}`, pack: `/v1/accreditation/${fw}/evidence-pack.zip${q}`, dvv: `/v1/accreditation/${fw}/dvv.xlsx${q}` } : {};
+    const tmplFw = tmpl ? (tmpl[1] ?? fw) : '';
+    const target = file ? `/v1/accreditation/evidence/${file[1]}/download` : tmpl && tmplFw ? `/v1/accreditation/${tmplFw}/metrics/${tmpl[2]}/template.xlsx${q}` : (per[id] ?? legacy[id]);
     if (!target) return new Response('Not found', { status: 404 });
     FIXED[kind] = target;
   }

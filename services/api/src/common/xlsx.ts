@@ -57,14 +57,30 @@ export const looksLikeXlsx = (b: Uint8Array) => b.length > 4 && b[0] === 0x50 &&
 
 /** The first worksheet as rows of text; empty cells are empty strings. */
 export function readXlsx(buf: Buffer): string[][] {
+  const sheets = readXlsxSheets(buf);
+  if (!sheets.length) throw new Error('The workbook has no sheet');
+  return sheets[0].rows;
+}
+
+/** Every worksheet in workbook order, with its name, as rows of text. */
+export function readXlsxSheets(buf: Buffer): { name: string; rows: string[][] }[] {
   const files = unzip(buf);
-  const sheetName = [...files.keys()].filter((k) => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort((a, b) => Number(a.match(/\d+/)![0]) - Number(b.match(/\d+/)![0]))[0];
-  if (!sheetName) throw new Error('The workbook has no sheet');
+  const parts = [...files.keys()].filter((k) => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort((a, b) => Number(a.match(/\d+/)![0]) - Number(b.match(/\d+/)![0]));
   const shared: string[] = [];
   const ss = files.get('xl/sharedStrings.xml')?.toString('utf8');
   if (ss) for (const m of ss.matchAll(/<si>([\s\S]*?)<\/si>/g)) shared.push(xmlText([...m[1]!.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map((t) => t[1]).join('')));
+  // Sheet names come from the workbook through its relationships; fall back to the part order.
+  const wb = files.get('xl/workbook.xml')?.toString('utf8') ?? '';
+  const rels = files.get('xl/_rels/workbook.xml.rels')?.toString('utf8') ?? '';
+  const target = new Map([...rels.matchAll(/<Relationship\b[^>]*?Id="([^"]+)"[^>]*?Target="([^"]+)"/g)].map((m) => [m[1]!, `xl/${m[2]!.replace(/^\/?xl\//, '')}`]));
+  const named = [...wb.matchAll(/<sheet\b[^>]*?name="([^"]+)"[^>]*?r:id="([^"]+)"/g)].map((m) => ({ name: xmlText(m[1]!), part: target.get(m[2]!) ?? '' })).filter((x) => files.has(x.part));
+  const order = named.length ? named : parts.map((part, i) => ({ name: `Sheet${i + 1}`, part }));
+  return order.map(({ name, part }) => ({ name, rows: sheetRows(files.get(part)!.toString('utf8'), shared) }));
+}
+
+function sheetRows(xml: string, shared: string[]): string[][] {
   const rows: string[][] = [];
-  for (const rm of files.get(sheetName)!.toString('utf8').matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)) {
+  for (const rm of xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)) {
     const row: string[] = [];
     for (const cm of rm[1]!.matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
       const attrs = cm[1]!;

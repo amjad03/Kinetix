@@ -29,7 +29,8 @@ export async function computeAuto(tx: Tx, keys: string[]): Promise<Map<string, A
   for (const key of keys) {
     if (done.has(key)) continue;
     done.add(key);
-    out.set(key, await one1(tx, key));
+    // A savepoint per key: a module not deployed for this tenant leaves its narrative empty instead of failing the page.
+    out.set(key, await tx.transaction((sp) => one1(sp as Tx, key)).catch(() => ({ value: null })));
   }
   return out;
 }
@@ -180,6 +181,22 @@ async function one1(tx: Tx, key: string): Promise<AutoValue> {
       return { value: r1((await one(tx, sql`select count(*)::int as v from iqac_practices where kind = 'best_practice'`)).v), text: 'Best practices written in the NAAC format' };
     case 'distinctiveness':
       return { value: r1((await one(tx, sql`select count(*)::int as v from iqac_practices where kind = 'distinctiveness'`)).v), text: 'Distinctiveness statements written' };
+    case 'mentoring': {
+      const x = await one(tx, sql`select (select count(*)::int from mentor_assignments where ended_on is null) as mentees, (select count(distinct mentor_user_id)::int from mentor_assignments where ended_on is null) as mentors, (select count(*)::int from early_alert_flags) as flags, (select count(*)::int from remedial_plans) as plans`);
+      return { value: r1(x.mentees), text: `${x.mentees} students are mentored by ${x.mentors} mentors; ${x.flags} early-alert flags were raised and ${x.plans} remedial plans recorded for slow learners.` };
+    }
+    case 'exam_automation': {
+      const x = await one(tx, sql`select (select count(*)::int from exam_sessions) as sessions, (select count(*)::int from exam_sessions where status in ('published', 'locked')) as published, (select count(*)::int from hall_tickets) as tickets, (select count(*)::int from revaluation_requests) as reval`);
+      return { value: r1(x.sessions), text: `Examinations run in the ERP: ${x.sessions} sessions (${x.published} published), ${x.tickets} hall tickets issued online, ${x.reval} revaluation and photocopy requests handled online with time limits.` };
+    }
+    case 'eresources_list': {
+      const rows = await all(tx, sql`select kind, count(*)::int as n from library_eresources where coalesce(status, 'active') = 'active' group by kind order by kind`);
+      return { value: rows.reduce((a, x) => a + Number(x.n), 0), text: rows.length ? `E-resources registered: ${rows.map((x) => `${x.n} ${x.kind}`).join(', ')}.` : 'No e-resources registered in the library module.' };
+    }
+    case 'institution_profile': {
+      const x = await one(tx, sql`select coalesce(p.legal_name, t.name) as name, coalesce(p.aishe_code, '') as aishe, coalesce(p.affiliation_body, '') as affiliation, coalesce(p.established_year::text, '') as est, concat_ws(', ', nullif(p.address_line, ''), nullif(p.city, ''), nullif(p.state, ''), nullif(p.pincode, '')) as address, coalesce(p.naac_grade, '') as grade from tenants t left join institution_profiles p on p.tenant_id = t.id limit 1`);
+      return { value: null, text: [`${x.name}`, x.aishe ? `AISHE / UDISE code ${x.aishe}` : 'Code not recorded', x.address ? `${x.address}` : '', x.affiliation ? `affiliated to ${x.affiliation}` : '', x.est ? `established ${x.est}` : '', x.grade ? `NAAC grade ${x.grade}` : ''].filter(Boolean).join('; ') + '.' };
+    }
     default:
       return { value: null };
   }
