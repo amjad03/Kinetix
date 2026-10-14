@@ -4,20 +4,23 @@ import { attendanceOverrides } from '../db/schema-g1.js';
 import { attendanceCondonations, attendanceRecords, businessRules, sections, subjects, tenants, timetableSlots } from '../db/schema.js';
 import { ruleInForce } from '../governance/governance.logic.js';
 import { attendancePct, effectivePct } from './attendance-rules.js';
+import { resolveAffiliation, resolveForSection } from '../affiliation/resolve.js';
 
 export const DEFAULT_THRESHOLD_PCT = 75;
 
 /**
  * The attendance rules in force. A class's programme may override the threshold or lock window (attendance_overrides); otherwise
  * the threshold comes from the approved, dated rule `attendance/exam-eligibility` in the rule registry (governance) when there
- * is one for today, else the institution's setting, else 75.
+ * is one for today, else the affiliating university's or board's profile (VTU 85%, BCI 70% for law, ...), else the institution's
+ * setting, else 75.
  */
 export async function attendanceSettings(tx: Tx, sectionId?: string, today: string = new Date().toISOString().slice(0, 10)): Promise<{ lockHours: number | null; thresholdPct: number; overridden: boolean }> {
   const [t] = await tx.select({ settings: tenants.settings }).from(tenants);
   const rules = await tx.select().from(businessRules).where(and(eq(businessRules.domain, 'attendance'), eq(businessRules.key, 'exam-eligibility'), eq(businessRules.status, 'approved')));
   const fromRule = Number(ruleInForce(rules, today)?.params?.thresholdPercent);
   const governed = Number.isFinite(fromRule) && fromRule > 0 && fromRule <= 100 ? fromRule : null;
-  const base = { lockHours: t?.settings?.attendanceLockHours ?? null, thresholdPct: governed ?? t?.settings?.attendanceThresholdPct ?? DEFAULT_THRESHOLD_PCT, overridden: false };
+  const affiliation = sectionId ? await resolveForSection(tx, sectionId) : await resolveAffiliation(tx, null);
+  const base = { lockHours: t?.settings?.attendanceLockHours ?? null, thresholdPct: governed ?? affiliation?.rules.attendance.minPercent ?? t?.settings?.attendanceThresholdPct ?? DEFAULT_THRESHOLD_PCT, overridden: false };
   if (!sectionId) return base;
   const [o] = await tx.select({ thresholdPct: attendanceOverrides.thresholdPct, lockHours: attendanceOverrides.lockHours }).from(attendanceOverrides).innerJoin(sections, eq(sections.programId, attendanceOverrides.programId)).where(eq(sections.id, sectionId));
   return o ? { thresholdPct: o.thresholdPct, lockHours: o.lockHours ?? base.lockHours, overridden: true } : base;

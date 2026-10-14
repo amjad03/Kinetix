@@ -74,11 +74,25 @@ export interface SubjectResult {
   reasons: string[];
   components: ComponentResult[];
   complete: boolean;
+  /** Grace marks added to pass (percentage points of the subject), 0 when none. */
+  grace: number;
+  /** Absent in every external assessment: fails and cannot be given grace. */
+  externalAbsent: boolean;
 }
 
 export const round = (n: number, d = 2) => {
   const f = 10 ** d;
   return Math.round((n + Number.EPSILON) * f) / f;
+};
+
+/** How a university rounds SGPA/CGPA: half up (7.455 → 7.46) or cut off (7.459 → 7.45). */
+export type RoundingMode = 'half_up' | 'truncate';
+
+export const roundBy = (n: number, d: number, mode: RoundingMode = 'half_up') => {
+  if (mode === 'half_up') return round(n, d);
+  const f = 10 ** d;
+  // A small epsilon so 7.45 stored as 7.4499999 is not cut to 7.44.
+  return Math.trunc(n * f + 1e-9) / f;
 };
 
 export function validateWeights(components: { weight: number }[]): string | null {
@@ -107,6 +121,8 @@ export function gradeFor(rules: GradeScaleRules, percent: number): { grade: stri
 export function subjectResult(components: SchemeComponent[], evidence: ComponentEvidence[], pass: PassRules, scale: GradeScaleRules): SubjectResult {
   const byId = new Map(evidence.map((e) => [e.componentId, e]));
   let complete = true;
+  const externals = components.filter((c) => c.kind === 'external').map((c) => byId.get(c.id)?.entries ?? []);
+  const externalAbsent = externals.length > 0 && externals.every((es) => es.length > 0 && es.every((e) => e.absent));
   const results: ComponentResult[] = components.map((c) => {
     const ev = byId.get(c.id);
     const max = ev ? ev.entries.reduce((s, e) => s + e.max, 0) : 0;
@@ -142,6 +158,8 @@ export function subjectResult(components: SchemeComponent[], evidence: Component
     reasons,
     components: results.map((r) => ({ ...r, fraction: r.fraction === null ? null : round(r.fraction, 4), weighted: round(r.weighted, 2) })),
     complete,
+    grace: 0,
+    externalAbsent,
   };
 }
 
@@ -155,20 +173,22 @@ export interface CreditLine {
  * SGPA = Σ(credits × grade point) ÷ Σ credits over the term's subjects (failed subjects count with
  * grade point 0, as UGC/BU regulations do). Credits earned counts only passed subjects.
  */
-export function sgpa(lines: CreditLine[], decimals = 2): { sgpa: number; creditsAttempted: number; creditsEarned: number; creditPoints: number } {
+export function sgpa(lines: CreditLine[], decimals = 2, opts: { rounding?: RoundingMode; includeFailedCredits?: boolean } = {}): { sgpa: number; creditsAttempted: number; creditsEarned: number; creditPoints: number } {
   const creditsAttempted = lines.reduce((s, l) => s + l.credits, 0);
   const creditPoints = lines.reduce((s, l) => s + l.credits * (l.passed ? l.gradePoint : 0), 0);
   const creditsEarned = lines.filter((l) => l.passed).reduce((s, l) => s + l.credits, 0);
-  return { sgpa: creditsAttempted === 0 ? 0 : round(creditPoints / creditsAttempted, decimals), creditsAttempted, creditsEarned, creditPoints: round(creditPoints, 4) };
+  // Some regulations average over the credits earned only (failed subjects leave the denominator).
+  const over = opts.includeFailedCredits === false ? creditsEarned : creditsAttempted;
+  return { sgpa: over === 0 ? 0 : roundBy(creditPoints / over, decimals, opts.rounding), creditsAttempted, creditsEarned, creditPoints: round(creditPoints, 4) };
 }
 
 /**
  * CGPA = Σ(credits of term × SGPA of term) ÷ Σ credits, computed from the unrounded credit points
  * (Σ credit points ÷ Σ credits) so rounding each SGPA does not drift the CGPA.
  */
-export function cgpa(terms: { creditsAttempted: number; creditPoints: number }[], decimals = 2): number {
+export function cgpa(terms: { creditsAttempted: number; creditPoints: number }[], decimals = 2, rounding: RoundingMode = 'half_up'): number {
   const credits = terms.reduce((s, t) => s + t.creditsAttempted, 0);
-  return credits === 0 ? 0 : round(terms.reduce((s, t) => s + t.creditPoints, 0) / credits, decimals);
+  return credits === 0 ? 0 : roundBy(terms.reduce((s, t) => s + t.creditPoints, 0) / credits, decimals, rounding);
 }
 
 /** Ready-made scales; institutions copy and adjust them. */

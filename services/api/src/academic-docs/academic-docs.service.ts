@@ -9,6 +9,8 @@ import { academicDocRequests, examResultLines, examResults, examSessions, guardi
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { consolidate, DEFAULT_CLASSES, docCode, docPdf, DOC_TITLE, importedTerm, serialFor, type DocKind, type DocSnapshot, type TermBlock } from './academic-docs.logic.js';
 import { certificateSerial } from '../exam-office/settings.js';
+import { classify, percentEquivalent, roundBy } from '../affiliation/maths.js';
+import { resolveAffiliation } from '../affiliation/resolve.js';
 
 /** Staff who decide and issue. */
 export const DOC_ADMIN: RoleName[] = ['tenant_admin', 'principal', 'exam_controller'];
@@ -29,12 +31,14 @@ export class AcademicDocsService {
   async snapshot(tx: Tx, tenantId: string, studentId: string): Promise<DocSnapshot> {
     const [t] = await tx.select({ name: tenants.name }).from(tenants);
     const [s] = await tx
-      .select({ name: students.fullName, rollNo: students.rollNo, className: sections.displayName, program: programs.name })
+      .select({ name: students.fullName, rollNo: students.rollNo, className: sections.displayName, program: programs.name, programId: programs.id })
       .from(students)
       .innerJoin(sections, eq(sections.id, students.sectionId))
       .innerJoin(programs, eq(programs.id, sections.programId))
       .where(eq(students.id, studentId));
     if (!s) throw new NotFoundException('Student not found');
+    const affiliation = await resolveAffiliation(tx, s.programId);
+    const termLabel = affiliation?.rules.terminology.termLabel ?? 'Semester';
     const history = await tx.select().from(legacyMarks).where(or(eq(legacyMarks.studentId, studentId), eq(legacyMarks.rollNo, s.rollNo)));
     const groups = new Map<string, typeof history>();
     for (const m of history) {
@@ -43,7 +47,7 @@ export class AcademicDocsService {
     }
     const terms: TermBlock[] = [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([key, rows]) => {
       const [year, term] = key.split('|');
-      return importedTerm(`${year} - Semester ${Number(term)}`, rows.map((r) => ({ code: r.subjectCode, subject: r.subjectName || r.subjectCode, credits: r.credits, internal: r.internalMarks, external: r.externalMarks, maxInternal: r.maxInternal, maxExternal: r.maxExternal, grade: r.grade, gradePoint: r.gradePoint, result: r.result })));
+      return importedTerm(`${year} - ${termLabel} ${Number(term)}`, rows.map((r) => ({ code: r.subjectCode, subject: r.subjectName || r.subjectCode, credits: r.credits, internal: r.internalMarks, external: r.externalMarks, maxInternal: r.maxInternal, maxExternal: r.maxExternal, grade: r.grade, gradePoint: r.gradePoint, result: r.result })));
     });
     const rs = await tx
       .select({ id: examResults.id, name: examSessions.name, term: examSessions.term, sgpa: examResults.sgpa, creditsAttempted: examResults.creditsAttempted, creditsEarned: examResults.creditsEarned, creditPoints: examResults.creditPoints })
@@ -57,9 +61,22 @@ export class AcademicDocsService {
         .from(examResultLines)
         .innerJoin(subjects, eq(subjects.id, examResultLines.subjectId))
         .where(inArray(examResultLines.resultId, rs.map((r) => r.id)));
-      for (const r of rs) terms.push({ label: `${r.name} - Semester ${r.term}`, source: 'kinetix', lines: lines.filter((l) => l.resultId === r.id).sort((a, b) => a.code.localeCompare(b.code)).map(({ resultId: _r, ...l }) => l), sgpa: r.sgpa, creditsAttempted: r.creditsAttempted, creditsEarned: r.creditsEarned, creditPoints: r.creditPoints });
+      for (const r of rs) terms.push({ label: `${r.name} - ${termLabel} ${r.term}`, source: 'kinetix', lines: lines.filter((l) => l.resultId === r.id).sort((a, b) => a.code.localeCompare(b.code)).map(({ resultId: _r, ...l }) => l), sgpa: r.sgpa, creditsAttempted: r.creditsAttempted, creditsEarned: r.creditsEarned, creditPoints: r.creditPoints });
     }
-    return { header: { institution: t?.name ?? '', ...s }, terms, ...consolidate(terms, DEFAULT_CLASSES) };
+    const { programId: _p, ...header } = s;
+    const overall = consolidate(terms, DEFAULT_CLASSES);
+    if (affiliation) {
+      // The university's own award rules: its CGPA rounding and its classes (CGPA- or percentage-based, first-attempt conditions).
+      const r = affiliation.rules;
+      const cgpaValue = overall.creditsAttempted > 0 ? roundBy(terms.reduce((a, x) => a + x.creditPoints, 0) / overall.creditsAttempted, r.gpa.decimals, r.gpa.rounding) : 0;
+      const lines = terms.flatMap((x) => x.lines);
+      const marks = lines.filter((l) => l.percent !== null);
+      const percent = marks.length ? Math.round((marks.reduce((a, l) => a + (l.percent ?? 0), 0) / marks.length) * 100) / 100 : null;
+      const firstAttempt = lines.every((l) => l.passed);
+      const label = classify(r, { passed: overall.outcome === 'passed', cgpa: r.gpa.enabled ? cgpaValue : null, percent: r.percentage.basis === 'cgpa' ? percentEquivalent(r, { cgpa: cgpaValue, marksPercent: percent }) : percent, firstAttempt });
+      return { header: { institution: t?.name ?? '', ...header }, terms, ...overall, cgpa: cgpaValue, classLabel: label ?? '' };
+    }
+    return { header: { institution: t?.name ?? '', ...header }, terms, ...overall };
   }
 
   create(p: UserPrincipal, b: { studentId: string; kind: DocKind; purpose: string }) {

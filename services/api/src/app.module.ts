@@ -61,6 +61,7 @@ import { WelfareModule } from './welfare/welfare.module.js';
 import { AcademicsModule } from './academics/academics.module.js';
 import { AttendanceGovernanceModule } from './attendance-governance/governance.module.js';
 import { InstitutionModule } from './institution/institution.module.js';
+import { AffiliationModule } from './affiliation/affiliation.module.js';
 import { TrustModule } from './trust/trust.module.js';
 import { SchedulingModule } from './scheduling/scheduling.module.js';
 import { SchoolLearningModule } from './school-learning/school-learning.module.js';
@@ -193,6 +194,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     AcademicsModule,
     AttendanceGovernanceModule,
     InstitutionModule,
+    AffiliationModule,
     TrustModule,
     SchedulingModule,
     SchoolLearningModule,

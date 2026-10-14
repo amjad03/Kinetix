@@ -2272,6 +2272,8 @@ export const examResults = pgTable(
     creditPoints: numeric('credit_points', { precision: 9, scale: 4, mode: 'number' }).notNull(),
     outcome: text('outcome').notNull(),
     computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
+    /** The affiliation profile, scheme and rules version the result was graded under (migration 0144); null without a profile. */
+    rulesRef: jsonb('rules_ref').$type<{ profile: string; scheme: string; version: number; overridden: boolean }>(),
   },
   (t) => [uniqueIndex('exam_results_uq').on(t.sessionId, t.studentId)],
 );
@@ -2289,6 +2291,8 @@ export const examResultLines = pgTable(
     passed: boolean('passed').notNull(),
     reasons: jsonb('reasons').notNull().default(sql`'[]'::jsonb`),
     components: jsonb('components').notNull().default(sql`'[]'::jsonb`),
+    /** Grace marks the profile's rules added to pass (migration 0144). */
+    grace: numeric('grace', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.resultId, t.subjectId] })],
 );
@@ -3580,6 +3584,7 @@ export const TENANT_TABLES = [
   'integrity_checks',
   'integrity_matches',
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
+  'affiliation_settings', 'programme_affiliations',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------

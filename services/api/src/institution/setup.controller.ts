@@ -16,6 +16,7 @@ import { invalidateModuleGate } from './module-gate.interceptor.js';
 import { GOVERNANCE_MODELS, GOVERNANCE_RULES, INSTITUTION_TYPES, PRESETS, presetByKey, STRUCTURE_MODELS, type GovernanceModel } from './presets.js';
 import { TOGGLE_MODULES } from './institution.controller.js';
 import { naturalAsc } from '../common/natural-order.js';
+import { resolveAffiliation } from '../affiliation/resolve.js';
 
 const opt = (max: number) => z.string().trim().max(max).nullable().optional();
 const TermKey = z.string().regex(/^[a-z][a-zA-Z0-9.]{1,60}$/);
@@ -92,7 +93,10 @@ export class InstitutionSetupController {
       const r = await profile(tx);
       const boards = await tx.select().from(schoolBoards).orderBy(asc(schoolBoards.code));
       const gov = (r?.governanceModel ?? null) as GovernanceModel | null;
+      const aff = await resolveAffiliation(tx, null);
       return {
+        /** The setup wizard's Affiliation step: done once a university or board is chosen. */
+        affiliation: aff ? { profileCode: aff.profile.code, name: aff.profile.name, scheme: aff.scheme.code, schemeName: aff.scheme.name } : null,
         institutionType: r?.institutionType ?? null,
         structureModel: r?.structureModel ?? null,
         governanceModel: gov,

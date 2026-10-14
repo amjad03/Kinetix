@@ -132,19 +132,19 @@ export const DEFAULT_SETTINGS: OfficeSettings = {
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** Stored settings over the defaults, key by key, so a setting added later still has a value. */
-export function withDefaults(stored: unknown): OfficeSettings {
+export function withDefaults(stored: unknown, defaults: OfficeSettings = DEFAULT_SETTINGS): OfficeSettings {
   const s = isObj(stored) ? stored : {};
   const merge = <T extends object>(d: T, v: unknown): T => (isObj(v) ? ({ ...d, ...Object.fromEntries(Object.entries(v).filter(([k]) => k in d)) } as T) : d);
   return {
-    hallTicketSeries: merge(DEFAULT_SETTINGS.hallTicketSeries, s.hallTicketSeries),
-    certificateSeries: merge(DEFAULT_SETTINGS.certificateSeries, s.certificateSeries),
-    qpSeries: merge(DEFAULT_SETTINGS.qpSeries, s.qpSeries),
+    hallTicketSeries: merge(defaults.hallTicketSeries, s.hallTicketSeries),
+    certificateSeries: merge(defaults.certificateSeries, s.certificateSeries),
+    qpSeries: merge(defaults.qpSeries, s.qpSeries),
     defaultGradeScaleId: typeof s.defaultGradeScaleId === 'string' ? s.defaultGradeScaleId : null,
-    grace: merge(DEFAULT_SETTINGS.grace, s.grace),
-    moderation: merge(DEFAULT_SETTINGS.moderation, s.moderation),
-    revaluation: merge(DEFAULT_SETTINGS.revaluation, s.revaluation),
-    examFees: merge(DEFAULT_SETTINGS.examFees, s.examFees),
-    qpReleaseMinutes: typeof s.qpReleaseMinutes === 'number' ? s.qpReleaseMinutes : DEFAULT_SETTINGS.qpReleaseMinutes,
+    grace: merge(defaults.grace, s.grace),
+    moderation: merge(defaults.moderation, s.moderation),
+    revaluation: merge(defaults.revaluation, s.revaluation),
+    examFees: merge(defaults.examFees, s.examFees),
+    qpReleaseMinutes: typeof s.qpReleaseMinutes === 'number' ? s.qpReleaseMinutes : defaults.qpReleaseMinutes,
   };
 }
 

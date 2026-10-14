@@ -8,6 +8,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { invalidateModuleGate } from './module-gate.interceptor.js';
 import { buildingFloors, buildings, campuses, institutionProfiles, rooms, tenants } from '../db/schema.js';
+import { resolveAffiliation } from '../affiliation/resolve.js';
 
 /** ERP sections an institution may switch off (they disappear from the navigation). */
 export const TOGGLE_MODULES = ['hostel', 'transport', 'canteen', 'library', 'placements', 'research', 'obe', 'courseRegistration', 'earlyYears', 'alumni', 'inventory', 'assets', 'skills', 'campusLife', 'mentoring', 'workflows'] as const;
@@ -53,7 +54,10 @@ export class InstitutionController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const r = await readProfile(tx);
       const [tenant] = await tx.select({ kind: tenants.kind }).from(tenants).where(eq(tenants.id, p.tenantId));
+      const aff = await resolveAffiliation(tx, null);
       return {
+        /** The affiliating university or board and its wording (Semester, IA/SEE or CIE/SEE, USN or Register Number). */
+        affiliation: aff ? { profileCode: aff.profile.code, shortName: aff.profile.shortName, kind: aff.profile.kind, scheme: aff.scheme.code, terminology: aff.rules.terminology } : null,
         tenantKind: tenant?.kind ?? null,
         academicModel: r?.academicModel ?? 'school',
         boardOrUniversity: r?.boardOrUniversity ?? null,
