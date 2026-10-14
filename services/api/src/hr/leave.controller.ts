@@ -1,4 +1,10 @@
-import { Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
+import { Readable } from 'node:stream';
+import { documentType } from '../admissions/public-admissions.controller.js';
+import { UploadScanService } from '../scanning/upload-scan.js';
+import { ObjectStorage } from '../storage/storage.service.js';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -6,7 +12,7 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
-import { leaveTypes } from '../db/schema.js';
+import { leaveRequests, leaveTypes } from '../db/schema.js';
 import { HR_ROLES, PAYROLL_ROLES, STAFF_ROLES, hasAnyRole } from './hr.access.js';
 import { HrService } from './hr.service.js';
 import { LeaveService } from './leave.service.js';
@@ -23,8 +29,28 @@ const TypeBody = z.object({
   active: z.boolean().default(true),
   /** Omitted: left as it is. */
   encashable: z.boolean().optional(),
+  kind: z.enum(['regular', 'unpaid', 'duty', 'vacation', 'comp_off', 'maternity', 'paternity', 'study', 'special']).optional(),
+  maxPerRequest: Days.nullable().optional(),
+  minNoticeDays: z.number().int().min(0).max(90).optional(),
+  requiresDocument: z.boolean().optional(),
+  gender: z.enum(['any', 'female', 'male']).optional(),
+  countsHolidays: z.boolean().optional(),
+  halfDayAllowed: z.boolean().optional(),
+  validDays: z.number().int().min(1).max(366).optional(),
 });
-const ApplyBody = z.object({ leaveTypeId: z.uuid(), fromDate: Day, toDate: Day, halfDay: z.boolean().default(false), reason: z.string().trim().max(500).default('') });
+const ApplyBody = z.object({
+  leaveTypeId: z.uuid(),
+  fromDate: Day,
+  toDate: Day,
+  halfDay: z.boolean().default(false),
+  reason: z.string().trim().max(500).default(''),
+  /** HR applying on a staff member's behalf. */
+  userId: z.uuid().optional(),
+  /** A colleague who decides the applicant's approvals while they are away (from approval). */
+  delegateId: z.uuid().nullish(),
+});
+const RevokeBody = z.object({ reason: z.string().trim().min(3, 'Give a reason').max(500) });
+const MAX_DOC_BYTES = 5 * 1024 * 1024;
 const DecideBody = z.object({ note: z.string().trim().max(500).optional() });
 const CarryBody = z.object({ fromYear: z.number().int().min(2000).max(2100) });
 
@@ -35,6 +61,8 @@ export class LeaveController {
     private readonly db: DbService,
     private readonly hr: HrService,
     private readonly leave: LeaveService,
+    private readonly scans: UploadScanService,
+    private readonly storage: ObjectStorage,
   ) {}
 
   @Get('leave-types')
@@ -139,6 +167,71 @@ export class LeaveController {
   @Auth('user', STAFF_ROLES)
   cancel(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, (tx) => this.leave.cancel(tx, p, id));
+  }
+
+  /** HR withdraws approved leave, with a reason (the applicant is told). */
+  @Post('leave/requests/:id/revoke')
+  @HttpCode(200)
+  @Auth('user', HR_ROLES)
+  revoke(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(RevokeBody)) b: z.infer<typeof RevokeBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.leave.revoke(tx, p, id, b.reason));
+  }
+
+  /** Assigns substitutes to the teacher's periods during approved leave. HR, or the head of their department. */
+  @Post('leave/requests/:id/arrange-substitutes')
+  @HttpCode(200)
+  @Auth('user', [...HR_ROLES, 'hod'])
+  arrange(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const r = await this.leave.get(tx, id);
+      if (!hasAnyRole(p, HR_ROLES) && !(await this.leave.headedStaff(tx, p.userId)).includes(r.user.id)) throw new NotFoundException('Leave request not found');
+      return this.leave.arrangeSubstitutes(tx, p, id);
+    });
+  }
+
+  /** Attaches the supporting document (medical certificate, order) to a request: the applicant or HR. Multipart field `file`. */
+  @Post('leave/requests/:id/document')
+  @Auth('user', STAFF_ROLES)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_DOC_BYTES, files: 1 } }))
+  async attach(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @UploadedFile() file?: { buffer: Buffer; originalname: string }) {
+    if (!file?.buffer?.length) throw new BadRequestException('Choose the file');
+    const type = documentType(file.buffer);
+    if (!type) throw new BadRequestException('The document must be a PDF, JPEG or PNG');
+    const req = await this.db.withTenant(p.tenantId, async (tx) => {
+      const [r] = await tx.select().from(leaveRequests).where(eq(leaveRequests.id, id));
+      if (!r || (r.userId !== p.userId && !hasAnyRole(p, HR_ROLES))) throw new NotFoundException('Leave request not found');
+      if (r.status === 'rejected' || r.status === 'cancelled') throw new ConflictException(`This request is ${r.status}`);
+      return r;
+    });
+    await this.scans.assertClean(file.buffer, 'The document');
+    const key = `tenants/${p.tenantId}/hr/leave/${id}-${Date.now()}`;
+    await this.storage.put(key, Readable.from(file.buffer), MAX_DOC_BYTES, type);
+    try {
+      const out = await this.db.withTenant(p.tenantId, async (tx) => {
+        await tx.update(leaveRequests).set({ documentKey: key, documentType: type, documentName: file.originalname.slice(0, 200) }).where(eq(leaveRequests.id, id));
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'leave.document_attached', subjectType: 'leave_request', subjectId: id, data: { type } });
+        return this.leave.get(tx, id);
+      });
+      if (req.documentKey) await this.storage.delete(req.documentKey).catch(() => undefined);
+      return out;
+    } catch (e) {
+      await this.storage.delete(key).catch(() => undefined);
+      throw e;
+    }
+  }
+
+  @Get('leave/requests/:id/document')
+  @Auth('user', STAFF_ROLES)
+  async document(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
+    const r = await this.db.withTenant(p.tenantId, async (tx) => {
+      const [row] = await tx.select().from(leaveRequests).where(eq(leaveRequests.id, id));
+      const allowed = row && (row.userId === p.userId || hasAnyRole(p, PAYROLL_ROLES) || (await this.leave.headedStaff(tx, p.userId)).includes(row.userId));
+      if (!row?.documentKey || !allowed) throw new NotFoundException('No document attached');
+      return row;
+    });
+    const { stream, size } = await this.storage.get(r.documentKey!);
+    res.set({ 'content-type': r.documentType ?? 'application/octet-stream', 'content-length': String(size), 'content-disposition': 'inline', 'x-content-type-options': 'nosniff', 'cache-control': 'private, no-store' });
+    stream.pipe(res);
   }
 }
 

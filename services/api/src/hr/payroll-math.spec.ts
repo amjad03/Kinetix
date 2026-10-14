@@ -108,7 +108,7 @@ describe('computePayslip', () => {
   it('₹2 lakh gross in April: PF 1,800, PT 200, TDS 24,375, net 1,73,625', () => {
     const p = computePayslip(input());
     expect(p).toMatchObject({ grossPaise: R(2_00_000), employeePfPaise: R(1_800), ptPaise: R(200), tdsPaise: R(24_375), deductionsPaise: R(26_375), netPaise: R(1_73_625) });
-    expect(p.employer).toEqual({ epfPaise: R(550), epsPaise: R(1_250), esiPaise: 0 });
+    expect(p.employer).toEqual({ epfPaise: R(550), epsPaise: R(1_250), esiPaise: 0, lwfPaise: 0 });
     expect(p.deductions.map((d) => d.code)).toEqual(['PF', 'PT', 'TDS']);
   });
 

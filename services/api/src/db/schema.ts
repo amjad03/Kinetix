@@ -2969,6 +2969,11 @@ export const designations = pgTable(
     tenantId: tenantId(),
     name: text('name').notNull(),
     grade: text('grade'),
+    /** professor | associate_professor | assistant_professor | lecturer | principal | librarian | physical_director | lab_staff | administrative | support | other */
+    cadre: text('cadre'),
+    /** teaching | non_teaching */
+    staffCategory: text('staff_category').notNull().default('teaching'),
+    sortOrder: integer('sort_order').notNull().default(0),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('designations_name_uq').on(t.tenantId, t.name)],
@@ -3007,6 +3012,36 @@ export const staffProfiles = pgTable(
     /** AES-256-GCM (common/secret-box.ts), bound to "<tenantId>:staff.<userId>.bank_account". */
     bankAccountEnc: text('bank_account_enc'),
     bankAccountLast4: text('bank_account_last4'),
+    /** teaching | non_teaching */
+    staffCategory: text('staff_category').notNull().default('teaching'),
+    /** The faculty cadre (AICTE/UGC): professor, associate_professor, assistant_professor, lecturer and so on. */
+    cadre: text('cadre'),
+    /** sanctioned | self_financing | guest */
+    postType: text('post_type').notNull().default('sanctioned'),
+    /** general | ews | obc | sc | st */
+    socialCategory: text('social_category'),
+    religion: text('religion'),
+    bloodGroup: text('blood_group'),
+    maritalStatus: text('marital_status'),
+    fatherOrSpouseName: text('father_or_spouse_name'),
+    differentlyAbled: boolean('differently_abled').notNull().default(false),
+    address: text('address'),
+    emergencyContactName: text('emergency_contact_name'),
+    emergencyContactPhone: text('emergency_contact_phone'),
+    /** AES-256-GCM like the bank account, bound to "<tenantId>:staff.<userId>.aadhaar". */
+    aadhaarEnc: text('aadhaar_enc'),
+    aadhaarLast4: text('aadhaar_last4'),
+    /** none | pursuing | submitted | awarded */
+    phdStatus: text('phd_status').notNull().default('none'),
+    phdYear: smallint('phd_year'),
+    /** none | net | net_jrf | set | slet */
+    netSet: text('net_set').notNull().default('none'),
+    netSetYear: smallint('net_set_year'),
+    payScale: text('pay_scale'),
+    payLevel: smallint('pay_level'),
+    confirmedOn: date('confirmed_on'),
+    retirementAge: smallint('retirement_age').notNull().default(60),
+    lwfEnabled: boolean('lwf_enabled').notNull().default(true),
     version: integer('version').notNull().default(1),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -3027,6 +3062,11 @@ export const staffAttendance = pgTable(
     source: text('source').notNull(), // app | manual | biometric
     note: text('note'),
     markedBy: uuid('marked_by').references(() => users.id, { onDelete: 'set null' }),
+    /** Minutes after office start plus grace at check-in, and before office end at check-out. */
+    lateMinutes: smallint('late_minutes'),
+    earlyMinutes: smallint('early_minutes'),
+    /** Set by an approved regularisation request. */
+    regularised: boolean('regularised').notNull().default(false),
     updatedAt: updatedAt(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.date] }), index('staff_attendance_date_idx').on(t.tenantId, t.date)],
@@ -3045,6 +3085,19 @@ export const leaveTypes = pgTable(
     carryForwardMax: numeric('carry_forward_max', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
     encashable: boolean('encashable').notNull().default(false),
     active: boolean('active').notNull().default(true),
+    /** regular | unpaid | duty | vacation | comp_off | maternity | paternity | study | special */
+    kind: text('kind').notNull().default('regular'),
+    maxPerRequest: numeric('max_per_request', { precision: 5, scale: 1, mode: 'number' }),
+    minNoticeDays: smallint('min_notice_days').notNull().default(0),
+    requiresDocument: boolean('requires_document').notNull().default(false),
+    /** any | female | male */
+    gender: text('gender').notNull().default('any'),
+    /** Sandwich rule: weekly offs and holidays inside the leave count as leave. */
+    countsHolidays: boolean('counts_holidays').notNull().default(false),
+    halfDayAllowed: boolean('half_day_allowed').notNull().default(true),
+    /** Compensatory off: days a credit stays usable. */
+    validDays: smallint('valid_days').notNull().default(90),
+    sortOrder: integer('sort_order').notNull().default(0),
   },
   (t) => [uniqueIndex('leave_types_code_uq').on(t.tenantId, t.code)],
 );
@@ -3081,6 +3134,15 @@ export const leaveRequests = pgTable(
     recommendedAt: timestamp('recommended_at', { withTimezone: true }),
     recommendNote: text('recommend_note'),
     decisionNote: text('decision_note'),
+    /** HR applying on the staff member's behalf. */
+    appliedBy: uuid('applied_by').references(() => users.id, { onDelete: 'set null' }),
+    /** The colleague who decides the applicant's approvals while they are away. */
+    delegateId: uuid('delegate_id').references(() => users.id, { onDelete: 'set null' }),
+    delegationId: uuid('delegation_id').references((): AnyPgColumn => approvalDelegations.id, { onDelete: 'set null' }),
+    documentKey: text('document_key'),
+    documentType: text('document_type'),
+    documentName: text('document_name'),
+    revokedReason: text('revoked_reason'),
     createdAt: createdAt(),
   },
   (t) => [index('leave_requests_user_idx').on(t.userId, t.fromDate), index('leave_requests_status_idx').on(t.tenantId, t.status)],
@@ -3116,6 +3178,20 @@ export const jobApplicants = pgTable(
     notes: text('notes').notNull().default(''),
     stage: text('stage').notNull().default('applied'),
     stageHistory: jsonb('stage_history').$type<{ stage: string; at: string; by: string; note?: string }[]>().notNull().default([]),
+    qualification: text('qualification').notNull().default(''),
+    experienceYears: numeric('experience_years', { precision: 4, scale: 1, mode: 'number' }),
+    phd: boolean('phd').notNull().default(false),
+    netSet: boolean('net_set').notNull().default(false),
+    currentOrganisation: text('current_organisation').notNull().default(''),
+    expectedCtcPaise: bigint('expected_ctc_paise', { mode: 'number' }),
+    /** direct | advertisement | referral | portal | campus | walk_in */
+    source: text('source').notNull().default('direct'),
+    screeningScore: numeric('screening_score', { precision: 5, scale: 2, mode: 'number' }),
+    resumeKey: text('resume_key'),
+    resumeType: text('resume_type'),
+    resumeName: text('resume_name'),
+    /** The staff account made when the applicant joined. */
+    hiredUserId: uuid('hired_user_id').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
   },
   (t) => [index('job_applicants_opening_idx').on(t.openingId, t.stage)],
@@ -3137,6 +3213,10 @@ export const salaryComponents = pgTable(
     taxable: boolean('taxable').notNull().default(true),
     active: boolean('active').notNull().default(true),
     sortOrder: smallint('sort_order').notNull().default(0),
+    /** fixed: the structure's amount. percent: a percentage of another component (DA on basic). */
+    calc: text('calc').notNull().default('fixed'),
+    percent: numeric('percent', { precision: 7, scale: 3, mode: 'number' }),
+    baseCode: text('base_code').notNull().default('BASIC'),
   },
   (t) => [uniqueIndex('salary_components_code_uq').on(t.tenantId, t.code)],
 );
@@ -3175,6 +3255,8 @@ export const payrollSettings = pgTable('payroll_settings', {
   ptSlabs: jsonb('pt_slabs').notNull(),
   weeklyOffs: jsonb('weekly_offs').$type<number[]>().notNull().default([0]),
   ledgers: jsonb('ledgers').notNull(),
+  /** Labour Welfare Fund: a fixed contribution in the listed months (Karnataka: Rs 50 + Rs 100 in December). */
+  lwf: jsonb('lwf').$type<{ enabled: boolean; employeePaise: number; employerPaise: number; months: number[] }>().notNull().default({ enabled: true, employeePaise: 5000, employerPaise: 10000, months: [12] }),
   updatedAt: updatedAt(),
 });
 
@@ -3197,9 +3279,19 @@ export const payrollRuns = pgTable(
     bankFileAt: timestamp('bank_file_at', { withTimezone: true }),
     publishedBy: uuid('published_by').references(() => users.id, { onDelete: 'set null' }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
+    /** regular | supplementary */
+    kind: text('kind').notNull().default('regular'),
+    /** 1 for the regular run; supplementary runs of the month count on. */
+    seq: smallint('seq').notNull().default(1),
+    /** Supplementary run: the staff paid in full (late joiners); everyone else gets only their unpaid adjustments. */
+    staffIds: jsonb('staff_ids').$type<string[]>().notNull().default([]),
+    note: text('note').notNull().default(''),
+    reversedBy: uuid('reversed_by').references(() => users.id, { onDelete: 'set null' }),
+    reversedAt: timestamp('reversed_at', { withTimezone: true }),
+    reversalReason: text('reversal_reason'),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('payroll_runs_month_uq').on(t.tenantId, t.month)],
+  (t) => [uniqueIndex('payroll_runs_month_uq').on(t.tenantId, t.month, t.seq).where(sql`${t.status} <> 'reversed'`)],
 );
 
 /** One payslip per staff member per run; `data` is the full computed payslip (the record once locked). */
@@ -3926,6 +4018,8 @@ export const TENANT_TABLES = [
   'elections', 'election_posts', 'election_candidates', 'election_voters', 'election_ballots', 'event_external_registrations', 'event_duty_leaves',
   'grievance_routes', 'antiragging_undertakings', 'pwd_accommodations', 'mentor_messages', 'learner_rules',
   'contact_suppressions', 'homework_extensions', 'homework_groups', 'lms_item_progress', 'lms_quizzes', 'lms_quiz_questions', 'lms_quiz_attempts',
+  // HR depth (0165–0167)
+  'staff_experience', 'staff_publications', 'staff_documents', 'comp_off_credits', 'attendance_regularisations', 'job_interviews', 'job_interview_scores', 'salary_component_rates',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -7162,6 +7256,12 @@ export const appraisals = pgTable(
     grade: text('grade'),
     principalRemarks: text('principal_remarks'),
     principalId: uuid('principal_id').references(() => users.id, { onDelete: 'set null' }),
+    /** Average student rating of the teacher in the cycle's year, as a percentage. */
+    studentFeedbackScore: numeric('student_feedback_score', { precision: 5, scale: 2, mode: 'number' }),
+    committeeScore: numeric('committee_score', { precision: 5, scale: 2, mode: 'number' }),
+    committeeRemarks: text('committee_remarks'),
+    committeeBy: uuid('committee_by').references(() => users.id, { onDelete: 'set null' }),
+    committeeAt: timestamp('committee_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

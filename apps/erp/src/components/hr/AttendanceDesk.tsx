@@ -91,6 +91,8 @@ export function AttendanceDesk({ date, today, timeZone, rows }: { date: string; 
                           </TextField></>) },
           { id: 'c2', header: t('hr.att.in'), sort: (r) => r.checkInAt ?? '', cell: (r) => clockTime(r.checkInAt, timeZone) },
           { id: 'c3', header: t('hr.att.out'), sort: (r) => r.checkOutAt ?? '', cell: (r) => clockTime(r.checkOutAt, timeZone) },
+          { id: 'late', header: t('hk.att.late'), align: 'right', sort: (r) => r.lateMinutes ?? 0, cell: (r) => (r.lateMinutes ? <StatusPill tone="warning">{t('hk.att.minutes', { n: r.lateMinutes })}</StatusPill> : '–') },
+          { id: 'early', header: t('hk.att.early'), align: 'right', hideBelow: 'md', sort: (r) => r.earlyMinutes ?? 0, cell: (r) => (r.earlyMinutes ? t('hk.att.minutes', { n: r.earlyMinutes }) : '–') },
           { id: 'c4', header: t('hr.att.source'), sort: (r) => (r.source ? t(`hr.att.src.${r.source}` as MessageKey) : ''), cell: (r) => (r.source ? t(`hr.att.src.${r.source}` as MessageKey) : '–') },
         ]}
       />

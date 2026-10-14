@@ -16,7 +16,7 @@ const TONE: Record<string, Tone> = { scheduled: 'warning', applied: 'success', c
 const place = (p: Transfer['from']) => [p.department, p.designation, p.campus].filter(Boolean).join(' · ') || '-';
 
 /** Staff transfers: record a move with its effective date, and read the history. */
-export function TransfersDesk({ transfers, options, staff }: { transfers: Transfer[]; options: TransferOptions; staff: { userId: string; fullName: string }[] }) {
+export function TransfersDesk({ transfers, options, staff, formOnly = false }: { transfers: Transfer[]; options: TransferOptions; staff: { userId: string; fullName: string }[]; /** Only the form (the history is a record kit list on the page). */ formOnly?: boolean }) {
   const { t, locale } = useI18n();
   const router = useRouter();
   const [f, setF] = useState(BLANK);
@@ -81,8 +81,8 @@ export function TransfersDesk({ transfers, options, staff }: { transfers: Transf
         </form>
       </div>
 
-      <SectionTitle flush>{t('as.tr.history')}</SectionTitle>
-      {transfers.length === 0 ? (
+      {!formOnly && <SectionTitle flush>{t('as.tr.history')}</SectionTitle>}
+      {formOnly ? null : transfers.length === 0 ? (
         <p className="text-sm leading-[21px] text-muted-foreground">{t('as.tr.none')}</p>
       ) : (
         <div className="rounded-[12px] border bg-card overflow-x-auto">

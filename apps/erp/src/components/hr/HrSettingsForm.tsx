@@ -49,7 +49,7 @@ export function HrSettingsForm({ initial, leaveTypes, payroll }: { initial: HrMo
             title: t('hf.set.numbering'),
             description: t('hf.set.numberingHelp'),
             content: (
-              <div className="grid gap-6">
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
                 <NumberingSeriesField label={t('hf.set.employeeNo')} value={toUi(s.employeeSeries)} onChange={(v) => setS({ ...s, employeeSeries: fromUi(v) })} />
                 <NumberingSeriesField label={t('hf.set.payslipNo')} value={toUi(s.payslipSeries)} onChange={(v) => setS({ ...s, payslipSeries: fromUi(v) })} />
               </div>
@@ -61,7 +61,7 @@ export function HrSettingsForm({ initial, leaveTypes, payroll }: { initial: HrMo
             title: t('hf.set.leave'),
             description: t('hf.set.leaveHelp'),
             content: (
-              <div className="grid gap-6">
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
                 <FormGrid>
                   <SelectInput label={t('hf.set.levels')} value={String(s.leaveLevels)} onChange={(e) => setS({ ...s, leaveLevels: e.target.value === '2' ? 2 : 1 })} options={[{ value: '1', label: t('hf.set.levels1') }, { value: '2', label: t('hf.set.levels2') }]} />
                   <TextInput label={t('hf.set.encashMax')} type="number" value={String(s.encashment.maxDaysPerYear)} onChange={(e) => setS({ ...s, encashment: { ...s.encashment, maxDaysPerYear: num(e.target.value) } })} />
@@ -94,6 +94,8 @@ export function HrSettingsForm({ initial, leaveTypes, payroll }: { initial: HrMo
                 <TextInput label={t('hf.set.grace')} type="number" value={String(s.attendance.graceMinutes)} onChange={(e) => setS({ ...s, attendance: { ...s.attendance, graceMinutes: num(e.target.value) } })} />
                 <TextInput label={t('hf.set.halfDayAfter')} type="number" value={String(s.attendance.halfDayAfterMinutes)} onChange={(e) => setS({ ...s, attendance: { ...s.attendance, halfDayAfterMinutes: num(e.target.value) } })} />
                 <TextInput label={t('hf.set.minHours')} type="number" value={String(s.attendance.minHoursFullDay)} onChange={(e) => setS({ ...s, attendance: { ...s.attendance, minHoursFullDay: num(e.target.value) } })} />
+                <TextInput label={t('hk.set.officeEnd')} type="time" value={s.attendance.officeEnd ?? '17:00'} onChange={(e) => setS({ ...s, attendance: { ...s.attendance, officeEnd: e.target.value } })} slotProps={{ inputLabel: { shrink: true } }} />
+                <TextInput label={t('hk.set.lateMarks')} helperText={t('hk.set.lateMarksHelp')} type="number" value={String(s.attendance.lateMarksPerHalfDay ?? 3)} onChange={(e) => setS({ ...s, attendance: { ...s.attendance, lateMarksPerHalfDay: num(e.target.value) } })} />
               </FormGrid>
             ),
           },

@@ -16,7 +16,7 @@ const KINDS = ['fdp', 'workshop', 'conference', 'course'] as const;
 const BLANK = { userId: '', title: '', kind: 'fdp', organiser: '', startsOn: '', endsOn: '', hours: '', certificateRef: '' };
 
 /** Training and FDP records: staff add their own, HR adds for anyone and verifies against the certificate. */
-export function TrainingDesk({ records, summary, staff, isHr, meId }: { records: TrainingRecord[]; summary: TrainingSummary[]; staff: { userId: string; fullName: string }[]; isHr: boolean; meId: string }) {
+export function TrainingDesk({ records, summary, staff, isHr, meId, summaryOnly = false }: { records: TrainingRecord[]; summary: TrainingSummary[]; staff: { userId: string; fullName: string }[]; isHr: boolean; meId: string; /** Only the hours per person (the records are a record kit list on the page). */ summaryOnly?: boolean }) {
   const { t, locale } = useI18n();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +31,21 @@ export function TrainingDesk({ records, summary, staff, isHr, meId }: { records:
         router.refresh();
       } else setError(res.error ?? null);
     });
+  if (summaryOnly)
+    return summary.length ? (
+      <div className="rounded-[12px] border bg-card p-5">
+        <SectionTitle flush>{t('hl.train.summary')}</SectionTitle>
+        <div className="flex flex-row flex-wrap gap-2">
+          {summary.map((s) => (
+            <StatusPill key={s.userId} tone="info">
+              {s.fullName}: {s.hours} · {t('hl.train.programmes', { n: s.programmes })}
+            </StatusPill>
+          ))}
+        </div>
+      </div>
+    ) : (
+      <p className="text-sm leading-[21px] text-muted-foreground">{t('hl.train.none')}</p>
+    );
   return (
     <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}

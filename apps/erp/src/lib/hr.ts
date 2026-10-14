@@ -16,14 +16,14 @@ export function shiftMonth(ym: string, by: number): string {
   return `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`;
 }
 
-export const RUN_TONE: Record<PayrollRunStatus, 'default' | 'info' | 'warning' | 'success'> = { draft: 'default', verified: 'info', approved: 'warning', locked: 'success' };
+export const RUN_TONE: Record<PayrollRunStatus, 'default' | 'info' | 'warning' | 'success' | 'error'> = { draft: 'default', verified: 'info', approved: 'warning', locked: 'success', reversed: 'error' };
 export const LEAVE_TONE: Record<LeaveStatus, 'default' | 'info' | 'warning' | 'success' | 'error'> = { pending: 'warning', recommended: 'info', approved: 'success', rejected: 'error', cancelled: 'default' };
 
 /**
  * What a person can still do to a run: draft → verify (payroll staff) → approve → lock (principal) → publish payslips.
  * A verified or approved run can be reopened; draft and verified runs can be recomputed.
  */
-export function runActions(status: PayrollRunStatus, canApprove: boolean, published = false): { recompute: boolean; verify: boolean; approve: boolean; lock: boolean; reopen: boolean; publish: boolean; exports: boolean } {
+export function runActions(status: PayrollRunStatus, canApprove: boolean, published = false): { recompute: boolean; verify: boolean; approve: boolean; lock: boolean; reopen: boolean; publish: boolean; exports: boolean; reverse: boolean } {
   return {
     recompute: status === 'draft' || status === 'verified',
     verify: status === 'draft',
@@ -32,10 +32,15 @@ export function runActions(status: PayrollRunStatus, canApprove: boolean, publis
     reopen: (status === 'verified' || status === 'approved') && canApprove,
     publish: status === 'locked' && !published,
     exports: status === 'approved' || status === 'locked',
+    reverse: status === 'locked' && canApprove,
   };
 }
 
-export type StatutoryKind = 'pf' | 'esi' | 'pt' | 'tds';
+/** The payroll page's tabs (?tab=). */
+export type PayrollTab = 'runs' | 'structures' | 'components' | 'challans' | 'returns' | 'settings';
+export const PAYROLL_TABS: PayrollTab[] = ['runs', 'structures', 'components', 'challans', 'returns', 'settings'];
+
+export type StatutoryKind = 'pf' | 'esi' | 'pt' | 'tds' | 'lwf';
 
 /** Same-origin download URLs (the route at app/api/download adds the session token). */
 export const downloadUrl = {
@@ -43,6 +48,10 @@ export const downloadUrl = {
   tally: (runId: string) => `/api/download?kind=tally&id=${runId}`,
   statutory: (runId: string, kind: StatutoryKind) => `/api/download?kind=${kind}&id=${runId}`,
   payslip: (id: string) => `/api/download?kind=payslip&id=${id}`,
+  /** EPFO ECR 2.0 text file of a run. */
+  ecr: (runId: string) => `/api/download?kind=ecr&id=${runId}`,
+  /** Form 24Q for a financial year (2026 = 2026-27) and quarter; annexure II goes with the fourth quarter. */
+  q24: (fy: number, quarter: number, annexure: 1 | 2) => `/api/download?kind=q24&fy=${fy}&quarter=${quarter}&annexure=${annexure}`,
 };
 
 export interface LineDraft {

@@ -3,12 +3,11 @@
 import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
-import type { HrModuleSettings, LeaveEncashment, ServiceBookEntry, StaffLoan } from '@/lib/hr-flow';
+import type { HrModuleSettings, ServiceBookEntry } from '@/lib/hr-flow';
 import type { LeaveType } from '@/lib/hr-types';
 import type { ActionResult } from '@/lib/types';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 export type DecisionKind = 'leave' | 'loan' | 'encashment' | 'requisition';
@@ -22,27 +21,6 @@ export async function decideHr(kind: DecisionKind, id: string, decision: 'approv
       : api(kind === 'loan' ? `/v1/hr/loans/${id}/decide` : kind === 'encashment' ? `/v1/hr/leave/encashments/${id}/decide` : `/v1/hr/openings/${id}/decide`, { method: 'POST', body: { decision, note: comment } }),
   );
   if (res.ok) revalidatePath(kind === 'leave' ? '/hr/leave' : kind === 'requisition' ? '/hr/recruitment' : '/payroll/loans');
-  return res;
-}
-
-export async function requestLoan(input: { userId?: string; kind: 'advance' | 'loan'; amountPaise: number; installments: number; startMonth: string; purpose: string }): Promise<ActionResult<StaffLoan>> {
-  if (!MONTH.test(input.startMonth) || !(input.amountPaise > 0)) return { ok: false, error: (await getI18n()).t('hf.err.loan') };
-  const res = await act(() => api<StaffLoan>('/v1/hr/loans', { method: 'POST', body: input }));
-  if (res.ok) revalidatePath('/payroll/loans');
-  return res;
-}
-
-export async function cancelLoan(id: string): Promise<ActionResult<StaffLoan>> {
-  if (!UUID.test(id)) return { ok: false, error: (await getI18n()).t('error.generic') };
-  const res = await act(() => api<StaffLoan>(`/v1/hr/loans/${id}/cancel`, { method: 'POST' }));
-  if (res.ok) revalidatePath('/payroll/loans');
-  return res;
-}
-
-export async function requestEncashment(input: { userId?: string; leaveTypeId: string; days: number; payMonth: string }): Promise<ActionResult<LeaveEncashment>> {
-  if (!UUID.test(input.leaveTypeId) || !MONTH.test(input.payMonth) || !(input.days > 0)) return { ok: false, error: (await getI18n()).t('hf.err.encash') };
-  const res = await act(() => api<LeaveEncashment>('/v1/hr/leave/encashments', { method: 'POST', body: input }));
-  if (res.ok) revalidatePath('/payroll/loans');
   return res;
 }
 

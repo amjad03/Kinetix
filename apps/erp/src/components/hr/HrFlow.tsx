@@ -1,16 +1,15 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { addServiceEntry, cancelLoan, decideHr, raiseRequisition, requestEncashment, requestLoan, type DecisionKind } from '@/app/(dashboard)/hr/flow-actions';
+import { addServiceEntry, decideHr, raiseRequisition, type DecisionKind } from '@/app/(dashboard)/hr/flow-actions';
 import { useNotice } from '@/components/hr/Common';
 import { Button } from '@/components/shadcn/button';
 import { ApprovalPanel, type ActivityItem, type WorkflowStep } from '@/components/templates';
 import { DataTable, Dialog, FormGrid, SelectInput, StatusPill, TextInput, type Tone } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { formatDate, formatMonth } from '@/lib/dates';
-import type { LeaveEncashment, ServiceBookEntry, StaffLoan } from '@/lib/hr-flow';
-import { formatRupees } from '@/lib/money';
+import { formatDate } from '@/lib/dates';
+import type { ServiceBookEntry } from '@/lib/hr-flow';
 
 export const LOAN_TONE: Record<string, Tone> = { pending: 'warning', approved: 'info', closed: 'success', rejected: 'danger', cancelled: 'neutral' };
 
@@ -88,130 +87,6 @@ export function ServiceBook({ userId, entries, canAdd }: { userId: string; entri
         </Dialog>
       )}
     </div>
-  );
-}
-
-/** Loans and advances, leave encashment: the lists and the request forms. */
-export function LoansDesk({ loans, encashments, leaveTypes, staff, canRaiseForOthers, meId }: { loans: StaffLoan[]; encashments: LeaveEncashment[]; leaveTypes: { id: string; name: string }[]; staff: { userId: string; fullName: string }[]; canRaiseForOthers: boolean; meId: string }) {
-  const { t, locale } = useI18n();
-  const router = useRouter();
-  const { run, view } = useNotice();
-  const [pending, start] = useTransition();
-  const [dialog, setDialog] = useState<'loan' | 'encash' | null>(null);
-  const thisMonth = new Date().toISOString().slice(0, 7);
-  const [lf, setLf] = useState({ userId: meId, kind: 'advance' as 'advance' | 'loan', amount: '', installments: '3', startMonth: thisMonth, purpose: '' });
-  const [ef, setEf] = useState({ userId: meId, leaveTypeId: leaveTypes[0]?.id ?? '', days: '', payMonth: thisMonth });
-  const who = canRaiseForOthers ? staff.map((s) => ({ value: s.userId, label: s.fullName })) : [];
-  const submit = () =>
-    start(async () => {
-      const r =
-        dialog === 'loan'
-          ? await run(() => requestLoan({ userId: lf.userId === meId ? undefined : lf.userId, kind: lf.kind, amountPaise: Math.round(Number(lf.amount) * 100), installments: Number(lf.installments), startMonth: lf.startMonth, purpose: lf.purpose }), t('hf.loan.requested'))
-          : await run(() => requestEncashment({ userId: ef.userId === meId ? undefined : ef.userId, leaveTypeId: ef.leaveTypeId, days: Number(ef.days), payMonth: ef.payMonth }), t('hf.loan.requested'));
-      if (r.ok) {
-        setDialog(null);
-        router.refresh();
-      }
-    });
-  const withdraw = (id: string) =>
-    start(async () => {
-      if ((await run(() => cancelLoan(id), t('hl.saved'))).ok) router.refresh();
-    });
-  return (
-    <div className="space-y-8">
-      {view}
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="outline" onClick={() => setDialog('encash')} disabled={leaveTypes.length === 0}>{t('hf.encash.new')}</Button>
-        <Button onClick={() => setDialog('loan')}>{t('hf.loan.new')}</Button>
-      </div>
-      <DataTable
-        testId="loans"
-        label={t('hf.loan.title')}
-        rows={loans}
-        rowId={(l) => l.id}
-        rowHref={(l) => `/payroll/loans/${l.id}`}
-        exportName="loans"
-        empty={t('hf.loan.empty')}
-        columns={[
-          { id: 'n', header: t('hf.loan.no'), rowHeader: true, sort: (l) => l.loanNo, cell: (l) => l.loanNo },
-          { id: 'u', header: t('hl.staff'), sort: (l) => l.user.fullName, cell: (l) => l.user.fullName },
-          { id: 'k', header: t('hf.loan.kind'), sort: (l) => l.kind, cell: (l) => t(`hf.loan.kind.${l.kind}` as MessageKey) },
-          { id: 'a', header: t('hf.amount'), align: 'right', sort: (l) => l.amountPaise, cell: (l) => formatRupees(l.amountPaise) },
-          { id: 'e', header: t('hf.loan.emi'), align: 'right', sort: (l) => l.emiPaise, cell: (l) => `${formatRupees(l.emiPaise)} × ${l.installments}` },
-          { id: 'o', header: t('hf.loan.outstanding'), align: 'right', sort: (l) => l.outstandingPaise, cell: (l) => formatRupees(l.outstandingPaise) },
-          { id: 's', header: t('hr.f.status'), sort: (l) => l.status, cell: (l) => <StatusPill tone={LOAN_TONE[l.status]}>{t(`hf.status.${l.status}` as MessageKey)}</StatusPill> },
-          { id: 'x', header: '', align: 'right', csv: false, cell: (l) => (l.status === 'pending' && l.user.id === meId ? <Button size="sm" variant="ghost" disabled={pending} onClick={(e) => { e.stopPropagation(); withdraw(l.id); }}>{t('hf.withdraw')}</Button> : null) },
-        ]}
-      />
-      <DataTable
-        testId="encashments"
-        label={t('hf.encash.title')}
-        rows={encashments}
-        rowId={(e) => e.id}
-        exportName="leave-encashments"
-        empty={t('hf.encash.empty')}
-        columns={[
-          { id: 'u', header: t('hl.staff'), rowHeader: true, sort: (e) => e.user.fullName, cell: (e) => e.user.fullName },
-          { id: 'l', header: t('hr.leave.type'), sort: (e) => e.leaveType.name, cell: (e) => e.leaveType.name },
-          { id: 'd', header: t('hr.leave.days'), align: 'right', sort: (e) => e.days, cell: (e) => e.days },
-          { id: 'a', header: t('hf.amount'), align: 'right', sort: (e) => e.amountPaise, cell: (e) => formatRupees(e.amountPaise) },
-          { id: 'm', header: t('pay.month'), sort: (e) => e.payMonth, cell: (e) => formatMonth(`${e.payMonth}-01`, locale) },
-          { id: 's', header: t('hr.f.status'), sort: (e) => e.status, cell: (e) => <StatusPill tone={LOAN_TONE[e.status]}>{t(`hf.status.${e.status}` as MessageKey)}</StatusPill> },
-          { id: 'x', header: '', align: 'right', csv: false, cell: (e) => (e.status === 'pending' ? <EncashDecision id={e.id} /> : null) },
-        ]}
-      />
-      {dialog && (
-        <Dialog title={t(dialog === 'loan' ? 'hf.loan.new' : 'hf.encash.new')} onClose={() => setDialog(null)} busy={pending} actions={<><Button variant="outline" onClick={() => setDialog(null)}>{t('hl.cancel')}</Button><Button disabled={pending} onClick={submit}>{t('hf.submit')}</Button></>}>
-          <FormGrid>
-            {who.length > 0 && <SelectInput label={t('hl.staff')} value={dialog === 'loan' ? lf.userId : ef.userId} onChange={(e) => (dialog === 'loan' ? setLf({ ...lf, userId: e.target.value }) : setEf({ ...ef, userId: e.target.value }))} options={who} />}
-            {dialog === 'loan' ? (
-              <>
-                <SelectInput label={t('hf.loan.kind')} value={lf.kind} onChange={(e) => setLf({ ...lf, kind: e.target.value as 'advance' })} options={(['advance', 'loan'] as const).map((k) => ({ value: k, label: t(`hf.loan.kind.${k}`) }))} />
-                <TextInput label={t('hf.amountRupees')} inputMode="decimal" value={lf.amount} onChange={(e) => setLf({ ...lf, amount: e.target.value })} />
-                <TextInput label={t('hf.loan.installments')} type="number" value={lf.installments} onChange={(e) => setLf({ ...lf, installments: e.target.value })} />
-                <TextInput label={t('hf.loan.start')} type="month" value={lf.startMonth} onChange={(e) => setLf({ ...lf, startMonth: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-                <TextInput label={t('hf.loan.purpose')} value={lf.purpose} onChange={(e) => setLf({ ...lf, purpose: e.target.value })} />
-              </>
-            ) : (
-              <>
-                <SelectInput label={t('hr.leave.type')} value={ef.leaveTypeId} onChange={(e) => setEf({ ...ef, leaveTypeId: e.target.value })} options={leaveTypes.map((x) => ({ value: x.id, label: x.name }))} />
-                <TextInput label={t('hr.leave.days')} inputMode="decimal" value={ef.days} onChange={(e) => setEf({ ...ef, days: e.target.value })} />
-                <TextInput label={t('pay.month')} type="month" value={ef.payMonth} onChange={(e) => setEf({ ...ef, payMonth: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-              </>
-            )}
-          </FormGrid>
-        </Dialog>
-      )}
-    </div>
-  );
-}
-
-/** Approve or reject a pending encashment in place (rejecting needs a reason). */
-function EncashDecision({ id }: { id: string }) {
-  const { t } = useI18n();
-  const router = useRouter();
-  const { run, view } = useNotice();
-  const [pending, start] = useTransition();
-  const [rejecting, setRejecting] = useState(false);
-  const [note, setNote] = useState('');
-  const go = (d: 'approve' | 'reject') =>
-    start(async () => {
-      if ((await run(() => decideHr('encashment', id, d, note), t('hl.saved'))).ok) {
-        setRejecting(false);
-        router.refresh();
-      }
-    });
-  return (
-    <span className="inline-flex gap-2">
-      {view}
-      <Button size="sm" variant="ghost" disabled={pending} onClick={() => setRejecting(true)}>{t('hr.leave.reject')}</Button>
-      <Button size="sm" disabled={pending} onClick={() => go('approve')}>{t('hf.approve')}</Button>
-      {rejecting && (
-        <Dialog title={t('hr.leave.reject')} onClose={() => setRejecting(false)} busy={pending} actions={<><Button variant="outline" onClick={() => setRejecting(false)}>{t('hl.cancel')}</Button><Button variant="destructive" disabled={pending || !note.trim()} onClick={() => go('reject')}>{t('hr.leave.reject')}</Button></>}>
-          <TextInput fullWidth multiline minRows={2} label={t('hf.reason')} value={note} onChange={(e) => setNote(e.target.value)} />
-        </Dialog>
-      )}
-    </span>
   );
 }
 

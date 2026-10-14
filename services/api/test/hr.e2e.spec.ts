@@ -169,7 +169,7 @@ describe('HR and payroll', () => {
 
     it('creates the default leave types and shows balances accrued to date', async () => {
       const types = (await get('teacher', '/v1/hr/leave-types').expect(200)).body as { id: string; code: string }[];
-      expect(types.map((x) => x.code)).toEqual(['CL', 'EL', 'LOP', 'SL']);
+      expect(types.map((x) => x.code)).toEqual(['CL', 'SL', 'EL', 'LOP', 'DL', 'CO', 'ML']);
       clId = types.find((x) => x.code === 'CL')!.id;
       lopId = types.find((x) => x.code === 'LOP')!.id;
       const bal = (await get('teacher', '/v1/hr/leave/balances/me').expect(200)).body as { leaveType: { code: string }; accrued: number; available: number }[];

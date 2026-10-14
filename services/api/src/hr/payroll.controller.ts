@@ -10,7 +10,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { payrollRuns, payrollSettings, salaryComponents, tenants } from '../db/schema.js';
 import { monthEnd } from './dates.js';
-import { bankTransferCsv, statutoryCsv, tallyXml, type StatRow } from './exports.js';
+import { bankTransferCsv, ecrText, statutoryCsv, tallyXml, type StatRow } from './exports.js';
 import { PAYROLL_APPROVERS, PAYROLL_ROLES, STAFF_ROLES, hasAnyRole } from './hr.access.js';
 import { HrService } from './hr.service.js';
 import { PayrollService } from './payroll.service.js';
@@ -28,7 +28,20 @@ const ComponentBody = z.object({
   taxable: z.boolean().default(true),
   active: z.boolean().default(true),
   sortOrder: z.number().int().min(0).max(100).default(0),
+  calc: z.enum(['fixed', 'percent']).default('fixed'),
+  /** The starting rate of a percentage component; revisions go through components/:id/rates. */
+  percent: z.number().min(0).max(1000).nullable().optional(),
+  baseCode: z.string().trim().toUpperCase().regex(/^[A-Z0-9_]{1,12}$/).default('BASIC'),
 });
+const RateBody = z.object({
+  effectiveMonth: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-07'),
+  percent: z.number().min(0).max(1000),
+  note: z.string().trim().max(300).default(''),
+  /** The month the arrears for locked months are paid in (default: this month). */
+  arrearsMonth: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10').optional(),
+});
+const ReverseBody = z.object({ expectedVersion: z.number().int().min(1), reason: z.string().trim().min(5, 'Give the reason').max(500) });
+const Q24Body = z.object({ fy: z.coerce.number().int().min(2000).max(2100), quarter: z.coerce.number().int().min(1).max(4), annexure: z.coerce.number().int().min(1).max(2).default(1) });
 const StructureBody = z.object({ effectiveFrom: Day, lines: z.array(z.object({ componentId: z.uuid(), monthlyPaise: z.number().int().min(1).max(100_000_000_00) })).min(1).max(30) });
 const Ledger = z.string().trim().min(1).max(100);
 const SettingsBody = z.object({
@@ -38,9 +51,16 @@ const SettingsBody = z.object({
   ptState: z.string().trim().min(1).max(40),
   ptSlabs: z.array(z.object({ minGrossPaise: Paise, amountPaise: Paise, februaryAmountPaise: Paise.optional() })).min(1).max(12),
   weeklyOffs: z.array(z.number().int().min(0).max(6)).max(3),
-  ledgers: z.object({ salaryExpense: Ledger, employerPfExpense: Ledger, employerEsiExpense: Ledger, pfPayable: Ledger, esiPayable: Ledger, ptPayable: Ledger, tdsPayable: Ledger, salaryPayable: Ledger, otherDeductions: Ledger }),
+  ledgers: z.object({ salaryExpense: Ledger, employerPfExpense: Ledger, employerEsiExpense: Ledger, pfPayable: Ledger, esiPayable: Ledger, ptPayable: Ledger, tdsPayable: Ledger, salaryPayable: Ledger, otherDeductions: Ledger, lwfPayable: Ledger.optional(), employerLwfExpense: Ledger.optional() }),
+  lwf: z.object({ enabled: z.boolean(), employeePaise: Paise.max(100_000), employerPaise: Paise.max(100_000), months: z.array(z.number().int().min(1).max(12)).max(12) }).optional(),
 });
-const RunBody = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10') });
+const RunBody = z.object({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10'),
+  kind: z.enum(['regular', 'supplementary']).default('regular'),
+  /** Supplementary: staff to pay in full (late joiners); everyone else gets only their unpaid adjustments. */
+  staffIds: z.array(z.uuid()).max(500).default([]),
+  note: z.string().trim().max(300).default(''),
+});
 const VersionBody = z.object({ expectedVersion: z.number().int().min(1) });
 const RecomputeBody = z.object({ expectedVersion: z.number().int().min(1).optional() });
 
@@ -90,7 +110,9 @@ export class PayrollController {
   createComponent(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ComponentBody)) b: z.infer<typeof ComponentBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       if ((await this.payroll.components(tx, p.tenantId)).some((c) => c.code === b.code)) throw new ConflictException('That component code is already in use');
-      const [row] = await tx.insert(salaryComponents).values({ tenantId: p.tenantId, ...b }).returning();
+      if (b.calc === 'percent' && (b.percent === null || b.percent === undefined)) throw new BadRequestException('Give the percentage');
+      if (b.calc === 'percent' && b.baseCode === b.code) throw new BadRequestException('A component cannot be a percentage of itself');
+      const [row] = await tx.insert(salaryComponents).values({ tenantId: p.tenantId, ...b, percent: b.calc === 'percent' ? b.percent : null }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.component_created', subjectType: 'salary_component', subjectId: row.id, data: b });
       return (await this.payroll.components(tx, p.tenantId)).find((c) => c.id === row.id);
     });
@@ -100,7 +122,8 @@ export class PayrollController {
   @Auth('user', PAYROLL_ROLES)
   updateComponent(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ComponentBody)) b: z.infer<typeof ComponentBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [row] = await tx.update(salaryComponents).set(b).where(eq(salaryComponents.id, id)).returning({ id: salaryComponents.id });
+      if (b.calc === 'percent' && b.baseCode === b.code) throw new BadRequestException('A component cannot be a percentage of itself');
+      const [row] = await tx.update(salaryComponents).set({ ...b, percent: b.calc === 'percent' ? (b.percent ?? null) : null }).where(eq(salaryComponents.id, id)).returning({ id: salaryComponents.id });
       if (!row) throw new NotFoundException('Salary component not found');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.component_updated', subjectType: 'salary_component', subjectId: id, data: b });
       return (await this.payroll.components(tx, p.tenantId)).find((c) => c.id === id);
@@ -135,7 +158,67 @@ export class PayrollController {
   @Post('runs')
   @Auth('user', PAYROLL_ROLES)
   createRun(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(RunBody)) b: z.infer<typeof RunBody>) {
-    return this.db.withTenant(p.tenantId, (tx) => this.payroll.createRun(tx, p, b.month));
+    return this.db.withTenant(p.tenantId, (tx) => this.payroll.createRun(tx, p, b.month, { kind: b.kind, staffIds: b.staffIds, note: b.note }));
+  }
+
+  /** Reverses a locked run (principal or administrator), with the reason. */
+  @Post('runs/:id/reverse')
+  @HttpCode(200)
+  @Auth('user', PAYROLL_APPROVERS)
+  reverse(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ReverseBody)) b: z.infer<typeof ReverseBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.payroll.reverse(tx, p, id, b.expectedVersion, b.reason));
+  }
+
+  /** The rate history of a percentage component (DA). */
+  @Get('components/:id/rates')
+  @Auth('user', PAYROLL_ROLES)
+  rates(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, (tx) => this.payroll.rates(tx, id));
+  }
+
+  /**
+   * Revises a percentage component (a DA revision) from a month. Months already locked are owed the difference:
+   * one arrears adjustment per staff member, waiting for approval, paid in `arrearsMonth`.
+   */
+  @Post('components/:id/rates')
+  @Auth('user', PAYROLL_ROLES)
+  revise(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(RateBody)) b: z.infer<typeof RateBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.payroll.reviseRate(tx, p, id, b));
+  }
+
+  /** Form 24Q: annexure I (deductee details by month of the quarter) or, for the fourth quarter, annexure II (salary details for the year). */
+  @Get('24q.csv')
+  @Auth('user', PAYROLL_ROLES)
+  q24(@CurrentPrincipal() p: UserPrincipal, @Query() q: Record<string, string>, @Res({ passthrough: true }) res: Response) {
+    const parsed = Q24Body.safeParse(q);
+    if (!parsed.success) throw new BadRequestException('Give fy (like 2026), quarter (1 to 4) and annexure (1 or 2)');
+    const { fy, quarter, annexure } = parsed.data;
+    if (annexure === 2 && quarter !== 4) throw new BadRequestException('Annexure II is filed with the fourth quarter');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const out = annexure === 1 ? await this.payroll.q24Annexure1(tx, fy, quarter) : await this.payroll.q24Annexure2(tx, fy);
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.export_24q', subjectType: 'payroll_settings', data: { fy, quarter, annexure } });
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="24Q-${fy}-${String(fy + 1).slice(2)}-Q${quarter}${annexure === 2 ? '-annexure-II' : ''}.csv"`);
+      return out;
+    });
+  }
+
+  /** The EPFO Electronic Challan cum Return text file (ECR 2.0, #~# separated) of an approved or locked run. */
+  @Get('runs/:id/ecr.txt')
+  @Auth('user', PAYROLL_ROLES)
+  ecr(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { run, settings, rows } = await this.payroll.exportRows(tx, p.tenantId, id);
+      const missing = rows.filter(({ d }) => d.employeePfPaise > 0 && !d.uan).map(({ d }) => d.user.fullName);
+      const text = ecrText(
+        rows.filter(({ d }) => d.employeePfPaise > 0 && d.uan).map(({ d }) => ({ uan: d.uan!, name: d.user.fullName, grossPaise: d.grossPaise, pfWagePaise: d.pfWagePaise, pfCeilingPaise: settings.pfWageCeilingPaise, pfCapAtCeiling: settings.pfCapAtCeiling, employeePfPaise: d.employeePfPaise, epsPaise: d.employer.epsPaise, epfPaise: d.employer.epfPaise, ncpDays: d.lopDays })),
+      );
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.export_ecr', subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version, missingUan: missing.length } });
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="ECR-${run.month}.txt"`);
+      if (missing.length) res.setHeader('X-Missing-Uan', encodeURIComponent(missing.join(', ')));
+      return text;
+    });
   }
 
   @Get('runs/:id')
@@ -215,8 +298,8 @@ export class PayrollController {
   @Get('runs/:id/statutory.csv')
   @Auth('user', PAYROLL_ROLES)
   statutory(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('kind') kind: string, @Res({ passthrough: true }) res: Response) {
-    const k = z.enum(['pf', 'esi', 'pt', 'tds']).safeParse(kind);
-    if (!k.success) throw new BadRequestException('kind must be pf, esi, pt or tds');
+    const k = z.enum(['pf', 'esi', 'pt', 'tds', 'lwf']).safeParse(kind);
+    if (!k.success) throw new BadRequestException('kind must be pf, esi, pt, tds or lwf');
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { run, settings, rows } = await this.payroll.exportRows(tx, p.tenantId, id);
       const stat: StatRow[] = rows.map(({ d }) => ({
@@ -239,6 +322,8 @@ export class PayrollController {
         esiEmployerPaise: d.employer.esiPaise,
         ptPaise: d.ptPaise,
         tdsPaise: d.tdsPaise,
+        lwfEmployeePaise: d.lwfPaise ?? 0,
+        lwfEmployerPaise: d.employer.lwfPaise ?? 0,
       }));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `payroll.export_${k.data}`, subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version } });
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');

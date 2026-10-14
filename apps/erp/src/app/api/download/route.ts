@@ -45,6 +45,13 @@ const TARGETS: Record<string, (id: string) => string> = {
   'condonation-doc': (id) => `/v1/attendance/condonations/${id}/document`,
   'placement-shortlist': (id) => `/v1/placements/drives/${id}/shortlist?format=csv`,
   'placement-offer-letter': (id) => `/v1/placements/offers/${id}/letter`,
+  'staff-doc': (id) => `/v1/hr/staff-documents/${id}/file`,
+  'leave-doc': (id) => `/v1/hr/leave/requests/${id}/document`,
+  resume: (id) => `/v1/hr/applicants/${id}/resume`,
+  'appointment-letter': (id) => `/v1/hr/applicants/${id}/appointment-letter`,
+  'experience-cert': (id) => `/v1/hr/separations/${id}/experience-certificate`,
+  lwf: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=lwf`,
+  ecr: (id) => `/v1/payroll/runs/${id}/ecr.txt`,
 };
 
 /**
@@ -104,6 +111,14 @@ export async function GET(req: NextRequest) {
     if (id === 'nirf-rp') FIXED[kind] = `/v1/research/reports/nirf-rp.xlsx${/^\d{4}$/.test(toYear) ? `?toYear=${toYear}` : ''}`;
     else if (id === 'profile') FIXED[kind] = `/v1/research/reports/faculty-profile.xlsx${UUID.test(user) ? `?userId=${user}` : ''}`;
     else return new Response('Not found', { status: 404 });
+  // Form 24Q: ?kind=q24&fy=2026&quarter=1..4&annexure=1|2
+  if (kind === 'q24') {
+    const sp = req.nextUrl.searchParams;
+    const fy = sp.get('fy') ?? '';
+    const quarter = sp.get('quarter') ?? '';
+    const annexure = sp.get('annexure') ?? '1';
+    if (!/^\d{4}$/.test(fy) || !/^[1-4]$/.test(quarter) || !/^[12]$/.test(annexure)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/payroll/24q.csv?fy=${fy}&quarter=${quarter}&annexure=${annexure}`;
   }
   if (kind === 'hall-ticket') {
     const test = req.nextUrl.searchParams.get('test') ?? '';
