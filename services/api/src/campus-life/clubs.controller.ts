@@ -1,3 +1,6 @@
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { studentBlock } from '../documents/doc-data.js';
+import { longDate } from '../documents/render.js';
 import { Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, Res } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
@@ -6,10 +9,9 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { Day, orConflict } from '../common/ops.js';
-import { A4, Pdf } from '../common/pdf-doc.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { clubActivities, clubActivityAttendance, clubMembers, clubs, students, tenants } from '../db/schema.js';
+import { clubActivities, clubActivityAttendance, clubMembers, clubs, students } from '../db/schema.js';
 import { found, hasRole } from '../placements/placements.access.js';
 import { FAMILY, LIFE_STAFF } from './campus-life.access.js';
 import { CampusLifeService } from './campus-life.service.js';
@@ -30,6 +32,7 @@ export class ClubsController {
   constructor(
     private readonly db: DbService,
     private readonly svc: CampusLifeService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   // ---- staff: club master ------------------------------------------------------------------
@@ -204,9 +207,20 @@ export class ClubsController {
         .where(and(eq(clubActivities.clubId, id), eq(clubActivityAttendance.studentId, studentId)))
         .orderBy(asc(clubActivities.activityOn));
       if (att.length === 0) throw new ConflictException('The student has not attended any activity yet');
-      const [t] = await tx.select({ name: tenants.name }).from(tenants).where(eq(tenants.id, p.tenantId));
       await auditUser(tx, p, 'club.certificate_issued', 'club', id, { studentId });
-      return certificatePdf({ institution: t?.name ?? '', club: club.name, student: stu.fullName, rollNo: stu.rollNo, role: member.role, activities: att.map((a) => `${a.on}  ${a.title}`), points: att.reduce((s, a) => s + a.points, 0), issuedOn: this.svc.now().toISOString().slice(0, 10) });
+      const points = att.reduce((s, a) => s + a.points, 0);
+      const role = member.role === 'lead' ? 'student lead' : 'member';
+      const citation = `for taking part, as a ${role} of the **${club.name}**, in ${att.length} activit${att.length === 1 ? 'y' : 'ies'} and earning **${points} activity points**.`;
+      const out = await this.engine.produce(tx, p, {
+        docType: 'generic_certificate',
+        title: 'Certificate of Participation',
+        subject: { type: 'student', id: studentId, name: stu.fullName },
+        source: { type: 'club_certificate', id: `${id}:${studentId}` },
+        data: { ...(await studentBlock(tx, studentId)), award: { title: 'Certificate of Participation', kind: 'Participation', recipient: stu.fullName, citation, event: club.name, date: longDate(this.svc.now().toISOString().slice(0, 10)), position: role } },
+        keyFields: [{ label: 'Awarded to', value: `${stu.fullName} (${stu.rollNo})` }, { label: 'Club', value: club.name }, { label: 'Activities', value: String(att.length) }, { label: 'Points', value: String(points) }],
+        photo: null,
+      });
+      return out.pdf;
     });
     res.setHeader('content-type', 'application/pdf');
     res.setHeader('content-disposition', `inline; filename="club-certificate-${studentId.slice(0, 8)}.pdf"`);
@@ -266,27 +280,4 @@ export class ClubsController {
     const rows = await tx.select({ studentId: clubActivityAttendance.studentId, points: sql<number>`sum(${clubActivityAttendance.points})::int` }).from(clubActivityAttendance).innerJoin(clubActivities, eq(clubActivities.id, clubActivityAttendance.activityId)).where(eq(clubActivities.clubId, clubId)).groupBy(clubActivityAttendance.studentId);
     return new Map(rows.map((r) => [r.studentId, r.points]));
   }
-}
-
-/** A landscape participation certificate: institution, student, club, activity list and total points. */
-function certificatePdf(c: { institution: string; club: string; student: string; rollNo: string; role: string; activities: string[]; points: number; issuedOn: string }): Buffer {
-  const w = A4.h;
-  const h = A4.w;
-  const pdf = new Pdf(`Participation certificate ${c.student}`).addPage(w, h);
-  pdf.rect(24, 24, w - 48, h - 48, { stroke: '#1f3a5f', lineWidth: 2 }).rect(32, 32, w - 64, h - 64, { stroke: '#1f3a5f', lineWidth: 0.5 });
-  pdf.text(c.institution, w / 2, 90, { size: 22, bold: true, align: 'center', color: '#1f3a5f' });
-  pdf.text('CERTIFICATE OF PARTICIPATION', w / 2, 135, { size: 18, bold: true, align: 'center' });
-  pdf.line(w / 2 - 90, 145, w / 2 + 90, 145, { width: 1, color: '#1f3a5f' });
-  const role = c.role === 'lead' ? 'student lead' : 'member';
-  const y = pdf.paragraph(`This is to certify that ${c.student} (Roll No. ${c.rollNo}) has taken part, as a ${role} of the ${c.club}, in ${c.activities.length} activit${c.activities.length === 1 ? 'y' : 'ies'} and earned ${c.points} activity points.`, 80, 190, w - 160, { size: 13, leading: 20, align: 'center' });
-  let yy = y + 8;
-  for (const a of c.activities.slice(0, 8)) {
-    pdf.text(a, w / 2, yy, { size: 10, align: 'center', color: '#444444' });
-    yy += 15;
-  }
-  if (c.activities.length > 8) pdf.text(`and ${c.activities.length - 8} more`, w / 2, yy, { size: 10, align: 'center', color: '#444444' });
-  pdf.text(`Date: ${c.issuedOn}`, 70, h - 80, { size: 10 });
-  pdf.line(w - 240, h - 90, w - 70, h - 90);
-  pdf.text('Principal', w - 155, h - 75, { size: 10, align: 'center' });
-  return pdf.build();
 }

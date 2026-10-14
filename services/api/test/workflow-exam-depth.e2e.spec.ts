@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as s from '../src/db/schema.js';
 import { hallTicketCode } from '../src/exams/hall-ticket-code.js';
 import { TasksService } from '../src/tasks/tasks.service.js';
-import { createApp, createTenant, env, FixedClock, ownerPool } from './helpers.js';
+import { createApp, createTenant, env, FixedClock, ownerPool, pdfText } from './helpers.js';
 
 /** Parallel / conditional / SLA workflow steps, task escalation, exam registration, hall ticket QR and anti-collusion seating. */
 describe('workflow depth and exam registration / seating', () => {
@@ -265,9 +265,12 @@ describe('workflow depth and exam registration / seating', () => {
         r.on('end', () => cb(null, Buffer.concat(chunks)));
       }).expect(200);
       expect(res.headers['content-type']).toContain('application/pdf');
-      const text = (res.body as Buffer).toString('latin1');
-      expect(text).toContain('Scan the code to check that this hall ticket is genuine.');
-      expect((text.match(/ re f/g) ?? []).length).toBeGreaterThan(100); // the QR modules
+      const text = pdfText(res.body as Buffer);
+      expect(text).toContain('Verify this document');
+      expect(text).toContain(ticketNo);
+      // The QR opens the register's record of this hall ticket.
+      const [{ verify_token: qrToken }] = await q("select verify_token from issued_documents where tenant_id = $1 and source_type = 'hall_ticket' and source_id like $2", [t.tenantId, `%:${t.students[R3].id}`]);
+      expect((await http().get(`/v1/public/verify/${t.slug}/${qrToken}`).expect(200)).body).toMatchObject({ status: 'valid', docType: 'hall_ticket', subjectName: 'Student C', signatureValid: true });
 
       const code = hallTicketCode(env.JWT_SECRET, t.tenantId, ticketNo);
       const ok = (await http().get(`/v1/public/verify-hallticket/${t.slug}/${encodeURIComponent(code)}`).expect(200)).body;

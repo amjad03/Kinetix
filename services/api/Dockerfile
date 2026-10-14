@@ -63,6 +63,8 @@ COPY --from=build /app/packages/shared/dist packages/shared/dist
 COPY --from=build /app/services/api/dist services/api/dist
 COPY services/api/migrations services/api/migrations
 COPY services/api/content services/api/content
+# Fonts embedded in PDFs (document engine; Hindi and Kannada in the older writers too).
+COPY services/api/assets services/api/assets
 # The downloadable 3D models, served at /assets/models (MODELS_DIR) so boards fetch them from here.
 COPY packages/kinetix_3d/remote_models packages/kinetix_3d/remote_models
 COPY --chmod=0755 services/api/docker-entrypoint.sh /usr/local/bin/kinetix-api

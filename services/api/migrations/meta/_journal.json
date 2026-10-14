@@ -922,54 +922,68 @@
     {
       "idx": 131,
       "version": "7",
+      "when": 1791500003000,
+      "tag": "0139_branding_doc_templates",
+      "breakpoints": true
+    },
+    {
+      "idx": 132,
+      "version": "7",
+      "when": 1791500004000,
+      "tag": "0140_issued_documents",
+      "breakpoints": true
+    },
+    {
+      "idx": 133,
+      "version": "7",
       "when": 1791505000000,
       "tag": "0141_accreditation_catalogue",
       "breakpoints": true
     },
     {
-      "idx": 132,
+      "idx": 134,
       "version": "7",
       "when": 1791506000000,
       "tag": "0142_accreditation_tasks",
       "breakpoints": true
     },
     {
-      "idx": 133,
+      "idx": 135,
       "version": "7",
       "when": 1791506001000,
       "tag": "0143_affiliation_profiles",
       "breakpoints": true
     },
     {
-      "idx": 134,
+      "idx": 136,
       "version": "7",
       "when": 1791506002000,
       "tag": "0144_result_rules_ref",
       "breakpoints": true
     },
     {
-      "idx": 135,
+      "idx": 137,
       "version": "7",
       "when": 1791506003000,
       "tag": "0145_report_studio",
       "breakpoints": true
     },
     {
-      "idx": 136,
+      "idx": 138,
       "version": "7",
       "when": 1791506004000,
       "tag": "0146_report_dashboards",
       "breakpoints": true
     },
     {
-      "idx": 137,
+      "idx": 139,
       "version": "7",
       "when": 1791506005000,
       "tag": "0147_record_depth_kit",
       "breakpoints": true
     },
     {
-      "idx": 138,
+      "idx": 140,
       "version": "7",
       "when": 1791506006000,
       "tag": "0148_record_imports",

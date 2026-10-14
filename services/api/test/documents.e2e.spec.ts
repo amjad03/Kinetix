@@ -5,7 +5,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { idCardCode } from '../src/documents/render.js';
 import * as s from '../src/db/schema.js';
-import { createApp, createTenant, env, FixedClock, ownerPool } from './helpers.js';
+import { createApp, createTenant, env, FixedClock, ownerPool, pdfText } from './helpers.js';
 
 const binary = (res: { on: (e: string, f: (c?: Buffer) => void) => void }, cb: (e: Error | null, b: Buffer) => void) => {
   const chunks: Buffer[] = [];
@@ -146,13 +146,13 @@ describe('documents and certificates', () => {
     it('freezes the text at issue: later template edits do not change it', async () => {
       const pdf = await get('parent', `/v1/documents/requests/${bonafide.id}/pdf`).buffer(true).parse(binary).expect(200);
       expect(pdf.headers['content-type']).toBe('application/pdf');
-      const text = (pdf.body as Buffer).toString('latin1');
-      expect(text.startsWith('%PDF-1.4')).toBe(true);
+      expect((pdf.body as Buffer).subarray(0, 5).toString('latin1')).toBe('%PDF-');
+      const text = pdfText(pdf.body as Buffer);
       expect(text).toContain('Student A');
       expect(text).toContain(`BON/${fy}/00001`);
       expect(text).toContain('Bank account');
       expect(text).toContain('20 October 2026');
-      expect(text).toContain('Scan to verify');
+      expect(text).toContain('Verify this document');
       await get('parent2', `/v1/documents/requests/${bonafide.id}/pdf`).expect(404);
       await get('outsider', `/v1/documents/requests/${bonafide.id}/pdf`).expect(404);
       await get('teacher', `/v1/documents/requests/${bonafide.id}/pdf`).expect(404);
@@ -162,7 +162,7 @@ describe('documents and certificates', () => {
       const r = (await post('principal', '/v1/documents/requests', { templateId: template('study').id, studentId: t.students[2].id, purpose: 'Visa' }).expect(201)).body;
       await post('principal', `/v1/documents/requests/${r.id}/approve`).expect(200);
       await post('principal', `/v1/documents/requests/${r.id}/issue`).expect(200);
-      const text = ((await get('student', `/v1/documents/requests/${r.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer).toString('latin1');
+      const text = pdfText((await get('student', `/v1/documents/requests/${r.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer);
       expect(text).toContain('{{typo}}');
       expect(text).toContain('BBCom Sem 3 A'.slice(1));
     });
@@ -188,7 +188,10 @@ describe('documents and certificates', () => {
 
     it('answers without sign-in, with only what the certificate shows', async () => {
       const v = (await http().get(`/v1/public/verify/${t.slug}/${token(cert.verifyUrl)}`).expect(200)).body;
-      expect(v).toEqual({ status: 'valid', institution: t.slug.length ? 'Tenant ' + (await owner.query('select name from tenants where id = $1', [t.tenantId])).rows[0].name.replace('Tenant ', '') : '', title: 'Bonafide Certificate', serialNo: `BON/2026-27/00001`, subjectName: 'Student A', issuedOn: '20 October 2026' });
+      // A certificate printed through the document engine answers from the register, with its fields and a signature check.
+      expect(v).toMatchObject({ status: 'valid', institution: (await owner.query('select name from tenants where id = $1', [t.tenantId])).rows[0].name, title: 'Bonafide Certificate', serialNo: `BON/2026-27/00001`, subjectName: 'Student A', issuedOn: '20 October 2026', docType: 'bonafide_certificate', signatureValid: true });
+      expect(v.fields).toEqual(expect.arrayContaining([{ label: 'Issued to', value: 'Student A' }]));
+      expect(v.fingerprint).toMatch(/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/);
     });
 
     it('does not confirm guesses, other institutions’ tokens or malformed ones', async () => {
@@ -207,7 +210,7 @@ describe('documents and certificates', () => {
       expect(v).toMatchObject({ status: 'revoked', serialNo: 'BON/2026-27/00001', revokedOn: '20 October 2026' });
       await post('principal', `/v1/documents/requests/${cert.id}/revoke`, { reason: 'Again' }).expect(409);
       await get('parent', `/v1/documents/requests/${cert.id}/pdf`).expect(403);
-      const office = ((await get('accountant', `/v1/documents/requests/${cert.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer).toString('latin1');
+      const office = pdfText((await get('accountant', `/v1/documents/requests/${cert.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer);
       expect(office).toContain('REVOKED');
       expect(await audited('certificate.revoked')).toBe(1);
     });
@@ -225,7 +228,7 @@ describe('documents and certificates', () => {
       await post('hr', `/v1/documents/requests/${r.id}/approve`).expect(200);
       const issued = (await post('hr', `/v1/documents/requests/${r.id}/issue`).expect(200)).body;
       expect(issued.serialNo).toBe('EXP/2026-27/00001');
-      const text = ((await get('teacher', `/v1/documents/requests/${r.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer).toString('latin1');
+      const text = pdfText((await get('teacher', `/v1/documents/requests/${r.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer);
       expect(text).toContain('T001');
       expect(text).toContain('3 June 2024');
       expect(text).toContain('2026-12-31');
@@ -238,14 +241,15 @@ describe('documents and certificates', () => {
       await get('teacher', `/v1/documents/id-cards/students.pdf?sectionId=${t.section.id}`).expect(403);
       await get('accountant', '/v1/documents/id-cards/students.pdf').expect(400);
       const pdf = await get('accountant', `/v1/documents/id-cards/students.pdf?sectionId=${t.section.id}`).buffer(true).parse(binary).expect(200);
-      const text = (pdf.body as Buffer).toString('latin1');
-      expect(text).toContain('/Count 1');
+      // Three cards fit one A4 sheet: a page of fronts and a page of backs.
+      expect((pdf.body as Buffer).toString('latin1')).toContain('/Count 2');
+      const text = pdfText(pdf.body as Buffer);
       for (const n of ['Student A', 'Student B', 'Student C']) expect(text).toContain(n);
-      const mine = ((await get('student', '/v1/documents/id-cards/me.pdf').buffer(true).parse(binary).expect(200)).body as Buffer).toString('latin1');
+      const mine = pdfText((await get('student', '/v1/documents/id-cards/me.pdf').buffer(true).parse(binary).expect(200)).body as Buffer);
       expect(mine).toContain('Student C');
       expect(mine).not.toContain('Student A');
       await get('parent', '/v1/documents/id-cards/me.pdf').expect(404);
-      const staff = ((await get('hr', `/v1/documents/id-cards/staff.pdf?userIds=${t.teacher.id}`).buffer(true).parse(binary).expect(200)).body as Buffer).toString('latin1');
+      const staff = pdfText((await get('hr', `/v1/documents/id-cards/staff.pdf?userIds=${t.teacher.id}`).buffer(true).parse(binary).expect(200)).body as Buffer);
       expect(staff).toContain('T001');
       await get('hr', '/v1/documents/id-cards/staff.pdf?userIds=nope').expect(400);
       expect(await audited('idcard.printed')).toBe(2);
@@ -266,8 +270,8 @@ describe('documents and certificates', () => {
     it('renders a fee receipt PDF for those who may see the receipt', async () => {
       const [inv] = await db.insert(s.feeInvoices).values({ tenantId: t.tenantId, studentId: t.students[0].id, sectionId: t.section.id, batchId: crypto.randomUUID(), title: 'Semester 3 tuition', amountPaise: 45_000_00, paidPaise: 20_000_00, dueOn: '2026-11-01', createdBy: t.principal.id }).returning();
       const [pay] = await db.insert(s.feePayments).values({ tenantId: t.tenantId, invoiceId: inv.id, studentId: t.students[0].id, amountPaise: 20_000_00, method: 'cash', status: 'paid', receiptNo: 'RCPT/2026-27/00001', paidAt: new Date('2026-10-19T08:00:00Z'), reference: 'CTR-1' }).returning();
-      const text = ((await get('parent', `/v1/documents/fee-receipts/${pay.id}.pdf`).buffer(true).parse(binary).expect(200)).body as Buffer).toString('latin1');
-      for (const x of ['RCPT/2026-27/00001', 'Student A', 'Semester 3 tuition', '20,000.00', '25,000.00', '2026-10-19']) expect(text).toContain(x);
+      const text = pdfText((await get('parent', `/v1/documents/fee-receipts/${pay.id}.pdf`).buffer(true).parse(binary).expect(200)).body as Buffer);
+      for (const x of ['RCPT/2026-27/00001', 'Student A', 'Semester 3 tuition', '20,000.00', '25,000.00', '19 October 2026', 'Twenty Thousand']) expect(text).toContain(x);
       await get('accountant', `/v1/documents/fee-receipts/${pay.id}.pdf`).expect(200);
       await get('parent2', `/v1/documents/fee-receipts/${pay.id}.pdf`).expect(404);
       await get('outsider', `/v1/documents/fee-receipts/${pay.id}.pdf`).expect(404);

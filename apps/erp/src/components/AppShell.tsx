@@ -34,6 +34,7 @@ export interface ShellUser {
 export function AppShell({
   user,
   school,
+  schoolLogo = null,
   years = [],
   yearId = '',
   notices = [],
@@ -47,6 +48,8 @@ export function AppShell({
 }: {
   user: ShellUser;
   school: string;
+  /** The institution's logo (Settings > Branding), shown in the sidebar header. */
+  schoolLogo?: string | null;
   years?: ShellYear[];
   yearId?: string;
   notices?: ShellNotice[];
@@ -84,7 +87,7 @@ export function AppShell({
           {t('shell.skip')}
         </a>
         <SidebarProvider defaultOpen={sidebarOpen} className="kx-shell">
-          <AppSidebar groups={groups} pathname={pathname} school={school} roleText={roleText} workspace={workspace} home={home} setup={setup} userKey={user.email ?? user.fullName} />
+          <AppSidebar groups={groups} pathname={pathname} school={school} schoolLogo={schoolLogo} roleText={roleText} workspace={workspace} home={home} setup={setup} userKey={user.email ?? user.fullName} />
           <SidebarInset className="min-w-0 bg-background">
             <TabsProvider groups={groups} userKey={user.email ?? user.fullName}>
               <TopBar user={user} roleText={roleText} groups={groups} crumbs={crumbs} years={years} yearId={yearId} notices={notices} unread={unread} density={density} />

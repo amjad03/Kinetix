@@ -14,6 +14,7 @@ import { financialYear } from '../fees/fees.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { texts } from '../notifications/texts.js';
 import { hasRole, OFFICE_ROLES } from './documents.access.js';
+import { IssuedDocsService } from './issued-docs.service.js';
 import { DEFAULT_TEMPLATES, longDate, renderTemplate } from './render.js';
 
 type Cert = typeof certificates.$inferSelect;
@@ -37,6 +38,7 @@ export class CertificatesService {
     @Inject(ENV) env: Env,
     private readonly clock: Clock,
     private readonly notifications: NotificationsService,
+    private readonly issued: IssuedDocsService,
   ) {
     this.verifyBase = env.VERIFY_BASE_URL.replace(/\/$/, '');
   }
@@ -231,6 +233,7 @@ export class CertificatesService {
     if (!c) throw new NotFoundException('Certificate not found');
     if (c.status !== 'issued') throw new ConflictException('Only an issued certificate can be revoked');
     await tx.update(certificates).set({ status: 'revoked', revokedAt: this.clock.now(), revokedBy: p.userId, revokedReason: reason }).where(eq(certificates.id, id));
+    await this.issued.revokeSource(tx, p, 'certificate', id, reason);
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'certificate.revoked', subjectType: 'certificate', subjectId: id, data: { serialNo: c.serialNo, reason } });
     return (await this.views(tx, [await this.get(tx, id)]))[0];
   }

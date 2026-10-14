@@ -335,13 +335,21 @@ export interface CertificateRequest {
 
 /** GET /v1/public/verify/:slug/:token (no sign-in). Reveals no more than the certificate shows. */
 export interface CertificateVerification {
-  status: 'valid' | 'revoked' | 'not_found';
+  status: 'valid' | 'revoked' | 'superseded' | 'not_found';
   institution?: string;
   title?: string;
   serialNo?: string;
-  subjectName?: string;
+  subjectName?: string | null;
   issuedOn?: string;
   revokedOn?: string;
+  /** Documents in the register (document engine) add these. */
+  revokedReason?: string | null;
+  docType?: string;
+  fields?: { label: string; value: string }[];
+  signatureValid?: boolean;
+  fingerprint?: string;
+  /** API path of the institution's public logo. */
+  logo?: string | null;
 }
 
 export interface IdCardVerification {

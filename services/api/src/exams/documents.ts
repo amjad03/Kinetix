@@ -1,3 +1,4 @@
+import type { DocData } from '@kinetix/shared';
 import { PdfWriter } from '../common/pdf.js';
 
 export interface StudentHeader {
@@ -8,17 +9,6 @@ export interface StudentHeader {
   program: string;
 }
 
-const header = (pdf: PdfWriter, h: StudentHeader, title: string, sub?: string) => {
-  pdf.text(h.institution, { size: 16, bold: true, align: 'center' });
-  pdf.text(title, { size: 12, bold: true, align: 'center' });
-  if (sub) pdf.text(sub, { size: 10, align: 'center' });
-  pdf.rule();
-  pdf.text(`Name: ${h.name}`, { bold: true });
-  pdf.text(`Roll no: ${h.rollNo}      Class: ${h.className}      Programme: ${h.program}`);
-  pdf.gap(4);
-  pdf.rule();
-};
-
 export interface HallTicketData extends StudentHeader {
   sessionName: string;
   ticketNo: string;
@@ -27,30 +17,6 @@ export interface HallTicketData extends StudentHeader {
   /** The student's profile photo (a JPEG); printed beside the ticket number when present. */
   photo?: Buffer | null;
   papers: { date: string; time: string; subject: string; room: string | null; seat: number | null }[];
-}
-
-export function hallTicketPdf(d: HallTicketData): Buffer {
-  const pdf = new PdfWriter();
-  header(pdf, d, 'HALL TICKET', d.sessionName);
-  const top = pdf.y;
-  const hasPhoto = d.photo ? pdf.image(d.photo, { x: 445, width: 70, height: 85 }) : false;
-  pdf.text(`Hall ticket no: ${d.ticketNo}`, { bold: true });
-  pdf.gap();
-  if (hasPhoto && top - pdf.y < 92) pdf.gap(92 - (top - pdf.y));
-  const xs = [0, 80, 150, 380, 460];
-  pdf.row(['Date', 'Time', 'Subject', 'Hall', 'Seat'], xs, { bold: true });
-  pdf.rule();
-  for (const p of d.papers) pdf.row([p.date, p.time, p.subject, p.room ?? '-', p.seat === null ? '-' : String(p.seat)], xs);
-  pdf.gap(20);
-  pdf.paragraph('Bring this hall ticket and your institution ID card to every paper. Mobile phones and smart watches are not allowed in the examination hall.', { size: 9 });
-  if (d.verifyUrl) {
-    pdf.gap(8);
-    pdf.qr(d.verifyUrl, 80);
-    pdf.text('Scan the code to check that this hall ticket is genuine.', { size: 9, stay: true });
-    pdf.gap(88);
-  } else pdf.gap(24);
-  pdf.text('Controller of Examinations', { align: 'right' });
-  return pdf.build();
 }
 
 /** The seating chart of one hall for one sitting: row by row, bench by bench, who sits where. */
@@ -104,38 +70,44 @@ export interface ResultData {
   lines: { code: string; subject: string; credits: number; percent: number; grade: string; gradePoint: number; passed: boolean }[];
 }
 
-const lineRows = (pdf: PdfWriter, r: ResultData) => {
-  const xs = [0, 70, 270, 320, 370, 420, 470];
-  pdf.row(['Code', 'Subject', 'Credits', 'Marks %', 'Grade', 'Points', 'Result'], xs, { bold: true });
-  pdf.rule();
-  for (const l of r.lines) pdf.row([l.code, l.subject, String(l.credits), l.percent.toFixed(2), l.grade, l.gradePoint.toFixed(2), l.passed ? 'Pass' : 'Fail'], xs);
-  pdf.rule();
-};
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const long = (d: string) => `${Number(d.slice(8, 10))} ${MONTHS[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}`;
+const CLASSES = [{ label: 'First Class with Distinction', min: 7.5 }, { label: 'First Class', min: 6 }, { label: 'Second Class', min: 5 }, { label: 'Pass Class', min: 4 }];
 
-export function marksCardPdf(h: StudentHeader, r: ResultData): Buffer {
-  const pdf = new PdfWriter();
-  header(pdf, h, 'STATEMENT OF MARKS / GRADE CARD', `${r.sessionName} - Semester ${r.term}`);
-  lineRows(pdf, r);
-  pdf.text(`Credits attempted: ${r.creditsAttempted}    Credits earned: ${r.creditsEarned}`);
-  pdf.text(`SGPA: ${r.sgpa.toFixed(2)}    CGPA: ${r.cgpa.toFixed(2)}    Result: ${r.outcome === 'pass' ? 'PASS' : 'NOT PASSED'}`, { bold: true });
-  pdf.gap(24);
-  pdf.text('Controller of Examinations', { align: 'right' });
-  return pdf.build();
+/** The class a CGPA (10-point scale) is placed in, read as 10 x CGPA percent. */
+export const classification = (cgpa: number, passed: boolean) => (passed ? (CLASSES.find((c) => cgpa >= c.min)?.label ?? '') : 'Not yet complete');
+
+/** `exam` and `marks` blocks of a marks card (document engine data, packages/shared doc-samples.ts). */
+export function marksCardData(r: ResultData): DocData {
+  const credits = r.lines.reduce((a, l) => a + l.credits, 0);
+  const pct = credits ? r.lines.reduce((a, l) => a + l.percent * l.credits, 0) / credits : 0;
+  const total = Math.round(r.lines.reduce((a, l) => a + l.percent, 0));
+  return {
+    exam: { session: r.sessionName, term: String(r.term), semester: `Semester ${r.term}`, monthYear: '', sgpa: r.sgpa.toFixed(2), cgpa: r.cgpa.toFixed(2), creditsAttempted: r.creditsAttempted, creditsEarned: r.creditsEarned, totalMarks: total, maxMarks: r.lines.length * 100, percentage: pct.toFixed(2), result: r.outcome === 'pass' ? 'PASS' : 'NOT PASSED', classification: classification(r.cgpa, r.outcome === 'pass') },
+    marks: { rows: r.lines.map((l) => ({ code: l.code, subject: l.subject, credits: l.credits, internal: '—', external: '—', total: Math.round(l.percent), max: 100, percent: l.percent.toFixed(2), grade: l.grade, gradePoint: l.gradePoint.toFixed(2), result: l.passed ? 'Pass' : 'Fail' })) },
+  };
 }
 
-export function transcriptPdf(h: StudentHeader, results: ResultData[]): Buffer {
-  const pdf = new PdfWriter();
-  header(pdf, h, 'ACADEMIC TRANSCRIPT');
-  for (const r of results) {
-    pdf.gap(6);
-    pdf.text(`${r.sessionName} - Semester ${r.term}`, { bold: true });
-    lineRows(pdf, r);
-    pdf.text(`SGPA ${r.sgpa.toFixed(2)}    Credits earned ${r.creditsEarned}/${r.creditsAttempted}    Cumulative CGPA ${r.cgpa.toFixed(2)}`);
-  }
+/** The `transcript` block: every course of every term, term SGPAs and the final CGPA. */
+export function transcriptData(results: ResultData[]): DocData {
   const last = results[results.length - 1];
-  pdf.gap(10);
-  if (last) pdf.text(`Overall CGPA: ${last.cgpa.toFixed(2)}`, { bold: true, size: 12 });
-  pdf.gap(24);
-  pdf.text('Controller of Examinations', { align: 'right' });
-  return pdf.build();
+  const passed = results.every((r) => r.outcome === 'pass');
+  const earned = results.reduce((a, r) => a + r.creditsEarned, 0);
+  const attempted = results.reduce((a, r) => a + r.creditsAttempted, 0);
+  return {
+    transcript: {
+      cgpa: (last?.cgpa ?? 0).toFixed(2), creditsEarned: earned, creditsAttempted: attempted, result: passed ? 'PASSED' : 'IN PROGRESS', classification: classification(last?.cgpa ?? 0, passed), percentage: ((last?.cgpa ?? 0) * 10).toFixed(2), completedOn: last?.sessionName ?? '',
+      terms: results.map((r) => ({ label: `Semester ${r.term} (${r.sessionName})`, sgpa: r.sgpa.toFixed(2), creditsEarned: r.creditsEarned, creditsAttempted: r.creditsAttempted, result: r.outcome === 'pass' ? 'Pass' : 'Not passed' })),
+      rows: results.flatMap((r) => r.lines.map((l) => ({ term: `Semester ${r.term}`, code: l.code, subject: l.subject, credits: l.credits, grade: l.grade, gradePoint: l.gradePoint.toFixed(2), result: l.passed ? 'Pass' : 'Fail' }))),
+    },
+  };
+}
+
+/** The `exam` and `papers` blocks of a hall ticket. */
+export function hallTicketData(d: { sessionName: string; ticketNo: string; papers: { date: string; time: string; subject: string; code?: string; room: string | null; seat: number | null }[] }): DocData {
+  return {
+    exam: { session: d.sessionName, ticketNo: d.ticketNo, centre: 'As allotted below', reportingTime: '30 minutes before each paper', instructions: 'Bring this hall ticket and your institution ID card to every paper. Mobile phones, smart watches and other electronic devices are not allowed in the examination hall. Candidates will not be admitted more than 30 minutes after the paper starts.' },
+    papers: d.papers.map((p) => ({ date: long(p.date), day: DAYS[new Date(`${p.date}T00:00:00Z`).getUTCDay()], time: p.time, code: p.code ?? '', subject: p.subject, room: p.room ?? '—', seat: p.seat === null ? '—' : String(p.seat) })),
+  };
 }

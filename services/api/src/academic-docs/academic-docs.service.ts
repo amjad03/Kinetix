@@ -1,3 +1,5 @@
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { studentBlock } from '../documents/doc-data.js';
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, count, desc, eq, inArray, isNotNull, or } from 'drizzle-orm';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
@@ -7,7 +9,7 @@ import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { academicDocRequests, examResultLines, examResults, examSessions, guardians, legacyMarks, programs, sections, students, subjects, tenants } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import { consolidate, DEFAULT_CLASSES, docCode, docPdf, DOC_TITLE, importedTerm, serialFor, type DocKind, type DocSnapshot, type TermBlock } from './academic-docs.logic.js';
+import { consolidate, DEFAULT_CLASSES, docCode, DOC_TITLE, importedTerm, serialFor, type DocKind, type DocSnapshot, type TermBlock } from './academic-docs.logic.js';
 import { certificateSerial } from '../exam-office/settings.js';
 import { classify, percentEquivalent, roundBy } from '../affiliation/maths.js';
 import { resolveAffiliation } from '../affiliation/resolve.js';
@@ -21,6 +23,7 @@ export class AcademicDocsService {
     private readonly db: DbService,
     private readonly notes: NotificationsService,
     @Inject(ENV) private readonly env: Env,
+    private readonly engine: DocumentEngine,
   ) {}
 
   private isAdmin(p: UserPrincipal) {
@@ -173,10 +176,28 @@ export class AcademicDocsService {
       const r = await this.load(tx, id);
       await assertCanSeeStudent(tx, p, r.studentId, DOC_ADMIN);
       if (r.status !== 'issued' || !r.snapshot || !r.serialNo) throw new ForbiddenException('This document has not been issued yet');
-      const [t] = await tx.select({ slug: tenants.slug }).from(tenants);
-      const verifyUrl = `${this.env.VERIFY_BASE_URL.replace(/\/$/, '')}/academic/${t!.slug}/${encodeURIComponent(docCode(this.env.JWT_SECRET, p.tenantId, r.serialNo))}`;
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'academic_doc.downloaded', subjectType: 'academic_doc_request', subjectId: id });
-      return { pdf: docPdf(r.kind as DocKind, r.snapshot as DocSnapshot, r.serialNo, (r.issuedAt ?? new Date()).toISOString().slice(0, 10), verifyUrl), name: `${r.kind}-${r.serialNo.replace(/\//g, '-')}.pdf` };
+      const kind = r.kind as DocKind;
+      const snap = r.snapshot as DocSnapshot;
+      const h = snap.header;
+      const title = DOC_TITLE[kind].toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+      const passed = snap.outcome === 'passed';
+      const transcript = {
+        cgpa: snap.cgpa.toFixed(2), creditsEarned: snap.creditsEarned, creditsAttempted: snap.creditsAttempted, result: passed ? 'PASSED' : 'NOT YET COMPLETE', classification: snap.classLabel, percentage: (snap.cgpa * 10).toFixed(2), completedOn: snap.terms[snap.terms.length - 1]?.label ?? '',
+        terms: snap.terms.map((t) => ({ label: t.label, sgpa: t.sgpa.toFixed(2), creditsEarned: t.creditsEarned, creditsAttempted: t.creditsAttempted, result: t.lines.every((l) => l.passed) ? 'Pass' : 'Not passed' })),
+        rows: kind === 'grade_card' ? [] : snap.terms.flatMap((t) => t.lines.map((l) => ({ term: t.label, code: l.code, subject: l.subject, credits: l.credits, grade: l.grade, gradePoint: l.gradePoint.toFixed(2), result: l.passed ? 'Pass' : 'Fail' }))),
+      };
+      const citation = `has ${passed ? 'successfully completed' : 'appeared in the examinations of'} the **${h.program}** programme of this institution, with a cumulative grade point average of **${snap.cgpa.toFixed(2)}** and ${snap.creditsEarned} credits earned${passed && snap.classLabel ? `, placed in ${snap.classLabel}` : ''}. This certificate is provisional, valid until the degree certificate is awarded.`;
+      const out = await this.engine.produce(tx, p, {
+        docType: kind === 'provisional_certificate' ? 'course_completion_certificate' : 'transcript',
+        title,
+        subject: { type: 'student', id: r.studentId, name: h.name },
+        source: { type: 'academic_doc', id },
+        serial: r.serialNo,
+        data: { ...(await studentBlock(tx, r.studentId)), transcript, doc: { title, certificateNo: r.serialNo }, award: { title, recipient: h.name, citation, event: '', date: '', position: '' } },
+        keyFields: [{ label: 'Document', value: title }, { label: 'Student', value: `${h.name} (${h.rollNo})` }, { label: 'Programme', value: h.program }, { label: 'CGPA', value: snap.cgpa.toFixed(2) }, { label: 'Number', value: r.serialNo }],
+      });
+      return { pdf: out.pdf, name: `${r.kind}-${r.serialNo.replace(/\//g, '-')}.pdf` };
     });
   }
 }

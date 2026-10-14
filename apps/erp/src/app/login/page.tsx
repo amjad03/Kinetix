@@ -6,6 +6,7 @@ import { safeReturnPath } from '@/lib/return-path';
 import { SESSION_COOKIE, TENANT_COOKIE } from '@/lib/config';
 import { getI18n } from '@/i18n/server';
 import type { MessageKey } from '@/i18n/messages';
+import { publicBranding } from '@/lib/branding';
 import { LoginForm } from './LoginForm';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,8 +25,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if (jar.get(SESSION_COOKIE) && !reason) redirect(safeReturnPath(next) ?? '/');
   const { t } = await getI18n();
   const notice = reason ? NOTICES[reason] : undefined;
+  const tenant = jar.get(TENANT_COOKIE)?.value ?? '';
+  const brand = tenant ? await publicBranding(tenant) : null;
   return (
-    <AuthShell title={t('v2.auth.artTitle')} lead={t('v2.auth.artLead')} cardTitle={t('v2.auth.artCard')} cardText={t('v2.auth.artCardText')}>
+    <AuthShell title={t('v2.auth.artTitle')} lead={t('v2.auth.artLead')} cardTitle={t('v2.auth.artCard')} cardText={t('v2.auth.artCardText')} brand={brand}>
       <LoginForm defaultTenant={jar.get(TENANT_COOKIE)?.value ?? ''} notice={notice ? { severity: notice.severity, text: t(notice.text) } : undefined} next={next} mode={mode === 'otp' ? 'otp' : 'password'} />
     </AuthShell>
   );

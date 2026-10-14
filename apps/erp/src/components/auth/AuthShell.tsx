@@ -4,15 +4,23 @@ import type { ReactNode } from 'react';
  * Redesign v2 auth layout: the form on the left, a gradient art panel with a message on the right
  * (hidden on phones).
  */
-export function AuthShell({ children, title, lead, cardTitle, cardText, footer }: { children: ReactNode; title: string; lead: string; cardTitle: string; cardText: string; footer?: ReactNode }) {
+export function AuthShell({ children, title, lead, cardTitle, cardText, footer, brand }: { children: ReactNode; title: string; lead: string; cardTitle: string; cardText: string; footer?: ReactNode; /** The institution last signed in to (Settings > Branding). */ brand?: { name: string; logo: string | null } | null }) {
   return (
     <div className="grid min-h-[100dvh] bg-card md:grid-cols-2" data-testid="auth-shell">
       <div className="flex min-h-[100dvh] flex-col px-5 py-6 md:px-10">
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center gap-4 py-8">
-          <div className="flex items-center gap-2.5">
-            <span className="grid size-8 place-items-center rounded-[9px] bg-[linear-gradient(135deg,#0f9488,#4f46e5)] font-bold text-white">K</span>
-            <b className="text-[17px]">Kinetix</b>
-          </div>
+          {brand ? (
+            <div className="flex items-center gap-3" data-testid="auth-brand">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {brand.logo && <img src={brand.logo} alt="" className="size-12 shrink-0 object-contain" />}
+              <b className="text-[17px] leading-tight">{brand.name}</b>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2.5">
+              <span className="grid size-8 place-items-center rounded-[9px] bg-[linear-gradient(135deg,#0f9488,#4f46e5)] font-bold text-white">K</span>
+              <b className="text-[17px]">Kinetix</b>
+            </div>
+          )}
           {children}
         </div>
         <div className="text-center text-xs text-muted-foreground">{footer ?? '© 2026 Kinetix'}</div>

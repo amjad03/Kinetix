@@ -8,6 +8,8 @@ import { DbService } from '../db/db.service.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { parseHallTicketCode } from '../exams/hall-ticket-code.js';
 import { certificates, departments, designations, examSessions, hallTickets, sections, staffProfiles, students, tenants, users } from '../db/schema.js';
+import { BrandingService } from './branding.service.js';
+import { IssuedDocsService } from './issued-docs.service.js';
 import { longDate, parseIdCardCode } from './render.js';
 
 /**
@@ -22,6 +24,8 @@ export class PublicVerifyController {
     private readonly db: DbService,
     private readonly lookups: SystemLookups,
     private readonly limiter: RateLimiter,
+    private readonly issued: IssuedDocsService,
+    private readonly branding: BrandingService,
   ) {}
 
   @Get('verify/:slug/:token')
@@ -30,6 +34,12 @@ export class PublicVerifyController {
     const tenant = /^[a-z0-9-]{1,60}$/.test(slug) && /^[0-9a-f]{32}$/.test(token) ? await this.lookups.tenantBySlug(slug) : undefined;
     if (!tenant) return { status: 'not_found' };
     return this.db.withTenant(tenant.id, async (tx) => {
+      // Documents in the register (every document the engine issues) carry their fields and a signature check.
+      const doc = await this.issued.verifyToken(tx, token, tenant.timezone);
+      if (doc) {
+        const look = await this.branding.publicView(tx, slug);
+        return { ...doc, logo: look.assets.logo ?? look.assets.emblem ?? null, palette: look.palette };
+      }
       const [c] = await tx.select().from(certificates).where(eq(certificates.verifyToken, token));
       if (!c || (c.status !== 'issued' && c.status !== 'revoked')) return { status: 'not_found' as const };
       const [t] = await tx.select({ name: tenants.name }).from(tenants);

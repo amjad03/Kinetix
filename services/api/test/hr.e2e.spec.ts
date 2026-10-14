@@ -5,7 +5,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as s from '../src/db/schema.js';
-import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
+import { createApp, createTenant, FixedClock, ownerPool, pdfText } from './helpers.js';
 
 const R = (rupees: number) => rupees * 100;
 
@@ -384,8 +384,8 @@ describe('HR and payroll', () => {
         res.on('end', () => cb(null, Buffer.concat(chunks)));
       }).expect(200);
       expect(pdf.headers['content-type']).toBe('application/pdf');
-      expect((pdf.body as Buffer).subarray(0, 8).toString()).toBe('%PDF-1.4');
-      expect((pdf.body as Buffer).toString('latin1')).toContain('Net pay');
+      expect((pdf.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
+      expect(pdfText(pdf.body as Buffer)).toMatch(/net pay/i);
       // Not someone else's, and a staff member who is not in payroll sees none.
       const theirs = (await get('teacher2', '/v1/payroll/payslips/me').expect(200)).body as { id: string }[];
       await get('teacher2', `/v1/payroll/payslips/${mine[0].id}`).expect(404);

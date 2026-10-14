@@ -14,7 +14,9 @@ import { bankTransferCsv, statutoryCsv, tallyXml, type StatRow } from './exports
 import { PAYROLL_APPROVERS, PAYROLL_ROLES, STAFF_ROLES, hasAnyRole } from './hr.access.js';
 import { HrService } from './hr.service.js';
 import { PayrollService } from './payroll.service.js';
-import { monthLabel, payslipPdf } from './payslip-pdf.js';
+import { monthLabel } from './payslip-pdf.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { plainMoney, rupees, rupeeWords, staffBlock } from '../documents/doc-data.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const Paise = z.number().int().min(0).max(100_000_000_00);
@@ -49,6 +51,7 @@ export class PayrollController {
     private readonly db: DbService,
     private readonly hr: HrService,
     private readonly payroll: PayrollService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   // ----- settings ----------------------------------------------------------------------------------
@@ -277,11 +280,27 @@ export class PayrollController {
   @Auth('user', STAFF_ROLES)
   pdf(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const { payslip, institution } = await this.payroll.payslip(tx, id, { userId: p.userId, payroll: hasAnyRole(p, PAYROLL_ROLES) });
+      const { payslip: s } = await this.payroll.payslip(tx, id, { userId: p.userId, payroll: hasAnyRole(p, PAYROLL_ROLES) });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.payslip_downloaded', subjectType: 'payslip', subjectId: id });
+      const block = await staffBlock(tx, s.user.id);
+      const rows = Array.from({ length: Math.max(s.earnings.length, s.deductions.length) }, (_, i) => ({ earning: s.earnings[i]?.name ?? '', earningAmount: s.earnings[i] ? plainMoney(s.earnings[i].amountPaise) : '', deduction: s.deductions[i]?.name ?? '', deductionAmount: s.deductions[i] ? plainMoney(s.deductions[i].amountPaise) : '' }));
+      const month = monthLabel(s.month);
+      const out = await this.engine.produce(tx, p, {
+        docType: 'salary_slip',
+        title: 'Salary Slip',
+        subject: { type: 'staff', id: s.user.id, name: s.user.fullName },
+        source: { type: 'payslip', id },
+        serial: s.payslipNo ?? undefined,
+        data: {
+          staff: { ...(block.staff as object), name: s.user.fullName, employeeCode: s.user.employeeCode ?? '', designation: s.user.designation ?? '', department: s.user.department ?? '' },
+          pay: { month, payslipNo: s.payslipNo ?? '', daysInMonth: s.daysInMonth, paidDays: s.paidDays, lopDays: s.lopDays, taxRegime: s.taxRegime === 'new' ? 'New' : 'Old', gross: rupees(s.grossPaise), deductions: rupees(s.deductionsPaise), net: rupees(s.netPaise), netWords: rupeeWords(s.netPaise), employerPf: rupees(s.employer.epfPaise + s.employer.epsPaise), employerEsi: rupees(s.employer.esiPaise), annualTax: rupees(s.annualTaxPaise), rows },
+        },
+        keyFields: [{ label: 'Employee', value: `${s.user.fullName}${s.user.employeeCode ? ` (${s.user.employeeCode})` : ''}` }, { label: 'Pay period', value: month }, { label: 'Net pay', value: rupees(s.netPaise) }],
+        photo: null,
+      });
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="payslip-${payslip.month}.pdf"`);
-      return new StreamableFile(payslipPdf(institution, payslip));
+      res.setHeader('Content-Disposition', `inline; filename="payslip-${s.month}.pdf"`);
+      return new StreamableFile(out.pdf);
     });
   }
 }

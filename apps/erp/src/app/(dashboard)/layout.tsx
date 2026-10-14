@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -14,8 +15,16 @@ import { CHANGE_PASSWORD_PATH } from '@/lib/password';
 import { getI18n } from '@/i18n/server';
 import { summarize } from '@/lib/setup';
 import { loadSetup } from '@/lib/setup-load';
+import { publicBranding } from '@/lib/branding';
 
 export const dynamic = 'force-dynamic';
+
+/** The institution's own browser icon, when it has uploaded one (Settings > Branding). */
+export async function generateMetadata(): Promise<Metadata> {
+  const me = await load(getMe);
+  const brand = me.error === undefined ? await publicBranding(me.data.tenant.slug) : null;
+  return brand?.favicon ? { icons: { icon: brand.favicon } } : {};
+}
 
 interface Notifications {
   unread: number;
@@ -49,6 +58,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     load(() => api<{ disabledModules: string[]; academicModel?: string; tenantKind?: string | null }>('/v1/institution/capabilities')),
     canSee(roles, 'institutionSetup') ? loadSetup() : Promise.resolve(null),
   ]);
+  const brand = await publicBranding(me.data.tenant.slug);
   const years = structure?.data?.academicYears ?? [];
   const picked = (await cookies()).get(YEAR_COOKIE)?.value ?? '';
   const wsCookie = (await cookies()).get(WORKSPACE_COOKIE)?.value;
@@ -57,6 +67,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     <AppShell
       user={{ fullName: me.data.fullName, email: me.data.email, roles, platformAdmin: !!me.data.platformAdmin }}
       school={me.data.tenant.name}
+      schoolLogo={brand?.logo ?? null}
       years={years}
       yearId={yearId}
       notices={notes.data?.items ?? []}

@@ -1,3 +1,4 @@
+import { DocumentEngine } from '../documents/document-engine.service.js';
 import { BadRequestException, Controller, Get, NotFoundException, Param, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { sql } from 'drizzle-orm';
@@ -41,6 +42,7 @@ export class AcademicReportsController {
   constructor(
     private readonly db: DbService,
     private readonly svc: AcademicsService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   @Get(':kind')
@@ -68,7 +70,8 @@ export class AcademicReportsController {
       grid.forEach((line, i) => pdf.row(line.map(String), xs, { bold: i === 0, size: head.length > 8 ? 7 : 9 }));
       res.setHeader('content-type', 'application/pdf');
       res.setHeader('content-disposition', `attachment; filename="${kind}.pdf"`);
-      res.end(pdf.build());
+      const title = kind.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+      res.end(await this.db.withTenant(p.tenantId, (tx) => this.engine.withCover(tx, p, pdf.build(), { title, subtitle: 'Academic report', period: [q.from, q.to].filter(Boolean).join(' to ') || q.date || q.month || '', preparedBy: 'Academic office', source: { type: 'report', id: `academics:${kind}:${new URLSearchParams(q).toString()}`.slice(0, 300) } })));
       return;
     }
     res.setHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

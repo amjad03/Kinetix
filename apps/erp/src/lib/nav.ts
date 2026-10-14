@@ -241,6 +241,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/sso', label: 'nav.sso', section: 'settings', icon: 'settings' },
       { href: '/settings/institution', label: 'nav.institution', section: 'settings', icon: 'departments' },
       { href: '/settings/affiliation', label: 'nav.affiliation', section: 'settings', icon: 'exams' },
+      { href: '/settings/branding', label: 'nav.branding', section: 'settings', icon: 'settings' },
       { href: '/institution-setup', label: 'nav.institutionSetup', section: 'institutionSetup', icon: 'settings' },
       { href: '/settings/buildings', label: 'nav.buildings', section: 'settings', icon: 'campus' },
       { href: '/audit', label: 'nav.audit', section: 'audit', icon: 'academicAudit' },
