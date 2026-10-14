@@ -130,6 +130,9 @@ describe('attendance governance, QR attendance, institution profile', () => {
     expect((await get('parent', '/v1/attendance/condonations').expect(200)).body).toHaveLength(1);
     expect((await get('otherPrincipal', '/v1/attendance/condonations').expect(200)).body).toHaveLength(0);
     await post('principal', `/v1/attendance/condonations/${sent.body.id}/decision`, { decision: 'approved', points: 0, note: 'no points' }).expect(400);
+    // No more than the office's condonation limit (10 points by default).
+    await post('principal', `/v1/attendance/condonations/${sent.body.id}/decision`, { decision: 'approved', points: 25, note: 'Certificate verified' }).expect(400);
+    await put('principal', '/v1/academics/settings/attendance', { maxCondonationPoints: 25 }).expect(200);
     await post('principal', `/v1/attendance/condonations/${sent.body.id}/decision`, { decision: 'approved', points: 25, note: 'Certificate verified' }).expect(200);
     expect(await audited('attendance.condonation.approved')).toBe(1);
 

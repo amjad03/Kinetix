@@ -60,6 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/university', label: 'nav.university', section: 'university', icon: 'departments' },
       { href: '/departments', label: 'nav.departments', section: 'departments', icon: 'departments' },
       { href: '/academics/structure', label: 'nav.structure', section: 'departments', icon: 'classes' },
+      { href: '/academics/planning', label: 'nav.academicPlanning', section: 'courseRegistration', icon: 'courseRegistration' },
       { href: '/course-files', label: 'nav.courseFiles', section: 'courseFiles', icon: 'courseFiles' },
       { href: '/academic-audit', label: 'nav.academicAudit', section: 'academicAudit', icon: 'academicAudit' },
       { href: '/course-registration', label: 'nav.courseRegistration', section: 'courseRegistration', icon: 'courseRegistration' },
@@ -76,6 +77,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/timetable', label: 'nav.timetable', section: 'timetable', icon: 'timetable' },
       { href: '/calendar', label: 'nav.calendar', section: 'calendar', icon: 'calendar' },
       { href: '/scheduling', label: 'nav.scheduling', section: 'scheduling', icon: 'timetable' },
+      { href: '/timetable/setup', label: 'nav.timetableSetup', section: 'timetable', icon: 'settings' },
     ],
   },
   {
@@ -84,6 +86,11 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'attendance',
     items: [
       { href: '/attendance', label: 'nav.attendance', section: 'school', icon: 'attendance' },
+      { href: '/attendance/mark', label: 'nav.attendanceMark', section: 'school', icon: 'attendance' },
+      { href: '/attendance/unmarked', label: 'nav.attendanceUnmarked', section: 'school', icon: 'tasks' },
+      { href: '/attendance/leave', label: 'nav.attendanceLeave', section: 'school', icon: 'calendar' },
+      { href: '/attendance/register', label: 'nav.attendanceRegister', section: 'school', icon: 'reports' },
+      { href: '/attendance/eligibility', label: 'nav.attendanceEligibility', section: 'school', icon: 'exams' },
       { href: '/attendance/governance', label: 'nav.attendanceGov', section: 'school', icon: 'academicAudit' },
     ],
   },

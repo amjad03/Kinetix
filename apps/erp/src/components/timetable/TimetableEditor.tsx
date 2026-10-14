@@ -14,7 +14,7 @@ import { CalendarDays as CalendarMonthOutlined, Plus as Add, Trash2 as DeleteOut
 import { cn } from '@/lib/utils';
 import { size } from '@/lib/sx';
 export interface TimetableView {
-  kind: 'class' | 'teacher';
+  kind: 'class' | 'teacher' | 'room';
   id: string;
   name: string;
 }
@@ -42,7 +42,7 @@ export function TimetableEditor({
   const grid = useMemo(() => weekGrid(slots), [slots]);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const base: Partial<SlotInput> = view.kind === 'class' ? { sectionId: view.id } : { teacherId: view.id };
+  const base: Partial<SlotInput> = view.kind === 'class' ? { sectionId: view.id } : view.kind === 'teacher' ? { teacherId: view.id } : { roomId: view.id };
   const hours = slots.reduce((m, s) => m + minutes(s.endsAt) - minutes(s.startsAt), 0);
 
   const add = (draft: Partial<SlotInput> = {}) => setEditing({ draft: { ...base, ...draft } });
@@ -148,7 +148,7 @@ const formatHours = (m: number, t: TFunction) => (m % 60 === 0 ? t('tt.hours', {
 
 function SlotCard({ slot, view, onClick }: { slot: TimetableSlot; view: TimetableView; onClick: () => void }) {
   const { t, locale } = useI18n();
-  const who = view.kind === 'class' ? slot.teacher.fullName : slot.section.displayName;
+  const who = view.kind === 'class' ? slot.teacher.fullName : view.kind === 'room' ? `${slot.section.displayName} · ${slot.teacher.fullName}` : slot.section.displayName;
   return (
     <ButtonBase className="block text-left w-full h-full rounded-[8px] px-2.5 py-2 bg-secondary text-secondary-foreground border-l-3 border-teal hover:bg-teal-soft hover:text-teal-ink focus-visible:[outline:2px] focus-visible:outline-teal focus-visible:[outline-style:solid]"
       onClick={onClick}
@@ -161,9 +161,14 @@ function SlotCard({ slot, view, onClick }: { slot: TimetableSlot; view: Timetabl
       <p className="text-xs tracking-[0.3px] truncate opacity-[0.85] leading-[16px]">
         {who}
       </p>
-      {slot.room && (
+      {slot.room && view.kind !== 'room' && (
         <p className="text-xs tracking-[0.3px] truncate opacity-[0.7] leading-[16px]">
           {slot.room}
+        </p>
+      )}
+      {(slot.batch || !!slot.combinedSectionIds?.length) && (
+        <p className="text-xs tracking-[0.3px] truncate leading-[16px] font-medium">
+          {[slot.batch ? t('tt.batchShort', { b: slot.batch }) : '', slot.combinedSectionIds?.length ? t('tt.combinedShort', { n: slot.combinedSectionIds.length }) : ''].filter(Boolean).join(' · ')}
         </p>
       )}
     </ButtonBase>
@@ -198,6 +203,8 @@ function PeriodDialog({
         dayOfWeek: existing.dayOfWeek,
         startsAt: hm(existing.startsAt),
         endsAt: hm(existing.endsAt),
+        batch: existing.batch ?? '',
+        combinedSectionIds: existing.combinedSectionIds ?? [],
       }
     : (editing as { draft: Partial<SlotInput> }).draft;
 
@@ -209,11 +216,13 @@ function PeriodDialog({
   const [day, setDay] = useState(d.dayOfWeek ?? 1);
   const [startsAt, setStartsAt] = useState(d.startsAt ?? '09:00');
   const [endsAt, setEndsAt] = useState(d.endsAt ?? addMinutes(d.startsAt ?? '09:00', PERIOD_MINUTES));
+  const [batch, setBatch] = useState(d.batch ?? '');
+  const [combined, setCombined] = useState<string[]>(d.combinedSectionIds ?? []);
   const [error, setError] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [pending, start] = useTransition();
 
-  const input: SlotInput = { sectionId, subjectId, teacherId, roomId: roomId || null, dayOfWeek: day, startsAt, endsAt };
+  const input: SlotInput = { sectionId, subjectId, teacherId, roomId: roomId || null, dayOfWeek: day, startsAt, endsAt, batch: batch.trim() || null, combinedSectionIds: combined.filter((x) => x !== sectionId) };
   const problem = slotProblem(input);
   const subjectName = subjects.find((s) => s.id === subjectId)?.name ?? t('tt.thePeriod');
   const when = `${weekdayName(day, locale)} ${startsAt}–${endsAt}`;
@@ -374,6 +383,27 @@ function PeriodDialog({
                   error={!!startsAt && !!endsAt && endsAt <= startsAt}
                   slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 300 } }}
                 />
+              </FormField>
+            </div>
+            <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_2fr] gap-4">
+              <FormField label={t('tt.batch')} helper={t('tt.batchHelp')}>
+                <TextInput value={batch} onChange={(e) => setBatch(e.target.value)} inputProps={{ maxLength: 20 }} />
+              </FormField>
+              <FormField label={t('tt.combined')} helper={t('tt.combinedHelp')}>
+                <TextInput
+                  select
+                  value={combined}
+                  onChange={(e) => setCombined(typeof e.target.value === 'string' ? e.target.value.split(',') : (e.target.value as unknown as string[]))}
+                  slotProps={{ select: { multiple: true, renderValue: (v: unknown) => (v as string[]).map((id) => sections.find((s) => s.id === id)?.displayName ?? '').join(', ') } }}
+                >
+                  {sections
+                    .filter((s) => s.id !== sectionId)
+                    .map((s) => (
+                      <MenuItem key={s.id} value={s.id}>
+                        {s.displayName}
+                      </MenuItem>
+                    ))}
+                </TextInput>
               </FormField>
             </div>
             {existing && (

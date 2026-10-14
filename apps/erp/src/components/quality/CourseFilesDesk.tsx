@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { buildCourseFile, reviewCourseFile } from '@/app/(dashboard)/course-files/actions';
 import { Bar, FormDialog, Grid, Pill, useToast } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
+import type { MessageKey } from '@/i18n/messages';
 import type { CourseFileOption, CourseFileRow } from '@/lib/quality';
 
 import { Button, Link } from '@/components/kx';
@@ -33,6 +34,11 @@ export function CourseFilesDesk({ options, files }: { options: CourseFileOption[
           { label: t('cf.col.version'), cell: (f) => f.version, num: true },
           { label: t('cf.col.built'), cell: (f) => t('cf.builtBy', { date: fmt.dateTime(f.generatedAt), name: f.generatedByName }), sort: (f) => f.generatedAt },
           { label: t('cf.col.topics'), cell: (f) => t('cf.topicsOf', { covered: f.summary.topicsCovered ?? 0, total: f.summary.topics ?? 0 }) },
+          {
+            label: t('cf.col.complete'),
+            cell: (f) => (f.checklist ? <Pill warn={(f.completePct ?? 0) < 100} label={`${fmt.number(f.completePct ?? 0)}%`} /> : '—'),
+            sort: (f) => f.completePct ?? 0,
+          },
           { label: t('cf.col.review'), cell: (f) => (f.reviewedAt ? <Pill label={t('cf.reviewed', { name: f.reviewedByName ?? '' })} /> : <Pill warn label={t('cf.notReviewed')} />), sort: (f) => (f.reviewedAt ? 1 : 0) },
           {
             label: '',
@@ -60,7 +66,25 @@ export function CourseFilesDesk({ options, files }: { options: CourseFileOption[
           onClose={done}
         />
       )}
-      {dlg && typeof dlg === 'object' && <FormDialog title={`${t('cf.reviewTitle')}: ${dlg.review.subject}, ${dlg.review.section} v${dlg.review.version}`} fields={[{ name: 'remark', label: t('cf.f.remark'), kind: 'multiline' }]} onSubmit={(v) => reviewCourseFile(dlg.review.id, v)} onClose={done} />}
+      {dlg && typeof dlg === 'object' && (
+        <FormDialog
+          title={`${t('cf.reviewTitle')}: ${dlg.review.subject}, ${dlg.review.section} v${dlg.review.version}`}
+          intro={
+            dlg.review.checklist ? (
+              <ul className="m-0 mb-2 grid list-none gap-1 p-0 text-[13px]" data-testid="cf-checklist">
+                {dlg.review.checklist.map((c) => (
+                  <li key={c.item} className={c.ok ? 'text-green-ink' : 'text-red-ink'}>
+                    {c.ok ? '✓' : '✗'} {t(`cf.check.${c.item}` as MessageKey)}
+                  </li>
+                ))}
+              </ul>
+            ) : undefined
+          }
+          fields={[{ name: 'remark', label: t('cf.f.remark'), kind: 'multiline' }]}
+          onSubmit={(v) => reviewCourseFile(dlg.review.id, v)}
+          onClose={done}
+        />
+      )}
       {toastNode}
     </>
   );

@@ -45,6 +45,11 @@ export function StructureRecords({ entity, meta, page, state }: { entity: Struct
       { id: 'programme', header: t('rk.col.programme'), sortKey: 'programme', hideBelow: 'sm', cell: (x) => v(x).programName },
       { id: 'term', header: t('rk.col.term'), sortKey: 'term', align: 'right', cell: (x) => n(v(x).term) },
       { id: 'department', header: t('rk.col.department'), sortKey: 'department', hideBelow: 'md', cell: (x) => v(x).departmentName ?? <span className="text-muted-foreground">—</span> },
+      { id: 'type', header: t('plan.col.type'), sortKey: 'type', hideBelow: 'md', cell: (x) => <StatusPill tone="neutral">{tr(t, `rk.o.subjects.courseType.${v(x).courseType}`, String(v(x).courseType))}</StatusPill> },
+      { id: 'credits', header: t('plan.col.credits'), sortKey: 'credits', align: 'right', hideBelow: 'sm', cell: (x) => (v(x).credits === null ? '—' : fmt.number(Number(v(x).credits))) },
+      { id: 'ltps', header: t('plan.col.ltps'), hideBelow: 'lg', cell: (x) => <span className="tabular-nums">{`${v(x).lectureHours}-${v(x).tutorialHours}-${v(x).practicalHours}-${v(x).selfStudyHours}`}</span> },
+      { id: 'marks', header: t('plan.col.marksSplit'), hideBelow: 'lg', defaultHidden: true, cell: (x) => (v(x).maxInternal === null && v(x).maxExternal === null ? '—' : `${v(x).maxInternal ?? '—'} + ${v(x).maxExternal ?? '—'}`) },
+      { id: 'requires', header: t('plan.col.requires'), hideBelow: 'lg', defaultHidden: true, cell: (x) => v(x).requires || '—' },
     ];
   }, [entity, t, fmt]);
 

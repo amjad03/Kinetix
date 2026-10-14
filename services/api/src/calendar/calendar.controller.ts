@@ -29,8 +29,12 @@ const EventBody = z
     departmentIds: z.array(z.uuid()).min(1).max(50).nullable().optional(),
     /** Tell families and students (default: yes). */
     notify: z.boolean().optional(),
+    /** A draft is seen by staff only until published (default: published). */
+    draft: z.boolean().optional(),
   })
   .refine((b) => b.startsOn <= b.endsOn, { message: 'The last day must be on or after the first day', path: ['endsOn'] });
+
+const PublishBody = z.object({ ids: z.array(z.uuid()).min(1).max(500), publish: z.boolean().default(true), notify: z.boolean().optional() });
 
 /** Longest range one request lists (a whole academic year and a bit). */
 const MAX_DAYS = 400;
@@ -63,6 +67,8 @@ export class CalendarController {
       // Calendars by audience: institution-wide entries always show; a narrowed entry shows when the asked-for campus, class, department or programme is one of its audiences.
       const hit = (ids: string[] | null, want?: string) => !want || ids === null || ids.includes(want);
       const visible = rows
+        // Drafts are for staff until they are published.
+        .filter((e) => mine === null || e.published)
         .filter((e) => (mine === null ? true : e.programIds === null || e.programIds.some((id) => mine.includes(id))))
         .filter((e) => (mySections === null || e.sectionIds === null ? true : e.sectionIds.some((id) => mySections.includes(id))))
         .filter((e) => hit(e.campusIds, campusId) && hit(e.sectionIds, sectionId) && hit(e.departmentIds, departmentId) && hit(e.programIds, programId));
@@ -85,6 +91,7 @@ async function listBetween(tx: Tx, from: string, to: string) {
       sectionIds: calendarEvents.sectionIds,
       departmentIds: calendarEvents.departmentIds,
       source: calendarEvents.source,
+      published: calendarEvents.published,
     })
     .from(calendarEvents)
     .where(and(lte(calendarEvents.startsOn, to), gte(calendarEvents.endsOn, from)))
@@ -131,10 +138,10 @@ export class CalendarAdminController {
       await assertPrograms(tx, b.programIds);
       const [e] = await tx
         .insert(calendarEvents)
-        .values({ tenantId: p.tenantId, kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, campusIds: b.campusIds ?? null, sectionIds: b.sectionIds ?? null, departmentIds: b.departmentIds ?? null, createdBy: p.userId })
+        .values({ tenantId: p.tenantId, kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, campusIds: b.campusIds ?? null, sectionIds: b.sectionIds ?? null, departmentIds: b.departmentIds ?? null, published: !b.draft, createdBy: p.userId })
         .returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'calendar.created', subjectType: 'calendar_event', subjectId: e.id, data: { kind: e.kind, title: e.title, startsOn: e.startsOn, endsOn: e.endsOn } });
-      if (b.notify !== false) await this.notifications.calendarEvent(tx, e);
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'calendar.created', subjectType: 'calendar_event', subjectId: e.id, data: { kind: e.kind, title: e.title, startsOn: e.startsOn, endsOn: e.endsOn, draft: !e.published } });
+      if (b.notify !== false && e.published) await this.notifications.calendarEvent(tx, e);
       return e;
     });
   }
@@ -151,9 +158,25 @@ export class CalendarAdminController {
         .returning();
       if (!e) throw new NotFoundException('Calendar entry not found');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'calendar.updated', subjectType: 'calendar_event', subjectId: id, data: { kind: e.kind, title: e.title, startsOn: e.startsOn, endsOn: e.endsOn } });
-      // The same notification is updated in place (it is keyed by the entry).
-      if (b.notify !== false) await this.notifications.calendarEvent(tx, e);
+      // The same notification is updated in place (it is keyed by the entry); drafts tell nobody yet.
+      if (b.notify !== false && e.published) await this.notifications.calendarEvent(tx, e);
       return e;
+    });
+  }
+
+  /** Publishes draft entries to students and families (and tells them), or takes entries back to draft. */
+  @Post('publish')
+  @HttpCode(200)
+  @Auth('user', STAFF_ADMIN_ROLES)
+  publish(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(PublishBody)) b: z.infer<typeof PublishBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx.update(calendarEvents).set({ published: b.publish }).where(and(inArray(calendarEvents.id, b.ids), eq(calendarEvents.published, !b.publish))).returning();
+      for (const e of rows) {
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: b.publish ? 'calendar.published' : 'calendar.unpublished', subjectType: 'calendar_event', subjectId: e.id, changes: { published: { before: !b.publish, after: b.publish } } });
+        if (b.publish && b.notify !== false) await this.notifications.calendarEvent(tx, e);
+        if (!b.publish) await tx.update(notifications).set({ retractedAt: new Date() }).where(and(eq(notifications.dedupeKey, `calendar:${e.id}`), isNull(notifications.retractedAt)));
+      }
+      return { changed: rows.length };
     });
   }
 

@@ -18,6 +18,11 @@ export interface OfferingFacts {
   eligibleSemesters: number[] | null;
   prerequisiteSubjectId: string | null;
   slots: SlotTime[];
+  /** Further prerequisites (passed before) and co-requisites (passed or taken with it), from the course master. */
+  requires?: string[];
+  corequires?: string[];
+  /** The elective basket the course belongs to, and how many of it a student may take. */
+  basket?: { id: string; maxChoose: number } | null;
 }
 
 export interface StudentFacts {
@@ -27,12 +32,14 @@ export interface StudentFacts {
   passedSubjectIds: Set<string>;
 }
 
-export type Refusal = 'closed' | 'not_eligible' | 'prerequisite' | 'clash' | 'credit_limit' | 'seats_full';
+export type Refusal = 'closed' | 'not_eligible' | 'prerequisite' | 'corequisite' | 'basket_full' | 'clash' | 'credit_limit' | 'seats_full';
 
 export const REFUSAL_TEXT: Record<Refusal, string> = {
   closed: 'This course is closed for registration',
   not_eligible: 'This course is not open to your programme or semester',
   prerequisite: 'You have not cleared the prerequisite for this course',
+  corequisite: 'Register for this course together with its co-requisite',
+  basket_full: 'You already have as many courses from this elective basket as it allows',
   clash: 'This course clashes with another course you are registered for',
   credit_limit: 'This would take you over the credit limit for the term',
   seats_full: 'No seats are left in this course',
@@ -64,6 +71,9 @@ export function refusal(offering: OfferingFacts, student: StudentFacts, held: Of
   if (offering.status !== 'open') return 'closed';
   if (!isEligible(offering, student)) return 'not_eligible';
   if (offering.prerequisiteSubjectId && !student.passedSubjectIds.has(offering.prerequisiteSubjectId)) return 'prerequisite';
+  if (offering.requires?.some((id) => !student.passedSubjectIds.has(id))) return 'prerequisite';
+  if (offering.corequires?.some((id) => !student.passedSubjectIds.has(id) && !held.some((h) => h.subjectId === id))) return 'corequisite';
+  if (offering.basket && held.filter((h) => h.id !== offering.id && h.basket?.id === offering.basket!.id).length >= offering.basket.maxChoose) return 'basket_full';
   if (held.some((h) => h.id !== offering.id && slotsClash(h.slots, offering.slots))) return 'clash';
   // An audit course carries no credit toward the term's limit.
   if (!opts.ignoreCredits && round1(held.filter((h) => h.id !== offering.id && h.category !== 'audit').reduce((n, h) => n + h.credits, 0) + (offering.category === 'audit' ? 0 : offering.credits)) > maxCredits) return 'credit_limit';

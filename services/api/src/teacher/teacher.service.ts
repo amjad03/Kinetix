@@ -48,8 +48,10 @@ export class TeacherService {
     const now = await this.localNow(tx);
     const day = date ? parseDate(date) : now.date;
     const weekday = isoWeekday(day);
+    // A compensatory working day follows another weekday's timetable (for every programme or some).
+    const orders = await this.calendar.dayOrders(tx, day, addDays(day, 7));
 
-    const all = await tx
+    const week = await tx
       .select({
         slot: timetableSlots,
         section: { id: sections.id, displayName: sections.displayName },
@@ -61,8 +63,9 @@ export class TeacherService {
       .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
       .innerJoin(subjects, eq(subjects.id, timetableSlots.subjectId))
       .leftJoin(rooms, eq(rooms.id, timetableSlots.roomId))
-      .where(and(eq(timetableSlots.teacherId, teacherId), eq(timetableSlots.dayOfWeek, weekday), isNull(timetableSlots.archivedAt)))
+      .where(and(eq(timetableSlots.teacherId, teacherId), isNull(timetableSlots.archivedAt)))
       .orderBy(asc(timetableSlots.startsAt));
+    const all = week.filter((r) => orders.weekday(day, r.programId) === r.slot.dayOfWeek);
     // Holidays cancel the day's classes (for everyone, or for some programs).
     const holidays = await this.calendar.holidays(tx, day, addDays(day, 31));
     const rows = all.filter((r) => !holidays.on(day, r.programId));
@@ -99,16 +102,10 @@ export class TeacherService {
     }));
 
     // The next day with classes (not cancelled by a holiday), so an empty Sunday can point at Monday.
-    const week = await tx
-      .select({ day: timetableSlots.dayOfWeek, programId: sections.programId })
-      .from(timetableSlots)
-      .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
-      .where(and(eq(timetableSlots.teacherId, teacherId), isNull(timetableSlots.archivedAt)));
     let nextTeachingDate: string | null = null;
     for (let i = 1; i <= 7; i++) {
       const candidate = addDays(day, i);
-      const wd = isoWeekday(candidate);
-      if (week.some((w) => w.day === wd && !holidays.on(candidate, w.programId))) {
+      if (week.some((w) => orders.weekday(candidate, w.programId) === w.slot.dayOfWeek && !holidays.on(candidate, w.programId))) {
         nextTeachingDate = candidate;
         break;
       }
@@ -161,6 +158,13 @@ export class TeacherService {
       if (!sub) throw new ForbiddenException('This is not your period');
     }
     return slot;
+  }
+
+  /** Throws unless the weekly period meets on the date (its weekday, or a compensatory working day that follows it). */
+  async assertMeets(tx: Tx, slot: { dayOfWeek: number; sectionId: string }, date: string): Promise<void> {
+    if (isoWeekday(date) === slot.dayOfWeek) return;
+    const [s] = await tx.select({ programId: sections.programId }).from(sections).where(eq(sections.id, slot.sectionId));
+    if (!(await this.calendar.meetsOn(tx, slot, date, s?.programId))) throw new BadRequestException('This period is not on that day');
   }
 
   async attendanceSheet(tx: Tx, slotId: string, date: string) {

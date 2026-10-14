@@ -2,7 +2,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition, type ReactNode } from 'react';
 import { FormField, TextInput } from '@/components/ui';
-import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '@/app/(dashboard)/calendar/actions';
+import { createCalendarEvent, deleteCalendarEvent, publishCalendarEvents, updateCalendarEvent } from '@/app/(dashboard)/calendar/actions';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -265,6 +265,7 @@ function EntryList({ events, today, onEdit, onDelete }: { events: CalendarEvent[
             <div className="flex-1 min-w-0">
               <p className="text-base font-medium tracking-[0.1px] leading-[24px]">
                 {e.title}
+                {e.published === false && <span className="ml-2 rounded-full bg-muted px-2 py-0.5 align-middle text-xs font-semibold text-amber-ink" data-testid="calendar-draft-badge">{t('cal.draft')}</span>}
               </p>
               <p className="text-[13px] leading-[19px] text-muted-foreground">
                 {t(`cal.kind.${e.kind}`)} · {days === 1 ? fmt.date(e.startsOn, 'short') : t('cal.range', { from: fmt.date(e.startsOn, 'short'), to: fmt.date(e.endsOn, 'short') })}
@@ -273,6 +274,7 @@ function EntryList({ events, today, onEdit, onDelete }: { events: CalendarEvent[
                 {e.programs?.length ? t('cal.forPrograms', { programs: e.programs.join(', ') }) : t('cal.forAll')}
               </p>
             </div>
+            {onEdit && e.published === false && <PublishButton id={e.id} />}
             {onEdit && (
               <Tooltip title={t('common.edit')}>
                 <IconButton onClick={() => onEdit(e)} aria-label={t('cal.editEntry', { title: e.title })}>
@@ -303,11 +305,12 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
   const [scope, setScope] = useState<'all' | 'some'>(event?.programIds?.length ? 'some' : 'all');
   const [programIds, setProgramIds] = useState<string[]>(event?.programIds ?? []);
   const [notify, setNotify] = useState(true);
+  const [draft, setDraft] = useState(event ? event.published === false : false);
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  const input: CalendarInput = { kind, title, startsOn, endsOn, programIds: scope === 'all' ? null : programIds, notify };
+  const input: CalendarInput = { kind, title, startsOn, endsOn, programIds: scope === 'all' ? null : programIds, notify, ...(event ? {} : { draft }) };
   const problem = calendarProblem(input);
   const show = (p: ReturnType<typeof calendarProblem>[]) => (touched && problem && p.includes(problem) ? t(`cal.problem.${problem}`) : undefined);
   const names = new Map(programs.map((p) => [p.id, p.name]));
@@ -430,6 +433,12 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
               {t('cal.dialog.notifyHelp')}
             </p>
           </div>
+          {!event && (
+            <div>
+              <FormControlLabel control={<Checkbox checked={draft} onChange={(e) => setDraft(e.target.checked)} data-testid="calendar-draft" />} label={t('cal.dialog.draft')} />
+              <p className="text-xs leading-4 tracking-[0.3px] text-muted-foreground ml-8">{t('cal.dialog.draftHelp')}</p>
+            </div>
+          )}
         </div>
       </DialogContent>
       <DialogActions>
@@ -481,5 +490,28 @@ function DeleteDialog({ event, onClose }: { event: CalendarEvent; onClose: (mess
         </Button>
       </DialogActions>
     </Dialog>
+  );
+}
+
+/** Publishes a draft entry to students and families. */
+function PublishButton({ id }: { id: string }) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      variant="outlined"
+      size="small"
+      disabled={pending}
+      data-testid="calendar-publish"
+      onClick={() =>
+        start(async () => {
+          const r = await publishCalendarEvents([id], true);
+          if (r.ok) router.refresh();
+        })
+      }
+    >
+      {t('cal.publish')}
+    </Button>
   );
 }

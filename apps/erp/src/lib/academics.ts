@@ -166,7 +166,7 @@ export interface ReportData {
   rows: Record<string, string | number | null>[];
 }
 
-export const REPORT_KINDS = ['strength', 'attendance-daily', 'attendance-monthly', 'attendance-subject', 'shortage', 'timetable', 'workload', 'marks-register', 'syllabus-coverage', 'registration-summary'] as const;
+export const REPORT_KINDS = ['strength', 'attendance-daily', 'attendance-monthly', 'attendance-subject', 'shortage', 'timetable', 'workload', 'marks-register', 'syllabus-coverage', 'registration-summary', 'room-utilisation', 'syllabus-department', 'hours-register', 'plan-deviation', 'substitute-load', 'marking-compliance', 'defaulter-trend', 'condonation-list', 'leave-register', 'detention-list'] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 /** The filters each report reads from the URL. */
 export const REPORT_FILTERS: Record<ReportKind, ('date' | 'month' | 'from' | 'to' | 'sectionId' | 'subjectId' | 'termId' | 'by' | 'id')[]> = {
@@ -180,14 +180,40 @@ export const REPORT_FILTERS: Record<ReportKind, ('date' | 'month' | 'from' | 'to
   'marks-register': ['sectionId'],
   'syllabus-coverage': ['sectionId'],
   'registration-summary': [],
+  'room-utilisation': [],
+  'syllabus-department': [],
+  'hours-register': ['from', 'to', 'sectionId'],
+  'plan-deviation': ['sectionId'],
+  'substitute-load': ['from', 'to'],
+  'marking-compliance': ['from', 'to', 'sectionId'],
+  'defaulter-trend': ['sectionId'],
+  'condonation-list': ['sectionId'],
+  'leave-register': ['from', 'to', 'sectionId'],
+  'detention-list': ['sectionId'],
 };
 
 export interface AcademicSettings {
   numbering: { admission: NumberingSeries; roll: NumberingSeries; tc: NumberingSeries; request: NumberingSeries; rollPerSection: boolean };
-  attendance: { minPercent: number; warnPercent: number; lateCountsAsPresent: boolean; correctionWindowDays: number; maxCondonationPoints: number; notifyGuardianOnAbsence: boolean };
+  attendance: {
+    minPercent: number;
+    warnPercent: number;
+    lateCountsAsPresent: boolean;
+    correctionWindowDays: number;
+    maxCondonationPoints: number;
+    notifyGuardianOnAbsence: boolean;
+    mode: 'hour' | 'day' | 'session';
+    shortageAlerts: boolean;
+    dailyDigest: boolean;
+    unmarkedReminderMinutes: number;
+    onDutyCountsAs: 'present' | 'excused';
+    medicalCountsAs: 'absent' | 'excused';
+    personalCountsAs: 'absent' | 'excused';
+    condonationFeePaise: number;
+  };
   assessment: { components: { code: string; name: string; weight: number; maxMarks: number }[]; lockBeforePublish: boolean; passPercent: number };
   timetable: { periodsPerDay: number; periodMinutes: number; maxPeriodsPerTeacherPerDay: number; maxPeriodsPerTeacherPerWeek: number; changeNeedsApproval: boolean; substitutionNeedsApproval: boolean };
   registration: { minCredits: number; maxCredits: number; advisorApproval: boolean; addDropDays: number; waitlist: boolean };
+  workload: { defaultHoursPerWeek: number; norms: { designation: string; hoursPerWeek: number }[] };
 }
 
 /** Tone of a request or record status pill. */

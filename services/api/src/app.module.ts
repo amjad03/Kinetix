@@ -62,6 +62,8 @@ import { ConnectorsModule } from './connectors/connectors.module.js';
 import { WelfareModule } from './welfare/welfare.module.js';
 import { AcademicsModule } from './academics/academics.module.js';
 import { AttendanceGovernanceModule } from './attendance-governance/governance.module.js';
+import { AttendanceDeskModule } from './attendance-desk/desk.module.js';
+import { AcademicPlanningModule } from './academic-planning/planning.module.js';
 import { InstitutionModule } from './institution/institution.module.js';
 import { AffiliationModule } from './affiliation/affiliation.module.js';
 import { TrustModule } from './trust/trust.module.js';
@@ -222,6 +224,8 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     GovernanceModule,
     BillingModule,
     IntegrityModule,
+    AttendanceDeskModule,
+    AcademicPlanningModule,
   ],
 })
 export class AppModule {}

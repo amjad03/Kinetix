@@ -122,7 +122,7 @@ export class RecordsService {
     const filters = await Promise.all(Object.entries(e.list.filters ?? {}).map(async ([key, f]) => ({ key, label: f.label, options: (await resolveOptions(ctx, f.options)) ?? null })));
     const actions = Object.entries(e.actions ?? {})
       .filter(([, a]) => hasRole(ctx.p, a.roles ?? e.roles.write))
-      .map(([key, a]) => ({ key, label: a.label, tone: a.tone ?? null }));
+      .map(([key, a]) => ({ key, label: a.label, tone: a.tone ?? null, ...(a.inputs?.length ? { inputs: a.inputs } : {}) }));
     return {
       key: e.key,
       module: e.module,

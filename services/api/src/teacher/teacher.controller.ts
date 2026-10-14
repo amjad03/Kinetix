@@ -15,6 +15,7 @@ import { attendanceRecords, boardSessions, devices, guardians, homework, section
 import { SessionsService } from '../sessions/sessions.service.js';
 import { attendanceLocked } from '../attendance-governance/attendance-rules.js';
 import { attendanceSettings } from '../attendance-governance/eligibility.js';
+import { leaveOn, periodRoster } from '../attendance-governance/policy.js';
 import { isoWeekday, isSchoolAdmin, parseDate, TeacherService } from './teacher.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { naturalCompare } from '../common/natural-order.js';
@@ -252,7 +253,7 @@ export class AttendanceController {
     const day = parseDate(body.date);
     return this.db.withTenant(p.tenantId, async (tx) => {
       const slot = await this.teacher.slotFor(tx, p, body.slotId, day);
-      if (isoWeekday(day) !== slot.dayOfWeek) throw new BadRequestException('This period is not on that day');
+      await this.teacher.assertMeets(tx, slot, day);
       const now = await this.teacher.localNow(tx);
       if (day > now.date) throw new BadRequestException('Attendance cannot be taken for a future date');
       const [cfg] = await tx.select({ settings: tenants.settings, tz: tenants.timezone }).from(tenants);
@@ -263,16 +264,22 @@ export class AttendanceController {
 
       // One mark per student; the last one in the list wins.
       const marks = new Map(body.records.map((r) => [r.studentId, r.status]));
-      // FKs bypass RLS: confirm every student under RLS and in this period's class.
+      // FKs bypass RLS: confirm every student under RLS and on this period's roster (its class, combined classes,
+      // batch or elective). Classmates outside a batch or an elective are left alone; anyone else is refused.
+      const roster = new Map((await periodRoster(tx, slot, day)).map((r) => [r.id, r]));
       const valid = await this.teacher.studentsInSection(tx, slot.sectionId, [...marks.keys()]);
-      const strangers = [...marks.keys()].filter((id) => !valid.has(id));
+      const strangers = [...marks.keys()].filter((id) => !roster.has(id) && !valid.has(id));
       if (strangers.length) throw new BadRequestException({ message: 'Some students are not in this class', studentIds: strangers });
+      for (const id of [...marks.keys()]) if (!roster.has(id)) marks.delete(id);
+      // Approved leave and on duty stand: those students keep the mark the leave gave them.
+      const leave = await leaveOn(tx, [...marks.keys()], day, slot.startsAt);
+      for (const [id, l] of leave) marks.set(id, l.countsAs);
 
       const occurredAt = this.clock.now();
       for (const [studentId, status] of marks) {
         await tx
           .insert(attendanceRecords)
-          .values({ tenantId: p.tenantId, studentId, sectionId: slot.sectionId, date: day, timetableSlotId: slot.id, status, markedBy: p.userId, occurredAt })
+          .values({ tenantId: p.tenantId, studentId, sectionId: roster.get(studentId)!.sectionId, date: day, timetableSlotId: slot.id, status, markedBy: p.userId, occurredAt })
           .onConflictDoUpdate({
             target: [attendanceRecords.studentId, attendanceRecords.date, attendanceRecords.timetableSlotId],
             set: { status, markedBy: p.userId, occurredAt, updatedAt: new Date() },

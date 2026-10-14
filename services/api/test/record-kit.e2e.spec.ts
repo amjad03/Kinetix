@@ -230,8 +230,9 @@ describe('record depth kit', () => {
     expect(tpl.headers['content-type']).toContain('spreadsheetml');
     const tplBody = tpl.body as Buffer;
     const sheet = readXlsx(tplBody);
-    expect(sheet[0]).toEqual(['Programme *', 'Term *', 'Code *', 'Subject *', 'Department']);
-    expect(sheet[1]).toEqual(['BSc', '1', 'BSC-1.1', 'Physics I']);
+    expect(sheet[0]).toEqual(['Programme *', 'Term *', 'Code *', 'Subject *', 'Department', 'Type', 'Credits', 'L-T-P-S', 'Internal maximum', 'External maximum', 'Internal pass marks', 'External pass marks']);
+    expect(sheet[1].slice(0, 4)).toEqual(['BSc', '1', 'BSC-1.1', 'Physics I']);
+    expect(sheet[1].slice(5, 10)).toEqual(['core', '4', '3-1-0-0', '40', '60']);
     expect(tplBody.toString('latin1')).toContain('xl/worksheets/sheet3.xml'); // the hidden lists
     await http().get('/v1/records/subjects/import/template').set(as('teacher')).expect(403);
 
@@ -239,8 +240,8 @@ describe('record depth kit', () => {
       {
         name: 'Data',
         rows: [
-          ['Programme *', 'Term *', 'Code *', 'Subject *', 'Department', 'Notes'],
-          ['BSc', '1', 'BSC-1.1', 'Physics I', ''], // the example row: skipped
+          ['Programme *', 'Term *', 'Code *', 'Subject *', 'Department', 'Notes', 'Type', 'Credits', 'L-T-P-S', 'Internal maximum', 'External maximum'],
+          ['BSc', '1', 'BSC-1.1', 'Physics I', '', '', 'core', '4', '3-1-0-0', '40', '60'], // the example row: skipped
           ['BCom', '3', 'BCOM-3.2', 'Cost Accounting', 'Commerce and Management'],
           ['BCom', '3', 'BCOM-3.1', 'Corporate Accounting II', ''],
           ['BCom', '9', 'BCOM-9.1', 'Too far', ''],

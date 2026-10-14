@@ -121,8 +121,17 @@ export interface RecordMeta {
   columns: { key: string; header: string }[];
   move: { label: string; reason: boolean; options: FieldOption[] } | null;
   order: { scope: string[] } | null;
-  actions: { key: string; label: string; tone: 'danger' | null }[];
+  actions: { key: string; label: string; tone: 'danger' | null; inputs?: ActionInput[] }[];
   import: { columns: { key: string; header: string; required: boolean; help: string | null }[]; key: string[] } | null;
+}
+
+/** A value asked for before a module action runs (money is typed in rupees and sent in paise). */
+export interface ActionInput {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'number' | 'money';
+  required?: boolean;
+  help?: string;
 }
 
 export interface RecordsPage<R = Row> {

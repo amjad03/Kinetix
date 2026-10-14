@@ -10,6 +10,9 @@ import { coverageCounts } from '../coverage/coverage.controller.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { isShort, pct } from './academics-rules.js';
 import { AcademicsService } from './academics.service.js';
+import { PLANNING_HEAD, PLANNING_REPORTS, planningReport, type PlanningReport } from './planning-reports.js';
+import { attendancePolicy } from '../attendance-governance/policy.js';
+import { CalendarService } from '../timetable/calendar.service.js';
 import { ACAD_STAFF } from './requests.controller.js';
 
 type Row = Record<string, string | number | null>;
@@ -19,7 +22,7 @@ interface Report {
   rows: Row[];
 }
 
-export const ACAD_REPORTS = ['strength', 'attendance-daily', 'attendance-monthly', 'attendance-subject', 'shortage', 'timetable', 'workload', 'marks-register', 'syllabus-coverage', 'registration-summary'] as const;
+export const ACAD_REPORTS = ['strength', 'attendance-daily', 'attendance-monthly', 'attendance-subject', 'shortage', 'timetable', 'workload', 'marks-register', 'syllabus-coverage', 'registration-summary', ...PLANNING_REPORTS] as const;
 type ReportKind = (typeof ACAD_REPORTS)[number];
 
 /** English column headings for the PDF and Excel files (the ERP translates the keys itself). */
@@ -41,6 +44,7 @@ export class AcademicReportsController {
   constructor(
     private readonly db: DbService,
     private readonly svc: AcademicsService,
+    private readonly calendar: CalendarService,
   ) {}
 
   @Get(':kind')
@@ -57,7 +61,7 @@ export class AcademicReportsController {
       await auditUser(tx, p, 'academics.report_exported', 'academic_report', undefined, { kind, format: q.format });
       return out;
     });
-    const head = r.columns.map((c) => c.label ?? HEAD[c.key] ?? c.key);
+    const head = r.columns.map((c) => c.label ?? HEAD[c.key] ?? PLANNING_HEAD[c.key] ?? c.key);
     const grid = [head, ...r.rows.map((row) => r.columns.map((c) => row[c.key] ?? ''))];
     if (q.format === 'pdf') {
       const pdf = new PdfWriter();
@@ -81,6 +85,7 @@ export class AcademicReportsController {
     for (const k of ['date', 'from', 'to'] as const) if (q[k] && !DAY.test(q[k])) throw new BadRequestException('Give dates as YYYY-MM-DD');
     for (const k of ['sectionId', 'subjectId', 'termId', 'id'] as const) if (q[k] && !UUID.test(q[k])) throw new BadRequestException('Unknown filter');
     const today = await this.svc.today(tx);
+    if ((PLANNING_REPORTS as readonly string[]).includes(kind)) return planningReport(tx, kind as PlanningReport, q, { calendar: this.calendar, today });
     const att = await this.svc.settings(tx, 'attendance');
     const sec = q.sectionId ?? null;
     const presentSql = att.lateCountsAsPresent ? sql`ar.status in ('present','late','excused')` : sql`ar.status in ('present','excused')`;
@@ -133,13 +138,15 @@ export class AcademicReportsController {
               where ar.date between ${from}::date and ${to}::date and st.status in ('active','on_leave','detained') and (${sec}::uuid is null or s.id = ${sec}::uuid) and (${q.subjectId ?? null}::uuid is null or ${bySubject ? sql`sb.id` : sql`null`} = ${q.subjectId ?? null}::uuid)
               group by st.id, s.display_name ${bySubject ? sql`, sb.id, sb.name` : sql``} order by s.display_name, st.roll_no limit 5000`,
         );
-        const condoned = await rows(tx, sql`select student_id as id, coalesce(subject_id::text, '') as "subjectId", sum(approved_points)::int as pts from attendance_condonations where status = 'approved' group by student_id, subject_id`);
+        // The threshold in force (programme override, rule, the affiliating university's profile, the institution's setting).
+        const policy = await attendancePolicy(tx, sec);
+        const condoned = await rows(tx, sql`select student_id as id, coalesce(subject_id::text, '') as "subjectId", sum(approved_points)::int as pts from attendance_condonations where status = 'approved' and fee_status in ('none','paid','waived') group by student_id, subject_id`);
         const pts = new Map(condoned.map((c) => [`${c.id}|${c.subjectId}`, Number(c.pts)]));
         const out = r.map((x) => {
           const percent = pct(Number(x.attended), Number(x.held));
           const c = Math.min(att.maxCondonationPoints, pts.get(`${x.id}|${x.subjectId}`) ?? 0);
           const effective = percent === null ? null : Math.min(100, Math.round((percent + c) * 10) / 10);
-          const status = percent === null ? '' : isShort(percent, c, att.minPercent) ? 'short' : effective! < att.warnPercent ? 'warning' : 'ok';
+          const status = percent === null ? '' : isShort(percent, c, policy.thresholdPct) ? 'short' : effective! < policy.warnPct ? 'warning' : 'ok';
           return { section: x.section, rollNo: x.rollNo, student: x.student, subject: x.subject, held: x.held, attended: x.attended, percent, condoned: c, effective, status };
         });
         if (bySubject) return { columns: cols('section', 'rollNo', 'student', 'subject', 'held', 'attended', 'percent', 'status'), rows: out };
@@ -219,6 +226,8 @@ export class AcademicReportsController {
         );
         return { columns: cols('term', 'subject', 'category', 'credits', 'seats', 'registered', 'waitlisted', 'pending', 'approved', 'fill'), rows: r.map((x) => ({ ...x, credits: Number(x.credits), fill: pct(Number(x.registered), Number(x.seats)) })) };
       }
+      default:
+        throw new NotFoundException('Unknown report');
     }
   }
 }

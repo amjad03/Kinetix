@@ -25,6 +25,17 @@ describe('registration rules', () => {
     expect(refusal(off('a'), stu, [], 2, 20, { ignoreSeats: true })).toBeNull();
   });
 
+  it('follows the course master: every prerequisite, co-requisites taken together, and the basket limit', () => {
+    expect(refusal(off('a', { requires: ['math', 'physics'] }), stu, [], 0, 20)).toBe('prerequisite');
+    expect(refusal(off('a', { requires: ['math'] }), stu, [], 0, 20)).toBeNull();
+    expect(refusal(off('a', { corequires: ['s-lab'] }), stu, [], 0, 20)).toBe('corequisite');
+    expect(refusal(off('a', { corequires: ['s-lab'] }), stu, [off('lab')], 0, 20)).toBeNull();
+    expect(refusal(off('a', { corequires: ['math'] }), stu, [], 0, 20)).toBeNull(); // passed before
+    const basket = { id: 'b1', maxChoose: 1 };
+    expect(refusal(off('a', { basket }), stu, [off('b', { basket })], 0, 20)).toBe('basket_full');
+    expect(refusal(off('a', { basket }), stu, [off('b', { basket: { id: 'b2', maxChoose: 1 } })], 0, 20)).toBeNull();
+  });
+
   it('adds credits without float drift', () => {
     expect(totalCredits([{ credits: 1.1 }, { credits: 2.2 }])).toBe(3.3);
   });

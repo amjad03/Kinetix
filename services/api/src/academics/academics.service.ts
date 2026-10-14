@@ -38,7 +38,9 @@ export class AcademicsService {
   }
 
   async saveSettings(tx: Tx, p: UserPrincipal, kind: SettingsKind, value: unknown) {
-    const parsed = SETTINGS_SCHEMAS[kind].safeParse(value);
+    // Values a form does not send keep what is saved (a form made before a setting was added does not reset it).
+    const current = await this.settings(tx, kind);
+    const parsed = SETTINGS_SCHEMAS[kind].safeParse(value && typeof value === 'object' && !Array.isArray(value) ? { ...current, ...value } : value);
     if (!parsed.success) throw new BadRequestException(parsed.error.issues[0]?.message ?? 'Check the settings');
     const problem = settingsProblem(kind, parsed.data as Record<string, unknown>);
     if (problem) throw new BadRequestException(problem);

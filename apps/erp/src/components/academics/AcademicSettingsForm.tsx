@@ -5,13 +5,13 @@ import type { MessageKey } from '@/i18n/messages';
 import { useState } from 'react';
 import { Button } from '@/components/shadcn/button';
 import { ModuleSettingsPage, NumberingSeriesField } from '@/components/templates';
-import { CheckboxField, FormRow, TextInput, useToast } from '@/components/ui';
+import { CheckboxField, FormRow, SelectInput, TextInput, useToast } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { AcademicSettings } from '@/lib/academics';
 import { saveSettings } from '@/app/(dashboard)/academics/actions';
 
 type K = keyof AcademicSettings;
-const KINDS: K[] = ['numbering', 'attendance', 'assessment', 'timetable', 'registration'];
+const KINDS: K[] = ['numbering', 'attendance', 'assessment', 'timetable', 'registration', 'workload'];
 
 /** Academics settings: numbering series, attendance rules, assessment components, timetable and registration rules. */
 export function AcademicSettingsForm({ initial }: { initial: AcademicSettings }) {
@@ -80,6 +80,18 @@ export function AcademicSettingsForm({ initial }: { initial: AcademicSettings })
               </FormRow>
               {flag('attendance', 'lateCountsAsPresent', t('acad.set.lateCountsAsPresent'))}
               {flag('attendance', 'notifyGuardianOnAbsence', t('acad.set.notifyGuardianOnAbsence'))}
+              <FormRow>
+                <SelectInput className="w-[220px]" label={t('acad.set.mode')} value={v.attendance.mode} onChange={(e) => patch('attendance', { mode: e.target.value as AcademicSettings['attendance']['mode'] })} options={(['hour', 'day', 'session'] as const).map((m) => ({ value: m, label: t(`acad.set.mode.${m}`) }))} />
+                {num('attendance', 'unmarkedReminderMinutes', t('acad.set.unmarkedReminderMinutes'))}
+                <TextInput className="w-[180px]" type="number" label={t('acad.set.condonationFee')} value={String(v.attendance.condonationFeePaise / 100)} onChange={(e) => patch('attendance', { condonationFeePaise: Math.round(Number(e.target.value) * 100) })} />
+              </FormRow>
+              <FormRow>
+                <SelectInput className="w-[200px]" label={t('acad.set.onDutyCountsAs')} value={v.attendance.onDutyCountsAs} onChange={(e) => patch('attendance', { onDutyCountsAs: e.target.value as 'present' | 'excused' })} options={(['present', 'excused'] as const).map((m) => ({ value: m, label: t(`atd.status.${m}`) }))} />
+                <SelectInput className="w-[200px]" label={t('acad.set.medicalCountsAs')} value={v.attendance.medicalCountsAs} onChange={(e) => patch('attendance', { medicalCountsAs: e.target.value as 'absent' | 'excused' })} options={(['absent', 'excused'] as const).map((m) => ({ value: m, label: t(`atd.status.${m}`) }))} />
+                <SelectInput className="w-[200px]" label={t('acad.set.personalCountsAs')} value={v.attendance.personalCountsAs} onChange={(e) => patch('attendance', { personalCountsAs: e.target.value as 'absent' | 'excused' })} options={(['absent', 'excused'] as const).map((m) => ({ value: m, label: t(`atd.status.${m}`) }))} />
+              </FormRow>
+              {flag('attendance', 'shortageAlerts', t('acad.set.shortageAlerts'))}
+              {flag('attendance', 'dailyDigest', t('acad.set.dailyDigest'))}
             </div>
           ),
         },
@@ -143,6 +155,33 @@ export function AcademicSettingsForm({ initial }: { initial: AcademicSettings })
               </FormRow>
               {flag('registration', 'advisorApproval', t('acad.set.advisorApproval'))}
               {flag('registration', 'waitlist', t('acad.set.waitlist'))}
+            </div>
+          ),
+        },
+        {
+          id: 'workload',
+          title: t('acad.set.workload'),
+          description: t('acad.set.workloadHelp'),
+          content: (
+            <div className="grid gap-4">
+              <FormRow>{num('workload', 'defaultHoursPerWeek', t('acad.set.defaultHours'))}</FormRow>
+              {v.workload.norms.map((n, i) => {
+                const set = (p: Partial<typeof n>) => patch('workload', { norms: v.workload.norms.map((x, j) => (j === i ? { ...x, ...p } : x)) });
+                return (
+                  <FormRow key={i}>
+                    <TextInput className="w-[260px]" label={t('acad.set.designation')} value={n.designation} onChange={(e) => set({ designation: e.target.value })} />
+                    <TextInput className="w-[160px]" type="number" label={t('acad.set.hoursPerWeek')} value={String(n.hoursPerWeek)} onChange={(e) => set({ hoursPerWeek: Number(e.target.value) })} />
+                    <Button variant="ghost" size="icon" aria-label={t('acad.remove')} onClick={() => patch('workload', { norms: v.workload.norms.filter((_, j) => j !== i) })}>
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </FormRow>
+                );
+              })}
+              <div>
+                <Button variant="outline" onClick={() => patch('workload', { norms: [...v.workload.norms, { designation: '', hoursPerWeek: v.workload.defaultHoursPerWeek }] })}>
+                  <Plus className="size-4" /> {t('acad.set.addNorm')}
+                </Button>
+              </div>
             </div>
           ),
         },

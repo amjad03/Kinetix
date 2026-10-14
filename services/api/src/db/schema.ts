@@ -262,6 +262,19 @@ export const subjects = pgTable('subjects', {
   departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
   /** Manual order within the program and term (record depth kit reorder). */
   sortOrder: integer('sort_order').notNull().default(0),
+  // Course master (migration 0153): credits, contact hours a week (L-T-P-S), type and the marks split with its pass rules.
+  credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }),
+  lectureHours: smallint('lecture_hours').notNull().default(0),
+  tutorialHours: smallint('tutorial_hours').notNull().default(0),
+  practicalHours: smallint('practical_hours').notNull().default(0),
+  selfStudyHours: smallint('self_study_hours').notNull().default(0),
+  /** core | elective | open_elective | audit | mooc | lab | project | skill | ability (COURSE_TYPES). */
+  courseType: text('course_type').notNull().default('core'),
+  maxInternal: smallint('max_internal'),
+  maxExternal: smallint('max_external'),
+  /** Minimum marks to pass the internal and external parts (null = the scheme or the university profile decides). */
+  internalPassMarks: smallint('internal_pass_marks'),
+  externalPassMarks: smallint('external_pass_marks'),
 });
 
 /**
@@ -363,6 +376,10 @@ export const timetableSlots = pgTable(
      * sessions and recordings point at it.
      */
     archivedAt: timestamp('archived_at', { withTimezone: true }),
+    /** A lab or tutorial batch of the class ("B1"): only its students attend; null = the whole class (migration 0153). */
+    batch: text('batch'),
+    /** Other classes taught together with this one in the same period (a combined class). */
+    combinedSectionIds: uuid('combined_section_ids').array(),
   },
   (t) => [index('timetable_teacher_day_idx').on(t.teacherId, t.dayOfWeek)],
 );
@@ -578,6 +595,14 @@ export const attendanceCondonations = pgTable(
     decidedBy: uuid('decided_by').references(() => users.id),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
     decisionNote: text('decision_note'),
+    // Condonation fee (migration 0154): the points count only once the fee is paid or waived.
+    feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0),
+    /** none | due | paid | waived */
+    feeStatus: text('fee_status').notNull().default('none'),
+    feeReceipt: text('fee_receipt'),
+    feePaidAt: timestamp('fee_paid_at', { withTimezone: true }),
+    /** Approved medical leave the request rests on (attendance_leaves). */
+    leaveIds: uuid('leave_ids').array(),
     createdAt: createdAt(),
   },
   (t) => [index('attendance_condonations_student_idx').on(t.studentId, t.status)],
@@ -1698,6 +1723,8 @@ export const calendarEvents = pgTable(
     /** Set when the event is fed from another module (admissions, exams); source + ref are unique. */
     source: text('source'),
     sourceRef: text('source_ref'),
+    /** A draft is seen by staff only; publishing shows it to students and families (migration 0153). */
+    published: boolean('published').notNull().default(true),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
   },
@@ -3730,6 +3757,9 @@ export const TENANT_TABLES = [
   'integrity_matches',
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
   'affiliation_settings', 'programme_affiliations',
+  // Academic planning and the attendance desk (migrations 0153, 0154; schema-academic-ops.ts).
+  'elective_baskets', 'elective_basket_subjects', 'subject_requisites', 'credit_transfers', 'faculty_allocations', 'period_structures', 'special_classes', 'working_day_swaps', 'student_batches',
+  'attendance_leaves', 'special_class_attendance', 'attendance_session_marks', 'attendance_alerts',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------

@@ -41,6 +41,8 @@ const TARGETS: Record<string, (id: string) => string> = {
   'committee-evidence': (id) => `/v1/campus-life/evidence/${id}/download`,
   'event-media': (id) => `/v1/campus-life/media/${id}/file`,
   'grievance-evidence': (id) => `/v1/grievances/evidence/${id}/download`,
+  'leave-doc': (id) => `/v1/attendance-desk/leaves/${id}/document`,
+  'condonation-doc': (id) => `/v1/attendance/condonations/${id}/document`,
 };
 
 /**
@@ -169,6 +171,15 @@ export async function GET(req: NextRequest) {
       if (v && re.test(v)) keep.set(k, v);
     }
     FIXED[kind] = `/v1/academics/reports/${report}/export?${keep.toString()}`;
+  }
+  // A class's monthly attendance register: ?kind=att-register&id=<class>&month=2026-10&subjectId=&format=pdf|xlsx
+  if (kind === 'att-register') {
+    const sp = req.nextUrl.searchParams;
+    const month = sp.get('month') ?? '';
+    const subjectId = sp.get('subjectId') ?? '';
+    const format = sp.get('format') === 'pdf' ? 'pdf' : 'xlsx';
+    if (!UUID.test(id) || !/^\d{4}-\d{2}$/.test(month) || (subjectId && !UUID.test(subjectId))) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/attendance-desk/register?sectionId=${id}&month=${month}&format=${format}${subjectId ? `&subjectId=${subjectId}` : ''}`;
   }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.

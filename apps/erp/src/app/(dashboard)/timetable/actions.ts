@@ -22,7 +22,17 @@ async function check(s: SlotInput): Promise<string | null> {
   return null;
 }
 
-const body = (s: SlotInput) => ({ sectionId: s.sectionId, subjectId: s.subjectId, teacherId: s.teacherId, roomId: s.roomId, dayOfWeek: s.dayOfWeek, startsAt: s.startsAt, endsAt: s.endsAt });
+const body = (s: SlotInput) => ({
+  sectionId: s.sectionId,
+  subjectId: s.subjectId,
+  teacherId: s.teacherId,
+  roomId: s.roomId,
+  dayOfWeek: s.dayOfWeek,
+  startsAt: s.startsAt,
+  endsAt: s.endsAt,
+  batch: s.batch?.trim() || null,
+  combinedSectionIds: (s.combinedSectionIds ?? []).filter((x) => UUID.test(x)),
+});
 
 export async function addSlot(s: SlotInput): Promise<ActionResult<TimetableSlot>> {
   const problem = await check(s);

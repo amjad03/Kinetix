@@ -9,6 +9,7 @@ import { randomUUID } from 'node:crypto';
 import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
 import { academicTerms, courseOfferings, courseRegistrations, departments, examResultLines, feeInvoices, examResults, registrationWindows, sections, students, subjects, timetableSlots } from '../db/schema.js';
 import { DomainEvents, EventBus } from '../events/events.js';
+import { creditTransfers, electiveBaskets, electiveBasketSubjects, subjectRequisites } from '../db/schema-academic-ops.js';
 import { allocationOrder, type Applicant, type OfferingFacts, REFUSAL_TEXT, refusal, type Refusal, type StudentFacts, totalCredits } from './registration-rules.js';
 
 export type Offering = typeof courseOfferings.$inferSelect;
@@ -55,8 +56,11 @@ export class CourseRegistrationService {
       .from(examResultLines)
       .innerJoin(examResults, eq(examResults.id, examResultLines.resultId))
       .where(and(eq(examResults.studentId, studentId), eq(examResultLines.passed, true)));
+    // Approved credit transfers (ABC, SWAYAM, NPTEL) count as passing the course they are mapped to.
+    const transferred = await tx.select({ subjectId: creditTransfers.mappedSubjectId }).from(creditTransfers).where(and(eq(creditTransfers.studentId, studentId), eq(creditTransfers.status, 'approved')));
     const [last] = await tx.select({ cgpa: examResults.cgpa }).from(examResults).where(eq(examResults.studentId, studentId)).orderBy(desc(examResults.computedAt)).limit(1);
-    return { studentId, fullName: s.fullName, rollNo: s.rollNo, programId: s.programId, semester: s.semester, passedSubjectIds: new Set(passed.map((x) => x.subjectId)), cgpa: last?.cgpa ?? 0 };
+    const passedIds = [...passed.map((x) => x.subjectId), ...transferred.flatMap((x) => (x.subjectId ? [x.subjectId] : []))];
+    return { studentId, fullName: s.fullName, rollNo: s.rollNo, programId: s.programId, semester: s.semester, passedSubjectIds: new Set(passedIds), cgpa: last?.cgpa ?? 0 };
   }
 
   /** Offerings with their timetable slot times resolved, ready for the rules. */
@@ -64,6 +68,11 @@ export class CourseRegistrationService {
     const slotIds = [...new Set(rows.flatMap((r) => r.slotIds))];
     const slots = slotIds.length ? await tx.select().from(timetableSlots).where(inArray(timetableSlots.id, slotIds)) : [];
     const byId = new Map(slots.map((s) => [s.id, { day: s.dayOfWeek, starts: s.startsAt, ends: s.endsAt }]));
+    const subjectIds = [...new Set(rows.map((r) => r.subjectId))];
+    const reqs = subjectIds.length ? await tx.select().from(subjectRequisites).where(inArray(subjectRequisites.subjectId, subjectIds)) : [];
+    const baskets = subjectIds.length
+      ? await tx.select({ subjectId: electiveBasketSubjects.subjectId, id: electiveBaskets.id, maxChoose: electiveBaskets.maxChoose }).from(electiveBasketSubjects).innerJoin(electiveBaskets, eq(electiveBaskets.id, electiveBasketSubjects.basketId)).where(inArray(electiveBasketSubjects.subjectId, subjectIds))
+      : [];
     return new Map(
       rows.map((r) => [
         r.id,
@@ -78,6 +87,9 @@ export class CourseRegistrationService {
           eligibleSemesters: r.eligibleSemesters,
           prerequisiteSubjectId: r.prerequisiteSubjectId,
           slots: r.slotIds.flatMap((id) => byId.get(id) ?? []),
+          requires: reqs.filter((q) => q.subjectId === r.subjectId && q.kind === 'prerequisite').map((q) => q.requiresSubjectId),
+          corequires: reqs.filter((q) => q.subjectId === r.subjectId && q.kind === 'corequisite').map((q) => q.requiresSubjectId),
+          basket: baskets.find((b) => b.subjectId === r.subjectId) ?? null,
         },
       ]),
     );

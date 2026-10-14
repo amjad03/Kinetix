@@ -2,7 +2,8 @@
 
 import { ArrowRightLeft, Copy, Eye, FileUp, History, Pencil, Plus, Trash2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState, useSyncExternalStore, useTransition, type ReactNode } from 'react';
+import { EmptyState } from '@/components/States';
+import { cloneElement, isValidElement, useCallback, useMemo, useState, useSyncExternalStore, useTransition, type ReactElement, type ReactNode } from 'react';
 import { toast as sonner } from 'sonner';
 import { bulkRecords, deleteRecord, duplicateRecord, moveRecord, reorderRecords, restoreFromBin } from '@/app/(dashboard)/records-actions';
 import { Button } from '@/components/shadcn/button';
@@ -11,6 +12,7 @@ import { useI18n } from '@/i18n/client';
 import { bulkTarget, exportHref, listSearch, type BulkReport, type ListState, type RecordMeta, type RecordsPage, type Row, type SavedViewState } from '@/lib/records';
 import { BulkEditDialog } from './BulkEditDialog';
 import { BulkReportDialog } from './BulkReportDialog';
+import { ActionInputs, actionParams, inputsReady } from './ActionInputs';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ImportWizard } from './ImportWizard';
 import { MoveDialog } from './MoveDialog';
@@ -131,7 +133,13 @@ export function RecordsTable({
   const pathname = usePathname();
   const [navigating, startNav] = useTransition();
   const [busy, startBusy] = useTransition();
-  const [open, setOpen] = useState<Pending | null>(null);
+  const [open, setOpenState] = useState<Pending | null>(null);
+  // Values a module action asks for (a note, points, a receipt), cleared whenever a dialog opens or closes.
+  const [actionValues, setActionValues] = useState<Record<string, string>>({});
+  const setOpen = (next: Pending | null) => {
+    setActionValues({});
+    setOpenState(next);
+  };
   const entity = meta.key;
   const name = entityText(t, entity);
   // Columns and density are remembered per person in this browser (saved views carry them too).
@@ -246,6 +254,9 @@ export function RecordsTable({
 
   const shownColumns = useMemo(() => columns, [columns]);
   const o = open;
+  // An empty list hides the table and its toolbar, so its empty state carries the add and import buttons (unless the caller gave it its own).
+  const emptyProps = isValidElement(empty) && empty.type === EmptyState ? (empty.props as { action?: ReactNode; actions?: ReactNode }) : null;
+  const emptyWithActions = emptyProps && !emptyProps.action && !emptyProps.actions && (meta.can.create || meta.can.import) ? cloneElement(empty as ReactElement<{ actions?: ReactNode }>, { actions: <div className="flex flex-wrap justify-center gap-2">{toolbarButtons}</div> }) : empty;
 
   return (
     <>
@@ -262,7 +273,7 @@ export function RecordsTable({
         rowHref={onView ? undefined : rowHref}
         onRowClick={onView}
         rowActions={rowActions}
-        empty={!listParamsGiven && page.total === 0 ? empty : undefined}
+        empty={!listParamsGiven && page.total === 0 ? emptyWithActions : undefined}
         toolbar={toolbarButtons}
         views={<SavedViews page={viewsPage ?? entity} current={viewState} onApply={applyView} onDefault={(v) => !listParamsGiven && applyView(v.state)} />}
         visibleColumns={visible}
@@ -351,10 +362,14 @@ export function RecordsTable({
           tone={o.action.tone ?? undefined}
           typeToConfirm={o.action.tone === 'danger' ? String(o.sel.count) : undefined}
           busy={busy}
+          disabled={!inputsReady(o.action.inputs, actionValues)}
           onClose={() => setOpen(null)}
-          onConfirm={() => void runBulk({ op: 'action', action: o.action.key, target: targetOf(o.sel) }, tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label)).then((e) => e && toast.error(e))}
+          onConfirm={() =>
+            void runBulk({ op: 'action', action: o.action.key, target: targetOf(o.sel), ...(o.action.inputs?.length ? { params: actionParams(o.action.inputs, actionValues) } : {}) }, tr(t, `rk.action.${entity}.${o.action.key}`, o.action.label)).then((e) => e && toast.error(e))
+          }
         >
           <p className="m-0">{tr(t, `rk.actionHelp.${entity}.${o.action.key}`, t('rk.action.body'))}</p>
+          {!!o.action.inputs?.length && <ActionInputs entity={entity} action={o.action.key} inputs={o.action.inputs} values={actionValues} onChange={setActionValues} />}
         </ConfirmDialog>
       )}
       {o?.kind === 'report' && <BulkReportDialog report={o.report} title={o.title} onClose={() => setOpen(null)} />}

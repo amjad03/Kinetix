@@ -17,6 +17,20 @@ export const SETTINGS_SCHEMAS = {
     correctionWindowDays: z.number().int().min(0).max(90),
     maxCondonationPoints: z.number().int().min(0).max(30),
     notifyGuardianOnAbsence: z.boolean(),
+    /** hour: each timetable period; day: one mark a day; session: forenoon and afternoon. */
+    mode: z.enum(['hour', 'day', 'session']).default('hour'),
+    /** Tell the student and family when they fall under the warning level and under the minimum. */
+    shortageAlerts: z.boolean().default(true),
+    /** A summary of the day's absences to the family in the evening, instead of one message a period. */
+    dailyDigest: z.boolean().default(false),
+    /** Remind the teacher of a period not marked this many minutes after it ends (0 = no reminder). */
+    unmarkedReminderMinutes: z.number().int().min(0).max(1440).default(30),
+    /** How approved leave counts: on duty as present (or excused), medical and personal leave as absent (or excused). */
+    onDutyCountsAs: z.enum(['present', 'excused']).default('present'),
+    medicalCountsAs: z.enum(['absent', 'excused']).default('absent'),
+    personalCountsAs: z.enum(['absent', 'excused']).default('absent'),
+    /** Fee for a condonation, in paise (0 = no fee). */
+    condonationFeePaise: z.number().int().min(0).max(10_000_000).default(0),
   }),
   assessment: z.object({ components: z.array(Component).max(12), lockBeforePublish: z.boolean(), passPercent: z.number().min(0).max(100) }),
   timetable: z.object({
@@ -28,6 +42,11 @@ export const SETTINGS_SCHEMAS = {
     substitutionNeedsApproval: z.boolean(),
   }),
   registration: z.object({ minCredits: z.number().min(0).max(60), maxCredits: z.number().min(1).max(60), advisorApproval: z.boolean(), addDropDays: z.number().int().min(0).max(60), waitlist: z.boolean() }),
+  /** Teaching load norms (UGC: 16 hours a week for an assistant professor, 14 for associate professors and professors). */
+  workload: z.object({
+    defaultHoursPerWeek: z.number().int().min(1).max(60),
+    norms: z.array(z.object({ designation: z.string().trim().min(1).max(80), hoursPerWeek: z.number().int().min(1).max(60) })).max(30),
+  }),
 } as const;
 
 export type SettingsKind = keyof typeof SETTINGS_SCHEMAS;
@@ -42,7 +61,22 @@ export const SETTINGS_DEFAULTS: { [K in SettingsKind]: Settings<K> } = {
     request: { prefix: 'AR/{FY}/', next: 1, pad: 5, suffix: '' },
     rollPerSection: true,
   },
-  attendance: { minPercent: 75, warnPercent: 80, lateCountsAsPresent: true, correctionWindowDays: 7, maxCondonationPoints: 10, notifyGuardianOnAbsence: true },
+  attendance: {
+    minPercent: 75,
+    warnPercent: 80,
+    lateCountsAsPresent: true,
+    correctionWindowDays: 7,
+    maxCondonationPoints: 10,
+    notifyGuardianOnAbsence: true,
+    mode: 'hour',
+    shortageAlerts: true,
+    dailyDigest: false,
+    unmarkedReminderMinutes: 30,
+    onDutyCountsAs: 'present',
+    medicalCountsAs: 'absent',
+    personalCountsAs: 'absent',
+    condonationFeePaise: 0,
+  },
   assessment: {
     components: [
       { code: 'IA1', name: 'Internal test 1', weight: 30, maxMarks: 25 },
@@ -55,12 +89,24 @@ export const SETTINGS_DEFAULTS: { [K in SettingsKind]: Settings<K> } = {
   },
   timetable: { periodsPerDay: 8, periodMinutes: 45, maxPeriodsPerTeacherPerDay: 6, maxPeriodsPerTeacherPerWeek: 30, changeNeedsApproval: true, substitutionNeedsApproval: true },
   registration: { minCredits: 16, maxCredits: 26, advisorApproval: true, addDropDays: 14, waitlist: true },
+  workload: {
+    defaultHoursPerWeek: 16,
+    norms: [
+      { designation: 'Professor', hoursPerWeek: 14 },
+      { designation: 'Associate Professor', hoursPerWeek: 14 },
+      { designation: 'Assistant Professor', hoursPerWeek: 16 },
+    ],
+  },
 };
 
 /** Problems the schema cannot express; empty when the settings are consistent. */
 export function settingsProblem(kind: SettingsKind, v: Record<string, unknown>): string | null {
   if (kind === 'attendance' && (v.warnPercent as number) < (v.minPercent as number)) return 'The warning level must be at or above the minimum attendance';
   if (kind === 'registration' && (v.minCredits as number) > (v.maxCredits as number)) return 'Minimum credits cannot exceed maximum credits';
+  if (kind === 'workload') {
+    const names = (v.norms as { designation: string }[]).map((n) => n.designation.toLowerCase());
+    if (new Set(names).size !== names.length) return 'Each designation can have only one norm';
+  }
   if (kind === 'timetable' && (v.maxPeriodsPerTeacherPerDay as number) > (v.periodsPerDay as number)) return 'A teacher cannot have more periods a day than the day has';
   if (kind === 'assessment') {
     const c = v.components as { code: string; weight: number }[];

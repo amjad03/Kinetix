@@ -235,6 +235,13 @@ export class NotificationsService {
     await this.insertFor(tx, this.studentAndFamily(studentId), { kind: 'fee', ...n });
   }
 
+  /** An attendance notice about one student (shortage alert, the day's absences, leave decided): the family and the student. Returns how many were told. */
+  async attendanceNotice(tx: Tx, studentId: string, n: { text: Localized; data: Record<string, string>; dedupeKey: string }): Promise<number> {
+    await this.insertFor(tx, this.studentAndFamily(studentId), { kind: 'absence', ...n }, { replace: true });
+    const { rows } = await tx.execute<{ n: number }>(sql`select count(*)::int as n from notifications where dedupe_key = ${n.dedupeKey}`);
+    return rows[0]?.n ?? 0;
+  }
+
   /** HR, payroll and document events for specific users (idempotent per user and dedupe key). */
   async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare' | 'survey' | 'task' | 'homework' | 'calendar' | 'transport' | 'announcement' | 'message'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean } = {}): Promise<void> {
     if (userIds.length === 0) return;
