@@ -106,6 +106,28 @@ export const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     serialPrefix: 'FEE',
   },
   {
+    kind: 'migration',
+    name: 'Migration certificate',
+    subjectType: 'student',
+    title: 'Migration Certificate',
+    body: `${STUDENT}was a student of {{program}} at {{institution}}. The institution has no objection to the student migrating to {{fields.migratingTo}} to continue studies. This certificate does not by itself entitle the student to admission there.\n\nIssued on {{issuedOn}}.`,
+    fields: [
+      { key: 'migratingTo', label: 'Migrating to (university or board)', required: true },
+      { key: 'lastExamination', label: 'Last examination passed', required: true },
+      { key: 'result', label: 'Result', required: false },
+    ],
+    serialPrefix: 'MIG',
+  },
+  {
+    kind: 'medium_of_instruction',
+    name: 'Medium of instruction certificate',
+    subjectType: 'student',
+    title: 'Medium of Instruction Certificate',
+    body: `${STUDENT}studied {{program}} at {{institution}} in the academic year {{academicYear}}. The medium of instruction and examination throughout the programme was {{fields.medium}}.\n\nThis certificate is issued for {{purpose}}.\n\nIssued on {{issuedOn}}.`,
+    fields: [{ key: 'medium', label: 'Medium of instruction', required: true }],
+    serialPrefix: 'MOI',
+  },
+  {
     kind: 'experience',
     name: 'Experience certificate',
     subjectType: 'staff',

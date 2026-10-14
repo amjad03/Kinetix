@@ -41,6 +41,11 @@ export interface UserPrincipal {
   sessionId?: string;
   /** Second factor required by the institution but not set up yet (AuthGuard). */
   mustSetUpMfa?: true;
+  /**
+   * The campuses this member of staff is limited to, when every one of their roles is tied to a campus (AuthGuard reads
+   * user_roles each request). Absent: every campus. Tables with a campus are filtered to these (migration 0182).
+   */
+  campusIds?: string[];
 }
 
 /** An enrolled board, not signed in by a teacher. */

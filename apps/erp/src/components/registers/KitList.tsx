@@ -8,7 +8,7 @@ import { BulkReportDialog } from '@/components/records/BulkReportDialog';
 import { RecordsTable } from '@/components/records/RecordsTable';
 import { tr } from '@/components/records/text';
 import { Button } from '@/components/shadcn/button';
-import { Dialog, EmptyState, StatusPill, TextInput, useToast, type Column, type Tone } from '@/components/ui';
+import { Dialog, EmptyState, StatusPill, TextInput, useToast, type Column, type RowAction, type Tone } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { bulkTarget, type BulkReport, type ListState, type RecordMeta, type RecordsPage, type Row } from '@/lib/records';
@@ -58,6 +58,7 @@ export function KitList({
   rowHref,
   toolbar,
   testId,
+  rowActions,
 }: {
   meta: RecordMeta;
   page: RecordsPage<Row>;
@@ -70,6 +71,8 @@ export function KitList({
   rowHref?: (row: Row) => string | undefined;
   toolbar?: ReactNode;
   testId?: string;
+  /** Row actions of the page's own (open the timeline, compare with the last version). */
+  rowActions?: (row: Row) => RowAction<Row>[];
 }) {
   const { t, fmt } = useI18n();
   const toast = useToast();
@@ -162,7 +165,7 @@ export function KitList({
         rowHref={rowHref}
         toolbar={toolbar}
         testId={testId}
-        extraRowActions={(x) => allowed.filter((a) => !a.when || a.when(x)).map((a) => ({ id: `p-${a.key}`, label: actionLabel(a.key), tone: a.tone, onSelect: () => setAsk({ action: a, ids: [x.id as string] }) }))}
+        extraRowActions={(x) => [...(rowActions?.(x) ?? []), ...allowed.filter((a) => !a.when || a.when(x)).map((a) => ({ id: `p-${a.key}`, label: actionLabel(a.key), tone: a.tone, onSelect: () => setAsk({ action: a, ids: [x.id as string] }) }))]}
         extraBulkActions={allowed.map((a) => ({ id: `p-${a.key}`, label: actionLabel(a.key), tone: a.tone, onClick: (_rows, sel) => setAsk({ action: a, ids: null, sel }) }))}
         empty={
           <EmptyState icon={empty.icon ?? <Inbox />} title={t(empty.title)} testId={`${entity}-empty`}>

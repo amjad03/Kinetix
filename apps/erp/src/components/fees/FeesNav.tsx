@@ -1,7 +1,7 @@
 import { LinkTabs } from '@/components/ui/Tabs';
 import { getI18n } from '@/i18n/server';
 
-export type FeesTab = 'overview' | 'counter' | 'invoices' | 'structures' | 'setup' | 'plans' | 'scholarships' | 'challans' | 'dues' | 'transfers' | 'sponsors';
+export type FeesTab = 'overview' | 'counter' | 'invoices' | 'structures' | 'setup' | 'plans' | 'scholarships' | 'challans' | 'dues' | 'holds' | 'transfers' | 'sponsors';
 const HREF: Record<FeesTab, string> = {
   overview: '/fees',
   counter: '/fees/counter',
@@ -12,6 +12,7 @@ const HREF: Record<FeesTab, string> = {
   scholarships: '/fees/scholarships',
   challans: '/fees/challans',
   dues: '/fees/dues',
+  holds: '/fees/holds',
   transfers: '/fees/bank-transfers',
   sponsors: '/fees/sponsors',
 };

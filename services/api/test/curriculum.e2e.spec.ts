@@ -5,7 +5,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as s from '../src/db/schema.js';
 import { degreeCode } from '../src/curriculum/university.controller.js';
 import { docxOf, pdfOf, SYLLABUS } from '../src/curriculum/curriculum.spec.js';
-import { createApp, createTenant, env, FixedClock, ownerPool } from './helpers.js';
+import { createApp, createTenant, env, FixedClock, ownerPool, pdfText } from './helpers.js';
+
+const binary = (res: { on: (e: string, f: (c?: Buffer) => void) => void }, cb: (e: Error | null, b: Buffer) => void) => {
+  const chunks: Buffer[] = [];
+  res.on('data', (c) => chunks.push(c!));
+  res.on('end', () => cb(null, Buffer.concat(chunks)));
+};
 
 describe('curriculum versions, school mode and university basics', () => {
   const owner = ownerPool();
@@ -286,11 +292,11 @@ describe('curriculum versions, school mode and university basics', () => {
       const issued = done.candidates.find((x: { status: string }) => x.status === 'degree_issued');
       expect(issued.certificateNo).toBe('DEG-2026-0001');
 
-      const pdf = await get('principal', `/v1/university/convocations/${c.id}/candidates/${cand}/certificate.pdf`).expect(200);
-      const text = Buffer.from(pdf.body).toString('latin1');
-      expect(text.startsWith('%PDF-')).toBe(true);
+      const pdf = await get('principal', `/v1/university/convocations/${c.id}/candidates/${cand}/certificate.pdf`).buffer(true).parse(binary).expect(200);
+      expect((pdf.body as Buffer).subarray(0, 5).toString('latin1')).toBe('%PDF-');
+      const text = pdfText(pdf.body as Buffer);
       expect(text).toContain('Grad Asha');
-      expect((text.match(/ re f/g) ?? []).length).toBeGreaterThan(100); // the QR modules
+      expect(text).toContain('BCom');
       await get('outsider', `/v1/university/convocations/${c.id}/candidates/${cand}/certificate.pdf`).expect(404);
 
       const code = degreeCode(env.JWT_SECRET, t.tenantId, 'DEG-2026-0001');
@@ -298,6 +304,34 @@ describe('curriculum versions, school mode and university basics', () => {
       expect(ok).toEqual({ status: 'valid', institution: expect.any(String), name: 'Grad Asha', degree: 'BCom', certificateNo: 'DEG-2026-0001', conferredOn: '2026-12-10' });
       expect((await http().get(`/v1/public/verify-degree/${t.slug}/${encodeURIComponent(code.replace('0001', '0002'))}`).expect(200)).body).toEqual({ status: 'not_found' });
       expect((await http().get(`/v1/public/verify-degree/${other.slug}/${encodeURIComponent(code)}`).expect(200)).body).toEqual({ status: 'not_found' });
+
+      // The degree went through the template engine into the register of issued documents, under its own number.
+      const reg = (await get('principal', '/v1/documents/issued?docType=degree_certificate').expect(200)).body;
+      const entry = (Array.isArray(reg) ? reg : reg.rows).find((d: { serial: string }) => d.serial === 'DEG-2026-0001');
+      expect(entry).toMatchObject({ docType: 'degree_certificate', subjectName: 'Grad Asha', status: 'valid' });
+      expect(text).toContain('DEG-2026-0001');
+      // The degree register.
+      const degrees = (await get('principal', '/v1/university/degrees?year=2026').expect(200)).body;
+      expect(degrees).toEqual([expect.objectContaining({ certificateNo: 'DEG-2026-0001', name: 'Grad Asha', degreeTitle: 'BCom', cgpa: 8.2, classification: 'First Class with Distinction', inAbsentia: false, registerStatus: 'valid', convocationId: c.id })]);
+      expect((await get('principal', '/v1/university/degrees?year=2025').expect(200)).body).toEqual([]);
+      await get('teacher', '/v1/university/degrees').expect(403);
+      expect((await get('outsider', '/v1/university/degrees').expect(200)).body).toEqual([]);
+    });
+
+    it('builds the eligible list for one batch and confers degrees in absentia', async () => {
+      const [fin] = await db.insert(s.sections).values({ tenantId: t.tenantId, programId: ids.prog, academicYearId: yearId, term: 6, name: 'B', displayName: 'BCom Sem 6 B' }).returning();
+      const grads = await db.insert(s.students).values([['Chitra', '2023-07-01'], ['Dev', '2022-07-01']].map(([n, on], i) => ({ tenantId: t.tenantId, sectionId: fin.id, rollNo: `H${i}`, fullName: `Grad ${n}`, status: 'active', enrolledOn: on }))).returning();
+      const [session] = await db.insert(s.examSessions).values({ tenantId: t.tenantId, academicYearId: yearId, programId: ids.prog, term: 6, name: 'Sem 6 exam B', startsOn: '2026-05-01', endsOn: '2026-05-20', createdBy: t.principal.id }).returning();
+      await db.insert(s.examResults).values(grads.map((g) => ({ tenantId: t.tenantId, sessionId: session.id, studentId: g.id, sgpa: 6.5, cgpa: 6.4, creditsAttempted: 24, creditsEarned: 24, creditPoints: 150, outcome: 'pass' })));
+      const c = (await post('principal', '/v1/university/convocations', { name: '2026 Winter Convocation', heldOn: '2026-12-20', graduationYear: 2026, programId: ids.prog }).expect(201)).body;
+      // Only the 2023 batch of this class.
+      expect((await post('principal', `/v1/university/convocations/${c.id}/eligible`, { batchYear: 2023, sectionId: fin.id }).expect(200)).body).toEqual({ added: 1, eligible: 1 });
+      await post('principal', `/v1/university/convocations/${c.id}/issue`).expect(400); // nobody registered
+      expect((await post('principal', `/v1/university/convocations/${c.id}/issue`, { inAbsentia: true }).expect(200)).body).toEqual({ issued: 1 });
+      const degrees = (await get('principal', `/v1/university/degrees?convocationId=${c.id}`).expect(200)).body;
+      expect(degrees).toEqual([expect.objectContaining({ certificateNo: 'DEG-2026-0002', name: 'Grad Chitra', classification: 'First Class', inAbsentia: true })]);
+      const pdf = await get('principal', `/v1/university/convocations/${c.id}/candidates/${degrees[0].candidateId}/certificate.pdf`).buffer(true).parse(binary).expect(200);
+      expect(pdfText(pdf.body as Buffer)).toContain('Grad Chitra');
     });
   });
 });

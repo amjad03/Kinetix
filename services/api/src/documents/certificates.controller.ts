@@ -17,7 +17,7 @@ import { IssuedDocsService } from './issued-docs.service.js';
 
 const Fields = z.array(z.object({ key: z.string().regex(/^[A-Za-z][A-Za-z0-9]{0,29}$/, 'Use letters and digits'), label: z.string().trim().min(1).max(80), required: z.boolean() })).max(12);
 const TemplateBody = z.object({
-  kind: z.enum(['transfer_certificate', 'bonafide', 'conduct', 'study', 'course_completion', 'fee_receipt', 'experience', 'custom']),
+  kind: z.enum(['transfer_certificate', 'bonafide', 'conduct', 'study', 'course_completion', 'fee_receipt', 'experience', 'migration', 'medium_of_instruction', 'custom']),
   name: z.string().trim().min(1).max(80),
   subjectType: z.enum(['student', 'staff']),
   title: z.string().trim().min(1).max(100),
@@ -166,7 +166,28 @@ export class CertificatesController {
       const body = c.renderedBody!;
       const fields = (tmpl?.fields ?? []).map((f) => ({ label: f.label, value: c.fields[f.key] ?? '' })).filter((f) => f.value);
       const docType = certificateDocType(tmpl?.kind as CertificateTemplate['kind']);
-      const tc = docType === 'transfer_certificate' ? [{ label: 'Name of the student', value: name }, ...(view.subject.detail ? [{ label: 'Class and roll number', value: view.subject.detail }] : []), ...fields] : fields;
+      const st = (subject.student ?? {}) as Record<string, string>;
+      // Particulars certificates (TC, migration) list the student's details above the body.
+      const particulars =
+        docType === 'migration_certificate'
+          ? [
+              { label: 'Name of the student', value: name },
+              ...(st.guardianName ? [{ label: "Father's / guardian's name", value: st.guardianName }] : []),
+              { label: 'Register number', value: st.admissionNo || st.rollNo || '' },
+              { label: 'Programme', value: st.program ?? '' },
+              ...(st.enrolledOn ? [{ label: 'Year of admission', value: st.enrolledOn.slice(-4) }] : []),
+              { label: 'Last examination passed', value: c.fields.lastExamination ?? '' },
+              ...(c.fields.result ? [{ label: 'Result', value: c.fields.result }] : []),
+              { label: 'Migrating to', value: c.fields.migratingTo ?? '' },
+            ].filter((f) => f.value)
+          : null;
+      const tc = docType === 'transfer_certificate' ? [{ label: 'Name of the student', value: name }, ...(view.subject.detail ? [{ label: 'Class and roll number', value: view.subject.detail }] : []), ...fields] : (particulars ?? fields);
+      const docBody =
+        docType === 'transfer_certificate'
+          ? 'Certified that the above particulars are true as per the records of the institution.'
+          : docType === 'migration_certificate'
+            ? 'The institution has no objection to the student named above migrating to another university or board to continue studies. This certificate does not by itself entitle the student to admission there.'
+            : emphasiseName(body, name);
       const out = await this.engine.produce(tx, p, {
         docType,
         title: c.renderedTitle!,
@@ -176,7 +197,7 @@ export class CertificatesController {
         token: c.verifyToken ?? undefined,
         data: {
           ...subject,
-          doc: { title: c.renderedTitle!, purpose: c.purpose, body: docType === 'transfer_certificate' ? 'Certified that the above particulars are true as per the records of the institution.' : emphasiseName(body, name), fields: tc, certificateNo: c.serialNo! },
+          doc: { title: c.renderedTitle!, purpose: c.purpose, body: docBody, fields: tc, certificateNo: c.serialNo!, ...(c.fields.medium ? { medium: c.fields.medium } : {}) },
           award: { title: c.renderedTitle!, recipient: name, citation: emphasiseName(citationFrom(body, name), name), event: c.purpose, date: '', position: '' },
         },
         keyFields: [{ label: 'Certificate', value: c.renderedTitle! }, { label: 'Issued to', value: name }, { label: 'Certificate number', value: c.serialNo! }, ...fields.slice(0, 4)],

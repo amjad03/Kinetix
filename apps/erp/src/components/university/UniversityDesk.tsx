@@ -1,4 +1,5 @@
 'use client';
+import NextLink from 'next/link';
 import { useState } from 'react';
 import { addConvocation, addInstitution, convocationStep } from '@/app/(dashboard)/university/actions';
 import { Bar, FormDialog, Grid, Tabbed, useToast, type Field } from '@/components/ops/kit';
@@ -91,7 +92,7 @@ export function UniversityDesk({ institutions, convocations, programs, tab, canA
         empty={t('un.c.empty')}
         rows={convocations}
         cols={[
-          { label: t('un.c.name'), cell: (c) => c.name, sort: (c) => c.name },
+          { label: t('un.c.name'), cell: (c) => <NextLink className="font-medium hover:underline" href={`/university/convocations/${c.id}`}>{c.name}</NextLink>, sort: (c) => c.name },
           { label: t('un.c.date'), cell: (c) => c.heldOn, sort: (c) => c.heldOn },
           { label: t('un.c.status'), cell: (c) => <StatusPill tone={TONE[c.status]}>{t(`un.cs.${c.status}` as MessageKey)}</StatusPill>, sort: (c) => c.status },
           { label: t('un.c.eligible'), cell: (c) => c.candidates, num: true },

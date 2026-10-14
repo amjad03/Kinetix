@@ -3,6 +3,7 @@ import type { MessageKey } from '@/i18n/messages';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { RequestList } from '@/components/academics/shared';
+import { actionText } from '@/components/records/text';
 import { RecordPage } from '@/components/templates';
 import { LinkButton } from '@/components/LinkButton';
 import { SectionTitle } from '@/components/PageHeader';
@@ -11,6 +12,9 @@ import { LifecycleTimeline } from '@/components/students/LifecycleTimeline';
 import { StudentActions } from '@/components/students/StudentActions';
 import { StudentClearancesTab } from '@/components/students/StudentClearancesTab';
 import { StudentDetailsTab } from '@/components/students/StudentDetailsTab';
+import { FeeHoldPanel } from '@/components/fee-depth/FeeHolds';
+import { canOverrideFeeHold, FEE_HOLD_READERS, type FeeHoldStatus } from '@/lib/fee-holds';
+import { canReadmit } from '@/lib/relative-grading';
 import type { ChangeRequest, Clearance, StudentDetails } from '@/lib/student-info';
 import { ApiError, api, load, requireSection } from '@/lib/api';
 import { canChangeLifecycle } from '@/lib/access';
@@ -68,6 +72,8 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
     load(() => api<ChangeRequest[]>(`/v1/students/${id}/change-requests`)),
     load(() => api<Clearance[]>(`/v1/students/${id}/clearances`)),
   ]);
+  // Holds for unpaid fees (hall ticket, result, TC), for the roles that may see them.
+  const holds = (me?.roles ?? []).some((r) => FEE_HOLD_READERS.includes(r)) ? await load(() => api<FeeHoldStatus>(`/v1/fee-holds/${id}`)) : null;
   const [requests, activity, att, marks, fees] = await Promise.all([
     load(() => api<RequestRow[]>(`/v1/academics/requests?studentId=${id}`)),
     load(() => api<AuditRow[]>(`/v1/academics/activity/${id}`)),
@@ -182,6 +188,11 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
             <div className="grid grid-cols-[1fr] gap-6 lg:grid-cols-[1fr_1.55fr]">
               <div className="min-w-0">
                 <StudentActions student={s} canChange={canChange} canGuardians classes={sameProgram} />
+                {canReadmit(roles) && (
+                  <NextLink className="mt-3 inline-block text-sm underline underline-offset-2" href={`/curriculum/readmission?student=${s.id}`} data-testid="stu-readmission">
+                    {t('ra.fromProfile')}
+                  </NextLink>
+                )}
               </div>
               <div className="rounded-[12px] border bg-card p-5">
                 <SectionTitle flush>{t('stu.timeline')}</SectionTitle>
@@ -190,7 +201,7 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
             </div>
           </>
         }
-        initialTab={tab === 'details' || tab === 'clearances' ? tab : undefined}
+        initialTab={tab === 'details' || tab === 'clearances' || tab === 'fees' ? tab : undefined}
         related={[
           {
             value: 'details',
@@ -278,6 +289,8 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
             label: t('v2.prof.fees'),
             count: invoices.length,
             content: (
+              <div className="grid gap-4">
+              {holds?.data && <FeeHoldPanel studentId={s.id} status={holds.data} canOverride={canOverrideFeeHold(roles)} canSettings={roles.some((r) => ['principal', 'tenant_admin', 'accountant'].includes(r))} />}
               <div className={box}>
                 {fees.data && <p className="mb-3 text-sm">{t('v2.prof.feesDue', { amount: formatRupees(fees.data.duePaise) })}</p>}
                 {invoices.length === 0
@@ -295,6 +308,7 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
                     </ul>
                   )}
               </div>
+              </div>
             ),
           },
           { value: 'requests', label: t('acad.tab.requests'), count: reqRows.length, content: <RequestList rows={reqRows} label={t('acad.tab.requests')} /> },
@@ -306,7 +320,7 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
         activity={(activity.data ?? []).map((a) => {
           const key = `acad.audit.${a.action}`;
           const label = t(key as MessageKey);
-          return { id: String(a.id), at: a.at, actor: a.actor ?? t('acad.system'), action: label === key ? a.action.replace(/[._]/g, ' ') : label };
+          return { id: String(a.id), at: a.at, actor: a.actor ?? t('acad.system'), action: label === key ? actionText(t, a.action) : label };
         })}
       />
     </>

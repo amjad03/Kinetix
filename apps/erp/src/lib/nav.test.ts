@@ -8,10 +8,28 @@ describe('navigation groups', () => {
   it('shows a role only the pages access.ts lets it open', () => {
     expect([...hrefs(['accountant'])].sort()).toEqual(['/', '/academics', '/analytics', '/chat', '/alumni', '/budgets', '/calendar', '/delegations', '/documents', '/fees', '/accounts', '/accounts/bank', '/books', '/gl-export', '/ops-reports', '/payroll', '/payroll/payslips', '/payroll/loans', '/reports', '/scholarships', '/settlements', '/students', '/tally', '/tasks', '/workflows', '/procurement', '/indents', '/facilities', '/conversations'].sort());
     expect(hrefs(['accountant'])).not.toContain('/settings');
-    expect([...hrefs(['librarian'])].sort()).toEqual(['/academics', '/calendar', '/chat', '/delegations', '/library', '/ops-reports', '/payroll/payslips', '/payroll/loans', '/reports', '/tasks', '/workflows', '/indents', '/facilities'].sort());
+    expect([...hrefs(['librarian'])].sort()).toEqual(['/academics', '/calendar', '/chat', '/delegations', '/library', '/library/desk', '/library/records', '/ops-reports', '/payroll/payslips', '/payroll/loans', '/reports', '/tasks', '/workflows', '/indents', '/facilities'].sort());
     expect(hrefs(['principal'])).toContain('/obe');
     expect(hrefs(['principal'])).not.toContain('/platform/concept-videos');
     expect(hrefs(['principal'], true)).toContain('/platform/concept-videos');
+  });
+
+  it('lists the library, hostel and transport desks and record lists for their own roles only', () => {
+    expect(hrefs(['librarian'])).toEqual(expect.arrayContaining(['/library/desk', '/library/records']));
+    expect(hrefs(['hostel_warden'])).toEqual(expect.arrayContaining(['/hostel', '/hostel/desk', '/hostel/records']));
+    expect(hrefs(['transport_manager'])).toEqual(expect.arrayContaining(['/transport', '/transport/desk', '/transport/records']));
+    expect(hrefs(['hostel_warden'])).not.toContain('/transport/desk');
+    expect(hrefs(['transport_manager'])).not.toContain('/library/records');
+    expect(hrefs(['accountant'])).not.toContain('/hostel/desk');
+    expect(findNav(visibleGroups(['librarian']), '/library/desk')?.item.label).toBe('lht.desk.library');
+    expect(findNav(visibleGroups(['librarian']), '/library/records')?.item.label).toBe('lht.records.library');
+  });
+
+  it('lists relative grading for the exam office and heads of department, not for teachers', () => {
+    expect(hrefs(['exam_controller'])).toContain('/exams/relative-grading');
+    expect(hrefs(['hod'])).toContain('/exams/relative-grading');
+    expect(hrefs(['teacher'])).not.toContain('/exams/relative-grading');
+    expect(findNav(visibleGroups(['principal']), '/exams/relative-grading')?.item.label).toBe('nav.relativeGrading');
   });
 
   it('drops groups with nothing to show and keeps the product order', () => {

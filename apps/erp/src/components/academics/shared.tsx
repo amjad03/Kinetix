@@ -1,5 +1,6 @@
 'use client';
 
+import { actionText } from '@/components/records/text';
 import type { ActivityItem } from '@/components/templates';
 import type { MessageKey } from '@/i18n/messages';
 import { DataTable, StatusPill, type Column } from '@/components/ui';
@@ -13,7 +14,7 @@ export function toActivity(rows: AuditRow[], t: T): ActivityItem[] {
   return rows.map((r) => {
     const key = `acad.audit.${r.action}`;
     const label = t(key as MessageKey);
-    return { id: String(r.id), at: r.at, actor: r.actor ?? t('acad.system'), action: label === key ? r.action.replace(/[._]/g, ' ') : label };
+    return { id: String(r.id), at: r.at, actor: r.actor ?? t('acad.system'), action: label === key ? actionText(t, r.action) : label };
   });
 }
 

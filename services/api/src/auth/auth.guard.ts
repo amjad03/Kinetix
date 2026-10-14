@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { and, eq, gt, isNull } from 'drizzle-orm';
+import { and, eq, gt, isNull, notInArray, sql } from 'drizzle-orm';
 import { Clock } from '../common/time.js';
-import { DbService } from '../db/db.service.js';
-import { boardSessions, devices, users } from '../db/schema.js';
+import { DbService, type Tx } from '../db/db.service.js';
+import { boardSessions, devices, userRoles, users } from '../db/schema.js';
 import { userSessions } from '../db/schema-foundation.js';
 import { currentContext } from '../observability/request-context.js';
 import { ALLOW_MFA_SETUP_META, ALLOW_PASSWORD_CHANGE_META, AUTH_META, type AuthRequirement } from './auth.decorators.js';
-import type { Principal } from './principal.js';
+import type { Principal, RoleName } from './principal.js';
 
 export const PASSWORD_CHANGE_REQUIRED = 'Change your temporary password first';
 import { TokensService } from './tokens.service.js';
@@ -54,21 +54,27 @@ export class AuthGuard implements CanActivate {
     if (rc) {
       rc.tenantId = principal.tenantId;
       rc.userId = principal.kind === 'user' ? principal.userId : principal.kind === 'board' ? principal.teacherId : undefined;
+      // Campus-scoped staff: every query of this request sees only their campuses (DbService.withTenant, migration 0182).
+      if (principal.kind === 'user' && principal.campusIds?.length) rc.campusIds = principal.campusIds;
     }
     return true;
   }
 
-  /** A signed-out (revoked) session's token stops working at once. `last_seen_at` is refreshed at most once a minute. */
-  private async assertSessionActive(tenantId: string, userId: string, sessionId: string): Promise<void> {
+  /**
+   * A signed-out (revoked) session's token stops working at once. `last_seen_at` is refreshed at most once a minute.
+   * Answers the person's campus scope, read in the same transaction (see {@link campusScope}).
+   */
+  private async assertSessionActive(tenantId: string, userId: string, sessionId: string): Promise<string[] | undefined> {
     const now = this.clock.now();
-    const ok = await this.db.withTenant(tenantId, async (tx) => {
+    const res = await this.db.withTenant(tenantId, async (tx) => {
       const [s] = await tx.select({ revokedAt: userSessions.revokedAt, seen: userSessions.lastSeenAt, status: users.status }).from(userSessions).innerJoin(users, eq(users.id, userSessions.userId)).where(and(eq(userSessions.id, sessionId), eq(userSessions.userId, userId)));
       // A disabled account stops working at once, even with a token signed before it was disabled.
-      if (!s || s.revokedAt || s.status === 'disabled') return false;
+      if (!s || s.revokedAt || s.status === 'disabled') return null;
       if (now.getTime() - s.seen.getTime() > 60_000) await tx.update(userSessions).set({ lastSeenAt: now }).where(eq(userSessions.id, sessionId));
-      return true;
+      return { campuses: await campusScope(tx, userId) };
     });
-    if (!ok) throw new UnauthorizedException('This session was signed out');
+    if (!res) throw new UnauthorizedException('This session was signed out');
+    return res.campuses;
   }
 
   /** Verifies the token and, for devices and boards, that it has not been revoked or ended. */
@@ -76,8 +82,8 @@ export class AuthGuard implements CanActivate {
     const c = this.tokens.verify(token);
     switch (c.typ) {
       case 'user': {
-        if (c.sid) await this.assertSessionActive(c.tid, c.sub, c.sid);
-        return { kind: 'user', tenantId: c.tid, userId: c.sub, roles: c.roles, ...(c.sid ? { sessionId: c.sid } : {}), ...(c.pwc ? { mustChangePassword: true as const } : {}), ...(c.mfe ? { mustSetUpMfa: true as const } : {}) };
+        const campusIds = c.sid ? await this.assertSessionActive(c.tid, c.sub, c.sid) : await this.db.withTenant(c.tid, (tx) => campusScope(tx, c.sub));
+        return { kind: 'user', tenantId: c.tid, userId: c.sub, roles: c.roles, ...(c.sid ? { sessionId: c.sid } : {}), ...(c.pwc ? { mustChangePassword: true as const } : {}), ...(c.mfe ? { mustSetUpMfa: true as const } : {}), ...(campusIds ? { campusIds } : {}) };
       }
       case 'device': {
         const ok = await this.db.withTenant(c.tid, async (tx) => {
@@ -106,4 +112,20 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('Unknown token type');
     }
   }
+}
+
+/** Roles that are not staff: never campus-limited. */
+const NOT_STAFF: RoleName[] = ['student', 'guardian', 'alumni', 'external_examiner'];
+
+/**
+ * The campuses a member of staff is limited to: when every one of their roles is tied to a campus (user_roles.campus_id), those
+ * campuses; when any role covers every campus (no campus), undefined, meaning no limit.
+ */
+export async function campusScope(tx: Tx, userId: string): Promise<string[] | undefined> {
+  // Only staff roles count: a student's or family's own records are already theirs alone.
+  const [r] = await tx
+    .select({ open: sql<boolean>`bool_or(${userRoles.campusId} is null)`, ids: sql<string[] | null>`array_agg(distinct ${userRoles.campusId}::text) filter (where ${userRoles.campusId} is not null)` })
+    .from(userRoles)
+    .where(and(eq(userRoles.userId, userId), notInArray(userRoles.role, NOT_STAFF)));
+  return !r || r.open !== false || !r.ids?.length ? undefined : r.ids;
 }

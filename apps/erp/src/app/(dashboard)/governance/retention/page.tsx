@@ -3,18 +3,19 @@ import { RetentionDesk } from '@/components/governance/RetentionDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
+import { loadRecords } from '@/lib/records-server';
 import { getI18n } from '@/i18n/server';
-import type { DueFile, RetentionPolicy } from '@/lib/governance';
+import type { DueFile } from '@/lib/governance';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.govRetention') };
 }
 
 /** File retention per category: the policy, the files that are past it, and the archive run. */
-export default async function RetentionPage() {
+export default async function RetentionPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireSection('governance');
   const { t } = await getI18n();
-  const [policies, due] = await Promise.all([load(() => api<RetentionPolicy[]>('/v1/governance/retention')), load(() => api<DueFile[]>('/v1/governance/retention/due'))]);
+  const [policies, due] = await Promise.all([loadRecords('retention-policies', await searchParams), load(() => api<DueFile[]>('/v1/governance/retention/due'))]);
   const failed = policies.error ?? due.error;
   return (
     <>

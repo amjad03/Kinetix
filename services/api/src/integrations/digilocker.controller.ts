@@ -59,6 +59,21 @@ async function buildPayload(tx: Tx, studentId: string, docType: (typeof DOC_TYPE
   return { student: { name: st.fullName, rollNo: st.rollNo, program: st.program, apaarId: ids?.apaarId ?? null, abcId: ids?.abcId ?? null }, docType, cgpa, results: docType === 'marksheet' ? [list[list.length - 1]] : list };
 }
 
+/** Pushes one document to the DigiLocker issuer API; the answer's URI is stored, a failure is recorded and can be retried. */
+export async function pushDigilockerDocument(tx: Tx, p: UserPrincipal, docId: string) {
+  const [d] = await tx.select().from(dlDocuments).where(eq(dlDocuments.id, docId));
+  if (!d) throw new NotFoundException('Document not found');
+  if (d.status === 'issued') return d;
+  const cfg = await getSetting(tx, p.tenantId, 'digilocker', DL_ENV());
+  if (!cfg.baseUrl || !cfg.clientId || !cfg.clientSecret) throw new BadRequestException('DigiLocker is not configured yet: add the issuer URL, client id and secret');
+  const body = JSON.stringify({ issuerId: cfg.issuerId ?? cfg.clientId, docType: d.docType, docRef: d.docRef, title: d.title, sha256: d.sha256, signature: d.signature, document: d.payload });
+  const res = await call(`${String(cfg.baseUrl).replace(/\/$/, '')}/issuer/v1/documents`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-client-id': cfg.clientId, 'x-signature': createHmac('sha256', cfg.clientSecret).update(body).digest('hex') }, body });
+  const uri = res.ok && typeof res.body?.uri === 'string' ? (res.body.uri as string) : null;
+  const [row] = await tx.update(dlDocuments).set(uri ? { status: 'issued', uri, issuedAt: new Date(), error: null, attempts: d.attempts + 1 } : { status: 'failed', error: (res.error ?? res.body?.message ?? 'No URI in the answer').toString().slice(0, 300), attempts: d.attempts + 1 }).where(eq(dlDocuments.id, docId)).returning();
+  await auditUser(tx, p, uri ? 'digilocker.document_issued' : 'digilocker.document_failed', 'dl_document', docId, { uri });
+  return row;
+}
+
 /** DigiLocker issuer (documents signed and pushed), the NAD upload batch and the APAAR / ABC identifiers of students. */
 @Controller('v1')
 export class DigiLockerController {
@@ -139,18 +154,8 @@ export class DigiLockerController {
     });
   }
 
-  private async pushOne(tx: Tx, p: UserPrincipal, docId: string) {
-    const [d] = await tx.select().from(dlDocuments).where(eq(dlDocuments.id, docId));
-    if (!d) throw new NotFoundException('Document not found');
-    if (d.status === 'issued') return d;
-    const cfg = await getSetting(tx, p.tenantId, 'digilocker', DL_ENV());
-    if (!cfg.baseUrl || !cfg.clientId || !cfg.clientSecret) throw new BadRequestException('DigiLocker is not configured yet: add the issuer URL, client id and secret');
-    const body = JSON.stringify({ issuerId: cfg.issuerId ?? cfg.clientId, docType: d.docType, docRef: d.docRef, title: d.title, sha256: d.sha256, signature: d.signature, document: d.payload });
-    const res = await call(`${String(cfg.baseUrl).replace(/\/$/, '')}/issuer/v1/documents`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-client-id': cfg.clientId, 'x-signature': createHmac('sha256', cfg.clientSecret).update(body).digest('hex') }, body });
-    const uri = res.ok && typeof res.body?.uri === 'string' ? (res.body.uri as string) : null;
-    const [row] = await tx.update(dlDocuments).set(uri ? { status: 'issued', uri, issuedAt: new Date(), error: null, attempts: d.attempts + 1 } : { status: 'failed', error: (res.error ?? res.body?.message ?? 'No URI in the answer').toString().slice(0, 300), attempts: d.attempts + 1 }).where(eq(dlDocuments.id, docId)).returning();
-    await auditUser(tx, p, uri ? 'digilocker.document_issued' : 'digilocker.document_failed', 'dl_document', docId, { uri });
-    return row;
+  private pushOne(tx: Tx, p: UserPrincipal, docId: string) {
+    return pushDigilockerDocument(tx, p, docId);
   }
 
   /** Asks the issuer API for the state of an issued document by its URI. */

@@ -254,6 +254,12 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
               <CheckboxField label={t('fx.block.results')} checked={!!s.duesBlock.results} onChange={(v) => edit({ duesBlock: { ...s.duesBlock, results: v } })} />
               <CheckboxField label={t('fx.block.tc')} checked={!!s.duesBlock.tc} onChange={(v) => edit({ duesBlock: { ...s.duesBlock, tc: v } })} />
               <TextInput label={t('fx.set.minDues')} type="number" value={String(s.duesBlock.minRupees ?? 0)} onChange={(e) => edit({ duesBlock: { ...s.duesBlock, minRupees: Number(e.target.value) || 0 } })} />
+              <p className="m-0 text-sm text-muted-foreground">
+                {t('fh.settingsHint')}{' '}
+                <Link className="underline underline-offset-2" href="/fees/holds">
+                  {t('fh.pageTitle')}
+                </Link>
+              </p>
             </div>
           ),
         },

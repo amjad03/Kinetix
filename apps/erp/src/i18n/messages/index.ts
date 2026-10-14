@@ -114,7 +114,13 @@ import commsDepth from './comms-depth';
 
 import hrKit from './hr-kit';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, accreditationHub, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk, v2, ease, campusOps, qualityHub, workflowBuilder, affiliation, records, reportStudio, communication, docDesigns, examCell, studentInfo, admissionsDesk, researchDepth, obeDepth, iqacDepth, recordsDepth, feeDepth, docEditor, attendanceDesk, academicPlanning, recordsCampusDepth, inventoryDepth, placementsDepth, governanceAccess, lht, lifeDepth, welfareDepth, lmsDepth, commsDepth, hrKit } as const;
+import auditVerbs from './audit-verbs';
+import feeHolds from './fee-holds';
+import degrees from './degrees';
+import kitRegisters from './kit-registers';
+import examCurve from './exam-curve';
+
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, accreditationHub, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk, v2, ease, campusOps, qualityHub, workflowBuilder, affiliation, records, reportStudio, communication, docDesigns, examCell, studentInfo, admissionsDesk, researchDepth, obeDepth, iqacDepth, recordsDepth, feeDepth, docEditor, attendanceDesk, academicPlanning, recordsCampusDepth, inventoryDepth, placementsDepth, governanceAccess, lht, lifeDepth, welfareDepth, lmsDepth, commsDepth, hrKit, auditVerbs, feeHolds, degrees, kitRegisters, examCurve } as const;
 
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.
 // See docs/i18n/erp.md for how to add strings.

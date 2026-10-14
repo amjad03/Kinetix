@@ -27,3 +27,30 @@ export async function convocationStep(id: string, step: 'eligible' | 'open' | 'c
   if (!UUID.test(id)) return bad();
   return send(`/v1/university/convocations/${encodeURIComponent(id)}/${step}`, {}, PAGE);
 }
+
+const detail = (id: string) => `/university/convocations/${id}`;
+
+/** Builds the eligible list, optionally for one batch (year of admission) or one class. */
+export async function buildEligible(id: string, v: Record<string, string>) {
+  const year = v.batchYear?.trim() ? Number(v.batchYear) : undefined;
+  if (!UUID.test(id) || (year !== undefined && !(Number.isInteger(year) && year >= 1990 && year <= 2100)) || (v.sectionId && !UUID.test(v.sectionId))) return bad();
+  return send(`/v1/university/convocations/${id}/eligible`, { ...(year ? { batchYear: year } : {}), ...(v.sectionId ? { sectionId: v.sectionId } : {}) }, detail(id));
+}
+
+/** Opens or closes registration, from the convocation's own page. */
+export async function convocationDetailStep(id: string, step: 'open' | 'close') {
+  if (!UUID.test(id)) return bad();
+  return send(`/v1/university/convocations/${id}/${step}`, {}, detail(id));
+}
+
+/** Issues the degrees with their serial numbers: to registered graduates, or (in absentia) to every eligible one too. */
+export async function issueDegrees(id: string, inAbsentia: boolean) {
+  if (!UUID.test(id)) return bad();
+  return send(`/v1/university/convocations/${id}/issue`, { inAbsentia }, detail(id));
+}
+
+/** Registers an eligible graduate for the ceremony, or withholds a graduate's degree. */
+export async function candidateStep(id: string, candidate: { id: string; studentId: string }, step: 'register' | 'withhold') {
+  if (!UUID.test(id) || !UUID.test(candidate.id) || !UUID.test(candidate.studentId)) return bad();
+  return step === 'register' ? send(`/v1/university/convocations/${id}/register`, { studentId: candidate.studentId }, detail(id)) : send(`/v1/university/convocations/${id}/candidates/${candidate.id}/withhold`, {}, detail(id));
+}

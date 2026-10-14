@@ -1,68 +1,54 @@
 'use client';
-import { useState, useTransition } from 'react';
-import { createEntry, loadAcks } from '@/app/(dashboard)/diary/actions';
-import { Bar, FormDialog, Grid, InfoDialog, Pill, useToast, type Col, type Field } from '@/components/ops/kit';
-import { UrlSelect } from '@/components/UrlSelect';
-import { useI18n } from '@/i18n/client';
-import type { DiaryAck, DiaryEntry, SectionOption } from '@/lib/school-life';
 
-import { Button } from '@/components/kx';
-import { Plus as Add } from 'lucide-react';
-/** A section's diary: entries by day, who has read each, and a form to write one. */
-export function DiaryDesk({ sections, sectionId, entries }: { sections: SectionOption[]; sectionId: string; entries: DiaryEntry[] }) {
+import { NotebookPen } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { loadAcks } from '@/app/(dashboard)/diary/actions';
+import { InfoDialog, useToast } from '@/components/ops/kit';
+import { KitList, type ColSpec } from '@/components/registers/KitList';
+import { useI18n } from '@/i18n/client';
+import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
+import type { DiaryAck } from '@/lib/school-life';
+
+const COLUMNS: ColSpec[] = [
+  { key: 'entryDate', header: 'rk.f.diary-entries.entryDate', kind: 'date' },
+  { key: 'sectionId', from: 'section', header: 'rk.f.diary-entries.sectionId', kind: 'strong' },
+  { key: 'subjectId', from: 'subject', header: 'rk.f.diary-entries.subjectId', hideBelow: 'md' },
+  { key: 'author', header: 'rk.f.diary-entries.author', sortKey: false, hideBelow: 'sm' },
+  { key: 'classwork', header: 'rk.f.diary-entries.classwork', kind: 'wrap', sortKey: false },
+  { key: 'homeworkNote', header: 'rk.f.diary-entries.homeworkNote', kind: 'wrap', sortKey: false },
+  { key: 'notice', header: 'rk.f.diary-entries.notice', kind: 'wrap', sortKey: false, hideBelow: 'md' },
+  { key: 'acknowledged', header: 'rk.f.diary-entries.acknowledged', kind: 'number', sortKey: false },
+];
+
+/**
+ * The school diary as a record kit list across the classes a person may write for (filter by class or date): write an
+ * entry (families are told), correct it, delete it to the recycle bin and restore it, with history; each row shows who
+ * has read it.
+ */
+export function DiaryDesk({ list }: { list: { meta: RecordMeta; page: RecordsPage<Row>; state: ListState } }) {
   const { t, fmt } = useI18n();
   const [toast, toastNode] = useToast();
-  const [writing, setWriting] = useState(false);
-  const [acks, setAcks] = useState<{ entry: DiaryEntry; rows: DiaryAck[] } | null>(null);
+  const [acks, setAcks] = useState<{ entry: Row; rows: DiaryAck[] } | null>(null);
   const [, start] = useTransition();
-
-  const fields: Field[] = [
-    { name: 'entryDate', label: t('dy.f.date'), kind: 'date' },
-    { name: 'classwork', label: t('dy.f.classwork'), kind: 'multiline' },
-    { name: 'homeworkNote', label: t('dy.f.homework'), kind: 'multiline' },
-    { name: 'notice', label: t('dy.f.notice'), kind: 'multiline' },
-  ];
-
-  const openAcks = (entry: DiaryEntry) =>
+  const openAcks = (entry: Row) =>
     start(async () => {
-      const res = await loadAcks(entry.id);
+      const res = await loadAcks(String(entry.id));
       if (res.ok) setAcks({ entry, rows: res.data });
       else toast(res.error);
     });
-
-  const cols: Col<DiaryEntry>[] = [
-    { label: t('dy.col.date'), cell: (e) => fmt.date(e.entryDate), sort: (e) => e.entryDate },
-    { label: t('dy.col.author'), cell: (e) => (e.subject ? `${e.author} (${e.subject})` : e.author) },
-    { label: t('dy.col.classwork'), cell: (e) => e.classwork || '-', wrap: true },
-    { label: t('dy.col.homework'), cell: (e) => e.homeworkNote || '-', wrap: true },
-    { label: t('dy.col.notice'), cell: (e) => e.notice || '-', wrap: true },
-    { label: t('dy.col.read'), cell: (e) => <Pill label={t('dy.read', { n: e.acknowledged, total: e.students })} warn={e.students > 0 && e.acknowledged === 0} />, sort: (e) => e.acknowledged },
-    { label: '', cell: (e) => <Button size="small" onClick={() => openAcks(e)}>{t('dy.who')}</Button> },
-  ];
-
   return (
     <>
-      <Bar>
-        <UrlSelect label={t('dy.section')} param="sectionId" value={sectionId} options={sections.map((s) => ({ value: s.id, label: s.displayName }))} testId="dy-section" />
-        <Button variant="contained" startIcon={<Add />} onClick={() => setWriting(true)} disabled={!sectionId} data-testid="dy-new">
-          {t('dy.new')}
-        </Button>
-      </Bar>
-      <Grid testId="dy-entries" empty={t('dy.empty')} rows={entries} cols={cols} />
-
-      {writing && (
-        <FormDialog
-          title={t('dy.new')}
-          fields={fields}
-          onSubmit={(v) => createEntry(sectionId, v)}
-          onClose={(m) => {
-            setWriting(false);
-            if (m) toast(m);
-          }}
-        />
-      )}
+      <KitList
+        {...list}
+        label="nav.diary"
+        columns={COLUMNS}
+        rowActions={(e) => [{ id: 'who', label: t('dy.who'), onSelect: () => openAcks(e) }]}
+        empty={{ icon: <NotebookPen />, title: 'dy.empty', body: 'kr.empty.diary-entries' }}
+        testId="dy-entries"
+      />
       {acks && (
         <InfoDialog title={t('dy.whoTitle')} onClose={() => setAcks(null)}>
+          <p className="mb-2 text-[13px] text-muted-foreground">{t('dy.read', { n: Number(acks.entry.acknowledged ?? 0), total: Number(acks.entry.students ?? 0) })}</p>
           <div className="flex flex-col gap-1" data-testid="dy-acks">
             {acks.rows.map((a) => (
               <p className="text-[13px] leading-[19px]" key={a.studentId}>

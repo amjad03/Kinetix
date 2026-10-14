@@ -7,10 +7,10 @@ import type { RoleName } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
 import { userMfa, userSessions } from '../db/schema-foundation.js';
-import { roleName, userRoles, users } from '../db/schema.js';
+import { campuses, roleName, userRoles, users } from '../db/schema.js';
 import { fail, lc, outcome, required } from '../import/row-helpers.js';
 import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from '../records/entity.js';
-import { Text } from '../records/helpers.js';
+import { OptionalRef, Text } from '../records/helpers.js';
 import { eachRow } from '../records/import.js';
 
 /** Roles this page hands out. Students, guardians and alumni get their accounts from their own records. */
@@ -60,6 +60,8 @@ const RoleParam = z.object({ role: z.enum(ASSIGNABLE_ROLES as [RoleName, ...Role
 /** Qualified, so a subquery over another table never reads its own "id". */
 const USER_ID = sql.raw('"users"."id"');
 const roleList = sql<string[]>`coalesce((select array_agg(distinct ur.role::text order by ur.role::text) from user_roles ur where ur.user_id = ${USER_ID}), '{}')`;
+/** The one campus every role of the person is tied to (null: some role covers every campus, or several campuses). */
+const campusOf = sql<string | null>`(select case when count(*) > 0 and bool_and(ur.campus_id is not null) and count(distinct ur.campus_id) = 1 then min(ur.campus_id::text) end from user_roles ur where ur.user_id = ${USER_ID})`;
 const lastActive = sql<string | null>`(select max(s.last_seen_at) from user_sessions s where s.user_id = ${USER_ID})`;
 const openSessions = sql<number>`(select count(*)::int from user_sessions s where s.user_id = ${USER_ID} and s.revoked_at is null)`;
 const mfaOn = sql<boolean>`exists (select 1 from user_mfa m where m.user_id = ${USER_ID} and m.confirmed_at is not null)`;
@@ -101,6 +103,25 @@ export async function revokeAll(tx: Tx, userId: string): Promise<number> {
  * nobody changes their own roles, only an administrator gives or takes the administrator role, and the last active
  * administrator keeps it. The person is signed out so the change applies at once. Audited as `user.roles_changed`.
  */
+/** The campus a person's roles are limited to (the same for all of them), or null for every campus. */
+async function campusOfUser(tx: Tx, userId: string): Promise<string | null> {
+  const [r] = await tx.execute<{ c: string | null }>(sql`select ${campusOf} as c from users where users.id = ${userId}::uuid`).then((x) => x.rows);
+  return r?.c ?? null;
+}
+
+/**
+ * Limits every role of a member of staff to one campus (or, with null, lets them work on every campus). From the next
+ * request they see only that campus's programmes, rooms, buildings, fee structures and devices (AuthGuard, migration
+ * 0182). Nobody limits their own account, and only an administrator limits an administrator.
+ */
+export async function setCampus(ctx: KitCtx, userId: string, campusId: string | null): Promise<void> {
+  if (userId === ctx.p.userId) throw new ForbiddenException('You cannot limit your own account to a campus. Ask another administrator.');
+  const roles = await assertMayManage(ctx, userId);
+  if (roles.includes('tenant_admin') && !ctx.p.roles.includes('tenant_admin')) throw new ForbiddenException("Only the institution's administrator can limit an administrator to a campus");
+  if (campusId && !(await ctx.tx.select({ id: campuses.id }).from(campuses).where(eq(campuses.id, campusId)))[0]) throw new BadRequestException('Choose one of the campuses');
+  await ctx.tx.update(userRoles).set({ campusId }).where(eq(userRoles.userId, userId));
+}
+
 export async function setRoles(ctx: KitCtx, userId: string, next: RoleName[]): Promise<{ before: RoleName[]; after: RoleName[]; signedOut: number }> {
   if (userId === ctx.p.userId) throw new ForbiddenException('You cannot change your own roles. Ask another administrator.');
   const before = await assertMayManage(ctx, userId);
@@ -112,7 +133,9 @@ export async function setRoles(ctx: KitCtx, userId: string, next: RoleName[]): P
   if (removing.includes('tenant_admin') && (await otherAdmins(ctx.tx, userId)) === 0) throw new BadRequestException('The institution needs at least one active administrator');
   if (!want.length) throw new BadRequestException('Give at least one role, or disable the account instead');
   if (removing.length) await ctx.tx.delete(userRoles).where(and(eq(userRoles.userId, userId), sql`${userRoles.role}::text in (${sql.join(removing.map((r) => sql`${r}`), sql`, `)})`));
-  for (const role of adding) await ctx.tx.insert(userRoles).values({ tenantId: ctx.p.tenantId, userId, role, campusId: null }).onConflictDoNothing();
+  // A new role keeps the person's campus limit, if they have one.
+  const campusId = await campusOfUser(ctx.tx, userId);
+  for (const role of adding) await ctx.tx.insert(userRoles).values({ tenantId: ctx.p.tenantId, userId, role, campusId }).onConflictDoNothing();
   const signedOut = await revokeAll(ctx.tx, userId);
   await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: 'user.roles_changed', subjectType: 'user', subjectId: userId, changes: { roles: { before: before.join(', '), after: want.join(', ') } }, data: { added: adding, removed: removing, signedOut } });
   return { before, after: want, signedOut };
@@ -152,6 +175,8 @@ export function usersEntity(): RecordEntity {
         status: users.status,
         mustChangePassword: users.passwordMustChange,
         roles: roleList,
+        campusId: campusOf,
+        campusName: sql<string | null>`(select c.name from campuses c where c.id::text = ${campusOf})`,
         kind,
         lastActiveAt: lastActive,
         openSessions,
@@ -191,6 +216,15 @@ export function usersEntity(): RecordEntity {
       phone: { label: 'Mobile number', type: 'phone', schema: Phone, column: users.phone, help: 'Signs in with a code sent to this number' },
       role: { label: 'Role', type: 'select', schema: z.enum(ASSIGNABLE_ROLES as [RoleName, ...RoleName[]]), options: ROLE_OPTIONS, required: true, edit: false, apply: async () => undefined },
       preferredLanguage: { label: 'Language', type: 'select', schema: z.enum(['en', 'hi', 'kn']), column: users.preferredLanguage, options: LANGUAGES, bulk: true },
+      campusId: {
+        label: 'Campus',
+        type: 'select',
+        schema: OptionalRef,
+        options: async (ctx) => (await ctx.tx.select({ id: campuses.id, name: campuses.name }).from(campuses).orderBy(campuses.name)).map((c) => ({ value: c.id, label: c.name })),
+        bulk: true,
+        help: 'Limits every role of this person to one campus; leave empty for every campus',
+        apply: (ctx, id, v) => setCampus(ctx, id, (v as string | null) ?? null),
+      },
       status: {
         label: 'Status',
         type: 'select',
@@ -210,7 +244,7 @@ export function usersEntity(): RecordEntity {
         .insert(users)
         .values({ tenantId: ctx.p.tenantId, fullName: String(v.fullName), email: (v.email as string | null) ?? null, phone: (v.phone as string | null) ?? null, preferredLanguage: (v.preferredLanguage as 'en' | 'hi' | 'kn' | undefined) ?? 'en' })
         .returning({ id: users.id });
-      await ctx.tx.insert(userRoles).values({ tenantId: ctx.p.tenantId, userId: u.id, role, campusId: null });
+      await ctx.tx.insert(userRoles).values({ tenantId: ctx.p.tenantId, userId: u.id, role, campusId: (v.campusId as string | null | undefined) ?? null });
       return u.id;
     },
     remove: {
@@ -273,6 +307,7 @@ export function usersEntity(): RecordEntity {
       { key: 'email', header: 'Email' },
       { key: 'phone', header: 'Phone' },
       { key: 'roles', header: 'Roles', value: (r) => (r.roles as string[]).join('; ') },
+      { key: 'campusName', header: 'Campus', value: (r) => (r.campusName as string | null) ?? 'Every campus' },
       { key: 'status', header: 'Status' },
       { key: 'mfaOn', header: 'Two-step sign-in', value: (r) => (r.mfaOn ? 'On' : 'Off') },
       { key: 'lastActiveAt', header: 'Last active', value: (r) => (r.lastActiveAt ? new Date(String(r.lastActiveAt)).toISOString() : '') },

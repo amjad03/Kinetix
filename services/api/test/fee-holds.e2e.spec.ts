@@ -70,8 +70,17 @@ describe('fee holds on hall tickets, results and the TC', () => {
     expect(st.holds.find((h: { purpose: string }) => h.purpose === 'hallTicket')).toMatchObject({ held: true, overridden: true, message: null });
     expect(st.overrides[0]).toMatchObject({ purpose: 'hallTicket', reason: 'Instalment agreed with the family' });
 
+    expect(st.holds.every((h: { enabled: boolean }) => h.enabled)).toBe(true);
+    // The overrides in force, across students, for the fees office's list.
+    const current = (await http().get('/v1/fee-holds').set(as('acc')).expect(200)).body;
+    expect(current).toEqual([expect.objectContaining({ id: o.id, studentId: t.students[0].id, studentName: t.students[0].fullName, purpose: 'hallTicket', grantedBy: t.principal.fullName, revokedAt: null })]);
+    await http().get('/v1/fee-holds').set(as('parent')).expect(403);
+
     // Withdrawn, the hold applies again.
+    await http().delete(`/v1/fee-holds/overrides/${o.id}`).set(as('acc')).send({ reason: 'Instalment not paid' }).expect(403);
     await http().delete(`/v1/fee-holds/overrides/${o.id}`).set(as('principal')).send({ reason: 'Instalment not paid' }).expect(200);
+    expect((await http().get('/v1/fee-holds').set(as('acc')).expect(200)).body).toEqual([]);
+    expect((await http().get('/v1/fee-holds?all=1').set(as('acc')).expect(200)).body).toEqual([expect.objectContaining({ id: o.id, revokedBy: t.principal.fullName })]);
     await ticketPdf('parent').expect(403);
     expect(await actions()).toEqual(expect.arrayContaining(['fee_hold.overridden', 'fee_hold.override_revoked']));
   });

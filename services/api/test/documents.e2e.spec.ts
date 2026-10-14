@@ -72,8 +72,8 @@ describe('documents and certificates', () => {
       await get('teacher', '/v1/documents/templates').expect(403);
       await get('parent', '/v1/documents/templates').expect(403);
       templates = (await get('principal', '/v1/documents/templates').expect(200)).body;
-      expect(templates.map((x) => x.kind).sort()).toEqual(['bonafide', 'conduct', 'course_completion', 'experience', 'fee_receipt', 'study', 'transfer_certificate']);
-      expect((await get('principal', '/v1/documents/templates').expect(200)).body).toHaveLength(7);
+      expect(templates.map((x) => x.kind).sort()).toEqual(['bonafide', 'conduct', 'course_completion', 'experience', 'fee_receipt', 'medium_of_instruction', 'migration', 'study', 'transfer_certificate']);
+      expect((await get('principal', '/v1/documents/templates').expect(200)).body).toHaveLength(9);
       const forParents = (await get('parent', '/v1/documents/templates/available').expect(200)).body as { kind: string }[];
       expect(forParents.map((x) => x.kind)).not.toContain('experience');
       expect((await get('teacher', '/v1/documents/templates/available').expect(200)).body.map((x: { kind: string }) => x.kind)).toContain('experience');
@@ -165,6 +165,28 @@ describe('documents and certificates', () => {
       const text = pdfText((await get('student', `/v1/documents/requests/${r.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer);
       expect(text).toContain('{{typo}}');
       expect(text).toContain('BBCom Sem 3 A'.slice(1));
+    });
+
+    it('issues migration and medium-of-instruction certificates on request, through the template engine', async () => {
+      // Migration: asked for by the family with where the student is going, printed with the particulars.
+      await http().post('/v1/documents/requests').set(auth('parent')).send({ templateId: template('migration').id, studentId: t.students[0].id, purpose: 'Admission elsewhere', fields: { lastExamination: 'BCom Semester 3' } }).expect(400); // where to is required
+      const mig = (await http().post('/v1/documents/requests').set(auth('parent')).send({ templateId: template('migration').id, studentId: t.students[0].id, purpose: 'Admission elsewhere', fields: { migratingTo: 'University of Mysore', lastExamination: 'BCom Semester 3, May 2026', result: 'Passed' } }).expect(201)).body;
+      await post('principal', `/v1/documents/requests/${mig.id}/approve`).expect(200);
+      expect((await post('accountant', `/v1/documents/requests/${mig.id}/issue`).expect(200)).body.serialNo).toBe(`MIG/${fy}/00001`);
+      const migText = pdfText((await get('parent', `/v1/documents/requests/${mig.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer);
+      expect(migText).toContain('University of Mysore');
+      expect(migText).toContain('BCom Semester 3, May 2026');
+      expect(migText).toContain(`MIG/${fy}/00001`);
+      // Medium of instruction: the medium is part of the request.
+      const moi = (await http().post('/v1/documents/requests').set(auth('parent')).send({ templateId: template('medium_of_instruction').id, studentId: t.students[0].id, purpose: 'admission to a university abroad', fields: { medium: 'English' } }).expect(201)).body;
+      await post('principal', `/v1/documents/requests/${moi.id}/approve`).expect(200);
+      expect((await post('principal', `/v1/documents/requests/${moi.id}/issue`).expect(200)).body.serialNo).toBe(`MOI/${fy}/00001`);
+      const moiText = pdfText((await get('parent', `/v1/documents/requests/${moi.id}/pdf`).buffer(true).parse(binary).expect(200)).body as Buffer);
+      expect(moiText).toContain('English');
+      expect(moiText).toContain('admission to a university abroad');
+      const reg = (await get('principal', '/v1/documents/issued?docType=migration_certificate').expect(200)).body;
+      expect((Array.isArray(reg) ? reg : reg.rows).map((d: { serial: string }) => d.serial)).toContain(`MIG/${fy}/00001`);
+      expect((await get('principal', '/v1/documents/issued?docType=medium_of_instruction_certificate').expect(200)).body).toHaveLength(1);
     });
 
     it('bulk issues to a class, skipping students who already hold one', async () => {

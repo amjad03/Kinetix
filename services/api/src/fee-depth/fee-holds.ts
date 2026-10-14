@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, Delete, ForbiddenException, Get, Global, HttpCode, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, ConflictException, Controller, Delete, ForbiddenException, Get, Global, HttpCode, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -7,7 +7,7 @@ import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { feeHoldOverrides } from '../db/schema-fee-depth.js';
-import { students, users } from '../db/schema.js';
+import { sections, students, users } from '../db/schema.js';
 import { rupees } from '../documents/doc-data.js';
 import { settingsOf } from '../fee-accounts/fee-accounts.service.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
@@ -25,6 +25,8 @@ export interface FeeHold {
   held: boolean;
   /** Held, but the principal has let it through. */
   overridden: boolean;
+  /** The institution holds this document for dues at all (fee settings; off by default). */
+  enabled: boolean;
   /** For the student, family or office: why it is held and what to do. */
   message: string | null;
 }
@@ -41,11 +43,12 @@ export class FeeHoldsService {
   /** Every purpose's hold for a student, with the dues behind it. */
   async status(tx: Tx, tenantId: string, studentId: string) {
     const b = await this.dues.blocks(tx, tenantId, studentId);
+    const on = (await settingsOf(tx, tenantId)).duesBlock;
     const overrides = await tx.select().from(feeHoldOverrides).where(and(eq(feeHoldOverrides.studentId, studentId), isNull(feeHoldOverrides.revokedAt))).orderBy(desc(feeHoldOverrides.createdAt));
     const holds: FeeHold[] = HOLD_PURPOSES.map((purpose) => {
       const overridden = b[purpose] && overrides.some((o) => o.purpose === purpose);
       const held = b[purpose];
-      return { purpose, held, overridden, message: held && !overridden ? `${WHAT[purpose]} is held for unpaid fees: ${rupees(b.overduePaise)} is overdue. Pay the dues at the fee counter, or ask the principal to allow it.` : null };
+      return { purpose, held, overridden, enabled: !!on[purpose], message: held && !overridden ? `${WHAT[purpose]} is held for unpaid fees: ${rupees(b.overduePaise)} is overdue. Pay the dues at the fee counter, or ask the principal to allow it.` : null };
     });
     return { duePaise: b.duePaise, overduePaise: b.overduePaise, holds, overrides };
   }
@@ -57,7 +60,7 @@ export class FeeHoldsService {
 
   /** The hold on one purpose. */
   async check(tx: Tx, tenantId: string, studentId: string, purpose: DuesPurpose): Promise<FeeHold> {
-    if (!(await this.enabled(tx, tenantId, purpose))) return { purpose, held: false, overridden: false, message: null };
+    if (!(await this.enabled(tx, tenantId, purpose))) return { purpose, held: false, overridden: false, enabled: false, message: null };
     return (await this.status(tx, tenantId, studentId)).holds.find((h) => h.purpose === purpose)!;
   }
 
@@ -78,6 +81,40 @@ export class FeeHoldsController {
     private readonly db: DbService,
     private readonly holds: FeeHoldsService,
   ) {}
+
+  /**
+   * The principal's overrides across students, newest first: the ones in force, or (`?all=1`) withdrawn ones too,
+   * with the student, the class and who granted or withdrew each.
+   */
+  @Get()
+  @Auth('user', [...FEE_ROLES, 'exam_controller', 'hod'])
+  list(@CurrentPrincipal() p: UserPrincipal, @Query('all') all?: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx
+        .select({
+          id: feeHoldOverrides.id,
+          studentId: feeHoldOverrides.studentId,
+          studentName: students.fullName,
+          rollNo: students.rollNo,
+          section: sections.displayName,
+          purpose: feeHoldOverrides.purpose,
+          reason: feeHoldOverrides.reason,
+          grantedBy: feeHoldOverrides.grantedBy,
+          revokedBy: feeHoldOverrides.revokedBy,
+          revokedAt: feeHoldOverrides.revokedAt,
+          createdAt: feeHoldOverrides.createdAt,
+        })
+        .from(feeHoldOverrides)
+        .innerJoin(students, eq(students.id, feeHoldOverrides.studentId))
+        .leftJoin(sections, eq(sections.id, students.sectionId))
+        .where(all === '1' || all === 'true' ? undefined : isNull(feeHoldOverrides.revokedAt))
+        .orderBy(desc(feeHoldOverrides.createdAt))
+        .limit(500);
+      const ids = [...new Set(rows.flatMap((r) => [r.grantedBy, r.revokedBy].filter((x): x is string => !!x)))];
+      const names = new Map(ids.length ? (await tx.select({ id: users.id, name: users.fullName }).from(users).where(inArray(users.id, ids))).map((u) => [u.id, u.name]) : []);
+      return rows.map((r) => ({ ...r, grantedBy: r.grantedBy ? (names.get(r.grantedBy) ?? null) : null, revokedBy: r.revokedBy ? (names.get(r.revokedBy) ?? null) : null }));
+    });
+  }
 
   @Get(':studentId')
   @Auth('user', [...FEE_ROLES, 'exam_controller', 'hod'])

@@ -8,9 +8,10 @@ import { ExamControllerDepthController, ResultsDepthController } from './exam-de
 import { ExamRegistrationController } from './exam-registration.controller.js';
 import { ExamSessionsController } from './exams.controller.js';
 import { ExamsService } from './exams.service.js';
+import { RelativeGradingController } from './relative-grading.controller.js';
 import { ResultsController } from './results.controller.js';
 import { SchemesController } from './schemes.controller.js';
 
 /** Assessment schemes, exam sessions (schedule, seating, hall tickets), results, transcripts and revaluation. */
-@Module({ imports: [NotificationsModule, WorkflowsModule, TasksModule], controllers: [SchemesController, ExamSessionsController, ExamRegistrationController, ResultsController, ExamControllerDepthController, ResultsDepthController, ExamOpsController, ExamBoardController], providers: [ExamsService], exports: [ExamsService] })
+@Module({ imports: [NotificationsModule, WorkflowsModule, TasksModule], controllers: [SchemesController, ExamSessionsController, ExamRegistrationController, ResultsController, ExamControllerDepthController, ResultsDepthController, ExamOpsController, ExamBoardController, RelativeGradingController], providers: [ExamsService], exports: [ExamsService] })
 export class ExamsModule {}

@@ -104,6 +104,20 @@ export const RulesSchema = z.object({
     bands: z.array(Band).min(1).max(20),
     pointsMode: z.enum(['band', 'percentOver10']),
     absentGrade: z.string().trim().min(1).max(4),
+    /**
+     * Relative (curve) grading, where the regulation permits it: a subject's grades start at the class mean plus so
+     * many standard deviations (`minZ`), never below the pass mark; classes smaller than `minClassSize` keep the
+     * absolute bands. Absent or `allowed: false`: absolute grading only.
+     */
+    relative: z
+      .object({
+        allowed: z.boolean(),
+        minClassSize: z.number().int().min(2).max(1000),
+        bands: z.array(z.object({ grade: z.string().trim().min(1).max(4), gradePoint: z.number().min(0).max(10), minZ: z.number().min(-5).max(5) })).min(2).max(15),
+        /** The largest moderation shift (percent points either way) the examination board may apply. */
+        maxShift: z.number().min(0).max(20),
+      })
+      .optional(),
   }),
   gpa: z.object({
     enabled: z.boolean(),

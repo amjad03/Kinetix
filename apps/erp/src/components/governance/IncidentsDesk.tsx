@@ -1,143 +1,93 @@
 'use client';
+
+import { ShieldAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { closeOutIncident, incidentTimeline, reportIncident, updateIncident } from '@/app/(dashboard)/governance/actions';
-import { Bar, FormDialog, Grid, InfoDialog, useToast } from '@/components/ops/kit';
-import { StatusPill } from '@/components/ui';
+import { incidentTimeline } from '@/app/(dashboard)/governance/actions';
+import { InfoDialog } from '@/components/ops/kit';
+import { KitList, type ColSpec, type ParamAction } from '@/components/registers/KitList';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { INCIDENT_CATEGORIES, INCIDENT_SEVERITIES, INCIDENT_STATUSES, type Incident } from '@/lib/governance';
+import type { Incident } from '@/lib/governance';
+import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
 
-import { Button } from '@/components/kx';
-/** The incident register: report, update the timeline, record root cause and corrective actions, and watch the 72-hour breach clock. */
-export function IncidentsDesk({ incidents }: { incidents: Incident[] }) {
-  const { t, fmt } = useI18n();
-  const [toast, toastNode] = useToast();
-  const [dialog, setDialog] = useState<'report' | { update: Incident } | { closeOut: Incident } | { timeline: Incident } | null>(null);
-  const statusOpts = INCIDENT_STATUSES.map((s) => ({ value: s, label: t(`inc.st.${s}` as MessageKey) }));
-  const done = (m?: string) => {
-    setDialog(null);
-    if (m) toast(t('ops.saved'));
-  };
+const sevTone = (v: string) => (v === 'sev1' || v === 'sev2' ? 'danger' : 'neutral');
+const statusTone = (v: string) => (v === 'closed' || v === 'resolved' ? 'success' : v === 'open' ? 'warning' : 'info');
+
+const COLUMNS: ColSpec[] = [
+  { key: 'title', header: 'rk.f.incidents.title', kind: 'strong' },
+  { key: 'severity', header: 'rk.f.incidents.severity', kind: 'choice', tone: sevTone },
+  { key: 'category', header: 'rk.f.incidents.category', kind: 'choice', hideBelow: 'sm' },
+  { key: 'status', header: 'rk.f.incidents.status', kind: 'choice', tone: statusTone },
+  { key: 'detectedAt', header: 'rk.f.incidents.detectedAt', kind: 'datetime', hideBelow: 'sm' },
+  { key: 'ownerId', from: 'ownerIdName', header: 'rk.f.incidents.ownerId', hideBelow: 'md' },
+  { key: 'regulatorDeadline', header: 'rk.f.incidents.regulatorDeadline', kind: 'datetime', sortKey: false, hideBelow: 'md' },
+  { key: 'regulatorNotifiedAt', header: 'rk.f.incidents.regulatorNotifiedAt', kind: 'datetime', sortKey: false, hideBelow: 'lg' },
+  { key: 'reportedByName', header: 'rk.f.incidents.reportedByName', sortKey: false, defaultHidden: true },
+  { key: 'rootCause', header: 'rk.f.incidents.rootCause', kind: 'wrap', sortKey: false, defaultHidden: true },
+];
+
+const open = (r: Row) => r.status !== 'closed';
+const note = (required: boolean): ParamAction['fields'] => [{ name: 'note', label: 'rk.in.incidents.note', type: 'textarea', required }];
+const ACTIONS: ParamAction[] = [
+  { key: 'note', fields: note(true), when: open },
+  { key: 'investigating', fields: note(false), when: (r) => r.status === 'open' || r.status === 'mitigated' },
+  { key: 'mitigated', fields: note(false), when: (r) => r.status === 'investigating' || r.status === 'resolved' },
+  { key: 'resolved', fields: note(false), when: (r) => r.status === 'mitigated' || r.status === 'investigating' },
+  { key: 'closed', fields: note(true), when: (r) => r.status === 'resolved' },
+  { key: 'reopen', fields: note(true), when: (r) => r.status === 'closed' || r.status === 'resolved' },
+];
+
+/**
+ * The incident register as a record kit list: report (Add), owner, severity and category in bulk, root cause and
+ * corrective actions in the record, status moves and timeline notes as actions, and the 72-hour clock for a breach of
+ * personal data. Each row opens its timeline.
+ */
+export function IncidentsDesk({ meta, page, state }: { meta: RecordMeta; page: RecordsPage<Row>; state: ListState }) {
+  const { t } = useI18n();
+  const [timeline, setTimeline] = useState<Row | null>(null);
   return (
     <>
-      <p className="text-[13px] leading-[19px] text-muted-foreground mb-4">
-        {t('inc.hint')}
-      </p>
-      <Bar>
-        <Button variant="contained" onClick={() => setDialog('report')} data-testid="inc-report">
-          {t('inc.report')}
-        </Button>
-      </Bar>
-      <Grid
+      <p className="mb-4 text-[13px] leading-[19px] text-muted-foreground">{t('inc.hint')}</p>
+      <KitList
+        meta={meta}
+        page={page}
+        state={state}
+        label="nav.govIncidents"
+        columns={COLUMNS}
+        paramActions={ACTIONS}
+        rowActions={(r) => [{ id: 'timeline', label: t('inc.act.timeline'), onSelect: () => setTimeline(r) }]}
+        empty={{ icon: <ShieldAlert />, title: 'inc.empty', body: 'inc.hint' }}
         testId="inc-table"
-        empty={t('inc.empty')}
-        rows={incidents}
-        exportName="incidents"
-        cols={[
-          { label: t('inc.col.title'), cell: (r) => r.title, sort: (r) => r.title },
-          { label: t('inc.col.severity'), cell: (r) => <StatusPill tone={r.severity === 'sev1' || r.severity === 'sev2' ? 'danger' : 'neutral'}>{t(`inc.sev.${r.severity}` as MessageKey)}</StatusPill>, sort: (r) => r.severity },
-          { label: t('inc.col.category'), cell: (r) => t(`inc.cat.${r.category}` as MessageKey), sort: (r) => r.category },
-          { label: t('inc.col.status'), cell: (r) => t(`inc.st.${r.status}` as MessageKey), sort: (r) => r.status },
-          { label: t('inc.col.detected'), cell: (r) => fmt.dateTime(r.detectedAt), sort: (r) => r.detectedAt },
-          {
-            label: t('inc.col.regulator'),
-            cell: (r) =>
-              !r.personalDataInvolved ? (
-                '—'
-              ) : r.regulatorNotifiedAt ? (
-                <StatusPill tone="success">{t('inc.notified')}</StatusPill>
-              ) : (
-                <StatusPill tone={r.regulatorOverdue ? 'danger' : 'warning'}>{t(r.regulatorOverdue ? 'inc.overdue' : 'inc.due', { when: fmt.dateTime(r.regulatorDeadline!) })}</StatusPill>
-              ),
-          },
-          {
-            label: '',
-            cell: (r) => (
-              <div className="flex flex-row">
-                <Button size="small" onClick={() => setDialog({ timeline: r })}>
-                  {t('inc.act.timeline')}
-                </Button>
-                {r.status !== 'closed' && (
-                  <>
-                    <Button size="small" onClick={() => setDialog({ update: r })}>
-                      {t('inc.act.update')}
-                    </Button>
-                    <Button size="small" onClick={() => setDialog({ closeOut: r })}>
-                      {t('inc.act.closeOut')}
-                    </Button>
-                  </>
-                )}
-              </div>
-            ),
-          },
-        ]}
       />
-      {dialog === 'report' && (
-        <FormDialog
-          title={t('inc.report')}
-          onSubmit={reportIncident}
-          onClose={done}
-          fields={[
-            { name: 'title', label: t('inc.f.title'), required: true },
-            { name: 'severity', label: t('inc.f.severity'), kind: 'select', init: 'sev3', options: INCIDENT_SEVERITIES.map((s) => ({ value: s, label: t(`inc.sev.${s}` as MessageKey) })) },
-            { name: 'category', label: t('inc.f.category'), kind: 'select', init: 'other', options: INCIDENT_CATEGORIES.map((s) => ({ value: s, label: t(`inc.cat.${s}` as MessageKey) })) },
-            { name: 'description', label: t('inc.f.description'), kind: 'multiline' },
-            { name: 'impact', label: t('inc.f.impact'), kind: 'multiline' },
-            { name: 'personalData', label: t('inc.f.personalData'), kind: 'select', init: 'no', options: [{ value: 'no', label: t('inc.no') }, { value: 'yes', label: t('inc.yes') }] },
-          ]}
-        />
-      )}
-      {typeof dialog === 'object' && dialog && 'update' in dialog && (
-        <FormDialog
-          title={t('inc.act.update')}
-          onSubmit={(v) => updateIncident(dialog.update.id, v)}
-          onClose={done}
-          fields={[
-            { name: 'body', label: t('inc.f.note'), kind: 'multiline', required: true },
-            { name: 'status', label: t('inc.f.status'), kind: 'select', init: '', options: [{ value: '', label: t('inc.keepStatus') }, ...statusOpts] },
-          ]}
-        />
-      )}
-      {typeof dialog === 'object' && dialog && 'closeOut' in dialog && (
-        <FormDialog
-          title={t('inc.act.closeOut')}
-          intro={t('inc.closeHint')}
-          onSubmit={(v) => closeOutIncident(dialog.closeOut.id, v)}
-          onClose={done}
-          fields={[
-            { name: 'rootCause', label: t('inc.f.rootCause'), kind: 'multiline', init: dialog.closeOut.rootCause ?? '' },
-            { name: 'correctiveActions', label: t('inc.f.corrective'), kind: 'multiline', init: dialog.closeOut.correctiveActions ?? '' },
-            ...(dialog.closeOut.personalDataInvolved && !dialog.closeOut.regulatorNotifiedAt ? [{ name: 'regulatorNotified', label: t('inc.f.regulator'), kind: 'select' as const, init: 'no', options: [{ value: 'no', label: t('inc.no') }, { value: 'yes', label: t('inc.yes') }] }] : []),
-          ]}
-        />
-      )}
-      {typeof dialog === 'object' && dialog && 'timeline' in dialog && <Timeline incident={dialog.timeline} onClose={() => setDialog(null)} />}
-      {toastNode}
+      {timeline && <Timeline incident={timeline} onClose={() => setTimeline(null)} />}
     </>
   );
 }
 
-function Timeline({ incident, onClose }: { incident: Incident; onClose: () => void }) {
+/** An incident's timeline: who wrote what and when, with the status each update moved it to. */
+function Timeline({ incident, onClose }: { incident: Row; onClose: () => void }) {
   const { t, fmt } = useI18n();
   const [rows, setRows] = useState<NonNullable<Incident['timeline']> | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    void incidentTimeline(incident.id).then((r) => (r.ok ? setRows(r.data.timeline ?? []) : setError(r.error)));
+    void incidentTimeline(String(incident.id)).then((r) => (r.ok ? setRows(r.data.timeline ?? []) : setError(r.error)));
   }, [incident.id]);
   return (
-    <InfoDialog title={`${incident.title}`} onClose={onClose}>
+    <InfoDialog title={String(incident.title)} onClose={onClose}>
       {error && <p className="text-sm leading-[21px] text-red-ink">{error}</p>}
-      {incident.rootCause && (
-        <p className="text-[13px] leading-[19px] mb-2">
+      {typeof incident.rootCause === 'string' && incident.rootCause && (
+        <p className="mb-2 text-[13px] leading-[19px]">
           <strong>{t('inc.f.rootCause')}:</strong> {incident.rootCause}
         </p>
       )}
-      {rows?.map((u) => (
-        <p className="text-[13px] leading-[19px] mb-1" key={u.id}>
-          {fmt.dateTime(u.createdAt)} · {u.author}: {u.body}
-          {u.statusAfter ? ` (${t(`inc.st.${u.statusAfter}` as MessageKey)})` : ''}
-        </p>
-      ))}
+      <div data-testid="inc-timeline">
+        {rows?.map((u) => (
+          <p className="mb-1 text-[13px] leading-[19px]" key={u.id}>
+            {fmt.dateTime(u.createdAt)} · {u.author}: {u.body}
+            {u.statusAfter ? ` (${t(`inc.st.${u.statusAfter}` as MessageKey)})` : ''}
+          </p>
+        ))}
+      </div>
     </InfoDialog>
   );
 }

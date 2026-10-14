@@ -4022,6 +4022,8 @@ export const TENANT_TABLES = [
   'staff_experience', 'staff_publications', 'staff_documents', 'comp_off_credits', 'attendance_regularisations', 'job_interviews', 'job_interview_scores', 'salary_component_rates',
   // Fee holds on hall tickets, results and TCs (migration 0181; schema-fee-depth.ts).
   'fee_hold_overrides',
+  // Relative grading and the re-admission scheme (migration 0183; schema-curriculum.ts).
+  'exam_relative_grades', 'curriculum_equivalences', 'student_readmissions',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
