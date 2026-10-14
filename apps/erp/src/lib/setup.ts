@@ -1,7 +1,7 @@
-// The new-college setup checklist: seven steps, each "done" when the data it unlocks exists.
+// The new-college setup checklist: eight steps, each "done" when the data it unlocks exists.
 import type { MessageKey } from '@/i18n/messages';
 
-export type SetupStepId = 'profile' | 'affiliation' | 'programmes' | 'staff' | 'students' | 'timetable' | 'fees';
+export type SetupStepId = 'profile' | 'year' | 'affiliation' | 'programmes' | 'staff' | 'students' | 'timetable' | 'fees';
 
 export interface SetupStep {
   id: SetupStepId;
@@ -25,6 +25,10 @@ export interface SetupFacts {
   feesBilledPaise: number;
   /** A university or board is chosen (Settings > Affiliation). */
   affiliated: boolean;
+  /** One academic year is marked current (Settings > Academic years). */
+  currentYear: boolean;
+  /** Terms or semesters in the academic years. */
+  terms: number;
 }
 
 /** The checklist from what the institution already has; unknown facts count as not done. */
@@ -32,6 +36,7 @@ export function setupSteps(f: Partial<SetupFacts>): SetupStep[] {
   const n = (v: number | undefined) => v ?? 0;
   return [
     { id: 'profile', title: 'setup.s.profile', help: 'setup.s.profileHelp', href: '/settings/institution', minutes: 5, done: n(f.academicYears) > 0 && n(f.campuses) > 0 },
+    { id: 'year', title: 'setup.s.year', help: 'setup.s.yearHelp', href: '/settings/academic-years', minutes: 5, done: f.currentYear === true && n(f.terms) > 0 },
     { id: 'affiliation', title: 'setup.s.affiliation', help: 'setup.s.affiliationHelp', href: '/settings/affiliation', minutes: 5, done: f.affiliated === true },
     { id: 'programmes', title: 'setup.s.programmes', help: 'setup.s.programmesHelp', href: '/institution-setup', minutes: 10, done: n(f.programs) > 0 && n(f.subjects) > 0 },
     { id: 'staff', title: 'setup.s.staff', help: 'setup.s.staffHelp', href: '/import', minutes: 10, done: n(f.staff) > 1, upload: true },

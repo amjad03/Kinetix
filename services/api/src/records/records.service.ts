@@ -203,6 +203,7 @@ export class RecordsService {
       return row.id;
     });
     if (e.order) await this.placeLast(ctx, e, id);
+    if (e.check) await e.check(ctx, id);
     const after = await this.get(ctx, e, id);
     await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: `${e.subjectType}.created`, subjectType: e.subjectType, subjectId: id, after: this.fieldValues(e, after), data: { label: e.label(after) } });
     return after;
@@ -231,6 +232,7 @@ export class RecordsService {
     const before = await this.get(ctx, e, id);
     const values = await this.parseFields(ctx, e, body, mode);
     await guarded(() => this.writeFields(ctx, e, id, values));
+    if (e.check) await e.check(ctx, id);
     const after = await this.get(ctx, e, id);
     const fields = values.map(([k]) => k);
     await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: `${e.subjectType}.updated`, subjectType: e.subjectType, subjectId: id, before: this.fieldValues(e, before), after: this.fieldValues(e, after), fields, data: { label: e.label(after), ...(mode === 'bulk' && { bulk: true }) } });

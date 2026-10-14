@@ -168,6 +168,11 @@ export interface RecordEntity {
   };
   import?: ImportSpec;
   actions?: Record<string, CustomAction>;
+  /**
+   * Runs after an add or an edit is written, in the same transaction: throw (a 400) to refuse values that clash with
+   * each other or with other records (a term outside its academic year). The write is then undone.
+   */
+  check?: (ctx: KitCtx, id: string) => Promise<void>;
 }
 
 /** Every entity the kit serves, by key. Modules add theirs on start-up. */

@@ -47,7 +47,7 @@ export function Schedules({ schedules, reports }: { schedules: Schedule[]; repor
           </div>
         </div>
       ))}
-      <form className="grid gap-4 grid-cols-[1fr] md:grid-cols-[2fr_1fr_1fr] items-start" onSubmit={(e) => { e.preventDefault(); run(() => createSchedule({ reportKey, frequency, format, recipients })); }}>
+      <form className="grid grid-cols-[1fr] items-end gap-4 md:grid-cols-[2fr_1fr_1fr]" onSubmit={(e) => { e.preventDefault(); run(() => createSchedule({ reportKey, frequency, format, recipients })); }}>
         <FormField label={t('reports.schedules.report')}>
           <TextInput select value={reportKey} onChange={(e) => setReportKey(e.target.value)}>
             {reports.map((r) => (
@@ -72,9 +72,11 @@ export function Schedules({ schedules, reports }: { schedules: Schedule[]; repor
             <MenuItem value="pdf">{t('reports.pdf')}</MenuItem>
           </TextInput>
         </FormField>
-        <FormField label={t('reports.schedules.recipients')}>
-          <TextInput className="md:col-[1/3]" value={recipients} onChange={(e) => setRecipients(e.target.value)} />
-        </FormField>
+        <div className="min-w-0 md:col-span-2">
+          <FormField label={t('reports.schedules.recipients')}>
+            <TextInput value={recipients} onChange={(e) => setRecipients(e.target.value)} fullWidth />
+          </FormField>
+        </div>
         <Button type="submit" variant="contained" disabled={pending || !recipients.trim() || !reportKey}>
           {t('reports.schedules.add')}
         </Button>

@@ -77,6 +77,8 @@ export interface TenantSettings {
   recycleBinRetentionDays?: number;
   /** Family chat (Communication > Conversations). */
   chat?: ChatSettings;
+  /** Settings > Notifications: kinds of app notification the institution does not send at all (`off`), or sends without a phone push (`pushOff`). */
+  notifications?: { off?: string[]; pushOff?: string[] };
 }
 
 export interface ChatSettings {
@@ -100,6 +102,13 @@ export const campuses = pgTable('campuses', {
   tenantId: tenantId(),
   name: text('name').notNull(),
   city: text('city'),
+  /** Campus details (migration 0178): a short code, the address and phone shown on documents, its head, and whether it is open. */
+  code: text('code'),
+  address: text('address'),
+  phone: text('phone'),
+  headUserId: uuid('head_user_id').references((): AnyPgColumn => users.id, { onDelete: 'set null' }),
+  active: boolean('active').notNull().default(true),
+  sortOrder: integer('sort_order').notNull().default(0),
   createdAt: createdAt(),
 });
 
@@ -3735,6 +3744,8 @@ export const TENANT_TABLES = [
   'integrity_matches',
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
   'affiliation_settings', 'programme_affiliations',
+  // Governance and platform settings (migrations 0178-0179, schema-governance.ts)
+  'role_access_rules', 'tenant_exports',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------

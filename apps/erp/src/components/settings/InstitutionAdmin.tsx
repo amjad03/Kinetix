@@ -52,7 +52,7 @@ export function InstitutionAdmin({ initial, rules }: { initial: InstitutionProfi
         </Alert>
       )}
       <SectionTitle>{t('inst.profile')}</SectionTitle>
-      <Card className="p-5 mb-6">
+      <Card className="mb-6">
         <FormGrid cols={2}>
           {TEXT_FIELDS.filter((k) => k !== 'boardOrUniversity').map((k) => (
             <TextInput key={k} label={t(`inst.f.${k}` as MessageKey)} value={text[k]} onChange={(e) => setText({ ...text, [k]: e.target.value })} />
@@ -63,7 +63,7 @@ export function InstitutionAdmin({ initial, rules }: { initial: InstitutionProfi
       </Card>
 
       <SectionTitle>{t('inst.capability')}</SectionTitle>
-      <Card className="p-5 mb-6">
+      <Card className="mb-6">
         <FormGrid cols={2}>
           <SelectInput label={t('inst.f.academicModel')} value={model} options={ACADEMIC_MODELS.map((m) => ({ value: m, label: t(`inst.model.${m}` as MessageKey) }))} onChange={(e) => setModel(e.target.value as typeof model)} />
           <TextInput label={t('inst.f.boardOrUniversity')} value={text.boardOrUniversity} onChange={(e) => setText({ ...text, boardOrUniversity: e.target.value })} />
@@ -79,7 +79,7 @@ export function InstitutionAdmin({ initial, rules }: { initial: InstitutionProfi
       </Card>
 
       <SectionTitle>{t('inst.attendance')}</SectionTitle>
-      <Card className="p-5 mb-6">
+      <Card className="mb-6">
         <FormGrid cols={2}>
           <TextInput label={t('inst.f.lockHours')} helper={t('inst.f.lockHours.help')} value={lock} inputMode="numeric" onChange={(e) => setLock(e.target.value.replace(/\D/g, '').slice(0, 3))} />
           <TextInput label={t('inst.f.threshold')} value={pct} inputMode="numeric" onChange={(e) => setPct(e.target.value.replace(/\D/g, '').slice(0, 3))} />

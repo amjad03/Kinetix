@@ -55,6 +55,9 @@ export const ERROR_KEYS: Record<string, MessageKey> = {
   RATE_LIMITED: 'error.RATE_LIMITED',
   NETWORK: 'error.NETWORK',
   SERVER_ERROR: 'error.SERVER_ERROR',
+  // Settings > Roles and permissions: the institution narrowed this role's access to a module.
+  ROLE_ACCESS_DENIED: 'error.ROLE_ACCESS_DENIED',
+  ROLE_READ_ONLY: 'error.ROLE_READ_ONLY',
 };
 
 /** Codes whose English server message is specific (e.g. "That book is already lent"); other languages get a generic line. */

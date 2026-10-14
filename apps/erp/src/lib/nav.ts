@@ -244,6 +244,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/settings/branding', label: 'nav.branding', section: 'settings', icon: 'settings' },
       { href: '/institution-setup', label: 'nav.institutionSetup', section: 'institutionSetup', icon: 'settings' },
       { href: '/settings/buildings', label: 'nav.buildings', section: 'settings', icon: 'campus' },
+      // Governance and access (users, roles, years, campuses, notifications, backups).
+      { href: '/settings/users', label: 'ga.users.title', section: 'settings', icon: 'hr' },
+      { href: '/settings/roles', label: 'ga.roles.title', section: 'settings', icon: 'settings' },
+      { href: '/settings/academic-years', label: 'ga.years.title', section: 'settings', icon: 'calendar' },
+      { href: '/settings/campuses', label: 'ga.campus.title', section: 'settings', icon: 'campus' },
+      { href: '/settings/notifications', label: 'ga.notif.title', section: 'settings', icon: 'communication' },
+      { href: '/settings/data-export', label: 'ga.export.title', section: 'settings', icon: 'import' },
       { href: '/audit', label: 'nav.audit', section: 'audit', icon: 'academicAudit' },
       { href: '/recycle-bin', label: 'nav.recycleBin', section: 'settings', icon: 'documents' },
       { href: '/governance/rules', label: 'nav.govRules', section: 'governance', icon: 'workflows' },
