@@ -53,7 +53,7 @@ export function LeaveExtras({ r, canManage, canRevoke }: { r: LeaveRequest; canM
     <div className="flex flex-wrap items-center gap-2">
       {r.hasDocument && (
         <Button asChild variant="outline" size="sm" className="h-9">
-          <a href={`/api/download?kind=leave-doc&id=${r.id}`} target="_blank" rel="noopener">
+          <a href={`/api/download?kind=staff-leave-doc&id=${r.id}`} target="_blank" rel="noopener">
             <FileDown />
             {t('hk.link.document')}
           </a>

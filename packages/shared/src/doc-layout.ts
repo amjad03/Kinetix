@@ -41,6 +41,9 @@ export const DOC_TYPES = [
   'appointment_letter',
   'report_cover',
   'generic_certificate',
+  'degree_certificate',
+  'migration_certificate',
+  'medium_of_instruction_certificate',
 ] as const;
 export type DocType = (typeof DOC_TYPES)[number];
 
@@ -75,6 +78,9 @@ export const DOC_TYPE_INFO: Record<DocType, DocTypeInfo> = {
   appointment_letter: { type: 'appointment_letter', label: 'Appointment letter', subject: 'staff', serialPrefix: 'APT', group: 'hr' },
   report_cover: { type: 'report_cover', label: 'Report cover page', subject: 'none', serialPrefix: 'RPT', group: 'report' },
   generic_certificate: { type: 'generic_certificate', label: 'Certificate (merit / participation)', subject: 'student', serialPrefix: 'CRT', group: 'certificate' },
+  degree_certificate: { type: 'degree_certificate', label: 'Degree certificate', subject: 'student', serialPrefix: 'DEG', group: 'academic' },
+  migration_certificate: { type: 'migration_certificate', label: 'Migration certificate', subject: 'student', serialPrefix: 'MIG', group: 'certificate' },
+  medium_of_instruction_certificate: { type: 'medium_of_instruction_certificate', label: 'Medium of instruction certificate', subject: 'student', serialPrefix: 'MOI', group: 'certificate' },
 };
 
 /** The four looks every document type has as a system preset. */

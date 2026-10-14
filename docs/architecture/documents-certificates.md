@@ -116,7 +116,7 @@ otherwise.
 ```jsonc
 {
   "schemaVersion": 1,
-  "docType": "marks_card",                    // one of DOC_TYPES (16 types)
+  "docType": "marks_card",                    // one of DOC_TYPES (19 types)
   "page": { "size": "A4", "orientation": "portrait", "marginMm": 12 },
   "fonts": { "heading": "playfair" },          // optional: this template's fonts instead of the institution's
   "sides": [                                   // pages; cards have "front" and "back"
@@ -201,7 +201,7 @@ carry `group` (editor only: grouped elements select and move together; the engin
 
 ## Templates and presets
 
-The system presets (`src/documents/presets/`, ids `preset:<docType>:<style>`) give each of the 16
+The system presets (`src/documents/presets/`, ids `preset:<docType>:<style>`) give each of the 19
 document types four looks:
 
 - **Classic**: serif type, an ornamental double border in primary and secondary with corner
@@ -218,7 +218,9 @@ ID cards: Classic and Modern are portrait, Minimal and Heritage landscape; the f
 photo (rectangle, rounded or circle crop), name, class or designation, blood group, validity and
 a Code 128 barcode; the back the QR, emergency contact, address, the principal's signature and a
 return address. Staff cards use the tertiary colour. Fee receipts are A5 landscape (Classic,
-Modern, Minimal) or an A4 sheet with a student's copy and an office copy (Heritage). Course
+Modern, Minimal) or an A4 sheet with a student's copy and an office copy (Heritage). Migration
+certificates use the transfer certificate's list of particulars; medium of instruction
+certificates the bonafide letter. Degree, course
 completion and merit or participation certificates are A4 landscape with the name in display
 type.
 
@@ -314,6 +316,10 @@ its version, and the status: `valid`, `revoked` (with a reason) or `superseded`.
 - **Revocation**: `POST /v1/documents/issued/:id/revoke { reason }` (principal or administrator).
   Revoking a certificate request or withholding a hall ticket revokes its record too. A reprint of
   a revoked or superseded record carries a large REVOKED or SUPERSEDED stamp.
+- **Watermark**: a generator may pass `watermark` to `DocumentEngine.produce` (DUPLICATE for an
+  academic document issued in place of a lost original with a `-DUP` serial and for a fee receipt
+  printed again; CANCELLED or CHEQUE RETURNED on such receipts). It is kept in the record's data
+  (`doc.watermark`), so reprints carry it too.
 - **Reissue**: `POST /v1/documents/issued/:id/reissue` gives the same data a fresh serial and QR
   (a lost copy); the old one verifies as replaced.
 - `GET /v1/documents/issued?docType=&status=&q=` lists records (office roles);

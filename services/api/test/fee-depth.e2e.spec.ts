@@ -241,6 +241,9 @@ describe('fees and accounts depth', () => {
     expect((pdf1.body as Buffer).subarray(0, 4).toString()).toBe('%PDF');
     ok(await post('acc', `/v1/fee-collect/receipts/${again.id}/print`), 200);
     expect((await owner.query("select count(*)::int as n from audit_log where action = 'fee_receipt.duplicate_printed' and subject_id = $1", [again.id])).rows[0].n).toBe(1);
+    // A copy after the first is stamped DUPLICATE, and the register keeps the stamp for reprints.
+    await get('acc', `/v1/fee-collect/receipts/${again.id}/pdf`).buffer(true).parse(binary).expect(200);
+    expect((await owner.query("select payload -> 'doc' ->> 'watermark' as w from issued_documents where source_type = 'fee_receipt' and source_id = $1 and status = 'valid'", [again.id])).rows[0].w).toBe('DUPLICATE');
   });
 
   it('concession types apply to their heads; a chain lets the accountant approve small ones and forwards the rest', async () => {

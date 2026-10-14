@@ -2,6 +2,15 @@ import type { BellPeriod } from '../db/schema-academic-ops.js';
 
 /** Pure rules of academic planning: weekday lists, bell schedules, working days and teaching load. */
 
+/** Where transferred credits come from (credit_transfers.source). */
+export const TRANSFER_SOURCES: { value: string; label: string }[] = [
+  { value: 'abc', label: 'Academic Bank of Credits' },
+  { value: 'swayam', label: 'SWAYAM' },
+  { value: 'nptel', label: 'NPTEL' },
+  { value: 'mooc', label: 'Other MOOC' },
+  { value: 'institution', label: 'Another institution' },
+];
+
 export const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
 /** "Mon,Tue,Wed" or "1,2,3" (or "Mon-Sat") → ISO weekdays, sorted; null when something is not a day. */

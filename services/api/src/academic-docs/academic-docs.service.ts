@@ -7,7 +7,9 @@ import { audit } from '../common/audit.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { academicDocRequests, creditTransfers, examResultLines, examResults, examSessions, guardians, legacyMarks, programs, sections, students, subjects, tenants } from '../db/schema.js';
+import { academicDocRequests, examResultLines, examResults, examSessions, guardians, legacyMarks, programs, sections, students, subjects, tenants } from '../db/schema.js';
+import { creditTransfers } from '../db/schema-academic-ops.js';
+import { TRANSFER_SOURCES } from '../academic-planning/planning-rules.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { consolidate, DEFAULT_CLASSES, docCode, DOC_TITLE, importedTerm, serialFor, type DocKind, type DocSnapshot, type TermBlock } from './academic-docs.logic.js';
 import { certificateSerial } from '../exam-office/settings.js';
@@ -48,18 +50,27 @@ export class AcademicDocsService {
       const key = `${m.academicYear}|${String(m.term).padStart(2, '0')}`;
       groups.set(key, [...(groups.get(key) ?? []), m]);
     }
-    // Credits accepted from other institutions come first, one block per institution.
-    const transfers = await tx.select({ t: creditTransfers, code: subjects.code, name: subjects.name }).from(creditTransfers).leftJoin(subjects, eq(subjects.id, creditTransfers.subjectId)).where(eq(creditTransfers.studentId, studentId));
-    const transferred: TermBlock[] = [...new Set(transfers.map((x) => x.t.sourceInstitution))].map((inst) => {
-      const rows = transfers.filter((x) => x.t.sourceInstitution === inst);
+    // Approved credit transfers (another institution, ABC, SWAYAM, NPTEL) come first, one block per provider. A credit
+    // with no grade point is earned but stays out of the CGPA.
+    const transfers = await tx
+      .select({ t: creditTransfers, code: subjects.code, name: subjects.name })
+      .from(creditTransfers)
+      .leftJoin(subjects, eq(subjects.id, creditTransfers.mappedSubjectId))
+      .where(and(eq(creditTransfers.studentId, studentId), eq(creditTransfers.status, 'approved')))
+      .orderBy(asc(creditTransfers.createdAt));
+    const providerOf = (x: (typeof transfers)[number]) => x.t.provider || TRANSFER_SOURCES.find((o) => o.value === x.t.source)?.label || x.t.source;
+    const transferred: TermBlock[] = [...new Set(transfers.map(providerOf))].map((inst) => {
+      const rows = transfers.filter((x) => providerOf(x) === inst);
+      const graded = rows.filter((x) => x.t.gradePoint !== null);
       const credits = rows.reduce((a, x) => a + x.t.credits, 0);
-      const points = rows.reduce((a, x) => a + x.t.credits * x.t.gradePoint, 0);
+      const gradedCredits = graded.reduce((a, x) => a + x.t.credits, 0);
+      const points = graded.reduce((a, x) => a + x.t.credits * (x.t.gradePoint ?? 0), 0);
       return {
         label: `Credits transferred from ${inst}`,
         source: 'imported' as const,
-        lines: rows.map((x) => ({ code: x.code ?? x.t.sourceCourse, subject: x.name ? `${x.name} (${x.t.sourceCourse})` : x.t.sourceCourse, credits: x.t.credits, percent: null, grade: x.t.grade, gradePoint: x.t.gradePoint, passed: true })),
-        sgpa: credits ? Math.round((points / credits) * 100) / 100 : 0,
-        creditsAttempted: credits,
+        lines: rows.map((x) => ({ code: x.code ?? x.t.courseTitle, subject: x.name ? `${x.name} (${x.t.courseTitle})` : x.t.courseTitle, credits: x.t.credits, percent: null, grade: x.t.grade || 'P', gradePoint: x.t.gradePoint ?? 0, passed: true })),
+        sgpa: gradedCredits ? Math.round((points / gradedCredits) * 100) / 100 : 0,
+        creditsAttempted: gradedCredits,
         creditsEarned: credits,
         creditPoints: points,
       };
@@ -216,7 +227,9 @@ export class AcademicDocsService {
         source: { type: 'academic_doc', id },
         serial: r.serialNo,
         data: { ...(await studentBlock(tx, r.studentId)), transcript, doc: { title, certificateNo: r.serialNo }, award: { title, recipient: h.name, citation, event: '', date: '', position: '' } },
-        keyFields: [{ label: 'Document', value: title }, { label: 'Student', value: `${h.name} (${h.rollNo})` }, { label: 'Programme', value: h.program }, { label: 'CGPA', value: snap.cgpa.toFixed(2) }, { label: 'Number', value: r.serialNo }],
+        keyFields: [{ label: 'Document', value: title }, { label: 'Student', value: `${h.name} (${h.rollNo})` }, { label: 'Programme', value: h.program }, { label: 'CGPA', value: snap.cgpa.toFixed(2) }, { label: 'Number', value: r.serialNo }, ...(r.duplicate ? [{ label: 'Copy', value: 'Duplicate' }] : [])],
+        // A duplicate (issued in place of a lost original, serial -DUP) says so across the page.
+        watermark: r.duplicate ? 'DUPLICATE' : undefined,
       });
       return { pdf: out.pdf, name: `${r.kind}-${r.serialNo.replace(/\//g, '-')}.pdf` };
     });

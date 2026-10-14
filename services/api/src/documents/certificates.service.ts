@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { FeeHoldsService } from '../fee-depth/fee-holds.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
@@ -39,6 +40,7 @@ export class CertificatesService {
     private readonly clock: Clock,
     private readonly notifications: NotificationsService,
     private readonly issued: IssuedDocsService,
+    private readonly holds: FeeHoldsService,
   ) {
     this.verifyBase = env.VERIFY_BASE_URL.replace(/\/$/, '');
   }
@@ -198,6 +200,8 @@ export class CertificatesService {
     const direct = c.status === 'requested' && !(await qualitySettings(tx, p.tenantId, 'documents')).rules.approvalBeforeIssue;
     if (c.status !== 'approved' && !direct) throw new ConflictException(`A ${c.status} request cannot be issued`);
     const [tmpl] = await tx.select().from(certificateTemplates).where(eq(certificateTemplates.id, c.templateId));
+    // Overdue fees hold back a transfer certificate when the institution says so, unless the principal allowed it.
+    if (tmpl.kind === 'transfer_certificate' && c.studentId) await this.holds.assertClear(tx, p.tenantId, c.studentId, 'tc');
     const today = await this.today(tx);
     const fy = financialYear(today);
     // The upsert takes the counter row's lock, so concurrent issues queue and never share a number.

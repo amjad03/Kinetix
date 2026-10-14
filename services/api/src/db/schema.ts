@@ -3970,7 +3970,7 @@ export const TENANT_TABLES = [
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
   'affiliation_settings', 'programme_affiliations',
   'result_withholds', 'grace_applications', 'mark_entry_checks', 'valuation_camps', 'valuation_bundles', 'valuation_daily_counts', 'answer_sheet_accounts', 'invigilation_swaps', 'exam_reschedules', 'result_runs', 'result_revisions',
-  'record_corrections', 'verification_requests', 'credit_transfers',
+  'record_corrections', 'verification_requests',
   'student_profiles', 'student_custom_fields', 'student_change_requests', 'student_clearances', 'student_clearance_items',
   'admission_assignment_rules', 'admission_requests', 'admission_refund_slabs', 'admission_custody_items', 'application_drafts',
   // Research office depth (migration 0159).
@@ -4020,6 +4020,8 @@ export const TENANT_TABLES = [
   'contact_suppressions', 'homework_extensions', 'homework_groups', 'lms_item_progress', 'lms_quizzes', 'lms_quiz_questions', 'lms_quiz_attempts',
   // HR depth (0165–0167)
   'staff_experience', 'staff_publications', 'staff_documents', 'comp_off_credits', 'attendance_regularisations', 'job_interviews', 'job_interview_scores', 'salary_component_rates',
+  // Fee holds on hall tickets, results and TCs (migration 0181; schema-fee-depth.ts).
+  'fee_hold_overrides',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -9135,24 +9137,5 @@ export const verificationRequests = pgTable(
   (t) => [index('verification_requests_status_idx').on(t.tenantId, t.status)],
 );
 
-/** Credits a transfer or lateral-entry student earned elsewhere, accepted against a course here (credit equivalence). */
-export const creditTransfers = pgTable(
-  'credit_transfers',
-  {
-    id: id(),
-    tenantId: tenantId(),
-    studentId: uuid('student_id').notNull().references(() => students.id),
-    sourceInstitution: text('source_institution').notNull(),
-    sourceCourse: text('source_course').notNull(),
-    /** The course here it counts as; null keeps it as a credit with no equivalent course. */
-    subjectId: uuid('subject_id').references(() => subjects.id),
-    term: smallint('term').notNull(),
-    credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }).notNull(),
-    grade: text('grade').notNull(),
-    gradePoint: numeric('grade_point', { precision: 4, scale: 2, mode: 'number' }).notNull(),
-    note: text('note'),
-    createdBy: uuid('created_by').notNull().references(() => users.id),
-    createdAt: createdAt(),
-  },
-  (t) => [index('credit_transfers_student_idx').on(t.studentId)],
-);
+// credit_transfers (0153, widened in 0157) lives in schema-academic-ops.ts: one request table for ABC, MOOC and
+// other-institution credits that, once approved, count in course registration, the CGPA and the transcript.

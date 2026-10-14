@@ -451,17 +451,22 @@ export function PastPaperRecords({ meta, page, state }: Props) {
   return <RecordsTable meta={meta} page={page} state={state} label={t('rk.entity.past-exam-questions')} columns={columns} empty={canAdd(meta) ? undefined : <EmptyState icon={<FileQuestion />} title={t('xc.empty.pastPapers')} testId="no-past-papers">{t('xc.empty.pastPapersBody')}</EmptyState>} />;
 }
 
-/** Credits accepted from another institution: they count in the CGPA and lead the transcript. */
+/**
+ * Credits earned elsewhere (another institution, ABC, SWAYAM, NPTEL): the same register academic planning keeps. Once
+ * approved they count in the CGPA and lead the transcript.
+ */
 export function TransferRecords({ meta, page, state }: Props) {
   const { t, fmt } = useI18n();
+  const status = (r: Row) => meta.filters.find((f) => f.key === 'status')?.options?.find((o) => o.value === s(r, 'status'))?.label ?? s(r, 'status');
   const columns: Column<Row>[] = [
-    { id: 'student', header: t('xc.col.student'), sortKey: 'student', rowHeader: true, hideable: false, cell: (r) => `${s(r, 'rollNo')} ${s(r, 'studentName')}` },
-    { id: 'institution', header: t('xc.ct.institution'), sortKey: 'institution', hideBelow: 'md', cell: (r) => s(r, 'sourceInstitution') },
-    { id: 'course', header: t('xc.ct.course'), cell: (r) => s(r, 'sourceCourse') },
-    { id: 'countsAs', header: t('xc.ct.countsAs'), hideBelow: 'lg', cell: (r) => (r.subjectCode ? `${s(r, 'subjectCode')} ${s(r, 'subjectName')}` : muted(t('xc.ct.creditOnly'))) },
-    { id: 'term', header: t('xc.col.term'), sortKey: 'term', align: 'right', hideBelow: 'sm', cell: (r) => fmt.number(n(r, 'term')) },
+    { id: 'student', header: t('xc.col.student'), sortKey: 'student', rowHeader: true, hideable: false, cell: (r) => `${s(r, 'rollNo')} ${s(r, 'fullName')}` },
+    { id: 'institution', header: t('xc.ct.institution'), sortKey: 'institution', hideBelow: 'md', cell: (r) => s(r, 'provider') || muted('-') },
+    { id: 'course', header: t('xc.ct.course'), sortKey: 'course', cell: (r) => s(r, 'courseTitle') },
+    { id: 'countsAs', header: t('xc.ct.countsAs'), hideBelow: 'lg', cell: (r) => (r.mapped ? s(r, 'mapped') : muted(t('xc.ct.creditOnly'))) },
+    { id: 'term', header: t('xc.col.term'), sortKey: 'term', align: 'right', hideBelow: 'sm', cell: (r) => (r.term === null || r.term === undefined ? muted('-') : fmt.number(n(r, 'term'))) },
     { id: 'credits', header: t('xc.ct.credits'), sortKey: 'credits', align: 'right', cell: (r) => fmt.number(n(r, 'credits')) },
-    { id: 'grade', header: t('xc.ct.grade'), hideBelow: 'sm', cell: (r) => `${s(r, 'grade')} (${fmt.number(n(r, 'gradePoint'))})` },
+    { id: 'grade', header: t('xc.ct.grade'), hideBelow: 'sm', cell: (r) => (r.gradePoint === null || r.gradePoint === undefined ? s(r, 'grade') || muted('-') : `${s(r, 'grade')} (${fmt.number(n(r, 'gradePoint'))})`) },
+    { id: 'status', header: t('xc.col.status'), sortKey: 'status', cell: (r) => status(r) },
     { id: 'note', header: t('xc.col.note'), defaultHidden: true, cell: (r) => s(r, 'note') || muted('-') },
   ];
   return <RecordsTable meta={meta} page={page} state={state} label={t('rk.entity.credit-transfers')} columns={columns} empty={canAdd(meta) ? undefined : <EmptyState icon={<ArrowRightLeft />} title={t('xc.empty.transfers')} testId="no-transfers">{t('xc.empty.transfersBody')}</EmptyState>} />;

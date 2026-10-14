@@ -21,14 +21,17 @@ export const DOC_TYPES = [
   'appointment_letter',
   'report_cover',
   'generic_certificate',
+  'degree_certificate',
+  'migration_certificate',
+  'medium_of_instruction_certificate',
 ] as const;
 export type DocType = (typeof DOC_TYPES)[number];
 
 export const DOC_GROUPS: { id: string; types: DocType[] }[] = [
   { id: 'identity', types: ['student_id_card', 'staff_id_card'] },
-  { id: 'academic', types: ['marks_card', 'transcript', 'hall_ticket'] },
+  { id: 'academic', types: ['marks_card', 'transcript', 'hall_ticket', 'degree_certificate'] },
   { id: 'finance', types: ['fee_receipt', 'fee_invoice'] },
-  { id: 'certificate', types: ['bonafide_certificate', 'transfer_certificate', 'conduct_certificate', 'course_completion_certificate', 'generic_certificate'] },
+  { id: 'certificate', types: ['bonafide_certificate', 'transfer_certificate', 'conduct_certificate', 'course_completion_certificate', 'migration_certificate', 'medium_of_instruction_certificate', 'generic_certificate'] },
   { id: 'hr', types: ['salary_slip', 'offer_letter', 'appointment_letter'] },
   { id: 'report', types: ['report_cover'] },
 ];

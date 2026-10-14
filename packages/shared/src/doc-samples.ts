@@ -213,6 +213,35 @@ export const DOC_SAMPLES: Record<DocType, DocData> = {
     course: { name: 'Bachelor of Computer Applications', duration: 'August 2021 to May 2024', completedOn: '31 May 2024', grade: 'CGPA 8.88 - First Class with Distinction' },
     award: { title: 'Certificate of Course Completion', recipient: 'Ananya Raghavendra', citation: 'has successfully completed the **Bachelor of Computer Applications** programme from August 2021 to May 2024, securing a CGPA of **8.88** and placed in First Class with Distinction.', event: 'Convocation 2026', date: '14 October 2026', position: '' },
   },
+  degree_certificate: {
+    ...common('Degree Certificate', 'DEG/2026-27/00412'),
+    student: { ...student, registerNo: 'U19SI21S0147' },
+    degree: { name: 'Bachelor of Computer Applications', short: 'BCA', classification: 'First Class with Distinction', cgpa: '8.88', examination: 'May 2024', convocation: 'Twelfth Annual Convocation, 14 October 2026', university: 'Bengaluru City University', citation: 'having passed the examination held in **May 2024** and fulfilled the requirements of the programme, has been admitted to the degree of **Bachelor of Computer Applications** in **First Class with Distinction** (CGPA 8.88).' },
+  },
+  migration_certificate: {
+    ...common('Migration Certificate', 'MIG/2026-27/00031'),
+    student,
+    doc: {
+      title: 'Migration Certificate', serial: 'MIG/2026-27/00031', issuedOn: '14 October 2026', fingerprint: '7F3A-91C2-04BE', purpose: 'admission to another university',
+      body: 'The institution has no objection to the student named above migrating to another university or board to continue studies. This certificate does not by itself entitle the student to admission there.',
+      fields: [
+        { label: 'Name of the student', value: 'Ananya Raghavendra' },
+        { label: "Father's / guardian's name", value: 'K. Raghavendra' },
+        { label: 'Register number', value: 'U19SI21S0147' },
+        { label: 'Programme', value: 'Bachelor of Computer Applications' },
+        { label: 'University', value: 'Bengaluru City University' },
+        { label: 'Year of admission', value: '2021' },
+        { label: 'Last examination passed', value: 'BCA Semester 6, May 2024' },
+        { label: 'Result', value: 'Passed, First Class with Distinction' },
+        { label: 'Migrating to', value: 'University of Mysore' },
+      ],
+    },
+  },
+  medium_of_instruction_certificate: {
+    ...common('Medium of Instruction Certificate', 'MOI/2026-27/00064'),
+    student,
+    doc: { title: 'Medium of Instruction Certificate', serial: 'MOI/2026-27/00064', issuedOn: '14 October 2026', fingerprint: '7F3A-91C2-04BE', purpose: 'admission to a university abroad', medium: 'English', body: 'This is to certify that **Ananya Raghavendra** (Roll No. 21BCA014) studied the **Bachelor of Computer Applications** programme at Soundarya Institute of Management and Science from August 2021 to May 2024. The medium of instruction and examination throughout the programme was **English**.\n\nThis certificate is issued at her request for admission to a university abroad.', fields: [] },
+  },
   salary_slip: {
     ...common('Salary Slip', 'PAY/2026-27/02215'),
     staff,

@@ -291,8 +291,8 @@ export function RecordsTable({
         onRowClick={onView}
         rowActions={rowActions}
         empty={
-          !listParamsGiven && page.total === 0 && empty ? (
-            emptyActions && emptyWithActions === empty ? (
+          !listParamsGiven && page.total === 0 ? (
+            emptyActions && empty ? (
               <div className="grid gap-3">
                 {empty}
                 <div className="flex flex-wrap items-end justify-center gap-2">{toolbarButtons}</div>

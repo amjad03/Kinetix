@@ -82,14 +82,18 @@ export const creditTransfers = pgTable(
     externalRef: text('external_ref').notNull().default(''),
     credits: num('credits', 4, 1).notNull(),
     grade: text('grade').notNull().default(''),
+    /** On the 10-point scale here; null for a pass-only credit, which is earned but left out of the CGPA. */
+    gradePoint: num('grade_point', 4, 2),
     completedOn: date('completed_on'),
     term: smallint('term'),
     mappedSubjectId: uuid('mapped_subject_id').references(() => subjects.id, { onDelete: 'set null' }),
-    /** pending | approved | rejected */
+    /** pending | approved | rejected | revoked; only approved credits count anywhere. */
     status: text('status').notNull().default('pending'),
     decidedBy: userRef('decided_by'),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
     decisionNote: text('decision_note'),
+    /** E.g. the order number of the equivalence committee. */
+    note: text('note'),
     createdBy: userRef('created_by'),
     createdAt: createdAt(),
   },
