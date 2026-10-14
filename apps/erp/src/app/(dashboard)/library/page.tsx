@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { LinkButton } from '@/components/LinkButton';
 import { LibraryDesk } from '@/components/library/LibraryDesk';
+import { LhtLinks } from '@/components/lht/LhtRecordsPage';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
@@ -38,7 +39,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} actions={<><LinkButton href="/library/circulation" variant="outlined">{t('dx.link.circ')}</LinkButton><LinkButton href="/library/e-resources" variant="outlined">{t('dx.link.eres')}</LinkButton><LinkButton href="/scan" variant="outlined">{t('nav.scan')}</LinkButton><LinkButton href="/library/stock-checks" variant="outlined">{t('cops.sc.title')}</LinkButton><LinkButton href="/module-settings/library" variant="outlined">{t('cops.settings')}</LinkButton></>} />
+      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} actions={<><LhtLinks module="library" here="home" /><LinkButton href="/library/circulation" variant="outlined">{t('dx.link.circ')}</LinkButton><LinkButton href="/library/e-resources" variant="outlined">{t('dx.link.eres')}</LinkButton><LinkButton href="/scan" variant="outlined">{t('nav.scan')}</LinkButton><LinkButton href="/library/stock-checks" variant="outlined">{t('cops.sc.title')}</LinkButton><LinkButton href="/module-settings/library" variant="outlined">{t('cops.settings')}</LinkButton></>} />
       {books.error !== undefined || loans.error !== undefined || fines.error !== undefined ? (
         <ErrorState message={(books.error ?? loans.error ?? fines.error)!} />
       ) : (

@@ -66,12 +66,13 @@ export interface HrModuleSettings {
   payslipSeries: Series;
   leaveLevels: 1 | 2;
   encashment: { maxDaysPerYear: number; minBalanceAfter: number };
-  attendance: { officeStart: string; graceMinutes: number; halfDayAfterMinutes: number; minHoursFullDay: number };
+  /** officeEnd marks early leaving; every lateMarksPerHalfDay late marks in a month cost half a day of pay (0 = never). */
+  attendance: { officeStart: string; graceMinutes: number; halfDayAfterMinutes: number; minHoursFullDay: number; officeEnd?: string; lateMarksPerHalfDay?: number };
   loans: { maxInstallments: number; maxAdvancePaise: number; maxLoanPaise: number };
   preview: { employeeCode: string; payslipNo: string };
 }
 
-export const HR_REPORTS = ['staff-strength', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition'] as const;
+export const HR_REPORTS = ['staff-strength', 'staff-category', 'faculty-cadre', 'sfr', 'naac-faculty', 'publications', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'pt-return', 'lwf', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition'] as const;
 export type HrReportKind = (typeof HR_REPORTS)[number];
 export interface HrReport {
   kind: HrReportKind;
@@ -82,6 +83,11 @@ export interface HrReport {
 /** Which filters each report reads. */
 export const REPORT_FILTERS: Record<HrReportKind, ('month' | 'fy' | 'year')[]> = {
   'staff-strength': [],
+  'staff-category': [],
+  'faculty-cadre': [],
+  sfr: [],
+  'naac-faculty': ['fy'],
+  publications: ['fy'],
   'attendance-register': ['month'],
   'leave-register': ['year'],
   'leave-balances': ['year'],
@@ -90,6 +96,8 @@ export const REPORT_FILTERS: Record<HrReportKind, ('month' | 'fy' | 'year')[]> =
   pf: ['month'],
   esi: ['month'],
   pt: ['month'],
+  'pt-return': ['month'],
+  lwf: ['month'],
   tds: ['month'],
   'bank-transfer': ['month'],
   form16: ['fy'],

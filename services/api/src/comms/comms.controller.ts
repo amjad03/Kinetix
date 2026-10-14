@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { quietHoursProblem } from '../quality-hub/settings.catalogue.js';
 import { asc, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -35,6 +35,9 @@ const CampaignBody = z.object({
   vars: z.record(z.string().max(60), z.string().max(300)).default({}),
   /** Leave out to send now. */
   sendAt: z.coerce.date().optional(),
+  /** Recurring reminders: repeat after each send until this date. */
+  repeat: z.enum(['none', 'daily', 'weekly', 'monthly']).default('none'),
+  repeatUntil: z.iso.date().optional(),
 });
 
 /** Message templates, saved audiences and scheduled campaigns across in-app, SMS, email and WhatsApp. */
@@ -123,7 +126,7 @@ export class CommsController {
   campaigns(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) =>
       tx
-        .select({ id: messageCampaigns.id, title: messageCampaigns.title, channel: messageTemplates.channel, templateKey: messageTemplates.key, audience: audienceRules.name, sendAt: messageCampaigns.sendAt, status: messageCampaigns.status, recipients: messageCampaigns.recipients, sentCount: messageCampaigns.sentCount, failedCount: messageCampaigns.failedCount })
+        .select({ id: messageCampaigns.id, title: messageCampaigns.title, channel: messageTemplates.channel, templateKey: messageTemplates.key, audience: audienceRules.name, sendAt: messageCampaigns.sendAt, status: messageCampaigns.status, recipients: messageCampaigns.recipients, sentCount: messageCampaigns.sentCount, failedCount: messageCampaigns.failedCount, suppressedCount: messageCampaigns.suppressedCount, repeat: messageCampaigns.repeat, repeatUntil: messageCampaigns.repeatUntil })
         .from(messageCampaigns)
         .innerJoin(messageTemplates, eq(messageTemplates.id, messageCampaigns.templateId))
         .innerJoin(audienceRules, eq(audienceRules.id, messageCampaigns.audienceId))
@@ -150,7 +153,8 @@ export class CommsController {
       if (t.channel === 'sms' && !t.dltTemplateId) throw new ConflictException('Register this text with your telecom operator (DLT) and enter its template id first');
       if (t.channel === 'whatsapp' && !this.whatsapp.connected) throw new ConflictException('WhatsApp Business is not connected for this institution');
       if (sendAt.getTime() < now.getTime() - 60_000) throw new ConflictException('The send time is in the past');
-      const [c] = await tx.insert(messageCampaigns).values({ tenantId: p.tenantId, title: b.title, templateId: b.templateId, audienceId: b.audienceId, vars: b.vars, sendAt, createdBy: p.userId }).returning();
+      if (b.repeat !== 'none' && !b.repeatUntil) throw new BadRequestException('Give the date the reminder stops repeating');
+      const [c] = await tx.insert(messageCampaigns).values({ tenantId: p.tenantId, title: b.title, templateId: b.templateId, audienceId: b.audienceId, vars: b.vars, sendAt, repeat: b.repeat, repeatUntil: b.repeatUntil ?? null, createdBy: p.userId }).returning();
       await auditUser(tx, p, 'comms.campaign_scheduled', 'message_campaign', c.id, { channel: t.channel, sendAt: sendAt.toISOString() });
       return c;
     });

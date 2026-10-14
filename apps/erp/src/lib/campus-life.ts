@@ -64,6 +64,10 @@ export interface GrievanceTicket {
   committee: string | null;
   slaDueAt: string;
   escalationLevel: number;
+  /** The appeal to the next level after resolution (v1/grievances/:id/appeal). */
+  appealStatus?: 'pending' | 'upheld' | 'overturned' | null;
+  appealReason?: string | null;
+  appealDecision?: string | null;
 }
 
 const OPEN = ['open', 'assigned', 'in_progress', 'escalated', 'reopened'];

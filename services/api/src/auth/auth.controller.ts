@@ -3,6 +3,7 @@ import { Body, Controller, Headers, HttpCode, Ip, Post, UnauthorizedException } 
 import argon2 from 'argon2';
 import { eq, or } from 'drizzle-orm';
 import { z } from 'zod';
+import { audit } from '../common/audit.js';
 import { RateLimiter } from '../common/rate-limiter.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
@@ -56,16 +57,25 @@ export class AuthController {
     const tenant = await this.system.tenantBySlug(body.tenant);
     if (!tenant) throw fail;
 
-    return this.db.withTenant(tenant.id, async (tx) => {
+    const result = await this.db.withTenant(tenant.id, async (tx) => {
       const [user] = await tx
         .select()
         .from(users)
         .where(or(eq(users.email, body.login.trim().toLowerCase()), eq(users.phone, normalizePhone(body.login))));
-      if (!user?.passwordHash || user.status !== 'active') throw fail;
-      if (!(await argon2.verify(user.passwordHash, body.password))) throw fail;
+      if (!user?.passwordHash) return { refused: null };
+      // Failed attempts on a real account are kept for the sign-in report (written below, outside this transaction).
+      if (user.status === 'disabled') return { refused: { userId: user.id, action: 'auth.sign_in_blocked' } };
+      if (user.status !== 'active') return { refused: null };
+      if (!(await argon2.verify(user.passwordHash, body.password))) return { refused: { userId: user.id, action: 'auth.sign_in_failed' } };
       await noteSignInDevice(tx, tenant.id, user.id, deviceId);
-      return signInResponse(tx, this.mfa, tenant.id, user, 'password', { ip, userAgent, deviceName });
+      return { ok: await signInResponse(tx, this.mfa, tenant.id, user, 'password', { ip, userAgent, deviceName }) };
     });
+    if ('ok' in result) return result.ok;
+    if (result.refused) {
+      const r = result.refused;
+      await this.db.withTenant(tenant.id, (tx) => audit(tx, { tenantId: tenant.id, actorType: 'system', action: r.action, subjectType: 'user', subjectId: r.userId, data: { method: 'password', ip: ip ?? null, device: deviceName ?? null } }));
+    }
+    throw fail;
   }
 
   /** Second step for a user with two-factor on: the `mfaToken` from login plus an authenticator or backup code. */

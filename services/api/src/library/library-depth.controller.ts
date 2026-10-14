@@ -14,8 +14,9 @@ import { chapters, libraryBooks, libraryLoans, students, tenants, topics } from 
 import { libraryEresourceAccess, libraryEresources, libraryReservations, resourceTopicLinks } from '../db/schema-depth.js';
 import { addDays } from '../teacher/teacher.service.js';
 import { LIBRARY_ROLES } from './library.controller.js';
-import { readSettings, ruleNumber } from '../campus-ops/settings.js';
 import { copiesHeld, copiesOut, expireHolds, promoteNext } from './reservations.js';
+import { libraryCopies } from '../db/schema-lht.js';
+import { renewLoan, settleLoan } from './circulation.js';
 
 const SEAT_WINDOW_MINUTES = 30;
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);
@@ -48,17 +49,9 @@ export class LibraryDepthController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [loan] = await tx.select().from(libraryLoans).where(eq(libraryLoans.id, id)).for('update');
       if (!loan) throw new NotFoundException('Loan not found');
-      await assertCanSeeStudent(tx, p, loan.studentId, LIBRARY_ROLES);
-      if (loan.returnedAt) throw new ConflictException('This book has already been returned');
-      const rules = (await readSettings(tx, p.tenantId, 'library')).rules;
-      if (loan.renewCount >= Number(rules.maxRenewals)) throw new ConflictException(`A loan can be renewed ${String(rules.maxRenewals)} times`);
-      const today = await this.today(tx);
-      if (loan.dueOn < today) throw new ConflictException('Overdue books cannot be renewed; return the book at the desk');
-      const [waiting] = await tx.select({ id: libraryReservations.id }).from(libraryReservations).where(and(eq(libraryReservations.bookId, loan.bookId), sql`${libraryReservations.status} in ('waiting', 'ready')`)).limit(1);
-      if (waiting) throw new ConflictException('Another student has reserved this book');
-      const [row] = await tx.update(libraryLoans).set({ dueOn: addDays(loan.dueOn > today ? loan.dueOn : today, Number(rules.loanDays)), renewCount: loan.renewCount + 1 }).where(eq(libraryLoans.id, id)).returning();
-      await auditUser(tx, p, 'library.renewed', 'library_loan', id, { renewCount: row.renewCount });
-      return row;
+      if (loan.studentId) await assertCanSeeStudent(tx, p, loan.studentId, LIBRARY_ROLES);
+      else if (!p.roles.some((r) => LIBRARY_ROLES.includes(r))) throw new NotFoundException('Loan not found');
+      return renewLoan(tx, p, this.clock.now(), id);
     });
   }
 
@@ -136,20 +129,7 @@ export class LibraryDepthController {
   // ---- lost and damaged ------------------------------------------------------------------------------------------
 
   private async settle(p: UserPrincipal, id: string, kind: 'lost' | 'damaged', b: z.infer<typeof ConditionBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const [loan] = await tx.select().from(libraryLoans).where(eq(libraryLoans.id, id)).for('update');
-      if (!loan) throw new NotFoundException('Loan not found');
-      if (loan.returnedAt) throw new ConflictException('This book has already been returned');
-      const [book] = await tx.select().from(libraryBooks).where(eq(libraryBooks.id, loan.bookId)).for('update');
-      const charge = b.amountPaise ?? (kind === 'lost' ? book.pricePaise : 0);
-      if (kind === 'lost' && charge <= 0) throw new BadRequestException('Give the charge for the lost book (or record the book\'s price)');
-      const late = Math.max(0, daysBetween(loan.dueOn, await this.today(tx))) * (await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'));
-      const [row] = await tx.update(libraryLoans).set({ returnedAt: this.clock.now(), finePaise: late + charge, condition: kind, conditionNote: b.note }).where(eq(libraryLoans.id, id)).returning();
-      if (kind === 'lost') await tx.update(libraryBooks).set({ copies: Math.max(0, book.copies - 1) }).where(eq(libraryBooks.id, book.id));
-      else await promoteNext(tx, book.id, this.clock.now());
-      await auditUser(tx, p, `library.${kind}`, 'library_loan', id, { chargePaise: charge });
-      return row;
-    });
+    return this.db.withTenant(p.tenantId, (tx) => settleLoan(tx, p, this.clock.now(), id, kind, b.note, b.amountPaise));
   }
 
   /** The book is lost: the loan closes, the fine is the late fine plus the book's price, and the library has one copy fewer. */
@@ -210,11 +190,14 @@ export class LibraryDepthController {
   scan(@CurrentPrincipal() p: UserPrincipal, @Param('code') code: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const clean = code.trim().slice(0, 40);
-      const [book] = await tx.select().from(libraryBooks).where(clean.length === 0 ? sql`false` : sql`${libraryBooks.barcode} = ${clean} or ${libraryBooks.isbn} = ${clean}`);
+      let [book] = await tx.select().from(libraryBooks).where(clean.length === 0 ? sql`false` : sql`${libraryBooks.barcode} = ${clean} or ${libraryBooks.isbn} = ${clean}`);
+      // A copy's own barcode, accession number or RFID tag names its book too.
+      const [copy] = book || clean.length === 0 ? [] : await tx.select().from(libraryCopies).where(sql`lower(${libraryCopies.barcode}) = ${clean.toLowerCase()} or lower(${libraryCopies.accessionNo}) = ${clean.toLowerCase()} or lower(${libraryCopies.rfid}) = ${clean.toLowerCase()}`).limit(1);
+      if (!book && copy) [book] = await tx.select().from(libraryBooks).where(eq(libraryBooks.id, copy.bookId));
       if (!book) throw new NotFoundException('No book carries that code');
       const out = await tx.select({ id: libraryLoans.id, student: students.fullName, rollNo: students.rollNo, dueOn: libraryLoans.dueOn }).from(libraryLoans).innerJoin(students, eq(students.id, libraryLoans.studentId)).where(and(eq(libraryLoans.bookId, book.id), isNull(libraryLoans.returnedAt))).orderBy(asc(libraryLoans.dueOn));
       const held = await copiesHeld(tx, book.id);
-      return { book, available: Math.max(0, book.copies - out.length - held), held, loans: out };
+      return { book, available: Math.max(0, book.copies - out.length - held), held, loans: out, ...(copy && { copy: { id: copy.id, accessionNo: copy.accessionNo, status: copy.status } }) };
     });
   }
 

@@ -43,6 +43,15 @@ const TARGETS: Record<string, (id: string) => string> = {
   'grievance-evidence': (id) => `/v1/grievances/evidence/${id}/download`,
   'leave-doc': (id) => `/v1/attendance-desk/leaves/${id}/document`,
   'condonation-doc': (id) => `/v1/attendance/condonations/${id}/document`,
+  'placement-shortlist': (id) => `/v1/placements/drives/${id}/shortlist?format=csv`,
+  'placement-offer-letter': (id) => `/v1/placements/offers/${id}/letter`,
+  'staff-doc': (id) => `/v1/hr/staff-documents/${id}/file`,
+  'staff-leave-doc': (id) => `/v1/hr/leave/requests/${id}/document`,
+  resume: (id) => `/v1/hr/applicants/${id}/resume`,
+  'appointment-letter': (id) => `/v1/hr/applicants/${id}/appointment-letter`,
+  'experience-cert': (id) => `/v1/hr/separations/${id}/experience-certificate`,
+  lwf: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=lwf`,
+  ecr: (id) => `/v1/payroll/runs/${id}/ecr.txt`,
 };
 
 /**
@@ -65,7 +74,7 @@ export async function GET(req: NextRequest) {
   if (kind === 'ops-report') {
     const format = req.nextUrl.searchParams.get('format') ?? '';
     const status = req.nextUrl.searchParams.get('status') ?? '';
-    if (!/^[a-z]+\.[a-z]+$/.test(id) || !['pdf', 'xlsx', 'csv'].includes(format) || !/^[a-z_]{0,40}$/.test(status)) return new Response('Not found', { status: 404 });
+    if (!/^[a-z]+\.[a-z]+(-[a-z]+)*$/.test(id) || !['pdf', 'xlsx', 'csv'].includes(format) || !/^[a-z_]{0,40}$/.test(status)) return new Response('Not found', { status: 404 });
     const q = new URLSearchParams({ format });
     if (range[0] && /^\d{4}-\d{2}-\d{2}$/.test(range[0])) q.set('from', range[0]);
     if (range[1] && /^\d{4}-\d{2}-\d{2}$/.test(range[1])) q.set('to', range[1]);
@@ -102,6 +111,15 @@ export async function GET(req: NextRequest) {
     if (id === 'nirf-rp') FIXED[kind] = `/v1/research/reports/nirf-rp.xlsx${/^\d{4}$/.test(toYear) ? `?toYear=${toYear}` : ''}`;
     else if (id === 'profile') FIXED[kind] = `/v1/research/reports/faculty-profile.xlsx${UUID.test(user) ? `?userId=${user}` : ''}`;
     else return new Response('Not found', { status: 404 });
+  }
+  // Form 24Q: ?kind=q24&fy=2026&quarter=1..4&annexure=1|2
+  if (kind === 'q24') {
+    const sp = req.nextUrl.searchParams;
+    const fy = sp.get('fy') ?? '';
+    const quarter = sp.get('quarter') ?? '';
+    const annexure = sp.get('annexure') ?? '1';
+    if (!/^\d{4}$/.test(fy) || !/^[1-4]$/.test(quarter) || !/^[12]$/.test(annexure)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/payroll/24q.csv?fy=${fy}&quarter=${quarter}&annexure=${annexure}`;
   }
   if (kind === 'hall-ticket') {
     const test = req.nextUrl.searchParams.get('test') ?? '';
@@ -189,6 +207,13 @@ export async function GET(req: NextRequest) {
     const format = sp.get('format') === 'pdf' ? 'pdf' : 'xlsx';
     if (!UUID.test(id) || !/^\d{4}-\d{2}$/.test(month) || (subjectId && !UUID.test(subjectId))) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/attendance-desk/register?sectionId=${id}&month=${month}&format=${format}${subjectId ? `&subjectId=${subjectId}` : ''}`;
+  }
+  // A placement report (NIRF, NAAC 5.2, branch-wise…) for a year: ?kind=pl-report&id=<report>&format=csv|xlsx&year=
+  if (kind === 'pl-report') {
+    const format = req.nextUrl.searchParams.get('format') === 'csv' ? 'csv' : 'xlsx';
+    const year = req.nextUrl.searchParams.get('year') ?? '';
+    if (!/^[a-z]{3,20}$/.test(id) || !/^\d{4}$/.test(year)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/placements/reports/${id}?format=${format}&year=${year}`;
   }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.

@@ -115,6 +115,7 @@ import { GovernanceModule } from './governance/governance.module.js';
 import { BillingModule } from './billing/billing.module.js';
 import { IntegrityModule } from './integrity/integrity.module.js';
 import { ExamCellModule } from './exam-cell/exam-cell.module.js';
+import { AccessModule } from './access/access.module.js';
 
 @Module({
   imports: [
@@ -234,6 +235,7 @@ import { ExamCellModule } from './exam-cell/exam-cell.module.js';
     ExamCellModule,
     AttendanceDeskModule,
     AcademicPlanningModule,
+    AccessModule,
   ],
 })
 export class AppModule {}

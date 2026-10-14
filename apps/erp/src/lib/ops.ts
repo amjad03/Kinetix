@@ -56,7 +56,7 @@ export interface CItem { id: string; name: string; pricePaise: number; available
 // ---- Inventory and assets (v1/inventory, v1/assets) ----
 export interface IItem { id: string; sku: string; name: string; category: string; unit: string; reorderLevel: number; active: boolean; onHand: number; low: boolean }
 export interface IStore { id: string; name: string; location: string }
-export interface IVendor { id: string; name: string; gstin: string | null; phone: string; email: string | null }
+export interface IVendor { id: string; name: string; gstin: string | null; phone: string; email: string | null; active?: boolean; blacklisted?: boolean }
 export interface IStock { storeId: string; store: string; itemId: string; sku: string; item: string; unit: string; qty: number; reorderLevel: number }
 export interface IReq { id: string; number: string; reason: string; status: string; decisionNote: string | null; lines: { itemId: string; item: string; unit: string; qty: number }[] }
 export interface IRfq { id: string; number: string; requisitionId: string; status: string; closesOn: string | null }

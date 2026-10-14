@@ -9,6 +9,7 @@ import { Day } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { alumniCampaigns, alumniDonations, alumniPledges, alumniProfiles, alumniVolunteerOpportunities, alumniVolunteerSignups, tenants, userRoles, users } from '../db/schema.js';
+import { alumniJobPosts, placementFeedback } from '../db/schema-placements.js';
 import { receiptPdf } from './alumni-giving.logic.js';
 import { found } from './placements.access.js';
 
@@ -27,6 +28,9 @@ const ProfileBody = z.object({
 const PledgeBody = z.object({ amountPaise: z.number().int().min(100).max(10_000_000_000), dueOn: Day.optional(), note: z.string().trim().max(500).default('') });
 const LinkBody = z.object({ alumniId: z.uuid(), userId: z.uuid() });
 const SignupBody = z.object({ note: z.string().trim().max(500).default('') });
+const JobBody = z.object({ title: z.string().trim().min(2).max(160), company: z.string().trim().min(1).max(160), kind: z.enum(['job', 'internship']).default('job'), location: z.string().trim().max(120).default(''), description: z.string().trim().max(4000).default(''), applyContact: z.string().trim().min(3).max(300), closesOn: Day.optional() });
+const Rating = z.number().int().min(1).max(5);
+const AlumniFeedbackBody = z.object({ year: z.number().int().min(2000).max(2100), r1: Rating, r2: Rating, r3: Rating, r4: Rating, r5: Rating, overall: Rating, comments: z.string().trim().max(2000).default('') });
 
 /**
  * The alumni portal API: a graduate with an alumni login manages their own profile, sees and makes pledges,
@@ -174,6 +178,44 @@ export class AlumniPortalController {
       const me = await this.mine(tx, p);
       await tx.delete(alumniVolunteerSignups).where(and(eq(alumniVolunteerSignups.opportunityId, id), eq(alumniVolunteerSignups.alumniId, me.id)));
       await auditUser(tx, p, 'alumni.volunteer_self_withdrawn', 'alumni_volunteer_opportunity', id, { alumniId: me.id });
+    });
+  }
+
+  /** Published job posts, and my own posts with where they stand. */
+  @Get('jobs')
+  @Auth('user', ALUMNI)
+  jobs(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const me = await this.mine(tx, p);
+      const published = await tx.select().from(alumniJobPosts).where(and(eq(alumniJobPosts.status, 'published'), sql`(${alumniJobPosts.closesOn} is null or ${alumniJobPosts.closesOn} >= current_date)`)).orderBy(desc(alumniJobPosts.createdAt));
+      const mine = await tx.select().from(alumniJobPosts).where(eq(alumniJobPosts.alumniId, me.id)).orderBy(desc(alumniJobPosts.createdAt));
+      return { published, mine };
+    });
+  }
+
+  /** I post a job or internship for students; alumni relations checks it before it shows. */
+  @Post('jobs')
+  @Auth('user', ALUMNI)
+  postJob(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(JobBody)) b: z.infer<typeof JobBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const me = await this.mine(tx, p);
+      const [row] = await tx.insert(alumniJobPosts).values({ tenantId: p.tenantId, ...b, closesOn: b.closesOn ?? null, alumniId: me.id, postedBy: p.userId, status: 'pending' }).returning();
+      await auditUser(tx, p, 'alumni.job_posted', 'alumni_job_post', row.id, { title: b.title, company: b.company });
+      return row;
+    });
+  }
+
+  /** The alumni feedback survey (OBE indirect attainment): five ratings, an overall rating and comments, once a year. */
+  @Post('feedback')
+  @Auth('user', ALUMNI)
+  feedback(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(AlumniFeedbackBody)) b: z.infer<typeof AlumniFeedbackBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const me = await this.mine(tx, p);
+      const [again] = await tx.select({ id: placementFeedback.id }).from(placementFeedback).where(and(eq(placementFeedback.alumniId, me.id), eq(placementFeedback.year, b.year), eq(placementFeedback.kind, 'alumni')));
+      if (again) throw new ConflictException('You have already given feedback for this year');
+      const [row] = await tx.insert(placementFeedback).values({ tenantId: p.tenantId, kind: 'alumni', alumniId: me.id, respondentName: me.fullName, respondentOrg: me.employer ?? '', respondentEmail: me.email, year: b.year, r1: b.r1, r2: b.r2, r3: b.r3, r4: b.r4, r5: b.r5, overall: b.overall, comments: b.comments, source: 'alumni_portal' }).returning();
+      await auditUser(tx, p, 'placement.feedback_received', 'placement_feedback', row.id, { kind: 'alumni' });
+      return row;
     });
   }
 }

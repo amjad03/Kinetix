@@ -13,7 +13,9 @@ import { libraryBooks, libraryLoans, sections, students, tenants } from '../db/s
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { addDays } from '../teacher/teacher.service.js';
 import { libraryReservations } from '../db/schema-depth.js';
-import { copiesHeld, promoteNext } from './reservations.js';
+import { copiesHeld } from './reservations.js';
+import { libraryCopies } from '../db/schema-lht.js';
+import { addCopies, ensureStudentMember, pickCopy, returnLoan } from './circulation.js';
 import { naturalAsc } from '../common/natural-order.js';
 
 export const LIBRARY_ROLES: RoleName[] = ['librarian', 'tenant_admin', 'principal'];
@@ -27,9 +29,6 @@ const BookBody = z.object({
   copies: z.number().int().min(1).max(500).default(1),
 });
 const IssueBody = z.object({ bookId: z.uuid(), studentId: z.uuid(), dueOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() });
-
-/** Days between two YYYY-MM-DD dates (b − a). */
-const daysBetween = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400_000);
 
 /**
  * Library circulation: the librarian keeps the catalogue and issues and returns books; students
@@ -71,6 +70,9 @@ export class LibraryController {
   async addBook(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(BookBody)) body: z.infer<typeof BookBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [b] = await tx.insert(libraryBooks).values({ tenantId: p.tenantId, ...body }).returning();
+      // Each copy gets its accession number in the register.
+      await addCopies(tx, p.tenantId, b.id, body.copies, { acquiredOn: await this.today(tx) });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library_book.created', subjectType: 'library_book', subjectId: b.id, data: { label: b.title, copies: body.copies } });
       return { ...b, onLoan: 0 };
     });
   }
@@ -94,7 +96,10 @@ export class LibraryController {
       const today = await this.today(tx);
       const dueOn = body.dueOn ?? addDays(today, Number(rules.loanDays));
       if (dueOn < today) throw new BadRequestException('The due date has already passed');
-      const [loan] = await tx.insert(libraryLoans).values({ tenantId: p.tenantId, bookId: book.id, studentId: student.id, dueOn, issuedBy: p.userId }).returning();
+      const member = await ensureStudentMember(tx, p.tenantId, student.id);
+      const copy = await pickCopy(tx, book.id);
+      const [loan] = await tx.insert(libraryLoans).values({ tenantId: p.tenantId, bookId: book.id, studentId: student.id, memberId: member.id, copyId: copy?.id ?? null, dueOn, issuedBy: p.userId }).returning();
+      if (copy) await tx.update(libraryCopies).set({ status: 'on_loan' }).where(eq(libraryCopies.id, copy.id));
       await tx.update(libraryReservations).set({ status: 'fulfilled', loanId: loan.id }).where(and(eq(libraryReservations.bookId, book.id), eq(libraryReservations.studentId, student.id), sql`${libraryReservations.status} in ('waiting', 'ready')`));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library.issued', subjectType: 'library_loan', subjectId: loan.id });
       await this.notifications.libraryIssued(tx, { loanId: loan.id, studentId: student.id, studentName: student.fullName, title: book.title, dueOn });
@@ -111,15 +116,7 @@ export class LibraryController {
       const [loan] = await tx.select().from(libraryLoans).where(eq(libraryLoans.id, id)).for('update');
       if (!loan) throw new NotFoundException('Loan not found');
       if (loan.returnedAt) return loan;
-      const late = Math.max(0, daysBetween(loan.dueOn, await this.today(tx)));
-      const [done] = await tx
-        .update(libraryLoans)
-        .set({ returnedAt: this.clock.now(), finePaise: late * (await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay')) })
-        .where(eq(libraryLoans.id, id))
-        .returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library.returned', subjectType: 'library_loan', subjectId: id, data: { daysLate: late } });
-      await promoteNext(tx, loan.bookId, this.clock.now());
-      return done;
+      return returnLoan(tx, p, this.clock.now(), id);
     });
   }
 

@@ -60,7 +60,13 @@ export default async function FrameworkPage({ params, searchParams }: { params: 
       throw e;
     }
   });
-  if (data.error !== undefined) return <ErrorState message={data.error} />;
+  if (data.error !== undefined)
+    return (
+      <>
+        <PageHeader title={t('acx.h.title')} />
+        <ErrorState message={data.error} />
+      </>
+    );
   if (!data.data) notFound();
   const { r } = data.data;
   const fw = r.framework.key;

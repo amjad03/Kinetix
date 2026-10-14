@@ -185,7 +185,7 @@ export const AUDIENCE_ROLES = ['student', 'guardian', 'teacher', 'hod', 'princip
 
 export interface MessageTemplate { id: string; key: string; channel: Channel; locale: 'en' | 'hi' | 'kn'; subject: string; body: string; dltTemplateId: string | null; active: boolean; placeholders: string[] }
 export interface AudienceRow { id: string; name: string; rule: { roles?: string[]; sectionIds?: string[]; userIds?: string[] } }
-export interface CampaignRow { id: string; title: string; channel: Channel; templateKey: string; audience: string; sendAt: string; status: string; recipients: number; sentCount: number; failedCount: number }
+export interface CampaignRow { id: string; title: string; channel: Channel; templateKey: string; audience: string; sendAt: string; status: string; recipients: number; sentCount: number; failedCount: number; suppressedCount?: number; repeat?: string; repeatUntil?: string | null }
 export interface CampaignDetail extends CampaignRow {
   delivery: Record<string, number>;
   failures: { userId: string; fullName: string; error: string | null; attempts: number; nextAttemptAt: string | null }[];

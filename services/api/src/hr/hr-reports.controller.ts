@@ -6,8 +6,9 @@ import { audit } from '../common/audit.js';
 import { DbService } from '../db/db.service.js';
 import { PAYROLL_ROLES } from './hr.access.js';
 import { LeaveService } from './leave.service.js';
+import { cadreRatio, sfr } from './hr-master.logic.js';
 
-export const HR_REPORTS = ['staff-strength', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition'] as const;
+export const HR_REPORTS = ['staff-strength', 'staff-category', 'faculty-cadre', 'sfr', 'naac-faculty', 'publications', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'pt-return', 'lwf', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition'] as const;
 export type HrReport = (typeof HR_REPORTS)[number];
 
 type Row = Record<string, string | number | null>;
@@ -42,7 +43,7 @@ export class HrReportsController {
       const slips = (extra: SQL) => sql`
         select s.data->'user'->>'employeeCode' as code, s.data->'user'->>'fullName' as name, s.data->'user'->>'department' as department, ${extra}
         from payslips s join payroll_runs r on r.id = s.run_id left join staff_profiles sp on sp.user_id = s.user_id
-        where r.month = ${month} ${deptCond(sql`sp.department_id`)} order by 2`;
+        where r.month = ${month} and r.status <> 'reversed' ${deptCond(sql`sp.department_id`)} order by 2`;
       let columns: string[];
       let rows: Row[];
       switch (kind as HrReport) {
@@ -55,6 +56,69 @@ export class HrReportsController {
               count(*) filter (where sp.gender = 'female')::int as female, count(*) filter (where sp.gender = 'male')::int as male, count(*)::int as total
             from staff_profiles sp left join departments d on d.id = sp.department_id left join designations g on g.id = sp.designation_id
             where sp.status <> 'exited' ${deptCond(sql`sp.department_id`)} group by 1, 2 order by 1, 2`);
+          break;
+        case 'staff-category':
+          columns = ['category', 'cadre', 'female', 'male', 'other', 'general', 'ews', 'obc', 'sc', 'st', 'differentlyAbled', 'phd', 'netSet', 'total'];
+          rows = await run(sql`
+            select case sp.staff_category when 'teaching' then 'Teaching' else 'Non-teaching' end as category, coalesce(initcap(replace(sp.cadre, '_', ' ')), '—') as cadre,
+              count(*) filter (where sp.gender = 'female')::int as female, count(*) filter (where sp.gender = 'male')::int as male, count(*) filter (where sp.gender = 'other')::int as other,
+              count(*) filter (where sp.social_category = 'general')::int as general, count(*) filter (where sp.social_category = 'ews')::int as ews, count(*) filter (where sp.social_category = 'obc')::int as obc,
+              count(*) filter (where sp.social_category = 'sc')::int as sc, count(*) filter (where sp.social_category = 'st')::int as st, count(*) filter (where sp.differently_abled)::int as "differentlyAbled",
+              count(*) filter (where sp.phd_status = 'awarded')::int as phd, count(*) filter (where sp.net_set <> 'none')::int as "netSet", count(*)::int as total
+            from staff_profiles sp where sp.status <> 'exited' ${deptCond(sql`sp.department_id`)} group by 1, 2 order by 1 desc, 2`);
+          break;
+        case 'faculty-cadre':
+          columns = ['department', 'professor', 'associate', 'assistant', 'others', 'total', 'requiredProfessor', 'requiredAssociate', 'meetsRatio'];
+          rows = (
+            await run(sql`
+            select coalesce(d.name, '—') as department,
+              count(*) filter (where coalesce(sp.cadre, g.cadre) = 'professor')::int as professor, count(*) filter (where coalesce(sp.cadre, g.cadre) = 'associate_professor')::int as associate,
+              count(*) filter (where coalesce(sp.cadre, g.cadre) = 'assistant_professor')::int as assistant,
+              count(*) filter (where coalesce(sp.cadre, g.cadre) is null or coalesce(sp.cadre, g.cadre) not in ('professor', 'associate_professor', 'assistant_professor'))::int as others, count(*)::int as total
+            from staff_profiles sp left join departments d on d.id = sp.department_id left join designations g on g.id = sp.designation_id
+            where sp.status <> 'exited' and sp.staff_category = 'teaching' ${deptCond(sql`sp.department_id`)} group by 1 order by 1`)
+          ).map((r) => {
+            const ratio = cadreRatio({ professor: Number(r.professor), associate: Number(r.associate), assistant: Number(r.assistant) });
+            return { ...r, requiredProfessor: ratio.required.professor, requiredAssociate: ratio.required.associate, meetsRatio: ratio.meets ? 'Yes' : 'No' };
+          });
+          break;
+        case 'sfr': {
+          columns = ['programme', 'students', 'teachers', 'sfr'];
+          const prog = await run(sql`
+            select pr.name as programme,
+              (select count(*)::int from students st join sections sc on sc.id = st.section_id where sc.program_id = pr.id and st.status in ('active', 'enrolled', 'on_leave', 'detained')) as students,
+              (select count(distinct ts.teacher_id)::int from timetable_slots ts join sections sc on sc.id = ts.section_id where sc.program_id = pr.id and ts.archived_at is null) as teachers
+            from programs pr order by pr.sort_order, pr.name`);
+          const [tot] = await run(sql`
+            select (select count(*)::int from students where status in ('active', 'enrolled', 'on_leave', 'detained')) as students,
+              (select count(*)::int from staff_profiles where status <> 'exited' and staff_category = 'teaching') as teachers`);
+          rows = [...prog.map((r) => ({ ...r, sfr: sfr(Number(r.students), Number(r.teachers)) })), { programme: 'Institution', students: tot.students, teachers: tot.teachers, sfr: sfr(Number(tot.students), Number(tot.teachers)) }];
+          break;
+        }
+        case 'naac-faculty':
+          columns = ['code', 'name', 'pan', 'gender', 'department', 'designation', 'appointedOn', 'nature', 'highestQualification', 'phd', 'phdYear', 'netSet', 'experienceHere', 'experienceTotal', 'publications', 'stillServing'];
+          rows = await run(sql`
+            select sp.employee_code as code, u.full_name as name, coalesce(sp.pan, '') as pan, coalesce(sp.gender, '') as gender, coalesce(d.name, '') as department, coalesce(g.name, '') as designation,
+              sp.date_of_joining::text as "appointedOn", case sp.post_type when 'sanctioned' then 'Full time (sanctioned post)' when 'self_financing' then 'Full time (self-financing)' else 'Guest / part time' end as nature,
+              coalesce((select q.title from staff_qualifications q where q.user_id = sp.user_id and q.kind = 'degree' order by case q.level when 'Post-doctoral' then 1 when 'Ph.D.' then 2 when 'M.Phil.' then 3 when 'PG' then 4 when 'UG' then 5 else 6 end, q.year desc nulls last limit 1), '') as "highestQualification",
+              case sp.phd_status when 'awarded' then 'Yes' when 'submitted' then 'Thesis submitted' when 'pursuing' then 'Pursuing' else 'No' end as phd, sp.phd_year as "phdYear",
+              case sp.net_set when 'none' then 'No' else upper(replace(sp.net_set, '_', '-')) end as "netSet",
+              round(((coalesce(sp.date_of_leaving, current_date) - sp.date_of_joining) / 365.25)::numeric, 1)::float as "experienceHere",
+              round((((coalesce(sp.date_of_leaving, current_date) - sp.date_of_joining) + coalesce((select sum(e.to_date - e.from_date + 1) from staff_experience e where e.user_id = sp.user_id and e.kind = 'teaching'), 0)) / 365.25)::numeric, 1)::float as "experienceTotal",
+              (select count(*)::int from staff_publications pb where pb.user_id = sp.user_id) as publications,
+              case when sp.status = 'exited' then 'No' else 'Yes' end as "stillServing"
+            from staff_profiles sp join users u on u.id = sp.user_id left join departments d on d.id = sp.department_id left join designations g on g.id = sp.designation_id
+            where sp.staff_category = 'teaching' and sp.date_of_joining is not null and sp.date_of_joining <= ${`${fy + 1}-03-31`}::date
+              and (sp.date_of_leaving is null or sp.date_of_leaving >= ${`${fy}-04-01`}::date) ${deptCond(sql`sp.department_id`)} order by 5, 2`);
+          break;
+        case 'publications':
+          columns = ['code', 'name', 'department', 'kind', 'title', 'venue', 'year', 'issnIsbn', 'indexing', 'impactFactor', 'authorRole', 'verified'];
+          rows = await run(sql`
+            select sp.employee_code as code, u.full_name as name, coalesce(d.name, '') as department, pb.kind, pb.title, pb.venue, pb.year, pb.issn_isbn as "issnIsbn",
+              case pb.indexing when 'scopus' then 'Scopus' when 'wos' then 'Web of Science' when 'ugc_care' then 'UGC-CARE' when 'peer_reviewed' then 'Peer reviewed' else 'Not indexed' end as indexing,
+              pb.impact_factor::float as "impactFactor", pb.author_role as "authorRole", case when pb.verified_at is null then 'No' else 'Yes' end as verified
+            from staff_publications pb join users u on u.id = pb.user_id left join staff_profiles sp on sp.user_id = pb.user_id left join departments d on d.id = sp.department_id
+            where pb.year in (${fy}, ${fy + 1}) ${deptCond(sql`sp.department_id`)} order by pb.year desc, 2`);
           break;
         case 'attendance-register':
           columns = ['code', 'name', 'department', 'present', 'halfDay', 'absent', 'onLeave', 'marked', 'lateIns'];
@@ -105,6 +169,25 @@ export class HrReportsController {
         case 'pt':
           columns = ['code', 'name', 'department', 'grossPaise', 'ptPaise'];
           rows = await run(slips(sql`s.gross_paise as "grossPaise", s.pt_paise as "ptPaise"`));
+          break;
+        case 'pt-return': {
+          // Karnataka PT return (Form 5): employees and tax by salary slab for the month.
+          columns = ['slab', 'ratePaise', 'employees', 'ptPaise'];
+          const settings = (await tx.execute<{ pt_slabs: { minGrossPaise: number; amountPaise: number; februaryAmountPaise?: number }[] }>(sql`select pt_slabs from payroll_settings limit 1`)).rows[0]?.pt_slabs ?? [];
+          const slabs = [...settings].sort((a, b) => a.minGrossPaise - b.minGrossPaise);
+          const gross = await run(sql`select s.gross_paise as gross, s.pt_paise as pt from payslips s join payroll_runs r on r.id = s.run_id left join staff_profiles sp on sp.user_id = s.user_id where r.month = ${month} and r.status in ('approved', 'locked') and r.kind = 'regular' ${deptCond(sql`sp.department_id`)}`);
+          const feb = month.slice(5, 7) === '02';
+          rows = slabs.map((sl, k) => {
+            const top = slabs[k + 1]?.minGrossPaise ?? Infinity;
+            const inSlab = gross.filter((g) => Number(g.gross) >= sl.minGrossPaise && Number(g.gross) < top);
+            const rupee = (p: number) => (p / 100).toLocaleString('en-IN');
+            return { slab: top === Infinity ? `Rs. ${rupee(sl.minGrossPaise)} and above` : `Rs. ${rupee(sl.minGrossPaise)} to Rs. ${rupee(top - 100)}`, ratePaise: feb && sl.februaryAmountPaise !== undefined ? sl.februaryAmountPaise : sl.amountPaise, employees: inSlab.length, ptPaise: inSlab.reduce((n, g) => n + Number(g.pt), 0) };
+          });
+          break;
+        }
+        case 'lwf':
+          columns = ['code', 'name', 'department', 'lwfPaise', 'lwfEmployerPaise'];
+          rows = (await run(slips(sql`coalesce((s.data->>'lwfPaise')::bigint, 0) as "lwfPaise", coalesce((s.data->'employer'->>'lwfPaise')::bigint, 0) as "lwfEmployerPaise"`))).filter((r) => Number(r.lwfPaise) > 0 || Number(r.lwfEmployerPaise) > 0);
           break;
         case 'tds':
           columns = ['code', 'name', 'pan', 'taxableGrossPaise', 'tdsPaise'];

@@ -1,29 +1,34 @@
 import type { Metadata } from 'next';
-import { LoansDesk } from '@/components/hr/HrFlow';
-import { ErrorState, PageHeader } from '@/components/ui';
+import { HrList } from '@/components/hr/HrList';
+import { ErrorState, LinkTabs, PageHeader } from '@/components/ui';
 import { getI18n } from '@/i18n/server';
-import { api, load, requireSection } from '@/lib/api';
-import type { LeaveEncashment, StaffLoan } from '@/lib/hr-flow';
-import type { LeaveType, StaffSummary } from '@/lib/hr-types';
+import { requireSection } from '@/lib/api';
+import { loadRecords } from '@/lib/records-server';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('hf.loan.title') };
 }
 
-/** Loans, salary advances and leave encashment: requests, approvals and recovery through payroll. */
-export default async function LoansPage() {
-  const me = await requireSection('payslips');
+/** Loans, salary advances and leave encashment: requests, approvals, early closure and recovery through payroll (staff see their own). */
+export default async function LoansPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  await requireSection('payslips');
   const { t } = await getI18n();
-  const payroll = !!me && me.roles.some((r) => r === 'principal' || r === 'tenant_admin' || r === 'hr_manager' || r === 'accountant');
-  const data = await load(() => Promise.all([api<StaffLoan[]>('/v1/hr/loans'), api<LeaveEncashment[]>('/v1/hr/leave/encashments'), api<LeaveType[]>('/v1/hr/leave-types'), payroll ? api<StaffSummary[]>('/v1/hr/staff') : Promise.resolve([] as StaffSummary[])]));
+  const sp = await searchParams;
+  const view = sp.view === 'encashments' ? 'encashments' : 'loans';
+  const entity = view === 'encashments' ? 'leave-encashments' : 'staff-loans';
+  const list = await loadRecords(entity, sp);
   return (
     <>
       <PageHeader title={t('hf.loan.title')} subtitle={t('hf.loan.subtitle')} />
-      {data.error !== undefined || !me ? (
-        <ErrorState message={data.error ?? t('error.generic')} />
-      ) : (
-        <LoansDesk loans={data.data[0]} encashments={data.data[1]} leaveTypes={data.data[2].filter((x) => x.encashable && x.active).map((x) => ({ id: x.id, name: x.name }))} staff={data.data[3].filter((s) => s.employeeCode).map((s) => ({ userId: s.userId, fullName: s.fullName }))} canRaiseForOthers={payroll} meId={me.id} />
-      )}
+      <LinkTabs
+        value={view}
+        label={t('hf.loan.title')}
+        items={[
+          { value: 'loans', href: '/payroll/loans', label: t('rk.entity.staff-loans') },
+          { value: 'encashments', href: '/payroll/loans?view=encashments', label: t('rk.entity.leave-encashments') },
+        ]}
+      />
+      {list.error !== undefined ? <ErrorState message={list.error} /> : <HrList entity={entity} data={list.data} extraParams={{ view }} />}
     </>
   );
 }

@@ -386,6 +386,9 @@ export class NotificationsService {
     n: { kind: Kind; text: Localized | Text; data: Record<string, string>; dedupeKey: string },
     opts: { revive?: boolean; replace?: boolean } = {},
   ): Promise<void> {
+    // Settings > Notifications: a kind the institution turned off is not sent; one without push stays in the app.
+    const prefs = await notificationPrefs(tx);
+    if (prefs.off.includes(n.kind)) return;
     // A withdrawn absence that becomes an absence again is shown again, as unread; a changed
     // entry (calendar, a second review) replaces the earlier text and is shown as new.
     const onConflict = opts.replace
@@ -407,6 +410,13 @@ export class NotificationsService {
       join users u on u.id = r.user_id
       ${onConflict}
       returning id, tenant_id`);
-    if (rows.length) await this.push.queue(tx, rows[0].tenant_id, rows.map((r) => r.id));
+    if (rows.length && !prefs.pushOff.includes(n.kind)) await this.push.queue(tx, rows[0].tenant_id, rows.map((r) => r.id));
   }
+}
+
+/** The institution's notification switches (tenants.settings.notifications). Messages in a conversation are always sent. */
+export async function notificationPrefs(tx: Tx): Promise<{ off: string[]; pushOff: string[] }> {
+  const { rows } = await tx.execute<{ n: { off?: string[]; pushOff?: string[] } | null }>(sql`select settings -> 'notifications' as n from tenants where id = nullif(current_setting('app.tenant_id', true), '')::uuid`);
+  const n = rows[0]?.n ?? {};
+  return { off: (n.off ?? []).filter((k) => k !== 'message'), pushOff: n.pushOff ?? [] };
 }

@@ -248,7 +248,7 @@ describe('document versions, retention, communication, parent visibility and app
     const kid = () => t.students[0].id;
 
     it('shows parents everything by default and lets the school switch sections off', async () => {
-      expect((await get('parent', '/v1/parent/visibility').expect(200)).body).toEqual({ attendance: true, diary: true, report_card: true, behaviour: true, activities: true, health: true });
+      expect((await get('parent', '/v1/parent/visibility').expect(200)).body).toEqual({ attendance: true, diary: true, report_card: true, behaviour: true, activities: true, health: true, mentoring: true });
       await get('parent', `/v1/parent/children/${kid()}/attendance`).expect(200);
       await get('parent', `/v1/parent/children/${kid()}/diary`).expect(200);
       await get('parent', `/v1/parent/children/${kid()}/health`).expect(200);
@@ -256,7 +256,7 @@ describe('document versions, retention, communication, parent visibility and app
       await get('parent', `/v1/school/report-cards?studentId=${kid()}`).expect(200);
       await put('teacher', '/v1/parent-visibility/attendance', { visible: false }).expect(403);
       await put('principal', '/v1/parent-visibility/marks', { visible: false }).expect(400);
-      for (const section of ['attendance', 'diary', 'health', 'activities', 'behaviour', 'report_card']) await put('principal', `/v1/parent-visibility/${section}`, { visible: false }).expect(200);
+      for (const section of ['attendance', 'diary', 'health', 'activities', 'behaviour', 'report_card', 'mentoring']) await put('principal', `/v1/parent-visibility/${section}`, { visible: false }).expect(200);
       expect((await get('principal', '/v1/parent-visibility').expect(200)).body.every((x: { visible: boolean }) => x.visible === false)).toBe(true);
     });
 
@@ -282,7 +282,7 @@ describe('document versions, retention, communication, parent visibility and app
       await put('principal', '/v1/parent-visibility/attendance', { visible: true }).expect(200);
       await get('parent', `/v1/parent/children/${kid()}/attendance`).expect(200);
       expect((await get('parent', `/v1/parent/children/${kid()}/summary`).expect(200)).body.attendance.hidden).toBeUndefined();
-      expect((await q<{ n: number }>(`select count(*)::int as n from audit_log where tenant_id = $1 and action = 'parent_visibility.changed'`, [t.tenantId]))[0].n).toBe(7);
+      expect((await q<{ n: number }>(`select count(*)::int as n from audit_log where tenant_id = $1 and action = 'parent_visibility.changed'`, [t.tenantId]))[0].n).toBe(8);
     });
   });
 

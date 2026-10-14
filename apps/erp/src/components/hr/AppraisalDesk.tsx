@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { committeeReview } from '@/app/(dashboard)/hr/depth-actions';
 import { closeCycle, createCycle, finaliseAppraisal, hodReview, saveSelfAppraisal } from '@/app/(dashboard)/hr/talent-actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { Dialog, FormField, StatusPill, TextInput, type Tone } from '@/components/ui';
@@ -10,7 +11,7 @@ import type { MessageKey } from '@/i18n/messages';
 import type { Appraisal, AppraisalCategory, AppraisalCycle, AppraisalScores, AppraisalStatus } from '@/lib/hr-lifecycle';
 
 import { Alert, Button, MenuItem, Table, TableBody, TableCell, TableHead, TableRow } from '@/components/kx';
-const TONE: Record<AppraisalStatus, Tone> = { draft: 'neutral', self_submitted: 'warning', hod_reviewed: 'info', finalised: 'success' };
+const TONE: Record<AppraisalStatus, Tone> = { draft: 'neutral', self_submitted: 'warning', hod_reviewed: 'info', committee_reviewed: 'info', finalised: 'success' };
 
 export interface AppraisalViewer {
   userId: string;
@@ -60,6 +61,8 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
   const [final, setFinal] = useState<Appraisal | null>(null);
   const [remarks, setRemarks] = useState('');
   const [finalPct, setFinalPct] = useState('');
+  const [committee, setCommittee] = useState<Appraisal | null>(null);
+  const [committeePct, setCommitteePct] = useState('');
   const current = cycles.find((c) => c.id === cycleId) ?? null;
   const locked = !current || current.status !== 'open' || (mine != null && mine.status !== 'draft');
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>, after?: () => void) =>
@@ -160,6 +163,8 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
                   <TableCell>{t('hl.appr.col.status')}</TableCell>
                   <TableCell align="right">{t('hl.appr.col.self')}</TableCell>
                   <TableCell align="right">{t('hl.appr.col.hod')}</TableCell>
+                  <TableCell align="right">{t('hk.appr.feedback')}</TableCell>
+                  <TableCell align="right">{t('hk.appr.committee')}</TableCell>
                   <TableCell align="right">{t('hl.appr.col.final')}</TableCell>
                   <TableCell>{t('hl.appr.col.grade')}</TableCell>
                   <TableCell />
@@ -174,6 +179,8 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
                     </TableCell>
                     <TableCell align="right">{a.selfPercent}%</TableCell>
                     <TableCell align="right">{a.status === 'self_submitted' || a.status === 'draft' ? '–' : `${a.hodPercent}%`}</TableCell>
+                    <TableCell align="right">{a.studentFeedbackScore == null ? '–' : `${a.studentFeedbackScore}%`}</TableCell>
+                    <TableCell align="right">{a.committeeScore == null ? '–' : `${a.committeeScore}%`}</TableCell>
                     <TableCell align="right">{a.finalScore == null ? '–' : `${a.finalScore}%`}</TableCell>
                     <TableCell>{a.grade ? t(`hl.grade.${a.grade}` as MessageKey) : '–'}</TableCell>
                     <TableCell className="whitespace-nowrap" align="right">
@@ -189,7 +196,12 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
                           {t('hl.appr.review')}
                         </Button>
                       )}
-                      {viewer.principal && a.userId !== viewer.userId && a.status === 'hod_reviewed' && (
+                      {viewer.hr && a.userId !== viewer.userId && (a.status === 'hod_reviewed' || a.status === 'committee_reviewed') && (
+                        <Button size="small" onClick={() => { setRemarks(a.committeeRemarks ?? ''); setCommitteePct(a.committeeScore == null ? String(a.hodPercent) : String(a.committeeScore)); setCommittee(a); }}>
+                          {t('hk.appr.committeeAction')}
+                        </Button>
+                      )}
+                      {viewer.principal && a.userId !== viewer.userId && (a.status === 'hod_reviewed' || a.status === 'committee_reviewed') && (
                         <Button size="small" onClick={() => { setRemarks(''); setFinalPct(''); setFinal(a); }}>
                           {t('hl.appr.finalise')}
                         </Button>
@@ -238,9 +250,34 @@ export function AppraisalDesk({ cycles, cycleId, cats, mine, appraisals, viewer 
           }
         >
           <div className="flex flex-col gap-4 pt-2">
-            <p className="text-sm leading-[21px]">{t('hl.appr.col.hod')}: {final.hodPercent}%</p>
+            <p className="text-sm leading-[21px]">{t('hl.appr.col.hod')}: {final.hodPercent}%{final.committeeScore != null && ` · ${t('hk.appr.committee')}: ${final.committeeScore}%`}</p>
             <FormField label={t('hl.appr.finalPercent')} helper={t('hl.appr.finalHelp')}>
               <TextInput type="number" value={finalPct} slotProps={{ htmlInput: { min: 0, max: 100, step: 0.01 } }} onChange={(e) => setFinalPct(e.target.value)} />
+            </FormField>
+            <FormField label={t('hl.appr.remarks')}>
+              <TextInput multiline minRows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
+            </FormField>
+          </div>
+        </Dialog>
+      )}
+
+      {committee && (
+        <Dialog
+          title={`${t('hk.appr.committeeAction')}: ${committee.fullName ?? ''}`}
+          onClose={() => setCommittee(null)}
+          busy={pending}
+          actions={
+            <Button variant="contained" disabled={pending || committeePct.trim() === ''} onClick={() => run(() => committeeReview(committee.id, Number(committeePct), remarks), () => setCommittee(null))}>
+              {t('hl.save')}
+            </Button>
+          }
+        >
+          <div className="flex flex-col gap-4 pt-2">
+            <p className="text-sm leading-[21px]">
+              {t('hl.appr.col.self')}: {committee.selfPercent}% · {t('hl.appr.col.hod')}: {committee.hodPercent}% · {t('hk.appr.feedback')}: {committee.studentFeedbackScore == null ? '–' : `${committee.studentFeedbackScore}%`}
+            </p>
+            <FormField label={t('hk.appr.committeePercent')} helper={t('hk.appr.committeeHelp')} required>
+              <TextInput type="number" value={committeePct} slotProps={{ htmlInput: { min: 0, max: 100, step: 0.01 } }} onChange={(e) => setCommitteePct(e.target.value)} required />
             </FormField>
             <FormField label={t('hl.appr.remarks')}>
               <TextInput multiline minRows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />

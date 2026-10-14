@@ -9,6 +9,8 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { invalidateModuleGate } from './module-gate.interceptor.js';
 import { buildingFloors, buildings, campuses, institutionProfiles, rooms, tenants } from '../db/schema.js';
 import { resolveAffiliation } from '../affiliation/resolve.js';
+import { ACCESS_MODULES, effectiveAccess, type AccessLevel } from '../access/access-catalog.js';
+import { roleAccessRules } from '../db/schema-governance.js';
 
 /** ERP sections an institution may switch off (they disappear from the navigation). */
 export const TOGGLE_MODULES = ['hostel', 'transport', 'canteen', 'library', 'placements', 'research', 'obe', 'courseRegistration', 'earlyYears', 'alumni', 'inventory', 'assets', 'skills', 'campusLife', 'mentoring', 'workflows'] as const;
@@ -55,7 +57,11 @@ export class InstitutionController {
       const r = await readProfile(tx);
       const [tenant] = await tx.select({ kind: tenants.kind }).from(tenants).where(eq(tenants.id, p.tenantId));
       const aff = await resolveAffiliation(tx, null);
+      // Settings > Roles and permissions: the modules this person's roles may not use, or may only look at.
+      const rules = new Map((await tx.select({ role: roleAccessRules.role, module: roleAccessRules.module, access: roleAccessRules.access }).from(roleAccessRules)).map((x) => [`${x.role}:${x.module}`, x.access as AccessLevel]));
+      const levels = ACCESS_MODULES.map((m) => ({ key: m.key, level: effectiveAccess(p.roles, m.key, rules) }));
       return {
+        access: { none: levels.filter((l) => l.level === 'none').map((l) => l.key), read: levels.filter((l) => l.level === 'read').map((l) => l.key) },
         /** The affiliating university or board and its wording (Semester, IA/SEE or CIE/SEE, USN or Register Number). */
         affiliation: aff ? { profileCode: aff.profile.code, shortName: aff.profile.shortName, kind: aff.profile.kind, scheme: aff.scheme.code, terminology: aff.rules.terminology } : null,
         tenantKind: tenant?.kind ?? null,

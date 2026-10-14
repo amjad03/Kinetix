@@ -13,7 +13,8 @@ import { WhatsAppSender } from '../comms/channels.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { chatMembers, chatMessages, chatThreads } from '../db/schema-chat.js';
-import { userRoles, users } from '../db/schema.js';
+import { tenants, userRoles, users } from '../db/schema.js';
+import { postRefusal } from './chat-groups.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
@@ -130,7 +131,7 @@ export class ChatController {
   @Get('threads')
   @Auth('user')
   list(@CurrentPrincipal() p: UserPrincipal, @Query('filter') filter?: string) {
-    this.assertStaff(p);
+    // Families see only the class and club groups they were added to (membership decides everything below).
     return this.db.withTenant(p.tenantId, async (tx) => {
       const rows = await this.summaries(tx, p)
         .where(and(eq(chatMembers.userId, p.userId), filter === 'groups' ? eq(chatThreads.kind, 'group') : filter === 'external' ? eq(chatThreads.kind, 'external') : undefined))
@@ -185,6 +186,10 @@ export class ChatController {
     const { msg, thread, memberIds, senderName } = await this.db.withTenant(p.tenantId, async (tx) => {
       const thread = await this.member(tx, p, id);
       const now = new Date();
+      const [mine] = await tx.select({ role: chatMembers.role }).from(chatMembers).where(and(eq(chatMembers.threadId, id), eq(chatMembers.userId, p.userId)));
+      const [ten] = await tx.select({ tz: tenants.timezone }).from(tenants);
+      const refusal = postRefusal(thread, mine?.role ?? 'member', now, ten?.tz ?? 'Asia/Kolkata');
+      if (refusal) throw new ForbiddenException(refusal);
       const ext = thread.kind === 'external';
       const [msg] = await tx
         .insert(chatMessages)
@@ -397,6 +402,12 @@ export class ChatController {
         pinned: chatMembers.pinned,
         createdAt: chatThreads.createdAt,
         lastMessageAt: chatThreads.lastMessageAt,
+        linkedKind: chatThreads.linkedKind,
+        linkedId: chatThreads.linkedId,
+        postPolicy: chatThreads.postPolicy,
+        quietStart: chatThreads.quietStart,
+        quietEnd: chatThreads.quietEnd,
+        myRole: chatMembers.role,
         /** Direct threads: the other person. */
         peer: sql<{ id: string; fullName: string } | null>`(select json_build_object('id', u.id, 'fullName', u.full_name) from chat_members o join users u on u.id = o.user_id where o.thread_id = ${chatThreads.id} and o.user_id <> ${p.userId}::uuid and ${chatThreads.kind} = 'direct' limit 1)`,
         memberCount: sql<number>`(select count(*)::int from chat_members o where o.thread_id = ${chatThreads.id})`,

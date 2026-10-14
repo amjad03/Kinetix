@@ -130,6 +130,8 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
               { label: t('pwb.comms.recipients'), cell: (c) => fmt.number(c.recipients), num: true, sort: (c) => c.recipients },
               { label: t('pwb.comms.sent'), cell: (c) => fmt.number(c.sentCount), num: true, sort: (c) => c.sentCount },
               { label: t('pwb.comms.failed'), cell: (c) => fmt.number(c.failedCount), num: true, sort: (c) => c.failedCount },
+              { label: t('cd.suppressed'), cell: (c) => fmt.number(c.suppressedCount ?? 0), num: true, sort: (c) => c.suppressedCount ?? 0 },
+              { label: t('cd.repeat'), cell: (c) => (c.repeat && c.repeat !== 'none' ? t(`cd.repeat.${c.repeat}` as MessageKey) : '-'), sort: (c) => c.repeat ?? '' },
               { label: '', cell: (c) => <Button size="small" onClick={() => setDetail(c)}>{t('ops.details')}</Button> },
             ]}
           />
@@ -172,6 +174,8 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
             { name: 'audienceId', label: t('pwb.comms.audience'), kind: 'select', required: true, options: audiences.map((a) => ({ value: a.id, label: a.name })) },
             { name: 'vars', label: t('pwb.comms.vars'), kind: 'multiline' },
             { name: 'sendAt', label: t('pwb.comms.sendAtOptional'), kind: 'datetime' },
+            { name: 'repeat', label: t('cd.repeat'), kind: 'select', init: 'none', options: ['none', 'daily', 'weekly', 'monthly'].map((r) => ({ value: r, label: t(`cd.repeat.${r}` as MessageKey) })) },
+            { name: 'repeatUntil', label: t('cd.repeatUntil'), kind: 'date' },
           ]}
         />
       )}

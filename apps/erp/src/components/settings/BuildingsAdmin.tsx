@@ -39,7 +39,7 @@ export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
         </Alert>
       )}
       <SectionTitle>{t('bld.addBuilding')}</SectionTitle>
-      <Card className="p-5 mb-6">
+      <Card className="mb-6">
         <FormGrid cols={3}>
           <SelectInput label={t('bld.campus')} value={campusId} options={tree.campuses.map((c) => ({ value: c.id, label: c.name }))} onChange={(e) => setCampusId(e.target.value)} />
           <TextInput label={t('bld.name')} value={name} onChange={(e) => setName(e.target.value)} />
@@ -56,7 +56,7 @@ export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
         tree.buildings.map((b) => {
           const d = floorDraft[b.id] ?? { level: '', label: '' };
           return (
-            <Card className="p-5 mb-4" key={b.id} data-testid="building">
+            <Card className="mb-4" key={b.id} data-testid="building">
               <h3 className="text-base leading-6 font-medium tracking-[0.1px]">
                 {b.name} {b.code && <Chip className="ml-2" size="small" label={b.code} />}
               </h3>
@@ -81,7 +81,7 @@ export function BuildingsAdmin({ tree }: { tree: BuildingsTree }) {
       {tree.unplacedRooms.length > 0 && (
         <>
           <SectionTitle>{t('bld.unplaced')}</SectionTitle>
-          <Card className="p-5">
+          <Card>
             {tree.unplacedRooms.map((r) => (
               <FormRow className="gap-3 mb-3" key={r.id}>
                 <p className="text-sm leading-[21px] min-w-[160px]">{r.name}</p>

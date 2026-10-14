@@ -24,13 +24,14 @@ export function ChatSettingsPanel({ settings, staff, schoolKind }: { settings: C
   const [endAt, setEndAt] = useState(settings.officeHours?.end ?? '17:00');
   const [days, setDays] = useState<number[]>(settings.officeHours?.days ?? [1, 2, 3, 4, 5, 6]);
   const [office, setOffice] = useState<string[]>(settings.officeUserIds ?? []);
+  const [officeRoles, setOfficeRoles] = useState<string[]>(settings.officeRoles ?? []);
   const [busy, start] = useTransition();
   const hoursError = hoursOn && (startAt >= endAt || days.length === 0) ? t('fc.set.hoursError') : '';
 
   const save = () =>
     start(async () => {
       if (hoursError) return;
-      const r = await saveChatSettings({ studentChat, officeHours: hoursOn ? { start: startAt, end: endAt, days } : null, officeUserIds: office });
+      const r = await saveChatSettings({ studentChat, officeHours: hoursOn ? { start: startAt, end: endAt, days } : null, officeUserIds: office, officeRoles });
       if (!r.ok) return toast.error(r.error);
       toast.success(t('fc.set.saved'));
       router.refresh();
@@ -89,6 +90,18 @@ export function ChatSettingsPanel({ settings, staff, schoolKind }: { settings: C
               </li>
             ))}
           </ul>
+        </fieldset>
+        <fieldset className="grid gap-2 border-0 p-0 m-0">
+          <legend className="text-[13px] font-semibold mb-1">{t('cd.officeRoles')}</legend>
+          <p className="text-xs text-muted-foreground">{t('cd.officeRolesHelp')}</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1" data-testid="fc-office-roles">
+            {(settings.officeRoleChoices ?? []).map((r) => (
+              <label key={r} className="flex cursor-pointer items-center gap-2 text-sm">
+                <input type="checkbox" checked={officeRoles.includes(r)} onChange={() => setOfficeRoles((x) => (x.includes(r) ? x.filter((y) => y !== r) : [...x, r]))} />
+                {t(`role.${r}` as MessageKey)}
+              </label>
+            ))}
+          </div>
         </fieldset>
       </section>
 

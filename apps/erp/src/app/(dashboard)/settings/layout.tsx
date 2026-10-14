@@ -6,9 +6,10 @@ import { canSee } from '@/lib/access';
 import { NAV_GROUPS, type NavItem } from '@/lib/nav';
 
 const GROUPS: { label: MessageKey; hrefs: string[] }[] = [
-  { label: 'v2.set.g.institution', hrefs: ['/settings', '/settings/institution', '/settings/affiliation', '/settings/branding', '/settings/buildings', '/institution-setup', '/sso'] },
+  { label: 'v2.set.g.institution', hrefs: ['/settings', '/settings/institution', '/settings/affiliation', '/settings/branding', '/settings/academic-years', '/settings/campuses', '/settings/buildings', '/institution-setup'] },
+  { label: 'ga.set.g.access', hrefs: ['/settings/users', '/settings/roles', '/sso', '/settings/notifications'] },
   { label: 'v2.set.g.automation', hrefs: ['/workflows', '/delegations'] },
-  { label: 'v2.set.g.data', hrefs: ['/connectors', '/integrations', '/import', '/import/migration'] },
+  { label: 'v2.set.g.data', hrefs: ['/connectors', '/integrations', '/import', '/import/migration', '/settings/data-export', '/recycle-bin'] },
   { label: 'v2.set.g.compliance', hrefs: ['/audit', '/governance/rules', '/governance/incidents', '/governance/retention', '/dpdp', '/integrity', '/ai/audit', '/ai/evals'] },
   { label: 'v2.set.g.billing', hrefs: ['/billing'] },
 ];

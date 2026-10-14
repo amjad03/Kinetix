@@ -174,6 +174,42 @@ export function monthlyTds(regime: TaxRegime, p: {
   return { annualTaxPaise: tax, tdsPaise: roundRupee(Math.max(0, tax - p.ytdTdsPaise) / left) };
 }
 
+/**
+ * TDS on a supplementary payment (arrears, bonus) made after the month's regular payroll: the tax on the year's
+ * projected income with the payment, less the tax without it, deducted in full now (it is paid once).
+ */
+export function supplementaryTds(regime: TaxRegime, p: {
+  month: number;
+  extraTaxablePaise: number;
+  regularMonthTaxablePaise: number;
+  ytdGrossTaxablePaise: number;
+  ytdPtPaise: number;
+  ytdEmployeePfPaise: number;
+  declared80cPaise: number;
+  otherDeductionsPaise: number;
+}): { annualTaxPaise: number; tdsPaise: number } {
+  // The year to date already includes this month's regular pay; the months after it repeat it.
+  const later = monthsLeftInFy(p.month) - 1;
+  const base = { professionalTaxPaise: p.ytdPtPaise, section80cPaise: p.declared80cPaise + p.ytdEmployeePfPaise, otherDeductionsPaise: p.otherDeductionsPaise };
+  const projected = p.ytdGrossTaxablePaise + p.regularMonthTaxablePaise * later;
+  const without = annualTax(regime, { ...base, grossPaise: projected });
+  const withExtra = annualTax(regime, { ...base, grossPaise: projected + p.extraTaxablePaise });
+  return { annualTaxPaise: withExtra, tdsPaise: roundRupee(Math.max(0, withExtra - without)) };
+}
+
+/**
+ * The monthly amount of each structure line for a month: fixed lines as set, percentage lines (DA on basic) as
+ * the rate in force that month times their base component's amount, rounded to the rupee.
+ */
+export function resolveLines(lines: (StructureLine & { calc?: string; percent?: number | null; baseCode?: string })[], rateFor: (code: string) => number | null): StructureLine[] {
+  const fixed = new Map(lines.filter((l) => l.calc !== 'percent').map((l) => [l.code, l.monthlyPaise]));
+  return lines.map(({ calc, percent, baseCode, ...l }) => {
+    if (calc !== 'percent') return l;
+    const rate = rateFor(l.code) ?? percent ?? 0;
+    return { ...l, monthlyPaise: roundRupee(((fixed.get(baseCode ?? 'BASIC') ?? 0) * rate) / 100) };
+  });
+}
+
 export interface StructureLine {
   code: string;
   name: string;
@@ -196,6 +232,13 @@ export interface PayslipInput {
   ytd: { grossTaxablePaise: number; ptPaise: number; employeePfPaise: number; tdsPaise: number };
   /** Approved overtime, arrears and bonuses (added in full, not prorated) and recoveries (taken as deductions). */
   extras?: { code: string; name: string; amountPaise: number; taxable: boolean; recovery?: boolean }[];
+  /** Labour Welfare Fund due this month (Karnataka: December), when the staff member is covered. */
+  lwf?: { employeePaise: number; employerPaise: number } | null;
+  /**
+   * A supplementary run: only the extras are paid, so no PF wage, PT or LWF; TDS is the extra tax the extras
+   * add to the year's projected income (`regularMonthTaxablePaise` is this month's regular taxable pay).
+   */
+  supplementary?: { regularMonthTaxablePaise: number } | null;
 }
 
 export interface ComputedLine {
@@ -214,9 +257,10 @@ export interface ComputedPayslip {
   netPaise: number;
   pfWagePaise: number;
   employeePfPaise: number;
-  employer: { epfPaise: number; epsPaise: number; esiPaise: number };
+  employer: { epfPaise: number; epsPaise: number; esiPaise: number; lwfPaise: number };
   esiPaise: number;
   ptPaise: number;
+  lwfPaise: number;
   tdsPaise: number;
   annualTaxPaise: number;
 }
@@ -236,8 +280,21 @@ export function computePayslip(i: PayslipInput): ComputedPayslip {
   const pf = i.staff.pfEnabled ? providentFund(pfWage, i.pf) : { employee: 0, eps: 0, epf: 0 };
   const e = i.staff.esiEnabled ? esi(gross, i.esiLimitPaise) : { employee: 0, employer: 0 };
   const month = Number(i.month.slice(5, 7));
-  const pt = i.staff.ptEnabled ? professionalTax(gross, month, i.ptSlabs) : 0;
-  const tds = monthlyTds(i.staff.regime, {
+  const supp = i.supplementary ?? null;
+  const pt = i.staff.ptEnabled && !supp ? professionalTax(gross, month, i.ptSlabs) : 0;
+  const lwf = i.lwf && !supp ? i.lwf : { employeePaise: 0, employerPaise: 0 };
+  const tds = supp
+    ? supplementaryTds(i.staff.regime, {
+        month,
+        extraTaxablePaise: taxableGross,
+        regularMonthTaxablePaise: supp.regularMonthTaxablePaise,
+        ytdGrossTaxablePaise: i.ytd.grossTaxablePaise,
+        ytdPtPaise: i.ytd.ptPaise,
+        ytdEmployeePfPaise: i.ytd.employeePfPaise,
+        declared80cPaise: i.staff.tax80cPaise,
+        otherDeductionsPaise: i.staff.taxOtherDeductionsPaise,
+      })
+    : monthlyTds(i.staff.regime, {
     month,
     monthGrossTaxablePaise: taxableGross,
     monthPtPaise: pt,
@@ -254,6 +311,7 @@ export function computePayslip(i: PayslipInput): ComputedPayslip {
   if (pf.employee) deductions.push({ code: 'PF', name: 'Provident Fund', amountPaise: pf.employee });
   if (e.employee) deductions.push({ code: 'ESI', name: 'ESI', amountPaise: e.employee });
   if (pt) deductions.push({ code: 'PT', name: 'Professional Tax', amountPaise: pt });
+  if (lwf.employeePaise) deductions.push({ code: 'LWF', name: 'Labour Welfare Fund', amountPaise: lwf.employeePaise });
   if (tds.tdsPaise) deductions.push({ code: 'TDS', name: 'Income Tax (TDS)', amountPaise: tds.tdsPaise });
   // Fixed deductions (loan recovery, canteen…) are not prorated, and never take net pay below zero.
   let room = gross - deductions.reduce((s, d) => s + d.amountPaise, 0);
@@ -274,9 +332,10 @@ export function computePayslip(i: PayslipInput): ComputedPayslip {
     netPaise: gross - totalDeductions,
     pfWagePaise: pfWage,
     employeePfPaise: pf.employee,
-    employer: { epfPaise: pf.epf, epsPaise: pf.eps, esiPaise: e.employer },
+    employer: { epfPaise: pf.epf, epsPaise: pf.eps, esiPaise: e.employer, lwfPaise: lwf.employerPaise },
     esiPaise: e.employee,
     ptPaise: pt,
+    lwfPaise: lwf.employeePaise,
     tdsPaise: tds.tdsPaise,
     annualTaxPaise: tds.annualTaxPaise,
   };

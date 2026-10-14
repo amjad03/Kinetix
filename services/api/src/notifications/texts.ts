@@ -48,9 +48,13 @@ export const texts = {
   leaveRecommended: (p: { name: string; from: string; to: string; days: number }) =>
     all((l) => ({ title: l === 'hi' ? `${p.name} का अवकाश अनुशंसित, स्वीकृति शेष` : l === 'kn' ? `${p.name} ರಜೆ ಶಿಫಾರಸು, ಅನುಮೋದನೆ ಬಾಕಿ` : `Leave recommended for ${p.name}, awaiting approval`, body: `${dateIn(l, p.from)} - ${dateIn(l, p.to)} (${p.days})` })),
   /** A loan, advance, leave encashment or requisition was decided. */
-  hrRequestDecided: (p: { what: 'loan' | 'advance' | 'encashment' | 'requisition'; approved: boolean; detail: string }) =>
+  hrRequestDecided: (p: { what: 'loan' | 'advance' | 'encashment' | 'requisition' | 'compoff' | 'regularisation'; approved: boolean; detail: string }) =>
     all((l) => {
-      const what = { en: { loan: 'loan', advance: 'salary advance', encashment: 'leave encashment', requisition: 'staff requisition' }, hi: { loan: 'ऋण', advance: 'वेतन अग्रिम', encashment: 'अवकाश नकदीकरण', requisition: 'स्टाफ़ माँग' }, kn: { loan: 'ಸಾಲ', advance: 'ವೇತನ ಮುಂಗಡ', encashment: 'ರಜೆ ನಗದೀಕರಣ', requisition: 'ಸಿಬ್ಬಂದಿ ಬೇಡಿಕೆ' } }[l][p.what];
+      const what = {
+        en: { loan: 'loan', advance: 'salary advance', encashment: 'leave encashment', requisition: 'staff requisition', compoff: 'compensatory off', regularisation: 'attendance correction' },
+        hi: { loan: 'ऋण', advance: 'वेतन अग्रिम', encashment: 'अवकाश नकदीकरण', requisition: 'स्टाफ़ माँग', compoff: 'प्रतिपूरक अवकाश', regularisation: 'उपस्थिति सुधार' },
+        kn: { loan: 'ಸಾಲ', advance: 'ವೇತನ ಮುಂಗಡ', encashment: 'ರಜೆ ನಗದೀಕರಣ', requisition: 'ಸಿಬ್ಬಂದಿ ಬೇಡಿಕೆ', compoff: 'ಪರಿಹಾರ ರಜೆ', regularisation: 'ಹಾಜರಾತಿ ತಿದ್ದುಪಡಿ' },
+      }[l][p.what];
       const verdict = l === 'hi' ? (p.approved ? 'स्वीकृत' : 'अस्वीकृत') : l === 'kn' ? (p.approved ? 'ಅನುಮೋದಿಸಲಾಗಿದೆ' : 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ') : p.approved ? 'approved' : 'not approved';
       return { title: l === 'en' ? `Your ${what} request was ${verdict}` : `${what}: ${verdict}`, body: p.detail };
     }),

@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics' | 'chat' | 'campusOps' | 'qualityHub';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics' | 'chat' | 'campusOps' | 'qualityHub' | 'procurement' | 'indents' | 'facilities';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -33,7 +33,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // timetable-admin.controller.ts: STAFF_ADMIN_ROLES
   timetable: ['principal', 'tenant_admin'],
   // messages.controller.ts: GET /v1/conversations?all=true is for isSchoolAdmin (principal, admin)
-  conversations: ['principal', 'tenant_admin'],
+  // Office threads are also answered by the office roles (accountant, admissions officer: chat-rules.ts DEFAULT_OFFICE_ROLES).
+  conversations: ['principal', 'tenant_admin', 'accountant', 'admissions_officer'],
   // departments.controller.ts: a head of department's view (the principal and admin see any)
   department: ['hod', 'principal', 'tenant_admin'],
   // departments.controller.ts DepartmentsAdminController: STAFF_ADMIN_ROLES
@@ -53,6 +54,11 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // inventory.controller.ts and assets.controller.ts STORE_ROLES
   inventory: ['store_keeper', 'principal', 'tenant_admin'],
   assets: ['store_keeper', 'principal', 'tenant_admin'],
+  // inventory.records.ts ACCOUNTS: orders, invoices and vendors (the accountant pays invoices)
+  procurement: ['store_keeper', 'principal', 'tenant_admin', 'accountant'],
+  // inventory.controller.ts STAFF_ROLES less teachers, who do not use the ERP: indents, hall bookings and fault reports
+  indents: ['store_keeper', 'tenant_admin', 'principal', 'hod', 'librarian', 'accountant', 'transport_manager', 'hostel_warden', 'canteen_manager'],
+  facilities: ['store_keeper', 'tenant_admin', 'principal', 'hod', 'librarian', 'accountant', 'transport_manager', 'hostel_warden', 'canteen_manager'],
   // admissions.controller.ts ADMISSIONS_ROLES
   admissions: ['principal', 'tenant_admin', 'admissions_officer'],
   campusOps: ['principal', 'tenant_admin', 'admissions_officer', 'librarian', 'hostel_warden', 'transport_manager', 'canteen_manager', 'store_keeper', 'accountant'],
@@ -276,6 +282,9 @@ export function sectionOf(pathname: string): Section | null {
     case 'canteen':
     case 'inventory':
     case 'assets':
+    case 'procurement':
+    case 'indents':
+    case 'facilities':
       return first;
     case 'scan':
       return 'assets';
@@ -294,7 +303,7 @@ export function sectionOf(pathname: string): Section | null {
     case 'obe':
       return 'obe';
     case 'hr':
-      return pathname.startsWith('/hr/appraisal') || pathname.startsWith('/hr/training') || pathname.startsWith('/hr/probation') || pathname.startsWith('/hr/faculty') ? 'appraisal' : 'hr';
+      return pathname.startsWith('/hr/appraisal') || pathname.startsWith('/hr/training') || pathname.startsWith('/hr/probation') || pathname.startsWith('/hr/faculty') || pathname.startsWith('/hr/interviews') ? 'appraisal' : 'hr';
     case 'reports':
       return 'reports';
     case 'surveys':

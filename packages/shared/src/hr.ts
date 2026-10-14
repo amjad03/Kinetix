@@ -112,6 +112,18 @@ export interface LeaveType {
   active: boolean;
   /** Unused days can be paid out (leave encashment). */
   encashable?: boolean;
+  /** regular | unpaid | duty | vacation | comp_off | maternity | paternity | study | special */
+  kind?: string;
+  maxPerRequest?: number | null;
+  minNoticeDays?: number;
+  requiresDocument?: boolean;
+  /** any | female | male */
+  gender?: string;
+  /** Sandwich rule: weekly offs and holidays inside the leave count. */
+  countsHolidays?: boolean;
+  halfDayAllowed?: boolean;
+  /** Compensatory off: days a credit stays usable. */
+  validDays?: number;
 }
 
 export interface LeaveBalance {
@@ -145,6 +157,14 @@ export interface LeaveRequest {
   recommendedAt?: string | null;
   recommendNote?: string | null;
   decisionNote: string | null;
+  /** Set when HR applied on the staff member's behalf. */
+  appliedBy?: { id: string; fullName: string } | null;
+  /** The colleague who decides the applicant's approvals while they are away. */
+  delegate?: { id: string; fullName: string } | null;
+  /** A supporting document (medical certificate…) is attached. */
+  hasDocument?: boolean;
+  documentName?: string | null;
+  revokedReason?: string | null;
   createdAt: string;
 }
 
@@ -203,6 +223,11 @@ export interface SalaryComponent {
   taxable: boolean;
   active: boolean;
   sortOrder: number;
+  /** fixed: the structure's amount; percent: a percentage of another component (DA, HRA on basic). */
+  calc?: 'fixed' | 'percent';
+  /** The rate in force today (percent components). */
+  percent?: number | null;
+  baseCode?: string;
 }
 
 export interface SalaryStructure {
@@ -229,6 +254,8 @@ export interface PayrollSettings {
   /** 0 = Sunday … 6 = Saturday. */
   weeklyOffs: number[];
   ledgers: TallyLedgers;
+  /** Labour Welfare Fund: fixed contributions in the listed months (Karnataka: Rs 50 + Rs 100 in December). */
+  lwf?: { enabled: boolean; employeePaise: number; employerPaise: number; months: number[] };
 }
 
 export interface TallyLedgers {
@@ -241,9 +268,12 @@ export interface TallyLedgers {
   tdsPayable: string;
   salaryPayable: string;
   otherDeductions: string;
+  /** Labour Welfare Fund (employee and employer shares). */
+  lwfPayable?: string;
+  employerLwfExpense?: string;
 }
 
-export type PayrollRunStatus = 'draft' | 'verified' | 'approved' | 'locked';
+export type PayrollRunStatus = 'draft' | 'verified' | 'approved' | 'locked' | 'reversed';
 
 export interface PayrollRunSummary {
   id: string;
@@ -261,6 +291,12 @@ export interface PayrollRunSummary {
   verifiedAt?: string | null;
   bankFileAt?: string | null;
   publishedAt?: string | null;
+  /** regular | supplementary (arrears, bonuses and late joiners after the month was locked). */
+  kind?: 'regular' | 'supplementary';
+  seq?: number;
+  note?: string;
+  reversedAt?: string | null;
+  reversalReason?: string | null;
 }
 
 export interface PayslipLine {
@@ -285,7 +321,7 @@ export interface Payslip {
   grossPaise: number;
   deductionsPaise: number;
   netPaise: number;
-  employer: { epfPaise: number; epsPaise: number; esiPaise: number };
+  employer: { epfPaise: number; epsPaise: number; esiPaise: number; lwfPaise?: number };
   taxRegime: TaxRegime;
   /** Notes on the TDS projection, for the payslip. */
   annualTaxPaise: number;

@@ -25,6 +25,8 @@ dependencies:
   printing: ^5.14.3
   # Phone remote: a photo from the camera onto the board.
   image_picker: ^1.2.3
+  # Chat: a PDF to send to a family.
+  file_picker: ^13.1.0
   http: ^1.6.0
   url_launcher: ^6.3.3
   intl: ^0.20.3
@@ -44,6 +46,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+# file_picker needs dbus 0.8 (Linux only); wakelock_plus pins 0.7.x but uses only the client API that 0.8 keeps.
+dependency_overrides:
+  dbus: ^0.8.0
 
 flutter:
   uses-material-design: true

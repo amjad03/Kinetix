@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LhtLinks } from '@/components/lht/LhtRecordsPage';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
@@ -32,7 +33,7 @@ export default async function TransportPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <PageHeader title={t('nav.transport')} subtitle={t('tr.subtitle')} />
+      <PageHeader title={t('nav.transport')} subtitle={t('tr.subtitle')} actions={<LhtLinks module="transport" here="home" />} />
       {failed !== undefined ? (
         <ErrorState message={failed} />
       ) : (

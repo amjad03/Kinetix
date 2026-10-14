@@ -28,6 +28,13 @@ const AdjBody = z.object({ userId: z.uuid(), kind: z.enum(['overtime', 'arrear',
 const TaxProfileBody = z.object({ tan: z.string().trim().toUpperCase().regex(/^[A-Z]{4}\d{5}[A-Z]$/, 'A TAN looks like BLRA12345B'), pan: z.string().trim().toUpperCase().regex(/^[A-Z]{5}\d{4}[A-Z]$/, 'A PAN looks like ABCDE1234F'), deductorName: z.string().trim().min(2).max(200), deductorAddress: z.string().trim().max(400).default(''), responsiblePerson: z.string().trim().max(120).default(''), responsibleDesignation: z.string().trim().max(120).default('') });
 const ChallanBody = z.object({ payMonth: Month, section: z.string().trim().max(10).default('192'), bsrCode: z.string().trim().regex(/^\d{7}$/, 'A BSR code has seven digits'), challanSerial: z.string().trim().min(1).max(20), depositedOn: Day, tdsPaise: z.number().int().min(1), interestPaise: z.number().int().min(0).default(0) });
 
+/** True when the month's regular payroll is not locked, or a supplementary run of the month is open. */
+export async function monthTakesAdjustments(tx: Tx, month: string): Promise<boolean> {
+  const runs = await tx.select({ kind: payrollRuns.kind, status: payrollRuns.status }).from(payrollRuns).where(and(eq(payrollRuns.month, month), sql`${payrollRuns.status} <> 'reversed'`));
+  const regular = runs.find((r) => r.kind === 'regular');
+  return regular?.status !== 'locked' || runs.some((r) => r.kind === 'supplementary' && r.status !== 'locked');
+}
+
 /** Qualifications, workload, teaching evaluation, overtime and arrears, and Form 16 (PRD sections 31 and 33). */
 @Controller('v1/hr')
 export class HrDepthController {
@@ -245,8 +252,7 @@ export class HrDepthController {
   @Auth('user', PAYROLL_ROLES)
   addAdjustment(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(AdjBody)) b: z.infer<typeof AdjBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [run] = await tx.select({ status: payrollRuns.status }).from(payrollRuns).where(eq(payrollRuns.month, b.payMonth));
-      if (run?.status === 'locked') throw new ConflictException('That month\'s payroll is locked');
+      if (!(await monthTakesAdjustments(tx, b.payMonth))) throw new ConflictException('That month\'s payroll is locked: start a supplementary run to pay it');
       const [sp] = await tx.select({ id: staffProfiles.userId }).from(staffProfiles).where(eq(staffProfiles.userId, b.userId));
       if (!sp) throw new NotFoundException('Staff member not found');
       let amount = b.amountPaise ?? 0;
@@ -271,8 +277,7 @@ export class HrDepthController {
   @Auth('user', PAYROLL_ROLES)
   revisionArrears(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(z.object({ userId: z.uuid(), payMonth: Month }))) b: { userId: string; payMonth: string }) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [run] = await tx.select({ status: payrollRuns.status }).from(payrollRuns).where(eq(payrollRuns.month, b.payMonth));
-      if (run?.status === 'locked') throw new ConflictException('That month\'s payroll is locked');
+      if (!(await monthTakesAdjustments(tx, b.payMonth))) throw new ConflictException('That month\'s payroll is locked: start a supplementary run to pay it');
       const list = await tx.select().from(salaryStructures).where(and(eq(salaryStructures.userId, b.userId), lte(salaryStructures.effectiveFrom, `${b.payMonth}-28`))).orderBy(desc(salaryStructures.effectiveFrom)).limit(2);
       if (list.length < 2) throw new ConflictException('There is no earlier salary structure to compare with');
       const [now, before] = list;
@@ -297,8 +302,7 @@ export class HrDepthController {
       const [a] = await tx.select().from(payrollAdjustments).where(eq(payrollAdjustments.id, id)).for('update');
       if (!a) throw new NotFoundException('Adjustment not found');
       if (a.status !== 'pending') throw new ConflictException(`This adjustment is already ${a.status}`);
-      const [run] = await tx.select({ status: payrollRuns.status }).from(payrollRuns).where(eq(payrollRuns.month, a.payMonth));
-      if (run?.status === 'locked') throw new ConflictException('That month\'s payroll is locked');
+      if (!(await monthTakesAdjustments(tx, a.payMonth))) throw new ConflictException('That month\'s payroll is locked: start a supplementary run to pay it');
       const [row] = await tx.update(payrollAdjustments).set({ status: b.approve ? 'approved' : 'rejected', decidedBy: p.userId, decidedAt: new Date() }).where(eq(payrollAdjustments.id, id)).returning();
       await auditUser(tx, p, 'payroll.adjustment_decided', 'payroll_adjustment', id, { approve: b.approve });
       return row;

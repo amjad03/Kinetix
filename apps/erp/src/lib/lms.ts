@@ -11,9 +11,10 @@ export interface LmsCourseRow {
   section: string;
 }
 
-export interface LmsItem { id: string; kind: (typeof LMS_KINDS)[number]; title: string; refId: string | null; url: string | null; position: number }
+export interface LmsItem { id: string; kind: (typeof LMS_KINDS)[number]; title: string; refId: string | null; url: string | null; position: number; releaseAt?: string | null; prerequisiteItemId?: string | null; audienceStudentIds?: string[] | null }
 export interface LmsModule { id: string; title: string; position: number; items: LmsItem[] }
 export interface LmsCourse extends LmsCourseRow {
+  sectionId: string;
   description: string;
   canManage: boolean;
   modules: LmsModule[];

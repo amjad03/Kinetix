@@ -1,18 +1,21 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Payslip, PayrollRunDetail, PayrollRunSummary, SalaryComponent, SalaryStructure } from '@kinetix/shared';
 import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, ne, or, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import type { Tx } from '../db/db.service.js';
-import { payrollAdjustments } from '../db/schema-depth.js';
+import { payrollAdjustments, tdsChallans } from '../db/schema-depth.js';
+import { salaryComponentRates } from '../db/schema-hr2.js';
 import { payrollRuns, payslips, salaryComponents, salaryStructureLines, salaryStructures, staffProfiles, tenants } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { texts } from '../notifications/texts.js';
 import { monthEnd, monthStart } from './dates.js';
 import { HrService } from './hr.service.js';
 import { requireVersion } from './hr.access.js';
-import { computePayslip, daysInMonth, fyStart, type StructureLine } from './payroll-math.js';
+import { annualTax, computePayslip, daysInMonth, fyStart, resolveLines, type StructureLine } from './payroll-math.js';
+import { csv as csvText } from './exports.js';
+import { monthTakesAdjustments } from './hr-depth.controller.js';
 import { monthLabel } from './payslip-pdf.js';
 import { formatSeries, takeNumbers } from './hr-settings.js';
 import type { TallyTotals } from './exports.js';
@@ -25,7 +28,13 @@ export const DEFAULT_COMPONENTS = [
 ] as const;
 
 type Run = typeof payrollRuns.$inferSelect;
-type StoredPayslip = Omit<Payslip, 'id' | 'runId' | 'month' | 'runStatus'> & { pfWagePaise: number; esiPaise: number; ptPaise: number; tdsPaise: number; employeePfPaise: number; pan: string | null; uan: string | null; esiNumber: string | null; employerCostPaise: number };
+type StoredPayslip = Omit<Payslip, 'id' | 'runId' | 'month' | 'runStatus'> & { pfWagePaise: number; esiPaise: number; ptPaise: number; lwfPaise?: number; tdsPaise: number; employeePfPaise: number; pan: string | null; uan: string | null; esiNumber: string | null; employerCostPaise: number; taxableGrossPaise?: number };
+
+/** The rate of a percentage component in force in a month (YYYY-MM): the latest revision from that month or before. */
+export function rateIn(rates: { componentId: string; effectiveMonth: string; percent: number }[], componentId: string, month: string): number | null {
+  const r = rates.filter((x) => x.componentId === componentId && x.effectiveMonth <= month).sort((a, b) => b.effectiveMonth.localeCompare(a.effectiveMonth))[0];
+  return r ? r.percent : null;
+}
 
 @Injectable()
 export class PayrollService {
@@ -40,7 +49,21 @@ export class PayrollService {
   async components(tx: Tx, tenantId: string): Promise<SalaryComponent[]> {
     const any = await tx.select({ id: salaryComponents.id }).from(salaryComponents).limit(1);
     if (!any.length) await tx.insert(salaryComponents).values(DEFAULT_COMPONENTS.map((c) => ({ ...c, tenantId }))).onConflictDoNothing();
-    return (await tx.select().from(salaryComponents).orderBy(asc(salaryComponents.sortOrder), asc(salaryComponents.code))).map((c) => ({ id: c.id, code: c.code, name: c.name, kind: c.kind as SalaryComponent['kind'], pfWage: c.pfWage, taxable: c.taxable, active: c.active, sortOrder: c.sortOrder }));
+    const rates = await tx.select().from(salaryComponentRates);
+    const month = (await this.hr.today(tx)).slice(0, 7);
+    return (await tx.select().from(salaryComponents).orderBy(asc(salaryComponents.sortOrder), asc(salaryComponents.code))).map((c) => ({
+      id: c.id,
+      code: c.code,
+      name: c.name,
+      kind: c.kind as SalaryComponent['kind'],
+      pfWage: c.pfWage,
+      taxable: c.taxable,
+      active: c.active,
+      sortOrder: c.sortOrder,
+      calc: c.calc as 'fixed' | 'percent',
+      percent: c.calc === 'percent' ? (rateIn(rates, c.id, month) ?? c.percent) : null,
+      baseCode: c.baseCode,
+    }));
   }
 
   private async structureView(tx: Tx, userId: string, s: typeof salaryStructures.$inferSelect): Promise<SalaryStructure> {
@@ -79,22 +102,67 @@ export class PayrollService {
     const [existing] = await tx.select().from(salaryStructures).where(and(eq(salaryStructures.userId, userId), eq(salaryStructures.effectiveFrom, effectiveFrom)));
     const structure = existing ?? (await tx.insert(salaryStructures).values({ tenantId: p.tenantId, userId, effectiveFrom, createdBy: p.userId }).returning())[0];
     await tx.delete(salaryStructureLines).where(eq(salaryStructureLines.structureId, structure.id));
-    await tx.insert(salaryStructureLines).values(lines.map((l) => ({ tenantId: p.tenantId, structureId: structure.id, componentId: l.componentId, monthlyPaise: l.monthlyPaise })));
+    // Percentage lines (DA on basic) are worked out from their base at the rate of the first month; payroll works
+    // them out again each month, so a DA revision needs no new structure.
+    const rates = await tx.select().from(salaryComponentRates);
+    const resolved = resolveLines(
+      lines.map((l) => {
+        const c = byId.get(l.componentId)!;
+        return { code: c.code, name: c.name, kind: c.kind, monthlyPaise: l.monthlyPaise, pfWage: c.pfWage, taxable: c.taxable, calc: c.calc, percent: c.percent, baseCode: c.baseCode, id: c.id };
+      }),
+      (code) => {
+        const c = comps.find((x) => x.code === code);
+        return c ? rateIn(rates, c.id, effectiveFrom.slice(0, 7)) : null;
+      },
+    );
+    await tx.insert(salaryStructureLines).values(lines.map((l, k) => ({ tenantId: p.tenantId, structureId: structure.id, componentId: l.componentId, monthlyPaise: Math.max(1, resolved[k].monthlyPaise) })));
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.structure_saved', subjectType: 'user', subjectId: userId, data: { effectiveFrom, lines: lines.length } });
     return this.structureView(tx, userId, structure);
   }
 
   // ----- runs -----------------------------------------------------------------------------------
 
-  async createRun(tx: Tx, p: UserPrincipal, month: string): Promise<PayrollRunDetail> {
+  async createRun(tx: Tx, p: UserPrincipal, month: string, opts: { kind?: 'regular' | 'supplementary'; staffIds?: string[]; note?: string } = {}): Promise<PayrollRunDetail> {
     const today = await this.hr.today(tx);
     if (month > today.slice(0, 7)) throw new ConflictException('Payroll cannot be run for a future month');
-    const [dup] = await tx.select({ id: payrollRuns.id }).from(payrollRuns).where(eq(payrollRuns.month, month));
-    if (dup) throw new ConflictException('There is already a payroll run for that month');
-    const [run] = await tx.insert(payrollRuns).values({ tenantId: p.tenantId, month, createdBy: p.userId }).returning();
+    const kind = opts.kind ?? 'regular';
+    const live = await tx.select({ id: payrollRuns.id, kind: payrollRuns.kind, status: payrollRuns.status, seq: payrollRuns.seq }).from(payrollRuns).where(and(eq(payrollRuns.month, month), ne(payrollRuns.status, 'reversed')));
+    const regular = live.find((r) => r.kind === 'regular');
+    let seq = 1;
+    if (kind === 'regular') {
+      if (regular) throw new ConflictException('There is already a payroll run for that month');
+    } else {
+      if (regular?.status !== 'locked') throw new ConflictException('A supplementary run follows the locked regular run of the month');
+      if (live.some((r) => r.kind === 'supplementary' && r.status !== 'locked')) throw new ConflictException('Finish the open supplementary run of the month first');
+      seq = Math.max(...live.map((r) => r.seq)) + 1;
+    }
+    const [run] = await tx.insert(payrollRuns).values({ tenantId: p.tenantId, month, kind, seq, staffIds: opts.staffIds ?? [], note: opts.note ?? '', createdBy: p.userId }).returning();
     await this.compute(tx, p.tenantId, run);
-    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.run_created', subjectType: 'payroll_run', subjectId: run.id, data: { month } });
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.run_created', subjectType: 'payroll_run', subjectId: run.id, data: { month, kind, seq } });
     return this.detail(tx, run.id);
+  }
+
+  /**
+   * Reverses a locked run that must be redone (wrong figures, paid in error): its payslips leave the staff's view,
+   * its adjustments and loan instalments are released to be paid again, and a new run can be made for the month.
+   * Only the latest locked run of the financial year can be reversed (TDS builds on the year to date).
+   */
+  async reverse(tx: Tx, p: UserPrincipal, id: string, expected: number, reason: string): Promise<PayrollRunDetail> {
+    const [run] = await tx.select().from(payrollRuns).where(eq(payrollRuns.id, id)).for('update');
+    if (!run) throw new NotFoundException('Payroll run not found');
+    if (run.status !== 'locked') throw new ConflictException('Only a locked run is reversed; reopen an unlocked one instead');
+    requireVersion(run.version, expected);
+    const [later] = await tx
+      .select({ month: payrollRuns.month, seq: payrollRuns.seq })
+      .from(payrollRuns)
+      .where(and(eq(payrollRuns.status, 'locked'), ne(payrollRuns.id, id), or(sql`${payrollRuns.month} > ${run.month}`, and(eq(payrollRuns.month, run.month), sql`${payrollRuns.seq} > ${run.seq}`))));
+    if (later) throw new ConflictException(`Reverse the later run of ${later.month} first`);
+    await tx.update(payrollRuns).set({ status: 'reversed', reversedBy: p.userId, reversedAt: new Date(), reversalReason: reason, version: run.version + 1 }).where(eq(payrollRuns.id, id));
+    const released = await tx.update(payrollAdjustments).set({ runId: null }).where(eq(payrollAdjustments.runId, id)).returning({ id: payrollAdjustments.id });
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.run_reversed', subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version, reason, adjustmentsReleased: released.length } });
+    const staff = await tx.select({ userId: payslips.userId }).from(payslips).where(eq(payslips.runId, id));
+    if (run.publishedAt) for (const s of staff) await this.notifications.notifyUsers(tx, [s.userId], { kind: 'payslip', text: texts.payslipReady({ month: `${monthLabel(run.month)} (withdrawn)` }), data: { runId: id, month: run.month }, dedupeKey: `payslip-rev:${id}:${s.userId}` });
+    return this.detail(tx, id);
   }
 
   /** Recomputes every payslip of a draft run from the current records. */
@@ -107,21 +175,37 @@ export class PayrollService {
     const structures = await tx.select().from(salaryStructures).where(lte(salaryStructures.effectiveFrom, monthEnd(month))).orderBy(desc(salaryStructures.effectiveFrom));
     const lineRows = structures.length
       ? await tx
-          .select({ structureId: salaryStructureLines.structureId, code: salaryComponents.code, name: salaryComponents.name, kind: salaryComponents.kind, pfWage: salaryComponents.pfWage, taxable: salaryComponents.taxable, monthlyPaise: salaryStructureLines.monthlyPaise, sort: salaryComponents.sortOrder })
+          .select({ structureId: salaryStructureLines.structureId, componentId: salaryComponents.id, code: salaryComponents.code, name: salaryComponents.name, kind: salaryComponents.kind, pfWage: salaryComponents.pfWage, taxable: salaryComponents.taxable, monthlyPaise: salaryStructureLines.monthlyPaise, sort: salaryComponents.sortOrder, calc: salaryComponents.calc, percent: salaryComponents.percent, baseCode: salaryComponents.baseCode })
           .from(salaryStructureLines)
           .innerJoin(salaryComponents, eq(salaryComponents.id, salaryStructureLines.componentId))
           .where(inArray(salaryStructureLines.structureId, structures.map((s) => s.id)))
           .orderBy(asc(salaryComponents.sortOrder))
       : [];
-    // Year to date from locked runs of this financial year (TDS is a running figure).
+    const rates = await tx.select().from(salaryComponentRates);
+    const supplementary = run.kind === 'supplementary';
+    // Year to date from locked runs of this financial year (TDS is a running figure); a supplementary run also
+    // counts the month's regular run.
     const fy = fyStart(month);
     const ytdRows = await tx
       .select({ userId: payslips.userId, taxable: sql<number>`sum(${payslips.taxableGrossPaise})::bigint`.mapWith(Number), pt: sql<number>`sum(${payslips.ptPaise})::bigint`.mapWith(Number), pf: sql<number>`sum(${payslips.employeePfPaise})::bigint`.mapWith(Number), tds: sql<number>`sum(${payslips.tdsPaise})::bigint`.mapWith(Number) })
       .from(payslips)
       .innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId))
-      .where(and(eq(payrollRuns.status, 'locked'), gte(payrollRuns.month, `${fy}-04`), lt(payrollRuns.month, month)))
+      .where(and(eq(payrollRuns.status, 'locked'), gte(payrollRuns.month, `${fy}-04`), supplementary ? lte(payrollRuns.month, month) : lt(payrollRuns.month, month), ne(payrollRuns.id, run.id)))
       .groupBy(payslips.userId);
     const ytd = new Map(ytdRows.map((r) => [r.userId, r]));
+    // Who the month's earlier runs already paid in full, and what each was paid (a supplementary run's TDS base).
+    const paidThisMonth = supplementary
+      ? new Map(
+          (
+            await tx
+              .select({ userId: payslips.userId, taxable: payslips.taxableGrossPaise, data: payslips.data })
+              .from(payslips)
+              .innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId))
+              .where(and(eq(payrollRuns.month, month), eq(payrollRuns.status, 'locked'), ne(payrollRuns.id, run.id)))
+          ).map((r) => [r.userId, r.taxable]),
+        )
+      : new Map<string, number>();
+    const lwfDue = settings.lwf?.enabled && settings.lwf.months.includes(Number(month.slice(5, 7))) ? settings.lwf : null;
 
     // Approved overtime, arrears, bonuses and recoveries for this month go onto the payslip in full.
     const adjRows = await tx.select().from(payrollAdjustments).where(and(eq(payrollAdjustments.payMonth, month), eq(payrollAdjustments.status, 'approved'), or(isNull(payrollAdjustments.runId), eq(payrollAdjustments.runId, run.id))));
@@ -139,25 +223,40 @@ export class PayrollService {
       if (prof.status === 'exited' && prof.dateOfLeaving && prof.dateOfLeaving < monthStart(month)) continue;
       if (prof.dateOfJoining && prof.dateOfJoining > monthEnd(month)) continue;
       const structure = structures.find((x) => x.userId === s.userId);
-      if (!structure) {
+      const extras = adjRows.filter((a) => a.userId === s.userId);
+      // A supplementary run pays in full only the staff it names (late joiners) who were not paid this month,
+      // and everyone else only their adjustments.
+      const full = supplementary ? run.staffIds.includes(s.userId) && !paidThisMonth.has(s.userId) : true;
+      if (supplementary && !full && extras.length === 0) continue;
+      if (full && !structure) {
         skipped.push({ userId: s.userId, fullName: s.fullName, reason: 'No salary structure' });
         continue;
       }
-      const lines: StructureLine[] = lineRows.filter((l) => l.structureId === structure.id).map((l) => ({ code: l.code, name: l.name, kind: l.kind as 'earning', monthlyPaise: l.monthlyPaise, pfWage: l.pfWage, taxable: l.taxable }));
+      const lines: StructureLine[] = full
+        ? resolveLines(
+            lineRows.filter((l) => l.structureId === structure!.id).map((l) => ({ code: l.code, name: l.name, kind: l.kind as 'earning', monthlyPaise: l.monthlyPaise, pfWage: l.pfWage, taxable: l.taxable, calc: l.calc, percent: l.percent, baseCode: l.baseCode })),
+            (code) => {
+              const line = lineRows.find((l) => l.code === code);
+              return line ? rateIn(rates, line.componentId, month) : null;
+            },
+          )
+        : [];
       const y = ytd.get(s.userId);
       const c = computePayslip({
         month,
         daysInMonth: days,
-        lopDays: lop.get(s.userId) ?? 0,
+        lopDays: full ? (lop.get(s.userId) ?? 0) : 0,
         lines,
+        lwf: full && prof.lwfEnabled && lwfDue ? { employeePaise: lwfDue.employeePaise, employerPaise: lwfDue.employerPaise } : null,
+        supplementary: supplementary && !full ? { regularMonthTaxablePaise: paidThisMonth.get(s.userId) ?? 0 } : null,
         pf: { capAtCeiling: settings.pfCapAtCeiling, wageCeilingPaise: settings.pfWageCeilingPaise },
         esiLimitPaise: settings.esiGrossLimitPaise,
         ptSlabs: settings.ptSlabs,
         staff: { regime: prof.taxRegime as 'new', pfEnabled: prof.pfEnabled, esiEnabled: prof.esiEnabled, ptEnabled: prof.ptEnabled, tax80cPaise: prof.tax80cPaise, taxOtherDeductionsPaise: prof.taxOtherDeductionsPaise },
         ytd: { grossTaxablePaise: y?.taxable ?? 0, ptPaise: y?.pt ?? 0, employeePfPaise: y?.pf ?? 0, tdsPaise: y?.tds ?? 0 },
-        extras: adjRows.filter((a) => a.userId === s.userId).map((a) => ({ code: a.loanId ? 'LADV' : (ADJ_NAME[a.kind]?.[0] ?? 'ADJ'), name: a.loanId ? 'Loan / advance recovery' : (ADJ_NAME[a.kind]?.[1] ?? 'Adjustment'), amountPaise: a.amountPaise, taxable: true, recovery: a.kind === 'recovery' })),
+        extras: extras.map((a) => ({ code: a.loanId ? 'LADV' : (ADJ_NAME[a.kind]?.[0] ?? 'ADJ'), name: a.loanId ? 'Loan / advance recovery' : (ADJ_NAME[a.kind]?.[1] ?? 'Adjustment'), amountPaise: a.amountPaise, taxable: true, recovery: a.kind === 'recovery' })),
       });
-      const employerCost = c.grossPaise + c.employer.epfPaise + c.employer.epsPaise + c.employer.esiPaise;
+      const employerCost = c.grossPaise + c.employer.epfPaise + c.employer.epsPaise + c.employer.esiPaise + c.employer.lwfPaise;
       const data: StoredPayslip = {
         user: { id: s.userId, fullName: s.fullName, employeeCode: prof.employeeCode, designation: s.designation?.name ?? null, department: s.department?.name ?? null },
         daysInMonth: days,
@@ -174,8 +273,10 @@ export class PayrollService {
         pfWagePaise: c.pfWagePaise,
         esiPaise: c.esiPaise,
         ptPaise: c.ptPaise,
+        lwfPaise: c.lwfPaise,
         tdsPaise: c.tdsPaise,
         employeePfPaise: c.employeePfPaise,
+        taxableGrossPaise: c.taxableGrossPaise,
         pan: prof.pan,
         uan: prof.uan,
         esiNumber: prof.esiNumber,
@@ -201,7 +302,7 @@ export class PayrollService {
       .leftJoin(payslips, eq(payslips.runId, payrollRuns.id))
       .where(where)
       .groupBy(payrollRuns.id)
-      .orderBy(desc(payrollRuns.month));
+      .orderBy(desc(payrollRuns.month), desc(payrollRuns.seq), desc(payrollRuns.createdAt));
     return rows.map((x) => ({
       id: x.r.id,
       month: x.r.month,
@@ -218,6 +319,11 @@ export class PayrollService {
       verifiedAt: x.r.verifiedAt?.toISOString() ?? null,
       bankFileAt: x.r.bankFileAt?.toISOString() ?? null,
       publishedAt: x.r.publishedAt?.toISOString() ?? null,
+      kind: x.r.kind as 'regular' | 'supplementary',
+      seq: x.r.seq,
+      note: x.r.note,
+      reversedAt: x.r.reversedAt?.toISOString() ?? null,
+      reversalReason: x.r.reversalReason,
     }));
   }
 
@@ -301,7 +407,10 @@ export class PayrollService {
       await tx.update(payrollRuns).set({ status: 'approved', approvedBy: p.userId, approvedAt: now, version: run.version + 1 }).where(eq(payrollRuns.id, id));
     } else if (action === 'lock') {
       // TDS projections build on the year to date, which only counts locked runs: lock in order.
-      const [earlier] = await tx.select({ month: payrollRuns.month }).from(payrollRuns).where(and(ne(payrollRuns.status, 'locked'), lt(payrollRuns.month, run.month), gte(payrollRuns.month, `${fyStart(run.month)}-04`)));
+      const [earlier] = await tx
+        .select({ month: payrollRuns.month })
+        .from(payrollRuns)
+        .where(and(sql`${payrollRuns.status} not in ('locked', 'reversed')`, ne(payrollRuns.id, id), or(and(lt(payrollRuns.month, run.month), gte(payrollRuns.month, `${fyStart(run.month)}-04`)), and(eq(payrollRuns.month, run.month), sql`${payrollRuns.seq} < ${run.seq}`))));
       if (earlier) throw new ConflictException(`Lock ${earlier.month} first`);
       await tx.update(payrollRuns).set({ status: 'locked', lockedBy: p.userId, lockedAt: now, version: run.version + 1 }).where(eq(payrollRuns.id, id));
       const rows = await tx.select({ userId: payslips.userId, id: payslips.id }).from(payslips).where(eq(payslips.runId, id));
@@ -340,16 +449,144 @@ export class PayrollService {
       employerEsiPaise: sum((r) => r.d.employer.esiPaise),
       ptPaise: sum((r) => r.d.ptPaise),
       tdsPaise: sum((r) => r.d.tdsPaise),
+      employeeLwfPaise: sum((r) => r.d.lwfPaise ?? 0),
+      employerLwfPaise: sum((r) => r.d.employer.lwfPaise ?? 0),
       otherDeductionsPaise: 0,
       netPaise: sum((r) => r.d.netPaise),
     };
-    totals.otherDeductionsPaise = sum((r) => r.d.deductionsPaise) - totals.employeePfPaise - totals.employeeEsiPaise - totals.ptPaise - totals.tdsPaise;
+    totals.otherDeductionsPaise = sum((r) => r.d.deductionsPaise) - totals.employeePfPaise - totals.employeeEsiPaise - totals.ptPaise - totals.tdsPaise - (totals.employeeLwfPaise ?? 0);
     return { run, settings, totals };
+  }
+
+  // ----- DA revisions -----------------------------------------------------------------------------------
+
+  async rates(tx: Tx, componentId: string) {
+    const [c] = await tx.select().from(salaryComponents).where(eq(salaryComponents.id, componentId));
+    if (!c) throw new NotFoundException('Salary component not found');
+    const rows = await tx.select().from(salaryComponentRates).where(eq(salaryComponentRates.componentId, componentId)).orderBy(desc(salaryComponentRates.effectiveMonth));
+    return { component: { id: c.id, code: c.code, name: c.name, calc: c.calc, percent: c.percent, baseCode: c.baseCode }, rates: rows.map((r) => ({ id: r.id, effectiveMonth: r.effectiveMonth, percent: r.percent, note: r.note, createdAt: r.createdAt.toISOString() })) };
+  }
+
+  async reviseRate(tx: Tx, p: UserPrincipal, componentId: string, b: { effectiveMonth: string; percent: number; note: string; arrearsMonth?: string }) {
+    const [c] = await tx.select().from(salaryComponents).where(eq(salaryComponents.id, componentId)).for('update');
+    if (!c) throw new NotFoundException('Salary component not found');
+    if (c.calc !== 'percent') throw new ConflictException('Only a percentage component (such as DA) has rate revisions');
+    const today = await this.hr.today(tx);
+    const payIn = b.arrearsMonth ?? today.slice(0, 7);
+    if (b.effectiveMonth > payIn) throw new BadRequestException('The arrears month is before the revision');
+    const [dup] = await tx.select({ id: salaryComponentRates.id }).from(salaryComponentRates).where(and(eq(salaryComponentRates.componentId, componentId), eq(salaryComponentRates.effectiveMonth, b.effectiveMonth)));
+    if (dup) throw new ConflictException('There is already a revision from that month');
+    const [rate] = await tx.insert(salaryComponentRates).values({ tenantId: p.tenantId, componentId, effectiveMonth: b.effectiveMonth, percent: b.percent, note: b.note, createdBy: p.userId }).returning();
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'salary_component.rate_revised', subjectType: 'salary_component', subjectId: componentId, data: { effectiveMonth: b.effectiveMonth, percent: b.percent, note: b.note } });
+    // Locked months from the revision on were paid at the old rate: the difference is owed as arrears.
+    const paid = await tx
+      .select({ userId: payslips.userId, month: payrollRuns.month, data: payslips.data })
+      .from(payslips)
+      .innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId))
+      .where(and(eq(payrollRuns.status, 'locked'), gte(payrollRuns.month, b.effectiveMonth), lt(payrollRuns.month, payIn)));
+    const owed = new Map<string, { paise: number; months: Set<string> }>();
+    for (const r of paid) {
+      const d = r.data as StoredPayslip;
+      const line = d.earnings.find((e) => e.code === c.code);
+      const base = d.earnings.find((e) => e.code === c.baseCode);
+      if (!line || !base) continue;
+      const diff = Math.round((base.amountPaise * b.percent) / 10000) * 100 - line.amountPaise;
+      if (diff <= 0) continue;
+      const o = owed.get(r.userId) ?? { paise: 0, months: new Set<string>() };
+      o.paise += diff;
+      o.months.add(r.month);
+      owed.set(r.userId, o);
+    }
+    if (owed.size && !(await monthTakesAdjustments(tx, payIn))) throw new ConflictException(`The payroll of ${payIn} is locked: start a supplementary run or choose a later month for the arrears`);
+    let total = 0;
+    for (const [userId, o] of owed) {
+      const [adj] = await tx
+        .insert(payrollAdjustments)
+        .values({ tenantId: p.tenantId, userId, kind: 'arrear', payMonth: payIn, amountPaise: o.paise, reason: `${c.name} revised to ${b.percent}% from ${b.effectiveMonth}: arrears for ${o.months.size} month(s)`, createdBy: p.userId })
+        .returning({ id: payrollAdjustments.id });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.arrears_computed', subjectType: 'payroll_adjustment', subjectId: adj.id, data: { componentId, months: o.months.size, amountPaise: o.paise } });
+      total += o.paise;
+    }
+    return { rate: { id: rate.id, effectiveMonth: rate.effectiveMonth, percent: rate.percent }, arrears: { staff: owed.size, totalPaise: total, payMonth: payIn } };
+  }
+
+  // ----- Form 24Q ----------------------------------------------------------------------------------------
+
+  private async taxRows(tx: Tx, from: string, to: string) {
+    return tx
+      .select({ userId: payslips.userId, month: payrollRuns.month, gross: payslips.grossPaise, taxable: payslips.taxableGrossPaise, tds: payslips.tdsPaise, pt: payslips.ptPaise, pf: payslips.employeePfPaise, data: payslips.data, pan: staffProfiles.pan, regime: staffProfiles.taxRegime, code: staffProfiles.employeeCode, doj: staffProfiles.dateOfJoining, dol: staffProfiles.dateOfLeaving, c80: staffProfiles.tax80cPaise, other: staffProfiles.taxOtherDeductionsPaise })
+      .from(payslips)
+      .innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId))
+      .innerJoin(staffProfiles, eq(staffProfiles.userId, payslips.userId))
+      .where(and(eq(payrollRuns.status, 'locked'), gte(payrollRuns.month, from), lte(payrollRuns.month, to)))
+      .orderBy(asc(payrollRuns.month), asc(staffProfiles.employeeCode));
+  }
+
+  /** Annexure I (deductee details): one row per staff member per month of the quarter, with the challan the TDS went in. */
+  async q24Annexure1(tx: Tx, fy: number, quarter: number): Promise<string> {
+    const first = quarter === 4 ? `${fy + 1}-01` : `${fy}-${String(quarter * 3 + 1).padStart(2, '0')}`;
+    const months = [0, 1, 2].map((k) => {
+      const [y, m] = first.split('-').map(Number);
+      const d = new Date(Date.UTC(y, m - 1 + k, 1));
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    });
+    const rows = await this.taxRows(tx, months[0], months[2]);
+    const challans = await tx.select().from(tdsChallans).where(inArray(tdsChallans.payMonth, months));
+    const byUserMonth = new Map<string, { name: string; code: string; pan: string | null; month: string; gross: number; tds: number }>();
+    for (const r of rows) {
+      const key = `${r.userId}:${r.month}`;
+      const d = r.data as StoredPayslip;
+      const x = byUserMonth.get(key) ?? { name: d.user.fullName, code: r.code, pan: r.pan, month: r.month, gross: 0, tds: 0 };
+      x.gross += r.gross;
+      x.tds += r.tds;
+      byUserMonth.set(key, x);
+    }
+    const out: (string | number)[][] = [['Sr No', 'Employee Code', 'PAN of the Employee', 'Name of the Employee', 'Section Code', 'Date of Payment / Credit', 'Amount Paid / Credited', 'TDS', 'Education Cess', 'Total Tax Deducted', 'Total Tax Deposited', 'Date of Deduction', 'BSR Code', 'Challan Serial No', 'Date of Deposit', 'Remarks']];
+    let n = 0;
+    for (const x of byUserMonth.values()) {
+      const ch = challans.find((c) => c.payMonth === x.month);
+      const last = monthEnd(x.month);
+      const tax = Math.round(x.tds / 1.04);
+      out.push([++n, x.code, x.pan ?? 'PANNOTAVBL', x.name, '192', last, (x.gross / 100).toFixed(2), (tax / 100).toFixed(2), ((x.tds - tax) / 100).toFixed(2), (x.tds / 100).toFixed(2), (x.tds / 100).toFixed(2), last, ch?.bsrCode ?? '', ch?.challanSerial ?? '', ch?.depositedOn ?? '', x.pan ? '' : 'C']);
+    }
+    return csvText(out);
+  }
+
+  /** Annexure II (salary details for the year), filed with the fourth quarter: one row per staff member. */
+  async q24Annexure2(tx: Tx, fy: number): Promise<string> {
+    const rows = await this.taxRows(tx, `${fy}-04`, `${fy + 1}-03`);
+    const by = new Map<string, { name: string; code: string; pan: string | null; regime: string; from: string; to: string; gross: number; taxable: number; pt: number; pf: number; tds: number; c80: number; other: number }>();
+    for (const r of rows) {
+      const d = r.data as StoredPayslip;
+      const x = by.get(r.userId) ?? { name: d.user.fullName, code: r.code, pan: r.pan, regime: r.regime, from: r.doj && r.doj > `${fy}-04-01` ? r.doj : `${fy}-04-01`, to: r.dol && r.dol < `${fy + 1}-03-31` ? r.dol : `${fy + 1}-03-31`, gross: 0, taxable: 0, pt: 0, pf: 0, tds: 0, c80: r.c80, other: r.other };
+      x.gross += r.gross;
+      x.taxable += r.taxable;
+      x.pt += r.pt;
+      x.pf += r.pf;
+      x.tds += r.tds;
+      by.set(r.userId, x);
+    }
+    const rupee = (p: number) => (p / 100).toFixed(2);
+    const out: (string | number)[][] = [['Sr No', 'Employee Code', 'PAN of the Employee', 'Name of the Employee', 'Tax Regime (115BAC)', 'Employed From', 'Employed To', 'Gross Salary', 'Standard Deduction', 'Professional Tax', 'Income Chargeable under Salaries', 'Deductions under Chapter VI-A (80C incl. PF)', 'Other Deductions', 'Total Taxable Income', 'Tax on Total Income', 'TDS Deducted', 'Shortfall / Excess']];
+    let n = 0;
+    for (const x of by.values()) {
+      const regime = x.regime === 'old' ? 'old' : 'new';
+      const std = regime === 'new' ? 7_500_000 : 5_000_000;
+      const pt = regime === 'old' ? x.pt : 0;
+      const c80 = regime === 'old' ? Math.min(x.c80 + x.pf, 15_000_000) : 0;
+      const other = regime === 'old' ? x.other : 0;
+      const income = Math.max(0, x.taxable - std - pt);
+      const total = Math.max(0, income - c80 - other);
+      const tax = annualTax(regime, { grossPaise: x.taxable, professionalTaxPaise: x.pt, section80cPaise: x.c80 + x.pf, otherDeductionsPaise: x.other });
+      out.push([++n, x.code, x.pan ?? 'PANNOTAVBL', x.name, regime === 'new' ? 'Yes' : 'No', x.from, x.to, rupee(x.gross), rupee(std), rupee(pt), rupee(income), rupee(c80), rupee(other), rupee(total), rupee(tax), rupee(x.tds), rupee(tax - x.tds)]);
+    }
+    return csvText(out);
   }
 
   async exportRows(tx: Tx, tenantId: string, id: string) {
     const run = await this.run(tx, id);
     if (run.status === 'draft' || run.status === 'verified') throw new ConflictException('Approve the run before exporting');
+    if (run.status === 'reversed') throw new ConflictException('This run was reversed');
     const settings = await this.hr.settings(tx, tenantId);
     const rows = await tx.select().from(payslips).where(eq(payslips.runId, id));
     const profiles = new Map((await tx.select().from(staffProfiles)).map((r) => [r.userId, r]));

@@ -165,6 +165,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/hr', label: 'nav.hr', section: 'hr', icon: 'hr' },
       { href: '/hr/appraisal', label: 'nav.appraisal', section: 'appraisal', icon: 'hr' },
+      { href: '/hr/interviews', label: 'hk.myInterviews.nav', section: 'appraisal', icon: 'hr' },
       { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: 'payroll' },
       { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: 'payslips' },
       { href: '/payroll/loans', label: 'hf.loan.title', section: 'payslips', icon: 'payroll' },
@@ -205,6 +206,9 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/inventory', label: 'nav.inventory', section: 'inventory', icon: 'inventory' },
       { href: '/assets', label: 'nav.assets', section: 'assets', icon: 'assets' },
+      { href: '/procurement', label: 'nav.procurement', section: 'procurement', icon: 'inventory' },
+      { href: '/indents', label: 'nav.indents', section: 'indents', icon: 'inventory' },
+      { href: '/facilities', label: 'nav.facilities', section: 'facilities', icon: 'assets' },
       { href: '/scan', label: 'nav.scan', section: 'assets', icon: 'assets' },
     ],
   },
@@ -254,6 +258,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/settings/branding', label: 'nav.branding', section: 'settings', icon: 'settings' },
       { href: '/institution-setup', label: 'nav.institutionSetup', section: 'institutionSetup', icon: 'settings' },
       { href: '/settings/buildings', label: 'nav.buildings', section: 'settings', icon: 'campus' },
+      // Governance and access (users, roles, years, campuses, notifications, backups).
+      { href: '/settings/users', label: 'ga.users.title', section: 'settings', icon: 'hr' },
+      { href: '/settings/roles', label: 'ga.roles.title', section: 'settings', icon: 'settings' },
+      { href: '/settings/academic-years', label: 'ga.years.title', section: 'settings', icon: 'calendar' },
+      { href: '/settings/campuses', label: 'ga.campus.title', section: 'settings', icon: 'campus' },
+      { href: '/settings/notifications', label: 'ga.notif.title', section: 'settings', icon: 'communication' },
+      { href: '/settings/data-export', label: 'ga.export.title', section: 'settings', icon: 'import' },
       { href: '/audit', label: 'nav.audit', section: 'audit', icon: 'academicAudit' },
       { href: '/recycle-bin', label: 'nav.recycleBin', section: 'settings', icon: 'documents' },
       { href: '/governance/rules', label: 'nav.govRules', section: 'governance', icon: 'workflows' },

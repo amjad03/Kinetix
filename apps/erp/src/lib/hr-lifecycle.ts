@@ -8,7 +8,7 @@ export interface AppraisalCycle {
   status: 'open' | 'closed';
 }
 export type AppraisalScores = Record<string, { score: number; evidence?: string }>;
-export type AppraisalStatus = 'draft' | 'self_submitted' | 'hod_reviewed' | 'finalised';
+export type AppraisalStatus = 'draft' | 'self_submitted' | 'hod_reviewed' | 'committee_reviewed' | 'finalised';
 export interface Appraisal {
   id: string;
   cycleId: string;
@@ -23,6 +23,9 @@ export interface Appraisal {
   principalRemarks: string | null;
   selfPercent: number;
   hodPercent: number;
+  committeeScore?: number | null;
+  committeeRemarks?: string | null;
+  studentFeedbackScore?: number | null;
 }
 export interface AppraisalCategory {
   key: string;

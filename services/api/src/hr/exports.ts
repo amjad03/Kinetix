@@ -43,12 +43,17 @@ export interface StatRow {
   esiEmployerPaise: number;
   ptPaise: number;
   tdsPaise: number;
+  lwfEmployeePaise?: number;
+  lwfEmployerPaise?: number;
 }
 
 const EPS_CEILING = 1_500_000;
 
 /** PF in the ECR column order, ESI contribution, Professional Tax and TDS statements. */
-export function statutoryCsv(kind: 'pf' | 'esi' | 'pt' | 'tds', rows: StatRow[]): string {
+export function statutoryCsv(kind: 'pf' | 'esi' | 'pt' | 'tds' | 'lwf', rows: StatRow[]): string {
+  if (kind === 'lwf') {
+    return csv([['Employee Code', 'Employee', 'Employee Contribution', 'Employer Contribution', 'Total'], ...rows.filter((r) => (r.lwfEmployeePaise ?? 0) > 0).map((r) => [r.employeeCode ?? '', r.name, rs(r.lwfEmployeePaise ?? 0), rs(r.lwfEmployerPaise ?? 0), rs((r.lwfEmployeePaise ?? 0) + (r.lwfEmployerPaise ?? 0))])]);
+  }
   if (kind === 'pf') {
     return csv([
       ['UAN', 'Member Name', 'Gross Wages', 'EPF Wages', 'EPS Wages', 'EDLI Wages', 'EPF Contribution (Employee)', 'EPS Contribution', 'EPF-EPS Diff (Employer)', 'NCP Days', 'Refund of Advances'],
@@ -71,6 +76,34 @@ export function statutoryCsv(kind: 'pf' | 'esi' | 'pt' | 'tds', rows: StatRow[])
   return csv([['Employee Code', 'Employee', 'PAN', 'Regime', 'Gross Salary', 'TDS'], ...rows.filter((r) => r.tdsPaise > 0).map((r) => [r.employeeCode ?? '', r.name, r.pan ?? '', r.regime, rs(r.grossPaise), rs(r.tdsPaise)])]);
 }
 
+export interface EcrRow {
+  uan: string;
+  name: string;
+  grossPaise: number;
+  pfWagePaise: number;
+  pfCeilingPaise: number;
+  pfCapAtCeiling: boolean;
+  employeePfPaise: number;
+  epsPaise: number;
+  epfPaise: number;
+  ncpDays: number;
+}
+
+/**
+ * EPFO ECR 2.0: one line per member, fields separated by #~#, whole rupees: UAN, name, gross wages, EPF wages,
+ * EPS wages, EDLI wages, EE share, EPS share, ER share (EPF-EPS difference), NCP days, refund of advances.
+ */
+export function ecrText(rows: EcrRow[]): string {
+  return rows
+    .map((r) => {
+      const epfWage = r.pfCapAtCeiling ? Math.min(r.pfWagePaise, r.pfCeilingPaise) : r.pfWagePaise;
+      const epsWage = Math.min(r.pfWagePaise, EPS_CEILING);
+      const name = r.name.toUpperCase().replace(/[^A-Z .]/g, '').trim();
+      return [r.uan, name, r.grossPaise, epfWage, epsWage, epsWage, r.employeePfPaise, r.epsPaise, r.epfPaise].map((v) => (typeof v === 'number' ? String(Math.round(v / 100)) : v)).concat(String(Math.round(r.ncpDays)), '0').join('#~#');
+    })
+    .join('\n');
+}
+
 export const xml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export interface TallyTotals {
@@ -81,6 +114,8 @@ export interface TallyTotals {
   employerEsiPaise: number;
   ptPaise: number;
   tdsPaise: number;
+  employeeLwfPaise?: number;
+  employerLwfPaise?: number;
   otherDeductionsPaise: number;
   netPaise: number;
 }
@@ -91,12 +126,14 @@ export function tallyEntries(t: TallyTotals, l: TallyLedgers) {
     { ledger: l.salaryExpense, paise: t.grossPaise },
     { ledger: l.employerPfExpense, paise: t.employerPfPaise },
     { ledger: l.employerEsiExpense, paise: t.employerEsiPaise },
+    { ledger: l.employerLwfExpense ?? 'Employer LWF Contribution', paise: t.employerLwfPaise ?? 0 },
   ].filter((e) => e.paise > 0);
   const credits = [
     { ledger: l.pfPayable, paise: t.employeePfPaise + t.employerPfPaise },
     { ledger: l.esiPayable, paise: t.employeeEsiPaise + t.employerEsiPaise },
     { ledger: l.ptPayable, paise: t.ptPaise },
     { ledger: l.tdsPayable, paise: t.tdsPaise },
+    { ledger: l.lwfPayable ?? 'Labour Welfare Fund Payable', paise: (t.employeeLwfPaise ?? 0) + (t.employerLwfPaise ?? 0) },
     { ledger: l.otherDeductions, paise: t.otherDeductionsPaise },
     { ledger: l.salaryPayable, paise: t.netPaise },
   ].filter((e) => e.paise > 0);

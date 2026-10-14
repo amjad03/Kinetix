@@ -23,7 +23,14 @@ const SettingsBody = z.object({
   payslipSeries: Series,
   leaveLevels: z.union([z.literal(1), z.literal(2)]),
   encashment: z.object({ maxDaysPerYear: z.number().min(0).max(365), minBalanceAfter: z.number().min(0).max(365) }),
-  attendance: z.object({ officeStart: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use a time like 09:00'), graceMinutes: z.number().int().min(0).max(120), halfDayAfterMinutes: z.number().int().min(0).max(480), minHoursFullDay: z.number().min(1).max(12) }),
+  attendance: z.object({
+    officeStart: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use a time like 09:00'),
+    graceMinutes: z.number().int().min(0).max(120),
+    halfDayAfterMinutes: z.number().int().min(0).max(480),
+    minHoursFullDay: z.number().min(1).max(12),
+    officeEnd: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use a time like 17:00').default('17:00'),
+    lateMarksPerHalfDay: z.number().int().min(0).max(31).default(3),
+  }),
   loans: z.object({ maxInstallments: z.number().int().min(1).max(120), maxAdvancePaise: z.number().int().min(0), maxLoanPaise: z.number().int().min(0) }),
 });
 const LoanBody = z.object({ userId: z.uuid().optional(), kind: z.enum(['advance', 'loan']), amountPaise: z.number().int().min(100_00), installments: z.number().int().min(1).max(120), startMonth: Month, purpose: z.string().trim().min(3).max(300) });
@@ -42,6 +49,107 @@ const RequisitionBody = z.object({
 const HISTORY_SUBJECTS = ['user', 'leave_request', 'payroll_run', 'payslip', 'job_opening', 'job_applicant', 'appraisal', 'appraisal_cycle', 'training_record', 'separation', 'staff_loan', 'leave_encashment', 'offer_letter'];
 
 type LoanRow = typeof staffLoans.$inferSelect;
+
+/** One day's pay for encashment: basic and DA (the PF wage components) of the current structure over 30 days. */
+export async function encashDayRate(tx: Tx, userId: string, month: string): Promise<number> {
+  const [s] = await tx.select({ id: salaryStructures.id }).from(salaryStructures).where(and(eq(salaryStructures.userId, userId), sql`${salaryStructures.effectiveFrom} <= ${`${month}-28`}`)).orderBy(desc(salaryStructures.effectiveFrom)).limit(1);
+  if (!s) throw new BadRequestException('This staff member has no salary structure yet');
+  const lines = await tx.select({ paise: salaryStructureLines.monthlyPaise, pfWage: salaryComponents.pfWage, kind: salaryComponents.kind }).from(salaryStructureLines).innerJoin(salaryComponents, eq(salaryComponents.id, salaryStructureLines.componentId)).where(eq(salaryStructureLines.structureId, s.id));
+  const base = lines.filter((l) => l.kind === 'earning' && l.pfWage).reduce((a, l) => a + l.paise, 0) || lines.filter((l) => l.kind === 'earning').reduce((a, l) => a + l.paise, 0);
+  return Math.round(base / 30);
+}
+
+
+/** A leave encashment request: an encashable type, within the yearly cap and leaving the minimum balance; priced at a day's basic and DA. */
+export async function requestEncashment(tx: Tx, p: UserPrincipal, leave: LeaveService, b: { userId?: string; leaveTypeId: string; days: number; payMonth: string }) {
+  const userId = b.userId ?? p.userId;
+  if (userId !== p.userId && !isPayrollStaff(p)) throw new ForbiddenException('You can only encash your own leave');
+  const [type] = await tx.select().from(leaveTypes).where(eq(leaveTypes.id, b.leaveTypeId));
+  if (!type?.encashable) throw new BadRequestException('This leave type cannot be encashed');
+  const rules = (await hrModuleSettings(tx, p.tenantId)).encashment;
+  const year = Number(b.payMonth.slice(0, 4));
+  const [done] = await tx.select({ d: sql<number>`coalesce(sum(${leaveEncashments.days}), 0)::float` }).from(leaveEncashments).where(and(eq(leaveEncashments.userId, userId), eq(leaveEncashments.year, year), inArray(leaveEncashments.status, ['pending', 'approved'])));
+  if (done.d + b.days > rules.maxDaysPerYear) throw new BadRequestException(`At most ${rules.maxDaysPerYear} days can be encashed in a year`);
+  const bal = (await leave.balances(tx, p.tenantId, userId, year)).find((x) => x.leaveType.id === type.id);
+  if (!bal || bal.available - b.days < rules.minBalanceAfter) throw new BadRequestException(`Not enough balance: ${bal?.available ?? 0} days available and ${rules.minBalanceAfter} must remain`);
+  const amountPaise = Math.round((await encashDayRate(tx, userId, b.payMonth)) * b.days);
+  const [row] = await tx.insert(leaveEncashments).values({ tenantId: p.tenantId, userId, leaveTypeId: type.id, year, days: b.days, amountPaise, payMonth: b.payMonth, createdBy: p.userId }).returning();
+  await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'leave.encashment_requested', subjectType: 'leave_encashment', subjectId: row.id, data: { userId, days: b.days, amountPaise } });
+  return row;
+}
+
+/** Approve (a payroll adjustment pays it in its month) or reject (with a reason) a pending encashment. */
+export async function decideEncashment(tx: Tx, p: UserPrincipal, notifications: NotificationsService, id: string, decision: 'approve' | 'reject', note: string | undefined): Promise<void> {
+  const [e] = await tx.select().from(leaveEncashments).where(eq(leaveEncashments.id, id)).for('update');
+  if (!e) throw new NotFoundException('Encashment not found');
+  if (e.status !== 'pending') throw new ConflictException(`This request is already ${e.status}`);
+  if (decision === 'reject' && !note) throw new BadRequestException('Give a reason for rejecting');
+  const status = decision === 'approve' ? 'approved' : 'rejected';
+  let adjustmentId: string | null = null;
+  if (status === 'approved') {
+    const [adj] = await tx.insert(payrollAdjustments).values({ tenantId: p.tenantId, userId: e.userId, kind: 'encashment', payMonth: e.payMonth, amountPaise: e.amountPaise, reason: `Leave encashment: ${e.days} days`, status: 'approved', createdBy: e.createdBy, decidedBy: p.userId, decidedAt: new Date() }).returning({ id: payrollAdjustments.id });
+    adjustmentId = adj.id;
+  }
+  await tx.update(leaveEncashments).set({ status, adjustmentId, decidedBy: p.userId, decidedAt: new Date(), decisionNote: note || null }).where(eq(leaveEncashments.id, id));
+  await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `leave.encashment_${status}`, subjectType: 'leave_encashment', subjectId: id, data: { note: note } });
+  await notifications.notifyUsers(tx, [e.userId], { kind: 'leave', text: texts.hrRequestDecided({ what: 'encashment', approved: status === 'approved', detail: `${e.days} · ${rupees(e.amountPaise)} · ${e.payMonth}` }), data: { encashmentId: id }, dedupeKey: `encash:${id}` });
+}
+
+/** Records a loan or advance request after checking the institution's limits. */
+export async function createLoan(tx: Tx, p: UserPrincipal, b: { userId?: string; kind: 'advance' | 'loan'; amountPaise: number; installments: number; startMonth: string; purpose: string }): Promise<LoanRow> {
+  const userId = b.userId ?? p.userId;
+  if (userId !== p.userId && !isPayrollStaff(p)) throw new ForbiddenException('You can only request a loan for yourself');
+  const rules = (await hrModuleSettings(tx, p.tenantId)).loans;
+  const cap = b.kind === 'advance' ? rules.maxAdvancePaise : rules.maxLoanPaise;
+  if (b.amountPaise > cap) throw new BadRequestException(`The most you can request as ${b.kind === 'advance' ? 'an advance' : 'a loan'} is ${rupees(cap)}`);
+  if (b.installments > rules.maxInstallments) throw new BadRequestException(`Repay in at most ${rules.maxInstallments} instalments`);
+  const [open] = await tx.select({ id: staffLoans.id }).from(staffLoans).where(and(eq(staffLoans.userId, userId), eq(staffLoans.kind, b.kind), eq(staffLoans.status, 'pending')));
+  if (open) throw new ConflictException('There is already a pending request of this kind');
+  const [n] = await tx.select({ n: sql<number>`count(*)::int` }).from(staffLoans);
+  const loanNo = formatSeries({ prefix: b.kind === 'advance' ? 'ADV/{FY}/' : 'LN/{FY}/', next: n.n + 1, digits: 4, suffix: '' });
+  const emi = loanSchedule(b.amountPaise, b.installments, b.startMonth)[0].amountPaise;
+  const [row] = await tx.insert(staffLoans).values({ tenantId: p.tenantId, loanNo, userId, kind: b.kind, amountPaise: b.amountPaise, installments: b.installments, emiPaise: emi, startMonth: b.startMonth, purpose: b.purpose, createdBy: p.userId }).returning();
+  await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.loan_requested', subjectType: 'staff_loan', subjectId: row.id, data: { userId, kind: b.kind, amountPaise: b.amountPaise, installments: b.installments } });
+  return row;
+}
+
+/** Approves (instalments become approved payroll recoveries) or rejects a pending loan. */
+export async function decideLoan(tx: Tx, p: UserPrincipal, notifications: NotificationsService, id: string, decision: 'approve' | 'reject', note: string): Promise<LoanRow> {
+  const [l] = await tx.select().from(staffLoans).where(eq(staffLoans.id, id)).for('update');
+  if (!l) throw new NotFoundException('Loan not found');
+  if (l.status !== 'pending') throw new ConflictException(`This request is already ${l.status}`);
+  if (l.userId === p.userId) throw new ForbiddenException('You cannot decide your own request');
+  if (decision === 'reject' && !note) throw new BadRequestException('Give a reason for rejecting');
+  const status = decision === 'approve' ? 'approved' : 'rejected';
+  if (status === 'approved') {
+    const [locked] = await tx.select({ month: payrollRuns.month }).from(payrollRuns).where(and(eq(payrollRuns.month, l.startMonth), eq(payrollRuns.kind, 'regular'), inArray(payrollRuns.status, ['approved', 'locked'])));
+    if (locked) throw new ConflictException(`Payroll for ${l.startMonth} is already approved; start recovery in a later month`);
+    const sched = loanSchedule(l.amountPaise, l.installments, l.startMonth);
+    await tx.insert(payrollAdjustments).values(sched.map((s) => ({ tenantId: p.tenantId, userId: l.userId, kind: 'recovery', payMonth: s.month, amountPaise: s.amountPaise, reason: `${l.loanNo} instalment`, status: 'approved', loanId: l.id, createdBy: l.createdBy, decidedBy: p.userId, decidedAt: new Date() })));
+  }
+  await tx.update(staffLoans).set({ status, decidedBy: p.userId, decidedAt: new Date(), decisionNote: note || null }).where(eq(staffLoans.id, id));
+  await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `payroll.loan_${status}`, subjectType: 'staff_loan', subjectId: id, data: { note } });
+  await notifications.notifyUsers(tx, [l.userId], { kind: 'payslip', text: texts.hrRequestDecided({ what: l.kind as 'loan', approved: status === 'approved', detail: `${l.loanNo} · ${rupees(l.amountPaise)}${note ? ` · ${note}` : ''}` }), data: { loanId: id }, dedupeKey: `loan:${id}` });
+  return (await tx.select().from(staffLoans).where(eq(staffLoans.id, id)))[0];
+}
+
+/** Closes an approved loan early: instalments not yet paid through a locked payroll are removed. */
+export async function closeLoanEarly(tx: Tx, p: UserPrincipal, id: string, note: string): Promise<LoanRow> {
+  const [l] = await tx.select().from(staffLoans).where(eq(staffLoans.id, id)).for('update');
+  if (!l) throw new NotFoundException('Loan not found');
+  if (l.status !== 'approved') throw new ConflictException('Only an approved loan can be closed');
+  const open = await tx
+    .select({ id: payrollAdjustments.id, runId: payrollAdjustments.runId, runStatus: payrollRuns.status })
+    .from(payrollAdjustments)
+    .leftJoin(payrollRuns, eq(payrollRuns.id, payrollAdjustments.runId))
+    .where(eq(payrollAdjustments.loanId, id));
+  const drop = open.filter((a) => a.runStatus !== 'locked' && a.runStatus !== 'approved').map((a) => a.id);
+  if (!drop.length) throw new ConflictException('Every instalment is already paid');
+  await tx.delete(payrollAdjustments).where(inArray(payrollAdjustments.id, drop));
+  await tx.update(staffLoans).set({ status: 'closed', closedAt: new Date(), closeNote: note }).where(eq(staffLoans.id, id));
+  await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.loan_closed', subjectType: 'staff_loan', subjectId: id, changes: { status: { before: 'approved', after: 'closed' } }, data: { note, instalmentsDropped: drop.length } });
+  return (await tx.select().from(staffLoans).where(eq(staffLoans.id, id)))[0];
+}
 
 /** Splits a loan into monthly instalments; the last one takes the rounding difference. */
 export function loanSchedule(amountPaise: number, installments: number, startMonth: string): { month: string; amountPaise: number }[] {
@@ -148,22 +256,7 @@ export class HrWorkflowsController {
   @Post('loans')
   @Auth('user', STAFF_ROLES)
   requestLoan(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(LoanBody)) b: z.infer<typeof LoanBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const userId = b.userId ?? p.userId;
-      if (userId !== p.userId && !isPayrollStaff(p)) throw new ForbiddenException('You can only request a loan for yourself');
-      const rules = (await hrModuleSettings(tx, p.tenantId)).loans;
-      const cap = b.kind === 'advance' ? rules.maxAdvancePaise : rules.maxLoanPaise;
-      if (b.amountPaise > cap) throw new BadRequestException(`The most you can request as ${b.kind === 'advance' ? 'an advance' : 'a loan'} is ${rupees(cap)}`);
-      if (b.installments > rules.maxInstallments) throw new BadRequestException(`Repay in at most ${rules.maxInstallments} instalments`);
-      const [open] = await tx.select({ id: staffLoans.id }).from(staffLoans).where(and(eq(staffLoans.userId, userId), eq(staffLoans.kind, b.kind), eq(staffLoans.status, 'pending')));
-      if (open) throw new ConflictException('There is already a pending request of this kind');
-      const [n] = await tx.select({ n: sql<number>`count(*)::int` }).from(staffLoans);
-      const loanNo = formatSeries({ prefix: b.kind === 'advance' ? 'ADV/{FY}/' : 'LN/{FY}/', next: n.n + 1, digits: 4, suffix: '' });
-      const emi = loanSchedule(b.amountPaise, b.installments, b.startMonth)[0].amountPaise;
-      const [row] = await tx.insert(staffLoans).values({ tenantId: p.tenantId, loanNo, userId, kind: b.kind, amountPaise: b.amountPaise, installments: b.installments, emiPaise: emi, startMonth: b.startMonth, purpose: b.purpose, createdBy: p.userId }).returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.loan_requested', subjectType: 'staff_loan', subjectId: row.id, data: { userId, kind: b.kind, amountPaise: b.amountPaise, installments: b.installments } });
-      return this.loanView(tx, row);
-    });
+    return this.db.withTenant(p.tenantId, async (tx) => this.loanView(tx, await createLoan(tx, p, b)));
   }
 
   /** The principal approves (instalments become approved payroll recoveries) or rejects. */
@@ -172,22 +265,17 @@ export class HrWorkflowsController {
   @Auth('user', PAYROLL_APPROVERS)
   decideLoan(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(DecideBody)) b: z.infer<typeof DecideBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const l = await this.ownLoan(tx, p, id, true);
-      if (l.status !== 'pending') throw new ConflictException(`This request is already ${l.status}`);
-      if (l.userId === p.userId) throw new ForbiddenException('You cannot decide your own request');
-      if (b.decision === 'reject' && !b.note) throw new BadRequestException('Give a reason for rejecting');
-      const status = b.decision === 'approve' ? 'approved' : 'rejected';
-      if (status === 'approved') {
-        const [locked] = await tx.select({ month: payrollRuns.month }).from(payrollRuns).where(and(eq(payrollRuns.month, l.startMonth), inArray(payrollRuns.status, ['approved', 'locked'])));
-        if (locked) throw new ConflictException(`Payroll for ${l.startMonth} is already approved; start recovery in a later month`);
-        const sched = loanSchedule(l.amountPaise, l.installments, l.startMonth);
-        await tx.insert(payrollAdjustments).values(sched.map((s) => ({ tenantId: p.tenantId, userId: l.userId, kind: 'recovery', payMonth: s.month, amountPaise: s.amountPaise, reason: `${l.loanNo} instalment`, status: 'approved', loanId: l.id, createdBy: l.createdBy, decidedBy: p.userId, decidedAt: new Date() })));
-      }
-      await tx.update(staffLoans).set({ status, decidedBy: p.userId, decidedAt: new Date(), decisionNote: b.note || null }).where(eq(staffLoans.id, id));
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `payroll.loan_${status}`, subjectType: 'staff_loan', subjectId: id, data: { note: b.note } });
-      await this.notifications.notifyUsers(tx, [l.userId], { kind: 'payslip', text: texts.hrRequestDecided({ what: l.kind as 'loan', approved: status === 'approved', detail: `${l.loanNo} · ${rupees(l.amountPaise)}${b.note ? ` · ${b.note}` : ''}` }), data: { loanId: id }, dedupeKey: `loan:${id}` });
-      return this.loanView(tx, (await tx.select().from(staffLoans).where(eq(staffLoans.id, id)))[0]);
+      await this.ownLoan(tx, p, id);
+      return this.loanView(tx, await decideLoan(tx, p, this.notifications, id, b.decision, b.note));
     });
+  }
+
+  /** Closes an approved loan early (repaid in cash or written off): instalments not yet in a locked payroll are dropped. */
+  @Post('loans/:id/close')
+  @HttpCode(200)
+  @Auth('user', PAYROLL_APPROVERS)
+  closeLoan(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ note: z.string().trim().min(3, 'Say how the rest was settled').max(300) }))) b: { note: string }) {
+    return this.db.withTenant(p.tenantId, async (tx) => this.loanView(tx, await closeLoanEarly(tx, p, id, b.note)));
   }
 
   @Post('loans/:id/cancel')
@@ -204,15 +292,6 @@ export class HrWorkflowsController {
   }
 
   // ----- leave encashment -----------------------------------------------------------------------------------
-
-  /** One day's pay for encashment: basic and DA (the PF wage components) of the current structure over 30 days. */
-  private async dayRate(tx: Tx, userId: string, month: string): Promise<number> {
-    const [s] = await tx.select({ id: salaryStructures.id }).from(salaryStructures).where(and(eq(salaryStructures.userId, userId), sql`${salaryStructures.effectiveFrom} <= ${`${month}-28`}`)).orderBy(desc(salaryStructures.effectiveFrom)).limit(1);
-    if (!s) throw new BadRequestException('This staff member has no salary structure yet');
-    const lines = await tx.select({ paise: salaryStructureLines.monthlyPaise, pfWage: salaryComponents.pfWage, kind: salaryComponents.kind }).from(salaryStructureLines).innerJoin(salaryComponents, eq(salaryComponents.id, salaryStructureLines.componentId)).where(eq(salaryStructureLines.structureId, s.id));
-    const base = lines.filter((l) => l.kind === 'earning' && l.pfWage).reduce((a, l) => a + l.paise, 0) || lines.filter((l) => l.kind === 'earning').reduce((a, l) => a + l.paise, 0);
-    return Math.round(base / 30);
-  }
 
   private async encashView(tx: Tx, rows: (typeof leaveEncashments.$inferSelect)[]) {
     if (!rows.length) return [];
@@ -231,19 +310,7 @@ export class HrWorkflowsController {
   @Auth('user', STAFF_ROLES)
   requestEncashment(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(EncashBody)) b: z.infer<typeof EncashBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const userId = b.userId ?? p.userId;
-      if (userId !== p.userId && !isPayrollStaff(p)) throw new ForbiddenException('You can only encash your own leave');
-      const [type] = await tx.select().from(leaveTypes).where(eq(leaveTypes.id, b.leaveTypeId));
-      if (!type?.encashable) throw new BadRequestException('This leave type cannot be encashed');
-      const rules = (await hrModuleSettings(tx, p.tenantId)).encashment;
-      const year = Number(b.payMonth.slice(0, 4));
-      const [done] = await tx.select({ d: sql<number>`coalesce(sum(${leaveEncashments.days}), 0)::float` }).from(leaveEncashments).where(and(eq(leaveEncashments.userId, userId), eq(leaveEncashments.year, year), inArray(leaveEncashments.status, ['pending', 'approved'])));
-      if (done.d + b.days > rules.maxDaysPerYear) throw new BadRequestException(`At most ${rules.maxDaysPerYear} days can be encashed in a year`);
-      const bal = (await this.leave.balances(tx, p.tenantId, userId, year)).find((x) => x.leaveType.id === type.id);
-      if (!bal || bal.available - b.days < rules.minBalanceAfter) throw new BadRequestException(`Not enough balance: ${bal?.available ?? 0} days available and ${rules.minBalanceAfter} must remain`);
-      const amountPaise = Math.round((await this.dayRate(tx, userId, b.payMonth)) * b.days);
-      const [row] = await tx.insert(leaveEncashments).values({ tenantId: p.tenantId, userId, leaveTypeId: type.id, year, days: b.days, amountPaise, payMonth: b.payMonth, createdBy: p.userId }).returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'leave.encashment_requested', subjectType: 'leave_encashment', subjectId: row.id, data: { userId, days: b.days, amountPaise } });
+      const row = await requestEncashment(tx, p, this.leave, b);
       return (await this.encashView(tx, [row]))[0];
     });
   }
@@ -253,19 +320,7 @@ export class HrWorkflowsController {
   @Auth('user', PAYROLL_APPROVERS)
   decideEncashment(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(DecideBody)) b: z.infer<typeof DecideBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [e] = await tx.select().from(leaveEncashments).where(eq(leaveEncashments.id, id)).for('update');
-      if (!e) throw new NotFoundException('Encashment not found');
-      if (e.status !== 'pending') throw new ConflictException(`This request is already ${e.status}`);
-      if (b.decision === 'reject' && !b.note) throw new BadRequestException('Give a reason for rejecting');
-      const status = b.decision === 'approve' ? 'approved' : 'rejected';
-      let adjustmentId: string | null = null;
-      if (status === 'approved') {
-        const [adj] = await tx.insert(payrollAdjustments).values({ tenantId: p.tenantId, userId: e.userId, kind: 'encashment', payMonth: e.payMonth, amountPaise: e.amountPaise, reason: `Leave encashment: ${e.days} days`, status: 'approved', createdBy: e.createdBy, decidedBy: p.userId, decidedAt: new Date() }).returning({ id: payrollAdjustments.id });
-        adjustmentId = adj.id;
-      }
-      await tx.update(leaveEncashments).set({ status, adjustmentId, decidedBy: p.userId, decidedAt: new Date(), decisionNote: b.note || null }).where(eq(leaveEncashments.id, id));
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `leave.encashment_${status}`, subjectType: 'leave_encashment', subjectId: id, data: { note: b.note } });
-      await this.notifications.notifyUsers(tx, [e.userId], { kind: 'leave', text: texts.hrRequestDecided({ what: 'encashment', approved: status === 'approved', detail: `${e.days} · ${rupees(e.amountPaise)} · ${e.payMonth}` }), data: { encashmentId: id }, dedupeKey: `encash:${id}` });
+      await decideEncashment(tx, p, this.notifications, id, b.decision, b.note);
       return (await this.encashView(tx, (await tx.select().from(leaveEncashments).where(eq(leaveEncashments.id, id)))))[0];
     });
   }

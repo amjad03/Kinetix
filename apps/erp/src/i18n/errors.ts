@@ -55,6 +55,9 @@ export const ERROR_KEYS: Record<string, MessageKey> = {
   RATE_LIMITED: 'error.RATE_LIMITED',
   NETWORK: 'error.NETWORK',
   SERVER_ERROR: 'error.SERVER_ERROR',
+  // Settings > Roles and permissions: the institution narrowed this role's access to a module.
+  ROLE_ACCESS_DENIED: 'error.ROLE_ACCESS_DENIED',
+  ROLE_READ_ONLY: 'error.ROLE_READ_ONLY',
 };
 
 /** Codes whose English server message is specific (e.g. "That book is already lent"); other languages get a generic line. */
@@ -77,6 +80,19 @@ const GENERIC_FALLBACK: Record<string, MessageKey> = {
   RESTORE_EXISTS: 'error.CONFLICT',
   DUPLICATE: 'error.RECORD_DUPLICATE',
   VIEW_NAME_TAKEN: 'error.RECORD_DUPLICATE',
+  // Purchase, facilities and placements: the message names the budget, vendor, room, slot or student.
+  BUDGET_EXCEEDED: 'ivd.e.budget',
+  VENDOR_NOT_APPROVED: 'ivd.e.vendorNotApproved',
+  VENDOR_BLACKLISTED: 'ivd.e.vendorBlacklisted',
+  PURCHASE_MODE: 'ivd.e.purchaseMode',
+  NO_RATE_CONTRACT: 'ivd.e.noRateContract',
+  BOOKING_CONFLICT: 'ivd.e.bookingConflict',
+  SLOT_CONFLICT: 'ivd.e.slotConflict',
+  SAME_GROUP_OFFER: 'ivd.e.sameGroup',
+  ALREADY_PLACED: 'ivd.e.alreadyPlaced',
+  DEBARRED: 'ivd.e.debarred',
+  NOT_OPTED_IN: 'ivd.e.notOptedIn',
+  NOT_ELIGIBLE: 'ivd.e.notEligible',
 };
 
 /**

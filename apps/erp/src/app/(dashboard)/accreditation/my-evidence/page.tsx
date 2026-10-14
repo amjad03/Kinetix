@@ -35,7 +35,13 @@ export default async function MyEvidencePage() {
   await requireSection('facultyEvidence');
   const { t } = await getI18n();
   const data = await load(async () => ({ mine: await api<Mine[]>('/v1/accreditation/my-evidence'), all: await safe(api<Everyone[]>('/v1/accreditation/faculty-evidence'), null) }));
-  if (data.error !== undefined) return <ErrorState message={data.error} />;
+  if (data.error !== undefined)
+    return (
+      <>
+        <PageHeader title={t('acc.title.mine')} subtitle={t('acc.sub.mine')} />
+        <ErrorState message={data.error} />
+      </>
+    );
   const { mine, all } = data.data;
   const verified = mine.filter((m) => m.verified).length;
   const pending = (all ?? []).filter((m) => !m.verified).length;

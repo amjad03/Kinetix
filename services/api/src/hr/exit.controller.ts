@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Res, StreamableFile } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, StreamableFile } from '@nestjs/common';
 import type { Response } from 'express';
 import { and, asc, desc, eq, notInArray } from 'drizzle-orm';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ import { departments, designations, exitClearances, separations, staffProfiles, 
 import { addDays } from './dates.js';
 import { hasAnyRole, HR_ROLES, isHr, STAFF_ROLES } from './hr.access.js';
 import { HrService } from './hr.service.js';
-import { relievingLetterPdf } from './letters-pdf.js';
+import { experienceCertificatePdf, relievingLetterPdf } from './letters-pdf.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const ResignBody = z.object({ userId: z.uuid().optional(), reason: z.string().trim().min(3).max(1000), resignedOn: Day.optional(), noticeDays: z.number().int().min(0).max(180).default(30), lastWorkingDay: Day.optional() });
@@ -230,6 +230,32 @@ export class ExitController {
     res.setHeader('Content-Disposition', 'inline; filename="relieving-letter.pdf"');
     return new StreamableFile(
       relievingLetterPdf({ institution: d.institution, employeeName: d.name, employeeCode: d.sp?.code ?? null, designation: d.sp?.designation ?? null, department: d.sp?.department ?? null, joinedOn: d.sp?.doj ?? null, lastWorkingDay: d.s.lastWorkingDay, relievedOn: d.s.relievedOn!, referenceNo: `REL/${d.s.relievedOn!.slice(0, 4)}/${d.s.id.slice(0, 6).toUpperCase()}` }),
+    );
+  }
+
+  /** The experience certificate of a relieved employee; `duties` (optional) says what they did. */
+  @Get('separations/:id/experience-certificate')
+  @Auth('user', STAFF_ROLES)
+  async experience(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('duties') duties: string | undefined, @Res({ passthrough: true }) res: Response) {
+    const d = await this.db.withTenant(p.tenantId, async (tx) => {
+      const s = await this.load(tx, id);
+      if (s.userId !== p.userId && !isHr(p)) throw new ForbiddenException('Not your certificate');
+      if (s.status !== 'relieved') throw new ConflictException('The experience certificate is issued once the employee is relieved');
+      const [u] = await tx.select({ name: users.fullName }).from(users).where(eq(users.id, s.userId));
+      const [sp] = await tx
+        .select({ code: staffProfiles.employeeCode, doj: staffProfiles.dateOfJoining, designation: designations.name, department: departments.name })
+        .from(staffProfiles)
+        .leftJoin(designations, eq(designations.id, staffProfiles.designationId))
+        .leftJoin(departments, eq(departments.id, staffProfiles.departmentId))
+        .where(eq(staffProfiles.userId, s.userId));
+      const [t] = await tx.select({ name: tenants.name }).from(tenants);
+      await audit(tx, { ...this.act(p), action: 'hr.experience_certificate.v1', subjectType: 'separation', subjectId: id, data: {} });
+      return { s, name: u?.name ?? '', sp, institution: t?.name ?? '', today: await this.hr.today(tx) };
+    });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="experience-certificate.pdf"');
+    return new StreamableFile(
+      experienceCertificatePdf({ institution: d.institution, referenceNo: `EXP/${d.today.slice(0, 4)}/${d.s.id.slice(0, 6).toUpperCase()}`, issuedOn: d.today, name: d.name, employeeCode: d.sp?.code ?? null, designation: d.sp?.designation ?? null, department: d.sp?.department ?? null, joinedOn: d.sp?.doj ?? null, lastWorkingDay: d.s.lastWorkingDay, duties: (duties ?? '').slice(0, 400) }),
     );
   }
 }

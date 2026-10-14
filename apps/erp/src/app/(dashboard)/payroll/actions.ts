@@ -5,16 +5,11 @@ import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import { structureLines, type LineDraft } from '@/lib/hr';
 import type { ActionResult } from '@/lib/types';
-import type { PayrollRunDetail, PayrollSettings, SalaryComponent, SalaryStructure } from '@/lib/hr-types';
+import type { PayrollRunDetail, PayrollSettings, SalaryStructure } from '@/lib/hr-types';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-export async function createRun(month: string): Promise<ActionResult<PayrollRunDetail>> {
-  const res = await act(() => api<PayrollRunDetail>('/v1/payroll/runs', { method: 'POST', body: { month } }));
-  if (res.ok) revalidatePath('/payroll');
-  return res;
-}
 
 /** recompute needs no version; approve, lock and reopen send the one the person was looking at. */
 export async function runAction(id: string, action: 'recompute' | 'verify' | 'approve' | 'lock' | 'reopen' | 'publish', version: number): Promise<ActionResult<PayrollRunDetail>> {
@@ -40,11 +35,6 @@ export async function saveStructure(userId: string, effectiveFrom: string, rows:
   return act(() => api<SalaryStructure>(`/v1/payroll/structures/${userId}`, { method: 'PUT', body: { effectiveFrom, lines: lines.lines } }));
 }
 
-export async function addComponent(c: { code: string; name: string; kind: 'earning' | 'deduction'; pfWage: boolean; taxable: boolean }): Promise<ActionResult<SalaryComponent>> {
-  const res = await act(() => api<SalaryComponent>('/v1/payroll/components', { method: 'POST', body: { ...c, code: c.code.trim(), name: c.name.trim(), active: true, sortOrder: c.kind === 'deduction' ? 10 : 5 } }));
-  if (res.ok) revalidatePath('/payroll');
-  return res;
-}
 
 export async function saveSettings(s: PayrollSettings): Promise<ActionResult<PayrollSettings>> {
   const res = await act(() => api<PayrollSettings>('/v1/payroll/settings', { method: 'PUT', body: s }));

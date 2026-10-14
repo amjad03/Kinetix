@@ -30,5 +30,5 @@ export default async function LeaveRecordPage({ params }: { params: Promise<{ id
   const [r, settings, activity] = data.data;
   const hr = !!me && me.roles.some((x) => x === 'principal' || x === 'tenant_admin' || x === 'hr_manager');
   const canDecide = !!me && me.id !== r.user.id && (r.status === 'pending' || (r.status === 'recommended' && hr));
-  return <LeaveRecord r={r} twoLevel={settings?.leaveLevels === 2} canDecide={canDecide} activity={activity} />;
+  return <LeaveRecord r={r} twoLevel={settings?.leaveLevels === 2} canDecide={canDecide} activity={activity} canManage={hr || (!!me && me.roles.includes('hod'))} canRevoke={hr && me?.id !== r.user.id} />;
 }

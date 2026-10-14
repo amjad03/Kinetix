@@ -105,6 +105,8 @@ export function RecordsTable({
   testId,
   actionParams = {},
   rowActionKeys = [],
+  createDefaults,
+  emptyActions = false,
 }: {
   meta: RecordMeta;
   page: RecordsPage<Row>;
@@ -128,6 +130,10 @@ export function RecordsTable({
   extraParams?: Record<string, string>;
   /** The saved views' page key (default: the entity). */
   viewsPage?: string;
+  /** Starting values of the Add form (the list's own context, e.g. the person whose record it is). */
+  createDefaults?: Record<string, string>;
+  /** Keep Add, Import and the page's own buttons under the empty state, so the first record can be made from it. */
+  emptyActions?: boolean;
   testId?: string;
   /** Values a module action asks for before it runs, by action key (a reason, a template). */
   actionParams?: Record<string, ActionParam[]>;
@@ -284,7 +290,18 @@ export function RecordsTable({
         rowHref={onView ? undefined : rowHref}
         onRowClick={onView}
         rowActions={rowActions}
-        empty={!listParamsGiven && page.total === 0 ? emptyWithActions : undefined}
+        empty={
+          !listParamsGiven && page.total === 0 ? (
+            emptyActions && empty ? (
+              <div className="grid gap-3">
+                {empty}
+                <div className="flex flex-wrap items-end justify-center gap-2">{toolbarButtons}</div>
+              </div>
+            ) : (
+              emptyWithActions
+            )
+          ) : undefined
+        }
         toolbar={toolbarButtons}
         views={<SavedViews page={viewsPage ?? entity} current={viewState} onApply={applyView} onDefault={(v) => !listParamsGiven && applyView(v.state)} />}
         visibleColumns={visible}
@@ -321,6 +338,7 @@ export function RecordsTable({
         <RecordForm
           meta={meta}
           row={o.row}
+          defaults={createDefaults}
           title={o.row ? t('rk.editTitle', { name: o.row._label ?? '' }) : t('rk.addTitle', { name: tr(t, `rk.one.${entity}`, name) })}
           onClose={() => setOpen(null)}
           onSaved={() => {

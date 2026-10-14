@@ -7,7 +7,8 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { appraisalCycles, appraisals, departments, departmentStaff, jobApplicants, jobOpenings, offerLetters, onboardingItems, staffProfiles, trainingRecords, users } from '../db/schema.js';
+import { teachingEvaluations } from '../db/schema-depth.js';
+import { appraisalCycles, appraisals, departments, departmentStaff, jobApplicants, jobOpenings, offerLetters, onboardingItems, staffProfiles, tenants, trainingRecords, users } from '../db/schema.js';
 import { APPRAISAL_CATEGORIES, APPRAISAL_MAX, gradeFor, percentOf, scoreProblems } from './appraisal-math.js';
 import { addDays } from './dates.js';
 import { hasAnyRole, HR_ROLES, isHr, PAYROLL_APPROVERS, STAFF_ROLES } from './hr.access.js';
@@ -22,6 +23,7 @@ const Scores = z.record(z.string(), z.object({ score: z.number().min(0).max(1000
 const CycleBody = z.object({ period: z.string().trim().min(4).max(20), opensOn: Day, closesOn: Day });
 const SelfBody = z.object({ cycleId: z.uuid(), scores: Scores, submit: z.boolean().default(false) });
 const HodBody = z.object({ scores: Scores, remarks: z.string().trim().max(2000).default('') });
+const CommitteeBody = z.object({ score: z.number().min(0).max(100), remarks: z.string().trim().max(2000).default('') });
 const FinaliseBody = z.object({ finalPercent: z.number().min(0).max(100).optional(), remarks: z.string().trim().max(2000).default('') });
 const TrainingBody = z.object({
   userId: z.uuid().optional(),
@@ -169,7 +171,8 @@ export class TalentController {
       if (a.userId === p.userId) throw new ForbiddenException('You cannot review your own appraisal');
       if (!isHr(p) && !(await this.headsDepartmentOf(tx, p.userId, a.userId))) throw new ForbiddenException('Only the head of their department can review this appraisal');
       if (a.status !== 'self_submitted' && a.status !== 'hod_reviewed') throw new ConflictException(a.status === 'draft' ? 'The teacher has not submitted the self-appraisal yet' : 'This appraisal is already finalised');
-      const [row] = await tx.update(appraisals).set({ hodScores: b.scores, hodRemarks: b.remarks, hodId: p.userId, status: 'hod_reviewed', updatedAt: new Date() }).where(eq(appraisals.id, id)).returning();
+      const studentFeedbackScore = await this.studentFeedback(tx, a.cycleId, a.userId);
+      const [row] = await tx.update(appraisals).set({ hodScores: b.scores, hodRemarks: b.remarks, hodId: p.userId, status: 'hod_reviewed', studentFeedbackScore, updatedAt: new Date() }).where(eq(appraisals.id, id)).returning();
       await audit(tx, { ...this.act(p), action: 'hr.appraisal_hod_reviewed.v1', subjectType: 'appraisal', subjectId: id, data: { percent: percentOf(b.scores) } });
       return this.shape(row);
     });
@@ -183,10 +186,41 @@ export class TalentController {
       const [a] = await tx.select().from(appraisals).where(eq(appraisals.id, id)).for('update');
       if (!a) throw new NotFoundException('Appraisal not found');
       if (a.userId === p.userId) throw new ForbiddenException('You cannot finalise your own appraisal');
-      if (a.status !== 'hod_reviewed') throw new ConflictException(a.status === 'finalised' ? 'This appraisal is already finalised' : 'The head of department has not reviewed it yet');
-      const final = b.finalPercent ?? percentOf(a.hodScores);
+      if (a.status !== 'hod_reviewed' && a.status !== 'committee_reviewed') throw new ConflictException(a.status === 'finalised' ? 'This appraisal is already finalised' : 'The head of department has not reviewed it yet');
+      // The committee's score stands unless the principal enters their own; without a committee, the HoD's total.
+      const final = b.finalPercent ?? a.committeeScore ?? percentOf(a.hodScores);
       const [row] = await tx.update(appraisals).set({ finalScore: final, grade: gradeFor(final), principalRemarks: b.remarks, principalId: p.userId, status: 'finalised', updatedAt: new Date() }).where(eq(appraisals.id, id)).returning();
       await audit(tx, { ...this.act(p), action: 'hr.appraisal_finalised.v1', subjectType: 'appraisal', subjectId: id, data: { final, grade: row.grade } });
+      return this.shape(row);
+    });
+  }
+
+  /** Average student rating of the teacher over the year before the cycle closes, as a percentage (ratings are 1 to 5). */
+  private async studentFeedback(tx: Tx, cycleId: string, userId: string): Promise<number | null> {
+    const [c] = await tx.select({ closesOn: appraisalCycles.closesOn }).from(appraisalCycles).where(eq(appraisalCycles.id, cycleId));
+    if (!c) return null;
+    const [r] = await tx
+      .select({ avg: sql<number | null>`avg(${teachingEvaluations.average})::float8`, n: sql<number>`count(*)::int` })
+      .from(teachingEvaluations)
+      .where(and(eq(teachingEvaluations.staffUserId, userId), eq(teachingEvaluations.raterKind, 'student'), sql`${teachingEvaluations.createdAt} > ${c.closesOn}::date - interval '1 year'`, sql`${teachingEvaluations.createdAt} < ${c.closesOn}::date + interval '1 day'`));
+    return r?.n ? Math.round((r.avg! / 5) * 10000) / 100 : null;
+  }
+
+  /**
+   * The appraisal committee's score (0 to 100) after the HoD's review, weighing the self and HoD scores with the
+   * student feedback; the principal then finalises. Members of the committee: HR and the principal.
+   */
+  @Put('appraisals/:id/committee')
+  @Auth('user', [...HR_ROLES])
+  committee(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CommitteeBody)) b: z.infer<typeof CommitteeBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [a] = await tx.select().from(appraisals).where(eq(appraisals.id, id)).for('update');
+      if (!a) throw new NotFoundException('Appraisal not found');
+      if (a.userId === p.userId) throw new ForbiddenException('You cannot score your own appraisal');
+      if (a.status !== 'hod_reviewed' && a.status !== 'committee_reviewed') throw new ConflictException(a.status === 'finalised' ? 'This appraisal is already finalised' : 'The head of department has not reviewed it yet');
+      const studentFeedbackScore = await this.studentFeedback(tx, a.cycleId, a.userId);
+      const [row] = await tx.update(appraisals).set({ committeeScore: b.score, committeeRemarks: b.remarks, committeeBy: p.userId, committeeAt: new Date(), studentFeedbackScore, status: 'committee_reviewed', updatedAt: new Date() }).where(eq(appraisals.id, id)).returning();
+      await audit(tx, { ...this.act(p), action: 'hr.appraisal_committee_reviewed.v1', subjectType: 'appraisal', subjectId: id, changes: { committee_score: { before: a.committeeScore, after: b.score } }, data: { remarks: b.remarks } });
       return this.shape(row);
     });
   }

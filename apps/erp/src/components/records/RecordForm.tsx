@@ -48,11 +48,11 @@ const asText = (v: unknown) => (v === null || v === undefined ? '' : String(v));
  * Add or edit a record from the entity's own field list (GET /v1/records/:entity/meta). Only changed fields are sent
  * on edit, so the history shows exactly what the person changed.
  */
-export function RecordForm({ meta, row, title, onClose, onSaved }: { meta: RecordMeta; row?: Row; title: string; onClose: () => void; onSaved: (row: Row) => void }) {
+export function RecordForm({ meta, row, title, onClose, onSaved, defaults }: { meta: RecordMeta; row?: Row; title: string; onClose: () => void; onSaved: (row: Row) => void; /** Starting values of a new record (the list's own context, e.g. the person whose record it is). */ defaults?: Record<string, string> }) {
   const { t } = useI18n();
   const editing = !!row;
   const fields = meta.fields.filter((f) => (editing ? f.edit : f.create));
-  const initial = Object.fromEntries(fields.map((f) => [f.key, row ? asText(row[f.rowKey]) : f.type === 'boolean' ? 'false' : '']));
+  const initial = Object.fromEntries(fields.map((f) => [f.key, row ? asText(row[f.rowKey]) : (defaults?.[f.key] ?? (f.type === 'boolean' ? 'false' : ''))]));
   const [values, setValues] = useState<Record<string, string>>(initial);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();

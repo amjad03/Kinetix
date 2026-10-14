@@ -4,6 +4,8 @@ import { DataTable } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { runAction } from '@/app/(dashboard)/payroll/actions';
+import { reversePayrollRun } from '@/app/(dashboard)/hr/depth-actions';
+import { FormField, TextInput } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -21,6 +23,8 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
   const { run: call, view } = useNotice();
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState<Step | null>(null);
+  const [reversing, setReversing] = useState(false);
+  const [reason, setReason] = useState('');
   const can = runActions(run.status, canApprove, !!run.publishedAt);
 
   const go = (step: Step) =>
@@ -29,7 +33,15 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
       setConfirm(null);
       if (r.ok) router.refresh();
     });
-  const statutory: StatutoryKind[] = ['pf', 'esi', 'pt', 'tds'];
+  const statutory: StatutoryKind[] = ['pf', 'esi', 'pt', 'tds', 'lwf'];
+  const reverse = () =>
+    start(async () => {
+      const r = await call(() => reversePayrollRun(run.id, run.version, reason), t('hk.run.reversed'));
+      if (r.ok) {
+        setReversing(false);
+        router.refresh();
+      }
+    });
 
   return (
     <>
@@ -41,14 +53,16 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
         {can.approve && <Button variant="contained" disabled={pending || run.payslips.length === 0} onClick={() => setConfirm('approve')}>{t('pay.approve')}</Button>}
         {can.lock && <Button variant="contained" disabled={pending} onClick={() => setConfirm('lock')}>{t('pay.lock')}</Button>}
         {can.publish && <Button variant="contained" disabled={pending} onClick={() => setConfirm('publish')}>{t('pay.publish')}</Button>}
+        {can.reverse && <Button variant="outlined" color="error" disabled={pending} onClick={() => { setReason(''); setReversing(true); }}>{t('hk.run.reverse')}</Button>}
       </div>
 
       {can.exports && (
         <div className="flex flex-row gap-2 flex-wrap mt-6">
           <Button variant="outlined" startIcon={<Download />} href={downloadUrl.bank(run.id)}>{t('pay.dl.bank')}</Button>
           {statutory.map((k) => (
-            <Button key={k} variant="outlined" startIcon={<Download />} href={downloadUrl.statutory(run.id, k)}>{t(`pay.dl.${k}` as MessageKey)}</Button>
+            <Button key={k} variant="outlined" startIcon={<Download />} href={downloadUrl.statutory(run.id, k)}>{t((k === 'lwf' ? 'hk.dl.lwf' : `pay.dl.${k}`) as MessageKey)}</Button>
           ))}
+          <Button variant="outlined" startIcon={<Download />} href={downloadUrl.ecr(run.id)}>{t('hk.dl.ecr')}</Button>
           <Button variant="outlined" startIcon={<Download />} href={downloadUrl.tally(run.id)}>{t('pay.dl.tally')}</Button>
         </div>
       )}
@@ -78,6 +92,26 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
           ]}
         />
       </div>
+
+      {reversing && (
+        <Dialog open onClose={() => setReversing(false)}>
+          <DialogTitle>{t('hk.run.reverse')}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>{t('hk.run.reverseBody')}</DialogContentText>
+            <div className="mt-4">
+              <FormField label={t('hk.param.reason')} required>
+                <TextInput multiline minRows={2} value={reason} onChange={(e) => setReason(e.target.value)} required />
+              </FormField>
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setReversing(false)}>{t('hr.cancel')}</Button>
+            <Button variant="contained" color="error" disabled={pending || reason.trim().length < 3} onClick={reverse}>
+              {t('hk.run.reverse')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
       {confirm && (
         <Dialog open onClose={() => setConfirm(null)}>
