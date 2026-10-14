@@ -34,6 +34,8 @@ import { addDays, isSchoolAdmin, isoWeekday, parseDate } from '../teacher/teache
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 import { naturalAsc } from '../common/natural-order.js';
+import { RecordRegistry } from '../records/entity.js';
+import { RecordsService } from '../records/records.service.js';
 
 /** Who can open a department view: its head, or the principal and administrator for any. */
 const VIEW_ROLES: RoleName[] = ['hod', 'principal', 'tenant_admin'];
@@ -416,7 +418,11 @@ function zero() {
 /** Setting up departments: principal and administrator. */
 @Controller('v1/admin/departments')
 export class DepartmentsAdminController {
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly registry: RecordRegistry,
+    private readonly records: RecordsService,
+  ) {}
 
   @Get()
   @Auth('user', STAFF_ADMIN_ROLES)
@@ -532,6 +538,7 @@ export class DepartmentsAdminController {
         await tx.update(subjects).set({ departmentId: null }).where(eq(subjects.departmentId, id));
         if (ids.length) await tx.update(subjects).set({ departmentId: id }).where(inArray(subjects.id, ids));
       }
+      const [after] = await tx.select().from(departments).where(eq(departments.id, id));
       await audit(tx, {
         tenantId: p.tenantId,
         actorType: 'user',
@@ -539,29 +546,20 @@ export class DepartmentsAdminController {
         action: 'department.updated',
         subjectType: 'department',
         subjectId: id,
-        data: body,
+        before: { name: d.name, headUserId: d.headUserId },
+        after: { name: after.name, headUserId: after.headUserId },
+        data: { ...(body.staffIds && { staffIds: body.staffIds }), ...(body.subjectIds && { subjectIds: body.subjectIds }) },
       });
       return (await this.listIn(tx)).find((x) => x.id === id);
     });
   }
 
+  /** Moves the department to the recycle bin (with its staff links and subject links), where it can be restored. */
   @Delete(':id')
   @HttpCode(204)
   @Auth('user', STAFF_ADMIN_ROLES)
   async remove(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    await this.db.withTenant(p.tenantId, async (tx) => {
-      const [d] = await tx.delete(departments).where(eq(departments.id, id)).returning({ id: departments.id, name: departments.name });
-      if (!d) throw new NotFoundException('Department not found');
-      await audit(tx, {
-        tenantId: p.tenantId,
-        actorType: 'user',
-        actorId: p.userId,
-        action: 'department.deleted',
-        subjectType: 'department',
-        subjectId: id,
-        data: { name: d.name },
-      });
-    });
+    await this.db.withTenant(p.tenantId, (tx) => this.records.remove({ tx, p }, this.registry.get('departments'), id));
   }
 
   /** A head must be an active member of staff with the HOD role. */

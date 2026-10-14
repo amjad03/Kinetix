@@ -59,3 +59,12 @@ export function csvField(v: Cell): string {
 export function toCsv(header: readonly string[], rows: readonly (readonly Cell[])[]): string {
   return [header, ...rows].map((r) => r.map(csvField).join(',')).join('\r\n');
 }
+
+/** The list with the item at `from` moved to `to` (drag-and-drop and keyboard reordering). */
+export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
+  const out = [...list];
+  if (from < 0 || from >= out.length) return out;
+  const [item] = out.splice(from, 1);
+  out.splice(Math.min(Math.max(to, 0), out.length), 0, item);
+  return out;
+}

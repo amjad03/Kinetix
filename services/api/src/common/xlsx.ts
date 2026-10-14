@@ -90,6 +90,70 @@ const colName = (i: number) => {
   return s;
 };
 
+export interface WorkbookSheet {
+  name: string;
+  rows: (string | number | null)[][];
+  /** The first row is bold and stays in view while scrolling. */
+  header?: boolean;
+  /** Column widths in characters. */
+  widths?: number[];
+  /** Drop-down lists: cells of `column` (0-based) from row 2 to `untilRow` accept only the values in `source` (a range such as `Lists!$A$2:$A$9`). */
+  lists?: { column: number; source: string; untilRow?: number; prompt?: string }[];
+  /** Hidden from the tabs (the lists behind drop-downs). */
+  hidden?: boolean;
+}
+
+const cellXml = (v: string | number | null, ref: string, style: number) =>
+  v === null || v === ''
+    ? ''
+    : typeof v === 'number'
+      ? `<c r="${ref}"${style ? ` s="${style}"` : ''}><v>${v}</v></c>`
+      : `<c r="${ref}" t="inlineStr"${style ? ` s="${style}"` : ''}><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+
+/**
+ * A workbook of several sheets with a bold, frozen header row, column widths and drop-down lists (Excel data
+ * validation): the import templates. The first sheet is the one {@link readXlsx} reads back.
+ */
+export function writeWorkbook(sheets: WorkbookSheet[]): Buffer {
+  const sheetXml = (s: WorkbookSheet) => {
+    const rows = s.rows.map((r, ri) => `<row r="${ri + 1}">${r.map((v, ci) => cellXml(v, `${colName(ci)}${ri + 1}`, s.header && ri === 0 ? 1 : 0)).join('')}</row>`).join('');
+    const view = s.header ? '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' : '';
+    const cols = s.widths?.length ? `<cols>${s.widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols>` : '';
+    const dv = s.lists?.length
+      ? `<dataValidations count="${s.lists.length}">${s.lists
+          .map((l) => {
+            const c = colName(l.column);
+            const prompt = l.prompt ? ` showInputMessage="1" prompt="${xmlEsc(l.prompt.slice(0, 250))}"` : '';
+            return `<dataValidation type="list" allowBlank="1" showErrorMessage="1"${prompt} sqref="${c}2:${c}${l.untilRow ?? 2000}"><formula1>${xmlEsc(l.source)}</formula1></dataValidation>`;
+          })
+          .join('')}</dataValidations>`
+      : '';
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${view}${cols}<sheetData>${rows}</sheetData>${dv}</worksheet>`;
+  };
+  const overrides = sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('');
+  const files: [string, string][] = [
+    [
+      '[Content_Types].xml',
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${overrides}</Types>`,
+    ],
+    ['_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    [
+      'xl/workbook.xml',
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s, i) => `<sheet name="${xmlEsc(s.name.slice(0, 31))}" sheetId="${i + 1}"${s.hidden ? ' state="hidden"' : ''} r:id="rId${i + 1}"/>`).join('')}</sheets></workbook>`,
+    ],
+    [
+      'xl/_rels/workbook.xml.rels',
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+    ],
+    [
+      'xl/styles.xml',
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8F1F0"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>',
+    ],
+    ...sheets.map((s, i): [string, string] => [`xl/worksheets/sheet${i + 1}.xml`, sheetXml(s)]),
+  ];
+  return zip(files.map(([name, data]) => ({ name, data: Buffer.from(data, 'utf8') })));
+}
+
 /** A workbook with one sheet. Numbers stay numbers; everything else is text. */
 export function writeXlsx(sheetName: string, rows: (string | number | null)[][]): Buffer {
   const sheetRows = rows

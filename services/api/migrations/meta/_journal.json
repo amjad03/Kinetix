@@ -904,6 +904,20 @@
       "when": 1791500000000,
       "tag": "0136_workflow_builder",
       "breakpoints": true
+    },
+    {
+      "idx": 139,
+      "version": "7",
+      "when": 1791500011000,
+      "tag": "0147_record_depth_kit",
+      "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1791500012000,
+      "tag": "0148_record_imports",
+      "breakpoints": true
     }
   ]
 }

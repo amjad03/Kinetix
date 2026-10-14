@@ -1,6 +1,8 @@
 'use client';
 import Link from 'next/link';
-import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
+import { FormField, StatusPill, TextInput, type Column } from '@/components/ui';
+import { RecordsTable } from '@/components/records/RecordsTable';
+import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
 import { useEffect, useState, useTransition } from 'react';
 import { addDesignation, getProfile, saveBank, saveProfile, type ProfileInput } from '@/app/(dashboard)/hr/actions';
 import { EmptyState } from '@/components/States';
@@ -10,50 +12,97 @@ import { paiseToInput, rupeesToPaise } from '@/lib/money';
 import type { Designation, EmploymentType, StaffProfile, StaffStatus, StaffSummary } from '@/lib/hr-types';
 import { useNotice } from './Common';
 
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, MenuItem, Switch } from '@/components/kx';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Switch } from '@/components/kx';
 import { Pencil as EditOutlined, Plus as Add } from 'lucide-react';
 const TYPES: EmploymentType[] = ['permanent', 'contract', 'probation', 'visiting'];
 const STATUSES: StaffStatus[] = ['active', 'on_notice', 'exited'];
 
-export function StaffDirectory({ staff, designations, departments }: { staff: StaffSummary[]; designations: Designation[]; departments: { id: string; name: string }[] }) {
-  const { t } = useI18n();
+/** A staff member as the record kit lists them (GET /v1/records/staff). */
+export type StaffRow = Row & {
+  fullName: string;
+  email: string | null;
+  phone: string | null;
+  roles: string | null;
+  employeeCode: string | null;
+  departmentId: string | null;
+  departmentName: string | null;
+  designationId: string | null;
+  designationName: string | null;
+  employmentType: EmploymentType | null;
+  staffStatus: StaffStatus | null;
+  accountStatus: string;
+  dateOfJoining: string | null;
+};
+
+const summaryOf = (r: StaffRow): StaffSummary => ({
+  userId: r.id,
+  fullName: r.fullName,
+  email: r.email,
+  phone: r.phone,
+  roles: (r.roles ?? '').split(', ').filter(Boolean),
+  employeeCode: r.employeeCode,
+  department: r.departmentId ? { id: r.departmentId, name: r.departmentName ?? '' } : null,
+  designation: r.designationId ? { id: r.designationId, name: r.designationName ?? '' } : null,
+  employmentType: r.employmentType,
+  status: r.staffStatus,
+  dateOfJoining: r.dateOfJoining,
+});
+
+/**
+ * HR → Staff: the record kit list of staff (search, filters, bulk move to a department, bulk edit of designation,
+ * language or account, import, export, history, recycle bin, saved views) plus the HR record and designations.
+ */
+export function StaffDirectory({ meta, page, state, designations, departments }: { meta: RecordMeta; page: RecordsPage<StaffRow>; state: ListState; designations: Designation[]; departments: { id: string; name: string }[] }) {
+  const { t, fmt } = useI18n();
   const [editing, setEditing] = useState<StaffSummary | null>(null);
   const [adding, setAdding] = useState(false);
   const { run, view } = useNotice();
+  const s = (x: Row) => x as StaffRow;
+  const columns: Column<Row>[] = [
+    {
+      id: 'name',
+      header: t('hr.staff.name'),
+      rowHeader: true,
+      sortKey: 'name',
+      cell: (x) => (
+        <>
+          <p className="text-[13px] leading-[19px] font-medium">
+            <Link className="text-primary underline-offset-4 hover:underline" href={`/hr/staff/${x.id}`} onClick={(e) => e.stopPropagation()}>
+              {s(x).fullName}
+            </Link>
+          </p>
+          <span className="text-xs leading-4 font-normal tracking-[0.3px] text-muted-foreground">{s(x).email ?? s(x).phone ?? ''}</span>
+        </>
+      ),
+    },
+    { id: 'code', header: t('hr.staff.code'), sortKey: 'code', cell: (x) => s(x).employeeCode ?? <StatusPill tone="warning">{t('hr.staff.noRecord')}</StatusPill> },
+    { id: 'department', header: t('hr.f.department'), sortKey: 'department', hideBelow: 'md', cell: (x) => s(x).departmentName ?? '–' },
+    { id: 'designation', header: t('hr.f.designation'), sortKey: 'designation', hideBelow: 'lg', cell: (x) => s(x).designationName ?? '–' },
+    { id: 'status', header: t('hr.f.status'), cell: (x) => (s(x).staffStatus ? t(`hr.status.${s(x).staffStatus}` as MessageKey) : '–') },
+    { id: 'roles', header: t('rk.col.roles'), defaultHidden: true, cell: (x) => (s(x).roles ?? '').split(', ').filter(Boolean).map((r) => t(`role.${r}` as MessageKey)).join(', ') },
+    { id: 'account', header: t('rk.col.account'), sortKey: 'account', defaultHidden: true, cell: (x) => <StatusPill tone={s(x).accountStatus === 'active' ? 'success' : 'neutral'}>{t(`rk.o.staff.accountStatus.${s(x).accountStatus === 'active' ? 'active' : 'disabled'}` as MessageKey)}</StatusPill> },
+    { id: 'joined', header: t('rk.col.joined'), sortKey: 'joined', defaultHidden: true, cell: (x) => (s(x).dateOfJoining ? fmt.date(s(x).dateOfJoining!) : '–') },
+  ];
   return (
     <>
       {view}
-      <div className="flex justify-between items-center mb-4 gap-2 flex-wrap">
-        <p className="text-[13px] leading-[19px] text-muted-foreground">
-          {t('hr.staff.designationsLine', { n: designations.length })}
-        </p>
-        <Button variant="outlined" startIcon={<Add />} onClick={() => setAdding(true)}>
-          {t('hr.staff.newDesignation')}
-        </Button>
-      </div>
-      <DataTable
-        testId="staff-table"
+      <p className="mb-3 text-[13px] leading-[19px] text-muted-foreground">{t('hr.staff.designationsLine', { n: designations.length })}</p>
+      <RecordsTable
+        meta={meta}
+        page={page}
+        state={state}
         label={t('nav.hr')}
-        rows={staff}
-        rowId={(s) => s.userId}
-        exportName="staff"
-        columns={[
-          { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (s) => s.fullName, cell: (s) => (<><p className="text-[13px] leading-[19px] font-medium">
-                            <Link className="text-primary underline-offset-4 hover:underline" href={`/hr/staff/${s.userId}`}>{s.fullName}</Link>
-                          </p>
-                          <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
-                            {s.email ?? s.phone ?? ''}
-                          </span></>) },
-          { id: 'c1', header: t('hr.staff.code'), sort: (s) => s.employeeCode ?? '', cell: (s) => s.employeeCode ?? <StatusPill tone="warning">{t('hr.staff.noRecord')}</StatusPill> },
-          { id: 'c2', header: t('hr.f.department'), sort: (s) => s.department?.name ?? '–', cell: (s) => s.department?.name ?? '–' },
-          { id: 'c3', header: t('hr.f.designation'), sort: (s) => s.designation?.name ?? '–', cell: (s) => s.designation?.name ?? '–' },
-          { id: 'c4', header: t('hr.f.status'), sort: (s) => s.status ? t(`hr.status.${s.status}` as MessageKey) : '', cell: (s) => s.status ? t(`hr.status.${s.status}` as MessageKey) : '–' },
-          { id: 'c5', header: '', align: 'right', csv: false, cell: (s) => (<><IconButton aria-label={t('hr.staff.edit')} onClick={() => setEditing(s)}>
-                            <EditOutlined />
-                          </IconButton></>) },
-        ]}
+        columns={columns}
+        rowHref={(x) => `/hr/staff/${x.id}`}
+        testId="staff-table"
+        toolbar={
+          <Button variant="outlined" startIcon={<Add />} onClick={() => setAdding(true)}>
+            {t('hr.staff.newDesignation')}
+          </Button>
+        }
+        extraRowActions={(x) => [{ id: 'hr-record', label: t('rk.hrRecord'), icon: <EditOutlined />, onSelect: () => setEditing(summaryOf(x as StaffRow)) }]}
+        empty={<EmptyState icon={<EditOutlined />} title={t('hr.staff.empty')} />}
       />
-      {staff.length === 0 && <EmptyState icon={<EditOutlined />} title={t('hr.staff.empty')} />}
       {editing && <ProfileDialog person={editing} designations={designations} departments={departments} onClose={() => setEditing(null)} />}
       {adding && <DesignationDialog onClose={() => setAdding(false)} run={run} />}
     </>

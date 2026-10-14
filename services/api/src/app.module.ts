@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
+import { RecordsModule } from './records/records.module.js';
 import { FeesModule } from './fees/fees.module.js';
 import { CampusOpsModule } from './campus-ops/campus-ops.module.js';
 import { HostelModule } from './hostel/hostel.module.js';
@@ -118,6 +119,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     HealthModule,
     StorageModule,
     JobsModule,
+    RecordsModule,
     PushModule,
     AuthModule,
     RealtimeModule,
