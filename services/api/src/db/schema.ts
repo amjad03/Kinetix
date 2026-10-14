@@ -8280,6 +8280,9 @@ export const issuedDocuments = pgTable(
     index('issued_documents_source_idx').on(t.tenantId, t.sourceType, t.sourceId),
     index('issued_documents_type_idx').on(t.tenantId, t.docType, t.issuedAt),
   ],
+);
+
+// ---------------------------------------------------------------------------------------------
 // Exam cell depth (migrations 0156 and 0157, src/exam-cell): withheld results, grace applications,
 // double-entry mark checks, valuation camps, answer-sheet accounts, duty swaps, reschedules, result
 // runs and revisions, record corrections and verification requests.
