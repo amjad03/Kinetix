@@ -27,7 +27,8 @@ export default async function DeskReportPage({ params, searchParams }: { params:
   const data = await load(async () => ({
     report: await api<{ rows: Row[]; totals: Record<string, number> }>(`/v1/fee-accounts/reports/${report}?${new URLSearchParams(query)}`),
     students: spec.filters.includes('studentId') ? await api<{ id: string; student: string }[]>('/v1/fee-accounts/list/accounts') : undefined,
+    funds: spec.filters.includes('fund') ? await api<{ id: string; code: string; name: string }[]>('/v1/accounts-depth/funds') : undefined,
   }));
   if (data.error !== undefined) return <ErrorState title={t(`fd.rep.${report}` as MessageKey)} message={data.error} />;
-  return <DeskReport spec={spec} rows={data.data.report.rows.map((r, i) => ({ ...r, id: String(r.id ?? i) }))} totals={data.data.report.totals} query={query} students={data.data.students?.map((s) => ({ id: s.id, student: s.student }))} />;
+  return <DeskReport spec={spec} rows={data.data.report.rows.map((r, i) => ({ ...r, id: String(r.id ?? i) }))} totals={data.data.report.totals} query={query} students={data.data.students?.map((s) => ({ id: s.id, student: s.student }))} funds={data.data.funds} />;
 }

@@ -12,6 +12,8 @@ import { FEE_ROLES } from '../fees/fees.service.js';
 import { budgetReportRows } from '../finance/finance.controller.js';
 import { ageBucket, eligible80G, fyOf, gstSplit, headOf } from './fee-accounts.logic.js';
 import { ensureInvoiceNumbers, historyOf, settingsOf } from './fee-accounts.service.js';
+import { chainOf } from './chains.js';
+import { chainRole } from '../fees/fee-depth.logic.js';
 
 type Row = Record<string, unknown>;
 const PG_TS = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d+)?)([+-]\d{2})(:?\d{2})?$/;
@@ -21,8 +23,8 @@ const rowsOf = async (tx: Tx, q: SQL) => ((await tx.execute(q)).rows as Row[]).m
 const num = (r: Row[], ...keys: string[]): Row[] => r.map((x) => Object.fromEntries(Object.entries(x).map(([k, v]) => [k, keys.includes(k) ? Number(v ?? 0) : v])));
 const sum = (r: Row[], key: string) => r.reduce((a, x) => a + Number(x[key] ?? 0), 0);
 
-export const ENTITIES = ['structures', 'accounts', 'invoices', 'receipts', 'concessions', 'refunds', 'write-offs', 'vouchers', 'voucher-requests', 'ledgers', 'budgets', 'cheques', 'closings'] as const;
-export const REPORTS = ['daily-collection', 'head-collection', 'outstanding', 'concessions', 'refunds', 'cheques', 'student-ledger', 'cash-book', 'bank-book', 'day-book', 'trial-balance', 'income-expenditure', 'balance-sheet', 'budget-vs-actual', 'gst', '80g'] as const;
+export const ENTITIES = ['structures', 'accounts', 'invoices', 'receipts', 'concessions', 'refunds', 'write-offs', 'vouchers', 'voucher-requests', 'ledgers', 'budgets', 'cheques', 'closings', 'waivers', 'custom-plans', 'challans', 'govt-scholarships', 'funds'] as const;
+export const REPORTS = ['daily-collection', 'head-collection', 'outstanding', 'concessions', 'refunds', 'cheques', 'student-ledger', 'cash-book', 'bank-book', 'day-book', 'trial-balance', 'income-expenditure', 'balance-sheet', 'budget-vs-actual', 'gst', '80g', 'cashier-collection', 'discounts', 'scholarships', 'receipt-register', 'challans', 'carry-forward', 'fund-summary'] as const;
 
 /** Lists, single records (with their audit history) and reports for the fees and accounts desk. Read only. */
 @Controller('v1/fee-accounts')
@@ -54,6 +56,10 @@ export class FeeAccountsReadsController {
             union all select 'voucher-requests', id, number, narration, amount_paise, requested_by, created_at, 'decide' from acct_voucher_requests where status = 'pending'
             union all select 'closings', c.id, c.closing_date::text, u.full_name, c.counted_paise, c.cashier_id, c.created_at, 'verify' from fee_cash_closings c join users u on u.id = c.cashier_id where c.status = 'submitted'
             union all select 'cheques', q.id, q.cheque_no, s.full_name, q.amount_paise, q.created_by, q.created_at, case when q.status = 'received' then 'deposit' else 'clear' end from fee_cheques q join students s on s.id = q.student_id where q.status in ('received', 'deposited')
+            union all select 'waivers', w.id, w.number, s.full_name, w.amount_paise, w.requested_by, w.created_at, 'decide' from fee_waiver_requests w join students s on s.id = w.student_id where w.status = 'pending'
+            union all select 'custom-plans', c.id, c.number, s.full_name, (select coalesce(sum((x->>'amountPaise')::bigint), 0) from jsonb_array_elements(c.parts) x), c.requested_by, c.created_at, 'decide' from fee_custom_plans c join students s on s.id = c.student_id where c.status = 'pending'
+            union all select 'receipt-cancels', r.id, r.receipt_no, s.full_name, r.total_paise, r.cancel_requested_by, r.cancel_requested_at, 'decide' from fee_receipts r join students s on s.id = r.student_id where r.status = 'cancel_pending'
+            union all select 'govt-scholarships', g.id, g.application_no, s.full_name, g.sanctioned_paise, g.created_by, g.sanctioned_on::timestamptz, 'receive' from fee_govt_scholarships g join students s on s.id = g.student_id where g.status = 'sanctioned'
           ) x order by at desc nulls last limit 200`,
         ),
         'amount',
@@ -172,12 +178,14 @@ export class FeeAccountsReadsController {
           return { record: num([r], 'amount_paise')[0], refunds, vouchers, history: await history('fee_payment') };
         }
         case 'concessions': {
-          const r = await one(sql`select c.*, s.full_name as student, i.title as "invoiceTitle", i.invoice_no as "invoiceNo", rb.full_name as "requestedByName", db.full_name as "decidedByName" from fee_concessions c join students s on s.id = c.student_id left join fee_invoices i on i.id = c.invoice_id left join users rb on rb.id = c.requested_by left join users db on db.id = c.decided_by where c.id = ${id}::uuid`);
-          return { record: num([r], 'amount_paise', 'applied_paise')[0], history: await history('fee_concession') };
+          const r = await one(sql`select c.*, s.full_name as student, i.title as "invoiceTitle", i.invoice_no as "invoiceNo", rb.full_name as "requestedByName", db.full_name as "decidedByName", t.name as "typeName" from fee_concessions c join students s on s.id = c.student_id left join fee_invoices i on i.id = c.invoice_id left join users rb on rb.id = c.requested_by left join users db on db.id = c.decided_by left join fee_concession_types t on t.id = c.type_id where c.id = ${id}::uuid`);
+          const chain = await chainOf(tx, p.tenantId, 'concession');
+          return { record: { ...num([r], 'amount_paise', 'applied_paise')[0], chainRole: chainRole(chain, Number(r.level ?? 0)), chain }, history: await history('fee_concession') };
         }
         case 'refunds': {
           const r = await one(sql`select r.*, s.full_name as student, p.receipt_no as "receiptNo", p.amount_paise as "paymentPaise", p.method, rb.full_name as "requestedByName", db.full_name as "decidedByName", pb.full_name as "paidByName" from fee_refund_requests r join students s on s.id = r.student_id join fee_payments p on p.id = r.payment_id left join users rb on rb.id = r.requested_by left join users db on db.id = r.decided_by left join users pb on pb.id = r.paid_by where r.id = ${id}::uuid`);
-          return { record: num([r], 'amount_paise', 'paymentPaise')[0], history: await history('fee_refund_request') };
+          const chain = await chainOf(tx, p.tenantId, 'refund');
+          return { record: { ...num([r], 'amount_paise', 'paymentPaise')[0], chainRole: chainRole(chain, Number(r.level ?? 0)), chain }, history: await history('fee_refund_request') };
         }
         case 'write-offs': {
           const r = await one(sql`select w.*, s.full_name as student, i.title, i.invoice_no as "invoiceNo", (i.amount_paise - i.paid_paise) as "invoiceBalancePaise", rb.full_name as "requestedByName", db.full_name as "decidedByName" from fee_write_offs w join students s on s.id = w.student_id join fee_invoices i on i.id = w.invoice_id left join users rb on rb.id = w.requested_by left join users db on db.id = w.decided_by where w.id = ${id}::uuid`);
@@ -211,8 +219,30 @@ export class FeeAccountsReadsController {
           const r = await one(sql`select q.*, s.full_name as student, p.receipt_no as "receiptNo", p.id as "paymentId" from fee_cheques q join students s on s.id = q.student_id join fee_payments p on p.id = q.payment_id where q.id = ${id}::uuid`);
           return { record: num([r], 'amount_paise', 'bounce_charge_paise')[0], history: await history('fee_cheque') };
         }
+        case 'waivers':
+        case 'custom-plans': {
+          const table = entity === 'waivers' ? sql`fee_waiver_requests` : sql`fee_custom_plans`;
+          const r = await one(sql`select w.*, s.full_name as student, s.roll_no as "rollNo", i.title as "invoiceTitle", i.invoice_no as "invoiceNo", i.amount_paise as "invoicePaise", rb.full_name as "requestedByName", db.full_name as "decidedByName" from ${table} w join students s on s.id = w.student_id join fee_invoices i on i.id = w.invoice_id left join users rb on rb.id = w.requested_by left join users db on db.id = w.decided_by where w.id = ${id}::uuid`);
+          const chain = await chainOf(tx, p.tenantId, entity === 'waivers' ? 'waiver' : 'customPlan');
+          const parts = entity === 'custom-plans' ? ((r.parts as { dueOn: string; amountPaise: number }[]) ?? []).map((x, i) => ({ id: String(i), seq: i + 1, dueOn: x.dueOn, amountPaise: x.amountPaise })) : [];
+          const amount = entity === 'waivers' ? Number(r.amount_paise) : parts.reduce((a, x) => a + x.amountPaise, 0);
+          return { record: { ...num([r], 'invoicePaise')[0], amountPaise: amount, chainRole: chainRole(chain, Number(r.level ?? 0)), chain }, parts, history: await history(entity === 'waivers' ? 'fee_waiver_request' : 'fee_custom_plan') };
+        }
+        case 'challans': {
+          const r = await one(sql`select c.*, s.full_name as student, s.roll_no as "rollNo", u.full_name as "createdByName", fr.receipt_no as "receiptNo" from fee_challans c join students s on s.id = c.student_id left join users u on u.id = c.created_by left join fee_receipts fr on fr.id = c.receipt_id where c.id = ${id}::uuid`);
+          return { record: num([r], 'amount_paise')[0], history: await history('fee_challan') };
+        }
+        case 'govt-scholarships': {
+          const r = await one(sql`select g.*, s.full_name as student, s.roll_no as "rollNo", sec.display_name as section, fr.receipt_no as "receiptNo", u.full_name as "createdByName" from fee_govt_scholarships g join students s on s.id = g.student_id join sections sec on sec.id = s.section_id left join fee_receipts fr on fr.id = g.receipt_id left join users u on u.id = g.created_by where g.id = ${id}::uuid`);
+          return { record: num([r], 'applied_paise', 'sanctioned_paise', 'received_paise')[0], history: await history('govt_scholarship') };
+        }
+        case 'funds': {
+          const r = await one(sql`select * from acct_funds where id = ${id}::uuid`);
+          const vouchers = num(await rowsOf(tx, sql`select v.id, v.number, v.voucher_type as "voucherType", v.voucher_date::text as date, v.narration, (select coalesce(sum(debit_paise), 0) from acct_voucher_lines l where l.voucher_id = v.id) as "amountPaise" from acct_vouchers v where v.fund_id = ${id}::uuid and v.voided_at is null order by v.voucher_date desc limit 200`), 'amountPaise');
+          return { record: r, vouchers, history: await history('acct_fund') };
+        }
         case 'closings': {
-          const r = await one(sql`select c.*, u.full_name as cashier, v.full_name as "verifiedByName" from fee_cash_closings c join users u on u.id = c.cashier_id left join users v on v.id = c.verified_by where c.id = ${id}::uuid`);
+          const r = await one(sql`select c.*, u.full_name as cashier, v.full_name as "verifiedByName", h.full_name as "handedToName" from fee_cash_closings c join users u on u.id = c.cashier_id left join users v on v.id = c.verified_by left join users h on h.id = c.handed_to where c.id = ${id}::uuid`);
           const receipts = num(await rowsOf(tx, sql`select id, receipt_no as "receiptNo", amount_paise as "amountPaise", paid_at as "paidAt" from fee_payments where status = 'paid' and method = 'cash' and recorded_by = ${String(r.cashier_id)}::uuid and (paid_at at time zone 'Asia/Kolkata')::date = ${String(r.closing_date)}::date order by paid_at`), 'amountPaise');
           return { record: num([r], 'system_paise', 'counted_paise')[0], receipts, history: await history('fee_cash_closing') };
         }
@@ -227,12 +257,15 @@ export class FeeAccountsReadsController {
       await rowsOf(
         tx,
         sql`select * from (
-          select i.created_at as at, i.created_at::date::text as date, coalesce(i.invoice_no, '') as ref, i.title as particulars, (i.amount_paise + coalesce((select sum(applied_paise) from fee_concessions c where c.invoice_id = i.id and c.status = 'approved'), 0) + coalesce((select sum(amount_paise) from fee_write_offs w where w.invoice_id = i.id and w.status = 'approved'), 0)) as debit, 0 as credit from fee_invoices i where i.student_id = ${studentId}::uuid and i.status <> 'cancelled'
+          select i.created_at as at, i.created_at::date::text as date, coalesce(i.invoice_no, '') as ref, i.title as particulars, (i.amount_paise + i.carried_paise + coalesce((select sum(applied_paise) from fee_concessions c where c.invoice_id = i.id and c.status = 'approved'), 0) + coalesce((select sum(amount_paise) from fee_write_offs w where w.invoice_id = i.id and w.status = 'approved'), 0)) as debit, 0 as credit from fee_invoices i where i.student_id = ${studentId}::uuid and i.status <> 'cancelled'
+          union all select f.created_at, (f.created_at at time zone 'Asia/Kolkata')::date::text, '', 'Carried forward to ' || f.to_year, 0, f.amount_paise from fee_carry_forwards f where f.student_id = ${studentId}::uuid
           union all select coalesce(p.paid_at, p.created_at), (coalesce(p.paid_at, p.created_at) at time zone 'Asia/Kolkata')::date::text, p.receipt_no, 'Receipt (' || p.method || ')', 0, p.amount_paise from fee_payments p where p.student_id = ${studentId}::uuid and p.receipt_no is not null
-          union all select p.created_at, (p.created_at at time zone 'Asia/Kolkata')::date::text, p.receipt_no, 'Cheque returned', p.amount_paise, 0 from fee_payments p join fee_cheques q on q.payment_id = p.id where p.student_id = ${studentId}::uuid and q.status = 'bounced'
+          union all select p.created_at, (p.created_at at time zone 'Asia/Kolkata')::date::text, p.receipt_no, case when p.status = 'cancelled' then 'Receipt cancelled' else 'Cheque returned' end, p.amount_paise, 0 from fee_payments p where p.student_id = ${studentId}::uuid and p.receipt_no is not null and p.status in ('failed', 'cancelled')
+          union all select c.created_at, (c.created_at at time zone 'Asia/Kolkata')::date::text, '', case when c.amount_paise > 0 then 'Advance received' when c.kind = 'applied' then 'Advance used' when c.kind = 'refund' then 'Advance refunded' else 'Advance adjusted' end || coalesce(': ' || nullif(c.note, ''), ''), greatest(-c.amount_paise, 0), greatest(c.amount_paise, 0) from student_credits c where c.student_id = ${studentId}::uuid
           union all select c.decided_at, (c.decided_at at time zone 'Asia/Kolkata')::date::text, c.number, 'Concession (' || c.kind || ')', 0, c.applied_paise from fee_concessions c where c.student_id = ${studentId}::uuid and c.status = 'approved' and c.applied_paise > 0
           union all select w.decided_at, (w.decided_at at time zone 'Asia/Kolkata')::date::text, w.number, 'Written off', 0, w.amount_paise from fee_write_offs w where w.student_id = ${studentId}::uuid and w.status = 'approved'
           union all select r.refunded_at, (r.refunded_at at time zone 'Asia/Kolkata')::date::text, '', 'Refund: ' || r.reason, r.amount_paise, 0 from fee_refunds r where r.student_id = ${studentId}::uuid
+          union all select q.reverted_at, (q.reverted_at at time zone 'Asia/Kolkata')::date::text, q.number, 'Refund reverted: ' || coalesce(q.revert_reason, ''), 0, q.amount_paise from fee_refund_requests q where q.student_id = ${studentId}::uuid and q.status = 'reverted'
         ) x order by at, debit desc`,
       ),
       'debit',
@@ -273,6 +306,7 @@ export class FeeAccountsReadsController {
       const to = q.to ? Day.parse(q.to) : today;
       if (from > to) throw new BadRequestException('The start date is after the end date');
       const paidIn = sql`p.status = 'paid' and (p.paid_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date`;
+      const fundId = q.fund && /^[0-9a-f-]{36}$/i.test(q.fund) ? q.fund : undefined;
       const out = (rows: Row[], totals: Record<string, number> = {}) => ({ key, from, to, fy, rows, totals });
       switch (key) {
         case 'daily-collection': {
@@ -281,8 +315,11 @@ export class FeeAccountsReadsController {
         }
         case 'head-collection': {
           const heads = (await settingsOf(tx, p.tenantId)).feeHeads;
-          const raw = num(await rowsOf(tx, sql`select i.title, count(*)::int as receipts, sum(p.amount_paise) as "amountPaise" from fee_payments p join fee_invoices i on i.id = p.invoice_id where ${paidIn} group by i.title`), 'amountPaise');
+          // Payments split by head (allocations) count under their head; older ones by their invoice title.
+          const split = num(await rowsOf(tx, sql`select a.head_code as code, coalesce(h.name, max(l.head_name)) as head, count(distinct p.receipt_id)::int as receipts, sum(a.amount_paise) as "amountPaise" from fee_payment_allocations a join fee_payments p on p.id = a.payment_id left join fee_heads h on h.code = a.head_code left join fee_invoice_lines l on l.id = a.line_id where ${paidIn} group by a.head_code, h.name`), 'amountPaise');
+          const raw = num(await rowsOf(tx, sql`select i.title, count(*)::int as receipts, sum(p.amount_paise) as "amountPaise" from fee_payments p join fee_invoices i on i.id = p.invoice_id where ${paidIn} and not exists (select 1 from fee_payment_allocations a where a.payment_id = p.id) group by i.title`), 'amountPaise');
           const by = new Map<string, { id: string; head: string; code: string; receipts: number; amountPaise: number }>();
+          for (const r of split) by.set(String(r.code), { id: String(r.code), head: String(r.head ?? r.code), code: String(r.code), receipts: Number(r.receipts), amountPaise: Number(r.amountPaise) });
           for (const r of raw) {
             const h = headOf(String(r.title), heads);
             const k = h?.code ?? String(r.title);
@@ -312,7 +349,14 @@ export class FeeAccountsReadsController {
           return out(rows, { amountPaise: sum(rows, 'amountPaise'), appliedPaise: sum(rows, 'appliedPaise') });
         }
         case 'refunds': {
-          const rows = num(await rowsOf(tx, sql`select f.id, (f.refunded_at at time zone 'Asia/Kolkata')::date::text as date, coalesce(r.number, '') as number, s.full_name as student, p.receipt_no as "receiptNo", f.amount_paise as "amountPaise", coalesce(r.pay_mode, p.method::text) as mode, f.reason, u.full_name as "paidBy" from fee_refunds f join students s on s.id = f.student_id join fee_payments p on p.id = f.payment_id left join fee_refund_requests r on r.refund_id = f.id left join users u on u.id = f.refunded_by where (f.refunded_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date order by f.refunded_at`), 'amountPaise');
+          const rows = num(
+            await rowsOf(
+              tx,
+              sql`select * from (select f.id::text as id, f.refunded_at as at, (f.refunded_at at time zone 'Asia/Kolkata')::date::text as date, coalesce(r.number, '') as number, s.full_name as student, p.receipt_no as "receiptNo", f.amount_paise as "amountPaise", coalesce(r.pay_mode, p.method::text) as mode, f.reason, u.full_name as "paidBy" from fee_refunds f join students s on s.id = f.student_id join fee_payments p on p.id = f.payment_id left join fee_refund_requests r on r.refund_id = f.id left join users u on u.id = f.refunded_by where (f.refunded_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date
+                union all select r.id::text || ':rev', r.reverted_at, (r.reverted_at at time zone 'Asia/Kolkata')::date::text, r.number, s.full_name, p.receipt_no, -r.amount_paise, 'reverted', 'Reverted: ' || coalesce(r.revert_reason, ''), u.full_name from fee_refund_requests r join students s on s.id = r.student_id join fee_payments p on p.id = r.payment_id left join users u on u.id = r.reverted_by where r.status = 'reverted' and (r.reverted_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date) x order by at`,
+            ),
+            'amountPaise',
+          );
           return out(rows, { amountPaise: sum(rows, 'amountPaise') });
         }
         case 'cheques': {
@@ -335,24 +379,24 @@ export class FeeAccountsReadsController {
           return out(l.rows, { openingPaise: l.openingPaise, receiptsPaise: sum(l.rows, 'debitPaise'), paymentsPaise: sum(l.rows, 'creditPaise'), closingPaise: l.closingPaise });
         }
         case 'day-book': {
-          const vs = await voucherLines(tx, { from, to });
+          const vs = await voucherLines(tx, { from, to, fundId });
           const rows = vs.flatMap((v) => v.lines.map((l, i) => ({ id: `${v.id}:${i}`, voucherId: v.id, date: v.date, number: v.number, voucherType: v.voucherType, account: `${l.code} ${l.accountName}`, narration: i === 0 ? v.narration : '', debitPaise: l.debitPaise, creditPaise: l.creditPaise })));
           return out(rows, { debitPaise: sum(rows, 'debitPaise'), creditPaise: sum(rows, 'creditPaise'), vouchers: vs.length });
         }
         case 'trial-balance': {
           await ensureChart(tx, p.tenantId);
-          const tb = trialBalance(await movements(tx, { to }));
+          const tb = trialBalance(await movements(tx, { to, fundId }));
           return out(tb.lines.map((l) => ({ id: l.accountId, ...l })), { debitPaise: tb.totalDebitPaise, creditPaise: tb.totalCreditPaise });
         }
         case 'income-expenditure': {
           await ensureChart(tx, p.tenantId);
-          const ie = incomeExpenditure(await movements(tx, { from: fyStart(fy), to: fyEnd(fy), excludeClosing: true }));
+          const ie = incomeExpenditure(await movements(tx, { from: fyStart(fy), to: fyEnd(fy), excludeClosing: true, fundId }));
           const rows = [...ie.income.map((r) => ({ id: r.code, side: 'income', ...r })), ...ie.expense.map((r) => ({ id: r.code, side: 'expense', ...r }))];
           return out(rows, { incomePaise: ie.totalIncomePaise, expensePaise: ie.totalExpensePaise, surplusPaise: ie.surplusPaise });
         }
         case 'balance-sheet': {
           await ensureChart(tx, p.tenantId);
-          const bs = balanceSheet(await movements(tx, { to }));
+          const bs = balanceSheet(await movements(tx, { to, fundId }));
           const rows = [...bs.assets.map((r) => ({ id: r.code, side: 'asset', ...r })), ...bs.liabilities.map((r) => ({ id: r.code, side: 'liability', ...r })), ...bs.equity.map((r) => ({ id: r.code, side: 'equity', ...r })), { id: 'surplus', side: 'equity', code: '', name: 'Surplus not yet moved to reserves', paise: bs.surplusPaise }];
           return out(rows, { assetsPaise: bs.totalAssetsPaise, liabilitiesPaise: bs.totalLiabilitiesPaise });
         }
@@ -362,13 +406,101 @@ export class FeeAccountsReadsController {
           return out(rows, { budgetPaise: sum(rows, 'budgetPaise'), actualPaise: sum(rows, 'actualPaise') });
         }
         case 'gst': {
+          const split = num(await rowsOf(tx, sql`select a.id, (p.paid_at at time zone 'Asia/Kolkata')::date::text as date, p.receipt_no as "receiptNo", s.full_name as student, coalesce(h.name, l.head_name) as head, coalesce(h.sac, '') as sac, l.gst_rate::float as rate, a.amount_paise as "amountPaise" from fee_payment_allocations a join fee_payments p on p.id = a.payment_id join fee_invoice_lines l on l.id = a.line_id left join fee_heads h on h.code = a.head_code join students s on s.id = p.student_id where ${paidIn} and l.gst_rate > 0 order by p.paid_at`), 'amountPaise', 'rate');
+          const splitRows = split.map((r) => ({ ...r, ...gstSplit(Number(r.amountPaise), Number(r.rate)) }));
           const heads = (await settingsOf(tx, p.tenantId)).feeHeads.filter((h) => h.gstRate > 0);
-          const raw = num(await rowsOf(tx, sql`select p.id, (p.paid_at at time zone 'Asia/Kolkata')::date::text as date, p.receipt_no as "receiptNo", s.full_name as student, i.title, p.amount_paise as "amountPaise" from fee_payments p join fee_invoices i on i.id = p.invoice_id join students s on s.id = p.student_id where ${paidIn} order by p.paid_at`), 'amountPaise');
-          const rows = raw.flatMap((r) => {
+          const raw = num(await rowsOf(tx, sql`select p.id, (p.paid_at at time zone 'Asia/Kolkata')::date::text as date, p.receipt_no as "receiptNo", s.full_name as student, i.title, p.amount_paise as "amountPaise" from fee_payments p join fee_invoices i on i.id = p.invoice_id join students s on s.id = p.student_id where ${paidIn} and not exists (select 1 from fee_payment_allocations a where a.payment_id = p.id) order by p.paid_at`), 'amountPaise');
+          const rows: Row[] = [...splitRows];
+          rows.push(...raw.flatMap((r) => {
             const h = headOf(String(r.title), heads);
             return h ? [{ ...r, head: h.name, rate: h.gstRate, ...gstSplit(Number(r.amountPaise), h.gstRate) }] : [];
-          });
+          }));
           return out(rows, { amountPaise: sum(rows, 'amountPaise'), taxablePaise: sum(rows, 'taxablePaise'), cgstPaise: sum(rows, 'cgstPaise'), sgstPaise: sum(rows, 'sgstPaise') });
+        }
+        case 'cashier-collection': {
+          const rows = num(
+            await rowsOf(
+              tx,
+              sql`select coalesce(u.id::text, 'online') as id, coalesce(u.full_name, 'Online') as cashier, count(distinct r.id)::int as receipts,
+                coalesce(sum(p.amount_paise) filter (where p.method = 'cash'), 0) as "cashPaise", coalesce(sum(p.amount_paise) filter (where p.method in ('cheque', 'dd')), 0) as "chequePaise",
+                coalesce(sum(p.amount_paise) filter (where p.method not in ('cash', 'cheque', 'dd')), 0) as "otherPaise", sum(p.amount_paise) as "amountPaise"
+              from fee_payments p left join fee_receipts r on r.id = p.receipt_id left join users u on u.id = p.recorded_by where ${paidIn} group by 1, 2 order by "amountPaise" desc`,
+            ),
+            'cashPaise',
+            'chequePaise',
+            'otherPaise',
+            'amountPaise',
+          );
+          return out(rows, { amountPaise: sum(rows, 'amountPaise'), cashPaise: sum(rows, 'cashPaise'), receipts: sum(rows, 'receipts') });
+        }
+        case 'discounts': {
+          // Concessions approved in the period, seen by batch, category, head, class or type.
+          const by = ['batch', 'category', 'head', 'section', 'type', 'student'].includes(q.groupBy ?? '') ? q.groupBy! : 'type';
+          const key =
+            by === 'batch' ? sql`coalesce(fp.batch, 'Not set')` : by === 'category' ? sql`coalesce(fp.category, 'Not set')` : by === 'head' ? sql`coalesce(nullif(array_to_string(c.head_codes, ', '), ''), 'All heads')` : by === 'section' ? sql`sec.display_name` : by === 'student' ? sql`s.full_name || ' (' || s.roll_no || ')'` : sql`coalesce(t.name, c.kind)`;
+          const rows = num(
+            await rowsOf(
+              tx,
+              sql`select ${key} as id, ${key} as label, count(*)::int as concessions, count(distinct c.student_id)::int as students, sum(c.applied_paise) as "appliedPaise"
+                from fee_concessions c join students s on s.id = c.student_id join sections sec on sec.id = s.section_id left join fee_student_profiles fp on fp.student_id = c.student_id left join fee_concession_types t on t.id = c.type_id
+                where c.status = 'approved' and (c.decided_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date group by 1 order by "appliedPaise" desc`,
+            ),
+            'appliedPaise',
+          );
+          return out(rows, { appliedPaise: sum(rows, 'appliedPaise'), concessions: sum(rows, 'concessions') });
+        }
+        case 'scholarships': {
+          const rows = num(
+            await rowsOf(
+              tx,
+              sql`select g.id, g.academic_year as year, s.full_name as student, s.roll_no as "rollNo", g.scheme, g.portal, g.application_no as "applicationNo", g.status, g.applied_paise as "appliedPaise", g.sanctioned_paise as "sanctionedPaise", g.received_paise as "receivedPaise", g.received_on::text as "receivedOn"
+                from fee_govt_scholarships g join students s on s.id = g.student_id where coalesce(g.applied_on, g.created_at::date) <= ${to}::date and coalesce(g.received_on, ${to}::date) >= ${from}::date
+                union all select a.id, '', s.full_name, s.roll_no, sc.name, 'institution', '', a.status, a.awarded_paise, a.awarded_paise, a.awarded_paise, (a.decided_at at time zone 'Asia/Kolkata')::date::text
+                from scholarship_applications a join scholarship_schemes sc on sc.id = a.scheme_id join students s on s.id = a.student_id where a.status = 'approved' and (a.decided_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date
+                order by 2`,
+            ),
+            'appliedPaise',
+            'sanctionedPaise',
+            'receivedPaise',
+          );
+          return out(rows, { appliedPaise: sum(rows, 'appliedPaise'), sanctionedPaise: sum(rows, 'sanctionedPaise'), receivedPaise: sum(rows, 'receivedPaise') });
+        }
+        case 'receipt-register': {
+          const rows = num(
+            await rowsOf(
+              tx,
+              sql`select r.id, r.collected_on::text as date, r.receipt_no as "receiptNo", s.full_name as student, s.roll_no as "rollNo", (select string_agg(distinct m->>'method', ' + ') from jsonb_array_elements(r.modes) m) as mode, r.total_paise as "amountPaise", r.status, r.print_count as prints, r.cancel_reason as "cancelReason", u.full_name as cashier
+                from fee_receipts r join students s on s.id = r.student_id left join users u on u.id = r.collected_by where r.collected_on between ${from}::date and ${to}::date ${q.status ? sql`and r.status = ${q.status}` : sql``} order by r.collected_on, r.receipt_no`,
+            ),
+            'amountPaise',
+          );
+          return out(rows, { amountPaise: sum(rows.filter((r) => r.status === 'active' || r.status === 'cancel_pending'), 'amountPaise'), cancelledPaise: sum(rows.filter((r) => r.status === 'cancelled' || r.status === 'bounced'), 'amountPaise'), receipts: rows.length });
+        }
+        case 'challans': {
+          const rows = num(await rowsOf(tx, sql`select c.id, (c.created_at at time zone 'Asia/Kolkata')::date::text as date, c.number, s.full_name as student, c.bank_name as "bankName", c.amount_paise as "amountPaise", case when c.status = 'issued' and c.valid_until < ${today}::date then 'expired' else c.status end as status, c.valid_until::text as "validUntil", c.paid_on::text as "paidOn", c.bank_ref as "bankRef" from fee_challans c join students s on s.id = c.student_id where (c.created_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date order by c.created_at`), 'amountPaise');
+          return out(rows, { amountPaise: sum(rows, 'amountPaise'), paidPaise: sum(rows.filter((r) => r.status === 'paid'), 'amountPaise') });
+        }
+        case 'carry-forward': {
+          const rows = num(await rowsOf(tx, sql`select f.id, (f.created_at at time zone 'Asia/Kolkata')::date::text as date, s.full_name as student, s.roll_no as "rollNo", f.from_year as "fromYear", f.to_year as "toYear", f.amount_paise as "amountPaise", i.invoice_no as "invoiceNo" from fee_carry_forwards f join students s on s.id = f.student_id join fee_invoices i on i.id = f.to_invoice_id where (f.created_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date order by f.created_at`), 'amountPaise');
+          return out(rows, { amountPaise: sum(rows, 'amountPaise') });
+        }
+        case 'fund-summary': {
+          // Income, expenditure and money held by each fund (separate books) for the year.
+          const rows = num(
+            await rowsOf(
+              tx,
+              sql`select coalesce(f.id::text, 'main') as id, coalesce(f.code || ' ' || f.name, 'Main books') as fund,
+                coalesce(sum(l.credit_paise - l.debit_paise) filter (where a.group_type = 'income'), 0) as "incomePaise",
+                coalesce(sum(l.debit_paise - l.credit_paise) filter (where a.group_type = 'expense'), 0) as "expensePaise",
+                coalesce(sum(l.debit_paise - l.credit_paise) filter (where a.is_cash_bank), 0) as "cashBankPaise"
+              from acct_vouchers v join acct_voucher_lines l on l.voucher_id = v.id join acct_accounts a on a.id = l.account_id left join acct_funds f on f.id = v.fund_id
+              where v.voided_at is null and v.is_closing = false and v.voucher_date between ${fyStart(fy)}::date and ${fyEnd(fy)}::date group by 1, 2 order by 2`,
+            ),
+            'incomePaise',
+            'expensePaise',
+            'cashBankPaise',
+          ).map((r) => ({ ...r, surplusPaise: Number(r.incomePaise) - Number(r.expensePaise) }));
+          return out(rows, { incomePaise: sum(rows, 'incomePaise'), expensePaise: sum(rows, 'expensePaise'), surplusPaise: sum(rows, 'surplusPaise') });
         }
         case '80g': {
           const rows = num(await rowsOf(tx, sql`select d.id, d.received_on::text as date, d.receipt_serial as "receiptNo", d.donor_name as donor, coalesce(d.donor_pan, '') as pan, d.mode, d.amount_paise as "amountPaise", c.name as campaign from alumni_donations d join alumni_campaigns c on c.id = d.campaign_id where d.received_on between ${from}::date and ${to}::date order by d.received_on`), 'amountPaise').map((r) => ({ ...r, eligible: eligible80G(String(r.mode), Number(r.amountPaise)) && !!r.pan }));

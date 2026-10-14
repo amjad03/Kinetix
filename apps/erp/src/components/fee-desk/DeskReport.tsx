@@ -8,11 +8,13 @@ import type { MessageKey } from '@/i18n/messages';
 import { fillHref, type ReportSpec, type Row } from '@/lib/fee-desk';
 import { useCell, useWord } from './SpecTable';
 
-const MODES = ['cash', 'cheque', 'upi', 'bank_transfer', 'online'];
+const MODES = ['cash', 'cheque', 'dd', 'card', 'upi', 'bank_transfer', 'online', 'scholarship'];
 const CHEQUE = ['received', 'deposited', 'cleared', 'bounced'];
+const RECEIPT = ['active', 'cancel_pending', 'cancelled', 'bounced'];
+const GROUP_BY = ['type', 'head', 'batch', 'category', 'section', 'student'];
 
 /** A desk report on the ReportPage template: URL filters, totals, the table, print and CSV. */
-export function DeskReport({ spec, rows, totals, query, students }: { spec: ReportSpec; rows: Row[]; totals: Record<string, number>; query: Record<string, string>; students?: { id: string; student: string }[] }) {
+export function DeskReport({ spec, rows, totals, query, students, funds }: { spec: ReportSpec; rows: Row[]; totals: Record<string, number>; query: Record<string, string>; students?: { id: string; student: string }[]; funds?: { id: string; code: string; name: string }[] }) {
   const { t } = useI18n();
   const cell = useCell();
   const word = useWord();
@@ -38,7 +40,11 @@ export function DeskReport({ spec, rows, totals, query, students }: { spec: Repo
       case 'mode':
         return <SelectInput key={name} name={name} label={t('fd.col.mode')} empty={t('fd.all')} defaultValue={query.mode ?? ''} options={MODES.map((m) => ({ value: m, label: word(m) }))} />;
       case 'status':
-        return <SelectInput key={name} name={name} label={t('fd.col.status')} empty={t('fd.all')} defaultValue={query.status ?? ''} options={CHEQUE.map((m) => ({ value: m, label: word(m) }))} />;
+        return <SelectInput key={name} name={name} label={t('fd.col.status')} empty={t('fd.all')} defaultValue={query.status ?? ''} options={(spec.key === 'receipt-register' ? RECEIPT : CHEQUE).map((m) => ({ value: m, label: word(m) }))} />;
+      case 'fund':
+        return <SelectInput key={name} name={name} label={t('fd.col.fund')} empty={t('fx.allFunds')} defaultValue={query.fund ?? ''} options={(funds ?? []).map((f) => ({ value: f.id, label: `${f.code} ${f.name}` }))} />;
+      case 'groupBy':
+        return <SelectInput key={name} name={name} label={t('fx.groupBy')} defaultValue={query.groupBy ?? 'type'} options={GROUP_BY.map((g) => ({ value: g, label: t(`fx.by.${g}` as MessageKey) }))} />;
       case 'studentId':
         return <SelectInput key={name} name={name} label={t('fd.col.student')} empty={t('fd.pick')} defaultValue={query.studentId ?? ''} options={(students ?? []).map((s) => ({ value: s.id, label: s.student }))} />;
     }

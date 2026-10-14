@@ -148,6 +148,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/books', label: 'nav.books', section: 'finance', icon: 'finance' },
       { href: '/tally', label: 'nav.tally', section: 'finance', icon: 'finance' },
       { href: '/settlements', label: 'nav.settlements', section: 'finance', icon: 'finance' },
+      { href: '/accounts/bank', label: 'fx.bankReco', section: 'finance', icon: 'finance' },
     ],
   },
   {

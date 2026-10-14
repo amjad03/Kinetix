@@ -2,8 +2,9 @@
 // the cheque register, day-end cash closing, month close and the module settings. Amounts are integer paise.
 // Kept apart from schema.ts, which these tables reference.
 import { sql } from 'drizzle-orm';
-import { bigint, date, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { bigint, boolean, date, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { acctVouchers, feeInvoices, feePayments, feeRefunds, students, tenants, users } from './schema.js';
+import type { TrailEntry } from './schema-fee-depth.js';
 
 const id = () => uuid('id').primaryKey().default(sql`gen_random_uuid()`);
 const tenantId = () => uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' });
@@ -34,6 +35,11 @@ export const feeConcessions = pgTable(
     decidedAt: ts('decided_at'),
     decisionNote: text('decision_note'),
     createdAt: createdAt(),
+    /** The concession type, the approval level reached, each decision so far and the heads it reduces (migration 0162). */
+    typeId: uuid('type_id'),
+    level: integer('level').notNull().default(0),
+    trail: jsonb('trail').$type<TrailEntry[]>().notNull().default([]),
+    headCodes: text('head_codes').array().notNull().default(sql`'{}'`),
   },
   (t) => [uniqueIndex('fee_concessions_number_uq').on(t.tenantId, t.number), index('fee_concessions_student_idx').on(t.studentId)],
 );
@@ -59,6 +65,9 @@ export const feeCheques = pgTable(
     chargeInvoiceId: uuid('charge_invoice_id').references(() => feeInvoices.id, { onDelete: 'set null' }),
     createdBy: userRef('created_by'),
     createdAt: createdAt(),
+    /** The receipt the cheque paid (a bounce reverses all of it), and cheque or dd (migration 0163). */
+    receiptId: uuid('receipt_id'),
+    kind: text('kind').notNull().default('cheque'),
   },
   (t) => [uniqueIndex('fee_cheques_payment_uq').on(t.paymentId), index('fee_cheques_status_idx').on(t.tenantId, t.status)],
 );
@@ -87,6 +96,18 @@ export const feeRefundRequests = pgTable(
     paidBy: userRef('paid_by'),
     paidAt: ts('paid_at'),
     createdAt: createdAt(),
+    /** Approval level and trail, whether the refunded part stops being charged (a withdrawal), the rule's quote, the
+     * payee's bank details for NEFT, and a reversal of a paid refund (migration 0163). */
+    level: integer('level').notNull().default(0),
+    trail: jsonb('trail').$type<TrailEntry[]>().notNull().default([]),
+    closeDues: boolean('close_dues').notNull().default(false),
+    quote: jsonb('quote').$type<Record<string, unknown> | null>(),
+    payeeName: text('payee_name'),
+    payeeAccount: text('payee_account'),
+    payeeIfsc: text('payee_ifsc'),
+    revertedBy: userRef('reverted_by'),
+    revertedAt: ts('reverted_at'),
+    revertReason: text('revert_reason'),
   },
   (t) => [uniqueIndex('fee_refund_requests_number_uq').on(t.tenantId, t.number)],
 );
@@ -138,6 +159,10 @@ export const acctVoucherRequests = pgTable(
     decisionNote: text('decision_note'),
     voucherId: uuid('voucher_id').references(() => acctVouchers.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Fund (books) and department (budget) of the voucher, and the budget warning the maker saw (migration 0164). */
+    fundId: uuid('fund_id'),
+    departmentId: uuid('department_id'),
+    budgetNote: text('budget_note'),
   },
   (t) => [uniqueIndex('acct_voucher_requests_number_uq').on(t.tenantId, t.number)],
 );
@@ -162,6 +187,9 @@ export const feeCashClosings = pgTable(
     verifiedAt: ts('verified_at'),
     decisionNote: text('decision_note'),
     createdAt: createdAt(),
+    /** Who took the cash over from the cashier (migration 0163). */
+    handedTo: userRef('handed_to'),
+    handedAt: ts('handed_at'),
   },
   (t) => [uniqueIndex('fee_cash_closings_uq').on(t.tenantId, t.closingDate, t.cashierId)],
 );
@@ -180,6 +208,38 @@ export const acctPeriodCloses = pgTable(
   },
   (t) => [uniqueIndex('acct_period_closes_uq').on(t.tenantId, t.period)],
 );
+
+/** One level of an approval chain: the role that decides there, and the most it may approve on its own (rupees; null = any). */
+export interface ChainStep {
+  role: string;
+  limitRupees: number | null;
+}
+/** What unpaid dues hold back, and from how much. */
+export interface DuesBlock {
+  hallTicket?: boolean;
+  results?: boolean;
+  tc?: boolean;
+  minRupees?: number;
+}
+/** When reminders go out on their own: days before and after the due date, on which channels; and the daily summary. */
+export interface ReminderSchedule {
+  enabled?: boolean;
+  daysBefore?: number[];
+  daysAfter?: number[];
+  channels?: ('app' | 'sms' | 'whatsapp')[];
+  dailySummary?: boolean;
+}
+/** The gateway charge passed on to the payer: a percent, a flat amount, or both. */
+export interface ConvenienceFee {
+  percent?: number;
+  flatRupees?: number;
+}
+/** A withdrawal refund band (UGC style): withdrawn up to `untilDays` after the course start, `percent` back less `deductionRupees`. */
+export interface RefundSlab {
+  untilDays: number | null;
+  percent: number;
+  deductionRupees: number;
+}
 
 export interface Series {
   prefix: string;
@@ -216,6 +276,13 @@ export const feeAccountsSettings = pgTable(
     updatedBy: userRef('updated_by'),
     updatedAt: ts('updated_at').notNull().defaultNow(),
     createdAt: createdAt(),
+    /** Approval chains by kind (concession, refund, waiver, customPlan, receiptCancel), dues blocks, the reminder
+     * schedule, the online convenience fee and the refund slabs (migration 0162). */
+    chains: jsonb('chains').$type<Record<string, ChainStep[]>>().notNull().default({}),
+    duesBlock: jsonb('dues_block').$type<DuesBlock>().notNull().default({}),
+    reminders: jsonb('reminders').$type<ReminderSchedule>().notNull().default({}),
+    convenience: jsonb('convenience').$type<ConvenienceFee>().notNull().default({}),
+    refundRules: jsonb('refund_rules').$type<RefundSlab[]>().notNull().default([]),
   },
   (t) => [uniqueIndex('fee_accounts_settings_uq').on(t.tenantId)],
 );

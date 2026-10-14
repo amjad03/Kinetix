@@ -12,7 +12,7 @@ import { useWord } from './SpecTable';
 type Line = { accountId: string; debit: string; credit: string };
 
 /** A voucher entered for approval: type, date, narration and balanced lines. It posts once someone else approves it. */
-export function NewVoucher({ accounts }: { accounts: { id: string; code: string; name: string }[] }) {
+export function NewVoucher({ accounts, funds = [], departments = [] }: { accounts: { id: string; code: string; name: string }[]; funds?: { id: string; code: string; name: string }[]; departments?: { id: string; name: string }[] }) {
   const { t, fmt } = useI18n();
   const word = useWord();
   const router = useRouter();
@@ -29,7 +29,7 @@ export function NewVoucher({ accounts }: { accounts: { id: string; code: string;
 
   const save = (form: FormData) =>
     start(async () => {
-      const body = { type: form.get('type'), date: form.get('date'), narration: form.get('narration'), lines: lines.filter((l) => l.accountId).map((l) => ({ accountId: l.accountId, debitPaise: paise(l.debit), creditPaise: paise(l.credit) })) };
+      const body = { type: form.get('type'), date: form.get('date'), narration: form.get('narration'), fundId: String(form.get('fundId') ?? '') || undefined, departmentId: String(form.get('departmentId') ?? '') || undefined, lines: lines.filter((l) => l.accountId).map((l) => ({ accountId: l.accountId, debitPaise: paise(l.debit), creditPaise: paise(l.credit) })) };
       const res = await deskSend<{ id: string }>('/v1/fee-accounts/vouchers', body);
       if (!res.ok) return setError(res.error);
       toast?.success(t('fd.done.requested'));
@@ -71,6 +71,8 @@ export function NewVoucher({ accounts }: { accounts: { id: string; code: string;
               <SelectInput name="type" label={t('fd.col.type')} defaultValue="payment" options={['payment', 'receipt', 'journal', 'contra'].map((v) => ({ value: v, label: word(v) }))} />
               <TextInput name="date" label={t('fd.col.date')} type="date" defaultValue={new Date().toISOString().slice(0, 10)} required />
               <TextInput name="narration" label={t('fd.col.narration')} required />
+              {funds.length > 0 && <SelectInput name="fundId" label={t('fd.col.fund')} empty={t('fx.mainBooks')} defaultValue="" options={funds.map((f) => ({ value: f.id, label: `${f.code} ${f.name}` }))} />}
+              {departments.length > 0 && <SelectInput name="departmentId" label={t('fx.col.department')} empty={t('fx.noDepartment')} defaultValue="" options={departments.map((d) => ({ value: d.id, label: d.name }))} />}
             </FormGrid>
             <div className="grid gap-3">
               {lines.map((l, i) => (

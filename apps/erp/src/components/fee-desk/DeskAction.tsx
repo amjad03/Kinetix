@@ -13,7 +13,7 @@ export interface FieldSpec {
   name: string;
   /** i18n key. */
   label: string;
-  kind?: 'text' | 'money' | 'date' | 'select' | 'textarea' | 'number';
+  kind?: 'text' | 'money' | 'date' | 'select' | 'textarea' | 'number' | 'bool';
   options?: { value: string; label: string }[];
   required?: boolean;
   defaultValue?: string;
@@ -58,7 +58,7 @@ export function DeskAction({
       for (const f of fields) {
         const raw = String(form?.get(f.name) ?? '').trim();
         if (raw === '') continue;
-        body[f.name] = f.kind === 'money' ? Math.round(Number(raw) * 100) : f.kind === 'number' ? Number(raw) : raw;
+        body[f.name] = f.kind === 'money' ? Math.round(Number(raw) * 100) : f.kind === 'number' ? Number(raw) : f.kind === 'bool' ? raw === 'yes' : raw;
       }
       const res = await deskSend<{ id?: string }>(path, body, method);
       if (!res.ok) return setError(res.error);
@@ -110,7 +110,9 @@ export function DeskAction({
           >
             <FormGrid>
               {fields.map((f) =>
-                f.kind === 'select' ? (
+                f.kind === 'bool' ? (
+                  <SelectInput key={f.name} name={f.name} label={t(f.label as MessageKey)} defaultValue={f.defaultValue ?? 'no'} options={[{ value: 'no', label: t('fd.no') }, { value: 'yes', label: t('fd.yes') }]} />
+                ) : f.kind === 'select' ? (
                   <SelectInput key={f.name} name={f.name} label={t(f.label as MessageKey)} defaultValue={f.defaultValue ?? f.options?.[0]?.value ?? ''} options={(f.options ?? []).map((o) => ({ value: o.value, label: o.label === o.value ? word(o.value) : o.label }))} required={f.required} />
                 ) : (
                   <TextInput

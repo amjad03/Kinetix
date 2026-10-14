@@ -1,8 +1,8 @@
 // Pure rules of the fees and accounts desk: numbering series, defaults, concession amounts, cash counts, cheque states and ageing.
 import type { FeeHead, PaymentModeSetting, Series } from '../db/schema-fee-accounts.js';
 
-export type SeriesKey = 'receipt' | 'invoice' | 'concession' | 'refund' | 'writeOff' | 'voucher';
-export const SERIES_KEYS: SeriesKey[] = ['receipt', 'invoice', 'concession', 'refund', 'writeOff', 'voucher'];
+export type SeriesKey = 'receipt' | 'invoice' | 'concession' | 'refund' | 'writeOff' | 'voucher' | 'challan' | 'waiver' | 'plan';
+export const SERIES_KEYS: SeriesKey[] = ['receipt', 'invoice', 'concession', 'refund', 'writeOff', 'voucher', 'challan', 'waiver', 'plan'];
 
 export const DEFAULT_SERIES: Record<SeriesKey, Series> = {
   receipt: { prefix: 'RCPT/{FY}/', next: 1, pad: 5 },
@@ -11,6 +11,9 @@ export const DEFAULT_SERIES: Record<SeriesKey, Series> = {
   refund: { prefix: 'RFD/{FY}/', next: 1, pad: 4 },
   writeOff: { prefix: 'WO/{FY}/', next: 1, pad: 4 },
   voucher: { prefix: 'VR/{FY}/', next: 1, pad: 4 },
+  challan: { prefix: 'CHL/{FY}/', next: 1, pad: 5 },
+  waiver: { prefix: 'WV/{FY}/', next: 1, pad: 4 },
+  plan: { prefix: 'PLN/{FY}/', next: 1, pad: 4 },
 };
 
 export const DEFAULT_HEADS: FeeHead[] = [

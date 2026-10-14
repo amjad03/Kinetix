@@ -35,7 +35,7 @@ export default async function FeePlansPage() {
   const data = await load(async () => {
     const [plans, rule, lateFees, credits, invoices, students] = await Promise.all([
       api<Plan[]>('/v1/fees/instalment-plans'),
-      api<{ name: string; graceDays: number; flatPaise: number; perDayPaise: number; capPaise: number | null } | null>('/v1/fees/late-fee-rule'),
+      api<{ name: string; mode: 'daily' | 'slab'; slabs: unknown[]; graceDays: number; flatPaise: number; perDayPaise: number; capPaise: number | null } | null>('/v1/fees/late-fee-rule'),
       api<Record<string, unknown>[]>('/v1/fees/late-fees'),
       api<{ studentId: string; name: string; rollNo: string; balancePaise: number }[]>('/v1/fees/credits'),
       safe(api<Invoice[]>('/v1/fees/invoices?status=due'), []),
@@ -49,7 +49,6 @@ export default async function FeePlansPage() {
   const invLabel = (i: Invoice) => `${i.student.fullName} (${i.student.rollNo}): ${i.title}, ${fmt.rupees(i.amountPaise - i.paidPaise)}`;
   const unpaid = invoices.filter((i) => i.paidPaise === 0);
   const withCredit = invoices.filter((i) => credits.some((c) => c.studentId === i.student.id));
-  const rupees = (paise: number | null | undefined) => (paise === null || paise === undefined ? '' : String(paise / 100));
 
   const panels: Panel[] = [
     {
@@ -67,17 +66,8 @@ export default async function FeePlansPage() {
         { label: t('dx.fee.retire'), path: '/v1/fees/instalment-plans/{id}/active', body: { active: false }, show: { key: 'active', is: [true] } },
         { label: t('dx.fee.reuse'), path: '/v1/fees/instalment-plans/{id}/active', body: { active: true }, show: { key: 'active', is: [false] } },
       ],
+      // New plans are added under Fees → Setup → Instalment plans.
       forms: [
-        {
-          id: 'plan',
-          title: t('dx.fee.newPlan'),
-          submit: t('dx.add'),
-          path: '/v1/fees/instalment-plans',
-          fields: [
-            { name: 'name', label: t('dx.c.name'), type: 'text', required: true },
-            { name: 'parts', label: t('dx.fee.parts'), type: 'lines', lines: { keys: ['percent', 'dueAfterDays'], numeric: ['percent', 'dueAfterDays'] }, initial: '50, 0\n30, 30\n20, 60', required: true, hint: t('dx.fee.partsHint') },
-          ],
-        },
         {
           id: 'split',
           title: t('dx.fee.split'),
@@ -94,7 +84,7 @@ export default async function FeePlansPage() {
     {
       id: 'late',
       title: t('dx.fee.late'),
-      hint: rule ? t('dx.fee.ruleText', { grace: rule.graceDays, flat: fmt.rupees(rule.flatPaise), perDay: fmt.rupees(rule.perDayPaise), cap: rule.capPaise === null ? t('dx.none') : fmt.rupees(rule.capPaise) }) : t('dx.fee.noRule'),
+      hint: rule ? (rule.mode === 'slab' ? t('fx.slabRuleText', { grace: rule.graceDays, n: rule.slabs.length, cap: rule.capPaise === null ? t('dx.none') : fmt.rupees(rule.capPaise) }) : t('dx.fee.ruleText', { grace: rule.graceDays, flat: fmt.rupees(rule.flatPaise), perDay: fmt.rupees(rule.perDayPaise), cap: rule.capPaise === null ? t('dx.none') : fmt.rupees(rule.capPaise) })) : t('dx.fee.noRule'),
       empty: t('dx.fee.noLate'),
       columns: [
         { key: 'student', label: t('dx.c.name') },
@@ -107,20 +97,8 @@ export default async function FeePlansPage() {
       ],
       rows: lateFees,
       actions: [{ label: t('dx.fee.waive'), path: '/v1/fees/late-fees/{id}/waive', fields: [{ name: 'amountPaise', label: t('dx.fee.waiveAmount'), type: 'paise', hint: t('dx.fee.waiveHint') }, { name: 'reason', label: t('dx.c.reason'), type: 'text', required: true }] }],
+      // The rule itself (daily or slabs) is set under Fees → Setup → Late fees.
       forms: [
-        {
-          id: 'rule',
-          title: t('dx.fee.setRule'),
-          submit: t('dx.save'),
-          method: 'PUT',
-          path: '/v1/fees/late-fee-rule',
-          fields: [
-            { name: 'graceDays', label: t('dx.fee.grace'), type: 'number', initial: String(rule?.graceDays ?? 5), required: true },
-            { name: 'flatPaise', label: t('dx.fee.flat'), type: 'paise', initial: rupees(rule?.flatPaise ?? 5000), required: true },
-            { name: 'perDayPaise', label: t('dx.fee.perDay'), type: 'paise', initial: rupees(rule?.perDayPaise ?? 1000), required: true },
-            { name: 'capPaise', label: t('dx.fee.cap'), type: 'paise', initial: rupees(rule?.capPaise ?? 50000), nullable: true },
-          ],
-        },
         { id: 'run', title: t('dx.fee.runTitle'), submit: t('dx.fee.run'), path: '/v1/fees/late-fees/run', fields: [], result: [{ key: 'assessed', label: t('dx.fee.assessed') }] },
       ],
     },

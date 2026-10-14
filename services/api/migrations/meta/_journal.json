@@ -1051,6 +1051,27 @@
       "when": 1791506019000,
       "tag": "0161_iqac_depth",
       "breakpoints": true
+    },
+    {
+      "idx": 150,
+      "version": "7",
+      "when": 1791506020000,
+      "tag": "0162_fee_setup",
+      "breakpoints": true
+    },
+    {
+      "idx": 151,
+      "version": "7",
+      "when": 1791506021000,
+      "tag": "0163_fee_collection",
+      "breakpoints": true
+    },
+    {
+      "idx": 152,
+      "version": "7",
+      "when": 1791506022000,
+      "tag": "0164_accounts_depth",
+      "breakpoints": true
     }
   ]
 }

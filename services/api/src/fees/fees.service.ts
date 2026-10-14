@@ -4,12 +4,13 @@ import { and, eq, lte, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { feeInvoices, feePayments, guardians, receiptCounters, sections, students, tenants } from '../db/schema.js';
+import { feeInvoices, feePayments, guardians, sections, students, tenants } from '../db/schema.js';
+import { feeReceipts } from '../db/schema-fee-depth.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import type { RoleName } from '../auth/principal.js';
-import { postFeeReceipt } from '../books/books.service.js';
-import { receiptNumber } from '../fee-accounts/fee-accounts.service.js';
+import { allocatePayment } from './fee-lines.js';
+import { nextReceiptNo, postPayment, prefixFor } from './receipts.js';
 
 export const FEE_ROLES: RoleName[] = ['tenant_admin', 'principal', 'accountant'];
 
@@ -46,26 +47,36 @@ export class FeesService {
 
   /**
    * Marks a payment paid, numbers its receipt and credits the invoice. Idempotent: the
-   * checkout confirmation and the gateway's webhook may both arrive.
+   * checkout confirmation and the gateway's webhook may both arrive. The payment's split over the invoice's heads is
+   * recorded (the given one from the counter, or by head priority), and it posts to each head's ledger. A payment
+   * that is part of a receipt made at the counter (several fees or modes) takes that receipt's number; any other gets
+   * a receipt of its own.
    */
-  async markPaid(tx: Tx, paymentId: string, details: { providerPaymentId?: string } = {}) {
+  async markPaid(tx: Tx, paymentId: string, details: { providerPaymentId?: string; allocations?: { lineId: string; headCode: string; paise: number }[]; notify?: boolean; date?: string } = {}) {
     const [payment] = await tx.select().from(feePayments).where(eq(feePayments.id, paymentId)).for('update');
     if (!payment) throw new NotFoundException('Payment not found');
     if (payment.status === 'paid') return payment;
 
     const [tenant] = await tx.select({ timezone: tenants.timezone }).from(tenants);
-    const today = localParts(new Date(), tenant?.timezone ?? 'Asia/Kolkata').date;
-    const fy = financialYear(today);
-    const [counter] = await tx
-      .insert(receiptCounters)
-      .values({ tenantId: payment.tenantId, financialYear: fy, lastNo: 1 })
-      .onConflictDoUpdate({ target: [receiptCounters.tenantId, receiptCounters.financialYear], set: { lastNo: sql`${receiptCounters.lastNo} + 1` } })
-      .returning();
-    const receiptNo = await receiptNumber(tx, counter.lastNo, today);
+    const today = details.date ?? localParts(new Date(), tenant?.timezone ?? 'Asia/Kolkata').date;
+    const pieces = await allocatePayment(tx, payment, details.allocations);
+    let receiptNo: string;
+    let receiptId = payment.receiptId;
+    if (receiptId) {
+      const [r] = await tx.select({ no: feeReceipts.receiptNo }).from(feeReceipts).where(eq(feeReceipts.id, receiptId));
+      receiptNo = r.no;
+    } else {
+      receiptNo = await nextReceiptNo(tx, payment.tenantId, today, await prefixFor(tx, payment.tenantId, pieces.map((x) => x.headCode)));
+      const [r] = await tx
+        .insert(feeReceipts)
+        .values({ tenantId: payment.tenantId, receiptNo, studentId: payment.studentId, totalPaise: payment.amountPaise, modes: [{ method: payment.method, amountPaise: payment.amountPaise, reference: payment.reference ?? details.providerPaymentId ?? null }], collectedBy: payment.recordedBy, collectedOn: today })
+        .returning();
+      receiptId = r.id;
+    }
 
     const [paid] = await tx
       .update(feePayments)
-      .set({ status: 'paid', paidAt: new Date(), receiptNo, providerPaymentId: details.providerPaymentId ?? payment.providerPaymentId })
+      .set({ status: 'paid', paidAt: new Date(), receiptNo, receiptId, providerPaymentId: details.providerPaymentId ?? payment.providerPaymentId })
       .where(eq(feePayments.id, paymentId))
       .returning();
     const [invoice] = await tx
@@ -79,15 +90,16 @@ export class FeesService {
       .returning();
     const [student] = await tx.select({ fullName: students.fullName }).from(students).where(eq(students.id, payment.studentId));
     await this.events.emit(tx, payment.tenantId, { type: DomainEvents.FeePaid, aggregateType: 'fee_payment', aggregateId: paymentId, payload: { invoiceId: payment.invoiceId, studentId: payment.studentId, amountPaise: payment.amountPaise, receiptNo, method: payment.method } });
-    await this.notifications.feePaid(tx, {
-      paymentId,
-      studentId: payment.studentId,
-      studentName: student?.fullName ?? 'your child',
-      title: invoice.title,
-      amountPaise: payment.amountPaise,
-      receiptNo,
-    });
-    await postFeeReceipt(tx, { tenantId: payment.tenantId, paymentId, date: today, receiptNo, method: payment.method, amountPaise: payment.amountPaise, student: student?.fullName ?? 'student' });
+    if (details.notify !== false)
+      await this.notifications.feePaid(tx, {
+        paymentId,
+        studentId: payment.studentId,
+        studentName: student?.fullName ?? 'your child',
+        title: invoice.title,
+        amountPaise: payment.amountPaise,
+        receiptNo,
+      });
+    await postPayment(tx, paid, receiptNo, today, payment.recordedBy);
     return paid;
   }
 

@@ -1335,6 +1335,7 @@ export const conceptVideos = pgTable(
 // ---------------------------------------------------------------------------------------------
 
 export const invoiceStatus = pgEnum('invoice_status', ['due', 'paid', 'cancelled']);
+// ('dd', 'card', 'scholarship' and the 'cancelled' payment status: migration 0163.)
 
 /** What one student owes for one fee (e.g. "Semester 3 tuition"). Part payments add up. */
 export const feeInvoices = pgTable(
@@ -1357,12 +1358,20 @@ export const feeInvoices = pgTable(
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
+    /** The fee structure that raised it (migration 0162). */
+    structureId: uuid('structure_id'),
+    academicYear: text('academic_year'),
+    /** fee, arrears, revision or charge. */
+    kind: text('kind').notNull().default('fee'),
+    /** Dues moved to the next year's arrears invoice (`carried_to`). */
+    carriedPaise: bigint('carried_paise', { mode: 'number' }).notNull().default(0),
+    carriedTo: uuid('carried_to'),
   },
   (t) => [index('fee_invoices_student_idx').on(t.studentId, t.dueOn), index('fee_invoices_section_idx').on(t.sectionId, t.status)],
 );
 
-export const paymentStatus = pgEnum('payment_status', ['created', 'paid', 'failed']);
-export const paymentMethod = pgEnum('payment_method', ['online', 'cash', 'cheque', 'bank_transfer', 'upi', 'credit']);
+export const paymentStatus = pgEnum('payment_status', ['created', 'paid', 'failed', 'cancelled']);
+export const paymentMethod = pgEnum('payment_method', ['online', 'cash', 'cheque', 'bank_transfer', 'upi', 'credit', 'dd', 'card', 'scholarship']);
 
 /**
  * A payment against an invoice: online (an order with the payment provider, confirmed by its
@@ -1389,10 +1398,14 @@ export const feePayments = pgTable(
     recordedBy: uuid('recorded_by').references(() => users.id, { onDelete: 'set null' }),
     paidAt: timestamp('paid_at', { withTimezone: true }),
     createdAt: createdAt(),
+    /** The receipt (fee_receipts) this payment belongs to; one receipt can hold several payments (migration 0163). */
+    receiptId: uuid('receipt_id'),
+    /** The gateway's convenience fee the payer added on top (not credited to the invoice). */
+    conveniencePaise: bigint('convenience_paise', { mode: 'number' }).notNull().default(0),
   },
   (t) => [
     uniqueIndex('fee_payments_order_uq').on(t.providerOrderId),
-    uniqueIndex('fee_payments_receipt_uq').on(t.tenantId, t.receiptNo),
+    uniqueIndex('fee_payments_receipt_uq').on(t.tenantId, t.receiptNo).where(sql`receipt_id is null`),
     index('fee_payments_invoice_idx').on(t.invoiceId),
   ],
 );
@@ -3796,6 +3809,10 @@ export const TENANT_TABLES = [
   'iqac_members',
   'iqac_initiatives',
   'iqac_aqar_submissions',
+  // Fees and accounts depth (migrations 0162, 0163, 0164; db/schema-fee-depth.ts)
+  'fee_heads', 'fee_student_profiles', 'fee_invoice_lines', 'fee_assignments', 'fee_concession_types', 'fee_waiver_requests', 'fee_custom_plans',
+  'fee_receipts', 'fee_payment_allocations', 'fee_challans', 'fee_govt_scholarships', 'fee_carry_forwards', 'fee_reminder_runs',
+  'acct_funds', 'acct_bank_statements', 'acct_bank_lines',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4942,6 +4959,8 @@ export const budgets = pgTable(
     amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
     note: text('note').notNull().default(''),
     createdAt: createdAt(),
+    /** What happens when spending would pass the budget: warn, block or off (migration 0164). */
+    enforce: text('enforce').notNull().default('warn'),
   },
   (t) => [unique('budgets_dept_year_uq').on(t.departmentId, t.fiscalYear)],
 );
@@ -7581,6 +7600,11 @@ export const acctAccounts = pgTable(
     openingPaise: bigint('opening_paise', { mode: 'number' }).notNull().default(0),
     active: boolean('active').notNull().default(true),
     createdAt: createdAt(),
+    /** A bank ledger's account details (migration 0164). */
+    bankName: text('bank_name'),
+    accountNo: text('account_no'),
+    ifsc: text('ifsc'),
+    sortOrder: integer('sort_order').notNull().default(0),
   },
   (t) => [uniqueIndex('acct_accounts_code_uq').on(t.tenantId, t.code)],
 );
@@ -7602,6 +7626,9 @@ export const acctVouchers = pgTable(
     postedBy: uuid('posted_by').references(() => users.id, { onDelete: 'set null' }),
     voidedAt: timestamp('voided_at', { withTimezone: true }),
     createdAt: createdAt(),
+    /** The fund (separate books) and the department (budget) of the voucher (migration 0164). */
+    fundId: uuid('fund_id'),
+    departmentId: uuid('department_id'),
   },
   (t) => [uniqueIndex('acct_vouchers_number_uq').on(t.tenantId, t.financialYear, t.voucherType, t.number), index('acct_vouchers_date_idx').on(t.tenantId, t.voucherDate)],
 );
