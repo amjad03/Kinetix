@@ -100,6 +100,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/exams/documents', label: 'nav.docRequests', section: 'exams', icon: 'results' },
       { href: '/exams/examiners', label: 'nav.examiners', section: 'exams', icon: 'exams' },
       { href: '/results', label: 'nav.results', section: 'results', icon: 'results' },
+      { href: '/exams/cell', label: 'nav.examCell', section: 'exams', icon: 'exams' },
+      { href: '/exams/results-desk', label: 'nav.resultsDesk', section: 'exams', icon: 'results' },
     ],
   },
   {

@@ -212,6 +212,14 @@ describe('new roles, annotations, delegation, DPDP and the alumni portal', () =>
       await post('exr', base, { pageIndex: 0, kind: 'ink', strokes: [[[0.1, 0.1]]] }).expect(400);
       await post('exr', base, { pageIndex: 0, kind: 'ink', strokes: [[[0.1, 0.1], [1.4, 0.2]]] }).expect(400);
       expect((await get('exr', base).expect(200)).body.mine.find((m: { kind: string }) => m.kind === 'ink').strokes).toHaveLength(1);
+      // A pen in colour and width: kept per stroke group, per page, per valuation; undo removes the last one.
+      expect(ink).toMatchObject({ color: '#d81b60', width: 2 });
+      const blue = (await post('exr', base, { pageIndex: 0, kind: 'ink', strokes: pen, color: '#1565C0', width: 4 }).expect(201)).body;
+      expect(blue).toMatchObject({ color: '#1565c0', width: 4 });
+      await post('exr', base, { pageIndex: 0, kind: 'ink', strokes: pen, color: 'blue' }).expect(400);
+      await post('exr', base, { pageIndex: 0, kind: 'ink', strokes: pen, width: 40 }).expect(400);
+      expect((await get('exr', base).expect(200)).body.mine.filter((m: { kind: string }) => m.kind === 'ink').map((m: { color: string }) => m.color)).toEqual(['#d81b60', '#1565c0']);
+      await del('exr', `${base}/${blue.id}`).expect(200);
       await del('exr', `${base}/${ink.id}`).expect(200);
 
       // AI marking help: a draft only. Nothing enters the valuation until the examiner accepts or edits it.

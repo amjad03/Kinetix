@@ -35,6 +35,15 @@ export interface SchemeComponent {
   kind: ComponentKind;
   /** Share of the subject's 100 (weights of a scheme add up to 100). */
   weight: number;
+  /** Best-of-N: only the N best assessments count ("best two of three tests"); null or missing = all of them. */
+  bestOf?: number | null;
+}
+
+/** The entries that count for a component: all of them, or the `bestOf` best by share of their maximum. */
+export function countingEntries(entries: ComponentEvidence['entries'], bestOf: number | null | undefined): ComponentEvidence['entries'] {
+  if (!bestOf || entries.length <= bestOf) return entries;
+  const share = (e: ComponentEvidence['entries'][number]) => (e.absent || e.scored === null || e.max <= 0 ? 0 : e.scored / e.max);
+  return [...entries].sort((a, b) => share(b) - share(a)).slice(0, bestOf);
 }
 
 export interface PassRules {
@@ -125,12 +134,13 @@ export function subjectResult(components: SchemeComponent[], evidence: Component
   const externalAbsent = externals.length > 0 && externals.every((es) => es.length > 0 && es.every((e) => e.absent));
   const results: ComponentResult[] = components.map((c) => {
     const ev = byId.get(c.id);
-    const max = ev ? ev.entries.reduce((s, e) => s + e.max, 0) : 0;
+    const counted = ev ? countingEntries(ev.entries, c.bestOf) : [];
+    const max = counted.reduce((s, e) => s + e.max, 0);
     if (!ev || max === 0) {
       complete = false;
       return { componentId: c.id, code: c.code, name: c.name, kind: c.kind, weight: c.weight, fraction: null, weighted: 0 };
     }
-    const scored = ev.entries.reduce((s, e) => s + (e.absent || e.scored === null ? 0 : e.scored), 0);
+    const scored = counted.reduce((s, e) => s + (e.absent || e.scored === null ? 0 : e.scored), 0);
     const fraction = scored / max;
     return { componentId: c.id, code: c.code, name: c.name, kind: c.kind, weight: c.weight, fraction, weighted: fraction * c.weight };
   });

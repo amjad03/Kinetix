@@ -51,7 +51,7 @@ const SchemeBody = z.object({
   maxAttempts: z.number().int().min(1).max(5).optional(),
   passRules: z.object({ minInternalPercent: z.number().min(0).max(100).nullable(), minExternalPercent: z.number().min(0).max(100).nullable(), minTotalPercent: z.number().min(0).max(100) }),
   components: z
-    .array(z.object({ code: z.string().trim().min(1).max(12), name: z.string().trim().min(1).max(80), kind: z.enum(['internal', 'external', 'practical', 'project', 'viva', 'observation', 'diagnostic', 'skill']), weight: z.number().positive().max(100) }))
+    .array(z.object({ code: z.string().trim().min(1).max(12), name: z.string().trim().min(1).max(80), kind: z.enum(['internal', 'external', 'practical', 'project', 'viva', 'observation', 'diagnostic', 'skill']), weight: z.number().positive().max(100), bestOf: z.number().int().min(1).max(20).nullable().optional() }))
     .min(1)
     .max(12),
 });
@@ -126,8 +126,8 @@ export class SchemesController {
       for (const h of have) if (!body.components.some((c) => c.code === h.code)) await tx.delete(schemeComponents).where(eq(schemeComponents.id, h.id));
       for (const [ord, c] of body.components.entries()) {
         const prior = have.find((h) => h.code === c.code);
-        if (prior) await tx.update(schemeComponents).set({ name: c.name, kind: c.kind, weight: c.weight, ord }).where(eq(schemeComponents.id, prior.id));
-        else await tx.insert(schemeComponents).values({ tenantId: p.tenantId, schemeId: id, code: c.code, name: c.name, kind: c.kind, weight: c.weight, ord });
+        if (prior) await tx.update(schemeComponents).set({ name: c.name, kind: c.kind, weight: c.weight, ord, bestOf: c.bestOf ?? null }).where(eq(schemeComponents.id, prior.id));
+        else await tx.insert(schemeComponents).values({ tenantId: p.tenantId, schemeId: id, code: c.code, name: c.name, kind: c.kind, weight: c.weight, ord, bestOf: c.bestOf ?? null });
       }
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: existing ? 'scheme.updated' : 'scheme.created', subjectType: 'assessment_scheme', subjectId: id, data: { subjectId: body.subjectId, credits: body.credits, components: body.components.length } });
       return this.load(tx, body.subjectId, body.academicYearId);

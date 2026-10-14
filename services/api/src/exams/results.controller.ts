@@ -1,4 +1,8 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
+import { withheldSessions } from '../exam-cell/withholds.js';
+import { revaluationOutcome } from '../exam-cell/exam-cell.logic.js';
+import { reviseResult } from '../exam-cell/result-runs.js';
+import { revaluationThreshold } from '../exam-cell/settings.js';
 import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
@@ -32,7 +36,7 @@ export async function studentHeader(tx: Tx, tenantId: string, studentId: string)
 
 const RevalBody = z.object({ sessionId: z.uuid(), subjectId: z.uuid(), reason: z.string().trim().min(3).max(500), kind: z.enum(REVAL_KINDS).default('revaluation') });
 const DecideBody = z.object({ accept: z.boolean(), note: z.string().trim().max(500).optional() });
-const CompleteBody = z.object({ marks: z.number().min(0) });
+const CompleteBody = z.object({ marks: z.number().min(0).optional(), note: z.string().trim().max(500).optional() });
 
 /** A student's published results (student, family, staff), grade-card and transcript PDFs, and revaluation. */
 @Controller('v1')
@@ -47,8 +51,12 @@ export class ResultsController {
   forStudent(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
-      const terms = await this.published(tx, studentId);
-      return { cgpa: terms.length ? terms[terms.length - 1].cgpa : null, terms };
+      const held = await withheldSessions(tx, studentId);
+      const all = await this.published(tx, studentId);
+      // A withheld result shows as withheld, never its figures.
+      const terms = all.map((t) => (held.has(t.sessionId) ? { sessionId: t.sessionId, sessionName: t.sessionName, term: t.term, withheld: true, withheldReason: held.get(t.sessionId)!, sgpa: null, cgpa: null, creditsAttempted: null, creditsEarned: null, outcome: 'withheld', lines: [] } : { ...t, withheld: false }));
+      const open = all.filter((t) => !held.has(t.sessionId));
+      return { cgpa: open.length ? open[open.length - 1].cgpa : null, terms };
     });
   }
 
@@ -108,6 +116,7 @@ export class ResultsController {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
       const term = (await this.published(tx, studentId)).find((t) => t.sessionId === sessionId);
       if (!term) throw new NotFoundException('No published result for that session');
+      if ((await withheldSessions(tx, studentId)).has(sessionId)) throw new ForbiddenException('This result is withheld. Contact the examination office.');
       return marksCardPdf(await studentHeader(tx, p.tenantId, studentId), term);
     });
     this.send(res, pdf, 'marks-card.pdf');
@@ -118,7 +127,8 @@ export class ResultsController {
   async transcript(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string, @Res() res: Response) {
     const pdf = await this.db.withTenant(p.tenantId, async (tx) => {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
-      const terms = await this.published(tx, studentId);
+      const held = await withheldSessions(tx, studentId);
+      const terms = (await this.published(tx, studentId)).filter((t) => !held.has(t.sessionId));
       if (terms.length === 0) throw new NotFoundException('No published results yet');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transcript.generated', subjectType: 'student', subjectId: studentId });
       return transcriptPdf(await studentHeader(tx, p.tenantId, studentId), terms);
@@ -164,7 +174,12 @@ export class ResultsController {
     });
   }
 
-  /** Records the re-checked marks of the external paper and re-grades the student. */
+  /**
+   * Records the outcome of a request. A photocopy is completed when the copy is handed over. For a revaluation the
+   * re-checked marks replace the original only when they differ by the change rule's share of the maximum (the exam
+   * cell's setting, else the affiliation profile's); a retotalling corrects any difference. A change re-grades the
+   * student, keeps a versioned revision and recalculates the CGPA of later terms.
+   */
   @Post('revaluations/:id/complete')
   @HttpCode(200)
   @Auth('user', ADMIN)
@@ -174,18 +189,35 @@ export class ResultsController {
       if (r.status !== 'accepted') throw new ConflictException('Accept the request first');
       const s = await this.exams.session(tx, r.sessionId);
       if (s.status !== 'published') throw new ConflictException('The results are locked');
+      if (r.kind === 'photocopy') {
+        await tx.update(revaluationRequests).set({ status: 'completed', decisionNote: body.note ?? 'Copy of the answer script given', decidedBy: p.userId, decidedAt: new Date() }).where(eq(revaluationRequests.id, id));
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'revaluation.completed', subjectType: 'revaluation', subjectId: id, data: { kind: 'photocopy' } });
+        return { previousPercent: r.previousPercent, newPercent: r.previousPercent, changed: false };
+      }
+      if (body.marks === undefined) throw new BadRequestException('Enter the re-checked marks');
       const [st] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.id, r.studentId));
-      const [paper] = await tx.select().from(examPapers).where(and(eq(examPapers.sessionId, r.sessionId), eq(examPapers.subjectId, r.subjectId), eq(examPapers.sectionId, st.sectionId)));
+      const papers = await tx.select().from(examPapers).where(and(eq(examPapers.sessionId, r.sessionId), eq(examPapers.subjectId, r.subjectId)));
+      const paper = papers.find((x) => x.sectionId === st.sectionId) ?? papers[0];
       if (!paper?.assessmentId) throw new NotFoundException('No paper for that subject');
       if (body.marks > paper.maxMarks) throw new BadRequestException(`Marks cannot be more than ${paper.maxMarks}`);
       const [old] = await tx.select().from(marks).where(and(eq(marks.assessmentId, paper.assessmentId), eq(marks.studentId, r.studentId)));
-      await tx.update(marks).set({ marks: body.marks, moderatedMarks: null, absent: false, remark: 'Revaluation', updatedAt: new Date() }).where(and(eq(marks.assessmentId, paper.assessmentId), eq(marks.studentId, r.studentId)));
-      const [res] = await this.exams.compute(tx, s, r.studentId);
-      await this.exams.store(tx, p.tenantId, s, [res]);
-      const line = res.lines.find((l) => l.subjectId === r.subjectId);
-      await tx.update(revaluationRequests).set({ status: 'completed', newPercent: line?.result.percent ?? null, decidedBy: p.userId, decidedAt: new Date() }).where(eq(revaluationRequests.id, id));
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'revaluation.completed', subjectType: 'revaluation', subjectId: id, data: { from: old?.moderatedMarks ?? old?.marks ?? null, to: body.marks, sgpa: res.sgpa } });
-      return { previousPercent: r.previousPercent, newPercent: line?.result.percent ?? null, sgpa: res.sgpa, cgpa: res.cgpa };
+      const original = old?.moderatedMarks ?? old?.marks ?? 0;
+      const threshold = r.kind === 'retotalling' ? null : await revaluationThreshold(tx, s.programId);
+      const outcome = revaluationOutcome(original, body.marks, paper.maxMarks, threshold);
+      let newPercent = r.previousPercent;
+      let sgpaNow: number | null = null;
+      let cgpaNow: number | null = null;
+      if (outcome.changed) {
+        await tx.update(marks).set({ marks: body.marks, moderatedMarks: null, absent: false, remark: r.kind === 'retotalling' ? 'Retotalling' : 'Revaluation', updatedAt: new Date() }).where(and(eq(marks.assessmentId, paper.assessmentId), eq(marks.studentId, r.studentId)));
+        const rev = await reviseResult(tx, this.exams, p.tenantId, p.userId, s, r.studentId, 'revaluation', `${r.kind === 'retotalling' ? 'Retotalling' : 'Revaluation'}: ${original} to ${body.marks}`);
+        newPercent = rev.result?.lines.find((l) => l.subjectId === r.subjectId)?.result.percent ?? null;
+        sgpaNow = rev.result?.sgpa ?? null;
+        cgpaNow = rev.result?.cgpa ?? null;
+      }
+      const note = outcome.changed ? (body.note ?? null) : (body.note ?? `No change: the difference of ${outcome.difference} marks is below the change rule`);
+      await tx.update(revaluationRequests).set({ status: 'completed', newPercent, decisionNote: note, decidedBy: p.userId, decidedAt: new Date() }).where(eq(revaluationRequests.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'revaluation.completed', subjectType: 'revaluation', subjectId: id, data: { from: original, revalued: body.marks, changed: outcome.changed, threshold } });
+      return { previousPercent: r.previousPercent, newPercent, changed: outcome.changed, difference: outcome.difference, sgpa: sgpaNow, cgpa: cgpaNow };
     });
   }
 

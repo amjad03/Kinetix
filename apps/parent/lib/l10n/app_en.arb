@@ -2230,5 +2230,13 @@
   },
   "chatClosedFamily": "The institution closed this conversation. Start a new one from Messages if you need help.",
   "chatOfficeHint": "Fees, certificates, transport and anything else",
-  "chatClassTeacher": "Class teacher"
+  "chatClassTeacher": "Class teacher",
+  "resultWithheld": "Withheld",
+  "@resultWithheld": {
+    "description": "Pill on a term result the exam office holds back."
+  },
+  "resultWithheldBody": "This result is withheld by the examination office. Contact the office to know why and what to do.",
+  "@resultWithheldBody": {
+    "description": "Shown instead of the figures of a withheld result."
+  }
 }

@@ -5,6 +5,7 @@ import { MarksListTable } from '@/components/results/ResultsTables';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { MarksPanel } from '@/components/results/MarksPanel';
+import { CellActionButton } from '@/components/exam-cell/CellAction';
 import { Distribution } from '@/components/results/Distribution';
 import { PublishButton } from '@/components/results/PublishButton';
 import { PublishedChip } from '@/components/results/PublishedChip';
@@ -82,7 +83,12 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
         }
         actions={
           me && canPublishMarks(me.roles) ? (
-            <PublishButton id={a.id} title={a.title} className={className} entered={c.entered + c.absent} missing={c.missing} published={!!a.publishedAt} />
+            <>
+              {a.kind !== 'exam' && a.markStatus === 'draft' && (
+                <CellActionButton spec={{ label: t('xc.att.fill'), path: `/v1/assessments/${a.id}/attendance-marks`, confirm: t('xc.att.confirm'), done: t('xc.att.done') }} testId="attendance-marks" />
+              )}
+              <PublishButton id={a.id} title={a.title} className={className} entered={c.entered + c.absent} missing={c.missing} published={!!a.publishedAt} />
+            </>
           ) : undefined
         }
       />

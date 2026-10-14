@@ -71,20 +71,6 @@ export async function generateRegister(body: { templateId: string; label: string
   return res;
 }
 
-export async function decideDoc(id: string, approve: boolean): Promise<ActionResult<unknown>> {
-  if (!UUID.test(id)) return { ok: false, error: 'Not found' };
-  const res = await act(() => api(`/v1/academic-docs/requests/${id}/decide`, { method: 'POST', body: { approve } }));
-  if (res.ok) revalidatePath('/exams/documents');
-  return res;
-}
-
-export async function issueDoc(id: string): Promise<ActionResult<unknown>> {
-  if (!UUID.test(id)) return { ok: false, error: 'Not found' };
-  const res = await act(() => api(`/v1/academic-docs/requests/${id}/issue`, { method: 'POST', body: {} }));
-  if (res.ok) revalidatePath('/exams/documents');
-  return res;
-}
-
 export async function addExaminer(body: { fullName: string; phone: string; organisation: string }): Promise<ActionResult<{ id: string }>> {
   const res = await act(() => api<{ id: string }>('/v1/external-examiners', { method: 'POST', body }));
   if (res.ok) revalidatePath('/exams/examiners');

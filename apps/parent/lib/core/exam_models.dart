@@ -121,16 +121,17 @@ class ResultLine {
 
 /// A published term result with its SGPA.
 class TermResult {
-  const TermResult({required this.sessionId, required this.sessionName, required this.term, required this.sgpa, required this.cgpa, required this.outcome, required this.lines});
+  const TermResult({required this.sessionId, required this.sessionName, required this.term, required this.sgpa, required this.cgpa, required this.outcome, required this.lines, this.withheld = false});
 
   factory TermResult.fromJson(Map<String, dynamic> j) => TermResult(
     sessionId: j['sessionId'] as String,
     sessionName: j['sessionName'] as String,
     term: (j['term'] as num?)?.toInt() ?? 0,
-    sgpa: (j['sgpa'] as num).toDouble(),
+    sgpa: (j['sgpa'] as num?)?.toDouble() ?? 0,
     cgpa: (j['cgpa'] as num?)?.toDouble() ?? 0,
     outcome: j['outcome'] as String? ?? 'pass',
     lines: [for (final l in (j['lines'] as List? ?? const [])) ResultLine.fromJson((l as Map).cast<String, dynamic>())],
+    withheld: j['withheld'] == true,
   );
 
   final String sessionId;
@@ -140,6 +141,9 @@ class TermResult {
   final double cgpa;
   final String outcome;
   final List<ResultLine> lines;
+
+  /// The exam office holds this result back (malpractice inquiry, fees, documents): no figures are shown.
+  final bool withheld;
   bool get passed => outcome == 'pass';
 }
 

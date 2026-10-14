@@ -1,10 +1,10 @@
 'use client';
-import { useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { addAnnotation, removeAnnotation } from '@/app/(dashboard)/evaluation/desk/actions';
 import { TextInput, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { ANNOTATION_TOOLS, extendStroke, inkAnnotation, newAnnotation, onPage, pointOnPage, strokePath, type Annotation, type AnnotationKind, type Point, type Stroke } from '@/lib/annotations';
+import { afterDraw, afterRedo, afterUndo, ANNOTATION_TOOLS, DEFAULT_PEN, emptyHistory, extendStroke, INK_COLOURS, INK_WIDTHS, inkAnnotation, newAnnotation, onPage, pointOnPage, strokePath, undoTarget, type Annotation, type AnnotationKind, type InkHistory, type Pen, type Point, type Stroke } from '@/lib/annotations';
 
 import { Box, Button, ToggleButton, ToggleButtonGroup } from '@/components/kx';
 import { cn } from '@/lib/utils';
@@ -25,9 +25,19 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
   const [pendingComment, setPendingComment] = useState<Point | null>(null);
   const [text, setText] = useState('');
   const [pen, setPen] = useState<Stroke | null>(null);
+  /** Strokes lifted but not yet saved (shown dashed until the API answers). */
   const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [ink, setInk] = useState<Pen>(DEFAULT_PEN);
+  const [histories, setHistories] = useState<Record<number, InkHistory>>({});
+  const history = histories[pageIndex] ?? emptyHistory();
+  const setHistory = (h: InkHistory) => setHistories((all) => ({ ...all, [pageIndex]: h }));
   const [error, setError] = useState<string | null>(null);
   const here = onPage(marks, pageIndex);
+  // The latest marks, for saves that finish after other marks changed.
+  const marksRef = useRef(marks);
+  useEffect(() => {
+    marksRef.current = marks;
+  }, [marks]);
   const before = onPage(earlier, pageIndex);
 
   const at = (e: PointerEvent): Point | null => {
@@ -61,18 +71,52 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
     }
     if (start) setCursor(at(e));
   };
-  const saveInk = async () => {
-    const body = inkAnnotation(pageIndex, strokes);
+  /** Each stroke is saved as the pen lifts, in the pen's colour and width: a vector mark of this page of this valuation. */
+  const saveStroke = async (stroke: Stroke) => {
+    const body = inkAnnotation(pageIndex, [stroke], ink);
+    if (!body) return;
+    setStrokes((all) => [...all, stroke]);
+    const res = await addAnnotation(allocationId, body);
+    setStrokes((all) => all.filter((x) => x !== stroke));
+    if (!res.ok) return setError(res.error || t('ev.ann.err'));
+    setError(null);
+    setHistory(afterDraw(history, res.data.id));
+    onChange([...marksRef.current, res.data]);
+  };
+  const undo = async () => {
+    const target = undoTarget(history, here);
+    if (!target) return;
+    const res = await removeAnnotation(allocationId, target.id);
+    if (!res.ok) return setError(res.error);
+    setHistory(afterUndo(history, target));
+    onChange(marksRef.current.filter((m) => m.id !== target.id));
+  };
+  const redo = async () => {
+    const body = history.undone[0];
     if (!body) return;
     const res = await addAnnotation(allocationId, body);
     if (!res.ok) return setError(res.error || t('ev.ann.err'));
-    setError(null);
-    setStrokes([]);
-    onChange([...marks, res.data]);
+    setHistory(afterRedo(history, res.data.id));
+    onChange([...marksRef.current, res.data]);
+  };
+  const clearPage = async () => {
+    const mine = here.filter((a) => a.kind === 'ink');
+    if (mine.length === 0 || !window.confirm(t('xc.ink.clearConfirm', { n: mine.length }))) return;
+    let left = marksRef.current;
+    for (const a of mine) {
+      const res = await removeAnnotation(allocationId, a.id);
+      if (!res.ok) {
+        setError(res.error);
+        break;
+      }
+      left = left.filter((m) => m.id !== a.id);
+    }
+    setHistory(emptyHistory());
+    onChange(left);
   };
   const up = (e: PointerEvent) => {
     if (pen) {
-      if (pen.length >= 2) setStrokes((all) => [...all, pen]);
+      if (pen.length >= 2) void saveStroke(pen);
       setPen(null);
       return;
     }
@@ -131,33 +175,52 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
         {(here.some((a) => a.kind === 'ink') || before.some((a) => a.kind === 'ink') || strokes.length > 0 || pen) && (
           <svg viewBox="0 0 1 1" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden data-testid="ann-ink">
             {before.filter((a) => a.kind === 'ink').flatMap((a) => (a.strokes ?? []).map((st, i) => <path key={`${a.id}-${i}`} d={strokePath(st)} fill="none" stroke="#757575" strokeOpacity={0.6} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />))}
-            {here.filter((a) => a.kind === 'ink').flatMap((a) => (a.strokes ?? []).map((st, i) => <path key={`${a.id}-${i}`} d={strokePath(st)} fill="none" stroke={COLOUR.ink} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />))}
-            {[...strokes, ...(pen ? [pen] : [])].map((st, i) => <path key={`draft-${i}`} d={strokePath(st)} fill="none" stroke={COLOUR.ink} strokeDasharray="4 3" strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />)}
+            {here.filter((a) => a.kind === 'ink').flatMap((a) => (a.strokes ?? []).map((st, i) => <path key={`${a.id}-${i}`} d={strokePath(st)} fill="none" stroke={a.color ?? COLOUR.ink} strokeWidth={Number(a.width ?? 2)} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" data-testid="ink-stroke" />))}
+            {[...strokes, ...(pen ? [pen] : [])].map((st, i) => <path key={`draft-${i}`} d={strokePath(st)} fill="none" stroke={ink.color} strokeDasharray="4 3" strokeWidth={ink.width} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />)}
           </svg>
         )}
         {draft && <div className="absolute pointer-events-none" style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: size(`${draft.w * 100}%`), height: size(`${draft.h * 100}%`), border: `2px dashed ${COLOUR.highlight}` }} />}
       </div>
       {!locked && tool === 'ink' && (
-        <div className="flex flex-row gap-2 items-center flex-wrap">
-          <Button size="small" variant="contained" disabled={strokes.length === 0} onClick={() => void saveInk()} data-testid="ink-save">
-            {t('ev.ann.inkSave', { n: strokes.length })}
+        <div className="flex flex-row flex-wrap items-center gap-3" data-testid="ink-toolbar">
+          <div className="flex items-center gap-1.5" role="radiogroup" aria-label={t('xc.ink.colour')}>
+            {INK_COLOURS.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                role="radio"
+                aria-checked={ink.color === c.value}
+                aria-label={t(`xc.ink.c.${c.key}` as MessageKey)}
+                title={t(`xc.ink.c.${c.key}` as MessageKey)}
+                onClick={() => setInk({ ...ink, color: c.value })}
+                className={cn('size-7 rounded-full border-2', ink.color === c.value ? 'border-foreground ring-2 ring-offset-1 ring-foreground/30' : 'border-transparent')}
+                style={{ background: c.value }}
+                data-testid={`ink-colour-${c.key}`}
+              />
+            ))}
+          </div>
+          <ToggleButtonGroup size="small" exclusive value={ink.width} onChange={(_, v: number | null) => v && setInk({ ...ink, width: v })} aria-label={t('xc.ink.width')}>
+            {INK_WIDTHS.map((w) => (
+              <ToggleButton key={w} value={w} data-testid={`ink-width-${w}`}>
+                {t(w === INK_WIDTHS[0] ? 'xc.ink.fine' : 'xc.ink.thick')}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          <Button size="small" disabled={!undoTarget(history, here)} onClick={() => void undo()} data-testid="ink-undo">
+            {t('xc.ink.undo')}
           </Button>
-          <Button size="small" disabled={strokes.length === 0} onClick={() => setStrokes((all) => all.slice(0, -1))}>
-            {t('ev.ann.inkUndo')}
+          <Button size="small" disabled={history.undone.length === 0} onClick={() => void redo()} data-testid="ink-redo">
+            {t('xc.ink.redo')}
           </Button>
-          <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
-            {t('ev.ann.inkClear')}
+          <Button size="small" color="inherit" disabled={!here.some((a) => a.kind === 'ink')} onClick={() => void clearPage()} data-testid="ink-clear">
+            {t('xc.ink.clearPage')}
           </Button>
         </div>
       )}
-      {here.filter((a) => a.kind === 'ink').length > 0 && (
-        <div className="flex flex-row gap-2 items-center flex-wrap">
-          {here.filter((a) => a.kind === 'ink').map((a, i) => (
-            <Button key={a.id} size="small" color="inherit" disabled={locked} onClick={() => void remove(a)} aria-label={`${t('ev.ann.ink')} ${i + 1}: ${t('ev.ann.remove')}`}>
-              {t('ev.ann.ink')} {i + 1} ✕
-            </Button>
-          ))}
-        </div>
+      {here.some((a) => a.kind === 'ink') && (
+        <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground" data-testid="ink-count">
+          {t('xc.ink.count', { n: here.filter((a) => a.kind === 'ink').length })}
+        </span>
       )}
       {before.length > 0 && (
         <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">

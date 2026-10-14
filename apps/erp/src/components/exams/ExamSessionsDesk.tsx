@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createSession } from '@/app/(dashboard)/exams/actions';
 import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
+import type { MessageKey } from '@/i18n/messages';
 import { sessionTone, type ExamSession } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
 import { useRun } from './useRun';
@@ -13,7 +14,7 @@ export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions:
   const { t, fmt } = useI18n();
   const { pending, run, feedback } = useRun();
   const years = structure.academicYears ?? [];
-  const [f, setF] = useState({ academicYearId: years.find((y) => y.isCurrent)?.id ?? years[0]?.id ?? '', programId: structure.programs[0]?.id ?? '', term: '1', name: '', kind: 'regular' as 'regular' | 'supplementary', startsOn: '', endsOn: '' });
+  const [f, setF] = useState({ academicYearId: years.find((y) => y.isCurrent)?.id ?? years[0]?.id ?? '', programId: structure.programs[0]?.id ?? '', term: '1', name: '', kind: 'regular' as 'regular' | 'supplementary' | 'improvement' | 'special' | 'practical' | 'viva', startsOn: '', endsOn: '' });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
   return (
     <>
@@ -57,6 +58,10 @@ export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions:
               <TextInput select value={f.kind} onChange={set('kind')}>
                 <MenuItem value="regular">{t('exm.kind.regular')}</MenuItem>
                 <MenuItem value="supplementary">{t('exm.kind.supplementary')}</MenuItem>
+                <MenuItem value="improvement">{t('exm.kind.improvement')}</MenuItem>
+                <MenuItem value="special">{t('exm.kind.special')}</MenuItem>
+                <MenuItem value="practical">{t('exm.kind.practical')}</MenuItem>
+                <MenuItem value="viva">{t('exm.kind.viva')}</MenuItem>
               </TextInput>
             </FormField>
             <FormField label={t('exm.f.starts')} required>
@@ -83,7 +88,7 @@ export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions:
           exportName="exam-sessions"
           columns={[
             { id: 'c0', header: t('exm.f.name'), rowHeader: true, sort: (s) => s.name, cell: (s) => (<><Link href={`/exams/${s.id}`}>{s.name}</Link>
-                              {s.kind === 'supplementary' && <span style={{ marginInlineStart: 8 }}><StatusPill tone="info">{t('exm.kind.supplementary')}</StatusPill></span>}</>) },
+                              {s.kind !== 'regular' && <span style={{ marginInlineStart: 8 }}><StatusPill tone="info">{t(`exm.kind.${s.kind}` as MessageKey)}</StatusPill></span>}</>) },
             { id: 'c1', header: t('exm.f.term'), sort: (s) => s.term, cell: (s) => s.term },
             { id: 'c2', header: t('exm.dates'), sort: (s) => `${fmt.date(s.startsOn)} – ${fmt.date(s.endsOn)}`, cell: (s) => `${fmt.date(s.startsOn)} – ${fmt.date(s.endsOn)}` },
             { id: 'c3', header: t('exm.status'), sort: (s) => t(`exm.st.${s.status}`), cell: (s) => (<><StatusPill tone={sessionTone(s.status) === 'success' ? 'success' : sessionTone(s.status) === 'warning' ? 'warning' : 'neutral'}>{t(`exm.st.${s.status}`)}</StatusPill></>) },

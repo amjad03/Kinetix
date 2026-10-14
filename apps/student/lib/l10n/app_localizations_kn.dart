@@ -4636,4 +4636,11 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get chatClassTeacher => 'ತರಗತಿ ಶಿಕ್ಷಕ';
+
+  @override
+  String get resultWithheld => 'ತಡೆಹಿಡಿಯಲಾಗಿದೆ';
+
+  @override
+  String get resultWithheldBody =>
+      'ಈ ಫಲಿತಾಂಶವನ್ನು ಪರೀಕ್ಷಾ ಕಚೇರಿ ತಡೆಹಿಡಿದಿದೆ. ಕಾರಣ ಮತ್ತು ಮುಂದೇನು ಮಾಡಬೇಕು ಎಂದು ತಿಳಿಯಲು ಕಚೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.';
 }

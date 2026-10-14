@@ -1,11 +1,11 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, desc, eq, inArray, isNotNull, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, or } from 'drizzle-orm';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { academicDocRequests, examResultLines, examResults, examSessions, guardians, legacyMarks, programs, sections, students, subjects, tenants } from '../db/schema.js';
+import { academicDocRequests, creditTransfers, examResultLines, examResults, examSessions, guardians, legacyMarks, programs, sections, students, subjects, tenants } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { consolidate, DEFAULT_CLASSES, docCode, docPdf, DOC_TITLE, importedTerm, serialFor, type DocKind, type DocSnapshot, type TermBlock } from './academic-docs.logic.js';
 import { certificateSerial } from '../exam-office/settings.js';
@@ -45,10 +45,26 @@ export class AcademicDocsService {
       const key = `${m.academicYear}|${String(m.term).padStart(2, '0')}`;
       groups.set(key, [...(groups.get(key) ?? []), m]);
     }
-    const terms: TermBlock[] = [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([key, rows]) => {
+    // Credits accepted from other institutions come first, one block per institution.
+    const transfers = await tx.select({ t: creditTransfers, code: subjects.code, name: subjects.name }).from(creditTransfers).leftJoin(subjects, eq(subjects.id, creditTransfers.subjectId)).where(eq(creditTransfers.studentId, studentId));
+    const transferred: TermBlock[] = [...new Set(transfers.map((x) => x.t.sourceInstitution))].map((inst) => {
+      const rows = transfers.filter((x) => x.t.sourceInstitution === inst);
+      const credits = rows.reduce((a, x) => a + x.t.credits, 0);
+      const points = rows.reduce((a, x) => a + x.t.credits * x.t.gradePoint, 0);
+      return {
+        label: `Credits transferred from ${inst}`,
+        source: 'imported' as const,
+        lines: rows.map((x) => ({ code: x.code ?? x.t.sourceCourse, subject: x.name ? `${x.name} (${x.t.sourceCourse})` : x.t.sourceCourse, credits: x.t.credits, percent: null, grade: x.t.grade, gradePoint: x.t.gradePoint, passed: true })),
+        sgpa: credits ? Math.round((points / credits) * 100) / 100 : 0,
+        creditsAttempted: credits,
+        creditsEarned: credits,
+        creditPoints: points,
+      };
+    });
+    const terms: TermBlock[] = [...transferred, ...[...groups].sort(([a], [b]) => a.localeCompare(b)).map(([key, rows]) => {
       const [year, term] = key.split('|');
       return importedTerm(`${year} - ${termLabel} ${Number(term)}`, rows.map((r) => ({ code: r.subjectCode, subject: r.subjectName || r.subjectCode, credits: r.credits, internal: r.internalMarks, external: r.externalMarks, maxInternal: r.maxInternal, maxExternal: r.maxExternal, grade: r.grade, gradePoint: r.gradePoint, result: r.result })));
-    });
+    })];
     const rs = await tx
       .select({ id: examResults.id, name: examSessions.name, term: examSessions.term, sgpa: examResults.sgpa, creditsAttempted: examResults.creditsAttempted, creditsEarned: examResults.creditsEarned, creditPoints: examResults.creditPoints })
       .from(examResults)
@@ -152,16 +168,21 @@ export class AcademicDocsService {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const r = await this.load(tx, id);
       if (r.status !== 'approved') throw new ConflictException('Approve the request first');
+      if (r.feePaise > 0 && !r.paymentRef) throw new ConflictException('Record the fee payment first');
       const snap = await this.snapshot(tx, p.tenantId, r.studentId);
       const now = new Date();
       const [{ n }] = await tx.select({ n: count() }).from(academicDocRequests).where(and(eq(academicDocRequests.kind, r.kind), isNotNull(academicDocRequests.serialNo)));
-      const serial = (await certificateSerial(tx, now)) ?? serialFor(r.kind as DocKind, now.getUTCFullYear(), Number(n) + 1);
+      const base = (await certificateSerial(tx, now)) ?? serialFor(r.kind as DocKind, now.getUTCFullYear(), Number(n) + 1);
+      // A duplicate carries its own serial marked DUP, so the copy and the original can always be told apart.
+      const serial = r.duplicate ? `${base}-DUP` : base;
       const [row] = await tx
         .update(academicDocRequests)
         .set({ status: 'issued', issuedAt: now, serialNo: serial, verifyToken: docCode(this.env.JWT_SECRET, p.tenantId, serial), snapshot: snap })
         .where(eq(academicDocRequests.id, id))
         .returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'academic_doc.issued', subjectType: 'academic_doc_request', subjectId: id, data: { serial, kind: r.kind } });
+      // A reissued or duplicate copy replaces the original, which is now out of date.
+      if (r.originalId) await tx.update(academicDocRequests).set({ supersededAt: now, supersededReason: r.duplicate ? `Duplicate issued: ${serial}` : `Reissued as ${serial}` }).where(and(eq(academicDocRequests.id, r.originalId), isNull(academicDocRequests.supersededAt)));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'academic_doc.issued', subjectType: 'academic_doc_request', subjectId: id, data: { serial, kind: r.kind, duplicate: r.duplicate } });
       await this.tell(tx, row!, 'issued');
       return this.view(row!);
     });

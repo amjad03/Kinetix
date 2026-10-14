@@ -22,6 +22,8 @@ export interface SchemeComponent {
   name: string;
   kind: ComponentKind;
   weight: number;
+  /** Best-of-N: only the N best assessments of the component count; null or missing = all of them. */
+  bestOf?: number | null;
 }
 export interface PassRules {
   minInternalPercent: number | null;
@@ -45,7 +47,7 @@ export interface SchemePresets {
 export interface ExamSession {
   id: string;
   name: string;
-  kind: 'regular' | 'supplementary';
+  kind: 'regular' | 'supplementary' | 'improvement' | 'special' | 'practical' | 'viva';
   term: number;
   programId: string;
   academicYearId: string;
