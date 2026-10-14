@@ -22,6 +22,14 @@ export const chatThreads = pgTable('chat_threads', {
   createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: ts('created_at').notNull().defaultNow(),
   lastMessageAt: ts('last_message_at'),
+  /** Group chats for a class or club (migration 0176): section | club and its id; members follow its roster. */
+  linkedKind: text('linked_kind'),
+  linkedId: uuid('linked_id'),
+  /** all | admins: who may post. */
+  postPolicy: text('post_policy').notNull().default('all'),
+  /** No push notifications between these local times (HH:MM). */
+  quietStart: text('quiet_start'),
+  quietEnd: text('quiet_end'),
 });
 
 export const chatMembers = pgTable(

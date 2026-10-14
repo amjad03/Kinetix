@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { addTicketEvidence, addWitness, contactParents, incidentContacts, incidentWitnesses, removeTicketEvidence, ticketEvidence } from '@/app/(dashboard)/grievances/actions';
 import { sendResolution } from '@/app/(dashboard)/workflows/bound-actions';
+import { decideAppeal } from '@/app/(dashboard)/grievances/depth-actions';
 import { ActionButton, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast } from '@/components/ops/kit';
 import { FileFormDialog, SectionHead, useLoad } from '@/components/pathways-b/common';
 import { SendForApproval } from '@/components/pathways-b/SendForApproval';
@@ -123,6 +124,7 @@ function TicketDialog({ ticket, flows, onClose, toast }: { ticket: GrievanceTick
           },
         ]}
       />
+      {ticket.appealStatus && <AppealSection ticket={ticket} toast={toast} onDone={onClose} />}
       {!ticket.committee && !RESOLVED.includes(ticket.status) && (
         <>
           <SectionHead title={t('pwb.gv.resolution')} />
@@ -143,6 +145,42 @@ function TicketDialog({ ticket, flows, onClose, toast }: { ticket: GrievanceTick
         />
       )}
     </InfoDialog>
+  );
+}
+
+/** The reporter's appeal to the next level: its grounds, and (pending) the decision to uphold or reopen. */
+function AppealSection({ ticket, toast, onDone }: { ticket: GrievanceTicket; toast: Toast; onDone: () => void }) {
+  const { t } = useI18n();
+  const [deciding, setDeciding] = useState<'upheld' | 'overturned' | null>(null);
+  return (
+    <>
+      <SectionHead title={t('wd.appeal.title')}>
+        <Pill warn={ticket.appealStatus === 'pending'} label={t(`wd.appeal.${ticket.appealStatus}` as MessageKey)} />
+      </SectionHead>
+      <p className="mb-2 text-[13px] leading-[19px]" data-testid="wd-appeal-reason">{ticket.appealReason}</p>
+      {ticket.appealDecision && <p className="mb-2 text-[13px] leading-[19px] text-muted-foreground">{ticket.appealDecision}</p>}
+      {ticket.appealStatus === 'pending' && (
+        <div className="flex gap-2">
+          <Button variant="outlined" size="small" onClick={() => setDeciding('upheld')}>{t('wd.appeal.uphold')}</Button>
+          <Button variant="outlined" size="small" color="error" onClick={() => setDeciding('overturned')}>{t('wd.appeal.overturn')}</Button>
+        </div>
+      )}
+      {deciding && (
+        <FormDialog
+          title={deciding === 'upheld' ? t('wd.appeal.uphold') : t('wd.appeal.overturn')}
+          intro={<p className="text-[13px] leading-[19px] text-muted-foreground">{t('wd.appeal.help')}</p>}
+          onSubmit={(v) => decideAppeal(ticket.id, deciding, v.note)}
+          onClose={(m) => {
+            setDeciding(null);
+            if (m) {
+              toast(m);
+              onDone();
+            }
+          }}
+          fields={[{ name: 'note', label: t('wd.appeal.note'), kind: 'multiline', required: true }]}
+        />
+      )}
+    </>
   );
 }
 

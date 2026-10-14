@@ -33,7 +33,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // timetable-admin.controller.ts: STAFF_ADMIN_ROLES
   timetable: ['principal', 'tenant_admin'],
   // messages.controller.ts: GET /v1/conversations?all=true is for isSchoolAdmin (principal, admin)
-  conversations: ['principal', 'tenant_admin'],
+  // Office threads are also answered by the office roles (accountant, admissions officer: chat-rules.ts DEFAULT_OFFICE_ROLES).
+  conversations: ['principal', 'tenant_admin', 'accountant', 'admissions_officer'],
   // departments.controller.ts: a head of department's view (the principal and admin see any)
   department: ['hod', 'principal', 'tenant_admin'],
   // departments.controller.ts DepartmentsAdminController: STAFF_ADMIN_ROLES

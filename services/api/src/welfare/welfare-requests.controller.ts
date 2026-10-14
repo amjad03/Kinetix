@@ -13,7 +13,7 @@ import { WELFARE_ROLES } from './welfare.access.js';
 import { WelfareService } from './welfare.service.js';
 import { approvedAmountOk, canMoveWelfare } from './welfare-rules.js';
 
-const RequestBody = z.object({ studentId: z.uuid().optional(), kind: z.enum(['scholarship', 'fee_waiver', 'medical_aid', 'hardship', 'other']), title: z.string().trim().min(3).max(160), details: z.string().trim().max(3000).default(''), amountRequestedPaise: Paise.default(0) });
+const RequestBody = z.object({ studentId: z.uuid().optional(), kind: z.enum(['scholarship', 'fee_waiver', 'freeship', 'poor_fund', 'medical_aid', 'hardship', 'other']), title: z.string().trim().min(3).max(160), details: z.string().trim().max(3000).default(''), amountRequestedPaise: Paise.default(0) });
 const DecisionBody = z.object({ decision: z.enum(['approved', 'rejected']), amountApprovedPaise: Paise.optional(), note: z.string().trim().min(3).max(1000), expectedVersion: z.number().int().optional() });
 
 /** Scholarships, fee waivers and welfare aid requested by students or parents, decided by the welfare team. */

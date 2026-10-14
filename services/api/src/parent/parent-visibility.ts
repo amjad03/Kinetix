@@ -6,7 +6,7 @@ import { students } from '../db/schema.js';
 import { parentVisibility } from '../db/schema-pathways.js';
 
 /** The parts of a child's record an institution can switch off for parents. Staff and the student always see their own. */
-export const VISIBILITY_SECTIONS = ['attendance', 'diary', 'report_card', 'behaviour', 'activities', 'health'] as const;
+export const VISIBILITY_SECTIONS = ['attendance', 'diary', 'report_card', 'behaviour', 'activities', 'health', 'mentoring'] as const;
 export type VisibilitySection = (typeof VISIBILITY_SECTIONS)[number];
 
 export const VISIBILITY_LABELS: Record<VisibilitySection, string> = {
@@ -16,6 +16,7 @@ export const VISIBILITY_LABELS: Record<VisibilitySection, string> = {
   behaviour: 'Behaviour and discipline',
   activities: 'Clubs, events and house',
   health: 'Health record',
+  mentoring: "Mentor's remarks",
 };
 
 /** Reads and enforces the per-institution parent visibility switches. */

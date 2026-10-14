@@ -4,10 +4,11 @@ import { addItem, addModule, announce, removeItem, removeModule, setStatus } fro
 import { ActionButton, Bar, FormDialog, Pill, useToast } from '@/components/ops/kit';
 import { Card } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
-import { LMS_KINDS, type LmsCourse } from '@/lib/lms';
+import { LMS_KINDS, type LmsCourse, type LmsItem } from '@/lib/lms';
+import { AccessBadges, EngagementDialog, ItemAccessDialog } from '@/components/life/LmsExtras';
 
 import { Button } from '@/components/kx';
-type Dialog = 'module' | 'announce' | { item: string };
+type Dialog = 'module' | 'announce' | 'engagement' | { item: string } | { access: LmsItem };
 
 export function CourseDesk({ course }: { course: LmsCourse }) {
   const { t, fmt } = useI18n();
@@ -27,6 +28,7 @@ export function CourseDesk({ course }: { course: LmsCourse }) {
             <ActionButton label={t(published ? 'lms.unpublish' : 'lms.publish')} run={() => setStatus(course.id, published ? 'draft' : 'published')} onDone={toast} />
             <Button variant="outlined" onClick={() => setDlg('module')} data-testid="add-module">{t('lms.addModule')}</Button>
             <Button variant="outlined" onClick={() => setDlg('announce')}>{t('lms.announce')}</Button>
+            <Button variant="outlined" onClick={() => setDlg('engagement')} data-testid="course-engagement">{t('ld.eng.title')}</Button>
           </>
         )}
       </Bar>
@@ -39,6 +41,8 @@ export function CourseDesk({ course }: { course: LmsCourse }) {
             <div className="text-sm leading-[21px] flex gap-2 items-center py-1" key={i.id}>
               <Pill label={t(`lms.kind.${i.kind}`)} />
               {i.url ? <a href={i.url} target="_blank" rel="noreferrer">{i.title}</a> : i.title}
+              <AccessBadges item={i} course={course} />
+              {course.canManage && <Button size="small" onClick={() => setDlg({ access: i })}>{t('ld.acc.title')}</Button>}
               {course.canManage && <ActionButton label={t('lms.remove')} tone="error" run={() => removeItem(course.id, i.id)} onDone={toast} />}
             </div>
           ))}
@@ -60,7 +64,9 @@ export function CourseDesk({ course }: { course: LmsCourse }) {
       ))}
       {dlg === 'module' && <FormDialog title={t('lms.addModule')} onSubmit={(v) => addModule(course.id, v)} onClose={done} fields={[{ name: 'title', label: t('lms.fTitle'), required: true }]} />}
       {dlg === 'announce' && <FormDialog title={t('lms.announce')} onSubmit={(v) => announce(course.id, v)} onClose={done} fields={[{ name: 'title', label: t('lms.fTitle'), required: true }, { name: 'body', label: t('lms.fBody'), kind: 'multiline' }]} />}
-      {dlg && typeof dlg === 'object' && (
+      {dlg === 'engagement' && <EngagementDialog courseId={course.id} onClose={() => setDlg(null)} />}
+      {dlg && typeof dlg === 'object' && 'access' in dlg && <ItemAccessDialog course={course} item={dlg.access} onClose={done} />}
+      {dlg && typeof dlg === 'object' && 'item' in dlg && (
         <FormDialog
           title={t('lms.addItem')}
           onSubmit={(v) => addItem(course.id, dlg.item, v)}

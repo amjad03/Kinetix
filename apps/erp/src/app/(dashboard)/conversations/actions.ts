@@ -52,11 +52,11 @@ export async function startFamilyThread(body: { studentId: string; withUserId: s
 }
 
 export async function searchStudents(q: string): Promise<ActionResult<{ id: string; fullName: string; rollNo: string; className: string }[]>> {
-  const r = await act(() => api<{ students: { id: string; fullName: string; rollNo: string; className: string }[] }>(`/v1/announcements/people?q=${encodeURIComponent(q.slice(0, 60))}`));
-  return r.ok ? { ok: true, data: r.data.students } : r;
+  // Leaders and office staff find any student; teachers the students of their classes.
+  return act(() => api<{ id: string; fullName: string; rollNo: string; className: string }[]>(`/v1/conversations/students?q=${encodeURIComponent(q.slice(0, 60))}`));
 }
 
-export async function saveChatSettings(body: { studentChat?: boolean; officeHours?: OfficeHours | null; officeUserIds?: string[] }): Promise<ActionResult<ChatSettingsView>> {
+export async function saveChatSettings(body: { studentChat?: boolean; officeHours?: OfficeHours | null; officeUserIds?: string[]; officeRoles?: string[] }): Promise<ActionResult<ChatSettingsView>> {
   const r = await act(() => api<ChatSettingsView>('/v1/conversations/settings', { method: 'PUT', body }));
   if (r.ok) revalidatePath('/conversations');
   return r;

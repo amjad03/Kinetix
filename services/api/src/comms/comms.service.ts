@@ -8,7 +8,7 @@ import { guardians, notifications, students, tenants, userRoles, users } from '.
 import { audienceRules, messageCampaigns, messageDeliveries, messageTemplates } from '../db/schema-pathways.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { TextSender, WhatsAppSender } from './channels.js';
-import { MAX_ATTEMPTS, fillTemplate, retryDelayMinutes, toE164 } from './comms.logic.js';
+import { MAX_ATTEMPTS, fillTemplate, nextOccurrence, retryDelayMinutes, toE164 } from './comms.logic.js';
 
 export const COMMS_RUN = 'comms.run';
 type Rule = typeof audienceRules.$inferSelect.rule;
@@ -78,18 +78,36 @@ export class CommsService implements OnModuleInit {
       const ids = await this.audienceUsers(tx, a.rule);
       await tx.update(messageCampaigns).set({ status: 'sending', recipients: ids.length }).where(eq(messageCampaigns.id, campaignId));
       if (ids.length) await tx.insert(messageDeliveries).values(ids.map((userId) => ({ tenantId, campaignId, userId, channel: t.channel }))).onConflictDoNothing();
-      return (await tx.select({ id: messageDeliveries.id }).from(messageDeliveries).where(eq(messageDeliveries.campaignId, campaignId))).map((d) => d.id);
+      await this.suppress(tx, campaignId, t.channel);
+      return (await tx.select({ id: messageDeliveries.id }).from(messageDeliveries).where(and(eq(messageDeliveries.campaignId, campaignId), eq(messageDeliveries.status, 'queued')))).map((d) => d.id);
     });
     if (!prepared) return null;
     for (const id of prepared) await this.attempt(tenantId, id);
     return this.recount(tenantId, campaignId);
   }
 
+  /**
+   * Holds back deliveries to addresses on the suppression list (DND, bounced, opted out, invalid) for the channel:
+   * they are marked "suppressed" with the reason and never sent. In-app messages are never held back.
+   */
+  async suppress(tx: Tx, campaignId: string, channel: string): Promise<void> {
+    if (channel !== 'sms' && channel !== 'whatsapp' && channel !== 'email') return;
+    const match =
+      channel === 'email'
+        ? sql`(s.user_id = u.id or (u.email is not null and lower(s.address) = lower(u.email)))`
+        : sql`(s.user_id = u.id or (u.phone is not null and length(regexp_replace(u.phone, '\\D', '', 'g')) >= 10 and right(regexp_replace(s.address, '\\D', '', 'g'), 10) = right(regexp_replace(u.phone, '\\D', '', 'g'), 10)))`;
+    await tx.execute(sql`
+      update message_deliveries d set status = 'suppressed', error = 'Not sent: ' || replace(s.reason, '_', ' '), next_attempt_at = null
+      from users u, contact_suppressions s
+      where d.campaign_id = ${campaignId}::uuid and d.status = 'queued' and u.id = d.user_id
+        and s.channel in (${channel}, 'all') and ${match}`);
+  }
+
   /** One send attempt: fill the text for the recipient, hand it to the channel, record the outcome. */
   async attempt(tenantId: string, deliveryId: string): Promise<void> {
     const ctx = await this.db.withTenant(tenantId, async (tx) => {
       const [d] = await tx.select().from(messageDeliveries).where(eq(messageDeliveries.id, deliveryId));
-      if (!d || d.status === 'sent' || d.status === 'read') return null;
+      if (!d || d.status === 'sent' || d.status === 'read' || d.status === 'suppressed') return null;
       const [c] = await tx.select().from(messageCampaigns).where(eq(messageCampaigns.id, d.campaignId));
       const [u] = await tx.select().from(users).where(eq(users.id, d.userId));
       const [t0] = await tx.select().from(messageTemplates).where(eq(messageTemplates.id, c.templateId));
@@ -162,8 +180,17 @@ export class CommsService implements OnModuleInit {
       const [pending] = await tx.select({ n: sql<number>`count(*)::int` }).from(messageDeliveries).where(and(eq(messageDeliveries.campaignId, campaignId), eq(messageDeliveries.status, 'failed'), isNotNull(messageDeliveries.nextAttemptAt)));
       const [c] = await tx.select().from(messageCampaigns).where(eq(messageCampaigns.id, campaignId));
       const done = c.status === 'sending' && queued === 0 && pending.n === 0;
-      await tx.update(messageCampaigns).set({ sentCount: sent, failedCount: failed, ...(done ? { status: 'sent' } : {}) }).where(eq(messageCampaigns.id, campaignId));
-      if (done) await audit(tx, { tenantId, actorType: 'system', action: 'comms.campaign_sent', subjectType: 'message_campaign', subjectId: campaignId, data: { sent, failed, maxAttempts: MAX_ATTEMPTS } });
+      await tx.update(messageCampaigns).set({ sentCount: sent, failedCount: failed, suppressedCount: n('suppressed'), ...(done ? { status: 'sent' } : {}) }).where(eq(messageCampaigns.id, campaignId));
+      if (done) {
+        await audit(tx, { tenantId, actorType: 'system', action: 'comms.campaign_sent', subjectType: 'message_campaign', subjectId: campaignId, data: { sent, failed, suppressed: n('suppressed'), maxAttempts: MAX_ATTEMPTS } });
+        // A recurring reminder schedules its next send (once: the unique parent link keeps a re-count from doubling it).
+        const next = nextOccurrence(c.sendAt, c.repeat, c.repeatUntil);
+        const [already] = next ? await tx.select({ id: messageCampaigns.id }).from(messageCampaigns).where(eq(messageCampaigns.parentCampaignId, campaignId)) : [];
+        if (next && !already) {
+          const [n2] = await tx.insert(messageCampaigns).values({ tenantId, title: c.title, templateId: c.templateId, audienceId: c.audienceId, vars: c.vars, sendAt: next, repeat: c.repeat, repeatUntil: c.repeatUntil, parentCampaignId: campaignId, createdBy: c.createdBy }).returning({ id: messageCampaigns.id });
+          await audit(tx, { tenantId, actorType: 'system', action: 'comms.campaign_scheduled', subjectType: 'message_campaign', subjectId: n2.id, data: { repeatOf: campaignId, sendAt: next.toISOString() } });
+        }
+      }
       return { sent, failed };
     });
   }

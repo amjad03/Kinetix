@@ -1,6 +1,6 @@
 import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNotNull, isNull, lt, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, lt, ne, notInArray, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -9,23 +9,26 @@ import { nextNumber } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { grievanceEvents, grievanceTickets, userRoles } from '../db/schema.js';
+import { grievanceRoutes } from '../db/schema-life.js';
 import { found, hasRole } from '../placements/placements.access.js';
 import { COMMITTEE_ROLES, GRIEVANCE_STAFF } from './welfare.access.js';
 import { WelfareService } from './welfare.service.js';
 import { fillTemplate, qualitySettings } from '../quality-hub/settings.catalogue.js';
-import { COMMITTEE_STAGES, OPEN_STATUSES, type Committee, type Severity, canAdvanceStage, canMoveTicket, canReopen, committeeFor, effectiveSeverity, escalate, isOverdue, slaDueAt } from './welfare-rules.js';
+import { COMMITTEE_STAGES, OPEN_STATUSES, type Committee, type Severity, canAdvanceStage, canMoveTicket, canAppeal, canReopen, committeeFor, effectiveSeverity, escalate, isOverdue, routeAssignee, slaDueAt } from './welfare-rules.js';
 
 type Ticket = typeof grievanceTickets.$inferSelect;
 type Viewer = 'reporter' | 'staff' | 'committee';
 
 const RaiseBody = z.object({
-  category: z.enum(['academic', 'exam', 'fees', 'hostel', 'transport', 'infrastructure', 'staff_conduct', 'ragging', 'harassment', 'other']),
+  category: z.enum(['academic', 'exam', 'fees', 'hostel', 'transport', 'infrastructure', 'staff_conduct', 'ragging', 'harassment', 'discrimination', 'other']),
   severity: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
   subject: z.string().trim().min(3).max(200),
   description: z.string().trim().min(10).max(5000),
   anonymous: z.boolean().default(false),
   studentId: z.uuid().optional(),
   committee: z.enum(['icc', 'posh']).optional(),
+  /** The member of staff the grievance is about: it is never routed to them and they never see it. */
+  againstUserId: z.uuid().optional(),
 });
 const Text = z.object({ body: z.string().trim().min(1).max(3000) });
 
@@ -49,6 +52,8 @@ export class GrievancesController {
     const q = tx.select().from(grievanceTickets).where(eq(grievanceTickets.id, id));
     const t = found((await (lock ? q.for('update') : q))[0], 'Ticket');
     if (t.raisedBy === p.userId) return { t, viewer: 'reporter' };
+    // The person a grievance is about never sees it, whatever their role.
+    if (t.againstUserId === p.userId) throw new NotFoundException('Ticket not found');
     if (t.committee) {
       if (!hasRole(p, COMMITTEE_ROLES)) throw new NotFoundException('Ticket not found');
       return { t, viewer: 'committee' };
@@ -77,7 +82,7 @@ export class GrievancesController {
       await tx.insert(grievanceEvents).values({ tenantId, ticketId: t.id, actorRole: 'system', kind: 'escalated', visibility: 'public', body: `Escalated to level ${next.level} after the deadline passed` });
       await audit(tx, { tenantId, actorType: 'system', action: 'grievance.escalated', subjectType: 'grievance', subjectId: t.id, data: { level: next.level } });
       const tier = t.committee ? await this.svc.usersWithRole(tx, ['principal']) : await this.svc.usersWithRole(tx, next.level === 1 ? ['principal', 'grievance_officer'] : ['principal', 'tenant_admin']);
-      await this.svc.notify(tx, tier, 'grievance', 'A ticket is past its deadline', `${t.ticketNo} was escalated to level ${next.level}`, `grievance:esc:${t.id}:${next.level}`, { ticketId: t.id });
+      await this.svc.notify(tx, tier.filter((u) => u !== t.againstUserId), 'grievance', 'A ticket is past its deadline', `${t.ticketNo} was escalated to level ${next.level}`, `grievance:esc:${t.id}:${next.level}`, { ticketId: t.id });
       n++;
     }
     return n;
@@ -99,16 +104,28 @@ export class GrievancesController {
       // Module settings: anonymity and the response deadline for each severity.
       const set = await qualitySettings(tx, p.tenantId, 'grievances');
       if (b.anonymous && !set.rules.allowAnonymous) throw new BadRequestException('This institution does not accept anonymous grievances');
-      const slaHours = Number(set.rules[`sla${severity[0].toUpperCase()}${severity.slice(1)}Hours`]);
+      if (b.againstUserId) {
+        if (b.againstUserId === p.userId) throw new BadRequestException('A grievance cannot be about yourself');
+        const [staff] = await tx.select({ id: userRoles.id }).from(userRoles).where(and(eq(userRoles.userId, b.againstUserId), notInArray(userRoles.role, ['student', 'guardian', 'alumni'])));
+        if (!staff) throw new BadRequestException('Name a member of staff');
+      }
+      // The category's route (non-committee matters): its person, or the backup when the first is the one complained about.
+      const [route] = committee ? [] : await tx.select().from(grievanceRoutes).where(and(eq(grievanceRoutes.category, b.category), eq(grievanceRoutes.active, true)));
+      const assignee = routeAssignee(route, p.userId, b.againstUserId ?? null);
+      const slaHours = route?.slaHours ?? Number(set.rules[`sla${severity[0].toUpperCase()}${severity.slice(1)}Hours`]);
       const [t] = await tx
         .insert(grievanceTickets)
-        .values({ tenantId: p.tenantId, ticketNo: await nextNumber(tx, p.tenantId, 'GRV'), category: b.category, severity, subject: b.subject, description: b.description, anonymous: b.anonymous, committee, committeeStage: committee ? 'received' : null, raisedBy: p.userId, studentId, slaDueAt: Number.isFinite(slaHours) ? new Date(now.getTime() + slaHours * 3_600_000) : slaDueAt(now, severity) })
+        .values({ tenantId: p.tenantId, ticketNo: await nextNumber(tx, p.tenantId, 'GRV'), category: b.category, severity, subject: b.subject, description: b.description, anonymous: b.anonymous, committee, committeeStage: committee ? 'received' : null, raisedBy: p.userId, studentId, againstUserId: b.againstUserId ?? null, assigneeUserId: assignee, status: assignee ? 'assigned' : 'open', slaDueAt: Number.isFinite(slaHours) ? new Date(now.getTime() + slaHours * 3_600_000) : slaDueAt(now, severity) })
         .returning();
       await tx.insert(grievanceEvents).values({ tenantId: p.tenantId, ticketId: t.id, actorUserId: p.userId, actorRole: 'reporter', kind: 'raised', visibility: 'public', body: '' });
+      if (assignee) {
+        await tx.insert(grievanceEvents).values({ tenantId: p.tenantId, ticketId: t.id, actorRole: 'system', kind: 'assigned', visibility: 'internal', body: route && assignee !== route.assigneeUserId ? 'Routed to the backup: the usual handler is named in the grievance' : 'Routed by category' });
+        await this.svc.notify(tx, [assignee], 'grievance', 'A ticket was assigned to you', `${t.ticketNo}: ${b.subject}`, `grievance:assign:${t.id}:${assignee}`, { ticketId: t.id });
+      }
       // An anonymous report is audited without the reporter's identity.
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: b.anonymous ? undefined : p.userId, action: committee ? 'grievance.committee_raised' : 'grievance.raised', subjectType: 'grievance', subjectId: t.id, data: { category: b.category, severity, anonymous: b.anonymous } });
       const team = committee ? await this.svc.usersWithRole(tx, COMMITTEE_ROLES) : await this.svc.usersWithRole(tx, GRIEVANCE_STAFF);
-      await this.svc.notify(tx, team.filter((u) => u !== p.userId), 'grievance', 'New grievance', committee ? `${t.ticketNo}: a confidential matter needs the committee` : `${t.ticketNo}: ${b.subject}`, `grievance:new:${t.id}`, { ticketId: t.id });
+      await this.svc.notify(tx, team.filter((u) => u !== p.userId && u !== b.againstUserId), 'grievance', 'New grievance', committee ? `${t.ticketNo}: a confidential matter needs the committee` : `${t.ticketNo}: ${b.subject}`, `grievance:new:${t.id}`, { ticketId: t.id });
       return present(t, 'reporter');
     });
   }
@@ -131,7 +148,7 @@ export class GrievancesController {
       const rows = await tx
         .select()
         .from(grievanceTickets)
-        .where(and(scope, status ? eq(grievanceTickets.status, status) : undefined, category ? eq(grievanceTickets.category, category) : undefined, overdue === 'true' ? and(inArray(grievanceTickets.status, OPEN_STATUSES), lt(grievanceTickets.slaDueAt, this.svc.now())) : undefined))
+        .where(and(scope, or(isNull(grievanceTickets.againstUserId), ne(grievanceTickets.againstUserId, p.userId), eq(grievanceTickets.raisedBy, p.userId)), status ? eq(grievanceTickets.status, status) : undefined, category ? eq(grievanceTickets.category, category) : undefined, overdue === 'true' ? and(inArray(grievanceTickets.status, OPEN_STATUSES), lt(grievanceTickets.slaDueAt, this.svc.now())) : undefined))
         .orderBy(asc(grievanceTickets.slaDueAt));
       return rows.map((t) => present(t, t.raisedBy === p.userId ? 'reporter' : t.committee ? 'committee' : 'staff'));
     });
@@ -195,6 +212,7 @@ export class GrievancesController {
       const [r] = await tx.select({ id: userRoles.id }).from(userRoles).where(and(eq(userRoles.userId, b.assigneeUserId), inArray(userRoles.role, allowed)));
       if (!r) throw new ConflictException(t.committee ? 'Only committee members can handle this matter' : 'That person is not on the grievance team');
       if (t.raisedBy === b.assigneeUserId) throw new ConflictException('A person cannot handle their own grievance');
+      if (t.againstUserId === b.assigneeUserId) throw new ConflictException('A grievance cannot go to the person it is about');
       const [row] = await tx.update(grievanceTickets).set({ assigneeUserId: b.assigneeUserId, status: t.status === 'open' || t.status === 'reopened' ? 'assigned' : t.status, version: t.version + 1 }).where(eq(grievanceTickets.id, id)).returning();
       await this.event(tx, p, t, viewer, 'assigned', '', 'internal');
       await auditUser(tx, p, 'grievance.assigned', 'grievance', id, { assigneeUserId: b.assigneeUserId });
@@ -300,6 +318,52 @@ export class GrievancesController {
       const [row] = await tx.update(grievanceTickets).set({ status: 'reopened', resolvedAt: null, resolution: null, slaDueAt: slaDueAt(this.svc.now(), t.severity as Severity), escalationLevel: 0, version: t.version + 1 }).where(eq(grievanceTickets.id, id)).returning();
       await this.event(tx, p, t, viewer, 'reopened', b.body);
       await auditUser(tx, p, 'grievance.reopened', 'grievance', id);
+      return present(row, viewer);
+    });
+  }
+
+  // ---- appeal to the next level ----------------------------------------------------------------
+
+  /** The reporter, not satisfied with the resolution, appeals within 15 days; the principal (or administrator) decides. */
+  @Post(':id/appeal')
+  @Auth('user')
+  @HttpCode(200)
+  appeal(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ reason: z.string().trim().min(10).max(3000) }))) b: { reason: string }) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { t, viewer } = await this.access(tx, p, id, true);
+      if (viewer !== 'reporter') throw new ForbiddenException('Only the person who raised the ticket can appeal');
+      if (!['resolved', 'closed'].includes(t.status)) throw new ConflictException('You can appeal once the ticket is resolved');
+      if (t.appealStatus) throw new ConflictException('This ticket has already been appealed');
+      if (!canAppeal(t.resolvedAt, this.svc.now())) throw new ConflictException('The 15 days for an appeal have passed');
+      const [row] = await tx.update(grievanceTickets).set({ appealReason: b.reason, appealedAt: this.svc.now(), appealStatus: 'pending', version: t.version + 1 }).where(eq(grievanceTickets.id, id)).returning();
+      await this.event(tx, p, t, viewer, 'appealed', b.reason);
+      await auditUser(tx, p, 'grievance.appealed', 'grievance', id);
+      const next = (await this.svc.usersWithRole(tx, t.committee ? ['principal'] : ['principal', 'tenant_admin'])).filter((u) => u !== t.assigneeUserId && u !== t.againstUserId);
+      await this.svc.notify(tx, next, 'grievance', 'A grievance was appealed', t.committee ? t.ticketNo : `${t.ticketNo}: ${t.subject}`, `grievance:appeal:${id}`, { ticketId: id });
+      return present(row, viewer);
+    });
+  }
+
+  /** The appeal authority upholds the resolution or overturns it (the ticket reopens at the top level). Not the person who handled it. */
+  @Post(':id/appeal-decision')
+  @Auth('user', ['principal', 'tenant_admin'])
+  @HttpCode(200)
+  appealDecision(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ decision: z.enum(['upheld', 'overturned']), note: z.string().trim().min(5).max(3000) }))) b: { decision: 'upheld' | 'overturned'; note: string }) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { t, viewer } = await this.access(tx, p, id, true);
+      this.staffOnly(viewer);
+      if (t.appealStatus !== 'pending') throw new ConflictException('There is no pending appeal on this ticket');
+      if (t.assigneeUserId === p.userId) throw new ForbiddenException('An appeal must be decided by someone other than the person who handled the ticket');
+      const now = this.svc.now();
+      const reopen = b.decision === 'overturned';
+      const [row] = await tx
+        .update(grievanceTickets)
+        .set({ appealStatus: b.decision, appealDecision: b.note, appealDecidedBy: p.userId, appealDecidedAt: now, version: t.version + 1, ...(reopen ? { status: 'reopened', resolvedAt: null, resolution: null, rating: null, escalationLevel: 2, assigneeUserId: p.userId, slaDueAt: slaDueAt(now, t.severity as Severity) } : {}) })
+        .where(eq(grievanceTickets.id, id))
+        .returning();
+      await this.event(tx, p, t, viewer, `appeal_${b.decision}`, b.note);
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `grievance.appeal_${b.decision}`, subjectType: 'grievance', subjectId: id, changes: { appealStatus: { before: 'pending', after: b.decision } } });
+      await this.svc.notify(tx, [t.raisedBy], 'grievance', 'Your appeal was decided', `${t.ticketNo}: ${b.decision === 'upheld' ? 'the resolution stands' : 'the ticket is reopened'}`, `grievance:appeal-decided:${id}`, { ticketId: id });
       return present(row, viewer);
     });
   }

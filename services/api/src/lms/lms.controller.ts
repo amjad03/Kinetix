@@ -10,6 +10,8 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { assessments, conceptVideos, homework, lmsAnnouncements, lmsCourses, lmsGradeCategories, lmsGradeOverrides, lmsItems, lmsModules, sections, students, subjects, topics } from '../db/schema.js';
 import { worksheets } from '../db/schema-g1.js';
+import { lmsItemProgress } from '../db/schema-life.js';
+import { itemAccess } from './lms-access.js';
 import { csv } from '../hr/exports.js';
 import { LMS_STAFF, LmsService } from './lms.service.js';
 import { naturalAsc } from '../common/natural-order.js';
@@ -107,14 +109,29 @@ export class LmsController {
       const c = await this.lms.course(tx, id);
       const manage = await this.lms.canManage(tx, p, c);
       let grade = null;
+      let viewer: string | null = null;
       if (!manage) {
         const kid = (await this.lms.familyStudents(tx, p)).find((s) => s.sectionId === c.sectionId && (!studentId || s.id === studentId));
         if (!kid || c.status !== 'published') throw new NotFoundException('Course not found');
         const gb = await this.lms.gradebook(tx, c, { publishedOnly: true, studentIds: [kid.id] });
         grade = { categories: gb.categories, ...gb.rows[0] };
+        viewer = kid.id;
       }
       const mods = await tx.select().from(lmsModules).where(eq(lmsModules.courseId, id)).orderBy(asc(lmsModules.position));
-      const items = mods.length ? await tx.select().from(lmsItems).where(inArray(lmsItems.moduleId, mods.map((m) => m.id))).orderBy(asc(lmsItems.position)) : [];
+      const all = mods.length ? await tx.select().from(lmsItems).where(inArray(lmsItems.moduleId, mods.map((m) => m.id))).orderBy(asc(lmsItems.position)) : [];
+      // Students and families see what is released for them; an item behind a prerequisite shows as locked.
+      let items: (typeof all[number] & { locked?: boolean; completed?: boolean })[] = all;
+      if (viewer) {
+        const done = await tx.select({ itemId: lmsItemProgress.itemId, completedAt: lmsItemProgress.completedAt }).from(lmsItemProgress).where(and(eq(lmsItemProgress.studentId, viewer), inArray(lmsItemProgress.itemId, all.length ? all.map((i) => i.id) : [id])));
+        const completed = new Set(done.filter((d) => d.completedAt).map((d) => d.itemId));
+        const now = new Date();
+        items = all.flatMap((i) => {
+          const a = itemAccess(i, viewer!, now, completed);
+          if (!a.visible) return [];
+          const { audienceStudentIds: _audience, ...rest } = i;
+          return [{ ...rest, audienceStudentIds: null, locked: a.locked, completed: completed.has(i.id), ...(a.locked ? { url: null, refId: null } : {}) }];
+        });
+      }
       const announcements = await tx.select().from(lmsAnnouncements).where(eq(lmsAnnouncements.courseId, id)).orderBy(desc(lmsAnnouncements.createdAt)).limit(20);
       const [meta] = await tx.select({ subject: subjects.name, section: sections.displayName }).from(subjects).innerJoin(sections, eq(sections.id, c.sectionId)).where(eq(subjects.id, c.subjectId));
       return { ...c, ...meta, canManage: manage, grade, modules: mods.map((m) => ({ ...m, items: items.filter((i) => i.moduleId === m.id) })), announcements };

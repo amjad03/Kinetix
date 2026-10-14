@@ -21,6 +21,28 @@ export function fillTemplate(text: string, vars: Record<string, string>): { text
   return { text: text.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_m, k: string) => vars[k] ?? ''), missing };
 }
 
+export type Repeat = 'none' | 'daily' | 'weekly' | 'monthly';
+
+/**
+ * The next send of a recurring campaign, or null when it does not repeat or the next one falls after `until`
+ * (a YYYY-MM-DD date, inclusive). A monthly send on the 31st lands on the last day of shorter months.
+ */
+export function nextOccurrence(at: Date, repeat: Repeat, until: string | null): Date | null {
+  if (repeat === 'none') return null;
+  const next = new Date(at.getTime());
+  if (repeat === 'daily') next.setUTCDate(next.getUTCDate() + 1);
+  else if (repeat === 'weekly') next.setUTCDate(next.getUTCDate() + 7);
+  else {
+    const day = at.getUTCDate();
+    next.setUTCDate(1);
+    next.setUTCMonth(next.getUTCMonth() + 1);
+    const last = new Date(Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0)).getUTCDate();
+    next.setUTCDate(Math.min(day, last));
+  }
+  if (until && next.toISOString().slice(0, 10) > until) return null;
+  return next;
+}
+
 /** A phone number in E.164 form (a bare 10-digit Indian number gets +91), or null. */
 export function toE164(phone: string | null | undefined): string | null {
   if (!phone) return null;

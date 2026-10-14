@@ -6,15 +6,32 @@ export const SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
 /** Hours to resolve, by severity. */
 export const SLA_HOURS: Record<Severity, number> = { critical: 24, high: 48, medium: 120, low: 240 };
 
-export const COMMITTEE_CATEGORIES = ['ragging', 'harassment'] as const;
-export type Committee = 'anti_ragging' | 'icc' | 'posh';
+export const COMMITTEE_CATEGORIES = ['ragging', 'harassment', 'discrimination'] as const;
+export type Committee = 'anti_ragging' | 'icc' | 'posh' | 'sc_st';
 
 /** Ragging goes to the anti-ragging committee; harassment to the ICC (or POSH when the reporter says it is a staff matter). */
 export function committeeFor(category: string, requested?: Committee): Committee | null {
   if (category === 'ragging') return 'anti_ragging';
   if (category === 'harassment') return requested === 'posh' ? 'posh' : 'icc';
+  // Caste discrimination goes to the SC/ST cell (UGC regulations), handled as confidentially as ragging.
+  if (category === 'discrimination') return 'sc_st';
   return null;
 }
+
+/**
+ * Who a new ticket goes to under its category's route: the route's person, or the backup when the first is the
+ * reporter or the person complained about; nobody (the team picks it up) when neither may handle it.
+ */
+export function routeAssignee(route: { assigneeUserId: string; backupUserId: string | null } | undefined, raisedBy: string, againstUserId: string | null): string | null {
+  if (!route) return null;
+  const ok = (u: string | null) => !!u && u !== raisedBy && u !== againstUserId;
+  if (ok(route.assigneeUserId)) return route.assigneeUserId;
+  return ok(route.backupUserId) ? route.backupUserId : null;
+}
+
+/** An appeal to the next level is open for 15 days after the ticket is resolved. */
+export const APPEAL_DAYS = 15;
+export const canAppeal = (resolvedAt: Date | null, now: Date) => !!resolvedAt && now.getTime() - resolvedAt.getTime() <= APPEAL_DAYS * 86_400_000;
 
 /** Committee matters are never lower than high severity. */
 export function effectiveSeverity(category: string, severity: Severity): Severity {

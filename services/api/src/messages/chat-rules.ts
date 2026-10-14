@@ -6,6 +6,11 @@ export type OfficeHours = NonNullable<ChatSettings['officeHours']>;
 /** Roles that are a family, not staff. Everyone else is staff. */
 export const FAMILY_ROLES = ['guardian', 'student'];
 
+/** Office roles that may answer office threads, and the default when the institution has not chosen. */
+export const OFFICE_ROLE_CHOICES = ['accountant', 'admissions_officer', 'hostel_warden', 'transport_manager', 'librarian', 'exam_controller'] as const;
+export const DEFAULT_OFFICE_ROLES = ['accountant', 'admissions_officer'];
+export const officeRolesOf = (settings: ChatSettings | undefined): string[] => settings?.officeRoles ?? DEFAULT_OFFICE_ROLES;
+
 /** Students write for themselves by default only at colleges and universities. */
 export function studentChatEnabled(settings: ChatSettings | undefined, kind: 'school' | 'college' | 'university'): boolean {
   return settings?.studentChat ?? kind !== 'school';
