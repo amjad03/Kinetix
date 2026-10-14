@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { DataTable, FormField, TextInput } from '@/components/ui';
+import { DataTable, FormField, FormRow, TextInput } from '@/components/ui';
 import { addAction, computeAttainment, setActionStatus } from '@/app/(dashboard)/obe/actions';
 import { useRun } from '@/components/exams/useRun';
 import { EmptyState } from '@/components/States';
@@ -82,7 +82,7 @@ export function ObeDashboard({
   return (
     <>
       <Card className="mb-5" padded>
-        <div className="flex gap-4 flex-wrap items-center">
+        <FormRow>
           <FormField label={t('exm.f.program')}>
             <TextInput className="min-w-[200px] w-full sm:w-auto" select value={programId} onChange={(e) => go(e.target.value, yearId)}>
               {programs.map((p) => (
@@ -102,15 +102,15 @@ export function ObeDashboard({
             </TextInput>
           </FormField>
           <div className="flex-1" />
-          <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.csv?academicYearId=${yearId}`)} download size="small">CSV</Button>
-          <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.pdf?academicYearId=${yearId}&framework=nba`)} size="small">{t('obe.pdfNba')}</Button>
-          <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.pdf?academicYearId=${yearId}&framework=naac`)} size="small">{t('obe.pdfNaac')}</Button>
+          <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.csv?academicYearId=${yearId}`)} download>CSV</Button>
+          <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.pdf?academicYearId=${yearId}&framework=nba`)}>{t('obe.pdfNba')}</Button>
+          <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.pdf?academicYearId=${yearId}&framework=naac`)}>{t('obe.pdfNaac')}</Button>
           {canManage && (
             <Button variant="contained" disabled={pending || !programId || !yearId} onClick={() => run(() => computeAttainment(programId, yearId), t('obe.computed'))}>
               {t('obe.compute')}
             </Button>
           )}
-        </div>
+        </FormRow>
       </Card>
       {feedback}
       {!attainment || attainment.computedAt === null ? (

@@ -1,3 +1,4 @@
+import { ShieldCheck } from 'lucide-react';
 import type { Metadata } from 'next';
 import { IntegrityDesk } from '@/components/integrity/IntegrityDesk';
 import { PageHeader } from '@/components/PageHeader';
@@ -32,7 +33,7 @@ export default async function IntegrityPage({ searchParams }: { searchParams: Pr
     return (
       <>
         {head}
-        <EmptyState icon={<span>·</span>} title={t('ig.noHomework')} />
+        <EmptyState icon={<ShieldCheck />} title={t('ig.noHomework')} />
       </>
     );
   }
@@ -41,7 +42,9 @@ export default async function IntegrityPage({ searchParams }: { searchParams: Pr
   return (
     <>
       {head}
-      <UrlSelect label={t('ig.homework')} param="homeworkId" value={id} options={rows.map((r) => ({ value: r.id, label: `${r.section} · ${r.subject} · ${r.title}` }))} />
+      <div data-slot="toolbar" className="mb-4 flex flex-wrap items-end gap-3">
+        <UrlSelect label={t('ig.homework')} param="homeworkId" value={id} options={rows.map((r) => ({ value: r.id, label: `${r.section} · ${r.subject} · ${r.title}` }))} minWidth={320} />
+      </div>
       {report.error !== undefined ? <ErrorState message={report.error} /> : <IntegrityDesk key={id} homeworkId={id} report={report.data!} />}
     </>
   );

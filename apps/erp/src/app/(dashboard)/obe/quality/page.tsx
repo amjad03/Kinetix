@@ -194,7 +194,7 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
       <PageHeader title={t('dx.q.title')} subtitle={t('dx.q.subtitle')} actions={frameworks.length ? <UrlSelect label={t('dx.q.framework')} param="framework" value={current?.id ?? ''} options={opt(frameworks, (f) => f.id, (f) => f.name)} /> : undefined} />
       <DepthDesk panels={panels} />
       {exam.papers.length > 0 && (
-        <div style={{ marginTop: 24 }}>
+        <div data-slot="toolbar" className="mt-6 mb-4 flex flex-wrap items-end gap-3">
           <UrlSelect label={t('dx.q.examPaper')} param="paper" value={paper?.id ?? ''} options={opt(exam.papers, (p) => p.id, (p) => `${p.subject}, ${p.section}`)} minWidth={320} />
         </div>
       )}

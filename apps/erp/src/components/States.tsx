@@ -1,41 +1,51 @@
 'use client';
 
-import { CloudOff } from 'lucide-react';
+import { CloudOff, Inbox } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useI18n } from '@/i18n/client';
 import { cn } from '@/lib/utils';
 import { RetryButton } from './RetryButton';
 
-/** The shared empty state: what the page is for, why it is empty, and one clear next step. */
+/**
+ * The shared empty state: an icon in a soft circle, what is missing, an optional line on why, and one
+ * clear next step. Centred in a quiet card. Pass a lucide icon that says what the list holds; without one
+ * an inbox is shown. `description` and `children` are the same slot; `action` and `actions` too.
+ */
 export function EmptyState({
   icon,
   title,
+  description,
   children,
+  action,
   actions,
   dense,
   testId,
+  className,
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
   title: string;
+  description?: ReactNode;
   children?: ReactNode;
+  action?: ReactNode;
   actions?: ReactNode;
   dense?: boolean;
   testId?: string;
+  className?: string;
 }) {
+  const body = description ?? children;
+  const buttons = action ?? actions;
   return (
-    <div data-testid={testId} className={cn('grid place-items-center rounded-lg border border-dashed border-border-strong px-5 text-center text-muted-foreground', dense ? 'py-6' : 'py-10')}>
-      <span
-        aria-hidden
-        className={cn(
-          'mb-3 grid place-items-center rounded-[14px] border border-dashed border-border-strong bg-background text-muted-foreground [&_svg]:!size-6',
-          dense ? 'size-11' : 'size-[52px]',
-        )}
-      >
-        {icon}
+    <div
+      data-testid={testId}
+      data-slot="empty-state"
+      className={cn('flex flex-col items-center rounded-lg border bg-card px-6 text-center text-muted-foreground', dense ? 'py-8' : 'py-12', className)}
+    >
+      <span aria-hidden className={cn('mb-3 grid shrink-0 place-items-center rounded-full bg-teal-soft text-teal-ink', dense ? 'size-10 [&_svg]:!size-5' : 'size-12 [&_svg]:!size-6')}>
+        {icon ?? <Inbox />}
       </span>
-      <p className="m-0 text-base font-semibold text-foreground">{title}</p>
-      {children && <div className="mx-auto mt-1 max-w-[460px] text-[13px]">{children}</div>}
-      {actions && <div className="mt-4 flex flex-wrap justify-center gap-2">{actions}</div>}
+      <p className="m-0 text-[15px] leading-6 font-semibold text-foreground">{title}</p>
+      {body && <div className="mx-auto mt-1 max-w-[460px] text-[13px] leading-5">{body}</div>}
+      {buttons && <div className="mt-4 flex flex-wrap items-center justify-center gap-2">{buttons}</div>}
     </div>
   );
 }

@@ -39,7 +39,7 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
 
   return (
     <>
-      <div className="flex flex-wrap gap-2 items-center mb-4" role="group" aria-label={t('classes.filterStatus')}>
+      <div className="mb-4 flex flex-wrap items-end gap-2 [&>button]:mb-1" role="group" aria-label={t('classes.filterStatus')}>
         <Chip className={cn(status === ALL && 'bg-secondary text-secondary-foreground [&_svg]:text-inherit')}
           label={t('classes.all', { n: classes.length })}
           variant={status === ALL ? 'filled' : 'outlined'}

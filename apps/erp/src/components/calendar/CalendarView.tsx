@@ -110,7 +110,7 @@ export function CalendarView({
             <ChevronRight />
           </IconButton>
         </Tooltip>
-        <Button className="ml-2" variant="outlined" size="small" onClick={() => go(today.slice(0, 7))} disabled={month === today.slice(0, 7)}>
+        <Button className="ml-2" variant="outlined" onClick={() => go(today.slice(0, 7))} disabled={month === today.slice(0, 7)}>
           {t('cal.thisMonth')}
         </Button>
         <div className="flex-1" />

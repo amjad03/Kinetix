@@ -34,8 +34,9 @@ export function TrendPill({ delta, label, goodWhen = 'up', suffix = '%' }: Trend
 }
 
 /**
- * A KPI card (redesign): label and an icon chip, one big number with an optional mini chart
- * beside it, then the trend pill and one line of context. With `href` the whole card is a link
+ * A KPI card: a small uppercase label (and an optional icon chip), one big number with an optional
+ * mini chart beside it, then the trend pill and one line of context. Compact padding; tiles in a
+ * StatGrid row share one height. With `href` the whole card is a link
  * (the drill-down into the filtered list).
  */
 export function StatTile({
@@ -64,33 +65,33 @@ export function StatTile({
   testId?: string;
 }) {
   const body = (
-    <div className="flex h-full flex-col px-[18px] py-4">
-      <div className="flex min-h-[30px] items-center justify-between gap-2 text-[13px] font-medium text-muted-foreground">
-        <h3 className="m-0 text-[13px] font-medium">{label}</h3>
+    <div className="flex h-full flex-col px-4 py-3.5">
+      <div className="flex min-h-6 items-center justify-between gap-2">
+        <h3 className="m-0 truncate text-[11.5px] leading-4 font-semibold tracking-[0.05em] text-muted-foreground uppercase">{label}</h3>
         {icon && (
-          <span aria-hidden className="grid size-[30px] shrink-0 place-items-center rounded-[9px] border bg-background text-muted-foreground [&_svg]:!size-[15px]">
+          <span aria-hidden className="grid size-6 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground [&_svg]:!size-3.5">
             {icon}
           </span>
         )}
       </div>
-      <div className="mt-2.5 flex min-w-0 flex-wrap items-end justify-between gap-2.5">
+      <div className="mt-1.5 flex min-w-0 flex-wrap items-end justify-between gap-2">
         <p className="m-0 flex min-w-0 flex-wrap items-baseline gap-x-1.5">
-          <b className={cn('text-[28px] leading-[1.1] font-[650] whitespace-nowrap tracking-[-0.02em] tabular-nums', tone === 'warning' ? 'text-red-ink' : tone === 'live' ? 'text-orange-ink' : 'text-foreground')}>{value}</b>
+          <b className={cn('text-[18px] leading-8 font-[650] whitespace-nowrap tracking-[-0.02em] tabular-nums @[180px]:text-[22px] @[220px]:text-[26px]', tone === 'warning' ? 'text-red-ink' : tone === 'live' ? 'text-orange-ink' : 'text-foreground')}>{value}</b>
           {unit && <span className="min-w-0 text-[13px] [overflow-wrap:anywhere] text-muted-foreground">{unit}</span>}
         </p>
         {spark && <div className="shrink-0">{spark}</div>}
       </div>
-      {bar && <div className="mt-2.5">{bar}</div>}
+      {bar && <div className="mt-2">{bar}</div>}
       {(trend || caption) && (
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-[12.5px] text-muted-foreground">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] leading-[18px] text-muted-foreground">
           {trend && <TrendPill {...trend} />}
-          {caption && <div>{caption}</div>}
+          {caption && <div className="min-w-0">{caption}</div>}
         </div>
       )}
     </div>
   );
   return (
-    <div data-testid={testId} className={cn('relative h-full min-w-0 rounded-lg border bg-card shadow-card transition-colors', href && 'hover:border-border-strong')}>
+    <div data-testid={testId} className={cn('@container relative h-full min-w-0 rounded-lg border bg-card shadow-card transition-colors', href && 'hover:border-border-strong')}>
       {href ? (
         <Link href={href} className="block h-full rounded-[inherit] text-inherit no-underline">
           {body}
@@ -102,9 +103,10 @@ export function StatTile({
   );
 }
 
+/** A responsive row of StatTiles: as many columns of at least `min` px as fit (two on a phone), equal heights. */
 export function StatGrid({ children, min = 170 }: { children: ReactNode; min?: number }) {
   return (
-    <div className="mb-4 grid gap-4" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}px, calc(50% - 8px)), 1fr))` }}>
+    <div data-slot="stat-grid" className="mb-5 grid auto-rows-fr gap-3 sm:gap-4" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}px, calc(50% - 8px)), 1fr))` }}>
       {children}
     </div>
   );

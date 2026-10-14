@@ -35,12 +35,12 @@ export function UrlSelect({ label, param, value, options, minWidth = 220, testId
   return (
     <>
       {pending && <PendingBar label={t('common.loading')} />}
-      <div className="grid max-w-full gap-1" style={{ minWidth }}>
+      <div className="grid max-w-full min-w-0 grid-cols-1 gap-1" style={{ minWidth: `min(${minWidth}px, 100%)` }}>
         <Label htmlFor={id} className="text-xs font-medium text-muted-foreground">
           {label}
         </Label>
         <Select value={current} onValueChange={(v) => start(() => router.push(`${pathname}?${param ? new URLSearchParams({ [param]: v }) : v}`, { scroll: false }))}>
-          <SelectTrigger id={id} data-testid={testId} aria-label={label} className="h-9 w-full rounded-md bg-card">
+          <SelectTrigger id={id} data-testid={testId} aria-label={label} className="h-9 w-full min-w-0 rounded-md bg-card">
             <SelectValue placeholder={label} />
           </SelectTrigger>
           <SelectContent>

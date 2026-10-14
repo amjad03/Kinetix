@@ -126,19 +126,21 @@ export interface Col<T> {
   label: string;
   cell: (row: T) => ReactNode;
   num?: boolean;
+  /** Long text (notes, descriptions): wraps within a readable width instead of stretching the table. */
+  wrap?: boolean;
   /** The value to sort and search by; defaults to the cell itself when it is text or a number. */
   sort?: (row: T) => Cell;
 }
 
 /** A list in the shared DataTable (sortable columns, search and paging once it is long), or an empty state. */
-export function Grid<T>({ cols, rows, empty, testId, tint, exportName, filters }: { cols: Col<T>[]; rows: T[]; empty: string; testId?: string; tint?: (row: T) => boolean; exportName?: string; filters?: TableFilter<T>[] }) {
+export function Grid<T>({ cols, rows, empty, emptyIcon, testId, tint, exportName, filters }: { cols: Col<T>[]; rows: T[]; empty: string; /** A lucide icon for the empty state (default: an inbox). */ emptyIcon?: ReactNode; testId?: string; tint?: (row: T) => boolean; exportName?: string; filters?: TableFilter<T>[] }) {
   const ids = useMemo(() => new Map(rows.map((r, i) => [r, String(i)])), [rows]);
-  if (rows.length === 0) return <div className="mb-6 last:mb-0"><EmptyState icon={<span>·</span>} title={empty} dense testId={testId ? `${testId}-empty` : undefined} /></div>;
+  if (rows.length === 0) return <div className="mb-6 last:mb-0"><EmptyState icon={emptyIcon} title={empty} dense testId={testId ? `${testId}-empty` : undefined} /></div>;
   const columns: Column<T>[] = cols.map((c, i) => ({
     id: `c${i}`,
     header: c.label,
     align: c.num ? 'right' : 'left',
-    cell: c.num ? (r) => <span style={{ fontVariantNumeric: 'tabular-nums' }}>{c.cell(r)}</span> : c.cell,
+    cell: c.num ? (r) => <span className="tabular-nums">{c.cell(r)}</span> : c.wrap ? (r) => <span className="block min-w-[180px] max-w-[360px] whitespace-normal">{c.cell(r)}</span> : c.cell,
     ...(c.label
       ? {
           sort:
@@ -212,7 +214,10 @@ export function Tabbed({ tabs, initial, label, actions }: { tabs: { id: string; 
   );
 }
 
-/** A row of buttons above a table. */
+/**
+ * A toolbar above a table: filters and buttons on one row. Items sit on the bottom edge, so a button lines
+ * up with a labelled select's input, not its label; buttons take the 36px input height.
+ */
 export const Bar = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-wrap gap-2 mb-3">{children}</div>
+  <div data-slot="toolbar" className="mb-4 flex flex-wrap items-end gap-3 [&>a]:h-9 [&>button]:h-9">{children}</div>
 );

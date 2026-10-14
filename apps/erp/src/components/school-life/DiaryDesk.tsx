@@ -33,9 +33,9 @@ export function DiaryDesk({ sections, sectionId, entries }: { sections: SectionO
   const cols: Col<DiaryEntry>[] = [
     { label: t('dy.col.date'), cell: (e) => fmt.date(e.entryDate), sort: (e) => e.entryDate },
     { label: t('dy.col.author'), cell: (e) => (e.subject ? `${e.author} (${e.subject})` : e.author) },
-    { label: t('dy.col.classwork'), cell: (e) => e.classwork || '-' },
-    { label: t('dy.col.homework'), cell: (e) => e.homeworkNote || '-' },
-    { label: t('dy.col.notice'), cell: (e) => e.notice || '-' },
+    { label: t('dy.col.classwork'), cell: (e) => e.classwork || '-', wrap: true },
+    { label: t('dy.col.homework'), cell: (e) => e.homeworkNote || '-', wrap: true },
+    { label: t('dy.col.notice'), cell: (e) => e.notice || '-', wrap: true },
     { label: t('dy.col.read'), cell: (e) => <Pill label={t('dy.read', { n: e.acknowledged, total: e.students })} warn={e.students > 0 && e.acknowledged === 0} />, sort: (e) => e.acknowledged },
     { label: '', cell: (e) => <Button size="small" onClick={() => openAcks(e)}>{t('dy.who')}</Button> },
   ];

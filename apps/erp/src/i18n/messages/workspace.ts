@@ -50,6 +50,7 @@ export default area(
     'tpl.next': 'Next number',
     'tpl.digits': 'Digits',
     'tpl.suffix': 'Suffix',
+    'tpl.nextIssued': 'Next number issued',
   },
   {
     hi: {
@@ -99,6 +100,7 @@ export default area(
       'tpl.next': 'अगली संख्या',
       'tpl.digits': 'अंक',
       'tpl.suffix': 'प्रत्यय',
+      'tpl.nextIssued': 'अगला जारी होने वाला नंबर',
     },
     kn: {
       'tabs.bar': 'ತೆರೆದ ಪುಟಗಳು',
@@ -147,6 +149,7 @@ export default area(
       'tpl.next': 'ಮುಂದಿನ ಸಂಖ್ಯೆ',
       'tpl.digits': 'ಅಂಕೆಗಳು',
       'tpl.suffix': 'ಪ್ರತ್ಯಯ',
+      'tpl.nextIssued': 'ಮುಂದೆ ನೀಡುವ ಸಂಖ್ಯೆ',
     },
   },
 );

@@ -52,6 +52,41 @@ Other alignment rules:
 - **Dialog footers** use `DialogActions` (right-aligned, 8px gap, 16px bottom padding).
 - **Table action columns** use `align: 'right'` and `csv: false`.
 
+## Layout rules
+
+Every page under `app/(dashboard)` follows these. Fix the shared component when a rule breaks, not the page.
+
+- **Page header**: `PageHeader` only. Title and description on the left, actions on the right, vertically
+  centred on the title block; action buttons are 36px (`h-9`). One primary (filled) action at most.
+- **Filter bars and toolbars** (a labelled select or input next to buttons): items sit on the **bottom
+  edge** (`items-end`), so a button lines up with the input, not its label. Inputs, selects and buttons
+  share one height: 36px for `UrlSelect` toolbars (`Bar` in `components/ops/kit`), 40px inside `FormRow`.
+  Gap 12px (`gap-3`) between controls, 8px inside a button group. Chip filters next to a labelled select
+  sit in a `min-h-9 items-center` group so they centre on the input.
+- **One height per row**: never mix `size="small"` and default buttons in one toolbar row.
+- **Stat cards**: `StatGrid` + `StatTile`. Label 11.5px uppercase muted, value 26px, one optional sub-line
+  (`caption` or `trend`). Tiles in a row have equal heights (`auto-rows-fr`); the grid fits as many
+  columns of `min` px as it can, two on a phone.
+- **Empty states**: `EmptyState` with a lucide icon that says what the list holds (inbox by default),
+  a title, an optional description and an optional action. Never pass a dot or a text glyph as the icon.
+  `Grid` (ops kit) takes `emptyIcon`.
+- **Tabs**: `Tabs`/`LinkTabs` (or `Tabbed` in the ops kit). The active tab is a 2px teal underline and
+  bold text, never a box.
+- **Focus**: rings only on keyboard focus. The `focus-visible:` variant is gated by `<html data-kbd>`
+  (`src/theme/focus-modality.ts`), so a click followed by Shift, Ctrl or Cmd does not leave a teal box on a
+  tab or sidebar item. Text fields always show their focus ring. Do not use `focus:ring` on buttons,
+  links or tabs.
+- **Active navigation**: the active sidebar item is the soft filled background with the teal side bar;
+  never an outline.
+- **Cards**: `Card` pads 20px (`p-5`) with the header 18px from the top; do not add extra padding inside.
+  Grids of cards use `gap-4`; sections stack with `gap-6`.
+- **Tables**: always inside a horizontal scroller (`DataTable` and `kx/Table` already are). Long text
+  columns wrap within a readable width (`Col.wrap` in the ops kit) instead of stretching the table.
+- **Dialogs**: footer actions right-aligned, Cancel first, the primary action last (`Dialog actions`,
+  `DialogActions`, `FormActions`).
+- **Canvases** (workflow builder): scroll on both axes, the content box sized to its content plus a
+  margin; drag on empty space pans and Shift + wheel scrolls sideways.
+
 ## RecordPage
 
 `import { RecordPage } from '@/components/templates'`. Use it for one record: a student, invoice, purchase

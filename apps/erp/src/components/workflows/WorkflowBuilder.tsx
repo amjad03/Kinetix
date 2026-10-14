@@ -143,20 +143,22 @@ export function WorkflowBuilder({ initial }: { initial: WorkflowDetail }) {
       setPath(res.data.path);
     });
 
-  // Pan by dragging the empty canvas.
+  // The canvas scrolls both ways. Pan by dragging empty space, and Shift + wheel scrolls sideways
+  // (for mice without a horizontal wheel). The flow starts centred horizontally.
   const canvas = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const cv = canvas.current;
     if (!cv) return;
     cv.scrollLeft = (cv.scrollWidth - cv.clientWidth) / 2;
-    let drag: { x: number; y: number; l: number; t: number } | null = null;
+    let drag: { x: number; y: number; l: number; t: number; id: number } | null = null;
     const down = (e: PointerEvent) => {
-      if ((e.target as HTMLElement).closest('button,input,select,textarea,[role=menu]')) return;
-      drag = { x: e.clientX, y: e.clientY, l: cv.scrollLeft, t: cv.scrollTop };
+      if (e.button !== 0 || (e.target as HTMLElement).closest('button,a,input,select,textarea,[role=menu]')) return;
+      drag = { x: e.clientX, y: e.clientY, l: cv.scrollLeft, t: cv.scrollTop, id: e.pointerId };
       cv.style.cursor = 'grabbing';
+      e.preventDefault();
     };
     const move = (e: PointerEvent) => {
-      if (!drag) return;
+      if (!drag || e.pointerId !== drag.id) return;
       cv.scrollLeft = drag.l - (e.clientX - drag.x);
       cv.scrollTop = drag.t - (e.clientY - drag.y);
     };
@@ -164,13 +166,22 @@ export function WorkflowBuilder({ initial }: { initial: WorkflowDetail }) {
       drag = null;
       cv.style.cursor = '';
     };
+    const wheel = (e: WheelEvent) => {
+      if (!e.shiftKey || e.deltaX !== 0 || e.deltaY === 0 || cv.scrollWidth <= cv.clientWidth) return;
+      cv.scrollLeft += e.deltaY;
+      e.preventDefault();
+    };
     cv.addEventListener('pointerdown', down);
-    cv.addEventListener('pointermove', move);
+    window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+    cv.addEventListener('wheel', wheel, { passive: false });
     return () => {
       cv.removeEventListener('pointerdown', down);
-      cv.removeEventListener('pointermove', move);
+      window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      cv.removeEventListener('wheel', wheel);
     };
   }, []);
 
@@ -287,7 +298,10 @@ export function WorkflowBuilder({ initial }: { initial: WorkflowDetail }) {
             style={{ backgroundImage: 'radial-gradient(var(--border) 1.2px, transparent 1.2px)', backgroundSize: '18px 18px' }}
             data-testid="wb-canvas"
           >
-            <div className="flex min-w-[760px] origin-top flex-col items-center px-5 pt-10 pb-32 transition-transform" style={{ transform: `scale(${zoom})` }}>
+            {/* Sized to its content (w-max) and at least the viewport (min-w-full), so wide branches grow the
+                scroll area instead of spilling off the left edge. CSS zoom (not transform) so the scroll
+                area follows the zoom level. */}
+            <div className="flex w-max min-w-full flex-col items-center px-24 pt-10 pb-32" style={{ zoom }} data-testid="wb-flow">
               {nodeCard(graph.trigger)}
               {edge({ parent: null }, 0)}
               {seq(graph.nodes, { parent: null })}

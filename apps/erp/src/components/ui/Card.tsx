@@ -36,7 +36,7 @@ export function Card({
   const inner = (
     <>
       {(title || action) && (
-        <div className={cn('flex items-center justify-between gap-3 px-5 pt-[18px]', padded ? 'pb-0' : 'pb-3')}>
+        <div className={cn('flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 pt-[18px]', padded ? 'pb-0' : 'pb-3')}>
           <div className="min-w-0">
             {title && (
               <h2 id={id} className="m-0 text-[15px] leading-6 font-semibold">
@@ -45,7 +45,7 @@ export function Card({
             )}
             {subtitle && <p className={cn('m-0 mt-0.5 text-[12.5px]', tone === 'ai' ? 'text-inherit' : 'text-muted-foreground')}>{subtitle}</p>}
           </div>
-          {action && <div className="shrink-0">{action}</div>}
+          {action && <div className="max-w-full min-w-0 shrink-0">{action}</div>}
         </div>
       )}
       <div className={cn('min-w-0 flex-1', padded && 'px-5 pb-5', padded && (title || action ? 'pt-4' : 'pt-5'))}>{children}</div>

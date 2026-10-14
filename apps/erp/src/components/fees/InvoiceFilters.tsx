@@ -24,9 +24,9 @@ export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFi
   };
 
   return (
-    <div className="flex flex-wrap gap-2 items-center mb-4">
+    <div className="mb-4 flex flex-wrap items-end gap-2">
       {pending && <LinearProgress className="fixed top-0 left-0 right-0 z-[2000] h-[3px] rounded-none" aria-label={t('common.loading')} />}
-      <div className="flex flex-wrap gap-2" role="group" aria-label={t('fees.filterStatus')}>
+      <div className="flex min-h-9 flex-wrap items-center gap-2" role="group" aria-label={t('fees.filterStatus')}>
         {INVOICE_FILTERS.map((f) => {
           const on = status === f;
           return (

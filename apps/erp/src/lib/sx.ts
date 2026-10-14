@@ -4,7 +4,7 @@ const PAL: Record<string, string> = {
   'text.secondary': 'var(--muted-foreground)', 'text.primary': 'var(--foreground)', 'text.disabled': 'var(--faint)',
   divider: 'var(--border)', 'm3.outlineVariant': 'var(--border)', 'm3.outline': 'var(--border-strong)',
   'primary.main': 'var(--teal)', primary: 'var(--teal)', 'm3.primary': 'var(--teal)',
-  'error.main': 'var(--destructive)', error: 'var(--destructive)', 'success.main': 'var(--green-ink)', 'kx.success': 'var(--green-ink)', success: 'var(--green-ink)',
+  'error.main': 'var(--destructive)', error: 'var(--destructive)', 'm3.error': 'var(--red)', 'success.main': 'var(--green-ink)', 'kx.success': 'var(--green-ink)', success: 'var(--green-ink)',
   'warning.main': 'var(--amber-ink)', 'kx.warning': 'var(--amber-ink)', warning: 'var(--amber-ink)', 'info.main': 'var(--blue-ink)', info: 'var(--blue-ink)',
   'kx.live': 'var(--orange)', 'kx.liveContainer': 'var(--orange-soft)', 'kx.onLiveContainer': 'var(--orange-ink)',
   'kx.successContainer': 'var(--green-soft)', 'kx.onSuccessContainer': 'var(--green-ink)', 'kx.warningContainer': 'var(--amber-soft)', 'kx.onWarningContainer': 'var(--amber-ink)',

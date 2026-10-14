@@ -1,3 +1,4 @@
+import { CalendarDays } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Logo } from '@/components/Logo';
@@ -46,7 +47,7 @@ export default async function PublicEventsPage({ params }: { params: Promise<{ s
             <p className="text-sm leading-[21px] text-muted-foreground mb-6">
               {t('g1.ev.how')}
             </p>
-            {res.data.events.length === 0 && <EmptyState icon={<span>·</span>} title={t('g1.ev.empty')} />}
+            {res.data.events.length === 0 && <EmptyState icon={<CalendarDays />} title={t('g1.ev.empty')} />}
             {res.data.events.map((e) => (
               <div className="rounded-[12px] border bg-card p-5 mb-4" key={e.id} data-testid="public-event">
                 <h2 className="text-base leading-6 font-medium tracking-[0.1px]">

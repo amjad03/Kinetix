@@ -336,7 +336,7 @@ export function DataTable<T>({
         <TableHeader className="[&_tr]:border-b-0">
           <TableRow className="hover:bg-transparent">
             {selectable && (
-              <TableHead className="h-auto w-12 border-b border-border px-3 py-2.5">
+              <TableHead className="h-auto w-12 border-b border-border bg-muted/40 px-3 py-2.5">
                 <Checkbox
                   checked={allOnPage ? true : someOnPage ? 'indeterminate' : false}
                   onCheckedChange={(v) => toggle(pageIds, v === true)}
@@ -372,7 +372,7 @@ export function DataTable<T>({
                 </TableHead>
               );
             })}
-            {rowMenu && <TableHead className="w-10 border-b border-border px-1" aria-label={t('ez.rowMenu')} />}
+            {rowMenu && <TableHead className="h-auto w-10 border-b border-border bg-muted/40 px-1 py-2.5" aria-label={t('ez.rowMenu')} />}
           </TableRow>
         </TableHeader>
         <TableBody ref={bodyRef} className="[&_tr:last-child>*]:border-b-0">

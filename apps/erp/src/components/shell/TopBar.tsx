@@ -99,12 +99,12 @@ export function TopBar({
       <SidebarTrigger aria-label={t('shell.toggleSidebar')} className="size-9 text-muted-foreground" />
       <Separator orientation="vertical" className="mr-1 hidden data-[orientation=vertical]:h-5 md:block" />
       {trail.length > 0 && (
-        <Breadcrumb className="hidden min-w-0 md:block">
+        <Breadcrumb className="hidden min-w-0 xl:block">
           <BreadcrumbList className="flex-nowrap text-[13px]">
             {trail.map((c, i) => (
               <Fragment key={`${c.text}-${i}`}>
-                {i > 0 && <BreadcrumbSeparator />}
-                <BreadcrumbItem className="min-w-0">
+                {i > 0 && <BreadcrumbSeparator className="shrink-0" />}
+                <BreadcrumbItem className="min-w-0 [&>a]:truncate">
                   {i === trail.length - 1 ? (
                     <BreadcrumbPage className="max-w-[260px] truncate font-semibold">{c.text}</BreadcrumbPage>
                   ) : c.href ? (

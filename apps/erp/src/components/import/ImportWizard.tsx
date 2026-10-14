@@ -47,7 +47,7 @@ export function ImportWizard() {
   const set = (kind: ImportKind, patch: Partial<StepState>) => setSteps((s) => ({ ...s, [kind]: { ...s[kind], ...patch } }));
 
   return (
-    <Card className="p-4 md:p-6">
+    <Card className="p-5">
       <Stepper nonLinear activeStep={active} orientation="vertical">
         {IMPORT_KINDS.map((kind, i) => (
           <Step key={kind} completed={!!steps[kind].result?.committed} data-testid={`import-step-${kind}`}>

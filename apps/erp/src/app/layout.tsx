@@ -7,6 +7,7 @@ import { getI18n, getMessages } from '@/i18n/server';
 import { notoDevanagari, notoKannada, sansFlex, sansFlexDisplay } from '@/theme/fonts';
 import '@/theme/tokens.css';
 import './globals.css';
+import { FOCUS_SCRIPT } from '@/theme/focus-modality';
 import { MODE_SCRIPT, ThemeRegistry } from '@/theme/ThemeRegistry';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,6 +34,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <Script id="kx-mode" strategy="beforeInteractive">
           {MODE_SCRIPT}
+        </Script>
+        <Script id="kx-focus" strategy="beforeInteractive">
+          {FOCUS_SCRIPT}
         </Script>
         <I18nProvider locale={locale} messages={messages}>
           <ThemeRegistry>{children}</ThemeRegistry>

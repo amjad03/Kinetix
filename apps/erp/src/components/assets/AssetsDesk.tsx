@@ -12,7 +12,7 @@ import { st } from '@/lib/ops-labels';
 import type { Asset, AssetDetail, MaintDue } from '@/lib/ops';
 
 import { Button } from '@/components/kx';
-import { Plus as Add, Printer as PrintOutlined } from 'lucide-react';
+import { Plus as Add, Printer as PrintOutlined, Package } from 'lucide-react';
 type Dialog = 'register' | 'depr' | { detail: AssetDetail } | { allocate: AssetDetail } | { maintain: AssetDetail } | { dispose: AssetDetail };
 
 /** The printable label: the tag large, the name, the QR code a scanner reads (`kinetix://asset/<tag>`) and that text beneath it. */
@@ -51,7 +51,7 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
         <Button className="mt-6" variant="outlined" onClick={() => setDlg('depr')} disabled={assets.length === 0}>{t('as.postDep')}</Button>
       </Bar>
       {assets.length === 0 ? (
-        <EmptyState dense icon={<span>·</span>} title={t('as.none')} testId="as-list-empty" />
+        <EmptyState dense icon={<Package />} title={t('as.none')} testId="as-list-empty" />
       ) : (
         <DataTable
           testId="as-list"

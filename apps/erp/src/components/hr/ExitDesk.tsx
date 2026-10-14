@@ -58,13 +58,15 @@ function Case({ s, run, pending }: { s: SeparationDetail; run: (fn: () => Promis
           </h6>
           <div className="flex flex-col gap-2">
             {s.clearances.map((c) => (
-              <div className="flex flex-col sm:flex-row gap-2 sm:items-center" key={c.id}>
-                <p className="text-sm leading-[21px] min-w-[130px]">{t(`hl.exit.dept.${c.department}` as MessageKey)}</p>
-                <StatusPill tone={c.status === 'cleared' ? 'success' : 'warning'}>{c.status === 'cleared' ? t('hl.exit.cleared') : t('hl.exit.pending')}</StatusPill>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3" key={c.id}>
+                <p className="m-0 flex min-h-8 min-w-[130px] items-center text-sm">{t(`hl.exit.dept.${c.department}` as MessageKey)}</p>
+                <span className="flex min-h-8 items-center">
+                  <StatusPill tone={c.status === 'cleared' ? 'success' : 'warning'}>{c.status === 'cleared' ? t('hl.exit.cleared') : t('hl.exit.pending')}</StatusPill>
+                </span>
                 {s.status === 'clearance' && (
                   <>
                     <TextInput className="max-w-[160px]" type="number" label={t('hl.exit.dues')} value={dues[c.department] ?? '0'} onChange={(e) => setDues({ ...dues, [c.department]: e.target.value })} />
-                    <Button size="small" disabled={pending} onClick={() => run(() => setClearance(s.id, c.department, c.status === 'cleared' ? 'pending' : 'cleared', Number(dues[c.department] ?? 0), c.remarks ?? ''))}>
+                    <Button size="small" className="h-8" disabled={pending} onClick={() => run(() => setClearance(s.id, c.department, c.status === 'cleared' ? 'pending' : 'cleared', Number(dues[c.department] ?? 0), c.remarks ?? ''))}>
                       {c.status === 'cleared' ? t('hl.exit.reopen') : t('hl.exit.clear')}
                     </Button>
                   </>

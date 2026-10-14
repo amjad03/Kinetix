@@ -29,10 +29,10 @@ export function NumberingSeriesField({ label, value, onChange }: { label: string
         <TextInput className="w-[120px]" type="number" label={t('tpl.next')} value={String(value.next)} onChange={(e) => onChange({ ...value, next: Number(e.target.value) || 0 })} />
         <TextInput className="w-[100px]" type="number" label={t('tpl.digits')} value={String(value.pad)} onChange={(e) => onChange({ ...value, pad: Number(e.target.value) || 1 })} />
         <TextInput className="w-[120px]" label={t('tpl.suffix')} value={value.suffix ?? ''} onChange={(e) => onChange({ ...value, suffix: e.target.value })} />
-        <p className="font-mono text-sm" aria-live="polite">
-          {formatSeries(value)}
-        </p>
       </FormRow>
+      <p className="m-0 text-[13px] text-muted-foreground" aria-live="polite">
+        {t('tpl.nextIssued')}: <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[13px] text-foreground">{formatSeries(value)}</code>
+      </p>
     </fieldset>
   );
 }
@@ -60,19 +60,19 @@ export function ModuleSettingsPage({
   const { t } = useI18n();
   const name = (s: SettingsSection) => s.title ?? (s.kind ? t(TITLE[s.kind]) : s.id);
   return (
-    <div className="grid gap-6" data-testid="module-settings">
+    <div className="grid grid-cols-1 gap-6" data-testid="module-settings">
       <PageHeader
         title={title}
         subtitle={subtitle}
         actions={
           onSave && (
-            <Button className="h-10" onClick={onSave} disabled={saving || !dirty}>
+            <Button onClick={onSave} disabled={saving || !dirty}>
               {t('tpl.save')}
             </Button>
           )
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[200px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[200px_minmax(0,1fr)]">
         <nav aria-label={title} className="hidden lg:block">
           <ul className="sticky top-32 grid gap-1">
             {sections.map((s) => (
@@ -84,7 +84,7 @@ export function ModuleSettingsPage({
             ))}
           </ul>
         </nav>
-        <div className="grid min-w-0 gap-6">
+        <div className="grid min-w-0 grid-cols-1 gap-6">
           {sections.map((s) => (
             <section key={s.id} id={`set-${s.id}`} className="scroll-mt-32">
               <Card title={name(s)} subtitle={s.description}>

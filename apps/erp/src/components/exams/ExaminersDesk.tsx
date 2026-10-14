@@ -6,6 +6,7 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 
 import { Alert, Button, Card, MenuItem, TextField } from '@/components/kx';
+import { FormRow } from '@/components/ui';
 export interface ExaminerRow {
   id: string;
   fullName: string;
@@ -51,12 +52,12 @@ export function ExaminersDesk({ examiners, papers, claims, sessions, subjects, o
       {msg && <Alert severity={msg.tone}>{msg.text}</Alert>}
       <Card className="p-5">
         <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-4">{t('uni.ex.add')}</h2>
-        <div className="flex flex-col md:flex-row gap-4">
+        <FormRow>
           <TextField size="small" label={t('uni.ex.name')} value={name} onChange={(e) => setName(e.target.value)} />
           <TextField size="small" label={t('uni.ex.phone')} value={phone} onChange={(e) => setPhone(e.target.value)} />
           <TextField size="small" label={t('uni.ex.org')} value={org} onChange={(e) => setOrg(e.target.value)} />
           <Button variant="contained" disabled={pending || !name.trim() || !phone.trim()} onClick={() => start(async () => say(await addExaminer({ fullName: name, phone, organisation: org }), t('uni.ex.saved')))}>{t('uni.ex.add')}</Button>
-        </div>
+        </FormRow>
       </Card>
 
       {examiners.length > 0 && (

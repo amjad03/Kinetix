@@ -1,3 +1,4 @@
+import { CalendarRange } from 'lucide-react';
 import type { Metadata } from 'next';
 import { RegistrationDesk } from '@/components/course-registration/RegistrationDesk';
 import { PageHeader } from '@/components/PageHeader';
@@ -24,7 +25,7 @@ export default async function CourseRegistrationPage({ searchParams }: { searchP
   if (!term) return (
     <>
       {header}
-      <EmptyState icon={<span>·</span>} title={t('cr.noTerms')} />
+      <EmptyState icon={<CalendarRange />} title={t('cr.noTerms')} />
     </>
   );
   const q = `termId=${term.id}`;
@@ -37,9 +38,10 @@ export default async function CourseRegistrationPage({ searchParams }: { searchP
   return (
     <>
       {header}
-      <div className="mb-6">
+      <div data-slot="toolbar" className="mb-5 flex flex-wrap items-end gap-3">
         <UrlSelect label={t('cr.term')} param="term" value={term.id} minWidth={240} testId="cr-term" options={terms.data.map((x) => ({ value: x.id, label: `${x.name} (${fmt.date(x.startsOn)})` }))} />
-      </div>      <StatGrid min={140}>
+      </div>
+      <StatGrid min={140}>
         <StatTile label={t('cr.stat.offerings')} value={list.length} testId="cr-offerings" />
         <StatTile label={t('cr.stat.filled')} value={list.reduce((n, o) => n + o.registered, 0)} />
         <StatTile label={t('cr.stat.pending')} value={approvals.data.length} tone={approvals.data.length ? 'warning' : 'default'} />

@@ -12,7 +12,7 @@ import type { Holiday, LeaveBalance, LeaveRequest, LeaveType, StaffSummary } fro
 import { pillTone, useNotice } from './Common';
 
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Tab, Tabs } from '@/components/kx';
-import { Plus as Add } from 'lucide-react';
+import { CalendarDays, Palmtree, Plus as Add } from 'lucide-react';
 type Tab_ = 'requests' | 'balances' | 'types' | 'holidays';
 
 export function LeaveDesk({ requests, types, holidays, staff }: { requests: LeaveRequest[]; types: LeaveType[]; holidays: Holiday[]; staff: StaffSummary[] }) {
@@ -40,7 +40,7 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
 
       {tab === 'requests' &&
         (requests.length === 0 ? (
-          <EmptyState icon={<Add />} title={t('hr.leave.none')} />
+          <EmptyState icon={<Palmtree />} title={t('hr.leave.none')} />
         ) : (
           <DataTable
             testId="leave-requests"
@@ -127,7 +127,7 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
 
       {tab === 'holidays' &&
         (holidays.length === 0 ? (
-          <EmptyState icon={<Add />} title={t('hr.leave.noHolidays')}>
+          <EmptyState icon={<CalendarDays />} title={t('hr.leave.noHolidays')}>
             {t('hr.leave.holidaysHelp')}
           </EmptyState>
         ) : (

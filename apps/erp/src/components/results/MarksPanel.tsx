@@ -19,7 +19,7 @@ export function MarksPanel({ assessment: a, canVerify }: { assessment: Assessmen
   const editable = canEnterMarks(status);
 
   return (
-    <Card className="p-4 md:p-6 mb-6" data-testid="marks-panel">
+    <Card className="mb-6 p-5" data-testid="marks-panel">
       <div className="flex gap-3 items-center flex-wrap mb-3">
         <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
           {t('results.entry.title')}

@@ -20,7 +20,7 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
   const get = strengthMap(cells);
   return (
     <>
-      <div className="flex gap-4 flex-wrap mb-4">
+      <FormRow className="mb-4">
         <FormField label={t('exm.f.subject')}>
           <TextInput className="min-w-[280px]" select value={subjectId} onChange={(e) => router.push(`/obe/matrix?subjectId=${e.target.value}`)}>
             {subjects.map((s) => (
@@ -44,7 +44,7 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
             {t('obe.newVersion')}
           </Button>
         )}
-      </div>
+      </FormRow>
       {feedback}
       {!matrix ? (
         <p className="text-sm leading-[21px] text-muted-foreground">{t('obe.noVersion')}</p>

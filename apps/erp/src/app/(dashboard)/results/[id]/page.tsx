@@ -110,7 +110,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
       {a.markStatus && <MarksPanel assessment={a} canPublish={!!me && canPublishMarks(me.roles)} canVerify={!!me && me.roles.some((r) => r === 'principal' || r === 'tenant_admin' || r === 'hod')} />}
 
       <SectionTitle>{t('results.howClassDid')}</SectionTitle>
-      <Card className="p-4 md:p-6">
+      <Card className="p-5">
         {c.entered === 0 ? (
           <p className="text-[13px] leading-[19px] text-muted-foreground">
             {t('results.chartLater')}

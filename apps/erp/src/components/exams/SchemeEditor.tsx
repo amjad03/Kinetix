@@ -31,7 +31,7 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
 
   return (
     <>
-      <div className="flex gap-4 flex-wrap mb-4">
+      <FormRow className="mb-4">
         <FormField label={t('exm.f.subject')}>
           <TextInput className="min-w-[280px]" select value={subjectId} onChange={(e) => go(e.target.value, yearId)}>
             {structure.subjects.map((s) => (
@@ -50,7 +50,7 @@ export function SchemeEditor({ structure, years, scales, presets, scheme, subjec
             ))}
           </TextInput>
         </FormField>
-      </div>
+      </FormRow>
       <Card className="p-5 mb-6">
         <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
           {scheme ? t('exm.scheme.edit') : t('exm.scheme.new')}

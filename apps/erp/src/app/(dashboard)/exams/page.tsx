@@ -62,7 +62,11 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
         <div className="flex flex-col gap-6">
           {pick && detail?.data ? (
             <section id="publish" className="flex scroll-mt-20 flex-col gap-3">
-              {list.length > 1 && <UrlSelect label={t('axr.ex.session')} param="session" value={pick.id} options={list.map((x) => ({ value: x.id, label: x.name }))} testId="exam-session" />}
+              {list.length > 1 && (
+                <div data-slot="toolbar" className="mb-1 flex flex-wrap items-end gap-3">
+                  <UrlSelect label={t('axr.ex.session')} param="session" value={pick.id} options={list.map((x) => ({ value: x.id, label: x.name }))} minWidth={320} testId="exam-session" />
+                </div>
+              )}
               <ExamsOverview
                 s={detail.data}
                 counts={{

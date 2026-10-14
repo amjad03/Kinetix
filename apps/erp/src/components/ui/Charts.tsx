@@ -128,29 +128,31 @@ export function LineChart({
         </ComposedChart>
       </ChartContainer>
       <Legend items={keyed.map(({ s, color }) => ({ label: s.label, color }))} />
-      <table className="sr-only">
-        <caption>{ariaLabel}</caption>
-        <thead>
-          <tr>
-            <th scope="col" />
-            {series.map((s) => (
-              <th scope="col" key={s.key}>
-                {s.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {labels.map((l, i) => (
-            <tr key={l + i}>
-              <th scope="row">{l}</th>
+      <div className="sr-only">
+        <table>
+          <caption>{ariaLabel}</caption>
+          <thead>
+            <tr>
+              <th scope="col" />
               {series.map((s) => (
-                <td key={s.key}>{fmt(s.values[i])}</td>
+                <th scope="col" key={s.key}>
+                  {s.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {labels.map((l, i) => (
+              <tr key={l + i}>
+                <th scope="row">{l}</th>
+                {series.map((s) => (
+                  <td key={s.key}>{fmt(s.values[i])}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

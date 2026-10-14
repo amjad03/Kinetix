@@ -38,9 +38,9 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
     <>
       <PageHeader title={t('adm.tab.applications')} subtitle={t('adm.apps.subtitle')} />
       <AdmissionsTabs current="applications" />
-      <div className="flex flex-row gap-3 mb-4 flex-wrap gap-y-3 items-center">
+      <div className="mb-4 flex flex-wrap items-end gap-3">
         <UrlSelect label={t('adm.cycle')} param="cycle" value={cycle} options={[{ value: '', label: t('adm.allCycles') }, ...(cycles.data ?? []).map((c) => ({ value: c.id, label: c.name }))]} />
-        <div className="flex flex-row gap-1.5 flex-wrap gap-y-1.5">
+        <div className="flex flex-wrap gap-1.5 [&>a]:h-9">
           <LinkButton size="small" href={keep({ status: '' })} variant={status ? 'outlined' : 'contained'}>
             {t('adm.allStatuses')}
           </LinkButton>

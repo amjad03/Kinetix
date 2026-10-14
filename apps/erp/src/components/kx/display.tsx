@@ -161,16 +161,16 @@ export function CardActionArea({ component, href, className, ...rest }: Rest & {
 // Tables.
 const HeadCtx = createContext(false);
 const SizeCtx = createContext<'small' | 'medium'>('medium');
+const ContainerCtx = createContext(false);
 
-export function TableContainer({ component = 'div', className, ...rest }: Rest & { component?: ElementType }) {
-  return createElement(component, { className: cn('w-full overflow-x-auto', className), ...rest });
+export function TableContainer({ component = 'div', className, children, ...rest }: Rest & { component?: ElementType }) {
+  return <ContainerCtx.Provider value>{createElement(component, { className: cn('w-full overflow-x-auto', className), ...rest }, children)}</ContainerCtx.Provider>;
 }
+/** A table. Outside a TableContainer it brings its own horizontal scroller, so a wide table never widens the page. */
 export function Table({ size = 'medium', stickyHeader, className, ...rest }: Rest & { size?: 'small' | 'medium'; stickyHeader?: boolean }) {
-  return (
-    <SizeCtx.Provider value={size}>
-      <table className={cn('w-full border-collapse text-[13.5px]', stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:bg-card', className)} {...(rest as HTMLAttributes<HTMLTableElement>)} />
-    </SizeCtx.Provider>
-  );
+  const contained = useContext(ContainerCtx);
+  const table = <table className={cn('w-full border-collapse text-[13.5px]', stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:bg-card', className)} {...(rest as HTMLAttributes<HTMLTableElement>)} />;
+  return <SizeCtx.Provider value={size}>{contained ? table : <div className="w-full overflow-x-auto">{table}</div>}</SizeCtx.Provider>;
 }
 export function TableHead({ className, ...rest }: Rest) {
   return (

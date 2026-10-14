@@ -1,3 +1,4 @@
+import { IndianRupee } from 'lucide-react';
 import type { Metadata } from 'next';
 import { MyPayslipsTable } from '@/components/payroll/MyPayslipsTable';
 import { PageHeader } from '@/components/PageHeader';
@@ -20,7 +21,7 @@ export default async function MyPayslipsPage() {
       {data.error !== undefined ? (
         <ErrorState message={data.error} />
       ) : data.data.length === 0 ? (
-        <EmptyState icon={<span aria-hidden>₹</span>} title={t('pay.my.none')} />
+        <EmptyState icon={<IndianRupee />} title={t('pay.my.none')} />
       ) : (
         <MyPayslipsTable rows={data.data} />
       )}

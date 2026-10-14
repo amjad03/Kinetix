@@ -57,7 +57,7 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
         </div>
       ))}
       {canEdit && (
-        <Card className="p-4 mb-6">
+        <Card className="mb-6 p-5">
           <FieldRow>
             <FormField label={t('obe.f.kind')}>
               <TextInput className="min-w-[150px]" select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as OutcomeKind })}>
