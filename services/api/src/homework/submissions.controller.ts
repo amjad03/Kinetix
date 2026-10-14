@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Body,
   Controller,
   ForbiddenException,
@@ -15,7 +16,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
@@ -26,7 +27,9 @@ import { Clock, zonedToInstant } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { guardians, homework, homeworkSubmissions, students, subjects, type SubmissionFile, tenants, users } from '../db/schema.js';
+import { homeworkExtensions, homeworkGroups } from '../db/schema-life.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { handInVerdict, type HandInPolicy } from './assignment-rules.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { addDays, isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
@@ -107,7 +110,11 @@ export class SubmissionsController {
       await this.assertMayHandIn(tx, p, studentId);
       const [prev] = await tx.select().from(homeworkSubmissions).where(and(eq(homeworkSubmissions.homeworkId, id), eq(homeworkSubmissions.studentId, studentId)));
       if (prev?.status === 'checked') throw new BadRequestException('This homework has already been checked');
-      return { ...hw, previous: prev?.files ?? [] };
+      // The assignment's rules: a later due date for this student, the late policy, the hard cut-off and attempts.
+      const policy = await this.policyFor(tx, id, studentId, hw.dueOn);
+      const verdict = handInVerdict(policy, this.clock.now(), prev ? { attempts: prev.attempts, returned: prev.status === 'returned' } : null);
+      if (verdict.refusal) throw new ConflictException(verdict.refusal);
+      return { ...hw, previous: prev?.files ?? [], verdict, groupMates: policy.groupMates };
     });
 
     // Files first (outside the transaction), then the row; old files beyond the new count are removed.
@@ -122,12 +129,15 @@ export class SubmissionsController {
 
     return this.db.withTenant(p.tenantId, async (tx) => {
       const now = this.clock.now();
-      const v = { text, files, status: 'submitted' as const, submittedBy: p.userId, submittedAt: now, remark: null, checkedBy: null, checkedAt: null };
-      await tx
-        .insert(homeworkSubmissions)
-        .values({ tenantId: p.tenantId, homeworkId: id, studentId, ...v })
-        .onConflictDoUpdate({ target: [homeworkSubmissions.homeworkId, homeworkSubmissions.studentId], set: v });
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'homework.submitted', subjectType: 'homework', subjectId: id, data: { studentId, files: files.length } });
+      const v = { text, files, status: 'submitted' as const, submittedBy: p.userId, submittedAt: now, remark: null, checkedBy: null, checkedAt: null, late: hw.verdict.late, penaltyPct: hw.verdict.penaltyPct, attempts: hw.verdict.attempt };
+      // A group hands in once for every member (each is marked on their own later).
+      for (const sid of [studentId, ...hw.groupMates]) {
+        await tx
+          .insert(homeworkSubmissions)
+          .values({ tenantId: p.tenantId, homeworkId: id, studentId: sid, ...v })
+          .onConflictDoUpdate({ target: [homeworkSubmissions.homeworkId, homeworkSubmissions.studentId], set: v });
+      }
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'homework.submitted', subjectType: 'homework', subjectId: id, data: { studentId, files: files.length, late: hw.verdict.late, attempt: hw.verdict.attempt, ...(hw.groupMates.length ? { group: hw.groupMates } : {}) } });
       return this.one(tx, id, studentId, hw.dueEnd);
     });
   }
@@ -160,13 +170,17 @@ export class SubmissionsController {
           remark: homeworkSubmissions.remark,
           checkedAt: homeworkSubmissions.checkedAt,
           checkedBy: users.fullName,
+          late: homeworkSubmissions.late,
+          marks: homeworkSubmissions.marks,
+          penaltyPct: homeworkSubmissions.penaltyPct,
+          attempts: homeworkSubmissions.attempts,
         })
         .from(students)
         .leftJoin(homeworkSubmissions, and(eq(homeworkSubmissions.studentId, students.id), eq(homeworkSubmissions.homeworkId, id)))
         .leftJoin(users, eq(users.id, homeworkSubmissions.checkedBy))
         .where(and(eq(students.sectionId, hw.sectionId), eq(students.status, 'active')))
         .orderBy(asc(students.rollNo));
-      const out = rows.map((r) => ({ ...r, files: (r.files ?? []).map(publicFile), late: r.submittedAt ? r.submittedAt > hw.dueEnd : false }));
+      const out = rows.map((r) => ({ ...r, files: (r.files ?? []).map(publicFile) }));
       const count = (s: string | null) => out.filter((r) => r.status === s).length;
       return { homeworkId: id, dueOn: hw.dueOn, counts: { students: out.length, submitted: count('submitted'), checked: count('checked'), returned: count('returned'), missing: count(null) }, students: out };
     });
@@ -221,7 +235,7 @@ export class SubmissionsController {
     });
   }
 
-  private async one(tx: Tx, id: string, studentId: string, dueEnd: Date) {
+  private async one(tx: Tx, id: string, studentId: string, _dueEnd: Date) {
     const [s] = await tx
       .select({ submission: homeworkSubmissions, checkedBy: users.fullName })
       .from(homeworkSubmissions)
@@ -236,7 +250,10 @@ export class SubmissionsController {
       text: x.text,
       files: x.files.map(publicFile),
       submittedAt: x.submittedAt,
-      late: x.submittedAt > dueEnd,
+      late: x.late,
+      marks: x.marks,
+      penaltyPct: x.penaltyPct,
+      attempts: x.attempts,
       remark: x.remark,
       checkedBy: s.checkedBy,
       checkedAt: x.checkedAt,
@@ -262,6 +279,25 @@ export class SubmissionsController {
     if (!st?.userId || st.userId === p.userId) return;
     const [t] = await tx.select({ kind: tenants.kind }).from(tenants);
     if (t?.kind !== 'school') throw new ForbiddenException('This student hands in their own homework');
+  }
+
+  /** The hand-in rules for one student: their due day (or extension), the cut-off, the late policy and attempts, and group mates. */
+  private async policyFor(tx: Tx, id: string, studentId: string, dueOn: string): Promise<HandInPolicy & { groupMates: string[] }> {
+    const [h] = await tx.select({ latePolicy: homework.latePolicy, latePenaltyPct: homework.latePenaltyPct, cutoffOn: homework.cutoffOn, maxAttempts: homework.maxAttempts, groupMode: homework.groupMode }).from(homework).where(eq(homework.id, id));
+    const [ext] = await tx.select({ dueOn: homeworkExtensions.dueOn }).from(homeworkExtensions).where(and(eq(homeworkExtensions.homeworkId, id), eq(homeworkExtensions.studentId, studentId)));
+    const tz = await this.timetable.tenantTimezone(tx);
+    const end = (d: string) => zonedToInstant(addDays(d, 1), '00:00:00', tz);
+    const due = ext?.dueOn ?? dueOn;
+    // An extension also moves the cut-off for that student when it is later.
+    const cutoff = h.cutoffOn ? (h.cutoffOn > due ? h.cutoffOn : due) : null;
+    let groupMates: string[] = [];
+    if (h.groupMode) {
+      const [g] = await tx.select({ ids: homeworkGroups.studentIds }).from(homeworkGroups).where(and(eq(homeworkGroups.homeworkId, id), sql`${studentId}::uuid = any(${homeworkGroups.studentIds})`));
+      const mates = (g?.ids ?? []).filter((s) => s !== studentId);
+      const checked = mates.length ? (await tx.select({ s: homeworkSubmissions.studentId }).from(homeworkSubmissions).where(and(eq(homeworkSubmissions.homeworkId, id), inArray(homeworkSubmissions.studentId, mates), eq(homeworkSubmissions.status, 'checked')))).map((r) => r.s) : [];
+      groupMates = mates.filter((s) => !checked.includes(s));
+    }
+    return { dueEnd: end(due), cutoffEnd: cutoff ? end(cutoff) : null, latePolicy: h.latePolicy, latePenaltyPct: h.latePenaltyPct, maxAttempts: h.maxAttempts, groupMates };
   }
 
   private async staffHomework(tx: Tx, p: UserPrincipal, id: string) {

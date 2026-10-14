@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -37,6 +38,21 @@ Future<ChatUpload?> pickChatPhoto(ImageSource source) async {
   final name = x.name.toLowerCase().endsWith('.png') ? x.name : (x.name.contains('.') ? '${x.name.substring(0, x.name.lastIndexOf('.'))}.jpg' : '${x.name}.jpg');
   return ChatUpload(name: name, mime: name.endsWith('.png') ? 'image/png' : 'image/jpeg', bytes: await x.readAsBytes());
 }
+
+/// Picks a PDF (a circular, a form, a marks sheet) to send.
+typedef PickChatPdf = Future<ChatUpload?> Function();
+
+/// The PDF picker chats use; tests replace it.
+PickChatPdf chatPdfPicker = pickChatPdf;
+
+Future<ChatUpload?> pickChatPdf() async {
+  final f = await FilePicker.pickFile(type: FileType.custom, allowedExtensions: const ['pdf']);
+  final x = f?.xFile;
+  if (x == null || !x.name.toLowerCase().endsWith('.pdf')) return null;
+  return ChatUpload(name: x.name, mime: 'application/pdf', bytes: await x.readAsBytes());
+}
+
+enum _AttachFrom { camera, gallery, pdf }
 
 /// The largest file a chat message takes (services/api common/blob.ts).
 const chatMaxBytes = 4000000;
@@ -267,24 +283,29 @@ class _ChatScreenState extends State<ChatScreen> {
     ..showSnackBar(SnackBar(content: Text(text)));
 
   Future<void> _attach() async {
-    final source = await showModalBottomSheet<ImageSource>(
+    final from = await showModalBottomSheet<_AttachFrom>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(key: const Key('attachCamera'), leading: const Icon(Icons.photo_camera_outlined), title: Text(context.l10n.chatCamera), onTap: () => Navigator.pop(context, ImageSource.camera)),
-            ListTile(key: const Key('attachGallery'), leading: const Icon(Icons.photo_library_outlined), title: Text(context.l10n.chatGallery), onTap: () => Navigator.pop(context, ImageSource.gallery)),
+            ListTile(key: const Key('attachCamera'), leading: const Icon(Icons.photo_camera_outlined), title: Text(context.l10n.chatCamera), onTap: () => Navigator.pop(context, _AttachFrom.camera)),
+            ListTile(key: const Key('attachGallery'), leading: const Icon(Icons.photo_library_outlined), title: Text(context.l10n.chatGallery), onTap: () => Navigator.pop(context, _AttachFrom.gallery)),
+            ListTile(key: const Key('attachPdf'), leading: const Icon(Icons.picture_as_pdf_outlined), title: Text(context.l10n.chatPdf), onTap: () => Navigator.pop(context, _AttachFrom.pdf)),
           ],
         ),
       ),
     );
-    if (source == null) return;
-    final photo = await chatPhotoPicker(source);
-    if (photo == null || !mounted) return;
-    if (photo.bytes.length > chatMaxBytes) return _snack(context.l10n.chatFileTooBig);
-    setState(() => _photo = photo);
+    if (from == null) return;
+    final file = switch (from) {
+      _AttachFrom.camera => await chatPhotoPicker(ImageSource.camera),
+      _AttachFrom.gallery => await chatPhotoPicker(ImageSource.gallery),
+      _AttachFrom.pdf => await chatPdfPicker(),
+    };
+    if (file == null || !mounted) return;
+    if (file.bytes.length > chatMaxBytes) return _snack(context.l10n.chatFileTooBig);
+    setState(() => _photo = file);
   }
 
   Future<void> _openFile(ChatMessage m) async {
@@ -398,7 +419,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 alignment: Alignment.centerLeft,
                 child: InputChip(
                   key: const Key('pendingAttachment'),
-                  avatar: const Icon(Icons.image_outlined),
+                  avatar: Icon(_photo!.mime == 'application/pdf' ? Icons.picture_as_pdf_outlined : Icons.image_outlined),
                   label: Text(_photo!.name, overflow: TextOverflow.ellipsis),
                   onDeleted: () => setState(() => _photo = null),
                 ),
@@ -665,7 +686,7 @@ class _Composer extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              IconButton(key: const Key('attachFile'), tooltip: context.l10n.chatAttach, onPressed: onAttach, icon: const Icon(Icons.add_photo_alternate_outlined)),
+              IconButton(key: const Key('attachFile'), tooltip: context.l10n.chatAttach, onPressed: onAttach, icon: const Icon(Icons.attach_file)),
               Expanded(
                 child: TextField(
                   key: const Key('messageField'),

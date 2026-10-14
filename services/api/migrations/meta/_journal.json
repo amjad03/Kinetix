@@ -974,6 +974,27 @@
       "when": 1791506006000,
       "tag": "0148_record_imports",
       "breakpoints": true
+    },
+    {
+      "idx": 164,
+      "version": "7",
+      "when": 1791506032000,
+      "tag": "0174_campus_life_depth",
+      "breakpoints": true
+    },
+    {
+      "idx": 165,
+      "version": "7",
+      "when": 1791506033000,
+      "tag": "0175_welfare_depth",
+      "breakpoints": true
+    },
+    {
+      "idx": 166,
+      "version": "7",
+      "when": 1791506034000,
+      "tag": "0176_comms_lms_depth",
+      "breakpoints": true
     }
   ]
 }

@@ -86,6 +86,8 @@ export interface ChatSettings {
   officeHours?: { start: string; end: string; days: number[] } | null;
   /** Who answers office threads. Empty = principals and administrators. */
   officeUserIds?: string[];
+  /** Office roles whose holders also answer office threads (the accounts desk, the front office). Absent = accountant and admissions officer. */
+  officeRoles?: string[];
 }
 
 export interface BoardKioskSettings {
@@ -788,6 +790,18 @@ export const homework = pgTable(
     /** Local calendar date in the tenant timezone. */
     dueOn: date('due_on').notNull(),
     createdAt: createdAt(),
+    /** Assignment depth (migration 0176): marks, late policy, resubmission, rubric, group work. */
+    maxMarks: numeric('max_marks', { precision: 6, scale: 2, mode: 'number' }),
+    /** accept | penalty | reject: what happens to work handed in after the due date (and the student's extension). */
+    latePolicy: text('late_policy').$type<'accept' | 'penalty' | 'reject'>().notNull().default('accept'),
+    latePenaltyPct: integer('late_penalty_pct').notNull().default(0),
+    /** No hand-ins at all after this date, even late ones. */
+    cutoffOn: date('cutoff_on'),
+    maxAttempts: integer('max_attempts').notNull().default(1),
+    rubricId: uuid('rubric_id'),
+    groupMode: boolean('group_mode').notNull().default(false),
+    /** The internal-marks assessment its marks were pushed to. */
+    pushedAssessmentId: uuid('pushed_assessment_id'),
   },
   (t) => [index('homework_section_due_idx').on(t.sectionId, t.dueOn), index('homework_created_by_idx').on(t.createdBy, t.createdAt)],
 );
@@ -1743,6 +1757,11 @@ export const homeworkSubmissions = pgTable(
     remark: text('remark'),
     checkedBy: uuid('checked_by').references(() => users.id),
     checkedAt: timestamp('checked_at', { withTimezone: true }),
+    /** Marks (after any late penalty), whether it was late, and how many times it was handed in (migration 0176). */
+    marks: numeric('marks', { precision: 6, scale: 2, mode: 'number' }),
+    late: boolean('late').notNull().default(false),
+    penaltyPct: integer('penalty_pct').notNull().default(0),
+    attempts: integer('attempts').notNull().default(1),
   },
   (t) => [primaryKey({ columns: [t.homeworkId, t.studentId] })],
 );
@@ -3730,6 +3749,11 @@ export const TENANT_TABLES = [
   'integrity_matches',
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
   'affiliation_settings', 'programme_affiliations',
+  // Campus life, welfare, communication and LMS depth (migrations 0174-0176, schema-life.ts).
+  'activity_units', 'unit_members', 'unit_activities', 'unit_hours', 'student_achievements', 'outreach_activities', 'club_budgets', 'club_expense_claims',
+  'elections', 'election_posts', 'election_candidates', 'election_voters', 'election_ballots', 'event_external_registrations', 'event_duty_leaves',
+  'grievance_routes', 'antiragging_undertakings', 'pwd_accommodations', 'mentor_messages', 'learner_rules',
+  'contact_suppressions', 'homework_extensions', 'homework_groups', 'lms_item_progress', 'lms_quizzes', 'lms_quiz_questions', 'lms_quiz_attempts',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4611,6 +4635,15 @@ export const grievanceTickets = pgTable('grievance_tickets', {
   ratingComment: text('rating_comment'),
   version: integer('version').notNull().default(0),
   createdAt: createdAt(),
+  /** The person the grievance is about: never routed to them, and they never see it (migration 0175). */
+  againstUserId: ref('against_user_id', () => users.id),
+  /** An appeal to the next level after resolution: pending | upheld | overturned. */
+  appealReason: text('appeal_reason'),
+  appealedAt: timestamp('appealed_at', { withTimezone: true }),
+  appealStatus: text('appeal_status'),
+  appealDecision: text('appeal_decision'),
+  appealDecidedBy: ref('appeal_decided_by', () => users.id),
+  appealDecidedAt: timestamp('appeal_decided_at', { withTimezone: true }),
 });
 
 export const grievanceEvents = pgTable('grievance_events', {
@@ -4745,6 +4778,10 @@ export const lmsItems = pgTable('lms_items', {
   title: text('title').notNull(),
   refId: uuid('ref_id'),
   url: text('url'),
+  /** Access rules (migration 0176): hidden until this time; until this item is completed; only for these students (remedial). */
+  releaseAt: timestamp('release_at', { withTimezone: true }),
+  prerequisiteItemId: uuid('prerequisite_item_id'),
+  audienceStudentIds: uuid('audience_student_ids').array(),
 });
 
 export const lmsAnnouncements = pgTable('lms_announcements', {
@@ -5338,6 +5375,19 @@ export const campusEvents = pgTable('campus_events', {
   status: text('status').notNull().default('draft'), // draft | published | cancelled
   createdBy: uuid('created_by').notNull().references(() => users.id),
   createdAt: createdAt(),
+  /** Proposal and budget approval (migration 0174): not_required | pending | approved | rejected. */
+  budgetPaise: bigint('budget_paise', { mode: 'number' }).notNull().default(0),
+  approvalStatus: text('approval_status').notNull().default('not_required'),
+  approvalNote: text('approval_note').notNull().default(''),
+  approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'set null' }),
+  approvedAt: timestamp('approved_at', { withTimezone: true }),
+  /** People from other institutions may register (fests, inter-college events). */
+  externalRegistration: boolean('external_registration').notNull().default(false),
+  /** The report after the event, and what it cost. */
+  report: text('report').notNull().default(''),
+  reportAt: timestamp('report_at', { withTimezone: true }),
+  spentPaise: bigint('spent_paise', { mode: 'number' }).notNull().default(0),
+  cancelReason: text('cancel_reason').notNull().default(''),
 });
 
 export const eventRegistrations = pgTable(
@@ -5352,6 +5402,12 @@ export const eventRegistrations = pgTable(
     qrToken: text('qr_token').notNull(),
     checkedInAt: timestamp('checked_in_at', { withTimezone: true }),
     createdAt: createdAt(),
+    /** The fee paid at the desk (migration 0174), and its refund when the event is cancelled. */
+    paidPaise: bigint('paid_paise', { mode: 'number' }).notNull().default(0),
+    paymentRef: text('payment_ref').notNull().default(''),
+    refundStatus: text('refund_status').notNull().default('none'), // none | due | refunded
+    refundRef: text('refund_ref').notNull().default(''),
+    refundedAt: timestamp('refunded_at', { withTimezone: true }),
   },
   (t) => [uniqueIndex('event_registrations_uq').on(t.eventId, t.studentId), uniqueIndex('event_registrations_token_uq').on(t.qrToken)],
 );

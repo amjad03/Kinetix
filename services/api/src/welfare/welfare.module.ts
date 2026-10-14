@@ -7,7 +7,9 @@ import { RetentionController } from './retention.controller.js';
 import { DisciplineExtrasController, GrievanceEvidenceController } from './welfare-extras.controller.js';
 import { WelfareRequestsController } from './welfare-requests.controller.js';
 import { WelfareService } from './welfare.service.js';
+import { WelfareDepthController } from './welfare-depth.controller.js';
+import { WelfareRecords } from './welfare.records.js';
 
 /** Grievances and the confidential committee workflow, discipline, counselling and welfare requests. */
-@Module({ imports: [NotificationsModule], controllers: [GrievancesController, DisciplineController, GrievanceEvidenceController, DisciplineExtrasController, CounsellingController, WelfareRequestsController, RetentionController], providers: [WelfareService] })
+@Module({ imports: [NotificationsModule], controllers: [GrievancesController, DisciplineController, GrievanceEvidenceController, DisciplineExtrasController, CounsellingController, WelfareRequestsController, RetentionController, WelfareDepthController], providers: [WelfareService, WelfareRecords] })
 export class WelfareModule {}

@@ -1,10 +1,11 @@
 'use client';
 
-import { Check, CheckCheck, ChevronLeft, Clock, FileText, Info, Mail, MessageCircle, Paperclip, Pin, PinOff, Plus, Search, Send, ShieldCheck, Users, X } from 'lucide-react';
+import { Check, CheckCheck, ChevronLeft, Clock, FileText, Info, Mail, MessageCircle, Paperclip, Pin, PinOff, Plus, Search, Send, Settings2, ShieldCheck, Users, UsersRound, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { addMembers, markRead, pinThread, sendMessage, startThread, typing } from '@/app/(dashboard)/chat/actions';
 import { initials } from '@/components/initials';
+import { GroupSettingsDialog, LinkedGroupDialog, postBlock } from '@/components/life/ChatGroups';
 import { Button } from '@/components/shadcn/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/shadcn/dialog';
 import { Input } from '@/components/shadcn/input';
@@ -38,7 +39,7 @@ function fileToBase64(f: File): Promise<string> {
   });
 }
 
-export function ChatView({ meId, threads, people, open, tab: initialTab }: { meId: string; threads: ChatThread[]; people: ChatPerson[]; open: { thread: ChatThread; members: ChatMember[]; messages: ChatMessage[] } | null; tab: string }) {
+export function ChatView({ meId, threads, people, open, tab: initialTab, groupSources }: { meId: string; threads: ChatThread[]; people: ChatPerson[]; open: { thread: ChatThread; members: ChatMember[]; messages: ChatMessage[] } | null; tab: string; groupSources?: { sections: { id: string; name: string }[]; clubs: { id: string; name: string }[] } }) {
   const { t, fmt } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
@@ -51,6 +52,7 @@ export function ChatView({ meId, threads, people, open, tab: initialTab }: { meI
   const [error, setError] = useState('');
   const [typingName, setTypingName] = useState('');
   const [newOpen, setNewOpen] = useState(false);
+  const [groupDlg, setGroupDlg] = useState<'linked' | 'settings' | null>(null);
   const [busy, start] = useTransition();
   const lastTyping = useRef(0);
   const scroller = useRef<HTMLDivElement>(null);
@@ -171,6 +173,11 @@ export function ChatView({ meId, threads, people, open, tab: initialTab }: { meI
             <Button size="icon" variant="outline" className="size-8" aria-label={t('v2.chat.new')} onClick={() => setNewOpen(true)} data-testid="chat-new">
               <Plus />
             </Button>
+            {groupSources && (groupSources.sections.length > 0 || groupSources.clubs.length > 0) && (
+              <Button size="icon" variant="outline" className="size-8" aria-label={t('cd.group.title')} title={t('cd.group.title')} onClick={() => setGroupDlg('linked')} data-testid="chat-linked-group">
+                <UsersRound />
+              </Button>
+            )}
           </div>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -215,6 +222,11 @@ export function ChatView({ meId, threads, people, open, tab: initialTab }: { meI
                   {current.kind === 'group' ? t('v2.chat.members', { n: current.memberCount }) : current.kind === 'external' ? `${current.contactAddress} · ${t(`v2.chat.kind.${current.contactKind ?? 'other'}` as MessageKey)}` : (others[0]?.roles ?? []).map((r) => t(`role.${r}` as MessageKey)).join(' · ')}
                 </span>
               </div>
+              {current.kind === 'group' && (current.myRole === 'owner' || current.myRole === 'admin') && (
+                <Button size="icon" variant="ghost" aria-label={t('cd.group.settings')} onClick={() => setGroupDlg('settings')} data-testid="chat-group-settings">
+                  <Settings2 />
+                </Button>
+              )}
               <Button size="icon" variant="ghost" aria-label={current.pinned ? t('v2.chat.unpin') : t('v2.chat.pin')} onClick={() => start(async () => void (await pinThread(current.id, !current.pinned), router.refresh()))}>
                 {current.pinned ? <PinOff /> : <Pin />}
               </Button>
@@ -286,7 +298,8 @@ export function ChatView({ meId, threads, people, open, tab: initialTab }: { meI
                 </div>
               )}
             </div>
-            {error && <p role="alert" className="border-t bg-red-soft px-4 py-2 text-sm text-red-ink">{error}</p>}
+{postBlock(current, t) && <p className="border-t bg-amber-soft px-4 py-2 text-sm text-amber-ink" data-testid="chat-post-block">{postBlock(current, t)}</p>}
+                        {error && <p role="alert" className="border-t bg-red-soft px-4 py-2 text-sm text-red-ink">{error}</p>}
             {file && (
               <div className="flex items-center gap-2 border-t px-4 py-2 text-sm">
                 <Paperclip className="size-4 text-muted-foreground" />
@@ -382,6 +395,8 @@ export function ChatView({ meId, threads, people, open, tab: initialTab }: { meI
       )}
 
       <NewThread open={newOpen} onOpenChange={setNewOpen} people={people} onCreated={(id) => select(id)} />
+      {groupDlg === 'linked' && groupSources && <LinkedGroupDialog sections={groupSources.sections} clubs={groupSources.clubs} onClose={() => setGroupDlg(null)} onCreated={(id) => { setGroupDlg(null); select(id); }} />}
+      {groupDlg === 'settings' && current && <GroupSettingsDialog thread={current} onClose={() => setGroupDlg(null)} />}
     </div>
   );
 }

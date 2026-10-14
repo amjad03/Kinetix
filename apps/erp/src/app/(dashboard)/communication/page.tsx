@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { CommsDesk } from '@/components/comms/CommsDesk';
+import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
@@ -28,7 +29,7 @@ export default async function CommunicationPage({ searchParams }: { searchParams
   const list = campaigns.data!;
   return (
     <>
-      <PageHeader title={t('nav.comms')} subtitle={t('pwb.comms.subtitle')} />
+      <PageHeader title={t('nav.comms')} subtitle={t('pwb.comms.subtitle')} actions={<LinkButton href="/communication/suppressions" variant="outlined">{t('cd.sup.title')}</LinkButton>} />
       <StatGrid min={140}>
         <StatTile label={t('pwb.comms.stat.templates')} value={templates.data!.filter((x) => x.active).length} testId="comms-templates-count" />
         <StatTile label={t('pwb.comms.stat.audiences')} value={audiences.data!.length} />

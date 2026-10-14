@@ -1,22 +1,22 @@
 'use client';
 import { useEffect, useState } from 'react';
 import {
-  addAction, addActivity, addClub, addCommittee, addCommitteeMember, addEvent, addMeeting, checkIn, clubActivities, clubMembers, committeeMeetings, committeeMembers, decideMember, endTenure, eventRegistrations, eventStep, eventSummary, markAttendance, meetingActions, saveMinutes, setActionStatus, setMemberRole,
+  addAction, addActivity, addCommitteeMember, addMeeting, clubActivities, clubMembers, committeeMeetings, committeeMembers, decideMember, endTenure, eventRegistrations, eventSummary, markAttendance, meetingActions, saveMinutes, setActionStatus, setMemberRole,
 } from '@/app/(dashboard)/campus-life/actions';
-import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
-import { AchievementsTab, ClubExtras, CommitteeExtras, EventExtras } from '@/components/campus-life/LifeExtras';
+import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, type Field } from '@/components/ops/kit';
+import { ClubExtras, CommitteeExtras, EventExtras } from '@/components/campus-life/LifeExtras';
 import { CheckboxField } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import {
-  ACTION_STATUSES, AUDIENCES, CLUB_CATEGORIES, COMMITTEE_ROLES, EVENT_TYPES,
+  ACTION_STATUSES, COMMITTEE_ROLES,
   type ActionItem, type CampusEvent, type Club, type ClubActivity, type ClubMember, type Committee, type CommitteeMember, type EventRegistration, type EventSummary, type Meeting,
 } from '@/lib/clife';
 import type { ActionResult } from '@/lib/types';
 
 import { Button } from '@/components/kx';
 /** Loads a read-only list for a dialog and reloads it after a change. */
-function useRead<T>(load: () => Promise<ActionResult<T>>) {
+export function useRead<T>(load: () => Promise<ActionResult<T>>) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
@@ -38,162 +38,10 @@ function useRead<T>(load: () => Promise<ActionResult<T>>) {
 
 const opts = (t: (k: MessageKey) => string, prefix: string, values: readonly string[]) => values.map((v) => ({ value: v, label: t(`${prefix}.${v}` as MessageKey) }));
 
-export function CampusLifeDesk({ clubs, committees, events, initialTab }: { clubs: Club[]; committees: Committee[]; events: CampusEvent[]; initialTab: string }) {
-  const { t, fmt } = useI18n();
-  const [toast, toastNode] = useToast();
-  const [dlg, setDlg] = useState<'club' | 'committee' | 'event' | { club: Club } | { committee: Committee } | { event: CampusEvent } | { checkIn: CampusEvent } | null>(null);
-  const done = (m?: string) => {
-    setDlg(null);
-    if (m) toast(m);
-  };
-  const add = (label: string, k: 'club' | 'committee' | 'event') => (
-    <Button variant="outlined" onClick={() => setDlg(k)}>{label}</Button>
-  );
-  const yesNo = [{ value: 'no', label: t('ops.no') }, { value: 'yes', label: t('ops.yes') }];
-
-  return (
-    <>
-      <Tabbed
-        label={t('nav.campusLife')}
-        initial={initialTab}
-        tabs={[
-          {
-            id: 'clubs',
-            label: t('cl.tab.clubs', { n: clubs.length }),
-            node: (
-              <>
-                <Bar>{add(t('cl.addClub'), 'club')}</Bar>
-                <Grid
-                  testId="cl-clubs"
-                  empty={t('cl.noClubs')}
-                  rows={clubs}
-                  cols={[
-                    { label: t('cl.col.club'), cell: (c) => c.name },
-                    { label: t('cl.col.category'), cell: (c) => t(`cl.cat.${c.category}` as MessageKey) },
-                    { label: t('cl.col.members'), cell: (c) => c.members, num: true },
-                    { label: t('cl.col.pending'), cell: (c) => (c.pending ? <Pill warn label={String(c.pending)} /> : 0), num: true, sort: (c) => c.pending },
-                    { label: '', cell: (c) => <Button size="small" onClick={() => setDlg({ club: c })}>{t('cl.manage')}</Button> },
-                  ]}
-                />
-              </>
-            ),
-          },
-          {
-            id: 'committees',
-            label: t('cl.tab.committees', { n: committees.length }),
-            node: (
-              <>
-                <Bar>{add(t('cl.addCommittee'), 'committee')}</Bar>
-                <Grid
-                  testId="cl-committees"
-                  empty={t('cl.noCommittees')}
-                  rows={committees}
-                  cols={[
-                    { label: t('cl.col.committee'), cell: (c) => c.name },
-                    { label: t('cl.col.statutory'), cell: (c) => (c.statutory ? <Pill label={t('cl.statutory')} /> : '-'), sort: (c) => (c.statutory ? 1 : 0) },
-                    { label: t('cl.col.current'), cell: (c) => c.members, num: true },
-                    { label: t('cl.col.openActions'), cell: (c) => c.openActions, num: true },
-                    { label: '', cell: (c) => <Button size="small" onClick={() => setDlg({ committee: c })}>{t('cl.manage')}</Button> },
-                  ]}
-                />
-              </>
-            ),
-          },
-          {
-            id: 'events',
-            label: t('cl.tab.events', { n: events.length }),
-            node: (
-              <>
-                <Bar>{add(t('cl.addEvent'), 'event')}</Bar>
-                <Grid
-                  testId="cl-events"
-                  empty={t('cl.noEvents')}
-                  rows={events}
-                  cols={[
-                    { label: t('cl.col.event'), cell: (e) => e.title },
-                    { label: t('cl.col.when'), cell: (e) => fmt.dateTime(e.startsAt), sort: (e) => e.startsAt },
-                    { label: t('cl.col.venue'), cell: (e) => e.venue || '-' },
-                    { label: t('cl.col.seats'), cell: (e) => `${e.registered} / ${e.capacity}`, sort: (e) => e.registered },
-                    { label: t('cl.col.waitlist'), cell: (e) => e.waitlisted, num: true },
-                    { label: t('cl.col.checkedIn'), cell: (e) => e.checkedIn, num: true },
-                    { label: t('ops.f.status'), cell: (e) => <Pill warn={e.status === 'cancelled'} label={t(`cl.evStatus.${e.status}` as MessageKey)} /> },
-                    {
-                      label: '',
-                      cell: (e) => (
-                        <>
-                          {e.status === 'draft' && <ActionButton label={t('cl.publish')} run={() => eventStep(e.id, 'publish')} onDone={toast} />}
-                          {e.status === 'published' && <Button size="small" onClick={() => setDlg({ checkIn: e })}>{t('cl.checkIn')}</Button>}
-                          <Button size="small" onClick={() => setDlg({ event: e })}>{t('cl.registrations')}</Button>
-                          {e.status !== 'cancelled' && <ActionButton tone="error" label={t('cl.cancelEvent')} run={() => eventStep(e.id, 'cancel')} onDone={toast} />}
-                        </>
-                      ),
-                    },
-                  ]}
-                />
-              </>
-            ),
-          },
-          { id: 'achievements', label: t('pwb.cl.tab'), node: <AchievementsTab /> },
-        ]}
-      />
-
-      {dlg === 'club' && (
-        <FormDialog
-          title={t('cl.addClub')}
-          onSubmit={addClub}
-          onClose={done}
-          fields={[
-            { name: 'name', label: t('ops.f.name'), required: true },
-            { name: 'category', label: t('cl.col.category'), kind: 'select', init: 'general', options: opts(t, 'cl.cat', CLUB_CATEGORIES) },
-            { name: 'coordinator', label: t('cl.coordinator'), kind: 'uuid' },
-            { name: 'description', label: t('cl.description'), kind: 'multiline' },
-          ]}
-        />
-      )}
-      {dlg === 'committee' && (
-        <FormDialog
-          title={t('cl.addCommittee')}
-          onSubmit={addCommittee}
-          onClose={done}
-          fields={[
-            { name: 'name', label: t('ops.f.name'), required: true },
-            { name: 'statutory', label: t('cl.statutoryQ'), kind: 'select', init: 'no', options: yesNo },
-            { name: 'description', label: t('cl.description'), kind: 'multiline' },
-          ]}
-        />
-      )}
-      {dlg === 'event' && (
-        <FormDialog
-          title={t('cl.addEvent')}
-          onSubmit={addEvent}
-          onClose={done}
-          fields={[
-            { name: 'title', label: t('ops.f.title'), required: true },
-            { name: 'eventType', label: t('cl.evType'), kind: 'select', init: 'other', options: opts(t, 'cl.evType', EVENT_TYPES) },
-            { name: 'venue', label: t('cl.col.venue') },
-            { name: 'capacity', label: t('cl.capacity'), kind: 'number', required: true },
-            { name: 'startsAt', label: t('cl.startsAt'), kind: 'datetime', required: true },
-            { name: 'endsAt', label: t('cl.endsAt'), kind: 'datetime', required: true },
-            { name: 'audience', label: t('cl.audience'), kind: 'select', init: 'all', options: opts(t, 'cl.aud', AUDIENCES) },
-            { name: 'fee', label: t('cl.fee'), kind: 'rupees' },
-            { name: 'description', label: t('cl.description'), kind: 'multiline' },
-            { name: 'publish', label: t('cl.publishNow'), kind: 'select', init: 'no', options: yesNo },
-          ]}
-        />
-      )}
-      {dlg && typeof dlg === 'object' && 'club' in dlg && <ClubDialog club={dlg.club} onClose={() => setDlg(null)} toast={toast} />}
-      {dlg && typeof dlg === 'object' && 'committee' in dlg && <CommitteeDialog committee={dlg.committee} onClose={() => setDlg(null)} toast={toast} />}
-      {dlg && typeof dlg === 'object' && 'event' in dlg && <EventDialog event={dlg.event} onClose={() => setDlg(null)} toast={toast} />}
-      {dlg && typeof dlg === 'object' && 'checkIn' in dlg && <FormDialog title={`${t('cl.checkIn')} · ${dlg.checkIn.title}`} intro={t('cl.checkInHelp')} onSubmit={(v) => checkIn(dlg.checkIn.id, v)} onClose={done} fields={[{ name: 'token', label: t('cl.token'), required: true }]} />}
-      {toastNode}
-    </>
-  );
-}
-
-type Toast = (m: string) => void;
+export type Toast = (m: string) => void;
 
 /** Members with their requests and points, and activities with attendance, for one club. */
-function ClubDialog({ club, onClose, toast }: { club: Club; onClose: () => void; toast: Toast }) {
+export function ClubDialog({ club, onClose, toast }: { club: Club; onClose: () => void; toast: Toast }) {
   const { t, fmt } = useI18n();
   const members = useRead<ClubMember[]>(() => clubMembers(club.id));
   const activities = useRead<ClubActivity[]>(() => clubActivities(club.id));
@@ -312,7 +160,7 @@ function AttendanceDialog({ activity, members, onClose }: { activity: ClubActivi
 }
 
 /** Members and tenure, meetings with minutes, and action items for one committee. */
-function CommitteeDialog({ committee, onClose, toast }: { committee: Committee; onClose: () => void; toast: Toast }) {
+export function CommitteeDialog({ committee, onClose, toast }: { committee: Committee; onClose: () => void; toast: Toast }) {
   const { t, fmt } = useI18n();
   const members = useRead<CommitteeMember[]>(() => committeeMembers(committee.id));
   const meetings = useRead<Meeting[]>(() => committeeMeetings(committee.id));
@@ -448,7 +296,7 @@ function ActionsDialog({ meeting, onClose, toast }: { meeting: Meeting; onClose:
 }
 
 /** Registrations and the attendance and feedback summary for one event. */
-function EventDialog({ event, onClose, toast }: { event: CampusEvent; onClose: () => void; toast: Toast }) {
+export function EventDialog({ event, onClose, toast }: { event: CampusEvent; onClose: () => void; toast: Toast }) {
   const { t, fmt } = useI18n();
   const regs = useRead<EventRegistration[]>(() => eventRegistrations(event.id));
   const sum = useRead<EventSummary>(() => eventSummary(event.id));

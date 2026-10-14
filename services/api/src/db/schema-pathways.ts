@@ -718,6 +718,12 @@ export const messageCampaigns = pgTable(
     failedCount: integer('failed_count').notNull().default(0),
     createdBy: userRef('created_by'),
     createdAt: createdAt(),
+    /** Recurring reminders (migration 0176): none | daily | weekly | monthly, until this date. */
+    repeat: text('repeat').$type<'none' | 'daily' | 'weekly' | 'monthly'>().notNull().default('none'),
+    repeatUntil: date('repeat_until'),
+    parentCampaignId: uuid('parent_campaign_id'),
+    /** Recipients skipped because the address is on DND, bounced or opted out. */
+    suppressedCount: integer('suppressed_count').notNull().default(0),
   },
   (t) => [index('message_campaigns_due_idx').on(t.status, t.sendAt)],
 );

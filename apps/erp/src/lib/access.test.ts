@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { canChangeLifecycle, canEditCalendar, canLinkSubjects, canPublishMarks, canReviewVideos, canSee, canUseErp, homeFor, isOnlyHod, landingFor, sectionOf } from './access';
 
 describe('access', () => {
-  it('lets the accounts office into Fees (and the calendar) only', () => {
+  it('lets the accounts office into Fees, the calendar and office conversations', () => {
     const r = ['accountant'];
     expect(canUseErp(r)).toBe(true);
     expect(canSee(r, 'fees')).toBe(true);
-    for (const s of ['school', 'boards', 'live', 'syllabus', 'ai', 'library', 'results', 'timetable', 'conversations'] as const) expect(canSee(r, s)).toBe(false);
+    for (const s of ['school', 'boards', 'live', 'syllabus', 'ai', 'library', 'results', 'timetable'] as const) expect(canSee(r, s)).toBe(false);
+    // The accounts office answers office threads in Conversations.
+    expect(canSee(r, 'conversations')).toBe(true);
     expect(homeFor(r)).toBe('/');
     expect(landingFor(r, '/')).toBe('/');
     expect(landingFor(r, '/fees/invoices?status=due')).toBe('/fees/invoices?status=due');

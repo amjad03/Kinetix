@@ -16,6 +16,12 @@ export interface ChatThread {
   lastMessage: { body: string; senderName: string | null; direction: string; attachment: boolean } | null;
   unread: number;
   replyTo?: string | null;
+  /** Class and club groups (v1/chat/groups/linked): who may post, quiet hours and the caller's role. */
+  linkedKind?: 'section' | 'club' | null;
+  postPolicy?: 'all' | 'admins';
+  quietStart?: string | null;
+  quietEnd?: string | null;
+  myRole?: string;
 }
 export interface ChatMember {
   id: string;

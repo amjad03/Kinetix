@@ -98,4 +98,32 @@ void main() {
     expect(find.text('board.jpg'), findsOneWidget);
     expect(find.byWidgetPredicate((w) => w.key is ValueKey<String> && (w.key! as ValueKey<String>).value.endsWith('-sent')), findsOneWidget);
   });
+
+  testWidgets('sends a PDF picked from files', (tester) async {
+    chatPdfPicker = () async => ChatUpload(name: 'circular.pdf', mime: 'application/pdf', bytes: Uint8List(4096));
+    addTearDown(() => chatPdfPicker = pickChatPdf);
+    await pumpApp(tester);
+    await openThread(tester);
+    await tester.tap(find.byKey(const Key('attachFile')));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose a PDF'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('attachPdf')));
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: find.byKey(const Key('pendingAttachment')), matching: find.byIcon(Icons.picture_as_pdf_outlined)), findsOneWidget);
+    await tester.tap(find.byKey(const Key('sendMessage')));
+    await tester.pumpAndSettle();
+    expect(api.calls.where((c) => c.startsWith('send c1') && c.endsWith('+circular.pdf')), hasLength(1));
+  });
+
+  testWidgets('refuses a PDF over the size limit', (tester) async {
+    chatPdfPicker = () async => ChatUpload(name: 'huge.pdf', mime: 'application/pdf', bytes: Uint8List(chatMaxBytes + 1));
+    addTearDown(() => chatPdfPicker = pickChatPdf);
+    await pumpApp(tester);
+    await openThread(tester);
+    await tester.tap(find.byKey(const Key('attachFile')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('attachPdf')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('pendingAttachment')), findsNothing);
+  });
 }

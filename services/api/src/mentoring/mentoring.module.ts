@@ -3,8 +3,10 @@ import { TasksModule } from '../tasks/tasks.module.js';
 import { TeacherModule } from '../teacher/teacher.module.js';
 import { MentoringController } from './mentoring.controller.js';
 import { MentoringDepthController } from './mentoring-depth.controller.js';
+import { MentoringExtraController } from './mentoring-extra.controller.js';
+import { MentoringRecords } from '../welfare/welfare.records.js';
 import { MentoringService } from './mentoring.service.js';
 
 /** Student mentoring and early intervention. */
-@Module({ imports: [TeacherModule, TasksModule], controllers: [MentoringController, MentoringDepthController], providers: [MentoringService] })
+@Module({ imports: [TeacherModule, TasksModule], controllers: [MentoringController, MentoringDepthController, MentoringExtraController], providers: [MentoringService, MentoringRecords] })
 export class MentoringModule {}

@@ -166,6 +166,11 @@ export interface ChatSettingsView {
   timezone: string;
   kind: 'school' | 'college' | 'university';
   officeUserIds?: string[];
+  /** Roles whose holders also answer office threads, and the roles that may be chosen. */
+  officeRoles?: string[];
+  officeRoleChoices?: string[];
+  /** Whether the signed-in person answers office threads. */
+  isOffice?: boolean;
   officeStaff?: { id: string; fullName: string }[];
   classTeachers?: { sectionId: string; displayName: string; classTeacher: { id: string; fullName: string } | null }[];
 }

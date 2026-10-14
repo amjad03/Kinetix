@@ -44,7 +44,7 @@ export async function removeAudience(audienceId: string) {
 export async function createCampaign(v: V) {
   const vars = parseVars(v.vars ?? '');
   if (!vars.ok) return fail('pwb.comms.err.vars', { line: vars.line });
-  return send(`${C}/campaigns`, { title: v.title, templateId: v.templateId, audienceId: v.audienceId, vars: vars.vars, ...(optStr(v.sendAt) ? { sendAt: v.sendAt } : {}) }, PAGE);
+  return send(`${C}/campaigns`, { title: v.title, templateId: v.templateId, audienceId: v.audienceId, vars: vars.vars, ...(optStr(v.sendAt) ? { sendAt: v.sendAt } : {}), ...(v.repeat && v.repeat !== 'none' ? { repeat: v.repeat, ...(optStr(v.repeatUntil) ? { repeatUntil: v.repeatUntil } : {}) } : {}) }, PAGE);
 }
 
 export async function campaignDetail(campaignId: string) {

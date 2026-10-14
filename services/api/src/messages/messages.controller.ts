@@ -5,7 +5,7 @@ import { and, asc, desc, eq, ilike, inArray, isNull, lt, notInArray, or, sql, ty
 import { alias } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
-import type { UserPrincipal } from '../auth/principal.js';
+import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { BlobBody, putBlob, sendBlob } from '../common/blob.js';
 import { Clock } from '../common/time.js';
@@ -18,7 +18,7 @@ import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { isSchoolAdmin } from '../teacher/teacher.service.js';
 import { naturalAsc } from '../common/natural-order.js';
-import { FAMILY_ROLES, outsideOfficeHours, studentChatEnabled, tick, validOfficeHours } from './chat-rules.js';
+import { FAMILY_ROLES, OFFICE_ROLE_CHOICES, officeRolesOf, outsideOfficeHours, studentChatEnabled, tick, validOfficeHours } from './chat-rules.js';
 
 const StartBody = z
   .object({ studentId: z.uuid(), withUserId: z.uuid().optional(), office: z.boolean().default(false) })
@@ -35,6 +35,7 @@ const SettingsBody = z.object({
   studentChat: z.boolean().optional(),
   officeHours: z.object({ start: HHMM, end: HHMM, days: z.array(z.number().int().min(1).max(7)).min(1).max(7) }).nullable().optional(),
   officeUserIds: z.array(z.uuid()).max(50).optional(),
+  officeRoles: z.array(z.enum(OFFICE_ROLE_CHOICES)).max(10).optional(),
 });
 const ClassTeacherBody = z.object({ userId: z.uuid().nullable() });
 
@@ -131,21 +132,50 @@ export class ConversationsController {
     return [...byStudent.values()];
   }
 
+  /**
+   * Students the caller may start a thread about, by name or roll number: any student for leaders and office staff
+   * (the accounts desk, the front office), the students of their classes for teachers.
+   */
+  @Get('students')
+  @Auth('user')
+  students(@CurrentPrincipal() p: UserPrincipal, @Query('q') q = '') {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const term = q.trim().replace(/[%_]/g, '').slice(0, 60);
+      if (term.length < 2) return [];
+      const office = await this.officeStaffIds(tx);
+      let scope: SQL | undefined;
+      if (!isSchoolAdmin(p) && !office.includes(p.userId)) {
+        const taught = await tx.selectDistinct({ sectionId: timetableSlots.sectionId }).from(timetableSlots).where(and(eq(timetableSlots.teacherId, p.userId), isNull(timetableSlots.archivedAt)));
+        const own = await tx.select({ sectionId: sections.id }).from(sections).where(eq(sections.classTeacherId, p.userId));
+        const ids = [...new Set([...taught, ...own].map((x) => x.sectionId))];
+        if (!ids.length) return [];
+        scope = inArray(students.sectionId, ids);
+      }
+      return tx
+        .select({ id: students.id, fullName: students.fullName, rollNo: students.rollNo, className: sections.displayName })
+        .from(students)
+        .innerJoin(sections, eq(sections.id, students.sectionId))
+        .where(and(eq(students.status, 'active'), or(ilike(students.fullName, `%${term}%`), ilike(students.rollNo, `${term}%`)), scope))
+        .orderBy(asc(students.fullName))
+        .limit(20);
+    });
+  }
+
   /** Office hours and whether students may chat (anyone); office staff and class teachers too for leaders. */
   @Get('settings')
   @Auth('user')
   settings(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const t = await this.tenant(tx);
-      const base = { studentChat: studentChatEnabled(t.settings.chat, t.kind), officeHours: t.settings.chat?.officeHours ?? null, timezone: t.timezone, kind: t.kind };
-      if (!isSchoolAdmin(p)) return base;
       const office = await this.officeStaffIds(tx);
+      const base = { studentChat: studentChatEnabled(t.settings.chat, t.kind), officeHours: t.settings.chat?.officeHours ?? null, timezone: t.timezone, kind: t.kind, isOffice: office.includes(p.userId) };
+      if (!isSchoolAdmin(p)) return base;
       const officeStaff = office.length ? await tx.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, office)).orderBy(asc(users.fullName)) : [];
       const classTeachers = await tx
         .select({ sectionId: sections.id, displayName: sections.displayName, classTeacher: sql<{ id: string; fullName: string } | null>`(select json_build_object('id', u.id, 'fullName', u.full_name) from users u where u.id = ${sections.classTeacherId})` })
         .from(sections)
         .orderBy(...naturalAsc(sections.displayName));
-      return { ...base, officeUserIds: t.settings.chat?.officeUserIds ?? [], officeStaff, classTeachers };
+      return { ...base, officeUserIds: t.settings.chat?.officeUserIds ?? [], officeRoles: officeRolesOf(t.settings.chat), officeRoleChoices: OFFICE_ROLE_CHOICES, officeStaff, classTeachers };
     });
   }
 
@@ -162,10 +192,11 @@ export class ConversationsController {
         ...(body.studentChat !== undefined ? { studentChat: body.studentChat } : {}),
         ...(body.officeHours !== undefined ? { officeHours: body.officeHours } : {}),
         ...(body.officeUserIds !== undefined ? { officeUserIds: [...new Set(body.officeUserIds)] } : {}),
+        ...(body.officeRoles !== undefined ? { officeRoles: [...new Set(body.officeRoles)] } : {}),
       };
       await tx.update(tenants).set({ settings: { ...t.settings, chat } }).where(eq(tenants.id, p.tenantId));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'conversation.settings_changed', subjectType: 'tenant', subjectId: p.tenantId, data: { before, after: chat } });
-      return { studentChat: studentChatEnabled(chat, t.kind), officeHours: chat.officeHours ?? null, officeUserIds: chat.officeUserIds ?? [] };
+      return { studentChat: studentChatEnabled(chat, t.kind), officeHours: chat.officeHours ?? null, officeUserIds: chat.officeUserIds ?? [], officeRoles: officeRolesOf(chat) };
     });
   }
 
@@ -618,10 +649,14 @@ export class ConversationsController {
     return t;
   }
 
-  /** Who answers office threads: the institution's list, or else its principals and administrators. */
+  /**
+   * Who answers office threads: the institution's list (or else its principals and administrators), then everyone
+   * holding one of the office roles (by default the accounts desk and the front office). The first answers new threads.
+   */
   private async officeStaffIds(tx: Tx): Promise<string[]> {
     const t = await this.tenant(tx);
     const listed = t.settings.chat?.officeUserIds ?? [];
+    const roles = officeRolesOf(t.settings.chat);
     const rows = listed.length
       ? await tx.select({ id: users.id }).from(users).where(and(inArray(users.id, listed), eq(users.status, 'active')))
       : await tx
@@ -631,7 +666,16 @@ export class ConversationsController {
           .where(and(inArray(userRoles.role, ['principal', 'tenant_admin']), eq(users.status, 'active')))
           .orderBy(asc(users.fullName));
     const ids = rows.map((r) => r.id);
-    return listed.length ? listed.filter((id) => ids.includes(id)) : ids;
+    const first = listed.length ? listed.filter((id) => ids.includes(id)) : ids;
+    const desk = roles.length
+      ? await tx
+          .selectDistinct({ id: users.id, fullName: users.fullName })
+          .from(userRoles)
+          .innerJoin(users, eq(users.id, userRoles.userId))
+          .where(and(inArray(userRoles.role, roles as RoleName[]), eq(users.status, 'active')))
+          .orderBy(asc(users.fullName))
+      : [];
+    return [...first, ...desk.map((d) => d.id).filter((id) => !first.includes(id))];
   }
 
   private async assertStaff(tx: Tx, ids: string[]) {
