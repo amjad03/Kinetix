@@ -18,6 +18,23 @@ const ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher', 'quali
 const MAX_BYTES = 20 * 1024 * 1024;
 
 /** Course files: one PDF per class and subject, assembled from existing records, kept as dated versions. */
+/**
+ * What a complete course file holds (NAAC/NBA practice): the syllabus, lesson plans, at least four fifths of the
+ * syllabus covered, attendance taken, assessments, outcome attainment and teaching material.
+ */
+export function courseFileChecklist(s: Record<string, number>): { item: string; ok: boolean }[] {
+  const topics = s.topics ?? 0;
+  return [
+    { item: 'syllabus', ok: topics > 0 },
+    { item: 'lessonPlans', ok: (s.lessonPlans ?? 0) > 0 },
+    { item: 'coverage', ok: topics > 0 && (s.topicsCovered ?? 0) / topics >= 0.8 },
+    { item: 'attendance', ok: (s.attendanceSessions ?? 0) > 0 },
+    { item: 'assessments', ok: (s.assessments ?? 0) > 0 },
+    { item: 'attainment', ok: (s.outcomes ?? 0) > 0 },
+    { item: 'materials', ok: (s.whiteboards ?? 0) + (s.recordings ?? 0) > 0 },
+  ];
+}
+
 @Controller('v1/course-files')
 export class CourseFilesController {
   constructor(
@@ -91,7 +108,8 @@ export class CourseFilesController {
 
   private view(r: typeof courseFiles.$inferSelect, section: string, subject: string, generatedBy: string, reviewedBy: string | null) {
     const { storageKey: _k, ...rest } = r;
-    return { ...rest, section, subject, generatedByName: generatedBy, reviewedByName: reviewedBy };
+    const checklist = courseFileChecklist(r.summary);
+    return { ...rest, section, subject, generatedByName: generatedBy, reviewedByName: reviewedBy, checklist, completePct: Math.round((checklist.filter((c) => c.ok).length / checklist.length) * 100) };
   }
 
   /** Versions the caller may see, newest first. */

@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -18,6 +18,10 @@ const SlotBody = z
     dayOfWeek: z.number().int().min(1).max(7),
     startsAt: Time,
     endsAt: Time,
+    /** A lab or tutorial batch ("B1"); empty = the whole class. */
+    batch: z.string().trim().max(20).nullable().optional().transform((v) => v || null),
+    /** Other classes taught together in this period. */
+    combinedSectionIds: z.array(z.uuid()).max(10).nullable().optional(),
   })
   .refine((s) => s.startsAt < s.endsAt, { message: 'The period must end after it starts', path: ['endsAt'] });
 
@@ -49,15 +53,22 @@ export class TimetableAdminController {
     });
   }
 
-  /** The week's periods for a class or a teacher. */
+  /** The week's periods for a class (with the periods it is combined into), a teacher or a room. */
   @Get('timetable')
   @Auth('user', STAFF_ADMIN_ROLES)
-  week(@CurrentPrincipal() p: UserPrincipal, @Query('sectionId') sectionId?: string, @Query('teacherId') teacherId?: string) {
-    for (const v of [sectionId, teacherId]) if (v && !z.uuid().safeParse(v).success) throw new BadRequestException('Bad id');
-    if (!sectionId && !teacherId) throw new BadRequestException('Give sectionId or teacherId');
+  week(@CurrentPrincipal() p: UserPrincipal, @Query('sectionId') sectionId?: string, @Query('teacherId') teacherId?: string, @Query('roomId') roomId?: string) {
+    for (const v of [sectionId, teacherId, roomId]) if (v && !z.uuid().safeParse(v).success) throw new BadRequestException('Bad id');
+    if (!sectionId && !teacherId && !roomId) throw new BadRequestException('Give sectionId, teacherId or roomId');
     return this.db.withTenant(p.tenantId, (tx) =>
       this.slots(tx)
-        .where(and(isNull(timetableSlots.archivedAt), sectionId ? eq(timetableSlots.sectionId, sectionId) : undefined, teacherId ? eq(timetableSlots.teacherId, teacherId) : undefined))
+        .where(
+          and(
+            isNull(timetableSlots.archivedAt),
+            sectionId ? or(eq(timetableSlots.sectionId, sectionId), sql`${sectionId}::uuid = any(${timetableSlots.combinedSectionIds})`) : undefined,
+            teacherId ? eq(timetableSlots.teacherId, teacherId) : undefined,
+            roomId ? eq(timetableSlots.roomId, roomId) : undefined,
+          ),
+        )
         .orderBy(asc(timetableSlots.dayOfWeek), asc(timetableSlots.startsAt)),
     );
   }
@@ -133,6 +144,8 @@ export class TimetableAdminController {
         teacher: { id: users.id, fullName: users.fullName },
         roomId: timetableSlots.roomId,
         room: rooms.name,
+        batch: timetableSlots.batch,
+        combinedSectionIds: timetableSlots.combinedSectionIds,
       })
       .from(timetableSlots)
       .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))

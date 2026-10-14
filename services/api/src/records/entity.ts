@@ -124,8 +124,20 @@ export interface MoveSpec {
   apply?: (ctx: KitCtx, id: string, to: string, reason?: string) => Promise<void>;
 }
 
+/** A value the ERP asks for before running an action (a note, points, a receipt number). */
+export interface ActionInput {
+  key: string;
+  label: string;
+  /** money: entered in rupees, sent in paise. */
+  type: 'text' | 'textarea' | 'number' | 'money';
+  required?: boolean;
+  help?: string;
+}
+
 export interface CustomAction {
   label: string;
+  /** What the ERP asks for before running it; sent as `params` (validated by `params`). */
+  inputs?: ActionInput[];
   /** Defaults to the entity's write roles. */
   roles?: RoleName[];
   tone?: 'danger';

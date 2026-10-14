@@ -9,6 +9,8 @@ import { REPORT_FILTERS, statusTone, type Directory, type ReportData, type Repor
 
 type Row = ReportData['rows'][number] & { _i: number };
 const STATUS_COLS = new Set(['status']);
+/** Columns whose values are codes with their own words (`acad.value.<code>`): a leave's kind, the rule's basis, a fee's state. */
+const VALUE_COLS = new Set(['kind', 'basis', 'feeStatus']);
 const PCT_COLS = new Set(['percent', 'effective', 'fill']);
 
 /** One academics report: URL filters, the API's rows as a table, print and PDF / Excel from the API. */
@@ -37,6 +39,10 @@ export function AcademicReport({ kind, data, q, directory }: { kind: ReportKind;
       const v = r[c.key];
       if (STATUS_COLS.has(c.key) && typeof v === 'string' && v) return <StatusPill tone={statusTone(v)}>{t(`acad.status.${v}` as MessageKey)}</StatusPill>;
       if (v === null || v === undefined || v === '') return '—';
+      if (VALUE_COLS.has(c.key) && typeof v === 'string') {
+        const key = `acad.value.${v}` as MessageKey;
+        return t(key) === key ? v : t(key);
+      }
       if (PCT_COLS.has(c.key) && typeof v === 'number') return `${fmt.number(v)}%`;
       return typeof v === 'number' ? fmt.number(v) : v;
     },

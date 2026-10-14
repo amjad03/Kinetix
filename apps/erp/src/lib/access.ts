@@ -313,7 +313,8 @@ export function sectionOf(pathname: string): Section | null {
     case 'course-registration':
       return 'courseRegistration';
     case 'academics':
-      return 'academics';
+      // Planning (baskets, prerequisites, allocation, workload) is for the academic heads, as in academic-planning/planning.records.ts.
+      return pathname.startsWith('/academics/planning') ? 'courseRegistration' : 'academics';
     case 'documents':
       return 'documents';
     case 'skills':

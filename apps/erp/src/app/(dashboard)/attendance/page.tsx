@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
+import { DepartmentDay } from '@/components/attendance-desk/DepartmentDay';
+import { AttendanceTabs } from '@/components/attendance-desk/kit';
+import type { DeptDashboard } from '@/lib/attendance-desk';
 import { AbsenteesTable, ClassAttendanceTable } from '@/components/attendance/AttendanceTables';
 import { LiveAttendance } from '@/components/attendance/LiveAttendance';
 import { DateNav } from '@/components/DateNav';
@@ -21,10 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AttendancePage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
-  await requireSection('school');
+  const me = await requireSection('school');
   const date = dateParam((await searchParams).date);
   const today = schoolToday();
-  const res = await load(() => api<AttendanceDay>(`/v1/admin/attendance?date=${date}`));
+  const lead = (me?.roles ?? []).some((r) => r === 'principal' || r === 'tenant_admin' || r === 'hod');
+  const [res, depts] = await Promise.all([load(() => api<AttendanceDay>(`/v1/admin/attendance?date=${date}`)), lead ? load(() => api<DeptDashboard>(`/v1/attendance-desk/dashboard?date=${date}`)) : Promise.resolve(null)]);
   const i18n = await getI18n();
   const { t, fmt } = i18n;
 
@@ -36,7 +40,9 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
         subtitle={`${fmt.date(date, 'long')}${date === today ? '' : ` · ${fmt.relativeDay(date, today)}`}`}
         actions={<DateNav date={date} today={today} />}
       />
+      <AttendanceTabs value="today" t={t} />
       {res.error !== undefined ? <ErrorState message={res.error} /> : <AttendanceView a={res.data} date={date} today={today} i18n={i18n} />}
+      {depts?.data && depts.data.departments.length > 0 && <DepartmentDay data={depts.data} />}
     </>
   );
 }

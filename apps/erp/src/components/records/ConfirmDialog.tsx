@@ -17,6 +17,7 @@ export function ConfirmDialog({
   tone,
   typeToConfirm,
   busy,
+  disabled,
   onConfirm,
   onClose,
 }: {
@@ -26,6 +27,8 @@ export function ConfirmDialog({
   tone?: 'danger';
   typeToConfirm?: string;
   busy?: boolean;
+  /** Keeps the confirm button off (a required value is missing). */
+  disabled?: boolean;
   onConfirm: () => void;
   onClose: () => void;
 }) {
@@ -43,7 +46,7 @@ export function ConfirmDialog({
           <Button variant="outline" onClick={onClose} disabled={busy}>
             {t('common.cancel')}
           </Button>
-          <Button variant={tone === 'danger' ? 'destructive' : 'default'} onClick={onConfirm} disabled={!ready || busy} data-testid="confirm">
+          <Button variant={tone === 'danger' ? 'destructive' : 'default'} onClick={onConfirm} disabled={!ready || busy || disabled} data-testid="confirm">
             {confirmLabel}
           </Button>
         </>
@@ -56,7 +59,7 @@ export function ConfirmDialog({
             className="grid gap-1.5"
             onSubmit={(e) => {
               e.preventDefault();
-              if (ready && !busy) onConfirm();
+              if (ready && !busy && !disabled) onConfirm();
             }}
           >
             <label htmlFor={id} className="text-[13px] font-semibold">

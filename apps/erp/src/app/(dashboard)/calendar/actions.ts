@@ -32,6 +32,7 @@ const body = (i: CalendarInput) => ({
   endsOn: i.endsOn,
   programIds: i.programIds?.length ? [...new Set(i.programIds)] : null,
   notify: i.notify,
+  ...(i.draft !== undefined ? { draft: i.draft } : {}),
 });
 
 export async function createCalendarEvent(input: CalendarInput): Promise<ActionResult<CalendarEvent>> {
@@ -47,6 +48,14 @@ export async function updateCalendarEvent(id: string, input: CalendarInput): Pro
   const problem = await check(input);
   if (problem) return { ok: false, error: problem };
   const res = await act(() => api<CalendarEvent>(`/v1/admin/calendar/${id}`, { method: 'PUT', body: body(input) }));
+  if (res.ok) done();
+  return res;
+}
+
+/** Publishes draft entries to students and families (and tells them), or takes entries back to draft. */
+export async function publishCalendarEvents(ids: string[], publish: boolean): Promise<ActionResult<{ changed: number }>> {
+  if (!ids.length || ids.some((id) => !UUID.test(id))) return { ok: false, error: (await getI18n()).t('error.NOT_FOUND') };
+  const res = await act(() => api<{ changed: number }>('/v1/admin/calendar/publish', { method: 'POST', body: { ids, publish } }));
   if (res.ok) done();
   return res;
 }

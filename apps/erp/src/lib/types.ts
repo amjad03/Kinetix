@@ -440,6 +440,10 @@ export interface TimetableSlot {
   teacher: { id: string; fullName: string };
   roomId: string | null;
   room: string | null;
+  /** A lab or tutorial batch of the class (null = the whole class). */
+  batch?: string | null;
+  /** Other classes taught together in this period. */
+  combinedSectionIds?: string[] | null;
 }
 
 // ---- Parent–teacher conversations (v1/conversations?all=true, read-only for leaders) ----

@@ -90,6 +90,9 @@ export interface CourseFileRow {
   reviewedAt: string | null;
   reviewedByName: string | null;
   reviewRemark: string | null;
+  /** What a complete course file holds, and how much of it this version has. */
+  checklist?: { item: string; ok: boolean }[];
+  completePct?: number;
 }
 
 export interface AuditTemplateRow {

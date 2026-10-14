@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
 import { attendanceOverrides } from '../db/schema-g1.js';
-import { attendanceCondonations, attendanceRecords, businessRules, sections, subjects, tenants, timetableSlots } from '../db/schema.js';
+import { academicSettings, attendanceCondonations, attendanceRecords, businessRules, sections, subjects, tenants, timetableSlots } from '../db/schema.js';
 import { ruleInForce } from '../governance/governance.logic.js';
 import { attendancePct, effectivePct } from './attendance-rules.js';
 import { resolveAffiliation, resolveForSection } from '../affiliation/resolve.js';
@@ -14,17 +14,29 @@ export const DEFAULT_THRESHOLD_PCT = 75;
  * is one for today, else the affiliating university's or board's profile (VTU 85%, BCI 70% for law, ...), else the institution's
  * setting, else 75.
  */
-export async function attendanceSettings(tx: Tx, sectionId?: string, today: string = new Date().toISOString().slice(0, 10)): Promise<{ lockHours: number | null; thresholdPct: number; overridden: boolean }> {
+export async function attendanceSettings(tx: Tx, sectionId?: string, today: string = new Date().toISOString().slice(0, 10)): Promise<{ lockHours: number | null; thresholdPct: number; overridden: boolean; source: ThresholdSource }> {
   const [t] = await tx.select({ settings: tenants.settings }).from(tenants);
   const rules = await tx.select().from(businessRules).where(and(eq(businessRules.domain, 'attendance'), eq(businessRules.key, 'exam-eligibility'), eq(businessRules.status, 'approved')));
   const fromRule = Number(ruleInForce(rules, today)?.params?.thresholdPercent);
   const governed = Number.isFinite(fromRule) && fromRule > 0 && fromRule <= 100 ? fromRule : null;
   const affiliation = sectionId ? await resolveForSection(tx, sectionId) : await resolveAffiliation(tx, null);
-  const base = { lockHours: t?.settings?.attendanceLockHours ?? null, thresholdPct: governed ?? affiliation?.rules.attendance.minPercent ?? t?.settings?.attendanceThresholdPct ?? DEFAULT_THRESHOLD_PCT, overridden: false };
+  const [{ value: saved } = { value: null }] = await tx.select({ value: academicSettings.value }).from(academicSettings).where(eq(academicSettings.kind, 'attendance'));
+  const office = Number(saved?.minPercent);
+  const chain: [number | null | undefined, ThresholdSource][] = [
+    [governed, 'rule'],
+    [affiliation?.rules.attendance.minPercent, 'profile'],
+    [t?.settings?.attendanceThresholdPct, 'institution'],
+    [Number.isFinite(office) && office > 0 ? office : null, 'institution'],
+  ];
+  const [thresholdPct, source] = chain.find(([v]) => typeof v === 'number') ?? [DEFAULT_THRESHOLD_PCT, 'default' as const];
+  const base = { lockHours: t?.settings?.attendanceLockHours ?? null, thresholdPct: thresholdPct as number, overridden: false, source };
   if (!sectionId) return base;
   const [o] = await tx.select({ thresholdPct: attendanceOverrides.thresholdPct, lockHours: attendanceOverrides.lockHours }).from(attendanceOverrides).innerJoin(sections, eq(sections.programId, attendanceOverrides.programId)).where(eq(sections.id, sectionId));
-  return o ? { thresholdPct: o.thresholdPct, lockHours: o.lockHours ?? base.lockHours, overridden: true } : base;
+  return o ? { thresholdPct: o.thresholdPct, lockHours: o.lockHours ?? base.lockHours, overridden: true, source: 'programme' } : base;
 }
+
+/** Where the attendance threshold in force comes from. */
+export type ThresholdSource = 'programme' | 'rule' | 'profile' | 'institution' | 'default';
 
 export interface SubjectAttendance {
   studentId: string;
@@ -96,7 +108,8 @@ async function condonedPoints(tx: Tx, studentIds: string[]) {
   const rows = await tx
     .select({ studentId: attendanceCondonations.studentId, subjectId: attendanceCondonations.subjectId, points: sql<number>`sum(${attendanceCondonations.approvedPoints})::int` })
     .from(attendanceCondonations)
-    .where(and(inArray(attendanceCondonations.studentId, studentIds), eq(attendanceCondonations.status, 'approved')))
+    // A condonation with a fee counts once the fee is paid or waived.
+    .where(and(inArray(attendanceCondonations.studentId, studentIds), eq(attendanceCondonations.status, 'approved'), inArray(attendanceCondonations.feeStatus, ['none', 'paid', 'waived'])))
     .groupBy(attendanceCondonations.studentId, attendanceCondonations.subjectId);
   const overall = new Map<string, number>();
   const bySubject = new Map<string, number>();

@@ -14,6 +14,8 @@ export interface CalendarEvent {
   /** null: the whole institution. */
   programIds: string[] | null;
   programs: string[] | null;
+  /** False for a draft: staff see it, students and families do not until it is published. */
+  published?: boolean;
 }
 
 export interface CalendarList {
@@ -31,6 +33,8 @@ export interface CalendarInput {
   endsOn: string;
   programIds: string[] | null;
   notify: boolean;
+  /** Keep it a draft (staff only) until published. */
+  draft?: boolean;
 }
 
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;

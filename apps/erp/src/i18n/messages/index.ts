@@ -99,8 +99,12 @@ import recordsDepth from './records-depth';
 
 import feeDepth from './fee-depth';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, accreditationHub, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk, v2, ease, campusOps, qualityHub, workflowBuilder, affiliation, records, reportStudio, communication, docDesigns, examCell, studentInfo, admissionsDesk, researchDepth, obeDepth, iqacDepth, recordsDepth, feeDepth, docEditor } as const;
 
+
+import attendanceDesk from './attendance-desk';
+import academicPlanning from './academic-planning';
+
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality, questionBank, workflows, evaluation, lifecycleDeep, schoolLife, govern, paymentsDesk, institution, privacy, curriculum, admissionsGrowth, hrLifecycle, hrFlow, assist, depth, g1, pathwaysA, pathwaysB, governDepth, scan, trainings, accreditation, accreditationHub, university, gatewayBooks, integrations, admissionsDepth, redesign, admissionsExamsFlow, homes, roster, workspace, academics, examOffice, feeDesk, v2, ease, campusOps, qualityHub, workflowBuilder, affiliation, records, reportStudio, communication, docDesigns, examCell, studentInfo, admissionsDesk, researchDepth, obeDepth, iqacDepth, recordsDepth, feeDepth, docEditor, attendanceDesk, academicPlanning } as const;
 
 
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.

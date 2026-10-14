@@ -52,6 +52,10 @@ export interface SlotInput {
   dayOfWeek: number;
   startsAt: string;
   endsAt: string;
+  /** A lab or tutorial batch ("B1"); empty = the whole class. */
+  batch?: string | null;
+  /** Other classes taught together in this period. */
+  combinedSectionIds?: string[];
 }
 
 /** The same checks the API makes on the form, so mistakes are explained before saving (dictionary keys). */
