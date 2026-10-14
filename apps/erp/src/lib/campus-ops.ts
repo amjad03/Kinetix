@@ -171,9 +171,9 @@ export const MODULE_REPORTS: Record<OpsModule, string[]> = {
   hostel: ['hostel.occupancy', 'hostel.outpasses', 'hostel.complaints'],
   transport: ['transport.riders', 'transport.compliance', 'transport.expenses'],
   canteen: ['canteen.sales'],
-  inventory: ['inventory.stock', 'inventory.ledger'],
-  assets: ['assets.register', 'assets.maintenance'],
-  procurement: ['procurement.orders', 'procurement.vendors'],
+  inventory: ['inventory.stock', 'inventory.ledger', 'inventory.stockRegister', 'inventory.slowMoving', 'inventory.consumption', 'inventory.verification', 'inventory.gate'],
+  assets: ['assets.register', 'assets.maintenance', 'assets.deadStock', 'assets.naacInfra', 'assets.transfers', 'assets.condemned', 'assets.bookings', 'assets.tickets'],
+  procurement: ['procurement.orders', 'procurement.vendors', 'procurement.register', 'procurement.indents', 'procurement.debitNotes'],
 };
 export const REPORT_IDS = Object.values(MODULE_REPORTS).flat();
 export const isReportId = (id: string) => REPORT_IDS.includes(id);

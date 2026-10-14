@@ -32,6 +32,25 @@ export async function disposeAsset(assetId: string, v: V) {
   return send(`/v1/assets/${id(assetId)}/dispose`, { disposedOn: v.disposedOn, disposalPaise: num(v.proceeds || '0') }, PAGE);
 }
 
+/** Moves an asset to another room, place or department; the transfer register keeps where it was. */
+export async function transferAsset(assetId: string, v: V) {
+  return send(`/v1/assets/${id(assetId)}/transfer`, { reason: v.reason, ...(optStr(v.toRoomId) ? { toRoomId: v.toRoomId } : {}), ...(optStr(v.toDepartmentId) ? { toDepartmentId: v.toDepartmentId } : {}), ...(optStr(v.toLocation) ? { toLocation: v.toLocation } : {}), ...(optStr(v.on) ? { on: v.on } : {}) }, PAGE);
+}
+
+/** Proposes an asset for condemnation; the committee (principal or administrator) decides. */
+export async function condemnAsset(assetId: string, v: V) {
+  return send(`/v1/assets/${id(assetId)}/condemn`, { reason: v.reason, condition: v.condition ?? '' }, PAGE);
+}
+
+export async function rejectCondemnation(condemnationId: string, v: V) {
+  return send(`/v1/assets/condemnations/${id(condemnationId)}/decision`, { approve: false, ...(optStr(v.note) ? { note: v.note } : {}) }, PAGE);
+}
+
+/** Writes off an approved condemnation: the asset is disposed of by auction, scrap, donation or buy-back. */
+export async function writeOffAsset(condemnationId: string, v: V) {
+  return send(`/v1/assets/condemnations/${id(condemnationId)}/write-off`, { disposalMode: v.disposalMode, realisedPaise: num(v.realised || '0'), ...(optStr(v.on) ? { on: v.on } : {}) }, PAGE);
+}
+
 export async function postDepreciation(v: V) {
   return send('/v1/assets/gl/depreciation', { fiscalYear: v.fiscalYear }, PAGE);
 }

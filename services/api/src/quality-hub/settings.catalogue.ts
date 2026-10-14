@@ -49,7 +49,9 @@ export const SETTINGS_CATALOGUE: Record<SettingsModule, ModuleCatalogue> = {
     defaults: [],
   },
   // New drives start with these eligibility limits; offers get a response deadline this many days out (0: none).
-  placements: { numbering: [], rules: [num('offerResponseDays', 0, 0, 60)], templates: {}, defaults: [num('minCgpa', 0, 0, 10), num('maxBacklogs', 0, 0, 50)] },
+  // offerPolicy: one_offer stops a placed student; dream lets them sit for a higher category; open has no limit.
+  // A student absent from the first round of a drive they registered for is debarred for debarDaysForAbsence days (0 = never).
+  placements: { numbering: [], rules: [num('offerResponseDays', 0, 0, 60), flag('requireOptIn', false), { key: 'offerPolicy', kind: 'choice', default: 'dream', choices: ['one_offer', 'dream', 'open'] }, num('debarDaysForAbsence', 30, 0, 365)], templates: {}, defaults: [num('minCgpa', 0, 0, 10), num('maxBacklogs', 0, 0, 50)] },
   // Students may ask alumni for mentoring only while this is on.
   alumni: { numbering: [], rules: [flag('mentorshipEnabled', true)], templates: {}, defaults: [] },
   // Project codes from approved proposals and new projects.

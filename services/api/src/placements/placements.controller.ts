@@ -12,7 +12,7 @@ import { DbService } from '../db/db.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { promoteToAlumni } from './alumni-promotion.js';
 import { driveRegistrations, driveRounds, internships, placementCompanies, placementDrives, placementOffers, programs, roundResults, sections, students } from '../db/schema.js';
-import { canMoveDrive, checkEligibility, ctcSummary } from './eligibility.js';
+import { canMoveDrive, checkEligibility, ctcSummary, standingReasons } from './eligibility.js';
 import { PLACEMENT_ROLES, PLACEMENT_VIEW_ROLES, checkVersion, found } from './placements.access.js';
 import { PlacementsService } from './placements.service.js';
 
@@ -24,7 +24,11 @@ const CompanyBody = z.object({
   contactName: Opt(80),
   contactEmail: z.email().optional(),
   contactPhone: Opt(30),
-  status: z.enum(['active', 'blacklisted']).default('active'),
+  status: z.enum(['active', 'blacklisted', 'pending']).default('active'),
+  groupName: Opt(120),
+  city: z.string().trim().max(80).default(''),
+  address: z.string().trim().max(300).default(''),
+  description: z.string().trim().max(2000).default(''),
 });
 const DriveBody = z.object({
   companyId: z.uuid(),
@@ -40,6 +44,12 @@ const DriveBody = z.object({
   minCgpa: z.number().min(0).max(10).optional(),
   maxBacklogs: z.number().int().min(0).max(50).optional(),
   programIds: z.array(z.uuid()).max(50).default([]),
+  category: z.enum(['regular', 'dream', 'super_dream']).default('regular'),
+  batchYears: z.array(z.number().int().min(2000).max(2100)).max(10).default([]),
+  registrationOpensOn: Day.nullish(),
+  venue: z.string().trim().max(160).default(''),
+  skills: z.string().trim().max(500).default(''),
+  bond: z.string().trim().max(300).default(''),
   expectedVersion: z.number().int().optional(),
 });
 const RoundBody = z.object({ name: z.string().trim().min(1).max(80), kind: z.enum(['aptitude', 'technical', 'gd', 'interview', 'hr']).default('interview'), scheduledOn: Day.optional() });
@@ -106,6 +116,7 @@ export class PlacementsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const company = found((await tx.select().from(placementCompanies).where(eq(placementCompanies.id, b.companyId)))[0], 'Company');
       if (company.status === 'blacklisted') throw new ConflictException('That company is blacklisted');
+      if (company.status === 'pending') throw new ConflictException('Verify the company before creating a drive for it');
       const { expectedVersion: _v, ...values } = b;
       // Eligibility limits left out of the form come from the placement settings.
       const set = await qualitySettings(tx, p.tenantId, 'placements');
@@ -183,28 +194,17 @@ export class PlacementsController {
   }
 
   /** Records pass/fail/absent for registrations in one round; a fail rejects the student, a pass shortlists. */
+  /**
+   * Records pass/fail/absent for registrations in one round; a fail rejects the student, a pass shortlists. A student
+   * absent from the first round of a placement drive they registered for is debarred for the settings' days.
+   */
   @Put('drives/:id/rounds/:roundId/results')
   @Auth('user', PLACEMENT_ROLES)
   roundResults(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Param('roundId', ParseUUIDPipe) roundId: string, @Body(new ZodBody(ResultsBody)) b: z.infer<typeof ResultsBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const drive = found((await tx.select().from(placementDrives).where(eq(placementDrives.id, id)))[0], 'Drive');
-      const round = found((await tx.select().from(driveRounds).where(and(eq(driveRounds.id, roundId), eq(driveRounds.driveId, id))))[0], 'Round');
-      if (['draft', 'cancelled'].includes(drive.status)) throw new ConflictException('This drive is not running');
-      const regs = await tx.select().from(driveRegistrations).where(and(eq(driveRegistrations.driveId, id), inArray(driveRegistrations.id, b.results.map((r) => r.registrationId))));
-      if (regs.length !== new Set(b.results.map((r) => r.registrationId)).size) throw new BadRequestException('Some registrations do not belong to this drive');
-      const prev = round.seq > 1 ? (await tx.select({ id: driveRounds.id }).from(driveRounds).where(and(eq(driveRounds.driveId, id), eq(driveRounds.seq, round.seq - 1))))[0] : null;
-      const prevPassed = prev ? new Set((await tx.select({ r: roundResults.registrationId }).from(roundResults).where(and(eq(roundResults.roundId, prev.id), eq(roundResults.result, 'pass')))).map((x) => x.r)) : null;
-      for (const r of b.results) {
-        const reg = regs.find((x) => x.id === r.registrationId)!;
-        if (['withdrawn', 'rejected', 'selected'].includes(reg.status)) throw new ConflictException(`A ${reg.status} registration cannot take a round result`);
-        if (prevPassed && !prevPassed.has(reg.id)) throw new ConflictException('The student has not cleared the previous round');
-        await tx.insert(roundResults).values({ tenantId: p.tenantId, roundId, registrationId: reg.id, result: r.result, note: r.note }).onConflictDoUpdate({ target: [roundResults.roundId, roundResults.registrationId], set: { result: r.result, note: r.note, recordedAt: new Date() } });
-        const status = r.result === 'pass' ? 'shortlisted' : 'rejected';
-        await tx.update(driveRegistrations).set({ status }).where(eq(driveRegistrations.id, reg.id));
-        await this.svc.notifyStudent(tx, reg.studentId, drive.title, `${round.name}: ${r.result === 'pass' ? 'you cleared this round' : 'you were not selected'}`, `round:${roundId}:${reg.id}`);
-      }
-      await auditUser(tx, p, 'placement.round_results', 'drive', id, { roundId, count: b.results.length });
-      return { recorded: b.results.length };
+      const out = await this.svc.recordResults(tx, { tenantId: p.tenantId, userId: p.userId }, id, roundId, b.results);
+      await auditUser(tx, p, 'placement.round_results', 'drive', id, { roundId, count: b.results.length, debarred: out.debarred });
+      return out;
     });
   }
 
@@ -220,12 +220,25 @@ export class PlacementsController {
         const [last] = await tx.select().from(roundResults).where(and(eq(roundResults.roundId, rounds[0].id), eq(roundResults.registrationId, reg.id)));
         if (last?.result !== 'pass') throw new ConflictException('The student has not cleared the final round');
       }
+      // A duplicate offer from the same group of companies is refused (one group, one offer).
+      const [company] = await tx.select({ group: placementCompanies.groupName }).from(placementCompanies).where(eq(placementCompanies.id, drive.companyId));
+      if (company?.group?.trim()) {
+        const [dup] = await tx
+          .select({ id: placementOffers.id, company: placementCompanies.name })
+          .from(placementOffers)
+          .innerJoin(placementDrives, eq(placementDrives.id, placementOffers.driveId))
+          .innerJoin(placementCompanies, eq(placementCompanies.id, placementDrives.companyId))
+          .where(and(eq(placementOffers.studentId, reg.studentId), inArray(placementOffers.status, ['offered', 'accepted']), sql`lower(${placementCompanies.groupName}) = ${company.group.trim().toLowerCase()}`));
+        if (dup) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'SAME_GROUP_OFFER', message: `The student already holds an offer from ${dup.company}, of the same group` });
+      }
+      // A student who still has backlogs gets a conditional offer, held until they are cleared.
+      const now = await this.svc.academics(tx, reg.studentId);
       const offeredOn = await this.svc.today(tx);
       // Without a deadline the student has the settings' number of days to respond.
       const respondDays = Number((await qualitySettings(tx, p.tenantId, 'placements')).rules.offerResponseDays);
       const respondBy = b.respondBy ?? (respondDays > 0 ? new Date(Date.parse(`${offeredOn}T00:00:00Z`) + respondDays * 86_400_000).toISOString().slice(0, 10) : undefined);
       const [row] = await orConflict('This student already has an offer from this drive', () =>
-        tx.insert(placementOffers).values({ tenantId: p.tenantId, driveId: id, registrationId: reg.id, studentId: reg.studentId, roleTitle: b.roleTitle ?? drive.roleTitle, ctcLpa: b.ctcLpa ?? drive.ctcLpa, offeredOn, respondBy }).returning(),
+        tx.insert(placementOffers).values({ tenantId: p.tenantId, driveId: id, registrationId: reg.id, studentId: reg.studentId, roleTitle: b.roleTitle ?? drive.roleTitle, ctcLpa: b.ctcLpa ?? drive.ctcLpa, offeredOn, respondBy, conditional: now.backlogs > 0, conditionNote: now.backlogs > 0 ? `Clear ${now.backlogs} pending backlog${now.backlogs === 1 ? '' : 's'}` : null }).returning(),
       );
       await tx.update(driveRegistrations).set({ status: 'selected' }).where(eq(driveRegistrations.id, reg.id));
       await auditUser(tx, p, 'placement.offer_made', 'offer', row.id, { driveId: id, studentId: reg.studentId, ctcLpa: row.ctcLpa });
@@ -281,13 +294,20 @@ export class PlacementsController {
       const offers = await tx.select().from(placementOffers).where(eq(placementOffers.studentId, studentId)).orderBy(desc(placementOffers.createdAt));
       const interns = await tx.select().from(internships).where(eq(internships.studentId, studentId)).orderBy(desc(internships.startsOn));
       const mine = new Map(regs.map((r) => [r.driveId, r]));
+      const [standing, rules] = [await this.svc.standing(tx, studentId), await this.svc.rules(tx, p.tenantId)];
+      const eligibility = (d: typeof placementDrives.$inferSelect) => {
+        const e = checkEligibility(d, academics, today);
+        const more = standingReasons(d.kind, d.category, standing, rules, today);
+        return { eligible: e.eligible && !more.length, reasons: [...e.reasons, ...more] };
+      };
       return {
         academics: { cgpa: academics.cgpa, backlogs: academics.backlogs },
+        standing: { optedIn: standing.optedIn, debarredUntil: standing.debarredUntil, requireOptIn: rules.requireOptIn, policy: rules.policy },
         placed: offers.some((o) => o.status === 'accepted'),
         drives: drives
           .filter((x) => x.d.status === 'open' || mine.has(x.d.id))
-          .map((x) => ({ id: x.d.id, title: x.d.title, company: x.company, kind: x.d.kind, roleTitle: x.d.roleTitle, ctcLpa: x.d.ctcLpa, stipendMonthly: x.d.stipendMonthly, location: x.d.location, driveDate: x.d.driveDate, registrationClosesOn: x.d.registrationClosesOn, status: x.d.status, minCgpa: x.d.minCgpa, maxBacklogs: x.d.maxBacklogs, eligibility: checkEligibility(x.d, academics, today), registration: mine.get(x.d.id) ? { id: mine.get(x.d.id)!.id, status: mine.get(x.d.id)!.status } : null })),
-        offers: offers.map((o) => ({ id: o.id, driveId: o.driveId, roleTitle: o.roleTitle, ctcLpa: o.ctcLpa, status: o.status, offeredOn: o.offeredOn, respondBy: o.respondBy })),
+          .map((x) => ({ id: x.d.id, title: x.d.title, company: x.company, kind: x.d.kind, roleTitle: x.d.roleTitle, ctcLpa: x.d.ctcLpa, stipendMonthly: x.d.stipendMonthly, location: x.d.location, driveDate: x.d.driveDate, registrationClosesOn: x.d.registrationClosesOn, status: x.d.status, minCgpa: x.d.minCgpa, maxBacklogs: x.d.maxBacklogs, category: x.d.category, registrationOpensOn: x.d.registrationOpensOn, venue: x.d.venue, eligibility: eligibility(x.d), registration: mine.get(x.d.id) ? { id: mine.get(x.d.id)!.id, status: mine.get(x.d.id)!.status } : null })),
+        offers: offers.map((o) => ({ id: o.id, driveId: o.driveId, roleTitle: o.roleTitle, ctcLpa: o.ctcLpa, status: o.status, offeredOn: o.offeredOn, respondBy: o.respondBy, conditional: o.conditional, conditionNote: o.conditionNote, joiningStatus: o.joiningStatus, hasLetter: !!o.offerLetterKey })),
         internships: interns.map((i) => ({ id: i.id, title: i.title, orgName: i.orgName, startsOn: i.startsOn, endsOn: i.endsOn, status: i.status, evaluationScore: i.evaluationScore })),
       };
     });
@@ -307,10 +327,10 @@ export class PlacementsController {
       const [a, today] = [await this.svc.academics(tx, studentId), await this.svc.today(tx)];
       const el = checkEligibility(drive, a, today);
       if (!el.eligible) throw new ConflictException({ message: 'You are not eligible for this drive', code: 'NOT_ELIGIBLE', reasons: el.reasons });
-      if (drive.kind === 'placement') {
-        const [placed] = await tx.select({ id: placementOffers.id }).from(placementOffers).where(and(eq(placementOffers.studentId, studentId), eq(placementOffers.status, 'accepted')));
-        if (placed) throw new ConflictException('You have already accepted an offer');
-      }
+      const why = standingReasons(drive.kind, drive.category, await this.svc.standing(tx, studentId), await this.svc.rules(tx, p.tenantId), today);
+      if (why.includes('already_placed')) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'ALREADY_PLACED', message: 'You have already accepted an offer; only a drive of a higher category is open to you', reasons: why });
+      if (why.includes('debarred')) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'DEBARRED', message: 'You are debarred from placement drives for now; ask the placement cell', reasons: why });
+      if (why.length) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'NOT_OPTED_IN', message: 'Opt in to placements first', reasons: why });
       const values = { cgpaAt: a.cgpa ?? 0, backlogsAt: a.backlogs, status: 'registered', createdAt: this.svc.now() };
       const [row] = existing
         ? await tx.update(driveRegistrations).set(values).where(eq(driveRegistrations.id, existing.id)).returning()
@@ -351,7 +371,7 @@ export class PlacementsController {
         await tx.update(placementOffers).set({ status: 'expired' }).where(eq(placementOffers.id, id));
         throw new ConflictException('This offer has expired');
       }
-      const [row] = await orConflict('You have already accepted another offer', () => tx.update(placementOffers).set({ status: b.response, respondedAt: new Date(), declineReason: b.response === 'declined' ? (b.reason ?? null) : null }).where(eq(placementOffers.id, id)).returning());
+      const [row] = await orConflict('You have already accepted another offer', () => tx.update(placementOffers).set({ status: b.response, respondedAt: new Date(), respondedVia: 'student', declineReason: b.response === 'declined' ? (b.reason ?? null) : null }).where(eq(placementOffers.id, id)).returning());
       await auditUser(tx, p, `placement.offer_${b.response}`, 'offer', id, { driveId: o.driveId });
       if (b.response === 'accepted') {
         const [drive] = await tx.select({ companyId: placementDrives.companyId }).from(placementDrives).where(eq(placementDrives.id, o.driveId));

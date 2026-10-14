@@ -1086,6 +1086,27 @@
       "when": 1791506022000,
       "tag": "0164_accounts_depth",
       "breakpoints": true
+    },
+    {
+      "idx": 155,
+      "version": "7",
+      "when": 1791506029000,
+      "tag": "0171_procurement_depth",
+      "breakpoints": true
+    },
+    {
+      "idx": 156,
+      "version": "7",
+      "when": 1791506030000,
+      "tag": "0172_assets_facilities",
+      "breakpoints": true
+    },
+    {
+      "idx": 157,
+      "version": "7",
+      "when": 1791506031000,
+      "tag": "0173_placements_depth",
+      "breakpoints": true
     }
   ]
 }
