@@ -188,6 +188,51 @@ describe('branding, document templates and the register of issued documents', ()
       expect(await audited('doc_template.updated')).toBe(3);
     });
 
+    it('gives the editor what it needs: layout issues by path, groups, real people to preview with, and the fonts', async () => {
+      const copy = (await post('principal', '/v1/documents/designs', { from: 'preset:student_id_card:modern', name: 'Editor card' }).expect(201)).body;
+      const layout = copy.layout as DocLayout;
+      // An invalid layout comes back with every issue and where it is.
+      const broken = structuredClone(layout);
+      (broken.sides[0].elements[1] as { x: unknown }).x = 'left';
+      (broken.sides[1].elements[0] as { opacity: number }).opacity = 3;
+      const bad = (await put('principal', `/v1/documents/designs/${copy.id}`, { layout: broken }).expect(400)).body;
+      expect(bad.code).toBe('LAYOUT_INVALID');
+      expect(bad.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ['sides', 0, 'elements', 1, 'x'] }), expect.objectContaining({ path: ['sides', 1, 'elements', 0, 'opacity'] })]));
+      expect((await http().post('/v1/documents/designs/preview').set(auth('principal')).send({ layout: broken, format: 'png' }).expect(400)).body.code).toBe('LAYOUT_INVALID');
+      // Grouped elements keep their group through a save.
+      layout.sides[0].elements[1].group = 'g1';
+      layout.sides[0].elements[2].group = 'g1';
+      const saved = (await put('principal', `/v1/documents/designs/${copy.id}`, { layout, note: 'Grouped the header' }).expect(200)).body;
+      expect(saved.layout.sides[0].elements.filter((e: { group?: string }) => e.group === 'g1')).toHaveLength(2);
+
+      // Search people, then preview with one of them instead of the sample student.
+      const kids = (await get('accountant', '/v1/documents/designs/subjects?kind=student&q=student a').expect(200)).body;
+      expect(kids[0]).toMatchObject({ type: 'student', id: t.students[0].id, name: 'Student A' });
+      const staff = (await get('accountant', `/v1/documents/designs/subjects?kind=staff&q=${encodeURIComponent(t.teacher.fullName.slice(0, 5))}`).expect(200)).body;
+      expect(staff.map((x: { id: string }) => x.id)).toContain(t.teacher.id);
+      await get('accountant', '/v1/documents/designs/subjects?kind=parents').expect(400);
+      await get('teacher', '/v1/documents/designs/subjects?kind=student').expect(403);
+      expect((await get('accountant', `/v1/documents/designs/subjects/student/${t.students[0].id}`).expect(200)).body.student).toMatchObject({ name: 'Student A', rollNo: t.students[0].rollNo });
+      expect((await get('accountant', `/v1/documents/designs/subjects/staff/${t.teacher.id}`).expect(200)).body.staff).toMatchObject({ name: t.teacher.fullName });
+      await get('accountant', `/v1/documents/designs/subjects/student/${crypto.randomUUID()}`).expect(404);
+      await get('accountant', `/v1/documents/designs/subjects/guardian/${t.students[0].id}`).expect(404);
+      const real = await http().post('/v1/documents/designs/preview').set(auth('principal')).send({ layout, format: 'pdf', subject: { type: 'student', id: t.students[0].id } }).buffer(true).parse(binary).expect(200);
+      const text = pdfText(real.body as Buffer);
+      expect(text).toContain('Student A');
+      expect(text).not.toContain('Ananya');
+      await http().post('/v1/documents/designs/preview').set(auth('principal')).send({ layout, format: 'pdf', subject: { type: 'staff', id: t.teacher.id } }).expect(400);
+      await http().post('/v1/documents/designs/preview').set(auth('principal')).send({ layout, format: 'pdf', subject: { type: 'student', id: crypto.randomUUID() } }).expect(404);
+      expect((await get('outsider', '/v1/documents/designs/subjects?kind=student&q=student').expect(200)).body.map((x: { id: string }) => x.id)).not.toContain(t.students[0].id);
+
+      // The faces the PDF embeds, for the canvas.
+      const font = await getBin('accountant', '/v1/documents/designs/fonts/NotoSerif-Regular.ttf').expect(200);
+      expect(font.headers['content-type']).toBe('font/ttf');
+      expect((font.body as Buffer).length).toBeGreaterThan(10_000);
+      await getBin('accountant', '/v1/documents/designs/fonts/..%2F..%2Fpackage.json').expect(404);
+      await getBin('accountant', '/v1/documents/designs/fonts/Comic.ttf').expect(404);
+      await http().delete(`/v1/documents/designs/${copy.id}`).set(auth('principal')).expect(204);
+    });
+
     it('sets the default per document type, which every generator then uses', async () => {
       await put('principal', '/v1/documents/designs/defaults/marks_card', { templateId: ids.receiptTpl }).expect(400);
       const list = (await put('principal', '/v1/documents/designs/defaults/fee_receipt', { templateId: ids.receiptTpl }).expect(200)).body;
