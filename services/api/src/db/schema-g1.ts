@@ -1,7 +1,7 @@
 // Requirements gap close for PRD sections 1-21 (migration 0117): boards, per-programme attendance, campus fee structures, trusted devices, prior education,
 // landing pages, subject frequency, faculties, learning support, forums, rubrics, reattempts and integrity flags. Kept apart from schema.ts, which they reference.
 import { sql } from 'drizzle-orm';
-import { boolean, date, index, integer, jsonb, numeric, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { bigint, boolean, date, index, integer, jsonb, numeric, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { academicYears, admissionCycles, applications, campuses, courseOutcomes, lessonPlans, lmsCourses, programs, sections, students, subjects, tenants, topics, users } from './schema.js';
 import { affiliatedInstitutions, learningOutcomes } from './schema-curriculum.js';
 import { assessmentSchemes } from './schema.js';
@@ -65,6 +65,8 @@ export const campusSettings = pgTable(
 export interface FeeItem {
   head: string;
   amountPaise: number;
+  /** The fee head's code (fee_heads), when the item was picked from the heads. */
+  code?: string;
 }
 
 /** A fee plan for one campus and/or programme: heads and amounts, issued to the matching students. */
@@ -88,6 +90,16 @@ export const feeStructures = pgTable('fee_structures', {
   publishedAt: timestamp('published_at', { withTimezone: true }),
   createdBy: userRef('created_by'),
   createdAt: createdAt(),
+  /** Who it is for beyond campus and programme: admission batch, quota, category and semester (migration 0162). */
+  batch: text('batch'),
+  quota: text('quota'),
+  category: text('category'),
+  term: smallint('term'),
+  /** Credit-hour fee: this much per registered credit, charged under `credit_head`. */
+  perCreditPaise: bigint('per_credit_paise', { mode: 'number' }).notNull().default(0),
+  creditHead: text('credit_head'),
+  instalmentPlanId: uuid('instalment_plan_id'),
+  sortOrder: integer('sort_order').notNull().default(0),
 });
 
 /** A device a person has chosen to trust (a hash of its install id; the id itself is never stored). */

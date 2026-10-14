@@ -29,6 +29,9 @@ const HEADS: RoleName[] = ['principal', 'tenant_admin'];
 const FEE: RoleName[] = ['principal', 'tenant_admin', 'accountant'];
 const may = (roles: RoleName[], allowed: RoleName[]) => roles.some((r) => allowed.includes(r));
 const today = () => new Date().toISOString().slice(0, 10);
+/** The role the request waits for on its approval chain decides it (an institution admin always may), never the person who asked. */
+const onChain = (r: R, me: { id: string; roles: RoleName[] }, by: unknown) => (me.roles.includes(s(r.chainRole) as RoleName) || me.roles.includes('tenant_admin')) && s(by) !== me.id;
+const waiting = (r: R): Fact[] => (r.status === 'pending' || r.status === 'requested' ? [f('waitingFor', r.chainRole, 'status')] : []);
 
 /** done / current / upcoming / rejected for a request that waits for one decision. */
 function decisionSteps(r: R, waiting: string, requested: string, by: string, decidedBy: string, last?: StepSpec): StepSpec[] {
@@ -114,6 +117,10 @@ export function recordView(entity: Entity, id: string, d: Api, me: { id: string;
             ? ([
                 { label: 'fd.a.concession', path: '/v1/fee-accounts/concessions', fixed: { studentId: s(r.studentId), invoiceId: id }, variant: 'outline', done: 'fd.done.requested', fields: [kindField, { name: 'percent', label: 'fd.col.percent', kind: 'number' }, { name: 'amountPaise', label: 'fd.col.amount', kind: 'money' }, { name: 'sponsorName', label: 'fd.col.sponsor' }, reason] },
                 { label: 'fd.a.writeOff', path: '/v1/fee-accounts/write-offs', fixed: { invoiceId: id }, variant: 'outline', done: 'fd.done.requested', fields: [{ name: 'amountPaise', label: 'fd.col.amount', kind: 'money', required: true, defaultValue: String(bal / 100) }, reason] },
+                ...rows(d.lateFees)
+                  .filter((l) => Number(l.appliedPaise) > Number(l.waivedPaise))
+                  .slice(0, 1)
+                  .map((l) => ({ label: 'fx.a.askWaiver', path: '/v1/fee-setup/waivers', fixed: { lateFeeId: l.id }, variant: 'outline' as const, done: 'fd.done.requested', fields: [{ name: 'amountPaise', label: 'fx.f.waiveAmount', kind: 'money' as const, defaultValue: String((Number(l.appliedPaise) - Number(l.waivedPaise)) / 100) }, reason] })),
               ] satisfies ActionSpec[])
             : [],
       };
@@ -121,7 +128,15 @@ export function recordView(entity: Entity, id: string, d: Api, me: { id: string;
     case 'receipts': {
       const st = s(r.status);
       const actions: ActionSpec[] = [];
-      if (st === 'paid') actions.push({ label: 'fd.a.refund', path: '/v1/fee-accounts/refunds', fixed: { paymentId: id }, variant: 'outline', done: 'fd.done.requested', fields: [{ name: 'amountPaise', label: 'fd.col.amount', kind: 'money', required: true }, reason] });
+      if (st === 'paid')
+        actions.push({
+          label: 'fd.a.refund',
+          path: '/v1/fee-accounts/refunds',
+          fixed: { paymentId: id },
+          variant: 'outline',
+          done: 'fd.done.requested',
+          fields: [{ name: 'amountPaise', label: 'fd.col.amount', kind: 'money', required: true }, reason, { name: 'closeDues', label: 'fx.f.withdrawal', kind: 'bool' }, { name: 'payeeName', label: 'fx.f.payeeName' }, { name: 'payeeAccount', label: 'fx.f.payeeAccount' }, { name: 'payeeIfsc', label: 'fx.f.payeeIfsc' }],
+        });
       if (st === 'paid' && r.method === 'cheque' && !r.chequeId) actions.push({ label: 'fd.a.registerCheque', path: '/v1/fee-accounts/cheques', fixed: { paymentId: id }, done: 'fd.saved', fields: [{ name: 'chequeNo', label: 'fd.col.chequeNo', required: true, defaultValue: s(r.reference).match(/\d{6}/)?.[0] }, { name: 'bankName', label: 'fd.col.bank', required: true }, { name: 'chequeDate', label: 'fd.col.date', kind: 'date', required: true, defaultValue: s(r.paid_at).slice(0, 10) }] });
       return {
         title: s(r.receipt_no),
@@ -141,10 +156,10 @@ export function recordView(entity: Entity, id: string, d: Api, me: { id: string;
         title: s(r.number),
         subtitle: `${s(r.student)}${r.invoiceNo ? ` · ${s(r.invoiceNo)}` : ''}`,
         status: s(r.status),
-        facts: [f('kind', r.kind, 'status'), f('amount', r.amount_paise, 'money'), f('applied', r.applied_paise, 'money'), f('percent', r.percent ?? '—'), f('sponsor', r.sponsor_name ?? '—')],
-        details: [f('student', r.student), f('invoice', r.invoiceTitle ?? '—'), f('reason', r.reason), f('requestedBy', r.requestedByName)],
+        facts: [f('kind', r.kind, 'status'), f('amount', r.amount_paise, 'money'), f('applied', r.applied_paise, 'money'), f('percent', r.percent ?? '—'), ...waiting(r)],
+        details: [f('student', r.student), f('invoice', r.invoiceTitle ?? '—'), f('type', r.typeName ?? '—'), f('heads', Array.isArray(r.head_codes) && r.head_codes.length ? r.head_codes.join(', ') : '—'), f('sponsor', r.sponsor_name ?? '—'), f('reason', r.reason), f('requestedBy', r.requestedByName)],
         steps: decisionSteps(r, 'pending', 'fd.step.requested', 'requestedByName', 'decidedByName', { id: 'applied', label: 'fd.step.applied', state: Number(r.applied_paise) > 0 ? 'done' : r.status === 'rejected' ? 'skipped' : 'upcoming', at: s(r.decided_at) || null }),
-        decide: r.status === 'pending' ? { path: `${base}/decide`, canDecide: may(me.roles, FEE) && notMine(r.requested_by) } : undefined,
+        decide: r.status === 'pending' ? { path: `${base}/decide`, canDecide: onChain(r, me, r.requested_by) } : undefined,
       };
     case 'refunds': {
       const st = s(r.status);
@@ -152,11 +167,25 @@ export function recordView(entity: Entity, id: string, d: Api, me: { id: string;
         title: s(r.number),
         subtitle: `${s(r.student)} · ${s(r.receiptNo)}`,
         status: st,
-        facts: [f('amount', r.amount_paise, 'money'), f('receipt', r.receiptNo), f('paidOriginally', r.paymentPaise, 'money'), f('mode', r.pay_mode ?? r.method, 'status'), f('requestedBy', r.requestedByName)],
-        details: [f('reason', r.reason), f('reference', r.pay_reference ?? '—'), f('paidBy', r.paidByName ?? '—'), f('paidAt', r.paid_at, 'datetime')],
+        facts: [f('amount', r.amount_paise, 'money'), f('receipt', r.receiptNo), f('paidOriginally', r.paymentPaise, 'money'), f('mode', r.pay_mode ?? r.method, 'status'), ...waiting(r)],
+        details: [
+          f('reason', r.reason),
+          f('withdrawal', r.close_dues ? 'yes' : 'no', 'status'),
+          f('payee', [r.payee_name, r.payee_account, r.payee_ifsc].filter(Boolean).join(' · ') || '—'),
+          f('requestedBy', r.requestedByName),
+          f('reference', r.pay_reference ?? '—'),
+          f('paidBy', r.paidByName ?? '—'),
+          f('paidAt', r.paid_at, 'datetime'),
+          ...(st === 'reverted' ? [f('revertReason', r.revert_reason ?? '—'), f('revertedAt', r.reverted_at, 'datetime')] : []),
+        ],
         steps: decisionSteps(r, 'requested', 'fd.step.requested', 'requestedByName', 'decidedByName', { id: 'paid', label: 'fd.step.paid', state: st === 'paid' ? 'done' : st === 'approved' ? 'current' : st === 'rejected' ? 'skipped' : 'upcoming', by: s(r.paidByName) || null, at: s(r.paid_at) || null }),
-        decide: st === 'requested' ? { path: `${base}/decide`, canDecide: may(me.roles, HEADS) && notMine(r.requested_by) } : undefined,
-        actions: st === 'approved' ? [{ label: 'fd.a.payRefund', path: `${base}/pay`, done: 'fd.done.paid', fields: [{ name: 'mode', label: 'fd.col.mode', kind: 'select', options: ['bank_transfer', 'upi', 'cheque', 'cash', 'original_method'].map((m) => ({ value: m, label: m })) }, { name: 'reference', label: 'fd.col.reference' }] }] : [],
+        decide: st === 'requested' ? { path: `${base}/decide`, canDecide: onChain(r, me, r.requested_by) } : undefined,
+        actions:
+          st === 'approved'
+            ? [{ label: 'fd.a.payRefund', path: `${base}/pay`, done: 'fd.done.paid', fields: [{ name: 'mode', label: 'fd.col.mode', kind: 'select', options: ['bank_transfer', 'upi', 'cheque', 'cash', 'original_method'].map((m) => ({ value: m, label: m })) }, { name: 'reference', label: 'fd.col.reference' }] }]
+            : st === 'paid' && may(me.roles, HEADS)
+              ? [{ label: 'fx.a.revertRefund', path: `${base}/revert`, variant: 'destructive', done: 'fx.done.reverted', fields: [reason] }]
+              : [],
       };
     }
     case 'write-offs':
@@ -226,6 +255,64 @@ export function recordView(entity: Entity, id: string, d: Api, me: { id: string;
         actions,
       };
     }
+    case 'waivers':
+    case 'custom-plans': {
+      const st = s(r.status);
+      const plan = entity === 'custom-plans';
+      return {
+        title: s(r.number),
+        subtitle: `${s(r.student)} · ${s(r.invoiceNo) || s(r.invoiceTitle)}`,
+        status: st,
+        facts: [f('amount', r.amountPaise, 'money'), f('invoice', r.invoiceNo ?? r.invoiceTitle), f('roll', r.rollNo), ...waiting(r)],
+        details: [f('student', r.student), f('title', r.invoiceTitle), f('reason', r.reason), f('requestedBy', r.requestedByName)],
+        overview: plan ? { label: 'fd.r.instalments', columns: [col('seq', 'seq', 'number'), col('dueOn', 'dueOn', 'date'), col('amountPaise', 'amount', 'money')], rows: rows(d.parts) } : undefined,
+        steps: decisionSteps(r, 'pending', 'fd.step.requested', 'requestedByName', 'decidedByName'),
+        decide: st === 'pending' ? { path: `/v1/fee-setup/${entity}/${id}/decide`, canDecide: onChain(r, me, r.requested_by) } : undefined,
+      };
+    }
+    case 'challans': {
+      const st = s(r.status) === 'issued' && s(r.valid_until) < today() ? 'expired' : s(r.status);
+      return {
+        title: s(r.number),
+        subtitle: `${s(r.student)} · ${s(r.rollNo)}`,
+        status: st,
+        facts: [f('amount', r.amount_paise, 'money'), f('validUntil', r.valid_until, 'date'), f('bank', r.bank_name), f('receipt', r.receiptNo ?? '—'), f('paidOn', r.paid_on ?? '—', r.paid_on ? 'date' : 'text')],
+        details: [f('student', r.student), f('createdBy', r.createdByName), f('createdAt', r.created_at, 'datetime')],
+        actions: st === 'issued' || st === 'expired' ? [{ label: 'fx.cancelChallan', path: `/v1/fee-collect/challans/${id}/cancel`, variant: 'destructive', done: 'fx.done.challanCancelled', fields: [reason] }] : [],
+      };
+    }
+    case 'govt-scholarships': {
+      const st = s(r.status);
+      const sanctioned = Number(r.sanctioned_paise ?? 0);
+      const on: FieldSpec = { name: 'on', label: 'fx.f.on', kind: 'date', required: true, defaultValue: today() };
+      const actions: ActionSpec[] = [];
+      if (st === 'applied') actions.push({ label: 'fx.sanction', path: `/v1/fee-collect/govt-scholarships/${id}/sanction`, done: 'fd.saved', fields: [{ name: 'amountPaise', label: 'fx.f.sanctioned', kind: 'money', required: true, defaultValue: String(Number(r.applied_paise ?? 0) / 100) }, on] });
+      if (st === 'applied' || st === 'sanctioned') {
+        actions.push({ label: 'fx.receive', path: `/v1/fee-collect/govt-scholarships/${id}/receive`, done: 'fx.done.received', fields: [{ name: 'amountPaise', label: 'fx.f.received', kind: 'money', required: true, defaultValue: sanctioned ? String(sanctioned / 100) : '' }, on, { name: 'reference', label: 'fx.f.dbtRef', required: true }] });
+        actions.push({ label: 'fx.closeScholarship', path: `/v1/fee-collect/govt-scholarships/${id}/reject`, variant: 'destructive', done: 'fd.saved', fields: [{ name: 'status', label: 'fd.col.status', kind: 'select', options: [{ value: 'rejected', label: 'rejected' }, { value: 'lapsed', label: 'lapsed' }] }, reason] });
+      }
+      return {
+        title: s(r.scheme),
+        subtitle: `${s(r.student)} · ${s(r.rollNo)} · ${s(r.section)}`,
+        status: st,
+        facts: [f('appliedFor', r.applied_paise, 'money'), f('sanctioned', r.sanctioned_paise, 'money'), f('received', r.received_paise, 'money'), f('portal', r.portal, 'status'), f('year', r.academic_year)],
+        details: [f('application', r.application_no ?? '—'), f('reference', r.reference ?? '—'), f('receipt', r.receiptNo ?? '—'), f('note', r.note || '—'), f('createdBy', r.createdByName)],
+        steps: [
+          { id: 'applied', label: 'fd.step.applied', state: 'done', at: s(r.applied_on) || s(r.created_at) || null },
+          { id: 'sanctioned', label: 'fx.step.sanctioned', state: st === 'applied' ? 'current' : (st === 'rejected' || st === 'lapsed') && !sanctioned ? 'rejected' : 'done', at: s(r.sanctioned_on) || null },
+          { id: 'received', label: 'fd.step.received', state: st === 'received' ? 'done' : st === 'sanctioned' ? 'current' : st === 'rejected' || st === 'lapsed' ? 'skipped' : 'upcoming', at: s(r.received_on) || null },
+        ],
+        actions,
+      };
+    }
+    case 'funds':
+      return {
+        title: `${s(r.code)} ${s(r.name)}`,
+        subtitle: s(r.note),
+        status: r.active === false ? 'off' : 'active',
+        facts: [f('code', r.code), f('name', r.name), f('vouchers', rows(d.vouchers).length, 'number')],
+        overview: { label: 'fd.nav.vouchers', columns: [col('date', 'date', 'date'), col('number', 'number'), col('voucherType', 'type', 'status'), col('narration', 'narration'), col('amountPaise', 'amount', 'money')], rows: rows(d.vouchers), href: '/accounts/vouchers/{id}' },
+      };
     case 'closings': {
       const variance = Number(r.counted_paise) - Number(r.system_paise);
       const notes = Object.entries((r.denominations as Record<string, number>) ?? {}).map(([note, n]) => ({ id: note, note: `₹${note}`, count: n, amountPaise: Number(note) * 100 * n }));

@@ -294,6 +294,9 @@ export const feeLateFeeRules = pgTable('fee_late_fee_rules', {
   capPaise: paise('cap_paise'),
   active: boolean('active').notNull().default(true),
   createdAt: createdAt(),
+  /** daily (flat + per day, capped) or slab (an amount per band of days late) (migration 0162). */
+  mode: text('mode').notNull().default('daily'),
+  slabs: jsonb('slabs').$type<{ fromDay: number; toDay: number | null; paise: number; perDay: boolean }[]>().notNull().default([]),
 });
 
 export const feeLateFees = pgTable(

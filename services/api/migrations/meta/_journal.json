@@ -974,6 +974,27 @@
       "when": 1791506006000,
       "tag": "0148_record_imports",
       "breakpoints": true
+    },
+    {
+      "idx": 139,
+      "version": "7",
+      "when": 1791506007000,
+      "tag": "0162_fee_setup",
+      "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1791506008000,
+      "tag": "0163_fee_collection",
+      "breakpoints": true
+    },
+    {
+      "idx": 141,
+      "version": "7",
+      "when": 1791506009000,
+      "tag": "0164_accounts_depth",
+      "breakpoints": true
     }
   ]
 }

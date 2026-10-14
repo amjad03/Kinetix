@@ -11,12 +11,24 @@ import { feeInvoices, feePayments, students, tenants } from '../db/schema.js';
 import { feeInstalmentPlans, feeInstalments, feeLateFeeRules, feeLateFees, studentCredits } from '../db/schema-depth.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { allocatePaid, daysBetween, lateFee, planProblem, splitInstalments } from './fees-depth.logic.js';
+import { slabFine, slabsProblem } from './fee-depth.logic.js';
+import { chargeHead, fineHead, reduceCharge } from './fee-lines.js';
 import { FEE_ROLES, FeesService } from './fees.service.js';
 
 const LATE_FEE_JOB = 'fees.late_fees';
 const APPROVERS: RoleName[] = ['tenant_admin', 'principal'];
 const PlanBody = z.object({ name: z.string().trim().min(2).max(80), parts: z.array(z.object({ percent: z.number().gt(0).max(100), dueAfterDays: z.number().int().min(0).max(730) })).min(2).max(12) });
-const RuleBody = z.object({ name: z.string().trim().min(2).max(80).default('Late fee'), graceDays: z.number().int().min(0).max(365), flatPaise: z.number().int().min(0), perDayPaise: z.number().int().min(0), capPaise: z.number().int().min(0).nullish() });
+const Slab = z.object({ fromDay: z.number().int().min(1).max(3650), toDay: z.number().int().min(1).max(3650).nullable(), paise: z.number().int().min(0), perDay: z.boolean().default(false) });
+const RuleBody = z.object({
+  name: z.string().trim().min(2).max(80).default('Late fee'),
+  /** daily: a flat fine plus so much a day; slab: an amount per band of days late. */
+  mode: z.enum(['daily', 'slab']).default('daily'),
+  graceDays: z.number().int().min(0).max(365),
+  flatPaise: z.number().int().min(0).default(0),
+  perDayPaise: z.number().int().min(0).default(0),
+  capPaise: z.number().int().min(0).nullish(),
+  slabs: z.array(Slab).max(12).default([]),
+});
 const CreditBody = z.object({ studentId: z.uuid(), amountPaise: z.number().int().min(1), kind: z.enum(['advance', 'adjustment']).default('advance'), note: z.string().trim().max(300).default('') });
 const RefundBody = z.object({ studentId: z.uuid(), amountPaise: z.number().int().min(1), note: z.string().trim().max(300).default('') });
 
@@ -132,10 +144,15 @@ export class FeesDepthController implements OnModuleInit {
   @Put('late-fee-rule')
   @Auth('user', APPROVERS)
   saveRule(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(RuleBody)) b: z.infer<typeof RuleBody>) {
-    if (b.flatPaise === 0 && b.perDayPaise === 0) throw new BadRequestException('Give a flat fine, a daily fine, or both');
+    if (b.mode === 'daily' && b.flatPaise === 0 && b.perDayPaise === 0) throw new BadRequestException('Give a flat fine, a daily fine, or both');
+    if (b.mode === 'slab') {
+      if (!b.slabs.length) throw new BadRequestException('Add at least one slab');
+      const problem = slabsProblem(b.slabs);
+      if (problem) throw new BadRequestException(problem);
+    }
     return this.db.withTenant(p.tenantId, async (tx) => {
       await tx.update(feeLateFeeRules).set({ active: false }).where(eq(feeLateFeeRules.active, true));
-      const [row] = await tx.insert(feeLateFeeRules).values({ tenantId: p.tenantId, name: b.name, graceDays: b.graceDays, flatPaise: b.flatPaise, perDayPaise: b.perDayPaise, capPaise: b.capPaise ?? null }).returning();
+      const [row] = await tx.insert(feeLateFeeRules).values({ tenantId: p.tenantId, name: b.name, mode: b.mode, graceDays: b.graceDays, flatPaise: b.mode === 'daily' ? b.flatPaise : 0, perDayPaise: b.mode === 'daily' ? b.perDayPaise : 0, capPaise: b.capPaise ?? null, slabs: b.mode === 'slab' ? b.slabs : [] }).returning();
       await auditUser(tx, p, 'fees.late_fee_rule_saved', 'fee_late_fee_rule', row.id);
       return row;
     });
@@ -158,12 +175,16 @@ export class FeesDepthController implements OnModuleInit {
       const mine = inst.filter((x) => x.invoiceId === inv.id);
       const from = mine.length ? allocatePaid(mine.map((r) => ({ seq: r.seq, dueOn: r.dueOn, amountPaise: r.amountPaise })), inv.paidPaise, today).find((x) => x.status === 'overdue')?.dueOn : inv.dueOn;
       if (!from) continue;
-      const fine = lateFee({ graceDays: rule.graceDays, flatPaise: rule.flatPaise, perDayPaise: rule.perDayPaise, capPaise: rule.capPaise }, daysBetween(from, today));
+      const days = daysBetween(from, today);
+      const fine =
+        rule.mode === 'slab'
+          ? { daysLate: Math.max(0, days - rule.graceDays), amountPaise: slabFine(rule.slabs, Math.max(0, days - rule.graceDays), rule.capPaise) }
+          : lateFee({ graceDays: rule.graceDays, flatPaise: rule.flatPaise, perDayPaise: rule.perDayPaise, capPaise: rule.capPaise }, days);
       const before = prior.find((x) => x.invoiceId === inv.id);
       const already = before?.appliedPaise ?? 0;
       if (fine.amountPaise <= already) continue;
       const delta = fine.amountPaise - already;
-      await tx.update(feeInvoices).set({ amountPaise: sql`${feeInvoices.amountPaise} + ${delta}`, updatedAt: new Date() }).where(eq(feeInvoices.id, inv.id));
+      await chargeHead(tx, inv.id, await fineHead(tx, tenantId), delta);
       if (before) await tx.update(feeLateFees).set({ daysLate: fine.daysLate, appliedPaise: fine.amountPaise, lastRunOn: today, ruleId: rule.id }).where(eq(feeLateFees.id, before.id));
       else await tx.insert(feeLateFees).values({ tenantId, invoiceId: inv.id, ruleId: rule.id, daysLate: fine.daysLate, appliedPaise: fine.amountPaise, lastRunOn: today });
       assessed++;
@@ -211,7 +232,9 @@ export class FeesDepthController implements OnModuleInit {
       const unpaid = inv.amountPaise - inv.paidPaise;
       const amount = Math.min(b.amountPaise ?? open, open, unpaid);
       if (amount <= 0) throw new ConflictException('There is nothing left to waive');
-      await tx.update(feeInvoices).set({ amountPaise: sql`${feeInvoices.amountPaise} - ${amount}`, status: sql`case when ${feeInvoices.amountPaise} - ${amount} <= ${feeInvoices.paidPaise} then 'paid'::invoice_status else ${feeInvoices.status} end`, updatedAt: new Date() }).where(eq(feeInvoices.id, inv.id));
+      const fin = await fineHead(tx, p.tenantId);
+      const off = await reduceCharge(tx, inv.id, amount, [fin.code]);
+      if (off < amount) await reduceCharge(tx, inv.id, amount - off);
       const [row] = await tx.update(feeLateFees).set({ waivedPaise: f.waivedPaise + amount, waiveReason: b.reason }).where(eq(feeLateFees.id, id)).returning();
       await auditUser(tx, p, 'fees.late_fee_waived', 'fee_late_fee', id, { amountPaise: amount, reason: b.reason });
       return row;

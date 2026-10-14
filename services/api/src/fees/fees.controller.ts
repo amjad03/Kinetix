@@ -34,6 +34,8 @@ import { ApplicationFeesService } from './application-fees.service.js';
 import { FEE_ROLES, FeesService } from './fees.service.js';
 import { PAYMENTS_NOT_CONFIGURED, PaymentGateway } from './payment-gateway.service.js';
 import { WalletTopupService } from './wallet-topup.service.js';
+import { settingsOf } from '../fee-accounts/fee-accounts.service.js';
+import { convenienceFee } from './fee-depth.logic.js';
 import type { PaymentProvider } from './payment-provider.js';
 import { naturalAsc } from '../common/natural-order.js';
 
@@ -237,7 +239,7 @@ export class FeesController {
   @Post('invoices/:id/checkout')
   @Auth('user')
   async checkout(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CheckoutBody)) body: z.infer<typeof CheckoutBody>) {
-    const { inv, amountPaise, payer, provider } = await this.db.withTenant(p.tenantId, async (tx) => {
+    const { inv, amountPaise, payer, provider, conveniencePaise } = await this.db.withTenant(p.tenantId, async (tx) => {
       // Fees go to the institution's own Razorpay account; without one, only the counter.
       const provider = await this.gateway.forTenant(tx);
       if (!provider) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
@@ -247,14 +249,16 @@ export class FeesController {
       const amountPaise = body.amountPaise ?? balance;
       if (amountPaise > balance) throw new BadRequestException('That is more than the balance due');
       const [payer] = await tx.select({ fullName: users.fullName, email: users.email, phone: users.phone }).from(users).where(eq(users.id, p.userId));
-      return { inv, amountPaise, payer, provider };
+      // The institution may pass the gateway's charge on to the payer (Settings → convenience fee).
+      const conveniencePaise = convenienceFee((await settingsOf(tx, p.tenantId)).convenience, amountPaise);
+      return { inv, amountPaise, payer, provider, conveniencePaise };
     });
     // The gateway call happens outside the transaction.
-    const order = await provider.createOrder({ amountPaise, receipt: `inv_${id.slice(0, 8)}`, notes: { invoiceId: id, tenantId: p.tenantId }, payer: { name: payer?.fullName ?? '', email: payer?.email ?? '', phone: payer?.phone ?? '' }, returnUrl: body.returnUrl });
+    const order = await provider.createOrder({ amountPaise: amountPaise + conveniencePaise, receipt: `inv_${id.slice(0, 8)}`, notes: { invoiceId: id, tenantId: p.tenantId }, payer: { name: payer?.fullName ?? '', email: payer?.email ?? '', phone: payer?.phone ?? '' }, returnUrl: body.returnUrl });
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [pay] = await tx
         .insert(feePayments)
-        .values({ tenantId: p.tenantId, invoiceId: id, studentId: inv.studentId, amountPaise, method: 'online', status: 'created', provider: provider.name, providerOrderId: order.orderId, payerUserId: p.userId })
+        .values({ tenantId: p.tenantId, invoiceId: id, studentId: inv.studentId, amountPaise, conveniencePaise, method: 'online', status: 'created', provider: provider.name, providerOrderId: order.orderId, payerUserId: p.userId })
         .returning();
       const [tenant] = await tx.select({ name: tenants.name }).from(tenants);
       return {
@@ -265,7 +269,9 @@ export class FeesController {
         orderId: order.orderId,
         /** A hosted checkout (PayU): the app posts these fields to the url in a browser. */
         hosted: order.hosted ?? null,
-        amountPaise,
+        amountPaise: amountPaise + conveniencePaise,
+        feePaise: amountPaise,
+        conveniencePaise,
         currency: 'INR',
         name: tenant?.name ?? 'KINETIX',
         description: inv.title,
@@ -375,7 +381,7 @@ export class FeesController {
   }
 
   private async credit(tx: Tx, pay: typeof feePayments.$inferSelect, entity: { id: string; amount: number }) {
-    if (pay.amountPaise !== entity.amount) {
+    if (pay.amountPaise + pay.conveniencePaise !== entity.amount) {
       this.log.error(`Webhook amount ${entity.amount} does not match payment ${pay.id} (${pay.amountPaise})`);
       return;
     }

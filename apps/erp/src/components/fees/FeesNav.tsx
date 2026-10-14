@@ -1,8 +1,20 @@
 import { LinkTabs } from '@/components/ui/Tabs';
 import { getI18n } from '@/i18n/server';
 
-export type FeesTab = 'overview' | 'invoices' | 'transfers' | 'plans' | 'sponsors';
-const HREF: Record<FeesTab, string> = { overview: '/fees', invoices: '/fees/invoices', transfers: '/fees/bank-transfers', plans: '/fees/plans', sponsors: '/fees/sponsors' };
+export type FeesTab = 'overview' | 'counter' | 'invoices' | 'structures' | 'setup' | 'plans' | 'scholarships' | 'challans' | 'dues' | 'transfers' | 'sponsors';
+const HREF: Record<FeesTab, string> = {
+  overview: '/fees',
+  counter: '/fees/counter',
+  invoices: '/fees/invoices',
+  structures: '/fees/structures',
+  setup: '/fees/setup',
+  plans: '/fees/plans',
+  scholarships: '/fees/scholarships',
+  challans: '/fees/challans',
+  dues: '/fees/dues',
+  transfers: '/fees/bank-transfers',
+  sponsors: '/fees/sponsors',
+};
 
 /** The Fees & accounts sections, the same strip on every fees page. */
 export async function FeesNav({ value }: { value: FeesTab }) {
