@@ -26,6 +26,7 @@ import '../core/models.dart';
 import '../core/pathways.dart';
 import '../core/scholarships.dart';
 import '../core/school_life.dart';
+import '../core/self_service.dart';
 
 /// In-memory [StudentApi] for widget tests.
 class FakeStudentApi implements StudentApi {
@@ -2582,6 +2583,399 @@ class FakeStudentApi implements StudentApi {
 
   @override
   Future<void> removePushDevice(String token) async => calls.add('push remove $token');
+
+  // ── Online quizzes ──────────────────────────────────────────────────────────────────────────
+
+  /// The quizzes of the class: one open now, one taken, one coming up. Dates follow the clock.
+  late List<Map<String, dynamic>> quizRows = () {
+    final now = DateTime.now().toUtc();
+    String t(Duration d) => now.add(d).toIso8601String();
+    return <Map<String, dynamic>>[
+      {'id': 'qz1', 'title': 'Algebra check', 'subject': 'Mathematics', 'instructions': 'Answer every question. Calculators are not allowed.', 'opensAt': t(const Duration(days: -1)), 'closesAt': t(const Duration(days: 2)), 'durationMin': 15, 'maxAttempts': 2, 'status': 'published', 'canStart': true, 'openAttemptId': null, 'attempts': <Object>[]},
+      {'id': 'qz2', 'title': 'Cells and tissues', 'subject': 'Science', 'instructions': '', 'opensAt': t(const Duration(days: -10)), 'closesAt': t(const Duration(days: -3)), 'durationMin': 20, 'maxAttempts': 1, 'status': 'closed', 'canStart': false, 'openAttemptId': null, 'attempts': [{'id': 'qa9', 'attemptNo': 1, 'score': 8, 'maxScore': 10, 'needsMarking': false, 'submittedAt': t(const Duration(days: -5))}]},
+      {'id': 'qz3', 'title': 'Grammar quiz', 'subject': 'English', 'instructions': '', 'opensAt': t(const Duration(days: 3)), 'closesAt': t(const Duration(days: 4)), 'durationMin': 10, 'maxAttempts': 1, 'status': 'published', 'canStart': false, 'openAttemptId': null, 'attempts': <Object>[]},
+    ];
+  }();
+  ApiException? quizError;
+
+  /// How long an attempt runs from its start in the fake.
+  Duration quizTime = const Duration(minutes: 15);
+
+  /// Answers saved so far, by attempt.
+  final quizSaves = <String, Map<String, Object>>{};
+  ApiException? quizSaveError;
+
+  @override
+  Future<List<QuizSummary>> myQuizzes() async {
+    calls.add('myQuizzes');
+    if (quizError != null) throw quizError!;
+    return [for (final q in quizRows) QuizSummary.fromJson(q)];
+  }
+
+  @override
+  Future<QuizAttempt> startQuiz(String quizId) async {
+    calls.add('startQuiz $quizId');
+    if (quizError != null) throw quizError!;
+    final q = quizRows.firstWhere((x) => x['id'] == quizId);
+    q['openAttemptId'] = 'att-$quizId';
+    return QuizAttempt.fromJson({
+      'attemptId': 'att-$quizId',
+      'title': q['title'],
+      'instructions': q['instructions'],
+      'dueAt': DateTime.now().add(quizTime).toUtc().toIso8601String(),
+      'answers': quizSaves['att-$quizId'] ?? const {},
+      'questions': [
+        {'id': 'q1', 'kind': 'mcq', 'text': 'What is 7 × 8?', 'options': ['54', '56', '64'], 'marks': 1},
+        {'id': 'q2', 'kind': 'multi', 'text': 'Which of these are prime?', 'options': ['2', '9', '11', '15'], 'marks': 2},
+        {'id': 'q3', 'kind': 'short', 'text': 'Solve for x: 2x = 10', 'options': <String>[], 'marks': 1},
+      ],
+    });
+  }
+
+  @override
+  Future<void> saveQuizAnswers(String attemptId, Map<String, Object> answers) async {
+    calls.add('saveQuiz $attemptId ${answers.length}');
+    if (quizSaveError != null) throw quizSaveError!;
+    quizSaves[attemptId] = {...?quizSaves[attemptId], ...answers};
+  }
+
+  @override
+  Future<QuizOutcome> submitQuiz(String attemptId, Map<String, Object> answers) async {
+    calls.add('submitQuiz $attemptId ${answers.length}');
+    if (quizError != null) throw quizError!;
+    final a = {...?quizSaves[attemptId], ...answers};
+    final r1 = a['q1'] is List && (a['q1'] as List).length == 1 && (a['q1'] as List).first == 1;
+    final r2 = a['q2'] is List && (a['q2'] as List).toSet().containsAll({0, 2}) && (a['q2'] as List).length == 2;
+    final r3 = '${a['q3'] ?? ''}'.trim() == '5';
+    final score = (r1 ? 1 : 0) + (r2 ? 2 : 0) + (r3 ? 1 : 0);
+    final quizId = attemptId.replaceFirst('att-', '');
+    final q = quizRows.where((x) => x['id'] == quizId).firstOrNull;
+    if (q != null) {
+      q['openAttemptId'] = null;
+      q['attempts'] = [
+        ...(q['attempts'] as List),
+        {'id': attemptId, 'attemptNo': (q['attempts'] as List).length + 1, 'score': score, 'maxScore': 4, 'needsMarking': false, 'submittedAt': DateTime.now().toUtc().toIso8601String()},
+      ];
+    }
+    return QuizOutcome.fromJson({
+      'attemptId': attemptId,
+      'score': score,
+      'maxScore': 4,
+      'needsMarking': false,
+      'results': {
+        'q1': {'correct': r1, 'marks': r1 ? 1 : 0},
+        'q2': {'correct': r2, 'marks': r2 ? 2 : 0},
+        'q3': {'correct': r3, 'marks': r3 ? 1 : 0},
+      },
+    });
+  }
+
+  // ── Council elections ───────────────────────────────────────────────────────────────────────
+
+  late List<Map<String, dynamic>> electionRows = () {
+    final now = DateTime.now().toUtc();
+    return <Map<String, dynamic>>[
+      {
+        'id': 'el1',
+        'title': 'Student council 2026',
+        'description': 'Choose your council for the year.',
+        'status': 'open',
+        'votingStartsAt': now.subtract(const Duration(hours: 2)).toIso8601String(),
+        'votingEndsAt': now.add(const Duration(hours: 6)).toIso8601String(),
+        'canVote': true,
+        'voted': false,
+        'posts': [
+          {
+            'id': 'p1',
+            'title': 'President',
+            'seats': 1,
+            'candidates': [
+              {'id': 'c1', 'fullName': 'Meera Iyer', 'className': 'BCom Sem 5 A', 'manifesto': 'A quieter library and longer hours.'},
+              {'id': 'c2', 'fullName': 'Rahul Nair', 'className': 'BSc Sem 5 B', 'manifesto': ''},
+            ],
+          },
+          {
+            'id': 'p2',
+            'title': 'Class representatives',
+            'seats': 2,
+            'candidates': [
+              {'id': 'c3', 'fullName': 'Asha Rao', 'className': 'BCom Sem 3 A', 'manifesto': ''},
+              {'id': 'c4', 'fullName': 'Kiran Shetty', 'className': 'BCom Sem 3 A', 'manifesto': ''},
+              {'id': 'c5', 'fullName': 'Nikhil Das', 'className': 'BCom Sem 3 A', 'manifesto': ''},
+            ],
+          },
+        ],
+      },
+      {
+        'id': 'el0',
+        'title': 'Sports secretary',
+        'description': '',
+        'status': 'published',
+        'votingStartsAt': now.subtract(const Duration(days: 30)).toIso8601String(),
+        'votingEndsAt': now.subtract(const Duration(days: 29)).toIso8601String(),
+        'canVote': false,
+        'voted': true,
+        'posts': [
+          {
+            'id': 'p0',
+            'title': 'Sports secretary',
+            'seats': 1,
+            'candidates': [
+              {'id': 'c8', 'fullName': 'Divya Kulkarni', 'className': 'BSc Sem 5 A', 'manifesto': '', 'votes': 212, 'elected': true},
+              {'id': 'c9', 'fullName': 'Arjun Menon', 'className': 'BCom Sem 5 B', 'manifesto': '', 'votes': 147, 'elected': false},
+            ],
+          },
+        ],
+      },
+    ];
+  }();
+  ApiException? electionError;
+  ApiException? voteError;
+
+  @override
+  Future<List<Election>> myElections(String studentId) async {
+    calls.add('myElections');
+    if (electionError != null) throw electionError!;
+    return [for (final e in electionRows) Election.fromJson(e)];
+  }
+
+  @override
+  Future<void> vote(String studentId, String electionId, Map<String, List<String>> choices) async {
+    calls.add('vote $electionId ${[for (final e in choices.entries) '${e.key}:${e.value.join('+')}'].join(' ')}');
+    if (voteError != null) throw voteError!;
+    final e = electionRows.firstWhere((x) => x['id'] == electionId);
+    e['voted'] = true;
+    e['canVote'] = false;
+  }
+
+  // ── Library catalogue ───────────────────────────────────────────────────────────────────────
+
+  List<Map<String, dynamic>> catalogue = [
+    {'id': 'b1', 'title': 'Concepts of Physics', 'author': 'H C Verma', 'isbn': '9788177091878', 'callNo': '530 VER', 'subject': 'Physics', 'publisher': 'Bharati Bhawan', 'pubYear': 2019, 'edition': '', 'copies': 4, 'available': 2, 'reservable': false, 'branches': [{'branch': 'Main library', 'available': 2, 'copies': 4}]},
+    {'id': 'b2', 'title': 'Principles of Accounting', 'author': 'T S Grewal', 'isbn': '', 'callNo': '657 GRE', 'subject': 'Commerce', 'publisher': '', 'pubYear': 2021, 'edition': '5th', 'copies': 2, 'available': 0, 'reservable': true, 'branches': [{'branch': 'Main library', 'available': 0, 'copies': 2}]},
+  ];
+  List<Map<String, dynamic>> reservationRows = [];
+  ApiException? catalogueError;
+  ApiException? checkoutError;
+
+  @override
+  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1}) async {
+    calls.add('searchCatalogue $query${availableOnly ? ' available' : ''} $page');
+    if (catalogueError != null) throw catalogueError!;
+    final words = query.toLowerCase().split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
+    final rows = [
+      for (final b in catalogue)
+        if (words.every((w) => '${b['title']} ${b['author']} ${b['subject']} ${b['isbn']}'.toLowerCase().contains(w)) && (!availableOnly || (b['available'] as int) > 0)) b,
+    ];
+    return CataloguePage.fromJson({'total': rows.length, 'page': page, 'rows': rows});
+  }
+
+  @override
+  Future<void> reserveBook(String bookId) async {
+    calls.add('reserveBook $bookId');
+    final b = catalogue.firstWhere((x) => x['id'] == bookId);
+    reservationRows = [...reservationRows, {'id': 'r${reservationRows.length + 1}', 'bookId': bookId, 'title': b['title'], 'status': 'waiting', 'position': 2, 'expiresAt': null}];
+  }
+
+  @override
+  Future<List<BookReservation>> myReservations() async {
+    calls.add('myReservations');
+    return [for (final r in reservationRows) BookReservation.fromJson(r)];
+  }
+
+  @override
+  Future<void> cancelReservation(String id) async {
+    calls.add('cancelReservation $id');
+    reservationRows = [for (final r in reservationRows) if (r['id'] != id) r];
+  }
+
+  @override
+  Future<SelfCheckout> selfCheckout(String copyCode) async {
+    calls.add('selfCheckout $copyCode');
+    if (checkoutError != null) throw checkoutError!;
+    return SelfCheckout.fromJson({'loanId': 'l9', 'title': 'Concepts of Physics', 'dueOn': '2026-10-28'});
+  }
+
+  // ── Hostel ──────────────────────────────────────────────────────────────────────────────────
+
+  List<Map<String, dynamic>> hostelApps = [];
+  Map<String, dynamic> hostelAccountJson = {
+    'requests': [
+      {'id': 'hr1', 'kind': 'change', 'status': 'rejected', 'reason': 'Closer to the library', 'effectiveOn': '2026-08-01', 'decisionNote': 'No free bed in that block'},
+    ],
+    'messLeaves': [
+      {'id': 'ml1', 'fromOn': '2026-09-12', 'toOn': '2026-09-15', 'reason': 'Home for the festival', 'status': 'pending'},
+    ],
+    'messBills': [
+      {'id': 'mb2', 'month': '2026-09', 'days': 30, 'leaveDays': 4, 'rebateDays': 4, 'grossPaise': 360000, 'rebatePaise': 48000, 'netPaise': 312000, 'status': 'charged'},
+      {'id': 'mb1', 'month': '2026-08', 'days': 31, 'leaveDays': 0, 'rebateDays': 0, 'grossPaise': 372000, 'rebatePaise': 0, 'netPaise': 372000, 'status': 'charged'},
+    ],
+    'holds': <Object>[],
+    'allotments': <Object>[],
+  };
+  ApiException? hostelActionError;
+
+  @override
+  Future<List<HostelApplication>> hostelApplications(String studentId) async {
+    calls.add('hostelApplications');
+    return [for (final a in hostelApps) HostelApplication.fromJson(a)];
+  }
+
+  @override
+  Future<void> applyForHostel(String studentId, {required String gender, double? distanceKm, String needs = ''}) async {
+    calls.add('applyForHostel $gender ${distanceKm ?? '-'} $needs');
+    if (hostelActionError != null) throw hostelActionError!;
+    hostelApps = [
+      {'id': 'ha1', 'number': 'HAP-0001', 'status': 'applied', 'decisionNote': '', 'createdAt': DateTime.now().toUtc().toIso8601String()},
+      ...hostelApps,
+    ];
+  }
+
+  @override
+  Future<HostelAccount> hostelAccount(String studentId) async {
+    calls.add('hostelAccount');
+    return HostelAccount.fromJson(hostelAccountJson);
+  }
+
+  @override
+  Future<void> requestHostelChange(String studentId, {required String kind, required String reason, required DateTime effectiveOn}) async {
+    calls.add('hostelRequest $kind ${isoDay(effectiveOn)} $reason');
+    if (hostelActionError != null) throw hostelActionError!;
+    hostelAccountJson = {
+      ...hostelAccountJson,
+      'requests': [
+        {'id': 'hr2', 'kind': kind, 'status': 'pending', 'reason': reason, 'effectiveOn': isoDay(effectiveOn), 'decisionNote': ''},
+        ...(hostelAccountJson['requests'] as List),
+      ],
+    };
+  }
+
+  @override
+  Future<void> applyMessLeave(String studentId, {required DateTime from, required DateTime to, String reason = ''}) async {
+    calls.add('messLeave ${isoDay(from)} ${isoDay(to)} $reason');
+    if (hostelActionError != null) throw hostelActionError!;
+    hostelAccountJson = {
+      ...hostelAccountJson,
+      'messLeaves': [
+        {'id': 'ml2', 'fromOn': isoDay(from), 'toOn': isoDay(to), 'reason': reason, 'status': 'pending'},
+        ...(hostelAccountJson['messLeaves'] as List),
+      ],
+    };
+  }
+
+  // ── Transport ───────────────────────────────────────────────────────────────────────────────
+
+  List<Map<String, dynamic>> routesJson = [
+    {
+      'id': 'rt1',
+      'name': 'Route 4 · Jayanagar',
+      'feePaise': 150000,
+      'stops': [
+        {'id': 'st1', 'routeId': 'rt1', 'name': 'Jayanagar 4th Block', 'landmark': 'Bus depot', 'pickupTime': '07:20:00', 'dropTime': '16:10:00', 'feePaise': 150000},
+        {'id': 'st2', 'routeId': 'rt1', 'name': 'South End Circle', 'landmark': '', 'pickupTime': '07:35:00', 'dropTime': '15:55:00', 'feePaise': 140000},
+      ],
+    },
+    {
+      'id': 'rt2',
+      'name': 'Route 7 · Banashankari',
+      'feePaise': 160000,
+      'stops': [
+        {'id': 'st3', 'routeId': 'rt2', 'name': 'BDA Complex', 'landmark': 'Opposite the temple', 'pickupTime': '07:10:00', 'dropTime': '16:20:00', 'feePaise': 160000},
+      ],
+    },
+  ];
+  List<Map<String, dynamic>> stopChanges = [];
+  ApiException? transportActionError;
+
+  @override
+  Future<List<PublicRoute>> transportRoutes() async {
+    calls.add('transportRoutes');
+    return [for (final r in routesJson) PublicRoute.fromJson(r)];
+  }
+
+  @override
+  Future<List<StopChangeRequest>> stopChangeRequests(String studentId) async {
+    calls.add('stopChangeRequests');
+    return [for (final r in stopChanges) StopChangeRequest.fromJson(r)];
+  }
+
+  @override
+  Future<void> requestStopChange(String studentId, {required String toStopId, required DateTime effectiveOn, required String reason}) async {
+    calls.add('requestStopChange $toStopId ${isoDay(effectiveOn)} $reason');
+    if (transportActionError != null) throw transportActionError!;
+    final stop = [for (final r in routesJson) ...(r['stops'] as List)].cast<Map<String, dynamic>>().firstWhere((s) => s['id'] == toStopId);
+    stopChanges = [
+      {'id': 'tc${stopChanges.length + 1}', 'toStopId': toStopId, 'toRouteId': stop['routeId'], 'effectiveOn': isoDay(effectiveOn), 'status': 'pending', 'reason': reason, 'decisionNote': '', 'feeDeltaPaise': 0},
+      ...stopChanges,
+    ];
+  }
+
+  @override
+  Future<Uint8List> busPassPdf(String studentId) async {
+    calls.add('busPassPdf $studentId');
+    return Uint8List.fromList('%PDF-1.4 bus pass'.codeUnits);
+  }
+
+  // ── Attendance by subject, leave and on duty ────────────────────────────────────────────────
+
+  Map<String, dynamic> attendanceOverviewJson = {
+    'student': {'id': 's1', 'fullName': 'Aarav Rao', 'rollNo': '21', 'section': 'BCom Sem 3 A'},
+    'policy': {'thresholdPct': 75, 'basis': 'per_subject', 'warnPct': 80, 'mode': 'hour', 'profile': {'code': 'BCU', 'name': 'Bengaluru City University', 'scheme': 'NEP'}},
+    'window': {'from': '2026-07-01', 'to': '2026-10-14', 'label': 'Semester 3'},
+    'overall': {'held': 120, 'attended': 95, 'pct': 79.2, 'condoned': 0, 'effective': 79.2},
+    'subjects': [
+      {'subjectId': 'sub1', 'subject': 'Corporate Accounting', 'code': 'COM301', 'held': 40, 'attended': 36, 'pct': 90, 'condoned': 0, 'effective': 90, 'short': false},
+      {'subjectId': 'sub2', 'subject': 'Business Statistics', 'code': 'COM302', 'held': 40, 'attended': 31, 'pct': 77.5, 'condoned': 0, 'effective': 77.5, 'short': false},
+      {'subjectId': 'sub3', 'subject': 'Company Law', 'code': 'COM303', 'held': 40, 'attended': 28, 'pct': 70, 'condoned': 0, 'effective': 70, 'short': true},
+    ],
+    'status': 'condonable',
+    'warning': false,
+    'days': <Object>[],
+    'leaves': <Object>[],
+  };
+  ApiException? overviewError;
+
+  List<Map<String, dynamic>> attendanceLeaveRows = [
+    {'id': 'al1', 'kind': 'on_duty', 'fromDate': '2026-09-20', 'toDate': '2026-09-21', 'fromTime': null, 'toTime': null, 'reason': 'Inter-college debate', 'activity': 'Debate at the university fest', 'status': 'approved', 'decisionNote': '', 'hasDocument': true, 'countsAs': 'present'},
+  ];
+  ApiException? attendanceLeaveError;
+
+  @override
+  Future<AttendanceOverview> attendanceOverview(String studentId) async {
+    calls.add('attendanceOverview $studentId');
+    if (overviewError != null) throw overviewError!;
+    return AttendanceOverview.fromJson(attendanceOverviewJson);
+  }
+
+  @override
+  Future<List<AttendanceLeave>> attendanceLeaves() async {
+    calls.add('attendanceLeaves');
+    return [for (final r in attendanceLeaveRows) AttendanceLeave.fromJson(r)];
+  }
+
+  @override
+  Future<AttendanceLeave> applyAttendanceLeave({
+    required String kind,
+    required DateTime from,
+    required DateTime to,
+    required String reason,
+    String activity = '',
+    String? fromTime,
+    String? toTime,
+    UploadFile? document,
+  }) async {
+    calls.add('applyAttendanceLeave $kind ${isoDay(from)} ${isoDay(to)} ${fromTime ?? '-'} ${toTime ?? '-'} $reason${activity.isEmpty ? '' : ' / $activity'}${document == null ? '' : ' +${document.name}'}');
+    if (attendanceLeaveError != null) throw attendanceLeaveError!;
+    final row = <String, dynamic>{'id': 'al${attendanceLeaveRows.length + 1}', 'kind': kind, 'fromDate': isoDay(from), 'toDate': isoDay(to), 'fromTime': fromTime, 'toTime': toTime, 'reason': reason, 'activity': activity, 'status': 'pending', 'decisionNote': '', 'hasDocument': document != null, 'countsAs': null};
+    attendanceLeaveRows = [row, ...attendanceLeaveRows];
+    return AttendanceLeave.fromJson(row);
+  }
+
+  @override
+  Future<void> cancelAttendanceLeave(String id) async {
+    calls.add('cancelAttendanceLeave $id');
+    attendanceLeaveRows = [for (final r in attendanceLeaveRows) r['id'] == id ? {...r, 'status': 'cancelled'} : r];
+  }
 }
 
 /// Hands the hand-in screen fixed files instead of opening the camera, gallery or files.

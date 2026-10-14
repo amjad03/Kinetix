@@ -177,7 +177,7 @@ export class TransportOpsController {
           hi: { title: `${s.name} को लेने का कोड: ${otp}`, body: `स्टॉप पर ${s.name} को लेते समय यह कोड बस कर्मचारी को बताएँ। यह ${minutes} मिनट तक मान्य है।` },
           kn: { title: `${s.name} ಅವರನ್ನು ಕರೆದೊಯ್ಯಲು ಕೋಡ್: ${otp}`, body: `ನಿಲ್ದಾಣದಲ್ಲಿ ${s.name} ಅವರನ್ನು ಕರೆದೊಯ್ಯುವಾಗ ಈ ಕೋಡ್ ಅನ್ನು ಬಸ್ ಸಿಬ್ಬಂದಿಗೆ ತಿಳಿಸಿ. ಇದು ${minutes} ನಿಮಿಷ ಮಾನ್ಯ.` },
         },
-        data: { studentId: s.id, handoverId: h.id },
+        data: { studentId: s.id, handoverId: h.id, otp, expiresAt: h.otpExpiresAt!.toISOString() },
         dedupeKey: `handover:${h.id}`,
       });
       await auditUser(tx, p, 'transport_handover.code_sent', 'transport_handover', h.id, { studentId: s.id });

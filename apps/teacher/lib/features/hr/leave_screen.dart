@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
+import '../../core/desk_models.dart';
 import '../../core/format.dart';
 import '../../core/hr_models.dart';
 import '../../core/l10n.dart';
+import '../../core/models.dart';
+import '../messages/chat_screen.dart' show chatPdfPicker, chatPhotoPicker;
 import '../../widgets/common.dart';
 
 /// Roles that can decide other people's leave (the server limits heads of department to their staff).
@@ -151,10 +155,27 @@ class _LeaveScreenState extends State<LeaveScreen> {
                     ListTile(
                       key: Key('leave-${r.id}'),
                       title: Text('${r.type.name} · ${l.leaveDaysLabel(daysText(r.days))}'),
-                      subtitle: Text('${_range(f, r)}\n${leaveStatusText(l, r.status)}${r.decisionNote == null ? '' : ' · ${r.decisionNote}'}'),
+                      subtitle: Text(
+                        [
+                          _range(f, r),
+                          '${leaveStatusText(l, r.status)}${r.decisionNote == null ? '' : ' · ${r.decisionNote}'}',
+                          if (r.delegateName != null) l.leaveDelegateLine(r.delegateName!),
+                          if (r.hasDocument) l.leaveDocumentAttached(r.documentName ?? ''),
+                          if (!r.hasDocument && _needsDocument(r)) l.leaveDocumentNeeded,
+                        ].join('\n'),
+                      ),
                       isThreeLine: true,
-                      trailing: r.status == LeaveStatus.pending
-                          ? TextButton(key: Key('cancel-${r.id}'), onPressed: () => _run(() async => widget.api.cancelLeave(r.id)), child: Text(l.leaveCancelAction))
+                      trailing: r.status == LeaveStatus.pending || r.status == LeaveStatus.recommended
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                if (r.status == LeaveStatus.pending)
+                                  InkWell(key: Key('cancel-${r.id}'), onTap: () => _run(() async => widget.api.cancelLeave(r.id)), child: Text(l.leaveCancelAction, style: context.text.labelLarge?.copyWith(color: context.colors.primary))),
+                                if (!r.hasDocument)
+                                  InkWell(key: Key('attach-${r.id}'), onTap: () => _attach(r), child: Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(l.leaveAttach, style: context.text.labelLarge?.copyWith(color: context.colors.primary)))),
+                              ],
+                            )
                           : null,
                     ),
                   const SizedBox(height: 88),
@@ -164,6 +185,21 @@ class _LeaveScreenState extends State<LeaveScreen> {
         ),
       ),
     );
+  }
+
+  /// A type that needs a document and a request longer than the limit (the approver will ask for it).
+  bool _needsDocument(LeaveRequestInfo r) =>
+      (r.status == LeaveStatus.pending || r.status == LeaveStatus.recommended) && r.type.requiresDocument && r.days > documentAfterDays;
+
+  Future<void> _attach(LeaveRequestInfo r) async {
+    final file = await pickLeaveDocument(context);
+    if (file == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final done = context.l10n.leaveDocumentSent;
+    await _run(() async {
+      await widget.api.attachLeaveDocument(r.id, file);
+      messenger.showSnackBar(SnackBar(content: Text(done)));
+    });
   }
 
   static String _range(Fmt f, LeaveRequestInfo r) => r.fromDate == r.toDate ? f.shortDay(r.fromDate) : '${f.shortDay(r.fromDate)} – ${f.shortDay(r.toDate)}';
@@ -182,6 +218,9 @@ class ApplyLeaveScreen extends StatefulWidget {
 class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   List<LeaveTypeInfo>? _types;
   String? _typeId;
+  List<Colleague> _colleagues = const [];
+  String? _delegateId;
+  ChatUpload? _document;
   DateTime _from = DateUtils.dateOnly(DateTime.now());
   DateTime _to = DateUtils.dateOnly(DateTime.now());
   bool _half = false;
@@ -201,6 +240,25 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
     }, onError: (Object e) {
       if (mounted) setState(() => _error = e is ApiException ? context.l10n.errorText(e) : '$e');
     });
+    widget.api.colleagues().then((c) {
+      if (mounted) setState(() => _colleagues = c);
+    }, onError: (Object _) {
+      // Without the list the leave is applied for without a delegate.
+    });
+  }
+
+  LeaveTypeInfo? get _type => _types?.where((t) => t.id == _typeId).firstOrNull;
+
+  /// What the rules of the chosen type say about these dates, or null when they are fine.
+  String? _ruleProblem(AppLocalizations l) {
+    final t = _type;
+    if (t == null) return null;
+    final today = DateUtils.dateOnly(DateTime.now());
+    final notice = DateUtils.dateOnly(_from).difference(today).inDays;
+    if (t.minNoticeDays > 0 && notice < t.minNoticeDays) return l.leaveNoticeShort(t.name, t.minNoticeDays);
+    final days = leaveDays(_from, _to, halfDay: _half);
+    if (t.maxPerRequest != null && days > t.maxPerRequest!) return l.leaveTooLong(t.name, daysText(t.maxPerRequest!));
+    return null;
   }
 
   Future<void> _pick(bool from) async {
@@ -223,7 +281,15 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
       _error = null;
     });
     try {
-      await widget.api.applyLeave(leaveTypeId: _typeId!, fromDate: dayString(_from), toDate: dayString(_to), halfDay: _half, reason: _reason.text.trim());
+      final r = await widget.api.applyLeave(leaveTypeId: _typeId!, fromDate: dayString(_from), toDate: dayString(_to), halfDay: _half, reason: _reason.text.trim(), delegateId: _delegateId);
+      // The document goes with the request once it exists; a failure here leaves the request in place to attach later.
+      if (_document != null) {
+        try {
+          await widget.api.attachLeaveDocument(r.id, _document!);
+        } on ApiException catch (e) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.leaveDocumentLater(context.l10n.errorText(e)))));
+        }
+      }
       if (mounted) Navigator.pop(context, true);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = context.l10n.errorText(e));
@@ -247,20 +313,117 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
                 DropdownButtonFormField<String>(
                   key: const Key('leaveType'),
                   initialValue: _typeId,
+                  isExpanded: true,
                   decoration: InputDecoration(labelText: l.leaveType),
-                  items: [for (final t in types) DropdownMenuItem(value: t.id, child: Text(t.name))],
+                  items: [for (final t in types) DropdownMenuItem(value: t.id, child: Text(t.name, overflow: TextOverflow.ellipsis))],
                   onChanged: (v) => setState(() => _typeId = v),
                 ),
                 ListTile(key: const Key('pickFrom'), title: Text(l.leaveFrom), trailing: Text(f.shortDay(_from)), onTap: () => _pick(true)),
                 ListTile(key: const Key('pickTo'), title: Text(l.leaveTo), trailing: Text(f.shortDay(_to)), onTap: () => _pick(false)),
-                SwitchListTile(key: const Key('halfDay'), title: Text(l.leaveHalfDay), value: _half, onChanged: _from == _to ? (v) => setState(() => _half = v) : null),
+                if (_type case final t?) _RulesCard(type: t),
+                SwitchListTile(
+                  key: const Key('halfDay'),
+                  title: Text(l.leaveHalfDay),
+                  value: _half,
+                  onChanged: _from == _to && (_type?.halfDayAllowed ?? true) ? (v) => setState(() => _half = v) : null,
+                ),
                 TextField(key: const Key('leaveReason'), controller: _reason, maxLines: 3, maxLength: 500, decoration: InputDecoration(labelText: l.leaveReason)),
+                DropdownButtonFormField<String?>(
+                  key: const Key('leaveDelegate'),
+                  initialValue: _delegateId,
+                  isExpanded: true,
+                  decoration: InputDecoration(labelText: l.leaveDelegate, helperText: l.leaveDelegateHelp, helperMaxLines: 3),
+                  items: [
+                    DropdownMenuItem<String?>(value: null, child: Text(l.leaveNoDelegate)),
+                    for (final c in _colleagues) DropdownMenuItem<String?>(value: c.id, child: Text(c.fullName, overflow: TextOverflow.ellipsis)),
+                  ],
+                  onChanged: (v) => setState(() => _delegateId = v),
+                ),
+                const SizedBox(height: Kx.s12),
+                if (_document == null)
+                  OutlinedButton.icon(
+                    key: const Key('leaveAddDocument'),
+                    onPressed: () async {
+                      final file = await pickLeaveDocument(context);
+                      if (file != null && mounted) setState(() => _document = file);
+                    },
+                    icon: const Icon(Icons.attach_file),
+                    label: Text((_type?.requiresDocument ?? false) ? l.leaveAddDocumentNeeded : l.leaveAddDocument),
+                  )
+                else
+                  ListTile(
+                    key: const Key('leaveDocument'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(_document!.mime == 'application/pdf' ? Icons.picture_as_pdf_outlined : Icons.image_outlined),
+                    title: Text(_document!.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    trailing: IconButton(tooltip: l.leaveRemoveDocument, icon: const Icon(Icons.close), onPressed: () => setState(() => _document = null)),
+                  ),
                 Text(l.leaveDaysCount(daysText(leaveDays(_from, _to, halfDay: _half))), key: const Key('previewDays')),
+                if (_ruleProblem(l) case final p?) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(p, key: const Key('leaveRuleProblem'), style: context.text.bodyMedium?.copyWith(color: context.colors.error))),
                 if (_error != null) Padding(padding: const EdgeInsets.only(top: Kx.s12), child: ErrorBanner(_error!)),
                 const SizedBox(height: Kx.s16),
-                FilledButton(key: const Key('submitLeave'), onPressed: _busy || _typeId == null ? null : _submit, child: Text(l.leaveSubmit)),
+                FilledButton(key: const Key('submitLeave'), onPressed: _busy || _typeId == null || _ruleProblem(l) != null ? null : _submit, child: Text(l.leaveSubmit)),
               ],
             ),
     );
   }
+}
+
+/// The chosen leave type's rules: notice, the longest request, whether a document is needed and half days.
+class _RulesCard extends StatelessWidget {
+  const _RulesCard({required this.type});
+
+  final LeaveTypeInfo type;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final t = type;
+    final rules = [
+      if (t.minNoticeDays > 0) l.leaveRuleNotice(t.minNoticeDays),
+      if (t.maxPerRequest != null) l.leaveRuleMax(daysText(t.maxPerRequest!)),
+      if (t.requiresDocument) l.leaveRuleDocument(documentAfterDays),
+      if (!t.halfDayAllowed) l.leaveRuleNoHalfDay,
+    ];
+    if (rules.isEmpty) return const SizedBox.shrink();
+    return Card(
+      key: const Key('leaveRules'),
+      color: context.colors.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(Kx.s12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.leaveRulesFor(t.name), style: context.text.titleSmall),
+            for (final r in rules) Text('• $r', style: context.text.bodyMedium),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Asks for a photo (camera) or a PDF to support a leave request; null when cancelled.
+Future<ChatUpload?> pickLeaveDocument(BuildContext context) async {
+  final l = context.l10n;
+  final from = await showModalBottomSheet<String>(
+    context: context,
+    showDragHandle: true,
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(key: const Key('docCamera'), leading: const Icon(Icons.photo_camera_outlined), title: Text(l.leaveDocCamera), onTap: () => Navigator.pop(ctx, 'camera')),
+          ListTile(key: const Key('docGallery'), leading: const Icon(Icons.photo_library_outlined), title: Text(l.leaveDocGallery), onTap: () => Navigator.pop(ctx, 'gallery')),
+          ListTile(key: const Key('docPdf'), leading: const Icon(Icons.picture_as_pdf_outlined), title: Text(l.leaveDocPdf), onTap: () => Navigator.pop(ctx, 'pdf')),
+        ],
+      ),
+    ),
+  );
+  return switch (from) {
+    'camera' => chatPhotoPicker(ImageSource.camera),
+    'gallery' => chatPhotoPicker(ImageSource.gallery),
+    'pdf' => chatPdfPicker(),
+    _ => null,
+  };
 }

@@ -105,6 +105,7 @@ class _PassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final (label, tone) = switch (pass.status) {
+      'parent_pending' => (l.gatePassParentPending, KxTone.warning),
       'requested' => (l.gatePassRequested, KxTone.warning),
       'approved' => (l.gatePassApproved, KxTone.success),
       'issued' => (l.gatePassIssued, KxTone.success),

@@ -253,9 +253,21 @@ class _TermCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Kx.s4),
-          if (term.withheld)
-            Text(l.resultWithheldBody, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant))
-          else ...[
+          if (term.withheld) ...[
+            Text(l.resultWithheldBody, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+            if (term.withheldReason != null)
+              Padding(
+                padding: const EdgeInsets.only(top: Kx.s8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, size: 18, color: bad.fg),
+                    const SizedBox(width: Kx.s8),
+                    Expanded(child: Text(l.resultWithheldReason(term.withheldReason!), key: Key('withheldReason-${term.sessionId}'), style: context.text.bodyMedium)),
+                  ],
+                ),
+              ),
+          ] else ...[
             Text(l.sgpaLine(term.sgpa.toStringAsFixed(2)), key: Key('sgpa-${term.sessionId}'), style: context.text.titleLarge?.copyWith(color: c.primary, fontWeight: FontWeight.w600)),
             const SizedBox(height: Kx.s8),
             for (final line in term.lines) _line(context, line),

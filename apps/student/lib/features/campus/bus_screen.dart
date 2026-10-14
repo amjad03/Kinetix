@@ -5,17 +5,25 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/campus_services.dart';
+import '../../core/files.dart';
+import '../../core/format.dart';
+import '../../core/self_service.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import '../../widgets/load_view.dart';
+import 'stop_change_screen.dart';
 
 /// The student's bus: the route, the stop and pickup time, and, while the bus is on the road,
 /// how many minutes and stops away it is. Refreshes by itself every [every].
 class BusScreen extends StatefulWidget {
-  const BusScreen({super.key, required this.api, required this.studentId, this.every = const Duration(seconds: 20)});
+  const BusScreen({super.key, required this.api, required this.studentId, this.every = const Duration(seconds: 20), this.openFile = openWithSystem});
 
   final StudentApi api;
   final String studentId;
   final Duration every;
+
+  /// Opens the bus pass PDF; tests pass their own.
+  final OpenFile openFile;
 
   static Future<void> open(BuildContext context, StudentApi api, String studentId) =>
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => BusScreen(api: api, studentId: studentId)));
@@ -28,12 +36,74 @@ class _BusScreenState extends State<BusScreen> {
   StudentBus? _bus;
   ApiException? _error;
   Timer? _timer;
+  List<StopChangeRequest>? _changes;
+  List<PublicRoute>? _routes;
+  bool _passBusy = false;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _loadChanges();
     _timer = Timer.periodic(widget.every, (_) => _load());
+  }
+
+  Future<void> _loadChanges() async {
+    try {
+      final (changes, routes) = await (widget.api.stopChangeRequests(widget.studentId), widget.api.transportRoutes()).wait;
+      if (mounted) {
+        setState(() {
+          _changes = changes;
+          _routes = routes;
+        });
+      }
+    } on ParallelWaitError {
+      if (mounted) setState(() => _changes = const []);
+    }
+  }
+
+  Future<void> _changeStop() async {
+    final sent = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => StopChangeScreen(api: widget.api, studentId: widget.studentId, currentStopId: _bus?.stopId)));
+    if (sent == true && mounted) {
+      say(context, context.l10n.trChangeSent);
+      await _loadChanges();
+    }
+  }
+
+  Future<void> _pass() async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _passBusy = true);
+    try {
+      final bytes = await widget.api.busPassPdf(widget.studentId);
+      final ok = await widget.openFile(bytes, 'bus-pass.pdf', 'application/pdf');
+      if (!ok) messenger.showSnackBar(SnackBar(content: Text(l.fileOpenFailed)));
+    } on ApiException catch (e) {
+      if (mounted) messenger.showSnackBar(SnackBar(content: Text(context.errorText(e))));
+    } finally {
+      if (mounted) setState(() => _passBusy = false);
+    }
+  }
+
+  String _stopName(String id) {
+    for (final r in _routes ?? const <PublicRoute>[]) {
+      for (final s in r.stops) {
+        if (s.id == id) return '${s.name} · ${r.name}';
+      }
+    }
+    return '';
+  }
+
+  Widget _statusPill(BuildContext context, String status) {
+    final l = context.l10n;
+    final (label, tone) = switch (status) {
+      'approved' => (l.trApproved, KxTone.success),
+      'rejected' => (l.trRejected, KxTone.danger),
+      'cancelled' => (l.trCancelled, KxTone.neutral),
+      _ => (l.trPending, KxTone.warning),
+    };
+    final t = kxTone(context, tone);
+    return ConstrainedBox(constraints: const BoxConstraints(maxWidth: 120), child: Pill(label, background: t.bg, foreground: t.fg));
   }
 
   @override
@@ -63,7 +133,7 @@ class _BusScreenState extends State<BusScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l.busTitle)),
       body: RefreshIndicator(
-        onRefresh: _load,
+        onRefresh: () => Future.wait([_load(), _loadChanges()]),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s32),
@@ -104,6 +174,48 @@ class _BusScreenState extends State<BusScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: Kx.s16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const Key('busPass'),
+                      onPressed: _passBusy ? null : _pass,
+                      icon: _passBusy ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.badge_outlined),
+                      label: Text(l.trBusPass),
+                    ),
+                  ),
+                  const SizedBox(width: Kx.s12),
+                  Expanded(
+                    child: FilledButton.tonalIcon(
+                      key: const Key('changeStop'),
+                      onPressed: (_changes ?? const []).any((c) => c.status == 'pending') ? null : _changeStop,
+                      icon: const Icon(Icons.edit_location_alt_outlined),
+                      label: Text(l.trChangeStop),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (b != null && !b.assigned && _changes != null && !_changes!.any((c) => c.status == 'pending'))
+              Center(child: TextButton.icon(key: const Key('askForStop'), onPressed: _changeStop, icon: const Icon(Icons.add_location_alt_outlined), label: Text(l.trAskForStop))),
+            if ((_changes ?? const []).isNotEmpty) ...[
+              SectionTitle(l.trChangeRequests),
+              for (final r in _changes!)
+                Card(
+                  key: Key('stopChange-${r.id}'),
+                  child: ListTile(
+                    leading: const Icon(Icons.edit_location_alt_outlined),
+                    title: Text(_stopName(r.toStopId).isEmpty ? l.trNewStop : _stopName(r.toStopId)),
+                    subtitle: Text([
+                      l.trFromDay(context.fmt.date(r.effectiveOn)),
+                      if (r.feeDeltaPaise > 0) l.trFeeMore(Fmt.rupees(r.feeDeltaPaise)),
+                      if (r.feeDeltaPaise < 0) l.trFeeLess(Fmt.rupees(-r.feeDeltaPaise)),
+                      if (r.decisionNote.isNotEmpty) r.decisionNote,
+                    ].join(' · ')),
+                    trailing: _statusPill(context, r.status),
+                  ),
+                ),
             ],
           ],
         ),

@@ -16,6 +16,7 @@ import '../core/boarding.dart';
 import '../core/campus.dart';
 import '../core/conduct.dart';
 import '../core/exam_models.dart';
+import '../core/family_care.dart';
 import '../core/growth.dart';
 import '../core/realtime.dart';
 import '../core/lms.dart';
@@ -2001,6 +2002,74 @@ class FakeParentApi implements ParentApi {
   Future<void> markConversationRead(String conversationId) async {
     calls.add('chat-read $conversationId');
     _readAt[conversationId] = DateTime.now();
+  }
+
+  // ── Family care ─────────────────────────────────────────────────────────────────────────────
+
+  /// Out-passes waiting for the family (none unless a test adds one; see [aaravPass]).
+  List<Map<String, dynamic>> familyPasses = [];
+
+  /// Aarav asks to go home for the weekend.
+  static const aaravPass = {
+    'pass': {'id': 'gp9', 'studentId': 'c1', 'reason': 'Weekend at home', 'destination': 'Mysuru', 'expectedBackAt': '2026-10-11T12:30:00.000Z', 'status': 'parent_pending', 'createdAt': '2026-10-08T04:00:00.000Z'},
+    'studentName': 'Aarav Patel',
+  };
+  ApiException? outPassError;
+
+  @override
+  Future<List<FamilyOutPass>> outPassesForFamily() async {
+    calls.add('outPassesForFamily');
+    if (outPassError != null) throw outPassError!;
+    return [for (final p in familyPasses) FamilyOutPass.fromJson(p)];
+  }
+
+  @override
+  Future<void> decideOutPass(String passId, {required bool approve}) async {
+    calls.add('decideOutPass $passId ${approve ? 'approve' : 'reject'}');
+    if (outPassError != null) throw outPassError!;
+    familyPasses = [for (final p in familyPasses) if ((p['pass'] as Map)['id'] != passId) p];
+  }
+
+  Map<String, dynamic> attendanceOverviewJson = {
+    'student': {'id': 'c1', 'fullName': 'Aarav Patel', 'rollNo': '12', 'section': 'BCom Sem 3 A'},
+    'policy': {'thresholdPct': 75, 'basis': 'per_subject', 'warnPct': 80, 'mode': 'hour', 'profile': {'code': 'BCU', 'name': 'Bengaluru City University', 'scheme': 'NEP'}},
+    'window': {'from': '2026-07-01', 'to': '2026-10-08', 'label': 'Semester 3'},
+    'overall': {'held': 90, 'attended': 72, 'pct': 80, 'condoned': 0, 'effective': 80},
+    'subjects': [
+      {'subjectId': 's-acc', 'subject': 'Corporate Accounting', 'code': 'COM301', 'held': 30, 'attended': 27, 'pct': 90, 'condoned': 0, 'effective': 90, 'short': false},
+      {'subjectId': 's-law', 'subject': 'Company Law', 'code': 'COM303', 'held': 30, 'attended': 21, 'pct': 70, 'condoned': 0, 'effective': 70, 'short': true},
+      {'subjectId': 's-sta', 'subject': 'Business Statistics', 'code': 'COM302', 'held': 30, 'attended': 24, 'pct': 80, 'condoned': 0, 'effective': 80, 'short': false},
+    ],
+    'status': 'condonable',
+    'warning': false,
+    'days': <Object>[],
+    'leaves': [
+      {'id': 'lv1', 'kind': 'medical', 'fromDate': '2026-09-14', 'toDate': '2026-09-15', 'status': 'approved', 'reason': 'Fever'},
+    ],
+  };
+  ApiException? overviewError;
+
+  @override
+  Future<AttendanceOverview> attendanceOverview(String childId) async {
+    calls.add('attendanceOverview $childId');
+    if (overviewError != null) throw overviewError!;
+    return AttendanceOverview.fromJson(attendanceOverviewJson);
+  }
+
+  Map<String, dynamic> mentoringJson = {
+    'mentor': {'mentorName': 'Anita Sharma', 'startedOn': '2026-07-01'},
+    'sessions': [
+      {'heldOn': '2026-09-20', 'mode': 'in_person', 'summary': 'Talked about the Company Law classes missed and a study plan.', 'followUpOn': '2026-10-20'},
+      {'heldOn': '2026-08-10', 'mode': 'phone', 'summary': 'Settling in well; joined the debate club.', 'followUpOn': null},
+    ],
+  };
+  ApiException? mentoringError;
+
+  @override
+  Future<MentoringView> mentoring(String childId) async {
+    calls.add('mentoring $childId');
+    if (mentoringError != null) throw mentoringError!;
+    return MentoringView.fromJson(mentoringJson);
   }
 }
 

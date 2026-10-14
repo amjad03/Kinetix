@@ -14,6 +14,7 @@ import 'boarding.dart';
 import 'campus.dart';
 import 'conduct.dart';
 import 'exam_models.dart';
+import 'family_care.dart';
 import 'growth.dart';
 import 'lms.dart';
 import 'campus_extras.dart';
@@ -353,6 +354,20 @@ abstract class ParentApi implements AnnouncementSource {
 
   /// One course: modules, content, announcements and the grade breakdown (`GET /v1/lms/courses/:id`).
   Future<LmsCourseDetail> lmsCourse(String courseId, String childId);
+
+  // ── Family care ─────────────────────────────────────────────────────────────────────────────
+
+  /// Out-passes my children asked for that wait for my approval (`GET /v1/hostel/gate-passes/for-family`).
+  Future<List<FamilyOutPass>> outPassesForFamily();
+
+  /// Approves (it goes on to the warden) or declines an out-pass (`POST /v1/hostel/gate-passes/:id/parent-approve|parent-reject`).
+  Future<void> decideOutPass(String passId, {required bool approve});
+
+  /// The child's attendance by subject under the rules, with leave (`GET /v1/attendance-desk/students/:id`).
+  Future<AttendanceOverview> attendanceOverview(String childId);
+
+  /// The child's mentor and the session summaries (`GET /v1/mentoring/family/:id`); 403 when the college does not share it.
+  Future<MentoringView> mentoring(String childId);
 }
 
 /// Lets the lesson player load recordings through a [ParentApi].
@@ -1002,4 +1017,20 @@ class HttpParentApi implements ParentApi {
   @override
   Future<LmsCourseDetail> lmsCourse(String courseId, String childId) async =>
       LmsCourseDetail.fromJson(await _send('GET', '/v1/lms/courses/$courseId?studentId=$childId') as Map<String, dynamic>);
+
+  // ── Family care ─────────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<FamilyOutPass>> outPassesForFamily() async =>
+      [for (final r in await _send('GET', '/v1/hostel/gate-passes/for-family') as List) FamilyOutPass.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> decideOutPass(String passId, {required bool approve}) => _send('POST', '/v1/hostel/gate-passes/$passId/${approve ? 'parent-approve' : 'parent-reject'}');
+
+  @override
+  Future<AttendanceOverview> attendanceOverview(String childId) async =>
+      AttendanceOverview.fromJson(await _send('GET', '/v1/attendance-desk/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<MentoringView> mentoring(String childId) async => MentoringView.fromJson(await _send('GET', '/v1/mentoring/family/$childId') as Map<String, dynamic>);
 }

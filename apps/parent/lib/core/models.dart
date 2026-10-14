@@ -354,7 +354,7 @@ class ChildSummary {
   List<RecordingInfo> get recordingsMissedFirst => [...recordings.where((r) => r.missed), ...recordings.where((r) => !r.missed)];
 }
 
-enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, broadcast, announcement, calendar, transport, hostel, other }
+enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, broadcast, announcement, calendar, transport, hostel, welfare, other }
 
 class AppNotification {
   AppNotification({
@@ -383,6 +383,7 @@ class AppNotification {
       'calendar' => NotificationKind.calendar,
       'transport' => NotificationKind.transport,
       'hostel' => NotificationKind.hostel,
+      'welfare' => NotificationKind.welfare,
       _ => NotificationKind.other,
     },
     title: j['title'] as String,
@@ -415,6 +416,15 @@ class AppNotification {
   String? get homeworkId => data['homeworkId'] as String?;
   String? get whiteboardId => data['whiteboardId'] as String?;
   String? get recordingId => data['recordingId'] as String?;
+
+  /// An out-pass waiting for the family's approval.
+  String? get passId => data['passId'] as String?;
+
+  /// A stay in the hostel sick bay the family is told about.
+  String? get sickbayId => data['sickbayId'] as String?;
+
+  /// A shortage alert names the subject (or `overall`) it is about.
+  String? get attendanceScope => data['scope'] as String?;
 
   /// A fee payment went through (opens its receipt).
   String? get paymentId => data['paymentId'] as String?;

@@ -2238,5 +2238,279 @@
   "resultWithheldBody": "This result is withheld by the examination office. Contact the office to know why and what to do.",
   "@resultWithheldBody": {
     "description": "Shown instead of the figures of a withheld result."
-  }
+  },
+  "atBySubject": "Attendance by subject",
+  "atBySubjectFor": "{name}'s attendance by subject",
+  "@atBySubjectFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "atBySubjectSubtitle": "Against the minimum, with shortage warnings",
+  "atRuleBody": "At least {pct}% is needed under the rules of {body}.",
+  "@atRuleBody": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "body": {
+        "type": "String"
+      }
+    }
+  },
+  "atRuleOwn": "At least {pct}% is needed under the college's rules.",
+  "@atRuleOwn": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atPerSubjectRule": "The minimum applies to every subject on its own.",
+  "atSubjects": "Subjects",
+  "atNoSubjects": "No classes have been marked yet.",
+  "atLeaves": "Leave and on duty",
+  "atKindOnDuty": "On duty",
+  "atKindMedical": "Medical leave",
+  "atKindPersonal": "Leave",
+  "atApproved": "Approved",
+  "atDeclined": "Declined",
+  "atWithdrawn": "Withdrawn",
+  "atRevoked": "Revoked",
+  "atAwaiting": "Awaiting decision",
+  "atDetained": "{name} is short of attendance beyond what can be condoned. Please meet the class teacher.",
+  "@atDetained": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "atShortOverall": "{name} is below {pct}%. Every class from now counts.",
+  "@atShortOverall": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atShortIn": "{name} is short of attendance in {subjects}.",
+  "@atShortIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "subjects": {
+        "type": "String"
+      }
+    }
+  },
+  "atClose": "{name} is close to the {pct}% minimum.",
+  "@atClose": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atFine": "{name}'s attendance is above the minimum.",
+  "@atFine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "atOverall": "Overall",
+  "atOverallIn": "Overall in {term}",
+  "@atOverallIn": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "atHeldAttended": "{attended} of {held} classes attended",
+  "@atHeldAttended": {
+    "placeholders": {
+      "attended": {
+        "type": "int"
+      },
+      "held": {
+        "type": "int"
+      }
+    }
+  },
+  "atNeedClasses": "{n, plural, =1{Attending the next class brings it to {pct}%.} other{Attending the next {n} classes in a row brings it to {pct}%.}}",
+  "@atNeedClasses": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atCloseSubject": "Close to the {pct}% minimum.",
+  "@atCloseSubject": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "outPassWaitingForYou": "Waiting for you",
+  "opApprovalsTitle": "Out-passes to approve",
+  "opApprovalsSubtitle": "Hostel out-passes your child asked for",
+  "opEmpty": "Nothing is waiting for your approval.",
+  "opDeclineTitle": "Decline the out-pass?",
+  "opDeclineBody": "{name} will be told, and the pass will not go to the warden.",
+  "@opDeclineBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "opDecline": "Decline",
+  "opApprove": "Approve",
+  "opApproved": "Approved. The warden issues the pass for {name}.",
+  "@opApproved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "opDeclined": "Out-pass declined.",
+  "opAsks": "{name} asks to leave the hostel",
+  "@opAsks": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "opBackBy": "Back by {when}",
+  "@opBackBy": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "opWaiting": "{n, plural, =1{An out-pass is waiting for your approval} other{{n} out-passes are waiting for your approval}}",
+  "@opWaiting": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sickbayNow": "{name} is in the hostel sick bay",
+  "@sickbayNow": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sickbaySince": "Since {when}",
+  "@sickbaySince": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "sickbayTreatment": "Treatment: {text}",
+  "@sickbayTreatment": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "sickbayReferred": "Referred to {place}",
+  "@sickbayReferred": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "sickbayWarden": "The warden will keep you informed. Call the hostel office if you need to.",
+  "hoTitle": "Hand-over code",
+  "hoReadOut": "Read this code out to the bus staff when you receive {name} at the stop.",
+  "@hoReadOut": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hoReadOutAny": "Read this code out to the bus staff when you receive your child at the stop.",
+  "hoWorksFor": "{n, plural, =1{Works for 1 more minute} other{Works for {n} more minutes}}",
+  "@hoWorksFor": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "hoExpired": "This code has expired. Ask the bus staff to send a new one.",
+  "hoNever": "Never share this code by phone or message. Give it only in person at the stop.",
+  "resultWithheldReason": "Reason: {reason}",
+  "@resultWithheldReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "mnTitle": "{name}'s mentor",
+  "@mnTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mnSubtitle": "Mentoring sessions and follow-ups",
+  "mnNoMentor": "No mentor is assigned to {name} yet.",
+  "@mnNoMentor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mnSince": "Mentor since {day}",
+  "@mnSince": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "mnSessions": "Sessions",
+  "mnNoSessions": "No sessions yet.",
+  "mnFollowUp": "Next meeting {day}",
+  "@mnFollowUp": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "mnPrivacy": "These are the mentor's summaries for the family. Private notes stay with the mentor."
 }

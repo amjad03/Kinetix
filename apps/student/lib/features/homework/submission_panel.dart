@@ -48,6 +48,8 @@ class _SubmissionPanelState extends State<SubmissionPanel> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(context.l10n.handedInDone)));
+    // The hand-in's answer carries no rules: load again for the attempts left.
+    await _load();
   }
 
   @override
@@ -85,6 +87,15 @@ class _SubmissionPanelState extends State<SubmissionPanel> {
                 if (s.status != null && s.late) Pill(l.statusLate, key: const Key('submissionLate'), background: c.errorContainer, foreground: c.onErrorContainer),
               ],
             ),
+            if (s.rules != null) _HandInRulesBlock(submission: s, now: DateTime.now()),
+            if (s.status != null && s.penaltyPct > 0) ...[
+              const SizedBox(height: Kx.s8),
+              Text(l.hwPenaltyApplied(_pct(s.penaltyPct)), key: const Key('submissionPenalty'), style: context.text.bodyMedium?.copyWith(color: c.error)),
+            ],
+            if (s.status == SubmissionStatus.checked && s.marks != null) ...[
+              const SizedBox(height: Kx.s8),
+              Text(l.hwMarksLine(_pct(s.marks!)), key: const Key('submissionMarks'), style: context.text.titleMedium?.copyWith(color: c.primary)),
+            ],
             if (s.submittedAt != null) ...[
               const SizedBox(height: Kx.s8),
               Text(l.handedInAt(context.fmt.dateTime(s.submittedAt!)), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
@@ -132,7 +143,7 @@ class _SubmissionPanelState extends State<SubmissionPanel> {
                     ? () => SubmittedPhotoScreen.open(context, widget.api.submissionFile(widget.homework.id, widget.studentId, f.index), f.name)
                     : null,
               ),
-            if (s.canHandIn) ...[
+            if (s.canHandIn && !_closed(s, DateTime.now())) ...[
               const SizedBox(height: Kx.s12),
               if (s.status == null || s.status == SubmissionStatus.returned)
                 FilledButton.icon(
@@ -152,6 +163,68 @@ class _SubmissionPanelState extends State<SubmissionPanel> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "10" for 10.0, "12.5" for 12.5.
+String _pct(double v) => v == v.roundToDouble() ? v.round().toString() : v.toStringAsFixed(1);
+
+/// Whether the rules refuse another hand-in now: past the cut-off, late work not taken, or no attempts left
+/// (returned work may always be redone).
+bool _closed(Submission s, DateTime now) {
+  final r = s.rules;
+  if (r == null) return false;
+  if (r.cutoffAt != null && !now.isBefore(r.cutoffAt!)) return true;
+  if (r.latePolicy == 'reject' && !now.isBefore(r.dueAt)) return true;
+  return s.status != SubmissionStatus.returned && s.status != null && (s.attemptsLeft ?? 1) <= 0;
+}
+
+/// The hand-in rules: the group, attempts used, and what happens to late work.
+class _HandInRulesBlock extends StatelessWidget {
+  const _HandInRulesBlock({required this.submission, required this.now});
+
+  final Submission submission;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final c = context.colors;
+    final r = submission.rules!;
+    final late = !now.isBefore(r.dueAt);
+    final shut = _closed(submission, now);
+    final lateText = switch (r.latePolicy) {
+      'reject' => l.hwLateRejected,
+      'penalty' => l.hwLatePenalty(_pct(r.latePenaltyPct)),
+      _ => l.hwLateAccepted,
+    };
+    Widget line(IconData icon, String text, {Color? color, Key? key}) => Padding(
+      padding: const EdgeInsets.only(top: Kx.s8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: color ?? c.onSurfaceVariant),
+          const SizedBox(width: Kx.s8),
+          Expanded(child: Text(text, key: key, style: context.text.bodyMedium?.copyWith(color: color))),
+        ],
+      ),
+    );
+    return Column(
+      key: const Key('handInRules'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (r.groupName != null) line(Icons.groups_outlined, r.groupMembers.isEmpty ? l.hwGroupAlone(r.groupName!) : l.hwGroupWith(r.groupName!, r.groupMembers.join(', ')), key: const Key('hwGroup')),
+        if (r.maxAttempts > 1 || submission.attempts > 0) line(Icons.repeat, l.hwAttemptsUsed(submission.attempts, r.maxAttempts), key: const Key('hwAttempts')),
+        line(Icons.schedule, l.hwDueAt(context.fmt.dateTime(r.dueAt))),
+        if (shut)
+          line(Icons.block, l.hwClosed, color: c.error, key: const Key('hwClosed'))
+        else if (late && submission.status == null)
+          line(Icons.warning_amber_rounded, l.hwLateNow(lateText), color: Tone.warn(context), key: const Key('hwLateNotice'))
+        else
+          line(Icons.info_outline, lateText, key: const Key('hwLatePolicy')),
+        if (r.cutoffAt != null && !shut) line(Icons.event_busy_outlined, l.hwCutoff(context.fmt.dateTime(r.cutoffAt!))),
+      ],
     );
   }
 }

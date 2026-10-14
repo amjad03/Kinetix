@@ -123,7 +123,7 @@ class ResultLine {
 
 /// A published term result with its SGPA.
 class TermResult {
-  const TermResult({required this.sessionId, required this.sessionName, required this.term, required this.sgpa, required this.cgpa, required this.outcome, required this.lines, this.withheld = false});
+  const TermResult({required this.sessionId, required this.sessionName, required this.term, required this.sgpa, required this.cgpa, required this.outcome, required this.lines, this.withheld = false, this.withheldReason});
 
   factory TermResult.fromJson(Map<String, dynamic> j) => TermResult(
     sessionId: j['sessionId'] as String,
@@ -134,6 +134,7 @@ class TermResult {
     outcome: j['outcome'] as String? ?? 'pass',
     lines: [for (final l in (j['lines'] as List? ?? const [])) ResultLine.fromJson((l as Map).cast<String, dynamic>())],
     withheld: j['withheld'] == true,
+    withheldReason: (j['withheldReason'] as String?)?.trim().isEmpty ?? true ? null : (j['withheldReason'] as String).trim(),
   );
 
   final String sessionId;
@@ -146,6 +147,9 @@ class TermResult {
 
   /// The exam office holds this result back (malpractice inquiry, fees, documents): no figures are shown.
   final bool withheld;
+
+  /// Why it is held, in the office's words (unpaid fees, a pending inquiry); null when not said.
+  final String? withheldReason;
   bool get passed => outcome == 'pass';
 }
 

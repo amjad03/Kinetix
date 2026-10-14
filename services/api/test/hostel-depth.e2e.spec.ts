@@ -144,11 +144,14 @@ describe('hostel depth', () => {
   it('needs the family’s approval for a student’s own out-pass when the setting says so', async () => {
     await http().put('/v1/module-settings/hostel').set(as('principal')).send({ rules: { outpassNeedsParentApproval: true } }).expect(200);
     const back = new Date(Date.now() + 6 * 3600_000).toISOString();
-    const pass = (await post('student', '/v1/hostel/gate-passes/requests', { studentId: t.students[2].id, reason: 'Doctor', expectedBackAt: back }).expect(201)).body;
-    expect(pass).toMatchObject({ status: 'parent_pending', parentStatus: 'pending' });
     // Student C has no guardian in the fixture: link guardian 2 to decide.
     await owner.query(`insert into guardians (tenant_id, user_id, student_id, relation) values ($1, $2, $3, 'mother')`, [t.tenantId, t.guardian2.id, t.students[2].id]);
-    expect((await get('parent2', '/v1/hostel/gate-passes/for-family').expect(200)).body).toHaveLength(1);
+    const pass = (await post('student', '/v1/hostel/gate-passes/requests', { studentId: t.students[2].id, reason: 'Doctor', expectedBackAt: back }).expect(201)).body;
+    expect(pass).toMatchObject({ status: 'parent_pending', parentStatus: 'pending' });
+    // The family is told at once (a push in the Parent App), with the pass to open.
+    const told = (await get('parent2', '/v1/notifications').expect(200)).body.items.filter((n: { kind: string }) => n.kind === 'hostel');
+    expect(told).toEqual([expect.objectContaining({ data: { studentId: t.students[2].id, passId: pass.id }, title: expect.stringContaining('asks to leave the hostel') })]);
+    expect((await get('parent2', '/v1/hostel/gate-passes/for-family').expect(200)).body).toEqual([expect.objectContaining({ studentName: expect.any(String), pass: expect.objectContaining({ id: pass.id, studentId: t.students[2].id, reason: 'Doctor' }) })]);
     await post('parent', `/v1/hostel/gate-passes/${pass.id}/parent-approve`).expect(404);
     expect((await post('parent2', `/v1/hostel/gate-passes/${pass.id}/parent-approve`).expect(200)).body).toMatchObject({ status: 'requested', parentStatus: 'approved' });
     await action('warden', 'hostel-gate-passes', pass.id, 'approve').expect(200);
@@ -172,7 +175,12 @@ describe('hostel depth', () => {
     expect(sick).toMatchObject({ parentAlerted: true, healthVisitId: expect.any(String) });
     expect((await owner.query(`select complaint from health_visits where student_id = $1`, [t.students[2].id])).rows).toEqual([{ complaint: 'Fever 101F' }]);
     expect(JSON.stringify((await get('parent2', '/v1/notifications').expect(200)).body)).toContain('sick bay');
+    // The notice names the stay, and the family's hostel page shows it until discharge.
+    const sickNote = (await get('parent2', '/v1/notifications').expect(200)).body.items.find((n: { kind: string; data: Record<string, string> }) => n.kind === 'welfare' && n.data.sickbayId);
+    expect(sickNote.data).toEqual({ studentId: t.students[2].id, sickbayId: sick.id });
+    expect((await get('parent2', `/v1/hostel/students/${t.students[2].id}`).expect(200)).body.sickbay).toEqual([expect.objectContaining({ id: sick.id, symptoms: 'Fever 101F', treatment: 'Paracetamol', dischargedAt: null })]);
     await action('warden', 'hostel-sickbay', sick.id, 'discharge').expect(200);
+    expect((await get('parent2', `/v1/hostel/students/${t.students[2].id}`).expect(200)).body.sickbay[0].dischargedAt).toEqual(expect.any(String));
     expect((await action('warden', 'hostel-sickbay', sick.id, 'discharge').expect(200)).body.rows[0].ok).toBe(false);
   });
 

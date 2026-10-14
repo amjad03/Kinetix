@@ -9,6 +9,7 @@ import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'bus_map.dart';
+import 'handover_code_screen.dart';
 
 /// "Arriving in 7 min" / "2 stops away" for the child's stop; null when there is no running bus.
 String? busEtaText(AppLocalizations l, StudentBus b) {
@@ -115,6 +116,7 @@ class _BusScreenState extends State<BusScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
                       if (_error != null) ...[ErrorBanner(_error!, onRetry: _load), const SizedBox(height: Kx.s12)],
+                      HandoverCodeCard(api: widget.api, childId: widget.child.id, childName: widget.child.firstName),
                       _eta(context, b),
                       const SizedBox(height: Kx.s12),
                       SizedBox(

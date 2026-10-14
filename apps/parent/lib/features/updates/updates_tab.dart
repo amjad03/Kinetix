@@ -5,11 +5,13 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/api.dart';
 
 import '../../core/family.dart';
+import '../../core/family_care.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../announcements/announcements.dart';
+import '../attendance/attendance_overview_screen.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
 import '../calendar/calendar_screen.dart';
@@ -18,6 +20,8 @@ import '../fees/receipt_screen.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
 import '../hostel/boarding_screen.dart';
+import '../hostel/out_pass_approvals_screen.dart';
+import '../transport/handover_code_screen.dart';
 import '../transport/bus_screen.dart';
 import '../marks/marks.dart';
 import '../messages/chat_screen.dart';
@@ -53,6 +57,7 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.calendar => Icons.event,
     NotificationKind.transport => Icons.directions_bus,
     NotificationKind.hostel => Icons.apartment,
+    NotificationKind.welfare => Icons.health_and_safety_outlined,
     NotificationKind.other => Icons.notifications,
   };
 
@@ -72,6 +77,8 @@ class UpdatesTab extends StatelessWidget {
         if (family.children.isEmpty) await family.load();
         final child = family.byId(n.studentId) ?? family.selected;
         final date = n.data['date'] is String ? parseIsoDate(n.data['date'] as String) : null;
+        // A shortage alert names a subject (or overall): the attendance by subject against the minimum.
+        if (child != null && n.attendanceScope != null && context.mounted) return AttendanceOverviewScreen.open(context, api, child);
         if (child != null && context.mounted) return AttendanceScreen.open(context, api, child, highlightDate: date);
       case NotificationKind.homework:
         // New homework names the class; "checked" and "to redo" name the child.
@@ -107,6 +114,9 @@ class UpdatesTab extends StatelessWidget {
       case NotificationKind.transport:
         if (family.children.isEmpty) await family.load();
         final child = family.byId(n.studentId) ?? family.selected;
+        // The hand-over code at the stop: shown large to read out to the bus staff.
+        final code = HandoverCode.of(n);
+        if (code != null && context.mounted) return HandoverCodeScreen.open(context, code, childName: child?.firstName ?? '');
         if (child != null && context.mounted) return BusScreen.open(context, family, child);
       case NotificationKind.marks:
         // "Marks published": that assessment's result for the child in the class, else all their results.
@@ -121,10 +131,18 @@ class UpdatesTab extends StatelessWidget {
       case NotificationKind.calendar:
         return CalendarScreen.open(context, api, highlightId: n.calendarEventId);
       case NotificationKind.hostel:
-        // A night-roll absence (or a gate event) opens the child's hostel page.
+        // An out-pass waiting for the family opens the approvals; a night-roll absence (or a gate event) the child's hostel page.
+        if (n.passId != null && context.mounted) return OutPassApprovalsScreen.open(context, api);
         if (family.children.isEmpty) await family.load();
         final kid = family.byId(n.studentId) ?? family.selected;
         if (kid != null && context.mounted) return BoardingScreen.open(context, family.api, kid);
+      case NotificationKind.welfare:
+        // A stay in the hostel sick bay opens the child's hostel page, where it shows at the top.
+        if (n.sickbayId != null) {
+          if (family.children.isEmpty) await family.load();
+          final kid = family.byId(n.studentId) ?? family.selected;
+          if (kid != null && context.mounted) return BoardingScreen.open(context, family.api, kid);
+        }
       case NotificationKind.announcement:
         if (announcements != null && n.announcementId != null) {
           if (announcements.byId(n.announcementId!) == null) await announcements.load();

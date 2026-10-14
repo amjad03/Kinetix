@@ -9,7 +9,11 @@ import '../../core/profile_photo.dart';
 import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import '../attendance/attendance_overview_screen.dart';
 import '../attendance/attendance_screen.dart';
+import '../campus/elections_screen.dart';
+import '../campus/hostel_screen.dart';
+import '../quizzes/quizzes_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../campus/bus_screen.dart';
 import '../campus/campus_life_screen.dart';
@@ -253,6 +257,21 @@ class ProfileTabState extends State<ProfileTab> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => AttendanceScreen.open(context, widget.study.api, st),
                 ),
+                ListTile(
+                  key: const Key('openAttendanceOverview'),
+                  leading: const Icon(Icons.bar_chart_rounded),
+                  title: Text(l.atBySubject),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => AttendanceOverviewScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openAttendanceLeave'),
+                  leading: const Icon(Icons.event_note_outlined),
+                  title: Text(l.atLeaveOnDuty),
+                  subtitle: Text(l.atLeaveOnDutySub),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => AttendanceLeaveScreen.open(context, widget.study.api),
+                ),
                 KxSectionHeader(l.resultsLibraryHeader),
                 ListTile(
                   key: const Key('openResults'),
@@ -269,6 +288,14 @@ class ProfileTabState extends State<ProfileTab> {
                   subtitle: Text(_libraryLine(l, widget.study.library)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => LibraryScreen.open(context, widget.study),
+                ),
+                ListTile(
+                  key: const Key('openQuizzes'),
+                  leading: const Icon(Icons.quiz_outlined),
+                  title: Text(l.qzTitle),
+                  subtitle: Text(l.qzSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => QuizzesScreen.open(context, widget.study.api),
                 ),
                 DeviceTrustTile(api: widget.study.api),
                 ListTile(
@@ -411,6 +438,22 @@ class ProfileTabState extends State<ProfileTab> {
                   title: Text(l.busTitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => BusScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openHostel'),
+                  leading: const Icon(Icons.bed_outlined),
+                  title: Text(l.hsTitle),
+                  subtitle: Text(l.hsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => HostelScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openElections'),
+                  leading: const Icon(Icons.how_to_vote_outlined),
+                  title: Text(l.elTitle),
+                  subtitle: Text(l.elSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ElectionsScreen.open(context, widget.study.api, st.id),
                 ),
                 ListTile(
                   key: const Key('openGatePass'),

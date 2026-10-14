@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// No description provided for @today.
   ///
@@ -7989,10 +7982,1485 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This result is withheld by the examination office. Contact the office to know why and what to do.'**
   String get resultWithheldBody;
+
+  /// No description provided for @resultWithheldReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason: {reason}'**
+  String resultWithheldReason(String reason);
+
+  /// No description provided for @hwPenaltyApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed in late: {pct}% is taken off the marks.'**
+  String hwPenaltyApplied(String pct);
+
+  /// No description provided for @hwMarksLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks: {marks}'**
+  String hwMarksLine(String marks);
+
+  /// No description provided for @hwLateRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Late work is not taken after the due time.'**
+  String get hwLateRejected;
+
+  /// No description provided for @hwLatePenalty.
+  ///
+  /// In en, this message translates to:
+  /// **'Late work loses {pct}% of its marks.'**
+  String hwLatePenalty(String pct);
+
+  /// No description provided for @hwLateAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Late work is taken but marked late.'**
+  String get hwLateAccepted;
+
+  /// No description provided for @hwLateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'The due time has passed. {policy}'**
+  String hwLateNow(String policy);
+
+  /// No description provided for @hwClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This assignment takes no more hand-ins.'**
+  String get hwClosed;
+
+  /// No description provided for @hwCutoff.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time for late work: {when}'**
+  String hwCutoff(String when);
+
+  /// No description provided for @hwDueAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Due by {when}'**
+  String hwDueAt(String when);
+
+  /// No description provided for @hwGroupWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Group work ({group}) with {names}. One hand-in counts for everyone.'**
+  String hwGroupWith(String group, String names);
+
+  /// No description provided for @hwGroupAlone.
+  ///
+  /// In en, this message translates to:
+  /// **'Group work ({group}).'**
+  String hwGroupAlone(String group);
+
+  /// No description provided for @hwAttemptsUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'{used} of {max} hand-ins used'**
+  String hwAttemptsUsed(int used, int max);
+
+  /// No description provided for @qzTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Online quizzes'**
+  String get qzTitle;
+
+  /// No description provided for @qzSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Timed quizzes from your teachers'**
+  String get qzSubtitle;
+
+  /// No description provided for @qzEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No quizzes for your class yet.'**
+  String get qzEmpty;
+
+  /// No description provided for @qzOpenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Open now'**
+  String get qzOpenNow;
+
+  /// No description provided for @qzComingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming up'**
+  String get qzComingUp;
+
+  /// No description provided for @qzDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get qzDone;
+
+  /// No description provided for @qzMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min'**
+  String qzMinutes(int n);
+
+  /// No description provided for @qzAttemptsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{No attempts left} =1{1 attempt left} other{{n} attempts left}}'**
+  String qzAttemptsLeft(int n);
+
+  /// No description provided for @qzBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best {score}'**
+  String qzBest(String score);
+
+  /// No description provided for @qzBeingMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Being marked'**
+  String get qzBeingMarked;
+
+  /// No description provided for @qzOpensAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens {when}'**
+  String qzOpensAt(String when);
+
+  /// No description provided for @qzClosesAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Closes {when}'**
+  String qzClosesAt(String when);
+
+  /// No description provided for @qzClosedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed {when}'**
+  String qzClosedAt(String when);
+
+  /// No description provided for @qzAttemptScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt {n}: {score} of {max}'**
+  String qzAttemptScore(int n, String score, String max);
+
+  /// No description provided for @qzAttemptMarking.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt {n}: being marked'**
+  String qzAttemptMarking(int n);
+
+  /// No description provided for @qzStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get qzStart;
+
+  /// No description provided for @qzResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get qzResume;
+
+  /// No description provided for @qzNoAttemptsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'No attempts left'**
+  String get qzNoAttemptsLeft;
+
+  /// No description provided for @qzStartRules.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {minutes} minutes once you start, and the clock keeps running if you leave. Attempts left: {left}.'**
+  String qzStartRules(int minutes, int left);
+
+  /// No description provided for @qzSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Answers saved'**
+  String get qzSaved;
+
+  /// No description provided for @qzSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get qzSaving;
+
+  /// No description provided for @qzSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not saved yet. Trying again.'**
+  String get qzSaveFailed;
+
+  /// No description provided for @qzNoQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'This quiz has no questions.'**
+  String get qzNoQuestions;
+
+  /// No description provided for @qzQuestionOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n} of {total}'**
+  String qzQuestionOf(int n, int total);
+
+  /// No description provided for @qzMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'{marks} marks'**
+  String qzMarks(String marks);
+
+  /// No description provided for @qzPickAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick every right answer'**
+  String get qzPickAll;
+
+  /// No description provided for @qzPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get qzPrevious;
+
+  /// No description provided for @qzNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get qzNext;
+
+  /// No description provided for @qzSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get qzSubmit;
+
+  /// No description provided for @qzSubmitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit the quiz?'**
+  String get qzSubmitTitle;
+
+  /// No description provided for @qzSubmitAll.
+  ///
+  /// In en, this message translates to:
+  /// **'You have answered every question. You cannot change your answers after submitting.'**
+  String get qzSubmitAll;
+
+  /// No description provided for @qzSubmitMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 question is not answered.} other{{n} questions are not answered.}} You cannot change your answers after submitting.'**
+  String qzSubmitMissing(int n);
+
+  /// No description provided for @qzKeepGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going'**
+  String get qzKeepGoing;
+
+  /// No description provided for @qzTimeUpSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Time is up. Your answers were submitted.'**
+  String get qzTimeUpSubmitted;
+
+  /// No description provided for @qzLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the quiz?'**
+  String get qzLeaveTitle;
+
+  /// No description provided for @qzLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers are saved, but the clock keeps running. Come back before the time is up to finish.'**
+  String get qzLeaveBody;
+
+  /// No description provided for @qzLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get qzLeave;
+
+  /// No description provided for @qzYourAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get qzYourAnswer;
+
+  /// No description provided for @qzYourCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Your code ({language})'**
+  String qzYourCode(String language);
+
+  /// No description provided for @qzCodeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your code is run against the teacher\'s tests when you submit.'**
+  String get qzCodeNote;
+
+  /// No description provided for @qzResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz result'**
+  String get qzResultTitle;
+
+  /// No description provided for @qzScoreOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} / {max}'**
+  String qzScoreOf(String score, String max);
+
+  /// No description provided for @qzNeedsMarking.
+  ///
+  /// In en, this message translates to:
+  /// **'A coding answer is still to be marked by your teacher.'**
+  String get qzNeedsMarking;
+
+  /// No description provided for @qzReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Question by question'**
+  String get qzReview;
+
+  /// No description provided for @qzToBeMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'To be marked'**
+  String get qzToBeMarked;
+
+  /// No description provided for @qzCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get qzCorrect;
+
+  /// No description provided for @qzWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Not correct'**
+  String get qzWrong;
+
+  /// No description provided for @qzMarksOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{got} of {max} marks'**
+  String qzMarksOf(String got, String max);
+
+  /// No description provided for @elTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Council elections'**
+  String get elTitle;
+
+  /// No description provided for @elSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vote, and see the results'**
+  String get elSubtitle;
+
+  /// No description provided for @elEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No election for you right now.'**
+  String get elEmpty;
+
+  /// No description provided for @elResultsOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Results are out.'**
+  String get elResultsOut;
+
+  /// No description provided for @elVotingWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Voting from {from} to {to}'**
+  String elVotingWindow(String from, String to);
+
+  /// No description provided for @elAlreadyVoted.
+  ///
+  /// In en, this message translates to:
+  /// **'You have voted. Results come out when the committee publishes them.'**
+  String get elAlreadyVoted;
+
+  /// No description provided for @elVoteNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Vote now'**
+  String get elVoteNow;
+
+  /// No description provided for @elNotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Voting is not open now.'**
+  String get elNotOpen;
+
+  /// No description provided for @elElected.
+  ///
+  /// In en, this message translates to:
+  /// **'Elected'**
+  String get elElected;
+
+  /// No description provided for @elVotes.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 vote} other{{n} votes}}'**
+  String elVotes(int n);
+
+  /// No description provided for @elNoCandidates.
+  ///
+  /// In en, this message translates to:
+  /// **'No candidates for this post.'**
+  String get elNoCandidates;
+
+  /// No description provided for @elMaxPicks.
+  ///
+  /// In en, this message translates to:
+  /// **'You can choose at most {n} for this post.'**
+  String elMaxPicks(int n);
+
+  /// No description provided for @elConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cast your vote?'**
+  String get elConfirmTitle;
+
+  /// No description provided for @elNoChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'No choice'**
+  String get elNoChoice;
+
+  /// No description provided for @elSkippedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not chosen for every post.'**
+  String get elSkippedNote;
+
+  /// No description provided for @elFinalNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You vote once. It cannot be changed after this.'**
+  String get elFinalNote;
+
+  /// No description provided for @elChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get elChange;
+
+  /// No description provided for @elCast.
+  ///
+  /// In en, this message translates to:
+  /// **'Cast vote'**
+  String get elCast;
+
+  /// No description provided for @elVoted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your vote is cast.'**
+  String get elVoted;
+
+  /// No description provided for @elSecretNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your vote is secret: the college records that you voted, never whom you chose.'**
+  String get elSecretNote;
+
+  /// No description provided for @elPickOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one'**
+  String get elPickOne;
+
+  /// No description provided for @elPickUpTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose up to {n}'**
+  String elPickUpTo(int n);
+
+  /// No description provided for @elReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and cast'**
+  String get elReview;
+
+  /// No description provided for @libCatalogue.
+  ///
+  /// In en, this message translates to:
+  /// **'Library catalogue'**
+  String get libCatalogue;
+
+  /// No description provided for @libSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Title, author, subject or ISBN'**
+  String get libSearchHint;
+
+  /// No description provided for @libClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get libClear;
+
+  /// No description provided for @libOnShelfOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'On the shelf now'**
+  String get libOnShelfOnly;
+
+  /// No description provided for @libMyReservations.
+  ///
+  /// In en, this message translates to:
+  /// **'My reservations'**
+  String get libMyReservations;
+
+  /// No description provided for @libReadyPickUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready: collect it at the desk.'**
+  String get libReadyPickUp;
+
+  /// No description provided for @libReadyUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready: collect it at the desk by {when}.'**
+  String libReadyUntil(String when);
+
+  /// No description provided for @libQueuePlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Number {n} in the queue'**
+  String libQueuePlace(int n);
+
+  /// No description provided for @libSearchPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the catalogue to find a book and see if it is on the shelf.'**
+  String get libSearchPrompt;
+
+  /// No description provided for @libNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No book matches your search.'**
+  String get libNoMatch;
+
+  /// No description provided for @libResults.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 book} other{{n} books}}'**
+  String libResults(int n);
+
+  /// No description provided for @libMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Show more'**
+  String get libMore;
+
+  /// No description provided for @libOnShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'{available} of {copies} on the shelf'**
+  String libOnShelf(int available, int copies);
+
+  /// No description provided for @libAllOut.
+  ///
+  /// In en, this message translates to:
+  /// **'All copies are out'**
+  String get libAllOut;
+
+  /// No description provided for @libInQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'You are in the queue'**
+  String get libInQueue;
+
+  /// No description provided for @libReserve.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserve'**
+  String get libReserve;
+
+  /// No description provided for @libReserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved. You will be told when a copy is ready.'**
+  String get libReserved;
+
+  /// No description provided for @libReservationCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Reservation cancelled.'**
+  String get libReservationCancelled;
+
+  /// No description provided for @libSelfCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-checkout'**
+  String get libSelfCheckout;
+
+  /// No description provided for @libSelfCheckoutHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'At the self-checkout desk, type the number printed under the barcode on the book. The book goes on your library card.'**
+  String get libSelfCheckoutHelp;
+
+  /// No description provided for @libCopyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Book number'**
+  String get libCopyCode;
+
+  /// No description provided for @libBorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrow'**
+  String get libBorrow;
+
+  /// No description provided for @libBorrowedDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed. Due back {day}.'**
+  String libBorrowedDue(String day);
+
+  /// No description provided for @gatePassParentPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your family'**
+  String get gatePassParentPending;
+
+  /// No description provided for @hsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel'**
+  String get hsTitle;
+
+  /// No description provided for @hsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Room, out-passes, mess bills and requests'**
+  String get hsSubtitle;
+
+  /// No description provided for @hsNoSeat.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have a hostel seat. Apply below; the warden allots beds by distance and need.'**
+  String get hsNoSeat;
+
+  /// No description provided for @hsApplicationOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your application {number} is with the warden.'**
+  String hsApplicationOpen(String number);
+
+  /// No description provided for @hsApplyForSeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply for a hostel seat'**
+  String get hsApplyForSeat;
+
+  /// No description provided for @hsApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Application sent to the warden.'**
+  String get hsApplied;
+
+  /// No description provided for @hsApplications.
+  ///
+  /// In en, this message translates to:
+  /// **'My applications'**
+  String get hsApplications;
+
+  /// No description provided for @hsBed.
+  ///
+  /// In en, this message translates to:
+  /// **'Bed {bed}'**
+  String hsBed(String bed);
+
+  /// No description provided for @hsMessLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Mess leave'**
+  String get hsMessLeave;
+
+  /// No description provided for @hsMessLeaveSent.
+  ///
+  /// In en, this message translates to:
+  /// **'The mess is told. Days away are taken off your bill.'**
+  String get hsMessLeaveSent;
+
+  /// No description provided for @hsChangeOrVacate.
+  ///
+  /// In en, this message translates to:
+  /// **'Change room or vacate'**
+  String get hsChangeOrVacate;
+
+  /// No description provided for @hsRequestWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'A request is already waiting for the warden.'**
+  String get hsRequestWaiting;
+
+  /// No description provided for @hsRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to the warden.'**
+  String get hsRequestSent;
+
+  /// No description provided for @hsRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Room requests'**
+  String get hsRequests;
+
+  /// No description provided for @hsVacate.
+  ///
+  /// In en, this message translates to:
+  /// **'Vacate'**
+  String get hsVacate;
+
+  /// No description provided for @hsRoomChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Room change'**
+  String get hsRoomChange;
+
+  /// No description provided for @hsFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {day}'**
+  String hsFrom(String day);
+
+  /// No description provided for @hsMessBills.
+  ///
+  /// In en, this message translates to:
+  /// **'Mess bills'**
+  String get hsMessBills;
+
+  /// No description provided for @hsNoBills.
+  ///
+  /// In en, this message translates to:
+  /// **'No mess bill yet.'**
+  String get hsNoBills;
+
+  /// No description provided for @hsMessLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Mess leave'**
+  String get hsMessLeaves;
+
+  /// No description provided for @hsAppApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get hsAppApproved;
+
+  /// No description provided for @hsAppWaitlisted.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting list'**
+  String get hsAppWaitlisted;
+
+  /// No description provided for @hsAppAllotted.
+  ///
+  /// In en, this message translates to:
+  /// **'Bed allotted'**
+  String get hsAppAllotted;
+
+  /// No description provided for @hsAppRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get hsAppRejected;
+
+  /// No description provided for @hsAppWithdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get hsAppWithdrawn;
+
+  /// No description provided for @hsAppApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied'**
+  String get hsAppApplied;
+
+  /// No description provided for @hsApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get hsApproved;
+
+  /// No description provided for @hsRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get hsRejected;
+
+  /// No description provided for @hsCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get hsCancelled;
+
+  /// No description provided for @hsPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get hsPending;
+
+  /// No description provided for @hsBillDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 day on the mess plan} other{{n} days on the mess plan}}'**
+  String hsBillDays(int n);
+
+  /// No description provided for @hsBillRebate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebate for {days} days away: {amount}'**
+  String hsBillRebate(int days, String amount);
+
+  /// No description provided for @hsBillCharged.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to your fees'**
+  String get hsBillCharged;
+
+  /// No description provided for @hsBillDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Being worked out'**
+  String get hsBillDraft;
+
+  /// No description provided for @hsPickGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose who the room is for.'**
+  String get hsPickGender;
+
+  /// No description provided for @hsDistanceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the distance as a number of kilometres.'**
+  String get hsDistanceNumber;
+
+  /// No description provided for @hsApplySend.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get hsApplySend;
+
+  /// No description provided for @hsGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Room for'**
+  String get hsGender;
+
+  /// No description provided for @hsGenderFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Girls'**
+  String get hsGenderFemale;
+
+  /// No description provided for @hsGenderMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Boys'**
+  String get hsGenderMale;
+
+  /// No description provided for @hsGenderOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get hsGenderOther;
+
+  /// No description provided for @hsDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance from home'**
+  String get hsDistance;
+
+  /// No description provided for @hsKm.
+  ///
+  /// In en, this message translates to:
+  /// **'km'**
+  String get hsKm;
+
+  /// No description provided for @hsNeeds.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything the warden should know (health, access)'**
+  String get hsNeeds;
+
+  /// No description provided for @hsEndBeforeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'The last day is before the first.'**
+  String get hsEndBeforeStart;
+
+  /// No description provided for @hsSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get hsSend;
+
+  /// No description provided for @hsMessLeaveHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell the mess before you go: days away are taken off the month\'s bill.'**
+  String get hsMessLeaveHelp;
+
+  /// No description provided for @hsFromDate.
+  ///
+  /// In en, this message translates to:
+  /// **'First day away'**
+  String get hsFromDate;
+
+  /// No description provided for @hsToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Last day away'**
+  String get hsToDate;
+
+  /// No description provided for @hsReasonOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get hsReasonOptional;
+
+  /// No description provided for @hsReasonNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Say why, in a few words.'**
+  String get hsReasonNeeded;
+
+  /// No description provided for @hsEffectiveOn.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get hsEffectiveOn;
+
+  /// No description provided for @hsReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get hsReason;
+
+  /// No description provided for @trChangeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to the transport office.'**
+  String get trChangeSent;
+
+  /// No description provided for @trBusPass.
+  ///
+  /// In en, this message translates to:
+  /// **'Bus pass'**
+  String get trBusPass;
+
+  /// No description provided for @trChangeStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Change my stop'**
+  String get trChangeStop;
+
+  /// No description provided for @trAskForStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for a bus stop'**
+  String get trAskForStop;
+
+  /// No description provided for @trChangeRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop change requests'**
+  String get trChangeRequests;
+
+  /// No description provided for @trNewStop.
+  ///
+  /// In en, this message translates to:
+  /// **'New stop'**
+  String get trNewStop;
+
+  /// No description provided for @trFromDay.
+  ///
+  /// In en, this message translates to:
+  /// **'From {day}'**
+  String trFromDay(String day);
+
+  /// No description provided for @trFeeMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} more a month'**
+  String trFeeMore(String amount);
+
+  /// No description provided for @trFeeLess.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} less a month'**
+  String trFeeLess(String amount);
+
+  /// No description provided for @trApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get trApproved;
+
+  /// No description provided for @trRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get trRejected;
+
+  /// No description provided for @trCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get trCancelled;
+
+  /// No description provided for @trPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get trPending;
+
+  /// No description provided for @trPickStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the new stop.'**
+  String get trPickStop;
+
+  /// No description provided for @trReasonNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Say why, in a few words.'**
+  String get trReasonNeeded;
+
+  /// No description provided for @trNoRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'No bus routes are running.'**
+  String get trNoRoutes;
+
+  /// No description provided for @trPickStopHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the stop you want to use from the date below.'**
+  String get trPickStopHelp;
+
+  /// No description provided for @trPickupAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup {time}'**
+  String trPickupAt(String time);
+
+  /// No description provided for @trMonthlyFee.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} a month'**
+  String trMonthlyFee(String amount);
+
+  /// No description provided for @trYourStopNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Your stop now'**
+  String get trYourStopNow;
+
+  /// No description provided for @trFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get trFrom;
+
+  /// No description provided for @trReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get trReason;
+
+  /// No description provided for @trFeeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'If the new stop costs more or less, the difference is charged from that date.'**
+  String get trFeeNote;
+
+  /// No description provided for @trSendRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get trSendRequest;
+
+  /// No description provided for @atBySubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance by subject'**
+  String get atBySubject;
+
+  /// No description provided for @atLeaveOnDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave and on duty'**
+  String get atLeaveOnDuty;
+
+  /// No description provided for @atLeaveOnDutySub.
+  ///
+  /// In en, this message translates to:
+  /// **'For attendance, with a document'**
+  String get atLeaveOnDutySub;
+
+  /// No description provided for @atRuleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You need at least {pct}% under the rules of {body}.'**
+  String atRuleBody(String pct, String body);
+
+  /// No description provided for @atRuleOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'You need at least {pct}% under the college\'s rules.'**
+  String atRuleOwn(String pct);
+
+  /// No description provided for @atPerSubjectRule.
+  ///
+  /// In en, this message translates to:
+  /// **'The minimum applies to every subject on its own.'**
+  String get atPerSubjectRule;
+
+  /// No description provided for @atSubjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Subjects'**
+  String get atSubjects;
+
+  /// No description provided for @atNoSubjects.
+  ///
+  /// In en, this message translates to:
+  /// **'No classes have been marked yet.'**
+  String get atNoSubjects;
+
+  /// No description provided for @atDetained.
+  ///
+  /// In en, this message translates to:
+  /// **'You are short of attendance beyond what can be condoned. Meet your class teacher now.'**
+  String get atDetained;
+
+  /// No description provided for @atShortOverall.
+  ///
+  /// In en, this message translates to:
+  /// **'You are below {pct}%. Attend every class to make it up.'**
+  String atShortOverall(String pct);
+
+  /// No description provided for @atShortIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Short of attendance in {subjects}.'**
+  String atShortIn(String subjects);
+
+  /// No description provided for @atClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close to the {pct}% minimum. Do not miss classes.'**
+  String atClose(String pct);
+
+  /// No description provided for @atFine.
+  ///
+  /// In en, this message translates to:
+  /// **'Your attendance is above the minimum.'**
+  String get atFine;
+
+  /// No description provided for @atOverall.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall'**
+  String get atOverall;
+
+  /// No description provided for @atOverallIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall in {term}'**
+  String atOverallIn(String term);
+
+  /// No description provided for @atHeldAttended.
+  ///
+  /// In en, this message translates to:
+  /// **'{attended} of {held} classes attended'**
+  String atHeldAttended(int attended, int held);
+
+  /// No description provided for @atCondoned.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} classes condoned'**
+  String atCondoned(int n);
+
+  /// No description provided for @atNeedClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Attend the next class to reach {pct}%.} other{Attend the next {n} classes in a row to reach {pct}%.}}'**
+  String atNeedClasses(int n, String pct);
+
+  /// No description provided for @atCloseSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Close to the {pct}% minimum.'**
+  String atCloseSubject(String pct);
+
+  /// No description provided for @atLeaveSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to your teachers for approval.'**
+  String get atLeaveSent;
+
+  /// No description provided for @atLeaveWithdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Request withdrawn.'**
+  String get atLeaveWithdrawn;
+
+  /// No description provided for @atApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get atApply;
+
+  /// No description provided for @atLeaveEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No leave or on-duty requests yet.'**
+  String get atLeaveEmpty;
+
+  /// No description provided for @atDocumentAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Document attached'**
+  String get atDocumentAttached;
+
+  /// No description provided for @atCountsAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts as {what}'**
+  String atCountsAs(String what);
+
+  /// No description provided for @atWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get atWithdraw;
+
+  /// No description provided for @atKindOnDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty'**
+  String get atKindOnDuty;
+
+  /// No description provided for @atKindMedical.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical leave'**
+  String get atKindMedical;
+
+  /// No description provided for @atKindPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get atKindPersonal;
+
+  /// No description provided for @atCountsPresent.
+  ///
+  /// In en, this message translates to:
+  /// **'present'**
+  String get atCountsPresent;
+
+  /// No description provided for @atCountsExcused.
+  ///
+  /// In en, this message translates to:
+  /// **'excused'**
+  String get atCountsExcused;
+
+  /// No description provided for @atCountsAbsent.
+  ///
+  /// In en, this message translates to:
+  /// **'absent'**
+  String get atCountsAbsent;
+
+  /// No description provided for @atApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get atApproved;
+
+  /// No description provided for @atDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get atDeclined;
+
+  /// No description provided for @atRevoked.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoked'**
+  String get atRevoked;
+
+  /// No description provided for @atWithdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get atWithdrawn;
+
+  /// No description provided for @atAwaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting decision'**
+  String get atAwaiting;
+
+  /// No description provided for @atDocTooBig.
+  ///
+  /// In en, this message translates to:
+  /// **'The document is larger than 5 MB.'**
+  String get atDocTooBig;
+
+  /// No description provided for @atReasonNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Say why, in a few words.'**
+  String get atReasonNeeded;
+
+  /// No description provided for @atEndBeforeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'The last day is before the first.'**
+  String get atEndBeforeStart;
+
+  /// No description provided for @atNeedCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach the medical certificate.'**
+  String get atNeedCertificate;
+
+  /// No description provided for @atNeedActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Name the event or activity.'**
+  String get atNeedActivity;
+
+  /// No description provided for @atTimesOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'The start time must be before the end time.'**
+  String get atTimesOrder;
+
+  /// No description provided for @atApplyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply for leave or on duty'**
+  String get atApplyTitle;
+
+  /// No description provided for @atOnDutyHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'For college work away from class: a fest, sports, NSS or a placement drive. Approved on duty counts towards your attendance.'**
+  String get atOnDutyHelp;
+
+  /// No description provided for @atMedicalHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'When you are unwell. Attach the doctor\'s certificate.'**
+  String get atMedicalHelp;
+
+  /// No description provided for @atPersonalHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'For other reasons. Your teachers decide.'**
+  String get atPersonalHelp;
+
+  /// No description provided for @atPartOfDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of a day only'**
+  String get atPartOfDay;
+
+  /// No description provided for @atOnDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get atOnDay;
+
+  /// No description provided for @atFirstDay.
+  ///
+  /// In en, this message translates to:
+  /// **'First day'**
+  String get atFirstDay;
+
+  /// No description provided for @atLastDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Last day'**
+  String get atLastDay;
+
+  /// No description provided for @atFromTime.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get atFromTime;
+
+  /// No description provided for @atToTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get atToTime;
+
+  /// No description provided for @atActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Event or activity'**
+  String get atActivity;
+
+  /// No description provided for @atReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get atReason;
+
+  /// No description provided for @atDocumentNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical certificate (needed)'**
+  String get atDocumentNeeded;
+
+  /// No description provided for @atDocumentOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Letter or document (optional)'**
+  String get atDocumentOptional;
+
+  /// No description provided for @atRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get atRemove;
+
+  /// No description provided for @atTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get atTakePhoto;
+
+  /// No description provided for @atChooseFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a PDF'**
+  String get atChooseFile;
+
+  /// No description provided for @atSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send for approval'**
+  String get atSend;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -8001,8 +9469,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

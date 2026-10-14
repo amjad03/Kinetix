@@ -10,10 +10,10 @@ import { assertCanSeeStudent } from '../common/student-access.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { hostelAllotments, hostelBeds, hostelBlocks, hostelComplaints, hostelGatePasses, hostelNightAttendance, hostelRooms, hostelTransfers, hostelWaitlist, hostelVisitors, messMenu, messPlans, messSubscriptions, students, tenants } from '../db/schema.js';
+import { hostelAllotments, hostelBeds, hostelBlocks, hostelComplaints, hostelGatePasses, hostelNightAttendance, hostelRooms, hostelTransfers, guardians, hostelWaitlist, hostelVisitors, messMenu, messPlans, messSubscriptions, students, tenants } from '../db/schema.js';
 import { FeesService } from '../fees/fees.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import { hostelRoomTypes } from '../db/schema-lht.js';
+import { hostelRoomTypes, hostelSickbay } from '../db/schema-lht.js';
 import { allotBed, decidePass, defaultHostel, gateMove, requestStatus, transfer, vacate } from './allotment.js';
 
 export const HOSTEL_ROLES: RoleName[] = ['hostel_warden', 'tenant_admin', 'principal'];
@@ -349,6 +349,21 @@ export class HostelController {
       const start = await requestStatus(tx, p.tenantId, p.roles.includes('student') && !p.roles.includes('guardian'));
       const [pass] = await tx.insert(hostelGatePasses).values({ tenantId: p.tenantId, ...b, expectedBackAt: new Date(b.expectedBackAt), status: start.status, parentStatus: start.parentStatus, ...(start.parentStatus === 'approved' && { parentDecidedBy: p.userId, parentDecidedAt: this.clock.now() }), issuedBy: p.userId }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.pass_requested', subjectType: 'hostel_gate_pass', subjectId: pass.id, data: { studentId: b.studentId } });
+      if (pass.status === 'parent_pending') {
+        // The family approves first: their app is told (a push), and the pass waits in their list.
+        const [s] = await tx.select({ name: students.fullName }).from(students).where(eq(students.id, b.studentId));
+        const guardianIds = (await tx.select({ id: guardians.userId }).from(guardians).where(eq(guardians.studentId, b.studentId))).map((g) => g.id);
+        await this.notifications.notifyUsers(tx, guardianIds, {
+          kind: 'hostel',
+          text: {
+            en: { title: `${s.name} asks to leave the hostel`, body: `Reason: ${b.reason.slice(0, 120)}. Approve or decline the out-pass in the app.` },
+            hi: { title: `${s.name} छात्रावास से बाहर जाने की अनुमति माँग रहे हैं`, body: `कारण: ${b.reason.slice(0, 120)}। ऐप में आउट-पास स्वीकार या अस्वीकार करें।` },
+            kn: { title: `${s.name} ವಸತಿ ನಿಲಯದಿಂದ ಹೊರಹೋಗಲು ಅನುಮತಿ ಕೇಳುತ್ತಿದ್ದಾರೆ`, body: `ಕಾರಣ: ${b.reason.slice(0, 120)}. ಆ್ಯಪ್‌ನಲ್ಲಿ ಹೊರಹೋಗುವ ಪಾಸ್ ಅನುಮೋದಿಸಿ ಅಥವಾ ತಿರಸ್ಕರಿಸಿ.` },
+          },
+          data: { studentId: b.studentId, passId: pass.id },
+          dedupeKey: `hostel-pass-family:${pass.id}`,
+        });
+      }
       return pass;
     });
   }
@@ -558,7 +573,14 @@ export class HostelController {
         .where(and(eq(hostelAllotments.studentId, studentId), isNull(hostelAllotments.vacatedOn)));
       const passes = await tx.select().from(hostelGatePasses).where(eq(hostelGatePasses.studentId, studentId)).orderBy(desc(hostelGatePasses.createdAt)).limit(20);
       const nights = await tx.select({ night: hostelNightAttendance.night, status: hostelNightAttendance.status }).from(hostelNightAttendance).where(eq(hostelNightAttendance.studentId, studentId)).orderBy(desc(hostelNightAttendance.night)).limit(14);
-      return { resident: !!bed, bed: bed ?? null, passes, nights };
+      // Sick-bay stays, the current one first: what the family was told about, and when the child left.
+      const sickbay = await tx
+        .select({ id: hostelSickbay.id, admittedAt: hostelSickbay.admittedAt, dischargedAt: hostelSickbay.dischargedAt, symptoms: hostelSickbay.symptoms, treatment: hostelSickbay.treatment, referredTo: hostelSickbay.referredTo })
+        .from(hostelSickbay)
+        .where(eq(hostelSickbay.studentId, studentId))
+        .orderBy(desc(hostelSickbay.admittedAt))
+        .limit(5);
+      return { resident: !!bed, bed: bed ?? null, passes, nights, sickbay };
     });
   }
 

@@ -148,8 +148,17 @@ export class SubmissionsController {
   get(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Param('studentId', ParseUUIDPipe) studentId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const hw = await this.homeworkFor(tx, p, id, studentId, true);
-      return this.one(tx, id, studentId, hw.dueEnd);
+      return { ...(await this.one(tx, id, studentId, hw.dueEnd)), rules: await this.rulesView(tx, id, studentId, hw.dueOn) };
     });
+  }
+
+  /** The hand-in rules as the student sees them: their due time and cut-off, the late policy, attempts and the group. */
+  private async rulesView(tx: Tx, id: string, studentId: string, dueOn: string) {
+    const r = await this.policyFor(tx, id, studentId, dueOn);
+    const [g] = await tx.select({ name: homeworkGroups.name, ids: homeworkGroups.studentIds }).from(homeworkGroups).where(and(eq(homeworkGroups.homeworkId, id), sql`${studentId}::uuid = any(${homeworkGroups.studentIds})`));
+    const others = (g?.ids ?? []).filter((s) => s !== studentId);
+    const mates = others.length ? await tx.select({ fullName: students.fullName }).from(students).where(inArray(students.id, others)).orderBy(asc(students.fullName)) : [];
+    return { dueAt: r.dueEnd, cutoffAt: r.cutoffEnd, latePolicy: r.latePolicy, latePenaltyPct: r.latePenaltyPct, maxAttempts: r.maxAttempts, group: g ? { name: g.name, members: mates.map((m) => m.fullName) } : null };
   }
 
   /** The class list with who has handed in (staff who teach the class). */

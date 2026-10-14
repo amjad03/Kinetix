@@ -18,6 +18,7 @@ import '../fees/fees_card.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
 import '../hostel/boarding_screen.dart';
+import '../hostel/out_pass_approvals_screen.dart';
 import '../school_life/school_life_screen.dart';
 import '../transport/bus_screen.dart';
 import '../updates/updates_controller.dart';
@@ -158,8 +159,13 @@ class _HomeTabState extends State<HomeTab> {
     final updates = widget.updates?.items.take(3).toList() ?? const <AppNotification>[];
     return [
       if (holiday case (final h, final isToday)) HolidayBanner(holiday: h, isToday: isToday, onOpen: () => CalendarScreen.open(context, family.api, program: c.programName)),
-      KxTileGrid(
+      // Out-passes waiting for the family lead the tiles (nothing shows when there are none).
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          PendingOutPassesBanner(api: family.api),
+          KxTileGrid(
+            children: [
           if (family.visibility.allows('attendance'))
             KxStatTile(
               key: const Key('tileAttendance'),
@@ -185,6 +191,8 @@ class _HomeTabState extends State<HomeTab> {
             onTap: () => setState(() => _section = _HomeSection.academics),
           ),
           KxStatTile(key: const Key('tileOverall'), icon: Icons.insights_outlined, label: l.tileOverall, value: progressText, tone: progressTone),
+            ],
+          ),
         ],
       ),
       Row(

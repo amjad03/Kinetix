@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// No description provided for @today.
   ///
@@ -5517,10 +5510,369 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This result is withheld by the examination office. Contact the office to know why and what to do.'**
   String get resultWithheldBody;
+
+  /// No description provided for @atBySubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance by subject'**
+  String get atBySubject;
+
+  /// No description provided for @atBySubjectFor.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s attendance by subject'**
+  String atBySubjectFor(String name);
+
+  /// No description provided for @atBySubjectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Against the minimum, with shortage warnings'**
+  String get atBySubjectSubtitle;
+
+  /// No description provided for @atRuleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'At least {pct}% is needed under the rules of {body}.'**
+  String atRuleBody(String pct, String body);
+
+  /// No description provided for @atRuleOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'At least {pct}% is needed under the college\'s rules.'**
+  String atRuleOwn(String pct);
+
+  /// No description provided for @atPerSubjectRule.
+  ///
+  /// In en, this message translates to:
+  /// **'The minimum applies to every subject on its own.'**
+  String get atPerSubjectRule;
+
+  /// No description provided for @atSubjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Subjects'**
+  String get atSubjects;
+
+  /// No description provided for @atNoSubjects.
+  ///
+  /// In en, this message translates to:
+  /// **'No classes have been marked yet.'**
+  String get atNoSubjects;
+
+  /// No description provided for @atLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave and on duty'**
+  String get atLeaves;
+
+  /// No description provided for @atKindOnDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty'**
+  String get atKindOnDuty;
+
+  /// No description provided for @atKindMedical.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical leave'**
+  String get atKindMedical;
+
+  /// No description provided for @atKindPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get atKindPersonal;
+
+  /// No description provided for @atApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get atApproved;
+
+  /// No description provided for @atDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get atDeclined;
+
+  /// No description provided for @atWithdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get atWithdrawn;
+
+  /// No description provided for @atRevoked.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoked'**
+  String get atRevoked;
+
+  /// No description provided for @atAwaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting decision'**
+  String get atAwaiting;
+
+  /// No description provided for @atDetained.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is short of attendance beyond what can be condoned. Please meet the class teacher.'**
+  String atDetained(String name);
+
+  /// No description provided for @atShortOverall.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is below {pct}%. Every class from now counts.'**
+  String atShortOverall(String name, String pct);
+
+  /// No description provided for @atShortIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is short of attendance in {subjects}.'**
+  String atShortIn(String name, String subjects);
+
+  /// No description provided for @atClose.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is close to the {pct}% minimum.'**
+  String atClose(String name, String pct);
+
+  /// No description provided for @atFine.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s attendance is above the minimum.'**
+  String atFine(String name);
+
+  /// No description provided for @atOverall.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall'**
+  String get atOverall;
+
+  /// No description provided for @atOverallIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall in {term}'**
+  String atOverallIn(String term);
+
+  /// No description provided for @atHeldAttended.
+  ///
+  /// In en, this message translates to:
+  /// **'{attended} of {held} classes attended'**
+  String atHeldAttended(int attended, int held);
+
+  /// No description provided for @atNeedClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Attending the next class brings it to {pct}%.} other{Attending the next {n} classes in a row brings it to {pct}%.}}'**
+  String atNeedClasses(int n, String pct);
+
+  /// No description provided for @atCloseSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Close to the {pct}% minimum.'**
+  String atCloseSubject(String pct);
+
+  /// No description provided for @outPassWaitingForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for you'**
+  String get outPassWaitingForYou;
+
+  /// No description provided for @opApprovalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Out-passes to approve'**
+  String get opApprovalsTitle;
+
+  /// No description provided for @opApprovalsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel out-passes your child asked for'**
+  String get opApprovalsSubtitle;
+
+  /// No description provided for @opEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is waiting for your approval.'**
+  String get opEmpty;
+
+  /// No description provided for @opDeclineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline the out-pass?'**
+  String get opDeclineTitle;
+
+  /// No description provided for @opDeclineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will be told, and the pass will not go to the warden.'**
+  String opDeclineBody(String name);
+
+  /// No description provided for @opDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get opDecline;
+
+  /// No description provided for @opApprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get opApprove;
+
+  /// No description provided for @opApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved. The warden issues the pass for {name}.'**
+  String opApproved(String name);
+
+  /// No description provided for @opDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Out-pass declined.'**
+  String get opDeclined;
+
+  /// No description provided for @opAsks.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} asks to leave the hostel'**
+  String opAsks(String name);
+
+  /// No description provided for @opBackBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Back by {when}'**
+  String opBackBy(String when);
+
+  /// No description provided for @opWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{An out-pass is waiting for your approval} other{{n} out-passes are waiting for your approval}}'**
+  String opWaiting(int n);
+
+  /// No description provided for @sickbayNow.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is in the hostel sick bay'**
+  String sickbayNow(String name);
+
+  /// No description provided for @sickbaySince.
+  ///
+  /// In en, this message translates to:
+  /// **'Since {when}'**
+  String sickbaySince(String when);
+
+  /// No description provided for @sickbayTreatment.
+  ///
+  /// In en, this message translates to:
+  /// **'Treatment: {text}'**
+  String sickbayTreatment(String text);
+
+  /// No description provided for @sickbayReferred.
+  ///
+  /// In en, this message translates to:
+  /// **'Referred to {place}'**
+  String sickbayReferred(String place);
+
+  /// No description provided for @sickbayWarden.
+  ///
+  /// In en, this message translates to:
+  /// **'The warden will keep you informed. Call the hostel office if you need to.'**
+  String get sickbayWarden;
+
+  /// No description provided for @hoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand-over code'**
+  String get hoTitle;
+
+  /// No description provided for @hoReadOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Read this code out to the bus staff when you receive {name} at the stop.'**
+  String hoReadOut(String name);
+
+  /// No description provided for @hoReadOutAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Read this code out to the bus staff when you receive your child at the stop.'**
+  String get hoReadOutAny;
+
+  /// No description provided for @hoWorksFor.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Works for 1 more minute} other{Works for {n} more minutes}}'**
+  String hoWorksFor(int n);
+
+  /// No description provided for @hoExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This code has expired. Ask the bus staff to send a new one.'**
+  String get hoExpired;
+
+  /// No description provided for @hoNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never share this code by phone or message. Give it only in person at the stop.'**
+  String get hoNever;
+
+  /// No description provided for @resultWithheldReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason: {reason}'**
+  String resultWithheldReason(String reason);
+
+  /// No description provided for @mnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s mentor'**
+  String mnTitle(String name);
+
+  /// No description provided for @mnSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mentoring sessions and follow-ups'**
+  String get mnSubtitle;
+
+  /// No description provided for @mnNoMentor.
+  ///
+  /// In en, this message translates to:
+  /// **'No mentor is assigned to {name} yet.'**
+  String mnNoMentor(String name);
+
+  /// No description provided for @mnSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Mentor since {day}'**
+  String mnSince(String day);
+
+  /// No description provided for @mnSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get mnSessions;
+
+  /// No description provided for @mnNoSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions yet.'**
+  String get mnNoSessions;
+
+  /// No description provided for @mnFollowUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Next meeting {day}'**
+  String mnFollowUp(String day);
+
+  /// No description provided for @mnPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'These are the mentor\'s summaries for the family. Private notes stay with the mentor.'**
+  String get mnPrivacy;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -5529,8 +5881,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

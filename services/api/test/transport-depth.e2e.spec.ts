@@ -158,6 +158,9 @@ describe('transport depth', () => {
     expect(sent.persons).toEqual([expect.objectContaining({ name: 'Grandpa Rao' })]);
     const notes = (await get('parent', '/v1/notifications').expect(200)).body;
     const code = /(\d{6})/.exec(JSON.stringify(notes).match(/Code to receive[^"]*/)![0])![1];
+    // The Parent App shows the code large at the stop: it comes in the notice's data too, with when it stops working.
+    const notice = notes.items.find((n: { data: Record<string, string> }) => n.data.handoverId === sent.handoverId);
+    expect(notice.data).toEqual({ studentId: t.students[0].id, handoverId: sent.handoverId, otp: code, expiresAt: new Date(sent.expiresAt).toISOString() });
     const wrong = (await post('tm', `/v1/transport/handovers/${sent.handoverId}/verify`, { otp: code === '000000' ? '111111' : '000000' }).expect(200)).body;
     expect(wrong).toMatchObject({ ok: false, status: 'pending', attemptsLeft: 4 });
     expect((await post('tm', `/v1/transport/handovers/${sent.handoverId}/verify`, { otp: code }).expect(200)).body).toMatchObject({ ok: true, status: 'done' });

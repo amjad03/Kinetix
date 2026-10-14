@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'attendance_overview_screen.dart';
 
 /// Every period's mark over the last 30 days, grouped by day, newest first.
 class AttendanceScreen extends StatefulWidget {
@@ -79,7 +80,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final dates = days.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.childAttendance(widget.child.firstName))),
+      appBar: AppBar(
+        title: Text(context.l10n.childAttendance(widget.child.firstName)),
+        actions: [
+          IconButton(
+            key: const Key('attendanceBySubject'),
+            tooltip: context.l10n.atBySubject,
+            icon: const Icon(Icons.bar_chart_rounded),
+            onPressed: () => AttendanceOverviewScreen.open(context, widget.api, widget.child),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: CustomScrollView(

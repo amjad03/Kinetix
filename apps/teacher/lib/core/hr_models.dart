@@ -20,14 +20,44 @@ double leaveDays(DateTime from, DateTime to, {bool halfDay = false, Set<int> wee
 String daysText(num d) => d == d.roundToDouble() ? d.round().toString() : d.toString();
 
 class LeaveTypeInfo {
-  const LeaveTypeInfo({required this.id, required this.code, required this.name, required this.paid});
+  const LeaveTypeInfo({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.paid,
+    this.minNoticeDays = 0,
+    this.requiresDocument = false,
+    this.maxPerRequest,
+    this.halfDayAllowed = true,
+  });
 
-  factory LeaveTypeInfo.fromJson(Map<String, dynamic> j) =>
-      LeaveTypeInfo(id: j['id'] as String, code: j['code'] as String, name: j['name'] as String, paid: j['paid'] as bool);
+  factory LeaveTypeInfo.fromJson(Map<String, dynamic> j) => LeaveTypeInfo(
+    id: j['id'] as String,
+    code: j['code'] as String,
+    name: j['name'] as String,
+    paid: j['paid'] as bool,
+    minNoticeDays: (j['minNoticeDays'] as num?)?.toInt() ?? 0,
+    requiresDocument: j['requiresDocument'] == true,
+    maxPerRequest: (j['maxPerRequest'] as num?)?.toDouble(),
+    halfDayAllowed: j['halfDayAllowed'] != false,
+  );
 
   final String id, code, name;
   final bool paid;
+
+  /// Days ahead the leave must be asked for (0: no notice needed).
+  final int minNoticeDays;
+
+  /// A supporting document (a medical certificate, an order) is needed for longer leave.
+  final bool requiresDocument;
+
+  /// The most days one request may take; null for no limit.
+  final double? maxPerRequest;
+  final bool halfDayAllowed;
 }
+
+/// The longest leave of a type that needs a document which may be approved without one (services/api hr/leave.service.ts).
+const documentAfterDays = 2;
 
 class LeaveBalanceInfo {
   const LeaveBalanceInfo({required this.type, required this.opening, required this.accrued, required this.used, required this.pending, required this.available});
@@ -60,9 +90,15 @@ class LeaveRequestInfo {
     required this.reason,
     required this.status,
     this.decisionNote,
+    this.hasDocument = false,
+    this.documentName,
+    this.delegateName,
   });
 
   factory LeaveRequestInfo.fromJson(Map<String, dynamic> j) => LeaveRequestInfo(
+    hasDocument: j['hasDocument'] == true,
+    documentName: j['documentName'] as String?,
+    delegateName: (j['delegate'] as Map?)?['fullName'] as String?,
     id: j['id'] as String,
     userId: (j['user'] as Map)['id'] as String,
     userName: (j['user'] as Map)['fullName'] as String,
@@ -83,6 +119,13 @@ class LeaveRequestInfo {
   final double days;
   final LeaveStatus status;
   final String? decisionNote;
+
+  /// A supporting document is attached ([documentName]).
+  final bool hasDocument;
+  final String? documentName;
+
+  /// The colleague who approves in the applicant's place while they are away.
+  final String? delegateName;
 }
 
 class AttendanceDayInfo {

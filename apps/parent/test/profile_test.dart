@@ -36,6 +36,9 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(const Key('signOut')), 200, scrollable: list);
+    // Clear of the bottom bar.
+    await Scrollable.ensureVisible(tester.element(find.byKey(const Key('signOut'))), alignment: 0.5);
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('signOut')));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Sign out'));

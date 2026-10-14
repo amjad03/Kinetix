@@ -6,7 +6,10 @@ import '../../core/app_state.dart';
 import '../../core/family.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import '../attendance/attendance_overview_screen.dart';
 import '../calendar/calendar_screen.dart';
+import '../hostel/out_pass_approvals_screen.dart';
+import '../school_life/mentoring_screen.dart';
 import '../courses/courses_screen.dart';
 import '../exams/exams_screen.dart';
 import '../fees/fees_screen.dart';
@@ -231,7 +234,32 @@ class ProfileTab extends StatelessWidget {
                     rate: family.api.rateGrievance,
                   ),
                 ),
+                ListTile(
+                  key: Key('profile-attendance-${child.id}'),
+                  leading: const Icon(Icons.bar_chart_rounded),
+                  title: Text(family.children.length == 1 ? l.atBySubject : l.atBySubjectFor(child.firstName)),
+                  subtitle: Text(l.atBySubjectSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => AttendanceOverviewScreen.open(context, family.api, child),
+                ),
+                ListTile(
+                  key: Key('profile-mentor-${child.id}'),
+                  leading: const Icon(Icons.support_agent_outlined),
+                  title: Text(l.mnTitle(child.firstName)),
+                  subtitle: Text(l.mnSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => MentoringScreen.open(context, family.api, child),
+                ),
               ],
+              if (family.children.isNotEmpty)
+                ListTile(
+                  key: const Key('profile-outpasses'),
+                  leading: const Icon(Icons.badge_outlined),
+                  title: Text(l.opApprovalsTitle),
+                  subtitle: Text(l.opApprovalsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => OutPassApprovalsScreen.open(context, family.api),
+                ),
               if (family.children.isNotEmpty) KxSectionHeader(l.syllabusProgress),
               for (final child in family.children)
                 ListTile(

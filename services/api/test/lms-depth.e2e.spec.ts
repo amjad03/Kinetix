@@ -78,6 +78,11 @@ describe('lms depth', () => {
     expect(sub).toMatchObject({ late: true, penaltyPct: 10, attempts: 1 });
     await http().post(`/v1/homework/${hwId}/submissions/${t.students[2].id}`).set(as('student')).field('text', 'Revised').expect(200);
     await http().post(`/v1/homework/${hwId}/submissions/${t.students[2].id}`).set(as('student')).field('text', 'Third').expect(409);
+    // The Student App shows the hand-in rules with the submission: attempts, late policy and the group.
+    const mine = (await http().get(`/v1/homework/${hwId}/submissions/${t.students[2].id}`).set(as('student')).expect(200)).body;
+    expect(mine).toMatchObject({ attempts: 2, rules: { latePolicy: 'penalty', latePenaltyPct: 10, maxAttempts: 2, group: { name: 'Team A', members: [expect.any(String)] } } });
+    expect(mine.rules.dueAt).toEqual(expect.any(String));
+    expect(mine.rules.cutoffAt).toEqual(expect.any(String));
     const list = (await http().get(`/v1/homework/${hwId}/submissions`).set(as('teacher')).expect(200)).body;
     expect(list.students.filter((s: { status: string | null }) => s.status).map((s: { rollNo: string }) => s.rollNo)).toEqual(['R1', 'R3']);
 

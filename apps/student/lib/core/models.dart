@@ -1461,9 +1461,17 @@ class Submission {
     this.remark,
     this.checkedBy,
     this.checkedAt,
+    this.attempts = 0,
+    this.penaltyPct = 0,
+    this.marks,
+    this.rules,
   });
 
   factory Submission.fromJson(Map<String, dynamic> j) => Submission(
+    attempts: (j['attempts'] as num?)?.toInt() ?? 0,
+    penaltyPct: (j['penaltyPct'] as num?)?.toDouble() ?? 0,
+    marks: (j['marks'] as num?)?.toDouble(),
+    rules: j['rules'] is Map ? HandInRules.fromJson((j['rules'] as Map).cast<String, dynamic>()) : null,
     status: SubmissionStatus.values.asNameMap()[j['status']],
     text: j['text'] as String? ?? '',
     files: [for (final f in (j['files'] as List? ?? const [])) SubmissionFile.fromJson(f as Map<String, dynamic>)],
@@ -1483,8 +1491,53 @@ class Submission {
   final String? checkedBy;
   final DateTime? checkedAt;
 
+  /// Hand-ins so far (a returned piece of work may be redone).
+  final int attempts;
+
+  /// The late penalty taken off the marks, in per cent.
+  final double penaltyPct;
+  final double? marks;
+
+  /// The assignment's rules for this student; null from an older server.
+  final HandInRules? rules;
+
   /// Whether the work can be handed in (again): anything but checked work.
   bool get canHandIn => status != SubmissionStatus.checked;
+
+  /// Attempts left before the limit; null when the rules are not known.
+  int? get attemptsLeft => rules == null ? null : (rules!.maxAttempts - attempts).clamp(0, rules!.maxAttempts);
+}
+
+/// An assignment's hand-in rules for one student: their due time (an extension moves it), the
+/// last time late work is taken, the late policy (`accept`, `penalty` or `reject`), attempts and the group.
+class HandInRules {
+  const HandInRules({required this.dueAt, required this.latePolicy, required this.maxAttempts, this.cutoffAt, this.latePenaltyPct = 0, this.groupName, this.groupMembers = const []});
+
+  factory HandInRules.fromJson(Map<String, dynamic> j) {
+    final g = (j['group'] as Map?)?.cast<String, dynamic>();
+    return HandInRules(
+      dueAt: _instant(j['dueAt']) ?? DateTime.now(),
+      cutoffAt: _instant(j['cutoffAt']),
+      latePolicy: j['latePolicy'] as String? ?? 'accept',
+      latePenaltyPct: (j['latePenaltyPct'] as num?)?.toDouble() ?? 0,
+      maxAttempts: (j['maxAttempts'] as num?)?.toInt() ?? 1,
+      groupName: g?['name'] as String?,
+      groupMembers: [for (final m in (g?['members'] as List? ?? const [])) '$m'],
+    );
+  }
+
+  /// The moment the work becomes late.
+  final DateTime dueAt;
+
+  /// After this nothing is taken; null: no cut-off.
+  final DateTime? cutoffAt;
+  final String latePolicy;
+  final double latePenaltyPct;
+  final int maxAttempts;
+
+  /// The group handing in together (each member is marked on their own); null for individual work.
+  final String? groupName;
+  final List<String> groupMembers;
 }
 
 /// A photo or PDF picked to hand in.

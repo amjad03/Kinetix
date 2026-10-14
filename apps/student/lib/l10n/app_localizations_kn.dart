@@ -36,12 +36,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String overdueBy(int days) {
-    String _temp0 = intl.Intl.pluralLogic(
-      days,
-      locale: localeName,
-      other: '$days ದಿನ',
-      one: '1 ದಿನ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(days, locale: localeName, other: '$days ದಿನ', one: '1 ದಿನ');
     return '$_temp0 ತಡವಾಗಿದೆ';
   }
 
@@ -132,12 +127,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String pages(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಪುಟಗಳು',
-      one: '1 ಪುಟ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಪುಟಗಳು', one: '1 ಪುಟ');
     return '$_temp0';
   }
 
@@ -152,12 +142,10 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get errTimeout =>
-      'ಸರ್ವರ್ ಉತ್ತರಿಸಲು ತುಂಬಾ ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errTimeout => 'ಸರ್ವರ್ ಉತ್ತರಿಸಲು ತುಂಬಾ ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get errUnreachable =>
-      'KINETIX ಗೆ ಸಂಪರ್ಕ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ.';
+  String get errUnreachable => 'KINETIX ಗೆ ಸಂಪರ್ಕ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get errForbidden => 'ಇದಕ್ಕೆ ನಿಮಗೆ ಅನುಮತಿ ಇಲ್ಲ.';
@@ -166,8 +154,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get errNotFound => 'ಸಿಗಲಿಲ್ಲ.';
 
   @override
-  String get errTooMany =>
-      'ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಲಾಗಿದೆ. ಒಂದು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errTooMany => 'ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಲಾಗಿದೆ. ಒಂದು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String errGeneric(Object status) {
@@ -187,8 +174,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get signOutQuestion => 'ಸೈನ್ ಔಟ್ ಮಾಡಬೇಕೇ?';
 
   @override
-  String get signOutBody =>
-      'ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬೇಕಾಗುತ್ತದೆ.';
+  String get signOutBody => 'ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬೇಕಾಗುತ್ತದೆ.';
 
   @override
   String get institutionCode => 'ಸಂಸ್ಥೆಯ ಕೋಡ್';
@@ -217,15 +203,13 @@ class AppLocalizationsKn extends AppLocalizations {
   String get enterInstitutionCode => 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಕೋಡ್ ನಮೂದಿಸಿ';
 
   @override
-  String get institutionCodeChars =>
-      'ಅಕ್ಷರಗಳು, ಅಂಕಿಗಳು ಮತ್ತು ಹೈಫನ್ (-) ಮಾತ್ರ ಬಳಸಿ';
+  String get institutionCodeChars => 'ಅಕ್ಷರಗಳು, ಅಂಕಿಗಳು ಮತ್ತು ಹೈಫನ್ (-) ಮಾತ್ರ ಬಳಸಿ';
 
   @override
   String get enterValidEmail => 'ಸರಿಯಾದ ಇಮೇಲ್ ವಿಳಾಸ ನಮೂದಿಸಿ';
 
   @override
-  String get enterValidPhone =>
-      '10 ಅಂಕಿಯ ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ ಸರಿಯಾದ ಇಮೇಲ್ ನಮೂದಿಸಿ';
+  String get enterValidPhone => '10 ಅಂಕಿಯ ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ ಸರಿಯಾದ ಇಮೇಲ್ ನಮೂದಿಸಿ';
 
   @override
   String get enterPassword => 'ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ';
@@ -330,8 +314,7 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count ಪುಸ್ತಕಗಳನ್ನು ಹಿಂದಿರುಗಿಸಲು ತಡವಾಗಿದೆ. ದಯವಿಟ್ಟು ಅವುಗಳನ್ನು ಗ್ರಂಥಾಲಯಕ್ಕೆ ಹಿಂದಿರುಗಿಸಿ.',
+      other: '$count ಪುಸ್ತಕಗಳನ್ನು ಹಿಂದಿರುಗಿಸಲು ತಡವಾಗಿದೆ. ದಯವಿಟ್ಟು ಅವುಗಳನ್ನು ಗ್ರಂಥಾಲಯಕ್ಕೆ ಹಿಂದಿರುಗಿಸಿ.',
       one: '1 ಪುಸ್ತಕ ಹಿಂದಿರುಗಿಸಲು ತಡವಾಗಿದೆ. ದಯವಿಟ್ಟು ಅದನ್ನು ಗ್ರಂಥಾಲಯಕ್ಕೆ ಹಿಂದಿರುಗಿಸಿ.',
     );
     return '$_temp0';
@@ -384,8 +367,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get noBooksOut => 'ಈಗ ಯಾವುದೇ ಪುಸ್ತಕ ಪಡೆದಿಲ್ಲ.';
 
   @override
-  String get fineRule =>
-      'ಪುಸ್ತಕವನ್ನು ತಡವಾಗಿ ಹಿಂದಿರುಗಿಸಿದರೆ ಗ್ರಂಥಾಲಯವು ಪ್ರತಿ ದಿನಕ್ಕೆ ದಂಡ ವಿಧಿಸುತ್ತದೆ.';
+  String get fineRule => 'ಪುಸ್ತಕವನ್ನು ತಡವಾಗಿ ಹಿಂದಿರುಗಿಸಿದರೆ ಗ್ರಂಥಾಲಯವು ಪ್ರತಿ ದಿನಕ್ಕೆ ದಂಡ ವಿಧಿಸುತ್ತದೆ.';
 
   @override
   String returnedHeading(Object count) {
@@ -428,8 +410,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get marksExplainer =>
-      'ಪ್ರಕಟಿತ ಎಲ್ಲಾ ಮೌಲ್ಯಮಾಪನಗಳಲ್ಲಿ ಒಟ್ಟು ಅಂಕಗಳಲ್ಲಿ ಪಡೆದ ಅಂಕಗಳು.';
+  String get marksExplainer => 'ಪ್ರಕಟಿತ ಎಲ್ಲಾ ಮೌಲ್ಯಮಾಪನಗಳಲ್ಲಿ ಒಟ್ಟು ಅಂಕಗಳಲ್ಲಿ ಪಡೆದ ಅಂಕಗಳು.';
 
   @override
   String get assessments => 'ಮೌಲ್ಯಮಾಪನಗಳು';
@@ -477,8 +458,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get recordingNotShared =>
-      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಈಗ ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
+  String get recordingNotShared => 'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಈಗ ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
 
   @override
   String get classBoard => 'ತರಗತಿಯ ಬೋರ್ಡ್';
@@ -498,12 +478,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get zoomOut => 'ಜೂಮ್ ಔಟ್ ಮಾಡಲು ಎರಡು ಬಾರಿ ಟ್ಯಾಪ್ ಮಾಡಿ';
 
   @override
-  String get zoomSideways =>
-      'ಜೂಮ್ ಮಾಡಲು ಎರಡು ಬೆರಳುಗಳಿಂದ ಹಿಗ್ಗಿಸಿ, ಅಥವಾ ಫೋನ್ ಅನ್ನು ಅಡ್ಡವಾಗಿ ತಿರುಗಿಸಿ';
+  String get zoomSideways => 'ಜೂಮ್ ಮಾಡಲು ಎರಡು ಬೆರಳುಗಳಿಂದ ಹಿಗ್ಗಿಸಿ, ಅಥವಾ ಫೋನ್ ಅನ್ನು ಅಡ್ಡವಾಗಿ ತಿರುಗಿಸಿ';
 
   @override
-  String get zoomHint =>
-      'ಜೂಮ್ ಮಾಡಲು ಎರಡು ಬೆರಳುಗಳಿಂದ ಹಿಗ್ಗಿಸಿ ಅಥವಾ ಎರಡು ಬಾರಿ ಟ್ಯಾಪ್ ಮಾಡಿ';
+  String get zoomHint => 'ಜೂಮ್ ಮಾಡಲು ಎರಡು ಬೆರಳುಗಳಿಂದ ಹಿಗ್ಗಿಸಿ ಅಥವಾ ಎರಡು ಬಾರಿ ಟ್ಯಾಪ್ ಮಾಡಿ';
 
   @override
   String get fees => 'ಶುಲ್ಕ';
@@ -521,12 +499,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String feesToPay(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಶುಲ್ಕಗಳನ್ನು ಪಾವತಿಸಬೇಕಿದೆ',
-      one: '1 ಶುಲ್ಕ ಪಾವತಿಸಬೇಕಿದೆ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಶುಲ್ಕಗಳನ್ನು ಪಾವತಿಸಬೇಕಿದೆ', one: '1 ಶುಲ್ಕ ಪಾವತಿಸಬೇಕಿದೆ');
     return '$_temp0';
   }
 
@@ -587,8 +560,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get receiptNotFound => 'ಈ ರಸೀದಿ ಸಿಗಲಿಲ್ಲ.';
 
   @override
-  String get receiptCopied =>
-      'ರಸೀದಿ ನಕಲಾಗಿದೆ. ಇದನ್ನು ಸಂದೇಶ ಅಥವಾ ಇಮೇಲ್‌ನಲ್ಲಿ ಪೇಸ್ಟ್ ಮಾಡಿ.';
+  String get receiptCopied => 'ರಸೀದಿ ನಕಲಾಗಿದೆ. ಇದನ್ನು ಸಂದೇಶ ಅಥವಾ ಇಮೇಲ್‌ನಲ್ಲಿ ಪೇಸ್ಟ್ ಮಾಡಿ.';
 
   @override
   String get receipt => 'ರಸೀದಿ';
@@ -670,8 +642,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get pullForEarlier => 'ಹಿಂದಿನ ಸಂದೇಶಗಳಿಗಾಗಿ ಕೆಳಗೆ ಎಳೆಯಿರಿ';
 
   @override
-  String get teachersReply =>
-      'ಶಿಕ್ಷಕರು ಸಮಯ ಸಿಕ್ಕಾಗ, ಸಾಮಾನ್ಯವಾಗಿ ಕಾಲೇಜು ಸಮಯದಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ.';
+  String get teachersReply => 'ಶಿಕ್ಷಕರು ಸಮಯ ಸಿಕ್ಕಾಗ, ಸಾಮಾನ್ಯವಾಗಿ ಕಾಲೇಜು ಸಮಯದಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ.';
 
   @override
   String get messageCopied => 'ಸಂದೇಶ ನಕಲಾಗಿದೆ';
@@ -699,12 +670,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String attendedOf(Object attended, int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ತರಗತಿಗಳಲ್ಲಿ',
-      one: '1 ತರಗತಿಯಲ್ಲಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ತರಗತಿಗಳಲ್ಲಿ', one: '1 ತರಗತಿಯಲ್ಲಿ');
     return '$_temp0 $attended ರಲ್ಲಿ ಹಾಜರು';
   }
 
@@ -738,8 +704,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get resultsSubtitle => 'ಪ್ರಕಟಿತ ಅಂಕಗಳು ಮತ್ತು ತರಗತಿ ಸರಾಸರಿ';
 
   @override
-  String get librarySubtitle =>
-      'ಪಡೆದ ಪುಸ್ತಕಗಳು, ಹಿಂದಿರುಗಿಸುವ ದಿನಾಂಕಗಳು ಮತ್ತು ದಂಡ';
+  String get librarySubtitle => 'ಪಡೆದ ಪುಸ್ತಕಗಳು, ಹಿಂದಿರುಗಿಸುವ ದಿನಾಂಕಗಳು ಮತ್ತು ದಂಡ';
 
   @override
   String get college => 'ಕಾಲೇಜು';
@@ -783,30 +748,25 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಇನ್ನೂ ಯಾವುದೇ ಅಂಕಗಳನ್ನು ಪ್ರಕಟಿಸಿಲ್ಲ. ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಪರೀಕ್ಷೆಯ ಅಂಕಗಳನ್ನು ಪ್ರಕಟಿಸಿದಾಗ, ಅವು ತರಗತಿ ಸರಾಸರಿಯೊಂದಿಗೆ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.';
 
   @override
-  String get noMarksScreen =>
-      'ಇನ್ನೂ ಯಾವುದೇ ಅಂಕಗಳನ್ನು ಪ್ರಕಟಿಸಿಲ್ಲ.\nನಿಮ್ಮ ಶಿಕ್ಷಕರು ಅಂಕಗಳನ್ನು ಪ್ರಕಟಿಸಿದಾಗ, ಅವು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.';
+  String get noMarksScreen => 'ಇನ್ನೂ ಯಾವುದೇ ಅಂಕಗಳನ್ನು ಪ್ರಕಟಿಸಿಲ್ಲ.\nನಿಮ್ಮ ಶಿಕ್ಷಕರು ಅಂಕಗಳನ್ನು ಪ್ರಕಟಿಸಿದಾಗ, ಅವು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.';
 
   @override
   String get you => 'ನೀವು';
 
   @override
-  String get recordingsEmpty =>
-      'ಶಿಕ್ಷಕರು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಪಾಠವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ ಹಂಚಿಕೊಂಡಾಗ, ನೀವು ಅದನ್ನು ಇಲ್ಲಿ ಮತ್ತೆ ನೋಡಬಹುದು.';
+  String get recordingsEmpty => 'ಶಿಕ್ಷಕರು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಪಾಠವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ ಹಂಚಿಕೊಂಡಾಗ, ನೀವು ಅದನ್ನು ಇಲ್ಲಿ ಮತ್ತೆ ನೋಡಬಹುದು.';
 
   @override
   String get missedThisClass => 'ನೀವು ಈ ತರಗತಿಯನ್ನು ತಪ್ಪಿಸಿಕೊಂಡಿದ್ದೀರಿ';
 
   @override
-  String get noRecordingsShared =>
-      'ಇನ್ನೂ ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಯಾವುದೇ ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
+  String get noRecordingsShared => 'ಇನ್ನೂ ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಯಾವುದೇ ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
 
   @override
-  String get recordingNotSharedYours =>
-      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಈಗ ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
+  String get recordingNotSharedYours => 'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಈಗ ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
 
   @override
-  String get boardNotShared =>
-      'ಈ ಬೋರ್ಡ್ ಅನ್ನು ಈಗ ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
+  String get boardNotShared => 'ಈ ಬೋರ್ಡ್ ಅನ್ನು ಈಗ ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
 
   @override
   String writeToAbout(Object teacher) {
@@ -814,12 +774,10 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get noMessagesStudent =>
-      'ಇನ್ನೂ ಯಾವುದೇ ಸಂದೇಶಗಳಿಲ್ಲ.\nತರಗತಿ, ಹೋಂವರ್ಕ್ ಅಥವಾ ಸಂದೇಹದ ಬಗ್ಗೆ ನಿಮ್ಮ ಶಿಕ್ಷಕರಿಗೆ ಬರೆಯಿರಿ.';
+  String get noMessagesStudent => 'ಇನ್ನೂ ಯಾವುದೇ ಸಂದೇಶಗಳಿಲ್ಲ.\nತರಗತಿ, ಹೋಂವರ್ಕ್ ಅಥವಾ ಸಂದೇಹದ ಬಗ್ಗೆ ನಿಮ್ಮ ಶಿಕ್ಷಕರಿಗೆ ಬರೆಯಿರಿ.';
 
   @override
-  String get noTeachersOnTimetable =>
-      'ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ಶಿಕ್ಷಕರಿಲ್ಲ.';
+  String get noTeachersOnTimetable => 'ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ಶಿಕ್ಷಕರಿಲ್ಲ.';
 
   @override
   String yourTeachers(Object className) {
@@ -838,8 +796,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get openMessages => 'ಸಂದೇಶಗಳನ್ನು ತೆರೆಯಿರಿ';
 
   @override
-  String get askYourTeachers =>
-      'ತರಗತಿ, ಹೋಂವರ್ಕ್ ಅಥವಾ ಸಂದೇಹದ ಬಗ್ಗೆ ನಿಮ್ಮ ಶಿಕ್ಷಕರನ್ನು ಕೇಳಿ.';
+  String get askYourTeachers => 'ತರಗತಿ, ಹೋಂವರ್ಕ್ ಅಥವಾ ಸಂದೇಹದ ಬಗ್ಗೆ ನಿಮ್ಮ ಶಿಕ್ಷಕರನ್ನು ಕೇಳಿ.';
 
   @override
   String get noUpdates =>
@@ -869,12 +826,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get navLearn => 'ಕಲಿಯಿರಿ';
 
   @override
-  String get attendanceFewMissed =>
-      'ಇತ್ತೀಚೆಗೆ ನೀವು ಕೆಲವು ತರಗತಿಗಳನ್ನು ತಪ್ಪಿಸಿಕೊಂಡಿದ್ದೀರಿ.';
+  String get attendanceFewMissed => 'ಇತ್ತೀಚೆಗೆ ನೀವು ಕೆಲವು ತರಗತಿಗಳನ್ನು ತಪ್ಪಿಸಿಕೊಂಡಿದ್ದೀರಿ.';
 
   @override
-  String get attendanceBelow75 =>
-      '75% ಕ್ಕಿಂತ ಕಡಿಮೆ. ಪರೀಕ್ಷೆಗೆ ಕೂರಲು ಕಾಲೇಜುಗಳು ಸಾಮಾನ್ಯವಾಗಿ 75% ಹಾಜರಾತಿ ಕೇಳುತ್ತವೆ.';
+  String get attendanceBelow75 => '75% ಕ್ಕಿಂತ ಕಡಿಮೆ. ಪರೀಕ್ಷೆಗೆ ಕೂರಲು ಕಾಲೇಜುಗಳು ಸಾಮಾನ್ಯವಾಗಿ 75% ಹಾಜರಾತಿ ಕೇಳುತ್ತವೆ.';
 
   @override
   String noAttendanceForYou(Object days) {
@@ -882,19 +837,16 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get nothingDue =>
-      'ಈಗ ಸಲ್ಲಿಸಬೇಕಾದದ್ದು ಏನೂ ಇಲ್ಲ. ನಿಮ್ಮ ಶಿಕ್ಷಕರ ಹೊಸ ಹೋಂವರ್ಕ್ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
+  String get nothingDue => 'ಈಗ ಸಲ್ಲಿಸಬೇಕಾದದ್ದು ಏನೂ ಇಲ್ಲ. ನಿಮ್ಮ ಶಿಕ್ಷಕರ ಹೊಸ ಹೋಂವರ್ಕ್ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
   String get stuckTitle => 'ಎಲ್ಲಿಯಾದರೂ ಸಿಲುಕಿದ್ದೀರಾ?';
 
   @override
-  String get stuckBody =>
-      'KINETIX AI ಗೆ ವಿವರಿಸಲು ಕೇಳಿ, English, हिन्दी ಅಥವಾ ಕನ್ನಡದಲ್ಲಿ.';
+  String get stuckBody => 'KINETIX AI ಗೆ ವಿವರಿಸಲು ಕೇಳಿ, English, हिन्दी ಅಥವಾ ಕನ್ನಡದಲ್ಲಿ.';
 
   @override
-  String get boardsEmpty =>
-      'ಪಾಠದ ನಂತರ ಶಿಕ್ಷಕರು ತರಗತಿಯ ಬೋರ್ಡ್ ಹಂಚಿಕೊಂಡಾಗ, ನೀವು ಪುನರಾವರ್ತಿಸಲು ಅದು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
+  String get boardsEmpty => 'ಪಾಠದ ನಂತರ ಶಿಕ್ಷಕರು ತರಗತಿಯ ಬೋರ್ಡ್ ಹಂಚಿಕೊಂಡಾಗ, ನೀವು ಪುನರಾವರ್ತಿಸಲು ಅದು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
   String get feesNote =>
@@ -922,20 +874,14 @@ class AppLocalizationsKn extends AppLocalizations {
   String get noFeesIssued => 'ನಿಮಗೆ ಯಾವುದೇ ಶುಲ್ಕ ವಿಧಿಸಿಲ್ಲ.';
 
   @override
-  String get noPayments =>
-      'ಇನ್ನೂ ಯಾವುದೇ ಪಾವತಿ ಇಲ್ಲ. ಪಾವತಿ ಆದ ನಂತರ ರಸೀದಿಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.';
+  String get noPayments => 'ಇನ್ನೂ ಯಾವುದೇ ಪಾವತಿ ಇಲ್ಲ. ಪಾವತಿ ಆದ ನಂತರ ರಸೀದಿಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.';
 
   @override
   String get allPaid => 'ಎಲ್ಲವೂ ಪಾವತಿಯಾಗಿದೆ';
 
   @override
   String feesOverdueNext(int count, Object title) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಶುಲ್ಕಗಳ ಗಡುವು ಮೀರಿದೆ',
-      one: '1 ಶುಲ್ಕದ ಗಡುವು ಮೀರಿದೆ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಶುಲ್ಕಗಳ ಗಡುವು ಮೀರಿದೆ', one: '1 ಶುಲ್ಕದ ಗಡುವು ಮೀರಿದೆ');
     return '$_temp0 · ಮುಂದಿನದು: $title';
   }
 
@@ -976,8 +922,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get nil => 'ಶೂನ್ಯ';
 
   @override
-  String get keepReceipt =>
-      'ಇದನ್ನು ನಿಮ್ಮ ದಾಖಲೆಗಾಗಿ ಇಟ್ಟುಕೊಳ್ಳಿ. ಯಾರಾದರೂ ಪಾವತಿಯ ಪುರಾವೆ ಕೇಳಿದರೆ, ಶುಲ್ಕ ಕೌಂಟರ್‌ನಲ್ಲಿ ಇದನ್ನು ತೋರಿಸಿ.';
+  String get keepReceipt => 'ಇದನ್ನು ನಿಮ್ಮ ದಾಖಲೆಗಾಗಿ ಇಟ್ಟುಕೊಳ್ಳಿ. ಯಾರಾದರೂ ಪಾವತಿಯ ಪುರಾವೆ ಕೇಳಿದರೆ, ಶುಲ್ಕ ಕೌಂಟರ್‌ನಲ್ಲಿ ಇದನ್ನು ತೋರಿಸಿ.';
 
   @override
   String get yourClass => 'ನಿಮ್ಮ ತರಗತಿ';
@@ -1035,34 +980,19 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String booksOut(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಪುಸ್ತಕಗಳನ್ನು ಪಡೆದಿದೆ',
-      one: '1 ಪುಸ್ತಕ ಪಡೆದಿದೆ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಪುಸ್ತಕಗಳನ್ನು ಪಡೆದಿದೆ', one: '1 ಪುಸ್ತಕ ಪಡೆದಿದೆ');
     return '$_temp0';
   }
 
   @override
   String feesCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಶುಲ್ಕಗಳು',
-      one: '1 ಶುಲ್ಕ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಶುಲ್ಕಗಳು', one: '1 ಶುಲ್ಕ');
     return '$_temp0';
   }
 
   @override
   String receiptsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ರಸೀದಿಗಳು',
-      one: '1 ರಸೀದಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ರಸೀದಿಗಳು', one: '1 ರಸೀದಿ');
     return '$_temp0';
   }
 
@@ -1082,8 +1012,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get earlierQuestions => 'ಹಿಂದೆ ಕೇಳಿದ ಪ್ರಶ್ನೆಗಳು';
 
   @override
-  String get askIntro =>
-      'KINETIX AI ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮದ ಪ್ರಕಾರ ಇದನ್ನು ಹಂತ ಹಂತವಾಗಿ ವಿವರಿಸುತ್ತದೆ.';
+  String get askIntro => 'KINETIX AI ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮದ ಪ್ರಕಾರ ಇದನ್ನು ಹಂತ ಹಂತವಾಗಿ ವಿವರಿಸುತ್ತದೆ.';
 
   @override
   String aboutTopic(Object topic) {
@@ -1130,29 +1059,25 @@ class AppLocalizationsKn extends AppLocalizations {
   String get previewAnswer => 'ಮಾದರಿ ಉತ್ತರ';
 
   @override
-  String get previewNote =>
-      'ನಿಮ್ಮ ಕಾಲೇಜಿನಲ್ಲಿ KINETIX AI ಇನ್ನೂ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಹಾಗಾಗಿ ಇದು ಕೇವಲ ಮಾದರಿ, ನಿಜವಾದ ವಿವರಣೆ ಅಲ್ಲ.';
+  String get previewNote => 'ನಿಮ್ಮ ಕಾಲೇಜಿನಲ್ಲಿ KINETIX AI ಇನ್ನೂ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಹಾಗಾಗಿ ಇದು ಕೇವಲ ಮಾದರಿ, ನಿಜವಾದ ವಿವರಣೆ ಅಲ್ಲ.';
 
   @override
   String get aiCantAnswer => 'KINETIX AI ಇದಕ್ಕೆ ಉತ್ತರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ';
 
   @override
-  String get aiRephrase =>
-      'ಇದನ್ನು ನಿಮ್ಮ ಓದಿಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಶ್ನೆಯಾಗಿ ಮತ್ತೆ ಬರೆದು ನೋಡಿ.';
+  String get aiRephrase => 'ಇದನ್ನು ನಿಮ್ಮ ಓದಿಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಶ್ನೆಯಾಗಿ ಮತ್ತೆ ಬರೆದು ನೋಡಿ.';
 
   @override
   String get aiAllowanceUsed => 'ಇಂದಿನ KINETIX AI ಮಿತಿ ಮುಗಿದಿದೆ';
 
   @override
-  String get aiAllowanceBody =>
-      'ನಿಮ್ಮ ಕಾಲೇಜು ಇಂದಿನ ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ಇದು ನಾಳೆ ಮತ್ತೆ ಆರಂಭವಾಗುತ್ತದೆ.';
+  String get aiAllowanceBody => 'ನಿಮ್ಮ ಕಾಲೇಜು ಇಂದಿನ ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ಇದು ನಾಳೆ ಮತ್ತೆ ಆರಂಭವಾಗುತ್ತದೆ.';
 
   @override
   String get aiUnreachable => 'KINETIX AI ಸಂಪರ್ಕಕ್ಕೆ ಸಿಗುತ್ತಿಲ್ಲ';
 
   @override
-  String get aiUnreachableBody =>
-      'ಈಗ ಸಂಪರ್ಕಕ್ಕೆ ಸಿಗುತ್ತಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get aiUnreachableBody => 'ಈಗ ಸಂಪರ್ಕಕ್ಕೆ ಸಿಗುತ್ತಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get noConnection => 'ಸಂಪರ್ಕವಿಲ್ಲ';
@@ -1179,8 +1104,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get noNotes => 'ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಯಾವುದೇ ಟಿಪ್ಪಣಿಗಳನ್ನು ಸೇರಿಸಿಲ್ಲ.';
 
   @override
-  String get notReviewed =>
-      'ಈ ಟಿಪ್ಪಣಿಗಳನ್ನು ಪಠ್ಯಕ್ರಮ ತಂಡ ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ. ನಿಮ್ಮ ಪಠ್ಯಪುಸ್ತಕ ಮತ್ತು ಶಿಕ್ಷಕರಿಗೆ ಮೊದಲ ಆದ್ಯತೆ.';
+  String get notReviewed => 'ಈ ಟಿಪ್ಪಣಿಗಳನ್ನು ಪಠ್ಯಕ್ರಮ ತಂಡ ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ. ನಿಮ್ಮ ಪಠ್ಯಪುಸ್ತಕ ಮತ್ತು ಶಿಕ್ಷಕರಿಗೆ ಮೊದಲ ಆದ್ಯತೆ.';
 
   @override
   String get askKinetixAi => 'KINETIX AI ಅನ್ನು ಕೇಳಿ';
@@ -1198,23 +1122,13 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String topicsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ವಿಷಯಗಳು',
-      one: '1 ವಿಷಯ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ವಿಷಯಗಳು', one: '1 ವಿಷಯ');
     return '$_temp0';
   }
 
   @override
   String chaptersCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಅಧ್ಯಾಯಗಳು',
-      one: '1 ಅಧ್ಯಾಯ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಅಧ್ಯಾಯಗಳು', one: '1 ಅಧ್ಯಾಯ');
     return '$_temp0';
   }
 
@@ -1266,8 +1180,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get boardOfflineTitle => 'ಬೋರ್ಡ್ ಆಫ್‌ಲೈನ್ ಆಗಿದೆ';
 
   @override
-  String get boardOfflineBody =>
-      'ತರಗತಿಯ ಬೋರ್ಡ್ ಸಂಪರ್ಕ ಕಳೆದುಕೊಂಡಿದೆ. ಇಲ್ಲೇ ಇರಿ: ಮತ್ತೆ ಸಂಪರ್ಕಗೊಂಡಾಗ ಬೋರ್ಡ್ ತಾನಾಗಿಯೇ ಕಾಣಿಸುತ್ತದೆ.';
+  String get boardOfflineBody => 'ತರಗತಿಯ ಬೋರ್ಡ್ ಸಂಪರ್ಕ ಕಳೆದುಕೊಂಡಿದೆ. ಇಲ್ಲೇ ಇರಿ: ಮತ್ತೆ ಸಂಪರ್ಕಗೊಂಡಾಗ ಬೋರ್ಡ್ ತಾನಾಗಿಯೇ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
   String get classEndedTitle => 'ತರಗತಿ ಮುಗಿದಿದೆ';
@@ -1305,8 +1218,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get liveNotConnected => 'ಸಂಪರ್ಕವಿಲ್ಲ';
 
   @override
-  String get liveTimeout =>
-      'ತರಗತಿಯಿಂದ ಉತ್ತರ ಬರಲು ತುಂಬಾ ತಡವಾಗುತ್ತಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get liveTimeout => 'ತರಗತಿಯಿಂದ ಉತ್ತರ ಬರಲು ತುಂಬಾ ತಡವಾಗುತ್ತಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get liveCouldNotJoin => 'ತರಗತಿಗೆ ಸೇರಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.';
@@ -1333,40 +1245,31 @@ class AppLocalizationsKn extends AppLocalizations {
   String get unmuteClass => 'ತರಗತಿಯ ಧ್ವನಿ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಿ';
 
   @override
-  String get errNotStudent =>
-      'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿ ಲಾಗಿನ್ ಸಿದ್ಧಪಡಿಸಲು ಕಾಲೇಜು ಕಚೇರಿಯನ್ನು ಕೇಳಿ.';
+  String get errNotStudent => 'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿ ಲಾಗಿನ್ ಸಿದ್ಧಪಡಿಸಲು ಕಾಲೇಜು ಕಚೇರಿಯನ್ನು ಕೇಳಿ.';
 
   @override
-  String get errGuardianAccount =>
-      'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ಪೋಷಕರು KINETIX Parent ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
+  String get errGuardianAccount => 'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ಪೋಷಕರು KINETIX Parent ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
 
   @override
-  String get errTeacherAccount =>
-      'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ಶಿಕ್ಷಕರು KINETIX Teacher ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
+  String get errTeacherAccount => 'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ಶಿಕ್ಷಕರು KINETIX Teacher ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
 
   @override
-  String get errNotLinked =>
-      'ನಿಮ್ಮ ಲಾಗಿನ್ ಇನ್ನೂ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿ ದಾಖಲೆಗೆ ಜೋಡಣೆಯಾಗಿಲ್ಲ. ಅದನ್ನು ಜೋಡಿಸಲು ಕಾಲೇಜು ಕಚೇರಿಯನ್ನು ಕೇಳಿ.';
+  String get errNotLinked => 'ನಿಮ್ಮ ಲಾಗಿನ್ ಇನ್ನೂ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿ ದಾಖಲೆಗೆ ಜೋಡಣೆಯಾಗಿಲ್ಲ. ಅದನ್ನು ಜೋಡಿಸಲು ಕಾಲೇಜು ಕಚೇರಿಯನ್ನು ಕೇಳಿ.';
 
   @override
-  String get errAccountInactive =>
-      'ನಿಮ್ಮ ಖಾತೆ ಸಕ್ರಿಯವಾಗಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಕಚೇರಿಯನ್ನು ಕೇಳಿ.';
+  String get errAccountInactive => 'ನಿಮ್ಮ ಖಾತೆ ಸಕ್ರಿಯವಾಗಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಕಚೇರಿಯನ್ನು ಕೇಳಿ.';
 
   @override
-  String get errSignInAgain =>
-      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಅವಧಿ ಮುಗಿದಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+  String get errSignInAgain => 'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಅವಧಿ ಮುಗಿದಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
-  String get errTooLarge =>
-      'ಒಂದು ಫೈಲ್ ತುಂಬಾ ದೊಡ್ಡದಾಗಿದೆ. ಪ್ರತಿ ಫೋಟೋ ಅಥವಾ PDF ಗರಿಷ್ಠ 8 MB ಇರಬಹುದು.';
+  String get errTooLarge => 'ಒಂದು ಫೈಲ್ ತುಂಬಾ ದೊಡ್ಡದಾಗಿದೆ. ಪ್ರತಿ ಫೋಟೋ ಅಥವಾ PDF ಗರಿಷ್ಠ 8 MB ಇರಬಹುದು.';
 
   @override
-  String get errConflict =>
-      'ಈ ನಡುವೆ ಇದು ಬದಲಾಗಿದೆ. ರಿಫ್ರೆಶ್ ಮಾಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errConflict => 'ಈ ನಡುವೆ ಇದು ಬದಲಾಗಿದೆ. ರಿಫ್ರೆಶ್ ಮಾಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get errSubjectNotInClass =>
-      'ಈ ವಿಷಯವನ್ನು ಈ ತರಗತಿಯಲ್ಲಿ ಕಲಿಸಲಾಗುವುದಿಲ್ಲ.';
+  String get errSubjectNotInClass => 'ಈ ವಿಷಯವನ್ನು ಈ ತರಗತಿಯಲ್ಲಿ ಕಲಿಸಲಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get errSubmissionEmpty => 'ಉತ್ತರ ಬರೆಯಿರಿ ಅಥವಾ ಫೋಟೋ ಸೇರಿಸಿ.';
@@ -1387,8 +1290,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get seeCalendar => 'ಪೂರ್ಣ ಕ್ಯಾಲೆಂಡರ್ ನೋಡಿ';
 
   @override
-  String get calendarEmpty =>
-      'ಮುಂದಿನ ತಿಂಗಳುಗಳಲ್ಲಿ ಯಾವುದೇ ರಜೆ, ಪರೀಕ್ಷೆ ಅಥವಾ ಕಾರ್ಯಕ್ರಮವಿಲ್ಲ.';
+  String get calendarEmpty => 'ಮುಂದಿನ ತಿಂಗಳುಗಳಲ್ಲಿ ಯಾವುದೇ ರಜೆ, ಪರೀಕ್ಷೆ ಅಥವಾ ಕಾರ್ಯಕ್ರಮವಿಲ್ಲ.';
 
   @override
   String get kindHoliday => 'ರಜೆ';
@@ -1401,12 +1303,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String inDays(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ದಿನಗಳಲ್ಲಿ',
-      one: '1 ದಿನದಲ್ಲಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ದಿನಗಳಲ್ಲಿ', one: '1 ದಿನದಲ್ಲಿ');
     return '$_temp0';
   }
 
@@ -1467,8 +1364,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get answerLabel => 'ಉತ್ತರ';
 
   @override
-  String get answerHint =>
-      'ಉತ್ತರವನ್ನು ಇಲ್ಲಿ ಬರೆಯಿರಿ, ಅಥವಾ ಕೆಲಸದ ಫೋಟೋಗಳನ್ನು ಸೇರಿಸಿ';
+  String get answerHint => 'ಉತ್ತರವನ್ನು ಇಲ್ಲಿ ಬರೆಯಿರಿ, ಅಥವಾ ಕೆಲಸದ ಫೋಟೋಗಳನ್ನು ಸೇರಿಸಿ';
 
   @override
   String get handIn => 'ಸಲ್ಲಿಸಿ';
@@ -1508,8 +1404,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get addPdf => 'PDF ಸೇರಿಸಿ';
 
   @override
-  String get filesHint =>
-      'ಗರಿಷ್ಠ 5 ಫೋಟೋ ಅಥವಾ PDF, ಪ್ರತಿಯೊಂದೂ 8 MB ವರೆಗೆ. ಕಳುಹಿಸುವ ಮೊದಲು ಫೋಟೋಗಳನ್ನು ಚಿಕ್ಕದಾಗಿಸಲಾಗುತ್ತದೆ.';
+  String get filesHint => 'ಗರಿಷ್ಠ 5 ಫೋಟೋ ಅಥವಾ PDF, ಪ್ರತಿಯೊಂದೂ 8 MB ವರೆಗೆ. ಕಳುಹಿಸುವ ಮೊದಲು ಫೋಟೋಗಳನ್ನು ಚಿಕ್ಕದಾಗಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String uploading(String percent) {
@@ -1536,8 +1431,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get privacy => 'ಗೌಪ್ಯತೆ';
 
   @override
-  String get privacySubtitle =>
-      'ವಿದ್ಯಾರ್ಥಿಯ ಮಾಹಿತಿಯೊಂದಿಗೆ KINETIX ಏನು ಮಾಡಬಹುದು';
+  String get privacySubtitle => 'ವಿದ್ಯಾರ್ಥಿಯ ಮಾಹಿತಿಯೊಂದಿಗೆ KINETIX ಏನು ಮಾಡಬಹುದು';
 
   @override
   String get notNow => 'ಈಗ ಬೇಡ';
@@ -1589,8 +1483,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get noticeWhoDecides => 'ಯಾರು ನಿರ್ಧರಿಸುತ್ತಾರೆ';
 
   @override
-  String get noticeSchool =>
-      'ಶಾಲೆ (18 ವರ್ಷದೊಳಗಿನ ವಿದ್ಯಾರ್ಥಿಗಳು): ಮಗುವಿನ ಪರವಾಗಿ ಪೋಷಕರು ನಿರ್ಧರಿಸುತ್ತಾರೆ.';
+  String get noticeSchool => 'ಶಾಲೆ (18 ವರ್ಷದೊಳಗಿನ ವಿದ್ಯಾರ್ಥಿಗಳು): ಮಗುವಿನ ಪರವಾಗಿ ಪೋಷಕರು ನಿರ್ಧರಿಸುತ್ತಾರೆ.';
 
   @override
   String get noticeCollege =>
@@ -1634,8 +1527,7 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಸಂಸ್ಥೆ ತರಗತಿಗಳನ್ನು ನಡೆಸಲು ಮತ್ತು ನಿಮಗೆ ಮಾಹಿತಿ ನೀಡಲು ವಿದ್ಯಾರ್ಥಿಯ ಹಾಜರಾತಿ, ಹೋಂವರ್ಕ್, ಅಂಕಗಳು, ಶುಲ್ಕ ಮತ್ತು ಗ್ರಂಥಾಲಯದ ದಾಖಲೆಗಳನ್ನು ಇಡುವುದು.';
 
   @override
-  String get purposeDataNo =>
-      'ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಡಬೇಕಾದ ದಾಖಲೆಗಳನ್ನು ಸಂಸ್ಥೆ ಇನ್ನೂ ಇಡುತ್ತದೆ; ನಿಮಗೆ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸೂಚನೆಗಳು ಬರುವುದಿಲ್ಲ.';
+  String get purposeDataNo => 'ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಡಬೇಕಾದ ದಾಖಲೆಗಳನ್ನು ಸಂಸ್ಥೆ ಇನ್ನೂ ಇಡುತ್ತದೆ; ನಿಮಗೆ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸೂಚನೆಗಳು ಬರುವುದಿಲ್ಲ.';
 
   @override
   String get purposeAiTitle => 'KINETIX AI';
@@ -1645,15 +1537,13 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಸಂದೇಹಗಳಿಗೆ ವಿದ್ಯಾರ್ಥಿ KINETIX AI ನಿಂದ ಸಹಾಯ ಕೇಳುವುದು. ಪ್ರಶ್ನೆಗಳನ್ನು ಭಾರತದ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಸಂಸ್ಕರಿಸಲಾಗುತ್ತದೆ ಮತ್ತು AI ಮಾದರಿಗಳ ತರಬೇತಿಗೆ ಬಳಸಲಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get purposeAiNo =>
-      'ವಿದ್ಯಾರ್ಥಿಗೆ KINETIX AI ಆಫ್ ಆಗುತ್ತದೆ. ಉಳಿದೆಲ್ಲವೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+  String get purposeAiNo => 'ವಿದ್ಯಾರ್ಥಿಗೆ KINETIX AI ಆಫ್ ಆಗುತ್ತದೆ. ಉಳಿದೆಲ್ಲವೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
 
   @override
   String get purposeRecordingsTitle => 'ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ ಮತ್ತು ಲೈವ್ ತರಗತಿಗಳು';
 
   @override
-  String get purposeRecordingsBody =>
-      'ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡ ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್ ಮತ್ತು ಲೈವ್ ತರಗತಿಗಳಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿಯ ಧ್ವನಿ ಅಥವಾ ಚಿತ್ರ ಬರುವುದು.';
+  String get purposeRecordingsBody => 'ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡ ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್ ಮತ್ತು ಲೈವ್ ತರಗತಿಗಳಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿಯ ಧ್ವನಿ ಅಥವಾ ಚಿತ್ರ ಬರುವುದು.';
 
   @override
   String get purposeRecordingsNo =>
@@ -1667,12 +1557,10 @@ class AppLocalizationsKn extends AppLocalizations {
       'ವಿದ್ಯಾರ್ಥಿಯ ಫೋಟೋಗಳನ್ನು (ಉದಾಹರಣೆಗೆ ಹೋಂವರ್ಕ್‌ನಲ್ಲಿ ಅಥವಾ ತರಗತಿ ಚಟುವಟಿಕೆಗಳಲ್ಲಿ) ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳುವುದು.';
 
   @override
-  String get purposePhotosNo =>
-      'ವಿದ್ಯಾರ್ಥಿಯ ಫೋಟೋಗಳನ್ನು ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುವುದಿಲ್ಲ.';
+  String get purposePhotosNo => 'ವಿದ್ಯಾರ್ಥಿಯ ಫೋಟೋಗಳನ್ನು ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get errConsentGuardianDecides =>
-      'ಶಾಲೆಯಲ್ಲಿ ಈ ಆಯ್ಕೆಗಳನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ಮಾಡುತ್ತಾರೆ.';
+  String get errConsentGuardianDecides => 'ಶಾಲೆಯಲ್ಲಿ ಈ ಆಯ್ಕೆಗಳನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ಮಾಡುತ್ತಾರೆ.';
 
   @override
   String get aiConsentWithdrawnTitle => 'KINETIX AI ಆಫ್ ಆಗಿದೆ';
@@ -1685,19 +1573,16 @@ class AppLocalizationsKn extends AppLocalizations {
   String get openPrivacy => 'ಗೌಪ್ಯತೆ ತೆರೆಯಿರಿ';
 
   @override
-  String get errLiveNotAllowed =>
-      'ಶಾಲೆಯ ಮುಖ್ಯಸ್ಥರು ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳು ಮಾತ್ರ ತರಗತಿಗಳನ್ನು ನೋಡಬಹುದು.';
+  String get errLiveNotAllowed => 'ಶಾಲೆಯ ಮುಖ್ಯಸ್ಥರು ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳು ಮಾತ್ರ ತರಗತಿಗಳನ್ನು ನೋಡಬಹುದು.';
 
   @override
   String get errLiveViewOff => 'ನಿಮ್ಮ ಸಂಸ್ಥೆಗೆ ಲೈವ್ ವೀಕ್ಷಣೆ ಆಫ್ ಆಗಿದೆ.';
 
   @override
-  String get errLiveNotStarted =>
-      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಲೈವ್ ತರಗತಿಯನ್ನು ಪ್ರಾರಂಭಿಸಿಲ್ಲ.';
+  String get errLiveNotStarted => 'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಲೈವ್ ತರಗತಿಯನ್ನು ಪ್ರಾರಂಭಿಸಿಲ್ಲ.';
 
   @override
-  String get errLiveUnknownBoard =>
-      'ಈ ತರಗತಿ ಬೋರ್ಡ್ ಗುರುತಿಸಲಾಗಿಲ್ಲ. ಯಾವ ತರಗತಿಯನ್ನು ನೋಡಬೇಕು ಎಂದು ನಿಮ್ಮ ಶಿಕ್ಷಕರನ್ನು ಕೇಳಿ.';
+  String get errLiveUnknownBoard => 'ಈ ತರಗತಿ ಬೋರ್ಡ್ ಗುರುತಿಸಲಾಗಿಲ್ಲ. ಯಾವ ತರಗತಿಯನ್ನು ನೋಡಬೇಕು ಎಂದು ನಿಮ್ಮ ಶಿಕ್ಷಕರನ್ನು ಕೇಳಿ.';
 
   @override
   String get errLiveNoClass => 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಈಗ ಯಾವುದೇ ತರಗತಿ ನಡೆಯುತ್ತಿಲ್ಲ.';
@@ -1709,23 +1594,19 @@ class AppLocalizationsKn extends AppLocalizations {
   String get yourWork => 'ನಿಮ್ಮ ಕೆಲಸ';
 
   @override
-  String get returnedNote =>
-      'ಇದನ್ನು ಮತ್ತೆ ಮಾಡಲು ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಹೇಳಿದ್ದಾರೆ. ಟಿಪ್ಪಣಿ ಓದಿ, ನಂತರ ಮತ್ತೆ ಸಲ್ಲಿಸಿ.';
+  String get returnedNote => 'ಇದನ್ನು ಮತ್ತೆ ಮಾಡಲು ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಹೇಳಿದ್ದಾರೆ. ಟಿಪ್ಪಣಿ ಓದಿ, ನಂತರ ಮತ್ತೆ ಸಲ್ಲಿಸಿ.';
 
   @override
   String get consentTitle => 'ನಿಮ್ಮ ಗೌಪ್ಯತೆಯ ಆಯ್ಕೆಗಳು';
 
   @override
-  String get consentIntro =>
-      'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ. ನೀವು ಆಯ್ಕೆ ಮಾಡುವವರೆಗೆ ಯಾವುದೂ ಆನ್ ಆಗುವುದಿಲ್ಲ.';
+  String get consentIntro => 'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ. ನೀವು ಆಯ್ಕೆ ಮಾಡುವವರೆಗೆ ಯಾವುದೂ ಆನ್ ಆಗುವುದಿಲ್ಲ.';
 
   @override
-  String get privacyIntro =>
-      'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು. ಅನುಮತಿ ಹಿಂಪಡೆಯಲು ಸ್ವಿಚ್ ಆಫ್ ಮಾಡಿ.';
+  String get privacyIntro => 'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು. ಅನುಮತಿ ಹಿಂಪಡೆಯಲು ಸ್ವಿಚ್ ಆಫ್ ಮಾಡಿ.';
 
   @override
-  String get privacyIntroReadOnly =>
-      'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು, ಮತ್ತು ಯಾರು ನಿರ್ಧರಿಸಿದರು.';
+  String get privacyIntroReadOnly => 'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು, ಮತ್ತು ಯಾರು ನಿರ್ಧರಿಸಿದರು.';
 
   @override
   String get managedByParent =>
@@ -1761,8 +1642,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get comingUpInClass => 'ತರಗತಿಯಲ್ಲಿ ಮುಂದೆ';
 
   @override
-  String get readAhead =>
-      'ತರಗತಿಯಲ್ಲಿ ಕಲಿಸಲು ಯೋಜಿಸಿರುವ ವಿಷಯಗಳು. ಬೇಕಿದ್ದರೆ ಮೊದಲೇ ಓದಿಕೊಳ್ಳಿ.';
+  String get readAhead => 'ತರಗತಿಯಲ್ಲಿ ಕಲಿಸಲು ಯೋಜಿಸಿರುವ ವಿಷಯಗಳು. ಬೇಕಿದ್ದರೆ ಮೊದಲೇ ಓದಿಕೊಳ್ಳಿ.';
 
   @override
   String get phoneNumber => 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ';
@@ -1805,12 +1685,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get usePhoneCode => 'ಬದಲಿಗೆ ಫೋನ್‌ಗೆ ಕೋಡ್ ಪಡೆಯಿರಿ';
 
   @override
-  String get errOtpInvalid =>
-      'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕೇಳಿ.';
+  String get errOtpInvalid => 'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕೇಳಿ.';
 
   @override
-  String get errOtpTooMany =>
-      'ಹಲವು ಬಾರಿ ಕೋಡ್ ಕೇಳಲಾಗಿದೆ. ಕೆಲವು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errOtpTooMany => 'ಹಲವು ಬಾರಿ ಕೋಡ್ ಕೇಳಲಾಗಿದೆ. ಕೆಲವು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get notificationsTitle => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಸೂಚನೆಗಳನ್ನು ಪಡೆಯಬೇಕೇ?';
@@ -1819,8 +1697,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get notificationsAllow => 'ಆನ್ ಮಾಡಿ';
 
   @override
-  String get otpHint =>
-      'ನಿಮ್ಮ ಕಾಲೇಜಿನಲ್ಲಿರುವ ಫೋನ್ ಸಂಖ್ಯೆಗೆ ನಾವು ಕೋಡ್ ಕಳುಹಿಸುತ್ತೇವೆ';
+  String get otpHint => 'ನಿಮ್ಮ ಕಾಲೇಜಿನಲ್ಲಿರುವ ಫೋನ್ ಸಂಖ್ಯೆಗೆ ನಾವು ಕೋಡ್ ಕಳುಹಿಸುತ್ತೇವೆ';
 
   @override
   String get notificationsBody =>
@@ -1856,8 +1733,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get conceptVideos => 'ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು';
 
   @override
-  String get conceptVideosHint =>
-      'ತರಗತಿಗೆ ಮೊದಲು ಮುನ್ನೋಟಕ್ಕಾಗಿ ಮತ್ತು ತರಗತಿಯ ನಂತರ ಪುನರಾವರ್ತನೆಗಾಗಿ ನೋಡಿ.';
+  String get conceptVideosHint => 'ತರಗತಿಗೆ ಮೊದಲು ಮುನ್ನೋಟಕ್ಕಾಗಿ ಮತ್ತು ತರಗತಿಯ ನಂತರ ಪುನರಾವರ್ತನೆಗಾಗಿ ನೋಡಿ.';
 
   @override
   String get conceptVideosFromYouTube => 'ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತದೆ';
@@ -1872,8 +1748,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get conceptVideoSourceTeacher => 'ಶಿಕ್ಷಕ';
 
   @override
-  String get conceptVideosUnsupported =>
-      'ವೀಡಿಯೊಗಳು ಇಲ್ಲಿ ಪ್ಲೇ ಆಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ಬಳಸಿ.';
+  String get conceptVideosUnsupported => 'ವೀಡಿಯೊಗಳು ಇಲ್ಲಿ ಪ್ಲೇ ಆಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ಬಳಸಿ.';
 
   @override
   String conceptVideoPlay(String title) {
@@ -1907,8 +1782,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get liveQuestionNotWords => 'ಒಂದರಿಂದ ಮೂರು ಪದಗಳನ್ನು ಬರೆಯಿರಿ';
 
   @override
-  String get liveQuestionClosed =>
-      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಈ ಪ್ರಶ್ನೆಯನ್ನು ಮುಗಿಸಿದ್ದಾರೆ.';
+  String get liveQuestionClosed => 'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಈ ಪ್ರಶ್ನೆಯನ್ನು ಮುಗಿಸಿದ್ದಾರೆ.';
 
   @override
   String get careersTitle => 'ಉದ್ಯೋಗ ಅವಕಾಶಗಳು';
@@ -1959,8 +1833,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get careersDecline => 'ತಿರಸ್ಕರಿಸಿ';
 
   @override
-  String get careersViewOnly =>
-      'ನೀವು ಇಲ್ಲಿ ಡ್ರೈವ್ ಮತ್ತು ಆಫರ್‌ಗಳನ್ನು ನೋಡಬಹುದು. ನೋಂದಣಿ ಮತ್ತು ಆಫರ್‌ಗೆ ಉತ್ತರ ನೀಡುವುದು ನಿಮ್ಮ ಮಗು ಮಾತ್ರ.';
+  String get careersViewOnly => 'ನೀವು ಇಲ್ಲಿ ಡ್ರೈವ್ ಮತ್ತು ಆಫರ್‌ಗಳನ್ನು ನೋಡಬಹುದು. ನೋಂದಣಿ ಮತ್ತು ಆಫರ್‌ಗೆ ಉತ್ತರ ನೀಡುವುದು ನಿಮ್ಮ ಮಗು ಮಾತ್ರ.';
 
   @override
   String careersPackage(Object ctc) {
@@ -2029,8 +1902,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get grievancesTitle => 'ದೂರುಗಳು';
 
   @override
-  String get grievancesSubtitle =>
-      'ನಿಮ್ಮ ಸಮಸ್ಯೆ ದಾಖಲಿಸಿ, ಪರಿಹಾರದವರೆಗೆ ಹಿಂಬಾಲಿಸಿ';
+  String get grievancesSubtitle => 'ನಿಮ್ಮ ಸಮಸ್ಯೆ ದಾಖಲಿಸಿ, ಪರಿಹಾರದವರೆಗೆ ಹಿಂಬಾಲಿಸಿ';
 
   @override
   String get grievanceNone => 'ಇನ್ನೂ ಯಾವ ದೂರೂ ದಾಖಲಾಗಿಲ್ಲ.';
@@ -2051,12 +1923,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get grievanceAnonymous => 'ಸಿಬ್ಬಂದಿಯಿಂದ ನನ್ನ ಹೆಸರು ಮರೆಮಾಡಿ';
 
   @override
-  String get grievanceAnonymousHint =>
-      'ಯಾರು ದಾಖಲಿಸಿದರು ಎಂದು ತಂಡಕ್ಕೆ ಕಾಣುವುದಿಲ್ಲ. ನೀವು ಇಲ್ಲಿ ಹಿಂಬಾಲಿಸಬಹುದು.';
+  String get grievanceAnonymousHint => 'ಯಾರು ದಾಖಲಿಸಿದರು ಎಂದು ತಂಡಕ್ಕೆ ಕಾಣುವುದಿಲ್ಲ. ನೀವು ಇಲ್ಲಿ ಹಿಂಬಾಲಿಸಬಹುದು.';
 
   @override
-  String get grievanceConfidentialHint =>
-      'ರ‍್ಯಾಗಿಂಗ್ ಮತ್ತು ಕಿರುಕುಳದ ವಿಷಯಗಳು ಗೌಪ್ಯ ಸಮಿತಿಗೆ ಹೋಗುತ್ತವೆ. ಬೇರೆ ಯಾರೂ ಅವನ್ನು ಓದಲಾಗದು.';
+  String get grievanceConfidentialHint => 'ರ‍್ಯಾಗಿಂಗ್ ಮತ್ತು ಕಿರುಕುಳದ ವಿಷಯಗಳು ಗೌಪ್ಯ ಸಮಿತಿಗೆ ಹೋಗುತ್ತವೆ. ಬೇರೆ ಯಾರೂ ಅವನ್ನು ಓದಲಾಗದು.';
 
   @override
   String get grievanceSubmit => 'ಸಲ್ಲಿಸಿ';
@@ -2144,8 +2014,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get examResultsTitle => 'ಫಲಿತಾಂಶ';
 
   @override
-  String get noExamsScheduled =>
-      'ಇನ್ನೂ ಯಾವುದೇ ಪರೀಕ್ಷೆ ನಿಗದಿಯಾಗಿಲ್ಲ. ಕಾಲೇಜು ವೇಳಾಪಟ್ಟಿ ಪ್ರಕಟಿಸಿದಾಗ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
+  String get noExamsScheduled => 'ಇನ್ನೂ ಯಾವುದೇ ಪರೀಕ್ಷೆ ನಿಗದಿಯಾಗಿಲ್ಲ. ಕಾಲೇಜು ವೇಳಾಪಟ್ಟಿ ಪ್ರಕಟಿಸಿದಾಗ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
   String get noExamResults => 'ಇನ್ನೂ ಯಾವುದೇ ಫಲಿತಾಂಶ ಪ್ರಕಟವಾಗಿಲ್ಲ.';
@@ -2182,15 +2051,13 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get hallTicketWithheldNoReason =>
-      'ಪ್ರವೇಶ ಪತ್ರ ತಡೆಹಿಡಿಯಲಾಗಿದೆ. ಪರೀಕ್ಷಾ ಕಚೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.';
+  String get hallTicketWithheldNoReason => 'ಪ್ರವೇಶ ಪತ್ರ ತಡೆಹಿಡಿಯಲಾಗಿದೆ. ಪರೀಕ್ಷಾ ಕಚೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.';
 
   @override
   String get hallTicketNotIssued => 'ಪ್ರವೇಶ ಪತ್ರ ಇನ್ನೂ ನೀಡಿಲ್ಲ.';
 
   @override
-  String get fileOpenFailed =>
-      'ಈ ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. PDF ತೆರೆಯುವ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ.';
+  String get fileOpenFailed => 'ಈ ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. PDF ತೆರೆಯುವ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ.';
 
   @override
   String get sgpaLabel => 'SGPA';
@@ -2226,12 +2093,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get revaluationWhy => 'ಈ ಪತ್ರಿಕೆಯನ್ನು ಏಕೆ ಮರುಪರಿಶೀಲಿಸಬೇಕು?';
 
   @override
-  String get revaluationNeedReason =>
-      'ಕೆಲವು ಪದಗಳನ್ನು ಬರೆಯಿರಿ (ಕನಿಷ್ಠ 3 ಅಕ್ಷರ).';
+  String get revaluationNeedReason => 'ಕೆಲವು ಪದಗಳನ್ನು ಬರೆಯಿರಿ (ಕನಿಷ್ಠ 3 ಅಕ್ಷರ).';
 
   @override
-  String get revaluationSent =>
-      'ಮನವಿ ಕಳುಹಿಸಲಾಗಿದೆ. ಪರೀಕ್ಷಾ ಕಚೇರಿ ತೀರ್ಮಾನಿಸುತ್ತದೆ.';
+  String get revaluationSent => 'ಮನವಿ ಕಳುಹಿಸಲಾಗಿದೆ. ಪರೀಕ್ಷಾ ಕಚೇರಿ ತೀರ್ಮಾನಿಸುತ್ತದೆ.';
 
   @override
   String get revaluationRequested => 'ಮರುಮೌಲ್ಯಮಾಪನ ಕೋರಲಾಗಿದೆ';
@@ -2315,12 +2180,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String tileStreakDays(int n) {
-    String _temp0 = intl.Intl.pluralLogic(
-      n,
-      locale: localeName,
-      other: '$n ದಿನಗಳು',
-      one: '1 ದಿನ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n ದಿನಗಳು', one: '1 ದಿನ');
     return '$_temp0';
   }
 
@@ -2328,8 +2188,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get continueLearning => 'ಕಲಿಕೆ ಮುಂದುವರಿಸಿ';
 
   @override
-  String get continueLearningEmpty =>
-      'KINETIX AI ಗೆ ಸಂದೇಹ ಕೇಳಿ ಅಥವಾ ನನ್ನ ಕಲಿಕೆಯಿಂದ ಒಂದು ವಿಷಯ ತೆರೆಯಿರಿ.';
+  String get continueLearningEmpty => 'KINETIX AI ಗೆ ಸಂದೇಹ ಕೇಳಿ ಅಥವಾ ನನ್ನ ಕಲಿಕೆಯಿಂದ ಒಂದು ವಿಷಯ ತೆರೆಯಿರಿ.';
 
   @override
   String continueProgress(int taught, int total) {
@@ -2415,13 +2274,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String busStopsAway(int n) {
-    String _temp0 = intl.Intl.pluralLogic(
-      n,
-      locale: localeName,
-      other: '$n ನಿಲುಗಡೆ ದೂರ',
-      one: '1 ನಿಲುಗಡೆ ದೂರ',
-      zero: 'ನಿಮ್ಮ ನಿಲುಗಡೆಯಲ್ಲಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n ನಿಲುಗಡೆ ದೂರ', one: '1 ನಿಲುಗಡೆ ದೂರ', zero: 'ನಿಮ್ಮ ನಿಲುಗಡೆಯಲ್ಲಿ');
     return '$_temp0';
   }
 
@@ -2432,8 +2285,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get gatePassTitle => 'ಹಾಸ್ಟೆಲ್ ಗೇಟ್ ಪಾಸ್';
 
   @override
-  String get gatePassNotResident =>
-      'ನೀವು ಹಾಸ್ಟೆಲ್‌ನಲ್ಲಿ ಇಲ್ಲ. ಗೇಟ್ ಪಾಸ್ ಹಾಸ್ಟೆಲ್ ನಿವಾಸಿಗಳಿಗೆ.';
+  String get gatePassNotResident => 'ನೀವು ಹಾಸ್ಟೆಲ್‌ನಲ್ಲಿ ಇಲ್ಲ. ಗೇಟ್ ಪಾಸ್ ಹಾಸ್ಟೆಲ್ ನಿವಾಸಿಗಳಿಗೆ.';
 
   @override
   String gatePassRoom(String block, String room) {
@@ -2509,8 +2361,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get certificateNone => 'ಇನ್ನೂ ಯಾವುದೇ ಪ್ರಮಾಣಪತ್ರ ಇಲ್ಲ.';
 
   @override
-  String get certificateNoTemplates =>
-      'ಕಾಲೇಜು ಮನವಿಗೆ ಯಾವುದೇ ಪ್ರಮಾಣಪತ್ರ ತೆರೆದಿಲ್ಲ.';
+  String get certificateNoTemplates => 'ಕಾಲೇಜು ಮನವಿಗೆ ಯಾವುದೇ ಪ್ರಮಾಣಪತ್ರ ತೆರೆದಿಲ್ಲ.';
 
   @override
   String get certificateRequested => 'ಕಚೇರಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ';
@@ -2536,8 +2387,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get coursesNone =>
-      'ಇನ್ನೂ ಕೋರ್ಸ್‌ಗಳಿಲ್ಲ. ಶಿಕ್ಷಕರು ಪ್ರಕಟಿಸಿದಾಗ ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.';
+  String get coursesNone => 'ಇನ್ನೂ ಕೋರ್ಸ್‌ಗಳಿಲ್ಲ. ಶಿಕ್ಷಕರು ಪ್ರಕಟಿಸಿದಾಗ ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.';
 
   @override
   String courseModulesCount(int count) {
@@ -2600,8 +2450,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get scholarshipIncomeLabel => 'ವಾರ್ಷಿಕ ಕುಟುಂಬ ಆದಾಯ (₹)';
 
   @override
-  String get scholarshipIncomeRequired =>
-      'ಕುಟುಂಬದ ಆದಾಯವನ್ನು ಸಂಖ್ಯೆಯಲ್ಲಿ ನಮೂದಿಸಿ.';
+  String get scholarshipIncomeRequired => 'ಕುಟುಂಬದ ಆದಾಯವನ್ನು ಸಂಖ್ಯೆಯಲ್ಲಿ ನಮೂದಿಸಿ.';
 
   @override
   String get scholarshipNoteLabel => 'ಕಾಲೇಜಿಗೆ ತಿಳಿಸಬೇಕಾದದ್ದು (ಐಚ್ಛಿಕ)';
@@ -2610,8 +2459,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get scholarshipSend => 'ಅರ್ಜಿ ಕಳುಹಿಸಿ';
 
   @override
-  String get scholarshipSentSnack =>
-      'ಅರ್ಜಿಯನ್ನು ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
+  String get scholarshipSentSnack => 'ಅರ್ಜಿಯನ್ನು ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
 
   @override
   String get walletTitle => 'ಹಾಸ್ಟೆಲ್ ಮತ್ತು ಕ್ಯಾಂಟೀನ್';
@@ -2699,16 +2547,13 @@ class AppLocalizationsKn extends AppLocalizations {
   String get walletCouldNotConfirm => 'ಪಾವತಿ ದೃಢೀಕರಿಸಲು ಆಗಲಿಲ್ಲ';
 
   @override
-  String get walletNotSetUp =>
-      'ಆನ್‌ಲೈನ್ ಪಾವತಿ ಇನ್ನೂ ಸಿದ್ಧವಾಗಿಲ್ಲ. ಕ್ಯಾಂಟೀನ್ ಕೌಂಟರ್‌ನಲ್ಲಿ ಹಣ ಸೇರಿಸಿ.';
+  String get walletNotSetUp => 'ಆನ್‌ಲೈನ್ ಪಾವತಿ ಇನ್ನೂ ಸಿದ್ಧವಾಗಿಲ್ಲ. ಕ್ಯಾಂಟೀನ್ ಕೌಂಟರ್‌ನಲ್ಲಿ ಹಣ ಸೇರಿಸಿ.';
 
   @override
-  String get walletPhonesOnly =>
-      'ಆನ್‌ಲೈನ್ ಪಾವತಿ Android ಫೋನ್ ಮತ್ತು iPhone ಗಳಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+  String get walletPhonesOnly => 'ಆನ್‌ಲೈನ್ ಪಾವತಿ Android ಫೋನ್ ಮತ್ತು iPhone ಗಳಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
 
   @override
-  String get walletFailNoConfirm =>
-      'ಪಾವತಿ ಆ್ಯಪ್‌ನಿಂದ ದೃಢೀಕರಣ ಬರಲಿಲ್ಲ. ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಹಣ ಕಡಿತವಾಗಿದ್ದರೆ ವಾಲೆಟ್ ಶೀಘ್ರದಲ್ಲೇ ನವೀಕರಣವಾಗುತ್ತದೆ.';
+  String get walletFailNoConfirm => 'ಪಾವತಿ ಆ್ಯಪ್‌ನಿಂದ ದೃಢೀಕರಣ ಬರಲಿಲ್ಲ. ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಹಣ ಕಡಿತವಾಗಿದ್ದರೆ ವಾಲೆಟ್ ಶೀಘ್ರದಲ್ಲೇ ನವೀಕರಣವಾಗುತ್ತದೆ.';
 
   @override
   String get walletFailOpen => 'ಪಾವತಿ ಪರದೆ ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
@@ -2725,8 +2570,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get walletInWalletBody =>
-      'ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ಪಾವತಿ ಪೂರ್ಣಗೊಳಿಸಿ. ಪೂರ್ಣವಾದ ಕೂಡಲೇ ವಾಲೆಟ್ ನವೀಕರಣವಾಗುತ್ತದೆ.';
+  String get walletInWalletBody => 'ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ಪಾವತಿ ಪೂರ್ಣಗೊಳಿಸಿ. ಪೂರ್ಣವಾದ ಕೂಡಲೇ ವಾಲೆಟ್ ನವೀಕರಣವಾಗುತ್ತದೆ.';
 
   @override
   String get walletDemo => 'ಡೆಮೊ ಪಾವತಿ';
@@ -3033,8 +2877,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get attendanceMarkedPresent => 'ನಿಮ್ಮನ್ನು ಹಾಜರು ಎಂದು ದಾಖಲಿಸಲಾಗಿದೆ.';
 
   @override
-  String get attendanceAlreadyMarked =>
-      'ಈ ಅವಧಿಯ ನಿಮ್ಮ ಹಾಜರಾತಿ ಈಗಾಗಲೇ ದಾಖಲಾಗಿದೆ.';
+  String get attendanceAlreadyMarked => 'ಈ ಅವಧಿಯ ನಿಮ್ಮ ಹಾಜರಾತಿ ಈಗಾಗಲೇ ದಾಖಲಾಗಿದೆ.';
 
   @override
   String get dpdpTitle => 'ನನ್ನ ಡೇಟಾ ಹಕ್ಕುಗಳು';
@@ -3046,8 +2889,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get dpdpOfficerTitle => 'ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ';
 
   @override
-  String get dpdpOfficerNone =>
-      'ಇನ್ನೂ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿಯನ್ನು ನೇಮಿಸಿಲ್ಲ. ಶಾಲಾ ಕಚೇರಿಗೆ ಬರೆಯಿರಿ.';
+  String get dpdpOfficerNone => 'ಇನ್ನೂ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿಯನ್ನು ನೇಮಿಸಿಲ್ಲ. ಶಾಲಾ ಕಚೇರಿಗೆ ಬರೆಯಿರಿ.';
 
   @override
   String get dpdpExportTitle => 'ನನ್ನ ಡೇಟಾ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
@@ -3102,12 +2944,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get dpdpEraseSend => 'ಅಳಿಸಲು ಕೋರಿಕೆ ಸಲ್ಲಿಸಿ';
 
   @override
-  String get dpdpEraseConfirm =>
-      'ಶಾಲೆಗೆ ನಿಮ್ಮ ಡೇಟಾ ಅಳಿಸಲು ಕೇಳಬೇಕೇ? ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಡಬೇಕಾದ ದಾಖಲೆಗಳು ಉಳಿಯುತ್ತವೆ.';
+  String get dpdpEraseConfirm => 'ಶಾಲೆಗೆ ನಿಮ್ಮ ಡೇಟಾ ಅಳಿಸಲು ಕೇಳಬೇಕೇ? ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಡಬೇಕಾದ ದಾಖಲೆಗಳು ಉಳಿಯುತ್ತವೆ.';
 
   @override
-  String get dpdpRequestSent =>
-      'ಕೋರಿಕೆ ಕಳುಹಿಸಲಾಗಿದೆ. ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ 30 ದಿನಗಳಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ.';
+  String get dpdpRequestSent => 'ಕೋರಿಕೆ ಕಳುಹಿಸಲಾಗಿದೆ. ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ 30 ದಿನಗಳಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ.';
 
   @override
   String get dpdpRetentionNotice => 'ಈ ದಾಖಲೆಗಳನ್ನು ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಡಬೇಕು:';
@@ -3200,8 +3040,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get peerNone => 'ಪರಿಶೀಲಿಸಲು ನಿಮಗೆ ಇನ್ನೂ ಯಾವುದೇ ಕೆಲಸ ಕೊಟ್ಟಿಲ್ಲ.';
 
   @override
-  String get peerAnonymous =>
-      'ಹೆಸರುಗಳು ಮರೆಯಾಗಿವೆ: ಯಾರು ಬರೆದರು ಎಂದು ನಿಮಗೆ ಗೊತ್ತಿಲ್ಲ, ಯಾರು ಪರಿಶೀಲಿಸಿದರು ಎಂದು ಅವರಿಗೆ ಗೊತ್ತಿಲ್ಲ.';
+  String get peerAnonymous => 'ಹೆಸರುಗಳು ಮರೆಯಾಗಿವೆ: ಯಾರು ಬರೆದರು ಎಂದು ನಿಮಗೆ ಗೊತ್ತಿಲ್ಲ, ಯಾರು ಪರಿಶೀಲಿಸಿದರು ಎಂದು ಅವರಿಗೆ ಗೊತ್ತಿಲ್ಲ.';
 
   @override
   String get peerWork => 'ಕೆಲಸ';
@@ -3240,19 +3079,16 @@ class AppLocalizationsKn extends AppLocalizations {
   String get peerPending => 'ಇನ್ನೂ ಬರಬೇಕಾದ ಪರಿಶೀಲನೆಗಳು';
 
   @override
-  String get peerNoFeedback =>
-      'ಯಾವ ಸಹಪಾಠಿಯೂ ನಿಮ್ಮ ಕೆಲಸವನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ.';
+  String get peerNoFeedback => 'ಯಾವ ಸಹಪಾಠಿಯೂ ನಿಮ್ಮ ಕೆಲಸವನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ.';
 
   @override
   String get myLearningTitle => 'ನನ್ನ ಕಲಿಕೆ';
 
   @override
-  String get myLearningSubtitle =>
-      'ಅಭ್ಯಾಸ, ಕಾರ್ಯಪತ್ರಗಳು, ಹೆಚ್ಚುವರಿ ಸಹಾಯ ಮತ್ತು ಪರೀಕ್ಷಾ ಸಿದ್ಧತೆ';
+  String get myLearningSubtitle => 'ಅಭ್ಯಾಸ, ಕಾರ್ಯಪತ್ರಗಳು, ಹೆಚ್ಚುವರಿ ಸಹಾಯ ಮತ್ತು ಪರೀಕ್ಷಾ ಸಿದ್ಧತೆ';
 
   @override
-  String get myLearningNothing =>
-      'ಇಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ. ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಕಾರ್ಯಪತ್ರ ಮತ್ತು ಅಭ್ಯಾಸ ಸೇರಿಸುತ್ತಾರೆ.';
+  String get myLearningNothing => 'ಇಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ. ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಕಾರ್ಯಪತ್ರ ಮತ್ತು ಅಭ್ಯಾಸ ಸೇರಿಸುತ್ತಾರೆ.';
 
   @override
   String get myLearningPractice => 'ಮುಂದೇನು ಮಾಡಬೇಕು';
@@ -3329,8 +3165,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get deviceTrustTitle => 'ಈ ಫೋನ್';
 
   @override
-  String get deviceTrustNew =>
-      'ಇನ್ನೂ ವಿಶ್ವಾಸಾರ್ಹವಲ್ಲ. ಈ ಫೋನ್‌ನಿಂದ ಸೈನ್-ಇನ್ ಹೊಸದೆಂದು ಗುರುತಿಸದಂತೆ ಇದನ್ನು ವಿಶ್ವಾಸಾರ್ಹ ಮಾಡಿ.';
+  String get deviceTrustNew => 'ಇನ್ನೂ ವಿಶ್ವಾಸಾರ್ಹವಲ್ಲ. ಈ ಫೋನ್‌ನಿಂದ ಸೈನ್-ಇನ್ ಹೊಸದೆಂದು ಗುರುತಿಸದಂತೆ ಇದನ್ನು ವಿಶ್ವಾಸಾರ್ಹ ಮಾಡಿ.';
 
   @override
   String get deviceTrustTrusted => 'ವಿಶ್ವಾಸಾರ್ಹ';
@@ -3358,13 +3193,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String forumReplies(int n) {
-    String _temp0 = intl.Intl.pluralLogic(
-      n,
-      locale: localeName,
-      other: '$n ಉತ್ತರಗಳು',
-      one: '1 ಉತ್ತರ',
-      zero: 'ಉತ್ತರಗಳಿಲ್ಲ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n ಉತ್ತರಗಳು', one: '1 ಉತ್ತರ', zero: 'ಉತ್ತರಗಳಿಲ್ಲ');
     return '$_temp0';
   }
 
@@ -3393,8 +3222,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get pjTabPortfolio => 'ಪೋರ್ಟ್‌ಫೋಲಿಯೋ';
 
   @override
-  String get pjNoneMine =>
-      'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ಯೋಜನೆಯಲ್ಲಿ ಇಲ್ಲ. ಸೇರಲು ತಂಡ ಹುಡುಕಿ.';
+  String get pjNoneMine => 'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ಯೋಜನೆಯಲ್ಲಿ ಇಲ್ಲ. ಸೇರಲು ತಂಡ ಹುಡುಕಿ.';
 
   @override
   String get pjOnShowcase => 'ಪ್ರದರ್ಶನದಲ್ಲಿದೆ';
@@ -3486,12 +3314,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String pjOpenings(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಸ್ಥಾನಗಳು ಖಾಲಿ',
-      one: '1 ಸ್ಥಾನ ಖಾಲಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಸ್ಥಾನಗಳು ಖಾಲಿ', one: '1 ಸ್ಥಾನ ಖಾಲಿ');
     return '$_temp0';
   }
 
@@ -3547,8 +3370,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get pjAddPortfolio => 'ಪೋರ್ಟ್‌ಫೋಲಿಯೋಗೆ ಸೇರಿಸಿ';
 
   @override
-  String get pjPortfolioNote =>
-      'ಪ್ರಕಟಿಸಿದ ಅಂಶಗಳನ್ನು ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಎಲ್ಲರೂ ನೋಡಬಹುದು.';
+  String get pjPortfolioNote => 'ಪ್ರಕಟಿಸಿದ ಅಂಶಗಳನ್ನು ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಎಲ್ಲರೂ ನೋಡಬಹುದು.';
 
   @override
   String get pjNonePortfolio => 'ನಿಮ್ಮ ಪೋರ್ಟ್‌ಫೋಲಿಯೋದಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ.';
@@ -3671,12 +3493,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String pjReviewsSummary(int count, int average) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ವಿಮರ್ಶೆಗಳು',
-      one: '1 ವಿಮರ್ಶೆ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ವಿಮರ್ಶೆಗಳು', one: '1 ವಿಮರ್ಶೆ');
     return '$_temp0, ಸರಾಸರಿ $average%';
   }
 
@@ -3729,8 +3546,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get prepRecs => 'ವೃತ್ತಿ ಶಿಫಾರಸುಗಳು';
 
   @override
-  String get prepRecsSub =>
-      'ನಿಮ್ಮ ಕೌಶಲ್ಯಕ್ಕೆ ಹೊಂದುವ ದಾರಿಗಳು ಮತ್ತು ತುಂಬಬೇಕಾದ ಕೊರತೆಗಳು';
+  String get prepRecsSub => 'ನಿಮ್ಮ ಕೌಶಲ್ಯಕ್ಕೆ ಹೊಂದುವ ದಾರಿಗಳು ಮತ್ತು ತುಂಬಬೇಕಾದ ಕೊರತೆಗಳು';
 
   @override
   String get prepAssistant => 'ವೃತ್ತಿ ಸಹಾಯಕ';
@@ -3802,8 +3618,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get rsSaved => 'ರೆಸ್ಯೂಮೆ ಉಳಿಸಲಾಗಿದೆ';
 
   @override
-  String get rsEntryIncomplete =>
-      'ಅಗತ್ಯ ಕ್ಷೇತ್ರಗಳನ್ನು ತುಂಬಿ (ಲಿಂಕ್ https:// ನಿಂದ ಆರಂಭವಾಗಬೇಕು).';
+  String get rsEntryIncomplete => 'ಅಗತ್ಯ ಕ್ಷೇತ್ರಗಳನ್ನು ತುಂಬಿ (ಲಿಂಕ್ https:// ನಿಂದ ಆರಂಭವಾಗಬೇಕು).';
 
   @override
   String get testsNone => 'ಈಗ ಯಾವುದೇ ಯೋಗ್ಯತಾ ಪರೀಕ್ಷೆ ತೆರೆದಿಲ್ಲ.';
@@ -3825,12 +3640,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String testQuestions(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಪ್ರಶ್ನೆಗಳು',
-      one: '1 ಪ್ರಶ್ನೆ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಪ್ರಶ್ನೆಗಳು', one: '1 ಪ್ರಶ್ನೆ');
     return '$_temp0';
   }
 
@@ -3844,12 +3654,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String testAttempts(int attempts, int best) {
-    String _temp0 = intl.Intl.pluralLogic(
-      attempts,
-      locale: localeName,
-      other: '$attempts ಪ್ರಯತ್ನಗಳು',
-      one: '1 ಪ್ರಯತ್ನ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(attempts, locale: localeName, other: '$attempts ಪ್ರಯತ್ನಗಳು', one: '1 ಪ್ರಯತ್ನ');
     return '$_temp0, ಉತ್ತಮ $best%';
   }
 
@@ -3884,8 +3689,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get testSubmit => 'ಉತ್ತರಗಳನ್ನು ಸಲ್ಲಿಸಿ';
 
   @override
-  String get testLeave =>
-      'ಪರೀಕ್ಷೆ ಬಿಡುವಿರಾ? ಟೈಮರ್ ನಡೆಯುತ್ತಲೇ ಇರುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ.';
+  String get testLeave => 'ಪರೀಕ್ಷೆ ಬಿಡುವಿರಾ? ಟೈಮರ್ ನಡೆಯುತ್ತಲೇ ಇರುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get testStay => 'ಇಲ್ಲೇ ಇರಿ';
@@ -3905,8 +3709,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get testBack => 'ಪರೀಕ್ಷೆಗಳ ಪಟ್ಟಿಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get mockIntro =>
-      'ಪ್ರತಿ ಪ್ರಶ್ನೆಗೆ ಸಂದರ್ಶನದಲ್ಲಿ ಹೇಳುವಂತೆ ನಿಮ್ಮ ಮಾತುಗಳಲ್ಲಿ ಉತ್ತರಿಸಿ. ಪ್ರತಿ ಉತ್ತರಕ್ಕೆ ಅಂಕ ಮತ್ತು ಸಲಹೆಗಳು ಸಿಗುತ್ತವೆ.';
+  String get mockIntro => 'ಪ್ರತಿ ಪ್ರಶ್ನೆಗೆ ಸಂದರ್ಶನದಲ್ಲಿ ಹೇಳುವಂತೆ ನಿಮ್ಮ ಮಾತುಗಳಲ್ಲಿ ಉತ್ತರಿಸಿ. ಪ್ರತಿ ಉತ್ತರಕ್ಕೆ ಅಂಕ ಮತ್ತು ಸಲಹೆಗಳು ಸಿಗುತ್ತವೆ.';
 
   @override
   String get mockIntroCommunication =>
@@ -3963,8 +3766,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get recNone =>
-      'ಇನ್ನೂ ಯಾವುದೇ ವೃತ್ತಿ ದಾರಿ ಇಲ್ಲ. ರೆಸ್ಯೂಮೆಗೆ ಕೌಶಲ್ಯ ಮತ್ತು ಆಸಕ್ತಿಗಳನ್ನು ಸೇರಿಸಿ, ನಂತರ ಮತ್ತೆ ನೋಡಿ.';
+  String get recNone => 'ಇನ್ನೂ ಯಾವುದೇ ವೃತ್ತಿ ದಾರಿ ಇಲ್ಲ. ರೆಸ್ಯೂಮೆಗೆ ಕೌಶಲ್ಯ ಮತ್ತು ಆಸಕ್ತಿಗಳನ್ನು ಸೇರಿಸಿ, ನಂತರ ಮತ್ತೆ ನೋಡಿ.';
 
   @override
   String recFit(int fit) {
@@ -4106,8 +3908,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get alTitle => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿಗಳು';
 
   @override
-  String get alSubtitle =>
-      'ನಿಮ್ಮ ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಪ್ರೊಫೈಲ್, ಕಥೆಗಳು ಮತ್ತು ದೇಣಿಗೆ';
+  String get alSubtitle => 'ನಿಮ್ಮ ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಪ್ರೊಫೈಲ್, ಕಥೆಗಳು ಮತ್ತು ದೇಣಿಗೆ';
 
   @override
   String get alTabProfile => 'ಪ್ರೊಫೈಲ್';
@@ -4145,8 +3946,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get alDirectory => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಡೈರೆಕ್ಟರಿಯಲ್ಲಿ ನನ್ನನ್ನು ತೋರಿಸಿ';
 
   @override
-  String get alDirectoryHelp =>
-      'ಇದು ಆನ್ ಆಗಿದ್ದರೆ ಮಾತ್ರ ವಿದ್ಯಾರ್ಥಿಗಳು ನಿಮ್ಮನ್ನು ಹುಡುಕಬಹುದು.';
+  String get alDirectoryHelp => 'ಇದು ಆನ್ ಆಗಿದ್ದರೆ ಮಾತ್ರ ವಿದ್ಯಾರ್ಥಿಗಳು ನಿಮ್ಮನ್ನು ಹುಡುಕಬಹುದು.';
 
   @override
   String get alMentor => 'ನಾನು ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಮಾರ್ಗದರ್ಶನ ನೀಡಬಲ್ಲೆ';
@@ -4155,8 +3955,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get alSaved => 'ಪ್ರೊಫೈಲ್ ಉಳಿಸಲಾಗಿದೆ';
 
   @override
-  String get storyIntro =>
-      'ನಿಮ್ಮ ಪ್ರಯಾಣದ ಬಗ್ಗೆ ಬರೆಯಿರಿ. ಪ್ರಕಟಿಸುವ ಮೊದಲು ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಕಚೇರಿ ಓದುತ್ತದೆ.';
+  String get storyIntro => 'ನಿಮ್ಮ ಪ್ರಯಾಣದ ಬಗ್ಗೆ ಬರೆಯಿರಿ. ಪ್ರಕಟಿಸುವ ಮೊದಲು ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಕಚೇರಿ ಓದುತ್ತದೆ.';
 
   @override
   String get storyNone => 'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ಕಥೆ ಬರೆದಿಲ್ಲ.';
@@ -4183,8 +3982,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get storySubmitted => 'ಪರಿಶೀಲನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ';
 
   @override
-  String get storyUnderReview =>
-      'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಕಚೇರಿ ಇದನ್ನು ಪರಿಶೀಲಿಸುತ್ತಿದೆ.';
+  String get storyUnderReview => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಕಚೇರಿ ಇದನ್ನು ಪರಿಶೀಲಿಸುತ್ತಿದೆ.';
 
   @override
   String storyReviewNote(Object note) {
@@ -4320,8 +4118,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get tutorNext => 'ಮುಂದೆ ಅಭ್ಯಾಸ ಮಾಡಿ';
 
   @override
-  String get tutorPreview =>
-      'ಇದು ಮಾದರಿ ಉತ್ತರ: ಇನ್ನೂ ಯಾವ AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ.';
+  String get tutorPreview => 'ಇದು ಮಾದರಿ ಉತ್ತರ: ಇನ್ನೂ ಯಾವ AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ.';
 
   @override
   String get mealRateTitle => 'ಊಟಕ್ಕೆ ರೇಟಿಂಗ್ ನೀಡಿ';
@@ -4518,8 +4315,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get inboxTitle => 'ಪ್ರಕಟಣೆಗಳು';
 
   @override
-  String get inboxEmpty =>
-      'ಇನ್ನೂ ಪ್ರಕಟಣೆಗಳಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸೂಚನೆಗಳು ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.';
+  String get inboxEmpty => 'ಇನ್ನೂ ಪ್ರಕಟಣೆಗಳಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸೂಚನೆಗಳು ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.';
 
   @override
   String get inboxPinned => 'ಪಿನ್ ಮಾಡಿದವು';
@@ -4535,18 +4331,12 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String inboxFileCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಫೈಲ್‌ಗಳು',
-      one: '1 ಫೈಲ್',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಫೈಲ್‌ಗಳು', one: '1 ಫೈಲ್');
     return '$_temp0';
   }
 
   @override
-  String get inboxFileFailed =>
-      'ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. ಫೋಟೋ ಅಥವಾ PDF ತೆರೆಯುವ ಆ್ಯಪ್ ಸ್ಥಾಪಿಸಿ.';
+  String get inboxFileFailed => 'ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. ಫೋಟೋ ಅಥವಾ PDF ತೆರೆಯುವ ಆ್ಯಪ್ ಸ್ಥಾಪಿಸಿ.';
 
   @override
   String inboxFrom(String name) {
@@ -4574,12 +4364,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String inboxUnread(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಓದದವು',
-      one: '1 ಓದದ್ದು',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಓದದವು', one: '1 ಓದದ್ದು');
     return '$_temp0';
   }
 
@@ -4628,8 +4413,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get chatClosedFamily =>
-      'ಸಂಸ್ಥೆ ಈ ಸಂಭಾಷಣೆಯನ್ನು ಮುಚ್ಚಿದೆ. ಸಹಾಯ ಬೇಕಿದ್ದರೆ ಸಂದೇಶಗಳಲ್ಲಿ ಹೊಸದನ್ನು ಆರಂಭಿಸಿ.';
+  String get chatClosedFamily => 'ಸಂಸ್ಥೆ ಈ ಸಂಭಾಷಣೆಯನ್ನು ಮುಚ್ಚಿದೆ. ಸಹಾಯ ಬೇಕಿದ್ದರೆ ಸಂದೇಶಗಳಲ್ಲಿ ಹೊಸದನ್ನು ಆರಂಭಿಸಿ.';
 
   @override
   String get chatOfficeHint => 'ಶುಲ್ಕ, ಪ್ರಮಾಣಪತ್ರ, ಸಾರಿಗೆ ಮತ್ತು ಇತರ ಎಲ್ಲವೂ';
@@ -4643,4 +4427,871 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get resultWithheldBody =>
       'ಈ ಫಲಿತಾಂಶವನ್ನು ಪರೀಕ್ಷಾ ಕಚೇರಿ ತಡೆಹಿಡಿದಿದೆ. ಕಾರಣ ಮತ್ತು ಮುಂದೇನು ಮಾಡಬೇಕು ಎಂದು ತಿಳಿಯಲು ಕಚೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.';
+
+  @override
+  String resultWithheldReason(String reason) {
+    return 'ಕಾರಣ: $reason';
+  }
+
+  @override
+  String hwPenaltyApplied(String pct) {
+    return 'ತಡವಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ: ಅಂಕಗಳಲ್ಲಿ $pct% ಕಡಿತವಾಗುತ್ತದೆ.';
+  }
+
+  @override
+  String hwMarksLine(String marks) {
+    return 'ಅಂಕಗಳು: $marks';
+  }
+
+  @override
+  String get hwLateRejected => 'ನಿಗದಿತ ಸಮಯದ ನಂತರ ತಡವಾದ ಕೆಲಸವನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ.';
+
+  @override
+  String hwLatePenalty(String pct) {
+    return 'ತಡವಾದ ಕೆಲಸಕ್ಕೆ ಅಂಕಗಳಲ್ಲಿ $pct% ಕಡಿತವಾಗುತ್ತದೆ.';
+  }
+
+  @override
+  String get hwLateAccepted => 'ತಡವಾದ ಕೆಲಸವನ್ನು ಸ್ವೀಕರಿಸಲಾಗುತ್ತದೆ, ಆದರೆ ತಡ ಎಂದು ಗುರುತಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String hwLateNow(String policy) {
+    return 'ನಿಗದಿತ ಸಮಯ ಮೀರಿದೆ. $policy';
+  }
+
+  @override
+  String get hwClosed => 'ಈ ನಿಯೋಜನೆಗೆ ಇನ್ನು ಸಲ್ಲಿಕೆ ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ.';
+
+  @override
+  String hwCutoff(String when) {
+    return 'ತಡವಾದ ಕೆಲಸಕ್ಕೆ ಕೊನೆಯ ಸಮಯ: $when';
+  }
+
+  @override
+  String hwDueAt(String when) {
+    return '$when ರೊಳಗೆ ಸಲ್ಲಿಸಿ';
+  }
+
+  @override
+  String hwGroupWith(String group, String names) {
+    return 'ಗುಂಪು ಕೆಲಸ ($group), ಜೊತೆಗೆ $names. ಒಂದು ಸಲ್ಲಿಕೆ ಎಲ್ಲರಿಗೂ ಎಣಿಕೆಯಾಗುತ್ತದೆ.';
+  }
+
+  @override
+  String hwGroupAlone(String group) {
+    return 'ಗುಂಪು ಕೆಲಸ ($group).';
+  }
+
+  @override
+  String hwAttemptsUsed(int used, int max) {
+    return '$max ರಲ್ಲಿ $used ಸಲ್ಲಿಕೆಗಳು ಬಳಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get qzTitle => 'ಆನ್‌ಲೈನ್ ಕ್ವಿಜ್‌ಗಳು';
+
+  @override
+  String get qzSubtitle => 'ಶಿಕ್ಷಕರ ಸಮಯಬದ್ಧ ಕ್ವಿಜ್‌ಗಳು';
+
+  @override
+  String get qzEmpty => 'ನಿಮ್ಮ ತರಗತಿಗೆ ಇನ್ನೂ ಯಾವುದೇ ಕ್ವಿಜ್ ಇಲ್ಲ.';
+
+  @override
+  String get qzOpenNow => 'ಈಗ ತೆರೆದಿವೆ';
+
+  @override
+  String get qzComingUp => 'ಮುಂಬರುವ';
+
+  @override
+  String get qzDone => 'ಮುಗಿದಿವೆ';
+
+  @override
+  String qzMinutes(int n) {
+    return '$n ನಿಮಿಷ';
+  }
+
+  @override
+  String qzAttemptsLeft(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ಪ್ರಯತ್ನಗಳು ಉಳಿದಿವೆ',
+      one: '1 ಪ್ರಯತ್ನ ಉಳಿದಿದೆ',
+      zero: 'ಯಾವುದೇ ಪ್ರಯತ್ನ ಉಳಿದಿಲ್ಲ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String qzBest(String score) {
+    return 'ಅತ್ಯುತ್ತಮ $score';
+  }
+
+  @override
+  String get qzBeingMarked => 'ಮೌಲ್ಯಮಾಪನ ನಡೆಯುತ್ತಿದೆ';
+
+  @override
+  String qzOpensAt(String when) {
+    return '$when ರಂದು ತೆರೆಯುತ್ತದೆ';
+  }
+
+  @override
+  String qzClosesAt(String when) {
+    return '$when ರಂದು ಮುಚ್ಚುತ್ತದೆ';
+  }
+
+  @override
+  String qzClosedAt(String when) {
+    return '$when ರಂದು ಮುಚ್ಚಿದೆ';
+  }
+
+  @override
+  String qzAttemptScore(int n, String score, String max) {
+    return 'ಪ್ರಯತ್ನ $n: $max ರಲ್ಲಿ $score';
+  }
+
+  @override
+  String qzAttemptMarking(int n) {
+    return 'ಪ್ರಯತ್ನ $n: ಮೌಲ್ಯಮಾಪನ ನಡೆಯುತ್ತಿದೆ';
+  }
+
+  @override
+  String get qzStart => 'ಪ್ರಾರಂಭಿಸಿ';
+
+  @override
+  String get qzResume => 'ಮುಂದುವರಿಸಿ';
+
+  @override
+  String get qzNoAttemptsLeft => 'ಯಾವುದೇ ಪ್ರಯತ್ನ ಉಳಿದಿಲ್ಲ';
+
+  @override
+  String qzStartRules(int minutes, int left) {
+    return 'ಪ್ರಾರಂಭಿಸಿದ ನಂತರ ನಿಮಗೆ $minutes ನಿಮಿಷಗಳಿವೆ, ಮತ್ತು ನೀವು ಹೊರಹೋದರೂ ಗಡಿಯಾರ ಓಡುತ್ತಲೇ ಇರುತ್ತದೆ. ಉಳಿದ ಪ್ರಯತ್ನಗಳು: $left.';
+  }
+
+  @override
+  String get qzSaved => 'ಉತ್ತರಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get qzSaving => 'ಉಳಿಸಲಾಗುತ್ತಿದೆ…';
+
+  @override
+  String get qzSaveFailed => 'ಇನ್ನೂ ಉಳಿಸಲಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲಾಗುತ್ತಿದೆ.';
+
+  @override
+  String get qzNoQuestions => 'ಈ ಕ್ವಿಜ್‌ನಲ್ಲಿ ಯಾವುದೇ ಪ್ರಶ್ನೆ ಇಲ್ಲ.';
+
+  @override
+  String qzQuestionOf(int n, int total) {
+    return 'ಪ್ರಶ್ನೆ $n / $total';
+  }
+
+  @override
+  String qzMarks(String marks) {
+    return '$marks ಅಂಕಗಳು';
+  }
+
+  @override
+  String get qzPickAll => 'ಎಲ್ಲ ಸರಿಯಾದ ಉತ್ತರಗಳನ್ನು ಆರಿಸಿ';
+
+  @override
+  String get qzPrevious => 'ಹಿಂದಿನದು';
+
+  @override
+  String get qzNext => 'ಮುಂದಿನದು';
+
+  @override
+  String get qzSubmit => 'ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get qzSubmitTitle => 'ಕ್ವಿಜ್ ಸಲ್ಲಿಸುವುದೇ?';
+
+  @override
+  String get qzSubmitAll => 'ನೀವು ಎಲ್ಲ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿದ್ದೀರಿ. ಸಲ್ಲಿಸಿದ ನಂತರ ಉತ್ತರಗಳನ್ನು ಬದಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.';
+
+  @override
+  String qzSubmitMissing(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿಲ್ಲ.', one: '1 ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಿಲ್ಲ.');
+    return '$_temp0 ಸಲ್ಲಿಸಿದ ನಂತರ ಉತ್ತರಗಳನ್ನು ಬದಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.';
+  }
+
+  @override
+  String get qzKeepGoing => 'ಮುಂದುವರಿಸಿ';
+
+  @override
+  String get qzTimeUpSubmitted => 'ಸಮಯ ಮುಗಿದಿದೆ. ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಸಲ್ಲಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get qzLeaveTitle => 'ಕ್ವಿಜ್ ಬಿಡುವುದೇ?';
+
+  @override
+  String get qzLeaveBody => 'ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ, ಆದರೆ ಗಡಿಯಾರ ಓಡುತ್ತಲೇ ಇರುತ್ತದೆ. ಮುಗಿಸಲು ಸಮಯ ಮುಗಿಯುವ ಮೊದಲು ಹಿಂತಿರುಗಿ.';
+
+  @override
+  String get qzLeave => 'ಬಿಡಿ';
+
+  @override
+  String get qzYourAnswer => 'ನಿಮ್ಮ ಉತ್ತರ';
+
+  @override
+  String qzYourCode(String language) {
+    return 'ನಿಮ್ಮ ಕೋಡ್ ($language)';
+  }
+
+  @override
+  String get qzCodeNote => 'ಸಲ್ಲಿಸಿದಾಗ ನಿಮ್ಮ ಕೋಡ್ ಅನ್ನು ಶಿಕ್ಷಕರ ಪರೀಕ್ಷೆಗಳಲ್ಲಿ ಚಲಾಯಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get qzResultTitle => 'ಕ್ವಿಜ್ ಫಲಿತಾಂಶ';
+
+  @override
+  String qzScoreOf(String score, String max) {
+    return '$score / $max';
+  }
+
+  @override
+  String get qzNeedsMarking => 'ಒಂದು ಕೋಡಿಂಗ್ ಉತ್ತರವನ್ನು ಶಿಕ್ಷಕರು ಇನ್ನೂ ಮೌಲ್ಯಮಾಪನ ಮಾಡಬೇಕಿದೆ.';
+
+  @override
+  String get qzReview => 'ಪ್ರಶ್ನೆವಾರು';
+
+  @override
+  String get qzToBeMarked => 'ಮೌಲ್ಯಮಾಪನ ಬಾಕಿ';
+
+  @override
+  String get qzCorrect => 'ಸರಿ';
+
+  @override
+  String get qzWrong => 'ಸರಿಯಲ್ಲ';
+
+  @override
+  String qzMarksOf(String got, String max) {
+    return '$max ರಲ್ಲಿ $got ಅಂಕಗಳು';
+  }
+
+  @override
+  String get elTitle => 'ಪರಿಷತ್ ಚುನಾವಣೆಗಳು';
+
+  @override
+  String get elSubtitle => 'ಮತ ಚಲಾಯಿಸಿ, ಫಲಿತಾಂಶ ನೋಡಿ';
+
+  @override
+  String get elEmpty => 'ಈಗ ನಿಮಗೆ ಯಾವುದೇ ಚುನಾವಣೆ ಇಲ್ಲ.';
+
+  @override
+  String get elResultsOut => 'ಫಲಿತಾಂಶ ಪ್ರಕಟವಾಗಿದೆ.';
+
+  @override
+  String elVotingWindow(String from, String to) {
+    return 'ಮತದಾನ $from ರಿಂದ $to ರವರೆಗೆ';
+  }
+
+  @override
+  String get elAlreadyVoted => 'ನೀವು ಮತ ಚಲಾಯಿಸಿದ್ದೀರಿ. ಸಮಿತಿ ಪ್ರಕಟಿಸಿದಾಗ ಫಲಿತಾಂಶ ಬರುತ್ತದೆ.';
+
+  @override
+  String get elVoteNow => 'ಈಗ ಮತ ಚಲಾಯಿಸಿ';
+
+  @override
+  String get elNotOpen => 'ಈಗ ಮತದಾನ ತೆರೆದಿಲ್ಲ.';
+
+  @override
+  String get elElected => 'ಆಯ್ಕೆಯಾಗಿದ್ದಾರೆ';
+
+  @override
+  String elVotes(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n ಮತಗಳು', one: '1 ಮತ');
+    return '$_temp0';
+  }
+
+  @override
+  String get elNoCandidates => 'ಈ ಸ್ಥಾನಕ್ಕೆ ಯಾವುದೇ ಅಭ್ಯರ್ಥಿ ಇಲ್ಲ.';
+
+  @override
+  String elMaxPicks(int n) {
+    return 'ಈ ಸ್ಥಾನಕ್ಕೆ ನೀವು ಗರಿಷ್ಠ $n ಆರಿಸಬಹುದು.';
+  }
+
+  @override
+  String get elConfirmTitle => 'ನಿಮ್ಮ ಮತ ಚಲಾಯಿಸುವುದೇ?';
+
+  @override
+  String get elNoChoice => 'ಆಯ್ಕೆ ಇಲ್ಲ';
+
+  @override
+  String get elSkippedNote => 'ನೀವು ಎಲ್ಲ ಸ್ಥಾನಗಳಿಗೆ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ.';
+
+  @override
+  String get elFinalNote => 'ನೀವು ಒಮ್ಮೆ ಮಾತ್ರ ಮತ ಚಲಾಯಿಸುತ್ತೀರಿ. ಇದರ ನಂತರ ಬದಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.';
+
+  @override
+  String get elChange => 'ಬದಲಿಸಿ';
+
+  @override
+  String get elCast => 'ಮತ ಚಲಾಯಿಸಿ';
+
+  @override
+  String get elVoted => 'ನಿಮ್ಮ ಮತ ಚಲಾಯಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get elSecretNote => 'ನಿಮ್ಮ ಮತ ರಹಸ್ಯ: ನೀವು ಮತ ಚಲಾಯಿಸಿದ್ದೀರಿ ಎಂಬುದನ್ನು ಮಾತ್ರ ಕಾಲೇಜು ದಾಖಲಿಸುತ್ತದೆ, ಯಾರನ್ನು ಆರಿಸಿದಿರಿ ಎಂಬುದನ್ನಲ್ಲ.';
+
+  @override
+  String get elPickOne => 'ಒಬ್ಬರನ್ನು ಆರಿಸಿ';
+
+  @override
+  String elPickUpTo(int n) {
+    return 'ಗರಿಷ್ಠ $n ಆರಿಸಿ';
+  }
+
+  @override
+  String get elReview => 'ಪರಿಶೀಲಿಸಿ ಮತ ಚಲಾಯಿಸಿ';
+
+  @override
+  String get libCatalogue => 'ಗ್ರಂಥಾಲಯ ಪಟ್ಟಿ';
+
+  @override
+  String get libSearchHint => 'ಶೀರ್ಷಿಕೆ, ಲೇಖಕ, ವಿಷಯ ಅಥವಾ ಐಎಸ್‌ಬಿಎನ್';
+
+  @override
+  String get libClear => 'ತೆರವುಗೊಳಿಸಿ';
+
+  @override
+  String get libOnShelfOnly => 'ಈಗ ಕಪಾಟಿನಲ್ಲಿವೆ';
+
+  @override
+  String get libMyReservations => 'ನನ್ನ ಕಾಯ್ದಿರಿಸುವಿಕೆಗಳು';
+
+  @override
+  String get libReadyPickUp => 'ಸಿದ್ಧ: ಕೌಂಟರ್‌ನಲ್ಲಿ ಪಡೆಯಿರಿ.';
+
+  @override
+  String libReadyUntil(String when) {
+    return 'ಸಿದ್ಧ: $when ರೊಳಗೆ ಕೌಂಟರ್‌ನಲ್ಲಿ ಪಡೆಯಿರಿ.';
+  }
+
+  @override
+  String libQueuePlace(int n) {
+    return 'ಸಾಲಿನಲ್ಲಿ $nನೇ ಸ್ಥಾನ';
+  }
+
+  @override
+  String get libSearchPrompt => 'ಪುಸ್ತಕ ಹುಡುಕಲು ಮತ್ತು ಅದು ಕಪಾಟಿನಲ್ಲಿದೆಯೇ ಎಂದು ನೋಡಲು ಪಟ್ಟಿಯಲ್ಲಿ ಹುಡುಕಿ.';
+
+  @override
+  String get libNoMatch => 'ನಿಮ್ಮ ಹುಡುಕಾಟಕ್ಕೆ ಯಾವುದೇ ಪುಸ್ತಕ ಹೊಂದುತ್ತಿಲ್ಲ.';
+
+  @override
+  String libResults(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n ಪುಸ್ತಕಗಳು', one: '1 ಪುಸ್ತಕ');
+    return '$_temp0';
+  }
+
+  @override
+  String get libMore => 'ಇನ್ನಷ್ಟು ತೋರಿಸಿ';
+
+  @override
+  String libOnShelf(int available, int copies) {
+    return '$copies ರಲ್ಲಿ $available ಕಪಾಟಿನಲ್ಲಿವೆ';
+  }
+
+  @override
+  String get libAllOut => 'ಎಲ್ಲ ಪ್ರತಿಗಳು ಹೊರಗಿವೆ';
+
+  @override
+  String get libInQueue => 'ನೀವು ಸಾಲಿನಲ್ಲಿದ್ದೀರಿ';
+
+  @override
+  String get libReserve => 'ಕಾಯ್ದಿರಿಸಿ';
+
+  @override
+  String get libReserved => 'ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ. ಪ್ರತಿ ಸಿದ್ಧವಾದಾಗ ನಿಮಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get libReservationCancelled => 'ಕಾಯ್ದಿರಿಸುವಿಕೆ ರದ್ದಾಗಿದೆ.';
+
+  @override
+  String get libSelfCheckout => 'ಸ್ವಯಂ ಪುಸ್ತಕ ಪಡೆಯಿರಿ';
+
+  @override
+  String get libSelfCheckoutHelp =>
+      'ಸ್ವಯಂ ಪುಸ್ತಕ ಪಡೆಯುವ ಕೌಂಟರ್‌ನಲ್ಲಿ ಪುಸ್ತಕದ ಬಾರ್‌ಕೋಡ್ ಕೆಳಗೆ ಮುದ್ರಿಸಿರುವ ಸಂಖ್ಯೆಯನ್ನು ಬರೆಯಿರಿ. ಪುಸ್ತಕ ನಿಮ್ಮ ಗ್ರಂಥಾಲಯ ಕಾರ್ಡ್‌ಗೆ ಸೇರುತ್ತದೆ.';
+
+  @override
+  String get libCopyCode => 'ಪುಸ್ತಕದ ಸಂಖ್ಯೆ';
+
+  @override
+  String get libBorrow => 'ಎರವಲು ಪಡೆಯಿರಿ';
+
+  @override
+  String libBorrowedDue(String day) {
+    return 'ಎರವಲು ಪಡೆಯಲಾಗಿದೆ. $day ರೊಳಗೆ ಹಿಂದಿರುಗಿಸಿ.';
+  }
+
+  @override
+  String get gatePassParentPending => 'ನಿಮ್ಮ ಕುಟುಂಬದ ಅನುಮೋದನೆ ಬಾಕಿ';
+
+  @override
+  String get hsTitle => 'ವಸತಿ ನಿಲಯ';
+
+  @override
+  String get hsSubtitle => 'ಕೊಠಡಿ, ಹೊರಹೋಗುವ ಪಾಸ್, ಮೆಸ್ ಬಿಲ್ ಮತ್ತು ಮನವಿಗಳು';
+
+  @override
+  String get hsNoSeat => 'ನಿಮಗೆ ವಸತಿ ನಿಲಯದಲ್ಲಿ ಸ್ಥಳವಿಲ್ಲ. ಕೆಳಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ; ವಾರ್ಡನ್ ದೂರ ಮತ್ತು ಅಗತ್ಯದ ಪ್ರಕಾರ ಹಾಸಿಗೆ ನೀಡುತ್ತಾರೆ.';
+
+  @override
+  String hsApplicationOpen(String number) {
+    return 'ನಿಮ್ಮ ಅರ್ಜಿ $number ವಾರ್ಡನ್ ಬಳಿ ಇದೆ.';
+  }
+
+  @override
+  String get hsApplyForSeat => 'ವಸತಿ ನಿಲಯದ ಸ್ಥಳಕ್ಕೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get hsApplied => 'ಅರ್ಜಿಯನ್ನು ವಾರ್ಡನ್‌ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get hsApplications => 'ನನ್ನ ಅರ್ಜಿಗಳು';
+
+  @override
+  String hsBed(String bed) {
+    return 'ಹಾಸಿಗೆ $bed';
+  }
+
+  @override
+  String get hsMessLeave => 'ಮೆಸ್ ರಜೆ';
+
+  @override
+  String get hsMessLeaveSent => 'ಮೆಸ್‌ಗೆ ತಿಳಿಸಲಾಗಿದೆ. ಹೊರಗಿರುವ ದಿನಗಳನ್ನು ನಿಮ್ಮ ಬಿಲ್‌ನಿಂದ ಕಡಿತಗೊಳಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get hsChangeOrVacate => 'ಕೊಠಡಿ ಬದಲಿಸಿ ಅಥವಾ ಖಾಲಿ ಮಾಡಿ';
+
+  @override
+  String get hsRequestWaiting => 'ಒಂದು ಮನವಿ ಈಗಾಗಲೇ ವಾರ್ಡನ್ ಬಳಿ ಇದೆ.';
+
+  @override
+  String get hsRequestSent => 'ಮನವಿಯನ್ನು ವಾರ್ಡನ್‌ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get hsRequests => 'ಕೊಠಡಿ ಮನವಿಗಳು';
+
+  @override
+  String get hsVacate => 'ಖಾಲಿ ಮಾಡುವುದು';
+
+  @override
+  String get hsRoomChange => 'ಕೊಠಡಿ ಬದಲಾವಣೆ';
+
+  @override
+  String hsFrom(String day) {
+    return '$day ರಿಂದ';
+  }
+
+  @override
+  String get hsMessBills => 'ಮೆಸ್ ಬಿಲ್‌ಗಳು';
+
+  @override
+  String get hsNoBills => 'ಇನ್ನೂ ಯಾವುದೇ ಮೆಸ್ ಬಿಲ್ ಇಲ್ಲ.';
+
+  @override
+  String get hsMessLeaves => 'ಮೆಸ್ ರಜೆ';
+
+  @override
+  String get hsAppApproved => 'ಅನುಮೋದಿಸಲಾಗಿದೆ';
+
+  @override
+  String get hsAppWaitlisted => 'ಕಾಯುವ ಪಟ್ಟಿ';
+
+  @override
+  String get hsAppAllotted => 'ಹಾಸಿಗೆ ಹಂಚಿಕೆಯಾಗಿದೆ';
+
+  @override
+  String get hsAppRejected => 'ಅನುಮೋದನೆ ಇಲ್ಲ';
+
+  @override
+  String get hsAppWithdrawn => 'ಹಿಂಪಡೆಯಲಾಗಿದೆ';
+
+  @override
+  String get hsAppApplied => 'ಅರ್ಜಿ ಸಲ್ಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get hsApproved => 'ಅನುಮೋದಿಸಲಾಗಿದೆ';
+
+  @override
+  String get hsRejected => 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get hsCancelled => 'ರದ್ದಾಗಿದೆ';
+
+  @override
+  String get hsPending => 'ಬಾಕಿ ಇದೆ';
+
+  @override
+  String hsBillDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: 'ಮೆಸ್ ಯೋಜನೆಯಲ್ಲಿ $n ದಿನಗಳು', one: 'ಮೆಸ್ ಯೋಜನೆಯಲ್ಲಿ 1 ದಿನ');
+    return '$_temp0';
+  }
+
+  @override
+  String hsBillRebate(int days, String amount) {
+    return 'ಹೊರಗಿದ್ದ $days ದಿನಗಳ ರಿಯಾಯಿತಿ: $amount';
+  }
+
+  @override
+  String get hsBillCharged => 'ನಿಮ್ಮ ಶುಲ್ಕಕ್ಕೆ ಸೇರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get hsBillDraft => 'ಲೆಕ್ಕ ಹಾಕಲಾಗುತ್ತಿದೆ';
+
+  @override
+  String get hsPickGender => 'ಕೊಠಡಿ ಯಾರಿಗೆ ಎಂದು ಆರಿಸಿ.';
+
+  @override
+  String get hsDistanceNumber => 'ದೂರವನ್ನು ಕಿಲೋಮೀಟರ್‌ಗಳ ಸಂಖ್ಯೆಯಾಗಿ ನೀಡಿ.';
+
+  @override
+  String get hsApplySend => 'ಅರ್ಜಿ ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get hsGender => 'ಕೊಠಡಿ ಯಾರಿಗೆ';
+
+  @override
+  String get hsGenderFemale => 'ವಿದ್ಯಾರ್ಥಿನಿಯರು';
+
+  @override
+  String get hsGenderMale => 'ವಿದ್ಯಾರ್ಥಿಗಳು';
+
+  @override
+  String get hsGenderOther => 'ಇತರೆ';
+
+  @override
+  String get hsDistance => 'ಮನೆಯಿಂದ ದೂರ';
+
+  @override
+  String get hsKm => 'ಕಿ.ಮೀ.';
+
+  @override
+  String get hsNeeds => 'ವಾರ್ಡನ್ ತಿಳಿಯಬೇಕಾದದ್ದು (ಆರೋಗ್ಯ, ಪ್ರವೇಶ ಸೌಲಭ್ಯ)';
+
+  @override
+  String get hsEndBeforeStart => 'ಕೊನೆಯ ದಿನ ಮೊದಲ ದಿನಕ್ಕಿಂತ ಮುಂಚಿತವಾಗಿದೆ.';
+
+  @override
+  String get hsSend => 'ಕಳುಹಿಸಿ';
+
+  @override
+  String get hsMessLeaveHelp => 'ಹೋಗುವ ಮೊದಲು ಮೆಸ್‌ಗೆ ತಿಳಿಸಿ: ಹೊರಗಿರುವ ದಿನಗಳನ್ನು ತಿಂಗಳ ಬಿಲ್‌ನಿಂದ ಕಡಿತಗೊಳಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get hsFromDate => 'ಹೊರಗಿರುವ ಮೊದಲ ದಿನ';
+
+  @override
+  String get hsToDate => 'ಹೊರಗಿರುವ ಕೊನೆಯ ದಿನ';
+
+  @override
+  String get hsReasonOptional => 'ಕಾರಣ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get hsReasonNeeded => 'ಕೆಲವು ಪದಗಳಲ್ಲಿ ಕಾರಣ ತಿಳಿಸಿ.';
+
+  @override
+  String get hsEffectiveOn => 'ಯಾವಾಗಿನಿಂದ';
+
+  @override
+  String get hsReason => 'ಕಾರಣ';
+
+  @override
+  String get trChangeSent => 'ಮನವಿಯನ್ನು ಸಾರಿಗೆ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get trBusPass => 'ಬಸ್ ಪಾಸ್';
+
+  @override
+  String get trChangeStop => 'ನನ್ನ ನಿಲ್ದಾಣ ಬದಲಿಸಿ';
+
+  @override
+  String get trAskForStop => 'ಬಸ್ ನಿಲ್ದಾಣಕ್ಕೆ ಮನವಿ ಮಾಡಿ';
+
+  @override
+  String get trChangeRequests => 'ನಿಲ್ದಾಣ ಬದಲಾವಣೆ ಮನವಿಗಳು';
+
+  @override
+  String get trNewStop => 'ಹೊಸ ನಿಲ್ದಾಣ';
+
+  @override
+  String trFromDay(String day) {
+    return '$day ರಿಂದ';
+  }
+
+  @override
+  String trFeeMore(String amount) {
+    return 'ತಿಂಗಳಿಗೆ $amount ಹೆಚ್ಚು';
+  }
+
+  @override
+  String trFeeLess(String amount) {
+    return 'ತಿಂಗಳಿಗೆ $amount ಕಡಿಮೆ';
+  }
+
+  @override
+  String get trApproved => 'ಅನುಮೋದಿಸಲಾಗಿದೆ';
+
+  @override
+  String get trRejected => 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get trCancelled => 'ರದ್ದಾಗಿದೆ';
+
+  @override
+  String get trPending => 'ಬಾಕಿ ಇದೆ';
+
+  @override
+  String get trPickStop => 'ಹೊಸ ನಿಲ್ದಾಣ ಆರಿಸಿ.';
+
+  @override
+  String get trReasonNeeded => 'ಕೆಲವು ಪದಗಳಲ್ಲಿ ಕಾರಣ ತಿಳಿಸಿ.';
+
+  @override
+  String get trNoRoutes => 'ಯಾವುದೇ ಬಸ್ ಮಾರ್ಗ ಓಡುತ್ತಿಲ್ಲ.';
+
+  @override
+  String get trPickStopHelp => 'ಕೆಳಗಿನ ದಿನಾಂಕದಿಂದ ಬಳಸಲು ಬಯಸುವ ನಿಲ್ದಾಣ ಆರಿಸಿ.';
+
+  @override
+  String trPickupAt(String time) {
+    return 'ಹತ್ತುವ ಸಮಯ $time';
+  }
+
+  @override
+  String trMonthlyFee(String amount) {
+    return 'ತಿಂಗಳಿಗೆ $amount';
+  }
+
+  @override
+  String get trYourStopNow => 'ಈಗಿನ ನಿಮ್ಮ ನಿಲ್ದಾಣ';
+
+  @override
+  String get trFrom => 'ಯಾವಾಗಿನಿಂದ';
+
+  @override
+  String get trReason => 'ಕಾರಣ';
+
+  @override
+  String get trFeeNote => 'ಹೊಸ ನಿಲ್ದಾಣದ ಶುಲ್ಕ ಹೆಚ್ಚು ಅಥವಾ ಕಡಿಮೆ ಇದ್ದರೆ, ವ್ಯತ್ಯಾಸವನ್ನು ಆ ದಿನಾಂಕದಿಂದ ವಿಧಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get trSendRequest => 'ಮನವಿ ಕಳುಹಿಸಿ';
+
+  @override
+  String get atBySubject => 'ವಿಷಯವಾರು ಹಾಜರಾತಿ';
+
+  @override
+  String get atLeaveOnDuty => 'ರಜೆ ಮತ್ತು ಕರ್ತವ್ಯದ ಮೇಲೆ';
+
+  @override
+  String get atLeaveOnDutySub => 'ಹಾಜರಾತಿಗಾಗಿ, ದಾಖಲೆಯೊಂದಿಗೆ';
+
+  @override
+  String atRuleBody(String pct, String body) {
+    return '$body ನಿಯಮಗಳ ಪ್ರಕಾರ ನಿಮಗೆ ಕನಿಷ್ಠ $pct% ಬೇಕು.';
+  }
+
+  @override
+  String atRuleOwn(String pct) {
+    return 'ಕಾಲೇಜಿನ ನಿಯಮಗಳ ಪ್ರಕಾರ ನಿಮಗೆ ಕನಿಷ್ಠ $pct% ಬೇಕು.';
+  }
+
+  @override
+  String get atPerSubjectRule => 'ಕನಿಷ್ಠ ಮಿತಿ ಪ್ರತಿಯೊಂದು ವಿಷಯಕ್ಕೂ ಪ್ರತ್ಯೇಕವಾಗಿ ಅನ್ವಯಿಸುತ್ತದೆ.';
+
+  @override
+  String get atSubjects => 'ವಿಷಯಗಳು';
+
+  @override
+  String get atNoSubjects => 'ಇನ್ನೂ ಯಾವುದೇ ತರಗತಿ ದಾಖಲಾಗಿಲ್ಲ.';
+
+  @override
+  String get atDetained => 'ಮನ್ನಾ ಮಾಡಬಹುದಾದ ಮಿತಿಗಿಂತಲೂ ನಿಮ್ಮ ಹಾಜರಾತಿ ಕಡಿಮೆ ಇದೆ. ಈಗಲೇ ನಿಮ್ಮ ತರಗತಿ ಶಿಕ್ಷಕರನ್ನು ಭೇಟಿಯಾಗಿ.';
+
+  @override
+  String atShortOverall(String pct) {
+    return 'ನೀವು $pct% ಕ್ಕಿಂತ ಕಡಿಮೆ ಇದ್ದೀರಿ. ಕೊರತೆ ತುಂಬಲು ಪ್ರತಿ ತರಗತಿಗೆ ಹಾಜರಾಗಿ.';
+  }
+
+  @override
+  String atShortIn(String subjects) {
+    return '$subjects ನಲ್ಲಿ ಹಾಜರಾತಿ ಕಡಿಮೆ ಇದೆ.';
+  }
+
+  @override
+  String atClose(String pct) {
+    return '$pct% ಕನಿಷ್ಠ ಮಿತಿಯ ಹತ್ತಿರ. ತರಗತಿಗಳನ್ನು ತಪ್ಪಿಸಬೇಡಿ.';
+  }
+
+  @override
+  String get atFine => 'ನಿಮ್ಮ ಹಾಜರಾತಿ ಕನಿಷ್ಠ ಮಿತಿಗಿಂತ ಹೆಚ್ಚಿದೆ.';
+
+  @override
+  String get atOverall => 'ಒಟ್ಟು';
+
+  @override
+  String atOverallIn(String term) {
+    return '$term ರಲ್ಲಿ ಒಟ್ಟು';
+  }
+
+  @override
+  String atHeldAttended(int attended, int held) {
+    return '$held ರಲ್ಲಿ $attended ತರಗತಿಗಳಿಗೆ ಹಾಜರು';
+  }
+
+  @override
+  String atCondoned(int n) {
+    return '$n ತರಗತಿಗಳನ್ನು ಮನ್ನಾ ಮಾಡಲಾಗಿದೆ';
+  }
+
+  @override
+  String atNeedClasses(int n, String pct) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$pct% ತಲುಪಲು ಸತತವಾಗಿ ಮುಂದಿನ $n ತರಗತಿಗಳಿಗೆ ಹಾಜರಾಗಿ.',
+      one: '$pct% ತಲುಪಲು ಮುಂದಿನ ತರಗತಿಗೆ ಹಾಜರಾಗಿ.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String atCloseSubject(String pct) {
+    return '$pct% ಕನಿಷ್ಠ ಮಿತಿಯ ಹತ್ತಿರ.';
+  }
+
+  @override
+  String get atLeaveSent => 'ಅನುಮೋದನೆಗಾಗಿ ನಿಮ್ಮ ಶಿಕ್ಷಕರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get atLeaveWithdrawn => 'ಮನವಿಯನ್ನು ಹಿಂಪಡೆಯಲಾಗಿದೆ.';
+
+  @override
+  String get atApply => 'ಅರ್ಜಿ ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get atLeaveEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ರಜೆ ಅಥವಾ ಕರ್ತವ್ಯದ ಮೇಲಿನ ಮನವಿ ಇಲ್ಲ.';
+
+  @override
+  String get atDocumentAttached => 'ದಾಖಲೆ ಲಗತ್ತಿಸಲಾಗಿದೆ';
+
+  @override
+  String atCountsAs(String what) {
+    return '$what ಎಂದು ಪರಿಗಣಿಸಲಾಗುತ್ತದೆ';
+  }
+
+  @override
+  String get atWithdraw => 'ಹಿಂಪಡೆಯಿರಿ';
+
+  @override
+  String get atKindOnDuty => 'ಕರ್ತವ್ಯದ ಮೇಲೆ';
+
+  @override
+  String get atKindMedical => 'ವೈದ್ಯಕೀಯ ರಜೆ';
+
+  @override
+  String get atKindPersonal => 'ರಜೆ';
+
+  @override
+  String get atCountsPresent => 'ಹಾಜರು';
+
+  @override
+  String get atCountsExcused => 'ವಿನಾಯಿತಿ';
+
+  @override
+  String get atCountsAbsent => 'ಗೈರು';
+
+  @override
+  String get atApproved => 'ಅನುಮೋದಿಸಲಾಗಿದೆ';
+
+  @override
+  String get atDeclined => 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get atRevoked => 'ಅನುಮೋದನೆ ಹಿಂಪಡೆಯಲಾಗಿದೆ';
+
+  @override
+  String get atWithdrawn => 'ಹಿಂಪಡೆಯಲಾಗಿದೆ';
+
+  @override
+  String get atAwaiting => 'ನಿರ್ಧಾರ ಬಾಕಿ';
+
+  @override
+  String get atDocTooBig => 'ದಾಖಲೆ 5 ಎಂಬಿಗಿಂತ ದೊಡ್ಡದಾಗಿದೆ.';
+
+  @override
+  String get atReasonNeeded => 'ಕೆಲವು ಪದಗಳಲ್ಲಿ ಕಾರಣ ತಿಳಿಸಿ.';
+
+  @override
+  String get atEndBeforeStart => 'ಕೊನೆಯ ದಿನ ಮೊದಲ ದಿನಕ್ಕಿಂತ ಮುಂಚಿತವಾಗಿದೆ.';
+
+  @override
+  String get atNeedCertificate => 'ವೈದ್ಯಕೀಯ ಪ್ರಮಾಣಪತ್ರ ಲಗತ್ತಿಸಿ.';
+
+  @override
+  String get atNeedActivity => 'ಕಾರ್ಯಕ್ರಮ ಅಥವಾ ಚಟುವಟಿಕೆಯ ಹೆಸರು ಬರೆಯಿರಿ.';
+
+  @override
+  String get atTimesOrder => 'ಪ್ರಾರಂಭದ ಸಮಯ ಮುಕ್ತಾಯದ ಸಮಯಕ್ಕಿಂತ ಮೊದಲು ಇರಬೇಕು.';
+
+  @override
+  String get atApplyTitle => 'ರಜೆ ಅಥವಾ ಕರ್ತವ್ಯದ ಮೇಲೆ ಅರ್ಜಿ';
+
+  @override
+  String get atOnDutyHelp =>
+      'ತರಗತಿಯ ಹೊರಗಿನ ಕಾಲೇಜು ಕೆಲಸಕ್ಕಾಗಿ: ಉತ್ಸವ, ಕ್ರೀಡೆ, ಎನ್‌ಎಸ್‌ಎಸ್ ಅಥವಾ ಪ್ಲೇಸ್‌ಮೆಂಟ್ ಡ್ರೈವ್. ಅನುಮೋದಿತ ಕರ್ತವ್ಯದ ಮೇಲಿನ ದಿನಗಳು ಹಾಜರಾತಿಗೆ ಸೇರುತ್ತವೆ.';
+
+  @override
+  String get atMedicalHelp => 'ನೀವು ಅಸ್ವಸ್ಥರಾಗಿದ್ದಾಗ. ವೈದ್ಯರ ಪ್ರಮಾಣಪತ್ರ ಲಗತ್ತಿಸಿ.';
+
+  @override
+  String get atPersonalHelp => 'ಇತರ ಕಾರಣಗಳಿಗಾಗಿ. ನಿಮ್ಮ ಶಿಕ್ಷಕರು ನಿರ್ಧರಿಸುತ್ತಾರೆ.';
+
+  @override
+  String get atPartOfDay => 'ದಿನದ ಒಂದು ಭಾಗ ಮಾತ್ರ';
+
+  @override
+  String get atOnDay => 'ದಿನ';
+
+  @override
+  String get atFirstDay => 'ಮೊದಲ ದಿನ';
+
+  @override
+  String get atLastDay => 'ಕೊನೆಯ ದಿನ';
+
+  @override
+  String get atFromTime => 'ಇಂದ';
+
+  @override
+  String get atToTime => 'ವರೆಗೆ';
+
+  @override
+  String get atActivity => 'ಕಾರ್ಯಕ್ರಮ ಅಥವಾ ಚಟುವಟಿಕೆ';
+
+  @override
+  String get atReason => 'ಕಾರಣ';
+
+  @override
+  String get atDocumentNeeded => 'ವೈದ್ಯಕೀಯ ಪ್ರಮಾಣಪತ್ರ (ಅಗತ್ಯ)';
+
+  @override
+  String get atDocumentOptional => 'ಪತ್ರ ಅಥವಾ ದಾಖಲೆ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get atRemove => 'ತೆಗೆದುಹಾಕಿ';
+
+  @override
+  String get atTakePhoto => 'ಫೋಟೋ ತೆಗೆಯಿರಿ';
+
+  @override
+  String get atChooseFile => 'ಪಿಡಿಎಫ್ ಆರಿಸಿ';
+
+  @override
+  String get atSend => 'ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಿ';
 }

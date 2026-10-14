@@ -1175,7 +1175,7 @@ export class HostelRecords implements OnModuleInit {
             hi: { title: `${s.fullName} छात्रावास के चिकित्सा कक्ष में हैं`, body: `${s.fullName} को चिकित्सा कक्ष में भर्ती किया गया है: ${String(v.symptoms).slice(0, 120)}। वार्डन आपको जानकारी देते रहेंगे।` },
             kn: { title: `${s.fullName} ವಸತಿ ನಿಲಯದ ಆರೋಗ್ಯ ಕೊಠಡಿಯಲ್ಲಿದ್ದಾರೆ`, body: `${s.fullName} ಅವರನ್ನು ಆರೋಗ್ಯ ಕೊಠಡಿಗೆ ದಾಖಲಿಸಲಾಗಿದೆ: ${String(v.symptoms).slice(0, 120)}. ವಾರ್ಡನ್ ನಿಮಗೆ ಮಾಹಿತಿ ನೀಡುತ್ತಾರೆ.` },
           },
-          data: { studentId: s.id },
+          data: { studentId: s.id, sickbayId: row.id },
           dedupeKey: `hostel-sickbay:${row.id}`,
         });
         return row.id;

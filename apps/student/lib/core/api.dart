@@ -24,6 +24,7 @@ import 'models.dart';
 import 'pathways.dart';
 import 'scholarships.dart';
 import 'school_life.dart';
+import 'self_service.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
 enum ApiProblem { timeout, unreachable, wrongLogin, notStudent, guardianAccount, teacherAccount, notLinked }
@@ -488,6 +489,98 @@ abstract class StudentApi implements AnnouncementSource {
 
   /// Published success stories, featured first (`GET /v1/alumni-stories`).
   Future<List<SuccessStory>> publishedStories();
+
+  // ── Online quizzes ──────────────────────────────────────────────────────────────────────────
+
+  /// Published quizzes of my class with my attempts (`GET /v1/lms/my-quizzes`).
+  Future<List<QuizSummary>> myQuizzes();
+
+  /// Starts an attempt, or resumes the open one; the clock runs on the server (`POST /v1/lms/quizzes/:id/start`).
+  Future<QuizAttempt> startQuiz(String quizId);
+
+  /// Saves answers as the student goes; 409 once time is up (`PUT /v1/lms/quiz-attempts/:id/answers`).
+  Future<void> saveQuizAnswers(String attemptId, Map<String, Object> answers);
+
+  /// Submits the attempt with the last answers and returns the marking (`POST /v1/lms/quiz-attempts/:id/submit`).
+  Future<QuizOutcome> submitQuiz(String attemptId, Map<String, Object> answers);
+
+  // ── Council elections ───────────────────────────────────────────────────────────────────────
+
+  /// Elections I vote in now and published results (`GET /v1/campus-life/me/elections`).
+  Future<List<Election>> myElections(String studentId);
+
+  /// Casts my one secret ballot: candidate ids by post (`POST /v1/campus-life/elections/:id/vote`).
+  Future<void> vote(String studentId, String electionId, Map<String, List<String>> choices);
+
+  // ── Library catalogue ───────────────────────────────────────────────────────────────────────
+
+  /// Searches the catalogue by title, author, subject or ISBN, 20 a page (`GET /v1/library/opac`).
+  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1});
+
+  /// Joins the queue for a book whose copies are all out (`POST /v1/library/reservations`).
+  Future<void> reserveBook(String bookId);
+
+  /// My open reservations with my place in each queue (`GET /v1/library/reservations`).
+  Future<List<BookReservation>> myReservations();
+  Future<void> cancelReservation(String id);
+
+  /// Borrows a copy at the self-checkout by its barcode (`POST /v1/library/self-checkout`).
+  Future<SelfCheckout> selfCheckout(String copyCode);
+
+  // ── Hostel ──────────────────────────────────────────────────────────────────────────────────
+
+  /// My hostel applications, newest first (`GET /v1/hostel/applications/mine`).
+  Future<List<HostelApplication>> hostelApplications(String studentId);
+
+  /// Applies for a hostel seat (`POST /v1/hostel/applications/mine`).
+  Future<void> applyForHostel(String studentId, {required String gender, double? distanceKm, String needs = ''});
+
+  /// Room change and vacate requests, mess leave and mess bills (`GET /v1/hostel/students/:id/requests`).
+  Future<HostelAccount> hostelAccount(String studentId);
+
+  /// Asks the warden to change room or to vacate from a date (`POST /v1/hostel/requests/mine`).
+  Future<void> requestHostelChange(String studentId, {required String kind, required String reason, required DateTime effectiveOn});
+
+  /// Tells the mess about days away (`POST /v1/hostel/mess/leaves/mine`).
+  Future<void> applyMessLeave(String studentId, {required DateTime from, required DateTime to, String reason = ''});
+
+  // ── Transport ───────────────────────────────────────────────────────────────────────────────
+
+  /// Running routes with their stops and fees (`GET /v1/transport/routes-public`).
+  Future<List<PublicRoute>> transportRoutes();
+
+  /// My requests to change stop (`GET /v1/transport/change-requests/mine`).
+  Future<List<StopChangeRequest>> stopChangeRequests(String studentId);
+
+  /// Asks to move to another stop from a date (`POST /v1/transport/change-requests/mine`).
+  Future<void> requestStopChange(String studentId, {required String toStopId, required DateTime effectiveOn, required String reason});
+
+  /// My bus pass as a PDF with the conductor's QR code (`GET /v1/transport/passes/:id.pdf`).
+  Future<Uint8List> busPassPdf(String studentId);
+
+  // ── Attendance by subject, leave and on duty ────────────────────────────────────────────────
+
+  /// My attendance by subject and overall under the rules, with my leave (`GET /v1/attendance-desk/students/:id`).
+  Future<AttendanceOverview> attendanceOverview(String studentId);
+
+  /// My leave and on-duty requests (`GET /v1/attendance-desk/leaves/mine`).
+  Future<List<AttendanceLeave>> attendanceLeaves();
+
+  /// Applies for leave or on duty with an optional document (multipart `POST /v1/attendance-desk/leaves`).
+  /// [kind] is `on_duty`, `medical` (needs the certificate) or `personal`; [fromTime]/[toTime] ("09:30") for part of a day.
+  Future<AttendanceLeave> applyAttendanceLeave({
+    required String kind,
+    required DateTime from,
+    required DateTime to,
+    required String reason,
+    String activity = '',
+    String? fromTime,
+    String? toTime,
+    UploadFile? document,
+  });
+
+  /// Withdraws a request still waiting (`POST /v1/attendance-desk/leaves/:id/cancel`).
+  Future<void> cancelAttendanceLeave(String id);
 }
 
 /// Lets the lesson player load recordings through a [StudentApi].
@@ -1390,4 +1483,131 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<List<SuccessStory>> publishedStories() async => _rows(await _send('GET', '/v1/alumni-stories'), SuccessStory.fromJson);
+
+  // ── Online quizzes ──────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<QuizSummary>> myQuizzes() async => _rows(await _send('GET', '/v1/lms/my-quizzes'), QuizSummary.fromJson);
+
+  @override
+  Future<QuizAttempt> startQuiz(String quizId) async => QuizAttempt.fromJson(await _send('POST', '/v1/lms/quizzes/$quizId/start') as Map<String, dynamic>);
+
+  @override
+  Future<void> saveQuizAnswers(String attemptId, Map<String, Object> answers) => _send('PUT', '/v1/lms/quiz-attempts/$attemptId/answers', body: {'answers': answers});
+
+  @override
+  Future<QuizOutcome> submitQuiz(String attemptId, Map<String, Object> answers) async =>
+      QuizOutcome.fromJson(await _send('POST', '/v1/lms/quiz-attempts/$attemptId/submit', body: {'answers': answers}, timeout: const Duration(seconds: 60)) as Map<String, dynamic>);
+
+  // ── Council elections ───────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<Election>> myElections(String studentId) async => _rows(await _send('GET', '/v1/campus-life/me/elections?studentId=$studentId'), Election.fromJson);
+
+  @override
+  Future<void> vote(String studentId, String electionId, Map<String, List<String>> choices) => _send(
+    'POST',
+    '/v1/campus-life/elections/$electionId/vote',
+    body: {
+      'studentId': studentId,
+      'choices': [for (final e in choices.entries) {'postId': e.key, 'candidateIds': e.value}],
+    },
+  );
+
+  // ── Library catalogue ───────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1}) async => CataloguePage.fromJson(
+    await _send('GET', '/v1/library/opac?q=${Uri.encodeQueryComponent(query.trim())}&page=$page${availableOnly ? '&available=true' : ''}') as Map<String, dynamic>,
+  );
+
+  @override
+  Future<void> reserveBook(String bookId) => _send('POST', '/v1/library/reservations', body: {'bookId': bookId});
+
+  @override
+  Future<List<BookReservation>> myReservations() async => _rows(await _send('GET', '/v1/library/reservations'), BookReservation.fromJson);
+
+  @override
+  Future<void> cancelReservation(String id) => _send('POST', '/v1/library/reservations/$id/cancel');
+
+  @override
+  Future<SelfCheckout> selfCheckout(String copyCode) async =>
+      SelfCheckout.fromJson(await _send('POST', '/v1/library/self-checkout', body: {'copyCode': copyCode.trim()}) as Map<String, dynamic>);
+
+  // ── Hostel ──────────────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<HostelApplication>> hostelApplications(String studentId) async =>
+      _rows(await _send('GET', '/v1/hostel/applications/mine?studentId=$studentId'), HostelApplication.fromJson);
+
+  @override
+  Future<void> applyForHostel(String studentId, {required String gender, double? distanceKm, String needs = ''}) =>
+      _send('POST', '/v1/hostel/applications/mine', body: {'studentId': studentId, 'gender': gender, 'distanceKm': ?distanceKm, 'needs': needs});
+
+  @override
+  Future<HostelAccount> hostelAccount(String studentId) async => HostelAccount.fromJson(await _send('GET', '/v1/hostel/students/$studentId/requests') as Map<String, dynamic>);
+
+  @override
+  Future<void> requestHostelChange(String studentId, {required String kind, required String reason, required DateTime effectiveOn}) =>
+      _send('POST', '/v1/hostel/requests/mine', body: {'studentId': studentId, 'kind': kind, 'reason': reason, 'effectiveOn': isoDay(effectiveOn)});
+
+  @override
+  Future<void> applyMessLeave(String studentId, {required DateTime from, required DateTime to, String reason = ''}) =>
+      _send('POST', '/v1/hostel/mess/leaves/mine', body: {'studentId': studentId, 'fromOn': isoDay(from), 'toOn': isoDay(to), 'reason': reason});
+
+  // ── Transport ───────────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<PublicRoute>> transportRoutes() async => _rows(await _send('GET', '/v1/transport/routes-public'), PublicRoute.fromJson);
+
+  @override
+  Future<List<StopChangeRequest>> stopChangeRequests(String studentId) async =>
+      _rows(await _send('GET', '/v1/transport/change-requests/mine?studentId=$studentId'), StopChangeRequest.fromJson);
+
+  @override
+  Future<void> requestStopChange(String studentId, {required String toStopId, required DateTime effectiveOn, required String reason}) =>
+      _send('POST', '/v1/transport/change-requests/mine', body: {'studentId': studentId, 'toStopId': toStopId, 'effectiveOn': isoDay(effectiveOn), 'reason': reason});
+
+  @override
+  Future<Uint8List> busPassPdf(String studentId) => _download('/v1/transport/passes/$studentId.pdf');
+
+  // ── Attendance by subject, leave and on duty ────────────────────────────────────────────────
+
+  @override
+  Future<AttendanceOverview> attendanceOverview(String studentId) async =>
+      AttendanceOverview.fromJson(await _send('GET', '/v1/attendance-desk/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<List<AttendanceLeave>> attendanceLeaves() async => _rows(await _send('GET', '/v1/attendance-desk/leaves/mine'), AttendanceLeave.fromJson);
+
+  @override
+  Future<AttendanceLeave> applyAttendanceLeave({
+    required String kind,
+    required DateTime from,
+    required DateTime to,
+    required String reason,
+    String activity = '',
+    String? fromTime,
+    String? toTime,
+    UploadFile? document,
+  }) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/attendance-desk/leaves'))
+      ..fields.addAll({
+        'kind': kind,
+        'fromDate': isoDay(from),
+        'toDate': isoDay(to),
+        'reason': reason,
+        if (activity.isNotEmpty) 'activity': activity,
+        'fromTime': ?fromTime,
+        'toTime': ?toTime,
+      })
+      ..headers['accept'] = 'application/json';
+    if (document != null) req.files.add(http.MultipartFile.fromBytes('document', document.bytes, filename: document.name, contentType: MediaType.parse(document.mime)));
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    if (deviceId != null) req.headers['x-device-id'] = deviceId!;
+    return AttendanceLeave.fromJson(await _receive(req, auth: true, timeout: const Duration(minutes: 2)) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<void> cancelAttendanceLeave(String id) => _send('POST', '/v1/attendance-desk/leaves/$id/cancel');
 }

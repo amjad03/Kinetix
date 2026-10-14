@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import 'course_file_models.dart';
+import 'desk_models.dart';
 import 'evidence_models.dart';
 import 'academics_models.dart';
 import 'growth_models.dart';
@@ -93,7 +94,8 @@ abstract class TeacherApi implements AnnouncementSource {
 
   /// Requests waiting for this person to decide (heads of department, HR, principal).
   Future<List<LeaveRequestInfo>> pendingLeaveRequests();
-  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason});
+  /// [delegateId]: a colleague who approves in the teacher's place while they are away.
+  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason, String? delegateId});
   Future<LeaveRequestInfo> cancelLeave(String id);
   Future<LeaveRequestInfo> decideLeave(String id, {required bool approve, String? note});
   Future<MyAttendance> myAttendance({String? month});
@@ -415,6 +417,77 @@ abstract class TeacherApi implements AnnouncementSource {
 
   /// Awards a badge (KxBadge.api) to a student of a class the teacher teaches; the family is told.
   Future<void> awardBadge({required String studentId, required String sectionId, required String badge, String? subjectId});
+
+  // ── Attendance desk ─────────────────────────────────────────────────────────────────────────
+
+  /// Classes the teacher may mark (`GET /v1/attendance-desk/classes`).
+  Future<List<DeskClass>> deskClasses();
+
+  /// A class's day: periods with their marks and special classes (`GET /v1/attendance-desk/day`).
+  Future<ClassDay> classDay(String sectionId, String date);
+
+  /// The teacher's periods that met and have no marks, between two dates (`GET /v1/attendance-desk/unmarked`).
+  Future<List<DeskPeriod>> unmarkedPeriods({String? from, String? to});
+
+  /// A special class's mark sheet with leave that stands (`GET /v1/attendance-desk/sheet?specialId=`).
+  Future<SpecialSheet> specialSheet(String id);
+
+  /// Marks a special class; marking makes it held (`POST /v1/attendance-desk/special/:id`).
+  Future<void> markSpecial(String id, Map<String, AttendanceStatus> marks);
+
+  /// Students' leave and on duty waiting for a decision, for classes the teacher teaches (`GET /v1/records/attendance-leaves`).
+  Future<List<StudentLeaveRow>> pendingStudentLeaves();
+
+  /// Approves (marks are written as the policy says) or declines with a reason (`POST /v1/attendance-desk/leaves/:id/decision`).
+  Future<void> decideStudentLeave(String id, {required bool approve, String? note});
+
+  /// The certificate or letter attached to a request (`GET /v1/attendance-desk/leaves/:id/document`).
+  Future<Uint8List> studentLeaveDocument(String id);
+
+  // ── Indents ─────────────────────────────────────────────────────────────────────────────────
+
+  /// Items the store keeps (`GET /v1/inventory/items`).
+  Future<List<StockItem>> stockItems();
+
+  /// The teacher's indents, newest first (`GET /v1/inventory/requisitions`).
+  Future<List<Indent>> myIndents();
+
+  /// Raises an indent; the head of department, then the principal, approve it (`POST /v1/inventory/requisitions`).
+  Future<void> raiseIndent({required String reason, String? neededBy, required List<({String itemId, int qty, int? estUnitPaise})> lines});
+
+  // ── Rooms and halls ─────────────────────────────────────────────────────────────────────────
+
+  /// Rooms and halls that can be booked (`GET /v1/facilities/rooms`).
+  Future<List<BookableRoom>> bookableRooms();
+
+  /// What holds a room on a day (`GET /v1/facilities/rooms/:id/day`).
+  Future<RoomDay> roomDay(String roomId, String date);
+
+  /// The teacher's bookings (`GET /v1/facilities/bookings`).
+  Future<List<RoomBooking>> myBookings();
+
+  /// Books a room; 409 with what holds it then (`POST /v1/facilities/bookings`).
+  Future<void> bookRoom({required String roomId, required String title, String purpose = '', int? attendees, required String onDate, required String startsAt, required String endsAt});
+  Future<void> cancelBooking(String id);
+
+  // ── Interview panels ────────────────────────────────────────────────────────────────────────
+
+  /// Interviews where the teacher sits on the panel (`GET /v1/hr/interviews/mine`).
+  Future<List<PanelInterview>> myInterviews();
+
+  /// The panel's scores for one interview (`GET /v1/hr/interviews/:id/scores`).
+  Future<InterviewScores> interviewScores(String id);
+
+  /// Records (or corrects) the teacher's scores, 0 to 10 per criterion, on the day (`PUT /v1/hr/interviews/:id/scores`).
+  Future<void> scoreInterview(String id, {required Map<String, double> scores, required String recommendation, String remarks = ''});
+
+  // ── Leave rules ─────────────────────────────────────────────────────────────────────────────
+
+  /// Colleagues who can approve in the teacher's place while they are away (`GET /v1/delegations/colleagues`).
+  Future<List<Colleague>> colleagues();
+
+  /// Attaches the supporting document to a leave request (multipart `file`, `POST /v1/hr/leave/requests/:id/document`).
+  Future<void> attachLeaveDocument(String requestId, ChatUpload file);
 }
 
 /// Lets the lesson player load recordings through a [TeacherApi].
@@ -521,8 +594,10 @@ class HttpTeacherApi implements TeacherApi {
       ];
 
   @override
-  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason}) async =>
-      LeaveRequestInfo.fromJson(await _send('POST', '/v1/hr/leave/requests', body: {'leaveTypeId': leaveTypeId, 'fromDate': fromDate, 'toDate': toDate, 'halfDay': halfDay, 'reason': reason}));
+  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason, String? delegateId}) async =>
+      LeaveRequestInfo.fromJson(
+        await _send('POST', '/v1/hr/leave/requests', body: {'leaveTypeId': leaveTypeId, 'fromDate': fromDate, 'toDate': toDate, 'halfDay': halfDay, 'reason': reason, 'delegateId': ?delegateId}),
+      );
 
   @override
   Future<LeaveRequestInfo> cancelLeave(String id) async => LeaveRequestInfo.fromJson(await _send('POST', '/v1/hr/leave/requests/$id/cancel'));
@@ -1349,5 +1424,116 @@ class HttpTeacherApi implements TeacherApi {
       }
     } catch (_) {}
     return null;
+  }
+
+  // ── Attendance desk ─────────────────────────────────────────────────────────────────────────
+
+  List<Map<String, dynamic>> _list(Object? v) => [for (final x in (v as List? ?? const [])) (x as Map).cast<String, dynamic>()];
+
+  @override
+  Future<List<DeskClass>> deskClasses() async => [for (final r in _list(await _send('GET', '/v1/attendance-desk/classes'))) DeskClass.fromJson(r)];
+
+  @override
+  Future<ClassDay> classDay(String sectionId, String date) async => ClassDay.fromJson(await _send('GET', '/v1/attendance-desk/day?sectionId=$sectionId&date=$date') as Map<String, dynamic>);
+
+  @override
+  Future<List<DeskPeriod>> unmarkedPeriods({String? from, String? to}) async {
+    final q = [if (from != null) 'from=$from', if (to != null) 'to=$to'].join('&');
+    final j = await _send('GET', '/v1/attendance-desk/unmarked${q.isEmpty ? '' : '?$q'}') as Map<String, dynamic>;
+    return [for (final r in _list(j['rows'])) DeskPeriod.fromJson(r)];
+  }
+
+  @override
+  Future<SpecialSheet> specialSheet(String id) async => SpecialSheet.fromJson(await _send('GET', '/v1/attendance-desk/sheet?specialId=$id') as Map<String, dynamic>);
+
+  @override
+  Future<void> markSpecial(String id, Map<String, AttendanceStatus> marks) =>
+      _send('POST', '/v1/attendance-desk/special/$id', body: {'records': [for (final e in marks.entries) {'studentId': e.key, 'status': e.value.name}]});
+
+  @override
+  Future<List<StudentLeaveRow>> pendingStudentLeaves() async {
+    final j = await _send('GET', '/v1/records/attendance-leaves?f.status=pending&sort=from:asc&pageSize=100') as Map<String, dynamic>;
+    return [for (final r in _list(j['rows'])) StudentLeaveRow.fromJson(r)];
+  }
+
+  @override
+  Future<void> decideStudentLeave(String id, {required bool approve, String? note}) =>
+      _send('POST', '/v1/attendance-desk/leaves/$id/decision', body: {'approve': approve, 'note': ?note});
+
+  @override
+  Future<Uint8List> studentLeaveDocument(String id) async => (await _request('GET', '/v1/attendance-desk/leaves/$id/document', timeout: const Duration(seconds: 60))).bodyBytes;
+
+  // ── Indents ─────────────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<StockItem>> stockItems() async => [for (final r in _list(await _send('GET', '/v1/inventory/items'))) StockItem.fromJson(r)];
+
+  @override
+  Future<List<Indent>> myIndents() async => [for (final r in _list(await _send('GET', '/v1/inventory/requisitions'))) Indent.fromJson(r)];
+
+  @override
+  Future<void> raiseIndent({required String reason, String? neededBy, required List<({String itemId, int qty, int? estUnitPaise})> lines}) => _send(
+    'POST',
+    '/v1/inventory/requisitions',
+    body: {
+      'reason': reason,
+      'neededBy': ?neededBy,
+      'lines': [for (final l in lines) {'itemId': l.itemId, 'qty': l.qty, 'estUnitPaise': ?l.estUnitPaise}],
+    },
+  );
+
+  // ── Rooms and halls ─────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<BookableRoom>> bookableRooms() async => [for (final r in _list(await _send('GET', '/v1/facilities/rooms'))) BookableRoom.fromJson(r)];
+
+  @override
+  Future<RoomDay> roomDay(String roomId, String date) async => RoomDay.fromJson(await _send('GET', '/v1/facilities/rooms/$roomId/day?date=$date') as Map<String, dynamic>);
+
+  @override
+  Future<List<RoomBooking>> myBookings() async => [for (final r in _list(await _send('GET', '/v1/facilities/bookings'))) RoomBooking.fromJson(r)];
+
+  @override
+  Future<void> bookRoom({required String roomId, required String title, String purpose = '', int? attendees, required String onDate, required String startsAt, required String endsAt}) => _send(
+    'POST',
+    '/v1/facilities/bookings',
+    body: {'roomId': roomId, 'title': title, 'purpose': purpose, 'attendees': ?attendees, 'onDate': onDate, 'startsAt': startsAt, 'endsAt': endsAt},
+  );
+
+  @override
+  Future<void> cancelBooking(String id) => _send('POST', '/v1/facilities/bookings/$id/cancel', body: const <String, Object>{});
+
+  // ── Interview panels ────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<PanelInterview>> myInterviews() async => [for (final r in _list(await _send('GET', '/v1/hr/interviews/mine'))) PanelInterview.fromJson(r)];
+
+  @override
+  Future<InterviewScores> interviewScores(String id) async => InterviewScores.fromJson(await _send('GET', '/v1/hr/interviews/$id/scores') as Map<String, dynamic>);
+
+  @override
+  Future<void> scoreInterview(String id, {required Map<String, double> scores, required String recommendation, String remarks = ''}) =>
+      _send('PUT', '/v1/hr/interviews/$id/scores', body: {'scores': scores, 'recommendation': recommendation, 'remarks': remarks});
+
+  // ── Leave rules ─────────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<Colleague>> colleagues() async => [for (final r in _list(await _send('GET', '/v1/delegations/colleagues'))) Colleague.fromJson(r)];
+
+  @override
+  Future<void> attachLeaveDocument(String requestId, ChatUpload file) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/hr/leave/requests/$requestId/document'))
+      ..files.add(http.MultipartFile.fromBytes('file', file.bytes, filename: file.name));
+    req.headers['accept'] = 'application/json';
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    final http.Response res;
+    try {
+      res = await http.Response.fromStream(await _http.send(req)).timeout(const Duration(minutes: 2));
+    } on TimeoutException {
+      throw ApiException(0, 'The server is taking too long to respond. Try again.', kind: ApiErrorKind.timeout);
+    } catch (_) {
+      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", kind: ApiErrorKind.offline);
+    }
+    if (res.statusCode >= 400) throw ApiException(res.statusCode, _message(res) ?? 'HTTP ${res.statusCode}', code: _code(res));
   }
 }

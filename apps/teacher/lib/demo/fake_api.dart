@@ -12,6 +12,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/academics_models.dart';
 import '../core/api.dart';
 import '../core/course_file_models.dart';
+import '../core/desk_models.dart';
 import '../core/evidence_models.dart';
 import '../core/growth_models.dart';
 import '../core/hr_models.dart';
@@ -916,6 +917,7 @@ class FakeTeacherApi implements TeacherApi {
   ];
   List<LeaveRequestInfo> myLeaves = [];
   List<LeaveRequestInfo> pendingLeaves = [];
+  ApiException? applyLeaveError;
   AttendanceDayInfo? todayMark;
   List<PayslipInfo> payslipList = [];
   List<EvidenceInfo> evidenceList = [];
@@ -931,8 +933,9 @@ class FakeTeacherApi implements TeacherApi {
   Future<List<LeaveRequestInfo>> pendingLeaveRequests() async => List.of(pendingLeaves);
 
   @override
-  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason}) async {
-    calls.add('applyLeave $leaveTypeId $fromDate $toDate ${halfDay ? 'half' : 'full'} $reason');
+  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason, String? delegateId}) async {
+    calls.add('applyLeave $leaveTypeId $fromDate $toDate ${halfDay ? 'half' : 'full'} $reason${delegateId == null ? '' : ' delegate $delegateId'}');
+    if (applyLeaveError != null) throw applyLeaveError!;
     final r = LeaveRequestInfo(
       id: 'lr${++_leaveSeq}',
       userId: 'me',
@@ -1879,5 +1882,271 @@ class FakeTeacherApi implements TeacherApi {
   Future<LessonDraft> draftLessonPlan({required String slotId, required String date, List<String>? topicIds, String? language}) async {
     calls.add('draft $slotId $date ${topicIds?.join(',') ?? '-'} ${language ?? '-'}');
     return draft;
+  }
+
+  // ── Attendance desk ─────────────────────────────────────────────────────────────────────────
+
+  List<DeskClass> deskClassList = const [DeskClass(id: 'sec-7b', name: '7 B', program: 'Class 7'), DeskClass(id: 'sec-8a', name: '8 A', program: 'Class 8')];
+  ApiException? deskError;
+
+  /// A class's day by "sectionId date"; [classDay] answers this one for any other key.
+  Map<String, Map<String, dynamic>> classDays = {};
+  Map<String, dynamic> defaultClassDay = {
+    'date': '2026-10-14',
+    'section': {'id': 'sec-7b', 'name': '7 B'},
+    'holiday': null,
+    'strength': 3,
+    'periods': [
+      {'slotId': 'slot-1', 'date': '2026-10-14', 'startsAt': '09:00:00', 'endsAt': '09:45:00', 'sectionId': 'sec-7b', 'section': '7 B', 'subjectId': 'sub-math', 'subject': 'Mathematics', 'teacherId': 't1', 'teacher': 'Anita Sharma', 'substitute': false, 'batch': null, 'combined': 0, 'marked': 3},
+      {'slotId': 'slot-2', 'date': '2026-10-14', 'startsAt': '10:00:00', 'endsAt': '10:45:00', 'sectionId': 'sec-7b', 'section': '7 B', 'subjectId': 'sub-sci', 'subject': 'Science', 'teacherId': 't1', 'teacher': 'Anita Sharma', 'substitute': true, 'batch': null, 'combined': 0, 'marked': 0},
+    ],
+    'special': [
+      {'id': 'sp1', 'kind': 'remedial', 'startsAt': '15:30:00', 'endsAt': '16:15:00', 'subject': 'Mathematics', 'teacher': 'Anita Sharma', 'status': 'scheduled', 'marked': 0},
+    ],
+  };
+
+  List<Map<String, dynamic>> unmarkedRows = [
+    {'slotId': 'slot-2', 'date': '2026-10-13', 'startsAt': '10:00:00', 'endsAt': '10:45:00', 'sectionId': 'sec-7b', 'section': '7 B', 'subjectId': 'sub-sci', 'subject': 'Science', 'teacherId': 't1', 'teacher': 'Anita Sharma', 'substitute': false, 'batch': null, 'combined': 0, 'marked': 0},
+    {'slotId': 'slot-9', 'date': '2026-10-12', 'startsAt': '11:00:00', 'endsAt': '11:45:00', 'sectionId': 'sec-8a', 'section': '8 A', 'subjectId': 'sub-math', 'subject': 'Mathematics', 'teacherId': 't1', 'teacher': 'Anita Sharma', 'substitute': true, 'batch': null, 'combined': 0, 'marked': 0},
+  ];
+
+  Map<String, dynamic> specialSheetJson = {
+    'kind': 'special',
+    'id': 'sp1',
+    'specialKind': 'remedial',
+    'status': 'scheduled',
+    'date': '2026-10-14',
+    'startsAt': '15:30:00',
+    'endsAt': '16:15:00',
+    'section': {'id': 'sec-7b', 'name': '7 B'},
+    'subject': {'id': 'sub-math', 'name': 'Mathematics', 'code': 'MATH'},
+    'locked': false,
+    'future': false,
+    'roster': [
+      {'id': 'st1', 'fullName': 'Aarav Patel', 'rollNo': '1', 'section': '7 B', 'batch': null, 'status': null, 'markedBy': null, 'leave': null, 'punch': null},
+      {'id': 'st2', 'fullName': 'Diya Rao', 'rollNo': '2', 'section': '7 B', 'batch': null, 'status': null, 'markedBy': null, 'leave': {'leaveId': 'lv1', 'kind': 'on_duty', 'countsAs': 'present'}, 'punch': null},
+      {'id': 'st3', 'fullName': 'Kiran Shetty', 'rollNo': '3', 'section': '7 B', 'batch': null, 'status': null, 'markedBy': null, 'leave': null, 'punch': null},
+    ],
+  };
+
+  List<Map<String, dynamic>> studentLeaveRows = [
+    {'id': 'al1', 'studentId': 'st1', 'fullName': 'Aarav Patel', 'rollNo': '1', 'sectionId': 'sec-7b', 'section': '7 B', 'kind': 'medical', 'fromDate': '2026-10-15', 'toDate': '2026-10-16', 'fromTime': null, 'toTime': null, 'activity': '', 'reason': 'Fever', 'status': 'pending', 'hasDocument': true, 'requestedBy': 'Raj Patel'},
+    {'id': 'al2', 'studentId': 'st3', 'fullName': 'Kiran Shetty', 'rollNo': '3', 'sectionId': 'sec-7b', 'section': '7 B', 'kind': 'on_duty', 'fromDate': '2026-10-17', 'toDate': '2026-10-17', 'fromTime': '09:00:00', 'toTime': '13:00:00', 'activity': 'Inter-school chess', 'reason': 'Representing the school', 'status': 'pending', 'hasDocument': false, 'requestedBy': 'Kiran Shetty'},
+  ];
+  ApiException? decideStudentLeaveError;
+
+  @override
+  Future<List<DeskClass>> deskClasses() async {
+    calls.add('deskClasses');
+    if (deskError != null) throw deskError!;
+    return deskClassList;
+  }
+
+  @override
+  Future<ClassDay> classDay(String sectionId, String date) async {
+    calls.add('classDay $sectionId $date');
+    if (deskError != null) throw deskError!;
+    return ClassDay.fromJson(classDays['$sectionId $date'] ?? defaultClassDay);
+  }
+
+  @override
+  Future<List<DeskPeriod>> unmarkedPeriods({String? from, String? to}) async {
+    calls.add('unmarked ${from ?? '-'} ${to ?? '-'}');
+    if (deskError != null) throw deskError!;
+    return [for (final r in unmarkedRows) DeskPeriod.fromJson(r)];
+  }
+
+  @override
+  Future<SpecialSheet> specialSheet(String id) async {
+    calls.add('specialSheet $id');
+    return SpecialSheet.fromJson(specialSheetJson);
+  }
+
+  @override
+  Future<void> markSpecial(String id, Map<String, AttendanceStatus> marks) async {
+    calls.add('markSpecial $id ${[for (final e in marks.entries) '${e.key}:${e.value.name}'].join(',')}');
+    specialSheetJson = {
+      ...specialSheetJson,
+      'status': 'held',
+      'roster': [for (final r in specialSheetJson['roster'] as List) {...(r as Map<String, dynamic>), 'status': marks[r['id']]?.name}],
+    };
+  }
+
+  @override
+  Future<List<StudentLeaveRow>> pendingStudentLeaves() async {
+    calls.add('pendingStudentLeaves');
+    if (deskError != null) throw deskError!;
+    return [for (final r in studentLeaveRows) StudentLeaveRow.fromJson(r)];
+  }
+
+  @override
+  Future<void> decideStudentLeave(String id, {required bool approve, String? note}) async {
+    calls.add('decideStudentLeave $id ${approve ? 'approve' : 'reject'} ${note ?? '-'}');
+    if (decideStudentLeaveError != null) throw decideStudentLeaveError!;
+    studentLeaveRows = [for (final r in studentLeaveRows) if (r['id'] != id) r];
+  }
+
+  @override
+  Future<Uint8List> studentLeaveDocument(String id) async {
+    calls.add('studentLeaveDocument $id');
+    return Uint8List.fromList('%PDF-1.4 certificate'.codeUnits);
+  }
+
+  // ── Indents ─────────────────────────────────────────────────────────────────────────────────
+
+  List<StockItem> stockItemList = const [
+    StockItem(id: 'it1', name: 'Whiteboard markers (box)', unit: 'box', sku: 'STN-001', category: 'Stationery', lastPricePaise: 18000, onHand: 12),
+    StockItem(id: 'it2', name: 'A4 paper (ream)', unit: 'ream', sku: 'STN-002', category: 'Stationery', lastPricePaise: 26000, onHand: 3),
+    StockItem(id: 'it3', name: 'Beakers 250 ml', unit: 'piece', sku: 'LAB-010', category: 'Lab', lastPricePaise: 9000, onHand: 0, active: false),
+  ];
+  List<Map<String, dynamic>> indentRows = [
+    {'id': 'r1', 'number': 'IND-0007', 'status': 'approved', 'reason': 'Science lab practicals', 'step': null, 'decisionNote': 'Approved within budget', 'neededBy': '2026-10-01', 'createdAt': '2026-09-20T05:00:00.000Z', 'estimatedPaise': 90000, 'department': 'Science', 'lines': [{'requisitionId': 'r1', 'itemId': 'it3', 'item': 'Beakers 250 ml', 'unit': 'piece', 'qty': 10, 'estUnitPaise': 9000}]},
+  ];
+  ApiException? indentError;
+
+  @override
+  Future<List<StockItem>> stockItems() async {
+    calls.add('stockItems');
+    return stockItemList;
+  }
+
+  @override
+  Future<List<Indent>> myIndents() async {
+    calls.add('myIndents');
+    if (indentError != null) throw indentError!;
+    return [for (final r in indentRows) Indent.fromJson(r)];
+  }
+
+  @override
+  Future<void> raiseIndent({required String reason, String? neededBy, required List<({String itemId, int qty, int? estUnitPaise})> lines}) async {
+    calls.add('raiseIndent $reason ${neededBy ?? '-'} ${[for (final l in lines) '${l.itemId}x${l.qty}'].join(',')}');
+    if (indentError != null) throw indentError!;
+    indentRows = [
+      {
+        'id': 'r${indentRows.length + 1}',
+        'number': 'IND-00${indentRows.length + 8}',
+        'status': 'submitted',
+        'reason': reason,
+        'step': 'hod',
+        'decisionNote': null,
+        'neededBy': neededBy,
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+        'estimatedPaise': 0,
+        'department': null,
+        'lines': [
+          for (final l in lines)
+            {'itemId': l.itemId, 'item': stockItemList.firstWhere((i) => i.id == l.itemId).name, 'unit': stockItemList.firstWhere((i) => i.id == l.itemId).unit, 'qty': l.qty, 'estUnitPaise': l.estUnitPaise},
+        ],
+      },
+      ...indentRows,
+    ];
+  }
+
+  // ── Rooms and halls ─────────────────────────────────────────────────────────────────────────
+
+  List<BookableRoom> roomList = const [
+    BookableRoom(id: 'rm1', name: 'Seminar hall', kind: 'hall', capacity: 120, facilities: 'Projector, sound'),
+    BookableRoom(id: 'rm2', name: 'Physics lab', kind: 'lab', capacity: 30),
+  ];
+  Map<String, dynamic> roomDayJson = {
+    'room': {'id': 'rm1', 'name': 'Seminar hall'},
+    'date': '2026-10-20',
+    'bookings': [
+      {'id': 'b0', 'number': 'FB-0003', 'title': 'Staff meeting', 'startsAt': '15:00:00', 'endsAt': '16:00:00', 'status': 'approved'},
+    ],
+    'classes': [
+      {'id': 'slot-x', 'startsAt': '09:00:00', 'endsAt': '09:45:00', 'section': '8 A', 'subject': 'Music'},
+    ],
+  };
+  List<Map<String, dynamic>> bookingRows = [];
+  ApiException? bookingError;
+
+  @override
+  Future<List<BookableRoom>> bookableRooms() async {
+    calls.add('bookableRooms');
+    return roomList;
+  }
+
+  @override
+  Future<RoomDay> roomDay(String roomId, String date) async {
+    calls.add('roomDay $roomId $date');
+    return RoomDay.fromJson({...roomDayJson, 'date': date});
+  }
+
+  @override
+  Future<List<RoomBooking>> myBookings() async {
+    calls.add('myBookings');
+    return [for (final r in bookingRows) RoomBooking.fromJson(r)];
+  }
+
+  @override
+  Future<void> bookRoom({required String roomId, required String title, String purpose = '', int? attendees, required String onDate, required String startsAt, required String endsAt}) async {
+    calls.add('bookRoom $roomId $onDate $startsAt-$endsAt $title${attendees == null ? '' : ' x$attendees'}');
+    if (bookingError != null) throw bookingError!;
+    bookingRows = [
+      {'id': 'bk${bookingRows.length + 1}', 'number': 'FB-00${bookingRows.length + 10}', 'room': roomList.firstWhere((r) => r.id == roomId).name, 'title': title, 'purpose': purpose, 'attendees': attendees, 'onDate': onDate, 'startsAt': '$startsAt:00', 'endsAt': '$endsAt:00', 'status': 'pending', 'decisionNote': null},
+      ...bookingRows,
+    ];
+  }
+
+  @override
+  Future<void> cancelBooking(String id) async {
+    calls.add('cancelBooking $id');
+    bookingRows = [for (final r in bookingRows) r['id'] == id ? {...r, 'status': 'cancelled'} : r];
+  }
+
+  // ── Interview panels ────────────────────────────────────────────────────────────────────────
+
+  List<Map<String, dynamic>> interviewRows = [
+    {'id': 'iv1', 'applicant': 'Meera Iyer', 'applicantId': 'ap1', 'opening': 'Assistant Professor, Commerce', 'round': 1, 'kind': 'panel', 'scheduledAt': '2026-10-14T05:30:00.000Z', 'venue': 'Board room', 'mode': 'in_person', 'status': 'scheduled', 'scoredByMe': false},
+    {'id': 'iv0', 'applicant': 'Rahul Nair', 'applicantId': 'ap0', 'opening': 'Assistant Professor, Commerce', 'round': 1, 'kind': 'panel', 'scheduledAt': '2026-10-10T05:30:00.000Z', 'venue': 'Board room', 'mode': 'in_person', 'status': 'completed', 'scoredByMe': true},
+  ];
+  Map<String, Map<String, dynamic>> interviewScoreJson = {
+    'iv1': {
+      'criteria': ['subject_knowledge', 'teaching_ability', 'communication', 'research', 'attitude'],
+      'panel': [{'id': 't1', 'fullName': 'Anita Sharma', 'scored': false}, {'id': 'p2', 'fullName': 'R Krishnan', 'scored': true}],
+      'scores': [{'panelistId': 'p2', 'panelist': 'R Krishnan', 'scores': {'subject_knowledge': 8, 'teaching_ability': 7, 'communication': 8, 'research': 6, 'attitude': 9}, 'total': 76, 'recommendation': 'select', 'remarks': ''}],
+      'average': 76,
+    },
+    'iv0': {
+      'criteria': ['subject_knowledge', 'teaching_ability', 'communication', 'research', 'attitude'],
+      'panel': [{'id': 't1', 'fullName': 'Anita Sharma', 'scored': true}],
+      'scores': [{'panelistId': 't1', 'panelist': 'Anita Sharma', 'scores': {'subject_knowledge': 6, 'teaching_ability': 6, 'communication': 7, 'research': 5, 'attitude': 8}, 'total': 64, 'recommendation': 'hold', 'remarks': 'Needs a demo class'}],
+      'average': 64,
+    },
+  };
+  ApiException? scoreError;
+
+  @override
+  Future<List<PanelInterview>> myInterviews() async {
+    calls.add('myInterviews');
+    return [for (final r in interviewRows) PanelInterview.fromJson(r)];
+  }
+
+  @override
+  Future<InterviewScores> interviewScores(String id) async {
+    calls.add('interviewScores $id');
+    return InterviewScores.fromJson(interviewScoreJson[id]!);
+  }
+
+  @override
+  Future<void> scoreInterview(String id, {required Map<String, double> scores, required String recommendation, String remarks = ''}) async {
+    calls.add('scoreInterview $id ${[for (final e in scores.entries) '${e.key}=${e.value.round()}'].join(',')} $recommendation $remarks');
+    if (scoreError != null) throw scoreError!;
+    interviewRows = [for (final r in interviewRows) r['id'] == id ? {...r, 'scoredByMe': true} : r];
+  }
+
+  // ── Leave rules ─────────────────────────────────────────────────────────────────────────────
+
+  List<Colleague> colleagueList = const [Colleague(id: 'p2', fullName: 'R Krishnan'), Colleague(id: 'p3', fullName: 'Sunita Rao')];
+  ApiException? attachError;
+
+  @override
+  Future<List<Colleague>> colleagues() async => colleagueList;
+
+  @override
+  Future<void> attachLeaveDocument(String requestId, ChatUpload file) async {
+    calls.add('attachLeaveDocument $requestId ${file.name}');
+    if (attachError != null) throw attachError!;
   }
 }

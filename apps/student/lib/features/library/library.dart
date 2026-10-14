@@ -7,6 +7,7 @@ import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../core/study.dart';
 import '../../widgets/common.dart';
+import 'catalogue_screen.dart';
 
 /// (background, foreground) for a book's due chip: overdue in red, due within two days in amber.
 (Color, Color) _dueTone(BuildContext context, LibraryLoan l, DateTime today) {
@@ -195,7 +196,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
   Widget build(BuildContext context) {
     final study = widget.study;
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.libraryBooks)),
+      appBar: AppBar(
+        title: Text(context.l10n.libraryBooks),
+        actions: [
+          IconButton(key: const Key('openCatalogue'), tooltip: context.l10n.libCatalogue, icon: const Icon(Icons.search), onPressed: () => CatalogueScreen.open(context, study.api)),
+          IconButton(
+            key: const Key('librarySelfCheckout'),
+            tooltip: context.l10n.libSelfCheckout,
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: () async {
+              await SelfCheckoutScreen.open(context, study.api);
+              await study.loadLibrary();
+            },
+          ),
+        ],
+      ),
       body: ListenableBuilder(
         listenable: study,
         builder: (context, _) {

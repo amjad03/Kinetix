@@ -2,6 +2,7 @@
 /// (`GET /v1/hostel/students/:id`, `GET /v1/canteen/students/:id`).
 library;
 
+import 'family_care.dart';
 import 'models.dart';
 
 /// One night's roll call: present, absent, or leave (out on a gate pass).
@@ -33,7 +34,7 @@ class OutPass {
   final String destination;
   final DateTime expectedBackAt;
 
-  /// requested, approved, issued, out, returned, rejected or cancelled.
+  /// parent_pending (waiting for the family), requested, approved, issued, out, returned, rejected or cancelled.
   final String status;
 }
 
@@ -51,7 +52,7 @@ class CanteenDish {
 }
 
 class BoardingView {
-  const BoardingView({required this.resident, this.block, this.room, this.bed, this.nights = const [], this.passes = const []});
+  const BoardingView({required this.resident, this.block, this.room, this.bed, this.nights = const [], this.passes = const [], this.sickbay = const []});
 
   factory BoardingView.fromJson(Map<String, dynamic> j) {
     final bed = (j['bed'] as Map?)?.cast<String, dynamic>();
@@ -62,6 +63,7 @@ class BoardingView {
       bed: bed?['bed'] as String?,
       nights: [for (final n in (j['nights'] as List? ?? const [])) NightMark.fromJson((n as Map).cast<String, dynamic>())],
       passes: [for (final p in (j['passes'] as List? ?? const [])) OutPass.fromJson((p as Map).cast<String, dynamic>())],
+      sickbay: [for (final s in (j['sickbay'] as List? ?? const [])) SickbayStay.fromJson((s as Map).cast<String, dynamic>())],
     );
   }
 
@@ -71,6 +73,12 @@ class BoardingView {
   final String? room;
   final String? bed;
   final List<NightMark> nights;
+
+  /// Sick-bay stays, the latest first.
+  final List<SickbayStay> sickbay;
+
+  /// The stay going on now, if the child is in the sick bay.
+  SickbayStay? get inSickbay => sickbay.where((s) => s.current).firstOrNull;
 }
 
 class MealMark {

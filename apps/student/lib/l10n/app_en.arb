@@ -3005,5 +3005,678 @@
   "resultWithheldBody": "This result is withheld by the examination office. Contact the office to know why and what to do.",
   "@resultWithheldBody": {
     "description": "Shown instead of the figures of a withheld result."
-  }
+  },
+  "resultWithheldReason": "Reason: {reason}",
+  "@resultWithheldReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "hwPenaltyApplied": "Handed in late: {pct}% is taken off the marks.",
+  "@hwPenaltyApplied": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "hwMarksLine": "Marks: {marks}",
+  "@hwMarksLine": {
+    "placeholders": {
+      "marks": {
+        "type": "String"
+      }
+    }
+  },
+  "hwLateRejected": "Late work is not taken after the due time.",
+  "hwLatePenalty": "Late work loses {pct}% of its marks.",
+  "@hwLatePenalty": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "hwLateAccepted": "Late work is taken but marked late.",
+  "hwLateNow": "The due time has passed. {policy}",
+  "@hwLateNow": {
+    "placeholders": {
+      "policy": {
+        "type": "String"
+      }
+    }
+  },
+  "hwClosed": "This assignment takes no more hand-ins.",
+  "hwCutoff": "Last time for late work: {when}",
+  "@hwCutoff": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "hwDueAt": "Due by {when}",
+  "@hwDueAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "hwGroupWith": "Group work ({group}) with {names}. One hand-in counts for everyone.",
+  "@hwGroupWith": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "hwGroupAlone": "Group work ({group}).",
+  "@hwGroupAlone": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "hwAttemptsUsed": "{used} of {max} hand-ins used",
+  "@hwAttemptsUsed": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "qzTitle": "Online quizzes",
+  "qzSubtitle": "Timed quizzes from your teachers",
+  "qzEmpty": "No quizzes for your class yet.",
+  "qzOpenNow": "Open now",
+  "qzComingUp": "Coming up",
+  "qzDone": "Closed",
+  "qzMinutes": "{n} min",
+  "@qzMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "qzAttemptsLeft": "{n, plural, =0{No attempts left} =1{1 attempt left} other{{n} attempts left}}",
+  "@qzAttemptsLeft": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "qzBest": "Best {score}",
+  "@qzBest": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "qzBeingMarked": "Being marked",
+  "qzOpensAt": "Opens {when}",
+  "@qzOpensAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "qzClosesAt": "Closes {when}",
+  "@qzClosesAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "qzClosedAt": "Closed {when}",
+  "@qzClosedAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "qzAttemptScore": "Attempt {n}: {score} of {max}",
+  "@qzAttemptScore": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "score": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "qzAttemptMarking": "Attempt {n}: being marked",
+  "@qzAttemptMarking": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "qzStart": "Start",
+  "qzResume": "Resume",
+  "qzNoAttemptsLeft": "No attempts left",
+  "qzStartRules": "You have {minutes} minutes once you start, and the clock keeps running if you leave. Attempts left: {left}.",
+  "@qzStartRules": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "qzSaved": "Answers saved",
+  "qzSaving": "Saving…",
+  "qzSaveFailed": "Not saved yet. Trying again.",
+  "qzNoQuestions": "This quiz has no questions.",
+  "qzQuestionOf": "Question {n} of {total}",
+  "@qzQuestionOf": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "qzMarks": "{marks} marks",
+  "@qzMarks": {
+    "placeholders": {
+      "marks": {
+        "type": "String"
+      }
+    }
+  },
+  "qzPickAll": "Pick every right answer",
+  "qzPrevious": "Previous",
+  "qzNext": "Next",
+  "qzSubmit": "Submit",
+  "qzSubmitTitle": "Submit the quiz?",
+  "qzSubmitAll": "You have answered every question. You cannot change your answers after submitting.",
+  "qzSubmitMissing": "{n, plural, =1{1 question is not answered.} other{{n} questions are not answered.}} You cannot change your answers after submitting.",
+  "@qzSubmitMissing": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "qzKeepGoing": "Keep going",
+  "qzTimeUpSubmitted": "Time is up. Your answers were submitted.",
+  "qzLeaveTitle": "Leave the quiz?",
+  "qzLeaveBody": "Your answers are saved, but the clock keeps running. Come back before the time is up to finish.",
+  "qzLeave": "Leave",
+  "qzYourAnswer": "Your answer",
+  "qzYourCode": "Your code ({language})",
+  "@qzYourCode": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "qzCodeNote": "Your code is run against the teacher's tests when you submit.",
+  "qzResultTitle": "Quiz result",
+  "qzScoreOf": "{score} / {max}",
+  "@qzScoreOf": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "qzNeedsMarking": "A coding answer is still to be marked by your teacher.",
+  "qzReview": "Question by question",
+  "qzToBeMarked": "To be marked",
+  "qzCorrect": "Correct",
+  "qzWrong": "Not correct",
+  "qzMarksOf": "{got} of {max} marks",
+  "@qzMarksOf": {
+    "placeholders": {
+      "got": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "elTitle": "Council elections",
+  "elSubtitle": "Vote, and see the results",
+  "elEmpty": "No election for you right now.",
+  "elResultsOut": "Results are out.",
+  "elVotingWindow": "Voting from {from} to {to}",
+  "@elVotingWindow": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "elAlreadyVoted": "You have voted. Results come out when the committee publishes them.",
+  "elVoteNow": "Vote now",
+  "elNotOpen": "Voting is not open now.",
+  "elElected": "Elected",
+  "elVotes": "{n, plural, =1{1 vote} other{{n} votes}}",
+  "@elVotes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "elNoCandidates": "No candidates for this post.",
+  "elMaxPicks": "You can choose at most {n} for this post.",
+  "@elMaxPicks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "elConfirmTitle": "Cast your vote?",
+  "elNoChoice": "No choice",
+  "elSkippedNote": "You have not chosen for every post.",
+  "elFinalNote": "You vote once. It cannot be changed after this.",
+  "elChange": "Change",
+  "elCast": "Cast vote",
+  "elVoted": "Your vote is cast.",
+  "elSecretNote": "Your vote is secret: the college records that you voted, never whom you chose.",
+  "elPickOne": "Choose one",
+  "elPickUpTo": "Choose up to {n}",
+  "@elPickUpTo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "elReview": "Review and cast",
+  "libCatalogue": "Library catalogue",
+  "libSearchHint": "Title, author, subject or ISBN",
+  "libClear": "Clear",
+  "libOnShelfOnly": "On the shelf now",
+  "libMyReservations": "My reservations",
+  "libReadyPickUp": "Ready: collect it at the desk.",
+  "libReadyUntil": "Ready: collect it at the desk by {when}.",
+  "@libReadyUntil": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "libQueuePlace": "Number {n} in the queue",
+  "@libQueuePlace": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "libSearchPrompt": "Search the catalogue to find a book and see if it is on the shelf.",
+  "libNoMatch": "No book matches your search.",
+  "libResults": "{n, plural, =1{1 book} other{{n} books}}",
+  "@libResults": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "libMore": "Show more",
+  "libOnShelf": "{available} of {copies} on the shelf",
+  "@libOnShelf": {
+    "placeholders": {
+      "available": {
+        "type": "int"
+      },
+      "copies": {
+        "type": "int"
+      }
+    }
+  },
+  "libAllOut": "All copies are out",
+  "libInQueue": "You are in the queue",
+  "libReserve": "Reserve",
+  "libReserved": "Reserved. You will be told when a copy is ready.",
+  "libReservationCancelled": "Reservation cancelled.",
+  "libSelfCheckout": "Self-checkout",
+  "libSelfCheckoutHelp": "At the self-checkout desk, type the number printed under the barcode on the book. The book goes on your library card.",
+  "libCopyCode": "Book number",
+  "libBorrow": "Borrow",
+  "libBorrowedDue": "Borrowed. Due back {day}.",
+  "@libBorrowedDue": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "gatePassParentPending": "Waiting for your family",
+  "hsTitle": "Hostel",
+  "hsSubtitle": "Room, out-passes, mess bills and requests",
+  "hsNoSeat": "You do not have a hostel seat. Apply below; the warden allots beds by distance and need.",
+  "hsApplicationOpen": "Your application {number} is with the warden.",
+  "@hsApplicationOpen": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "hsApplyForSeat": "Apply for a hostel seat",
+  "hsApplied": "Application sent to the warden.",
+  "hsApplications": "My applications",
+  "hsBed": "Bed {bed}",
+  "@hsBed": {
+    "placeholders": {
+      "bed": {
+        "type": "String"
+      }
+    }
+  },
+  "hsMessLeave": "Mess leave",
+  "hsMessLeaveSent": "The mess is told. Days away are taken off your bill.",
+  "hsChangeOrVacate": "Change room or vacate",
+  "hsRequestWaiting": "A request is already waiting for the warden.",
+  "hsRequestSent": "Request sent to the warden.",
+  "hsRequests": "Room requests",
+  "hsVacate": "Vacate",
+  "hsRoomChange": "Room change",
+  "hsFrom": "From {day}",
+  "@hsFrom": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "hsMessBills": "Mess bills",
+  "hsNoBills": "No mess bill yet.",
+  "hsMessLeaves": "Mess leave",
+  "hsAppApproved": "Approved",
+  "hsAppWaitlisted": "Waiting list",
+  "hsAppAllotted": "Bed allotted",
+  "hsAppRejected": "Not approved",
+  "hsAppWithdrawn": "Withdrawn",
+  "hsAppApplied": "Applied",
+  "hsApproved": "Approved",
+  "hsRejected": "Declined",
+  "hsCancelled": "Cancelled",
+  "hsPending": "Waiting",
+  "hsBillDays": "{n, plural, =1{1 day on the mess plan} other{{n} days on the mess plan}}",
+  "@hsBillDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "hsBillRebate": "Rebate for {days} days away: {amount}",
+  "@hsBillRebate": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "hsBillCharged": "Added to your fees",
+  "hsBillDraft": "Being worked out",
+  "hsPickGender": "Choose who the room is for.",
+  "hsDistanceNumber": "Give the distance as a number of kilometres.",
+  "hsApplySend": "Apply",
+  "hsGender": "Room for",
+  "hsGenderFemale": "Girls",
+  "hsGenderMale": "Boys",
+  "hsGenderOther": "Other",
+  "hsDistance": "Distance from home",
+  "hsKm": "km",
+  "hsNeeds": "Anything the warden should know (health, access)",
+  "hsEndBeforeStart": "The last day is before the first.",
+  "hsSend": "Send",
+  "hsMessLeaveHelp": "Tell the mess before you go: days away are taken off the month's bill.",
+  "hsFromDate": "First day away",
+  "hsToDate": "Last day away",
+  "hsReasonOptional": "Reason (optional)",
+  "hsReasonNeeded": "Say why, in a few words.",
+  "hsEffectiveOn": "From",
+  "hsReason": "Reason",
+  "trChangeSent": "Request sent to the transport office.",
+  "trBusPass": "Bus pass",
+  "trChangeStop": "Change my stop",
+  "trAskForStop": "Ask for a bus stop",
+  "trChangeRequests": "Stop change requests",
+  "trNewStop": "New stop",
+  "trFromDay": "From {day}",
+  "@trFromDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "trFeeMore": "{amount} more a month",
+  "@trFeeMore": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "trFeeLess": "{amount} less a month",
+  "@trFeeLess": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "trApproved": "Approved",
+  "trRejected": "Declined",
+  "trCancelled": "Cancelled",
+  "trPending": "Waiting",
+  "trPickStop": "Choose the new stop.",
+  "trReasonNeeded": "Say why, in a few words.",
+  "trNoRoutes": "No bus routes are running.",
+  "trPickStopHelp": "Choose the stop you want to use from the date below.",
+  "trPickupAt": "Pickup {time}",
+  "@trPickupAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "trMonthlyFee": "{amount} a month",
+  "@trMonthlyFee": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "trYourStopNow": "Your stop now",
+  "trFrom": "From",
+  "trReason": "Reason",
+  "trFeeNote": "If the new stop costs more or less, the difference is charged from that date.",
+  "trSendRequest": "Send request",
+  "atBySubject": "Attendance by subject",
+  "atLeaveOnDuty": "Leave and on duty",
+  "atLeaveOnDutySub": "For attendance, with a document",
+  "atRuleBody": "You need at least {pct}% under the rules of {body}.",
+  "@atRuleBody": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "body": {
+        "type": "String"
+      }
+    }
+  },
+  "atRuleOwn": "You need at least {pct}% under the college's rules.",
+  "@atRuleOwn": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atPerSubjectRule": "The minimum applies to every subject on its own.",
+  "atSubjects": "Subjects",
+  "atNoSubjects": "No classes have been marked yet.",
+  "atDetained": "You are short of attendance beyond what can be condoned. Meet your class teacher now.",
+  "atShortOverall": "You are below {pct}%. Attend every class to make it up.",
+  "@atShortOverall": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atShortIn": "Short of attendance in {subjects}.",
+  "@atShortIn": {
+    "placeholders": {
+      "subjects": {
+        "type": "String"
+      }
+    }
+  },
+  "atClose": "Close to the {pct}% minimum. Do not miss classes.",
+  "@atClose": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atFine": "Your attendance is above the minimum.",
+  "atOverall": "Overall",
+  "atOverallIn": "Overall in {term}",
+  "@atOverallIn": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "atHeldAttended": "{attended} of {held} classes attended",
+  "@atHeldAttended": {
+    "placeholders": {
+      "attended": {
+        "type": "int"
+      },
+      "held": {
+        "type": "int"
+      }
+    }
+  },
+  "atCondoned": "{n} classes condoned",
+  "@atCondoned": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "atNeedClasses": "{n, plural, =1{Attend the next class to reach {pct}%.} other{Attend the next {n} classes in a row to reach {pct}%.}}",
+  "@atNeedClasses": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atCloseSubject": "Close to the {pct}% minimum.",
+  "@atCloseSubject": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "atLeaveSent": "Sent to your teachers for approval.",
+  "atLeaveWithdrawn": "Request withdrawn.",
+  "atApply": "Apply",
+  "atLeaveEmpty": "No leave or on-duty requests yet.",
+  "atDocumentAttached": "Document attached",
+  "atCountsAs": "Counts as {what}",
+  "@atCountsAs": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "atWithdraw": "Withdraw",
+  "atKindOnDuty": "On duty",
+  "atKindMedical": "Medical leave",
+  "atKindPersonal": "Leave",
+  "atCountsPresent": "present",
+  "atCountsExcused": "excused",
+  "atCountsAbsent": "absent",
+  "atApproved": "Approved",
+  "atDeclined": "Declined",
+  "atRevoked": "Revoked",
+  "atWithdrawn": "Withdrawn",
+  "atAwaiting": "Awaiting decision",
+  "atDocTooBig": "The document is larger than 5 MB.",
+  "atReasonNeeded": "Say why, in a few words.",
+  "atEndBeforeStart": "The last day is before the first.",
+  "atNeedCertificate": "Attach the medical certificate.",
+  "atNeedActivity": "Name the event or activity.",
+  "atTimesOrder": "The start time must be before the end time.",
+  "atApplyTitle": "Apply for leave or on duty",
+  "atOnDutyHelp": "For college work away from class: a fest, sports, NSS or a placement drive. Approved on duty counts towards your attendance.",
+  "atMedicalHelp": "When you are unwell. Attach the doctor's certificate.",
+  "atPersonalHelp": "For other reasons. Your teachers decide.",
+  "atPartOfDay": "Part of a day only",
+  "atOnDay": "Day",
+  "atFirstDay": "First day",
+  "atLastDay": "Last day",
+  "atFromTime": "From",
+  "atToTime": "Until",
+  "atActivity": "Event or activity",
+  "atReason": "Reason",
+  "atDocumentNeeded": "Medical certificate (needed)",
+  "atDocumentOptional": "Letter or document (optional)",
+  "atRemove": "Remove",
+  "atTakePhoto": "Take a photo",
+  "atChooseFile": "Choose a PDF",
+  "atSend": "Send for approval"
 }

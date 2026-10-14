@@ -3657,5 +3657,356 @@
       }
     }
   },
-  "chatClassTeacher": "Class teacher"
+  "chatClassTeacher": "Class teacher",
+  "deskTitle": "Attendance desk",
+  "deskBody": "Periods, special classes, unmarked hours and student leave",
+  "deskByClass": "By class",
+  "deskUnmarked": "Unmarked",
+  "deskStudentLeave": "Student leave",
+  "deskNoClasses": "You have no classes to mark.",
+  "deskClass": "Class",
+  "deskHoliday": "Holiday: {name}",
+  "@deskHoliday": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deskPeriods": "Periods",
+  "deskNoPeriods": "The class has no periods on this day.",
+  "deskSubstitute": "Substitute",
+  "deskBatch": "Batch {batch}",
+  "@deskBatch": {
+    "placeholders": {
+      "batch": {
+        "type": "String"
+      }
+    }
+  },
+  "deskSpecialClasses": "Special classes",
+  "deskNoSpecial": "No special classes on this day.",
+  "deskCancelled": "Cancelled",
+  "deskFutureNote": "Classes on a later day are marked on the day.",
+  "deskKindRemedial": "Remedial",
+  "deskKindExtra": "Extra class",
+  "deskKindMakeup": "Make-up class",
+  "deskKindSpecial": "Special class",
+  "deskMarkedCount": "{n} marked",
+  "@deskMarkedCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "deskNotMarked": "Not marked",
+  "deskAllMarked": "Every period of the last week is marked.",
+  "deskUnmarkedHelp": "{n, plural, =1{1 period of the last week has no attendance yet.} other{{n} periods of the last week have no attendance yet.}}",
+  "@deskUnmarkedHelp": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "deskMark": "Mark",
+  "deskApproveLeaveTitle": "Approve leave for {name}?",
+  "@deskApproveLeaveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deskDeclineLeaveTitle": "Decline leave for {name}?",
+  "@deskDeclineLeaveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deskNoteOptional": "Note (optional)",
+  "deskDeclineReason": "Reason for declining",
+  "deskDeclineNeedsReason": "Give a reason for declining.",
+  "deskLeaveApproved": "Approved. The marks for those periods are written.",
+  "deskLeaveDeclined": "Declined. The family is told.",
+  "deskNoStudentLeave": "No leave or on-duty requests wait for you.",
+  "deskKindOnDuty": "On duty",
+  "deskKindMedical": "Medical leave",
+  "deskKindLeave": "Leave",
+  "deskAskedBy": "Asked by {name}",
+  "@deskAskedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deskViewDocument": "View document",
+  "deskNoCertificate": "No medical certificate attached.",
+  "deskSpecialSaved": "Marks saved. The class counts as held.",
+  "deskTapToChange": "Everyone starts present; tap a name to change the mark.",
+  "deskOnDutyCovers": "On duty: approved",
+  "deskLeaveCovers": "On approved leave",
+  "deskSaveMarks": "{n, plural, =0{Save: everyone present} =1{Save: 1 absent} other{Save: {n} absent}}",
+  "@deskSaveMarks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ivTitle": "My interviews",
+  "ivBody": "Score candidates when you sit on a hiring panel",
+  "ivEmpty": "You are not on any interview panel.",
+  "ivRound": "Round {n}",
+  "@ivRound": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ivCancelled": "Cancelled",
+  "ivScored": "Scored",
+  "ivUpcoming": "Coming up",
+  "ivToScore": "To score",
+  "ivSaved": "Scores saved.",
+  "ivOnTheDay": "Scores are given on the day of the interview.",
+  "ivClosed": "The whole panel has scored; the scores are final.",
+  "ivSubjectKnowledge": "Subject knowledge",
+  "ivTeachingAbility": "Teaching ability",
+  "ivCommunication": "Communication",
+  "ivResearch": "Research",
+  "ivAttitude": "Attitude",
+  "ivSelect": "Select",
+  "ivHold": "Hold",
+  "ivReject": "Reject",
+  "ivTotal": "Total {score} out of 100",
+  "@ivTotal": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "ivRemarks": "Remarks",
+  "ivSaveScores": "Save my scores",
+  "ivPanel": "The panel",
+  "ivNotYet": "Not yet",
+  "ivAverage": "Panel average {score}",
+  "@ivAverage": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveDelegateLine": "Approvals go to {name} while you are away",
+  "@leaveDelegateLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveDocumentAttached": "Document attached: {name}",
+  "@leaveDocumentAttached": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveDocumentNeeded": "Attach the supporting document before it can be approved",
+  "leaveAttach": "Attach",
+  "leaveDocumentSent": "Document attached.",
+  "leaveNoticeShort": "{type} must be asked for {n} days ahead.",
+  "@leaveNoticeShort": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "leaveTooLong": "One request for {type} can take at most {days} days.",
+  "@leaveTooLong": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveDocumentLater": "Leave applied, but the document was not attached ({reason}). Attach it from your requests.",
+  "@leaveDocumentLater": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveDelegate": "Who approves in your place",
+  "leaveDelegateHelp": "While you are away, this colleague decides what waits for your approval.",
+  "leaveNoDelegate": "No one",
+  "leaveAddDocument": "Add a document (optional)",
+  "leaveAddDocumentNeeded": "Add the supporting document",
+  "leaveRemoveDocument": "Remove",
+  "leaveRulesFor": "Rules for {type}",
+  "@leaveRulesFor": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveRuleNotice": "Ask {n} days ahead",
+  "@leaveRuleNotice": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "leaveRuleMax": "At most {days} days in one request",
+  "@leaveRuleMax": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveRuleDocument": "A supporting document is needed for more than {n} days",
+  "@leaveRuleDocument": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "leaveRuleNoHalfDay": "No half days",
+  "leaveDocCamera": "Take a photo",
+  "leaveDocGallery": "Choose a photo",
+  "leaveDocPdf": "Choose a PDF",
+  "indentsTitle": "Indents",
+  "indentsBody": "Ask the store for what your class or lab needs",
+  "indentApproved": "Approved",
+  "indentRejected": "Rejected",
+  "indentOrdered": "Ordered",
+  "indentWithHod": "With the head of department",
+  "indentWithPrincipal": "With the principal",
+  "indentRaised": "Indent raised. It goes for approval.",
+  "indentRaise": "Raise an indent",
+  "indentsEmpty": "You have not raised an indent yet.",
+  "indentNeededBy": "Needed by {day}",
+  "@indentNeededBy": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "indentEstimate": "Estimate {amount}",
+  "@indentEstimate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "indentPickItems": "Add at least one item.",
+  "indentReasonNeeded": "Say what it is for.",
+  "indentReason": "What it is for",
+  "indentNeededByLabel": "Needed by",
+  "indentAnyTime": "Any time",
+  "indentSearchItems": "Search items",
+  "indentNoItems": "No item matches.",
+  "indentInStock": "{n} {unit} in stock",
+  "@indentInStock": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "indentLastPrice": "last bought at {amount}",
+  "@indentLastPrice": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "indentLess": "One less",
+  "indentMore": "One more",
+  "indentFlowNote": "The head of department approves first, then the principal checks it against the budget.",
+  "indentSend": "Send for approval",
+  "bookingsTitle": "Rooms and halls",
+  "bookingsBody": "Book the seminar hall, a lab or a room",
+  "bookingApproved": "Approved",
+  "bookingRejected": "Declined",
+  "bookingCancelled": "Cancelled",
+  "bookingPending": "Waiting",
+  "bookingSent": "Booking sent to the estate office.",
+  "bookingNew": "Book a room",
+  "bookingsEmpty": "You have no bookings.",
+  "bookingCancelTitle": "Cancel this booking?",
+  "bookingCancelAction": "Cancel booking",
+  "bookingTitleNeeded": "Give the booking a title.",
+  "bookingTimesOrder": "The booking must end after it starts.",
+  "bookingAttendeesNumber": "Give the number of people as a number.",
+  "bookingTooMany": "{room} seats {n}.",
+  "@bookingTooMany": {
+    "placeholders": {
+      "room": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "bookingNoRooms": "No rooms can be booked. Ask the estate office.",
+  "bookingRoom": "Room",
+  "bookingRoomSeats": "{room} · {n} seats",
+  "@bookingRoomSeats": {
+    "placeholders": {
+      "room": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "bookingDay": "Day",
+  "bookingFrom": "From",
+  "bookingTo": "Until",
+  "bookingAlreadyHeld": "Already in use that day",
+  "bookingFreeAllDay": "Free all day.",
+  "bookingClash": "The room is in use {time}: {what}. Choose another time.",
+  "@bookingClash": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "bookingTitleLabel": "Title",
+  "bookingPurpose": "Purpose (optional)",
+  "bookingAttendees": "People expected (optional)",
+  "bookingSend": "Book"
 }

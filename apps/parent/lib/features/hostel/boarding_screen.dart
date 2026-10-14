@@ -3,11 +3,13 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/boarding.dart';
+import '../../core/family_care.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../fees/payment_gateway.dart';
+import 'out_pass_approvals_screen.dart';
 
 /// The child's hostel bed and recent night roll calls (an absence is highlighted; the server also
 /// sends a notification that opens this screen), plus the canteen wallet with online top-up.
@@ -28,6 +30,7 @@ class _BoardingScreenState extends State<BoardingScreen> {
   BoardingView? _boarding;
   WalletView? _wallet;
   List<CanteenDish> _menu = const [];
+  List<FamilyOutPass> _waiting = const [];
   ApiException? _error;
   String? _busy;
 
@@ -48,6 +51,12 @@ class _BoardingScreenState extends State<BoardingScreen> {
       });
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
+    }
+    try {
+      final waiting = await widget.api.outPassesForFamily();
+      if (mounted) setState(() => _waiting = [for (final p in waiting) if (p.studentId == widget.child.id) p]);
+    } on ApiException {
+      // Approvals show on their own page too; the hostel page still shows without them.
     }
     try {
       final menu = await widget.api.canteenMenu();
@@ -104,6 +113,7 @@ class _BoardingScreenState extends State<BoardingScreen> {
   }
 
   String _passStatus(AppLocalizations l, String status) => switch (status) {
+    'parent_pending' => l.outPassWaitingForYou,
     'requested' => l.outPassRequested,
     'approved' => l.outPassApproved,
     'issued' => l.outPassIssued,
@@ -195,6 +205,12 @@ class _BoardingScreenState extends State<BoardingScreen> {
               padding: const EdgeInsets.all(Kx.s16),
               children: [
                 if (_error != null) ErrorBanner(_error!, onRetry: _load),
+                if (b?.inSickbay case final stay?) ...[_SickbayCard(stay: stay, name: widget.child.firstName), const SizedBox(height: Kx.s16)],
+                if (_waiting.isNotEmpty) ...[
+                  Text(l.opApprovalsTitle, style: context.text.titleMedium),
+                  const SizedBox(height: Kx.s8),
+                  for (final p in _waiting) Padding(padding: const EdgeInsets.only(bottom: Kx.s12), child: OutPassApprovalCard(api: widget.api, pass: p, onDecided: _load)),
+                ],
                 if (b != null) ...[
                   Text(l.hostel, style: context.text.titleMedium),
                   const SizedBox(height: Kx.s8),
@@ -357,6 +373,43 @@ class _BoardingScreenState extends State<BoardingScreen> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// The child is in the hostel sick bay (or was, lately): since when, what for, and the treatment.
+class _SickbayCard extends StatelessWidget {
+  const _SickbayCard({required this.stay, required this.name});
+
+  final SickbayStay stay;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final c = context.colors;
+    return KxCard(
+      key: const Key('sickbayCard'),
+      color: c.errorContainer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.local_hospital_outlined, color: c.onErrorContainer),
+              const SizedBox(width: Kx.s8),
+              Expanded(child: Text(l.sickbayNow(name), style: context.text.titleSmall?.copyWith(color: c.onErrorContainer, fontWeight: FontWeight.w600))),
+            ],
+          ),
+          const SizedBox(height: Kx.s8),
+          Text(l.sickbaySince('${context.fmt.shortDay(stay.admittedAt)}, ${context.fmt.time(stay.admittedAt)}'), style: context.text.bodyMedium?.copyWith(color: c.onErrorContainer)),
+          Text(stay.symptoms, style: context.text.bodyLarge?.copyWith(color: c.onErrorContainer)),
+          if (stay.treatment.isNotEmpty) Text(l.sickbayTreatment(stay.treatment), style: context.text.bodyMedium?.copyWith(color: c.onErrorContainer)),
+          if (stay.referredTo.isNotEmpty) Text(l.sickbayReferred(stay.referredTo), style: context.text.bodyMedium?.copyWith(color: c.onErrorContainer, fontWeight: FontWeight.w600)),
+          const SizedBox(height: Kx.s4),
+          Text(l.sickbayWarden, style: context.text.bodySmall?.copyWith(color: c.onErrorContainer)),
+        ],
+      ),
     );
   }
 }

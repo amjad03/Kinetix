@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// App name (keep in English).
   ///
@@ -6285,10 +6278,873 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Class teacher'**
   String get chatClassTeacher;
+
+  /// No description provided for @deskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance desk'**
+  String get deskTitle;
+
+  /// No description provided for @deskBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Periods, special classes, unmarked hours and student leave'**
+  String get deskBody;
+
+  /// No description provided for @deskByClass.
+  ///
+  /// In en, this message translates to:
+  /// **'By class'**
+  String get deskByClass;
+
+  /// No description provided for @deskUnmarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmarked'**
+  String get deskUnmarked;
+
+  /// No description provided for @deskStudentLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Student leave'**
+  String get deskStudentLeave;
+
+  /// No description provided for @deskNoClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no classes to mark.'**
+  String get deskNoClasses;
+
+  /// No description provided for @deskClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get deskClass;
+
+  /// No description provided for @deskHoliday.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday: {name}'**
+  String deskHoliday(String name);
+
+  /// No description provided for @deskPeriods.
+  ///
+  /// In en, this message translates to:
+  /// **'Periods'**
+  String get deskPeriods;
+
+  /// No description provided for @deskNoPeriods.
+  ///
+  /// In en, this message translates to:
+  /// **'The class has no periods on this day.'**
+  String get deskNoPeriods;
+
+  /// No description provided for @deskSubstitute.
+  ///
+  /// In en, this message translates to:
+  /// **'Substitute'**
+  String get deskSubstitute;
+
+  /// No description provided for @deskBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch {batch}'**
+  String deskBatch(String batch);
+
+  /// No description provided for @deskSpecialClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Special classes'**
+  String get deskSpecialClasses;
+
+  /// No description provided for @deskNoSpecial.
+  ///
+  /// In en, this message translates to:
+  /// **'No special classes on this day.'**
+  String get deskNoSpecial;
+
+  /// No description provided for @deskCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get deskCancelled;
+
+  /// No description provided for @deskFutureNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes on a later day are marked on the day.'**
+  String get deskFutureNote;
+
+  /// No description provided for @deskKindRemedial.
+  ///
+  /// In en, this message translates to:
+  /// **'Remedial'**
+  String get deskKindRemedial;
+
+  /// No description provided for @deskKindExtra.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra class'**
+  String get deskKindExtra;
+
+  /// No description provided for @deskKindMakeup.
+  ///
+  /// In en, this message translates to:
+  /// **'Make-up class'**
+  String get deskKindMakeup;
+
+  /// No description provided for @deskKindSpecial.
+  ///
+  /// In en, this message translates to:
+  /// **'Special class'**
+  String get deskKindSpecial;
+
+  /// No description provided for @deskMarkedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} marked'**
+  String deskMarkedCount(int n);
+
+  /// No description provided for @deskNotMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not marked'**
+  String get deskNotMarked;
+
+  /// No description provided for @deskAllMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Every period of the last week is marked.'**
+  String get deskAllMarked;
+
+  /// No description provided for @deskUnmarkedHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 period of the last week has no attendance yet.} other{{n} periods of the last week have no attendance yet.}}'**
+  String deskUnmarkedHelp(int n);
+
+  /// No description provided for @deskMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark'**
+  String get deskMark;
+
+  /// No description provided for @deskApproveLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve leave for {name}?'**
+  String deskApproveLeaveTitle(String name);
+
+  /// No description provided for @deskDeclineLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline leave for {name}?'**
+  String deskDeclineLeaveTitle(String name);
+
+  /// No description provided for @deskNoteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get deskNoteOptional;
+
+  /// No description provided for @deskDeclineReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for declining'**
+  String get deskDeclineReason;
+
+  /// No description provided for @deskDeclineNeedsReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Give a reason for declining.'**
+  String get deskDeclineNeedsReason;
+
+  /// No description provided for @deskLeaveApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved. The marks for those periods are written.'**
+  String get deskLeaveApproved;
+
+  /// No description provided for @deskLeaveDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined. The family is told.'**
+  String get deskLeaveDeclined;
+
+  /// No description provided for @deskNoStudentLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'No leave or on-duty requests wait for you.'**
+  String get deskNoStudentLeave;
+
+  /// No description provided for @deskKindOnDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty'**
+  String get deskKindOnDuty;
+
+  /// No description provided for @deskKindMedical.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical leave'**
+  String get deskKindMedical;
+
+  /// No description provided for @deskKindLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get deskKindLeave;
+
+  /// No description provided for @deskAskedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Asked by {name}'**
+  String deskAskedBy(String name);
+
+  /// No description provided for @deskViewDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'View document'**
+  String get deskViewDocument;
+
+  /// No description provided for @deskNoCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'No medical certificate attached.'**
+  String get deskNoCertificate;
+
+  /// No description provided for @deskSpecialSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks saved. The class counts as held.'**
+  String get deskSpecialSaved;
+
+  /// No description provided for @deskTapToChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone starts present; tap a name to change the mark.'**
+  String get deskTapToChange;
+
+  /// No description provided for @deskOnDutyCovers.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty: approved'**
+  String get deskOnDutyCovers;
+
+  /// No description provided for @deskLeaveCovers.
+  ///
+  /// In en, this message translates to:
+  /// **'On approved leave'**
+  String get deskLeaveCovers;
+
+  /// No description provided for @deskSaveMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{Save: everyone present} =1{Save: 1 absent} other{Save: {n} absent}}'**
+  String deskSaveMarks(int n);
+
+  /// No description provided for @ivTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My interviews'**
+  String get ivTitle;
+
+  /// No description provided for @ivBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Score candidates when you sit on a hiring panel'**
+  String get ivBody;
+
+  /// No description provided for @ivEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not on any interview panel.'**
+  String get ivEmpty;
+
+  /// No description provided for @ivRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Round {n}'**
+  String ivRound(int n);
+
+  /// No description provided for @ivCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get ivCancelled;
+
+  /// No description provided for @ivScored.
+  ///
+  /// In en, this message translates to:
+  /// **'Scored'**
+  String get ivScored;
+
+  /// No description provided for @ivUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming up'**
+  String get ivUpcoming;
+
+  /// No description provided for @ivToScore.
+  ///
+  /// In en, this message translates to:
+  /// **'To score'**
+  String get ivToScore;
+
+  /// No description provided for @ivSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Scores saved.'**
+  String get ivSaved;
+
+  /// No description provided for @ivOnTheDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Scores are given on the day of the interview.'**
+  String get ivOnTheDay;
+
+  /// No description provided for @ivClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'The whole panel has scored; the scores are final.'**
+  String get ivClosed;
+
+  /// No description provided for @ivSubjectKnowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject knowledge'**
+  String get ivSubjectKnowledge;
+
+  /// No description provided for @ivTeachingAbility.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching ability'**
+  String get ivTeachingAbility;
+
+  /// No description provided for @ivCommunication.
+  ///
+  /// In en, this message translates to:
+  /// **'Communication'**
+  String get ivCommunication;
+
+  /// No description provided for @ivResearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Research'**
+  String get ivResearch;
+
+  /// No description provided for @ivAttitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Attitude'**
+  String get ivAttitude;
+
+  /// No description provided for @ivSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get ivSelect;
+
+  /// No description provided for @ivHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold'**
+  String get ivHold;
+
+  /// No description provided for @ivReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get ivReject;
+
+  /// No description provided for @ivTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {score} out of 100'**
+  String ivTotal(String score);
+
+  /// No description provided for @ivRemarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Remarks'**
+  String get ivRemarks;
+
+  /// No description provided for @ivSaveScores.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my scores'**
+  String get ivSaveScores;
+
+  /// No description provided for @ivPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'The panel'**
+  String get ivPanel;
+
+  /// No description provided for @ivNotYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet'**
+  String get ivNotYet;
+
+  /// No description provided for @ivAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel average {score}'**
+  String ivAverage(String score);
+
+  /// No description provided for @leaveDelegateLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Approvals go to {name} while you are away'**
+  String leaveDelegateLine(String name);
+
+  /// No description provided for @leaveDocumentAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Document attached: {name}'**
+  String leaveDocumentAttached(String name);
+
+  /// No description provided for @leaveDocumentNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach the supporting document before it can be approved'**
+  String get leaveDocumentNeeded;
+
+  /// No description provided for @leaveAttach.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach'**
+  String get leaveAttach;
+
+  /// No description provided for @leaveDocumentSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Document attached.'**
+  String get leaveDocumentSent;
+
+  /// No description provided for @leaveNoticeShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} must be asked for {n} days ahead.'**
+  String leaveNoticeShort(String type, int n);
+
+  /// No description provided for @leaveTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'One request for {type} can take at most {days} days.'**
+  String leaveTooLong(String type, String days);
+
+  /// No description provided for @leaveDocumentLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave applied, but the document was not attached ({reason}). Attach it from your requests.'**
+  String leaveDocumentLater(String reason);
+
+  /// No description provided for @leaveDelegate.
+  ///
+  /// In en, this message translates to:
+  /// **'Who approves in your place'**
+  String get leaveDelegate;
+
+  /// No description provided for @leaveDelegateHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'While you are away, this colleague decides what waits for your approval.'**
+  String get leaveDelegateHelp;
+
+  /// No description provided for @leaveNoDelegate.
+  ///
+  /// In en, this message translates to:
+  /// **'No one'**
+  String get leaveNoDelegate;
+
+  /// No description provided for @leaveAddDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a document (optional)'**
+  String get leaveAddDocument;
+
+  /// No description provided for @leaveAddDocumentNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the supporting document'**
+  String get leaveAddDocumentNeeded;
+
+  /// No description provided for @leaveRemoveDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get leaveRemoveDocument;
+
+  /// No description provided for @leaveRulesFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules for {type}'**
+  String leaveRulesFor(String type);
+
+  /// No description provided for @leaveRuleNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask {n} days ahead'**
+  String leaveRuleNotice(int n);
+
+  /// No description provided for @leaveRuleMax.
+  ///
+  /// In en, this message translates to:
+  /// **'At most {days} days in one request'**
+  String leaveRuleMax(String days);
+
+  /// No description provided for @leaveRuleDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'A supporting document is needed for more than {n} days'**
+  String leaveRuleDocument(int n);
+
+  /// No description provided for @leaveRuleNoHalfDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No half days'**
+  String get leaveRuleNoHalfDay;
+
+  /// No description provided for @leaveDocCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get leaveDocCamera;
+
+  /// No description provided for @leaveDocGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo'**
+  String get leaveDocGallery;
+
+  /// No description provided for @leaveDocPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a PDF'**
+  String get leaveDocPdf;
+
+  /// No description provided for @indentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Indents'**
+  String get indentsTitle;
+
+  /// No description provided for @indentsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the store for what your class or lab needs'**
+  String get indentsBody;
+
+  /// No description provided for @indentApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get indentApproved;
+
+  /// No description provided for @indentRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get indentRejected;
+
+  /// No description provided for @indentOrdered.
+  ///
+  /// In en, this message translates to:
+  /// **'Ordered'**
+  String get indentOrdered;
+
+  /// No description provided for @indentWithHod.
+  ///
+  /// In en, this message translates to:
+  /// **'With the head of department'**
+  String get indentWithHod;
+
+  /// No description provided for @indentWithPrincipal.
+  ///
+  /// In en, this message translates to:
+  /// **'With the principal'**
+  String get indentWithPrincipal;
+
+  /// No description provided for @indentRaised.
+  ///
+  /// In en, this message translates to:
+  /// **'Indent raised. It goes for approval.'**
+  String get indentRaised;
+
+  /// No description provided for @indentRaise.
+  ///
+  /// In en, this message translates to:
+  /// **'Raise an indent'**
+  String get indentRaise;
+
+  /// No description provided for @indentsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not raised an indent yet.'**
+  String get indentsEmpty;
+
+  /// No description provided for @indentNeededBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed by {day}'**
+  String indentNeededBy(String day);
+
+  /// No description provided for @indentEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate {amount}'**
+  String indentEstimate(String amount);
+
+  /// No description provided for @indentPickItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one item.'**
+  String get indentPickItems;
+
+  /// No description provided for @indentReasonNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Say what it is for.'**
+  String get indentReasonNeeded;
+
+  /// No description provided for @indentReason.
+  ///
+  /// In en, this message translates to:
+  /// **'What it is for'**
+  String get indentReason;
+
+  /// No description provided for @indentNeededByLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed by'**
+  String get indentNeededByLabel;
+
+  /// No description provided for @indentAnyTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Any time'**
+  String get indentAnyTime;
+
+  /// No description provided for @indentSearchItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Search items'**
+  String get indentSearchItems;
+
+  /// No description provided for @indentNoItems.
+  ///
+  /// In en, this message translates to:
+  /// **'No item matches.'**
+  String get indentNoItems;
+
+  /// No description provided for @indentInStock.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} {unit} in stock'**
+  String indentInStock(int n, String unit);
+
+  /// No description provided for @indentLastPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'last bought at {amount}'**
+  String indentLastPrice(String amount);
+
+  /// No description provided for @indentLess.
+  ///
+  /// In en, this message translates to:
+  /// **'One less'**
+  String get indentLess;
+
+  /// No description provided for @indentMore.
+  ///
+  /// In en, this message translates to:
+  /// **'One more'**
+  String get indentMore;
+
+  /// No description provided for @indentFlowNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The head of department approves first, then the principal checks it against the budget.'**
+  String get indentFlowNote;
+
+  /// No description provided for @indentSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send for approval'**
+  String get indentSend;
+
+  /// No description provided for @bookingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rooms and halls'**
+  String get bookingsTitle;
+
+  /// No description provided for @bookingsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Book the seminar hall, a lab or a room'**
+  String get bookingsBody;
+
+  /// No description provided for @bookingApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get bookingApproved;
+
+  /// No description provided for @bookingRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get bookingRejected;
+
+  /// No description provided for @bookingCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get bookingCancelled;
+
+  /// No description provided for @bookingPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get bookingPending;
+
+  /// No description provided for @bookingSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking sent to the estate office.'**
+  String get bookingSent;
+
+  /// No description provided for @bookingNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a room'**
+  String get bookingNew;
+
+  /// No description provided for @bookingsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no bookings.'**
+  String get bookingsEmpty;
+
+  /// No description provided for @bookingCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this booking?'**
+  String get bookingCancelTitle;
+
+  /// No description provided for @bookingCancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel booking'**
+  String get bookingCancelAction;
+
+  /// No description provided for @bookingTitleNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the booking a title.'**
+  String get bookingTitleNeeded;
+
+  /// No description provided for @bookingTimesOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'The booking must end after it starts.'**
+  String get bookingTimesOrder;
+
+  /// No description provided for @bookingAttendeesNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the number of people as a number.'**
+  String get bookingAttendeesNumber;
+
+  /// No description provided for @bookingTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{room} seats {n}.'**
+  String bookingTooMany(String room, int n);
+
+  /// No description provided for @bookingNoRooms.
+  ///
+  /// In en, this message translates to:
+  /// **'No rooms can be booked. Ask the estate office.'**
+  String get bookingNoRooms;
+
+  /// No description provided for @bookingRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Room'**
+  String get bookingRoom;
+
+  /// No description provided for @bookingRoomSeats.
+  ///
+  /// In en, this message translates to:
+  /// **'{room} · {n} seats'**
+  String bookingRoomSeats(String room, int n);
+
+  /// No description provided for @bookingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get bookingDay;
+
+  /// No description provided for @bookingFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get bookingFrom;
+
+  /// No description provided for @bookingTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get bookingTo;
+
+  /// No description provided for @bookingAlreadyHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in use that day'**
+  String get bookingAlreadyHeld;
+
+  /// No description provided for @bookingFreeAllDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Free all day.'**
+  String get bookingFreeAllDay;
+
+  /// No description provided for @bookingClash.
+  ///
+  /// In en, this message translates to:
+  /// **'The room is in use {time}: {what}. Choose another time.'**
+  String bookingClash(String time, String what);
+
+  /// No description provided for @bookingTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get bookingTitleLabel;
+
+  /// No description provided for @bookingPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose (optional)'**
+  String get bookingPurpose;
+
+  /// No description provided for @bookingAttendees.
+  ///
+  /// In en, this message translates to:
+  /// **'People expected (optional)'**
+  String get bookingAttendees;
+
+  /// No description provided for @bookingSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get bookingSend;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -6297,8 +7153,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
