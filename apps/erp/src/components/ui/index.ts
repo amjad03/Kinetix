@@ -1,7 +1,7 @@
 // The ERP component library: import from '@/components/ui'. See docs/design/erp-ui.md.
 export { Card } from './Card';
 export { StatTile, StatGrid, TrendPill, type Trend } from './StatTile';
-export { DataTable, type Column, type TableFilter, type BulkAction } from './DataTable';
+export { DataTable, TableFrame, type Column, type TableFilter, type BulkAction, type RowAction, type SelectionInfo, type ServerMode, type Density } from './DataTable';
 export { FormField, TextInput, SelectInput, CheckboxField, SwitchField, FormGrid, FormActions, FieldRow, FormRow, FormRowActions, InlineField } from './Form';
 export { Tabs, LinkTabs, TabPanel, type TabItem } from './Tabs';
 export { StatusPill, CountBadge, type Tone } from './Badge';

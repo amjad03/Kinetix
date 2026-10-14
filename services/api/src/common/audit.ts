@@ -17,11 +17,27 @@ export async function audit(
     data?: unknown;
     /** What this action changed, field by field (see {@link changesOf}); stored as `data.changes` so the audit viewer can show before and after. */
     changes?: Record<string, { before: unknown; after: unknown }>;
+    /**
+     * The record before and after the action: the fields that differ are stored as `changes`, the same as
+     * passing `changes: changesOf(before, after, fields)`. A create passes only `after`, a delete only `before`.
+     */
+    before?: Record<string, unknown> | null;
+    after?: Record<string, unknown> | null;
+    /** Only these fields of `before`/`after` are compared (leave out secrets and noise such as updated_at). */
+    fields?: string[];
   },
 ): Promise<void> {
-  const { changes, ...rest } = entry;
+  const { before, after, fields, ...withChanges } = entry;
+  const derived = before !== undefined || after !== undefined ? changesOf(before ?? {}, after ?? {}, fields ?? fieldsOf(before, after)) : undefined;
+  const { changes = derived, ...rest } = withChanges;
   const data = changes && Object.keys(changes).length ? { ...(typeof entry.data === 'object' && entry.data !== null ? entry.data : entry.data === undefined ? {} : { value: entry.data }), changes } : (entry.data ?? null);
   await tx.insert(auditLog).values({ ...rest, data });
+}
+
+/** Fields compared by default: everything but bookkeeping columns. */
+const NOISE = new Set(['updatedAt', 'updated_at', 'createdAt', 'created_at', 'tenantId', 'tenant_id', 'version', 'passwordHash', 'password_hash']);
+function fieldsOf(before?: Record<string, unknown> | null, after?: Record<string, unknown> | null): string[] {
+  return [...new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})])].filter((k) => !NOISE.has(k) && !k.startsWith('_'));
 }
 
 /** The fields that differ between two records, as `{ field: { before, after } }`. Only the named fields are compared when `fields` is given. */

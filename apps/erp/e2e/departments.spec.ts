@@ -9,7 +9,7 @@ const card = (page: Page, name: string) => page.getByTestId('department-card').f
 
 test('the principal sets up a department: name, head, subjects and staff, then deletes it', async ({ page }) => {
   const name = `E2E Humanities ${Date.now() % 100000}`;
-  await open(page, '/departments');
+  await open(page, '/departments?view=assign');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Departments');
   await expect(card(page, 'Commerce').getByTestId('department-head')).toHaveText('Head: Ravi Kumar');
   await expect(card(page, 'Commerce').getByTestId('department-subjects')).toContainText('Corporate Accounting');
@@ -28,7 +28,7 @@ test('the principal sets up a department: name, head, subjects and staff, then d
   await card(page, name).getByRole('link', { name: `View ${name}` }).click();
   await expect(page.getByTestId('dept-picker')).toBeVisible();
   await expect(page.getByTestId('no-subjects')).toContainText('No subjects in this department yet');
-  await open(page, '/departments');
+  await open(page, '/departments?view=assign');
 
   // Edit: rename, Ravi as head (only HOD staff are offered), Discrete Mathematics (moves it from Computer Science), Anita as staff.
   await card(page, name).getByRole('button', { name: `Edit ${name}` }).click();
@@ -62,7 +62,7 @@ test('the principal sets up a department: name, head, subjects and staff, then d
   await shot(page, 'department-principal');
 
   // Delete, with a confirmation.
-  await open(page, '/departments');
+  await open(page, '/departments?view=assign');
   await card(page, `${name} and Arts`).getByRole('button', { name: `Delete ${name} and Arts` }).click();
   dialog = page.getByRole('dialog', { name: `Delete ${name} and Arts?` });
   await expect(dialog).toContainText('Ravi Kumar will no longer see this department');

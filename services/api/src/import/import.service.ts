@@ -501,7 +501,8 @@ export class ImportService {
 // ---- helpers ---------------------------------------------------------------------------------
 
 
-function errorRow(line: number, e: unknown): RowResult {
+/** A failed row as the import report shows it: a row error, an HTTP error or a database error. */
+export function errorRow(line: number, e: unknown): RowResult {
   if (e instanceof RowError) return { row: line, status: 'error', message: e.message, code: ERROR_CODES[e.message] ?? 'IMPORT_INVALID_VALUE', ...(e.detail !== undefined && { detail: e.detail }) };
   if (e instanceof HttpException) {
     const body = e.getResponse();

@@ -73,6 +73,8 @@ export interface TenantSettings {
   boardModelsBase?: string | null;
   /** Institution announcements shown in the board's What's New, newest first. */
   boardWhatsNew?: { title: string; body: string; at: string }[];
+  /** Days deleted records stay in the recycle bin before they are purged (default 90, 1–3650). */
+  recycleBinRetentionDays?: number;
 }
 
 export interface BoardKioskSettings {
@@ -215,6 +217,8 @@ export const programs = pgTable('programs', {
   curriculumCode: text('curriculum_code'),
   /** Grades (K-12) or semesters (UG/PG). */
   termCount: smallint('term_count').notNull(),
+  /** Manual list order (record depth kit reorder); ties fall back to the name. */
+  sortOrder: integer('sort_order').notNull().default(0),
 });
 
 /** A teachable group: "Grade 7 B" or "BCom Sem 3 A". */
@@ -228,6 +232,8 @@ export const sections = pgTable('sections', {
   displayName: text('display_name').notNull(), // "BCom Sem 3 A"
   /** PUC: the stream combination this class is for (null = a mixed class). */
   combinationId: uuid('combination_id'),
+  /** Manual order within the program, year and term (record depth kit reorder). */
+  sortOrder: integer('sort_order').notNull().default(0),
 });
 
 export const subjects = pgTable('subjects', {
@@ -241,6 +247,8 @@ export const subjects = pgTable('subjects', {
   courseId: uuid('course_id').references(() => courses.id),
   /** The department that teaches it (null until the principal assigns one). */
   departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+  /** Manual order within the program and term (record depth kit reorder). */
+  sortOrder: integer('sort_order').notNull().default(0),
 });
 
 /**
@@ -254,6 +262,8 @@ export const departments = pgTable('departments', {
   headUserId: uuid('head_user_id').references(() => users.id, { onDelete: 'set null' }),
   /** The faculty or school above it (university model); the table is in schema-g1.ts. */
   facultyId: uuid('faculty_id'),
+  /** Manual list order (record depth kit reorder). */
+  sortOrder: integer('sort_order').notNull().default(0),
   createdAt: createdAt(),
 });
 
@@ -3257,6 +3267,10 @@ export const TENANT_TABLES = [
   'whiteboard_versions',
   'whiteboard_exports',
   'past_exam_questions',
+  // Record depth kit (migrations 0147, 0148)
+  'deleted_records',
+  'saved_views',
+  'record_imports',
   'report_schedules',
   'report_runs',
   'student_leave_requests',
@@ -7828,4 +7842,99 @@ export const academicRequests = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [index('academic_requests_status_idx').on(t.tenantId, t.status, t.kind), uniqueIndex('academic_requests_number_uq').on(t.tenantId, t.number)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Record depth kit (migrations 0147, 0148): recycle bin, saved views and staged imports
+// ---------------------------------------------------------------------------------------------
+
+/** What a recycle-bin entry holds: the deleted row, the rows the database cascaded away with it, and the links it cleared. */
+export interface DeletedSnapshot {
+  /** The deleted row itself, column name → value as Postgres `to_jsonb` gives it. */
+  root: Record<string, unknown>;
+  /** Rows deleted with it (cascades and listed dependents), parents before children. */
+  rows: { table: string; row: Record<string, unknown> }[];
+  /** Rows elsewhere whose link to a deleted row was set to null: restored by setting the columns back. */
+  nulled: { table: string; columns: string[]; values: unknown[]; keys: Record<string, unknown>[] }[];
+}
+
+/** A deleted record in the recycle bin, kept until it is restored or purged (after the retention period). */
+export const deletedRecords = pgTable(
+  'deleted_records',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    /** The record depth kit entity key ("students"). */
+    entity: text('entity').notNull(),
+    /** The ERP module it belongs to, for the bin's filter ("students", "hr", "academics"). */
+    module: text('module').notNull(),
+    tableName: text('table_name').notNull(),
+    recordId: text('record_id').notNull(),
+    /** How the record was named when it was deleted ("R12 Asha Rao"). */
+    label: text('label').notNull(),
+    snapshot: jsonb('snapshot').$type<DeletedSnapshot>().notNull(),
+    rowCount: integer('row_count').notNull().default(1),
+    deletedBy: uuid('deleted_by').references(() => users.id, { onDelete: 'set null' }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('deleted_records_tenant_at_idx').on(t.tenantId, t.deletedAt), index('deleted_records_record_idx').on(t.tenantId, t.tableName, t.recordId), index('deleted_records_module_idx').on(t.tenantId, t.module, t.deletedAt)],
+);
+
+/** What a saved view restores on a list page. */
+export interface SavedViewState {
+  q?: string;
+  filters?: Record<string, string>;
+  sort?: { id: string; dir: 'asc' | 'desc' } | null;
+  columns?: string[];
+  density?: 'comfortable' | 'compact';
+  pageSize?: number;
+}
+
+/** A person's named filters, columns and sort for one list page; shared with the roles listed. */
+export const savedViews = pgTable(
+  'saved_views',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    /** The list it belongs to: the record kit entity key ("students") or a page key. */
+    page: text('page').notNull(),
+    name: text('name').notNull(),
+    state: jsonb('state').$type<SavedViewState>().notNull().default({}),
+    sharedRoles: text('shared_roles').array().notNull().default(sql`'{}'::text[]`),
+    isDefault: boolean('is_default').notNull().default(false),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('saved_views_page_idx').on(t.tenantId, t.page)],
+);
+
+/** One row of an uploaded import file, by column key. */
+export interface ImportRowValues {
+  line: number;
+  values: Record<string, string>;
+}
+
+/** One uploaded import file: parsed and checked once, then committed from the stored rows. */
+export const recordImports = pgTable(
+  'record_imports',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    entity: text('entity').notNull(),
+    fileName: text('file_name').notNull(),
+    /** insert: rows whose key exists are errors; upsert: they are updated. */
+    mode: text('mode').$type<'insert' | 'upsert'>().notNull().default('upsert'),
+    /** validated → committed (or failed when the commit found errors). */
+    status: text('status').$type<'validated' | 'committed' | 'failed'>().notNull().default('validated'),
+    headers: jsonb('headers').$type<string[]>().notNull().default([]),
+    rows: jsonb('rows').$type<ImportRowValues[]>().notNull().default([]),
+    preview: jsonb('preview').$type<unknown[]>().notNull().default([]),
+    result: jsonb('result').$type<unknown[] | null>(),
+    totals: jsonb('totals').$type<Record<string, number>>().notNull().default({}),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    committedAt: timestamp('committed_at', { withTimezone: true }),
+  },
+  (t) => [index('record_imports_entity_idx').on(t.tenantId, t.entity, t.createdAt)],
 );

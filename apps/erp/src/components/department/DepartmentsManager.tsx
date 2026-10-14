@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useMemo, useState, useTransition } from 'react';
+import { useMemo, useState, useTransition, type ReactNode } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { createDepartment, deleteDepartment, updateDepartment } from '@/app/(dashboard)/departments/actions';
 import { EmptyState } from '@/components/States';
@@ -23,7 +23,7 @@ export interface SubjectOption {
 
 type Open = { kind: 'create' } | { kind: 'edit'; dept: AdminDepartment } | { kind: 'delete'; dept: AdminDepartment } | null;
 
-export function DepartmentsManager({ departments, staff, subjects }: { departments: AdminDepartment[]; staff: StaffMember[]; subjects: SubjectOption[] }) {
+export function DepartmentsManager({ departments, staff, subjects, tabs }: { departments: AdminDepartment[]; staff: StaffMember[]; subjects: SubjectOption[]; /** The page's view switch, under the header. */ tabs?: ReactNode }) {
   const { t } = useI18n();
   const [open, setOpen] = useState<Open>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -47,6 +47,7 @@ export function DepartmentsManager({ departments, staff, subjects }: { departmen
           </Button>
         }
       />
+      {tabs}
       {departments.length === 0 ? (
         <EmptyState
           icon={<GroupsOutlined />}

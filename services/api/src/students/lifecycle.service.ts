@@ -207,19 +207,71 @@ export class LifecycleService {
     if (roles.length > 0 && roles.every((r) => r.role === 'student')) await tx.update(users).set({ status: 'disabled', updatedAt: this.clockNow() }).where(eq(users.id, userId));
   }
 
-  /** Moves a student to another class of the same program (a section change, not a promotion). */
-  async changeSection(tx: Tx, actor: LifecycleActor, studentId: string, sectionId: string, reason: string) {
+  /**
+   * Moves a student to another class (a section change, not a promotion). By default only within the program;
+   * `anyProgram` allows a programme transfer (the record kit's Move), which the event and audit entry mark as such.
+   */
+  async changeSection(tx: Tx, actor: LifecycleActor, studentId: string, sectionId: string, reason: string, opts: { anyProgram?: boolean } = {}) {
     const ctx = await this.load(tx, studentId, true);
     if (!['enrolled', 'active', 'on_leave', 'detained', 'promoted'].includes(ctx.student.status)) throw new BadRequestException('This student is no longer on the roll');
     if (sectionId === ctx.student.sectionId) throw new BadRequestException('The student is already in this class');
     const [target] = await tx.select().from(sections).where(eq(sections.id, sectionId));
     if (!target) throw new NotFoundException('Class not found');
-    if (target.programId !== ctx.section.programId) throw new BadRequestException('Choose a class of the same program');
+    const programChange = target.programId !== ctx.section.programId;
+    if (programChange && !opts.anyProgram) throw new BadRequestException('Choose a class of the same program');
     const rollNo = await this.freeRollNo(tx, sectionId, ctx.student.rollNo);
     await tx.update(students).set({ sectionId, rollNo, updatedAt: this.clockNow() }).where(eq(students.id, studentId));
-    await this.addEvent(tx, actor, { studentId, kind: 'section', fromSectionId: ctx.student.sectionId, toSectionId: sectionId, reason, data: { rollNo, previousRollNo: ctx.student.rollNo } });
-    await audit(tx, { tenantId: actor.tenantId, actorType: 'user', actorId: actor.userId, action: 'students.section_changed.v1', subjectType: 'student', subjectId: studentId, data: { from: ctx.student.sectionId, to: sectionId, reason } });
+    const programs_ = programChange ? { fromProgramId: ctx.section.programId, toProgramId: target.programId } : {};
+    await this.addEvent(tx, actor, { studentId, kind: 'section', fromSectionId: ctx.student.sectionId, toSectionId: sectionId, reason, data: { rollNo, previousRollNo: ctx.student.rollNo, ...programs_ } });
+    await audit(tx, {
+      tenantId: actor.tenantId,
+      actorType: 'user',
+      actorId: actor.userId,
+      action: 'students.section_changed.v1',
+      subjectType: 'student',
+      subjectId: studentId,
+      changes: { sectionId: { before: ctx.student.sectionId, after: sectionId }, ...(rollNo !== ctx.student.rollNo && { rollNo: { before: ctx.student.rollNo, after: rollNo } }) },
+      data: { from: ctx.student.sectionId, to: sectionId, reason, ...programs_ },
+    });
     return { sectionId, rollNo };
+  }
+
+  /**
+   * Promotes one active student to the next term's class (the record kit's bulk "Promote"): the class given, or else
+   * the next term's class of the same program with the same name ("A" → "A"), preferring the newest academic year.
+   * A student in the program's final term graduates (alumni). Returns what happened, for the bulk report.
+   */
+  async promoteOne(tx: Tx, actor: LifecycleActor, studentId: string, label: string, toSectionId?: string | null): Promise<string> {
+    const ctx = await this.load(tx, studentId, true);
+    if (ctx.student.status !== 'active') throw new BadRequestException('Only active students can be promoted');
+    if (ctx.finalTerm) {
+      if (toSectionId) throw new BadRequestException(`${ctx.section.displayName} is the final term: graduate it instead of promoting`);
+      await this.changeStatus(tx, actor, studentId, 'alumni', { reason: label, kind: 'promotion' });
+      return 'Graduated';
+    }
+    const candidates = await tx
+      .select({ s: sections, starts: academicYears.startsOn })
+      .from(sections)
+      .innerJoin(academicYears, eq(academicYears.id, sections.academicYearId))
+      .where(and(eq(sections.programId, ctx.section.programId), eq(sections.term, ctx.section.term + 1)))
+      .orderBy(desc(academicYears.startsOn), asc(sections.sortOrder), asc(sections.name));
+    const target = toSectionId ? candidates.find((c) => c.s.id === toSectionId) : (candidates.find((c) => c.s.name.toLowerCase() === ctx.section.name.toLowerCase()) ?? candidates[0]);
+    if (!target) throw new BadRequestException(toSectionId ? 'That class is not the next term of this program' : `There is no class for term ${ctx.section.term + 1} of ${ctx.programName}. Add it first.`);
+    const today = await this.today(tx);
+    const rollNo = await this.freeRollNo(tx, target.s.id, ctx.student.rollNo);
+    await tx.update(students).set({ sectionId: target.s.id, rollNo, updatedAt: this.clockNow() }).where(eq(students.id, studentId));
+    await this.addEvent(tx, actor, { studentId, kind: 'promotion', fromStatus: 'active', toStatus: 'active', fromSectionId: ctx.student.sectionId, toSectionId: target.s.id, reason: label, effectiveOn: today, data: { rollNo, previousRollNo: ctx.student.rollNo } });
+    await audit(tx, {
+      tenantId: actor.tenantId,
+      actorType: 'user',
+      actorId: actor.userId,
+      action: 'students.promoted.v1',
+      subjectType: 'student',
+      subjectId: studentId,
+      changes: { sectionId: { before: ctx.student.sectionId, after: target.s.id } },
+      data: { from: ctx.section.displayName, to: target.s.displayName, reason: label },
+    });
+    return `${ctx.section.displayName} → ${target.s.displayName}`;
   }
 
   /** The roll number to keep in a class: the same if free, otherwise the next number after the highest. */
