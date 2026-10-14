@@ -1,29 +1,27 @@
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/PageHeader';
-import { ReportBuilder } from '@/components/reports/ReportBuilder';
 import { ErrorState } from '@/components/States';
+import { MyReports } from '@/components/reports/studio/MyReports';
+import { OVERVIEW_ROLES, ReportsTabs } from '@/components/reports/studio/ReportsTabs';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
-import type { DatasetMeta, SavedReport } from '@/lib/govern';
+import type { SavedReportRow } from '@/lib/report-studio';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: (await getI18n()).t('rb.title') };
+  return { title: (await getI18n()).t('rs.tab.mine') };
 }
 
-/** The custom report builder: saved definitions over the datasets the person's role allows. */
-export default async function CustomReportsPage() {
-  await requireSection('reports');
-  const { t } = await getI18n();
-  const [datasets, saved] = await Promise.all([
-    load(() => api<{ datasets: DatasetMeta[] }>('/v1/analytics/custom-reports/datasets')),
-    load(() => api<SavedReport[]>('/v1/analytics/custom-reports')),
-  ]);
-  const failed = datasets.error ?? saved.error;
-  if (failed !== undefined) return <ErrorState message={failed} />;
+/** Saved reports: the person's own, and those shared with their role (leaders see everyone's). */
+export default async function MyReportsPage() {
+  const me = await requireSection('reports');
+  const { t, locale } = await getI18n();
+  const [reports, folders] = await Promise.all([load(() => api<SavedReportRow[]>(`/v1/analytics/studio/reports?lang=${locale}`)), load(() => api<{ name: string; count: number }[]>('/v1/analytics/studio/folders'))]);
+  const failed = reports.error ?? folders.error;
   return (
     <>
-      <PageHeader title={t('rb.title')} subtitle={t('rb.subtitle')} />
-      <ReportBuilder datasets={datasets.data!.datasets} reports={saved.data!} />
+      <PageHeader title={t('rs.title')} subtitle={t('rs.mine.subtitle')} />
+      <ReportsTabs active="mine" overview={(me?.roles ?? []).some((r) => OVERVIEW_ROLES.includes(r))} />
+      {failed !== undefined ? <ErrorState message={failed} /> : <MyReports reports={reports.data!} folders={folders.data!} />}
     </>
   );
 }

@@ -1,43 +1,49 @@
 import { expect, test } from '@playwright/test';
-import { dialog, fillForm, submitForm, uniq, watchErrors } from './desk';
+import { uniq, watchErrors } from './desk';
 import { open } from './helpers';
 
 // Signed in as the principal (principal.setup.ts).
-test('the principal builds a custom report, runs it and deletes it', async ({ page }) => {
+test('the principal opens a library report and changes the period', async ({ page }) => {
   const errors = watchErrors(page);
-  await open(page, '/reports/custom');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Custom reports');
-  await page.getByTestId('rb-new').click();
-  const dlg = dialog(page, 'New report');
-  const name = uniq('Student list');
-  await fillForm(page, dlg, { name, description: 'Everyone on the roll' });
-  await dlg.getByTestId('f-dataset').getByRole('combobox').click();
-  await page.getByRole('option').first().click();
-  await submitForm(dlg);
-
-  const row = page.getByTestId('rb-list').getByRole('row').filter({ hasText: name });
-  await expect(row).toBeVisible();
-  await page.getByTestId(/^rb-run-/).first().waitFor();
-  await row.getByRole('button', { name: 'Run' }).click();
-  await expect(page.getByTestId('rb-result').or(page.getByTestId('rb-result-empty'))).toBeVisible();
-  await page.getByRole('button', { name: 'Close' }).last().click();
-
-  await row.getByRole('button', { name: 'Delete' }).click();
-  await expect(page.getByTestId('rb-list').getByRole('row').filter({ hasText: name })).toHaveCount(0);
+  await open(page, '/reports/library');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Reports');
+  await page.getByTestId('rs-lib-search').fill('strength');
+  await page.getByTestId('rs-lib-students.strength_by_class').getByRole('link', { name: 'Open' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Class-wise student strength');
+  await expect(page.getByTestId('rs-result').or(page.getByTestId('rs-empty'))).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('a report needs a name', async ({ page }) => {
+test('the principal builds a report, saves it to a folder and deletes it', async ({ page }) => {
+  const errors = watchErrors(page);
+  await open(page, '/reports/builder');
+  await page.getByTestId('rs-pick-students').click();
+  await page.getByTestId('rs-add-class').click();
+  await page.getByRole('menuitem', { name: 'Group by it' }).click();
+  await expect(page.getByTestId('rs-preview').getByTestId('rs-table').or(page.getByTestId('rs-empty'))).toBeVisible();
+  const name = uniq('Strength by class');
+  await page.getByTestId('rs-save').click();
+  await page.getByTestId('rs-save-name').fill(name);
+  await page.getByLabel('Folder').fill('Office');
+  await page.getByTestId('rs-save-submit').click();
+  await expect(page).toHaveURL(/\/reports\/builder\?id=/);
+
   await open(page, '/reports/custom');
-  await page.getByTestId('rb-new').click();
-  await page.getByTestId('ops-submit').click();
-  await expect(page.getByRole('alert')).toBeVisible();
+  const row = page.getByTestId('rs-mine').getByRole('row').filter({ hasText: name });
+  await expect(row).toContainText('Office');
+  await row.getByRole('button', { name: `Actions for ${name}` }).click();
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  await page.getByTestId('rs-confirm-delete').click();
+  await expect(page.getByTestId('rs-mine').getByRole('row').filter({ hasText: name })).toHaveCount(0);
+  expect(errors).toEqual([]);
 });
 
-test.describe('only roles that can open Reports', () => {
+test.describe('the library desk', () => {
   test.use({ storageState: 'e2e/.auth/librarian.json' });
-  test('the library desk is sent back to the library', async ({ page }) => {
-    await open(page, '/reports/custom');
-    await expect(page).toHaveURL(/\/library$/);
+  test('starts in the report library and sees library reports only', async ({ page }) => {
+    await open(page, '/reports');
+    await expect(page).toHaveURL(/\/reports\/library$/);
+    await expect(page.getByTestId('rs-lib-library.overdue')).toBeVisible();
+    await expect(page.getByTestId('rs-lib-fees.defaulters')).toHaveCount(0);
   });
 });

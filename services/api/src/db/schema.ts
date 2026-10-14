@@ -3416,6 +3416,8 @@ export const TENANT_TABLES = [
   'health_visits',
   'health_vaccinations',
   'custom_reports',
+  'report_favourites',
+  'report_dashboards',
   'connectors',
   'connector_deliveries',
   'alumni_campaigns',
@@ -6042,11 +6044,61 @@ export const customReports = pgTable(
     description: text('description').notNull().default(''),
     dataset: text('dataset').notNull(),
     definition: jsonb('definition').$type<Record<string, unknown>>().notNull().default({}),
+    /** A folder name in the person's report list ('' = none). */
+    folder: text('folder').notNull().default(''),
+    /** Roles that may open and run the report (the owner and leaders always may). */
+    sharedRoles: jsonb('shared_roles').$type<string[]>().notNull().default([]),
+    /** The library report it was customised from, if any. */
+    sourceLibraryKey: text('source_library_key'),
+    lastRunAt: timestamp('last_run_at', { withTimezone: true }),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [index('custom_reports_tenant_idx').on(t.tenantId, t.createdBy)],
+);
+
+/** A person's starred reports: `custom:<id>` or `lib:<key>`. */
+export const reportFavourites = pgTable(
+  'report_favourites',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    reportRef: text('report_ref').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('report_favourites_uq').on(t.tenantId, t.userId, t.reportRef)],
+);
+
+export interface DashboardWidget {
+  id: string;
+  /** A saved report (`custom:<id>`) or a library report (`lib:<key>`). */
+  ref: string;
+  title?: string;
+  /** Overrides the report's own chart. */
+  chart?: string;
+  /** Grid width out of 12, and height in rows. */
+  w: number;
+  h: number;
+}
+
+/** A grid of saved and library reports; leaders can make one the home dashboard of a role. */
+export const reportDashboards = pgTable(
+  'report_dashboards',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+    widgets: jsonb('widgets').$type<DashboardWidget[]>().notNull().default([]),
+    sharedRoles: jsonb('shared_roles').$type<string[]>().notNull().default([]),
+    defaultForRoles: jsonb('default_for_roles').$type<string[]>().notNull().default([]),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('report_dashboards_tenant_idx').on(t.tenantId, t.createdBy)],
 );
 
 

@@ -1,4 +1,6 @@
-/** A store-only ZIP writer (no compression), enough to bundle a few CSV files. No dependencies. */
+/** A small ZIP writer, enough to bundle a few CSV files or an XLSX workbook. No dependencies beyond zlib. */
+
+import { deflateRawSync } from 'node:zlib';
 
 const TABLE = (() => {
   const t = new Uint32Array(256);
@@ -16,7 +18,8 @@ export function crc32(buf: Buffer): number {
   return (c ^ 0xffffffff) >>> 0;
 }
 
-export function zip(files: { name: string; data: Buffer }[], at = new Date()): Buffer {
+/** `deflate`: compress entries (an XLSX workbook); the default stores them as they are. */
+export function zip(files: { name: string; data: Buffer }[], at = new Date(), deflate = false): Buffer {
   const dosTime = (at.getUTCHours() << 11) | (at.getUTCMinutes() << 5) | (at.getUTCSeconds() >> 1);
   const dosDate = ((Math.max(at.getUTCFullYear(), 1980) - 1980) << 9) | ((at.getUTCMonth() + 1) << 5) | at.getUTCDate();
   const parts: Buffer[] = [];
@@ -25,33 +28,35 @@ export function zip(files: { name: string; data: Buffer }[], at = new Date()): B
   for (const f of files) {
     const name = Buffer.from(f.name, 'utf8');
     const crc = crc32(f.data);
+    const body = deflate ? deflateRawSync(f.data) : f.data;
+    const method = deflate ? 8 : 0;
     const local = Buffer.alloc(30);
     local.writeUInt32LE(0x04034b50, 0);
     local.writeUInt16LE(20, 4);
     local.writeUInt16LE(0x0800, 6); // UTF-8 names
-    local.writeUInt16LE(0, 8); // stored
+    local.writeUInt16LE(method, 8); // 0 stored, 8 deflated
     local.writeUInt16LE(dosTime, 10);
     local.writeUInt16LE(dosDate, 12);
     local.writeUInt32LE(crc, 14);
-    local.writeUInt32LE(f.data.length, 18);
+    local.writeUInt32LE(body.length, 18);
     local.writeUInt32LE(f.data.length, 22);
     local.writeUInt16LE(name.length, 26);
-    parts.push(local, name, f.data);
+    parts.push(local, name, body);
     const c = Buffer.alloc(46);
     c.writeUInt32LE(0x02014b50, 0);
     c.writeUInt16LE(20, 4);
     c.writeUInt16LE(20, 6);
     c.writeUInt16LE(0x0800, 8);
-    c.writeUInt16LE(0, 10);
+    c.writeUInt16LE(method, 10);
     c.writeUInt16LE(dosTime, 12);
     c.writeUInt16LE(dosDate, 14);
     c.writeUInt32LE(crc, 16);
-    c.writeUInt32LE(f.data.length, 20);
+    c.writeUInt32LE(body.length, 20);
     c.writeUInt32LE(f.data.length, 24);
     c.writeUInt16LE(name.length, 28);
     c.writeUInt32LE(offset, 42);
     central.push(c, name);
-    offset += 30 + name.length + f.data.length;
+    offset += 30 + name.length + body.length;
   }
   const cd = Buffer.concat(central);
   const end = Buffer.alloc(22);

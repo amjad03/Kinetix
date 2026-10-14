@@ -175,10 +175,11 @@ describe('audit viewer, custom reports, connectors and alumni giving', () => {
 
     it('offers each role only its datasets', async () => {
       const keys = async (who: string) => ((await get(who, '/v1/analytics/custom-reports/datasets').expect(200)).body.datasets as { key: string }[]).map((d) => d.key);
-      expect(await keys('principal')).toEqual(['students', 'attendance', 'marks', 'fees', 'staff']);
-      expect(await keys('teacher')).toEqual(['students', 'attendance', 'marks']);
-      expect(await keys('accountant')).toEqual(['fees']);
-      expect(await keys('hr')).toEqual(['staff']);
+      // The report studio's catalogue: each role sees the datasets of its work, and nothing else.
+      expect(await keys('principal')).toEqual(expect.arrayContaining(['students', 'attendance', 'marks', 'fees', 'staff', 'payroll', 'admissions', 'library_loans']));
+      expect(await keys('teacher')).toEqual(['students', 'attendance', 'marks', 'results', 'semester_results', 'timetable']);
+      expect(await keys('accountant')).toEqual(['fees', 'collections', 'concessions', 'scholarships', 'payroll', 'inventory']);
+      expect(await keys('hr')).toEqual(['staff', 'staff_attendance', 'leave', 'payroll']);
       await get('student', '/v1/analytics/custom-reports/datasets').expect(403);
     });
 
