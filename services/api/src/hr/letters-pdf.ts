@@ -41,44 +41,6 @@ export function relievingLetterPdf(r: RelievingLetterData): Buffer {
   return pdf.build();
 }
 
-export interface AppointmentLetterData {
-  institution: string;
-  referenceNo: string;
-  issuedOn: string;
-  name: string;
-  employeeCode: string;
-  position: string;
-  department: string | null;
-  employmentType: string;
-  joiningOn: string;
-  annualCtcPaise: number | null;
-  terms: string;
-}
-
-const EMPLOYMENT_WORDS: Record<string, string> = { permanent: 'a permanent', contract: 'a contract', probation: 'a probationary', visiting: 'a visiting' };
-
-/** The appointment order issued when a selected candidate joins. */
-export function appointmentLetterPdf(o: AppointmentLetterData): Buffer {
-  const pdf = new Pdf(`Appointment ${o.employeeCode}`).addPage();
-  letterhead(pdf, o.institution, 'APPOINTMENT ORDER', o.referenceNo, o.issuedOn);
-  let y = 180;
-  pdf.text(`Dear ${o.name},`, L, y, { size: 11 });
-  y = pdf.paragraph(
-    `With reference to your acceptance of our offer, you are appointed as ${o.position}${o.department ? ` in the ${o.department} department` : ''} on ${EMPLOYMENT_WORDS[o.employmentType] ?? 'a'} basis with effect from ${longDate(o.joiningOn)}. Your employee code is ${o.employeeCode}.`,
-    L, y + 24, W, { size: 11, leading: 16 },
-  );
-  if (o.annualCtcPaise) y = pdf.paragraph(`Your annual cost to company is Rs. ${money(o.annualCtcPaise)}, paid monthly with statutory deductions (PF, ESI, professional tax and income tax) as applicable.`, L, y + 8, W, { size: 11, leading: 16 });
-  if (o.employmentType === 'probation') y = pdf.paragraph("You will be on probation for the period set by the institution's service rules. Your confirmation will follow a review of your work and conduct.", L, y + 8, W, { size: 11, leading: 16 });
-  y = pdf.paragraph('You will be governed by the service rules, code of conduct and leave rules of the institution in force from time to time. Please report to the HR office on your joining date with the original certificates listed in the joining checklist.', L, y + 8, W, { size: 11, leading: 16 });
-  if (o.terms.trim()) {
-    pdf.text('Terms and conditions', L, y + 22, { size: 11, bold: true });
-    y = pdf.paragraph(o.terms, L, y + 40, W, { size: 10, leading: 14 });
-  }
-  pdf.text('Authorised signatory', L, y + 80, { size: 10, bold: true }).text(o.institution, L, y + 94, { size: 10 });
-  pdf.line(A4.w - L - 180, y + 66, A4.w - L, y + 66).text('Accepted: signature and date', A4.w - L - 180, y + 80, { size: 9, color: '#666666' });
-  return pdf.build();
-}
-
 export interface ExperienceCertificateData {
   institution: string;
   referenceNo: string;

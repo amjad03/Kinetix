@@ -189,7 +189,7 @@ export const HR_LISTS = {
       { key: 'arrange', when: (r: Row) => r.status === 'approved' },
     ],
     params: [{ key: 'revoke', fields: [reason], tone: 'danger', when: (r: Row) => r.status === 'approved', help: 'hk.help.revoke' }],
-    links: (r: Row) => (r.hasDocument ? [{ label: 'hk.link.document', href: dl('leave-doc', r.id) }] : []),
+    links: (r: Row) => (r.hasDocument ? [{ label: 'hk.link.document', href: dl('staff-leave-doc', r.id) }] : []),
     upload: { label: 'hk.upload.document', kind: 'leave-doc', when: (r: Row) => ['pending', 'recommended', 'approved'].includes(String(r.status)) },
   },
   'comp-off-credits': {

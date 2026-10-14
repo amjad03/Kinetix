@@ -129,8 +129,11 @@ export function delegationsEntity(): RecordEntity {
     check: (ctx, id) => check(ctx.tx, ctx, id),
     remove: {
       guard: async (ctx, id) => {
-        const [row] = await ctx.tx.select().from(approvalDelegations).where(eq(approvalDelegations.id, id));
-        return row && row.delegatorId !== ctx.p.userId && !isAdmin(ctx) ? 'Only the person who gave this delegation, or the principal, can remove it' : null;
+        const [row] = await ctx.tx.select({ delegatorId: approvalDelegations.delegatorId, state }).from(approvalDelegations).where(eq(approvalDelegations.id, id));
+        if (!row) return null;
+        if (row.delegatorId !== ctx.p.userId && !isAdmin(ctx)) return 'Only the person who gave this delegation, or the principal, can remove it';
+        // A delegation that is in force or still to come is revoked first, so the trail shows when it stopped.
+        return row.state === 'active' || row.state === 'upcoming' ? 'Revoke the delegation first' : null;
       },
     },
     actions: {

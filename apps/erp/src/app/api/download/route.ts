@@ -46,7 +46,7 @@ const TARGETS: Record<string, (id: string) => string> = {
   'placement-shortlist': (id) => `/v1/placements/drives/${id}/shortlist?format=csv`,
   'placement-offer-letter': (id) => `/v1/placements/offers/${id}/letter`,
   'staff-doc': (id) => `/v1/hr/staff-documents/${id}/file`,
-  'leave-doc': (id) => `/v1/hr/leave/requests/${id}/document`,
+  'staff-leave-doc': (id) => `/v1/hr/leave/requests/${id}/document`,
   resume: (id) => `/v1/hr/applicants/${id}/resume`,
   'appointment-letter': (id) => `/v1/hr/applicants/${id}/appointment-letter`,
   'experience-cert': (id) => `/v1/hr/separations/${id}/experience-certificate`,

@@ -12,6 +12,9 @@ import { audit } from '../common/audit.js';
 import { localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
+import { rupees, staffBlock } from '../documents/doc-data.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { longDate } from '../documents/render.js';
 import { serviceBookEntries } from '../db/schema-hrpay.js';
 import { jobInterviews, jobInterviewScores } from '../db/schema-hr2.js';
 import { departments, departmentStaff, designations, jobApplicants, jobOpenings, offerLetters, onboardingItems, staffProfiles, tenants, userRoles, users } from '../db/schema.js';
@@ -21,7 +24,6 @@ import { addDays } from './dates.js';
 import { HR_ROLES, isHr, STAFF_ROLES } from './hr.access.js';
 import { HrService } from './hr.service.js';
 import { formatSeries, takeNumbers } from './hr-settings.js';
-import { appointmentLetterPdf } from './letters-pdf.js';
 import { ONBOARDING_CHECKLIST } from './onboarding-checklist.js';
 
 /** What each panel member scores, out of 10. */
@@ -53,6 +55,7 @@ export class HiringController {
     private readonly hr: HrService,
     private readonly scans: UploadScanService,
     private readonly storage: ObjectStorage,
+    private readonly engine: DocumentEngine,
   ) {}
 
   /** Interviews where the caller sits on the panel (HR sees all), coming up first. */
@@ -186,36 +189,45 @@ export class HiringController {
     });
   }
 
-  /** The appointment order of a hired applicant. */
+  /** The appointment order of a hired applicant, through the document engine (recorded in the register with its QR). */
   @Get('applicants/:id/appointment-letter')
   @Auth('user', HR_ROLES)
-  async appointment(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
-    const d = await this.db.withTenant(p.tenantId, async (tx) => {
+  appointment(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
       const [a] = await tx.select().from(jobApplicants).where(eq(jobApplicants.id, id));
       if (!a?.hiredUserId) throw new ConflictException('The appointment order is issued once the applicant is hired');
       const [o] = await tx.select().from(offerLetters).where(and(eq(offerLetters.applicantId, id), eq(offerLetters.status, 'accepted'))).orderBy(desc(offerLetters.createdAt)).limit(1);
       const [sp] = await tx.select({ code: staffProfiles.employeeCode, doj: staffProfiles.dateOfJoining, type: staffProfiles.employmentType, dept: departments.name, desig: designations.name }).from(staffProfiles).leftJoin(departments, eq(departments.id, staffProfiles.departmentId)).leftJoin(designations, eq(designations.id, staffProfiles.designationId)).where(eq(staffProfiles.userId, a.hiredUserId));
-      const [t] = await tx.select({ name: tenants.name }).from(tenants);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'recruitment.appointment_letter', subjectType: 'job_applicant', subjectId: id });
-      return { a, o, sp, institution: t?.name ?? '', today: await this.hr.today(tx) };
+      const today = await this.hr.today(tx);
+      const position = sp?.desig ?? o?.position ?? 'Staff member';
+      const department = sp?.dept ?? '';
+      const no = `APT/${(sp?.doj ?? today).slice(0, 4)}/${sp?.code ?? a.hiredUserId.slice(0, 6).toUpperCase()}`;
+      const appointment = {
+        no,
+        date: longDate(today),
+        name: a.fullName,
+        position,
+        department: department || 'the institution',
+        payScale: o?.annualCtcPaise ? `${rupees(o.annualCtcPaise).replace(/\.00$/, '')} a year (cost to company), paid monthly with statutory deductions` : 'as per the institution’s pay structure',
+        joiningDate: sp?.doj ? longDate(sp.doj) : '',
+        probation: (sp?.type ?? 'probation') === 'probation' ? 'one year' : 'none',
+        reportingTo: department ? `Head of the Department, ${department}` : 'Principal',
+        terms: (o?.terms ?? '').trim() || 'Your appointment is subject to verification of your original certificates. You will be governed by the service rules of the institution as amended from time to time.',
+      };
+      const out = await this.engine.produce(tx, p, {
+        docType: 'appointment_letter',
+        title: 'Letter of Appointment',
+        subject: { type: 'staff', id: a.hiredUserId, name: a.fullName },
+        source: { type: 'appointment', id: a.hiredUserId },
+        data: { ...(await staffBlock(tx, a.hiredUserId)), appointment },
+        keyFields: [{ label: 'Appointee', value: a.fullName }, { label: 'Position', value: position }, { label: 'Department', value: department }, { label: 'Employee code', value: sp?.code ?? '' }],
+        photo: null,
+      });
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="appointment-${sp?.code?.replace(/[^\w-]+/g, '-') ?? 'order'}.pdf"`);
+      return new StreamableFile(out.pdf);
     });
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="appointment-${d.sp?.code?.replace(/[^\w-]+/g, '-') ?? 'order'}.pdf"`);
-    return new StreamableFile(
-      appointmentLetterPdf({
-        institution: d.institution,
-        referenceNo: `APT/${(d.sp?.doj ?? '').slice(0, 4)}/${d.sp?.code ?? ''}`,
-        issuedOn: d.today,
-        name: d.a.fullName,
-        employeeCode: d.sp?.code ?? '',
-        position: d.sp?.desig ?? d.o?.position ?? '',
-        department: d.sp?.dept ?? null,
-        employmentType: d.sp?.type ?? 'probation',
-        joiningOn: d.sp?.doj ?? '',
-        annualCtcPaise: d.o?.annualCtcPaise ?? null,
-        terms: d.o?.terms ?? '',
-      }),
-    );
   }
 
   // ---- resumes -------------------------------------------------------------------------------------------

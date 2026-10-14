@@ -10,7 +10,9 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { feeCarryForwards, feeChallans, feeGovtScholarships, feeInvoiceLines, feeReceipts, feeReminderRuns } from '../db/schema-fee-depth.js';
 import { feeInvoices, feePayments, sections, students, tenants, users } from '../db/schema.js';
-import { feeReceiptPdf } from '../documents/pdfs.js';
+import { rupees, rupeeWords, studentBlock } from '../documents/doc-data.js';
+import { DocumentEngine } from '../documents/document-engine.service.js';
+import { longDate } from '../documents/render.js';
 import { chainOf, decideOnChain } from '../fee-accounts/chains.js';
 import { assertPeriodOpen, approverIds, deskTexts, nextNumber, settingsOf } from '../fee-accounts/fee-accounts.service.js';
 import { fyOf } from '../fee-accounts/fee-accounts.logic.js';
@@ -22,6 +24,9 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { CollectionService } from './collection.service.js';
 import { DuesService } from './dues.service.js';
 import { feeTexts } from './texts.js';
+
+/** How each payment mode reads on a receipt. */
+const MODE_LABEL: Record<string, string> = { cash: 'Cash', cheque: 'Cheque', dd: 'Demand draft', card: 'Card', upi: 'UPI', bank_transfer: 'Bank transfer', online: 'Online', credit: 'Credit adjustment' };
 
 const Mode = z.object({
   method: z.enum(['cash', 'cheque', 'dd', 'card', 'upi', 'bank_transfer']),
@@ -56,6 +61,7 @@ export class CollectionController {
     private readonly collection: CollectionService,
     private readonly duesSvc: DuesService,
     private readonly notifications: NotificationsService,
+    private readonly engine: DocumentEngine,
   ) {}
 
   private async ask(tx: Tx, role: string, what: string, number: string, id: string, except: string) {
@@ -136,7 +142,10 @@ export class CollectionController {
     });
   }
 
-  /** The receipt as a PDF from the documents' receipt generator; a copy after the first is marked duplicate. */
+  /**
+   * The receipt as a PDF through the document engine (recorded in the register with its QR); printing the same
+   * receipt again returns the same record. A cancelled or bounced receipt says so; a copy after the first is counted.
+   */
   @Get('receipts/:id/pdf')
   @Auth('user', FEE_ROLES)
   pdf(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
@@ -146,25 +155,42 @@ export class CollectionController {
       const v = await this.collection.view(tx, id);
       const duplicate = r.printCount > 1;
       if (duplicate) await auditUser(tx, p, 'fee_receipt.duplicate_printed', 'fee_receipt', id, { copy: r.printCount });
-      const towards = v.items.map((i) => `${i.head} ₹${(i.amountPaise / 100).toLocaleString('en-IN')}`).join('; ') + (v.advancePaise ? `; Advance ₹${(v.advancePaise / 100).toLocaleString('en-IN')}` : '');
-      const label = v.status === 'cancelled' ? ' (CANCELLED)' : v.status === 'bounced' ? ' (CHEQUE RETURNED)' : duplicate ? ' (DUPLICATE)' : '';
+      const towards = v.items.map((i) => `${i.head} ${rupees(i.amountPaise)}`).join('; ') + (v.advancePaise ? `; Advance ${rupees(v.advancePaise)}` : '');
+      const label = v.status === 'cancelled' ? ' (CANCELLED)' : v.status === 'bounced' ? ' (CHEQUE RETURNED)' : '';
+      const paidOn = longDate(v.date);
+      const lines = v.items.map((i, n) => ({ no: n + 1, head: i.head, amount: rupees(i.amountPaise) }));
+      if (v.advancePaise) lines.push({ no: lines.length + 1, head: 'Advance', amount: rupees(v.advancePaise) });
+      const data = {
+        ...(await studentBlock(tx, v.student.id)),
+        receipt: {
+          no: `${v.receiptNo}${label}`,
+          date: paidOn,
+          mode: v.modes.map((m) => MODE_LABEL[m.method] ?? m.method).join(' + '),
+          reference: v.modes.map((m) => m.chequeNo ?? m.reference).filter(Boolean).join(', ') || '—',
+          amount: rupees(v.totalPaise),
+          amountWords: rupeeWords(v.totalPaise),
+          balance: rupees(v.balancePaise),
+          towards: towards.slice(0, 160),
+          period: '',
+          receivedBy: 'Accounts office',
+          total: rupees(v.totalPaise),
+        },
+        fee: { lines },
+        doc: { issuedOn: paidOn },
+      };
+      const out = await this.engine.produce(tx, p, {
+        docType: 'fee_receipt',
+        title: 'Fee Receipt',
+        subject: { type: 'student', id: v.student.id, name: v.student.fullName },
+        source: { type: 'fee_receipt', id },
+        serial: v.receiptNo,
+        data,
+        keyFields: [{ label: 'Receipt number', value: `${v.receiptNo}${label}` }, { label: 'Received from', value: `${v.student.fullName} (${v.student.rollNo})` }, { label: 'Amount', value: rupees(v.totalPaise) }, { label: 'Paid on', value: paidOn }, { label: 'Towards', value: towards.slice(0, 160) }],
+        photo: null,
+      });
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="${v.receiptNo.replace(/\//g, '-')}${duplicate ? '-duplicate' : ''}.pdf"`);
-      return new StreamableFile(
-        feeReceiptPdf({
-          institution: v.institution,
-          receiptNo: `${v.receiptNo}${label}`,
-          studentName: v.student.fullName,
-          rollNo: v.student.rollNo,
-          className: v.student.section,
-          invoiceTitle: towards.slice(0, 160),
-          amountPaise: v.totalPaise,
-          balancePaise: v.balancePaise,
-          method: v.modes.map((m) => m.method).join(' + '),
-          reference: v.modes.map((m) => m.chequeNo ?? m.reference).filter(Boolean).join(', ') || null,
-          paidOn: v.date,
-        }),
-      );
+      return new StreamableFile(out.pdf);
     });
   }
 

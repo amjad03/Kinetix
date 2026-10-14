@@ -56,8 +56,6 @@ export default area(
     "rk.o.contact-suppressions.reason.bounced": "Email bounced",
     "rk.o.contact-suppressions.reason.opted_out": "Opted out",
     "rk.o.contact-suppressions.reason.invalid": "Wrong number or address",
-    "role.student": "Student",
-    "role.guardian": "Parent",
   },
   {
     hi: {
@@ -114,8 +112,6 @@ export default area(
       "rk.o.contact-suppressions.reason.bounced": "ईमेल लौट आया",
       "rk.o.contact-suppressions.reason.opted_out": "संदेश न चाहें",
       "rk.o.contact-suppressions.reason.invalid": "गलत नंबर या पता",
-      "role.student": "विद्यार्थी",
-      "role.guardian": "अभिभावक",
     },
     kn: {
       "cd.sup.title": "ಸಂಪರ್ಕಿಸಬೇಡಿ",
@@ -171,8 +167,6 @@ export default area(
       "rk.o.contact-suppressions.reason.bounced": "ಇಮೇಲ್ ಹಿಂತಿರುಗಿದೆ",
       "rk.o.contact-suppressions.reason.opted_out": "ಸಂದೇಶ ಬೇಡ ಎಂದಿದ್ದಾರೆ",
       "rk.o.contact-suppressions.reason.invalid": "ತಪ್ಪು ಸಂಖ್ಯೆ ಅಥವಾ ವಿಳಾಸ",
-      "role.student": "ವಿದ್ಯಾರ್ಥಿ",
-      "role.guardian": "ಪೋಷಕರು",
     },
   },
 );

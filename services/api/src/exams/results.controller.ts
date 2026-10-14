@@ -119,6 +119,7 @@ export class ResultsController {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
       const term = (await this.published(tx, studentId)).find((t) => t.sessionId === sessionId);
       if (!term) throw new NotFoundException('No published result for that session');
+      if ((await withheldSessions(tx, studentId)).has(sessionId)) throw new ForbiddenException('This result is withheld. Contact the examination office.');
       const block = await studentBlock(tx, studentId);
       const h = await studentHeader(tx, p.tenantId, studentId);
       const out = await this.engine.produce(tx, p, {
@@ -130,8 +131,6 @@ export class ResultsController {
         keyFields: [{ label: 'Candidate', value: `${h.name} (${h.rollNo})` }, { label: 'Examination', value: `${term.sessionName}, semester ${term.term}` }, { label: 'SGPA', value: term.sgpa.toFixed(2) }, { label: 'CGPA', value: term.cgpa.toFixed(2) }, { label: 'Result', value: term.outcome === 'pass' ? 'Pass' : 'Not passed' }],
       });
       return out.pdf;
-      if ((await withheldSessions(tx, studentId)).has(sessionId)) throw new ForbiddenException('This result is withheld. Contact the examination office.');
-      return marksCardPdf(await studentHeader(tx, p.tenantId, studentId), term);
     });
     this.send(res, pdf, 'marks-card.pdf');
   }
