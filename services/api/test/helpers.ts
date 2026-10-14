@@ -92,7 +92,8 @@ export async function createTenant(pool: pg.Pool) {
 
   const user = async (email: string, role: (typeof s.roleName.enumValues)[number]) => {
     const [u] = await db.insert(s.users).values({ tenantId, fullName: email.split('@')[0], email, passwordHash }).returning();
-    await db.insert(s.userRoles).values({ tenantId, userId: u.id, role, campusId: campus.id });
+    // Staff work on every campus (a campus on a staff role limits what they see: AuthGuard, migration 0182).
+    await db.insert(s.userRoles).values({ tenantId, userId: u.id, role, campusId: role === 'student' || role === 'guardian' ? campus.id : null });
     return u;
   };
   const teacher = await user(`teacher${n}@x.in`, 'teacher');

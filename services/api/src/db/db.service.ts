@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { ENV, type Env } from '../config/env.js';
+import { currentContext } from '../observability/request-context.js';
 import * as schema from './schema.js';
 
 export type Database = NodePgDatabase<typeof schema>;
@@ -35,6 +36,9 @@ export class DbService implements OnApplicationShutdown {
   async withTenant<T>(tenantId: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
     return this.app.transaction(async (tx) => {
       await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
+      // A campus-scoped member of staff sees only their campuses' rows of tables with a campus (migration 0182).
+      const campuses = currentContext()?.campusIds;
+      if (campuses?.length) await tx.execute(sql`select set_config('app.campus_ids', ${campuses.join(',')}, true)`);
       return fn(tx);
     });
   }

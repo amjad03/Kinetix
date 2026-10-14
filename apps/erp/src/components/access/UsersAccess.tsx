@@ -72,6 +72,7 @@ export function UsersAccess({ meta, page, state, roles }: { meta: RecordMeta; pa
         </div>
       ),
     },
+    { id: 'campus', header: t('rk.f.users.campusId'), hideBelow: 'md', csv: (x) => String(x.campusName ?? ''), cell: (x) => (x.campusName ? <StatusPill tone="warning">{String(x.campusName)}</StatusPill> : <span className="text-muted-foreground">{t('kr.users.everyCampus')}</span>) },
     { id: 'status', header: t('ga.users.col.status'), sortKey: 'status', cell: (x) => <StatusPill tone={STATUS_TONE[u(x).status]}>{t(`ga.users.status.${u(x).status}` as MessageKey)}</StatusPill> },
     {
       id: 'mfa',

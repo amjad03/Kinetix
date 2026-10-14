@@ -1,7 +1,8 @@
 import { area } from '../define';
 
 // The record kit lists of governance (rules, incidents, retention), single sign-on, integrations, course offerings,
-// curriculum versions and the school diary: entities, fields, filters, choices, actions and their inputs, empty states.
+// curriculum versions and the school diary, and the campus a member of staff is limited to: entities, fields, filters,
+// choices, actions and their inputs, empty states.
 export default area(
   {
     'rk.module.governance': 'Governance',
@@ -287,6 +288,9 @@ export default area(
     'kr.empty.course-offerings': 'Add the courses this term offers, with their seats, credits and faculty.',
     'kr.empty.curriculum-versions': 'Add a draft for a programme and regulation year, or read one from a syllabus file.',
     'kr.empty.diary-entries': 'Write the day\'s classwork, homework or a notice; families are told.',
+    'rk.f.users.campusId': 'Campus',
+    'rk.help.users.campusId': 'Limits every role of this person to one campus; leave empty for every campus',
+    'kr.users.everyCampus': 'Every campus',
   },
   {
     hi: {
@@ -573,6 +577,9 @@ export default area(
       'kr.empty.course-offerings': 'इस अवधि के पाठ्यक्रम उनकी सीटों, क्रेडिट और अध्यापकों के साथ जोड़ें।',
       'kr.empty.curriculum-versions': 'किसी कार्यक्रम और विनियम वर्ष का मसौदा जोड़ें, या पाठ्यक्रम फ़ाइल से पढ़ें।',
       'kr.empty.diary-entries': 'दिन का कक्षा कार्य, गृहकार्य या सूचना लिखें; परिवारों को बताया जाता है।',
+      'rk.f.users.campusId': 'परिसर',
+      'rk.help.users.campusId': 'इस व्यक्ति की हर भूमिका को एक परिसर तक सीमित करता है; सभी परिसरों के लिए खाली छोड़ें',
+      'kr.users.everyCampus': 'सभी परिसर',
     },
     kn: {
       'rk.module.governance': 'ಆಡಳಿತ ನಿಯಮಗಳು',
@@ -858,6 +865,9 @@ export default area(
       'kr.empty.course-offerings': 'ಈ ಅವಧಿಯ ಕೋರ್ಸ್‌ಗಳನ್ನು ಸೀಟುಗಳು, ಕ್ರೆಡಿಟ್ ಮತ್ತು ಅಧ್ಯಾಪಕರೊಂದಿಗೆ ಸೇರಿಸಿ.',
       'kr.empty.curriculum-versions': 'ಒಂದು ಕಾರ್ಯಕ್ರಮ ಮತ್ತು ನಿಯಮಾವಳಿ ವರ್ಷಕ್ಕೆ ಕರಡು ಸೇರಿಸಿ, ಅಥವಾ ಪಠ್ಯಕ್ರಮ ಫೈಲ್‌ನಿಂದ ಓದಿ.',
       'kr.empty.diary-entries': 'ದಿನದ ತರಗತಿ ಕೆಲಸ, ಮನೆಗೆಲಸ ಅಥವಾ ಸೂಚನೆ ಬರೆಯಿರಿ; ಕುಟುಂಬಗಳಿಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.',
+      'rk.f.users.campusId': 'ಕ್ಯಾಂಪಸ್',
+      'rk.help.users.campusId': 'ಈ ವ್ಯಕ್ತಿಯ ಪ್ರತಿ ಪಾತ್ರವನ್ನು ಒಂದು ಕ್ಯಾಂಪಸ್‌ಗೆ ಸೀಮಿತಗೊಳಿಸುತ್ತದೆ; ಎಲ್ಲಾ ಕ್ಯಾಂಪಸ್‌ಗಳಿಗೆ ಖಾಲಿ ಬಿಡಿ',
+      'kr.users.everyCampus': 'ಎಲ್ಲಾ ಕ್ಯಾಂಪಸ್‌ಗಳು',
     },
   },
 );

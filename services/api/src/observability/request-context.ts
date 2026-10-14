@@ -7,6 +7,8 @@ export interface RequestContext {
   spanId: string;
   tenantId?: string;
   userId?: string;
+  /** The campuses a campus-scoped member of staff works on (every role tied to a campus); absent means every campus. */
+  campusIds?: string[];
 }
 
 export const requestContext = new AsyncLocalStorage<RequestContext>();
