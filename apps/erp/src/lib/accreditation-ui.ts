@@ -4,7 +4,7 @@ export type Scoring = 'naac' | 'nba' | 'nirf' | 'none';
 
 export interface FrameworkSummary {
   key: string;
-  body: 'naac' | 'nba' | 'nirf' | 'aishe' | 'udise';
+  body: 'naac' | 'nba' | 'nirf' | 'aishe' | 'udise' | 'aicte' | 'ugc' | 'cbse';
   title: string;
   variant: string;
   source: string;
@@ -208,6 +208,8 @@ export interface EvidenceRow {
   fileName: string | null;
   createdAt: string;
   year: string | null;
+  tags?: string[];
+  validUntil?: string | null;
 }
 
 export interface MetricDetail {
@@ -229,7 +231,7 @@ export interface People {
   departments: { id: string; name: string }[];
 }
 
-export const BODY_ORDER = ['naac', 'nba', 'nirf', 'aishe', 'udise'] as const;
+export const BODY_ORDER = ['naac', 'nba', 'nirf', 'aishe', 'udise', 'aicte', 'ugc', 'cbse'] as const;
 
 /** The current cycle and the four before it, for the cycle picker (for example 2026-27 back to 2022-23). */
 export function cycleOptions(current: string): { value: string; label: string }[] {

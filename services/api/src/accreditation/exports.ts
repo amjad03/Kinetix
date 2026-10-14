@@ -141,7 +141,9 @@ export function nbaSar(c: ExportCtx, att: { program: string; scope: string; code
     rows.push([], ['Criterion total', '', '', '', cr.score, cr.weight]);
     sheets.push({ name: `Criterion ${cr.id}`, rows, widths: [8, 70, 12, 14, 8, 6, 80], title: [0], header: [2] });
   }
-  for (const m of c.a.metrics.filter((x) => x.kind === 'QnM' && x.inputs.length && (x.criterion === '4' || x.criterion === '5'))) sheets.push(yearTable(m, `Table ${m.code}`));
+  // The year-by-year tables: every quantitative metric computed over CAY, CAYm1 and CAYm2 (criteria 4 and 5 in the
+  // engineering formats, 5 and 6 in the management format, 8 for Tier-I first-year academics).
+  for (const m of c.a.metrics.filter((x) => x.kind === 'QnM' && x.inputs.length && x.yearsRequired > 1)) sheets.push(yearTable(m, `Table ${m.code}`));
   sheets.push({ name: 'CO-PO attainment', rows: [['Programme', 'Level', 'Code', 'Direct', 'Indirect', 'Attainment', 'Target', 'Gap', 'Met'], ...att.map((a) => [a.program, a.scope === 'po' ? 'PO / PSO' : 'CO', a.code, a.direct, a.indirect, a.combined, a.target, a.gap, yesNo(a.met)])], widths: [30, 10, 12, 10, 10, 12, 10, 10, 8], header: [0] });
   const pos = [...new Set(matrix.map((x) => x.po))].sort((x, y) => x.localeCompare(y, 'en', { numeric: true }));
   const cos = [...new Set(matrix.map((x) => `${x.program}|${x.co}`))];

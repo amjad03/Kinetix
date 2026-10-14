@@ -3,7 +3,7 @@
 // tenant reads the same seed. Institutions override benchmarks and weights per framework (accreditation_settings).
 
 export type Scoring = 'naac' | 'nba' | 'nirf' | 'none';
-export type Body = 'naac' | 'nba' | 'nirf' | 'aishe' | 'udise';
+export type Body = 'naac' | 'nba' | 'nirf' | 'aishe' | 'udise' | 'aicte' | 'ugc' | 'cbse';
 
 /** How the year-wise values of a metric become the one figure that is filed. */
 export type Combine =

@@ -5,9 +5,8 @@ import { ErrorState } from '@/components/States';
 import { UrlSelect } from '@/components/UrlSelect';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
-import type { CoSet } from '@/lib/obe';
+import type { CoSet, ObeStructure } from '@/lib/obe';
 import type { ClassroomActivity } from '@/lib/staff-changes';
-import type { Structure } from '@/lib/types';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('as.cls.title') };
@@ -17,7 +16,7 @@ export default async function ClassroomActivitiesPage({ searchParams }: { search
   await requireSection('obe');
   const q = await searchParams;
   const { t } = await getI18n();
-  const structure = await load(() => api<Structure>('/v1/admin/structure'));
+  const structure = await load(() => api<ObeStructure>('/v1/obe/structure'));
   const head = <PageHeader title={t('as.cls.title')} subtitle={t('as.cls.subtitle')} />;
   if (structure.error !== undefined) {
     return (

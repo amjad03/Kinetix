@@ -40,7 +40,7 @@ const sheet = (b: Buffer, name: string) => sheetsOf(b).find((s) => s.name === na
 
 describe('accreditation catalogue', () => {
   it('seeds every framework with unique metric codes, types, formulas and templates', () => {
-    expect(FRAMEWORKS.map((f) => f.key)).toEqual(['naac-aff-ug', 'naac-autonomous', 'naac-university', 'nba-ug-eng-t2', 'nirf-college', 'nirf-university', 'nirf-engineering', 'nirf-management', 'nirf-pharmacy', 'aishe-dcf2', 'udise-plus']);
+    expect(FRAMEWORKS.map((f) => f.key)).toEqual(['naac-aff-ug', 'naac-autonomous', 'naac-university', 'nba-ug-eng-t2', 'nba-ug-eng-t1', 'nba-pg-mgmt', 'nirf-college', 'nirf-university', 'nirf-engineering', 'nirf-management', 'nirf-pharmacy', 'aishe-dcf2', 'udise-plus', 'aicte-eoa', 'ugc-disclosure', 'cbse-oasis']);
     for (const f of FRAMEWORKS) {
       const ms = metricsOf(f);
       expect(new Set(ms.map((m) => m.code)).size, f.key).toBe(ms.length);
@@ -160,7 +160,7 @@ describe('accreditation module', () => {
 
   it('serves the catalogue: frameworks, aliases and the criteria tree with formulas, templates and evidence', async () => {
     const list = (await get('principal', '/v1/accreditation/frameworks').expect(200)).body;
-    expect(list).toHaveLength(11);
+    expect(list).toHaveLength(16);
     expect(list.find((f: { key: string }) => f.key === 'naac-aff-ug')).toMatchObject({ body: 'naac', weight: 1000, criteria: 7 });
     const tree = (await get('principal', '/v1/accreditation/frameworks/naac').expect(200)).body;
     expect(tree.key).toBe('naac-aff-ug');

@@ -65,3 +65,11 @@ export function researchKpis(i: KpiInput) {
     },
   };
 }
+
+/** The h-index: the largest h such that h papers have at least h citations each. */
+export function hIndex(citations: number[]): number {
+  const sorted = [...citations].sort((a, b) => b - a);
+  let h = 0;
+  while (h < sorted.length && sorted[h] >= h + 1) h++;
+  return h;
+}

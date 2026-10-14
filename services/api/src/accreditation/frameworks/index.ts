@@ -1,11 +1,13 @@
 // The framework catalogue: every accreditation framework and statutory return KINETIX seeds, and lookup by key or alias.
 import { NAAC_AFFILIATED, NAAC_AUTONOMOUS, NAAC_UNIVERSITY } from './naac.js';
 import { NBA_UG_ENGG_T2 } from './nba.js';
+import { NBA_PG_MGMT, NBA_UG_ENGG_T1 } from './nba-more.js';
+import { AICTE_EOA, CBSE_OASIS, UGC_DISCLOSURE } from './regulatory.js';
 import { NIRF_COLLEGE, NIRF_ENGINEERING, NIRF_MANAGEMENT, NIRF_PHARMACY, NIRF_UNIVERSITY } from './nirf.js';
 import { AISHE_DCF2, UDISE_PLUS } from './returns.js';
 import { flatten, type FlatMetric, type FrameworkDef } from './types.js';
 
-export const FRAMEWORKS: FrameworkDef[] = [NAAC_AFFILIATED, NAAC_AUTONOMOUS, NAAC_UNIVERSITY, NBA_UG_ENGG_T2, NIRF_COLLEGE, NIRF_UNIVERSITY, NIRF_ENGINEERING, NIRF_MANAGEMENT, NIRF_PHARMACY, AISHE_DCF2, UDISE_PLUS];
+export const FRAMEWORKS: FrameworkDef[] = [NAAC_AFFILIATED, NAAC_AUTONOMOUS, NAAC_UNIVERSITY, NBA_UG_ENGG_T2, NBA_UG_ENGG_T1, NBA_PG_MGMT, NIRF_COLLEGE, NIRF_UNIVERSITY, NIRF_ENGINEERING, NIRF_MANAGEMENT, NIRF_PHARMACY, AISHE_DCF2, UDISE_PLUS, AICTE_EOA, UGC_DISCLOSURE, CBSE_OASIS];
 
 const BY_KEY = new Map<string, FrameworkDef>();
 for (const f of FRAMEWORKS) {

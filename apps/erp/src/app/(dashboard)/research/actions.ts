@@ -67,3 +67,8 @@ export async function uploadDatasetFile(datasetId: string, file: { name: string;
 export async function importDoi(v: V) {
   return send<{ title: string }>(`${BASE}/publications/import-doi`, { doi: v.doi }, PAGE);
 }
+
+/** Records the public works of an ORCID iD for a teacher (yourself when none is chosen). */
+export async function importOrcid(v: V) {
+  return send<{ found: number; added: number; skipped: number; incomplete: number }>(`${BASE}/publications/import-orcid`, { orcid: v.orcid ?? '', ...(optStr(v.ownerUserId) ? { ownerUserId: v.ownerUserId } : {}) }, PAGE);
+}

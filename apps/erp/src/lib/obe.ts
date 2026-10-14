@@ -24,6 +24,15 @@ export interface CourseOutcome {
   code: string;
   statement: string;
   bloomLevel: string | null;
+  /** The API's check of the leading action verb against the Bloom level. */
+  verbCheck?: VerbCheck;
+}
+export interface VerbCheck {
+  verb: string | null;
+  levels: number[];
+  ok: boolean;
+  issue: 'none' | 'vague' | 'unknown' | 'level' | null;
+  claimed: number | null;
 }
 export interface CoSet {
   id: string;
@@ -36,7 +45,7 @@ export interface MatrixData {
   set: { id: string; subjectId: string; status: CoSet['status']; version: number };
   cos: CourseOutcome[];
   outcomes: ProgramOutcome[];
-  cells: { coId: string; outcomeId: string; strength: number }[];
+  cells: { coId: string; outcomeId: string; strength: number; justification?: string }[];
 }
 export interface AttainmentRow {
   scope: 'co' | 'po';
@@ -80,10 +89,11 @@ export function strengthMap(cells: { coId: string; outcomeId: string; strength: 
   return (coId, outcomeId) => m.get(key(coId, outcomeId)) ?? 0;
 }
 
-/** Sets one cell and returns the new list; strength 0 removes the mapping. */
-export function setCell(cells: { coId: string; outcomeId: string; strength: number }[], coId: string, outcomeId: string, strength: number) {
-  const rest = cells.filter((c) => !(c.coId === coId && c.outcomeId === outcomeId));
-  return strength > 0 ? [...rest, { coId, outcomeId, strength }] : rest;
+/** Sets one cell and returns the new list (a justification already written stays); strength 0 removes the mapping. */
+export function setCell<C extends { coId: string; outcomeId: string; strength: number }>(cells: C[], coId: string, outcomeId: string, strength: number): C[] {
+  const old = cells.find((c) => c.coId === coId && c.outcomeId === outcomeId);
+  const rest = cells.filter((c) => c !== old);
+  return strength > 0 ? [...rest, { ...old, coId, outcomeId, strength } as C] : rest;
 }
 
 /** COs with no mapping at all (an accreditor's first question about the matrix). */
@@ -100,3 +110,66 @@ export function levelTone(row: { combined: number | null; target: number }): 'no
 }
 
 export const fmtLevel = (n: number | null): string => (n === null ? '—' : n.toFixed(2));
+
+// ---- OBE depth (migration 0160) -------------------------------------------------------------------------------------
+
+export interface PeoMission {
+  peos: ProgramOutcome[];
+  missions: ProgramOutcome[];
+  cells: { peoId: string; missionId: string; strength: number; justification: string }[];
+}
+export interface StatementsVersion {
+  id: string;
+  version: number;
+  effectiveFrom: string;
+  note: string | null;
+  statements: { kind: string; code: string; statement: string }[];
+  publishedAt: string;
+}
+export interface Versions {
+  versions: StatementsVersion[];
+  current: { kind: string; code: string; statement: string }[];
+  changedSinceLatest: { added: { kind: string; code: string; statement: string }[]; removed: { kind: string; code: string; statement: string }[]; changed: { kind: string; code: string; statement: string; before: string }[] } | null;
+}
+export interface TargetRow {
+  scope: 'co' | 'po';
+  targetId: string;
+  code: string;
+  statement: string;
+  subject: string | null;
+  targetLevel: number | null;
+  thresholdPercent: number | null;
+  rationale: string;
+}
+export interface Targets {
+  defaultLevel: number;
+  defaultThreshold: number;
+  maxLevel: number;
+  rows: TargetRow[];
+}
+export interface StudentWise {
+  subject: { code: string; name: string };
+  threshold: number;
+  cos: { id: string; code: string; statement: string; threshold: number; measured: number; attained: number; percentAttained: number | null; level: number | null; target: number }[];
+  students: { id: string; name: string; rollNo: string; cos: { coId: string; percent: number | null; attained: boolean | null }[] }[];
+}
+export interface Trend {
+  years: { id: string; label: string }[];
+  outcomes: { code: string; values: (number | null)[]; target: number | null }[];
+  courses: { yearId: string; cos: number; met: number }[];
+}
+export interface ObeReadiness {
+  items: { key: string; done: boolean; detail: string }[];
+  score: number;
+}
+
+/** Bloom's six levels, stored as L1 to L6. */
+export const BLOOM_CODES = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6'] as const;
+
+/** Changes a mapping cell's justification, keeping the strength. */
+export function setJustification<C extends { coId: string; outcomeId: string; strength: number; justification?: string }>(cells: C[], coId: string, outcomeId: string, text: string): C[] {
+  return cells.map((c) => (c.coId === coId && c.outcomeId === outcomeId ? { ...c, justification: text } : c));
+}
+
+/** Programmes, years and courses for the OBE pickers (`GET /v1/obe/structure`, readable by OBE staff). */
+export type ObeStructure = Pick<import('./types').Structure, 'academicYears' | 'programs' | 'subjects'>;

@@ -2701,6 +2701,8 @@ export const coOutcomeMap = pgTable(
     coId: uuid('co_id').notNull().references(() => courseOutcomes.id, { onDelete: 'cascade' }),
     outcomeId: uuid('outcome_id').notNull().references(() => programOutcomes.id, { onDelete: 'cascade' }),
     strength: smallint('strength').notNull(),
+    /** Why the CO addresses the PO at this strength (NBA asks for it with every mapping; migration 0160). */
+    justification: text('justification'),
   },
   (t) => [primaryKey({ columns: [t.coId, t.outcomeId] })],
 );
@@ -2793,6 +2795,9 @@ export const improvementActions = pgTable('improvement_actions', {
   remeasuredValue: numeric('remeasured_value', { precision: 12, scale: 2, mode: 'number' }),
   remeasureNote: text('remeasure_note'),
   remeasuredAt: timestamp('remeasured_at', { withTimezone: true }),
+  /** The year whose attainment showed the gap, and the outcome's code then (migration 0160). */
+  academicYearId: uuid('academic_year_id').references(() => academicYears.id, { onDelete: 'set null' }),
+  code: text('code'),
 });
 
 /** Evidence for accreditation: a link or note tied to a CO, PO/PSO or an improvement action. */
@@ -2814,6 +2819,9 @@ export const obeEvidence = pgTable('obe_evidence', {
   /** manual, or the module the evidence engine harvested it from (placements, exams, surveys …). */
   source: text('source').notNull().default('manual'),
   sourceRef: text('source_ref'),
+  /** Free tags for the evidence repository, and the date a certificate or licence stops being valid (migration 0161). */
+  tags: text('tags').array().notNull().default(sql`'{}'::text[]`),
+  validUntil: date('valid_until'),
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -3730,6 +3738,27 @@ export const TENANT_TABLES = [
   'integrity_matches',
   'exam_session_stages', 'exam_attendance', 'exam_fee_dues', 'exam_moderations', 'exam_office_settings',
   'affiliation_settings', 'programme_affiliations',
+  // Research office depth (migration 0159).
+  'research_calls',
+  'research_consultancies',
+  'research_mous',
+  'research_mou_activities',
+  'research_seed_grants',
+  'research_recognitions',
+  'research_ethics_approvals',
+  'research_equipment',
+  'research_equipment_usage',
+  'grant_utilisation_certificates',
+  'scholar_dc_meetings',
+  'scholar_coursework',
+  // OBE depth (migration 0160).
+  'peo_mission_map',
+  'program_outcome_versions',
+  'obe_targets',
+  // IQAC depth (migration 0161).
+  'iqac_members',
+  'iqac_initiatives',
+  'iqac_aqar_submissions',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4453,6 +4482,8 @@ export const researchProposals = pgTable('research_proposals', {
   decidedAt: timestamp('decided_at', { withTimezone: true }),
   version: integer('version').notNull().default(0),
   createdAt: createdAt(),
+  /** The funding call it answers (research_calls, migration 0159); its internal deadline gates submission. */
+  callId: uuid('call_id'),
 });
 
 export const researchProjects = pgTable('research_projects', {
@@ -4523,6 +4554,19 @@ export const publications = pgTable('publications', {
   indexedIn: text('indexed_in').array().notNull().default(sql`'{}'::text[]`),
   authors: jsonb('authors').notNull().default(sql`'[]'::jsonb`),
   createdAt: createdAt(),
+  // Research depth (migration 0159): bibliographic detail, citations for the h-index, and retraction.
+  departmentId: ref('department_id', () => departments.id),
+  isbn: text('isbn'),
+  volume: text('volume'),
+  issue: text('issue'),
+  pages: text('pages'),
+  url: text('url'),
+  citations: integer('citations').notNull().default(0),
+  impactFactor: numeric('impact_factor', { precision: 7, scale: 3, mode: 'number' }),
+  quartile: text('quartile'), // Q1 | Q2 | Q3 | Q4
+  status: text('status').notNull().default('published'), // accepted | published | retracted
+  retractedOn: date('retracted_on'),
+  retractionNote: text('retraction_note'),
 });
 
 export const researchGrants = pgTable('research_grants', {
@@ -4579,6 +4623,13 @@ export const patents = pgTable('patents', {
   status: text('status').notNull().default('filed'), // draft | filed | published | granted | rejected
   grantedOn: date('granted_on'),
   createdAt: createdAt(),
+  // Research depth (migration 0159): office, publication and grant numbers, and commercialisation.
+  departmentId: ref('department_id', () => departments.id),
+  country: text('country').notNull().default('India'),
+  publishedOn: date('published_on'),
+  patentNo: text('patent_no'),
+  licensed: boolean('licensed').notNull().default(false),
+  licenceRevenuePaise: bigint('licence_revenue_paise', { mode: 'number' }).notNull().default(0),
 });
 
 // ---------------------------------------------------------------------------------------------

@@ -4,8 +4,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
-import type { AttainmentConfig, ProgramOutcome } from '@/lib/obe';
-import type { Structure } from '@/lib/types';
+import type { AttainmentConfig, ObeStructure, ProgramOutcome } from '@/lib/obe';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('obe.setup') };
@@ -14,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ObeSetupPage({ searchParams }: { searchParams: Promise<{ programId?: string }> }) {
   const me = await requireSection('obe');
   const q = await searchParams;
-  const structure = await load(() => api<Structure>('/v1/admin/structure'));
+  const structure = await load(() => api<ObeStructure>('/v1/obe/structure'));
   const { t } = await getI18n();
   const head = <PageHeader title={t('obe.setup')} subtitle={t('obe.setupSubtitle')} />;
   if (structure.error !== undefined) return <>{head}<ErrorState message={structure.error} /></>;

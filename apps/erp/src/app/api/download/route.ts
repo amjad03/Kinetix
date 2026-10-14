@@ -92,6 +92,15 @@ export async function GET(req: NextRequest) {
     if (!target) return new Response('Not found', { status: 404 });
     FIXED[kind] = target;
   }
+  // Research reports: ?kind=research&id=nirf-rp&toYear=2026, or ?kind=research&id=profile&user=<uuid>
+  if (kind === 'research') {
+    const sp = req.nextUrl.searchParams;
+    const toYear = sp.get('toYear') ?? '';
+    const user = sp.get('user') ?? '';
+    if (id === 'nirf-rp') FIXED[kind] = `/v1/research/reports/nirf-rp.xlsx${/^\d{4}$/.test(toYear) ? `?toYear=${toYear}` : ''}`;
+    else if (id === 'profile') FIXED[kind] = `/v1/research/reports/faculty-profile.xlsx${UUID.test(user) ? `?userId=${user}` : ''}`;
+    else return new Response('Not found', { status: 404 });
+  }
   if (kind === 'hall-ticket') {
     const test = req.nextUrl.searchParams.get('test') ?? '';
     const app = req.nextUrl.searchParams.get('app') ?? '';

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import NextLink from 'next/link';
-import { ArrowRight, BadgeCheck, ClipboardList, GraduationCap, School, Trophy } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Building2, ClipboardList, GraduationCap, Landmark, School, ShieldCheck, Trophy } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { Card, StatusPill } from '@/components/ui';
@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('acx.h.title') };
 }
 
-const ICON = { naac: BadgeCheck, nba: GraduationCap, nirf: Trophy, aishe: ClipboardList, udise: School } as const;
+const ICON = { naac: BadgeCheck, nba: GraduationCap, nirf: Trophy, aishe: ClipboardList, udise: School, aicte: Building2, ugc: Landmark, cbse: ShieldCheck } as const;
 
 /** The accreditation hub: every framework and statutory return KINETIX prepares, grouped by body, and my open tasks. */
 export default async function AccreditationHub() {
