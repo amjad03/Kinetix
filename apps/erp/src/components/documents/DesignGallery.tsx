@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { Check, Copy, Eye, FileDown, History, Pencil, Trash2 } from 'lucide-react';
 import { deleteDesign, designVersions, duplicateDesign, renameDesign, restoreDesignVersion, setDefaultDesign } from '@/app/(dashboard)/documents/designs-actions';
+import { CustomiseButton } from '@/components/documents/CustomiseButton';
 import { useNotice } from '@/components/hr/Common';
 import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from '@/components/kx';
 import { TextInput } from '@/components/ui';
@@ -97,6 +98,7 @@ export function DesignGallery({ designs, canEdit, stamp, initialType }: { design
                         {t('dt.setDefault')}
                       </Button>
                     )}
+                    {canEdit && <CustomiseButton design={d} size="small" />}
                     <span className="ml-auto flex">
                       <Tooltip title={t('dt.openPdf')}>
                         <IconButton size="small" aria-label={t('dt.openPdf')} onClick={() => window.open(previewUrl(d.id, { format: 'pdf', v: `${d.version}-${stamp}` }), '_blank', 'noopener')}>

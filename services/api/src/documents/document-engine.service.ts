@@ -6,6 +6,7 @@ import type { Tx } from '../db/db.service.js';
 import { institutionProfiles, issuedDocuments, students, tenants, users } from '../db/schema.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { BrandingService, readAll } from './branding.service.js';
+import { staffBlock, studentBlock } from './doc-data.js';
 import { DocTemplatesService } from './doc-templates.service.js';
 import { renderCardSheets, renderPdf, renderSvg, svgToPng } from './engine/index.js';
 import { mergePdfs } from './engine/merge.js';
@@ -23,6 +24,12 @@ export interface Produced {
 }
 
 type Actor = { tenantId: string; userId: string | null };
+
+/** A real person to preview a template with: a student (students.id) or a staff member (users.id). */
+export interface PreviewSubject {
+  type: 'student' | 'staff';
+  id: string;
+}
 
 /**
  * What every document generator calls: renders the document with the institution's default
@@ -154,10 +161,20 @@ export class DocumentEngine {
     }
   }
 
-  /** Renders a template with sample data (or given data), unrecorded, marked as a specimen. */
-  async preview(tx: Tx, layout: DocLayout, o: { format: 'pdf' | 'svg' | 'png'; side?: string; page?: number; width?: number; animate?: boolean; data?: DocData }): Promise<Buffer | string> {
+  /**
+   * Renders a template with sample data (or given data), unrecorded, marked as a specimen. With a
+   * `subject`, the student's or staff member's real details and photo replace the sample person's.
+   */
+  async preview(tx: Tx, layout: DocLayout, o: { format: 'pdf' | 'svg' | 'png'; side?: string; page?: number; width?: number; animate?: boolean; data?: DocData; subject?: PreviewSubject }): Promise<Buffer | string> {
     const tz = await this.tz(tx);
-    const sample = o.data ?? DOC_SAMPLES[layout.docType];
+    let sample = o.data ?? DOC_SAMPLES[layout.docType];
+    let photo: Buffer | null = null;
+    if (o.subject) {
+      const block = o.subject.type === 'student' ? await studentBlock(tx, o.subject.id) : await staffBlock(tx, o.subject.id);
+      if (!Object.keys(block[o.subject.type] as DocData).length) throw new NotFoundException(o.subject.type === 'student' ? 'Student not found' : 'Staff member not found');
+      sample = { ...sample, ...block };
+      photo = await this.photoFor(tx, o.subject);
+    }
     const common = await this.common(tx);
     const inst = common.institution as DocData;
     // The institution's own name and contacts replace the sample's; sample people stay.
@@ -165,7 +182,7 @@ export class DocumentEngine {
     (data.doc as DocData).serial = String((sample.doc as DocData | undefined)?.serial ?? 'SPECIMEN');
     (data.doc as DocData).fingerprint = 'SPEC-IMEN-0000';
     (data.verify as DocData).url = String((sample.verify as DocData | undefined)?.url ?? 'https://kinetix.app/verify');
-    const ctx = await this.branding.renderContext(tx, null);
+    const ctx = await this.branding.renderContext(tx, photo);
     if (o.format === 'pdf') return renderPdf(layout, [{ data, ctx }], { title: `Specimen ${layout.docType}` });
     const svg = renderSvg(layout, { data, ctx }, { side: o.side, page: o.page, animate: o.animate && o.format === 'svg', pxWidth: o.width });
     return o.format === 'svg' ? svg : svgToPng(svg);

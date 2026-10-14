@@ -1,5 +1,8 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, StreamableFile } from '@nestjs/common';
-import { BRAND_ASSETS, type BrandAssetKind, DOC_BINDINGS, DOC_SAMPLES, DOC_TYPES, type DocType, FONT_FAMILIES, PALETTE_KEYS, SIGNATORY_ROLES } from '@kinetix/shared';
+import { BRAND_ASSETS, type BrandAssetKind, DOC_BINDINGS, DOC_SAMPLES, DOC_TYPE_INFO, DOC_TYPES, type DocType, FONT_FAMILIES, PALETTE_KEYS, SIGNATORY_ROLES } from '@kinetix/shared';
+import { and, asc, eq, ilike, inArray, or } from 'drizzle-orm';
+import { readdirSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
@@ -7,8 +10,11 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { RateLimiter } from '../common/rate-limiter.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
+import { sections, staffProfiles, students, userRoles, users } from '../db/schema.js';
+import { STAFF_ROLES } from '../hr/hr.access.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { BRAND_IMAGE_KINDS, type BrandImageKind, BrandingService } from './branding.service.js';
+import { staffBlock, studentBlock } from './doc-data.js';
 import { DocTemplatesService, parseLayout } from './doc-templates.service.js';
 import { DocumentEngine } from './document-engine.service.js';
 import { CERT_APPROVERS, OFFICE_ROLES } from './documents.access.js';
@@ -26,7 +32,17 @@ const AssetBody = z.object({ contentType: z.string().max(40), contentBase64: z.s
 const DuplicateBody = z.object({ from: z.string().min(1).max(80), name: z.string().trim().max(80).optional() });
 const UpdateBody = z.object({ name: z.string().trim().min(1).max(80).optional(), layout: z.unknown().optional(), note: z.string().trim().max(200).optional() });
 const DefaultBody = z.object({ templateId: z.string().min(1).max(80) });
-const PreviewBody = z.object({ layout: z.unknown(), format: z.enum(['svg', 'png', 'pdf']).default('png'), side: z.string().max(40).optional(), width: z.number().int().min(80).max(2400).optional() });
+const PreviewBody = z.object({
+  layout: z.unknown(),
+  format: z.enum(['svg', 'png', 'pdf']).default('png'),
+  side: z.string().max(40).optional(),
+  width: z.number().int().min(80).max(2400).optional(),
+  /** Preview with a real student's or staff member's details and photo instead of the sample person. */
+  subject: z.object({ type: z.enum(['student', 'staff']), id: z.uuid() }).optional(),
+});
+/** The document fonts the editor loads to draw text as the PDF does (assets/fonts). */
+const FONT_DIR = new URL('../../assets/fonts/', import.meta.url);
+const FONT_FILES = new Set(readdirSync(FONT_DIR).filter((f) => /^[A-Za-z-]+\.ttf$/.test(f)));
 const RevokeBody = z.object({ reason: z.string().trim().min(3).max(300) });
 
 const docType = (v: string): DocType => {
@@ -143,12 +159,74 @@ export class DocTemplatesController {
     return this.db.withTenant(p.tenantId, (tx) => this.templates.list(tx, t ? docType(t) : undefined));
   }
 
-  /** The bindings each document type offers and its sample data (for the template editor). */
+  /**
+   * The bindings each document type offers and its sample data (for the template editor), with the
+   * institution's own name and contacts in place of the sample's, as previews print them.
+   */
   @Get('designs/bindings/:docType')
   @Auth('user', OFFICE_ROLES)
-  bindings(@Param('docType') t: string) {
+  bindings(@CurrentPrincipal() p: UserPrincipal, @Param('docType') t: string) {
     const d = docType(t);
-    return { docType: d, bindings: DOC_BINDINGS[d], sample: DOC_SAMPLES[d] };
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const sample = DOC_SAMPLES[d];
+      const common = await this.engine.common(tx);
+      const own = Object.fromEntries(Object.entries(common.institution as Record<string, unknown>).filter(([, v]) => v));
+      const signatory = { ...(sample.signatory as object), ...(common.signatory as object) };
+      return { docType: d, bindings: DOC_BINDINGS[d], sample: { ...sample, institution: { ...(sample.institution as object), ...own }, signatory } };
+    });
+  }
+
+  /** Students or staff to preview a template with (`kind=student|staff&q=` name, roll number or employee code). */
+  @Get('designs/subjects')
+  @Auth('user', OFFICE_ROLES)
+  subjects(@CurrentPrincipal() p: UserPrincipal, @Query('kind') kind?: string, @Query('q') q?: string) {
+    const k = z.enum(['student', 'staff']).safeParse(kind);
+    if (!k.success) throw new BadRequestException('Choose students or staff');
+    const term = (q ?? '').trim().replace(/[%_\\]/g, '').slice(0, 60);
+    const like = `%${term}%`;
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      if (k.data === 'student') {
+        const rows = await tx
+          .select({ id: students.id, name: students.fullName, code: students.rollNo, detail: sections.displayName })
+          .from(students)
+          .innerJoin(sections, eq(sections.id, students.sectionId))
+          .where(term ? or(ilike(students.fullName, like), ilike(students.rollNo, like)) : undefined)
+          .orderBy(asc(students.fullName))
+          .limit(20);
+        return rows.map((r) => ({ type: 'student' as const, id: r.id, name: r.name, detail: [r.code, r.detail].filter(Boolean).join(' · ') }));
+      }
+      const rows = await tx
+        .selectDistinct({ id: users.id, name: users.fullName, code: staffProfiles.employeeCode })
+        .from(users)
+        .innerJoin(userRoles, and(eq(userRoles.userId, users.id), inArray(userRoles.role, STAFF_ROLES)))
+        .leftJoin(staffProfiles, eq(staffProfiles.userId, users.id))
+        .where(and(eq(users.status, 'active'), term ? or(ilike(users.fullName, like), ilike(staffProfiles.employeeCode, like)) : undefined))
+        .orderBy(asc(users.fullName))
+        .limit(20);
+      return rows.map((r) => ({ type: 'staff' as const, id: r.id, name: r.name, detail: r.code ?? '' }));
+    });
+  }
+
+  /** One person's data block (`student` or `staff`), so the editor's canvas can show their real details. */
+  @Get('designs/subjects/:type/:id')
+  @Auth('user', OFFICE_ROLES)
+  subjectData(@CurrentPrincipal() p: UserPrincipal, @Param('type') type: string, @Param('id', ParseUUIDPipe) id: string) {
+    if (type !== 'student' && type !== 'staff') throw new NotFoundException('Unknown kind of person');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const block = type === 'student' ? await studentBlock(tx, id) : await staffBlock(tx, id);
+      if (!Object.keys(block[type] as object).length) throw new NotFoundException(type === 'student' ? 'Student not found' : 'Staff member not found');
+      return block;
+    });
+  }
+
+  /** A document font file (SIL OFL), so the editor's canvas sets text in the faces the PDF embeds. */
+  @Get('designs/fonts/:file')
+  @Auth('user', OFFICE_ROLES)
+  async font(@Param('file') file: string, @Res({ passthrough: true }) res: Response) {
+    if (!FONT_FILES.has(file)) throw new NotFoundException('Unknown font');
+    res.setHeader('Content-Type', 'font/ttf');
+    res.setHeader('Cache-Control', 'private, max-age=604800, immutable');
+    return new StreamableFile(await readFile(new URL(file, FONT_DIR)));
   }
 
   @Get('designs/:id')
@@ -217,7 +295,9 @@ export class DocTemplatesController {
   @Auth('user', CERT_APPROVERS)
   previewLayout(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(PreviewBody)) b: z.infer<typeof PreviewBody>, @Res({ passthrough: true }) res: Response) {
     const layout = parseLayout(b.layout);
-    return this.db.withTenant(p.tenantId, async (tx) => sendPreview(res, await this.engine.preview(tx, layout, { format: b.format, side: b.side, width: b.width ?? 900 }), b.format, `preview-${layout.docType}`));
+    const wants = DOC_TYPE_INFO[layout.docType].subject;
+    if (b.subject && b.subject.type !== wants) throw new BadRequestException(wants === 'staff' ? 'This document is about a staff member' : wants === 'student' ? 'This document is about a student' : 'This document is not about a person');
+    return this.db.withTenant(p.tenantId, async (tx) => sendPreview(res, await this.engine.preview(tx, layout, { format: b.format, side: b.side, width: b.width ?? 900, subject: b.subject }), b.format, `preview-${layout.docType}`));
   }
 }
 

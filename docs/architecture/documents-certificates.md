@@ -157,7 +157,7 @@ column, `{{row.<key>}}` is the current item. Filters: `upper`, `lower`, `title`,
 `money` (`Rs. 12,34,567.00`, Indian grouping), `words` (`Rupees Forty-Two Thousand … Only`),
 `date` (`2026-10-05` → `5 October 2026`) and `default:<text>`. Every type's bindings with sample
 values are in `DOC_BINDINGS`, and `GET /v1/documents/designs/bindings/:docType` returns them with
-the sample data. Common to all types: `institution.*` (name, legalName, tagline, address, city,
+the sample data (the institution's own name, contacts and signatories in place of the sample's). Common to all types: `institution.*` (name, legalName, tagline, address, city,
 state, pincode, phone, email, website, affiliation, code, board, established, gstin),
 `signatory.<role>.{name,designation}`, `doc.{title,serial,issuedOn,fingerprint,…}` and
 `verify.url`.
@@ -191,10 +191,13 @@ page only. With `"shrink"` the rows get shorter to fit.
 
 **For the template editor**: load a template with `GET /v1/documents/designs/:id`, edit its
 `layout`, preview unsaved work with `POST /v1/documents/designs/preview { layout, format, side?,
-width? }` (SVG for an interactive canvas, PNG or PDF), and save with
-`PUT /v1/documents/designs/:id { layout, note? }`, which adds a version. Presets are read-only:
-duplicate one first (`POST /v1/documents/designs { from, name }`). Keep element ids stable across
-saves.
+width?, subject? }` (SVG, PNG or PDF; `subject: { type: 'student' | 'staff', id }` uses a real
+person's details and photo instead of the sample's), and save with
+`PUT /v1/documents/designs/:id { layout, note?, name? }`, which adds a version. An invalid layout
+is a `400` with `code: "LAYOUT_INVALID"` and `issues: [{ path, message }]` (up to 50; paths like
+`["sides", 0, "elements", 3, "style", "sizePt"]`). Presets are read-only: duplicate one first
+(`POST /v1/documents/designs { from, name }`). Keep element ids stable across saves. Elements may
+carry `group` (editor only: grouped elements select and move together; the engine ignores it).
 
 ## Templates and presets
 
@@ -228,9 +231,65 @@ Classic. Issued documents keep their data, so a reprint uses the current default
 ERP: Documents › Templates (`/documents/templates?type=`) is the gallery. Types are grouped (ID
 cards, examinations, fees, certificates, staff, reports); each design shows a thumbnail (rendered
 with the institution's branding and sample data; cards show front and back), **Use this design**,
-duplicate, rename, versions with restore and delete, and a large animated preview (SVG with the
-seal's shimmer) with Open PDF. The certificate wording templates are under Documents ›
-Certificate text (`/documents/templates/wording`).
+**Customise** (a preset is copied, named "My <style> design", and the copy opens in the editor;
+the institution's own designs open directly), duplicate, rename, versions with restore and delete,
+and a large animated preview (SVG with the seal's shimmer) with Open PDF. The certificate wording
+templates are under Documents › Certificate text (`/documents/templates/wording`).
+
+## The design editor
+
+`/documents/templates/<id>/edit` (principal or administrator; a preset id shows "make a copy"
+instead; phones and small tablets get a "use a larger screen" note). Code:
+`apps/erp/src/components/documents/editor/` (UI) and `apps/erp/src/lib/doc-editor/` (pure logic,
+tested in `model.test.ts`). The ERP imports the layout schema straight from
+`packages/shared/src/doc-layout.ts`, so it validates exactly what the API accepts.
+
+- **Canvas** (`EditorCanvas`): an SVG at true millimetre scale (100 % is real size on a 96 dpi
+  screen; zoom 25 to 400 %, fit, Ctrl + wheel at the pointer, Space or middle-button drag to pan),
+  rulers in mm with the cursor and selection marked, a grid, the margin (the safe area on cards),
+  and for CR80 cards the 2 mm bleed and the rounded cut line. Each element is drawn by
+  `lib/doc-editor/render.ts`, a port of the engine's `LayoutRenderer` (same geometry, line
+  breaking, shrink-to-fit, tables, frames, guilloche, seal, QR and Code 128) that sets text in the
+  same TrueType fonts the PDF embeds (`GET /v1/documents/designs/fonts/:file`, loaded with
+  `@font-face` per family, with Devanagari and Kannada faces by unicode-range). Elements are drawn
+  in local coordinates and cached, so a drag only moves a transform. **Print preview** posts the
+  unsaved layout to `POST /v1/documents/designs/preview` (PDF of every page and side, or a PNG of
+  one side) so what prints is the server's rendering.
+- **Editing** (`lib/doc-editor/model.ts`, a reducer): select (click, Shift-click, marquee; a click
+  on a group selects the group, a second click the element), move by drag or arrow keys (0.1 mm,
+  Shift 1 mm), resize from eight handles (Shift keeps the ratio; a rotated box keeps its opposite
+  corner), rotate (Shift: 15° steps), snapping to the page edges and centre, the margin, other
+  elements' edges and centres and the grid, with smart guides and distance hints; z-order, lock,
+  hide, group (`group` on the elements, editor only), duplicate, copy, cut, paste, delete, align
+  (to the selection, or the page for one element) and distribute; undo and redo over a history of
+  200 steps (a drag, a run of nudges or typing in one field is one step).
+- **Add panel**: heading, text box, data field (a binding picker listing the type's bindings with
+  sample values and filters), details list, photo, logo, crest, official seal, signature block or
+  image, upload (replaces a branding image: logo, crest, seal or a signature), verification QR,
+  barcode, a table per list binding, rectangle, rounded box, line, circle, colour band, border,
+  holographic seal, guilloche, rosette and watermark. Click to add in the middle of the page, or
+  drag onto the canvas.
+- **Properties**: position and size in mm, rotation, opacity; per type, text with `{{bindings}}`
+  (inserted at the cursor, with how it reads), font (heading, body or a family), size, weight,
+  italic, colour, alignment, spacing and case, shrink to fit; colours as palette tokens with tints
+  and shades or any hex; fills (colour, linear or radial gradient with stops); strokes; photo crop
+  shape and placeholder; table source, columns (heading, cell binding, width, alignment, order),
+  header, rows, zebra, borders and totals; seal tone, centre, ring text; `showIf`, `flowAfter`,
+  `pages`; **Reset to the original design** for elements that came from the preset. With nothing
+  selected: page size and orientation, margin, the side's background and the template's fonts.
+- **Layers**: the side's elements top first; drag (or Alt + arrow keys) to reorder, double-click
+  or F2 to rename, lock and hide. **Data**: preview with the sample or a real student or staff
+  member (`GET /v1/documents/designs/subjects?kind=&q=` and `…/subjects/:type/:id`); the canvas
+  and the print preview then show their details (the print preview also their photo).
+- **Saving**: Save adds a version with an optional note (`PUT /v1/documents/designs/:id`); the
+  layout is checked against the schema as you edit, and problems (the editor's, or the API's
+  `LAYOUT_INVALID` issues with their paths) are marked on the canvas, the layer list and the
+  property at fault. Versions with restore, **Use this design**, and a guard against leaving with
+  unsaved changes.
+- Keyboard: Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y, Ctrl+C / X / V / D, Delete, Ctrl+A, Ctrl+G /
+  Ctrl+Shift+G, Ctrl+L, Ctrl+] / [ (Shift: to front / back), Ctrl+S, Ctrl+0 (fit), Ctrl+1
+  (100 %), Ctrl+' (grid), + and −, Escape, and Tab to step through the elements. Strings in
+  `apps/erp/src/i18n/messages/doc-editor.ts` (en, hi, kn).
 
 ## The register of issued documents
 
@@ -354,7 +413,8 @@ archiving are audited.
 `fee-invoices/:invoiceId.pdf`, `appointment-letters/:userId.pdf`, `designs[?docType=]`,
 `designs/:id`, `designs/:id/versions`, `designs/:id/versions/:version/restore`,
 `designs/defaults/:docType`, `designs/:id/preview.{svg,png,pdf}?side=&page=&width=&animate=1`,
-`designs/preview`, `designs/bindings/:docType`, `issued`, `issued/:id/pdf`,
+`designs/preview`, `designs/bindings/:docType`, `designs/subjects?kind=&q=`,
+`designs/subjects/:type/:id`, `designs/fonts/:file`, `issued`, `issued/:id/pdf`,
 `issued/:id/{revoke,reissue}`, `vault/:ownerType/:ownerId`, `vault/files/:id`, `vault/expiring`.
 `/v1/public`: `verify/:slug/:token`, `verify-id/:slug/:code`, `branding/:slug`,
 `branding/:slug/:kind`.

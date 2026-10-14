@@ -236,6 +236,8 @@ const Base = {
   opacity: z.number().min(0).max(1).optional(),
   hidden: z.boolean().optional(),
   locked: z.boolean().optional(),
+  /** Editor only: elements with the same group id are selected, moved and resized together. */
+  group: z.string().min(1).max(64).optional(),
   /** On documents that run to several pages (a long table): every page (default), the first or the last only. */
   pages: z.enum(['all', 'first', 'last']).optional(),
   /** A binding path; the element is drawn only when it has a value (e.g. `student.bloodGroup`). */

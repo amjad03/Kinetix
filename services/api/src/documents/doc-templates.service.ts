@@ -11,10 +11,23 @@ type Row = typeof docTemplates.$inferSelect;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Parses a layout from the API or the database, with the schema's defaults applied. */
+/** One problem with a layout: where (`sides.0.elements.3.style.sizePt`) and what. */
+export interface LayoutIssue {
+  path: (string | number)[];
+  message: string;
+}
+
+/**
+ * Parses a layout from the API or the database, with the schema's defaults applied. An invalid
+ * layout is a 400 with code `LAYOUT_INVALID` and the issues (up to 50), so the editor can mark
+ * the elements and properties at fault.
+ */
 export function parseLayout(raw: unknown): DocLayout {
   const r = DocLayoutSchema.safeParse(raw);
-  if (!r.success) throw new BadRequestException(`The layout is not valid: ${r.error.issues.slice(0, 3).map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')}`);
+  if (!r.success) {
+    const issues: LayoutIssue[] = r.error.issues.slice(0, 50).map((i) => ({ path: i.path.map((k) => (typeof k === 'number' ? k : String(k))), message: i.message }));
+    throw new BadRequestException({ message: `The layout is not valid: ${issues.slice(0, 3).map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')}`, code: 'LAYOUT_INVALID', issues });
+  }
   return r.data;
 }
 

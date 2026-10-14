@@ -16,6 +16,8 @@ export class ApiError extends Error {
     message: string,
     /** The API's stable error code (services/api/src/common/error-codes.ts), when it sent one. */
     readonly code?: string,
+    /** Structured details some errors carry (a template layout's `issues`). */
+    readonly issues?: { path: (string | number)[]; message: string }[],
   ) {
     super(message);
     this.name = 'ApiError';
@@ -44,6 +46,7 @@ interface ErrorBody {
   code?: string;
   /** A validation error is the flattened zod error itself. */
   formErrors?: string[];
+  issues?: { path: (string | number)[]; message: string }[];
   fieldErrors?: Record<string, string[] | undefined>;
 }
 
@@ -59,7 +62,7 @@ async function errorFrom(res: Response): Promise<ApiError> {
     (Array.isArray(body.message) ? body.message.join(', ') : body.message) ??
     body.formErrors?.[0] ??
     Object.values(body.fieldErrors ?? {}).find((v) => v?.length)?.[0];
-  if (m) return new ApiError(res.status, m, body.code);
+  if (m) return new ApiError(res.status, m, body.code, Array.isArray(body.issues) ? body.issues.slice(0, 50) : undefined);
   if (res.status === 403) return new ApiError(403, "Your account doesn't have access to this.", body.code ?? 'FORBIDDEN');
   if (res.status === 404) return new ApiError(404, 'Not found.', body.code ?? 'NOT_FOUND');
   if (res.status === 429) return new ApiError(429, 'Too many attempts. Wait a minute and try again.', body.code ?? 'RATE_LIMITED');

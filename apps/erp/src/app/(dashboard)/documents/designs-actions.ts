@@ -1,9 +1,25 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { act, api } from '@/lib/api';
+import { unstable_rethrow } from 'next/navigation';
+import { errorText } from '@/i18n/errors';
+import { getI18n } from '@/i18n/server';
+import { act, api, ApiError } from '@/lib/api';
 import { DOC_TYPES, type DocTemplateSummary, type DocTemplateVersion, type IssuedDocument } from '@/lib/doc-designs';
+import type { DocData, DocLayout } from '@/lib/doc-editor/schema';
 import type { ActionResult } from '@/lib/types';
+
+/** A template with its layout (GET /v1/documents/designs/:id). */
+export type DesignWithLayout = DocTemplateSummary & { layout: DocLayout };
+/** A person to preview a template with. */
+export interface PreviewSubject {
+  type: 'student' | 'staff';
+  id: string;
+  name: string;
+  detail: string;
+}
+/** What saving a layout returns: the saved template, or the error with the layout's issues. */
+export type SaveLayoutResult = { ok: true; data: DesignWithLayout } | { ok: false; error: string; issues?: { path: (string | number)[]; message: string }[] };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PRESET = /^preset:[a-z_]{3,40}:(classic|modern|minimal|heritage)$/;
@@ -64,4 +80,40 @@ export async function reissueIssued(id: string): Promise<ActionResult<IssuedDocu
   const res = await act(() => api<IssuedDocument>(`/v1/documents/issued/${id}/reissue`, { method: 'POST', body: {} }));
   if (res.ok) revalidatePath('/documents/issued');
   return res;
+}
+
+/** A template (or preset) with its layout, for the editor after a restore or reload. */
+export async function getDesign(id: string): Promise<ActionResult<DesignWithLayout>> {
+  if (!ref(id)) return bad();
+  return act(() => api<DesignWithLayout>(`/v1/documents/designs/${encodeURIComponent(id)}`));
+}
+
+/**
+ * Saves the editor's layout as a new version (with an optional note and name). A layout the API
+ * rejects comes back with its issues, so the editor can mark the elements at fault.
+ */
+export async function saveDesignLayout(id: string, layout: DocLayout, note: string, name?: string): Promise<SaveLayoutResult> {
+  if (!UUID.test(id)) return bad();
+  try {
+    const data = await api<DesignWithLayout>(`/v1/documents/designs/${id}`, { method: 'PUT', body: { layout, ...(note.trim() ? { note: note.trim().slice(0, 200) } : {}), ...(name?.trim() ? { name: name.trim().slice(0, 80) } : {}) } });
+    revalidatePath('/documents/templates');
+    return { ok: true, data };
+  } catch (e) {
+    unstable_rethrow(e);
+    const { t } = await getI18n();
+    if (e instanceof ApiError) return { ok: false, error: errorText(e, t), issues: e.issues };
+    return { ok: false, error: t('error.generic') };
+  }
+}
+
+/** Students or staff whose real details a template can be previewed with. */
+export async function searchSubjects(kind: 'student' | 'staff', q: string): Promise<ActionResult<PreviewSubject[]>> {
+  if (kind !== 'student' && kind !== 'staff') return bad();
+  return act(() => api<PreviewSubject[]>(`/v1/documents/designs/subjects?kind=${kind}&q=${encodeURIComponent(q.trim().slice(0, 60))}`));
+}
+
+/** A person's data block (`student` or `staff`), so the canvas shows their real details. */
+export async function subjectData(kind: 'student' | 'staff', id: string): Promise<ActionResult<DocData>> {
+  if ((kind !== 'student' && kind !== 'staff') || !UUID.test(id)) return bad();
+  return act(() => api<DocData>(`/v1/documents/designs/subjects/${kind}/${id}`));
 }
