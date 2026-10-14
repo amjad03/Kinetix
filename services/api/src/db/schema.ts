@@ -3053,6 +3053,9 @@ export const vaultDocuments = pgTable(
 
 export const TENANT_TABLES = [
   'module_settings',
+  'chat_threads',
+  'chat_members',
+  'chat_messages',
   'library_stock_checks',
   'library_stock_check_items',
   'hr_settings',
@@ -3157,7 +3160,6 @@ export const TENANT_TABLES = [
   'iqac_actions',
   'iqac_practices',
   'iqac_feedback_reports',
-  'module_settings',
   'faculty_evidence',
   'exit_tickets',
   'migration_mappings', 'migration_batches', 'migration_batch_records', 'legacy_marks', 'legacy_attendance', 'legacy_fee_entries', 'university_templates', 'tabulation_registers',
