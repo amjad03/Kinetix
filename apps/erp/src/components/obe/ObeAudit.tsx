@@ -130,7 +130,7 @@ export function PeoPoEditor({ programId, data, canEdit }: { programId: string; d
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-[13px]" data-testid="peo-po">
+            <table className="w-full text-[13px]" style={{ minWidth: 300 + data.outcomes.length * 72 }} data-testid="peo-po">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
                   <th className="py-2 pr-3 font-medium">{t('obe2.peo.peo')}</th>
@@ -147,12 +147,12 @@ export function PeoPoEditor({ programId, data, canEdit }: { programId: string; d
                   const a = att.get(p.id);
                   return (
                     <tr key={p.id} className="border-b align-top last:border-0">
-                      <th scope="row" className="max-w-[320px] py-2 pr-3 text-left font-normal">
+                      <th scope="row" className="min-w-[220px] max-w-[320px] py-2 pr-3 text-left font-normal">
                         <b className="font-semibold">{p.code}</b> {p.statement}
                       </th>
                       {data.outcomes.map((o) => (
                         <td key={o.id} className="px-1 py-2 text-center">
-                          <TextInput size="small" select value={String(get(p.id, o.id)?.strength ?? 0)} disabled={!canEdit} onChange={(e) => set(p.id, o.id, { strength: Number(e.target.value) })} inputProps={{ 'aria-label': t('oa.pp.cell', { peo: p.code, po: o.code }) }}>
+                          <TextInput size="small" select className="min-w-[64px]" value={String(get(p.id, o.id)?.strength ?? 0)} disabled={!canEdit} onChange={(e) => set(p.id, o.id, { strength: Number(e.target.value) })} inputProps={{ 'aria-label': t('oa.pp.cell', { peo: p.code, po: o.code }) }}>
                             {STRENGTH.map((s) => (
                               <MenuItem key={s} value={String(s)}>
                                 {s === 0 ? '-' : s}

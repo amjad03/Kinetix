@@ -20,11 +20,12 @@ const ALLOWED = [
   // The proof a guardian attached to a bank-transfer payment.
   new RegExp(`^/v1/fees/bank-transfers/${UUID}/proof$`, 'i'),
   new RegExp(`^/v1/obe/programs/${UUID}/report\\.(csv|pdf)\\?academicYearId=${UUID}(&framework=(nba|naac))?$`, 'i'),
-  // OBE documents: course file and attainment reports, programme, NBA SAR, NAAC 2.6 and batch reports, and the marks sheet.
+  // OBE documents: course file and attainment reports, programme, NBA SAR, NAAC 2.6 and batch reports, the marks sheet and the targets sheet.
   new RegExp(`^/v1/obe/subjects/${UUID}/(course-file|attainment-report)\\.(pdf|xlsx)\\?academicYearId=${UUID}$`, 'i'),
   new RegExp(`^/v1/obe/programs/${UUID}/(attainment-report|sar|naac-2-6)\\.(pdf|xlsx)\\?academicYearId=${UUID}$`, 'i'),
   new RegExp(`^/v1/obe/programs/${UUID}/batch-report\\.(pdf|xlsx)$`, 'i'),
   new RegExp(`^/v1/obe/assessments/${UUID}/question-marks\\.xlsx$`, 'i'),
+  new RegExp(`^/v1/obe/programs/${UUID}/targets\\.xlsx\\?academicYearId=${UUID}$`, 'i'),
   // Settings > Backups and export: a full export of the institution's data.
   new RegExp(`^/v1/admin/data-exports/${UUID}/download$`, 'i'),
 ];
