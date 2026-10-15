@@ -68,10 +68,10 @@ export function DeskDialog({
       onClose={onClose}
       actions={
         <>
-          <Button variant="outline" className="h-10" onClick={onClose} disabled={pending}>
+          <Button variant="outline" onClick={onClose} disabled={pending}>
             {t('fd.cancel')}
           </Button>
-          <Button className="h-10" type="submit" form={formId} disabled={pending}>
+          <Button type="submit" form={formId} disabled={pending}>
             {submit ?? t('fd.confirm')}
           </Button>
         </>

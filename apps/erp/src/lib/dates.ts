@@ -93,6 +93,8 @@ export function isoWeekday(date: string): number {
 }
 
 export function formatDate(date: string, style: 'long' | 'short' | 'weekday' | 'day' | 'dayMonth' = 'long', locale: Locale = 'en'): string {
+  // A full timestamp is read as its calendar day at the institution, never as "undefined, NaN Oct".
+  if (date.length > 10) date = todayIn('Asia/Kolkata', new Date(date));
   const n = NAMES[locale];
   const [y, m, day] = date.split('-').map(Number);
   const w = isoWeekday(date) - 1;
@@ -107,6 +109,15 @@ export function formatDate(date: string, style: 'long' | 'short' | 'weekday' | '
 export function formatMonth(date: string, locale: Locale = 'en'): string {
   if (locale !== 'en') return `${NAMES[locale].months[Number(date.slice(5, 7)) - 1]} ${date.slice(0, 4)}`;
   return new Intl.DateTimeFormat(BCP47[locale], { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date.slice(0, 7)}-01T00:00:00Z`));
+}
+
+/**
+ * "Oct" or "Oct 26" for a month (YYYY-MM or any date in it), from the spelled-out names: Intl gives different
+ * short months on the server and in the browser in Kannada and Hindi ("ಜನ" against "ಜನವರಿ"), a hydration mismatch.
+ */
+export function formatMonthShort(date: string, locale: Locale = 'en', withYear = false): string {
+  const name = NAMES[locale].monthsShort[Number(date.slice(5, 7)) - 1] ?? '';
+  return withYear ? `${name} ${date.slice(2, 4)}` : name;
 }
 
 /** "09:00:00" → "09:00". */

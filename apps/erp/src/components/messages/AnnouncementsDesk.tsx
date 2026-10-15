@@ -364,7 +364,7 @@ function Detail({ a, busy, onClose, onEdit, onRecall, onDelete, onDuplicate, onR
               <div className="flex flex-wrap items-end gap-3">
                 <label className="grid gap-1.5 text-[13px] font-semibold">
                   {t('comm.show')}
-                  <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="h-10 rounded-md border bg-background px-2 text-sm font-normal" data-testid="ann-filter">
+                  <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="h-9 rounded-md border bg-background px-2 text-sm font-normal" data-testid="ann-filter">
                     {(['unread', 'unacknowledged', 'undelivered', 'all'] as const).map((f) => (
                       <option key={f} value={f}>
                         {t(`comm.filter.${f}` as MessageKey)}
@@ -374,7 +374,7 @@ function Detail({ a, busy, onClose, onEdit, onRecall, onDelete, onDuplicate, onR
                 </label>
                 <label className="grid gap-1.5 text-[13px] font-semibold">
                   {t('comm.col.app')}
-                  <select value={channel} onChange={(e) => setChannel(e.target.value as AppChannel | '')} className="h-10 rounded-md border bg-background px-2 text-sm font-normal">
+                  <select value={channel} onChange={(e) => setChannel(e.target.value as AppChannel | '')} className="h-9 rounded-md border bg-background px-2 text-sm font-normal">
                     <option value="">{t('comm.allApps')}</option>
                     {APP_CHANNELS.filter((c) => a.channels.includes(c)).map((c) => (
                       <option key={c} value={c}>
@@ -384,7 +384,7 @@ function Detail({ a, busy, onClose, onEdit, onRecall, onDelete, onDuplicate, onR
                   </select>
                 </label>
                 {live && (
-                  <Button className="h-10" variant="outline" disabled={busy || (a.requiresAck ? a.stats.acknowledged : a.stats.read) >= a.stats.recipients} onClick={onRemind} data-testid="ann-remind">
+                  <Button variant="outline" disabled={busy || (a.requiresAck ? a.stats.acknowledged : a.stats.read) >= a.stats.recipients} onClick={onRemind} data-testid="ann-remind">
                     <BellRing />
                     {a.requiresAck ? t('comm.remindUnacked') : t('comm.remindUnread')}
                   </Button>

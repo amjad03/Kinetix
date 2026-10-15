@@ -29,7 +29,13 @@ export default async function EarlyYearsPage({ searchParams }: { searchParams: P
     ]);
     return { sections, sectionId, children, terms, milestoneCount: framework.length };
   });
-  if (data.error !== undefined) return <ErrorState message={data.error} />;
+  if (data.error !== undefined)
+    return (
+      <>
+        <PageHeader title={t('nav.earlyYears')} subtitle={t('ey.subtitle')} />
+        <ErrorState message={data.error} />
+      </>
+    );
   const d = data.data;
   return (
     <>

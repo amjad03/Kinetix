@@ -160,7 +160,7 @@ export function RazorpayForm({ initial, webhookUrl }: { initial: RazorpayAccount
                 input: {
                   endAdornment: (
                     <Tooltip title={t('payments.copy')}>
-                      <IconButton aria-label={t('payments.copy')} onClick={copy} edge="end">
+                      <IconButton aria-label={t('payments.copy')} onClick={copy}>
                         <ContentCopyOutlined className="size-5" />
                       </IconButton>
                     </Tooltip>

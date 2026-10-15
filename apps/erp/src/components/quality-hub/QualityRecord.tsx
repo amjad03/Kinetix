@@ -56,7 +56,7 @@ export function QualityRecord({ record }: { record: QhRecord }) {
   const actionButtons = moves.length > 0 && (
     <>
       {moves.map((m, n) => (
-        <Button key={m.key} className="h-10" variant={m.danger ? 'destructive' : n === 0 ? 'default' : 'outline'} disabled={pending} onClick={() => press(m)} data-testid={`qh-move-${m.key}`}>
+        <Button key={m.key} variant={m.danger ? 'destructive' : n === 0 ? 'default' : 'outline'} disabled={pending} onClick={() => press(m)} data-testid={`qh-move-${m.key}`}>
           {moveLabel(m.key)}
         </Button>
       ))}
@@ -86,10 +86,10 @@ export function QualityRecord({ record }: { record: QhRecord }) {
             <p className="text-sm font-semibold">{moveLabel(asking.key)}</p>
             <TextField label={t(asking.note === 'required' ? 'qh.noteRequired' : 'qh.noteOptional')} multiline minRows={3} value={note} onChange={(e) => setNote(e.target.value)} error={!!error} helperText={error ?? undefined} />
             <div className="flex flex-wrap justify-end gap-2">
-              <Button variant="outline" className="h-10" disabled={pending} onClick={() => setAsking(null)}>
+              <Button variant="outline" disabled={pending} onClick={() => setAsking(null)}>
                 {t('qh.back')}
               </Button>
-              <Button className="h-10" variant={asking.danger ? 'destructive' : 'default'} disabled={pending} onClick={() => run(asking, note)} data-testid="qh-move-confirm">
+              <Button variant={asking.danger ? 'destructive' : 'default'} disabled={pending} onClick={() => run(asking, note)} data-testid="qh-move-confirm">
                 {moveLabel(asking.key)}
               </Button>
             </div>
@@ -113,7 +113,7 @@ export function QualityRecord({ record }: { record: QhRecord }) {
       facts={record.facts.map((f) => ({ label: t(fieldKey(f.key)), value: cellNode(i, f.key, f.kind, f.value) }))}
       primary={actionButtons || undefined}
       secondary={
-        <Button asChild variant="outline" className="h-10">
+        <Button asChild variant="outline">
           <Link href={MODULE_HOME[record.module]}>{t('qh.openDesk')}</Link>
         </Button>
       }

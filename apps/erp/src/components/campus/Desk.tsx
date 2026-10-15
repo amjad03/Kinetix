@@ -1,10 +1,11 @@
 'use client';
 import { isValidElement, useMemo, type ReactNode } from 'react';
 import { DataTable, StatusPill, type Column } from '@/components/ui';
+import { StatGrid } from '@/components/ui/StatTile';
 
-/** A row of stat tiles that stacks on a phone. */
+/** A row of stat tiles: the shared StatGrid (two on a phone, as many as fit on a desk). */
 export function Tiles({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_1fr] lg:grid-cols-[repeat(4,1fr)] gap-4 mb-6">{children}</div>;
+  return <StatGrid>{children}</StatGrid>;
 }
 
 /** The words in a ready-made cell (text, numbers and pill labels), for sorting, search and export. */

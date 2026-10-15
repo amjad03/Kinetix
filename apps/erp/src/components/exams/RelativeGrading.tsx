@@ -48,7 +48,7 @@ export function CurveSettingsCard({ settings, canEdit }: { settings: RelativeSet
           )}
           {canEdit && (
             <div>
-              <Button className="h-10" onClick={save} disabled={pending} data-testid="rg-save">
+              <Button onClick={save} disabled={pending} data-testid="rg-save">
                 {t('rg.save')}
               </Button>
             </div>
@@ -147,16 +147,16 @@ function CurveDialog({ sessionId, subject, enabled, maxShift, canApply, onClose 
       onClose={onClose}
       actions={
         <>
-          <Button variant="outline" className="h-10" onClick={onClose} disabled={pending}>
+          <Button variant="outline" onClick={onClose} disabled={pending}>
             {t('rg.close')}
           </Button>
           {canApply && subject.applied && (
-            <Button variant="outline" className="h-10" onClick={() => run('clear')} disabled={pending} data-testid="rg-clear">
+            <Button variant="outline" onClick={() => run('clear')} disabled={pending} data-testid="rg-clear">
               {t('rg.clear')}
             </Button>
           )}
           {canApply && enabled && preview && !preview.tooSmall && (
-            <Button className="h-10" onClick={() => run('apply')} disabled={pending} data-testid="rg-apply">
+            <Button onClick={() => run('apply')} disabled={pending} data-testid="rg-apply">
               {t('rg.apply')}
             </Button>
           )}
@@ -168,7 +168,7 @@ function CurveDialog({ sessionId, subject, enabled, maxShift, canApply, onClose 
           <div className="w-40">
             <TextInput label={t('rg.shift')} type="number" value={shift} onChange={(e) => setShift(e.target.value)} helper={t('rg.shiftHelp', { max: String(maxShift) })} fullWidth />
           </div>
-          <Button variant="outline" className="h-10" onClick={() => run('preview')} disabled={pending} data-testid="rg-preview">
+          <Button variant="outline" onClick={() => run('preview')} disabled={pending} data-testid="rg-preview">
             {t('rg.preview')}
           </Button>
         </div>

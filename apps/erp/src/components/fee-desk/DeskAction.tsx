@@ -72,7 +72,7 @@ export function DeskAction({
   if (fields.length === 0)
     return (
       <span className="inline-flex flex-col gap-1">
-        <Button className="h-10" variant={variant} disabled={pending} onClick={() => run()}>
+        <Button variant={variant} disabled={pending} onClick={() => run()}>
           {label}
         </Button>
         {error && <span className="text-xs text-destructive">{error}</span>}
@@ -81,7 +81,7 @@ export function DeskAction({
 
   return (
     <>
-      <Button className="h-10" variant={variant} onClick={() => setOpen(true)}>
+      <Button variant={variant} onClick={() => setOpen(true)}>
         {label}
       </Button>
       {open && (
@@ -92,10 +92,10 @@ export function DeskAction({
           onClose={() => setOpen(false)}
           actions={
             <>
-              <Button variant="outline" className="h-10" onClick={() => setOpen(false)} disabled={pending}>
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
                 {t('fd.cancel')}
               </Button>
-              <Button className="h-10" type="submit" form={`fd-${path}`} disabled={pending}>
+              <Button type="submit" form={`fd-${path}`} disabled={pending}>
                 {t('fd.confirm')}
               </Button>
             </>

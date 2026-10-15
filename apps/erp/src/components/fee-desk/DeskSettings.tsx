@@ -128,10 +128,10 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
           description: t('fx.set.headsMoved'),
           content: (
             <div className="flex flex-wrap gap-2">
-              <Button asChild variant="outline" className="h-10">
+              <Button asChild variant="outline">
                 <Link href="/fees/setup">{t('fx.setup.heads')}</Link>
               </Button>
-              <Button asChild variant="outline" className="h-10">
+              <Button asChild variant="outline">
                 <Link href="/fees/setup?tab=fines">{t('fx.setup.fines')}</Link>
               </Button>
               <p className="m-0 w-full text-sm text-muted-foreground">{ruleText}</p>
@@ -161,7 +161,7 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
             <div className="grid gap-4">
               <FormRow>
                 <SelectInput label={t('fd.set.gateway')} value={s.gateway} options={['razorpay', 'payu', 'none'].map((g) => ({ value: g, label: word(g) }))} onChange={(e) => edit({ gateway: e.target.value })} />
-                <Button asChild variant="outline" className="h-10">
+                <Button asChild variant="outline">
                   <Link href="/settings">{t('fd.set.gatewayKeys')}</Link>
                 </Button>
               </FormRow>
@@ -199,13 +199,13 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
                     <FormRow key={i}>
                       <SelectInput label={t('fx.set.level', { n: i + 1 })} value={step.role} options={CHAIN_ROLES.map((r) => ({ value: r, label: t(`role.${r}` as MessageKey) }))} onChange={(e) => setChain(k, chain(k).map((x, j) => (j === i ? { ...x, role: e.target.value } : x)))} />
                       <TextInput label={t('fx.set.limit')} type="number" value={step.limitRupees == null ? '' : String(step.limitRupees)} helperText={i === chain(k).length - 1 ? t('fx.set.lastLevel') : undefined} onChange={(e) => setChain(k, chain(k).map((x, j) => (j === i ? { ...x, limitRupees: num(e.target.value) } : x)))} />
-                      <Button variant="ghost" size="icon" className="h-10 w-10" aria-label={t('fd.remove')} disabled={chain(k).length <= 1} onClick={() => setChain(k, chain(k).filter((_, j) => j !== i))}>
+                      <Button variant="ghost" size="icon" className="size-9" aria-label={t('fd.remove')} disabled={chain(k).length <= 1} onClick={() => setChain(k, chain(k).filter((_, j) => j !== i))}>
                         <Trash2 className="size-4" />
                       </Button>
                     </FormRow>
                   ))}
                   <div>
-                    <Button variant="outline" className="h-10" disabled={chain(k).length >= 5} onClick={() => setChain(k, [...chain(k).slice(0, -1).map((x) => x), { role: 'accountant', limitRupees: 1000 }, chain(k).at(-1)!].sort((a, b) => (a.limitRupees ?? Infinity) - (b.limitRupees ?? Infinity)))}>
+                    <Button variant="outline" disabled={chain(k).length >= 5} onClick={() => setChain(k, [...chain(k).slice(0, -1).map((x) => x), { role: 'accountant', limitRupees: 1000 }, chain(k).at(-1)!].sort((a, b) => (a.limitRupees ?? Infinity) - (b.limitRupees ?? Infinity)))}>
                       <Plus className="size-4" /> {t('fx.set.addLevel')}
                     </Button>
                   </div>
@@ -227,16 +227,16 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
                   <TextInput label={t('fx.set.untilDays')} type="number" value={r.untilDays == null ? '' : String(r.untilDays)} helperText={r.untilDays == null ? t('fx.set.afterThat') : undefined} onChange={(e) => edit({ refundRules: s.refundRules.map((x, j) => (j === i ? { ...x, untilDays: num(e.target.value) } : x)) })} />
                   <TextInput label={t('fx.set.refundPercent')} type="number" value={String(r.percent)} onChange={(e) => edit({ refundRules: s.refundRules.map((x, j) => (j === i ? { ...x, percent: Number(e.target.value) || 0 } : x)) })} />
                   <TextInput label={t('fx.set.deduction')} type="number" value={String(r.deductionRupees)} onChange={(e) => edit({ refundRules: s.refundRules.map((x, j) => (j === i ? { ...x, deductionRupees: Number(e.target.value) || 0 } : x)) })} />
-                  <Button variant="ghost" size="icon" className="h-10 w-10" aria-label={t('fd.remove')} onClick={() => edit({ refundRules: s.refundRules.filter((_, j) => j !== i) })}>
+                  <Button variant="ghost" size="icon" className="size-9" aria-label={t('fd.remove')} onClick={() => edit({ refundRules: s.refundRules.filter((_, j) => j !== i) })}>
                     <Trash2 className="size-4" />
                   </Button>
                 </FormRow>
               ))}
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" className="h-10" onClick={() => edit({ refundRules: [...s.refundRules, { untilDays: s.refundRules.length ? null : 0, percent: 0, deductionRupees: 0 }] })}>
+                <Button variant="outline" onClick={() => edit({ refundRules: [...s.refundRules, { untilDays: s.refundRules.length ? null : 0, percent: 0, deductionRupees: 0 }] })}>
                   <Plus className="size-4" /> {t('fx.set.addBand')}
                 </Button>
-                <Button variant="outline" className="h-10" onClick={() => edit({ refundRules: UGC })}>
+                <Button variant="outline" onClick={() => edit({ refundRules: UGC })}>
                   {t('fx.set.useUgc')}
                 </Button>
               </div>

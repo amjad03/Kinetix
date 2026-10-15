@@ -37,7 +37,7 @@ const CRITERIA = [
 
 /** Interview slots with a panel, each panelist's score sheet, and the outcome that feeds the merit list. */
 export function InterviewsDesk({ interviews, applicants }: { interviews: Interview[]; applicants: ApplicantOption[] }) {
-  const { t, locale } = useI18n();
+  const { t, fmt } = useI18n();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -56,7 +56,7 @@ export function InterviewsDesk({ interviews, applicants }: { interviews: Intervi
         router.refresh();
       } else setError(res.error ?? null);
     });
-  const when = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' }).format(new Date(iso));
+  const when = (iso: string) => fmt.dateTime(iso);
   return (
     <div className="flex flex-col gap-6">
       {error && <Alert severity="error">{error}</Alert>}

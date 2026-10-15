@@ -33,10 +33,10 @@ export async function library(c: Ctx): Promise<void> {
 export async function hostelAndCanteen(c: Ctx): Promise<void> {
   const { kit: k, r } = c;
   const warden = c.byEmail.warden.id;
-  const blocks = await k.ins<{ id: string; gender: string }>('hostel_blocks', [{ name: 'Vidyaranya Block (Boys)', gender: 'male' }, { name: 'Sharada Block (Girls)', gender: 'female' }]);
+  const blocks = await k.ins<{ id: string; gender: string }>('hostel_blocks', [{ name: 'Vidyaranya Block (Boys)', gender: 'boys' }, { name: 'Sharada Block (Girls)', gender: 'girls' }]);
   const rooms: { id: string; blockId: string }[] = [];
   for (const b of blocks) {
-    rooms.push(...(await k.ins<{ id: string; blockId: string }>('hostel_rooms', Array.from({ length: 8 }, (_, i) => ({ blockId: b.id, number: `${b.gender === 'male' ? 'V' : 'S'}-${101 + i + (i > 3 ? 96 : 0)}`, floor: i > 3 ? 2 : 1, monthlyFeePaise: rupees(i % 2 ? 6500 : 8000) })))));
+    rooms.push(...(await k.ins<{ id: string; blockId: string }>('hostel_rooms', Array.from({ length: 8 }, (_, i) => ({ blockId: b.id, number: `${b.gender === 'boys' ? 'V' : 'S'}-${101 + i + (i > 3 ? 96 : 0)}`, floor: i > 3 ? 2 : 1, monthlyFeePaise: rupees(i % 2 ? 6500 : 8000) })))));
   }
   const beds = await k.ins<{ id: string; roomId: string }>('hostel_beds', rooms.flatMap((rm) => ['A', 'B', 'C'].map((label) => ({ roomId: rm.id, label }))));
   const outstation = c.students.filter((s, i) => i % 6 === 2);

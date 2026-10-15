@@ -69,7 +69,7 @@ export function RaiseIndent({ items, departments }: { items: (Option & { unit: s
               <div key={i} className="flex items-end gap-2">
                 <SelectInput className="min-w-0 flex-1" label={t('inv.item')} value={l.itemId} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, itemId: e.target.value } : x)))} options={items} empty="" />
                 <TextInput className="w-24" label={t('ops.f.qty')} inputMode="numeric" value={l.qty} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, qty: e.target.value } : x)))} />
-                <Button variant="ghost" size="icon" className="h-10 w-10" aria-label={t('ivd.ind.removeLine')} disabled={lines.length === 1} onClick={() => setLines(lines.filter((_, j) => j !== i))}>
+                <Button variant="ghost" size="icon" className="size-9" aria-label={t('ivd.ind.removeLine')} disabled={lines.length === 1} onClick={() => setLines(lines.filter((_, j) => j !== i))}>
                   <Trash2 />
                 </Button>
               </div>

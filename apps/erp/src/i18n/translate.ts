@@ -10,13 +10,14 @@ export interface TFunction {
   locale: Locale;
 }
 
-/** Replaces `{name}` with vars.name. Numbers are formatted with Indian grouping. */
+/** Replaces `{name}` with vars.name. Numbers are formatted with Indian grouping, except a year ("2026", not "2,026"). */
 export function interpolate(text: string, vars: Vars | undefined, locale: Locale): string {
   if (!vars) return text;
   const nf = new Intl.NumberFormat(NUMBER_LOCALE[locale], { maximumFractionDigits: 2 });
   return text.replace(/\{(\w+)\}/g, (m, name: string) => {
     const v = vars[name];
     if (v === undefined) return m;
+    if (typeof v === 'number' && /year/i.test(name) && Number.isInteger(v)) return String(v);
     return typeof v === 'number' ? nf.format(v) : v;
   });
 }

@@ -11,7 +11,7 @@ export interface Batch { id: string; provider: string; reference: string; settle
 export interface Exception { line: { id: string; providerPaymentId: string; amountPaise: number; exceptionReason: string; kind: string }; reference: string; provider: string }
 
 /** Choose the gateway, import or fetch a settlement, and clear the exceptions queue. */
-export function SettlementsDesk({ gateway, batches, exceptions, initialTab }: { gateway: GatewayView; batches: Batch[]; exceptions: Exception[]; initialTab: string }) {
+export function SettlementsDesk({ gateway, batches, exceptions, initialTab }: { gateway: GatewayView | null; batches: Batch[]; exceptions: Exception[]; initialTab: string }) {
   const { t, fmt } = useI18n();
   const [toast, toastNode] = useToast();
   const [dialog, setDialog] = useState<'gateway' | 'import' | 'fetch' | null>(null);
@@ -21,13 +21,13 @@ export function SettlementsDesk({ gateway, batches, exceptions, initialTab }: { 
   };
   const providers = [{ value: 'razorpay', label: 'Razorpay' }, { value: 'payu', label: 'PayU' }];
   const gatewayFields: Field[] = [
-    { name: 'provider', label: t('gb.set.choose'), kind: 'select', required: true, init: gateway.gateway ?? 'payu', options: providers },
-    { name: 'keyId', label: t('gb.set.keyId'), required: true, init: gateway.keyId ?? '' },
+    { name: 'provider', label: t('gb.set.choose'), kind: 'select', required: true, init: gateway?.gateway ?? 'payu', options: providers },
+    { name: 'keyId', label: t('gb.set.keyId'), required: true, init: gateway?.keyId ?? '' },
     { name: 'keySecret', label: t('gb.set.secret') },
     { name: 'webhookSecret', label: t('gb.set.webhookSecret') },
   ];
   const importFields: Field[] = [
-    { name: 'provider', label: t('gb.col.provider'), kind: 'select', required: true, init: gateway.gateway ?? 'payu', options: providers },
+    { name: 'provider', label: t('gb.col.provider'), kind: 'select', required: true, init: gateway?.gateway ?? 'payu', options: providers },
     { name: 'reference', label: t('gb.col.reference'), required: true },
     { name: 'settlementDate', label: t('gb.set.settlementDate'), kind: 'date', required: true },
     { name: 'csv', label: t('gb.set.csv'), kind: 'multiline', required: true },
@@ -76,7 +76,8 @@ export function SettlementsDesk({ gateway, batches, exceptions, initialTab }: { 
         />
       ),
     },
-    {
+    // The gateway account is for the institution's administrators; an accountant sees batches and exceptions.
+    ...(gateway ? [{
       id: 'gateway',
       label: t('gb.set.gateway'),
       node: (
@@ -94,7 +95,7 @@ export function SettlementsDesk({ gateway, batches, exceptions, initialTab }: { 
           <Button variant="contained" onClick={() => setDialog('gateway')}>{t('gb.set.choose')}</Button>
         </>
       ),
-    },
+    }] : []),
   ];
   return (
     <>

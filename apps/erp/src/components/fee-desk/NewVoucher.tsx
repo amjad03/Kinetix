@@ -39,7 +39,7 @@ export function NewVoucher({ accounts, funds = [], departments = [] }: { account
 
   return (
     <>
-      <Button className="h-10" onClick={() => setOpen(true)}>
+      <Button onClick={() => setOpen(true)}>
         {t('fd.a.newVoucher')}
       </Button>
       {open && (
@@ -50,10 +50,10 @@ export function NewVoucher({ accounts, funds = [], departments = [] }: { account
           onClose={() => setOpen(false)}
           actions={
             <>
-              <Button variant="outline" className="h-10" onClick={() => setOpen(false)}>
+              <Button variant="outline" onClick={() => setOpen(false)}>
                 {t('fd.cancel')}
               </Button>
-              <Button className="h-10" type="submit" form="fd-new-voucher" disabled={pending || dr === 0 || dr !== cr}>
+              <Button type="submit" form="fd-new-voucher" disabled={pending || dr === 0 || dr !== cr}>
                 {t('fd.a.sendForApproval')}
               </Button>
             </>
@@ -80,13 +80,13 @@ export function NewVoucher({ accounts, funds = [], departments = [] }: { account
                   <SelectInput label={t('fd.col.account')} value={l.accountId} empty={t('fd.pick')} options={options} onChange={(e) => set(i, { accountId: e.target.value })} />
                   <TextInput label={t('fd.col.debit')} type="number" value={l.debit} onChange={(e) => set(i, { debit: e.target.value, credit: e.target.value ? '' : l.credit })} />
                   <TextInput label={t('fd.col.credit')} type="number" value={l.credit} onChange={(e) => set(i, { credit: e.target.value, debit: e.target.value ? '' : l.debit })} />
-                  <Button type="button" variant="ghost" size="icon" className="h-10 w-10" aria-label={t('fd.remove')} disabled={lines.length <= 2} onClick={() => setLines(lines.filter((_, j) => j !== i))}>
+                  <Button type="button" variant="ghost" size="icon" className="size-9" aria-label={t('fd.remove')} disabled={lines.length <= 2} onClick={() => setLines(lines.filter((_, j) => j !== i))}>
                     <Trash2 className="size-4" />
                   </Button>
                 </FormRow>
               ))}
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <Button type="button" variant="outline" className="h-10" onClick={() => setLines([...lines, { accountId: '', debit: '', credit: '' }])}>
+                <Button type="button" variant="outline" onClick={() => setLines([...lines, { accountId: '', debit: '', credit: '' }])}>
                   <Plus className="size-4" /> {t('fd.a.addLine')}
                 </Button>
                 <span className={dr === cr ? 'text-sm' : 'text-sm text-destructive'}>

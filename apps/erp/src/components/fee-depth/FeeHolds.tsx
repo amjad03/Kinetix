@@ -41,10 +41,10 @@ function ReasonDialog({ ask, studentId, onClose }: { ask: Ask; studentId?: strin
       onClose={onClose}
       actions={
         <>
-          <Button variant="outline" className="h-10" onClick={onClose} disabled={pending}>
+          <Button variant="outline" onClick={onClose} disabled={pending}>
             {t('fh.cancel')}
           </Button>
-          <Button className="h-10" variant={ask.kind === 'withdraw' ? 'destructive' : 'default'} onClick={submit} disabled={pending} data-testid="fh-confirm">
+          <Button variant={ask.kind === 'withdraw' ? 'destructive' : 'default'} onClick={submit} disabled={pending} data-testid="fh-confirm">
             {ask.kind === 'grant' ? t('fh.grant') : t('fh.withdraw')}
           </Button>
         </>

@@ -221,10 +221,10 @@ function DecideCancel({ id, onClose }: { id: string; onClose: () => void }) {
       onClose={onClose}
       actions={
         <>
-          <Button variant="outline" className="h-10" disabled={pending} onClick={() => send('reject')}>
+          <Button variant="outline" disabled={pending} onClick={() => send('reject')}>
             {t('fx.keepReceipt')}
           </Button>
-          <Button variant="destructive" className="h-10" disabled={pending} onClick={() => send('approve')}>
+          <Button variant="destructive" disabled={pending} onClick={() => send('approve')}>
             {t('fx.approveCancel')}
           </Button>
         </>
@@ -272,10 +272,10 @@ function Reissue({ r, onClose }: { r: ReceiptView; onClose: () => void }) {
       onClose={onClose}
       actions={
         <>
-          <Button variant="outline" className="h-10" onClick={onClose} disabled={pending}>
+          <Button variant="outline" onClick={onClose} disabled={pending}>
             {t('fd.cancel')}
           </Button>
-          <Button className="h-10" onClick={send} disabled={pending}>
+          <Button onClick={send} disabled={pending}>
             {t('fx.reissue')}
           </Button>
         </>

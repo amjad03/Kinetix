@@ -124,7 +124,7 @@ export function ToggleButtonGroup({
   };
   return (
     <ToggleContext.Provider value={{ value, exclusive, size, disabled, onToggle }}>
-      <div role="group" className={cn('inline-flex rounded-[10px] border bg-card p-0.5', orientation === 'vertical' && 'flex-col', fullWidth && 'flex w-full [&>*]:flex-1', className)} {...(rest as HTMLAttributes<HTMLDivElement>)}>
+      <div role="group" className={cn('inline-flex max-w-full overflow-x-auto rounded-[10px] border bg-card p-0.5', orientation === 'vertical' && 'flex-col', fullWidth && 'flex w-full [&>*]:flex-1', className)} {...(rest as HTMLAttributes<HTMLDivElement>)}>
         {children}
       </div>
     </ToggleContext.Provider>
@@ -146,7 +146,8 @@ export function ToggleButton({ value, selected, onClick, disabled, className, ch
       }}
       className={cn(
         'inline-flex items-center justify-center gap-1.5 rounded-[8px] font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 aria-pressed:bg-secondary aria-pressed:text-foreground aria-pressed:shadow-sm [&_svg]:size-4',
-        ctx?.size === 'small' ? 'h-7 px-2.5 text-[12.5px]' : 'h-8 px-3 text-[13px]',
+        // With the group's 1px border and 2px padding a default group is 36px, the height of the buttons beside it.
+        ctx?.size === 'small' ? 'h-7 px-2.5 text-[12.5px]' : 'h-[30px] px-3 text-[13px]',
         className,
       )}
       {...(rest as HTMLAttributes<HTMLButtonElement>)}

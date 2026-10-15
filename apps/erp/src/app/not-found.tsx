@@ -7,6 +7,7 @@ export default async function NotFound() {
   const { t } = await getI18n();
   return (
     <div className="max-w-[560px] mx-auto mt-24 px-4">
+      <h1 className="sr-only">{t('state.notFound')}</h1>
       <EmptyState icon={<SearchOffOutlined />} title={t('state.notFound')} actions={<LinkButton variant="contained" href="/">{t('state.goToday')}</LinkButton>}>
         {t('state.notFoundBody')}
       </EmptyState>

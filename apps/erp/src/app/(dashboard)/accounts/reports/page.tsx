@@ -24,7 +24,7 @@ export default async function DeskReportsPage() {
         title={t('fd.reports')}
         subtitle={t('fd.reports.sub')}
         actions={
-          <Button asChild variant="outline" className="h-10">
+          <Button asChild variant="outline">
             <Link href="/accounts">{t('fd.back')}</Link>
           </Button>
         }

@@ -115,7 +115,7 @@ export function CalendarView({
         </Button>
         <div className="flex-1" />
         <Legend />
-        <ToggleButtonGroup exclusive size="small" value={view} onChange={(_, v: 'month' | 'list' | null) => v && go(month, v)} aria-label={t('cal.view')}>
+        <ToggleButtonGroup exclusive value={view} onChange={(_, v: 'month' | 'list' | null) => v && go(month, v)} aria-label={t('cal.view')}>
           {(['month', 'list'] as const).map((v) => (
             <ToggleButton className="gap-1.5 px-4" key={v} value={v} data-testid={`calendar-view-${v}`}>
               {view === v && <Check className="text-[18px]" />}

@@ -40,7 +40,7 @@ export function RoomDayView({ rooms, today }: { rooms: Option[]; today: string }
       <FormRow>
         <SelectInput className="min-w-[220px]" label={t('ivd.as.room')} value={roomId} onChange={(e) => setRoomId(e.target.value)} options={rooms} />
         <TextInput type="date" label={t('ivd.date')} value={date} onChange={(e) => setDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} />
-        <Button className="h-10" onClick={show} disabled={pending || !roomId || !date} data-testid="room-day-show">
+        <Button onClick={show} disabled={pending || !roomId || !date} data-testid="room-day-show">
           {t('ivd.fc.show')}
         </Button>
       </FormRow>

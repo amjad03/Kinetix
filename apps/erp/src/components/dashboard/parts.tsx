@@ -6,6 +6,8 @@ import { EmptyState } from '@/components/States';
 import { Card } from '@/components/ui/Card';
 import { CountBadge, StatusPill, type Tone } from '@/components/ui/Badge';
 import type { Fmt } from '@/i18n/format';
+import { isLocale } from '@/i18n/locales';
+import { formatMonthShort } from '@/lib/dates';
 import type { TFunction } from '@/i18n/translate';
 import type { CalendarEvent } from '@/lib/calendar';
 import type { Priority, SentBroadcast } from '@/lib/types';
@@ -125,7 +127,6 @@ export function Announcements({ items, t, fmt, canOpen }: { items: SentBroadcast
 
 /** Upcoming calendar events as date tiles (redesign: month in orange over the day). */
 export function UpcomingEvents({ events, t, fmt, locale, grid }: { events: CalendarEvent[]; t: TFunction; fmt: Fmt; locale: string; grid?: boolean }) {
-  const month = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' });
   return (
     <Card
       title={t('dash.events')}
@@ -149,7 +150,7 @@ export function UpcomingEvents({ events, t, fmt, locale, grid }: { events: Calen
             return (
               <li key={e.id} className={cn('flex items-center gap-3', grid ? 'rounded-xl border p-3' : 'border-t px-[18px] py-2.5')}>
                 <span aria-hidden className="w-[46px] shrink-0 rounded-[10px] border bg-background py-1 text-center">
-                  <small className="block text-[10.5px] font-semibold text-orange-ink uppercase">{month.format(d)}</small>
+                  <small className="block text-[10.5px] font-semibold text-orange-ink uppercase">{formatMonthShort(e.startsOn, isLocale(locale) ? locale : 'en')}</small>
                   <b className="block text-lg leading-tight tabular-nums">{d.getUTCDate()}</b>
                 </span>
                 <div className="min-w-0 flex-1">

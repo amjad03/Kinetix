@@ -46,10 +46,10 @@ export function NewChallan({ student: given }: { student?: StudentHit }) {
           onClose={() => setOpen(false)}
           actions={
             <>
-              <Button variant="outline" className="h-10" onClick={() => setOpen(false)} disabled={pending}>
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
                 {t('fd.cancel')}
               </Button>
-              <Button className="h-10" type="submit" form="fx-new-challan" disabled={pending || !student}>
+              <Button type="submit" form="fx-new-challan" disabled={pending || !student}>
                 {t('fx.issueChallan')}
               </Button>
             </>
@@ -132,7 +132,7 @@ export function ReconcileChallans() {
         <FileUp className="size-4" /> {t('fx.bankFile')}
       </Button>
       {open && (
-        <Dialog title={t('fx.bankFileTitle')} size="md" busy={pending} onClose={() => { setOpen(false); setResult(null); }} actions={<Button variant="outline" className="h-10" onClick={() => { setOpen(false); setResult(null); }}>{t('common.close')}</Button>}>
+        <Dialog title={t('fx.bankFileTitle')} size="md" busy={pending} onClose={() => { setOpen(false); setResult(null); }} actions={<Button variant="outline" onClick={() => { setOpen(false); setResult(null); }}>{t('common.close')}</Button>}>
           <div className="grid gap-4">
             <p className="m-0 text-sm text-muted-foreground">{t('fx.bankFileHelp')}</p>
             <input type="file" accept=".csv,text/csv" aria-label={t('fx.bankFile')} disabled={pending} onChange={(e) => upload(e.target.files?.[0])} className="text-sm" data-testid="challan-file" />

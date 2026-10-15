@@ -70,9 +70,9 @@ export function RecordView({ data }: { data: OpsRecord }) {
       primary={
         buttons.length > 0 ? (
           <FormRow labelled={false}>
-            {buttons.length > 0 && <Input className="h-10 w-[220px]" placeholder={t('cops.note')} aria-label={t('cops.note')} value={note} onChange={(e) => setNote(e.target.value)} />}
+            {buttons.length > 0 && <Input className="h-9 w-[220px]" placeholder={t('cops.note')} aria-label={t('cops.note')} value={note} onChange={(e) => setNote(e.target.value)} />}
             {buttons.map((a, i) => (
-              <Button key={a.key} className="h-10" variant={i === 0 ? 'default' : 'outline'} disabled={pending} onClick={() => void run(a.key)}>
+              <Button key={a.key} variant={i === 0 ? 'default' : 'outline'} disabled={pending} onClick={() => void run(a.key)}>
                 {tr(`cops.a.${a.key}`, humanize(a.key))}
               </Button>
             ))}

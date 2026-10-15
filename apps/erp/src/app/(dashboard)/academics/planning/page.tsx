@@ -21,7 +21,7 @@ const ENTITY: Record<Exclude<Tab, 'workload'>, PlanningEntity> = { baskets: 'ele
  * NPTEL), faculty allocation with mid-semester hand-over, the workload statement, and regulations.
  */
 export default async function PlanningPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireSection('academics');
+  await requireSection('courseRegistration'); // planning is for the academic heads (lib/access.ts)
   const sp = await searchParams;
   const tab: Tab = TABS.includes(sp.tab as Tab) ? (sp.tab as Tab) : 'baskets';
   const { t } = await getI18n();

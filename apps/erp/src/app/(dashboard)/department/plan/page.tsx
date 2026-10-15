@@ -45,6 +45,7 @@ export default async function ClassPlanPage({ searchParams }: { searchParams: Pr
     return (
       <>
         {back}
+        <PageHeader title={t('plan.title')} />
         <ErrorState message={t('error.NOT_FOUND')} />
       </>
     );

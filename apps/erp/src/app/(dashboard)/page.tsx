@@ -50,7 +50,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <>
             {showDate && <DateNav date={date} today={today} />}
             {canSee(me.roles, 'reports') && (
-              <LinkButton href="/reports" variant="outlined" startIcon={<Download />}>
+              <LinkButton href="/reports" variant="outlined" startIcon={<Download />} aria-label={t('home.report')}>
                 <span className="hidden sm:inline">{t('home.report')}</span>
               </LinkButton>
             )}

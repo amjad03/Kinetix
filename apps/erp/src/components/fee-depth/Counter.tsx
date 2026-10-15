@@ -212,7 +212,7 @@ export function Counter({ dues, modes: enabled }: { dues: StudentDues | null; mo
                   <SelectInput label={t('fx.f.mode')} value={m.method} onChange={(e) => setMode(i, { method: e.target.value })} options={allowed.map((x) => ({ value: x, label: word(x) }))} />
                   <TextInput label={t('fx.f.amount')} value={m.amount} onChange={(e) => setMode(i, { amount: e.target.value })} inputProps={{ inputMode: 'decimal' }} data-testid={`mode-amount-${i}`} />
                   {modes.length > 1 && (
-                    <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0" aria-label={t('fd.remove')} onClick={() => setModes(modes.filter((_, j) => j !== i))}>
+                    <Button type="button" variant="ghost" size="icon" className="size-9 shrink-0" aria-label={t('fd.remove')} onClick={() => setModes(modes.filter((_, j) => j !== i))}>
                       <Trash2 className="size-4" />
                     </Button>
                   )}
@@ -272,11 +272,11 @@ export function Counter({ dues, modes: enabled }: { dues: StudentDues | null; mo
                 {error}
               </p>
             )}
-            <Button className="h-10" disabled={pending} onClick={collect} data-testid="counter-collect">
+            <Button disabled={pending} onClick={collect} data-testid="counter-collect">
               <ReceiptText className="size-4" /> {t('fx.collectAndReceipt')}
             </Button>
             {dues.advancePaise > 0 && dues.duePaise > 0 && (
-              <Button variant="outline" className="h-10" disabled={pending} onClick={fromAdvance}>
+              <Button variant="outline" disabled={pending} onClick={fromAdvance}>
                 <Wallet className="size-4" /> {t('fx.payFromAdvance', { amount: fmt.rupees(Math.min(dues.advancePaise, dues.duePaise)) })}
               </Button>
             )}
@@ -315,14 +315,14 @@ export function Counter({ dues, modes: enabled }: { dues: StudentDues | null; mo
           }}
           actions={
             <>
-              <Button variant="outline" className="h-10" onClick={() => window.open(`/api/fee-receipt/${receipt.id}`, '_blank')}>
+              <Button variant="outline" onClick={() => window.open(`/api/fee-receipt/${receipt.id}`, '_blank')}>
                 <Printer className="size-4" /> {t('fx.pdf')}
               </Button>
-              <Button asChild variant="outline" className="h-10">
+              <Button asChild variant="outline">
                 <Link href={`/fees/receipt/${receipt.id}`}>{t('fx.openReceipt')}</Link>
               </Button>
               <Button
-                className="h-10"
+               
                 onClick={() => {
                   setReceipt(null);
                   router.push('/fees/counter');

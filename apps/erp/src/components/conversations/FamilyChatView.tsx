@@ -169,7 +169,7 @@ export function FamilyChatView({
           <span className={cn('block truncate text-[12.5px]', x.unread ? 'font-medium text-foreground' : 'text-muted-foreground')}>{x.lastMessage ?? (x.side === 'leader' ? t('fc.hiddenUntilOpened') : t('fc.noMessages'))}</span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-1.5 text-[11.5px] text-muted-foreground">
-          {x.lastMessageAt ? (dayKey(x.lastMessageAt, timeZone) === dayKey(new Date().toISOString(), timeZone) ? fmt.time(x.lastMessageAt) : fmt.date(x.lastMessageAt, 'short')) : ''}
+          {x.lastMessageAt ? (dayKey(x.lastMessageAt, timeZone) === dayKey(new Date().toISOString(), timeZone) ? fmt.time(x.lastMessageAt) : fmt.date(dayKey(x.lastMessageAt, timeZone), 'short')) : ''}
           {x.unread > 0 && <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[10.5px] font-bold text-primary-foreground">{x.unread}</span>}
           {x.status !== 'open' && <span className="text-[10.5px]">{t(`fc.status.${x.status}` as MessageKey)}</span>}
         </span>
@@ -182,14 +182,16 @@ export function FamilyChatView({
 
   return (
     <div className="-m-4 grid h-[calc(100dvh-105px)] min-h-[520px] overflow-hidden border-t bg-card grid-cols-[minmax(0,1fr)] md:-m-6 md:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)_auto]" data-testid="family-chat">
+      {/* On a phone the list (and its heading) is hidden while a thread is open. */}
+      {mobileThread && <h1 className="sr-only md:hidden">{allView ? t('fc.allThreads') : t('nav.conversations')}</h1>}
       <section aria-label={t('fc.list')} className={cn('flex min-h-0 flex-col border-r', mobileThread && 'hidden md:flex')}>
         <div className="flex flex-col gap-3 px-4 pt-4">
           <div className="flex items-center gap-2">
-            <b className="flex-1 text-[17px]">{allView ? t('fc.allThreads') : t('nav.conversations')}</b>
+            <h1 className="m-0 min-w-0 flex-1 text-[17px] leading-8 font-bold">{allView ? t('fc.allThreads') : t('nav.conversations')}</h1>
+            {/* Icon buttons keep the title on one line in the 340px list column. */}
             {isLeader && (
-              <Button size="sm" variant={allView ? 'secondary' : 'outline'} onClick={() => router.push(allView ? pathname : `${pathname}?view=all`)} aria-pressed={allView} data-testid="fc-all-view">
+              <Button size="icon" variant={allView ? 'secondary' : 'outline'} className="size-8" onClick={() => router.push(allView ? pathname : `${pathname}?view=all`)} aria-pressed={allView} aria-label={t('fc.safeguarding')} title={t('fc.safeguarding')} data-testid="fc-all-view">
                 <ShieldCheck />
-                {t('fc.safeguarding')}
               </Button>
             )}
             {!allView && (
@@ -201,9 +203,9 @@ export function FamilyChatView({
           <div className="flex items-end gap-2">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('fc.search')} aria-label={t('fc.search')} className="h-10 pl-9" data-testid="fc-search" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('fc.search')} aria-label={t('fc.search')} className="h-9 pl-9" data-testid="fc-search" />
             </div>
-            <select value={section} onChange={(e) => setSection(e.target.value)} aria-label={t('fc.byClass')} className="h-10 max-w-[140px] rounded-md border bg-background px-2 text-sm" data-testid="fc-class">
+            <select value={section} onChange={(e) => setSection(e.target.value)} aria-label={t('fc.byClass')} className="h-9 max-w-[140px] rounded-md border bg-background px-2 text-sm" data-testid="fc-class">
               <option value="">{t('fc.allClasses')}</option>
               {sections.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -448,7 +450,7 @@ function Assign({ staff, busy, onAssign }: { staff: { id: string; fullName: stri
         {t('fc.assign')}
       </label>
       <div className="flex items-end gap-2">
-        <select id="fc-assign" value={id} onChange={(e) => setId(e.target.value)} className="h-10 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm" data-testid="fc-assign">
+        <select id="fc-assign" value={id} onChange={(e) => setId(e.target.value)} className="h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm" data-testid="fc-assign">
           <option value="">{t('fc.assignPick')}</option>
           {staff.map((s) => (
             <option key={s.id} value={s.id}>
@@ -456,7 +458,7 @@ function Assign({ staff, busy, onAssign }: { staff: { id: string; fullName: stri
             </option>
           ))}
         </select>
-        <Button variant="outline" className="h-10" disabled={!id || busy} onClick={() => (onAssign(id), setId(''))}>
+        <Button variant="outline" disabled={!id || busy} onClick={() => (onAssign(id), setId(''))}>
           <UserRoundCog />
           {t('fc.assignGo')}
         </Button>

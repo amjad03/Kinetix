@@ -1,6 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState, useSyncExternalStore, useTransition } from 'react';
 import { addQuestion, type AttemptRow, configureOnlineTest, getAttempts, retireQuestion } from '@/app/(dashboard)/admissions/growth-actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { CheckboxField, FormField, TextInput } from '@/components/ui';
@@ -23,8 +23,10 @@ export interface OnlineTest {
   config: { questionCount: number; negativeMarks: number; open: boolean } | null;
 }
 
+const noop = () => () => {};
+
 function TestCard({ test, slug }: { test: OnlineTest; slug: string }) {
-  const { t, locale } = useI18n();
+  const { t, fmt } = useI18n();
   const router = useRouter();
   const [count, setCount] = useState(String(test.config?.questionCount ?? 10));
   const [negative, setNegative] = useState(String(test.config?.negativeMarks ?? 0));
@@ -32,8 +34,10 @@ function TestCard({ test, slug }: { test: OnlineTest; slug: string }) {
   const [attempts, setAttempts] = useState<AttemptRow[] | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
-  const url = `${typeof window === 'undefined' ? '' : window.location.origin}/apply/${slug}/test`;
-  const stamp = (iso: string | null) => (iso ? new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Kolkata' }).format(new Date(iso)) : '–');
+  // The origin is known only in the browser; the server renders the path, and hydration then fills in the host.
+  const origin = useSyncExternalStore(noop, () => window.location.origin, () => '');
+  const url = `${origin}/apply/${slug}/test`;
+  const stamp = (iso: string | null) => (iso ? fmt.dateTime(iso) : '–');
   return (
     <div className="rounded-[12px] border bg-card p-5" data-testid="online-test-card">
       <SectionTitle flush>{test.name}</SectionTitle>

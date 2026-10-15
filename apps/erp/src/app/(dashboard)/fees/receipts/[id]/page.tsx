@@ -31,12 +31,16 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
       <ReceiptPrintStyles />
       <div className="kx-noprint flex items-center justify-between gap-4 mb-6 flex-wrap">
         <div className="-ml-2">
-          <LinkButton href="/fees/invoices?status=paid" size="small" startIcon={<ArrowBack />}>
+          <LinkButton href="/fees/invoices?status=paid" startIcon={<ArrowBack />}>
             {t('fees.invoices')}
           </LinkButton>
         </div>
-        {receipt.data && <RefundPanel paymentId={receipt.data.paymentId} amountPaise={receipt.data.amountPaise} flows={flows} />}
-        {receipt.data && <PrintButton />}
+        {receipt.data && (
+          <div className="flex flex-wrap items-center gap-2">
+            <RefundPanel paymentId={receipt.data.paymentId} amountPaise={receipt.data.amountPaise} flows={flows} />
+            <PrintButton />
+          </div>
+        )}
       </div>
       {receipt.error !== undefined ? (
         <ErrorState title={t('fees.receipt.cantShow')} message={receipt.error} />

@@ -8,7 +8,7 @@ import type { SigningKeyInfo } from '@/lib/staff-changes';
 import { Alert, Button } from '@/components/kx';
 /** The institution's offline pairing key: boards get signed codes while online, and the Teacher App checks them against it. */
 export function OfflineKeyCard({ info, canRotate }: { info: SigningKeyInfo; canRotate: boolean }) {
-  const { t, locale } = useI18n();
+  const { t, fmt } = useI18n();
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export function OfflineKeyCard({ info, canRotate }: { info: SigningKeyInfo; canR
             {t('as.off.help')}
           </p>
           <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
-            {t('as.off.keyId')}: {info.keyId} · {info.algorithm} · {t('as.off.created')} {new Date(info.createdAt).toLocaleDateString(locale)}
+            {t('as.off.keyId')}: {info.keyId} · {info.algorithm} · {t('as.off.created')} {fmt.date(info.createdAt.slice(0, 10), 'day')}
           </span>
         </div>
         {canRotate && (

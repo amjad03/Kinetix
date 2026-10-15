@@ -14,7 +14,7 @@ export default async function SettlementsPage({ searchParams }: { searchParams: 
   const { tab } = await searchParams;
   const { t } = await getI18n();
   const data = await load(async () => ({
-    gateway: await api<GatewayView>('/v1/admin/payments/gateway'),
+    gateway: await api<GatewayView>('/v1/admin/payments/gateway').catch(() => null),
     batches: await api<Batch[]>('/v1/fees/settlements'),
     exceptions: await api<Exception[]>('/v1/fees/settlements/exceptions'),
   }));

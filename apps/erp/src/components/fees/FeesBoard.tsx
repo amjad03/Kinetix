@@ -12,7 +12,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/shadcn/table';
 import { useToast } from '@/components/ui/Toast';
 import { useI18n } from '@/i18n/client';
-import { formatDate } from '@/lib/dates';
+import { formatDate, formatMonthShort } from '@/lib/dates';
 import { initials, monthlyTotals, type Defaulter, type Receipt } from '@/lib/roster';
 import { cn } from '@/lib/utils';
 import { naturalSortBy } from '@/lib/natural';
@@ -44,7 +44,7 @@ export function FeesBoard({ billedPaise, collectedPaise, classes, months, receip
   const [month, setMonth] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const pct = billedPaise > 0 ? (collectedPaise / billedPaise) * 100 : 0;
-  const monthName = (m: string) => new Intl.DateTimeFormat(locale === 'en' ? 'en-IN' : `${locale}-IN`, { month: 'short', year: '2-digit', timeZone: 'UTC' }).format(new Date(`${m}-01T00:00:00Z`));
+  const monthName = (m: string) => formatMonthShort(m, locale, true);
   const totals = useMemo(() => (receipts ? monthlyTotals(receipts, months).map((m) => ({ ...m, label: monthName(m.month), lakh: m.paise / 1e7 })) : []), [receipts, months]); // eslint-disable-line react-hooks/exhaustive-deps
   const shownReceipts = (receipts ?? []).filter((r) => !month || r.day.startsWith(month)).slice(0, month ? 200 : 10);
   const owed = (defaulters ?? []).reduce((s, d) => s + d.overduePaise, 0);

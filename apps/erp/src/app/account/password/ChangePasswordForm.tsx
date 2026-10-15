@@ -17,7 +17,7 @@ export function ChangePasswordForm({ forced, hasPassword, emailName, next, back 
   const type = show ? 'text' : 'password';
   const toggle = (
     <InputAdornment position="end">
-      <IconButton aria-label={show ? t('login.hide') : t('login.show')} onClick={() => setShow((s) => !s)} edge="end">
+      <IconButton aria-label={show ? t('login.hide') : t('login.show')} onClick={() => setShow((s) => !s)}>
         {show ? <VisibilityOffOutlined /> : <VisibilityOutlined />}
       </IconButton>
     </InputAdornment>

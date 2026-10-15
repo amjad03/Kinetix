@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** External examiners: invite, assign, prepare anonymous scripts, move question papers, settle claims. */
 export default async function ExaminersPage() {
-  const me = await requireSection('exams');
+  const me = await requireSection('evaluation'); // the exam office: schemes.controller.ts ADMIN
   const { t } = await getI18n();
   const h = await headers();
   const origin = `${h.get('x-forwarded-proto') ?? 'https'}://${h.get('host') ?? 'localhost:3000'}`;

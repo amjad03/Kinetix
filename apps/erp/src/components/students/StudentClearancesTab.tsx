@@ -31,7 +31,7 @@ export function StudentClearancesTab({ studentId, clearances, canStart }: { stud
         <Card title={t('si.clr.start')} subtitle={t('si.clr.startHelp')}>
           <FormRow>
             <SelectInput label={t('si.clr.purpose')} value={purpose} onChange={(e) => setPurpose(e.target.value)} options={CLEARANCE_PURPOSES.map((p) => ({ value: p, label: t(`si.clr.purpose.${p}` as MessageKey) }))} className="min-w-[240px]" />
-            <Button className="h-10" onClick={go} disabled={pending} data-testid="start-clearance">
+            <Button onClick={go} disabled={pending} data-testid="start-clearance">
               {t('si.clr.start')}
             </Button>
           </FormRow>

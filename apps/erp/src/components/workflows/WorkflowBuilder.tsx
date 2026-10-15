@@ -258,7 +258,7 @@ export function WorkflowBuilder({ initial }: { initial: WorkflowDetail }) {
         <Link href="/workflows/builder" aria-label={t('wb.back')} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted">
           <ChevronLeft className="size-[18px]" />
         </Link>
-        <b className="min-w-0 truncate text-[15px]">{name}</b>
+        <h1 className="m-0 min-w-0 truncate text-[15px] font-bold">{name}</h1>
         <StatusPill tone={STATUS_TONE[status]}>{t(`wb.status.${status}` as MessageKey)}</StatusPill>
         {published > 0 && <span className="text-xs text-muted-foreground">{t('wb.live', { n: published })}</span>}
         {(hasDraft || dirty) && status !== 'draft' && <span className="text-xs text-orange-ink">{t('wb.unpublished')}</span>}

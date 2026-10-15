@@ -105,7 +105,7 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
           rowId={(c) => c.id}
           exportName="classes"
           columns={[
-            { id: 'c0', header: t('classes.col.time'), rowHeader: true, sort: (c) => `${hhmm(c.startsAt)}–${hhmm(c.endsAt)}`, cell: (c) => `${hhmm(c.startsAt)}–${hhmm(c.endsAt)}` },
+            { id: 'c0', header: t('classes.col.time'), rowHeader: true, sort: (c) => `${hhmm(c.startsAt)}–${hhmm(c.endsAt)}`, cell: (c) => <span className="whitespace-nowrap">{`${hhmm(c.startsAt)}–${hhmm(c.endsAt)}`}</span> },
             { id: 'c1', header: t('classes.col.class'), sort: (c) => c.subject.name, csv: (c) => `${c.subject.name} (${c.section.displayName} · ${c.subject.code})`, cell: (c) => (<><h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{c.subject.name}</h6>
                               <span className="text-xs leading-4 tracking-[0.3px] text-muted-foreground">
                                 {c.section.displayName} · {c.subject.code}

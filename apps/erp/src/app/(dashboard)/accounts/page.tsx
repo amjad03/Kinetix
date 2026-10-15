@@ -35,7 +35,7 @@ export default async function AccountsDeskPage() {
   const { t, fmt } = await getI18n();
   const data = await load(() => api<Inbox>('/v1/fee-accounts/inbox'));
   const link = (href: string, label: string, variant: 'outline' | 'default' = 'outline') => (
-    <Button asChild variant={variant} className="h-10">
+    <Button asChild variant={variant}>
       <Link href={href}>{label}</Link>
     </Button>
   );

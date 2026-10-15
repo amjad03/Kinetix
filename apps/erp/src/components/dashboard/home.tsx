@@ -50,7 +50,7 @@ export function AttentionInbox({ items, testId = 'attention-inbox' }: { items: I
         {items.length > 0 && <span className="rounded-full bg-red-soft px-[7px] text-[11px] font-semibold text-red-ink">{items.length}</span>}
       </div>
       <div className="px-[18px] pt-2.5">
-        <div role="tablist" aria-label={t('home.attention')} className="inline-flex gap-0.5 rounded-md border bg-card p-[3px]">
+        <div role="tablist" aria-label={t('home.attention')} className="inline-flex max-w-full gap-0.5 overflow-x-auto rounded-md border bg-card p-[3px]">
           {tabs.map((k) => (
             <button
               key={k}

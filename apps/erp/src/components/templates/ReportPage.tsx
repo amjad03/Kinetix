@@ -83,7 +83,7 @@ export function ReportPage<T>({
           <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-10">
+                <Button variant="outline">
                   <Bookmark /> {t('tpl.presets')}
                 </Button>
               </DropdownMenuTrigger>
@@ -111,18 +111,18 @@ export function ReportPage<T>({
                 </form>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" className="h-10" onClick={() => window.print()}>
+            <Button variant="outline" onClick={() => window.print()}>
               <Printer /> {t('tpl.print')}
             </Button>
             {exports?.pdf && (
-              <Button variant="outline" className="h-10" asChild>
+              <Button variant="outline" asChild>
                 <a href={withQuery(exports.pdf)}>
                   <FileDown /> {t('tpl.pdf')}
                 </a>
               </Button>
             )}
             {exports?.xlsx && (
-              <Button variant="outline" className="h-10" asChild>
+              <Button variant="outline" asChild>
                 <a href={withQuery(exports.xlsx)}>
                   <FileSpreadsheet /> {t('tpl.xlsx')}
                 </a>

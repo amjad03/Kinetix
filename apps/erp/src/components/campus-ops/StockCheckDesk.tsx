@@ -69,11 +69,11 @@ export function StockCheckDesk({ checks }: { checks: StockCheck[] }) {
         subtitle={t('cops.sc.subtitle')}
         actions={
           open ? (
-            <Button className="h-10" variant="outline" disabled={pending} onClick={close}>
+            <Button variant="outline" disabled={pending} onClick={close}>
               {t('cops.a.closeCheck')}
             </Button>
           ) : (
-            <Button className="h-10" disabled={pending} onClick={begin}>
+            <Button disabled={pending} onClick={begin}>
               {t('cops.sc.start')}
             </Button>
           )
@@ -91,7 +91,7 @@ export function StockCheckDesk({ checks }: { checks: StockCheck[] }) {
           <form onSubmit={scan}>
             <InlineField
               actions={
-                <Button type="submit" className="h-10" disabled={pending || !code.trim()}>
+                <Button type="submit" disabled={pending || !code.trim()}>
                   {t('cops.sc.scan')}
                 </Button>
               }

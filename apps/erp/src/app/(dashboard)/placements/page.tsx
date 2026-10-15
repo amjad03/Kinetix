@@ -182,7 +182,7 @@ export default async function PlacementsPage({ searchParams }: { searchParams: P
 
   return (
     <>
-      <PageHeader title={t('nav.placements')} subtitle={s ? t('pl.subtitle', { year: s.year }) : undefined} actions={<LinkButton href="/placements/reports" variant="outlined">{t('pd.reports')}</LinkButton>} />
+      <PageHeader title={t('nav.placements')} subtitle={s ? t('pl.subtitle', { year: String(s.year) }) : undefined} actions={<LinkButton href="/placements/reports" variant="outlined">{t('pd.reports')}</LinkButton>} />
       {s && (
         <Tiles>
           <StatTile label={t('pl.stat.students')} value={fmt.number(s.activeStudents)} testId="pl-students" />

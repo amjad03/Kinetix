@@ -539,7 +539,8 @@ export function DataTable<T>({
               </Button>
             </>
           ) : (
-            <>
+            // The table's own actions wrap together and stay on the right, never one orphan button on a line.
+            <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
               {toolbar}
               {reorder && (
                 <Button size="sm" variant="outline" onClick={() => toggleOrdering(true)} disabled={!!reorder.disabledReason} title={reorder.disabledReason} className="h-9 rounded-md" data-testid="reorder-start">
@@ -582,7 +583,7 @@ export function DataTable<T>({
                 </DropdownMenu>
               )}
               {exportButton(false)}
-            </>
+            </div>
           )}
         </div>
       )}
@@ -613,7 +614,8 @@ export function DataTable<T>({
                     style={{ width: c.width }}
                     className={cn('h-auto border-b border-border bg-muted/40 py-2.5 text-[12.5px] font-[550] whitespace-nowrap text-muted-foreground', cellPad, ALIGN[c.align ?? 'left'], c.hideBelow && HIDE[c.hideBelow])}
                   >
-                    {key && !ordering ? (
+                    {/* A column without a heading (actions, avatars) is not offered as an unnamed sort button. */}
+                    {key && !ordering && c.header !== '' && c.header != null ? (
                       <button
                         type="button"
                         onClick={() => setSort(!active ? { id: key, dir: 'asc' } : sort!.dir === 'asc' ? { id: key, dir: 'desc' } : null)}
@@ -695,7 +697,15 @@ export function DataTable<T>({
                       </TableCell>
                     )}
                     {shown.map((c) => {
-                      const cls = cn('border-b border-border text-[13.5px] align-middle', compact ? 'py-2' : 'py-3', cellPad, ALIGN[c.align ?? 'left'], c.hideBelow && HIDE[c.hideBelow]);
+                      const cls = cn(
+                        'border-b border-border text-[13.5px] align-middle',
+                        compact ? 'py-2' : 'py-3',
+                        cellPad,
+                        ALIGN[c.align ?? 'left'],
+                        c.hideBelow && HIDE[c.hideBelow],
+                        // An actions column stays in view at the right edge when a wide table scrolls sideways.
+                        c.id === 'actions' && 'sticky right-0 z-[1] bg-card',
+                      );
                       return c.rowHeader ? (
                         <th key={c.id} scope="row" className={cn(cls, 'font-semibold')}>
                           {c.cell(r)}

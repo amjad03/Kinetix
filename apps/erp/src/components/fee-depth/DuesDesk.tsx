@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { deskRead, deskSend } from '@/app/(dashboard)/accounts/actions';
 import { Button } from '@/components/shadcn/button';
-import { Card, DataTable, Dialog, EmptyState, StatusPill, TextInput, type Column } from '@/components/ui';
+import { Card, DataTable, Dialog, EmptyState, FormRow, StatusPill, TextInput, type Column } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { nextFy, type CarryRow, type ReminderRun } from '@/lib/fee-depth';
@@ -126,14 +126,14 @@ export function DuesDesk({ schedule, runs, fy }: { schedule: Schedule; runs: Rem
 
       <Card title={t('fx.carryForward')} subtitle={t('fx.carryForwardHint')}>
         <div className="grid gap-4">
-          <div className="flex flex-wrap items-end gap-3">
+          <FormRow>
             <TextInput label={t('fx.f.fromYear')} value={fromYear} onChange={(e) => { setFromYear(e.target.value); setRows(null); }} placeholder="2025-26" />
             <TextInput label={t('fx.f.toYear')} value={toYear} onChange={(e) => setToYear(e.target.value)} placeholder="2026-27" />
             <TextInput label={t('fx.f.arrearsDue')} type="date" value={dueOn} onChange={(e) => setDueOn(e.target.value)} />
-            <Button variant="outline" className="h-10" disabled={pending} onClick={check}>
+            <Button variant="outline" disabled={pending} onClick={check}>
               {t('fx.checkDues')}
             </Button>
-          </div>
+          </FormRow>
           {rows &&
             (rows.length === 0 ? (
               <EmptyState icon={<Forward />} title={t('fx.nothingToCarry')} dense />
@@ -158,10 +158,10 @@ export function DuesDesk({ schedule, runs, fy }: { schedule: Schedule; runs: Rem
           onClose={() => setConfirm(false)}
           actions={
             <>
-              <Button variant="outline" className="h-10" onClick={() => setConfirm(false)}>
+              <Button variant="outline" onClick={() => setConfirm(false)}>
                 {t('fd.cancel')}
               </Button>
-              <Button className="h-10" disabled={pending} onClick={carry}>
+              <Button disabled={pending} onClick={carry}>
                 {t('fx.carryNow')}
               </Button>
             </>

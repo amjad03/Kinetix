@@ -15,6 +15,13 @@ import type { DeviceActionRow, Fleet, FleetBoard, Structure } from '@/lib/types'
 
 import { Alert, Chip, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography } from '@/components/kx';
 import { RadioTower as SettingsRemoteOutlined } from 'lucide-react';
+
+/** A remote action's name; an action type this ERP does not know is shown as written, not as a message key. */
+function actionName(t: (k: MessageKey) => string, type: string) {
+  const key = `devices.act.${type}` as MessageKey;
+  const text = t(key);
+  return text === key ? type.replace(/_/g, ' ') : text.replace('…', '');
+}
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.devices') };
 }
@@ -174,7 +181,7 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
                     <TableRow key={a.id}>
                       <TableCell className="whitespace-nowrap">{fmt.dateTime(a.createdAt, TIMEZONE)}</TableCell>
                       <TableCell>{a.device}</TableCell>
-                      <TableCell>{t(`devices.act.${a.type}` as MessageKey).replace('…', '')}</TableCell>
+                      <TableCell>{actionName(t, a.type)}</TableCell>
                       <TableCell>{a.by ?? '—'}</TableCell>
                       <TableCell>
                         <Tooltip title={a.error ?? ''}>

@@ -94,7 +94,7 @@ export function TimetableEditor({
                 {grid.columns.map((c) => {
                   const here = r.cells[c.key] ?? [];
                   return (
-                    <div className="grid gap-1 [&:hover_.kx-add]:opacity-[1] min-h-[76px] border-b border-l p-1.5 first-of-type:border-l-0" key={c.key} role="cell">
+                    <div className="grid min-w-0 gap-1 [&:hover_.kx-add]:opacity-[1] min-h-[76px] border-b border-l p-1.5 first-of-type:border-l-0" key={c.key} role="cell">
                       {here.map((s) => (
                         <SlotCard key={s.id} slot={s} view={view} onClick={() => setEditing({ slot: s })} />
                       ))}
@@ -150,7 +150,7 @@ function SlotCard({ slot, view, onClick }: { slot: TimetableSlot; view: Timetabl
   const { t, locale } = useI18n();
   const who = view.kind === 'class' ? slot.teacher.fullName : view.kind === 'room' ? `${slot.section.displayName} · ${slot.teacher.fullName}` : slot.section.displayName;
   return (
-    <ButtonBase className="block text-left w-full h-full rounded-[8px] px-2.5 py-2 bg-secondary text-secondary-foreground border-l-3 border-teal hover:bg-teal-soft hover:text-teal-ink focus-visible:[outline:2px] focus-visible:outline-teal focus-visible:[outline-style:solid]"
+    <ButtonBase className="block min-w-0 overflow-hidden text-left w-full h-full rounded-[8px] px-2.5 py-2 bg-secondary text-secondary-foreground border-l-3 border-teal hover:bg-teal-soft hover:text-teal-ink focus-visible:[outline:2px] focus-visible:outline-teal focus-visible:[outline-style:solid]"
       onClick={onClick}
       data-testid="slot"
       aria-label={t('tt.slotLabel', { subject: slot.subject.name, who, day: weekdayName(slot.dayOfWeek, locale), time: `${hm(slot.startsAt)}–${hm(slot.endsAt)}` })}

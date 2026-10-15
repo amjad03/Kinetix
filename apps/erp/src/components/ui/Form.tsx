@@ -32,7 +32,7 @@ export function FormField({
   const id = given ?? generated;
   const hid = `${id}-h`;
   return (
-    <div className="grid gap-1.5">
+    <div className="grid gap-1.5" data-slot="field" data-helper={error || helper ? '' : undefined}>
       <label id={`${id}-label`} htmlFor={id} className="text-[13px] leading-5 font-semibold">
         {label}
         {required && (
@@ -69,6 +69,7 @@ export function FormRow({
     <Tag
       {...(rest as HTMLAttributes<HTMLElement>)}
       data-form-row=""
+      data-labelled={labelled ? '' : undefined}
       className={cn(
         'kx-form-row flex flex-wrap gap-3 [&>button]:shrink-0',
         labelled

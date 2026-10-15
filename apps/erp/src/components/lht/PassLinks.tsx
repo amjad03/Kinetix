@@ -16,7 +16,7 @@ export function PassLinks({ riders, routes }: { riders: Opt[]; routes: Opt[] }) 
   const row = (label: string, options: Opt[], value: string, set: (v: string) => void, href: string, testId: string) => (
     <div className="flex items-end gap-3">
       <SelectInput className="min-w-0 flex-1" label={label} value={value} onChange={(e) => set(e.target.value)} options={options} empty={t('lht.choose')} />
-      <Button asChild={!!value} variant="outline" className="h-10" disabled={!value} data-testid={testId}>
+      <Button asChild={!!value} variant="outline" disabled={!value} data-testid={testId}>
         {value ? (
           <a href={href} download>
             <Download />

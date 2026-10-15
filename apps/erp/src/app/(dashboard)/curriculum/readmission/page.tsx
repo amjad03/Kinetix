@@ -49,7 +49,7 @@ export default async function ReadmissionPage({ searchParams }: { searchParams: 
                 <Label htmlFor="ra-q">{t('ra.find')}</Label>
                 <Input id="ra-q" name="q" defaultValue={q} placeholder={t('ra.findHint')} data-testid="ra-q" />
               </div>
-              <Button type="submit" className="h-10">
+              <Button type="submit">
                 {t('ra.search')}
               </Button>
             </form>
@@ -98,7 +98,7 @@ export default async function ReadmissionPage({ searchParams }: { searchParams: 
                   <Label htmlFor="ra-term">{t('ra.rejoinTerm')}</Label>
                   <Input id="ra-term" name="term" type="number" min={1} max={20} defaultValue={sp.term ?? ''} required className="w-28" data-testid="ra-term" />
                 </div>
-                <Button type="submit" variant="outline" className="h-10" data-testid="ra-preview">
+                <Button type="submit" variant="outline" data-testid="ra-preview">
                   {t('ra.preview')}
                 </Button>
               </form>

@@ -127,10 +127,10 @@ export function ApprovalPanel({
             {extra}
             <TextField label={t('tpl.comment')} multiline minRows={2} value={comment} onChange={(e) => setComment(e.target.value)} error={!!error} helperText={error ?? undefined} />
             <div className="flex flex-wrap justify-end gap-2">
-              <Button variant="outline" className="h-10" disabled={pending} onClick={() => decide('reject')} data-testid="approval-reject">
+              <Button variant="outline" disabled={pending} onClick={() => decide('reject')} data-testid="approval-reject">
                 {t('tpl.reject')}
               </Button>
-              <Button className="h-10" disabled={pending} onClick={() => decide('approve')} data-testid="approval-approve">
+              <Button disabled={pending} onClick={() => decide('approve')} data-testid="approval-approve">
                 {t('tpl.approve')}
               </Button>
             </div>

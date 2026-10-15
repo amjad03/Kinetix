@@ -26,6 +26,7 @@ function LevelControl({ value, onChange, label, disabled }: { value: AccessLevel
           type="button"
           role="radio"
           aria-checked={value === l}
+          aria-label={t(`ga.level.${l}`)}
           disabled={disabled}
           onClick={() => onChange(l)}
           className={cn(

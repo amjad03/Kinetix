@@ -23,8 +23,8 @@ Load or reload with `pnpm db:seed:soundarya` in `services/api` (replaces this in
 | student | Vignesh Naik (25BCA001, BCA Sem 3 A) | student.bca@soundarya.demo.kinetix.in |
 | alumnus (alumni portal) | the first alumni profile | alumnus@soundarya.demo.kinetix.in |
 | guardian | Basavaraj Gowda (father of Sahana Gowda) | parent.bcom@soundarya.demo.kinetix.in |
-| guardian | Revathi Naik (mother of Vignesh Naik, BCA Sem 3, and Chaitra Naik, BBA Sem 1) | parent.bca@soundarya.demo.kinetix.in |
+| guardian | Revathi Naik (mother of Vignesh Naik and Chaitra Naik) | parent.bca@soundarya.demo.kinetix.in |
 
 Other staff sign in with `<email prefix>@soundarya.demo.kinetix.in` (for example `admissions`, `placements`, `warden`, `transport`, `stores`, `grievance`, `research`).
 
-Institution: Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru 560073. Affiliated to Bengaluru City University, NEP semester scheme, academic year 2026-27.
+Institution: Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru 560073. Bengaluru City University, NEP semester scheme, academic year 2026-27.

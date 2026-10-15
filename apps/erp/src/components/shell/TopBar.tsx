@@ -101,10 +101,11 @@ export function TopBar({
       {trail.length > 0 && (
         <Breadcrumb className="hidden min-w-0 xl:block">
           <BreadcrumbList className="flex-nowrap text-[13px]">
+            {/* Below 1536px only the section and the page fit; earlier crumbs would shrink to "D…". */}
             {trail.map((c, i) => (
               <Fragment key={`${c.text}-${i}`}>
-                {i > 0 && <BreadcrumbSeparator className="shrink-0" />}
-                <BreadcrumbItem className="min-w-0 [&>a]:truncate">
+                {i > 0 && <BreadcrumbSeparator className={cn('shrink-0', i < trail.length - 1 && 'hidden 2xl:block')} />}
+                <BreadcrumbItem className={cn('min-w-0 [&>a]:truncate', i < trail.length - 2 && 'hidden 2xl:inline-flex', i === trail.length - 2 && 'max-w-[200px]')}>
                   {i === trail.length - 1 ? (
                     <BreadcrumbPage className="max-w-[260px] truncate font-semibold">{c.text}</BreadcrumbPage>
                   ) : c.href ? (

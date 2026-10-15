@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { reviewFlag, runIntegrityCheck } from '@/app/(dashboard)/integrity/actions';
 import { ActionButton, Bar, Grid, useToast } from '@/components/ops/kit';
-import { StatusPill } from '@/components/ui';
+import { SelectInput, StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { IntegrityReport } from '@/lib/governance';
@@ -18,16 +18,7 @@ export function IntegrityDesk({ homeworkId, report }: { homeworkId: string; repo
         {t('ig.hint')}
       </p>
       <Bar>
-        <label>
-          {t('ig.threshold')}{' '}
-          <select value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} aria-label={t('ig.threshold')}>
-            {[40, 50, 60, 70, 80].map((x) => (
-              <option key={x} value={x}>
-                {x}%
-              </option>
-            ))}
-          </select>
-        </label>
+        <SelectInput className="w-[140px]" label={t('ig.threshold')} value={String(threshold)} onChange={(e) => setThreshold(Number(e.target.value))} options={[40, 50, 60, 70, 80].map((x) => ({ value: String(x), label: `${x}%` }))} />
         <ActionButton label={t('ig.run')} run={() => runIntegrityCheck(homeworkId, threshold / 100)} onDone={toast} />
       </Bar>
       {report.check && (

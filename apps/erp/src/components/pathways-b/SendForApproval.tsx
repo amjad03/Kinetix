@@ -42,7 +42,7 @@ export function SendForApproval({ flow, flows, sourceId, fields = [], onSend }: 
   const missing = flows !== null && !flows[flow.requestType];
   return (
     <>
-      <Button size="small" onClick={() => setOpen(true)} data-testid={`pwb-send-${flow.requestType}`}>{t('pwb.approval.send')}</Button>
+      <Button variant="outlined" onClick={() => setOpen(true)} data-testid={`pwb-send-${flow.requestType}`}>{t('pwb.approval.send')}</Button>
       {open && (
         <FormDialog
           title={`${t('pwb.approval.send')} · ${name}`}

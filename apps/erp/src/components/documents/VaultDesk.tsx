@@ -40,7 +40,7 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
   return (
     <>
       {view}
-      <div className="flex gap-3 flex-wrap mb-6">
+      <div className="mb-6 flex flex-wrap items-end gap-3">
         <FormField label={t('doc.vault.owner')}>
           <TextInput className="min-w-[150px]" select value={type} onChange={(e) => { setType(e.target.value as 'student' | 'staff'); setOwner(null); setDocs([]); }}>
             {canStudents && <MenuItem value="student">{t('doc.subject.student')}</MenuItem>}

@@ -145,6 +145,8 @@
   padding-bottom: 4px;
   font-size: 0.8125rem;
 }
-.kx-main[data-density='compact'] :is(input, select):not([type='checkbox'], [type='radio']) {
+/* Only inputs inside table cells (marks entry, registers) shrink: a toolbar input keeps the 36px height of
+   the buttons and selects beside it. */
+.kx-main[data-density='compact'] td :is(input, select):not([type='checkbox'], [type='radio']) {
   height: 32px;
 }

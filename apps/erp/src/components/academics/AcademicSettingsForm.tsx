@@ -22,8 +22,8 @@ export function AcademicSettingsForm({ initial }: { initial: AcademicSettings })
   const [saving, setSaving] = useState(false);
   const dirty = KINDS.filter((k) => JSON.stringify(v[k]) !== JSON.stringify(saved[k]));
   const patch = <S extends K>(k: S, p: Partial<AcademicSettings[S]>) => setV((x) => ({ ...x, [k]: { ...x[k], ...p } }));
-  const num = <S extends K>(k: S, f: keyof AcademicSettings[S] & string, label: string) => (
-    <TextInput className="w-[180px]" type="number" label={label} value={String(v[k][f] as number)} onChange={(e) => patch(k, { [f]: Number(e.target.value) } as Partial<AcademicSettings[S]>)} />
+  const num = <S extends K>(k: S, f: keyof AcademicSettings[S] & string, label: string, width = 'w-[180px]') => (
+    <TextInput className={width} type="number" label={label} value={String(v[k][f] as number)} onChange={(e) => patch(k, { [f]: Number(e.target.value) } as Partial<AcademicSettings[S]>)} />
   );
   const flag = <S extends K>(k: S, f: keyof AcademicSettings[S] & string, label: string) => <CheckboxField label={label} checked={v[k][f] as boolean} onChange={(c) => patch(k, { [f]: c } as Partial<AcademicSettings[S]>)} />;
 
@@ -82,7 +82,7 @@ export function AcademicSettingsForm({ initial }: { initial: AcademicSettings })
               {flag('attendance', 'notifyGuardianOnAbsence', t('acad.set.notifyGuardianOnAbsence'))}
               <FormRow>
                 <SelectInput className="w-[220px]" label={t('acad.set.mode')} value={v.attendance.mode} onChange={(e) => patch('attendance', { mode: e.target.value as AcademicSettings['attendance']['mode'] })} options={(['hour', 'day', 'session'] as const).map((m) => ({ value: m, label: t(`acad.set.mode.${m}`) }))} />
-                {num('attendance', 'unmarkedReminderMinutes', t('acad.set.unmarkedReminderMinutes'))}
+                {num('attendance', 'unmarkedReminderMinutes', t('acad.set.unmarkedReminderMinutes'), 'w-[min(100%,360px)]')}
                 <TextInput className="w-[180px]" type="number" label={t('acad.set.condonationFee')} value={String(v.attendance.condonationFeePaise / 100)} onChange={(e) => patch('attendance', { condonationFeePaise: Math.round(Number(e.target.value) * 100) })} />
               </FormRow>
               <FormRow>

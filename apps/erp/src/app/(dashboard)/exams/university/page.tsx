@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Affiliating-university mark-list and tabulation register formats (exam controller, principal, admin). */
 export default async function UniversityFormatsPage() {
-  const me = await requireSection('exams');
+  const me = await requireSection('evaluation'); // the exam office: schemes.controller.ts ADMIN
   const { t } = await getI18n();
   const data = await load(async () => {
     const [templates, registers, sessions] = await Promise.all([api<UniTemplate[]>('/v1/university-results/templates'), api<UniRegister[]>('/v1/university-results/registers'), api<{ id: string; name: string }[]>('/v1/exam-sessions')]);

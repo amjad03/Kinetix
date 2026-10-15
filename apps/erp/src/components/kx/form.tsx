@@ -260,7 +260,7 @@ export function TextField({
     );
   }
   return (
-    <div className={cn('grid min-w-0 content-start gap-1.5', className)} {...(root as HTMLAttributes<HTMLDivElement>)}>
+    <div className={cn('grid min-w-0 content-start gap-1.5', className)} data-slot="field" data-helper={helperText ? '' : undefined} {...(root as HTMLAttributes<HTMLDivElement>)}>
       {label && (
         <label id={`${id}-label`} htmlFor={id} className={labelClass}>
           {label}

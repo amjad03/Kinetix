@@ -7,12 +7,13 @@ import type { ReactNode } from 'react';
  */
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: ReactNode; actions?: ReactNode }) {
   return (
-    <div className="sticky top-[99px] z-10 mb-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 bg-background py-1 [box-shadow:0_0_0_24px_var(--background)] [clip-path:inset(-24px_-24px_-8px_-24px)]" data-slot="page-header">
-      <div className="min-w-0">
+    <div className="sticky top-[99px] z-10 mb-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 bg-background py-1 [box-shadow:0_0_0_24px_var(--background)] [clip-path:inset(0_-24px_-8px_-24px)]" data-slot="page-header">
+      {/* Grows from 320px, so a long subtitle wraps beside the actions instead of pushing them onto a row of their own. */}
+      <div className="min-w-0 flex-[1_1_320px]">
         <h1 className="m-0 text-[22px] leading-tight font-[650] tracking-[-0.015em] md:text-2xl">{title}</h1>
         {subtitle && <div className="mt-1 text-sm text-muted-foreground">{subtitle}</div>}
       </div>
-      {actions && <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2 [&>a]:h-9 [&>button]:h-9">{actions}</div>}
+      {actions && <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2 sm:justify-end [&>a]:h-9 [&>button]:h-9">{actions}</div>}
     </div>
   );
 }

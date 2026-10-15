@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 import { useState, useTransition, type ReactNode } from 'react';
 import { readLht } from '@/app/(dashboard)/lht-actions';
 import { Button } from '@/components/shadcn/button';
-import { Card, StatusPill, TextInput } from '@/components/ui';
+import { Card, FormRow, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { toneOf } from '@/lib/lht';
@@ -79,19 +79,19 @@ export function LibraryLookup() {
   return (
     <div className="mb-5 grid items-start gap-5 lg:grid-cols-2">
       <Card title={t('lht.look.title')} testId="lht-lookup">
-        <form
-          className="flex flex-wrap items-end gap-3"
+        <FormRow
+          component="form"
           onSubmit={(e) => {
             e.preventDefault();
             lookCode();
           }}
         >
           <TextInput className="min-w-[200px] flex-1" label={t('lht.look.code')} value={code} onChange={(e) => setCode(e.target.value)} error={!!error.code} helperText={error.code} />
-          <Button type="submit" variant="outline" className="h-10" disabled={busy} data-testid="lht-lookup-go">
+          <Button type="submit" variant="outline" disabled={busy} data-testid="lht-lookup-go">
             <Search />
             {t('lht.look.go')}
           </Button>
-        </form>
+        </FormRow>
         {found?.member && (
           <dl className="m-0 mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 border-t pt-4 text-sm" data-testid="lht-lookup-member">
             {row(t('lht.r.name'), `${found.member.fullName} · ${found.member.cardNo}`)}
@@ -113,19 +113,19 @@ export function LibraryLookup() {
         )}
       </Card>
       <Card title={t('lht.look.isbnTitle')} testId="lht-isbn">
-        <form
-          className="flex flex-wrap items-end gap-3"
+        <FormRow
+          component="form"
           onSubmit={(e) => {
             e.preventDefault();
             lookIsbn();
           }}
         >
           <TextInput className="min-w-[200px] flex-1" label="ISBN" value={isbn} onChange={(e) => setIsbn(e.target.value)} error={!!error.isbn} helperText={error.isbn} />
-          <Button type="submit" variant="outline" className="h-10" disabled={busy} data-testid="lht-isbn-go">
+          <Button type="submit" variant="outline" disabled={busy} data-testid="lht-isbn-go">
             <Search />
             {t('lht.look.go')}
           </Button>
-        </form>
+        </FormRow>
         {book && (
           <dl className="m-0 mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 border-t pt-4 text-sm" data-testid="lht-isbn-result">
             {book.inCatalogue && (

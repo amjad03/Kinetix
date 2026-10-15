@@ -65,8 +65,13 @@ Every page under `app/(dashboard)` follows these. Fix the shared component when 
   sit in a `min-h-9 items-center` group so they centre on the input.
 - **One height per row**: never mix `size="small"` and default buttons in one toolbar row.
 - **Stat cards**: `StatGrid` + `StatTile`. Label 11.5px uppercase muted, value 26px, one optional sub-line
-  (`caption` or `trend`). Tiles in a row have equal heights (`auto-rows-fr`); the grid fits as many
-  columns of `min` px as it can, two on a phone.
+  (`caption` or `trend`). Tiles in one row stretch to equal heights, but each row is only as tall as its
+  own content (no `auto-rows-fr`, which made every phone row as tall as the tallest tile); the grid fits as
+  many columns of `min` px as it can, two on a phone, where the mini chart and the trend's "vs …" text hide.
+- **Labelled fields and buttons in a hand-built flex row** line up on the input's bottom edge
+  automatically (`globals.css`, fields carry `data-slot="field"`), unless a field has helper text: use
+  `FormRow` for those. Do not hand-tune `h-10` on a button next to a 36px input.
+- **Table action columns** with `id: 'actions'` stay pinned to the right edge when a wide table scrolls.
 - **Empty states**: `EmptyState` with a lucide icon that says what the list holds (inbox by default),
   a title, an optional description and an optional action. Never pass a dot or a text glyph as the icon.
   `Grid` (ops kit) takes `emptyIcon`.

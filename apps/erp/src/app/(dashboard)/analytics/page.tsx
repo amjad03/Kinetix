@@ -53,7 +53,7 @@ export default async function AnalyticsPage() {
         <Kpi icon="students" label={t('v2.an.students')} value={r.students?.total ?? '–'} caption={r.students ? t('v2.an.joined', { n: r.students.joined }) : undefined} viz={marks.length > 1 ? <MiniBars values={marks} label={t('v2.an.marks')} /> : undefined} />
         <Kpi icon="attendance" label={t('v2.an.attendance')} value={r.attendance?.today === null || !r.attendance ? '–' : `${r.attendance.today}%`} caption={r.attendance?.previous != null ? t('v2.an.prev', { v: `${r.attendance.previous}%` }) : undefined} viz={attSeries.some((v) => v !== null) ? <Sparkline values={attSeries} width={72} height={28} label={t('v2.an.attendance')} /> : undefined} />
         <Kpi icon="finance" label={t('v2.an.collected')} value={r.fees ? formatRupees(r.fees.collected) : '–'} caption={r.fees ? t('v2.an.prev', { v: formatRupees(r.fees.previous) }) : undefined} viz={collectedPct !== null ? <span className="block w-16"><MiniMeter value={collectedPct} /></span> : undefined} />
-        <Kpi icon="hr" label={t('v2.an.staff')} value={r.staff?.total ?? '–'} caption={r.fees ? t('v2.an.overdue', { n: r.fees.overdueInvoices }) : undefined} />
+        <Kpi icon="hr" label={t('v2.an.staff')} value={r.staff?.total ?? '–'} caption={t('dash.kpi.facultyCaption')} />
       </div>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <V2Card title={t('v2.an.performance')} icon="reports">

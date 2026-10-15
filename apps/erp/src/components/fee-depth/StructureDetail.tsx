@@ -137,13 +137,13 @@ export function StructureDetail({ d, heads, meta, row, preview, me }: { d: Detai
               <div key={i} className="flex flex-wrap items-end gap-3">
                 <SelectInput label={t('fx.col.head')} value={it.code} disabled={!editable} onChange={(e) => setItem(i, { code: e.target.value })} options={heads_.map((x) => ({ value: x.code, label: `${x.code} · ${x.name}` }))} empty={t('fd.pick')} />
                 <TextInput label={t('fx.f.amount')} value={it.amount} disabled={!editable} onChange={(e) => setItem(i, { amount: e.target.value })} inputProps={{ inputMode: 'decimal' }} />
-                <span className="flex min-h-10 items-center gap-2 text-xs text-muted-foreground">
+                <span className="flex min-h-9 items-center gap-2 text-xs text-muted-foreground">
                   {h?.optional && <StatusPill tone="info">{t('fx.optionalFor', { who: word(h.linkedModule) })}</StatusPill>}
                   {h && !h.refundable && <StatusPill tone="neutral">{t('fx.nonRefundable')}</StatusPill>}
                   {h && h.gstRate > 0 && <StatusPill tone="warning">{t('fx.gstRate', { rate: h.gstRate })}</StatusPill>}
                 </span>
                 {editable && items.length > 1 && (
-                  <Button type="button" variant="ghost" size="icon" className="h-10 w-10" aria-label={t('fd.remove')} onClick={() => { setItems(items.filter((_, j) => j !== i)); setDirty(true); }}>
+                  <Button type="button" variant="ghost" size="icon" className="size-9" aria-label={t('fd.remove')} onClick={() => { setItems(items.filter((_, j) => j !== i)); setDirty(true); }}>
                     <Trash2 className="size-4" />
                   </Button>
                 )}
@@ -191,7 +191,7 @@ export function StructureDetail({ d, heads, meta, row, preview, me }: { d: Detai
       {decide && <DecideStructure id={s.id} onClose={() => setDecide(false)} />}
       {assign && <AssignDialog id={s.id} onClose={() => setAssign(false)} />}
       {reassign && (
-        <Dialog title={t('fx.reassignDone', { n: reassign.changed })} size="md" onClose={() => setReassign(null)} actions={<Button className="h-10" onClick={() => setReassign(null)}>{t('common.close')}</Button>}>
+        <Dialog title={t('fx.reassignDone', { n: reassign.changed })} size="md" onClose={() => setReassign(null)} actions={<Button onClick={() => setReassign(null)}>{t('common.close')}</Button>}>
           <DataTable
             columns={[
               { id: 's', header: t('fx.col.student'), rowHeader: true, cell: (r) => r.fullName },
@@ -231,10 +231,10 @@ function DecideStructure({ id, onClose }: { id: string; onClose: () => void }) {
       onClose={onClose}
       actions={
         <>
-          <Button variant="outline" className="h-10" disabled={pending} onClick={() => send('reject')}>
+          <Button variant="outline" disabled={pending} onClick={() => send('reject')}>
             {t('fx.reject')}
           </Button>
-          <Button className="h-10" disabled={pending} onClick={() => send('approve')}>
+          <Button disabled={pending} onClick={() => send('approve')}>
             {t('fx.approve')}
           </Button>
         </>
@@ -285,15 +285,15 @@ function AssignDialog({ id, onClose }: { id: string; onClose: () => void }) {
       onClose={onClose}
       actions={
         done ? (
-          <Button className="h-10" onClick={onClose}>
+          <Button onClick={onClose}>
             {t('common.close')}
           </Button>
         ) : (
           <>
-            <Button variant="outline" className="h-10" disabled={pending} onClick={check}>
+            <Button variant="outline" disabled={pending} onClick={check}>
               {t('fx.checkWho')}
             </Button>
-            <Button className="h-10" disabled={pending || !rows || rows.length === 0} onClick={go}>
+            <Button disabled={pending || !rows || rows.length === 0} onClick={go}>
               {t('fx.assignN', { n: rows?.length ?? 0 })}
             </Button>
           </>

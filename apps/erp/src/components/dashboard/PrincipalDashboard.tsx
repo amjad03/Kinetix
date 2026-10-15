@@ -9,7 +9,7 @@ import { StatGrid, StatTile } from '@/components/ui/StatTile';
 import { api, load } from '@/lib/api';
 import { canSee } from '@/lib/access';
 import type { CalendarList } from '@/lib/calendar';
-import { addDays } from '@/lib/dates';
+import { addDays, formatMonthShort } from '@/lib/dates';
 import { percentChange, pointsChange, type DashboardRollup } from '@/lib/dashboard';
 import { schoolNowTime } from '@/lib/school';
 import type { ClassesDay, Me, Overview, SentBroadcast } from '@/lib/types';
@@ -54,7 +54,6 @@ export async function PrincipalDashboard({ me, date, today }: { me: Me; date: st
     { href: '/ai', label: t('dash.qa.ai'), icon: <AutoAwesomeOutlined />, ai: true },
   ];
 
-  const monthFmt = new Intl.DateTimeFormat(locale === 'en' ? 'en-IN' : locale, { month: 'short', timeZone: 'UTC' });
   const perf = r?.performance ?? null;
   const KIND: Record<string, Pick<InboxItem, 'kind' | 'tone'>> = {
     leave: { kind: 'approval', tone: 'amber' },
@@ -81,7 +80,7 @@ export async function PrincipalDashboard({ me, date, today }: { me: Me; date: st
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <ChartCard title={t('home.attTrend')} subtitle={t('home.attTrendSub')} className="xl:col-span-2" testId="attendance-trend">
           {perf && perf.some((p) => p.attendance !== null) ? (
-            <TrendLine labels={perf.map((p) => monthFmt.format(new Date(`${p.month}-01T00:00:00Z`)))} values={perf.map((p) => p.attendance)} href="/attendance" ariaLabel={t('home.attTrend')} targetLabel={t('home.min75')} />
+            <TrendLine labels={perf.map((p) => formatMonthShort(p.month, locale))} values={perf.map((p) => p.attendance)} href="/attendance" ariaLabel={t('home.attTrend')} targetLabel={t('home.min75')} />
           ) : roll.error !== undefined ? (
             <ErrorState message={roll.error} />
           ) : (
@@ -192,8 +191,8 @@ function Kpis({ o, r, isToday, fmt, t, roles }: { o: Overview | undefined; r: Da
           );
         })()}
       </StatGrid>
-      <div style={{ height: 16 }} />
-      <StatGrid min={170}>
+      {/* Six small tiles: one row from 1280px. */}
+      <StatGrid min={140}>
         <StatTile testId="stat-faculty" icon={<BadgeOutlined />} label={t('dash.kpi.faculty')} value={r?.staff ? fmt.number(r.staff.total) : '—'} caption={t('dash.kpi.facultyCaption')} href={canSee(roles as never, 'hr') ? '/hr' : undefined} />
         <StatTile
           testId="stat-classes"

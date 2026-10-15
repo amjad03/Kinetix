@@ -22,11 +22,14 @@ export function Kpi({ icon, label, value, caption, viz }: { icon: NavIcon; label
     <div className="flex min-w-0 items-start gap-3 rounded-xl border bg-card p-4 shadow-card" data-testid="kpi">
       <NavTile icon={icon} size="md" />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-xs font-medium text-muted-foreground">{label}</div>
-        <div className="mt-0.5 text-[22px] leading-tight font-semibold tabular-nums">{value}</div>
-        {caption && <div className="mt-0.5 truncate text-xs text-muted-foreground">{caption}</div>}
+        <div className="text-xs leading-4 font-medium text-muted-foreground">{label}</div>
+        {/* The mini chart sits beside the number, so the label and the caption keep the tile's full width. */}
+        <div className="mt-0.5 flex min-w-0 flex-wrap items-end justify-between gap-x-2 gap-y-1">
+          <div className="text-[19px] leading-tight font-semibold whitespace-nowrap tabular-nums sm:text-[22px]">{value}</div>
+          {viz && <div className="mb-0.5 shrink-0">{viz}</div>}
+        </div>
+        {caption && <div className="mt-0.5 text-xs leading-4 text-muted-foreground">{caption}</div>}
       </div>
-      {viz && <div className="shrink-0 self-end">{viz}</div>}
     </div>
   );
 }

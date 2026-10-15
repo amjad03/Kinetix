@@ -73,7 +73,7 @@ export function CloseDay({ periods }: { periods: { period: string; closedAt: str
               {t('fd.col.counted')}: <strong>{fmt.rupees(counted)}</strong>
               {expected && diff !== 0 && <span className="ml-3 text-destructive">{t('fd.col.variance')}: {fmt.rupees(diff)}</span>}
             </span>
-            <Button className="h-10" onClick={submit} disabled={pending}>
+            <Button onClick={submit} disabled={pending}>
               {t('fd.a.submitClosing')}
             </Button>
           </div>
@@ -83,7 +83,7 @@ export function CloseDay({ periods }: { periods: { period: string; closedAt: str
         <div className="grid gap-4">
           <FormRow>
             <TextInput label={t('fd.col.month')} type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
-            <Button variant="outline" className="h-10" onClick={closeMonth} disabled={pending}>
+            <Button variant="outline" onClick={closeMonth} disabled={pending}>
               {t('fd.a.closeMonth')}
             </Button>
           </FormRow>

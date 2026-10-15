@@ -57,10 +57,12 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
       } else setError(res.error);
     });
 
+  // A request's type by its route's name ("Purchase approval"), not the code (capex_approval).
+  const typeName = (code: string) => definitions.find((d) => d.requestType === code)?.name ?? code.replace(/_/g, ' ');
   const statusPill = (r: { status: RequestRow['status'] }) => <Pill label={t(`wf.status.${r.status}` as MessageKey)} warn={r.status === 'rejected'} />;
   const requestCols = (withRequester: boolean): Col<RequestRow>[] => [
     { label: t('wf.col.title'), cell: (r) => r.title },
-    { label: t('wf.col.type'), cell: (r) => r.requestType },
+    { label: t('wf.col.type'), cell: (r) => typeName(r.requestType), sort: (r) => typeName(r.requestType) },
     ...(withRequester ? [{ label: t('wf.col.requester'), cell: (r: RequestRow) => r.requesterName }] : []),
     { label: t('wf.col.amount'), cell: (r) => (r.amount === null ? '-' : fmt.number(r.amount)), num: true, sort: (r) => r.amount },
     { label: t('wf.col.status'), cell: statusPill, sort: (r) => r.status },
@@ -72,7 +74,7 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
 
   const defCols: Col<DefinitionRow>[] = [
     { label: t('wf.col.name'), cell: (d) => d.name, sort: (d) => d.name },
-    { label: t('wf.col.type'), cell: (d) => d.requestType },
+    { label: t('wf.col.type'), cell: (d) => <span className="font-mono text-[12.5px] text-muted-foreground">{d.requestType}</span> },
     { label: t('wf.col.steps'), cell: (d) => d.steps.map((s) => s.name).join(' > ') },
     { label: t('wf.col.fields'), cell: (d) => d.fields.length, num: true },
     { label: t('wf.col.status'), cell: (d) => <Pill label={d.active ? t('wf.active') : t('wf.inactive')} warn={!d.active} /> },

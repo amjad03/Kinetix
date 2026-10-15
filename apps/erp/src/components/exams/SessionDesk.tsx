@@ -195,7 +195,7 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
             </FormRow>
           ))}
           <div className="flex gap-2 flex-wrap">
-            <Button size="small" onClick={() => setHalls([...halls, { roomId: structure.rooms[0]?.id ?? '', capacity: '30' }])}>
+            <Button variant="outlined" onClick={() => setHalls([...halls, { roomId: structure.rooms[0]?.id ?? '', capacity: '30' }])}>
               {t('exm.addHall')}
             </Button>
             <Button variant="outlined" disabled={pending || s.status === 'processed' || s.status === 'published' || s.status === 'locked'} onClick={() => run(() => generateSeating(s.id, halls.map((h) => ({ roomId: h.roomId, capacity: Number(h.capacity) }))), t('exm.seated'))}>

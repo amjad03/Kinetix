@@ -30,7 +30,7 @@ export function ExamRecord({ record: r }: { record: RecordView }) {
     );
 
   const button = (a: RecordAction) => (
-    <Button key={a.key} className="h-10" variant={a.tone === 'primary' ? 'default' : a.tone === 'danger' ? 'destructive' : 'outline'} disabled={!!a.blocked || pending} title={a.blocked} onClick={() => (a.input ? setOpen(a) : void run(a))}>
+    <Button key={a.key} variant={a.tone === 'primary' ? 'default' : a.tone === 'danger' ? 'destructive' : 'outline'} disabled={!!a.blocked || pending} title={a.blocked} onClick={() => (a.input ? setOpen(a) : void run(a))}>
       {label(t, 'xo.a.', a.key)}
     </Button>
   );
@@ -163,10 +163,10 @@ function ActionDialog({ action, record, busy, onClose, onRun }: { action: Record
       size={action.input === 'absentees' ? 'md' : 'sm'}
       actions={
         <>
-          <Button variant="outline" className="h-10" onClick={onClose}>
+          <Button variant="outline" onClick={onClose}>
             {t('common.cancel')}
           </Button>
-          <Button className="h-10" disabled={busy} onClick={() => void submit()}>
+          <Button disabled={busy} onClick={() => void submit()}>
             {t('xo.a.run')}
           </Button>
         </>

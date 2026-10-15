@@ -275,7 +275,7 @@ function Custody({ applicationId, items, onReturn }: { applicationId: string; it
           <FormField label={t('adk.col.reference')}>
             <TextInput value={ref} onChange={(e) => setRef(e.target.value)} className="min-w-[160px]" slotProps={{ htmlInput: { maxLength: 80 } }} />
           </FormField>
-          <Button className="h-10" onClick={receive} disabled={pending || doc.trim().length < 2} data-testid="receive-original">
+          <Button onClick={receive} disabled={pending || doc.trim().length < 2} data-testid="receive-original">
             <FileInput />
             {t('adk.custody.receive')}
           </Button>

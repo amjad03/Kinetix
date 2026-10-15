@@ -36,10 +36,10 @@ export function BrandingAdmin({ initial, canEdit, institution }: { initial: Bran
   return (
     <>
       {view}
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="grid min-w-0 gap-5">
           <Card title={t('br.assets')} subtitle={t('br.assetHelp')}>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,128px),1fr))] gap-3">
               {BRAND_ASSETS.map((k) => (
                 <ImageSlot key={k} kind={k} label={t(`br.asset.${k}` as MessageKey)} version={b.assets[k]?.version} dark={k === 'logo_dark'} canEdit={canEdit} onChange={setB} run={run} />
               ))}
@@ -47,7 +47,7 @@ export function BrandingAdmin({ initial, canEdit, institution }: { initial: Bran
           </Card>
 
           <Card title={t('br.palette')} subtitle={t('br.paletteHelp')}>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,200px),1fr))] gap-3">
               {PALETTE_KEYS.map((k) => (
                 <div key={k} className="flex items-center gap-3 rounded-lg border p-2.5">
                   <label className="relative block size-11 shrink-0 cursor-pointer overflow-hidden rounded-md border shadow-inner" style={{ background: HEX.test(palette[k]) ? palette[k] : '#ffffff' }}>
@@ -125,7 +125,7 @@ export function BrandingAdmin({ initial, canEdit, institution }: { initial: Bran
           )}
         </div>
 
-        <aside className="grid content-start gap-5 xl:sticky xl:top-4">
+        <aside className="grid content-start gap-5 2xl:sticky 2xl:top-4">
           <Card title={t('br.livePreview')}>
             <LivePreview palette={valid ? palette : initial.palette} fonts={fonts} institution={institution} tagline={tagline} logo={b.assets.emblem ? brandImageUrl('emblem', b.assets.emblem.version) : b.assets.logo ? brandImageUrl('logo', b.assets.logo.version) : null} />
           </Card>
@@ -160,8 +160,8 @@ function ImageSlot({ kind, label, version, dark, canEdit, onChange, run, compact
       if (r.ok) onChange(r.data);
     });
   return (
-    <div className="grid gap-2" data-testid={`slot-${kind}`}>
-      {!compact && <span className="text-[13px] font-medium">{label}</span>}
+    <div className={`grid gap-2 ${compact ? '' : 'grid-rows-[1fr_auto_auto]'}`} data-testid={`slot-${kind}`}>
+      {!compact && <span className="self-end text-[13px] font-medium">{label}</span>}
       <div className={`grid place-items-center overflow-hidden rounded-md border ${compact ? 'h-14' : 'aspect-square'} ${dark ? 'bg-slate-800' : 'bg-[repeating-conic-gradient(#f1f5f9_0_25%,#ffffff_0_50%)] bg-[length:16px_16px]'}`}>
         {version ? (
           // eslint-disable-next-line @next/next/no-img-element

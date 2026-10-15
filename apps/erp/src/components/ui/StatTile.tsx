@@ -23,12 +23,12 @@ export function TrendPill({ delta, label, goodWhen = 'up', suffix = '%' }: Trend
   const Icon = flat ? Minus : up ? ArrowUp : ArrowDown;
   const shown = `${up ? '+' : ''}${Math.round(delta * 10) / 10}${suffix}`;
   return (
-    <span data-trend={flat ? 'flat' : up ? 'up' : 'down'} className="inline-flex items-center gap-1.5 whitespace-nowrap">
-      <span className={cn('inline-flex items-center gap-0.5 rounded-full px-[7px] py-px text-xs font-semibold', good === null ? 'bg-slate-soft text-slate-ink' : good ? 'bg-green-soft text-green-ink' : 'bg-red-soft text-red-ink')}>
+    <span data-trend={flat ? 'flat' : up ? 'up' : 'down'} className="inline-flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+      <span className={cn('inline-flex shrink-0 items-center whitespace-nowrap gap-0.5 rounded-full px-[7px] py-px text-xs font-semibold', good === null ? 'bg-slate-soft text-slate-ink' : good ? 'bg-green-soft text-green-ink' : 'bg-red-soft text-red-ink')}>
         <Icon aria-hidden className="size-3" strokeWidth={2.5} />
         {shown}
       </span>
-      {label && <span className="text-[12.5px] text-muted-foreground">{label}</span>}
+      {label && <span className="text-[12.5px] text-muted-foreground @max-[200px]:hidden">{label}</span>}
     </span>
   );
 }
@@ -79,7 +79,7 @@ export function StatTile({
           <b className={cn('text-[18px] leading-8 font-[650] whitespace-nowrap tracking-[-0.02em] tabular-nums @[180px]:text-[22px] @[220px]:text-[26px]', tone === 'warning' ? 'text-red-ink' : tone === 'live' ? 'text-orange-ink' : 'text-foreground')}>{value}</b>
           {unit && <span className="min-w-0 text-[13px] [overflow-wrap:anywhere] text-muted-foreground">{unit}</span>}
         </p>
-        {spark && <div className="shrink-0">{spark}</div>}
+        {spark && <div className="shrink-0 @max-[200px]:hidden">{spark}</div>}
       </div>
       {bar && <div className="mt-2">{bar}</div>}
       {(trend || caption) && (
@@ -103,10 +103,14 @@ export function StatTile({
   );
 }
 
-/** A responsive row of StatTiles: as many columns of at least `min` px as fit (two on a phone), equal heights. */
+/**
+ * A responsive row of StatTiles: as many columns of at least `min` px as fit (two on a phone). Tiles in
+ * one row stretch to one height; each row is only as tall as its own content, so one long caption does
+ * not make every tile on a phone tall.
+ */
 export function StatGrid({ children, min = 170 }: { children: ReactNode; min?: number }) {
   return (
-    <div data-slot="stat-grid" className="mb-5 grid auto-rows-fr gap-3 sm:gap-4" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}px, calc(50% - 8px)), 1fr))` }}>
+    <div data-slot="stat-grid" className="mb-5 grid gap-3 sm:gap-4" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}px, calc(50% - 8px)), 1fr))` }}>
       {children}
     </div>
   );

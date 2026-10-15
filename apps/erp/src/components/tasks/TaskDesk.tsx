@@ -15,13 +15,19 @@ export function TaskDesk({ mine, assigned, people }: { mine: TaskRow[]; assigned
   const [toast, toastNode] = useToast();
   const [now] = useState(() => Date.now());
 
+  // The module a task came from by its menu name ("Workflows"), not the code.
+  const moduleName = (m: string) => {
+    const key = `nav.${m}` as MessageKey;
+    const text = t(key);
+    return text === key ? m.replace(/[_-]/g, ' ') : text;
+  };
   const cols = (who: 'ownerName' | 'assigneeName'): Col<TaskRow>[] => [
     { label: t('wk.tk.col.title'), cell: (x) => x.title },
     { label: t(who === 'ownerName' ? 'wk.tk.col.from' : 'wk.tk.col.to'), cell: (x) => x[who] },
     { label: t('wk.tk.col.priority'), cell: (x) => <Pill label={t(`wk.tk.pri.${x.priority}` as MessageKey)} warn={x.priority === 'urgent'} /> },
     { label: t('wk.tk.col.due'), cell: (x) => (x.dueAt ? <Pill label={fmt.dateTime(x.dueAt)} warn={dueState(x, now) === 'overdue'} /> : '-'), sort: (x) => x.dueAt },
     { label: t('wk.tk.col.status'), cell: (x) => t(`wk.tk.status.${x.status}` as MessageKey) },
-    { label: t('wk.tk.col.source'), cell: (x) => x.sourceModule ?? '-' },
+    { label: t('wk.tk.col.source'), cell: (x) => (x.sourceModule ? moduleName(x.sourceModule) : '-') },
     {
       label: '',
       cell: (x) => (

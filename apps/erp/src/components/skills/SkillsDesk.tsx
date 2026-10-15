@@ -9,6 +9,13 @@ import type { ActionResult } from '@/lib/types';
 
 import { Button } from '@/components/kx';
 /** Loads a read-only value for a dialog and reloads it after a change. */
+/** A skill category: the built-in ones are translated, a category the institution typed is shown as written. */
+function catName(t: (k: MessageKey) => string, category: string) {
+  const key = `sk.cat.${category}` as MessageKey;
+  const text = t(key);
+  return text === key ? category : text;
+}
+
 function useRead<T>(load: () => Promise<ActionResult<T>>) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +71,7 @@ export function SkillsDesk({ skills, sdg, initialTab }: { skills: Skill[]; sdg: 
                   cols={[
                     { label: t('sk.code'), cell: (s) => s.code },
                     { label: t('ops.f.name'), cell: (s) => s.name },
-                    { label: t('sk.col.category'), cell: (s) => t(`sk.cat.${s.category}` as MessageKey) },
+                    { label: t('sk.col.category'), cell: (s) => catName(t, s.category) },
                     { label: t('sk.col.sources'), cell: (s) => s.sources, num: true },
                     { label: t('sk.col.manual'), cell: (s) => s.manualEvidence, num: true },
                     { label: '', cell: (s) => <Button size="small" onClick={() => setDlg({ skill: s })}>{t('sk.manage')}</Button> },
@@ -255,7 +262,7 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
             rows={d.skills}
             cols={[
               { label: t('ops.f.name'), cell: (s) => s.name },
-              { label: t('sk.col.category'), cell: (s) => t(`sk.cat.${s.category}` as MessageKey) },
+              { label: t('sk.col.category'), cell: (s) => catName(t, s.category) },
               { label: t('sk.level'), cell: (s) => (s.level === null ? t('sk.pp.noLevel') : t('sk.pp.levelOf', { n: s.level })), sort: (s) => s.level ?? 0 },
               { label: t('sk.mapped'), cell: (s) => s.evidence.map((e) => `${e.title}: ${e.detail}`).join('; ') || '-' },
             ]}
@@ -268,7 +275,7 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
                 empty={t('sk.pp.none')}
                 rows={d.ksa}
                 cols={[
-                  { label: t('sk.col.category'), cell: (k) => t(`sk.cat.${k.category}` as MessageKey), sort: (k) => k.category },
+                  { label: t('sk.col.category'), cell: (k) => catName(t, k.category), sort: (k) => k.category },
                   { label: t('sk.stat.skills'), cell: (k) => k.skills, num: true, sort: (k) => k.skills },
                   { label: t('sk.pp.avgLevel'), cell: (k) => (k.averageLevel === null ? t('sk.pp.noLevel') : t('sk.pp.levelOf', { n: k.averageLevel })), num: true, sort: (k) => k.averageLevel },
                 ]}

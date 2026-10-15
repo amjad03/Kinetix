@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
 import { DepthDesk } from '@/components/depth/DepthDesk';
 import { PageHeader } from '@/components/PageHeader';
+import { Button } from '@/components/shadcn/button';
+import { Input } from '@/components/shadcn/input';
+import { FormRow, SelectInput } from '@/components/ui';
+import { Search } from 'lucide-react';
 import { ErrorState } from '@/components/States';
 import { UrlSelect } from '@/components/UrlSelect';
 import { getI18n } from '@/i18n/server';
@@ -117,19 +121,14 @@ export default async function EResourcesPage({ searchParams }: { searchParams: P
   return (
     <>
       <PageHeader title={t('dx.er.title')} subtitle={t('dx.er.subtitle')} actions={resources.length ? <UrlSelect label={t('dx.er.showLog')} param="resource" value={resource ? String(resource.id) : ''} options={opt(resources, (r) => String(r.id), (r) => String(r.title))} /> : undefined} />
-      <form method="get" style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
-        <input name="q" defaultValue={q} placeholder={t('dx.er.topicSearch')} aria-label={t('dx.er.topicSearch')} style={{ padding: '8px 10px', minWidth: 240 }} />
-        <button type="submit">{t('dx.er.search')}</button>
-        {topics.length > 1 && (
-          <select name="topic" defaultValue={topic?.id} aria-label={t('dx.er.topic')}>
-            {topics.map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.title}
-              </option>
-            ))}
-          </select>
-        )}
-      </form>
+      <FormRow component="form" method="get" labelled={false} className="mb-4">
+        <Input name="q" defaultValue={q} placeholder={t('dx.er.topicSearch')} aria-label={t('dx.er.topicSearch')} className="w-[min(100%,320px)] bg-card" />
+        {topics.length > 1 && <SelectInput name="topic" defaultValue={topic?.id} aria-label={t('dx.er.topic')} className="w-[min(100%,320px)]" options={topics.map((x) => ({ value: x.id, label: x.title }))} />}
+        <Button type="submit" variant="outline">
+          <Search />
+          {t('dx.er.search')}
+        </Button>
+      </FormRow>
       <DepthDesk panels={panels} />
     </>
   );

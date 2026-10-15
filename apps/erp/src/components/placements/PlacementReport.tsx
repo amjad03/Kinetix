@@ -32,12 +32,12 @@ export function PlacementReport({ data, years, criteria }: { data: ReportData; y
     <Card>
       <FormRow>
         <SelectInput className="w-36" label={t('pd.year')} value={String(data.year)} onChange={(e) => router.push(`/placements/reports?report=${data.id}&year=${e.target.value}`)} options={years.map((y) => ({ value: String(y), label: String(y) }))} />
-        <Button variant="outline" className="h-10" asChild>
+        <Button variant="outline" asChild>
           <a href={href('csv')}>
             <Download /> {t('pd.rp.csv')}
           </a>
         </Button>
-        <Button variant="outline" className="h-10" asChild>
+        <Button variant="outline" asChild>
           <a href={href('xlsx')}>
             <Download /> {t('pd.rp.xlsx')}
           </a>

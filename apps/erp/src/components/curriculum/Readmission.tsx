@@ -113,10 +113,10 @@ function ApplyDialog({ plan, onClose }: { plan: ReadmissionPlan; onClose: () => 
       onClose={onClose}
       actions={
         <>
-          <Button variant="outline" className="h-10" onClick={onClose} disabled={pending}>
+          <Button variant="outline" onClick={onClose} disabled={pending}>
             {t('ra.cancel')}
           </Button>
-          <Button className="h-10" onClick={submit} disabled={pending} data-testid="ra-confirm">
+          <Button onClick={submit} disabled={pending} data-testid="ra-confirm">
             {t('ra.apply')}
           </Button>
         </>

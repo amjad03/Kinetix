@@ -84,11 +84,11 @@ export function LateFeeRule({ rule }: { rule: Rule | null }) {
                 <TextInput label={t('fx.f.fromDay')} type="number" value={s.from} onChange={(e) => setSlab(i, { from: e.target.value })} />
                 <TextInput label={t('fx.f.toDay')} type="number" value={s.to} onChange={(e) => setSlab(i, { to: e.target.value })} helperText={i === slabs.length - 1 ? t('fx.f.toDayHelp') : undefined} />
                 <TextInput label={t('fx.f.slabAmount')} value={s.amount} onChange={(e) => setSlab(i, { amount: e.target.value })} inputProps={{ inputMode: 'decimal' }} />
-                <div className="flex min-h-10 items-center">
+                <div className="flex min-h-9 items-center">
                   <SwitchField label={t('fx.f.perDayToggle')} checked={s.perDay} onChange={(v) => setSlab(i, { perDay: v })} />
                 </div>
                 {slabs.length > 1 && (
-                  <Button type="button" variant="ghost" size="icon" className="h-10 w-10" aria-label={t('fd.remove')} onClick={() => setSlabs(slabs.filter((_, j) => j !== i))}>
+                  <Button type="button" variant="ghost" size="icon" className="size-9" aria-label={t('fd.remove')} onClick={() => setSlabs(slabs.filter((_, j) => j !== i))}>
                     <Trash2 className="size-4" />
                   </Button>
                 )}

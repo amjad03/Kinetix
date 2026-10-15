@@ -19,7 +19,7 @@ export function RefundPanel({ paymentId, amountPaise, flows }: { paymentId: stri
   ];
   return (
     <div className="flex flex-row gap-2 kx-noprint items-center flex-wrap" data-testid="pwb-refund-panel">
-      <Button size="small" variant="outlined" onClick={() => setOpen(true)} data-testid="pwb-refund">{t('pwb.refund.now')}</Button>
+      <Button variant="outlined" onClick={() => setOpen(true)} data-testid="pwb-refund">{t('pwb.refund.now')}</Button>
       <SendForApproval flow={BOUND_FLOWS[1]} flows={flows} fields={fields} onSend={(v) => sendRefund(paymentId, v)} />
       {open && (
         <FormDialog

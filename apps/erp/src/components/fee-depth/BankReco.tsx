@@ -196,7 +196,7 @@ function ImportStatement({ accountId, onClose, onDone }: { accountId: string; on
       router.refresh();
     });
   return (
-    <Dialog title={t('fx.importStatement')} busy={pending} onClose={onClose} actions={<Button variant="outline" className="h-10" onClick={onClose}>{t('fd.cancel')}</Button>}>
+    <Dialog title={t('fx.importStatement')} busy={pending} onClose={onClose} actions={<Button variant="outline" onClick={onClose}>{t('fd.cancel')}</Button>}>
       <div className="grid gap-3">
         <p className="m-0 text-sm text-muted-foreground">{t('fx.importStatementHelp')}</p>
         <input type="file" accept=".csv,text/csv" aria-label={t('fx.importStatement')} disabled={pending} onChange={(e) => upload(e.target.files?.[0])} className="text-sm" data-testid="statement-file" />
@@ -237,7 +237,7 @@ function MatchLine({ line, settlements, onClose }: { line: BankLine; settlements
     });
   const shown = (list ?? []).filter((c) => !voucherNo.trim() || c.number.toLowerCase().includes(voucherNo.trim().toLowerCase()) || c.text.toLowerCase().includes(voucherNo.trim().toLowerCase()));
   return (
-    <Dialog title={t('fx.matchTitle', { amount: fmt.rupees(line.creditPaise || line.debitPaise) })} size="md" busy={pending} onClose={onClose} actions={<Button variant="outline" className="h-10" onClick={onClose}>{t('fd.cancel')}</Button>}>
+    <Dialog title={t('fx.matchTitle', { amount: fmt.rupees(line.creditPaise || line.debitPaise) })} size="md" busy={pending} onClose={onClose} actions={<Button variant="outline" onClick={onClose}>{t('fd.cancel')}</Button>}>
       <div className="grid gap-3">
         <p className="m-0 text-sm text-muted-foreground">
           {fmt.date(line.txnDate, 'short')} · {[line.reference, line.description].filter(Boolean).join(' · ')}

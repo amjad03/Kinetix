@@ -213,6 +213,29 @@
 /* Workspace tabs: the right-edge drop zone appears only while a tab is dragged (wide screens). */
 body[data-tab-drag] .kx-split-drop { display: flex; }
 
+/* Hand-built rows of labelled fields and buttons (a flex row that is not a FormRow): the buttons sit on the
+   inputs' bottom edge instead of centring on label + input. Rows where a field has helper text are left alone. */
+.flex:not(.flex-col, .kx-form-row, [data-slot='page-header']):has(> [data-slot='field'] > label):has(> :is(button, a[data-slot='button'], [data-slot='field'] ~ [data-slot='field'])):not(:has(> [data-slot='field'][data-helper])) {
+  align-items: flex-end;
+}
+
+/* A labelled FormRow whose fields have no helper text sits everything on the bottom edge instead of the fixed
+   26px label offset, so the buttons stay on the input when a label wraps onto two lines (narrow fields, Kannada). */
+body .kx-form-row[data-labelled]:not(:has([data-slot='field'][data-helper])) {
+  align-items: flex-end;
+}
+body .kx-form-row[data-labelled]:not(:has([data-slot='field'][data-helper])) > :is(a, button, label, p) {
+  margin-top: 0;
+}
+body .kx-form-row[data-labelled]:not(:has([data-slot='field'][data-helper])) > .kx-form-row-actions {
+  padding-top: 0;
+}
+
+/* A grid of labelled fields (and nothing else): when one label wraps, the inputs still share a bottom edge. */
+.grid:has(> [data-slot='field'] > label):not(:has(> :not([data-slot='field']))):not(:has(> [data-slot='field'][data-helper], textarea)) {
+  align-items: end;
+}
+
 /* FormRow (components/ui/Form.tsx): inputs, selects and buttons on one row share a 40px height,
    whatever the display density. Repeated class for specificity over the density rules in tokens.css. */
 body .kx-form-row.kx-form-row :is(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='hidden']), select, [role='combobox'], [data-slot='select-trigger'], .kx-field-box) {

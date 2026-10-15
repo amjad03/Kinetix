@@ -169,7 +169,7 @@ export function ChatView({ meId, threads, people, open, tab: initialTab, groupSo
       <section aria-label={t('v2.chat.list')} className={cn('flex min-h-0 flex-col border-r', mobileThread && 'hidden md:flex')}>
         <div className="flex flex-col gap-3 px-4 pt-4">
           <div className="flex items-center gap-2">
-            <b className="flex-1 text-[17px]">{t('v2.chat.title')}</b>
+            <h1 className="m-0 flex-1 text-[17px] font-bold">{t('v2.chat.title')}</h1>
             <Button size="icon" variant="outline" className="size-8" aria-label={t('v2.chat.new')} onClick={() => setNewOpen(true)} data-testid="chat-new">
               <Plus />
             </Button>

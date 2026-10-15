@@ -32,6 +32,7 @@ export default async function ClassSyllabusPage({ searchParams }: { searchParams
     return (
       <>
         {back}
+        <PageHeader title={t('dept.syllabus.title')} />
         <ErrorState message={t('error.NOT_FOUND')} />
       </>
     );

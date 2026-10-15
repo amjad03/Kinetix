@@ -34,13 +34,25 @@ export function LinkButton({
 }) {
   const v = color === 'error' ? (variant === 'contained' ? 'destructive' : 'outline') : variant === 'contained' ? 'default' : variant === 'outlined' ? 'outline' : 'ghost';
   delete (rest as { sx?: unknown }).sx;
+  const inner = (
+    <>
+      {startIcon && <span aria-hidden className="inline-flex [&_svg]:!size-4">{startIcon}</span>}
+      {children}
+      {endIcon && <span aria-hidden className="inline-flex [&_svg]:!size-4">{endIcon}</span>}
+    </>
+  );
   return (
     <Button asChild variant={v} size={size === 'small' ? 'sm' : size === 'large' ? 'lg' : 'default'} className={[fullWidth ? 'w-full' : '', variant === 'text' ? 'text-foreground' : '', disabled ? 'pointer-events-none opacity-50' : '', className ?? ''].join(' ')}>
-      <Link href={href} aria-disabled={disabled || undefined} {...rest}>
-        {startIcon && <span aria-hidden className="inline-flex [&_svg]:!size-4">{startIcon}</span>}
-        {children}
-        {endIcon && <span aria-hidden className="inline-flex [&_svg]:!size-4">{endIcon}</span>}
-      </Link>
+      {/* A file from a route handler (/api/…) is a plain link: next/link would prefetch it as a page and get a 404. */}
+      {href.startsWith('/api/') ? (
+        <a href={href} aria-disabled={disabled || undefined} {...(rest as ComponentProps<'a'>)}>
+          {inner}
+        </a>
+      ) : (
+        <Link href={href} aria-disabled={disabled || undefined} {...rest}>
+          {inner}
+        </Link>
+      )}
     </Button>
   );
 }
