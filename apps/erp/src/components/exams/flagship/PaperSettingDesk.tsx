@@ -9,7 +9,7 @@ import { FormDialog, Grid, Pill } from '@/components/ops/kit';
 import { Card, Dialog, EmptyState, StatGrid, StatTile, StatusPill, useToastOptional, type Tone } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { rupees, spread, type QpAppointment, type QpCoverageDetail, type QpOverview, type QpSet, type QpSubject, type StaffOption } from '@/lib/exam-flagship';
+import { spread, type QpAppointment, type QpCoverageDetail, type QpOverview, type QpSet, type QpSubject, type StaffOption } from '@/lib/exam-flagship';
 
 const SET_TONE: Record<string, Tone> = { draft: 'neutral', scrutiny: 'warning', returned: 'danger', approved: 'info', locked: 'success' };
 const APP_TONE: Record<string, Tone> = { appointed: 'warning', accepted: 'info', in_progress: 'info', submitted: 'info', completed: 'success', declined: 'danger', cancelled: 'neutral' };
@@ -108,7 +108,7 @@ function SubjectCard({ sessionId, subject: s, staff, canManage }: { sessionId: s
           { label: t('xf.qp.col.sets'), num: true, cell: (a) => (a.role === 'setter' ? a.setsRequired : '-') },
           { label: t('xf.qp.col.due'), cell: (a) => <span className={a.overdue ? 'text-red-ink' : undefined}>{fmt.date(a.dueOn, 'short')}{a.overdue ? ` · ${t('xf.qp.overdue')}` : ''}</span>, sort: (a) => a.dueOn },
           { label: t('xf.qp.col.progress'), cell: (a) => <StatusPill tone={APP_TONE[a.progress] ?? 'neutral'}>{word(a.progress)}</StatusPill>, sort: (a) => a.progress },
-          { label: t('xf.qp.col.fee'), num: true, cell: (a) => `₹${rupees(a.remunerationPaise)}` },
+          { label: t('xf.qp.col.fee'), num: true, cell: (a) => fmt.rupees(Number(a.remunerationPaise ?? 0)) },
           ...(canManage ? [{ label: '', cell: (a: QpAppointment) => (['appointed', 'accepted'].includes(a.status) ? <Button size="small" color="error" onClick={() => setDlg({ cancel: a })}>{t('xf.qp.cancel')}</Button> : null) }] : []),
         ]}
       />

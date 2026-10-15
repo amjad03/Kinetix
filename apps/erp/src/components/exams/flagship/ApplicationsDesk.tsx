@@ -9,7 +9,7 @@ import { Bar, Grid, Pill } from '@/components/ops/kit';
 import { CheckboxField, Dialog, FormField, StatGrid, StatTile, StatusPill, TextInput, useToastOptional } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { chosenRepeats, feeFor, rupees, type ApplicationRow, type ApplicationView } from '@/lib/exam-flagship';
+import { chosenRepeats, feeFor, type ApplicationRow, type ApplicationView } from '@/lib/exam-flagship';
 
 export interface CandidateOption {
   id: string;
@@ -45,8 +45,8 @@ export function ApplicationsDesk({ sessionId, rows, candidates, canManage, windo
         <StatTile label={t('xf.app.stat.registered')} value={fmt.number(stats.registered)} />
         <StatTile label={t('xf.app.stat.ineligible')} value={fmt.number(stats.ineligible)} tone={stats.ineligible ? 'warning' : 'default'} />
         <StatTile label={t('xf.app.stat.repeats')} value={fmt.number(stats.repeats)} />
-        <StatTile label={t('xf.app.stat.due')} value={`₹${rupees(stats.due)}`} tone={stats.due ? 'warning' : 'default'} />
-        <StatTile label={t('xf.app.stat.paid')} value={`₹${rupees(stats.paid)}`} />
+        <StatTile label={t('xf.app.stat.due')} value={fmt.rupees(Number(stats.due ?? 0))} tone={stats.due ? 'warning' : 'default'} />
+        <StatTile label={t('xf.app.stat.paid')} value={fmt.rupees(Number(stats.paid ?? 0))} />
       </StatGrid>
       {canManage && (
         <Bar>
@@ -70,7 +70,7 @@ export function ApplicationsDesk({ sessionId, rows, candidates, canManage, windo
           { label: t('xf.app.col.no'), cell: (r) => r.applicationNo ?? '-' },
           { label: t('xf.app.col.papers'), cell: (r) => t('xf.app.papers', { regular: r.regular, backlog: r.backlog, improvement: r.improvement }), sort: (r) => r.regular + r.backlog + r.improvement },
           { label: t('exm.status'), cell: (r) => <Pill label={t(r.status === 'registered' ? (r.overridden ? 'xf.app.overridden' : 'er.status.registered') : 'er.status.ineligible')} warn={r.status === 'ineligible'} />, sort: (r) => r.status },
-          { label: t('xf.app.col.fee'), cell: (r) => (r.feeStatus ? <StatusPill tone={FEE_TONE[r.feeStatus]}>{`₹${rupees(r.feePaise)} ${t(`xf.fee.${r.feeStatus}` as MessageKey)}`}</StatusPill> : '-'), sort: (r) => r.feeStatus ?? '' },
+          { label: t('xf.app.col.fee'), cell: (r) => (r.feeStatus ? <StatusPill tone={FEE_TONE[r.feeStatus]}>{`${fmt.rupees(Number(r.feePaise ?? 0))} ${t(`xf.fee.${r.feeStatus}` as MessageKey)}`}</StatusPill> : '-'), sort: (r) => r.feeStatus ?? '' },
           { label: t('xf.app.col.invoice'), cell: (r) => r.receiptNo ?? r.invoiceNo ?? '-' },
           { label: t('xf.app.col.reasons'), wrap: true, cell: (r) => r.reasons.join('; ') || '-' },
           { label: '', cell: (r) => <Button size="small" onClick={() => setOpen(r.studentId)} data-testid={`xf-open-${r.rollNo}`}>{t('xf.app.open')}</Button> },
@@ -232,7 +232,7 @@ export function ApplicationDialog({ sessionId, studentId, canManage, onClose }: 
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <b>{app.applicationNo ?? '-'}</b>
               <Pill label={t(app.status === 'registered' ? 'er.status.registered' : 'er.status.ineligible')} warn={app.status === 'ineligible'} />
-              {app.fee && <StatusPill tone={FEE_TONE[app.fee.status as keyof typeof FEE_TONE] ?? 'neutral'}>{`₹${rupees(app.fee.amountPaise)} ${t(`xf.fee.${app.fee.status}` as MessageKey)}`}</StatusPill>}
+              {app.fee && <StatusPill tone={FEE_TONE[app.fee.status as keyof typeof FEE_TONE] ?? 'neutral'}>{`${fmt.rupees(Number(app.fee.amountPaise ?? 0))} ${t(`xf.fee.${app.fee.status}` as MessageKey)}`}</StatusPill>}
               {app.fee?.invoiceNo && <span className="text-muted-foreground">{t('xf.app.invoice', { no: app.fee.invoiceNo })}</span>}
               {app.fee?.receiptNo && <span className="text-muted-foreground">{t('xf.app.receipt', { no: app.fee.receiptNo })}</span>}
             </div>
@@ -264,15 +264,15 @@ export function ApplicationDialog({ sessionId, studentId, canManage, onClose }: 
                   </div>
                   <div className="flex items-center gap-2">
                     <Pill label={s.eligible ? t('xf.app.eligible') : t('xf.app.notEligible')} warn={!s.eligible} />
-                    <span className="tabular-nums text-sm">₹{rupees(s.eligible ? s.feePaise : 0)}</span>
+                    <span className="tabular-nums text-sm">{fmt.rupees(s.eligible ? s.feePaise : 0)}</span>
                   </div>
                 </div>
               ))}
             </div>
           )}
           <div className="text-sm" data-testid="xf-fee">
-            {t('xf.app.feeLine', { total: rupees(total), min: rupees(view.fee.minimumPaise) })}
-            {view.fee.lateFeePaise > 0 ? ` ${t('xf.app.lateLine', { late: rupees(view.fee.lateFeePaise), slab: view.fee.lateSlab ?? t('xf.app.lateFee') })}` : ''}
+            {t('xf.app.feeLine', { total: fmt.rupees(total), min: fmt.rupees(view.fee.minimumPaise) })}
+            {view.fee.lateFeePaise > 0 ? ` ${t('xf.app.lateLine', { late: fmt.rupees(view.fee.lateFeePaise), slab: view.fee.lateSlab ?? t('xf.app.lateFee') })}` : ''}
           </div>
           {error && <Alert severity="error">{error}</Alert>}
         </div>

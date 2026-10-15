@@ -6,7 +6,6 @@ import { tr } from '@/components/records/text';
 import { EmptyState, StatusPill, type Column, type Tone } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { ListState, RecordMeta, RecordsPage, Row } from '@/lib/records';
-import { rupees } from '@/lib/exam-flagship';
 
 type Props = { meta: RecordMeta; page: RecordsPage<Row>; state: ListState; extraParams?: Record<string, string> };
 
@@ -58,7 +57,7 @@ export function AppointmentRecords({ meta, page, state, extraParams }: Props) {
     { id: 'staff', header: t('xf.qp.col.name'), sortKey: 'staff', cell: (r) => s(r, 'staffName') },
     { id: 'session', header: t('xc.col.session'), hideBelow: 'lg', defaultHidden: true, cell: (r) => s(r, 'sessionName') },
     { id: 'due', header: t('xf.qp.col.due'), sortKey: 'due', hideBelow: 'sm', cell: (r) => fmt.date(s(r, 'dueOn').slice(0, 10), 'short') },
-    { id: 'fee', header: t('xf.qp.col.fee'), align: 'right', hideBelow: 'md', cell: (r) => `₹${rupees(Number(r.remunerationPaise ?? 0))}` },
+    { id: 'fee', header: t('xf.qp.col.fee'), align: 'right', hideBelow: 'md', cell: (r) => fmt.rupees(Number(r.remunerationPaise ?? 0)) },
     { id: 'status', header: t('exm.status'), sortKey: 'status', cell: (r) => <Status entity={e} value={r.status} /> },
   ];
   return (
