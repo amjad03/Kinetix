@@ -133,10 +133,10 @@ const SHOTS = [
   },
   {
     name: '05-registers-ledger',
-    url: `/exams/${published.id}/registers`,
+    url: `/exams/${supp.id}/registers`,
     run: async (p) => {
       await p.locator('[data-testid=xf-ledger-student]').click({ force: true }).catch(() => {});
-      await p.getByRole('option').nth(16).click({ timeout: 8000 }).catch(() => {});
+      await p.getByRole('option', { name: /25BCM005/ }).click({ timeout: 8000 }).catch(() => {});
       await p.locator('[data-testid=xf-ledger-rows]').waitFor({ timeout: 15000 }).catch(() => {});
       await p.waitForTimeout(500);
       await p.locator('[data-testid=xf-ledger]').scrollIntoViewIfNeeded();

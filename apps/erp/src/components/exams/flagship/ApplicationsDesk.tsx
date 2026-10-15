@@ -257,7 +257,8 @@ export function ApplicationDialog({ sessionId, studentId, canManage, onClose }: 
                       <CheckboxField label={`${s.code} ${s.name}`} checked={chosen.has(s.subjectId)} disabled={!editable || busy} onChange={(c) => setChosen((x) => { const n = new Set(x); if (c) n.add(s.subjectId); else n.delete(s.subjectId); return n; })} />
                     )}
                     <div className="text-[13px] text-muted-foreground">
-                      {t(`xf.kind.${s.kind}` as MessageKey)} · {t('xf.app.credits', { n: s.credits })}
+                      {t(`xf.kind.${s.kind}` as MessageKey)}
+                      {s.credits ? ` · ${t('xf.app.credits', { n: s.credits })}` : ''}
                       {s.examDate ? ` · ${fmt.date(s.examDate, 'short')} ${s.startsAt ?? ''}` : ''}
                     </div>
                     {s.reasons.length > 0 && <div className="text-[13px] text-red-ink">{s.reasons.join('; ')}</div>}

@@ -45,6 +45,8 @@ export function qpAppointmentsEntity(): RecordEntity {
       },
       sorts: { due: qpAppointments.dueOn, subject: subjects.code, staff: users.fullName, status: qpAppointments.status, created: qpAppointments.createdAt },
       defaultSort: { id: 'due', dir: 'asc' },
+      // Within a day: by paper, the setter before the moderator.
+      tiebreak: [subjects.code, sql`(${qpAppointments.role} = 'moderator')`],
     },
     fields: {
       dueOn: { label: 'Due on', type: 'date', schema: DATE, create: false, apply: whileOpen('dueOn') },

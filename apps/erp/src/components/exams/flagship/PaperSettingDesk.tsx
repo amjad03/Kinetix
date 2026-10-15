@@ -98,6 +98,12 @@ function SubjectCard({ sessionId, subject: s, staff, canManage }: { sessionId: s
           {t('xf.qp.drawInfo', { set: s.draw.setLabel ?? '-', n: s.draw.candidates, at: fmt.dateTime(s.draw.drawnAt) })}
         </p>
       )}
+      {s.appointments.length === 0 && s.sets.length === 0 ? (
+        <p className="m-0 text-sm text-muted-foreground" data-testid={`xf-qp-none-${s.code}`}>
+          {t('xf.qp.noAppointments')}
+        </p>
+      ) : (
+        <>
       <h4 className="m-0 mb-2 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">{t('xf.qp.people')}</h4>
       <Grid
         empty={t('xf.qp.noAppointments')}
@@ -127,6 +133,8 @@ function SubjectCard({ sessionId, subject: s, staff, canManage }: { sessionId: s
           { label: t('xf.qp.col.release'), cell: (x) => (x.release ? `${fmt.dateTime(x.release.releaseAt)} · ${x.release.status}` : x.status === 'locked' && !x.drawn && s.draw ? t('xf.qp.reserve') : '-') },
         ]}
       />
+        </>
+      )}
       {error && <Alert severity="error" role="alert">{error}</Alert>}
       {dlg === 'appoint' && (
         <FormDialog
