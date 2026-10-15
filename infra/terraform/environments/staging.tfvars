@@ -36,9 +36,9 @@ push_enabled      = false
 ai_base_url  = ""
 asr_base_url = ""
 # Pay-per-use fallback (and the only provider while the URLs above are empty). Fill in the
-# kinetix/<env>/sarvam secret first. See docs/operations/ai-hosting.md.
+# zynetix/<env>/sarvam secret first. See docs/operations/ai-hosting.md.
 ai_fallback_provider  = "none"
 asr_fallback_provider = "none"
 
 alarm_emails      = [] # e.g. ["ops@example.in"]
-github_repository = "" # e.g. "your-org/Kinetix"
+github_repository = "" # e.g. "your-org/Zynetix"

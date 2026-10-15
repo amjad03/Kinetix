@@ -1,4 +1,4 @@
-# KINETIX import: exam sessions of the current academic year. One row per session.
+# ZYNETIX import: exam sessions of the current academic year. One row per session.
 # program     Program name (required; import programs first)
 # term        Semester or grade (required)
 # name        Name of the session, e.g. Semester 1 Examination (required)

@@ -77,8 +77,8 @@ CREATE POLICY tenant_isolation ON "scholarship_schemes"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "scholarship_schemes" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "scholarship_schemes" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -88,8 +88,8 @@ CREATE POLICY tenant_isolation ON "scholarship_applications"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "scholarship_applications" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "scholarship_applications" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -99,8 +99,8 @@ CREATE POLICY tenant_isolation ON "fee_refunds"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_refunds" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_refunds" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -110,8 +110,8 @@ CREATE POLICY tenant_isolation ON "budgets"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "budgets" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "budgets" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -121,7 +121,7 @@ CREATE POLICY tenant_isolation ON "cost_expenses"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "cost_expenses" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "cost_expenses" TO zynetix_app;
   END IF;
 END $$;

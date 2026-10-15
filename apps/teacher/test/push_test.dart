@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/models.dart';
-import 'package:kinetix_teacher/core/push.dart';
+import 'package:zynetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/core/push.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -26,7 +26,7 @@ void main() {
     final state = await pumpApp(tester, api, prefs: {}, push: push);
     expect(api.pushDevices, isEmpty);
 
-    await state.signIn(server: 'http://test', tenant: 'demo-college', login: 'anita@demo.kinetix.in', password: 'kinetix123');
+    await state.signIn(server: 'http://test', tenant: 'demo-college', login: 'anita@demo.zynetix.in', password: 'zynetix123');
     await tester.pumpAndSettle();
     expect(push.permissionRequests, 1);
     expect(api.calls, contains('push register fcm-1 android'));

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:kinetix_student/core/live.dart';
-import 'package:kinetix_student/core/live_audio_player.dart';
+import 'package:zynetix_student/core/live.dart';
+import 'package:zynetix_student/core/live_audio_player.dart';
 
 /// An in-memory realtime connection: tests play the server, sending ready, frames and ended.
 class FakeLiveConnection implements LiveConnection {

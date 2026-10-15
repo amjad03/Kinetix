@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, Headers, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, UnauthorizedException } from '@nestjs/common';
-import { RealtimeEvents, type TransportPositionEvent } from '@kinetix/shared';
+import { RealtimeEvents, type TransportPositionEvent } from '@zynetix/shared';
 import { createHash, randomBytes } from 'node:crypto';
 import { and, asc, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';

@@ -9,7 +9,7 @@
  *     --year-label 2026-27 --year-start 2026-06-01 --year-end 2027-03-31 \
  *     --admin-name "Admin Office" --admin-email office@sjc.example.in [--admin-phone 98450 12345] [--otp-only]
  *
- * (Docker: `kinetix-api create-institution --slug …`.) The administrator's temporary password is
+ * (Docker: `zynetix-api create-institution --slug …`.) The administrator's temporary password is
  * printed once and never stored in clear; the ERP asks for a new one at the first sign-in
  * (users.password_must_change). With --otp-only there is no password and the administrator signs
  * in with a code sent to --admin-phone.

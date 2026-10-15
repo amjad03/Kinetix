@@ -1,11 +1,11 @@
-# KINETIX design system
+# ZYNETIX design system
 
 **Principles:**
 
 - The layout follows the Teachmint X board, which teachers already know.
 - The look follows Google's own apps: Material 3, Google Sans, calm surfaces, one accent colour.
 
-Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Board and every mobile app.
+Code: `packages/zynetix_ui` (themes, tokens, shared widgets) is used by the Board and every mobile app.
 
 ## Foundations
 
@@ -13,7 +13,7 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 |---|---|---|
 | Typeface | **Google Sans** (OFL), bundled | Static 400/500/700 cut from the variable font, subset to Latin + symbols incl. ₹ |
 | Indic fallback | Noto Sans Devanagari, Noto Sans Kannada (OFL), bundled | Hindi and Kannada render offline without system fonts |
-| Colour | Deep blue `#1D4ED8` (`KxColor.accent`, dark `KxColorDark.accent`), marigold `#8F5B00` for AI only, success `#15803D`, warning `#B45309`, danger `#B3261E`; white cards on a cool-grey ground `#F3F6FB` | Defined once in `packages/kinetix_ui/lib/src/tokens.dart`, mirrored in `apps/erp/src/theme/tokens.css` and `scheme.ts`. Chalkboard green is only a board theme. Components: `apps/erp/src/components/ui`. Screenshots: `docs/design/erp/` |
+| Colour | Deep blue `#1D4ED8` (`KxColor.accent`, dark `KxColorDark.accent`), marigold `#8F5B00` for AI only, success `#15803D`, warning `#B45309`, danger `#B3261E`; white cards on a cool-grey ground `#F3F6FB` | Defined once in `packages/zynetix_ui/lib/src/tokens.dart`, mirrored in `apps/erp/src/theme/tokens.css` and `scheme.ts`. Chalkboard green is only a board theme. Components: `apps/erp/src/components/ui`. Screenshots: `docs/design/erp/` |
 | Shape | M3 scale: 4 / 8 / 12 / 16 / 28 | Cards 16, dialogs and popovers 28 |
 | Spacing | 4-pt grid: `Kx.s4 … Kx.s48` | |
 | Touch targets | 48 px on phones, 56 px on the board | People stand at the board with a pen |
@@ -21,8 +21,8 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 
 ### Themes
 
-- `KinetixTheme.light()` / `.dark()` for the mobile apps (follow the system setting).
-- `KinetixTheme.boardChrome()` for the **board's toolbars, popovers, dialogs and panels**. It is
+- `ZynetixTheme.light()` / `.dark()` for the mobile apps (follow the system setting).
+- `ZynetixTheme.boardChrome()` for the **board's toolbars, popovers, dialogs and panels**. It is
   the dark scheme of the same seed: dark chrome on a bright canvas reads clearly from the back
   of a classroom, as on Teachmint. The canvas itself stays light (or chalkboard).
 
@@ -41,7 +41,7 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-| Teachmint X element | KINETIX equivalent |
+| Teachmint X element | ZYNETIX equivalent |
 |---|---|
 | Top-left "Classroom ID", "Go Live", "N students in your classroom · Add" | Class chip (teacher · class · period), Go live chip, attendance chip |
 | Top-right cast, screenshot, date/time | Sync status and clock pill; End class button |
@@ -50,7 +50,7 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 | Bottom-right Hide · Previous 1/1 Next · Switch | Same. "Next" on the last page becomes **New page** |
 | Pen popover (pen type, tips, colours) | **Write** popover: Pen/Highlighter segmented button, 10 colours, 4 thicknesses |
 | Shapes popover with 2D/3D tabs, Show lengths, Show angles | Same: 13 2D shapes, labels in cm on a 1 cm grid, angles to 0.1°. 3D is coming |
-| EduAI side panel (Ask me anything, Smart tools, Browse, Other tools) with a handle rail (⠿ ⌂ ✕) | **KINETIX AI** panel; rail with resize handle, swap side, close |
+| EduAI side panel (Ask me anything, Smart tools, Browse, Other tools) with a handle rail (⠿ ⌂ ✕) | **ZYNETIX AI** panel; rail with resize handle, swap side, close |
 | "Teacher Device Registration" dialog (phone keypad + QR) | **Sign in** dialog: steps + rotating 6-digit code + QR. No PIN is typed on the shared screen |
 | Utilities drawer (countdown, eye protection, calculator, touch lock…) | **Tools** popover grid (timer, random pick, attendance, split screen, eye comfort; others marked *Soon*) |
 
@@ -69,7 +69,7 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 ## Mobile apps (Teacher, Student, Parent)
 
 The three phone apps use the same tokens as the ERP and the board, and one set of Home building
-blocks from `packages/kinetix_ui` (`home_widgets.dart`): `KxHomeHeader`, `KxCard`, `KxStatTile`
+blocks from `packages/zynetix_ui` (`home_widgets.dart`): `KxHomeHeader`, `KxCard`, `KxStatTile`
 and `KxTileGrid`, `KxActionTile` and `KxActionGrid`, `KxProgressBar`, `KxFeedRow`, `KxIconBox`.
 Tone (`KxTone`) picks the tonal container and its on-colour in light and dark, so a screen never
 chooses a colour by hand. Marigold (`KxTone.spark`) is for AI only (the Teacher's AI Assistant)
@@ -95,6 +95,6 @@ Rules the screens follow:
   going, and the child switcher is a card, not chips.
 
 Screenshots (light and dark) are in `docs/design/mobile/`. Regenerate them with
-`KINETIX_SCREENSHOTS=1 flutter test --update-goldens test/home_test.dart` in `apps/teacher`
+`ZYNETIX_SCREENSHOTS=1 flutter test --update-goldens test/home_test.dart` in `apps/teacher`
 (`test/screenshots_test.dart` in the Student and Parent apps). Without the variable those tests
 are skipped, so the normal run never compares pixels.

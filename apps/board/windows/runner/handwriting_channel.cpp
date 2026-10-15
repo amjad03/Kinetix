@@ -157,7 +157,7 @@ void Recognize(const EncodableMap& args, std::unique_ptr<Result> result) {
 
 void RegisterHandwritingChannel(flutter::BinaryMessenger* messenger, HWND window) {
   g_window = window;
-  g_channel = std::make_unique<flutter::MethodChannel<EncodableValue>>(messenger, "kinetix/handwriting", &flutter::StandardMethodCodec::GetInstance());
+  g_channel = std::make_unique<flutter::MethodChannel<EncodableValue>>(messenger, "zynetix/handwriting", &flutter::StandardMethodCodec::GetInstance());
   g_channel->SetMethodCallHandler([](const flutter::MethodCall<EncodableValue>& call, std::unique_ptr<Result> result) {
     if (call.method_name() == "languages") {
       ListLanguages(std::move(result));

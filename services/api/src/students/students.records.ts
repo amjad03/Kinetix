@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { STUDENT_STATUSES, type StudentStatus } from '@kinetix/shared';
+import { STUDENT_STATUSES, type StudentStatus } from '@zynetix/shared';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { programOptions, sectionOptions } from '../admin/structure.records.js';

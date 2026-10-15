@@ -1,4 +1,4 @@
-KINETIX Board picture library
+ZYNETIX Board picture library
 
 192 pictures: 101 diagrams, maps and photos from Wikimedia Commons (public domain, CC0,
 CC BY, CC BY-SA), each under the licence named below, and 91 Microsoft Fluent Emoji (MIT).

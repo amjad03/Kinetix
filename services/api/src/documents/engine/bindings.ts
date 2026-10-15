@@ -1,4 +1,4 @@
-import type { DocData, DocValue } from '@kinetix/shared';
+import type { DocData, DocValue } from '@zynetix/shared';
 
 /**
  * `{{path | filter}}` bindings in template text. Paths walk the document data (`student.name`,

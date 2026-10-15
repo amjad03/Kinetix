@@ -22,7 +22,7 @@ resource "random_password" "code_runner" {
 }
 
 resource "aws_cloudwatch_log_group" "code_runner" {
-  name              = "/kinetix/${var.environment}/code-runner"
+  name              = "/zynetix/${var.environment}/code-runner"
   retention_in_days = var.log_retention_days
   kms_key_id        = aws_kms_key.data.arn
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/help/practice.dart';
-import 'package:kinetix_board/features/help/tour.dart';
-import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_board/features/help/practice.dart';
+import 'package:zynetix_board/features/help/tour.dart';
+import 'package:zynetix_board/features/toolkit/toolkit_controller.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'support/layout.dart';
 import 'support/marks.dart';
@@ -19,7 +19,7 @@ void main() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
+    await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
     await tester.pump();
     await tester.pumpAndSettle();
   }

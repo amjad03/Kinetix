@@ -25,7 +25,7 @@ The application code is the same in both tiers. A per-request resolver picks the
 
 Implemented in `services/api/migrations/0001_rls.sql` and `src/db/db.service.ts`.
 
-1. The app connects as `kinetix_app`. That role is **not** the table owner and has no `BYPASSRLS`, so policies always apply to it. We don't need `FORCE ROW LEVEL SECURITY` because the app never connects as the owner.
+1. The app connects as `zynetix_app`. That role is **not** the table owner and has no `BYPASSRLS`, so policies always apply to it. We don't need `FORCE ROW LEVEL SECURITY` because the app never connects as the owner.
 2. Every tenant table has:
    ```sql
    alter table x enable row level security;

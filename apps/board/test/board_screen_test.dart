@@ -2,18 +2,18 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/board/kit/subjects.dart';
-import 'package:kinetix_board/features/board/layout/board_chrome.dart';
-import 'package:kinetix_board/features/board/layout/layout_strings.dart';
-import 'package:kinetix_board/features/board/layout/page_overview.dart';
-import 'package:kinetix_board/features/board/popovers.dart' show inkPalette;
-import 'package:kinetix_board/features/toolkit/toolkit_layer.dart';
-import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_board/features/board/kit/subjects.dart';
+import 'package:zynetix_board/features/board/layout/board_chrome.dart';
+import 'package:zynetix_board/features/board/layout/layout_strings.dart';
+import 'package:zynetix_board/features/board/layout/page_overview.dart';
+import 'package:zynetix_board/features/board/popovers.dart' show inkPalette;
+import 'package:zynetix_board/features/toolkit/toolkit_layer.dart';
+import 'package:zynetix_board/features/toolkit/toolkit_controller.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/marks.dart';
@@ -35,7 +35,7 @@ void main() {
       ..skipEnrollment()
       ..toolbarDock = dock
       ..touchProfile = touch;
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: board)));
+    await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: board)));
     await tester.pump();
     return board;
   }
@@ -80,7 +80,7 @@ void main() {
       for (var i = 1; i < xs.length; i++) {
         expect(xs[i], greaterThan(xs[i - 1]), reason: order[i]);
       }
-      expect(find.text('KINETIX AI'), findsOneWidget);
+      expect(find.text('ZYNETIX AI'), findsOneWidget);
       for (final key in ['sign-in-chip', 'open-search', 'board-clock', 'profile-button', 'board-menu', 'record', 'previous-page', 'page-indicator', 'next-page', 'add-page', 'page-overview']) {
         expect(find.byKey(Key(key)), findsOneWidget, reason: key);
       }

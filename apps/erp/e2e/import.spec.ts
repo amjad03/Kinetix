@@ -34,7 +34,7 @@ test('the principal sets up classes, staff, students and the timetable from CSV 
   // 1. Programs: the template, a dry run that saves nothing, then the import.
   const programs = page.getByTestId('import-panel-programs');
   const [download] = await Promise.all([page.waitForEvent('download'), programs.getByTestId('import-template').click()]);
-  expect(download.suggestedFilename()).toBe('kinetix-programs.csv');
+  expect(download.suggestedFilename()).toBe('zynetix-programs.csv');
   expect(readFileSync((await download.path())!, 'utf8')).toContain('program,level,terms,term,section,display_name,subject_code,subject_name,department');
   await expect(programs.getByTestId('import-run')).toBeDisabled();
   await upload(

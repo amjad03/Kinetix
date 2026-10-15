@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 /// A ruled line on the board.
 Stroke boardLine(Offset a, Offset b, Color c, {double w = 2}) => Stroke(

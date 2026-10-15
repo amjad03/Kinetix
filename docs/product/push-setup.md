@@ -1,14 +1,14 @@
 # Push notifications setup
 
-How the KINETIX apps receive pushes (Firebase Cloud Messaging, which delivers through APNs on iOS). Pushes are optional: without configuration the apps and API run normally and notifications still appear in each app's inbox.
+How the ZYNETIX apps receive pushes (Firebase Cloud Messaging, which delivers through APNs on iOS). Pushes are optional: without configuration the apps and API run normally and notifications still appear in each app's inbox.
 
 ## Teacher App
 
 **Server.** Set `FCM_SERVICE_ACCOUNT` on the API (service-account JSON, inline or a file path). Without it the API uses `NoPushSender`. Pushes carry only ids (`kind`, `notificationId`) and a generic title, never personal data.
 
 **Firebase project.** Register two apps in the same Firebase project:
-- Android: package `in.kinetix.teacher`.
-- iOS: bundle id `in.kinetix.teacher`. Upload an APNs auth key (.p8) under *Project settings → Cloud Messaging*.
+- Android: package `in.zynetix.teacher`.
+- iOS: bundle id `in.zynetix.teacher`. Upload an APNs auth key (.p8) under *Project settings → Cloud Messaging*.
 
 **Build.** Firebase starts only when every required option is passed with `--dart-define`; otherwise the app uses `NoPush` (see `apps/teacher/lib/core/push.dart`, `FirebaseConfig`). No `google-services.json` or `GoogleService-Info.plist` is needed.
 
@@ -18,7 +18,7 @@ flutter build apk \
   --dart-define=FIREBASE_APP_ID=… \
   --dart-define=FIREBASE_MESSAGING_SENDER_ID=… \
   --dart-define=FIREBASE_PROJECT_ID=… \
-  [--dart-define=FIREBASE_IOS_BUNDLE_ID=in.kinetix.teacher] \
+  [--dart-define=FIREBASE_IOS_BUNDLE_ID=in.zynetix.teacher] \
   [--dart-define=FIREBASE_STORAGE_BUCKET=…]
 ```
 
@@ -43,8 +43,8 @@ Both family apps work the same way; the server side (`FCM_SERVICE_ACCOUNT`) is s
 
 | App | Android package | iOS bundle id | `app` sent to the API |
 |---|---|---|---|
-| Parent | `in.kinetix.parent` | `in.kinetix.parent` | `parent` |
-| Student | `in.kinetix.student` | `in.kinetix.student` | `student` |
+| Parent | `in.zynetix.parent` | `in.zynetix.parent` | `parent` |
+| Student | `in.zynetix.student` | `in.zynetix.student` | `student` |
 
 **Build.** Firebase starts only when `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_MESSAGING_SENDER_ID` and `FIREBASE_PROJECT_ID` are all passed with `--dart-define` (`FIREBASE_IOS_BUNDLE_ID` optional, for iOS builds), and only on Android and iOS. Otherwise, or if `Firebase.initializeApp` fails, the app uses `NoPushMessaging`: no token, no permission question. See `apps/{parent,student}/lib/core/firebase_push.dart`. No `google-services.json` or `GoogleService-Info.plist` is needed.
 
@@ -55,7 +55,7 @@ flutter build apk \
   --dart-define=FIREBASE_APP_ID=… \
   --dart-define=FIREBASE_MESSAGING_SENDER_ID=… \
   --dart-define=FIREBASE_PROJECT_ID=…
-# iOS: flutter build ipa … --dart-define=FIREBASE_IOS_BUNDLE_ID=in.kinetix.parent
+# iOS: flutter build ipa … --dart-define=FIREBASE_IOS_BUNDLE_ID=in.zynetix.parent
 ```
 
 `FIREBASE_APP_ID` is the app id of the platform being built.

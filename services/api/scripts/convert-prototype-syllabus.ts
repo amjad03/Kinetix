@@ -1,8 +1,8 @@
 /**
- * Converts the KINETIX prototype's syllabus (187 books, a lesson for each of their 2,573
+ * Converts the ZYNETIX prototype's syllabus (187 books, a lesson for each of their 2,573
  * chapters) into content-library files for `pnpm content:import`.
  *
- *   pnpm content:convert-prototype /path/to/kinetix_old_local
+ *   pnpm content:convert-prototype /path/to/zynetix_old_local
  *
  * Reads what the prototype app reads, which its tools/syllabus/build.py writes:
  * assets/syllabus/index.json (books and chapter titles, from the NCERT/KTBS contents pages),
@@ -109,7 +109,7 @@ export interface Library {
   courses: LibCourse[];
 }
 
-export const SOURCE = 'kinetix-curriculum-team (prototype import)';
+export const SOURCE = 'zynetix-curriculum-team (prototype import)';
 
 /** The prototype's boards as library curricula. LKG and UKG are K-12 classes -1 and 0. */
 export const CURRICULA: Record<string, { code: string; name: string }> = {
@@ -298,9 +298,9 @@ export function convertPrototype(root: string): { libraries: Map<string, Library
 }
 
 if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
-  const root = process.argv[2] ?? process.env.KINETIX_PROTOTYPE_DIR;
+  const root = process.argv[2] ?? process.env.ZYNETIX_PROTOTYPE_DIR;
   if (!root) {
-    console.error('Usage: pnpm content:convert-prototype /path/to/kinetix_old_local');
+    console.error('Usage: pnpm content:convert-prototype /path/to/zynetix_old_local');
     process.exit(2);
   }
   const outDir = new URL('../content/', import.meta.url).pathname;

@@ -53,7 +53,7 @@ export function fromOrcid(body: { group?: { 'work-summary'?: OrcidSummary[] }[] 
 @Injectable()
 export class PublicOrcidResolver extends OrcidResolver {
   async works(orcid: string): Promise<OrcidWork[] | null> {
-    const res = await fetch(`https://pub.orcid.org/v3.0/${encodeURIComponent(orcid)}/works`, { headers: { Accept: 'application/json', 'User-Agent': 'KINETIX/1.0 (research office)' }, signal: AbortSignal.timeout(10000) });
+    const res = await fetch(`https://pub.orcid.org/v3.0/${encodeURIComponent(orcid)}/works`, { headers: { Accept: 'application/json', 'User-Agent': 'ZYNETIX/1.0 (research office)' }, signal: AbortSignal.timeout(10000) });
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`ORCID answered ${res.status}`);
     return fromOrcid((await res.json()) as Parameters<typeof fromOrcid>[0]);

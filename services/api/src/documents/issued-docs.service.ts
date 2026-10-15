@@ -1,6 +1,6 @@
 import { createHash, createPrivateKey, createPublicKey, randomBytes, sign, verify } from 'node:crypto';
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { DOC_TYPE_INFO, type DocData, type DocType, type DocumentVerification, type IssuedDocStatus, type IssuedDocument } from '@kinetix/shared';
+import { DOC_TYPE_INFO, type DocData, type DocType, type DocumentVerification, type IssuedDocStatus, type IssuedDocument } from '@zynetix/shared';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';

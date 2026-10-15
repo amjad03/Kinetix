@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:kinetix_cast/kinetix_cast.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_cast/zynetix_cast.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 

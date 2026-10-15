@@ -12,7 +12,7 @@ Kannada by a native speaker (the apps carry a first draft).
 
 - **School (students under 18):** the parent or guardian decides for the child.
 - **College or university:** the student decides for themselves. A guardian decides only for a
-  student who has no KINETIX login of their own.
+  student who has no ZYNETIX login of their own.
 
 Every decision can be changed at any time in the app (Profile → Privacy). Changing it does not
 affect what was done before the change.
@@ -22,7 +22,7 @@ affect what was done before the change.
 | Purpose | What it covers | If you say no |
 |---|---|---|
 | `data_processing` | Keeping the student's attendance, homework, marks, fees and library records so the institution can run classes and keep you informed. | The institution still keeps the records it must by law; you will not get updates in the app. |
-| `ai_features` | The student asking KINETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models. | KINETIX AI is turned off for the student. Everything else works. |
+| `ai_features` | The student asking ZYNETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models. | ZYNETIX AI is turned off for the student. Everything else works. |
 | `class_recordings` | The student's voice or image appearing in lesson recordings and live classes shared with the class. | Teachers are asked not to record the student; recordings already shared stay with the class. |
 | `photos` | Photos of the student (for example on homework or in class activities) shared with the class. | Photos of the student are not shared with the class. |
 

@@ -34,8 +34,8 @@ class ExternalDisplay {
 /// * Android: an Android `Presentation` on the external display (MainActivity's `Projector.kt`).
 /// * Windows: a borderless window covering the second monitor (runner/projector_window.cpp).
 ///
-/// Both answer the `kinetix/projector` channel; the projector engine listens on
-/// `kinetix/projector_feed` (projector_screen.dart). Tests use a fake.
+/// Both answer the `zynetix/projector` channel; the projector engine listens on
+/// `zynetix/projector_feed` (projector_screen.dart). Tests use a fake.
 abstract class ProjectorDisplay {
   /// Second displays attached now.
   Future<List<ExternalDisplay>> displays();
@@ -55,9 +55,9 @@ abstract class ProjectorDisplay {
   Stream<void> get ready;
 }
 
-/// [ProjectorDisplay] over the `kinetix/projector` method channel.
+/// [ProjectorDisplay] over the `zynetix/projector` method channel.
 class MethodChannelProjectorDisplay implements ProjectorDisplay {
-  MethodChannelProjectorDisplay([MethodChannel? channel]) : _channel = channel ?? const MethodChannel('kinetix/projector');
+  MethodChannelProjectorDisplay([MethodChannel? channel]) : _channel = channel ?? const MethodChannel('zynetix/projector');
 
   final MethodChannel _channel;
   late final _changes = StreamController<void>.broadcast(onListen: _listen);

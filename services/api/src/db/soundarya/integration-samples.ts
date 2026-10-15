@@ -29,7 +29,7 @@ export async function integrationSamples(c: Ctx): Promise<void> {
     ...c.teachers.slice(0, 3).map((t, i) => ({ kind: 'biometric_pin', value: String(9001 + i), subjectType: 'staff', subjectId: t.id })),
   ], { returning: false });
 
-  await k.ins('lti_platforms', [{ name: 'Moodle (sample)', issuer: 'https://moodle.sample.example', clientId: 'kinetix-sample', authUrl: 'https://moodle.sample.example/mod/lti/auth.php', jwksUrl: 'https://moodle.sample.example/mod/lti/certs.php' }], { returning: false });
+  await k.ins('lti_platforms', [{ name: 'Moodle (sample)', issuer: 'https://moodle.sample.example', clientId: 'zynetix-sample', authUrl: 'https://moodle.sample.example/mod/lti/auth.php', jwksUrl: 'https://moodle.sample.example/mod/lti/certs.php' }], { returning: false });
 
   const reasons = [
     [{ signal: 'attendance', detail: 'Attendance 58% in the last 30 days', points: 40 }, { signal: 'marks', detail: 'Average 38% in the latest published results', points: 35 }],

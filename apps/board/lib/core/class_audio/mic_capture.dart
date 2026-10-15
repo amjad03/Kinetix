@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show LiveAudioCodec;
+import 'package:zynetix_ink/zynetix_ink.dart' show LiveAudioCodec;
 import 'package:record/record.dart';
 
 import '../recording/voice_recorder.dart' show VoiceUnavailable;

@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "in.kinetix" "\0"
-            VALUE "FileDescription", "KINETIX Board" "\0"
+            VALUE "CompanyName", "in.zynetix" "\0"
+            VALUE "FileDescription", "ZYNETIX Board" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "kinetix_board" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 in.kinetix. All rights reserved." "\0"
-            VALUE "OriginalFilename", "kinetix_board.exe" "\0"
-            VALUE "ProductName", "KINETIX Board" "\0"
+            VALUE "InternalName", "zynetix_board" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 in.zynetix. All rights reserved." "\0"
+            VALUE "OriginalFilename", "zynetix_board.exe" "\0"
+            VALUE "ProductName", "ZYNETIX Board" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -359,7 +359,7 @@ export function pastQuestionsEntity(): RecordEntity {
         { key: 'exam', header: 'Examination', required: true, help: 'The examination or paper it came from', example: 'Bangalore University BCom Sem 3' },
         { key: 'year', header: 'Year', required: true, help: 'The year of the examination', example: '2024' },
         { key: 'marks', header: 'Marks', help: 'Marks of the question', example: '10' },
-        { key: 'subject_code', header: 'Subject code', help: "The subject's code in KINETIX; leave empty for any subject", example: 'BCOM-3.1', options: async (ctx) => (await ctx.tx.select({ code: subjects.code }).from(subjects).orderBy(asc(subjects.code))).map((r) => r.code) },
+        { key: 'subject_code', header: 'Subject code', help: "The subject's code in ZYNETIX; leave empty for any subject", example: 'BCOM-3.1', options: async (ctx) => (await ctx.tx.select({ code: subjects.code }).from(subjects).orderBy(asc(subjects.code))).map((r) => r.code) },
         { key: 'unit', header: 'Unit', help: 'Unit or module of the syllabus', example: 'Unit 2' },
         { key: 'question_no', header: 'Question no', help: 'Its number on the paper', example: '4(a)' },
         { key: 'paper_code', header: 'Paper code', help: 'The code printed on the paper', example: '3BC1' },

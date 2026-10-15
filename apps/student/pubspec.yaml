@@ -1,5 +1,5 @@
-name: kinetix_student
-description: "KINETIX Student App: today's classes and homework, live classes, lesson recordings, shared class boards, results, library books, messages, KINETIX AI for doubts, the syllabus library, updates and fees."
+name: zynetix_student
+description: "ZYNETIX Student App: today's classes and homework, live classes, lesson recordings, shared class boards, results, library books, messages, ZYNETIX AI for doubts, the syllabus library, updates and fees."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -11,19 +11,19 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  kinetix_cast:
-    path: ../../packages/kinetix_cast
-  kinetix_ui:
-    path: ../../packages/kinetix_ui
-  kinetix_ink:
-    path: ../../packages/kinetix_ink
-  kinetix_lesson:
-    path: ../../packages/kinetix_lesson
-  kinetix_labs:
-    path: ../../packages/kinetix_labs
+  zynetix_cast:
+    path: ../../packages/zynetix_cast
+  zynetix_ui:
+    path: ../../packages/zynetix_ui
+  zynetix_ink:
+    path: ../../packages/zynetix_ink
+  zynetix_lesson:
+    path: ../../packages/zynetix_lesson
+  zynetix_labs:
+    path: ../../packages/zynetix_labs
   # The code lab (Learn → Code lab): Python, JavaScript and SQL offline; C, C++ and Java on the server.
-  kinetix_cs:
-    path: ../../packages/kinetix_cs
+  zynetix_cs:
+    path: ../../packages/zynetix_cs
   crypto: ^3.0.7
   http: ^1.6.0
   url_launcher: ^6.3.3

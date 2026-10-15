@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../mindmap/mind_map_editor.dart';
@@ -11,7 +11,7 @@ export 'graph_templates_panel.dart';
 
 /// The board's canvas tools, for the board's toolbars to call: the geometry box (as objects on
 /// the board, several at once), flowcharts and mind maps with "add next", and graph templates by
-/// subject and topic. The tools themselves live in kinetix_ink (so every viewer of a board knows
+/// subject and topic. The tools themselves live in zynetix_ink (so every viewer of a board knows
 /// the elements); this is where the Board opens them and keeps the screen calibration.
 ///
 /// The geometry tools are drawn over the teacher's board only: they are instruments, not page

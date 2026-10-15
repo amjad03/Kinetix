@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { DEFAULT_PALETTE, DOC_SAMPLES, DOC_TYPES, DocLayoutSchema, PRESET_STYLES } from '@kinetix/shared';
+import { DEFAULT_PALETTE, DOC_SAMPLES, DOC_TYPES, DocLayoutSchema, PRESET_STYLES } from '@zynetix/shared';
 import { describe, expect, it } from 'vitest';
 import { demoAssets } from '../demo-assets.js';
 import { presetsFor } from '../presets/index.js';

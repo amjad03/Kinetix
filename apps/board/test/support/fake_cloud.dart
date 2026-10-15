@@ -1,4 +1,4 @@
-// The KINETIX Cloud as the board's tests see it: an enrolled board, a signed-in teacher and AI
+// The ZYNETIX Cloud as the board's tests see it: an enrolled board, a signed-in teacher and AI
 // answers in the teacher's language (test/l10n_test.dart, test/phone_layout_test.dart).
 import 'dart:convert';
 
@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/device_store.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/device_store.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 /// A realtime connection that never connects; the tests drive the controller directly.
 class NoRealtime extends Realtime {
@@ -52,7 +52,7 @@ MockClient fakeCloud() => MockClient((req) async {
     }, 201),
     '/v1/devices/me/pairing-codes' => jsonResponse({
       'code': '482913',
-      'qrPayload': 'kinetix://pair/482913',
+      'qrPayload': 'zynetix://pair/482913',
       'expiresAt': DateTime.now().add(const Duration(minutes: 2)).toIso8601String(),
     }),
     '/v1/sessions/current' => jsonResponse({
@@ -212,7 +212,7 @@ void screenSize(WidgetTester tester, Size size) {
 
 /// A widget under test with the board's localizations in [language].
 Widget localized(String language, Widget child) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: Locale(language),
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,

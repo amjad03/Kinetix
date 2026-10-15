@@ -50,8 +50,8 @@ CREATE POLICY tenant_isolation ON "peo_mission_map"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "peo_mission_map" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "peo_mission_map" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "program_outcome_versions" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -60,8 +60,8 @@ CREATE POLICY tenant_isolation ON "program_outcome_versions"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "program_outcome_versions" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "program_outcome_versions" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "obe_targets" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -70,7 +70,7 @@ CREATE POLICY tenant_isolation ON "obe_targets"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "obe_targets" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "obe_targets" TO zynetix_app;
   END IF;
 END $$;

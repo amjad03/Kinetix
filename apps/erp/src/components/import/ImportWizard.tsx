@@ -113,7 +113,7 @@ function ImportStep({ kind, state, onChange, onNext }: { kind: ImportKind; state
       const url = URL.createObjectURL(new Blob(['﻿', res.data], { type: 'text/csv;charset=utf-8' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `kinetix-${kind}.csv`;
+      a.download = `zynetix-${kind}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     });

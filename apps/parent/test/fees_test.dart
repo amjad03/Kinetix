@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/format.dart';
-import 'package:kinetix_parent/core/models.dart';
-import 'package:kinetix_parent/features/fees/fees_screen.dart';
-import 'package:kinetix_parent/features/fees/payment_gateway.dart';
-import 'package:kinetix_parent/features/fees/razorpay_gateway.dart';
+import 'package:zynetix_parent/core/format.dart';
+import 'package:zynetix_parent/core/models.dart';
+import 'package:zynetix_parent/features/fees/fees_screen.dart';
+import 'package:zynetix_parent/features/fees/payment_gateway.dart';
+import 'package:zynetix_parent/features/fees/razorpay_gateway.dart';
 
 import 'helpers.dart';
 
@@ -294,7 +294,7 @@ void main() {
       name: 'Demo College',
       description: 'Exam fee',
       prefillName: 'Rajesh Patel',
-      prefillEmail: 'parent@demo.kinetix.in',
+      prefillEmail: 'parent@demo.zynetix.in',
       prefillContact: '+919800000001',
     );
 
@@ -308,7 +308,7 @@ void main() {
     expect(opened!['amount'], 250000);
     expect(opened!['name'], 'Demo College');
     expect(opened!['description'], 'Exam fee');
-    expect(opened!['prefill'], {'name': 'Rajesh Patel', 'email': 'parent@demo.kinetix.in', 'contact': '+919800000001'});
+    expect(opened!['prefill'], {'name': 'Rajesh Patel', 'email': 'parent@demo.zynetix.in', 'contact': '+919800000001'});
     expect(ok, isA<PaymentSucceeded>().having((r) => r.providerPaymentId, 'id', 'pay_XYZ').having((r) => r.signature, 'sig', 'sig123'));
 
     reply = {

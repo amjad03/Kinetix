@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One command for a live demo: Postgres, the API (0.0.0.0:4000) and the ERP (port 3000), in the background.
-# Logs: /tmp/kinetix-api.log and /tmp/kinetix-erp.log. Stop with scripts/demo-stop.sh.
+# Logs: /tmp/zynetix-api.log and /tmp/zynetix-erp.log. Stop with scripts/demo-stop.sh.
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=4500}"
@@ -34,10 +34,10 @@ free_port() { local p; p=$(lsof -tiTCP:"$1" -sTCP:LISTEN 2>/dev/null); [ -n "$p"
 say "Start"
 free_port 4000
 free_port 3000
-(cd "$ROOT/services/api" && exec nohup node --env-file-if-exists=.env dist/main.js) > /tmp/kinetix-api.log 2>&1 < /dev/null &
-echo $! > /tmp/kinetix-api.pid
-(cd "$ROOT/apps/erp" && KINETIX_API_URL=http://localhost:4000 KINETIX_TIMEZONE=Asia/Kolkata KINETIX_INSECURE_COOKIES=1 exec nohup node_modules/.bin/next start --port 3000 --hostname 0.0.0.0) > /tmp/kinetix-erp.log 2>&1 < /dev/null &
-echo $! > /tmp/kinetix-erp.pid
+(cd "$ROOT/services/api" && exec nohup node --env-file-if-exists=.env dist/main.js) > /tmp/zynetix-api.log 2>&1 < /dev/null &
+echo $! > /tmp/zynetix-api.pid
+(cd "$ROOT/apps/erp" && ZYNETIX_API_URL=http://localhost:4000 ZYNETIX_TIMEZONE=Asia/Kolkata ZYNETIX_INSECURE_COOKIES=1 exec nohup node_modules/.bin/next start --port 3000 --hostname 0.0.0.0) > /tmp/zynetix-erp.log 2>&1 < /dev/null &
+echo $! > /tmp/zynetix-erp.pid
 
 # 4. Health check.
 API_OK=no; ERP_OK=no
@@ -48,10 +48,10 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "unknown")
-say "KINETIX demo"
+say "ZYNETIX demo"
 echo "API health: $API_OK   ERP: $ERP_OK"
 echo "This Mac on the Wi-Fi: $IP"
 echo "ERP (browser):            http://$IP:3000   (on this Mac: http://localhost:3000)"
 echo "Server address for apps:  http://$IP:4000   (smartboard, teacher, student, parent apps)"
-echo "Logs: tail -f /tmp/kinetix-api.log /tmp/kinetix-erp.log    Stop: scripts/demo-stop.sh"
+echo "Logs: tail -f /tmp/zynetix-api.log /tmp/zynetix-erp.log    Stop: scripts/demo-stop.sh"
 [ "$API_OK" = yes ] && [ "$ERP_OK" = yes ] || { echo "Something did not start: check the logs above."; exit 1; }

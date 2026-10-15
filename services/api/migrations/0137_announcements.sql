@@ -4,17 +4,17 @@ CREATE TABLE IF NOT EXISTS "announcements" (id uuid PRIMARY KEY DEFAULT gen_rand
 ALTER TABLE "announcements" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP POLICY IF EXISTS tenant_isolation ON "announcements";--> statement-breakpoint
 CREATE POLICY tenant_isolation ON "announcements" USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid) WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
-DO $$ BEGIN IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN GRANT SELECT, INSERT, UPDATE, DELETE ON "announcements" TO kinetix_app; END IF; END $$;--> statement-breakpoint
+DO $$ BEGIN IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN GRANT SELECT, INSERT, UPDATE, DELETE ON "announcements" TO zynetix_app; END IF; END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "announcement_recipients" (id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL, tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE, announcement_id uuid NOT NULL REFERENCES announcements(id) ON DELETE CASCADE, user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, channel text NOT NULL, delivered_at timestamptz, read_at timestamptz, acknowledged_at timestamptz, reminded_at timestamptz, created_at timestamptz NOT NULL DEFAULT now());--> statement-breakpoint
 ALTER TABLE "announcement_recipients" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP POLICY IF EXISTS tenant_isolation ON "announcement_recipients";--> statement-breakpoint
 CREATE POLICY tenant_isolation ON "announcement_recipients" USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid) WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
-DO $$ BEGIN IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN GRANT SELECT, INSERT, UPDATE, DELETE ON "announcement_recipients" TO kinetix_app; END IF; END $$;--> statement-breakpoint
+DO $$ BEGIN IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN GRANT SELECT, INSERT, UPDATE, DELETE ON "announcement_recipients" TO zynetix_app; END IF; END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "announcement_templates" (id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL, tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE, name text NOT NULL, title text NOT NULL, body text NOT NULL, priority text NOT NULL DEFAULT 'normal', requires_ack boolean NOT NULL DEFAULT false, channels text[] NOT NULL DEFAULT '{}', created_by uuid REFERENCES users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());--> statement-breakpoint
 ALTER TABLE "announcement_templates" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP POLICY IF EXISTS tenant_isolation ON "announcement_templates";--> statement-breakpoint
 CREATE POLICY tenant_isolation ON "announcement_templates" USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid) WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
-DO $$ BEGIN IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN GRANT SELECT, INSERT, UPDATE, DELETE ON "announcement_templates" TO kinetix_app; END IF; END $$;--> statement-breakpoint
+DO $$ BEGIN IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN GRANT SELECT, INSERT, UPDATE, DELETE ON "announcement_templates" TO zynetix_app; END IF; END $$;--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS announcement_recipients_uq ON announcement_recipients (announcement_id, user_id, channel);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS announcement_recipients_user_idx ON announcement_recipients (user_id, channel);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS announcements_status_idx ON announcements (tenant_id, status, send_at);

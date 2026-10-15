@@ -7,13 +7,13 @@
 
 // Projector mode on Windows (docs/hardware/projector-mode.md): the class sees the board on the
 // PC's second monitor in a borderless window covering it, running a second Flutter engine at
-// `projectorMain` (lib/main.dart). Answers the "kinetix/projector" method channel
+// `projectorMain` (lib/main.dart). Answers the "zynetix/projector" method channel
 // (lib/features/projector/projector_display.dart):
 //
 //   displays        -> the monitors other than the board's own
 //   show {id}       -> opens the projector window on that monitor
 //   hide            -> closes it
-//   send <json>     -> passes a message to the projector engine ("kinetix/projector_feed" frame)
+//   send <json>     -> passes a message to the projector engine ("zynetix/projector_feed" frame)
 //
 // and calls back "displaysChanged" (WM_DISPLAYCHANGE, passed on by the main window) and "ready"
 // when the projector engine has started.

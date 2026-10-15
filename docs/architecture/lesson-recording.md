@@ -7,7 +7,7 @@ sharp on any screen and cheap on mobile data.
 
 ## Format
 
-`packages/kinetix_ink/lib/src/lesson.dart` documents the JSON (`v: 1`):
+`packages/zynetix_ink/lib/src/lesson.dart` documents the JSON (`v: 1`):
 
 ```json
 {"v": 1, "canvas": {"w": 1920, "h": 1080}, "background": "plain", "durationMs": 3120000,
@@ -35,7 +35,7 @@ Upload:  PUT /v1/recordings/:id {title, startedAt}       (id chosen by the board
          PUT /v1/recordings/:id/audio                     (raw audio, streamed to storage, ≤ 150 MB)
          POST /v1/recordings/:id/finish {durationMs, share}
 Cloud:   finish ─► job recording.transcribe (speech server in India) ─► job recording.summarize
-         (KINETIX AI) ─► transcript + summary on the recording
+         (ZYNETIX AI) ─► transcript + summary on the recording
          share ─► notifications: "Missed <subject>? Watch the lesson" to families of absentees,
                   "Lesson recording" to the rest of the class (and pushes)
 Apps:    Parent / Student / Teacher apps: GET /:id (summary, transcript), /:id/events,

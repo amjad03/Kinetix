@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/core/push.dart';
-import 'package:kinetix_student/features/homework/homework_screen.dart';
-import 'package:kinetix_student/features/messages/messages_screen.dart';
-import 'package:kinetix_student/features/updates/message_screen.dart';
-import 'package:kinetix_student/features/updates/updates_tab.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/core/push.dart';
+import 'package:zynetix_student/features/homework/homework_screen.dart';
+import 'package:zynetix_student/features/messages/messages_screen.dart';
+import 'package:zynetix_student/features/updates/message_screen.dart';
+import 'package:zynetix_student/features/updates/updates_tab.dart';
 
 import 'fake_push.dart';
 import 'helpers.dart';

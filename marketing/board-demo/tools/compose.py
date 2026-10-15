@@ -1,5 +1,5 @@
 """Compositor (v2, SaaS-demo style). Reads the capture stream from a FIFO (512-byte JSON header +
-1920x1080 RGBA per frame) and renders the board inside a floating rounded window on the KINETIX
+1920x1080 RGBA per frame) and renders the board inside a floating rounded window on the ZYNETIX
 navy/blue-glow stage: an eased camera that zooms and pans to the control in use (following the
 stylus), spotlight dimming with callout pills on the spoken word, kinetic feature titles, word-
 synced captions under the window, 3D-tilt chapter transitions, the stylus, tap ripples, app insets
@@ -16,7 +16,7 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 W, H, FPS = 1920, 1080, 30
 BW, BH = 1920, 1080  # board frame
 WX, WY, WW, WH = 176, 128, 1568, 882  # the floating window
-FONTS = os.path.join(ROOT, 'packages', 'kinetix_ui', 'fonts')
+FONTS = os.path.join(ROOT, 'packages', 'zynetix_ui', 'fonts')
 SHOTS = os.path.join(ROOT, 'marketing', 'promo', 'shots')
 NAVY = (7, 12, 28)
 BLUE = (47, 128, 255)
@@ -325,7 +325,7 @@ def phone(path, label, h=560):
     return out
 
 
-PHONE_LABEL = {'teacher': 'KINETIX Teacher', 'student': 'KINETIX Student', 'parent': 'KINETIX Parent'}
+PHONE_LABEL = {'teacher': 'ZYNETIX Teacher', 'student': 'ZYNETIX Student', 'parent': 'ZYNETIX Parent'}
 _phones = {}
 
 
@@ -338,7 +338,7 @@ def phone_img(name):
 def header(frame, crumb, chips_now, out_n):
     """Brand + chapter dots (top right)."""
     d = ImageDraw.Draw(frame, 'RGBA')
-    b = 'KINETIX Board'
+    b = 'ZYNETIX Board'
     bx = WX + WW - F_BRAND.getlength(b)
     d.text((bx, 40), b, font=F_BRAND, fill=(255, 255, 255, 170))
     n = len(CHAPTERS)
@@ -414,7 +414,7 @@ def main():
             else:
                 timeline['cards'].append({'at': out_n, 'n': n, 'title': hd['card'], 'num': hd['num']})
                 crumb_num, crumb_title = hd['num'], hd['card']
-            title = 'KINETIX' if end else hd['card']
+            title = 'ZYNETIX' if end else hd['card']
             for i in range(n):
                 f = stage_frame()
                 # previous window recedes
@@ -425,12 +425,12 @@ def main():
                 if end:
                     s = ease((i - 6) / 16)
                     fl = font(700, 132)
-                    tw = fl.getlength('KINETIX')
+                    tw = fl.getlength('ZYNETIX')
                     glow = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-                    ImageDraw.Draw(glow).text(((W - tw) / 2, 380), 'KINETIX', font=fl, fill=BLUE + (int(200 * s),))
+                    ImageDraw.Draw(glow).text(((W - tw) / 2, 380), 'ZYNETIX', font=fl, fill=BLUE + (int(200 * s),))
                     glow = glow.filter(ImageFilter.GaussianBlur(18))
                     f.paste(glow, (0, 0), glow)
-                    d.text(((W - tw) / 2, 380), 'KINETIX', font=fl, fill=(255, 255, 255, int(255 * s)))
+                    d.text(((W - tw) / 2, 380), 'ZYNETIX', font=fl, fill=(255, 255, 255, int(255 * s)))
                     kinetic(f, 'Board', (W - font(500, 44).getlength('Board')) / 2, 545, font(500, 44), i - 14, fill=CYAN)
                     tag = 'Every lesson, connected.'
                     kinetic(f, tag, (W - font(400, 34).getlength(tag)) / 2, 640, font(400, 34), i - 26, fill=(220, 230, 255))

@@ -37,8 +37,8 @@ CREATE POLICY tenant_isolation ON "student_profiles"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_profiles" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_profiles" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 -- Students who came through admissions start with the date of birth, gender and category they applied with.
@@ -69,8 +69,8 @@ CREATE POLICY tenant_isolation ON "student_custom_fields"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_custom_fields" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_custom_fields" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "student_change_requests" (
@@ -98,8 +98,8 @@ CREATE POLICY tenant_isolation ON "student_change_requests"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_change_requests" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_change_requests" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "student_clearances" (
@@ -121,8 +121,8 @@ CREATE POLICY tenant_isolation ON "student_clearances"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_clearances" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_clearances" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "student_clearance_items" (
@@ -144,7 +144,7 @@ CREATE POLICY tenant_isolation ON "student_clearance_items"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_clearance_items" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_clearance_items" TO zynetix_app;
   END IF;
 END $$;

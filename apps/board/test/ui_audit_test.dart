@@ -8,18 +8,18 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/core/board_controller.dart' show ToolbarDock;
-import 'package:kinetix_board/features/board/chrome.dart' show ChromeTile, PopoverScroll, ToolButton;
-import 'package:kinetix_board/features/board/layout/tool_palette.dart';
-import 'package:kinetix_board/features/board/sb_strings.dart';
-import 'package:kinetix_board/features/sim_hub/sim_entry.dart';
-import 'package:kinetix_board/features/sim_hub/sim_hub_panel.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/main.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/core/board_controller.dart' show ToolbarDock;
+import 'package:zynetix_board/features/board/chrome.dart' show ChromeTile, PopoverScroll, ToolButton;
+import 'package:zynetix_board/features/board/layout/tool_palette.dart';
+import 'package:zynetix_board/features/board/sb_strings.dart';
+import 'package:zynetix_board/features/sim_hub/sim_entry.dart';
+import 'package:zynetix_board/features/sim_hub/sim_hub_panel.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:kinetix_ink/kinetix_ink.dart' show WhiteboardCanvas;
+import 'package:zynetix_ink/zynetix_ink.dart' show WhiteboardCanvas;
 
 import 'screens/screens_test.dart' show ScreenSize, Shot, sampleContent, scenes, sizes;
 import 'support/fake_cloud.dart';
@@ -30,14 +30,14 @@ final _latin = RegExp(r"[A-Za-z][A-Za-z’'-]*[A-Za-z]");
 Iterable<String> _words(String text) => _latin.allMatches(text).map((m) => m[0]!);
 
 /// Names that are written in Latin script in every language (removed before looking for words).
-const _names = ['KINETIX Teacher App', 'KINETIX Student App', 'Teacher App', 'Student App', 'KINETIX Board', 'KINETIX AI', 'Connect to board'];
+const _names = ['ZYNETIX Teacher App', 'ZYNETIX Student App', 'Teacher App', 'Student App', 'ZYNETIX Board', 'ZYNETIX AI', 'Connect to board'];
 
 /// Words that stay in Latin script in every language: product, font and file names, standards,
 /// keys of the keyboard, units, maths and logic, and the class's own data
 /// (test/support/fake_cloud.dart) and the simulations' titles and credits.
 Set<String> _allowed() {
   final words = <String>{
-    'KINETIX',
+    'ZYNETIX',
     'PhET',
     'Google',
     'Wikipedia',
@@ -167,7 +167,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     Viewer3dEngine.debugOverride = FakeViewerEngine.new;
-    ViewerManifest.debugLoad = (id) async => ViewerManifest.fromJson(jsonDecode(File('../../packages/kinetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
+    ViewerManifest.debugLoad = (id) async => ViewerManifest.fromJson(jsonDecode(File('../../packages/zynetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
   });
   tearDown(() {
     Viewer3dEngine.debugOverride = null;
@@ -197,7 +197,7 @@ void main() {
 
     test('no TODO or placeholder text in what the board shows', () {
       final bad = <String>[];
-      for (final dir in ['lib', '../../packages/kinetix_ink/lib', '../../packages/kinetix_ui/lib', '../../packages/kinetix_3d/lib']) {
+      for (final dir in ['lib', '../../packages/zynetix_ink/lib', '../../packages/zynetix_ui/lib', '../../packages/zynetix_3d/lib']) {
         for (final f in Directory(dir).listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart') && !f.path.contains('/gen/'))) {
           for (final (i, line) in f.readAsLinesSync().indexed) {
             // Strings only: a comment may say what is left to do.
@@ -220,7 +220,7 @@ void main() {
     final board = await enrolledBoard();
     board.onPaired('session-token', sessionIn('en'));
     board.setToolbarTools(phone: false, ids: ['pen', 'laser', 'calculator', 'ruler', 'timer', 'models3d', 'drawer:seating-chart', 'tools', 'ai']);
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     final s = Shot(tester, board, sizes.first);
     await s.settle();
     if (find.text('Not now').evaluate().isNotEmpty) {
@@ -270,7 +270,7 @@ void main() {
       addTearDown(tester.view.reset);
       final board = await enrolledBoard();
       board.onPaired('session-token', sessionIn('en'));
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       final s = Shot(tester, board, ScreenSize(name, size, 1));
       await s.settle();
       if (find.text('Not now').evaluate().isNotEmpty) {
@@ -344,7 +344,7 @@ void main() {
       if (scene.signedIn) board.onPaired('session-token', sessionIn(lang));
       board.setBoardLanguage(BoardLanguage.values.byName(lang));
       scene.before?.call(board);
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       final s = Shot(tester, board, screen);
       await s.settle();
       final notNow = find.text(l10nFor(Locale(lang)).notNow);

@@ -77,8 +77,8 @@ CREATE POLICY tenant_isolation ON "lms_courses"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_courses" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_courses" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -88,8 +88,8 @@ CREATE POLICY tenant_isolation ON "lms_modules"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_modules" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_modules" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -99,8 +99,8 @@ CREATE POLICY tenant_isolation ON "lms_items"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_items" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_items" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -110,8 +110,8 @@ CREATE POLICY tenant_isolation ON "lms_announcements"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_announcements" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_announcements" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -121,8 +121,8 @@ CREATE POLICY tenant_isolation ON "lms_grade_categories"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_grade_categories" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_grade_categories" TO zynetix_app;
   END IF;
 END $$;
 --> statement-breakpoint
@@ -132,7 +132,7 @@ CREATE POLICY tenant_isolation ON "lms_grade_overrides"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_grade_overrides" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "lms_grade_overrides" TO zynetix_app;
   END IF;
 END $$;

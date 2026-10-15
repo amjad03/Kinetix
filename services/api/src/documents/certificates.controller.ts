@@ -1,5 +1,5 @@
 import { Body, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, StreamableFile } from '@nestjs/common';
-import type { CertificateRequest, CertificateStatus, CertificateTemplate } from '@kinetix/shared';
+import type { CertificateRequest, CertificateStatus, CertificateTemplate } from '@zynetix/shared';
 import { eq } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';

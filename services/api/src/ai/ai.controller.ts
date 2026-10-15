@@ -28,7 +28,7 @@ const Bodies = {
 const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
 
 /**
- * KINETIX AI for the board and the apps. Teachers get every task; students may ask for
+ * ZYNETIX AI for the board and the apps. Teachers get every task; students may ask for
  * explanations (self-paced learning). Generated quizzes and homework are drafts: they reach
  * students only when the teacher sends them.
  */
@@ -148,7 +148,7 @@ export class AiController {
           const [me] = await tx.select({ id: students.id }).from(students).where(eq(students.userId, p.userId));
           return me ? consentWithdrawn(tx, me.id, 'ai_features') : false;
         });
-        if (withdrawn) throw new ForbiddenException({ message: 'KINETIX AI is turned off for this student (consent was withdrawn)', code: 'CONSENT_WITHDRAWN' });
+        if (withdrawn) throw new ForbiddenException({ message: 'ZYNETIX AI is turned off for this student (consent was withdrawn)', code: 'CONSENT_WITHDRAWN' });
       }
       caller.userId = p.userId;
       caller.sectionId = sectionId;

@@ -1,6 +1,6 @@
 # Soundarya Reference Implementation — Detailed Data Onboarding
 
-Soundarya is the first reference institution. Its data must be represented through generic Kinetix entities.
+Soundarya is the first reference institution. Its data must be represented through generic Zynetix entities.
 
 ## Onboarding sequence
 

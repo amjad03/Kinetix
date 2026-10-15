@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/server_config.dart';
+import 'package:zynetix_parent/core/server_config.dart';
 
 void main() {
   group('resolveServerUrl', () {
-    test('uses KINETIX_API_URL without trailing slashes', () {
+    test('uses ZYNETIX_API_URL without trailing slashes', () {
       expect(resolveServerUrl(defined: ' https://api.example.in/ ', debug: false), 'https://api.example.in');
       expect(resolveServerUrl(defined: 'https://api.example.in', debug: true), 'https://api.example.in');
     });
@@ -17,11 +17,11 @@ void main() {
     test('release builds without the define fail instead of using localhost', () {
       expect(
         () => resolveServerUrl(defined: '', debug: false),
-        throwsA(isA<ServerConfigError>().having((e) => e.message, 'message', contains('KINETIX_API_URL'))),
+        throwsA(isA<ServerConfigError>().having((e) => e.message, 'message', contains('ZYNETIX_API_URL'))),
       );
     });
 
-    test('demo builds (KINETIX_DEMO) need no server address, even in release', () {
+    test('demo builds (ZYNETIX_DEMO) need no server address, even in release', () {
       expect(resolveServerUrl(defined: '', debug: false, demo: true), demoServerUrl);
       expect(resolveServerUrl(defined: 'https://api.example.in', debug: false, demo: true), demoServerUrl);
       expect(() => resolveServerUrl(defined: '', debug: false, demo: false), throwsA(isA<ServerConfigError>()));

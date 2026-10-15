@@ -76,8 +76,8 @@ CREATE POLICY tenant_isolation ON "exam_session_stages"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_session_stages" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_session_stages" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "exam_attendance" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -86,8 +86,8 @@ CREATE POLICY tenant_isolation ON "exam_attendance"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_attendance" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_attendance" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "exam_fee_dues" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -96,8 +96,8 @@ CREATE POLICY tenant_isolation ON "exam_fee_dues"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_fee_dues" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_fee_dues" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "exam_moderations" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -106,8 +106,8 @@ CREATE POLICY tenant_isolation ON "exam_moderations"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_moderations" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_moderations" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "exam_office_settings" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -116,7 +116,7 @@ CREATE POLICY tenant_isolation ON "exam_office_settings"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_office_settings" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "exam_office_settings" TO zynetix_app;
   END IF;
 END $$;

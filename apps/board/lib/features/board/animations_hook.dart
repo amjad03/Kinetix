@@ -1,17 +1,17 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show Model3dViewer, ProcessScene;
-import 'package:kinetix_animations/kinetix_animations.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_3d/zynetix_3d.dart' show Model3dViewer, ProcessScene;
+import 'package:zynetix_animations/zynetix_animations.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import '../insert/insert_actions.dart' show placePicture;
 import 'chrome.dart';
 import '../../l10n/l10n.dart';
 
-/// The split panel's Animations tab (packages/kinetix_animations): the period's subject and
+/// The split panel's Animations tab (packages/zynetix_animations): the period's subject and
 /// topic preselected; "Add to board" puts a still of the animation on the page, titled. The
-/// animations made as narrated 3D scenes open in the 3D viewer (packages/kinetix_3d) right in
+/// animations made as narrated 3D scenes open in the 3D viewer (packages/zynetix_3d) right in
 /// the panel, with their own "Put on board".
 Widget animationsPanel(BuildContext context, {required WhiteboardController wb, String? subject, String? topic}) => AnimationsPanel(
   subject: subject,

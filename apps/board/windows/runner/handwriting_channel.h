@@ -6,7 +6,7 @@
 
 // The AI pen's handwriting reader on Windows panels: the handwriting recogniser built into
 // Windows (Windows.UI.Input.Inking), on the panel itself, with no download. Answers the
-// "kinetix/handwriting" method channel (lib/core/handwriting/windows_handwriting.dart):
+// "zynetix/handwriting" method channel (lib/core/handwriting/windows_handwriting.dart):
 //
 //   languages               -> the board languages ("en", "hi", "kn") Windows can read
 //   recognize {language,    -> for each word, its readings (best first)

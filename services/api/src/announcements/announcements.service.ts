@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
-import type { BroadcastMessage } from '@kinetix/shared';
-import { RealtimeEvents } from '@kinetix/shared';
+import type { BroadcastMessage } from '@zynetix/shared';
+import { RealtimeEvents } from '@zynetix/shared';
 import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, lte, notInArray, or, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { BroadcastsService } from '../broadcasts/broadcasts.service.js';

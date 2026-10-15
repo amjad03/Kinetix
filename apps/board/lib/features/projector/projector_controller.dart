@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import '../../core/device_store.dart';
 import '../board/live_stream.dart';
@@ -30,7 +30,7 @@ class ProjectorSource {
 /// one is open.
 ///
 /// The second screen runs its own Flutter engine ([projectorMain]); the board streams to it the
-/// same event log the live view uses (kinetix_ink's lesson format), plus pictures of the 3D
+/// same event log the live view uses (zynetix_ink's lesson format), plus pictures of the 3D
 /// model or lab. Nothing leaves the device.
 ///
 /// On by default: the projector screen opens by itself when a display is attached ([auto]).

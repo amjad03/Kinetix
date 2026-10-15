@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/picture_saver.dart';
@@ -24,7 +24,7 @@ abstract final class BoardShot {
       SharePlus.instance.share(ShareParams(files: [XFile.fromData(png, name: name, mimeType: 'image/png')], fileNameOverrides: [name]));
 
   /// The file name: the board and the time.
-  static String fileName(DateTime at) => 'KINETIX board ${DateFormat('yyyy-MM-dd HH.mm').format(at)}.png';
+  static String fileName(DateTime at) => 'ZYNETIX board ${DateFormat('yyyy-MM-dd HH.mm').format(at)}.png';
 
   /// Renders the picture with [capture], then offers Save and Share over a preview.
   static Future<void> take(BuildContext context, Future<Uint8List> Function() capture) async {

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, Res } from '@nestjs/common';
-import { RealtimeEvents } from '@kinetix/shared';
+import { RealtimeEvents } from '@zynetix/shared';
 import type { Response } from 'express';
 import { asc, eq } from 'drizzle-orm';
 import { z } from 'zod';

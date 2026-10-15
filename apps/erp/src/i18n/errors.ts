@@ -37,7 +37,7 @@ export const ERROR_KEYS: Record<string, MessageKey> = {
   PAYMENTS_KEY_SECRET_REQUIRED: 'error.PAYMENTS_KEY_SECRET_REQUIRED',
   PAYMENTS_BAD_KEY_ID: 'error.PAYMENTS_BAD_KEY_ID',
   SECRETS_KEY_MISSING: 'error.SECRETS_KEY_MISSING',
-  // Platform › Concept videos (the KINETIX platform team).
+  // Platform › Concept videos (the ZYNETIX platform team).
   NOT_PLATFORM_ADMIN: 'error.NOT_PLATFORM_ADMIN',
   VIDEO_BAD_LINK: 'error.VIDEO_BAD_LINK',
   VIDEO_TITLE_UNAVAILABLE: 'error.VIDEO_TITLE_UNAVAILABLE',

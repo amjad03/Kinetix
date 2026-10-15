@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/features/plan/plan_timer.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/features/plan/plan_timer.dart';
 
 void main() {
   test('carries on for the same period and starts over for another', () {

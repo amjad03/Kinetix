@@ -1,5 +1,5 @@
 import { csv, rs, tallyEntries, xml, type TallyTotals } from '../hr/exports.js';
-import type { TallyLedgers } from '@kinetix/shared';
+import type { TallyLedgers } from '@zynetix/shared';
 
 /** Ledger names used for fee journals; payroll uses the ledgers set in payroll settings. */
 export const FEE_LEDGERS = { cash: 'Cash', bank: 'Bank Account', feeIncome: 'Fee Income', refunds: 'Fee Refunds' } as const;

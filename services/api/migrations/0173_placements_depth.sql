@@ -59,8 +59,8 @@ CREATE POLICY tenant_isolation ON "placement_company_contacts"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_company_contacts" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_company_contacts" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "placement_optins" (
@@ -82,8 +82,8 @@ CREATE POLICY tenant_isolation ON "placement_optins"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_optins" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_optins" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "interview_slots" (
@@ -108,8 +108,8 @@ CREATE POLICY tenant_isolation ON "interview_slots"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "interview_slots" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "interview_slots" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "placement_trainings" (
@@ -134,8 +134,8 @@ CREATE POLICY tenant_isolation ON "placement_trainings"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_trainings" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_trainings" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "placement_training_sessions" (
@@ -154,8 +154,8 @@ CREATE POLICY tenant_isolation ON "placement_training_sessions"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_training_sessions" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_training_sessions" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "placement_training_attendance" (
@@ -172,8 +172,8 @@ CREATE POLICY tenant_isolation ON "placement_training_attendance"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_training_attendance" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_training_attendance" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "placement_training_scores" (
@@ -194,8 +194,8 @@ CREATE POLICY tenant_isolation ON "placement_training_scores"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_training_scores" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_training_scores" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "student_progressions" (
@@ -222,8 +222,8 @@ CREATE POLICY tenant_isolation ON "student_progressions"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_progressions" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "student_progressions" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "alumni_job_posts" (
@@ -248,8 +248,8 @@ CREATE POLICY tenant_isolation ON "alumni_job_posts"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "alumni_job_posts" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "alumni_job_posts" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "placement_feedback" (
@@ -279,7 +279,7 @@ CREATE POLICY tenant_isolation ON "placement_feedback"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_feedback" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "placement_feedback" TO zynetix_app;
   END IF;
 END $$;

@@ -1,4 +1,4 @@
-import type { DocData } from '@kinetix/shared';
+import type { DocData } from '@zynetix/shared';
 import { PdfWriter } from '../common/pdf.js';
 
 export interface StudentHeader {

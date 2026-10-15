@@ -6,16 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/core/attachments.dart';
-import 'package:kinetix_student/core/live.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/features/calendar/calendar_screen.dart';
-import 'package:kinetix_student/features/learn/syllabus_view.dart';
-import 'package:kinetix_student/features/privacy/privacy.dart';
-import 'package:kinetix_student/features/profile/profile_tab.dart';
-import 'package:kinetix_student/features/today/today_tab.dart';
-import 'package:kinetix_student/l10n/l10n.dart';
+import 'package:zynetix_student/core/api.dart';
+import 'package:zynetix_student/core/attachments.dart';
+import 'package:zynetix_student/core/live.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/features/calendar/calendar_screen.dart';
+import 'package:zynetix_student/features/learn/syllabus_view.dart';
+import 'package:zynetix_student/features/privacy/privacy.dart';
+import 'package:zynetix_student/features/profile/profile_tab.dart';
+import 'package:zynetix_student/features/today/today_tab.dart';
+import 'package:zynetix_student/l10n/l10n.dart';
 
 import 'fake_api.dart';
 import 'fake_live.dart';
@@ -352,14 +352,14 @@ void main() {
     });
 
     testWidgets('Privacy and the notice name the grievance officer, with selectable email and phone', (tester) async {
-      await pumpApp(tester, setup: (api) => api.consentJson['grievanceOfficer'] = {'name': 'Meera Rao', 'email': 'dpo@demo.kinetix.in', 'phone': null});
+      await pumpApp(tester, setup: (api) => api.consentJson['grievanceOfficer'] = {'name': 'Meera Rao', 'email': 'dpo@demo.zynetix.in', 'phone': null});
       await openTab(tester, 'Profile');
       await scrollTo(tester, find.byKey(const Key('openPrivacy')), scrollable: profileList());
       await tester.tap(find.byKey(const Key('openPrivacy')));
       await tester.pumpAndSettle();
       await scrollTo(tester, find.byKey(const Key('grievanceOfficer')), scrollable: privacyList());
       expect(find.text('Meera Rao'), findsOneWidget);
-      expect(find.widgetWithText(SelectableText, 'dpo@demo.kinetix.in'), findsOneWidget);
+      expect(find.widgetWithText(SelectableText, 'dpo@demo.zynetix.in'), findsOneWidget);
       expect(find.byKey(const Key('grievanceOfficerPhone')), findsNothing);
       await tester.tap(find.byKey(const Key('readNotice')));
       await tester.pumpAndSettle();
@@ -395,10 +395,10 @@ void main() {
       expect(api.consentRequests, isEmpty);
     });
 
-    testWidgets('KINETIX AI turned off by withdrawn consent says so and points to Privacy', (tester) async {
+    testWidgets('ZYNETIX AI turned off by withdrawn consent says so and points to Privacy', (tester) async {
       await pumpApp(
         tester,
-        setup: (api) => api.explainError = ApiException(403, 'KINETIX AI is turned off for this student (consent was withdrawn)', code: 'CONSENT_WITHDRAWN'),
+        setup: (api) => api.explainError = ApiException(403, 'ZYNETIX AI is turned off for this student (consent was withdrawn)', code: 'CONSENT_WITHDRAWN'),
       );
       await openTab(tester, 'Learn');
       await tester.enterText(find.byKey(const Key('question')), 'What is goodwill?');
@@ -407,7 +407,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('askButton')));
       await tester.pumpAndSettle();
-      expect(find.text('KINETIX AI is turned off'), findsOneWidget);
+      expect(find.text('ZYNETIX AI is turned off'), findsOneWidget);
       expect(find.byKey(const Key('aiRetry')), findsNothing);
       await tester.ensureVisible(find.byKey(const Key('aiOpenPrivacy')));
       await tester.tap(find.byKey(const Key('aiOpenPrivacy')));

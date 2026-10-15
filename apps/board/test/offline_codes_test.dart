@@ -1,6 +1,6 @@
 // The board keeps a day of signed codes so it can still show one when the cloud cannot be reached.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/offline_codes.dart';
+import 'package:zynetix_board/core/offline_codes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

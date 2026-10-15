@@ -40,7 +40,7 @@ async function currentValue(tx: Tx, studentId: string, field: (typeof CORRECTION
 export async function fileCorrection(tx: Tx, p: UserPrincipal, studentId: string, b: z.infer<typeof CorrectionBody>): Promise<string> {
   if (b.field === 'date_of_birth' && !/^\d{4}-\d{2}-\d{2}$/.test(b.requestedValue)) throw new BadRequestException('Give the date of birth like 2006-05-14');
   const cur = await currentValue(tx, studentId, b.field);
-  if (b.field !== 'full_name' && !cur.applicationId) throw new ConflictException(`${FIELD_WORDS[b.field]} of this student is not held in KINETIX; it is kept with the admission application`);
+  if (b.field !== 'full_name' && !cur.applicationId) throw new ConflictException(`${FIELD_WORDS[b.field]} of this student is not held in ZYNETIX; it is kept with the admission application`);
   if ((cur.value ?? '').trim().toLowerCase() === b.requestedValue.trim().toLowerCase()) throw new BadRequestException('That is already the value on record');
   const [open] = await tx.select({ id: recordCorrections.id }).from(recordCorrections).where(and(eq(recordCorrections.studentId, studentId), eq(recordCorrections.field, b.field), sql`${recordCorrections.status} in ('requested', 'approved')`));
   if (open) throw new ConflictException('A correction of this field is already open');
@@ -162,7 +162,7 @@ export class DocumentsDeskController {
         const [s] = await tx.update(students).set({ fullName: c.requestedValue, updatedAt: new Date() }).where(eq(students.id, c.studentId)).returning({ userId: students.userId });
         if (s?.userId) await tx.update(users).set({ fullName: c.requestedValue }).where(eq(users.id, s.userId));
       } else {
-        if (!cur.applicationId) throw new ConflictException('This value is not held in KINETIX');
+        if (!cur.applicationId) throw new ConflictException('This value is not held in ZYNETIX');
         const set = field === 'date_of_birth' ? { dateOfBirth: c.requestedValue } : field === 'gender' ? { gender: c.requestedValue } : { guardianName: c.requestedValue };
         await tx.update(applications).set(set).where(eq(applications.id, cur.applicationId));
       }

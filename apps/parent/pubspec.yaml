@@ -1,5 +1,5 @@
-name: kinetix_parent
-description: "KINETIX Parent App: attendance, homework, class participation, shared class boards and lesson recordings for parents."
+name: zynetix_parent
+description: "ZYNETIX Parent App: attendance, homework, class participation, shared class boards and lesson recordings for parents."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -11,12 +11,12 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  kinetix_ui:
-    path: ../../packages/kinetix_ui
-  kinetix_ink:
-    path: ../../packages/kinetix_ink
-  kinetix_lesson:
-    path: ../../packages/kinetix_lesson
+  zynetix_ui:
+    path: ../../packages/zynetix_ui
+  zynetix_ink:
+    path: ../../packages/zynetix_ink
+  zynetix_lesson:
+    path: ../../packages/zynetix_lesson
   http: ^1.6.0
   url_launcher: ^6.3.3
   intl: ^0.20.3

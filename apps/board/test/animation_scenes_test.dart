@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_animations/kinetix_animations.dart';
-import 'package:kinetix_board/features/board/animations_hook.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_animations/zynetix_animations.dart';
+import 'package:zynetix_board/features/board/animations_hook.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 /// The Animations tab opens the animations made as narrated 3D scenes in the 3D viewer, in the
 /// panel (against a fake viewer page: there is no WebView under test).
@@ -19,7 +19,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(MaterialApp(
-      theme: KinetixTheme.board(),
+      theme: ZynetixTheme.board(),
       locale: locale,
       supportedLocales: const [Locale('en'), Locale('hi'), Locale('kn')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
@@ -37,7 +37,7 @@ void main() {
       expect(a.sceneId, sceneId);
       final scene = ProcessScene.byId(sceneId);
       expect(scene, isNotNull, reason: 'scene $sceneId');
-      final file = File('../../packages/kinetix_3d/${scene!.thumbAsset.replaceFirst('packages/kinetix_3d/', '')}');
+      final file = File('../../packages/zynetix_3d/${scene!.thumbAsset.replaceFirst('packages/zynetix_3d/', '')}');
       expect(file.existsSync(), isTrue, reason: '${file.path}: make the scene pictures (tool/models)');
     }
   });

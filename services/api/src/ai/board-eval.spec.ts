@@ -29,7 +29,7 @@ describe('board answer prompts (v4)', () => {
     const [, cards] = buildMessages('selectAsk', TaskInputs.selectAsk.parse({ action: 'quiz', content: 'The nucleus controls the cell.' }), g);
     expect(String(cards.content)).toContain('" Answer: "');
     const [, plan] = buildMessages('lessonPlan', TaskInputs.lessonPlan.parse({ topic: 'Fractions', minutes: 40 }), g);
-    expect(String(plan.content)).toContain('KINETIX interactive board');
+    expect(String(plan.content)).toContain('ZYNETIX interactive board');
   });
 
   it('asks in the chosen language', () => {
@@ -235,7 +235,7 @@ describe('board evaluation, mocked Gemini (no key needed)', () => {
 const baseUrl = process.env.AI_BASE_URL;
 describe.skipIf(!baseUrl || process.env.AI_LIVE_EVAL !== '1')('board accuracy (live provider)', () => {
   it('answers at least 80% of the evaluation questions correctly', async () => {
-    const provider = new OpenAiCompatibleProvider(baseUrl!, process.env.AI_MODEL ?? 'kinetix-llm', process.env.AI_API_KEY || undefined, 60_000, false, {
+    const provider = new OpenAiCompatibleProvider(baseUrl!, process.env.AI_MODEL ?? 'zynetix-llm', process.env.AI_API_KEY || undefined, 60_000, false, {
       reasoningEffort: process.env.AI_REASONING_EFFORT as ReasoningEffort | undefined,
     });
     const pace = Number(process.env.AI_EVAL_PACE_MS ?? (isGemini(baseUrl!) ? 13_000 : 0));

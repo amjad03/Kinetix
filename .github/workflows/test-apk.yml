@@ -3,7 +3,7 @@
 # downloaded on a phone. Not for the Play Store: release builds use release.yml.
 #
 # Runs on pushes to the development branch that touch the apps, or by hand. Set the repository
-# variable KINETIX_API_URL once a server is deployed; the APKs then also work against it (demo
+# variable ZYNETIX_API_URL once a server is deployed; the APKs then also work against it (demo
 # mode stays available from the sign-in screen).
 name: Test APKs
 
@@ -15,7 +15,7 @@ on:
       - 'apps/teacher/**'
       - 'apps/parent/**'
       - 'apps/student/**'
-      - 'packages/kinetix_*/**'
+      - 'packages/zynetix_*/**'
       - '.github/workflows/test-apk.yml'
   workflow_dispatch:
 
@@ -55,7 +55,7 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       # Python for the Code lab (board and Student App); not committed, pinned by checksum.
       - if: matrix.app == 'board' || matrix.app == 'student'
-        run: bash "$GITHUB_WORKSPACE/packages/kinetix_cs/tool/fetch_pyodide.sh"
+        run: bash "$GITHUB_WORKSPACE/packages/zynetix_cs/tool/fetch_pyodide.sh"
       # Gate the APK on the app's own checks: a broken app never reaches the test-build release.
       - run: flutter analyze
       - run: flutter test
@@ -63,24 +63,24 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.android/debug.keystore
-          key: kinetix-test-signing-${{ matrix.app }}-v1
+          key: zynetix-test-signing-${{ matrix.app }}-v1
       - name: Build demo APK
         env:
           # Signs the release build with the debug key (test builds only; see build.gradle.kts).
-          KINETIX_TEST_SIGNING: 'true'
-          API_URL: ${{ vars.KINETIX_API_URL || 'https://demo.kinetix.invalid' }}
+          ZYNETIX_TEST_SIGNING: 'true'
+          API_URL: ${{ vars.ZYNETIX_API_URL || 'https://demo.zynetix.invalid' }}
         run: >-
           flutter build apk --release
-          --dart-define=KINETIX_DEMO=true
-          --dart-define=KINETIX_API_URL="$API_URL"
+          --dart-define=ZYNETIX_DEMO=true
+          --dart-define=ZYNETIX_API_URL="$API_URL"
           --build-name=0.1.${{ github.run_number }}
           --build-number=${{ github.run_number }}
       - name: Rename
-        run: cp build/app/outputs/flutter-apk/app-release.apk "kinetix-${{ matrix.app }}-demo.apk"
+        run: cp build/app/outputs/flutter-apk/app-release.apk "zynetix-${{ matrix.app }}-demo.apk"
       - uses: actions/upload-artifact@v4
         with:
-          name: kinetix-${{ matrix.app }}-demo
-          path: apps/${{ matrix.app }}/kinetix-${{ matrix.app }}-demo.apk
+          name: zynetix-${{ matrix.app }}-demo
+          path: apps/${{ matrix.app }}/zynetix-${{ matrix.app }}-demo.apk
           retention-days: 14
 
   publish:
@@ -102,4 +102,4 @@ jobs:
           gh release delete test-build --repo "$REPO" --yes --cleanup-tag || true
           gh release create test-build apks/*.apk --repo "$REPO" --target "$SHA" --prerelease \
             --title "Test APKs (demo mode) — build ${{ github.run_number }}" \
-            --notes "Demo builds of the KINETIX apps with sample data; no server needed. Install on Android: download the APK on the phone, allow installing from this source, open it. New builds install over the previous ones (same test key). Not for the Play Store."
+            --notes "Demo builds of the ZYNETIX apps with sample data; no server needed. Install on Android: download the APK on the phone, allow installing from this source, open it. New builds install over the previous ones (same test key). Not for the Play Store."

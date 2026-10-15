@@ -29,7 +29,7 @@ export class SystemLookups {
     return row;
   }
 
-  /** Whether an active user is on the KINETIX platform team (PlatformAdminGuard, GET /v1/me). */
+  /** Whether an active user is on the ZYNETIX platform team (PlatformAdminGuard, GET /v1/me). */
   async isPlatformAdmin(userId: string): Promise<boolean> {
     const [row] = await this.db.system
       .select({ userId: platformAdmins.userId })

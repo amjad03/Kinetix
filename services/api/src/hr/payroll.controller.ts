@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, StreamableFile } from '@nestjs/common';
-import type { PayrollSettings, PtSlab, SalaryComponent, SalaryStructure } from '@kinetix/shared';
+import type { PayrollSettings, PtSlab, SalaryComponent, SalaryStructure } from '@zynetix/shared';
 import { eq } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';

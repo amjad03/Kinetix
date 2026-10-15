@@ -211,13 +211,13 @@ export const REPORTS: ReportDef[] = [
   {
     key: 'classroom.tools',
     title: 'Classroom tool usage',
-    description: 'How often polls, whiteboards, recordings and KINETIX AI were used.',
+    description: 'How often polls, whiteboards, recordings and ZYNETIX AI were used.',
     category: 'classroom',
     roles: ACADEMIC,
     params: [...SCOPE_PARAMS, ...RANGE_PARAMS],
     async run(tx, c) {
       const a = await classroomAnalytics(tx, c.scope, c.range, c.timezone, c.today);
-      return { columns: [{ key: 'label', label: 'Tool' }, { key: 'uses', label: 'Uses', kind: 'int' }], rows: [...a.tools, ...a.aiTasks.map((t) => ({ tool: `ai.${t.task}`, label: `KINETIX AI: ${t.task}`, uses: t.uses }))] };
+      return { columns: [{ key: 'label', label: 'Tool' }, { key: 'uses', label: 'Uses', kind: 'int' }], rows: [...a.tools, ...a.aiTasks.map((t) => ({ tool: `ai.${t.task}`, label: `ZYNETIX AI: ${t.task}`, uses: t.uses }))] };
     },
   },
   {

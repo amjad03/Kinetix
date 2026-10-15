@@ -70,13 +70,13 @@ export class MetricsRegistry {
 }
 
 export const registry = new MetricsRegistry();
-export const httpRequests = registry.counter('kinetix_http_requests_total', 'HTTP requests by method, route and status class.');
-export const httpDuration = registry.histogram('kinetix_http_request_duration_seconds', 'HTTP request duration in seconds.');
-export const eventsDispatched = registry.counter('kinetix_domain_events_total', 'Domain events handled, by type and outcome.');
-export const reportRunsTotal = registry.counter('kinetix_report_runs_total', 'Report runs by report and outcome.');
-export const uploadScansTotal = registry.counter('kinetix_upload_scans_total', 'Upload virus scans by outcome.');
-export const processUptime = registry.gauge('kinetix_process_uptime_seconds', 'Seconds since the process started.');
-export const processMemory = registry.gauge('kinetix_process_resident_memory_bytes', 'Resident memory of the process.');
+export const httpRequests = registry.counter('zynetix_http_requests_total', 'HTTP requests by method, route and status class.');
+export const httpDuration = registry.histogram('zynetix_http_request_duration_seconds', 'HTTP request duration in seconds.');
+export const eventsDispatched = registry.counter('zynetix_domain_events_total', 'Domain events handled, by type and outcome.');
+export const reportRunsTotal = registry.counter('zynetix_report_runs_total', 'Report runs by report and outcome.');
+export const uploadScansTotal = registry.counter('zynetix_upload_scans_total', 'Upload virus scans by outcome.');
+export const processUptime = registry.gauge('zynetix_process_uptime_seconds', 'Seconds since the process started.');
+export const processMemory = registry.gauge('zynetix_process_resident_memory_bytes', 'Resident memory of the process.');
 
 /** Refreshes the process gauges, then renders everything. */
 export function renderMetrics(): string {

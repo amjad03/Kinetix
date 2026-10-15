@@ -1,4 +1,4 @@
-import { type DocData, type DocElement, type DocLayout, type DocSide, type ElementOf, type Fill, type FontFamilyId, type ImageSource, type Palette, type SignatoryRole, type Stroke, type TextStyle, pageSizeMm, resolveColor } from '@kinetix/shared';
+import { type DocData, type DocElement, type DocLayout, type DocSide, type ElementOf, type Fill, type FontFamilyId, type ImageSource, type Palette, type SignatoryRole, type Stroke, type TextStyle, pageSizeMm, resolveColor } from '@zynetix/shared';
 import { qrMatrix } from '../../common/qr.js';
 import { code128 } from './barcode.js';
 import { bind, list, lookup, present } from './bindings.js';

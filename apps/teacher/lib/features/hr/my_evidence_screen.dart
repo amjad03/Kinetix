@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/evidence_models.dart';

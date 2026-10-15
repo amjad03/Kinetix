@@ -124,7 +124,7 @@ export class SsoRecords implements OnModuleInit {
             await set(ctx, id, { allowedDomains: v as string[] });
           },
         },
-        redirectAllowlist: { label: 'Return addresses', type: 'textarea', schema: Redirects, required: true, help: 'One per line: the ERP callback, or an app address like kinetix://sso', apply: async (ctx, id, v) => set(ctx, id, { redirectAllowlist: v as string[] }) },
+        redirectAllowlist: { label: 'Return addresses', type: 'textarea', schema: Redirects, required: true, help: 'One per line: the ERP callback, or an app address like zynetix://sso', apply: async (ctx, id, v) => set(ctx, id, { redirectAllowlist: v as string[] }) },
         enabled: { label: 'Switched on', type: 'boolean', schema: z.boolean(), column: ssoProviders.enabled, bulk: true },
       },
       create: async (ctx, v) => {

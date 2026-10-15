@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/cast/cast_controller.dart';
-import 'package:kinetix_board/core/cast/cast_receiver.dart';
+import 'package:zynetix_board/core/cast/cast_controller.dart';
+import 'package:zynetix_board/core/cast/cast_receiver.dart';
 
 // The sender of a teacher's own screen sends its offer the moment it is approved, which can
 // reach the board before WebRTC has finished starting. Those messages must be replayed, in order.

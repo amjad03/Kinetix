@@ -19,7 +19,7 @@ enum VoiceProblem {
   noSpeech,
 }
 
-/// Spoken questions for KINETIX AI: the device's own speech recogniser, on the device (no voice
+/// Spoken questions for ZYNETIX AI: the device's own speech recogniser, on the device (no voice
 /// leaves the board), in English, Hindi or Kannada.
 abstract class VoiceInput {
   /// The board's recogniser; tests put a fake here.

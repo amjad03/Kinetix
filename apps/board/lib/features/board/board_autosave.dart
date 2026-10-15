@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Where the autosaved board is kept.

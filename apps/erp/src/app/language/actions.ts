@@ -14,7 +14,7 @@ import { SESSION_COOKIE } from '@/lib/config';
 export async function setLanguage(locale: Locale): Promise<{ ok: boolean }> {
   if (!isLocale(locale)) return { ok: false };
   const jar = await cookies();
-  const secure = process.env.NODE_ENV === 'production' && process.env.KINETIX_INSECURE_COOKIES !== '1';
+  const secure = process.env.NODE_ENV === 'production' && process.env.ZYNETIX_INSECURE_COOKIES !== '1';
   jar.set(LANG_COOKIE, locale, { sameSite: 'lax', secure, path: '/', maxAge: 365 * 86_400 });
   let saved = true;
   if (jar.get(SESSION_COOKIE)) {

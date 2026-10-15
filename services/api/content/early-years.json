@@ -13,7 +13,7 @@
    "title": "English: Little Readers LKG, LKG",
    "term": -1,
    "language": "en",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -521,7 +521,7 @@
    "title": "Mathematics: Number Fun LKG, LKG",
    "term": -1,
    "language": "en",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -1028,7 +1028,7 @@
    "title": "EVS: My World LKG, LKG",
    "term": -1,
    "language": "en",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -1538,7 +1538,7 @@
    "title": "Art, LKG",
    "term": -1,
    "language": "en",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -1938,7 +1938,7 @@
    "title": "Hindi: Aksharmala LKG, LKG",
    "term": -1,
    "language": "hi",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -2239,7 +2239,7 @@
    "title": "Kannada: Varnamale LKG, LKG",
    "term": -1,
    "language": "kn",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -2540,7 +2540,7 @@
    "title": "English: Little Readers UKG, UKG",
    "term": 0,
    "language": "en",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -3039,7 +3039,7 @@
    "title": "Mathematics: Number Fun UKG, UKG",
    "term": 0,
    "language": "en",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -3574,7 +3574,7 @@
    "title": "EVS: My World UKG, UKG",
    "term": 0,
    "language": "en",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -4106,7 +4106,7 @@
    "title": "Art, UKG",
    "term": 0,
    "language": "en",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -4505,7 +4505,7 @@
    "title": "Hindi: Aksharmala UKG, UKG",
    "term": 0,
    "language": "hi",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {
@@ -4813,7 +4813,7 @@
    "title": "Kannada: Varnamale UKG, UKG",
    "term": 0,
    "language": "kn",
-   "source": "kinetix-curriculum-team (prototype import)",
+   "source": "zynetix-curriculum-team (prototype import)",
    "reviewed": false,
    "chapters": [
     {

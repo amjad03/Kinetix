@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/app_state.dart';
@@ -45,7 +45,7 @@ import '../privacy/dpdp_screen.dart';
 import '../privacy/privacy.dart';
 
 /// The student's details, attendance history, fees (read-only, with receipts), the language
-/// KINETIX AI answers in, and sign out.
+/// ZYNETIX AI answers in, and sign out.
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key, required this.state, required this.study, this.messages});
 
@@ -561,7 +561,7 @@ class ProfileTabState extends State<ProfileTab> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => CalendarScreen.open(context, widget.study.api, program: st.programName),
                 ),
-                const KxSectionHeader('KINETIX AI'),
+                const KxSectionHeader('ZYNETIX AI'),
                 ListTile(
                   key: const Key('aiLanguage'),
                   leading: const Icon(Icons.auto_awesome_outlined),

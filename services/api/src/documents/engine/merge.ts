@@ -1,5 +1,5 @@
 /**
- * Joins PDFs made by KINETIX's own writers (classic cross-reference tables, direct stream
+ * Joins PDFs made by ZYNETIX's own writers (classic cross-reference tables, direct stream
  * lengths) into one file: objects are renumbered and every page goes under one page tree. Used
  * to put an engine-made cover page in front of a report.
  */

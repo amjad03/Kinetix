@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
@@ -138,7 +138,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                   const SizedBox(height: Kx.s16),
                 ],
                 if (ReceiptScreen.isDemo(r)) ...[const DemoBanner(), const SizedBox(height: Kx.s16)],
-                Theme(data: KinetixTheme.light(), child: _Paper(r)),
+                Theme(data: ZynetixTheme.light(), child: _Paper(r)),
                 const SizedBox(height: Kx.s16),
                 OutlinedButton.icon(
                   onPressed: () => _copy(r),

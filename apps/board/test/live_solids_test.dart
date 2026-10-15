@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/features/board/live_solids.dart';
-import 'package:kinetix_board/l10n/gen/app_localizations.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/features/board/live_solids.dart';
+import 'package:zynetix_board/l10n/gen/app_localizations.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 Future<(WhiteboardController, ValueNotifier<String?>)> _pump(WidgetTester tester, {String locale = 'en'}) async {
   final wb = WhiteboardController();

@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, StreamableFile } from '@nestjs/common';
-import { BRAND_ASSETS, type BrandAssetKind, DOC_BINDINGS, DOC_SAMPLES, DOC_TYPE_INFO, DOC_TYPES, type DocType, FONT_FAMILIES, PALETTE_KEYS, SIGNATORY_ROLES } from '@kinetix/shared';
+import { BRAND_ASSETS, type BrandAssetKind, DOC_BINDINGS, DOC_SAMPLES, DOC_TYPE_INFO, DOC_TYPES, type DocType, FONT_FAMILIES, PALETTE_KEYS, SIGNATORY_ROLES } from '@zynetix/shared';
 import { and, asc, eq, ilike, inArray, or } from 'drizzle-orm';
 import { readdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';

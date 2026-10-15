@@ -1,4 +1,4 @@
-/** Business rules, incidents, file retention, the KINETIX subscription with invoices, AI evaluation cases and a tutor conversation. */
+/** Business rules, incidents, file retention, the ZYNETIX subscription with invoices, AI evaluation cases and a tutor conversation. */
 import { computeInvoice, invoiceNumber, planByCode } from '../../billing/billing.logic.js';
 import type { Ctx } from './ctx.js';
 import { addDays, at, Json } from './kit.js';
@@ -31,7 +31,7 @@ export async function governanceDepth(c: Ctx): Promise<void> {
   // Retention per file category.
   await k.ins('document_retention_policies', [['fee_receipt', 84, 'Tax records are kept for seven years.'], ['admission_form', 120, 'Kept ten years for audit and verification requests.'], ['medical', 36, 'Medical certificates are kept three years after the last claim.'], ['id_proof', 60, 'Kept five years after the student leaves.']].map(([category, retainMonths, note]) => ({ category, retainMonths, note, createdBy: admin })), { returning: false });
 
-  // The KINETIX subscription on the Standard plan, with last month's invoice paid.
+  // The ZYNETIX subscription on the Standard plan, with last month's invoice paid.
   const plan = planByCode('standard')!;
   const [{ n: studentCount }] = await k.q<{ n: number }>("select count(*)::int as n from students where tenant_id = $1 and status = 'active'", [c.tenantId]);
   const [{ n: staffCount }] = await k.q<{ n: number }>('select count(*)::int as n from staff_profiles where tenant_id = $1', [c.tenantId]);

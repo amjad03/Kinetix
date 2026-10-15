@@ -1,5 +1,5 @@
 // Writes src/lib/live/fixtures/live-audio.json: class audio encoded and decoded by the Dart
-// codec the boards use (packages/kinetix_ink LiveAudioCodec), so the ERP's TypeScript decoder
+// codec the boards use (packages/zynetix_ink LiveAudioCodec), so the ERP's TypeScript decoder
 // can be checked against it sample for sample (src/lib/live/audio.test.ts).
 //
 //   cd apps/erp && dart run scripts/live-audio-fixture.dart
@@ -8,7 +8,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import '../../../packages/kinetix_ink/lib/src/live_audio.dart';
+import '../../../packages/zynetix_ink/lib/src/live_audio.dart';
 
 void main() {
   final state = AdpcmState();
@@ -29,6 +29,6 @@ void main() {
     chunks.add({'data': data, 'samples': LiveAudioCodec.decodeBase64(data).toList()});
   }
   final out = File('${File.fromUri(Platform.script).parent.parent.path}/src/lib/live/fixtures/live-audio.json');
-  out.writeAsStringSync('${jsonEncode({'source': 'scripts/live-audio-fixture.dart (packages/kinetix_ink LiveAudioCodec)', 'rate': LiveAudioCodec.sampleRate, 'chunks': chunks})}\n');
+  out.writeAsStringSync('${jsonEncode({'source': 'scripts/live-audio-fixture.dart (packages/zynetix_ink LiveAudioCodec)', 'rate': LiveAudioCodec.sampleRate, 'chunks': chunks})}\n');
   stdout.writeln('Wrote ${out.path}: ${chunks.length} chunks');
 }

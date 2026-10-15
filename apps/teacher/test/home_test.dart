@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/hr_models.dart';
-import 'package:kinetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/core/hr_models.dart';
+import 'package:zynetix_teacher/core/models.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -80,8 +80,8 @@ void main() {
     expect(find.text('Pending approvals'), findsNothing);
   });
 
-  // Screenshots for docs/design/mobile: KINETIX_SCREENSHOTS=1 flutter test --update-goldens test/home_test.dart
-  final shots = Platform.environment.containsKey('KINETIX_SCREENSHOTS');
+  // Screenshots for docs/design/mobile: ZYNETIX_SCREENSHOTS=1 flutter test --update-goldens test/home_test.dart
+  final shots = Platform.environment.containsKey('ZYNETIX_SCREENSHOTS');
   for (final dark in [false, true]) {
     testWidgets('screenshot: Home ${dark ? 'dark' : 'light'}', (tester) async {
       await loadAppFonts();

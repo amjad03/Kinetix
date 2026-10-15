@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return new Response('Sign in', { status: 401 });
   const upstream = await fetch(`${API_URL}${target}`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: AbortSignal.timeout(60_000) }).catch(() => null);
-  if (!upstream) return new Response("Can't reach KINETIX Cloud", { status: 502 });
+  if (!upstream) return new Response("Can't reach ZYNETIX Cloud", { status: 502 });
   if (!upstream.ok) return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json' } });
   const headers = new Headers();
   for (const h of ['content-type', 'content-disposition', 'content-security-policy']) {
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   const body = await req.text();
   if (body.length > 2_000_000) return new Response('Too large', { status: 413 });
   const upstream = await fetch(`${API_URL}/v1/documents/designs/preview`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body, cache: 'no-store', signal: AbortSignal.timeout(60_000) }).catch(() => null);
-  if (!upstream) return new Response("Can't reach KINETIX Cloud", { status: 502 });
+  if (!upstream) return new Response("Can't reach ZYNETIX Cloud", { status: 502 });
   if (!upstream.ok) return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json' } });
   const headers = new Headers({ 'x-content-type-options': 'nosniff', 'cache-control': 'no-store' });
   for (const h of ['content-type', 'content-security-policy']) {

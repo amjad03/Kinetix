@@ -6,7 +6,7 @@ import { addDays, open, schoolToday, shot, signIn } from './helpers';
 test.describe.configure({ mode: 'serial' });
 
 test('a head of department lands on their department and sees how its classes went', async ({ page }) => {
-  await signIn(page, 'ravi@demo.kinetix.in');
+  await signIn(page, 'ravi@demo.zynetix.in');
   await expect(page).toHaveURL(/\/$/);
   await page.goto("/department");
   await page.context().storageState({ path: 'e2e/.auth/hod.json' });

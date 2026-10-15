@@ -3,8 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import '../../l10n/l10n.dart';
 import '../search/solids3d.dart' show renderSolidPng, solidStyle;

@@ -6,11 +6,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/handwriting/handwriting.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/handwriting/handwriting.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// A handwriting reader that reads every line as [line], with a model per language as [states]
@@ -73,7 +73,7 @@ void main() {
     final board = BoardController(handwriting: handwriting ?? const NoHandwritingRecognizer())
       ..skipEnrollment()
       ..toolbarDock = layout;
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: board)));
+    await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: board)));
     await tester.pump();
     return board;
   }

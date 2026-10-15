@@ -1,4 +1,4 @@
-import type { CertificateKind, DocData, DocType } from '@kinetix/shared';
+import type { CertificateKind, DocData, DocType } from '@zynetix/shared';
 import { and, eq } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
 import { academicYears, applications, departments, designations, guardians, healthProfiles, programs, sections, staffProfiles, students, users } from '../db/schema.js';

@@ -44,7 +44,7 @@ export class MfaService {
     readonly tokens: TokensService,
   ) {
     // Without a configured secrets key (development) the box is keyed from the JWT secret.
-    this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`kinetix-mfa:${env.JWT_SECRET}`).digest() }, 1);
+    this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`zynetix-mfa:${env.JWT_SECRET}`).digest() }, 1);
   }
 
   private aad = (tenantId: string, userId: string) => `${tenantId}:mfa.${userId}`;
@@ -79,7 +79,7 @@ export class MfaService {
       .insert(userMfa)
       .values({ userId, tenantId, secretEnc: this.box.encrypt(secret, this.aad(tenantId, userId)) })
       .onConflictDoUpdate({ target: userMfa.userId, set: { secretEnc: this.box.encrypt(secret, this.aad(tenantId, userId)), confirmedAt: null, backupCodes: [], lastStep: 0 } });
-    return { secret, otpauthUri: otpauthUri(secret, u.email ?? u.phone ?? u.fullName, 'KINETIX') };
+    return { secret, otpauthUri: otpauthUri(secret, u.email ?? u.phone ?? u.fullName, 'ZYNETIX') };
   }
 
   private newBackupCodes(): { plain: string[]; hashes: string[] } {

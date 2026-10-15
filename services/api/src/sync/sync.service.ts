@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import type { SyncOpResult } from '@kinetix/shared';
+import type { SyncOpResult } from '@zynetix/shared';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { BoardPrincipal } from '../auth/principal.js';
 import { localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { attendanceRecords, boardSessions, guardians, participationEvents, students, syncOps, userRoles } from '../db/schema.js';
-import { RealtimeEvents, type AttendanceUpdatedEvent } from '@kinetix/shared';
+import { RealtimeEvents, type AttendanceUpdatedEvent } from '@zynetix/shared';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { DbService } from '../db/db.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';

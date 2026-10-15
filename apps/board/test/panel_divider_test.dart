@@ -1,9 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/panel/split_panel.dart';
-import 'package:kinetix_board/main.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/panel/split_panel.dart';
+import 'package:zynetix_board/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_cloud.dart';
@@ -24,7 +24,7 @@ void main() {
     screenSize(tester, size);
     final board = await enrolledBoard();
     board.onPaired('t', sessionIn('en'));
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('panel-ai')));
     await tester.pumpAndSettle();
@@ -65,7 +65,7 @@ void main() {
     screenSize(tester, size);
     final board = await enrolledBoard();
     board.onPaired('t', sessionIn('en'));
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     final before = tester.getRect(find.byKey(const ValueKey('board-area')));
     final toolbar = tester.getRect(find.byKey(const Key('board-menu')));

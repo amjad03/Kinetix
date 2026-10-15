@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { STUDENT_STATUSES, type LifecycleEvent, type StudentStatus } from '@kinetix/shared';
+import { STUDENT_STATUSES, type LifecycleEvent, type StudentStatus } from '@zynetix/shared';
 import { alias } from 'drizzle-orm/pg-core';
 import { and, asc, desc, eq, ilike, or } from 'drizzle-orm';
 import { z } from 'zod';

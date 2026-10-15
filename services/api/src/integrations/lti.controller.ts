@@ -47,7 +47,7 @@ const PlatformBody = z.object({ name: z.string().trim().min(1).max(100), issuer:
 const form = (action: string, fields: Record<string, string>) =>
   `<!doctype html><html><body onload="document.forms[0].submit()"><form method="post" action="${attrEsc(action)}">${Object.entries(fields).map(([k, v]) => `<input type="hidden" name="${attrEsc(k)}" value="${attrEsc(v)}">`).join('')}<noscript><button>Continue</button></noscript></form></body></html>`;
 
-/** LTI 1.3: KINETIX launches external tools (platform side) and its courses can be launched from Moodle and other LMSs (tool side). */
+/** LTI 1.3: ZYNETIX launches external tools (platform side) and its courses can be launched from Moodle and other LMSs (tool side). */
 @Controller('v1/lti')
 export class LtiController {
   constructor(private readonly db: DbService, private readonly clock: Clock, private readonly mfa: MfaService) {}
@@ -159,7 +159,7 @@ export class LtiController {
     });
   }
 
-  // ---- tool side: KINETIX launched from Moodle and other LMSs ---------------------------------------
+  // ---- tool side: ZYNETIX launched from Moodle and other LMSs ---------------------------------------
 
   @Get('platforms')
   @Auth('user', ADMIN)
@@ -251,9 +251,9 @@ export class LtiController {
       if (c[`${CLAIM}message_type`] !== 'LtiResourceLinkRequest') throw new ForbiddenException('Only resource link launches are supported');
       const email = typeof c.email === 'string' ? c.email.toLowerCase() : '';
       const [user] = email ? await tx.select().from(users).where(eq(users.email, email)) : [];
-      if (!user || user.status !== 'active') throw new ForbiddenException('No KINETIX account matches this person. Ask the institution to add their email');
+      if (!user || user.status !== 'active') throw new ForbiddenException('No ZYNETIX account matches this person. Ask the institution to add their email');
       const custom = (c[`${CLAIM}custom`] ?? {}) as Record<string, string>;
-      const wanted = custom.kinetix_course ?? c[`${CLAIM}context`]?.label ?? '';
+      const wanted = custom.zynetix_course ?? c[`${CLAIM}context`]?.label ?? '';
       const [course] = wanted ? await tx.select({ id: courses.id }).from(courses).where(/^[0-9a-f-]{36}$/.test(wanted) ? eq(courses.id, wanted) : eq(courses.code, wanted)) : [];
       const ticket = randomBytes(24).toString('base64url');
       await tx.insert(ltiStates).values({ tenantId, kind: 'ticket', state: sha256(ticket), nonce: '', ref: { userId: user.id, courseId: course?.id ?? null }, expiresAt: new Date(this.clock.now().getTime() + 60_000) });

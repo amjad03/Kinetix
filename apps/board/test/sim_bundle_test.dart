@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/sim_hub/sim_entry.dart';
-import 'package:kinetix_board/features/sim_hub/sim_hub_panel.dart';
-import 'package:kinetix_board/features/sim_hub/sim_server.dart';
+import 'package:zynetix_board/features/sim_hub/sim_entry.dart';
+import 'package:zynetix_board/features/sim_hub/sim_hub_panel.dart';
+import 'package:zynetix_board/features/sim_hub/sim_server.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show RemoteModels;
-import 'package:kinetix_board/features/board/model_server.dart';
-import 'package:kinetix_board/features/board/profile_menu.dart';
+import 'package:zynetix_3d/zynetix_3d.dart' show RemoteModels;
+import 'package:zynetix_board/features/board/model_server.dart';
+import 'package:zynetix_board/features/board/profile_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_cloud.dart';
 
 /// 3D models download from this board's own server, then the institution's (the API's board
-/// config), then the KINETIX API's /assets/models, then GitHub.
+/// config), then the ZYNETIX API's /assets/models, then GitHub.
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -57,7 +57,7 @@ void main() {
     await tester.pumpWidget(localized('en', Scaffold(body: BoardSettingsDialog(board: board, initialQuery: '3D model'))));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('model-server')), findsOneWidget);
-    expect(find.text('1. KINETIX server: http://test/assets/models'), findsOneWidget);
+    expect(find.text('1. ZYNETIX server: http://test/assets/models'), findsOneWidget);
     expect(find.text('2. GitHub (always last): https://github.com/amjad03/Kinetix'), findsOneWidget);
 
     await tester.enterText(find.byKey(const Key('model-server-field')), 'ftp://wrong');
@@ -71,7 +71,7 @@ void main() {
     expect(find.byKey(const Key('model-server-note')), findsOneWidget);
     expect(find.text('1. This board: http://10.0.0.9/models'), findsOneWidget);
     expect(RemoteModels.servers.first, 'http://10.0.0.9/models');
-    expect((await SharedPreferences.getInstance()).getString('kinetix.models.base'), 'http://10.0.0.9/models');
+    expect((await SharedPreferences.getInstance()).getString('zynetix.models.base'), 'http://10.0.0.9/models');
 
     await tester.tap(find.byKey(const Key('model-server-clear')));
     await tester.pumpAndSettle();

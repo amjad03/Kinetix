@@ -112,7 +112,7 @@ describe('record kit on the remaining registers', () => {
   });
 
   it('keeps single sign-on providers with their secret encrypted, switched off in bulk, deleted and restored', async () => {
-    const base = { kind: 'google', name: 'College Google', clientId: 'abc.apps.googleusercontent.com', allowedDomains: 'kitcollege.edu\nstaff.kitcollege.edu', redirectAllowlist: 'kinetix://sso' };
+    const base = { kind: 'google', name: 'College Google', clientId: 'abc.apps.googleusercontent.com', allowedDomains: 'kitcollege.edu\nstaff.kitcollege.edu', redirectAllowlist: 'zynetix://sso' };
     await add('principal', 'sso-providers', base).expect(400); // no secret
     await add('principal', 'sso-providers', { ...base, clientSecret: 's3cret', allowedDomains: 'not a domain' }).expect(400);
     const sp = (await add('principal', 'sso-providers', { ...base, clientSecret: 's3cret' }).expect(201)).body;

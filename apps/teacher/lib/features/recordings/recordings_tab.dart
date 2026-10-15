@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
@@ -117,7 +117,7 @@ class RecordingsTab extends StatelessWidget {
     }
   }
 
-  /// The player itself (packages/kinetix_lesson) is not localised yet; its load errors are.
+  /// The player itself (packages/zynetix_lesson) is not localised yet; its load errors are.
   void _play(BuildContext context, RecordingInfo r) {
     final l = context.l10n;
     LessonPlayerScreen.open(

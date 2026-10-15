@@ -99,7 +99,7 @@
     }
   },
   "errTimeout": "The server is taking too long to respond. Try again.",
-  "errUnreachable": "Can't reach KINETIX. Check your internet connection and the server address.",
+  "errUnreachable": "Can't reach ZYNETIX. Check your internet connection and the server address.",
   "errForbidden": "You don't have access to this.",
   "errNotFound": "Not found.",
   "errTooMany": "Too many attempts. Wait a minute and try again.",
@@ -131,7 +131,7 @@
   "enterValidEmail": "Enter a valid email address",
   "enterValidPhone": "Enter a 10-digit phone number or a valid email",
   "enterPassword": "Enter your password",
-  "enterServer": "Enter a server address like https://api.kinetix.in",
+  "enterServer": "Enter a server address like https://api.zynetix.in",
   "language": "Language",
   "languageHelp": "Used for the app and for updates sent to you",
   "chooseLanguage": "Choose language",
@@ -450,7 +450,7 @@
   "tryAgain": "Try again",
   "signInHint": "Use the phone number or email you gave your child's college",
   "errNotGuardian": "This app is for parents and guardians. Ask your institution to link your account to your child.",
-  "errTeacherAccount": "This app is for parents and guardians. Teachers can use the KINETIX Teacher app.",
+  "errTeacherAccount": "This app is for parents and guardians. Teachers can use the ZYNETIX Teacher app.",
   "homeSubtitle": "Here's how {name} is doing",
   "@homeSubtitle": {
     "placeholders": {
@@ -718,7 +718,7 @@
     }
   },
   "paymentNotSetUp": "Online payment isn't set up by the college yet. Please pay at the fees counter.",
-  "paymentPhonesOnly": "Online payment works in the KINETIX Parent app on Android phones and iPhones. On this device, please pay at the fees counter.",
+  "paymentPhonesOnly": "Online payment works in the ZYNETIX Parent app on Android phones and iPhones. On this device, please pay at the fees counter.",
   "demoPayment": "Demo payment",
   "demoTo": "To",
   "demoFor": "For",
@@ -925,7 +925,7 @@
     }
   },
   "privacy": "Privacy",
-  "privacySubtitle": "What KINETIX may do with the student's information",
+  "privacySubtitle": "What ZYNETIX may do with the student's information",
   "notNow": "Not now",
   "ifYouSayNo": "If you say no: {text}",
   "@ifYouSayNo": {
@@ -968,7 +968,7 @@
   },
   "noticeWhoDecides": "Who decides",
   "noticeSchool": "School (students under 18): the parent or guardian decides for the child.",
-  "noticeCollege": "College or university: students decide for themselves. A guardian decides only for a student who has no KINETIX login of their own.",
+  "noticeCollege": "College or university: students decide for themselves. A guardian decides only for a student who has no ZYNETIX login of their own.",
   "noticeWhatWeAsk": "What we ask about",
   "noticeWhereKept": "Where data is kept",
   "noticeDataInIndia": "All data and all AI processing stay in India. Data is kept while the student is at the institution, and then for as long as the institution's records policy requires.",
@@ -981,9 +981,9 @@
   "purposeDataTitle": "Records and updates",
   "purposeDataBody": "Keeping the student's attendance, homework, marks, fees and library records so the institution can run classes and keep you informed.",
   "purposeDataNo": "the institution still keeps the records it must by law; you will not get updates in the app.",
-  "purposeAiTitle": "KINETIX AI",
-  "purposeAiBody": "The student asking KINETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.",
-  "purposeAiNo": "KINETIX AI is turned off for the student. Everything else works.",
+  "purposeAiTitle": "ZYNETIX AI",
+  "purposeAiBody": "The student asking ZYNETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.",
+  "purposeAiNo": "ZYNETIX AI is turned off for the student. Everything else works.",
   "purposeRecordingsTitle": "Class recordings and live classes",
   "purposeRecordingsBody": "The student's voice or image appearing in lesson recordings and live classes shared with the class.",
   "purposeRecordingsNo": "teachers are asked not to record the student; recordings already shared stay with the class.",
@@ -1008,7 +1008,7 @@
       }
     }
   },
-  "handInForNote": "Hand in here for a child who doesn't have their own KINETIX login.",
+  "handInForNote": "Hand in here for a child who doesn't have their own ZYNETIX login.",
   "consentTitleFor": "Privacy choices for {name}",
   "@consentTitleFor": {
     "placeholders": {
@@ -1017,7 +1017,7 @@
       }
     }
   },
-  "consentIntroFor": "Choose what KINETIX may do with {name}'s information. Nothing is switched on until you choose.",
+  "consentIntroFor": "Choose what ZYNETIX may do with {name}'s information. Nothing is switched on until you choose.",
   "@consentIntroFor": {
     "placeholders": {
       "name": {
@@ -1025,7 +1025,7 @@
       }
     }
   },
-  "privacyIntroFor": "What KINETIX may do with {name}'s information. Turn a switch off to withdraw your consent.",
+  "privacyIntroFor": "What ZYNETIX may do with {name}'s information. Turn a switch off to withdraw your consent.",
   "@privacyIntroFor": {
     "placeholders": {
       "name": {
@@ -1033,7 +1033,7 @@
       }
     }
   },
-  "privacyIntroReadOnlyFor": "What KINETIX may do with {name}'s information, and who decided.",
+  "privacyIntroReadOnlyFor": "What ZYNETIX may do with {name}'s information, and who decided.",
   "@privacyIntroReadOnlyFor": {
     "placeholders": {
       "name": {
@@ -1041,7 +1041,7 @@
       }
     }
   },
-  "managedByStudent": "{name} manages this. At a college, students with their own KINETIX login make these choices themselves.",
+  "managedByStudent": "{name} manages this. At a college, students with their own ZYNETIX login make these choices themselves.",
   "@managedByStudent": {
     "placeholders": {
       "name": {
@@ -1068,7 +1068,7 @@
   },
   "syllabusProgressSubtitle": "What the class has been taught in each subject",
   "syllabusSubjectsEmpty": "Subjects appear here once teachers set homework in them.",
-  "syllabusNotLinked": "The syllabus for {subject} isn't in KINETIX yet.",
+  "syllabusNotLinked": "The syllabus for {subject} isn't in ZYNETIX yet.",
   "@syllabusNotLinked": {
     "placeholders": {
       "subject": {
@@ -1142,7 +1142,7 @@
   "@demoBannerTitle": {
     "description": "Title of the banner on the sign-in screen of demo builds."
   },
-  "demoBannerBody": "Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.",
+  "demoBannerBody": "Sample data from ZYNETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.",
   "@demoBannerBody": {
     "description": "Body of the demo banner."
   },
@@ -2048,7 +2048,7 @@
       }
     }
   },
-  "aiUpdateTitle": "An update from KINETIX AI",
+  "aiUpdateTitle": "An update from ZYNETIX AI",
   "aiUpdateGood": "Going well",
   "aiUpdateWatch": "To watch",
   "aiUpdateDo": "What you can do",
@@ -2061,7 +2061,7 @@
       }
     }
   },
-  "aiUpdateNote": "Written by KINETIX AI from {name}'s marks, attendance and homework. It can be wrong: the class teacher knows {name} best.",
+  "aiUpdateNote": "Written by ZYNETIX AI from {name}'s marks, attendance and homework. It can be wrong: the class teacher knows {name} best.",
   "@aiUpdateNote": {
     "placeholders": {
       "name": {

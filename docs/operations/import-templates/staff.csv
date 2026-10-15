@@ -1,4 +1,4 @@
-# KINETIX import: staff. One row per person.
+# ZYNETIX import: staff. One row per person.
 # full_name           Full name, in any script (required)
 # email               Email address (email or phone required; used to match on re-import)
 # phone               Mobile number, e.g. 98450 12345 (staff sign in with a code sent to it)

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/sim_hub/sim_hub_panel.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/sim_hub/sim_hub_panel.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -18,7 +18,7 @@ void main() {
     screenSize(tester, const Size(1920, 1080));
     final board = await enrolledBoard();
     board.onPaired('session-token', sessionIn('en'));
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     if (find.text('Not now').evaluate().isNotEmpty) {
       await tester.tap(find.text('Not now'));

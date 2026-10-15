@@ -2,7 +2,7 @@ import 'server-only';
 import { isIsoDate, todayIn } from './dates';
 
 /** The school's time zone. The API works out "today" in the tenant's zone; keep this in step. */
-export const TIMEZONE = process.env.KINETIX_TIMEZONE ?? 'Asia/Kolkata';
+export const TIMEZONE = process.env.ZYNETIX_TIMEZONE ?? 'Asia/Kolkata';
 
 export function schoolToday(): string {
   return todayIn(TIMEZONE);

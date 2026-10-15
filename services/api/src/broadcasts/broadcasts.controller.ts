@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { RealtimeEvents } from '@kinetix/shared';
+import { RealtimeEvents } from '@zynetix/shared';
 import { z } from 'zod';
 import { Auth, BROADCAST_ROLES, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, DevicePrincipal, UserPrincipal } from '../auth/principal.js';

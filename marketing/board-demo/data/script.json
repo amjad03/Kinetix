@@ -6,7 +6,7 @@
    "segs": [
     {
      "id": "s00",
-     "vo": "This is KINETIX Board, the AI smartboard in every Soundarya classroom. Everything you'll see is the real board app, driven by a stylus, just as a teacher uses it."
+     "vo": "This is ZYNETIX Board, the AI smartboard in every Soundarya classroom. Everything you'll see is the real board app, driven by a stylus, just as a teacher uses it."
     }
    ]
   },
@@ -16,7 +16,7 @@
    "segs": [
     {
      "id": "s10",
-     "vo": "Signing in takes one scan. The teacher opens the KINETIX Teacher app and scans this QR code, or types the six digit code. No passwords on a shared screen."
+     "vo": "Signing in takes one scan. The teacher opens the ZYNETIX Teacher app and scans this QR code, or types the six digit code. No passwords on a shared screen."
     },
     {
      "id": "s11",
@@ -138,11 +138,11 @@
   },
   {
    "id": "c6",
-   "title": "KINETIX AI, built into the lesson",
+   "title": "ZYNETIX AI, built into the lesson",
    "segs": [
     {
      "id": "s60",
-     "vo": "KINETIX AI answers questions about the lesson, in the class's language, with sources, and follows the syllabus."
+     "vo": "ZYNETIX AI answers questions about the lesson, in the class's language, with sources, and follows the syllabus."
     },
     {
      "id": "s61",
@@ -248,11 +248,11 @@
     },
     {
      "id": "s111",
-     "vo": "End the class, and attendance, polls, homework, recordings and lesson evidence flow to the KINETIX ERP. And on to the Teacher app, the Student app, and the Parent app."
+     "vo": "End the class, and attendance, polls, homework, recordings and lesson evidence flow to the ZYNETIX ERP. And on to the Teacher app, the Student app, and the Parent app."
     },
     {
      "id": "s112",
-     "vo": "KINETIX Board. Every lesson, connected."
+     "vo": "ZYNETIX Board. Every lesson, connected."
     }
    ]
   }

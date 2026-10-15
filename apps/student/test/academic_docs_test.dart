@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/features/exams/academic_docs_screen.dart';
-import 'package:kinetix_student/l10n/app_localizations.dart';
+import 'package:zynetix_student/features/exams/academic_docs_screen.dart';
+import 'package:zynetix_student/l10n/app_localizations.dart';
 
-import 'package:kinetix_student/demo/fake_api.dart';
+import 'package:zynetix_student/demo/fake_api.dart';
 
 void main() {
   testWidgets('a student requests a document and downloads an issued one', (tester) async {

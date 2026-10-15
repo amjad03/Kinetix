@@ -1,4 +1,4 @@
-# KINETIX import: students and their parents or guardians. One row per student.
+# ZYNETIX import: students and their parents or guardians. One row per student.
 # roll_no             Roll number, unique in the institution (required; used to match on re-import)
 # full_name           Full name, in any script (required)
 # section             The class, as shown, e.g. BSc Sem 1 A (required; import programs first)

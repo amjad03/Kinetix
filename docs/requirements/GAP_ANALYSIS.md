@@ -9,7 +9,7 @@ Audit of `docs/requirements/` (Detailed System Requirements Pack v2) against the
 |---|---|---|
 | Smartboard: Android native, Kotlin + Jetpack Compose | Flutter (`apps/board`) | **Keep Flutter.** Approved by the product owner 2026-10-08. The Flutter board already covers ~90% of the Phase 01 surface list, passes 588 tests, and runs on Android panels **and** Windows panels from one codebase; a Kotlin rewrite would drop Windows and restart the work. Treat "Android native" in the pack as superseded. |
 | AI: cloud AI APIs + local 2–3B models | India-hosted provider chain (self-hosted/E2E first, Sarvam fallback) | Keep. Satisfies the data-residency rule the owner set, which outranks the pack's wording. |
-| Identity: Kinetix in-house | Phone OTP (MSG91) + our own tokens, RLS per tenant | Matches in-house identity. TOTP MFA with per-role policy is built (see Phase 00). |
+| Identity: Zynetix in-house | Phone OTP (MSG91) + our own tokens, RLS per tenant | Matches in-house identity. TOTP MFA with per-role policy is built (see Phase 00). |
 
 Everything else in the locked baseline matches: Next.js + TypeScript web, NestJS + TypeScript
 backend, PostgreSQL, Flutter mobile, multi-tenant SaaS, en/hi/kn from day one.
@@ -105,7 +105,7 @@ production readiness are all satisfied.
 
 ## ERP PRD V1 (Tier 2) audit — 2026-10-09
 
-The pack's newest ERP PRD (`KINETIX_COMPLETE_ERP_EDUCATION_OS_PRD_V1.md`) compared with the
+The pack's newest ERP PRD (`ZYNETIX_COMPLETE_ERP_EDUCATION_OS_PRD_V1.md`) compared with the
 code. Built in full: certificates, payroll, hostel, transport, grievance, discipline, Smartboard
 integration. Everything else is partial or missing; build waves, in order:
 

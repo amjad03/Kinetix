@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show RemoteModels;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart' show RemoteModels;
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/board_controller.dart';
@@ -10,11 +10,11 @@ import '../../l10n/feature_strings.dart';
 
 /// Where the board downloads 3D models from, tried in order before GitHub: this board's own
 /// setting (Board settings → 3D model downloads), the institution's school server (the API's
-/// board config, `modelsBase`) and the board's own KINETIX server (`<API>/assets/models`,
+/// board config, `modelsBase`) and the board's own ZYNETIX server (`<API>/assets/models`,
 /// served by services/api). A school server only needs the files of
-/// packages/kinetix_3d/remote_models under the same names.
+/// packages/zynetix_3d/remote_models under the same names.
 abstract final class ModelServer {
-  static const _key = 'kinetix.models.base', _instKey = 'kinetix.models.institution';
+  static const _key = 'zynetix.models.base', _instKey = 'zynetix.models.institution';
 
   /// This board's own model server, or null.
   static String? own;
@@ -22,7 +22,7 @@ abstract final class ModelServer {
   /// The institution's model server from the board config, or null.
   static String? institution;
 
-  /// The board's KINETIX server, or null (demo and not set up).
+  /// The board's ZYNETIX server, or null (demo and not set up).
   static String? apiBase;
 
   /// Bumped whenever the servers change, for the settings section.
@@ -109,7 +109,7 @@ FeatureStrings modelServerStrings(String lang) => FeatureStrings(lang, modelServ
 const modelServerStringTable = <String, Map<String, String>>{
   'en': {
     'title': '3D model downloads',
-    'hint': 'Models not in the app are downloaded once and kept for offline use. The board tries these servers in order, then the KINETIX copy on GitHub.',
+    'hint': 'Models not in the app are downloaded once and kept for offline use. The board tries these servers in order, then the ZYNETIX copy on GitHub.',
     'field': "This board's model server",
     'fieldHint': 'For example http://10.0.0.5/models',
     'save': 'Save',
@@ -117,13 +117,13 @@ const modelServerStringTable = <String, Map<String, String>>{
     'invalid': 'Enter an address that starts with http:// or https://',
     'own': 'This board',
     'institution': 'Your institution',
-    'api': 'KINETIX server',
+    'api': 'ZYNETIX server',
     'github': 'GitHub (always last)',
     'saved': 'Saved. New downloads use this server first.',
   },
   'hi': {
     'title': '3D मॉडल डाउनलोड',
-    'hint': 'जो मॉडल ऐप में नहीं हैं, वे एक बार डाउनलोड होकर ऑफ़लाइन उपयोग के लिए रखे जाते हैं। बोर्ड इन सर्वरों को क्रम से आज़माता है, फिर गिटहब पर रखी कायनेटिक्स प्रति को।',
+    'hint': 'जो मॉडल ऐप में नहीं हैं, वे एक बार डाउनलोड होकर ऑफ़लाइन उपयोग के लिए रखे जाते हैं। बोर्ड इन सर्वरों को क्रम से आज़माता है, फिर गिटहब पर रखी ज़ायनेटिक्स प्रति को।',
     'field': 'इस बोर्ड का मॉडल सर्वर',
     'fieldHint': 'उदाहरण: http://10.0.0.5/models',
     'save': 'सहेजें',
@@ -131,13 +131,13 @@ const modelServerStringTable = <String, Map<String, String>>{
     'invalid': 'http:// या https:// से शुरू होने वाला पता लिखें',
     'own': 'यह बोर्ड',
     'institution': 'आपका संस्थान',
-    'api': 'कायनेटिक्स सर्वर',
+    'api': 'ज़ायनेटिक्स सर्वर',
     'github': 'गिटहब (हमेशा अंत में)',
     'saved': 'सहेजा गया। नए डाउनलोड पहले इसी सर्वर से होंगे।',
   },
   'kn': {
     'title': '3D ಮಾದರಿ ಡೌನ್‌ಲೋಡ್‌ಗಳು',
-    'hint': 'ಆ್ಯಪ್‌ನಲ್ಲಿ ಇಲ್ಲದ ಮಾದರಿಗಳು ಒಮ್ಮೆ ಡೌನ್‌ಲೋಡ್ ಆಗಿ ಆಫ್‌ಲೈನ್ ಬಳಕೆಗಾಗಿ ಉಳಿಯುತ್ತವೆ. ಬೋರ್ಡ್ ಈ ಸರ್ವರ್‌ಗಳನ್ನು ಕ್ರಮವಾಗಿ ಪ್ರಯತ್ನಿಸುತ್ತದೆ, ನಂತರ ಗಿಟ್‌ಹಬ್‌ನಲ್ಲಿರುವ ಕೈನೆಟಿಕ್ಸ್ ಪ್ರತಿಯನ್ನು.',
+    'hint': 'ಆ್ಯಪ್‌ನಲ್ಲಿ ಇಲ್ಲದ ಮಾದರಿಗಳು ಒಮ್ಮೆ ಡೌನ್‌ಲೋಡ್ ಆಗಿ ಆಫ್‌ಲೈನ್ ಬಳಕೆಗಾಗಿ ಉಳಿಯುತ್ತವೆ. ಬೋರ್ಡ್ ಈ ಸರ್ವರ್‌ಗಳನ್ನು ಕ್ರಮವಾಗಿ ಪ್ರಯತ್ನಿಸುತ್ತದೆ, ನಂತರ ಗಿಟ್‌ಹಬ್‌ನಲ್ಲಿರುವ ಜೈನೆಟಿಕ್ಸ್ ಪ್ರತಿಯನ್ನು.',
     'field': 'ಈ ಬೋರ್ಡ್‌ನ ಮಾದರಿ ಸರ್ವರ್',
     'fieldHint': 'ಉದಾಹರಣೆ: http://10.0.0.5/models',
     'save': 'ಉಳಿಸಿ',
@@ -145,7 +145,7 @@ const modelServerStringTable = <String, Map<String, String>>{
     'invalid': 'http:// ಅಥವಾ https:// ನಿಂದ ಆರಂಭವಾಗುವ ವಿಳಾಸ ಬರೆಯಿರಿ',
     'own': 'ಈ ಬೋರ್ಡ್',
     'institution': 'ನಿಮ್ಮ ಸಂಸ್ಥೆ',
-    'api': 'ಕೈನೆಟಿಕ್ಸ್ ಸರ್ವರ್',
+    'api': 'ಜೈನೆಟಿಕ್ಸ್ ಸರ್ವರ್',
     'github': 'ಗಿಟ್‌ಹಬ್ (ಯಾವಾಗಲೂ ಕೊನೆಯಲ್ಲಿ)',
     'saved': 'ಉಳಿಸಲಾಗಿದೆ. ಹೊಸ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಮೊದಲು ಈ ಸರ್ವರ್‌ನಿಂದ ಆಗುತ್ತವೆ.',
   },

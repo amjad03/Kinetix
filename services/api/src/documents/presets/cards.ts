@@ -1,4 +1,4 @@
-import type { DocLayout, PresetStyle } from '@kinetix/shared';
+import type { DocLayout, PresetStyle } from '@zynetix/shared';
 import { Builder, layout, stroke, style } from './kit.js';
 
 /**

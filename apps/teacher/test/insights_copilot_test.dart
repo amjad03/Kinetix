@@ -1,10 +1,10 @@
 // Student insights for a class and the AI copilot.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/core/insights_models.dart';
-import 'package:kinetix_teacher/features/ai/ai_copilot_screen.dart';
-import 'package:kinetix_teacher/features/insights/section_insights_screen.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/core/insights_models.dart';
+import 'package:zynetix_teacher/features/ai/ai_copilot_screen.dart';
+import 'package:zynetix_teacher/features/insights/section_insights_screen.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

@@ -1,6 +1,6 @@
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { BadRequestException, HttpException, Controller, Delete, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, PayloadTooLargeException, Query, Req, Res, StreamableFile, UnsupportedMediaTypeException } from '@nestjs/common';
-import type { VaultDocument, VaultOwner, VaultVisibility } from '@kinetix/shared';
+import type { VaultDocument, VaultOwner, VaultVisibility } from '@zynetix/shared';
 import { and, asc, desc, eq, isNull, lte, sql } from 'drizzle-orm';
 import type { Request, Response } from 'express';
 import { z } from 'zod';

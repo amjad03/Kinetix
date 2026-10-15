@@ -60,12 +60,12 @@ abstract class KioskPlatform {
   Future<void> openSystemSettings();
 }
 
-/// Android: the `kinetix/kiosk` channel in MainActivity.kt. Elsewhere: [KioskStatus.unsupported]
+/// Android: the `zynetix/kiosk` channel in MainActivity.kt. Elsewhere: [KioskStatus.unsupported]
 /// (Windows boards use Assigned Access, see docs/hardware/kiosk-mode.md).
 class MethodChannelKioskPlatform implements KioskPlatform {
   MethodChannelKioskPlatform({bool? android, MethodChannel? channel, Future<void> Function(bool on)? immersive})
     : _android = android ?? (!kIsWeb && Platform.isAndroid),
-      _channel = channel ?? const MethodChannel('kinetix/kiosk'),
+      _channel = channel ?? const MethodChannel('zynetix/kiosk'),
       _immersive = immersive ?? _systemImmersive;
 
   final bool _android;

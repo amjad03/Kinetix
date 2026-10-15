@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/board/layout/backgrounds_popover.dart';
-import 'package:kinetix_board/features/board/layout/layout_strings.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/features/board/layout/backgrounds_popover.dart';
+import 'package:zynetix_board/features/board/layout/layout_strings.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 /// The Teachmint theme-template list (docs/requirements/BOARD_TEACHMINT_PARITY.md): every
 /// template is offered, spelled as the reference spells it, named in every board language, and

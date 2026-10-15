@@ -1,5 +1,5 @@
 /// In-memory fakes of the API and realtime. Widget tests use them directly; demo builds
-/// (`--dart-define=KINETIX_DEMO=true`) use them through DemoParentApi (demo_api.dart).
+/// (`--dart-define=ZYNETIX_DEMO=true`) use them through DemoParentApi (demo_api.dart).
 library;
 
 import 'dart:async';
@@ -8,7 +8,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/painting.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
 import '../core/academic_docs.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
@@ -122,7 +122,7 @@ class FakeParentApi implements ParentApi {
     roles: ['guardian'],
     preferredLanguage: 'en',
     institution: 'Demo College',
-    email: 'parent@demo.kinetix.in',
+    email: 'parent@demo.zynetix.in',
     phone: '+919800000001',
   );
 
@@ -376,7 +376,7 @@ class FakeParentApi implements ParentApi {
   @override
   Future<void> login({required String tenant, required String login, required String password}) async {
     calls.add('login $tenant $login');
-    if (password != 'kinetix123') throw ApiException(401, 'Wrong institution, login or password');
+    if (password != 'zynetix123') throw ApiException(401, 'Wrong institution, login or password');
     token = 'tok';
   }
 
@@ -937,7 +937,7 @@ class FakeParentApi implements ParentApi {
     calls.add('confirmWallet $topUpId');
     final o = _topUps[topUpId];
     if (o == null) throw ApiException(404, 'Top-up not found');
-    final expected = Hmac(sha256, utf8.encode('kinetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
+    final expected = Hmac(sha256, utf8.encode('zynetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
     if (signature != expected) throw ApiException(403, 'The payment could not be verified');
     walletBalancePaise += o.amountPaise;
     return walletBalancePaise;
@@ -976,7 +976,7 @@ class FakeParentApi implements ParentApi {
     calls.add('confirm $paymentId');
     final o = _orders[paymentId];
     if (o == null) throw ApiException(404, 'Payment not found');
-    final expected = Hmac(sha256, utf8.encode('kinetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
+    final expected = Hmac(sha256, utf8.encode('zynetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
     if (signature != expected) throw ApiException(403, 'The payment could not be verified');
     final list = invoices[o.childId]!;
     final at = list.indexWhere((i) => i.id == o.invoiceId);

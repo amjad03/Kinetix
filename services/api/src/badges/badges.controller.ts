@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { RealtimeEvents, type BadgeAwardedEvent, type BadgeView, type StudentBadges } from '@kinetix/shared';
+import { RealtimeEvents, type BadgeAwardedEvent, type BadgeView, type StudentBadges } from '@zynetix/shared';
 import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';

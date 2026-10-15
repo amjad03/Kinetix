@@ -8,12 +8,12 @@ board. Code: `apps/board/lib/features/projector`.
 ## How it works
 
 The second screen runs its own Flutter engine at `projectorMain` (`lib/main.dart`), showing
-`ProjectorApp`. The board sends it JSON messages over the `kinetix/projector` channel (native
-code passes them to the projector engine's `kinetix/projector_feed`):
+`ProjectorApp`. The board sends it JSON messages over the `zynetix/projector` channel (native
+code passes them to the projector engine's `zynetix/projector_feed`):
 
-- board events in the lesson/live-view format (`kinetix_ink`'s `LessonRecorder`), so the class
+- board events in the lesson/live-view format (`zynetix_ink`'s `LessonRecorder`), so the class
   sees exactly the part of the endless board the teacher shows, with the laser pointer;
-- pictures of the 3D model (through `kinetix_3d`'s `Model3dMirror`, set on the board's
+- pictures of the 3D model (through `zynetix_3d`'s `Model3dMirror`, set on the board's
   `Model3dScope`) and of an open lab (a picture of the split pane twice a second);
 - blank on/off.
 

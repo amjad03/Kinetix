@@ -1,6 +1,6 @@
 // A board's signed offline code is checked on the phone with no network (Ed25519, the institution's public key).
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/offline_pairing.dart';
+import 'package:zynetix_teacher/core/offline_pairing.dart';
 
 void main() {
   // Signed by services/api/src/pairing/offline-code.ts's format: window 04:30 to 04:45 UTC on 2026-10-20, tenant "tenant-1", board "device-1".

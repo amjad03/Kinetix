@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
-# KINETIX code runner: compiles and runs C, C++ and Java for the code lab (server.mjs).
+# ZYNETIX code runner: compiles and runs C, C++ and Java for the code lab (server.mjs).
 # Build from the repo root:
-#   docker build -f services/code-runner/Dockerfile -t kinetix-code-runner .
+#   docker build -f services/code-runner/Dockerfile -t zynetix-code-runner .
 # Run it only as docker-compose.yml does (no network, read-only, non-root, no capabilities,
 # seccomp, limits); docs/operations/code-runner.md has the full list and the ECS setup.
 # NODE_IMAGE can point at a registry mirror (e.g. mirror.gcr.io/library/node:22-bookworm-slim).

@@ -1,4 +1,4 @@
-# Kinetix Security + Privacy Acceptance Requirements
+# Zynetix Security + Privacy Acceptance Requirements
 
 ## Mandatory controls
 

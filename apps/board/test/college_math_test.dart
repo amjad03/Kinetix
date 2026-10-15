@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/board/kit/college/finance.dart';
-import 'package:kinetix_board/features/board/kit/college/pert.dart';
-import 'package:kinetix_board/features/board/kit/college/stats.dart';
+import 'package:zynetix_board/features/board/kit/college/finance.dart';
+import 'package:zynetix_board/features/board/kit/college/pert.dart';
+import 'package:zynetix_board/features/board/kit/college/stats.dart';
 
 void main() {
   group('commerce calculators (textbook values)', () {

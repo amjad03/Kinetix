@@ -99,7 +99,7 @@ bool Show(const std::string& id) {
     project.set_dart_entrypoint("projectorMain");
     auto window = std::make_unique<ProjectorWindow>(project);
     // Created at the monitor's corner, then made borderless and stretched over it.
-    if (!window->Create(L"KINETIX Projector", Win32Window::Point(m.rect.left, m.rect.top), Win32Window::Size(800, 600))) return false;
+    if (!window->Create(L"ZYNETIX Projector", Win32Window::Point(m.rect.left, m.rect.top), Win32Window::Size(800, 600))) return false;
     HWND hwnd = window->GetHandle();
     const LONG_PTR style = ::GetWindowLongPtr(hwnd, GWL_STYLE);
     ::SetWindowLongPtr(hwnd, GWL_STYLE, (style & ~static_cast<LONG_PTR>(WS_OVERLAPPEDWINDOW)) | WS_POPUP);
@@ -108,7 +108,7 @@ bool Show(const std::string& id) {
     // The teacher keeps working on the board; the projector never takes the focus.
     if (g_board_window) ::SetForegroundWindow(g_board_window);
 
-    g_feed = std::make_unique<flutter::MethodChannel<EncodableValue>>(window->controller()->engine()->messenger(), "kinetix/projector_feed",
+    g_feed = std::make_unique<flutter::MethodChannel<EncodableValue>>(window->controller()->engine()->messenger(), "zynetix/projector_feed",
                                                                       &flutter::StandardMethodCodec::GetInstance());
     g_feed->SetMethodCallHandler([](const auto& call, auto result) {
       if (call.method_name() == "ready" && g_board) g_board->InvokeMethod("ready", nullptr);
@@ -124,7 +124,7 @@ bool Show(const std::string& id) {
 
 void RegisterProjectorChannel(flutter::BinaryMessenger* messenger, HWND board_window) {
   g_board_window = board_window;
-  g_board = std::make_unique<flutter::MethodChannel<EncodableValue>>(messenger, "kinetix/projector", &flutter::StandardMethodCodec::GetInstance());
+  g_board = std::make_unique<flutter::MethodChannel<EncodableValue>>(messenger, "zynetix/projector", &flutter::StandardMethodCodec::GetInstance());
   g_board->SetMethodCallHandler([](const flutter::MethodCall<EncodableValue>& call, std::unique_ptr<flutter::MethodResult<EncodableValue>> result) {
     const std::string& method = call.method_name();
     if (method == "displays") {

@@ -10,7 +10,7 @@ const ERP = process.env.ERP_URL ?? 'http://localhost:3199';
 const API = process.env.API_URL ?? 'http://localhost:4199';
 const OUT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../../docs/demo/screens');
 const only = process.argv[2]?.split(',');
-const domain = 'soundarya.demo.kinetix.in';
+const domain = 'soundarya.demo.zynetix.in';
 
 const settle = async (page) => {
   await page.locator('main h1').first().waitFor({ timeout: 15000 }).catch(() => {});
@@ -105,7 +105,7 @@ const tokens = new Map();
 /** One sign-in per login for the whole run (sign-ins are rate limited). */
 async function token(prefix) {
   if (tokens.has(prefix)) return tokens.get(prefix);
-  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant: 'soundarya', login: `${prefix}@${domain}`, password: 'kinetix123' }) });
+  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant: 'soundarya', login: `${prefix}@${domain}`, password: 'zynetix123' }) });
   const t = (await r.json()).accessToken;
   if (!t) throw new Error(`sign-in failed for ${prefix} (${r.status})`);
   tokens.set(prefix, t);

@@ -1,10 +1,10 @@
 // A pretend classroom board for the live-view tests: enrols a new board through the API,
 // pairs a teacher, and answers the API's snapshot requests with lesson events, as the
-// KINETIX Board app does (services/api/test/helpers.ts pairBoard).
+// ZYNETIX Board app does (services/api/test/helpers.ts pairBoard).
 import { io, type Socket } from 'socket.io-client';
 import { PASSWORD, TENANT } from './helpers';
 
-export const API_URL = (process.env.KINETIX_API_URL ?? 'http://localhost:4000').replace(/\/+$/, '');
+export const API_URL = (process.env.ZYNETIX_API_URL ?? 'http://localhost:4000').replace(/\/+$/, '');
 
 async function call<T>(path: string, init: { method?: string; token?: string; body?: unknown } = {}): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {

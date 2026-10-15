@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/handwriting/windows_handwriting.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/handwriting/windows_handwriting.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 /// The AI pen through the real recogniser adapter ([WindowsHandwriting]): only the platform
 /// channel it talks to is a mock. Every symbol and digit a recogniser can answer comes out on the
@@ -9,7 +9,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 const _symbols = ['j', ':', ';', "'", '"', '/', '<', '>', ',', '?', '`', '~', '!', '@', r'$', '%', '^', '&', '*', '=', r'\'];
 const _digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-const _channel = MethodChannel('kinetix/handwriting');
+const _channel = MethodChannel('zynetix/handwriting');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -181,7 +181,7 @@ CREATE POLICY tenant_isolation ON "student_batches"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "elective_baskets", "elective_basket_subjects", "subject_requisites", "credit_transfers", "faculty_allocations", "period_structures", "special_classes", "working_day_swaps", "student_batches" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "elective_baskets", "elective_basket_subjects", "subject_requisites", "credit_transfers", "faculty_allocations", "period_structures", "special_classes", "working_day_swaps", "student_batches" TO zynetix_app;
   END IF;
 END $$;

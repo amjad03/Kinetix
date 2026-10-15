@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, Inject, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
-import type { DocData } from '@kinetix/shared';
+import type { DocData } from '@zynetix/shared';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';

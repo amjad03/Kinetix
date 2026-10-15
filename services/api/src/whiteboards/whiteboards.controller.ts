@@ -70,7 +70,7 @@ const StrokeSchema = z.object({
 
 /**
  * The other board elements (format 2): text, pictures, equations, graphs, figures, notes and sheets.
- * Their fields are the board's to define (packages/kinetix_ink serialization.dart); the API
+ * Their fields are the board's to define (packages/zynetix_ink serialization.dart); the API
  * only checks the kind and keeps them as they are. The whole board is size-limited below.
  */
 const OtherElementSchema = z.looseObject({ t: z.enum(['text', 'image', 'math', 'graph', 'polygon', 'note', 'sheet']) });

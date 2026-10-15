@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/demo/demo.dart';
-import 'package:kinetix_board/demo/demo_server.dart';
-import 'package:kinetix_board/features/concept_videos/concept_video_player.dart';
-import 'package:kinetix_board/features/concept_videos/concept_video_suggestions.dart';
-import 'package:kinetix_board/features/concept_videos/concept_videos.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/demo/demo.dart';
+import 'package:zynetix_board/demo/demo_server.dart';
+import 'package:zynetix_board/features/concept_videos/concept_video_player.dart';
+import 'package:zynetix_board/features/concept_videos/concept_video_suggestions.dart';
+import 'package:zynetix_board/features/concept_videos/concept_videos.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _NoRealtime extends Realtime {
@@ -35,7 +35,7 @@ Map<String, dynamic> _video(String id, String title, {String language = 'en'}) =
   'title': title,
   'language': language,
   'durationSeconds': 245,
-  'channelTitle': 'KINETIX',
+  'channelTitle': 'ZYNETIX',
   'position': 1,
   'topicTitle': 'Methods of valuing goodwill',
 };
@@ -115,7 +115,7 @@ void main() {
       await board.enroll('http://test', 'CODE');
       await tester.pumpWidget(
         MaterialApp(
-          theme: KinetixTheme.light(),
+          theme: ZynetixTheme.light(),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: ConceptVideoSuggestions(board: board, clock: () => DateTime(2026, 10, 5, 10, 5), child: const Scaffold(body: SizedBox.expand())),
@@ -204,7 +204,7 @@ void main() {
     addTearDown(tester.view.reset);
     final server = DemoBoardServer(claimDelay: const Duration(seconds: 2));
     final board = demoBoard(server);
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('conceptVideoCard')), findsOneWidget);
     expect(find.text('Re-issue of forfeited shares in 6 minutes'), findsOneWidget);

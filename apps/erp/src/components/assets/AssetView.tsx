@@ -13,7 +13,7 @@ import type { AssetDetail } from '@/lib/ops';
 import { statusTone, type Option } from '@/lib/procurement';
 import { statusLabel } from '@/lib/procurement-labels';
 
-/** The printable label: the tag large, the name, the QR code a scanner reads (`kinetix://asset/<tag>`) and that text beneath it. */
+/** The printable label: the tag large, the name, the QR code a scanner reads (`zynetix://asset/<tag>`) and that text beneath it. */
 export function AssetLabel({ a }: { a: Pick<AssetDetail, 'tag' | 'name' | 'qr' | 'qrSvg'> }) {
   return (
     <div className="border-2 border-solid border-foreground rounded-[10px] p-4 max-w-[320px] text-center print:[break-inside:avoid]" data-testid="asset-label">

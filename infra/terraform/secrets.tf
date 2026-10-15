@@ -25,7 +25,7 @@ resource "random_bytes" "secrets_encryption" {
 }
 
 resource "aws_secretsmanager_secret" "db" {
-  name                    = "kinetix/${var.environment}/db"
+  name                    = "zynetix/${var.environment}/db"
   description             = "PostgreSQL URLs: owner (migrations), app (RLS-bound, requests), admin (RDS master, db-bootstrap only)"
   kms_key_id              = aws_kms_key.data.arn
   recovery_window_in_days = 7
@@ -41,7 +41,7 @@ resource "aws_secretsmanager_secret_version" "db" {
 }
 
 resource "aws_secretsmanager_secret" "app" {
-  name                    = "kinetix/${var.environment}/app"
+  name                    = "zynetix/${var.environment}/app"
   description             = "JWT signing key, board pairing HMAC key, master key for secrets stored in the database"
   kms_key_id              = aws_kms_key.data.arn
   recovery_window_in_days = 7
@@ -60,7 +60,7 @@ resource "aws_secretsmanager_secret_version" "app" {
 }
 
 resource "aws_secretsmanager_secret" "redis" {
-  name                    = "kinetix/${var.environment}/redis"
+  name                    = "zynetix/${var.environment}/redis"
   description             = "REDIS_URL with the ElastiCache AUTH token"
   kms_key_id              = aws_kms_key.data.arn
   recovery_window_in_days = 7
@@ -90,14 +90,14 @@ locals {
 
 resource "aws_secretsmanager_secret" "manual" {
   for_each                = local.manual_secrets
-  name                    = "kinetix/${var.environment}/${each.key}"
+  name                    = "zynetix/${var.environment}/${each.key}"
   description             = each.value.description
   kms_key_id              = aws_kms_key.data.arn
   recovery_window_in_days = 7
 }
 
 # Placeholder values so the keys exist; put the real values with
-#   aws secretsmanager put-secret-value --secret-id kinetix/<env>/<name> --secret-string file://x.json
+#   aws secretsmanager put-secret-value --secret-id zynetix/<env>/<name> --secret-string file://x.json
 resource "aws_secretsmanager_secret_version" "manual" {
   for_each      = local.manual_secrets
   secret_id     = aws_secretsmanager_secret.manual[each.key].id

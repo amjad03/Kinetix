@@ -37,8 +37,8 @@ CREATE POLICY tenant_isolation ON "fee_receipts"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_receipts" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_receipts" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "fee_payments" ADD COLUMN IF NOT EXISTS "receipt_id" uuid REFERENCES "fee_receipts"("id") ON DELETE SET NULL;--> statement-breakpoint
@@ -72,8 +72,8 @@ CREATE POLICY tenant_isolation ON "fee_payment_allocations"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_payment_allocations" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_payment_allocations" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "fee_cheques" ADD COLUMN IF NOT EXISTS "receipt_id" uuid REFERENCES "fee_receipts"("id") ON DELETE SET NULL;--> statement-breakpoint
@@ -104,8 +104,8 @@ CREATE POLICY tenant_isolation ON "fee_challans"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_challans" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_challans" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "fee_cash_closings" ADD COLUMN IF NOT EXISTS "handed_to" uuid REFERENCES "users"("id") ON DELETE SET NULL;--> statement-breakpoint
@@ -150,8 +150,8 @@ CREATE POLICY tenant_isolation ON "fee_govt_scholarships"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_govt_scholarships" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_govt_scholarships" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "fee_carry_forwards" (
@@ -173,8 +173,8 @@ CREATE POLICY tenant_isolation ON "fee_carry_forwards"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_carry_forwards" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_carry_forwards" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "fee_reminder_runs" (
@@ -197,7 +197,7 @@ CREATE POLICY tenant_isolation ON "fee_reminder_runs"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_reminder_runs" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_reminder_runs" TO zynetix_app;
   END IF;
 END $$;

@@ -35,7 +35,7 @@ export function newSigningKeyPair(): SigningKeyPair {
 
 /** A short stable id for a public key: the first 12 characters of the HMAC-SHA256 of its PEM under a fixed label. */
 export function keyIdOf(publicKeyPem: string): string {
-  return createHmac('sha256', 'kinetix-offline-pairing-key-id').update(publicKeyPem).digest('base64url').slice(0, 12);
+  return createHmac('sha256', 'zynetix-offline-pairing-key-id').update(publicKeyPem).digest('base64url').slice(0, 12);
 }
 
 /** The raw 32-byte public key (base64url), for apps that cannot parse PEM. */

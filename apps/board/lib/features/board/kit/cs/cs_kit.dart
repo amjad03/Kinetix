@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_cs/kinetix_cs.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_cs/zynetix_cs.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../../../core/board_controller.dart';
 import '../../chrome.dart';
@@ -12,7 +12,7 @@ import '../../panel/panel_host.dart';
 
 /// The Computer Science kit (BCA/MCA and school computer science): the code lab, algorithm
 /// and data-structure animations, CS labs (numbers, logic, networks, OS, DBMS) and diagram
-/// parts. The engines and screens live in packages/kinetix_cs (shared with the Student App);
+/// parts. The engines and screens live in packages/zynetix_cs (shared with the Student App);
 /// this file puts them in the board's kit and on the board.
 class CsKitTab extends StatelessWidget {
   const CsKitTab({super.key, required this.tab, required this.wb, required this.accent, this.board});

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/features/today/today_tab.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_student/core/api.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/features/today/today_tab.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -71,8 +71,8 @@ void main() {
   });
 
   testWidgets('a failed load shows the error with Retry', (tester) async {
-    final (api, _) = await pumpApp(tester, setup: (api) => api.summaryError = ApiException(0, "Can't reach KINETIX."));
-    expect(find.text("Can't reach KINETIX."), findsOneWidget);
+    final (api, _) = await pumpApp(tester, setup: (api) => api.summaryError = ApiException(0, "Can't reach ZYNETIX."));
+    expect(find.text("Can't reach ZYNETIX."), findsOneWidget);
     api.summaryError = null;
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();

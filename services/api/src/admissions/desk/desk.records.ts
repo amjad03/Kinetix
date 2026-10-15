@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
-import { APPLICATION_MOVES, ENQUIRY_SOURCES, ENQUIRY_STAGES, NATIONALITIES, type ApplicationStatus, type EnquirySource, type EnquiryStage } from '@kinetix/shared';
+import { APPLICATION_MOVES, ENQUIRY_SOURCES, ENQUIRY_STAGES, NATIONALITIES, type ApplicationStatus, type EnquirySource, type EnquiryStage } from '@zynetix/shared';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { z } from 'zod';

@@ -1,4 +1,4 @@
-// KINETIX code runner: compiles and runs C, C++ and Java for the code lab, behind the API
+// ZYNETIX code runner: compiles and runs C, C++ and Java for the code lab, behind the API
 // (POST /v1/code/run). It is the only thing in its container, which has no network, a
 // read-only file system except /tmp, a non-root user, no capabilities and a seccomp profile
 // (docker-compose.yml, infra/docker/code-runner-seccomp.json, docs/operations/code-runner.md).

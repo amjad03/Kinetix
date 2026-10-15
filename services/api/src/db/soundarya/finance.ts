@@ -86,9 +86,9 @@ export async function sponsorsAndBudgets(c: Ctx): Promise<void> {
   const { kit: k, r } = c;
   const acc = c.byEmail.accounts.id;
   const sponsors = await k.ins<{ id: string; name: string }>('sponsors', [
-    { name: 'Bhagirathi Education Trust', contactName: 'Mr. T. R. Venkatesh', contactEmail: 'trustees@bhagirathi.demo.kinetix.in', gstin: '29AAATB1234C1Z5', createdBy: acc },
-    { name: 'Nandi Agro Foundation', contactName: 'Mrs. Kalpana Rao', contactEmail: 'csr@nandi-agro.demo.kinetix.in', gstin: '29AAFCN5678D1Z2', createdBy: acc },
-    { name: 'Karnataka Women in Business Forum', contactName: 'Ms. Anuradha Shetty', contactEmail: 'secretary@kwbf.demo.kinetix.in', createdBy: acc },
+    { name: 'Bhagirathi Education Trust', contactName: 'Mr. T. R. Venkatesh', contactEmail: 'trustees@bhagirathi.demo.zynetix.in', gstin: '29AAATB1234C1Z5', createdBy: acc },
+    { name: 'Nandi Agro Foundation', contactName: 'Mrs. Kalpana Rao', contactEmail: 'csr@nandi-agro.demo.zynetix.in', gstin: '29AAFCN5678D1Z2', createdBy: acc },
+    { name: 'Karnataka Women in Business Forum', contactName: 'Ms. Anuradha Shetty', contactEmail: 'secretary@kwbf.demo.zynetix.in', createdBy: acc },
   ]);
   let n = 0;
   for (const [si, sp] of sponsors.entries()) {

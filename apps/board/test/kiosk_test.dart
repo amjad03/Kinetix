@@ -5,16 +5,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/device_store.dart';
-import 'package:kinetix_board/core/kiosk/kiosk_controller.dart';
-import 'package:kinetix_board/core/kiosk/kiosk_pin.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/core/secret_store.dart';
-import 'package:kinetix_board/features/kiosk/kiosk_ui.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/device_store.dart';
+import 'package:zynetix_board/core/kiosk/kiosk_controller.dart';
+import 'package:zynetix_board/core/kiosk/kiosk_pin.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/core/secret_store.dart';
+import 'package:zynetix_board/features/kiosk/kiosk_ui.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -22,7 +22,7 @@ import 'support/wait.dart';
 
 // Kiosk mode (docs/hardware/kiosk-mode.md).
 
-/// Android behind the `kinetix/kiosk` channel, as MainActivity.kt answers it.
+/// Android behind the `zynetix/kiosk` channel, as MainActivity.kt answers it.
 class FakeAndroid {
   FakeAndroid({this.deviceOwner = false});
 
@@ -31,7 +31,7 @@ class FakeAndroid {
   bool bootLaunch = false;
   final calls = <MethodCall>[];
 
-  static const channel = MethodChannel('kinetix/kiosk');
+  static const channel = MethodChannel('zynetix/kiosk');
 
   void install() => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async {
     calls.add(call);
@@ -125,7 +125,7 @@ void main() {
     test('elsewhere, or without the channel, kiosk mode is unsupported', () async {
       expect(await MethodChannelKioskPlatform(android: false).enter(), KioskStatus.unsupported);
       expect(android.calls, isEmpty);
-      final missing = MethodChannelKioskPlatform(android: true, channel: const MethodChannel('kinetix/none'), immersive: (_) async {});
+      final missing = MethodChannelKioskPlatform(android: true, channel: const MethodChannel('zynetix/none'), immersive: (_) async {});
       expect(await missing.status(), KioskStatus.unsupported);
     });
   });
@@ -380,7 +380,7 @@ void main() {
       final k = await pump(tester, platform: platform);
       expect(k.active, isTrue);
       expect(find.byKey(const Key('kiosk-status')), findsOneWidget);
-      expect(find.text('On: screen pinning. For a full lock, make KINETIX Board the device owner (see the kiosk guide).'), findsOneWidget);
+      expect(find.text('On: screen pinning. For a full lock, make ZYNETIX Board the device owner (see the kiosk guide).'), findsOneWidget);
 
       await hold(tester, const Duration(seconds: 1));
       expect(find.byKey(const Key('kiosk-dialog')), findsNothing);
@@ -446,7 +446,7 @@ void main() {
       await pump(tester, policy: const KioskPolicy(enabled: true));
       await hold(tester, const Duration(milliseconds: 3100));
       expect(find.byKey(const Key('kiosk-no-pin')), findsOneWidget);
-      expect(find.textContaining('KINETIX ERP → Settings → Board kiosk mode'), findsOneWidget);
+      expect(find.textContaining('ZYNETIX ERP → Settings → Board kiosk mode'), findsOneWidget);
       expect(find.byKey(const Key('kiosk-pin')), findsNothing);
     });
 

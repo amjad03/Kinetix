@@ -8,7 +8,7 @@ on:
       - 'apps/teacher/**'
       - 'apps/parent/**'
       - 'apps/student/**'
-      - 'packages/kinetix_*/**'
+      - 'packages/zynetix_*/**'
       - '.github/workflows/flutter.yml'
   push:
     branches: [main]
@@ -17,7 +17,7 @@ on:
       - 'apps/teacher/**'
       - 'apps/parent/**'
       - 'apps/student/**'
-      - 'packages/kinetix_*/**'
+      - 'packages/zynetix_*/**'
       - '.github/workflows/flutter.yml'
   workflow_dispatch:
 
@@ -45,13 +45,13 @@ jobs:
           - apps/teacher
           - apps/parent
           - apps/student
-          - packages/kinetix_ui
-          - packages/kinetix_ink
-          - packages/kinetix_lesson
-          - packages/kinetix_math
-          - packages/kinetix_3d
-          - packages/kinetix_labs
-          - packages/kinetix_cs
+          - packages/zynetix_ui
+          - packages/zynetix_ink
+          - packages/zynetix_lesson
+          - packages/zynetix_math
+          - packages/zynetix_3d
+          - packages/zynetix_labs
+          - packages/zynetix_cs
     defaults:
       run:
         working-directory: ${{ matrix.package }}

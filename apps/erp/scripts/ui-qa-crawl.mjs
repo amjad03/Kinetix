@@ -23,11 +23,11 @@ const TENANT = process.env.TENANT ?? 'soundarya';
 const DASH = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../src/app/(dashboard)');
 
 const ROLE_LOGINS = {
-  principal: `principal@${TENANT}.demo.kinetix.in`,
-  accountant: `accounts@${TENANT}.demo.kinetix.in`,
-  librarian: `library@${TENANT}.demo.kinetix.in`,
+  principal: `principal@${TENANT}.demo.zynetix.in`,
+  accountant: `accounts@${TENANT}.demo.zynetix.in`,
+  librarian: `library@${TENANT}.demo.zynetix.in`,
   // Classroom teachers work in the Teacher App; a head of department is the teaching role that uses the ERP.
-  teacher: `hod.commerce@${TENANT}.demo.kinetix.in`,
+  teacher: `hod.commerce@${TENANT}.demo.zynetix.in`,
 };
 
 /** Route patterns from the file system: 'students/[id]' etc. Route groups and private folders are dropped. */
@@ -51,7 +51,7 @@ const toRegex = (p) => new RegExp(`^${p.replace(/\[\.\.\.[^\]]+\]/g, '.+').repla
 const quota = (p) => (/\[(kind|tab|entity|body|report|module)\]$/.test(p) ? 6 : 2);
 
 async function login(ctx, loginId) {
-  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant: TENANT, login: loginId, password: 'kinetix123' }) });
+  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant: TENANT, login: loginId, password: 'zynetix123' }) });
   const body = await r.json();
   if (!body.accessToken) throw new Error(`login failed for ${loginId}: ${JSON.stringify(body).slice(0, 200)}`);
   await ctx.addCookies([{ name: 'kx_session', value: body.accessToken, url: ERP }]);
@@ -368,7 +368,7 @@ async function crawlAll(browser, role, locale, widths, routesOverride) {
 async function roleRoutes(_browser, role) {
   const nav = readFileSync(path.resolve(DASH, '../../lib/nav.ts'), 'utf8');
   const hrefs = [...new Set(['/', ...[...nav.matchAll(/href: '(\/[^']*)'/g)].map((m) => m[1])])];
-  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant: TENANT, login: ROLE_LOGINS[role], password: 'kinetix123' }) });
+  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant: TENANT, login: ROLE_LOGINS[role], password: 'zynetix123' }) });
   const token = (await r.json()).accessToken;
   const open = [];
   for (const h of hrefs) {

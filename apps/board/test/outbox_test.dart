@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/realtime.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/realtime.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _NoRealtime extends Realtime {

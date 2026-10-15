@@ -1,15 +1,15 @@
 // Scholarships: schemes open for applications, applying (income test) and earlier applications.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/features/fees/scholarship_screen.dart';
-import 'package:kinetix_student/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_student/core/api.dart';
+import 'package:zynetix_student/features/fees/scholarship_screen.dart';
+import 'package:zynetix_student/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 
 Widget host(Widget child) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: const Locale('en'),
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,

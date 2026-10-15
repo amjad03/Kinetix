@@ -1,6 +1,6 @@
 # Detailed Module Specification Template
 
-Every Kinetix module must have an equivalent specification before P0/P1 implementation.
+Every Zynetix module must have an equivalent specification before P0/P1 implementation.
 
 ## 1. Purpose
 

@@ -1,4 +1,4 @@
-import { DOC_TYPES, type DocLayout, DocLayoutSchema, type DocType, PRESET_STYLES, type PresetStyle } from '@kinetix/shared';
+import { DOC_TYPES, type DocLayout, DocLayoutSchema, type DocType, PRESET_STYLES, type PresetStyle } from '@zynetix/shared';
 import { staffCard, studentCard } from './cards.js';
 import { PAGE_PRESETS } from './documents.js';
 

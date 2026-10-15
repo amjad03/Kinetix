@@ -1,6 +1,6 @@
 import 'topics_more.dart';
 
-// Ported from the KINETIX prototype's offline demo AI (lib/ai/topics*.dart): the notes are
+// Ported from the ZYNETIX prototype's offline demo AI (lib/ai/topics*.dart): the notes are
 // unchanged; the simulations they linked to are not part of this board.
 
 /// A multiple-choice question in the offline notes ([options] empty: an open question, [why]
@@ -14,7 +14,7 @@ class OfflineQuestion {
 }
 
 /// Hand-written lesson notes the offline AI (offline_ai.dart) answers from when the board
-/// cannot reach KINETIX AI, or in demo builds. English only.
+/// cannot reach ZYNETIX AI, or in demo builds. English only.
 class Topic {
   final String title;
   final List<String> keywords;

@@ -3,27 +3,27 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/ai/voice_input.dart';
-import 'package:kinetix_board/features/board/calculator.dart';
-import 'package:kinetix_board/features/board/kit/key_dates_data.dart';
-import 'package:kinetix_board/features/board/kit/key_dates_panel.dart';
-import 'package:kinetix_board/features/board/kit/kit_panel.dart';
-import 'package:kinetix_board/features/board/kit/subjects.dart';
-import 'package:kinetix_board/features/captions/live_captions.dart';
-import 'package:kinetix_board/features/classroom/seating.dart';
-import 'package:kinetix_board/features/classroom_plus/voice_commands.dart';
-import 'package:kinetix_board/features/exit_ticket/exit_ticket.dart';
-import 'package:kinetix_board/features/logic_gates/logic_circuit.dart';
-import 'package:kinetix_board/features/logic_gates/logic_gates_lab.dart';
-import 'package:kinetix_board/features/reader/read_aloud.dart';
-import 'package:kinetix_board/features/reader/reader_settings.dart';
-import 'package:kinetix_board/features/toolkit/noise_source.dart';
-import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/ai/voice_input.dart';
+import 'package:zynetix_board/features/board/calculator.dart';
+import 'package:zynetix_board/features/board/kit/key_dates_data.dart';
+import 'package:zynetix_board/features/board/kit/key_dates_panel.dart';
+import 'package:zynetix_board/features/board/kit/kit_panel.dart';
+import 'package:zynetix_board/features/board/kit/subjects.dart';
+import 'package:zynetix_board/features/captions/live_captions.dart';
+import 'package:zynetix_board/features/classroom/seating.dart';
+import 'package:zynetix_board/features/classroom_plus/voice_commands.dart';
+import 'package:zynetix_board/features/exit_ticket/exit_ticket.dart';
+import 'package:zynetix_board/features/logic_gates/logic_circuit.dart';
+import 'package:zynetix_board/features/logic_gates/logic_gates_lab.dart';
+import 'package:zynetix_board/features/reader/read_aloud.dart';
+import 'package:zynetix_board/features/reader/reader_settings.dart';
+import 'package:zynetix_board/features/toolkit/noise_source.dart';
+import 'package:zynetix_board/features/toolkit/toolkit_controller.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -382,7 +382,7 @@ void main() {
         addTearDown(wb.dispose);
         await tester.pumpWidget(
           MaterialApp(
-            theme: KinetixTheme.light(),
+            theme: ZynetixTheme.light(),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(

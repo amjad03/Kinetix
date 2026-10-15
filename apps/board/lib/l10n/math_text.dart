@@ -1,11 +1,11 @@
-import 'package:kinetix_math/kinetix_math.dart';
+import 'package:zynetix_math/zynetix_math.dart';
 
 import 'gen/app_localizations.dart';
 
 /// Puts the offline maths solver's working into the board's language.
 ///
-/// package:kinetix_math writes its explanations, answers and errors in English. The patterns
-/// here follow its wording (packages/kinetix_math/lib/src); the maths itself (numbers,
+/// package:zynetix_math writes its explanations, answers and errors in English. The patterns
+/// here follow its wording (packages/zynetix_math/lib/src); the maths itself (numbers,
 /// expressions, x) is kept as written. Anything not recognised is shown in English, so a
 /// change in the package never hides a step, it only shows it untranslated.
 class MathText {

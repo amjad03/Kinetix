@@ -13,7 +13,7 @@ import 'syllabus_view.dart';
 import 'tutor_screen.dart';
 import 'topic_screen.dart';
 
-/// Self-paced learning: ask KINETIX AI a doubt, browse and search the syllabus library, do a
+/// Self-paced learning: ask ZYNETIX AI a doubt, browse and search the syllabus library, do a
 /// virtual lab, or practise programming in the code lab.
 class LearnTab extends StatefulWidget {
   const LearnTab({super.key, required this.state, required this.study});

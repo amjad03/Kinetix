@@ -29,8 +29,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile --filter "@kinetix/shared"
-      - run: pnpm --filter @kinetix/shared build
+      - run: pnpm install --frozen-lockfile --filter "@zynetix/shared"
+      - run: pnpm --filter @zynetix/shared build
 
   api:
     name: API typecheck + tests
@@ -60,16 +60,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile --filter "@kinetix/api..."
-      - run: pnpm --filter @kinetix/shared build
-      # The same DB setup as a developer machine: owner role, RLS-bound app role, kinetix + kinetix_test.
+      - run: pnpm install --frozen-lockfile --filter "@zynetix/api..."
+      - run: pnpm --filter @zynetix/shared build
+      # The same DB setup as a developer machine: owner role, RLS-bound app role, zynetix + zynetix_test.
       - name: Database roles and databases
         run: |
           .github/scripts/postgres-service-shim.sh
-          bash services/api/scripts/setup-local-db.sh kinetix
-      - run: pnpm --filter @kinetix/api typecheck
-      - run: pnpm --filter @kinetix/api test
-      - run: pnpm --filter @kinetix/api build
+          bash services/api/scripts/setup-local-db.sh zynetix
+      - run: pnpm --filter @zynetix/api typecheck
+      - run: pnpm --filter @zynetix/api test
+      - run: pnpm --filter @zynetix/api build
 
   erp:
     name: ERP lint, typecheck, unit tests, build
@@ -82,12 +82,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile --filter "@kinetix/erp..."
-      - run: pnpm --filter @kinetix/erp lint
-      - run: pnpm --filter @kinetix/erp typecheck
-      - run: pnpm --filter @kinetix/erp test
+      - run: pnpm install --frozen-lockfile --filter "@zynetix/erp..."
+      - run: pnpm --filter @zynetix/erp lint
+      - run: pnpm --filter @zynetix/erp typecheck
+      - run: pnpm --filter @zynetix/erp test
       - name: next build (standalone output, as in the Docker image)
-        run: pnpm --filter @kinetix/erp build
+        run: pnpm --filter @zynetix/erp build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
 

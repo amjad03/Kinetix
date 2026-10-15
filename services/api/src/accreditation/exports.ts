@@ -69,7 +69,7 @@ export function summarySheets(c: ExportCtx, title: string): Sheet[] {
   if (e.scoring === 'naac') head.push([`Estimated CGPA ${e.value ?? '-'} (${e.grade}); counting unfilled metrics as zero ${e.floor ?? '-'} (${e.floorGrade}). Binary accreditation data set ${e.binary?.ready ? 'complete' : 'incomplete'}.`]);
   if (e.scoring === 'nba') head.push([`Estimated marks ${e.value ?? '-'} of ${e.max}`]);
   if (e.scoring === 'nirf') head.push([`Estimated NIRF score ${e.value ?? '-'} of 100 (indicative: NIRF scales against the category leaders)`]);
-  head.push(['Estimates are KINETIX calculations, not results of the accrediting or ranking body.'], []);
+  head.push(['Estimates are ZYNETIX calculations, not results of the accrediting or ranking body.'], []);
   const unit = e.scoring === 'naac' ? 'Grade point (scored metrics)' : e.scoring === 'none' ? 'Score' : 'Marks';
   const crit: Cell[][] = [['Criterion', 'Title', 'Weightage', 'Metrics', 'Complete', 'Completeness %', unit, e.scoring === 'naac' ? 'Grade point (all metrics)' : 'Maximum'], ...a.criteria.map((x) => [x.id, x.title, x.weight, x.metrics, x.complete, x.completeness, x.score, x.floor === null ? null : e.scoring === 'naac' ? x.floor : x.max])];
   const list: Cell[][] = [['Metric', 'Criterion', 'Type', 'Title', 'Unit', 'Weightage', 'Value', 'Source', 'Score', 'Of', 'Evidence files', 'Completeness %', 'Owner', 'Due', 'Status'], ...a.metrics.map((m) => [m.code, m.criterion, m.kind, m.title, m.unit, m.weight, round(m.value, 4), sourceWord(m), m.score, m.maxScore, m.evidence, m.completeness, m.task?.ownerName ?? m.task?.departmentName ?? '', m.task?.dueOn ?? '', m.task?.status ?? 'unassigned'])];
@@ -97,7 +97,7 @@ export async function naacSsr(c: ExportCtx, dvv: Parameters<typeof dvvSheet>[0],
   files.push({ name: 'Summary.xlsx', data: xlsx(summarySheets(c, `${c.f.title} self-study report data`), c.at) });
   files.push({ name: 'DVV clarifications.xlsx', data: xlsx([dvvSheet(dvv, c.a.cycle)], c.at) });
   const gaps = c.a.metrics.filter((m) => !m.complete);
-  files.push({ name: 'README.txt', data: Buffer.from(`${c.f.title}: self-study report data for ${c.inst}\nAssessment period ${c.a.window[0]} to ${c.a.cycle}\nGenerated ${c.at.toISOString()}\nCatalogue: ${c.f.source}\n\nEach file under "Criterion N" is one metric: the data template in NAAC column order with every year of the period, the year-wise inputs and a summary. "Extended profile.xlsx" holds the base figures. Estimates are KINETIX calculations, not NAAC results.\n\nMetrics still to complete (${gaps.length}):\n${gaps.map((g) => `- ${g.code}  ${g.title} (${g.completeness}%)`).join('\n')}\n`, 'utf8') });
+  files.push({ name: 'README.txt', data: Buffer.from(`${c.f.title}: self-study report data for ${c.inst}\nAssessment period ${c.a.window[0]} to ${c.a.cycle}\nGenerated ${c.at.toISOString()}\nCatalogue: ${c.f.source}\n\nEach file under "Criterion N" is one metric: the data template in NAAC column order with every year of the period, the year-wise inputs and a summary. "Extended profile.xlsx" holds the base figures. Estimates are ZYNETIX calculations, not NAAC results.\n\nMetrics still to complete (${gaps.length}):\n${gaps.map((g) => `- ${g.code}  ${g.title} (${g.completeness}%)`).join('\n')}\n`, 'utf8') });
   return files;
 }
 

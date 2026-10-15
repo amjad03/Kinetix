@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../classroom_plus/plus_strings.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../comfort/eye_comfort.dart';
 import '../search/solids3d.dart';
 
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'chrome.dart';
 import 'sb_strings.dart';

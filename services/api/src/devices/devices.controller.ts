@@ -179,7 +179,7 @@ export class DevicesController {
         secretHash: this.hashPairing(secret),
         expiresAt,
       });
-      const qrPayload = `kinetix://pair?c=${code}&s=${secret}&d=${p.deviceId}`;
+      const qrPayload = `zynetix://pair?c=${code}&s=${secret}&d=${p.deviceId}`;
       return { code, qrPayload, expiresAt };
     });
   }

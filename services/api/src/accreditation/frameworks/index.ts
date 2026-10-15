@@ -1,4 +1,4 @@
-// The framework catalogue: every accreditation framework and statutory return KINETIX seeds, and lookup by key or alias.
+// The framework catalogue: every accreditation framework and statutory return ZYNETIX seeds, and lookup by key or alias.
 import { NAAC_AFFILIATED, NAAC_AUTONOMOUS, NAAC_UNIVERSITY } from './naac.js';
 import { NBA_UG_ENGG_T2 } from './nba.js';
 import { NBA_PG_MGMT, NBA_UG_ENGG_T1 } from './nba-more.js';

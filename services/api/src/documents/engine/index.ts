@@ -1,4 +1,4 @@
-import type { DocData, DocLayout } from '@kinetix/shared';
+import type { DocData, DocLayout } from '@zynetix/shared';
 import sharp from 'sharp';
 import { type Matrix, Path, type Surface } from './canvas.js';
 import { LayoutRenderer, MM, pagePt, type RenderContext } from './layout-render.js';

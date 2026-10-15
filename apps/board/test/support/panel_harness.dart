@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_labs/kinetix_labs.dart' show LabSpeech;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_labs/zynetix_labs.dart' show LabSpeech;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 /// The two screens every new panel is checked at: a phone held upright and a 1920 × 1080 panel.
 const phoneSize = Size(390, 844), panelSize = Size(1920, 1080);
@@ -16,7 +16,7 @@ Future<void> pumpPanel(WidgetTester tester, Widget child, {Size size = panelSize
   final width = size.width < 600 ? size.width : size.width * 0.42;
   await tester.pumpWidget(
     MaterialApp(
-      theme: KinetixTheme.light(),
+      theme: ZynetixTheme.light(),
       locale: Locale(lang),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

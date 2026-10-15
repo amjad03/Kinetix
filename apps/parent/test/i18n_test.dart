@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/push.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
-import 'package:kinetix_parent/core/attachments.dart';
-import 'package:kinetix_parent/core/models.dart';
-import 'package:kinetix_parent/features/home/home_tab.dart' show HomeTab;
-import 'package:kinetix_parent/features/messages/messages_tab.dart';
-import 'package:kinetix_parent/features/profile/profile_tab.dart';
-import 'package:kinetix_parent/widgets/common.dart';
+import 'package:zynetix_parent/core/push.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_parent/core/attachments.dart';
+import 'package:zynetix_parent/core/models.dart';
+import 'package:zynetix_parent/features/home/home_tab.dart' show HomeTab;
+import 'package:zynetix_parent/features/messages/messages_tab.dart';
+import 'package:zynetix_parent/features/profile/profile_tab.dart';
+import 'package:zynetix_parent/widgets/common.dart';
 
 import 'fake_api.dart';
 import 'fake_push.dart';
@@ -370,7 +370,7 @@ void main() {
           roles: ['guardian'],
           preferredLanguage: 'kn',
           institution: 'Demo College',
-          email: 'parent@demo.kinetix.in',
+          email: 'parent@demo.zynetix.in',
           phone: '+919800000001',
         ),
       );

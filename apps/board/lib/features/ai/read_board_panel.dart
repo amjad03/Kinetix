@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show TexView;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show TexView;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
@@ -10,7 +10,7 @@ import 'ai_widgets.dart';
 
 const readAccent = Color(0xFFFCAD70);
 
-/// Read board: KINETIX AI reads the handwriting on the open page, so the teacher can copy it,
+/// Read board: ZYNETIX AI reads the handwriting on the open page, so the teacher can copy it,
 /// or ask about it.
 class ReadBoardPanel extends StatelessWidget {
   const ReadBoardPanel({super.key, required this.ai, this.onBack});

@@ -1,4 +1,4 @@
-# ADR 0001: Build KINETIX Board in Flutter, not native Kotlin
+# ADR 0001: Build ZYNETIX Board in Flutter, not native Kotlin
 
 - **Status:** Accepted
 - **Date:** 2026-10-04

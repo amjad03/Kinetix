@@ -1,4 +1,4 @@
-import type { PresetStyle } from '@kinetix/shared';
+import type { PresetStyle } from '@zynetix/shared';
 import { type Box, Builder, stroke, style, THEMES } from './kit.js';
 
 /**

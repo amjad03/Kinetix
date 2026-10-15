@@ -80,7 +80,7 @@ const common = (title: string, serial: string): DocData => ({
   institution,
   signatory,
   doc: { title, serial, issuedOn: '14 October 2026', fingerprint: '7F3A-91C2-04BE', purpose: 'Higher studies' },
-  verify: { url: `https://erp.kinetix.app/verify/soundarya/9f2c4e7a1b3d5f60718293a4b5c6d7e8` },
+  verify: { url: `https://erp.zynetix.app/verify/soundarya/9f2c4e7a1b3d5f60718293a4b5c6d7e8` },
 });
 
 const marksRows: DocData[] = [

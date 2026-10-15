@@ -9,9 +9,9 @@ import { signIn } from './helpers';
  * reaches Today.
  */
 test('a temporary password must be changed before anything else', async ({ page }) => {
-  const principal = await apiLogin('principal@demo.kinetix.in');
+  const principal = await apiLogin('principal@demo.zynetix.in');
   const tag = Math.random().toString(36).slice(2, 8);
-  const email = `vp-${tag}@demo.kinetix.in`;
+  const email = `vp-${tag}@demo.zynetix.in`;
   const fullName = `Vice Principal ${tag}`;
   const auth = { authorization: `Bearer ${principal}` };
 

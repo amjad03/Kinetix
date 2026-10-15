@@ -1,5 +1,5 @@
 // Screenshots of Home in light and dark for docs/design/mobile, with the real fonts:
-//   KINETIX_SCREENSHOTS=1 flutter test --update-goldens test/screenshots_test.dart
+//   ZYNETIX_SCREENSHOTS=1 flutter test --update-goldens test/screenshots_test.dart
 // Without the variable these are skipped, so the normal test run never compares pixels.
 import 'dart:io';
 
@@ -10,9 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'helpers.dart';
 
 Future<void> loadAppFonts() async {
-  final dir = Directory('../../packages/kinetix_ui/fonts');
+  final dir = Directory('../../packages/zynetix_ui/fonts');
   for (final family in ['SansFlex', 'SansFlexDisplay', 'NotoSansDevanagari', 'NotoSansKannada']) {
-    final loader = FontLoader('packages/kinetix_ui/$family');
+    final loader = FontLoader('packages/zynetix_ui/$family');
     for (final f in dir.listSync().whereType<File>().where((f) => f.path.contains('$family-') && f.path.endsWith('.ttf'))) {
       loader.addFont(Future.value(ByteData.sublistView(f.readAsBytesSync())));
     }
@@ -25,7 +25,7 @@ Future<void> loadAppFonts() async {
 }
 
 void main() {
-  final shots = Platform.environment.containsKey('KINETIX_SCREENSHOTS');
+  final shots = Platform.environment.containsKey('ZYNETIX_SCREENSHOTS');
   for (final dark in [false, true]) {
     testWidgets('screenshot: Home ${dark ? 'dark' : 'light'}', (tester) async {
       await loadAppFonts();

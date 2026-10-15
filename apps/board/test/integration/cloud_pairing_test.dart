@@ -1,4 +1,4 @@
-// End-to-end: the board's real ApiClient and Realtime against a running KINETIX API.
+// End-to-end: the board's real ApiClient and Realtime against a running ZYNETIX API.
 // Run with scripts/board-it.sh (it reseeds the database and starts the API).
 @Tags(['integration'])
 library;
@@ -9,20 +9,20 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/realtime.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/realtime.dart';
 
 void main() {
-  final api = Platform.environment['KINETIX_IT_API'];
-  final enrollCode = Platform.environment['KINETIX_IT_ENROLL_CODE'];
-  final skip = api == null || enrollCode == null ? 'set KINETIX_IT_API and KINETIX_IT_ENROLL_CODE' : null;
+  final api = Platform.environment['ZYNETIX_IT_API'];
+  final enrollCode = Platform.environment['ZYNETIX_IT_ENROLL_CODE'];
+  final skip = api == null || enrollCode == null ? 'set ZYNETIX_IT_API and ZYNETIX_IT_ENROLL_CODE' : null;
 
   Future<String> login(String email) async {
     final res = await http.post(
       Uri.parse('$api/v1/auth/login'),
       headers: {'content-type': 'application/json'},
-      body: jsonEncode({'tenant': 'demo-college', 'login': email, 'password': 'kinetix123'}),
+      body: jsonEncode({'tenant': 'demo-college', 'login': email, 'password': 'zynetix123'}),
     );
     return (jsonDecode(res.body) as Map)['accessToken'] as String;
   }
@@ -46,7 +46,7 @@ void main() {
     final code = await client.newPairingCode();
     expect(code.code, matches(RegExp(r'^\d{6}$')));
 
-    final teacher = await login('anita@demo.kinetix.in');
+    final teacher = await login('anita@demo.zynetix.in');
     final claim = await http.post(
       Uri.parse('$api/v1/pairing/claim'),
       headers: {'content-type': 'application/json', 'authorization': 'Bearer $teacher'},
@@ -59,7 +59,7 @@ void main() {
     expect(session.teacherName, 'Anita Sharma');
     client.sessionToken = event['sessionToken'] as String;
 
-    final principal = await login('principal@demo.kinetix.in');
+    final principal = await login('principal@demo.zynetix.in');
     await http.post(
       Uri.parse('$api/v1/broadcasts'),
       headers: {'content-type': 'application/json', 'authorization': 'Bearer $principal'},

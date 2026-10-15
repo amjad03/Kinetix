@@ -107,8 +107,8 @@ export async function lms(c: Ctx): Promise<void> {
       const items: Record<string, unknown>[] = [];
       modules.forEach((m, mi) => {
         items.push(
-          { moduleId: m.id, position: 0, kind: 'file', title: `Unit ${mi + 1} lecture notes (PDF)`, url: `https://learn.${'soundarya.demo.kinetix.in'}/files/${sub.code.toLowerCase()}-unit${mi + 1}.pdf` },
-          { moduleId: m.id, position: 1, kind: 'video', title: `Unit ${mi + 1} recorded lecture`, url: `https://learn.soundarya.demo.kinetix.in/video/${sub.code.toLowerCase()}-u${mi + 1}` },
+          { moduleId: m.id, position: 0, kind: 'file', title: `Unit ${mi + 1} lecture notes (PDF)`, url: `https://learn.${'soundarya.demo.zynetix.in'}/files/${sub.code.toLowerCase()}-unit${mi + 1}.pdf` },
+          { moduleId: m.id, position: 1, kind: 'video', title: `Unit ${mi + 1} recorded lecture`, url: `https://learn.soundarya.demo.zynetix.in/video/${sub.code.toLowerCase()}-u${mi + 1}` },
           { moduleId: m.id, position: 2, kind: 'link', title: 'Further reading', url: 'https://www.ugc.gov.in/' },
         );
       });

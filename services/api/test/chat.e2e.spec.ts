@@ -96,9 +96,9 @@ describe('Staff chat: direct and group threads, attachments, receipts, external 
     // Wrong or missing secret: the endpoint does not exist.
     await http().post('/v1/chat/inbound').send({ channel: 'email', to: replyTo, from: 'rao@parent.in', body: 'Thanks' }).expect(404);
     // A forged token, and a sender who is not the contact.
-    await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'email', to: replyTo.replace(/\.[A-Za-z0-9_-]+@/, '.AAAAAAAAAAAAAAAAAAAAAA@'), from: 'rao@parent.in', body: 'x' }).expect(404);
-    await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'email', to: replyTo, from: 'someone@else.in', body: 'x' }).expect(403);
-    const r = await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'email', to: `Kinetix <${replyTo}>`, from: 'Mr Rao <rao@parent.in>', body: 'Thank you, ma’am.\n\nOn Tue, Principal wrote:\n> Fee concession approved' }).expect(202);
+    await http().post('/v1/chat/inbound').set('x-zynetix-inbound-secret', SECRET).send({ channel: 'email', to: replyTo.replace(/\.[A-Za-z0-9_-]+@/, '.AAAAAAAAAAAAAAAAAAAAAA@'), from: 'rao@parent.in', body: 'x' }).expect(404);
+    await http().post('/v1/chat/inbound').set('x-zynetix-inbound-secret', SECRET).send({ channel: 'email', to: replyTo, from: 'someone@else.in', body: 'x' }).expect(403);
+    const r = await http().post('/v1/chat/inbound').set('x-zynetix-inbound-secret', SECRET).send({ channel: 'email', to: `Zynetix <${replyTo}>`, from: 'Mr Rao <rao@parent.in>', body: 'Thank you, ma’am.\n\nOn Tue, Principal wrote:\n> Fee concession approved' }).expect(202);
     expect(r.body.threadId).toBe(ext);
     const th = (await http().get(`/v1/chat/threads/${ext}`).set(as('teacher')).expect(200)).body;
     expect(th.messages.at(-1)).toMatchObject({ direction: 'inbound', body: 'Thank you, ma’am.', externalFrom: 'Mr Rao <rao@parent.in>' });
@@ -109,9 +109,9 @@ describe('Staff chat: direct and group threads, attachments, receipts, external 
     const w = await http().post('/v1/chat/threads').set(as('principal')).send({ kind: 'external', channel: 'whatsapp', contactName: 'Book vendor', contactAddress: '+91 98450 12345', contactKind: 'vendor' }).expect(201);
     const out = await http().post(`/v1/chat/threads/${w.body.id}/messages`).set(as('principal')).send({ body: 'Please send the invoice' }).expect(201);
     expect(out.body.delivery).toBe('queued');
-    const r = await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'whatsapp', tenantId: t.tenantId, from: '+919845012345', body: 'Sent' }).expect(202);
+    const r = await http().post('/v1/chat/inbound').set('x-zynetix-inbound-secret', SECRET).send({ channel: 'whatsapp', tenantId: t.tenantId, from: '+919845012345', body: 'Sent' }).expect(202);
     expect(r.body.threadId).toBe(w.body.id);
-    await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'whatsapp', tenantId: other.tenantId, from: '+919845012345', body: 'x' }).expect(404);
+    await http().post('/v1/chat/inbound').set('x-zynetix-inbound-secret', SECRET).send({ channel: 'whatsapp', tenantId: other.tenantId, from: '+919845012345', body: 'x' }).expect(404);
   });
 
   it('strips quoted history from replies', () => {

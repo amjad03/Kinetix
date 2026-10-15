@@ -25,6 +25,6 @@ describe('Razorpay settings', () => {
 
   it('leaves blank secrets out of the body and builds the webhook URL', () => {
     expect(razorpayBody({ keyId: ' rzp_test_BBBBbbbb2222 ', keySecret: ' ', webhookSecret: 'whsec-5678' })).toEqual({ keyId: 'rzp_test_BBBBbbbb2222', webhookSecret: 'whsec-5678' });
-    expect(webhookUrl('https://api.kinetix.in/', '/v1/fees/webhooks/razorpay/demo-college')).toBe('https://api.kinetix.in/v1/fees/webhooks/razorpay/demo-college');
+    expect(webhookUrl('https://api.zynetix.in/', '/v1/fees/webhooks/razorpay/demo-college')).toBe('https://api.zynetix.in/v1/fees/webhooks/razorpay/demo-college');
   });
 });

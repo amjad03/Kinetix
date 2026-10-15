@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type TransportPositionEvent } from '@kinetix/shared';
+import { RealtimeEvents, type TransportPositionEvent } from '@zynetix/shared';
 import argon2 from 'argon2';
 import { and, eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -340,7 +340,7 @@ describe('transport, hostel, canteen, inventory and assets', () => {
       await http().post('/v1/assets').set(as('store_keeper')).send({ ...body, salvagePaise: 60_000_00 }).expect(400);
       await http().post('/v1/assets').set(as('store_keeper')).send({ ...body, method: 'wdv' }).expect(400);
       const a = (await http().post('/v1/assets').set(as('store_keeper')).send(body).expect(201)).body;
-      expect(a).toMatchObject({ tag: 'AST-0001', qr: 'kinetix://asset/AST-0001' });
+      expect(a).toMatchObject({ tag: 'AST-0001', qr: 'zynetix://asset/AST-0001' });
       const w = (await http().post('/v1/assets').set(as('store_keeper')).send({ ...body, name: 'Laptop', method: 'wdv', wdvRatePct: 40 }).expect(201)).body;
       expect(w.tag).toBe('AST-0002');
 

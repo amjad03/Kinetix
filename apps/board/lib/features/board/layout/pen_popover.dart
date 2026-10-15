@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../pen_config/pen_config_screen.dart';
 import '../pen_config/pen_config_strings.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../../core/board_controller.dart';
 import '../../../l10n/l10n.dart';

@@ -573,55 +573,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.16"
-  kinetix_cast:
-    dependency: "direct main"
-    description:
-      path: "../../packages/kinetix_cast"
-      relative: true
-    source: path
-    version: "0.1.0"
-  kinetix_cs:
-    dependency: "direct main"
-    description:
-      path: "../../packages/kinetix_cs"
-      relative: true
-    source: path
-    version: "0.1.0"
-  kinetix_ink:
-    dependency: "direct main"
-    description:
-      path: "../../packages/kinetix_ink"
-      relative: true
-    source: path
-    version: "0.1.0"
-  kinetix_labs:
-    dependency: "direct main"
-    description:
-      path: "../../packages/kinetix_labs"
-      relative: true
-    source: path
-    version: "0.1.0"
-  kinetix_lesson:
-    dependency: "direct main"
-    description:
-      path: "../../packages/kinetix_lesson"
-      relative: true
-    source: path
-    version: "0.1.0"
-  kinetix_math:
-    dependency: transitive
-    description:
-      path: "../../packages/kinetix_math"
-      relative: true
-    source: path
-    version: "0.1.0"
-  kinetix_ui:
-    dependency: "direct main"
-    description:
-      path: "../../packages/kinetix_ui"
-      relative: true
-    source: path
-    version: "0.1.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -1267,6 +1218,55 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.4"
+  zynetix_cast:
+    dependency: "direct main"
+    description:
+      path: "../../packages/zynetix_cast"
+      relative: true
+    source: path
+    version: "0.1.0"
+  zynetix_cs:
+    dependency: "direct main"
+    description:
+      path: "../../packages/zynetix_cs"
+      relative: true
+    source: path
+    version: "0.1.0"
+  zynetix_ink:
+    dependency: "direct main"
+    description:
+      path: "../../packages/zynetix_ink"
+      relative: true
+    source: path
+    version: "0.1.0"
+  zynetix_labs:
+    dependency: "direct main"
+    description:
+      path: "../../packages/zynetix_labs"
+      relative: true
+    source: path
+    version: "0.1.0"
+  zynetix_lesson:
+    dependency: "direct main"
+    description:
+      path: "../../packages/zynetix_lesson"
+      relative: true
+    source: path
+    version: "0.1.0"
+  zynetix_math:
+    dependency: transitive
+    description:
+      path: "../../packages/zynetix_math"
+      relative: true
+    source: path
+    version: "0.1.0"
+  zynetix_ui:
+    dependency: "direct main"
+    description:
+      path: "../../packages/zynetix_ui"
+      relative: true
+    source: path
+    version: "0.1.0"
 sdks:
   dart: ">=3.13.5 <4.0.0"
   flutter: ">=3.47.0"

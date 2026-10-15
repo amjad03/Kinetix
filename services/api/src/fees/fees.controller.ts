@@ -273,7 +273,7 @@ export class FeesController {
         feePaise: amountPaise,
         conveniencePaise,
         currency: 'INR',
-        name: tenant?.name ?? 'KINETIX',
+        name: tenant?.name ?? 'ZYNETIX',
         description: inv.title,
         prefill: { name: payer?.fullName ?? '', email: payer?.email ?? '', contact: payer?.phone ?? '' },
       };

@@ -7,8 +7,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/l10n.dart';
@@ -65,7 +65,7 @@ class _PageOverviewState extends State<PageOverview> {
     final l = context.l10n;
     try {
       final pdf = await boardPdf(widget.wb, widget.canvas);
-      final name = 'KINETIX board ${DateFormat('yyyy-MM-dd HH.mm').format(DateTime.now())}.pdf';
+      final name = 'ZYNETIX board ${DateFormat('yyyy-MM-dd HH.mm').format(DateTime.now())}.pdf';
       await sharePdf(name, pdf);
       if (mounted) showBoardMessage(context, s.exportedPdf);
     } catch (e) {

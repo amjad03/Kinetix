@@ -671,7 +671,7 @@ def scene_cast(f, b, t):
 
 
 def scene_compare(f, b, t):
-    labels = [('BEFORE', (60, 66, 84), (255, 140, 140)), ('WITH KINETIX', (20, 60, 150), C.CYAN)]
+    labels = [('BEFORE', (60, 66, 84), (255, 140, 140)), ('WITH ZYNETIX', (20, 60, 150), C.CYAN)]
     for j, a in enumerate(b['acts']):
         s = ease((t - a['T']) / 0.25)
         if s <= 0:
@@ -695,12 +695,12 @@ def scene_logo(f, b, t, tag='It does the busywork, so teachers can teach.'):
     age = (t - a['T']) * FPS
     s = ease(age / 7)
     fl = F(700, 140)
-    tw = fl.getlength('KINETIX')
+    tw = fl.getlength('ZYNETIX')
     glow = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    ImageDraw.Draw(glow).text(((W - tw) / 2, 360), 'KINETIX', font=fl, fill=C.BLUE + (int(200 * s),))
+    ImageDraw.Draw(glow).text(((W - tw) / 2, 360), 'ZYNETIX', font=fl, fill=C.BLUE + (int(200 * s),))
     glow = glow.filter(ImageFilter.GaussianBlur(18))
     f.paste(glow, (0, 0), glow)
-    ImageDraw.Draw(f, 'RGBA').text(((W - tw) / 2, 360 + (1 - s) * 18), 'KINETIX', font=fl, fill=(255, 255, 255, int(255 * s)))
+    ImageDraw.Draw(f, 'RGBA').text(((W - tw) / 2, 360 + (1 - s) * 18), 'ZYNETIX', font=fl, fill=(255, 255, 255, int(255 * s)))
     sub = 'Board  ·  the AI smartboard'
     fs = F(500, 42)
     paste_a(f, C.text_img(sub, fs, C.CYAN), ((W - fs.getlength(sub)) / 2, 540), ease((age - 3) / 6))
@@ -729,7 +729,7 @@ def progress(f, chap, t):
             cb = [b for b in beats if b['chapter'] == chap]
             fr = min(1, max(0, (t - cb[0]['S']) / max(1, cb[-1]['E'] - cb[0]['S'])))
             d.rounded_rectangle([x0, y, x0 + sw * fr, y + 5], radius=2, fill=C.CYAN + (255,))
-    b = 'KINETIX Board'
+    b = 'ZYNETIX Board'
     d.text((WX + WW - C.F_BRAND.getlength(b), 40), b, font=C.F_BRAND, fill=(255, 255, 255, 170))
 
 

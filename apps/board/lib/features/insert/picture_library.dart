@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 
@@ -26,7 +26,7 @@ class PictureCredit {
   }
 }
 
-/// A picture in the bundled library (assets/library, from the KINETIX prototype).
+/// A picture in the bundled library (assets/library, from the ZYNETIX prototype).
 class LibraryPicture {
   const LibraryPicture(this.id, this.title, this.shelves, this.tags, this.size, this.credit);
 
@@ -285,6 +285,6 @@ class _PictureLibraryDialogState extends State<PictureLibraryDialog> {
 /// Registers the library's credits with the app's licence page.
 void registerPictureLibraryLicence() {
   LicenseRegistry.addLicense(() async* {
-    yield LicenseEntryWithLineBreaks(['KINETIX picture library', 'Microsoft Fluent Emoji', 'Wikimedia Commons'], await rootBundle.loadString('assets/library/CREDITS.txt'));
+    yield LicenseEntryWithLineBreaks(['ZYNETIX picture library', 'Microsoft Fluent Emoji', 'Wikimedia Commons'], await rootBundle.loadString('assets/library/CREDITS.txt'));
   });
 }

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { MAX_CASTS_PER_BOARD, type CastEndReason, type CastSenderRole, type IceServer } from '@kinetix/shared';
+import { MAX_CASTS_PER_BOARD, type CastEndReason, type CastSenderRole, type IceServer } from '@zynetix/shared';
 import { and, eq, gt, inArray, isNull, ne } from 'drizzle-orm';
 import { createHmac } from 'node:crypto';
 import type { UserPrincipal } from '../auth/principal.js';

@@ -1,7 +1,7 @@
-# KINETIX Board: specification coverage
+# ZYNETIX Board: specification coverage
 
 Audit of the smartboard specifications against the code, October 2026. Sources:
-`02_AUTHORITATIVE_PRODUCT_SPECS/SMARTBOARD/KINETIX_SMARTBOARD_COMPLETE_PRODUCT_REQUIREMENTS_AND_AGENT_HANDOFF_V1.md`
+`02_AUTHORITATIVE_PRODUCT_SPECS/SMARTBOARD/ZYNETIX_SMARTBOARD_COMPLETE_PRODUCT_REQUIREMENTS_AND_AGENT_HANDOFF_V1.md`
 (§7–§88), `01_MASTER_ENGINEERING/04-smartboard/SMARTBOARD_FEATURE_MATRIX.md`, ERP PRD §62
 (Smartboard ERP integration) and [docs/product/board-features.md](../product/board-features.md).
 
@@ -57,19 +57,19 @@ this pass. Paths are relative to the repository root; `board/` = `apps/board/lib
 | Feature | Status | Evidence |
 |---|---|---|
 | Bottom toolbar quick/nav groups, Switch, Hide | Built | `board/board/layout/`, `smartboard_toolbar_test` |
-| Pages, intelligent Add Page | Built | `packages/kinetix_ink/lib/src/whiteboard_controller.dart` (`canAddPage`) |
+| Pages, intelligent Add Page | Built | `packages/zynetix_ink/lib/src/whiteboard_controller.dart` (`canAddPage`) |
 | Infinite / large canvas with pan and zoom | Built | `whiteboard_controller.dart` (view, `visibleArea`) |
-| Undo/redo, selection, lasso, grouping, lock, duplicate | Built | `kinetix_ink` `whiteboard_controller.dart`, `pages_paper_test` |
+| Undo/redo, selection, lasso, grouping, lock, duplicate | Built | `zynetix_ink` `whiteboard_controller.dart`, `pages_paper_test` |
 | Multi-touch, two-finger zoom, palm rejection / palm eraser | Built | `whiteboard_controller.dart` (`palmMode`) |
 | Pen, highlighter, two-side pen, pressure | Built | `board/board/layout/pen_popover.dart` (`pen-pressure`) |
-| Text AI (handwriting), Shape AI, maths recogniser | Built | `packages/kinetix_ink/lib/src/pen/`, `board/board/ai_pen_ui.dart` |
-| 2D and 3D shapes with measurements | Built | `kinetix_ink`, `packages/kinetix_3d` |
+| Text AI (handwriting), Shape AI, maths recogniser | Built | `packages/zynetix_ink/lib/src/pen/`, `board/board/ai_pen_ui.dart` |
+| 2D and 3D shapes with measurements | Built | `zynetix_ink`, `packages/zynetix_3d` |
 | Eraser with size, slide to clear | Built | `SlideToClear` |
-| Theme templates, backgrounds, custom images | Built | `kinetix_ink/lib/src/board_background.dart` |
+| Theme templates, backgrounds, custom images | Built | `zynetix_ink/lib/src/board_background.dart` |
 | Text, sticky notes, images, tables, flowchart AI | Built | `board/board/editors.dart`, `board/extras/board_table.dart` |
-| Geometry tools (ruler, protractor, compass, set squares) | Built | `kinetix_ink/lib/src/geometry_tools.dart` |
+| Geometry tools (ruler, protractor, compass, set squares) | Built | `zynetix_ink/lib/src/geometry_tools.dart` |
 | Clipboard | Built | `board/insert/insert_actions.dart` |
-| **Multi-user zones** (2–4 zones, own pen, own eraser, clear own zone) | Built now | `board/classroom_plus/zones.dart`, `WhiteboardController.zonePen`, `packages/kinetix_ink/test/zones_test.dart` |
+| **Multi-user zones** (2–4 zones, own pen, own eraser, clear own zone) | Built now | `board/classroom_plus/zones.dart`, `WhiteboardController.zonePen`, `packages/zynetix_ink/test/zones_test.dart` |
 | Save, export PDF/images, share (WhatsApp, email, QR) | Built | `board/board/layout/page_overview.dart`, `share_whiteboard.dart` |
 | Version history and restore | Built | `board/board/version_history.dart` |
 | Write over anything (system overlay over other apps) | Hardware | Android overlay + MediaProjection / Windows transparent window; platform work per panel vendor. In-app annotation over PDF, PPT, video and web panes is built (`board/insert/presentation_pane.dart`) |
@@ -81,8 +81,8 @@ this pass. Paths are relative to the repository root; `board/` = `apps/board/lib
 | PDF, PPT (intelligent split), images, video | Built | `board/insert/` |
 | Browser / safe web | Built | `board/safe_web/safe_web.dart` |
 | HTML5 simulations (PhET), simulation hub | Built | `board/phet/`, `board/sims/` |
-| Virtual labs | Built | `packages/kinetix_labs` |
-| 3D learning, glTF loader | Built | `packages/kinetix_3d` |
+| Virtual labs | Built | `packages/zynetix_labs` |
+| 3D learning, glTF loader | Built | `packages/zynetix_3d` |
 | Books module, study material, syllabus topics | Built | `board/books/books_panel.dart` |
 | Institution content / lesson studio | Built | `board/plan/`, ERP lesson plans |
 | Classroom apps, subject tool ecosystem (§33, §50) | Built | `board/board/kit/`, `board/board/classroom_apps.dart` |
@@ -125,7 +125,7 @@ this pass. Paths are relative to the repository root; `board/` = `apps/board/lib
 | Start, pause, resume, stop, chapter markers | Built | `core/recording/lesson_capture.dart`, `board/recording/recording_ui.dart` |
 | **Consent / policy enforcement** (institution can turn recording off; notice first time per class) | Built now | `board/classroom_plus/recording_notice.dart` (`recordingAllowed` config), `board/board/board_screen.dart` |
 | **Important moments** (starred chapter) | Built now | hold the chapter marker (`rec-important`) in `board/recording/recording_ui.dart`, `test/lesson_recording_test.dart` |
-| Transcript, summary, chapters, resource links | Built | `services/api/src/recordings`, `packages/kinetix_lesson` |
+| Transcript, summary, chapters, resource links | Built | `services/api/src/recordings`, `packages/zynetix_lesson` |
 | Share to enrolled students | Built | `recordings.controller.ts` (`:id/share`) |
 | Live captions | Built | `board/captions/live_captions.dart` |
 

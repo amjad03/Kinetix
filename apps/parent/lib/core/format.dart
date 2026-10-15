@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart' show LessonFmt;
+import 'package:zynetix_lesson/zynetix_lesson.dart' show LessonFmt;
 
 import '../l10n/app_localizations.dart';
 import 'models.dart' show ClockTime;

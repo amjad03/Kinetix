@@ -1,5 +1,5 @@
 /**
- * Contracts shared by KINETIX TypeScript services and mirrored by the Dart clients.
+ * Contracts shared by ZYNETIX TypeScript services and mirrored by the Dart clients.
  * Realtime events travel over Socket.IO on the `/realtime` namespace.
  */
 
@@ -225,7 +225,7 @@ export interface LiveAudioChunk {
 }
 
 /**
- * Board → viewers. `events` use the lesson-recording format (packages/kinetix_ink lesson.dart),
+ * Board → viewers. `events` use the lesson-recording format (packages/zynetix_ink lesson.dart),
  * with times relative to the start of the stream; a frame with `snapshot` resets the viewer.
  */
 export interface LiveFrameEvent {
@@ -324,7 +324,7 @@ export interface MeResponse {
   mustChangePassword: boolean;
   /** False for phone-code-only accounts, which may set a first password without a current one. */
   hasPassword: boolean;
-  /** Present (true) only for the KINETIX platform team, who look after the global library. */
+  /** Present (true) only for the ZYNETIX platform team, who look after the global library. */
   platformAdmin?: true;
   /** GET this (with the token) for the profile photo; null shows initials. Changes when the photo does. */
   photoUrl: string | null;
@@ -484,11 +484,11 @@ export interface CreateHomeworkRequest {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Concept videos (the KINETIX YouTube channel, linked to library topics by the platform team)
+// Concept videos (the ZYNETIX YouTube channel, linked to library topics by the platform team)
 // ---------------------------------------------------------------------------------------------
 
 /** A concept video: played with YouTube's embedded player (youtube-nocookie.com), never downloaded. */
-/** Who linked a concept video: the KINETIX platform team (every institution), the institution's admin, or a teacher (their sections, or everyone once approved). */
+/** Who linked a concept video: the ZYNETIX platform team (every institution), the institution's admin, or a teacher (their sections, or everyone once approved). */
 export type ConceptVideoSource = 'platform' | 'institution' | 'teacher';
 /** A teacher's video: none = for their sections only; pending / approved / rejected = asked to be shared institution-wide. */
 export type ConceptVideoShareStatus = 'none' | 'pending' | 'approved' | 'rejected';

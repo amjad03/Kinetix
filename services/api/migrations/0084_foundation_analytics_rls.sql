@@ -11,8 +11,8 @@ BEGIN
       'CREATE POLICY tenant_isolation ON %I
          USING (tenant_id = nullif(current_setting(''app.tenant_id'', true), '''')::uuid)
          WITH CHECK (tenant_id = nullif(current_setting(''app.tenant_id'', true), '''')::uuid)', t);
-    IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-      EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO kinetix_app', t);
+    IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+      EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO zynetix_app', t);
     END IF;
   END LOOP;
   -- Consumption marks have no tenant column; they follow the visibility of their event.
@@ -21,7 +21,7 @@ BEGIN
   CREATE POLICY consumer_rows ON event_consumptions
     USING (EXISTS (SELECT 1 FROM domain_events e WHERE e.id = event_id))
     WITH CHECK (EXISTS (SELECT 1 FROM domain_events e WHERE e.id = event_id));
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT ON event_consumptions TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT ON event_consumptions TO zynetix_app;
   END IF;
 END $$;

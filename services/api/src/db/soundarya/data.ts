@@ -2,7 +2,7 @@
 
 /** Which demo institution to build: the Soundarya college (default) or the K-12 school (SEED_PROFILE=school). */
 export const PROFILE: 'college' | 'school' = process.env.SEED_PROFILE === 'school' ? 'school' : 'college';
-export const PASSWORD = 'kinetix123';
+export const PASSWORD = 'zynetix123';
 
 export type Dept = 'Management Studies' | 'Commerce' | 'Computer Applications' | 'Aviation Studies' | 'Languages' | 'Mathematics and Statistics';
 export const DEPARTMENTS: Dept[] = ['Management Studies', 'Commerce', 'Computer Applications', 'Aviation Studies', 'Languages', 'Mathematics and Statistics'];
@@ -276,7 +276,7 @@ export interface Institution {
   sibling: SpecialStudent;
 }
 const COLLEGE: Institution = {
-  slug: 'soundarya', domain: 'soundarya.demo.kinetix.in', name: 'Soundarya Institute of Management and Science', kind: 'college', shortName: 'SIMS',
+  slug: 'soundarya', domain: 'soundarya.demo.zynetix.in', name: 'Soundarya Institute of Management and Science', kind: 'college', shortName: 'SIMS',
   address: 'Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru 560073', affiliation: 'Bengaluru City University', scheme: 'NEP semester scheme',
   campus: 'Soundarya Nagar Campus', codePrefix: 'SIMS',
   strong: { name: 'Sahana Gowda', female: true, prog: 'BCM', term: 3, login: 'student.bcom', parentLogin: 'parent.bcom', parentName: 'Basavaraj Gowda', teacher: 'sudhir.kamath' },
@@ -284,7 +284,7 @@ const COLLEGE: Institution = {
   sibling: { name: 'Chaitra Naik', female: true, prog: 'BBA', term: 1 },
 };
 const SCHOOL: Institution = {
-  slug: 'vidyaniketan', domain: 'vidyaniketan.demo.kinetix.in', name: 'Sri Vidya Niketan Public School', kind: 'school', shortName: 'SVNPS',
+  slug: 'vidyaniketan', domain: 'vidyaniketan.demo.zynetix.in', name: 'Sri Vidya Niketan Public School', kind: 'school', shortName: 'SVNPS',
   address: '14th Cross, 2nd Stage, Basaveshwaranagar, Bengaluru 560079', affiliation: 'CBSE (Affiliation No. 830999)', scheme: 'CBSE, classes 1 to 12',
   campus: 'Basaveshwaranagar Campus', codePrefix: 'SVN',
   strong: { name: 'Ananya Rao', female: true, prog: 'SEC', term: 10, login: 'student.class10', parentLogin: 'parent.class10', parentName: 'Suresh Rao', teacher: 'sudhir.kamath' },

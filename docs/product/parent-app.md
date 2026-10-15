@@ -7,7 +7,7 @@ education jargon. One parent account can follow several children.
 
 Code: [`apps/parent`](../../apps/parent). API: `services/api/src/parent`, `src/notifications`, `src/whiteboards`, `src/recordings`, `src/fees`
 ([fees and payments](../architecture/fees-payments.md)), `src/library`, `src/marks`, `src/messages`.
-Lesson playback is shared with the Teacher App: [`packages/kinetix_lesson`](../../packages/kinetix_lesson).
+Lesson playback is shared with the Teacher App: [`packages/zynetix_lesson`](../../packages/zynetix_lesson).
 
 ## Phase 1 (built)
 
@@ -43,7 +43,7 @@ Lesson playback is shared with the Teacher App: [`packages/kinetix_lesson`](../.
 
 These appear under **Profile → Coming soon** with a *Soon* badge:
 
-- **Language**: English, हिन्दी and ಕನ್ನಡ (the fonts are already bundled in `kinetix_ui`).
+- **Language**: English, हिन्दी and ಕನ್ನಡ (the fonts are already bundled in `zynetix_ui`).
 
 Also planned for messages: push for replies (the chat polls while open), office hours, and
 attachments.

@@ -123,7 +123,7 @@ export class AssetsController {
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.tags_printed', subjectType: 'asset', data: { count: rows.length } });
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'inline; filename="asset-tags.pdf"');
-      return new StreamableFile(assetTagsPdf(t?.name ?? '', rows.map((a) => ({ tag: a.tag, name: a.name, location: a.location, qr: `kinetix://asset/${a.tag}` }))));
+      return new StreamableFile(assetTagsPdf(t?.name ?? '', rows.map((a) => ({ tag: a.tag, name: a.name, location: a.location, qr: `zynetix://asset/${a.tag}` }))));
     });
   }
 
@@ -255,7 +255,7 @@ export class AssetsController {
   // --- helpers -----------------------------------------------------------------------------
 
   private view(a: typeof assets.$inferSelect) {
-    return { ...a, qr: `kinetix://asset/${a.tag}` };
+    return { ...a, qr: `zynetix://asset/${a.tag}` };
   }
 
   private bookValue(a: typeof assets.$inferSelect, today: string): number {
@@ -274,7 +274,7 @@ export class AssetsController {
       tx.select().from(assetCondemnations).where(eq(assetCondemnations.assetId, id)).orderBy(desc(assetCondemnations.createdAt)),
     ]);
     const [names] = await tx.select({ room: rooms.name, department: departments.name, vendor: invVendors.name, po: invPurchaseOrders.number }).from(assets).leftJoin(rooms, eq(rooms.id, assets.roomId)).leftJoin(departments, eq(departments.id, assets.departmentId)).leftJoin(invVendors, eq(invVendors.id, assets.vendorId)).leftJoin(invPurchaseOrders, eq(invPurchaseOrders.id, assets.poId)).where(eq(assets.id, id));
-    return { ...this.view(a), ...names, qrSvg: qrSvg(`kinetix://asset/${a.tag}`), allocations, maintenance, transfers, condemnations, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
+    return { ...this.view(a), ...names, qrSvg: qrSvg(`zynetix://asset/${a.tag}`), allocations, maintenance, transfers, condemnations, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
   }
 
   private async lock(tx: Tx, id: string) {

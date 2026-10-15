@@ -18,7 +18,7 @@ const env = loadEnv();
 const pool = new pg.Pool({ connectionString: env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
 
-const PASSWORD = 'kinetix123';
+const PASSWORD = 'zynetix123';
 
 async function main() {
   // The demo has known passwords: never load it into a real deployment by accident.
@@ -38,7 +38,7 @@ async function main() {
 
   const [tenant] = await db
     .insert(s.tenants)
-    .values({ slug: 'demo-college', name: 'KINETIX Demo College of Commerce & Science', kind: 'college', settings: { liveViewEnabled: true, liveViewIndicator: true } })
+    .values({ slug: 'demo-college', name: 'ZYNETIX Demo College of Commerce & Science', kind: 'college', settings: { liveViewEnabled: true, liveViewIndicator: true } })
     .returning();
   const tenantId = tenant.id;
   const [campus] = await db.insert(s.campuses).values({ tenantId, name: 'Main Campus', city: 'Bengaluru' }).returning();
@@ -73,13 +73,13 @@ async function main() {
     for (const role of roles) await db.insert(s.userRoles).values({ tenantId, userId: u.id, role, campusId: campus.id });
     return u;
   };
-  await staff('Dr. Meera Rao', 'principal@demo.kinetix.in', ['principal']);
-  const admin = await staff('Admin Office', 'admin@demo.kinetix.in', ['tenant_admin']);
-  await staff('Admissions Office', 'admissions@demo.kinetix.in', ['admissions_officer']);
-  await staff('Accounts Office', 'accounts@demo.kinetix.in', ['accountant']);
-  const librarian = await staff('Library Desk', 'library@demo.kinetix.in', ['librarian']);
-  const anita = await staff('Anita Sharma', 'anita@demo.kinetix.in', ['teacher'], 'hi');
-  const ravi = await staff('Ravi Kumar', 'ravi@demo.kinetix.in', ['teacher', 'hod'], 'kn');
+  await staff('Dr. Meera Rao', 'principal@demo.zynetix.in', ['principal']);
+  const admin = await staff('Admin Office', 'admin@demo.zynetix.in', ['tenant_admin']);
+  await staff('Admissions Office', 'admissions@demo.zynetix.in', ['admissions_officer']);
+  await staff('Accounts Office', 'accounts@demo.zynetix.in', ['accountant']);
+  const librarian = await staff('Library Desk', 'library@demo.zynetix.in', ['librarian']);
+  const anita = await staff('Anita Sharma', 'anita@demo.zynetix.in', ['teacher'], 'hi');
+  const ravi = await staff('Ravi Kumar', 'ravi@demo.zynetix.in', ['teacher', 'hod'], 'kn');
 
   // Departments: Ravi heads Commerce (Anita teaches there) and also teaches in Computer Science.
   const [commerce] = await db.insert(s.departments).values({ tenantId, name: 'Commerce', headUserId: ravi.id }).returning();
@@ -128,8 +128,8 @@ async function main() {
     for (const [kid, relation] of kids) await db.insert(s.guardians).values({ tenantId, userId: u.id, studentId: byName(kid).id, relation });
     return u;
   };
-  const rajesh = await parent('Rajesh Patel', 'parent@demo.kinetix.in', '+919800000001', [['Aarav Patel', 'father'], ['Diya Patel', 'father']]);
-  await parent('Sunita Gowda', 'sunita@demo.kinetix.in', '+919800000002', [['Ananya Gowda', 'mother']]);
+  const rajesh = await parent('Rajesh Patel', 'parent@demo.zynetix.in', '+919800000001', [['Aarav Patel', 'father'], ['Diya Patel', 'father']]);
+  await parent('Sunita Gowda', 'sunita@demo.zynetix.in', '+919800000002', [['Ananya Gowda', 'mother']]);
 
   // Rajesh asked Anita about Aarav's absence; she replied.
   const [chat] = await db
@@ -142,7 +142,7 @@ async function main() {
   ]);
 
   // A student login for the Student App: Aarav.
-  const [aaravUser] = await db.insert(s.users).values({ tenantId, fullName: 'Aarav Patel', email: 'aarav@demo.kinetix.in', passwordHash: hash }).returning();
+  const [aaravUser] = await db.insert(s.users).values({ tenantId, fullName: 'Aarav Patel', email: 'aarav@demo.zynetix.in', passwordHash: hash }).returning();
   await db.insert(s.userRoles).values({ tenantId, userId: aaravUser.id, role: 'student', campusId: campus.id });
   await db.update(s.students).set({ userId: aaravUser.id }).where(eq(s.students.id, byName('Aarav Patel').id));
 
@@ -250,7 +250,7 @@ async function main() {
   ]);
 
   // Academic calendar 2026-27 (dates for the demo; each institution keeps its own).
-  const principalUser = (await db.select().from(s.users).where(eq(s.users.email, 'principal@demo.kinetix.in')))[0];
+  const principalUser = (await db.select().from(s.users).where(eq(s.users.email, 'principal@demo.zynetix.in')))[0];
   await db.insert(s.calendarEvents).values([
     { tenantId, kind: 'holiday', title: 'Gandhi Jayanti', startsOn: '2026-10-02', endsOn: '2026-10-02', createdBy: principalUser.id },
     { tenantId, kind: 'holiday', title: 'Dasara holidays', startsOn: '2026-10-19', endsOn: '2026-10-21', createdBy: principalUser.id },
@@ -314,7 +314,7 @@ async function main() {
             { minutes: 5, activity: 'Recap of the last class with two quick questions' },
             { minutes: 20, activity: `Explain ${topic.title} on the board with a worked example` },
             { minutes: 20, activity: 'Students solve Exercise 4.2 Q1 in pairs; discuss answers' },
-            { minutes: 10, activity: 'Quick quiz from KINETIX AI and summary' },
+            { minutes: 10, activity: 'Quick quiz from ZYNETIX AI and summary' },
           ],
           materials: ['Textbook chapter 4', 'Board: worked example'],
           assessment: 'Exit question: pass the journal entry for one case.',
@@ -399,23 +399,23 @@ async function main() {
     enrollmentCodeHash: hmac(env.PAIRING_HMAC_SECRET, `enroll:${code}`),
     enrollmentExpiresAt: new Date(Date.now() + 30 * 24 * 3600_000),
   });
-  // The demo administrator is also on the KINETIX platform team, to try Platform › Concept videos.
+  // The demo administrator is also on the ZYNETIX platform team, to try Platform › Concept videos.
   await db.insert(s.platformAdmins).values({ userId: admin.id, note: 'Demo' }).onConflictDoNothing();
 
   console.log(`
 Seeded tenant "demo-college".
   Staff logins (password "${PASSWORD}"):
-    principal@demo.kinetix.in   (principal: can circulate messages)
-    admin@demo.kinetix.in       (tenant admin; also on the KINETIX platform team: concept videos)
-    accounts@demo.kinetix.in    (accountant: fees)
-    library@demo.kinetix.in     (librarian)
-    anita@demo.kinetix.in       (teacher, BCom Sem 3 A)
-    ravi@demo.kinetix.in        (teacher, BCA Sem 1 A; head of Commerce)
+    principal@demo.zynetix.in   (principal: can circulate messages)
+    admin@demo.zynetix.in       (tenant admin; also on the ZYNETIX platform team: concept videos)
+    accounts@demo.zynetix.in    (accountant: fees)
+    library@demo.zynetix.in     (librarian)
+    anita@demo.zynetix.in       (teacher, BCom Sem 3 A)
+    ravi@demo.zynetix.in        (teacher, BCA Sem 1 A; head of Commerce)
   Parent logins (same password):
-    parent@demo.kinetix.in      (Rajesh Patel: Aarav, BCom Sem 3 A, and Diya, BCA Sem 1 A)
-    sunita@demo.kinetix.in      (Sunita Gowda: Ananya, BCom Sem 3 A)
+    parent@demo.zynetix.in      (Rajesh Patel: Aarav, BCom Sem 3 A, and Diya, BCA Sem 1 A)
+    sunita@demo.zynetix.in      (Sunita Gowda: Ananya, BCom Sem 3 A)
   Student login (same password):
-    aarav@demo.kinetix.in       (Aarav Patel, BCom Sem 3 A)
+    aarav@demo.zynetix.in       (Aarav Patel, BCom Sem 3 A)
   Board enrolment code for "Room 204 Board": ${code}
   Content library: ${library.courses} courses, ${library.topics} topics with notes
 `);

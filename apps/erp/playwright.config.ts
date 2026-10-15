@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// e2e tests run against a live KINETIX Cloud API with the demo seed (see README).
+// e2e tests run against a live ZYNETIX Cloud API with the demo seed (see README).
 const ERP_URL = process.env.ERP_URL ?? 'http://localhost:3000';
-const API_URL = process.env.KINETIX_API_URL ?? 'http://localhost:4000';
+const API_URL = process.env.ZYNETIX_API_URL ?? 'http://localhost:4000';
 const PORT = new URL(ERP_URL).port || '3000';
 
 export default defineConfig({
@@ -60,6 +60,6 @@ export default defineConfig({
         url: `${ERP_URL}/login`,
         reuseExistingServer: true,
         timeout: 120_000,
-        env: { KINETIX_API_URL: API_URL },
+        env: { ZYNETIX_API_URL: API_URL },
       },
 });

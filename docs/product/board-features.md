@@ -1,4 +1,4 @@
-# KINETIX Board: feature specification
+# ZYNETIX Board: feature specification
 
 Status key: ✅ built in this repo · 🟡 partly built · ⬜ specified, not yet built.
 Competitor parity items are tracked in
@@ -9,8 +9,8 @@ Competitor parity items are tracked in
 | Setup | Touch | Notes |
 |---|---|---|
 | Android tablet + projector/TV (HDMI, USB-C DP Alt or Miracast) | On the tablet (stylus recommended) | The cheapest route. The teacher writes on the tablet; the class sees the projection. |
-| TV/projector + **IR touch frame** (USB, 10–20 touch points) + Android box or Windows PC | On the big screen, many touches at once | A cheap retrofit that makes an old TV a multi-touch board. **A KINETIX differentiator.** ✅ Supported: a touch profile in Board settings, plus a [buying and installation guide](../hardware/ir-touch-frames.md). |
-| Android interactive flat panel (IFP) | On the panel, 20–40 touch points | Install the KINETIX APK on the panel |
+| TV/projector + **IR touch frame** (USB, 10–20 touch points) + Android box or Windows PC | On the big screen, many touches at once | A cheap retrofit that makes an old TV a multi-touch board. **A ZYNETIX differentiator.** ✅ Supported: a touch profile in Board settings, plus a [buying and installation guide](../hardware/ir-touch-frames.md). |
+| Android interactive flat panel (IFP) | On the panel, 20–40 touch points | Install the ZYNETIX APK on the panel |
 | Windows PC / OPS module / Windows IFP | Mouse, pen or touch | Same app, Windows build |
 
 **Minimum spec (decided):** Android 10 (API 29) or Windows 10 21H2; 4 GB RAM; 64 GB storage;
@@ -41,18 +41,18 @@ offline AI features on or off accordingly.
 - 🟡 **Measurements.** ✅ 2D shapes can show side lengths (cm, on the 1 cm grid), interior angles and a circle's radius. ✅ 3D solids (cube to frustum) with live volume, curved and total surface area and slant height, each with its formula and the values substituted. ⬜ Ruler, protractor, compass, set squares.
 - ✅ **Split screen.** A side panel next to the board, drag-resizable from 30% to 70%, which can sit on either side. 🟡 It holds a second whiteboard, a 3D model or a virtual lab (built), or a PDF/PPT, video or web page (coming).
 - ⬜ Annotate over any pane (a transparent ink layer).
-- ✅ Save boards to KINETIX Cloud, reopen them from *Your whiteboards*, and share them with the class: students and parents are notified and can open the board read-only in their apps. End class offers to save and share. ⬜ Export as PDF or images.
+- ✅ Save boards to ZYNETIX Cloud, reopen them from *Your whiteboards*, and share them with the class: students and parents are notified and can open the board read-only in their apps. End class offers to save and share. ⬜ Export as PDF or images.
 
-## 4. KINETIX AI on the board
+## 4. ZYNETIX AI on the board
 
 All AI runs on India-hosted infrastructure, or on the device itself. ([design](../architecture/ai-platform.md))
 
 - 🟡 **AI pen** (left rail and bottom toolbar; hidden on primary boards). Write or draw as with the pen; after a pause (or word by word, or on *Convert*) rough sketches become clean shapes, handwritten maths a typeset equation and words text. Everything it makes is an ordinary element (select, move, undo; recordings and the live view show it), and a tap on it with the AI pen shows other readings, a box to type the right one, *Solve* for maths, *It's a shape / It's writing* and *Back to my ink*. Scribbling over ink rubs it out. All of it runs on the board: no ink leaves it.
-    - ✅ Shapes: line, arrow, circle, ellipse, triangles, rectangle and square, parallelogram, trapezium, rhombus, regular pentagon and hexagon, other polygons (`packages/kinetix_ink/lib/src/pen/shape_fit.dart`, `ink_parser.dart`). Shape or letter is decided by fit, coverage and the teacher's own letter size, which the pen learns. The ordinary pen can tidy shapes too (*Tidy shapes as I draw*), the one part offered on primary boards.
-    - ✅ Maths on every platform with no model: a pure-Dart symbol recogniser (digits, + − × ÷ = < > ( ) [ ], x y z a b c n, α β θ π λ μ σ Δ, √ ∫ Σ, fraction bar, decimal point, ^, !) and the layout from where the ink sits (fractions, roots, powers). Templates are generated from vector glyphs by `packages/kinetix_ink/tool/generate_symbol_templates.dart`; on the held-out synthetic test set it reads 91.5 % of symbols right first time and 97.5 % in its top three. Real handwriting will score lower; tune the glyphs with real samples.
+    - ✅ Shapes: line, arrow, circle, ellipse, triangles, rectangle and square, parallelogram, trapezium, rhombus, regular pentagon and hexagon, other polygons (`packages/zynetix_ink/lib/src/pen/shape_fit.dart`, `ink_parser.dart`). Shape or letter is decided by fit, coverage and the teacher's own letter size, which the pen learns. The ordinary pen can tidy shapes too (*Tidy shapes as I draw*), the one part offered on primary boards.
+    - ✅ Maths on every platform with no model: a pure-Dart symbol recogniser (digits, + − × ÷ = < > ( ) [ ], x y z a b c n, α β θ π λ μ σ Δ, √ ∫ Σ, fraction bar, decimal point, ^, !) and the layout from where the ink sits (fractions, roots, powers). Templates are generated from vector glyphs by `packages/zynetix_ink/tool/generate_symbol_templates.dart`; on the held-out synthetic test set it reads 91.5 % of symbols right first time and 97.5 % in its top three. Real handwriting will score lower; tune the glyphs with real samples.
     - 🟡 Words: Android panels use ML Kit Digital Ink (each language's model downloads once from Google, from Board settings → AI pen; Hindi is hi-IN and Kannada kn-IN, and a language ML Kit has no model for shows as *Not available*). Windows panels use the Windows handwriting recogniser through `apps/board/windows/runner/handwriting_channel.cpp` (no download; a language needs its handwriting feature added in Windows settings). Elsewhere, or without a model, words stay as ink. Weaker for Hindi and Kannada than for English, as agreed.
     - Verifying on Windows: the *Flutter* workflow's `board-windows` job compiles the runner. On a panel, add Hindi handwriting in Settings → Time & language → Language → Hindi → Options, open Board settings → AI pen (English and Hindi show *Ready*), take the AI pen, write a word and a sum, and check they convert; with no recogniser the board says words stay as ink and maths still converts.
-- 🟡 **OCR.** ✅ *Read board*: KINETIX AI reads the handwriting on the open page (text and maths as LaTeX) with a vision model on the India-hosted AI server. ⬜ Photos and documents.
+- 🟡 **OCR.** ✅ *Read board*: ZYNETIX AI reads the handwriting on the open page (text and maths as LaTeX) with a vision model on the India-hosted AI server. ⬜ Photos and documents.
 - 🟡 A step-by-step maths solver for handwritten or typed problems, offline as well: ✅ an equation the AI pen typeset (or any equation on the board) opens in the solver with *Solve*.
 - ⬜ Explain a topic at the class's level, in the teacher's language.
 - ⬜ Generate quizzes, homework and assignments from the current chapter, then send them to the Student App.
@@ -142,7 +142,7 @@ model in the pilot (ADR 0002).
 | Screen Freeze until Close (bottom left) | ✅ | Menu → Freeze screen (`smartboard_toolbar_test`) |
 | Quick group (Switch, Profile/Guest, Share, WhatsApp, End class) and nav group (Hide, Previous, n/N, Next, Switch); Switch remembered per teacher | ✅ | `smartboard_toolbar_test` |
 | Hide leaves the canvas and a restore button bottom left | ✅ | `smartboard_toolbar_test` |
-| Add Page only after meaningful content | ✅ | `WhiteboardController.canAddPage` (`kinetix_ink/test/pages_paper_test`) |
+| Add Page only after meaningful content | ✅ | `WhiteboardController.canAddPage` (`zynetix_ink/test/pages_paper_test`) |
 | Theme Template / Background / Custom; JPG/PNG ≤ 10 MB with preview; logo, brand and watermark on exports | ✅ | `custom_theme_tab.dart`, `paintBranding`, server PDF (`families.e2e`) |
 | Templates: Black, Grid Lines, Horizontal Lines, English Lines, 2/3 Columns, Isometric Grid, Graph, Hindi Lines, Dotted, Checks, Music Lines, Basketball, Football, World Map (Natural Earth, public domain) | ✅ | `board_background.dart` |
 | Pen: Solid Pen, Highlighter, Two Side, Text AI, Shape AI; Single/Multi Touch | ✅ | `pen_modes.dart` |
@@ -150,7 +150,7 @@ model in the pilot (ADR 0002).
 | Text AI: 13 languages, Default / Kalam / custom font, correct and re-recognise | ✅ | ML Kit / Windows (ADR 0002) |
 | Global two-finger zoom; palm rejection and palm eraser | ✅ (existing) | device test pending |
 | Eraser size with preview; Clear All by a deliberate slide, with Undo | ✅ | `SlideToClear` |
-| 2D colour, lengths, angles; 3D rotate, lined/filled, per-face colour, lengths, angles | ✅ | `kinetix_3d/test/solid_display_test` |
+| 2D colour, lengths, angles; 3D rotate, lined/filled, per-face colour, lengths, angles | ✅ | `zynetix_3d/test/solid_display_test` |
 | Object controls incl. one-step forward/backward, lock, duplicate | ✅ | `pages_paper_test` |
 | PPT: intelligent split, draggable divider, Add Page, Add All Pages, Edge-to-Edge; animations via presenter app | ✅ | `presentation_pane_test`, `insert_test` |
 | Insert: PDF, Images, Videos, PPT, Clipboard, Geometry, Table, Flowchart | ✅ | Insert → category tiles |
@@ -158,7 +158,7 @@ model in the pilot (ADR 0002).
 | Quiz AI: topic or Scan Board (complete/chosen pages), class/board/subject, difficulty, types, count, timer, teams, reveal, explanation + usual mistake, Add to Board | ✅ | `quiz_ai_spec_test`, `ai.e2e` |
 | Exam frequency / Important only from the institution's past-exam bank (never invented) | ✅ | `past_exam_questions`, `ai.e2e` |
 | Homework AI: Q&A, fill blanks, MCQ, T/F, 2/3/5-mark, diagrams, rubric, model answers | ✅ | `QuizSetup(homework)` |
-| Kinetix AI Smart Tools: Summary, Quick Quiz, Lecture, Homework, Google, Wikipedia, Simulations, Periodic Table, Dictionary, Books, Graph, Calculator | ✅ | AI panel → Smart Tools |
+| Zynetix AI Smart Tools: Summary, Quick Quiz, Lecture, Homework, Google, Wikipedia, Simulations, Periodic Table, Dictionary, Books, Graph, Calculator | ✅ | AI panel → Smart Tools |
 | Select & Ask: explain, simplify, expand, solve, translate, example, quiz, homework, diagram, board-ready | ✅ | `smart_panels.dart`, `ai.e2e` |
 | Classroom Apps + Other Tools (Calculator, Spotlight) | ✅ | Menu → Classroom Apps |
 | Profile: New, Import, Your Whiteboards, Your Classrooms, Configurations, Schedule a Training (QR), What's New, Exit; Guest | ✅ | `profile_extras.dart`; training link and announcements from ERP settings |

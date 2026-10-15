@@ -12,7 +12,7 @@ test('the principal sets the training link, the 3D model server and an announcem
   await expect(card).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Smartboard' })).toBeVisible();
 
-  await card.getByTestId('training-url').fill('https://training.demo.kinetix.in/book');
+  await card.getByTestId('training-url').fill('https://training.demo.zynetix.in/book');
   await card.getByTestId('training-contact').fill('Front office, ext 12');
   await card.getByTestId('models-base').fill('http://10.0.0.5/models');
   await card.getByTestId('whats-new-add').click();
@@ -23,7 +23,7 @@ test('the principal sets the training link, the 3D model server and an announcem
 
   await page.reload({ waitUntil: 'networkidle' });
   const again = page.getByTestId('board-content');
-  await expect(again.getByTestId('training-url')).toHaveValue('https://training.demo.kinetix.in/book');
+  await expect(again.getByTestId('training-url')).toHaveValue('https://training.demo.zynetix.in/book');
   await expect(again.getByTestId('training-contact')).toHaveValue('Front office, ext 12');
   await expect(again.getByTestId('models-base')).toHaveValue('http://10.0.0.5/models');
   await expect(again.getByLabel('Title').first()).toHaveValue('New smartboard timetable');

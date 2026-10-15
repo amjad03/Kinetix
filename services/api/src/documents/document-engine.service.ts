@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DOC_SAMPLES, type DocData, type DocLayout, type DocType, pageSizeMm } from '@kinetix/shared';
+import { DOC_SAMPLES, type DocData, type DocLayout, type DocType, pageSizeMm } from '@zynetix/shared';
 import { eq } from 'drizzle-orm';
 import { localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
@@ -197,7 +197,7 @@ export class DocumentEngine {
     const data = await this.fullData(tx, { ...sample, institution: { ...(sample.institution as DocData), ...Object.fromEntries(Object.entries(inst).filter(([, v]) => v)) } }, String((sample.doc as DocData | undefined)?.title ?? 'Specimen'), null, tz);
     (data.doc as DocData).serial = String((sample.doc as DocData | undefined)?.serial ?? 'SPECIMEN');
     (data.doc as DocData).fingerprint = 'SPEC-IMEN-0000';
-    (data.verify as DocData).url = String((sample.verify as DocData | undefined)?.url ?? 'https://kinetix.app/verify');
+    (data.verify as DocData).url = String((sample.verify as DocData | undefined)?.url ?? 'https://zynetix.app/verify');
     const ctx = await this.branding.renderContext(tx, photo);
     if (o.format === 'pdf') return renderPdf(layout, [{ data, ctx }], { title: `Specimen ${layout.docType}` });
     const svg = renderSvg(layout, { data, ctx }, { side: o.side, page: o.page, animate: o.animate && o.format === 'svg', pxWidth: o.width });

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/board_controller.dart';
@@ -223,7 +223,7 @@ class _TeacherNotesPanelState extends State<TeacherNotesPanel> {
   Timer? _debounce;
   bool _saved = false;
 
-  String get _key => 'kinetix.teacherNotes.${widget.board.session?.teacherId ?? 'guest'}.${classKey(widget.board)}';
+  String get _key => 'zynetix.teacherNotes.${widget.board.session?.teacherId ?? 'guest'}.${classKey(widget.board)}';
 
   @override
   void initState() {

@@ -43,8 +43,8 @@ export interface BoardClaims {
 
 export type Claims = UserClaims | DeviceClaims | BoardClaims;
 
-const AUDIENCE = 'kinetix-api';
-const MFA_AUDIENCE = 'kinetix-mfa';
+const AUDIENCE = 'zynetix-api';
+const MFA_AUDIENCE = 'zynetix-mfa';
 
 /**
  * HS256 for now. TODO: switch to EdDSA keys from KMS so the offline-pairing credential can be

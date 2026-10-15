@@ -44,7 +44,7 @@ export class FeatureFlags {
   }
 }
 
-export const FEATURE_META = 'kinetix:feature';
+export const FEATURE_META = 'zynetix:feature';
 
 /** Rejects with 403 FEATURE_DISABLED when the signed-in institution has the flag off. Runs after AuthGuard. */
 @Injectable()

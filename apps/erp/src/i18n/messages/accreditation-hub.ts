@@ -8,7 +8,7 @@ export default area(
 
     'acx.cancel': 'Cancel',
     'acx.h.title': 'Accreditation and statutory returns',
-    'acx.h.sub': 'Every framework KINETIX prepares: criteria, key indicators and metrics with their formulas, data templates and evidence. Figures come from ERP records where they exist.',
+    'acx.h.sub': 'Every framework ZYNETIX prepares: criteria, key indicators and metrics with their formulas, data templates and evidence. Figures come from ERP records where they exist.',
     'acx.h.myTasks': 'You have {n} accreditation tasks open',
     'acx.h.metrics': '{n} metrics',
     'acx.h.split': '{qn} quantitative · {ql} qualitative',
@@ -291,7 +291,7 @@ export default area(
 
       'acx.cancel': 'रद्द करें',
       'acx.h.title': 'प्रत्यायन और वैधानिक विवरणियाँ',
-      'acx.h.sub': 'हर ढाँचा जो KINETIX तैयार करता है: मानदंड, मुख्य संकेतक और मीट्रिक, उनके सूत्र, डेटा प्रारूप और प्रमाण के साथ। जहाँ अभिलेख हैं वहाँ आँकड़े ERP से आते हैं।',
+      'acx.h.sub': 'हर ढाँचा जो ZYNETIX तैयार करता है: मानदंड, मुख्य संकेतक और मीट्रिक, उनके सूत्र, डेटा प्रारूप और प्रमाण के साथ। जहाँ अभिलेख हैं वहाँ आँकड़े ERP से आते हैं।',
       'acx.h.myTasks': 'आपके {n} प्रत्यायन कार्य खुले हैं',
       'acx.h.metrics': '{n} मीट्रिक',
       'acx.h.split': '{qn} मात्रात्मक · {ql} गुणात्मक',
@@ -573,7 +573,7 @@ export default area(
 
       'acx.cancel': 'ರದ್ದುಮಾಡಿ',
       'acx.h.title': 'ಮಾನ್ಯತೆ ಮತ್ತು ಶಾಸನಬದ್ಧ ವಿವರಣೆಗಳು',
-      'acx.h.sub': 'KINETIX ಸಿದ್ಧಪಡಿಸುವ ಪ್ರತಿ ಚೌಕಟ್ಟು: ಮಾನದಂಡಗಳು, ಪ್ರಮುಖ ಸೂಚಕಗಳು ಮತ್ತು ಮೆಟ್ರಿಕ್‌ಗಳು, ಅವುಗಳ ಸೂತ್ರಗಳು, ಮಾಹಿತಿ ನಮೂನೆಗಳು ಮತ್ತು ಸಾಕ್ಷ್ಯಗಳೊಂದಿಗೆ. ದಾಖಲೆಗಳಿರುವಲ್ಲಿ ಅಂಕಿಗಳು ERP ಯಿಂದ ಬರುತ್ತವೆ.',
+      'acx.h.sub': 'ZYNETIX ಸಿದ್ಧಪಡಿಸುವ ಪ್ರತಿ ಚೌಕಟ್ಟು: ಮಾನದಂಡಗಳು, ಪ್ರಮುಖ ಸೂಚಕಗಳು ಮತ್ತು ಮೆಟ್ರಿಕ್‌ಗಳು, ಅವುಗಳ ಸೂತ್ರಗಳು, ಮಾಹಿತಿ ನಮೂನೆಗಳು ಮತ್ತು ಸಾಕ್ಷ್ಯಗಳೊಂದಿಗೆ. ದಾಖಲೆಗಳಿರುವಲ್ಲಿ ಅಂಕಿಗಳು ERP ಯಿಂದ ಬರುತ್ತವೆ.',
       'acx.h.myTasks': 'ನಿಮ್ಮ {n} ಮಾನ್ಯತೆ ಕಾರ್ಯಗಳು ತೆರೆದಿವೆ',
       'acx.h.metrics': '{n} ಮೆಟ್ರಿಕ್‌ಗಳು',
       'acx.h.split': '{qn} ಪರಿಮಾಣಾತ್ಮಕ · {ql} ಗುಣಾತ್ಮಕ',

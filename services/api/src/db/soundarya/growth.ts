@@ -51,10 +51,10 @@ export async function admissionsGrowth(c: Ctx): Promise<void> {
 
   // Agents and referral partners; the seeded referral enquiries are credited to them and re-scored.
   const defs = [
-    { name: 'Karnataka Education Consultants', kind: 'agent' as const, phone: '+919000011001', email: 'info@kec.demo.kinetix.in', commissionPaise: rupees(3000), referralCode: 'KEC2026' },
-    { name: 'Vidya Mitra Partner Network', kind: 'partner' as const, phone: '+919000011002', email: 'desk@vidyamitra.demo.kinetix.in', commissionPaise: rupees(2500), referralCode: 'VIDYA26' },
-    { name: 'Sri Venkateshwara PUC College', kind: 'partner' as const, phone: '+919000011003', email: 'principal@svpuc.demo.kinetix.in', commissionPaise: rupees(2000), referralCode: 'SVPUC26' },
-    { name: 'Soundarya Alumni Ambassadors', kind: 'agent' as const, phone: '+919000011004', email: 'alumni@soundarya.demo.kinetix.in', commissionPaise: rupees(1000), referralCode: 'ALUMNI26' },
+    { name: 'Karnataka Education Consultants', kind: 'agent' as const, phone: '+919000011001', email: 'info@kec.demo.zynetix.in', commissionPaise: rupees(3000), referralCode: 'KEC2026' },
+    { name: 'Vidya Mitra Partner Network', kind: 'partner' as const, phone: '+919000011002', email: 'desk@vidyamitra.demo.zynetix.in', commissionPaise: rupees(2500), referralCode: 'VIDYA26' },
+    { name: 'Sri Venkateshwara PUC College', kind: 'partner' as const, phone: '+919000011003', email: 'principal@svpuc.demo.zynetix.in', commissionPaise: rupees(2000), referralCode: 'SVPUC26' },
+    { name: 'Soundarya Alumni Ambassadors', kind: 'agent' as const, phone: '+919000011004', email: 'alumni@soundarya.demo.zynetix.in', commissionPaise: rupees(1000), referralCode: 'ALUMNI26' },
   ];
   const made = [];
   for (const d of defs) made.push(await withTenant(c.tenantId, (tx) => agents.create(tx, actor, d)));

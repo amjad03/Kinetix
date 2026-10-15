@@ -52,7 +52,7 @@ describe('m3Scheme (ColorScheme.fromSeed, TonalSpot)', () => {
   });
 });
 
-describe('brandScheme (the KINETIX design tokens)', () => {
+describe('brandScheme (the ZYNETIX design tokens)', () => {
   it('uses the neutral redesign palette in light (near-black action, amber AI)', () => {
     const light = brandScheme(false);
     expect(light.primary).toBe('#18181b');

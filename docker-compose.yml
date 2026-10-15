@@ -2,15 +2,15 @@
 # one-off migrate job. The demo seed is a profile:
 #   docker compose up -d --build                          # postgres, redis, migrate, api, erp, code-runner
 #   docker compose --profile seed run --rm seed           # demo institution (once, on a fresh DB)
-#   open http://localhost:3000  (institution demo-college, principal@demo.kinetix.in / kinetix123)
+#   open http://localhost:3000  (institution demo-college, principal@demo.zynetix.in / zynetix123)
 # Secrets below are local-only defaults; override them in a .env file next to this one.
 # Behind a registry mirror: NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim, POSTGRES_IMAGE=..., REDIS_IMAGE=...
 
-name: kinetix
+name: zynetix
 
 x-api-env: &api-env
-  DATABASE_URL: postgres://kinetix_owner:${KINETIX_OWNER_PASSWORD:-kinetix_owner}@postgres:5432/kinetix
-  APP_DATABASE_URL: postgres://kinetix_app:${KINETIX_APP_PASSWORD:-kinetix_app}@postgres:5432/kinetix
+  DATABASE_URL: postgres://zynetix_owner:${ZYNETIX_OWNER_PASSWORD:-zynetix_owner}@postgres:5432/zynetix
+  APP_DATABASE_URL: postgres://zynetix_app:${ZYNETIX_APP_PASSWORD:-zynetix_app}@postgres:5432/zynetix
   JWT_SECRET: ${JWT_SECRET:-local-compose-jwt-secret-change-me}
   PAIRING_HMAC_SECRET: ${PAIRING_HMAC_SECRET:-local-compose-hmac-change-me}
   REDIS_URL: redis://redis:6379
@@ -42,15 +42,15 @@ services:
     image: ${POSTGRES_IMAGE:-postgres:16-alpine}
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      KINETIX_OWNER_PASSWORD: ${KINETIX_OWNER_PASSWORD:-kinetix_owner}
-      KINETIX_APP_PASSWORD: ${KINETIX_APP_PASSWORD:-kinetix_app}
+      ZYNETIX_OWNER_PASSWORD: ${ZYNETIX_OWNER_PASSWORD:-zynetix_owner}
+      ZYNETIX_APP_PASSWORD: ${ZYNETIX_APP_PASSWORD:-zynetix_app}
       TZ: Asia/Kolkata
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./infra/docker/postgres-init:/docker-entrypoint-initdb.d:ro
     ports: ["127.0.0.1:${POSTGRES_PORT:-55432}:5432"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d kinetix"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zynetix"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -67,7 +67,7 @@ services:
       retries: 20
 
   migrate:
-    image: kinetix-api:${KINETIX_TAG:-local}
+    image: zynetix-api:${ZYNETIX_TAG:-local}
     build: *api-build
     command: ["migrate"]
     environment: *api-env
@@ -76,7 +76,7 @@ services:
     restart: "no"
 
   seed:
-    image: kinetix-api:${KINETIX_TAG:-local}
+    image: zynetix-api:${ZYNETIX_TAG:-local}
     profiles: ["seed"]
     command: ["seed"]
     environment:
@@ -88,7 +88,7 @@ services:
     restart: "no"
 
   api:
-    image: kinetix-api:${KINETIX_TAG:-local}
+    image: zynetix-api:${ZYNETIX_TAG:-local}
     build: *api-build
     init: true
     environment: *api-env
@@ -107,7 +107,7 @@ services:
   # caps on memory, CPU and processes; each program has its own limits on top
   # (docs/operations/code-runner.md).
   code-runner:
-    image: kinetix-code-runner:${KINETIX_TAG:-local}
+    image: zynetix-code-runner:${ZYNETIX_TAG:-local}
     build:
       context: .
       dockerfile: services/code-runner/Dockerfile
@@ -137,7 +137,7 @@ services:
     restart: unless-stopped
 
   erp:
-    image: kinetix-erp:${KINETIX_TAG:-local}
+    image: zynetix-erp:${ZYNETIX_TAG:-local}
     build:
       context: .
       dockerfile: apps/erp/Dockerfile
@@ -145,10 +145,10 @@ services:
         NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
     init: true
     environment:
-      KINETIX_API_URL: http://api:4000
-      KINETIX_TIMEZONE: Asia/Kolkata
+      ZYNETIX_API_URL: http://api:4000
+      ZYNETIX_TIMEZONE: Asia/Kolkata
       # Plain HTTP on localhost: drop the Secure cookie flag. Never set this behind HTTPS.
-      KINETIX_INSECURE_COOKIES: "1"
+      ZYNETIX_INSECURE_COOKIES: "1"
     ports: ["127.0.0.1:${ERP_PORT:-3000}:3000"]
     depends_on:
       api: { condition: service_healthy }

@@ -24,7 +24,7 @@ const ALLOWED = [
   new RegExp(`^/v1/admin/data-exports/${UUID}/download$`, 'i'),
 ];
 
-/** Streams a CSV or PDF from KINETIX Cloud with the signed-in user's token (it never reaches the browser). */
+/** Streams a CSV or PDF from ZYNETIX Cloud with the signed-in user's token (it never reaches the browser). */
 export async function GET(req: NextRequest) {
   const site = req.headers.get('sec-fetch-site');
   if (site && site !== 'same-origin') return new Response('Forbidden', { status: 403 });
@@ -38,9 +38,9 @@ export async function GET(req: NextRequest) {
     const big = path.startsWith('/v1/admin/data-exports/');
     res = await fetch(`${API_URL}${path}`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: AbortSignal.timeout(big ? 15 * 60_000 : 30_000) });
   } catch {
-    return new Response("Can't reach KINETIX Cloud", { status: 502 });
+    return new Response("Can't reach ZYNETIX Cloud", { status: 502 });
   }
-  if (!res.ok) return new Response(res.status === 403 ? 'Not allowed' : res.status === 404 ? 'Not found' : res.status === 401 ? 'Sign in again' : 'KINETIX Cloud error', { status: res.status === 401 || res.status === 403 || res.status === 404 ? res.status : 502 });
+  if (!res.ok) return new Response(res.status === 403 ? 'Not allowed' : res.status === 404 ? 'Not found' : res.status === 401 ? 'Sign in again' : 'ZYNETIX Cloud error', { status: res.status === 401 || res.status === 403 || res.status === 404 ? res.status : 502 });
   const headers = new Headers({ 'content-type': res.headers.get('content-type') ?? 'application/octet-stream', 'cache-control': 'private, no-store' });
   const cd = res.headers.get('content-disposition');
   if (cd) headers.set('content-disposition', cd);

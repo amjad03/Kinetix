@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'panel/panel_host.dart';
 import 'sb_strings.dart';

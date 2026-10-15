@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { DOC_TYPE_INFO, DOC_TYPES, type DocLayout, DocLayoutSchema, type DocTemplate, type DocTemplateSummary, type DocTemplateVersion, type DocType, type PresetStyle } from '@kinetix/shared';
+import { DOC_TYPE_INFO, DOC_TYPES, type DocLayout, DocLayoutSchema, type DocTemplate, type DocTemplateSummary, type DocTemplateVersion, type DocType, type PresetStyle } from '@zynetix/shared';
 import { and, asc, desc, eq, isNull } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';

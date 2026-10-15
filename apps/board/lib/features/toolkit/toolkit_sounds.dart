@@ -25,7 +25,7 @@ class AssetToolkitSounds implements ToolkitSounds {
   Future<AudioPlayer> _player(String id) async {
     final ready = _players[id];
     if (ready != null) return ready;
-    final p = AudioPlayer(playerId: 'kinetix-$id');
+    final p = AudioPlayer(playerId: 'zynetix-$id');
     try {
       // Duck the class's audio (a video, read-aloud) rather than stop it.
       await p.setAudioContext(AudioContextConfig(focus: AudioContextConfigFocus.duckOthers).build());

@@ -208,7 +208,7 @@ export class ChatController {
       await tx.update(chatMembers).set({ lastReadAt: now }).where(and(eq(chatMembers.threadId, id), eq(chatMembers.userId, p.userId)));
       const memberIds = (await tx.select({ userId: chatMembers.userId }).from(chatMembers).where(eq(chatMembers.threadId, id))).map((m) => m.userId);
       const [me] = await tx.select({ fullName: users.fullName }).from(users).where(eq(users.id, p.userId));
-      return { msg, thread, memberIds, senderName: me?.fullName ?? 'Kinetix' };
+      return { msg, thread, memberIds, senderName: me?.fullName ?? 'Zynetix' };
     });
     let delivery = msg.delivery;
     if (thread.kind === 'external') {
@@ -287,11 +287,11 @@ export class ChatController {
 
   /**
    * Inbound replies from the email relay (to = reply+<token>@domain) or the WhatsApp webhook (tenantId +
-   * from = the contact's number). Authenticated by the shared `x-kinetix-inbound-secret`.
+   * from = the contact's number). Authenticated by the shared `x-zynetix-inbound-secret`.
    */
   @Post('inbound')
   @HttpCode(202)
-  async inbound(@Headers('x-kinetix-inbound-secret') secret: string | undefined, @Body(new ZodBody(InboundBody)) body: z.infer<typeof InboundBody>) {
+  async inbound(@Headers('x-zynetix-inbound-secret') secret: string | undefined, @Body(new ZodBody(InboundBody)) body: z.infer<typeof InboundBody>) {
     const want = this.env.CHAT_INBOUND_SECRET;
     if (!want || !secret || secret.length !== want.length || !timingSafeEqual(Buffer.from(secret), Buffer.from(want))) throw new NotFoundException();
     let tenantId: string;

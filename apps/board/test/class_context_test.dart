@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show InkDomain;
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/board/context/class_context.dart';
-import 'package:kinetix_board/features/board/context/context_switcher.dart';
-import 'package:kinetix_board/features/board/kit/subjects.dart';
-import 'package:kinetix_board/features/board/layout/tools_drawer.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show InkDomain;
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/board/context/class_context.dart';
+import 'package:zynetix_board/features/board/context/context_switcher.dart';
+import 'package:zynetix_board/features/board/kit/subjects.dart';
+import 'package:zynetix_board/features/board/layout/tools_drawer.dart';
 
 import 'support/panel_harness.dart';
 

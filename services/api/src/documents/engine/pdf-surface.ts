@@ -223,7 +223,7 @@ export class PdfSurface implements Surface {
     const pagesId = reserve();
     const created = this.meta.created ?? new Date();
     const d = created.toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    const info = add(`<< /Title ${pdfString(this.meta.title)} /Producer (KINETIX document engine) /Creator (KINETIX)${this.meta.author ? ` /Author ${pdfString(this.meta.author)}` : ''}${this.meta.subject ? ` /Subject ${pdfString(this.meta.subject)}` : ''} /CreationDate (D:${d}Z) >>`);
+    const info = add(`<< /Title ${pdfString(this.meta.title)} /Producer (ZYNETIX document engine) /Creator (ZYNETIX)${this.meta.author ? ` /Author ${pdfString(this.meta.author)}` : ''}${this.meta.subject ? ` /Subject ${pdfString(this.meta.subject)}` : ''} /CreationDate (D:${d}Z) >>`);
 
     // Fonts.
     const fontIds = new Map<string, number>();

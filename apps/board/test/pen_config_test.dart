@@ -1,10 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/pen_config/pen_config_screen.dart';
-import 'package:kinetix_board/features/board/pen_config/pen_config_strings.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/pen_config/pen_config_screen.dart';
+import 'package:zynetix_board/features/board/pen_config/pen_config_strings.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';

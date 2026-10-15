@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/reader/read_aloud.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_board/features/reader/read_aloud.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// A voice that records what it is asked to say; it has only the [languages] given.
@@ -88,7 +88,7 @@ void main() {
     final voice = FakeVoice(languages: {'en'});
     await tester.pumpWidget(
       MaterialApp(
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         home: ImmersiveReader(title: 'Page 1', paragraphs: const ['Hello class', 'ನಮಸ್ಕಾರ'], voice: voice),
       ),
     );
@@ -115,7 +115,7 @@ void main() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
+    await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
     await tester.pump();
     final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
     final t = _text('The Sun is a star', 500, 400);
@@ -140,7 +140,7 @@ void main() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
+    await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
     await tester.pump();
     final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
     wb.add(_text('Line two', 500, 500));

@@ -25,7 +25,7 @@ export class SigningKeys {
   private readonly box: SecretBox;
 
   constructor(@Inject(ENV) env: Env) {
-    this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`kinetix-signing-keys:${env.PAIRING_HMAC_SECRET}`).digest() }, 1);
+    this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`zynetix-signing-keys:${env.PAIRING_HMAC_SECRET}`).digest() }, 1);
   }
 
   async get(tx: Tx, tenantId: string, rotate = false) {

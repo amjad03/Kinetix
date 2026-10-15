@@ -3,7 +3,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
@@ -12,7 +12,7 @@ import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 
 /// The page the player runs in: the embed's origin and Referer (YouTube's embedded player needs one).
-const playerOrigin = 'https://player.kinetix.local';
+const playerOrigin = 'https://player.zynetix.local';
 
 final _videoId = RegExp(r'^[A-Za-z0-9_-]{11}$');
 
@@ -41,7 +41,7 @@ function onYouTubeIframeAPIReady() {
 </script></body></html>''';
 }
 
-/// "Concept videos" on a topic page: the KINETIX channel's explainers, to preview before class and
+/// "Concept videos" on a topic page: the ZYNETIX channel's explainers, to preview before class and
 /// revise after. Nothing shows when the topic has none (or they can't be loaded).
 class ConceptVideosSection extends StatefulWidget {
   const ConceptVideosSection({super.key, required this.api, required this.topicId});
@@ -152,7 +152,7 @@ class _VideoRow extends StatelessWidget {
   }
 }
 
-/// Who linked a video: KINETIX, the school or the class's teacher.
+/// Who linked a video: ZYNETIX, the school or the class's teacher.
 class _SourceBadge extends StatelessWidget {
   const _SourceBadge({super.key, required this.source});
 

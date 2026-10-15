@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/api.dart';
-import 'package:kinetix_parent/features/sign_in/sign_in_screen.dart';
-import 'package:kinetix_parent/l10n/l10n.dart';
+import 'package:zynetix_parent/core/api.dart';
+import 'package:zynetix_parent/features/sign_in/sign_in_screen.dart';
+import 'package:zynetix_parent/l10n/l10n.dart';
 
 import 'helpers.dart';
 
@@ -168,7 +168,7 @@ void main() {
         ..add('teacher'),
     );
     await signInWithCode(tester);
-    expect(find.textContaining('KINETIX Teacher app'), findsOneWidget);
+    expect(find.textContaining('ZYNETIX Teacher app'), findsOneWidget);
     expect(state.signedIn, isFalse);
     expect(api.token, isNull);
     expect(storedToken(state), isNull);

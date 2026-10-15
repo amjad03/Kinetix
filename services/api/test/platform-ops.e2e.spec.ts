@@ -345,9 +345,9 @@ describe('audit viewer, custom reports, connectors and alumni giving', () => {
       const ok = (await post('admin', `/v1/connectors/${hookId}/test`).expect(200)).body;
       expect(ok.status).toBe('ok');
       expect(hits).toHaveLength(1);
-      expect(hits[0].headers['x-kinetix-event']).toBe('connector.test');
-      expect(verifyWebhook(secret, hits[0].body, hits[0].headers['x-kinetix-signature'] as string)).toBe(true);
-      expect(verifyWebhook('wrong-secret-wrong-secret', hits[0].body, hits[0].headers['x-kinetix-signature'] as string)).toBe(false);
+      expect(hits[0].headers['x-zynetix-event']).toBe('connector.test');
+      expect(verifyWebhook(secret, hits[0].body, hits[0].headers['x-zynetix-signature'] as string)).toBe(true);
+      expect(verifyWebhook('wrong-secret-wrong-secret', hits[0].body, hits[0].headers['x-zynetix-signature'] as string)).toBe(false);
       answer = 500;
       const failed = (await post('admin', `/v1/connectors/${hookId}/test`).expect(200)).body;
       answer = 200;
@@ -373,14 +373,14 @@ describe('audit viewer, custom reports, connectors and alumni giving', () => {
       await drain();
       expect(hits).toHaveLength(1);
       const hit = hits[0];
-      expect(hit.headers['x-kinetix-event']).toBe('alumni.donation_received');
-      expect(verifyWebhook(secret, hit.body, hit.headers['x-kinetix-signature'] as string)).toBe(true);
+      expect(hit.headers['x-zynetix-event']).toBe('alumni.donation_received');
+      expect(verifyWebhook(secret, hit.body, hit.headers['x-zynetix-signature'] as string)).toBe(true);
       // A tampered body or a replay beyond the tolerance fails verification.
-      expect(verifyWebhook(secret, hit.body + ' ', hit.headers['x-kinetix-signature'] as string)).toBe(false);
+      expect(verifyWebhook(secret, hit.body + ' ', hit.headers['x-zynetix-signature'] as string)).toBe(false);
       expect(verifyWebhook(secret, hit.body, signWebhook(secret, hit.body, 1000))).toBe(false);
       const event = JSON.parse(hit.body);
       expect(event).toMatchObject({ type: 'alumni.donation_received', tenantId: t.tenantId, aggregateId: donation.id, data: { amountPaise: 75_000 } });
-      expect(hit.headers['x-kinetix-delivery']).toBeTruthy();
+      expect(hit.headers['x-zynetix-delivery']).toBeTruthy();
       const rows = await delivery(hookId);
       expect(rows).toHaveLength(1);
       expect(rows[0]).toMatchObject({ status: 'delivered', attempts: 1, response_status: 200 });

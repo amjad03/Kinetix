@@ -1,5 +1,5 @@
 // Render compose/index.html frame by frame with system Chrome and stream JPEGs into ffmpeg.
-//   node render.mjs                         -> ../../dist/kinetix-promo.mp4 (needs audio/mix_norm.wav)
+//   node render.mjs                         -> ../../dist/zynetix-promo.mp4 (needs audio/mix_norm.wav)
 //   node render.mjs --stills 3,20,40        -> renders/still-<t>.jpg for QA
 import puppeteer from 'puppeteer-core';
 import { spawn } from 'node:child_process';
@@ -11,7 +11,7 @@ const args = process.argv.slice(2);
 const stills = args.includes('--stills') ? args[args.indexOf('--stills') + 1].split(',').map(Number) : null;
 const FPS = 30;
 const TL = JSON.parse(fs.readFileSync(path.join(HERE, 'timeline.json'), 'utf8'));
-const OUT = path.resolve(HERE, '../../dist/kinetix-promo.mp4');
+const OUT = path.resolve(HERE, '../../dist/zynetix-promo.mp4');
 
 const browser = await puppeteer.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',

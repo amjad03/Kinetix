@@ -121,7 +121,7 @@ export class DataExportService implements OnModuleInit {
         files.push({ name: `tables/${table}.json`, data: Buffer.from(JSON.stringify(clean)) });
       }
       const manifest = {
-        format: 'kinetix-tenant-export',
+        format: 'zynetix-tenant-export',
         version: 1,
         exportedAt: new Date().toISOString(),
         institution: { ...tenant, settings: redact((tenant?.settings ?? {}) as Record<string, unknown>, new Set()) },
@@ -157,7 +157,7 @@ export class DataExportService implements OnModuleInit {
       return r;
     });
     const { stream, size } = await this.storage.get(row.fileKey!);
-    return { stream, size, name: `kinetix-export-${row.createdAt.toISOString().slice(0, 10)}.zip` };
+    return { stream, size, name: `zynetix-export-${row.createdAt.toISOString().slice(0, 10)}.zip` };
   }
 
   /** Deletes an export and its file. */

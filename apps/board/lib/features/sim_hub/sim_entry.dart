@@ -219,19 +219,19 @@ final List<SimEntry> simCatalogue = List.unmodifiable([
   _web('polypad', 'Mathigon Polypad [online, not redistributable]', 'maths', 1, 12, 'https://mathigon.org/polypad', 'Mathigon', 'Free to use online', ['manipulatives', 'tiles']),
   _web('wokwi', 'Wokwi (Arduino and ESP32) [online, not redistributable]', 'electronics', 8, 13, 'https://wokwi.com/', 'Wokwi', 'Free tier', ['arduino', 'microcontroller']),
   _web('molstar', '3D molecules (Mol* viewer)', 'biology', 9, 13, 'https://molstar.org/viewer/', 'Mol* / RCSB PDB', 'MIT; PDB data CC0', ['3d', 'protein', 'molecules']),
-  _native('model3d', '3D biology models (board 3D viewer)', 'biology', 5, 12, 'KINETIX 3D viewer', 'Open models, see 3D credits', ['3d', 'anatomy']),
+  _native('model3d', '3D biology models (board 3D viewer)', 'biology', 5, 12, 'ZYNETIX 3D viewer', 'Open models, see 3D credits', ['3d', 'anatomy']),
   // Economics.
   _web('econgraphs', 'EconGraphs (interactive economics graphs)', 'economics', 11, 13, 'https://www.econgraphs.org/', 'EconGraphs', 'CC BY-NC-SA', ['demand', 'supply', 'graphs']),
-  _native('macro-money', 'Money and banking macro model', 'economics', 11, 13, 'KINETIX (original)', 'KINETIX', ['money-multiplier', 'banking', 'macro']),
+  _native('macro-money', 'Money and banking macro model', 'economics', 11, 13, 'ZYNETIX (original)', 'ZYNETIX', ['money-multiplier', 'banking', 'macro']),
   // Psychology.
   _web('pavlovia', 'PsychoJS / Pavlovia experiments', 'psychology', 11, 13, 'https://pavlovia.org/explore', 'Pavlovia (PsychoPy)', 'Per experiment; PsychoJS GPL-3.0', ['experiments', 'psychopy']),
-  _native('pebl-stroop', 'Stroop test', 'psychology', 9, 13, 'Classic test (PEBL-style), KINETIX', 'KINETIX', ['attention', 'pebl']),
-  _native('pebl-reaction', 'Reaction time', 'psychology', 6, 13, 'Classic test (PEBL-style), KINETIX', 'KINETIX', ['reaction', 'pebl']),
-  _native('pebl-span', 'Memory span', 'psychology', 6, 13, 'Classic test (PEBL-style), KINETIX', 'KINETIX', ['memory', 'pebl']),
+  _native('pebl-stroop', 'Stroop test', 'psychology', 9, 13, 'Classic test (PEBL-style), ZYNETIX', 'ZYNETIX', ['attention', 'pebl']),
+  _native('pebl-reaction', 'Reaction time', 'psychology', 6, 13, 'Classic test (PEBL-style), ZYNETIX', 'ZYNETIX', ['reaction', 'pebl']),
+  _native('pebl-span', 'Memory span', 'psychology', 6, 13, 'Classic test (PEBL-style), ZYNETIX', 'ZYNETIX', ['memory', 'pebl']),
   // Geography, history, language, CS and general.
   _native('map-lab', 'Map lab (layers, markers, measure)', 'geography', 6, 13, 'OpenStreetMap contributors (ODbL) via flutter_map', 'BSD-3 (flutter_map); ODbL map data', ['gis', 'qgis', 'maps'], needsNet: true, note: 'Map tiles are from OpenStreetMap contributors and need internet.'),
-  _native('geo-quiz', 'Geography map quiz', 'geography', 5, 12, 'KINETIX', 'KINETIX', ['quiz', 'maps', 'capitals']),
-  _native('timeline', 'Timeline from key dates', 'history', 6, 12, 'KINETIX key-dates data', 'See assets/history/CREDITS.txt', ['timeline', 'dates']),
+  _native('geo-quiz', 'Geography map quiz', 'geography', 5, 12, 'ZYNETIX', 'ZYNETIX', ['quiz', 'maps', 'capitals']),
+  _native('timeline', 'Timeline from key dates', 'history', 6, 12, 'ZYNETIX key-dates data', 'See assets/history/CREDITS.txt', ['timeline', 'dates']),
   _native('grammar', 'Grammar check (LanguageTool)', 'language', 6, 13, 'LanguageTool public API', 'LGPL-2.1 (service)', ['grammar', 'spelling'], needsNet: true, note: 'Needs internet: the text is sent to api.languagetool.org.'),
   _web('learningapps', 'LearningApps', 'general', 1, 12, 'https://learningapps.org/', 'LearningApps.org', 'Per app, mostly CC BY-SA', ['quiz', 'games']),
   const SimEntry(

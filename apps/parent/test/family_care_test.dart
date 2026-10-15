@@ -3,28 +3,28 @@
 // the child's mentor.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/api.dart';
-import 'package:kinetix_parent/core/boarding.dart';
-import 'package:kinetix_parent/core/exam_models.dart';
-import 'package:kinetix_parent/core/family_care.dart';
-import 'package:kinetix_parent/core/models.dart';
-import 'package:kinetix_parent/features/attendance/attendance_overview_screen.dart';
-import 'package:kinetix_parent/features/exams/exams_screen.dart';
-import 'package:kinetix_parent/features/hostel/boarding_screen.dart';
-import 'package:kinetix_parent/features/hostel/out_pass_approvals_screen.dart';
-import 'package:kinetix_parent/features/school_life/mentoring_screen.dart';
-import 'package:kinetix_parent/features/transport/bus_map.dart';
-import 'package:kinetix_parent/features/transport/bus_screen.dart';
-import 'package:kinetix_parent/features/transport/handover_code_screen.dart';
-import 'package:kinetix_parent/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_parent/core/api.dart';
+import 'package:zynetix_parent/core/boarding.dart';
+import 'package:zynetix_parent/core/exam_models.dart';
+import 'package:zynetix_parent/core/family_care.dart';
+import 'package:zynetix_parent/core/models.dart';
+import 'package:zynetix_parent/features/attendance/attendance_overview_screen.dart';
+import 'package:zynetix_parent/features/exams/exams_screen.dart';
+import 'package:zynetix_parent/features/hostel/boarding_screen.dart';
+import 'package:zynetix_parent/features/hostel/out_pass_approvals_screen.dart';
+import 'package:zynetix_parent/features/school_life/mentoring_screen.dart';
+import 'package:zynetix_parent/features/transport/bus_map.dart';
+import 'package:zynetix_parent/features/transport/bus_screen.dart';
+import 'package:zynetix_parent/features/transport/handover_code_screen.dart';
+import 'package:zynetix_parent/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 import 'fake_push.dart';
 import 'helpers.dart';
 
 Widget host(Widget child, {String language = 'en'}) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: Locale(language),
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,

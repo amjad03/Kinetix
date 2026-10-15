@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
@@ -28,9 +28,9 @@ const languageStringTable = <String, Map<String, String>>{
     'notFound': 'Not in the offline word list.',
     'loadFailed': 'The dictionary could not be loaded.',
     'retry': 'Retry',
-    'askAi': 'Meaning from KINETIX AI',
-    'aiPreview': 'Sample answer (demo): connect KINETIX AI for real meanings',
-    'aiOffline': 'KINETIX AI cannot be reached; the offline list is shown.',
+    'askAi': 'Meaning from ZYNETIX AI',
+    'aiPreview': 'Sample answer (demo): connect ZYNETIX AI for real meanings',
+    'aiOffline': 'ZYNETIX AI cannot be reached; the offline list is shown.',
     'makeCard': 'Make a card',
     'toBoard': 'Put on the board',
     'onBoard': 'On the board',
@@ -63,9 +63,9 @@ const languageStringTable = <String, Map<String, String>>{
     'notFound': 'ऑफ़लाइन शब्द सूची में नहीं है।',
     'loadFailed': 'शब्दकोश लोड नहीं हो सका।',
     'retry': 'फिर कोशिश करें',
-    'askAi': 'KINETIX AI से अर्थ',
-    'aiPreview': 'नमूना उत्तर (डेमो): वास्तविक अर्थ के लिए KINETIX AI जोड़ें',
-    'aiOffline': 'KINETIX AI तक नहीं पहुँच सके; ऑफ़लाइन सूची दिखाई गई है।',
+    'askAi': 'ZYNETIX AI से अर्थ',
+    'aiPreview': 'नमूना उत्तर (डेमो): वास्तविक अर्थ के लिए ZYNETIX AI जोड़ें',
+    'aiOffline': 'ZYNETIX AI तक नहीं पहुँच सके; ऑफ़लाइन सूची दिखाई गई है।',
     'makeCard': 'कार्ड बनाएँ',
     'toBoard': 'बोर्ड पर रखें',
     'onBoard': 'बोर्ड पर',
@@ -98,9 +98,9 @@ const languageStringTable = <String, Map<String, String>>{
     'notFound': 'ಆಫ್‌ಲೈನ್ ಪದ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲ.',
     'loadFailed': 'ನಿಘಂಟು ಲೋಡ್ ಆಗಲಿಲ್ಲ.',
     'retry': 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
-    'askAi': 'KINETIX AI ಇಂದ ಅರ್ಥ',
-    'aiPreview': 'ಮಾದರಿ ಉತ್ತರ (ಡೆಮೊ): ನಿಜವಾದ ಅರ್ಥಕ್ಕೆ KINETIX AI ಜೋಡಿಸಿ',
-    'aiOffline': 'KINETIX AI ತಲುಪಲಾಗಲಿಲ್ಲ; ಆಫ್‌ಲೈನ್ ಪಟ್ಟಿ ತೋರಿಸಲಾಗಿದೆ.',
+    'askAi': 'ZYNETIX AI ಇಂದ ಅರ್ಥ',
+    'aiPreview': 'ಮಾದರಿ ಉತ್ತರ (ಡೆಮೊ): ನಿಜವಾದ ಅರ್ಥಕ್ಕೆ ZYNETIX AI ಜೋಡಿಸಿ',
+    'aiOffline': 'ZYNETIX AI ತಲುಪಲಾಗಲಿಲ್ಲ; ಆಫ್‌ಲೈನ್ ಪಟ್ಟಿ ತೋರಿಸಲಾಗಿದೆ.',
     'makeCard': 'ಕಾರ್ಡ್ ಮಾಡಿ',
     'toBoard': 'ಬೋರ್ಡ್‌ಗೆ ಹಾಕಿ',
     'onBoard': 'ಬೋರ್ಡ್‌ನಲ್ಲಿ',
@@ -137,7 +137,7 @@ List<Word> lookUpWords(String query) {
 
 enum LanguageTab { dictionary, phonics, grammar, cards }
 
-/// The language kit (English, Hindi, Kannada): a dictionary (offline list, and KINETIX AI's
+/// The language kit (English, Hindi, Kannada): a dictionary (offline list, and ZYNETIX AI's
 /// meaning), phonics charts, grammar tables and a vocabulary card builder.
 class LanguageKitPanel extends StatefulWidget {
   const LanguageKitPanel({super.key, required this.board, required this.wb, this.initial = LanguageTab.dictionary});

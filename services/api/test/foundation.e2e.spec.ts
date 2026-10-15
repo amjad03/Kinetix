@@ -90,7 +90,7 @@ describe('Phase 00 foundation', () => {
       secret = (await http().post('/v1/me/mfa/enrol').set(as('accountant')).expect(200)).body.secret;
       const uri = (await http().post('/v1/me/mfa/enrol').set(as('accountant')).expect(200)).body;
       secret = uri.secret;
-      expect(uri.otpauthUri).toMatch(/^otpauth:\/\/totp\/KINETIX/);
+      expect(uri.otpauthUri).toMatch(/^otpauth:\/\/totp\/ZYNETIX/);
       const wrong = await http().post('/v1/me/mfa/confirm').set(as('accountant')).send({ code: '000000' }).expect(403);
       expect(wrong.body.code).toBe('MFA_CODE_INVALID');
       const ok = await http().post('/v1/me/mfa/confirm').set(as('accountant')).send({ code: code(secret) }).expect(200);
@@ -310,10 +310,10 @@ describe('Phase 00 foundation', () => {
       await http().get('/v1/me/sessions').set(as('teacher')).expect(200);
       const m = await http().get('/metrics').expect(200);
       expect(m.headers['content-type']).toMatch(/text\/plain/);
-      expect(m.text).toMatch(/# TYPE kinetix_http_requests_total counter/);
-      expect(m.text).toMatch(/kinetix_http_requests_total\{method="GET",route="\/v1\/me\/sessions",status="2xx"\} \d+/);
-      expect(m.text).toMatch(/kinetix_http_request_duration_seconds_bucket\{[^}]*le="\+Inf"\}/);
-      expect(m.text).toMatch(/kinetix_domain_events_total/);
+      expect(m.text).toMatch(/# TYPE zynetix_http_requests_total counter/);
+      expect(m.text).toMatch(/zynetix_http_requests_total\{method="GET",route="\/v1\/me\/sessions",status="2xx"\} \d+/);
+      expect(m.text).toMatch(/zynetix_http_request_duration_seconds_bucket\{[^}]*le="\+Inf"\}/);
+      expect(m.text).toMatch(/zynetix_domain_events_total/);
     });
   });
 });

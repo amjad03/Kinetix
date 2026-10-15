@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
 
 // Boards download 3D models from their own API server (/assets/models) before GitHub, or from
-// the school server the institution sets (packages/kinetix_3d/lib/src/viewer/remote_models.dart).
+// the school server the institution sets (packages/zynetix_3d/lib/src/viewer/remote_models.dart).
 describe('3D model downloads', () => {
   const owner = ownerPool();
   const clock = new FixedClock(new Date('2026-10-13T05:00:00Z'));
@@ -41,7 +41,7 @@ describe('3D model downloads', () => {
     expect(glb.headers['access-control-allow-origin']).toBe('*');
     const body = glb.body as Buffer;
     expect(body.readUInt32LE(0)).toBe(0x46546c67); // "glTF"
-    expect(body.equals(readFileSync('../../packages/kinetix_3d/remote_models/bacteria.glb'))).toBe(true);
+    expect(body.equals(readFileSync('../../packages/zynetix_3d/remote_models/bacteria.glb'))).toBe(true);
   });
 
   it('serves nothing outside the models folder and says when a model is missing', async () => {

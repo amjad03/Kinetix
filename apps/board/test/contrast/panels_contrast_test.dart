@@ -4,18 +4,18 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/pen_config/pen_config_screen.dart';
-import 'package:kinetix_board/features/classroom/seating.dart';
-import 'package:kinetix_board/features/doc_camera/doc_camera.dart';
-import 'package:kinetix_board/features/exit_ticket/exit_ticket.dart';
-import 'package:kinetix_board/features/language_kit/language_kit.dart';
-import 'package:kinetix_board/features/teaching_aids/organisers.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/pen_config/pen_config_screen.dart';
+import 'package:zynetix_board/features/classroom/seating.dart';
+import 'package:zynetix_board/features/doc_camera/doc_camera.dart';
+import 'package:zynetix_board/features/exit_ticket/exit_ticket.dart';
+import 'package:zynetix_board/features/language_kit/language_kit.dart';
+import 'package:zynetix_board/features/teaching_aids/organisers.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../screens/screens_test.dart' show Shot, sizes;
@@ -57,7 +57,7 @@ void main() {
     FlutterSecureStorage.setMockInitialValues({});
     Viewer3dEngine.debugOverride = FakeViewerEngine.new;
     ViewerManifest.debugLoad = (id) async =>
-        ViewerManifest.fromJson(jsonDecode(File('../../packages/kinetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
+        ViewerManifest.fromJson(jsonDecode(File('../../packages/zynetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
   });
   tearDown(() {
     Viewer3dEngine.debugOverride = null;
@@ -85,7 +85,7 @@ void main() {
         final board = await enrolledBoard();
         board.onPaired('session-token', sessionIn('en'));
         board.setTheme(theme);
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         final s = Shot(tester, board, screen);
         await s.settle();
         final notNow = find.text(l10nFor(const Locale('en')).notNow);
@@ -133,7 +133,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: dark ? KinetixTheme.boardChrome() : KinetixTheme.board(),
+            theme: dark ? ZynetixTheme.boardChrome() : ZynetixTheme.board(),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(body: e.value(board, wb)),

@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import type { LeaveBalance, LeaveRequest, LeaveType } from '@kinetix/shared';
+import type { LeaveBalance, LeaveRequest, LeaveType } from '@zynetix/shared';
 import { and, asc, desc, eq, gte, inArray, isNull, lte, ne, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';

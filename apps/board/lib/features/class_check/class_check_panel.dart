@@ -6,8 +6,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kinetix_cards/kinetix_cards.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_cards/zynetix_cards.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';

@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const ICON = { naac: BadgeCheck, nba: GraduationCap, nirf: Trophy, aishe: ClipboardList, udise: School, aicte: Building2, ugc: Landmark, cbse: ShieldCheck } as const;
 
-/** The accreditation hub: every framework and statutory return KINETIX prepares, grouped by body, and my open tasks. */
+/** The accreditation hub: every framework and statutory return ZYNETIX prepares, grouped by body, and my open tasks. */
 export default async function AccreditationHub() {
   await requireSection('accreditation');
   const { t } = await getI18n();

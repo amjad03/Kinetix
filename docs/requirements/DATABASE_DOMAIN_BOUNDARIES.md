@@ -1,4 +1,4 @@
-# Kinetix Database Domain Boundaries
+# Zynetix Database Domain Boundaries
 
 The PostgreSQL database is shared at the platform level but organized by clear domain ownership in the application.
 

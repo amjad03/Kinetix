@@ -216,7 +216,7 @@ export class SarvamAsr extends SpeechToText {
 }
 
 async function withTemp<T>(fn: (dir: string) => Promise<T>): Promise<T> {
-  const dir = await mkdtemp(join(tmpdir(), 'kinetix-asr-'));
+  const dir = await mkdtemp(join(tmpdir(), 'zynetix-asr-'));
   try {
     return await fn(dir);
   } finally {

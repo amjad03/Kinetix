@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,7 +24,7 @@ Future<bool> _openInPresenter(String name, Uint8List bytes) async {
   final file = File('${dir.path}/$safe');
   await file.writeAsBytes(bytes, flush: true);
   if (Platform.isAndroid) {
-    return await const MethodChannel('kinetix/presenter').invokeMethod<bool>('open', {'path': file.path, 'adjacent': true}) ?? false;
+    return await const MethodChannel('zynetix/presenter').invokeMethod<bool>('open', {'path': file.path, 'adjacent': true}) ?? false;
   }
   if (Platform.isWindows) {
     final r = await Process.run('cmd', ['/c', 'start', '', file.path]);

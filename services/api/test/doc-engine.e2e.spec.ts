@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { DOC_TYPES, PRESET_STYLES, type DocLayout } from '@kinetix/shared';
+import { DOC_TYPES, PRESET_STYLES, type DocLayout } from '@zynetix/shared';
 import argon2 from 'argon2';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import request from 'supertest';

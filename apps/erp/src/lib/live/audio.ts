@@ -1,5 +1,5 @@
 // Class audio in the live view: mono 16 kHz IMA ADPCM (`LiveAudioChunk` in packages/shared).
-// A port of `LiveAudioCodec.decode` (packages/kinetix_ink/lib/src/live_audio.dart), checked
+// A port of `LiveAudioCodec.decode` (packages/zynetix_ink/lib/src/live_audio.dart), checked
 // sample for sample against the Dart codec (fixtures/live-audio.json), and the timing that
 // plays chunks back to back. Pure: the Web Audio side is in components/live/useLiveAudio.ts.
 

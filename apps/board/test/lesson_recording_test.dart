@@ -5,15 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/classroom_plus/recording_notice.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/core/recording/recordings.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/recording/recording_ui.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/classroom_plus/recording_notice.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/core/recording/recordings.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_board/features/recording/recording_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/recording_fakes.dart';
@@ -81,7 +81,7 @@ void main() {
     if (signIn) board.onPaired('session-token', session());
     await tester.pumpWidget(
       MaterialApp(
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         home: BoardScreen(board: board),
       ),
     );

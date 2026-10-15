@@ -34,10 +34,10 @@ export async function POST(req: NextRequest) {
       signal: AbortSignal.timeout(90_000),
     });
   } catch {
-    return new Response("Can't reach KINETIX Cloud", { status: 502 });
+    return new Response("Can't reach ZYNETIX Cloud", { status: 502 });
   }
   if (!res.ok) {
-    let message = res.status === 403 ? 'Not allowed' : res.status === 404 ? 'Not found' : 'KINETIX Cloud error';
+    let message = res.status === 403 ? 'Not allowed' : res.status === 404 ? 'Not found' : 'ZYNETIX Cloud error';
     try {
       const j = (await res.json()) as { message?: string | string[] };
       if (j.message) message = Array.isArray(j.message) ? j.message.join(', ') : j.message;

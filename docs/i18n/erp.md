@@ -1,7 +1,7 @@
 # ERP: Hindi and Kannada
 
 The ERP (`apps/erp`) is localised into English, Hindi (हिन्दी) and Kannada (ಕನ್ನಡ). Terms and style
-follow the [glossary](glossary.md): आप-form and ನೀವು-form, KINETIX / app names / UPI / ISBN / PIN /
+follow the [glossary](glossary.md): आप-form and ನೀವು-form, ZYNETIX / app names / UPI / ISBN / PIN /
 class and subject names in Latin script, Western digits, Indian grouping (₹12,34,567).
 
 > **Needs native review.** The Hindi and Kannada strings are a first draft, written alongside the
@@ -83,7 +83,7 @@ user's language before anything is sent.
   English, as on most Indian receipts.
 - The board app's own screen names quoted in the enrolment steps ("Set up this board",
   "Register board") stay in English until the board is localised.
-- KINETIX, KINETIX AI, KINETIX Cloud, Teacher App, Parent / Student app names, UPI, ISBN, PIN,
+- ZYNETIX, ZYNETIX AI, ZYNETIX Cloud, Teacher App, Parent / Student app names, UPI, ISBN, PIN,
   HOD, UTR (glossary).
 
 ## Tests

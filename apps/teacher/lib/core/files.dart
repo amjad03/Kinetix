@@ -1,5 +1,5 @@
 import 'package:image_picker/image_picker.dart';
-import 'package:kinetix_ui/kinetix_ui.dart' show KxPhotoSource;
+import 'package:zynetix_ui/zynetix_ui.dart' show KxPhotoSource;
 import 'dart:io';
 import 'dart:typed_data';
 

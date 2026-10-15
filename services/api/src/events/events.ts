@@ -56,7 +56,7 @@ export interface EmitInput {
 }
 
 const MAX_ATTEMPTS = 8;
-const WAKE_CHANNEL = 'kinetix:events:wake';
+const WAKE_CHANNEL = 'zynetix:events:wake';
 
 /**
  * Transactional outbox + in-process dispatcher.

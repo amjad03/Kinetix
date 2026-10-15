@@ -1,5 +1,5 @@
 // y = f(x) for graphs on the live board: a TypeScript port of `compileGraph` in
-// packages/kinetix_ink/lib/src/graph_expr.dart. Understands + − × ÷ ^, brackets, implicit
+// packages/zynetix_ink/lib/src/graph_expr.dart. Understands + − × ÷ ^, brackets, implicit
 // multiplication (2x, 3(x+1), x sin x), pi, e, and sin, cos, tan, asin, acos, atan, sqrt, abs,
 // ln, log (base 10), exp. Angles are radians. No eval: the expression is parsed into closures.
 

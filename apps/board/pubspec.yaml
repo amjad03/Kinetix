@@ -1,5 +1,5 @@
-name: kinetix_board
-description: "KINETIX Board: the classroom panel app (Windows panels/OPS PCs and Android panels)."
+name: zynetix_board
+description: "ZYNETIX Board: the classroom panel app (Windows panels/OPS PCs and Android panels)."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -36,25 +36,25 @@ dependencies:
   image_picker: ^1.2.3
   intl: ^0.20.3
   latlong2: ^0.9.1
-  kinetix_3d:
-    path: ../../packages/kinetix_3d
+  zynetix_3d:
+    path: ../../packages/zynetix_3d
   # Animations for the split panel: photosynthesis, the heart, cell division, the water cycle,
   # circuits... drawn in Flutter, offline (lib/features/board/animations_hook.dart).
-  kinetix_animations:
-    path: ../../packages/kinetix_animations
-  kinetix_cards:
-    path: ../../packages/kinetix_cards
+  zynetix_animations:
+    path: ../../packages/zynetix_animations
+  zynetix_cards:
+    path: ../../packages/zynetix_cards
   # The CS kit: code lab (Python/JS/SQL on the board, C/C++/Java on the server), algorithms, CS labs.
-  kinetix_cs:
-    path: ../../packages/kinetix_cs
-  kinetix_ink:
-    path: ../../packages/kinetix_ink
-  kinetix_labs:
-    path: ../../packages/kinetix_labs
-  kinetix_math:
-    path: ../../packages/kinetix_math
-  kinetix_ui:
-    path: ../../packages/kinetix_ui
+  zynetix_cs:
+    path: ../../packages/zynetix_cs
+  zynetix_ink:
+    path: ../../packages/zynetix_ink
+  zynetix_labs:
+    path: ../../packages/zynetix_labs
+  zynetix_math:
+    path: ../../packages/zynetix_math
+  zynetix_ui:
+    path: ../../packages/zynetix_ui
   path_provider: ^2.1.6
   # PDF pages drawn on the board itself (PDFium), for PDF import.
   pdfrx: ^2.6.5
@@ -219,10 +219,10 @@ flutter:
 # one); the certificate itself is passed on the command line, never committed:
 #   dart run msix:create --build-windows false --certificate-path <cert.pfx> --certificate-password <pw>
 msix_config:
-  display_name: KINETIX Board
-  publisher_display_name: KINETIX
-  identity_name: in.kinetix.board
-  publisher: CN=KINETIX, O=KINETIX, C=IN
+  display_name: ZYNETIX Board
+  publisher_display_name: ZYNETIX
+  identity_name: in.zynetix.board
+  publisher: CN=ZYNETIX, O=ZYNETIX, C=IN
   capabilities: internetClient,microphone,webcam
   languages: en-in, hi-in, kn-in
   store: false

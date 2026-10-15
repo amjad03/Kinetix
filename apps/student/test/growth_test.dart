@@ -3,18 +3,18 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/features/campus/house_screen.dart';
-import 'package:kinetix_student/features/profile/profile_tab.dart';
-import 'package:kinetix_student/features/homework/peer_review_screen.dart';
-import 'package:kinetix_student/features/privacy/dpdp_screen.dart';
-import 'package:kinetix_student/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_student/features/campus/house_screen.dart';
+import 'package:zynetix_student/features/profile/profile_tab.dart';
+import 'package:zynetix_student/features/homework/peer_review_screen.dart';
+import 'package:zynetix_student/features/privacy/dpdp_screen.dart';
+import 'package:zynetix_student/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
 
 Widget screen(Widget home, {String language = 'en'}) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: Locale(language),
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,

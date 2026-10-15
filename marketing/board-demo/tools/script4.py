@@ -25,7 +25,7 @@ CH = [
   B('i1', "^This is the board in most classrooms. ^Chalk, dust, and a lot of waiting.", [S('chalk'), S('chalkwrite')], kind='explain'),
   B('i2', "^Now imagine it as a giant tablet. ^You can write on it, tap it, and even talk to it. ^That's a smart board.", [S('tablet'), S('tabwrite'), S('smartlabel')], kind='explain'),
   B('i3', "^But teachers have a dozen jobs before class even starts. ^Attendance. ^Slides. ^A quiz. ^Homework.", [S('jobs'), S('j0'), S('j1'), S('j2'), S('j3')], kind='explain'),
-  B('h3', "^Meet KINETIX Board. ^It does the busywork, so the teacher can just teach.", [A('logo'), A('tag')], kind='logo'),
+  B('h3', "^Meet ZYNETIX Board. ^It does the busywork, so the teacher can just teach.", [A('logo'), A('tag')], kind='logo'),
   B('i5', "Let's spend one science lesson in Class 10 B. ^Here's Ms Kavya, the teacher. ^And here's Aarav, a student.", [S('kavya'), S('aarav')], kind='explain'),
   B('h4', "Today's topic: ^how light bends.", [ink('Refraction of light')], title='One lesson, start to finish'),
  ]),
@@ -74,7 +74,7 @@ CH = [
   B('b55', "^A safe web browser, for research. ^And a document camera, to show real things.", [A('tile', 'Safe browser'), A('tile', 'Document camera')], title='Web & camera', kind='grid'),
  ]),
  ('c6', 'Your AI teaching assistant', [
-  B('b61', "Now, ^she asks KINETIX AI a question about today's lesson.", [A('act', 'Answer in seconds')], title='Ask KINETIX AI'),
+  B('b61', "Now, ^she asks ZYNETIX AI a question about today's lesson.", [A('act', 'Answer in seconds')], title='Ask ZYNETIX AI'),
   B('b62', "It answers in simple words. ^And it shows where the answer came from.", [A('hl', 'NCERT source')], title='With sources'),
   B('x61', "^Planning a lesson can take a whole evening. ^With the AI lesson builder, it takes seconds.", [A('cmp', side=0, text='Plan a lesson by hand', sub='a whole evening'), A('cmp', side=1, text='AI lesson builder', sub='seconds')], kind='compare'),
   B('b63', "Short on time? ^The lesson builder writes a whole plan.", [A('act', 'AI lesson builder')], title='AI lesson builder'),
@@ -82,7 +82,7 @@ CH = [
   B('b65', "It can do more. ^Make a quick quiz. ^Write tonight's homework. ^Draft lecture notes. ^Or read what's on the board.", [A('tile', 'Quick quiz'), A('tile', 'Homework'), A('tile', 'Lecture notes'), A('tile', 'Read the board')], title='More AI helpers', kind='grid'),
  ]),
  ('c7', 'The whole class answers', [
-  B('x71', "^Calling out forty names can take five minutes. ^With KINETIX, it takes ten seconds.", [A('cmp', side=0, text='Call out 40 names', sub='5 minutes'), A('cmp', side=1, text='Tap who is absent', sub='10 seconds')], kind='compare'),
+  B('x71', "^Calling out forty names can take five minutes. ^With ZYNETIX, it takes ten seconds.", [A('cmp', side=0, text='Call out 40 names', sub='5 minutes'), A('cmp', side=1, text='Tap who is absent', sub='10 seconds')], kind='compare'),
   B('b71', "^She just taps who's absent, and it goes straight to the school office.", [A('act', "Tap who's absent")], title='Attendance'),
   B('b72', "Now, ^she asks the whole class a question.", [A('act', 'Live question')], title='Ask the class'),
   B('b73', "^Students answer on their phones, ^and the bars move live.", [A('act', 'Answers arriving'), A('act', 'Live results')], title='Answers from phones', bubble={'at': 1, 'text': 'I picked B, from my phone!'}),
@@ -127,7 +127,7 @@ CH = [
  ('end', '', [
   B('r1', "One board, for the whole lesson. ^Ink that feels real. ^An AI helper. ^Live answers from every student. ^And every app, in sync.",
     [A('mont', 'Ink that feels real', src='b26'), A('mont', 'AI lesson builder', src='b64'), A('mont', 'Live answers', src='b75'), A('mont', 'Every app in sync', src='b121')], kind='recap'),
-  B('r2', "^KINETIX Board. Every lesson, connected.", [A('logo')], kind='endcard'),
+  B('r2', "^ZYNETIX Board. Every lesson, connected.", [A('logo')], kind='endcard'),
  ]),
 ]
 

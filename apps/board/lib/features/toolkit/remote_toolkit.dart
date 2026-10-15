@@ -1,4 +1,4 @@
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import '../remote/board_toolkit.dart';
 import 'toolkit_controller.dart';

@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { PairingClaimedEvent } from '@kinetix/shared';
-import { RealtimeEvents } from '@kinetix/shared';
+import type { PairingClaimedEvent } from '@zynetix/shared';
+import { RealtimeEvents } from '@zynetix/shared';
 import { and, desc, eq, gte, gt, inArray, isNull, sql } from 'drizzle-orm';
 import type { DevicePrincipal, UserPrincipal } from '../auth/principal.js';
 import { TokensService } from '../auth/tokens.service.js';
@@ -28,7 +28,7 @@ type Device = typeof devices.$inferSelect;
 export interface ClaimInput {
   /** Typed 6-digit code. */
   code?: string;
-  /** Scanned QR payload: kinetix://pair?c=…&s=…&d=… */
+  /** Scanned QR payload: zynetix://pair?c=…&s=…&d=… */
   qr?: string;
 }
 
@@ -227,13 +227,13 @@ export class PairingService {
       try {
         url = new URL(input.qr);
       } catch {
-        throw new BadRequestException('Not a KINETIX pairing QR code');
+        throw new BadRequestException('Not a ZYNETIX pairing QR code');
       }
       const code = url.searchParams.get('c');
       const secret = url.searchParams.get('s');
       const deviceId = url.searchParams.get('d');
-      if (url.protocol !== 'kinetix:' || url.host !== 'pair' || !code || !secret || !deviceId) {
-        throw new BadRequestException('Not a KINETIX pairing QR code');
+      if (url.protocol !== 'zynetix:' || url.host !== 'pair' || !code || !secret || !deviceId) {
+        throw new BadRequestException('Not a ZYNETIX pairing QR code');
       }
       return { code, secret, deviceId };
     }

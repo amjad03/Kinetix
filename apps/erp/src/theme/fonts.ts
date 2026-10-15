@@ -1,6 +1,6 @@
 import localFont from 'next/font/local';
 
-// Bundled OFL fonts (copied from packages/kinetix_ui/fonts, see its NOTICE.md): no Google Fonts
+// Bundled OFL fonts (copied from packages/zynetix_ui/fonts, see its NOTICE.md): no Google Fonts
 // request at runtime. Google Sans Flex static instances, under our own family name.
 export const sansFlex = localFont({
   variable: '--font-sans-flex',

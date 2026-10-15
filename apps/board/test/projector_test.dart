@@ -4,13 +4,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show Model3dScope;
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/projector/projector_controller.dart';
-import 'package:kinetix_board/features/projector/projector_screen.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart' show Model3dScope;
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_board/features/projector/projector_controller.dart';
+import 'package:zynetix_board/features/projector/projector_screen.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// A second screen the test plugs in and out; it records what the board sends.
@@ -191,7 +191,7 @@ void main() {
     });
 
     testWidgets('the projector engine\'s app takes frames from the channel and asks for a snapshot', (tester) async {
-      const channel = MethodChannel('kinetix/projector_feed');
+      const channel = MethodChannel('zynetix/projector_feed');
       final calls = <String>[];
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async {
         calls.add(call.method);
@@ -223,7 +223,7 @@ void main() {
     final fake = FakeProjectorDisplay()..attached.add(_hdmi);
     final board = BoardController(projector: ProjectorController(display: fake))..skipEnrollment();
     await tester.runAsync(board.projector.start);
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: board)));
+    await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: board)));
     await tester.pumpAndSettle();
     expect(board.projector.isShowing, isTrue);
     expect(fake.events.where((e) => e[1] == 'L'), isNotEmpty);

@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type LiveFrameEvent, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
+import { RealtimeEvents, type LiveFrameEvent, type LiveViewersEvent, type LiveWatchAck } from '@zynetix/shared';
 import { Redis } from 'ioredis';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';

@@ -1,4 +1,4 @@
-import type { DocLayout, DocType, ElementOf, PresetStyle, TextStyle } from '@kinetix/shared';
+import type { DocLayout, DocType, ElementOf, PresetStyle, TextStyle } from '@zynetix/shared';
 import { compactChrome, landscapeCertificateChrome, portraitChrome } from './chrome.js';
 import { A4L, A4P, A5L, type Box, Builder, field, layout, panel, section, signatures, stroke, style, type Theme, THEMES, tile } from './kit.js';
 

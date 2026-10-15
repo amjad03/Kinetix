@@ -101,7 +101,7 @@ describe('QR codes', () => {
     expect(() => qrMatrix('z'.repeat(300))).toThrow();
   });
   it('draws the three finder patterns and the timing line', () => {
-    const m = qrMatrix('https://kinetix.example/verify/slug/token');
+    const m = qrMatrix('https://zynetix.example/verify/slug/token');
     const n = m.length;
     for (const [r, c] of [[0, 0], [0, n - 7], [n - 7, 0]]) {
       expect(m[r][c] && m[r + 6][c + 6] && m[r + 3][c + 3]).toBe(true);

@@ -88,7 +88,7 @@ export default area(
 
     'rk.history.title': 'History',
     'rk.history.none': 'No changes recorded yet',
-    'rk.history.system': 'KINETIX',
+    'rk.history.system': 'ZYNETIX',
     'rk.history.someone': 'Someone',
     'rk.history.to': 'to',
     'rk.history.reason': 'Reason: {reason}',
@@ -414,7 +414,7 @@ export default area(
 
       'rk.history.title': 'इतिहास',
       'rk.history.none': 'अभी कोई बदलाव दर्ज नहीं',
-      'rk.history.system': 'KINETIX',
+      'rk.history.system': 'ZYNETIX',
       'rk.history.someone': 'कोई व्यक्ति',
       'rk.history.to': 'से बदलकर',
       'rk.history.reason': 'कारण: {reason}',
@@ -739,7 +739,7 @@ export default area(
 
       'rk.history.title': 'ಇತಿಹಾಸ',
       'rk.history.none': 'ಇನ್ನೂ ಯಾವುದೇ ಬದಲಾವಣೆ ದಾಖಲಾಗಿಲ್ಲ',
-      'rk.history.system': 'KINETIX',
+      'rk.history.system': 'ZYNETIX',
       'rk.history.someone': 'ಯಾರೋ',
       'rk.history.to': 'ಇಂದ ಬದಲಾಗಿ',
       'rk.history.reason': 'ಕಾರಣ: {reason}',

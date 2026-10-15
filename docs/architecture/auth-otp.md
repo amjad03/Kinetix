@@ -67,10 +67,10 @@ The limits apply before the tenant and user lookups, so they are identical for e
 
 ### DLT (TRAI) notes
 
-Commercial SMS in India must be sent from a sender id (header) and template registered on a DLT platform (Jio, Vodafone Idea, Airtel, BSNL…) under the institution's or KINETIX's principal entity.
+Commercial SMS in India must be sent from a sender id (header) and template registered on a DLT platform (Jio, Vodafone Idea, Airtel, BSNL…) under the institution's or ZYNETIX's principal entity.
 
 1. Register the principal entity and a 6-character header (e.g. `KINTIX`), set it as `MSG91_SENDER_ID`.
-2. Register a **Service Implicit / OTP** content template, e.g. `{#var#} is your {#var#} sign-in code. It expires in 5 minutes. Do not share it.` Variables map to MSG91's `##otp##` and `##app##`; `SMS_APP_NAME` (default `KINETIX`) fills `app`.
+2. Register a **Service Implicit / OTP** content template, e.g. `{#var#} is your {#var#} sign-in code. It expires in 5 minutes. Do not share it.` Variables map to MSG91's `##otp##` and `##app##`; `SMS_APP_NAME` (default `ZYNETIX`) fills `app`.
 3. Create the MSG91 Flow template with the DLT template id and use its id as `MSG91_TEMPLATE_ID`.
 4. The wording, and its language, is fixed by the registered template. The user's `preferredLanguage` is passed to the sender so per-language templates (one DLT template per language, Unicode for Indic scripts) can be selected later; today one template is used for everyone.
 5. Do not put links or anything but the code and app name in the message; OTP templates with extra content are rejected or throttled.

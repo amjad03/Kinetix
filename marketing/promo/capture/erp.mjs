@@ -20,8 +20,8 @@ if (process.env.LIGHT) await page.emulateMediaFeatures([{ name: 'prefers-color-s
 await page.goto(`${BASE}/login`, { waitUntil: 'networkidle2', timeout: 120000 });
 await page.type('input[name=tenant]', 'soundarya').catch(() => {});
 await page.evaluate(() => { const t = document.querySelector('input[name=tenant]'); if (t) t.value = 'soundarya'; });
-await page.type('input[name=login]', process.env.ERP_LOGIN ?? 'principal@soundarya.demo.kinetix.in');
-await page.type('input[name=password]', process.env.ERP_PASSWORD ?? 'kinetix123');
+await page.type('input[name=login]', process.env.ERP_LOGIN ?? 'principal@soundarya.demo.zynetix.in');
+await page.type('input[name=password]', process.env.ERP_PASSWORD ?? 'zynetix123');
 await Promise.all([page.waitForNavigation({ timeout: 120000 }).catch(() => {}), page.keyboard.press('Enter')]);
 console.log('after login', page.url());
 for (const [name, path] of PAGES) {

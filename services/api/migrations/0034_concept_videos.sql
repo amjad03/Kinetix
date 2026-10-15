@@ -28,8 +28,8 @@ CREATE INDEX "concept_videos_topic_idx" ON "concept_videos" USING btree ("topic_
 -- not granted to the app role at all; SystemLookups reads it as the owner.
 DO $$
 BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    REVOKE ALL ON concept_videos, platform_admins FROM kinetix_app;
-    GRANT SELECT ON concept_videos TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    REVOKE ALL ON concept_videos, platform_admins FROM zynetix_app;
+    GRANT SELECT ON concept_videos TO zynetix_app;
   END IF;
 END $$;

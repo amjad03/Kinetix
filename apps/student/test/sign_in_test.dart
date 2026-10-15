@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/features/sign_in/sign_in_screen.dart';
+import 'package:zynetix_student/features/sign_in/sign_in_screen.dart';
 
 import 'fake_push.dart';
 import 'helpers.dart';
@@ -9,8 +9,8 @@ void main() {
   Future<void> fill(
     WidgetTester tester, {
     String tenant = 'demo-college',
-    String login = 'aarav@demo.kinetix.in',
-    String password = 'kinetix123',
+    String login = 'aarav@demo.zynetix.in',
+    String password = 'zynetix123',
   }) async {
     if (find.byKey(const Key('password')).evaluate().isEmpty) await usePassword(tester);
     await tester.enterText(find.byKey(const Key('tenant')), tenant);
@@ -43,7 +43,7 @@ void main() {
 
   test('normalises Indian phone numbers to E.164 and lower-cases emails', () {
     expect(normalizeLogin('98000 00001'), '+919800000001');
-    expect(normalizeLogin('Aarav@Demo.Kinetix.in'), 'aarav@demo.kinetix.in');
+    expect(normalizeLogin('Aarav@Demo.Zynetix.in'), 'aarav@demo.zynetix.in');
   });
 
   testWidgets('shows the server error inline for a wrong password', (tester) async {
@@ -60,9 +60,9 @@ void main() {
         ..clear()
         ..add('guardian'),
     );
-    await fill(tester, login: 'parent@demo.kinetix.in');
+    await fill(tester, login: 'parent@demo.zynetix.in');
     expect(find.textContaining('This app is for students'), findsOneWidget);
-    expect(find.textContaining('KINETIX Parent app'), findsOneWidget);
+    expect(find.textContaining('ZYNETIX Parent app'), findsOneWidget);
     expect(state.signedIn, isFalse);
     expect(api.token, isNull);
   });
@@ -75,8 +75,8 @@ void main() {
         ..clear()
         ..add('teacher'),
     );
-    await fill(tester, login: 'anita@demo.kinetix.in');
-    expect(find.textContaining('KINETIX Teacher app'), findsOneWidget);
+    await fill(tester, login: 'anita@demo.zynetix.in');
+    expect(find.textContaining('ZYNETIX Teacher app'), findsOneWidget);
   });
 
   testWidgets('explains a student login with no student record', (tester) async {
@@ -89,8 +89,8 @@ void main() {
 
   testWidgets('signs in, remembers the institution and opens Today', (tester) async {
     final (api, state) = await pumpApp(tester, signedIn: false);
-    await fill(tester, tenant: ' Demo-College ', login: 'Aarav@Demo.Kinetix.in');
-    expect(api.calls.first, 'login demo-college aarav@demo.kinetix.in');
+    await fill(tester, tenant: ' Demo-College ', login: 'Aarav@Demo.Zynetix.in');
+    expect(api.calls.first, 'login demo-college aarav@demo.zynetix.in');
     expect(find.byKey(const Key('greeting')), findsOneWidget);
     expect(find.textContaining('Aarav'), findsWidgets);
     expect(find.byType(NavigationBar), findsOneWidget);

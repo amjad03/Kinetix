@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Put, Query } from '@nestjs/common';
-import { NATIONALITIES } from '@kinetix/shared';
+import { NATIONALITIES } from '@zynetix/shared';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../../auth/auth.decorators.js';

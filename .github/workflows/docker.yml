@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: ECR repositories to push to (kinetix-<environment>-api / -erp)
+        description: ECR repositories to push to (zynetix-<environment>-api / -erp)
         type: choice
         options: [staging, prod]
         default: staging
@@ -67,7 +67,7 @@ jobs:
       - name: Tags
         id: tags
         run: |
-          repo="${{ steps.ecr.outputs.registry || 'local' }}/kinetix-${KX_ENV}-${{ matrix.name }}"
+          repo="${{ steps.ecr.outputs.registry || 'local' }}/zynetix-${KX_ENV}-${{ matrix.name }}"
           echo "tags=${repo}:${GITHUB_SHA::12},${repo}:main" >> "$GITHUB_OUTPUT"
       - uses: docker/build-push-action@v6
         with:

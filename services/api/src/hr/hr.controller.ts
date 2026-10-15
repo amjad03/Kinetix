@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, ServiceUnavailableException } from '@nestjs/common';
-import type { BankDetailsView, Designation, Holiday, StaffAttendanceSummary } from '@kinetix/shared';
+import type { BankDetailsView, Designation, Holiday, StaffAttendanceSummary } from '@zynetix/shared';
 import { asc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';

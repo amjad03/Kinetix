@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_cloud.dart';
@@ -16,7 +16,7 @@ void main() {
     screenSize(tester, const Size(1920, 1080));
     final board = await enrolledBoard();
     board.onPaired('t', sessionIn('en'));
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     return (board, tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller);
   }
@@ -48,7 +48,7 @@ void main() {
     final board = await enrolledBoard();
     board.onPaired('t', sessionIn('en'));
     board.setTheme(BoardTheme.dark);
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
     expect(wb.background, BoardBackground.night);

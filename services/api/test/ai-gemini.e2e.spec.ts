@@ -13,7 +13,7 @@ import { createApp, createTenant, FixedClock, nextMondayIst, ownerPool, pairBoar
  * retryDelay, 503 "overloaded", the daily quota), cut-off and withheld replies, and answers
  * written the way Gemini writes them (LaTeX, markdown, nulls, numbers as text).
  */
-describe('KINETIX AI on Google Gemini (OpenAI-compatible endpoint)', () => {
+describe('ZYNETIX AI on Google Gemini (OpenAI-compatible endpoint)', () => {
   const owner = ownerPool();
   const clock = new FixedClock(nextMondayIst('10:30'));
   const gemini = new FakeGemini();
@@ -158,7 +158,7 @@ describe('KINETIX AI on Google Gemini (OpenAI-compatible endpoint)', () => {
   it('says "busy, try again" when Gemini stays overloaded or the day\'s free quota is used', async () => {
     gemini.failures = [503, 503, 503];
     const busy = await post('board', '/v1/ai/explain', { question: 'What is the longest river in India?' }).expect(503);
-    expect(busy.body).toMatchObject({ code: 'AI_BUSY', message: 'KINETIX AI is busy right now. Try again in a minute.' });
+    expect(busy.body).toMatchObject({ code: 'AI_BUSY', message: 'ZYNETIX AI is busy right now. Try again in a minute.' });
     expect(gemini.requests).toHaveLength(3);
 
     gemini.requests = [];

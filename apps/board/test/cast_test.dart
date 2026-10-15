@@ -3,11 +3,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/cast/cast_controller.dart';
-import 'package:kinetix_board/core/cast/cast_receiver.dart';
-import 'package:kinetix_board/features/cast/cast_panel.dart';
-import 'package:kinetix_board/features/fleet/device_lock.dart' show deviceLockStringTable;
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/cast/cast_controller.dart';
+import 'package:zynetix_board/core/cast/cast_receiver.dart';
+import 'package:zynetix_board/features/cast/cast_panel.dart';
+import 'package:zynetix_board/features/fleet/device_lock.dart' show deviceLockStringTable;
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'support/board_fonts.dart';
 

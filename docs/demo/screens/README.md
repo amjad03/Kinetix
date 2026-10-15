@@ -1,6 +1,6 @@
 # ERP screenshots
 
-Representative KINETIX ERP pages after the visual QA pass, signed in as the principal of the Soundarya seed
+Representative ZYNETIX ERP pages after the visual QA pass, signed in as the principal of the Soundarya seed
 (`docs/demo/SOUNDARYA_DEMO_LOGINS.md`), English, light theme, 1440 × 900 (phones at 390 × 844).
 Retake them with `apps/erp/scripts/demo-screens.mjs`; check every page with `apps/erp/scripts/ui-qa-crawl.mjs`.
 

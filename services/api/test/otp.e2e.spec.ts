@@ -52,7 +52,7 @@ describe('phone sign-in (OTP)', () => {
   it('request → verify signs in with the same body as password login, once', async () => {
     const res = await ask(a.slug, '98000 00101').expect(202);
     expect(res.body).toEqual({ retryAfterSeconds: 30, expiresInSeconds: 300 });
-    expect(sms.sent.at(-1)).toMatchObject({ to: '+919800000101', appName: 'KINETIX', language: 'en' });
+    expect(sms.sent.at(-1)).toMatchObject({ to: '+919800000101', appName: 'ZYNETIX', language: 'en' });
     const code = sms.last('+919800000101');
     expect(code).toMatch(/^\d{6}$/);
 

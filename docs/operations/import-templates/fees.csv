@@ -1,4 +1,4 @@
-# KINETIX import: fee structures. One row per fee head; rows with the same structure (and program) form one structure.
+# ZYNETIX import: fee structures. One row per fee head; rows with the same structure (and program) form one structure.
 # structure     Name of the fee structure, e.g. BSc Sem 1 fees (required)
 # program       Optional: the program it applies to (import programs first)
 # head          Fee head, e.g. Tuition (required)

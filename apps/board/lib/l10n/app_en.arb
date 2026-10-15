@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "KINETIX Board",
+  "appTitle": "ZYNETIX Board",
   "@appTitle": {
     "description": "Product name; stays in English."
   },
@@ -52,7 +52,7 @@
       }
     }
   },
-  "cloudUnreachable": "Could not reach KINETIX Cloud",
+  "cloudUnreachable": "Could not reach ZYNETIX Cloud",
   "toolRecord": "Record",
   "toolStop": "Stop",
   "toolTheme": "Theme",
@@ -131,7 +131,7 @@
       }
     }
   },
-  "cloudUnreachableCheckOnline": "Could not reach KINETIX Cloud. Check the board is online.",
+  "cloudUnreachableCheckOnline": "Could not reach ZYNETIX Cloud. Check the board is online.",
   "noClassList": "No class list",
   "takeAttendance": "{count, plural, =1{1 student · Take attendance} other{{count} students · Take attendance}}",
   "@takeAttendance": {
@@ -160,7 +160,7 @@
       }
     }
   },
-  "connectedCloud": "Connected to KINETIX Cloud",
+  "connectedCloud": "Connected to ZYNETIX Cloud",
   "offlineSaved": "Offline. Everything is saved and will sync.",
   "endClass": "End class",
   "signedOutGuest": "Signed out. The board is in guest mode.",
@@ -195,7 +195,7 @@
     }
   },
   "recordingDiscarded": "Recording discarded.",
-  "recordingSavedUploading": "Recording saved. It is uploading to KINETIX Cloud.",
+  "recordingSavedUploading": "Recording saved. It is uploading to ZYNETIX Cloud.",
   "recordingSavedLater": "Recording saved on this board. It uploads when {name} next signs in.",
   "@recordingSavedLater": {
     "placeholders": {
@@ -585,7 +585,7 @@
   "tourInsertBody": "Equations, notes, pictures, the picture library, a PDF or PowerPoint, 3D models, labs and simulations.",
   "tourToolsTitle": "Class tools",
   "tourToolsBody": "Timer, stopwatch, name picker, dice, spinner, noise meter, screen shade, spotlight and the immersive reader.",
-  "tourAiTitle": "KINETIX AI",
+  "tourAiTitle": "ZYNETIX AI",
   "tourAiBody": "Ask about the lesson, make a quiz or homework, or solve a sum written on the board.",
   "tourBooksTitle": "Books",
   "tourBooksBody": "Your syllabus: each topic’s lesson, key facts and questions, read aloud if you like.",
@@ -606,7 +606,7 @@
   "helpGroupWriting": "Writing on the board",
   "helpGroupContent": "Pages and content",
   "helpGroupClass": "Teaching tools",
-  "helpGroupAi": "KINETIX AI and Books",
+  "helpGroupAi": "ZYNETIX AI and Books",
   "helpGroupSettings": "Settings",
   "helpWriteTitle": "Write and draw",
   "helpWrite1": "Tap the pen on the left and write with a finger or the stylus.",
@@ -643,7 +643,7 @@
   "helpRecordTitle": "Record a lesson",
   "helpRecord1": "Tap the red button to record the board and your voice.",
   "helpRecord2": "Tap it again to stop and save.",
-  "helpAiTitle": "Ask KINETIX AI",
+  "helpAiTitle": "Ask ZYNETIX AI",
   "helpAi1": "Tap the AI buttons on the right: ask, quiz, homework, the maths solver.",
   "helpAi2": "Select something on the board and tap Read with AI to ask about it.",
   "helpBooksTitle": "Lessons from Books",
@@ -874,7 +874,7 @@
       }
     }
   },
-  "recUploadNote": "It uploads to KINETIX Cloud in the background. Absent students are told it is there.",
+  "recUploadNote": "It uploads to ZYNETIX Cloud in the background. Absent students are told it is there.",
   "sharedWith": "Shared with {section}.",
   "@sharedWith": {
     "placeholders": {
@@ -954,8 +954,8 @@
     }
   },
   "thisBoard": "this board",
-  "signInUsePhone": "Use the KINETIX Teacher app on your phone.",
-  "signInStep1": "Open the KINETIX Teacher app",
+  "signInUsePhone": "Use the ZYNETIX Teacher app on your phone.",
+  "signInStep1": "Open the ZYNETIX Teacher app",
   "signInStep2": "Tap Connect to board",
   "@signInStep2": {
     "description": "Button name in the Teacher App; keep it the same as the Teacher App shows it."
@@ -969,10 +969,10 @@
       }
     }
   },
-  "cannotReachCloudRetrying": "Cannot reach KINETIX Cloud. Retrying…",
+  "cannotReachCloudRetrying": "Cannot reach ZYNETIX Cloud. Retrying…",
   "signInCodeNote": "The code changes every 2 minutes and works once. No password is typed on the board.",
   "enrollTitle": "Set up this board",
-  "enrollHint": "In KINETIX ERP, open Devices → Add board, then enter the code shown there.",
+  "enrollHint": "In ZYNETIX ERP, open Devices → Add board, then enter the code shown there.",
   "@enrollHint": {
     "description": "Devices and Add board are ERP menu names; keep them as the ERP shows them."
   },
@@ -981,7 +981,7 @@
   "enrollRegistering": "Registering…",
   "enrollRegister": "Register board",
   "enrollSkip": "Skip for now and use the practice board",
-  "aiAskNeedsSignIn": "Sign in with the Teacher app to ask KINETIX AI.",
+  "aiAskNeedsSignIn": "Sign in with the Teacher app to ask ZYNETIX AI.",
   "aiAskHint": "Ask anything about a topic",
   "aiAskHintClass": "Ask anything about {classLabel}",
   "@aiAskHintClass": {
@@ -994,7 +994,7 @@
   "aiSpeak": "Speak",
   "aiAsk": "Ask",
   "aiDisclaimer": "Answers follow your syllabus. Check before sharing with the class.",
-  "aiPreparing": "KINETIX AI is preparing an explanation…",
+  "aiPreparing": "ZYNETIX AI is preparing an explanation…",
   "aiGroupTeach": "Teach",
   "aiGroupMathsScience": "Maths & science",
   "aiGroupLookUp": "Look up",
@@ -1017,10 +1017,10 @@
   },
   "aiKeyPoints": "Key points",
   "aiAskNext": "Ask next",
-  "aiPreviewLabel": "Preview — connect the KINETIX AI server for real answers",
+  "aiPreviewLabel": "Preview — connect the ZYNETIX AI server for real answers",
   "aiPreview": "Preview",
-  "aiLanguageTooltip": "Language for KINETIX AI",
-  "aiSignInNotice": "KINETIX AI needs a teacher signed in and the board online. Sign in with the Teacher app from the profile button. The maths solver works without signing in.",
+  "aiLanguageTooltip": "Language for ZYNETIX AI",
+  "aiSignInNotice": "ZYNETIX AI needs a teacher signed in and the board online. Sign in with the Teacher app from the profile button. The maths solver works without signing in.",
   "difficultyEasy": "Easy",
   "difficultyMedium": "Medium",
   "difficultyHard": "Hard",
@@ -1033,11 +1033,11 @@
     }
   },
   "dueDate": "Due date",
-  "aiErrSignInAgain": "Sign in again with the Teacher app to use KINETIX AI.",
-  "aiErrRefused": "KINETIX AI can’t help with that request. Try rephrasing it for the classroom.",
-  "aiErrQuota": "Your institution has used today’s KINETIX AI allowance. It resets tomorrow.",
-  "aiErrUnusable": "KINETIX AI could not produce a usable answer. Try again or rephrase.",
-  "aiErrUnreachable": "KINETIX AI is not reachable right now. Try again in a minute.",
+  "aiErrSignInAgain": "Sign in again with the Teacher app to use ZYNETIX AI.",
+  "aiErrRefused": "ZYNETIX AI can’t help with that request. Try rephrasing it for the classroom.",
+  "aiErrQuota": "Your institution has used today’s ZYNETIX AI allowance. It resets tomorrow.",
+  "aiErrUnusable": "ZYNETIX AI could not produce a usable answer. Try again or rephrase.",
+  "aiErrUnreachable": "ZYNETIX AI is not reachable right now. Try again in a minute.",
   "aiErrCheckInput": "Check what you typed and try again.",
   "aiErrGeneric": "Something went wrong ({status}). Try again.",
   "@aiErrGeneric": {
@@ -1047,13 +1047,13 @@
       }
     }
   },
-  "aiErrTimeout": "KINETIX AI is taking too long. Try again in a minute.",
-  "aiErrOffline": "The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.",
-  "aiErrBusy": "KINETIX AI is busy right now. Try again in a minute.",
+  "aiErrTimeout": "ZYNETIX AI is taking too long. Try again in a minute.",
+  "aiErrOffline": "The board is offline. Connect to the internet to use ZYNETIX AI. The maths solver works offline.",
+  "aiErrBusy": "ZYNETIX AI is busy right now. Try again in a minute.",
   "aiErrNothingOnPages": "Nothing could be read on those pages. Write on the board first, or choose other pages.",
   "aiExplainTopic": "Explain {topic}",
   "@aiExplainTopic": {
-    "description": "Question sent to KINETIX AI, in the AI language.",
+    "description": "Question sent to ZYNETIX AI, in the AI language.",
     "placeholders": {
       "topic": {
         "type": "String"
@@ -1062,14 +1062,14 @@
   },
   "aiExplainFromBoard": "Explain this from the board: {text}",
   "@aiExplainFromBoard": {
-    "description": "Question sent to KINETIX AI, in the AI language.",
+    "description": "Question sent to ZYNETIX AI, in the AI language.",
     "placeholders": {
       "text": {
         "type": "String"
       }
     }
   },
-  "quizNeedsSignIn": "Sign in with the Teacher app to make a quiz with KINETIX AI.",
+  "quizNeedsSignIn": "Sign in with the Teacher app to make a quiz with ZYNETIX AI.",
   "quizTypeTopic": "Type a topic for the quiz first.",
   "quizTopicHint": "e.g. Photosynthesis, Fractions, Company accounts",
   "questionsLabel": "Questions",
@@ -1138,7 +1138,7 @@
   "@quizHomeworkIntro": {
     "description": "Homework text sent to students, in the AI language."
   },
-  "homeworkNeedsSignIn": "Sign in with the Teacher app to make homework with KINETIX AI.",
+  "homeworkNeedsSignIn": "Sign in with the Teacher app to make homework with ZYNETIX AI.",
   "homeworkTypeTopic": "Type a topic for the homework first.",
   "homeworkTopicHint": "e.g. Linear equations, Journal entries",
   "homeworkMake": "Make homework",
@@ -1208,7 +1208,7 @@
       }
     }
   },
-  "lessonNeedsSignIn": "Sign in with the Teacher app to plan a lesson with KINETIX AI.",
+  "lessonNeedsSignIn": "Sign in with the Teacher app to plan a lesson with ZYNETIX AI.",
   "lessonTypeTopic": "Type a topic for the lesson first.",
   "lessonTopicHint": "e.g. The water cycle",
   "lessonLength": "Length",
@@ -1226,7 +1226,7 @@
   },
   "lessonMaterials": "Materials",
   "lessonCheck": "Check understanding",
-  "readNeedsSignIn": "Sign in with the Teacher app to read the board with KINETIX AI.",
+  "readNeedsSignIn": "Sign in with the Teacher app to read the board with ZYNETIX AI.",
   "readIntro": "Turns the handwriting on this page into text you can copy, check or ask about. Write clearly; one page at a time.",
   "readThisPage": "Read this page",
   "readAgain": "Read again",
@@ -1235,12 +1235,12 @@
   "readMathsFound": "Maths found",
   "copied": "Copied",
   "copyText": "Copy text",
-  "askAiAboutThis": "Ask KINETIX AI about this",
+  "askAiAboutThis": "Ask ZYNETIX AI about this",
   "booksTopic": "Topic",
   "booksSignIn": "Books show the syllabus of the class being taught. Sign in with the Teacher app to open it.",
   "booksOpening": "Opening the syllabus…",
   "booksCouldNotOpen": "Could not open the syllabus. Check the board is online.",
-  "booksUnlinked": "This subject isn't linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.",
+  "booksUnlinked": "This subject isn't linked to a syllabus yet. Your admin can link it in ZYNETIX ERP → Syllabus.",
   "booksDraft": "Draft content: check against your textbook before teaching from it.",
   "booksDraftShort": "Draft content: check against your textbook.",
   "booksAddedByInstitution": "Added by your institution",
@@ -1254,7 +1254,7 @@
   },
   "booksOpeningTopic": "Opening the topic…",
   "booksCouldNotOpenTopic": "Could not open this topic.",
-  "booksExplain": "Explain with KINETIX AI",
+  "booksExplain": "Explain with ZYNETIX AI",
   "booksQuiz": "Quick quiz on this",
   "booksOnTheBoard": "On the board",
   "booksKeyFacts": "Key facts",
@@ -1652,9 +1652,9 @@
   "@planNone": {
     "description": "No plan saved for the period."
   },
-  "planAiDrafted": "Drafted with KINETIX AI",
+  "planAiDrafted": "Drafted with ZYNETIX AI",
   "@planAiDrafted": {
-    "description": "The plan began as a KINETIX AI draft."
+    "description": "The plan began as a ZYNETIX AI draft."
   },
   "planTopics": "Topics",
   "@planTopics": {
@@ -1704,7 +1704,7 @@
   "@demoBannerTitle": {
     "description": "Title of the banner on the sign-in screen of demo builds."
   },
-  "demoBannerBody": "Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.",
+  "demoBannerBody": "Sample data from ZYNETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.",
   "@demoBannerBody": {
     "description": "Body of the demo banner."
   },
@@ -1733,9 +1733,9 @@
   "@kioskTitle": {
     "description": "Board kiosk mode (docs/hardware/kiosk-mode.md): the device locked to the board app."
   },
-  "kioskSettingsHint": "Keeps students in KINETIX Board and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.",
-  "kioskStatusLocked": "On: this device is locked to KINETIX Board.",
-  "kioskStatusPinned": "On: screen pinning. For a full lock, make KINETIX Board the device owner (see the kiosk guide).",
+  "kioskSettingsHint": "Keeps students in ZYNETIX Board and opens it again after a power cut. Your institution turns it on and sets the IT PIN in ZYNETIX ERP → Settings.",
+  "kioskStatusLocked": "On: this device is locked to ZYNETIX Board.",
+  "kioskStatusPinned": "On: screen pinning. For a full lock, make ZYNETIX Board the device owner (see the kiosk guide).",
   "kioskStatusOff": "Off",
   "kioskStatusPaused": "Paused by IT until {time}",
   "@kioskStatusPaused": {
@@ -1750,7 +1750,7 @@
   "kioskTry": "Try kiosk (screen pinning)",
   "kioskStopTrial": "Stop kiosk trial",
   "kioskExitTitle": "Leave kiosk mode",
-  "kioskEnterPin": "For IT staff: enter the IT PIN set in KINETIX ERP.",
+  "kioskEnterPin": "For IT staff: enter the IT PIN set in ZYNETIX ERP.",
   "kioskPinLabel": "IT PIN",
   "kioskUnlock": "Unlock",
   "kioskWrongPin": "{count, plural, =1{Wrong PIN. 1 attempt left.} other{Wrong PIN. {count} attempts left.}}",
@@ -1769,7 +1769,7 @@
       }
     }
   },
-  "kioskNoPin": "No IT PIN has been set for this institution yet. Set one in KINETIX ERP → Settings → Board kiosk mode; the board picks it up when it is next online. Until then, kiosk mode can only be removed as the kiosk guide describes.",
+  "kioskNoPin": "No IT PIN has been set for this institution yet. Set one in ZYNETIX ERP → Settings → Board kiosk mode; the board picks it up when it is next online. Until then, kiosk mode can only be removed as the kiosk guide describes.",
   "kioskLeave": "Leave kiosk for 10 minutes",
   "kioskLeaveHint": "The board locks again by itself after 10 minutes, or when it restarts.",
   "kioskOpenSettings": "Open Android settings",
@@ -1865,7 +1865,7 @@
   "tapToPlace": "Tap the board to place it",
   "laserHint": "Points without drawing",
   "kitAddWord": "Add a word",
-  "kitAiForLesson": "KINETIX AI for this lesson",
+  "kitAiForLesson": "ZYNETIX AI for this lesson",
   "kitAll": "All",
   "kitAtomBall": "Atom ball",
   "kitBinary": "Binary",
@@ -2038,7 +2038,7 @@
   "aiPenModelDownloading": "Downloading…",
   "aiPenModelUnsupported": "Not available on this board",
   "aiPenDownloadFailed": "Could not download the handwriting model. Connect to the internet once and try again.",
-  "aiOfflineLabel": "Offline sample — from the board's own notes (in English), because KINETIX AI cannot be reached",
+  "aiOfflineLabel": "Offline sample — from the board's own notes (in English), because ZYNETIX AI cannot be reached",
   "profilesTitle": "Who is teaching?",
   "profilesHint": "Teachers who have signed in on this board. Tap your name and enter your PIN.",
   "profilesSignInFull": "Sign in with the Teacher app",
@@ -2372,7 +2372,7 @@
     }
   },
   "aiVoiceNothingHeard": "Nothing was heard. Tap the mic and speak.",
-  "booksAskAiChapter": "Tap for KINETIX AI to explain it",
+  "booksAskAiChapter": "Tap for ZYNETIX AI to explain it",
   "signInNeedsEnrolment": "Sign-in works once this board is enrolled with your institution.",
   "attendanceNeedsClass": "Attendance opens with a timetabled class that has a student list.",
   "aiPenMeasureShapes": "Show measurements on new shapes",
@@ -2447,7 +2447,7 @@
     }
   },
   "aiPenModelsReady": "The AI pen is ready: handwriting, maths and shapes now convert.",
-  "offlineCodeBody": "No connection. Scan this code in the KINETIX Teacher app to confirm this board. It works until {time}.",
+  "offlineCodeBody": "No connection. Scan this code in the ZYNETIX Teacher app to confirm this board. It works until {time}.",
   "@offlineCodeBody": {
     "placeholders": {
       "time": {
@@ -2470,15 +2470,15 @@
   "testConnection": "Test connection",
   "connectionOk": "Server reachable",
   "connectionFailed": "Cannot reach the server",
-  "invalidServer": "Enter a server address like https://api.kinetix.in",
+  "invalidServer": "Enter a server address like https://api.zynetix.in",
   "thisBoardTitle": "This board",
   "@thisBoardTitle": {"description": "Board settings section: the server the board is registered with, and Set up again."},
   "thisBoardServer": "Registered as {name} with {server}",
   "@thisBoardServer": {"placeholders": {"name": {"type": "String"}, "server": {"type": "String"}}},
   "setUpAgain": "Set up again",
-  "setUpAgainHint": "Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (KINETIX ERP → Boards). Settings and saved boards stay on this device.",
+  "setUpAgainHint": "Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (ZYNETIX ERP → Boards). Settings and saved boards stay on this device.",
   "setUpAgainKiosk": "Kiosk mode is on. To set the board up again, IT first holds the clock for 3 seconds and enters the IT PIN.",
   "setUpAgainTitle": "Set up this board again?",
-  "setUpAgainBody": "The board stops using {server} and the teacher is signed out. Then enter the server address and a new enrolment code from KINETIX ERP (Boards → New enrolment code).",
+  "setUpAgainBody": "The board stops using {server} and the teacher is signed out. Then enter the server address and a new enrolment code from ZYNETIX ERP (Boards → New enrolment code).",
   "@setUpAgainBody": {"placeholders": {"server": {"type": "String"}}}
 }

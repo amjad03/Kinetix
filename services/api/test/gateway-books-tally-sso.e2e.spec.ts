@@ -283,7 +283,7 @@ describe('PayU, settlements, books, Tally, SSO and meeting attendance', () => {
     let nextClaims: Record<string, unknown> = {};
     let lastToken: Record<string, string> = {};
     let providerId = '';
-    const RETURN = 'kinetix://sso';
+    const RETURN = 'zynetix://sso';
 
     const idToken = (claims: Record<string, unknown>) => {
       const part = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -337,7 +337,7 @@ describe('PayU, settlements, books, Tally, SSO and meeting attendance', () => {
       expect(lastToken).toMatchObject({ grant_type: 'authorization_code', client_id: 'client-123', client_secret: 'idp-client-secret' });
       expect(lastToken.code_verifier.length).toBeGreaterThan(40);
       const ticket = location.searchParams.get('ticket')!;
-      expect(location.href.startsWith('kinetix://sso')).toBe(true);
+      expect(location.href.startsWith('zynetix://sso')).toBe(true);
       expect(location.searchParams.get('tenant')).toBe(t.slug);
       const session = await http().post('/v1/auth/sso/exchange').send({ tenant: t.slug, ticket }).expect(201);
       expect(session.body.user.roles).toContain('teacher');

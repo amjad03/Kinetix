@@ -45,7 +45,7 @@ export function ltiToolsEntity(): RecordEntity {
     title: 'name',
     fields: {
       name: { label: 'Name', kind: 'text', column: ltiTools.name, required: true, max: 100, example: 'Turnitin' },
-      clientId: { label: 'Client ID', kind: 'text', column: ltiTools.clientId, required: true, max: 120, example: 'kinetix-turnitin' },
+      clientId: { label: 'Client ID', kind: 'text', column: ltiTools.clientId, required: true, max: 120, example: 'zynetix-turnitin' },
       loginUrl: { label: 'Login address', kind: 'text', column: ltiTools.loginUrl, required: true, max: 500, example: 'https://tool.example.com/lti/login' },
       launchUrl: { label: 'Launch address', kind: 'text', column: ltiTools.launchUrl, required: true, max: 500, example: 'https://tool.example.com/lti/launch' },
       jwksUrl: { label: 'Key set address', kind: 'text', column: ltiTools.jwksUrl, max: 500 },

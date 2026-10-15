@@ -1,7 +1,7 @@
 import { photoUrl } from '../profile/photo-url.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { SessionContext, SessionEndReason } from '@kinetix/shared';
-import { RealtimeEvents } from '@kinetix/shared';
+import type { SessionContext, SessionEndReason } from '@zynetix/shared';
+import { RealtimeEvents } from '@zynetix/shared';
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';

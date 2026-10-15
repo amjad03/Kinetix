@@ -1,0 +1,19 @@
+name: zynetix_labs
+description: ZYNETIX virtual labs — offline benches on reusable engines (circuits, optics, mechanics, chemistry, biology, forensics) for LKG to PG, in English, Hindi and Kannada, with readings, fits, CSV and a board report.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  zynetix_ui:
+    path: ../zynetix_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

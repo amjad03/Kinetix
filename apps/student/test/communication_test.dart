@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/attachments.dart';
-import 'package:kinetix_student/core/models.dart';
+import 'package:zynetix_student/core/attachments.dart';
+import 'package:zynetix_student/core/models.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

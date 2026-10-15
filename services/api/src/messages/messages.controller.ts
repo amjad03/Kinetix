@@ -1,4 +1,4 @@
-import { RealtimeEvents } from '@kinetix/shared';
+import { RealtimeEvents } from '@zynetix/shared';
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { and, asc, desc, eq, ilike, inArray, isNull, lt, notInArray, or, sql, type SQL } from 'drizzle-orm';
@@ -424,7 +424,7 @@ export class ConversationsController {
           id: m.id,
           conversationId: id,
           recipientId,
-          senderName: sender?.fullName ?? 'KINETIX',
+          senderName: sender?.fullName ?? 'ZYNETIX',
           body: body.body || stored?.title || '',
           studentId: c.studentId,
         });
@@ -552,7 +552,7 @@ export class ConversationsController {
       await tx.insert(messages).values({ tenantId: p.tenantId, conversationId: id, senderId: p.userId, kind: 'system', body: `Assigned to ${name(body.userId)} by ${name(p.userId)}`, createdAt: now });
       await this.notifications.notifyUsers(tx, [body.userId], {
         kind: 'message',
-        text: { title: `Conversation assigned to you by ${name(p.userId)}`, body: 'Open KINETIX to read and reply.' },
+        text: { title: `Conversation assigned to you by ${name(p.userId)}`, body: 'Open ZYNETIX to read and reply.' },
         data: { conversationId: id, studentId: c.studentId },
         dedupeKey: `conversation-assigned:${id}:${now.toISOString()}`,
       });

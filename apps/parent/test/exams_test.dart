@@ -3,17 +3,17 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/api.dart';
-import 'package:kinetix_parent/core/exam_models.dart';
-import 'package:kinetix_parent/features/exams/exams_screen.dart';
-import 'package:kinetix_parent/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_parent/core/api.dart';
+import 'package:zynetix_parent/core/exam_models.dart';
+import 'package:zynetix_parent/features/exams/exams_screen.dart';
+import 'package:zynetix_parent/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
 
 Widget host(Widget child) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: const Locale('en'),
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,

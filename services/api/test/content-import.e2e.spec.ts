@@ -16,7 +16,7 @@ const topic = (title: string, hook = `Why ${title}?`): Topic => ({ title, summar
 describe('content import', () => {
   const owner = ownerPool();
   const db = drizzle(owner, { schema });
-  const dir = mkdtempSync(join(tmpdir(), 'kinetix-content-'));
+  const dir = mkdtempSync(join(tmpdir(), 'zynetix-content-'));
   const write = (chapters: Course['chapters'], file = 'lib.json', code = 'class-1-test') =>
     writeFileSync(
       join(dir, file),

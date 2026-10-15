@@ -217,7 +217,7 @@ const SettingsBody = z
     attendanceLockHours: z.number().int().min(0).max(720).nullable(),
     attendanceThresholdPct: z.number().int().min(1).max(100),
     boardTraining: z.object({ url: z.url().max(500).nullable().optional(), contact: z.string().trim().max(200).nullable().optional() }).strict().nullable(),
-    /** A school server with the 3D model files (packages/kinetix_3d/remote_models); null = this API. */
+    /** A school server with the 3D model files (packages/zynetix_3d/remote_models); null = this API. */
     boardModelsBase: z.url({ protocol: /^https?$/ }).max(500).nullable(),
     boardWhatsNew: z.array(z.object({ title: z.string().trim().min(1).max(120), body: z.string().trim().max(1000), at: z.iso.date() })).max(30),
     /** Kiosk mode on boards. `pin` sets the IT PIN (4–8 digits; only its hash is kept) or removes it (null). */

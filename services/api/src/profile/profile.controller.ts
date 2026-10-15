@@ -1,6 +1,6 @@
 import { BadRequestException, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { MeResponse } from '@kinetix/shared';
+import type { MeResponse } from '@zynetix/shared';
 import { and, eq, inArray, or } from 'drizzle-orm';
 import type { Response } from 'express';
 import { Readable } from 'node:stream';

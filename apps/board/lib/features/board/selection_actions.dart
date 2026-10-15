@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
@@ -45,7 +45,7 @@ class SelectionActions extends StatelessWidget {
   /// Edits the selected equation, note or text.
   final void Function(BoardElement e)? onEdit;
 
-  /// Reads what is selected with KINETIX AI.
+  /// Reads what is selected with ZYNETIX AI.
   final VoidCallback? onAskAi;
 
   /// Sends the selected equation to the maths solver.

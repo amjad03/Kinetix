@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/app_state.dart';
@@ -330,7 +330,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               spacing: Kx.s8,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                Text('KINETIX', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+                                Text('ZYNETIX', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
                                 Text('Student', style: context.text.titleMedium?.copyWith(color: colors.onSurfaceVariant)),
                               ],
                             ),

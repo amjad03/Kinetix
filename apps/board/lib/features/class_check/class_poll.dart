@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:kinetix_cards/kinetix_cards.dart';
+import 'package:zynetix_cards/zynetix_cards.dart';
 
 import '../../core/api_client.dart';
 import '../../core/board_controller.dart';

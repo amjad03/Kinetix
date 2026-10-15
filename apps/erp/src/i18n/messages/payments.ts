@@ -5,7 +5,7 @@ export default area(
   {
     'payments.title': 'Online payments (Razorpay)',
     'payments.help':
-      "Fees that families pay in the Parent App go directly to your institution's own Razorpay account and are settled to your bank account by Razorpay. KINETIX never holds the money and takes no commission. Create a Razorpay account for the institution (with its KYC), then enter its API keys here.",
+      "Fees that families pay in the Parent App go directly to your institution's own Razorpay account and are settled to your bank account by Razorpay. ZYNETIX never holds the money and takes no commission. Create a Razorpay account for the institution (with its KYC), then enter its API keys here.",
     'payments.steps': 'In the Razorpay dashboard: 1. Account & Settings → API keys: generate a key and copy the key id and key secret. 2. Webhooks: add the webhook URL below with a secret of your choice, for the events payment.captured and order.paid. 3. Enter the key id, key secret and webhook secret here and test the connection.',
     'payments.status.configured': 'Set up',
     'payments.status.notConfigured': 'Not set up: families can pay only at the fees counter',
@@ -40,13 +40,13 @@ export default area(
     'error.PAYMENTS_KEYS_REQUIRED': 'Enter the key secret and the webhook secret.',
     'error.PAYMENTS_KEY_SECRET_REQUIRED': 'A new key id needs its key secret.',
     'error.PAYMENTS_BAD_KEY_ID': 'Enter the key id from Razorpay (rzp_live_… or rzp_test_…).',
-    'error.SECRETS_KEY_MISSING': 'This server cannot store payment keys yet. Ask your KINETIX administrator to set the encryption key.',
+    'error.SECRETS_KEY_MISSING': 'This server cannot store payment keys yet. Ask your ZYNETIX administrator to set the encryption key.',
   },
   {
     hi: {
       'payments.title': 'ऑनलाइन भुगतान (Razorpay)',
       'payments.help':
-        'परिवार Parent App में जो फ़ीस भरते हैं, वह सीधे आपके संस्थान के अपने Razorpay खाते में जाती है और Razorpay उसे आपके बैंक खाते में जमा करता है। KINETIX पैसा कभी अपने पास नहीं रखता और कोई कमीशन नहीं लेता। संस्थान के लिए Razorpay खाता बनाइए (उसके KYC के साथ), फिर उसकी API कुंजियाँ यहाँ भरिए।',
+        'परिवार Parent App में जो फ़ीस भरते हैं, वह सीधे आपके संस्थान के अपने Razorpay खाते में जाती है और Razorpay उसे आपके बैंक खाते में जमा करता है। ZYNETIX पैसा कभी अपने पास नहीं रखता और कोई कमीशन नहीं लेता। संस्थान के लिए Razorpay खाता बनाइए (उसके KYC के साथ), फिर उसकी API कुंजियाँ यहाँ भरिए।',
       'payments.steps':
         'Razorpay डैशबोर्ड में: 1. अकाउंट और सेटिंग्स → API कुंजियाँ: एक कुंजी बनाइए और की आईडी तथा की सीक्रेट कॉपी कीजिए। 2. वेबहुक: नीचे दिया वेबहुक URL अपनी चुनी हुई सीक्रेट के साथ जोड़िए, भुगतान पूरा होने और ऑर्डर का भुगतान होने की घटनाओं के लिए। 3. की आईडी, की सीक्रेट और वेबहुक सीक्रेट यहाँ भरिए और कनेक्शन जाँचिए।',
       'payments.status.configured': 'सेट है',
@@ -82,12 +82,12 @@ export default area(
       'error.PAYMENTS_KEYS_REQUIRED': 'की सीक्रेट और वेबहुक सीक्रेट भरें।',
       'error.PAYMENTS_KEY_SECRET_REQUIRED': 'नई की आईडी के साथ उसकी की सीक्रेट भी चाहिए।',
       'error.PAYMENTS_BAD_KEY_ID': 'Razorpay से मिली की आईडी भरें।',
-      'error.SECRETS_KEY_MISSING': 'यह सर्वर अभी भुगतान कुंजियाँ नहीं रख सकता। अपने KINETIX व्यवस्थापक से एन्क्रिप्शन कुंजी सेट करने को कहें।',
+      'error.SECRETS_KEY_MISSING': 'यह सर्वर अभी भुगतान कुंजियाँ नहीं रख सकता। अपने ZYNETIX व्यवस्थापक से एन्क्रिप्शन कुंजी सेट करने को कहें।',
     },
     kn: {
       'payments.title': 'ಆನ್‌ಲೈನ್ ಪಾವತಿಗಳು (Razorpay)',
       'payments.help':
-        'ಕುಟುಂಬಗಳು Parent App ನಲ್ಲಿ ಪಾವತಿಸುವ ಶುಲ್ಕ ನೇರವಾಗಿ ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸ್ವಂತ Razorpay ಖಾತೆಗೆ ಹೋಗುತ್ತದೆ ಮತ್ತು Razorpay ಅದನ್ನು ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ ಜಮಾ ಮಾಡುತ್ತದೆ. KINETIX ಹಣವನ್ನು ಎಂದಿಗೂ ತನ್ನ ಬಳಿ ಇಟ್ಟುಕೊಳ್ಳುವುದಿಲ್ಲ ಮತ್ತು ಯಾವುದೇ ಕಮಿಷನ್ ತೆಗೆದುಕೊಳ್ಳುವುದಿಲ್ಲ. ಸಂಸ್ಥೆಗೆ Razorpay ಖಾತೆ ತೆರೆಯಿರಿ (ಅದರ KYC ಜೊತೆಗೆ), ನಂತರ ಅದರ API ಕೀಗಳನ್ನು ಇಲ್ಲಿ ನಮೂದಿಸಿ.',
+        'ಕುಟುಂಬಗಳು Parent App ನಲ್ಲಿ ಪಾವತಿಸುವ ಶುಲ್ಕ ನೇರವಾಗಿ ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸ್ವಂತ Razorpay ಖಾತೆಗೆ ಹೋಗುತ್ತದೆ ಮತ್ತು Razorpay ಅದನ್ನು ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ ಜಮಾ ಮಾಡುತ್ತದೆ. ZYNETIX ಹಣವನ್ನು ಎಂದಿಗೂ ತನ್ನ ಬಳಿ ಇಟ್ಟುಕೊಳ್ಳುವುದಿಲ್ಲ ಮತ್ತು ಯಾವುದೇ ಕಮಿಷನ್ ತೆಗೆದುಕೊಳ್ಳುವುದಿಲ್ಲ. ಸಂಸ್ಥೆಗೆ Razorpay ಖಾತೆ ತೆರೆಯಿರಿ (ಅದರ KYC ಜೊತೆಗೆ), ನಂತರ ಅದರ API ಕೀಗಳನ್ನು ಇಲ್ಲಿ ನಮೂದಿಸಿ.',
       'payments.steps':
         'Razorpay ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ: 1. ಖಾತೆ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು → API ಕೀಗಳು: ಒಂದು ಕೀ ರಚಿಸಿ, ಕೀ ಐಡಿ ಮತ್ತು ಕೀ ಸೀಕ್ರೆಟ್ ನಕಲಿಸಿ. 2. ವೆಬ್‌ಹುಕ್‌ಗಳು: ಕೆಳಗಿನ ವೆಬ್‌ಹುಕ್ URL ಅನ್ನು ನೀವು ಆರಿಸಿದ ಸೀಕ್ರೆಟ್ ಜೊತೆ ಸೇರಿಸಿ, ಪಾವತಿ ಪೂರ್ಣಗೊಂಡ ಮತ್ತು ಆರ್ಡರ್ ಪಾವತಿಯಾದ ಘಟನೆಗಳಿಗೆ. 3. ಕೀ ಐಡಿ, ಕೀ ಸೀಕ್ರೆಟ್ ಮತ್ತು ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್ ಅನ್ನು ಇಲ್ಲಿ ನಮೂದಿಸಿ ಸಂಪರ್ಕ ಪರೀಕ್ಷಿಸಿ.',
       'payments.status.configured': 'ಹೊಂದಿಸಲಾಗಿದೆ',
@@ -123,7 +123,7 @@ export default area(
       'error.PAYMENTS_KEYS_REQUIRED': 'ಕೀ ಸೀಕ್ರೆಟ್ ಮತ್ತು ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್ ನಮೂದಿಸಿ.',
       'error.PAYMENTS_KEY_SECRET_REQUIRED': 'ಹೊಸ ಕೀ ಐಡಿಗೆ ಅದರ ಕೀ ಸೀಕ್ರೆಟ್ ಬೇಕು.',
       'error.PAYMENTS_BAD_KEY_ID': 'Razorpay ನೀಡಿದ ಕೀ ಐಡಿ ನಮೂದಿಸಿ.',
-      'error.SECRETS_KEY_MISSING': 'ಈ ಸರ್ವರ್ ಇನ್ನೂ ಪಾವತಿ ಕೀಗಳನ್ನು ಇಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಎನ್‌ಕ್ರಿಪ್ಷನ್ ಕೀ ಹೊಂದಿಸಲು ನಿಮ್ಮ KINETIX ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ.',
+      'error.SECRETS_KEY_MISSING': 'ಈ ಸರ್ವರ್ ಇನ್ನೂ ಪಾವತಿ ಕೀಗಳನ್ನು ಇಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಎನ್‌ಕ್ರಿಪ್ಷನ್ ಕೀ ಹೊಂದಿಸಲು ನಿಮ್ಮ ZYNETIX ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ.',
     },
   },
 );

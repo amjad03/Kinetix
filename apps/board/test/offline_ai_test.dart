@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/demo/demo.dart';
-import 'package:kinetix_board/features/ai/ai_controller.dart';
-import 'package:kinetix_board/features/ai/ai_widgets.dart';
-import 'package:kinetix_board/features/offline_ai/offline_ai.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/demo/demo.dart';
+import 'package:zynetix_board/features/ai/ai_controller.dart';
+import 'package:zynetix_board/features/ai/ai_widgets.dart';
+import 'package:zynetix_board/features/offline_ai/offline_ai.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _NoRealtime extends Realtime {
@@ -97,7 +97,7 @@ void main() {
     });
   });
 
-  group('KINETIX AI falls back to the notes', () {
+  group('ZYNETIX AI falls back to the notes', () {
     late List<http.Request> requests;
     late bool offline;
 
@@ -128,7 +128,7 @@ void main() {
       await c.ask('What is photosynthesis?');
       expect(c.explain.error, isNull);
       expect(c.explain.value!.meta.offline, isTrue);
-      expect(requests.where((r) => r.url.path == '/v1/ai/explain'), hasLength(1), reason: 'KINETIX AI is tried first');
+      expect(requests.where((r) => r.url.path == '/v1/ai/explain'), hasLength(1), reason: 'ZYNETIX AI is tried first');
 
       await c.generateQuiz('Pythagoras');
       expect(c.quiz.value!.meta.offline, isTrue);
@@ -164,7 +164,7 @@ void main() {
     for (final lang in ['en', 'hi', 'kn']) {
       await tester.pumpWidget(
         MaterialApp(
-          theme: KinetixTheme.light(),
+          theme: ZynetixTheme.light(),
           locale: Locale(lang),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

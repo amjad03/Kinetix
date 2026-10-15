@@ -1,11 +1,11 @@
-# KINETIX vs Linways: Gap Analysis
+# ZYNETIX vs Linways: Gap Analysis
 
 Date: 2026-10-10. Status legend: **Have** (equal or better), **Partial**, **Missing**, **Unk** (Linways detail unknown), **Exp** (Expected, market norm: not advertised by Linways but an Indian buyer will ask).
 Goal is feature parity, not a copy of Linways UI, text or branding.
 
 ## 1. Summary and score
 
-**Overall: 6.0 / 10 vs Linways.** Breadth and engineering surface are at or above Linways (and KINETIX adds a smartboard stack, Indic/school coverage, DPDP tooling). The score is held down because Linways has 15+ years, ~dozens of live Kerala/Bangalore institutions and accreditation reports that real NAAC/NBA teams use. KINETIX has zero live customers, nothing exercised against real vendors, and unverified official-format exports.
+**Overall: 6.0 / 10 vs Linways.** Breadth and engineering surface are at or above Linways (and ZYNETIX adds a smartboard stack, Indic/school coverage, DPDP tooling). The score is held down because Linways has 15+ years, ~dozens of live Kerala/Bangalore institutions and accreditation reports that real NAAC/NBA teams use. ZYNETIX has zero live customers, nothing exercised against real vendors, and unverified official-format exports.
 
 | Area (weight) | Score | Why |
 |---|---|---|
@@ -20,13 +20,13 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 ## 2. Method and source limits
 
 - Linways side: public pages only (linways.com features, module pages, pricing, customers, customer-college sites). Tags [OFF]/[3P]/[INF]/[UNK] in `linways_inventory.md`. Many modules are name-only (Engagement, Skill Mapping, Slow Learner, SDG, Club, AI attendance, Internship); mechanics unknown. No demo, no tender documents, no app-store text, no reviews.
-- KINETIX side: `kinetix_inventory.md` (static code/controller audit, PRD_COVERAGE 422 Built / 19 Partial / 7 Missing). Nothing was run against real vendors. "Have" means code and routes exist, not production-proven.
+- ZYNETIX side: `zynetix_inventory.md` (static code/controller audit, PRD_COVERAGE 422 Built / 19 Partial / 7 Missing). Nothing was run against real vendors. "Have" means code and routes exist, not production-proven.
 - Spot verification greps (services/api/src, apps/erp/src) were done for non-obvious items; cited in the table. A keyword hit is evidence of presence, not of depth.
 - "Exp" items come from Indian higher-ed norms (NAAC SSR/AQAR 7 criteria, NBA SAR, NIRF, AISHE, UGC ABC/APAAR, NAD/DigiLocker, CBCS/NEP 2020, affiliating-university workflows, Tally), not from Linways pages.
 
 ## 3. Area-by-area table
 
-| # | Area | Linways | KINETIX | Status | Evidence / note |
+| # | Area | Linways | ZYNETIX | Status | Evidence / note |
 |---|---|---|---|---|---|
 | 1 | Roles/portals (mgmt, principal, HoD, faculty, student, parent, exam controller, ext. examiner, placement) | Yes | RBAC + audit, delegations, 5 consoles, 4 apps | Have | api/delegation, api/auth; ext. examiner portal: Partial (second-valuation exists, dedicated external login unverified) |
 | 2 | Attendance + reports + alerts | Yes | Eligibility, condonation, board loop | Have | api/attendance-governance |
@@ -119,7 +119,7 @@ Weighted: 0.25*8.5 + 0.25*6.5 + 0.2*5 + 0.15*3.5 + 0.15*1.5 = **6.0** (rounded).
 
 Accreditation workbench; gateways; Tally; biometric CSV only; Teams/Meet; plagiarism (internal only); student planner; slow learner; question paper scrutiny; e-governance builder UX; external examiner; mobile gaps (none left: teacher course files and OBE screens, student report card and diary exist in the apps); DPDP/security certification; Power BI; transcript.
 
-## 6. KINETIX advantages (not advertised by Linways)
+## 6. ZYNETIX advantages (not advertised by Linways)
 
 | Advantage | Evidence |
 |---|---|

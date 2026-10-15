@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
@@ -396,7 +396,7 @@ class AnswerCard extends StatelessWidget {
         ],
         const SizedBox(height: Kx.s16),
         Text(
-          'KINETIX AI can make mistakes. Check important answers with your teacher or textbook.',
+          'ZYNETIX AI can make mistakes. Check important answers with your teacher or textbook.',
           style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
         ),
       ];

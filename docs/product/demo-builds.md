@@ -1,17 +1,17 @@
 # Demo builds (offline sample data)
 
 A demo build of the Teacher, Parent, Student and Board apps runs with no server. Every screen
-works against an in-memory copy of **KINETIX Demo College** (the same people and classes as
+works against an in-memory copy of **ZYNETIX Demo College** (the same people and classes as
 `services/api/src/db/seed.ts`), so the apps can be installed on a phone or tablet and tried
 before anything is deployed.
 
 ```sh
 cd apps/teacher   # or apps/parent, apps/student, apps/board
-flutter build apk --release --dart-define=KINETIX_DEMO=true
+flutter build apk --release --dart-define=ZYNETIX_DEMO=true
 ```
 
-`KINETIX_API_URL` is not needed (and is ignored) in a demo build. Without `KINETIX_DEMO=true`
-nothing changes: a release build without `KINETIX_API_URL` still stops with the "cannot start"
+`ZYNETIX_API_URL` is not needed (and is ignored) in a demo build. Without `ZYNETIX_DEMO=true`
+nothing changes: a release build without `ZYNETIX_API_URL` still stops with the "cannot start"
 screen (docs/operations/mobile-release.md).
 
 ## What the demo shows
@@ -33,7 +33,7 @@ screen (docs/operations/mobile-release.md).
   assigning and checking homework, handing in work, entering and publishing marks, marking topics
   taught, moving year-plan topics, saving lesson plans, messages, consent, and fee payment through
   the demo gateway.
-- KINETIX AI answers (lesson-plan drafts, student questions, the board's AI panel) are sample
+- ZYNETIX AI answers (lesson-plan drafts, student questions, the board's AI panel) are sample
   answers, labelled as previews like answers from a server without an AI model.
 - About eight seconds after sign-in, a reply "arrives" in the family/teacher chat, to show live
   messages. Push notifications are off.
@@ -64,33 +64,33 @@ Release builds need the upload key (docs/operations/mobile-release.md). For thro
 built in CI without that key, ask for test signing:
 
 ```sh
-flutter build apk --release --dart-define=KINETIX_DEMO=true -Pkinetix.testSigning=true
-# or: KINETIX_TEST_SIGNING=true flutter build apk --release …
+flutter build apk --release --dart-define=ZYNETIX_DEMO=true -Pzynetix.testSigning=true
+# or: ZYNETIX_TEST_SIGNING=true flutter build apk --release …
 ```
 
-When no release key is configured (no `KINETIX_ANDROID_KEYSTORE_*` variables and no
+When no release key is configured (no `ZYNETIX_ANDROID_KEYSTORE_*` variables and no
 `android/key.properties`), the APK is then signed with the debug key and Gradle prints a loud
 warning. Never publish such an APK or give it to users. Without the flag, a release build with no
 key still fails as before; with a key configured, the flag changes nothing.
 
 ## Board against a real server (live demo)
 
-The board APK in `dist/kinetix-board.apk` is a server build, not a demo build: it talks to the
-KINETIX API. Pick the server in one of two ways:
+The board APK in `dist/zynetix-board.apk` is a server build, not a demo build: it talks to the
+ZYNETIX API. Pick the server in one of two ways:
 
-1. **At build time:** `--dart-define=KINETIX_API_URL=<address>`, which pre-fills the server.
+1. **At build time:** `--dart-define=ZYNETIX_API_URL=<address>`, which pre-fills the server.
 2. **In the app:** the enrolment screen (first start, or after *Unpair* from the IT console) has a
    **Server** field, pre-filled from the build. Type another address there before entering the
    enrolment code; it is remembered for that board.
 
 For a laptop running the API on the school Wi-Fi (`pnpm dev` in `services/api`, port 4000), the
 board needs plain HTTP to a local address, which Android release builds refuse. Build with
-`-Pkinetix.lanHttp=true` (or `KINETIX_LAN_HTTP=true`) to allow it:
+`-Pzynetix.lanHttp=true` (or `ZYNETIX_LAN_HTTP=true`) to allow it:
 
 ```sh
 cd apps/board
-KINETIX_TEST_SIGNING=true flutter build apk --release \
-  --dart-define=KINETIX_API_URL=http://<laptop-ip>:4000 -Pkinetix.lanHttp=true
+ZYNETIX_TEST_SIGNING=true flutter build apk --release \
+  --dart-define=ZYNETIX_API_URL=http://<laptop-ip>:4000 -Pzynetix.lanHttp=true
 ```
 
 Then create an enrolment code for the board in the ERP (the devices page, `POST /v1/devices/:id/enrollment-code`) and enter it on the board. A build
@@ -102,7 +102,7 @@ for schools uses an `https://` address and no `lanHttp`.
   the widget tests also use, so there is one source of truth) and `demo_api.dart` (the seeded
   demo data on top of them); on the board, `demo_server.dart` answers ApiClient's HTTP requests
   in memory and stands in for the realtime connection.
-- `Demo.enabled` (lib/demo/demo.dart) is `KINETIX_DEMO` at run time; tests set it to see the demo
+- `Demo.enabled` (lib/demo/demo.dart) is `ZYNETIX_DEMO` at run time; tests set it to see the demo
   UI. Each app has a `test/demo_test.dart` smoke test.
 
 ## Getting the test APKs
@@ -111,5 +111,5 @@ The `Test APKs` workflow (.github/workflows/test-apk.yml) builds all four apps i
 every push to the development branch that touches the apps, and publishes them as the
 `test-build` pre-release on the repository's Releases page. Open that page on an Android phone,
 download the APK, allow installing apps from the browser when asked, and open it. New builds
-install over older ones. Set the repository variable `KINETIX_API_URL` once a server exists to
+install over older ones. Set the repository variable `ZYNETIX_API_URL` once a server exists to
 make the same APKs talk to it as well.

@@ -91,7 +91,7 @@ export interface AccessUser {
 /** Roles a person has that this page does not hand out (student, guardian, alumni): shown, never edited here. */
 export const FAMILY_ROLES = ['student', 'guardian', 'alumni'];
 
-/** A short name for a browser or app from its user agent: "Chrome on Windows", "KINETIX app on Android". */
+/** A short name for a browser or app from its user agent: "Chrome on Windows", "ZYNETIX app on Android". */
 export function deviceName(s: Pick<AccessSession, 'label' | 'userAgent'>): string {
   if (s.label) return s.label;
   const ua = s.userAgent ?? '';

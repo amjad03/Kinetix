@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import type { CertificateKind, CertificateSubject } from '@kinetix/shared';
+import type { CertificateKind, CertificateSubject } from '@zynetix/shared';
 
 /**
  * Fills {{placeholders}} in a template. Unknown placeholders are left as they are, so a typo

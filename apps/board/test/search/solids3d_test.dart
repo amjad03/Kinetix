@@ -3,12 +3,12 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/features/search/solids3d.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/features/search/solids3d.dart';
 
 import '../support/fake_cloud.dart';
 
-/// The Shapes popover's 3D solids: drawn by kinetix_3d's Dart renderer, turned with a finger,
+/// The Shapes popover's 3D solids: drawn by zynetix_3d's Dart renderer, turned with a finger,
 /// put on the board as a picture.
 void main() {
   Future<int> inkedPixels(Uint8List png) async {

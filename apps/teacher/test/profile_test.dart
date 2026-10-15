@@ -1,10 +1,10 @@
 // Profile editing and photo, the class-and-subject picker, and awarding badges from the roster.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/models.dart';
-import 'package:kinetix_teacher/features/homework/homework_form.dart';
-import 'package:kinetix_teacher/features/roster/roster_screen.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/features/homework/homework_form.dart';
+import 'package:zynetix_teacher/features/roster/roster_screen.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -29,7 +29,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('subjectField')), 'Accountancy');
     await tapAndSettle(tester, find.byKey(const Key('addSubject')));
     await tapAndSettle(tester, find.byKey(const Key('saveProfile')));
-    expect(api.calls, contains('profile Anita R. Sharma anita@demo.kinetix.in Accountancy'));
+    expect(api.calls, contains('profile Anita R. Sharma anita@demo.zynetix.in Accountancy'));
     expect(state.me!.fullName, 'Anita R. Sharma');
     expect(find.text('Anita R. Sharma'), findsOneWidget);
     expect(find.text('Accountancy'), findsOneWidget);

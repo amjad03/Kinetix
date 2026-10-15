@@ -21,7 +21,7 @@ END $$;--> statement-breakpoint
 DROP POLICY IF EXISTS campus_scope ON "campuses";--> statement-breakpoint
 CREATE POLICY campus_scope ON "campuses" AS RESTRICTIVE USING (kx_campus_visible(id)) WITH CHECK (kx_campus_visible(id));--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT EXECUTE ON FUNCTION kx_campus_visible(uuid) TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT EXECUTE ON FUNCTION kx_campus_visible(uuid) TO zynetix_app;
   END IF;
 END $$;

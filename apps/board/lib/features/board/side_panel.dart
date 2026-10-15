@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_labs/kinetix_labs.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_labs/zynetix_labs.dart';
 
 import '../../l10n/feature_strings.dart';
 import '../../l10n/l10n.dart';

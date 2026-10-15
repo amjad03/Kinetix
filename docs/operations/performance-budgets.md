@@ -17,6 +17,6 @@ Each module has a response-time budget for a sample read: the 95th percentile, i
 | Mentoring | `/v1/mentoring/plans` | 500 ms |
 | Cast | `/v1/cast/boards` | 400 ms |
 
-Whole-service alerts back this up in production: `KinetixSlowRequests` (p95 above 1.5 s for 15 minutes) and `KinetixLatencyRegression` (p95 three times yesterday's) in `infra/monitoring/prometheus-rules.yml`.
+Whole-service alerts back this up in production: `ZynetixSlowRequests` (p95 above 1.5 s for 15 minutes) and `ZynetixLatencyRegression` (p95 three times yesterday's) in `infra/monitoring/prometheus-rules.yml`.
 
 To add a module, add a row to `PERF_BUDGETS` with a path its list screen calls. To change a budget, change the number and say why in the commit; a budget is raised only after the query has been looked at.

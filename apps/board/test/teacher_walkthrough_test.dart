@@ -5,16 +5,16 @@ import 'dart:ui' as ui;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/recording/recordings.dart';
-import 'package:kinetix_board/demo/demo.dart';
-import 'package:kinetix_board/demo/demo_server.dart';
-import 'package:kinetix_board/features/board/board_autosave.dart';
-import 'package:kinetix_board/features/insert/device_files.dart';
-import 'package:kinetix_board/features/insert/document_import.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/recording/recordings.dart';
+import 'package:zynetix_board/demo/demo.dart';
+import 'package:zynetix_board/demo/demo_server.dart';
+import 'package:zynetix_board/features/board/board_autosave.dart';
+import 'package:zynetix_board/features/insert/device_files.dart';
+import 'package:zynetix_board/features/insert/document_import.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/recording_fakes.dart';
@@ -39,7 +39,7 @@ void main() {
     addTearDown(tester.view.reset);
     final store = MemoryRecordingStore();
     final board = demoBoard(DemoBoardServer(claimDelay: const Duration(seconds: 2)), recordings: Recordings(store: store, voice: () => FakeVoiceRecorder(store: store)));
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     // The period's concept videos are offered first (concept_videos_test.dart).
     await tester.tap(find.byKey(const Key('conceptVideoSkip')));
@@ -104,7 +104,7 @@ void main() {
     addTearDown(tester.view.reset);
     final store = MemoryRecordingStore();
     final board = BoardController(outboxStore: MemoryOutboxStore(), recordings: Recordings(store: store, voice: () => FakeVoiceRecorder(store: store)));
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.runAsync(board.start);
     await tester.pumpAndSettle();
     expect(board.stage, BoardStage.needsEnrollment);

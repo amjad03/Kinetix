@@ -62,7 +62,7 @@ export class FcmPushSender extends PushSender {
               token: m.token,
               notification: { title: m.title, body: m.body },
               data: m.data,
-              android: { priority: 'high', notification: { channel_id: 'kinetix_updates' } },
+              android: { priority: 'high', notification: { channel_id: 'zynetix_updates' } },
               apns: { payload: { aps: { sound: 'default' } } },
             },
           }),

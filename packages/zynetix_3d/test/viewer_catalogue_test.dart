@@ -1,0 +1,232 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+
+/// Checks every viewer model against its files: names and notes in all three languages,
+/// the GLB, manifest and picture present, references resolved, credits kept.
+const _assets = 'assets/viewer3d';
+
+Map<String, dynamic> _json(String path) => jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
+
+void _complete(Object? words, String where) {
+  expect(words, isA<Map<String, dynamic>>(), reason: where);
+  final m = words as Map<String, dynamic>;
+  for (final lang in viewerLanguages) {
+    expect((m[lang] as String? ?? '').trim(), isNotEmpty, reason: '$where has no $lang');
+  }
+}
+
+void main() {
+  final index = _json('$_assets/models/index.json')['models'] as List;
+
+  test('the Dart catalogue data matches the model index', () {
+    expect([for (final m in ViewerModelInfo.all) m.id], [for (final m in index) m['id']]);
+    for (final m in index) {
+      final info = ViewerModelInfo.byId(m['id'] as String)!;
+      expect(info.subject, m['subject']);
+      for (final lang in viewerLanguages) {
+        expect(info.title.of(lang), m['title'][lang], reason: '${info.id} $lang');
+      }
+      expect(info.classes, m['classes']);
+    }
+  });
+
+  test('every model has its manifest, geometry and picture', () {
+    for (final m in ViewerModelInfo.all) {
+      final manifest = File('$_assets/models/${m.id}.json');
+      expect(manifest.existsSync(), isTrue, reason: m.id);
+      final j = _json(manifest.path);
+      expect(j['id'], m.id);
+      expect(File('$_assets/models/${j['file']}').existsSync(), isTrue, reason: '${m.id}: ${j['file']}');
+      expect(File('$_assets/thumbs/${m.id}.jpg').existsSync(), isTrue, reason: '${m.id} picture');
+      expect(m.classes, isNotEmpty, reason: m.id);
+      expect(m.keywords, isNotEmpty, reason: m.id);
+      expect(['Biology', 'Physics', 'Chemistry', 'Geography', 'History', 'Space', 'Engineering', 'Maths'], contains(m.subject), reason: m.id);
+    }
+  });
+
+  test('every name, note, group, view, cut and step is in English, Hindi and Kannada', () {
+    for (final m in ViewerModelInfo.all) {
+      final j = _json('$_assets/models/${m.id}.json');
+      _complete(j['title'], '${m.id} title');
+      _complete(j['summary'], '${m.id} summary');
+      for (final g in j['groups'] as List) {
+        _complete(g['name'], '${m.id} group ${g['id']}');
+      }
+      for (final p in j['parts'] as List) {
+        _complete(p['name'], '${m.id} part ${p['id']}');
+        _complete(p['info'], '${m.id} part ${p['id']} note');
+      }
+      for (final v in j['views'] as List) {
+        _complete(v['name'], '${m.id} view ${v['id']}');
+      }
+      for (final s in j['slices'] as List) {
+        _complete(s['name'], '${m.id} cut ${s['id']}');
+      }
+      for (final v in (j['variants'] as List? ?? const [])) {
+        _complete(v['name'], '${m.id} version ${v['id']}');
+      }
+      for (final a in j['animations'] as List) {
+        _complete(a['name'], '${m.id} animation ${a['id']}');
+        for (final (i, s) in (a['steps'] as List? ?? const []).indexed) {
+          _complete(s['text'], '${m.id} ${a['id']} step ${i + 1}');
+        }
+      }
+    }
+  });
+
+  test('every part belongs to a group and an existing version, and ids are unique', () {
+    for (final m in ViewerModelInfo.all) {
+      final model = ViewerManifest.fromJson(_json('$_assets/models/${m.id}.json'));
+      final groups = {for (final g in model.groups) g.id};
+      final variants = {for (final v in model.variants) v.id};
+      final ids = [for (final p in model.parts) p.id];
+      expect(ids.toSet(), hasLength(ids.length), reason: m.id);
+      expect(model.parts, isNotEmpty, reason: m.id);
+      expect(model.views, isNotEmpty, reason: m.id);
+      for (final p in model.parts) {
+        expect(groups, contains(p.group), reason: '${m.id}/${p.id}');
+        if (p.variant != null) expect(variants, contains(p.variant), reason: '${m.id}/${p.id}');
+      }
+      // Every version shows something.
+      for (final v in variants) {
+        expect(model.parts.any((p) => p.variant == v), isTrue, reason: '${m.id} version $v');
+      }
+      for (final s in model.slices) {
+        if (s.view != null) expect(model.view(s.view), isNotNull, reason: '${m.id} cut ${s.id}');
+      }
+      expect(m.variants, [for (final v in model.variants) v.id], reason: m.id);
+    }
+  });
+
+  test('the old ids still open the same models', () {
+    for (final e in ModelCatalogue.all.where((e) => e.usesViewer)) {
+      final info = ViewerModelInfo.byId(e.viewerId!);
+      expect(info, isNotNull, reason: e.id);
+      if (e.variant != null) expect(info!.variants, contains(e.variant), reason: e.id);
+    }
+  });
+
+  test('the new models for higher classes are there, with procedural credits', () {
+    for (final id in ['orbitals', 'hybridisation', 'crystal_lattices', 'electric_circuit', 'ac_generator', 'transformer', 'simple_machines', 'nephron']) {
+      final m = ViewerModelInfo.byId(id);
+      expect(m, isNotNull, reason: id);
+      expect(m!.fromBodyParts3D, isFalse, reason: id);
+    }
+    expect(ViewerModelInfo.byId('orbitals')!.variants, containsAll(['s1', 'px', 'dz2']));
+    expect(ViewerModelInfo.byId('crystal_lattices')!.variants, ['sc', 'bcc', 'fcc', 'nacl']);
+  });
+
+  test('the ear, kidney and DNA are made from real data, with every part a class names', () {
+    final ear = ViewerModelInfo.byId('ear')!;
+    expect(ear.fromBodyParts3D, isTrue);
+    expect(ear.credit, contains('micro-CT'));
+    final earParts = ViewerManifest.fromJson(_json('$_assets/models/ear.json'));
+    for (final id in ['pinna', 'ear_canal', 'eardrum', 'malleus', 'incus', 'stapes', 'cochlea', 'vestibule', 'semicircular_canals', 'auditory_nerve', 'eustachian_tube']) {
+      expect(earParts.part(id), isNotNull, reason: id);
+    }
+    expect(ViewerModelInfo.byId('kidney')!.fromBodyParts3D, isTrue);
+    final kidney = ViewerManifest.fromJson(_json('$_assets/models/kidney.json'));
+    for (final id in ['cortex', 'medulla', 'pelvis', 'nephron', 'renal_artery', 'renal_vein', 'ureter']) {
+      expect(kidney.part(id), isNotNull, reason: id);
+    }
+    expect(kidney.slices, isNotEmpty);
+    final dna = ViewerModelInfo.byId('dna')!;
+    expect(dna.variants, ['helix', 'ladder', 'atoms']);
+    expect(dna.credit, contains('PDB 1BNA'));
+    // Models built in code where no open model exists say they are simplified.
+    for (final id in ['animal_cell', 'plant_cell', 'flower', 'neuron']) {
+      expect(ViewerModelInfo.byId(id)!.credit, startsWith('Simplified'), reason: id);
+    }
+  });
+
+  test('the Earth shows its five layers, named and explained in English, Hindi and Kannada', () {
+    final m = ViewerManifest.fromJson(_json('$_assets/models/earth_layers.json'));
+    final layers = ['crust', 'upper_mantle', 'lower_mantle', 'outer_core', 'inner_core'];
+    final names = {
+      'crust': ['Crust', 'भूपर्पटी', 'ಭೂಹೊರಪದರ'],
+      'upper_mantle': ['Upper mantle', 'ऊपरी प्रावार', 'ಮೇಲಿನ ಪ್ರಾವಾರ'],
+      'lower_mantle': ['Lower mantle', 'निचला प्रावार', 'ಕೆಳಗಿನ ಪ್ರಾವಾರ'],
+      'outer_core': ['Outer core', 'बाहरी क्रोड', 'ಹೊರ ತಿರುಳು'],
+      'inner_core': ['Inner core', 'आंतरिक क्रोड', 'ಒಳ ತಿರುಳು'],
+    };
+    for (final id in layers) {
+      final p = m.part(id);
+      expect(p, isNotNull, reason: id);
+      expect(p!.name.complete && p.info.complete, isTrue, reason: id);
+      for (final (i, lang) in viewerLanguages.indexed) {
+        expect(p.name.of(lang), names[id]![i], reason: '$id in $lang');
+      }
+      // Each note says how deep the layer is and how hot, in every language.
+      for (final lang in viewerLanguages) {
+        expect(p.info.of(lang), contains('°C'), reason: '$id in $lang: temperature');
+        expect(p.info.of(lang), matches(RegExp(r'\d+(,\d+)?[–-]\d')), reason: '$id in $lang: depth');
+      }
+    }
+    expect(m.part('inner_core')!.info.en, contains('6,371 km'));
+    expect(m.part('upper_mantle')!.info.en, contains('thick'));
+    // The textbook wedge, and the plain half.
+    final wedge = m.slices.firstWhere((s) => s.id == 'wedge');
+    expect(wedge.normal2, isNotNull);
+    expect(wedge.name.complete, isTrue);
+    expect(m.slices.map((s) => s.id), contains('open'));
+  });
+
+  test('the cell and the heart have their ready-made cuts', () {
+    final cell = ViewerManifest.fromJson(_json('$_assets/models/animal_cell.json'));
+    final cellWedge = cell.slices.firstWhere((s) => s.id == 'wedge');
+    expect(cellWedge.normal2, isNotNull);
+    expect(cell.view(cellWedge.view), isNotNull);
+    final heart = ViewerManifest.fromJson(_json('$_assets/models/heart.json'));
+    final half = heart.slices.firstWhere((s) => s.id == 'four_chambers');
+    expect(half.normal2, isNull); // a plain half
+    expect(half.name.complete, isTrue);
+  });
+
+  test('BodyParts3D and three.js are credited', () {
+    final anatomy = [for (final m in ViewerModelInfo.all) if (m.fromBodyParts3D) m.id];
+    expect(anatomy, containsAll(['heart', 'brain', 'digestive', 'lungs', 'eye', 'excretory', 'skeleton']));
+    for (final id in anatomy) {
+      expect(ViewerModelInfo.byId(id)!.credit, contains('CC BY 4.0'), reason: id);
+    }
+    for (final f in ['NOTICE', '$_assets/CREDITS.txt']) {
+      final text = File(f).readAsStringSync();
+      expect(text, contains('BodyParts3D'), reason: f);
+      expect(text, contains('Creative Commons Attribution 4.0'), reason: f);
+      expect(text, contains('three.js'), reason: f);
+      expect(text, contains('MIT'), reason: f);
+    }
+    expect(File('$_assets/viewer.js').readAsStringSync(), startsWith('/* ZYNETIX 3D viewer. Includes three.js (MIT License'));
+    for (final lang in viewerLanguages) {
+      final lines = Model3dCredits.lines(lang);
+      expect(lines.join('\n'), contains('BodyParts3D'));
+      expect(lines.join('\n'), contains('three.js'));
+    }
+  });
+
+  test('the controls\' words are all in English, Hindi and Kannada', () {
+    for (final e in Viewer3dStrings.words.entries) {
+      expect(e.value, hasLength(3), reason: e.key);
+      for (final w in e.value) {
+        expect(w.trim(), isNotEmpty, reason: e.key);
+      }
+      // Hindi and Kannada are not left in English (names like three.js aside).
+      if (!e.value[0].contains('three.js') && !e.value[0].contains('BodyParts3D') && !e.value[0].contains('Natural Earth')) {
+        expect(e.value[1], isNot(e.value[0]), reason: '${e.key} hi');
+        expect(e.value[2], isNot(e.value[0]), reason: '${e.key} kn');
+      }
+    }
+  });
+
+  test('a topic finds its model', () {
+    expect(ViewerModelInfo.bestFor('Structure of the human heart and double circulation')?.id, 'heart');
+    expect(ViewerModelInfo.bestFor('Shapes of s, p and d orbitals')?.id, 'orbitals');
+    expect(ViewerModelInfo.bestFor('Packing efficiency of a face centred cubic unit cell')?.id, 'crystal_lattices');
+    expect(ViewerModelInfo.bestFor('How does a step up transformer work?')?.id, 'transformer');
+    expect(ViewerModelInfo.bestFor('Structure of a nephron')?.id, 'nephron');
+    expect(ViewerModelInfo.bestFor('Longitudinal section of kidney')?.id, 'kidney');
+    expect(ViewerModelInfo.bestFor('Heartily welcome'), isNull);
+  });
+}

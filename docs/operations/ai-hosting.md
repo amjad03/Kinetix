@@ -1,6 +1,6 @@
-# Hosting KINETIX AI
+# Hosting ZYNETIX AI
 
-KINETIX AI runs **as locally as possible**: a self-hosted open model (and speech-to-text
+ZYNETIX AI runs **as locally as possible**: a self-hosted open model (and speech-to-text
 server) first, then **Sarvam AI**'s pay-per-use API for whatever the self-hosted servers cannot
 take. Every option on this page keeps processing in India. The design is in
 [docs/architecture/ai-platform.md](../architecture/ai-platform.md#hosting-local-first-with-an-indian-fallback).
@@ -47,7 +47,7 @@ service.
 | (b) / (c) | `https://<gpu-host>/v1` | `sarvam` | `https://<gpu-host>/asr/v1` | `sarvam` |
 | Fully self-hosted | `https://<gpu-host>/v1` | `none` | `https://<gpu-host>/asr/v1` | `none` |
 
-Other settings (defaults in brackets): `AI_MODEL` (`kinetix-llm`, must equal vLLM's
+Other settings (defaults in brackets): `AI_MODEL` (`zynetix-llm`, must equal vLLM's
 `--served-model-name`), `AI_API_KEY`, `AI_VISION` (`true`: set `false` if the primary model cannot
 read images), `AI_TIMEOUT_MS` (60000), `AI_BREAKER_FAILURES` (3) and `AI_BREAKER_COOLDOWN_S` (60),
 `AI_DAILY_LIMIT` (2000 requests per institution per day), `ASR_MODEL` (`whisper`), `ASR_API_KEY`,
@@ -55,11 +55,11 @@ read images), `AI_TIMEOUT_MS` (60000), `AI_BREAKER_FAILURES` (3) and `AI_BREAKER
 (`sarvam-105b`), `SARVAM_ASR_MODEL` (`saaras:v3`), `SARVAM_INR_PER_M_INPUT` (29.28),
 `SARVAM_INR_PER_M_OUTPUT` (73.2), `SARVAM_INR_PER_AUDIO_HOUR` (30).
 
-The Sarvam key is a secret. In AWS it lives in Secrets Manager as `kinetix/<env>/sarvam` and is
+The Sarvam key is a secret. In AWS it lives in Secrets Manager as `zynetix/<env>/sarvam` and is
 injected only when one of the fallbacks is `sarvam`:
 
 ```bash
-aws secretsmanager put-secret-value --secret-id kinetix/prod/sarvam \
+aws secretsmanager put-secret-value --secret-id zynetix/prod/sarvam \
   --secret-string '{"SARVAM_API_KEY":"<key from dashboard.sarvam.ai>"}'
 ```
 
@@ -117,7 +117,7 @@ docker run -d --name vllm --restart unless-stopped --gpus all --ipc=host \
   -p 127.0.0.1:8000:8000 \
   -v /data/hf:/root/.cache/huggingface -e HF_TOKEN=<read token> \
   vllm/vllm-openai:latest \
-  --model google/gemma-3-12b-it --served-model-name kinetix-llm \
+  --model google/gemma-3-12b-it --served-model-name zynetix-llm \
   --max-model-len 16384 --gpu-memory-utilization 0.80 \
   --api-key <long random key>
 # On an L4 add: --quantization fp8   (and lower --gpu-memory-utilization if Whisper shares the card)

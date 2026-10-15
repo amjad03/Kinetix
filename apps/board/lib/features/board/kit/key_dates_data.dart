@@ -66,7 +66,7 @@ class HistoryEvent {
 /// The board's key dates: about five thousand events from the dawn of writing to today, world
 /// and Indian history, science and Karnataka, with the day for most. Bundled in
 /// assets/history/key_dates.tsv: events of "On this day" from Wikipedia (CC BY-SA 4.0, see
-/// assets/history/CREDITS.txt) and the KINETIX curriculum list. The 300 most-taught (the
+/// assets/history/CREDITS.txt) and the ZYNETIX curriculum list. The 300 most-taught (the
 /// curriculum list and the best-known India and world events) are also in Hindi and Kannada
 /// (assets/history/key_dates_hi_kn.tsv); the rest show in English. Searchable offline.
 class KeyDatesData {

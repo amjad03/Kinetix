@@ -25,7 +25,7 @@ export function SsoDesk({ list, callback }: { list: { meta: RecordMeta; page: Re
     <>
       <p className="mb-2 text-sm">{t('gb.sso.link')}</p>
       <p className="mb-4 text-[13px] leading-[19px] text-muted-foreground" data-testid="sso-callback">
-        {t('gb.sso.redirectHelp', { callback, appAddress: 'kinetix://sso' })}
+        {t('gb.sso.redirectHelp', { callback, appAddress: 'zynetix://sso' })}
       </p>
       <KitList {...list} label="nav.sso" columns={COLUMNS} empty={{ icon: <KeyRound />, title: 'gb.sso.empty', body: 'gb.sso.link' }} testId="sso-providers" />
     </>

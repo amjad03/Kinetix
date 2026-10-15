@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "kms" {
     condition {
       test     = "ArnLike"
       variable = "kms:EncryptionContext:aws:logs:arn"
-      values   = ["arn:${local.partition}:logs:${var.aws_region}:${local.account_id}:log-group:/kinetix/${var.environment}/*"]
+      values   = ["arn:${local.partition}:logs:${var.aws_region}:${local.account_id}:log-group:/zynetix/${var.environment}/*"]
     }
   }
 }

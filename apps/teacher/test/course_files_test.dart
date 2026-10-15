@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/course_file_models.dart';
-import 'package:kinetix_teacher/features/work/course_files_screen.dart';
+import 'package:zynetix_teacher/core/course_file_models.dart';
+import 'package:zynetix_teacher/features/work/course_files_screen.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

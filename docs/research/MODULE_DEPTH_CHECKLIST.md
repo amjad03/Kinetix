@@ -1,14 +1,14 @@
-# KINETIX ERP: Module Depth Checklist (target: match or exceed Linways)
+# ZYNETIX ERP: Module Depth Checklist (target: match or exceed Linways)
 
 Date: 2026-10-14. Companion to `LINWAYS_GAP_ANALYSIS.md` (breadth) and `requirements/MODULE_COVERAGE_MATRIX.md` (capability list). This file is about **depth**: the screens, entities, actions, workflows, approvals, reports and edge cases that a buyer at an Indian college, university or school will check in a demo.
 
 ## How to read this
 
 - `- [ ]` is an item an industry-grade product must have. Nobody has ticked anything yet. Ticking means "built, demoed on seed data, and edge cases tested", not just "a route exists".
-- **[L:key]** means public evidence shows Linways has it. The keys are listed in the source table below. Anything without a tag is either a market norm (seen in competitor material or Indian regulatory practice) or a capability that would let KINETIX go beyond Linways.
+- **[L:key]** means public evidence shows Linways has it. The keys are listed in the source table below. Anything without a tag is either a market norm (seen in competitor material or Indian regulatory practice) or a capability that would let ZYNETIX go beyond Linways.
 - **[C:key]** means a competitor or regulator source sets the depth bar.
-- **(KX+)** marks an item where KINETIX can go beyond Linways, because Linways shows no public evidence of it.
-- Beside each domain heading are the KINETIX ERP route directories (`apps/erp/src/app/(dashboard)/<dir>`) that the domain covers.
+- **(KX+)** marks an item where ZYNETIX can go beyond Linways, because Linways shows no public evidence of it.
+- Beside each domain heading are the ZYNETIX ERP route directories (`apps/erp/src/app/(dashboard)/<dir>`) that the domain covers.
 
 ## Source limits (read before trusting the [L] tags)
 
@@ -57,7 +57,7 @@ Date: 2026-10-14. Companion to `LINWAYS_GAP_ANALYSIS.md` (breadth) and `requirem
 ---
 
 ## 1. Admissions and enquiry CRM
-KINETIX: `admissions`, `admissions-tools`, `scholarships`, `careers` (public pages)
+ZYNETIX: `admissions`, `admissions-tools`, `scholarships`, `careers` (public pages)
 
 - [ ] Enquiry capture from web form, walk-in, phone, WhatsApp, fairs, and Meta/Google lead ads, with source and UTM stored [L:L-crmblog]
 - [ ] Landing-page builder per programme with embedded form and publish-to-channel [L:L-crm]
@@ -88,7 +88,7 @@ KINETIX: `admissions`, `admissions-tools`, `scholarships`, `careers` (public pag
 - [ ] Reports: daily admission register, category-wise statistics (AISHE format), quota-fill report, application-to-admission conversion, and agent statement
 
 ## 2. Student information and lifecycle
-KINETIX: `students`, `records`, `classes`, `import`, `documents` (student docs), `dpdp`, `early-years`, `school-mode`, `university`
+ZYNETIX: `students`, `records`, `classes`, `import`, `documents` (student docs), `dpdp`, `early-years`, `school-mode`, `university`
 
 - [ ] 360° profile tabs (personal, guardian, academic history, admission, fees, attendance, marks, documents, discipline, health, hostel, transport, library, mentoring) [L:L-home "student 360"]; [L:C2] profile settings
 - [ ] Configurable custom fields per institution type, with field-level permissions
@@ -109,7 +109,7 @@ KINETIX: `students`, `records`, `classes`, `import`, `documents` (student docs),
 - [ ] Reports: strength register by class, gender and category; the minority/religion statistics required by AISHE/UDISE+; age-wise; students without documents; and the dropout list
 
 ## 3. Academics: programme structure, curriculum, course registration, timetable, planning
-KINETIX: `academics`, `curriculum`, `syllabus`, `courses`, `course-registration`, `course-files`, `departments`, `department`, `timetable`, `scheduling`, `calendar`, `diary`, `university`
+ZYNETIX: `academics`, `curriculum`, `syllabus`, `courses`, `course-registration`, `course-files`, `departments`, `department`, `timetable`, `scheduling`, `calendar`, `diary`, `university`
 
 - [ ] Hierarchy: institution > department > programme > scheme/regulation (e.g., 2019 scheme) > semester > course > batch/section, with versioned regulations
 - [ ] Course master: code, credits (L-T-P-S), type (core/elective/open/audit/MOOC/lab/project), max internal/external, pass rules
@@ -131,7 +131,7 @@ KINETIX: `academics`, `curriculum`, `syllabus`, `courses`, `course-registration`
 - [ ] Reports: workload statement, timetable utilisation (rooms), syllabus completion by department, and a hours-taken vs hours-allotted register
 
 ## 4. Attendance (student and class)
-KINETIX: `attendance`, `devices`
+ZYNETIX: `attendance`, `devices`
 
 - [ ] Hour-wise and day-wise marking, with session/half-day modes for schools [L:C2]; [L:L-home]
 - [ ] Marking from the timetable slot on web, mobile or the board, including bulk "all present" with exceptions and copying attendance across hours [L:L-app "copy attendance"]
@@ -151,7 +151,7 @@ KINETIX: `attendance`, `devices`
 - [ ] Reports: monthly attendance register (university format), shortage list, condonation list, defaulter trend, faculty-wise marking compliance, and a daily department dashboard [L:L-home]
 
 ## 5. Examinations and evaluation
-KINETIX: `exams`, `evaluation`, `question-bank`, `assessment-tools`, `scan`, `integrity`
+ZYNETIX: `exams`, `evaluation`, `question-bank`, `assessment-tools`, `scan`, `integrity`
 
 Internal (CIA):
 - [ ] Assessment scheme per course (test 1, test 2, assignment, seminar, attendance marks) with weights and best-of-N rules [L:C1]
@@ -190,7 +190,7 @@ Post-exam:
 - [ ] Reports: tabulation register and gazette, pass % by course/teacher, topper list, result analysis by gender and category, and the exam-fee collection statement [L:L-exam]; [C:F-ms]
 
 ## 6. Results, grade cards and academic documents
-KINETIX: `results`, `documents`, `boards` (school boards), `university`
+ZYNETIX: `results`, `documents`, `boards` (school boards), `university`
 
 - [ ] Grading schemes: absolute and relative, 10-point CGPA, letter grades, school CCE and CBSE/ICSE/state board formats, NEP holistic report card
 - [ ] SGPA/CGPA calculation with rounding rules and the percentage-conversion formula printed on the card
@@ -209,7 +209,7 @@ KINETIX: `results`, `documents`, `boards` (school boards), `university`
 - [ ] Reports: result register, distinction list, gold medal list, NIRF graduation-outcome data, and a pending-certificate register
 
 ## 7. OBE, accreditation and quality (NAAC/NBA/NIRF/AISHE/IQAC)
-KINETIX: `obe`, `accreditation`, `quality`, `academic-audit`, `skills`, `surveys` (indirect)
+ZYNETIX: `obe`, `accreditation`, `quality`, `academic-audit`, `skills`, `surveys` (indirect)
 
 OBE:
 - [ ] Vision, Mission, PEO, PO, PSO per programme, with versioning [L:L-obeblog]
@@ -238,7 +238,7 @@ Accreditation:
 - [ ] Reports: criterion-wise readiness %, missing-evidence list, department contribution status
 
 ## 8. Fees, finance and accounts
-KINETIX: `fees`, `accounts`, `books`, `budgets`, `billing`, `gl-export`, `tally`, `settlements`, `scholarships`
+ZYNETIX: `fees`, `accounts`, `books`, `budgets`, `billing`, `gl-export`, `tally`, `settlements`, `scholarships`
 
 Fee setup:
 - [ ] Fee heads with ordering (allocation priority), GL/ledger mapping, taxable/non-taxable (GST) flags, refundable/non-refundable [L:L-fee]
@@ -280,7 +280,7 @@ Accounts:
 - [ ] Reports: collection by head/date/mode/cashier, outstanding ageing, concession register, refund register, scholarship register, a daily collection summary to management, and a fee-structure print
 
 ## 9. HR, payroll and staff
-KINETIX: `hr`, `payroll`, `trainings`, `delegations`
+ZYNETIX: `hr`, `payroll`, `trainings`, `delegations`
 
 - [ ] Staff master: personal, qualifications (with UGC/AICTE cadre eligibility), experience, publications, bank, PAN, Aadhaar, and documents [L:L-home "HRIS"]
 - [ ] Faculty-cadre and SFR tracking for AICTE/NBA; Ph.D./NET/SET status
@@ -300,7 +300,7 @@ KINETIX: `hr`, `payroll`, `trainings`, `delegations`
 - [ ] Reports: staff strength by cadre, gender and category; leave balance; payroll register; salary statement for the bank; and a faculty list for NAAC/NBA
 
 ## 10. Library
-KINETIX: `library`
+ZYNETIX: `library`
 
 - [ ] Cataloguing (MARC21 import, ISBN lookup, accession register, multiple copies, call number DDC) [L:L-feat]
 - [ ] Acquisition: suggestion, approval, order, receipt, invoice, budget per department
@@ -322,7 +322,7 @@ KINETIX: `library`
 - [ ] Reports: accession register, circulation statistics, overdue list, most borrowed, and NAAC library expenditure and usage
 
 ## 11. Hostel (and mess/canteen)
-KINETIX: `hostel`, `canteen`, `health`
+ZYNETIX: `hostel`, `canteen`, `health`
 
 - [ ] Multiple hostels, blocks, floors, rooms, beds, with room types and fees [L:L-feat]
 - [ ] Application and allotment by rules (year, distance, merit), room reservation, waitlist [L:L-feat]
@@ -344,7 +344,7 @@ KINETIX: `hostel`, `canteen`, `health`
 - [ ] Reports: occupancy, vacancy, fee dues, gate-pass log, and the night attendance absent list
 
 ## 12. Transport
-KINETIX: `transport`
+ZYNETIX: `transport`
 
 - [ ] Vehicles (registration, insurance, fitness and permit expiry alerts), drivers and conductors (licence expiry) [L:L-home]
 - [ ] Routes, stops with timings, stop-wise fees [L:L-home]
@@ -364,7 +364,7 @@ KINETIX: `transport`
 - [ ] Reports: route-wise and pickup-point-wise lists, vehicle expiry calendar, fee dues by route
 
 ## 13. Inventory, assets, infrastructure and procurement
-KINETIX: `inventory`, `assets`, `budgets`
+ZYNETIX: `inventory`, `assets`, `budgets`
 
 - [ ] Item master, categories, units, stores (central/department/lab) [L:L-home "infrastructure"]
 - [ ] Indent from department, approval chain, budget check [C:F-acad]
@@ -384,7 +384,7 @@ KINETIX: `inventory`, `assets`, `budgets`
 - [ ] Reports: stock register, dead stock register, asset register, purchase register, and the NAAC infrastructure expenditure report
 
 ## 14. Placements, training, internships, careers, alumni
-KINETIX: `placements`, `careers`, `alumni`, `trainings`, `skills`
+ZYNETIX: `placements`, `careers`, `alumni`, `trainings`, `skills`
 
 - [ ] Company registry, contacts, job descriptions (JD) [L:L-feat]
 - [ ] Drives: eligibility criteria (CGPA, backlogs, branch, batch), auto-eligible student list, registration window [L:L-home]; [C:F-edum]
@@ -404,7 +404,7 @@ KINETIX: `placements`, `careers`, `alumni`, `trainings`, `skills`
 - [ ] Reports: placement % by branch, median salary (NIRF), company-wise, offer list, and the internship register
 
 ## 15. Research, projects and IPR
-KINETIX: `research`, `projects`
+ZYNETIX: `research`, `projects`
 
 - [ ] Faculty publications (Scopus/WoS/UGC-CARE indexing), auto-import by DOI/ORCID, h-index
 - [ ] Funded projects: agency, sanction, PI/Co-PI, fund utilisation, UC submission
@@ -424,7 +424,7 @@ KINETIX: `research`, `projects`
 - [ ] Reports: NAAC Criterion 3 metrics, NIRF RPC data, faculty research profile
 
 ## 16. Communication and engagement
-KINETIX: `communication`, `messages`, `conversations`, `chat`, `ptm`, `surveys`
+ZYNETIX: `communication`, `messages`, `conversations`, `chat`, `ptm`, `surveys`
 
 - [ ] Announcements/circulars to roles, classes and groups, with read receipts [L:L-home "communications"]
 - [ ] SMS (DLT templates), email, push and WhatsApp channels; delivery report; credit balance
@@ -444,7 +444,7 @@ KINETIX: `communication`, `messages`, `conversations`, `chat`, `ptm`, `surveys`
 - [ ] Reports: message delivery, feedback analysis by teacher/course, survey participation
 
 ## 17. LMS and online learning
-KINETIX: `live`, `homework`, `topic-videos`, `course-files`, `assessment-tools`, `learning-support`, `ai`
+ZYNETIX: `live`, `homework`, `topic-videos`, `course-files`, `assessment-tools`, `learning-support`, `ai`
 
 - [ ] Subject communities per course/batch, with teacher moderation [L:L-comm]
 - [ ] Course materials (files, links, videos) by unit/topic, linked to the lesson plan [L:L-comm]; [L:C1]
@@ -467,7 +467,7 @@ KINETIX: `live`, `homework`, `topic-videos`, `course-files`, `assessment-tools`,
 - [ ] Reports: assignment submission compliance, material usage, quiz analytics (item difficulty and discrimination)
 
 ## 18. Grievance, discipline, mentoring and welfare
-KINETIX: `grievances`, `mentoring`, `early-alerts`, `learning-support`, `health`
+ZYNETIX: `grievances`, `mentoring`, `early-alerts`, `learning-support`, `health`
 
 - [ ] Grievance submission (student, parent, staff), categories, anonymous option [L:L-griev]; [L:C2]
 - [ ] Routing to the responsible committee/person, SLA, escalation, action tracking, closure with feedback [L:L-griev]
@@ -486,7 +486,7 @@ KINETIX: `grievances`, `mentoring`, `early-alerts`, `learning-support`, `health`
 - [ ] Reports: grievance register for NAAC, mentoring statistics, slow-learner outcomes
 
 ## 19. Campus life, events and clubs
-KINETIX: `campus-life`, `calendar`
+ZYNETIX: `campus-life`, `calendar`
 
 - [ ] Clubs/associations: members, office bearers, activities [L:L-home "clubs"]
 - [ ] Event planning: proposal, budget approval, venue booking, registration (internal/external with fee), attendance, certificates, a report with photos [L:L-home "event planning"]
@@ -505,7 +505,7 @@ KINETIX: `campus-life`, `calendar`
 - [ ] Reports: event register, participation, and the NAAC 5.3 metrics
 
 ## 20. Governance, settings, workflow, analytics and platform
-KINETIX: `governance`, `settings`, `module-settings`, `institution-setup`, `workflows`, `delegations`, `audit`, `sso`, `integrations`, `connectors`, `devices`, `platform`, `analytics`, `reports`, `ops-reports`, `tasks`, `dpdp`
+ZYNETIX: `governance`, `settings`, `module-settings`, `institution-setup`, `workflows`, `delegations`, `audit`, `sso`, `integrations`, `connectors`, `devices`, `platform`, `analytics`, `reports`, `ops-reports`, `tasks`, `dpdp`
 
 - [ ] Institution setup wizard: type (affiliated/autonomous/university/school), presets, academic year
 - [ ] Role consoles: management, principal, HOD, faculty, exam controller, student, parent, admission [L:C5]

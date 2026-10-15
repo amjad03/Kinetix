@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { type BrandAssetKind, BRAND_ASSETS, type Branding, DEFAULT_FONTS, DEFAULT_PALETTE, FONT_FAMILIES, type FontFamilyId, type Palette, PALETTE_KEYS, type PublicBranding, SIGNATORY_ROLES, type SignatoryRole } from '@kinetix/shared';
+import { type BrandAssetKind, BRAND_ASSETS, type Branding, DEFAULT_FONTS, DEFAULT_PALETTE, FONT_FAMILIES, type FontFamilyId, type Palette, PALETTE_KEYS, type PublicBranding, SIGNATORY_ROLES, type SignatoryRole } from '@zynetix/shared';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 import type { UserPrincipal } from '../auth/principal.js';

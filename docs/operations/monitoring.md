@@ -1,6 +1,6 @@
 # Monitoring
 
-Everything is in CloudWatch in ap-south-1. Alarms notify the SNS topic `kinetix-<env>-alarms`
+Everything is in CloudWatch in ap-south-1. Alarms notify the SNS topic `zynetix-<env>-alarms`
 (subscribe on-call emails with `alarm_emails` in the tfvars; each address must confirm). Add a
 chat/pager integration (e.g. AWS Chatbot to Slack) to that topic when there is an on-call rota.
 
@@ -39,16 +39,16 @@ All alarms also send an OK notification when they clear (except the error-log al
 
 | Log group | Contents |
 | --- | --- |
-| `/kinetix/<env>/api` | API, one JSON object per line (`LOG_FORMAT=json`): `level`, `context`, `message`, `timestamp`, `pid` |
-| `/kinetix/<env>/erp` | Next.js server |
-| `/kinetix/<env>/jobs` | One-off tasks: migrate, db-bootstrap, content-import, seed |
-| `/aws/rds/instance/kinetix-<env>/postgresql` | PostgreSQL log (slow statements > 1 s, connections, errors) |
+| `/zynetix/<env>/api` | API, one JSON object per line (`LOG_FORMAT=json`): `level`, `context`, `message`, `timestamp`, `pid` |
+| `/zynetix/<env>/erp` | Next.js server |
+| `/zynetix/<env>/jobs` | One-off tasks: migrate, db-bootstrap, content-import, seed |
+| `/aws/rds/instance/zynetix-<env>/postgresql` | PostgreSQL log (slow statements > 1 s, connections, errors) |
 
 Retention: 30 days staging, 90 days prod (`log_retention_days`); encrypted with the environment
 key. Logs never contain sign-in codes (outside the console SMS sender, which prod does not use) and
 phone numbers are masked. Do not add personal data to log messages.
 
-Useful Logs Insights queries (log group `/kinetix/prod/api`):
+Useful Logs Insights queries (log group `/zynetix/prod/api`):
 
 ```
 fields @timestamp, context, message

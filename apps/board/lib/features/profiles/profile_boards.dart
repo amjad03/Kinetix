@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Each teacher's own whiteboard on a shared board (features/profiles): when the board switches

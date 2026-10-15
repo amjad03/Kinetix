@@ -24,7 +24,7 @@ const Topic = z.object({
   summary: z.string().default(''),
   notes: z.array(z.string()).default([]),
   outcomes: z.array(z.string()).default([]),
-  /** 3D models and labs on the board: ids from packages/kinetix_3d and packages/kinetix_labs. */
+  /** 3D models and labs on the board: ids from packages/zynetix_3d and packages/zynetix_labs. */
   resources: z.array(z.object({ kind: z.enum(['model3d', 'lab']), id: z.string().min(1), title: z.string().min(1) })).default([]),
   lesson: Lesson.optional(),
 });

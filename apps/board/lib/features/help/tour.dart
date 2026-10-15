@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../l10n/l10n.dart';
@@ -42,7 +42,7 @@ abstract final class BoardTour {
   /// Whether the tour starts by itself the first time the board opens (tests turn it off).
   static bool autoStart = true;
 
-  static const _seenKey = 'kinetix.board.tour.seen';
+  static const _seenKey = 'zynetix.board.tour.seen';
 
   static Future<bool> seen() async {
     try {

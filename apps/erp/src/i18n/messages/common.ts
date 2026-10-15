@@ -3,7 +3,7 @@ import { area } from '../define';
 // Shared across the ERP: navigation, roles, the app shell, buttons, states, time words, errors.
 export default area(
   {
-    'app.name': 'KINETIX ERP',
+    'app.name': 'ZYNETIX ERP',
     'app.description': "The principal's view of the whole school: classes, attendance, homework, messages and boards.",
 
     'nav.main': 'Main',
@@ -38,7 +38,7 @@ export default area(
     'role.accountant': 'Accounts office',
     'role.librarian': 'Library',
 
-    'shell.home': 'KINETIX ERP home',
+    'shell.home': 'ZYNETIX ERP home',
     'shell.account': 'Account',
     'shell.hi': 'Hi, {name}',
     'shell.signOut': 'Sign out',
@@ -85,11 +85,11 @@ export default area(
 
     'state.loadFailed': "Couldn't load this page",
     'state.somethingWrong': 'Something went wrong',
-    'state.pageFailed': "This page couldn't be shown. Try again; if it keeps happening, tell your KINETIX administrator.",
+    'state.pageFailed': "This page couldn't be shown. Try again; if it keeps happening, tell your ZYNETIX administrator.",
     'state.notFound': 'Page not found',
-    'state.notFoundBody': "This address doesn't exist in KINETIX ERP.",
+    'state.notFoundBody': "This address doesn't exist in ZYNETIX ERP.",
     'state.goToday': 'Go to Today',
-    'state.cantOpen': "Can't open KINETIX ERP",
+    'state.cantOpen': "Can't open ZYNETIX ERP",
 
     'date.today': 'Today',
     'date.previousDay': 'Previous day',
@@ -134,8 +134,8 @@ export default area(
     'error.FORBIDDEN': "Your account doesn't have access to this.",
     'error.NOT_FOUND': 'Not found. It may have been removed.',
     'error.RATE_LIMITED': 'Too many attempts. Wait a minute and try again.',
-    'error.NETWORK': "Can't reach KINETIX Cloud. Check your connection and try again.",
-    'error.SERVER_ERROR': 'KINETIX Cloud had a problem. Try again in a minute.',
+    'error.NETWORK': "Can't reach ZYNETIX Cloud. Check your connection and try again.",
+    'error.SERVER_ERROR': 'ZYNETIX Cloud had a problem. Try again in a minute.',
     'error.VALIDATION': 'Check the details you entered.',
     'error.BAD_REQUEST': "That couldn't be done.",
     'error.CONFLICT': 'That clashes with something already saved.',
@@ -154,7 +154,7 @@ export default area(
   },
   {
     hi: {
-      'app.name': 'KINETIX ERP',
+      'app.name': 'ZYNETIX ERP',
       'app.description': 'पूरे संस्थान की झलक: कक्षाएँ, उपस्थिति, होमवर्क, संदेश और बोर्ड।',
 
       'nav.main': 'मुख्य',
@@ -189,7 +189,7 @@ export default area(
       'role.accountant': 'लेखा कार्यालय',
       'role.librarian': 'पुस्तकालय',
 
-      'shell.home': 'KINETIX ERP होम',
+      'shell.home': 'ZYNETIX ERP होम',
       'shell.account': 'खाता',
       'shell.hi': 'नमस्ते, {name}',
       'shell.signOut': 'साइन आउट',
@@ -236,11 +236,11 @@ export default area(
 
       'state.loadFailed': 'यह पेज लोड नहीं हो सका',
       'state.somethingWrong': 'कुछ गड़बड़ हो गई',
-      'state.pageFailed': 'यह पेज नहीं दिखाया जा सका। फिर से कोशिश करें; बार-बार ऐसा हो तो अपने KINETIX प्रशासक को बताएँ।',
+      'state.pageFailed': 'यह पेज नहीं दिखाया जा सका। फिर से कोशिश करें; बार-बार ऐसा हो तो अपने ZYNETIX प्रशासक को बताएँ।',
       'state.notFound': 'पेज नहीं मिला',
-      'state.notFoundBody': 'यह पता KINETIX ERP में नहीं है।',
+      'state.notFoundBody': 'यह पता ZYNETIX ERP में नहीं है।',
       'state.goToday': '"आज" पर जाएँ',
-      'state.cantOpen': 'KINETIX ERP नहीं खुल सका',
+      'state.cantOpen': 'ZYNETIX ERP नहीं खुल सका',
 
       'date.today': 'आज',
       'date.previousDay': 'पिछला दिन',
@@ -285,8 +285,8 @@ export default area(
       'error.FORBIDDEN': 'आपके खाते को इसकी अनुमति नहीं है।',
       'error.NOT_FOUND': 'नहीं मिला। हो सकता है इसे हटा दिया गया हो।',
       'error.RATE_LIMITED': 'बहुत ज़्यादा कोशिशें हुईं। एक मिनट रुककर फिर से कोशिश करें।',
-      'error.NETWORK': 'KINETIX Cloud से जुड़ नहीं पा रहे। अपना इंटरनेट देखें और फिर से कोशिश करें।',
-      'error.SERVER_ERROR': 'KINETIX Cloud में समस्या आई। एक मिनट बाद फिर से कोशिश करें।',
+      'error.NETWORK': 'ZYNETIX Cloud से जुड़ नहीं पा रहे। अपना इंटरनेट देखें और फिर से कोशिश करें।',
+      'error.SERVER_ERROR': 'ZYNETIX Cloud में समस्या आई। एक मिनट बाद फिर से कोशिश करें।',
       'error.VALIDATION': 'भरी गई जानकारी जाँचें।',
       'error.BAD_REQUEST': 'यह नहीं हो सका।',
       'error.CONFLICT': 'यह पहले से सहेजी गई किसी चीज़ से टकराता है।',
@@ -304,7 +304,7 @@ export default area(
       'status.help.upcoming': 'आज बाद में या किसी आने वाले दिन',
     },
     kn: {
-      'app.name': 'KINETIX ERP',
+      'app.name': 'ZYNETIX ERP',
       'app.description': 'ಇಡೀ ಸಂಸ್ಥೆಯ ನೋಟ: ತರಗತಿಗಳು, ಹಾಜರಾತಿ, ಹೋಂವರ್ಕ್, ಸಂದೇಶಗಳು ಮತ್ತು ಬೋರ್ಡ್‌ಗಳು.',
 
       'nav.main': 'ಮುಖ್ಯ',
@@ -339,7 +339,7 @@ export default area(
       'role.accountant': 'ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿ',
       'role.librarian': 'ಗ್ರಂಥಾಲಯ',
 
-      'shell.home': 'KINETIX ERP ಮುಖಪುಟ',
+      'shell.home': 'ZYNETIX ERP ಮುಖಪುಟ',
       'shell.account': 'ಖಾತೆ',
       'shell.hi': 'ನಮಸ್ಕಾರ, {name}',
       'shell.signOut': 'ಸೈನ್ ಔಟ್',
@@ -386,11 +386,11 @@ export default area(
 
       'state.loadFailed': 'ಈ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ',
       'state.somethingWrong': 'ಏನೋ ತಪ್ಪಾಗಿದೆ',
-      'state.pageFailed': 'ಈ ಪುಟವನ್ನು ತೋರಿಸಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ; ಹೀಗೆಯೇ ಆಗುತ್ತಿದ್ದರೆ ನಿಮ್ಮ KINETIX ನಿರ್ವಾಹಕರಿಗೆ ತಿಳಿಸಿ.',
+      'state.pageFailed': 'ಈ ಪುಟವನ್ನು ತೋರಿಸಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ; ಹೀಗೆಯೇ ಆಗುತ್ತಿದ್ದರೆ ನಿಮ್ಮ ZYNETIX ನಿರ್ವಾಹಕರಿಗೆ ತಿಳಿಸಿ.',
       'state.notFound': 'ಪುಟ ಸಿಗಲಿಲ್ಲ',
-      'state.notFoundBody': 'ಈ ವಿಳಾಸ KINETIX ERP ನಲ್ಲಿ ಇಲ್ಲ.',
+      'state.notFoundBody': 'ಈ ವಿಳಾಸ ZYNETIX ERP ನಲ್ಲಿ ಇಲ್ಲ.',
       'state.goToday': '"ಇಂದು" ಗೆ ಹೋಗಿ',
-      'state.cantOpen': 'KINETIX ERP ತೆರೆಯಲಾಗಲಿಲ್ಲ',
+      'state.cantOpen': 'ZYNETIX ERP ತೆರೆಯಲಾಗಲಿಲ್ಲ',
 
       'date.today': 'ಇಂದು',
       'date.previousDay': 'ಹಿಂದಿನ ದಿನ',
@@ -435,8 +435,8 @@ export default area(
       'error.FORBIDDEN': 'ನಿಮ್ಮ ಖಾತೆಗೆ ಇದರ ಅನುಮತಿ ಇಲ್ಲ.',
       'error.NOT_FOUND': 'ಸಿಗಲಿಲ್ಲ. ಇದನ್ನು ತೆಗೆದುಹಾಕಿರಬಹುದು.',
       'error.RATE_LIMITED': 'ಹಲವು ಪ್ರಯತ್ನಗಳಾಗಿವೆ. ಒಂದು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
-      'error.NETWORK': 'KINETIX Cloud ತಲುಪಲಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
-      'error.SERVER_ERROR': 'KINETIX Cloud ನಲ್ಲಿ ತೊಂದರೆಯಾಗಿದೆ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+      'error.NETWORK': 'ZYNETIX Cloud ತಲುಪಲಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+      'error.SERVER_ERROR': 'ZYNETIX Cloud ನಲ್ಲಿ ತೊಂದರೆಯಾಗಿದೆ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
       'error.VALIDATION': 'ನೀವು ನಮೂದಿಸಿದ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',
       'error.BAD_REQUEST': 'ಅದನ್ನು ಮಾಡಲಾಗಲಿಲ್ಲ.',
       'error.CONFLICT': 'ಇದು ಈಗಾಗಲೇ ಉಳಿಸಿದ ಯಾವುದೋ ಒಂದರ ಜೊತೆ ಘರ್ಷಿಸುತ್ತದೆ.',

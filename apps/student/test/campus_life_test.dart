@@ -3,20 +3,20 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/core/campus_life.dart';
-import 'package:kinetix_student/features/campus/campus_life_screen.dart';
-import 'package:kinetix_student/features/campus/course_registration_screen.dart';
-import 'package:kinetix_student/features/campus/passport_screen.dart';
-import 'package:kinetix_student/features/campus/surveys_screen.dart';
-import 'package:kinetix_student/features/recordings/class_notes_screen.dart';
-import 'package:kinetix_student/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_student/core/api.dart';
+import 'package:zynetix_student/core/campus_life.dart';
+import 'package:zynetix_student/features/campus/campus_life_screen.dart';
+import 'package:zynetix_student/features/campus/course_registration_screen.dart';
+import 'package:zynetix_student/features/campus/passport_screen.dart';
+import 'package:zynetix_student/features/campus/surveys_screen.dart';
+import 'package:zynetix_student/features/recordings/class_notes_screen.dart';
+import 'package:zynetix_student/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 
 Widget host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: locale,
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,

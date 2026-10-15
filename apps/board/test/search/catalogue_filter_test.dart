@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/features/search/catalogue_facets.dart';
-import 'package:kinetix_labs/kinetix_labs.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/features/search/catalogue_facets.dart';
+import 'package:zynetix_labs/zynetix_labs.dart';
 
 /// The Subject → Topic → Class dropdowns over the 3D models and the virtual labs.
 void main() {

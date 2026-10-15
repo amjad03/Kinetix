@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/features/phet/phet_catalogue.dart';
-import 'package:kinetix_board/features/phet/phet_downloads.dart';
-import 'package:kinetix_board/features/phet/phet_panel.dart';
-import 'package:kinetix_board/features/phet/phet_strings.dart';
-import 'package:kinetix_board/main.dart';
+import 'package:zynetix_board/features/phet/phet_catalogue.dart';
+import 'package:zynetix_board/features/phet/phet_downloads.dart';
+import 'package:zynetix_board/features/phet/phet_panel.dart';
+import 'package:zynetix_board/features/phet/phet_strings.dart';
+import 'package:zynetix_board/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -51,7 +51,7 @@ void main() {
         }
         expect(s.locales, contains('en'), reason: s.id);
         // Named in Hindi and Kannada: PhET's own title where PhET has the sim in that language,
-        // KINETIX's (tools/phet/titles.json) where it does not (the sim then opens in English).
+        // ZYNETIX's (tools/phet/titles.json) where it does not (the sim then opens in English).
         for (final l in ['hi', 'kn']) {
           expect(s.titles[l], isNotNull, reason: '${s.id} has a $l title');
         }
@@ -328,7 +328,7 @@ void main() {
         screenSize(tester, size);
         final board = await enrolledBoard();
         board.onPaired('session-token', sessionIn('en'));
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         await tester.pumpAndSettle();
         if (find.text('Not now').evaluate().isNotEmpty) {
           await tester.tap(find.text('Not now'));

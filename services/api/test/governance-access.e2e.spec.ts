@@ -318,7 +318,7 @@ describe('governance: users, access, settings and reports', () => {
     const zip = (await http().get(`/v1/admin/data-exports/${req.id}/download`).set(as('principal')).buffer(true).parse(binary).expect(200)).body as Buffer;
     const files = readZip(zip);
     const manifest = JSON.parse(files.find((f) => f.path === 'manifest.json')!.data.toString());
-    expect(manifest).toMatchObject({ format: 'kinetix-tenant-export', tables: expect.objectContaining({ students: 3, campuses: 2 }), redacted: expect.objectContaining({ users: ['password_hash'] }) });
+    expect(manifest).toMatchObject({ format: 'zynetix-tenant-export', tables: expect.objectContaining({ students: 3, campuses: 2 }), redacted: expect.objectContaining({ users: ['password_hash'] }) });
     const people = JSON.parse(files.find((f) => f.path === 'tables/users.json')!.data.toString()) as { email: string; password_hash: string | null }[];
     expect(people.every((u) => u.password_hash === null)).toBe(true);
     expect(people.map((u) => u.email)).not.toContain(other.principal.email);

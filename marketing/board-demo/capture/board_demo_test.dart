@@ -1,4 +1,4 @@
-// KINETIX Board product demo: the real board app (demo server, Soundarya Central School,
+// ZYNETIX Board product demo: the real board app (demo server, Soundarya Central School,
 // Class 10 B Science) driven by a stylus. Copied into apps/board/test/ for the capture only:
 //   OUT=<fifo> VO=<vo.json> HAND=<hand.json> flutter test test/zz_board_demo_test.dart
 //   PREVIEW=<dir> ... writes small stills instead of streaming frames.
@@ -10,20 +10,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/kiosk/kiosk_pin.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/recording/recordings.dart';
-import 'package:kinetix_board/demo/demo.dart';
-import 'package:kinetix_board/demo/demo_server.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/kiosk/kiosk_pin.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/recording/recordings.dart';
+import 'package:zynetix_board/demo/demo.dart';
+import 'package:zynetix_board/demo/demo_server.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:kinetix_board/features/ai/voice_input.dart';
+import 'package:zynetix_board/features/ai/voice_input.dart';
 
 import 'support/captions_fakes.dart';
 import 'support/recording_fakes.dart';
@@ -68,15 +68,15 @@ final hw = ScriptedHandwriting();
 String? lastPoll;
 Map<String, dynamic>? lastPollBody;
 
-/// KINETIX AI answers for this lesson, in the API's shape (the demo server only has
-/// placeholders; a live board gets these from the KINETIX AI service).
+/// ZYNETIX AI answers for this lesson, in the API's shape (the demo server only has
+/// placeholders; a live board gets these from the ZYNETIX AI service).
 Map<String, dynamic>? aiAnswer(String path) {
   Map<String, dynamic> wrap(String task, Map<String, dynamic> r) => {
     'task': task,
     'result': r,
     'meta': {
-      'provider': 'kinetix',
-      'model': 'kinetix-edu',
+      'provider': 'zynetix',
+      'model': 'zynetix-edu',
       'cached': false,
       'preview': false,
       'sources': [
@@ -225,7 +225,7 @@ void main() {
       session: server.session(),
     );
     final rk = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(key: rk, child: KinetixBoardApp(controller: board)));
+    await tester.pumpWidget(RepaintBoundary(key: rk, child: ZynetixBoardApp(controller: board)));
     for (var i = 0; i < 30; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }

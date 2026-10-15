@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, ForbiddenException, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Res, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { documentsFor, NATIONALITIES, validateAnswers, type AdmissionDocumentSpec, type AdmissionFormField } from '@kinetix/shared';
+import { documentsFor, NATIONALITIES, validateAnswers, type AdmissionDocumentSpec, type AdmissionFormField } from '@zynetix/shared';
 import { timingSafeEqual } from 'node:crypto';
 import { and, desc, eq, notInArray, sql } from 'drizzle-orm';
 import { Readable } from 'node:stream';

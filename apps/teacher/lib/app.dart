@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'core/app_state.dart';
 import 'core/l10n.dart';
@@ -39,8 +39,8 @@ class TeacherApp extends StatelessWidget {
       ],
       localeListResolutionCallback: resolveDeviceLocale,
       debugShowCheckedModeBanner: false,
-      theme: KinetixTheme.light(),
-      darkTheme: KinetixTheme.dark(),
+      theme: ZynetixTheme.light(),
+      darkTheme: ZynetixTheme.dark(),
       themeMode: ThemeMode.system,
       navigatorKey: navigatorKey,
       builder: demoAppBuilder,

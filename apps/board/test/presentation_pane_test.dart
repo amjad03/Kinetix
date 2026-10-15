@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/insert/document_import.dart';
-import 'package:kinetix_board/features/insert/presentation_pane.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/features/insert/document_import.dart';
+import 'package:zynetix_board/features/insert/presentation_pane.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 /// Spec §28: intelligent split, draggable divider, Add Page, Add All Pages, Edge-to-Edge and
 /// handing the deck to the presenter app for animations.
@@ -37,7 +37,7 @@ void main() {
     };
     var closed = false;
     await tester.pumpWidget(MaterialApp(
-      theme: KinetixTheme.light(),
+      theme: ZynetixTheme.light(),
       home: Scaffold(
         body: ListenableBuilder(
           listenable: p,

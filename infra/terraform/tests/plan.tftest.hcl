@@ -14,7 +14,7 @@ mock_provider "aws" {
     defaults = { json = "{}" }
   }
   mock_resource "aws_secretsmanager_secret" {
-    defaults = { arn = "arn:aws:secretsmanager:ap-south-1:111111111111:secret:kinetix/x" }
+    defaults = { arn = "arn:aws:secretsmanager:ap-south-1:111111111111:secret:zynetix/x" }
   }
   mock_resource "aws_kms_key" {
     defaults = { arn = "arn:aws:kms:ap-south-1:111111111111:key/x" }
@@ -35,7 +35,7 @@ mock_provider "aws" {
     defaults = { arn = "arn:aws:sns:ap-south-1:111111111111:x" }
   }
   mock_resource "aws_elasticache_replication_group" {
-    defaults = { member_clusters = ["kinetix-001"], primary_endpoint_address = "redis.internal" }
+    defaults = { member_clusters = ["zynetix-001"], primary_endpoint_address = "redis.internal" }
   }
 }
 
@@ -96,7 +96,7 @@ run "prod_providers_and_github" {
     redis_nodes          = 2
     ai_base_url          = "http://10.40.30.10:8000/v1"
     ai_fallback_provider = "sarvam"
-    github_repository    = "example/Kinetix"
+    github_repository    = "example/Zynetix"
   }
 
   assert {

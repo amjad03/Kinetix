@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
@@ -29,7 +29,7 @@ const assessmentStringTable = <String, Map<String, String>>{
     'ask': 'Ask the class',
     'askHint': 'Sends this question to the Student App (and answer cards) as a poll',
     'sent': 'Sent to the Student App',
-    'sourceAi': 'From KINETIX AI',
+    'sourceAi': 'From ZYNETIX AI',
     'sourceOffline': 'Offline sample (the board\'s notes)',
     'sourceBank': 'From the class question bank',
     'sourceTemplate': 'Template (no AI or notes for this topic)',
@@ -59,7 +59,7 @@ const assessmentStringTable = <String, Map<String, String>>{
     'ask': 'कक्षा से पूछें',
     'askHint': 'यह प्रश्न स्टूडेंट ऐप (और उत्तर कार्ड) पर पोल के रूप में भेजता है',
     'sent': 'स्टूडेंट ऐप पर भेजा गया',
-    'sourceAi': 'KINETIX AI से',
+    'sourceAi': 'ZYNETIX AI से',
     'sourceOffline': 'ऑफ़लाइन नमूना (बोर्ड के नोट्स)',
     'sourceBank': 'कक्षा के प्रश्न बैंक से',
     'sourceTemplate': 'टेम्पलेट (इस विषय के लिए AI या नोट्स नहीं)',
@@ -89,7 +89,7 @@ const assessmentStringTable = <String, Map<String, String>>{
     'ask': 'ತರಗತಿಯನ್ನು ಕೇಳಿ',
     'askHint': 'ಈ ಪ್ರಶ್ನೆಯನ್ನು ಸ್ಟೂಡೆಂಟ್ ಆ್ಯಪ್‌ಗೆ (ಮತ್ತು ಉತ್ತರ ಕಾರ್ಡ್‌ಗಳಿಗೆ) ಪೋಲ್ ಆಗಿ ಕಳುಹಿಸುತ್ತದೆ',
     'sent': 'ಸ್ಟೂಡೆಂಟ್ ಆ್ಯಪ್‌ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ',
-    'sourceAi': 'KINETIX AI ಇಂದ',
+    'sourceAi': 'ZYNETIX AI ಇಂದ',
     'sourceOffline': 'ಆಫ್‌ಲೈನ್ ಮಾದರಿ (ಬೋರ್ಡ್‌ನ ಟಿಪ್ಪಣಿಗಳು)',
     'sourceBank': 'ತರಗತಿಯ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್‌ನಿಂದ',
     'sourceTemplate': 'ಮಾದರಿ ನಮೂನೆ (ಈ ವಿಷಯಕ್ಕೆ AI ಅಥವಾ ಟಿಪ್ಪಣಿ ಇಲ್ಲ)',
@@ -112,7 +112,7 @@ const assessmentStringTable = <String, Map<String, String>>{
 
 enum AssessmentKind { exitTicket, worksheet }
 
-/// Where the questions came from (the panel says so, as KINETIX AI's answers do).
+/// Where the questions came from (the panel says so, as ZYNETIX AI's answers do).
 enum QuestionSource { ai, offline, bank, template }
 
 class AssessmentQuestion {
@@ -165,13 +165,13 @@ class Assessment {
   }
 }
 
-/// Makes exit tickets and worksheets on a topic: KINETIX AI's quiz when it is there, the board's
+/// Makes exit tickets and worksheets on a topic: ZYNETIX AI's quiz when it is there, the board's
 /// offline notes or the class's question bank when it is not (and in a demo build), and a
 /// template of open questions when nothing covers the topic, so there is always something.
 class AssessmentGenerator {
   AssessmentGenerator({this.online, this.offline, this.bank, this.demo = false});
 
-  /// KINETIX AI's quiz on a topic.
+  /// ZYNETIX AI's quiz on a topic.
   final Future<AiResult<Quiz>> Function(String topic, int count)? online;
 
   /// The board's offline notes (features/offline_ai).
@@ -255,7 +255,7 @@ class AssessmentGenerator {
         final r = await online!(topic, count).timeout(const Duration(seconds: 60));
         if (r.result.questions.isNotEmpty) return (r.result.questions, r.meta.offline ? QuestionSource.offline : QuestionSource.ai);
       } catch (e) {
-        debugPrint('Assessment: KINETIX AI not reached ($e); using the offline fallback');
+        debugPrint('Assessment: ZYNETIX AI not reached ($e); using the offline fallback');
       }
     }
     return local() ?? (const <QuizQuestion>[], QuestionSource.template);

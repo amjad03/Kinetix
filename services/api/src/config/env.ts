@@ -14,7 +14,7 @@ const EnvSchema = z.object({
    * fallback, AI tasks return labelled previews so the apps still work in development.
    */
   AI_BASE_URL: z.url().optional(),
-  AI_MODEL: z.string().default('kinetix-llm'),
+  AI_MODEL: z.string().default('zynetix-llm'),
   /**
    * More models on the same server (AI_BASE_URL), comma-separated, tried in order when the one
    * before is busy or has used its daily allowance. Gemini's free tier allows about 20 requests a
@@ -109,10 +109,10 @@ const EnvSchema = z.object({
     .default('false')
     .transform((v) => v === 'true'),
   /**
-   * The downloadable 3D models (packages/kinetix_3d/remote_models), served at /assets/models so
+   * The downloadable 3D models (packages/zynetix_3d/remote_models), served at /assets/models so
    * boards fetch them from this server before GitHub. Relative to the working directory.
    */
-  MODELS_DIR: z.string().default('../../packages/kinetix_3d/remote_models'),
+  MODELS_DIR: z.string().default('../../packages/zynetix_3d/remote_models'),
   /**
    * Where boards download 3D models from when the institution has not set its own
    * (Settings → Smartboard): a CDN or school server with the same files. Absent: each board
@@ -154,7 +154,7 @@ const EnvSchema = z.object({
   /** The 6-character DLT sender id (header), e.g. KINTIX. */
   MSG91_SENDER_ID: z.string().optional(),
   /** The app name passed to the SMS template. */
-  SMS_APP_NAME: z.string().default('KINETIX'),
+  SMS_APP_NAME: z.string().default('ZYNETIX'),
   /**
    * YouTube Data API key (Google Cloud, YouTube Data API v3), optional. Only the platform team's
    * playlist import and video durations use it (playlistItems.list and videos.list cost one
@@ -185,18 +185,18 @@ const EnvSchema = z.object({
   CLAMAV_PORT: z.coerce.number().int().default(3310),
   /** OTLP/HTTP traces endpoint base (e.g. http://otel-collector:4318); unset = no tracing. Standard OTEL_* names. */
   OTEL_EXPORTER_OTLP_ENDPOINT: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
-  OTEL_SERVICE_NAME: z.string().default('kinetix-api'),
+  OTEL_SERVICE_NAME: z.string().default('zynetix-api'),
   /** Fraction of requests traced (0 to 1). */
   OTEL_TRACES_SAMPLER_ARG: z.coerce.number().min(0).max(1).default(1),
   /** When set, GET /metrics needs `Authorization: Bearer <token>`. */
   METRICS_TOKEN: z.string().optional(),
   /** Scheduled reports are emailed by POSTing JSON to this relay (SES/Postmark lambda, n8n…); unset: only logged. */
   MAIL_WEBHOOK_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
-  MAIL_FROM: z.string().default('reports@kinetix.local'),
-  /** Inbound email/WhatsApp replies to external chat threads: the relay sends `x-kinetix-inbound-secret`. Unset: inbound is off. */
+  MAIL_FROM: z.string().default('reports@zynetix.local'),
+  /** Inbound email/WhatsApp replies to external chat threads: the relay sends `x-zynetix-inbound-secret`. Unset: inbound is off. */
   CHAT_INBOUND_SECRET: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(16).optional()),
   /** Replies to external chat emails go to reply+<token>@ this domain. */
-  CHAT_REPLY_DOMAIN: z.string().default('reply.kinetix.local'),
+  CHAT_REPLY_DOMAIN: z.string().default('reply.zynetix.local'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

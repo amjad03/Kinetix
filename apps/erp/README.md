@@ -1,33 +1,33 @@
-# KINETIX ERP: principal dashboard (first slice)
+# ZYNETIX ERP: principal dashboard (first slice)
 
 The web dashboard for principals, administrators, heads of department and the accounts office:
 the whole school's day at a glance, classes, the timetable editor, attendance, homework, results,
 messages to every classroom ("Circulate"), the head of department's view of their department (with syllabus progress and year-plan status per class, and each class's year plan and lesson plans to review), departments set-up, a read-only safeguarding view of parent–teacher
 messages, the boards, live classroom view, fees, the library desk,
-the syllabus library, KINETIX AI usage, the academic calendar, and institution settings with the privacy & consent summary.
+the syllabus library, ZYNETIX AI usage, the academic calendar, and institution settings with the privacy & consent summary.
 In English, Hindi and Kannada ([docs/i18n/erp.md](../../docs/i18n/erp.md)). Spec: [docs/product/erp-dashboard.md](../../docs/product/erp-dashboard.md).
 
 Next.js (App Router, TypeScript strict) + Material UI themed to Material 3. The colour scheme is
 generated from the seed `#0B57D0` with `@material/material-color-utilities` (TonalSpot, the same
 algorithm as Flutter's `ColorScheme.fromSeed`), so it matches the Board and the mobile apps.
-Google Sans and Noto Devanagari/Kannada are bundled from `packages/kinetix_ui/fonts`. Light and
+Google Sans and Noto Devanagari/Kannada are bundled from `packages/zynetix_ui/fonts`. Light and
 dark themes follow the system.
 
 ## Run
 
-Needs the KINETIX Cloud API running with the demo seed (see the root README).
+Needs the ZYNETIX Cloud API running with the demo seed (see the root README).
 
 ```bash
 pnpm install                          # at the repo root
 cd apps/erp
-cp .env.example .env.local            # set KINETIX_API_URL if the API is not on :4000
+cp .env.example .env.local            # set ZYNETIX_API_URL if the API is not on :4000
 pnpm dev                              # http://localhost:3000
 ```
 
-Sign in with institution code `demo-college`, password `kinetix123`:
-`principal@demo.kinetix.in` (principal), `admin@demo.kinetix.in` (administrator) or
-`ravi@demo.kinetix.in` (head of department), `accounts@demo.kinetix.in` (accounts office: Fees
-only) or `library@demo.kinetix.in` (library desk: Library only). Teachers such as `anita@demo.kinetix.in` are refused.
+Sign in with institution code `demo-college`, password `zynetix123`:
+`principal@demo.zynetix.in` (principal), `admin@demo.zynetix.in` (administrator) or
+`ravi@demo.zynetix.in` (head of department), `accounts@demo.zynetix.in` (accounts office: Fees
+only) or `library@demo.zynetix.in` (library desk: Library only). Teachers such as `anita@demo.zynetix.in` are refused.
 
 | Script | |
 |---|---|
@@ -38,7 +38,7 @@ only) or `library@demo.kinetix.in` (library desk: Library only). Teachers such a
 | `pnpm test:e2e` | Playwright against a running API with a **fresh** demo seed; starts `pnpm dev` unless `ERP_URL` is set |
 
 ```bash
-KINETIX_API_URL=http://localhost:4000 pnpm test:e2e
+ZYNETIX_API_URL=http://localhost:4000 pnpm test:e2e
 # or against an already running ERP:
 ERP_URL=http://localhost:3000 pnpm test:e2e
 ```
@@ -52,7 +52,7 @@ account. The live-view tests enrol a pretend board through the API and stream in
 of the pages. Leaders hear class audio only when the institution setting `classroomAudioToViewers` is
 on: the class-audio test turns it on in Settings and off again. The departments test adds a department
 and deletes it again; the calendar test adds a holiday for today and deletes it; the settings test
-puts every setting back. The head-of-department tests sign in as `ravi@demo.kinetix.in` themselves; the plans test reviews the seeded lesson plan, and has Ravi save a lesson plan for his own Discrete Mathematics period through the API (the principal then reviews it).
+puts every setting back. The head-of-department tests sign in as `ravi@demo.zynetix.in` themselves; the plans test reviews the seeded lesson plan, and has Ravi save a lesson plan for his own Discrete Mathematics period through the API (the principal then reviews it).
 Tests read English: `signIn` picks English on the browser (`kx_lang=en`); `e2e/i18n.spec.ts`
 checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
 
@@ -60,9 +60,9 @@ checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
 
 | Variable | Default | |
 |---|---|---|
-| `KINETIX_API_URL` | `http://localhost:4000` | KINETIX Cloud API. Only the Next.js server calls it |
-| `KINETIX_TIMEZONE` | `Asia/Kolkata` | School time zone for "today", the "now" line and times. Keep in step with the tenant's zone |
-| `KINETIX_INSECURE_COOKIES` | unset | `1` drops the `Secure` flag on cookies in production (only for plain-HTTP test deployments) |
+| `ZYNETIX_API_URL` | `http://localhost:4000` | ZYNETIX Cloud API. Only the Next.js server calls it |
+| `ZYNETIX_TIMEZONE` | `Asia/Kolkata` | School time zone for "today", the "now" line and times. Keep in step with the tenant's zone |
+| `ZYNETIX_INSECURE_COOKIES` | unset | `1` drops the `Secure` flag on cookies in production (only for plain-HTTP test deployments) |
 
 ## How it works
 
@@ -91,7 +91,7 @@ checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
   them on a canvas the way the board does (backgrounds, highlighter, arrows, chalk-white ink on
   the chalkboard). Class audio (when the API allows it for leaders and the teacher's mic is on) is
   relayed the same way; Listen starts Web Audio (`src/lib/live/audio.ts` decodes the 16 kHz IMA ADPCM
-  chunks, a port of `LiveAudioCodec` in packages/kinetix_ink, and schedules them back to back with a
+  chunks, a port of `LiveAudioCodec` in packages/zynetix_ink, and schedules them back to back with a
   300 ms lead). `scripts/live-audio-fixture.dart` regenerates the cross-language test fixture
   (`dart run scripts/live-audio-fixture.dart`).
 - **Languages** (`src/i18n`): a typed dictionary per area with English, Hindi and Kannada, `t()` and
@@ -101,5 +101,5 @@ checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
 - **Money** is integer paise from the API, shown as Indian rupees (`src/lib/money.ts`).
 - **Theme** (`src/theme`): `scheme.ts` generates M3 roles; `palette.ts` maps them onto MUI
   (`primary`, `background`, `text`, `divider`, state layers) and exposes the full scheme as
-  `palette.m3.*` and KINETIX extras as `palette.kx.*` (live/success colours, frame and pane).
+  `palette.m3.*` and ZYNETIX extras as `palette.kx.*` (live/success colours, frame and pane).
   `theme.ts` sets the M3 type scale, 4/8/12/16/28 shapes and flat surfaces.

@@ -1,4 +1,4 @@
-import type { TallyLedgers } from '@kinetix/shared';
+import type { TallyLedgers } from '@zynetix/shared';
 
 /** CSV cell: quoted when needed, and neutralised against spreadsheet formula injection. */
 export function csvCell(v: string | number | null | undefined): string {

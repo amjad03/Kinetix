@@ -1,4 +1,4 @@
-import type { ColorRef, DocElement, DocLayout, DocType, ElementSchema, Fill, FontRef, PageSpec, PresetStyle, SignatoryRole, Stroke, TextStyle } from '@kinetix/shared';
+import type { ColorRef, DocElement, DocLayout, DocType, ElementSchema, Fill, FontRef, PageSpec, PresetStyle, SignatoryRole, Stroke, TextStyle } from '@zynetix/shared';
 import type { z } from 'zod';
 
 /**

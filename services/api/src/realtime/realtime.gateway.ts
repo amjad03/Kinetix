@@ -1,6 +1,6 @@
 import { BeforeApplicationShutdown, Inject, Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { RealtimeEvents, type LiveAudioChunk, type LiveAudioState, type LiveFrameEvent, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
+import { RealtimeEvents, type LiveAudioChunk, type LiveAudioState, type LiveFrameEvent, type LiveViewersEvent, type LiveWatchAck } from '@zynetix/shared';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import type { Namespace, Server, Socket } from 'socket.io';
 import { AuthGuard } from '../auth/auth.guard.js';

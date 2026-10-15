@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/cast/cast_controller.dart';
 import '../../l10n/feature_strings.dart';
@@ -31,7 +31,7 @@ const castStringTable = <String, Map<String, String>>{
     'added': 'The screen is on the board',
     'failed': 'Could not take the picture',
     'empty': 'Nothing is being shared.',
-    'how': 'A teacher or student opens the KINETIX Teacher or Student App and chooses “Share screen to the board”, or a laptop opens the school’s /cast page. You approve each screen here, and you can stop any of them.',
+    'how': 'A teacher or student opens the ZYNETIX Teacher or Student App and chooses “Share screen to the board”, or a laptop opens the school’s /cast page. You approve each screen here, and you can stop any of them.',
     'limit': 'Up to 4 screens at once.',
     'you': 'Teacher',
   },
@@ -51,7 +51,7 @@ const castStringTable = <String, Map<String, String>>{
     'added': 'स्क्रीन बोर्ड पर है',
     'failed': 'चित्र नहीं लिया जा सका',
     'empty': 'कुछ भी साझा नहीं हो रहा।',
-    'how': 'शिक्षक या छात्र KINETIX शिक्षक या छात्र ऐप खोलकर “स्क्रीन बोर्ड पर दिखाएँ” चुनते हैं, या लैपटॉप स्कूल का /cast पेज खोलता है। हर स्क्रीन की अनुमति आप यहाँ देते हैं और किसी को भी रोक सकते हैं।',
+    'how': 'शिक्षक या छात्र ZYNETIX शिक्षक या छात्र ऐप खोलकर “स्क्रीन बोर्ड पर दिखाएँ” चुनते हैं, या लैपटॉप स्कूल का /cast पेज खोलता है। हर स्क्रीन की अनुमति आप यहाँ देते हैं और किसी को भी रोक सकते हैं।',
     'limit': 'एक साथ 4 स्क्रीन तक।',
     'you': 'शिक्षक',
   },
@@ -71,7 +71,7 @@ const castStringTable = <String, Map<String, String>>{
     'added': 'ಪರದೆ ಬೋರ್ಡ್‌ನಲ್ಲಿದೆ',
     'failed': 'ಚಿತ್ರ ತೆಗೆಯಲಾಗಲಿಲ್ಲ',
     'empty': 'ಏನನ್ನೂ ಹಂಚಿಕೊಳ್ಳುತ್ತಿಲ್ಲ.',
-    'how': 'ಶಿಕ್ಷಕರು ಅಥವಾ ವಿದ್ಯಾರ್ಥಿ KINETIX ಶಿಕ್ಷಕ ಅಥವಾ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ತೆರೆದು “ಪರದೆಯನ್ನು ಬೋರ್ಡ್‌ಗೆ ಹಂಚಿಕೊಳ್ಳಿ” ಆರಿಸುತ್ತಾರೆ, ಅಥವಾ ಲ್ಯಾಪ್‌ಟಾಪ್ ಶಾಲೆಯ /cast ಪುಟ ತೆರೆಯುತ್ತದೆ. ಪ್ರತಿ ಪರದೆಗೆ ನೀವು ಇಲ್ಲಿ ಅನುಮತಿ ನೀಡುತ್ತೀರಿ ಮತ್ತು ಯಾವುದನ್ನೂ ನಿಲ್ಲಿಸಬಹುದು.',
+    'how': 'ಶಿಕ್ಷಕರು ಅಥವಾ ವಿದ್ಯಾರ್ಥಿ ZYNETIX ಶಿಕ್ಷಕ ಅಥವಾ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ತೆರೆದು “ಪರದೆಯನ್ನು ಬೋರ್ಡ್‌ಗೆ ಹಂಚಿಕೊಳ್ಳಿ” ಆರಿಸುತ್ತಾರೆ, ಅಥವಾ ಲ್ಯಾಪ್‌ಟಾಪ್ ಶಾಲೆಯ /cast ಪುಟ ತೆರೆಯುತ್ತದೆ. ಪ್ರತಿ ಪರದೆಗೆ ನೀವು ಇಲ್ಲಿ ಅನುಮತಿ ನೀಡುತ್ತೀರಿ ಮತ್ತು ಯಾವುದನ್ನೂ ನಿಲ್ಲಿಸಬಹುದು.',
     'limit': 'ಒಮ್ಮೆಗೆ 4 ಪರದೆಗಳವರೆಗೆ.',
     'you': 'ಶಿಕ್ಷಕ',
   },

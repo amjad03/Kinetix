@@ -15,8 +15,8 @@ CREATE POLICY tenant_isolation ON "role_access_rules"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "role_access_rules" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "role_access_rules" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "campuses" ADD COLUMN IF NOT EXISTS "code" text;--> statement-breakpoint

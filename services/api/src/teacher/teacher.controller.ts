@@ -1,6 +1,6 @@
 import { photoUrl } from '../profile/photo-url.js';
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import type { ActiveBoardSession, AttendanceSheet, Homework, MeResponse, RosterStudent, TeacherClass, TeacherTimetableResponse } from '@kinetix/shared';
+import type { ActiveBoardSession, AttendanceSheet, Homework, MeResponse, RosterStudent, TeacherClass, TeacherTimetableResponse } from '@zynetix/shared';
 import { and, asc, desc, eq, gt, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { AllowDuringPasswordChange, Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
@@ -135,7 +135,7 @@ export function loadMe(db: DbService, system: SystemLookups, p: UserPrincipal): 
       ...(p.mustSetUpMfa ? { mustSetUpMfa: true } : {}),
       photoUrl: photoUrl(u),
       teachingSubjects: u.teachingSubjects,
-      // The KINETIX platform team (the ERP shows its Platform area); absent for everyone else.
+      // The ZYNETIX platform team (the ERP shows its Platform area); absent for everyone else.
       ...((await system.isPlatformAdmin(u.id)) ? { platformAdmin: true } : {}),
     };
   });
@@ -333,7 +333,7 @@ export class HomeworkController {
   }
 
   /**
-   * Homework set from the board (often a KINETIX AI draft the teacher accepted). The class and
+   * Homework set from the board (often a ZYNETIX AI draft the teacher accepted). The class and
    * subject come from the period open on the board.
    */
   @Post('from-board')

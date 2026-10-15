@@ -1,5 +1,5 @@
 #!/bin/sh
-# KINETIX Cloud API container entrypoint. One image, several modes:
+# ZYNETIX Cloud API container entrypoint. One image, several modes:
 #   serve           (default) the HTTP + socket.io server, as the app role (APP_DATABASE_URL)
 #   migrate         apply SQL migrations as the owner role (DATABASE_URL), then exit
 #   seed            load the demo institution (development / staging only), then exit
@@ -8,11 +8,11 @@
 #                   create a real institution and its first administrator, as the owner role
 #                   (DATABASE_URL); prints the administrator's temporary password once, then exits
 #   platform-admin add|remove|list --tenant … --login … (see src/db/platform-admin.ts)
-#                   manage the KINETIX platform team (concept videos for every institution), as the
+#                   manage the ZYNETIX platform team (concept videos for every institution), as the
 #                   owner role (DATABASE_URL), then exit
 #   rotate-secrets  re-encrypt stored secrets (institutions' Razorpay keys) with the current
 #                   SECRETS_ENCRYPTION_KEY, as the owner role (DATABASE_URL), then exit
-#   db-bootstrap    create/update the kinetix_owner and kinetix_app roles and the database, as the
+#   db-bootstrap    create/update the zynetix_owner and zynetix_app roles and the database, as the
 #                   RDS master user (ADMIN_DATABASE_URL), then exit. Idempotent; re-run to rotate.
 # Anything else is executed as given (e.g. `sh` for debugging).
 set -eu

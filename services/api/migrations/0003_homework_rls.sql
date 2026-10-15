@@ -11,7 +11,7 @@ CREATE POLICY tenant_isolation ON homework
 --> statement-breakpoint
 DO $$
 BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON homework TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON homework TO zynetix_app;
   END IF;
 END $$;

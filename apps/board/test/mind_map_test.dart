@@ -3,10 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/mindmap/mind_map.dart';
-import 'package:kinetix_board/features/mindmap/mind_map_editor.dart';
-import 'package:kinetix_board/features/mindmap/mind_map_paint.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/features/mindmap/mind_map.dart';
+import 'package:zynetix_board/features/mindmap/mind_map_editor.dart';
+import 'package:zynetix_board/features/mindmap/mind_map_paint.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'support/panel_harness.dart';
 

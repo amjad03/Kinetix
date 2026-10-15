@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/app.dart';
-import 'package:kinetix_teacher/core/app_state.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/app.dart';
+import 'package:zynetix_teacher/core/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';

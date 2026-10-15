@@ -11,8 +11,8 @@ BEGIN
       'CREATE POLICY tenant_isolation ON %I
          USING (tenant_id = nullif(current_setting(''app.tenant_id'', true), '''')::uuid)
          WITH CHECK (tenant_id = nullif(current_setting(''app.tenant_id'', true), '''')::uuid)', t);
-    IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-      EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO kinetix_app', t);
+    IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+      EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO zynetix_app', t);
     END IF;
   END LOOP;
 END $$;
@@ -21,7 +21,7 @@ END $$;
 -- tenant row (tenant_self policy) and nothing else on tenants.
 DO $$
 BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT UPDATE (settings) ON tenants TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT UPDATE (settings) ON tenants TO zynetix_app;
   END IF;
 END $$;

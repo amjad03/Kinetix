@@ -7,7 +7,7 @@ import { addDays, PASSWORD, schoolToday, shot, signIn, signInAsPrincipal, TENANT
 // not in his department, so he may not review plans there (the principal may).
 test.describe.configure({ mode: 'serial' });
 
-const API_URL = process.env.KINETIX_API_URL ?? 'http://localhost:4000';
+const API_URL = process.env.ZYNETIX_API_URL ?? 'http://localhost:4000';
 const monday = (d: string) => {
   const w = new Date(`${d}T00:00:00Z`).getUTCDay();
   return addDays(d, w === 0 ? -6 : 1 - w);
@@ -22,9 +22,9 @@ async function showWeekOf(page: Page, date: string) {
   await expect(page.getByTestId('lessons-week')).toBeVisible();
 }
 
-/** Ravi plans his next Discrete Mathematics period through the API, as the Teacher App would (with KINETIX AI). */
+/** Ravi plans his next Discrete Mathematics period through the API, as the Teacher App would (with ZYNETIX AI). */
 async function raviPlansAPeriod(request: APIRequestContext) {
-  const login = await request.post(`${API_URL}/v1/auth/login`, { data: { tenant: TENANT, login: 'ravi@demo.kinetix.in', password: PASSWORD } });
+  const login = await request.post(`${API_URL}/v1/auth/login`, { data: { tenant: TENANT, login: 'ravi@demo.zynetix.in', password: PASSWORD } });
   expect(login.ok()).toBe(true);
   const headers = { authorization: `Bearer ${(await login.json()).accessToken}` };
   let day = await (await request.get(`${API_URL}/v1/teacher/timetable?date=${schoolToday()}`, { headers })).json();
@@ -53,7 +53,7 @@ async function raviPlansAPeriod(request: APIRequestContext) {
 }
 
 test('a head of department sees the year plan status, opens the class plan and reviews a lesson plan', async ({ page, request }) => {
-  await signIn(page, 'ravi@demo.kinetix.in');
+  await signIn(page, 'ravi@demo.zynetix.in');
   await expect(page).toHaveURL(/\/$/);
   await page.goto("/department");
   await page.waitForLoadState('networkidle');
@@ -92,7 +92,7 @@ test('a head of department sees the year plan status, opens the class plan and r
   await expect(page.getByTestId('topic-taught').first()).toContainText('Taught');
 
   // Anita's lesson plan for her next period (this week or next).
-  const login = await request.post(`${API_URL}/v1/auth/login`, { data: { tenant: TENANT, login: 'ravi@demo.kinetix.in', password: PASSWORD } });
+  const login = await request.post(`${API_URL}/v1/auth/login`, { data: { tenant: TENANT, login: 'ravi@demo.zynetix.in', password: PASSWORD } });
   const section = new URL(page.url()).searchParams.get('section');
   const subject = new URL(page.url()).searchParams.get('subject');
   const list = await (await request.get(`${API_URL}/v1/lesson-plans?sectionId=${section}&subjectId=${subject}`, { headers: { authorization: `Bearer ${(await login.json()).accessToken}` } })).json();
@@ -132,7 +132,7 @@ test("a head may not review plans outside their department: the API's reason is 
   const mine = await raviPlansAPeriod(request);
   const url = `/department/plan?section=${mine.section}&subject=${mine.subject}`;
 
-  await signIn(page, 'ravi@demo.kinetix.in');
+  await signIn(page, 'ravi@demo.zynetix.in');
   await expect(page).toHaveURL(/\/$/);
   await page.goto(url);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('BCA Sem 1 A · Discrete Mathematics');

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { open, shot } from './helpers';
 
-// Signed in as the accounts office (accounts@demo.kinetix.in) by principal.setup.ts.
+// Signed in as the accounts office (accounts@demo.zynetix.in) by principal.setup.ts.
 test.describe.configure({ mode: 'serial' });
 
 const FEE = `E2E Library fee ${Date.now() % 100000}`;
@@ -76,7 +76,7 @@ test('issue a fee, take a counter payment and print the receipt', async ({ page 
   await open(page, href!);
   const receipt = page.getByTestId('receipt');
   await expect(receipt).toContainText('Fee receipt');
-  await expect(receipt).toContainText('KINETIX Demo College of Commerce & Science');
+  await expect(receipt).toContainText('ZYNETIX Demo College of Commerce & Science');
   await expect(receipt).toContainText('Diya Patel');
   await expect(receipt).toContainText('Rupees One Thousand Two Hundred Fifty only');
   await expect(page.getByRole('button', { name: 'Print' })).toBeVisible();

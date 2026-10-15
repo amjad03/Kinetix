@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 /// Graph templates by subject and topic. The period's subject and topic preselect the list and
 /// the best-matching graph; "Add to board" places it as an editable graph (double-tap it to

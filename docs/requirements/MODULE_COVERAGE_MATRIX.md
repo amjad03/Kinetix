@@ -1,4 +1,4 @@
-# Kinetix Complete Module Coverage Matrix
+# Zynetix Complete Module Coverage Matrix
 
 ## Platform Core
 

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { open, setClassAudio, shot } from './helpers';
 
 // Signed in as the principal by principal.setup.ts. A pretend board is enrolled and paired
-// through the API, and answers snapshot requests like the KINETIX Board app.
+// through the API, and answers snapshot requests like the ZYNETIX Board app.
 test.describe.configure({ mode: 'serial' });
 
 let tokens: { admin: string; teacher: string };
@@ -13,7 +13,7 @@ const audioFixture = JSON.parse(readFileSync(new URL('../src/lib/live/fixtures/l
 const boards: SimBoard[] = [];
 
 test.beforeAll(async () => {
-  tokens = { admin: await apiLogin('admin@demo.kinetix.in'), teacher: await apiLogin('anita@demo.kinetix.in') };
+  tokens = { admin: await apiLogin('admin@demo.zynetix.in'), teacher: await apiLogin('anita@demo.zynetix.in') };
 });
 
 test.afterAll(async () => {

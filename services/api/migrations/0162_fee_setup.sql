@@ -27,8 +27,8 @@ CREATE POLICY tenant_isolation ON "fee_heads"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_heads" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_heads" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "fee_structures" ADD COLUMN IF NOT EXISTS "batch" text;--> statement-breakpoint
@@ -58,8 +58,8 @@ CREATE POLICY tenant_isolation ON "fee_student_profiles"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_student_profiles" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_student_profiles" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "fee_invoices" ADD COLUMN IF NOT EXISTS "structure_id" uuid REFERENCES "fee_structures"("id") ON DELETE SET NULL;--> statement-breakpoint
@@ -86,8 +86,8 @@ CREATE POLICY tenant_isolation ON "fee_invoice_lines"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_invoice_lines" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_invoice_lines" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "fee_assignments" (
@@ -109,8 +109,8 @@ CREATE POLICY tenant_isolation ON "fee_assignments"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_assignments" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_assignments" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "fee_concession_types" (
@@ -133,8 +133,8 @@ CREATE POLICY tenant_isolation ON "fee_concession_types"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_concession_types" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_concession_types" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "fee_concessions" ADD COLUMN IF NOT EXISTS "type_id" uuid REFERENCES "fee_concession_types"("id") ON DELETE SET NULL;--> statement-breakpoint
@@ -168,8 +168,8 @@ CREATE POLICY tenant_isolation ON "fee_waiver_requests"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_waiver_requests" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_waiver_requests" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "fee_custom_plans" (
@@ -196,8 +196,8 @@ CREATE POLICY tenant_isolation ON "fee_custom_plans"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_custom_plans" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "fee_custom_plans" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "fee_accounts_settings" ADD COLUMN IF NOT EXISTS "chains" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint

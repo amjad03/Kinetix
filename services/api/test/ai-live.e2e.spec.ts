@@ -14,7 +14,7 @@ import { createApp, createTenant, FixedClock, nextMondayIst, ownerPool, pairBoar
  */
 const live = process.env.AI_LIVE_SMOKE === '1' && !!process.env.AI_BASE_URL;
 
-describe.skipIf(!live)('KINETIX AI live smoke (real model)', { timeout: 180_000 }, () => {
+describe.skipIf(!live)('ZYNETIX AI live smoke (real model)', { timeout: 180_000 }, () => {
   const owner = ownerPool();
   const clock = new FixedClock(nextMondayIst('10:30'));
   const results: Record<string, unknown> = {};

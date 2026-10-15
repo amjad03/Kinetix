@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/device_store.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/secret_store.dart';
-import 'package:kinetix_board/features/enrollment/enroll_screen.dart';
-import 'package:kinetix_board/features/enrollment/set_up_again.dart';
-import 'package:kinetix_board/main.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/device_store.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/secret_store.dart';
+import 'package:zynetix_board/features/enrollment/enroll_screen.dart';
+import 'package:zynetix_board/features/enrollment/set_up_again.dart';
+import 'package:zynetix_board/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -84,7 +84,7 @@ void main() {
     screenSize(tester, const Size(1920, 1080));
     SharedPreferences.setMockInitialValues({});
     final board = (await tester.runAsync(() => enrolledBoard(store: DeviceStore(secrets: MemorySecretStore()))))!;
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     if (find.text('Not now').evaluate().isNotEmpty) {
       await tester.tap(find.text('Not now'));

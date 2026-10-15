@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { RealtimeEvents, type DeviceActionEvent, type DeviceActionType, type DeviceHealth } from '@kinetix/shared';
+import { RealtimeEvents, type DeviceActionEvent, type DeviceActionType, type DeviceHealth } from '@zynetix/shared';
 import { and, asc, desc, eq, gt, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';

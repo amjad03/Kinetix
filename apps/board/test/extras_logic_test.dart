@@ -1,24 +1,24 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/board/context/context_switcher.dart';
-import 'package:kinetix_board/features/logic_gates/logic_gates_lab.dart';
-import 'package:kinetix_board/features/mindmap/mind_map_editor.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/demo/demo_strings.dart';
-import 'package:kinetix_board/features/assessment/assessment.dart';
-import 'package:kinetix_board/features/captions/live_captions.dart';
-import 'package:kinetix_board/features/classroom/classroom_strings.dart';
-import 'package:kinetix_board/features/classroom/classroom_tools.dart';
-import 'package:kinetix_board/features/doc_camera/doc_camera.dart';
-import 'package:kinetix_board/features/extras/board_extras.dart';
-import 'package:kinetix_board/features/language_kit/language_kit.dart';
-import 'package:kinetix_board/features/offline_ai/offline_ai.dart';
-import 'package:kinetix_board/features/primary/primary_strings.dart';
-import 'package:kinetix_board/features/primary/tracing.dart';
-import 'package:kinetix_board/features/safe_web/safe_web.dart';
-import 'package:kinetix_board/features/teaching_aids/teaching_aids.dart';
-import 'package:kinetix_board/l10n/feature_strings.dart';
+import 'package:zynetix_board/features/board/context/context_switcher.dart';
+import 'package:zynetix_board/features/logic_gates/logic_gates_lab.dart';
+import 'package:zynetix_board/features/mindmap/mind_map_editor.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/demo/demo_strings.dart';
+import 'package:zynetix_board/features/assessment/assessment.dart';
+import 'package:zynetix_board/features/captions/live_captions.dart';
+import 'package:zynetix_board/features/classroom/classroom_strings.dart';
+import 'package:zynetix_board/features/classroom/classroom_tools.dart';
+import 'package:zynetix_board/features/doc_camera/doc_camera.dart';
+import 'package:zynetix_board/features/extras/board_extras.dart';
+import 'package:zynetix_board/features/language_kit/language_kit.dart';
+import 'package:zynetix_board/features/offline_ai/offline_ai.dart';
+import 'package:zynetix_board/features/primary/primary_strings.dart';
+import 'package:zynetix_board/features/primary/tracing.dart';
+import 'package:zynetix_board/features/safe_web/safe_web.dart';
+import 'package:zynetix_board/features/teaching_aids/teaching_aids.dart';
+import 'package:zynetix_board/l10n/feature_strings.dart';
 import 'package:flutter/painting.dart' show Color;
 
 import 'support/captions_fakes.dart';
@@ -58,7 +58,7 @@ void main() {
     QuizQuestion q(String text) => QuizQuestion(question: text, options: ['a', 'b', 'c', 'd'], answer: 1, explanation: '');
     AiResult<Quiz> quiz(List<String> qs, {bool offline = false}) => AiResult(Quiz(topic: 't', questions: [for (final x in qs) q(x)]), AiMeta(cached: false, preview: false, offline: offline));
 
-    test('KINETIX AI first when it answers', () async {
+    test('ZYNETIX AI first when it answers', () async {
       final g = AssessmentGenerator(online: (t, n) async => quiz(['AI 1', 'AI 2', 'AI 3']), offline: (t, n) => quiz(['notes']));
       final r = await g.generate(AssessmentKind.exitTicket, 'Refraction', s);
       expect(r.source, QuestionSource.ai);
@@ -66,7 +66,7 @@ void main() {
       expect(r.questions.where((x) => x.section == 'R'), hasLength(2));
     });
 
-    test('offline notes when KINETIX AI cannot be reached', () async {
+    test('offline notes when ZYNETIX AI cannot be reached', () async {
       final g = AssessmentGenerator(online: (t, n) async => throw Exception('offline'), offline: (t, n) => quiz(['notes 1', 'notes 2', 'notes 3', 'notes 4', 'notes 5'], offline: true));
       final r = await g.generate(AssessmentKind.worksheet, 'Refraction', s);
       expect(r.source, QuestionSource.offline);

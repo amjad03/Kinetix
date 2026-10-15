@@ -1,7 +1,7 @@
 import { keywords } from '../content/content.service.js';
 
 /** Words that say nothing about the topic in a channel's video titles. */
-const NOISE = new Set('kinetix video part lecture concept concepts introduction intro basics tutorial explained hindi kannada english animated animation class grade sem semester'.split(' '));
+const NOISE = new Set('zynetix video part lecture concept concepts introduction intro basics tutorial explained hindi kannada english animated animation class grade sem semester'.split(' '));
 
 /**
  * The chapter topic a playlist video most likely explains, by keyword overlap between the video

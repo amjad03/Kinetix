@@ -36,14 +36,14 @@ translations to the other two files, then run `flutter gen-l10n` (or `flutter pu
 ## What is not translated
 
 - Server content: names, class and subject names, homework, message and assessment text, board names.
-- Kept in English per the glossary: KINETIX, app names, QR, OTP, MCQ, roll numbers, class names.
+- Kept in English per the glossary: ZYNETIX, app names, QR, OTP, MCQ, roll numbers, class names.
 - Server error messages the app does not know. Every API error carries a stable `code`
   (`services/api/src/common/error-codes.ts`); `errorText` in `core/l10n.dart` words the codes the
   Teacher App can receive (`NOT_YOUR_CLASS`, `PAIRING_CODE_INVALID`, `COVERAGE_FUTURE_DATE`,
   `SUBMISSION_MISSING`, `PLAN_NO_SYLLABUS`, `PERIOD_WRONG_DAY`, …, and the status codes `FORBIDDEN`, `NOT_FOUND`, `RATE_LIMITED`,
   `VALIDATION`, `SERVER_ERROR`). Older servers send no code, so the English messages they are
   known to send are still matched as a fallback; any other server text is shown as is.
-- The lesson player (`packages/kinetix_lesson`: player controls, transcript and summary panels)
+- The lesson player (`packages/zynetix_lesson`: player controls, transcript and summary panels)
   is shared with the Parent App and is not localised yet. The Teacher App passes it translated
   load errors only.
 

@@ -6,8 +6,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -312,8 +312,8 @@ class SeatingChartPanelState extends State<SeatingChartPanel> {
   bool _moving = false;
   final _shot = GlobalKey();
 
-  String get _key => 'kinetix.seating.${classKey(widget.board)}';
-  String get _infoKey => 'kinetix.seatinfo.${classKey(widget.board)}';
+  String get _key => 'zynetix.seating.${classKey(widget.board)}';
+  String get _infoKey => 'zynetix.seatinfo.${classKey(widget.board)}';
 
   @override
   void initState() {
@@ -443,7 +443,7 @@ class SeatingChartPanelState extends State<SeatingChartPanel> {
     final image = await boundary.toImage(pixelRatio: 2);
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     if (data == null) return;
-    await SeatingShare.share('KINETIX seating plan.png', data.buffer.asUint8List(), 'image/png');
+    await SeatingShare.share('ZYNETIX seating plan.png', data.buffer.asUint8List(), 'image/png');
   }
 
   void toBoard() {

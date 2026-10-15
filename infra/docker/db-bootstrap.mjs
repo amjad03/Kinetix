@@ -1,13 +1,13 @@
 // One-off database bootstrap for a managed Postgres (Amazon RDS), the production counterpart of
-// services/api/scripts/setup-local-db.sh. Runs inside the API image: `kinetix-api db-bootstrap`.
+// services/api/scripts/setup-local-db.sh. Runs inside the API image: `zynetix-api db-bootstrap`.
 //
 //   ADMIN_DATABASE_URL  the RDS master user (from the RDS-managed secret), any database
-//   DATABASE_URL        kinetix_owner: migrations and the narrowly scoped system lookups
-//   APP_DATABASE_URL    kinetix_app: every request; NOSUPERUSER NOBYPASSRLS, so RLS always applies
+//   DATABASE_URL        zynetix_owner: migrations and the narrowly scoped system lookups
+//   APP_DATABASE_URL    zynetix_app: every request; NOSUPERUSER NOBYPASSRLS, so RLS always applies
 //
-// Creates both roles and the database (owned by kinetix_owner) when missing, and sets the roles'
+// Creates both roles and the database (owned by zynetix_owner) when missing, and sets the roles'
 // passwords from the URLs every time, so re-running it after rotating the secrets applies the new
-// passwords. The role names are fixed: the migrations grant to kinetix_app by name.
+// passwords. The role names are fixed: the migrations grant to zynetix_app by name.
 import pg from 'pg';
 
 const required = (name) => {
@@ -22,8 +22,8 @@ const roles = [
   { name: decodeURIComponent(owner.username), password: decodeURIComponent(owner.password), extra: 'NOSUPERUSER NOBYPASSRLS' },
   { name: decodeURIComponent(app.username), password: decodeURIComponent(app.password), extra: 'NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE' },
 ];
-if (roles[0].name !== 'kinetix_owner' || roles[1].name !== 'kinetix_app') {
-  throw new Error('DATABASE_URL must use kinetix_owner and APP_DATABASE_URL kinetix_app (the migrations grant by name)');
+if (roles[0].name !== 'zynetix_owner' || roles[1].name !== 'zynetix_app') {
+  throw new Error('DATABASE_URL must use zynetix_owner and APP_DATABASE_URL zynetix_app (the migrations grant by name)');
 }
 if (decodeURIComponent(app.pathname.slice(1)) !== database) throw new Error('DATABASE_URL and APP_DATABASE_URL must name the same database');
 if (roles.some((r) => r.password.length < 16)) throw new Error('Role passwords must be at least 16 characters');
@@ -47,7 +47,7 @@ try {
   }
   await admin.query(`REVOKE ALL ON DATABASE ${ident(database)} FROM PUBLIC`);
   await admin.query(`GRANT CONNECT, TEMPORARY ON DATABASE ${ident(database)} TO ${ident(roles[1].name)}`);
-  console.log(`Database ${database} is ready. Next: kinetix-api migrate`);
+  console.log(`Database ${database} is ready. Next: zynetix-api migrate`);
 } finally {
   await admin.end();
 }

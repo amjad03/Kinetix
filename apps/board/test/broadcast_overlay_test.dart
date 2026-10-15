@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/broadcast/broadcast_overlay.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/broadcast/broadcast_overlay.dart';
 
 BroadcastMessage msg(String id, BroadcastPriority p) => BroadcastMessage(
   id: id,

@@ -18,8 +18,8 @@ CREATE POLICY tenant_isolation ON "acct_funds"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "acct_funds" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "acct_funds" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "acct_vouchers" ADD COLUMN IF NOT EXISTS "fund_id" uuid REFERENCES "acct_funds"("id") ON DELETE SET NULL;--> statement-breakpoint
@@ -52,8 +52,8 @@ CREATE POLICY tenant_isolation ON "acct_bank_statements"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "acct_bank_statements" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "acct_bank_statements" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "acct_bank_lines" (
@@ -85,8 +85,8 @@ CREATE POLICY tenant_isolation ON "acct_bank_lines"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "acct_bank_lines" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "acct_bank_lines" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "budgets" ADD COLUMN IF NOT EXISTS "enforce" text DEFAULT 'warn' NOT NULL;

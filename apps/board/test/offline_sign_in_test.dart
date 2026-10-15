@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/offline_codes.dart';
-import 'package:kinetix_board/features/signin/sign_in_dialog.dart';
-import 'package:kinetix_board/l10n/gen/app_localizations.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/offline_codes.dart';
+import 'package:zynetix_board/features/signin/sign_in_dialog.dart';
+import 'package:zynetix_board/l10n/gen/app_localizations.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -20,7 +20,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MaterialApp(
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: SignInDialog(api: api, boardName: 'Room 1 Board')),
@@ -44,7 +44,7 @@ void main() {
       client: MockClient((req) async {
         asked.add(req.url.path);
         if (req.url.path.endsWith('/pairing-codes')) {
-          return http.Response(jsonEncode({'code': '482913', 'qrPayload': 'kinetix://pair?c=482913', 'expiresAt': DateTime.now().add(const Duration(minutes: 2)).toUtc().toIso8601String()}), 200);
+          return http.Response(jsonEncode({'code': '482913', 'qrPayload': 'zynetix://pair?c=482913', 'expiresAt': DateTime.now().add(const Duration(minutes: 2)).toUtc().toIso8601String()}), 200);
         }
         return http.Response(jsonEncode({'keyId': 'k', 'board': {'id': 'b', 'name': 'Room 1 Board'}, 'codes': [for (var i = 0; i < 96; i++) windowJson(i, from)]}), 200);
       }),
@@ -73,7 +73,7 @@ void main() {
     await tester.pump();
     expect(find.byKey(const Key('offline-qr')), findsOneWidget);
     expect(find.byKey(const Key('offline-note')), findsOneWidget);
-    expect(find.textContaining('Scan this code in the KINETIX Teacher app'), findsOneWidget);
+    expect(find.textContaining('Scan this code in the ZYNETIX Teacher app'), findsOneWidget);
     // Close the dialog so its refresh timer is cancelled.
     await tester.pumpWidget(const SizedBox());
   });

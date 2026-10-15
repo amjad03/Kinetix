@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/comfort/eye_comfort.dart';
+import 'package:zynetix_board/features/comfort/eye_comfort.dart';
 
 void main() {
   test('off means no change', () {

@@ -194,7 +194,7 @@ export class StudioService {
     const [u] = await tx.select({ name: users.fullName }).from(users).where(eq(users.id, userId));
     const now = this.clock.now();
     const local = localParts(now, t?.tz ?? 'Asia/Kolkata');
-    return { institution: inst?.name || t?.name || 'KINETIX', title, generatedBy: u?.name ?? 'KINETIX', generatedAt: `${local.date} ${local.time.slice(0, 5)}`, at: now, lang };
+    return { institution: inst?.name || t?.name || 'ZYNETIX', title, generatedBy: u?.name ?? 'ZYNETIX', generatedAt: `${local.date} ${local.time.slice(0, 5)}`, at: now, lang };
   }
 
   // ----- schedules --------------------------------------------------------------------------------
@@ -273,7 +273,7 @@ export class StudioService {
       if (out.to.length === 0) throw new Error('Nobody to send to: none of the recipients is an active user allowed to see this report');
       await this.mailer.send({
         to: out.to,
-        subject: `KINETIX report: ${out.r.title} (${out.rendered.filename.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? ''})`,
+        subject: `ZYNETIX report: ${out.r.title} (${out.rendered.filename.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? ''})`,
         text: `Your scheduled report "${out.r.title}" is attached (${out.res.rows.length} rows${out.res.filters.length ? `; ${out.res.filters.join('; ')}` : ''}).\n\nSchedule: ${s.name || s.frequency}. To change or stop it, open Reports > Schedules in the ERP.`,
         attachments: [{ filename: out.rendered.filename, contentType: out.rendered.contentType.split(';')[0], content: out.rendered.body }],
       });

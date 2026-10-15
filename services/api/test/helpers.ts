@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { INestApplication } from '@nestjs/common';
 import { Test, type TestingModuleBuilder } from '@nestjs/testing';
-import { RealtimeEvents, type PairingClaimedEvent } from '@kinetix/shared';
+import { RealtimeEvents, type PairingClaimedEvent } from '@zynetix/shared';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import argon2 from 'argon2';
@@ -16,11 +16,11 @@ import { Clock, zonedToInstant } from '../src/common/time.js';
 import { enrollmentCode, hmac } from '../src/common/crypto.js';
 import * as s from '../src/db/schema.js';
 
-const TEST_DB = process.env.KINETIX_TEST_DB || 'kinetix_test';
+const TEST_DB = process.env.ZYNETIX_TEST_DB || 'zynetix_test';
 
 export const env = {
-  DATABASE_URL: `postgres://kinetix_owner:kinetix_owner@localhost:5432/${TEST_DB}`,
-  APP_DATABASE_URL: `postgres://kinetix_app:kinetix_app@localhost:5432/${TEST_DB}`,
+  DATABASE_URL: `postgres://zynetix_owner:zynetix_owner@localhost:5432/${TEST_DB}`,
+  APP_DATABASE_URL: `postgres://zynetix_app:zynetix_app@localhost:5432/${TEST_DB}`,
   JWT_SECRET: 'test-secret-test-secret',
   PAIRING_HMAC_SECRET: 'pairing-test-secret',
   PORT: '0',
@@ -29,7 +29,7 @@ export const env = {
   EVENTS_POLL_MS: '0',
   REPORTS_POLL_MS: '0',
   SCAN_POLL_MS: '0',
-  STORAGE_DIR: `/tmp/kinetix-test-objects-${process.pid}`,
+  STORAGE_DIR: `/tmp/zynetix-test-objects-${process.pid}`,
   /** Encrypts institutions' payment secrets in tests (32 bytes, base64; not a real key). */
   SECRETS_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
 };

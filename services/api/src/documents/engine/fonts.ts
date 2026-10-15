@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import * as hb from 'harfbuzzjs';
-import type { FontFamilyId } from '@kinetix/shared';
+import type { FontFamilyId } from '@zynetix/shared';
 
 /**
  * The curated document fonts (assets/fonts, all SIL OFL). A family is a Latin face plus Devanagari

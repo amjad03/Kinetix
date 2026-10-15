@@ -25,7 +25,7 @@ class OsmBusMap extends StatelessWidget {
   static Widget builder(BuildContext context, BusMapData data) => OsmBusMap(data);
 
   static const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-  static const userAgentPackageName = 'in.kinetix.parent';
+  static const userAgentPackageName = 'in.zynetix.parent';
 
   @override
   Widget build(BuildContext context) {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_labs/kinetix_labs.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/features/learn/labs_view.dart';
+import 'package:zynetix_labs/zynetix_labs.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/features/learn/labs_view.dart';
 
 import 'helpers.dart';
 

@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'app_info.dart';
 import 'models.dart';
@@ -24,7 +24,7 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// KINETIX Cloud API, as seen by a board.
+/// ZYNETIX Cloud API, as seen by a board.
 class ApiClient {
   ApiClient({required this.baseUrl, http.Client? client}) : _http = client ?? http.Client();
 
@@ -288,7 +288,7 @@ class ApiClient {
   Future<void> markDisplayed(String id) async => _send('POST', '/v1/broadcasts/$id/displayed');
   Future<void> acknowledge(String id) async => _send('POST', '/v1/broadcasts/$id/ack');
 
-  // --- KINETIX AI (board-session token; the class and subject come from the session) --------
+  // --- ZYNETIX AI (board-session token; the class and subject come from the session) --------
 
   Future<AiResult<Explanation>> explain(String question, AiLanguage language, {bool fresh = false, String? topicId, String? level}) =>
       _ai('explain', {'question': question, 'language': language.name, 'fresh': fresh, 'topicId': ?topicId, 'level': ?level}, Explanation.fromJson);

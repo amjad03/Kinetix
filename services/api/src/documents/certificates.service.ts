@@ -3,7 +3,7 @@ import { FeeHoldsService } from '../fee-depth/fee-holds.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
-import type { CertificateKind, CertificateRequest, CertificateStatus, CertificateSubject, CertificateTemplate } from '@kinetix/shared';
+import type { CertificateKind, CertificateRequest, CertificateStatus, CertificateSubject, CertificateTemplate } from '@zynetix/shared';
 import { and, asc, desc, eq, inArray, or, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';

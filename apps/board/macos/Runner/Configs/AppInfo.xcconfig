@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = kinetix_board
+PRODUCT_NAME = zynetix_board
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = in.kinetix.kinetixBoard
+PRODUCT_BUNDLE_IDENTIFIER = in.zynetix.zynetixBoard
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 in.kinetix. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 in.zynetix. All rights reserved.

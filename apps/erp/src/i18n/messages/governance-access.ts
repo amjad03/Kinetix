@@ -291,7 +291,7 @@ export default area(
 
     // ---- backups and export
     'ga.export.title': 'Backups and export',
-    'ga.export.sub': 'Download everything the institution keeps in KINETIX: every table, in one ZIP file',
+    'ga.export.sub': 'Download everything the institution keeps in ZYNETIX: every table, in one ZIP file',
     'ga.export.requested': 'The export has started. It is usually ready in a few minutes.',
     'ga.export.deleted': 'Export deleted',
     'ga.export.col.when': 'Requested',
@@ -787,7 +787,7 @@ export default area(
       'ga.notif.kind.task': 'कार्य और स्वीकृतियाँ',
       'ga.notif.kind.message': 'बातचीत में उत्तर',
       'ga.export.title': 'बैकअप और निर्यात',
-      'ga.export.sub': 'संस्था का KINETIX में रखा सब कुछ डाउनलोड करें: हर तालिका, एक ZIP फ़ाइल में',
+      'ga.export.sub': 'संस्था का ZYNETIX में रखा सब कुछ डाउनलोड करें: हर तालिका, एक ZIP फ़ाइल में',
       'ga.export.requested': 'निर्यात शुरू हो गया है। यह आमतौर पर कुछ मिनट में तैयार हो जाता है।',
       'ga.export.deleted': 'निर्यात हटाया गया',
       'ga.export.col.when': 'अनुरोध',
@@ -1278,7 +1278,7 @@ export default area(
       'ga.notif.kind.task': 'ಕಾರ್ಯಗಳು ಮತ್ತು ಅನುಮೋದನೆಗಳು',
       'ga.notif.kind.message': 'ಸಂಭಾಷಣೆಯಲ್ಲಿ ಉತ್ತರಗಳು',
       'ga.export.title': 'ಬ್ಯಾಕಪ್ ಮತ್ತು ರಫ್ತು',
-      'ga.export.sub': 'ಸಂಸ್ಥೆ KINETIX ನಲ್ಲಿ ಇಟ್ಟಿರುವ ಎಲ್ಲವನ್ನೂ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ: ಪ್ರತಿ ಕೋಷ್ಟಕ, ಒಂದು ZIP ಕಡತದಲ್ಲಿ',
+      'ga.export.sub': 'ಸಂಸ್ಥೆ ZYNETIX ನಲ್ಲಿ ಇಟ್ಟಿರುವ ಎಲ್ಲವನ್ನೂ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ: ಪ್ರತಿ ಕೋಷ್ಟಕ, ಒಂದು ZIP ಕಡತದಲ್ಲಿ',
       'ga.export.requested': 'ರಫ್ತು ಆರಂಭವಾಗಿದೆ. ಸಾಮಾನ್ಯವಾಗಿ ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಸಿದ್ಧವಾಗುತ್ತದೆ.',
       'ga.export.deleted': 'ರಫ್ತು ಅಳಿಸಲಾಗಿದೆ',
       'ga.export.col.when': 'ವಿನಂತಿ',

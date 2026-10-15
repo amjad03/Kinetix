@@ -123,7 +123,7 @@ importers:
       '@huggingface/transformers':
         specifier: ^3
         version: 3.8.1
-      '@kinetix/shared':
+      '@zynetix/shared':
         specifier: workspace:^
         version: link:../../packages/shared
       '@nestjs/common':

@@ -68,7 +68,7 @@ class _MapLabState extends State<MapLab> {
       child: FlutterMap(
         options: MapOptions(initialCenter: const LatLng(20.6, 78.9), initialZoom: 4.5, onTap: _tap),
         children: [
-          TileLayer(urlTemplate: _streets ? _osm : _carto, userAgentPackageName: 'in.kinetix.board'),
+          TileLayer(urlTemplate: _streets ? _osm : _carto, userAgentPackageName: 'in.zynetix.board'),
           if (_showMeasure && _path.length > 1) PolylineLayer(polylines: [Polyline(points: _path, strokeWidth: 4, color: Colors.deepOrange)]),
           if (_showMeasure) MarkerLayer(markers: [for (final p in _path) Marker(point: p, width: 12, height: 12, child: const DecoratedBox(decoration: BoxDecoration(color: Colors.deepOrange, shape: BoxShape.circle)))]),
           if (_showMarkers) MarkerLayer(markers: [for (final p in _markers) Marker(point: p, width: 36, height: 36, child: const Icon(Icons.location_on, color: Colors.red, size: 36))]),
@@ -169,7 +169,7 @@ class _GeoQuizState extends State<GeoQuiz> {
         child: FlutterMap(
           options: MapOptions(initialCenter: const LatLng(21, 80), initialZoom: 4.3, onTap: _tap),
           children: [
-            TileLayer(urlTemplate: _carto, userAgentPackageName: 'in.kinetix.board'),
+            TileLayer(urlTemplate: _carto, userAgentPackageName: 'in.zynetix.board'),
             if (_answer != null) MarkerLayer(markers: [Marker(point: _answer!, width: 36, height: 36, child: const Icon(Icons.location_on, color: Colors.red, size: 36))]),
             _attribution(),
           ],

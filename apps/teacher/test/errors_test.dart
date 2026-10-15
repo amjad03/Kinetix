@@ -5,9 +5,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/core/l10n.dart';
-import 'package:kinetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/core/l10n.dart';
+import 'package:zynetix_teacher/core/models.dart';
 
 import 'helpers.dart';
 
@@ -44,7 +44,7 @@ void main() {
     });
 
     test('a generic code falls back to the known message, then the message itself', () {
-      expect(en.errorText(ApiException(400, 'Not a KINETIX pairing QR code', code: 'BAD_REQUEST')), en.errorNotPairingQr);
+      expect(en.errorText(ApiException(400, 'Not a ZYNETIX pairing QR code', code: 'BAD_REQUEST')), en.errorNotPairingQr);
       expect(en.errorText(ApiException(400, 'Marks cannot be more than 25', code: 'BAD_REQUEST')), 'Marks cannot be more than 25');
     });
 

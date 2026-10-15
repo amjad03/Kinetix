@@ -2,14 +2,14 @@
 // evaluation, mentoring, course rosters, surveys and clubs.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/work_models.dart';
-import 'package:kinetix_teacher/features/attendance/attendance_screen.dart';
-import 'package:kinetix_teacher/features/work/duties_screens.dart';
-import 'package:kinetix_teacher/features/work/evaluation_screens.dart';
-import 'package:kinetix_teacher/features/work/mentoring_screens.dart';
-import 'package:kinetix_teacher/features/work/requests_screen.dart';
-import 'package:kinetix_teacher/features/work/roster_surveys_clubs.dart';
-import 'package:kinetix_teacher/features/work/tasks_screen.dart';
+import 'package:zynetix_teacher/core/work_models.dart';
+import 'package:zynetix_teacher/features/attendance/attendance_screen.dart';
+import 'package:zynetix_teacher/features/work/duties_screens.dart';
+import 'package:zynetix_teacher/features/work/evaluation_screens.dart';
+import 'package:zynetix_teacher/features/work/mentoring_screens.dart';
+import 'package:zynetix_teacher/features/work/requests_screen.dart';
+import 'package:zynetix_teacher/features/work/roster_surveys_clubs.dart';
+import 'package:zynetix_teacher/features/work/tasks_screen.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

@@ -1,5 +1,5 @@
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_labs/kinetix_labs.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_labs/zynetix_labs.dart';
 
 import 'fuzzy.dart';
 import 'search_strings.dart';

@@ -1,4 +1,4 @@
-import { ageOn, canMoveApplication, canMoveEnquiry, eligibilityFailures, meritScore, rankMerit, transitionProblem, validateAnswers, type AdmissionFormField } from '@kinetix/shared';
+import { ageOn, canMoveApplication, canMoveEnquiry, eligibilityFailures, meritScore, rankMerit, transitionProblem, validateAnswers, type AdmissionFormField } from '@zynetix/shared';
 import { describe, expect, it } from 'vitest';
 import { configProblems } from './admissions.service.js';
 

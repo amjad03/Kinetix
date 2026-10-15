@@ -243,7 +243,7 @@ export class HttpPayuApi extends PayuApi {
 
   async ping(keys: PayuKeys): Promise<PingResult> {
     try {
-      const r = await this.call(keys, 'verify_payment', 'kinetix-ping');
+      const r = await this.call(keys, 'verify_payment', 'zynetix-ping');
       return /invalid|incorrect|authent/i.test(String(r.msg ?? '')) && /hash|key|authent/i.test(String(r.msg)) ? { ok: false, error: 'AUTHENTICATION_FAILED' } : { ok: true };
     } catch {
       return { ok: false, error: 'NETWORK_ERROR' };
@@ -312,7 +312,7 @@ export class PayuProvider extends PaymentProvider {
     const txnid = `kx${randomUUID().replace(/-/g, '').slice(0, 24)}`;
     const amount = paiseToRupees(o.amountPaise);
     const payer = o.payer ?? { name: 'Parent', email: '', phone: '' };
-    const email = payer.email || 'noreply@kinetix.invalid';
+    const email = payer.email || 'noreply@zynetix.invalid';
     const firstname = payer.name.split(' ')[0]?.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 40) || 'Parent';
     const productinfo = o.receipt.slice(0, 100);
     const udf1 = o.notes.tenantId ?? '';
@@ -361,7 +361,7 @@ export class PayuProvider extends PaymentProvider {
  * secret. No money moves; the apps label it clearly. Never enable in production.
  */
 export class DemoPaymentProvider extends PaymentProvider {
-  static readonly SECRET = 'kinetix-demo-payments';
+  static readonly SECRET = 'zynetix-demo-payments';
   readonly name = 'demo';
   readonly keyId = 'demo';
 
