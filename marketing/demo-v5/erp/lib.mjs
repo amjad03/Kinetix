@@ -68,7 +68,8 @@ export class Clip {
     this.page = await this.ctx.newPage();
     const p = this.page;
     await p.setViewport({ width: CSS_W, height: CSS_H, deviceScaleFactor: DSF });
-    await p.setCookie({ name: 'kx_session', value: await token(this.def.login), domain: 'localhost', path: '/' });
+    await p.setCookie({ name: 'kx_session', value: await token(this.def.login), domain: 'localhost', path: '/' },
+      { name: 'kx_lang', value: this.def.lang ?? 'en', domain: 'localhost', path: '/' });
     await p.evaluateOnNewDocument(PAGE_SETUP);
     this.client = p._client();
     p.on('request', (r) => { if (!['websocket', 'eventsource'].includes(r.resourceType())) this.inflight.add(r); });

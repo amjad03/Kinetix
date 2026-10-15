@@ -69,6 +69,9 @@ void phoneView(WidgetTester t) {
   t.view.padding = const FakeViewPadding(top: padTop * 3, bottom: padBottom * 3);
   t.view.viewPadding = const FakeViewPadding(top: padTop * 3, bottom: padBottom * 3);
   t.platformDispatcher.platformBrightnessTestValue = Brightness.light;
+  // A finger, not a keyboard: no focus rings.
+  FocusManager.instance.highlightStrategy = FocusHighlightStrategy.alwaysTouch;
+  addTearDown(() => FocusManager.instance.highlightStrategy = FocusHighlightStrategy.automatic);
   addTearDown(t.view.reset);
   addTearDown(t.platformDispatcher.clearPlatformBrightnessTestValue);
 }

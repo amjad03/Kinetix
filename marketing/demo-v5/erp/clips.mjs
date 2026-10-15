@@ -108,7 +108,7 @@ export const CLIPS = [
       await c.hoverEl(await c.el('main *', 'BCom Semester 5: Semester End Examination', { closest: CARD + ', li, a' }), 'BCom Sem 5 session progress', 1.0);
       await c.nav('/exams', 'Exam session: registration, hall tickets issued, valuation');
       await c.hold(1.8);
-      await c.hoverEl(await c.el('main *', 'Hall tickets issued', { closest: CARD }), 'Hall tickets issued: 25', 1.0);
+      await c.hoverEl(await c.el('main *', 'Hall tickets issued', { nth: 1, closest: CARD }), 'Hall tickets issued: 25', 1.0);
       await c.scrollToEl(await c.el('main h2, main h3', 'Valuation & moderation'), 160, 1.5);
       c.mark('Valuation and moderation by paper');
       await c.hold(1.8);

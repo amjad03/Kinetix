@@ -205,7 +205,7 @@ for ci, ch in enumerate(BEATS['chapters']):
                         rect = [r['x'], r['y'], r['w'], r['h']]
                 u['anchors'].append({'f': max(0, fr - 6), 's': fr, 'ink': False, 'rect': rect, 'hl': False})
             if ci_['grp'] == 'v3d':
-                u['fixed_view'] = (300, 100, 1320, 1320 * 9 / 16)      # the 3D model fills the frame
+                u['fixed_view'] = (180, 120, 1560, 1560 * 9 / 16)      # the 3D model fills the frame
         u['n_anchor_words'] = b.get('vo', '').count('^')
         units.append(u)
 
@@ -289,7 +289,7 @@ def build():
         S = t
         gap = 0.45 if u['first'] else 0.22
         if anc:
-            pre = max(0.8, (anc[0]['s'] - u['src_in']) / FPS / 3.0) if 'src_in' in u else 0.6
+            pre = max(0.45, (anc[0]['s'] - u['src_in']) / FPS / 3.0) if 'src_in' in u else 0.6
             vo_start = max(S + 0.3, S + pre + lead[0] - A_rel[0], (prev['vo_end'] + gap) if prev else 0)
         else:
             vo_start = max(S + 0.35, (prev['vo_end'] + gap) if prev else 0.6)
