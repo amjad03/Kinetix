@@ -153,6 +153,11 @@ class BoardController extends ChangeNotifier {
   String? deviceName;
   bool online = false;
 
+  /// The server this board was set up with when its device token was not found on start (the
+  /// computer's key store did not keep it): the set-up screen offers this address again and says
+  /// why. Null on a first start or after "Set up again".
+  String? lostKeyServer;
+
   /// The signed-in teacher's session. Null means the board is in guest mode.
   SessionContext? session;
   List<Student> roster = [];
@@ -407,6 +412,7 @@ class BoardController extends ChangeNotifier {
     unawaited(profiles.start());
     unawaited(projector.start());
     if (saved.server == null || saved.token == null) {
+      lostKeyServer = saved.server;
       stage = BoardStage.needsEnrollment;
     } else {
       _connect(saved.server!, saved.token!);
@@ -581,6 +587,7 @@ class BoardController extends ChangeNotifier {
     final client = _apiFactory(url);
     final res = await client.enroll(code.trim(), _platform());
     await _store.save(server: url, token: res.deviceToken, name: res.deviceName);
+    lostKeyServer = null;
     deviceName = res.deviceName;
     _connect(url, res.deviceToken);
     stage = BoardStage.board;
@@ -1139,6 +1146,7 @@ class BoardController extends ChangeNotifier {
     online = false;
     deviceLocked = false;
     await _store.clear();
+    lostKeyServer = null;
     _signOut();
     stage = BoardStage.needsEnrollment;
     notifyListeners();

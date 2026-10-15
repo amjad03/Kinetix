@@ -978,6 +978,11 @@
   },
   "enrollCode": "Enrolment code",
   "enrollServer": "Server",
+  "enrollKeyLost": "This board was set up with {server}, but this computer did not keep its key. Enter a new enrolment code to connect it again; its settings and saved boards are still here.",
+  "@enrollKeyLost": {
+    "description": "Set-up screen note when the board was enrolled before but its device token was not found on start.",
+    "placeholders": {"server": {"type": "String", "example": "http://localhost:4000"}}
+  },
   "enrollRegistering": "Registering…",
   "enrollRegister": "Register board",
   "enrollSkip": "Skip for now and use the practice board",

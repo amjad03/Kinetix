@@ -1656,6 +1656,11 @@ class AppLocalizationsKn extends AppLocalizations {
   String get enrollServer => 'ಸರ್ವರ್';
 
   @override
+  String enrollKeyLost(String server) {
+    return 'ಈ ಬೋರ್ಡ್ ಅನ್ನು $server ಗೆ ಜೋಡಿಸಲಾಗಿತ್ತು, ಆದರೆ ಈ ಕಂಪ್ಯೂಟರ್ ಅದರ ಕೀಯನ್ನು ಉಳಿಸಿಕೊಂಡಿಲ್ಲ. ಮತ್ತೆ ಸಂಪರ್ಕಿಸಲು ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ ನಮೂದಿಸಿ; ಇದರ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಉಳಿಸಿದ ಬೋರ್ಡ್‌ಗಳು ಇಲ್ಲೇ ಇವೆ.';
+  }
+
+  @override
   String get enrollRegistering => 'ನೋಂದಾಯಿಸಲಾಗುತ್ತಿದೆ…';
 
   @override

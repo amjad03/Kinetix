@@ -9,9 +9,14 @@ abstract class SecretStore {
 }
 
 /// flutter_secure_storage: Android Keystore on panels and tablets; on Windows the data is
-/// encrypted with DPAPI for the signed-in Windows user.
+/// encrypted with DPAPI for the signed-in Windows user; on a Mac the login keychain.
 class OsSecretStore implements SecretStore {
-  OsSecretStore([FlutterSecureStorage? storage]) : _storage = storage ?? const FlutterSecureStorage();
+  OsSecretStore([FlutterSecureStorage? storage]) : _storage = storage ?? const FlutterSecureStorage(mOptions: macOptions);
+
+  /// The Mac's login keychain, not the data protection keychain (the plugin's default): that one
+  /// needs a keychain-access-groups entitlement from a signed team build, so an ad-hoc signed
+  /// board app could not keep its device token and asked to be enrolled again after every launch.
+  static const macOptions = MacOsOptions(usesDataProtectionKeychain: false);
 
   final FlutterSecureStorage _storage;
 

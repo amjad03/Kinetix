@@ -1666,6 +1666,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enrollServer => 'Server';
 
   @override
+  String enrollKeyLost(String server) {
+    return 'This board was set up with $server, but this computer did not keep its key. Enter a new enrolment code to connect it again; its settings and saved boards are still here.';
+  }
+
+  @override
   String get enrollRegistering => 'Registering…';
 
   @override
