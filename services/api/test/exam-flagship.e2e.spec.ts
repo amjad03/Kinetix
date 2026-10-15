@@ -360,4 +360,33 @@ describe('examinations flagship', () => {
     expect(ledger.attempts.find((x: { code: string }) => x.code === 'BCOM-3.1')).toMatchObject({ passed: false, counts: true, percent: 31 });
     await get('parentB', `/v1/students/${t.students[A].id}/marks-ledger`).expect(404);
   });
+
+  it('analyses results by class, grade and year (worked by hand)', async () => {
+    // The October sitting: Corporate Accounting F 31, C 55, C 72 (2 of 3 pass); Cost Accounting B 58, B 62, B 80.
+    const sec = (await get('hod', `/v1/exam-cell/reports/pass_by_section?sessionId=${ids.past}`).expect(200)).body;
+    expect(sec.rows.map((r: { section: string; code: string; passed: number; passPercent: number; mean: number }) => [r.section, r.code, r.passed, r.passPercent, r.mean])).toEqual([
+      ['BCom Sem 3 A', 'BCOM-3.1', 2, 66.67, 52.67],
+      ['BCom Sem 3 A', 'BCOM-3.2', 3, 100, 66.67],
+    ]);
+    expect(sec.totals).toMatchObject({ appeared: 6, passed: 5, passPercent: 83.33 });
+
+    // Grades ordered by their mean percent: B (66.67), C (63.5), F (31).
+    const dist = (await get('hod', `/v1/exam-cell/reports/grade_distribution?sessionId=${ids.past}`).expect(200)).body;
+    expect(dist.columns.map((c: { label: string }) => c.label)).toEqual(['Code', 'Subject', 'Appeared', 'B', 'C', 'F']);
+    expect(dist.rows.map((r: Record<string, unknown>) => [r.code, r['g:B'], r['g:C'], r['g:F']])).toEqual([['BCOM-3.1', 0, 2, 1], ['BCOM-3.2', 3, 0, 0]]);
+    expect(dist.totals).toMatchObject({ appeared: 6, 'g:B': 3, 'g:C': 2, 'g:F': 1 });
+
+    // A year earlier 1 of 2 passed (50%); this year 2 of 3 (66.67%): up 16.67 points.
+    const [y] = await q<{ id: string }>(`insert into academic_years (tenant_id, label, starts_on, ends_on, is_current) values ($1, '2025-26', '2025-08-01', '2026-05-31', false) returning id`, [t.tenantId]);
+    const [old] = await q<{ id: string }>(`insert into exam_sessions (tenant_id, academic_year_id, program_id, term, name, kind, starts_on, ends_on, status, created_by) values ($1, $2, $3, 3, 'Sem 3 Model Examination, October 2025', 'regular', '2025-10-06', '2025-10-13', 'published', $4) returning id`, [t.tenantId, y.id, t.program.id, t.principal.id]);
+    for (const [i, outcome, sgpa] of [[A, 'pass', 6.1], [B, 'fail', 3.2]] as const) await q(`insert into exam_results (tenant_id, session_id, student_id, sgpa, cgpa, credits_attempted, credits_earned, credit_points, outcome) values ($1, $2, $3, $4, $4, 8, 8, 40, $5)`, [t.tenantId, old.id, t.students[i].id, sgpa, outcome]);
+    const yc = (await get('hod', `/v1/exam-cell/reports/year_comparison?sessionId=${ids.past}`).expect(200)).body;
+    expect(yc.rows.map((r: { year: string; appeared: number; passPercent: number; change: number | string; topSgpa: number }) => [r.year, r.appeared, r.passPercent, r.change, r.topSgpa])).toEqual([
+      ['2025-26', 2, 50, '', 6.1],
+      ['2026-27', 3, 66.67, 16.67, 6.5],
+    ]);
+    const csv = await get('hod', `/v1/exam-cell/reports/year_comparison?sessionId=${ids.past}&format=csv`).expect(200);
+    expect(csv.text.split('\n')[0]).toBe('Academic year,Examination,Appeared,Passed,Pass %,Change in pass %,Mean SGPA,Top SGPA');
+    await get('teacher', `/v1/exam-cell/reports/year_comparison?sessionId=${ids.past}`).expect(403);
+  });
 });
