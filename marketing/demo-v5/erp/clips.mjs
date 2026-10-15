@@ -137,8 +137,10 @@ export const CLIPS = [
       await c.markEl('Programme outcome attainment rings', 'main h2', 'Programme outcome attainment', { closest: 'section, ' + CARD });
       await c.hold(1.6);
       await c.scrollToEl(await c.el('main h2', 'CO–PO mapping matrix'), 140, 1.6);
-      await c.markEl('CO-PO mapping matrix', 'main h2', 'CO–PO mapping matrix', { closest: 'section, ' + CARD });
-      await c.hold(2.0);
+      await c.click(await c.el('main [role=combobox]', 'BBA-101'), 'Subject picker for the CO-PO matrix', {});
+      await c.click(await c.el('[role=option]', 'BBA-301'), null, {});
+      await c.markEl('CO-PO mapping matrix for BBA-301', 'main h2', 'CO–PO mapping matrix', { closest: 'section, ' + CARD });
+      await c.hold(2.2);
       await c.scrollToEl(await c.el('main h2', 'CO attainment (direct and indirect)'), 140, 1.6);
       c.mark('CO attainment, direct and indirect');
       await c.hold(2.0);
@@ -206,7 +208,7 @@ export const CLIPS = [
       await c.hold(1.8);
       await c.nav('/payroll', 'Payroll runs: October, September, August');
       await c.hold(1.4);
-      await c.click(await c.el('main tbody tr', 'October 2026', {}), 'Payroll run for October 2026: prepare, verify, approve, lock, bank file', {});
+      await c.click(await c.el('main tbody a, main tbody button', 'Open', { exact: true }), 'Payroll run for October 2026: prepare, verify, approve, lock, bank file', {});
       await c.hold(2.0);
       await c.scrollBy(300, 1.2);
       c.mark('Staff pay lines with PF, PT, TDS and payslip PDF');

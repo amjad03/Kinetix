@@ -1,0 +1,23 @@
+{
+ "id": "v3d_labels",
+ "title": "Labels in English, Hindi, Kannada",
+ "duration": 12,
+ "marks": [
+  {
+   "t": 0.8,
+   "label": "part picked"
+  },
+  {
+   "t": 3.6,
+   "label": "English labels"
+  },
+  {
+   "t": 6.4,
+   "label": "Hindi labels"
+  },
+  {
+   "t": 9.2,
+   "label": "Kannada labels"
+  }
+ ]
+}

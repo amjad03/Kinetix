@@ -1,0 +1,19 @@
+{
+ "id": "v3d_tour",
+ "title": "Brain, solar system, Taj Mahal",
+ "duration": 10.4,
+ "marks": [
+  {
+   "t": 0.3,
+   "label": "brain"
+  },
+  {
+   "t": 3.7,
+   "label": "solar system"
+  },
+  {
+   "t": 7.1,
+   "label": "Taj Mahal"
+  }
+ ]
+}

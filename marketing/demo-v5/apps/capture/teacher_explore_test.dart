@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +17,8 @@ void main() {
     phoneView(t);
     final r = Rec(t, id: 'tx', title: 'x');
     SharedPreferences.setMockInitialValues({});
-    final api = DemoTeacherApi();
+    r.startAt(11, 20);
+    final api = DemoTeacherApi(clock: r.now);
     final state = AppState(api, await SharedPreferences.getInstance(), realtime: DemoRealtime(api), secure: MemorySecureStore());
     await t.pumpWidget(r.wrap(TeacherApp(state: state)));
     await state.restore();
@@ -24,27 +26,15 @@ void main() {
     await dumpScreen(t, r, '00_signin');
     await t.tap(find.byKey(const Key('demoSignIn0')));
     await t.pumpAndSettle();
-    await dumpScreen(t, r, '01_home');
-    await t.drag(find.byType(Scrollable).first, const Offset(0, -500));
-    await t.pumpAndSettle();
-    await dumpScreen(t, r, '02_home_down');
-    await t.tap(find.byKey(const Key('navClasses')));
-    await t.pumpAndSettle();
-    await dumpScreen(t, r, '03_classes');
-    await t.tap(find.byKey(const Key('navStudents')));
-    await t.pumpAndSettle();
-    await dumpScreen(t, r, '04_students');
-    await t.tap(find.byKey(const Key('navMore')));
-    await t.pumpAndSettle();
-    await dumpScreen(t, r, '05_more');
-    await t.drag(find.byType(Scrollable).first, const Offset(0, -600));
-    await t.pumpAndSettle();
-    await dumpScreen(t, r, '06_more_down');
-    await t.drag(find.byType(Scrollable).first, const Offset(0, -600));
-    await t.pumpAndSettle();
-    await dumpScreen(t, r, '07_more_down2');
-    await t.pump(const Duration(seconds: 10));
-    await t.pumpAndSettle();
+    Future<void> tapK(String k) async { await t.tap(find.byKey(Key(k)).hitTestable().first); await t.pumpAndSettle(); }
+    Future<void> tapT(String k) async { await t.tap(find.text(k).hitTestable().first); await t.pumpAndSettle(); }
+    Future<void> down([double d = 500]) async { await t.drag(find.byType(Scrollable).hitTestable().first, Offset(0, -d)); await t.pumpAndSettle(); }
+    Future<void> back() async { await t.binding.handlePopRoute(); await t.pumpAndSettle(); }
+    Future<void> step(String n, Future<void> Function() f) async {
+      try { await f(); } catch (e) { File('${r.preview}/errors.txt').writeAsStringSync('$n: $e\n', mode: FileMode.append); }
+      await dumpScreen(t, r, n);
+    }
+//STEPS
     Demo.enabled = false;
   });
 }

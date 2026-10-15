@@ -78,6 +78,160 @@ class _Dot {
   Offset p;
   double a = 0; // opacity 0..1
   double s = 0.8; // scale
+  double decay = 0; // alpha lost per frame once released (typing)
+}
+
+/// One key of the on-screen keyboard, in keyboard coordinates.
+class _Key {
+  const _Key(this.id, this.rect, {this.label, this.sub, this.special = false, this.icon, this.blank = false});
+  final String id;
+  final Rect rect;
+  final String? label, sub;
+  final bool special, blank;
+  final IconData? icon;
+}
+
+const _kbLetterH = 336.0, _kbNumberH = 260.0;
+
+List<_Key> _letterKeys() {
+  const m = 3.0, g = 6.0, kh = 42.0;
+  const w = (390 - 2 * m - 9 * g) / 10;
+  final keys = <_Key>[];
+  double y(int row) => 10 + row * 54.0;
+  for (final (i, c) in 'qwertyuiop'.split('').indexed) {
+    keys.add(_Key(c, Rect.fromLTWH(m + i * (w + g), y(0), w, kh), label: c));
+  }
+  for (final (i, c) in 'asdfghjkl'.split('').indexed) {
+    keys.add(_Key(c, Rect.fromLTWH(m + (w + g) / 2 + i * (w + g), y(1), w, kh), label: c));
+  }
+  keys.add(_Key('shift', Rect.fromLTWH(m, y(2), 44, kh), special: true, icon: Icons.arrow_upward_rounded));
+  for (final (i, c) in 'zxcvbnm'.split('').indexed) {
+    keys.add(_Key(c, Rect.fromLTWH(m + (w + g) * 1.5 + i * (w + g), y(2), w, kh), label: c));
+  }
+  keys.add(_Key('del', Rect.fromLTWH(390 - m - 44, y(2), 44, kh), special: true, icon: Icons.backspace_outlined));
+  keys.add(_Key('123', Rect.fromLTWH(m, y(3), 88, kh), label: '123', special: true));
+  keys.add(_Key(' ', Rect.fromLTWH(m + 88 + g, y(3), 390 - 2 * m - 2 * 88 - 2 * g, kh), label: 'space'));
+  keys.add(_Key('return', Rect.fromLTWH(390 - m - 88, y(3), 88, kh), label: 'return', special: true));
+  return keys;
+}
+
+List<_Key> _numberKeys() {
+  const m = 6.0, g = 6.0, kh = 46.0;
+  const w = (390 - 2 * m - 2 * g) / 3;
+  const subs = ['', 'ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQRS', 'TUV', 'WXYZ'];
+  final keys = <_Key>[];
+  for (var i = 0; i < 9; i++) {
+    keys.add(_Key('${i + 1}', Rect.fromLTWH(m + (i % 3) * (w + g), 6 + (i ~/ 3) * 53.0, w, kh), label: '${i + 1}', sub: subs[i]));
+  }
+  keys.add(_Key('blank', Rect.fromLTWH(m, 6 + 3 * 53.0, w, kh), blank: true));
+  keys.add(_Key('0', Rect.fromLTWH(m + w + g, 6 + 3 * 53.0, w, kh), label: '0'));
+  keys.add(_Key('del', Rect.fromLTWH(m + 2 * (w + g), 6 + 3 * 53.0, w, kh), blank: true, icon: Icons.backspace_outlined));
+  return keys;
+}
+
+/// An iPhone-style keyboard (letters or number pad) that slides up while a field is edited.
+class _Keyboard extends StatelessWidget {
+  const _Keyboard(this.rec);
+  final Rec rec;
+
+  static const bg = Color(0xFFD1D4DB), keyC = Color(0xFFFDFDFE), specialC = Color(0xFFABB0BB), shadow = Color(0xFF898A8D);
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: rec._tick,
+      builder: (context, _, _) {
+        if (rec._kbShown <= 0) return const SizedBox.shrink();
+        final h = rec._kbH;
+        final top = phoneSize.height - h * rec._kbShown;
+        final keys = rec._kbNumeric ? _numberKeys() : _letterKeys();
+        final upper = rec._kbShift;
+        final children = <Widget>[];
+        _Key? pressed;
+        for (final k in keys) {
+          final down = rec._kbPressed == k.id;
+          if (down) pressed = k;
+          final color = k.blank
+              ? (down ? specialC : Colors.transparent)
+              : down
+              ? (rec._kbNumeric ? specialC : (k.special ? keyC : keyC))
+              : (k.special ? specialC : keyC);
+          String? label = k.label;
+          if (label != null && label.length == 1 && upper) label = label.toUpperCase();
+          children.add(
+            Positioned.fromRect(
+              rect: k.rect,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(rec._kbNumeric ? 6 : 5),
+                  boxShadow: k.blank ? null : const [BoxShadow(color: shadow, offset: Offset(0, 1))],
+                ),
+                alignment: Alignment.center,
+                child: k.icon != null
+                    ? Icon(k.icon, size: 22, color: Colors.black)
+                    : label == null
+                    ? null
+                    : k.sub != null
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 25, height: 1.0, color: Colors.black)),
+                          if (k.sub!.isNotEmpty)
+                            Text(k.sub!, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.5, height: 1.2, color: Colors.black)),
+                        ],
+                      )
+                    : Text(
+                        label,
+                        style: TextStyle(fontFamily: 'Inter', fontSize: label.length == 1 ? 22.5 : 15.5, height: 1.0, color: Colors.black),
+                      ),
+              ),
+            ),
+          );
+        }
+        // The letter balloon above a pressed letter key.
+        if (pressed != null && !rec._kbNumeric && pressed.label != null && pressed.label!.length == 1) {
+          final r = pressed.rect;
+          final l = upper ? pressed.label!.toUpperCase() : pressed.label!;
+          children.add(
+            Positioned(
+              left: (r.center.dx - (r.width + 18) / 2).clamp(1.0, 389.0 - r.width - 18),
+              top: r.top - 56,
+              width: r.width + 18,
+              height: 56 + r.height,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: keyC,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: const [BoxShadow(color: Color(0x55000000), blurRadius: 3, offset: Offset(0, 1))],
+                ),
+                alignment: const Alignment(0, -0.62),
+                child: Text(l, style: const TextStyle(fontFamily: 'Inter', fontSize: 34, height: 1.0, color: Colors.black)),
+              ),
+            ),
+          );
+        }
+        if (!rec._kbNumeric) {
+          children.add(const Positioned(left: 22, top: 236, child: Icon(Icons.emoji_emotions_outlined, size: 28, color: Color(0xFF50555C))));
+          children.add(const Positioned(right: 22, top: 236, child: Icon(Icons.mic_none_rounded, size: 28, color: Color(0xFF50555C))));
+        }
+        return Stack(
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              top: top,
+              height: h,
+              child: Container(
+                color: bg,
+                child: Stack(clipBehavior: Clip.none, children: children),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _Chrome extends CustomPainter {
@@ -116,7 +270,7 @@ class _StatusBar extends StatelessWidget {
     return ValueListenableBuilder<int>(
       valueListenable: rec._tick,
       builder: (context, _, _) {
-        final now = DateTime.now();
+        final now = rec.now();
         final h = now.hour % 12 == 0 ? 12 : now.hour % 12;
         final time = '$h:${now.minute.toString().padLeft(2, '0')}';
         final c = rec.statusDark ? Colors.white : Colors.black;
@@ -217,6 +371,26 @@ class Rec {
   int frame = 0; // recorded frames
   Duration _clock = const Duration(seconds: 1); // pointer event time
   int _pointer = 20;
+
+  // The on-screen keyboard.
+  double _kbShown = 0; // 0 hidden .. 1 fully up
+  bool _kbNumeric = false;
+  bool _kbShift = false;
+  String? _kbPressed;
+  double get _kbH => _kbNumeric ? _kbNumberH : _kbLetterH;
+
+  /// The top of the keyboard when it is up (logical y), or the bottom of the screen.
+  double get keyboardTop => _kbShown > 0 ? phoneSize.height - _kbH : phoneSize.height;
+
+  /// The demo moment: today at [hour]:[minute], moving with app time. Pass [now] as the demo
+  /// API's clock so the timetable's "now" and the status bar agree.
+  DateTime base = DateTime.now();
+  void startAt(int hour, int minute) {
+    final d = DateTime.now();
+    base = DateTime(d.year, d.month, d.day, hour, minute);
+  }
+
+  DateTime now() => base.add(_clock);
   final _sw = Stopwatch()..start();
 
   double get time => frame / fps;
@@ -230,6 +404,7 @@ class Rec {
         fit: StackFit.expand,
         children: [
           app,
+          IgnorePointer(child: _Keyboard(this)),
           IgnorePointer(child: _StatusBar(this)),
           IgnorePointer(child: CustomPaint(painter: _Chrome(this))),
         ],
@@ -252,6 +427,13 @@ class Rec {
   /// One frame of app time, recorded.
   Future<void> emit([int n = 1]) async {
     for (var i = 0; i < n; i++) {
+      for (final d in _dots.toList()) {
+        if (d.decay > 0) {
+          d.a -= d.decay;
+          d.s += 0.03;
+          if (d.a <= 0) _dots.remove(d);
+        }
+      }
       _tick.value++;
       await t.pump(frameDt);
       _clock += frameDt;
@@ -260,6 +442,7 @@ class Rec {
       if (_out != null) {
         final bytes = await _grab(ratio, ui.ImageByteFormat.rawRgba);
         _out!.writeFromSync(bytes);
+        _sampleStatus(bytes, ratio);
       }
       if (preview != null && (_pendingSnap != null || frame % 60 == 0)) {
         final png = await _grab(0.5, ui.ImageByteFormat.png);
@@ -269,6 +452,19 @@ class Rec {
       }
       if (frame % 150 == 0) _log('${time.toStringAsFixed(1)}s recorded');
     }
+  }
+
+  /// The status bar follows the screen under it: white text on a dark screen (the camera).
+  void _sampleStatus(Uint8List rgba, double pr) {
+    final w = (phoneSize.width * pr).round();
+    var sum = 0.0;
+    var n = 0;
+    for (final (x, y) in [(175.0, 12.0), (195.0, 22.0), (215.0, 12.0), (120.0, 40.0), (270.0, 40.0)]) {
+      final i = ((y * pr).round() * w + (x * pr).round()) * 4;
+      sum += 0.2126 * rgba[i] + 0.7152 * rgba[i + 1] + 0.0722 * rgba[i + 2];
+      n++;
+    }
+    statusDark = sum / n < 110;
   }
 
   Future<Uint8List> _grab(double pr, ui.ImageByteFormat f) async {
@@ -414,15 +610,68 @@ class Rec {
     }
   }
 
-  /// Types [text] into [f] a few characters at a time, like thumbs on a keyboard.
-  Future<void> type(Finder f, String text, {int perFrame = 1}) async {
-    final rnd = math.Random(text.length);
-    for (var i = 1; i <= text.length; i += perFrame) {
-      await t.enterText(f, text.substring(0, math.min(text.length, i)));
-      await emit(1 + rnd.nextInt(3));
+  /// Slides the keyboard up (letters, or the number pad) and resizes the app above it.
+  Future<void> keyboardUp({bool numeric = false}) async {
+    if (_kbShown >= 1 && _kbNumeric == numeric) return;
+    if (_kbShown > 0) await keyboardDown();
+    _kbNumeric = numeric;
+    for (var i = 1; i <= 8; i++) {
+      _kbShown = Curves.easeOutCubic.transform(i / 8);
+      t.view.viewInsets = FakeViewPadding(bottom: _kbH * _kbShown * 3);
+      await emit();
     }
-    await t.enterText(f, text);
+  }
+
+  Future<void> keyboardDown() async {
+    if (_kbShown <= 0) return;
+    for (var i = 7; i >= 0; i--) {
+      _kbShown = Curves.easeInCubic.transform(i / 8);
+      t.view.viewInsets = FakeViewPadding(bottom: _kbH * _kbShown * 3);
+      await emit();
+    }
+    _kbShown = 0;
+    t.view.viewInsets = FakeViewPadding.zero;
+  }
+
+  /// Types [text] into [f] key by key on the on-screen keyboard (with touches on the keys).
+  Future<void> type(Finder f, String text, {bool numeric = false, int perFrame = 1}) async {
+    await keyboardUp(numeric: numeric);
+    final keys = numeric ? _numberKeys() : _letterKeys();
+    final rnd = math.Random(text.length + frame);
+    final kbTop = phoneSize.height - _kbH;
+    var typed = (t.widget<EditableText>(find.descendant(of: f, matching: find.byType(EditableText), matchRoot: true).first)).controller.text;
+    for (final ch in text.split('')) {
+      final low = ch.toLowerCase();
+      final key = keys.where((k) => k.id == low || (ch == ' ' && k.id == ' ')).firstOrNull;
+      _kbShift = !numeric && ch != low;
+      if (key != null) {
+        final p = Offset(key.rect.center.dx, key.rect.center.dy + kbTop) + Offset(rnd.nextDouble() * 6 - 3, rnd.nextDouble() * 6 - 1);
+        final d = _Dot(p)
+          ..a = 1
+          ..s = 0.85;
+        _dots.add(d);
+        _kbPressed = key.id;
+        typed += ch;
+        await t.enterText(f, typed);
+        await emit(2);
+        _kbPressed = null;
+        d.decay = 0.25;
+      } else {
+        typed += ch;
+        await t.enterText(f, typed);
+        await emit(1);
+      }
+      _kbShift = false;
+      await emit(1 + rnd.nextInt(2));
+    }
     await emit(2);
+  }
+
+  /// The keyboard goes away (the field loses focus).
+  Future<void> doneTyping() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await emit();
+    await keyboardDown();
   }
 
   /// A system back gesture (the app bar's back button is tapped instead where there is one).
@@ -483,7 +732,7 @@ Future<void> dumpScreen(WidgetTester t, Rec r, String name) async {
   Directory(dir).createSync(recursive: true);
   r._tick.value++;
   await t.pump();
-  final png = await r._grab(0.5, ui.ImageByteFormat.png);
+  final png = await r._grab(0.75, ui.ImageByteFormat.png);
   File('$dir/$name.png').writeAsBytesSync(png);
   File('$dir/$name.txt').writeAsStringSync('${screenTexts(t).join('\n')}\n--- keys\n${screenKeys(t).join('\n')}\n');
 }

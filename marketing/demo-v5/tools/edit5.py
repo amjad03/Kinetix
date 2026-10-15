@@ -205,7 +205,7 @@ for ci, ch in enumerate(BEATS['chapters']):
                         rect = [r['x'], r['y'], r['w'], r['h']]
                 u['anchors'].append({'f': max(0, fr - 6), 's': fr, 'ink': False, 'rect': rect, 'hl': False})
             if ci_['grp'] == 'v3d':
-                u['fixed_view'] = (300, 60, 1320, 1320 * 9 / 16)      # the 3D model fills the frame
+                u['fixed_view'] = (300, 100, 1320, 1320 * 9 / 16)      # the 3D model fills the frame
         u['n_anchor_words'] = b.get('vo', '').count('^')
         units.append(u)
 
