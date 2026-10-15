@@ -520,6 +520,9 @@ def render_unit(frame, u, t):
         j = max([i for i, A in enumerate(u['A']) if t >= A - 0.35] or [0])
         if shots[j] == 'brand':
             draw_brand(frame, ease((t - u['S']) / 0.5))
+        elif shots[j] == 'apps':
+            for x, n in zip((W / 2 - 520, W / 2, W / 2 + 520), ('app_teacher', 'app_student', 'app_parent')):
+                place_phone(frame, still(n + '.jpg'), x)
         else:
             src = still(shots[j] + '.jpg')
             if src.height > src.width:

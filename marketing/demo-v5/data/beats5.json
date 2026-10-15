@@ -580,13 +580,592 @@
      "src": "b122",
      "vo": "When the bell rings, ^the teacher ends the class.",
      "label": "End the class"
+    }
+   ]
+  },
+  {
+   "id": "e0",
+   "title": "The ERP: one view of the whole school",
+   "beats": [
+    {
+     "id": "k3",
+     "kind": "card",
+     "title": "The ERP",
+     "sub": "Running the whole institution",
+     "vo": ""
     },
     {
-     "id": "b123",
-     "kind": "board",
-     "src": "b123",
-     "vo": "And everything goes where it's needed. ^Attendance, ^homework, ^and recordings go to the school. ^And to the teacher, ^student, ^and parent apps.",
-     "label": "Everything in sync"
+     "id": "r01",
+     "kind": "clip",
+     "src": "erp/dashboard",
+     "vo": "Everything the board does lands in the ERP. ^The principal's dashboard shows the whole college today. ^Attendance. ^Fees collected. ^And what needs attention.",
+     "label": "Principal dashboard",
+     "m": [
+      0,
+      1,
+      2,
+      3
+     ]
+    },
+    {
+     "id": "r02",
+     "kind": "clip",
+     "src": "erp/smartboards",
+     "vo": "^Every classroom board shows up here, ^with its health, ^and the principal can even watch a class live.",
+     "label": "Classroom boards",
+     "m": [
+      0,
+      2,
+      4
+     ]
+    },
+    {
+     "id": "r03",
+     "kind": "clip",
+     "src": "erp/early_alerts",
+     "vo": "^It warns early about students who may need help, ^with the reason why, ^so a mentor can step in.",
+     "label": "Early alerts",
+     "m": [
+      0,
+      1,
+      2
+     ]
+    },
+    {
+     "id": "r04",
+     "kind": "clip",
+     "src": "erp/language",
+     "vo": "^And the whole ERP works in ^Kannada, ^Hindi, and English.",
+     "label": "Three languages",
+     "m": [
+      0,
+      1,
+      2
+     ]
+    }
+   ]
+  },
+  {
+   "id": "e1",
+   "title": "Students, from admission to results",
+   "beats": [
+    {
+     "id": "r05",
+     "kind": "clip",
+     "src": "erp/admissions",
+     "vo": "^Admissions follow simple steps, from enquiry to joining. ^Merit lists are made for you. ^And every application is in one place.",
+     "label": "Admissions",
+     "m": [
+      0,
+      2,
+      4
+     ]
+    },
+    {
+     "id": "r06",
+     "kind": "clip",
+     "src": "erp/students",
+     "vo": "^Every student has one profile. ^Search a name, ^and see attendance, ^marks, ^and fees together.",
+     "label": "Student profiles",
+     "m": [
+      0,
+      1,
+      3,
+      5,
+      6
+     ]
+    },
+    {
+     "id": "r07",
+     "kind": "clip",
+     "src": "erp/attendance",
+     "vo": "^Attendance from every class comes in live. ^See which students are absent, ^and who is falling below the limit.",
+     "label": "Attendance",
+     "m": [
+      0,
+      3,
+      5
+     ]
+    },
+    {
+     "id": "r08",
+     "kind": "clip",
+     "src": "erp/timetable",
+     "vo": "^The timetable is built for every class, ^with teachers and rooms.",
+     "label": "Timetable",
+     "m": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "r09",
+     "kind": "clip",
+     "src": "erp/exams",
+     "vo": "^The exam office runs every exam: ^registrations, ^hall tickets, ^and paper checking.",
+     "label": "Exams",
+     "m": [
+      0,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "r10",
+     "kind": "clip",
+     "src": "erp/results",
+     "vo": "^Results are worked out by themselves, ^with grades and grade points for every student.",
+     "label": "Results",
+     "m": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "r11",
+     "kind": "clip",
+     "src": "erp/certificates",
+     "vo": "^Students ask for certificates online. ^The office approves them, ^and prints ID cards with a QR code.",
+     "label": "Certificates and ID cards",
+     "m": [
+      0,
+      1,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "id": "e2",
+   "title": "Quality and accreditation",
+   "beats": [
+    {
+     "id": "r12",
+     "kind": "clip",
+     "src": "erp/obe",
+     "vo": "^Outcome-based education is built in. ^Each course outcome is linked to the programme's goals, ^and the system measures how well students reach them.",
+     "label": "Outcome-based education",
+     "m": [
+      1,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "r13",
+     "kind": "clip",
+     "src": "erp/naac",
+     "vo": "^For NAAC, it gathers the proof as the college works, ^and even predicts the grade.",
+     "label": "NAAC and IQAC",
+     "m": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "r14",
+     "kind": "clip",
+     "src": "erp/lms",
+     "vo": "^Every subject gets an online course. ^And the question bank makes exam papers in minutes.",
+     "label": "Courses and question bank",
+     "m": [
+      1,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "id": "e3",
+   "title": "Money, people and campus",
+   "beats": [
+    {
+     "id": "r15",
+     "kind": "clip",
+     "src": "erp/fees",
+     "vo": "^Fees are tracked to the last rupee. ^See who still owes money, ^open any receipt, ^and record a payment.",
+     "label": "Fees",
+     "m": [
+      0,
+      2,
+      3,
+      5
+     ]
+    },
+    {
+     "id": "r16",
+     "kind": "clip",
+     "src": "erp/finance",
+     "vo": "^The accounts desk keeps every ledger, ^and sends everything to Tally.",
+     "label": "Accounts",
+     "m": [
+      0,
+      4
+     ]
+    },
+    {
+     "id": "r17",
+     "kind": "clip",
+     "src": "erp/hr",
+     "vo": "^Staff records, ^leave, ^and monthly payroll, with PF, tax and payslips.",
+     "label": "HR and payroll",
+     "m": [
+      0,
+      1,
+      3
+     ]
+    },
+    {
+     "id": "r18",
+     "kind": "clip",
+     "src": "erp/library",
+     "vo": "^The library knows every book, ^every overdue loan, ^and the fine.",
+     "label": "Library",
+     "m": [
+      0,
+      1,
+      2
+     ]
+    },
+    {
+     "id": "r19",
+     "kind": "clip",
+     "src": "erp/transport",
+     "vo": "^Buses, drivers and routes, ^with reminders before papers expire.",
+     "label": "Transport",
+     "m": [
+      0,
+      2
+     ]
+    },
+    {
+     "id": "r20",
+     "kind": "clip",
+     "src": "erp/hostel",
+     "vo": "^Hostel beds, ^the mess menu, ^and gate passes.",
+     "label": "Hostel",
+     "m": [
+      1,
+      2,
+      3
+     ]
+    },
+    {
+     "id": "r21",
+     "kind": "clip",
+     "src": "erp/placements",
+     "vo": "^Placements: companies, drives, and offers. ^Internships, ^and alumni too.",
+     "label": "Placements",
+     "m": [
+      0,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "r22",
+     "kind": "clip",
+     "src": "erp/inventory",
+     "vo": "^Stores and purchases, ^with alerts when stock runs low.",
+     "label": "Inventory",
+     "m": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "r23",
+     "kind": "clip",
+     "src": "erp/grievances",
+     "vo": "^Complaints are tracked, ^and serious ones are flagged at once.",
+     "label": "Grievances",
+     "m": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "r24",
+     "kind": "clip",
+     "src": "erp/research",
+     "vo": "^Research projects, grants and publications.",
+     "label": "Research",
+     "m": [
+      0
+     ]
+    },
+    {
+     "id": "r25",
+     "kind": "clip",
+     "src": "erp/campus_life",
+     "vo": "^And clubs, committees, and events.",
+     "label": "Campus life",
+     "m": [
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "e4",
+   "title": "Messages, approvals and reports",
+   "beats": [
+    {
+     "id": "r26",
+     "kind": "clip",
+     "src": "erp/comms",
+     "vo": "^Send one notice ^to every board, ^and to parents by SMS and WhatsApp.",
+     "label": "Notices",
+     "m": [
+      0,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "r27",
+     "kind": "clip",
+     "src": "erp/workflows",
+     "vo": "^Approvals can be drawn like a flowchart. ^For example: purchases over twenty-five thousand rupees need the principal.",
+     "label": "Workflows",
+     "m": [
+      1,
+      2
+     ]
+    },
+    {
+     "id": "r28",
+     "kind": "clip",
+     "src": "erp/analytics",
+     "vo": "^And live charts show how the whole institution is doing, ^month by month.",
+     "label": "Analytics",
+     "m": [
+      0,
+      2
+     ]
+    }
+   ]
+  },
+  {
+   "id": "a1",
+   "title": "Teacher app",
+   "beats": [
+    {
+     "id": "k4",
+     "kind": "card",
+     "title": "The mobile apps",
+     "sub": "For teachers, students and parents",
+     "vo": ""
+    },
+    {
+     "id": "a01",
+     "kind": "clip",
+     "src": "apps/teacher_connect_board",
+     "vo": "The teacher's phone is the key to the board. ^She taps Start class, ^scans the code, ^and the board opens her class.",
+     "label": "Connect to the board",
+     "m": [
+      1,
+      2,
+      4
+     ]
+    },
+    {
+     "id": "a02",
+     "kind": "clip",
+     "src": "apps/teacher_attendance",
+     "vo": "^Taking attendance? Everyone starts present. ^Tap the ones who are absent, ^and it's saved.",
+     "label": "Attendance",
+     "m": [
+      2,
+      3,
+      7
+     ]
+    },
+    {
+     "id": "a03",
+     "kind": "clip",
+     "src": "apps/teacher_homework",
+     "vo": "^She sees who handed in their homework, ^opens an answer, ^and marks it checked, with a remark.",
+     "label": "Homework",
+     "m": [
+      3,
+      6,
+      8
+     ]
+    },
+    {
+     "id": "a04",
+     "kind": "clip",
+     "src": "apps/teacher_marks",
+     "vo": "^Marks are typed in, ^published, ^and families can see them right away.",
+     "label": "Marks",
+     "m": [
+      3,
+      5,
+      8
+     ]
+    },
+    {
+     "id": "a05",
+     "kind": "clip",
+     "src": "apps/teacher_plan_syllabus",
+     "vo": "^The syllabus shows what's been taught. ^The year plan flags topics that are late. ^And AI drafts the next lesson plan.",
+     "label": "Syllabus and plans",
+     "m": [
+      1,
+      5,
+      9
+     ]
+    },
+    {
+     "id": "a06",
+     "kind": "clip",
+     "src": "apps/teacher_messages",
+     "vo": "^Teachers and parents can chat, ^and replies arrive instantly.",
+     "label": "Messages",
+     "m": [
+      3,
+      5
+     ]
+    }
+   ]
+  },
+  {
+   "id": "a2",
+   "title": "Student app",
+   "beats": [
+    {
+     "id": "a07",
+     "kind": "clip",
+     "src": "apps/student_home",
+     "vo": "Students have their own app. ^They can answer the teacher's live question from their phone, ^and see homework, attendance and results at a glance.",
+     "label": "Student home",
+     "m": [
+      3,
+      6
+     ]
+    },
+    {
+     "id": "a08",
+     "kind": "clip",
+     "src": "apps/student_homework",
+     "vo": "^They open their homework, ^write an answer, ^and hand it in. ^Checked work comes back with the teacher's remark.",
+     "label": "Hand in homework",
+     "m": [
+      1,
+      3,
+      5,
+      8
+     ]
+    },
+    {
+     "id": "a09",
+     "kind": "clip",
+     "src": "apps/student_marks_attendance",
+     "vo": "^Results show their marks next to the class average. ^And attendance shows every class, day by day.",
+     "label": "Results and attendance",
+     "m": [
+      2,
+      5
+     ]
+    },
+    {
+     "id": "a10",
+     "kind": "clip",
+     "src": "apps/student_learn",
+     "vo": "Missed a class? ^Watch the recorded lesson, with a summary and key points. ^And see how much of the syllabus is done.",
+     "label": "Lessons and syllabus",
+     "m": [
+      2,
+      6
+     ]
+    }
+   ]
+  },
+  {
+   "id": "a3",
+   "title": "Parent app",
+   "beats": [
+    {
+     "id": "a11",
+     "kind": "clip",
+     "src": "apps/parent_home",
+     "vo": "And parents get an app too. ^They see how their child is doing. ^Got two children? ^Switch in one tap.",
+     "label": "Parent home",
+     "m": [
+      2,
+      4,
+      6
+     ]
+    },
+    {
+     "id": "a12",
+     "kind": "clip",
+     "src": "apps/parent_attendance",
+     "vo": "^Attendance is always up to date, ^class by class.",
+     "label": "Attendance",
+     "m": [
+      1,
+      3
+     ]
+    },
+    {
+     "id": "a13",
+     "kind": "clip",
+     "src": "apps/parent_fees",
+     "vo": "^Fees are clear: what's due, and what's paid. ^Pay online in a few taps, ^and the receipt comes straight away.",
+     "label": "Fees",
+     "m": [
+      1,
+      6,
+      8
+     ]
+    },
+    {
+     "id": "a14",
+     "kind": "clip",
+     "src": "apps/parent_reports",
+     "vo": "^Results and the teacher's remarks are right there. ^Even an overdue library book.",
+     "label": "Results",
+     "m": [
+      3,
+      6
+     ]
+    },
+    {
+     "id": "a15",
+     "kind": "clip",
+     "src": "apps/parent_messages",
+     "vo": "^And they can message the teacher, ^and get a reply in the same app.",
+     "label": "Messages",
+     "m": [
+      3,
+      5
+     ]
+    }
+   ]
+  },
+  {
+   "id": "end",
+   "title": "",
+   "beats": [
+    {
+     "id": "e1",
+     "kind": "brand",
+     "vo": "^Zynetix. ^A smart board that makes every lesson come alive. ^An ERP that runs the whole school. ^And apps that keep everyone connected.",
+     "shots": [
+      "brand",
+      "board",
+      "erp",
+      "apps"
+     ]
+    },
+    {
+     "id": "e2",
+     "kind": "end",
+     "vo": "^Book a demo, and see it in your school.",
+     "sub": "Smart board  ·  ERP  ·  Mobile apps"
     }
    ]
   }

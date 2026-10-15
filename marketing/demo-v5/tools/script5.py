@@ -116,7 +116,6 @@ chapter('c10', 'Comfortable and safe', [
   B('b113', "^Touch lock keeps the board safe. ^And health checks keep it running.", 'Lock and health checks'),
   B('b121', "If the Wi-Fi drops, ^nothing is lost. ^Changes wait, and sync when it's back.", 'Works offline'),
   B('b122', "When the bell rings, ^the teacher ends the class.", 'End the class'),
-  B('b123', "And everything goes where it's needed. ^Attendance, ^homework, ^and recordings go to the school. ^And to the teacher, ^student, ^and parent apps.", 'Everything in sync'),
 ])
 
 if __name__ == '__main__':

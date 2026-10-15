@@ -47,22 +47,22 @@ export const CLIPS = [
     async run(c) {
       await c.hold(1.0);
       c.mark('Student list: 330 students with attendance, fee status');
-      await c.hold(1.2);
+      await c.hold(0.9);
       await c.click(await c.el('main input[placeholder^="Search name"]'), null, { max: 0.5 });
       await c.type('Vignesh Naik');
       c.mark('Searched for Vignesh Naik');
       await c.hold(0.6);
       await c.click(await c.el('main tbody tr', 'Vignesh Naik'), 'Quick panel opened (attendance, fees, CGPA)', {});
-      await c.hold(1.6);
+      await c.hold(1.3);
       await c.click(await c.el('[role=dialog] button, [role=dialog] [role=tab]', 'Attendance', { exact: true }), 'Quick panel: attendance tab', {});
-      await c.hold(1.6);
+      await c.hold(1.3);
       const full = await c.el('a', 'Open full profile'); await full.evaluate((a) => a.removeAttribute('target'));
       await c.click(full, 'Full 360 profile opened', { max: 3 });
       await c.hold(1.5);
       await c.click(await c.el(TAB, 'Academics'), 'Academics tab: marks', {});
-      await c.hold(1.8);
+      await c.hold(1.5);
       await c.click(await c.el(TAB, 'Fees'), 'Fees tab: invoices and balance', {});
-      await c.hold(1.8);
+      await c.hold(1.5);
     },
   },
   {
