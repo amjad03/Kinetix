@@ -4,6 +4,7 @@ import type { UserPrincipal } from '../auth/principal.js';
 import type { Tx } from '../db/db.service.js';
 import { examFeeDues, feeInvoices, feePayments, revaluationRequests, students } from '../db/schema.js';
 import { DomainEvents, EventBus } from '../events/events.js';
+import { nextNumber } from '../fee-accounts/fee-accounts.service.js';
 import { headsOf, raiseInvoice } from '../fees/fee-lines.js';
 import { auditCell } from './common.js';
 
@@ -18,6 +19,11 @@ async function examHead(tx: Tx, tenantId: string) {
   const heads = await headsOf(tx, tenantId);
   const h = heads.find((x) => x.kind === 'exam') ?? heads.find((x) => x.code === 'EXM') ?? heads[0];
   return h ? { code: h.code, name: h.name, priority: h.sortOrder, gstRate: h.gstRate } : { code: 'EXM', name: 'Examination fee', priority: 30, gstRate: 0 };
+}
+
+/** The invoice takes the next number of the fee account's invoice series at once, so the candidate can quote it. */
+async function numberInvoice(tx: Tx, tenantId: string, invoiceId: string, now: Date) {
+  await tx.update(feeInvoices).set({ invoiceNo: await nextNumber(tx, tenantId, 'invoice', now.toISOString().slice(0, 10)) }).where(eq(feeInvoices.id, invoiceId));
 }
 
 const inDays = (from: Date, days: number) => new Date(from.getTime() + days * 86_400_000).toISOString().slice(0, 10);
@@ -51,6 +57,7 @@ export async function chargeExamFee(
   if (v.amountPaise > 0 && st) {
     const head = await examHead(tx, p.tenantId);
     const inv = await raiseInvoice(tx, { tenantId: p.tenantId, studentId: v.studentId, sectionId: st.sectionId, title: `Examination fee: ${v.sessionName}`.slice(0, 200), dueOn: inDays(v.now, v.dueInDays ?? 7), createdBy: p.userId, kind: 'charge', lines: [{ ...head, amountPaise: v.amountPaise }] });
+    await numberInvoice(tx, p.tenantId, inv.id, v.now);
     invoiceId = inv.id;
   }
   const values = { papers: v.papers, amountPaise: v.amountPaise, status: v.amountPaise > 0 ? 'due' : 'waived', note: v.note ?? (v.amountPaise > 0 ? null : 'No fee for this application'), feeInvoiceId: invoiceId };
@@ -70,6 +77,7 @@ export async function chargeRevaluationFee(tx: Tx, p: UserPrincipal, v: { reques
   if (!st) return null;
   const head = await examHead(tx, p.tenantId);
   const inv = await raiseInvoice(tx, { tenantId: p.tenantId, studentId: v.studentId, sectionId: st.sectionId, title: v.title.slice(0, 200), dueOn: inDays(v.now, 3), createdBy: p.userId, kind: 'charge', lines: [{ ...head, amountPaise: v.amountPaise }] });
+  await numberInvoice(tx, p.tenantId, inv.id, v.now);
   await tx.update(revaluationRequests).set({ feeInvoiceId: inv.id }).where(eq(revaluationRequests.id, v.requestId));
   return inv.id;
 }

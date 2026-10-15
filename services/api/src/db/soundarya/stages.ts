@@ -27,6 +27,7 @@ import { accreditationSamples } from './accreditation.js';
 import { qualityHubSettings } from './quality-hub.js';
 import { migrationAndExaminer } from './migration-examiner.js';
 import { examOffice } from './exam-office.js';
+import { examFlagship } from './exam-flagship.js';
 import { gatewayBooksSamples } from './gateway-books.js';
 import { feeAccountsSamples } from './fee-accounts.js';
 
@@ -97,4 +98,6 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['DigiLocker settings, APAAR ids, devices, tags, LTI platform and early alerts', integrationSamples],
   ['module settings and library stock verification', campusOpsDepth],
   ['academics desk: settings, approval requests, locked marks and lesson plans to review', academicsCore],
+  // After the fees and accounts desk: the exam fees are invoices numbered by its series.
+  ['exam applications with fees on the fee account, question paper setting and marks unlock requests', examFlagship],
 ];

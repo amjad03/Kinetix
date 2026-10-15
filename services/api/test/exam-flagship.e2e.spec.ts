@@ -129,6 +129,7 @@ describe('examinations flagship', () => {
     const done = (await post('student', `/v1/exam-sessions/${ids.regular}/application`, { studentId: t.students[C].id }).expect(200)).body;
     expect(done.application).toMatchObject({ applicationNo: 'EXA/26/00001', status: 'registered', fee: { amountPaise: 50_000, status: 'due', invoiceId: expect.any(String) } });
     ids.invoiceC = done.application.fee.invoiceId;
+    expect(done.application.fee.invoiceNo).toMatch(/^INV\//); // numbered at once from the fee account's series
     const [inv] = await q<{ amount_paise: string; status: string; title: string }>(`select amount_paise, status, title from fee_invoices where id = $1`, [ids.invoiceC]);
     expect(inv).toMatchObject({ amount_paise: '50000', status: 'due', title: 'Examination fee: Sem 3 Semester End Examination, November 2026' });
     expect((await q(`select 1 from notifications where tenant_id = $1 and dedupe_key = $2`, [t.tenantId, `exam-application:${ids.regular}:${t.students[C].id}`])).length).toBeGreaterThan(0);
