@@ -5,7 +5,7 @@ import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessmentQuestionCos, assessmentQuestions, obeCurriculumGaps, type ObeFramework } from '../db/schema-obe-flagship.js';
+import { assessmentQuestionCos, assessmentQuestions, obeCurriculumGaps, QUESTION_DIFFICULTY, type ObeFramework } from '../db/schema-obe-flagship.js';
 import { academicYears, assessments, chapters, coOutcomeMap, coSets, courseOutcomes, examResults, examSessions, improvementActions, obeEvidence, obeSurveys, programOutcomes, schemeComponents, sections, students, subjects, surveys, tenants, timetableSlots, topics, users } from '../db/schema.js';
 import { BrandingService } from '../documents/branding.service.js';
 import { DocumentEngine } from '../documents/document-engine.service.js';
@@ -214,13 +214,14 @@ export class ObeReportsController {
       const sig = `${a.title.replace(/\s+/g, ' ')}|${paper.map((q) => `${q.no}:${q.maxMarks}`).join(',')}`;
       if (!paper.length || seen.has(sig)) continue;
       seen.add(sig);
-      blocks.push({ kind: 'table', caption: `${a.title}: question paper with CO and Bloom tags`, sheet: `Paper ${seen.size}`, columns: [{ title: 'Q', w: 0.6 }, { title: 'Part', w: 1 }, { title: 'Marks', w: 0.8, align: 'right' }, { title: 'COs', w: 1.6 }, { title: 'Bloom level', w: 1.4 }, { title: 'Class average %', w: 1.3, align: 'right' }], rows: paper.map((q) => [q.no, q.part || '-', q.maxMarks, tags.filter((t) => t.questionId === q.id).map((t) => coCode.get(t.coId) ?? '').join(', ') || '-', bloomNumber(q.bloomLevel) ? BLOOM_LEVELS[bloomNumber(q.bloomLevel)! - 1] : '-', qAvg.has(q.id) ? round((qAvg.get(q.id)! / q.maxMarks) * 100, 1) : null]) });
+      blocks.push({ kind: 'table', caption: `${a.title}: question paper with CO and Bloom tags`, sheet: `Paper ${seen.size}`, columns: [{ title: 'Q', w: 0.6 }, { title: 'Part', w: 1 }, { title: 'Marks', w: 0.8, align: 'right' }, { title: 'COs', w: 1.6 }, { title: 'Bloom level', w: 1.4 }, { title: 'Difficulty', w: 1 }, { title: 'Class average %', w: 1.3, align: 'right' }], rows: paper.map((q) => [q.no, q.part || '-', q.maxMarks, tags.filter((t) => t.questionId === q.id).map((t) => coCode.get(t.coId) ?? '').join(', ') || '-', bloomNumber(q.bloomLevel) ? BLOOM_LEVELS[bloomNumber(q.bloomLevel)! - 1] : '-', q.difficulty ?? '-', qAvg.has(q.id) ? round((qAvg.get(q.id)! / q.maxMarks) * 100, 1) : null]) });
     }
     if (qs.length) {
       const total = qs.reduce((s, q) => s + q.maxMarks, 0);
       const weight = (coId: string) => qs.reduce((s, q) => { const mine = tags.filter((t) => t.questionId === q.id); const w = mine.reduce((x, t) => x + t.weight, 0); const t = mine.find((x) => x.coId === coId); return s + (t && w ? (q.maxMarks * t.weight) / w : 0); }, 0);
       blocks.push({ kind: 'table', caption: 'CO weightage across all question papers (marks and share)', sheet: 'CO weightage', columns: [{ title: 'CO', w: 1 }, { title: 'Marks', w: 1, align: 'right' }, { title: 'Share %', w: 1, align: 'right' }], rows: cos.map((c) => [c.code, round(weight(c.id), 1), total ? round((weight(c.id) / total) * 100, 1) : null]) });
       blocks.push({ kind: 'table', caption: 'Bloom level spread across all question papers', sheet: 'Bloom spread', columns: [{ title: 'Bloom level', w: 2 }, { title: 'Marks', w: 1, align: 'right' }, { title: 'Share %', w: 1, align: 'right' }], rows: BLOOM_LEVELS.map((name, i) => { const m = qs.filter((q) => bloomNumber(q.bloomLevel) === i + 1).reduce((s, q) => s + q.maxMarks, 0); return [name, m, total ? round((m / total) * 100, 1) : null]; }) });
+      blocks.push({ kind: 'table', caption: 'Difficulty spread across all question papers', sheet: 'Difficulty spread', columns: [{ title: 'Difficulty', w: 2 }, { title: 'Marks', w: 1, align: 'right' }, { title: 'Share %', w: 1, align: 'right' }], rows: [...QUESTION_DIFFICULTY.map((d) => { const m = qs.filter((q) => q.difficulty === d).reduce((s, q) => s + q.maxMarks, 0); return [d, m, total ? round((m / total) * 100, 1) : null]; }), (() => { const m = qs.filter((q) => !q.difficulty).reduce((s, q) => s + q.maxMarks, 0); return ['not set', m, total ? round((m / total) * 100, 1) : null]; })()] });
     }
 
     // Student-wise CO attainment and the class result per CO.
@@ -305,11 +306,11 @@ export class ObeReportsController {
   }
 
   private async actionBlocks(tx: Tx, programId: string, yearId: string, n: string): Promise<Block[]> {
-    const acts = await tx.select({ a: improvementActions, owner: users.fullName }).from(improvementActions).leftJoin(users, eq(users.id, improvementActions.ownerId)).where(and(eq(improvementActions.programId, programId), or(eq(improvementActions.academicYearId, yearId), sql`${improvementActions.academicYearId} is null`))).orderBy(asc(improvementActions.code));
+    const acts = await tx.select({ a: improvementActions, owner: users.fullName, verifier: sql<string | null>`(select v.full_name from users v where v.id = ${improvementActions.verifiedBy})` }).from(improvementActions).leftJoin(users, eq(users.id, improvementActions.ownerId)).where(and(eq(improvementActions.programId, programId), or(eq(improvementActions.academicYearId, yearId), sql`${improvementActions.academicYearId} is null`))).orderBy(asc(improvementActions.code));
     const ev = acts.length ? await tx.select({ targetId: obeEvidence.targetId, title: obeEvidence.title }).from(obeEvidence).where(and(eq(obeEvidence.scope, 'action'), inArray(obeEvidence.targetId, acts.map((x) => x.a.id)))) : [];
     return [
       { kind: 'heading', text: `${n}. Gap analysis and action-taken report` },
-      { kind: 'table', caption: 'Outcomes below target, the action, what was done and the re-measurement', sheet: 'ATR', columns: [{ title: 'Outcome', w: 1.2 }, { title: 'Before', w: 0.7, align: 'right' }, { title: 'Target', w: 0.7, align: 'right' }, { title: 'Root cause', w: 3 }, { title: 'Action', w: 3 }, { title: 'Action taken', w: 3.4 }, { title: 'Owner', w: 1.6 }, { title: 'Status', w: 1 }, { title: 'After', w: 0.7, align: 'right' }, { title: 'Evidence', w: 2.4 }], rows: acts.map(({ a, owner }) => [a.code ?? '', a.baselineValue, a.targetValue, a.rootCause ?? '-', a.title, a.actionTaken ?? '-', owner ?? '-', a.status, a.remeasuredValue, ev.filter((e) => e.targetId === a.id).map((e) => e.title).join('; ') || '-']), empty: 'No improvement actions were needed.' },
+      { kind: 'table', caption: 'Outcomes below target, the action, what was done and the re-measurement', sheet: 'ATR', columns: [{ title: 'Outcome', w: 1.2 }, { title: 'Before', w: 0.7, align: 'right' }, { title: 'Target', w: 0.7, align: 'right' }, { title: 'Root cause', w: 3 }, { title: 'Action', w: 3 }, { title: 'Action taken', w: 3.4 }, { title: 'Owner', w: 1.6 }, { title: 'Status', w: 1 }, { title: 'After', w: 0.7, align: 'right' }, { title: 'Evidence', w: 2.4 }, { title: 'Verified', w: 1.8 }], rows: acts.map(({ a, owner, verifier }) => [a.code ?? '', a.baselineValue, a.targetValue, a.rootCause ?? '-', a.title, a.actionTaken ?? '-', owner ?? '-', a.status, a.remeasuredValue, ev.filter((e) => e.targetId === a.id).map((e) => e.title).join('; ') || '-', a.verifiedAt ? `${verifier ?? ''} ${a.verifiedAt.toISOString().slice(0, 10)}`.trim() : '-']), empty: 'No improvement actions were needed.' },
     ];
   }
 
@@ -327,51 +328,101 @@ export class ObeReportsController {
 
   // ---- NBA SAR criteria 2 and 3 ----------------------------------------------------------------------------------------------
 
+  /** The assessment year and the two before it (NBA's CAY, CAYm1, CAYm2), newest first, as far as they exist. */
+  private async assessmentYears(tx: Tx, yearId: string): Promise<{ id: string; label: string; tag: string }[]> {
+    const years = await tx.select({ id: academicYears.id, label: academicYears.label, startsOn: academicYears.startsOn }).from(academicYears).orderBy(desc(academicYears.startsOn));
+    const at = years.findIndex((y) => y.id === yearId);
+    if (at < 0) return [];
+    return years.slice(at, at + 3).map((y, i) => ({ id: y.id, label: y.label, tag: i === 0 ? 'CAY' : `CAYm${i}` }));
+  }
+
+  /**
+   * NBA SAR tables for the programme's framework. Engineering Tier II and pharmacy: criterion 2 (curricular gaps 2.1.1,
+   * content beyond the syllabus 2.1.2, question paper quality 2.2.2) and criterion 3 (3.1 to 3.3). Engineering Tier I adds
+   * the curriculum structure and components (2.1.2, 2.1.3). Management (MBA/PGDM) reports outcomes as criterion 3 and the
+   * curriculum as criterion 4. CO and PO attainment are shown for the assessment year and the two years before it.
+   */
   private async sarDoc(tx: Tx, programId: string, yearId: string): Promise<ReportDoc> {
     const b = await this.basics(tx, programId, yearId);
     const config = (await this.obe.policy(tx, programId, null, yearId)).config;
     const { subs, cells, cosOf } = await this.courseSets(tx, programId);
     const { rows } = await this.obe.latest(tx, programId, yearId);
+    const years = await this.assessmentYears(tx, yearId);
+    const history = new Map<string, Awaited<ReturnType<ObeService['latest']>>['rows']>();
+    for (const y of years) history.set(y.id, y.id === yearId ? rows : (await this.obe.latest(tx, programId, y.id)).rows);
     const gaps = await tx.select().from(obeCurriculumGaps).where(eq(obeCurriculumGaps.programId, programId)).orderBy(desc(obeCurriculumGaps.heldOn));
     const subName = new Map(subs.map((s) => [s.id, `${s.code} ${s.name}`]));
-    const blocks: Block[] = [{ kind: 'facts', items: [['Programme', b.prog.name], ['Framework', FRAMEWORK_NAME[b.framework]], ['Assessment year', b.year], ['Courses with COs', String(subs.length)]] }];
-    blocks.push({ kind: 'heading', text: 'Criterion 2: Program curriculum and teaching-learning processes' });
-    blocks.push({ kind: 'sub', text: '2.1.1 Curricular gaps identified for the attainment of the POs and PSOs, and actions taken' });
-    blocks.push({ kind: 'table', caption: 'Table 2.1.1: Curricular gaps', sheet: '2.1.1 Gaps', columns: [{ title: 'S.No', w: 0.5 }, { title: 'Gap', w: 3.4 }, { title: 'Action taken', w: 3.4 }, { title: 'Date', w: 1.1 }, { title: 'Resource person', w: 2 }, { title: 'Students', w: 0.8, align: 'right' }, { title: 'Relevance to POs/PSOs', w: 1.4 }], rows: gaps.filter((g) => g.kind === 'gap').map((g, i) => [i + 1, g.title, g.description ?? '-', g.heldOn, g.resourcePerson ?? '-', g.beneficiaries, g.outcomeCodes.map((c) => c.toUpperCase()).join(', ')]) });
-    blocks.push({ kind: 'sub', text: '2.1.2 Delivery of content beyond the syllabus for the attainment of the POs and PSOs' });
-    blocks.push({ kind: 'table', caption: 'Table 2.1.2: Content beyond the syllabus', sheet: '2.1.2 Beyond syllabus', columns: [{ title: 'S.No', w: 0.5 }, { title: 'Topic', w: 3.4 }, { title: 'Course', w: 2.4 }, { title: 'Mode', w: 1.4 }, { title: 'Date', w: 1.1 }, { title: 'Resource person', w: 2 }, { title: 'Students', w: 0.8, align: 'right' }, { title: 'POs/PSOs', w: 1.2 }], rows: gaps.filter((g) => g.kind === 'beyond_syllabus').map((g, i) => [i + 1, g.title, g.subjectId ? subName.get(g.subjectId) ?? '-' : '-', (g.method ?? '-').replace(/_/g, ' '), g.heldOn, g.resourcePerson ?? '-', g.beneficiaries, g.outcomeCodes.map((c) => c.toUpperCase()).join(', ')]) });
-    blocks.push({ kind: 'sub', text: '2.2.2 Quality of internal semester question papers, assignments and evaluation' });
+    const management = b.framework === 'nba_management';
+    const tier1 = b.framework === 'nba_tier1';
+    const blocks: Block[] = [{ kind: 'facts', items: [['Programme', b.prog.name], ['Framework', FRAMEWORK_NAME[b.framework]], ['Assessment years', years.map((y) => `${y.tag} ${y.label}`).join(', ') || b.year], ['Courses with COs', String(subs.length)]] }];
+
+    // Curriculum (criterion 2; criterion 4 for management programmes).
+    const curriculum: Block[] = [];
+    const cur = management ? '4' : '2';
+    curriculum.push({ kind: 'heading', text: management ? 'Criterion 4: Curriculum and learning process' : 'Criterion 2: Program curriculum and teaching-learning processes' });
+    if (tier1 || management) {
+      const all = await tx.select().from(subjects).where(eq(subjects.programId, programId)).orderBy(asc(subjects.term), asc(subjects.sortOrder), asc(subjects.code));
+      curriculum.push({ kind: 'sub', text: `${cur}.1.2 Structure of the curriculum` });
+      curriculum.push({ kind: 'table', caption: `Table ${cur}.1.2: Courses with their contact hours and credits`, sheet: `${cur}.1.2 Structure`, columns: [{ title: 'Sem', w: 0.5, align: 'center' }, { title: 'Course code', w: 1.2 }, { title: 'Course title', w: 4 }, { title: 'Type', w: 1.2 }, { title: 'L', w: 0.5, align: 'right' }, { title: 'T', w: 0.5, align: 'right' }, { title: 'P', w: 0.5, align: 'right' }, { title: 'Credits', w: 0.8, align: 'right' }], rows: all.map((s) => [s.term, s.code, s.name, s.courseType.replace(/_/g, ' '), s.lectureHours, s.tutorialHours, s.practicalHours, s.credits]), empty: 'No courses are recorded for this programme.' });
+      const byType = new Map<string, { courses: number; credits: number; hours: number }>();
+      for (const s of all) {
+        const v = byType.get(s.courseType) ?? { courses: 0, credits: 0, hours: 0 };
+        v.courses++;
+        v.credits += s.credits ?? 0;
+        v.hours += s.lectureHours + s.tutorialHours + s.practicalHours;
+        byType.set(s.courseType, v);
+      }
+      const totalCredits = [...byType.values()].reduce((a, v) => a + v.credits, 0);
+      curriculum.push({ kind: 'sub', text: `${cur}.1.3 Components of the curriculum` });
+      curriculum.push({ kind: 'table', caption: `Table ${cur}.1.3: Curriculum components`, sheet: `${cur}.1.3 Components`, columns: [{ title: 'Component', w: 2.4 }, { title: 'Courses', w: 0.9, align: 'right' }, { title: 'Contact hours a week', w: 1.4, align: 'right' }, { title: 'Credits', w: 0.9, align: 'right' }, { title: 'Share of credits %', w: 1.3, align: 'right' }], rows: [...byType].map(([k, v]) => [k.replace(/_/g, ' '), v.courses, v.hours, round(v.credits, 1), totalCredits ? round((v.credits / totalCredits) * 100, 1) : null]) });
+    }
+    const gapNo = tier1 ? `${cur}.1.4` : `${cur}.1.1`;
+    curriculum.push({ kind: 'sub', text: `${gapNo} Curricular gaps identified for the attainment of the POs and PSOs, and actions taken` });
+    curriculum.push({ kind: 'table', caption: `Table ${gapNo}: Curricular gaps`, sheet: `${gapNo} Gaps`, columns: [{ title: 'S.No', w: 0.5 }, { title: 'Gap', w: 3.4 }, { title: 'Action taken', w: 3.4 }, { title: 'Date', w: 1.1 }, { title: 'Resource person', w: 2 }, { title: 'Students', w: 0.8, align: 'right' }, { title: 'Relevance to POs/PSOs', w: 1.4 }], rows: gaps.filter((g) => g.kind === 'gap').map((g, i) => [i + 1, g.title, g.description ?? '-', g.heldOn, g.resourcePerson ?? '-', g.beneficiaries, g.outcomeCodes.map((c) => c.toUpperCase()).join(', ')]) });
+    const beyondNo = tier1 ? `${cur}.1.4 (b)` : `${cur}.1.2`;
+    curriculum.push({ kind: 'sub', text: `${beyondNo} Delivery of content beyond the syllabus for the attainment of the POs and PSOs` });
+    curriculum.push({ kind: 'table', caption: `Table ${beyondNo}: Content beyond the syllabus`, sheet: `${beyondNo.replace(' (b)', 'b')} Beyond syllabus`, columns: [{ title: 'S.No', w: 0.5 }, { title: 'Topic', w: 3.4 }, { title: 'Course', w: 2.4 }, { title: 'Mode', w: 1.4 }, { title: 'Date', w: 1.1 }, { title: 'Resource person', w: 2 }, { title: 'Students', w: 0.8, align: 'right' }, { title: 'POs/PSOs', w: 1.2 }], rows: gaps.filter((g) => g.kind === 'beyond_syllabus').map((g, i) => [i + 1, g.title, g.subjectId ? subName.get(g.subjectId) ?? '-' : '-', (g.method ?? '-').replace(/_/g, ' '), g.heldOn, g.resourcePerson ?? '-', g.beneficiaries, g.outcomeCodes.map((c) => c.toUpperCase()).join(', ')]) });
+    curriculum.push({ kind: 'sub', text: `${cur}.2.2 Quality of internal semester question papers, assignments and evaluation` });
     const papers = subs.length
-      ? await tx.execute<{ subject_id: string; title: string; questions: number; marks: number; cos: number; bloom: number; higher: number }>(sql`
-          select a.subject_id, min(a.title) as title, count(distinct q.id)::int as questions, coalesce(sum(distinct q.max_marks), 0)::float as marks,
-            count(distinct c.co_id)::int as cos, count(distinct q.bloom_level)::int as bloom,
-            coalesce(sum(q.max_marks) filter (where q.bloom_level ~* '(analy|evalu|creat|[456])'), 0)::float as higher
+      ? await tx.execute<{ subject_id: string; title: string; questions: number; cos: number; bloom: number; higher: number; marks: number; levels: number }>(sql`
+          select a.subject_id, a.title, count(distinct q.id)::int as questions,
+            count(distinct c.co_id)::int as cos, count(distinct q.bloom_level)::int as bloom, count(distinct q.difficulty)::int as levels,
+            (select coalesce(sum(x.max_marks), 0)::float from assessment_questions x where x.assessment_id = min(a.id::text)::uuid) as marks,
+            (select coalesce(sum(x.max_marks), 0)::float from assessment_questions x where x.assessment_id = min(a.id::text)::uuid and x.bloom_level ~* '(analy|evalu|creat|[456])') as higher
           from assessments a join sections s on s.id = a.section_id
           join assessment_questions q on q.assessment_id = a.id left join assessment_question_cos c on c.question_id = q.id
           where s.academic_year_id = ${yearId}::uuid and a.subject_id in (${sql.join(subs.map((x) => sql`${x.id}::uuid`), sql`, `)}) and a.kind <> 'exam'
           group by a.subject_id, a.title order by 1, 2`)
       : { rows: [] };
-    blocks.push({ kind: 'table', caption: 'Table 2.2.2: Internal question papers: CO coverage and Bloom levels', sheet: '2.2.2 Question papers', columns: [{ title: 'Course', w: 3 }, { title: 'Assessment', w: 3 }, { title: 'Questions', w: 0.9, align: 'right' }, { title: 'COs covered', w: 1, align: 'right' }, { title: 'COs of course', w: 1, align: 'right' }, { title: 'Bloom levels used', w: 1.1, align: 'right' }], rows: papers.rows.map((r) => [subName.get(r.subject_id) ?? '', r.title, r.questions, r.cos, cosOf(r.subject_id).length, r.bloom]), empty: 'No internal question papers are recorded for this year.' });
+    curriculum.push({ kind: 'table', caption: `Table ${cur}.2.2: Internal question papers: CO coverage, Bloom levels and difficulty`, sheet: `${cur}.2.2 Question papers`, columns: [{ title: 'Course', w: 3 }, { title: 'Assessment', w: 3 }, { title: 'Questions', w: 0.9, align: 'right' }, { title: 'COs covered', w: 1, align: 'right' }, { title: 'COs of course', w: 1, align: 'right' }, { title: 'Bloom levels used', w: 1.1, align: 'right' }, { title: 'Higher-order marks %', w: 1.3, align: 'right' }, { title: 'Difficulty levels', w: 1.1, align: 'right' }], rows: papers.rows.map((r) => [subName.get(r.subject_id) ?? '', r.title, r.questions, r.cos, cosOf(r.subject_id).length, r.bloom, r.marks ? round((r.higher / r.marks) * 100, 1) : null, r.levels]), empty: 'No internal question papers are recorded for this year.' });
 
-    blocks.push({ kind: 'heading', text: 'Criterion 3: Course outcomes and program outcomes' });
-    blocks.push({ kind: 'sub', text: '3.1.1 Course outcomes (COs)' });
-    blocks.push({ kind: 'table', caption: 'Table 3.1.1: COs of the courses', sheet: '3.1.1 COs', columns: [{ title: 'Course', w: 2.6 }, { title: 'Sem', w: 0.5, align: 'center' }, { title: 'CO', w: 0.6 }, { title: 'Statement', w: 6 }, { title: 'Bloom level', w: 1.2 }], rows: subs.flatMap((s) => cosOf(s.id).map((c) => [`${s.code} ${s.name}`, s.term, c.code, c.statement, c.bloomLevel ?? '-'])) });
-    blocks.push({ kind: 'sub', text: '3.1.2 CO-PO/PSO matrices of the courses' });
-    for (const s of subs.slice(0, 40)) blocks.push(this.camTable(`Table 3.1.2: ${s.code} ${s.name}`, cosOf(s.id), b.outcomes, cells, `3.1.2 ${s.code}`));
-    blocks.push({ kind: 'sub', text: '3.1.3 Program level course-PO/PSO matrix' }, this.pamBlock(subs, cells, cosOf, b.outcomes));
-    blocks.push({ kind: 'sub', text: '3.2.1 Assessment processes and tools used to measure CO attainment' });
-    for (const line of policyText(config)) blocks.push({ kind: 'para', text: line });
-    blocks.push({ kind: 'para', text: 'Direct tools: internal tests, assignments, quizzes (including LMS quizzes), laboratory work and the semester end examination, each with its questions tagged to COs and Bloom levels and marked question by question. Indirect tool: the course exit survey taken in the Student App.' });
-    blocks.push({ kind: 'sub', text: '3.2.2 Attainment of course outcomes' });
+    // Outcomes (criterion 3).
+    const outcomes: Block[] = [];
+    outcomes.push({ kind: 'heading', text: management ? 'Criterion 3: Program outcomes and course outcomes' : 'Criterion 3: Course outcomes and program outcomes' });
+    outcomes.push({ kind: 'sub', text: '3.1.1 Course outcomes (COs)' });
+    outcomes.push({ kind: 'table', caption: 'Table 3.1.1: COs of the courses', sheet: '3.1.1 COs', columns: [{ title: 'Course', w: 2.6 }, { title: 'Sem', w: 0.5, align: 'center' }, { title: 'CO', w: 0.6 }, { title: 'Statement', w: 6 }, { title: 'Bloom level', w: 1.2 }], rows: subs.flatMap((s) => cosOf(s.id).map((c) => [`${s.code} ${s.name}`, s.term, c.code, c.statement, c.bloomLevel ?? '-'])) });
+    outcomes.push({ kind: 'sub', text: '3.1.2 CO-PO/PSO matrices of the courses' });
+    for (const s of subs.slice(0, 40)) outcomes.push(this.camTable(`Table 3.1.2: ${s.code} ${s.name}`, cosOf(s.id), b.outcomes, cells, `3.1.2 ${s.code}`));
+    outcomes.push({ kind: 'sub', text: '3.1.3 Program level course-PO/PSO matrix' }, this.pamBlock(subs, cells, cosOf, b.outcomes));
+    outcomes.push({ kind: 'sub', text: '3.2.1 Assessment processes and tools used to measure CO attainment' });
+    for (const line of policyText(config)) outcomes.push({ kind: 'para', text: line });
+    outcomes.push({ kind: 'para', text: 'Direct tools: internal tests, assignments, quizzes (including LMS quizzes), laboratory work and the semester end examination, each with its questions tagged to COs, Bloom levels and difficulty, and marked question by question. Indirect tool: the course exit survey taken in the Student App.' });
+    outcomes.push({ kind: 'sub', text: '3.2.2 Attainment of course outcomes' });
     const maxCos = Math.max(0, ...subs.map((s) => cosOf(s.id).length));
-    blocks.push({ kind: 'table', caption: 'Table 3.2.2: CO attainment levels', sheet: '3.2.2 CO attainment', columns: [{ title: 'Course', w: 3 }, ...Array.from({ length: maxCos }, (_, i) => ({ title: `CO${i + 1}`, w: 0.7, align: 'center' as const, level: { max: config.maxLevel, target: config.targetLevel } })), { title: 'Target', w: 0.7, align: 'right' }], rows: subs.map((s) => { const v = cosOf(s.id).map((c) => rows.find((r) => r.targetId === c.id)?.combined ?? null); return [`${s.code} ${s.name}`, ...Array.from({ length: maxCos }, (_, i) => v[i] ?? null), config.targetLevel]; }) });
-    blocks.push({ kind: 'sub', text: '3.3.1 Assessment tools and processes for PO/PSO attainment' });
-    blocks.push({ kind: 'para', text: `Direct: from the CO attainment of every course through the course articulation matrices. Indirect: programme exit survey of the final-year students in the Student App, alumni and employer surveys. Overall = ${config.directWeight}% direct + ${config.indirectWeight}% indirect.` });
-    blocks.push({ kind: 'sub', text: '3.3.2 Results of the evaluation of each PO and PSO' }, this.poBlock(rows, b.outcomes, config));
-    blocks.push(...(await this.actionBlocks(tx, programId, yearId, '3.3.3')));
-    return { title: `NBA SAR criteria 2 and 3: ${b.prog.name}`, subtitle: `${b.year}. Programme reports under ${FRAMEWORK_NAME[b.framework]}.`, institution: b.institution, period: b.year, preparedFor: 'National Board of Accreditation (NBA)', landscape: true, blocks };
+    const snapOf = (r: typeof rows, id: string) => r.find((x) => x.targetId === id);
+    outcomes.push({ kind: 'table', caption: `Table 3.2.2: CO attainment levels against each CO's target (${years[0]?.tag ?? 'CAY'} ${b.year})`, sheet: '3.2.2 CO attainment', columns: [{ title: 'Course', w: 3 }, ...Array.from({ length: maxCos }, (_, i) => ({ title: `CO${i + 1}`, w: 0.7, align: 'center' as const, level: { max: config.maxLevel, target: config.targetLevel } })), { title: 'Target', w: 0.7, align: 'right' }, { title: 'COs met', w: 0.8, align: 'right' }], rows: subs.map((s) => { const v = cosOf(s.id).map((c) => snapOf(rows, c.id)); const t = v.filter((x) => x).map((x) => x!.target); return [`${s.code} ${s.name}`, ...Array.from({ length: maxCos }, (_, i) => v[i]?.combined ?? null), t.length ? round(t.reduce((a, c) => a + c, 0) / t.length, 2) : config.targetLevel, `${v.filter((x) => x?.met).length}/${v.filter((x) => x && x.combined !== null).length}`]; }) });
+    if (years.length > 1) {
+      // Matched by course code and CO code: an earlier year's COs may be an earlier version.
+      outcomes.push({ kind: 'table', caption: 'Table 3.2.2 (b): Average CO attainment of each course over the assessment years', sheet: '3.2.2 By year', columns: [{ title: 'Course', w: 3 }, ...years.flatMap((y) => [{ title: `${y.tag} ${y.label}`, w: 1.1, align: 'right' as const, level: { max: config.maxLevel, target: config.targetLevel } }, { title: `${y.tag} met`, w: 0.8, align: 'right' as const }])], rows: subs.map((s) => [`${s.code} ${s.name}`, ...years.flatMap((y) => { const mine = (history.get(y.id) ?? []).filter((r) => r.scope === 'co' && (r.subjectId === s.id || r.code.startsWith(`${s.code}/`))); const v = mine.filter((r) => r.combined !== null); return [v.length ? round(v.reduce((a, r) => a + (r.combined as number), 0) / v.length, 2) : null, v.length ? `${v.filter((r) => r.met).length}/${v.length}` : '-']; })]) });
+    }
+    outcomes.push({ kind: 'sub', text: '3.3.1 Assessment tools and processes for PO/PSO attainment' });
+    outcomes.push({ kind: 'para', text: `Direct: from the CO attainment of every course through the course articulation matrices. Indirect: programme exit survey of the final-year students in the Student App, alumni and employer surveys. Overall = ${config.directWeight}% direct + ${config.indirectWeight}% indirect.` });
+    outcomes.push({ kind: 'sub', text: '3.3.2 Results of the evaluation of each PO and PSO' }, this.poBlock(rows, b.outcomes, config));
+    if (years.length > 1) outcomes.push({ kind: 'table', caption: 'Table 3.3.2 (b): Overall PO and PSO attainment over the assessment years', sheet: '3.3.2 By year', columns: [{ title: 'PO/PSO', w: 0.9 }, ...years.flatMap((y) => [{ title: `${y.tag} ${y.label}`, w: 1.1, align: 'right' as const, level: { max: config.maxLevel, target: config.targetLevel } }, { title: `${y.tag} target`, w: 0.9, align: 'right' as const }])], rows: b.outcomes.map((o) => [o.code, ...years.flatMap((y) => { const r = (history.get(y.id) ?? []).find((x) => x.scope === 'po' && x.targetId === o.id); return [r?.combined ?? null, r?.target ?? null]; })]) });
+    outcomes.push(...(await this.actionBlocks(tx, programId, yearId, '3.3.3')));
+    blocks.push(...(management ? [...outcomes, ...curriculum] : [...curriculum, ...outcomes]));
+    return { title: `NBA SAR ${management ? 'criteria 3 and 4' : 'criteria 2 and 3'}: ${b.prog.name}`, subtitle: `${b.year}. Programme reports under ${FRAMEWORK_NAME[b.framework]}.`, institution: b.institution, period: b.year, preparedFor: 'National Board of Accreditation (NBA)', landscape: true, blocks };
   }
-
   // ---- NAAC 2.6 --------------------------------------------------------------------------------------------------------------
 
   private async naacDoc(tx: Tx, programId: string, yearId: string): Promise<ReportDoc> {

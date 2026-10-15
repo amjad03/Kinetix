@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { TargetsSheet } from '@/components/obe/ObeAudit';
 import { ObeTabs, ProgramYearBar, TargetsEditor } from '@/components/obe/ObeDepth';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
@@ -11,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('obe2.tab.targets') };
 }
 
-/** Attainment targets per CO and PO/PSO for a year, against the programme's default, with a copy to the next offering. */
+/** Attainment targets per CO and PO/PSO for a year, against the programme's default, with an Excel round trip and a copy to the next offering. */
 export default async function ObeTargetsPage({ searchParams }: { searchParams: Promise<{ programId?: string; academicYearId?: string }> }) {
   const me = await requireSection('obe');
   const { t } = await getI18n();
@@ -29,6 +30,7 @@ export default async function ObeTargetsPage({ searchParams }: { searchParams: P
     <>
       {head}
       <ProgramYearBar base="/obe/targets" programs={picks.programs} programId={picks.programId} years={picks.years} yearId={picks.yearId} />
+      <TargetsSheet programId={picks.programId} yearId={picks.yearId} canEdit={!!me} />
       {data.error !== undefined ? <ErrorState message={data.error} /> : <TargetsEditor key={`${picks.programId}:${picks.yearId}`} programId={picks.programId} yearId={picks.yearId} years={picks.years} data={data.data} canEdit={!!me} />}
     </>
   );

@@ -426,7 +426,7 @@ export class ObeController {
         const [cur] = await tx.select({ rootCause: improvementActions.rootCause }).from(improvementActions).where(eq(improvementActions.id, id));
         if (cur && !cur.rootCause?.trim()) throw new ConflictException('Record the root cause before closing this action');
       }
-      const [row] = await tx.update(improvementActions).set({ ...body, ...(body.status ? { closedAt: body.status === 'done' ? new Date() : null } : {}) }).where(eq(improvementActions.id, id)).returning();
+      const [row] = await tx.update(improvementActions).set({ ...body, ...(body.status ? { closedAt: body.status === 'done' ? new Date() : null } : {}), ...(body.status && body.status !== 'done' ? { verifiedAt: null, verifiedBy: null, verifyNote: null } : {}) }).where(eq(improvementActions.id, id)).returning();
       if (!row) throw new NotFoundException('Action not found');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.action.updated', subjectType: 'improvement_action', subjectId: id, data: { status: body.status } });
       return row;

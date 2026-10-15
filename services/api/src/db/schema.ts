@@ -2940,6 +2940,10 @@ export const improvementActions = pgTable('improvement_actions', {
   actionTaken: text('action_taken'),
   takenOn: date('taken_on'),
   subjectId: uuid('subject_id').references((): AnyPgColumn => subjects.id, { onDelete: 'set null' }),
+  /** The IQAC's (or principal's) verification that closes the action-taken report (migration 0185). */
+  verifiedBy: uuid('verified_by').references((): AnyPgColumn => users.id, { onDelete: 'set null' }),
+  verifiedAt: timestamp('verified_at', { withTimezone: true }),
+  verifyNote: text('verify_note'),
 });
 
 /** Evidence for accreditation: a link or note tied to a CO, PO/PSO or an improvement action. */

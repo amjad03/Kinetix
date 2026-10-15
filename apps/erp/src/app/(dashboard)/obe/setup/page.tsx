@@ -2,13 +2,12 @@ import type { Metadata } from 'next';
 import { CoordinatorsList } from '@/components/obe/ObeKitLists';
 import { FrameworkCard, PolicyEditor } from '@/components/obe/ObeDesks';
 import { ObeTabs, ProgramYearBar } from '@/components/obe/ObeDepth';
-import { OutcomesEditor } from '@/components/obe/OutcomesEditor';
+import { StatementsList } from '@/components/obe/ObeAudit';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { Card, SectionTitle } from '@/components/ui';
 import { api, load, requireSection } from '@/lib/api';
 import { safe } from '@/lib/depth-ui';
-import type { ProgramOutcome } from '@/lib/obe';
 import type { Framework, PolicyView, Preset } from '@/lib/obe-flagship';
 import { loadRecords } from '@/lib/records-server';
 import { getI18n } from '@/i18n/server';
@@ -38,8 +37,8 @@ export default async function ObeSetupPage({ searchParams }: { searchParams: Pro
   const { programId, yearId, subjectId } = picks;
   if (!programId) return <>{head}<ErrorState message={t('obe.noProgram')} /></>;
   const admin = !!me && me.roles.some((r) => r === 'principal' || r === 'tenant_admin' || r === 'quality_officer');
-  const [outcomes, fw, presets, programPolicy, institutionPolicy, coursePolicy, coordinators] = await Promise.all([
-    load(() => api<ProgramOutcome[]>(`/v1/obe/programs/${programId}/outcomes`)),
+  const [statements, fw, presets, programPolicy, institutionPolicy, coursePolicy, coordinators] = await Promise.all([
+    loadRecords('obe-statements', { ...sp, 'f.programId': programId }, { pageSize: 50 }),
     safe(api<{ framework: Framework }>(`/v1/obe/programs/${programId}/framework`), { framework: 'naac' as Framework }),
     safe(api<Preset[]>('/v1/obe/presets'), []),
     safe(api<PolicyView>(`/v1/obe/policies?programId=${programId}&academicYearId=${yearId}`), null),
@@ -55,7 +54,7 @@ export default async function ObeSetupPage({ searchParams }: { searchParams: Pro
       <div className="flex flex-col gap-6">
         <FrameworkCard key={`fw:${programId}`} programId={programId} framework={fw.framework} presets={presets} canEdit={admin} />
         <Card title={t('of.setup.statements')} subtitle={t('of.setup.statementsSub')}>
-          {outcomes.error !== undefined ? <ErrorState message={outcomes.error} /> : <OutcomesEditor key={programId} programs={picks.programs} programId={programId} outcomes={outcomes.data} canEdit={admin} />}
+          {statements.error !== undefined ? <ErrorState message={statements.error} /> : <StatementsList meta={statements.data.meta} page={statements.data.page} state={statements.data.state} />}
         </Card>
         <div id="policy" className="grid items-start gap-4 2xl:grid-cols-2">
           {programPolicy && <PolicyEditor key={`p:${programId}:${programPolicy.history[0]?.id ?? ''}`} view={programPolicy} scope="program" programId={programId} years={picks.years} canEdit={admin} title={t('of.pol.programme')} />}

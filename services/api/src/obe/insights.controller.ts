@@ -189,7 +189,7 @@ export class ObeInsightsController {
         .sort((a, b) => (b.gap ?? 0) - (a.gap ?? 0))
         .slice(0, 12)
         .map((s) => ({ coId: s.targetId, code: s.code, subjectId: s.subjectId, subject: subjectOf.get(s.subjectId!)?.name ?? '', programId: s.programId, combined: s.combined, target: s.target, gap: s.gap, weak: ((s.detail as { weakItems?: { label: string }[] }).weakItems ?? []).slice(0, 2).map((w) => w.label) }));
-      const [act] = progIds.length ? await tx.select({ open: sql<number>`count(*) filter (where ${improvementActions.status} <> 'done')::int`, overdue: sql<number>`count(*) filter (where ${improvementActions.status} <> 'done' and ${improvementActions.dueOn} < current_date)::int` }).from(improvementActions).where(inArray(improvementActions.programId, progIds)) : [{ open: 0, overdue: 0 }];
+      const [act] = progIds.length ? await tx.select({ open: sql<number>`count(*) filter (where ${improvementActions.status} <> 'done')::int`, overdue: sql<number>`count(*) filter (where ${improvementActions.status} <> 'done' and ${improvementActions.dueOn} < current_date)::int`, toVerify: sql<number>`count(*) filter (where ${improvementActions.status} = 'done' and ${improvementActions.verifiedAt} is null)::int` }).from(improvementActions).where(inArray(improvementActions.programId, progIds)) : [{ open: 0, overdue: 0, toVerify: 0 }];
       const [sv] = await tx.select({ n: sql<number>`count(*)::int` }).from(surveys).where(and(isNotNull(surveys.obeKind), eq(surveys.status, 'open')));
       return {
         year: { id: year.id, label: year.label },
@@ -213,6 +213,7 @@ export class ObeInsightsController {
           cosMeasured: snaps.filter((s) => s.scope === 'co' && s.combined !== null && s.subjectId && subjectOf.has(s.subjectId)).length,
           actionsOpen: act?.open ?? 0,
           actionsOverdue: act?.overdue ?? 0,
+          actionsToVerify: act?.toVerify ?? 0,
           surveysOpen: sv?.n ?? 0,
         },
       };

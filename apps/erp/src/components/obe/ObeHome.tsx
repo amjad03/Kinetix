@@ -109,7 +109,7 @@ export function ObeHome({ data, programId }: { data: ObeDash; programId: string 
         <StatTile label={t('of.kpi.courses')} value={fmt.number(data.counts.courses)} caption={t('of.kpi.cos', { n: data.counts.cos })} href="/obe/courses" />
         <StatTile label={t('of.kpi.cosMet')} value={data.counts.cosMeasured ? `${Math.round((data.counts.cosMet / data.counts.cosMeasured) * 100)}%` : '-'} caption={t('of.kpi.cosMetOf', { met: data.counts.cosMet, n: data.counts.cosMeasured })} />
         <StatTile label={t('of.kpi.attention')} value={fmt.number(attention.length)} tone={attention.length ? 'warning' : 'default'} caption={t('of.kpi.attentionSub', { cos: data.counts.noCos, tags: data.counts.untagged, marks: data.counts.marks })} />
-        <StatTile label={t('of.kpi.actions')} value={fmt.number(data.counts.actionsOpen)} caption={data.counts.actionsOverdue ? t('of.kpi.overdue', { n: data.counts.actionsOverdue }) : undefined} tone={data.counts.actionsOverdue ? 'warning' : 'default'} href="/obe/actions" />
+        <StatTile label={t('of.kpi.actions')} value={fmt.number(data.counts.actionsOpen)} caption={[data.counts.actionsOverdue ? t('of.kpi.overdue', { n: data.counts.actionsOverdue }) : '', data.counts.actionsToVerify ? t('oa.kpi.toVerify', { n: data.counts.actionsToVerify }) : ''].filter(Boolean).join(' · ') || undefined} tone={data.counts.actionsOverdue ? 'warning' : 'default'} href={data.counts.actionsToVerify ? '/obe/actions?f.verified=waiting' : '/obe/actions'} />
         <StatTile label={t('of.kpi.surveys')} value={fmt.number(data.counts.surveysOpen)} href="/obe/surveys" />
       </StatGrid>
 

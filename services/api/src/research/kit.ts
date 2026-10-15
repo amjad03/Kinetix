@@ -200,8 +200,12 @@ async function cellValue(ctx: KitCtx, key: string, f: KitField, text: string): P
       return d ? d.id : fail('No department with this name', text);
     }
     case 'ref': {
-      const id = f.lookup ? await f.lookup(ctx, text) : null;
-      return id ?? fail('This value is not valid', text);
+      if (f.lookup) return (await f.lookup(ctx, text)) ?? fail('This value is not valid', text);
+      // Without a lookup: the record whose name matches, or whose name starts with the code given ("BCM-101").
+      const opts = f.options ? await optionsOf(ctx, f) : [];
+      const want = text.toLowerCase();
+      const hit = opts.find((o) => o.value === text || o.label.toLowerCase() === want) ?? opts.filter((o) => o.label.toLowerCase().startsWith(`${want} `)).at(0);
+      return hit ? hit.value : fail('This value is not valid', text);
     }
     case 'select': {
       const opts = await optionsOf(ctx, f);

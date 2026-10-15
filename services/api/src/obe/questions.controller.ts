@@ -9,7 +9,7 @@ import { audit } from '../common/audit.js';
 import { looksLikeXlsx, readXlsx, writeWorkbook } from '../common/xlsx.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessmentQuestionCos, assessmentQuestions, questionMarks } from '../db/schema-obe-flagship.js';
+import { assessmentQuestionCos, assessmentQuestions, QUESTION_DIFFICULTY, questionMarks, type QuestionDifficulty } from '../db/schema-obe-flagship.js';
 import { assessmentCoMap, assessments, coSets, courseOutcomes, examPapers, examSessions, marks, qbPaperItems, qbPapers, schemeComponents, sections, students, subjects } from '../db/schema.js';
 import { headsSubject } from '../departments/departments.controller.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
@@ -29,6 +29,7 @@ const QuestionsBody = z.object({
         part: z.string().trim().max(40).default(''),
         maxMarks: z.number().gt(0).max(1000),
         bloomLevel: z.string().trim().max(20).nullish(),
+        difficulty: z.enum(QUESTION_DIFFICULTY).nullish(),
         cos: z.array(z.object({ coId: z.uuid(), weight: z.number().gt(0).max(100).default(1) })).max(10).default([]),
       }),
     )
@@ -45,7 +46,7 @@ const CopyBody = z.object({ fromAssessmentId: z.uuid().optional(), qbPaperId: z.
 type Asmt = typeof assessments.$inferSelect;
 
 /**
- * Question-wise assessment: an assessment's question paper (questions with maximum marks, Bloom levels and the COs each
+ * Question-wise assessment: an assessment's question paper (questions with maximum marks, Bloom levels, difficulty and the COs each
  * tests), question-wise marks entry (also as an Excel sheet to download and upload) whose sum is the student's mark,
  * and the course's assessments with how complete their tagging and marks are. Results that come as totals only (a
  * university SEE) are shared out to COs by the paper's CO weightage when attainment is computed.
@@ -134,13 +135,13 @@ export class ObeQuestionsController {
         rows = [];
         for (const [i, b] of body.questions.entries()) {
           const q = existing.find((x) => x.no.toLowerCase() === b.no.toLowerCase())!;
-          const [u] = await tx.update(assessmentQuestions).set({ part: b.part, bloomLevel: b.bloomLevel ?? null, ord: i, no: b.no }).where(eq(assessmentQuestions.id, q.id)).returning();
+          const [u] = await tx.update(assessmentQuestions).set({ part: b.part, bloomLevel: b.bloomLevel ?? null, difficulty: b.difficulty ?? null, ord: i, no: b.no }).where(eq(assessmentQuestions.id, q.id)).returning();
           rows.push(u);
         }
         await tx.delete(assessmentQuestionCos).where(inArray(assessmentQuestionCos.questionId, existing.map((q) => q.id)));
       } else {
         await tx.delete(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, id));
-        rows = body.questions.length ? await tx.insert(assessmentQuestions).values(body.questions.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel ?? null, ord: i }))).returning() : [];
+        rows = body.questions.length ? await tx.insert(assessmentQuestions).values(body.questions.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel ?? null, difficulty: q.difficulty ?? null, ord: i }))).returning() : [];
       }
       const tags = body.questions.flatMap((b) => {
         const q = rows.find((r) => r.no.toLowerCase() === b.no.toLowerCase())!;
@@ -167,27 +168,28 @@ export class ObeQuestionsController {
       if (n > 0) throw new ConflictException('This assessment already has a paper; clear it first');
       const cos = await this.activeCos(tx, a.subjectId);
       const byCode = new Map(cos.map((c) => [c.code, c.id]));
-      let src: { no: string; part: string; maxMarks: number; bloomLevel: string | null; cos: { coId: string; weight: number }[] }[] = [];
+      let src: { no: string; part: string; maxMarks: number; bloomLevel: string | null; difficulty: QuestionDifficulty | null; cos: { coId: string; weight: number }[] }[] = [];
       if (body.fromAssessmentId) {
         const [from] = await tx.select().from(assessments).where(eq(assessments.id, body.fromAssessmentId));
         if (!from || from.subjectId !== a.subjectId) throw new BadRequestException('Copy from an assessment of the same course');
         const qs = await tx.select().from(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, from.id)).orderBy(asc(assessmentQuestions.ord));
         const tags = qs.length ? await tx.select({ questionId: assessmentQuestionCos.questionId, weight: assessmentQuestionCos.weight, code: courseOutcomes.code }).from(assessmentQuestionCos).innerJoin(courseOutcomes, eq(courseOutcomes.id, assessmentQuestionCos.coId)).where(inArray(assessmentQuestionCos.questionId, qs.map((q) => q.id))) : [];
-        src = qs.map((q) => ({ no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, cos: tags.filter((t) => t.questionId === q.id && byCode.has(t.code)).map((t) => ({ coId: byCode.get(t.code)!, weight: t.weight })) }));
+        src = qs.map((q) => ({ no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, cos: tags.filter((t) => t.questionId === q.id && byCode.has(t.code)).map((t) => ({ coId: byCode.get(t.code)!, weight: t.weight })) }));
       } else {
         const [paper] = await tx.select().from(qbPapers).where(eq(qbPapers.id, body.qbPaperId!));
         if (!paper || paper.subjectId !== a.subjectId) throw new BadRequestException('Copy from a question bank paper of the same course');
         const items = await tx.select().from(qbPaperItems).where(eq(qbPaperItems.paperId, paper.id)).orderBy(asc(qbPaperItems.section), asc(qbPaperItems.position));
         const parts = ['Part A', 'Part B', 'Part C', 'Part D', 'Part E'];
         src = items.map((it, i) => {
-          const snap = it.snapshot as { coId?: string | null; coCode?: string | null; bloom?: string | null };
+          const snap = it.snapshot as { coId?: string | null; coCode?: string | null; bloom?: string | null; difficulty?: string | null };
           const coId = snap.coCode && byCode.has(snap.coCode) ? byCode.get(snap.coCode)! : snap.coId && cos.some((c) => c.id === snap.coId) ? snap.coId : null;
           const lvl = snap.bloom ? bloomNumber(snap.bloom) : null;
-          return { no: String(i + 1), part: parts[it.section] ?? '', maxMarks: it.marks, bloomLevel: lvl ? BLOOM_LEVELS[lvl - 1] : null, cos: coId ? [{ coId, weight: 1 }] : [] };
+          const difficulty = (QUESTION_DIFFICULTY as readonly string[]).includes(snap.difficulty ?? '') ? (snap.difficulty as QuestionDifficulty) : null;
+          return { no: String(i + 1), part: parts[it.section] ?? '', maxMarks: it.marks, bloomLevel: lvl ? BLOOM_LEVELS[lvl - 1] : null, difficulty, cos: coId ? [{ coId, weight: 1 }] : [] };
         });
       }
       if (!src.length) throw new BadRequestException('That paper has no questions');
-      const rows = await tx.insert(assessmentQuestions).values(src.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, ord: i }))).returning();
+      const rows = await tx.insert(assessmentQuestions).values(src.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, ord: i }))).returning();
       const tags = src.flatMap((q, i) => q.cos.map((c) => ({ tenantId: p.tenantId, questionId: rows[i].id, coId: c.coId, weight: c.weight })));
       if (tags.length) await tx.insert(assessmentQuestionCos).values(tags);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.paper.copied', subjectType: 'assessment', subjectId: id, data: { from: body.fromAssessmentId ?? body.qbPaperId, questions: rows.length } });
@@ -220,7 +222,7 @@ export class ObeQuestionsController {
       const rows = marksSheetRows(d.questions, d.students.map((s) => ({ id: s.id, rollNo: s.rollNo, name: s.name, absent: s.absent, marks: s.marks })));
       const file = writeWorkbook([
         { name: 'Marks', header: true, rows, widths: [12, 28, 12, ...d.questions.map(() => 10), 10], lists: [{ column: 2, source: 'Lists!$A$2:$A$3', untilRow: rows.length + 5, prompt: 'Y when the student was absent' }] },
-        { name: 'Paper', header: true, rows: [['Question', 'Part', 'Max marks', 'COs', 'Bloom level'], ...d.questions.map((q) => [q.no, q.part, q.maxMarks, q.cos.map((c) => cos.get(c.coId) ?? '').join(', '), q.bloomLevel ?? ''])], widths: [10, 12, 12, 20, 14] },
+        { name: 'Paper', header: true, rows: [['Question', 'Part', 'Max marks', 'COs', 'Bloom level', 'Difficulty'], ...d.questions.map((q) => [q.no, q.part, q.maxMarks, q.cos.map((c) => cos.get(c.coId) ?? '').join(', '), q.bloomLevel ?? '', q.difficulty ?? ''])], widths: [10, 12, 12, 20, 14, 12] },
         { name: 'How to fill', rows: [['Enter each student’s marks for each question; leave a cell blank when the question was not answered.'], ['Put Y in "Absent" for a student who missed the assessment; their marks are ignored.'], ['Do not change the roll numbers or the question headers. The total is worked out when you upload.'], [`Assessment: ${a.title}, out of ${a.maxMarks}`]], widths: [100] },
         { name: 'Lists', hidden: true, rows: [['Absent'], ['Y'], ['N']] },
       ]);
@@ -312,10 +314,11 @@ export class ObeQuestionsController {
     const [sec] = await tx.select({ name: sections.displayName, yearId: sections.academicYearId }).from(sections).where(eq(sections.id, a.sectionId));
     const [comp] = a.componentId ? await tx.select({ kind: schemeComponents.kind, name: schemeComponents.name }).from(schemeComponents).where(eq(schemeComponents.id, a.componentId)) : [];
     const config = (await this.obe.policy(tx, sub.programId, a.subjectId, sec.yearId)).config;
-    const questions = qs.map((q) => ({ id: q.id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, cos: tags.filter((t) => t.questionId === q.id).map((t) => ({ coId: t.coId, weight: t.weight })) }));
+    const questions = qs.map((q) => ({ id: q.id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, cos: tags.filter((t) => t.questionId === q.id).map((t) => ({ coId: t.coId, weight: t.weight })) }));
     const shares = blueprintShares(questions, config.seeApportion);
     const coMarks = cos.map((c) => ({ coId: c.id, code: c.code, marks: round(questions.reduce((s, q) => { const w = q.cos.reduce((x, y) => x + y.weight, 0); const mine = q.cos.find((x) => x.coId === c.id); return s + (mine && w ? (q.maxMarks * mine.weight) / w : 0); }, 0), 2), share: round((shares.get(c.id) ?? 0) * 100, 1) }));
     const bloom = BLOOM_LEVELS.map((name, i) => ({ level: i + 1, name, marks: round(questions.filter((q) => bloomNumber(q.bloomLevel) === i + 1).reduce((s, q) => s + q.maxMarks, 0), 2) }));
+    const difficulty = QUESTION_DIFFICULTY.map((level) => ({ level, marks: round(questions.filter((q) => q.difficulty === level).reduce((s, q) => s + q.maxMarks, 0), 2) }));
     return {
       assessment: { id: a.id, title: a.title, kind: a.kind, maxMarks: a.maxMarks, heldOn: a.heldOn, markStatus: a.markStatus, locked: !!a.lockedAt, sectionId: a.sectionId, section: sec?.name ?? '', subjectId: a.subjectId, subject: sub ? `${sub.code} ${sub.name}` : '', component: comp?.name ?? null, evidence: a.kind === 'exam' || comp?.kind === 'external' ? 'see' : 'cie' },
       editable: await this.editable(tx, p, a),
@@ -326,6 +329,7 @@ export class ObeQuestionsController {
       paperMarks: round(questions.reduce((s, q) => s + q.maxMarks, 0), 2),
       coMarks,
       bloom,
+      difficulty,
       students: roster.map((r) => {
         const mine = qm.filter((m) => m.studentId === r.id);
         return { id: r.id, rollNo: r.rollNo, name: r.name, absent: r.absent ?? false, total: r.total, marks: Object.fromEntries(mine.map((m) => [m.questionId, m.marks])) as Record<string, number | null>, questionWise: mine.some((m) => m.marks !== null) };

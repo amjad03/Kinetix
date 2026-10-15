@@ -60,15 +60,17 @@ export interface ObeDash {
     programs: { programId: string; name: string; framework: Framework; computedAt: string | null; outcomes: (HeatValue & { outcomeId: string; kind: string })[] }[];
   };
   weakCos: { coId: string; code: string; subjectId: string; subject: string; programId: string; combined: number; target: number; gap: number; weak: string[] }[];
-  counts: { programs: number; courses: number; cos: number; approvals: number; noCos: number; unmapped: number; untagged: number; marks: number; cosMet: number; cosMeasured: number; actionsOpen: number; actionsOverdue: number; surveysOpen: number };
+  counts: { programs: number; courses: number; cos: number; approvals: number; noCos: number; unmapped: number; untagged: number; marks: number; cosMet: number; cosMeasured: number; actionsOpen: number; actionsOverdue: number; actionsToVerify?: number; surveysOpen: number };
 }
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
 export interface PaperQuestion {
   id: string;
   no: string;
   part: string;
   maxMarks: number;
   bloomLevel: string | null;
+  difficulty?: Difficulty | null;
   cos: { coId: string; weight: number }[];
 }
 export interface Paper {
@@ -81,6 +83,7 @@ export interface Paper {
   paperMarks: number;
   coMarks: { coId: string; code: string; marks: number; share: number }[];
   bloom: { level: number; name: string; marks: number }[];
+  difficulty?: { level: Difficulty; marks: number }[];
   students: { id: string; rollNo: string; name: string; absent: boolean; total: number | null; marks: Record<string, number | null>; questionWise: boolean }[];
 }
 export interface CourseAssessment {

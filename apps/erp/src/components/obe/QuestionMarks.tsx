@@ -11,24 +11,25 @@ import { Card, EmptyState, FormRow, StatusPill, TextInput, useToast } from '@/co
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { exportHref } from '@/lib/exams';
-import { changedEntries, moveFrom, parseClipboard, pasteInto, rowProblems, type GridState, type Paper } from '@/lib/obe-flagship';
+import { changedEntries, moveFrom, parseClipboard, pasteInto, rowProblems, type Difficulty, type GridState, type Paper } from '@/lib/obe-flagship';
 import { cn } from '@/lib/utils';
 
 const BLOOM = ['Remember', 'Understand', 'Apply', 'Analyse', 'Evaluate', 'Create'] as const;
-type Q = { no: string; part: string; maxMarks: string; bloomLevel: string; cos: string[] };
+const DIFFICULTY = ['easy', 'medium', 'hard'] as const;
+type Q = { no: string; part: string; maxMarks: string; bloomLevel: string; difficulty: string; cos: string[] };
 
-/** The question paper: questions with marks, Bloom level and the COs each tests; copied from another assessment or a question bank paper. */
+/** The question paper: questions with marks, Bloom level, difficulty and the COs each tests; copied from another assessment or a question bank paper. */
 export function PaperEditor({ paper, others, qbPapers }: { paper: Paper; others: { id: string; title: string; section: string }[]; qbPapers: { id: string; title: string }[] }) {
   const { t } = useI18n();
   const router = useRouter();
   const { pending, run, feedback } = useRun();
-  const [qs, setQs] = useState<Q[]>(paper.questions.map((q) => ({ no: q.no, part: q.part, maxMarks: String(q.maxMarks), bloomLevel: q.bloomLevel ?? '', cos: q.cos.map((c) => c.coId) })));
+  const [qs, setQs] = useState<Q[]>(paper.questions.map((q) => ({ no: q.no, part: q.part, maxMarks: String(q.maxMarks), bloomLevel: q.bloomLevel ?? '', difficulty: q.difficulty ?? '', cos: q.cos.map((c) => c.coId) })));
   const [from, setFrom] = useState('');
   const locked = paper.students.some((s) => s.questionWise);
   const total = qs.reduce((s, q) => s + (Number(q.maxMarks) || 0), 0);
   const set = (i: number, patch: Partial<Q>) => setQs(qs.map((q, j) => (j === i ? { ...q, ...patch } : q)));
   const short = qs.length > 0 && total + 1e-9 < paper.assessment.maxMarks;
-  const save = () => run(() => savePaper(paper.assessment.id, qs.map((q) => ({ no: q.no, part: q.part, maxMarks: Number(q.maxMarks), bloomLevel: q.bloomLevel || null, cos: q.cos.map((coId) => ({ coId, weight: 1 })) }))), t('of.paper.saved'), () => router.refresh());
+  const save = () => run(() => savePaper(paper.assessment.id, qs.map((q) => ({ no: q.no, part: q.part, maxMarks: Number(q.maxMarks), bloomLevel: q.bloomLevel || null, difficulty: (q.difficulty || null) as Difficulty | null, cos: q.cos.map((coId) => ({ coId, weight: 1 })) }))), t('of.paper.saved'), () => router.refresh());
   return (
     <Card
       title={t('of.paper.title')}
@@ -72,6 +73,7 @@ export function PaperEditor({ paper, others, qbPapers }: { paper: Paper; others:
                 <th className="py-2 pr-2 font-medium">{t('of.paper.part')}</th>
                 <th className="py-2 pr-2 font-medium">{t('of.col.outOf')}</th>
                 <th className="py-2 pr-2 font-medium">{t('of.col.bloom')}</th>
+                <th className="py-2 pr-2 font-medium">{t('oa.col.difficulty')}</th>
                 <th className="py-2 pr-2 font-medium">{t('of.col.cos')}</th>
                 <th className="py-2 font-medium" />
               </tr>
@@ -94,6 +96,16 @@ export function PaperEditor({ paper, others, qbPapers }: { paper: Paper; others:
                       {BLOOM.map((b, k) => (
                         <MenuItem key={b} value={b}>
                           {t(`obe2.bloom.${k + 1}` as MessageKey)}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </td>
+                  <td className="py-1.5 pr-2">
+                    <TextInput size="small" select className="w-[120px]" value={q.difficulty} disabled={!paper.canTag} onChange={(e) => set(i, { difficulty: e.target.value })} inputProps={{ 'aria-label': t('oa.paper.difficultyFor', { n: q.no }) }} data-testid="of-paper-difficulty">
+                      <MenuItem value="">-</MenuItem>
+                      {DIFFICULTY.map((d) => (
+                        <MenuItem key={d} value={d}>
+                          {t(`oa.difficulty.${d}`)}
                         </MenuItem>
                       ))}
                     </TextInput>
@@ -126,7 +138,7 @@ export function PaperEditor({ paper, others, qbPapers }: { paper: Paper; others:
       {paper.canTag && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {!locked && (
-            <Button variant="outline" onClick={() => setQs([...qs, { no: String(qs.length + 1), part: qs.at(-1)?.part ?? '', maxMarks: qs.at(-1)?.maxMarks ?? '5', bloomLevel: '', cos: [] }])} data-testid="of-paper-add">
+            <Button variant="outline" onClick={() => setQs([...qs, { no: String(qs.length + 1), part: qs.at(-1)?.part ?? '', maxMarks: qs.at(-1)?.maxMarks ?? '5', bloomLevel: '', difficulty: '', cos: [] }])} data-testid="of-paper-add">
               <Plus className="size-4" aria-hidden />
               {t('of.paper.add')}
             </Button>
@@ -140,7 +152,7 @@ export function PaperEditor({ paper, others, qbPapers }: { paper: Paper; others:
         </div>
       )}
       {paper.questions.length > 0 && (
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <div>
             <h3 className="m-0 mb-2 text-sm font-semibold">{t('of.paper.weightage')}</h3>
             <ul className="m-0 grid list-none gap-1.5 p-0 text-[13px]">
@@ -166,6 +178,20 @@ export function PaperEditor({ paper, others, qbPapers }: { paper: Paper; others:
                     <span className="block h-full bg-primary" style={{ width: `${paper.paperMarks ? (b.marks / paper.paperMarks) * 100 : 0}%` }} />
                   </span>
                   <span className="text-right tabular-nums">{b.marks}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div data-testid="of-paper-difficulty-spread">
+            <h3 className="m-0 mb-2 text-sm font-semibold">{t('oa.paper.difficulty')}</h3>
+            <ul className="m-0 grid list-none gap-1.5 p-0 text-[13px]">
+              {(paper.difficulty ?? []).map((d) => (
+                <li key={d.level} className="grid grid-cols-[96px_1fr_40px] items-center gap-2">
+                  <span>{t(`oa.difficulty.${d.level}`)}</span>
+                  <span className="h-2 overflow-hidden rounded bg-muted">
+                    <span className="block h-full bg-primary" style={{ width: `${paper.paperMarks ? (d.marks / paper.paperMarks) * 100 : 0}%` }} />
+                  </span>
+                  <span className="text-right tabular-nums">{d.marks}</span>
                 </li>
               ))}
             </ul>

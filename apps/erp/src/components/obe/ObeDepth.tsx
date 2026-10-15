@@ -215,11 +215,19 @@ export function PeoMissionEditor({ programId, data, versions, canEdit }: { progr
 
 /** This year's target for each CO and PO/PSO, against the programme's default; copy to the next offering. */
 export function TargetsEditor({ programId, yearId, years, data, canEdit }: { programId: string; yearId: string; years: { id: string; label: string }[]; data: Targets; canEdit: boolean }) {
-  const { t } = useI18n();
+  const { t, fmt } = useI18n();
   const { pending, run, feedback } = useRun();
   const [rows, setRows] = useState<TargetRow[]>(data.rows);
   const [dirty, setDirty] = useState<Set<string>>(new Set());
   const [copyTo, setCopyTo] = useState('');
+  const [fill, setFill] = useState({ scope: 'co' as 'co' | 'po', level: '' });
+  const fillBlanks = () => {
+    const level = Number(fill.level);
+    if (fill.level.trim() === '' || Number.isNaN(level) || level < 0 || level > data.maxLevel) return;
+    const ids = rows.filter((r) => r.scope === fill.scope && r.targetLevel === null).map((r) => r.targetId);
+    setRows(rows.map((r) => (ids.includes(r.targetId) ? { ...r, targetLevel: level } : r)));
+    setDirty(new Set([...dirty, ...ids]));
+  };
   const edit = (id: string, patch: Partial<TargetRow>) => {
     setRows(rows.map((r) => (r.targetId === id ? { ...r, ...patch } : r)));
     setDirty(new Set(dirty).add(id));
@@ -260,12 +268,29 @@ export function TargetsEditor({ programId, yearId, years, data, canEdit }: { pro
                   </td>
                   <td className="px-3 py-2">
                     <TextInput size="small" fullWidth disabled={!canEdit} value={r.rationale} inputProps={{ maxLength: 500, 'aria-label': t('obe2.tg.rationaleFor', { code: r.code }) }} onChange={(e) => edit(r.targetId, { rationale: e.target.value })} />
+                    {r.setBy && <span className="mt-1 block text-xs text-muted-foreground">{t('oa.tg.setBy', { name: r.setBy, date: r.updatedAt ? fmt.date(r.updatedAt.slice(0, 10), 'short') : '' })}</span>}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+      {canEdit && rows.length > 0 && (
+        <FormRow className="mt-4" data-testid="targets-fill">
+          <FormField label={t('oa.tg.fillScope')}>
+            <TextInput className="min-w-[160px]" select value={fill.scope} onChange={(e) => setFill({ ...fill, scope: e.target.value as 'co' | 'po' })}>
+              <MenuItem value="co">{t('oa.tg.fillCos')}</MenuItem>
+              <MenuItem value="po">{t('oa.tg.fillPos')}</MenuItem>
+            </TextInput>
+          </FormField>
+          <FormField label={t('oa.tg.fillLevel')}>
+            <TextInput className="w-[110px]" type="number" value={fill.level} inputProps={{ step: 0.1, min: 0, max: data.maxLevel }} onChange={(e) => setFill({ ...fill, level: e.target.value })} />
+          </FormField>
+          <Button variant="outline" disabled={fill.level.trim() === ''} onClick={fillBlanks}>
+            {t('oa.tg.fill')}
+          </Button>
+        </FormRow>
       )}
       {canEdit && rows.length > 0 && (
         <FormRow className="mt-4">

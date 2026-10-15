@@ -1,8 +1,10 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, OnModuleInit } from '@nestjs/common';
 import { and, asc, eq, sql } from 'drizzle-orm';
+import { z } from 'zod';
+import { audit } from '../common/audit.js';
 import type { RoleName } from '../auth/principal.js';
 import { obeAssignments, obeCurriculumGaps } from '../db/schema-obe-flagship.js';
-import { academicYears, coSets, courseOutcomes, improvementActions, obeSurveys, programs, subjects } from '../db/schema.js';
+import { academicYears, coOutcomeMap, coSets, courseOutcomes, improvementActions, obeEvidence, obeSurveys, programOutcomes, programs, subjects } from '../db/schema.js';
 import { headsSubject } from '../departments/departments.controller.js';
 import { qualitySettings } from '../quality-hub/settings.catalogue.js';
 import { RecordRegistry, type FieldOption, type KitCtx } from '../records/entity.js';
@@ -17,6 +19,79 @@ const programOptions = async (ctx: KitCtx): Promise<FieldOption[]> => (await ctx
 const yearOptions = async (ctx: KitCtx): Promise<FieldOption[]> => (await ctx.tx.select({ id: academicYears.id, label: academicYears.label }).from(academicYears).orderBy(sql`${academicYears.startsOn} desc`)).map((y) => ({ value: y.id, label: y.label }));
 const subjectOptions = async (ctx: KitCtx): Promise<FieldOption[]> =>
   (await ctx.tx.select({ id: subjects.id, code: subjects.code, name: subjects.name, program: programs.name, term: subjects.term }).from(subjects).innerJoin(programs, eq(programs.id, subjects.programId)).orderBy(asc(programs.name), asc(subjects.term), asc(subjects.code))).map((s) => ({ value: s.id, label: `${s.code} ${s.name}`, group: `${s.program} · ${s.term}` }));
+
+const VerifyParams = z.object({ note: z.string().trim().max(1000).optional() }).optional();
+
+/**
+ * The IQAC (or principal) verifies a done action: the action taken must be written down with its date and backed by
+ * evidence or a re-measurement, and the owner cannot verify their own action. Verification closes the action-taken
+ * report entry; reopening the action withdraws it.
+ */
+export async function verifyAction(ctx: KitCtx, id: string, note?: string): Promise<string> {
+  const r = await rowOf(ctx, improvementActions, id);
+  if (r.status !== 'done') throw new BadRequestException('Only a done action can be verified');
+  if (r.verifiedAt) throw new BadRequestException('This action is already verified');
+  if (r.ownerId === ctx.p.userId) throw new ForbiddenException('Someone other than the owner must verify this action');
+  if (!String(r.actionTaken ?? '').trim() || !r.takenOn) throw new BadRequestException('Record the action taken and its date first');
+  const [{ n }] = await ctx.tx.select({ n: sql<number>`count(*)::int` }).from(obeEvidence).where(and(eq(obeEvidence.scope, 'action'), eq(obeEvidence.targetId, id)));
+  if (n === 0 && (r.remeasuredValue === null || r.remeasuredValue === undefined)) throw new BadRequestException('Add evidence or the re-measured attainment before verifying');
+  await ctx.tx.update(improvementActions).set({ verifiedAt: new Date(), verifiedBy: ctx.p.userId, verifyNote: note?.trim() || null }).where(eq(improvementActions.id, id));
+  await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: 'obe.action.verified', subjectType: 'improvement_action', subjectId: id, data: { evidence: n } });
+  return 'Verified';
+}
+
+const STATEMENT_KINDS = ['vision', 'mission', 'peo', 'po', 'pso'] as const;
+
+/**
+ * A programme's vision, mission, PEOs, POs and PSOs as a record kit list: add, edit, bulk, Excel import (keyed by
+ * programme, kind and code) and export, history and delete. A PO or PSO mapped from course outcomes, or a PEO or mission
+ * element in the PEO-mission matrix, cannot be deleted. Published versions of the statements stay on the PEOs page.
+ */
+export function obeStatementsEntity() {
+  return kitEntity({
+    key: 'obe-statements',
+    module: 'obe',
+    table: programOutcomes,
+    subjectType: 'program_outcome',
+    roles: { read: MANAGE, write: ADMIN },
+    title: 'code',
+    label: (r) => `${String(r.program ?? '')} ${String(r.code ?? '')}`.trim(),
+    fields: {
+      programId: { label: 'Programme', kind: 'ref', column: programOutcomes.programId, options: programOptions, required: true, filter: true, edit: false },
+      kind: { label: 'Kind', kind: 'select', column: programOutcomes.kind, options: choices([...STATEMENT_KINDS], { vision: 'Vision', mission: 'Mission', peo: 'PEO', po: 'PO', pso: 'PSO' }), required: true, filter: true, edit: false },
+      code: { label: 'Code', kind: 'text', column: programOutcomes.code, required: true, max: 16, example: 'PO1' },
+      statement: { label: 'Statement', kind: 'textarea', column: programOutcomes.statement, required: true, max: 1000 },
+      ord: { label: 'Order', kind: 'number', column: programOutcomes.ord, min: 0, max: 200, int: true, bulk: true, example: '1' },
+    },
+    extra: {
+      program: sql<string>`(select p.name from programs p where p.id = ${programOutcomes.programId})`,
+      mapped: sql<number>`(select count(*)::int from co_outcome_map m join course_outcomes c on c.id = m.co_id join co_sets cs on cs.id = c.co_set_id where m.outcome_id = "program_outcomes"."id" and cs.status = 'active')`,
+    },
+    search: [programOutcomes.code, programOutcomes.statement],
+    defaultSort: { id: 'kind', dir: 'asc' },
+    importKey: ['programId', 'kind', 'code'],
+    remove: {
+      guard: async (ctx, id) => {
+        const [m] = await ctx.tx.select({ n: sql<number>`count(*)::int` }).from(coOutcomeMap).where(eq(coOutcomeMap.outcomeId, id));
+        if (m.n > 0) return `Course outcomes are mapped to this statement (${m.n} mappings); remove them from the course articulation matrices first`;
+        const [pm] = (await ctx.tx.execute<{ n: number }>(sql`select count(*)::int as n from peo_mission_map where peo_id = ${id}::uuid or mission_id = ${id}::uuid`)).rows;
+        return pm && pm.n > 0 ? 'This statement is in the PEO-mission matrix; clear it there first' : null;
+      },
+    },
+    validate: async (ctx, id) => {
+      const r = await rowOf(ctx, programOutcomes, id);
+      const code = String(r.code ?? '').trim().toUpperCase();
+      if (!/^[A-Z0-9][A-Z0-9 .-]{0,15}$/.test(code)) return 'Use a short code such as PO1, PSO2 or PEO3';
+      if (code !== r.code) await ctx.tx.update(programOutcomes).set({ code }).where(eq(programOutcomes.id, id));
+      if (String(r.statement ?? '').trim().length < 3) return 'Write the statement';
+      if (!r.ord) {
+        const digits = Number(code.replace(/\D/g, ''));
+        if (digits) await ctx.tx.update(programOutcomes).set({ ord: digits }).where(eq(programOutcomes.id, id));
+      }
+      return null;
+    },
+  });
+}
 
 /**
  * OBE improvement actions (the CQI loop) as a record kit list across programmes: owner, due date and status in bulk,
@@ -45,6 +120,8 @@ export function obeActionsEntity() {
       remeasureOn: { label: 'Re-measure on', kind: 'date', column: improvementActions.remeasureOn, create: false },
       remeasuredValue: { label: 'Attainment after', kind: 'number', column: improvementActions.remeasuredValue, min: 0, max: 100, create: false },
       remeasureNote: { label: 'Re-measurement note', kind: 'textarea', column: improvementActions.remeasureNote, max: 2000, create: false },
+      verifiedAt: { label: 'Verified on', kind: 'datetime', column: improvementActions.verifiedAt, create: false, edit: false, noImport: true },
+      verifyNote: { label: 'Verification note', kind: 'textarea', column: improvementActions.verifyNote, max: 1000, create: false, edit: false, noImport: true },
       programId: { label: 'Programme', kind: 'ref', column: improvementActions.programId, options: programOptions, create: false, edit: false, filter: true, noImport: true },
       academicYearId: { label: 'Year of the gap', kind: 'ref', column: improvementActions.academicYearId, options: yearOptions, create: false, edit: false, filter: true, noImport: true },
     },
@@ -55,14 +132,31 @@ export function obeActionsEntity() {
       year: sql<string | null>`(select y.label from academic_years y where y.id = ${improvementActions.academicYearId})`,
       evidence: sql<number>`(select count(*)::int from obe_evidence e where e.scope = 'action' and e.target_id = "improvement_actions"."id")`,
       closed: sql<boolean>`${improvementActions.remeasuredValue} is not null and ${improvementActions.targetValue} is not null and ${improvementActions.remeasuredValue} >= ${improvementActions.targetValue}`,
+      verifiedByName: sql<string | null>`(select u.full_name from users u where u.id = ${improvementActions.verifiedBy})`,
+      /** Where the action is in its loop: identified, assigned, in progress, evidence added, done, verified. */
+      stage: sql<string>`case when ${improvementActions.verifiedAt} is not null then 'verified' when ${improvementActions.status} = 'done' then 'done' when exists (select 1 from obe_evidence e where e.scope = 'action' and e.target_id = "improvement_actions"."id") or ${improvementActions.actionTaken} is not null then 'evidence' when ${improvementActions.status} = 'in_progress' then 'in_progress' when ${improvementActions.ownerId} is not null then 'assigned' else 'identified' end`,
     },
-    filters: { overdue: { label: 'Overdue', options: choices(['yes']), where: (v) => (v === 'yes' ? sql`${improvementActions.status} <> 'done' and ${improvementActions.dueOn} < current_date` : undefined) } },
+    filters: {
+      overdue: { label: 'Overdue', options: choices(['yes']), where: (v) => (v === 'yes' ? sql`${improvementActions.status} <> 'done' and ${improvementActions.dueOn} < current_date` : undefined) },
+      verified: { label: 'Verified', options: choices(['yes', 'no', 'waiting']), where: (v) => (v === 'yes' ? sql`${improvementActions.verifiedAt} is not null` : v === 'no' ? sql`${improvementActions.verifiedAt} is null` : v === 'waiting' ? sql`${improvementActions.verifiedAt} is null and ${improvementActions.status} = 'done'` : undefined) },
+    },
+    actions: {
+      verify: {
+        label: 'Verify the action taken',
+        roles: ADMIN,
+        params: VerifyParams,
+        inputs: [{ key: 'note', label: 'Verification note', type: 'textarea' }],
+        apply: async (ctx, id, params) => verifyAction(ctx, id, (params as z.infer<typeof VerifyParams> | undefined)?.note),
+      },
+    },
     search: [improvementActions.title, improvementActions.code, improvementActions.detail, improvementActions.rootCause, improvementActions.actionTaken],
     defaultSort: { id: 'dueOn', dir: 'asc' },
     noImport: true,
     validate: async (ctx, id) => {
       const r = await rowOf(ctx, improvementActions, id);
       if (r.status === 'done' && (await qualitySettings(ctx.tx, ctx.p.tenantId, 'obe')).rules.requireRootCause && !String(r.rootCause ?? '').trim()) return 'Record the root cause before closing this action';
+      // Reopening a verified action withdraws the verification.
+      if (r.status !== 'done' && r.verifiedAt) await ctx.tx.update(improvementActions).set({ verifiedAt: null, verifiedBy: null, verifyNote: null }).where(eq(improvementActions.id, id));
       if (r.remeasuredValue !== null && r.remeasuredValue !== undefined && !r.remeasuredAt) await ctx.tx.update(improvementActions).set({ remeasuredAt: new Date() }).where(eq(improvementActions.id, id));
       const done = r.status === 'done';
       if (done !== !!r.closedAt) await ctx.tx.update(improvementActions).set({ closedAt: done ? new Date() : null }).where(eq(improvementActions.id, id));
@@ -239,5 +333,6 @@ export class ObeRecords implements OnModuleInit {
     this.registry.register(obeAssignmentsEntity());
     this.registry.register(obeInstrumentsEntity());
     this.registry.register(obeCosEntity());
+    this.registry.register(obeStatementsEntity());
   }
 }

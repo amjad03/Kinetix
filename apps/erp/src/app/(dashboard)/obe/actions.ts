@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
-import type { AttainmentConfig, OutcomeKind } from '@/lib/obe';
+import type { AttainmentConfig } from '@/lib/obe';
 import type { ActionResult } from '@/lib/types';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,14 +17,6 @@ async function call<T>(method: 'POST' | 'PUT' | 'DELETE', path: string, body: un
   return res;
 }
 
-export async function addOutcome(programId: string, input: { kind: OutcomeKind; code: string; statement: string }) {
-  if (!UUID.test(programId) || !input.code.trim() || input.statement.trim().length < 3) return bad('obe.err.outcome');
-  return call('POST', `/v1/obe/programs/${programId}/outcomes`, { ...input, code: input.code.trim(), statement: input.statement.trim() }, ['/obe/setup', '/obe/matrix']);
-}
-export async function removeOutcome(id: string) {
-  if (!UUID.test(id)) return bad('obe.err.outcome');
-  return call('DELETE', `/v1/obe/outcomes/${id}`, undefined, ['/obe/setup', '/obe/matrix']);
-}
 export async function saveConfig(programId: string, c: AttainmentConfig) {
   if (!UUID.test(programId)) return bad('obe.err.config');
   return call('PUT', `/v1/obe/programs/${programId}/config`, c, ['/obe/setup', '/obe']);

@@ -1,13 +1,16 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { looksLikeXlsx, readXlsx, writeWorkbook } from '../common/xlsx.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { obeTargets, peoMissionMap, programOutcomeVersions } from '../db/schema-obe-depth.js';
-import { academicYears, programs, assessmentCoMap, assessments, attainmentSnapshots, coOutcomeMap, coSets, courseOutcomes, improvementActions, marks, programOutcomes, sections, students, subjects } from '../db/schema.js';
+import { academicYears, programs, users, assessmentCoMap, assessments, attainmentSnapshots, coOutcomeMap, coSets, courseOutcomes, improvementActions, marks, programOutcomes, sections, students, subjects } from '../db/schema.js';
 import { levelFor } from './attainment.js';
 import { checkCo } from './bloom.js';
 import { ObeService } from './obe.service.js';
@@ -22,6 +25,7 @@ const TargetsBody = z.object({
   academicYearId: z.uuid(),
   targets: z.array(z.object({ targetId: z.uuid(), targetLevel: z.number().min(0).max(10).nullable(), thresholdPercent: z.number().gt(0).max(100).nullish(), rationale: z.string().trim().max(500).optional() })).max(2000),
 });
+type TargetInput = z.infer<typeof TargetsBody>['targets'][number];
 const CopyTargetsBody = z.object({ fromYearId: z.uuid(), toYearId: z.uuid() });
 const GapsBody = z.object({ academicYearId: z.uuid(), dueOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() });
 const CheckBody = z.object({ statement: z.string().trim().min(1).max(1000), bloomLevel: z.string().trim().max(40).optional() });
@@ -138,12 +142,12 @@ export class ObeDepthController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const cfg = await this.obe.config(tx, programId);
       const items = await this.outcomeItems(tx, programId);
-      const own = new Map((await tx.select().from(obeTargets).where(and(eq(obeTargets.programId, programId), eq(obeTargets.academicYearId, academicYearId)))).map((t) => [t.targetId, t]));
+      const own = new Map((await tx.select({ t: obeTargets, by: users.fullName }).from(obeTargets).leftJoin(users, eq(users.id, obeTargets.setBy)).where(and(eq(obeTargets.programId, programId), eq(obeTargets.academicYearId, academicYearId)))).map((r) => [r.t.targetId, { ...r.t, setByName: r.by }]));
       return {
         defaultLevel: cfg.targetLevel,
         defaultThreshold: cfg.studentThresholdPercent,
         maxLevel: cfg.maxLevel,
-        rows: items.map((i) => ({ ...i, targetLevel: own.get(i.targetId)?.targetLevel ?? null, thresholdPercent: own.get(i.targetId)?.thresholdPercent ?? null, rationale: own.get(i.targetId)?.rationale ?? '' })),
+        rows: items.map((i) => ({ ...i, targetLevel: own.get(i.targetId)?.targetLevel ?? null, thresholdPercent: own.get(i.targetId)?.thresholdPercent ?? null, rationale: own.get(i.targetId)?.rationale ?? '', setBy: own.get(i.targetId)?.setByName ?? null, updatedAt: own.get(i.targetId)?.updatedAt ?? null })),
       };
     });
   }
@@ -152,28 +156,77 @@ export class ObeDepthController {
   @Put('programs/:programId/targets')
   @Auth('user', MANAGE)
   setTargets(@CurrentPrincipal() p: UserPrincipal, @Param('programId', ParseUUIDPipe) programId: string, @Body(new ZodBody(TargetsBody)) body: z.infer<typeof TargetsBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.applyTargets(tx, p, programId, body.academicYearId, body.targets));
+  }
+
+  /** Sets targets of a year (shared by the grid and the Excel sheet); a null level removes the outcome's own target. */
+  private async applyTargets(tx: Tx, p: UserPrincipal, programId: string, academicYearId: string, targets: TargetInput[]) {
+    const cfg = await this.obe.config(tx, programId);
+    const items = new Map((await this.outcomeItems(tx, programId)).map((i) => [i.targetId, i]));
+    let set = 0;
+    let cleared = 0;
+    for (const t of targets) {
+      const item = items.get(t.targetId);
+      if (!item) throw new BadRequestException('A target is for an outcome of another programme');
+      if (t.targetLevel !== null && t.targetLevel > cfg.maxLevel) throw new BadRequestException(`A target cannot be above level ${cfg.maxLevel}`);
+      if (t.thresholdPercent && item.scope !== 'co') throw new BadRequestException('A student threshold applies to course outcomes only');
+      if (t.targetLevel === null) {
+        cleared += (await tx.delete(obeTargets).where(and(eq(obeTargets.academicYearId, academicYearId), eq(obeTargets.targetId, t.targetId))).returning({ id: obeTargets.id })).length;
+        continue;
+      }
+      await tx
+        .insert(obeTargets)
+        .values({ tenantId: p.tenantId, programId, academicYearId, scope: item.scope, targetId: t.targetId, code: item.code, targetLevel: t.targetLevel, thresholdPercent: t.thresholdPercent ?? null, rationale: t.rationale || null, setBy: p.userId })
+        .onConflictDoUpdate({ target: [obeTargets.academicYearId, obeTargets.targetId], set: { targetLevel: t.targetLevel, thresholdPercent: t.thresholdPercent ?? null, rationale: t.rationale || null, setBy: p.userId, updatedAt: new Date() } });
+      set++;
+    }
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.targets.set', subjectType: 'program', subjectId: programId, data: { academicYearId, set, cleared } });
+    return { set, cleared };
+  }
+
+  /** The year's targets as an Excel sheet: one row per CO and PO/PSO, the target columns blank where the default applies. */
+  @Get('programs/:programId/targets.xlsx')
+  @Auth('user', MANAGE)
+  async targetsSheet(@CurrentPrincipal() p: UserPrincipal, @Param('programId', ParseUUIDPipe) programId: string, @Query('academicYearId', ParseUUIDPipe) academicYearId: string, @Res() res: Response) {
+    const file = await this.db.withTenant(p.tenantId, async (tx) => {
+      const prog = await this.obe.program(tx, programId);
+      const [yr] = await tx.select({ label: academicYears.label }).from(academicYears).where(eq(academicYears.id, academicYearId));
+      if (!yr) throw new NotFoundException('Academic year not found');
+      const cfg = await this.obe.config(tx, programId);
+      const items = await this.outcomeItems(tx, programId);
+      const own = new Map((await tx.select().from(obeTargets).where(and(eq(obeTargets.programId, programId), eq(obeTargets.academicYearId, academicYearId)))).map((t) => [t.targetId, t]));
+      const rows: (string | number | null)[][] = [[...TARGET_HEADER], ...items.map((i) => [i.code, i.scope === 'co' ? 'CO' : 'PO/PSO', i.subject ?? '', i.statement, own.get(i.targetId)?.targetLevel ?? null, own.get(i.targetId)?.thresholdPercent ?? null, own.get(i.targetId)?.rationale ?? ''])];
+      return writeWorkbook([
+        { name: 'Targets', header: true, rows, widths: [16, 9, 28, 60, 12, 16, 40] },
+        { name: 'How to fill', rows: [[`${prog.name}, ${yr.label}. Levels run from 0 to ${cfg.maxLevel}; leave a level blank to use the programme default (level ${cfg.targetLevel}).`], [`The student threshold (course outcomes only) is a percentage; blank uses the rule's ${cfg.studentThresholdPercent}%.`], ['Do not change the codes in the first column. Upload the sheet on the Targets page; it is checked before anything is saved.']], widths: [110] },
+      ]);
+    });
+    res.setHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('content-disposition', 'attachment; filename="obe-targets.xlsx"');
+    res.end(file);
+  }
+
+  /** Reads a filled targets sheet. With `check=true` nothing is saved; otherwise it is saved only when it has no errors. */
+  @Post('programs/:programId/targets.xlsx')
+  @HttpCode(200)
+  @Auth('user', MANAGE)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 4 * 1024 * 1024, files: 1 } }))
+  uploadTargets(@CurrentPrincipal() p: UserPrincipal, @Param('programId', ParseUUIDPipe) programId: string, @Query('academicYearId', ParseUUIDPipe) academicYearId: string, @UploadedFile() file?: { buffer: Buffer }, @Query('check') check?: string) {
+    if (!file?.buffer?.length) throw new BadRequestException('Choose the targets sheet');
+    if (!looksLikeXlsx(file.buffer)) throw new BadRequestException('Upload the Excel (.xlsx) targets sheet');
+    let sheet: string[][];
+    try {
+      sheet = readXlsx(file.buffer);
+    } catch {
+      throw new BadRequestException('The file could not be read as an Excel sheet');
+    }
     return this.db.withTenant(p.tenantId, async (tx) => {
       const cfg = await this.obe.config(tx, programId);
-      const items = new Map((await this.outcomeItems(tx, programId)).map((i) => [i.targetId, i]));
-      let set = 0;
-      let cleared = 0;
-      for (const t of body.targets) {
-        const item = items.get(t.targetId);
-        if (!item) throw new BadRequestException('A target is for an outcome of another programme');
-        if (t.targetLevel !== null && t.targetLevel > cfg.maxLevel) throw new BadRequestException(`A target cannot be above level ${cfg.maxLevel}`);
-        if (t.thresholdPercent && item.scope !== 'co') throw new BadRequestException('A student threshold applies to course outcomes only');
-        if (t.targetLevel === null) {
-          cleared += (await tx.delete(obeTargets).where(and(eq(obeTargets.academicYearId, body.academicYearId), eq(obeTargets.targetId, t.targetId))).returning({ id: obeTargets.id })).length;
-          continue;
-        }
-        await tx
-          .insert(obeTargets)
-          .values({ tenantId: p.tenantId, programId, academicYearId: body.academicYearId, scope: item.scope, targetId: t.targetId, code: item.code, targetLevel: t.targetLevel, thresholdPercent: t.thresholdPercent ?? null, rationale: t.rationale || null, setBy: p.userId })
-          .onConflictDoUpdate({ target: [obeTargets.academicYearId, obeTargets.targetId], set: { targetLevel: t.targetLevel, thresholdPercent: t.thresholdPercent ?? null, rationale: t.rationale || null, setBy: p.userId, updatedAt: new Date() } });
-        set++;
-      }
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.targets.set', subjectType: 'program', subjectId: programId, data: { academicYearId: body.academicYearId, set, cleared } });
-      return { set, cleared };
+      const items = await this.outcomeItems(tx, programId);
+      const { targets, errors } = parseTargetsSheet(sheet, items, cfg.maxLevel);
+      if (errors.length || check === 'true') return { saved: false, rows: targets.length, errors };
+      const res = await this.applyTargets(tx, p, programId, academicYearId, targets);
+      return { saved: true, rows: targets.length, errors, ...res };
     });
   }
 
@@ -369,4 +422,39 @@ function diff(before: { kind: string; code: string; statement: string }[], after
     removed: before.filter((s) => !now.has(key(s))),
     changed: after.filter((s) => was.has(key(s)) && was.get(key(s))!.statement !== s.statement).map((s) => ({ ...s, before: was.get(key(s))!.statement })),
   };
+}
+
+export const TARGET_HEADER = ['Code', 'Kind', 'Course', 'Statement', 'Target level', 'Student threshold %', 'Rationale'] as const;
+
+/**
+ * Reads the targets sheet: rows are matched by code; a blank level clears the outcome's own target. Unknown codes, levels
+ * outside the scale and thresholds on POs are reported by row.
+ */
+export function parseTargetsSheet(rows: string[][], items: { scope: 'co' | 'po'; targetId: string; code: string }[], maxLevel: number): { targets: TargetInput[]; errors: { row: number; message: string }[] } {
+  const errors: { row: number; message: string }[] = [];
+  const targets: TargetInput[] = [];
+  const head = (rows[0] ?? []).map((h) => String(h ?? '').trim().toLowerCase());
+  const col = (name: string) => head.indexOf(name.toLowerCase());
+  const [cCode, cLevel, cThr, cWhy] = [col('Code'), col('Target level'), col('Student threshold %'), col('Rationale')];
+  if (cCode < 0 || cLevel < 0) return { targets, errors: [{ row: 1, message: 'Use the downloaded sheet: the Code and Target level columns are missing' }] };
+  const byCode = new Map(items.map((i) => [i.code.toUpperCase(), i]));
+  const seen = new Set<string>();
+  rows.slice(1).forEach((r, i) => {
+    const n = i + 2;
+    const code = String(r[cCode] ?? '').trim();
+    if (!code) return;
+    const item = byCode.get(code.toUpperCase());
+    if (!item) return void errors.push({ row: n, message: `${code}: no such course outcome or PO in this programme` });
+    if (seen.has(item.targetId)) return void errors.push({ row: n, message: `${code} appears twice` });
+    seen.add(item.targetId);
+    const num = (v: unknown) => (String(v ?? '').trim() === '' ? null : Number(String(v).trim()));
+    const level = num(r[cLevel]);
+    const thr = cThr >= 0 ? num(r[cThr]) : null;
+    if (level !== null && (Number.isNaN(level) || level < 0 || level > maxLevel)) return void errors.push({ row: n, message: `${code}: the target level must be between 0 and ${maxLevel}` });
+    if (thr !== null && (Number.isNaN(thr) || thr <= 0 || thr > 100)) return void errors.push({ row: n, message: `${code}: the threshold must be a percentage` });
+    if (thr !== null && item.scope !== 'co') return void errors.push({ row: n, message: `${code}: a student threshold applies to course outcomes only` });
+    if (level === null && thr !== null) return void errors.push({ row: n, message: `${code}: give the target level with the threshold` });
+    targets.push({ targetId: item.targetId, targetLevel: level, thresholdPercent: thr, rationale: cWhy >= 0 ? String(r[cWhy] ?? '').trim().slice(0, 500) : undefined });
+  });
+  return { targets, errors };
 }

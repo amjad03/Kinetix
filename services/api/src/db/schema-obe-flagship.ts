@@ -10,6 +10,9 @@ const pk = () => uuid('id').primaryKey().default(sql`gen_random_uuid()`);
 const created = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 const level = (name: string) => numeric(name, { precision: 5, scale: 2, mode: 'number' });
 
+export const QUESTION_DIFFICULTY = ['easy', 'medium', 'hard'] as const;
+export type QuestionDifficulty = (typeof QUESTION_DIFFICULTY)[number];
+
 /** One question (or part) of an assessment's paper: its number, maximum marks and Bloom level. */
 export const assessmentQuestions = pgTable(
   'assessment_questions',
@@ -23,6 +26,8 @@ export const assessmentQuestions = pgTable(
     part: text('part').notNull().default(''),
     maxMarks: numeric('max_marks', { precision: 6, scale: 2, mode: 'number' }).notNull(),
     bloomLevel: text('bloom_level'),
+    /** easy, medium or hard (the question bank's scale; migration 0185). */
+    difficulty: text('difficulty').$type<QuestionDifficulty>(),
     ord: smallint('ord').notNull().default(0),
     createdAt: created(),
   },

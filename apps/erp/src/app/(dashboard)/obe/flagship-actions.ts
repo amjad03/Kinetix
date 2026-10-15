@@ -56,8 +56,8 @@ export async function activateDirectly(setId: string) {
 
 // ---- question papers and question-wise marks -----------------------------------------------------------------------
 
-export async function savePaper(assessmentId: string, questions: { no: string; part: string; maxMarks: number; bloomLevel: string | null; cos: { coId: string; weight: number }[] }[]) {
-  if (!ok(assessmentId) || questions.some((q) => !q.no.trim() || !(q.maxMarks > 0) || q.cos.some((c) => !UUID.test(c.coId)))) return bad();
+export async function savePaper(assessmentId: string, questions: { no: string; part: string; maxMarks: number; bloomLevel: string | null; difficulty?: 'easy' | 'medium' | 'hard' | null; cos: { coId: string; weight: number }[] }[]) {
+  if (!ok(assessmentId) || questions.some((q) => !q.no.trim() || !(q.maxMarks > 0) || q.cos.some((c) => !UUID.test(c.coId)) || (q.difficulty && !['easy', 'medium', 'hard'].includes(q.difficulty)))) return bad();
   return call<Paper>('PUT', `/v1/obe/assessments/${assessmentId}/questions`, { questions: questions.map((q) => ({ ...q, no: q.no.trim(), part: q.part.trim(), bloomLevel: q.bloomLevel || null })) }, ['/obe/assessments/[id]']);
 }
 export async function copyPaper(assessmentId: string, from: { fromAssessmentId?: string; qbPaperId?: string }) {
@@ -74,6 +74,16 @@ export async function uploadMarksSheet(assessmentId: string, form: FormData) {
   const check = form.get('check') === 'true';
   const res = await act(() => api<{ saved: boolean; rows: number; errors: { row: number; message: string }[] }>(`/v1/obe/assessments/${assessmentId}/question-marks.xlsx${check ? '?check=true' : ''}`, { method: 'POST', form, timeoutMs: 60_000 }));
   if (res.ok && res.data.saved) revalidatePath('/obe/assessments/[id]', 'page');
+  return res;
+}
+
+/** Checks (or, with check=false, saves) a filled targets sheet for a programme and year. */
+export async function uploadTargetsSheet(programId: string, academicYearId: string, form: FormData) {
+  const file = form.get('file');
+  if (!ok(programId, academicYearId) || !(file instanceof File) || file.size === 0) return bad();
+  const check = form.get('check') === 'true';
+  const res = await act(() => api<{ saved: boolean; rows: number; errors: { row: number; message: string }[] }>(`/v1/obe/programs/${programId}/targets.xlsx?academicYearId=${academicYearId}${check ? '&check=true' : ''}`, { method: 'POST', form, timeoutMs: 60_000 }));
+  if (res.ok && res.data.saved) revalidatePath('/obe/targets', 'page');
   return res;
 }
 

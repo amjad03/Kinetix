@@ -140,6 +140,9 @@ export interface TargetRow {
   targetLevel: number | null;
   thresholdPercent: number | null;
   rationale: string;
+  /** Who set this year's target and when (null while the default applies). */
+  setBy?: string | null;
+  updatedAt?: string | null;
 }
 export interface Targets {
   defaultLevel: number;
