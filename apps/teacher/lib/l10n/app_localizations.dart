@@ -7430,6 +7430,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This step is for another reviewer; you can still comment.'**
   String get obeNotYourStep;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper setting and unlocks'**
+  String get qpTitle;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Papers you set or moderate, and your requests to unlock marks'**
+  String get qpBody;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper setting appointments'**
+  String get qpAppointments;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'No paper setting appointments'**
+  String get qpEmpty;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Setter'**
+  String get qpSetter;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderator'**
+  String get qpModerator;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Due on {date}'**
+  String qpDue(String date);
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'{made} of {required} sets made'**
+  String qpSets(String made, String required);
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets waiting for your scrutiny: {n}'**
+  String qpToModerate(String n);
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Remuneration ₹{amount}'**
+  String qpFee(String amount);
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get qpAccept;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get qpDecline;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Why do you decline?'**
+  String get qpDeclineWhy;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment accepted'**
+  String get qpAccepted;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment declined; the exam office is told'**
+  String get qpDeclined;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your answer'**
+  String get qpWaiting;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get qpAcceptedState;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Build the sets from the question bank in the ERP for this session.'**
+  String get qpSetHint;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'My unlock requests'**
+  String get unlockTitle;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'No unlock requests'**
+  String get unlockNone;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask to unlock marks'**
+  String get unlockAsk;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Why do the marks need to change?'**
+  String get unlockWhy;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to the head of department'**
+  String get unlockSent;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get unlockWithdraw;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get unlockPending;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get unlockApproved;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Turned down'**
+  String get unlockRejected;
+
+  /// Question paper setting and marks unlock requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get unlockCancelled;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

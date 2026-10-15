@@ -3399,4 +3399,81 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get mnPrivacy => 'ये परिवार के लिए मार्गदर्शक के सारांश हैं। निजी टिप्पणियाँ मार्गदर्शक के पास ही रहती हैं।';
+
+  @override
+  String get examAppTitle => 'परीक्षा आवेदन';
+
+  @override
+  String get examAppOpen => 'परीक्षा आवेदन और शुल्क';
+
+  @override
+  String get examAppNone => 'अभी किसी परीक्षा के लिए आवेदन खुले नहीं हैं।';
+
+  @override
+  String examAppCloses(String date) {
+    return 'आवेदन $date को बंद होंगे';
+  }
+
+  @override
+  String get examAppStateOpen => 'खुला';
+
+  @override
+  String get examAppStateLate => 'विलंब शुल्क लगेगा';
+
+  @override
+  String get examAppStateUpcoming => 'अभी नहीं खुला';
+
+  @override
+  String get examAppStateClosed => 'बंद';
+
+  @override
+  String get examAppKindRegular => 'इस सत्र का';
+
+  @override
+  String get examAppKindBacklog => 'बैकलॉग';
+
+  @override
+  String get examAppKindImprovement => 'सुधार';
+
+  @override
+  String get examAppHeld => 'रोका गया';
+
+  @override
+  String examAppFee(String amount) {
+    return 'परीक्षा शुल्क ₹$amount';
+  }
+
+  @override
+  String get examAppSubmit => 'आवेदन जमा करें';
+
+  @override
+  String get examAppUpdate => 'बदलाव सहेजें';
+
+  @override
+  String get examAppSent => 'आवेदन सहेजा गया। प्रवेश पत्र के लिए शुल्क में परीक्षा शुल्क जमा करें।';
+
+  @override
+  String examAppNo(String no) {
+    return 'आवेदन $no';
+  }
+
+  @override
+  String get examAppFeeDue => 'शुल्क बकाया';
+
+  @override
+  String get examAppFeePaid => 'शुल्क जमा';
+
+  @override
+  String get examAppFeeWaived => 'शुल्क माफ़';
+
+  @override
+  String examAppInvoice(String no) {
+    return 'बिल $no';
+  }
+
+  @override
+  String get examAppRegistered => 'पंजीकृत';
+
+  @override
+  String get examAppIneligible => 'पात्र नहीं';
 }

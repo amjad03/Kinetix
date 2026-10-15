@@ -11,6 +11,7 @@ import 'package:flutter/painting.dart';
 import 'package:zynetix_lesson/zynetix_lesson.dart';
 import '../core/academics_models.dart';
 import '../core/api.dart';
+import '../core/exam_work_models.dart';
 import '../core/course_file_models.dart';
 import '../core/desk_models.dart';
 import '../core/evidence_models.dart';
@@ -1117,6 +1118,42 @@ class FakeTeacherApi implements TeacherApi {
 
   @override
   Future<List<InvigilationDuty>> myInvigilation() async => dutyList;
+
+  List<QpAppointment> qpAppointments = [
+    QpAppointment.fromJson({'id': 'qp1', 'role': 'setter', 'status': 'appointed', 'setsRequired': 2, 'dueOn': '2026-10-25', 'session': 'BCom Semester 3: Supplementary Examination, January 2027', 'code': 'BCM-303', 'subject': 'Company Law', 'setsMade': 0, 'toModerate': 0, 'remunerationPaise': 150000}),
+    QpAppointment.fromJson({'id': 'qp2', 'role': 'moderator', 'status': 'accepted', 'setsRequired': 0, 'dueOn': '2026-10-30', 'session': 'BCom Semester 3: Supplementary Examination, January 2027', 'code': 'BCM-302', 'subject': 'Cost Accounting', 'setsMade': 0, 'toModerate': 1, 'remunerationPaise': 75000}),
+  ];
+  List<UnlockRequest> unlockRequests = [
+    UnlockRequest.fromJson({'id': 'ur1', 'assessment': 'Internal test 2 (unit 3 and 4)', 'section': 'BCom Sem 5 A', 'code': 'BCM-501', 'reason': 'Two scripts were totalled wrongly', 'status': 'pending', 'mine': true}),
+  ];
+
+  @override
+  Future<List<QpAppointment>> myQpAppointments() async {
+    calls.add('myQpAppointments');
+    return qpAppointments;
+  }
+
+  @override
+  Future<void> respondQpAppointment(String id, {required bool accept, String? note}) async {
+    calls.add('respondQp $id $accept${note == null ? '' : ' $note'}');
+    qpAppointments = [for (final a in qpAppointments) a.id == id ? QpAppointment(id: a.id, role: a.role, status: accept ? 'accepted' : 'declined', setsRequired: a.setsRequired, dueOn: a.dueOn, session: a.session, code: a.code, subject: a.subject, setsMade: a.setsMade, toModerate: a.toModerate, remunerationPaise: a.remunerationPaise, note: note) : a]
+        .where((a) => a.status != 'declined')
+        .toList();
+  }
+
+  @override
+  Future<void> askMarksUnlock(String assessmentId, String reason) async {
+    calls.add('askMarksUnlock $assessmentId $reason');
+  }
+
+  @override
+  Future<List<UnlockRequest>> myUnlockRequests() async => unlockRequests;
+
+  @override
+  Future<void> cancelUnlockRequest(String id) async {
+    calls.add('cancelUnlock $id');
+    unlockRequests = [for (final r in unlockRequests) if (r.id != id) r];
+  }
 
   List<EvalAllocation> evalList = [];
   EvalScript? evalScriptData;

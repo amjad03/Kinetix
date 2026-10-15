@@ -4105,4 +4105,96 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get obeNotYourStep => 'ಈ ಹಂತ ಬೇರೆ ಪರಿಶೀಲಕರದು; ನೀವು ಟಿಪ್ಪಣಿ ಮಾಡಬಹುದು.';
+
+  @override
+  String get qpTitle => 'ಪ್ರಶ್ನೆಪತ್ರಿಕೆ ತಯಾರಿ ಮತ್ತು ಅನ್‌ಲಾಕ್';
+
+  @override
+  String get qpBody => 'ನೀವು ತಯಾರಿಸುವ ಅಥವಾ ಪರಿಶೀಲಿಸುವ ಪತ್ರಿಕೆಗಳು, ಮತ್ತು ಅಂಕ ಅನ್‌ಲಾಕ್ ವಿನಂತಿಗಳು';
+
+  @override
+  String get qpAppointments => 'ಪ್ರಶ್ನೆಪತ್ರಿಕೆ ತಯಾರಿ ನೇಮಕಗಳು';
+
+  @override
+  String get qpEmpty => 'ಪ್ರಶ್ನೆಪತ್ರಿಕೆ ತಯಾರಿ ನೇಮಕಗಳಿಲ್ಲ';
+
+  @override
+  String get qpSetter => 'ತಯಾರಕರು';
+
+  @override
+  String get qpModerator => 'ಪರಿಶೀಲಕರು';
+
+  @override
+  String qpDue(String date) {
+    return 'ಅಂತಿಮ ದಿನಾಂಕ $date';
+  }
+
+  @override
+  String qpSets(String made, String required) {
+    return '$required ರಲ್ಲಿ $made ಸೆಟ್ ತಯಾರಾಗಿದೆ';
+  }
+
+  @override
+  String qpToModerate(String n) {
+    return 'ನಿಮ್ಮ ಪರಿಶೀಲನೆಗೆ ಕಾಯುತ್ತಿರುವ ಸೆಟ್‌ಗಳು: $n';
+  }
+
+  @override
+  String qpFee(String amount) {
+    return 'ಸಂಭಾವನೆ ₹$amount';
+  }
+
+  @override
+  String get qpAccept => 'ಒಪ್ಪಿಕೊಳ್ಳಿ';
+
+  @override
+  String get qpDecline => 'ನಿರಾಕರಿಸಿ';
+
+  @override
+  String get qpDeclineWhy => 'ನೀವು ಏಕೆ ನಿರಾಕರಿಸುತ್ತೀರಿ?';
+
+  @override
+  String get qpAccepted => 'ನೇಮಕ ಒಪ್ಪಲಾಗಿದೆ';
+
+  @override
+  String get qpDeclined => 'ನೇಮಕ ನಿರಾಕರಿಸಲಾಗಿದೆ; ಪರೀಕ್ಷಾ ಕಚೇರಿಗೆ ತಿಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get qpWaiting => 'ನಿಮ್ಮ ಉತ್ತರಕ್ಕಾಗಿ ಕಾಯುತ್ತಿದೆ';
+
+  @override
+  String get qpAcceptedState => 'ಒಪ್ಪಲಾಗಿದೆ';
+
+  @override
+  String get qpSetHint => 'ಈ ಅವಧಿಯ ಸೆಟ್‌ಗಳನ್ನು ಇಆರ್‌ಪಿಯ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್‌ನಿಂದ ತಯಾರಿಸಿ.';
+
+  @override
+  String get unlockTitle => 'ನನ್ನ ಅನ್‌ಲಾಕ್ ವಿನಂತಿಗಳು';
+
+  @override
+  String get unlockNone => 'ಅನ್‌ಲಾಕ್ ವಿನಂತಿಗಳಿಲ್ಲ';
+
+  @override
+  String get unlockAsk => 'ಅಂಕ ಅನ್‌ಲಾಕ್‌ಗೆ ಕೇಳಿ';
+
+  @override
+  String get unlockWhy => 'ಅಂಕಗಳು ಏಕೆ ಬದಲಾಗಬೇಕು?';
+
+  @override
+  String get unlockSent => 'ವಿನಂತಿಯನ್ನು ವಿಭಾಗದ ಮುಖ್ಯಸ್ಥರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ';
+
+  @override
+  String get unlockWithdraw => 'ಹಿಂಪಡೆಯಿರಿ';
+
+  @override
+  String get unlockPending => 'ಕಾಯುತ್ತಿದೆ';
+
+  @override
+  String get unlockApproved => 'ಅನ್‌ಲಾಕ್ ಆಗಿದೆ';
+
+  @override
+  String get unlockRejected => 'ನಿರಾಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get unlockCancelled => 'ಹಿಂಪಡೆಯಲಾಗಿದೆ';
 }

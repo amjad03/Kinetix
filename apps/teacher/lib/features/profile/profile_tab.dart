@@ -24,6 +24,7 @@ import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 import '../work/course_files_screen.dart';
 import '../work/duties_screens.dart';
+import '../work/paper_setting_screen.dart';
 import '../work/evaluation_screens.dart';
 import '../work/houses_curriculum_screens.dart';
 import '../work/mentoring_screens.dart';
@@ -302,6 +303,7 @@ class ProfileTab extends StatelessWidget {
               ('openRequests', Icons.approval_outlined, l.requestsTitle, l.requestsBody, () => RequestsScreen(api: state.api)),
               ('openSubstitutions', Icons.swap_horiz, l.subsTitle, l.subsBody, () => SubstitutionsScreen(api: state.api)),
               ('openDuties', Icons.fact_check_outlined, l.dutiesTitle, l.dutiesBody, () => DutiesScreen(api: state.api)),
+              ('openPaperSetting', Icons.quiz_outlined, l.qpTitle, l.qpBody, () => PaperSettingScreen(api: state.api)),
               ('openEvaluation', Icons.rate_review_outlined, l.evalTitle, l.evalBody, () => EvaluationScreen(api: state.api)),
               ('openMentoring', Icons.diversity_3_outlined, l.mentoringTitle, l.mentoringBody, () => MentoringScreen(api: state.api)),
               ('openCourseRoster', Icons.groups_outlined, l.courseRosterTitle, l.courseRosterBody, () => CourseRosterScreen(api: state.api, userId: me.id)),

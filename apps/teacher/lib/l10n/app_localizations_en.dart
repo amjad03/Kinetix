@@ -4099,4 +4099,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obeNotYourStep => 'This step is for another reviewer; you can still comment.';
+
+  @override
+  String get qpTitle => 'Paper setting and unlocks';
+
+  @override
+  String get qpBody => 'Papers you set or moderate, and your requests to unlock marks';
+
+  @override
+  String get qpAppointments => 'Paper setting appointments';
+
+  @override
+  String get qpEmpty => 'No paper setting appointments';
+
+  @override
+  String get qpSetter => 'Setter';
+
+  @override
+  String get qpModerator => 'Moderator';
+
+  @override
+  String qpDue(String date) {
+    return 'Due on $date';
+  }
+
+  @override
+  String qpSets(String made, String required) {
+    return '$made of $required sets made';
+  }
+
+  @override
+  String qpToModerate(String n) {
+    return 'Sets waiting for your scrutiny: $n';
+  }
+
+  @override
+  String qpFee(String amount) {
+    return 'Remuneration ₹$amount';
+  }
+
+  @override
+  String get qpAccept => 'Accept';
+
+  @override
+  String get qpDecline => 'Decline';
+
+  @override
+  String get qpDeclineWhy => 'Why do you decline?';
+
+  @override
+  String get qpAccepted => 'Appointment accepted';
+
+  @override
+  String get qpDeclined => 'Appointment declined; the exam office is told';
+
+  @override
+  String get qpWaiting => 'Waiting for your answer';
+
+  @override
+  String get qpAcceptedState => 'Accepted';
+
+  @override
+  String get qpSetHint => 'Build the sets from the question bank in the ERP for this session.';
+
+  @override
+  String get unlockTitle => 'My unlock requests';
+
+  @override
+  String get unlockNone => 'No unlock requests';
+
+  @override
+  String get unlockAsk => 'Ask to unlock marks';
+
+  @override
+  String get unlockWhy => 'Why do the marks need to change?';
+
+  @override
+  String get unlockSent => 'Request sent to the head of department';
+
+  @override
+  String get unlockWithdraw => 'Withdraw';
+
+  @override
+  String get unlockPending => 'Waiting';
+
+  @override
+  String get unlockApproved => 'Unlocked';
+
+  @override
+  String get unlockRejected => 'Turned down';
+
+  @override
+  String get unlockCancelled => 'Withdrawn';
 }

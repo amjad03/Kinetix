@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
+import '../work/paper_setting_screen.dart';
 
 /// What the teacher has typed for one student, compared with what is saved.
 class MarkDraft {
@@ -303,6 +304,12 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
             appBar: AppBar(
               title: Text(a.title, maxLines: 1, overflow: TextOverflow.ellipsis),
               actions: [
+                // Submitted or locked marks are reopened only on the head of department's approval.
+                PopupMenuButton<String>(
+                  key: const Key('marksMenu'),
+                  onSelected: (_) => askUnlock(context, widget.api, a.id),
+                  itemBuilder: (context) => [PopupMenuItem(key: const Key('askUnlock'), value: 'unlock', child: Text(context.l10n.unlockAsk))],
+                ),
                 if (ready)
                   Padding(
                     padding: const EdgeInsets.only(right: Kx.s12),

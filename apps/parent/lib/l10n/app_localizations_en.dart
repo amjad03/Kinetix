@@ -3388,4 +3388,81 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mnPrivacy => 'These are the mentor\'s summaries for the family. Private notes stay with the mentor.';
+
+  @override
+  String get examAppTitle => 'Exam applications';
+
+  @override
+  String get examAppOpen => 'Exam applications and fees';
+
+  @override
+  String get examAppNone => 'No examination is open for applications now.';
+
+  @override
+  String examAppCloses(String date) {
+    return 'Applications close on $date';
+  }
+
+  @override
+  String get examAppStateOpen => 'Open';
+
+  @override
+  String get examAppStateLate => 'Late fee applies';
+
+  @override
+  String get examAppStateUpcoming => 'Not open yet';
+
+  @override
+  String get examAppStateClosed => 'Closed';
+
+  @override
+  String get examAppKindRegular => 'This term';
+
+  @override
+  String get examAppKindBacklog => 'Backlog';
+
+  @override
+  String get examAppKindImprovement => 'Improvement';
+
+  @override
+  String get examAppHeld => 'Held back';
+
+  @override
+  String examAppFee(String amount) {
+    return 'Exam fee ₹$amount';
+  }
+
+  @override
+  String get examAppSubmit => 'Submit application';
+
+  @override
+  String get examAppUpdate => 'Save changes';
+
+  @override
+  String get examAppSent => 'Application saved. Pay the exam fee in Fees to get the hall ticket.';
+
+  @override
+  String examAppNo(String no) {
+    return 'Application $no';
+  }
+
+  @override
+  String get examAppFeeDue => 'Fee due';
+
+  @override
+  String get examAppFeePaid => 'Fee paid';
+
+  @override
+  String get examAppFeeWaived => 'Fee waived';
+
+  @override
+  String examAppInvoice(String no) {
+    return 'Invoice $no';
+  }
+
+  @override
+  String get examAppRegistered => 'Registered';
+
+  @override
+  String get examAppIneligible => 'Not eligible';
 }

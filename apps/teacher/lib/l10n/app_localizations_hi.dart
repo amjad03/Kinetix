@@ -4094,4 +4094,96 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get obeNotYourStep => 'यह चरण किसी अन्य समीक्षक का है; आप टिप्पणी कर सकते हैं।';
+
+  @override
+  String get qpTitle => 'प्रश्नपत्र निर्माण और अनलॉक';
+
+  @override
+  String get qpBody => 'आपके द्वारा बनाए या जाँचे जाने वाले प्रश्नपत्र, और अंक अनलॉक के आपके अनुरोध';
+
+  @override
+  String get qpAppointments => 'प्रश्नपत्र निर्माण नियुक्तियाँ';
+
+  @override
+  String get qpEmpty => 'कोई प्रश्नपत्र निर्माण नियुक्ति नहीं';
+
+  @override
+  String get qpSetter => 'प्रश्नपत्र-निर्माता';
+
+  @override
+  String get qpModerator => 'मॉडरेटर';
+
+  @override
+  String qpDue(String date) {
+    return 'नियत तिथि $date';
+  }
+
+  @override
+  String qpSets(String made, String required) {
+    return '$required में से $made सेट बने';
+  }
+
+  @override
+  String qpToModerate(String n) {
+    return 'आपकी जाँच की प्रतीक्षा में सेट: $n';
+  }
+
+  @override
+  String qpFee(String amount) {
+    return 'पारिश्रमिक ₹$amount';
+  }
+
+  @override
+  String get qpAccept => 'स्वीकार करें';
+
+  @override
+  String get qpDecline => 'अस्वीकार करें';
+
+  @override
+  String get qpDeclineWhy => 'आप क्यों अस्वीकार कर रहे हैं?';
+
+  @override
+  String get qpAccepted => 'नियुक्ति स्वीकार की';
+
+  @override
+  String get qpDeclined => 'नियुक्ति अस्वीकार की; परीक्षा कार्यालय को सूचित किया गया';
+
+  @override
+  String get qpWaiting => 'आपके उत्तर की प्रतीक्षा';
+
+  @override
+  String get qpAcceptedState => 'स्वीकार';
+
+  @override
+  String get qpSetHint => 'इस सत्र के सेट ईआरपी के प्रश्न बैंक से बनाएँ।';
+
+  @override
+  String get unlockTitle => 'मेरे अनलॉक अनुरोध';
+
+  @override
+  String get unlockNone => 'कोई अनलॉक अनुरोध नहीं';
+
+  @override
+  String get unlockAsk => 'अंक अनलॉक का अनुरोध करें';
+
+  @override
+  String get unlockWhy => 'अंक क्यों बदलने हैं?';
+
+  @override
+  String get unlockSent => 'अनुरोध विभागाध्यक्ष को भेजा गया';
+
+  @override
+  String get unlockWithdraw => 'वापस लें';
+
+  @override
+  String get unlockPending => 'प्रतीक्षा में';
+
+  @override
+  String get unlockApproved => 'अनलॉक किया';
+
+  @override
+  String get unlockRejected => 'अस्वीकार';
+
+  @override
+  String get unlockCancelled => 'वापस लिया';
 }

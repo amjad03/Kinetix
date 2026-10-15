@@ -5343,4 +5343,93 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get surveyExitProgramme => 'ಕಾರ್ಯಕ್ರಮ ಮುಕ್ತಾಯ ಸಮೀಕ್ಷೆ';
+
+  @override
+  String get examAppTitle => 'ಪರೀಕ್ಷಾ ಅರ್ಜಿಗಳು';
+
+  @override
+  String get examAppOpen => 'ಪರೀಕ್ಷೆಗೆ ಅರ್ಜಿ ಹಾಕಿ';
+
+  @override
+  String get examAppNone => 'ಈಗ ಯಾವುದೇ ಪರೀಕ್ಷೆಗೆ ಅರ್ಜಿ ತೆರೆದಿಲ್ಲ.';
+
+  @override
+  String examAppCloses(String date) {
+    return 'ಅರ್ಜಿಗಳು $date ರಂದು ಮುಚ್ಚುತ್ತವೆ';
+  }
+
+  @override
+  String get examAppStateOpen => 'ತೆರೆದಿದೆ';
+
+  @override
+  String get examAppStateLate => 'ತಡ ಶುಲ್ಕ ಅನ್ವಯಿಸುತ್ತದೆ';
+
+  @override
+  String get examAppStateUpcoming => 'ಇನ್ನೂ ತೆರೆದಿಲ್ಲ';
+
+  @override
+  String get examAppStateClosed => 'ಮುಚ್ಚಿದೆ';
+
+  @override
+  String get examAppKindRegular => 'ಈ ಅವಧಿಯ';
+
+  @override
+  String get examAppKindBacklog => 'ಬ್ಯಾಕ್‌ಲಾಗ್';
+
+  @override
+  String get examAppKindImprovement => 'ಸುಧಾರಣೆ';
+
+  @override
+  String get examAppHeld => 'ತಡೆಹಿಡಿಯಲಾಗಿದೆ';
+
+  @override
+  String examAppFee(String amount) {
+    return 'ಪರೀಕ್ಷಾ ಶುಲ್ಕ ₹$amount';
+  }
+
+  @override
+  String get examAppSubmit => 'ಅರ್ಜಿ ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get examAppUpdate => 'ಬದಲಾವಣೆ ಉಳಿಸಿ';
+
+  @override
+  String get examAppSent => 'ಅರ್ಜಿ ಉಳಿಸಲಾಗಿದೆ. ಪ್ರವೇಶ ಪತ್ರಕ್ಕಾಗಿ ಶುಲ್ಕದಲ್ಲಿ ಪರೀಕ್ಷಾ ಶುಲ್ಕ ಪಾವತಿಸಿ.';
+
+  @override
+  String examAppNo(String no) {
+    return 'ಅರ್ಜಿ $no';
+  }
+
+  @override
+  String get examAppFeeDue => 'ಶುಲ್ಕ ಬಾಕಿ';
+
+  @override
+  String get examAppFeePaid => 'ಶುಲ್ಕ ಪಾವತಿಸಲಾಗಿದೆ';
+
+  @override
+  String get examAppFeeWaived => 'ಶುಲ್ಕ ಮನ್ನಾ';
+
+  @override
+  String examAppInvoice(String no) {
+    return 'ಬಿಲ್ $no';
+  }
+
+  @override
+  String get examAppRegistered => 'ನೋಂದಾಯಿತ';
+
+  @override
+  String get examAppIneligible => 'ಅರ್ಹರಲ್ಲ';
+
+  @override
+  String get revalKind => 'ನಿಮಗೆ ಏನು ಬೇಕು?';
+
+  @override
+  String get revalKindRevaluation => 'ಮರುಮೌಲ್ಯಮಾಪನ';
+
+  @override
+  String get revalKindRetotalling => 'ಮರುಎಣಿಕೆ';
+
+  @override
+  String get revalKindPhotocopy => 'ಉತ್ತರ ಪತ್ರಿಕೆಯ ಪ್ರತಿ';
 }

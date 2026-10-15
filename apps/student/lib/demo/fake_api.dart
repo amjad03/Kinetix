@@ -11,6 +11,7 @@ import 'package:flutter/painting.dart';
 import 'package:zynetix_lesson/zynetix_lesson.dart';
 import '../core/alumni.dart';
 import '../core/buzzer.dart';
+import '../core/exam_applications.dart';
 import '../core/academic_docs.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
@@ -1227,11 +1228,54 @@ class FakeStudentApi implements StudentApi {
     return Uint8List.fromList('%PDF-1.4 hall ticket'.codeUnits);
   }
 
-  ApiException? revaluationError;
+  /// The supplementary session's application: one backlog paper due, an improvement paper offered.
+  List<ExamApplication> applications = [
+    ExamApplication.fromJson({
+      'session': {'id': 'supp1', 'name': 'BCom Semester 3: Supplementary Examination, January 2027'},
+      'window': {'state': 'open', 'closesOn': '2026-10-27', 'lateUntil': '2026-11-04'},
+      'blockers': [],
+      'subjects': [
+        {'subjectId': 'sub-ca', 'code': 'BCM-301', 'name': 'Corporate Accounting', 'kind': 'backlog', 'eligible': true, 'reasons': [], 'feePaise': 25000, 'chosen': true, 'examDate': '2027-01-18'},
+        {'subjectId': 'sub-cost', 'code': 'BCM-302', 'name': 'Cost Accounting', 'kind': 'improvement', 'eligible': true, 'reasons': [], 'feePaise': 25000, 'chosen': false, 'examDate': '2027-01-19'},
+        {'subjectId': 'sub-law', 'code': 'BCM-303', 'name': 'Company Law', 'kind': 'backlog', 'eligible': false, 'reasons': ['Prerequisite not cleared: BCM-201'], 'feePaise': 25000, 'chosen': false, 'examDate': '2027-01-20'},
+      ],
+      'fee': {'minimumPaise': 50000, 'lateFeePaise': 0},
+      'application': {'applicationNo': 'EXA/26/00030', 'status': 'registered', 'fee': {'amountPaise': 50000, 'status': 'due', 'invoiceNo': 'INV/2026-27/00971'}},
+      'canSubmit': true,
+    }),
+  ];
+  ApiException? applicationError;
 
   @override
-  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason}) async {
+  Future<List<ExamApplication>> examApplications(String studentId) async {
+    calls.add('examApplications');
+    if (applicationError != null) throw applicationError!;
+    return applications;
+  }
+
+  @override
+  Future<ExamApplication> submitExamApplication(String sessionId, String studentId, List<String> subjectIds) async {
+    calls.add('submitExamApplication $sessionId ${subjectIds.join(',')}');
+    if (applicationError != null) throw applicationError!;
+    final i = applications.indexWhere((a) => a.sessionId == sessionId);
+    final a = applications[i];
+    final chosen = subjectIds.toSet();
+    final next = ExamApplication(
+      sessionId: a.sessionId, sessionName: a.sessionName, windowState: a.windowState, closesOn: a.closesOn, blockers: a.blockers, minimumPaise: a.minimumPaise, lateFeePaise: a.lateFeePaise, canSubmit: a.canSubmit,
+      subjects: [for (final s in a.subjects) ApplicationSubject(subjectId: s.subjectId, code: s.code, name: s.name, kind: s.kind, eligible: s.eligible, reasons: s.reasons, feePaise: s.feePaise, chosen: !s.optional || chosen.contains(s.subjectId), examDate: s.examDate)],
+      applicationNo: a.applicationNo ?? 'EXA/26/00099', status: 'registered', feePaise: a.feeFor(chosen), feeStatus: 'due', invoiceNo: a.invoiceNo ?? 'INV/2026-27/01001',
+    );
+    applications[i] = next;
+    return next;
+  }
+
+  ApiException? revaluationError;
+  String? revaluationKind;
+
+  @override
+  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason, String kind = 'revaluation'}) async {
     calls.add('revaluation $sessionId $subjectId $reason');
+    revaluationKind = kind;
     if (revaluationError != null) throw revaluationError!;
     final i = examSessions.indexWhere((e) => e.id == sessionId);
     final cur = examSessions[i];

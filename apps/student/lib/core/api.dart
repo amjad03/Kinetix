@@ -12,6 +12,7 @@ import '../l10n/l10n.dart';
 import 'academic_docs.dart';
 import 'alumni.dart';
 import 'buzzer.dart';
+import 'exam_applications.dart';
 import 'campus.dart';
 import 'campus_life.dart';
 import 'campus_services.dart';
@@ -160,8 +161,14 @@ abstract class StudentApi implements AnnouncementSource {
   /// The hall ticket as a PDF; the server refuses (403) when the college withholds it.
   Future<Uint8List> hallTicketPdf(String sessionId, String studentId);
 
+  /// Examination applications open or coming for the student (`GET /v1/students/:id/exam-applications`).
+  Future<List<ExamApplication>> examApplications(String studentId);
+
+  /// Submits or changes an application with the chosen backlog and improvement subjects; the fee goes on the fee account.
+  Future<ExamApplication> submitExamApplication(String sessionId, String studentId, List<String> subjectIds);
+
   /// Asks for a paper to be re-checked while the results are published and open.
-  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason});
+  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason, String kind = 'revaluation'});
 
   /// The student's leave applications, newest first.
   Future<List<LeaveRequest>> leaveRequests(String studentId);
@@ -789,8 +796,16 @@ class HttpStudentApi implements StudentApi {
   Future<Uint8List> hallTicketPdf(String sessionId, String studentId) => _download('/v1/exam-sessions/$sessionId/hall-tickets/$studentId/pdf');
 
   @override
-  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason}) =>
-      _send('POST', '/v1/results/students/$studentId/revaluations', body: {'sessionId': sessionId, 'subjectId': subjectId, 'reason': reason});
+  Future<List<ExamApplication>> examApplications(String studentId) async =>
+      [for (final a in await _send('GET', '/v1/students/$studentId/exam-applications') as List) ExamApplication.fromJson((a as Map).cast<String, dynamic>())];
+
+  @override
+  Future<ExamApplication> submitExamApplication(String sessionId, String studentId, List<String> subjectIds) async =>
+      ExamApplication.fromJson(await _send('POST', '/v1/exam-sessions/$sessionId/application', body: {'studentId': studentId, 'subjectIds': subjectIds}) as Map<String, dynamic>);
+
+  @override
+  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason, String kind = 'revaluation'}) =>
+      _send('POST', '/v1/results/students/$studentId/revaluations', body: {'sessionId': sessionId, 'subjectId': subjectId, 'reason': reason, 'kind': kind});
 
   @override
   Future<List<LeaveRequest>> leaveRequests(String studentId) async =>

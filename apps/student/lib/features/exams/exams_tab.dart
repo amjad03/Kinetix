@@ -8,6 +8,7 @@ import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'academic_docs_screen.dart';
+import 'exam_applications_screen.dart';
 
 /// Exams: the timetable of every session, the hall ticket as a PDF, published results with
 /// SGPA and CGPA, and a request to have a paper re-checked while the window is open.
@@ -62,10 +63,10 @@ class _ExamsTabState extends State<ExamsTab> {
   Future<void> _revalue(ExamSession s, ResultLine line, String subjectId) async {
     final l = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
-    final reason = await showDialog<String>(context: context, builder: (_) => const _ReasonDialog());
-    if (reason == null) return;
+    final ask = await showDialog<({String kind, String reason})>(context: context, builder: (_) => const _ReasonDialog());
+    if (ask == null) return;
     try {
-      await widget.api.requestRevaluation(widget.student.id, sessionId: s.id, subjectId: subjectId, reason: reason);
+      await widget.api.requestRevaluation(widget.student.id, sessionId: s.id, subjectId: subjectId, reason: ask.reason, kind: ask.kind);
       messenger.showSnackBar(SnackBar(content: Text(l.revaluationSent)));
       await _load();
     } on ApiException catch (e) {
@@ -95,6 +96,8 @@ class _ExamsTabState extends State<ExamsTab> {
                 KxCard(child: Text(l.noExamsScheduled, key: const Key('noExams'), style: context.text.bodyLarge))
               else
                 for (final s in upcoming) ...[_SessionCard(session: s, onHallTicket: () => _hallTicket(s)), const SizedBox(height: Kx.s12)],
+              KxCard(child: ListTile(key: const Key('examApplications'), contentPadding: EdgeInsets.zero, leading: const Icon(Icons.assignment_outlined), title: Text(l.examAppOpen), trailing: const Icon(Icons.chevron_right), onTap: () => ExamApplicationsScreen.open(context, widget.api, widget.student.id))),
+              const SizedBox(height: Kx.s12),
               KxCard(child: ListTile(key: const Key('academicDocs'), contentPadding: EdgeInsets.zero, leading: const Icon(Icons.workspace_premium_outlined), title: Text(academicDocsTitle(context)), trailing: const Icon(Icons.chevron_right), onTap: () => AcademicDocsScreen.open(context, widget.api, widget.student.id))),
               const SizedBox(height: Kx.s12),
               SectionTitle(l.examResultsTitle),
@@ -330,6 +333,7 @@ class _ReasonDialog extends StatefulWidget {
 class _ReasonDialogState extends State<_ReasonDialog> {
   final _controller = TextEditingController();
   bool _invalid = false;
+  String _kind = 'revaluation';
 
   @override
   void dispose() {
@@ -342,13 +346,31 @@ class _ReasonDialogState extends State<_ReasonDialog> {
     final l = context.l10n;
     return AlertDialog(
       title: Text(l.revaluationRequest),
-      content: TextField(
-        key: const Key('revalReason'),
-        controller: _controller,
-        autofocus: true,
-        maxLines: 3,
-        maxLength: 500,
-        decoration: InputDecoration(labelText: l.revaluationWhy, errorText: _invalid ? l.revaluationNeedReason : null),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DropdownButtonFormField<String>(
+            key: const Key('revalKind'),
+            isExpanded: true,
+            initialValue: _kind,
+            decoration: InputDecoration(labelText: l.revalKind),
+            items: [
+              DropdownMenuItem(value: 'revaluation', child: Text(l.revalKindRevaluation)),
+              DropdownMenuItem(value: 'retotalling', child: Text(l.revalKindRetotalling)),
+              DropdownMenuItem(value: 'photocopy', child: Text(l.revalKindPhotocopy)),
+            ],
+            onChanged: (v) => setState(() => _kind = v ?? _kind),
+          ),
+          const SizedBox(height: Kx.s12),
+          TextField(
+            key: const Key('revalReason'),
+            controller: _controller,
+            autofocus: true,
+            maxLines: 3,
+            maxLength: 500,
+            decoration: InputDecoration(labelText: l.revaluationWhy, errorText: _invalid ? l.revaluationNeedReason : null),
+          ),
+        ],
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
@@ -357,7 +379,7 @@ class _ReasonDialogState extends State<_ReasonDialog> {
           onPressed: () {
             final text = _controller.text.trim();
             if (text.length < 3) return setState(() => _invalid = true);
-            Navigator.pop(context, text);
+            Navigator.pop(context, (kind: _kind, reason: text));
           },
           child: Text(l.send),
         ),
