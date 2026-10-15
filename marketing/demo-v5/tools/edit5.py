@@ -44,6 +44,7 @@ F_CAP = font('Inter-500.ttf', 36)
 F_TITLE = font('SansFlexDisplay-500.ttf', 92)
 F_SUB = font('Inter-400.ttf', 36)
 F_BRAND = font('SansFlexDisplay-500.ttf', 132)
+F_PHT = font('SansFlexDisplay-500.ttf', 76)
 
 
 def ease(s):
@@ -540,7 +541,14 @@ def render_unit(frame, u, t):
     idx = src_index(u, t)
     src = grab(u, idx)
     if u.get('phone'):
-        place_phone(frame, src, W / 2)
+        place_phone(frame, src, 700)
+        a = ease((t - u['S']) / 0.4)
+        if u['label']:
+            ti = text_img(u['label'], F_PHT, INK)
+            paste_a(frame, ti, (1040, H / 2 - ti.height - 4), a)
+        if u['chap']:
+            su = text_img(u['chap'], F_SUB, MUTED)
+            paste_a(frame, su, (1044, H / 2 + 22), a)
     else:
         place16(frame, src, cam_at(u, t))
 
@@ -549,7 +557,7 @@ def draw_chrome(frame, u, t):
     if u['kind'] in ('card', 'brand', 'end') and not u.get('label'):
         pass
     # chapter · feature, above the recording
-    if u['kind'] not in ('card', 'brand', 'end') and (u['chap'] or u['label']):
+    if u['kind'] not in ('card', 'brand', 'end') and not u.get('phone') and (u['chap'] or u['label']):
         a = ease((t - u['S']) / 0.35) * ease((u['E'] - t) / 0.25 + 0.2)
         x = IX + 4
         if u['chap']:
@@ -565,7 +573,10 @@ def draw_chrome(frame, u, t):
         if s - 0.08 <= t <= e + 0.35:
             a = min(ease((t - s + 0.08) / 0.12), ease((e + 0.35 - t) / 0.15))
             ci = text_img(txt, F_CAP, INK)
-            paste_a(frame, ci, ((W - ci.width) / 2, IY + IH + 22), a)
+            if u.get('phone'):
+                paste_a(frame, ci, (1044, H / 2 + 110), a)
+            else:
+                paste_a(frame, ci, ((W - ci.width) / 2, IY + IH + 22), a)
             break
 
 

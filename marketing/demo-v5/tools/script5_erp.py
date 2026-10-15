@@ -8,7 +8,7 @@ ERP = [
  ('e0', 'The ERP: one view of the whole school', [
   CARD('k3', 'The ERP', 'Running the whole institution'),
   V('r01', 'dashboard', "Everything the board does lands in the ERP. ^The principal's dashboard shows the whole college today. ^Attendance. ^Fees collected. ^And what needs attention.", 'Principal dashboard', [0, 1, 2, 3]),
-  V('r02', 'smartboards', "^Every classroom board shows up here, ^with its health, ^and the principal can even watch a class live.", 'Classroom boards', [0, 2, 4]),
+  V('r02', 'smartboards', "^Every classroom board shows up here. ^The office can see each board's health, ^and fix it from a distance.", 'Classroom boards', [0, 2, 3]),
   V('r03', 'early_alerts', "^It warns early about students who may need help, ^with the reason why, ^so a mentor can step in.", 'Early alerts', [0, 1, 2]),
   V('r04', 'language', "^And the whole ERP works in ^Kannada, ^Hindi, and English.", 'Three languages', [0, 1, 2]),
  ]),

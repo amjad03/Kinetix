@@ -611,12 +611,12 @@
      "id": "r02",
      "kind": "clip",
      "src": "erp/smartboards",
-     "vo": "^Every classroom board shows up here, ^with its health, ^and the principal can even watch a class live.",
+     "vo": "^Every classroom board shows up here. ^The office can see each board's health, ^and fix it from a distance.",
      "label": "Classroom boards",
      "m": [
       0,
       2,
-      4
+      3
      ]
     },
     {
