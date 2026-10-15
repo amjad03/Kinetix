@@ -10,6 +10,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { qbBlueprints, qbPaperItems, qbPapers, qbQuestions, subjects, tenants, userRoles, users } from '../db/schema.js';
 import { qbPaperReleases } from '../db/schema-depth.js';
+import { qpSetDraws } from '../db/schema-exam-flagship.js';
 import { paperPdf } from './paper-pdf.js';
 
 const EXAM_STAFF: RoleName[] = ['tenant_admin', 'principal', 'hod', 'exam_controller'];
@@ -78,6 +79,12 @@ export class PaperReleaseController {
       const [paper] = await tx.select().from(qbPapers).where(eq(qbPapers.id, id));
       if (!paper) throw new NotFoundException('Paper not found');
       if (paper.status !== 'locked') throw new ConflictException('Lock the paper before scheduling its release');
+      // A set of an exam session is released only when it is the set drawn for the examination.
+      if (paper.sessionId) {
+        const [draw] = await tx.select({ paperId: qpSetDraws.paperId }).from(qpSetDraws).where(and(eq(qpSetDraws.sessionId, paper.sessionId), eq(qpSetDraws.subjectId, paper.subjectId)));
+        if (!draw) throw new ConflictException('Draw the set for this examination first');
+        if (draw.paperId !== paper.id) throw new ConflictException('Another set was drawn for this examination; this set stays sealed as a reserve');
+      }
       const releaseAt = new Date(b.releaseAt);
       if (releaseAt <= this.clock.now()) throw new ConflictException('Choose a release time in the future');
       const [ctl] = await tx.select({ role: userRoles.role }).from(userRoles).where(and(eq(userRoles.userId, b.controllerId), eq(userRoles.role, 'exam_controller')));

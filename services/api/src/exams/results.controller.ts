@@ -12,7 +12,8 @@ import { audit } from '../common/audit.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, marks, programs, revaluationRequests, rooms, sections, students, subjects, tenants } from '../db/schema.js';
+import { examPapers, examResultLines, examResults, examSeats, examSessions, feeInvoices, hallTickets, marks, programs, revaluationRequests, rooms, sections, students, subjects, tenants } from '../db/schema.js';
+import { chargeRevaluationFee, revaluationFeeState } from '../exam-cell/exam-fees.js';
 import { marksCardData, transcriptData, type ResultData, type StudentHeader } from './documents.js';
 import { FeeHoldsService } from '../fee-depth/fee-holds.js';
 import { DocumentEngine } from '../documents/document-engine.service.js';
@@ -194,8 +195,12 @@ export class ResultsController {
       const open = await tx.select({ id: revaluationRequests.id }).from(revaluationRequests).where(and(eq(revaluationRequests.sessionId, body.sessionId), eq(revaluationRequests.studentId, studentId), eq(revaluationRequests.subjectId, body.subjectId), inArray(revaluationRequests.status, ['requested', 'accepted'])));
       if (open.length) throw new ConflictException('A revaluation request for this subject is already open');
       const [row] = await tx.insert(revaluationRequests).values({ tenantId: p.tenantId, ...body, feePaise: revalFee(cfg.revaluation, body.kind), studentId, previousPercent: line.percent, requestedBy: p.userId }).returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'revaluation.requested', subjectType: 'revaluation', subjectId: row.id, data: { studentId, subjectId: body.subjectId } });
-      return row;
+      // The fee goes on the student's fee account; the request is decided once it is paid.
+      const [sub] = await tx.select({ code: subjects.code }).from(subjects).where(eq(subjects.id, body.subjectId));
+      const KIND_WORD = { revaluation: 'Revaluation', retotalling: 'Retotalling', photocopy: 'Answer script photocopy' } as const;
+      const invoiceId = await chargeRevaluationFee(tx, p, { requestId: row.id, studentId, title: `${KIND_WORD[body.kind]} fee: ${sub?.code ?? ''}, ${s.name}`, amountPaise: row.feePaise, now: new Date() });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'revaluation.requested', subjectType: 'revaluation', subjectId: row.id, data: { studentId, subjectId: body.subjectId, kind: body.kind, feePaise: row.feePaise, invoiceId } });
+      return { ...row, feeInvoiceId: invoiceId };
     });
   }
 
@@ -206,7 +211,11 @@ export class ResultsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const r = await this.load(tx, id);
       if (r.status !== 'requested') throw new ConflictException('Already decided');
+      const fee = await revaluationFeeState(tx, r);
+      if (body.accept && fee === 'due') throw new ConflictException('The fee for this request is not paid yet');
       const status = body.accept ? 'accepted' : 'rejected';
+      // A rejected request whose fee is unpaid has nothing to pay for any more.
+      if (!body.accept && fee === 'due' && r.feeInvoiceId) await tx.update(feeInvoices).set({ status: 'cancelled', updatedAt: new Date() }).where(and(eq(feeInvoices.id, r.feeInvoiceId), eq(feeInvoices.paidPaise, 0)));
       await tx.update(revaluationRequests).set({ status, decisionNote: body.note ?? null, decidedBy: p.userId, decidedAt: new Date() }).where(eq(revaluationRequests.id, id));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `revaluation.${status}`, subjectType: 'revaluation', subjectId: id });
       return { status };

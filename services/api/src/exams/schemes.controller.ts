@@ -31,7 +31,7 @@ async function affiliationPresets(tx: Tx) {
 }
 
 export const ADMIN: RoleName[] = ['tenant_admin', 'principal', 'exam_controller'];
-const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
+const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin', 'exam_controller'];
 
 const Band = z.object({ grade: z.string().trim().min(1).max(4), minPercent: z.number().min(0).max(100), gradePoint: z.number().min(0).max(10), pass: z.boolean() });
 const ScaleBody = z.object({

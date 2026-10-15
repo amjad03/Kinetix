@@ -16,11 +16,13 @@ import { BLOOM, blueprintProblems, type Candidate, DIFFICULTY, K_LEVELS, pickSec
 import { qbPaperReleases } from '../db/schema-depth.js';
 import { paperPdf } from './paper-pdf.js';
 import { releaseState } from './paper-release.controller.js';
+import { appointedModerator, assertCanSet } from '../exam-cell/qp-setting.js';
+import { nextSetLabel } from '../exam-cell/qp.logic.js';
 
 /** Anyone who writes or reviews questions. */
-const QB_ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher'];
+const QB_ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher', 'exam_controller'];
 /** Exam staff: see every paper in the institution. A paper's setter and moderator see their own. */
-const EXAM_STAFF: RoleName[] = ['tenant_admin', 'principal', 'hod'];
+const EXAM_STAFF: RoleName[] = ['tenant_admin', 'principal', 'hod', 'exam_controller'];
 /** Close questions in a subject (pg_trgm similarity) are flagged as duplicates. */
 const DUPLICATE = 0.8;
 
@@ -63,7 +65,15 @@ const SectionBody = z.object({
   coverage: z.array(uuid).max(50).optional(),
 });
 const BlueprintBody = z.object({ subjectId: uuid, title: z.string().trim().min(2).max(200), totalMarks: z.number().int().min(1).max(1000), durationMinutes: z.number().int().min(5).max(600), sections: z.array(SectionBody).min(1).max(12) });
-const PaperBody = z.object({ blueprintId: uuid, title: z.string().trim().min(2).max(200), seed: z.string().trim().min(1).max(100).optional(), avoidLast: z.number().int().min(0).max(20).default(3) });
+const PaperBody = z.object({
+  blueprintId: uuid,
+  title: z.string().trim().min(2).max(200),
+  seed: z.string().trim().min(1).max(100).optional(),
+  avoidLast: z.number().int().min(0).max(20).default(3),
+  /** A set (A, B, C ...) of an exam session's subject; the setter must be appointed for it. */
+  sessionId: uuid.optional(),
+  setLabel: z.string().trim().regex(/^[A-Z][0-9]?$/).optional(),
+});
 
 type Question = typeof qbQuestions.$inferSelect;
 type Paper = typeof qbPapers.$inferSelect;
@@ -347,10 +357,18 @@ export class QuestionBankController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const bp = found((await tx.select().from(qbBlueprints).where(eq(qbBlueprints.id, b.blueprintId)))[0], 'Blueprint');
       const seed = b.seed ?? randomUUID();
-      const [paper] = await tx.insert(qbPapers).values({ tenantId: p.tenantId, blueprintId: bp.id, subjectId: bp.subjectId, title: b.title, seed, avoidLast: b.avoidLast, setterId: p.userId }).returning();
+      let setLabel: string | null = null;
+      if (b.sessionId) {
+        await assertCanSet(tx, p, b.sessionId, bp.subjectId);
+        const taken = (await tx.select({ l: qbPapers.setLabel }).from(qbPapers).where(and(eq(qbPapers.sessionId, b.sessionId), eq(qbPapers.subjectId, bp.subjectId)))).map((r) => r.l);
+        setLabel = b.setLabel ?? nextSetLabel(taken);
+        if (taken.includes(setLabel)) throw new ConflictException(`Set ${setLabel} of this paper already exists`);
+      }
+      // Earlier sets of the same examination count as recent papers, so a new set avoids their questions where it can.
+      const [paper] = await tx.insert(qbPapers).values({ tenantId: p.tenantId, blueprintId: bp.id, subjectId: bp.subjectId, title: setLabel ? `${b.title} (Set ${setLabel})` : b.title, seed, avoidLast: b.sessionId ? Math.max(b.avoidLast, 6) : b.avoidLast, setterId: p.userId, sessionId: b.sessionId ?? null, setLabel }).returning();
       const repeats = await this.fill(tx, p, paper, seed);
       const [saved] = await tx.update(qbPapers).set({ repeats }).where(eq(qbPapers.id, paper.id)).returning();
-      await auditUser(tx, p, 'qb.paper.generated', 'qb_paper', paper.id, { seed, repeats });
+      await auditUser(tx, p, 'qb.paper.generated', 'qb_paper', paper.id, { seed, repeats, sessionId: b.sessionId ?? null, setLabel });
       return saved;
     });
   }
@@ -382,6 +400,9 @@ export class QuestionBankController {
       if (paper.setterId !== p.userId) throw new ForbiddenException('Only the paper setter can send it for scrutiny');
       if (!['draft', 'returned'].includes(paper.status)) throw new ConflictException('This paper is already with the moderator or locked');
       if (b.moderatorId === p.userId) throw new BadRequestException('The moderator must be someone other than the setter');
+      // A set of an exam session goes to the moderator appointed for that paper.
+      const appointed = paper.sessionId ? await appointedModerator(tx, paper.sessionId, paper.subjectId) : null;
+      if (appointed && appointed !== b.moderatorId) throw new BadRequestException('Send this set to the moderator appointed for the paper');
       const [mod] = await tx.select({ id: users.id }).from(users).innerJoin(userRoles, eq(userRoles.userId, users.id)).where(and(eq(users.id, b.moderatorId), inArray(userRoles.role, QB_ROLES))).limit(1);
       if (!mod) throw new BadRequestException('Pick a member of staff as the moderator');
       const [saved] = await tx.update(qbPapers).set({ status: 'scrutiny', moderatorId: b.moderatorId, remarks: null }).where(eq(qbPapers.id, id)).returning();

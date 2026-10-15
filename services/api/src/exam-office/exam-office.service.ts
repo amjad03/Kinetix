@@ -11,6 +11,8 @@ import { TasksService } from '../tasks/tasks.service.js';
 import { APPROVAL_STAGES, currentStage, examFee, formatSeries, moderate, moderationProblem, passStats, QP_FLOW, stageBlocker, stageStates, STAGES, withDefaults, type OfficeSettings, type Stage, type StageFacts, type StageRow } from './exam-office.logic.js';
 import { officeSettings } from './settings.js';
 import { lateFeeFor } from '../exam-cell/exam-cell.logic.js';
+import { chargeExamFee, syncExamFees } from '../exam-cell/exam-fees.js';
+import { feeInvoices } from '../db/schema.js';
 import { cellSettings } from '../exam-cell/settings.js';
 
 export const KINDS = ['session', 'paper', 'registration', 'hall_ticket', 'question_paper', 'script', 'examiner', 'result', 'revaluation', 'certificate'] as const;
@@ -613,9 +615,10 @@ export class ExamOfficeService {
     );
     if (regs.length === 0) throw new ConflictException('Every registered candidate already has an exam fee');
     // Late registrants pay the late fee: the office's one late fee, or the slab (super-fine) their lateness reaches.
+    // Each fee is an invoice on the candidate's fee account (paid at the counter, online or in the apps).
     for (const r of regs) {
       const late = lateFeeFor(slabs, r.days_late, cfg.examFees.lateFeePaise);
-      await tx.insert(examFeeDues).values({ tenantId: p.tenantId, sessionId: id, studentId: r.student_id, papers: r.papers, amountPaise: examFee(cfg.examFees, r.papers, supplementary, false) + late.amountPaise, note: late.slab ? `Includes ${late.slab}` : late.amountPaise ? 'Includes the late fee' : null });
+      await chargeExamFee(tx, p, { sessionId: id, studentId: r.student_id, sessionName: name, papers: r.papers, amountPaise: examFee(cfg.examFees, r.papers, supplementary, false) + late.amountPaise, note: late.slab ? `Includes ${late.slab}` : late.amountPaise ? 'Includes the late fee' : null, now: new Date() });
     }
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.fees.raised', subjectType: 'exam_session', subjectId: id, data: { candidates: regs.length } });
     await this.notes.examNotice(tx, regs.map((r) => r.student_id), {
@@ -708,13 +711,21 @@ export class ExamOfficeService {
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.registration.overridden', subjectType: 'exam_registration', subjectId: stid, data: { sessionId: sid, note } });
       return { status: 'registered' };
     }
+    await syncExamFees(tx, { sessionId: sid, studentId: stid });
     const [fee] = await tx.select().from(examFeeDues).where(and(eq(examFeeDues.sessionId, sid), eq(examFeeDues.studentId, stid)));
     if (!fee) throw new ConflictException('No exam fee has been raised for this candidate');
     if (fee.status !== 'due') throw new ConflictException('The exam fee is already settled');
     if (action === 'fee_paid' || action === 'fee_waive') {
       const receipt = typeof (value as { receiptNo?: unknown })?.receiptNo === 'string' ? (value as { receiptNo: string }).receiptNo.trim() : '';
+      // A fee on the fee account is paid like any other fee (the counter, online, the apps); waiving it cancels the invoice.
+      const [inv] = fee.feeInvoiceId ? await tx.select().from(feeInvoices).where(eq(feeInvoices.id, fee.feeInvoiceId)) : [];
+      if (action === 'fee_paid' && inv && inv.status !== 'cancelled') throw new ConflictException('This exam fee is on the student\'s fee account: collect it at the fees counter or online and it settles here');
       if (action === 'fee_paid' && !receipt) throw new BadRequestException('Enter the receipt number');
       if (action === 'fee_waive' && !note) throw new BadRequestException('Say why the fee is waived');
+      if (action === 'fee_waive' && inv) {
+        if (inv.paidPaise > 0) throw new ConflictException('Part of this fee is paid; ask the accounts office to adjust it');
+        await tx.update(feeInvoices).set({ status: 'cancelled', updatedAt: new Date() }).where(eq(feeInvoices.id, inv.id));
+      }
       const status = action === 'fee_paid' ? 'paid' : 'waived';
       await tx.update(examFeeDues).set({ status, receiptNo: receipt || null, note, settledBy: p.userId, settledAt: new Date() }).where(eq(examFeeDues.id, fee.id));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `exam.fee.${status}`, subjectType: 'exam_fee', subjectId: stid, data: { sessionId: sid, receipt: receipt || null, note } });

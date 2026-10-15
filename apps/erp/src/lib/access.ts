@@ -29,7 +29,7 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // library.controller.ts LIBRARY_ROLES
   library: ['librarian', 'principal', 'tenant_admin'],
   // marks.controller.ts: staff who teach the class, principal and admin. HODs also see their department's classes.
-  results: ['principal', 'tenant_admin', 'hod'],
+  results: ['principal', 'tenant_admin', 'hod', 'exam_controller'],
   // timetable-admin.controller.ts: STAFF_ADMIN_ROLES
   timetable: ['principal', 'tenant_admin'],
   // messages.controller.ts: GET /v1/conversations?all=true is for isSchoolAdmin (principal, admin)
@@ -166,7 +166,7 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // skills.access.ts SKILL_ADMIN (teachers record evidence and tag SDGs in the Teacher App)
   skills: ['principal', 'tenant_admin', 'hod'],
   // question-bank.controller.ts EXAM_STAFF: leaders and heads of department run the bank and papers here; teachers write and moderate in the Teacher App
-  questionBank: ['principal', 'tenant_admin', 'hod'],
+  questionBank: ['principal', 'tenant_admin', 'hod', 'exam_controller'],
   // school-life/diary.controller.ts DIARY_WRITERS (teachers write in the Teacher App; the ERP is for leaders and heads of department)
   diary: ['principal', 'tenant_admin', 'hod'],
   // school-life/ptm.controller.ts PTM_ORGANISERS (teachers give their slots in the Teacher App)

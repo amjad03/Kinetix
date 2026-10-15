@@ -44,7 +44,7 @@ export class AdminController {
   /** Campuses, programs, classes and rooms: for audience pickers and filters. */
   /** Also readable by the accounts office (fees go to classes) and admissions officers (cycles belong to a program and year). */
   @Get('structure')
-  @Auth('user', [...DASHBOARD_ROLES, 'accountant', 'admissions_officer'])
+  @Auth('user', [...DASHBOARD_ROLES, 'accountant', 'admissions_officer', 'exam_controller'])
   structure(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => ({
       timezone: await this.timetable.tenantTimezone(tx),

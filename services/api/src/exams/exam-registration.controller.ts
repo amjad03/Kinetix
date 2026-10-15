@@ -16,6 +16,7 @@ import { seatingChartPdf } from './documents.js';
 import { ExamsService } from './exams.service.js';
 import { ineligibleReasons, type EligibilityFacts, type EligibilityRules } from './registration-rules.js';
 import { registrationState } from '../exam-cell/exam-cell.logic.js';
+import { syncRepeatRegistrations } from '../exam-cell/applications.js';
 import { slotGroups } from './seating.js';
 import { ADMIN } from './schemes.controller.js';
 
@@ -139,6 +140,8 @@ export class ExamRegistrationController {
       const reasons = (await tx.select({ r: examRegistrations.reasons }).from(examRegistrations).where(and(eq(examRegistrations.sessionId, id), eq(examRegistrations.studentId, studentId))))[0]?.r ?? [];
       const v = { status: 'registered' as const, reasons, overriddenBy: p.userId, overrideReason: b.reason, registeredAt: this.clock.now() };
       const [row] = await tx.insert(examRegistrations).values({ tenantId: p.tenantId, sessionId: id, studentId, ...v }).onConflictDoUpdate({ target: [examRegistrations.sessionId, examRegistrations.studentId], set: v }).returning();
+      // The backlog and improvement subjects of the candidate's application now count for result processing.
+      await syncRepeatRegistrations(tx, p, id, studentId, true);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.registration.overridden', subjectType: 'student', subjectId: studentId, data: { sessionId: id, reasons, reason: b.reason } });
       return row;
     });

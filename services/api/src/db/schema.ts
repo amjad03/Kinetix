@@ -2504,6 +2504,9 @@ export const examRegistrations = pgTable(
     overriddenBy: uuid('overridden_by').references(() => users.id),
     overrideReason: text('override_reason'),
     registeredAt: timestamp('registered_at', { withTimezone: true }).notNull().defaultNow(),
+    /** The application's number and who submitted it (the student, a guardian or the office), migration 0186. */
+    applicationNo: text('application_no'),
+    submittedBy: uuid('submitted_by').references(() => users.id, { onDelete: 'set null' }),
   },
   (t) => [primaryKey({ columns: [t.sessionId, t.studentId] })],
 );
@@ -2583,6 +2586,8 @@ export const revaluationRequests = pgTable('revaluation_requests', {
   kind: text('kind').notNull().default('revaluation'),
   /** The fee charged when the request was made (from the exam office settings). */
   feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0),
+  /** The fee invoice that carries the request's fee (migration 0186); the request is decided once it is paid. */
+  feeInvoiceId: uuid('fee_invoice_id').references(() => feeInvoices.id, { onDelete: 'set null' }),
 });
 
 // On-screen evaluation (spec §24), exam controller depth (§23) and results depth (§25).
@@ -4042,6 +4047,8 @@ export const TENANT_TABLES = [
   'fee_hold_overrides',
   // Relative grading and the re-admission scheme (migration 0183; schema-curriculum.ts).
   'exam_relative_grades', 'curriculum_equivalences', 'student_readmissions',
+  // Examinations flagship (migrations 0186-0188; schema-exam-flagship.ts).
+  'exam_application_subjects', 'qp_appointments', 'qp_set_draws', 'marks_unlock_requests',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -6399,6 +6406,9 @@ export const qbPapers = pgTable(
     lockedAt: timestamp('locked_at', { withTimezone: true }),
     lockedBy: uuid('locked_by').references(() => users.id),
     createdAt: createdAt(),
+    /** Set A, B, C ... of an exam session's subject (migration 0187); null for a paper not tied to a session. */
+    sessionId: uuid('session_id').references((): AnyPgColumn => examSessions.id, { onDelete: 'set null' }),
+    setLabel: text('set_label'),
   },
   (t) => [index('qb_papers_subject_idx').on(t.subjectId, t.createdAt)],
 );
@@ -8539,6 +8549,8 @@ export const examFeeDues = pgTable(
     settledBy: uuid('settled_by').references(() => users.id, { onDelete: 'set null' }),
     settledAt: timestamp('settled_at', { withTimezone: true }),
     createdAt: createdAt(),
+    /** The fee invoice that carries this exam fee (migration 0186); paying it settles the due. */
+    feeInvoiceId: uuid('fee_invoice_id').references(() => feeInvoices.id, { onDelete: 'set null' }),
   },
   (t) => [uniqueIndex('exam_fee_dues_uq').on(t.sessionId, t.studentId)],
 );
