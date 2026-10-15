@@ -83,6 +83,7 @@ void main() {
 
   testWidgets('results show CGPA and SGPA; revaluation needs a reason and is asked for once', (tester) async {
     await pumpExams(tester);
+    await tester.scrollUntilVisible(find.text('SGPA 7.90'), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('CGPA 7.90'), findsOneWidget);
     expect(find.text('SGPA 7.90'), findsOneWidget);
     await tester.scrollUntilVisible(find.byKey(const Key('revalue-sub1')), 200, scrollable: find.byType(Scrollable).first);

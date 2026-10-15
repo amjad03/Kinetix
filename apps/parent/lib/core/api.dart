@@ -13,6 +13,7 @@ import 'academic_docs.dart';
 import 'boarding.dart';
 import 'campus.dart';
 import 'conduct.dart';
+import 'exam_applications.dart';
 import 'exam_models.dart';
 import 'family_care.dart';
 import 'growth.dart';
@@ -164,6 +165,12 @@ abstract class ParentApi implements AnnouncementSource {
 
   /// The child's hall ticket as a PDF; the server refuses (403) when the college withholds it.
   Future<Uint8List> hallTicketPdf(String sessionId, String childId);
+
+  /// The child's examination applications open or coming (`GET /v1/students/:id/exam-applications`).
+  Future<List<ExamApplication>> examApplications(String childId);
+
+  /// Submits or changes the child's application with the chosen backlog and improvement subjects.
+  Future<ExamApplication> submitExamApplication(String sessionId, String childId, List<String> subjectIds);
 
   /// Transcript, provisional certificate and grade card requests for a child.
   Future<List<AcademicDocRequest>> academicDocRequests(String childId);
@@ -580,6 +587,14 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<Uint8List> hallTicketPdf(String sessionId, String childId) => _download('/v1/exam-sessions/$sessionId/hall-tickets/$childId/pdf');
+
+  @override
+  Future<List<ExamApplication>> examApplications(String childId) async =>
+      [for (final a in await _send('GET', '/v1/students/$childId/exam-applications') as List) ExamApplication.fromJson((a as Map).cast<String, dynamic>())];
+
+  @override
+  Future<ExamApplication> submitExamApplication(String sessionId, String childId, List<String> subjectIds) async =>
+      ExamApplication.fromJson(await _send('POST', '/v1/exam-sessions/$sessionId/application', body: {'studentId': childId, 'subjectIds': subjectIds}) as Map<String, dynamic>);
 
   @override
   Future<void> requestRevaluation(String childId, {required String sessionId, required String subjectId, required String reason}) =>

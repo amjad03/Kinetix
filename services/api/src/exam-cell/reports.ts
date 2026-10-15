@@ -13,7 +13,7 @@ import { CELL_READ, loadSession, rowsOf, UUID } from './common.js';
 import { csv, goldMedallists, rankList, remuneration } from './exam-cell.logic.js';
 import { cellSettings } from './settings.js';
 
-export const CELL_REPORTS = ['gazette', 'result_register', 'pass_by_course', 'pass_by_teacher', 'toppers', 'ranks', 'analysis', 'distinctions', 'gold_medals', 'nirf', 'exam_fees', 'withheld', 'pending_certificates', 'remuneration', 'answer_sheets', 'mismatches'] as const;
+export const CELL_REPORTS = ['gazette', 'result_register', 'pass_by_course', 'pass_by_teacher', 'pass_by_section', 'grade_distribution', 'year_comparison', 'toppers', 'ranks', 'analysis', 'distinctions', 'gold_medals', 'nirf', 'exam_fees', 'withheld', 'pending_certificates', 'remuneration', 'answer_sheets', 'mismatches'] as const;
 export type CellReport = (typeof CELL_REPORTS)[number];
 /** Reports that need no exam session. */
 const NO_SESSION: CellReport[] = ['pending_certificates', 'remuneration'];
@@ -31,7 +31,7 @@ const pct = (a: number, b: number) => (b ? Math.round((a / b) * 10000) / 100 : 0
 
 /**
  * The exam cell's registers and analyses: the tabulation register (gazette), result register, pass percentage by
- * course and by teacher, toppers and ranks (repeaters excluded by the rule), results by gender and category,
+ * course, by teacher and by class, the grade distribution of each paper, the comparison with earlier years, toppers and ranks (repeaters excluded by the rule), results by gender and category,
  * distinctions, gold medals, the NIRF graduation outcome, the exam-fee statement, withheld results, the pending
  * certificate register, remuneration of invigilators and valuers, the answer-book statements and the double-entry
  * mismatches. Each is a table on screen and a CSV file.
@@ -147,6 +147,37 @@ async function build(tx: Tx, report: CellReport, sessionId: string | null): Prom
       }
       const rows = [...groups.values()].sort((a, b) => a.teacher.localeCompare(b.teacher) || a.code.localeCompare(b.code)).map((g) => ({ teacher: g.teacher, code: g.code, subject: g.subject, ...passStats(g.list) }));
       return { report, columns: cols(['teacher', 'Teacher'], ['code', 'Code'], ['subject', 'Subject'], ['appeared', 'Appeared'], ['passed', 'Passed'], ['passPercent', 'Pass %'], ['mean', 'Mean %']), rows };
+    }
+    case 'pass_by_section': {
+      const ls = await lines(tx, s!.id);
+      const names = new Map((await rowsOf<{ id: string; name: string }>(tx, sql`select id, display_name as name from sections where id in (select st.section_id from exam_results r join students st on st.id = r.student_id where r.session_id = ${s!.id}::uuid)`)).map((x) => [x.id, x.name]));
+      const groups = new Map<string, typeof ls>();
+      for (const l of ls) groups.set(`${l.section_id}|${l.code}`, [...(groups.get(`${l.section_id}|${l.code}`) ?? []), l]);
+      const rows = [...groups.values()]
+        .map((list) => ({ section: names.get(list[0].section_id) ?? '', code: list[0].code, subject: list[0].subject, ...passStats(list) }))
+        .sort((a, b) => a.section.localeCompare(b.section) || a.code.localeCompare(b.code));
+      return { report, columns: cols(['section', 'Class'], ['code', 'Code'], ['subject', 'Subject'], ['appeared', 'Appeared'], ['passed', 'Passed'], ['failed', 'Failed'], ['passPercent', 'Pass %'], ['mean', 'Mean %']), rows, totals: { section: 'Total', ...passStats(ls) } };
+    }
+    case 'grade_distribution': {
+      const ls = await lines(tx, s!.id);
+      const dist = gradeDistribution(ls);
+      return { report, columns: [...cols(['code', 'Code'], ['subject', 'Subject'], ['appeared', 'Appeared']), ...dist.grades.map((g) => ({ key: `g:${g}`, label: g }))], rows: dist.rows, totals: dist.totals };
+    }
+    case 'year_comparison': {
+      // The same examination (programme, term and kind) in every year, oldest first, for the trend.
+      const rows = await rowsOf<{ session: string; year: string; starts_on: string; appeared: number; passed: number; mean_sgpa: number | null; top_sgpa: number | null }>(
+        tx,
+        sql`select s.name as session, y.label as year, s.starts_on::text as starts_on, count(r.id)::int as appeared, count(r.id) filter (where r.outcome = 'pass')::int as passed,
+              round(avg(r.sgpa), 2)::float8 as mean_sgpa, max(r.sgpa)::float8 as top_sgpa
+            from exam_sessions s join academic_years y on y.id = s.academic_year_id left join exam_results r on r.session_id = s.id
+            where s.program_id = ${s!.programId}::uuid and s.term = ${s!.term} and s.kind = ${s!.kind} and (s.status in ('processed', 'published', 'locked') or s.id = ${s!.id}::uuid)
+            group by s.id, s.name, y.label, s.starts_on order by s.starts_on`,
+      );
+      return {
+        report,
+        columns: cols(['year', 'Academic year'], ['session', 'Examination'], ['appeared', 'Appeared'], ['passed', 'Passed'], ['passPercent', 'Pass %'], ['change', 'Change in pass %'], ['meanSgpa', 'Mean SGPA'], ['topSgpa', 'Top SGPA']),
+        rows: yearTrend(rows.map((r) => ({ year: r.year, session: r.session, appeared: r.appeared, passed: r.passed, meanSgpa: r.mean_sgpa, topSgpa: r.top_sgpa }))),
+      };
     }
     case 'toppers':
     case 'ranks': {
@@ -291,4 +322,30 @@ async function build(tx: Tx, report: CellReport, sessionId: string | null): Prom
       return { report, columns: cols(['code', 'Paper'], ['rollNo', 'Roll no'], ['name', 'Name'], ['first', 'First entry'], ['second', 'Second entry'], ['status', 'Status'], ['resolved', 'Settled at'], ['note', 'Note']), rows };
     }
   }
+}
+
+/** Candidates per grade in each paper (grades ordered from the best mean percent down), with the totals. */
+export function gradeDistribution(ls: { code: string; subject: string; grade: string; percent: number }[]) {
+  const meanOf = new Map<string, { sum: number; n: number }>();
+  for (const l of ls) {
+    const m = meanOf.get(l.grade) ?? { sum: 0, n: 0 };
+    meanOf.set(l.grade, { sum: m.sum + l.percent, n: m.n + 1 });
+  }
+  const grades = [...meanOf].sort(([, a], [, b]) => b.sum / b.n - a.sum / a.n).map(([g]) => g);
+  const bySub = new Map<string, typeof ls>();
+  for (const l of ls) bySub.set(l.code, [...(bySub.get(l.code) ?? []), l]);
+  const count = (list: typeof ls) => Object.fromEntries(grades.map((g) => [`g:${g}`, list.filter((l) => l.grade === g).length]));
+  const rows = [...bySub].map(([code, list]) => ({ code, subject: list[0].subject, appeared: list.length, ...count(list) }));
+  return { grades, rows, totals: { code: 'Total', subject: '', appeared: ls.length, ...count(ls) } };
+}
+
+/** Pass percentage of each year and its change from the year before (percentage points). */
+export function yearTrend(rows: { year: string; session: string; appeared: number; passed: number; meanSgpa: number | null; topSgpa: number | null }[]) {
+  let prev: number | null = null;
+  return rows.map((r) => {
+    const passPercent = pct(r.passed, r.appeared);
+    const change = prev === null || r.appeared === 0 ? '' : Math.round((passPercent - prev) * 100) / 100;
+    if (r.appeared) prev = passPercent;
+    return { ...r, passPercent, change, meanSgpa: r.meanSgpa ?? '', topSgpa: r.topSgpa ?? '' };
+  });
 }

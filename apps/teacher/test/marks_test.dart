@@ -237,4 +237,19 @@ void main() {
     expect(find.byKey(const Key('publishMarks')), findsNothing);
     expect(find.textContaining('families notified'), findsOneWidget);
   });
+
+  testWidgets('asks the head of department to unlock submitted marks, with a reason', (tester) async {
+    api.addAssessment(title: 'Unit test 2');
+    await pumpEntry(tester, 'a1');
+    await tester.tap(find.byKey(const Key('marksMenu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('askUnlock')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('reason')), 'Roll 7 was totalled wrongly');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('reasonSend')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('askMarksUnlock a1 Roll 7 was totalled wrongly'));
+    expect(find.text('Request sent to the head of department'), findsOneWidget);
+  });
 }

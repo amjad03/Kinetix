@@ -13,7 +13,7 @@ import { toCsv } from '../common/pdf.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, institutionProfiles, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, examRegistrationWindows, examRegistrations } from '../db/schema.js';
+import { assessments, examFeeDues, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, institutionProfiles, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, examRegistrationWindows, examRegistrations } from '../db/schema.js';
 import { WorkflowsService } from '../workflows/workflows.service.js';
 import { workflowDefinitions, workflowRequests } from '../db/schema.js';
 import { GOVERNANCE_RULES, type GovernanceModel } from '../institution/presets.js';
@@ -24,7 +24,8 @@ import { hallTicketData } from './documents.js';
 import { FeeHoldsService } from '../fee-depth/fee-holds.js';
 import { DocumentEngine } from '../documents/document-engine.service.js';
 import { studentBlock } from '../documents/doc-data.js';
-import { ExamsService, type SessionRow } from './exams.service.js';
+import { ExamsService, REPEAT_KINDS, type SessionRow } from './exams.service.js';
+import { syncExamFees } from '../exam-cell/exam-fees.js';
 import { allocateSeats, overlaps, slotGroups } from './seating.js';
 import { studentHeader } from './results.controller.js';
 import { diffResults } from '../exam-cell/exam-cell.logic.js';
@@ -269,8 +270,23 @@ export class ExamSessionsController {
       const s = await this.exams.session(tx, id);
       if (s.status === 'draft') throw new ConflictException('Schedule the session before issuing hall tickets');
       const papers = await tx.select({ sectionId: examPapers.sectionId }).from(examPapers).where(eq(examPapers.sessionId, id));
-      const roster = await tx.select({ id: students.id, rollNo: students.rollNo }).from(students).where(and(inArray(students.sectionId, [...new Set(papers.map((x) => x.sectionId))]), eq(students.status, 'active')));
+      // Candidates: the classes the session is for (a regular session), and anyone who applied or registered for a
+      // backlog or improvement paper (from any class).
+      const repeat = REPEAT_KINDS.includes(s.kind);
+      const classRoster = repeat || papers.length === 0 ? [] : await tx.select({ id: students.id, rollNo: students.rollNo }).from(students).where(and(inArray(students.sectionId, [...new Set(papers.map((x) => x.sectionId))]), eq(students.status, 'active')));
+      const applied = await tx.execute<{ id: string; roll_no: string }>(
+        sql`select distinct st.id, st.roll_no from students st where st.status = 'active' and st.id in (
+              select student_id from supplementary_registrations where session_id = ${id}::uuid
+              union select student_id from exam_registrations where session_id = ${id}::uuid)`,
+      );
+      const roster = [...classRoster];
+      for (const r of applied.rows) if (!roster.some((x) => x.id === r.id)) roster.push({ id: r.id, rollNo: r.roll_no });
       const blocks = new Map(body.blocks.map((b) => [b.studentId, b.reason]));
+      // An exam fee raised for the candidate and not paid holds the ticket back (paid invoices settle it first).
+      await syncExamFees(tx, { sessionId: id });
+      for (const f of await tx.select({ studentId: examFeeDues.studentId, amountPaise: examFeeDues.amountPaise }).from(examFeeDues).where(and(eq(examFeeDues.sessionId, id), eq(examFeeDues.status, 'due')))) {
+        if (!blocks.has(f.studentId)) blocks.set(f.studentId, `Exam fee of Rs ${(f.amountPaise / 100).toFixed(2)} is not paid`);
+      }
       if (body.blockByAttendance) {
         const cfg = await attendanceSettings(tx);
         const att = await overallAttendance(tx, roster.map((r) => r.id), cfg.thresholdPct);
@@ -331,14 +347,23 @@ export class ExamSessionsController {
       // Dues that fell overdue after the tickets went out hold it back too.
       await this.holds.assertClear(tx, p.tenantId, studentId, 'hallTicket');
       const [st] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.id, studentId));
-      const papers = await tx
-        .select({ examDate: examPapers.examDate, startsAt: examPapers.startsAt, endsAt: examPapers.endsAt, subject: subjects.name, code: subjects.code, room: rooms.name, seat: examSeats.seatNo })
+      // This class's papers, and the backlog and improvement papers the candidate is registered for (one sitting each).
+      const all = await tx
+        .select({ subjectId: examPapers.subjectId, sectionId: examPapers.sectionId, examDate: examPapers.examDate, startsAt: examPapers.startsAt, endsAt: examPapers.endsAt, subject: subjects.name, code: subjects.code, room: rooms.name, seat: examSeats.seatNo })
         .from(examPapers)
         .innerJoin(subjects, eq(subjects.id, examPapers.subjectId))
         .leftJoin(examSeats, and(eq(examSeats.paperId, examPapers.id), eq(examSeats.studentId, studentId)))
         .leftJoin(rooms, eq(rooms.id, examSeats.roomId))
-        .where(and(eq(examPapers.sessionId, id), eq(examPapers.sectionId, st.sectionId)))
+        .where(eq(examPapers.sessionId, id))
         .orderBy(asc(examPapers.examDate), asc(examPapers.startsAt));
+      const repeats = new Set((await tx.execute<{ subject_id: string }>(sql`select subject_id from supplementary_registrations where session_id = ${id}::uuid and student_id = ${studentId}::uuid`)).rows.map((r) => r.subject_id));
+      const papers = REPEAT_KINDS.includes(s.kind) ? [] : all.filter((x) => x.sectionId === st.sectionId);
+      for (const subjectId of repeats) {
+        if (papers.some((x) => x.subjectId === subjectId)) continue;
+        const pick = all.find((x) => x.subjectId === subjectId && x.seat !== null) ?? all.find((x) => x.subjectId === subjectId);
+        if (pick) papers.push(pick);
+      }
+      papers.sort((a, b) => a.examDate.localeCompare(b.examDate) || a.startsAt.localeCompare(b.startsAt));
       const block = await studentBlock(tx, studentId);
       const name = String((block.student as Record<string, unknown>).name ?? '');
       const out = await this.engine.produce(tx, p, {

@@ -4269,5 +4269,140 @@
   "obeNotYourStep": "This step is for another reviewer; you can still comment.",
   "@obeNotYourStep": {
     "description": "Outcome-based education."
+  },
+  "qpTitle": "Paper setting and unlocks",
+  "@qpTitle": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpBody": "Papers you set or moderate, and your requests to unlock marks",
+  "@qpBody": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpAppointments": "Paper setting appointments",
+  "@qpAppointments": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpEmpty": "No paper setting appointments",
+  "@qpEmpty": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpSetter": "Setter",
+  "@qpSetter": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpModerator": "Moderator",
+  "@qpModerator": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpDue": "Due on {date}",
+  "@qpDue": {
+    "description": "Question paper setting and marks unlock requests.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "qpSets": "{made} of {required} sets made",
+  "@qpSets": {
+    "description": "Question paper setting and marks unlock requests.",
+    "placeholders": {
+      "made": {
+        "type": "String"
+      },
+      "required": {
+        "type": "String"
+      }
+    }
+  },
+  "qpToModerate": "Sets waiting for your scrutiny: {n}",
+  "@qpToModerate": {
+    "description": "Question paper setting and marks unlock requests.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "qpFee": "Remuneration ₹{amount}",
+  "@qpFee": {
+    "description": "Question paper setting and marks unlock requests.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "qpAccept": "Accept",
+  "@qpAccept": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpDecline": "Decline",
+  "@qpDecline": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpDeclineWhy": "Why do you decline?",
+  "@qpDeclineWhy": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpAccepted": "Appointment accepted",
+  "@qpAccepted": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpDeclined": "Appointment declined; the exam office is told",
+  "@qpDeclined": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpWaiting": "Waiting for your answer",
+  "@qpWaiting": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpAcceptedState": "Accepted",
+  "@qpAcceptedState": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "qpSetHint": "Build the sets from the question bank in the ERP for this session.",
+  "@qpSetHint": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockTitle": "My unlock requests",
+  "@unlockTitle": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockNone": "No unlock requests",
+  "@unlockNone": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockAsk": "Ask to unlock marks",
+  "@unlockAsk": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockWhy": "Why do the marks need to change?",
+  "@unlockWhy": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockSent": "Request sent to the head of department",
+  "@unlockSent": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockWithdraw": "Withdraw",
+  "@unlockWithdraw": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockPending": "Waiting",
+  "@unlockPending": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockApproved": "Unlocked",
+  "@unlockApproved": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockRejected": "Turned down",
+  "@unlockRejected": {
+    "description": "Question paper setting and marks unlock requests."
+  },
+  "unlockCancelled": "Withdrawn",
+  "@unlockCancelled": {
+    "description": "Question paper setting and marks unlock requests."
   }
 }

@@ -3756,5 +3756,133 @@
   "surveyExitProgramme": "Programme exit survey",
   "@surveyExitProgramme": {
     "description": "Outcome-based education."
+  },
+  "examAppTitle": "Exam applications",
+  "@examAppTitle": {
+    "description": "Exam applications."
+  },
+  "examAppOpen": "Apply for examinations",
+  "@examAppOpen": {
+    "description": "Exam applications."
+  },
+  "examAppNone": "No examination is open for applications now.",
+  "@examAppNone": {
+    "description": "Exam applications."
+  },
+  "examAppCloses": "Applications close on {date}",
+  "@examAppCloses": {
+    "description": "Exam applications.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "examAppStateOpen": "Open",
+  "@examAppStateOpen": {
+    "description": "Exam applications."
+  },
+  "examAppStateLate": "Late fee applies",
+  "@examAppStateLate": {
+    "description": "Exam applications."
+  },
+  "examAppStateUpcoming": "Not open yet",
+  "@examAppStateUpcoming": {
+    "description": "Exam applications."
+  },
+  "examAppStateClosed": "Closed",
+  "@examAppStateClosed": {
+    "description": "Exam applications."
+  },
+  "examAppKindRegular": "This term",
+  "@examAppKindRegular": {
+    "description": "Exam applications."
+  },
+  "examAppKindBacklog": "Backlog",
+  "@examAppKindBacklog": {
+    "description": "Exam applications."
+  },
+  "examAppKindImprovement": "Improvement",
+  "@examAppKindImprovement": {
+    "description": "Exam applications."
+  },
+  "examAppHeld": "Held back",
+  "@examAppHeld": {
+    "description": "Exam applications."
+  },
+  "examAppFee": "Exam fee ₹{amount}",
+  "@examAppFee": {
+    "description": "Exam applications.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "examAppSubmit": "Submit application",
+  "@examAppSubmit": {
+    "description": "Exam applications."
+  },
+  "examAppUpdate": "Save changes",
+  "@examAppUpdate": {
+    "description": "Exam applications."
+  },
+  "examAppSent": "Application saved. Pay the exam fee in Fees to get your hall ticket.",
+  "@examAppSent": {
+    "description": "Exam applications."
+  },
+  "examAppNo": "Application {no}",
+  "@examAppNo": {
+    "description": "Exam applications.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "examAppFeeDue": "Fee due",
+  "@examAppFeeDue": {
+    "description": "Exam applications."
+  },
+  "examAppFeePaid": "Fee paid",
+  "@examAppFeePaid": {
+    "description": "Exam applications."
+  },
+  "examAppFeeWaived": "Fee waived",
+  "@examAppFeeWaived": {
+    "description": "Exam applications."
+  },
+  "examAppInvoice": "Invoice {no}",
+  "@examAppInvoice": {
+    "description": "Exam applications.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "examAppRegistered": "Registered",
+  "@examAppRegistered": {
+    "description": "Exam applications."
+  },
+  "examAppIneligible": "Not eligible",
+  "@examAppIneligible": {
+    "description": "Exam applications."
+  },
+  "revalKind": "What do you want?",
+  "@revalKind": {
+    "description": "Revaluation kinds."
+  },
+  "revalKindRevaluation": "Revaluation",
+  "@revalKindRevaluation": {
+    "description": "Revaluation kinds."
+  },
+  "revalKindRetotalling": "Retotalling",
+  "@revalKindRetotalling": {
+    "description": "Revaluation kinds."
+  },
+  "revalKindPhotocopy": "Photocopy of the answer script",
+  "@revalKindPhotocopy": {
+    "description": "Revaluation kinds."
   }
 }

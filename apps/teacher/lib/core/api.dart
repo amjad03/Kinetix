@@ -10,6 +10,7 @@ import 'package:zynetix_lesson/zynetix_lesson.dart';
 import 'course_file_models.dart';
 import 'desk_models.dart';
 import 'evidence_models.dart';
+import 'exam_work_models.dart';
 import 'academics_models.dart';
 import 'growth_models.dart';
 import 'hr_models.dart';
@@ -140,6 +141,21 @@ abstract class TeacherApi implements AnnouncementSource {
 
   /// My exam invigilation duties.
   Future<List<InvigilationDuty>> myInvigilation();
+
+  /// My question paper setting appointments as setter or moderator (`GET /v1/qp-appointments/mine`).
+  Future<List<QpAppointment>> myQpAppointments();
+
+  /// Accepts an appointment, or declines it with a reason.
+  Future<void> respondQpAppointment(String id, {required bool accept, String? note});
+
+  /// Asks the head of department to reopen submitted or locked marks.
+  Future<void> askMarksUnlock(String assessmentId, String reason);
+
+  /// My requests to unlock marks, newest first.
+  Future<List<UnlockRequest>> myUnlockRequests();
+
+  /// Withdraws a request that is still waiting.
+  Future<void> cancelUnlockRequest(String id);
 
   /// On-screen evaluation: scripts allocated to me, one script, a scanned page, saving per-question marks and submitting.
   Future<List<EvalAllocation>> evaluationAllocations();
@@ -717,6 +733,22 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<List<InvigilationDuty>> myInvigilation() async => _rows(await _send('GET', '/v1/invigilation/mine'), InvigilationDuty.fromJson);
+
+  @override
+  Future<List<QpAppointment>> myQpAppointments() async => _rows(await _send('GET', '/v1/qp-appointments/mine'), QpAppointment.fromJson);
+
+  @override
+  Future<void> respondQpAppointment(String id, {required bool accept, String? note}) =>
+      _send('POST', '/v1/qp-appointments/$id/respond', body: {'accept': accept, if (note != null && note.isNotEmpty) 'note': note});
+
+  @override
+  Future<void> askMarksUnlock(String assessmentId, String reason) => _send('POST', '/v1/assessments/$assessmentId/unlock-requests', body: {'reason': reason});
+
+  @override
+  Future<List<UnlockRequest>> myUnlockRequests() async => [for (final r in _rows(await _send('GET', '/v1/marks-unlock-requests'), UnlockRequest.fromJson)) if (r.mine) r];
+
+  @override
+  Future<void> cancelUnlockRequest(String id) => _send('POST', '/v1/marks-unlock-requests/$id/cancel');
 
   @override
   Future<List<EvalAllocation>> evaluationAllocations() async => _rows(await _send('GET', '/v1/evaluation/allocations/mine'), EvalAllocation.fromJson);

@@ -9530,6 +9530,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Programme exit survey'**
   String get surveyExitProgramme;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam applications'**
+  String get examAppTitle;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply for examinations'**
+  String get examAppOpen;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'No examination is open for applications now.'**
+  String get examAppNone;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Applications close on {date}'**
+  String examAppCloses(String date);
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get examAppStateOpen;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Late fee applies'**
+  String get examAppStateLate;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Not open yet'**
+  String get examAppStateUpcoming;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get examAppStateClosed;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'This term'**
+  String get examAppKindRegular;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Backlog'**
+  String get examAppKindBacklog;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Improvement'**
+  String get examAppKindImprovement;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Held back'**
+  String get examAppHeld;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam fee ₹{amount}'**
+  String examAppFee(String amount);
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit application'**
+  String get examAppSubmit;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get examAppUpdate;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Application saved. Pay the exam fee in Fees to get your hall ticket.'**
+  String get examAppSent;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Application {no}'**
+  String examAppNo(String no);
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee due'**
+  String get examAppFeeDue;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee paid'**
+  String get examAppFeePaid;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee waived'**
+  String get examAppFeeWaived;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice {no}'**
+  String examAppInvoice(String no);
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered'**
+  String get examAppRegistered;
+
+  /// Exam applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Not eligible'**
+  String get examAppIneligible;
+
+  /// Revaluation kinds.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want?'**
+  String get revalKind;
+
+  /// Revaluation kinds.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation'**
+  String get revalKindRevaluation;
+
+  /// Revaluation kinds.
+  ///
+  /// In en, this message translates to:
+  /// **'Retotalling'**
+  String get revalKindRetotalling;
+
+  /// Revaluation kinds.
+  ///
+  /// In en, this message translates to:
+  /// **'Photocopy of the answer script'**
+  String get revalKindPhotocopy;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
