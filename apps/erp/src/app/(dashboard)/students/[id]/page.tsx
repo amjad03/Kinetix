@@ -24,6 +24,9 @@ import { formatDate, formatMonth } from '@/lib/dates';
 import { formatRupees } from '@/lib/money';
 import type { Structure } from '@/lib/types';
 import { getI18n, isSchoolTenant } from '@/i18n/server';
+import { StudentOutcomesView } from '@/components/obe/StudentOutcomes';
+import { safe } from '@/lib/depth-ui';
+import type { StudentOutcomes } from '@/lib/obe-flagship';
 
 import { Alert } from '@/components/kx';
 import { ArrowLeft as ArrowBack, BookOpen, Cake, CalendarDays, CircleCheck, Droplet, Hash, IdCard, Mail, Phone, School, UserRound, Users } from 'lucide-react';
@@ -81,6 +84,8 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
     load(() => api<{ subjects: { subject: string; percent: number }[] }>(`/v1/marks/students/${id}`)),
     load(() => api<{ duePaise: number; invoices: { id: string; title: string; amountPaise: number; paidPaise: number; dueOn: string; status: string }[] }>(`/v1/fees/students/${id}`)),
   ]);
+  // CO-wise attainment (OBE) for the roles that may see it; nothing for others or for a school class without COs.
+  const outcomes = await safe(api<StudentOutcomes>(`/v1/obe/students/${id}/outcomes`), null);
   const a = att.data;
   const subjects = marks.data?.subjects ?? [];
   const invoices = fees.data?.invoices ?? [];
@@ -201,7 +206,7 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
             </div>
           </>
         }
-        initialTab={tab === 'details' || tab === 'clearances' || tab === 'fees' ? tab : undefined}
+        initialTab={tab === 'details' || tab === 'clearances' || tab === 'fees' || tab === 'outcomes' ? tab : undefined}
         related={[
           {
             value: 'details',
@@ -257,6 +262,9 @@ export default async function StudentPage({ params, searchParams }: { params: Pr
               </div>
             ),
           },
+          ...(outcomes && outcomes.courses.length
+            ? [{ value: 'outcomes', label: t('of.stu.tab'), count: outcomes.courses.reduce((n, c) => n + c.cos.length, 0), content: <div className={box}><StudentOutcomesView data={outcomes} /></div> }]
+            : []),
           {
             value: 'attendance',
             label: t('v2.prof.attendance'),

@@ -2,30 +2,20 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FieldRow, FormField, TextInput } from '@/components/ui';
-import { addOutcome, removeOutcome, saveConfig } from '@/app/(dashboard)/obe/actions';
+import { addOutcome, removeOutcome } from '@/app/(dashboard)/obe/actions';
 import { useRun } from '@/components/exams/useRun';
 import { useI18n } from '@/i18n/client';
-import type { AttainmentConfig, OutcomeKind, ProgramOutcome } from '@/lib/obe';
+import type { OutcomeKind, ProgramOutcome } from '@/lib/obe';
 
 import { Button, Card, MenuItem } from '@/components/kx';
 const KINDS: OutcomeKind[] = ['mission', 'vision', 'peo', 'po', 'pso'];
 
-export function OutcomesEditor({ programs, programId, outcomes, config, canEdit }: { programs: { id: string; name: string }[]; programId: string; outcomes: ProgramOutcome[]; config: AttainmentConfig; canEdit: boolean }) {
+/** The programme's mission, vision, PEOs, POs and PSOs. */
+export function OutcomesEditor({ programs, programId, outcomes, canEdit }: { programs: { id: string; name: string }[]; programId: string; outcomes: ProgramOutcome[]; canEdit: boolean }) {
   const { t } = useI18n();
   const router = useRouter();
   const { pending, run, feedback } = useRun();
   const [f, setF] = useState({ kind: 'po' as OutcomeKind, code: '', statement: '' });
-  const [c, setC] = useState({ ...config, evidence: Object.entries(config.evidenceWeights).map(([k, v]) => `${k}=${v}`).join(', '), levels: config.levels.map((l) => `${l.level}:${l.minStudentsPercent}`).join(', ') });
-  const save = () => {
-    const evidenceWeights = Object.fromEntries(c.evidence.split(',').map((p) => p.trim()).filter(Boolean).map((p) => [p.split('=')[0].trim(), Number(p.split('=')[1])]));
-    const levels = c.levels.split(',').map((p) => p.trim()).filter(Boolean).map((p) => ({ level: Number(p.split(':')[0]), minStudentsPercent: Number(p.split(':')[1]) }));
-    run(() => saveConfig(programId, { studentThresholdPercent: Number(c.studentThresholdPercent), levels, evidenceWeights, directWeight: Number(c.directWeight), indirectWeight: Number(c.indirectWeight), maxLevel: Number(c.maxLevel), targetLevel: Number(c.targetLevel), decimals: Number(c.decimals) }), t('obe.configSaved'));
-  };
-  const num = (k: 'studentThresholdPercent' | 'directWeight' | 'indirectWeight' | 'maxLevel' | 'targetLevel') => (
-    <FormField label={t(`obe.cfg.${k}`)}>
-      <TextInput type="number" value={c[k]} onChange={(e) => setC({ ...c, [k]: e.target.value as unknown as number })} disabled={!canEdit} />
-    </FormField>
-  );
   return (
     <>
       <FormField label={t('exm.f.program')}>
@@ -79,27 +69,6 @@ export function OutcomesEditor({ programs, programId, outcomes, config, canEdit 
             </Button>
           </FieldRow>
         </Card>
-      )}
-      <h2 className="text-base leading-6 font-medium tracking-[0.1px] mb-2">
-        {t('obe.cfg.title')}
-      </h2>
-      <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(190px,1fr))]">
-        {num('studentThresholdPercent')}
-        {num('directWeight')}
-        {num('indirectWeight')}
-        {num('maxLevel')}
-        {num('targetLevel')}
-        <FormField label={t('obe.cfg.levels')}>
-          <TextInput helperText={t('obe.cfg.levelsHelp')} value={c.levels} onChange={(e) => setC({ ...c, levels: e.target.value })} disabled={!canEdit} />
-        </FormField>
-        <FormField label={t('obe.cfg.evidence')}>
-          <TextInput helperText={t('obe.cfg.evidenceHelp')} value={c.evidence} onChange={(e) => setC({ ...c, evidence: e.target.value })} disabled={!canEdit} />
-        </FormField>
-      </div>
-      {canEdit && (
-        <Button className="mt-3" variant="contained" disabled={pending} onClick={save}>
-          {t('obe.cfg.save')}
-        </Button>
       )}
     </>
   );

@@ -50,7 +50,7 @@ export function ObeDashboard({
   const router = useRouter();
   const { pending, run, feedback } = useRun();
   const [draft, setDraft] = useState({ targetId: '', title: '', dueOn: '' });
-  const go = (p: string, y: string, s = '') => router.push(`/obe?programId=${p}&academicYearId=${y}${s ? `&subjectId=${s}` : ''}`);
+  const go = (p: string, y: string, s = '') => router.push(`/obe/attainment?programId=${p}&academicYearId=${y}${s ? `&subjectId=${s}` : ''}`);
   const all = [...(attainment?.cos ?? []), ...(attainment?.pos ?? [])];
   const base = `/v1/obe/programs/${programId}/report`;
   const max = attainment?.config.maxLevel || 3;

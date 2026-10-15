@@ -18,6 +18,7 @@ import '../core/growth_models.dart';
 import '../core/hr_models.dart';
 import '../core/insights_models.dart';
 import '../core/models.dart';
+import '../core/obe_models.dart';
 import '../core/offline_key.dart';
 import '../core/work_models.dart';
 import '../core/push.dart';
@@ -1349,6 +1350,176 @@ class FakeTeacherApi implements TeacherApi {
     calls.add('coAttainment $programId $academicYearId');
     if (attainmentError != null) throw attainmentError!;
     return coAttainmentList;
+  }
+
+  List<CourseAssessment> courseAssessmentList = const [
+    CourseAssessment(
+      id: 'qa1',
+      title: 'Internal test 1',
+      kind: 'test',
+      section: 'BCom Sem 3 A',
+      maxMarks: 20,
+      heldOn: '2026-09-12',
+      evidence: 'cie',
+      basis: 'questions',
+      questions: 3,
+      tagged: 3,
+      classSize: 2,
+      questionMarked: 1,
+    ),
+    CourseAssessment(
+      id: 'qa2',
+      title: 'Assignment 1',
+      kind: 'assignment',
+      section: 'BCom Sem 3 A',
+      maxMarks: 10,
+      evidence: 'cie',
+      basis: 'none',
+      questions: 0,
+      tagged: 0,
+      classSize: 2,
+      questionMarked: 0,
+    ),
+  ];
+  Map<String, QuestionPaper> questionPapers = {
+    'qa1': const QuestionPaper(
+      id: 'qa1',
+      title: 'Internal test 1',
+      section: 'BCom Sem 3 A',
+      subject: 'BCOM-3.1 Corporate Accounting',
+      maxMarks: 20,
+      evidence: 'cie',
+      editable: true,
+      cos: [
+        PaperCo(id: 'co1', code: 'CO1', statement: 'Value goodwill by common methods'),
+        PaperCo(id: 'co2', code: 'CO2', statement: 'Prepare company final accounts'),
+      ],
+      questions: [
+        PaperQuestion(id: 'q1', no: '1', part: 'A', maxMarks: 5, bloomLevel: 'remember', coIds: ['co1']),
+        PaperQuestion(id: 'q2', no: '2', part: 'B', maxMarks: 5, bloomLevel: 'apply', coIds: ['co1']),
+        PaperQuestion(id: 'q3', no: '3', part: 'B', maxMarks: 10, bloomLevel: 'create', coIds: ['co2']),
+      ],
+      students: [
+        PaperStudent(id: 'st1', rollNo: '01', name: 'Aarav Rao', absent: false, total: 14, marks: {'q1': 4, 'q2': 3, 'q3': 7}),
+        PaperStudent(id: 'st2', rollNo: '02', name: 'Bhavya Shetty', absent: false, marks: {}),
+      ],
+    ),
+    'qa2': const QuestionPaper(
+      id: 'qa2',
+      title: 'Assignment 1',
+      section: 'BCom Sem 3 A',
+      subject: 'BCOM-3.1 Corporate Accounting',
+      maxMarks: 10,
+      evidence: 'cie',
+      editable: true,
+      cos: [],
+      questions: [],
+      students: [],
+    ),
+  };
+  List<List<QuestionMarksEntry>> savedQuestionMarks = [];
+
+  @override
+  Future<List<CourseAssessment>> courseAssessments(String subjectId, String academicYearId) async {
+    calls.add('courseAssessments $subjectId $academicYearId');
+    return courseAssessmentList;
+  }
+
+  @override
+  Future<QuestionPaper> questionPaper(String assessmentId) async => questionPapers[assessmentId]!;
+
+  @override
+  Future<QuestionPaper> saveQuestionMarks(String assessmentId, List<QuestionMarksEntry> entries) async {
+    savedQuestionMarks.add(entries);
+    final p = questionPapers[assessmentId]!;
+    final byId = {for (final e in entries) e.studentId: e};
+    final next = QuestionPaper(
+      id: p.id,
+      title: p.title,
+      section: p.section,
+      subject: p.subject,
+      maxMarks: p.maxMarks,
+      evidence: p.evidence,
+      editable: p.editable,
+      cos: p.cos,
+      questions: p.questions,
+      students: [
+        for (final s in p.students)
+          if (byId[s.id] case final e?)
+            PaperStudent(
+              id: s.id,
+              rollNo: s.rollNo,
+              name: s.name,
+              absent: e.absent,
+              marks: e.absent ? const {} : e.marks,
+              total: e.absent || e.marks.values.every((v) => v == null) ? null : e.marks.values.fold<double>(0, (a, b) => a + (b ?? 0)),
+            )
+          else
+            s,
+      ],
+    );
+    questionPapers[assessmentId] = next;
+    return next;
+  }
+
+  List<CoApproval> coApprovalList = [
+    CoApproval(
+      id: 'cs9',
+      version: 3,
+      stage: 'hod',
+      subjectId: 'sub2',
+      subject: 'Business Statistics',
+      code: 'BCOM-3.2',
+      program: 'BCom',
+      cos: 5,
+      verbIssues: 1,
+      submittedBy: 'Ravi Kumar',
+      submittedAt: DateTime(2026, 10, 3, 11),
+    ),
+  ];
+  Map<String, CoReviews> coReviewMap = {
+    'cs9': CoReviews(
+      reviewStage: 'hod',
+      canDecide: true,
+      history: [
+        CoReviewEntry(
+          stage: 'hod',
+          decision: 'submitted',
+          comment: 'Revised CO3 after the BoS meeting',
+          actor: 'Ravi Kumar',
+          at: DateTime(2026, 10, 3, 11),
+        ),
+      ],
+    ),
+  };
+  List<String> submitWarnings = const [];
+
+  @override
+  Future<List<String>> submitCoSet(String coSetId, {String? comment}) async {
+    calls.add('submitCoSet $coSetId');
+    coSetList = [
+      for (final s in coSetList)
+        s.id == coSetId ? CoSet(id: s.id, version: s.version, status: s.status, outcomes: s.outcomes, note: s.note, reviewStage: 'hod') : s,
+    ];
+    return submitWarnings;
+  }
+
+  @override
+  Future<List<CoApproval>> coApprovals() async => coApprovalList;
+
+  @override
+  Future<CoReviews> coReviews(String coSetId) async =>
+      coReviewMap[coSetId] ?? const CoReviews(reviewStage: 'draft', canDecide: false, history: []);
+
+  @override
+  Future<void> reviewCoSet(String coSetId, {required String decision, String? comment}) async {
+    calls.add('reviewCoSet $coSetId $decision ${comment ?? ''}'.trim());
+    if (decision != 'comment') {
+      coApprovalList = [
+        for (final a in coApprovalList)
+          if (a.id != coSetId) a,
+      ];
+    }
   }
 
   // --- Research --------------------------------------------------------------------------------

@@ -262,7 +262,7 @@ class SurveyQuestion {
 }
 
 class MySurvey {
-  const MySurvey({required this.id, required this.title, required this.description, required this.anonymous, required this.answered, required this.questions, this.closesAt});
+  const MySurvey({required this.id, required this.title, required this.description, required this.anonymous, required this.answered, required this.questions, this.closesAt, this.obeKind});
 
   factory MySurvey.fromJson(Map<String, dynamic> j) => MySurvey(
     id: j['id'] as String,
@@ -271,6 +271,7 @@ class MySurvey {
     anonymous: j['anonymous'] as bool? ?? false,
     answered: j['answered'] as bool? ?? false,
     closesAt: _at(j['closesAt']),
+    obeKind: j['obeKind'] as String?,
     questions: [for (final q in (j['questions'] as List? ?? const [])) SurveyQuestion.fromJson((q as Map).cast<String, dynamic>())],
   );
 
@@ -281,6 +282,11 @@ class MySurvey {
   final bool answered;
   final DateTime? closesAt;
   final List<SurveyQuestion> questions;
+
+  /// course_exit or programme_exit when the survey measures course or programme outcomes (OBE).
+  final String? obeKind;
+
+  bool get isExitSurvey => obeKind == 'course_exit' || obeKind == 'programme_exit';
 }
 
 /// One answer on its way to `POST /v1/surveys/:id/responses`.

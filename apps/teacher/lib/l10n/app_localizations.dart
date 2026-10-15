@@ -7142,6 +7142,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Book'**
   String get bookingSend;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Question-wise marks'**
+  String get obeQuestionMarks;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks per question, counted towards the COs each question tests'**
+  String get obeQuestionMarksBody;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'No assessments for this course this year.'**
+  String get obeAssessmentsEmpty;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'No academic year is set up yet.'**
+  String get obeNoYear;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'{tagged} of {questions} questions tagged · {marked} of {size} students marked'**
+  String obeAssessmentProgress(int tagged, int questions, int marked, int size);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal (CIE)'**
+  String get obeEvidenceCie;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'End-semester (SEE)'**
+  String get obeEvidenceSee;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'No question paper yet. Set the questions and their COs in the ERP: OBE, the course, Assessments.'**
+  String get obeNoPaper;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Q{no} · {max} marks · {cos}'**
+  String obeQuestionHead(String no, String max, String cos);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Q{no}'**
+  String obeQuestionLabel(String no);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {total} / {max}'**
+  String obeTotalOf(String total, String max);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get obeAbsent;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'0 to {max}'**
+  String obeMarkRange(String max);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Save marks'**
+  String get obeSaveMarks;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Question-wise marks saved'**
+  String get obeMarksSaved;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Some marks are outside the question\'s range; fix the highlighted ones.'**
+  String get obeMarksFix;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'These marks are submitted or locked, so they can only be read here.'**
+  String get obeMarksReadOnly;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'CO approvals'**
+  String get obeApprovals;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is waiting for your approval.'**
+  String get obeApprovalsEmpty;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} · version {version} · {count} COs'**
+  String obeApprovalLine(String code, int version, int count);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent by {name}'**
+  String obeSentBy(String name);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One CO to check the action verb} other{{count} COs to check the action verb}}'**
+  String obeVerbIssues(int count);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sent for approval'**
+  String get obeStageDraft;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'With the head of department'**
+  String get obeStageHod;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'With the OBE coordinator'**
+  String get obeStageCoordinator;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'With the IQAC'**
+  String get obeStageIqac;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned for changes'**
+  String get obeStageReturned;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get obeStageApproved;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Send for approval'**
+  String get obeSubmit;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent for approval'**
+  String get obeSubmitted;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Sent for approval, with one point for reviewers to check} other{Sent for approval, with {count} points for reviewers to check}}'**
+  String obeSubmittedWarnings(int count);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for the reviewers (optional)'**
+  String get obeReviewNote;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get obeReviewComment;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get obeApprove;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Return'**
+  String get obeReturn;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Add comment'**
+  String get obeAddComment;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Say what needs to change before returning.'**
+  String get obeReturnNeedsComment;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the comment first.'**
+  String get obeCommentNeeded;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get obeApprovedDone;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned to the teacher'**
+  String get obeReturnedDone;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment added'**
+  String get obeCommentedDone;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Review history'**
+  String get obeHistory;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet.'**
+  String get obeHistoryEmpty;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get obeDecisionSubmitted;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get obeDecisionApproved;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned'**
+  String get obeDecisionReturned;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get obeDecisionComment;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'This step is for another reviewer; you can still comment.'**
+  String get obeNotYourStep;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

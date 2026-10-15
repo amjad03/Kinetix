@@ -75,6 +75,12 @@ class _SurveysScreenState extends State<SurveysScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(s.title, style: context.text.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                            if (s.isExitSurvey)
+                              Text(
+                                s.obeKind == 'programme_exit' ? l.surveyExitProgramme : l.surveyExitCourse,
+                                key: Key('surveyExit-${s.id}'),
+                                style: context.text.labelSmall?.copyWith(color: context.colors.primary),
+                              ),
                             if (s.closesAt != null) Text(l.surveyClosesOn(context.fmt.dateTime(s.closesAt!)), style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
                           ],
                         ),

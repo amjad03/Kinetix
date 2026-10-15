@@ -1,30 +1,50 @@
 /**
  * OBE attainment maths. Pure functions: the service gathers evidence, these turn it into levels.
- * Nothing here is an accreditor's constant; every number comes from the framework configuration.
+ * Nothing here is an accreditor's constant; every number comes from the attainment policy (institution, programme or
+ * course, see ObeService.policy). The defaults are the ones the institution approved:
  *
- * Direct CO attainment (per evidence kind, e.g. CIE and SEE, then weighted):
- *   1. per student, pool the marks of every assessment item of that kind mapped to the CO;
- *   2. a student attains the CO when they score ≥ `studentThresholdPercent` of those marks;
- *   3. the share of students who attain gives the level through `levels`
- *      (e.g. ≥70% of students → 3, ≥60% → 2, ≥50% → 1, else 0);
- *   4. direct = Σ(kind weight × kind level) ÷ Σ weights of the kinds that have evidence.
+ * Direct CO attainment (per evidence kind: CIE is "internal", SEE is "external"; then weighted 40 : 60):
+ *   1. per student, pool the marks of every question (or assessment share) of that kind tagged to the CO;
+ *   2. the "threshold" method: a student attains the CO when they score ≥ `studentThresholdPercent` (60%) of those
+ *      marks, and the share of students who attain gives the level through `levels` (≥60% of students → 3,
+ *      ≥50% → 2, ≥40% → 1, else 0);
+ *      the "class_average" method (NBA's alternative): the class's average percentage on those marks gives the level
+ *      through the same bands; the "percentage" method: the level is the share of students attaining × top level
+ *      (a continuous value, e.g. 70% of students → 2.1 on a 0-3 scale);
+ *   3. direct = Σ(kind weight × kind level) ÷ Σ weights of the kinds that have evidence.
  * Indirect: each survey's mean rating is scaled to the level scale (mean ÷ scale max × level max),
  *   surveys under their minimum response count are ignored, the rest are weight-averaged.
- * Combined = directWeight × direct + indirectWeight × indirect (direct only when no survey qualifies).
- * PO/PSO = Σ(mapping strength × CO attainment) ÷ Σ strength over every mapped CO of the program.
+ * Combined = directWeight × direct + indirectWeight × indirect (80 : 20; direct only when no survey qualifies).
+ * PO/PSO (direct part), by `poMethod`:
+ *   - "course_weighted" (default): for each course, A = Σ(strength × CO attainment) ÷ Σ strength over the course's COs
+ *     mapped to the PO, and its articulation P = the average strength of those mappings (the programme articulation
+ *     matrix); PO = Σ(P × A) ÷ Σ P over the courses;
+ *   - "co_weighted": Σ(strength × CO attainment) ÷ Σ strength over every mapped CO of the programme;
+ *   - "course_average": NBA's course-level form, PO = Σ(P × course attainment) ÷ Σ P, the course attainment being the
+ *     average of all its measured COs.
+ * Apportioning: an assessment whose result arrives as a total (a university SEE) is shared out to the COs of its
+ * question paper by the paper's CO weightage ("blueprint": the marks of the questions on each CO), or equally
+ * between the COs it tests ("equal"); "off" leaves totals-only results out.
  */
 
 export interface LevelRule {
   level: number;
-  /** Minimum percentage of students attaining the threshold for this level. */
+  /** Minimum percentage (of students attaining the threshold, or the class average) for this level. */
   minStudentsPercent: number;
 }
+
+export type CoMethod = 'threshold' | 'class_average' | 'percentage';
+export type PoMethod = 'course_weighted' | 'co_weighted' | 'course_average';
+export type Apportion = 'blueprint' | 'equal' | 'off';
+export const CO_METHODS: CoMethod[] = ['threshold', 'class_average', 'percentage'];
+export const PO_METHODS: PoMethod[] = ['course_weighted', 'co_weighted', 'course_average'];
+export const APPORTION: Apportion[] = ['blueprint', 'equal', 'off'];
 
 export interface AttainmentConfig {
   /** Percentage of the mapped marks a student must score to attain the outcome. */
   studentThresholdPercent: number;
   levels: LevelRule[];
-  /** Weight of each evidence kind in direct attainment, e.g. { internal: 30, external: 70 }. */
+  /** Weight of each evidence kind in direct attainment, e.g. { internal: 40, external: 60 }. */
   evidenceWeights: Record<string, number>;
   directWeight: number;
   indirectWeight: number;
@@ -33,33 +53,52 @@ export interface AttainmentConfig {
   /** Target attainment level for COs and POs. */
   targetLevel: number;
   decimals: number;
+  /** How a kind's level is found from the students' scores. */
+  coMethod?: CoMethod;
+  /** How COs roll up to POs and PSOs. */
+  poMethod?: PoMethod;
+  /** How a totals-only result is shared out to COs. */
+  seeApportion?: Apportion;
+  /** LMS quiz questions tagged to a CO count as CIE. */
+  includeLms?: boolean;
 }
 
-export const DEFAULT_ATTAINMENT_CONFIG: AttainmentConfig = {
+export const DEFAULT_ATTAINMENT_CONFIG: Required<AttainmentConfig> = {
   studentThresholdPercent: 60,
   levels: [
-    { level: 3, minStudentsPercent: 70 },
-    { level: 2, minStudentsPercent: 60 },
-    { level: 1, minStudentsPercent: 50 },
+    { level: 3, minStudentsPercent: 60 },
+    { level: 2, minStudentsPercent: 50 },
+    { level: 1, minStudentsPercent: 40 },
   ],
-  evidenceWeights: { internal: 30, external: 70 },
+  evidenceWeights: { internal: 40, external: 60 },
   directWeight: 80,
   indirectWeight: 20,
   maxLevel: 3,
   targetLevel: 2,
   decimals: 2,
+  coMethod: 'threshold',
+  poMethod: 'course_weighted',
+  seeApportion: 'blueprint',
+  includeLms: true,
 };
 
-const round = (n: number, d: number) => Math.round((n + Number.EPSILON) * 10 ** d) / 10 ** d;
+/** A stored policy with every rule filled in (older policies predate the methods). */
+export function withDefaults(c: Partial<AttainmentConfig> | null | undefined): Required<AttainmentConfig> {
+  return { ...DEFAULT_ATTAINMENT_CONFIG, ...(c ?? {}) } as Required<AttainmentConfig>;
+}
+
+export const round = (n: number, d: number) => Math.round((n + Number.EPSILON) * 10 ** d) / 10 ** d;
 
 export interface EvidenceItem {
   /** Assessment (or question) the marks come from. */
   sourceId: string;
   label: string;
-  /** Evidence kind: internal / external / practical / project / viva. */
+  /** Evidence kind: internal (CIE) / external (SEE) / classroom / any kind the policy weights. */
   kind: string;
   /** Marks of this item that count towards the CO, per student (absent = 0 of max). */
   scores: { studentId: string; scored: number | null; max: number }[];
+  /** How the marks reached the CO: from question marks, apportioned from a total by the paper, or by an assessment share. */
+  basis?: 'questions' | 'apportioned' | 'share' | 'lms' | 'poll';
 }
 
 export interface KindAttainment {
@@ -79,12 +118,21 @@ export interface DirectAttainment {
   weakItems: { sourceId: string; label: string; percentAttained: number }[];
 }
 
-export function levelFor(config: AttainmentConfig, percentStudents: number): number {
-  const rule = [...config.levels].sort((a, b) => b.level - a.level).find((r) => percentStudents + 1e-9 >= r.minStudentsPercent);
+export function levelFor(config: AttainmentConfig, percent: number): number {
+  const rule = [...config.levels].sort((a, b) => b.level - a.level).find((r) => percent + 1e-9 >= r.minStudentsPercent);
   return rule ? rule.level : 0;
 }
 
-function pooled(items: EvidenceItem[], threshold: number) {
+/** The level of a pool of students under the policy's CO method. */
+export function methodLevel(config: AttainmentConfig, p: { percentAttained: number; averagePercent: number }): number {
+  const m = config.coMethod ?? 'threshold';
+  if (m === 'class_average') return levelFor(config, p.averagePercent);
+  if (m === 'percentage') return round((p.percentAttained / 100) * config.maxLevel, config.decimals);
+  return levelFor(config, p.percentAttained);
+}
+
+/** Each student's marks and maximum, pooled over the items. */
+export function pooledByStudent(items: EvidenceItem[]): Map<string, { scored: number; max: number }> {
   const per = new Map<string, { scored: number; max: number }>();
   for (const it of items)
     for (const s of it.scores) {
@@ -93,7 +141,11 @@ function pooled(items: EvidenceItem[], threshold: number) {
       p.max += s.max;
       per.set(s.studentId, p);
     }
-  const rows = [...per.values()].filter((p) => p.max > 0);
+  return per;
+}
+
+export function pooled(items: EvidenceItem[], threshold: number) {
+  const rows = [...pooledByStudent(items).values()].filter((p) => p.max > 0);
   const attained = rows.filter((p) => (p.scored / p.max) * 100 + 1e-9 >= threshold).length;
   const avg = rows.length ? rows.reduce((s, p) => s + p.scored / p.max, 0) / rows.length : 0;
   return { students: rows.length, attained, percentAttained: rows.length ? (attained / rows.length) * 100 : 0, averagePercent: avg * 100 };
@@ -115,7 +167,7 @@ export function directAttainment(items: EvidenceItem[], config: AttainmentConfig
       attained: p.attained,
       percentAttained: round(p.percentAttained, 2),
       averagePercent: round(p.averagePercent, 2),
-      level: levelFor(config, p.percentAttained),
+      level: methodLevel(config, p),
       weight,
     });
   }
@@ -123,9 +175,13 @@ export function directAttainment(items: EvidenceItem[], config: AttainmentConfig
   const totalWeight = weighted.reduce((s, k) => s + k.weight, 0);
   const level = totalWeight === 0 ? null : round(weighted.reduce((s, k) => s + k.weight * k.level, 0) / totalWeight, config.decimals);
   const weakItems = items
-    .map((i) => ({ sourceId: i.sourceId, label: i.label, percentAttained: round(pooled([i], config.studentThresholdPercent).percentAttained, 2) }))
-    .filter((i) => levelFor(config, i.percentAttained) < config.targetLevel)
-    .sort((a, b) => a.percentAttained - b.percentAttained);
+    .map((i) => {
+      const p = pooled([i], config.studentThresholdPercent);
+      return { sourceId: i.sourceId, label: i.label, percentAttained: round(p.percentAttained, 2), level: methodLevel(config, p), n: p.students };
+    })
+    .filter((i) => i.n > 0 && i.level < config.targetLevel)
+    .sort((a, b) => a.percentAttained - b.percentAttained)
+    .map(({ sourceId, label, percentAttained }) => ({ sourceId, label, percentAttained }));
   return { level, byKind, weakItems };
 }
 
@@ -157,16 +213,115 @@ export function combinedAttainment(direct: number | null, indirect: number | nul
   return round((config.directWeight * direct + config.indirectWeight * indirect) / w, config.decimals);
 }
 
-/** PO/PSO attainment from mapped CO attainments: Σ(strength × CO) ÷ Σ strength. COs without attainment are left out (and reduce coverage). */
-export function programOutcomeAttainment(cells: { coId: string; strength: number; coAttainment: number | null }[], config: AttainmentConfig): { level: number | null; coverage: number; contributors: number } {
+export interface PoCell {
+  coId: string;
+  strength: number;
+  coAttainment: number | null;
+  /** The course (subject) the CO belongs to; needed by the course-wise methods. */
+  courseId?: string;
+}
+
+export interface PoAttainment {
+  level: number | null;
+  /** Share of the mapped COs that were measured. */
+  coverage: number;
+  contributors: number;
+  /** Per course: its articulation (average strength) and its attainment towards this PO (the PO attainment tree). */
+  byCourse: { courseId: string; articulation: number; attainment: number | null; cos: number }[];
+}
+
+/**
+ * PO/PSO attainment from mapped CO attainments (see the header for the methods). `courseAverage` (course → the average
+ * attainment of all its measured COs) is used by "course_average"; it defaults to the average of the mapped COs.
+ */
+export function programOutcomeAttainment(cells: PoCell[], config: AttainmentConfig, courseAverage?: Map<string, number | null>): PoAttainment {
   const mapped = cells.filter((c) => c.strength > 0);
   const known = mapped.filter((c) => c.coAttainment !== null);
-  const strength = known.reduce((s, c) => s + c.strength, 0);
+  const coverage = mapped.length === 0 ? 0 : round((known.length / mapped.length) * 100, 1);
+  const courses = [...new Set(mapped.map((c) => c.courseId ?? '_'))];
+  const byCourse = courses.map((courseId) => {
+    const mine = mapped.filter((c) => (c.courseId ?? '_') === courseId);
+    const measured = mine.filter((c) => c.coAttainment !== null);
+    const articulation = mine.reduce((s, c) => s + c.strength, 0) / mine.length;
+    const sw = measured.reduce((s, c) => s + c.strength, 0);
+    const weighted = sw === 0 ? null : measured.reduce((s, c) => s + c.strength * (c.coAttainment as number), 0) / sw;
+    const avg = courseAverage?.has(courseId) ? (courseAverage.get(courseId) ?? null) : measured.length ? measured.reduce((s, c) => s + (c.coAttainment as number), 0) / measured.length : null;
+    return { courseId, articulation, attainment: config.poMethod === 'course_average' ? avg : weighted, cos: mine.length };
+  });
+  let level: number | null;
+  if ((config.poMethod ?? 'co_weighted') === 'co_weighted') {
+    const strength = known.reduce((s, c) => s + c.strength, 0);
+    level = strength === 0 ? null : known.reduce((s, c) => s + c.strength * (c.coAttainment as number), 0) / strength;
+  } else {
+    const usable = byCourse.filter((c) => c.attainment !== null);
+    const p = usable.reduce((s, c) => s + c.articulation, 0);
+    level = p === 0 ? null : usable.reduce((s, c) => s + c.articulation * (c.attainment as number), 0) / p;
+  }
   return {
-    level: strength === 0 ? null : round(known.reduce((s, c) => s + c.strength * (c.coAttainment as number), 0) / strength, config.decimals),
-    coverage: mapped.length === 0 ? 0 : round((known.length / mapped.length) * 100, 1),
+    level: level === null ? null : round(level, config.decimals),
+    coverage,
     contributors: known.length,
+    byCourse: byCourse.map((c) => ({ ...c, articulation: round(c.articulation, 2), attainment: c.attainment === null ? null : round(c.attainment, config.decimals) })),
   };
+}
+
+/** The programme articulation matrix: course × PO, the average strength of the course's COs mapped to the PO (0 = none). */
+export function articulationMatrix(cells: { courseId: string; outcomeId: string; strength: number }[]): Map<string, Map<string, number>> {
+  const sums = new Map<string, Map<string, { s: number; n: number }>>();
+  for (const c of cells.filter((x) => x.strength > 0)) {
+    const row = sums.get(c.courseId) ?? new Map();
+    const cur = row.get(c.outcomeId) ?? { s: 0, n: 0 };
+    cur.s += c.strength;
+    cur.n++;
+    row.set(c.outcomeId, cur);
+    sums.set(c.courseId, row);
+  }
+  return new Map([...sums].map(([k, row]) => [k, new Map([...row].map(([o, v]) => [o, round(v.s / v.n, 2)]))]));
+}
+
+export interface BlueprintQuestion {
+  maxMarks: number;
+  cos: { coId: string; weight: number }[];
+}
+
+/**
+ * The share of a paper's marks that tests each CO. "blueprint": the marks of each question split over its COs by weight,
+ * over the marks of the whole paper (questions with no CO count for none). "equal": every CO the paper tests gets the
+ * same share. "off": none.
+ */
+export function blueprintShares(questions: BlueprintQuestion[], mode: Apportion): Map<string, number> {
+  const out = new Map<string, number>();
+  if (mode === 'off') return out;
+  const total = questions.reduce((s, q) => s + q.maxMarks, 0);
+  if (total <= 0) return out;
+  if (mode === 'equal') {
+    const cos = [...new Set(questions.flatMap((q) => q.cos.map((c) => c.coId)))];
+    for (const c of cos) out.set(c, 1 / cos.length);
+    return out;
+  }
+  for (const q of questions) {
+    const w = q.cos.reduce((s, c) => s + c.weight, 0);
+    if (w <= 0) continue;
+    for (const c of q.cos) out.set(c.coId, (out.get(c.coId) ?? 0) + (q.maxMarks * c.weight) / w / total);
+  }
+  return out;
+}
+
+/** A student's marks on each CO from their question-wise marks: each question's marks split over its COs by weight. */
+export function questionCoMarks(questions: (BlueprintQuestion & { id: string })[], marks: Map<string, number | null>): Map<string, { scored: number; max: number }> {
+  const out = new Map<string, { scored: number; max: number }>();
+  for (const q of questions) {
+    const w = q.cos.reduce((s, c) => s + c.weight, 0);
+    if (w <= 0) continue;
+    const m = marks.get(q.id) ?? 0;
+    for (const c of q.cos) {
+      const cur = out.get(c.coId) ?? { scored: 0, max: 0 };
+      cur.scored += ((m ?? 0) * c.weight) / w;
+      cur.max += (q.maxMarks * c.weight) / w;
+      out.set(c.coId, cur);
+    }
+  }
+  return out;
 }
 
 export interface Gap {
@@ -196,5 +351,8 @@ export function validateConfig(c: AttainmentConfig): string | null {
   if (c.directWeight < 0 || c.indirectWeight < 0 || c.directWeight + c.indirectWeight === 0) return 'Direct and indirect weights must be positive';
   if (c.targetLevel > c.maxLevel) return 'The target cannot be above the top level';
   if (c.studentThresholdPercent <= 0 || c.studentThresholdPercent > 100) return 'The student threshold must be a percentage';
+  if (Object.values(c.evidenceWeights).every((w) => w <= 0)) return 'Give at least one kind of evidence a weight';
+  if (c.coMethod && !CO_METHODS.includes(c.coMethod)) return 'Choose a CO attainment method';
+  if (c.poMethod && !PO_METHODS.includes(c.poMethod)) return 'Choose a PO attainment method';
   return null;
 }

@@ -2809,6 +2809,10 @@ export const coSets = pgTable(
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
     activatedAt: timestamp('activated_at', { withTimezone: true }),
+    /** Approval workflow of a draft (migration 0184): draft → hod → coordinator → iqac → approved (activated), or returned with comments. */
+    reviewStage: text('review_stage').$type<'draft' | 'hod' | 'coordinator' | 'iqac' | 'approved' | 'returned'>().notNull().default('draft'),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    submittedBy: uuid('submitted_by').references((): AnyPgColumn => users.id, { onDelete: 'set null' }),
   },
   (t) => [uniqueIndex('co_sets_version_uq').on(t.subjectId, t.version)],
 );
@@ -2932,6 +2936,10 @@ export const improvementActions = pgTable('improvement_actions', {
   /** The year whose attainment showed the gap, and the outcome's code then (migration 0160). */
   academicYearId: uuid('academic_year_id').references(() => academicYears.id, { onDelete: 'set null' }),
   code: text('code'),
+  /** Action-taken report (migration 0184): what was done, when, and the course it was for. */
+  actionTaken: text('action_taken'),
+  takenOn: date('taken_on'),
+  subjectId: uuid('subject_id').references((): AnyPgColumn => subjects.id, { onDelete: 'set null' }),
 });
 
 /** Evidence for accreditation: a link or note tied to a CO, PO/PSO or an improvement action. */
@@ -3990,6 +3998,16 @@ export const TENANT_TABLES = [
   'peo_mission_map',
   'program_outcome_versions',
   'obe_targets',
+  // OBE flagship (migration 0184).
+  'assessment_questions',
+  'assessment_question_cos',
+  'question_marks',
+  'obe_policies',
+  'obe_programs',
+  'co_set_reviews',
+  'obe_assignments',
+  'obe_curriculum_gaps',
+  'obe_batch_snapshots',
   // IQAC depth (migration 0161).
   'iqac_members',
   'iqac_initiatives',
@@ -5653,6 +5671,12 @@ export const surveys = pgTable('surveys', {
   repeatEveryDays: smallint('repeat_every_days'),
   /** Opens by itself at `opensAt` instead of waiting for a person to publish. */
   autoPublish: boolean('auto_publish').notNull().default(false),
+  /** An OBE instrument (migration 0184): course_exit, programme_exit, alumni or employer, with what it measures. */
+  obeKind: text('obe_kind').$type<'course_exit' | 'programme_exit' | 'alumni' | 'employer'>(),
+  programId: uuid('program_id').references((): AnyPgColumn => programs.id, { onDelete: 'set null' }),
+  subjectId: uuid('subject_id').references((): AnyPgColumn => subjects.id, { onDelete: 'set null' }),
+  academicYearId: uuid('academic_year_id').references((): AnyPgColumn => academicYears.id, { onDelete: 'set null' }),
+  lastRemindedAt: timestamp('last_reminded_at', { withTimezone: true }),
   createdAt: createdAt(),
 });
 
@@ -5669,6 +5693,8 @@ export const surveyQuestions = pgTable('survey_questions', {
   coId: ref('co_id', () => courseOutcomes.id),
   /** Shown only when an earlier question was answered a certain way. */
   showIf: jsonb('show_if').$type<{ questionId: string; op: 'eq' | 'neq' | 'gte' | 'lte' | 'includes'; value: string | number }>(),
+  /** The PO or PSO this question measures (programme exit, alumni and employer surveys; migration 0184). */
+  outcomeId: uuid('outcome_id').references((): AnyPgColumn => programOutcomes.id, { onDelete: 'set null' }),
 });
 
 /** One row per respondent per survey: the "already answered" marker. */

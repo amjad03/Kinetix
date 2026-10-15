@@ -13,8 +13,10 @@ import { academicYears, assessmentCoMap, assessments, coOutcomeMap, coSets, cour
 import { pollCoMap } from '../db/schema-assist.js';
 import { headsSubject } from '../departments/departments.controller.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
-import { trend, validateConfig, type AttainmentConfig } from './attainment.js';
+import { APPORTION, CO_METHODS, PO_METHODS, trend, validateConfig, withDefaults, type AttainmentConfig } from './attainment.js';
 import { checkCo } from './bloom.js';
+import { obePolicies } from '../db/schema-obe-flagship.js';
+import { activateCoSet, assertCoEditor, OBE_ACTIVATORS } from './workflow.js';
 import { ObeService } from './obe.service.js';
 
 /** OBE belongs to leadership and the quality officer (IQAC), not the exam cell. */
@@ -32,6 +34,10 @@ const ConfigBody = z.object({
   maxLevel: z.number().positive().max(10),
   targetLevel: z.number().min(0).max(10),
   decimals: z.number().int().min(0).max(4),
+  coMethod: z.enum(CO_METHODS).optional(),
+  poMethod: z.enum(PO_METHODS).optional(),
+  seeApportion: z.enum(APPORTION).optional(),
+  includeLms: z.boolean().optional(),
 });
 const CoBody = z.object({ code: z.string().trim().min(1).max(16), statement: z.string().trim().min(3).max(1000), bloomLevel: z.string().trim().max(40).optional(), ord: z.number().int().min(0).max(100).default(0) });
 const MatrixBody = z.object({ cells: z.array(z.object({ coId: z.uuid(), outcomeId: z.uuid(), strength: z.number().int().min(0).max(3), justification: z.string().trim().max(500).optional() })).max(2000) });
@@ -110,9 +116,13 @@ export class ObeController {
     if (err) throw new BadRequestException(err);
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.obe.program(tx, programId);
-      await tx.insert(obeConfigs).values({ programId, tenantId: p.tenantId, config: body, updatedBy: p.userId }).onConflictDoUpdate({ target: obeConfigs.programId, set: { config: body, updatedBy: p.userId, updatedAt: new Date() } });
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.config.updated', subjectType: 'program', subjectId: programId, data: body });
-      return body;
+      const full = withDefaults(body);
+      await tx.insert(obeConfigs).values({ programId, tenantId: p.tenantId, config: full, updatedBy: p.userId }).onConflictDoUpdate({ target: obeConfigs.programId, set: { config: full, updatedBy: p.userId, updatedAt: new Date() } });
+      // Every change is kept as a new version of the programme's policy, so past calculations stay explainable.
+      const [{ v }] = await tx.select({ v: sql<number>`coalesce(max(${obePolicies.version}), 0)::int` }).from(obePolicies).where(and(eq(obePolicies.scope, 'program'), eq(obePolicies.programId, programId)));
+      await tx.insert(obePolicies).values({ tenantId: p.tenantId, scope: 'program', programId, version: v + 1, config: full, createdBy: p.userId });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.config.updated', subjectType: 'program', subjectId: programId, data: full });
+      return full;
     });
   }
 
@@ -142,7 +152,7 @@ export class ObeController {
         for (const c of old) {
           const [n] = await tx.insert(courseOutcomes).values({ tenantId: p.tenantId, coSetId: set.id, code: c.code, statement: c.statement, bloomLevel: c.bloomLevel, ord: c.ord }).returning({ id: courseOutcomes.id });
           const cells = await tx.select().from(coOutcomeMap).where(eq(coOutcomeMap.coId, c.id));
-          if (cells.length) await tx.insert(coOutcomeMap).values(cells.map((x) => ({ tenantId: p.tenantId, coId: n.id, outcomeId: x.outcomeId, strength: x.strength })));
+          if (cells.length) await tx.insert(coOutcomeMap).values(cells.map((x) => ({ tenantId: p.tenantId, coId: n.id, outcomeId: x.outcomeId, strength: x.strength, justification: x.justification })));
         }
       }
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.coset.created', subjectType: 'co_set', subjectId: set.id, data: { subjectId, version: set.version } });
@@ -190,18 +200,21 @@ export class ObeController {
     });
   }
 
-  /** Makes a draft version the live one; the previous live version is retired (its history stays). */
+  /**
+   * Makes a draft version the live one; the previous live version is retired (its history stays). Teachers send their
+   * draft through the approval workflow (head of department, OBE coordinator, IQAC), whose last approval activates it;
+   * the principal, administrator or IQAC may activate a draft directly, which is recorded in its review history.
+   */
   @Post('co-sets/:id/activate')
   @HttpCode(200)
   @Auth('user', STAFF)
   activate(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const set = await this.editableSet(tx, p, id);
-      const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(courseOutcomes).where(eq(courseOutcomes.coSetId, id));
-      if (n === 0) throw new BadRequestException('Add at least one course outcome first');
-      await tx.update(coSets).set({ status: 'retired' }).where(and(eq(coSets.subjectId, set.subjectId), eq(coSets.status, 'active')));
-      await tx.update(coSets).set({ status: 'active', activatedAt: new Date() }).where(eq(coSets.id, id));
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.coset.activated', subjectType: 'co_set', subjectId: id, data: { version: set.version } });
+      const [set] = await tx.select().from(coSets).where(eq(coSets.id, id));
+      if (!set) throw new NotFoundException('Version not found');
+      if (set.status !== 'draft') throw new ConflictException('Only a draft version can be changed; start a new version');
+      if (!p.roles.some((r) => OBE_ACTIVATORS.includes(r))) throw new ConflictException('Send the course outcomes for approval; they become live when the IQAC approves them');
+      await activateCoSet(tx, p, set, 'Activated directly');
       return { status: 'active' };
     });
   }
@@ -522,11 +535,7 @@ export class ObeController {
   }
 
   private async assertCoEditor(tx: Tx, p: UserPrincipal, subjectId: string) {
-    const [s] = await tx.select({ id: subjects.id }).from(subjects).where(eq(subjects.id, subjectId));
-    if (!s) throw new NotFoundException('Subject not found');
-    if (isSchoolAdmin(p) || (await headsSubject(tx, p, subjectId))) return;
-    const [slot] = await tx.execute<{ n: number }>(sql`select count(*)::int as n from timetable_slots where subject_id = ${subjectId}::uuid and teacher_id = ${p.userId}::uuid`).then((r) => r.rows);
-    if (!slot || slot.n === 0) throw new ForbiddenException('Only the subject teacher, head of department or principal can change course outcomes');
+    await assertCoEditor(tx, p, subjectId);
   }
 
   private async editableSet(tx: Tx, p: UserPrincipal, setId: string) {
@@ -534,6 +543,7 @@ export class ObeController {
     if (!set) throw new NotFoundException('Version not found');
     await this.assertCoEditor(tx, p, set.subjectId);
     if (set.status !== 'draft') throw new ConflictException('Only a draft version can be changed; start a new version');
+    if (set.reviewStage !== 'draft' && set.reviewStage !== 'returned') throw new ConflictException('The course outcomes are under review; they can be changed when they are returned');
     return set;
   }
 }

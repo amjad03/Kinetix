@@ -1589,5 +1589,149 @@
   "bookingTitleLabel": "शीर्षक",
   "bookingPurpose": "उद्देश्य (वैकल्पिक)",
   "bookingAttendees": "अपेक्षित लोग (वैकल्पिक)",
-  "bookingSend": "बुक करें"
+  "bookingSend": "बुक करें",
+  "obeQuestionMarks": "प्रश्नवार अंक",
+  "obeQuestionMarksBody": "हर प्रश्न के अंक, जो उस प्रश्न के CO में गिने जाते हैं",
+  "obeAssessmentsEmpty": "इस वर्ष इस कोर्स का कोई मूल्यांकन नहीं है।",
+  "obeNoYear": "अभी कोई शैक्षणिक वर्ष तय नहीं है।",
+  "obeAssessmentProgress": "{questions} में से {tagged} प्रश्न टैग · {size} में से {marked} विद्यार्थियों के अंक",
+  "@obeAssessmentProgress": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "tagged": {
+        "type": "int"
+      },
+      "questions": {
+        "type": "int"
+      },
+      "marked": {
+        "type": "int"
+      },
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "obeEvidenceCie": "आंतरिक (CIE)",
+  "obeEvidenceSee": "सेमेस्टर-अंत (SEE)",
+  "obeNoPaper": "अभी प्रश्न-पत्र नहीं है। ERP में OBE, कोर्स, मूल्यांकन में प्रश्न और उनके CO तय करें।",
+  "obeQuestionHead": "प्र{no} · {max} अंक · {cos}",
+  "@obeQuestionHead": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "cos": {
+        "type": "String"
+      }
+    }
+  },
+  "obeQuestionLabel": "प्र{no}",
+  "@obeQuestionLabel": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "obeTotalOf": "कुल {total} / {max}",
+  "@obeTotalOf": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAbsent": "अनुपस्थित",
+  "obeMarkRange": "0 से {max}",
+  "@obeMarkRange": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "obeSaveMarks": "अंक सहेजें",
+  "obeMarksSaved": "प्रश्नवार अंक सहेजे गए",
+  "obeMarksFix": "कुछ अंक प्रश्न की सीमा से बाहर हैं; चिह्नित अंक ठीक करें।",
+  "obeMarksReadOnly": "ये अंक जमा या लॉक हैं, इसलिए यहाँ केवल पढ़े जा सकते हैं।",
+  "obeApprovals": "CO स्वीकृतियाँ",
+  "obeApprovalsEmpty": "आपकी स्वीकृति के लिए कुछ भी प्रतीक्षा में नहीं है।",
+  "obeApprovalLine": "{code} · संस्करण {version} · {count} CO",
+  "@obeApprovalLine": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "version": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeSentBy": "{name} ने भेजा",
+  "@obeSentBy": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "obeVerbIssues": "{count, plural, =1{एक CO की क्रिया जाँचें} other{{count} CO की क्रिया जाँचें}}",
+  "@obeVerbIssues": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeStageDraft": "स्वीकृति के लिए नहीं भेजा",
+  "obeStageHod": "विभागाध्यक्ष के पास",
+  "obeStageCoordinator": "OBE समन्वयक के पास",
+  "obeStageIqac": "आंतरिक गुणवत्ता प्रकोष्ठ के पास",
+  "obeStageReturned": "बदलाव के लिए लौटाया गया",
+  "obeStageApproved": "स्वीकृत",
+  "obeSubmit": "स्वीकृति के लिए भेजें",
+  "obeSubmitted": "स्वीकृति के लिए भेजा गया",
+  "obeSubmittedWarnings": "{count, plural, =1{स्वीकृति के लिए भेजा, समीक्षकों के लिए एक बिंदु जाँचना है} other{स्वीकृति के लिए भेजा, समीक्षकों के लिए {count} बिंदु जाँचने हैं}}",
+  "@obeSubmittedWarnings": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeReviewNote": "समीक्षकों के लिए टिप्पणी (वैकल्पिक)",
+  "obeReviewComment": "टिप्पणी",
+  "obeApprove": "स्वीकृत करें",
+  "obeReturn": "लौटाएँ",
+  "obeAddComment": "टिप्पणी जोड़ें",
+  "obeReturnNeedsComment": "लौटाने से पहले बताएँ कि क्या बदलना है।",
+  "obeCommentNeeded": "पहले टिप्पणी लिखें।",
+  "obeApprovedDone": "स्वीकृत किया गया",
+  "obeReturnedDone": "शिक्षक को लौटाया गया",
+  "obeCommentedDone": "टिप्पणी जोड़ी गई",
+  "obeHistory": "समीक्षा इतिहास",
+  "obeHistoryEmpty": "अभी कोई समीक्षा नहीं।",
+  "obeDecisionSubmitted": "भेजा",
+  "obeDecisionApproved": "स्वीकृत",
+  "obeDecisionReturned": "लौटाया",
+  "obeDecisionComment": "टिप्पणी",
+  "obeNotYourStep": "यह चरण किसी अन्य समीक्षक का है; आप टिप्पणी कर सकते हैं।"
 }

@@ -21,6 +21,7 @@ import 'learning.dart';
 import 'lms.dart';
 import 'campus_extras.dart';
 import 'models.dart';
+import 'outcomes.dart';
 import 'pathways.dart';
 import 'scholarships.dart';
 import 'school_life.dart';
@@ -390,6 +391,9 @@ abstract class StudentApi implements AnnouncementSource {
 
   /// Open surveys addressed to me (`GET /v1/surveys/mine`).
   Future<List<MySurvey>> mySurveys();
+
+  /// My CO-wise attainment in this year's courses (`GET /v1/obe/students/me/outcomes`).
+  Future<MyOutcomes> myOutcomes();
 
   /// Submits my answers; 409 if already answered (`POST /v1/surveys/:id/responses`).
   Future<void> submitSurvey(String surveyId, List<SurveyAnswer> answers);
@@ -1279,6 +1283,9 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<List<MySurvey>> mySurveys() async => [for (final s in await _send('GET', '/v1/surveys/mine') as List) MySurvey.fromJson((s as Map).cast<String, dynamic>())];
+
+  @override
+  Future<MyOutcomes> myOutcomes() async => MyOutcomes.fromJson(await _send('GET', '/v1/obe/students/me/outcomes') as Map<String, dynamic>);
 
   @override
   Future<void> submitSurvey(String surveyId, List<SurveyAnswer> answers) => _send('POST', '/v1/surveys/$surveyId/responses', body: {'answers': [for (final a in answers) a.toJson()]});

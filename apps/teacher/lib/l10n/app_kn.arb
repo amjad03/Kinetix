@@ -1589,5 +1589,149 @@
   "bookingTitleLabel": "ಶೀರ್ಷಿಕೆ",
   "bookingPurpose": "ಉದ್ದೇಶ (ಐಚ್ಛಿಕ)",
   "bookingAttendees": "ನಿರೀಕ್ಷಿತ ಜನರು (ಐಚ್ಛಿಕ)",
-  "bookingSend": "ಕಾಯ್ದಿರಿಸಿ"
+  "bookingSend": "ಕಾಯ್ದಿರಿಸಿ",
+  "obeQuestionMarks": "ಪ್ರಶ್ನೆವಾರು ಅಂಕಗಳು",
+  "obeQuestionMarksBody": "ಪ್ರತಿ ಪ್ರಶ್ನೆಯ ಅಂಕಗಳು, ಆ ಪ್ರಶ್ನೆ ಪರೀಕ್ಷಿಸುವ CO ಗಳಿಗೆ ಎಣಿಕೆಯಾಗುತ್ತವೆ",
+  "obeAssessmentsEmpty": "ಈ ವರ್ಷ ಈ ಕೋರ್ಸ್‌ಗೆ ಯಾವುದೇ ಮೌಲ್ಯಮಾಪನ ಇಲ್ಲ.",
+  "obeNoYear": "ಇನ್ನೂ ಯಾವುದೇ ಶೈಕ್ಷಣಿಕ ವರ್ಷ ಹೊಂದಿಸಿಲ್ಲ.",
+  "obeAssessmentProgress": "{questions} ರಲ್ಲಿ {tagged} ಪ್ರಶ್ನೆಗಳಿಗೆ ಟ್ಯಾಗ್ · {size} ರಲ್ಲಿ {marked} ವಿದ್ಯಾರ್ಥಿಗಳ ಅಂಕ",
+  "@obeAssessmentProgress": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "tagged": {
+        "type": "int"
+      },
+      "questions": {
+        "type": "int"
+      },
+      "marked": {
+        "type": "int"
+      },
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "obeEvidenceCie": "ಆಂತರಿಕ (CIE)",
+  "obeEvidenceSee": "ಸೆಮಿಸ್ಟರ್ ಅಂತ್ಯ (SEE)",
+  "obeNoPaper": "ಇನ್ನೂ ಪ್ರಶ್ನೆಪತ್ರಿಕೆ ಇಲ್ಲ. ERP ಯಲ್ಲಿ OBE, ಕೋರ್ಸ್, ಮೌಲ್ಯಮಾಪನಗಳಲ್ಲಿ ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಅವುಗಳ CO ಗಳನ್ನು ಹೊಂದಿಸಿ.",
+  "obeQuestionHead": "ಪ್ರ{no} · {max} ಅಂಕ · {cos}",
+  "@obeQuestionHead": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "cos": {
+        "type": "String"
+      }
+    }
+  },
+  "obeQuestionLabel": "ಪ್ರ{no}",
+  "@obeQuestionLabel": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "obeTotalOf": "ಒಟ್ಟು {total} / {max}",
+  "@obeTotalOf": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAbsent": "ಗೈರು",
+  "obeMarkRange": "0 ರಿಂದ {max}",
+  "@obeMarkRange": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "obeSaveMarks": "ಅಂಕಗಳನ್ನು ಉಳಿಸಿ",
+  "obeMarksSaved": "ಪ್ರಶ್ನೆವಾರು ಅಂಕಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ",
+  "obeMarksFix": "ಕೆಲವು ಅಂಕಗಳು ಪ್ರಶ್ನೆಯ ಮಿತಿಯ ಹೊರಗಿವೆ; ಗುರುತಿಸಿದವನ್ನು ಸರಿಪಡಿಸಿ.",
+  "obeMarksReadOnly": "ಈ ಅಂಕಗಳನ್ನು ಸಲ್ಲಿಸಲಾಗಿದೆ ಅಥವಾ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ, ಇಲ್ಲಿ ಓದಲು ಮಾತ್ರ.",
+  "obeApprovals": "CO ಅನುಮೋದನೆಗಳು",
+  "obeApprovalsEmpty": "ನಿಮ್ಮ ಅನುಮೋದನೆಗೆ ಏನೂ ಕಾಯುತ್ತಿಲ್ಲ.",
+  "obeApprovalLine": "{code} · ಆವೃತ್ತಿ {version} · {count} CO",
+  "@obeApprovalLine": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "version": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeSentBy": "{name} ಕಳುಹಿಸಿದ್ದಾರೆ",
+  "@obeSentBy": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "obeVerbIssues": "{count, plural, =1{ಒಂದು CO ದ ಕ್ರಿಯಾಪದ ಪರಿಶೀಲಿಸಿ} other{{count} CO ಗಳ ಕ್ರಿಯಾಪದ ಪರಿಶೀಲಿಸಿ}}",
+  "@obeVerbIssues": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeStageDraft": "ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಿಲ್ಲ",
+  "obeStageHod": "ವಿಭಾಗದ ಮುಖ್ಯಸ್ಥರ ಬಳಿ",
+  "obeStageCoordinator": "OBE ಸಂಯೋಜಕರ ಬಳಿ",
+  "obeStageIqac": "ಆಂತರಿಕ ಗುಣಮಟ್ಟ ಘಟಕದ ಬಳಿ",
+  "obeStageReturned": "ಬದಲಾವಣೆಗೆ ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ",
+  "obeStageApproved": "ಅನುಮೋದಿಸಲಾಗಿದೆ",
+  "obeSubmit": "ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಿ",
+  "obeSubmitted": "ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "obeSubmittedWarnings": "{count, plural, =1{ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ, ಪರಿಶೀಲಕರಿಗೆ ಒಂದು ಅಂಶ ಪರಿಶೀಲಿಸಲಿದೆ} other{ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ, ಪರಿಶೀಲಕರಿಗೆ {count} ಅಂಶಗಳು ಪರಿಶೀಲಿಸಲಿವೆ}}",
+  "@obeSubmittedWarnings": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeReviewNote": "ಪರಿಶೀಲಕರಿಗೆ ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)",
+  "obeReviewComment": "ಟಿಪ್ಪಣಿ",
+  "obeApprove": "ಅನುಮೋದಿಸಿ",
+  "obeReturn": "ಹಿಂತಿರುಗಿಸಿ",
+  "obeAddComment": "ಟಿಪ್ಪಣಿ ಸೇರಿಸಿ",
+  "obeReturnNeedsComment": "ಹಿಂತಿರುಗಿಸುವ ಮೊದಲು ಏನು ಬದಲಾಗಬೇಕು ಎಂದು ತಿಳಿಸಿ.",
+  "obeCommentNeeded": "ಮೊದಲು ಟಿಪ್ಪಣಿ ಬರೆಯಿರಿ.",
+  "obeApprovedDone": "ಅನುಮೋದಿಸಲಾಗಿದೆ",
+  "obeReturnedDone": "ಶಿಕ್ಷಕರಿಗೆ ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ",
+  "obeCommentedDone": "ಟಿಪ್ಪಣಿ ಸೇರಿಸಲಾಗಿದೆ",
+  "obeHistory": "ಪರಿಶೀಲನಾ ಇತಿಹಾಸ",
+  "obeHistoryEmpty": "ಇನ್ನೂ ಯಾವುದೇ ಪರಿಶೀಲನೆ ಇಲ್ಲ.",
+  "obeDecisionSubmitted": "ಕಳುಹಿಸಲಾಗಿದೆ",
+  "obeDecisionApproved": "ಅನುಮೋದನೆ",
+  "obeDecisionReturned": "ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ",
+  "obeDecisionComment": "ಟಿಪ್ಪಣಿ",
+  "obeNotYourStep": "ಈ ಹಂತ ಬೇರೆ ಪರಿಶೀಲಕರದು; ನೀವು ಟಿಪ್ಪಣಿ ಮಾಡಬಹುದು."
 }

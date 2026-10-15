@@ -65,3 +65,39 @@ export function checkCo(statement: string, bloomLevel?: string | null): VerbChec
   if (!levels.includes(claimed)) return { verb, levels, ok: false, issue: 'level', claimed, message: `"${verb}" is a ${levels.map((l) => BLOOM_LEVELS[l - 1]).join(' or ')} verb, not ${BLOOM_LEVELS[claimed - 1]}` };
   return { verb, levels, ok: true, issue: null, claimed, message: null };
 }
+
+/** The commonest measurable verbs of a level (1-6), the ones suggested first. */
+const PREFERRED: Record<number, string[]> = {
+  1: ['define', 'list', 'identify', 'state', 'recall'],
+  2: ['explain', 'describe', 'summarise', 'classify', 'interpret'],
+  3: ['apply', 'solve', 'compute', 'demonstrate', 'prepare'],
+  4: ['analyse', 'compare', 'differentiate', 'examine', 'investigate'],
+  5: ['evaluate', 'justify', 'assess', 'critique', 'recommend'],
+  6: ['design', 'develop', 'formulate', 'construct', 'propose'],
+};
+
+/** The action verbs of a Bloom level, preferred ones first. */
+export function verbsFor(level: number): string[] {
+  return [...new Set([...(PREFERRED[level] ?? []), ...(VERBS[level] ?? [])])];
+}
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/**
+ * Rewrites of a CO statement with measurable verbs: the claimed level's verbs (or, with no level, the levels its own verb
+ * belongs to, else Apply), keeping the rest of the sentence. No rewrites when the statement already reads well.
+ */
+export function suggestCo(statement: string, bloomLevel?: string | null): { level: number; verbs: string[]; rewrites: string[] } {
+  const check = checkCo(statement, bloomLevel);
+  const level = check.claimed ?? check.levels[0] ?? 3;
+  const verbs = verbsFor(level).slice(0, 8);
+  if (check.ok) return { level, verbs, rewrites: [] };
+  const body = statement
+    .trim()
+    .replace(/^co\s*\d+\s*[:.)-]\s*/i, '')
+    .replace(/^(on (successful )?completion of (this|the) course,?\s*)?((the )?(students?|learners?) (will|should|shall) be able to|be able to|able to)\s*/i, '')
+    .trim();
+  const rest = check.verb ? body.replace(/^[A-Za-z]+\s*/, '') : body;
+  const rewrites = rest ? (PREFERRED[level] ?? verbs).slice(0, 3).map((v) => `${cap(v)} ${rest}`.trim()) : [];
+  return { level, verbs, rewrites };
+}

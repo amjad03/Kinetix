@@ -3931,4 +3931,178 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get bookingSend => 'ಕಾಯ್ದಿರಿಸಿ';
+
+  @override
+  String get obeQuestionMarks => 'ಪ್ರಶ್ನೆವಾರು ಅಂಕಗಳು';
+
+  @override
+  String get obeQuestionMarksBody => 'ಪ್ರತಿ ಪ್ರಶ್ನೆಯ ಅಂಕಗಳು, ಆ ಪ್ರಶ್ನೆ ಪರೀಕ್ಷಿಸುವ CO ಗಳಿಗೆ ಎಣಿಕೆಯಾಗುತ್ತವೆ';
+
+  @override
+  String get obeAssessmentsEmpty => 'ಈ ವರ್ಷ ಈ ಕೋರ್ಸ್‌ಗೆ ಯಾವುದೇ ಮೌಲ್ಯಮಾಪನ ಇಲ್ಲ.';
+
+  @override
+  String get obeNoYear => 'ಇನ್ನೂ ಯಾವುದೇ ಶೈಕ್ಷಣಿಕ ವರ್ಷ ಹೊಂದಿಸಿಲ್ಲ.';
+
+  @override
+  String obeAssessmentProgress(int tagged, int questions, int marked, int size) {
+    return '$questions ರಲ್ಲಿ $tagged ಪ್ರಶ್ನೆಗಳಿಗೆ ಟ್ಯಾಗ್ · $size ರಲ್ಲಿ $marked ವಿದ್ಯಾರ್ಥಿಗಳ ಅಂಕ';
+  }
+
+  @override
+  String get obeEvidenceCie => 'ಆಂತರಿಕ (CIE)';
+
+  @override
+  String get obeEvidenceSee => 'ಸೆಮಿಸ್ಟರ್ ಅಂತ್ಯ (SEE)';
+
+  @override
+  String get obeNoPaper => 'ಇನ್ನೂ ಪ್ರಶ್ನೆಪತ್ರಿಕೆ ಇಲ್ಲ. ERP ಯಲ್ಲಿ OBE, ಕೋರ್ಸ್, ಮೌಲ್ಯಮಾಪನಗಳಲ್ಲಿ ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಅವುಗಳ CO ಗಳನ್ನು ಹೊಂದಿಸಿ.';
+
+  @override
+  String obeQuestionHead(String no, String max, String cos) {
+    return 'ಪ್ರ$no · $max ಅಂಕ · $cos';
+  }
+
+  @override
+  String obeQuestionLabel(String no) {
+    return 'ಪ್ರ$no';
+  }
+
+  @override
+  String obeTotalOf(String total, String max) {
+    return 'ಒಟ್ಟು $total / $max';
+  }
+
+  @override
+  String get obeAbsent => 'ಗೈರು';
+
+  @override
+  String obeMarkRange(String max) {
+    return '0 ರಿಂದ $max';
+  }
+
+  @override
+  String get obeSaveMarks => 'ಅಂಕಗಳನ್ನು ಉಳಿಸಿ';
+
+  @override
+  String get obeMarksSaved => 'ಪ್ರಶ್ನೆವಾರು ಅಂಕಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeMarksFix => 'ಕೆಲವು ಅಂಕಗಳು ಪ್ರಶ್ನೆಯ ಮಿತಿಯ ಹೊರಗಿವೆ; ಗುರುತಿಸಿದವನ್ನು ಸರಿಪಡಿಸಿ.';
+
+  @override
+  String get obeMarksReadOnly => 'ಈ ಅಂಕಗಳನ್ನು ಸಲ್ಲಿಸಲಾಗಿದೆ ಅಥವಾ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ, ಇಲ್ಲಿ ಓದಲು ಮಾತ್ರ.';
+
+  @override
+  String get obeApprovals => 'CO ಅನುಮೋದನೆಗಳು';
+
+  @override
+  String get obeApprovalsEmpty => 'ನಿಮ್ಮ ಅನುಮೋದನೆಗೆ ಏನೂ ಕಾಯುತ್ತಿಲ್ಲ.';
+
+  @override
+  String obeApprovalLine(String code, int version, int count) {
+    return '$code · ಆವೃತ್ತಿ $version · $count CO';
+  }
+
+  @override
+  String obeSentBy(String name) {
+    return '$name ಕಳುಹಿಸಿದ್ದಾರೆ';
+  }
+
+  @override
+  String obeVerbIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count CO ಗಳ ಕ್ರಿಯಾಪದ ಪರಿಶೀಲಿಸಿ',
+      one: 'ಒಂದು CO ದ ಕ್ರಿಯಾಪದ ಪರಿಶೀಲಿಸಿ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get obeStageDraft => 'ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಿಲ್ಲ';
+
+  @override
+  String get obeStageHod => 'ವಿಭಾಗದ ಮುಖ್ಯಸ್ಥರ ಬಳಿ';
+
+  @override
+  String get obeStageCoordinator => 'OBE ಸಂಯೋಜಕರ ಬಳಿ';
+
+  @override
+  String get obeStageIqac => 'ಆಂತರಿಕ ಗುಣಮಟ್ಟ ಘಟಕದ ಬಳಿ';
+
+  @override
+  String get obeStageReturned => 'ಬದಲಾವಣೆಗೆ ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeStageApproved => 'ಅನುಮೋದಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeSubmit => 'ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಿ';
+
+  @override
+  String get obeSubmitted => 'ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ';
+
+  @override
+  String obeSubmittedWarnings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ, ಪರಿಶೀಲಕರಿಗೆ $count ಅಂಶಗಳು ಪರಿಶೀಲಿಸಲಿವೆ',
+      one: 'ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ, ಪರಿಶೀಲಕರಿಗೆ ಒಂದು ಅಂಶ ಪರಿಶೀಲಿಸಲಿದೆ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get obeReviewNote => 'ಪರಿಶೀಲಕರಿಗೆ ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get obeReviewComment => 'ಟಿಪ್ಪಣಿ';
+
+  @override
+  String get obeApprove => 'ಅನುಮೋದಿಸಿ';
+
+  @override
+  String get obeReturn => 'ಹಿಂತಿರುಗಿಸಿ';
+
+  @override
+  String get obeAddComment => 'ಟಿಪ್ಪಣಿ ಸೇರಿಸಿ';
+
+  @override
+  String get obeReturnNeedsComment => 'ಹಿಂತಿರುಗಿಸುವ ಮೊದಲು ಏನು ಬದಲಾಗಬೇಕು ಎಂದು ತಿಳಿಸಿ.';
+
+  @override
+  String get obeCommentNeeded => 'ಮೊದಲು ಟಿಪ್ಪಣಿ ಬರೆಯಿರಿ.';
+
+  @override
+  String get obeApprovedDone => 'ಅನುಮೋದಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeReturnedDone => 'ಶಿಕ್ಷಕರಿಗೆ ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeCommentedDone => 'ಟಿಪ್ಪಣಿ ಸೇರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeHistory => 'ಪರಿಶೀಲನಾ ಇತಿಹಾಸ';
+
+  @override
+  String get obeHistoryEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ಪರಿಶೀಲನೆ ಇಲ್ಲ.';
+
+  @override
+  String get obeDecisionSubmitted => 'ಕಳುಹಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeDecisionApproved => 'ಅನುಮೋದನೆ';
+
+  @override
+  String get obeDecisionReturned => 'ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeDecisionComment => 'ಟಿಪ್ಪಣಿ';
+
+  @override
+  String get obeNotYourStep => 'ಈ ಹಂತ ಬೇರೆ ಪರಿಶೀಲಕರದು; ನೀವು ಟಿಪ್ಪಣಿ ಮಾಡಬಹುದು.';
 }

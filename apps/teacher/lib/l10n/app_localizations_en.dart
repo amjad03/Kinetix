@@ -3925,4 +3925,178 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bookingSend => 'Book';
+
+  @override
+  String get obeQuestionMarks => 'Question-wise marks';
+
+  @override
+  String get obeQuestionMarksBody => 'Marks per question, counted towards the COs each question tests';
+
+  @override
+  String get obeAssessmentsEmpty => 'No assessments for this course this year.';
+
+  @override
+  String get obeNoYear => 'No academic year is set up yet.';
+
+  @override
+  String obeAssessmentProgress(int tagged, int questions, int marked, int size) {
+    return '$tagged of $questions questions tagged · $marked of $size students marked';
+  }
+
+  @override
+  String get obeEvidenceCie => 'Internal (CIE)';
+
+  @override
+  String get obeEvidenceSee => 'End-semester (SEE)';
+
+  @override
+  String get obeNoPaper => 'No question paper yet. Set the questions and their COs in the ERP: OBE, the course, Assessments.';
+
+  @override
+  String obeQuestionHead(String no, String max, String cos) {
+    return 'Q$no · $max marks · $cos';
+  }
+
+  @override
+  String obeQuestionLabel(String no) {
+    return 'Q$no';
+  }
+
+  @override
+  String obeTotalOf(String total, String max) {
+    return 'Total $total / $max';
+  }
+
+  @override
+  String get obeAbsent => 'Absent';
+
+  @override
+  String obeMarkRange(String max) {
+    return '0 to $max';
+  }
+
+  @override
+  String get obeSaveMarks => 'Save marks';
+
+  @override
+  String get obeMarksSaved => 'Question-wise marks saved';
+
+  @override
+  String get obeMarksFix => 'Some marks are outside the question\'s range; fix the highlighted ones.';
+
+  @override
+  String get obeMarksReadOnly => 'These marks are submitted or locked, so they can only be read here.';
+
+  @override
+  String get obeApprovals => 'CO approvals';
+
+  @override
+  String get obeApprovalsEmpty => 'Nothing is waiting for your approval.';
+
+  @override
+  String obeApprovalLine(String code, int version, int count) {
+    return '$code · version $version · $count COs';
+  }
+
+  @override
+  String obeSentBy(String name) {
+    return 'Sent by $name';
+  }
+
+  @override
+  String obeVerbIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count COs to check the action verb',
+      one: 'One CO to check the action verb',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get obeStageDraft => 'Not sent for approval';
+
+  @override
+  String get obeStageHod => 'With the head of department';
+
+  @override
+  String get obeStageCoordinator => 'With the OBE coordinator';
+
+  @override
+  String get obeStageIqac => 'With the IQAC';
+
+  @override
+  String get obeStageReturned => 'Returned for changes';
+
+  @override
+  String get obeStageApproved => 'Approved';
+
+  @override
+  String get obeSubmit => 'Send for approval';
+
+  @override
+  String get obeSubmitted => 'Sent for approval';
+
+  @override
+  String obeSubmittedWarnings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sent for approval, with $count points for reviewers to check',
+      one: 'Sent for approval, with one point for reviewers to check',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get obeReviewNote => 'Note for the reviewers (optional)';
+
+  @override
+  String get obeReviewComment => 'Comment';
+
+  @override
+  String get obeApprove => 'Approve';
+
+  @override
+  String get obeReturn => 'Return';
+
+  @override
+  String get obeAddComment => 'Add comment';
+
+  @override
+  String get obeReturnNeedsComment => 'Say what needs to change before returning.';
+
+  @override
+  String get obeCommentNeeded => 'Write the comment first.';
+
+  @override
+  String get obeApprovedDone => 'Approved';
+
+  @override
+  String get obeReturnedDone => 'Returned to the teacher';
+
+  @override
+  String get obeCommentedDone => 'Comment added';
+
+  @override
+  String get obeHistory => 'Review history';
+
+  @override
+  String get obeHistoryEmpty => 'No reviews yet.';
+
+  @override
+  String get obeDecisionSubmitted => 'Sent';
+
+  @override
+  String get obeDecisionApproved => 'Approved';
+
+  @override
+  String get obeDecisionReturned => 'Returned';
+
+  @override
+  String get obeDecisionComment => 'Comment';
+
+  @override
+  String get obeNotYourStep => 'This step is for another reviewer; you can still comment.';
 }

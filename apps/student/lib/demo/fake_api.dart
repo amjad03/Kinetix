@@ -23,6 +23,7 @@ import '../core/learning.dart';
 import '../core/lms.dart';
 import '../core/campus_extras.dart';
 import '../core/models.dart';
+import '../core/outcomes.dart';
 import '../core/pathways.dart';
 import '../core/scholarships.dart';
 import '../core/school_life.dart';
@@ -351,6 +352,52 @@ class FakeStudentApi implements StudentApi {
     ),
   ];
   List<SurveyAnswer>? lastSurveyAnswers;
+
+  MyOutcomes outcomes = const MyOutcomes(
+    courses: [
+      MyCourseOutcomes(
+        subjectId: 'sub1',
+        code: 'BCOM-3.1',
+        name: 'Corporate Accounting',
+        threshold: 60,
+        cos: [
+          MyCo(
+            coId: 'co1',
+            code: 'CO1',
+            statement: 'Value goodwill and shares by common methods',
+            bloomLevel: 'apply',
+            cie: 78,
+            see: 70,
+            overall: 73.2,
+            attained: true,
+            classLevel: 2.6,
+            target: 2,
+          ),
+          MyCo(
+            coId: 'co2',
+            code: 'CO2',
+            statement: 'Prepare company final accounts as per Schedule III',
+            bloomLevel: 'create',
+            cie: 55,
+            see: 48.5,
+            overall: 51.1,
+            attained: false,
+            classLevel: 1.8,
+            target: 2,
+          ),
+          MyCo(coId: 'co3', code: 'CO3', statement: 'Explain the process of amalgamation', bloomLevel: 'understand', target: 2),
+        ],
+      ),
+    ],
+  );
+  ApiException? outcomesError;
+
+  @override
+  Future<MyOutcomes> myOutcomes() async {
+    calls.add('myOutcomes');
+    if (outcomesError != null) throw outcomesError!;
+    return outcomes;
+  }
 
   @override
   Future<List<MySurvey>> mySurveys() async {

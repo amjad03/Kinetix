@@ -1,13 +1,7 @@
-/** Student accounts, outcome-based education (COs, POs, attainment), feedback surveys and the question bank. */
-import { DEFAULT_ATTAINMENT_CONFIG } from '../../obe/attainment.js';
-import { ObeService } from '../../obe/obe.service.js';
+/** Student accounts, feedback surveys and the question bank (outcome-based education is in obe-showcase.ts). */
 import { DOMAIN } from './data.js';
 import type { Ctx, SectionRef, SubjectRef } from './ctx.js';
 import { addDays, at, J } from './kit.js';
-import { examState } from './exams.js';
-import { service, withTenant } from './nest.js';
-
-const OBE_PROGRAMS = ['BCM', 'BBA', 'BCA'];
 
 /** Every student gets an account (phone/e-mail sign-in), so survey answers, submissions and the student app have owners. */
 export async function studentAccounts(c: Ctx): Promise<void> {
@@ -17,62 +11,6 @@ export async function studentAccounts(c: Ctx): Promise<void> {
   await k.ins('user_roles', users.map((u) => ({ userId: u.id, role: 'student', campusId: c.campusId })), { returning: false });
   for (const [i, s] of need.entries()) s.userId = users[i].id;
   await k.q('update students s set user_id = x.uid from unnest($1::uuid[], $2::uuid[]) as x(sid, uid) where s.id = x.sid', [need.map((s) => s.id), users.map((u) => u.id)]);
-}
-
-const PO_TEXT = [
-  ['PO1', 'Disciplinary knowledge', 'Apply the knowledge of the discipline to analyse and solve business problems.'],
-  ['PO2', 'Critical thinking and problem solving', 'Analyse information, evaluate options and take reasoned decisions.'],
-  ['PO3', 'Communication', 'Communicate effectively in writing and speech with peers, clients and the public.'],
-  ['PO4', 'Digital and analytical skills', 'Use data and digital tools for business analysis and decision making.'],
-  ['PO5', 'Ethics and sustainability', 'Practise professional ethics and take account of social and environmental impact.'],
-  ['PO6', 'Teamwork and leadership', 'Work effectively as a member or leader of diverse teams.'],
-];
-const CO_VERBS = [
-  (n: string) => `Explain the fundamental concepts and terminology of ${n}`,
-  (n: string) => `Apply the techniques of ${n} to solve routine problems`,
-  (n: string) => `Analyse cases and data using the methods of ${n}`,
-  (n: string) => `Evaluate alternatives and prepare reports in the area of ${n}`,
-];
-const BLOOM = ['understand', 'apply', 'analyze', 'evaluate'];
-
-export async function obe(c: Ctx): Promise<void> {
-  const { kit: k, r } = c;
-  const hod = (dept: string) => c.byEmail[dept === 'Commerce' ? 'hod.commerce' : dept === 'Computer Applications' ? 'hod.computers' : 'hod.management'].id;
-  for (const code of OBE_PROGRAMS) {
-    const prog = c.programs[code];
-    const pid = prog.id;
-    const outs = await k.ins<{ id: string; code: string; kind: string }>('program_outcomes', [
-      { programId: pid, kind: 'mission', code: 'MISSION', statement: 'To develop ethical, employable and socially responsible graduates through quality teaching, industry exposure and community engagement.', ord: 0 },
-      { programId: pid, kind: 'vision', code: 'VISION', statement: 'To be a leading institution of Bengaluru for management and science education rooted in Karnataka’s values.', ord: 0 },
-      ...[1, 2, 3].map((i) => ({ programId: pid, kind: 'peo', code: `PEO${i}`, statement: ['Graduates build successful careers in business, technology or public service.', 'Graduates pursue higher studies and lifelong learning.', 'Graduates contribute ethically to their communities.'][i - 1], ord: i })),
-      ...PO_TEXT.map(([cd, , st], i) => ({ programId: pid, kind: 'po', code: cd, statement: st, ord: i + 1 })),
-      ...[1, 2].map((i) => ({ programId: pid, kind: 'pso', code: `PSO${i}`, statement: `${prog.def.name}: ${['demonstrate specialised competence in the core areas of the programme', 'apply programme-specific tools in an industry setting'][i - 1]}.`, ord: i })),
-    ]);
-    const targets = outs.filter((o) => o.kind === 'po' || o.kind === 'pso');
-    const sec = c.sections.find((s) => s.prog === code && s.term === 3)!;
-    const session = examState.sessions!.find((s) => s.sec.id === sec.id)!;
-    for (const sub of sec.subjects) {
-      const set = await k.one<{ id: string }>('co_sets', { subjectId: sub.id, version: 1, status: 'active', note: 'Approved by the Board of Studies', createdBy: sub.teacherId, activatedAt: at('2026-08-04') });
-      const cos = await k.ins<{ id: string }>('course_outcomes', CO_VERBS.map((f, i) => ({ coSetId: set.id, code: `CO${i + 1}`, statement: f(sub.name), bloomLevel: BLOOM[i], ord: i + 1 })));
-      await k.ins('co_outcome_map', cos.flatMap((co, i) => [targets[(i + sec.subjects.indexOf(sub)) % 6], targets[(i + 3 + sec.subjects.indexOf(sub)) % 8]].map((o, j) => ({ coId: co.id, outcomeId: o.id, strength: 3 - ((i + j) % 3) }))), { returning: false });
-      const [iat, iaa, iap, see] = session.assessmentIds[sub.id];
-      await k.ins('assessment_co_map', [
-        { assessmentId: iat, coId: cos[0].id, share: 0.5 }, { assessmentId: iat, coId: cos[1].id, share: 0.5 },
-        { assessmentId: iaa, coId: cos[2].id, share: 1 }, { assessmentId: iap, coId: cos[3].id, share: 1 },
-        ...cos.map((co) => ({ assessmentId: see, coId: co.id, share: 0.25 })),
-      ], { returning: false });
-    }
-    await k.ins('obe_configs', { programId: pid, config: J(DEFAULT_ATTAINMENT_CONFIG), updatedBy: hod(prog.def.dept) }, { noTenant: false, returning: false });
-
-    // Exit survey ratings against programme outcomes (indirect evidence), then attainment through the module.
-    const survey = await k.one<{ id: string }>('obe_surveys', { programId: pid, academicYearId: c.years.cur, kind: 'graduate_exit', title: `${prog.def.name} graduate exit survey 2025-26`, scaleMax: 5, minResponses: 10, weight: 1, createdBy: hod(prog.def.dept) });
-    await k.ins('obe_survey_ratings', targets.flatMap((o) => Array.from({ length: 12 }, () => ({ surveyId: survey.id, outcomeId: o.id, rating: r.int(3, 5) }))), { returning: false });
-    const svc = await service(ObeService);
-    await withTenant(c.tenantId, (tx) => svc.compute(tx, c.tenantId, hod(prog.def.dept), pid, c.years.cur));
-    const unmet = await k.q<{ scope: string; targetId: string; code: string }>('select scope, target_id, code from attainment_snapshots where program_id = $1 and met = false order by computed_at desc limit 3', [pid]);
-    await k.ins('improvement_actions', unmet.map((u, i) => ({ programId: pid, scope: u.scope, targetId: u.targetId, title: `Improve attainment of ${u.code}`, detail: ['Add two tutorial hours and a case study on the weak outcome.', 'Redesign the internal test to cover the outcome with more questions.', 'Bridge class for students below 40 percent.'][i], ownerId: hod(prog.def.dept), dueOn: addDays(c.today, 30 + i * 10), status: i === 0 ? 'in_progress' : 'open', createdBy: hod(prog.def.dept) })), { returning: false });
-    await k.ins('obe_evidence', [{ programId: pid, scope: 'program', targetId: pid, title: 'IQAC review minutes, September 2026', note: 'Attainment tabled and actions agreed.', uploadedBy: hod(prog.def.dept) }, { programId: pid, scope: 'program', targetId: pid, title: 'Sample answer scripts for CO3', url: 'https://learn.soundarya.demo.zynetix.in/evidence/co3-scripts', uploadedBy: hod(prog.def.dept) }], { returning: false });
-  }
 }
 
 export async function surveys(c: Ctx): Promise<void> {

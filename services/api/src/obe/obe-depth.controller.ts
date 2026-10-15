@@ -46,6 +46,7 @@ export class ObeDepthController {
       academicYears: await tx.select({ id: academicYears.id, label: academicYears.label, isCurrent: academicYears.isCurrent }).from(academicYears).orderBy(desc(academicYears.startsOn)),
       programs: await tx.select({ id: programs.id, name: programs.name, level: programs.level, campusId: programs.campusId, termCount: programs.termCount }).from(programs).orderBy(asc(programs.name)),
       subjects: await tx.select({ id: subjects.id, code: subjects.code, name: subjects.name, programId: subjects.programId, term: subjects.term, courseId: subjects.courseId }).from(subjects).orderBy(asc(subjects.code)),
+      sections: await tx.select({ id: sections.id, name: sections.displayName, programId: sections.programId, term: sections.term, academicYearId: sections.academicYearId }).from(sections).orderBy(asc(sections.displayName)),
     }));
   }
 
@@ -218,31 +219,28 @@ export class ObeDepthController {
   @Auth('user', [...MANAGE, 'teacher'])
   studentWise(@CurrentPrincipal() p: UserPrincipal, @Param('programId', ParseUUIDPipe) programId: string, @Query('academicYearId', ParseUUIDPipe) academicYearId: string, @Query('subjectId', ParseUUIDPipe) subjectId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const cfg = await this.obe.config(tx, programId);
       const [sub] = await tx.select().from(subjects).where(and(eq(subjects.id, subjectId), eq(subjects.programId, programId)));
       if (!sub) throw new NotFoundException('Subject not found in this programme');
+      const cfg = (await this.obe.policy(tx, programId, subjectId, academicYearId)).config;
       const [set] = await tx.select().from(coSets).where(and(eq(coSets.subjectId, subjectId), eq(coSets.status, 'active')));
       if (!set) return { subject: { code: sub.code, name: sub.name }, threshold: cfg.studentThresholdPercent, cos: [], students: [] };
       const cos = await tx.select().from(courseOutcomes).where(eq(courseOutcomes.coSetId, set.id)).orderBy(asc(courseOutcomes.ord), asc(courseOutcomes.code));
       const own = new Map((await tx.select().from(obeTargets).where(and(eq(obeTargets.academicYearId, academicYearId), inArray(obeTargets.targetId, cos.length ? cos.map((c) => c.id) : [subjectId])))).map((t) => [t.targetId, t]));
-      const maps = cos.length ? await tx.select().from(assessmentCoMap).where(inArray(assessmentCoMap.coId, cos.map((c) => c.id))) : [];
-      const asmts = maps.length ? await tx.select({ id: assessments.id, max: assessments.maxMarks }).from(assessments).innerJoin(sections, eq(sections.id, assessments.sectionId)).where(and(inArray(assessments.id, [...new Set(maps.map((m) => m.assessmentId))]), eq(sections.academicYearId, academicYearId))) : [];
-      const rows = asmts.length ? await tx.select({ assessmentId: marks.assessmentId, studentId: marks.studentId, v: sql<number | null>`coalesce(${marks.moderatedMarks}, ${marks.marks})::float`, absent: marks.absent }).from(marks).where(inArray(marks.assessmentId, asmts.map((a) => a.id))) : [];
-      const ids = [...new Set(rows.map((r) => r.studentId))];
-      const people = ids.length ? await tx.select({ id: students.id, name: students.fullName, roll: students.rollNo }).from(students).where(inArray(students.id, ids)).orderBy(asc(students.rollNo)) : [];
+      // Question-wise marks, apportioned totals and assessment shares, pooled over CIE and SEE for each student.
+      const evidence = await this.obe.courseEvidence(tx, [subjectId], academicYearId, () => cfg);
       const per = new Map<string, Map<string, { s: number; m: number }>>();
-      for (const m of maps) {
-        const a = asmts.find((x) => x.id === m.assessmentId);
-        if (!a) continue;
-        for (const r of rows.filter((x) => x.assessmentId === a.id)) {
-          const byCo = per.get(r.studentId) ?? new Map();
-          const cur = byCo.get(m.coId) ?? { s: 0, m: 0 };
-          cur.s += r.absent || r.v === null ? 0 : r.v * m.share;
-          cur.m += a.max * m.share;
-          byCo.set(m.coId, cur);
-          per.set(r.studentId, byCo);
-        }
-      }
+      for (const c of cos)
+        for (const it of evidence.get(c.id) ?? [])
+          for (const sc of it.scores) {
+            const byCo = per.get(sc.studentId) ?? new Map();
+            const cur = byCo.get(c.id) ?? { s: 0, m: 0 };
+            cur.s += sc.scored ?? 0;
+            cur.m += sc.max;
+            byCo.set(c.id, cur);
+            per.set(sc.studentId, byCo);
+          }
+      const ids = [...per.keys()];
+      const people = ids.length ? await tx.select({ id: students.id, name: students.fullName, roll: students.rollNo }).from(students).where(inArray(students.id, ids)).orderBy(asc(students.rollNo)) : [];
       const threshold = (coId: string) => own.get(coId)?.thresholdPercent ?? cfg.studentThresholdPercent;
       const studentsOut = people.map((s) => ({
         id: s.id,

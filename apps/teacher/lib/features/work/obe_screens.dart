@@ -8,6 +8,7 @@ import '../../core/l10n.dart';
 import '../../core/work_models.dart' show numText;
 import '../../widgets/async_body.dart';
 import '../../widgets/common.dart';
+import 'obe_flagship_screens.dart';
 
 String coSetStatusText(AppLocalizations l, String status) => switch (status) {
   'active' => l.obeStatusActive,
@@ -28,7 +29,17 @@ class OutcomesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l.obeTitle)),
+      appBar: AppBar(
+        title: Text(l.obeTitle),
+        actions: [
+          IconButton(
+            key: const Key('openCoApprovals'),
+            tooltip: l.obeApprovals,
+            icon: const Icon(Icons.fact_check_outlined),
+            onPressed: () => Navigator.of(context).push<void>(MaterialPageRoute(builder: (_) => CoApprovalsScreen(api: api))),
+          ),
+        ],
+      ),
       body: AsyncBody<List<CourseFileOption>>(
         load: () async {
           final seen = <String>{};
@@ -119,6 +130,31 @@ class SubjectOutcomesScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
                 child: Text('${l.obeVersion('${set.version}')} · ${coSetStatusText(l, set.status)}', key: const Key('coSetHeader'), style: context.text.titleSmall),
+              ),
+              if (set.status == 'draft')
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s4, Kx.s16, 0),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(coStageText(l, set.reviewStage), key: const Key('coSetStage'), style: context.text.bodySmall)),
+                      if (set.canSubmit)
+                        FilledButton.tonal(
+                          key: const Key('submitCoSet'),
+                          onPressed: () async {
+                            if (await submitCoSetFlow(context, api, set.id)) await reload();
+                          },
+                          child: Text(l.obeSubmit),
+                        ),
+                    ],
+                  ),
+                ),
+              ListTile(
+                key: const Key('openQuestionMarks'),
+                leading: const Icon(Icons.grid_on_outlined),
+                title: Text(l.obeQuestionMarks),
+                subtitle: Text(l.obeQuestionMarksBody),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push<void>(MaterialPageRoute(builder: (_) => CourseAssessmentsScreen(api: api, subjectId: subjectId, title: title))),
               ),
               KxSectionHeader(l.curriculumOutcomes),
               for (final co in set.outcomes)

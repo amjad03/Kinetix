@@ -4008,5 +4008,266 @@
   "bookingTitleLabel": "Title",
   "bookingPurpose": "Purpose (optional)",
   "bookingAttendees": "People expected (optional)",
-  "bookingSend": "Book"
+  "bookingSend": "Book",
+  "obeQuestionMarks": "Question-wise marks",
+  "@obeQuestionMarks": {
+    "description": "Outcome-based education."
+  },
+  "obeQuestionMarksBody": "Marks per question, counted towards the COs each question tests",
+  "@obeQuestionMarksBody": {
+    "description": "Outcome-based education."
+  },
+  "obeAssessmentsEmpty": "No assessments for this course this year.",
+  "@obeAssessmentsEmpty": {
+    "description": "Outcome-based education."
+  },
+  "obeNoYear": "No academic year is set up yet.",
+  "@obeNoYear": {
+    "description": "Outcome-based education."
+  },
+  "obeAssessmentProgress": "{tagged} of {questions} questions tagged · {marked} of {size} students marked",
+  "@obeAssessmentProgress": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "tagged": {
+        "type": "int"
+      },
+      "questions": {
+        "type": "int"
+      },
+      "marked": {
+        "type": "int"
+      },
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "obeEvidenceCie": "Internal (CIE)",
+  "@obeEvidenceCie": {
+    "description": "Outcome-based education."
+  },
+  "obeEvidenceSee": "End-semester (SEE)",
+  "@obeEvidenceSee": {
+    "description": "Outcome-based education."
+  },
+  "obeNoPaper": "No question paper yet. Set the questions and their COs in the ERP: OBE, the course, Assessments.",
+  "@obeNoPaper": {
+    "description": "Outcome-based education."
+  },
+  "obeQuestionHead": "Q{no} · {max} marks · {cos}",
+  "@obeQuestionHead": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "cos": {
+        "type": "String"
+      }
+    }
+  },
+  "obeQuestionLabel": "Q{no}",
+  "@obeQuestionLabel": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "obeTotalOf": "Total {total} / {max}",
+  "@obeTotalOf": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAbsent": "Absent",
+  "@obeAbsent": {
+    "description": "Outcome-based education."
+  },
+  "obeMarkRange": "0 to {max}",
+  "@obeMarkRange": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "obeSaveMarks": "Save marks",
+  "@obeSaveMarks": {
+    "description": "Outcome-based education."
+  },
+  "obeMarksSaved": "Question-wise marks saved",
+  "@obeMarksSaved": {
+    "description": "Outcome-based education."
+  },
+  "obeMarksFix": "Some marks are outside the question's range; fix the highlighted ones.",
+  "@obeMarksFix": {
+    "description": "Outcome-based education."
+  },
+  "obeMarksReadOnly": "These marks are submitted or locked, so they can only be read here.",
+  "@obeMarksReadOnly": {
+    "description": "Outcome-based education."
+  },
+  "obeApprovals": "CO approvals",
+  "@obeApprovals": {
+    "description": "Outcome-based education."
+  },
+  "obeApprovalsEmpty": "Nothing is waiting for your approval.",
+  "@obeApprovalsEmpty": {
+    "description": "Outcome-based education."
+  },
+  "obeApprovalLine": "{code} · version {version} · {count} COs",
+  "@obeApprovalLine": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "version": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeSentBy": "Sent by {name}",
+  "@obeSentBy": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "obeVerbIssues": "{count, plural, =1{One CO to check the action verb} other{{count} COs to check the action verb}}",
+  "@obeVerbIssues": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeStageDraft": "Not sent for approval",
+  "@obeStageDraft": {
+    "description": "Outcome-based education."
+  },
+  "obeStageHod": "With the head of department",
+  "@obeStageHod": {
+    "description": "Outcome-based education."
+  },
+  "obeStageCoordinator": "With the OBE coordinator",
+  "@obeStageCoordinator": {
+    "description": "Outcome-based education."
+  },
+  "obeStageIqac": "With the IQAC",
+  "@obeStageIqac": {
+    "description": "Outcome-based education."
+  },
+  "obeStageReturned": "Returned for changes",
+  "@obeStageReturned": {
+    "description": "Outcome-based education."
+  },
+  "obeStageApproved": "Approved",
+  "@obeStageApproved": {
+    "description": "Outcome-based education."
+  },
+  "obeSubmit": "Send for approval",
+  "@obeSubmit": {
+    "description": "Outcome-based education."
+  },
+  "obeSubmitted": "Sent for approval",
+  "@obeSubmitted": {
+    "description": "Outcome-based education."
+  },
+  "obeSubmittedWarnings": "{count, plural, =1{Sent for approval, with one point for reviewers to check} other{Sent for approval, with {count} points for reviewers to check}}",
+  "@obeSubmittedWarnings": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeReviewNote": "Note for the reviewers (optional)",
+  "@obeReviewNote": {
+    "description": "Outcome-based education."
+  },
+  "obeReviewComment": "Comment",
+  "@obeReviewComment": {
+    "description": "Outcome-based education."
+  },
+  "obeApprove": "Approve",
+  "@obeApprove": {
+    "description": "Outcome-based education."
+  },
+  "obeReturn": "Return",
+  "@obeReturn": {
+    "description": "Outcome-based education."
+  },
+  "obeAddComment": "Add comment",
+  "@obeAddComment": {
+    "description": "Outcome-based education."
+  },
+  "obeReturnNeedsComment": "Say what needs to change before returning.",
+  "@obeReturnNeedsComment": {
+    "description": "Outcome-based education."
+  },
+  "obeCommentNeeded": "Write the comment first.",
+  "@obeCommentNeeded": {
+    "description": "Outcome-based education."
+  },
+  "obeApprovedDone": "Approved",
+  "@obeApprovedDone": {
+    "description": "Outcome-based education."
+  },
+  "obeReturnedDone": "Returned to the teacher",
+  "@obeReturnedDone": {
+    "description": "Outcome-based education."
+  },
+  "obeCommentedDone": "Comment added",
+  "@obeCommentedDone": {
+    "description": "Outcome-based education."
+  },
+  "obeHistory": "Review history",
+  "@obeHistory": {
+    "description": "Outcome-based education."
+  },
+  "obeHistoryEmpty": "No reviews yet.",
+  "@obeHistoryEmpty": {
+    "description": "Outcome-based education."
+  },
+  "obeDecisionSubmitted": "Sent",
+  "@obeDecisionSubmitted": {
+    "description": "Outcome-based education."
+  },
+  "obeDecisionApproved": "Approved",
+  "@obeDecisionApproved": {
+    "description": "Outcome-based education."
+  },
+  "obeDecisionReturned": "Returned",
+  "@obeDecisionReturned": {
+    "description": "Outcome-based education."
+  },
+  "obeDecisionComment": "Comment",
+  "@obeDecisionComment": {
+    "description": "Outcome-based education."
+  },
+  "obeNotYourStep": "This step is for another reviewer; you can still comment.",
+  "@obeNotYourStep": {
+    "description": "Outcome-based education."
+  }
 }

@@ -3678,5 +3678,83 @@
   "atRemove": "Remove",
   "atTakePhoto": "Take a photo",
   "atChooseFile": "Choose a PDF",
-  "atSend": "Send for approval"
+  "atSend": "Send for approval",
+  "outcomesTitle": "My course outcomes",
+  "@outcomesTitle": {
+    "description": "Outcome-based education."
+  },
+  "outcomesNone": "No course outcomes to show for this year yet.",
+  "@outcomesNone": {
+    "description": "Outcome-based education."
+  },
+  "outcomesIntro": "A course outcome (CO) is what a course sets out to teach you. You reach it when your marks in the questions that test it are at or above the threshold.",
+  "@outcomesIntro": {
+    "description": "Outcome-based education."
+  },
+  "outcomesSummary": "{reached} of {measured} COs reached · threshold {threshold}%",
+  "@outcomesSummary": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "reached": {
+        "type": "int"
+      },
+      "measured": {
+        "type": "int"
+      },
+      "threshold": {
+        "type": "String"
+      }
+    }
+  },
+  "outcomesNotYet": "No marks to measure yet.",
+  "@outcomesNotYet": {
+    "description": "Outcome-based education."
+  },
+  "outcomesAttained": "Reached",
+  "@outcomesAttained": {
+    "description": "Outcome-based education."
+  },
+  "outcomesBelow": "Not yet reached",
+  "@outcomesBelow": {
+    "description": "Outcome-based education."
+  },
+  "outcomesPending": "No marks yet",
+  "@outcomesPending": {
+    "description": "Outcome-based education."
+  },
+  "outcomesDetail": "Internal {cie} · End-semester {see} · Class level {level} (target {target})",
+  "@outcomesDetail": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "cie": {
+        "type": "String"
+      },
+      "see": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "outcomesExitSurveys": "{count, plural, =1{One course exit survey is open: tell us how well the course outcomes were met} other{{count} course exit surveys are open: tell us how well the course outcomes were met}}",
+  "@outcomesExitSurveys": {
+    "description": "Outcome-based education.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "surveyExitCourse": "Course exit survey",
+  "@surveyExitCourse": {
+    "description": "Outcome-based education."
+  },
+  "surveyExitProgramme": "Programme exit survey",
+  "@surveyExitProgramme": {
+    "description": "Outcome-based education."
+  }
 }

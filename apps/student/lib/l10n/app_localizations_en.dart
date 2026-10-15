@@ -5282,4 +5282,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get atSend => 'Send for approval';
+
+  @override
+  String get outcomesTitle => 'My course outcomes';
+
+  @override
+  String get outcomesNone => 'No course outcomes to show for this year yet.';
+
+  @override
+  String get outcomesIntro =>
+      'A course outcome (CO) is what a course sets out to teach you. You reach it when your marks in the questions that test it are at or above the threshold.';
+
+  @override
+  String outcomesSummary(int reached, int measured, String threshold) {
+    return '$reached of $measured COs reached · threshold $threshold%';
+  }
+
+  @override
+  String get outcomesNotYet => 'No marks to measure yet.';
+
+  @override
+  String get outcomesAttained => 'Reached';
+
+  @override
+  String get outcomesBelow => 'Not yet reached';
+
+  @override
+  String get outcomesPending => 'No marks yet';
+
+  @override
+  String outcomesDetail(String cie, String see, String level, String target) {
+    return 'Internal $cie · End-semester $see · Class level $level (target $target)';
+  }
+
+  @override
+  String outcomesExitSurveys(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count course exit surveys are open: tell us how well the course outcomes were met',
+      one: 'One course exit survey is open: tell us how well the course outcomes were met',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get surveyExitCourse => 'Course exit survey';
+
+  @override
+  String get surveyExitProgramme => 'Programme exit survey';
 }

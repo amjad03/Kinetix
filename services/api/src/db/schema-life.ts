@@ -456,6 +456,8 @@ export const lmsQuizQuestions = pgTable('lms_quiz_questions', {
   /** Coding questions: c | cpp | java, and the tests the program must pass. */
   language: text('language'),
   tests: jsonb('tests').$type<CodeTest[]>().notNull().default([]),
+  /** The course outcome this question tests, so quiz results feed CO attainment (migration 0184). */
+  coId: uuid('co_id'),
 });
 
 export interface QuizResult {

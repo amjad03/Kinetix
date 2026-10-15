@@ -119,7 +119,7 @@ describe('OBE depth: PEO-mission, versions, targets, student-wise attainment, tr
     expect(item('peoMission').done).toBe(true);
     expect(item('published').detail).toBe('Version 2 from 2027-28');
     expect(item('cos').done).toBe(false); // the version is still a draft
-    await http().post(`/v1/obe/co-sets/${ids.set}/activate`).set(as('teacher')).expect(200);
+    await http().post(`/v1/obe/co-sets/${ids.set}/activate`).set(as('principal')).expect(200);
     const r2 = (await http().get(`${base()}/readiness`).set(as('principal')).expect(200)).body;
     expect(r2.items.find((i: { key: string }) => i.key === 'verbs')).toMatchObject({ done: false, detail: '1 of 2 COs need a better action verb or Bloom level' });
     expect(r2.items.find((i: { key: string }) => i.key === 'justified')).toMatchObject({ done: false, detail: '1 of 3 mappings justified' });
@@ -146,6 +146,9 @@ describe('OBE depth: PEO-mission, versions, targets, student-wise attainment, tr
     await http().put(tg).set(as('teacher')).send({ academicYearId: year(), targets: [] }).expect(403);
     expect((await http().put(tg).set(as('principal')).send({ academicYearId: year(), targets: [{ targetId: ids.co1, targetLevel: 0.9, thresholdPercent: 50, rationale: 'First offering' }, { targetId: ids.po1, targetLevel: 3 }] }).expect(200)).body).toEqual({ set: 2, cleared: 0 });
 
+    // This programme keeps stricter rules of its own: levels at 70/60/50% of students, CIE 30 : SEE 70, all COs pooled to POs.
+    const cfg = (await http().get(`${base()}/config`).set(as('principal')).expect(200)).body;
+    await http().put(`${base()}/config`).set(as('principal')).send({ ...cfg, levels: [{ level: 3, minStudentsPercent: 70 }, { level: 2, minStudentsPercent: 60 }, { level: 1, minStudentsPercent: 50 }], evidenceWeights: { internal: 30, external: 70 }, poMethod: 'co_weighted' }).expect(200);
     await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
     const a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
     // CO1 at a 50% threshold: test 90/70/40% -> 2 of 3, exam 80/50/30% -> 2 of 3: both level 2, so direct 2 against a 0.9 target.

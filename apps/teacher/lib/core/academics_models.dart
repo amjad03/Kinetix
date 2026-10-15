@@ -43,13 +43,14 @@ class CourseOutcome {
 
 /// A version of a subject's course outcomes (`GET /v1/obe/subjects/:id/co-sets`); status is draft, active or retired.
 class CoSet {
-  const CoSet({required this.id, required this.version, required this.status, required this.outcomes, this.note});
+  const CoSet({required this.id, required this.version, required this.status, required this.outcomes, this.note, this.reviewStage = 'draft'});
 
   factory CoSet.fromJson(Map<String, dynamic> j) => CoSet(
     id: j['id'] as String,
     version: _int(j['version']),
     status: _s(j['status']),
     note: _sOrNull(j['note']),
+    reviewStage: _s(j['reviewStage']).isEmpty ? 'draft' : _s(j['reviewStage']),
     outcomes: [for (final o in _list(j['outcomes'])) CourseOutcome.fromJson(o)],
   );
 
@@ -57,6 +58,12 @@ class CoSet {
   final int version;
   final String? note;
   final List<CourseOutcome> outcomes;
+
+  /// Where the version is in its approval: draft, hod, coordinator, iqac, returned or approved.
+  final String reviewStage;
+
+  /// A draft its author may (re)send for approval.
+  bool get canSubmit => status == 'draft' && (reviewStage == 'draft' || reviewStage == 'returned');
 
   /// The version to show: the live one, else the newest.
   static CoSet? current(List<CoSet> sets) {

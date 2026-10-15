@@ -80,7 +80,9 @@ describe('OBE: outcomes, CO-PO matrix, attainment and accreditation exports', ()
     expect(m.cells).toHaveLength(3); // strength 0 means no mapping
     expect(m.outcomes.map((o: { code: string }) => o.code)).toEqual(['PO1', 'PO2', 'PSO1']);
 
-    await http().post(`/v1/obe/co-sets/${setId}/activate`).set(as('teacher')).expect(200);
+    // Teachers send COs for approval; a leader (or the IQAC's final approval) makes them live.
+    await http().post(`/v1/obe/co-sets/${setId}/activate`).set(as('teacher')).expect(409);
+    await http().post(`/v1/obe/co-sets/${setId}/activate`).set(as('principal')).expect(200);
     await http().post(`/v1/obe/co-sets/${setId}/outcomes`).set(as('teacher')).send({ code: 'CO3', statement: 'Too late for v1' }).expect(409);
     await http().put(`/v1/obe/co-sets/${setId}/matrix`).set(as('teacher')).send({ cells }).expect(409);
 
@@ -120,20 +122,21 @@ describe('OBE: outcomes, CO-PO matrix, attainment and accreditation exports', ()
     const a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
     const co = (code: string) => a.cos.find((c: { code: string }) => c.code.endsWith(code));
     const po = (code: string) => a.pos.find((c: { code: string }) => c.code === code);
-    // CO1: internal 9/10*.5=4.5/5, 3.5/5, 2/5 -> 90%, 70%, 40%: 2 of 3 attain 60% -> 66.7% -> level 2.
-    //      external 8, 5, 3 of 10 -> 1 of 3 -> 33.3% -> level 0. direct = (30*2 + 70*0)/100 = 0.6.
-    //      indirect = 4/5 * 3 = 2.4. combined = (80*0.6 + 20*2.4)/100 = 0.96.
-    expect(co('CO1')).toMatchObject({ direct: 0.6, indirect: 2.4, combined: 0.96, target: 2, gap: 1.04, met: false });
-    expect(co('CO1').detail.byKind.map((k: { kind: string; level: number }) => [k.kind, k.level])).toEqual([['external', 0], ['internal', 2]]);
-    // CO2: only the internal test (half its marks) -> level 2, no survey -> combined 2.
-    expect(co('CO2')).toMatchObject({ direct: 2, indirect: null, combined: 2, gap: 0, met: true });
-    // PO1 = (3 * 0.96 + 2 * 2) / 5 = 1.376; PO2 = 0.96; PSO1 has no mapped CO.
-    expect(po('PO1')).toMatchObject({ combined: 1.38, met: false });
-    expect(po('PO2')).toMatchObject({ combined: 0.96 });
+    // Default rules: threshold 60%, levels 3/2/1 at 60/50/40% of students, CIE 40 : SEE 60, direct 80 : indirect 20.
+    // CO1: internal 9/10*.5=4.5/5, 3.5/5, 2/5 -> 90%, 70%, 40%: 2 of 3 attain 60% -> 66.7% -> level 3.
+    //      external 8, 5, 3 of 10 -> 1 of 3 -> 33.3% -> level 0. direct = (40*3 + 60*0)/100 = 1.2.
+    //      indirect = 4/5 * 3 = 2.4. combined = (80*1.2 + 20*2.4)/100 = 1.44.
+    expect(co('CO1')).toMatchObject({ direct: 1.2, indirect: 2.4, combined: 1.44, target: 2, gap: 0.56, met: false });
+    expect(co('CO1').detail.byKind.map((k: { kind: string; level: number }) => [k.kind, k.level])).toEqual([['external', 0], ['internal', 3]]);
+    // CO2: only the internal test (half its marks) -> level 3, no survey -> combined 3.
+    expect(co('CO2')).toMatchObject({ direct: 3, indirect: null, combined: 3, gap: -1, met: true });
+    // PO1 = (3 * 1.44 + 2 * 3) / 5 = 2.064; PO2 = 1.44; PSO1 has no mapped CO.
+    expect(po('PO1')).toMatchObject({ combined: 2.06, met: true });
+    expect(po('PO2')).toMatchObject({ combined: 1.44, met: false });
     expect(po('PSO1')).toMatchObject({ combined: null, met: false, gap: null });
-    expect(a.summary).toMatchObject({ cosMet: 1, cos: 2, posMet: 0, pos: 3 });
-    expect(a.summary.gaps.map((g: { code: string }) => g.code).sort()).toEqual(['BCOM-3.1/CO1', 'PO1', 'PO2']); // unmet and measured; PSO1 has no measurement
-    expect(a.summary.gaps[2].gap).toBe(0.62); // largest first: 1.04, 1.04, then PO1 at 2 - 1.38
+    expect(a.summary).toMatchObject({ cosMet: 1, cos: 2, posMet: 1, pos: 3 });
+    expect(a.summary.gaps.map((g: { code: string }) => g.code).sort()).toEqual(['BCOM-3.1/CO1', 'PO2']); // unmet and measured; PSO1 has no measurement
+    expect(a.summary.gaps.map((g: { gap: number }) => g.gap)).toEqual([0.56, 0.56])
     expect(a.cos.every((c: { trend: string }) => c.trend === 'new')).toBe(true);
 
     // A second run gives a trend against the first.
@@ -178,16 +181,16 @@ describe('OBE: outcomes, CO-PO matrix, attainment and accreditation exports', ()
     const qid = sv.questions.find((q: { kind: string }) => q.kind === 'rating').id as string;
     // Below the minimum number of answers the survey is left out.
     const answer = (n: number, rating: number) => owner.query(`insert into survey_answers (tenant_id, survey_id, question_id, rating) select $1, $2, $3, $4 from generate_series(1, $5)`, [t.tenantId, sv.id, qid, rating, n]);
-    await answer(2, 5);
+    await answer(2, 4);
     await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
     let a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
-    expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO2'))).toMatchObject({ indirect: null, combined: 2 });
+    expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO2'))).toMatchObject({ indirect: null, combined: 3 });
 
-    // Five answers averaging 5 of 5 give the top level (3) as indirect attainment: combined = (80*2 + 20*3)/100.
-    await answer(3, 5);
+    // Five answers averaging 4 of 5 give 4/5 * 3 = 2.4 as indirect attainment: combined = (80*3 + 20*2.4)/100 = 2.88.
+    await answer(3, 4);
     await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
     a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
-    expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO2'))).toMatchObject({ direct: 2, indirect: 3, combined: 2.2 });
+    expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO2'))).toMatchObject({ direct: 3, indirect: 2.4, combined: 2.88 });
     expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO1'))).toMatchObject({ indirect: 2.4 });
   });
 
@@ -208,16 +211,16 @@ describe('OBE: outcomes, CO-PO matrix, attainment and accreditation exports', ()
     await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
     let a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
     let co2row = a.cos.find((c: { code: string }) => c.code.endsWith('CO2'));
-    expect(co2row.detail.byKind.map((k: { kind: string; weight: number }) => [k.kind, k.weight])).toEqual([['classroom', 0], ['internal', 30]]);
-    expect(co2row.direct).toBe(2);
+    expect(co2row.detail.byKind.map((k: { kind: string; weight: number }) => [k.kind, k.weight])).toEqual([['classroom', 0], ['internal', 40]]);
+    expect(co2row.direct).toBe(3);
 
-    // Giving it a weight makes it count: (30 * 2 + 40 * 2) / 70 stays 2 here, so check the level of the kind itself.
+    // Giving it a weight makes it count: (40 * 3 + 20 * 3) / 60 stays 3 here, so check the level of the kind itself.
     const cfg = (await http().get(`${base()}/config`).set(as('teacher')).expect(200)).body;
     await http().put(`${base()}/config`).set(as('principal')).send({ ...cfg, evidenceWeights: { ...cfg.evidenceWeights, classroom: 20 } }).expect(200);
     await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
     a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
     co2row = a.cos.find((c: { code: string }) => c.code.endsWith('CO2'));
-    expect(co2row.detail.byKind.find((k: { kind: string }) => k.kind === 'classroom')).toMatchObject({ students: 3, attained: 2, level: 2, weight: 20 });
+    expect(co2row.detail.byKind.find((k: { kind: string }) => k.kind === 'classroom')).toMatchObject({ students: 3, attained: 2, level: 3, weight: 20 });
     await http().put(`/v1/obe/polls/${poll.id}/cos`).set(as('teacher')).send({ coIds: [] }).expect(200);
   });
 });

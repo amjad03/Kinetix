@@ -13,11 +13,15 @@ import type { ObeReadiness, PeoMission, StudentWise, TargetRow, Targets, Trend, 
 
 import { MenuItem } from '@/components/kx';
 
-/** The OBE pages beyond the dashboard: statements and PEO-mission, targets, student-wise attainment, CQI actions. */
-export function ObeTabs({ value }: { value: 'dashboard' | 'peo' | 'targets' | 'students' | 'actions' }) {
+const TABS = ['home', 'courses', 'approvals', 'attainment', 'trends', 'peo', 'targets', 'students', 'actions', 'gaps', 'surveys', 'reports', 'setup'] as const;
+export type ObeTab = (typeof TABS)[number];
+const TAB_LABEL: Record<ObeTab, MessageKey> = { home: 'of.tab.home', courses: 'of.tab.courses', approvals: 'of.tab.approvals', attainment: 'obe2.tab.dashboard', trends: 'of.tab.trends', peo: 'obe2.tab.peo', targets: 'obe2.tab.targets', students: 'obe2.tab.students', actions: 'obe2.tab.actions', gaps: 'of.tab.gaps', surveys: 'of.tab.surveys', reports: 'of.tab.reports', setup: 'obe.setup' };
+
+/** The OBE pages: the role dashboard, courses, approvals, attainment, trends, statements, targets, students, actions, gaps, surveys, reports and set-up. */
+export function ObeTabs({ value }: { value: ObeTab | 'dashboard' }) {
   const { t } = useI18n();
-  const items = (['dashboard', 'peo', 'targets', 'students', 'actions'] as const).map((v) => ({ value: v, label: t(`obe2.tab.${v}`), href: v === 'dashboard' ? '/obe' : `/obe/${v}` }));
-  return <LinkTabs value={value} label={t('nav.obe')} items={items} />;
+  const items = TABS.map((v) => ({ value: v, label: t(TAB_LABEL[v]), href: v === 'home' ? '/obe' : `/obe/${v}` }));
+  return <LinkTabs value={value === 'dashboard' ? 'attainment' : value} label={t('nav.obe')} items={items} />;
 }
 
 /** Programme and year pickers that keep the page's other parameters. */

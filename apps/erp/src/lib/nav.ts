@@ -118,6 +118,9 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'obe',
     items: [
       { href: '/obe', label: 'nav.obe', section: 'obe', icon: 'obe' },
+      { href: '/obe/courses', label: 'nav.obeCourses', section: 'obe', icon: 'obe' },
+      { href: '/obe/approvals', label: 'nav.obeApprovals', section: 'obe', icon: 'obe' },
+      { href: '/obe/reports', label: 'nav.obeReports', section: 'obe', icon: 'obe' },
       { href: '/accreditation', label: 'nav.accHub', section: 'accreditation', icon: 'obe' },
       { href: '/accreditation/naac', label: 'nav.accNaac', section: 'accreditation', icon: 'obe' },
       { href: '/accreditation/nba', label: 'nav.accNba', section: 'accreditation', icon: 'obe' },

@@ -15,6 +15,7 @@ import 'growth_models.dart';
 import 'hr_models.dart';
 import 'insights_models.dart';
 import 'models.dart';
+import 'obe_models.dart';
 import 'offline_key.dart';
 import 'work_models.dart';
 
@@ -199,6 +200,19 @@ abstract class TeacherApi implements AnnouncementSource {
   Future<CoMatrix> coMatrix(String coSetId);
   Future<String?> currentAcademicYearId();
   Future<List<CoAttainment>> coAttainment({required String programId, required String academicYearId});
+
+  /// Question-wise marks: a course's assessments in a year, one assessment's paper with the class's marks, and saving
+  /// marks (each student's total becomes the sum of their question marks; the saved paper comes back).
+  Future<List<CourseAssessment>> courseAssessments(String subjectId, String academicYearId);
+  Future<QuestionPaper> questionPaper(String assessmentId);
+  Future<QuestionPaper> saveQuestionMarks(String assessmentId, List<QuestionMarksEntry> entries);
+
+  /// Course-outcome approval: sending a draft (returns warnings to show), the versions waiting for me, a version's
+  /// history and deciding (approve, return or comment).
+  Future<List<String>> submitCoSet(String coSetId, {String? comment});
+  Future<List<CoApproval>> coApprovals();
+  Future<CoReviews> coReviews(String coSetId);
+  Future<void> reviewCoSet(String coSetId, {required String decision, String? comment});
 
   /// Research (faculty): projects, scholars I supervise, theses, publications and datasets.
   Future<List<ResearchProject>> researchProjects();
@@ -863,6 +877,35 @@ class HttpTeacherApi implements TeacherApi {
     final max = (j['config'] as Map?)?['maxLevel'];
     return _rows(j['cos'], (m) => CoAttainment.fromJson({...m, 'maxLevel': max}));
   }
+
+  @override
+  Future<List<CourseAssessment>> courseAssessments(String subjectId, String academicYearId) async =>
+      _rows(await _send('GET', '/v1/obe/subjects/$subjectId/assessments?academicYearId=$academicYearId'), CourseAssessment.fromJson);
+
+  @override
+  Future<QuestionPaper> questionPaper(String assessmentId) async =>
+      QuestionPaper.fromJson(await _send('GET', '/v1/obe/assessments/$assessmentId/questions') as Map<String, dynamic>);
+
+  @override
+  Future<QuestionPaper> saveQuestionMarks(String assessmentId, List<QuestionMarksEntry> entries) async => QuestionPaper.fromJson(
+    await _send('PUT', '/v1/obe/assessments/$assessmentId/question-marks', body: {'entries': [for (final e in entries) e.toJson()]}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<List<String>> submitCoSet(String coSetId, {String? comment}) async {
+    final j = await _send('POST', '/v1/obe/co-sets/$coSetId/submit', body: {if (comment != null && comment.isNotEmpty) 'comment': comment}) as Map<String, dynamic>;
+    return [for (final w in (j['warnings'] as List? ?? const [])) '$w'];
+  }
+
+  @override
+  Future<List<CoApproval>> coApprovals() async => _rows(await _send('GET', '/v1/obe/approvals'), CoApproval.fromJson);
+
+  @override
+  Future<CoReviews> coReviews(String coSetId) async => CoReviews.fromJson(await _send('GET', '/v1/obe/co-sets/$coSetId/reviews') as Map<String, dynamic>);
+
+  @override
+  Future<void> reviewCoSet(String coSetId, {required String decision, String? comment}) async =>
+      _send('POST', '/v1/obe/co-sets/$coSetId/review', body: {'decision': decision, if (comment != null && comment.isNotEmpty) 'comment': comment});
 
   @override
   Future<List<ResearchProject>> researchProjects() async => _rows(await _send('GET', '/v1/research/projects'), ResearchProject.fromJson);

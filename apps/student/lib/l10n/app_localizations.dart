@@ -9458,6 +9458,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send for approval'**
   String get atSend;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'My course outcomes'**
+  String get outcomesTitle;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'No course outcomes to show for this year yet.'**
+  String get outcomesNone;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'A course outcome (CO) is what a course sets out to teach you. You reach it when your marks in the questions that test it are at or above the threshold.'**
+  String get outcomesIntro;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'{reached} of {measured} COs reached · threshold {threshold}%'**
+  String outcomesSummary(int reached, int measured, String threshold);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'No marks to measure yet.'**
+  String get outcomesNotYet;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached'**
+  String get outcomesAttained;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet reached'**
+  String get outcomesBelow;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'No marks yet'**
+  String get outcomesPending;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal {cie} · End-semester {see} · Class level {level} (target {target})'**
+  String outcomesDetail(String cie, String see, String level, String target);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One course exit survey is open: tell us how well the course outcomes were met} other{{count} course exit surveys are open: tell us how well the course outcomes were met}}'**
+  String outcomesExitSurveys(int count);
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Course exit survey'**
+  String get surveyExitCourse;
+
+  /// Outcome-based education.
+  ///
+  /// In en, this message translates to:
+  /// **'Programme exit survey'**
+  String get surveyExitProgramme;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

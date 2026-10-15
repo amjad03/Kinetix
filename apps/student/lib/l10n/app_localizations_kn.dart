@@ -5294,4 +5294,53 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get atSend => 'ಅನುಮೋದನೆಗೆ ಕಳುಹಿಸಿ';
+
+  @override
+  String get outcomesTitle => 'ನನ್ನ ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು';
+
+  @override
+  String get outcomesNone => 'ಈ ವರ್ಷ ತೋರಿಸಲು ಇನ್ನೂ ಯಾವುದೇ ಕೋರ್ಸ್ ಫಲಿತಾಂಶ ಇಲ್ಲ.';
+
+  @override
+  String get outcomesIntro =>
+      'ಕೋರ್ಸ್ ಫಲಿತಾಂಶ (CO) ಎಂದರೆ ಕೋರ್ಸ್ ನಿಮಗೆ ಕಲಿಸಲು ಉದ್ದೇಶಿಸಿರುವುದು. ಅದನ್ನು ಪರೀಕ್ಷಿಸುವ ಪ್ರಶ್ನೆಗಳಲ್ಲಿ ನಿಮ್ಮ ಅಂಕಗಳು ಮಿತಿಗೆ ಸಮ ಅಥವಾ ಹೆಚ್ಚಿದ್ದಾಗ ನೀವು ಅದನ್ನು ತಲುಪುತ್ತೀರಿ.';
+
+  @override
+  String outcomesSummary(int reached, int measured, String threshold) {
+    return '$measured ರಲ್ಲಿ $reached CO ತಲುಪಲಾಗಿದೆ · ಮಿತಿ $threshold%';
+  }
+
+  @override
+  String get outcomesNotYet => 'ಅಳೆಯಲು ಇನ್ನೂ ಅಂಕಗಳಿಲ್ಲ.';
+
+  @override
+  String get outcomesAttained => 'ತಲುಪಲಾಗಿದೆ';
+
+  @override
+  String get outcomesBelow => 'ಇನ್ನೂ ತಲುಪಿಲ್ಲ';
+
+  @override
+  String get outcomesPending => 'ಇನ್ನೂ ಅಂಕಗಳಿಲ್ಲ';
+
+  @override
+  String outcomesDetail(String cie, String see, String level, String target) {
+    return 'ಆಂತರಿಕ $cie · ಸೆಮಿಸ್ಟರ್ ಅಂತ್ಯ $see · ತರಗತಿ ಮಟ್ಟ $level (ಗುರಿ $target)';
+  }
+
+  @override
+  String outcomesExitSurveys(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಕೋರ್ಸ್ ಮುಕ್ತಾಯ ಸಮೀಕ್ಷೆಗಳು ತೆರೆದಿವೆ: ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು ಎಷ್ಟು ಸಾಧಿತವಾದವು ಎಂದು ತಿಳಿಸಿ',
+      one: 'ಒಂದು ಕೋರ್ಸ್ ಮುಕ್ತಾಯ ಸಮೀಕ್ಷೆ ತೆರೆದಿದೆ: ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು ಎಷ್ಟು ಸಾಧಿತವಾದವು ಎಂದು ತಿಳಿಸಿ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get surveyExitCourse => 'ಕೋರ್ಸ್ ಮುಕ್ತಾಯ ಸಮೀಕ್ಷೆ';
+
+  @override
+  String get surveyExitProgramme => 'ಕಾರ್ಯಕ್ರಮ ಮುಕ್ತಾಯ ಸಮೀಕ್ಷೆ';
 }

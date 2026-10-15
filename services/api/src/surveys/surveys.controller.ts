@@ -162,6 +162,9 @@ export class SurveysController {
           description: s.description,
           anonymous: s.anonymous,
           closesAt: s.closesAt,
+          // A course or programme exit survey (OBE indirect evidence), and the course it is about.
+          obeKind: s.obeKind,
+          subjectId: s.subjectId,
           answered,
           questions: answered ? [] : qs.filter((q) => q.surveyId === s.id).map((q) => ({ id: q.id, ord: q.ord, kind: q.kind, prompt: q.prompt, options: q.options, required: q.required, showIf: q.showIf })),
         };

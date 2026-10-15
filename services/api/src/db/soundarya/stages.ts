@@ -11,7 +11,8 @@ import { curriculumAndConvocation } from './curriculum.js';
 import { smallTables, syllabus } from './finish.js';
 import { governanceDepth } from './governance-depth.js';
 import { exams } from './exams.js';
-import { obe, questionBank, studentAccounts, surveys } from './outcomes.js';
+import { questionBank, studentAccounts, surveys } from './outcomes.js';
+import { obeAttainment, obeStructure } from './obe-showcase.js';
 import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from './quality.js';
 import { hrWorkflows, payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
 import { assistSamples } from './assist.js';
@@ -53,9 +54,10 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['admissions growth: agents, commissions, interviews, online entrance test', admissionsGrowth],
   ['HR lifecycle: appraisal, training, offers, onboarding, exit', hrLifecycle],
   ['student accounts', studentAccounts],
-  ['outcome-based education and attainment', obe],
+  ['outcome-based education: statements, COs, approvals, CO-PO matrices, question papers and question-wise marks', obeStructure],
   ['feedback surveys', surveys],
   ['question bank and papers', questionBank],
+  ['outcome-based education: exit surveys, attainment, trends, batches, gaps and action-taken reports', obeAttainment],
   ['semester end session, seating and invigilation', semesterEndSession],
   ['on-screen evaluation', evaluation],
   ['course files', courseFiles],

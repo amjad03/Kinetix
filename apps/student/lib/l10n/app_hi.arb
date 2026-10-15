@@ -1560,5 +1560,17 @@
   "atRemove": "हटाएँ",
   "atTakePhoto": "फ़ोटो लें",
   "atChooseFile": "पीडीएफ़ चुनें",
-  "atSend": "स्वीकृति के लिए भेजें"
+  "atSend": "स्वीकृति के लिए भेजें",
+  "outcomesTitle": "मेरे कोर्स परिणाम",
+  "outcomesNone": "इस वर्ष दिखाने के लिए अभी कोई कोर्स परिणाम नहीं है।",
+  "outcomesIntro": "कोर्स परिणाम (CO) वह है जो कोर्स आपको सिखाना चाहता है। जब उसे जाँचने वाले प्रश्नों में आपके अंक सीमा या उससे ऊपर हों, तब आप उसे प्राप्त करते हैं।",
+  "outcomesSummary": "{measured} में से {reached} CO प्राप्त · सीमा {threshold}%",
+  "outcomesNotYet": "मापने के लिए अभी अंक नहीं हैं।",
+  "outcomesAttained": "प्राप्त",
+  "outcomesBelow": "अभी प्राप्त नहीं",
+  "outcomesPending": "अभी अंक नहीं",
+  "outcomesDetail": "आंतरिक {cie} · सेमेस्टर-अंत {see} · कक्षा स्तर {level} (लक्ष्य {target})",
+  "outcomesExitSurveys": "{count, plural, =1{एक कोर्स समापन सर्वेक्षण खुला है: बताएँ कि कोर्स परिणाम कितने पूरे हुए} other{{count} कोर्स समापन सर्वेक्षण खुले हैं: बताएँ कि कोर्स परिणाम कितने पूरे हुए}}",
+  "surveyExitCourse": "कोर्स समापन सर्वेक्षण",
+  "surveyExitProgramme": "कार्यक्रम समापन सर्वेक्षण"
 }
