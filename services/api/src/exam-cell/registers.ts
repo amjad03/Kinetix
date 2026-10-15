@@ -1,5 +1,5 @@
 import { BadRequestException, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Query, Res } from '@nestjs/common';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -284,6 +284,3 @@ function send(res: Response, pdf: Buffer, name: string) {
   res.setHeader('content-disposition', `inline; filename="${name}"`);
   res.end(pdf);
 }
-
-// Keep the column order of rooms for imports elsewhere.
-export const ROOM_ORDER = asc(rooms.name);

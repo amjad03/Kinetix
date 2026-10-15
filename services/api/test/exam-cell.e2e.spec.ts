@@ -212,6 +212,7 @@ describe('exam cell', () => {
     await http().put('/v1/exam-cell/settings').set(as('teacher')).send({ ...cfg, revaluationThresholdPercent: 10 }).expect(403);
     await http().put('/v1/exam-cell/settings').set(as('principal')).send({ ...cfg, revaluationThresholdPercent: 10 }).expect(200);
     const r = (await http().post(`/v1/results/students/${t.students[A].id}/revaluations`).set(as('parentA')).send({ sessionId, subjectId: t.subject.id, reason: 'Expected more marks' }).expect(201)).body;
+    await http().post(`/v1/fees/invoices/${r.feeInvoiceId}/payments`).set(as('principal')).send({ amountPaise: r.feePaise, method: 'cash' }).expect(201);
     await http().post(`/v1/revaluations/${r.id}/decide`).set(as('principal')).send({ accept: true }).expect(200);
     // 52 is 2 marks more: under 10% of 60, so the original 50 stands.
     expect((await http().post(`/v1/revaluations/${r.id}/complete`).set(as('principal')).send({ marks: 52 }).expect(200)).body).toMatchObject({ changed: false, difference: 2 });

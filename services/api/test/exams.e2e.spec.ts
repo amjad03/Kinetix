@@ -195,6 +195,9 @@ describe('assessment schemes, exams and results', () => {
     await http().post(`/v1/results/students/${t.students[A].id}/revaluations`).set(as('parentB')).send(rq).expect(404);
     await http().post(`/v1/revaluations/${r.id}/complete`).set(as('principal')).send({ marks: 40 }).expect(409); // must be accepted first
     await http().post(`/v1/revaluations/${r.id}/decide`).set(as('teacher')).send({ accept: true }).expect(403);
+    // The fee is an invoice on the fee account; the request is decided once it is paid.
+    await http().post(`/v1/revaluations/${r.id}/decide`).set(as('principal')).send({ accept: true }).expect(409);
+    await http().post(`/v1/fees/invoices/${r.feeInvoiceId}/payments`).set(as('principal')).send({ amountPaise: r.feePaise, method: 'cash' }).expect(201);
     await http().post(`/v1/revaluations/${r.id}/decide`).set(as('principal')).send({ accept: true }).expect(200);
     await http().post(`/v1/revaluations/${r.id}/complete`).set(as('principal')).send({ marks: 61 }).expect(400);
     // SEE 40/60 -> 40; with IA moderated 24: 64 -> B+, 6.4.

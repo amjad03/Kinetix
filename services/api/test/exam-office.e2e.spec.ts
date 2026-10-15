@@ -87,14 +87,16 @@ describe('exam office: session workflow, approvals, records, reports and setting
     expect(dues.map((d) => d.amountPaise)).toEqual([50_000, 50_000, 50_000]);
     await act('controller', 'session', ids.session, 'complete').expect(409);
     const [A, B] = t.students.map((st) => `${ids.session}_${st.id}`);
-    await act('controller', 'registration', A, 'fee_paid').expect(400);
-    await act('controller', 'registration', A, 'fee_paid', { value: { receiptNo: 'EXF-001' } }).expect(200);
+    // Each exam fee is an invoice on the fee account: it is paid at the fees counter (or online) and settles here.
     await act('controller', 'registration', A, 'fee_paid', { value: { receiptNo: 'EXF-001' } }).expect(409);
+    const invoiceOf = (i: number) => dues.find((d) => d.studentId === t.students[i].id)!.feeInvoiceId!;
+    for (const i of [0, 2]) await http().post(`/v1/fees/invoices/${invoiceOf(i)}/payments`).set(as('principal')).send({ amountPaise: 50_000, method: 'cash' }).expect(201);
+    await act('controller', 'registration', A, 'fee_paid', { value: { receiptNo: 'EXF-001' } }).expect(409); // settled
     await act('controller', 'registration', B, 'fee_waive', { comment: 'SC/ST fee concession' }).expect(200);
-    await act('controller', 'registration', C, 'fee_paid', { value: { receiptNo: 'EXF-002' } }).expect(200);
+    expect((await db.select().from(s.feeInvoices).where(eq(s.feeInvoices.id, invoiceOf(1))))[0].status).toBe('cancelled');
     const reg = (await get('controller', `/v1/exam-office/records/registration/${C}`).expect(200)).body;
     expect(reg).toMatchObject({ status: { key: 'registered' }, facts: expect.arrayContaining([{ key: 'fee', value: 'paid', format: 'status' }]) });
-    expect(reg.activity.map((a: { action: string }) => a.action)).toEqual(expect.arrayContaining(['exam.fee.paid', 'exam.registration.overridden']));
+    expect(reg.activity.map((a: { action: string }) => a.action)).toEqual(expect.arrayContaining(['exam.fee.charged', 'exam.registration.overridden']));
     await act('controller', 'session', ids.session, 'complete').expect(200);
 
     // Hall tickets take the office's numbering series once settings are saved.

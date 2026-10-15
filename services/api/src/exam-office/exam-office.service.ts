@@ -141,6 +141,8 @@ export class ExamOfficeService {
 
   record(p: UserPrincipal, kind: Kind, id: string): Promise<RecordView> {
     return this.db.withTenant(p.tenantId, async (tx) => {
+      // Exam fees paid on the fee account settle before they are shown.
+      if (kind === 'registration' || kind === 'session') await syncExamFees(tx, {});
       switch (kind) {
         case 'session':
           return this.sessionRecord(tx, p, id);
@@ -806,6 +808,7 @@ export class ExamOfficeService {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const sid = f.sessionId && UUID.test(f.sessionId) ? f.sessionId : null;
       if (!sid) return { columns: [], rows: [] };
+      await syncExamFees(tx, { sessionId: sid });
       const R = (columns: Related['columns'], rows: Row[]) => ({ columns, rows });
       switch (report) {
         case 'registration_summary':
