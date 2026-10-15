@@ -302,6 +302,8 @@ def build():
         E = max(vo_end + 0.25, last + HOLD + 0.1)
         if u['kind'] == 'brand':
             E = vo_end + 0.6
+        if u['kind'] == 'end':
+            E = vo_end + 3.2
         if u['b'].get('hold'):
             E += u['b']['hold']
         u.update(S=S, vo_start=vo_start, vo_end=vo_end, E=E, offsets=[vo_start + x for x in pt], extra=extra)
