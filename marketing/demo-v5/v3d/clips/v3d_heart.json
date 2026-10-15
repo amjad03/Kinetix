@@ -1,0 +1,19 @@
+{
+ "id": "v3d_heart",
+ "title": "Human heart: turn, cut, take apart",
+ "duration": 11,
+ "marks": [
+  {
+   "t": 0.6,
+   "label": "heart turning"
+  },
+  {
+   "t": 3.6,
+   "label": "cut in half"
+  },
+  {
+   "t": 6.8,
+   "label": "taken apart"
+  }
+ ]
+}

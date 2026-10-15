@@ -1,0 +1,10 @@
+renders/
+audio/
+*.mp4
+*.wav
+v3d/build/
+erp/clips/
+apps/clips/
+erp/frames/
+apps/frames/
+node_modules/
