@@ -54,7 +54,7 @@ export interface ApplicationView {
   /** Reasons that stop the whole application (fees overdue, too many backlogs). */
   blockers: string[];
   subjects: ApplicationSubject[];
-  fee: { papersPaise: number; topUpPaise: number; lateFeePaise: number; totalPaise: number; papers: number; lateSlab: string | null };
+  fee: { papersPaise: number; topUpPaise: number; lateFeePaise: number; totalPaise: number; papers: number; lateSlab: string | null; minimumPaise: number };
   application: {
     applicationNo: string | null;
     status: string;
@@ -85,7 +85,7 @@ export async function syncRepeatRegistrations(tx: Tx, p: UserPrincipal, sessionI
 @Injectable()
 export class ApplicationsService {
   constructor(
-    private readonly exams: ExamsService,
+    readonly exams: ExamsService,
     private readonly clock: Clock,
     private readonly notes: NotificationsService,
   ) {}
@@ -198,7 +198,7 @@ export class ApplicationsService {
 
     const daysLate = w && window?.state === 'late' ? Math.round((Date.parse(today) - Date.parse(w.closesOn)) / 86_400_000) : 0;
     const late = lateFeeFor((await cellSettings(tx)).lateFeeSlabs, daysLate, cfg.examFees.lateFeePaise);
-    const fee = { ...applicationFee(cfg.examFees, list.filter((x) => x.chosen).map((x) => ({ kind: x.kind, eligible: x.eligible })), late.amountPaise), lateSlab: late.slab };
+    const fee = { ...applicationFee(cfg.examFees, list.filter((x) => x.chosen).map((x) => ({ kind: x.kind, eligible: x.eligible })), late.amountPaise), lateSlab: late.slab, minimumPaise: cfg.examFees.minimumPaise };
 
     const [reg] = await tx.select().from(examRegistrations).where(and(eq(examRegistrations.sessionId, sessionId), eq(examRegistrations.studentId, studentId)));
     const [feeRow] = await tx
@@ -381,6 +381,21 @@ export class ApplicationsController {
   @Auth('user', CELL_READ)
   list(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, (tx) => this.svc.list(tx, id));
+  }
+
+  /** Who may apply in the session: the active students of its programme, by class and roll number (the office's picker). */
+  @Get('exam-sessions/:id/candidates')
+  @Auth('user', CELL_READ)
+  candidates(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const s = await this.svc.exams.session(tx, id);
+      return rowsOf(
+        tx,
+        sql`select st.id, st.roll_no as "rollNo", st.full_name as name, sec.display_name as section, sec.term
+            from students st join sections sec on sec.id = st.section_id
+            where sec.program_id = ${s.programId}::uuid and st.status = 'active' order by sec.term desc, sec.display_name, st.roll_no limit 2000`,
+      );
+    });
   }
 
   /** The student's open and coming applications (apps). */

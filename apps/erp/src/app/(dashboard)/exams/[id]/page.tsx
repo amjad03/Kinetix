@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { ExamDepthPanel } from '@/components/exams/ExamDepthPanel';
 import { ExamRegistrationPanel } from '@/components/exams/ExamRegistrationPanel';
 import { SessionDesk } from '@/components/exams/SessionDesk';
+import { SessionTabs } from '@/components/exams/flagship/SessionTabs';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
@@ -72,6 +73,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
     <>
       {back}
       <PageHeader title={session.data.name} subtitle={t('exm.sessionSubtitle', { term: session.data.term })} />
+      <SessionTabs sessionId={id} current="overview" />
       {structure.error !== undefined ? <ErrorState message={structure.error} /> : <SessionDesk session={session.data} structure={structure.data} results={results.data ?? []} revaluations={revals.data ?? []} canManage={canManage} />}
       {structure.data && <ExamRegistrationPanel session={session.data} window={regWindow} registrations={registrations} plan={plan} rooms={structure.data.rooms} canManage={canManage} />}
       {structure.data && <ExamDepthPanel session={session.data} canManage={canManage} data={{ duties, supplementary, malpractice, rules, grace, ranks: ranks?.students ?? null, progression, staff, rooms: structure.data.rooms }} />}

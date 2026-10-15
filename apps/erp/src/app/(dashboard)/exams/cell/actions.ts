@@ -17,7 +17,7 @@ export async function runCell<T = Record<string, unknown>>(method: 'POST' | 'PUT
   return res;
 }
 
-const READS = /^\/v1\/(exam-papers\/[0-9a-f-]{36}\/double-entry|exam-sessions\/[0-9a-f-]{36}\/(runs|revisions|swaps|results\/[0-9a-f-]{36}\/revisions)|valuation-camps\/[0-9a-f-]{36}\/daily)$/;
+const READS = /^\/v1\/(exam-papers\/[0-9a-f-]{36}\/double-entry|exam-sessions\/[0-9a-f-]{36}\/(runs|revisions|swaps|results\/[0-9a-f-]{36}\/revisions|application\/[0-9a-f-]{36}|subjects\/[0-9a-f-]{36}\/qp-coverage)|valuation-camps\/[0-9a-f-]{36}\/daily|students\/[0-9a-f-]{36}\/marks-ledger|assessments\/[0-9a-f-]{36}\/unlock-requests)$/;
 
 /** A read a desk asks for on demand (a sheet, a day count, the versions of a result). */
 export async function readCell<T>(path: string): Promise<ActionResult<T>> {

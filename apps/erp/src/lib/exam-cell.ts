@@ -22,13 +22,18 @@ export const CELL_PATHS = new RegExp(
     `verification-requests/${ID}/(pay|check|reject)`,
     `assessments/${ID}/attendance-marks`,
     'exam-cell/settings',
+    // Applications, question paper setting and marks unlocking (lib/exam-flagship.ts).
+    `exam-sessions/${ID}/(application|application/${ID}/withdraw|registrations/${ID}/override|qp-appointments|subjects/${ID}/draw)`,
+    `qp-appointments/${ID}/(respond|cancel)`,
+    `assessments/${ID}/unlock-requests`,
+    `marks-unlock-requests/${ID}/(decide|cancel)`,
   ].join('|')})$`,
 );
 
 export const isCellPath = (path: string) => !path.includes('?') && CELL_PATHS.test(path);
 
 /** The registers and analyses (GET /v1/exam-cell/reports/:report). */
-export const CELL_REPORTS = ['gazette', 'result_register', 'pass_by_course', 'pass_by_teacher', 'toppers', 'ranks', 'analysis', 'distinctions', 'gold_medals', 'nirf', 'exam_fees', 'withheld', 'pending_certificates', 'remuneration', 'answer_sheets', 'mismatches'] as const;
+export const CELL_REPORTS = ['gazette', 'result_register', 'pass_by_course', 'pass_by_teacher', 'pass_by_section', 'grade_distribution', 'year_comparison', 'toppers', 'ranks', 'analysis', 'distinctions', 'gold_medals', 'nirf', 'exam_fees', 'withheld', 'pending_certificates', 'remuneration', 'answer_sheets', 'mismatches'] as const;
 export type CellReport = (typeof CELL_REPORTS)[number];
 /** Reports that need no exam session. */
 export const NO_SESSION_REPORTS: CellReport[] = ['pending_certificates', 'remuneration'];

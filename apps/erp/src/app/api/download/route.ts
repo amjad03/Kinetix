@@ -169,6 +169,17 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !UUID.test(student)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/exam-sessions/${id}/hall-tickets/${student}/pdf`;
   }
+  // Exam registers: ?kind=exam-attendance-sheet&id=<session>&paper=<paper>[&room=<hall>], exam-d-form (paper), exam-tabulation.
+  if (kind === 'exam-attendance-sheet' || kind === 'exam-d-form') {
+    const paper = req.nextUrl.searchParams.get('paper') ?? '';
+    const room = req.nextUrl.searchParams.get('room') ?? '';
+    if (!UUID.test(id) || !UUID.test(paper) || (room && !UUID.test(room))) return new Response('Not found', { status: 404 });
+    FIXED[kind] = kind === 'exam-d-form' ? `/v1/exam-sessions/${id}/registers/d-form.pdf?paperId=${paper}` : `/v1/exam-sessions/${id}/registers/attendance-sheet.pdf?paperId=${paper}${room ? `&roomId=${room}` : ''}`;
+  }
+  if (kind === 'exam-tabulation') {
+    if (!UUID.test(id)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/exam-sessions/${id}/registers/tabulation.pdf`;
+  }
   // The seating chart of one hall for one sitting: ?kind=seating-chart&id=<session>&slot=<n>&room=<hall>
   if (kind === 'seating-chart') {
     const slot = req.nextUrl.searchParams.get('slot') ?? '';
