@@ -86,7 +86,7 @@ SCENES.labs = {
     b.hd = $(`<div class="a dsp" style="left:0;top:0;width:1200px;height:620px;display:grid;place-items:center;font-size:84px;text-align:center;background:linear-gradient(160deg,rgba(163,230,53,.18),rgba(8,6,24,.92))">🧪 No mess.<br>No broken glass.</div>`, b.win.g);
   },
   update(t, f, b) {
-    const t0 = f.t0(0), idx = [5, 4, 3, 2, 1, 0].map(i => i).find(i => t >= f.t0(i));
+    const t0 = f.t0(0), idx = [5, 4, 3, 2, 1, 0].find(i => t >= f.t0(i)) ?? 0;
     appear(b.win.g, t, t0 - .1, { dy: 80, s0: .8 });
     const tabOf = [0, 0, 0, 1, 2, 3][idx];
     [...b.tabs.children].forEach((c, i) => { const on = idx > 0 && i === tabOf; css(c, { color: on ? '#14122b' : '#9C93C9', background: on ? '#A3E635' : 'transparent', borderColor: on ? '#A3E635' : 'rgba(255,255,255,.12)', transform: on ? 'scale(1.06)' : 'scale(1)' }); });
