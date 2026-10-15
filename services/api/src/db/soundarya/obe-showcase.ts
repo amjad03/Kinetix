@@ -222,6 +222,14 @@ export async function obeStructure(c: Ctx): Promise<void> {
     const peos = outs.filter((o) => o.kind === 'peo');
     const missions = outs.filter((o) => o.kind === 'mission');
     await k.ins('peo_mission_map', peos.flatMap((p, i) => missions.map((m, j) => ({ programId: pid, peoId: p.id, missionId: m.id, strength: i === j ? 3 : (i + j) % 2 === 0 ? 2 : 1, justification: i === j ? `${p.code} realises mission element ${m.code} directly` : null }))), { returning: false });
+    // PEO-PO/PSO matrix: each PEO is served strongly by every n-th PO (n = the number of PEOs) and by its own PSO.
+    const pos = outs.filter((o) => o.kind === 'po');
+    const psos = outs.filter((o) => o.kind === 'pso');
+    await k.ins('peo_po_map', peos.flatMap((p, i) => [
+      ...pos.filter((_, j) => j % peos.length === i).map((o) => ({ programId: pid, peoId: p.id, outcomeId: o.id, strength: 3, justification: `${o.code} is a graduate attribute ${p.code} depends on` })),
+      ...pos.filter((_, j) => j % peos.length === (i + 1) % peos.length).slice(0, 1).map((o) => ({ programId: pid, peoId: p.id, outcomeId: o.id, strength: 1, justification: null })),
+      ...(psos[i % Math.max(1, psos.length)] ? [{ programId: pid, peoId: p.id, outcomeId: psos[i % psos.length].id, strength: 2, justification: `${psos[i % psos.length].code} is the programme skill behind ${p.code}` }] : []),
+    ]), { returning: false });
     const stmts = (await k.q<{ kind: string; code: string; statement: string }>('select kind::text, code, statement from program_outcomes where program_id = $1 order by kind, ord, code', [pid])).map((s) => ({ kind: s.kind, code: s.code, statement: s.statement }));
     await k.ins('program_outcome_versions', [
       { programId: pid, version: 1, effectiveFrom: '2023-24', note: 'Adopted with the NEP 2020 curriculum of Bengaluru City University', statements: J(stmts.map((s) => (s.code === 'V1' ? { ...s, statement: s.statement.replace('globally employable', 'employable') } : s))), publishedBy: principal, publishedAt: at('2023-07-10') },

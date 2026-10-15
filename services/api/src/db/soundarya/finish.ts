@@ -28,6 +28,14 @@ export async function syllabus(c: Ctx): Promise<void> {
       const [course] = await k.q<{ id: string }>('select id from courses where code = $1', [code]);
       if (!course) continue; // the library has not been imported on this database
       await k.q('update subjects set course_id = $2 where id = $1', [sub.id, course.id]);
+      // The course plan: the units share the active COs in order, and the last unit also serves the last (higher-order) CO.
+      const units = await k.q<{ id: string }>('select id from chapters where course_id = $1 order by position', [course.id]);
+      const cos = await k.q<{ code: string }>(`select co.code from course_outcomes co join co_sets cs on cs.id = co.co_set_id where cs.subject_id = $1 and cs.status = 'active' order by co.ord, co.code`, [sub.id]);
+      if (units.length && cos.length) {
+        const links = cos.map((co, j) => ({ chapterId: units[Math.min(units.length - 1, Math.floor((j * units.length) / cos.length))].id, coCode: co.code }));
+        if (units.length > 1) links.push({ chapterId: units[units.length - 1].id, coCode: cos[cos.length - 1].code });
+        await k.ins('obe_unit_cos', [...new Map(links.map((l) => [`${l.chapterId}:${l.coCode}`, { subjectId: sub.id, ...l, setBy: sub.teacherId }])).values()], { returning: false });
+      }
       const topics = await k.q<{ id: string; title: string }>('select t.id, t.title from topics t join chapters ch on ch.id = t.chapter_id where ch.course_id = $1 order by ch.position, t.position', [course.id]);
       if (!topics.length) continue;
       const mine = slots.filter((x) => x.subjectId === sub.id);
