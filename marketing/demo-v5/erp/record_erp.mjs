@@ -4,18 +4,28 @@
 import { launch, Clip } from './lib.mjs';
 import { CLIPS } from './clips.mjs';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 
 const OUT = new URL('./clips', import.meta.url).pathname;
 const PREVIEW = process.env.PREVIEW_DIR; // optional: write a 6-frame strip per clip here
 const want = process.argv.slice(2);
 const list = want.length ? CLIPS.filter((c) => want.includes(c.id)) : CLIPS;
+// Demo data only: the seed stamps the classroom boards' heartbeat at seed time, so after ~30 minutes they read
+// "offline". Refresh the heartbeat (as a running board would) so dashboard/boards show the boards online.
+function refreshBoards() {
+  try {
+    const env = readFileSync(new URL('../../../services/api/.env', import.meta.url), 'utf8');
+    const db = env.match(/^DATABASE_URL=(.*)$/m)?.[1];
+    if (db) execFileSync('psql', [db, '-qc', "update devices set last_seen_at = now() - interval '40 seconds' where tenant_id in (select id from tenants where slug = 'soundarya')"]);
+  } catch (e) { console.log('board heartbeat refresh skipped:', e.message); }
+}
 const browser = await launch();
 const results = [];
 for (const def of list) {
   const clip = new Clip(browser, def);
   const t0 = Date.now();
   try {
+    refreshBoards();
     await clip.open();
     await def.run(clip);
     const meta = await clip.encode(OUT);

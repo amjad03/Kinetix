@@ -1,6 +1,7 @@
 // Teacher App screen recordings (demo build data). One clip per run: CLIP=<id>.
 // Copied into apps/teacher/test/ by tools/capture_apps.sh, with zz_rec.dart, and deleted after.
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,6 +49,16 @@ void fakeCamera(WidgetTester t) {
   }
 }
 
+/// The demo backend, but a hand-in's photo is a real notebook page (the demo only has a 1-pixel
+/// placeholder image).
+class _Api extends DemoTeacherApi {
+  _Api({super.clock});
+  static final page = File('../../marketing/demo-v5/apps/capture/assets/notes_page.jpg').readAsBytesSync();
+  @override
+  Future<Uint8List> submissionFile(String homeworkId, String studentId, int index) async =>
+      index == 0 ? page : super.submissionFile(homeworkId, studentId, index);
+}
+
 class TeacherRig {
   TeacherRig(this.t, this.r);
   final WidgetTester t;
@@ -65,7 +76,7 @@ class TeacherRig {
     r.recording = false;
     r.startAt(11, 20);
     SharedPreferences.setMockInitialValues({});
-    api = DemoTeacherApi(clock: r.now);
+    api = _Api(clock: r.now);
     realtime = DemoRealtime(api, delay: const Duration(hours: 2));
     final state = AppState(api, await SharedPreferences.getInstance(), realtime: realtime, secure: MemorySecureStore());
     await t.pumpWidget(r.wrap(TeacherApp(state: state)));
@@ -147,8 +158,8 @@ void main() {
     await r.finish();
   }, skip: clip != 'teacher_attendance');
 
-  testWidgets('teacher_homework_marks', (t) async {
-    final r = Rec(t, id: 'teacher_homework_marks', title: 'Teacher App: check homework, enter and publish marks');
+  testWidgets('teacher_homework', (t) async {
+    final r = Rec(t, id: 'teacher_homework', title: 'Teacher App: check homework hand-ins with a remark');
     final g = TeacherRig(t, r);
     await g.bootSignedIn();
     await r.hold(0.6);
@@ -165,9 +176,11 @@ void main() {
     await r.hold(2.2);
     await r.back();
     await r.settle(min: 0.4);
-    await r.tap(k('submission-s2'), label: "Ananya's hand-in");
+    await r.tap(k('submission-s2'), label: "Ananya's hand-in: a photo of her notes");
+    await r.realWait();
     await r.settle(min: 0.5);
-    await r.hold(0.8);
+    await r.realWait();
+    await r.hold(1.2);
     await r.tap(k('reviewRemark'));
     await r.type(find.byKey(const Key('reviewRemark')), 'Good summary. Add the journal entry.');
     await r.hold(0.4);
@@ -175,12 +188,15 @@ void main() {
     await r.tap(k('checkWork'), label: 'Mark as checked, with a remark');
     await r.settle(min: 0.6);
     r.mark('Checked: the student and family are told');
-    await r.hold(1.8);
-    // Marks.
-    for (var i = 0; i < 3 && k('navMore').hitTestable().evaluate().isEmpty; i++) {
-      await r.back();
-      await r.settle(min: 0.3, max: 1.2);
-    }
+    await r.hold(2.4);
+    await r.finish();
+  }, skip: clip != 'teacher_homework');
+
+  testWidgets('teacher_marks', (t) async {
+    final r = Rec(t, id: 'teacher_marks', title: 'Teacher App: enter and publish marks');
+    final g = TeacherRig(t, r);
+    await g.bootSignedIn();
+    await r.hold(0.6);
     await g.openMore('openMarks', label: 'Marks');
     r.mark('Assessments: a draft and a published test');
     await r.hold(1.5);
@@ -211,7 +227,7 @@ void main() {
     r.mark('Published: families can see the marks');
     await r.hold(2.4);
     await r.finish();
-  }, skip: clip != 'teacher_homework_marks');
+  }, skip: clip != 'teacher_marks');
 
   testWidgets('teacher_plan_syllabus', (t) async {
     final r = Rec(t, id: 'teacher_plan_syllabus', title: 'Teacher App: syllabus coverage, year plan and lesson plan');
@@ -311,4 +327,34 @@ void main() {
     await r.hold(3);
     await r.finish();
   }, skip: clip != 'teacher_connect_board');
+
+  testWidgets('teacher_recordings_calendar', (t) async {
+    final r = Rec(t, id: 'teacher_recordings_calendar', title: 'Teacher App: lesson recordings and the calendar');
+    final g = TeacherRig(t, r);
+    await g.bootSignedIn();
+    await r.hold(0.6);
+    await g.openMore('openRecordings', label: 'Recordings');
+    r.mark('Board lessons recorded, shared, transcribed');
+    await r.hold(2.4);
+    await r.tap(k('share-r3'), label: 'Share "Pro-rata allotment" with the class');
+    await r.settle(min: 0.6);
+    r.mark('Students and families of absent students are told');
+    await r.hold(1.8);
+    await r.tap(k('confirmShare'), label: 'Share');
+    await r.settle(min: 0.6);
+    r.mark('Shared with the class');
+    await r.hold(2);
+    await r.back();
+    await r.settle(min: 0.5);
+    await r.scrollTo(k('openCalendar'), top: 120, bottom: 640);
+    await r.hold(0.3);
+    await r.tap(k('openCalendar'), label: 'Calendar');
+    await r.settle(min: 0.6);
+    r.mark('Holidays, exams and events');
+    await r.hold(2.2);
+    await r.scroll(-300);
+    await r.settle(min: 0.3);
+    await r.hold(1.8);
+    await r.finish();
+  }, skip: clip != 'teacher_recordings_calendar');
 }

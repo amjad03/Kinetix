@@ -412,9 +412,10 @@ export const CLIPS = [
       await c.hold(1.0);
       c.mark('Students who may need help, with reasons (attendance, marks, fees)');
       await c.hold(1.4);
-      await c.hoverEl(await c.el('main tbody tr', 'Vignesh Naik'), 'Vignesh Naik: high risk', 1.4);
+      await c.hoverEl(await c.el('main tbody tr', 'Vignesh Naik'), 'Vignesh Naik: high risk', 1.6);
       await c.nav('/mentoring', 'Mentoring: at-risk students with their mentor');
-      await c.hold(2.0);
+      await c.hold(1.6);
+      await c.hoverEl(await c.el('main tbody tr', 'Vignesh Naik'), 'Mentor, attendance, failing marks, overdue fees, risk', 1.8);
     },
   },
   {
@@ -437,6 +438,8 @@ export const CLIPS = [
       await c.hoverEl(await c.el('main tbody tr', 'Ceiling fan'), 'Low-stock item', 1.0);
       await c.click(await c.el('main button', 'Purchase orders'), 'Purchase orders', {});
       await c.hold(1.8);
+      await c.click(await c.el('main button', 'Vendors'), 'Vendors', {});
+      await c.hold(1.8);
     },
   },
   {
@@ -447,7 +450,9 @@ export const CLIPS = [
       await c.hold(1.6);
       await c.scrollToEl(await c.el('main h2', 'Research office'), 140, 1.6);
       c.mark('Research office: supervisors, theses, datasets');
-      await c.hold(2.0);
+      await c.hold(1.6);
+      await c.click(await c.el('main button', 'Theses'), 'Theses', {});
+      await c.hold(1.8);
     },
   },
   {

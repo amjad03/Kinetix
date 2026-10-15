@@ -14,9 +14,9 @@ FLUTTER="${FLUTTER:-/opt/flutter/bin/flutter}"
 PR="${PR:-3}"
 W=$(python3 -c "print(round(390*$PR))"); H=$(python3 -c "print(round(844*$PR))")
 
-ALL="teacher_signin_home teacher_attendance teacher_homework_marks teacher_plan_syllabus teacher_messages teacher_connect_board teacher_recordings_calendar
-student_home student_homework student_marks_attendance student_learn student_ask_ai
-parent_home parent_attendance parent_fees parent_reports_messages parent_school_life"
+ALL="teacher_signin_home teacher_attendance teacher_homework teacher_marks teacher_plan_syllabus teacher_messages teacher_connect_board teacher_recordings_calendar
+student_home student_homework student_marks_attendance student_learn
+parent_home parent_attendance parent_fees parent_reports parent_messages"
 CLIPS="${*:-$ALL}"
 
 COPIED=()

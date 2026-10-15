@@ -107,7 +107,7 @@ export class Clip {
     for (;;) {
       const b = await this.shot();
       const now = Date.now();
-      const dur = Math.min((now - last) / 1000 * RATE, 0.1);
+      const dur = Math.min((now - last) / 1000 * RATE, 0.05);
       last = now;
       this.frames.push({ buf: b, t: this.t });
       this.t += Math.max(dur, 1 / FPS);
@@ -222,15 +222,31 @@ export class Clip {
     await this.settle(0.8, 0.1);
   }
   async scrollBy(dy, dur, container) { const { y } = await this.scrollInfo(container); await this.scrollTo(y + dy, dur, container); }
+  // Bottom edge of sticky/fixed headers at the top of the viewport (content above it is hidden).
+  async stickyBottom() {
+    return this.page.evaluate(() => {
+      let b = 0;
+      for (const e of document.querySelectorAll('body *')) {
+        const p = getComputedStyle(e).position;
+        if (p !== 'sticky' && p !== 'fixed') continue;
+        if (e.id && e.id.startsWith('__demo')) continue;
+        const r = e.getBoundingClientRect();
+        if (r.top < 160 && r.bottom > 0 && r.height < innerHeight / 2 && r.width > innerWidth / 3) b = Math.max(b, r.bottom);
+      }
+      return b;
+    });
+  }
   async scrollToEl(e, top = 140, dur, container) {
     if (typeof e === 'string') e = await this.el(e);
+    if (!container) { await this.page.evaluate(() => window.scrollBy(0, 1)); top = Math.max(top, (await this.stickyBottom()) + 24); await this.page.evaluate(() => window.scrollBy(0, -1)); }
     const r = await this.rect(e); const { y } = await this.scrollInfo(container);
     await this.scrollTo(y + r.y - top, dur, container);
     return e;
   }
   async ensureVisible(e) {
     const r = await this.rect(e);
-    if (r.y < 110 || r.y + r.h > CSS_H - 30) {
+    const sb = await this.stickyBottom();
+    if (r.y < Math.max(110, sb + 8) || r.y + r.h > CSS_H - 30) {
       const container = await e.evaluate((n) => { let p = n.parentElement; while (p && p !== document.body) { const s = getComputedStyle(p); if (/(auto|scroll)/.test(s.overflowY) && p.scrollHeight > p.clientHeight + 2) { if (!p.id) p.id = '__scroll_' + Math.random().toString(36).slice(2, 8); return '#' + p.id; } p = p.parentElement; } return null; });
       if (container) {
         const cr = await this.page.$eval(container, (n) => { const b = n.getBoundingClientRect(); return { y: b.y, h: b.height }; });
@@ -238,7 +254,7 @@ export class Clip {
         await this.scrollTo(y + (r.y - cr.y) - Math.max(40, cr.h / 3), undefined, container);
       } else {
         const { y } = await this.scrollInfo();
-        await this.scrollTo(y + r.y - Math.min(300, CSS_H / 3));
+        await this.scrollTo(y + r.y - Math.max(sb + 60, Math.min(300, CSS_H / 3)));
       }
     }
   }

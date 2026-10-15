@@ -69,6 +69,9 @@ void phoneView(WidgetTester t) {
   t.view.padding = const FakeViewPadding(top: padTop * 3, bottom: padBottom * 3);
   t.view.viewPadding = const FakeViewPadding(top: padTop * 3, bottom: padBottom * 3);
   t.platformDispatcher.platformBrightnessTestValue = Brightness.light;
+  // Real elevation shadows (flutter_test draws a black outline instead by default).
+  debugDisableShadows = false;
+  addTearDown(() => debugDisableShadows = true);
   // A finger, not a keyboard: no focus rings.
   FocusManager.instance.highlightStrategy = FocusHighlightStrategy.alwaysTouch;
   addTearDown(() => FocusManager.instance.highlightStrategy = FocusHighlightStrategy.automatic);
@@ -551,7 +554,9 @@ class Rec {
     await g.down(p, timeStamp: _clock);
     await emit(3);
     await g.up(timeStamp: _clock);
-    await _fadeOut(d);
+    // The dot fades over the next 0.3 s while the app responds.
+    d.decay = 1 / 9;
+    await emit(2);
     if (after > 0) await hold(after);
   }
 
@@ -594,7 +599,7 @@ class Rec {
   }
 
   /// Scroll (in eased steps) until [f] is visible inside [top]..[bottom] (logical y).
-  Future<void> scrollTo(Finder f, {double top = 140, double bottom = 700, Offset? from, int maxSteps = 8}) async {
+  Future<void> scrollTo(Finder f, {double top = 140, double bottom = 700, Offset? from, int maxSteps = 8, bool up = false}) async {
     for (var i = 0; i < maxSteps; i++) {
       final el = f.evaluate();
       if (el.isNotEmpty) {
@@ -607,7 +612,7 @@ class Rec {
         await scroll(dy, from: from);
         await settle(min: 0.2, max: 1.5);
       } else {
-        await scroll(-380, from: from);
+        await scroll(up ? 380 : -380, from: from);
         await settle(min: 0.2, max: 1.5);
       }
     }
@@ -693,9 +698,13 @@ class Rec {
     }
   }
 
+  /// Lets real (not fake) time pass for image decoding, without recording a frame.
+  Future<void> realWait([int ms = 400]) => t.runAsync(() => Future<void>.delayed(Duration(milliseconds: ms)));
+
   /// Finish: closes the sink and writes the clip's json.
   Future<void> finish() async {
     await emit(2);
+    debugDisableShadows = true;
     _out?.closeSync();
     final meta = {'id': id, 'title': title, 'duration': double.parse(time.toStringAsFixed(2)), 'marks': marks};
     final path = _env['META'];
