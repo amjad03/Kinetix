@@ -180,13 +180,7 @@ export class QpSettingController {
   @HttpCode(200)
   @Auth('user', CELL)
   cancel(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CancelBody)) b: z.infer<typeof CancelBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const a = await this.load(tx, id);
-      if (!['appointed', 'accepted'].includes(a.status)) throw new ConflictException(`The appointment is already ${a.status}`);
-      const [row] = await tx.update(qpAppointments).set({ status: 'cancelled', note: b.reason }).where(eq(qpAppointments.id, id)).returning();
-      await auditCell(tx, p, 'qp.cancelled', 'qp_appointment', id, { before: { status: a.status }, after: { status: 'cancelled', reason: b.reason } });
-      return row;
-    });
+    return this.db.withTenant(p.tenantId, (tx) => cancelAppointment(tx, p, id, b.reason));
   }
 
   /** The signed-in member of staff's appointments, with the session and subject (teacher app and ERP). */
@@ -238,6 +232,17 @@ export class QpSettingController {
     if (!a) throw new NotFoundException('Appointment not found');
     return a;
   }
+}
+
+/** Cancels an appointment that is still open (appointed or accepted); the reason is kept as its note. */
+export async function cancelAppointment(tx: Tx, p: UserPrincipal, id: string, reason: string) {
+  const [a] = await tx.select().from(qpAppointments).where(eq(qpAppointments.id, id));
+  if (!a) throw new NotFoundException('Appointment not found');
+  if (!['appointed', 'accepted'].includes(a.status)) throw new ConflictException(`The appointment is already ${a.status}`);
+  const [row] = await tx.update(qpAppointments).set({ status: 'cancelled', note: reason }).where(eq(qpAppointments.id, id)).returning();
+  await auditCell(tx, p, 'qp.cancelled', 'qp_appointment', id, { before: { status: a.status }, after: { status: 'cancelled', reason } });
+  await tx.execute(sql`update tasks set status = 'cancelled' where source_module = 'qp_setting' and source_id = ${id} and status in ('open', 'in_progress')`);
+  return row;
 }
 
 function toItem(i: { section: number; marks: number; snapshot: unknown }): SetItem {

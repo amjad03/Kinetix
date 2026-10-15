@@ -389,4 +389,36 @@ describe('examinations flagship', () => {
     expect(csv.text.split('\n')[0]).toBe('Academic year,Examination,Appeared,Passed,Pass %,Change in pass %,Mean SGPA,Top SGPA');
     await get('teacher', `/v1/exam-cell/reports/year_comparison?sessionId=${ids.past}`).expect(403);
   });
+
+  it('keeps appointments and unlock requests as record kit lists', async () => {
+    const list = (await get('controller', `/v1/records/qp-appointments?f.session=${ids.supp}&sort=due:asc`).expect(200)).body;
+    expect(list.rows.map((r: { code: string; role: string; status: string }) => [r.code, r.role, r.status])).toEqual([['BCOM-3.1', 'setter', 'accepted'], ['BCOM-3.1', 'moderator', 'accepted'], ['BCOM-3.2', 'setter', 'declined']]);
+    const meta = (await get('controller', '/v1/records/qp-appointments/meta').expect(200)).body;
+    expect(meta.can).toMatchObject({ write: true, create: false });
+    const setter = list.rows[0];
+    await http().patch(`/v1/records/qp-appointments/${setter.id}`).set(as('controller')).send({ dueOn: '2026-11-14' }).expect(200);
+    const h = (await get('controller', `/v1/records/qp-appointments/${setter.id}/history`).expect(200)).body.items.map((i: { action: string }) => i.action);
+    expect(h).toEqual(expect.arrayContaining(['qp.appointed', 'qp.accepted']));
+    await http().delete(`/v1/records/qp-appointments/${setter.id}`).set(as('controller')).expect(403);
+    const declined = list.rows[2];
+    await http().patch(`/v1/records/qp-appointments/${declined.id}`).set(as('controller')).send({ note: 'x' }).expect(409);
+    const cancelled = (await post('controller', '/v1/records/qp-appointments/bulk', { op: 'action', action: 'cancel', target: { ids: [list.rows[1].id] }, params: { reason: 'Moderator changed' } }).expect(200)).body;
+    expect(cancelled.succeeded).toBe(1);
+    const csv = await get('controller', `/v1/records/qp-appointments/export?format=csv&f.session=${ids.supp}`).expect(200);
+    expect(csv.text.split('\n')[0]).toContain('Exam session,Code,Subject,Role,Appointed');
+    expect((await get('outsider', '/v1/records/qp-appointments').expect(200)).body.total).toBe(0);
+    await get('teacher', '/v1/records/qp-appointments').expect(403);
+
+    // Unlock requests: the teacher sees their own, the head of department theirs, another teacher nothing.
+    expect((await get('teacher', '/v1/records/marks-unlock-requests').expect(200)).body.total).toBe(2);
+    expect((await get('teacher2', '/v1/records/marks-unlock-requests').expect(200)).body.total).toBe(0);
+    expect((await get('hod', '/v1/records/marks-unlock-requests?f.status=approved').expect(200)).body.total).toBe(1);
+    const a = (await q<{ id: string }>(`select id from assessments where title = 'Internal test 2' and tenant_id = $1`, [t.tenantId]))[0].id;
+    const r = (await post('teacher', `/v1/assessments/${a}/unlock-requests`, { reason: 'Student C total needs a fix' }).expect(201)).body;
+    await post('teacher', '/v1/records/marks-unlock-requests/bulk', { op: 'action', action: 'approve', target: { ids: [r.id] }, params: {} }).expect(403);
+    const turned = (await post('hod', '/v1/records/marks-unlock-requests/bulk', { op: 'action', action: 'reject', target: { ids: [r.id] }, params: { note: 'Totals are correct' } }).expect(200)).body;
+    expect(turned.succeeded).toBe(1);
+    expect((await get('hod', `/v1/records/marks-unlock-requests/${r.id}`).expect(200)).body).toMatchObject({ status: 'rejected', decisionNote: 'Totals are correct' });
+    await http().delete(`/v1/records/marks-unlock-requests/${r.id}`).set(as('hod')).expect(403);
+  });
 });

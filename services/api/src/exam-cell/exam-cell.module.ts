@@ -13,6 +13,7 @@ import { ResultsDeskController } from './results-desk.js';
 import { ValuationController, ValuationRecords } from './valuation.js';
 import { ApplicationsController, ApplicationsService } from './applications.js';
 import { ExamFeeSync } from './exam-fees.js';
+import { FlagshipRecords } from './flagship.records.js';
 import { MarksUnlockController } from './marks-unlock.js';
 import { QpSettingController } from './qp-setting.js';
 import { RegistersController } from './registers.js';
@@ -28,6 +29,6 @@ import { WithholdRecords, WithholdsController } from './withholds.js';
 @Module({
   imports: [ExamsModule, NotificationsModule, AcademicDocsModule, TasksModule],
   controllers: [WithholdsController, GraceApplicationsController, DoubleEntryController, ValuationController, HallsController, ResultsDeskController, InternalMarksController, DocumentsDeskController, VerificationPublicController, CellReportsController, ApplicationsController, QpSettingController, MarksUnlockController, RegistersController],
-  providers: [WithholdRecords, GraceRecords, ValuationRecords, HallRecords, DocumentDeskRecords, ExamRecords, ApplicationsService, ExamFeeSync],
+  providers: [WithholdRecords, GraceRecords, ValuationRecords, HallRecords, DocumentDeskRecords, ExamRecords, ApplicationsService, ExamFeeSync, FlagshipRecords],
 })
 export class ExamCellModule {}

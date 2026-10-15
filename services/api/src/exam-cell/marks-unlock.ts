@@ -71,27 +71,7 @@ export class MarksUnlockController {
   @HttpCode(200)
   @Auth('user', ['hod', ...CELL])
   decide(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(DecideBody)) b: z.infer<typeof DecideBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const [r] = await tx.select().from(marksUnlockRequests).where(eq(marksUnlockRequests.id, id)).for('update');
-      if (!r) throw new NotFoundException('Request not found');
-      if (r.status !== 'pending') throw new ConflictException(`The request is already ${r.status}`);
-      if (r.requestedBy === p.userId) throw new ForbiddenException('Someone other than the person who asked must decide');
-      const a = await this.assessment(tx, r.assessmentId);
-      if (!p.roles.some((x) => CELL.includes(x)) && !(await headsSubject(tx, p, a.subjectId))) throw new ForbiddenException('Only the head of this subject\'s department, the controller of examinations or the principal can decide');
-      if (!b.approve && !b.note) throw new BadRequestException('Say why the request is turned down');
-      const status = b.approve ? 'approved' : 'rejected';
-      if (b.approve) {
-        if (a.publishedAt) throw new ConflictException('The marks were published meanwhile; they stay locked');
-        // Reopen exactly as the head of department's reopen does: moderation cleared, back to draft, unlocked.
-        await tx.update(marks).set({ moderatedMarks: null, moderationNote: null }).where(eq(marks.assessmentId, a.id));
-        await tx.update(assessments).set({ markStatus: 'draft', submittedAt: null, verifiedBy: null, verifiedAt: null, moderatedBy: null, moderatedAt: null, lockedAt: null, lockedBy: null }).where(eq(assessments.id, a.id));
-        await auditCell(tx, p, 'marks.unlocked', 'assessment', a.id, { before: { markStatus: a.markStatus, lockedAt: a.lockedAt?.toISOString() ?? null }, after: { markStatus: 'draft', lockedAt: null }, data: { requestId: id } });
-      }
-      const [row] = await tx.update(marksUnlockRequests).set({ status, decidedBy: p.userId, decidedAt: this.clock.now(), decisionNote: b.note ?? null }).where(eq(marksUnlockRequests.id, id)).returning();
-      await auditCell(tx, p, `marks.unlock_${status}`, 'marks_unlock_request', id, { data: { assessmentId: a.id, note: b.note ?? null } });
-      await this.notes.notifyUsers(tx, [r.requestedBy], { kind: 'task', text: { title: b.approve ? 'Marks unlocked' : 'Unlock request turned down', body: b.approve ? `${a.title}: you can edit the marks again` : `${a.title}: ${b.note}` }, data: { assessmentId: a.id, requestId: id }, dedupeKey: `marks-unlock:${id}:${status}` });
-      return row;
-    });
+    return this.db.withTenant(p.tenantId, (tx) => decideUnlock(tx, p, this.notes, this.clock.now(), id, b.approve, b.note));
   }
 
   @Post('marks-unlock-requests/:id/cancel')
@@ -132,6 +112,32 @@ export class MarksUnlockController {
           order by (r.status = 'pending') desc, r.created_at desc limit 300`,
     );
   }
+}
+
+/**
+ * Decides a request: never by the person who asked; the head of the subject's department, the controller of
+ * examinations or the principal. Approval reopens the marks exactly as a head of department's reopen does.
+ */
+export async function decideUnlock(tx: Tx, p: UserPrincipal, notes: NotificationsService, now: Date, id: string, approve: boolean, note?: string) {
+  const [r] = await tx.select().from(marksUnlockRequests).where(eq(marksUnlockRequests.id, id)).for('update');
+  if (!r) throw new NotFoundException('Request not found');
+  if (r.status !== 'pending') throw new ConflictException(`The request is already ${r.status}`);
+  if (r.requestedBy === p.userId) throw new ForbiddenException('Someone other than the person who asked must decide');
+  const [a] = await tx.select().from(assessments).where(eq(assessments.id, r.assessmentId));
+  if (!a) throw new NotFoundException('Assessment not found');
+  if (!p.roles.some((x) => CELL.includes(x)) && !(await headsSubject(tx, p, a.subjectId))) throw new ForbiddenException("Only the head of this subject's department, the controller of examinations or the principal can decide");
+  if (!approve && !note) throw new BadRequestException('Say why the request is turned down');
+  const status = approve ? 'approved' : 'rejected';
+  if (approve) {
+    if (a.publishedAt) throw new ConflictException('The marks were published meanwhile; they stay locked');
+    await tx.update(marks).set({ moderatedMarks: null, moderationNote: null }).where(eq(marks.assessmentId, a.id));
+    await tx.update(assessments).set({ markStatus: 'draft', submittedAt: null, verifiedBy: null, verifiedAt: null, moderatedBy: null, moderatedAt: null, lockedAt: null, lockedBy: null }).where(eq(assessments.id, a.id));
+    await auditCell(tx, p, 'marks.unlocked', 'assessment', a.id, { before: { markStatus: a.markStatus, lockedAt: a.lockedAt?.toISOString() ?? null }, after: { markStatus: 'draft', lockedAt: null }, data: { requestId: id } });
+  }
+  const [row] = await tx.update(marksUnlockRequests).set({ status, decidedBy: p.userId, decidedAt: now, decisionNote: note ?? null }).where(eq(marksUnlockRequests.id, id)).returning();
+  await auditCell(tx, p, `marks.unlock_${status}`, 'marks_unlock_request', id, { before: { status: 'pending' }, after: { status, decisionNote: note ?? null }, data: { assessmentId: a.id } });
+  await notes.notifyUsers(tx, [r.requestedBy], { kind: 'task', text: { title: approve ? 'Marks unlocked' : 'Unlock request turned down', body: approve ? `${a.title}: you can edit the marks again` : `${a.title}: ${note}` }, data: { assessmentId: a.id, requestId: id }, dedupeKey: `marks-unlock:${id}:${status}` });
+  return row;
 }
 
 /** Whether the user teaches the subject in the class (a timetable slot), the way marks entry checks it. */
