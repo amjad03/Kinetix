@@ -28,9 +28,10 @@ export default async function AssessmentQuestionsPage({ params }: { params: Prom
   const a = paper.data.assessment;
   const yearOf = await safe(api<{ academicYears: { id: string; isCurrent: boolean }[]; sections: { id: string; academicYearId: string }[] }>('/v1/obe/structure'), null);
   const yearId = yearOf?.sections.find((s) => s.id === a.sectionId)?.academicYearId ?? '';
-  const [others, qb] = await Promise.all([
+  const [others, qb, rubrics] = await Promise.all([
     yearId ? safe(api<CourseAssessment[]>(`/v1/obe/subjects/${a.subjectId}/assessments?academicYearId=${yearId}`), []) : Promise.resolve([] as CourseAssessment[]),
     safe(api<{ id: string; title: string; subjectId: string }[]>('/v1/question-bank/papers'), []),
+    safe(api<{ id: string; name: string }[]>('/v1/assessment-tools/rubrics'), []),
   ]);
   return (
     <>
@@ -48,7 +49,7 @@ export default async function AssessmentQuestionsPage({ params }: { params: Prom
       />
       <ObeTabs value="courses" />
       <div className="flex flex-col gap-6">
-        <PaperEditor key={`p:${paper.data.questions.map((q) => q.id).join(',')}`} paper={paper.data} others={others.filter((o) => o.id !== id && o.questions > 0).map((o) => ({ id: o.id, title: o.title, section: o.section }))} qbPapers={qb.filter((p) => p.subjectId === a.subjectId).map((p) => ({ id: p.id, title: p.title }))} />
+        <PaperEditor key={`p:${paper.data.questions.map((q) => q.id).join(',')}`} paper={paper.data} others={others.filter((o) => o.id !== id && o.questions > 0).map((o) => ({ id: o.id, title: o.title, section: o.section }))} qbPapers={qb.filter((p) => p.subjectId === a.subjectId).map((p) => ({ id: p.id, title: p.title }))} rubrics={rubrics.map((r) => ({ id: r.id, name: r.name }))} />
         <MarksGrid key={`g:${paper.data.students.map((s) => `${s.id}${s.total}`).join(',')}`} paper={paper.data} />
       </div>
     </>

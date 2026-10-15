@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
-import type { Framework, Paper, Policy } from '@/lib/obe-flagship';
+import type { Framework, Paper, Policy, UnitPlan } from '@/lib/obe-flagship';
 import type { ActionResult } from '@/lib/types';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -60,8 +60,8 @@ export async function savePaper(assessmentId: string, questions: { no: string; p
   if (!ok(assessmentId) || questions.some((q) => !q.no.trim() || !(q.maxMarks > 0) || q.cos.some((c) => !UUID.test(c.coId)) || (q.difficulty && !['easy', 'medium', 'hard'].includes(q.difficulty)))) return bad();
   return call<Paper>('PUT', `/v1/obe/assessments/${assessmentId}/questions`, { questions: questions.map((q) => ({ ...q, no: q.no.trim(), part: q.part.trim(), bloomLevel: q.bloomLevel || null })) }, ['/obe/assessments/[id]']);
 }
-export async function copyPaper(assessmentId: string, from: { fromAssessmentId?: string; qbPaperId?: string }) {
-  if (!ok(assessmentId) || !ok(from.fromAssessmentId ?? from.qbPaperId)) return bad();
+export async function copyPaper(assessmentId: string, from: { fromAssessmentId?: string; qbPaperId?: string; rubricId?: string }) {
+  if (!ok(assessmentId) || !ok(from.fromAssessmentId ?? from.qbPaperId ?? from.rubricId)) return bad();
   return call<Paper>('POST', `/v1/obe/assessments/${assessmentId}/questions/copy`, from, ['/obe/assessments/[id]']);
 }
 export async function saveQuestionMarks(assessmentId: string, entries: { studentId: string; absent: boolean; marks: Record<string, number | null> }[]) {
@@ -123,4 +123,15 @@ export async function remindSurvey(id: string) {
 export async function addRatings(surveyId: string, ratings: { outcomeId?: string; coId?: string; rating: number }[]) {
   if (!ok(surveyId) || !ratings.length || ratings.some((r) => !(r.rating >= 0) || !ok(r.outcomeId ?? r.coId))) return bad();
   return call<{ added: number }>('POST', `/v1/obe/surveys/${surveyId}/ratings`, { ratings }, ['/obe/surveys']);
+}
+
+// ---- PEO-PO matrix and the course plan (units and COs) -------------------------------------------------------------
+
+export async function savePeoPo(programId: string, cells: { peoId: string; outcomeId: string; strength: number; justification: string }[]) {
+  if (!ok(programId) || cells.some((c) => !ok(c.peoId, c.outcomeId) || !Number.isInteger(c.strength) || c.strength < 0 || c.strength > 3)) return bad();
+  return call('PUT', `/v1/obe/programs/${programId}/peo-po`, { cells: cells.map((c) => ({ ...c, justification: c.justification.trim() || undefined })) }, ['/obe/peo']);
+}
+export async function saveUnitPlan(subjectId: string, cells: { chapterId: string; coCode: string }[]) {
+  if (!ok(subjectId) || cells.some((c) => !ok(c.chapterId) || !c.coCode.trim())) return bad();
+  return call<UnitPlan>('PUT', `/v1/obe/subjects/${subjectId}/units`, { cells }, ['/obe/courses/[subjectId]']);
 }

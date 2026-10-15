@@ -299,3 +299,21 @@ export function changedEntries(before: GridState, after: GridState, studentIds: 
   });
   return out;
 }
+
+/** The PEO-PO/PSO matrix of a programme and each PEO's attainment for a year (GET /v1/obe/programs/:id/peo-po). */
+export interface PeoPo {
+  peos: { id: string; code: string; statement: string }[];
+  outcomes: { id: string; code: string; kind: string; statement: string; attainment: number | null }[];
+  cells: { peoId: string; outcomeId: string; strength: number; justification: string }[];
+  maxLevel: number;
+  targetLevel: number;
+  attainment: { peoId: string; code: string; value: number | null; measured: number; mapped: number; met: boolean | null }[];
+}
+
+/** A course's units with their topics and the COs each serves (GET /v1/obe/subjects/:id/units). */
+export interface UnitPlan {
+  coVersion: number | null;
+  units: { id: string; position: number; title: string; topics: string[]; coCodes: string[] }[];
+  cos: { code: string; statement: string; bloomLevel: string | null }[];
+  uncovered: string[];
+}

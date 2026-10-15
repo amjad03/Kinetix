@@ -11,7 +11,7 @@ import { safe } from '@/lib/depth-ui';
 import { YEAR_COOKIE } from '@/lib/config';
 import { getI18n } from '@/i18n/server';
 import type { CoSet, MatrixData, ObeStructure } from '@/lib/obe';
-import type { CourseAssessment, CourseAttainment, ExitSurvey, PolicyView, Reviews } from '@/lib/obe-flagship';
+import type { CourseAssessment, CourseAttainment, ExitSurvey, PolicyView, Reviews, UnitPlan } from '@/lib/obe-flagship';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('of.ws.title') };
@@ -38,13 +38,14 @@ export default async function CourseWorkspacePage({ params, searchParams }: { pa
   const sets = await load(() => api<CoSet[]>(`/v1/obe/subjects/${subjectId}/co-sets`));
   if (sets.error !== undefined) return <ErrorState message={sets.error} />;
   const set = sets.data.find((x) => x.id === q.setId) ?? sets.data.find((x) => x.status === 'draft') ?? sets.data.find((x) => x.status === 'active') ?? sets.data[0] ?? null;
-  const [matrix, reviews, assessments, attainment, policy, surveys] = await Promise.all([
+  const [matrix, reviews, assessments, attainment, policy, surveys, plan] = await Promise.all([
     set ? safe(api<MatrixData>(`/v1/obe/co-sets/${set.id}/matrix`), null) : Promise.resolve(null),
     set ? safe(api<Reviews>(`/v1/obe/co-sets/${set.id}/reviews`), null) : Promise.resolve(null),
     yearId ? safe(api<CourseAssessment[]>(`/v1/obe/subjects/${subjectId}/assessments?academicYearId=${yearId}`), []) : Promise.resolve([]),
     yearId ? safe(api<CourseAttainment>(`/v1/obe/subjects/${subjectId}/attainment?academicYearId=${yearId}`), null) : Promise.resolve(null),
     safe(api<PolicyView>(`/v1/obe/policies?subjectId=${subjectId}${yearId ? `&academicYearId=${yearId}` : ''}`), null),
     safe(api<ExitSurvey[]>(`/v1/obe/programs/${sub.programId}/exit-surveys${yearId ? `?academicYearId=${yearId}` : ''}`), []),
+    safe(api<UnitPlan>(`/v1/obe/subjects/${subjectId}/units`), null),
   ]);
   const d: WorkspaceData = {
     subject: { id: sub.id, code: sub.code, name: sub.name, term: sub.term, programId: sub.programId, program: prog?.name ?? '' },
@@ -58,6 +59,7 @@ export default async function CourseWorkspacePage({ params, searchParams }: { pa
     attainment,
     policy,
     surveys: surveys ?? [],
+    plan,
     sections: s.sections.filter((x) => x.programId === sub.programId && x.term === sub.term && x.academicYearId === yearId).map((x) => ({ id: x.id, name: x.name })),
     leader: !!me && me.roles.some((r) => r === 'principal' || r === 'tenant_admin' || r === 'quality_officer'),
   };

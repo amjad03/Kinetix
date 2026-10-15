@@ -6,12 +6,14 @@ import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { assessmentQuestionCos, assessmentQuestions, obeCurriculumGaps, QUESTION_DIFFICULTY, type ObeFramework } from '../db/schema-obe-flagship.js';
-import { academicYears, assessments, chapters, coOutcomeMap, coSets, courseOutcomes, examResults, examSessions, improvementActions, obeEvidence, obeSurveys, programOutcomes, schemeComponents, sections, students, subjects, surveys, tenants, timetableSlots, topics, users } from '../db/schema.js';
+import { academicYears, assessments, coOutcomeMap, coSets, courseOutcomes, examResults, examSessions, improvementActions, obeEvidence, obeSurveys, programOutcomes, schemeComponents, sections, students, subjects, surveys, tenants, timetableSlots, users } from '../db/schema.js';
 import { BrandingService } from '../documents/branding.service.js';
 import { DocumentEngine } from '../documents/document-engine.service.js';
+import { peoPoMap } from '../db/schema-obe-depth.js';
+import { unitPlan } from './links.controller.js';
 import { headsSubject } from '../departments/departments.controller.js';
 import { isSchoolAdmin } from '../teacher/teacher.service.js';
-import { articulationMatrix, round } from './attainment.js';
+import { articulationMatrix, peoAttainment, round } from './attainment.js';
 import { bloomNumber, BLOOM_LEVELS } from './bloom.js';
 import { reportPdf, reportXlsx, type Block, type Cell, type Column, type ReportDoc } from './obe-report.js';
 import { ObeService, studentCoPercent, type Policy } from './obe.service.js';
@@ -181,9 +183,9 @@ export class ObeReportsController {
 
     if (full) {
       blocks.push({ kind: 'heading', text: '1. Syllabus' });
-      const chs = sub.courseId ? await tx.select().from(chapters).where(eq(chapters.courseId, sub.courseId)).orderBy(asc(chapters.position)) : [];
-      const tps = chs.length ? await tx.select({ chapterId: topics.chapterId, title: topics.title }).from(topics).where(inArray(topics.chapterId, chs.map((c) => c.id))).orderBy(asc(topics.position)) : [];
-      blocks.push({ kind: 'table', caption: 'Units and topics', sheet: 'Syllabus', columns: [{ title: 'Unit', w: 3 }, { title: 'Topics', w: 7 }], rows: chs.map((c) => [c.title, tps.filter((t) => t.chapterId === c.id).map((t) => t.title).join('; ')]), empty: 'No syllabus is linked to this course in the content library.' });
+      const plan = await unitPlan(tx, sub);
+      blocks.push({ kind: 'table', caption: 'Course plan: units, their topics and the COs each unit serves', sheet: 'Syllabus', columns: [{ title: 'Unit', w: 3 }, { title: 'Topics', w: 6 }, { title: 'COs', w: 1.4 }], rows: plan.units.map((u) => [u.title, u.topics.join('; '), u.coCodes.join(', ') || '-']), empty: 'No syllabus is linked to this course in the content library.' });
+      if (plan.units.length && plan.uncovered.length) blocks.push({ kind: 'para', text: `No unit is mapped to ${plan.uncovered.join(', ')}.`, muted: true });
     }
 
     blocks.push({ kind: 'heading', text: `${full ? '2' : '1'}. Course outcomes` });
@@ -283,8 +285,20 @@ export class ObeReportsController {
     const maxCos = Math.max(0, ...live.map((s) => cosOf(s.id).length));
     blocks.push({ kind: 'table', caption: 'Overall CO attainment (level) of each course', sheet: 'CO attainment', columns: [{ title: 'Course', w: 3.2 }, { title: 'Sem', w: 0.5, align: 'center' }, ...Array.from({ length: maxCos }, (_, i) => ({ title: `CO${i + 1}`, w: 0.7, align: 'center' as const, level: { max: config.maxLevel, target: config.targetLevel } })), { title: 'Course average', w: 1, align: 'right' }], rows: live.map((s) => { const v = cosOf(s.id).map((c) => rows.find((r) => r.targetId === c.id)?.combined ?? null); const m = v.filter((x): x is number => x !== null); return [`${s.code} ${s.name}`, s.term, ...Array.from({ length: maxCos }, (_, i) => v[i] ?? null), m.length ? round(m.reduce((a, c) => a + c, 0) / m.length, 2) : null]; }) });
     blocks.push({ kind: 'heading', text: '5. PO and PSO attainment' }, this.poBlock(rows, b.outcomes, config));
-    blocks.push(...(await this.actionBlocks(tx, programId, yearId, '6')));
+    blocks.push({ kind: 'heading', text: '6. PEO attainment (through the PEO-PO/PSO matrix)' }, ...(await this.peoBlocks(tx, programId, rows, config)));
+    blocks.push(...(await this.actionBlocks(tx, programId, yearId, '7')));
     return { title: `Programme attainment report: ${b.prog.name}`, subtitle: `${b.year}. ${FRAMEWORK_NAME[b.framework]}.`, institution: b.institution, period: b.year, preparedFor: 'IQAC and the programme committee', landscape: true, blocks };
+  }
+
+  /** Each PEO's attainment: its POs' overall attainment weighted by the PEO-PO/PSO matrix. */
+  private async peoBlocks(tx: Tx, programId: string, rows: { scope: string; targetId: string; combined: number | null }[], config: Policy): Promise<Block[]> {
+    const peos = await tx.select().from(programOutcomes).where(and(eq(programOutcomes.programId, programId), eq(programOutcomes.kind, 'peo'))).orderBy(asc(programOutcomes.ord), asc(programOutcomes.code));
+    const cells = await tx.select({ peoId: peoPoMap.peoId, outcomeId: peoPoMap.outcomeId, strength: peoPoMap.strength, code: programOutcomes.code }).from(peoPoMap).innerJoin(programOutcomes, eq(programOutcomes.id, peoPoMap.outcomeId)).where(eq(peoPoMap.programId, programId));
+    const levels = new Map(rows.filter((r) => r.scope === 'po').map((r) => [r.targetId, r.combined]));
+    return [
+      { kind: 'para', text: 'A PEO is attained through the POs and PSOs that serve it: the average of their overall attainment, weighted by the strength in the PEO-PO/PSO matrix (3 high, 2 medium, 1 low).', muted: true },
+      { kind: 'table', caption: 'PEO attainment', sheet: 'PEO attainment', columns: [{ title: 'PEO', w: 0.8 }, { title: 'Statement', w: 5 }, { title: 'Served by (strength)', w: 2.6 }, { title: 'Attainment', w: 1, align: 'right', level: { max: config.maxLevel, target: config.targetLevel } }, { title: 'Target', w: 0.8, align: 'right' }, { title: 'Met', w: 0.6, align: 'center' }], rows: peos.map((pe) => { const mine = cells.filter((c) => c.peoId === pe.id); const a = peoAttainment(mine, levels, config.decimals); return [pe.code, pe.statement, mine.map((c) => `${c.code} (${c.strength})`).join(', ') || '-', a.value, config.targetLevel, a.value === null ? '-' : a.value >= config.targetLevel ? 'Yes' : 'No']; }), empty: 'No PEOs are recorded for this programme.' },
+    ];
   }
 
   private pamBlock(subs: { id: string; code: string; name: string; term: number }[], cells: { coId: string; outcomeId: string; strength: number }[], cosOf: (s: string) => { id: string }[], outcomes: { id: string; code: string }[]): Block {

@@ -2,7 +2,7 @@
 // attainment targets per outcome and year. Kept apart from schema.ts, which these tables reference.
 import { sql } from 'drizzle-orm';
 import { integer, jsonb, numeric, pgTable, primaryKey, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
-import { academicYears, programOutcomes, programs, tenants, users } from './schema.js';
+import { academicYears, chapters, programOutcomes, programs, subjects, tenants, users } from './schema.js';
 
 const tenantId = () => uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' });
 
@@ -55,4 +55,32 @@ export const obeTargets = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex('obe_targets_uq').on(t.academicYearId, t.targetId)],
+);
+
+/** How strongly a PEO is served by a PO or PSO (1 low, 2 medium, 3 high), and why (migration 0185). PEO attainment follows from it. */
+export const peoPoMap = pgTable(
+  'peo_po_map',
+  {
+    tenantId: tenantId(),
+    programId: uuid('program_id').notNull().references(() => programs.id, { onDelete: 'cascade' }),
+    peoId: uuid('peo_id').notNull().references(() => programOutcomes.id, { onDelete: 'cascade' }),
+    outcomeId: uuid('outcome_id').notNull().references(() => programOutcomes.id, { onDelete: 'cascade' }),
+    strength: smallint('strength').notNull(),
+    justification: text('justification'),
+  },
+  (t) => [primaryKey({ name: 'peo_po_map_pk', columns: [t.peoId, t.outcomeId] })],
+);
+
+/** The course plan: a CO that a unit (chapter) of the course's syllabus serves, by CO code so it outlives a CO version (migration 0185). */
+export const obeUnitCos = pgTable(
+  'obe_unit_cos',
+  {
+    tenantId: tenantId(),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id, { onDelete: 'cascade' }),
+    chapterId: uuid('chapter_id').notNull().references(() => chapters.id, { onDelete: 'cascade' }),
+    coCode: text('co_code').notNull(),
+    setBy: uuid('set_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ name: 'obe_unit_cos_pk', columns: [t.subjectId, t.chapterId, t.coCode] })],
 );

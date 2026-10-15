@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { articulationMatrix, blueprintShares, combinedAttainment, DEFAULT_ATTAINMENT_CONFIG as C, directAttainment, gapFor, indirectAttainment, levelFor, programOutcomeAttainment, questionCoMarks, trend, validateConfig, withDefaults, type EvidenceItem, type PoCell } from './attainment.js';
+import { articulationMatrix, blueprintShares, combinedAttainment, DEFAULT_ATTAINMENT_CONFIG as C, directAttainment, gapFor, indirectAttainment, levelFor, peoAttainment, programOutcomeAttainment, questionCoMarks, trend, validateConfig, withDefaults, type EvidenceItem, type PoCell } from './attainment.js';
 
 const students = (scores: number[], max = 10) => scores.map((scored, i) => ({ studentId: `s${i}`, scored, max }));
 // CIE: 7 of 10 students at >= 60%, class average 60%. SEE: 4 of 10 at >= 60%, class average 50%.
@@ -142,5 +142,13 @@ describe('OBE attainment maths', () => {
     expect(validateConfig(C)).toBeNull();
     expect(validateConfig({ ...C, targetLevel: 5 })).toMatch('target');
     expect(validateConfig({ ...C, evidenceWeights: { internal: 0 } })).toMatch('weight');
+  });
+
+  it('PEO attainment: strength-weighted average of the measured POs that serve it', () => {
+    // PO1 2.4 (strength 3), PO2 1.8 (strength 1), PSO1 not measured (strength 2): (3*2.4 + 1*1.8) / 4 = 2.25.
+    const levels = new Map<string, number | null>([['po1', 2.4], ['po2', 1.8], ['pso1', null]]);
+    expect(peoAttainment([{ outcomeId: 'po1', strength: 3 }, { outcomeId: 'po2', strength: 1 }, { outcomeId: 'pso1', strength: 2 }], levels)).toEqual({ value: 2.25, measured: 2, mapped: 3 });
+    expect(peoAttainment([{ outcomeId: 'pso1', strength: 2 }], levels)).toEqual({ value: null, measured: 0, mapped: 1 });
+    expect(peoAttainment([], levels).value).toBeNull();
   });
 });

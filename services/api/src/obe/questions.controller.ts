@@ -9,6 +9,7 @@ import { audit } from '../common/audit.js';
 import { looksLikeXlsx, readXlsx, writeWorkbook } from '../common/xlsx.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
+import { rubrics } from '../db/schema-g1.js';
 import { assessmentQuestionCos, assessmentQuestions, QUESTION_DIFFICULTY, questionMarks, type QuestionDifficulty } from '../db/schema-obe-flagship.js';
 import { assessmentCoMap, assessments, coSets, courseOutcomes, examPapers, examSessions, marks, qbPaperItems, qbPapers, schemeComponents, sections, students, subjects } from '../db/schema.js';
 import { headsSubject } from '../departments/departments.controller.js';
@@ -41,7 +42,7 @@ const MarksBody = z.object({
     .min(1)
     .max(500),
 });
-const CopyBody = z.object({ fromAssessmentId: z.uuid().optional(), qbPaperId: z.uuid().optional() });
+const CopyBody = z.object({ fromAssessmentId: z.uuid().optional(), qbPaperId: z.uuid().optional(), rubricId: z.uuid().optional() });
 
 type Asmt = typeof assessments.$inferSelect;
 
@@ -155,12 +156,16 @@ export class ObeQuestionsController {
     });
   }
 
-  /** Copies a paper from another assessment of the course or from a question bank paper (its COs, Bloom levels and marks). */
+  /**
+   * Copies a paper from another assessment of the course, from a question bank paper (its COs, Bloom levels and marks),
+   * or from a marking rubric (each criterion becomes a question worth its top level, for labs, projects and vivas; the
+   * teacher then tags the criteria to COs).
+   */
   @Post('assessments/:id/questions/copy')
   @HttpCode(200)
   @Auth('user', STAFF)
   copyPaper(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CopyBody)) body: z.infer<typeof CopyBody>) {
-    if (!!body.fromAssessmentId === !!body.qbPaperId) throw new BadRequestException('Copy from one assessment or one question bank paper');
+    if ([body.fromAssessmentId, body.qbPaperId, body.rubricId].filter(Boolean).length !== 1) throw new BadRequestException('Copy from one assessment, one question bank paper or one rubric');
     return this.db.withTenant(p.tenantId, async (tx) => {
       const a = await this.load(tx, id);
       if (!(await this.canTag(tx, p, a))) throw new ForbiddenException('You do not teach this class');
@@ -175,6 +180,10 @@ export class ObeQuestionsController {
         const qs = await tx.select().from(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, from.id)).orderBy(asc(assessmentQuestions.ord));
         const tags = qs.length ? await tx.select({ questionId: assessmentQuestionCos.questionId, weight: assessmentQuestionCos.weight, code: courseOutcomes.code }).from(assessmentQuestionCos).innerJoin(courseOutcomes, eq(courseOutcomes.id, assessmentQuestionCos.coId)).where(inArray(assessmentQuestionCos.questionId, qs.map((q) => q.id))) : [];
         src = qs.map((q) => ({ no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, cos: tags.filter((t) => t.questionId === q.id && byCode.has(t.code)).map((t) => ({ coId: byCode.get(t.code)!, weight: t.weight })) }));
+      } else if (body.rubricId) {
+        const [rubric] = await tx.select().from(rubrics).where(eq(rubrics.id, body.rubricId));
+        if (!rubric || rubric.archived) throw new BadRequestException('Choose a rubric in use');
+        src = rubric.criteria.map((c, i) => ({ no: `R${i + 1}`, part: c.name.slice(0, 40), maxMarks: Math.max(0, ...c.levels.map((l) => Number(l.points) || 0)), bloomLevel: null, difficulty: null, cos: [] })).filter((q) => q.maxMarks > 0);
       } else {
         const [paper] = await tx.select().from(qbPapers).where(eq(qbPapers.id, body.qbPaperId!));
         if (!paper || paper.subjectId !== a.subjectId) throw new BadRequestException('Copy from a question bank paper of the same course');
@@ -192,7 +201,7 @@ export class ObeQuestionsController {
       const rows = await tx.insert(assessmentQuestions).values(src.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, ord: i }))).returning();
       const tags = src.flatMap((q, i) => q.cos.map((c) => ({ tenantId: p.tenantId, questionId: rows[i].id, coId: c.coId, weight: c.weight })));
       if (tags.length) await tx.insert(assessmentQuestionCos).values(tags);
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.paper.copied', subjectType: 'assessment', subjectId: id, data: { from: body.fromAssessmentId ?? body.qbPaperId, questions: rows.length } });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.paper.copied', subjectType: 'assessment', subjectId: id, data: { from: body.fromAssessmentId ?? body.qbPaperId ?? body.rubricId, questions: rows.length } });
       return this.paperData(tx, p, a);
     });
   }

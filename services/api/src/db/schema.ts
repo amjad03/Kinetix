@@ -4012,6 +4012,9 @@ export const TENANT_TABLES = [
   'obe_assignments',
   'obe_curriculum_gaps',
   'obe_batch_snapshots',
+  // OBE completeness audit (migration 0185).
+  'peo_po_map',
+  'obe_unit_cos',
   // IQAC depth (migration 0161).
   'iqac_members',
   'iqac_initiatives',

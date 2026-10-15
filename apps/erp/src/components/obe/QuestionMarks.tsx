@@ -18,8 +18,8 @@ const BLOOM = ['Remember', 'Understand', 'Apply', 'Analyse', 'Evaluate', 'Create
 const DIFFICULTY = ['easy', 'medium', 'hard'] as const;
 type Q = { no: string; part: string; maxMarks: string; bloomLevel: string; difficulty: string; cos: string[] };
 
-/** The question paper: questions with marks, Bloom level, difficulty and the COs each tests; copied from another assessment or a question bank paper. */
-export function PaperEditor({ paper, others, qbPapers }: { paper: Paper; others: { id: string; title: string; section: string }[]; qbPapers: { id: string; title: string }[] }) {
+/** The question paper: questions with marks, Bloom level, difficulty and the COs each tests; copied from another assessment, a question bank paper or a marking rubric (labs, projects). */
+export function PaperEditor({ paper, others, qbPapers, rubrics = [] }: { paper: Paper; others: { id: string; title: string; section: string }[]; qbPapers: { id: string; title: string }[]; rubrics?: { id: string; name: string }[] }) {
   const { t } = useI18n();
   const router = useRouter();
   const { pending, run, feedback } = useRun();
@@ -48,8 +48,13 @@ export function PaperEditor({ paper, others, qbPapers }: { paper: Paper; others:
                   {t('of.paper.qb', { title: o.title })}
                 </MenuItem>
               ))}
+              {rubrics.map((o) => (
+                <MenuItem key={`r:${o.id}`} value={`r:${o.id}`}>
+                  {t('oa.paper.rubric', { name: o.name })}
+                </MenuItem>
+              ))}
             </TextInput>
-            <Button size="sm" variant="outline" disabled={pending || !from} onClick={() => run(() => copyPaper(paper.assessment.id, from.startsWith('a:') ? { fromAssessmentId: from.slice(2) } : { qbPaperId: from.slice(2) }), t('of.paper.copied'), () => router.refresh())}>
+            <Button size="sm" variant="outline" disabled={pending || !from} onClick={() => run(() => copyPaper(paper.assessment.id, from.startsWith('a:') ? { fromAssessmentId: from.slice(2) } : from.startsWith('r:') ? { rubricId: from.slice(2) } : { qbPaperId: from.slice(2) }), t('of.paper.copied'), () => router.refresh())}>
               <Copy className="size-4" aria-hidden />
               {t('of.paper.copy')}
             </Button>

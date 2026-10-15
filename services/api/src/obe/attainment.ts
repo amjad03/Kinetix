@@ -356,3 +356,14 @@ export function validateConfig(c: AttainmentConfig): string | null {
   if (c.poMethod && !PO_METHODS.includes(c.poMethod)) return 'Choose a PO attainment method';
   return null;
 }
+
+/**
+ * A PEO's attainment from the PEO-PO matrix: the average of the overall attainment of the POs and PSOs that serve it,
+ * weighted by the strength of each link. POs not yet measured are left out; null when none of its POs is measured.
+ */
+export function peoAttainment(cells: { outcomeId: string; strength: number }[], poLevels: Map<string, number | null>, decimals = 2): { value: number | null; measured: number; mapped: number } {
+  const live = cells.filter((c) => c.strength > 0);
+  const known = live.filter((c) => poLevels.get(c.outcomeId) !== null && poLevels.get(c.outcomeId) !== undefined);
+  const w = known.reduce((s, c) => s + c.strength, 0);
+  return { value: w === 0 ? null : round(known.reduce((s, c) => s + c.strength * (poLevels.get(c.outcomeId) as number), 0) / w, decimals), measured: known.length, mapped: live.length };
+}

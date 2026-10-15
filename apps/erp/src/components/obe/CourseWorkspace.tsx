@@ -15,14 +15,15 @@ import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { exportHref } from '@/lib/exams';
 import type { CoSet, MatrixData } from '@/lib/obe';
-import { lvl, type Approval, type CourseAssessment, type CourseAttainment, type ExitSurvey, type PolicyView, type Reviews } from '@/lib/obe-flagship';
+import { lvl, type Approval, type CourseAssessment, type CourseAttainment, type ExitSurvey, type PolicyView, type Reviews, type UnitPlan } from '@/lib/obe-flagship';
 import { LevelCell, LevelLegend } from './Heat';
+import { UnitPlanEditor } from './ObeAudit';
 import { stageLabel } from './ObeHome';
 
 const BLOOM = ['Remember', 'Understand', 'Apply', 'Analyse', 'Evaluate', 'Create'] as const;
 const STRENGTH = [0, 1, 2, 3];
-type Tab = 'cos' | 'cam' | 'assessments' | 'attainment' | 'survey' | 'file';
-const TABS: Tab[] = ['cos', 'cam', 'assessments', 'attainment', 'survey', 'file'];
+type Tab = 'cos' | 'cam' | 'plan' | 'assessments' | 'attainment' | 'survey' | 'file';
+const TABS: Tab[] = ['cos', 'cam', 'plan', 'assessments', 'attainment', 'survey', 'file'];
 
 /** CO versions waiting for the person's decision, oldest first. */
 export function ApprovalsList({ rows }: { rows: Approval[] }) {
@@ -51,11 +52,13 @@ export interface WorkspaceData {
   attainment: CourseAttainment | null;
   policy: PolicyView | null;
   surveys: ExitSurvey[];
+  /** The course plan (units and the COs each serves); null when the person may not edit the course. */
+  plan: UnitPlan | null;
   sections: { id: string; name: string }[];
   leader: boolean;
 }
 
-/** One course's OBE workspace: its COs and their approval, the CO-PO matrix, assessments and papers, attainment, exit survey and course file. */
+/** One course's OBE workspace: its COs and their approval, the CO-PO matrix, the course plan (units and COs), assessments and papers, attainment, exit survey and course file. */
 export function CourseWorkspace({ d }: { d: WorkspaceData }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -85,6 +88,9 @@ export function CourseWorkspace({ d }: { d: WorkspaceData }) {
       </TabPanel>
       <TabPanel value="cam" active={tab}>
         <CamPanel d={d} />
+      </TabPanel>
+      <TabPanel value="plan" active={tab}>
+        {d.plan ? <UnitPlanEditor key={d.plan.units.map((u) => u.coCodes.join(',')).join('|')} subjectId={d.subject.id} plan={d.plan} canEdit /> : <EmptyState icon={<FileText />} title={t('oa.up.noAccess')}>{t('oa.up.noAccessBody')}</EmptyState>}
       </TabPanel>
       <TabPanel value="assessments" active={tab}>
         <AssessmentsPanel d={d} />
