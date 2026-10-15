@@ -203,4 +203,64 @@ describe('OBE completeness: statements list, question difficulty, verified actio
     expect(byYear[1][0]).toBe('PO1');
     expect(multi.find((s) => s.name === '3.2.2 By year')).toBeTruthy();
   });
+
+  it('maps PEOs to POs with PEO attainment, and units of the syllabus to COs in the course plan', async () => {
+    const add = (body: Record<string, unknown>) => http().post('/v1/records/obe-statements').set(as('iqac')).send({ programId: t.program.id, ...body }).expect(201);
+    id.peo1 = (await add({ kind: 'peo', code: 'PEO1', statement: 'Graduates work as accounting professionals' })).body.id;
+    id.peo2 = (await add({ kind: 'peo', code: 'PEO2', statement: 'Graduates pursue higher studies' })).body.id;
+    id.po2 = (await add({ kind: 'po', code: 'PO2', statement: 'Communicate business information' })).body.id;
+    const pp = `${base()}/peo-po`;
+    await http().put(pp).set(as('teacher')).send({ cells: [] }).expect(403);
+    await http().put(pp).set(as('iqac')).send({ cells: [{ peoId: id.peo1, outcomeId: id.po1, strength: 3 }] }).expect(400); // PEO2 unmapped
+    await http().put(pp).set(as('iqac')).send({ cells: [{ peoId: id.po1, outcomeId: id.po1, strength: 3 }] }).expect(400); // not a PEO
+    await http().put(pp).set(as('iqac')).send({ cells: [{ peoId: id.peo1, outcomeId: id.po1, strength: 3, justification: 'Core accounting skill' }, { peoId: id.peo1, outcomeId: id.po2, strength: 1 }, { peoId: id.peo2, outcomeId: id.po2, strength: 2 }] }).expect(200);
+    const m = (await http().get(`${pp}?academicYearId=${year()}`).set(as('teacher')).expect(200)).body;
+    expect(m.cells).toHaveLength(3);
+    expect(m.cells.find((c: { outcomeId: string }) => c.outcomeId === id.po1).justification).toBe('Core accounting skill');
+    const po1 = m.outcomes.find((o: { code: string }) => o.code === 'PO1').attainment as number;
+    expect(po1).not.toBeNull();
+    // PO2 has no COs mapped, so it is not measured: PEO1 rests on PO1 alone, PEO2 on nothing.
+    expect(m.attainment.find((a: { code: string }) => a.code === 'PEO1')).toMatchObject({ value: po1, measured: 1, mapped: 2 });
+    expect(m.attainment.find((a: { code: string }) => a.code === 'PEO2')).toMatchObject({ value: null, measured: 0, mapped: 1, met: null });
+    const rep = await xlsx(`${base()}/attainment-report.xlsx?academicYearId=${year()}`);
+    const peoSheet = rep.find((s) => s.name === 'PEO attainment')!.rows;
+    expect(peoSheet[0]).toEqual(['PEO', 'Statement', 'Served by (strength)', 'Attainment', 'Target', 'Met']);
+    expect(peoSheet[1].slice(0, 3)).toEqual(['PEO1', 'Graduates work as accounting professionals', 'PO1 (3), PO2 (1)']);
+    await http().get(pp).set(as('outsider')).expect(404);
+
+    // Course plan: units come from the course's syllabus.
+    const units = `/v1/obe/subjects/${t.subject.id}/units`;
+    expect((await http().get(units).set(as('teacher')).expect(200)).body.units).toEqual([]);
+    await http().put(units).set(as('teacher')).send({ cells: [] }).expect(400);
+    await q(`insert into curricula (code, name, level) values ('obe-audit', 'OBE audit', 'ug') on conflict do nothing`);
+    const [course] = await q(`insert into courses (curriculum_code, code, title, term, source) values ('obe-audit', $1, 'Corporate accounting', 3, 'test') returning id`, [`ca-${t.tenantId.slice(0, 8)}`]);
+    const [u1] = await q(`insert into chapters (tenant_id, course_id, position, title) values ($1, $2, 1, 'Company final accounts') returning id`, [t.tenantId, course.id]);
+    const [u2] = await q(`insert into chapters (tenant_id, course_id, position, title) values ($1, $2, 2, 'Ratio analysis') returning id`, [t.tenantId, course.id]);
+    await q(`insert into topics (tenant_id, chapter_id, position, title) values ($1, $2, 1, 'Schedule III'), ($1, $2, 2, 'Profit and loss statement')`, [t.tenantId, u1.id]);
+    await q(`update subjects set course_id = $1 where id = $2`, [course.id, t.subject.id]);
+    const plan0 = (await http().get(units).set(as('teacher')).expect(200)).body;
+    expect(plan0.units.map((u: { title: string; topics: string[] }) => [u.title, u.topics])).toEqual([['Company final accounts', ['Schedule III', 'Profit and loss statement']], ['Ratio analysis', []]]);
+    expect(plan0.uncovered).toEqual(['CO1', 'CO2']);
+    await http().put(units).set(as('teacher')).send({ cells: [{ chapterId: u1.id, coCode: 'CO9' }] }).expect(400);
+    await http().put(units).set(as('teacher')).send({ cells: [{ chapterId: id.po1, coCode: 'CO1' }] }).expect(400);
+    const plan = (await http().put(units).set(as('teacher')).send({ cells: [{ chapterId: u1.id, coCode: 'co1' }, { chapterId: u1.id, coCode: 'CO1' }] }).expect(200)).body;
+    expect(plan.units[0].coCodes).toEqual(['CO1']);
+    expect(plan.uncovered).toEqual(['CO2']);
+    await http().put(units).set(as('teacher')).send({ cells: [{ chapterId: u1.id, coCode: 'CO1' }, { chapterId: u2.id, coCode: 'CO2' }] }).expect(200);
+    expect((await http().get(units).set(as('teacher')).expect(200)).body.uncovered).toEqual([]);
+    await http().get(units).set(as('outsider')).expect((r) => expect(r.status).toBeGreaterThanOrEqual(400));
+    const cf = await xlsx(`/v1/obe/subjects/${t.subject.id}/course-file.xlsx?academicYearId=${year()}`);
+    expect(cf.find((s) => s.name === 'Syllabus')!.rows).toEqual([['Unit', 'Topics', 'COs'], ['Company final accounts', 'Schedule III; Profit and loss statement', 'CO1'], ['Ratio analysis', '', 'CO2']]);
+    expect((await q(`select count(*)::int as n from audit_log where tenant_id = $1 and action in ('obe.peo_po.saved', 'obe.course_plan.saved')`, [t.tenantId]))[0].n).toBe(3);
+  });
+
+  it('turns a marking rubric into a paper of criteria for a practical', async () => {
+    const criteria = [{ name: 'Journal entries', levels: [{ label: 'Weak', points: 1, descriptor: '' }, { label: 'Good', points: 4, descriptor: '' }] }, { name: 'Ledger and trial balance', levels: [{ label: 'Weak', points: 2, descriptor: '' }, { label: 'Good', points: 6, descriptor: '' }] }];
+    const r = (await http().post('/v1/assessment-tools/rubrics').set(as('teacher')).send({ name: 'Accounts practical', scope: 'practical', criteria }).expect(201)).body;
+    const asm = (await http().post('/v1/assessments').set(as('teacher')).send({ sectionId: t.section.id, subjectId: t.subject.id, title: 'Practical 1', kind: 'practical', maxMarks: 10, heldOn: '2026-10-29' }).expect(201)).body.id;
+    await http().post(`/v1/obe/assessments/${asm}/questions/copy`).set(as('teacher')).send({ rubricId: r.id, qbPaperId: r.id }).expect(400);
+    const p = (await http().post(`/v1/obe/assessments/${asm}/questions/copy`).set(as('teacher')).send({ rubricId: r.id }).expect(200)).body;
+    expect(p.questions.map((x: { no: string; part: string; maxMarks: number }) => [x.no, x.part, x.maxMarks])).toEqual([['R1', 'Journal entries', 4], ['R2', 'Ledger and trial balance', 6]]);
+    expect(p.paperMarks).toBe(10);
+  });
 });
