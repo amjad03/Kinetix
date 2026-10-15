@@ -1,18 +1,44 @@
-# ZYNETIX promo — script v1 (~100 s, voice af_heart)
+# ZYNETIX promo, v2 (about 2:30, voice af_heart, spoken "ZY-net-iks")
 
-| # | Time | On screen | Voiceover |
-|---|------|-----------|-----------|
-| 1 | 0–7 | Dark glow. Words fly in: "Attendance. Fees. Exams. Homework. Boards." scattered, then dim | Every campus runs on a dozen disconnected tools. |
-| 2 | 7–13 | Scattered words snap into one glowing line, ZYNETIX logo forms | What if one intelligent system connected them all? |
-| 3 | 13–17 | "ZYNETIX" + "The AI operating system for education." | Meet ZYNETIX. The AI operating system for education. |
-| 4 | 17–30 | Smartboard app, tilted 3D: lesson canvas, ink, 3D model, live poll results | It starts in the classroom. The ZYNETIX AI smartboard turns every lesson into an interactive experience — ink, 3D models, live polls, and AI that builds the lesson with you. |
-| 5 | 30–36 | Board → QR sign-in, "Works offline" badge | Teachers sign in with a scan, even when the internet doesn't. |
-| 6 | 36–52 | ERP dashboard floats in; quick cuts: admissions, exam hall tickets, fees, HR, OBE matrix | Behind it, an AI-powered ERP runs the entire institution — admissions to alumni, exams and evaluation, fees, HR, and outcome-based accreditation. |
-| 7 | 52–60 | ERP AI assistant panel answering, AI marking draft | Built-in AI assistants draft, check, and flag — while people stay in control. |
-| 8 | 60–74 | Three phones fan out: Teacher, Student, Parent | And everyone stays connected. Teachers take attendance and mark scripts on the go. Students learn, submit, and track progress. Parents see attendance, fees, and report cards — the moment they happen. |
-| 9 | 74–82 | Network diagram: board, ERP, three apps linked by light lines to a core | One platform. One source of truth. Every screen in sync. |
-| 10 | 82–92 | Badges: English · हिंदी · ಕನ್ನಡ / DPDP-ready / Works offline / Schools · Colleges · Universities | In English, Hindi, and Kannada. Privacy-first, DPDP-ready, and built for schools, colleges, and universities. |
-| 11 | 92–100 | End card: logo, tagline, "Book a demo" button, www.zynetix.example · hello@zynetix.example | ZYNETIX. The AI operating system for education. Book your demo today. |
+Built to hold attention: the hook is a real 3D heart you can spin, slice and pull apart (the real Zynetix viewer),
+the unique features (3D models, virtual labs, simulations, AI) come first, and the school-management modules come after.
+Plain words, short sentences, written to be understood by a 12 to 15 year old.
 
-Music: generated soft ambient/electronic bed, rises at #3 and #9, resolves on end card.
-Placeholders to swap: website, email.
+## Why picture and voice stay in sync
+
+`script.json` is a flat list of short phrases (one voice clip each). `tts.py` makes one clip per phrase and
+`timeline.py` places each phrase at its **measured** start. Every zoom, pop-in, 3D move, language switch and tick
+in `compose/` is keyed to those starts (`f.t0(i)`), never to a hand-typed time, so nothing drifts when the wording changes.
+Captions light up word by word. Each phrase also fires a ring pulse, a keyword slam, a camera punch and a soft tick in the score.
+
+## Order
+
+1. Hook (0 to 17 s): heart (spin, slice, pull apart), brain, planets, Taj Mahal, then the Zynetix logo hit.
+2. 3D models: 46 models, tap a part, labels in English, Hindi, Kannada.
+3. Virtual labs: pendulum (Moon, Jupiter), lens, Ohm's law, break-even.
+4. Simulations: 120+ PhET sims, circuit simulator, Python in the browser, periodic table, map of India.
+5. AI helper: lesson plans, answers, drafted marking, the teacher approves.
+6. Smart board: ink, laser, live polls. Sign in by QR, works offline, phone as remote and camera, recording.
+7. ERP: dashboard, admissions, exams, OBE and NAAC, fees and payroll, live bus, hostel, library, placements,
+   certificates and ID cards, notices in three languages, workflows, analytics, and a cloud of everything else.
+8. Apps: teacher, student, parent, all in sync.
+9. Close: three languages, private and safe, "Learning, made magical.", book a demo.
+
+## Build
+
+```sh
+cd marketing/promo
+npm i                       # puppeteer-core
+pip install kokoro-onnx soundfile numpy
+# models/ needs kokoro-v1.0.int8.onnx and voices-v1.0.bin (kokoro-onnx release "model-files-v1.0")
+./prep.sh                   # patched copy of the real 3D viewer + model lists  -> build/
+python3 tts.py && python3 timeline.py && python3 audio.py
+node render.mjs --stills 3,20,60     # QA stills -> renders/
+node render.mjs                      # frames + ../../dist/zynetix-promo.mp4
+```
+
+`CHROME=/path/to/chrome` overrides the browser. Rendering is frame-exact (no real-time capture) and resumable:
+existing `frames/NNNNN.jpg` are skipped.
+
+Placeholders to swap: the website `zynetix.in` on the end card. PhET simulations are CC-BY (credit is on screen);
+anatomy models are BodyParts3D (CC BY 4.0), see `packages/zynetix_3d/NOTICE`.

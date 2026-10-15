@@ -1,40 +1,31 @@
-"""Scene timings from SCRIPT.md, checked against measured VO durations; captions chunked by phrase."""
+"""Phrase start times from MEASURED clip lengths -> compose/timeline.js, timeline.json.
+Every visual cue in the scenes is keyed to these starts, so picture and voice cannot drift."""
 import json, os, re
-
 HERE = os.path.dirname(os.path.abspath(__file__))
-vo = json.load(open(os.path.join(HERE, "audio/vo.json")))
-STARTS = [0, 7, 13, 17, 30, 36, 52, 60, 74, 82, 92]
-DURATION = 100.0
-LEAD = [0.8, 0.4, 0.1, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.6]
-
-scenes, captions = [], []
-for i, (s, v) in enumerate(zip(STARTS, vo)):
-    end = STARTS[i + 1] if i + 1 < len(STARTS) else DURATION
-    vs = s + LEAD[i]
-    # never let a line run past its scene (keep >= 0.15 s of air)
-    vs = min(vs, end - v["dur"] - 0.15)
-    assert vs >= s - 0.05, f"scene {i+1} too short for its VO"
-    scenes.append({"start": s, "end": end, "vo": round(vs, 3), "voEnd": round(vs + v["dur"], 3)})
-    # caption chunks: split at sentence ends / em-dashes, then by length
-    parts = [p.strip() for p in re.split(r"(?<=[.?!])\s+|\s+—\s+", v["text"]) if p.strip()]
-    chunks = []
-    for p in parts:
-        words, cur = p.split(), ""
-        for w in words:
-            if len(cur) + len(w) + 1 > 62 and cur:
-                chunks.append(cur); cur = w
-            else:
-                cur = (cur + " " + w).strip()
-        if chunks and len(cur) < 12 and cur != p:
-            chunks[-1] += " " + cur
-        else:
-            chunks.append(cur)
-    total = sum(len(c) + 6 for c in chunks)
-    tcur = vs
-    for c in chunks:
-        d = v["dur"] * (len(c) + 6) / total
-        captions.append({"t0": round(tcur, 3), "t1": round(tcur + d, 3), "text": c})
-        tcur += d
-json.dump({"duration": DURATION, "fps": 30, "scenes": scenes, "captions": captions}, open(os.path.join(HERE, "timeline.json"), "w"), indent=1)
-print(len(captions), "captions")
-open(os.path.join(HERE, "compose/timeline.js"), "w").write("window.TL = " + json.dumps({"duration": DURATION, "fps": 30, "scenes": scenes, "captions": captions}) + ";\n")
+P = json.load(open(os.path.join(HERE, "script.json")))
+D = json.load(open(os.path.join(HERE, "audio/vo.json")))
+t, out, scenes = 0.7, [], []
+for i, (p, d) in enumerate(zip(P, D)):
+    if i and p["s"] != P[i - 1]["s"]:
+        t += 0.22
+    words, ws = p["t"].split(), []
+    for w in words:
+        ws.append(len(re.sub(r"\W", "", w)) + 2 + (3 if re.search(r"[,.…?!]$", w) else 0))
+    tot, c, wt = sum(ws), 0.0, []
+    for w, x in zip(words, ws):
+        wt.append([w, round(t + d * c / tot, 3), round(t + d * (c + x) / tot, 3)]); c += x
+    out.append({"i": i, "s": p["s"], "text": p["t"], "kw": p.get("kw", ""), "t0": round(t, 3), "t1": round(t + d, 3), "words": wt})
+    if not scenes or scenes[-1]["id"] != p["s"]:
+        scenes.append({"id": p["s"], "p0": i, "p1": i, "start": round(t, 3), "end": 0})
+    scenes[-1]["p1"] = i
+    scenes[-1]["end"] = round(t + d + p.get("pad", 0), 3)
+    t += d + p.get("pad", 0) + 0.11
+dur = round(t + 0.6, 2)
+for k, s in enumerate(scenes):   # a scene starts just before its first word; the previous one fades out over it
+    s["start"] = 0 if k == 0 else round(s["start"] - 0.3, 3)
+    s["end"] = dur if k + 1 == len(scenes) else round(scenes[k + 1]["start"] - 0.3 + 0.2, 3)
+for k in range(len(scenes) - 1): scenes[k]["end"] = round(scenes[k + 1]["start"] + 0.2, 3)
+tl = {"duration": dur, "fps": 30, "phrases": out, "scenes": scenes}
+json.dump(tl, open(os.path.join(HERE, "timeline.json"), "w"))
+open(os.path.join(HERE, "compose/timeline.js"), "w").write("window.TL=" + json.dumps(tl) + ";\n")
+print("duration", dur, "scenes", [(s["id"], round(s["start"], 1), round(s["end"], 1)) for s in scenes])

@@ -1,0 +1,299 @@
+[
+{
+"s": "heart",
+"t": "Have you ever held a human heart… in your hands?",
+"kw": "HOLD A HEART"
+},
+{
+"s": "heart",
+"t": "Spin it.",
+"kw": "SPIN"
+},
+{
+"s": "heart",
+"t": "Slice it in half.",
+"kw": "SLICE"
+},
+{
+"s": "heart",
+"t": "Now pull it apart… piece by piece.",
+"kw": "PULL APART",
+"pad": 0.3
+},
+{
+"s": "brain",
+"t": "Next, the brain.",
+"kw": "BRAIN",
+"pad": 0.5
+},
+{
+"s": "space",
+"t": "Then the planets.",
+"kw": "PLANETS",
+"pad": 0.5
+},
+{
+"s": "taj",
+"t": "Even the Taj Mahal.",
+"kw": "TAJ MAHAL",
+"pad": 0.4
+},
+{
+"s": "logo",
+"t": "This is Zynetix.",
+"kw": "",
+"pad": 0.5
+},
+{
+"s": "logo",
+"t": "Where learning feels like magic.",
+"kw": "",
+"pad": 0.6
+},
+{
+"s": "models",
+"t": "Zynetix has more than forty real 3D models.",
+"kw": "46 3D MODELS"
+},
+{
+"s": "models",
+"t": "Tap any part, and it tells you its name…",
+"kw": "TAP A PART"
+},
+{
+"s": "models",
+"t": "in English,",
+"kw": "ENGLISH"
+},
+{
+"s": "models",
+"t": "Hindi,",
+"kw": "हिंदी"
+},
+{
+"s": "models",
+"t": "or Kannada.",
+"kw": "ಕನ್ನಡ",
+"pad": 0.3
+},
+{
+"s": "labs",
+"t": "Now, science experiments. No mess. No broken glass.",
+"kw": "VIRTUAL LABS"
+},
+{
+"s": "labs",
+"t": "Swing a pendulum on the Moon…",
+"kw": "MOON"
+},
+{
+"s": "labs",
+"t": "or on Jupiter.",
+"kw": "JUPITER"
+},
+{
+"s": "labs",
+"t": "Bend light through a lens.",
+"kw": "LIGHT"
+},
+{
+"s": "labs",
+"t": "Build a circuit, and watch the electricity flow.",
+"kw": "CIRCUITS"
+},
+{
+"s": "labs",
+"t": "Even run a shop, and find your break-even point.",
+"kw": "BREAK-EVEN",
+"pad": 0.2
+},
+{
+"s": "sims",
+"t": "There are over a hundred simulations too.",
+"kw": "120+ SIMULATIONS"
+},
+{
+"s": "sims",
+"t": "Wire up real electronics.",
+"kw": "ELECTRONICS"
+},
+{
+"s": "sims",
+"t": "Write Python, right inside the browser.",
+"kw": "PYTHON"
+},
+{
+"s": "sims",
+"t": "Explore the periodic table, and a map of India.",
+"kw": "EXPLORE",
+"pad": 0.2
+},
+{
+"s": "ai",
+"t": "And an AI helper builds the lesson with the teacher.",
+"kw": "AI HELPER"
+},
+{
+"s": "ai",
+"t": "It writes plans, answers questions, and drafts the marking.",
+"kw": ""
+},
+{
+"s": "ai",
+"t": "But the teacher is always the boss.",
+"kw": "TEACHER IN CONTROL",
+"pad": 0.2
+},
+{
+"s": "board",
+"t": "All of this lives on the smart board.",
+"kw": "SMART BOARD"
+},
+{
+"s": "board",
+"t": "Write with ink.",
+"kw": "INK"
+},
+{
+"s": "board",
+"t": "Point with a laser.",
+"kw": "LASER"
+},
+{
+"s": "board",
+"t": "Ask a question, and watch the class answer, live.",
+"kw": "LIVE POLLS",
+"pad": 0.2
+},
+{
+"s": "offline",
+"t": "Sign in by scanning a code.",
+"kw": "SCAN TO SIGN IN"
+},
+{
+"s": "offline",
+"t": "No internet? No problem. It works offline.",
+"kw": "WORKS OFFLINE"
+},
+{
+"s": "offline",
+"t": "Your phone becomes the remote, and the camera.",
+"kw": "PHONE = REMOTE"
+},
+{
+"s": "offline",
+"t": "Every lesson can be recorded, for anyone who missed it.",
+"kw": "RECORD LESSONS",
+"pad": 0.2
+},
+{
+"s": "erp",
+"t": "Behind the board, Zynetix ERP runs the whole school.",
+"kw": "ZYNETIX ERP",
+"say": "Behind the board, Zynetix E R P runs the whole school."
+},
+{
+"s": "erp",
+"t": "Students apply online, pay the fee, and get picked from a merit list.",
+"kw": "ADMISSIONS"
+},
+{
+"s": "erp",
+"t": "Exams, hall tickets and results take minutes, not weeks.",
+"kw": "EXAMS"
+},
+{
+"s": "erp",
+"t": "Need accreditation reports? Zynetix collects the proof while teachers teach.",
+"kw": "OBE · NAAC"
+},
+{
+"s": "erp",
+"t": "Fees are paid online. Staff attendance, leave and payslips are handled too.",
+"kw": "FEES · PAYROLL"
+},
+{
+"s": "erp",
+"t": "Watch the school bus, live on a map.",
+"kw": "LIVE BUS"
+},
+{
+"s": "erp",
+"t": "Hostel rooms, library books and job placements live here too.",
+"kw": "HOSTEL · LIBRARY · JOBS"
+},
+{
+"s": "erp",
+"t": "Print certificates and ID cards, with a QR code.",
+"say": "Print certificates and I D cards, with a Q R code.",
+"kw": "CERTIFICATES · ID CARDS"
+},
+{
+"s": "erp",
+"t": "Send notices to every parent, in their own language.",
+"kw": "NOTICES"
+},
+{
+"s": "erp",
+"t": "Drag boxes to build your own workflows.",
+"kw": "WORKFLOWS"
+},
+{
+"s": "erp",
+"t": "And see live charts of the whole school.",
+"kw": "ANALYTICS"
+},
+{
+"s": "erp",
+"t": "Timetables, homework, courses, mentoring, inventory… and so much more.",
+"kw": "AND SO MUCH MORE",
+"pad": 0.3
+},
+{
+"s": "apps",
+"t": "Teachers, students and parents each get their own app.",
+"kw": "3 APPS"
+},
+{
+"s": "apps",
+"t": "Teachers take attendance in seconds.",
+"kw": "TEACHER"
+},
+{
+"s": "apps",
+"t": "Students see their homework and marks.",
+"kw": "STUDENT"
+},
+{
+"s": "apps",
+"t": "Parents see fees and attendance the moment they change.",
+"kw": "PARENT"
+},
+{
+"s": "apps",
+"t": "Everything stays in sync.",
+"kw": "IN SYNC",
+"pad": 0.2
+},
+{
+"s": "close",
+"t": "In English, Hindi and Kannada.",
+"kw": ""
+},
+{
+"s": "close",
+"t": "Private. Safe. Built for schools, colleges and universities.",
+"kw": ""
+},
+{
+"s": "close",
+"t": "Zynetix. Learning, made magical.",
+"kw": ""
+},
+{
+"s": "close",
+"t": "Book your demo today.",
+"kw": "",
+"pad": 1.2
+}
+]

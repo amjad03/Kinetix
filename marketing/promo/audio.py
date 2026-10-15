@@ -1,174 +1,114 @@
-"""Synthesize the ambient music bed and mix it under the VO clips.
-
-Reads audio/vo_*.wav + audio/vo.json (from tts.py) and timeline.json; writes audio/mix.wav (48 kHz stereo).
-Music: soft pads + subtle pulse, rises into scene 3 and scene 9, resolves on the end card.
-Ducking: music sits ~18 dB under the voice while it speaks.
-"""
-import json, os, subprocess
-import numpy as np
+"""Zynetix promo sound: VO clips placed at the measured phrase starts + a synthesized score and sound effects.
+The music is built around the video: a heartbeat under the 3D hook (in time with the pulsing heart), a riser into the
+logo hit, a beat that comes in on the logo, and a resolved chord on the last line. Writes audio/mix.wav (48 kHz stereo)."""
+import json, os
+import numpy as np, soundfile as sf
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SR = 48000
 TL = json.load(open(os.path.join(HERE, "timeline.json")))
-DUR = TL["duration"]
-N = int(DUR * SR)
-t = np.arange(N) / SR
-rng = np.random.default_rng(7)
+DUR = TL["duration"]; N = int(DUR * SR)
+rng = np.random.default_rng(3)
+midi = lambda m: 440.0 * 2 ** ((m - 69) / 12)
 
+def add(buf, x, t, g=1.0):
+    i = int(t * SR); 
+    if i >= len(buf) or i < 0: return
+    n = min(len(x), len(buf) - i); buf[i:i + n] += x[:n] * g
+def env(n, a=.005, r=.2):
+    e = np.ones(n); na, nr = max(1, int(a * SR)), max(1, int(r * SR)); e[:na] = np.linspace(0, 1, na); e[-nr:] *= np.linspace(1, 0, nr) ** 2; return e
+def lp(x, fc):
+    X = np.fft.rfft(x); f = np.fft.rfftfreq(len(x), 1 / SR); return np.fft.irfft(X / np.sqrt(1 + (f / fc) ** 4), len(x))
+def hp(x, fc): return x - lp(x, fc)
+def tone(f, d, harm=((1, 1), (2, .3), (3, .12)), det=0):
+    t = np.arange(int(d * SR)) / SR; return sum(a * np.sin(2 * np.pi * f * (1 + det) * h * t) for h, a in harm)
+def kick(d=.35):
+    t = np.arange(int(d * SR)) / SR; f = 45 + 110 * np.exp(-t * 28); return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 9)
+def noise(d): return rng.standard_normal(int(d * SR))
+def clap(): x = hp(noise(.22), 1200) * env(int(.22 * SR), .001, .2); return x * 0.8
+def hat(): return hp(noise(.07), 6000) * env(int(.07 * SR), .001, .06) * .5
 
-def midi(m):
-    return 440.0 * 2 ** ((m - 69) / 12)
-
-
-def lowpass(x, fc):
-    # one-pole low-pass, vectorised by chunks is overkill; use FFT brickwall-ish smooth rolloff
-    X = np.fft.rfft(x)
-    f = np.fft.rfftfreq(len(x), 1 / SR)
-    X *= 1 / np.sqrt(1 + (f / fc) ** 4)
-    return np.fft.irfft(X, len(x))
-
-
-def env_ar(n, a, r):
-    e = np.ones(n)
-    na, nr = int(a * SR), int(r * SR)
-    e[:na] = np.linspace(0, 1, na) ** 2
-    e[-nr:] *= np.linspace(1, 0, nr) ** 2
-    return e
-
-
-def pad_voice(freq, n):
-    tt = np.arange(n) / SR
-    out = np.zeros(n)
-    for det in (-0.07, 0.0, 0.06):  # cents-ish detune via Hz offsets
-        f = freq * (1 + det / 100)
-        ph = rng.uniform(0, 2 * np.pi)
-        for h, amp in ((1, 1.0), (2, 0.35), (3, 0.15), (4, 0.06)):
-            out += amp * np.sin(2 * np.pi * f * h * tt + ph * h)
-    return out * (0.85 + 0.15 * np.sin(2 * np.pi * 0.11 * tt + rng.uniform(0, 6)))
-
-
-# Chord plan (MIDI notes); D major colour. Each chord ~8 s with long crossfades.
-CHORDS = [
-    [50, 57, 62, 64, 69],      # Dadd9
-    [47, 54, 59, 62, 66],      # Bm7
-    [43, 50, 55, 59, 62, 66],  # Gmaj7
-    [45, 52, 57, 61, 64],      # A
-]
-pads = np.zeros(N)
-step = 8.0
-k = 0
-start = 0.0
-while start < DUR - 6:
-    ch = CHORDS[k % 4]
-    if start >= TL["scenes"][-1]["start"] - 0.5:  # end card: resolve on D
-        ch = [38, 50, 57, 62, 66, 69]
-        length = DUR - start
-    else:
-        length = step + 3
-    n0, n = int(start * SR), min(int(length * SR), N - int(start * SR))
-    seg = sum(pad_voice(midi(m), n) for m in ch) / len(ch)
-    pads[n0:n0 + n] += seg * env_ar(n, 2.5, 3.0)
-    k += 1
-    if ch[0] == 38:
-        break
-    start += step
-pads = lowpass(pads, 1400) * 0.5
-
-# Pulse: soft plucks on 8ths at 96 BPM + gentle low thump, entering at scene 4.
-bpm = 96
-beat = 60 / bpm
-pulse = np.zeros(N)
-s3 = TL["scenes"][2]["start"]
-s4 = TL["scenes"][3]["start"]
-s9 = TL["scenes"][8]["start"]
-s10 = TL["scenes"][9]["start"]
-s11 = TL["scenes"][10]["start"]
-pl = int(0.5 * SR)
-tp = np.arange(pl) / SR
-arp = [62, 69, 66, 69, 64, 69, 66, 71]
-i = 0
-x = s4
-while x < s11:
-    n0 = int(x * SR)
-    m = arp[i % len(arp)] + (0 if (int(x // step) % 4) != 1 else -3)
-    tone = np.sin(2 * np.pi * midi(m) * tp) * np.exp(-tp * 9) * 0.18
-    seg = min(pl, N - n0)
-    lvl = 1.4 if s9 <= x < s11 else 1.0
-    pulse[n0:n0 + seg] += tone[:seg] * lvl
-    if i % 2 == 0 and x >= s4 + 4:
-        thump = np.sin(2 * np.pi * 52 * tp * (1 + 0.6 * np.exp(-tp * 30))) * np.exp(-tp * 12) * 0.32 * lvl
-        pulse[n0:n0 + seg] += thump[:seg]
-    x += beat / 2
-    i += 1
-pulse = lowpass(pulse, 3500)
-
-# Rises (filtered noise + pitch sweep) landing on scene 3 and scene 9.
-rises = np.zeros(N)
-for land, ln in ((s3, 3.5), (s9, 4.0)):
-    n0, n = int((land - ln) * SR), int(ln * SR)
-    tt = np.arange(n) / SR
-    noise = lowpass(rng.standard_normal(n), 2500) * 0.25
-    sweep = np.sin(2 * np.pi * np.cumsum(200 + 900 * (tt / ln) ** 2) / SR) * 0.06
-    rises[n0:n0 + n] += (noise + sweep) * (tt / ln) ** 3
-    # soft impact bloom on the landing
-    m0, m = int(land * SR), int(3.0 * SR)
-    tm = np.arange(m) / SR
-    rises[m0:m0 + m] += (np.sin(2 * np.pi * midi(38) * tm) * 0.35 + lowpass(rng.standard_normal(m), 900) * 0.15) * np.exp(-tm * 1.6)
-
-music = pads + pulse + rises
-# Global arc: fade in, swell after scene 3, lift at 9, resolve/fade out.
-arc = np.interp(t, [0, 3, s3, s4, s9, s10, s11, DUR - 2.5, DUR], [0, 0.75, 0.9, 0.85, 1.0, 1.0, 0.9, 0.7, 0])
-music *= arc
-
-# Simple stereo reverb (FFT convolution with decaying noise IR).
-def reverb(x, seed):
-    r = np.random.default_rng(seed)
-    L = int(2.4 * SR)
-    ir = r.standard_normal(L) * np.exp(-np.arange(L) / SR * 2.6)
-    ir = lowpass(ir, 4000)
-    ir[0] = 0
-    size = 1 << int(np.ceil(np.log2(len(x) + L)))
-    y = np.fft.irfft(np.fft.rfft(x, size) * np.fft.rfft(ir, size), size)[: len(x)]
-    return y / np.max(np.abs(y)) * np.max(np.abs(x))
-
-mL = music * 0.7 + reverb(music, 1) * 0.45
-mR = music * 0.7 + reverb(music, 2) * 0.45
-
-
-def load(path):
-    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", path, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"], capture_output=True, check=True).stdout
-    return np.frombuffer(raw, dtype=np.float32).astype(np.float64)
-
-
-def rms_db(x):
-    return 20 * np.log10(np.sqrt(np.mean(x ** 2)) + 1e-12)
-
-
+# ---- voice ----
 vo = np.zeros(N)
-speaking = np.zeros(N)
-for i, sc in enumerate(TL["scenes"]):
-    clip = load(os.path.join(HERE, f"audio/vo_{i}.wav"))
-    act = clip[np.abs(clip) > 0.01]
-    clip *= 10 ** ((-18 - rms_db(act)) / 20)  # VO speech at ~-18 dBFS RMS
-    n0 = int(sc["vo"] * SR)
-    seg = min(len(clip), N - n0)
-    vo[n0:n0 + seg] += clip[:seg]
-    speaking[n0:n0 + seg] = 1
+for ph in TL["phrases"]:
+    y, sr = sf.read(os.path.join(HERE, f"audio/p_{ph['i']}.wav")); assert sr == 24000
+    y = np.interp(np.arange(0, len(y), .5), np.arange(len(y)), y)   # 24k -> 48k
+    add(vo, y, ph["t0"], 1.0)
 
-# Music level: ~-26 dBFS alone, ~-36 under voice (18 dB below VO), smooth 250 ms ramps.
-mono = (mL + mR) / 2
-act = mono[np.abs(mono) > 1e-4]
-base = 10 ** ((-26 - rms_db(act)) / 20)
-kern = np.hanning(int(0.5 * SR))
-kern /= kern.sum()
-duck = np.convolve(speaking, kern, mode="same")
-gain = base * (1 - duck * (1 - 10 ** (-10 / 20)))
-L = vo + mL * gain
-R = vo + mR * gain
-peak = max(np.max(np.abs(L)), np.max(np.abs(R)))
-if peak > 0.97:
-    L, R = L / peak * 0.97, R / peak * 0.97
-out = np.stack([L, R], 1).astype(np.float32)
-subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "f32le", "-ar", str(SR), "-ac", "2", "-i", "-",
-                "-c:a", "pcm_s16le", os.path.join(HERE, "audio/mix.wav")], input=out.tobytes(), check=True)
-print("mix ok", DUR, "s; music under VO ~", round(-18 - (-36), 1), "dB")
+# ---- music ----
+mus = np.zeros(N)
+sc = {s["id"]: s for s in TL["scenes"]}
+T_LOGO = TL["phrases"][[p["s"] for p in TL["phrases"]].index("logo")]["t0"]
+T_END = TL["phrases"][-1]["t0"]
+# 1) heartbeat under the 3D hook, in time with the pulsing heart (period 2*pi/7.5 s)
+k = 0
+while True:
+    tb = (np.pi / 2 + 2 * np.pi * k) / 7.5 - .05; k += 1
+    if tb > T_LOGO - 1.3: break
+    if tb > 0.2:
+        add(mus, kick(.3) * .9, tb, .8); add(mus, kick(.25) * .6, tb + .17, .5)
+# 2) drone through the hook
+dr = (tone(55, DUR) + .6 * tone(82.4, DUR)) * .12; dr *= np.clip(np.linspace(0, 1, N) * 4, 0, 1) * (np.arange(N) / SR < T_LOGO)
+mus += lp(dr, 300)
+# 3) riser into the logo + impact
+rt = T_LOGO - 1.3; rd = 1.3; n = int(rd * SR); tt = np.arange(n) / SR
+riser = noise(rd) * (tt / rd) ** 2 * .5; riser = hp(riser, 800) + .35 * np.sin(2 * np.pi * np.cumsum(300 + 1700 * (tt / rd) ** 2) / SR) * (tt / rd)
+add(mus, riser, rt, .6)
+boom = kick(1.6) * 1.0 + .4 * lp(noise(1.2), 400) * env(int(1.2 * SR), .001, 1.1); add(mus, boom, T_LOGO - .02, 1.0)
+add(mus, hp(noise(.8), 3000) * env(int(.8 * SR), .001, .7) * .3, T_LOGO, .6)
+# 4) the beat: 112 BPM from the logo to the end card, building through sections
+bpm = 112; beat = 60 / bpm; bar = 4 * beat
+chords = [[50, 53, 57], [46, 50, 53], [53, 57, 60], [48, 52, 55]]   # Dm Bb F C (pads)
+roots = [38, 34, 41, 36]
+tb = T_LOGO; bi = 0
+sections = [(s["start"], s["id"]) for s in TL["scenes"]]
+def level(t):   # 0..1 energy by scene
+    cur = [i for (st, i) in sections if t >= st][-1]
+    return {'logo': .6, 'models': .75, 'labs': .85, 'sims': .95, 'ai': .9, 'board': 1, 'offline': .95, 'erp': 1, 'apps': 1, 'close': .8}.get(cur, .6)
+while tb < DUR - 1:
+    L_ = level(tb); ch = chords[(bi // 4) % 4]; rt_ = roots[(bi // 4) % 4]
+    add(mus, kick() * 1.0, tb, .55 * L_)
+    if bi % 2 == 1: add(mus, clap(), tb, .28 * L_)
+    add(mus, hat(), tb + beat / 2, .22 * L_)
+    if bi % 4 in (1, 3): add(mus, hat(), tb + beat * .75, .12 * L_)
+    # bass 8ths
+    for h in range(2):
+        f = midi(rt_ + (0, 0, 7, 12)[(bi * 2 + h) % 4] - (12 if h == 0 and bi % 2 == 0 else 0)); x = lp(tone(f, beat / 2, ((1, 1), (2, .5), (3, .2))), 500) * env(int(beat / 2 * SR), .004, .1)
+        add(mus, x, tb + h * beat / 2, .5 * L_)
+    # arpeggio sparkles from the labs on
+    if tb > sc["labs"]["start"] and tb < T_END:
+        for h in range(4):
+            note = ch[(bi * 4 + h) % 3] + 24 + (12 if (bi + h) % 5 == 0 else 0)
+            x = tone(midi(note), beat / 2, ((1, 1), (2, .25), (4, .1))) * env(int(beat / 2 * SR), .002, .3); add(mus, x, tb + h * beat / 4, .11 * L_)
+    # pad on the downbeat of each bar
+    if bi % 4 == 0:
+        for m in ch:
+            x = lp(tone(midi(m + 12), bar, ((1, 1), (2, .3), (3, .1)), .002) + tone(midi(m + 12), bar, ((1, 1), (2, .3)), -.002), 1800) * env(int(bar * SR), .4, .8); add(mus, x, tb, .09 * L_)
+    tb += beat; bi += 1
+# 5) resolved chord on the last line
+for m in (50, 57, 62, 66, 69):
+    x = lp(tone(midi(m), DUR - T_END - .2, ((1, 1), (2, .35), (3, .15))), 2200) * env(int((DUR - T_END - .2) * SR), .3, 2.0); add(mus, x, T_END, .12)
+# fade the beat out under the final line
+fade = np.ones(N); i0 = int(T_END * SR); fade[i0:] = np.linspace(1, .55, N - i0); mus *= fade
+# duck the score under the voice (side-chain)
+a = np.abs(vo); w = int(.12 * SR); sm = np.convolve(a, np.ones(w) / w, 'same'); sm = np.convolve(sm, np.ones(int(.25 * SR)) / int(.25 * SR), 'same')
+duck = 1 - .62 * np.clip(sm / .05, 0, 1); mus *= duck
+
+# ---- sound effects ----
+sfx = np.zeros(N)
+for ph in TL["phrases"]:     # a soft glassy tick as each spoken phrase lands on screen
+    f = (880, 1175, 1568)[ph["i"] % 3]; x = tone(f, .16, ((1, 1), (2, .3))) * env(int(.16 * SR), .002, .15); add(sfx, x, ph["t0"] - .03, .06)
+for s in TL["scenes"][1:]:   # whoosh at every scene change
+    d = .55; n = int(d * SR); x = noise(d); fc = np.linspace(300, 5000, n)
+    y = lp(x, 2500) * np.sin(np.linspace(0, np.pi, n)) ** 1.5; y = hp(y, 200); add(sfx, y, s["start"] - .12, .2)
+add(sfx, tone(1318, 1.2, ((1, 1), (2, .4), (3, .2))) * env(int(1.2 * SR), .002, 1.1), T_END + .3, .05)   # end sparkle
+for q in (1568, 1976, 2349, 3136):
+    add(sfx, tone(q, .9) * env(int(.9 * SR), .002, .85), T_END + .35 + (q % 7) * .02, .03)
+
+# ---- mix ----
+mix = vo * 1.0 + mus * .62 + sfx * 1.0
+m = np.abs(mix).max(); mix = mix / m * .92
+st = np.stack([mix, mix], 1); st[:, 1] = np.roll(mix, 24) * .98   # a hair of width
+sf.write(os.path.join(HERE, "audio/mix_raw.wav"), st, SR)
+os.system(f"ffmpeg -loglevel error -y -i {HERE}/audio/mix_raw.wav -af loudnorm=I=-16:TP=-1.5:LRA=9 -ar 48000 {HERE}/audio/mix.wav")
+print("mix", DUR, "s")
