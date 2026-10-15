@@ -16,7 +16,7 @@ def add(buf, x, t, g=1.0):
     if i >= len(buf) or i < 0: return
     n = min(len(x), len(buf) - i); buf[i:i + n] += x[:n] * g
 def env(n, a=.005, r=.2):
-    e = np.ones(n); na, nr = max(1, int(a * SR)), max(1, int(r * SR)); e[:na] = np.linspace(0, 1, na); e[-nr:] *= np.linspace(1, 0, nr) ** 2; return e
+    e = np.ones(n); na, nr = min(n, max(1, int(a * SR))), min(n, max(1, int(r * SR))); e[:na] = np.linspace(0, 1, na); e[-nr:] *= np.linspace(1, 0, nr) ** 2; return e
 def lp(x, fc):
     X = np.fft.rfft(x); f = np.fft.rfftfreq(len(x), 1 / SR); return np.fft.irfft(X / np.sqrt(1 + (f / fc) ** 4), len(x))
 def hp(x, fc): return x - lp(x, fc)
@@ -54,7 +54,7 @@ mus += lp(dr, 300)
 rt = T_LOGO - 1.3; rd = 1.3; n = int(rd * SR); tt = np.arange(n) / SR
 riser = noise(rd) * (tt / rd) ** 2 * .5; riser = hp(riser, 800) + .35 * np.sin(2 * np.pi * np.cumsum(300 + 1700 * (tt / rd) ** 2) / SR) * (tt / rd)
 add(mus, riser, rt, .6)
-boom = kick(1.6) * 1.0 + .4 * lp(noise(1.2), 400) * env(int(1.2 * SR), .001, 1.1); add(mus, boom, T_LOGO - .02, 1.0)
+boom = kick(1.6); bn = .4 * lp(noise(1.2), 400) * env(int(1.2 * SR), .001, 1.1); boom[:len(bn)] += bn; add(mus, boom, T_LOGO - .02, 1.0)
 add(mus, hp(noise(.8), 3000) * env(int(.8 * SR), .001, .7) * .3, T_LOGO, .6)
 # 4) the beat: 112 BPM from the logo to the end card, building through sections
 bpm = 112; beat = 60 / bpm; bar = 4 * beat
