@@ -1,5 +1,5 @@
 // Draws the board's elements beyond strokes (text, pictures, equations, graphs, figures, notes, sheets)
-// and the laser, as packages/kinetix_ink/lib/src/element_painting.dart does. Equations are shown
+// and the laser, as packages/zynetix_ink/lib/src/element_painting.dart does. Equations are shown
 // as readable text (the board typesets them; the web view has no TeX engine).
 
 import { compileGraph } from './graph';

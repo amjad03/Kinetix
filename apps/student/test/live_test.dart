@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show LessonView;
-import 'package:kinetix_student/core/live.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/features/live/live_class_screen.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show LessonView;
+import 'package:zynetix_student/core/live.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/features/live/live_class_screen.dart';
 
 import 'fake_api.dart';
 import 'fake_live.dart';

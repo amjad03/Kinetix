@@ -1,4 +1,4 @@
-import type { Payslip } from '@kinetix/shared';
+import type { Payslip } from '@zynetix/shared';
 import { A4, Pdf } from '../common/pdf-doc.js';
 
 const money = (paise: number) => (paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

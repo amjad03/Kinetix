@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import type { ConceptVideo, ConceptVideoSource, Language, ManagedConceptVideo, PeriodConceptVideos, PeriodTopicSource, TopicVideoCount } from '@kinetix/shared';
+import type { ConceptVideo, ConceptVideoSource, Language, ManagedConceptVideo, PeriodConceptVideos, PeriodTopicSource, TopicVideoCount } from '@zynetix/shared';
 import { and, asc, eq, gt, inArray, isNull, max, sql, type SQL } from 'drizzle-orm';
 import { licenceAllows } from './licensing.js';
 import { audit } from '../common/audit.js';

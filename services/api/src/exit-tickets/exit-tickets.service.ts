@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import type { PollResults } from '@kinetix/shared';
+import type { PollResults } from '@zynetix/shared';
 import { and, desc, eq, inArray, isNull, gt } from 'drizzle-orm';
 import type { BoardPrincipal, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';

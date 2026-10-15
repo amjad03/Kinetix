@@ -5,7 +5,7 @@
  * ("1:<base64>"), deploy, run this, then remove the old key. Runs as the owner role
  * (DATABASE_URL) because it touches every institution. Safe to run again.
  *
- *   pnpm secrets:rotate        (Docker: `kinetix-api rotate-secrets`)
+ *   pnpm secrets:rotate        (Docker: `zynetix-api rotate-secrets`)
  */
 import { eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';

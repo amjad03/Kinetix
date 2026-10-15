@@ -4,7 +4,7 @@
 // Usage: node scripts/demo-api-check.mjs [apiUrl] [tenant]   (defaults: http://localhost:4000 vidyaniketan)
 const API = process.argv[2] ?? 'http://localhost:4000';
 const T = process.argv[3] ?? 'vidyaniketan';
-const D = `${T}.demo.kinetix.in`;
+const D = `${T}.demo.zynetix.in`;
 const people = T === 'soundarya'
   ? { teacher: 'sowmya.reddy', student: 'student.bca', parent: 'parent.bca' }
   : { teacher: 'sowmya.reddy', student: 'student.class7', parent: 'parent.class7' };
@@ -16,7 +16,7 @@ async function call(method, path, token, body) {
   let json; try { json = JSON.parse(text); } catch { json = text; }
   return { status: r.status, json };
 }
-const login = async (who) => (await call('POST', '/v1/auth/login', null, { tenant: T, login: `${who}@${D}`, password: 'kinetix123' })).json.accessToken;
+const login = async (who) => (await call('POST', '/v1/auth/login', null, { tenant: T, login: `${who}@${D}`, password: 'zynetix123' })).json.accessToken;
 
 const principal = await login('principal');
 ok('principal sign-in', !!principal);

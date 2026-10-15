@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../core/l10n.dart';
 
-/// Full-screen camera that looks for a KINETIX pairing QR code (kinetix://pair?...).
+/// Full-screen camera that looks for a ZYNETIX pairing QR code (zynetix://pair?...).
 /// Only used on Android and iOS.
 class QrScannerView extends StatefulWidget {
   const QrScannerView({super.key, required this.busy, required this.error, required this.onScanned, required this.onEnterCode});
@@ -33,7 +33,7 @@ class _QrScannerViewState extends State<QrScannerView> {
     for (final b in capture.barcodes) {
       final raw = b.rawValue;
       if (raw == null) continue;
-      if (raw.startsWith('kinetix://pair') || raw.startsWith('KXO1.')) {
+      if (raw.startsWith('zynetix://pair') || raw.startsWith('KXO1.')) {
         setState(() => _notOurs = false);
         widget.onScanned(raw);
         return;

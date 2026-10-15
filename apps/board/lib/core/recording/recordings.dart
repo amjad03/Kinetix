@@ -4,7 +4,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import '../api_client.dart';
 import '../models.dart';
@@ -160,7 +160,7 @@ class LocalRecording {
   };
 }
 
-/// Lesson recordings on this board and the queue that uploads them to KINETIX Cloud.
+/// Lesson recordings on this board and the queue that uploads them to ZYNETIX Cloud.
 ///
 /// Uploads need the board-session token of the teacher who recorded, which ends with the
 /// class. So the queue uploads eagerly: as soon as a recording is saved, and again when the
@@ -358,7 +358,7 @@ class Recordings extends ChangeNotifier {
           break;
         } catch (e) {
           if (_session() == null) break;
-          next.error = 'Could not reach KINETIX Cloud';
+          next.error = 'Could not reach ZYNETIX Cloud';
           await _persist(next);
           _scheduleRetry();
           break;

@@ -1,4 +1,4 @@
-// Drives the real KINETIX Board under flutter_test like a teacher with a stylus, and streams
+// Drives the real ZYNETIX Board under flutter_test like a teacher with a stylus, and streams
 // every frame (30 fps of app time) plus the stylus position to the compositor.
 //
 // Copied into apps/board/test/ only while capturing (see ../README in SCRIPT.md), deleted after.
@@ -13,7 +13,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 const fps = 30;
 const frameDt = Duration(microseconds: 33333);
@@ -199,7 +199,7 @@ class Director {
 
   /// The closing card with the last line of voice-over (rendered by the compositor).
   void endCard(double voSeconds) {
-    if (_out != null) _writeHeader({'endcard': 'KINETIX Board', 'seg': 's112', 'frames': ((voSeconds + 2.2) * fps).round()}, 0);
+    if (_out != null) _writeHeader({'endcard': 'ZYNETIX Board', 'seg': 's112', 'frames': ((voSeconds + 2.2) * fps).round()}, 0);
     log.writeln('endcard at $frame');
   }
 

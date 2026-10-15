@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_cards/kinetix_cards.dart' show answerLetters;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_cards/zynetix_cards.dart' show answerLetters;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import 'class_poll.dart';

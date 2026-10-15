@@ -68,7 +68,7 @@
     {
      "id": "h3",
      "kind": "logo",
-     "vo": "^Meet KINETIX Board. ^It does the busywork, so the teacher can just teach.",
+     "vo": "^Meet ZYNETIX Board. ^It does the busywork, so the teacher can just teach.",
      "acts": [
       {
        "kind": "logo"
@@ -647,14 +647,14 @@
     {
      "id": "b61",
      "kind": "act",
-     "vo": "Now, ^she asks KINETIX AI a question about today's lesson.",
+     "vo": "Now, ^she asks ZYNETIX AI a question about today's lesson.",
      "acts": [
       {
        "kind": "act",
        "label": "Answer in seconds"
       }
      ],
-     "title": "Ask KINETIX AI"
+     "title": "Ask ZYNETIX AI"
     },
     {
      "id": "b62",
@@ -756,7 +756,7 @@
     {
      "id": "x71",
      "kind": "compare",
-     "vo": "^Calling out forty names can take five minutes. ^With KINETIX, it takes ten seconds.",
+     "vo": "^Calling out forty names can take five minutes. ^With ZYNETIX, it takes ten seconds.",
      "acts": [
       {
        "kind": "cmp",
@@ -1289,7 +1289,7 @@
     {
      "id": "r2",
      "kind": "endcard",
-     "vo": "^KINETIX Board. Every lesson, connected.",
+     "vo": "^ZYNETIX Board. Every lesson, connected.",
      "acts": [
       {
        "kind": "logo"

@@ -20,7 +20,7 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
 
 resource "aws_cloudwatch_log_group" "app" {
   for_each          = toset(["api", "erp", "jobs"])
-  name              = "/kinetix/${var.environment}/${each.key}"
+  name              = "/zynetix/${var.environment}/${each.key}"
   retention_in_days = var.log_retention_days
   kms_key_id        = aws_kms_key.data.arn
 }
@@ -58,7 +58,7 @@ locals {
       CODE_RUN_TENANT_PER_MINUTE = tostring(var.code_run_tenant_per_minute)
     },
     # Traces to an OTLP/HTTP collector (docs/operations/observability.md); unset = no tracing.
-    var.otel_exporter_endpoint != "" ? { OTEL_EXPORTER_OTLP_ENDPOINT = var.otel_exporter_endpoint, OTEL_SERVICE_NAME = "kinetix-api-${var.environment}" } : {},
+    var.otel_exporter_endpoint != "" ? { OTEL_EXPORTER_OTLP_ENDPOINT = var.otel_exporter_endpoint, OTEL_SERVICE_NAME = "zynetix-api-${var.environment}" } : {},
     # ClamAV quarantine for uploaded documents (off by default).
     var.upload_scan == "clamav" ? { UPLOAD_SCAN = "clamav", CLAMAV_HOST = var.clamav_host } : {},
     var.ai_base_url != "" ? { AI_BASE_URL = var.ai_base_url } : {},
@@ -118,7 +118,7 @@ resource "aws_ecs_task_definition" "api" {
   }])
 }
 
-# One-off: apply migrations as kinetix_owner, then exit. Run before every API deploy.
+# One-off: apply migrations as zynetix_owner, then exit. Run before every API deploy.
 resource "aws_ecs_task_definition" "migrate" {
   family                   = "${local.name}-migrate"
   requires_compatibilities = ["FARGATE"]
@@ -143,7 +143,7 @@ resource "aws_ecs_task_definition" "migrate" {
   }])
 }
 
-# One-off: create/update the kinetix_owner and kinetix_app roles and the kinetix database as the
+# One-off: create/update the zynetix_owner and zynetix_app roles and the zynetix database as the
 # RDS master user (first deploy, and after rotating the database passwords). Override the
 # command with ["content-import"] to load the global content library (needs DATABASE_URL only).
 resource "aws_ecs_task_definition" "db_admin" {
@@ -193,8 +193,8 @@ resource "aws_ecs_task_definition" "erp" {
     essential    = true
     portMappings = [{ containerPort = 3000, protocol = "tcp" }]
     environment = [
-      { name = "KINETIX_API_URL", value = "https://${var.api_domain}" },
-      { name = "KINETIX_TIMEZONE", value = "Asia/Kolkata" },
+      { name = "ZYNETIX_API_URL", value = "https://${var.api_domain}" },
+      { name = "ZYNETIX_TIMEZONE", value = "Asia/Kolkata" },
     ]
     stopTimeout      = 30
     linuxParameters  = { initProcessEnabled = true }

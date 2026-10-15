@@ -3,10 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/core/models.dart';
-import 'package:kinetix_teacher/features/homework/homework_detail_screen.dart';
-import 'package:kinetix_teacher/features/homework/submission_screen.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/features/homework/homework_detail_screen.dart';
+import 'package:zynetix_teacher/features/homework/submission_screen.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -143,7 +143,7 @@ void main() {
   });
 
   testWidgets('marking help shows the error when the AI is not reachable', (tester) async {
-    api.suggestError = ApiException(503, 'KINETIX AI is not reachable right now. Try again in a minute.');
+    api.suggestError = ApiException(503, 'ZYNETIX AI is not reachable right now. Try again in a minute.');
     await pumpDetail(tester);
     await tapAndSettle(tester, find.byKey(const Key('submission-s1')));
     await tester.ensureVisible(find.byKey(const Key('markingHelp')));

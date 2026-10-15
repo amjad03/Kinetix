@@ -21,7 +21,7 @@ const fakeFetch = (async (input: string | URL) => {
   return new Response(JSON.stringify(hit[1]), { headers: { 'content-type': 'application/json' } });
 }) as typeof fetch;
 const youtube = new YouTube('test-key', fakeFetch);
-const oembed = (title: string) => routes.splice(0, routes.length, ['https://www.youtube.com/oembed', { title, author_name: 'KINETIX' }]);
+const oembed = (title: string) => routes.splice(0, routes.length, ['https://www.youtube.com/oembed', { title, author_name: 'ZYNETIX' }]);
 
 const VID = (n: number) => `vid${String(n).padStart(8, '0')}`;
 
@@ -33,7 +33,7 @@ describe('concept videos', () => {
   let app: INestApplication;
   let t: Awaited<ReturnType<typeof createTenant>>;
   let other: Awaited<ReturnType<typeof createTenant>>;
-  let kinetix: Awaited<ReturnType<typeof createTenant>>;
+  let zynetix: Awaited<ReturnType<typeof createTenant>>;
   let tokens: Record<string, string>;
   let socket: Socket;
   let course: { id: string; chapters: { id: string; title: string; topics: { id: string; title: string; videos: number }[] }[] };
@@ -46,13 +46,13 @@ describe('concept videos', () => {
   beforeAll(async () => {
     t = await createTenant(owner);
     other = await createTenant(owner);
-    kinetix = await createTenant(owner); // KINETIX's own institution, where the platform team has accounts
+    zynetix = await createTenant(owner); // ZYNETIX's own institution, where the platform team has accounts
     const [c] = await db.select({ id: s.courses.id }).from(s.courses).where(eq(s.courses.code, 'bcom-3-corporate-accounting'));
     await db.update(s.subjects).set({ courseId: c.id }).where(eq(s.subjects.id, t.subject.id));
-    await addPlatformAdmin(db, kinetix.slug, kinetix.principal.email!, 'Curriculum team');
+    await addPlatformAdmin(db, zynetix.slug, zynetix.principal.email!, 'Curriculum team');
     app = await createApp(clock, (b) => b.overrideProvider(YouTube).useValue(youtube));
     tokens = {
-      platform: await login(kinetix.slug, kinetix.principal.email!),
+      platform: await login(zynetix.slug, zynetix.principal.email!),
       principal: await login(t.slug, t.principal.email!),
       teacher: await login(t.slug, t.teacher.email!),
       student: await login(t.slug, t.studentUser.email!),
@@ -70,10 +70,10 @@ describe('concept videos', () => {
     await owner.end();
   });
 
-  it('lets only the KINETIX platform team in', async () => {
-    expect(parseArgs(['add', '--tenant', 'kinetix', '--login', 'a@kinetix.in', '--note=Videos'])).toEqual({ command: 'add', tenant: 'kinetix', login: 'a@kinetix.in', note: 'Videos' });
+  it('lets only the ZYNETIX platform team in', async () => {
+    expect(parseArgs(['add', '--tenant', 'zynetix', '--login', 'a@zynetix.in', '--note=Videos'])).toEqual({ command: 'add', tenant: 'zynetix', login: 'a@zynetix.in', note: 'Videos' });
     expect(parseArgs(['list'])).toEqual({ command: 'list' });
-    expect(() => parseArgs(['add', '--login', 'a@kinetix.in'])).toThrow(/--tenant/);
+    expect(() => parseArgs(['add', '--login', 'a@zynetix.in'])).toThrow(/--tenant/);
     expect(() => parseArgs(['promote'])).toThrow(UsageError);
 
     expect((await http().get('/v1/me').set(auth('platform')).expect(200)).body.platformAdmin).toBe(true);
@@ -86,11 +86,11 @@ describe('concept videos', () => {
     await http().get('/v1/platform/library').expect(401);
 
     // Removing someone takes effect at once (no claim in their token).
-    expect((await removePlatformAdmin(db, kinetix.slug, kinetix.principal.email!)).removed).toBe(true);
+    expect((await removePlatformAdmin(db, zynetix.slug, zynetix.principal.email!)).removed).toBe(true);
     await http().get('/v1/platform/library').set(auth('platform')).expect(403);
-    await addPlatformAdmin(db, kinetix.slug, kinetix.principal.email!);
-    expect((await listPlatformAdmins(db)).map((r) => r.email)).toContain(kinetix.principal.email);
-    await expect(addPlatformAdmin(db, kinetix.slug, 'nobody@x.in')).rejects.toThrow(/No user/);
+    await addPlatformAdmin(db, zynetix.slug, zynetix.principal.email!);
+    expect((await listPlatformAdmins(db)).map((r) => r.email)).toContain(zynetix.principal.email);
+    await expect(addPlatformAdmin(db, zynetix.slug, 'nobody@x.in')).rejects.toThrow(/No user/);
 
     // The app role cannot read the team, nor write platform videos (institutions write only their own, see concept-video-scopes).
     const appPool = new pg.Pool({ connectionString: env.APP_DATABASE_URL, max: 1 });
@@ -132,7 +132,7 @@ describe('concept videos', () => {
 
     oembed('Valuing goodwill: average profit method');
     const a = (await add({ url: `https://www.youtube.com/watch?v=${VID(1)}&t=10s` }).expect(201)).body;
-    expect(a).toMatchObject({ youtubeVideoId: VID(1), title: 'Valuing goodwill: average profit method', language: 'en', channelTitle: 'KINETIX', position: 1 });
+    expect(a).toMatchObject({ youtubeVideoId: VID(1), title: 'Valuing goodwill: average profit method', language: 'en', channelTitle: 'ZYNETIX', position: 1 });
     expect((await add({ url: `https://youtu.be/${VID(1)}` }).expect(409)).body.code).toBe('VIDEO_DUPLICATE');
     expect((await add({ url: 'https://vimeo.com/12345' }).expect(400)).body.code).toBe('VIDEO_BAD_LINK');
 
@@ -160,7 +160,7 @@ describe('concept videos', () => {
     const listed = (await http().get(`/v1/platform/topics/${goodwill}/videos`).set(auth('platform')).expect(200)).body;
     expect(listed.topic).toMatchObject({ title: 'Methods of valuing goodwill', chapter: { title: 'Valuation of Goodwill' } });
     expect(listed.videos.map((v: { title: string }) => v.title)).toEqual(['Super profit method of valuing goodwill', 'ಸುನಾಮ ಮೌಲ್ಯಮಾಪನ', 'साख का मूल्यांकन', 'Valuing goodwill: average profit method']);
-    const { rows } = await owner.query(`select action from audit_log where tenant_id = $1 and action like 'platform.%'`, [kinetix.tenantId]);
+    const { rows } = await owner.query(`select action from audit_log where tenant_id = $1 and action like 'platform.%'`, [zynetix.tenantId]);
     expect(rows.map((r) => r.action)).toEqual(expect.arrayContaining(['platform.concept_video.added', 'platform.concept_video.removed']));
   });
 
@@ -222,7 +222,7 @@ describe('concept videos', () => {
   it('imports a playlist into a chapter, guessing each video’s topic from its title', async () => {
     const goodwill = topic('Valuation of Goodwill');
     const chapterId = course.chapters[1].id;
-    const url = 'https://www.youtube.com/playlist?list=PLkinetixGoodwill';
+    const url = 'https://www.youtube.com/playlist?list=PLzynetixGoodwill';
     routes.splice(
       0,
       routes.length,
@@ -230,13 +230,13 @@ describe('concept videos', () => {
         items: [
           { snippet: { title: 'Super profit method of valuing goodwill', position: 0 }, contentDetails: { videoId: VID(4) } },
           { snippet: { title: 'Goodwill: capitalisation method', position: 1 }, contentDetails: { videoId: VID(7) } },
-          { snippet: { title: 'Welcome to the KINETIX channel', position: 2 }, contentDetails: { videoId: VID(8) } },
+          { snippet: { title: 'Welcome to the ZYNETIX channel', position: 2 }, contentDetails: { videoId: VID(8) } },
         ],
       }],
       ['https://www.googleapis.com/youtube/v3/videos', { items: [{ id: VID(7), snippet: { title: 'Goodwill: capitalisation method' }, contentDetails: { duration: 'PT6M30S' } }] }],
     );
     const preview = (await http().post('/v1/platform/playlists/preview').set(auth('platform')).send({ url, chapterId }).expect(200)).body;
-    expect(preview).toMatchObject({ playlistId: 'PLkinetixGoodwill', chapter: { title: 'Valuation of Goodwill' }, topics: [{ id: goodwill.id }] });
+    expect(preview).toMatchObject({ playlistId: 'PLzynetixGoodwill', chapter: { title: 'Valuation of Goodwill' }, topics: [{ id: goodwill.id }] });
     expect(preview.videos).toEqual([
       expect.objectContaining({ youtubeVideoId: VID(4), suggestedTopicId: goodwill.id, alreadyOn: [goodwill.id] }),
       expect.objectContaining({ youtubeVideoId: VID(7), suggestedTopicId: goodwill.id, durationSeconds: 390, alreadyOn: [] }),
@@ -250,7 +250,7 @@ describe('concept videos', () => {
     const wrongChapter = { ...body, items: [{ ...body.items[0], topicId: topic('Valuation of Shares').id }] };
     await http().post('/v1/platform/playlists/import').set(auth('platform')).send(wrongChapter).expect(400);
     const [row] = await db.select().from(s.conceptVideos).where(eq(s.conceptVideos.youtubeVideoId, VID(7)));
-    expect(row).toMatchObject({ playlistId: 'PLkinetixGoodwill', durationSeconds: 390, position: 5 });
+    expect(row).toMatchObject({ playlistId: 'PLzynetixGoodwill', durationSeconds: 390, position: 5 });
 
     // Without a YouTube Data API key the server says so.
     Object.assign(youtube, { apiKey: undefined });

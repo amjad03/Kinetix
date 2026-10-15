@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import '../../core/campus_services.dart';
@@ -164,7 +164,7 @@ class DemoPaymentGateway implements PaymentGateway {
   DemoPaymentGateway({this.secret = defaultSecret});
 
   /// DemoPaymentProvider.SECRET in services/api/src/fees/payment-provider.ts.
-  static const defaultSecret = 'kinetix-demo-payments';
+  static const defaultSecret = 'zynetix-demo-payments';
   final String secret;
 
   static String sign(String secret, String orderId, String paymentId) => Hmac(sha256, utf8.encode(secret)).convert(utf8.encode('$orderId|$paymentId')).toString();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_cs/kinetix_cs.dart';
+import 'package:zynetix_cs/zynetix_cs.dart';
 
 import '../../core/api.dart';
 

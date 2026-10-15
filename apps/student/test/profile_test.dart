@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/core/format.dart';
-import 'package:kinetix_student/core/models.dart';
+import 'package:zynetix_student/core/api.dart';
+import 'package:zynetix_student/core/format.dart';
+import 'package:zynetix_student/core/models.dart';
 
 import 'helpers.dart';
 
@@ -13,7 +13,7 @@ void main() {
     await pumpApp(tester);
     await openProfile(tester);
     expect(find.text('Aarav Patel'), findsOneWidget);
-    expect(find.text('aarav@demo.kinetix.in'), findsOneWidget);
+    expect(find.text('aarav@demo.zynetix.in'), findsOneWidget);
     expect(find.text('U03BC001'), findsOneWidget);
     expect(find.text('BCom · Undergraduate'), findsOneWidget);
     expect(find.text('Demo College'), findsOneWidget);
@@ -69,16 +69,16 @@ void main() {
   });
 
   testWidgets('a fees error offers a retry', (tester) async {
-    final (api, _) = await pumpApp(tester, setup: (api) => api.feesError = ApiException(0, "Can't reach KINETIX."));
+    final (api, _) = await pumpApp(tester, setup: (api) => api.feesError = ApiException(0, "Can't reach ZYNETIX."));
     await openProfile(tester);
-    await scrollTo(tester, find.text("Can't reach KINETIX."));
+    await scrollTo(tester, find.text("Can't reach ZYNETIX."));
     api.feesError = null;
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('feesTotal')), findsOneWidget);
   });
 
-  testWidgets('changes the KINETIX AI language', (tester) async {
+  testWidgets('changes the ZYNETIX AI language', (tester) async {
     final (_, state) = await pumpApp(tester);
     await openProfile(tester);
     await scrollTo(tester, find.byKey(const Key('aiLanguage')));

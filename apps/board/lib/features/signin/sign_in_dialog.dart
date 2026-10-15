@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/api_client.dart';
@@ -12,7 +12,7 @@ import '../../l10n/l10n.dart';
 import '../board/phone_chrome.dart';
 
 /// "Sign in to this board": the teacher scans the QR code or types the 6-digit code in the
-/// KINETIX Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
+/// ZYNETIX Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
 /// when the board receives the session (see [BoardController.onPaired]).
 class SignInDialog extends StatefulWidget {
   const SignInDialog({super.key, required this.api, required this.boardName, this.onTapSignIn, this.onPaired, this.tapPoll = const Duration(seconds: 3), this.pairPoll = const Duration(seconds: 2)});

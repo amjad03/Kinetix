@@ -38,7 +38,7 @@ export function observabilityMiddleware(tracer: Tracer, log: (line: Record<strin
           name: `${req.method} ${route}`,
           startMs: start,
           endMs: start + ms,
-          attributes: { 'http.method': req.method, 'http.route': route, 'http.status_code': res.statusCode, ...(ctx.tenantId ? { 'kinetix.tenant_id': ctx.tenantId } : {}), ...(ctx.userId ? { 'enduser.id': ctx.userId } : {}) },
+          attributes: { 'http.method': req.method, 'http.route': route, 'http.status_code': res.statusCode, ...(ctx.tenantId ? { 'zynetix.tenant_id': ctx.tenantId } : {}), ...(ctx.userId ? { 'enduser.id': ctx.userId } : {}) },
           error: res.statusCode >= 500,
         });
       }

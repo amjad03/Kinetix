@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
@@ -17,7 +17,7 @@ import '../board/sb_strings.dart';
 import '../board/layout/tool_palette.dart';
 import 'smart_panels.dart';
 
-/// KINETIX AI: ask anything, plus the smart tools. Each tool opens as a page inside the
+/// ZYNETIX AI: ask anything, plus the smart tools. Each tool opens as a page inside the
 /// panel; the back arrow returns here.
 class AiPanel extends StatelessWidget {
   const AiPanel({super.key, required this.ai});
@@ -154,7 +154,7 @@ class _AiHomeState extends State<_AiHome> {
     return AiPanelPage(
       ai: ai,
       icon: Icons.auto_awesome,
-      title: 'KINETIX AI',
+      title: 'ZYNETIX AI',
       accent: aiAccent,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
@@ -217,7 +217,7 @@ class _AiHomeState extends State<_AiHome> {
               );
             },
           ),
-          // Kinetix AI Smart Tools (spec §38), in the reference's order.
+          // Zynetix AI Smart Tools (spec §38), in the reference's order.
           group(SbStrings.of(context)('smartTools'), [
             tool(Icons.summarize_outlined, SbStrings.of(context)('smartSummary'), ToolPalette.ai, AiView.summary),
             tool(Icons.quiz_outlined, l.aiQuickQuiz, ToolPalette.assessment, AiView.quiz),

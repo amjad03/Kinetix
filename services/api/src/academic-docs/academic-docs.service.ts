@@ -57,7 +57,7 @@ export class AcademicDocsService {
         .from(examResultLines)
         .innerJoin(subjects, eq(subjects.id, examResultLines.subjectId))
         .where(inArray(examResultLines.resultId, rs.map((r) => r.id)));
-      for (const r of rs) terms.push({ label: `${r.name} - Semester ${r.term}`, source: 'kinetix', lines: lines.filter((l) => l.resultId === r.id).sort((a, b) => a.code.localeCompare(b.code)).map(({ resultId: _r, ...l }) => l), sgpa: r.sgpa, creditsAttempted: r.creditsAttempted, creditsEarned: r.creditsEarned, creditPoints: r.creditPoints });
+      for (const r of rs) terms.push({ label: `${r.name} - Semester ${r.term}`, source: 'zynetix', lines: lines.filter((l) => l.resultId === r.id).sort((a, b) => a.code.localeCompare(b.code)).map(({ resultId: _r, ...l }) => l), sgpa: r.sgpa, creditsAttempted: r.creditsAttempted, creditsEarned: r.creditsEarned, creditPoints: r.creditPoints });
     }
     return { header: { institution: t?.name ?? '', ...s }, terms, ...consolidate(terms, DEFAULT_CLASSES) };
   }

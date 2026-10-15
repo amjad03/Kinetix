@@ -1,5 +1,5 @@
 import { Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
-import type { ApplicantStage, JobApplicant, JobOpening } from '@kinetix/shared';
+import type { ApplicantStage, JobApplicant, JobOpening } from '@zynetix/shared';
 import { asc, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';

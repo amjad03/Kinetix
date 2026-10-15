@@ -16,11 +16,11 @@ the institution, language, status and time.
 
 ## On the device
 
-- `packages/kinetix_cs/assets/runner/` holds the page and its worker; the app serves them on
+- `packages/zynetix_cs/assets/runner/` holds the page and its worker; the app serves them on
   127.0.0.1 only (the 3D viewer's pattern, `RunnerServer`). Stop ends the worker; a run is
   stopped after 10 s (Python's first start-up of a few seconds is not counted) or 64 KB of
   output.
-- **Pyodide is not committed.** `packages/kinetix_cs/tool/fetch_pyodide.sh` downloads
+- **Pyodide is not committed.** `packages/zynetix_cs/tool/fetch_pyodide.sh` downloads
   Pyodide 0.27.7's *core* (interpreter and standard library, no numpy) with a pinned SHA-256
   into `assets/runner/pyodide/`. Run it before every release build of the Board and the
   Student App (mobile-release.md). Size: 13.8 MB on disk (wasm 10.1 MB, stdlib 2.4 MB),
@@ -70,10 +70,10 @@ The container (docker-compose.yml):
 data subnets, which have no NAT route; it reaches only the ECR, CloudWatch Logs and S3
 endpoints it needs to start. Its security group accepts TCP 8080 from the API only. No task
 role, so nothing inside holds AWS credentials. It has a read-only root, user 10001, and all
-capabilities dropped. The API finds it at `http://code-runner.kinetix-<env>.internal:8080`
+capabilities dropped. The API finds it at `http://code-runner.zynetix-<env>.internal:8080`
 (Cloud Map), and its token is `CODE_RUNNER_TOKEN` in the `app` secret. Fargate does not take
 custom seccomp profiles; its default profile applies, with the runner's own limits on top.
-Image: `kinetix-<env>-code-runner` in ECR, built by `.github/workflows/docker.yml`. Size it with
+Image: `zynetix-<env>-code-runner` in ECR, built by `.github/workflows/docker.yml`. Size it with
 `code_runner_cpu`, `code_runner_memory`, `code_runner_count` and `code_runner_concurrency`
 (each running program needs about half a vCPU). A class of 60 compiling at once queues for a
 few seconds on the defaults.

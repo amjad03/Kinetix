@@ -25,7 +25,7 @@ describe('bulk import', () => {
 
   it('finds missing columns the way the API reads headers, skipping comments and a byte-order mark', () => {
     expect(headerKey(' Roll No ')).toBe('roll_no');
-    expect(missingColumns('﻿# KINETIX import: students\n# roll_no …\nRoll No,"Full Name",Section\nR1,आरव मिश्रा,BSc Sem 1 A\n', 'students')).toEqual([]);
+    expect(missingColumns('﻿# ZYNETIX import: students\n# roll_no …\nRoll No,"Full Name",Section\nR1,आरव मिश्रा,BSc Sem 1 A\n', 'students')).toEqual([]);
     expect(missingColumns('roll_no,full_name\nR1,A\n', 'students')).toEqual(['section']);
     expect(missingColumns('', 'timetable')).toEqual(['section', 'subject_code', 'teacher', 'day', 'start', 'end']);
   });

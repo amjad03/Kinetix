@@ -3,7 +3,7 @@ import 'dart:io' show Directory, File, Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -15,7 +15,7 @@ import '../board/panel/panel_host.dart';
 
 /// The page the player runs in. It is the embed's origin (and Referer, which YouTube's embedded
 /// player requires); nothing is served from it but the player page itself.
-const playerHost = 'player.kinetix.local';
+const playerHost = 'player.zynetix.local';
 const playerOrigin = 'https://$playerHost';
 
 final _videoId = RegExp(r'^[A-Za-z0-9_-]{11}$');
@@ -164,7 +164,7 @@ class _AndroidPlayerState extends State<_AndroidPlayer> {
 }
 
 /// Windows panels and OPS PCs: WebView2. The player page is written to a temporary folder served
-/// as https://player.kinetix.local, so the embed has a proper origin.
+/// as https://player.zynetix.local, so the embed has a proper origin.
 class _WindowsPlayer extends StatefulWidget {
   const _WindowsPlayer({required this.html});
   final String html;
@@ -190,7 +190,7 @@ class _WindowsPlayerState extends State<_WindowsPlayer> {
       await _controller.initialize();
       await _controller.setBackgroundColor(Colors.black);
       await _controller.setPopupWindowPolicy(win.WebviewPopupWindowPolicy.deny);
-      final dir = Directory('${(await getTemporaryDirectory()).path}/kinetix_player')..createSync(recursive: true);
+      final dir = Directory('${(await getTemporaryDirectory()).path}/zynetix_player')..createSync(recursive: true);
       File('${dir.path}/player.html').writeAsStringSync(widget.html);
       await _controller.addVirtualHostNameMapping(playerHost, dir.path, win.WebviewHostResourceAccessKind.allow);
       const page = '$playerOrigin/player.html';

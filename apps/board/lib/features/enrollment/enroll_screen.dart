@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../core/server_config.dart';
 import '../../l10n/l10n.dart';
 
-/// First run: an admin registers this board with the enrolment code from KINETIX ERP.
+/// First run: an admin registers this board with the enrolment code from ZYNETIX ERP.
 class EnrollScreen extends StatefulWidget {
   const EnrollScreen({super.key, required this.controller});
 

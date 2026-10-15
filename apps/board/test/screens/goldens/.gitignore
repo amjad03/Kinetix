@@ -1,4 +1,4 @@
-# The screenshots are made by test/screens/screens_test.dart (KINETIX_SCREENS=1) and are too many
+# The screenshots are made by test/screens/screens_test.dart (ZYNETIX_SCREENS=1) and are too many
 # to commit; only the contact sheets for review are kept.
 *
 !.gitignore

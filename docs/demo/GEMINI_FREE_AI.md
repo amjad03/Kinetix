@@ -1,6 +1,6 @@
 # Free AI for demos: Google Gemini
 
-Every KINETIX AI feature on the board can run on Google Gemini's free tier, through Gemini's
+Every ZYNETIX AI feature on the board can run on Google Gemini's free tier, through Gemini's
 OpenAI-compatible endpoint. No code change is needed: four settings in `services/api/.env`.
 
 ## Set it up (5 minutes)
@@ -28,9 +28,9 @@ OpenAI-compatible endpoint. No code change is needed: four settings in `services
 
 3. Restart the API (`scripts/demo-stop.sh && scripts/demo-start.sh` for the demo; or `pnpm build && pnpm start`,
    or `pnpm start:dev`, in `services/api`). The API reads `.env` only when it starts. Its log then says
-   `KINETIX AI: gemini-3.8-flash, then gemini-3.7-flash, then … at generativelanguage.googleapis.com` (demo log:
-   `grep "KINETIX AI:" /tmp/kinetix-api.log | tail -1`).
-4. On the board, sign in a teacher, open **KINETIX AI** and ask "Solve 3x + 7 = 22". A real answer
+   `ZYNETIX AI: gemini-3.8-flash, then gemini-3.7-flash, then … at generativelanguage.googleapis.com` (demo log:
+   `grep "ZYNETIX AI:" /tmp/zynetix-api.log | tail -1`).
+4. On the board, sign in a teacher, open **ZYNETIX AI** and ask "Solve 3x + 7 = 22". A real answer
    has no "Preview" label. The "Preview" label means `AI_BASE_URL` is not set or the API was not
    restarted.
 
@@ -69,7 +69,7 @@ board typesets it.
   for your key). The API log names the limit that was hit, e.g. `429
   (GenerateRequestsPerDayPerProjectPerModel-FreeTier, limit 20, …)`.
 - A busy or used-up model hands over to the next one in `AI_FALLBACK_MODELS` at once. When every
-  model is busy the API waits and asks again; if they stay busy the board says **"KINETIX AI is
+  model is busy the API waits and asks again; if they stay busy the board says **"ZYNETIX AI is
   busy right now. Try again in a minute."** When every model has used its day, it says the same
   at once; the allowances come back the next day (midnight Pacific time). For more, add models to
   `AI_FALLBACK_MODELS` or use a paid key.
@@ -97,7 +97,7 @@ against the real model through the API: about 13 requests.
 ## Privacy
 
 Gemini is not processed in India, and on the free tier Google may use what is sent to improve its
-products. Use it for demos and trials, with demo data. KINETIX never sends student names to the
+products. Use it for demos and trials, with demo data. ZYNETIX never sends student names to the
 model (insights send figures only), but a picture of the board sends whatever is written on it.
 For real classes use the self-hosted model or the Sarvam fallback (`docs/operations/ai-hosting.md`).
 
@@ -106,7 +106,7 @@ For real classes use the self-hosted model or the Sarvam fallback (`docs/operati
 | The board says | Check |
 |---|---|
 | "Preview" label on answers | `AI_BASE_URL` missing, or the API was not restarted. |
-| "KINETIX AI is not reachable right now" | The API log line `AI … failed:` says why. "API key not valid": the key is wrong. "unreachable": no internet on the server. "returned 404 … not found": Google retired the model; set `AI_MODEL=gemini-flash-latest` and restart. |
-| "KINETIX AI is busy right now" | The free limit for the minute or the day; wait, or switch `AI_MODEL`. |
+| "ZYNETIX AI is not reachable right now" | The API log line `AI … failed:` says why. "API key not valid": the key is wrong. "unreachable": no internet on the server. "returned 404 … not found": Google retired the model; set `AI_MODEL=gemini-flash-latest` and restart. |
+| "ZYNETIX AI is busy right now" | The free limit for the minute or the day; wait, or switch `AI_MODEL`. |
 | "The board is offline" | The board has no connection to the API. Topics in the board's offline notes still get a labelled sample answer. |
-| "KINETIX AI could not produce a usable answer" | Gemini's reply was not usable twice; ask again or rephrase. |
+| "ZYNETIX AI could not produce a usable answer" | Gemini's reply was not usable twice; ask again or rephrase. |

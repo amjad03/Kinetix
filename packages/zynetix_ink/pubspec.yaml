@@ -1,0 +1,24 @@
+name: zynetix_ink
+description: ZYNETIX ink engine — the endless whiteboard (strokes, shapes, text, pictures, equations, graphs, notes), its tools, the saved-board and lesson formats, and read-only viewers. Shared by the Board and the family apps.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Typesets equations on the board and in every viewer (MIT; KaTeX fonts, OFL).
+  flutter_math_fork: ^0.7.4
+  # The AI pen turns handwriting read as text into LaTeX with the solver's parser.
+  zynetix_math:
+    path: ../zynetix_math
+  zynetix_ui:
+    path: ../zynetix_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

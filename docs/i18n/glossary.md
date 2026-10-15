@@ -1,6 +1,6 @@
 # Translation glossary (English · हिन्दी · ಕನ್ನಡ)
 
-Every KINETIX app uses these words for these ideas, so a parent sees the same term in the
+Every ZYNETIX app uses these words for these ideas, so a parent sees the same term in the
 Parent App as the teacher does on the board. The translations are a **first draft**: they must
 be reviewed by native speakers who work in schools and colleges before release.
 
@@ -8,8 +8,8 @@ Style:
 - Plain, polite, everyday language as used in Indian schools and colleges; prefer the word
   teachers and parents actually say over a formal Sanskritised or literary one.
 - Hindi: आप-form (formal "you"). Kannada: ನೀವು-form.
-- Keep these in English (Latin script) everywhere: KINETIX, KINETIX AI, Board (the product
-  name "KINETIX Board"), app names, OTP, PDF, UPI, roll numbers, class names like
+- Keep these in English (Latin script) everywhere: ZYNETIX, ZYNETIX AI, Board (the product
+  name "ZYNETIX Board"), app names, OTP, PDF, UPI, roll numbers, class names like
   "BCom Sem 3 A", subject names from the timetable, and people's names.
 - Numbers stay in Western (Arabic) digits; dates and money use Indian formats (₹1,23,456).
 - Where an English loan word is what people really say (e.g. "होमवर्क", "ಹೋಂವರ್ಕ್"), use it.

@@ -5,21 +5,21 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/features/board/panel/split_panel.dart';
-import 'package:kinetix_board/features/broadcast/broadcast_overlay.dart';
-import 'package:kinetix_board/features/enrollment/enroll_screen.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/l10n/math_text.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_math/kinetix_math.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/features/board/panel/split_panel.dart';
+import 'package:zynetix_board/features/broadcast/broadcast_overlay.dart';
+import 'package:zynetix_board/features/enrollment/enroll_screen.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/l10n/math_text.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_math/zynetix_math.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
-import 'package:kinetix_board/features/board/layout/layout_strings.dart';
+import 'package:zynetix_board/features/board/layout/layout_strings.dart';
 import 'support/layout.dart';
 
 void main() {
@@ -118,7 +118,7 @@ void main() {
     testWidgets('the settings dialog switches the board to Hindi and Kannada, and remembers it', (tester) async {
       screenSize(tester, const Size(1920, 1080));
       final board = BoardController(realtimeFactory: (_) => NoRealtime(), outboxStore: MemoryOutboxStore())..skipEnrollment();
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       await tester.pumpAndSettle();
       expect(find.byTooltip('Undo'), findsOneWidget);
 
@@ -152,7 +152,7 @@ void main() {
       screenSize(tester, const Size(1920, 1080));
       final board = await enrolledBoard();
       board.setBoardLanguage(BoardLanguage.hi);
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       await tester.pumpAndSettle();
       final hi = lookupAppLocalizations(const Locale('hi'));
       final kn = lookupAppLocalizations(const Locale('kn'));
@@ -193,7 +193,7 @@ void main() {
       screenSize(tester, const Size(1920, 1080));
       final board = await enrolledBoard();
       board.setBoardLanguage(BoardLanguage.kn);
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       board.onPaired('session-token', sessionIn('ta'));
       await tester.pumpAndSettle();
       expect(board.language, BoardLanguage.kn);
@@ -204,7 +204,7 @@ void main() {
     testWidgets('a teacher who picks a language in settings sees it at once', (tester) async {
       screenSize(tester, const Size(1920, 1080));
       final board = await enrolledBoard();
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       board.onPaired('session-token', sessionIn('hi'));
       await tester.pumpAndSettle();
       expect(board.language, BoardLanguage.hi);
@@ -225,7 +225,7 @@ void main() {
         board.toolbarDock = ToolbarDock.left;
         board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
         board.onPaired('session-token', sessionIn(lang));
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         await tester.pumpAndSettle();
 
         void fits(String what) => expect(tester.takeException(), isNull, reason: '$lang $size: $what');
@@ -470,7 +470,7 @@ void main() {
           board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
           board.setSimpleBoard(primary ? SimpleBoard.on : SimpleBoard.off);
           board.onPaired('session-token', sessionIn(lang));
-          await tester.pumpWidget(KinetixBoardApp(controller: board));
+          await tester.pumpWidget(ZynetixBoardApp(controller: board));
           await tester.pumpAndSettle();
           void fits(String what) => expect(tester.takeException(), isNull, reason: '$lang $size toolbar: $what');
           if (find.text(l.notNow).evaluate().isNotEmpty) {

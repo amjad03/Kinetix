@@ -5,8 +5,8 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart' show RecordingInfo;
 
 /// "10:00:00" → a wall-clock time from the timetable (local to the institution).
 class ClockTime implements Comparable<ClockTime> {
@@ -436,9 +436,9 @@ class Inbox {
 }
 
 // ---------------------------------------------------------------------------------------------
-// KINETIX AI
+// ZYNETIX AI
 
-/// The languages KINETIX AI answers in. The fonts for all three are bundled in kinetix_ui.
+/// The languages ZYNETIX AI answers in. The fonts for all three are bundled in zynetix_ui.
 enum AiLanguage {
   en('English', 'English'),
   hi('हिन्दी', 'Hindi'),
@@ -600,7 +600,7 @@ class TopicDetail {
   TopicRef get ref => TopicRef(id: id, title: title);
 }
 
-/// A concept video from the KINETIX YouTube channel (`GET /v1/content/topics/:id/videos`), in the
+/// A concept video from the ZYNETIX YouTube channel (`GET /v1/content/topics/:id/videos`), in the
 /// class's language first. Only the YouTube id is kept; it plays in YouTube's embedded player.
 class ConceptVideo {
   const ConceptVideo({required this.id, required this.youtubeVideoId, required this.title, required this.language, this.durationSeconds, this.source = 'platform'});
@@ -622,7 +622,7 @@ class ConceptVideo {
   final String language;
   final int? durationSeconds;
 
-  /// Who linked it: platform (KINETIX), institution (the school) or teacher (this class's teacher, or approved for all).
+  /// Who linked it: platform (ZYNETIX), institution (the school) or teacher (this class's teacher, or approved for all).
   final String source;
 
   /// YouTube's own thumbnail (i.ytimg.com).

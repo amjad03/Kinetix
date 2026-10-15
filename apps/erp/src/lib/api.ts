@@ -63,11 +63,11 @@ async function errorFrom(res: Response): Promise<ApiError> {
   if (res.status === 403) return new ApiError(403, "Your account doesn't have access to this.", body.code ?? 'FORBIDDEN');
   if (res.status === 404) return new ApiError(404, 'Not found.', body.code ?? 'NOT_FOUND');
   if (res.status === 429) return new ApiError(429, 'Too many attempts. Wait a minute and try again.', body.code ?? 'RATE_LIMITED');
-  return new ApiError(res.status, `KINETIX Cloud returned an error (${res.status}).`, body.code);
+  return new ApiError(res.status, `ZYNETIX Cloud returned an error (${res.status}).`, body.code);
 }
 
 /**
- * Calls the KINETIX Cloud API from the server with the signed-in user's token.
+ * Calls the ZYNETIX Cloud API from the server with the signed-in user's token.
  * The token lives in an httpOnly cookie and never reaches the browser.
  * A missing or expired session sends the user to the sign-in page.
  */
@@ -92,7 +92,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
       signal: AbortSignal.timeout(opts.timeoutMs ?? 15_000),
     });
   } catch {
-    throw new ApiError(0, "Can't reach KINETIX Cloud. Check your connection and try again.", 'NETWORK');
+    throw new ApiError(0, "Can't reach ZYNETIX Cloud. Check your connection and try again.", 'NETWORK');
   }
   if (res.status === 401 && !opts.anonymous) redirect(loginUrl(await currentPath(), '/auth/end', { reason: 'expired' }));
   if (!res.ok) {
@@ -163,7 +163,7 @@ export async function requireSection(section: Section): Promise<Me | null> {
 }
 
 /**
- * For Platform pages: the signed-in user if they are on the KINETIX platform team (GET /v1/me
+ * For Platform pages: the signed-in user if they are on the ZYNETIX platform team (GET /v1/me
  * platformAdmin); anyone else goes back to their home page. The API checks again.
  */
 export async function requirePlatformAdmin(): Promise<Me | null> {

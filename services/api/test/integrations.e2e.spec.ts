@@ -320,7 +320,7 @@ describe('integrations: DigiLocker, devices, LTI/SCORM, feeds, retrieval and ear
       await http().get(authUrl).expect(403); // a launch can be used once
     });
 
-    it('lets Moodle launch KINETIX: verifies the signed launch, then swaps the ticket for a sign-in', async () => {
+    it('lets Moodle launch ZYNETIX: verifies the signed launch, then swaps the ticket for a sign-in', async () => {
       const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
       const jwk = { ...(publicKey.export({ format: 'jwk' }) as object), kid: 'moodle-1', alg: 'RS256', use: 'sig' };
       const moodle = await fake((r) => (r.url.includes('jwks') ? { body: { keys: [jwk] } } : { body: {} }));
@@ -337,7 +337,7 @@ describe('integrations: DigiLocker, devices, LTI/SCORM, feeds, retrieval and ear
       const nonce = to.searchParams.get('nonce')!;
       const C = 'https://purl.imsglobal.org/spec/lti/claim/';
       const now = Math.floor(clock.now().getTime() / 1000);
-      const claims = (over: object = {}) => ({ iss: 'https://moodle.example', aud: 'kx-tool', sub: 'u1', iat: now, exp: now + 300, nonce, email: t.teacher.email, [`${C}message_type`]: 'LtiResourceLinkRequest', [`${C}version`]: '1.3.0', [`${C}deployment_id`]: '1', [`${C}custom`]: course ? { kinetix_course: course.id } : {}, ...over });
+      const claims = (over: object = {}) => ({ iss: 'https://moodle.example', aud: 'kx-tool', sub: 'u1', iat: now, exp: now + 300, nonce, email: t.teacher.email, [`${C}message_type`]: 'LtiResourceLinkRequest', [`${C}version`]: '1.3.0', [`${C}deployment_id`]: '1', [`${C}custom`]: course ? { zynetix_course: course.id } : {}, ...over });
       // A token signed by someone else is refused.
       const forged = generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey.export({ type: 'pkcs8', format: 'pem' }) as string;
       await http().post(`/v1/lti/provider/${t.tenantId}/launch`).type('form').send({ id_token: signJwt(claims(), forged, 'moodle-1'), state }).expect(403);

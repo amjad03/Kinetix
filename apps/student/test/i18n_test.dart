@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/push.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
-import 'package:kinetix_student/core/live.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/features/learn/learn_tab.dart';
-import 'package:kinetix_student/features/profile/profile_tab.dart';
-import 'package:kinetix_student/features/today/today_tab.dart';
-import 'package:kinetix_student/core/attachments.dart';
-import 'package:kinetix_student/widgets/common.dart';
+import 'package:zynetix_student/core/push.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_student/core/live.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/features/learn/learn_tab.dart';
+import 'package:zynetix_student/features/profile/profile_tab.dart';
+import 'package:zynetix_student/features/today/today_tab.dart';
+import 'package:zynetix_student/core/attachments.dart';
+import 'package:zynetix_student/widgets/common.dart';
 
 import 'fake_api.dart';
 import 'fake_push.dart';
@@ -238,7 +238,7 @@ void main() {
               api.liveClass = FakeStudentApi.corporateLive();
               api.calendarEvents.insert(0, FakeStudentApi.eventJson('e0', 'holiday', 'Gandhi Jayanti (observed)', '2026-10-05', '2026-10-06'));
               (api.consentJson['purposes'] as Map)['photos'] = null;
-              api.consentJson['grievanceOfficer'] = {'name': 'Meera Rao', 'email': 'grievance.officer@demo-college.kinetix.in', 'phone': '+919800000009'};
+              api.consentJson['grievanceOfficer'] = {'name': 'Meera Rao', 'email': 'grievance.officer@demo-college.zynetix.in', 'phone': '+919800000009'};
               api.submissions['h1/s1'] = {
                 'status': 'returned',
                 'text': 'Journal entries for questions 1 to 5.',

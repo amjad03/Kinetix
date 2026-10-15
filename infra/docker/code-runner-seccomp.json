@@ -1,5 +1,5 @@
 {
-  "comment": "KINETIX code runner (services/code-runner). Docker applies one profile, so this one denies everything Docker's default profile denies, plus io_uring, the new mount API, chroot, personality, and every socket that is not a Unix socket (the runner listens on one; programs get none). clone3 answers ENOSYS so glibc falls back to clone. See docs/operations/code-runner.md.",
+  "comment": "ZYNETIX code runner (services/code-runner). Docker applies one profile, so this one denies everything Docker's default profile denies, plus io_uring, the new mount API, chroot, personality, and every socket that is not a Unix socket (the runner listens on one; programs get none). clone3 answers ENOSYS so glibc falls back to clone. See docs/operations/code-runner.md.",
   "defaultAction": "SCMP_ACT_ALLOW",
   "architectures": ["SCMP_ARCH_X86_64", "SCMP_ARCH_X86", "SCMP_ARCH_X32", "SCMP_ARCH_AARCH64", "SCMP_ARCH_ARM"],
   "syscalls": [

@@ -1,5 +1,5 @@
 /// In-memory fake of the API. Widget tests use it directly; demo builds
-/// (`--dart-define=KINETIX_DEMO=true`) use it through DemoStudentApi (demo_api.dart).
+/// (`--dart-define=ZYNETIX_DEMO=true`) use it through DemoStudentApi (demo_api.dart).
 library;
 
 import 'dart:async';
@@ -8,7 +8,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/painting.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
 import '../core/alumni.dart';
 import '../core/buzzer.dart';
 import '../core/academic_docs.dart';
@@ -514,7 +514,7 @@ class FakeStudentApi implements StudentApi {
     roles: ['student'],
     preferredLanguage: 'en',
     institution: 'Demo College',
-    email: 'aarav@demo.kinetix.in',
+    email: 'aarav@demo.zynetix.in',
   );
 
   StudentProfile? record = StudentProfile(
@@ -772,7 +772,7 @@ class FakeStudentApi implements StudentApi {
 
   List<TopicHit> hits = [];
 
-  // -- KINETIX AI -------------------------------------------------------------------------------
+  // -- ZYNETIX AI -------------------------------------------------------------------------------
 
   /// What [explain] returns; [explainError] wins when set.
   Explanation answer = Explanation(
@@ -829,7 +829,7 @@ class FakeStudentApi implements StudentApi {
   @override
   Future<void> login({required String tenant, required String login, required String password}) async {
     calls.add('login $tenant $login');
-    if (password != 'kinetix123') throw ApiException(401, 'Wrong institution, login or password');
+    if (password != 'zynetix123') throw ApiException(401, 'Wrong institution, login or password');
     token = 'tok';
   }
 
@@ -1293,7 +1293,7 @@ class FakeStudentApi implements StudentApi {
     calls.add('confirmWallet $topUpId');
     final o = _topUps[topUpId];
     if (o == null) throw ApiException(404, 'Top-up not found');
-    final expected = Hmac(sha256, utf8.encode('kinetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
+    final expected = Hmac(sha256, utf8.encode('zynetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
     if (signature != expected) throw ApiException(403, 'The payment could not be verified');
     walletBalancePaise += o.amountPaise;
     return walletBalancePaise;
@@ -1937,7 +1937,7 @@ class FakeStudentApi implements StudentApi {
     return [MockSummary.fromJson({'id': 'mi0', 'kind': 'hr', 'role': 'Analyst', 'status': 'completed', 'score': 70.0, 'createdAt': '2026-09-01T05:00:00Z'})];
   }
 
-  /// Whether the next answer comes from KINETIX AI (false: the built-in guidance).
+  /// Whether the next answer comes from ZYNETIX AI (false: the built-in guidance).
   bool assistantAi = false;
   List<Map<String, dynamic>> assistantHistoryJson = [
     {'role': 'user', 'body': 'What should I study?', 'createdAt': '2026-09-01T05:00:00Z'},

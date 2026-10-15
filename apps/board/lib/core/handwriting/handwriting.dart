@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'mlkit_handwriting.dart';
 import 'windows_handwriting.dart';

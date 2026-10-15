@@ -2,8 +2,8 @@
 // with the real bundled fonts: no overflow anywhere (an overflow fails the test).
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/core/hr_models.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/core/hr_models.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -346,7 +346,7 @@ void main() {
           await tester.pumpAndSettle();
           await tapAndSettle(tester, find.byKey(const Key('signIn')));
           await tester.enterText(find.byKey(const Key('tenant')), 'demo-college');
-          await tester.enterText(find.byKey(const Key('login')), 'anita@demo.kinetix.in');
+          await tester.enterText(find.byKey(const Key('login')), 'anita@demo.zynetix.in');
           await tester.enterText(find.byKey(const Key('server')), 'http://test');
           await tester.ensureVisible(find.byKey(const Key('signIn')));
           await tester.pumpAndSettle();

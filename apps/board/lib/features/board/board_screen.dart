@@ -7,10 +7,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show Model3dAnnotationStore, Model3dMirror, Model3dScope, Model3dSnapshot, SolidKind;
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart' show Model3dAnnotationStore, Model3dMirror, Model3dScope, Model3dSnapshot, SolidKind;
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_labs/zynetix_labs.dart' show LabReport, LabSpeech;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../cast/cast_panel.dart';
 import '../../core/board_controller.dart';
@@ -119,7 +119,7 @@ import 'version_history.dart';
 /// * the class bar at the top left (class and subject, Go live, attendance, time left) and
 ///   search, the clock and the profile at the top right;
 /// * one floating main toolbar, bottom centre (Pen · Highlighter · Eraser · Select · Shapes │
-///   Undo · Redo │ Tools · Add │ KINETIX AI), which the teacher can drag to the left or right
+///   Undo · Redo │ Tools · Add │ ZYNETIX AI), which the teacher can drag to the left or right
 ///   edge, or fold away;
 /// * the menu and Record at the bottom left, the pages at the bottom right;
 /// * the split panel (AI, 3D, Labs, Videos, Books, Kit, Animations) on the right, which also
@@ -515,7 +515,7 @@ class _BoardScreenState extends State<BoardScreen> {
     super.dispose();
   }
 
-  /// The page (or what is selected) as a PNG for KINETIX AI: what the class sees, not the whole
+  /// The page (or what is selected) as a PNG for ZYNETIX AI: what the class sees, not the whole
   /// endless board.
   Future<String> _captureForAi() async {
     final selected = _wb.selectedElements;
@@ -525,7 +525,7 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   /// Scan Board (Quiz AI, Summary AI): the writing on [pages] (every page when empty) read by
-  /// KINETIX AI, page by page. Typed text on the board is taken as it is.
+  /// ZYNETIX AI, page by page. Typed text on the board is taken as it is.
   Future<String> _readPagesForAi(List<int> pages) async {
     final api = board.api;
     if (api == null) return '';
@@ -876,7 +876,7 @@ class _BoardScreenState extends State<BoardScreen> {
     }
   }
 
-  /// Reads what is selected with KINETIX AI.
+  /// Reads what is selected with ZYNETIX AI.
   void _readSelectionWithAi() {
     if (!_ai.canUseAi) {
       showBoardMessage(context, context.l10n.aiAskNeedsSignIn);
@@ -1283,7 +1283,7 @@ class _BoardScreenState extends State<BoardScreen> {
     // The summary, with the share sheet (WhatsApp) for the notes link and the board PDF.
     if (ended != null && ended['notesSaved'] == true && mounted) {
       final bytes = pdfBytes;
-      await showEndSummary(context, board, ended, pdf: bytes == null ? null : () async => bytes, pdfName: 'KINETIX $title.pdf');
+      await showEndSummary(context, board, ended, pdf: bytes == null ? null : () async => bytes, pdfName: 'ZYNETIX $title.pdf');
     }
   }
 
@@ -1581,7 +1581,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   // --- Keyboard ------------------------------------------------------------------------------
 
-  /// Keyboard shortcuts, as on the KINETIX prototype: tool letters, Ctrl+Z/Y/C/X/V/D/A/G,
+  /// Keyboard shortcuts, as on the ZYNETIX prototype: tool letters, Ctrl+Z/Y/C/X/V/D/A/G,
   /// Delete, arrows to nudge, page keys, + − 0 to zoom, Esc. Not while typing.
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
@@ -2256,7 +2256,7 @@ class _BoardScreenState extends State<BoardScreen> {
       'ai': BarItem(
         const Key('panel-ai'),
         Icons.auto_awesome,
-        s.kinetixAi,
+        s.zynetixAi,
         () => _panel == PanelKind.ai ? _closePanel() : _openAi(AiView.home),
         selected: _panelTab == PanelTab.ai,
         color: const Color(0xFF835400),

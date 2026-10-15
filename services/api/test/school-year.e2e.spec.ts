@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type MessageNewEvent } from '@kinetix/shared';
+import { RealtimeEvents, type MessageNewEvent } from '@zynetix/shared';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -193,7 +193,7 @@ describe('school year', () => {
   });
 
   describe('consent', () => {
-    it('records decisions (adult student decides in a college), and withdrawing AI consent turns KINETIX AI off', async () => {
+    it('records decisions (adult student decides in a college), and withdrawing AI consent turns ZYNETIX AI off', async () => {
       const me = t.students[2].id;
       const before = (await http().get(`/v1/consents?studentId=${me}`).set(auth('student')).expect(200)).body;
       expect(before).toMatchObject({ canDecide: true, purposes: { ai_features: null } });

@@ -1,2 +1,2 @@
 // The fakes live in lib/demo so demo builds and tests share one source of truth.
-export 'package:kinetix_parent/demo/fake_api.dart';
+export 'package:zynetix_parent/demo/fake_api.dart';

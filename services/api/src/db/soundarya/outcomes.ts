@@ -71,7 +71,7 @@ export async function obe(c: Ctx): Promise<void> {
     await withTenant(c.tenantId, (tx) => svc.compute(tx, c.tenantId, hod(prog.def.dept), pid, c.years.cur));
     const unmet = await k.q<{ scope: string; targetId: string; code: string }>('select scope, target_id, code from attainment_snapshots where program_id = $1 and met = false order by computed_at desc limit 3', [pid]);
     await k.ins('improvement_actions', unmet.map((u, i) => ({ programId: pid, scope: u.scope, targetId: u.targetId, title: `Improve attainment of ${u.code}`, detail: ['Add two tutorial hours and a case study on the weak outcome.', 'Redesign the internal test to cover the outcome with more questions.', 'Bridge class for students below 40 percent.'][i], ownerId: hod(prog.def.dept), dueOn: addDays(c.today, 30 + i * 10), status: i === 0 ? 'in_progress' : 'open', createdBy: hod(prog.def.dept) })), { returning: false });
-    await k.ins('obe_evidence', [{ programId: pid, scope: 'program', targetId: pid, title: 'IQAC review minutes, September 2026', note: 'Attainment tabled and actions agreed.', uploadedBy: hod(prog.def.dept) }, { programId: pid, scope: 'program', targetId: pid, title: 'Sample answer scripts for CO3', url: 'https://learn.soundarya.demo.kinetix.in/evidence/co3-scripts', uploadedBy: hod(prog.def.dept) }], { returning: false });
+    await k.ins('obe_evidence', [{ programId: pid, scope: 'program', targetId: pid, title: 'IQAC review minutes, September 2026', note: 'Attainment tabled and actions agreed.', uploadedBy: hod(prog.def.dept) }, { programId: pid, scope: 'program', targetId: pid, title: 'Sample answer scripts for CO3', url: 'https://learn.soundarya.demo.zynetix.in/evidence/co3-scripts', uploadedBy: hod(prog.def.dept) }], { returning: false });
   }
 }
 

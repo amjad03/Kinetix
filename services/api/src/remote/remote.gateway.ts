@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { RealtimeEvents, type RemoteAttachAck, type RemoteBoardState, type RemoteCommand } from '@kinetix/shared';
+import { RealtimeEvents, type RemoteAttachAck, type RemoteBoardState, type RemoteCommand } from '@zynetix/shared';
 import type { Socket } from 'socket.io';
 import { z } from 'zod';
 import type { Principal } from '../auth/principal.js';

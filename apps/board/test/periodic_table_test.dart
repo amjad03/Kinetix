@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_board/features/board/kit/periodic_data.dart';
-import 'package:kinetix_board/features/board/kit/periodic_table.dart';
-import 'package:kinetix_board/features/board/kit/subject_data.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_board/features/board/kit/periodic_data.dart';
+import 'package:zynetix_board/features/board/kit/periodic_table.dart';
+import 'package:zynetix_board/features/board/kit/subject_data.dart';
 
 import 'support/fake_cloud.dart';
 

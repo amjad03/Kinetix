@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
+import 'package:zynetix_lesson/zynetix_lesson.dart' show RecordingInfo;
 
 import 'api.dart';
 import 'campus_services.dart';

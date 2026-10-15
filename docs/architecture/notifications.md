@@ -3,7 +3,7 @@
 Parents and students hear about what happens in class from the **in-app inbox**
 (`notifications` table), and their phones get a **push** for each new item. The push carries
 only a generic line ("Attendance update", "New homework") plus the notification id: the app
-fetches the text from KINETIX Cloud, so no names or details pass through Google's or Apple's
+fetches the text from ZYNETIX Cloud, so no names or details pass through Google's or Apple's
 servers.
 
 ## What creates a notification

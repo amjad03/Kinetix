@@ -33,41 +33,41 @@ Used for: a bad migration, an accidental bulk delete, a corrupted import. Writes
 time are lost — the on-call lead decides, and tells the institutions.
 
 1. **Pick the time** (UTC) just before the incident, e.g. from the migrate task's start time in
-   `/kinetix/<env>/jobs` or from the audit trail. Check the window:
-   `aws rds describe-db-instances --db-instance-identifier kinetix-prod --query 'DBInstances[0].LatestRestorableTime'`.
+   `/zynetix/<env>/jobs` or from the audit trail. Check the window:
+   `aws rds describe-db-instances --db-instance-identifier zynetix-prod --query 'DBInstances[0].LatestRestorableTime'`.
 2. **Stop writes**: scale the API to 0 so nothing writes to the old instance in the meantime
-   (`aws ecs update-service --cluster kinetix-prod --service api --desired-count 0`). The ERP shows
+   (`aws ecs update-service --cluster zynetix-prod --service api --desired-count 0`). The ERP shows
    its sign-in page with an error until the API is back. Announce the maintenance.
 3. **Restore to a new instance** with the same network, parameter group and key:
    ```bash
    aws rds restore-db-instance-to-point-in-time \
-     --source-db-instance-identifier kinetix-prod \
-     --target-db-instance-identifier kinetix-prod-restore \
+     --source-db-instance-identifier zynetix-prod \
+     --target-db-instance-identifier zynetix-prod-restore \
      --restore-time 2026-10-05T04:12:00Z \
-     --db-subnet-group-name kinetix-prod \
+     --db-subnet-group-name zynetix-prod \
      --vpc-security-group-ids <db security group id> \
      --db-parameter-group-name <parameter group name> \
      --multi-az --no-publicly-accessible --copy-tags-to-snapshot
-   aws rds wait db-instance-available --db-instance-identifier kinetix-prod-restore
+   aws rds wait db-instance-available --db-instance-identifier zynetix-prod-restore
    ```
    (Ids: `terraform state show aws_db_instance.main`.) A pilot-sized database restores in roughly
    20–60 minutes.
 4. **Swap names** so the endpoint (and therefore every secret) stays the same:
    ```bash
-   aws rds modify-db-instance --db-instance-identifier kinetix-prod --new-db-instance-identifier kinetix-prod-old --apply-immediately
-   aws rds wait db-instance-available --db-instance-identifier kinetix-prod-old
-   aws rds modify-db-instance --db-instance-identifier kinetix-prod-restore --new-db-instance-identifier kinetix-prod --apply-immediately
-   aws rds wait db-instance-available --db-instance-identifier kinetix-prod
+   aws rds modify-db-instance --db-instance-identifier zynetix-prod --new-db-instance-identifier zynetix-prod-old --apply-immediately
+   aws rds wait db-instance-available --db-instance-identifier zynetix-prod-old
+   aws rds modify-db-instance --db-instance-identifier zynetix-prod-restore --new-db-instance-identifier zynetix-prod --apply-immediately
+   aws rds wait db-instance-available --db-instance-identifier zynetix-prod
    ```
 5. **Run migrations** (the restored database may predate the latest ones):
-   `run_task kinetix-prod-migrate` (deploy.md). Then scale the API back up and check `/ready`.
+   `run_task zynetix-prod-migrate` (deploy.md). Then scale the API back up and check `/ready`.
 6. **Re-point Terraform** at the restored instance:
    ```bash
    terraform state rm aws_db_instance.main
-   terraform import -var-file=environments/prod.tfvars aws_db_instance.main kinetix-prod
+   terraform import -var-file=environments/prod.tfvars aws_db_instance.main zynetix-prod
    terraform plan -var-file=environments/prod.tfvars   # expect no replacement of the database
    ```
-7. Keep `kinetix-prod-old` (deletion protection on, stopped) for a week in case data must be copied
+7. Keep `zynetix-prod-old` (deletion protection on, stopped) for a week in case data must be copied
    across, then delete it with a final snapshot.
 
 Restoring from a **snapshot** (e.g. the manual one before a bulk load) is the same with
@@ -93,18 +93,18 @@ Objects in Glacier Instant Retrieval read immediately; nothing needs thawing.
 Proves the backups work and measures the real RTO. Do it on **prod** backups, in prod's account,
 without touching prod:
 
-1. Restore prod to a point 1 hour ago as `kinetix-prod-drill` (step 3 above, without stopping the
+1. Restore prod to a point 1 hour ago as `zynetix-prod-drill` (step 3 above, without stopping the
    API, single-AZ to save cost).
 2. Check it with a one-off task on the migrate task definition, pointing its `DATABASE_URL` at the
    drill endpoint (the restored instance has the same role passwords as prod):
    ```bash
-   CHECK='DATABASE_URL=$(echo "$DATABASE_URL" | sed "s/@kinetix-prod\./@kinetix-prod-drill./") &&
+   CHECK='DATABASE_URL=$(echo "$DATABASE_URL" | sed "s/@zynetix-prod\./@zynetix-prod-drill./") &&
      node dist/db/migrate.js &&
      node -e "const pg=require(\"pg\");const c=new pg.Client(process.env.DATABASE_URL);c.connect().then(async()=>{for(const t of [\"tenants\",\"users\",\"students\",\"attendance_records\",\"marks\"])console.log(t,(await c.query(\"select count(*) from \"+t)).rows[0].count);await c.end()})"'
-   run_task kinetix-prod-migrate "$(jq -nc --arg c "$CHECK" '["sh","-c",$c]')" migrate
+   run_task zynetix-prod-migrate "$(jq -nc --arg c "$CHECK" '["sh","-c",$c]')" migrate
    ```
    Expect `Migrations applied.` (nothing new) and counts close to prod's an hour ago (read in
-   `/kinetix/prod/jobs`).
+   `/zynetix/prod/jobs`).
 3. Restore one recording version from S3 into a scratch prefix and play it.
 4. Record: start time, time to available, time to verified, problems → in the ops log. Update
    this page if a step was wrong.

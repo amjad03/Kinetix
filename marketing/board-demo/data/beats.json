@@ -40,11 +40,11 @@
     {
      "id": "h3",
      "kind": "logo",
-     "vo": "Meet KINETIX Board, the AI smartboard.",
+     "vo": "Meet ZYNETIX Board, the AI smartboard.",
      "acts": [
       {
-       "w": "kinetix",
-       "text": "KINETIX Board"
+       "w": "zynetix",
+       "text": "ZYNETIX Board"
       }
      ]
     },
@@ -597,8 +597,8 @@
    "beats": [
     {
      "id": "b61",
-     "title": "Ask KINETIX AI",
-     "vo": "She asks KINETIX AI a question about the lesson.",
+     "title": "Ask ZYNETIX AI",
+     "vo": "She asks ZYNETIX AI a question about the lesson.",
      "acts": [
       {
        "w": "asks",
@@ -1197,7 +1197,7 @@
     {
      "id": "r2",
      "kind": "endcard",
-     "vo": "KINETIX Board. Every lesson, connected.",
+     "vo": "ZYNETIX Board. Every lesson, connected.",
      "acts": []
     }
    ]

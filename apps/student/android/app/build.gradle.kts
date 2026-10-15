@@ -8,8 +8,8 @@ plugins {
 }
 
 // Release signing (docs/operations/mobile-release.md). Values come from, in order:
-//   1. environment variables (CI): KINETIX_ANDROID_KEYSTORE_BASE64 (or KINETIX_ANDROID_KEYSTORE_PATH),
-//      KINETIX_ANDROID_KEYSTORE_PASSWORD, KINETIX_ANDROID_KEY_ALIAS, KINETIX_ANDROID_KEY_PASSWORD;
+//   1. environment variables (CI): ZYNETIX_ANDROID_KEYSTORE_BASE64 (or ZYNETIX_ANDROID_KEYSTORE_PATH),
+//      ZYNETIX_ANDROID_KEYSTORE_PASSWORD, ZYNETIX_ANDROID_KEY_ALIAS, ZYNETIX_ANDROID_KEY_PASSWORD;
 //   2. android/key.properties (local, gitignored): storeFile (relative to android/), storePassword,
 //      keyAlias, keyPassword.
 // Debug and profile builds keep the debug key. A release build without a key fails.
@@ -21,42 +21,42 @@ val keyProperties = Properties().apply {
 fun signingValue(env: String, property: String): String? =
     System.getenv(env)?.takeIf { it.isNotBlank() } ?: keyProperties.getProperty(property)?.takeIf { it.isNotBlank() }
 
-val releaseKeystore: File? = System.getenv("KINETIX_ANDROID_KEYSTORE_BASE64")?.takeIf { it.isNotBlank() }?.let { encoded ->
+val releaseKeystore: File? = System.getenv("ZYNETIX_ANDROID_KEYSTORE_BASE64")?.takeIf { it.isNotBlank() }?.let { encoded ->
     layout.buildDirectory.file("signing/upload-keystore.jks").get().asFile.apply {
         parentFile.mkdirs()
         writeBytes(Base64.getMimeDecoder().decode(encoded.trim()))
     }
-} ?: signingValue("KINETIX_ANDROID_KEYSTORE_PATH", "storeFile")?.let { rootProject.file(it) }
-val releaseStorePassword = signingValue("KINETIX_ANDROID_KEYSTORE_PASSWORD", "storePassword")
-val releaseKeyAlias = signingValue("KINETIX_ANDROID_KEY_ALIAS", "keyAlias")
-val releaseKeyPassword = signingValue("KINETIX_ANDROID_KEY_PASSWORD", "keyPassword")
+} ?: signingValue("ZYNETIX_ANDROID_KEYSTORE_PATH", "storeFile")?.let { rootProject.file(it) }
+val releaseStorePassword = signingValue("ZYNETIX_ANDROID_KEYSTORE_PASSWORD", "storePassword")
+val releaseKeyAlias = signingValue("ZYNETIX_ANDROID_KEY_ALIAS", "keyAlias")
+val releaseKeyPassword = signingValue("ZYNETIX_ANDROID_KEY_PASSWORD", "keyPassword")
 val releaseSigningProblem: String? = when {
     releaseKeystore == null ->
-        "no upload keystore: create android/key.properties or set KINETIX_ANDROID_KEYSTORE_BASE64"
+        "no upload keystore: create android/key.properties or set ZYNETIX_ANDROID_KEYSTORE_BASE64"
     !releaseKeystore.isFile -> "keystore not found: $releaseKeystore"
     releaseStorePassword == null || releaseKeyAlias == null || releaseKeyPassword == null ->
-        "storePassword, keyAlias and keyPassword (or the KINETIX_ANDROID_* variables) are all required"
+        "storePassword, keyAlias and keyPassword (or the ZYNETIX_ANDROID_* variables) are all required"
     else -> null
 }
 
 // Throwaway test builds only (CI APKs to try on a phone, docs/product/demo-builds.md): with no
-// release key and -Pkinetix.testSigning=true (or KINETIX_TEST_SIGNING=true), release builds are
+// release key and -Pzynetix.testSigning=true (or ZYNETIX_TEST_SIGNING=true), release builds are
 // signed with the debug key instead of failing. Such an APK can never be published, and a real
 // release cannot be installed over it.
-val testSigning = ((findProperty("kinetix.testSigning") as String?) ?: System.getenv("KINETIX_TEST_SIGNING"))?.toBoolean() ?: false
+val testSigning = ((findProperty("zynetix.testSigning") as String?) ?: System.getenv("ZYNETIX_TEST_SIGNING"))?.toBoolean() ?: false
 val useTestSigning = releaseSigningProblem != null && testSigning
 
 // Demo against a server on the local network (docs/product/demo-builds.md): with
-// -Pkinetix.lanHttp=true (or KINETIX_LAN_HTTP=true) release builds may talk plain HTTP.
+// -Pzynetix.lanHttp=true (or ZYNETIX_LAN_HTTP=true) release builds may talk plain HTTP.
 // Never for builds handed to schools: those use HTTPS only.
-val lanHttp = ((findProperty("kinetix.lanHttp") as String?) ?: System.getenv("KINETIX_LAN_HTTP"))?.toBoolean() ?: false
+val lanHttp = ((findProperty("zynetix.lanHttp") as String?) ?: System.getenv("ZYNETIX_LAN_HTTP"))?.toBoolean() ?: false
 
 // R8 (code + resource shrinking) stays off until a minified release has been smoke-tested on a
-// device; turn it on with -Pkinetix.minify=true (keep rules in proguard-rules.pro).
-val minifyRelease = (findProperty("kinetix.minify") as String?)?.toBoolean() ?: false
+// device; turn it on with -Pzynetix.minify=true (keep rules in proguard-rules.pro).
+val minifyRelease = (findProperty("zynetix.minify") as String?)?.toBoolean() ?: false
 
 android {
-    namespace = "app.kinetix.student"
+    namespace = "app.zynetix.student"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -67,7 +67,7 @@ android {
 
     defaultConfig {
         // Permanent once published (docs/operations/mobile-release.md).
-        applicationId = "in.kinetix.student"
+        applicationId = "in.zynetix.student"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // From `version: x.y.z+build` in pubspec.yaml. With --split-per-abi Flutter adds 1000 * ABI.
@@ -78,14 +78,14 @@ android {
     }
 
     signingConfigs {
-        // Per-app throwaway key for test APKs (KINETIX_TEST_SIGNING=true): ~/.kinetix-test-keys/student.jks, outside the repo.
-        val testKeystore = File(System.getProperty("user.home"), ".kinetix-test-keys/student.jks")
+        // Per-app throwaway key for test APKs (ZYNETIX_TEST_SIGNING=true): ~/.zynetix-test-keys/student.jks, outside the repo.
+        val testKeystore = File(System.getProperty("user.home"), ".zynetix-test-keys/student.jks")
         if (useTestSigning && testKeystore.isFile) {
-            create("kinetixTest") {
+            create("zynetixTest") {
                 storeFile = testKeystore
-                storePassword = "kinetixtest"
+                storePassword = "zynetixtest"
                 keyAlias = "test"
-                keyPassword = "kinetixtest"
+                keyPassword = "zynetixtest"
             }
         }
         if (releaseSigningProblem == null) {
@@ -101,7 +101,7 @@ android {
     buildTypes {
         release {
             // Never the debug key (unless test signing was asked for): without a release key the build stops (below).
-            signingConfig = if (useTestSigning) (signingConfigs.findByName("kinetixTest") ?: signingConfigs.getByName("debug")) else signingConfigs.findByName("release")
+            signingConfig = if (useTestSigning) (signingConfigs.findByName("zynetixTest") ?: signingConfigs.getByName("debug")) else signingConfigs.findByName("release")
             isMinifyEnabled = minifyRelease
             isShrinkResources = minifyRelease
             manifestPlaceholders["usesCleartextTraffic"] = if (lanHttp) "true" else "false"

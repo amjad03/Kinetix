@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show RemoteModels;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart' show RemoteModels;
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'core/api_client.dart';
@@ -34,18 +34,18 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   // Downloaded 3D models are kept here so they work offline after the first use.
   unawaited(getApplicationSupportDirectory().then((d) => RemoteModels.cacheDir = Directory('${d.path}/models3d'), onError: (_) {}));
-  // A release built without --dart-define=KINETIX_API_URL stops here with a clear message
-  // (unless it is a demo build: --dart-define=KINETIX_DEMO=true, which needs no server).
+  // A release built without --dart-define=ZYNETIX_API_URL stops here with a clear message
+  // (unless it is a demo build: --dart-define=ZYNETIX_DEMO=true, which needs no server).
   if (!checkServerConfig()) return;
   // The picture library's credits on the licence page.
   registerPictureLibraryLicence();
   final board = Demo.enabled ? demoBoard(DemoBoardServer()) : (BoardController()..start());
-  // 3D models download from this board's own server, the institution's or the KINETIX API first.
+  // 3D models download from this board's own server, the institution's or the ZYNETIX API first.
   unawaited(ModelServer.attach(board));
   // Back in front (from Android settings, or the user unpinned the screen): kiosk mode locks
   // again if it should be on (docs/hardware/kiosk-mode.md).
   AppLifecycleListener(onResume: () => unawaited(board.kiosk.refresh()));
-  runApp(KinetixBoardApp(controller: board));
+  runApp(ZynetixBoardApp(controller: board));
 }
 
 /// Projector mode's second screen (features/projector): Android's Presentation and the Windows
@@ -75,8 +75,8 @@ BoardController demoBoard(DemoBoardServer server, {Recordings? recordings}) {
   return board;
 }
 
-class KinetixBoardApp extends StatelessWidget {
-  const KinetixBoardApp({super.key, required this.controller});
+class ZynetixBoardApp extends StatelessWidget {
+  const ZynetixBoardApp({super.key, required this.controller});
 
   final BoardController controller;
 
@@ -86,9 +86,9 @@ class KinetixBoardApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) => MaterialApp(
-        title: 'KINETIX Board',
+        title: 'ZYNETIX Board',
         debugShowCheckedModeBanner: false,
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         locale: controller.language.locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

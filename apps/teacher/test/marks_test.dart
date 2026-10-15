@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/app.dart';
-import 'package:kinetix_teacher/core/app_state.dart';
-import 'package:kinetix_teacher/core/models.dart';
-import 'package:kinetix_teacher/features/marks/marks_entry_screen.dart';
+import 'package:zynetix_teacher/app.dart';
+import 'package:zynetix_teacher/core/app_state.dart';
+import 'package:zynetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/features/marks/marks_entry_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';

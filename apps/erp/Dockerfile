@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.7
-# KINETIX ERP (Next.js standalone server). Build from the repo root (the pnpm workspace):
-#   docker build -f apps/erp/Dockerfile -t kinetix-erp .
-#   docker run -p 3000:3000 -e KINETIX_API_URL=http://api:4000 kinetix-erp
-# Runtime settings (KINETIX_API_URL, KINETIX_TIMEZONE, KINETIX_INSECURE_COOKIES) are read by the
+# ZYNETIX ERP (Next.js standalone server). Build from the repo root (the pnpm workspace):
+#   docker build -f apps/erp/Dockerfile -t zynetix-erp .
+#   docker run -p 3000:3000 -e ZYNETIX_API_URL=http://api:4000 zynetix-erp
+# Runtime settings (ZYNETIX_API_URL, ZYNETIX_TIMEZONE, ZYNETIX_INSECURE_COOKIES) are read by the
 # server at runtime, so one image serves every environment.
 # Behind a TLS-intercepting proxy: --secret id=extra_ca,src=/path/to/ca.crt
 
@@ -27,9 +27,9 @@ COPY apps/erp/package.json apps/erp/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     --mount=type=secret,id=extra_ca,required=false \
     if [ -f /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi; \
-    pnpm install --frozen-lockfile --filter "@kinetix/erp..."
+    pnpm install --frozen-lockfile --filter "@zynetix/erp..."
 COPY apps/erp apps/erp
-RUN pnpm --filter @kinetix/erp build
+RUN pnpm --filter @zynetix/erp build
 
 # hadolint ignore=DL3006
 FROM ${NODE_IMAGE} AS runtime

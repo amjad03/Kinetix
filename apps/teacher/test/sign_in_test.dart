@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/app.dart';
-import 'package:kinetix_teacher/core/app_state.dart';
+import 'package:zynetix_teacher/app.dart';
+import 'package:zynetix_teacher/core/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';
@@ -48,7 +48,7 @@ void main() {
   testWidgets('shows the server error inline for a wrong password', (tester) async {
     await pumpApp(tester);
     await tester.enterText(find.byKey(const Key('tenant')), 'demo-college');
-    await tester.enterText(find.byKey(const Key('login')), 'anita@demo.kinetix.in');
+    await tester.enterText(find.byKey(const Key('login')), 'anita@demo.zynetix.in');
     await tester.enterText(find.byKey(const Key('password')), 'wrong');
     await tester.tap(find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
@@ -58,12 +58,12 @@ void main() {
   testWidgets('signs in, remembers the institution and opens Today', (tester) async {
     await pumpApp(tester);
     await tester.enterText(find.byKey(const Key('tenant')), ' Demo-College ');
-    await tester.enterText(find.byKey(const Key('login')), 'Anita@Demo.Kinetix.in');
-    await tester.enterText(find.byKey(const Key('password')), 'kinetix123');
+    await tester.enterText(find.byKey(const Key('login')), 'Anita@Demo.Zynetix.in');
+    await tester.enterText(find.byKey(const Key('password')), 'zynetix123');
     await tester.tap(find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
 
-    expect(api.calls, ['login demo-college anita@demo.kinetix.in']);
+    expect(api.calls, ['login demo-college anita@demo.zynetix.in']);
     expect(find.textContaining('Anita'), findsWidgets);
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(state.rememberedTenant, 'demo-college');

@@ -68,7 +68,7 @@ export async function assistSamples(c: Ctx): Promise<void> {
       questionId: alloc.questionId,
       maxMarks: alloc.maxMarks,
       suggestedMarks: half,
-      rationale: 'Preview only. Connect the KINETIX AI server to get a marking draft. Mark this answer yourself.',
+      rationale: 'Preview only. Connect the ZYNETIX AI server to get a marking draft. Mark this answer yourself.',
       criteria: J([{ criterion: 'Overall answer', max: alloc.maxMarks, awarded: half, comment: 'Preview only: nothing was read.' }]),
       preview: true,
       requestedBy: alloc.examinerId,

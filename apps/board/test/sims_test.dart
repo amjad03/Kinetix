@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/sims/sims.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_board/features/sims/sims.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -34,7 +34,7 @@ void main() {
       var sim = ActiveSim.of(kind);
       await tester.pumpWidget(
         MaterialApp(
-          theme: KinetixTheme.light(),
+          theme: ZynetixTheme.light(),
           home: Scaffold(
             body: StatefulBuilder(
               builder: (context, setState) => Center(
@@ -118,7 +118,7 @@ void main() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
+    await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
     await tester.pump();
     await tester.tap(find.byKey(const Key('tool-insert')));
     await tester.pumpAndSettle();

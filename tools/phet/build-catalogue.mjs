@@ -148,7 +148,7 @@ function levelRange(levels, id) {
 }
 
 const classification = JSON.parse(readFileSync(join(here, 'classification.json'), 'utf8'));
-// KINETIX's own Hindi and Kannada titles, used only where PhET has no translation of its own.
+// ZYNETIX's own Hindi and Kannada titles, used only where PhET has no translation of its own.
 const ourTitles = existsSync(join(here, 'titles.json')) ? JSON.parse(readFileSync(join(here, 'titles.json'), 'utf8')) : {};
 const sizes = existsSync(join(here, 'sizes.json')) ? JSON.parse(readFileSync(join(here, 'sizes.json'), 'utf8')) : {};
 

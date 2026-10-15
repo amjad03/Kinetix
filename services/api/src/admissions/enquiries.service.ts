@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { AdmissionsEvents, canMoveEnquiry, type EnquiryActivityKind, type EnquirySource, type EnquiryStage } from '@kinetix/shared';
+import { AdmissionsEvents, canMoveEnquiry, type EnquiryActivityKind, type EnquirySource, type EnquiryStage } from '@zynetix/shared';
 import { and, asc, eq, gte, inArray, lte, notInArray, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import { audit } from '../common/audit.js';

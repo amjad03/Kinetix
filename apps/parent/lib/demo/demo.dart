@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../l10n/l10n.dart';
 import '../core/server_config.dart';
 
-export '../core/server_config.dart' show demoServerUrl, kinetixDemoDefine;
+export '../core/server_config.dart' show demoServerUrl, zynetixDemoDefine;
 
-/// Whether this run uses the in-memory demo backend. main() leaves it at [kinetixDemoDefine];
+/// Whether this run uses the in-memory demo backend. main() leaves it at [zynetixDemoDefine];
 /// tests switch it on to see the demo UI.
 abstract final class Demo {
-  static bool enabled = kinetixDemoDefine;
+  static bool enabled = zynetixDemoDefine;
 }
 
 /// "DEMO", so nobody mistakes the sample data for real data.

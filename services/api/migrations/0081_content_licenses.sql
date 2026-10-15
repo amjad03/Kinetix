@@ -16,7 +16,7 @@ CREATE UNIQUE INDEX "content_licenses_content_uq" ON "content_licenses" USING bt
 -- A global table written only by the platform team (owner role); institutions may read it.
 DO $$
 BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT ON content_licenses TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT ON content_licenses TO zynetix_app;
   END IF;
 END $$;

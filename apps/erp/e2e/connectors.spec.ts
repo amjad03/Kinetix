@@ -18,7 +18,7 @@ test('the administrator adds an outbound webhook, then removes it', async ({ bro
   const ctx = await browser.newContext({ baseURL: process.env.ERP_URL ?? 'http://localhost:3000', storageState: { cookies: [], origins: [] }, viewport: { width: 1440, height: 900 } });
   const page = await ctx.newPage();
   const errors = watchErrors(page);
-  await signIn(page, 'admin@demo.kinetix.in');
+  await signIn(page, 'admin@demo.zynetix.in');
   await page.waitForURL((u) => !u.pathname.startsWith('/login'));
   await open(page, '/connectors');
 
@@ -26,7 +26,7 @@ test('the administrator adds an outbound webhook, then removes it', async ({ bro
   await page.getByTestId('conn-add-webhook_out').click();
   const dlg = dialog(page, 'Outbound webhook');
   const name = uniq('School site');
-  await fillForm(page, dlg, { name, c_url: 'https://example.com/kinetix-hook', c_secret: 'a-long-signing-secret-1234', enabled: 'No' });
+  await fillForm(page, dlg, { name, c_url: 'https://example.com/zynetix-hook', c_secret: 'a-long-signing-secret-1234', enabled: 'No' });
   await submitForm(dlg);
 
   await page.getByRole('tab', { name: 'My connectors' }).click();

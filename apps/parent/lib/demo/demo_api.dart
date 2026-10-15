@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart' show DateUtils;
-import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
+import 'package:zynetix_lesson/zynetix_lesson.dart' show RecordingInfo;
 
 import '../core/api.dart';
 import '../core/models.dart';
@@ -9,7 +9,7 @@ import '../core/realtime.dart';
 import '../core/server_config.dart';
 import 'fake_api.dart';
 
-/// The demo backend: [FakeParentApi] filled with KINETIX Demo College (as
+/// The demo backend: [FakeParentApi] filled with ZYNETIX Demo College (as
 /// services/api/src/db/seed.ts seeds it) around today's date. Rajesh Patel has two children,
 /// Aarav (BCom Sem 3 A) and Diya (BCA Sem 1 A). Changes (hand-ins, messages, consent, fee
 /// payments through the demo gateway) stay in memory until the app is closed.
@@ -20,8 +20,8 @@ class DemoParentApi extends FakeParentApi {
   }
 
   static const demoTenant = 'demo-college';
-  static const demoLogin = 'parent@demo.kinetix.in';
-  static const institution = 'KINETIX Demo College of Commerce & Science';
+  static const demoLogin = 'parent@demo.zynetix.in';
+  static const institution = 'ZYNETIX Demo College of Commerce & Science';
 
   final DateTime Function() _clock;
   DateTime get _today => DateUtils.dateOnly(_clock());

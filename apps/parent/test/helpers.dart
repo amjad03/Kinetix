@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
-import 'package:kinetix_parent/app.dart';
-import 'package:kinetix_parent/core/app_state.dart';
-import 'package:kinetix_parent/core/push.dart';
-import 'package:kinetix_parent/core/token_store.dart';
-import 'package:kinetix_parent/l10n/app_localizations.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_parent/app.dart';
+import 'package:zynetix_parent/core/app_state.dart';
+import 'package:zynetix_parent/core/push.dart';
+import 'package:zynetix_parent/core/token_store.dart';
+import 'package:zynetix_parent/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';

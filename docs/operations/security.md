@@ -23,7 +23,7 @@ row-level security in [docs/architecture/tenancy.md](../architecture/tenancy.md)
 
 ## DPDP Act 2023 (summary of our obligations as data fiduciary / processor)
 
-The institutions are data fiduciaries for their students' and staff data; KINETIX is their
+The institutions are data fiduciaries for their students' and staff data; ZYNETIX is their
 processor (and fiduciary for its own accounts). In practice:
 
 - **Contract**: a data-processing agreement with each institution: purpose, retention, security,
@@ -57,7 +57,7 @@ requirements are still being phased in.
 
 ## Secrets
 
-| Secret (`kinetix/<env>/…`) | Contents | Source | Rotation |
+| Secret (`zynetix/<env>/…`) | Contents | Source | Rotation |
 | --- | --- | --- | --- |
 | `db` | `DATABASE_URL` (owner), `APP_DATABASE_URL` (RLS-bound app), `ADMIN_DATABASE_URL` (RDS master) | Terraform `random_password` | yearly, or on suspicion |
 | `app` | `JWT_SECRET`, `PAIRING_HMAC_SECRET`, `SECRETS_ENCRYPTION_KEY` (master key for institutions' Razorpay secrets in the database), `SECRETS_ENCRYPTION_OLD_KEYS` (empty except during a rotation) | Terraform | yearly, or on suspicion |
@@ -73,8 +73,8 @@ Never put secrets in tfvars, images, GitHub variables, tickets or chat. GitHub h
 ```bash
 # database role passwords
 terraform apply -var-file=environments/prod.tfvars -replace=random_password.db_owner -replace=random_password.db_app
-run_task kinetix-prod-db-admin          # sets the new passwords on the roles (idempotent)
-aws ecs update-service --cluster kinetix-prod --service api --force-new-deployment
+run_task zynetix-prod-db-admin          # sets the new passwords on the roles (idempotent)
+aws ecs update-service --cluster zynetix-prod --service api --force-new-deployment
 # RDS master: -replace=random_password.db_master (Terraform also updates the instance)
 # JWT/pairing: -replace=random_password.jwt / random_password.pairing_hmac, then force a new deployment.
 #   Changing JWT_SECRET signs every user out; changing PAIRING_HMAC_SECRET needs boards re-paired — check
@@ -93,17 +93,17 @@ ones in Razorpay and saving them in the ERP.
 **Rotating `SECRETS_ENCRYPTION_KEY`** (no downtime; payments keep working throughout):
 
 ```bash
-OLD=$(aws secretsmanager get-secret-value --secret-id kinetix/prod/app --query SecretString --output text | jq -r .SECRETS_ENCRYPTION_KEY)
+OLD=$(aws secretsmanager get-secret-value --secret-id zynetix/prod/app --query SecretString --output text | jq -r .SECRETS_ENCRYPTION_KEY)
 terraform apply -var-file=environments/prod.tfvars -replace=random_bytes.secrets_encryption \
   -var secrets_encryption_key_version=2 -var "secrets_encryption_old_keys=1:$OLD"
-aws ecs update-service --cluster kinetix-prod --service api --force-new-deployment   # new key + old key
-run_task kinetix-prod-api '["rotate-secrets"]' api   # "Secrets on key version 2: N of N institutions re-encrypted."
+aws ecs update-service --cluster zynetix-prod --service api --force-new-deployment   # new key + old key
+run_task zynetix-prod-api '["rotate-secrets"]' api   # "Secrets on key version 2: N of N institutions re-encrypted."
 terraform apply -var-file=environments/prod.tfvars -var secrets_encryption_key_version=2   # drop the old key
-aws ecs update-service --cluster kinetix-prod --service api --force-new-deployment
+aws ecs update-service --cluster zynetix-prod --service api --force-new-deployment
 ```
 
 Keep `secrets_encryption_key_version` at the new value in the tfvars afterwards. Locally:
-`pnpm --filter @kinetix/api secrets:rotate` with `SECRETS_ENCRYPTION_KEY_VERSION` and
+`pnpm --filter @zynetix/api secrets:rotate` with `SECRETS_ENCRYPTION_KEY_VERSION` and
 `SECRETS_ENCRYPTION_OLD_KEYS` set.
 
 Between the password change and the redeploy, running tasks keep their open connections; new
@@ -117,7 +117,7 @@ connections fail — rotate in a quiet hour.
   `enable_ecs_exec = true`, apply, `aws ecs execute-command … --interactive --command sh`, then turn
   it off again. Every session is in CloudTrail.
 - Database access for investigations: a one-off task (deploy.md `run_task`) with a reviewed
-  read-only query, as `kinetix_app` with the tenant set wherever possible, never ad-hoc writes.
+  read-only query, as `zynetix_app` with the tenant set wherever possible, never ad-hoc writes.
 - Enable **CloudTrail** (organization trail, S3 in ap-south-1), **GuardDuty** and **AWS Config** in
   the account (not in this Terraform; small monthly cost) and **IAM Access Analyzer**.
 - Consider **AWS WAF** on the ALB (managed common rules + rate limiting) before opening to a large

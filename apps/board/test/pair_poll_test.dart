@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/signin/sign_in_dialog.dart';
-import 'package:kinetix_board/l10n/gen/app_localizations.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/signin/sign_in_dialog.dart';
+import 'package:zynetix_board/l10n/gen/app_localizations.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -23,7 +23,7 @@ void main() {
       baseUrl: 'http://cloud',
       client: MockClient((req) async {
         if (req.url.path.endsWith('/pairing-codes')) {
-          return http.Response(jsonEncode({'code': '482913', 'qrPayload': 'kinetix://pair?c=482913', 'expiresAt': DateTime.now().add(const Duration(minutes: 2)).toUtc().toIso8601String()}), 200);
+          return http.Response(jsonEncode({'code': '482913', 'qrPayload': 'zynetix://pair?c=482913', 'expiresAt': DateTime.now().add(const Duration(minutes: 2)).toUtc().toIso8601String()}), 200);
         }
         if (req.url.path == '/v1/pairing/pending') {
           if (!claimed) return http.Response(jsonEncode({'pending': null}), 200);
@@ -44,7 +44,7 @@ void main() {
     SessionContext? gotSession;
     await tester.pumpWidget(
       MaterialApp(
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(

@@ -693,59 +693,59 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.12.0"
-  kinetix_3d:
+  zynetix_3d:
     dependency: "direct main"
     description:
-      path: "../../packages/kinetix_3d"
+      path: "../../packages/zynetix_3d"
       relative: true
     source: path
     version: "0.2.0"
-  kinetix_animations:
+  zynetix_animations:
     dependency: "direct main"
     description:
-      path: "../../packages/kinetix_animations"
+      path: "../../packages/zynetix_animations"
       relative: true
     source: path
     version: "0.1.0"
-  kinetix_cards:
+  zynetix_cards:
     dependency: "direct main"
     description:
-      path: "../../packages/kinetix_cards"
+      path: "../../packages/zynetix_cards"
       relative: true
     source: path
     version: "0.1.0"
-  kinetix_cs:
+  zynetix_cs:
     dependency: "direct main"
     description:
-      path: "../../packages/kinetix_cs"
+      path: "../../packages/zynetix_cs"
       relative: true
     source: path
     version: "0.1.0"
-  kinetix_ink:
+  zynetix_ink:
     dependency: "direct main"
     description:
-      path: "../../packages/kinetix_ink"
+      path: "../../packages/zynetix_ink"
       relative: true
     source: path
     version: "0.1.0"
-  kinetix_labs:
+  zynetix_labs:
     dependency: "direct main"
     description:
-      path: "../../packages/kinetix_labs"
+      path: "../../packages/zynetix_labs"
       relative: true
     source: path
     version: "0.1.0"
-  kinetix_math:
+  zynetix_math:
     dependency: "direct main"
     description:
-      path: "../../packages/kinetix_math"
+      path: "../../packages/zynetix_math"
       relative: true
     source: path
     version: "0.1.0"
-  kinetix_ui:
+  zynetix_ui:
     dependency: "direct main"
     description:
-      path: "../../packages/kinetix_ui"
+      path: "../../packages/zynetix_ui"
       relative: true
     source: path
     version: "0.1.0"

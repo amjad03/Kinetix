@@ -13,7 +13,7 @@
 !services/api/src
 !services/api/migrations
 !services/api/content
-!packages/kinetix_3d/remote_models
+!packages/zynetix_3d/remote_models
 !services/api/docker-entrypoint.sh
 !infra/docker/db-bootstrap.mjs
 !services/code-runner/server.mjs

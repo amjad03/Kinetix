@@ -1,10 +1,10 @@
 import 'package:flutter/services.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 /// Words from handwriting on Windows panels: the handwriting recogniser built into Windows
 /// (Windows.UI.Input.Inking), on the panel itself, with no download.
 ///
-/// The runner answers on the `kinetix/handwriting` channel (apps/board/windows/runner/
+/// The runner answers on the `zynetix/handwriting` channel (apps/board/windows/runner/
 /// handwriting_channel.cpp):
 /// * `languages` → the board languages (en, hi, kn) Windows has a recogniser for. Windows has
 ///   one for each handwriting language added in Settings → Time & language.
@@ -14,7 +14,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 /// When the runner does not answer (an older build) or Windows has no recogniser, words stay
 /// as ink.
 class WindowsHandwriting implements HandwritingRecognizer {
-  WindowsHandwriting({MethodChannel? channel}) : _channel = channel ?? const MethodChannel('kinetix/handwriting');
+  WindowsHandwriting({MethodChannel? channel}) : _channel = channel ?? const MethodChannel('zynetix/handwriting');
 
   final MethodChannel _channel;
   Future<Set<String>>? _languages;

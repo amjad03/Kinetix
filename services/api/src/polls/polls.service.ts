@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { RealtimeEvents, type AnswerCardSheet, type PollAnswerSource, type PollAnsweredEvent, type PollKind, type PollResults, type PollTally, type PollView } from '@kinetix/shared';
+import { RealtimeEvents, type AnswerCardSheet, type PollAnswerSource, type PollAnsweredEvent, type PollKind, type PollResults, type PollTally, type PollView } from '@zynetix/shared';
 import { and, asc, count, desc, eq, gt, inArray, isNotNull, isNull } from 'drizzle-orm';
 import type { BoardPrincipal, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
@@ -11,7 +11,7 @@ import { DomainEvents, EventBus } from '../events/events.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
 
-/** Printed answer cards per class (packages/kinetix_cards has 100 distinct patterns). */
+/** Printed answer cards per class (packages/zynetix_cards has 100 distinct patterns). */
 export const MAX_CARDS = 100;
 
 export interface NewPoll {

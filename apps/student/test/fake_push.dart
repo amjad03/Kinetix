@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:kinetix_student/core/push.dart';
+import 'package:zynetix_student/core/push.dart';
 
 /// The phone's push service as Firebase would behave, driven by the test.
 class FakePushMessaging implements PushMessaging {

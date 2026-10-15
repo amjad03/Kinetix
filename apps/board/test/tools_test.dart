@@ -3,14 +3,14 @@ import 'dart:typed_data';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/ai/voice_input.dart';
-import 'package:kinetix_board/features/board/ai_pen_ui.dart';
-import 'package:kinetix_board/features/board/board_shot.dart';
-import 'package:kinetix_board/features/board/calculator.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/ai/voice_input.dart';
+import 'package:zynetix_board/features/board/ai_pen_ui.dart';
+import 'package:zynetix_board/features/board/board_shot.dart';
+import 'package:zynetix_board/features/board/calculator.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -18,7 +18,7 @@ import 'support/fake_cloud.dart';
 import 'support/wait.dart';
 
 /// What used to say "coming soon": the calculator, the screenshot, touch lock, screen projection
-/// and voice questions to KINETIX AI, at phone and panel sizes.
+/// and voice questions to ZYNETIX AI, at phone and panel sizes.
 class FakeVoice extends VoiceInput {
   void Function(String, bool)? words;
   AiLanguage? language;
@@ -110,7 +110,7 @@ void main() {
       screenSize(tester, size);
       final board = await enrolledBoard();
       board.onPaired('session-token', sessionIn('en'));
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       await tester.pumpAndSettle();
       if (find.text(l.notNow).evaluate().isNotEmpty) {
         await tester.tap(find.text(l.notNow));

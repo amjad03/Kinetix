@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/device_store.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/device_store.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
 
 /// Storage that cannot be read (for example plugins used before the engine is ready, or a
 /// broken key store). The board must still leave its loading screen.

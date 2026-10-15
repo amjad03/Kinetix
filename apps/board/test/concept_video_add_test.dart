@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/features/board/panel/videos_tab.dart';
-import 'package:kinetix_board/features/concept_videos/concept_videos.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/features/board/panel/videos_tab.dart';
+import 'package:zynetix_board/features/concept_videos/concept_videos.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _NoRealtime extends Realtime {
@@ -32,7 +32,7 @@ Map<String, dynamic> _video(String id, String title, String source) => {
   'title': title,
   'language': 'en',
   'durationSeconds': 245,
-  'channelTitle': 'KINETIX',
+  'channelTitle': 'ZYNETIX',
   'position': 1,
   'topicTitle': 'Methods of valuing goodwill',
 };
@@ -52,7 +52,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     Map<String, dynamic>? posted;
-    var videos = [_video('v1', 'KINETIX explainer', 'platform'), _video('v2', 'School explainer', 'institution')];
+    var videos = [_video('v1', 'ZYNETIX explainer', 'platform'), _video('v2', 'School explainer', 'institution')];
     final client = MockClient((req) async {
       if (req.url.path == '/v1/devices/enroll') return http.Response(jsonEncode({'deviceToken': 'dev', 'device': {'name': 'Board'}}), 201);
       if (req.url.path == '/v1/devices/me/concept-videos') {
@@ -78,7 +78,7 @@ void main() {
     await board.enroll('http://test', 'CODE');
     await tester.pumpWidget(
       MaterialApp(
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: ConceptVideosTab(board: board, onAddNote: (_) {})),
@@ -86,9 +86,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('KINETIX explainer'), findsOneWidget);
+    expect(find.text('ZYNETIX explainer'), findsOneWidget);
     expect(find.byKey(const Key('videoSource-v1')), findsOneWidget);
-    expect(find.descendant(of: find.byKey(const Key('videoSource-v1')), matching: find.text('KINETIX')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('videoSource-v1')), matching: find.text('ZYNETIX')), findsOneWidget);
     expect(find.descendant(of: find.byKey(const Key('videoSource-v2')), matching: find.text('School')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('video-add')));

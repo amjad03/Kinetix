@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_labs/kinetix_labs.dart' show LabSpeech;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_labs/zynetix_labs.dart' show LabSpeech;
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/board_controller.dart';
@@ -386,7 +386,7 @@ class RhymesActivity extends StatefulWidget {
 }
 
 class _RhymesActivityState extends State<RhymesActivity> {
-  static const _key = 'kinetix.primary.rhymes';
+  static const _key = 'zynetix.primary.rhymes';
   final _own = <Rhyme>[];
   int _i = 0;
 
@@ -506,7 +506,7 @@ class _StarWallState extends State<StarWall> {
   Map<String, int> _stars = {};
   String? _last;
 
-  String get _key => 'kinetix.stars.${widget.board.session?.sectionName ?? 'guest'}';
+  String get _key => 'zynetix.stars.${widget.board.session?.sectionName ?? 'guest'}';
 
   List<(String id, String name)> get _children {
     final roster = widget.board.roster;

@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/core/app_state.dart';
-import 'package:kinetix_teacher/core/secure_store.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/core/app_state.dart';
+import 'package:zynetix_teacher/core/secure_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';
@@ -48,7 +48,7 @@ void main() {
   test('signing in saves the token only in the key store; signing out removes it', () async {
     final secure = MemorySecureStore();
     final (state, prefs) = await restore({}, secure);
-    await state.signIn(server: 'http://test', tenant: 'demo-college', login: 'anita@demo.kinetix.in', password: 'kinetix123');
+    await state.signIn(server: 'http://test', tenant: 'demo-college', login: 'anita@demo.zynetix.in', password: 'zynetix123');
     expect(secure.values['token'], 'tok');
     expect(prefs.getString('token'), isNull);
 

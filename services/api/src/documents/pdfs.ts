@@ -21,7 +21,7 @@ export interface AssetTag {
   tag: string;
   name: string;
   location: string;
-  /** What a scan reads (`kinetix://asset/<tag>`). */
+  /** What a scan reads (`zynetix://asset/<tag>`). */
   qr: string;
 }
 

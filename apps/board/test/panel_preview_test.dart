@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_board/features/board/chrome.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/features/board/chrome.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/preview/panel_preview.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/preview/panel_preview.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_cloud.dart';
@@ -21,7 +21,7 @@ void main() {
     screenSize(tester, const Size(844, 390));
     final board = await enrolledBoard();
     board.onPaired('t', sessionIn('en'));
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     return board;
   }
@@ -98,7 +98,7 @@ void main() {
       final board = await enrolledBoard();
       board.onPaired('t', sessionIn('en'));
       board.setPanelPreview(true);
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       await tester.pumpAndSettle();
       if (find.text('Not now').evaluate().isNotEmpty) {
         await tester.tap(find.text('Not now'));

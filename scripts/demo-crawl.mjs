@@ -7,14 +7,14 @@ const API = process.argv[3] ?? 'http://localhost:4000';
 const nav = readFileSync(new URL('../apps/erp/src/lib/nav.ts', import.meta.url), 'utf8');
 const routes = [...new Set([...nav.matchAll(/href: '(\/[^']*)'/g)].map((m) => m[1]))];
 const logins = [
-  ['soundarya', 'principal@soundarya.demo.kinetix.in'],
-  ['soundarya', 'hod.commerce@soundarya.demo.kinetix.in'],
-  ['soundarya', 'accounts@soundarya.demo.kinetix.in'],
-  ['soundarya', 'controller@soundarya.demo.kinetix.in'],
-  ['vidyaniketan', 'principal@vidyaniketan.demo.kinetix.in'],
-  ['vidyaniketan', 'accounts@vidyaniketan.demo.kinetix.in'],
-  ['vidyaniketan', 'controller@vidyaniketan.demo.kinetix.in'],
-  ['vidyaniketan', 'hod.science@vidyaniketan.demo.kinetix.in'],
+  ['soundarya', 'principal@soundarya.demo.zynetix.in'],
+  ['soundarya', 'hod.commerce@soundarya.demo.zynetix.in'],
+  ['soundarya', 'accounts@soundarya.demo.zynetix.in'],
+  ['soundarya', 'controller@soundarya.demo.zynetix.in'],
+  ['vidyaniketan', 'principal@vidyaniketan.demo.zynetix.in'],
+  ['vidyaniketan', 'accounts@vidyaniketan.demo.zynetix.in'],
+  ['vidyaniketan', 'controller@vidyaniketan.demo.zynetix.in'],
+  ['vidyaniketan', 'hod.science@vidyaniketan.demo.zynetix.in'],
 ];
 const only = process.env.ONLY;
 let bad = 0;
@@ -22,7 +22,7 @@ let total = 0;
 let skippedForRole = 0;
 for (const [tenant, login] of logins) {
   if (only && !login.includes(only)) continue;
-  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant, login, password: 'kinetix123' }) });
+  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant, login, password: 'zynetix123' }) });
   const body = await r.json();
   const token = body.accessToken ?? body.access_token;
   if (!token) { console.log(`LOGIN FAILED ${login}: ${r.status} ${JSON.stringify(body).slice(0, 200)}`); bad++; continue; }

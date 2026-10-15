@@ -56,7 +56,7 @@ records the error and does not stop the schedule.
 ## Tests
 
 `services/api/src/foundation.spec.ts` and the analytics specs; ERP `insights.test.ts`. API specs
-need a Postgres: set `KINETIX_TEST_ADMIN_URL` and `KINETIX_TEST_DB`.
+need a Postgres: set `ZYNETIX_TEST_ADMIN_URL` and `ZYNETIX_TEST_DB`.
 
 ## Not built
 

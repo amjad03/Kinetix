@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1.7
-# KINETIX Cloud API (NestJS, ESM). Build from the repo root (the pnpm workspace):
-#   docker build -f services/api/Dockerfile -t kinetix-api .
+# ZYNETIX Cloud API (NestJS, ESM). Build from the repo root (the pnpm workspace):
+#   docker build -f services/api/Dockerfile -t zynetix-api .
 # Modes (see docker-entrypoint.sh): serve (default), migrate, seed, content-import, create-institution, db-bootstrap.
-#   docker run --rm --env-file api.env kinetix-api migrate   # one-off, owner role, before deploy
-#   docker run --rm --env-file api.env kinetix-api create-institution --slug … --name … (owner role)
-#   docker run --init -p 4000:4000 --env-file api.env kinetix-api
+#   docker run --rm --env-file api.env zynetix-api migrate   # one-off, owner role, before deploy
+#   docker run --rm --env-file api.env zynetix-api create-institution --slug … --name … (owner role)
+#   docker run --init -p 4000:4000 --env-file api.env zynetix-api
 #
 # Behind a TLS-intercepting proxy, pass its CA as a build secret:
 #   docker build --secret id=extra_ca,src=/path/to/ca.crt ...
@@ -34,16 +34,16 @@ FROM manifests AS build
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     --mount=type=secret,id=extra_ca,required=false \
     if [ -f /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi; \
-    pnpm install --frozen-lockfile --filter "@kinetix/api..."
+    pnpm install --frozen-lockfile --filter "@zynetix/api..."
 COPY packages/shared packages/shared
 COPY services/api services/api
-RUN pnpm --filter @kinetix/shared build && pnpm --filter @kinetix/api build
+RUN pnpm --filter @zynetix/shared build && pnpm --filter @zynetix/api build
 
 FROM manifests AS prod-deps
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     --mount=type=secret,id=extra_ca,required=false \
     if [ -f /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi; \
-    pnpm install --frozen-lockfile --prod --filter "@kinetix/api..."
+    pnpm install --frozen-lockfile --prod --filter "@zynetix/api..."
 
 # hadolint ignore=DL3006
 FROM ${NODE_IMAGE} AS runtime
@@ -64,8 +64,8 @@ COPY --from=build /app/services/api/dist services/api/dist
 COPY services/api/migrations services/api/migrations
 COPY services/api/content services/api/content
 # The downloadable 3D models, served at /assets/models (MODELS_DIR) so boards fetch them from here.
-COPY packages/kinetix_3d/remote_models packages/kinetix_3d/remote_models
-COPY --chmod=0755 services/api/docker-entrypoint.sh /usr/local/bin/kinetix-api
+COPY packages/zynetix_3d/remote_models packages/zynetix_3d/remote_models
+COPY --chmod=0755 services/api/docker-entrypoint.sh /usr/local/bin/zynetix-api
 COPY infra/docker/db-bootstrap.mjs services/api/db-bootstrap.mjs
 # Amazon RDS CA bundle (ap-south-1), so database URLs can use sslmode=verify-full with
 # NODE_EXTRA_CA_CERTS=/app/certs/rds-ap-south-1-bundle.pem (set in the ECS task).
@@ -78,5 +78,5 @@ USER node
 EXPOSE 4000
 HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=3 \
   CMD ["node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
-ENTRYPOINT ["kinetix-api"]
+ENTRYPOINT ["zynetix-api"]
 CMD ["serve"]

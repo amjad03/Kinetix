@@ -6,16 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_parent/core/api.dart';
-import 'package:kinetix_parent/core/attachments.dart';
-import 'package:kinetix_parent/core/models.dart';
-import 'package:kinetix_parent/core/realtime.dart';
-import 'package:kinetix_parent/features/calendar/calendar_screen.dart';
-import 'package:kinetix_parent/features/home/home_tab.dart' show HomeTab;
-import 'package:kinetix_parent/features/privacy/privacy.dart';
-import 'package:kinetix_parent/features/profile/profile_tab.dart';
-import 'package:kinetix_parent/features/syllabus/syllabus_screen.dart';
-import 'package:kinetix_parent/l10n/l10n.dart';
+import 'package:zynetix_parent/core/api.dart';
+import 'package:zynetix_parent/core/attachments.dart';
+import 'package:zynetix_parent/core/models.dart';
+import 'package:zynetix_parent/core/realtime.dart';
+import 'package:zynetix_parent/features/calendar/calendar_screen.dart';
+import 'package:zynetix_parent/features/home/home_tab.dart' show HomeTab;
+import 'package:zynetix_parent/features/privacy/privacy.dart';
+import 'package:zynetix_parent/features/profile/profile_tab.dart';
+import 'package:zynetix_parent/features/syllabus/syllabus_screen.dart';
+import 'package:zynetix_parent/l10n/l10n.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -379,7 +379,7 @@ void main() {
         tester,
         setup: (api) => api.consentJson['c1'] = {
           ...FakeParentApi.allDecided('c1'),
-          'grievanceOfficer': {'name': 'Meera Rao', 'email': 'dpo@demo.kinetix.in', 'phone': '+919800000009'},
+          'grievanceOfficer': {'name': 'Meera Rao', 'email': 'dpo@demo.zynetix.in', 'phone': '+919800000009'},
         },
       );
       Finder privacyList() => find.descendant(of: find.byType(PrivacyScreen), matching: find.byType(Scrollable)).first;
@@ -389,7 +389,7 @@ void main() {
       await tester.pumpAndSettle();
       await scrollTo(tester, find.byKey(const Key('grievanceOfficer')), privacyList());
       expect(find.text('Meera Rao'), findsOneWidget);
-      expect(find.widgetWithText(SelectableText, 'dpo@demo.kinetix.in'), findsOneWidget);
+      expect(find.widgetWithText(SelectableText, 'dpo@demo.zynetix.in'), findsOneWidget);
       expect(find.widgetWithText(SelectableText, '+919800000009'), findsOneWidget);
       expect(find.byKey(const Key('noGrievanceOfficer')), findsNothing);
       await scrollTo(tester, find.byKey(const Key('readNotice')), privacyList());

@@ -1,5 +1,5 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { AttendanceImportResult, BankDetailsView, PayrollSettings, StaffAttendanceRow, StaffProfile, StaffSummary } from '@kinetix/shared';
+import type { AttendanceImportResult, BankDetailsView, PayrollSettings, StaffAttendanceRow, StaffProfile, StaffSummary } from '@zynetix/shared';
 import { and, asc, eq, inArray, lte, gte, sql } from 'drizzle-orm';
 import { SecretBox } from '../common/secret-box.js';
 import { Clock, localParts, zonedToInstant } from '../common/time.js';

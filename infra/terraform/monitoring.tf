@@ -125,7 +125,7 @@ resource "aws_cloudwatch_log_metric_filter" "api_errors" {
   pattern        = "{ $.level = \"error\" }"
   metric_transformation {
     name          = "ApiErrorLines"
-    namespace     = "Kinetix/${var.environment}"
+    namespace     = "Zynetix/${var.environment}"
     value         = "1"
     default_value = "0"
   }
@@ -134,7 +134,7 @@ resource "aws_cloudwatch_log_metric_filter" "api_errors" {
 resource "aws_cloudwatch_metric_alarm" "api_errors" {
   alarm_name          = "${local.name}-api-error-logs"
   alarm_description   = "More than 20 error log lines from the API in 5 minutes"
-  namespace           = "Kinetix/${var.environment}"
+  namespace           = "Zynetix/${var.environment}"
   metric_name         = "ApiErrorLines"
   statistic           = "Sum"
   period              = 300

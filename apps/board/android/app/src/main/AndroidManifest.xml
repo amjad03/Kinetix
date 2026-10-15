@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The board talks to KINETIX Cloud in release builds too. -->
+    <!-- The board talks to ZYNETIX Cloud in release builds too. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Lesson recording: the teacher's voice. Without it the board records ink only. The noise
          meter reads the sound level from it on the board; nothing is recorded or sent. -->
@@ -9,10 +9,10 @@
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <!-- Kiosk mode: open the board again after a reboot or power cut (docs/hardware/kiosk-mode.md). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <!-- Screenshots into Pictures/KINETIX: only Android 9 and older need it (10+ use MediaStore). -->
+    <!-- Screenshots into Pictures/ZYNETIX: only Android 9 and older need it (10+ use MediaStore). -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <application
-        android:label="KINETIX Board"
+        android:label="ZYNETIX Board"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:networkSecurityConfig="${networkSecurityConfig}">
@@ -61,11 +61,11 @@
             </intent-filter>
         </activity-alias>
         <!-- Kiosk mode: device admin, so the board can be provisioned as device owner:
-             adb shell dpm set-device-owner in.kinetix.board/app.kinetix.board.KioskAdminReceiver -->
+             adb shell dpm set-device-owner in.zynetix.board/app.zynetix.board.KioskAdminReceiver -->
         <receiver
             android:name=".KioskAdminReceiver"
             android:exported="true"
-            android:label="KINETIX Board kiosk"
+            android:label="ZYNETIX Board kiosk"
             android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"
@@ -102,7 +102,7 @@
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
-        <!-- Voice questions to KINETIX AI: the device's own speech recogniser (speech_to_text). -->
+        <!-- Voice questions to ZYNETIX AI: the device's own speech recogniser (speech_to_text). -->
         <intent>
             <action android:name="android.speech.RecognitionService"/>
         </intent>

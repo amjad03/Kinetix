@@ -1,5 +1,5 @@
 // Draws a live board on an HTML canvas, as the board itself paints it
-// (packages/kinetix_ink: board_background.dart `BackgroundPainter`, ink_canvas.dart `paintStroke`).
+// (packages/zynetix_ink: board_background.dart `BackgroundPainter`, ink_canvas.dart `paintStroke`).
 
 import type { BoardBackground, Box, Canvas, Stroke } from './player';
 

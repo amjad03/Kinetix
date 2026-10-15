@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/ai/voice_input.dart';
-import 'package:kinetix_board/features/doc_camera/doc_camera.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/ai/voice_input.dart';
+import 'package:zynetix_board/features/doc_camera/doc_camera.dart';
 
 /// The board's speech recogniser in tests: [say] delivers words as if the teacher spoke.
 class FakeVoiceInput extends VoiceInput {

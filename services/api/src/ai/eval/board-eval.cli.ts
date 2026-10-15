@@ -18,7 +18,7 @@ if (!baseUrl) {
   process.exit(1);
 }
 // The main model, then AI_FALLBACK_MODELS as the API uses them (each has its own free daily allowance on Gemini).
-const models = [...new Set([process.env.AI_MODEL ?? 'kinetix-llm', ...(process.env.AI_FALLBACK_MODELS ?? '').split(',').map((m) => m.trim()).filter(Boolean)])];
+const models = [...new Set([process.env.AI_MODEL ?? 'zynetix-llm', ...(process.env.AI_FALLBACK_MODELS ?? '').split(',').map((m) => m.trim()).filter(Boolean)])];
 const pace = Number(process.env.AI_EVAL_PACE_MS ?? (isGemini(baseUrl) ? 13_000 : 0));
 const only = process.env.AI_EVAL_ONLY?.split(',').map((id) => id.trim()).filter(Boolean);
 const questions = only?.length ? BOARD_QUESTIONS.filter((x) => only.includes(x.id)) : BOARD_QUESTIONS;

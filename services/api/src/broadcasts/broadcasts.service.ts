@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import type { BroadcastMessage } from '@kinetix/shared';
-import { RealtimeEvents } from '@kinetix/shared';
+import type { BroadcastMessage } from '@zynetix/shared';
+import { RealtimeEvents } from '@zynetix/shared';
 import { and, desc, eq, gt, inArray, isNull, ne, or, sql, type SQL } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';

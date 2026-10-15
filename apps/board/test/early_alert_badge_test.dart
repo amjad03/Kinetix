@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/models.dart';
+import 'package:zynetix_board/core/models.dart';
 
 void main() {
   test('a student has no early alert until the server flags one', () {

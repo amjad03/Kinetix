@@ -10,7 +10,7 @@ import { rupees, type SaasInvoice, type SaasPlan, type SaasSubscriptionView } fr
 import { Button } from '@/components/kx';
 const TONE = { trial: 'warning', active: 'success', past_due: 'danger', cancelled: 'neutral', issued: 'warning', paid: 'success', void: 'neutral' } as const;
 
-/** The institution's KINETIX plan: what it pays, what it uses, and its invoices with GST. */
+/** The institution's ZYNETIX plan: what it pays, what it uses, and its invoices with GST. */
 export function BillingDesk({ view, plans, invoices }: { view: SaasSubscriptionView; plans: SaasPlan[]; invoices: SaasInvoice[] }) {
   const { t, fmt } = useI18n();
   const [toast, toastNode] = useToast();

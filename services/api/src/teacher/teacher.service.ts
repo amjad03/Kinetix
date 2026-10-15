@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import type { AttendanceCounts, AttendanceStatus, Homework, TeacherPeriod, TeacherTimetableResponse } from '@kinetix/shared';
+import type { AttendanceCounts, AttendanceStatus, Homework, TeacherPeriod, TeacherTimetableResponse } from '@zynetix/shared';
 import { and, asc, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { Clock, localParts } from '../common/time.js';

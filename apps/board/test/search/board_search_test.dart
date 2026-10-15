@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/features/board/side_panel.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/features/board/side_panel.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/board_fonts.dart';
@@ -22,7 +22,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     Viewer3dEngine.debugOverride = FakeViewerEngine.new;
     ViewerManifest.debugLoad = (id) async =>
-        ViewerManifest.fromJson(jsonDecode(File('../../packages/kinetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
+        ViewerManifest.fromJson(jsonDecode(File('../../packages/zynetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
   });
   tearDown(() {
     Viewer3dEngine.debugOverride = null;
@@ -36,7 +36,7 @@ void main() {
       final board = await enrolledBoard();
       board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
       board.onPaired('session-token', sessionIn(lang));
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l.notNow));
       await tester.pumpAndSettle();

@@ -5,7 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_pcm_sound/flutter_pcm_sound.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show LiveAudioCodec;
+import 'package:zynetix_ink/zynetix_ink.dart' show LiveAudioCodec;
 
 /// Plays the teacher's class audio during a live class: mono 16-bit PCM at 16 kHz, fed in
 /// 200 ms pieces as they arrive. Kept behind this interface so tests can fake it.

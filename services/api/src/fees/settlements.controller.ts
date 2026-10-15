@@ -226,7 +226,7 @@ export class SettlementsController {
     }
     const [seen] = await tx.select({ id: settlementLines.id }).from(settlementLines).where(and(eq(settlementLines.feePaymentId, pay.id), eq(settlementLines.kind, 'payment'), inArray(settlementLines.status, ['matched', 'resolved'])));
     if (seen) return exception('duplicate');
-    if (pay.status !== 'paid') return exception('not_paid_in_kinetix');
+    if (pay.status !== 'paid') return exception('not_paid_in_zynetix');
     if (pay.amountPaise !== l.amountPaise) return exception('amount_mismatch');
     void batchId;
     return { status: 'matched', feePaymentId: pay.id, exceptionReason: null };

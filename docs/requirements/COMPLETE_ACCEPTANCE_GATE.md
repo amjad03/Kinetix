@@ -1,6 +1,6 @@
-# Complete Kinetix Ecosystem Acceptance Gate
+# Complete Zynetix Ecosystem Acceptance Gate
 
-Kinetix cannot be declared platform-complete merely because the major screens are implemented.
+Zynetix cannot be declared platform-complete merely because the major screens are implemented.
 
 ## Gate A — Architecture
 

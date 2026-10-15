@@ -43,7 +43,7 @@ describe('content library files', () => {
         expect(codes.has(c.code), c.code).toBe(false);
         codes.add(c.code);
         expect(Object.keys(levels)).toContain(c.curriculum);
-        expect(c.source).toMatch(/^kinetix-curriculum-team from public (BU|KSLU) syllabus \(.+, 20\d\d-\d\d\)/);
+        expect(c.source).toMatch(/^zynetix-curriculum-team from public (BU|KSLU) syllabus \(.+, 20\d\d-\d\d\)/);
         expect(c.chapters.length, c.code).toBeGreaterThan(0);
         for (const ch of c.chapters) {
           expect(ch.topics.length, `${c.code} / ${ch.title}`).toBeGreaterThan(0);

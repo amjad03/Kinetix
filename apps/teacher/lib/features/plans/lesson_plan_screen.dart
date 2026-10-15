@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
@@ -25,7 +25,7 @@ class _Step {
 }
 
 /// The lesson plan for one period on one day: topics, objectives, timed steps, materials, how
-/// to check understanding and homework. KINETIX AI can write a first draft; the teacher edits
+/// to check understanding and homework. ZYNETIX AI can write a first draft; the teacher edits
 /// and saves it. A remark from the head of department's review is shown at the top.
 class LessonPlanScreen extends StatefulWidget {
   const LessonPlanScreen({super.key, required this.api, required this.period, required this.date, this.onSaved});
@@ -52,7 +52,7 @@ class _LessonPlanScreenState extends State<LessonPlanScreen> {
   bool _drafting = false;
   bool _dirty = false;
 
-  /// The content came from KINETIX AI (and [_preview]: a placeholder draft).
+  /// The content came from ZYNETIX AI (and [_preview]: a placeholder draft).
   bool _aiDrafted = false;
   bool _preview = false;
 

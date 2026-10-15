@@ -1,4 +1,4 @@
-# IR touch frames: turning any TV into a multi-touch KINETIX Board
+# IR touch frames: turning any TV into a multi-touch ZYNETIX Board
 
 An **infrared (IR) touch frame** is a bezel that fits around an ordinary TV, or around a wall
 used as a projector screen. LEDs and sensors along the edges detect fingers and pens. The
@@ -14,9 +14,9 @@ at once. Costs are indicative (unverified, 2026):
 | Projector + IR frame on the wall or a whiteboard | ₹15,000–40,000 (if a projector exists) | 10–20 |
 | Interactive flat panel (IFP) | ₹1–3 lakh | 20–40 |
 
-## How KINETIX supports it
+## How ZYNETIX supports it
 
-1. **The same app.** KINETIX Board on Windows or Android receives the frame's touches as ordinary
+1. **The same app.** ZYNETIX Board on Windows or Android receives the frame's touches as ordinary
    touch pointers. The ink engine already tracks every pointer separately
    (`apps/board/lib/features/ink/ink_controller.dart`), so ten students can write at once.
 2. **Touch profile: "IR touch frame".** In *Profile → Board settings → Touch screen*:
@@ -51,7 +51,7 @@ at once. Costs are indicative (unverified, 2026):
    the touch lands a few millimetres from the pen tip.
 2. Connect USB to the Android box or PC. On Windows, run **Tablet PC Settings → Calibrate** once
    if touches are offset. Android uses the frame's own mapping (check the vendor's calibration tool).
-3. In KINETIX Board, set **Board settings → Touch screen → IR touch frame**.
+3. In ZYNETIX Board, set **Board settings → Touch screen → IR touch frame**.
 4. Check with two people writing at the same time on opposite sides of the board.
 
 ## Known limitations

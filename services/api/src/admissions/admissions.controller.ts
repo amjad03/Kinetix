@@ -1,6 +1,6 @@
 import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 import { BadRequestException, Body, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, Res } from '@nestjs/common';
-import { APPLICATION_MOVES, ENQUIRY_ACTIVITY_KINDS, ENQUIRY_SOURCES, ENQUIRY_STAGES, eligibilityFailures, meritScore, type ApplicationStatus } from '@kinetix/shared';
+import { APPLICATION_MOVES, ENQUIRY_ACTIVITY_KINDS, ENQUIRY_SOURCES, ENQUIRY_STAGES, eligibilityFailures, meritScore, type ApplicationStatus } from '@zynetix/shared';
 import { and, asc, desc, eq, ilike, inArray, lte, notInArray, or, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';

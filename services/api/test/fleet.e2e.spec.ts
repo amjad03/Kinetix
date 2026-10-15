@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type DeviceActionEvent } from '@kinetix/shared';
+import { RealtimeEvents, type DeviceActionEvent } from '@zynetix/shared';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

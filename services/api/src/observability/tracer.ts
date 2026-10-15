@@ -38,7 +38,7 @@ export function otlpBody(service: string, spans: SpanData[]) {
         resource: { attributes: [attr('service.name', service)] },
         scopeSpans: [
           {
-            scope: { name: 'kinetix-api' },
+            scope: { name: 'zynetix-api' },
             spans: spans.map((s) => ({
               traceId: s.traceId,
               spanId: s.spanId,

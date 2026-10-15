@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/language_kit/dictionary_data.dart';
-import 'package:kinetix_board/features/language_kit/language_kit.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/language_kit/dictionary_data.dart';
+import 'package:zynetix_board/features/language_kit/language_kit.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'support/board_fonts.dart';
 import 'support/panel_harness.dart';

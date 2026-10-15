@@ -1,8 +1,8 @@
 // The AI tutor: a conversation that remembers, with next steps from the student's own record, and that reopens where it stopped.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/core/models.dart';
+import 'package:zynetix_student/core/api.dart';
+import 'package:zynetix_student/core/models.dart';
 
 import 'helpers.dart';
 
@@ -59,7 +59,7 @@ void main() {
   });
 
   testWidgets('a refused or unreachable tutor keeps the question so it can be sent again', (tester) async {
-    final (api, _) = await pumpApp(tester, setup: (a) => a.tutorError = ApiException(503, 'KINETIX AI is not reachable right now.'));
+    final (api, _) = await pumpApp(tester, setup: (a) => a.tutorError = ApiException(503, 'ZYNETIX AI is not reachable right now.'));
     await openTutor(tester);
     await say(tester, 'What is depreciation');
     expect(find.byKey(const Key('tutorError')), findsOneWidget);

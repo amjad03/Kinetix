@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/canvas_tools/canvas_tools.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/features/canvas_tools/canvas_tools.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

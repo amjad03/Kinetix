@@ -4,7 +4,7 @@ curriculum: bu-ug | Bangalore University (UG) | ug
 programme: BA
 scheme: SEP 2024 | 2024-25
 ! SIMS's BA is listed with Journalism (secondary sources); the combination was not confirmed. Journalism and Psychology are written for all six semesters as a common combination; other optionals (English, Political Science, Economics, History, Sociology) are not written.
-! Paper titles per semester are the KINETIX team's reading of the BU NEP/SEP pattern; confirm against the BU SEP BA Journalism and Psychology syllabi.
+! Paper titles per semester are the ZYNETIX team's reading of the BU NEP/SEP pattern; confirm against the BU SEP BA Journalism and Psychology syllabi.
 
 # ba-jour-1-communication | 1 | Journalism: Introduction to Communication
 ## Communication Concepts

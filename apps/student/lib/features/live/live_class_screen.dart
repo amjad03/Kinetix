@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
@@ -65,7 +65,7 @@ class _LiveClassScreenState extends State<LiveClassScreen> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: KinetixTheme.dark(),
+      data: ZynetixTheme.dark(),
       child: Scaffold(
         backgroundColor: _surround,
         body: ListenableBuilder(

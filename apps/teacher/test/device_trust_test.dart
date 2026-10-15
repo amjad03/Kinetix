@@ -1,7 +1,7 @@
 // Device trust on the Teacher App profile: offer to trust a new phone, and fit a 360dp phone in Kannada.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/features/profile/device_trust_tile.dart';
+import 'package:zynetix_teacher/features/profile/device_trust_tile.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

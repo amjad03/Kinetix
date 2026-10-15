@@ -10,7 +10,7 @@ class AppLocalizationsKn extends AppLocalizations {
   AppLocalizationsKn([String locale = 'kn']) : super(locale);
 
   @override
-  String get appTitle => 'KINETIX Teacher';
+  String get appTitle => 'ZYNETIX Teacher';
 
   @override
   String get cancel => 'ರದ್ದುಮಾಡಿ';
@@ -157,7 +157,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get invalidServer =>
-      'https://api.kinetix.in ರೀತಿಯ ಸರ್ವರ್ ವಿಳಾಸ ನಮೂದಿಸಿ';
+      'https://api.zynetix.in ರೀತಿಯ ಸರ್ವರ್ ವಿಳಾಸ ನಮೂದಿಸಿ';
 
   @override
   String get errorNotTeacher =>
@@ -165,7 +165,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get errorOffline =>
-      'KINETIX ಸಂಪರ್ಕಿಸಲು ಆಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ.';
+      'ZYNETIX ಸಂಪರ್ಕಿಸಲು ಆಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get errorTimeout =>
@@ -205,7 +205,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get errorOtherCampus => 'ಈ ಬೋರ್ಡ್ ಇರುವ ಕ್ಯಾಂಪಸ್‌ನಲ್ಲಿ ನೀವು ಶಿಕ್ಷಕರಲ್ಲ';
 
   @override
-  String get errorNotPairingQr => 'ಇದು KINETIX ಬೋರ್ಡ್‌ನ QR ಕೋಡ್ ಅಲ್ಲ';
+  String get errorNotPairingQr => 'ಇದು ZYNETIX ಬೋರ್ಡ್‌ನ QR ಕೋಡ್ ಅಲ್ಲ';
 
   @override
   String get errorFutureAttendance =>
@@ -430,7 +430,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get qrNotOurs =>
-      'ಇದು KINETIX ಬೋರ್ಡ್‌ನ ಕೋಡ್ ಅಲ್ಲ. ಬೋರ್ಡ್‌ನ ಪರದೆಯ ಮೇಲಿರುವ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.';
+      'ಇದು ZYNETIX ಬೋರ್ಡ್‌ನ ಕೋಡ್ ಅಲ್ಲ. ಬೋರ್ಡ್‌ನ ಪರದೆಯ ಮೇಲಿರುವ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.';
 
   @override
   String get scanTitle => 'ಬೋರ್ಡ್‌ನ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ';
@@ -978,7 +978,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get syllabusUnlinked =>
-      'ಈ ವಿಷಯವನ್ನು ಇನ್ನೂ ಪಠ್ಯಕ್ರಮಕ್ಕೆ ಜೋಡಿಸಿಲ್ಲ. ನಿಮ್ಮ ಆಡಳಿತಾಧಿಕಾರಿ KINETIX ERP → Syllabus ನಲ್ಲಿ ಜೋಡಿಸಬಹುದು.';
+      'ಈ ವಿಷಯವನ್ನು ಇನ್ನೂ ಪಠ್ಯಕ್ರಮಕ್ಕೆ ಜೋಡಿಸಿಲ್ಲ. ನಿಮ್ಮ ಆಡಳಿತಾಧಿಕಾರಿ ZYNETIX ERP → Syllabus ನಲ್ಲಿ ಜೋಡಿಸಬಹುದು.';
 
   @override
   String topicsTaught(int covered, int total) {
@@ -1142,7 +1142,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get yearPlanNone =>
-      'ಇನ್ನೂ ವಾರ್ಷಿಕ ಯೋಜನೆ ಇಲ್ಲ. ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯ ಪ್ರಕಾರ, ರಜೆ ಮತ್ತು ಪರೀಕ್ಷೆಗಳನ್ನು ಬಿಟ್ಟು, KINETIX ಈ ವಿಷಯದ ಪಠ್ಯಕ್ರಮವನ್ನು ಅವಧಿಯ ವಾರಗಳಿಗೆ ಹಂಚಬಹುದು. ನಂತರ ನೀವು ವಿಷಯಗಳನ್ನು ಬದಲಿಸಬಹುದು.';
+      'ಇನ್ನೂ ವಾರ್ಷಿಕ ಯೋಜನೆ ಇಲ್ಲ. ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯ ಪ್ರಕಾರ, ರಜೆ ಮತ್ತು ಪರೀಕ್ಷೆಗಳನ್ನು ಬಿಟ್ಟು, ZYNETIX ಈ ವಿಷಯದ ಪಠ್ಯಕ್ರಮವನ್ನು ಅವಧಿಯ ವಾರಗಳಿಗೆ ಹಂಚಬಹುದು. ನಂತರ ನೀವು ವಿಷಯಗಳನ್ನು ಬದಲಿಸಬಹುದು.';
 
   @override
   String get makeYearPlan => 'ವಾರ್ಷಿಕ ಯೋಜನೆ ಮಾಡಿ';
@@ -1320,13 +1320,13 @@ class AppLocalizationsKn extends AppLocalizations {
   String get lessonHomeworkHint => 'ಐಚ್ಛಿಕ';
 
   @override
-  String get draftWithAi => 'KINETIX AI ಮೂಲಕ ಕರಡು ಮಾಡಿ';
+  String get draftWithAi => 'ZYNETIX AI ಮೂಲಕ ಕರಡು ಮಾಡಿ';
 
   @override
-  String get drafting => 'KINETIX AI ಕರಡು ಮಾಡುತ್ತಿದೆ…';
+  String get drafting => 'ZYNETIX AI ಕರಡು ಮಾಡುತ್ತಿದೆ…';
 
   @override
-  String get replaceWithDraftTitle => 'KINETIX AI ಕರಡಿನಿಂದ ಬದಲಿಸಬೇಕೇ?';
+  String get replaceWithDraftTitle => 'ZYNETIX AI ಕರಡಿನಿಂದ ಬದಲಿಸಬೇಕೇ?';
 
   @override
   String get replaceWithDraftBody =>
@@ -1340,7 +1340,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get aiPreviewNote =>
-      'ಮಾದರಿ: KINETIX AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಇದು ಮಾದರಿ ಕರಡು.';
+      'ಮಾದರಿ: ZYNETIX AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಇದು ಮಾದರಿ ಕರಡು.';
 
   @override
   String get savePlan => 'ಯೋಜನೆ ಉಳಿಸಿ';
@@ -1381,15 +1381,15 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get errorAiAllowance =>
-      'ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇಂದಿನ KINETIX AI ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ನಾಳೆ ಮತ್ತೆ ಲಭ್ಯ.';
+      'ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇಂದಿನ ZYNETIX AI ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ನಾಳೆ ಮತ್ತೆ ಲಭ್ಯ.';
 
   @override
   String get errorAiUnavailable =>
-      'KINETIX AI ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+      'ZYNETIX AI ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get errorAiUnusable =>
-      'KINETIX AI ಬಳಸಬಹುದಾದ ಕರಡು ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+      'ZYNETIX AI ಬಳಸಬಹುದಾದ ಕರಡು ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String reviewedByOn(String name, String date) {
@@ -1455,7 +1455,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get demoBannerBody =>
-      'KINETIX ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
+      'ZYNETIX ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
 
   @override
   String demoSignInAs(String name) {
@@ -3045,7 +3045,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get pubDoiBody =>
-      'ಪ್ರಕಟಣೆಯ DOI ನಮೂದಿಸಿ; KINETIX ಅದರ ವಿವರಗಳನ್ನು DOI ರಿಜಿಸ್ಟ್ರಿಯಿಂದ ಓದುತ್ತದೆ.';
+      'ಪ್ರಕಟಣೆಯ DOI ನಮೂದಿಸಿ; ZYNETIX ಅದರ ವಿವರಗಳನ್ನು DOI ರಿಜಿಸ್ಟ್ರಿಯಿಂದ ಓದುತ್ತದೆ.';
 
   @override
   String get pubImport => 'ಆಮದು ಮಾಡಿ';
@@ -3245,7 +3245,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get offlineWrongInstitution => 'ಈ ಬೋರ್ಡ್ ಬೇರೊಂದು ಸಂಸ್ಥೆಗೆ ಸೇರಿದೆ.';
 
   @override
-  String get offlineBad => 'ಇದು ನಿಜವಾದ KINETIX ಬೋರ್ಡ್ ಕೋಡ್ ಅಲ್ಲ.';
+  String get offlineBad => 'ಇದು ನಿಜವಾದ ZYNETIX ಬೋರ್ಡ್ ಕೋಡ್ ಅಲ್ಲ.';
 
   @override
   String offlineVerified(String board, String time) {

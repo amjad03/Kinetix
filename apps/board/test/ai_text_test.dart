@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/features/ai/ai_controller.dart';
-import 'package:kinetix_board/features/ai/ai_widgets.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show TexView;
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/features/ai/ai_controller.dart';
+import 'package:zynetix_board/features/ai/ai_widgets.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show TexView;
 
 void main() {
   group('maths in AI answers', () {
@@ -40,8 +40,8 @@ void main() {
     test('busy model, empty scan, offline and timeout each have their own words in every language', () {
       for (final code in ['en', 'hi', 'kn']) {
         final l = l10nFor(Locale(code));
-        expect(aiErrorMessage(l, ApiException(503, 'KINETIX AI is busy right now. Try again in a minute.', code: 'AI_BUSY')), l.aiErrBusy);
-        expect(aiErrorMessage(l, ApiException(503, 'KINETIX AI is not reachable right now. Try again in a minute.', code: 'SERVICE_UNAVAILABLE')), l.aiErrUnreachable);
+        expect(aiErrorMessage(l, ApiException(503, 'ZYNETIX AI is busy right now. Try again in a minute.', code: 'AI_BUSY')), l.aiErrBusy);
+        expect(aiErrorMessage(l, ApiException(503, 'ZYNETIX AI is not reachable right now. Try again in a minute.', code: 'SERVICE_UNAVAILABLE')), l.aiErrUnreachable);
         expect(aiErrorMessage(l, const NothingOnBoard()), l.aiErrNothingOnPages);
         expect(aiErrorMessage(l, TimeoutException('slow')), l.aiErrTimeout);
         expect(aiErrorMessage(l, Exception('no network')), l.aiErrOffline);

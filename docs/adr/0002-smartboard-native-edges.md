@@ -5,7 +5,7 @@
 
 ## Context
 
-The Smartboard spec (`KINETIX_SMARTBOARD_COMPLETE_PRODUCT_REQUIREMENTS_AND_AGENT_HANDOFF_V1`)
+The Smartboard spec (`ZYNETIX_SMARTBOARD_COMPLETE_PRODUCT_REQUIREMENTS_AND_AGENT_HANDOFF_V1`)
 recommends a native Kotlin app. ADR 0001 keeps the board on Flutter (Android panels and
 Windows from one codebase), and the product owner confirmed that on 2026-10-08. Three spec
 requirements cannot be met by Flutter alone, so this ADR records where the board reaches into
@@ -20,7 +20,7 @@ the platform, and why.
      teacher's writing, on the side the intelligent split picks, with a draggable divider,
      Add Page, Add All Pages and Edge-to-Edge (`presentation_pane.dart`);
    - **Present with animations** hands the `.pptx` to the panel's installed presenter (WPS,
-     PowerPoint or the IFP maker's viewer) through `kinetix/presenter` (`Presenter.kt`:
+     PowerPoint or the IFP maker's viewer) through `zynetix/presenter` (`Presenter.kt`:
      `ACTION_VIEW` with a `FileProvider` URI and `FLAG_ACTIVITY_LAUNCH_ADJACENT`, so it opens in
      the window beside the board where the panel supports split screen). On Windows the file
      opens in the default presentation app. With no presenter installed the board says so and

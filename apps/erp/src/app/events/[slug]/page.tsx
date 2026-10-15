@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('g1.ev.title') };
 }
 
-/** The public list of the institution's open events (fests, seminars, open days): no sign-in; registering happens in the KINETIX app. */
+/** The public list of the institution's open events (fests, seminars, open days): no sign-in; registering happens in the ZYNETIX app. */
 export default async function PublicEventsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (!/^[a-z0-9-]{1,64}$/.test(slug)) notFound();

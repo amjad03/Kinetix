@@ -1,35 +1,35 @@
-# KINETIX
+# ZYNETIX
 
 An AI-first education ecosystem for Indian schools, colleges and universities, sold as
 multi-tenant SaaS and hosted entirely in India.
 
 | Product | What it is | Tech | Path |
 |---|---|---|---|
-| **KINETIX Board** | AI smart board for the classroom. Runs on an Android tablet with a projector or TV, on Android interactive flat panels, and on Windows PCs. | Flutter | `apps/board` |
-| **KINETIX Cloud API** | Multi-tenant backend: auth, tenancy, sync, realtime, AI gateway | NestJS + PostgreSQL | `services/api` |
-| **KINETIX ERP** | Web app for admins, principals, teachers and the curriculum team. First slice: the principal dashboard | Next.js | `apps/erp` |
-| **KINETIX Teacher App** | Teacher's phone: today's classes, attendance, homework, connecting to the board | Flutter | `apps/teacher` |
-| **KINETIX Parent App** | Parent's phone: each child's attendance, homework, class participation, shared class boards and updates | Flutter | `apps/parent` |
-| **KINETIX Student App** | Student's phone: today's classes and homework, recordings of missed lessons, KINETIX AI for doubts, syllabus, updates, fees | Flutter | `apps/student` |
+| **ZYNETIX Board** | AI smart board for the classroom. Runs on an Android tablet with a projector or TV, on Android interactive flat panels, and on Windows PCs. | Flutter | `apps/board` |
+| **ZYNETIX Cloud API** | Multi-tenant backend: auth, tenancy, sync, realtime, AI gateway | NestJS + PostgreSQL | `services/api` |
+| **ZYNETIX ERP** | Web app for admins, principals, teachers and the curriculum team. First slice: the principal dashboard | Next.js | `apps/erp` |
+| **ZYNETIX Teacher App** | Teacher's phone: today's classes, attendance, homework, connecting to the board | Flutter | `apps/teacher` |
+| **ZYNETIX Parent App** | Parent's phone: each child's attendance, homework, class participation, shared class boards and updates | Flutter | `apps/parent` |
+| **ZYNETIX Student App** | Student's phone: today's classes and homework, recordings of missed lessons, ZYNETIX AI for doubts, syllabus, updates, fees | Flutter | `apps/student` |
 | Shared contracts | Event and DTO types shared by the TS services | TypeScript | `packages/shared` |
 
 ## Status (October 2026)
 
 | Piece | State |
 |---|---|
-| Cloud API | Multi-tenant (row-level security), pairing, timetable (with editing and clash checks), attendance, homework, broadcasts, sync outbox, saved boards, families and notifications with push (in each user's language), KINETIX AI gateway (India-hosted model server, grounded in the syllabus, plus reading handwriting off the board), lesson recordings with transcripts and summaries, content library with 3D model and lab links, fees and payments (Razorpay), live classroom view and "Go live" to students with class audio, library circulation with fines, marks and exams, parent–teacher messaging, departments with a head-of-department view, academic calendar (holidays cancel classes), syllabus coverage, year plans and lesson plans (AI drafts, HOD review), homework submissions, DPDP consent records, institution settings, realtime messages, error codes for every error, phone OTP sign-in (MSG91), password change and resets, institution onboarding and CSV import, optional Redis for several instances, health checks, principal dashboard routes. 159 tests |
-| Board | Teachmint-style Material 3 board: multi-touch ink, shapes with measurements, select, pages, split screen, attendance, random pick, timer, eye comfort, IR-frame touch profile, save and share boards, KINETIX AI panel (ask, quick quiz with presenter, homework, lesson plan, read the board), offline maths solver, Books (syllabus with coverage and mark-as-taught, linked 3D models and labs), 3D models and virtual labs in split screen, Today's plan with a step timer, lesson recording with voice, live view and Go live to students with class audio (mic indicator), outbox saved to disk. English, Hindi and Kannada. 104 tests + live integration test |
+| Cloud API | Multi-tenant (row-level security), pairing, timetable (with editing and clash checks), attendance, homework, broadcasts, sync outbox, saved boards, families and notifications with push (in each user's language), ZYNETIX AI gateway (India-hosted model server, grounded in the syllabus, plus reading handwriting off the board), lesson recordings with transcripts and summaries, content library with 3D model and lab links, fees and payments (Razorpay), live classroom view and "Go live" to students with class audio, library circulation with fines, marks and exams, parent–teacher messaging, departments with a head-of-department view, academic calendar (holidays cancel classes), syllabus coverage, year plans and lesson plans (AI drafts, HOD review), homework submissions, DPDP consent records, institution settings, realtime messages, error codes for every error, phone OTP sign-in (MSG91), password change and resets, institution onboarding and CSV import, optional Redis for several instances, health checks, principal dashboard routes. 159 tests |
+| Board | Teachmint-style Material 3 board: multi-touch ink, shapes with measurements, select, pages, split screen, attendance, random pick, timer, eye comfort, IR-frame touch profile, save and share boards, ZYNETIX AI panel (ask, quick quiz with presenter, homework, lesson plan, read the board), offline maths solver, Books (syllabus with coverage and mark-as-taught, linked 3D models and labs), 3D models and virtual labs in split screen, Today's plan with a step timer, lesson recording with voice, live view and Go live to students with class audio (mic indicator), outbox saved to disk. English, Hindi and Kannada. 104 tests + live integration test |
 | Teacher App | Today's classes, connect to board, attendance, homework with submissions to check or return, syllabus progress, year plans, lesson plans with AI drafts, calendar, phone sign-in, push, marks entry and publishing, messages with parents, lesson recordings (share, play). English, Hindi and Kannada. 133 tests |
 | Parent App | Children, attendance, homework, class participation, shared boards, lesson recordings (missed classes first), marks, library loans and fines, messages with teachers, fees with online payment and receipts, updates inbox, calendar, homework hand-in per child, syllabus progress and this week in class, privacy and consent, phone sign-in, push. English, Hindi and Kannada. 137 tests |
-| Student App | Today, live class with the teacher's audio, KINETIX AI doubts in English/Hindi/Kannada with syllabus sources, syllabus, recordings, marks, library, updates, attendance and fees, calendar, homework hand-in with photos, syllabus progress and topics coming up in class, privacy and consent, phone sign-in, push. English, Hindi and Kannada. 187 tests |
+| Student App | Today, live class with the teacher's audio, ZYNETIX AI doubts in English/Hindi/Kannada with syllabus sources, syllabus, recordings, marks, library, updates, attendance and fees, calendar, homework hand-in with photos, syllabus progress and topics coming up in class, privacy and consent, phone sign-in, push. English, Hindi and Kannada. 187 tests |
 | ERP | Principal dashboard (today, classes, attendance, homework, messages, boards), live classroom view with class audio, department view for HODs, departments setup, academic calendar, settings and consent summary, syllabus progress, year-plan status and lesson-plan review, bulk import, change password, in English, Hindi and Kannada, timetable editing, library desk, results, conversations, fees for the accounts office, syllabus links, AI usage. 127 unit tests + Playwright |
-| Shared packages | `kinetix_ui` (Material 3 theme), `kinetix_ink` (ink engine, saved-board format, lesson recorder/player, live audio codec; 43 tests), `kinetix_lesson` (recording player, localised; 22 tests), `kinetix_math` (offline solver; 56 tests), `kinetix_3d` (three.js viewer with 31 teaching models in en/hi/kn, laser pointer and snapshots, on Android and Windows; Dart renderer for solids with measurements; 83 tests), `kinetix_labs` (Ohm's law, lenses and mirrors, pendulum, break-even, graph plotter; 41 tests) |
+| Shared packages | `zynetix_ui` (Material 3 theme), `zynetix_ink` (ink engine, saved-board format, lesson recorder/player, live audio codec; 43 tests), `zynetix_lesson` (recording player, localised; 22 tests), `zynetix_math` (offline solver; 56 tests), `zynetix_3d` (three.js viewer with 31 teaching models in en/hi/kn, laser pointer and snapshots, on Android and Windows; Dart renderer for solids with measurements; 83 tests), `zynetix_labs` (Ohm's law, lenses and mirrors, pendulum, break-even, graph plotter; 41 tests) |
 | Needs real infrastructure | An India-hosted LLM and speech server (AI answers are labelled previews until `AI_BASE_URL` / `ASR_BASE_URL` are set), Firebase for push, each institution's own Razorpay account (keys entered in ERP → Settings), S3 in ap-south-1. Nothing here has run on Android/iOS hardware yet; microphones and payments are covered by tests and fakes only |
 | Still to do | Native review of Hindi and Kannada text (see `docs/i18n/`); legal review of the privacy notice; a first real Android/iOS/Windows release build and device testing (class audio, camera uploads, push, SMS); AWS account, Firebase project, MSG91 DLT templates and signing keys (see `docs/operations/`) |
 
-**Demo logins** after `pnpm db:seed` (institution `demo-college`, password `kinetix123`): principal@demo.kinetix.in,
-anita@demo.kinetix.in (teacher), parent@demo.kinetix.in (parent of two), aarav@demo.kinetix.in (student),
-accounts@demo.kinetix.in (fees). The seed prints a board enrolment code and imports the sample content library.
+**Demo logins** after `pnpm db:seed` (institution `demo-college`, password `zynetix123`): principal@demo.zynetix.in,
+anita@demo.zynetix.in (teacher), parent@demo.zynetix.in (parent of two), aarav@demo.zynetix.in (student),
+accounts@demo.zynetix.in (fees). The seed prints a board enrolment code and imports the sample content library.
 
 ## Start here
 
@@ -63,16 +63,16 @@ accounts@demo.kinetix.in (fees). The seed prints a board enrolment code and impo
 
 ```bash
 pnpm install
-pnpm --filter @kinetix/shared build
+pnpm --filter @zynetix/shared build
 
 # API (PostgreSQL 16 running locally)
 cd services/api
 cp .env.example .env
-pnpm db:setup          # creates the kinetix + kinetix_test databases and the two roles
+pnpm db:setup          # creates the zynetix + zynetix_test databases and the two roles
 pnpm db:migrate        # schema + row-level-security policies
 pnpm db:seed           # demo BU-affiliated college, staff logins, a board enrolment code
 pnpm start:dev         # http://localhost:4000, OpenAPI docs at /docs
-pnpm test              # e2e tests against kinetix_test (RLS, pairing, broadcasts, sync)
+pnpm test              # e2e tests against zynetix_test (RLS, pairing, broadcasts, sync)
 
 # Board (Flutter 3.47+)
 cd apps/board
@@ -83,8 +83,8 @@ flutter test
 
 # ERP principal dashboard (Next.js, needs the API)
 cd apps/erp
-cp .env.example .env.local   # KINETIX_API_URL, defaults to http://localhost:4000
-pnpm dev                     # http://localhost:3000, sign in as principal@demo.kinetix.in / kinetix123
+cp .env.example .env.local   # ZYNETIX_API_URL, defaults to http://localhost:4000
+pnpm dev                     # http://localhost:3000, sign in as principal@demo.zynetix.in / zynetix123
 pnpm test && pnpm test:e2e   # unit tests; Playwright against the API with a fresh demo seed
 
 # Teacher App
@@ -93,6 +93,6 @@ flutter pub get
 flutter run -d linux     # phone-sized window; or an Android/iOS device for QR scanning
 flutter test
 
-# Parent and Student Apps: the same way, in apps/parent (parent@demo.kinetix.in) and
-# apps/student (aarav@demo.kinetix.in). Set PAYMENTS_PROVIDER=demo in the API to try fee payments.
+# Parent and Student Apps: the same way, in apps/parent (parent@demo.zynetix.in) and
+# apps/student (aarav@demo.zynetix.in). Set PAYMENTS_PROVIDER=demo in the API to try fee payments.
 ```

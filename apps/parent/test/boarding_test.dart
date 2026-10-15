@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/boarding.dart';
+import 'package:zynetix_parent/core/boarding.dart';
 
 import 'helpers.dart';
 

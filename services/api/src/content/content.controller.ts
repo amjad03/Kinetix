@@ -20,7 +20,7 @@ const TopicBody = z.object({
 });
 
 /**
- * The content library for the board's Books panel, the apps and KINETIX AI grounding.
+ * The content library for the board's Books panel, the apps and ZYNETIX AI grounding.
  * Everyone signed in can read it; teaching staff add their institution's own chapters and
  * topics on top of the global library.
  */
@@ -165,7 +165,7 @@ export class ContentController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       // Row-level security limits updates to the institution's own rows; global topics stay read-only.
       const [t] = await tx.update(topics).set({ ...body, updatedAt: new Date() }).where(eq(topics.id, id)).returning();
-      if (!t) throw new NotFoundException('Topic not found, or it belongs to the KINETIX library and cannot be edited');
+      if (!t) throw new NotFoundException('Topic not found, or it belongs to the ZYNETIX library and cannot be edited');
       return { id: t.id, title: t.title, summary: t.summary, notes: t.notes, outcomes: t.outcomes, own: true };
     });
   }
@@ -176,7 +176,7 @@ export class ContentController {
   async deleteTopic(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     await this.db.withTenant(p.tenantId, async (tx) => {
       const gone = await tx.delete(topics).where(eq(topics.id, id)).returning({ id: topics.id });
-      if (gone.length === 0) throw new NotFoundException('Topic not found, or it belongs to the KINETIX library and cannot be deleted');
+      if (gone.length === 0) throw new NotFoundException('Topic not found, or it belongs to the ZYNETIX library and cannot be deleted');
     });
   }
 }

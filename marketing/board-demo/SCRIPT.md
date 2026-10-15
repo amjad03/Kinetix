@@ -1,7 +1,7 @@
-# KINETIX Board product demo, v4 script
+# ZYNETIX Board product demo, v4 script
 
-**For:** a 12–15-year-old. It should be clear what a smart board is, what KINETIX does, and why each feature helps.
-**Story:** an animated opener explains what a smart board is, and how many jobs a teacher has to do. KINETIX takes over the busywork. After that we follow one lesson: Ms Kavya (teacher) and Aarav (a Class 10 B student), refraction through a glass slab. Aarav's speech bubbles give the student's view.
+**For:** a 12–15-year-old. It should be clear what a smart board is, what ZYNETIX does, and why each feature helps.
+**Story:** an animated opener explains what a smart board is, and how many jobs a teacher has to do. ZYNETIX takes over the busywork. After that we follow one lesson: Ms Kavya (teacher) and Aarav (a Class 10 B student), refraction through a glass slab. Aarav's speech bubbles give the student's view.
 **Shape:** an opener (≈30 s), then 12 chapters, then a fast recap and the end card. Each feature is one beat that says what it is and why it helps. The hero features (ink, AI lesson builder, live answers, 3D/labs) get a short run of beats. Three before/after cards show time saved.
 
 **Sync design:** a caret (^) marks each anchor word. Every anchor starts a clause, so the voice is synthesised in pieces split exactly at the anchors (`tools/tts4.py`). That makes each anchor's onset exact. `tools/edit4.py` time-warps the real capture so each action has *settled* 0.3 s before its word (ink is already drawing 0.5 s before), then holds the result for at least 1.5 s.
@@ -16,7 +16,7 @@ Pipeline: `script4.py` → `tts4.py` → `capture_v3.sh` → `edit4.py --qa` (re
 | i1 | explain |  | ^This is the board in most classrooms. ^Chalk, dust, and a lot of waiting. | chalk; chalkwrite |
 | i2 | explain |  | ^Now imagine it as a giant tablet. ^You can write on it, tap it, and even talk to it. ^That's a smart board. | tablet; tabwrite; smartlabel |
 | i3 | explain |  | ^But teachers have a dozen jobs before class even starts. ^Attendance. ^Slides. ^A quiz. ^Homework. | jobs; j0; j1; j2; j3 |
-| h3 | logo |  | ^Meet KINETIX Board. ^It does the busywork, so the teacher can just teach. | logo; tag |
+| h3 | logo |  | ^Meet ZYNETIX Board. ^It does the busywork, so the teacher can just teach. | logo; tag |
 | i5 | explain |  | Let's spend one science lesson in Class 10 B. ^Here's Ms Kavya, the teacher. ^And here's Aarav, a student. | kavya; aarav |
 | h4 | act | One lesson, start to finish | Today's topic: ^how light bends. | Refraction of light |
 
@@ -83,7 +83,7 @@ Pipeline: `script4.py` → `tts4.py` → `capture_v3.sh` → `edit4.py --qa` (re
 
 | Beat | Kind | Title | Voice-over (^ = anchor) | Anchor visuals |
 |---|---|---|---|---|
-| b61 | act | Ask KINETIX AI | Now, ^she asks KINETIX AI a question about today's lesson. | Answer in seconds |
+| b61 | act | Ask ZYNETIX AI | Now, ^she asks ZYNETIX AI a question about today's lesson. | Answer in seconds |
 | b62 | act | With sources | It answers in simple words. ^And it shows where the answer came from. | NCERT source |
 | x61 | compare |  | ^Planning a lesson can take a whole evening. ^With the AI lesson builder, it takes seconds. | Plan a lesson by hand; AI lesson builder |
 | b63 | act | AI lesson builder | Short on time? ^The lesson builder writes a whole plan. | AI lesson builder |
@@ -94,7 +94,7 @@ Pipeline: `script4.py` → `tts4.py` → `capture_v3.sh` → `edit4.py --qa` (re
 
 | Beat | Kind | Title | Voice-over (^ = anchor) | Anchor visuals |
 |---|---|---|---|---|
-| x71 | compare |  | ^Calling out forty names can take five minutes. ^With KINETIX, it takes ten seconds. | Call out 40 names; Tap who is absent |
+| x71 | compare |  | ^Calling out forty names can take five minutes. ^With ZYNETIX, it takes ten seconds. | Call out 40 names; Tap who is absent |
 | b71 | act | Attendance | ^She just taps who's absent, and it goes straight to the school office. | Tap who's absent |
 | b72 | act | Ask the class | Now, ^she asks the whole class a question. | Live question |
 | b73 | act | Answers from phones | ^Students answer on their phones, ^and the bars move live. | Answers arriving; Live results |
@@ -154,11 +154,11 @@ Pipeline: `script4.py` → `tts4.py` → `capture_v3.sh` → `edit4.py --qa` (re
 | Beat | Kind | Title | Voice-over (^ = anchor) | Anchor visuals |
 |---|---|---|---|---|
 | r1 | recap |  | One board, for the whole lesson. ^Ink that feels real. ^An AI helper. ^Live answers from every student. ^And every app, in sync. | Ink that feels real; AI lesson builder; Live answers; Every app in sync |
-| r2 | endcard |  | ^KINETIX Board. Every lesson, connected. | logo |
+| r2 | endcard |  | ^ZYNETIX Board. Every lesson, connected. | logo |
 
 ## Simulated in the capture
 
-- AI answers (explain, lesson plan, quiz, homework, lecture notes, read board) are scripted responses in the API's shape. A live board gets them from KINETIX AI.
+- AI answers (explain, lesson plan, quiz, homework, lecture notes, read board) are scripted responses in the API's shape. A live board gets them from ZYNETIX AI.
 - The share link (whiteboard export) is answered by the test client. The demo server has no export endpoint.
 - Student poll and word-cloud answers are realtime events fired by the script, as the Student App would send them.
 - AI-pen handwriting recognition uses a scripted recognizer, and live-caption speech comes from a scripted voice input.

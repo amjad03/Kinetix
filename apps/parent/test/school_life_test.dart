@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/models.dart';
-import 'package:kinetix_parent/features/messages/chat_screen.dart';
+import 'package:zynetix_parent/core/models.dart';
+import 'package:zynetix_parent/features/messages/chat_screen.dart';
 
 import 'helpers.dart';
 

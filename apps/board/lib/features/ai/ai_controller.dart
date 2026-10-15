@@ -10,7 +10,7 @@ import '../../demo/demo.dart';
 import '../board/side_panel.dart';
 import '../offline_ai/offline_ai.dart';
 
-/// Which page the KINETIX AI panel shows.
+/// Which page the ZYNETIX AI panel shows.
 enum AiView { home, quiz, homework, lessonPlan, math, readBoard, summary, lecture, selectAsk }
 
 /// One AI request and its outcome: loading, an error, or the result.
@@ -83,7 +83,7 @@ String aiErrorMessage(AppLocalizations l, Object e) {
   return l.aiErrOffline;
 }
 
-/// KINETIX AI state for the board: the chosen language, the current page and each tool's
+/// ZYNETIX AI state for the board: the chosen language, the current page and each tool's
 /// latest result. It outlives the panel, so closing and reopening keeps the work.
 class AiController extends ChangeNotifier {
   AiController(this.board) : language = AiLanguage.fromCode(board.session?.language) {
@@ -204,13 +204,13 @@ class AiController extends ChangeNotifier {
 
   ApiClient get _api => board.api!;
 
-  /// Sample answers from the board's own notes, when KINETIX AI cannot be reached or in demo
+  /// Sample answers from the board's own notes, when ZYNETIX AI cannot be reached or in demo
   /// builds (features/offline_ai). Nothing leaves the board.
   final offlineAi = const OfflineAi();
 
   String? get _subject => board.session?.subjectName;
 
-  /// Asks KINETIX AI; in a demo build, or when it cannot be reached, the offline notes answer
+  /// Asks ZYNETIX AI; in a demo build, or when it cannot be reached, the offline notes answer
   /// instead if they cover the topic (labelled "Offline sample"). Anything else they do not
   /// make up: the error stands, as do refusals and other errors.
   Future<AiResult<T>> _withOffline<T>(Future<AiResult<T>> Function() online, AiResult<T>? Function() offline) async {
@@ -227,7 +227,7 @@ class AiController extends ChangeNotifier {
   }
 
   /// Strings in the AI language, for text that goes out with the AI's content (homework,
-  /// questions sent to KINETIX AI), so it matches the language of the answer.
+  /// questions sent to ZYNETIX AI), so it matches the language of the answer.
   AppLocalizations get contentL10n => l10nFor(Locale(language.name));
 
   void setLanguage(AiLanguage l) {

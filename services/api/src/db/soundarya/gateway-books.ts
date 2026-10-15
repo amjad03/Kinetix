@@ -73,7 +73,7 @@ export async function gatewayBooksSamples(c: Ctx): Promise<void> {
   if (Number(providers) === 0) {
     await k.q(
       "insert into sso_providers (tenant_id, kind, name, issuer, client_id, client_secret_enc, authorization_endpoint, token_endpoint, jwks_uri, allowed_domains, redirect_allowlist, enabled) values ($1,'google','Soundarya Google Workspace','https://accounts.google.com','replace-with-client-id.apps.googleusercontent.com',$2,'https://accounts.google.com/o/oauth2/v2/auth','https://oauth2.googleapis.com/token','https://www.googleapis.com/oauth2/v3/certs',$3,$4,false)",
-      [t, sso.box.encrypt('replace-with-client-secret', `${t}:sso.client_secret`), ['soundarya.demo'], ['kinetix://sso']],
+      [t, sso.box.encrypt('replace-with-client-secret', `${t}:sso.client_secret`), ['soundarya.demo'], ['zynetix://sso']],
     );
   }
 

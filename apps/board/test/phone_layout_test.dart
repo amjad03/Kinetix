@@ -5,21 +5,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/demo/demo.dart';
-import 'package:kinetix_board/demo/demo_server.dart';
-import 'package:kinetix_board/features/board/panel/split_panel.dart';
-import 'package:kinetix_board/features/search/search_strings.dart';
-import 'package:kinetix_board/features/search/solids3d.dart';
-import 'package:kinetix_board/features/broadcast/broadcast_overlay.dart';
-import 'package:kinetix_board/features/enrollment/enroll_screen.dart';
-import 'package:kinetix_board/features/sims/sims.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/demo/demo.dart';
+import 'package:zynetix_board/demo/demo_server.dart';
+import 'package:zynetix_board/features/board/panel/split_panel.dart';
+import 'package:zynetix_board/features/search/search_strings.dart';
+import 'package:zynetix_board/features/search/solids3d.dart';
+import 'package:zynetix_board/features/broadcast/broadcast_overlay.dart';
+import 'package:zynetix_board/features/enrollment/enroll_screen.dart';
+import 'package:zynetix_board/features/sims/sims.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -56,7 +56,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     Viewer3dEngine.debugOverride = FakeViewerEngine.new;
     ViewerManifest.debugLoad = (id) async =>
-        ViewerManifest.fromJson(jsonDecode(File('../../packages/kinetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
+        ViewerManifest.fromJson(jsonDecode(File('../../packages/zynetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
   });
   tearDown(() {
     Viewer3dEngine.debugOverride = null;
@@ -179,7 +179,7 @@ void main() {
         final board = await enrolledBoard();
         board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
         board.onPaired('session-token', sessionIn(lang));
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         await tester.pumpAndSettle();
         await collecting(tester, name, (p) async {
           p.step = 'board';
@@ -364,7 +364,7 @@ void main() {
         final board = await enrolledBoard();
         board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
         board.onPaired('session-token', sessionIn(lang));
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         await tester.pumpAndSettle();
         await collecting(tester, name, (p) async {
           await tap(tester, find.text(l.notNow)); // the offer of a PIN
@@ -505,7 +505,7 @@ void main() {
         final board = await enrolledBoard();
         board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
         board.onPaired('session-token', sessionIn(lang));
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         await tester.pumpAndSettle();
         await collecting(tester, name, (p) async {
           await tap(tester, find.text(l.notNow)); // the offer of a PIN
@@ -588,7 +588,7 @@ void main() {
         final server = DemoBoardServer(claimDelay: const Duration(seconds: 2))..studentAnswerDelay = const Duration(seconds: 3);
         final board = demoBoard(server);
         board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         await tester.pumpAndSettle();
         // Picked in settings, the board's language wins over the demo teacher's own.
         board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
@@ -672,7 +672,7 @@ void main() {
       board.setSimpleBoard(SimpleBoard.on);
       board.setToolbarDock(ToolbarDock.left);
       board.onPaired('session-token', sessionIn(lang));
-      await tester.pumpWidget(KinetixBoardApp(controller: board));
+      await tester.pumpWidget(ZynetixBoardApp(controller: board));
       await tester.pumpAndSettle();
       await collecting(tester, '$lang simple', (p) async {
         expect(find.byKey(const Key('phone-more')), findsOneWidget);

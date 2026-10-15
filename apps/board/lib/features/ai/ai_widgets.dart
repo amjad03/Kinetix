@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show TexView;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show TexView;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../board/side_panel.dart';
 import 'ai_controller.dart';
 
-/// KINETIX AI's accent (the AI toolbar group).
+/// ZYNETIX AI's accent (the AI toolbar group).
 const aiAccent = Color(0xFFA142F4);
 
 /// Shown with every placeholder result, so nobody mistakes it for a real answer. (English; the
 /// board shows [AppLocalizations.aiPreviewLabel].)
-const previewLabel = 'Preview — connect the KINETIX AI server for real answers';
+const previewLabel = 'Preview — connect the ZYNETIX AI server for real answers';
 
 /// Text sizes for reading from the back of a classroom.
 abstract final class ClassType {
@@ -165,7 +165,7 @@ class AiSignInNotice extends StatelessWidget {
   Widget build(BuildContext context) => AiNotice(key: const Key('ai-signin'), icon: Icons.lock_outline, message: context.l10n.aiSignInNotice);
 }
 
-/// A spinner with a line of text, while KINETIX AI works.
+/// A spinner with a line of text, while ZYNETIX AI works.
 class AiLoading extends StatelessWidget {
   const AiLoading({super.key, required this.label});
 
@@ -203,7 +203,7 @@ List<({String text, bool math})> splitMath(String text) {
   return out;
 }
 
-/// AI text in a panel. KINETIX AI sends maths as plain Unicode (x², √, ×); LaTeX that an answer
+/// AI text in a panel. ZYNETIX AI sends maths as plain Unicode (x², √, ×); LaTeX that an answer
 /// still carries (an offline sample, an answer saved before) is typeset rather than shown raw.
 class AiText extends StatelessWidget {
   const AiText(this.text, {super.key, this.style});

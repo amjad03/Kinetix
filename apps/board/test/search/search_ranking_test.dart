@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/search/board_search.dart';
-import 'package:kinetix_board/features/search/catalogue_facets.dart';
-import 'package:kinetix_board/features/search/formula_browser.dart';
-import 'package:kinetix_board/features/search/fuzzy.dart';
-import 'package:kinetix_board/features/search/search_index.dart';
-import 'package:kinetix_board/features/search/search_strings.dart';
+import 'package:zynetix_board/features/search/board_search.dart';
+import 'package:zynetix_board/features/search/catalogue_facets.dart';
+import 'package:zynetix_board/features/search/formula_browser.dart';
+import 'package:zynetix_board/features/search/fuzzy.dart';
+import 'package:zynetix_board/features/search/search_index.dart';
+import 'package:zynetix_board/features/search/search_strings.dart';
 
 /// The search's ranking: typos forgiven, English, Hindi and Kannada titles, grouped by type.
 void main() {

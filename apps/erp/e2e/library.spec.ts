@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { open, shot } from './helpers';
 
-// Signed in as the library desk (library@demo.kinetix.in) by principal.setup.ts.
+// Signed in as the library desk (library@demo.zynetix.in) by principal.setup.ts.
 test.describe.configure({ mode: 'serial' });
 
 test('the library desk sees only Library and the calendar', async ({ page }) => {

@@ -1,7 +1,7 @@
 import { Body, Controller, ForbiddenException, HttpCode, Post } from '@nestjs/common';
 import { and, eq, gt } from 'drizzle-orm';
 import { z } from 'zod';
-import type { AttendanceUpdatedEvent } from '@kinetix/shared';
+import type { AttendanceUpdatedEvent } from '@zynetix/shared';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, DevicePrincipal } from '../auth/principal.js';
 import { boardSessions } from '../db/schema.js';

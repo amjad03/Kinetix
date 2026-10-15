@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, Ip, Param } from '@nestjs/common';
-import type { CertificateVerification, IdCardVerification } from '@kinetix/shared';
+import type { CertificateVerification, IdCardVerification } from '@zynetix/shared';
 import { eq } from 'drizzle-orm';
 import { localParts } from '../common/time.js';
 import { RateLimiter } from '../common/rate-limiter.js';

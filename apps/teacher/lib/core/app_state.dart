@@ -11,7 +11,7 @@ import 'realtime.dart';
 import 'secure_store.dart';
 import 'server_config.dart';
 
-/// The build's server address (`KINETIX_API_URL`; localhost only in debug builds).
+/// The build's server address (`ZYNETIX_API_URL`; localhost only in debug builds).
 export 'server_config.dart' show defaultServerUrl;
 
 /// Who is signed in, the remembered server and institution, and the UI language.

@@ -1,7 +1,7 @@
 import '../features/board/kit/subjects.dart' show KitTab;
 
 /// One concept video linked to a demo class's topic. The YouTube ids are placeholders until
-/// the KINETIX channel's own videos are linked (YouTube then says "Video unavailable").
+/// the ZYNETIX channel's own videos are linked (YouTube then says "Video unavailable").
 typedef DemoVideo = ({String id, String youtube, String title, String lang, int seconds});
 
 /// One step of today's lesson plan.
@@ -63,8 +63,8 @@ class DemoClass {
   final String rollPrefix;
   final List<DemoVideo> videos;
 
-  /// Lab ids (packages/kinetix_labs), 3D model ids (packages/kinetix_3d), PhET sim ids and
-  /// animation ids (packages/kinetix_animations), best first.
+  /// Lab ids (packages/zynetix_labs), 3D model ids (packages/zynetix_3d), PhET sim ids and
+  /// animation ids (packages/zynetix_animations), best first.
   final List<String> labs, models, phet, animations;
 
   /// The subject kit's tab that fits the lesson.
@@ -462,7 +462,7 @@ extension DemoClassJson on DemoClass {
         'title': v.title,
         'language': v.lang,
         'durationSeconds': v.seconds,
-        'channelTitle': 'KINETIX',
+        'channelTitle': 'ZYNETIX',
         'position': i + 1,
       },
   ];

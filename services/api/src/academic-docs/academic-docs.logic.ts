@@ -23,7 +23,7 @@ export interface TermLine {
 
 export interface TermBlock {
   label: string;
-  source: 'kinetix' | 'imported';
+  source: 'zynetix' | 'imported';
   lines: TermLine[];
   sgpa: number;
   creditsAttempted: number;

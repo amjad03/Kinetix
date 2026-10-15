@@ -2,13 +2,13 @@
 // runs at (a 1080p and a 4K panel, a tablet, a laptop, a phone upright and on its side), in its
 // three themes and in English, Hindi and Kannada, for reviewing the layout by eye.
 //
-//   KINETIX_SCREENS=1 flutter test test/screens/screens_test.dart
+//   ZYNETIX_SCREENS=1 flutter test test/screens/screens_test.dart
 //
 // writes test/screens/goldens/<size>/<theme>-<language>/<scene>.png and, beside them,
 // problems.txt (overflows and exceptions, by scene) and missing.txt (scenes whose control was
-// not found). Narrow it down with KINETIX_SCREENS_SIZES=panel,phone,
-// KINETIX_SCREENS_THEMES=dark, KINETIX_SCREENS_LANGS=hi and KINETIX_SCREENS_ONLY=settings,pages.
-// Without KINETIX_SCREENS the test is skipped (it takes a few minutes).
+// not found). Narrow it down with ZYNETIX_SCREENS_SIZES=panel,phone,
+// ZYNETIX_SCREENS_THEMES=dark, ZYNETIX_SCREENS_LANGS=hi and ZYNETIX_SCREENS_ONLY=settings,pages.
+// Without ZYNETIX_SCREENS the test is skipped (it takes a few minutes).
 @Tags(['screens'])
 library;
 
@@ -19,19 +19,19 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fake_cloud.dart';
 import '../support/screen_fonts.dart';
 
 final _env = Platform.environment;
-final _enabled = _env['KINETIX_SCREENS'] != null;
+final _enabled = _env['ZYNETIX_SCREENS'] != null;
 Set<String>? _filter(String name) {
   final v = _env[name];
   return v == null || v.isEmpty ? null : v.split(',').map((s) => s.trim()).toSet();
@@ -276,17 +276,17 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     Viewer3dEngine.debugOverride = FakeViewerEngine.new;
     ViewerManifest.debugLoad = (id) async =>
-        ViewerManifest.fromJson(jsonDecode(File('../../packages/kinetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
+        ViewerManifest.fromJson(jsonDecode(File('../../packages/zynetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
   });
   tearDown(() {
     Viewer3dEngine.debugOverride = null;
     ViewerManifest.debugLoad = null;
   });
 
-  final onlySizes = _filter('KINETIX_SCREENS_SIZES');
-  final onlyThemes = _filter('KINETIX_SCREENS_THEMES');
-  final onlyLangs = _filter('KINETIX_SCREENS_LANGS');
-  final onlyScenes = _filter('KINETIX_SCREENS_ONLY');
+  final onlySizes = _filter('ZYNETIX_SCREENS_SIZES');
+  final onlyThemes = _filter('ZYNETIX_SCREENS_THEMES');
+  final onlyLangs = _filter('ZYNETIX_SCREENS_LANGS');
+  final onlyScenes = _filter('ZYNETIX_SCREENS_ONLY');
 
   // English everywhere; Hindi and Kannada on a 1080p panel, a tablet and a phone, light and dark.
   final variants = <(ScreenSize, BoardTheme, String)>[
@@ -344,7 +344,7 @@ void main() {
         if (!scene.signedIn || !scene.enrolled) board.setBoardLanguage(BoardLanguage.values.byName(lang));
         board.setTheme(theme);
         scene.before?.call(board);
-        await tester.pumpWidget(RepaintBoundary(key: shot, child: KinetixBoardApp(controller: board)));
+        await tester.pumpWidget(RepaintBoundary(key: shot, child: ZynetixBoardApp(controller: board)));
         final s = Shot(tester, board, screen);
         await s.settle();
         // The offer to set a PIN, in the board's language.

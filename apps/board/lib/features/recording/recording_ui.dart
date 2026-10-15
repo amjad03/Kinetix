@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../classroom_plus/plus_strings.dart';
 import 'package:intl/intl.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/recording/lesson_capture.dart';
 import '../../core/recording/recordings.dart';
@@ -35,7 +35,7 @@ String voiceReason(AppLocalizations l, String reason) => switch (reason) {
 
 /// A recording's stored note (written in English by the upload queue), in the board's language.
 String recordingNote(AppLocalizations l, String note) {
-  if (note == 'Could not reach KINETIX Cloud') return l.cloudUnreachable;
+  if (note == 'Could not reach ZYNETIX Cloud') return l.cloudUnreachable;
   final failed = RegExp(r'^Request failed \((\d+)\)$').firstMatch(note);
   if (failed != null) return l.requestFailed(int.parse(failed[1]!));
   final later = RegExp(r'^Uploaded in a later class\. Share it from here if it is for (.*)\.$').firstMatch(note);

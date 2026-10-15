@@ -4,8 +4,8 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_windows/webview_windows.dart' as win;
@@ -115,7 +115,7 @@ abstract final class SafeWebPolicy {
     'rbi.org.in',
   ];
 
-  static const _key = 'kinetix.safeweb.allow', _instKey = 'kinetix.safeweb.institution';
+  static const _key = 'zynetix.safeweb.allow', _instKey = 'zynetix.safeweb.institution';
 
   /// The list now (loaded with [load]).
   static List<String> allow = List.of(defaults);
@@ -141,7 +141,7 @@ abstract final class SafeWebPolicy {
     } catch (_) {}
   }
 
-  /// The board config's `safeWeb` (from KINETIX Cloud): `{"allow": ["ncert.nic.in", …]}`.
+  /// The board config's `safeWeb` (from ZYNETIX Cloud): `{"allow": ["ncert.nic.in", …]}`.
   static Future<void> applyConfig(Object? config) async {
     if (config is! Map) return;
     final list = config['allow'];

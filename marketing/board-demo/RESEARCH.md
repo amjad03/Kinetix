@@ -12,7 +12,7 @@ the depth of each feature was uneven, and a 12–15-year-old should be able to f
 
 1. **Problem → magic → benefit.** The fintech video opens on a question in big type ("Still manually … payment
    details?"), shows the product doing the job, and closes on benefits ("Save time", "Stay …"). v3 opens with a
-   15 s hook about one teacher's morning, reveals KINETIX Board, then follows **one lesson** from walking in to
+   15 s hook about one teacher's morning, reveals ZYNETIX Board, then follows **one lesson** from walking in to
    the bell, and closes with a recap and a one-line promise.
 2. **One promise, one story.** Superhuman's film is built around one promise, not a feature list. v3's promise:
    *the board does the busywork, so the teacher can teach*. Every beat is tied to a moment of Kavya Menon's
@@ -33,11 +33,11 @@ the depth of each feature was uneven, and a 12–15-year-old should be able to f
    are separate and smaller, sit under the window, and highlight each word as it is spoken.
 8. **Real UI, staged beautifully.** The reference puts the app in a floating, tilted window over a branded
    gradient and lifts out single cards. v3 keeps the real board app (driven by the stylus) in a floating
-   window on the KINETIX navy and blue glow, with a spotlight on the active control and a callout pill.
+   window on the ZYNETIX navy and blue glow, with a spotlight on the active control and a callout pill.
 9. **Music marks the structure.** A light pulse plays under the voice, ducked while it speaks. A soft swell
    and hit falls on each chapter card and on the logo reveal, and the bed resolves on the end card.
 10. **Recap and one call to action.** The reference ends on its benefits and then the logo. v3 ends with a
-    four-tile recap of the hero moments and an end card: KINETIX Board, "Every lesson, connected."
+    four-tile recap of the hero moments and an end card: ZYNETIX Board, "Every lesson, connected."
 
 ## Rules derived for the edit
 
@@ -79,7 +79,7 @@ and [bluecarrot.io](https://bluecarrot.io/blog/saas-demo-videos-effective-exampl
    with the current word highlighted. *v4:* captions show only the piece being spoken, larger, on a dark plate.
 8. **Explain the category before the product.** Consumer launch films (Apple, Arc) open with a 15–25 s explainer
    of the problem in simple pictures. *v4:* an animated opener shows a chalkboard turning into a giant tablet ("that's a
-   smart board"), then the teacher's dozen jobs, then the KINETIX logo.
+   smart board"), then the teacher's dozen jobs, then the ZYNETIX logo.
 9. **A person to follow.** Story-driven demos follow one user through one day. *v4:* Ms Kavya (teacher) and Aarav (a
    Class 10 B student) are introduced as characters. Aarav's speech bubbles give the student's view at the live-answer,
    homework and sync moments.

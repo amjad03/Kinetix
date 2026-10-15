@@ -1,4 +1,4 @@
-# KINETIX Parent App
+# ZYNETIX Parent App
 
 The parent's phone app (Flutter, Material 3). For each child it shows attendance, homework,
 how the child answered when picked in class, and the class boards teachers shared after a
@@ -20,9 +20,9 @@ flutter test
 flutter analyze
 ```
 
-Sign in with institution code `demo-college`, `parent@demo.kinetix.in` (or phone `98000 00001`),
-password `kinetix123`. Rajesh Patel has two children (Aarav, BCom Sem 3 A, and Diya, BCA Sem 1 A).
-`sunita@demo.kinetix.in` has one child, so the child switcher is hidden.
+Sign in with institution code `demo-college`, `parent@demo.zynetix.in` (or phone `98000 00001`),
+password `zynetix123`. Rajesh Patel has two children (Aarav, BCom Sem 3 A, and Diya, BCA Sem 1 A).
+`sunita@demo.zynetix.in` has one child, so the child switcher is hidden.
 
 **Server address.** The default is `http://localhost:4000`. Tap **Server** under the sign-in
 button to change it. On the Android emulator, the host machine is `http://10.0.2.2:4000`.
@@ -61,8 +61,8 @@ test/          widget tests against FakeParentApi
 ```
 
 State is plain `ChangeNotifier` controllers rendered with `ListenableBuilder`. The design system
-is [`packages/kinetix_ui`](../../packages/kinetix_ui) (light and dark, follows the system setting);
-boards render with `WhiteboardView` from [`packages/kinetix_ink`](../../packages/kinetix_ink).
+is [`packages/zynetix_ui`](../../packages/zynetix_ui) (light and dark, follows the system setting);
+boards render with `WhiteboardView` from [`packages/zynetix_ink`](../../packages/zynetix_ink).
 
 ## Known gaps
 

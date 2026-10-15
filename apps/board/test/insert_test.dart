@@ -5,14 +5,14 @@ import 'dart:ui' as ui;
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/insert/device_files.dart';
-import 'package:kinetix_board/features/insert/document_import.dart';
-import 'package:kinetix_board/features/insert/picture_library.dart';
-import 'package:kinetix_board/features/insert/pptx_render.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_board/features/insert/device_files.dart';
+import 'package:zynetix_board/features/insert/document_import.dart';
+import 'package:zynetix_board/features/insert/picture_library.dart';
+import 'package:zynetix_board/features/insert/pptx_render.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/wait.dart';
@@ -142,7 +142,7 @@ void main() {
       tester.view.physicalSize = const Size(1920, 1080);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
+      await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
       await tester.pump();
       await tester.runAsync(PictureLibrary.load);
       await tester.tap(find.byKey(const Key('tool-insert')));
@@ -174,7 +174,7 @@ void main() {
       tester.view.physicalSize = const Size(1920, 1080);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
+      await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: BoardController()..skipEnrollment())));
       await tester.pump();
       return tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
     }

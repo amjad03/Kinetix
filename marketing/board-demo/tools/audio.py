@@ -1,7 +1,7 @@
 """Voice-over + generated ambient bed, ducked under the voice; loudness -14 LUFS; muxed with the video.
 
 Reads renders/timeline.json (from compose.py), data/vo.json and audio/<seg>.wav.
-Writes renders/mix.wav and ../../dist/kinetix-board-demo.mp4.
+Writes renders/mix.wav and ../../dist/zynetix-board-demo.mp4.
 """
 import json, os, subprocess
 import numpy as np
@@ -117,7 +117,7 @@ stereo = np.stack([mix, mix * 0.98 + np.roll(music, 240) * 0.02], 1)[:end + SR /
 wav = os.path.join(HERE, 'renders', 'mix.wav')
 sf.write(wav, stereo, SR)
 
-out = os.path.abspath(os.path.join(HERE, '..', '..', 'dist', 'kinetix-board-demo.mp4'))
+out = os.path.abspath(os.path.join(HERE, '..', '..', 'dist', 'zynetix-board-demo.mp4'))
 video = os.path.join(HERE, 'renders', 'video.mp4')
 subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', video, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'copy',
                 '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], check=True)

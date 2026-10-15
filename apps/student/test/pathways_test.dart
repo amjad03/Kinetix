@@ -3,27 +3,27 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/alumni.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/core/pathways.dart';
-import 'package:kinetix_student/core/school_life.dart';
-import 'package:kinetix_student/features/alumni/alumni_home.dart';
-import 'package:kinetix_student/features/careers/aptitude.dart';
-import 'package:kinetix_student/features/careers/career_prep.dart';
-import 'package:kinetix_student/features/careers/mock_interview.dart';
-import 'package:kinetix_student/features/profile/profile_tab.dart';
-import 'package:kinetix_student/features/projects/project_workspace_screen.dart';
-import 'package:kinetix_student/features/projects/projects_screen.dart';
-import 'package:kinetix_student/features/school/school_screens.dart';
-import 'package:kinetix_student/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_student/core/alumni.dart';
+import 'package:zynetix_student/core/api.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/core/pathways.dart';
+import 'package:zynetix_student/core/school_life.dart';
+import 'package:zynetix_student/features/alumni/alumni_home.dart';
+import 'package:zynetix_student/features/careers/aptitude.dart';
+import 'package:zynetix_student/features/careers/career_prep.dart';
+import 'package:zynetix_student/features/careers/mock_interview.dart';
+import 'package:zynetix_student/features/profile/profile_tab.dart';
+import 'package:zynetix_student/features/projects/project_workspace_screen.dart';
+import 'package:zynetix_student/features/projects/projects_screen.dart';
+import 'package:zynetix_student/features/school/school_screens.dart';
+import 'package:zynetix_student/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
 
 Widget host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: locale,
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,
@@ -488,7 +488,7 @@ void main() {
           api.record = null;
         },
       );
-      await state.signIn(server: 'http://localhost', tenant: 'demo-college', login: 'riya@example.com', password: 'kinetix123');
+      await state.signIn(server: 'http://localhost', tenant: 'demo-college', login: 'riya@example.com', password: 'zynetix123');
       await tester.pumpAndSettle();
       expect(state.signedIn, isTrue);
       expect(state.alumniOnly, isTrue);

@@ -12,7 +12,7 @@ import 'realtime.dart';
 import 'token_store.dart';
 import 'server_config.dart';
 
-/// The build's server address (`KINETIX_API_URL`; localhost only in debug builds).
+/// The build's server address (`ZYNETIX_API_URL`; localhost only in debug builds).
 export 'server_config.dart' show defaultServerUrl;
 
 /// Who is signed in, the remembered server, institution and selected child, and the app's language.
@@ -168,7 +168,7 @@ class AppState extends ChangeNotifier {
       final teacher = profile.roles.contains('teacher');
       throw ApiException(
         403,
-        'This app is for parents and guardians. ${teacher ? 'Teachers can use the KINETIX Teacher app.' : 'Ask your institution to link your account to your child.'}',
+        'This app is for parents and guardians. ${teacher ? 'Teachers can use the ZYNETIX Teacher app.' : 'Ask your institution to link your account to your child.'}',
         problem: teacher ? ApiProblem.teacherAccount : ApiProblem.notGuardian,
       );
     }

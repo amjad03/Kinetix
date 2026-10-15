@@ -2,13 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/academics_models.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/core/course_file_models.dart';
-import 'package:kinetix_teacher/core/models.dart';
-import 'package:kinetix_teacher/features/work/obe_screens.dart';
-import 'package:kinetix_teacher/features/work/project_screens.dart';
-import 'package:kinetix_teacher/features/work/research_screens.dart';
+import 'package:zynetix_teacher/core/academics_models.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/core/course_file_models.dart';
+import 'package:zynetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/features/work/obe_screens.dart';
+import 'package:zynetix_teacher/features/work/project_screens.dart';
+import 'package:zynetix_teacher/features/work/research_screens.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

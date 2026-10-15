@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart' show LessonStrings;
+import 'package:zynetix_lesson/zynetix_lesson.dart' show LessonStrings;
 
 import '../core/api.dart';
 import '../core/format.dart';

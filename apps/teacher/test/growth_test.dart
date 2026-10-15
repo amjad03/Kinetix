@@ -1,11 +1,11 @@
 // Annotations on scripts, the self-appraisal, house points and the curriculum view.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/growth_models.dart';
-import 'package:kinetix_teacher/core/work_models.dart';
-import 'package:kinetix_teacher/features/hr/appraisal_screen.dart';
-import 'package:kinetix_teacher/features/work/evaluation_screens.dart';
-import 'package:kinetix_teacher/features/work/houses_curriculum_screens.dart';
+import 'package:zynetix_teacher/core/growth_models.dart';
+import 'package:zynetix_teacher/core/work_models.dart';
+import 'package:zynetix_teacher/features/hr/appraisal_screen.dart';
+import 'package:zynetix_teacher/features/work/evaluation_screens.dart';
+import 'package:zynetix_teacher/features/work/houses_curriculum_screens.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

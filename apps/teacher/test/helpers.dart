@@ -4,20 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/app.dart';
-import 'package:kinetix_teacher/core/app_state.dart';
-import 'package:kinetix_teacher/core/l10n.dart';
-import 'package:kinetix_teacher/core/models.dart';
-import 'package:kinetix_teacher/core/push.dart';
-import 'package:kinetix_teacher/core/secure_store.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_teacher/app.dart';
+import 'package:zynetix_teacher/core/app_state.dart';
+import 'package:zynetix_teacher/core/l10n.dart';
+import 'package:zynetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/core/push.dart';
+import 'package:zynetix_teacher/core/secure_store.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';
 
 /// A screen on its own, localised like the app.
 Widget localizedApp({required Widget home, String language = 'en'}) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: Locale(language),
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: const [
@@ -48,9 +48,9 @@ bool _fontsLoaded = false;
 Future<void> loadAppFonts() async {
   if (_fontsLoaded) return;
   _fontsLoaded = true;
-  final dir = Directory('../../packages/kinetix_ui/fonts');
+  final dir = Directory('../../packages/zynetix_ui/fonts');
   for (final family in ['SansFlex', 'SansFlexDisplay', 'NotoSansDevanagari', 'NotoSansKannada']) {
-    final loader = FontLoader('packages/kinetix_ui/$family');
+    final loader = FontLoader('packages/zynetix_ui/$family');
     for (final f in dir.listSync().whereType<File>().where((f) => f.path.contains('$family-') && f.path.endsWith('.ttf'))) {
       loader.addFont(Future.value(ByteData.sublistView(f.readAsBytesSync())));
     }

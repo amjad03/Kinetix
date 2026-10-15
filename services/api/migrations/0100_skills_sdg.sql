@@ -54,8 +54,8 @@ INSERT INTO "sdg_goals" ("number", "name") VALUES
   (14, 'Life Below Water'), (15, 'Life on Land'), (16, 'Peace, Justice and Strong Institutions'), (17, 'Partnerships for the Goals')
 ON CONFLICT ("number") DO NOTHING;--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT ON "sdg_goals" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT ON "sdg_goals" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "sdg_tags" (
@@ -75,8 +75,8 @@ CREATE POLICY tenant_isolation ON "skills"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "skills" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "skills" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "skill_maps" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -85,8 +85,8 @@ CREATE POLICY tenant_isolation ON "skill_maps"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "skill_maps" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "skill_maps" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "skill_evidence" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -95,8 +95,8 @@ CREATE POLICY tenant_isolation ON "skill_evidence"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "skill_evidence" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "skill_evidence" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "outcome_passports" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -105,8 +105,8 @@ CREATE POLICY tenant_isolation ON "outcome_passports"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "outcome_passports" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "outcome_passports" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "sdg_tags" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -115,7 +115,7 @@ CREATE POLICY tenant_isolation ON "sdg_tags"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "sdg_tags" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "sdg_tags" TO zynetix_app;
   END IF;
 END $$;

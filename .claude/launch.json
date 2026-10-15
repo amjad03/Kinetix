@@ -26,7 +26,7 @@
       "runtimeExecutable": "open",
       "runtimeArgs": [
         "-n",
-        "apps/board/build/macos/Build/Products/Debug/kinetix_board.app"
+        "apps/board/build/macos/Build/Products/Debug/zynetix_board.app"
       ],
       "port": 4000
     }

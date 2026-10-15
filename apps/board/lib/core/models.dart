@@ -1,6 +1,6 @@
 /// Mirrors packages/shared/src/index.ts.
 library;
-import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
+import 'package:zynetix_ui/zynetix_ui.dart' show kxFitMinutes;
 
 class SessionContext {
   SessionContext({
@@ -180,9 +180,9 @@ class WhiteboardSummary {
   bool get shared => sharedAt != null;
 }
 
-// --- KINETIX AI ------------------------------------------------------------------------------
+// --- ZYNETIX AI ------------------------------------------------------------------------------
 
-/// Languages KINETIX AI writes in. The label is in the language itself.
+/// Languages ZYNETIX AI writes in. The label is in the language itself.
 enum AiLanguage {
   en('English', 'EN'),
   hi('हिन्दी', 'हि'),
@@ -217,7 +217,7 @@ class AiMeta {
   final bool cached;
   final bool preview;
 
-  /// Answered on the board from its offline notes (features/offline_ai), not by KINETIX AI:
+  /// Answered on the board from its offline notes (features/offline_ai), not by ZYNETIX AI:
   /// labelled "Offline sample". Always also [preview].
   final bool offline;
 
@@ -235,7 +235,7 @@ class SyllabusTopic {
   final String title;
   final String summary;
 
-  /// Added by the institution rather than the KINETIX library.
+  /// Added by the institution rather than the ZYNETIX library.
   final bool own;
 }
 
@@ -295,7 +295,7 @@ class Coverage {
   int get covered => topics.length;
 }
 
-/// A 3D model or lab the content library links to a topic (catalogue ids in kinetix_3d/labs).
+/// A 3D model or lab the content library links to a topic (catalogue ids in zynetix_3d/labs).
 class TopicResource {
   TopicResource({required this.kind, required this.id, required this.title});
   factory TopicResource.fromJson(Map<String, dynamic> j) => TopicResource(kind: j['kind'] as String, id: j['id'] as String, title: j['title'] as String);
@@ -533,7 +533,7 @@ class LessonStep {
   final String activity;
 }
 
-/// What KINETIX AI read on a board page.
+/// What ZYNETIX AI read on a board page.
 class BoardReading {
   BoardReading({required this.text, required this.math});
   factory BoardReading.fromJson(Map<String, dynamic> j) =>

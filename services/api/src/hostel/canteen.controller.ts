@@ -100,7 +100,7 @@ export class CanteenController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [topup] = await tx.insert(canteenTopups).values({ tenantId: p.tenantId, studentId, amountPaise: b.amountPaise, provider: provider.name, providerOrderId: order.orderId, payerUserId: p.userId }).returning();
       const [tenant] = await tx.select({ name: tenants.name }).from(tenants);
-      return { topupId: topup.id, provider: provider.name, keyId: provider.keyId, orderId: order.orderId, amountPaise: b.amountPaise, currency: 'INR', name: tenant?.name ?? 'KINETIX', description: 'Canteen wallet', prefill: { name: payer?.fullName ?? '', email: payer?.email ?? '', contact: payer?.phone ?? '' } };
+      return { topupId: topup.id, provider: provider.name, keyId: provider.keyId, orderId: order.orderId, amountPaise: b.amountPaise, currency: 'INR', name: tenant?.name ?? 'ZYNETIX', description: 'Canteen wallet', prefill: { name: payer?.fullName ?? '', email: payer?.email ?? '', contact: payer?.phone ?? '' } };
     });
   }
 

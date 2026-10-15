@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/features/ai/ai_controller.dart';
-import 'package:kinetix_board/features/ai/ai_widgets.dart';
-import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/board/panel/split_panel.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show TexView;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/features/ai/ai_controller.dart';
+import 'package:zynetix_board/features/ai/ai_widgets.dart';
+import 'package:zynetix_board/features/board/board_screen.dart';
+import 'package:zynetix_board/features/board/panel/split_panel.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show TexView;
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'support/layout.dart';
 import 'support/wait.dart';
@@ -122,7 +122,7 @@ void main() {
     board = BoardController(apiFactory: (url) => ApiClient(baseUrl: url, client: client), realtimeFactory: (_) => _NoRealtime());
     await board.enroll('http://test', 'KX-AAAA-BBBB');
     if (signIn) board.onPaired('session-token', ctx ?? session());
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: board)));
+    await tester.pumpWidget(MaterialApp(theme: ZynetixTheme.light(), home: BoardScreen(board: board)));
     await tester.pumpAndSettle();
   }
 
@@ -204,11 +204,11 @@ void main() {
       await pump(tester);
       await openAi(tester);
       final cases = {
-        429: 'Your institution has used today’s KINETIX AI allowance. It resets tomorrow.',
-        503: 'KINETIX AI is not reachable right now. Try again in a minute.',
-        502: 'KINETIX AI could not produce a usable answer. Try again or rephrase.',
+        429: 'Your institution has used today’s ZYNETIX AI allowance. It resets tomorrow.',
+        503: 'ZYNETIX AI is not reachable right now. Try again in a minute.',
+        502: 'ZYNETIX AI could not produce a usable answer. Try again or rephrase.',
         422: 'Not for the classroom.',
-        401: 'Sign in again with the Teacher app to use KINETIX AI.',
+        401: 'Sign in again with the Teacher app to use ZYNETIX AI.',
       };
       for (final e in cases.entries) {
         override = (_) async => http.Response(jsonEncode({'message': e.key == 422 ? 'Not for the classroom.' : 'x', 'statusCode': e.key}), e.key);
@@ -216,9 +216,9 @@ void main() {
         expect(find.text(e.value), findsOneWidget, reason: '${e.key}');
       }
       // The model server (Gemini's free tier) stayed busy after the API waited and asked again.
-      override = (_) async => http.Response(jsonEncode({'message': 'KINETIX AI is busy right now. Try again in a minute.', 'statusCode': 503, 'code': 'AI_BUSY'}), 503);
+      override = (_) async => http.Response(jsonEncode({'message': 'ZYNETIX AI is busy right now. Try again in a minute.', 'statusCode': 503, 'code': 'AI_BUSY'}), 503);
       await ask(tester, 'Busy question');
-      expect(find.text('KINETIX AI is busy right now. Try again in a minute.'), findsOneWidget);
+      expect(find.text('ZYNETIX AI is busy right now. Try again in a minute.'), findsOneWidget);
       override = (_) async => throw http.ClientException('Network is unreachable');
       await ask(tester, 'Offline question');
       expect(find.textContaining('The board is offline'), findsOneWidget);
@@ -238,7 +238,7 @@ void main() {
       expect(find.byKey(const Key('ai-signin')), findsOneWidget);
       await ask(tester, 'What is a cell?');
       expect(calls('/v1/ai/explain'), isEmpty);
-      expect(find.text('Sign in with the Teacher app to ask KINETIX AI.'), findsOneWidget);
+      expect(find.text('Sign in with the Teacher app to ask ZYNETIX AI.'), findsOneWidget);
 
       await tapKey(tester, 'ai-tool-math');
       await tester.enterText(find.byKey(const Key('math-input')), '3');

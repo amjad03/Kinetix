@@ -1,4 +1,4 @@
-# KINETIX import: program outcomes and course outcomes with their mapping. One row per outcome; list the PO and PSO rows before the CO rows that map to them.
+# ZYNETIX import: program outcomes and course outcomes with their mapping. One row per outcome; list the PO and PSO rows before the CO rows that map to them.
 # type           po, pso or co (required)
 # program        Program name (required; import programs first)
 # code           Outcome code, e.g. PO1, PSO1, CO1 (required)

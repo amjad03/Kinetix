@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/core/models.dart';
-import 'package:kinetix_teacher/features/driver/driver_screen.dart';
-import 'package:kinetix_teacher/features/driver/location.dart';
-import 'package:kinetix_teacher/features/driver/trip_controller.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/features/driver/driver_screen.dart';
+import 'package:zynetix_teacher/features/driver/location.dart';
+import 'package:zynetix_teacher/features/driver/trip_controller.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

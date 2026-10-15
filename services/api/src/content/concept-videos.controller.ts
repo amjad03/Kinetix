@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Put, Query } from '@nestjs/common';
-import type { Language, ManagedConceptVideo, PeriodConceptVideos, TopicConceptVideos, TopicVideoCount } from '@kinetix/shared';
+import type { Language, ManagedConceptVideo, PeriodConceptVideos, TopicConceptVideos, TopicVideoCount } from '@zynetix/shared';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES, TEACHING_ROLES } from '../auth/auth.decorators.js';

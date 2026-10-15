@@ -17,4 +17,4 @@ API: `services/api/src/exams`, `src/obe`, and the workflow additions in `src/mar
 - Reports: `GET /v1/obe/programs/:id/report.csv|pdf?academicYearId=&framework=nba|naac`.
 
 ## Testing
-`KINETIX_PG_ADMIN_URL` (or `KINETIX_TEST_ADMIN_URL`) is a superuser connection URL used by `test/global-setup.ts`; without it the old `sudo -u postgres psql` is used. `KINETIX_TEST_DB` picks the database.
+`ZYNETIX_PG_ADMIN_URL` (or `ZYNETIX_TEST_ADMIN_URL`) is a superuser connection URL used by `test/global-setup.ts`; without it the old `sudo -u postgres psql` is used. `ZYNETIX_TEST_DB` picks the database.

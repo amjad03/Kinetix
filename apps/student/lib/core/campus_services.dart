@@ -364,7 +364,7 @@ class TopUpCheckout {
       keyId: j['keyId'] as String? ?? '',
       orderId: j['orderId'] as String,
       amountPaise: (j['amountPaise'] as num).toInt(),
-      name: j['name'] as String? ?? 'KINETIX',
+      name: j['name'] as String? ?? 'ZYNETIX',
       description: j['description'] as String? ?? '',
       prefillName: p['name'] as String? ?? '',
       prefillEmail: p['email'] as String? ?? '',

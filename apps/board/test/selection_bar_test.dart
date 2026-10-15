@@ -1,12 +1,12 @@
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/ai_pen_ui.dart';
-import 'package:kinetix_board/features/board/selection_actions.dart';
-import 'package:kinetix_board/l10n/gen/app_localizations.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/ai_pen_ui.dart';
+import 'package:zynetix_board/features/board/selection_actions.dart';
+import 'package:zynetix_board/l10n/gen/app_localizations.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Stroke shape(ShapeKind k, Offset a, Offset b, {String id = 's'}) => Stroke(
@@ -25,7 +25,7 @@ void main() {
     addTearDown(wb.dispose);
     await tester.pumpWidget(
       MaterialApp(
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -115,7 +115,7 @@ void main() {
     final board = BoardController()..skipEnrollment();
     await tester.pumpWidget(
       MaterialApp(
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: MeasureShapesSwitch(board: board)),

@@ -55,7 +55,7 @@ whiteboards (id chosen by the board, owner, session, section, subject, content j
 ```
 
 See [notifications.md](notifications.md). A whiteboard's `content` is `{v, background, canvas{w,h},
-pages[{strokes[{t,c,w,s?,p[]}]}]}` with points at 0.1 px (`packages/kinetix_ink/lib/src/serialization.dart`).
+pages[{strokes[{t,c,w,s?,p[]}]}]}` with points at 0.1 px (`packages/zynetix_ink/lib/src/serialization.dart`).
 Students and guardians can read a board only after it is shared with their class.
 
 ## Content library

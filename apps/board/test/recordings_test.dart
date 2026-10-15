@@ -5,13 +5,13 @@ import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/recording/lesson_capture.dart';
-import 'package:kinetix_board/core/recording/recording_store.dart';
-import 'package:kinetix_board/core/recording/recordings.dart';
-import 'package:kinetix_board/core/recording/voice_recorder.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/recording/lesson_capture.dart';
+import 'package:zynetix_board/core/recording/recording_store.dart';
+import 'package:zynetix_board/core/recording/recordings.dart';
+import 'package:zynetix_board/core/recording/voice_recorder.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'support/recording_fakes.dart';
 
@@ -79,7 +79,7 @@ void main() {
     final events = server.requests[1];
     expect(events.headers['content-type'], 'application/octet-stream');
     final log = jsonDecode(utf8.decode(events.bodyBytes)) as Map<String, dynamic>;
-    expect(log['v'], 2); // the lesson stream format (packages/kinetix_ink lesson.dart)
+    expect(log['v'], 2); // the lesson stream format (packages/zynetix_ink lesson.dart)
     expect(log['canvas'], {'w': 1920, 'h': 1080});
     expect((log['events'] as List).map((e) => (e as List)[1]), containsAll(['L', 'b', 'e']));
     final audio = server.requests[2];

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { open, shot } from './helpers';
 
-const API = process.env.KINETIX_API_URL ?? 'http://localhost:4000';
+const API = process.env.ZYNETIX_API_URL ?? 'http://localhost:4000';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -35,7 +35,7 @@ test('Results shows the seeded unit test with its class average', async ({ page 
 
 test('the principal publishes marks a teacher has entered', async ({ page, request }) => {
   // Anita sets a quiz from the Teacher App and enters two marks, without publishing.
-  const login = await request.post(`${API}/v1/auth/login`, { data: { tenant: 'demo-college', login: 'anita@demo.kinetix.in', password: 'kinetix123' } });
+  const login = await request.post(`${API}/v1/auth/login`, { data: { tenant: 'demo-college', login: 'anita@demo.zynetix.in', password: 'zynetix123' } });
   expect(login.ok()).toBe(true);
   const headers = { authorization: `Bearer ${(await login.json()).accessToken}` };
   const classes: { section: { id: string }; subject: { id: string; name: string } }[] = await (await request.get(`${API}/v1/teacher/classes`, { headers })).json();

@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import type { Payslip, PayrollRunDetail, PayrollRunSummary, SalaryComponent, SalaryStructure } from '@kinetix/shared';
+import type { Payslip, PayrollRunDetail, PayrollRunSummary, SalaryComponent, SalaryStructure } from '@zynetix/shared';
 import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, ne, or, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { DomainEvents, EventBus } from '../events/events.js';

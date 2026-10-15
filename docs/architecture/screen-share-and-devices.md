@@ -26,7 +26,7 @@ Clients:
   (`features/cast`). Up to four tiles side by side, one can fill the panel, "Draw on it" marks stay on the board
   only, "Add to board" puts the frame (with marks) on the whiteboard, Stop ends one. The tab opens by itself when
   someone asks.
-- Teacher and Student apps: `packages/kinetix_cast` (sender, cast screen). `GET /v1/cast/boards` lists boards the
+- Teacher and Student apps: `packages/zynetix_cast` (sender, cast screen). `GET /v1/cast/boards` lists boards the
   person may cast to. Android needs a `mediaProjection` foreground service (declared in both manifests).
   iOS only captures the app itself unless a ReplayKit broadcast extension is added (not built).
 - Laptop: `/cast` in the ERP. Teachers and students sign in there (separate `kx_cast` cookie, not an ERP session);

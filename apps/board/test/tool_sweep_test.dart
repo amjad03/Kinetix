@@ -3,13 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/chrome.dart';
-import 'package:kinetix_board/features/board/layout/tools_drawer.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/chrome.dart';
+import 'package:zynetix_board/features/board/layout/tools_drawer.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -25,7 +25,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     Viewer3dEngine.debugOverride = FakeViewerEngine.new;
     ViewerManifest.debugLoad = (id) async =>
-        ViewerManifest.fromJson(jsonDecode(File('../../packages/kinetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
+        ViewerManifest.fromJson(jsonDecode(File('../../packages/zynetix_3d/assets/viewer3d/models/$id.json').readAsStringSync()) as Map<String, dynamic>);
   });
   tearDown(() {
     Viewer3dEngine.debugOverride = null;
@@ -72,7 +72,7 @@ void main() {
         boards = [board];
         board.setToolbarDock(layout);
         board.onPaired('session-token', sessionIn('en'));
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         await tester.pumpAndSettle();
         if (find.text('Not now').evaluate().isNotEmpty) {
           await tester.tap(find.text('Not now'));
@@ -180,7 +180,7 @@ void main() {
         final board = await enrolledBoard();
         boards = [board];
         board.onPaired('session-token', sessionIn('en'));
-        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpWidget(ZynetixBoardApp(controller: board));
         await tester.pumpAndSettle();
         final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
         // Something on the page, so Save, Share and Clear have something to act on.

@@ -1,5 +1,5 @@
 // The board's lesson events, rebuilt into pages of elements.
-// A TypeScript port of `LessonPlayer` in packages/kinetix_ink/lib/src/lesson.dart (format v2;
+// A TypeScript port of `LessonPlayer` in packages/zynetix_ink/lib/src/lesson.dart (format v2;
 // version 1 streams are a subset):
 //
 //   [t, 'L', pages, index]     every page's elements ([[[id, element], …], …]) and the open page

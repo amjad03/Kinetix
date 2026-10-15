@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type PairingClaimedEvent } from '@kinetix/shared';
+import { RealtimeEvents, type PairingClaimedEvent } from '@zynetix/shared';
 import { randomUUID } from 'node:crypto';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';

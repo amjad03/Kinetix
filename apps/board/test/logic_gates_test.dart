@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/logic_gates/logic_circuit.dart';
-import 'package:kinetix_board/features/logic_gates/logic_gates_lab.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/features/logic_gates/logic_circuit.dart';
+import 'package:zynetix_board/features/logic_gates/logic_gates_lab.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'support/panel_harness.dart';
 

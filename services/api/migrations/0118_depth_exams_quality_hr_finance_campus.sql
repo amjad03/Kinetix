@@ -547,7 +547,7 @@ CREATE POLICY tenant_isolation ON "intervention_reassessments"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "qb_paper_releases", "exam_practical_slots", "exam_practical_candidates", "result_class_bands", "mark_normalisations", "accreditation_frameworks", "accreditation_criteria", "staff_qualifications", "teaching_evaluations", "payroll_adjustments", "payroll_tax_profile", "tds_challans", "fee_instalment_plans", "fee_instalments", "fee_late_fee_rules", "fee_late_fees", "student_credits", "amc_contracts", "library_reservations", "library_eresources", "library_eresource_access", "resource_topic_links", "hostel_work_orders", "canteen_stock_log", "canteen_feedback", "retention_rules", "intervention_support", "intervention_reassessments" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "qb_paper_releases", "exam_practical_slots", "exam_practical_candidates", "result_class_bands", "mark_normalisations", "accreditation_frameworks", "accreditation_criteria", "staff_qualifications", "teaching_evaluations", "payroll_adjustments", "payroll_tax_profile", "tds_challans", "fee_instalment_plans", "fee_instalments", "fee_late_fee_rules", "fee_late_fees", "student_credits", "amc_contracts", "library_reservations", "library_eresources", "library_eresource_access", "resource_topic_links", "hostel_work_orders", "canteen_stock_log", "canteen_feedback", "retention_rules", "intervention_support", "intervention_reassessments" TO zynetix_app;
   END IF;
 END $$;

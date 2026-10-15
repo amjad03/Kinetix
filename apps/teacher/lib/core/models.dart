@@ -1,7 +1,7 @@
 /// Mirrors the Teacher App DTOs in packages/shared/src/index.ts.
 library;
 
-import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
+import 'package:zynetix_ui/zynetix_ui.dart' show kxFitMinutes;
 
 /// "10:00:00" → minutes since midnight.
 int _minutes(String hhmmss) {
@@ -976,7 +976,7 @@ class PeriodPlan {
   final List<String> suggestedTopicIds;
 }
 
-/// A first draft from KINETIX AI (POST /v1/lesson-plans/draft); not saved.
+/// A first draft from ZYNETIX AI (POST /v1/lesson-plans/draft); not saved.
 class LessonDraft {
   const LessonDraft({required this.topicIds, required this.content, this.preview = false});
 

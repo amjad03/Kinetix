@@ -1,4 +1,4 @@
-# KINETIX on AWS, ap-south-1 (Mumbai). One root module, one state per environment:
+# ZYNETIX on AWS, ap-south-1 (Mumbai). One root module, one state per environment:
 #   terraform init -backend-config=environments/staging.backend.hcl
 #   terraform plan -var-file=environments/staging.tfvars
 # See docs/operations/deploy.md. Nothing here leaves India: every resource is in var.aws_region,
@@ -26,7 +26,7 @@ provider "aws" {
 
   default_tags {
     tags = merge(var.tags, {
-      Project     = "kinetix"
+      Project     = "zynetix"
       Environment = var.environment
       ManagedBy   = "terraform"
       DataRegion  = var.aws_region
@@ -42,7 +42,7 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  name       = "kinetix-${var.environment}"
+  name       = "zynetix-${var.environment}"
   account_id = data.aws_caller_identity.current.account_id
   partition  = data.aws_partition.current.partition
   azs        = slice(data.aws_availability_zones.available.names, 0, var.az_count)

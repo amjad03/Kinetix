@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show AdpcmState, LiveAudioCodec;
-import 'package:kinetix_student/core/live.dart';
-import 'package:kinetix_student/core/live_audio_player.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show AdpcmState, LiveAudioCodec;
+import 'package:zynetix_student/core/live.dart';
+import 'package:zynetix_student/core/live_audio_player.dart';
 
 import 'fake_api.dart';
 import 'fake_live.dart';

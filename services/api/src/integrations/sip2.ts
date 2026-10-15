@@ -75,7 +75,7 @@ export class Sip2Service {
   }
 
   private statusResponse(_session: Sip2Session) {
-    return `98YYYNNN003005${sipDate(this.clock.now())}2.00AO|AMKINETIX|BXYYYYYYYYYYYYYYYY|`;
+    return `98YYYNNN003005${sipDate(this.clock.now())}2.00AO|AMZYNETIX|BXYYYYYYYYYYYYYYYY|`;
   }
 
   private async findPatron(tx: Tx, id: string) {

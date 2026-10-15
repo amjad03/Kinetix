@@ -1,5 +1,5 @@
-name: kinetix_teacher
-description: "KINETIX Teacher App: today's classes, attendance, homework, lesson recordings and connecting to the classroom board."
+name: zynetix_teacher
+description: "ZYNETIX Teacher App: today's classes, attendance, homework, lesson recordings and connecting to the classroom board."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -12,15 +12,15 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  kinetix_cast:
-    path: ../../packages/kinetix_cast
-  kinetix_ui:
-    path: ../../packages/kinetix_ui
-  kinetix_lesson:
-    path: ../../packages/kinetix_lesson
+  zynetix_cast:
+    path: ../../packages/zynetix_cast
+  zynetix_ui:
+    path: ../../packages/zynetix_ui
+  zynetix_lesson:
+    path: ../../packages/zynetix_lesson
   # Printable answer cards (the board reads them from a photo of the class).
-  kinetix_cards:
-    path: ../../packages/kinetix_cards
+  zynetix_cards:
+    path: ../../packages/zynetix_cards
   pdf: ^3.11.3
   printing: ^5.14.3
   # Phone remote: a photo from the camera onto the board.

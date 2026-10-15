@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 /// Puts a dot on the open page, so Add Page is allowed (spec 11.2: no blank page after a blank page).
 void markPage(WhiteboardController wb) =>

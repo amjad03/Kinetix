@@ -5,8 +5,8 @@ library;
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart' show RecordingInfo;
 
 /// "10:00:00" → a wall-clock time from the timetable (local to the institution).
 class ClockTime implements Comparable<ClockTime> {
@@ -93,7 +93,7 @@ class Me {
   }
 }
 
-/// A short update written by KINETIX AI for a parent about their own child (`POST /v1/ai/parent/children/:id/insight`).
+/// A short update written by ZYNETIX AI for a parent about their own child (`POST /v1/ai/parent/children/:id/insight`).
 class AiUpdate {
   const AiUpdate({required this.headline, required this.highlights, required this.risks, required this.suggestions, required this.preview});
 
@@ -584,7 +584,7 @@ class FeeCheckout {
       orderId: j['orderId'] as String,
       amountPaise: _paise(j['amountPaise']),
       currency: j['currency'] as String? ?? 'INR',
-      name: j['name'] as String? ?? 'KINETIX',
+      name: j['name'] as String? ?? 'ZYNETIX',
       description: j['description'] as String? ?? '',
       prefillName: prefill['name'] as String? ?? '',
       prefillEmail: prefill['email'] as String? ?? '',

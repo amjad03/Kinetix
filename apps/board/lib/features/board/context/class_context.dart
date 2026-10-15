@@ -1,4 +1,4 @@
-import 'package:kinetix_ink/kinetix_ink.dart' show InkDomain;
+import 'package:zynetix_ink/zynetix_ink.dart' show InkDomain;
 
 import '../kit/subjects.dart';
 

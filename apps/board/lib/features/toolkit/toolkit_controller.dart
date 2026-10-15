@@ -10,7 +10,7 @@ import '../../core/models.dart';
 import 'noise_source.dart';
 import 'toolkit_sounds.dart';
 
-/// The class toolkit (ported from the KINETIX prototype): cards that float over the board and
+/// The class toolkit (ported from the ZYNETIX prototype): cards that float over the board and
 /// the two overlays that cover it.
 enum ToolkitItem { timer, stopwatch, picker, dice, spinner, noise, curtain, spotlight }
 

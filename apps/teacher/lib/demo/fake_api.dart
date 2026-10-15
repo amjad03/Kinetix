@@ -1,5 +1,5 @@
 /// In-memory fakes of the API, realtime and push. Widget tests use them directly; demo builds
-/// (`--dart-define=KINETIX_DEMO=true`) use them through DemoTeacherApi (demo_api.dart).
+/// (`--dart-define=ZYNETIX_DEMO=true`) use them through DemoTeacherApi (demo_api.dart).
 library;
 
 import 'dart:async';
@@ -8,7 +8,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/painting.dart';
 
-import 'package:kinetix_lesson/kinetix_lesson.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
 import '../core/academics_models.dart';
 import '../core/api.dart';
 import '../core/course_file_models.dart';
@@ -110,7 +110,7 @@ class FakeTeacherApi implements TeacherApi {
     // English so most tests read like the spec; the i18n tests switch this to hi or kn.
     preferredLanguage: 'en',
     institution: 'Demo College',
-    email: 'anita@demo.kinetix.in',
+    email: 'anita@demo.zynetix.in',
   );
 
   final section = const Ref('sec1', 'BCom Sem 3 A');
@@ -143,7 +143,7 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<void> login({required String tenant, required String login, required String password}) async {
     calls.add('login $tenant $login');
-    if (password != 'kinetix123') throw ApiException(401, 'Wrong institution, login or password');
+    if (password != 'zynetix123') throw ApiException(401, 'Wrong institution, login or password');
     token = 'tok';
   }
 
@@ -636,7 +636,7 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<ChatMessage> sendMessage(String conversationId, String body) async {
     calls.add('send $conversationId $body');
-    if (sendFails) throw ApiException(0, "Can't reach KINETIX.");
+    if (sendFails) throw ApiException(0, "Can't reach ZYNETIX.");
     final m = ChatMessage(
       id: 'm${chat[conversationId]!.length + 100}',
       senderId: profile.id,
@@ -1700,7 +1700,7 @@ class FakeTeacherApi implements TeacherApi {
   List<String> suggestedTopicIds = ['t3'];
   Map<String, dynamic>? lastSavedPlan;
 
-  /// The draft KINETIX AI returns (a preview, as from a server without an AI model).
+  /// The draft ZYNETIX AI returns (a preview, as from a server without an AI model).
   LessonDraft draft = const LessonDraft(
     topicIds: ['t3'],
     preview: true,

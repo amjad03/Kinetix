@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
-import 'package:kinetix_board/core/recording/recording_store.dart';
-import 'package:kinetix_board/core/recording/voice_recorder.dart';
+import 'package:zynetix_board/core/recording/recording_store.dart';
+import 'package:zynetix_board/core/recording/voice_recorder.dart';
 
 /// Recordings kept in memory, for widget tests (real file I/O does not run under fake time).
 class MemoryRecordingStore implements RecordingStore {

@@ -1,4 +1,4 @@
-import { RealtimeEvents } from '@kinetix/shared';
+import { RealtimeEvents } from '@zynetix/shared';
 import { Body, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -189,7 +189,7 @@ export class ConversationsController {
         id: m.id,
         conversationId: id,
         recipientId: fromStaff ? c.familyId : c.staffId,
-        senderName: sender?.fullName ?? 'KINETIX',
+        senderName: sender?.fullName ?? 'ZYNETIX',
         body: body.body,
         studentId: c.studentId,
       });

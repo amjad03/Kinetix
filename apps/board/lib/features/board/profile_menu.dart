@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show InputMode;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show InputMode;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
@@ -175,7 +175,7 @@ class ProfileMenu extends StatelessWidget {
               kiosk: board.kiosk,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s8),
-                child: Text('KINETIX Board 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                child: Text('ZYNETIX Board 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
               ),
             ),
           ],

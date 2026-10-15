@@ -270,11 +270,11 @@ void main() {
 
       // Signing in switches to the account's language.
       await tester.enterText(find.byKey(const Key('tenant')), 'demo-college');
-      await tester.enterText(find.byKey(const Key('login')), 'anita@demo.kinetix.in');
+      await tester.enterText(find.byKey(const Key('login')), 'anita@demo.zynetix.in');
       await tester.enterText(find.byKey(const Key('password')), 'wrong');
       await tapAndSettle(tester, find.byKey(const Key('signIn')));
       expect(find.text(strings('kn').errorWrongLogin), findsOneWidget);
-      await tester.enterText(find.byKey(const Key('password')), 'kinetix123');
+      await tester.enterText(find.byKey(const Key('password')), 'zynetix123');
       await tapAndSettle(tester, find.byKey(const Key('signIn')));
       expect(find.text(strings('hi').todaysClasses), findsOneWidget);
 

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { signIn, signInAsPrincipal } from './helpers';
 
 test('a teacher is refused with a clear message', async ({ page }) => {
-  await signIn(page, 'anita@demo.kinetix.in');
+  await signIn(page, 'anita@demo.zynetix.in');
   await expect(page.locator('form').getByRole('alert')).toContainText('for principals, administrators, heads of department, the accounts office and the library');
   await expect(page).toHaveURL(/\/login/);
   // No session was created: the dashboard still sends us to sign in.
@@ -11,7 +11,7 @@ test('a teacher is refused with a clear message', async ({ page }) => {
 });
 
 test('a wrong password is rejected', async ({ page }) => {
-  await signIn(page, 'principal@demo.kinetix.in', 'demo-college', 'not-the-password');
+  await signIn(page, 'principal@demo.zynetix.in', 'demo-college', 'not-the-password');
   await expect(page.locator('form').getByRole('alert')).toContainText('Wrong institution code, login or password');
 });
 
@@ -25,7 +25,7 @@ test('the session cookie is httpOnly and the token never reaches the page', asyn
 });
 
 test('a head of department can sign in but cannot add boards', async ({ page }) => {
-  await signIn(page, 'ravi@demo.kinetix.in');
+  await signIn(page, 'ravi@demo.zynetix.in');
   await expect(page.getByTestId('school-name')).toBeVisible();
   await page.goto('/boards');
   await expect(page.getByRole('button', { name: 'Add board' })).toBeDisabled();

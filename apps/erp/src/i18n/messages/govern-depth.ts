@@ -1,13 +1,13 @@
 import { area } from '../define';
 
-// Business rules, incidents, file retention, the KINETIX plan and invoices, the AI audit and evaluation desks,
+// Business rules, incidents, file retention, the ZYNETIX plan and invoices, the AI audit and evaluation desks,
 // integrity checks, result approval, intervention re-measure, plain-words search and display density (migration 0120).
 export default area(
   {
     'nav.govRules': 'Business rules',
     'nav.govIncidents': 'Incidents',
     'nav.govRetention': 'File retention',
-    'nav.billing': 'KINETIX plan and billing',
+    'nav.billing': 'ZYNETIX plan and billing',
     'nav.aiAudit': 'AI audit',
     'nav.aiEvals': 'AI evaluation',
     'nav.integrity': 'Academic integrity',
@@ -117,7 +117,7 @@ export default area(
     'ret.f.note': 'Reason or rule',
     'ret.err.category': 'Use lower-case letters, digits and underscores for the category.',
 
-    'bl.subtitle': 'The institution\'s own KINETIX plan: what it uses, what the next invoice will be, and the invoices with GST.',
+    'bl.subtitle': 'The institution\'s own ZYNETIX plan: what it uses, what the next invoice will be, and the invoices with GST.',
     'bl.choose': 'Choose a plan',
     'bl.change': 'Change plan',
     'bl.cancel': 'Cancel renewal',
@@ -280,7 +280,7 @@ export default area(
       'nav.govRules': 'व्यावसायिक नियम',
       'nav.govIncidents': 'घटनाएँ',
       'nav.govRetention': 'फ़ाइल प्रतिधारण',
-      'nav.billing': 'KINETIX योजना और बिलिंग',
+      'nav.billing': 'ZYNETIX योजना और बिलिंग',
       'nav.aiAudit': 'AI ऑडिट',
       'nav.aiEvals': 'AI मूल्यांकन',
       'nav.integrity': 'शैक्षणिक ईमानदारी',
@@ -390,7 +390,7 @@ export default area(
       'ret.f.note': 'कारण या नियम',
       'ret.err.category': 'श्रेणी में छोटे अक्षर, अंक और अंडरस्कोर ही रखें।',
 
-      'bl.subtitle': 'संस्थान की अपनी KINETIX योजना: वह क्या उपयोग करती है, अगला बिल कितना होगा, और GST सहित बिल।',
+      'bl.subtitle': 'संस्थान की अपनी ZYNETIX योजना: वह क्या उपयोग करती है, अगला बिल कितना होगा, और GST सहित बिल।',
       'bl.choose': 'योजना चुनें',
       'bl.change': 'योजना बदलें',
       'bl.cancel': 'नवीनीकरण रद्द करें',
@@ -552,7 +552,7 @@ export default area(
       'nav.govRules': 'ವ್ಯವಹಾರ ನಿಯಮಗಳು',
       'nav.govIncidents': 'ಘಟನೆಗಳು',
       'nav.govRetention': 'ಕಡತ ಧಾರಣೆ',
-      'nav.billing': 'KINETIX ಯೋಜನೆ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್',
+      'nav.billing': 'ZYNETIX ಯೋಜನೆ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್',
       'nav.aiAudit': 'AI ಲೆಕ್ಕಪರಿಶೋಧನೆ',
       'nav.aiEvals': 'AI ಮೌಲ್ಯಮಾಪನ',
       'nav.integrity': 'ಶೈಕ್ಷಣಿಕ ಪ್ರಾಮಾಣಿಕತೆ',
@@ -662,7 +662,7 @@ export default area(
       'ret.f.note': 'ಕಾರಣ ಅಥವಾ ನಿಯಮ',
       'ret.err.category': 'ವರ್ಗಕ್ಕೆ ಸಣ್ಣ ಅಕ್ಷರಗಳು, ಅಂಕೆಗಳು ಮತ್ತು ಅಂಡರ್‌ಸ್ಕೋರ್ ಮಾತ್ರ ಬಳಸಿ.',
 
-      'bl.subtitle': 'ಸಂಸ್ಥೆಯ ಸ್ವಂತ KINETIX ಯೋಜನೆ: ಅದು ಏನನ್ನು ಬಳಸುತ್ತದೆ, ಮುಂದಿನ ಬಿಲ್ ಎಷ್ಟು, ಮತ್ತು GST ಸಹಿತ ಬಿಲ್‌ಗಳು.',
+      'bl.subtitle': 'ಸಂಸ್ಥೆಯ ಸ್ವಂತ ZYNETIX ಯೋಜನೆ: ಅದು ಏನನ್ನು ಬಳಸುತ್ತದೆ, ಮುಂದಿನ ಬಿಲ್ ಎಷ್ಟು, ಮತ್ತು GST ಸಹಿತ ಬಿಲ್‌ಗಳು.',
       'bl.choose': 'ಯೋಜನೆ ಆಯ್ಕೆಮಾಡಿ',
       'bl.change': 'ಯೋಜನೆ ಬದಲಿಸಿ',
       'bl.cancel': 'ನವೀಕರಣ ರದ್ದುಮಾಡಿ',

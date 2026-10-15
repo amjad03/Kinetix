@@ -1,6 +1,6 @@
 -- Row-level security for every tenant-owned table.
 --
--- The application connects as kinetix_app, which is neither the table owner nor BYPASSRLS, so
+-- The application connects as zynetix_app, which is neither the table owner nor BYPASSRLS, so
 -- these policies always apply to it. The owner role (migrations, narrowly scoped system lookups)
 -- bypasses RLS as owners do by default.
 --
@@ -32,13 +32,13 @@ CREATE POLICY tenant_self ON tenants
 --> statement-breakpoint
 DO $$
 BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT USAGE ON SCHEMA public TO kinetix_app;
-    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO kinetix_app;
-    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT USAGE ON SCHEMA public TO zynetix_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO zynetix_app;
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO zynetix_app;
     -- The app may read tenants but never create or alter them.
-    REVOKE INSERT, UPDATE, DELETE ON tenants FROM kinetix_app;
+    REVOKE INSERT, UPDATE, DELETE ON tenants FROM zynetix_app;
     -- The audit log is append-only for the app.
-    REVOKE UPDATE, DELETE ON audit_log FROM kinetix_app;
+    REVOKE UPDATE, DELETE ON audit_log FROM zynetix_app;
   END IF;
 END $$;

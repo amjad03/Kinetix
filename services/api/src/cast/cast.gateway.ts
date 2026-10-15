@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { RealtimeEvents, type CastApprovedEvent, type CastEndedEvent, type CastEndReason, type CastIceEvent, type CastPendingEvent, type CastRequestAck } from '@kinetix/shared';
+import { RealtimeEvents, type CastApprovedEvent, type CastEndedEvent, type CastEndReason, type CastIceEvent, type CastPendingEvent, type CastRequestAck } from '@zynetix/shared';
 import type { Socket } from 'socket.io';
 import { z } from 'zod';
 import type { Principal } from '../auth/principal.js';

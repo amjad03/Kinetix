@@ -1,6 +1,6 @@
 // The Simulations hub in Hindi and Kannada: each sim's title and a one-line description in
 // English, Hindi and Kannada. PhET titles are PhET's own translations where PhET has them
-// (assets/phet/catalogue.json), the rest are KINETIX's (tools/phet/titles.json). Product names
+// (assets/phet/catalogue.json), the rest are ZYNETIX's (tools/phet/titles.json). Product names
 // (PhET, GeoGebra, Blockly, JupyterLite...) stay as they are.
 
 /// Titles in Hindi and Kannada, by hub id (English is SimEntry.title).

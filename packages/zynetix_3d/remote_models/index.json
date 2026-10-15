@@ -1,0 +1,459 @@
+{
+ "version": 1,
+ "models": [
+  {
+   "id": "bacteria",
+   "subject": "Biology",
+   "title": {
+    "en": "Bacterium (bacillus)",
+    "hi": "जीवाणु (बैसिलस)",
+    "kn": "ಬ್ಯಾಕ್ಟೀರಿಯಾ (ಬ್ಯಾಸಿಲಸ್)"
+   },
+   "summary": {
+    "en": "A single prokaryotic cell about 2 µm long: no nucleus, its DNA lies loose in the cytoplasm. A wall and a slimy capsule protect it, and a whip-like flagellum moves it. Simplified model, about 25,000 times larger than life.",
+    "hi": "लगभग 2 µm लंबी एक प्रोकैरियोटिक कोशिका: केंद्रक नहीं, इसका डीएनए कोशिकाद्रव्य में खुला रहता है। भित्ति और चिपचिपा संपुट इसकी रक्षा करते हैं, और चाबुक जैसा कशाभ इसे चलाता है। सरलीकृत मॉडल, असल से लगभग 25,000 गुना बड़ा।",
+    "kn": "ಸುಮಾರು 2 µm ಉದ್ದದ ಒಂದೇ ಪ್ರೊಕ್ಯಾರಿಯೋಟಿಕ್ ಕೋಶ: ಕೋಶಕೇಂದ್ರವಿಲ್ಲ, ಇದರ ಡಿಎನ್‌ಎ ಕೋಶದ್ರವ್ಯದಲ್ಲಿ ಸಡಿಲವಾಗಿದೆ. ಭಿತ್ತಿ ಮತ್ತು ಲೋಳೆಯ ಸಂಪುಟ ಇದನ್ನು ರಕ್ಷಿಸುತ್ತವೆ; ಚಾವಟಿಯಂತಹ ಕಶಾಂಗ ಇದನ್ನು ಚಲಿಸುತ್ತದೆ. ಸರಳೀಕೃತ ಮಾದರಿ, ನಿಜಕ್ಕಿಂತ ಸುಮಾರು 25,000 ಪಟ್ಟು ದೊಡ್ಡದು."
+   },
+   "keywords": [
+    "bacteria",
+    "bacterium",
+    "bacillus",
+    "prokaryote",
+    "prokaryotic cell",
+    "microorganisms",
+    "microbes",
+    "flagellum",
+    "plasmid",
+    "nucleoid",
+    "cell wall",
+    "pili",
+    "the fundamental unit of life",
+    "microorganisms friend and foe",
+    "biological classification"
+   ],
+   "classes": [
+    8,
+    9,
+    11
+   ],
+   "order": 1.6,
+   "topic": "cell",
+   "license": "Same as the app",
+   "credit": "Simplified model built by ZYNETIX from textbook structure",
+   "bytes": 331412
+  },
+  {
+   "id": "mitochondrion",
+   "subject": "Biology",
+   "title": {
+    "en": "Mitochondrion",
+    "hi": "माइटोकॉन्ड्रिया (सूत्रकणिका)",
+    "kn": "ಮೈಟೊಕಾಂಡ್ರಿಯಾ"
+   },
+   "summary": {
+    "en": "The powerhouse of the cell, 1 to 2 µm long. Here food (glucose) is broken down with oxygen in cellular respiration, and the energy is stored as ATP. Simplified model, about 20,000 times larger than life.",
+    "hi": "कोशिका का ऊर्जा घर, 1 से 2 µm लंबा। यहाँ कोशिकीय श्वसन में भोजन (ग्लूकोज़) ऑक्सीजन की मदद से टूटता है और ऊर्जा ATP के रूप में जमा होती है। सरलीकृत मॉडल, असल से लगभग 20,000 गुना बड़ा।",
+    "kn": "ಕೋಶದ ಶಕ್ತಿಕೇಂದ್ರ, 1 ರಿಂದ 2 µm ಉದ್ದ. ಇಲ್ಲಿ ಕೋಶೀಯ ಉಸಿರಾಟದಲ್ಲಿ ಆಹಾರ (ಗ್ಲೂಕೋಸ್) ಆಮ್ಲಜನಕದೊಂದಿಗೆ ವಿಭಜನೆಯಾಗಿ ಶಕ್ತಿ ATP ಆಗಿ ಸಂಗ್ರಹವಾಗುತ್ತದೆ. ಸರಳೀಕೃತ ಮಾದರಿ, ನಿಜಕ್ಕಿಂತ ಸುಮಾರು 20,000 ಪಟ್ಟು ದೊಡ್ಡದು."
+   },
+   "keywords": [
+    "mitochondrion",
+    "mitochondria",
+    "powerhouse of the cell",
+    "cristae",
+    "matrix",
+    "atp",
+    "respiration",
+    "cellular respiration",
+    "organelle",
+    "cell organelles",
+    "the fundamental unit of life",
+    "cell the unit of life",
+    "respiration in organisms"
+   ],
+   "classes": [
+    9,
+    11
+   ],
+   "order": 1.7,
+   "topic": "cell",
+   "license": "Same as the app",
+   "credit": "Simplified model built by ZYNETIX from textbook structure",
+   "bytes": 185832
+  },
+  {
+   "id": "stomach",
+   "subject": "Biology",
+   "title": {
+    "en": "Stomach",
+    "hi": "आमाशय",
+    "kn": "ಜಠರ"
+   },
+   "summary": {
+    "en": "A J-shaped muscular bag that holds about a litre of food. Its walls churn the food with acid and enzymes for two to four hours before letting it into the small intestine a little at a time.",
+    "hi": "J आकार की पेशीय थैली जिसमें लगभग एक लीटर भोजन समाता है। इसकी दीवारें दो से चार घंटे तक भोजन को अम्ल और एंजाइमों के साथ मथती हैं, फिर उसे थोड़ा-थोड़ा करके छोटी आँत में जाने देती हैं।",
+    "kn": "ಸುಮಾರು ಒಂದು ಲೀಟರ್ ಆಹಾರ ಹಿಡಿಯುವ J ಆಕಾರದ ಸ್ನಾಯು ಚೀಲ. ಇದರ ಗೋಡೆಗಳು ಎರಡರಿಂದ ನಾಲ್ಕು ಗಂಟೆ ಆಹಾರವನ್ನು ಆಮ್ಲ ಮತ್ತು ಕಿಣ್ವಗಳೊಂದಿಗೆ ಕಲಕಿ, ನಂತರ ಸ್ವಲ್ಪ ಸ್ವಲ್ಪವಾಗಿ ಸಣ್ಣ ಕರುಳಿಗೆ ಬಿಡುತ್ತವೆ."
+   },
+   "keywords": [
+    "stomach",
+    "digestion",
+    "gastric juice",
+    "hydrochloric acid",
+    "pepsin",
+    "rugae",
+    "pylorus",
+    "sphincter",
+    "fundus",
+    "oesophagus",
+    "esophagus",
+    "nutrition in animals",
+    "life processes",
+    "digestion and absorption"
+   ],
+   "classes": [
+    7,
+    10,
+    11
+   ],
+   "order": 6.1,
+   "topic": "human",
+   "license": "CC BY 4.0",
+   "credit": "Stomach, oesophagus and duodenum: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; wall layers and sphincters built by ZYNETIX (simplified)",
+   "bytes": 288776
+  },
+  {
+   "id": "liver",
+   "subject": "Biology",
+   "title": {
+    "en": "Liver and gallbladder",
+    "hi": "यकृत और पित्ताशय",
+    "kn": "ಯಕೃತ್ತು ಮತ್ತು ಪಿತ್ತಕೋಶ"
+   },
+   "summary": {
+    "en": "The largest gland in the body, about 1.5 kg. It makes bile for digesting fats, stores sugar as glycogen and cleans the blood that comes from the intestines.",
+    "hi": "शरीर की सबसे बड़ी ग्रंथि, लगभग 1.5 किलो। यह वसा पचाने के लिए पित्त बनाता है, शर्करा को ग्लाइकोजन के रूप में संग्रहित करता है और आँतों से आने वाले रक्त को साफ़ करता है।",
+    "kn": "ದೇಹದ ಅತಿ ದೊಡ್ಡ ಗ್ರಂಥಿ, ಸುಮಾರು 1.5 ಕೆಜಿ. ಕೊಬ್ಬು ಜೀರ್ಣಿಸಲು ಪಿತ್ತರಸ ತಯಾರಿಸುತ್ತದೆ, ಸಕ್ಕರೆಯನ್ನು ಗ್ಲೈಕೋಜೆನ್ ಆಗಿ ಸಂಗ್ರಹಿಸುತ್ತದೆ ಮತ್ತು ಕರುಳಿನಿಂದ ಬರುವ ರಕ್ತವನ್ನು ಶುದ್ಧಗೊಳಿಸುತ್ತದೆ."
+   },
+   "keywords": [
+    "liver",
+    "gallbladder",
+    "bile",
+    "bile duct",
+    "hepatic",
+    "glycogen",
+    "digestion",
+    "digestive glands",
+    "portal vein",
+    "nutrition in animals",
+    "life processes",
+    "digestion and absorption"
+   ],
+   "classes": [
+    7,
+    10,
+    11
+   ],
+   "order": 6.2,
+   "topic": "human",
+   "license": "CC BY 4.0",
+   "credit": "BodyParts3D, © The Database Center for Life Science, CC BY 4.0",
+   "bytes": 451836
+  },
+  {
+   "id": "tooth",
+   "subject": "Biology",
+   "title": {
+    "en": "Tooth (inside a molar)",
+    "hi": "दाँत (दाढ़ के भीतर)",
+    "kn": "ಹಲ್ಲು (ದವಡೆಹಲ್ಲಿನ ಒಳಗೆ)"
+   },
+   "summary": {
+    "en": "A molar cut in half: hard enamel over dentine, the soft pulp with its nerve and blood vessels, and the roots held in the jaw bone. Simplified model.",
+    "hi": "बीच से कटी दाढ़: डेंटीन के ऊपर कठोर इनैमल, नस और रक्त वाहिकाओं वाला कोमल गूदा, और जबड़े की हड्डी में जमी जड़ें। सरलीकृत मॉडल।",
+    "kn": "ಅರ್ಧಕ್ಕೆ ಕತ್ತರಿಸಿದ ದವಡೆಹಲ್ಲು: ದಂತದ್ರವ್ಯದ ಮೇಲೆ ಗಟ್ಟಿಯಾದ ಎನಾಮೆಲ್, ನರ ಮತ್ತು ರಕ್ತನಾಳಗಳಿರುವ ಮೃದು ತಿರುಳು, ದವಡೆ ಮೂಳೆಯಲ್ಲಿ ಹಿಡಿದಿರುವ ಬೇರುಗಳು. ಸರಳೀಕೃತ ಮಾದರಿ."
+   },
+   "keywords": [
+    "tooth",
+    "teeth",
+    "molar",
+    "enamel",
+    "dentine",
+    "dentin",
+    "pulp",
+    "root",
+    "gum",
+    "cavity",
+    "tooth decay",
+    "dental care",
+    "structure of tooth",
+    "digestion",
+    "nutrition in animals"
+   ],
+   "classes": [
+    5,
+    7,
+    10
+   ],
+   "order": 6.3,
+   "topic": "human",
+   "license": "Same as the app",
+   "credit": "Simplified model built by ZYNETIX from textbook measurements",
+   "bytes": 181942
+  },
+  {
+   "id": "skin",
+   "subject": "Biology",
+   "title": {
+    "en": "Skin (layers)",
+    "hi": "त्वचा (परतें)",
+    "kn": "ಚರ್ಮ (ಪದರಗಳು)"
+   },
+   "summary": {
+    "en": "A small block of skin cut open: the epidermis on top, the dermis with hairs, glands, blood vessels and nerve endings, and a layer of fat underneath. The skin protects the body, feels touch and keeps the body's temperature steady. Simplified model.",
+    "hi": "खोला गया त्वचा का एक छोटा टुकड़ा: ऊपर अधिचर्म, बालों, ग्रंथियों, रक्त वाहिकाओं और तंत्रिका सिरों वाली चर्म, और नीचे वसा की परत। त्वचा शरीर की रक्षा करती है, स्पर्श महसूस करती है और शरीर का ताप स्थिर रखती है। सरलीकृत मॉडल।",
+    "kn": "ತೆರೆದ ಚರ್ಮದ ಸಣ್ಣ ತುಂಡು: ಮೇಲೆ ಹೊರಚರ್ಮ, ಕೂದಲು, ಗ್ರಂಥಿಗಳು, ರಕ್ತನಾಳಗಳು ಮತ್ತು ನರ ತುದಿಗಳಿರುವ ಒಳಚರ್ಮ, ಕೆಳಗೆ ಕೊಬ್ಬಿನ ಪದರ. ಚರ್ಮ ದೇಹವನ್ನು ರಕ್ಷಿಸುತ್ತದೆ, ಸ್ಪರ್ಶವನ್ನು ಅರಿಯುತ್ತದೆ ಮತ್ತು ದೇಹದ ತಾಪವನ್ನು ಸ್ಥಿರವಾಗಿಡುತ್ತದೆ. ಸರಳೀಕೃತ ಮಾದರಿ."
+   },
+   "keywords": [
+    "skin",
+    "epidermis",
+    "dermis",
+    "hair follicle",
+    "sweat gland",
+    "sebaceous gland",
+    "sense organs",
+    "touch",
+    "temperature control",
+    "excretion",
+    "sweat",
+    "melanin",
+    "integumentary system"
+   ],
+   "classes": [
+    7,
+    10,
+    11
+   ],
+   "order": 6.4,
+   "topic": "human",
+   "license": "Same as the app",
+   "credit": "Simplified model built by ZYNETIX from textbook proportions",
+   "bytes": 374260
+  },
+  {
+   "id": "woolly_mammoth",
+   "subject": "Biology",
+   "title": {
+    "en": "Woolly mammoth skeleton",
+    "hi": "ऊनी मैमथ का कंकाल",
+    "kn": "ಉಣ್ಣೆಯ ಮ್ಯಾಮತ್ ಅಸ್ಥಿಪಂಜರ"
+   },
+   "summary": {
+    "en": "A relative of today's elephants that lived in the cold grasslands of the last Ice Age and died out about 4,000 years ago. Fossils like this show how living things change and become extinct.",
+    "hi": "आज के हाथियों का संबंधी, जो पिछले हिमयुग के ठंडे घास के मैदानों में रहता था और लगभग 4,000 वर्ष पहले विलुप्त हो गया। ऐसे जीवाश्म दिखाते हैं कि जीव कैसे बदलते और विलुप्त होते हैं।",
+    "kn": "ಇಂದಿನ ಆನೆಗಳ ಸಂಬಂಧಿ; ಕೊನೆಯ ಹಿಮಯುಗದ ತಣ್ಣನೆಯ ಹುಲ್ಲುಗಾವಲುಗಳಲ್ಲಿ ಬದುಕಿ ಸುಮಾರು 4,000 ವರ್ಷಗಳ ಹಿಂದೆ ಅಳಿದುಹೋಯಿತು. ಇಂತಹ ಪಳೆಯುಳಿಕೆಗಳು ಜೀವಿಗಳು ಹೇಗೆ ಬದಲಾಗುತ್ತವೆ ಮತ್ತು ಅಳಿಯುತ್ತವೆ ಎಂದು ತೋರಿಸುತ್ತವೆ."
+   },
+   "keywords": [
+    "mammoth",
+    "woolly mammoth",
+    "fossil",
+    "extinct",
+    "extinction",
+    "ice age",
+    "evolution",
+    "elephant",
+    "skeleton",
+    "heredity and evolution",
+    "conservation"
+   ],
+   "classes": [
+    8,
+    10,
+    12
+   ],
+   "topic": "life",
+   "license": "CC0",
+   "credit": "Woolly mammoth, Smithsonian National Museum of Natural History, Smithsonian Open Access (CC0)",
+   "bytes": 524832
+  },
+  {
+   "id": "saturn_v",
+   "subject": "Physics",
+   "title": {
+    "en": "Saturn V rocket",
+    "hi": "सैटर्न V रॉकेट",
+    "kn": "ಸ್ಯಾಟರ್ನ್ V ರಾಕೆಟ್"
+   },
+   "summary": {
+    "en": "The rocket that sent people to the Moon (1967 to 1973): 111 m tall, with three stages that burn in turn and drop away, and the Apollo spacecraft on top.",
+    "hi": "वह रॉकेट जिसने मनुष्यों को चंद्रमा पर भेजा (1967 से 1973): 111 मीटर ऊँचा, तीन चरण जो बारी-बारी से जलकर अलग हो जाते हैं, और सबसे ऊपर अपोलो अंतरिक्ष यान।",
+    "kn": "ಮಾನವರನ್ನು ಚಂದ್ರನಿಗೆ ಕಳುಹಿಸಿದ ರಾಕೆಟ್ (1967 ರಿಂದ 1973): 111 ಮೀ ಎತ್ತರ, ಸರದಿಯಲ್ಲಿ ಉರಿದು ಬೇರ್ಪಡುವ ಮೂರು ಹಂತಗಳು, ಮತ್ತು ತುದಿಯಲ್ಲಿ ಅಪೊಲೊ ಬಾಹ್ಯಾಕಾಶ ನೌಕೆ."
+   },
+   "keywords": [
+    "rocket",
+    "saturn v",
+    "launch",
+    "newton third law",
+    "space",
+    "stages",
+    "apollo",
+    "moon",
+    "thrust",
+    "force and pressure",
+    "space exploration"
+   ],
+   "classes": [
+    8,
+    9,
+    11
+   ],
+   "order": 1,
+   "topic": "solar",
+   "license": "Public domain",
+   "credit": "Saturn V, NASA 3D Resources, public domain (NASA media usage guidelines)",
+   "bytes": 296536
+  },
+  {
+   "id": "hubble_telescope",
+   "subject": "Physics",
+   "title": {
+    "en": "Hubble Space Telescope",
+    "hi": "हबल अंतरिक्ष दूरबीन",
+    "kn": "ಹಬಲ್ ಬಾಹ್ಯಾಕಾಶ ದೂರದರ್ಶಕ"
+   },
+   "summary": {
+    "en": "A reflecting telescope with a 2.4 m mirror, circling the Earth about 540 km up since 1990. Above the air, which blurs and blocks starlight, it sees sharper and further than telescopes on the ground.",
+    "hi": "2.4 मीटर दर्पण वाली परावर्ती दूरबीन, जो 1990 से लगभग 540 किमी ऊपर पृथ्वी की परिक्रमा कर रही है। तारों के प्रकाश को धुंधला करने और रोकने वाली हवा से ऊपर होने के कारण यह ज़मीन की दूरबीनों से अधिक साफ़ और दूर तक देखती है।",
+    "kn": "2.4 ಮೀ ಕನ್ನಡಿಯಿರುವ ಪ್ರತಿಫಲನ ದೂರದರ್ಶಕ; 1990ರಿಂದ ಸುಮಾರು 540 ಕಿಮೀ ಎತ್ತರದಲ್ಲಿ ಭೂಮಿಯನ್ನು ಸುತ್ತುತ್ತಿದೆ. ನಕ್ಷತ್ರದ ಬೆಳಕನ್ನು ಮಸುಕಾಗಿಸುವ ಮತ್ತು ತಡೆಯುವ ಗಾಳಿಯ ಮೇಲಿರುವುದರಿಂದ ನೆಲದ ದೂರದರ್ಶಕಗಳಿಗಿಂತ ಸ್ಪಷ್ಟವಾಗಿ ಮತ್ತು ದೂರ ನೋಡುತ್ತದೆ."
+   },
+   "keywords": [
+    "telescope",
+    "hubble",
+    "optics",
+    "mirror",
+    "reflection",
+    "space",
+    "astronomy",
+    "satellite",
+    "light",
+    "stars and the solar system",
+    "galaxies"
+   ],
+   "classes": [
+    8,
+    10,
+    12
+   ],
+   "order": 2,
+   "topic": "solar",
+   "license": "Public domain",
+   "credit": "Hubble Space Telescope (A), NASA 3D Resources, public domain (NASA media usage guidelines)",
+   "bytes": 475235
+  },
+  {
+   "id": "apollo_lunar_module",
+   "subject": "Geography",
+   "title": {
+    "en": "Apollo Lunar Module",
+    "hi": "अपोलो चंद्र मॉड्यूल",
+    "kn": "ಅಪೊಲೊ ಚಂದ್ರ ಮಾಡ್ಯೂಲ್"
+   },
+   "summary": {
+    "en": "The lander that took two astronauts from orbit round the Moon down to its surface and back, six times from 1969 to 1972. Its lower half stayed on the Moon as a launch pad.",
+    "hi": "वह लैंडर जो दो अंतरिक्ष यात्रियों को चंद्रमा की कक्षा से उसकी सतह तक ले गया और वापस लाया, 1969 से 1972 तक छह बार। इसका निचला आधा भाग प्रक्षेपण मंच बनकर चंद्रमा पर ही रह गया।",
+    "kn": "ಇಬ್ಬರು ಗಗನಯಾತ್ರಿಗಳನ್ನು ಚಂದ್ರನ ಕಕ್ಷೆಯಿಂದ ಅದರ ಮೇಲ್ಮೈಗೆ ಇಳಿಸಿ ಮರಳಿ ತಂದ ಲ್ಯಾಂಡರ್; 1969 ರಿಂದ 1972ರವರೆಗೆ ಆರು ಬಾರಿ. ಇದರ ಕೆಳಗಿನ ಅರ್ಧ ಉಡಾವಣಾ ವೇದಿಕೆಯಾಗಿ ಚಂದ್ರನ ಮೇಲೆಯೇ ಉಳಿಯಿತು."
+   },
+   "keywords": [
+    "moon",
+    "lander",
+    "apollo",
+    "lunar module",
+    "space exploration",
+    "moon landing",
+    "gravity",
+    "armstrong",
+    "chandrayaan",
+    "the moon"
+   ],
+   "classes": [
+    6,
+    7,
+    8
+   ],
+   "topic": "solar",
+   "license": "Public domain",
+   "credit": "Apollo Lunar Module, NASA 3D Resources, public domain (NASA media usage guidelines)",
+   "bytes": 474979
+  },
+  {
+   "id": "cosmic_buddha",
+   "subject": "History",
+   "title": {
+    "en": "The Cosmic Buddha (sculpture)",
+    "hi": "कॉस्मिक बुद्ध (मूर्ति)",
+    "kn": "ಕಾಸ್ಮಿಕ್ ಬುದ್ಧ (ಶಿಲ್ಪ)"
+   },
+   "summary": {
+    "en": "A stone Buddha from 6th-century China, about 1.5 m tall. Buddhism began in India and travelled along trade routes to China and beyond; the robe is carved with scenes of its teaching.",
+    "hi": "6वीं शताब्दी के चीन की पत्थर की बुद्ध प्रतिमा, लगभग 1.5 मीटर ऊँची। बौद्ध धर्म भारत में आरंभ हुआ और व्यापार मार्गों से चीन और आगे तक फैला; वस्त्र पर इसकी शिक्षाओं के दृश्य उकेरे हैं।",
+    "kn": "6ನೇ ಶತಮಾನದ ಚೀನಾದ ಕಲ್ಲಿನ ಬುದ್ಧ ಪ್ರತಿಮೆ, ಸುಮಾರು 1.5 ಮೀ ಎತ್ತರ. ಬೌದ್ಧ ಧರ್ಮ ಭಾರತದಲ್ಲಿ ಆರಂಭವಾಗಿ ವ್ಯಾಪಾರ ಮಾರ್ಗಗಳ ಮೂಲಕ ಚೀನಾ ಮತ್ತು ಮುಂದಕ್ಕೆ ಹರಡಿತು; ವಸ್ತ್ರದ ಮೇಲೆ ಅದರ ಬೋಧನೆಯ ದೃಶ್ಯಗಳನ್ನು ಕೆತ್ತಲಾಗಿದೆ."
+   },
+   "keywords": [
+    "buddha",
+    "buddhism",
+    "sculpture",
+    "silk route",
+    "religion",
+    "art",
+    "ancient history",
+    "new questions and ideas",
+    "buildings paintings and books",
+    "statue"
+   ],
+   "classes": [
+    6,
+    7,
+    12
+   ],
+   "topic": "monument",
+   "license": "CC0",
+   "credit": "Buddha draped in robes portraying the Realms of Desire, National Museum of Asian Art, Smithsonian Open Access (CC0)",
+   "bytes": 919241
+  },
+  {
+   "id": "apollo11_command_module",
+   "subject": "Space",
+   "title": {
+    "en": "Apollo 11 command module",
+    "hi": "अपोलो 11 कमांड मॉड्यूल",
+    "kn": "ಅಪೊಲೊ 11 ಕಮಾಂಡ್ ಮಾಡ್ಯೂಲ್"
+   },
+   "summary": {
+    "en": "The capsule that took the first people to land on the Moon there and back in July 1969. Its heat shield, scorched on the way back, protected the crew from the heat of falling through the air.",
+    "hi": "वह कैप्सूल जो जुलाई 1969 में चंद्रमा पर उतरने वाले पहले लोगों को वहाँ ले गया और वापस लाया। लौटते समय झुलसी इसकी ऊष्मा-ढाल ने हवा में गिरते समय की गर्मी से दल को बचाया।",
+    "kn": "ಜುಲೈ 1969ರಲ್ಲಿ ಚಂದ್ರನ ಮೇಲೆ ಇಳಿದ ಮೊದಲ ಮಾನವರನ್ನು ಅಲ್ಲಿಗೆ ಕರೆದೊಯ್ದು ಮರಳಿ ತಂದ ಕ್ಯಾಪ್ಸೂಲ್. ಹಿಂದಿರುಗುವಾಗ ಸುಟ್ಟ ಇದರ ಉಷ್ಣ ಕವಚ, ಗಾಳಿಯಲ್ಲಿ ಬೀಳುವಾಗಿನ ಶಾಖದಿಂದ ಸಿಬ್ಬಂದಿಯನ್ನು ರಕ್ಷಿಸಿತು."
+   },
+   "keywords": [
+    "apollo",
+    "apollo 11",
+    "moon landing",
+    "spacecraft",
+    "command module",
+    "armstrong",
+    "space exploration",
+    "friction",
+    "heat shield",
+    "satellites",
+    "chandrayaan"
+   ],
+   "classes": [
+    6,
+    8,
+    9,
+    11
+   ],
+   "topic": "solar",
+   "license": "CC0",
+   "credit": "Command Module, Apollo 11, Smithsonian National Air and Space Museum, Smithsonian Open Access (CC0)",
+   "bytes": 1123227
+  }
+ ]
+}

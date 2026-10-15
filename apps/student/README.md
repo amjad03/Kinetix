@@ -1,8 +1,8 @@
-# KINETIX Student App
+# ZYNETIX Student App
 
 The student's phone app (Flutter, Material 3). It shows the student's day (attendance, homework
 due soon, lesson recordings with the missed ones first, boards teachers shared after class),
-lets them ask **KINETIX AI** to explain a doubt in English, हिन्दी or ಕನ್ನಡ, browse and search
+lets them ask **ZYNETIX AI** to explain a doubt in English, हिन्दी or ಕನ್ನಡ, browse and search
 the syllabus library, read their updates, and see their fees and receipts.
 It looks and behaves like its sister apps, [the Parent App](../parent) and [the Teacher App](../teacher).
 Product spec: [docs/product/student-app.md](../../docs/product/student-app.md).
@@ -21,7 +21,7 @@ flutter test
 flutter analyze
 ```
 
-Sign in with institution code `demo-college`, `aarav@demo.kinetix.in`, password `kinetix123`
+Sign in with institution code `demo-college`, `aarav@demo.zynetix.in`, password `zynetix123`
 (Aarav Patel, BCom Sem 3 A). Parent, teacher and staff logins are refused politely and pointed
 to their own app.
 
@@ -31,12 +31,12 @@ Cleartext HTTP is allowed only for development (`usesCleartextTraffic` on Androi
 `NSAllowsLocalNetworking` on iOS).
 
 **Filling the inbox.** The seed writes notifications for parents only. To see student updates,
-set homework as `anita@demo.kinetix.in` (`POST /v1/homework`), record a counter payment as
-`accounts@demo.kinetix.in` (`POST /v1/fees/invoices/:id/payments`, which gives Aarav a receipt),
-or send a broadcast as `principal@demo.kinetix.in`. Shared boards and lesson recordings come
+set homework as `anita@demo.zynetix.in` (`POST /v1/homework`), record a counter payment as
+`accounts@demo.zynetix.in` (`POST /v1/fees/invoices/:id/payments`, which gives Aarav a receipt),
+or send a broadcast as `principal@demo.zynetix.in`. Shared boards and lesson recordings come
 from the Board app (see the Parent App README).
 
-**KINETIX AI.** Without an AI server configured on the API (`AI_BASE_URL`), answers come back
+**ZYNETIX AI.** Without an AI server configured on the API (`AI_BASE_URL`), answers come back
 as previews; the app labels them **Preview answer** and says no AI server is connected.
 
 ## Screens
@@ -46,9 +46,9 @@ as previews; the app labels them **Preview answer** and says no AI server is con
 | Sign in | Institution code, email or phone, password; a 10-digit Indian number is sent as `+91…`. Remembers the institution, login and server. Needs the **student** role and a linked student record; others get a polite explanation. |
 | Today | Greeting with class and roll no., then **Attendance** (big percentage, counts, plain note, latest absences, history), **Homework** (due dates in words, past collapsed, detail), a **Stuck on something?** shortcut to Learn, **Lesson recordings** (missed first, "You missed this class", player), **Class boards** (read-only viewer). Pull to refresh. |
 | Learn → Ask a doubt | Question box, **Answer in** English / हिन्दी / ಕನ್ನಡ (remembered), optional **Subject** chip for syllabus grounding. The answer card shows the question, a **Preview answer** notice when no AI server is connected, the answer, **Key points**, **Based on** topic chips (open the topic), **Ask next** follow-ups (tap to ask), and a "can make mistakes" line. Clear messages for unsafe questions (422), the day's allowance used up (429), and AI or network unreachable (503 / offline, with **Try again**). Earlier questions of the session stay listed. The view scrolls to the answer. |
-| Learn → Syllabus | Search every library topic, or open **Your subjects** for chapter-by-chapter outlines. A topic page shows its summary, notes and "After this topic you should be able to…", with **Ask KINETIX AI about this** (questions grounded in that topic). |
+| Learn → Syllabus | Search every library topic, or open **Your subjects** for chapter-by-chapter outlines. A topic page shows its summary, notes and "After this topic you should be able to…", with **Ask ZYNETIX AI about this** (questions grounded in that topic). |
 | Updates | Inbox grouped Today / Earlier with an icon per kind and unread dots; a badge on the tab. Tapping marks it read and opens the homework, board, recording (player), attendance history (absence), receipt (payment) or fees (fee due), else the full message. Mark all as read. |
-| Profile | Name, class, roll no., program, college; attendance history; **Fees** (total due, overdue, every fee, payments and receipts; read-only: fees are paid by the parent or at the counter); the KINETIX AI answer language; *Soon* entries; server; sign out. |
+| Profile | Name, class, roll no., program, college; attendance history; **Fees** (total due, overdue, every fee, payments and receipts; read-only: fees are paid by the parent or at the counter); the ZYNETIX AI answer language; *Soon* entries; server; sign out. |
 
 Phones from 360 to 430 px wide use a bottom navigation bar; from 600 px (tablets) the
 destinations move to a navigation rail and content is centred at up to 720 px. Tests check the
@@ -68,9 +68,9 @@ test/          widget tests against FakeStudentApi
 ```
 
 State is plain `ChangeNotifier` controllers rendered with `ListenableBuilder`, as in the Parent
-App. Design system: [`packages/kinetix_ui`](../../packages/kinetix_ui); boards render with
-`WhiteboardView` from [`packages/kinetix_ink`](../../packages/kinetix_ink); lessons play with
-[`packages/kinetix_lesson`](../../packages/kinetix_lesson).
+App. Design system: [`packages/zynetix_ui`](../../packages/zynetix_ui); boards render with
+`WhiteboardView` from [`packages/zynetix_ink`](../../packages/zynetix_ink); lessons play with
+[`packages/zynetix_lesson`](../../packages/zynetix_lesson).
 
 ## Known gaps
 
@@ -81,4 +81,4 @@ App. Design system: [`packages/kinetix_ui`](../../packages/kinetix_ui); boards r
 - **Subjects** come from `GET /v1/student/subjects` (the subjects of the student's class).
 - The token is in `shared_preferences`; it should move to secure storage, with an app lock.
 - Receipts are shown on screen; there is no PDF download yet.
-- The app's own text is English only; KINETIX AI answers in English, Hindi or Kannada.
+- The app's own text is English only; ZYNETIX AI answers in English, Hindi or Kannada.

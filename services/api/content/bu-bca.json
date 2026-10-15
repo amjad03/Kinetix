@@ -13,7 +13,7 @@
    "title": "Discrete Structures, BCA Semester 1",
    "term": 1,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
    "reviewed": false,
    "chapters": [
     {
@@ -169,7 +169,7 @@
    "title": "Problem Solving Techniques (C Programming), BCA Semester 1",
    "term": 1,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
    "reviewed": false,
    "chapters": [
     {
@@ -392,7 +392,7 @@
    "title": "Computer Architecture, BCA Semester 1",
    "term": 1,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
    "reviewed": false,
    "chapters": [
     {
@@ -588,7 +588,7 @@
    "title": "Data Structures, BCA Semester 2",
    "term": 2,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
    "reviewed": false,
    "chapters": [
     {
@@ -792,7 +792,7 @@
    "title": "Object Oriented Programming using Java, BCA Semester 2",
    "term": 2,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
    "reviewed": false,
    "chapters": [
     {
@@ -960,7 +960,7 @@
    "title": "Database Management Systems, BCA Semester 3",
    "term": 3,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
    "reviewed": false,
    "chapters": [
     {
@@ -1181,7 +1181,7 @@
    "title": "C# and .NET Framework, BCA Semester 3",
    "term": 3,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
    "reviewed": false,
    "chapters": [
     {
@@ -1269,7 +1269,7 @@
    "title": "Computer Networks, BCA Semester 3",
    "term": 3,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
    "reviewed": false,
    "chapters": [
     {
@@ -1392,7 +1392,7 @@
    "title": "Python Programming, BCA Semester 4",
    "term": 4,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
    "reviewed": false,
    "chapters": [
     {
@@ -1583,7 +1583,7 @@
    "title": "Operating Systems, BCA Semester 4",
    "term": 4,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "source": "zynetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
    "reviewed": false,
    "chapters": [
     {
@@ -1734,7 +1734,7 @@
    "title": "Design and Analysis of Algorithms, BCA Semester 5",
    "term": 5,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "source": "zynetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
    "reviewed": false,
    "chapters": [
     {
@@ -1841,7 +1841,7 @@
    "title": "Statistical Computing and R Programming, BCA Semester 5",
    "term": 5,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "source": "zynetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
    "reviewed": false,
    "chapters": [
     {
@@ -1969,7 +1969,7 @@
    "title": "Software Engineering, BCA Semester 5",
    "term": 5,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "source": "zynetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
    "reviewed": false,
    "chapters": [
     {
@@ -2075,7 +2075,7 @@
    "title": "Cloud Computing (elective), BCA Semester 5",
    "term": 5,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "source": "zynetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
    "reviewed": false,
    "chapters": [
     {
@@ -2143,7 +2143,7 @@
    "title": "Artificial Intelligence and Machine Learning, BCA Semester 6",
    "term": 6,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "source": "zynetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
    "reviewed": false,
    "chapters": [
     {
@@ -2245,7 +2245,7 @@
    "title": "Web Programming with PHP and MySQL, BCA Semester 6",
    "term": 6,
    "language": "en",
-   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "source": "zynetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
    "reviewed": false,
    "chapters": [
     {

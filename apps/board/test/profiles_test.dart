@@ -5,19 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:kinetix_board/core/api_client.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/kiosk/kiosk_pin.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/core/secret_store.dart';
-import 'package:kinetix_board/features/profiles/profile_boards.dart';
-import 'package:kinetix_board/features/profiles/profiles_controller.dart';
-import 'package:kinetix_board/features/profiles/profiles_ui.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/api_client.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/kiosk/kiosk_pin.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/outbox_store.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/core/secret_store.dart';
+import 'package:zynetix_board/features/profiles/profile_boards.dart';
+import 'package:zynetix_board/features/profiles/profiles_controller.dart';
+import 'package:zynetix_board/features/profiles/profiles_ui.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -262,7 +262,7 @@ void main() {
       final board = await tester.runAsync(enrolled);
       await tester.pumpWidget(
         MaterialApp(
-          theme: KinetixTheme.light(),
+          theme: ZynetixTheme.light(),
           locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

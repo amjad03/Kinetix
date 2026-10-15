@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/marks.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/realtime.dart';
-import 'package:kinetix_board/demo/demo.dart';
-import 'package:kinetix_board/demo/demo_server.dart';
-import 'package:kinetix_board/features/class_check/class_check_panel.dart';
-import 'package:kinetix_board/main.dart';
-import 'package:kinetix_cards/kinetix_cards.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/realtime.dart';
+import 'package:zynetix_board/demo/demo.dart';
+import 'package:zynetix_board/demo/demo_server.dart';
+import 'package:zynetix_board/features/class_check/class_check_panel.dart';
+import 'package:zynetix_board/main.dart';
+import 'package:zynetix_cards/zynetix_cards.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// "Ask the class" and the phone remote on the demo board: students with phones answer in the
@@ -34,7 +34,7 @@ void main() {
     server = DemoBoardServer(claimDelay: const Duration(seconds: 2))..studentAnswerDelay = const Duration(seconds: 3);
     board = demoBoard(server);
     board.setToolbarDock(ToolbarDock.left);
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('conceptVideoSkip')));
     await tester.pumpAndSettle();

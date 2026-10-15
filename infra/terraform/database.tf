@@ -1,7 +1,7 @@
 # RDS PostgreSQL: encrypted, private, automated backups with point-in-time recovery.
-# Roles: the master user only runs `kinetix-api db-bootstrap` (creates kinetix_owner and the
-# RLS-bound kinetix_app, and the kinetix database). Migrations run as kinetix_owner; every
-# request runs as kinetix_app. See docs/operations/deploy.md.
+# Roles: the master user only runs `zynetix-api db-bootstrap` (creates zynetix_owner and the
+# RLS-bound zynetix_app, and the zynetix database). Migrations run as zynetix_owner; every
+# request runs as zynetix_app. See docs/operations/deploy.md.
 resource "aws_db_subnet_group" "main" {
   name       = local.name
   subnet_ids = aws_subnet.data[*].id
@@ -58,7 +58,7 @@ resource "aws_db_instance" "main" {
   storage_encrypted     = true
   kms_key_id            = aws_kms_key.data.arn
 
-  username = "kinetix_admin"
+  username = "zynetix_admin"
   password = random_password.db_master.result
   port     = 5432
 
@@ -97,10 +97,10 @@ resource "aws_db_instance" "main" {
 locals {
   db_host   = aws_db_instance.main.address
   db_ssl    = "sslmode=verify-full"
-  db_name   = "kinetix"
-  owner_url = "postgres://kinetix_owner:${random_password.db_owner.result}@${local.db_host}:5432/${local.db_name}?${local.db_ssl}"
-  app_url   = "postgres://kinetix_app:${random_password.db_app.result}@${local.db_host}:5432/${local.db_name}?${local.db_ssl}"
-  admin_url = "postgres://kinetix_admin:${random_password.db_master.result}@${local.db_host}:5432/postgres?${local.db_ssl}"
+  db_name   = "zynetix"
+  owner_url = "postgres://zynetix_owner:${random_password.db_owner.result}@${local.db_host}:5432/${local.db_name}?${local.db_ssl}"
+  app_url   = "postgres://zynetix_app:${random_password.db_app.result}@${local.db_host}:5432/${local.db_name}?${local.db_ssl}"
+  admin_url = "postgres://zynetix_admin:${random_password.db_master.result}@${local.db_host}:5432/postgres?${local.db_ssl}"
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -119,7 +119,7 @@ resource "random_password" "redis_auth" {
 
 resource "aws_elasticache_replication_group" "main" {
   replication_group_id = local.name
-  description          = "KINETIX ${var.environment} shared state"
+  description          = "ZYNETIX ${var.environment} shared state"
   engine               = "redis"
   engine_version       = "7.1"
   node_type            = var.redis_node_type

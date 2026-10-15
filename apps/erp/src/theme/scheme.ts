@@ -1,10 +1,10 @@
 import { argbFromHex, Hct, hexFromArgb, MaterialDynamicColors, SchemeTonalSpot } from '@material/material-color-utilities';
 
-/** KINETIX seed colour, a deep trustworthy blue (mirrors `Kx.seed` in kinetix_ui). */
+/** ZYNETIX seed colour, a deep trustworthy blue (mirrors `Kx.seed` in zynetix_ui). */
 export const SEED = '#1D4ED8';
 
 /**
- * The light scheme's hand-tuned roles (mirrors `KinetixTheme.lightScheme` in kinetix_ui and
+ * The light scheme's hand-tuned roles (mirrors `ZynetixTheme.lightScheme` in zynetix_ui and
  * tokens.css): white cards on a soft cool-grey ground, near-black for the one strong action, teal for
  * focus and charts, amber (tertiary) for AI. Every text pair is WCAG AA (scheme.test.ts).
  */
@@ -131,7 +131,7 @@ export function m3Scheme(seed: string = SEED, dark = false): M3Scheme {
   return out;
 }
 
-/** The KINETIX scheme: generated from [SEED], with the brand's hand-tuned roles on top. */
+/** The ZYNETIX scheme: generated from [SEED], with the brand's hand-tuned roles on top. */
 export function brandScheme(dark = false): M3Scheme {
   return { ...m3Scheme(SEED, dark), ...(dark ? BRAND_DARK : BRAND_LIGHT) };
 }

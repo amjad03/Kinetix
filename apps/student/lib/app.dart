@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'core/app_state.dart';
 import 'demo/demo.dart';
@@ -21,14 +21,14 @@ class StudentApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: state,
       builder: (context, _) => MaterialApp(
-      title: 'KINETIX Student',
+      title: 'ZYNETIX Student',
       debugShowCheckedModeBanner: false,
       locale: state.locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: appLocalizationsDelegates,
       localeListResolutionCallback: resolveDeviceLocale,
-      theme: KinetixTheme.light(),
-      darkTheme: KinetixTheme.dark(),
+      theme: ZynetixTheme.light(),
+      darkTheme: ZynetixTheme.dark(),
       themeMode: ThemeMode.system,
       navigatorKey: navigatorKey,
       builder: demoAppBuilder,

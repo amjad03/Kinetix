@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
 
 import 'helpers.dart';
 

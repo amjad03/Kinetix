@@ -355,7 +355,7 @@ CREATE POLICY tenant_isolation ON "convocation_candidates"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "regulations", "curriculum_versions", "curriculum_subjects", "curriculum_units", "curriculum_cos", "student_curriculum_pins", "syllabus_imports", "report_cards", "report_card_lines", "co_curricular_grades", "puc_streams", "puc_combinations", "puc_enrollments", "puc_marks", "learning_outcomes", "mastery_records", "houses", "house_members", "house_points", "affiliated_institutions", "convocations", "convocation_candidates" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "regulations", "curriculum_versions", "curriculum_subjects", "curriculum_units", "curriculum_cos", "student_curriculum_pins", "syllabus_imports", "report_cards", "report_card_lines", "co_curricular_grades", "puc_streams", "puc_combinations", "puc_enrollments", "puc_marks", "learning_outcomes", "mastery_records", "houses", "house_members", "house_points", "affiliated_institutions", "convocations", "convocation_candidates" TO zynetix_app;
   END IF;
 END $$;

@@ -2,7 +2,7 @@
 # Environment
 # ---------------------------------------------------------------------------------------------
 variable "environment" {
-  description = "staging or prod. Names every resource (kinetix-<environment>-...)."
+  description = "staging or prod. Names every resource (zynetix-<environment>-...)."
   type        = string
   validation {
     condition     = contains(["staging", "prod"], var.environment)
@@ -55,12 +55,12 @@ variable "single_nat_gateway" {
 # DNS and TLS
 # ---------------------------------------------------------------------------------------------
 variable "api_domain" {
-  description = "Host name of the API (apps, boards and the ERP server call it), e.g. api.staging.kinetix.in."
+  description = "Host name of the API (apps, boards and the ERP server call it), e.g. api.staging.zynetix.in."
   type        = string
 }
 
 variable "erp_domain" {
-  description = "Host name of the ERP, e.g. erp.staging.kinetix.in."
+  description = "Host name of the ERP, e.g. erp.staging.zynetix.in."
   type        = string
 }
 
@@ -246,7 +246,7 @@ variable "ai_base_url" {
 
 variable "ai_model" {
   type    = string
-  default = "kinetix-llm"
+  default = "zynetix-llm"
 }
 
 variable "asr_base_url" {
@@ -402,7 +402,7 @@ variable "phet_mirror_countries" {
 # ---------------------------------------------------------------------------------------------
 
 variable "otel_exporter_endpoint" {
-  description = "OTLP/HTTP collector base URL for API traces (e.g. http://otel-collector.kinetix.internal:4318). Empty = tracing off."
+  description = "OTLP/HTTP collector base URL for API traces (e.g. http://otel-collector.zynetix.internal:4318). Empty = tracing off."
   type        = string
   default     = ""
 }

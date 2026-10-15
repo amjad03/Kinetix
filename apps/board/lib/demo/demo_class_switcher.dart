@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show ModelCatalogue;
-import 'package:kinetix_animations/kinetix_animations.dart' show animationById, AnimLang;
-import 'package:kinetix_labs/kinetix_labs.dart' show LabCatalogue, LabLang;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart' show ModelCatalogue;
+import 'package:zynetix_animations/zynetix_animations.dart' show animationById, AnimLang;
+import 'package:zynetix_labs/zynetix_labs.dart' show LabCatalogue, LabLang;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../core/board_controller.dart';
 import '../features/board/chrome.dart';

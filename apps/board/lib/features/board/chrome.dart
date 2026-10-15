@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show BoardBackground;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show BoardBackground;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/board_controller.dart';
 
 /// Building blocks for the board's floating chrome: toolbars, popovers and panels.
 ///
-/// The chrome follows the KINETIX design (docs/design/design-system.md) in the teacher's App
+/// The chrome follows the ZYNETIX design (docs/design/design-system.md) in the teacher's App
 /// theme (Board settings), whatever the layout or the device: white floating surfaces with a
-/// soft shadow in [KinetixTheme.board], Material 3 dark in [KinetixTheme.boardChrome], or
+/// soft shadow in [ZynetixTheme.board], Material 3 dark in [ZynetixTheme.boardChrome], or
 /// chalkboard green.
 
 /// The app's own theme (screens, panels and dialogs) for a resolved [BoardTheme].
 ThemeData boardAppTheme(BoardTheme t) => _appThemes[t.resolve(Brightness.light)]!;
 
 final _appThemes = {
-  BoardTheme.light: KinetixTheme.light(),
-  BoardTheme.dark: KinetixTheme.dark(),
-  BoardTheme.chalkboard: KinetixTheme.chalkboard(),
+  BoardTheme.light: ZynetixTheme.light(),
+  BoardTheme.dark: ZynetixTheme.dark(),
+  BoardTheme.chalkboard: ZynetixTheme.chalkboard(),
 };
 
 /// The board's own paper in an App theme: white paper in the light theme, a near-black board in
@@ -39,9 +39,9 @@ class BoardChromeTheme extends StatelessWidget {
   final Widget child;
 
   static final _themes = {
-    BoardTheme.light: KinetixTheme.board(),
-    BoardTheme.dark: KinetixTheme.boardChrome(),
-    BoardTheme.chalkboard: KinetixTheme.chalkboard(large: true),
+    BoardTheme.light: ZynetixTheme.board(),
+    BoardTheme.dark: ZynetixTheme.boardChrome(),
+    BoardTheme.chalkboard: ZynetixTheme.chalkboard(large: true),
   };
 
   @override

@@ -7,12 +7,12 @@ import 'package:http/testing.dart' show MockClient;
 import '../core/models.dart';
 import '../core/realtime.dart';
 import '../core/server_config.dart';
-import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
+import 'package:zynetix_ui/zynetix_ui.dart' show kxFitMinutes;
 
 import 'demo_classes.dart';
 
-/// The demo backend for the board (`--dart-define=KINETIX_DEMO=true`): KINETIX Cloud answered in
-/// memory, with KINETIX Demo College's BCom Sem 3 A · Corporate Accounting class (as
+/// The demo backend for the board (`--dart-define=ZYNETIX_DEMO=true`): ZYNETIX Cloud answered in
+/// memory, with ZYNETIX Demo College's BCom Sem 3 A · Corporate Accounting class (as
 /// services/api/src/db/seed.ts seeds it). [client] goes into ApiClient and [realtime] stands in
 /// for the Socket.IO connection, so nothing touches the network. Saved boards, coverage,
 /// recordings and attendance last until the app is closed; AI answers are labelled previews.
@@ -266,7 +266,7 @@ class DemoBoardServer {
   };
 
   /// Sample concept videos (as the platform team links them in the ERP). The ids are placeholders
-  /// until the KINETIX channel's own videos are linked; YouTube then shows "Video unavailable".
+  /// until the ZYNETIX channel's own videos are linked; YouTube then shows "Video unavailable".
   static const conceptVideos = [
     ('cv1', 't5', 'kxDemoRe01a', 'Re-issue of forfeited shares in 6 minutes', 'en', 372),
     ('cv2', 't5', 'kxDemoRe02b', 'Capital reserve on re-issue: worked example', 'en', 455),
@@ -284,7 +284,7 @@ class DemoBoardServer {
           'title': title,
           'language': lang,
           'durationSeconds': secs,
-          'channelTitle': 'KINETIX',
+          'channelTitle': 'ZYNETIX',
           'position': i + 1,
         },
   ];
@@ -427,7 +427,7 @@ class DemoBoardServer {
       );
       return json({
         'code': '246810',
-        'qrPayload': 'kinetix://pair/246810',
+        'qrPayload': 'zynetix://pair/246810',
         'expiresAt': now
             .add(const Duration(minutes: 2))
             .toUtc()
@@ -633,7 +633,7 @@ class DemoBoardServer {
       }, 201);
     }
 
-    // KINETIX AI: sample answers, marked as previews so the board labels them.
+    // ZYNETIX AI: sample answers, marked as previews so the board labels them.
     final topicName = (body['topic'] ?? body['question'] ?? 'the topic')
         .toString();
     switch (path) {
@@ -641,7 +641,7 @@ class DemoBoardServer {
         return json(
           _ai('explain', {
             'answer':
-                'Sample answer (demo): with a KINETIX AI server this would explain "$topicName" for ${current.section}, '
+                'Sample answer (demo): with a ZYNETIX AI server this would explain "$topicName" for ${current.section}, '
                 'using the ${current.subject} syllabus notes.',
             'keyPoints': [
               'Start from the journal entry',

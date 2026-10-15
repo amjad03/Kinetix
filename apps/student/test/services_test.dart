@@ -3,22 +3,22 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/core/campus_services.dart';
-import 'package:kinetix_student/features/campus/bus_screen.dart';
-import 'package:kinetix_student/features/campus/certificates_screen.dart';
-import 'package:kinetix_student/features/campus/gate_pass_screen.dart';
-import 'package:kinetix_student/features/campus/leave_screen.dart';
-import 'package:kinetix_student/features/exams/exams_tab.dart';
-import 'package:kinetix_student/features/profile/profile_tab.dart';
-import 'package:kinetix_student/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_student/core/api.dart';
+import 'package:zynetix_student/core/campus_services.dart';
+import 'package:zynetix_student/features/campus/bus_screen.dart';
+import 'package:zynetix_student/features/campus/certificates_screen.dart';
+import 'package:zynetix_student/features/campus/gate_pass_screen.dart';
+import 'package:zynetix_student/features/campus/leave_screen.dart';
+import 'package:zynetix_student/features/exams/exams_tab.dart';
+import 'package:zynetix_student/features/profile/profile_tab.dart';
+import 'package:zynetix_student/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
 
 Widget host(Widget child) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: const Locale('en'),
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,

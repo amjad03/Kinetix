@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/models.dart' show AiLanguage;
@@ -64,7 +64,7 @@ const captionStringTable = <String, Map<String, String>>{
 typedef Caption = ({Duration at, Duration end, String text});
 
 /// Live captions: the teacher's words as subtitles on the board, recognised on the board itself
-/// (the device's speech recogniser, as KINETIX AI's voice input) in English, Hindi or Kannada,
+/// (the device's speech recogniser, as ZYNETIX AI's voice input) in English, Hindi or Kannada,
 /// for hearing-impaired students; kept as a transcript (WebVTT) for the lesson recording.
 class CaptionsController extends ChangeNotifier {
   CaptionsController({VoiceInput Function()? voice, DateTime Function()? now, this.restartDelay = const Duration(milliseconds: 150)})
@@ -360,14 +360,14 @@ class CaptionsOverlay extends StatelessWidget {
                             key: const Key('captions-save-text'),
                             tooltip: s['saveText'],
                             color: Colors.white,
-                            onPressed: c.transcript.isEmpty ? null : () => LiveCaptions.share('KINETIX captions.txt', Uint8List.fromList(utf8.encode(c.toText()))),
+                            onPressed: c.transcript.isEmpty ? null : () => LiveCaptions.share('ZYNETIX captions.txt', Uint8List.fromList(utf8.encode(c.toText()))),
                             icon: const Icon(Icons.description_outlined),
                           ),
                           IconButton(
                             key: const Key('captions-save'),
                             tooltip: s['save'],
                             color: Colors.white,
-                            onPressed: c.transcript.isEmpty ? null : () => LiveCaptions.share('KINETIX captions.vtt', Uint8List.fromList(utf8.encode(c.toVtt()))),
+                            onPressed: c.transcript.isEmpty ? null : () => LiveCaptions.share('ZYNETIX captions.vtt', Uint8List.fromList(utf8.encode(c.toVtt()))),
                             icon: const Icon(Icons.save_alt),
                           ),
                         ],

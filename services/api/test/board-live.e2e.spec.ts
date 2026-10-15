@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type AttendanceUpdatedEvent } from '@kinetix/shared';
+import { RealtimeEvents, type AttendanceUpdatedEvent } from '@zynetix/shared';
 import request from 'supertest';
 import { io, type Socket } from 'socket.io-client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

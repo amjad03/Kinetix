@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_cards/kinetix_cards.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_cards/zynetix_cards.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
@@ -15,9 +15,9 @@ import '../../widgets/common.dart';
 /// Hands the PDF to the phone's print / share sheet; tests replace it.
 Future<void> Function(Uint8List pdf, String filename) shareAnswerCardsPdf = (pdf, filename) => Printing.sharePdf(bytes: pdf, filename: filename);
 
-/// Fonts for students' names in Hindi or Kannada on the cards (bundled in kinetix_ui).
+/// Fonts for students' names in Hindi or Kannada on the cards (bundled in zynetix_ui).
 Future<pw.ThemeData> _pdfTheme() async {
-  Future<pw.Font> font(String name) async => pw.Font.ttf(await rootBundle.load('packages/kinetix_ui/fonts/$name.ttf'));
+  Future<pw.Font> font(String name) async => pw.Font.ttf(await rootBundle.load('packages/zynetix_ui/fonts/$name.ttf'));
   try {
     return pw.ThemeData.withFont(
       base: await font('Inter-400'),

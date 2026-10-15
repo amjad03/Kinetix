@@ -5,7 +5,7 @@ import { open, setLanguageCookie } from './helpers';
 // (principal.setup.ts). Puts everything back: kiosk mode on, no IT PIN.
 test.describe.configure({ mode: 'serial' });
 
-const API_URL = process.env.KINETIX_API_URL ?? 'http://localhost:4000';
+const API_URL = process.env.ZYNETIX_API_URL ?? 'http://localhost:4000';
 
 test('the principal sets the IT PIN; it is never shown again or sent back', async ({ page, request }) => {
   await open(page, '/settings');
@@ -45,7 +45,7 @@ test('the principal sets the IT PIN; it is never shown again or sent back', asyn
   await expect(page.getByTestId('kiosk-pin-save')).toHaveText('Change PIN');
 
   // The API says only that a PIN is set (what boards get is checked in services/api/test/kiosk.e2e.spec.ts).
-  const login = await request.post(`${API_URL}/v1/auth/login`, { data: { tenant: 'demo-college', login: 'principal@demo.kinetix.in', password: 'kinetix123' } });
+  const login = await request.post(`${API_URL}/v1/auth/login`, { data: { tenant: 'demo-college', login: 'principal@demo.zynetix.in', password: 'zynetix123' } });
   const token = (await login.json()).accessToken as string;
   const settings = await (await request.get(`${API_URL}/v1/admin/settings`, { headers: { authorization: `Bearer ${token}` } })).json();
   expect(settings.boardKiosk).toMatchObject({ enabled: true, pinSet: true });
@@ -77,6 +77,6 @@ test('the principal removes the PIN', async ({ page }) => {
 test('the section is translated', async ({ page }) => {
   await setLanguageCookie(page, 'hi');
   await open(page, '/settings');
-  await expect(page.getByTestId('kiosk')).toContainText('बोर्ड को KINETIX Board पर लॉक करें');
+  await expect(page.getByTestId('kiosk')).toContainText('बोर्ड को ZYNETIX Board पर लॉक करें');
   await setLanguageCookie(page, 'en');
 });

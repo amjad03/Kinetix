@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/board_controller.dart';
@@ -481,7 +481,7 @@ class _StarsTab extends StatefulWidget {
 class _StarsTabState extends State<_StarsTab> {
   Map<String, int> _stars = {};
 
-  String get _key => 'kinetix.stars.${widget.board.session?.sectionName ?? 'guest'}';
+  String get _key => 'zynetix.stars.${widget.board.session?.sectionName ?? 'guest'}';
 
   @override
   void initState() {

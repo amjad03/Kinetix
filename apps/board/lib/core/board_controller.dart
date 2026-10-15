@@ -13,7 +13,7 @@ import '../features/profiles/profiles_controller.dart';
 import '../features/projector/projector_controller.dart';
 import '../l10n/l10n.dart';
 
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'api_client.dart';
 import 'class_audio/class_audio.dart';

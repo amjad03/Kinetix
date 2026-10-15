@@ -30,17 +30,17 @@ single_nat_gateway = true # set false for a NAT gateway per AZ (+ ~USD 35/month 
 log_retention_days = 90
 enable_ecs_exec    = false
 
-sms_provider      = "msg91"    # fill in kinetix/prod/msg91 first
+sms_provider      = "msg91"    # fill in zynetix/prod/msg91 first
 payments_provider = "razorpay" # each institution adds its own keys in the ERP, or "none"
-push_enabled      = true       # fill in kinetix/prod/fcm first
+push_enabled      = true       # fill in zynetix/prod/fcm first
 
 ai_base_url  = ""
 asr_base_url = ""
 # Pay-per-use fallback (and the only provider while the URLs above are empty). Fill in the
-# kinetix/<env>/sarvam secret first. See docs/operations/ai-hosting.md.
+# zynetix/<env>/sarvam secret first. See docs/operations/ai-hosting.md.
 ai_fallback_provider  = "none"
 asr_fallback_provider = "none"
 
 alarm_emails      = [] # CHANGE
-github_repository = "" # e.g. "your-org/Kinetix"
+github_repository = "" # e.g. "your-org/Zynetix"
 # github_oidc_provider_arn = "" # set if staging already created the GitHub OIDC provider in this account

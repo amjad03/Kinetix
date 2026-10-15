@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/attendance_live.dart';
-import 'package:kinetix_parent/core/realtime.dart';
+import 'package:zynetix_parent/core/attendance_live.dart';
+import 'package:zynetix_parent/core/realtime.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

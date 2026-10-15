@@ -21,7 +21,7 @@ export function SsoDesk({ providers, callback }: { providers: Provider[]; callba
     { name: 'directoryId', label: t('gb.sso.directory') },
     { name: 'issuer', label: t('gb.sso.issuer') },
     { name: 'domains', label: t('gb.sso.domains'), kind: 'multiline', required: true },
-    { name: 'redirects', label: t('gb.sso.redirects'), kind: 'multiline', required: true, init: 'kinetix://sso' },
+    { name: 'redirects', label: t('gb.sso.redirects'), kind: 'multiline', required: true, init: 'zynetix://sso' },
   ];
   return (
     <>
@@ -52,7 +52,7 @@ export function SsoDesk({ providers, callback }: { providers: Provider[]; callba
       {adding && (
         <FormDialog
           title={t('gb.sso.add')}
-          intro={t('gb.sso.redirectHelp', { callback, appAddress: 'kinetix://sso' })}
+          intro={t('gb.sso.redirectHelp', { callback, appAddress: 'zynetix://sso' })}
           fields={fields}
           onSubmit={saveProvider}
           onClose={(m) => {

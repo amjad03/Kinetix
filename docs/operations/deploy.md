@@ -1,4 +1,4 @@
-# Deploying KINETIX
+# Deploying ZYNETIX
 
 Production runs on AWS in **ap-south-1 (Mumbai)**: ECS Fargate (API + ERP) behind an HTTPS
 load balancer, RDS PostgreSQL, ElastiCache Redis, S3 for recordings, Secrets Manager. Everything is
@@ -16,13 +16,13 @@ Related: [backups-and-restore.md](backups-and-restore.md) · [monitoring.md](mon
 
 | Piece | Where | Notes |
 | --- | --- | --- |
-| API (`kinetix-api serve`) | ECS service `api`, private subnets, port 4000 | `https://<api_domain>`; ALB health check is `GET /ready` |
+| API (`zynetix-api serve`) | ECS service `api`, private subnets, port 4000 | `https://<api_domain>`; ALB health check is `GET /ready` |
 | ERP (Next.js standalone) | ECS service `erp`, port 3000 | `https://<erp_domain>`; calls the API at `https://<api_domain>` |
-| Migrations | one-off task `kinetix-<env>-migrate` (`kinetix-api migrate`) | owner role `kinetix_owner`; run **before** each API rollout |
-| DB roles / content library | one-off task `kinetix-<env>-db-admin` (`db-bootstrap`, or `content-import`) | RDS master user only here |
-| PostgreSQL 16 | RDS, data subnets, encrypted, TLS required | requests run as `kinetix_app` (NOBYPASSRLS), so row-level security always applies |
+| Migrations | one-off task `zynetix-<env>-migrate` (`zynetix-api migrate`) | owner role `zynetix_owner`; run **before** each API rollout |
+| DB roles / content library | one-off task `zynetix-<env>-db-admin` (`db-bootstrap`, or `content-import`) | RDS master user only here |
+| PostgreSQL 16 | RDS, data subnets, encrypted, TLS required | requests run as `zynetix_app` (NOBYPASSRLS), so row-level security always applies |
 | Redis 7 | ElastiCache, TLS + AUTH | shared rate limits, live-classroom state, Socket.IO adapter |
-| Recordings | S3 `kinetix-<env>-objects-<account>` | KMS, versioned, public access blocked, lifecycle to IA/Glacier IR |
+| Recordings | S3 `zynetix-<env>-objects-<account>` | KMS, versioned, public access blocked, lifecycle to IA/Glacier IR |
 
 The image modes are documented in `services/api/docker-entrypoint.sh`:
 `serve` (default), `migrate`, `seed` (demo data — **never in prod**), `content-import`, `create-institution` (a real institution and its first administrator; see [Onboarding](#onboarding-a-real-institution)), `db-bootstrap`.
@@ -34,7 +34,7 @@ The image modes are documented in `services/api/docker-entrypoint.sh`:
 2. **Terraform state bucket** (once, ap-south-1):
    ```bash
    ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-   BUCKET=kinetix-tfstate-$ACCOUNT
+   BUCKET=zynetix-tfstate-$ACCOUNT
    aws s3api create-bucket --bucket $BUCKET --region ap-south-1 \
      --create-bucket-configuration LocationConstraint=ap-south-1
    aws s3api put-bucket-versioning --bucket $BUCKET --versioning-configuration Status=Enabled
@@ -46,7 +46,7 @@ The image modes are documented in `services/api/docker-entrypoint.sh`:
    Put the bucket name in `infra/terraform/environments/<env>.backend.hcl`. The state contains the
    generated database/Redis passwords: only the deploy role may read this bucket.
 3. **Domains and certificate.** Request one ACM certificate **in ap-south-1** for the API and ERP
-   host names (e.g. `api.kinetix.in`, `erp.kinetix.in`, or a wildcard), validate it by DNS, and put its
+   host names (e.g. `api.zynetix.in`, `erp.zynetix.in`, or a wildcard), validate it by DNS, and put its
    ARN, the host names and (optionally) the Route 53 zone id in `environments/<env>.tfvars`.
 4. **Terraform** (≥ 1.10):
    ```bash
@@ -62,13 +62,13 @@ The image modes are documented in `services/api/docker-entrypoint.sh`:
    GitHub environment named `staging` / `prod` with the secret `AWS_ECR_ROLE_ARN` = the
    `github_ecr_role_arn` output. Protect the `prod` environment with required reviewers.
 6. **Images.** Push to `main` (or run *Docker images* by hand, choosing the environment). The
-   workflow pushes `kinetix-<env>-api:<sha12>` and `:main` (same for `erp`). Without the secret it
+   workflow pushes `zynetix-<env>-api:<sha12>` and `:main` (same for `erp`). Without the secret it
    only builds.
 7. **Provider secrets** (fill in before switching the providers on in tfvars):
    ```bash
-   aws secretsmanager put-secret-value --secret-id kinetix/prod/msg91 --secret-string \
+   aws secretsmanager put-secret-value --secret-id zynetix/prod/msg91 --secret-string \
      '{"MSG91_AUTH_KEY":"…","MSG91_TEMPLATE_ID":"…","MSG91_SENDER_ID":"KINTIX"}'
-   aws secretsmanager put-secret-value --secret-id kinetix/prod/fcm \
+   aws secretsmanager put-secret-value --secret-id zynetix/prod/fcm \
      --secret-string "$(jq -n --rawfile sa service-account.json '{FCM_SERVICE_ACCOUNT:$sa}')"
    ```
    There are **no platform Razorpay keys**: each institution receives fees in its own Razorpay
@@ -98,14 +98,14 @@ run_task() {  # run_task <family> [command-override-json]
 
 1. Set `image_tag` to the pushed SHA in the tfvars and `terraform apply` (task definitions point at it).
 2. **Database roles and database** (as the RDS master user; idempotent):
-   `run_task kinetix-$ENV-db-admin` → exit code `0`. Logs: `/kinetix/$ENV/jobs`
-   (`Created role kinetix_owner … Database kinetix is ready`).
-3. **Migrations**: `run_task kinetix-$ENV-migrate` → `Migrations applied.`
+   `run_task zynetix-$ENV-db-admin` → exit code `0`. Logs: `/zynetix/$ENV/jobs`
+   (`Created role zynetix_owner … Database zynetix is ready`).
+3. **Migrations**: `run_task zynetix-$ENV-migrate` → `Migrations applied.`
 4. **Global content library** (idempotent):
-   `run_task kinetix-$ENV-db-admin '["content-import"]' db-admin` → `Imported … courses, … topics
+   `run_task zynetix-$ENV-db-admin '["content-import"]' db-admin` → `Imported … courses, … topics
    (… new, … changed, … removed)`. Re-run on every release that changes `services/api/content`
    (see its README); topic ids are kept, so classes' coverage and plans stay attached.
-5. **Staging only — demo data**: `run_task kinetix-$ENV-api '["seed"]' api` with `ALLOW_DEMO_SEED=yes` set on the task (the seed refuses to run in production images otherwise) (the seed validates
+5. **Staging only — demo data**: `run_task zynetix-$ENV-api '["seed"]' api` with `ALLOW_DEMO_SEED=yes` set on the task (the seed refuses to run in production images otherwise) (the seed validates
    the full API environment, so it runs on the API task definition). Never on prod: it creates
    accounts with a known password.
 6. Force the services to start on the new image:
@@ -128,7 +128,7 @@ run_task() {  # run_task <family> [command-override-json]
 3. Set `image_tag = "<sha12>"` and register the new migrate task first, then run it:
    ```bash
    terraform apply -var-file=environments/$ENV.tfvars -target=aws_ecs_task_definition.migrate
-   run_task kinetix-$ENV-migrate        # exit code 0, "Migrations applied."
+   run_task zynetix-$ENV-migrate        # exit code 0, "Migrations applied."
    ```
 4. `terraform plan` (only task definitions should change) and apply: the services roll. New API
    tasks join the load balancer only once `/ready` reports `migrations: ok`; if they never do, the
@@ -140,7 +140,7 @@ Deploy staging first; promote the same SHA to prod after a check on staging.
 ## Rollback
 
 - **App only (no migration in the release):** set `image_tag` back to the previous SHA and apply, or
-  `aws ecs update-service --service api --task-definition kinetix-$ENV-api:<previous revision>`.
+  `aws ecs update-service --service api --task-definition zynetix-$ENV-api:<previous revision>`.
   ECS's deployment circuit breaker already rolls back automatically when new tasks never turn
   healthy.
 - **Release with migrations:** migrations are forward-only (no down migrations). Because they are
@@ -168,17 +168,17 @@ from four CSV files. The demo seed is never used for a real institution.
 2. **Create the institution** on **staging first**, then prod, as a one-off task on the API task
    definition with a command override (the task's `DATABASE_URL` is the owner role):
    ```bash
-   run_task kinetix-$ENV-api '["create-institution","--slug","sjc-blr","--name","St. Joseph'"'"'s College",
+   run_task zynetix-$ENV-api '["create-institution","--slug","sjc-blr","--name","St. Joseph'"'"'s College",
      "--kind","college","--timezone","Asia/Kolkata","--campus","Main Campus","--city","Bengaluru",
      "--year-label","2026-27","--year-start","2026-06-01","--year-end","2027-03-31",
      "--admin-name","Admin Office","--admin-email","office@sjc.example.in","--admin-phone","98450 12345"]' api
    ```
-   Locally: `pnpm --filter @kinetix/api db:create-institution -- --slug … ` (or
+   Locally: `pnpm --filter @zynetix/api db:create-institution -- --slug … ` (or
    `node dist/db/create-institution.js …`). It creates the tenant (default settings: live view off,
    indicator on, class audio off, PIN fallback off), the campus, the current academic year and the
    first `tenant_admin`, audited as `institution.created`. It **refuses a slug that already exists**
    (exit code 1, nothing changed) and bad arguments (exit code 2). The administrator's
-   **temporary password is printed once** in the task log (`/kinetix/$ENV/jobs`); give it to them in
+   **temporary password is printed once** in the task log (`/zynetix/$ENV/jobs`); give it to them in
    person or by phone, never by email. At the first sign-in the ERP asks them to choose their own
    password before anything else (see [Passwords](../architecture/auth-otp.md#passwords)). With `--otp-only` (needs `--admin-phone`) there is no password
    and the administrator signs in with a code sent by SMS.

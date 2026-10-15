@@ -1,21 +1,21 @@
 // Activities, behaviour and notices, the school's visibility switches, and the report card details.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/api.dart';
-import 'package:kinetix_parent/core/conduct.dart';
-import 'package:kinetix_parent/core/growth.dart';
-import 'package:kinetix_parent/core/models.dart';
-import 'package:kinetix_parent/features/exams/report_card_screen.dart';
-import 'package:kinetix_parent/features/school_life/conduct_screens.dart';
-import 'package:kinetix_parent/features/school_life/school_life_screen.dart';
-import 'package:kinetix_parent/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_parent/core/api.dart';
+import 'package:zynetix_parent/core/conduct.dart';
+import 'package:zynetix_parent/core/growth.dart';
+import 'package:zynetix_parent/core/models.dart';
+import 'package:zynetix_parent/features/exams/report_card_screen.dart';
+import 'package:zynetix_parent/features/school_life/conduct_screens.dart';
+import 'package:zynetix_parent/features/school_life/school_life_screen.dart';
+import 'package:zynetix_parent/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
 
 Widget host(Widget child, {String lang = 'en'}) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: Locale(lang),
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,

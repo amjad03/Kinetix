@@ -34,7 +34,7 @@ const ProviderBody = z.object({
   jwksUri: z.url().optional(),
   scopes: z.string().trim().max(200).default('openid email profile'),
   allowedDomains: z.array(domain).min(1, 'Add at least one email domain').max(20),
-  /** Where the browser may be sent after sign-in: the ERP callback, or an app's own scheme (kinetix://sso). */
+  /** Where the browser may be sent after sign-in: the ERP callback, or an app's own scheme (zynetix://sso). */
   redirectAllowlist: z.array(redirect).min(1, 'Add at least one return address').max(20),
   enabled: z.boolean().default(true),
 });
@@ -52,7 +52,7 @@ export class SsoService {
     readonly db: DbService,
     readonly clock: Clock,
   ) {
-    this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`kinetix-sso:${env.JWT_SECRET}`).digest() }, 1);
+    this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`zynetix-sso:${env.JWT_SECRET}`).digest() }, 1);
   }
 
   /** Which institution's provider an address belongs to: the domain is claimed by exactly one institution. */
@@ -159,7 +159,7 @@ export class SsoAuthController {
         let [ident] = await tx.select().from(ssoIdentities).where(and(eq(ssoIdentities.providerId, p.id), eq(ssoIdentities.subject, claims.sub)));
         let userId = ident?.userId;
         if (!userId) {
-          // Just-in-time link: the first time, the provider's verified address finds the existing KINETIX user.
+          // Just-in-time link: the first time, the provider's verified address finds the existing ZYNETIX user.
           const [u] = await tx.select({ id: users.id, status: users.status }).from(users).where(sql`lower(${users.email}) = ${email}`);
           if (!u || u.status !== 'active') {
             await audit(tx, { tenantId: p.tenantId, actorType: 'system', action: 'auth.sso_no_account', subjectType: 'sso_provider', subjectId: p.id, data: { email } });

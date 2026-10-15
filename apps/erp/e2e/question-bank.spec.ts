@@ -23,7 +23,7 @@ test('the principal adds a question and a blueprint, then generates a paper', as
   // Maker and checker are different people: the administrator reviews and approves the principal's question.
   const adminCtx = await browser.newContext({ baseURL: ERP_URL, storageState: { cookies: [], origins: [] }, viewport: { width: 1440, height: 900 } });
   const adminPage = await adminCtx.newPage();
-  await signIn(adminPage, 'admin@demo.kinetix.in');
+  await signIn(adminPage, 'admin@demo.zynetix.in');
   await adminPage.waitForURL((u) => !u.pathname.startsWith('/login'));
   await open(adminPage, '/question-bank');
   const adminRow = adminPage.getByTestId('qb-questions').getByRole('row').filter({ hasText: topic });

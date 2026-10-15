@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_parent/core/api.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_parent/core/api.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'helpers.dart';
 

@@ -20,7 +20,7 @@ const SubscribeBody = z.object({
   trial: z.boolean().default(false),
 });
 
-/** The institution's own KINETIX plan, usage and invoices. */
+/** The institution's own ZYNETIX plan, usage and invoices. */
 @Controller('v1/billing')
 export class BillingController {
   constructor(

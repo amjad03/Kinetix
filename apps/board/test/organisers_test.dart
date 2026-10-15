@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/teaching_aids/organisers.dart';
-import 'package:kinetix_board/features/teaching_aids/teaching_aids.dart' show aidStringTable;
-import 'package:kinetix_board/l10n/feature_strings.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/features/teaching_aids/organisers.dart';
+import 'package:zynetix_board/features/teaching_aids/teaching_aids.dart' show aidStringTable;
+import 'package:zynetix_board/l10n/feature_strings.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import 'support/panel_harness.dart';
 

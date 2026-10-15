@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_math/kinetix_math.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_math/zynetix_math.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../../l10n/math_text.dart';
@@ -10,7 +10,7 @@ import 'ai_widgets.dart';
 
 const mathAccent = Color(0xFF8AB4F8);
 
-/// The maths solver. Runs on the board itself (package:kinetix_math), so it works with no
+/// The maths solver. Runs on the board itself (package:zynetix_math), so it works with no
 /// network and no teacher signed in.
 class MathPanel extends StatefulWidget {
   const MathPanel({super.key, required this.ai, this.onBack});

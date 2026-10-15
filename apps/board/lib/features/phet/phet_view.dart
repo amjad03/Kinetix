@@ -9,7 +9,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_windows/webview_windows.dart' as win;
 
 /// Serves the downloaded sims from the board's own storage on 127.0.0.1 only (never the school
-/// network), like the 3D viewer's server (packages/kinetix_3d): the WebView opens
+/// network), like the 3D viewer's server (packages/zynetix_3d): the WebView opens
 /// `http://127.0.0.1:<port>/<id>_all.html?locale=hi` and needs no internet. Android allows
 /// cleartext to 127.0.0.1 only (res/xml/network_security_config.xml).
 class PhetServer {

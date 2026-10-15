@@ -1,4 +1,4 @@
-/// Concept videos: short explainers from the KINETIX YouTube channel that the platform team links
+/// Concept videos: short explainers from the ZYNETIX YouTube channel that the platform team links
 /// to library topics (services/api: GET /v1/devices/me/concept-videos and
 /// /v1/content/topics/:id/videos). The board only ever keeps the YouTube id: videos play in
 /// YouTube's own embedded player and are never downloaded.
@@ -38,7 +38,7 @@ class ConceptVideo {
   final int? durationSeconds;
   final String? topicTitle;
 
-  /// Who linked it: platform (KINETIX), institution (the school's admin) or teacher.
+  /// Who linked it: platform (ZYNETIX), institution (the school's admin) or teacher.
   final String source;
 
   /// YouTube's own thumbnail (i.ytimg.com, 320×180).

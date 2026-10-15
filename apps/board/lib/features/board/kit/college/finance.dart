@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:kinetix_ink/kinetix_ink.dart' show formatGeneral, formatInr;
-import 'package:kinetix_labs/kinetix_labs.dart' show BreakEven;
+import 'package:zynetix_ink/zynetix_ink.dart' show formatGeneral, formatInr;
+import 'package:zynetix_labs/zynetix_labs.dart' show BreakEven;
 
 // Commerce calculators that show their working, as a B.Com / BBA answer would: each returns
 // the steps in order and the answer. The working is in English, as in the textbooks (the

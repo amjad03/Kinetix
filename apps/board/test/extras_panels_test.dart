@@ -5,20 +5,20 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/assessment/assessment.dart';
-import 'package:kinetix_board/features/captions/live_captions.dart';
-import 'package:kinetix_board/features/class_check/ask_dialog.dart';
-import 'package:kinetix_board/features/classroom/classroom_tools.dart';
-import 'package:kinetix_board/features/doc_camera/doc_camera.dart';
-import 'package:kinetix_board/features/language_kit/dictionary_data.dart';
-import 'package:kinetix_board/features/language_kit/language_kit.dart';
-import 'package:kinetix_board/features/primary/matching.dart';
-import 'package:kinetix_board/features/primary/primary_panel.dart';
-import 'package:kinetix_board/features/safe_web/safe_web.dart';
-import 'package:kinetix_board/features/teaching_aids/teaching_aids.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/assessment/assessment.dart';
+import 'package:zynetix_board/features/captions/live_captions.dart';
+import 'package:zynetix_board/features/class_check/ask_dialog.dart';
+import 'package:zynetix_board/features/classroom/classroom_tools.dart';
+import 'package:zynetix_board/features/doc_camera/doc_camera.dart';
+import 'package:zynetix_board/features/language_kit/dictionary_data.dart';
+import 'package:zynetix_board/features/language_kit/language_kit.dart';
+import 'package:zynetix_board/features/primary/matching.dart';
+import 'package:zynetix_board/features/primary/primary_panel.dart';
+import 'package:zynetix_board/features/safe_web/safe_web.dart';
+import 'package:zynetix_board/features/teaching_aids/teaching_aids.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
@@ -250,7 +250,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(state.plan.seats.take(2), [second, first]);
         final prefs = await SharedPreferences.getInstance();
-        expect(prefs.getString('kinetix.seating.guest'), state.plan.encode());
+        expect(prefs.getString('zynetix.seating.guest'), state.plan.encode());
         await tapKey(tester, 'seating-cols-plus');
         await tester.pump();
         expect(tester.takeException(), isNull);
@@ -280,7 +280,7 @@ void main() {
         await tester.enterText(find.byKey(const Key('teacher-notes-text')), 'Check on Ishita: missed the last test');
         await tester.pump(const Duration(seconds: 1));
         final prefs = await SharedPreferences.getInstance();
-        expect(prefs.getString('kinetix.teacherNotes.guest.guest'), 'Check on Ishita: missed the last test');
+        expect(prefs.getString('zynetix.teacherNotes.guest.guest'), 'Check on Ishita: missed the last test');
         expect(tester.takeException(), isNull);
       });
 
@@ -301,7 +301,7 @@ void main() {
         await tester.pump();
         expect(wb.elements.whereType<TextElement>().first.text, contains('Photosynthesis'));
 
-        // With KINETIX AI's questions, each can be asked as a poll.
+        // With ZYNETIX AI's questions, each can be asked as a poll.
         final ai = AssessmentGenerator(
           online: (t, n) async => AiResult(
             Quiz(topic: t, questions: [QuizQuestion(question: 'Where does photosynthesis happen?', options: ['Chloroplast', 'Nucleus', 'Root', 'Stem'], answer: 0, explanation: '')]),
@@ -336,7 +336,7 @@ void main() {
         await tester.enterText(find.byKey(const Key('dictionary-search')), 'ನೀರು');
         await tester.pump();
         expect(find.byKey(const Key('dictionary-word-water')), findsOneWidget);
-        // No class open: KINETIX AI falls back to the offline list.
+        // No class open: ZYNETIX AI falls back to the offline list.
         await tapKey(tester, 'dictionary-ai');
         await tester.pumpAndSettle();
         expect(find.byKey(const Key('dictionary-ai-answer')), findsOneWidget);

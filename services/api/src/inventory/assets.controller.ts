@@ -87,7 +87,7 @@ export class AssetsController {
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.tags_printed', subjectType: 'asset', data: { count: rows.length } });
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'inline; filename="asset-tags.pdf"');
-      return new StreamableFile(assetTagsPdf(t?.name ?? '', rows.map((a) => ({ tag: a.tag, name: a.name, location: a.location, qr: `kinetix://asset/${a.tag}` }))));
+      return new StreamableFile(assetTagsPdf(t?.name ?? '', rows.map((a) => ({ tag: a.tag, name: a.name, location: a.location, qr: `zynetix://asset/${a.tag}` }))));
     });
   }
 
@@ -216,7 +216,7 @@ export class AssetsController {
   // --- helpers -----------------------------------------------------------------------------
 
   private view(a: typeof assets.$inferSelect) {
-    return { ...a, qr: `kinetix://asset/${a.tag}` };
+    return { ...a, qr: `zynetix://asset/${a.tag}` };
   }
 
   private bookValue(a: typeof assets.$inferSelect, today: string): number {
@@ -232,7 +232,7 @@ export class AssetsController {
       tx.select().from(assetAllocations).where(eq(assetAllocations.assetId, id)).orderBy(desc(assetAllocations.allocatedOn)),
       tx.select().from(assetMaintenance).where(eq(assetMaintenance.assetId, id)).orderBy(desc(assetMaintenance.doneOn)),
     ]);
-    return { ...this.view(a), qrSvg: qrSvg(`kinetix://asset/${a.tag}`), allocations, maintenance, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
+    return { ...this.view(a), qrSvg: qrSvg(`zynetix://asset/${a.tag}`), allocations, maintenance, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
   }
 
   private async lock(tx: Tx, id: string) {

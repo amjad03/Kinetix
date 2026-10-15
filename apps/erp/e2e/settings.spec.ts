@@ -56,14 +56,14 @@ test('the principal names the grievance officer, then removes them', async ({ pa
   await card.getByTestId('grievance-email').fill('not-an-email');
   await card.getByTestId('grievance-save').click();
   await expect(card).toContainText('Enter a valid email address, or leave it empty');
-  await card.getByTestId('grievance-email').fill('grievance@demo.kinetix.in');
+  await card.getByTestId('grievance-email').fill('grievance@demo.zynetix.in');
   await card.getByTestId('grievance-phone').fill('+91 80 4000 1234');
   await card.getByTestId('grievance-save').click();
   await expect(card).toHaveAttribute('data-saved', 'true');
   await expect(card.getByTestId('grievance-not-set')).toHaveCount(0);
   await page.reload({ waitUntil: 'networkidle' });
   await expect(page.getByTestId('grievance-name')).toHaveValue('Dr. Kavya Rao');
-  await expect(page.getByTestId('grievance-email')).toHaveValue('grievance@demo.kinetix.in');
+  await expect(page.getByTestId('grievance-email')).toHaveValue('grievance@demo.zynetix.in');
   await expect(page.getByTestId('grievance-phone')).toHaveValue('+91 80 4000 1234');
   await expect(page.getByTestId('grievance-not-set')).toHaveCount(0);
 
@@ -91,7 +91,7 @@ test('the privacy & consent summary counts answers per purpose', async ({ page }
   await expect(data.getByTestId('consent-withdrawn')).toHaveText('0');
   await expect(data.getByTestId('consent-not-asked')).toHaveText(String(total - 2));
   const ai = summary.locator('[data-purpose="ai_features"]');
-  await expect(ai).toContainText('KINETIX AI');
+  await expect(ai).toContainText('ZYNETIX AI');
   await expect(ai.getByTestId('consent-granted')).toHaveText('1');
   await expect(ai.getByTestId('consent-not-asked')).toHaveText(String(total - 1));
   await expect(summary.locator('[data-purpose="photos"]').getByTestId('consent-not-asked')).toHaveText(String(total));

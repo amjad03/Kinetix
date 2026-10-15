@@ -2,14 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/picture_saver.dart';
+import 'package:zynetix_board/core/picture_saver.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final png = Uint8List.fromList([137, 80, 78, 71, 1, 2, 3]);
 
   test('Android: the picture goes to the gallery through MediaStore and says where', () async {
-    const channel = MethodChannel('kinetix/gallery');
+    const channel = MethodChannel('zynetix/gallery');
     MethodCall? seen;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async {
       seen = call;
@@ -21,11 +21,11 @@ void main() {
     expect(seen!.method, 'savePng');
     expect((seen!.arguments as Map)['name'], 'board.png');
     expect((seen!.arguments as Map)['bytes'], png);
-    expect(saver.savedTo, 'Pictures/KINETIX');
+    expect(saver.savedTo, 'Pictures/ZYNETIX');
   });
 
   test('Android: a refusal from the device is raised, not swallowed', () async {
-    const channel = MethodChannel('kinetix/gallery');
+    const channel = MethodChannel('zynetix/gallery');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async => throw PlatformException(code: 'gallery', message: 'full'));
     addTearDown(() => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null));
     expect(PictureSaver(platform: TargetPlatform.android).savePng('a.png', png), throwsA(isA<PlatformException>()));

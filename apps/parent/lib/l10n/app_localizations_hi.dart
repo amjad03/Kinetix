@@ -157,7 +157,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get errUnreachable =>
-      'KINETIX से कनेक्ट नहीं हो पा रहा। अपना इंटरनेट कनेक्शन और सर्वर का पता जाँचें।';
+      'ZYNETIX से कनेक्ट नहीं हो पा रहा। अपना इंटरनेट कनेक्शन और सर्वर का पता जाँचें।';
 
   @override
   String get errForbidden => 'आपको इसकी अनुमति नहीं है।';
@@ -230,7 +230,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get enterPassword => 'अपना पासवर्ड डालें';
 
   @override
-  String get enterServer => 'सर्वर का पता डालें, जैसे https://api.kinetix.in';
+  String get enterServer => 'सर्वर का पता डालें, जैसे https://api.zynetix.in';
 
   @override
   String get language => 'भाषा';
@@ -761,7 +761,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get errTeacherAccount =>
-      'यह ऐप अभिभावकों के लिए है। शिक्षक KINETIX Teacher ऐप इस्तेमाल कर सकते हैं।';
+      'यह ऐप अभिभावकों के लिए है। शिक्षक ZYNETIX Teacher ऐप इस्तेमाल कर सकते हैं।';
 
   @override
   String homeSubtitle(Object name) {
@@ -1070,7 +1070,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get paymentPhonesOnly =>
-      'ऑनलाइन भुगतान Android फ़ोन और iPhone पर KINETIX Parent ऐप में होता है। इस डिवाइस पर कृपया फ़ीस काउंटर पर भुगतान करें।';
+      'ऑनलाइन भुगतान Android फ़ोन और iPhone पर ZYNETIX Parent ऐप में होता है। इस डिवाइस पर कृपया फ़ीस काउंटर पर भुगतान करें।';
 
   @override
   String get demoPayment => 'डेमो भुगतान';
@@ -1344,7 +1344,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get privacySubtitle =>
-      'विद्यार्थी की जानकारी के साथ KINETIX क्या कर सकता है';
+      'विद्यार्थी की जानकारी के साथ ZYNETIX क्या कर सकता है';
 
   @override
   String get notNow => 'अभी नहीं';
@@ -1401,7 +1401,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get noticeCollege =>
-      'कॉलेज या विश्वविद्यालय: विद्यार्थी अपने लिए ख़ुद तय करते हैं। अभिभावक केवल उस विद्यार्थी के लिए तय करते हैं जिसका अपना KINETIX लॉगिन नहीं है।';
+      'कॉलेज या विश्वविद्यालय: विद्यार्थी अपने लिए ख़ुद तय करते हैं। अभिभावक केवल उस विद्यार्थी के लिए तय करते हैं जिसका अपना ZYNETIX लॉगिन नहीं है।';
 
   @override
   String get noticeWhatWeAsk => 'हम किस बारे में पूछते हैं';
@@ -1445,15 +1445,15 @@ class AppLocalizationsHi extends AppLocalizations {
       'संस्थान वे रिकॉर्ड फिर भी रखेगा जो क़ानूनन ज़रूरी हैं; आपको ऐप में सूचनाएँ नहीं मिलेंगी।';
 
   @override
-  String get purposeAiTitle => 'KINETIX AI';
+  String get purposeAiTitle => 'ZYNETIX AI';
 
   @override
   String get purposeAiBody =>
-      'विद्यार्थी का संदेह दूर करने के लिए KINETIX AI से मदद माँगना। सवाल भारत के सर्वर पर प्रोसेस होते हैं और AI मॉडल सिखाने में इस्तेमाल नहीं होते।';
+      'विद्यार्थी का संदेह दूर करने के लिए ZYNETIX AI से मदद माँगना। सवाल भारत के सर्वर पर प्रोसेस होते हैं और AI मॉडल सिखाने में इस्तेमाल नहीं होते।';
 
   @override
   String get purposeAiNo =>
-      'विद्यार्थी के लिए KINETIX AI बंद हो जाएगा। बाक़ी सब काम करेगा।';
+      'विद्यार्थी के लिए ZYNETIX AI बंद हो जाएगा। बाक़ी सब काम करेगा।';
 
   @override
   String get purposeRecordingsTitle => 'कक्षा की रिकॉर्डिंग और लाइव कक्षाएँ';
@@ -1497,7 +1497,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get handInForNote =>
-      'जिस बच्चे का अपना KINETIX लॉगिन नहीं है, उसकी ओर से यहाँ जमा करें।';
+      'जिस बच्चे का अपना ZYNETIX लॉगिन नहीं है, उसकी ओर से यहाँ जमा करें।';
 
   @override
   String consentTitleFor(String name) {
@@ -1506,22 +1506,22 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String consentIntroFor(String name) {
-    return 'चुनें कि KINETIX $name की जानकारी के साथ क्या कर सकता है। जब तक आप नहीं चुनते, कुछ भी चालू नहीं होता।';
+    return 'चुनें कि ZYNETIX $name की जानकारी के साथ क्या कर सकता है। जब तक आप नहीं चुनते, कुछ भी चालू नहीं होता।';
   }
 
   @override
   String privacyIntroFor(String name) {
-    return 'KINETIX $name की जानकारी के साथ क्या कर सकता है। अनुमति वापस लेने के लिए स्विच बंद करें।';
+    return 'ZYNETIX $name की जानकारी के साथ क्या कर सकता है। अनुमति वापस लेने के लिए स्विच बंद करें।';
   }
 
   @override
   String privacyIntroReadOnlyFor(String name) {
-    return 'KINETIX $name की जानकारी के साथ क्या कर सकता है, और किसने तय किया।';
+    return 'ZYNETIX $name की जानकारी के साथ क्या कर सकता है, और किसने तय किया।';
   }
 
   @override
   String managedByStudent(String name) {
-    return 'इसे $name ख़ुद संभालते हैं। कॉलेज में जिन विद्यार्थियों का अपना KINETIX लॉगिन है, वे ये विकल्प ख़ुद चुनते हैं।';
+    return 'इसे $name ख़ुद संभालते हैं। कॉलेज में जिन विद्यार्थियों का अपना ZYNETIX लॉगिन है, वे ये विकल्प ख़ुद चुनते हैं।';
   }
 
   @override
@@ -1547,7 +1547,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String syllabusNotLinked(String subject) {
-    return '$subject का पाठ्यक्रम अभी KINETIX में नहीं है।';
+    return '$subject का पाठ्यक्रम अभी ZYNETIX में नहीं है।';
   }
 
   @override
@@ -1664,7 +1664,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get demoBannerBody =>
-      'KINETIX डेमो कॉलेज का नमूना डेटा। कुछ भी सर्वर पर नहीं भेजा जाता, और आपके बदलाव ऐप बंद होने तक ही रहते हैं।';
+      'ZYNETIX डेमो कॉलेज का नमूना डेटा। कुछ भी सर्वर पर नहीं भेजा जाता, और आपके बदलाव ऐप बंद होने तक ही रहते हैं।';
 
   @override
   String demoSignInAs(String name) {
@@ -2968,7 +2968,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get aiUpdateTitle => 'KINETIX AI की ओर से अपडेट';
+  String get aiUpdateTitle => 'ZYNETIX AI की ओर से अपडेट';
 
   @override
   String get aiUpdateGood => 'जो अच्छा चल रहा है';
@@ -2990,7 +2990,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String aiUpdateNote(String name) {
-    return 'KINETIX AI ने $name के अंकों, उपस्थिति और गृहकार्य से लिखा। इसमें गलती हो सकती है: कक्षा शिक्षक $name को सबसे अच्छी तरह जानते हैं।';
+    return 'ZYNETIX AI ने $name के अंकों, उपस्थिति और गृहकार्य से लिखा। इसमें गलती हो सकती है: कक्षा शिक्षक $name को सबसे अच्छी तरह जानते हैं।';
   }
 
   @override

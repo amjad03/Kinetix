@@ -1,4 +1,4 @@
-# KINETIX Board
+# ZYNETIX Board
 
 The classroom app. Flutter, targeting Android (tablets, IFPs) and Windows. See
 [ADR 0001](../../docs/adr/0001-board-on-flutter.md) and the
@@ -30,7 +30,7 @@ On first run, enter the server URL and the enrolment code that `pnpm db:seed` pr
 
 ```bash
 TOKEN=$(curl -s -XPOST localhost:4000/v1/auth/login -H 'content-type: application/json' \
-  -d '{"tenant":"demo-college","login":"anita@demo.kinetix.in","password":"kinetix123"}' | jq -r .accessToken)
+  -d '{"tenant":"demo-college","login":"anita@demo.zynetix.in","password":"zynetix123"}' | jq -r .accessToken)
 curl -XPOST localhost:4000/v1/pairing/claim -H "authorization: Bearer $TOKEN" \
   -H 'content-type: application/json' -d '{"code":"<code on the board>"}'
 ```
@@ -39,7 +39,7 @@ To try the board without a server, use **Practice board**.
 
 ## Lesson recording
 
-**Record** on the toolbar records the board's ink (`LessonRecorder` from `kinetix_ink`) and the
+**Record** on the toolbar records the board's ink (`LessonRecorder` from `zynetix_ink`) and the
 teacher's voice, so absent students and parents can watch the lesson in their apps. Code:
 `lib/core/recording/` (capture, store, upload queue) and `lib/features/recording/` (UI).
 

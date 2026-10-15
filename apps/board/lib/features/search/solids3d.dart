@@ -2,15 +2,15 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_3d/kinetix_3d.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_3d/zynetix_3d.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../board/live_solids.dart' show faceColourStrings;
 import '../board/phone_chrome.dart';
 import 'search_strings.dart';
 import '../board/panel/panel_host.dart';
 
-/// 3D solids for the Shapes popover: the solids of kinetix_3d (drawn by its pure-Dart
+/// 3D solids for the Shapes popover: the solids of zynetix_3d (drawn by its pure-Dart
 /// renderer, so they work everywhere and offline), turned round with a finger, with their
 /// sizes and measurements, and put on the board as a picture that opens them again.
 

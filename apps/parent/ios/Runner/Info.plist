@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>KINETIX Parent</string>
+	<string>ZYNETIX Parent</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<!-- Pushes (APNs via Firebase Cloud Messaging). -->
@@ -28,7 +28,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>kinetix_parent</string>
+	<string>zynetix_parent</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -80,8 +80,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>KINETIX uses the camera to take photos of your child's homework to hand in.</string>
+	<string>ZYNETIX uses the camera to take photos of your child's homework to hand in.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>KINETIX opens your photos so you can choose pictures of your child's homework to hand in.</string>
+	<string>ZYNETIX opens your photos so you can choose pictures of your child's homework to hand in.</string>
 </dict>
 </plist>

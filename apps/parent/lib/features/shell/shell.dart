@@ -6,7 +6,7 @@ import '../../core/attendance_live.dart';
 import '../../core/app_state.dart';
 import '../../core/family.dart';
 import '../../core/realtime.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../fees/fees_screen.dart';

@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:kinetix_ink/kinetix_ink.dart' show GraphElement, compileGraph, paintGraph;
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart' show GraphElement, compileGraph, paintGraph;
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../board/context/class_context.dart' show showAllToolsByDefault;
@@ -12,7 +12,7 @@ import '../search/filter_bar.dart';
 import '../search/fuzzy.dart';
 import '../search/search_strings.dart';
 
-/// The six interactive simulations from the KINETIX prototype. They open in a window over the
+/// The six interactive simulations from the ZYNETIX prototype. They open in a window over the
 /// board (they are not written on it).
 enum SimKind { pendulum, projectile, grapher, fractions, wave, pythagoras }
 

@@ -1,9 +1,9 @@
 // Year plans (from the syllabus) and lesson plans (from today's period card).
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/api.dart';
-import 'package:kinetix_teacher/core/format.dart';
-import 'package:kinetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/core/api.dart';
+import 'package:zynetix_teacher/core/format.dart';
+import 'package:zynetix_teacher/core/models.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -184,7 +184,7 @@ void main() {
       expect(find.byKey(const Key('lessonTopic-t3')), findsNothing);
     });
 
-    testWidgets('KINETIX AI drafts the plan, labelled; replacing edits asks first', (tester) async {
+    testWidgets('ZYNETIX AI drafts the plan, labelled; replacing edits asks first', (tester) async {
       await openLessonPlan(tester);
       await tapAndSettle(tester, find.byKey(const Key('draftWithAi')));
       expect(api.calls, contains('draft slot1 2026-10-05 t3 en'));
@@ -199,7 +199,7 @@ void main() {
       await tester.enterText(find.byKey(const Key('homeworkField')), 'Ex 4.2');
       await tester.scrollUntilVisible(find.byKey(const Key('draftWithAi')), -200, scrollable: form());
       await tapAndSettle(tester, find.byKey(const Key('draftWithAi')));
-      expect(find.text('Replace with a KINETIX AI draft?'), findsOneWidget);
+      expect(find.text('Replace with a ZYNETIX AI draft?'), findsOneWidget);
       await tapAndSettle(tester, find.byKey(const Key('confirmReplace')));
       expect(api.calls.where((c) => c.startsWith('draft')), hasLength(2));
 

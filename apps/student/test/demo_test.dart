@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart';
-import 'package:kinetix_student/app.dart';
-import 'package:kinetix_student/core/app_state.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/core/token_store.dart';
-import 'package:kinetix_student/demo/demo.dart';
-import 'package:kinetix_student/demo/demo_api.dart';
+import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_student/app.dart';
+import 'package:zynetix_student/core/app_state.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/core/token_store.dart';
+import 'package:zynetix_student/demo/demo.dart';
+import 'package:zynetix_student/demo/demo_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers.dart';
 
-/// The demo build (--dart-define=KINETIX_DEMO=true): sample data, no server.
+/// The demo build (--dart-define=ZYNETIX_DEMO=true): sample data, no server.
 void main() {
   setUp(() => Demo.enabled = true);
   tearDown(() => Demo.enabled = false);

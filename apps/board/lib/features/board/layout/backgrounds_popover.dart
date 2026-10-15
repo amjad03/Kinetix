@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../core/board_controller.dart';
@@ -34,7 +34,7 @@ const templateBackgrounds = [
   BoardBackground.footballField,
   BoardBackground.cricketField,
   BoardBackground.worldMap,
-  // India with the Survey of India boundary (packages/kinetix_ink/tool/india_outline.py).
+  // India with the Survey of India boundary (packages/zynetix_ink/tool/india_outline.py).
   BoardBackground.indiaMap,
   BoardBackground.ledger,
   BoardBackground.journal,

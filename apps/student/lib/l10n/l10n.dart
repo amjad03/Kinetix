@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:kinetix_lesson/kinetix_lesson.dart' show LessonStrings;
+import 'package:zynetix_lesson/zynetix_lesson.dart' show LessonStrings;
 
 import '../core/api.dart';
 import '../core/format.dart';
@@ -61,7 +61,7 @@ const errorCodeForMessage = <String, String>{
   'Write an answer or add a photo': 'SUBMISSION_EMPTY',
   'This homework has already been checked': 'SUBMISSION_CHECKED',
   "In a school, the student's parent or guardian decides": 'CONSENT_GUARDIAN_DECIDES',
-  'KINETIX AI is turned off for this student (consent was withdrawn)': 'CONSENT_WITHDRAWN',
+  'ZYNETIX AI is turned off for this student (consent was withdrawn)': 'CONSENT_WITHDRAWN',
   'Only school leaders and students can watch classes': 'LIVE_NOT_ALLOWED',
   'Live view is turned off for your institution': 'LIVE_VIEW_OFF',
   'Your teacher has not started a live class': 'LIVE_NOT_STARTED',

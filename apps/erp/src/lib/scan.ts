@@ -2,9 +2,9 @@
 
 export type ScanTarget = { kind: 'asset'; code: string } | { kind: 'book'; code: string } | { kind: 'none'; code: '' };
 
-const ASSET_QR = /^kinetix:\/\/asset\/(.+)$/i;
+const ASSET_QR = /^zynetix:\/\/asset\/(.+)$/i;
 
-/** Asset labels carry `kinetix://asset/<tag>`; everything else typed or scanned is looked up as a library code (barcode or ISBN). */
+/** Asset labels carry `zynetix://asset/<tag>`; everything else typed or scanned is looked up as a library code (barcode or ISBN). */
 export function readScan(raw: string): ScanTarget {
   const text = raw.trim().slice(0, 120);
   if (!text) return { kind: 'none', code: '' };

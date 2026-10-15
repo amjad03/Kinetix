@@ -5,8 +5,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/painting.dart' show FontWeight, TextAlign, TextDirection, TextPainter, TextSpan, TextStyle, TextWidthBasis;
 import 'package:flutter/widgets.dart' show IconData;
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart' show KxFonts;
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart' show KxFonts;
 
 /// The outline of an idea's box.
 enum MindShape { rounded, pill, rectangle, ellipse }

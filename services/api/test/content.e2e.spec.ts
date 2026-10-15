@@ -120,7 +120,7 @@ describe('content library', () => {
     await http().delete(`/v1/content/topics/${added.body.id}`).set(auth('teacher')).expect(204);
   });
 
-  it('grounds KINETIX AI in the matching syllabus notes and cites them', async () => {
+  it('grounds ZYNETIX AI in the matching syllabus notes and cites them', async () => {
     const res = await http().post('/v1/ai/explain').set(auth('board')).send({ question: 'How do we value goodwill by the super profit method?' }).expect(200);
     expect(res.body.meta.sources).toEqual([{ topicId: expect.any(String), title: 'Methods of valuing goodwill' }]);
     const system = llm.prompts.at(-1)![0].content;

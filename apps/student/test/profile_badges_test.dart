@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/live.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_student/core/live.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_live.dart';
 import 'helpers.dart';
@@ -21,10 +21,10 @@ void main() {
     expect(find.byKey(const Key('subjectField')), findsNothing);
 
     await tester.enterText(find.byKey(const Key('nameField')), 'Aarav S. Patel');
-    await tester.enterText(find.byKey(const Key('emailField')), 'aarav.p@demo.kinetix.in');
+    await tester.enterText(find.byKey(const Key('emailField')), 'aarav.p@demo.zynetix.in');
     await tester.tap(find.byKey(const Key('saveProfile')));
     await tester.pumpAndSettle();
-    expect(api.calls, contains('profile Aarav S. Patel aarav.p@demo.kinetix.in'));
+    expect(api.calls, contains('profile Aarav S. Patel aarav.p@demo.zynetix.in'));
     expect(state.me!.fullName, 'Aarav S. Patel');
     expect(find.text('Aarav S. Patel'), findsOneWidget);
   });

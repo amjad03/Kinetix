@@ -1,8 +1,8 @@
 // New messages over the realtime connection: the list and the open thread update at once.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/models.dart';
-import 'package:kinetix_teacher/core/realtime.dart';
+import 'package:zynetix_teacher/core/models.dart';
+import 'package:zynetix_teacher/core/realtime.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

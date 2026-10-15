@@ -34,7 +34,7 @@ test('a task needs a title and someone to do it', async ({ page }) => {
 test.describe('a teacher has no ERP', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
   test('Anita is not let into Tasks', async ({ page }) => {
-    await signIn(page, 'anita@demo.kinetix.in');
+    await signIn(page, 'anita@demo.zynetix.in');
     await page.goto('/tasks');
     await expect(page).toHaveURL(/\/login/);
   });

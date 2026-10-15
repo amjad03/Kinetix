@@ -70,7 +70,7 @@ export class LocalProvider implements EmbeddingProvider {
       const dir = process.env.EMBEDDINGS_MODULE_DIR;
       const spec = dir ? pathToFileURL(createRequire(join(dir, 'x.js')).resolve(name)).href : name;
       const m = (await import(/* @vite-ignore */ spec)) as { pipeline: (task: string, model: string, o: object) => Promise<never>; env: { cacheDir: string } };
-      m.env.cacheDir = process.env.EMBEDDINGS_CACHE_DIR ?? join(tmpdir(), 'kinetix-models');
+      m.env.cacheDir = process.env.EMBEDDINGS_CACHE_DIR ?? join(tmpdir(), 'zynetix-models');
       return m.pipeline('feature-extraction', this.model, { dtype: 'q8' });
     })().catch((e) => {
       this.pipe = undefined;

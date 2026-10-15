@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/board/context/class_context.dart';
-import 'package:kinetix_board/features/board/kit/subjects.dart';
-import 'package:kinetix_board/features/search/catalogue_facets.dart';
+import 'package:zynetix_board/features/board/context/class_context.dart';
+import 'package:zynetix_board/features/board/kit/subjects.dart';
+import 'package:zynetix_board/features/search/catalogue_facets.dart';
 
 List<String> ids({String? subject, String? level, String? category}) =>
     [for (final i in filterCatalogue(modelItems, subject: subject, category: category, level: level, query: '')) i.id];

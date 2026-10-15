@@ -63,13 +63,13 @@ export async function GET(req: NextRequest) {
           relay.castId = ack.castId;
           send({ t: 'ack', castId: ack.castId, approved: ack.approved === true, iceServers: ack.iceServers ?? [] });
         } catch {
-          close({ t: 'refused', error: 'KINETIX Cloud did not answer. Try again.' });
+          close({ t: 'refused', error: 'ZYNETIX Cloud did not answer. Try again.' });
         }
       });
       socket.on('error', (e: { message?: string }) => {
         if (e?.message === 'unauthorized') close({ t: 'refused', error: 'Your session has ended. Sign in again.' });
       });
-      socket.on('connect_error', () => close({ t: 'refused', error: "Can't reach KINETIX Cloud." }));
+      socket.on('connect_error', () => close({ t: 'refused', error: "Can't reach ZYNETIX Cloud." }));
       socket.on('disconnect', () => close({ t: 'ended', reason: 'stopped' }));
       socket.on(CastEvents.Approved, (e: { castId?: string; iceServers?: IceServer[] }) => {
         if (e?.castId === relay.castId) send({ t: 'approved', iceServers: e.iceServers ?? [] });

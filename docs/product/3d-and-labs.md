@@ -8,10 +8,10 @@ renderer as the fallback wherever there is no WebView (tests, Linux, the web).
 
 | Package | What it has |
 |---|---|
-| `packages/kinetix_3d` | The three.js viewer and 31 teaching models with labels in en/hi/kn, a laser pointer and snapshots; a small software 3D engine, 10 solids with live measurements, procedural science models, a minimal glTF binary (`.glb`) loader |
-| `packages/kinetix_labs` | Five interactive labs with controls, live readouts, an aim card and reset |
+| `packages/zynetix_3d` | The three.js viewer and 31 teaching models with labels in en/hi/kn, a laser pointer and snapshots; a small software 3D engine, 10 solids with live measurements, procedural science models, a minimal glTF binary (`.glb`) loader |
+| `packages/zynetix_labs` | Five interactive labs with controls, live readouts, an aim card and reset |
 
-Both depend only on `kinetix_ui` (theme, `Kx` tokens). They look right on the dark board chrome
+Both depend only on `zynetix_ui` (theme, `Kx` tokens). They look right on the dark board chrome
 and on the light theme, and fill whatever space they get: side by side from about 860–900 px
 wide, stacked and scrolling in a narrow pane (tested at 360–400 px).
 
@@ -81,8 +81,8 @@ the pictures). The app drives it with JSON commands (`kx.cmd`, listed in
   its live view streams ink events, not pictures.
 - **Credits**: a credit line under every model and an "About this model" box. Anatomy is from
   BodyParts3D (DBCLS, CC BY 4.0); the viewer is three.js (MIT). Full text in
-  `packages/kinetix_3d/NOTICE`.
-- Rebuilding the viewer or the models: `packages/kinetix_3d/tool/models/README.md`.
+  `packages/zynetix_3d/NOTICE`.
+- Rebuilding the viewer or the models: `packages/zynetix_3d/tool/models/README.md`.
 
 ## Dart renderer
 

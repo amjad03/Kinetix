@@ -19,9 +19,9 @@ Future<void> loadScreenFonts() async {
     ('NotoSansMath', [400]),
     ('JetBrainsMono', [400, 700]),
   ]) {
-    final loader = FontLoader('packages/kinetix_ui/$family');
+    final loader = FontLoader('packages/zynetix_ui/$family');
     for (final weight in weights) {
-      loader.addFont(rootBundle.load('packages/kinetix_ui/fonts/$family-$weight.ttf'));
+      loader.addFont(rootBundle.load('packages/zynetix_ui/fonts/$family-$weight.ttf'));
     }
     await loader.load();
   }

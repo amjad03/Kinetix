@@ -4,17 +4,17 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/remote/board_remote.dart';
-import 'package:kinetix_board/features/toolkit/noise_source.dart';
-import 'package:kinetix_board/features/toolkit/remote_toolkit.dart';
-import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
-import 'package:kinetix_board/features/toolkit/toolkit_layer.dart';
-import 'package:kinetix_board/features/toolkit/toolkit_sounds.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/remote/board_remote.dart';
+import 'package:zynetix_board/features/toolkit/noise_source.dart';
+import 'package:zynetix_board/features/toolkit/remote_toolkit.dart';
+import 'package:zynetix_board/features/toolkit/toolkit_controller.dart';
+import 'package:zynetix_board/features/toolkit/toolkit_layer.dart';
+import 'package:zynetix_board/features/toolkit/toolkit_sounds.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 /// A microphone that reports whatever level the test sends.
 class FakeNoise implements NoiseSource {
@@ -324,7 +324,7 @@ void main() {
       addTearDown(tester.view.reset);
       await tester.pumpWidget(
         MaterialApp(
-          theme: KinetixTheme.light(),
+          theme: ZynetixTheme.light(),
           home: Scaffold(body: ToolkitLayer(kit: k, onAnswer: onAnswer)),
         ),
       );

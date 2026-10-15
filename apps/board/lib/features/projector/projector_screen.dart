@@ -3,17 +3,17 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 /// The projector screen's side of projector mode (projector_controller.dart): what the class
 /// sees on the second display. It runs in its own Flutter engine, started by the platform with
-/// [projectorMain], and gets the board's messages on the `kinetix/projector_feed` channel.
+/// [projectorMain], and gets the board's messages on the `zynetix/projector_feed` channel.
 ///
 /// Messages are JSON:
 ///
 /// | message | meaning |
 /// |---|---|
-/// | `{"t": "ev", "e": [...]}` | board events (kinetix_ink's lesson format), applied as they come |
+/// | `{"t": "ev", "e": [...]}` | board events (zynetix_ink's lesson format), applied as they come |
 /// | `{"t": "img", "k": "m3d" or "split", "d": base64 or null}` | the 3D model (JPEG) or the lab (PNG) open next to the board; null when closed |
 /// | `{"t": "blank", "on": bool}` | a blank screen while the teacher prepares |
 class ProjectorFeed extends ChangeNotifier {
@@ -103,15 +103,15 @@ class _Waiting extends StatelessWidget {
     key: Key('projector-waiting'),
     color: Colors.white,
     child: Center(
-      child: Text('KINETIX', style: TextStyle(fontSize: 64, fontWeight: FontWeight.w700, letterSpacing: 8, color: Color(0xFF1B1F24))),
+      child: Text('ZYNETIX', style: TextStyle(fontSize: 64, fontWeight: FontWeight.w700, letterSpacing: 8, color: Color(0xFF1B1F24))),
     ),
   );
 }
 
-/// The projector engine's app: [ProjectorView] fed from the `kinetix/projector_feed` channel.
+/// The projector engine's app: [ProjectorView] fed from the `zynetix/projector_feed` channel.
 /// It tells the board when it is ready, so the board sends a full snapshot.
 class ProjectorApp extends StatefulWidget {
-  const ProjectorApp({super.key, this.channel = const MethodChannel('kinetix/projector_feed')});
+  const ProjectorApp({super.key, this.channel = const MethodChannel('zynetix/projector_feed')});
 
   final MethodChannel channel;
 
@@ -142,7 +142,7 @@ class _ProjectorAppState extends State<ProjectorApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'KINETIX Projector',
+    title: 'ZYNETIX Projector',
     home: Scaffold(backgroundColor: Colors.white, body: ProjectorView(feed: _feed)),
   );
 }

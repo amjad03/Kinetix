@@ -2,82 +2,82 @@
 # Load into Prometheus (rule_files) or Grafana Alerting; CloudWatch alarms in
 # infra/terraform/monitoring.tf cover the load balancer, database and containers.
 groups:
-  - name: kinetix-api
+  - name: zynetix-api
     rules:
-      - alert: KinetixHigh5xxRate
-        expr: sum(rate(kinetix_http_requests_total{status="5xx"}[5m])) / clamp_min(sum(rate(kinetix_http_requests_total[5m])), 1) > 0.02
+      - alert: ZynetixHigh5xxRate
+        expr: sum(rate(zynetix_http_requests_total{status="5xx"}[5m])) / clamp_min(sum(rate(zynetix_http_requests_total[5m])), 1) > 0.02
         for: 10m
         labels: { severity: page }
         annotations:
           summary: More than 2% of API requests are failing with 5xx.
-      - alert: KinetixSlowRequests
-        expr: histogram_quantile(0.95, sum by (le) (rate(kinetix_http_request_duration_seconds_bucket[5m]))) > 1.5
+      - alert: ZynetixSlowRequests
+        expr: histogram_quantile(0.95, sum by (le) (rate(zynetix_http_request_duration_seconds_bucket[5m]))) > 1.5
         for: 15m
         labels: { severity: ticket }
         annotations:
           summary: p95 API latency above 1.5 s.
-      - alert: KinetixDomainEventsDead
-        expr: increase(kinetix_domain_events_total{outcome="dead"}[15m]) > 0
+      - alert: ZynetixDomainEventsDead
+        expr: increase(zynetix_domain_events_total{outcome="dead"}[15m]) > 0
         labels: { severity: ticket }
         annotations:
           summary: Domain events exhausted their retries ({{ $labels.type }}). Check the outbox consumer.
-      - alert: KinetixDomainEventRetries
-        expr: sum(rate(kinetix_domain_events_total{outcome="retry"}[10m])) > 0.5
+      - alert: ZynetixDomainEventRetries
+        expr: sum(rate(zynetix_domain_events_total{outcome="retry"}[10m])) > 0.5
         for: 15m
         labels: { severity: ticket }
         annotations:
           summary: Domain-event consumers keep failing and retrying.
-      - alert: KinetixVirusScannerDown
-        expr: increase(kinetix_upload_scans_total{outcome="error"}[10m]) > 3
+      - alert: ZynetixVirusScannerDown
+        expr: increase(zynetix_upload_scans_total{outcome="error"}[10m]) > 3
         labels: { severity: page }
         annotations:
           summary: clamd is not answering; uploads are quarantined or refused.
-      - alert: KinetixInfectedUpload
-        expr: increase(kinetix_upload_scans_total{outcome="infected"}[1h]) > 0
+      - alert: ZynetixInfectedUpload
+        expr: increase(zynetix_upload_scans_total{outcome="infected"}[1h]) > 0
         labels: { severity: ticket }
         annotations:
           summary: An infected upload was blocked. Review the audit log.
-      - alert: KinetixReportFailures
-        expr: increase(kinetix_report_runs_total{outcome="failed"}[1h]) > 3
+      - alert: ZynetixReportFailures
+        expr: increase(zynetix_report_runs_total{outcome="failed"}[1h]) > 3
         labels: { severity: ticket }
         annotations:
           summary: Scheduled reports are failing ({{ $labels.report }}).
-      - alert: KinetixApiRestarting
-        expr: kinetix_process_uptime_seconds < 120 and on() count(kinetix_process_uptime_seconds) > 0
+      - alert: ZynetixApiRestarting
+        expr: zynetix_process_uptime_seconds < 120 and on() count(zynetix_process_uptime_seconds) > 0
         for: 10m
         labels: { severity: ticket }
         annotations:
           summary: An API process keeps restarting.
-      - alert: KinetixApiMemoryHigh
-        expr: kinetix_process_resident_memory_bytes > 1.5e9
+      - alert: ZynetixApiMemoryHigh
+        expr: zynetix_process_resident_memory_bytes > 1.5e9
         for: 15m
         labels: { severity: ticket }
         annotations:
           summary: API process above 1.5 GB resident memory.
   # Anomaly rules (PRD section 82): each compares now with the same time yesterday, so a quiet institution and a busy one
   # are both judged against their own normal rather than a fixed number.
-  - name: kinetix-anomalies
+  - name: zynetix-anomalies
     rules:
-      - alert: KinetixTrafficSpike
-        expr: sum(rate(kinetix_http_requests_total[10m])) > 4 * sum(rate(kinetix_http_requests_total[10m] offset 1d)) and sum(rate(kinetix_http_requests_total[10m])) > 5
+      - alert: ZynetixTrafficSpike
+        expr: sum(rate(zynetix_http_requests_total[10m])) > 4 * sum(rate(zynetix_http_requests_total[10m] offset 1d)) and sum(rate(zynetix_http_requests_total[10m])) > 5
         for: 15m
         labels: { severity: ticket }
         annotations:
           summary: API traffic is more than four times what it was at this time yesterday. Check for scraping or a stuck client.
-      - alert: KinetixTrafficDrop
-        expr: sum(rate(kinetix_http_requests_total[10m])) < 0.2 * sum(rate(kinetix_http_requests_total[10m] offset 1d)) and sum(rate(kinetix_http_requests_total[10m] offset 1d)) > 2
+      - alert: ZynetixTrafficDrop
+        expr: sum(rate(zynetix_http_requests_total[10m])) < 0.2 * sum(rate(zynetix_http_requests_total[10m] offset 1d)) and sum(rate(zynetix_http_requests_total[10m] offset 1d)) > 2
         for: 15m
         labels: { severity: page }
         annotations:
           summary: API traffic fell below a fifth of yesterday's at this time. Apps may not be reaching the API.
-      - alert: KinetixClientErrorSurge
-        expr: sum(rate(kinetix_http_requests_total{status="4xx"}[10m])) > 4 * sum(rate(kinetix_http_requests_total{status="4xx"}[10m] offset 1d)) and sum(rate(kinetix_http_requests_total{status="4xx"}[10m])) > 1
+      - alert: ZynetixClientErrorSurge
+        expr: sum(rate(zynetix_http_requests_total{status="4xx"}[10m])) > 4 * sum(rate(zynetix_http_requests_total{status="4xx"}[10m] offset 1d)) and sum(rate(zynetix_http_requests_total{status="4xx"}[10m])) > 1
         for: 15m
         labels: { severity: ticket }
         annotations:
           summary: Rejected requests (4xx) are four times yesterday's rate. Look for a credential-guessing run in the audit log.
-      - alert: KinetixLatencyRegression
-        expr: histogram_quantile(0.95, sum by (le) (rate(kinetix_http_request_duration_seconds_bucket[15m]))) > 3 * histogram_quantile(0.95, sum by (le) (rate(kinetix_http_request_duration_seconds_bucket[15m] offset 1d))) and histogram_quantile(0.95, sum by (le) (rate(kinetix_http_request_duration_seconds_bucket[15m]))) > 0.4
+      - alert: ZynetixLatencyRegression
+        expr: histogram_quantile(0.95, sum by (le) (rate(zynetix_http_request_duration_seconds_bucket[15m]))) > 3 * histogram_quantile(0.95, sum by (le) (rate(zynetix_http_request_duration_seconds_bucket[15m] offset 1d))) and histogram_quantile(0.95, sum by (le) (rate(zynetix_http_request_duration_seconds_bucket[15m]))) > 0.4
         for: 20m
         labels: { severity: ticket }
         annotations:

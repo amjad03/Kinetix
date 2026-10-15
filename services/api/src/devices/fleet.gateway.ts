@@ -1,5 +1,5 @@
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { RealtimeEvents, type DeviceActionEvent } from '@kinetix/shared';
+import { RealtimeEvents, type DeviceActionEvent } from '@zynetix/shared';
 import type { Socket } from 'socket.io';
 import { z } from 'zod';
 import type { Principal } from '../auth/principal.js';

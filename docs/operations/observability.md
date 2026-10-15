@@ -17,12 +17,12 @@ the load balancer (it is not meant to be public).
 
 | Metric | Type | Labels |
 | --- | --- | --- |
-| `kinetix_http_requests_total` | counter | method, route, status class |
-| `kinetix_http_request_duration_seconds` | histogram | method, route |
-| `kinetix_domain_events_total` | counter | type, outcome |
-| `kinetix_report_runs_total` | counter | report, outcome |
-| `kinetix_upload_scans_total` | counter | outcome |
-| `kinetix_process_uptime_seconds`, `kinetix_process_resident_memory_bytes` | gauge | none |
+| `zynetix_http_requests_total` | counter | method, route, status class |
+| `zynetix_http_request_duration_seconds` | histogram | method, route |
+| `zynetix_domain_events_total` | counter | type, outcome |
+| `zynetix_report_runs_total` | counter | report, outcome |
+| `zynetix_upload_scans_total` | counter | outcome |
+| `zynetix_process_uptime_seconds`, `zynetix_process_resident_memory_bytes` | gauge | none |
 
 Counters are per process; scrape every task and sum in the query.
 
@@ -38,7 +38,7 @@ in `traceparent` is honoured. Terraform: `otel_exporter_endpoint`. Compose: `OTE
 
 `UPLOAD_SCAN=clamav` with `CLAMAV_HOST` / `CLAMAV_PORT` (default 3310) quarantines uploaded vault
 documents until clamd reports clean; see `docs/architecture/platform-foundation.md`. Terraform:
-`upload_scan`, `clamav_host`. Alert on a rising `kinetix_upload_scans_total{outcome="error"}`
+`upload_scan`, `clamav_host`. Alert on a rising `zynetix_upload_scans_total{outcome="error"}`
 (scanner unreachable, files stay quarantined and are retried).
 
 ## Not yet done

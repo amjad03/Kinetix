@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TL = json.load(open(os.path.join(HERE, 'renders', 'timeline.json')))
 WORDS = json.load(open(os.path.join(HERE, 'data', 'words.json')))
-V = os.path.abspath(os.path.join(HERE, '..', '..', 'dist', 'kinetix-board-demo.mp4'))
+V = os.path.abspath(os.path.join(HERE, '..', '..', 'dist', 'zynetix-board-demo.mp4'))
 CHECK = [('s10', 'QR'), ('s12', 'shuffled'), ('s20', 'thickness'), ('s33', 'circuits'), ('s53', 'tables'),
          ('s62', 'Homework.'), ('s74', 'Badges'), ('s92', 'Screen'), ('s102', 'spotlight'), ('s111', 'Parent')]
 segs = {s['id']: s for s in TL['segs']}

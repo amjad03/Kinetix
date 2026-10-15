@@ -1,6 +1,6 @@
 # ERP PRD V1 coverage audit (2026-10-09)
 
-Source: `KINETIX_COMPLETE_ERP_EDUCATION_OS_PRD_V1.md` (99 numbered sections + appendices), checked against
+Source: `ZYNETIX_COMPLETE_ERP_EDUCATION_OS_PRD_V1.md` (99 numbered sections + appendices), checked against
 `claude/kinetix-ecosystem-overview-lpphjn`. Complements `GAP_ANALYSIS.md` (which tracks build waves); this file is
 line-by-line against the PRD headings and sub-bullets.
 
@@ -722,7 +722,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Institution-side fees, invoices, scholarships, refunds | Built | `api/fees`, `api/finance` | |
 | Adapter-based gateway (not embedded) | Built | `api/fees/payment-provider.ts` | Razorpay and PayU behind one interface; external: PayU merchant account to certify live; Cashfree not integrated |
 | UPI, cards, bank transfer, invoice/PO | Built | `api/fees/bank-transfers.controller.ts` | via Razorpay + manual |
-| Kinetix SaaS billing (plans, subscription, usage, renewal, tax) | Built | `api/billing/*`, tables `saas_subscriptions`, `saas_usage_snapshots`, `saas_invoices`, `erp/billing`, `test/governance-billing-ai.e2e.spec.ts` | three plans, per-student pricing with a minimum, usage metering, a daily renewal job, GST invoices (CGST and SGST in Karnataka, IGST elsewhere); collecting the money online is not built (payments are recorded by reference) |
+| Zynetix SaaS billing (plans, subscription, usage, renewal, tax) | Built | `api/billing/*`, tables `saas_subscriptions`, `saas_usage_snapshots`, `saas_invoices`, `erp/billing`, `test/governance-billing-ai.e2e.spec.ts` | three plans, per-student pricing with a minimum, usage metering, a daily renewal job, GST invoices (CGST and SGST in Karnataka, IGST elsewhere); collecting the money online is not built (payments are recorded by reference) |
 
 ## 67. Integrations / connectors
 
@@ -832,7 +832,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | MFA, RBAC, RLS, rate limiting, audit, secure files | Built | `api/auth/mfa.controller.ts` | |
 | Encryption of sensitive fields at rest | Partial | `api/common/secret-box.ts` | secrets are encrypted; student, health and payroll columns rely on disk encryption; external: a key-management decision (KMS) before encrypting existing columns |
 | Secrets management, backup, DR | Partial | `docs/operations/backups-and-restore.md` | external: a restore drill on production-like infrastructure has to be run and recorded |
-| Anomaly monitoring | Built | `infra/monitoring/prometheus-rules.yml` (`kinetix-anomalies`) | traffic spike, traffic drop, client-error surge and latency regression, each against the same time yesterday |
+| Anomaly monitoring | Built | `infra/monitoring/prometheus-rules.yml` (`zynetix-anomalies`) | traffic spike, traffic drop, client-error surge and latency regression, each against the same time yesterday |
 | Child safety, guardian consent, restricted data | Built | `api/consent/consent.controller.ts` | |
 | Biometric / face policy | Missing | none | not built by design; the institution's policy decision is external |
 | Logs, metrics, traces, alerts | Built | `docs/operations/observability.md` | |
@@ -945,7 +945,7 @@ Excel (xlsx) export in report builder (S); subject ranking and consolidated mark
 | Tally live push (beyond file export) | 34, 67 | customer Tally gateway |
 | Indic fonts in server PDFs | 25 | embedded Noto fonts with shaping (licence-free, but engineering plus font choice) |
 | Payment gateway beyond Razorpay (adapter for UPI-only, bank APIs) | 66 | merchant accounts |
-| SaaS billing (Kinetix plans, tax invoices) | 66 | GST registration, billing provider (or build) |
+| SaaS billing (Zynetix plans, tax invoices) | 66 | GST registration, billing provider (or build) |
 | DigiLocker / NAD / university credential push | 26 | government API onboarding |
 | Quest Studio content | 20 | external product agreement |
 | Privacy notice, DPDP consent text, child-safety policy | 70, 81 | legal counsel review |

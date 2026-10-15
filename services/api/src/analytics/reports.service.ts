@@ -149,7 +149,7 @@ export class ReportsService implements OnApplicationBootstrap, BeforeApplication
 
   packZip(pack: Pack): Rendered {
     const files = pack.tables.map((t) => ({ name: `${t.name}.csv`, data: renderCsv(t) }));
-    const readme = `${pack.title}\nPeriod ${pack.period.from} to ${pack.period.to}\nGenerated ${pack.generatedAt}\n\nNot recorded in KINETIX (complete these by hand):\n${pack.gaps.map((g) => `- ${g}`).join('\n')}\n`;
+    const readme = `${pack.title}\nPeriod ${pack.period.from} to ${pack.period.to}\nGenerated ${pack.generatedAt}\n\nNot recorded in ZYNETIX (complete these by hand):\n${pack.gaps.map((g) => `- ${g}`).join('\n')}\n`;
     files.push({ name: 'README.txt', data: Buffer.from(readme, 'utf8') });
     return { contentType: 'application/zip', filename: `${pack.framework}-data-pack-${pack.period.to}.zip`, body: zip(files, this.clock.now()) };
   }
@@ -219,7 +219,7 @@ export class ReportsService implements OnApplicationBootstrap, BeforeApplication
         const { ctx, data } = await this.run(tx, def, s.params as ReportParams);
         return { rendered: this.render(def, data, ctx, s.format as 'csv' | 'pdf'), rowCount: data.rows.length, subject: `${def.title} (${ctx.today})` };
       });
-      await this.mailer.send({ to: s.recipients, subject: `KINETIX report: ${subject}`, text: `Your scheduled report "${def.title}" is attached (${rowCount} rows).\n\nSchedule: ${s.frequency}. To change or stop it, open Reports and analytics in the ERP.`, attachments: [{ filename: rendered.filename, contentType: rendered.contentType.split(';')[0], content: rendered.body }] });
+      await this.mailer.send({ to: s.recipients, subject: `ZYNETIX report: ${subject}`, text: `Your scheduled report "${def.title}" is attached (${rowCount} rows).\n\nSchedule: ${s.frequency}. To change or stop it, open Reports and analytics in the ERP.`, attachments: [{ filename: rendered.filename, contentType: rendered.contentType.split(';')[0], content: rendered.body }] });
       await this.db.withTenant(tenantId, async (tx) => {
         await this.recordRun(tx, tenantId, { scheduleId: id, key: s.reportKey, params: s.params as ReportParams, format: s.format, rows: rowCount, status: 'ok', deliveredTo: s.recipients });
         await audit(tx, { tenantId, actorType: 'system', action: 'report.scheduled_sent', subjectType: 'report_schedule', subjectId: id, data: { report: s.reportKey, recipients: s.recipients.length, rows: rowCount } });
@@ -247,7 +247,7 @@ export class ReportsService implements OnApplicationBootstrap, BeforeApplication
         const data = await runCustomReport(tx, { tenantId, userId: s.createdBy, roles }, ds, DefinitionSchema.parse(r.definition));
         return { name: r.name, data, today: localParts(this.clock.now(), await this.tenantTimezone(tx)).date };
       });
-      await this.mailer.send({ to: s.recipients, subject: `KINETIX report: ${out.name} (${out.today})`, text: `Your scheduled report "${out.name}" is attached (${out.data.rows.length} rows).\n\nSchedule: ${s.frequency}. To change or stop it, open Reports and analytics in the ERP.`, attachments: [{ filename: `custom-report-${out.today}.csv`, contentType: 'text/csv', content: renderCsv(out.data) }] });
+      await this.mailer.send({ to: s.recipients, subject: `ZYNETIX report: ${out.name} (${out.today})`, text: `Your scheduled report "${out.name}" is attached (${out.data.rows.length} rows).\n\nSchedule: ${s.frequency}. To change or stop it, open Reports and analytics in the ERP.`, attachments: [{ filename: `custom-report-${out.today}.csv`, contentType: 'text/csv', content: renderCsv(out.data) }] });
       await this.db.withTenant(tenantId, async (tx) => {
         await this.recordRun(tx, tenantId, { scheduleId: id, key: s.reportKey, params: {}, format: 'csv', rows: out.data.rows.length, status: 'ok', deliveredTo: s.recipients });
         await audit(tx, { tenantId, actorType: 'system', action: 'report.scheduled_sent', subjectType: 'report_schedule', subjectId: id, data: { report: s.reportKey, recipients: s.recipients.length, rows: out.data.rows.length } });

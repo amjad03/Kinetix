@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { AdmissionsEvents, LOGIN_DISABLED_STATUSES, READMIT_FROM, STUDENT_APPROVER_STATUSES, STUDENT_TRANSITIONS, transitionProblem, type StudentStatus } from '@kinetix/shared';
+import { AdmissionsEvents, LOGIN_DISABLED_STATUSES, READMIT_FROM, STUDENT_APPROVER_STATUSES, STUDENT_TRANSITIONS, transitionProblem, type StudentStatus } from '@zynetix/shared';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';

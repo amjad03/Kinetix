@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
 
 import '../../../core/models.dart';
 import '../../../l10n/l10n.dart';
@@ -7,7 +7,7 @@ import '../../ai/ai_controller.dart';
 
 /// Subjects taught from LKG to Class 12 and in college (B.Com, BBA, MBA, LLB, BSc). The class's subject reshapes the
 /// board: its accent colour, its paper, the subject tools on the left rail, the order of the AI
-/// tools on the right, and the tabs of its kit (ported from the KINETIX prototype).
+/// tools on the right, and the tabs of its kit (ported from the ZYNETIX prototype).
 enum Subject { maths, physics, chemistry, biology, science, evs, geography, history, civics, commerce, management, law, statistics, english, languages, computer, art, general }
 
 /// The subject's own tools on the left rail.
@@ -202,7 +202,7 @@ const subjectStyles = <Subject, SubjectStyle>{
     paper: BoardBackground.dots,
     tools: [SubjectTool.codeLab, SubjectTool.code, SubjectTool.flowchart],
     aiFirst: [AiView.quiz, AiView.homework, AiView.readBoard],
-    // The CS kit (kit/cs, packages/kinetix_cs), then the quick logic and binary tables.
+    // The CS kit (kit/cs, packages/zynetix_cs), then the quick logic and binary tables.
     tabs: [KitTab.algorithms, KitTab.csLabs, KitTab.diagrams, KitTab.logic, KitTab.binary],
   ),
   Subject.art: SubjectStyle(

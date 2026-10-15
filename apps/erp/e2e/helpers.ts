@@ -2,7 +2,7 @@ import { expect, type Page } from '@playwright/test';
 import path from 'node:path';
 
 export const TENANT = process.env.E2E_TENANT ?? 'demo-college';
-export const PASSWORD = process.env.E2E_PASSWORD ?? 'kinetix123';
+export const PASSWORD = process.env.E2E_PASSWORD ?? 'zynetix123';
 
 export const ERP_URL = process.env.ERP_URL ?? 'http://localhost:3000';
 
@@ -25,7 +25,7 @@ export async function signIn(page: Page, login: string, tenant = TENANT, passwor
 }
 
 export async function signInAsPrincipal(page: Page) {
-  await signIn(page, 'principal@demo.kinetix.in');
+  await signIn(page, 'principal@demo.zynetix.in');
   await expect(page.getByTestId('school-name')).toBeVisible();
 }
 
@@ -33,7 +33,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 
 /** Today in the school's time zone (Asia/Kolkata in the demo). */
 export function schoolToday(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: process.env.KINETIX_TIMEZONE ?? 'Asia/Kolkata' }).format(new Date());
+  return new Intl.DateTimeFormat('en-CA', { timeZone: process.env.ZYNETIX_TIMEZONE ?? 'Asia/Kolkata' }).format(new Date());
 }
 
 export function addDays(date: string, n: number): string {

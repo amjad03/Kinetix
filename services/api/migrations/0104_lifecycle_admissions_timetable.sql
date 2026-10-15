@@ -97,8 +97,8 @@ CREATE POLICY tenant_isolation ON "teacher_substitutions"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "teacher_substitutions" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "teacher_substitutions" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "entrance_tests" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -107,8 +107,8 @@ CREATE POLICY tenant_isolation ON "entrance_tests"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "entrance_tests" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "entrance_tests" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "entrance_halls" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -117,8 +117,8 @@ CREATE POLICY tenant_isolation ON "entrance_halls"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "entrance_halls" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "entrance_halls" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "entrance_seats" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -127,8 +127,8 @@ CREATE POLICY tenant_isolation ON "entrance_seats"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "entrance_seats" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "entrance_seats" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "admission_quotas" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -137,8 +137,8 @@ CREATE POLICY tenant_isolation ON "admission_quotas"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "admission_quotas" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "admission_quotas" TO zynetix_app;
   END IF;
 END $$;--> statement-breakpoint
 ALTER TABLE "admission_campaigns" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -147,7 +147,7 @@ CREATE POLICY tenant_isolation ON "admission_campaigns"
   USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
   WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);--> statement-breakpoint
 DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON "admission_campaigns" TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON "admission_campaigns" TO zynetix_app;
   END IF;
 END $$;

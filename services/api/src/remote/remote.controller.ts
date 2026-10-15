@@ -1,5 +1,5 @@
 import { BadRequestException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, PayloadTooLargeException, Put, Req, Res } from '@nestjs/common';
-import { RealtimeEvents, type RemoteCommand } from '@kinetix/shared';
+import { RealtimeEvents, type RemoteCommand } from '@zynetix/shared';
 import type { Request, Response } from 'express';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, UserPrincipal } from '../auth/principal.js';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/exam_room/exam_room.dart';
+import 'package:zynetix_board/features/exam_room/exam_room.dart';
 
 void main() {
   const view = {

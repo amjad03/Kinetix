@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/core/recording/recordings.dart';
-import 'package:kinetix_board/demo/demo.dart';
-import 'package:kinetix_board/demo/demo_server.dart';
-import 'package:kinetix_board/main.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/core/recording/recordings.dart';
+import 'package:zynetix_board/demo/demo.dart';
+import 'package:zynetix_board/demo/demo_server.dart';
+import 'package:zynetix_board/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/recording_fakes.dart';
 import 'support/layout.dart';
 
-/// The demo build (--dart-define=KINETIX_DEMO=true): no enrolment, a sample class, no server.
+/// The demo build (--dart-define=ZYNETIX_DEMO=true): no enrolment, a sample class, no server.
 void main() {
   setUp(() {
     Demo.enabled = true;
@@ -35,7 +35,7 @@ void main() {
         voice: () => FakeVoiceRecorder(store: store),
       ),
     );
-    await tester.pumpWidget(KinetixBoardApp(controller: board));
+    await tester.pumpWidget(ZynetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     // The period's concept videos are suggested first (concept_videos_test.dart); skip them.
     await tester.tap(find.byKey(const Key('conceptVideoSkip')));

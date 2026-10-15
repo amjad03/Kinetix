@@ -29,7 +29,7 @@ BEGIN
     USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
     WITH CHECK (scope <> 'platform' AND tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);
   CREATE POLICY global_read ON concept_videos FOR SELECT USING (scope = 'platform' AND tenant_id IS NULL);
-  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'kinetix_app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON concept_videos TO kinetix_app;
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'zynetix_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON concept_videos TO zynetix_app;
   END IF;
 END $$;

@@ -19,7 +19,7 @@ vo = json.load(open(vp)) if os.path.exists(vp) else {}
 
 
 def say(t):
-    for a, b in [('KINETIX', 'Kinetix'), ('PhET', 'Fet'), ('PIN', 'pin'), ('Ms Kavya', 'Miss Kavya'), ('3D', 'three D'), ('10 B', 'ten B'), ('Wi-Fi', 'wifi'), ('six-digit', 'six digit')]:
+    for a, b in [('ZYNETIX', 'Zynetix'), ('PhET', 'Fet'), ('PIN', 'pin'), ('Ms Kavya', 'Miss Kavya'), ('3D', 'three D'), ('10 B', 'ten B'), ('Wi-Fi', 'wifi'), ('six-digit', 'six digit')]:
         t = t.replace(a, b)
     return t
 

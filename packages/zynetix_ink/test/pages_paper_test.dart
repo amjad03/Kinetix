@@ -1,0 +1,142 @@
+import 'dart:ui';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+
+void main() {
+  test('each page keeps its own paper; new pages take the open page\'s', () {
+    final wb = WhiteboardController();
+    wb.background = BoardBackground.graph;
+    wb.addPage(force: true);
+    expect(wb.background, BoardBackground.graph);
+    wb.background = BoardBackground.ledger;
+    wb.previous();
+    expect(wb.background, BoardBackground.graph);
+    wb.next();
+    expect(wb.background, BoardBackground.ledger);
+
+    final saved = SavedBoard.fromJson(wb.toSaved(const Size(1920, 1080)).toJson());
+    expect(saved.backgroundOf(0), BoardBackground.graph);
+    expect(saved.backgroundOf(1), BoardBackground.ledger);
+    final again = WhiteboardController()..load(saved);
+    expect(again.background, BoardBackground.graph);
+    again.next();
+    expect(again.background, BoardBackground.ledger);
+  });
+
+  test('the pen keeps black ink on a dark paper, drawn white there', () {
+    final wb = WhiteboardController();
+    wb.background = BoardBackground.paperSlate;
+    expect(wb.penColor, WhiteboardController.inkBlack);
+    expect(inkColorFor(wb.penColor, wb.background).computeLuminance(), greaterThan(0.8));
+    wb.addPage(force: true);
+    wb.background = BoardBackground.plain;
+    expect(inkColorFor(WhiteboardController.chalkWhite, wb.background).computeLuminance(), lessThan(0.05));
+  });
+
+  test('replaceBackground follows the theme on plain pages only', () {
+    final wb = WhiteboardController()..addPage(force: true);
+    wb.background = BoardBackground.grid;
+    wb.replaceBackground(BoardBackground.plain, BoardBackground.night);
+    expect(wb.pages.first.background, BoardBackground.night);
+    expect(wb.background, BoardBackground.grid);
+  });
+
+  test('movePage reorders and keeps the open page open', () {
+    final wb = WhiteboardController();
+    wb.add(TextElement(id: 'a', position: Offset.zero, text: 'one', color: const Color(0xFF000000), fontSize: 20, size: const Size(40, 20)));
+    wb.addPage(force: true);
+    wb.addPage(force: true);
+    final open = wb.page;
+    wb.movePage(0, 2);
+    expect(wb.page, same(open));
+    expect(wb.pages.last.elements.single.id, 'a');
+  });
+
+  test('deleting a page before the open one keeps the open page on screen', () {
+    TextElement note(String id) => TextElement(id: id, position: Offset.zero, text: id, color: const Color(0xFF000000), fontSize: 20, size: const Size(40, 20));
+    final wb = WhiteboardController()..add(note('a'));
+    wb.addPage();
+    wb.add(note('b'));
+    wb.addPage();
+    wb.add(note('c'));
+    expect(wb.pageIndex, 2);
+    wb.deletePage(0);
+    expect(wb.pageCount, 2);
+    expect(wb.elements.single.id, 'c', reason: 'page "c" was open and stays open');
+    wb.deletePage(1);
+    expect(wb.elements.single.id, 'b', reason: 'deleting the open last page opens the one before it');
+    wb.addPage();
+    wb.add(note('d'));
+    wb.goToPage(0);
+    wb.deletePage(0);
+    expect(wb.elements.single.id, 'd', reason: 'deleting the open first page opens the next');
+  });
+
+  test('pen nibs, pressure and smoothing are kept', () {
+    final wb = WhiteboardController()
+      ..penNib = PenNib.dashed
+      ..penPressure = true
+      ..penSmoothing = 1;
+    wb.pointerDown(1, const InkPoint(0, 0, 0.2));
+    for (var i = 1; i <= 10; i++) {
+      wb.pointerMove(1, InkPoint(i * 10.0, i.isEven ? 8 : -8, 0.9));
+    }
+    wb.pointerUp(1);
+    final s = wb.elements.single as Stroke;
+    expect(s.style.nib, PenNib.dashed);
+    expect(s.points[5].y.abs(), lessThan(8)); // evened out
+    final back = decodeStroke(encodeStroke(s), 'x')!;
+    expect(back.style.nib, PenNib.dashed);
+    expect(back.style.pressure, isTrue);
+    expect(back.points.first.pressure, closeTo(0.2, 0.01));
+  });
+
+  test('3D models\' notes travel with the saved board', () {
+    final saved = WhiteboardController().toSaved(const Size(1920, 1080)).withModel3dNotes({
+      '/heart': {'pins': []},
+    });
+    expect(SavedBoard.fromJson(saved.toJson()).model3dNotes, contains('/heart'));
+    expect(SavedBoard.fromJson(WhiteboardController().toSaved(Size.zero).toJson()).model3dNotes, isEmpty);
+  });
+
+  test('every paper paints', () async {
+    for (final b in BoardBackground.values) {
+      final r = PictureRecorder();
+      paintBoardBackground(Canvas(r), const Rect.fromLTWH(-100, -100, 2200, 1300), b, scale: 0.5);
+      r.endRecording().dispose();
+    }
+  });
+
+  test('Add Page needs something on the open page (spec 11.2)', () {
+    final wb = WhiteboardController();
+    expect(wb.canAddPage, isFalse);
+    wb.addPage();
+    expect(wb.pageCount, 1);
+    wb.add(Stroke(id: 'dot', points: const [InkPoint(10, 10)], style: const InkStyle(tool: InkTool.pen, color: Color(0xFF000000), width: 4)));
+    expect(wb.canAddPage, isTrue);
+    wb.addPage();
+    expect((wb.pageCount, wb.pageIndex, wb.canAddPage), (2, 1, false));
+    wb.addPage();
+    expect(wb.pageCount, 2);
+  });
+
+  test('bring forward and send backward move one step (spec 23)', () {
+    final wb = WhiteboardController();
+    Stroke dot(String id) => Stroke(id: id, points: const [InkPoint(10, 10)], style: const InkStyle(tool: InkTool.pen, color: Color(0xFF000000), width: 4));
+    wb.setElements([dot('a'), dot('b'), dot('c')]);
+    wb.select({'a'});
+    wb.bringSelectionForward();
+    expect(wb.page.elements.map((e) => e.id), ['b', 'a', 'c']);
+    wb.sendSelectionBackward();
+    expect(wb.page.elements.map((e) => e.id), ['a', 'b', 'c']);
+    wb.sendSelectionBackward();
+    expect(wb.page.elements.map((e) => e.id), ['a', 'b', 'c']);
+  });
+
+  test('Flowchart AI suggests the usual next step after Start (spec 32)', () {
+    expect(suggestedNextFlow(FlowBlock.terminal).first, FlowBlock.inputOutput);
+    expect(suggestedNextFlow(FlowBlock.process), contains(FlowBlock.decision));
+    expect(suggestedNextFlow(FlowBlock.decision), contains(FlowBlock.terminal));
+  });
+}

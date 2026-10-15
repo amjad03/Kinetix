@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/models.dart';
@@ -103,7 +103,7 @@ class UnavailableGateway implements PaymentGateway {
   @override
   Future<PaymentResult> pay(BuildContext context, FeeCheckout checkout) async =>
       const PaymentFailed(
-        'Online payment works in the KINETIX Parent app on Android phones and iPhones.',
+        'Online payment works in the ZYNETIX Parent app on Android phones and iPhones.',
         reason: PaymentFailure.unavailable,
       );
 }
@@ -114,7 +114,7 @@ class DemoPaymentGateway implements PaymentGateway {
   DemoPaymentGateway({this.secret = defaultSecret});
 
   /// DemoPaymentProvider.SECRET in services/api/src/fees/payment-provider.ts.
-  static const defaultSecret = 'kinetix-demo-payments';
+  static const defaultSecret = 'zynetix-demo-payments';
   final String secret;
 
   static String sign(String secret, String orderId, String paymentId) =>

@@ -5,8 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -105,7 +105,7 @@ class _ShareDialogState extends State<_ShareDialog> {
     }
   }
 
-  String get _fileName => 'KINETIX ${widget.title} ${DateFormat('yyyy-MM-dd').format(DateTime.now())}.pdf';
+  String get _fileName => 'ZYNETIX ${widget.title} ${DateFormat('yyyy-MM-dd').format(DateTime.now())}.pdf';
 
   @override
   Widget build(BuildContext context) {

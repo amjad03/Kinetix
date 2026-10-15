@@ -465,12 +465,12 @@ def logo_scene(f, b, t):
     age = (t - a['T']) * FPS
     s = C.ease(age / 16)
     fl = C.font(700, 132)
-    tw = fl.getlength('KINETIX')
+    tw = fl.getlength('ZYNETIX')
     glow = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    ImageDraw.Draw(glow).text(((W - tw) / 2, 380), 'KINETIX', font=fl, fill=C.BLUE + (int(200 * s),))
+    ImageDraw.Draw(glow).text(((W - tw) / 2, 380), 'ZYNETIX', font=fl, fill=C.BLUE + (int(200 * s),))
     glow = glow.filter(ImageFilter.GaussianBlur(18))
     f.paste(glow, (0, 0), glow)
-    ImageDraw.Draw(f, 'RGBA').text(((W - tw) / 2, 380), 'KINETIX', font=fl, fill=(255, 255, 255, int(255 * s)))
+    ImageDraw.Draw(f, 'RGBA').text(((W - tw) / 2, 380), 'ZYNETIX', font=fl, fill=(255, 255, 255, int(255 * s)))
     sub = 'Board  ·  the AI smartboard'
     fs = C.font(500, 40)
     C.kinetic(f, sub, (W - fs.getlength(sub)) / 2, 550, fs, age - 10, fill=C.CYAN)

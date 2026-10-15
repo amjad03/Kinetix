@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/models.dart';
-import 'package:kinetix_board/features/ai/quiz_panel.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/models.dart';
+import 'package:zynetix_board/features/ai/quiz_panel.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 /// Spec §43: types beyond MCQ, timer, teams, Important / exam frequency (only when the bank
 /// has it), AI explanation with the usual mistake, Add to Board.
@@ -19,7 +19,7 @@ void main() {
     addTearDown(tester.view.reset);
     final added = <QuizQuestion>[];
     await tester.pumpWidget(MaterialApp(
-      theme: KinetixTheme.light(),
+      theme: ZynetixTheme.light(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: QuizPresenter(quiz: quiz, onAddToBoard: added.add)),

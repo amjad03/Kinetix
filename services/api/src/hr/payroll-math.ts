@@ -3,7 +3,7 @@
  * Pure functions over integer paise, so they can be tested against known values
  * (payroll-math.spec.ts). The rules and their sources are in docs/architecture/hr-payroll.md.
  */
-import type { PtSlab, TaxRegime } from '@kinetix/shared';
+import type { PtSlab, TaxRegime } from '@zynetix/shared';
 
 /** Rounds paise to the nearest rupee (half up). */
 export const roundRupee = (paise: number) => Math.round(paise / 100) * 100;

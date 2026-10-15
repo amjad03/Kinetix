@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
@@ -277,7 +277,7 @@ class ConceptVideoTile extends StatelessWidget {
   }
 }
 
-/// Who linked a video: KINETIX, the institution or a teacher.
+/// Who linked a video: ZYNETIX, the institution or a teacher.
 class VideoSourceBadge extends StatelessWidget {
   const VideoSourceBadge({super.key, required this.source});
 

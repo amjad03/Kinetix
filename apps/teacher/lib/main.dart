@@ -14,8 +14,8 @@ import 'demo/demo_api.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // A release built without --dart-define=KINETIX_API_URL stops here with a clear message
-  // (unless it is a demo build: --dart-define=KINETIX_DEMO=true, which needs no server).
+  // A release built without --dart-define=ZYNETIX_API_URL stops here with a clear message
+  // (unless it is a demo build: --dart-define=ZYNETIX_DEMO=true, which needs no server).
   if (!checkServerConfig()) return;
   final prefs = await SharedPreferences.getInstance();
   if (Demo.enabled) {

@@ -4,7 +4,7 @@ import { governanceDepth } from '../src/db/soundarya/governance-depth.js';
 import type { Ctx } from '../src/db/soundarya/ctx.js';
 import { createTenant, ownerPool } from './helpers.js';
 
-// The Soundarya sample for rules, incidents, retention, the KINETIX plan, AI evaluation and the tutor: it must load into the schema.
+// The Soundarya sample for rules, incidents, retention, the ZYNETIX plan, AI evaluation and the tutor: it must load into the schema.
 describe('Soundarya governance sample', () => {
   const owner = ownerPool();
   afterAll(() => owner.end());

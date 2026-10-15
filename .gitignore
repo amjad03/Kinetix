@@ -23,9 +23,9 @@ key.properties
 *.p12
 *.pfx
 
-# Pyodide is fetched at build time (packages/kinetix_cs/tool/fetch_pyodide.sh), not committed.
-packages/kinetix_cs/assets/runner/pyodide/*
-!packages/kinetix_cs/assets/runner/pyodide/.keep
+# Pyodide is fetched at build time (packages/zynetix_cs/tool/fetch_pyodide.sh), not committed.
+packages/zynetix_cs/assets/runner/pyodide/*
+!packages/zynetix_cs/assets/runner/pyodide/.keep
 
 # PhET catalogue build cache (tools/phet/build-catalogue.mjs)
 tools/phet/.cache/

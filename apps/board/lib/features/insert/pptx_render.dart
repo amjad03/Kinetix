@@ -8,7 +8,7 @@ import 'package:flutter/painting.dart';
 import 'package:xml/xml.dart';
 
 /// PowerPoint (.pptx) slides drawn on the board itself, one picture per slide, so a deck
-/// becomes board pages to write over without the internet. Ported from the KINETIX
+/// becomes board pages to write over without the internet. Ported from the ZYNETIX
 /// prototype's importer, which read the same XML into board elements.
 ///
 /// What comes across: the slide, layout or master background (colour or picture), pictures,

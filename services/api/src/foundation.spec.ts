@@ -77,7 +77,7 @@ describe('structured logging, metrics and tracing', () => {
     expect(parseTraceparent('garbage')).toBeNull();
     expect(parseTraceparent(`00-${'0'.repeat(32)}-${'2'.repeat(16)}-01`)).toBeNull();
     const span = { traceId: '1'.repeat(32), spanId: '2'.repeat(16), name: 'GET /x', startMs: 1000, endMs: 1500, attributes: { 'http.status_code': 200, ok: true, route: '/x' }, error: false };
-    const body = otlpBody('kinetix-api', [span]);
+    const body = otlpBody('zynetix-api', [span]);
     const s = body.resourceSpans[0].scopeSpans[0].spans[0];
     expect(s).toMatchObject({ name: 'GET /x', kind: 2, startTimeUnixNano: '1000000000', endTimeUnixNano: '1500000000', status: { code: 1 } });
     expect(s.attributes).toContainEqual({ key: 'http.status_code', value: { intValue: '200' } });

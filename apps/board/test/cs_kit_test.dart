@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/board_controller.dart';
-import 'package:kinetix_board/features/board/kit/cs/cs_kit.dart';
-import 'package:kinetix_board/features/board/kit/kit_panel.dart';
-import 'package:kinetix_board/features/board/kit/subjects.dart';
-import 'package:kinetix_board/l10n/l10n.dart';
-import 'package:kinetix_cs/kinetix_cs.dart';
-import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_board/core/board_controller.dart';
+import 'package:zynetix_board/features/board/kit/cs/cs_kit.dart';
+import 'package:zynetix_board/features/board/kit/kit_panel.dart';
+import 'package:zynetix_board/features/board/kit/subjects.dart';
+import 'package:zynetix_board/l10n/l10n.dart';
+import 'package:zynetix_cs/zynetix_cs.dart';
+import 'package:zynetix_ink/zynetix_ink.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const phone = Size(390, 844), panel = Size(1920, 1080);
@@ -23,7 +23,7 @@ void main() {
     addTearDown(wb.dispose);
     await tester.pumpWidget(
       MaterialApp(
-        theme: KinetixTheme.light(),
+        theme: ZynetixTheme.light(),
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

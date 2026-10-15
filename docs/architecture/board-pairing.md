@@ -27,7 +27,7 @@ Board                                   Cloud API                               
   │ open the teacher's workspace            │                                           │
 ```
 
-- **QR payload:** `kinetix://pair?c=<code>&s=<secret>&d=<deviceId>`. Scanning sends the secret, which makes the claim safe from someone guessing the code. **Typing the 6 digits** is the fallback. Typed claims are rate-limited (5 attempts per teacher per minute, 20 per device per minute) and only accepted from the same campus.
+- **QR payload:** `zynetix://pair?c=<code>&s=<secret>&d=<deviceId>`. Scanning sends the secret, which makes the claim safe from someone guessing the code. **Typing the 6 digits** is the fallback. Typed claims are rate-limited (5 attempts per teacher per minute, 20 per device per minute) and only accepted from the same campus.
 - The code rotates every 120 s and is single-use. Codes are stored as **hashes**.
 - The **board session token** is a JWT scoped to `{tid, did, uid, sid}`. It expires at the end of the period plus a 15-minute grace, at the latest.
 - **Ending a session:** "End class" on the board or in the Teacher App, the period ending, or 20 minutes idle (with a warning). The board then returns to the pairing screen and clears the teacher's state from memory.
@@ -39,7 +39,7 @@ Requirements: the board and the phone are on the same Wi-Fi, or within Bluetooth
 
 1. While online, the Teacher App holds an **offline credential**: a short JWT signed with the cloud's Ed25519 key, `{tid, uid, campusId, devicePubKey, exp: +7 days}`. It binds the teacher to a key pair generated on the phone; the private key stays in the Android Keystore or iOS Secure Enclave.
 2. The Board has the cloud's public key, the campus staff list and the timetable cached.
-3. The Board's QR code includes a nonce and its LAN address: `kinetix://pair-local?n=<nonce>&h=<ip:port>&d=<deviceId>`.
+3. The Board's QR code includes a nonce and its LAN address: `zynetix://pair-local?n=<nonce>&h=<ip:port>&d=<deviceId>`.
 4. The phone sends `{offlineCredential, sign(nonce‖deviceId)}` to the board's local HTTPS endpoint, or over BLE.
 5. The board verifies the cloud signature, the expiry, the campus and the nonce signature, then opens the session. The session syncs to the cloud with the evidence attached when the connection returns.
 

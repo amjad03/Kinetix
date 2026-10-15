@@ -1,19 +1,19 @@
 // Library renewals, meal ratings, repair requests and fee instalments.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/campus_extras.dart';
-import 'package:kinetix_student/features/campus/campus_extras_screens.dart';
-import 'package:kinetix_student/features/fees/instalments_screen.dart';
-import 'package:kinetix_student/features/profile/device_trust_tile.dart';
-import 'package:kinetix_student/features/profile/profile_tab.dart';
-import 'package:kinetix_student/l10n/l10n.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:zynetix_student/core/campus_extras.dart';
+import 'package:zynetix_student/features/campus/campus_extras_screens.dart';
+import 'package:zynetix_student/features/fees/instalments_screen.dart';
+import 'package:zynetix_student/features/profile/device_trust_tile.dart';
+import 'package:zynetix_student/features/profile/profile_tab.dart';
+import 'package:zynetix_student/l10n/l10n.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
 
 Widget screen(Widget home, {String language = 'en'}) => MaterialApp(
-  theme: KinetixTheme.light(),
+  theme: ZynetixTheme.light(),
   locale: Locale(language),
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: appLocalizationsDelegates,

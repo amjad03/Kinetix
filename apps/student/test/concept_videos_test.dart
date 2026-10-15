@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/demo/demo_api.dart';
-import 'package:kinetix_student/features/learn/concept_videos.dart';
+import 'package:zynetix_student/core/models.dart';
+import 'package:zynetix_student/demo/demo_api.dart';
+import 'package:zynetix_student/features/learn/concept_videos.dart';
 
 import 'helpers.dart';
 
@@ -30,8 +30,8 @@ void main() {
     expect(find.text('Concept videos'), findsOneWidget);
     expect(find.text('Underwriting commission in 5 minutes'), findsOneWidget);
     expect(find.text('4:05 · हिन्दी'), findsOneWidget);
-    // Who linked each: KINETIX, or the class's teacher.
-    expect(find.descendant(of: find.byKey(const Key('videoSource-cv1')), matching: find.text('KINETIX')), findsOneWidget);
+    // Who linked each: ZYNETIX, or the class's teacher.
+    expect(find.descendant(of: find.byKey(const Key('videoSource-cv1')), matching: find.text('ZYNETIX')), findsOneWidget);
     expect(find.descendant(of: find.byKey(const Key('videoSource-cv2')), matching: find.text('Teacher')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('conceptVideo-cv1')));

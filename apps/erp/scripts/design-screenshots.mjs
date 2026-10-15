@@ -24,8 +24,8 @@ for (const scheme of ['light', 'dark']) {
   const page = await ctx.newPage();
   await page.goto(`${ERP}/login`);
   await page.locator('input[name=tenant]').fill('demo-college');
-  await page.locator('input[name=login]').fill('principal@demo.kinetix.in');
-  await page.locator('input[name=password]').fill('kinetix123');
+  await page.locator('input[name=login]').fill('principal@demo.zynetix.in');
+  await page.locator('input[name=password]').fill('zynetix123');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.getByTestId('school-name').waitFor();
   for (const s of SHOTS.filter((x) => x.scheme === scheme && (!only || x.name === only))) {

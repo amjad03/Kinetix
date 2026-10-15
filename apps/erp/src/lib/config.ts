@@ -1,6 +1,6 @@
 import 'server-only';
 
-export const API_URL = (process.env.KINETIX_API_URL ?? 'http://localhost:4000').replace(/\/+$/, '');
+export const API_URL = (process.env.ZYNETIX_API_URL ?? 'http://localhost:4000').replace(/\/+$/, '');
 export const SESSION_COOKIE = 'kx_session';
 export const TENANT_COOKIE = 'kx_tenant';
 /** Matches the API's user token lifetime (12 h). */

@@ -17,7 +17,7 @@ import {
   type EligibilityRules,
   type MeritRule,
   type SeatQuota,
-} from '@kinetix/shared';
+} from '@zynetix/shared';
 import { createHash, randomBytes } from 'node:crypto';
 import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';

@@ -3,11 +3,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_teacher/core/hr_models.dart';
-import 'package:kinetix_teacher/features/hr/check_in_screen.dart';
-import 'package:kinetix_teacher/features/hr/leave_screen.dart';
-import 'package:kinetix_teacher/features/hr/loans_screen.dart';
-import 'package:kinetix_teacher/features/hr/payslips_screen.dart';
+import 'package:zynetix_teacher/core/hr_models.dart';
+import 'package:zynetix_teacher/features/hr/check_in_screen.dart';
+import 'package:zynetix_teacher/features/hr/leave_screen.dart';
+import 'package:zynetix_teacher/features/hr/loans_screen.dart';
+import 'package:zynetix_teacher/features/hr/payslips_screen.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/core/device_store.dart';
-import 'package:kinetix_board/core/secret_store.dart';
+import 'package:zynetix_board/core/device_store.dart';
+import 'package:zynetix_board/core/secret_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

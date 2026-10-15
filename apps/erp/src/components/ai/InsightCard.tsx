@@ -24,7 +24,7 @@ function Bullets({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-/** "Ask KINETIX AI": a summary of this page's domain figures, always labelled as an AI draft. */
+/** "Ask ZYNETIX AI": a summary of this page's domain figures, always labelled as an AI draft. */
 export function InsightCard({ kind }: { kind: InsightKind }) {
   const { t } = useI18n();
   const [res, setRes] = useState<InsightResponse | null>(null);

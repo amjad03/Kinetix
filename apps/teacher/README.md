@@ -1,4 +1,4 @@
-# KINETIX Teacher App
+# ZYNETIX Teacher App
 
 The teacher's phone app (Flutter, Material 3). It shows the day's classes, takes attendance,
 assigns homework and connects the teacher to a classroom board without typing a PIN on the
@@ -19,8 +19,8 @@ flutter test
 flutter analyze
 ```
 
-Sign in with institution code `demo-college`, `anita@demo.kinetix.in` (or `ravi@demo.kinetix.in`),
-password `kinetix123`.
+Sign in with institution code `demo-college`, `anita@demo.zynetix.in` (or `ravi@demo.zynetix.in`),
+password `zynetix123`.
 
 **Server address.** The default is `http://localhost:4000`. Tap **Server** under the sign-in
 button to change it. On the Android emulator, the host machine is `http://10.0.2.2:4000`.
@@ -69,11 +69,11 @@ it to the account (`PATCH /v1/me`). Before sign-in it follows the device (hi or 
 See [docs/i18n/teacher.md](../../docs/i18n/teacher.md) for adding strings and what needs review.
 
 State is plain `ChangeNotifier` controllers rendered with `ListenableBuilder`. The design
-system is [`packages/kinetix_ui`](../../packages/kinetix_ui) (light and dark, follows the system setting).
+system is [`packages/zynetix_ui`](../../packages/zynetix_ui) (light and dark, follows the system setting).
 
 ## Known gaps
 
 - The token is in `shared_preferences`. It should move to secure storage (Keystore/Keychain), with an app lock.
 - No offline pairing (BLE/LAN credential) and no offline queue for attendance yet.
-- The lesson player (`packages/kinetix_lesson`) is still English only; the rest of the app is in English, Hindi and Kannada ([docs/i18n/teacher.md](../../docs/i18n/teacher.md)).
+- The lesson player (`packages/zynetix_lesson`) is still English only; the rest of the app is in English, Hindi and Kannada ([docs/i18n/teacher.md](../../docs/i18n/teacher.md)).
 - No live updates: the Today screen refreshes on pull-to-refresh and after actions, not when the board ends a session.

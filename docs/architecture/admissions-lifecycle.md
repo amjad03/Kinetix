@@ -54,4 +54,4 @@ Notifications to applicants (SMS/email), entrance tests, reservation quotas, sib
 ## Tests
 
 `services/api/test/admissions.e2e.spec.ts`, `lifecycle.e2e.spec.ts`, `src/admissions/rules.spec.ts`; ERP `src/lib/cycle-config.test.ts`.
-Test DB admin: set `KINETIX_TEST_ADMIN_URL` (or `KINETIX_PG_ADMIN_URL`) to a superuser URL; without it `sudo -u postgres psql` is used.
+Test DB admin: set `ZYNETIX_TEST_ADMIN_URL` (or `ZYNETIX_PG_ADMIN_URL`) to a superuser URL; without it `sudo -u postgres psql` is used.

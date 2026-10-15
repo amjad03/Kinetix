@@ -11,7 +11,7 @@ export const REDIS = Symbol('REDIS');
  */
 export function createRedis(url: string, name: string, pubsub = false): Redis {
   const log = new Logger(`Redis:${name}`);
-  const client = new Redis(url, { connectionName: `kinetix-api-${name}`, maxRetriesPerRequest: pubsub ? null : 2, enableAutoPipelining: !pubsub });
+  const client = new Redis(url, { connectionName: `zynetix-api-${name}`, maxRetriesPerRequest: pubsub ? null : 2, enableAutoPipelining: !pubsub });
   client.on('error', (e: Error) => log.warn(e.message));
   return client;
 }
