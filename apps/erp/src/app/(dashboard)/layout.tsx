@@ -1,4 +1,4 @@
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { AppShell } from '@/components/AppShell';
@@ -14,8 +14,6 @@ import { CHANGE_PASSWORD_PATH } from '@/lib/password';
 import { getI18n } from '@/i18n/server';
 import { summarize } from '@/lib/setup';
 import { loadSetup } from '@/lib/setup-load';
-import { PATH_HEADER } from '@/lib/return-path';
-import { editionRedirect } from '@/lib/zynetix';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,10 +39,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // Signed in with a temporary password: nothing else until a new one is chosen.
   if (me.data.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
   if (me.data.mustSetUpMfa) redirect('/account/security');
-  // The board edition (Zynetix only): ERP pages go to the Zynetix overview.
+  // The board edition (Zynetix only): the shell sends ERP pages to the Zynetix overview. That is
+  // decided in the browser (AppShell), not here: this layout is kept across client navigations, so
+  // a redirect thrown here would be replayed on every later page.
   const edition = me.data.tenant.edition ?? 'full';
-  const away = editionRedirect(edition, (await headers()).get(PATH_HEADER));
-  if (away) redirect(away);
   // The top bar's extras are best effort: a failure hides them rather than the page.
   const roles = me.data.roles;
   const [structure, notes, caps, setupSteps] = await Promise.all([

@@ -1,7 +1,7 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useMemo, type ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { SidebarInset, SidebarProvider } from '@/components/shadcn/sidebar';
 import { TooltipProvider } from '@/components/shadcn/tooltip';
 import { useI18n } from '@/i18n/client';
@@ -11,7 +11,7 @@ import { crumbsFor, visibleGroups } from '@/lib/nav';
 import { setRecordsOwner } from '@/lib/recents';
 import type { SetupSummary } from '@/lib/setup';
 import type { Workspace } from '@/lib/workspaces';
-import { ZYNETIX_HOME, type Edition } from '@/lib/zynetix';
+import { editionRedirect, ZYNETIX_HOME, type Edition } from '@/lib/zynetix';
 import { AppSidebar } from './shell/AppSidebar';
 import { TopBar, type ShellNotice, type ShellYear } from './shell/TopBar';
 import { ToastProvider } from './ui/Toast';
@@ -69,6 +69,12 @@ export function AppShell({
   const { t } = useI18n();
   setRecordsOwner(user.email ?? user.fullName);
   const pathname = usePathname();
+  const router = useRouter();
+  // The board edition (Zynetix only): ERP pages are not shown; they go to the Zynetix overview.
+  const away = editionRedirect(edition, pathname);
+  useEffect(() => {
+    if (away) router.replace(away);
+  }, [away, router]);
   const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin, disabledModules, workspace, edition), [user.roles, user.platformAdmin, disabledModules, workspace, edition]);
   const crumbs = useMemo(() => crumbsFor(groups, pathname), [groups, pathname]);
   const home = edition === 'board' ? ZYNETIX_HOME : homeFor(user.roles as never);
@@ -94,7 +100,7 @@ export function AppShell({
               <TopBar user={user} roleText={roleText} groups={groups} crumbs={crumbs} years={years} yearId={yearId} notices={notices} unread={unread} density={density} />
               <TabBar />
               <TabHost className="kx-main mx-auto w-full max-w-[1440px] min-w-0 flex-1 p-4 outline-none md:p-6" density={density}>
-                {children}
+                {away ? null : children}
               </TabHost>
             </TabsProvider>
           </SidebarInset>

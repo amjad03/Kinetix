@@ -53,6 +53,7 @@ of the pages. Leaders hear class audio only when the institution setting `classr
 on: the class-audio test turns it on in Settings and off again. The departments test adds a department
 and deletes it again; the calendar test adds a holiday for today and deletes it; the settings test
 puts every setting back. The head-of-department tests sign in as `ravi@demo.kinetix.in` themselves; the plans test reviews the seeded lesson plan, and has Ravi save a lesson plan for his own Discrete Mathematics period through the API (the principal then reviews it).
+The Zynetix tests (`e2e/zynetix.spec.ts`, project `zynetix`) sign in as `admin@demo.kinetix.in`, switch the demo college to the board edition and back, and serve a YouTube channel feed on port 4399: start the API with `YOUTUBE_BASE_URL=http://127.0.0.1:4399` so nothing goes to YouTube.
 Tests read English: `signIn` picks English on the browser (`kx_lang=en`); `e2e/i18n.spec.ts`
 checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
 
