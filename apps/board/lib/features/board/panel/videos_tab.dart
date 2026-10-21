@@ -40,6 +40,8 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
   void initState() {
     super.initState();
     _load = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson);
+    // The tab opens on Topic resources: until the list is shown, a failure is nobody's error.
+    _load?.ignore();
   }
 
   void _reload() {

@@ -198,6 +198,16 @@ class ConceptVideoCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: Kx.s8),
+              if (onResources != null)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton.icon(
+                    key: const Key('conceptVideoResources'),
+                    onPressed: onResources,
+                    icon: const Icon(Icons.topic_outlined),
+                    label: Text(ResourceStrings.of(context).title),
+                  ),
+                ),
               Row(
                 children: [
                   Expanded(
@@ -206,13 +216,6 @@ class ConceptVideoCard extends StatelessWidget {
                       style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                     ),
                   ),
-                  if (onResources != null)
-                    TextButton.icon(
-                      key: const Key('conceptVideoResources'),
-                      onPressed: onResources,
-                      icon: const Icon(Icons.topic_outlined),
-                      label: Text(ResourceStrings.of(context).title),
-                    ),
                   TextButton(key: const Key('conceptVideoSkip'), onPressed: onSkip, child: Text(l.conceptVideosSkip)),
                 ],
               ),
