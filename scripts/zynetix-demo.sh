@@ -13,6 +13,21 @@ case "${1:-start}" in
 esac
 docker info >/dev/null 2>&1 || { echo "Docker is not running. Start Docker Desktop first."; exit 1; }
 
+# Claude as the board's AI: ANTHROPIC_API_KEY=sk-ant-... scripts/zynetix-demo.sh (saved to the git-ignored
+# .env.ai, so later starts keep it). Uses Anthropic's OpenAI-compatible endpoint; no key: AI shows previews.
+if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+  umask 077
+  cat > .env.ai <<EOT
+AI_BASE_URL=https://api.anthropic.com/v1
+AI_API_KEY=$ANTHROPIC_API_KEY
+AI_MODEL=${AI_MODEL:-claude-sonnet-5-5}
+AI_FALLBACK_MODELS=${AI_FALLBACK_MODELS:-claude-haiku-5-5}
+AI_VISION=true
+EOT
+  echo "== AI: Claude (${AI_MODEL:-claude-sonnet-5-5}) via .env.ai"
+elif [ -f .env.ai ]; then echo "== AI: using the saved .env.ai"
+else echo "== AI: no ANTHROPIC_API_KEY, AI features show previews"; fi
+
 # Reachable from boards/phones on the Wi-Fi, not only localhost.
 export BIND_ADDR=0.0.0.0
 API_PORT="${API_PORT:-4000}"; ERP_PORT="${ERP_PORT:-3000}"

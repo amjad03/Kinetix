@@ -32,3 +32,4 @@ tools/phet/.cache/
 
 # bundled sims ship their own build/ folders
 !apps/board/assets/simhub/**/build/
+.env.ai

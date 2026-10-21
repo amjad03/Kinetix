@@ -115,6 +115,10 @@ services:
     build: *api-build
     init: true
     environment: *api-env
+    # The AI model (scripts/zynetix-demo.sh writes it from ANTHROPIC_API_KEY; git-ignored). Absent: previews.
+    env_file:
+      - path: .env.ai
+        required: false
     ports: ["${BIND_ADDR:-127.0.0.1}:${API_PORT:-4000}:4000"]
     volumes:
       - objects:/app/services/api/.data/objects

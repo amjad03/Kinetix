@@ -15,6 +15,8 @@ scripts/zynetix-demo.sh reset    # stop and wipe data
 It prints `API: http://<mac-ip>:4000` and `ERP: http://<mac-ip>:3000`. Re-running is safe. If the macOS firewall asks, allow incoming connections.
 The 15 simulated SDMCET boards stay online through a small heartbeat service the script starts (board EE-301 stays offline on purpose). A real board you pair takes over its own entry from its first report.
 
+**AI (Claude):** start with your key once: `ANTHROPIC_API_KEY=sk-ant-... scripts/zynetix-demo.sh`. It is saved to the git-ignored `.env.ai` and reused on later starts (model `claude-sonnet-5-5`, falling back to `claude-haiku-5-5` when busy; override with `AI_MODEL=`). Without a key the AI shows previews. The Mac needs internet for AI answers.
+
 ## Point the apps at the server
 Enter the printed API URL as the server in each app's sign-in/settings screen (apps built with the `api_url` workflow input already have it baked in). Check from a phone browser first: `http://<mac-ip>:4000/docs`.
 
