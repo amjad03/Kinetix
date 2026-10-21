@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { NAV_GROUPS, visibleGroups } from './nav';
 import {
+  aiKeyProblem,
   aiLogQuery,
+  aiSourceKey,
+  CLAUDE_MODELS,
   bucketLabel,
   allowedInBoardEdition,
   bookRange,
@@ -27,12 +30,12 @@ describe('board edition', () => {
   it('shows only the Zynetix pages, the timetable and subjects and topics', () => {
     const groups = visibleGroups(['principal'], false, [], 'all', 'board');
     expect(groups.map((g) => g.id)).toEqual(['zynetix']);
-    expect(hrefs('board')).toEqual(['/zynetix', '/zynetix/library', '/zynetix/youtube', '/zynetix/programs', '/timetable', '/syllabus', '/topic-videos', '/zynetix/teachers', '/zynetix/boards', '/zynetix/ai-log']);
+    expect(hrefs('board')).toEqual(['/zynetix', '/zynetix/library', '/zynetix/youtube', '/zynetix/programs', '/timetable', '/syllabus', '/topic-videos', '/zynetix/teachers', '/zynetix/boards', '/zynetix/ai-log', '/zynetix/ai-settings']);
     expect(hrefs('board', true)).toContain('/platform/zynetix');
   });
 
   it('ignores the workspace in the board edition', () => {
-    expect(visibleGroups(['principal'], false, [], 'finance_ops', 'board').flatMap((g) => g.items).length).toBe(10);
+    expect(visibleGroups(['principal'], false, [], 'finance_ops', 'board').flatMap((g) => g.items).length).toBe(11);
   });
 
   it('adds a Zynetix group to the full ERP without repeating pages', () => {
@@ -146,5 +149,26 @@ describe('bucketLabel', () => {
     expect(bucketLabel('2026-10-20T10:00', 'hour')).toBe('20 Oct, 10:00');
     expect(bucketLabel('2026-10-20T00:00', 'day')).toBe('20 Oct');
     expect(bucketLabel('2026-10-20T04:30:00Z', 'hour', 'Asia/Kolkata')).toBe('20 Oct, 10:00');
+  });
+});
+
+describe('AI connection (Claude key)', () => {
+  it('needs a key until one is saved, and rejects one that is too short or has spaces', () => {
+    expect(aiKeyProblem('', false)).toBe('zx.aic.keyRequired');
+    expect(aiKeyProblem('  ', true)).toBeNull();
+    expect(aiKeyProblem('sk-ant-short', false)).toBe('zx.aic.keyShort');
+    expect(aiKeyProblem('sk-ant-api03 with space-0123456789', false)).toBe('zx.aic.keyShort');
+    expect(aiKeyProblem(' sk-ant-api03-0123456789abcdefWXYZ ', false)).toBeNull();
+  });
+
+  it('names where the AI comes from', () => {
+    expect(aiSourceKey({ source: 'institution' })).toBe('zx.aic.status.institution');
+    expect(aiSourceKey({ source: 'server' })).toBe('zx.aic.status.server');
+    expect(aiSourceKey({ source: 'none' })).toBe('zx.aic.status.none');
+    expect(CLAUDE_MODELS).toEqual(['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-5-5']);
+  });
+
+  it('lists the AI settings page in the Zynetix menu', () => {
+    expect(hrefs('full')).toContain('/zynetix/ai-settings');
   });
 });

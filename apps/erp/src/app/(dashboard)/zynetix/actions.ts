@@ -6,6 +6,10 @@ import { act, api } from '@/lib/api';
 import type { ActionResult, VideoLanguage } from '@/lib/types';
 import {
   AUDIENCES,
+  CLAUDE_MODELS,
+  type AiConnection,
+  type AiTestResult,
+  type ClaudeModel,
   MATERIAL_KINDS,
   materialProblem,
   type MaterialInput,
@@ -198,4 +202,24 @@ export async function setTenantEdition(id: string, edition: PlatformTenant['edit
   const res = await act(() => api<PlatformTenant>(`/v1/platform/tenants/${id}`, { method: 'PATCH', body: { edition } }));
   if (res.ok) revalidatePath('/platform/zynetix');
   return res;
+}
+
+// ---------------------------------------------------------------- AI connection (Claude key)
+
+export async function saveAiConnection(input: { apiKey?: string; model: ClaudeModel; fallbackModel: ClaudeModel | null }): Promise<ActionResult<AiConnection>> {
+  if (!CLAUDE_MODELS.includes(input.model) || (input.fallbackModel !== null && !CLAUDE_MODELS.includes(input.fallbackModel))) return invalid();
+  const apiKey = input.apiKey?.trim();
+  const res = await act(() => api<AiConnection>('/v1/ai/admin/connection', { method: 'PUT', body: { ...(apiKey ? { apiKey } : {}), model: input.model, fallbackModel: input.fallbackModel } }));
+  if (res.ok) revalidatePath('/zynetix');
+  return res;
+}
+
+export async function removeAiConnection(): Promise<ActionResult<AiConnection>> {
+  const res = await act(() => api<AiConnection>('/v1/ai/admin/connection', { method: 'DELETE' }));
+  if (res.ok) revalidatePath('/zynetix');
+  return res;
+}
+
+export async function testAiConnection(): Promise<ActionResult<AiTestResult>> {
+  return act(() => api<AiTestResult>('/v1/ai/admin/connection/test', { method: 'POST', body: {} }));
 }

@@ -118,6 +118,15 @@ requests wait up to `AI_QUEUE_WAIT_MS` (default 10000) and are then refused with
 | `GET /ai/usage` | ADMIN | last 30 days by task and outcome (existing). |
 | `GET /ai/admin/actions`, `/actions/summary` | AI admins | the AI action audit (existing). |
 
+**Claude connection** (migration 0141, `ai_connections`): an institution can use its own Anthropic key instead of the server's AI settings. With a key saved, its AI requests go to Anthropic's OpenAI-compatible endpoint (`ANTHROPIC_BASE_URL`, default `https://api.anthropic.com/v1`) with that key, the chosen model and the fallback model; otherwise the server's provider answers. The key is encrypted with `SECRETS_ENCRYPTION_KEY` (rotated by `pnpm secrets:rotate`) and never returned.
+
+| Call | Who | Notes |
+| --- | --- | --- |
+| `GET /ai/admin/connection` | tenant_admin, principal, PLATFORM | `{ provider: 'anthropic', model, fallbackModel, keySet, keyHint (last 4), updatedAt, source: institution\|server\|none }` |
+| `PUT /ai/admin/connection` | same | `{ apiKey?, model?, fallbackModel?: model\|null }`; models `claude-sonnet-5-5` (default), `claude-opus-5-5`, `claude-haiku-5-5` (default fallback). The first save needs `apiKey`; a key left out keeps the stored one. Audited (`ai.connection_updated`) without the key. |
+| `DELETE /ai/admin/connection` | same | removes it (`ai.connection_removed`); back to the server's AI. |
+| `POST /ai/admin/connection/test` | same | one tiny completion on the primary model → `{ ok: true, model, latencyMs }` or `{ ok: false, error }` (401/403: "The key was rejected by Anthropic"). |
+
 ## 6. Boards and edge devices
 
 `POST /devices/me/health` (device or board, every few minutes, max 30/min) now also takes

@@ -399,3 +399,32 @@ export interface NewTenantResult {
   tenant: PlatformTenant;
   admin: { id: string; fullName: string; email: string; temporaryPassword: string };
 }
+
+// ---------------------------------------------------------------- AI connection (Claude key)
+
+export const CLAUDE_MODELS = ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-5-5'] as const;
+export type ClaudeModel = (typeof CLAUDE_MODELS)[number];
+
+/** GET /v1/ai/admin/connection: the key itself is never sent. */
+export interface AiConnection {
+  provider: 'anthropic';
+  model: string;
+  fallbackModel: string | null;
+  keySet: boolean;
+  keyHint: string | null;
+  updatedAt: string | null;
+  source: 'institution' | 'server' | 'none';
+}
+
+export type AiTestResult = { ok: true; model: string; latencyMs: number } | { ok: false; error: string };
+
+/** What is wrong with a pasted key before it is sent (empty is fine once a key is saved). */
+export function aiKeyProblem(key: string, keySet: boolean): MessageKey | null {
+  const k = key.trim();
+  if (!k) return keySet ? null : 'zx.aic.keyRequired';
+  if (/\s/.test(k) || k.length < 20) return 'zx.aic.keyShort';
+  return null;
+}
+
+/** The status line's message for where this institution's AI comes from. */
+export const aiSourceKey = (c: Pick<AiConnection, 'source'>): MessageKey => (c.source === 'institution' ? 'zx.aic.status.institution' : c.source === 'server' ? 'zx.aic.status.server' : 'zx.aic.status.none');

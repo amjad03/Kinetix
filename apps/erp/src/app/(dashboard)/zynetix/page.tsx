@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Alert } from '@/components/kx';
 import { Card } from '@/components/ui';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -7,7 +8,7 @@ import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import { schoolToday } from '@/lib/school';
 import type { Structure } from '@/lib/types';
-import { bucketLabel, coverage, topTopics, type AiLogPage, type AiSummary, type Compute, type SubjectOutline } from '@/lib/zynetix';
+import { bucketLabel, coverage, topTopics, type AiConnection, type AiLogPage, type AiSummary, type Compute, type SubjectOutline } from '@/lib/zynetix';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.zxOverview') };
@@ -21,11 +22,12 @@ export default async function ZynetixOverview() {
   await requireSection('zynetix');
   const { t, fmt } = await getI18n();
   const today = schoolToday();
-  const [compute, summary, week, structure] = await Promise.all([
+  const [compute, summary, week, structure, aiConn] = await Promise.all([
     load(() => api<Compute>('/v1/devices/compute')),
     load(() => api<AiSummary>(`/v1/ai/admin/logs/summary?from=${today}&to=${today}&bucket=hour`)),
     load(() => api<AiLogPage>('/v1/ai/admin/logs?pageSize=200')),
     load(() => api<Structure>('/v1/admin/structure')),
+    load(() => api<AiConnection>('/v1/ai/admin/connection')),
   ]);
   const linked = [...new Map((structure.data?.subjects ?? []).filter((s) => s.courseId).map((s) => [s.courseId, s])).values()].slice(0, MAX_SUBJECTS);
   const outlines = (await Promise.all(linked.map((s) => load(() => api<SubjectOutline>(`/v1/subjects/${s.id}/outline`)))))
@@ -41,6 +43,14 @@ export default async function ZynetixOverview() {
   return (
     <>
       <PageHeader title={t('nav.zxOverview')} subtitle={t('zx.o.subtitle')} />
+      {aiConn.data?.source === 'none' && (
+        <Alert className="mb-4" severity="warning" data-testid="zx-ai-hint">
+          {t('zx.o.aiHint')}{' '}
+          <Link className="font-medium text-primary hover:underline" href="/zynetix/ai-settings">
+            {t('zx.o.aiHintLink')}
+          </Link>
+        </Alert>
+      )}
       <StatGrid>
         <StatTile label={t('zx.o.online')} value={c ? fmt.number(c.online) : dash} caption={c ? t('zx.o.ofBoards', { n: c.total }) : compute.error} href="/zynetix/boards" testId="zx-online" />
         <StatTile label={t('zx.o.offline')} value={c ? fmt.number(c.total - c.online) : dash} tone={c && c.total - c.online > 0 ? 'warning' : 'default'} href="/zynetix/boards" testId="zx-offline" />

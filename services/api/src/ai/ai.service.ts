@@ -14,6 +14,7 @@ import { ENV, type Env } from '../config/env.js';
 import { ContentService } from '../content/content.service.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { aiActions, aiCache, aiUsage, sections, subjects, tenants } from '../db/schema.js';
+import { AiConnections } from './ai-connection.service.js';
 import { AiGate } from './gate.js';
 import {
   AiBlockedError,
@@ -142,7 +143,18 @@ export class AiService {
     @Inject(ENV) private readonly env: Env,
     private readonly content: ContentService,
     private readonly gate: AiGate,
+    private readonly connections: AiConnections,
   ) {}
+
+  /** The server's own provider (env-configured). */
+  get serverProvider(): LlmProvider {
+    return this.provider;
+  }
+
+  /** The provider that answers this institution: its own Claude key when saved, else the server's. */
+  async providerFor(tenantId: string): Promise<LlmProvider> {
+    return (await this.connections.forTenant(tenantId)) ?? this.provider;
+  }
 
   /** Runs the task and logs it as an AI action: who asked, what grounded the answer and a short preview of both. */
   async run<T extends TaskName>(caller: AiCaller, task: T, input: TaskInput<T>, opts: { fresh?: boolean } = {}): Promise<AiResponse<T>> {
@@ -178,7 +190,7 @@ export class AiService {
   }
 
   private async runCore<T extends TaskName>(caller: AiCaller, task: T, input: TaskInput<T>, opts: { fresh?: boolean } = {}): Promise<AiResponse<T>> {
-    const p = this.provider;
+    const p = await this.providerFor(caller.tenantId);
     const { grounding, key, cached, sources } = await this.db.withTenant(caller.tenantId, async (tx) => {
       const words = requestText(input);
       const { grounding, sources } = await this.grounding(tx, caller, task === 'readBoard' ? '' : words, task, (input as { language?: Language }).language ?? 'en');
@@ -189,7 +201,7 @@ export class AiService {
 
       const bad = unsafeTerm(words, forMinors);
       if (bad) {
-        await this.record(tx, caller, task, 'blocked', { detail: `input: ${bad}` });
+        await this.record(tx, p, caller, task, 'blocked', { detail: `input: ${bad}` });
         return { grounding, key, sources, cached: undefined, refusal: 'blocked' as const };
       }
       if (!opts.fresh && !p.preview) {
@@ -199,12 +211,12 @@ export class AiService {
           .where(and(eq(aiCache.key, key), inArray(aiCache.model, [...(p.models ?? [p.model])]), gte(aiCache.createdAt, new Date(Date.now() - CACHE_DAYS * 86400_000))));
         if (hit) {
           await tx.update(aiCache).set({ hits: sql`${aiCache.hits} + 1` }).where(eq(aiCache.key, key));
-          await this.record(tx, caller, task, 'cached');
+          await this.record(tx, p, caller, task, 'cached');
           return { grounding, key, sources, cached: hit.result as TaskOutput<T> };
         }
       }
       if (!p.preview && (await this.usedToday(tx)) >= this.env.AI_DAILY_LIMIT) {
-        await this.record(tx, caller, task, 'quota');
+        await this.record(tx, p, caller, task, 'quota');
         return { grounding, key, sources, cached: undefined, refusal: 'quota' as const };
       }
       return { grounding, key, sources, cached: undefined };
@@ -223,12 +235,12 @@ export class AiService {
     // Peak load: wait for a free slot, else refuse and log it as throttled (never a silent failure).
     const release = await this.gate.acquire();
     if (!release) {
-      await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, caller, task, 'throttled', { detail: `Busy: ${this.gate.max} AI requests already running; waited ${this.gate.waitMs / 1000} s` }));
+      await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, p, caller, task, 'throttled', { detail: `Busy: ${this.gate.max} AI requests already running; waited ${this.gate.waitMs / 1000} s` }));
       throw new HttpException({ code: 'AI_THROTTLED', message: AI_BUSY }, HttpStatus.TOO_MANY_REQUESTS);
     }
     try {
       if (p.preview) {
-        await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, caller, task, 'ok'));
+        await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, p, caller, task, 'ok'));
         return { task, result: previewOutput(task, input), meta: { ...meta, cached: false } };
       }
 
@@ -239,7 +251,7 @@ export class AiService {
       let result: TaskOutput<T> | undefined;
       let busy = false;
       try {
-        result = await this.generate(task, input, grounding, usage);
+        result = await this.generate(p, task, input, grounding, usage);
         const bad = unsafeTerm(allText(result), grounding.institutionKind === 'school');
         if (bad) {
           outcome = 'blocked';
@@ -253,7 +265,7 @@ export class AiService {
       }
 
       await this.db.withTenant(caller.tenantId, async (tx) => {
-        await this.record(tx, caller, task, outcome, { ...usage, latencyMs: Date.now() - started, detail });
+        await this.record(tx, p, caller, task, outcome, { ...usage, latencyMs: Date.now() - started, detail });
         if (outcome === 'ok' && result) {
           await tx
             .insert(aiCache)
@@ -284,14 +296,14 @@ export class AiService {
    * right JSON, tells it what was wrong once; a reply cut off at the token limit is asked for
    * again with twice the room.
    */
-  private async generate<T extends TaskName>(task: T, input: TaskInput<T>, g: Grounding, usage: Usage): Promise<TaskOutput<T>> {
+  private async generate<T extends TaskName>(provider: LlmProvider, task: T, input: TaskInput<T>, g: Grounding, usage: Usage): Promise<TaskOutput<T>> {
     // A text-only provider (e.g. the Sarvam fallback on its own) cannot read the board.
-    if (task === 'readBoard' && this.provider.vision === false) throw new AiUnavailableError('No vision model is configured', false);
+    if (task === 'readBoard' && provider.vision === false) throw new AiUnavailableError('No vision model is configured', false);
     const messages = buildMessages(task, input, g);
     let maxTokens = maxTokensFor(task, input);
     for (let attempt = 0; ; attempt++) {
       const reply = await withBackoff(
-        () => this.provider.complete(messages, { maxTokens, temperature: temperatureFor(task) }),
+        () => provider.complete(messages, { maxTokens, temperature: temperatureFor(task) }),
         this.backoff,
         (e, wait, n) => this.log.warn(`AI ${task}: the model server is busy (${e.status}); asking again in ${(wait / 1000).toFixed(1)} s (${n} of ${this.env.AI_RETRIES})`),
       );
@@ -378,6 +390,7 @@ export class AiService {
 
   private async record(
     tx: Tx,
+    p: LlmProvider,
     caller: AiCaller,
     task: TaskName,
     outcome: Outcome,
@@ -390,8 +403,8 @@ export class AiService {
       deviceId: caller.deviceId ?? null,
       task,
       outcome,
-      provider: provider ?? this.provider.name,
-      model: model ?? this.provider.model,
+      provider: provider ?? p.name,
+      model: model ?? p.model,
       promptVersion: PROMPT_VERSION,
       estCostInr: costInr ?? null,
       topicId: caller.topicId ?? null,

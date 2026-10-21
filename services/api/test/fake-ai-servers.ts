@@ -50,6 +50,8 @@ export class FakePrimary extends FakeServer {
   mode: 'ok' | 'hang' | number = 'ok';
   chat: { model: string; messages: { role: string; content: unknown }[] }[] = [];
   asr: Record<string, unknown>[] = [];
+  /** The authorization header of each chat request. */
+  auth: (string | undefined)[] = [];
   reply: unknown = { answer: 'Photosynthesis makes food from light.', keyPoints: ['Chlorophyll'], followUps: [] };
   get url() {
     return `${this.origin}/v1`;
@@ -59,6 +61,7 @@ export class FakePrimary extends FakeServer {
     if (this.mode === 'hang') return; // never answers
     if (req.url === '/v1/chat/completions') {
       this.chat.push(JSON.parse(body.toString()));
+      this.auth.push(req.headers.authorization);
       if (typeof this.mode === 'number') return json(res, this.mode, { error: 'primary says no' });
       return json(res, 200, { choices: [{ message: { content: JSON.stringify(this.reply) } }], usage: { prompt_tokens: 100, completion_tokens: 50 } });
     }

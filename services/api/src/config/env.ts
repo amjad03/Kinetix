@@ -25,6 +25,8 @@ const EnvSchema = z.object({
     .optional()
     .transform((v) => (v ?? '').split(',').map((m) => m.trim()).filter(Boolean)),
   AI_API_KEY: z.string().optional(),
+  /** Anthropic's OpenAI-compatible endpoint, used when an institution saves its own Claude key in the dashboard. */
+  ANTHROPIC_BASE_URL: z.url().default('https://api.anthropic.com/v1'),
   AI_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
   /** Whether the primary model reads images (readBoard). */
   AI_VISION: z.stringbool().default(true),
