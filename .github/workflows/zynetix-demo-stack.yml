@@ -1,0 +1,71 @@
+name: Zynetix demo stack
+
+# Runs scripts/zynetix-demo.sh exactly as the presenter does (Docker Compose: build, migrate, SDMCET seed,
+# heartbeat) and checks the API and ERP answer; and builds the images for Apple-chip Macs (arm64).
+on:
+  workflow_dispatch:
+  push:
+    branches: ['claude/kinetix-ecosystem-overview-*']
+    paths:
+      - docker-compose.yml
+      - scripts/zynetix-demo.sh
+      - services/api/**
+      - services/code-runner/**
+      - apps/erp/**
+      - packages/shared/**
+      - .github/workflows/zynetix-demo-stack.yml
+
+concurrency:
+  group: zynetix-demo-stack-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stack:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the demo (no AI key)
+        env:
+          EDITOR: 'true'
+        run: scripts/zynetix-demo.sh < /dev/null
+      - name: Teacher and admin can sign in; dashboard data is there
+        run: |
+          set -euo pipefail
+          login() { curl -sf -X POST localhost:4000/v1/auth/login -H 'content-type: application/json' \
+            -d "{\"tenant\":\"sdmcet\",\"login\":\"$1\",\"password\":\"zynetix123\"}" | jq -r .accessToken; }
+          T=$(login shweta.ece@sdmcet.zynetix.in); A=$(login admin@sdmcet.zynetix.in)
+          curl -sf localhost:4000/v1/me -H "authorization: Bearer $T" | jq -e '.edition == "board" or .tenant.edition == "board"'
+          curl -sf localhost:4000/v1/teacher/timetable -H "authorization: Bearer $T" | jq -e '.periods | type == "array"'
+          sleep 70  # one heartbeat
+          curl -sf localhost:4000/v1/devices/compute -H "authorization: Bearer $A" | jq -e '.online >= 15'
+          curl -sf localhost:4000/v1/ai/admin/logs/summary -H "authorization: Bearer $A" | jq -e '.totals.requests > 0'
+          curl -sf -o /dev/null -w '%{http_code}\n' localhost:3000/login | grep -q 200
+          echo "Demo stack OK"
+      - name: Logs on failure
+        if: failure()
+        run: docker compose --profile seed-sdmcet logs --tail 80
+
+  arm64-images:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - { name: api, file: services/api/Dockerfile }
+          - { name: erp, file: apps/erp/Dockerfile }
+          - { name: code-runner, file: services/code-runner/Dockerfile }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build ${{ matrix.image.name }} for linux/arm64 (Apple chip)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.image.file }}
+          platforms: linux/arm64
+          push: false
+          cache-from: type=gha,scope=arm64-${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=arm64-${{ matrix.image.name }}

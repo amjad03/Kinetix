@@ -11,7 +11,27 @@ case "${1:-start}" in
   start) ;;
   *) echo "usage: $0 [start|stop|reset]"; exit 2 ;;
 esac
-docker info >/dev/null 2>&1 || { echo "Docker is not running. Start Docker Desktop first."; exit 1; }
+# Docker: install Docker Desktop if missing (Homebrew), start it if stopped, wait until it answers.
+if ! command -v docker >/dev/null 2>&1 && [ ! -d /Applications/Docker.app ]; then
+  if command -v brew >/dev/null 2>&1; then
+    echo "== Installing Docker Desktop (Homebrew; it may ask for your Mac password)"
+    brew install --cask docker
+  else
+    echo "Docker Desktop is not installed. Opening the download page: pick 'Mac with Apple chip'"
+    echo "(or Intel chip on an older Mac), install it, open it once, then run this again."
+    open "https://www.docker.com/products/docker-desktop/" 2>/dev/null || true
+    exit 1
+  fi
+fi
+export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin"
+if ! docker info >/dev/null 2>&1; then
+  echo "== Starting Docker Desktop (first start: accept its terms; signing in is not needed)"
+  open -a Docker 2>/dev/null || true
+  for _ in $(seq 1 90); do docker info >/dev/null 2>&1 && break; sleep 2; done
+  docker info >/dev/null 2>&1 || { echo "Docker did not start in 3 minutes. Open Docker Desktop, wait for the whale icon to settle, run this again."; exit 1; }
+fi
+MEM_GB=$(( $(docker info --format '{{.MemTotal}}' 2>/dev/null || echo 0) / 1073741824 ))
+[ "$MEM_GB" -ge 4 ] || echo "!! Docker has ${MEM_GB} GB of memory; give it at least 4 GB (Docker Desktop > Settings > Resources) if the build fails."
 
 # Claude as the board's AI: ANTHROPIC_API_KEY=sk-ant-... scripts/zynetix-demo.sh (saved to the git-ignored
 # .env.ai, so later starts keep it). Uses Anthropic's OpenAI-compatible endpoint; no key: AI shows previews.
