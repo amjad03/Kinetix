@@ -508,6 +508,8 @@ export async function seedSdmcet(pool: pg.Pool, opts: { now?: Date } = {}): Prom
       uptimeS: online ? r.int(3_000, 30_000) : 0,
       currentClass: sec?.label,
       ...l.h,
+      // Kept online by `--heartbeat` during a demo; a real board's first report replaces this health.
+      ...(online ? { demoSimulated: true } : {}),
     };
     const seen = online ? now : l.at;
     await k.q('update devices set health = $1::jsonb, health_at = $2, last_seen_at = $2 where id = $3', [JSON.stringify(health), seen, dev.id]);
@@ -611,6 +613,40 @@ export async function seedSdmcet(pool: pg.Pool, opts: { now?: Date } = {}): Prom
   };
 }
 
+/**
+ * Demo heartbeat: every minute, the simulated SDMCET boards (health.demoSimulated) report in, so they stay
+ * online for as long as the demo server runs; every 15 minutes each also adds a telemetry sample. A real
+ * board that pairs and reports replaces its health, which drops the flag and ends the simulation for it.
+ */
+async function heartbeat(pool: pg.Pool) {
+  let tick = 0;
+  for (;;) {
+    const sample = tick % 15 === 0;
+    const { rows } = await pool.query<{ id: string; tenant_id: string; health: Record<string, unknown> }>(
+      `select d.id, d.tenant_id, d.health from devices d join tenants t on t.id = d.tenant_id
+        where t.slug = $1 and (d.health->>'demoSimulated')::boolean is true`,
+      [SLUG],
+    );
+    for (const d of rows) {
+      const edge = d.health.deviceKind === 'edge';
+      const jitter = (v: unknown, spread: number) => Math.round(Math.min(99, Math.max(0, Number(v ?? 20) + (Math.random() - 0.5) * spread)) * 10) / 10;
+      const h = { ...d.health, cpuPct: jitter(d.health.cpuPct, 8), gpuPct: jitter(d.health.gpuPct, 8), npuPct: jitter(d.health.npuPct, 6), ramPct: jitter(d.health.ramPct, 4), uptimeS: Number(d.health.uptimeS ?? 0) + 60 };
+      await pool.query('update devices set health = $1::jsonb, health_at = now(), last_seen_at = now() where id = $2', [JSON.stringify(h), d.id]);
+      if (sample) {
+        const inf = edge ? Math.round(Math.random() * 40) : Math.round(Math.random() * 6);
+        await pool.query(
+          `insert into device_telemetry (tenant_id, device_id, at, cpu_pct, gpu_pct, npu_pct, ram_pct, disk_pct, cpu_temp_c, gpu_temp_c, ai_inferences, ai_inference_ms, app_version)
+           values ($1, $2, now(), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          [d.tenant_id, d.id, h.cpuPct, h.gpuPct, h.npuPct, h.ramPct, d.health.diskPct ?? null, Math.round(38 + h.cpuPct * 0.38), Math.round(36 + h.gpuPct * 0.42), inf, inf * (edge ? 95 : 320), d.health.appVersion ?? null],
+        );
+      }
+    }
+    if (tick === 0) console.log(`Demo heartbeat: keeping ${rows.length} simulated boards online (Ctrl+C to stop).`);
+    tick++;
+    await new Promise((res) => setTimeout(res, 60_000));
+  }
+}
+
 async function main() {
   if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'yes') {
     console.error('Refusing to load demo data with NODE_ENV=production. Set ALLOW_DEMO_SEED=yes for a staging demo.');
@@ -621,6 +657,10 @@ async function main() {
   if (!url) throw new Error('DATABASE_URL (the owner role) is not set');
   pg.types.setTypeParser(1082, (v: string) => v);
   const pool = new pg.Pool({ connectionString: url, max: 2 });
+  if (process.argv.includes('--heartbeat')) {
+    await heartbeat(pool);
+    return;
+  }
   const t0 = Date.now();
   try {
     const { classes, ...sum } = await seedSdmcet(pool);

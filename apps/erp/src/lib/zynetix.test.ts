@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { NAV_GROUPS, visibleGroups } from './nav';
 import {
   aiLogQuery,
+  bucketLabel,
   allowedInBoardEdition,
   bookRange,
   computeSeries,
@@ -133,9 +134,17 @@ describe('AI log and compute', () => {
     const u: ComputeUsage = { from: '', to: '', timezone: 'Asia/Kolkata', bucket: 'hour', totals: { aiInferences: 0, aiInferenceMs: 0 }, rows: [row('a', '2026-10-21T05:00:00Z', 20, 3), row('b', '2026-10-21T05:00:00Z', 40, 1), row('a', '2026-10-21T04:00:00Z', null, 0)] };
     const s = computeSeries(u);
     expect(s.at).toEqual(['2026-10-21T04:00:00Z', '2026-10-21T05:00:00Z']);
-    expect(s.labels).toEqual(['21, 09:30', '21, 10:30']);
+    expect(s.labels).toEqual(['21 Oct, 09:30', '21 Oct, 10:30']);
     expect(s.cpu).toEqual([null, 30]);
     expect(s.gpu).toEqual([null, null]);
     expect(s.inferences).toEqual([0, 4]);
+  });
+});
+
+describe('bucketLabel', () => {
+  it('shows the API wall-clock buckets as written, and converts real instants to the zone', () => {
+    expect(bucketLabel('2026-10-20T10:00', 'hour')).toBe('20 Oct, 10:00');
+    expect(bucketLabel('2026-10-20T00:00', 'day')).toBe('20 Oct');
+    expect(bucketLabel('2026-10-20T04:30:00Z', 'hour', 'Asia/Kolkata')).toBe('20 Oct, 10:00');
   });
 });

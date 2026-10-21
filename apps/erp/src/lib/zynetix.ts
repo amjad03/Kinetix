@@ -254,11 +254,15 @@ export interface ComputeUsage {
 
 /** A bucket's label in the institution's time zone: "14:00" by hour, "21 Oct" by day. */
 export function bucketLabel(at: string, bucket: 'day' | 'hour', timeZone = 'Asia/Kolkata'): string {
-  const d = new Date(at);
+  // The API sends buckets as wall-clock time in the institution's zone ("2026-10-20T10:00", no offset):
+  // show those as written. Only a real instant (with Z or an offset) is converted to the zone.
+  const wallClock = !/(Z|[+-]\d{2}:?\d{2})$/.test(at);
+  const d = new Date(wallClock ? `${at.length === 10 ? `${at}T00:00` : at}Z` : at);
   if (Number.isNaN(d.getTime())) return at;
+  const zone = wallClock ? 'UTC' : timeZone;
   return bucket === 'hour'
-    ? new Intl.DateTimeFormat('en-GB', { timeZone, day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(d)
-    : new Intl.DateTimeFormat('en-GB', { timeZone, day: 'numeric', month: 'short' }).format(d);
+    ? new Intl.DateTimeFormat('en-GB', { timeZone: zone, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(d)
+    : new Intl.DateTimeFormat('en-GB', { timeZone: zone, day: 'numeric', month: 'short' }).format(d);
 }
 
 const avg = (xs: (number | null)[]) => {

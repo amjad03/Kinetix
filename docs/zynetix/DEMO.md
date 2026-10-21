@@ -13,6 +13,7 @@ scripts/zynetix-demo.sh stop     # stop, keep data
 scripts/zynetix-demo.sh reset    # stop and wipe data
 ```
 It prints `API: http://<mac-ip>:4000` and `ERP: http://<mac-ip>:3000`. Re-running is safe. If the macOS firewall asks, allow incoming connections.
+The 15 simulated SDMCET boards stay online through a small heartbeat service the script starts (board EE-301 stays offline on purpose). A real board you pair takes over its own entry from its first report.
 
 ## Point the apps at the server
 Enter the printed API URL as the server in each app's sign-in/settings screen (apps built with the `api_url` workflow input already have it baked in). Check from a phone browser first: `http://<mac-ip>:4000/docs`.

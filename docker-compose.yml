@@ -99,6 +99,17 @@ services:
       migrate: { condition: service_completed_successfully }
     restart: "no"
 
+  # Keeps the simulated SDMCET boards online while the demo runs (scripts/zynetix-demo.sh starts it).
+  sdmcet-heartbeat:
+    image: kinetix-api:${KINETIX_TAG:-local}
+    profiles: ["seed-sdmcet"]
+    command: ["sdmcet-heartbeat"]
+    environment:
+      <<: *api-env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
   api:
     image: kinetix-api:${KINETIX_TAG:-local}
     build: *api-build

@@ -31,6 +31,9 @@ case "${1:-serve}" in
   seed-sdmcet)
     exec node --enable-source-maps dist/db/seed-sdmcet.js
     ;;
+  sdmcet-heartbeat)
+    exec node --enable-source-maps dist/db/seed-sdmcet.js --heartbeat
+    ;;
   content-import)
     exec node --enable-source-maps dist/content/import.js
     ;;

@@ -23,6 +23,7 @@ echo "== Starting Postgres, Redis, migrations, API, ERP (first run builds images
 $DC up -d --build --wait
 echo "== Seeding the SDMCET demo (safe to re-run)"
 $DC --profile seed-sdmcet run --rm seed-sdmcet
+$DC --profile seed-sdmcet up -d sdmcet-heartbeat
 
 cat <<EOT
 
