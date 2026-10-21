@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import 'app_info.dart';
+import 'fleet/system_stats.dart' show AiUsageMeter;
 import 'models.dart';
 import 'offline_codes.dart';
 import 'recording/recordings.dart' show RecordingSummary;
@@ -437,7 +438,10 @@ class ApiClient {
       _ai('read-board', {'image': pngBase64, 'language': language.name}, BoardReading.fromJson);
 
   Future<AiResult<T>> _ai<T>(String task, Map<String, dynamic> body, T Function(Map<String, dynamic>) parse) async {
+    final started = DateTime.now();
     final j = await _send('POST', '/v1/ai/$task', body: body) as Map<String, dynamic>;
+    // For the board's health report (aiInferences, aiMs).
+    AiUsageMeter.instance.record(DateTime.now().difference(started));
     return AiResult(parse(j['result'] as Map<String, dynamic>), AiMeta.fromJson(j['meta'] as Map<String, dynamic>));
   }
 

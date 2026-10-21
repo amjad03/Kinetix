@@ -6,11 +6,14 @@ import 'package:disk_space_plus/disk_space_plus.dart';
 import 'package:flutter/foundation.dart';
 
 import '../app_info.dart';
+import 'system_stats.dart';
+
+export 'system_stats.dart' show AiUsageMeter, SystemStats;
 
 /// What the device itself can tell about its health (the rest comes from the app).
 @immutable
 class DeviceSnapshot {
-  const DeviceSnapshot({required this.os, this.osVersion, this.storageFreeMb, this.storageTotalMb, this.batteryPercent, this.charging});
+  const DeviceSnapshot({required this.os, this.osVersion, this.storageFreeMb, this.storageTotalMb, this.batteryPercent, this.charging, this.stats = SystemStats.none});
 
   final String os;
   final String? osVersion;
@@ -20,6 +23,9 @@ class DeviceSnapshot {
   /// Null on a panel with no battery.
   final int? batteryPercent;
   final bool? charging;
+
+  /// CPU/GPU/NPU/RAM load and temperatures, as far as the platform tells.
+  final SystemStats stats;
 }
 
 /// Reads the device's storage and battery. Anything the platform cannot tell stays null.
@@ -62,6 +68,7 @@ class PluginDeviceProbe implements DeviceProbe {
       storageTotalMb: total,
       batteryPercent: level,
       charging: charging,
+      stats: await SystemStats.read(),
     );
   }
 }
@@ -81,13 +88,18 @@ class AppHealth {
 /// when it connects and every few minutes after, so the IT console shows whether it is online,
 /// its app version, OS, kiosk state, class, storage and battery.
 class FleetAgent {
-  FleetAgent({required this.send, required this.app, DeviceProbe? probe, this.interval = const Duration(minutes: 5)}) : probe = probe ?? PluginDeviceProbe();
+  FleetAgent({required this.send, required this.app, DeviceProbe? probe, this.interval = const Duration(minutes: 5), AiUsageMeter? ai})
+    : probe = probe ?? PluginDeviceProbe(),
+      ai = ai ?? AiUsageMeter.instance;
 
   /// Posts the report body. Throws when offline; the next tick tries again.
   final Future<void> Function(Map<String, Object?> body) send;
   final AppHealth Function() app;
   final DeviceProbe probe;
   final Duration interval;
+
+  /// The AI answers since the last report (aiInferences, aiMs: their total time).
+  final AiUsageMeter ai;
 
   Timer? _timer;
   bool _running = false;
@@ -107,6 +119,9 @@ class FleetAgent {
   Future<Map<String, Object?>> body() async {
     final d = await probe.read();
     final a = app();
+    final s = d.stats;
+    final usage = ai.peek();
+    final free = d.storageFreeMb, total = d.storageTotalMb;
     return {
       'os': d.os,
       if (d.osVersion != null) 'osVersion': _clip(d.osVersion!, 60),
@@ -117,6 +132,16 @@ class FleetAgent {
       if (d.batteryPercent != null) 'battery': {'percent': d.batteryPercent!.clamp(0, 100), 'charging': d.charging ?? false},
       if (a.currentClass != null) 'currentClass': _clip(a.currentClass!, 120),
       'locked': a.locked,
+      // Zynetix telemetry (docs/zynetix/PLAN.md: Boards/Edge devices): each only when known.
+      if (s.cpuPercent != null) 'cpuPercent': s.cpuPercent,
+      if (s.gpuPercent != null) 'gpuPercent': s.gpuPercent,
+      if (s.npuPercent != null) 'npuPercent': s.npuPercent,
+      if (s.ramPercent != null) 'ramPercent': s.ramPercent,
+      if (s.cpuTempC != null) 'cpuTempC': s.cpuTempC,
+      if (s.gpuTempC != null) 'gpuTempC': s.gpuTempC,
+      if (free != null && total != null && total > 0) 'diskUsedPercent': ((total - free) * 100 / total).round().clamp(0, 100),
+      'aiInferences': usage.inferences,
+      'aiMs': usage.ms,
     };
   }
 
@@ -124,7 +149,9 @@ class FleetAgent {
     if (_running) return;
     _running = true;
     try {
-      await send(await body());
+      final b = await body();
+      await send(b);
+      ai.consume((inferences: b['aiInferences'] as int, ms: b['aiMs'] as int));
     } catch (e) {
       debugPrint('Health not reported: $e');
     } finally {

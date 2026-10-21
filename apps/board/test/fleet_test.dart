@@ -8,6 +8,7 @@ import 'package:kinetix_board/core/api_client.dart';
 import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/device_store.dart';
 import 'package:kinetix_board/core/fleet/fleet_agent.dart';
+import 'package:kinetix_board/core/fleet/system_stats.dart';
 import 'package:kinetix_board/core/outbox_store.dart';
 import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/core/secret_store.dart';
@@ -92,11 +93,60 @@ void main() {
       'battery': {'percent': 80, 'charging': true},
       'currentClass': 'Physics · BCom A',
       'locked': false,
+      'diskUsedPercent': 88,
+      'aiInferences': 0,
+      'aiMs': 0,
     });
     // A panel with no battery and no storage plugin reports only what it knows.
     probe.snapshot = const DeviceSnapshot(os: 'windows');
     final bare = await FleetAgent(send: (_) async {}, probe: probe, app: () => const AppHealth(kiosk: 'off')).body();
-    expect(bare.keys, unorderedEquals(['os', 'appVersion', 'kiosk', 'locked']));
+    expect(bare.keys, unorderedEquals(['os', 'appVersion', 'kiosk', 'locked', 'aiInferences', 'aiMs']));
+  });
+
+  test('Zynetix telemetry: load, temperatures and AI use since the last report', () async {
+    final probe = FakeProbe()
+      ..snapshot = const DeviceSnapshot(
+        os: 'android',
+        stats: SystemStats(cpuPercent: 37, gpuPercent: 12, npuPercent: 64, ramPercent: 71, cpuTempC: 52, gpuTempC: 48),
+      );
+    final meter = AiUsageMeter.instance..reset();
+    meter.record(const Duration(milliseconds: 800));
+    meter.record(const Duration(milliseconds: 400));
+    final sent = <Map<String, Object?>>[];
+    var fail = true;
+    final agent = FleetAgent(send: (b) async => fail ? throw Exception('offline') : sent.add(b), probe: probe, app: () => const AppHealth(kiosk: 'on'));
+    // A failed report keeps the AI counts for the next one.
+    await agent.reportNow();
+    fail = false;
+    await agent.reportNow();
+    expect(sent.single, containsPair('aiInferences', 2));
+    expect(sent.single, containsPair('aiMs', 1200));
+    for (final (k, v) in [('cpuPercent', 37), ('gpuPercent', 12), ('npuPercent', 64), ('ramPercent', 71), ('cpuTempC', 52), ('gpuTempC', 48)]) {
+      expect(sent.single, containsPair(k, v));
+    }
+    await agent.reportNow();
+    expect(sent.last, containsPair('aiInferences', 0));
+  });
+
+  group('system stats parsing', () {
+    test('CPU from two /proc/stat samples', () {
+      expect(cpuPercentFromProcStat('cpu  100 0 100 800 0 0 0 0\ncpu0 1 1 1 1', 'cpu  150 0 150 900 0 0 0 0\n'), 50);
+      expect(cpuPercentFromProcStat('', ''), isNull);
+    });
+    test('memory from /proc/meminfo and vm_stat', () {
+      expect(ramPercentFromMeminfo('MemTotal:       8000000 kB\nMemFree:  100 kB\nMemAvailable:   2000000 kB\n'), 75);
+      expect(ramPercentFromVmStat('Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:  65536.\nPages inactive:  0.\nPages speculative: 0.\n', 16384 * 65536 * 4), 75);
+    });
+    test('temperatures, devfreq and ps', () {
+      expect(celsius('52000'), 52);
+      expect(celsius('48'), 48);
+      expect(celsius('-1'), isNull);
+      expect(devfreqLoad('64@800000000Hz'), 64);
+      expect(percentFromText('12 %'), 12);
+      expect(cpuPercentFromPs(' 50.0\n 30.0\n 20.0\n', 4), 25);
+      expect(isGpuZone('gpu-thermal'), isTrue);
+      expect(isCpuZone('soc-thermal'), isTrue);
+    });
   });
 
   test('a failed report is retried on the next tick, not thrown', () async {
