@@ -10,6 +10,7 @@ import '../../core/offline_codes.dart';
 import '../../l10n/feature_strings.dart';
 import '../../l10n/l10n.dart';
 import '../board/phone_chrome.dart';
+import 'password_sign_in.dart';
 
 /// "Sign in to this board": the teacher scans the QR code or types the 6-digit code in the
 /// KINETIX Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
@@ -38,6 +39,9 @@ class SignInDialog extends StatefulWidget {
 
 class _SignInDialogState extends State<SignInDialog> {
   PairingCode? _code;
+
+  /// Email and password instead of the code (features/signin/password_sign_in.dart).
+  bool _withPassword = false;
 
   /// The server's refusal, or [_unreachable] when there is no connection.
   ApiException? _error;
@@ -211,6 +215,9 @@ class _SignInDialogState extends State<SignInDialog> {
                 }),
               ],
               const SizedBox(height: Kx.s24),
+              if (_withPassword && widget.onPaired != null)
+                PasswordSignInForm(api: widget.api, onSignedIn: widget.onPaired!)
+              else
               Wrap(
                 spacing: Kx.s32,
                 runSpacing: Kx.s24,
@@ -288,6 +295,16 @@ class _SignInDialogState extends State<SignInDialog> {
                   ),
                 ],
               ),
+              if (widget.onPaired != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: Kx.s16),
+                  child: TextButton.icon(
+                    key: const Key('signin-password'),
+                    onPressed: () => setState(() => _withPassword = !_withPassword),
+                    icon: Icon(_withPassword ? Icons.qr_code_2 : Icons.password),
+                    label: Text(FeatureStrings(boardLang(context), passwordSignInStrings)[_withPassword ? 'switchBack' : 'switch']),
+                  ),
+                ),
               const SizedBox(height: Kx.s24),
               Row(
                 children: [

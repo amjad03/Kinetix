@@ -27,7 +27,10 @@ flutter build appbundle --release --dart-define=KINETIX_API_URL=https://api.exam
 - **Profile and release** builds without it (or with a value that is not an `http(s)://` URL)
   refuse to start: they show "KINETIX cannot start: This build has no server address…" and log
   `ServerConfigError` (`lib/core/server_config.dart` in each app, checked first in `main()`). The
-  release workflow also refuses to run without it.
+  release workflow also refuses to run without it. Exception: the **Board** without the define
+  starts on its set-up screen with the server field empty (pre-filled with the server it last
+  registered with), for a Zynetix demo server whose address is only known on the day
+  (docs/zynetix/DEMO.md); it never falls back to localhost.
 - The address is the *default*: the sign-in screens (Teacher, Parent, Student) still let the user
   change the server, and the Board's enrolment screen is pre-filled with it; a value saved on the
   device wins over the build's default.

@@ -29,18 +29,14 @@ class ServerConfigError extends Error {
 
 /// The server address for this build: [defined] (`KINETIX_API_URL`) without trailing slashes, or
 /// [debugServerUrl] in a debug build, or [demoServerUrl] in a [demo] build (which needs no
-/// server). Throws [ServerConfigError] for a profile/release build without the define, or for a
+/// server). A profile/release build without the define gets an empty address: the set-up screen
+/// then asks for one (a Zynetix demo server on the presenter's laptop has no fixed address,
+/// docs/zynetix/DEMO.md), and never quietly uses localhost. Throws [ServerConfigError] for a
 /// value that is not an http(s) URL.
 String resolveServerUrl({String defined = kinetixApiUrlDefine, bool debug = kDebugMode, bool demo = kinetixDemoDefine}) {
   if (demo) return demoServerUrl;
   final url = defined.trim().replaceAll(RegExp(r'/+$'), '');
-  if (url.isEmpty) {
-    if (debug) return debugServerUrl;
-    throw ServerConfigError(
-      'This build has no server address. Build it with '
-      '--dart-define=KINETIX_API_URL=https://<api domain> (see docs/operations/mobile-release.md).',
-    );
-  }
+  if (url.isEmpty) return debug ? debugServerUrl : '';
   final uri = Uri.tryParse(url);
   if (uri == null || !(uri.isScheme('http') || uri.isScheme('https')) || uri.host.isEmpty) {
     throw ServerConfigError('KINETIX_API_URL must be an http(s) address like https://api.example.in, not "$defined".');

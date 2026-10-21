@@ -208,6 +208,24 @@ class ApiClient {
     return (sessionToken: j['sessionToken'] as String, session: SessionContext.fromJson(j['session'] as Map<String, dynamic>));
   }
 
+  /// Signs a teacher in on this board with their email (or phone) and password, for boards
+  /// where no phone is at hand (a demo, a new teacher): the teacher's own sign-in
+  /// (`POST /v1/auth/login`) claims a fresh pairing code of this board, exactly as the Teacher
+  /// app would, and the board picks up the session it opened. The teacher's token is only held
+  /// for these calls. Throws [ApiException] (code `MFA_REQUIRED` for a two-factor account).
+  Future<({String sessionToken, SessionContext session})> signInWithPassword({required String tenant, required String login, required String password}) async {
+    final auth = await _send('POST', '/v1/auth/login', body: {'tenant': tenant.trim(), 'login': login.trim(), 'password': password}, auth: false) as Map<String, dynamic>;
+    if (auth['mfaRequired'] == true || auth['accessToken'] is! String) {
+      throw ApiException(403, 'This account uses two-factor sign-in: use the Teacher app to sign in on the board.', code: 'MFA_REQUIRED');
+    }
+    final code = await newPairingCode();
+    final claimed = await _send('POST', '/v1/pairing/claim', body: {'code': code.code}, bearer: auth['accessToken'] as String) as Map<String, dynamic>?;
+    final pending = await pendingPairing();
+    if (pending != null) return pending;
+    // A server that does not keep pending sessions: the claim's own context, token still to come.
+    throw ApiException(502, 'Signed in, but the board did not get the class yet. Try again.', body: claimed ?? const {});
+  }
+
   /// Polling fallback for the realtime `pairing.claimed` push: the session a teacher just opened
   /// on this board by claiming its code, or null when none.
   Future<({String sessionToken, SessionContext session})?> pendingPairing() async {
@@ -525,8 +543,8 @@ class ApiClient {
     await _send(method, path, body: body);
   }
 
-  Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false}) async {
-    final token = useDeviceToken ? deviceToken : (sessionToken ?? deviceToken);
+  Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false, String? bearer}) async {
+    final token = bearer ?? (useDeviceToken ? deviceToken : (sessionToken ?? deviceToken));
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
       ..headers['content-type'] = 'application/json'
       ..headers['accept'] = 'application/json';

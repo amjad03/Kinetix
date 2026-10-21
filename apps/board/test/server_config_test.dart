@@ -14,17 +14,14 @@ void main() {
       expect(debugServerUrl, 'http://localhost:4000');
     });
 
-    test('release builds without the define fail instead of using localhost', () {
-      expect(
-        () => resolveServerUrl(defined: '', debug: false),
-        throwsA(isA<ServerConfigError>().having((e) => e.message, 'message', contains('KINETIX_API_URL'))),
-      );
+    test('release builds without the define ask for the server instead of using localhost', () {
+      // An empty address: the set-up screen asks for it (the Zynetix demo server has no fixed address).
+      expect(resolveServerUrl(defined: '', debug: false), '');
     });
 
     test('demo builds (KINETIX_DEMO) need no server address, even in release', () {
       expect(resolveServerUrl(defined: '', debug: false, demo: true), demoServerUrl);
       expect(resolveServerUrl(defined: 'https://api.example.in', debug: false, demo: true), demoServerUrl);
-      expect(() => resolveServerUrl(defined: '', debug: false, demo: false), throwsA(isA<ServerConfigError>()));
     });
 
     test('rejects values that are not http(s) URLs', () {

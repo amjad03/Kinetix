@@ -1031,6 +1031,8 @@ class BoardController extends ChangeNotifier {
 
   @visibleForTesting
   void onPaired(String sessionToken, SessionContext ctx) {
+    // The same session again (the realtime push and a poll both found it): nothing to do.
+    if (session?.sessionId == ctx.sessionId && api?.sessionToken == sessionToken) return;
     api?.sessionToken = sessionToken;
     session = ctx;
     _teacherLanguage = BoardLanguage.tryParse(ctx.language);
