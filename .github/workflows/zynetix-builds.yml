@@ -65,7 +65,7 @@ jobs:
           KINETIX_TEST_SIGNING: 'true'
         run: >-
           flutter build apk --release
-          --dart-define=KINETIX_DEMO=true
+
           --dart-define=KINETIX_API_URL="$API_URL"
           --build-name=0.1.${{ github.run_number }}
           --build-number=${{ github.run_number }}
@@ -96,7 +96,7 @@ jobs:
       - name: Build macOS release
         run: >-
           flutter build macos --release
-          --dart-define=KINETIX_DEMO=true
+
           --dart-define=KINETIX_API_URL="$API_URL"
           --build-name=0.1.${{ github.run_number }}
           --build-number=${{ github.run_number }}

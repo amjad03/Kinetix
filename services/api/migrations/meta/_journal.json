@@ -925,6 +925,13 @@
       "when": 1791500201000,
       "tag": "0139_zynetix_board",
       "breakpoints": true
+    },
+    {
+      "idx": 132,
+      "version": "7",
+      "when": 1791500202000,
+      "tag": "0140_device_platform_macos",
+      "breakpoints": true
     }
   ]
 }

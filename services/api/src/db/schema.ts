@@ -372,7 +372,7 @@ export const teacherSubstitutions = pgTable(
 // Devices, pairing and board sessions
 // ---------------------------------------------------------------------------------------------
 
-export const devicePlatform = pgEnum('device_platform', ['android', 'windows', 'linux', 'web']);
+export const devicePlatform = pgEnum('device_platform', ['android', 'windows', 'linux', 'macos', 'web']);
 
 export const devices = pgTable('devices', {
   id: id(),

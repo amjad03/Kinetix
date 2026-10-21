@@ -93,14 +93,14 @@ void main() {
       'battery': {'percent': 80, 'charging': true},
       'currentClass': 'Physics · BCom A',
       'locked': false,
-      'diskUsedPercent': 88,
+      'diskPct': 88,
       'aiInferences': 0,
-      'aiMs': 0,
+      'aiInferenceMs': 0,
     });
     // A panel with no battery and no storage plugin reports only what it knows.
     probe.snapshot = const DeviceSnapshot(os: 'windows');
     final bare = await FleetAgent(send: (_) async {}, probe: probe, app: () => const AppHealth(kiosk: 'off')).body();
-    expect(bare.keys, unorderedEquals(['os', 'appVersion', 'kiosk', 'locked', 'aiInferences', 'aiMs']));
+    expect(bare.keys, unorderedEquals(['os', 'appVersion', 'kiosk', 'locked', 'aiInferences', 'aiInferenceMs']));
   });
 
   test('Zynetix telemetry: load, temperatures and AI use since the last report', () async {
@@ -120,8 +120,8 @@ void main() {
     fail = false;
     await agent.reportNow();
     expect(sent.single, containsPair('aiInferences', 2));
-    expect(sent.single, containsPair('aiMs', 1200));
-    for (final (k, v) in [('cpuPercent', 37), ('gpuPercent', 12), ('npuPercent', 64), ('ramPercent', 71), ('cpuTempC', 52), ('gpuTempC', 48)]) {
+    expect(sent.single, containsPair('aiInferenceMs', 1200));
+    for (final (k, v) in [('cpuPct', 37), ('gpuPct', 12), ('npuPct', 64), ('ramPct', 71), ('cpuTempC', 52), ('gpuTempC', 48)]) {
       expect(sent.single, containsPair(k, v));
     }
     await agent.reportNow();

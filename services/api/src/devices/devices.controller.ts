@@ -30,7 +30,7 @@ const UpdateDeviceBody = z
 
 const EnrollBody = z.object({
   code: z.string().min(4),
-  platform: z.enum(['android', 'windows', 'linux', 'web']),
+  platform: z.enum(['android', 'windows', 'linux', 'macos', 'web']),
   appVersion: z.string().max(40).optional(),
 });
 

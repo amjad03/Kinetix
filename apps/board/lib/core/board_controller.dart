@@ -1221,6 +1221,7 @@ class BoardController extends ChangeNotifier {
     if (kIsWeb) return 'web';
     if (Platform.isAndroid) return 'android';
     if (Platform.isWindows) return 'windows';
+    if (Platform.isMacOS) return 'macos';
     return 'linux';
   }
 

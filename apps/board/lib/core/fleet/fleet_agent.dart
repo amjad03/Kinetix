@@ -98,7 +98,7 @@ class FleetAgent {
   final DeviceProbe probe;
   final Duration interval;
 
-  /// The AI answers since the last report (aiInferences, aiMs: their total time).
+  /// The AI answers since the last report (aiInferences, aiInferenceMs: their total time).
   final AiUsageMeter ai;
 
   Timer? _timer;
@@ -133,15 +133,15 @@ class FleetAgent {
       if (a.currentClass != null) 'currentClass': _clip(a.currentClass!, 120),
       'locked': a.locked,
       // Zynetix telemetry (docs/zynetix/PLAN.md: Boards/Edge devices): each only when known.
-      if (s.cpuPercent != null) 'cpuPercent': s.cpuPercent,
-      if (s.gpuPercent != null) 'gpuPercent': s.gpuPercent,
-      if (s.npuPercent != null) 'npuPercent': s.npuPercent,
-      if (s.ramPercent != null) 'ramPercent': s.ramPercent,
+      if (s.cpuPercent != null) 'cpuPct': s.cpuPercent,
+      if (s.gpuPercent != null) 'gpuPct': s.gpuPercent,
+      if (s.npuPercent != null) 'npuPct': s.npuPercent,
+      if (s.ramPercent != null) 'ramPct': s.ramPercent,
       if (s.cpuTempC != null) 'cpuTempC': s.cpuTempC,
       if (s.gpuTempC != null) 'gpuTempC': s.gpuTempC,
-      if (free != null && total != null && total > 0) 'diskUsedPercent': ((total - free) * 100 / total).round().clamp(0, 100),
+      if (free != null && total != null && total > 0) 'diskPct': ((total - free) * 100 / total).round().clamp(0, 100),
       'aiInferences': usage.inferences,
-      'aiMs': usage.ms,
+      'aiInferenceMs': usage.ms,
     };
   }
 
@@ -151,7 +151,7 @@ class FleetAgent {
     try {
       final b = await body();
       await send(b);
-      ai.consume((inferences: b['aiInferences'] as int, ms: b['aiMs'] as int));
+      ai.consume((inferences: b['aiInferences'] as int, ms: b['aiInferenceMs'] as int));
     } catch (e) {
       debugPrint('Health not reported: $e');
     } finally {
