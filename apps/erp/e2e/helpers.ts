@@ -21,7 +21,7 @@ export async function signIn(page: Page, login: string, tenant = TENANT, passwor
   await page.locator('input[name=tenant]').fill(tenant);
   await page.locator('input[name=login]').fill(login);
   await page.locator('input[name=password]').fill(password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 }
 
 export async function signInAsPrincipal(page: Page) {
