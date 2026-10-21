@@ -168,7 +168,7 @@ describe('per-institution Razorpay accounts', () => {
     const box = SecretBox.fromEnv({ SECRETS_ENCRYPTION_KEY: newKey, SECRETS_ENCRYPTION_KEY_VERSION: 2, SECRETS_ENCRYPTION_OLD_KEYS: `1:${oldKey}` })!;
     const before = await ownerDb.select().from(s.paymentGatewayAccounts);
     const r = await rotateSecrets(ownerDb, box);
-    expect(r.rotated).toBe(before.length);
+    expect(r.rotated).toBe(before.length + (await ownerDb.select().from(s.aiConnections)).length);
     expect((await rotateSecrets(ownerDb, box)).rotated).toBe(0);
     const [row] = await ownerDb.select().from(s.paymentGatewayAccounts).where(eq(s.paymentGatewayAccounts.tenantId, a.tenantId));
     expect(row.keySecretEnc).toMatch(/^v2\./);

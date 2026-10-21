@@ -1479,6 +1479,19 @@ export const paymentGatewayAccounts = pgTable('payment_gateway_accounts', {
   updatedAt: updatedAt(),
 });
 
+/** An institution's own AI connection (Claude key pasted in the Zynetix dashboard); the key is encrypted like payment secrets. */
+export const aiConnections = pgTable('ai_connections', {
+  tenantId: tenantId().primaryKey(),
+  provider: text('provider').notNull().default('anthropic'),
+  apiKeyEnc: text('api_key_enc').notNull(),
+  apiKeyLast4: text('api_key_last4').notNull(),
+  model: text('model').notNull().default('claude-sonnet-5-5'),
+  fallbackModel: text('fallback_model').default('claude-haiku-5-5'),
+  updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
 // ---------------------------------------------------------------------------------------------
 // Library circulation
 // ---------------------------------------------------------------------------------------------
@@ -3128,6 +3141,7 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'ai_connections',
   'chat_threads',
   'chat_members',
   'chat_messages',

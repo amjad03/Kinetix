@@ -9,6 +9,8 @@ import { InsightsController } from './insights.controller.js';
 import { PastExamsController } from './past-exams.js';
 import { AsrGateway, NoSpeechToText, OpenAiCompatibleAsr, SarvamAsr, SpeechToText } from './asr.js';
 import { AiService, describeProvider, LLM_PROVIDER, providerFromEnv } from './ai.service.js';
+import { AiConnectionController } from './ai-connection.controller.js';
+import { AiConnections } from './ai-connection.service.js';
 import { CircuitBreaker } from './providers.js';
 import { AiGate } from './gate.js';
 
@@ -31,6 +33,7 @@ export function speechToTextFromEnv(env: Env, db: DbService): SpeechToText {
   imports: [ContentModule],
   providers: [
     AiService,
+    AiConnections,
     {
       provide: LLM_PROVIDER,
       inject: [ENV],
@@ -43,7 +46,7 @@ export function speechToTextFromEnv(env: Env, db: DbService): SpeechToText {
     { provide: SpeechToText, inject: [ENV, DbService], useFactory: speechToTextFromEnv },
     { provide: AiGate, inject: [ENV], useFactory: (env: Env) => new AiGate(env.AI_MAX_CONCURRENT, env.AI_QUEUE_WAIT_MS) },
   ],
-  controllers: [AiController, PastExamsController, InsightsController, TutorController, AiAdminController],
+  controllers: [AiConnectionController, AiController, PastExamsController, InsightsController, TutorController, AiAdminController],
   exports: [AiService, SpeechToText, AiGate],
 })
 export class AiModule {}

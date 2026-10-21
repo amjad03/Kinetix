@@ -25,7 +25,14 @@ export async function rotateSecrets(db: NodePgDatabase<typeof s>, box: SecretBox
       .where(eq(s.paymentGatewayAccounts.tenantId, r.tenantId));
     rotated++;
   }
-  return { rows: rows.length, rotated };
+  // Institutions' own Claude keys (Zynetix dashboard, AI settings).
+  const ai = await db.select().from(s.aiConnections);
+  for (const r of ai) {
+    if (!box.isStale(r.apiKeyEnc)) continue;
+    await db.update(s.aiConnections).set({ apiKeyEnc: box.rotate(r.apiKeyEnc, `${r.tenantId}:ai.anthropic.api_key`) }).where(eq(s.aiConnections.tenantId, r.tenantId));
+    rotated++;
+  }
+  return { rows: rows.length + ai.length, rotated };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
