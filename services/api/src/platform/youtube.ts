@@ -167,6 +167,8 @@ export class YouTube {
     private readonly apiKey: string | undefined,
     private readonly fetchFn: typeof fetch = fetch,
     private readonly timeoutMs = 8000,
+    /** Where public channel pages and feeds are read from; a local fixture server in e2e tests (YOUTUBE_BASE_URL). */
+    private readonly base = 'https://www.youtube.com',
   ) {}
 
   get canListPlaylists(): boolean {
@@ -264,12 +266,12 @@ export class YouTube {
 
   private async channelIdFromPage(ref: ChannelRef): Promise<string | null> {
     const path = ref.kind === 'handle' ? ref.handle : ref.kind === 'user' ? `user/${ref.name}` : ref.kind === 'custom' ? `c/${ref.name}` : `channel/${ref.id}`;
-    const html = await this.text(`https://www.youtube.com/${encodeURI(path)}`);
+    const html = await this.text(`${this.base}/${encodeURI(path)}`);
     return html ? channelIdFromHtml(html) : null;
   }
 
   private async feed(query: string) {
-    const xml = await this.text(`https://www.youtube.com/feeds/videos.xml?${query}`);
+    const xml = await this.text(`${this.base}/feeds/videos.xml?${query}`);
     return xml ? parseVideoFeed(xml) : null;
   }
 

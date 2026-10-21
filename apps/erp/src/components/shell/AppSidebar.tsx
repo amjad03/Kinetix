@@ -49,6 +49,7 @@ export function AppSidebar({
   home,
   setup,
   userKey = '',
+  brand,
 }: {
   groups: NavGroup[];
   pathname: string;
@@ -59,6 +60,8 @@ export function AppSidebar({
   setup?: SetupSummary | null;
   /** Favourites are remembered per person on this browser. */
   userKey?: string;
+  /** The product name shown under the institution (the board edition: Zynetix); it also hides the workspace choice. */
+  brand?: string;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -117,19 +120,19 @@ export function AppSidebar({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" data-testid="workspace-switcher" aria-label={t('g1.ws.label')} className="rounded-xl border bg-card hover:bg-sidebar-accent group-data-[collapsible=icon]:border-0">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-primary text-sm font-bold text-primary-foreground">{school.trim().charAt(0).toUpperCase() || 'K'}</span>
+                  <span className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-primary text-sm font-bold text-primary-foreground">{brand ? brand.charAt(0) : school.trim().charAt(0).toUpperCase() || 'K'}</span>
                   <span className="grid min-w-0 flex-1 text-left leading-tight">
                     <b className="truncate text-[13px] text-foreground" data-testid="school-name">
                       {school}
                     </b>
-                    <span className="truncate text-xs text-muted-foreground">{workspace === 'all' ? roleText : t(`g1.ws.${workspace}` as MessageKey)}</span>
+                    <span className="truncate text-xs text-muted-foreground" data-testid={brand ? 'product-brand' : undefined}>{brand ?? (workspace === 'all' ? roleText : t(`g1.ws.${workspace}` as MessageKey))}</span>
                   </span>
                   <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width) min-w-56">
-                <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t('shell.workspace')}</DropdownMenuLabel>
-                {WORKSPACES.map((w) => (
+                <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{brand ?? t('shell.workspace')}</DropdownMenuLabel>
+                {(brand ? [] : WORKSPACES).map((w) => (
                   <DropdownMenuItem
                     key={w}
                     disabled={busy}

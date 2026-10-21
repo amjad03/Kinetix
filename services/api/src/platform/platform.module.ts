@@ -10,6 +10,6 @@ import { YouTube } from './youtube.js';
 @Module({
   controllers: [PlatformController, ContentLicensesController, PlatformTenantsController],
   exports: [YouTube],
-  providers: [PlatformAdminGuard, { provide: YouTube, inject: [ENV], useFactory: (env: Env) => new YouTube(env.YOUTUBE_API_KEY) }],
+  providers: [PlatformAdminGuard, { provide: YouTube, inject: [ENV], useFactory: (env: Env) => new YouTube(env.YOUTUBE_API_KEY, fetch, 8000, env.YOUTUBE_BASE_URL) }],
 })
 export class PlatformModule {}

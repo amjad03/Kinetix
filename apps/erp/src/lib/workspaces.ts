@@ -29,9 +29,9 @@ export const WORKSPACE_SECTIONS: Record<Exclude<Workspace, 'all'>, readonly Sect
   ],
   content: [
     ...COMMON,
-    'syllabus', 'topicVideos', 'courses', 'questionBank', 'curriculum', 'learningSupport', 'assessmentTools', 'skills', 'library', 'boards', 'devices', 'trainings', 'live',
+    'syllabus', 'topicVideos', 'courses', 'questionBank', 'curriculum', 'learningSupport', 'assessmentTools', 'skills', 'library', 'boards', 'devices', 'trainings', 'live', 'zynetix',
   ],
-  ai: [...COMMON, 'ai', 'aiAudit', 'reports', 'department', 'topicVideos'],
+  ai: [...COMMON, 'ai', 'aiAudit', 'reports', 'department', 'topicVideos', 'zynetix'],
 };
 
 /** Whether a page appears in the chosen workspace. */
