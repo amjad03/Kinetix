@@ -39,15 +39,19 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // Signed in with a temporary password: nothing else until a new one is chosen.
   if (me.data.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
   if (me.data.mustSetUpMfa) redirect('/account/security');
+  // The board edition (Zynetix only): the shell sends ERP pages to the Zynetix overview. That is
+  // decided in the browser (AppShell), not here: this layout is kept across client navigations, so
+  // a redirect thrown here would be replayed on every later page.
+  const edition = me.data.tenant.edition ?? 'full';
   // The top bar's extras are best effort: a failure hides them rather than the page.
   const roles = me.data.roles;
   const [structure, notes, caps, setupSteps] = await Promise.all([
-    canSee(roles, 'school') || canSee(roles, 'fees') || canSee(roles, 'admissions')
+    edition === 'full' && (canSee(roles, 'school') || canSee(roles, 'fees') || canSee(roles, 'admissions'))
       ? load(() => api<{ academicYears: { id: string; label: string; isCurrent: boolean }[] }>('/v1/admin/structure'))
       : Promise.resolve(null),
     load(() => api<Notifications>('/v1/notifications?limit=10')),
     load(() => api<{ disabledModules: string[]; academicModel?: string; tenantKind?: string | null }>('/v1/institution/capabilities')),
-    canSee(roles, 'institutionSetup') ? loadSetup() : Promise.resolve(null),
+    edition === 'full' && canSee(roles, 'institutionSetup') ? loadSetup() : Promise.resolve(null),
   ]);
   const years = structure?.data?.academicYears ?? [];
   const picked = (await cookies()).get(YEAR_COOKIE)?.value ?? '';
@@ -62,7 +66,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       notices={notes.data?.items ?? []}
       unread={notes.data?.unread ?? 0}
       disabledModules={[...(caps.data?.disabledModules ?? []), ...(caps.data?.tenantKind === 'school' ? COLLEGE_ONLY_SECTIONS : [])]}
-      workspace={isWorkspace(wsCookie) ? wsCookie : 'all'}
+      workspace={edition === 'full' && isWorkspace(wsCookie) ? wsCookie : 'all'}
+      edition={edition}
       sidebarOpen={(await cookies()).get('sidebar_state')?.value !== 'false'}
       setup={setupSteps ? summarize(setupSteps) : null}
       density={densityFor(caps.data?.academicModel, (await cookies()).get(DENSITY_COOKIE)?.value)}

@@ -164,6 +164,8 @@ const EnvSchema = z.object({
    * quota unit each). Without it, concept videos are added one link at a time.
    */
   YOUTUBE_API_KEY: z.string().optional(),
+  /** Local e2e only: read public channel pages and feeds from this fixture server instead of www.youtube.com. */
+  YOUTUBE_BASE_URL: z.url({ protocol: /^https?$/ }).optional(),
   /**
    * Our mirror of PhET's sims in India (infra/terraform/phet.tf), e.g. https://dxxxx.cloudfront.net/phet;
    * files are at <url>/<id>/<id>_all.html. Unset (development, demo): boards are sent to

@@ -3,6 +3,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { canSee, type Section } from './access';
 import type { RoleName } from './types';
 import { inWorkspace, type Workspace } from './workspaces';
+import type { Edition } from './zynetix';
 
 export type NavIcon =
   | 'dashboard' | 'admissions' | 'students' | 'academics' | 'timetable' | 'attendance' | 'exams' | 'obe' | 'lms' | 'finance' | 'hr' | 'library'
@@ -229,6 +230,22 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/surveys', label: 'nav.surveys', section: 'surveys', icon: 'surveys' },
     ],
   },
+  // Zynetix (the smart board on its own): the admin dashboard. In the board edition it is the whole menu.
+  {
+    id: 'zynetix',
+    label: 'grp.zynetix',
+    icon: 'boards',
+    items: [
+      { href: '/zynetix', label: 'nav.zxOverview', section: 'zynetix', icon: 'dashboard' },
+      { href: '/zynetix/library', label: 'nav.zxLibrary', section: 'zynetix', icon: 'topicVideos' },
+      { href: '/zynetix/youtube', label: 'nav.zxYoutube', section: 'zynetix', icon: 'topicVideos' },
+      { href: '/zynetix/programs', label: 'nav.zxPrograms', section: 'zynetix', icon: 'syllabus' },
+      { href: '/zynetix/teachers', label: 'nav.zxTeachers', section: 'zynetix', icon: 'students' },
+      { href: '/zynetix/boards', label: 'nav.zxBoards', section: 'zynetix', icon: 'devices' },
+      { href: '/zynetix/ai-log', label: 'nav.zxAiLog', section: 'zynetix', icon: 'ai' },
+      { href: '/platform/zynetix', label: 'nav.zxPlatform', section: 'platform', icon: 'platform' },
+    ],
+  },
   {
     id: 'settings',
     label: 'grp.settings',
@@ -258,11 +275,26 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+/**
+ * ERP pages the board edition keeps (they live in other groups in the full edition, so the
+ * Zynetix group lists them only there): the timetable, and subjects and topics.
+ */
+export const BOARD_EDITION_SHARED: NavItem[] = [
+  { href: '/timetable', label: 'nav.timetable', section: 'timetable', icon: 'timetable' },
+  { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: 'syllabus' },
+  { href: '/topic-videos', label: 'nav.topicVideos', section: 'topicVideos', icon: 'topicVideos' },
+];
+
+
 /** The groups (and the pages in them) this person may open; empty groups are dropped. */
-export function visibleGroups(roles: readonly RoleName[], platformAdmin = false, disabledModules: readonly string[] = [], workspace: Workspace = 'all'): NavGroup[] {
+export function visibleGroups(roles: readonly RoleName[], platformAdmin = false, disabledModules: readonly string[] = [], workspace: Workspace = 'all', edition: Edition = 'full'): NavGroup[] {
   // Modules the institution switched off (Settings > Institution profile) are hidden from the menu, and so are pages outside the chosen workspace.
-  const on = (i: NavItem) => !disabledModules.includes(i.section) && (i.section === 'platform' || inWorkspace(i.section, workspace));
-  return NAV_GROUPS.map((g) => ({ ...g, solo: g.items.length === 1, items: g.items.filter((i) => on(i) && (i.section === 'platform' ? platformAdmin : canSee(roles, i.section))) })).filter((g) => g.items.length > 0);
+  const board = edition === 'board';
+  const on = (i: NavItem) => !disabledModules.includes(i.section) && (board || i.section === 'platform' || inWorkspace(i.section, workspace));
+  const allowed = (i: NavItem) => on(i) && (i.section === 'platform' ? platformAdmin : canSee(roles, i.section));
+  // The board edition (Zynetix only) shows the Zynetix pages and the ERP pages it keeps, and nothing else.
+  const groups = board ? NAV_GROUPS.filter((g) => g.id === 'zynetix').map((g) => ({ ...g, items: [...g.items.slice(0, 4), ...BOARD_EDITION_SHARED, ...g.items.slice(4)] })) : NAV_GROUPS;
+  return groups.map((g) => ({ ...g, solo: g.items.length === 1, items: g.items.filter(allowed) })).filter((g) => g.items.length > 0);
 }
 
 export function isActivePath(pathname: string, href: string): boolean {
@@ -327,6 +359,7 @@ export const NAV_SECTIONS: readonly { id: string; label: MessageKey; groups: rea
   { id: 'finance', label: 'sec.finance', groups: ['finance', 'hr'] },
   { id: 'campus', label: 'sec.campus', groups: ['library', 'campus', 'inventory'] },
   { id: 'accreditation', label: 'sec.accreditation', groups: ['obe'] },
+  { id: 'zynetix', label: 'sec.zynetix', groups: ['zynetix'] },
   { id: 'admin', label: 'sec.admin', groups: ['settings'] },
 ];
 

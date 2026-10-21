@@ -61,7 +61,7 @@ describe('sidebar sections', () => {
   it('places every group in exactly one section, in the redesign order', () => {
     const all = visibleGroups(['principal'], true);
     const secs = navSections(all);
-    expect(secs.map((s) => s.id)).toEqual(['overview', 'academics', 'exams', 'finance', 'campus', 'accreditation', 'admin']);
+    expect(secs.map((s) => s.id)).toEqual(['overview', 'academics', 'exams', 'finance', 'campus', 'accreditation', 'zynetix', 'admin']);
     expect(secs.flatMap((s) => s.groups).length).toBe(all.length);
   });
 

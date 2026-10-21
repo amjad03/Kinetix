@@ -1,7 +1,7 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useMemo, type ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { SidebarInset, SidebarProvider } from '@/components/shadcn/sidebar';
 import { TooltipProvider } from '@/components/shadcn/tooltip';
 import { useI18n } from '@/i18n/client';
@@ -11,6 +11,7 @@ import { crumbsFor, visibleGroups } from '@/lib/nav';
 import { setRecordsOwner } from '@/lib/recents';
 import type { SetupSummary } from '@/lib/setup';
 import type { Workspace } from '@/lib/workspaces';
+import { editionRedirect, ZYNETIX_HOME, type Edition } from '@/lib/zynetix';
 import { AppSidebar } from './shell/AppSidebar';
 import { TopBar, type ShellNotice, type ShellYear } from './shell/TopBar';
 import { ToastProvider } from './ui/Toast';
@@ -40,6 +41,7 @@ export function AppShell({
   unread = 0,
   disabledModules = [],
   workspace = 'all',
+  edition = 'full',
   density = 'comfortable',
   sidebarOpen = true,
   setup = null,
@@ -55,6 +57,8 @@ export function AppShell({
   disabledModules?: string[];
   /** The console chosen in the sidebar header; the menu lists only its pages. */
   workspace?: Workspace;
+  /** `board`: the Zynetix edition, whose menu is the Zynetix dashboard only (branded Zynetix). */
+  edition?: Edition;
   density?: 'comfortable' | 'compact';
   /** The sidebar's remembered state (cookie), so the first paint matches. */
   sidebarOpen?: boolean;
@@ -65,9 +69,15 @@ export function AppShell({
   const { t } = useI18n();
   setRecordsOwner(user.email ?? user.fullName);
   const pathname = usePathname();
-  const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin, disabledModules, workspace), [user.roles, user.platformAdmin, disabledModules, workspace]);
+  const router = useRouter();
+  // The board edition (Zynetix only): ERP pages are not shown; they go to the Zynetix overview.
+  const away = editionRedirect(edition, pathname);
+  useEffect(() => {
+    if (away) router.replace(away);
+  }, [away, router]);
+  const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin, disabledModules, workspace, edition), [user.roles, user.platformAdmin, disabledModules, workspace, edition]);
   const crumbs = useMemo(() => crumbsFor(groups, pathname), [groups, pathname]);
-  const home = homeFor(user.roles as never);
+  const home = edition === 'board' ? ZYNETIX_HOME : homeFor(user.roles as never);
   const roleText = user.roles
     .map((r) => {
       const key = `role.${r}` as MessageKey;
@@ -84,13 +94,13 @@ export function AppShell({
           {t('shell.skip')}
         </a>
         <SidebarProvider defaultOpen={sidebarOpen} className="kx-shell">
-          <AppSidebar groups={groups} pathname={pathname} school={school} roleText={roleText} workspace={workspace} home={home} setup={setup} userKey={user.email ?? user.fullName} />
+          <AppSidebar groups={groups} pathname={pathname} school={school} roleText={roleText} workspace={workspace} home={home} setup={setup} brand={edition === 'board' ? 'Zynetix' : undefined} userKey={user.email ?? user.fullName} />
           <SidebarInset className="min-w-0 bg-background">
             <TabsProvider groups={groups} userKey={user.email ?? user.fullName}>
               <TopBar user={user} roleText={roleText} groups={groups} crumbs={crumbs} years={years} yearId={yearId} notices={notices} unread={unread} density={density} />
               <TabBar />
               <TabHost className="kx-main mx-auto w-full max-w-[1440px] min-w-0 flex-1 p-4 outline-none md:p-6" density={density}>
-                {children}
+                {away ? null : children}
               </TabHost>
             </TabsProvider>
           </SidebarInset>

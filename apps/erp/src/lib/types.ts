@@ -36,7 +36,8 @@ export interface Me {
   /** en, hi or kn: the ERP's language unless one was picked on this browser. */
   preferredLanguage?: string;
   roles: RoleName[];
-  tenant: { name: string; slug: string };
+  /** `edition`: `board` is Zynetix only (the ERP shows just the Zynetix admin dashboard); `full` is ERP + board. */
+  tenant: { name: string; slug: string; timezone?: string; edition?: 'full' | 'board' };
   /** The session's token is limited to changing the temporary password (the ERP shows nothing else). */
   mustChangePassword?: boolean;
   /** Two-step sign-in is required for this role and not set up yet: the ERP shows only /account/security. */
