@@ -58,7 +58,11 @@ class OnDeviceRenderer implements PageRenderer {
     _ => throw const FormatException('not a PDF or PowerPoint'),
   };
 
-  static Future<List<ImportedPage>> _pdf(Uint8List bytes, void Function(int, int)? onPage) async {
+  static Future<List<ImportedPage>> _pdf(Uint8List bytes, void Function(int, int)? onPage) => renderPdfPages(bytes, onPage: onPage);
+
+  /// Draws pages [first]..[last] (1-based, inclusive; clamped to the document and to
+  /// [maxImportPages]) of a PDF: a book's chapter mapped to a topic opens at its own pages.
+  static Future<List<ImportedPage>> renderPdfPages(Uint8List bytes, {int first = 1, int? last, void Function(int, int)? onPage}) async {
     await pdfrxFlutterInitialize();
     final PdfDocument doc;
     try {
@@ -67,7 +71,10 @@ class OnDeviceRenderer implements PageRenderer {
       throw const FormatException('cannot open the PDF');
     }
     try {
-      final pages = doc.pages.take(maxImportPages).toList();
+      if (doc.pages.isEmpty) return const [];
+      final from = (first - 1).clamp(0, doc.pages.length - 1);
+      final to = (last ?? doc.pages.length).clamp(from + 1, doc.pages.length);
+      final pages = doc.pages.sublist(from, to).take(maxImportPages).toList();
       final out = <ImportedPage>[];
       for (final (i, page) in pages.indexed) {
         final w = importPageWidth;

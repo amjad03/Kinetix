@@ -85,6 +85,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // The tab opens on the topic's resources; the concept videos list is the other segment.
+    await tester.tap(find.byKey(const Key('videos-mode-concept')));
+    await tester.pumpAndSettle();
 
     expect(find.text('KINETIX explainer'), findsOneWidget);
     expect(find.byKey(const Key('videoSource-v1')), findsOneWidget);

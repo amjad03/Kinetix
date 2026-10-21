@@ -53,6 +53,9 @@ dependencies:
     path: ../../packages/kinetix_labs
   kinetix_math:
     path: ../../packages/kinetix_math
+  # Topic resources (videos, PDFs/books at their pages, links, animations) in the Videos tab.
+  kinetix_resources:
+    path: ../../packages/kinetix_resources
   kinetix_ui:
     path: ../../packages/kinetix_ui
   path_provider: ^2.1.6

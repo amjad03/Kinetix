@@ -1,0 +1,23 @@
+name: kinetix_resources
+description: Topic resources (videos, PDFs, books, syllabus documents, links and built-in animations) for a syllabus topic, shared by the Board and the Teacher, Student and Parent apps. Reads GET /v1/topics/:id/resources and keeps the last list for offline use.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  kinetix_animations:
+    path: ../kinetix_animations
+  kinetix_ui:
+    path: ../kinetix_ui
+  shared_preferences: ^2.5.5
+  url_launcher: ^6.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
