@@ -28,6 +28,9 @@ case "${1:-serve}" in
   seed)
     exec node --enable-source-maps dist/db/seed.js
     ;;
+  seed-sdmcet)
+    exec node --enable-source-maps dist/db/seed-sdmcet.js
+    ;;
   content-import)
     exec node --enable-source-maps dist/content/import.js
     ;;

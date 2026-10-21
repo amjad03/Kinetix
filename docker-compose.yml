@@ -87,12 +87,24 @@ services:
       migrate: { condition: service_completed_successfully }
     restart: "no"
 
+  # SDMCET demo institution (scripts/zynetix-demo.sh): docker compose --profile seed-sdmcet run --rm seed-sdmcet
+  seed-sdmcet:
+    image: kinetix-api:${KINETIX_TAG:-local}
+    profiles: ["seed-sdmcet"]
+    command: ["seed-sdmcet"]
+    environment:
+      <<: *api-env
+      ALLOW_DEMO_SEED: "yes"
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: "no"
+
   api:
     image: kinetix-api:${KINETIX_TAG:-local}
     build: *api-build
     init: true
     environment: *api-env
-    ports: ["127.0.0.1:${API_PORT:-4000}:4000"]
+    ports: ["${BIND_ADDR:-127.0.0.1}:${API_PORT:-4000}:4000"]
     volumes:
       - objects:/app/services/api/.data/objects
       - runner-sock:/run/kx-runner
@@ -149,7 +161,7 @@ services:
       KINETIX_TIMEZONE: Asia/Kolkata
       # Plain HTTP on localhost: drop the Secure cookie flag. Never set this behind HTTPS.
       KINETIX_INSECURE_COOKIES: "1"
-    ports: ["127.0.0.1:${ERP_PORT:-3000}:3000"]
+    ports: ["${BIND_ADDR:-127.0.0.1}:${ERP_PORT:-3000}:3000"]
     depends_on:
       api: { condition: service_healthy }
     restart: unless-stopped
