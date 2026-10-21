@@ -21,6 +21,19 @@ import '../concept_videos/concept_videos.dart';
 import '../insert/document_import.dart';
 import '../insert/presentation_pane.dart';
 
+/// The topic's resources in the panel, from the period card (one tap when a class opens).
+Future<void> openTopicResources(BuildContext context, BoardController board) => showPanelDialog<void>(
+  context: context,
+  builder: (ctx) => Scaffold(
+    key: const Key('topicResourcesPanel'),
+    appBar: AppBar(
+      leading: IconButton(key: const Key('topicResourcesClose'), icon: const Icon(Icons.close), onPressed: () => Navigator.of(ctx).pop()),
+      title: Text(ResourceStrings.of(ctx).title),
+    ),
+    body: BoardTopicResources(board: board),
+  ),
+);
+
 /// `GET /v1/topics/:id/resources`, or (on a server without it yet) the topic's concept videos.
 Future<Object?> fetchTopicResources(ApiClient api, String topicId) async {
   try {

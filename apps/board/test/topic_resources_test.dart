@@ -10,6 +10,8 @@ import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/outbox_store.dart';
 import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/features/concept_videos/concept_video_player.dart';
+import 'package:kinetix_board/features/concept_videos/concept_video_suggestions.dart';
+import 'package:kinetix_board/features/concept_videos/concept_videos.dart';
 import 'package:kinetix_board/features/insert/document_import.dart';
 import 'package:kinetix_board/features/insert/presentation_pane.dart';
 import 'package:kinetix_board/features/topic_resources/board_topic_resources.dart';
@@ -165,6 +167,37 @@ void main() {
     expect(find.text('5:00 · Zynetix · Needs internet'), findsOneWidget);
     // The campus upload still plays.
     expect(find.text('Institution'), findsOneWidget);
+  });
+
+  testWidgets('the period card opens the topic\'s resources in one tap', (tester) async {
+    final b = await board();
+    tester.view.physicalSize = const Size(1920, 1080);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: KinetixTheme.light(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ConceptVideoCard(
+              videos: PeriodVideos.fromJson({
+                'period': {'slotId': 's', 'date': '2026-10-21', 'startsAt': '10:00:00', 'endsAt': '10:55:00', 'isNow': true, 'section': {'id': 'x', 'displayName': 'A'}, 'subject': {'name': 'Circuits'}},
+                'topics': [{'id': 't1', 'title': 'Kirchhoff\'s laws'}],
+                'videos': [],
+              }),
+              onSkip: () {},
+              onResources: () => openTopicResources(context, b),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('conceptVideoResources')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('topicResourcesPanel')), findsOneWidget);
+    expect(find.text('Kirchhoff explained'), findsOneWidget);
   });
 
   test('falls back to concept videos on a server without the endpoint', () async {

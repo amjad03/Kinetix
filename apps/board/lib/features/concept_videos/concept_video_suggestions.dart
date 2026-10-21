@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:kinetix_resources/kinetix_resources.dart' show ResourceStrings;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
@@ -13,6 +14,7 @@ import '../board/phone_chrome.dart';
 import 'concept_video_player.dart';
 import 'concept_videos.dart';
 import '../board/panel/panel_host.dart';
+import '../topic_resources/board_topic_resources.dart';
 
 /// When to suggest concept videos: at the start of each period (or when a teacher opens their
 /// class mid-period), unless the teacher skipped them for that period. Asks again when the
@@ -128,7 +130,7 @@ class _ConceptVideoSuggestionsState extends State<ConceptVideoSuggestions> {
             right: right,
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: size.width - right - Kx.s8 - safe.left, maxHeight: size.height - top - Kx.s8 - safe.bottom),
-              child: ConceptVideoCard(videos: _suggester.current!, onSkip: _suggester.skip),
+              child: ConceptVideoCard(videos: _suggester.current!, onSkip: _suggester.skip, onResources: () => unawaited(openTopicResources(context, widget.board))),
             ),
           );
         },
@@ -146,10 +148,13 @@ String sourceLabel(AppLocalizations l, PeriodTopicSource? s) => switch (s) {
 
 /// "Concept videos for this period": the topic, its videos (tap to play full screen) and Skip.
 class ConceptVideoCard extends StatelessWidget {
-  const ConceptVideoCard({super.key, required this.videos, required this.onSkip});
+  const ConceptVideoCard({super.key, required this.videos, required this.onSkip, this.onResources});
 
   final PeriodVideos videos;
   final VoidCallback onSkip;
+
+  /// The period topic's videos, materials and animations (features/topic_resources).
+  final VoidCallback? onResources;
 
   @override
   Widget build(BuildContext context) {
@@ -201,6 +206,13 @@ class ConceptVideoCard extends StatelessWidget {
                       style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                     ),
                   ),
+                  if (onResources != null)
+                    TextButton.icon(
+                      key: const Key('conceptVideoResources'),
+                      onPressed: onResources,
+                      icon: const Icon(Icons.topic_outlined),
+                      label: Text(ResourceStrings.of(context).title),
+                    ),
                   TextButton(key: const Key('conceptVideoSkip'), onPressed: onSkip, child: Text(l.conceptVideosSkip)),
                 ],
               ),
