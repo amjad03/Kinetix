@@ -45,18 +45,11 @@ AI_FALLBACK_MODELS=${AI_FALLBACK_MODELS:-claude-haiku-5-5}
 AI_VISION=true
 EOT
   echo "== AI: Claude (${AI_MODEL:-claude-sonnet-5-5}) via .env.ai"
+elif [ -f .env.ai ] && ! grep -q 'PASTE_YOUR_ANTHROPIC_KEY_HERE' .env.ai; then
+  echo "== AI: Claude, from .env.ai"
 else
-  # No key given: open the settings file for the presenter to paste it (TextEdit on a Mac).
-  [ -f .env.ai ] || { cp .env.ai.example .env.ai; chmod 600 .env.ai; }
-  if grep -q 'PASTE_YOUR_ANTHROPIC_KEY_HERE' .env.ai; then
-    echo "== AI: paste your Anthropic key into .env.ai (opening it now), save, then press Enter."
-    (open -e .env.ai 2>/dev/null || "${EDITOR:-nano}" .env.ai) || true
-    read -r -p "   Press Enter when saved (or just Enter to run without AI)... " _ || true
-  fi
-  if grep -q 'PASTE_YOUR_ANTHROPIC_KEY_HERE' .env.ai; then
-    echo "== AI: no key pasted, AI features show previews (run this again to add it)"
-    rm -f .env.ai
-  else echo "== AI: Claude, from .env.ai"; fi
+  rm -f .env.ai
+  echo "== AI: add your Claude key in the dashboard: Zynetix > Claude AI (after sign-in as admin)"
 fi
 
 # Reachable from boards/phones on the Wi-Fi, not only localhost.
