@@ -252,6 +252,19 @@ void main() {
       expect(find.byKey(const Key('topicTitle')), findsOneWidget);
     });
 
+    testWidgets("a topic's resources: the same videos, materials and animations as in class", (tester) async {
+      final (api, _) = await pumpApp(tester);
+      await openSyllabus(tester);
+      await tester.tap(find.byKey(const Key('subjectTile-sub1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('topicResources-t1')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('topicResources t1'));
+      expect(find.text('Concept explainer'), findsOneWidget);
+      expect(find.text('Course textbook'), findsOneWidget);
+      expect(find.text('Cell division (mitosis)'), findsOneWidget);
+    });
+
     testWidgets('a subject not linked to the library says so', (tester) async {
       await pumpApp(tester);
       await openSyllabus(tester);

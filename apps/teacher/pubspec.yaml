@@ -16,6 +16,9 @@ dependencies:
     path: ../../packages/kinetix_cast
   kinetix_ui:
     path: ../../packages/kinetix_ui
+  # Topic resources (videos, materials, animations per syllabus topic), shared with the Board.
+  kinetix_resources:
+    path: ../../packages/kinetix_resources
   kinetix_lesson:
     path: ../../packages/kinetix_lesson
   # Printable answer cards (the board reads them from a photo of the class).

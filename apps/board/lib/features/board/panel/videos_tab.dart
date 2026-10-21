@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:kinetix_resources/kinetix_resources.dart' show ResourceStrings;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../../core/board_controller.dart';
@@ -7,12 +8,15 @@ import '../../../l10n/l10n.dart';
 import '../../concept_videos/concept_video_suggestions.dart';
 import '../../concept_videos/concept_videos.dart';
 import '../../search/filter_bar.dart';
+import '../../topic_resources/board_topic_resources.dart';
 import '../../search/fuzzy.dart';
 import '../../search/search_strings.dart';
 import '../layout/layout_strings.dart';
 
-/// The split panel's Videos tab: the period's concept videos, with Topic and Language
-/// dropdowns and a search. A video plays in the panel; "Add to board" puts a note of it on the
+/// The split panel's Videos tab. It opens on the period topic's resources (videos, PDFs and
+/// books at their pages, links and animations; features/topic_resources), with any other topic
+/// of the subject a pick away; "Concept videos" is the period's concept videos, with Topic and
+/// Language dropdowns and a search. A video plays in the panel; "Add to board" puts a note of it on the
 /// page (its title and link), so the class can find it again.
 class ConceptVideosTab extends StatefulWidget {
   const ConceptVideosTab({super.key, required this.board, required this.onAddNote});
@@ -25,6 +29,9 @@ class ConceptVideosTab extends StatefulWidget {
 }
 
 class _ConceptVideosTabState extends State<ConceptVideosTab> {
+  /// Topic resources (true) or the concept videos list.
+  bool _resources = true;
+
   Future<PeriodVideos>? _load;
   String _q = '';
   String? _topic, _language;
@@ -33,6 +40,8 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
   void initState() {
     super.initState();
     _load = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson);
+    // The tab opens on Topic resources: until the list is shown, a failure is nobody's error.
+    _load?.ignore();
   }
 
   void _reload() {
@@ -62,6 +71,29 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.board.api == null) return _videos(context);
+    final rs = ResourceStrings.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, 0),
+          child: SegmentedButton<bool>(
+            key: const Key('videos-mode'),
+            segments: [
+              ButtonSegment(value: true, icon: const Icon(Icons.topic_outlined), label: Text(rs.title, key: const Key('videos-mode-resources'))),
+              ButtonSegment(value: false, icon: const Icon(Icons.smart_display_outlined), label: Text(context.l10n.toolConceptVideos, key: const Key('videos-mode-concept'))),
+            ],
+            selected: {_resources},
+            onSelectionChanged: (v) => setState(() => _resources = v.first),
+          ),
+        ),
+        Expanded(child: _resources ? BoardTopicResources(key: const Key('board-topic-resources'), board: widget.board) : _videos(context)),
+      ],
+    );
+  }
+
+  Widget _videos(BuildContext context) {
     final l = context.l10n;
     final s = LayoutStrings.of(context);
     final search = SearchStrings.of(context);

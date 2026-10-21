@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import 'app_info.dart';
+import 'fleet/system_stats.dart' show AiUsageMeter;
 import 'models.dart';
 import 'offline_codes.dart';
 import 'recording/recordings.dart' show RecordingSummary;
@@ -207,6 +208,24 @@ class ApiClient {
     return (sessionToken: j['sessionToken'] as String, session: SessionContext.fromJson(j['session'] as Map<String, dynamic>));
   }
 
+  /// Signs a teacher in on this board with their email (or phone) and password, for boards
+  /// where no phone is at hand (a demo, a new teacher): the teacher's own sign-in
+  /// (`POST /v1/auth/login`) claims a fresh pairing code of this board, exactly as the Teacher
+  /// app would, and the board picks up the session it opened. The teacher's token is only held
+  /// for these calls. Throws [ApiException] (code `MFA_REQUIRED` for a two-factor account).
+  Future<({String sessionToken, SessionContext session})> signInWithPassword({required String tenant, required String login, required String password}) async {
+    final auth = await _send('POST', '/v1/auth/login', body: {'tenant': tenant.trim(), 'login': login.trim(), 'password': password}, auth: false) as Map<String, dynamic>;
+    if (auth['mfaRequired'] == true || auth['accessToken'] is! String) {
+      throw ApiException(403, 'This account uses two-factor sign-in: use the Teacher app to sign in on the board.', code: 'MFA_REQUIRED');
+    }
+    final code = await newPairingCode();
+    final claimed = await _send('POST', '/v1/pairing/claim', body: {'code': code.code}, bearer: auth['accessToken'] as String) as Map<String, dynamic>?;
+    final pending = await pendingPairing();
+    if (pending != null) return pending;
+    // A server that does not keep pending sessions: the claim's own context, token still to come.
+    throw ApiException(502, 'Signed in, but the board did not get the class yet. Try again.', body: claimed ?? const {});
+  }
+
   /// Polling fallback for the realtime `pairing.claimed` push: the session a teacher just opened
   /// on this board by claiming its code, or null when none.
   Future<({String sessionToken, SessionContext session})?> pendingPairing() async {
@@ -371,6 +390,28 @@ class ApiClient {
   Future<Map<String, dynamic>> addConceptVideo(String topicId, String url, {required String sectionId}) async =>
       await _send('POST', '/v1/content/topics/$topicId/videos', body: {'url': url, 'scope': 'teacher', if (sectionId.isNotEmpty) 'sectionIds': [sectionId]}) as Map<String, dynamic>;
 
+  /// A topic's videos, materials and animations (docs/zynetix/API.md); parsed by
+  /// packages/kinetix_resources, which tolerates missing fields.
+  Future<Object?> topicResources(String topicId) => _send('GET', '/v1/topics/${Uri.encodeComponent(topicId)}/resources');
+
+  /// The syllabus of the class open on the board (chapters and their topics), or null when its
+  /// subject is not linked to a course.
+  Future<Object?> syllabusNow() => _send('GET', '/v1/content/syllabus');
+
+  /// Downloads a file the server (or the web) serves: relative paths are on this server.
+  Future<Uint8List> download(String url) async {
+    final uri = Uri.parse(url.startsWith('/') ? '$baseUrl$url' : url);
+    final req = http.Request('GET', uri);
+    // Only our own server gets the token.
+    if (uri.toString().startsWith(baseUrl)) {
+      final token = sessionToken ?? deviceToken;
+      if (token != null) req.headers['authorization'] = 'Bearer $token';
+    }
+    final res = await http.Response.fromStream(await _http.send(req));
+    if (res.statusCode >= 400) throw ApiException(res.statusCode, 'Download failed (${res.statusCode})');
+    return res.bodyBytes;
+  }
+
   Future<Map<String, dynamic>> topicConceptVideos(String topicId) async => await _send('GET', '/v1/content/topics/$topicId/videos') as Map<String, dynamic>;
 
   Future<TopicDetail> topic(String id) async => TopicDetail.fromJson(await _send('GET', '/v1/content/topics/$id') as Map<String, dynamic>);
@@ -415,7 +456,10 @@ class ApiClient {
       _ai('read-board', {'image': pngBase64, 'language': language.name}, BoardReading.fromJson);
 
   Future<AiResult<T>> _ai<T>(String task, Map<String, dynamic> body, T Function(Map<String, dynamic>) parse) async {
+    final started = DateTime.now();
     final j = await _send('POST', '/v1/ai/$task', body: body) as Map<String, dynamic>;
+    // For the board's health report (aiInferences, aiMs).
+    AiUsageMeter.instance.record(DateTime.now().difference(started));
     return AiResult(parse(j['result'] as Map<String, dynamic>), AiMeta.fromJson(j['meta'] as Map<String, dynamic>));
   }
 
@@ -499,8 +543,8 @@ class ApiClient {
     await _send(method, path, body: body);
   }
 
-  Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false}) async {
-    final token = useDeviceToken ? deviceToken : (sessionToken ?? deviceToken);
+  Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false, String? bearer}) async {
+    final token = bearer ?? (useDeviceToken ? deviceToken : (sessionToken ?? deviceToken));
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
       ..headers['content-type'] = 'application/json'
       ..headers['accept'] = 'application/json';

@@ -1,9 +1,29 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/board_controller.dart';
 import '../../core/server_config.dart';
 import '../../l10n/l10n.dart';
+
+const _lastServerKey = 'board.lastServerUrl';
+
+/// The server this board last registered with (kept across Set up again), or null.
+Future<String?> lastServerUrl() async {
+  try {
+    return (await SharedPreferences.getInstance()).getString(_lastServerKey);
+  } catch (_) {
+    return null;
+  }
+}
+
+Future<void> rememberServerUrl(String url) async {
+  try {
+    await (await SharedPreferences.getInstance()).setString(_lastServerKey, url.trim().replaceAll(RegExp(r'/+$'), ''));
+  } catch (_) {}
+}
 
 /// First run: an admin registers this board with the enrolment code from KINETIX ERP.
 class EnrollScreen extends StatefulWidget {
@@ -21,6 +41,24 @@ class _EnrollScreenState extends State<EnrollScreen> {
   String? _error;
   bool _busy = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // A build without a baked-in address offers the server this board last used.
+    if (_server.text.isEmpty) {
+      unawaited(lastServerUrl().then((v) {
+        if (v != null && mounted && _server.text.isEmpty) setState(() => _server.text = v);
+      }));
+    }
+  }
+
+  @override
+  void dispose() {
+    _server.dispose();
+    _code.dispose();
+    super.dispose();
+  }
+
   Future<void> _submit() async {
     setState(() {
       _busy = true;
@@ -28,6 +66,7 @@ class _EnrollScreenState extends State<EnrollScreen> {
     });
     try {
       await widget.controller.enroll(_server.text, _code.text);
+      unawaited(rememberServerUrl(_server.text));
     } catch (e) {
       setState(() => _error = '$e');
     } finally {
@@ -90,6 +129,8 @@ class _EnrollScreenState extends State<EnrollScreen> {
                       autocorrect: false,
                       decoration: InputDecoration(
                         labelText: l.enrollServer,
+                        // The demo server prints its address (scripts/zynetix-demo.sh).
+                        hintText: 'http://192.168.1.20:4000',
                         prefixIcon: const Icon(Icons.dns_outlined),
                         errorText: isValidServerUrl(_server.text) ? null : l.invalidServer,
                       ),

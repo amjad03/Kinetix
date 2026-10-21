@@ -147,6 +147,10 @@ abstract class StudentApi {
   /// The subject's syllabus, or null when the subject is not linked to a library course yet.
   Future<CourseOutline?> syllabus(String subjectId);
 
+  /// A topic's videos, materials and animations (`GET /v1/topics/:id/resources`, docs/zynetix/API.md),
+  /// as the server sent it; packages/kinetix_resources reads it.
+  Future<Object?> topicResources(String topicId);
+
   Future<FeeAccount> fees(String studentId);
   Future<FeeReceipt> receipt(String paymentId);
 
@@ -673,6 +677,9 @@ class HttpStudentApi implements StudentApi {
     final j = await _send('GET', '/v1/content/syllabus?subjectId=$subjectId');
     return j == null ? null : CourseOutline.fromJson(j as Map<String, dynamic>);
   }
+
+  @override
+  Future<Object?> topicResources(String topicId) async => await _send('GET', '/v1/topics/${Uri.encodeComponent(topicId)}/resources');
 
   @override
   Future<FeeAccount> fees(String studentId) async => FeeAccount.fromJson(await _send('GET', '/v1/fees/students/$studentId'));

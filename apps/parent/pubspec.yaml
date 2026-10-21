@@ -13,6 +13,9 @@ dependencies:
     sdk: flutter
   kinetix_ui:
     path: ../../packages/kinetix_ui
+  # Topic resources (videos, materials, animations per syllabus topic), shared with the Board.
+  kinetix_resources:
+    path: ../../packages/kinetix_resources
   kinetix_ink:
     path: ../../packages/kinetix_ink
   kinetix_lesson:

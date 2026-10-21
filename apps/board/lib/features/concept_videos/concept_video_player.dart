@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert' show HtmlEscape, HtmlEscapeMode;
 import 'dart:io' show Directory, File, Platform;
 
 import 'package:flutter/foundation.dart';
@@ -44,18 +45,34 @@ function onYouTubeIframeAPIReady() {
 </script></body></html>''';
 }
 
+/// A video file (an upload on the institution's server, or any .mp4/.webm address) in the
+/// WebView's own player. Only an http(s) address is accepted.
+String fileVideoHtml(String url) {
+  final uri = Uri.tryParse(url);
+  if (uri == null || !(uri.isScheme('http') || uri.isScheme('https'))) throw ArgumentError.value(url, 'url');
+  final src = const HtmlEscape(HtmlEscapeMode.attribute).convert(uri.toString());
+  return '''<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}video{position:fixed;inset:0;width:100%;height:100%}</style>
+</head><body><video src="$src" controls autoplay playsinline></video></body></html>''';
+}
+
 /// A concept video, in the split panel. Close returns to the board.
 class ConceptVideoPlayer extends StatelessWidget {
-  const ConceptVideoPlayer({super.key, required this.video});
+  const ConceptVideoPlayer({super.key, required this.video, this.fileUrl});
 
   final ConceptVideo video;
+
+  /// Plays this video file instead of [video]'s YouTube id (topic resources: uploads).
+  final String? fileUrl;
 
   /// Tests replace the WebView (there is no platform view in widget tests).
   @visibleForTesting
   static Widget Function(ConceptVideo video)? surfaceOverride;
 
   /// Plays [video] in the board's split panel.
-  static Future<void> open(BuildContext context, ConceptVideo video) => showPanelDialog<void>(context: context, builder: (_) => ConceptVideoPlayer(video: video));
+  static Future<void> open(BuildContext context, ConceptVideo video, {String? fileUrl}) =>
+      showPanelDialog<void>(context: context, builder: (_) => ConceptVideoPlayer(video: video, fileUrl: fileUrl));
 
   @override
   Widget build(BuildContext context) {
@@ -99,8 +116,12 @@ class ConceptVideoPlayer extends StatelessWidget {
   Widget _surface(BuildContext context) {
     final override = surfaceOverride;
     if (override != null) return override(video);
-    final html = playerHtml(video.youtubeVideoId, language: video.language);
-    if (!kIsWeb && (Platform.isAndroid || Platform.isMacOS)) return _AndroidPlayer(html: html);
+    final file = fileUrl;
+    final html = file != null ? fileVideoHtml(file) : playerHtml(video.youtubeVideoId, language: video.language);
+    // A file on the campus server (often plain http) loads from its own origin: an https page
+    // may not play http media.
+    final origin = file == null ? null : Uri.parse(file).origin;
+    if (!kIsWeb && (Platform.isAndroid || Platform.isMacOS)) return _AndroidPlayer(html: html, origin: origin);
     if (!kIsWeb && Platform.isWindows) return _WindowsPlayer(html: html);
     return _Unsupported();
   }
@@ -123,13 +144,16 @@ class _Unsupported extends StatelessWidget {
 
 /// Only the player page may load in the main frame: the YouTube logo and "Watch on YouTube"
 /// would otherwise leave the board (and kiosk mode) for youtube.com.
-bool playerMayNavigate(String url, {required bool mainFrame}) =>
-    !mainFrame || url.startsWith(playerOrigin) || url == 'about:blank';
+bool playerMayNavigate(String url, {required bool mainFrame, String? origin}) =>
+    !mainFrame || url.startsWith(playerOrigin) || url == 'about:blank' || (origin != null && (url == origin || url.startsWith('$origin/')));
 
 /// Android panels (and macOS, through WKWebView): the system WebView.
 class _AndroidPlayer extends StatefulWidget {
-  const _AndroidPlayer({required this.html});
+  const _AndroidPlayer({required this.html, this.origin});
   final String html;
+
+  /// The page's origin when it is not [playerOrigin] (a video file on the campus server).
+  final String? origin;
 
   @override
   State<_AndroidPlayer> createState() => _AndroidPlayerState();
@@ -152,11 +176,11 @@ class _AndroidPlayerState extends State<_AndroidPlayer> {
     unawaited(
       _controller.setNavigationDelegate(
         NavigationDelegate(
-          onNavigationRequest: (r) => playerMayNavigate(r.url, mainFrame: r.isMainFrame) ? NavigationDecision.navigate : NavigationDecision.prevent,
+          onNavigationRequest: (r) => playerMayNavigate(r.url, mainFrame: r.isMainFrame, origin: widget.origin) ? NavigationDecision.navigate : NavigationDecision.prevent,
         ),
       ),
     );
-    unawaited(_controller.loadHtmlString(widget.html, baseUrl: '$playerOrigin/'));
+    unawaited(_controller.loadHtmlString(widget.html, baseUrl: '${widget.origin ?? playerOrigin}/'));
   }
 
   @override

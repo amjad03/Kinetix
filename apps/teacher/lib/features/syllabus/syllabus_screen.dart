@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:kinetix_resources/kinetix_resources.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
@@ -204,6 +205,13 @@ class _SyllabusScreenState extends State<SyllabusScreen> {
                             onToggle: () => _set(t.id, taught: !cov.topics.containsKey(t.id)),
                             onPickDate: () => _pickDate(t),
                             onVideos: () => TopicVideosSheet.show(context, api: widget.api, topic: t, section: widget.section),
+                            onResources: () => TopicResourcesScreen.open(
+                              context,
+                              repository: TopicResourcesRepository(fetch: widget.api.topicResources),
+                              topic: ResourceTopic(id: t.id, title: t.title, chapter: ch.title),
+                              topics: [for (final c in s.chapters) for (final x in c.topics) ResourceTopic(id: x.id, title: x.title, chapter: c.title)],
+                              subjectName: widget.subject.name,
+                            ),
                           ),
                       ],
                     ),
@@ -296,7 +304,7 @@ class _ChapterHeader extends StatelessWidget {
 }
 
 class _TopicTile extends StatelessWidget {
-  const _TopicTile({required this.topic, required this.taught, required this.saving, required this.onToggle, required this.onPickDate, required this.onVideos});
+  const _TopicTile({required this.topic, required this.taught, required this.saving, required this.onToggle, required this.onPickDate, required this.onVideos, required this.onResources});
 
   final SyllabusTopic topic;
   final TopicCoverage? taught;
@@ -304,6 +312,9 @@ class _TopicTile extends StatelessWidget {
   final VoidCallback onToggle;
   final VoidCallback onPickDate;
   final VoidCallback onVideos;
+
+  /// Topic resources: the videos, materials and animations mapped to the topic.
+  final VoidCallback onResources;
 
   @override
   Widget build(BuildContext context) {
@@ -326,8 +337,9 @@ class _TopicTile extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(key: Key('topicVideos-${topic.id}'), tooltip: l.topicVideosTooltip, onPressed: onVideos, icon: const Icon(Icons.video_library_outlined)),
-          IconButton(key: Key('pickDate-${topic.id}'), tooltip: l.taughtOnWhichDay, onPressed: saving ? null : onPickDate, icon: const Icon(Icons.edit_calendar_outlined)),
+          IconButton(visualDensity: VisualDensity.compact, key: Key('topicResources-${topic.id}'), tooltip: ResourceStrings.of(context).title, onPressed: onResources, icon: const Icon(Icons.topic_outlined)),
+          IconButton(visualDensity: VisualDensity.compact, key: Key('topicVideos-${topic.id}'), tooltip: l.topicVideosTooltip, onPressed: onVideos, icon: const Icon(Icons.video_library_outlined)),
+          IconButton(visualDensity: VisualDensity.compact, key: Key('pickDate-${topic.id}'), tooltip: l.taughtOnWhichDay, onPressed: saving ? null : onPickDate, icon: const Icon(Icons.edit_calendar_outlined)),
         ],
       ),
     );

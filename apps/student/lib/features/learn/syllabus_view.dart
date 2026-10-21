@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:kinetix_resources/kinetix_resources.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
@@ -410,7 +411,24 @@ class _SubjectScreenState extends State<SubjectScreen> {
                                 : Icon(Icons.radio_button_unchecked, color: c.outlineVariant),
                             title: Text(t.title),
                             subtitle: _topicSubtitle(context, t, cov?.topics[t.id]),
-                            trailing: const Icon(Icons.chevron_right),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  key: Key('topicResources-${t.id}'),
+                                  tooltip: ResourceStrings.of(context).title,
+                                  icon: const Icon(Icons.topic_outlined),
+                                  onPressed: () => TopicResourcesScreen.open(
+                                    context,
+                                    repository: TopicResourcesRepository(fetch: widget.api.topicResources),
+                                    topic: ResourceTopic(id: t.id, title: t.title, chapter: ch.title),
+                                    topics: [for (final c in o.chapters) for (final x in c.topics) ResourceTopic(id: x.id, title: x.title, chapter: c.title)],
+                                    subjectName: widget.subject.name,
+                                  ),
+                                ),
+                                const Icon(Icons.chevron_right),
+                              ],
+                            ),
                             onTap: () => TopicScreen.open(context, widget.api, t.id, controller: widget.ask),
                           ),
                         const SizedBox(height: Kx.s8),
