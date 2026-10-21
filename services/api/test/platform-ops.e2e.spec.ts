@@ -272,7 +272,7 @@ describe('audit viewer, custom reports, connectors and alumni giving', () => {
       await post('accountant', `/v1/analytics/custom-reports/${reportId}/schedule`, { frequency: 'weekly', recipients: [teacherEmail] }).expect(400);
       const sched = (await post('accountant', `/v1/analytics/custom-reports/${reportId}/schedule`, { frequency: 'weekly', recipients: [principalEmail] }).expect(201)).body;
       expect(sched.reportKey).toBe(`custom.${reportId}`);
-      await owner.query("update report_schedules set next_run_at = now() - interval '1 minute' where id = $1", [sched.id]);
+      await owner.query('update report_schedules set next_run_at = $2 where id = $1', [sched.id, new Date(clock.now().getTime() - 60_000)]);
       expect(await app.get(ReportsService).runDue()).toBeGreaterThanOrEqual(1);
       const run = (await owner.query('select status, row_count from report_runs where schedule_id = $1', [sched.id])).rows[0];
       expect(run).toEqual({ status: 'ok', row_count: 2 });

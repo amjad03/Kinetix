@@ -11,6 +11,7 @@ const controllers = files.filter((f) => f.endsWith('.controller.ts'));
 
 /** Modules whose writes are not business records, so they leave no audit entry. */
 const NO_AUDIT: Record<string, string> = {
+  chat: 'Private staff conversations; each message is itself the stored record, with its sender and time.',
   code: 'Runs a snippet in a sandbox and returns its output; nothing is stored.',
   notifications: 'Marks a person\'s own notifications read; the notifications themselves are logged where they are sent.',
   push: 'Registers and removes a phone\'s push token for the signed-in person.',

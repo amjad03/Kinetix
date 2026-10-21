@@ -97,7 +97,7 @@ export class DisciplineController {
       if (needsPrincipal(b.action) && !hasRole(p, ['principal'])) throw new ForbiddenException('Only the principal can suspend or expel');
       if (['closed', 'appealed'].includes(cur.status)) throw new ConflictException(`A ${cur.status} incident cannot take a new action`);
       if (b.action === 'expulsion' && cur.severity !== 'severe') throw new ConflictException('Expulsion is only for severe incidents');
-      const [row] = await tx.insert(disciplineActions).values({ tenantId: p.tenantId, incidentId: id, decidedBy: p.userId, ...b }).returning();
+      const [row] = await tx.insert(disciplineActions).values({ tenantId: p.tenantId, incidentId: id, decidedBy: p.userId, ...b, createdAt: this.svc.now() }).returning();
       await tx.update(disciplineIncidents).set({ status: 'action_taken', version: cur.version + 1 }).where(eq(disciplineIncidents.id, id));
       await auditUser(tx, p, 'discipline.action_recorded', 'incident', id, { action: b.action, actionId: row.id });
       await this.svc.notify(tx, await this.svc.family(tx, cur.studentId), 'grievance', 'A disciplinary decision was recorded', `You can read it and appeal within 15 days.`, `discipline:action:${row.id}`, { studentId: cur.studentId });

@@ -3122,7 +3122,9 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
-  'module_settings',
+  'chat_threads',
+  'chat_members',
+  'chat_messages',
   'library_stock_checks',
   'library_stock_check_items',
   'hr_settings',

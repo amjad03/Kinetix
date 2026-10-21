@@ -73,7 +73,7 @@ describe('exam office: session workflow, approvals, records, reports and setting
     expect((await session()).status.key).toBe('registration');
     await act('controller', 'session', ids.session, 'complete').expect(409);
     await db.insert(s.examRegistrationWindows).values({ tenantId: t.tenantId, sessionId: ids.session, opensOn: '2026-10-01', closesOn: '2026-10-20', createdBy: t.principal.id });
-    await db.insert(s.examRegistrations).values(t.students.map((st, i) => ({ tenantId: t.tenantId, sessionId: ids.session, studentId: st.id, status: (i === 2 ? 'ineligible' : 'registered') as 'registered' | 'ineligible', reasons: i === 2 ? ['Attendance 61% is below 75%'] : [] })));
+    await db.insert(s.examRegistrations).values(t.students.map((st, i) => ({ tenantId: t.tenantId, sessionId: ids.session, studentId: st.id, registeredAt: new Date('2026-10-15T05:00:00Z'), status: (i === 2 ? 'ineligible' : 'registered') as 'registered' | 'ineligible', reasons: i === 2 ? ['Attendance 61% is below 75%'] : [] })));
     await act('controller', 'session', ids.session, 'complete').expect(200);
 
     // Exam fees: raised from the settings (minimum ₹500 for one paper), paid or waived per candidate.

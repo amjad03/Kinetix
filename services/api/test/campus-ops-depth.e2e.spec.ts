@@ -88,7 +88,7 @@ describe('campus operations depth: module settings, record views, reports, libra
     await post(`/v1/hostel/blocks/${blk.id}/rooms`, { number: '101', beds: 2 }).expect(201);
     const beds = (await http().get('/v1/hostel/beds?free=true').set(as('principal')).expect(200)).body;
     await post('/v1/hostel/allotments', { studentId: s.id, bedId: beds[0].bedId }).expect(201);
-    const back = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
+    const back = (days: number) => new Date(Date.parse('2026-10-12T05:00:00Z') + days * 86_400_000).toISOString();
     await post('/v1/hostel/gate-passes', { studentId: s.id, reason: 'Home', expectedBackAt: back(9) }).expect(400);
     expect((await post('/v1/hostel/gate-passes/requests', { studentId: s.id, reason: 'Home', expectedBackAt: back(2) }, 'student').expect(201)).body.status).toBe('requested');
     await put('hostel', { rules: { outpassNeedsApproval: false, maxLeaveDays: 10 } });
