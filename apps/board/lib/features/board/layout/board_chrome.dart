@@ -352,7 +352,7 @@ class _ClassBarState extends State<ClassBar> {
                   gap,
                   GoLiveChip(board: board),
                   gap,
-                  ActionChip(
+                  if (!board.boardEdition) ActionChip(
                     key: const Key('attendance-chip'),
                     avatar: const Icon(Icons.groups_outlined, size: 18),
                     label: Text(

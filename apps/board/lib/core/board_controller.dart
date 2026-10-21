@@ -434,6 +434,7 @@ class BoardController extends ChangeNotifier {
         final info = await _store.setting('boardInfo');
         if (info != null) institutionBoardInfo = (jsonDecode(info) as Map).cast<String, dynamic>();
       } catch (_) {}
+      _edition = await _store.setting('edition') == 'board' ? 'board' : 'full';
       toolbarPanel = _ids(await _store.setting('toolbarPanel'));
       toolbarPhone = _ids(await _store.setting('toolbarPhone'));
       palmRejection = await _store.setting('palmRejection') != 'false';
@@ -513,6 +514,25 @@ class BoardController extends ChangeNotifier {
 
   /// The institution's training link and What's New items (board config).
   Map<String, dynamic> institutionBoardInfo = const {};
+
+  String _edition = 'full';
+
+  /// The institution's edition (docs/zynetix/PLAN.md): `full` (ERP + board) or `board`
+  /// (Zynetix only), from the teacher's session or the board config, kept for offline.
+  String get edition => session?.edition ?? _edition;
+
+  /// A Zynetix-only institution: the board hides what only the ERP does (attendance, exam rooms).
+  bool get boardEdition => edition == 'board';
+
+  /// The board config's `edition` (also kept for the next start).
+  @visibleForTesting
+  void setEdition(String? value) {
+    if (value != 'full' && value != 'board') return;
+    if (value == _edition) return;
+    _edition = value!;
+    unawaited(_store.setSetting('edition', value).catchError((Object _) {}));
+    notifyListeners();
+  }
 
   /// Smartboard preferences (toolbar sides, branding, stylus tips, Text AI font): one JSON
   /// teacher setting, so each teacher keeps their own.
@@ -982,6 +1002,7 @@ class BoardController extends ChangeNotifier {
     try {
       final config = await api.boardConfig();
       if (config['locked'] is bool) unawaited(setDeviceLocked(config['locked'] as bool));
+      setEdition(config['edition'] as String? ?? (config['institution'] as Map?)?['edition'] as String?);
       final kioskConfig = config['kiosk'];
       if (kioskConfig is Map<String, dynamic>) await kiosk.applyPolicy(KioskPolicy.fromConfig(kioskConfig));
       // Profile → Schedule a Training and What's New; kept for offline.

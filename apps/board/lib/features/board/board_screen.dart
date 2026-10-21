@@ -522,6 +522,8 @@ class _BoardScreenState extends State<BoardScreen> {
       case VoiceAction.pickStudent:
         kit.pickStudent();
       case VoiceAction.attendance:
+        // Attendance is an ERP module: not on a board-edition board.
+        if (board.boardEdition) return false;
         WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? _attendance() : null);
       case VoiceAction.undo:
         if (!_wb.canUndo) return false;
@@ -1645,7 +1647,8 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('badges', Icons.emoji_events_outlined, s.badges, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.badges))),
       DrawerTool('quick-quiz', Icons.quiz_outlined, s.quickQuiz, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.quiz))),
       DrawerTool('ask-class', Icons.how_to_vote_outlined, l.toolAskClass, [ToolGroup.classroom], cls, _run(() => unawaited(_classCheck.ask(context)))),
-      DrawerTool('attendance', Icons.how_to_reg_outlined, l.toolAttendance, [ToolGroup.classroom], cls, _run(_attendance)),
+      // Attendance is an ERP module: not on a Zynetix-only (board edition) board.
+      if (!board.boardEdition) DrawerTool('attendance', Icons.how_to_reg_outlined, l.toolAttendance, [ToolGroup.classroom], cls, _run(_attendance)),
       DrawerTool('todays-plan', Icons.event_note_outlined, l.toolTodaysPlan, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.plan))),
       DrawerTool('concept-videos', Icons.smart_display_outlined, l.toolConceptVideos, [ToolGroup.classroom, ToolGroup.science], cls, _run(() => _show(PanelKind.videos))),
       // The offline dictionary (language kit), not the kit's word wall of picture words.
@@ -2713,7 +2716,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final signedIn = board.session != null;
     return [
       if (phone) ...[
-        if (signedIn) (const Key('attendance-chip'), Icons.groups_outlined, l.toolAttendance, _attendance, true),
+        if (signedIn && !board.boardEdition) (const Key('attendance-chip'), Icons.groups_outlined, l.toolAttendance, _attendance, true),
         if (signedIn) (const Key('go-live'), Icons.sensors, board.classLive ? l.stopLiveTooltip : l.goLive, () => unawaited(toggleClassLive(context, board)), true),
         (const Key('record'), _capture != null ? Icons.stop_circle_outlined : Icons.fiber_manual_record, _capture != null ? l.toolStop : l.toolRecord, () => unawaited(_toggleRecording()), true),
         (const Key('profile-button'), Icons.person_outline, board.session?.teacherName.split(' ').first ?? l.guest, () => setState(() => _popover = BoardPopover.profile), true),
@@ -2814,7 +2817,7 @@ class _BoardScreenState extends State<BoardScreen> {
         ('live-class', Icons.sensors, s('appLiveClass'), () => unawaited(toggleClassLive(context, board))),
         ('homework', Icons.assignment_outlined, s('appHomework'), () => _openAi(AiView.homework)),
         ('lessons', Icons.event_note_outlined, s('appLessons'), () => _runDrawerTool('todays-plan')),
-        ('attendance', Icons.how_to_reg_outlined, s('appAttendance'), _attendance),
+        if (!board.boardEdition) ('attendance', Icons.how_to_reg_outlined, s('appAttendance'), _attendance),
         ('class-prep', Icons.co_present_outlined, s('appClassPrep'), () => _openAi(AiView.lessonPlan)),
         ('students', Icons.groups_outlined, s('appStudents'), () => _runDrawerTool('ask-class')),
         ('tests', Icons.quiz_outlined, s('appTests'), () => _openAi(AiView.quiz)),

@@ -107,6 +107,31 @@ void main() {
       board.dispose();
     });
 
+    testWidgets('a board-edition institution has no attendance (an ERP module)', (tester) async {
+      final board = await pump(tester);
+      final s = session();
+      board.onPaired('token', SessionContext.fromJson({...s.toJson(), 'edition': 'board'}));
+      await tester.pumpAndSettle();
+      expect(board.boardEdition, isTrue);
+      expect(find.byKey(const Key('go-live')), findsOneWidget);
+      expect(find.byKey(const Key('attendance-chip')), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      board.dispose();
+    });
+
+    test('the edition comes from the session, else the board config, and defaults to full', () {
+      final board = BoardController();
+      expect(board.edition, 'full');
+      board.setEdition('board');
+      expect(board.boardEdition, isTrue);
+      board.setEdition('nonsense');
+      expect(board.edition, 'board');
+      expect(SessionContext.fromJson({...session().toJson(), 'edition': 'full'}).edition, 'full');
+      expect(SessionContext.fromJson({...session().toJson(), 'institution': {'edition': 'board'}}).edition, 'board');
+      board.dispose();
+    });
+
     test('the layout\'s words are in English, Hindi and Kannada', () {
       for (final lang in ['hi', 'kn']) {
         expect(LayoutStrings.table(lang).keys.toSet(), LayoutStrings.keys.toSet(), reason: lang);

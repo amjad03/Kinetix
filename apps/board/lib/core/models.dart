@@ -16,6 +16,7 @@ class SessionContext {
     this.periodLabel,
     this.classTerm,
     this.programLevel,
+    this.edition,
   });
 
   factory SessionContext.fromJson(Map<String, dynamic> j) {
@@ -37,6 +38,7 @@ class SessionContext {
       periodLabel: period == null ? null : '${hhmm(period['startsAt'] as String)}–${hhmm(period['endsAt'] as String)}',
       classTerm: (section?['term'] as num?)?.toInt(),
       programLevel: section?['level'] as String?,
+      edition: j['edition'] as String? ?? (j['institution'] as Map?)?['edition'] as String?,
     );
   }
 
@@ -49,6 +51,7 @@ class SessionContext {
       'expiresAt': expiresAt.toUtc().toIso8601String(),
       'teacher': {'id': teacherId, 'fullName': teacherName, 'preferredLanguage': language},
       'institutionName': ?institutionName,
+      'edition': ?edition,
       'section': sectionName == null ? null : {'id': ?sectionId, 'displayName': sectionName, 'term': classTerm, 'level': programLevel},
       'subject': subjectName == null ? null : {'name': subjectName},
       'period': period == null || period.length != 2 ? null : {'startsAt': period[0], 'endsAt': period[1]},
@@ -75,6 +78,10 @@ class SessionContext {
 
   /// `k12`, `ug`, `pg`, `diploma` or `phd`, when the server sends it.
   final String? programLevel;
+
+  /// The institution's edition: `full` (ERP + board) or `board` (Zynetix only), when the
+  /// server sends it.
+  final String? edition;
 
   /// "BCom Sem 3 A · Corporate Accounting", or null for a session with no timetabled class.
   String? get classLabel {
