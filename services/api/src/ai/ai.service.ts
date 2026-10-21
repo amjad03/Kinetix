@@ -14,6 +14,7 @@ import { ENV, type Env } from '../config/env.js';
 import { ContentService } from '../content/content.service.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { aiActions, aiCache, aiUsage, sections, subjects, tenants } from '../db/schema.js';
+import { AiGate } from './gate.js';
 import {
   AiBlockedError,
   AiUnavailableError,
@@ -140,6 +141,7 @@ export class AiService {
     @Inject(LLM_PROVIDER) private readonly provider: LlmProvider,
     @Inject(ENV) private readonly env: Env,
     private readonly content: ContentService,
+    private readonly gate: AiGate,
   ) {}
 
   /** Runs the task and logs it as an AI action: who asked, what grounded the answer and a short preview of both. */
@@ -181,6 +183,8 @@ export class AiService {
       const words = requestText(input);
       const { grounding, sources } = await this.grounding(tx, caller, task === 'readBoard' ? '' : words, task, (input as { language?: Language }).language ?? 'en');
       const key = this.cacheKey(task, input, grounding);
+      // The answer log names the topic: the one chosen, else the first the request was grounded in.
+      caller = { ...caller, topicId: caller.topicId ?? sources[0]?.topicId ?? null };
       const forMinors = grounding.institutionKind === 'school';
 
       const bad = unsafeTerm(words, forMinors);
@@ -215,48 +219,59 @@ export class AiService {
 
     const meta = { provider: p.name, model: p.model, promptVersion: PROMPT_VERSION, preview: p.preview, sources };
     if (cached) return { task, result: postProcess(task, input, cached), meta: { ...meta, cached: true } };
-    if (p.preview) {
-      await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, caller, task, 'ok'));
-      return { task, result: previewOutput(task, input), meta: { ...meta, cached: false } };
-    }
 
-    const started = Date.now();
-    const usage: Usage = { promptTokens: 0, completionTokens: 0, provider: p.name, model: p.model };
-    let outcome: Outcome = 'ok';
-    let detail: string | undefined;
-    let result: TaskOutput<T> | undefined;
-    let busy = false;
+    // Peak load: wait for a free slot, else refuse and log it as throttled (never a silent failure).
+    const release = await this.gate.acquire();
+    if (!release) {
+      await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, caller, task, 'throttled', { detail: `Busy: ${this.gate.max} AI requests already running; waited ${this.gate.waitMs / 1000} s` }));
+      throw new HttpException({ code: 'AI_THROTTLED', message: AI_BUSY }, HttpStatus.TOO_MANY_REQUESTS);
+    }
     try {
-      result = await this.generate(task, input, grounding, usage);
-      const bad = unsafeTerm(allText(result), grounding.institutionKind === 'school');
-      if (bad) {
-        outcome = 'blocked';
-        detail = `output: ${bad}`;
+      if (p.preview) {
+        await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, caller, task, 'ok'));
+        return { task, result: previewOutput(task, input), meta: { ...meta, cached: false } };
       }
-    } catch (e) {
-      outcome = e instanceof AiUnavailableError ? 'unavailable' : e instanceof AiBlockedError ? 'blocked' : 'invalid';
-      busy = e instanceof AiUnavailableError && e.busy;
-      detail = (e as Error).message.slice(0, 500);
-      this.log.warn(`AI ${task} failed: ${detail}`);
-    }
 
-    await this.db.withTenant(caller.tenantId, async (tx) => {
-      await this.record(tx, caller, task, outcome, { ...usage, latencyMs: Date.now() - started, detail });
-      if (outcome === 'ok' && result) {
-        await tx
-          .insert(aiCache)
-          .values({ tenantId: caller.tenantId, key, task, result, model: usage.model })
-          .onConflictDoUpdate({ target: [aiCache.tenantId, aiCache.key], set: { result, model: usage.model, createdAt: new Date(), hits: 0 } });
+      const started = Date.now();
+      const usage: Usage = { promptTokens: 0, completionTokens: 0, provider: p.name, model: p.model };
+      let outcome: Outcome = 'ok';
+      let detail: string | undefined;
+      let result: TaskOutput<T> | undefined;
+      let busy = false;
+      try {
+        result = await this.generate(task, input, grounding, usage);
+        const bad = unsafeTerm(allText(result), grounding.institutionKind === 'school');
+        if (bad) {
+          outcome = 'blocked';
+          detail = `output: ${bad}`;
+        }
+      } catch (e) {
+        outcome = e instanceof AiUnavailableError ? 'unavailable' : e instanceof AiBlockedError ? 'blocked' : 'invalid';
+        busy = e instanceof AiUnavailableError && e.busy;
+        detail = (e as Error).message.slice(0, 500);
+        this.log.warn(`AI ${task} failed: ${detail}`);
       }
-    });
-    if (usage.costInr !== undefined) {
-      this.log.log(`AI ${task} served by ${usage.provider} (${usage.model}): ${usage.promptTokens}+${usage.completionTokens} tokens, about ₹${usage.costInr.toFixed(4)}`);
-    }
 
-    if (outcome === 'unavailable') throw new ServiceUnavailableException(busy ? AI_BUSY : 'KINETIX AI is not reachable right now. Try again in a minute.');
-    if (outcome === 'invalid') throw new BadGatewayException('KINETIX AI could not produce a usable answer. Try again or rephrase.');
-    if (outcome === 'blocked') throw new UnprocessableEntityException(BLOCKED);
-    return { task, result: result!, meta: { ...meta, provider: usage.provider, model: usage.model, cached: false } };
+      await this.db.withTenant(caller.tenantId, async (tx) => {
+        await this.record(tx, caller, task, outcome, { ...usage, latencyMs: Date.now() - started, detail });
+        if (outcome === 'ok' && result) {
+          await tx
+            .insert(aiCache)
+            .values({ tenantId: caller.tenantId, key, task, result, model: usage.model })
+            .onConflictDoUpdate({ target: [aiCache.tenantId, aiCache.key], set: { result, model: usage.model, createdAt: new Date(), hits: 0 } });
+        }
+      });
+      if (usage.costInr !== undefined) {
+        this.log.log(`AI ${task} served by ${usage.provider} (${usage.model}): ${usage.promptTokens}+${usage.completionTokens} tokens, about ₹${usage.costInr.toFixed(4)}`);
+      }
+
+      if (outcome === 'unavailable') throw new ServiceUnavailableException(busy ? AI_BUSY : 'KINETIX AI is not reachable right now. Try again in a minute.');
+      if (outcome === 'invalid') throw new BadGatewayException('KINETIX AI could not produce a usable answer. Try again or rephrase.');
+      if (outcome === 'blocked') throw new UnprocessableEntityException(BLOCKED);
+      return { task, result: result!, meta: { ...meta, provider: usage.provider, model: usage.model, cached: false } };
+    } finally {
+      release();
+    }
   }
 
   /** Busy-server retries: about 1.5 s, then 3 s; never a wait over 15 s, so the board hears back within its minute. */
@@ -379,6 +394,7 @@ export class AiService {
       model: model ?? this.provider.model,
       promptVersion: PROMPT_VERSION,
       estCostInr: costInr ?? null,
+      topicId: caller.topicId ?? null,
       ...rest,
     });
   }

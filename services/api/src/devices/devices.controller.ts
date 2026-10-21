@@ -193,7 +193,7 @@ export class DevicesController {
   @Auth(['device', 'board'])
   config(@CurrentPrincipal() p: DevicePrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [t] = await tx.select({ settings: tenants.settings }).from(tenants).where(eq(tenants.id, p.tenantId));
+      const [t] = await tx.select({ settings: tenants.settings, edition: tenants.edition }).from(tenants).where(eq(tenants.id, p.tenantId));
       const [d] = await tx.select({ locked: devices.locked, kioskOverride: devices.kioskOverride }).from(devices).where(eq(devices.id, p.deviceId));
       const kiosk = boardKioskConfig(t?.settings ?? {});
       // IT can lock one board or switch its kiosk mode (device console); both survive a restart.
@@ -201,6 +201,8 @@ export class DevicesController {
       return {
         kiosk: { ...kiosk, enabled: d?.kioskOverride ?? kiosk.enabled },
         locked: d?.locked ?? false,
+        // full (ERP + board) or board (Zynetix only): the board hides ERP features in the board edition.
+        edition: t?.edition ?? 'full',
         // Teacher profile: Schedule a Training and the institution's What's New items.
         training: st.boardTraining ?? null,
         whatsNew: st.boardWhatsNew ?? [],

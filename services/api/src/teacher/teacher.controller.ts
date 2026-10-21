@@ -118,7 +118,7 @@ export function loadMe(db: DbService, system: SystemLookups, p: UserPrincipal): 
     const [u] = await tx.select().from(users).where(eq(users.id, p.userId));
     if (!u) throw new NotFoundException('User not found');
     const roles = await tx.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, u.id));
-    const [tenant] = await tx.select({ name: tenants.name, slug: tenants.slug, timezone: tenants.timezone }).from(tenants);
+    const [tenant] = await tx.select({ name: tenants.name, slug: tenants.slug, timezone: tenants.timezone, edition: tenants.edition }).from(tenants);
     return {
       id: u.id,
       fullName: u.fullName,

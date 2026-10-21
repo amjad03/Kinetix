@@ -45,6 +45,9 @@ const EnvSchema = z.object({
   AI_BREAKER_COOLDOWN_S: z.coerce.number().int().positive().default(60),
   /** Model requests per institution per day (cached answers are free). */
   AI_DAILY_LIMIT: z.coerce.number().int().positive().default(2000),
+  /** AI requests sent to the model at once by this API instance; more wait up to AI_QUEUE_WAIT_MS, then are refused as `throttled`. */
+  AI_MAX_CONCURRENT: z.coerce.number().int().positive().default(16),
+  AI_QUEUE_WAIT_MS: z.coerce.number().int().min(0).max(120_000).default(10_000),
   /** Speech-to-text server (OpenAI-compatible /audio/transcriptions: faster-whisper, IndicConformer), in India. */
   ASR_BASE_URL: z.url().optional(),
   ASR_MODEL: z.string().default('whisper'),

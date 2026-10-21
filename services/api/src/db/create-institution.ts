@@ -36,6 +36,8 @@ export interface InstitutionArgs {
   adminEmail: string;
   adminPhone: string | null;
   otpOnly: boolean;
+  /** full (ERP + board, the default) or board (Zynetix only). */
+  edition?: s.Edition;
 }
 
 export class UsageError extends Error {}
@@ -43,7 +45,7 @@ export class UsageError extends Error {}
 /** The settings a new institution starts with: the same values the API assumes when one is unset. */
 export const DEFAULT_SETTINGS: s.TenantSettings = { liveViewEnabled: false, liveViewIndicator: true, classroomAudioToViewers: false, pinFallbackEnabled: false, grievanceOfficer: null };
 
-const FLAGS = ['slug', 'name', 'kind', 'timezone', 'campus', 'city', 'year-label', 'year-start', 'year-end', 'admin-name', 'admin-email', 'admin-phone'] as const;
+const FLAGS = ['slug', 'name', 'kind', 'timezone', 'campus', 'city', 'year-label', 'year-start', 'year-end', 'admin-name', 'admin-email', 'admin-phone', 'edition'] as const;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function parseArgs(argv: string[]): InstitutionArgs {
@@ -64,6 +66,7 @@ export function parseArgs(argv: string[]): InstitutionArgs {
   for (const f of ['slug', 'name', 'kind', 'year-label', 'year-start', 'year-end', 'admin-name', 'admin-email']) if (!v[f]) throw new UsageError(`--${f} is required`);
   if (!/^[a-z0-9](?:[a-z0-9-]{0,48}[a-z0-9])?$/.test(v.slug)) throw new UsageError('--slug: lower-case letters, digits and hyphens, e.g. sjc-blr');
   if (!['school', 'college', 'university'].includes(v.kind)) throw new UsageError('--kind must be school, college or university');
+  if (v.edition && !['full', 'board'].includes(v.edition)) throw new UsageError('--edition must be full or board');
   const timezone = v.timezone || 'Asia/Kolkata';
   try {
     new Intl.DateTimeFormat('en', { timeZone: timezone });
@@ -91,6 +94,7 @@ export function parseArgs(argv: string[]): InstitutionArgs {
     adminEmail,
     adminPhone,
     otpOnly,
+    ...(v.edition ? { edition: v.edition as s.Edition } : {}),
   };
 }
 
@@ -105,13 +109,13 @@ export async function createInstitution(db: NodePgDatabase<typeof s>, a: Institu
   return db.transaction(async (tx) => {
     const [taken] = await tx.select({ id: s.tenants.id }).from(s.tenants).where(eq(s.tenants.slug, a.slug));
     if (taken) throw new SlugTakenError(`An institution with the slug "${a.slug}" already exists. Nothing was changed.`);
-    const [tenant] = await tx.insert(s.tenants).values({ slug: a.slug, name: a.name, kind: a.kind, timezone: a.timezone, settings: DEFAULT_SETTINGS }).returning();
+    const [tenant] = await tx.insert(s.tenants).values({ slug: a.slug, name: a.name, kind: a.kind, timezone: a.timezone, settings: DEFAULT_SETTINGS, edition: a.edition ?? 'full' }).returning();
     const tenantId = tenant.id;
     const [campus] = await tx.insert(s.campuses).values({ tenantId, name: a.campus, city: a.city }).returning();
     const [year] = await tx.insert(s.academicYears).values({ tenantId, label: a.yearLabel, startsOn: a.yearStart, endsOn: a.yearEnd, isCurrent: true }).returning();
     const [admin] = await tx.insert(s.users).values({ tenantId, fullName: a.adminName, email: a.adminEmail, phone: a.adminPhone, passwordHash, passwordMustChange: !!password }).returning();
     await tx.insert(s.userRoles).values({ tenantId, userId: admin.id, role: 'tenant_admin', campusId: null });
-    await tx.insert(s.auditLog).values({ tenantId, actorType: 'system', action: 'institution.created', subjectType: 'tenant', subjectId: tenantId, data: { slug: a.slug, adminUserId: admin.id, otpOnly: a.otpOnly } });
+    await tx.insert(s.auditLog).values({ tenantId, actorType: 'system', action: 'institution.created', subjectType: 'tenant', subjectId: tenantId, data: { slug: a.slug, adminUserId: admin.id, otpOnly: a.otpOnly, edition: tenant.edition } });
     return { tenant, campus, year, admin, password };
   });
 }
@@ -122,7 +126,7 @@ async function main() {
     args = parseArgs(process.argv.slice(2));
   } catch (e) {
     if (!(e instanceof UsageError)) throw e;
-    console.error(`${e.message}\n\nUsage: create-institution --slug <slug> --name <name> --kind school|college|university [--timezone Asia/Kolkata] [--campus "Main Campus"] [--city <city>] --year-label 2026-27 --year-start 2026-06-01 --year-end 2027-03-31 --admin-name <name> --admin-email <email> [--admin-phone <mobile>] [--otp-only]`);
+    console.error(`${e.message}\n\nUsage: create-institution --slug <slug> --name <name> --kind school|college|university [--timezone Asia/Kolkata] [--campus "Main Campus"] [--city <city>] --year-label 2026-27 --year-start 2026-06-01 --year-end 2027-03-31 --admin-name <name> --admin-email <email> [--admin-phone <mobile>] [--otp-only] [--edition full|board]`);
     process.exitCode = 2;
     return;
   }
