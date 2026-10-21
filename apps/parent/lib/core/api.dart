@@ -295,6 +295,10 @@ abstract class ParentApi {
   /// A subject's syllabus, or null when the subject is not linked to a library course yet.
   Future<CourseOutline?> syllabus(String subjectId);
 
+  /// A topic's videos, materials and animations (`GET /v1/topics/:id/resources`, docs/zynetix/API.md),
+  /// as the server sent it; packages/kinetix_resources reads it.
+  Future<Object?> topicResources(String topicId);
+
   /// How much of [subjectId]'s syllabus the class [sectionId] has been taught.
   Future<Coverage> coverage({required String sectionId, required String subjectId});
 
@@ -766,6 +770,9 @@ class HttpParentApi implements ParentApi {
     final j = await _send('GET', '/v1/content/syllabus?subjectId=$subjectId');
     return j == null ? null : CourseOutline.fromJson(j as Map<String, dynamic>);
   }
+
+  @override
+  Future<Object?> topicResources(String topicId) async => await _send('GET', '/v1/topics/${Uri.encodeComponent(topicId)}/resources');
 
   @override
   Future<Coverage> coverage({required String sectionId, required String subjectId}) async =>

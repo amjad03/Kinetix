@@ -27,12 +27,12 @@ class TopicResourcesScreen extends StatefulWidget {
   const TopicResourcesScreen({super.key, required this.repository, required this.topic, this.topics = const [], this.subjectName, this.launcher});
 
   final TopicResourcesRepository repository;
-  final TopicRef topic;
-  final List<TopicRef> topics;
+  final ResourceTopic topic;
+  final List<ResourceTopic> topics;
   final String? subjectName;
   final ResourceLauncher? launcher;
 
-  static Future<void> open(BuildContext context, {required TopicResourcesRepository repository, required TopicRef topic, List<TopicRef> topics = const [], String? subjectName}) =>
+  static Future<void> open(BuildContext context, {required TopicResourcesRepository repository, required ResourceTopic topic, List<ResourceTopic> topics = const [], String? subjectName}) =>
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => TopicResourcesScreen(repository: repository, topic: topic, topics: topics, subjectName: subjectName)));
 
   @override
@@ -40,10 +40,10 @@ class TopicResourcesScreen extends StatefulWidget {
 }
 
 class _TopicResourcesScreenState extends State<TopicResourcesScreen> {
-  late TopicRef _topic = widget.topic;
+  late ResourceTopic _topic = widget.topic;
   late Future<LoadedResources> _load = widget.repository.load(_topic.id);
 
-  void _pick(TopicRef t) => setState(() {
+  void _pick(ResourceTopic t) => setState(() {
     _topic = t;
     _load = widget.repository.load(t.id);
   });

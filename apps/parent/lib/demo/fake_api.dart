@@ -604,6 +604,27 @@ class FakeParentApi implements ParentApi {
     return syllabi[subjectId];
   }
 
+  /// What [topicResources] answers (null: the server could not be reached).
+  Object? topicResourcesJson = const {
+    'videos': [
+      {'id': 'demo-v1', 'title': 'Concept explainer', 'provider': 'youtube', 'youtubeId': 'aqz-KE-bpKQ', 'durationSec': 300, 'source': 'platform'},
+    ],
+    'materials': [
+      {'id': 'demo-m1', 'kind': 'book', 'title': 'Course textbook', 'url': 'https://example.com/textbook.pdf', 'chapter': '1', 'pages': '1-12'},
+    ],
+    'animations': [
+      {'key': 'mitosis', 'title': 'Cell division (mitosis)'},
+    ],
+  };
+
+  @override
+  Future<Object?> topicResources(String topicId) async {
+    calls.add('topicResources $topicId');
+    final j = topicResourcesJson;
+    if (j == null) throw Exception('offline');
+    return j;
+  }
+
   Map<String, Map<String, dynamic>> coverageJson = {
     'sec1|sub1': {
       'covered': 1,

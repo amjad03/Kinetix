@@ -67,7 +67,7 @@ void main() {
     });
 
     test('topics from a syllabus outline', () {
-      final t = TopicRef.fromOutline({
+      final t = ResourceTopic.fromOutline({
         'chapters': [
           {'title': 'Unit 1', 'topics': [{'id': 'a', 'title': 'KCL'}, {'id': 'b', 'title': 'KVL'}]},
           {'title': 'Unit 2', 'topics': []},
@@ -123,7 +123,7 @@ void main() {
         asked.add(id);
         return id == 'a' ? _json : {'videos': [], 'materials': [], 'animations': []};
       });
-      const topics = [TopicRef(id: 'a', title: 'KCL'), TopicRef(id: 'b', title: 'KVL')];
+      const topics = [ResourceTopic(id: 'a', title: 'KCL'), ResourceTopic(id: 'b', title: 'KVL')];
       await tester.pumpWidget(MaterialApp(
         home: TopicResourcesScreen(
           repository: repo,

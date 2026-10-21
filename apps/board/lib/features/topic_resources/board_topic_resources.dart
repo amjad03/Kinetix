@@ -92,9 +92,9 @@ class _BoardTopicResourcesState extends State<BoardTopicResources> {
   late final ResourceStore _store = widget.store ?? const PrefsResourceStore();
   late final TopicResourcesRepository _repo = TopicResourcesRepository(fetch: _fetch, store: _store);
 
-  List<TopicRef> _period = const [];
-  List<TopicRef> _syllabus = const [];
-  TopicRef? _topic;
+  List<ResourceTopic> _period = const [];
+  List<ResourceTopic> _syllabus = const [];
+  ResourceTopic? _topic;
   Future<LoadedResources>? _load;
   bool _ready = false;
   String? _opening;
@@ -113,8 +113,8 @@ class _BoardTopicResourcesState extends State<BoardTopicResources> {
     return fetchTopicResources(api, topicId);
   }
 
-  Map<String, Object?> _encodeTopic(TopicRef t) => {'id': t.id, 'title': t.title, 'chapter': t.chapter};
-  TopicRef? _decodeTopic(Object? j) => j is Map && j['id'] is String && j['title'] is String ? TopicRef(id: j['id'] as String, title: j['title'] as String, chapter: j['chapter'] as String?) : null;
+  Map<String, Object?> _encodeTopic(ResourceTopic t) => {'id': t.id, 'title': t.title, 'chapter': t.chapter};
+  ResourceTopic? _decodeTopic(Object? j) => j is Map && j['id'] is String && j['title'] is String ? ResourceTopic(id: j['id'] as String, title: j['title'] as String, chapter: j['chapter'] as String?) : null;
 
   Future<void> _init() async {
     final api = _api;
@@ -122,11 +122,11 @@ class _BoardTopicResourcesState extends State<BoardTopicResources> {
     if (api != null) {
       try {
         final now = PeriodVideos.fromJson(await api.conceptVideosNow());
-        _period = [for (final t in now.topics) TopicRef(id: t.id, title: t.title)];
+        _period = [for (final t in now.topics) ResourceTopic(id: t.id, title: t.title)];
         online = true;
       } catch (_) {}
       try {
-        _syllabus = TopicRef.fromOutline(await api.syllabusNow());
+        _syllabus = ResourceTopic.fromOutline(await api.syllabusNow());
         online = true;
       } catch (_) {}
     }
@@ -139,7 +139,7 @@ class _BoardTopicResourcesState extends State<BoardTopicResources> {
         _syllabus = [for (final t in (j['syllabus'] as List? ?? const [])) ?_decodeTopic(t)];
       } catch (_) {}
     }
-    TopicRef? last;
+    ResourceTopic? last;
     try {
       last = _decodeTopic(jsonDecode(await _store.read(_lastTopicKey) ?? 'null'));
     } catch (_) {}
@@ -149,7 +149,7 @@ class _BoardTopicResourcesState extends State<BoardTopicResources> {
     if (topic != null) _pick(topic);
   }
 
-  List<TopicRef> get _topics {
+  List<ResourceTopic> get _topics {
     final seen = <String>{};
     return [
       for (final t in [..._period, ..._syllabus, ?_topic])
@@ -157,7 +157,7 @@ class _BoardTopicResourcesState extends State<BoardTopicResources> {
     ];
   }
 
-  void _pick(TopicRef t) {
+  void _pick(ResourceTopic t) {
     unawaited(_store.write(_lastTopicKey, jsonEncode(_encodeTopic(t))));
     setState(() {
       _topic = t;

@@ -236,6 +236,13 @@ void main() {
       expect(find.byKey(const Key('taught-t1')), findsOneWidget);
       expect(find.byKey(const Key('taught-t2')), findsNothing);
       expect(find.text('Taught on Thu 1 Oct'), findsOneWidget);
+
+      // A topic opens its resources: the same videos, materials and animations as the class.
+      await tester.tap(find.byKey(const Key('topic-t1')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('topicResources t1'));
+      expect(find.text('Concept explainer'), findsOneWidget);
+      expect(find.text('Course textbook'), findsOneWidget);
     });
 
     Future<void> openProgress(WidgetTester tester) async {

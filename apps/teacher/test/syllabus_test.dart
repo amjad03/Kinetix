@@ -96,6 +96,23 @@ void main() {
     expect(find.byType(LinearProgressIndicator), findsNothing);
   });
 
+  testWidgets('a topic\'s resources: videos, materials and animations, and the other topics of the subject', (tester) async {
+    await openFromToday(tester);
+    await tapAndSettle(tester, find.byKey(const Key('topicResources-t2')));
+    expect(api.calls, contains('topicResources t2'));
+    expect(find.text('Concept explainer'), findsOneWidget);
+    expect(find.text('Course textbook'), findsOneWidget);
+    expect(find.text('Cell division (mitosis)'), findsOneWidget);
+    expect(find.byKey(const Key('res-topic-picker')), findsOneWidget);
+    // Offline: the list kept from the last visit.
+    api.topicResourcesJson = null;
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tapAndSettle(tester, find.byKey(const Key('topicResources-t2')));
+    expect(find.text('Concept explainer'), findsOneWidget);
+    expect(find.byKey(const Key('res-offline')), findsOneWidget);
+  });
+
   testWidgets('a teacher adds a video to a topic for the class by pasting a link, then asks to share it', (tester) async {
     await openFromToday(tester);
     await tapAndSettle(tester, find.byKey(const Key('topicVideos-t2')));

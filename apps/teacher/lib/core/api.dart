@@ -331,6 +331,10 @@ abstract class TeacherApi {
   /// A subject's syllabus outline, or null when the subject is not linked to a course yet.
   Future<Syllabus?> syllabus(String subjectId);
 
+  /// A topic's videos, materials and animations (`GET /v1/topics/:id/resources`, docs/zynetix/API.md),
+  /// as the server sent it; packages/kinetix_resources reads it.
+  Future<Object?> topicResources(String topicId);
+
   /// Which topics of [subjectId]'s syllabus a class has been taught.
   Future<Coverage> coverage({required String sectionId, required String subjectId});
 
@@ -1076,6 +1080,9 @@ class HttpTeacherApi implements TeacherApi {
     final j = await _send('GET', '/v1/content/syllabus?subjectId=$subjectId');
     return j is Map<String, dynamic> ? Syllabus.fromJson(j) : null;
   }
+
+  @override
+  Future<Object?> topicResources(String topicId) async => await _send('GET', '/v1/topics/${Uri.encodeComponent(topicId)}/resources');
 
   @override
   Future<Coverage> coverage({required String sectionId, required String subjectId}) async =>

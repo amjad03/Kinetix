@@ -262,19 +262,19 @@ class TopicResources {
 }
 
 /// A topic of a subject's syllabus, for the topic picker.
-class TopicRef {
-  const TopicRef({required this.id, required this.title, this.chapter});
+class ResourceTopic {
+  const ResourceTopic({required this.id, required this.title, this.chapter});
 
   final String id;
   final String title;
   final String? chapter;
 
   /// The topics of a syllabus outline (`GET /v1/content/syllabus`: {chapters: [{title, topics: [{id, title}]}]}).
-  static List<TopicRef> fromOutline(Object? outline) => [
+  static List<ResourceTopic> fromOutline(Object? outline) => [
     if (outline is Map && outline['chapters'] is List)
       for (final c in outline['chapters'] as List)
         if (c is Map && c['topics'] is List)
           for (final t in c['topics'] as List)
-            if (t is Map && t['id'] is String && t['title'] is String) TopicRef(id: t['id'] as String, title: t['title'] as String, chapter: c['title'] as String?),
+            if (t is Map && t['id'] is String && t['title'] is String) ResourceTopic(id: t['id'] as String, title: t['title'] as String, chapter: c['title'] as String?),
   ];
 }

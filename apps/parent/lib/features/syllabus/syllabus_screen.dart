@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kinetix_resources/kinetix_resources.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
@@ -295,6 +296,15 @@ class _ChildSubjectScreenState extends State<ChildSubjectScreen> {
                                     : Icon(Icons.radio_button_unchecked, color: c.outlineVariant),
                                 title: Text(t.title),
                                 subtitle: _topicSubtitle(context, t, cov?.topics[t.id]),
+                                // The child's topic resources: the same videos, materials and animations as in class.
+                                trailing: Icon(Icons.topic_outlined, key: Key('topicResources-${t.id}'), semanticLabel: ResourceStrings.of(context).title),
+                                onTap: () => TopicResourcesScreen.open(
+                                  context,
+                                  repository: TopicResourcesRepository(fetch: widget.family.api.topicResources),
+                                  topic: ResourceTopic(id: t.id, title: t.title, chapter: ch.title),
+                                  topics: [for (final c in o.chapters) for (final x in c.topics) ResourceTopic(id: x.id, title: x.title, chapter: c.title)],
+                                  subjectName: widget.subject.name,
+                                ),
                               ),
                             const SizedBox(height: Kx.s8),
                           ],
