@@ -10,6 +10,7 @@ import { PastExamsController } from './past-exams.js';
 import { AsrGateway, NoSpeechToText, OpenAiCompatibleAsr, SarvamAsr, SpeechToText } from './asr.js';
 import { AiService, describeProvider, LLM_PROVIDER, providerFromEnv } from './ai.service.js';
 import { CircuitBreaker } from './providers.js';
+import { AiGate } from './gate.js';
 
 /** Local first: the self-hosted speech server (ASR_BASE_URL), then Sarvam; capped and metered per institution. */
 export function speechToTextFromEnv(env: Env, db: DbService): SpeechToText {
@@ -40,8 +41,9 @@ export function speechToTextFromEnv(env: Env, db: DbService): SpeechToText {
       },
     },
     { provide: SpeechToText, inject: [ENV, DbService], useFactory: speechToTextFromEnv },
+    { provide: AiGate, inject: [ENV], useFactory: (env: Env) => new AiGate(env.AI_MAX_CONCURRENT, env.AI_QUEUE_WAIT_MS) },
   ],
   controllers: [AiController, PastExamsController, InsightsController, TutorController, AiAdminController],
-  exports: [AiService, SpeechToText],
+  exports: [AiService, SpeechToText, AiGate],
 })
 export class AiModule {}

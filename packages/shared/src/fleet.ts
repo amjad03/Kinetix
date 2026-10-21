@@ -15,6 +15,21 @@ export interface DeviceHealth {
   /** For example "Class 9A · Physics"; absent when no class is open. */
   currentClass?: string;
   locked?: boolean;
+  /** What reports: a classroom board or IFP, or an edge compute box serving AI to boards. */
+  deviceKind?: 'board' | 'ifp' | 'edge';
+  /** Compute load now, in percent; absent when the device cannot measure it. */
+  cpuPct?: number;
+  gpuPct?: number;
+  npuPct?: number;
+  ramPct?: number;
+  ramTotalMb?: number;
+  diskPct?: number;
+  cpuTempC?: number;
+  gpuTempC?: number;
+  /** On-device AI since the previous report: inferences run and their total time. */
+  aiInferences?: number;
+  aiInferenceMs?: number;
+  uptimeS?: number;
 }
 
 export type DeviceActionType = 'lock' | 'unlock' | 'restart_app' | 'clear_pin_profiles' | 'message' | 'kiosk_policy' | 'rename_move' | 'unpair';

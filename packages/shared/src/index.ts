@@ -309,7 +309,8 @@ export interface MeResponse {
   phone: string | null;
   preferredLanguage: Language;
   roles: RoleName[];
-  tenant: { name: string; slug: string };
+  /** `edition`: `full` (ERP + board) or `board` (Zynetix only; the apps hide ERP features and the API refuses them with EDITION_BOARD_ONLY). */
+  tenant: { name: string; slug: string; edition: 'full' | 'board' };
   /** Signed in with a temporary password: the user must choose a new one (POST /v1/me/password) before anything else. */
   mustChangePassword: boolean;
   /** False for phone-code-only accounts, which may set a first password without a current one. */

@@ -9,6 +9,14 @@ const NOISE = new Set('kinetix video part lecture concept concepts introduction 
  * the earlier topic.
  */
 export function bestTopicFor(videoTitle: string, chapterTopics: { id: string; title: string; summary?: string }[]): string | null {
+  return topicMatch(videoTitle, chapterTopics)?.id ?? null;
+}
+
+/**
+ * The best-matching topic and its score (2 per title word shared, 1 per summary word), for
+ * matching a whole channel against a course or several. Null when nothing matches.
+ */
+export function topicMatch(videoTitle: string, chapterTopics: { id: string; title: string; summary?: string }[]): { id: string; score: number } | null {
   const want = [...keywords(videoTitle)].filter((w) => !NOISE.has(w));
   if (want.length === 0) return null;
   let best: { id: string; score: number } | null = null;
@@ -19,5 +27,5 @@ export function bestTopicFor(videoTitle: string, chapterTopics: { id: string; ti
     for (const w of want) score += title.has(w) ? 2 : summary.has(w) ? 1 : 0;
     if (score > 0 && (!best || score > best.score)) best = { id: t.id, score };
   }
-  return best?.id ?? null;
+  return best;
 }

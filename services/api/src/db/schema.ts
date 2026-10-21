@@ -47,7 +47,11 @@ export const tenants = pgTable('tenants', {
   /** Feature flags & policies, e.g. { liveViewIndicator: true, pinFallback: false }. */
   settings: jsonb('settings').$type<TenantSettings>().notNull().default({}),
   createdAt: createdAt(),
+  /** `full` (ERP + board) or `board` (Zynetix board only; ERP modules are refused, migration 0139). */
+  edition: text('edition').$type<Edition>().notNull().default('full'),
 });
+
+export type Edition = 'full' | 'board';
 
 export interface TenantSettings {
   liveViewEnabled?: boolean;
@@ -1093,7 +1097,7 @@ export const auditLog = pgTable('audit_log', {
 // ---------------------------------------------------------------------------------------------
 
 export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight', 'syllabusImport', 'careerCoach', 'gradeAssist', 'qualityInsight', 'researchInsight', 'careerInsight', 'parentInsight', 'tutor']);
-export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota']);
+export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota', 'throttled']);
 
 /** One row per AI request: metering per tenant, plus the model and template behind each answer. */
 export const aiUsage = pgTable(
@@ -1117,6 +1121,8 @@ export const aiUsage = pgTable(
     estCostInr: numeric('est_cost_inr', { precision: 12, scale: 4, mode: 'number' }),
     /** Why a request was refused or failed, never the prompt itself. */
     detail: text('detail'),
+    /** The content-library topic the request was about (chosen, or the first grounding topic). */
+    topicId: uuid('topic_id').references(() => topics.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
   },
   (t) => [index('ai_usage_tenant_created_idx').on(t.tenantId, t.createdAt)],
@@ -3279,6 +3285,8 @@ export const TENANT_TABLES = [
   'improvement_actions',
   'obe_evidence',
   'concept_videos',
+  'topic_materials',
+  'device_telemetry',
   'audit_log',
   'transport_vehicles',
   'transport_drivers',
