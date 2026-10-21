@@ -12,7 +12,7 @@ import { loadEnv } from '../config/env.js';
 import { DOMAIN, INST, LOGIN_STAFF, PASSWORD, PROFILE, PROGRAMS, SCHOOL_DEPT_NAMES, SLUG, STAFF } from './soundarya/data.js';
 import type { Ctx } from './soundarya/ctx.js';
 import { buildCore } from './soundarya/core.js';
-import { makeKit, setReadPool } from './soundarya/kit.js';
+import { makeKit, setReadPool, wipeTenant } from './soundarya/kit.js';
 import { stages } from './soundarya/stages.js';
 import { schoolLife } from './soundarya/school.js';
 import { closeNest } from './soundarya/nest.js';
@@ -25,26 +25,7 @@ const readPool = PROFILE === 'school' && env.APP_DATABASE_URL ? new pg.Pool({ co
 setReadPool(readPool);
 
 /** Removes this tenant and everything it owns (other tenants are untouched). */
-async function wipe(): Promise<void> {
-  const found = await pool.query('select id from tenants where slug = $1', [SLUG]);
-  if (found.rowCount === 0) return;
-  const tenantId = found.rows[0].id as string;
-  const tables = (await pool.query("select table_name from information_schema.columns where table_schema = 'public' and column_name = 'tenant_id' and table_name <> 'tenants' order by 1")).rows.map((r) => r.table_name as string);
-  let remaining = tables;
-  for (let pass = 0; pass < 12 && remaining.length; pass++) {
-    const next: string[] = [];
-    for (const t of remaining) {
-      try {
-        await pool.query(`delete from ${t} where tenant_id = $1`, [tenantId]);
-      } catch {
-        next.push(t);
-      }
-    }
-    remaining = next;
-  }
-  if (remaining.length) throw new Error(`Could not clear: ${remaining.join(', ')}`);
-  await pool.query('delete from tenants where id = $1', [tenantId]);
-}
+const wipe = () => wipeTenant(pool, SLUG);
 
 async function main() {
   if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'yes') {

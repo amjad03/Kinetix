@@ -102,3 +102,26 @@ export function makeKit(pool: pg.Pool, tenantId: string) {
   return { ins, one, q, tenantId, pool };
 }
 export type Kit = ReturnType<typeof makeKit>;
+
+/** Removes a tenant and every row it owns (other tenants and the global library are untouched); safe when it does not exist. */
+export async function wipeTenant(pool: pg.Pool, slug: string): Promise<void> {
+  const found = await pool.query('select id from tenants where slug = $1', [slug]);
+  if (found.rowCount === 0) return;
+  const tenantId = found.rows[0].id as string;
+  const tables = (await pool.query("select table_name from information_schema.columns where table_schema = 'public' and column_name = 'tenant_id' and table_name <> 'tenants' order by 1")).rows.map((r) => r.table_name as string);
+  let remaining = tables;
+  // Foreign keys between tenant tables decide the order: retry what failed until everything is gone.
+  for (let pass = 0; pass < 12 && remaining.length; pass++) {
+    const next: string[] = [];
+    for (const t of remaining) {
+      try {
+        await pool.query(`delete from ${t} where tenant_id = $1`, [tenantId]);
+      } catch {
+        next.push(t);
+      }
+    }
+    remaining = next;
+  }
+  if (remaining.length) throw new Error(`Could not clear: ${remaining.join(', ')}`);
+  await pool.query('delete from tenants where id = $1', [tenantId]);
+}
