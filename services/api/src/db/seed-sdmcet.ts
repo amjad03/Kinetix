@@ -365,11 +365,14 @@ export async function seedSdmcet(pool: pg.Pool, opts: { now?: Date } = {}): Prom
     for (let day = 1; day <= 6; day++) {
       const usedToday = new Set<number>();
       const periods = day === 6 ? 4 : PERIODS.length;
+      // Spread the week's periods over all six days, so a class has periods whichever day the demo is on.
+      const remaining = left.reduce((a, b) => a + b, 0);
+      const cap = Math.ceil(remaining / (7 - day));
       // Rotate the starting subject by day so each paper moves around the week.
       for (let p = 0; p < periods; p++) {
         const order = sec.subjects.map((_, i) => (i + day + p) % sec.subjects.length).sort((a, b) => left[b] - left[a]);
         const pick = order.find((i) => left[i] > 0 && !usedToday.has(i) && !busy.has(`${sec.subjects[i].teacherId}:${day}:${p}`));
-        if (pick === undefined) continue;
+        if (pick === undefined || usedToday.size >= cap) continue;
         // Leave the last afternoon period free for labs most days.
         if (p === 6 && day % 2 === 1) continue;
         left[pick]--;
