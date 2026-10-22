@@ -12,27 +12,31 @@ case "${1:-start}" in
   *) echo "usage: $0 [start|stop|reset]"; exit 2 ;;
 esac
 # Docker: install Docker Desktop if missing (Homebrew), start it if stopped, wait until it answers.
-if ! command -v docker >/dev/null 2>&1 && [ ! -d /Applications/Docker.app ]; then
+# `docker info` can hang while Docker Desktop is half-started, so every check has a time limit.
+echo "== Checking Docker"
+docker_ok() { docker info >/dev/null 2>&1 & local pid=$!; ( sleep 8; kill "$pid" 2>/dev/null ) & local w=$!; wait "$pid" 2>/dev/null; local rc=$?; kill "$w" 2>/dev/null; return $rc; }
+export PATH="$PATH:$HOME/.docker/bin:/Applications/Docker.app/Contents/Resources/bin"
+if [ "$(uname)" = Darwin ] && [ ! -d /Applications/Docker.app ]; then
   if command -v brew >/dev/null 2>&1; then
     echo "== Installing Docker Desktop (Homebrew; it may ask for your Mac password)"
     brew install --cask docker
   else
-    echo "Docker Desktop is not installed. Opening the download page: pick 'Mac with Apple chip'"
-    echo "(or Intel chip on an older Mac), install it, open it once, then run this again."
-    open "https://www.docker.com/products/docker-desktop/" 2>/dev/null || true
+    ARCH=$( [ "$(uname -m)" = arm64 ] && echo arm64 || echo amd64 )
+    echo "Docker Desktop is not installed. Downloading it in your browser:"
+    echo "  https://desktop.docker.com/mac/main/$ARCH/Docker.dmg"
+    echo "Open the .dmg, drag Docker to Applications, open it once (Accept, Skip), then run this again."
+    open "https://desktop.docker.com/mac/main/$ARCH/Docker.dmg" 2>/dev/null || true
     exit 1
   fi
 fi
-export PATH="$PATH:$HOME/.docker/bin:/Applications/Docker.app/Contents/Resources/bin"
-if ! docker info >/dev/null 2>&1; then
-  echo "== Starting Docker Desktop (first start: accept its terms; signing in is not needed)"
+if ! docker_ok; then
+  echo "== Starting Docker Desktop (first start: click Accept and Skip in its window; signing in is not needed)"
   open -a Docker 2>/dev/null || true
-  echo "   Waiting for Docker (up to 6 minutes; on its first start click Accept and Skip in its window)..."
-  for _ in $(seq 1 180); do docker info >/dev/null 2>&1 && break; sleep 2; done
-  docker info >/dev/null 2>&1 || { echo "Docker did not start. Open Docker Desktop from Applications, click Accept / Skip, wait for the whale icon in the menu bar to settle, then run this again."; exit 1; }
+  echo "   Waiting for Docker (up to 6 minutes)..."
+  for i in $(seq 1 45); do docker_ok && break; [ $((i % 6)) -eq 0 ] && echo "   ...still waiting ($((i * 8))s)"; done
+  docker_ok || { echo "Docker did not start. Open Docker Desktop from Applications, click Accept / Skip, wait for the whale icon in the menu bar to settle, then run this again."; exit 1; }
 fi
-MEM_GB=$(( $(docker info --format '{{.MemTotal}}' 2>/dev/null || echo 0) / 1073741824 ))
-[ "$MEM_GB" -ge 4 ] || echo "!! Docker has ${MEM_GB} GB of memory; give it at least 4 GB (Docker Desktop > Settings > Resources) if the build fails."
+echo "== Docker is running"
 
 # Claude as the board's AI: ANTHROPIC_API_KEY=sk-ant-... scripts/zynetix-demo.sh (saved to the git-ignored
 # .env.ai, so later starts keep it). Uses Anthropic's OpenAI-compatible endpoint; no key: AI shows previews.
