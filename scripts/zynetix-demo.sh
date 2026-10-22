@@ -15,7 +15,11 @@ esac
 # `docker info` can hang while Docker Desktop is half-started, so every check has a time limit.
 echo "== Checking Docker"
 docker_ok() { docker info >/dev/null 2>&1 & local pid=$!; ( sleep 8; kill "$pid" 2>/dev/null ) & local w=$!; wait "$pid" 2>/dev/null; local rc=$?; kill "$w" 2>/dev/null; return $rc; }
-export PATH="$PATH:$HOME/.docker/bin:/Applications/Docker.app/Contents/Resources/bin"
+# Prefer Docker Desktop's own CLI and context over any other docker on the PATH (Homebrew, Colima).
+export PATH="/Applications/Docker.app/Contents/Resources/bin:$HOME/.docker/bin:$PATH"
+if [ "$(uname)" = Darwin ] && docker context ls --format '{{.Name}}' 2>/dev/null | grep -qx desktop-linux; then
+  docker context use desktop-linux >/dev/null 2>&1 || true
+fi
 if [ "$(uname)" = Darwin ] && [ ! -d /Applications/Docker.app ]; then
   if command -v brew >/dev/null 2>&1; then
     echo "== Installing Docker Desktop (Homebrew; it may ask for your Mac password)"
