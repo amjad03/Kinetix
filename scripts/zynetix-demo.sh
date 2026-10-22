@@ -23,12 +23,13 @@ if ! command -v docker >/dev/null 2>&1 && [ ! -d /Applications/Docker.app ]; the
     exit 1
   fi
 fi
-export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin"
+export PATH="$PATH:$HOME/.docker/bin:/Applications/Docker.app/Contents/Resources/bin"
 if ! docker info >/dev/null 2>&1; then
   echo "== Starting Docker Desktop (first start: accept its terms; signing in is not needed)"
   open -a Docker 2>/dev/null || true
-  for _ in $(seq 1 90); do docker info >/dev/null 2>&1 && break; sleep 2; done
-  docker info >/dev/null 2>&1 || { echo "Docker did not start in 3 minutes. Open Docker Desktop, wait for the whale icon to settle, run this again."; exit 1; }
+  echo "   Waiting for Docker (up to 6 minutes; on its first start click Accept and Skip in its window)..."
+  for _ in $(seq 1 180); do docker info >/dev/null 2>&1 && break; sleep 2; done
+  docker info >/dev/null 2>&1 || { echo "Docker did not start. Open Docker Desktop from Applications, click Accept / Skip, wait for the whale icon in the menu bar to settle, then run this again."; exit 1; }
 fi
 MEM_GB=$(( $(docker info --format '{{.MemTotal}}' 2>/dev/null || echo 0) / 1073741824 ))
 [ "$MEM_GB" -ge 4 ] || echo "!! Docker has ${MEM_GB} GB of memory; give it at least 4 GB (Docker Desktop > Settings > Resources) if the build fails."
