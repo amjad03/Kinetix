@@ -8997,6 +8997,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sending…'**
   String get shareWorking;
+
+  /// Insert > Videos: choose concept videos or a file.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get insertVideosTitle;
+
+  /// Insert > Videos: play a video file from the board or a USB stick.
+  ///
+  /// In en, this message translates to:
+  /// **'Video from files or USB'**
+  String get insertLocalVideo;
+
+  /// Insert > Videos: play an audio file from the board or a USB stick.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio from files or USB'**
+  String get insertLocalAudio;
+
+  /// Insert category: an audio file.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get insertAudioCategory;
+
+  /// The media pane could not open a video or audio file.
+  ///
+  /// In en, this message translates to:
+  /// **'This board cannot play this file.'**
+  String get mediaCannotPlay;
+
+  /// Media pane: a pen that writes over the video.
+  ///
+  /// In en, this message translates to:
+  /// **'Write on it'**
+  String get mediaAnnotate;
+
+  /// Media pane: remove what was written over the video.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear writing'**
+  String get mediaClearInk;
+
+  /// Recordings list: this recording has a video of the lecture.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get recVideo;
+
+  /// Recordings list: show the QR code to the lecture video.
+  ///
+  /// In en, this message translates to:
+  /// **'QR code'**
+  String get recShareQr;
+
+  /// Title of the QR code dialog for a lecture video.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to watch the lesson'**
+  String get recLinkTitle;
+
+  /// Under the QR code: when the share link stops working.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone with this QR code or link can watch the video until {time}.'**
+  String recLinkExpires(String time);
+
+  /// The share link to a lecture video could not be made.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not make a link: {error}'**
+  String recLinkFailed(String error);
+
+  /// Lesson recording started, but the board could not record a video.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording without video: {reason}'**
+  String recordingNoVideo(String reason);
+
+  /// Live class: turn the teacher camera tile on.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my camera'**
+  String get cameraShow;
+
+  /// Live class: turn the teacher camera tile off.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide my camera'**
+  String get cameraHide;
+
+  /// Camera tile: the camera is being sent to students watching remotely.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get cameraLive;
+
+  /// Shown when the teacher turns the camera on during a live class.
+  ///
+  /// In en, this message translates to:
+  /// **'Students watching this live class on Zynetix see your camera.'**
+  String get cameraLiveNote;
+
+  /// The teacher camera could not start.
+  ///
+  /// In en, this message translates to:
+  /// **'No camera is available on this board.'**
+  String get cameraNotAvailable;
 }
 
 class _AppLocalizationsDelegate

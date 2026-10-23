@@ -13,6 +13,7 @@ import '../../../demo/demo.dart';
 import '../sb_strings.dart';
 import '../../../l10n/l10n.dart';
 import '../../kiosk/kiosk_ui.dart';
+import '../../live/teacher_camera_tile.dart';
 import '../../search/search_strings.dart';
 import '../chrome.dart';
 import 'layout_strings.dart';
@@ -370,6 +371,8 @@ class _ClassBarState extends State<ClassBar> {
                   ],
                   gap,
                   ClassAudioButton(board: board),
+                  // The teacher camera, for a live (hybrid) class or while it is on.
+                  if (board.classLive || board.teacherCamera.on) TeacherCameraButton(board: board),
                 ],
               ],
               if (s == null && widget.contextChip != null) ...[gap, widget.contextChip!],

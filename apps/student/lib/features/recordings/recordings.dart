@@ -75,7 +75,7 @@ class RecordingRow extends StatelessWidget {
         child: Row(
           children: [
             IconBadge(
-              Icons.play_arrow_rounded,
+              r.hasVideo ? Icons.smart_display_rounded : Icons.play_arrow_rounded,
               background: r.missed ? c.errorContainer : c.tertiaryContainer,
               foreground: r.missed ? c.onErrorContainer : c.onTertiaryContainer,
             ),

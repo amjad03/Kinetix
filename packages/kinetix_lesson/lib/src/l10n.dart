@@ -44,6 +44,12 @@ abstract class LessonStrings {
   String get transcriptPending;
   String get keyPoints;
   String get chapters;
+
+  /// The lecture video could not play: the board replay is shown instead.
+  String get videoUnavailable;
+
+  /// Switches from the lecture video to the board replay.
+  String get boardReplay;
   String get retry;
   String get loadFailed;
   String get recordingNotShared;
@@ -92,6 +98,10 @@ class _En extends LessonStrings {
   String get keyPoints => 'Key points';
   @override
   String get chapters => 'Chapters';
+  @override
+  String get videoUnavailable => "The video can't play on this device, so the board replay is shown.";
+  @override
+  String get boardReplay => 'Board replay';
   @override
   String get retry => 'Retry';
   @override
@@ -148,6 +158,10 @@ class _Hi extends LessonStrings {
   @override
   String get chapters => 'अध्याय';
   @override
+  String get videoUnavailable => 'इस डिवाइस पर वीडियो नहीं चल सकता, इसलिए बोर्ड रीप्ले दिखाया गया है।';
+  @override
+  String get boardReplay => 'बोर्ड रीप्ले';
+  @override
   String get retry => 'फिर से कोशिश करें';
   @override
   String get loadFailed => 'यह पाठ लोड नहीं हो सका। फिर से कोशिश करें।';
@@ -202,6 +216,10 @@ class _Kn extends LessonStrings {
   String get keyPoints => 'ಮುಖ್ಯ ಅಂಶಗಳು';
   @override
   String get chapters => 'ಅಧ್ಯಾಯಗಳು';
+  @override
+  String get videoUnavailable => 'ಈ ಸಾಧನದಲ್ಲಿ ವೀಡಿಯೊ ಪ್ಲೇ ಆಗುವುದಿಲ್ಲ, ಆದ್ದರಿಂದ ಬೋರ್ಡ್ ರೀಪ್ಲೇ ತೋರಿಸಲಾಗಿದೆ.';
+  @override
+  String get boardReplay => 'ಬೋರ್ಡ್ ರೀಪ್ಲೇ';
   @override
   String get retry => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
   @override

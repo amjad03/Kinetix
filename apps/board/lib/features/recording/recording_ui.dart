@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../classroom_plus/plus_strings.dart';
 import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/recording/lesson_capture.dart';
 import '../../core/recording/recordings.dart';
@@ -317,7 +320,8 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
       _when(context, r.startedAt),
       formatElapsed(Duration(milliseconds: r.durationMs)),
       r.sectionName,
-      r.hasAudio ? null : l.recNoSound,
+      r.hasVideo ? l.recVideo : null,
+      r.hasAudio || r.hasVideo ? null : l.recNoSound,
       if (!mine) r.teacherName,
     ].whereType<String>().join(' · ');
     final (label, icon) = switch (status) {
@@ -332,6 +336,8 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
       action = TextButton.icon(onPressed: () => recs.retry(r.id), icon: const Icon(Icons.refresh, size: 18), label: Text(l.retry));
     } else if (r.uploaded && !shared && mine && r.sectionName != null) {
       action = _shareButton(r.id);
+    } else if (r.uploaded && shared && mine && (r.hasVideo || (cloud?.hasVideo ?? false))) {
+      action = _qrButton(r.id);
     }
     // The last error matters only while it can be retried, that is to the teacher who recorded it.
     final note = (mine ? r.error : null) ?? r.notShared;
@@ -353,7 +359,8 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
       _when(context, r.startedAt),
       if (r.durationMs != null) formatElapsed(Duration(milliseconds: r.durationMs!)),
       r.sectionName,
-      r.hasAudio ? null : l.recNoSound,
+      r.hasVideo ? l.recVideo : null,
+      r.hasAudio || r.hasVideo ? null : l.recNoSound,
     ].whereType<String>().join(' · ');
     return _row(
       context,
@@ -365,8 +372,29 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
         avatar: Icon(shared ? Icons.people_alt_outlined : Icons.cloud_done_outlined, size: 16),
         label: Text(shared ? l.shared : l.recUploaded),
       ),
-      action: !shared && r.sectionId != null ? _shareButton(r.id) : null,
+      action: !shared && r.sectionId != null ? _shareButton(r.id) : (shared && r.hasVideo ? _qrButton(r.id) : null),
     );
+  }
+
+  /// A QR code (and link) to the lecture video, for the class to scan.
+  Widget _qrButton(String id) => TextButton.icon(
+    key: Key('rec-qr-$id'),
+    onPressed: _busy.contains(id) ? null : () => unawaited(_showLink(id)),
+    icon: const Icon(Icons.qr_code_2, size: 18),
+    label: Text(context.l10n.recShareQr),
+  );
+
+  Future<void> _showLink(String id) async {
+    setState(() => _busy.add(id));
+    try {
+      final link = await widget.recordings.shareLink(id);
+      if (!mounted) return;
+      await showDialog<void>(context: context, builder: (_) => BoardChromeTheme(child: RecordingLinkDialog(link: link)));
+    } catch (e) {
+      if (mounted) showBoardMessage(context, context.l10n.recLinkFailed('$e'));
+    } finally {
+      if (mounted) setState(() => _busy.remove(id));
+    }
   }
 
   Widget _shareButton(String id) => TextButton.icon(
@@ -412,4 +440,43 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
   }
 
   static String _when(BuildContext context, DateTime t) => DateFormat('d MMM, HH:mm', context.dateLocale).format(t.toLocal());
+}
+
+/// The lecture video's share link as a QR code the class scans, with the link and when it
+/// stops working.
+class RecordingLinkDialog extends StatelessWidget {
+  const RecordingLinkDialog({super.key, required this.link});
+
+  final RecordingLink link;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final until = DateFormat('d MMM, HH:mm', context.dateLocale).format(link.expiresAt);
+    return AlertDialog(
+      key: const Key('rec-link'),
+      icon: const Icon(Icons.qr_code_2),
+      title: Text(l.recLinkTitle),
+      content: SizedBox(
+        width: 360,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                color: const Color(0xFFFFFFFF),
+                padding: const EdgeInsets.all(Kx.s12),
+                child: QrImageView(key: const Key('rec-link-qr'), data: link.url, size: 240),
+              ),
+              const SizedBox(height: Kx.s12),
+              SelectableText(link.url, key: const Key('rec-link-url'), textAlign: TextAlign.center),
+              const SizedBox(height: Kx.s8),
+              Text(l.recLinkExpires(until), textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      ),
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l.close))],
+    );
+  }
 }

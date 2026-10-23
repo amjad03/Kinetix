@@ -117,6 +117,16 @@ class MainActivity : FlutterActivity() {
                 result.error("overlay", e.message, null)
             }
         }
+        // The lecture video: the screen and microphone into an MP4 (ScreenRecorder.kt).
+        val screen = ScreenRecorder(this)
+        screenRecorder = screen
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zynetix/screen_recorder").setMethodCallHandler { call, result ->
+            try {
+                screen.handle(call.method, call.arguments, result)
+            } catch (e: Exception) {
+                result.error("unavailable", e.message, null)
+            }
+        }
         val projectorChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/projector")
         val p = Projector(this, projectorChannel)
         projector = p
@@ -144,13 +154,6 @@ class MainActivity : FlutterActivity() {
         moveTaskToBack(true)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != PROJECTION_REQUEST) return
-        // Declined: the overlay still works and saves the ink alone.
-        if (resultCode == RESULT_OK && data != null) startOverlay(resultCode, data) else startOverlay(null, null)
-    }
-
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         val capture = intent.getStringExtra(OverlayService.EXTRA_CAPTURE)
@@ -163,14 +166,33 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private var screenRecorder: ScreenRecorder? = null
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // The lecture video's screen-capture consent (ScreenRecorder.kt).
+        if (screenRecorder?.onActivityResult(requestCode, resultCode, data) == true) return
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != PROJECTION_REQUEST) return
+        // Write over apps. Declined: the overlay still works and saves the ink alone.
+        if (resultCode == RESULT_OK && data != null) startOverlay(resultCode, data) else startOverlay(null, null)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (screenRecorder?.onPermissionResult(requestCode) == true) return
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
     override fun onDestroy() {
         projector?.dispose()
         projector = null
         overlayChannel = null
+        screenRecorder?.dispose()
+        screenRecorder = null
         super.onDestroy()
     }
 
     companion object {
-        private const val PROJECTION_REQUEST = 7302
+        private const val PROJECTION_REQUEST = 7310
     }
 }

@@ -39,6 +39,7 @@ class RecordingInfo {
     required this.startedAt,
     required this.duration,
     this.hasAudio = false,
+    this.hasVideo = false,
     this.sectionId,
     this.sectionName,
     this.subjectName,
@@ -60,6 +61,7 @@ class RecordingInfo {
     startedAt: _instant(j['startedAt']) ?? DateTime.now(),
     duration: Duration(milliseconds: (j['durationMs'] as num?)?.toInt() ?? 0),
     hasAudio: j['hasAudio'] as bool? ?? false,
+    hasVideo: j['hasVideo'] as bool? ?? false,
     sectionId: j['sectionId'] as String?,
     sectionName: j['sectionName'] as String?,
     subjectName: j['subjectName'] as String?,
@@ -80,6 +82,9 @@ class RecordingInfo {
   final DateTime startedAt;
   final Duration duration;
   final bool hasAudio;
+
+  /// A video of the lecture (board view and voice) was recorded too.
+  final bool hasVideo;
   final String? sectionId;
   final String? sectionName;
   final String? subjectName;
@@ -113,6 +118,7 @@ class RecordingInfo {
     startedAt: startedAt,
     duration: duration,
     hasAudio: hasAudio,
+    hasVideo: hasVideo,
     sectionId: sectionId,
     sectionName: sectionName,
     subjectName: subjectName,

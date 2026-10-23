@@ -5114,4 +5114,65 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get shareWorking => 'भेजा जा रहा है…';
+
+  @override
+  String get insertVideosTitle => 'वीडियो';
+
+  @override
+  String get insertLocalVideo => 'फ़ाइल या USB से वीडियो';
+
+  @override
+  String get insertLocalAudio => 'फ़ाइल या USB से ऑडियो';
+
+  @override
+  String get insertAudioCategory => 'ऑडियो';
+
+  @override
+  String get mediaCannotPlay => 'यह बोर्ड यह फ़ाइल नहीं चला सकता।';
+
+  @override
+  String get mediaAnnotate => 'इस पर लिखें';
+
+  @override
+  String get mediaClearInk => 'लिखा हुआ मिटाएँ';
+
+  @override
+  String get recVideo => 'वीडियो';
+
+  @override
+  String get recShareQr => 'QR कोड';
+
+  @override
+  String get recLinkTitle => 'पाठ देखने के लिए स्कैन करें';
+
+  @override
+  String recLinkExpires(String time) {
+    return 'इस QR कोड या लिंक वाला कोई भी $time तक वीडियो देख सकता है।';
+  }
+
+  @override
+  String recLinkFailed(String error) {
+    return 'लिंक नहीं बन सका: $error';
+  }
+
+  @override
+  String recordingNoVideo(String reason) {
+    return 'बिना वीडियो के रिकॉर्डिंग: $reason';
+  }
+
+  @override
+  String get cameraShow => 'मेरा कैमरा दिखाएँ';
+
+  @override
+  String get cameraHide => 'मेरा कैमरा छिपाएँ';
+
+  @override
+  String get cameraLive => 'लाइव';
+
+  @override
+  String get cameraLiveNote =>
+      'Zynetix पर यह लाइव कक्षा देख रहे विद्यार्थी आपका कैमरा देखते हैं।';
+
+  @override
+  String get cameraNotAvailable => 'इस बोर्ड पर कोई कैमरा उपलब्ध नहीं है।';
 }

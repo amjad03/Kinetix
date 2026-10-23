@@ -14,6 +14,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   share_plus
   speech_to_text_windows
   url_launcher_windows
+  video_player_win
   webview_windows
 )
 

@@ -98,6 +98,19 @@ class _LiveClassScreenState extends State<LiveClassScreen> {
                     ),
                   ),
                 ),
+                // The teacher's camera, beside the board while the teacher has it on.
+                if (controller.cameraFrame != null && phase != LivePhase.ended && phase != LivePhase.failed)
+                  Positioned(
+                    right: Kx.s16,
+                    bottom: Kx.target + Kx.s16,
+                    child: SafeArea(
+                      child: ClipRRect(
+                        key: const Key('liveCamera'),
+                        borderRadius: Kx.radiusSm,
+                        child: Image.memory(controller.cameraFrame!, width: 160, gaplessPlayback: true, fit: BoxFit.cover),
+                      ),
+                    ),
+                  ),
                 if (chrome) ...[
                   Positioned(top: 0, left: 0, right: 0, child: _TopBar(controller: controller)),
                   Positioned(bottom: 0, left: 0, right: 0, child: _BottomBar(controller: controller)),

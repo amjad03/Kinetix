@@ -63,6 +63,9 @@ class LiveClassController extends ChangeNotifier {
   /// The teacher's microphone is on.
   bool audioOn = false;
 
+  /// The newest picture from the teacher's camera, while it is on.
+  Uint8List? cameraFrame;
+
   /// The student muted the class (unmuted each time the class is opened).
   bool muted = false;
 
@@ -120,6 +123,7 @@ class LiveClassController extends ChangeNotifier {
         if (deviceId != live.deviceId) return;
         endedReason = reason;
         audioOn = false;
+        cameraFrame = null;
         _syncAudio();
         _set(LivePhase.ended);
       case LiveAudioState(:final deviceId, :final on):
@@ -130,6 +134,14 @@ class LiveClassController extends ChangeNotifier {
       case LiveAudioChunk(:final deviceId, :final data):
         if (deviceId != live.deviceId || !_playing) return;
         audioPlayer?.feed(LiveAudioCodec.decodeBase64(data));
+      case LiveCameraState(:final deviceId, :final on):
+        if (deviceId != live.deviceId || on) return;
+        cameraFrame = null;
+        notifyListeners();
+      case LiveCameraFrame(:final deviceId, :final jpeg):
+        if (deviceId != live.deviceId || phase == LivePhase.ended) return;
+        cameraFrame = jpeg;
+        notifyListeners();
       case LiveDisconnected():
         _connected = false;
         if (phase == LivePhase.live || phase == LivePhase.joining) _set(LivePhase.reconnecting);

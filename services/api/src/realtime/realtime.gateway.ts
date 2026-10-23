@@ -1,6 +1,6 @@
 import { BeforeApplicationShutdown, Inject, Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { RealtimeEvents, type LiveAudioChunk, type LiveAudioState, type LiveFrameEvent, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
+import { RealtimeEvents, type LiveAudioChunk, type LiveAudioState, type LiveCameraFrame, type LiveCameraState, type LiveFrameEvent, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import type { Namespace, Server, Socket } from 'socket.io';
 import { AuthGuard } from '../auth/auth.guard.js';
@@ -37,6 +37,8 @@ const MAX_FRAME_EVENTS = 5000;
 
 /** Largest audio chunk relayed (base64): about a second of 16 kHz ADPCM; boards send 200 ms. */
 const MAX_AUDIO_CHARS = 12_000;
+/** A camera picture: a 320-pixel JPEG is 10-30 KB; anything far bigger is not one. */
+const MAX_CAMERA_CHARS = 160_000;
 
 interface Watch {
   deviceId: string;
@@ -354,6 +356,37 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       codec: 'ima-adpcm',
       data: body.data,
     });
+  }
+
+  /** From the board: the teacher's camera went on or off. Viewers are told either way. */
+  @SubscribeMessage(RealtimeEvents.LiveCameraState)
+  async cameraState(@ConnectedSocket() socket: Socket, @MessageBody() body: LiveCameraState): Promise<{ ok: boolean }> {
+    const p = socket.data.principal as Principal | undefined;
+    if (!p || p.kind === 'user' || typeof body?.on !== 'boolean') return { ok: false };
+    this.server.to(liveRoom(p.deviceId)).emit(RealtimeEvents.LiveCameraState, { deviceId: p.deviceId, on: body.on });
+    await this.db
+      .withTenant(p.tenantId, (tx) =>
+        audit(tx, {
+          tenantId: p.tenantId,
+          actorType: 'device',
+          actorId: p.deviceId,
+          action: body.on ? 'live_camera.on' : 'live_camera.off',
+          subjectType: 'device',
+          subjectId: p.deviceId,
+        }),
+      )
+      .catch((e) => this.log.warn(`Audit failed: ${(e as Error).message}`));
+    return { ok: true };
+  }
+
+  /** From the board: a camera picture, relayed to the viewers allowed the class audio (the same audience). */
+  @SubscribeMessage(RealtimeEvents.LiveCamera)
+  async camera(@ConnectedSocket() socket: Socket, @MessageBody() body: LiveCameraFrame): Promise<void> {
+    const p = socket.data.principal as Principal | undefined;
+    if (!p || p.kind === 'user') return;
+    if (!body || typeof body.data !== 'string' || body.data.length > MAX_CAMERA_CHARS || body.mime !== 'image/jpeg' || !Number.isInteger(body.seq)) return;
+    if ((await this.listenerCount(p.deviceId)) === 0) return;
+    socket.to(audioRoom(p.deviceId)).emit(RealtimeEvents.LiveCamera, { deviceId: p.deviceId, seq: body.seq, mime: 'image/jpeg', data: body.data });
   }
 
   async listenerCount(deviceId: string): Promise<number> {

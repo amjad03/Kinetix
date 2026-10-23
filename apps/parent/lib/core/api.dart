@@ -353,7 +353,7 @@ abstract class ParentApi {
 }
 
 /// Lets the lesson player load recordings through a [ParentApi].
-class ParentLessonSource implements LessonSource {
+class ParentLessonSource implements LessonSource, LessonVideoSource {
   ParentLessonSource(this.api);
 
   final ParentApi api;
@@ -378,6 +378,13 @@ class ParentLessonSource implements LessonSource {
   @override
   LessonAudioLocation? audio(String id) => LessonAudioLocation(
     Uri.parse('${api.baseUrl}/v1/recordings/$id/audio'),
+    headers: {if (api.token != null) 'authorization': 'Bearer ${api.token}'},
+  );
+
+  /// The lecture video (board view and voice), streamed with Range requests.
+  @override
+  LessonAudioLocation? video(String id) => LessonAudioLocation(
+    Uri.parse('${api.baseUrl}/v1/recordings/$id/video'),
     headers: {if (api.token != null) 'authorization': 'Bearer ${api.token}'},
   );
 }

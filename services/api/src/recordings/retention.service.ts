@@ -113,7 +113,7 @@ export class RetentionService implements OnModuleInit {
     });
     if (!rec) return false;
     // Files go first: if this fails the row stays, and tomorrow's run tries again.
-    for (const key of [rec.rec.eventsKey, rec.rec.audioKey]) if (key) await this.storage.delete(key);
+    for (const key of [rec.rec.eventsKey, rec.rec.audioKey, rec.rec.videoKey]) if (key) await this.storage.delete(key);
     await this.db.withTenant(tenantId, async (tx) => {
       const r = rec.rec;
       await tx.delete(recordings).where(eq(recordings.id, id));

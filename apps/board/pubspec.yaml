@@ -79,6 +79,12 @@ dependencies:
   battery_plus: ^7.1.2
   disk_space_plus: ^0.2.6
   url_launcher: ^6.3.3
+  # Local video files (Insert -> Videos from files/USB) in the media pane; video_player_win
+  # plays them on Windows panels (Android and macOS are in video_player itself).
+  video_player: ^2.11.1
+  video_player_win: ^3.3.1
+  # JPEG frames of the teacher camera for viewers of a live class.
+  image: ^4.10.1
 
 dev_dependencies:
   flutter_test:

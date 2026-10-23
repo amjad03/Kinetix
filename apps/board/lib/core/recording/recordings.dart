@@ -10,6 +10,7 @@ import '../api_client.dart';
 import '../models.dart';
 import 'lesson_capture.dart';
 import 'recording_store.dart';
+import 'screen_video_recorder.dart';
 import 'voice_recorder.dart';
 
 /// A recording as `GET /v1/recordings` lists it.
@@ -20,6 +21,7 @@ class RecordingSummary {
     required this.startedAt,
     this.durationMs,
     this.hasAudio = false,
+    this.hasVideo = false,
     this.sectionId,
     this.sectionName,
     this.subjectName,
@@ -33,6 +35,7 @@ class RecordingSummary {
     startedAt: DateTime.parse(j['startedAt'] as String),
     durationMs: j['durationMs'] as int?,
     hasAudio: j['hasAudio'] as bool? ?? false,
+    hasVideo: j['hasVideo'] as bool? ?? false,
     sectionId: j['sectionId'] as String?,
     sectionName: j['sectionName'] as String?,
     subjectName: j['subjectName'] as String?,
@@ -45,6 +48,7 @@ class RecordingSummary {
   final DateTime startedAt;
   final int? durationMs;
   final bool hasAudio;
+  final bool hasVideo;
   final String? sectionId;
   final String? sectionName;
   final String? subjectName;
@@ -72,6 +76,10 @@ class LocalRecording {
     this.created = false,
     this.eventsSent = false,
     this.audioSent = false,
+    this.hasVideo = false,
+    this.videoMime,
+    this.videoChunksSent = 0,
+    this.videoSent = false,
     this.finishedAt,
     this.sharedAt,
     this.notShared,
@@ -95,6 +103,10 @@ class LocalRecording {
     created: j['created'] as bool? ?? false,
     eventsSent: j['eventsSent'] as bool? ?? false,
     audioSent: j['audioSent'] as bool? ?? false,
+    hasVideo: j['hasVideo'] as bool? ?? false,
+    videoMime: j['videoMime'] as String?,
+    videoChunksSent: j['videoChunksSent'] as int? ?? 0,
+    videoSent: j['videoSent'] as bool? ?? false,
     finishedAt: j['finishedAt'] == null ? null : DateTime.parse(j['finishedAt'] as String),
     sharedAt: j['sharedAt'] == null ? null : DateTime.parse(j['sharedAt'] as String),
     notShared: j['notShared'] as String?,
@@ -122,6 +134,13 @@ class LocalRecording {
   bool created;
   bool eventsSent;
   bool audioSent;
+
+  /// The lecture video: sent in chunks of [Recordings.videoChunkBytes]; [videoChunksSent] of
+  /// them are on the server, and [videoSent] once the server has joined them.
+  final bool hasVideo;
+  final String? videoMime;
+  int videoChunksSent;
+  bool videoSent;
   DateTime? finishedAt;
   DateTime? sharedAt;
 
@@ -152,6 +171,10 @@ class LocalRecording {
     'created': created,
     'eventsSent': eventsSent,
     'audioSent': audioSent,
+    'hasVideo': hasVideo,
+    'videoMime': videoMime,
+    'videoChunksSent': videoChunksSent,
+    'videoSent': videoSent,
     'finishedAt': finishedAt?.toUtc().toIso8601String(),
     'sharedAt': sharedAt?.toUtc().toIso8601String(),
     'notShared': notShared,
@@ -175,13 +198,28 @@ class LocalRecording {
 /// keeps them, and the board's disk is shared by every class); the small metadata file stays
 /// [keepUploaded] so the list can show what was uploaded.
 class Recordings extends ChangeNotifier {
-  Recordings({RecordingStore? store, VoiceRecorder Function()? voice, this.keepUploaded = const Duration(days: 7), DateTime Function()? clock})
-    : _store = store ?? FileRecordingStore(),
-      _voice = voice ?? MicVoiceRecorder.new,
-      _now = clock ?? DateTime.now;
+  Recordings({
+    RecordingStore? store,
+    VoiceRecorder Function()? voice,
+    ScreenVideoRecorder Function({BoardFrameSource? frames})? video,
+    this.keepUploaded = const Duration(days: 7),
+    this.videoChunkBytes = 8 * 1024 * 1024,
+    DateTime Function()? clock,
+  }) : _store = store ?? FileRecordingStore(),
+       _voice = voice ?? MicVoiceRecorder.new,
+       _video = video ?? defaultScreenVideoRecorder,
+       _now = clock ?? DateTime.now;
 
   final RecordingStore _store;
   final VoiceRecorder Function() _voice;
+  final ScreenVideoRecorder Function({BoardFrameSource? frames}) _video;
+
+  /// The size of each uploaded piece of a lecture video (the server takes up to 16 MB).
+  final int videoChunkBytes;
+
+  /// Whether lessons are recorded as a video too (board config `recordingVideo: false` turns
+  /// it off; the ink and voice are recorded either way).
+  bool videoEnabled = true;
   final DateTime Function() _now;
   final Duration keepUploaded;
 
@@ -246,8 +284,17 @@ class Recordings extends ChangeNotifier {
   // --- Capturing ---------------------------------------------------------------------------
 
   /// A new capture of [board], ready to [LessonCapture.start].
-  Future<LessonCapture> newCapture({required String id, required RecordableBoard board, required BoardBackground background, required Size canvas}) async {
+  /// [frames] pictures the board, for boards that build the video from frames.
+  Future<LessonCapture> newCapture({
+    required String id,
+    required RecordableBoard board,
+    required BoardBackground background,
+    required Size canvas,
+    BoardFrameSource? frames,
+  }) async {
     final audioPath = await _store.prepare(id);
+    final video = videoEnabled ? _video(frames: frames) : null;
+    final videoPath = video == null ? null : await _store.prepareVideo(id, video.extension);
     return LessonCapture(
       id: id,
       board: board,
@@ -256,6 +303,8 @@ class Recordings extends ChangeNotifier {
       voice: _voice(),
       audioPath: audioPath,
       sessionId: _session()?.sessionId,
+      video: video,
+      videoPath: videoPath,
     );
   }
 
@@ -273,6 +322,8 @@ class Recordings extends ChangeNotifier {
       teacherId: teacher.teacherId,
       teacherName: teacher.teacherName,
       hasAudio: c.hasAudio,
+      hasVideo: c.hasVideo,
+      videoMime: c.videoMime,
       savedAt: _now(),
       sessionId: c.sessionId,
       sectionName: teacher.sectionName,
@@ -391,8 +442,9 @@ class Recordings extends ChangeNotifier {
   Future<void> _upload(LocalRecording r) async {
     _uploadingId = r.id;
     final audioBytes = r.hasAudio && !r.audioSent ? await _store.audioLength(r.id) ?? 0 : 0;
+    final videoBytes = r.hasVideo && !r.videoSent ? await _store.videoLength(r.id) ?? 0 : 0;
     final events = r.eventsSent ? null : await _store.readEvents(r.id);
-    _total = (events?.length ?? 0) + audioBytes;
+    _total = (events?.length ?? 0) + audioBytes + (videoBytes - r.videoChunksSent * videoChunkBytes).clamp(0, videoBytes);
     _sent = 0;
     notifyListeners();
 
@@ -421,6 +473,26 @@ class Recordings extends ChangeNotifier {
       r.eventsSent = true;
       _sent = events.length;
       notifyListeners();
+      await _persist(r);
+    }
+
+    if (r.hasVideo && !r.videoSent && !finished && videoBytes > 0) {
+      final chunks = (videoBytes + videoChunkBytes - 1) ~/ videoChunkBytes;
+      try {
+        for (var i = r.videoChunksSent; i < chunks; i++) {
+          final bytes = await _store.readVideo(r.id, i * videoChunkBytes, videoChunkBytes);
+          await _apiOrThrow(r).uploadRecordingVideoChunk(r.id, i, bytes);
+          r.videoChunksSent = i + 1;
+          _sent += bytes.length;
+          notifyListeners();
+          await _persist(r);
+        }
+        await _apiOrThrow(r).finalizeRecordingVideo(r.id, chunks: chunks, mime: r.videoMime ?? 'video/mp4');
+      } on ApiException catch (e) {
+        if (!_alreadyFinished(e)) rethrow;
+        finished = true;
+      }
+      r.videoSent = true;
       await _persist(r);
     }
 
@@ -491,6 +563,14 @@ class Recordings extends ChangeNotifier {
     return api.recordings();
   }
 
+  /// A link (shown as a QR code) that plays an uploaded, shared lecture video in any browser
+  /// until it expires.
+  Future<RecordingLink> shareLink(String id, {int hours = 48}) async {
+    final api = _api();
+    if (api == null || api.sessionToken == null) throw StateError('Sign in to share recordings');
+    return api.recordingShareLink(id, hours: hours);
+  }
+
   /// Shares an uploaded recording with its class.
   Future<RecordingSummary> share(String id) async {
     final api = _api();
@@ -514,3 +594,13 @@ class Recordings extends ChangeNotifier {
 }
 
 class _SessionGone implements Exception {}
+
+/// A share link to a lecture video: `POST /v1/recordings/:id/share-links`.
+class RecordingLink {
+  const RecordingLink({required this.url, required this.expiresAt});
+
+  factory RecordingLink.fromJson(Map<String, dynamic> j) => RecordingLink(url: j['url'] as String, expiresAt: DateTime.parse(j['expiresAt'] as String).toLocal());
+
+  final String url;
+  final DateTime expiresAt;
+}

@@ -177,6 +177,71 @@ describe('lesson recordings', () => {
     await http().put(`/v1/recordings/${fresh}/audio`).set(auth('teacher')).set('content-type', 'audio/mp4').send(audio).expect(403);
   });
 
+  it('assembles a chunked lecture video, streams it with ranges and shares it by an expiring link', async () => {
+    await drain();
+    const video = Buffer.from(Array.from({ length: 70_000 }, (_, i) => (i * 7) % 256));
+    const parts = [video.subarray(0, 30_000), video.subarray(30_000, 60_000), video.subarray(60_000)];
+    const id = randomUUID();
+    await http().put(`/v1/recordings/${id}`).set(auth('board')).send({ title: 'Goodwill (video)', startedAt: clock.at.toISOString() }).expect(200);
+    await http().put(`/v1/recordings/${id}/events`).set(auth('board')).send(lessonLog).expect(204);
+    const chunk = (i: number, body: Buffer) => http().put(`/v1/recordings/${id}/video/chunks/${i}`).set(auth('board')).set('content-type', 'application/octet-stream').send(body);
+    // Out of order, with a retried chunk; the teacher's own account cannot upload.
+    await chunk(2, parts[2]).expect(204);
+    await chunk(0, Buffer.from('partial')).expect(204);
+    await chunk(0, parts[0]).expect(204);
+    await http().put(`/v1/recordings/${id}/video/chunks/1`).set(auth('teacher')).send(parts[1]).expect(403);
+    await chunk(-1 as unknown as number, parts[1]).expect(400);
+    const early = await http().post(`/v1/recordings/${id}/video/finalize`).set(auth('board')).send({ chunks: 3, mime: 'video/mp4' }).expect(400);
+    expect(early.body.message).toContain('missing: 1');
+    await chunk(1, parts[1]).expect(204);
+    const fin = await http().post(`/v1/recordings/${id}/video/finalize`).set(auth('board')).send({ chunks: 3, mime: 'video/mp4' }).expect(200);
+    expect(fin.body).toMatchObject({ hasVideo: true, hasAudio: false });
+    await http().post(`/v1/recordings/${id}/video/finalize`).set(auth('board')).send({ chunks: 3 }).expect(200); // idempotent
+    await chunk(0, parts[0]).expect(400); // assembled already
+
+    // No link before the class can watch it.
+    await http().post(`/v1/recordings/${id}/share-links`).set(auth('board')).send({}).expect(400);
+    const done = await http().post(`/v1/recordings/${id}/finish`).set(auth('board')).send({ durationMs: 90_000, share: true }).expect(200);
+    expect(done.body).toMatchObject({ hasVideo: true, transcriptState: 'queued' });
+    expect(await drain()).toBe(2); // transcribed from the video's sound
+    expect(asr.calls.at(-1)).toEqual({ bytes: video.length, mime: 'video/mp4', language: 'en' });
+
+    // The class lists and streams it, with Range requests.
+    const listed = await http().get(`/v1/recordings?sectionId=${t.section.id}`).set(auth('student')).expect(200);
+    expect(listed.body.find((r: { id: string }) => r.id === id)).toMatchObject({ hasVideo: true });
+    const whole = await http().get(`/v1/recordings/${id}/video`).set(auth('student')).buffer(true).expect(200);
+    expect(whole.headers['content-type']).toBe('video/mp4');
+    expect(Buffer.compare(whole.body as Buffer, video)).toBe(0);
+    const part = await http().get(`/v1/recordings/${id}/video`).set(auth('parent')).set('range', 'bytes=29990-30009').buffer(true).expect(206);
+    expect(part.headers['content-range']).toBe(`bytes 29990-30009/${video.length}`);
+    expect(Buffer.compare(part.body as Buffer, video.subarray(29_990, 30_010))).toBe(0);
+    await http().get(`/v1/recordings/${id}/video`).set(auth('outsider')).expect(404);
+    await http().get(`/v1/recordings/${id}/video`).set(auth('student')).set('range', 'bytes=70000-').expect(416);
+
+    // A share link (the board's QR code) plays it without signing in until it expires.
+    await http().post(`/v1/recordings/${id}/share-links`).set(auth('teacher2')).send({}).expect(404);
+    const link = await http().post(`/v1/recordings/${id}/share-links`).set(auth('board')).send({ expiresInHours: 2 }).expect(201);
+    expect(link.body.url).toMatch(new RegExp(`/v1/public/recordings/${t.slug}/[0-9a-f]{32}$`));
+    const path = new URL(link.body.url).pathname;
+    const page = await http().get(path).expect(200);
+    expect(page.headers['content-type']).toContain('text/html');
+    expect(page.text).toContain('Goodwill (video)');
+    const info = await http().get(`${path}/info`).expect(200);
+    expect(info.body).toMatchObject({ id, title: 'Goodwill (video)', sectionName: 'BCom Sem 3 A' });
+    const pub = await http().get(`${path}/video`).set('range', 'bytes=0-99').buffer(true).expect(206);
+    expect(Buffer.compare(pub.body as Buffer, video.subarray(0, 100))).toBe(0);
+    await http().get(path.replace(t.slug, other.slug)).expect(404);
+    await http().get(`${path.slice(0, -1)}0/video`).expect(404);
+
+    const now = clock.at;
+    clock.at = new Date(now.getTime() + 3 * 3600_000);
+    await http().get(`${path}/video`).expect(404); // expired
+    clock.at = now;
+    await http().get(`${path}/info`).expect(200);
+    await http().delete(`/v1/recordings/${id}/share-links`).set(auth('teacher')).expect(204);
+    await http().get(`${path}/info`).expect(404); // revoked
+  });
+
   it('retries a failed transcription with backoff', async () => {
     await drain(); // earlier tests' jobs
     asr.failNext = 1;

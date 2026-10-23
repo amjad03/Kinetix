@@ -9,7 +9,7 @@ import 'app_info.dart';
 import 'fleet/system_stats.dart' show AiUsageMeter;
 import 'models.dart';
 import 'offline_codes.dart';
-import 'recording/recordings.dart' show RecordingSummary;
+import 'recording/recordings.dart' show RecordingLink, RecordingSummary;
 
 class ApiException implements Exception {
   ApiException(this.status, this.message, {this.code, this.body = const {}});
@@ -307,6 +307,18 @@ class ApiClient {
     });
     return _sendRaw('PUT', '/v1/recordings/$id/audio', mime, length, counted);
   }
+
+  /// One chunk of the lecture video (numbered from 0); a retry replaces it.
+  Future<void> uploadRecordingVideoChunk(String id, int index, Uint8List bytes) =>
+      _sendRaw('PUT', '/v1/recordings/$id/video/chunks/$index', 'application/octet-stream', bytes.length, Stream.value(bytes));
+
+  /// Every chunk is up: the server joins them into the recording's video.
+  Future<RecordingSummary> finalizeRecordingVideo(String id, {required int chunks, required String mime}) async =>
+      RecordingSummary.fromJson(await _send('POST', '/v1/recordings/$id/video/finalize', body: {'chunks': chunks, 'mime': mime}) as Map<String, dynamic>);
+
+  /// A link (QR code) to a shared lecture video that expires after [hours].
+  Future<RecordingLink> recordingShareLink(String id, {int hours = 48}) async =>
+      RecordingLink.fromJson(await _send('POST', '/v1/recordings/$id/share-links', body: {'expiresInHours': hours}) as Map<String, dynamic>);
 
   Future<RecordingSummary> finishRecording(String id, {required int durationMs, required bool share}) async =>
       RecordingSummary.fromJson(await _send('POST', '/v1/recordings/$id/finish', body: {'durationMs': durationMs, 'share': share}) as Map<String, dynamic>);

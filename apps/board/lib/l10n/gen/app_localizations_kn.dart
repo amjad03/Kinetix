@@ -5125,4 +5125,65 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get shareWorking => 'ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ…';
+
+  @override
+  String get insertVideosTitle => 'ವೀಡಿಯೊಗಳು';
+
+  @override
+  String get insertLocalVideo => 'ಫೈಲ್ ಅಥವಾ USB ಯಿಂದ ವೀಡಿಯೊ';
+
+  @override
+  String get insertLocalAudio => 'ಫೈಲ್ ಅಥವಾ USB ಯಿಂದ ಆಡಿಯೊ';
+
+  @override
+  String get insertAudioCategory => 'ಆಡಿಯೊ';
+
+  @override
+  String get mediaCannotPlay => 'ಈ ಬೋರ್ಡ್ ಈ ಫೈಲ್ ಅನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.';
+
+  @override
+  String get mediaAnnotate => 'ಇದರ ಮೇಲೆ ಬರೆಯಿರಿ';
+
+  @override
+  String get mediaClearInk => 'ಬರಹ ಅಳಿಸಿ';
+
+  @override
+  String get recVideo => 'ವೀಡಿಯೊ';
+
+  @override
+  String get recShareQr => 'QR ಕೋಡ್';
+
+  @override
+  String get recLinkTitle => 'ಪಾಠ ನೋಡಲು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ';
+
+  @override
+  String recLinkExpires(String time) {
+    return 'ಈ QR ಕೋಡ್ ಅಥವಾ ಲಿಂಕ್ ಇರುವ ಯಾರಾದರೂ $time ವರೆಗೆ ವೀಡಿಯೊ ನೋಡಬಹುದು.';
+  }
+
+  @override
+  String recLinkFailed(String error) {
+    return 'ಲಿಂಕ್ ಮಾಡಲಾಗಲಿಲ್ಲ: $error';
+  }
+
+  @override
+  String recordingNoVideo(String reason) {
+    return 'ವೀಡಿಯೊ ಇಲ್ಲದೆ ರೆಕಾರ್ಡಿಂಗ್: $reason';
+  }
+
+  @override
+  String get cameraShow => 'ನನ್ನ ಕ್ಯಾಮೆರಾ ತೋರಿಸಿ';
+
+  @override
+  String get cameraHide => 'ನನ್ನ ಕ್ಯಾಮೆರಾ ಮರೆಮಾಡಿ';
+
+  @override
+  String get cameraLive => 'ಲೈವ್';
+
+  @override
+  String get cameraLiveNote =>
+      'Zynetix ನಲ್ಲಿ ಈ ಲೈವ್ ತರಗತಿಯನ್ನು ನೋಡುತ್ತಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳು ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ನೋಡುತ್ತಾರೆ.';
+
+  @override
+  String get cameraNotAvailable => 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಯಾವುದೇ ಕ್ಯಾಮೆರಾ ಲಭ್ಯವಿಲ್ಲ.';
 }
