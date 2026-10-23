@@ -37,7 +37,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter "@kinetix/api..."
 COPY packages/shared packages/shared
 COPY services/api services/api
-RUN pnpm --filter @kinetix/shared build && pnpm --filter @kinetix/api build
+RUN NODE_OPTIONS=--max-old-space-size=3584 pnpm --filter @kinetix/shared build && NODE_OPTIONS=--max-old-space-size=3584 pnpm --filter @kinetix/api build
 
 FROM manifests AS prod-deps
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \

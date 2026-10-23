@@ -68,7 +68,9 @@ IP="$( (ipconfig getifaddr en0 || ipconfig getifaddr en1 || hostname -I | awk '{
 IP="${IP:-localhost}"
 
 echo "== Starting Postgres, Redis, migrations, API, ERP (first run builds images: several minutes)"
-$DC up -d --build --wait
+# One image at a time: compiling the API needs ~3 GB, too much alongside the others on an 8 GB Mac.
+COMPOSE_PARALLEL_LIMIT=1 $DC build
+$DC up -d --wait
 echo "== Seeding the SDMCET demo (safe to re-run)"
 $DC --profile seed-sdmcet run --rm seed-sdmcet
 $DC --profile seed-sdmcet up -d sdmcet-heartbeat
