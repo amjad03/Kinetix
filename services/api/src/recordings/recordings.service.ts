@@ -17,6 +17,9 @@ export const SUMMARIZE = 'recording.summarize';
 /** Longest transcript sent for a summary (about an hour of speech). */
 const MAX_TRANSCRIPT_CHARS = 60_000;
 
+/** Largest lecture video whose sound track is sent for a transcript (when there is no voice file). */
+export const MAX_TRANSCRIBE_VIDEO_BYTES = 200 * 1024 * 1024;
+
 /** Recording queries, sharing, and the after-class jobs: transcript, then summary. */
 @Injectable()
 export class RecordingsService implements OnModuleInit {
@@ -52,6 +55,7 @@ export class RecordingsService implements OnModuleInit {
         startedAt: recordings.startedAt,
         durationMs: recordings.durationMs,
         hasAudio: isNotNull(recordings.audioKey).mapWith(Boolean),
+        hasVideo: isNotNull(recordings.videoKey).mapWith(Boolean),
         sectionId: recordings.sectionId,
         sectionName: sections.displayName,
         subjectName: subjects.name,
@@ -103,11 +107,14 @@ export class RecordingsService implements OnModuleInit {
 
   private async transcribe(job: Job): Promise<void> {
     const rec = await this.db.withTenant(job.tenantId, async (tx) => (await tx.select().from(recordings).where(eq(recordings.id, job.payload.recordingId)))[0]);
-    if (!rec?.audioKey) return;
-    const { stream } = await this.storage.get(rec.audioKey);
+    // The voice file when the board recorded one; otherwise the lecture video's sound track.
+    const key = rec?.audioKey ?? rec?.videoKey;
+    if (!rec || !key) return;
+    const mime = rec.audioKey ? (rec.audioMime ?? 'audio/mp4') : (rec.videoMime ?? 'video/mp4');
+    const { stream } = await this.storage.get(key);
     const chunks: Buffer[] = [];
     for await (const c of stream) chunks.push(c as Buffer);
-    const text = await this.asr.transcribe(Buffer.concat(chunks), rec.audioMime ?? 'audio/mp4', rec.language, { tenantId: job.tenantId, durationMs: rec.durationMs, userId: rec.ownerId, deviceId: rec.deviceId });
+    const text = await this.asr.transcribe(Buffer.concat(chunks), mime, rec.language, { tenantId: job.tenantId, durationMs: rec.durationMs, userId: rec.ownerId, deviceId: rec.deviceId });
     await this.db.withTenant(job.tenantId, async (tx) => {
       await tx
         .update(recordings)

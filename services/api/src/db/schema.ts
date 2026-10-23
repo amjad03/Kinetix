@@ -1179,6 +1179,10 @@ export const recordings = pgTable(
     audioKey: text('audio_key'),
     audioMime: text('audio_mime'),
     audioBytes: bigint('audio_bytes', { mode: 'number' }).notNull().default(0),
+    /** The lecture as a video (board view and microphone), assembled from uploaded chunks. */
+    videoKey: text('video_key'),
+    videoMime: text('video_mime'),
+    videoBytes: bigint('video_bytes', { mode: 'number' }).notNull().default(0),
     /** Set when the board has uploaded everything; the recording can be played from then on. */
     finishedAt: timestamp('finished_at', { withTimezone: true }),
     transcriptState: processingState('transcript_state').notNull().default('none'),
@@ -1194,6 +1198,25 @@ export const recordings = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [index('recordings_owner_idx').on(t.ownerId, t.startedAt), index('recordings_section_idx').on(t.sectionId, t.sharedAt)],
+);
+
+/** A link (and QR code) that lets anyone holding it watch a recording's video until it expires. */
+export const recordingShareLinks = pgTable(
+  'recording_share_links',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: tenantId(),
+    recordingId: uuid('recording_id')
+      .notNull()
+      .references(() => recordings.id, { onDelete: 'cascade' }),
+    /** sha256 of the token; the token itself is only in the link. */
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('recording_share_links_token_idx').on(t.tokenHash), index('recording_share_links_recording_idx').on(t.recordingId)],
 );
 
 export const jobState = pgEnum('job_state', ['queued', 'running', 'done', 'failed']);
