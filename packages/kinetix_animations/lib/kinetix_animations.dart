@@ -1,4 +1,4 @@
-/// KINETIX animations: offline, procedurally drawn science animations for the Board's panel,
+/// Zynetix animations: offline, procedurally drawn science animations for the Board's panel,
 /// with stepped captions in English, Hindi and Kannada.
 library;
 

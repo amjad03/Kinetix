@@ -1,4 +1,4 @@
-/// KINETIX lesson playback: a recorded lesson's board in step with the teacher's voice, with
+/// Zynetix lesson playback: a recorded lesson's board in step with the teacher's voice, with
 /// its summary and transcript. Shared by the Parent, Student and Teacher apps, in English,
 /// Hindi and Kannada ([LessonStrings]).
 library;

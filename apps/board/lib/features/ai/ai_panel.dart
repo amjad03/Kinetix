@@ -17,7 +17,7 @@ import '../board/sb_strings.dart';
 import '../board/layout/tool_palette.dart';
 import 'smart_panels.dart';
 
-/// KINETIX AI: ask anything, plus the smart tools. Each tool opens as a page inside the
+/// Zynetix AI: ask anything, plus the smart tools. Each tool opens as a page inside the
 /// panel; the back arrow returns here.
 class AiPanel extends StatelessWidget {
   const AiPanel({super.key, required this.ai});
@@ -154,12 +154,12 @@ class _AiHomeState extends State<_AiHome> {
     return AiPanelPage(
       ai: ai,
       icon: Icons.auto_awesome,
-      title: 'KINETIX AI',
+      title: 'Zynetix AI',
       accent: aiAccent,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
         children: [
-          if (!ai.canUseAi) ...[const AiSignInNotice(), const SizedBox(height: Kx.s16)],
+          if (!ai.canUseAi) ...[AiSignInNotice(board: ai.board), const SizedBox(height: Kx.s16)],
           SearchBar(
             key: const Key('ai-ask'),
             controller: _question,

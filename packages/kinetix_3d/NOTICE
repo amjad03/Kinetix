@@ -1,4 +1,4 @@
-KINETIX 3D (packages/kinetix_3d)
+Zynetix 3D (packages/kinetix_3d)
 ================================
 
 This package ships third-party work. The viewer shows a short credit line under
@@ -16,7 +16,7 @@ Creative Commons Attribution 4.0 International
 (https://creativecommons.org/licenses/by/4.0/).
 Source: https://dbarchive.biosciencedbc.jp/en/bodyparts3d/
 
-KINETIX simplified the meshes, cut vessels short, split the ventricle wall into
+Zynetix simplified the meshes, cut vessels short, split the ventricle wall into
 left, right and septum, and added names, notes and animations in English, Hindi
 and Kannada (tool/models/recipes). The model files derived from BodyParts3D
 (assets/viewer3d/models/{heart,brain,digestive,lungs,eye,excretory,skeleton,skull,teeth}.*)
@@ -65,7 +65,7 @@ Natural Earth (https://www.naturalearthdata.com), which is in the public domain.
 
 - Coronavirus (assets/viewer3d/models/virus.*): "SARS-CoV-2 Virion (PathogenAR
   Version)", NIAID, NIH 3D entry 3DPX-014820 (https://3d.nih.gov/entries/3DPX-014820),
-  Creative Commons Attribution 4.0 International. KINETIX split it by colour into
+  Creative Commons Attribution 4.0 International. Zynetix split it by colour into
   the envelope and the two forms of the spike protein and simplified it.
 - Globe (globe.*): NASA Earth Observatory, Blue Marble: Next Generation
   (Reto Stöckli), public domain.
@@ -75,13 +75,13 @@ Natural Earth (https://www.naturalearthdata.com), which is in the public domain.
   domain; the delta picture is from NASA Worldview/GIBS (MODIS Aqua), public domain.
 - Compound microscope (microscope.*): "Omax compound microscope" by 3Donimus,
   from Poly Pizza (https://poly.pizza/m/dcuaH6bEkwn), Creative Commons
-  Attribution 3.0. KINETIX removed the display stand and cord and grouped the
+  Attribution 3.0. Zynetix removed the display stand and cord and grouped the
   pieces into named parts.
 - Inner ear (ear.*: cochlea, vestibule, semicircular canals): micro-CT surface of
   specimen F07, "Human Bony Labyrinth: Co-Registered CT and micro-CT Images, Surface
   Models and Anatomical Landmarks", W. Wimmer, L. Anschuetz, S. Weder, F. Wagner,
   H. Delingette, M. Caversaccio (2019), https://doi.org/10.5281/zenodo.3355272,
-  Creative Commons Attribution 4.0 International. KINETIX simplified it, split it into
+  Creative Commons Attribution 4.0 International. Zynetix simplified it, split it into
   three parts and placed it in the ear with the BodyParts3D pinna.
 - DNA atoms (dna.*, "every atom"): PDB entry 1BNA (Drew, Wing, Takano, Broka, Tanaka,
   Itakura, Dickerson, 1981), RCSB Protein Data Bank (https://www.rcsb.org), CC0.
@@ -94,7 +94,7 @@ Natural Earth (https://www.naturalearthdata.com), which is in the public domain.
 The full list with links is in docs/licensing/3D_MODELS.md.
 
 
-5. Built by KINETIX
+5. Built by Zynetix
 -------------------
 
 All other models (cells, neuron, flower, DNA, electric motor, prism, bar
@@ -104,7 +104,7 @@ circuit, AC generator, transformer, simple machines, nephron, engine,
 gears, lens bench, laboratory apparatus, the middle ear, the inside of the
 kidney, the downloadable tooth, skin, bacterium and mitochondrion, and the
 simplified Taj Mahal, Qutub Minar, India Gate and Konark Sun Temple) are built
-in code by KINETIX (tool/models/recipes) and use no downloaded assets.
+in code by Zynetix (tool/models/recipes) and use no downloaded assets.
 
 The build tools (tool/models) use three.js, esbuild, glTF-Transform,
 meshoptimizer, draco3dgltf and sharp as development dependencies only (see

@@ -187,9 +187,9 @@ class WhiteboardSummary {
   bool get shared => sharedAt != null;
 }
 
-// --- KINETIX AI ------------------------------------------------------------------------------
+// --- Zynetix AI ------------------------------------------------------------------------------
 
-/// Languages KINETIX AI writes in. The label is in the language itself.
+/// Languages Zynetix AI writes in. The label is in the language itself.
 enum AiLanguage {
   en('English', 'EN'),
   hi('हिन्दी', 'हि'),
@@ -224,7 +224,7 @@ class AiMeta {
   final bool cached;
   final bool preview;
 
-  /// Answered on the board from its offline notes (features/offline_ai), not by KINETIX AI:
+  /// Answered on the board from its offline notes (features/offline_ai), not by Zynetix AI:
   /// labelled "Offline sample". Always also [preview].
   final bool offline;
 
@@ -242,7 +242,7 @@ class SyllabusTopic {
   final String title;
   final String summary;
 
-  /// Added by the institution rather than the KINETIX library.
+  /// Added by the institution rather than the Zynetix library.
   final bool own;
 }
 
@@ -540,7 +540,7 @@ class LessonStep {
   final String activity;
 }
 
-/// What KINETIX AI read on a board page.
+/// What Zynetix AI read on a board page.
 class BoardReading {
   BoardReading({required this.text, required this.math});
   factory BoardReading.fromJson(Map<String, dynamic> j) =>

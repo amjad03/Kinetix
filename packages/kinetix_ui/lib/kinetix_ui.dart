@@ -1,4 +1,4 @@
-/// KINETIX design system: Material 3 in chalkboard green, Google Sans Flex, marigold for AI.
+/// Zynetix design system: Material 3 in chalkboard green, Google Sans Flex, marigold for AI.
 library;
 
 export 'src/badges.dart';
@@ -15,3 +15,4 @@ export 'src/theme.dart';
 export 'src/tokens.dart';
 export 'src/widgets.dart';
 export 'src/server_test.dart';
+export 'src/zynetix_logo.dart';

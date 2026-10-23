@@ -97,7 +97,7 @@ void main() {
     });
   });
 
-  group('KINETIX AI falls back to the notes', () {
+  group('Zynetix AI falls back to the notes', () {
     late List<http.Request> requests;
     late bool offline;
 
@@ -128,7 +128,7 @@ void main() {
       await c.ask('What is photosynthesis?');
       expect(c.explain.error, isNull);
       expect(c.explain.value!.meta.offline, isTrue);
-      expect(requests.where((r) => r.url.path == '/v1/ai/explain'), hasLength(1), reason: 'KINETIX AI is tried first');
+      expect(requests.where((r) => r.url.path == '/v1/ai/explain'), hasLength(1), reason: 'Zynetix AI is tried first');
 
       await c.generateQuiz('Pythagoras');
       expect(c.quiz.value!.meta.offline, isTrue);

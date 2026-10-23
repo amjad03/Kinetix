@@ -1,4 +1,4 @@
-// The Qutub Minar, Delhi (begun about 1199), drawn by KINETIX from its
+// The Qutub Minar, Delhi (begun about 1199), drawn by Zynetix from its
 // published measurements: 72.5 m high in five storeys, 14.3 m across at the
 // base and 2.7 m at the top. The first three storeys are red sandstone with
 // different flutes (round and angular, round, angular), the top two marble
@@ -39,7 +39,7 @@ export default {
     'ತನ್ನ ಕಾಲದ ಅತಿ ಎತ್ತರದ ಕಲ್ಲಿನ ಮಿನಾರು, 72.5 ಮೀ ಎತ್ತರ; ಸುಮಾರು 1199ರಲ್ಲಿ ಕುತುಬುದ್ದೀನ್ ಐಬಕ್ ಆರಂಭಿಸಿ ಇಲ್ತುತ್ಮಿಷ್ ಪೂರ್ಣಗೊಳಿಸಿದ; ಮೇಲಿನ ಅಂತಸ್ತುಗಳನ್ನು ಫಿರೋಜ್ ಶಾ ತುಘಲಕ್ ಮರುನಿರ್ಮಿಸಿದ. ನಿಜ ಅನುಪಾತದ ಸರಳ ಮಾದರಿ.',
   ),
   keywords: ['qutub minar', 'qutb minar', 'delhi sultanate', 'aibak', 'iltutmish', 'monument', 'minaret', 'architecture', 'delhi', 'world heritage', 'towns traders and craftspersons', 'the delhi sultans'],
-  credit: 'Simplified model drawn by KINETIX from published measurements',
+  credit: 'Simplified model drawn by Zynetix from published measurements',
   size: 0.6,
   crease: 30,
   matte: true,

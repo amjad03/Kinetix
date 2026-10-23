@@ -26,7 +26,7 @@ class PictureCredit {
   }
 }
 
-/// A picture in the bundled library (assets/library, from the KINETIX prototype).
+/// A picture in the bundled library (assets/library, from the Zynetix prototype).
 class LibraryPicture {
   const LibraryPicture(this.id, this.title, this.shelves, this.tags, this.size, this.credit);
 

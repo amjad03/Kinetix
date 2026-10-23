@@ -61,7 +61,7 @@ class _LessonPlanPanelState extends State<LessonPlanPanel> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
             children: [
-              if (!ai.canUseAi) ...[const AiSignInNotice(), const SizedBox(height: Kx.s16)],
+              if (!ai.canUseAi) ...[AiSignInNotice(board: ai.board), const SizedBox(height: Kx.s16)],
               TextField(
                 key: const Key('lesson-topic'),
                 controller: _topic,

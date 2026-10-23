@@ -61,15 +61,15 @@ describe('YouTube links', () => {
 
 describe('YouTube client', () => {
   it('gets the title from oEmbed without a key, and gives up quietly when offline', async () => {
-    const yt = new YouTube(undefined, fakeFetch([['https://www.youtube.com/oembed', { title: 'Goodwill in 5 minutes', author_name: 'KINETIX' }]]).fn);
-    expect(await yt.videoInfo(ID)).toEqual({ title: 'Goodwill in 5 minutes', channelTitle: 'KINETIX', durationSeconds: null });
+    const yt = new YouTube(undefined, fakeFetch([['https://www.youtube.com/oembed', { title: 'Goodwill in 5 minutes', author_name: 'Zynetix' }]]).fn);
+    expect(await yt.videoInfo(ID)).toEqual({ title: 'Goodwill in 5 minutes', channelTitle: 'Zynetix', durationSeconds: null });
     expect(await new YouTube(undefined, fakeFetch([]).fn).videoInfo(ID)).toBeNull();
     expect(await new YouTube(undefined, fakeFetch([['https://www.youtube.com/oembed', {}, 404]]).fn).videoInfo(ID)).toBeNull();
   });
 
   it('with a key, reads durations and pages through a playlist, skipping private videos', async () => {
     const f = fakeFetch([
-      ['https://www.googleapis.com/youtube/v3/videos', { items: [{ id: ID, snippet: { title: 'Goodwill', channelTitle: 'KINETIX' }, contentDetails: { duration: 'PT5M' } }] }],
+      ['https://www.googleapis.com/youtube/v3/videos', { items: [{ id: ID, snippet: { title: 'Goodwill', channelTitle: 'Zynetix' }, contentDetails: { duration: 'PT5M' } }] }],
       [
         'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails%2Cstatus&playlistId=PLabcdefghij&maxResults=50&key=k&pageToken=p2',
         { items: [{ snippet: { title: 'Third', position: 2 }, contentDetails: { videoId: 'ccccccccccc' } }] },
@@ -79,7 +79,7 @@ describe('YouTube client', () => {
         {
           nextPageToken: 'p2',
           items: [
-            { snippet: { title: 'First', position: 0, videoOwnerChannelTitle: 'KINETIX' }, contentDetails: { videoId: 'aaaaaaaaaaa' } },
+            { snippet: { title: 'First', position: 0, videoOwnerChannelTitle: 'Zynetix' }, contentDetails: { videoId: 'aaaaaaaaaaa' } },
             { snippet: { title: 'Private video', position: 1 }, contentDetails: { videoId: 'bbbbbbbbbbb' }, status: { privacyStatus: 'private' } },
           ],
         },
@@ -87,7 +87,7 @@ describe('YouTube client', () => {
     ]);
     const yt = new YouTube('k', f.fn);
     expect(yt.canListPlaylists).toBe(true);
-    expect(await yt.videoInfo(ID)).toEqual({ title: 'Goodwill', channelTitle: 'KINETIX', durationSeconds: 300 });
+    expect(await yt.videoInfo(ID)).toEqual({ title: 'Goodwill', channelTitle: 'Zynetix', durationSeconds: 300 });
     expect((await yt.playlistVideos('PLabcdefghij')).map((v) => [v.videoId, v.title, v.position])).toEqual([
       ['aaaaaaaaaaa', 'First', 0],
       ['ccccccccccc', 'Third', 2],
@@ -104,10 +104,10 @@ describe('matching and ordering', () => {
   ];
 
   it('guesses the topic of a playlist video from its title', () => {
-    expect(bestTopicFor('Super profit method | Valuation of goodwill | KINETIX', topics)).toBe('methods');
+    expect(bestTopicFor('Super profit method | Valuation of goodwill | Zynetix', topics)).toBe('methods');
     expect(bestTopicFor('What is goodwill? Meaning and nature', topics)).toBe('meaning');
     expect(bestTopicFor('Share valuation: yield method explained', topics)).toBe('shares');
-    expect(bestTopicFor('KINETIX channel trailer', topics)).toBeNull();
+    expect(bestTopicFor('Zynetix channel trailer', topics)).toBeNull();
   });
 
   it("puts the class's language first, then English, then the rest", () => {

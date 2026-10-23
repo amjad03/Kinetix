@@ -285,7 +285,7 @@ describe('analytics and reporting', () => {
       expect(buf.subarray(0, 2).toString()).toBe('PK');
       expect(buf.includes('programs.csv')).toBe(true);
       expect(buf.includes('README.txt')).toBe(true);
-      expect(buf.includes('Not recorded in KINETIX')).toBe(true);
+      expect(buf.includes('Not recorded in Zynetix')).toBe(true);
       await http().get('/v1/analytics/accreditation/naac').set(as('accountant')).expect(403);
       await http().get('/v1/analytics/accreditation/naac').set(as('teacher')).expect(403);
       await http().get('/v1/analytics/accreditation/ugc').set(as('principal')).expect(404);

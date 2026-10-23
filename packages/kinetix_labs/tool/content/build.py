@@ -3,7 +3,7 @@
 English, Hindi and Kannada. The experiments themselves (the benches) are Dart
 code in lib/src/benches/; this holds what a teacher reads out: aim,
 principle, apparatus, procedure, precautions, conclusion and viva questions.
-All text is written for KINETIX, never copied from a lab manual.
+All text is written for Zynetix, never copied from a lab manual.
 
 Sources:
   prototype_labs.json   the 31 labs of the prototype (ids kept: lessons link them)

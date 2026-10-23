@@ -131,7 +131,7 @@ class PhetPanel extends StatefulWidget {
   final PhetDownloads downloads;
   final PhetPanelController controller;
 
-  /// The period's subject (KINETIX's name, e.g. "Physics"), picked first when it matches.
+  /// The period's subject (Zynetix's name, e.g. "Physics"), picked first when it matches.
   final String? subject;
 
   @override

@@ -79,7 +79,7 @@ class WebRunner implements CodeRunner {
   }
 }
 
-/// C, C++ and Java on the institution's runner, through the KINETIX API
+/// C, C++ and Java on the institution's runner, through the Zynetix API
 /// (POST /v1/code/run). [endpoint] and [headers] come from the app's signed-in client.
 class ServerRunner implements CodeRunner {
   ServerRunner({required this.endpoint, required this.headers, this.newClient = http.Client.new});
@@ -130,7 +130,7 @@ class ServerRunner implements CodeRunner {
 }
 
 /// Where [l] can run, best first: on the device when it runs there ([deviceReady]), then the
-/// school code box when it runs [l] ([boxLanguages], null: no box), then the KINETIX server
+/// school code box when it runs [l] ([boxLanguages], null: no box), then the Zynetix server
 /// for C, C++ and Java ([hasServer]). Empty: nowhere, and [whyNot] says what to do.
 List<RunPlace> routeFor(CodeLanguage l, {required bool deviceReady, Set<CodeLanguage>? boxLanguages, bool hasServer = false}) => [
   if (l.onDevice && deviceReady) RunPlace.device,
@@ -149,7 +149,7 @@ String whyNot(CodeLanguage l, {required bool webView}) => switch (l) {
 /// The code lab's runner. Each run goes to the first place in [routeFor] that can take it and
 /// falls back to the next when that one cannot be reached: Python, JavaScript and SQL on the
 /// device (offline), C, C++ and Java on the school code box on the local network, then the
-/// KINETIX server. The result says where it ran ([RunResult.place]).
+/// Zynetix server. The result says where it ran ([RunResult.place]).
 class HybridRunner implements CodeRunner {
   HybridRunner({required this.web, required this.sql, this.server, this.box, this.python});
 

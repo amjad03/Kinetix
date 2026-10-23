@@ -56,7 +56,7 @@ export default {
     'ಹೆಲಿಕಲ್ ಗೇರ್‌ಗಳ ಹಲ್ಲುಗಳು ಓರೆಯಾಗಿ ಕತ್ತರಿಸಲ್ಪಟ್ಟಿವೆ; ಅವು ಕ್ರಮೇಣ ಹೊಂದಿಕೊಂಡು ಸಮಾನಾಂತರ ಅಚ್ಚುಗಳ ನಡುವೆ ಸದ್ದಿಲ್ಲದೆ ಓಡುತ್ತವೆ. ಬೆವೆಲ್ ಗೇರ್‌ಗಳು ಶಂಕುಗಳು; ಚಲನೆಯನ್ನು ಒಂದು ಕೋನದಲ್ಲಿ, ಸಾಮಾನ್ಯವಾಗಿ 90° ಯಲ್ಲಿ, ತಿರುಗಿಸುತ್ತವೆ.',
   ),
   keywords: ['gear', 'helical gear', 'bevel gear', 'helix angle', 'gear pair', 'pitch cone', 'gear ratio', 'differential', 'machines', 'kinematics', 'theory of machines', 'machine design', 'power transmission'],
-  credit: 'Model built by KINETIX (involute profiles, module 4 mm; bevel teeth simplified)',
+  credit: 'Model built by Zynetix (involute profiles, module 4 mm; bevel teeth simplified)',
   crease: 40,
   build(THREE) {
     // Bevel pair: gear 1 on the z axis, gear 2 on the x axis, cones meeting at the origin.

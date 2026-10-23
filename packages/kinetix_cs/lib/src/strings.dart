@@ -67,7 +67,7 @@ class CsStrings {
     'status_unavailable': ['Cannot run here', 'यहाँ नहीं चल सकता', 'ಇಲ್ಲಿ ನಡೆಸಲಾಗದು'],
     'status_rate_limited': ['Too many runs. Wait a minute.', 'बहुत बार चलाया। एक मिनट रुकें।', 'ತುಂಬಾ ಬಾರಿ ನಡೆಸಲಾಗಿದೆ. ಒಂದು ನಿಮಿಷ ಕಾಯಿರಿ.'],
     'why_signIn': ['Sign in to run C, C++ and Java.', 'C, C++ और Java चलाने के लिए साइन इन करें।', 'C, C++ ಮತ್ತು Java ನಡೆಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.'],
-    'why_noServer': ['C, C++ and Java run on the KINETIX server, which this app is not connected to.', 'C, C++ और Java KINETIX सर्वर पर चलते हैं, जिससे यह ऐप जुड़ा नहीं है।', 'C, C++ ಮತ್ತು Java KINETIX ಸರ್ವರ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತವೆ; ಈ ಆ್ಯಪ್ ಅದಕ್ಕೆ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ.'],
+    'why_noServer': ['C, C++ and Java run on the Zynetix server, which this app is not connected to.', 'C, C++ और Java Zynetix सर्वर पर चलते हैं, जिससे यह ऐप जुड़ा नहीं है।', 'C, C++ ಮತ್ತು Java Zynetix ಸರ್ವರ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತವೆ; ಈ ಆ್ಯಪ್ ಅದಕ್ಕೆ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ.'],
     'why_noWebView': ['This device cannot run Python and JavaScript (no WebView). SQL still works.', 'यह डिवाइस Python और JavaScript नहीं चला सकता (WebView नहीं है)। SQL चलता है।', 'ಈ ಸಾಧನ Python ಮತ್ತು JavaScript ನಡೆಸಲಾರದು (WebView ಇಲ್ಲ). SQL ನಡೆಯುತ್ತದೆ.'],
     'why_offline': ['No connection to the server. Python, JavaScript and SQL still work offline.', 'सर्वर से कनेक्शन नहीं। Python, JavaScript और SQL बिना इंटरनेट चलते हैं।', 'ಸರ್ವರ್ ಸಂಪರ್ಕವಿಲ್ಲ. Python, JavaScript ಮತ್ತು SQL ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ನಡೆಯುತ್ತವೆ.'],
     'why_server': ['The code runner is not available right now. Try again in a little while.', 'कोड रनर अभी उपलब्ध नहीं है। थोड़ी देर में फिर कोशिश करें।', 'ಕೋಡ್ ರನ್ನರ್ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಪ್ರಯತ್ನಿಸಿ.'],
@@ -103,7 +103,7 @@ class CsStrings {
     // Where a program runs, and what to do when it cannot.
     'place_device': ['On this board, offline', 'इसी बोर्ड पर, बिना इंटरनेट', 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲೇ, ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ'],
     'place_box': ["On the school's code box", 'स्कूल के कोड बॉक्स पर', 'ಶಾಲೆಯ ಕೋಡ್ ಬಾಕ್ಸ್‌ನಲ್ಲಿ'],
-    'place_server': ['On the KINETIX server', 'KINETIX सर्वर पर', 'KINETIX ಸರ್ವರ್‌ನಲ್ಲಿ'],
+    'place_server': ['On the Zynetix server', 'Zynetix सर्वर पर', 'Zynetix ಸರ್ವರ್‌ನಲ್ಲಿ'],
     'place_none': ['Cannot run here yet', 'अभी यहाँ नहीं चल सकता', 'ಇನ್ನೂ ಇಲ್ಲಿ ನಡೆಸಲಾಗದು'],
     'ranOn': ['Ran: {0}', 'चला: {0}', 'ನಡೆದದ್ದು: {0}'],
     'why_needsBox': [

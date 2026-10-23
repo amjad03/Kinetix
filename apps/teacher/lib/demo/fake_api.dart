@@ -636,7 +636,7 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<ChatMessage> sendMessage(String conversationId, String body) async {
     calls.add('send $conversationId $body');
-    if (sendFails) throw ApiException(0, "Can't reach KINETIX.");
+    if (sendFails) throw ApiException(0, "Can't reach Zynetix.");
     final m = ChatMessage(
       id: 'm${chat[conversationId]!.length + 100}',
       senderId: profile.id,
@@ -1721,7 +1721,7 @@ class FakeTeacherApi implements TeacherApi {
   List<String> suggestedTopicIds = ['t3'];
   Map<String, dynamic>? lastSavedPlan;
 
-  /// The draft KINETIX AI returns (a preview, as from a server without an AI model).
+  /// The draft Zynetix AI returns (a preview, as from a server without an AI model).
   LessonDraft draft = const LessonDraft(
     topicIds: ['t3'],
     preview: true,

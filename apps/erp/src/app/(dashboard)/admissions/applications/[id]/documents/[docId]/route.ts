@@ -20,9 +20,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   try {
     upstream = await fetch(`${API_URL}/v1/admissions/applications/${id}/documents/${docId}/file`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: AbortSignal.timeout(30_000) });
   } catch {
-    return new Response("Can't reach KINETIX Cloud", { status: 502 });
+    return new Response("Can't reach Zynetix Cloud", { status: 502 });
   }
-  if (!upstream.ok) return new Response(upstream.status === 404 ? 'Not found' : upstream.status === 403 ? 'Not allowed' : 'KINETIX Cloud error', { status: [401, 403, 404].includes(upstream.status) ? upstream.status : 502 });
+  if (!upstream.ok) return new Response(upstream.status === 404 ? 'Not found' : upstream.status === 403 ? 'Not allowed' : 'Zynetix Cloud error', { status: [401, 403, 404].includes(upstream.status) ? upstream.status : 502 });
   const headers = new Headers();
   for (const h of ['content-type', 'content-length', 'content-disposition']) {
     const v = upstream.headers.get(h);

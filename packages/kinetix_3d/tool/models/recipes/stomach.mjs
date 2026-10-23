@@ -134,7 +134,7 @@ export default {
     'ಸುಮಾರು ಒಂದು ಲೀಟರ್ ಆಹಾರ ಹಿಡಿಯುವ J ಆಕಾರದ ಸ್ನಾಯು ಚೀಲ. ಇದರ ಗೋಡೆಗಳು ಎರಡರಿಂದ ನಾಲ್ಕು ಗಂಟೆ ಆಹಾರವನ್ನು ಆಮ್ಲ ಮತ್ತು ಕಿಣ್ವಗಳೊಂದಿಗೆ ಕಲಕಿ, ನಂತರ ಸ್ವಲ್ಪ ಸ್ವಲ್ಪವಾಗಿ ಸಣ್ಣ ಕರುಳಿಗೆ ಬಿಡುತ್ತವೆ.',
   ),
   keywords: ['stomach', 'digestion', 'gastric juice', 'hydrochloric acid', 'pepsin', 'rugae', 'pylorus', 'sphincter', 'fundus', 'oesophagus', 'esophagus', 'nutrition in animals', 'life processes', 'digestion and absorption'],
-  credit: 'Stomach, oesophagus and duodenum: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; wall layers and sphincters built by KINETIX (simplified)',
+  credit: 'Stomach, oesophagus and duodenum: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; wall layers and sphincters built by Zynetix (simplified)',
   groups: [
     { id: 'stomach', name: t('Stomach wall', 'आमाशय की दीवार', 'ಜಠರದ ಗೋಡೆ') },
     { id: 'tube', name: t('Food pipe and intestine', 'भोजन नली और आँत', 'ಅನ್ನನಾಳ ಮತ್ತು ಕರುಳು') },

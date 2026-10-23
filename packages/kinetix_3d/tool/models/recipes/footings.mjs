@@ -23,7 +23,7 @@ export default {
     'ಅಡಿಪಾಯ ಕಾಲಮ್ ಅಥವಾ ಗೋಡೆಯ ಭಾರವನ್ನು ಸಾಕಷ್ಟು ಮಣ್ಣಿನ ಮೇಲೆ ಹರಡುತ್ತದೆ. ಆಳವಿಲ್ಲದ ಅಡಿಪಾಯಗಳು (ಪ್ರತ್ಯೇಕ, ಸಂಯುಕ್ತ, ಪಟ್ಟಿ, ರಾಫ್ಟ್) ಮೇಲ್ಮೈ ಬಳಿಯ ಮಣ್ಣಿನ ಮೇಲೆ ಕೂರುತ್ತವೆ; ಪೈಲ್‌ಗಳು ಭಾರವನ್ನು ಕೆಳಗಿನ ಗಟ್ಟಿ ಪದರಕ್ಕೆ ಒಯ್ಯುತ್ತವೆ.',
   ),
   keywords: ['footing', 'foundation', 'isolated footing', 'combined footing', 'strip footing', 'raft foundation', 'pile foundation', 'pile cap', 'bearing capacity', 'soil', 'civil engineering', 'geotechnical'],
-  credit: 'Model built by KINETIX (simplified foundations at 1:50)',
+  credit: 'Model built by Zynetix (simplified foundations at 1:50)',
   crease: 40,
   build(THREE) {
     const xs = [-2, -1, 0, 1, 2].map((i) => i * GAP);

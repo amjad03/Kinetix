@@ -5,7 +5,7 @@ import '../../core/api.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 
-/// "An update from KINETIX AI": a short note about the child, written from their own marks, attendance and homework.
+/// "An update from Zynetix AI": a short note about the child, written from their own marks, attendance and homework.
 /// It is asked for on demand and says plainly that it is a machine's summary and the class teacher knows best.
 class AiUpdateCard extends StatefulWidget {
   const AiUpdateCard({super.key, required this.api, required this.child});

@@ -1,4 +1,4 @@
-/// KINETIX Computer Science: the code lab (an editor with colouring and a hybrid runner:
+/// Zynetix Computer Science: the code lab (an editor with colouring and a hybrid runner:
 /// Python, JavaScript and SQL on the device, C, C++ and Java on the institution's runner in
 /// India), and step-by-step algorithm, data-structure, networking, OS and DBMS simulations.
 library;

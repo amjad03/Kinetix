@@ -1,4 +1,4 @@
-/// KINETIX screen sharing to the board: the sending side for the Teacher and Student apps.
+/// Zynetix screen sharing to the board: the sending side for the Teacher and Student apps.
 library;
 
 export 'src/cast_link.dart';

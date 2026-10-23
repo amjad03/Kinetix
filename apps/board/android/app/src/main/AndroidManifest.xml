@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The board talks to KINETIX Cloud in release builds too. -->
+    <!-- The board talks to Zynetix Cloud in release builds too. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Lesson recording: the teacher's voice. Without it the board records ink only. The noise
          meter reads the sound level from it on the board; nothing is recorded or sent. -->
@@ -9,7 +9,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <!-- Kiosk mode: open the board again after a reboot or power cut (docs/hardware/kiosk-mode.md). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <!-- Screenshots into Pictures/KINETIX: only Android 9 and older need it (10+ use MediaStore). -->
+    <!-- Screenshots into Pictures/Zynetix: only Android 9 and older need it (10+ use MediaStore). -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <!-- Zynetix panel platform (lib/core/panel): write over other apps (OverlayService.kt) with a
          screenshot of the screen, and install app updates the dashboard rolls out (PanelBridge.kt). -->
@@ -126,7 +126,7 @@
             <action android:name="android.intent.action.MAIN"/>
             <category android:name="android.intent.category.LAUNCHER"/>
         </intent>
-        <!-- Voice questions to KINETIX AI: the device's own speech recogniser (speech_to_text). -->
+        <!-- Voice questions to Zynetix AI: the device's own speech recogniser (speech_to_text). -->
         <intent>
             <action android:name="android.speech.RecognitionService"/>
         </intent>

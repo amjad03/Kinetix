@@ -70,7 +70,7 @@ export default {
     'ಬಿಳಿ ಬೆಳಕು ಬಣ್ಣಗಳ ಮಿಶ್ರಣ. ಗಾಜನ್ನು ಪ್ರವೇಶಿಸುವಾಗ ಪ್ರತಿ ಬಣ್ಣ ಬೇರೆ ಬೇರೆ ಪ್ರಮಾಣದಲ್ಲಿ ಬಾಗುತ್ತದೆ; ಹಾಗಾಗಿ ಪಟ್ಟಕ ಬಿಳಿ ಬೆಳಕನ್ನು ವರ್ಣಪಟಲವಾಗಿ (VIBGYOR) ಹರಡುತ್ತದೆ.',
   ),
   keywords: ['prism', 'dispersion', 'spectrum', 'vibgyor', 'white light', 'refraction', 'rainbow', 'the human eye and the colourful world', 'light', 'ray optics'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   groups: [
     { id: 'setup', name: t('Prism and screen', 'प्रिज़्म और पर्दा', 'ಪಟ್ಟಕ ಮತ್ತು ಪರದೆ') },
     { id: 'light', name: t('Light', 'प्रकाश', 'ಬೆಳಕು') },

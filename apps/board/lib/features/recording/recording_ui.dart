@@ -35,7 +35,7 @@ String voiceReason(AppLocalizations l, String reason) => switch (reason) {
 
 /// A recording's stored note (written in English by the upload queue), in the board's language.
 String recordingNote(AppLocalizations l, String note) {
-  if (note == 'Could not reach KINETIX Cloud') return l.cloudUnreachable;
+  if (note == 'Could not reach Zynetix Cloud') return l.cloudUnreachable;
   final failed = RegExp(r'^Request failed \((\d+)\)$').firstMatch(note);
   if (failed != null) return l.requestFailed(int.parse(failed[1]!));
   final later = RegExp(r'^Uploaded in a later class\. Share it from here if it is for (.*)\.$').firstMatch(note);

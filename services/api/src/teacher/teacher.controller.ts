@@ -134,7 +134,7 @@ export function loadMe(db: DbService, system: SystemLookups, p: UserPrincipal): 
       ...(p.mustSetUpMfa ? { mustSetUpMfa: true } : {}),
       photoUrl: photoUrl(u),
       teachingSubjects: u.teachingSubjects,
-      // The KINETIX platform team (the ERP shows its Platform area); absent for everyone else.
+      // The Zynetix platform team (the ERP shows its Platform area); absent for everyone else.
       ...((await system.isPlatformAdmin(u.id)) ? { platformAdmin: true } : {}),
     };
   });
@@ -326,7 +326,7 @@ export class HomeworkController {
   }
 
   /**
-   * Homework set from the board (often a KINETIX AI draft the teacher accepted). The class and
+   * Homework set from the board (often a Zynetix AI draft the teacher accepted). The class and
    * subject come from the period open on the board.
    */
   @Post('from-board')

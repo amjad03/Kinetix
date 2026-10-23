@@ -106,7 +106,7 @@ async function importInto(tx: Tx | DbService['system'], b: z.infer<typeof Import
 }
 
 /**
- * YouTube channel import for the global library (the KINETIX/Zynetix channel): paste a channel
+ * YouTube channel import for the global library (the Zynetix channel): paste a channel
  * link, @handle, id or a playlist link, check the suggested topic for each video, then import the
  * confirmed mapping in one go. Lists every upload with YOUTUBE_API_KEY, else the public feed's
  * latest 15. Owner role, like the rest of the platform area.

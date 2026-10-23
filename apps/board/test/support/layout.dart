@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Taps a control of the board's layout wherever it is: on screen, in the phone's ⋯ sheet, in
 /// the menu (bottom left; ⋮ on a phone), or (for `panel-tab-…`) on the split panel, which
-/// KINETIX AI opens.
+/// Zynetix AI opens.
 Future<void> tapBoard(WidgetTester tester, String key) async {
   final f = find.byKey(Key(key));
   if (f.evaluate().isEmpty && key.startsWith('panel-tab-') && find.byKey(const Key('split-panel')).evaluate().isEmpty) {

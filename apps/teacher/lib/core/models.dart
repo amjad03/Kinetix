@@ -976,7 +976,7 @@ class PeriodPlan {
   final List<String> suggestedTopicIds;
 }
 
-/// A first draft from KINETIX AI (POST /v1/lesson-plans/draft); not saved.
+/// A first draft from Zynetix AI (POST /v1/lesson-plans/draft); not saved.
 class LessonDraft {
   const LessonDraft({required this.topicIds, required this.content, this.preview = false});
 

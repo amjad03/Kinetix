@@ -51,7 +51,7 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Everything the Teacher App asks of the KINETIX Cloud API. Tests use a fake.
+/// Everything the Teacher App asks of the Zynetix Cloud API. Tests use a fake.
 abstract class TeacherApi {
   String get baseUrl;
   set baseUrl(String value);
@@ -242,7 +242,7 @@ abstract class TeacherApi {
   /// A class at a glance: attendance %, average mark % and risk flag per student (`GET /v1/mentoring/sections/:id/insights`).
   Future<SectionInsights> sectionInsights(String sectionId);
 
-  /// Asks KINETIX AI for a draft (`POST /v1/ai/<task>`): [input] is the topic or question, [count] the questions
+  /// Asks Zynetix AI for a draft (`POST /v1/ai/<task>`): [input] is the topic or question, [count] the questions
   /// for a quiz or homework, [minutes] the length of a lesson plan. The result is a draft for the teacher to check.
   Future<AiDraft> aiDraft(AiTask task, {required String input, int? count, int? minutes, String language = 'en', String? sectionId, String? subjectId});
 
@@ -379,7 +379,7 @@ abstract class TeacherApi {
     required bool aiDrafted,
   });
 
-  /// A first draft from KINETIX AI (not saved).
+  /// A first draft from Zynetix AI (not saved).
   Future<LessonDraft> draftLessonPlan({required String slotId, required String date, List<String>? topicIds, String? language});
 
   /// A photo or PDF from a submission.
@@ -1222,7 +1222,7 @@ class HttpTeacherApi implements TeacherApi {
     } on TimeoutException {
       throw ApiException(0, 'The server is taking too long to respond. Try again.', kind: ApiErrorKind.timeout);
     } catch (_) {
-      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", kind: ApiErrorKind.offline);
+      throw ApiException(0, "Can't reach Zynetix. Check your internet connection and the server address.", kind: ApiErrorKind.offline);
     }
     if (res.statusCode >= 400) throw ApiException(res.statusCode, _message(res) ?? 'HTTP ${res.statusCode}', code: _code(res));
     return Me.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
@@ -1280,7 +1280,7 @@ class HttpTeacherApi implements TeacherApi {
     } on TimeoutException {
       throw ApiException(0, 'The server is taking too long to respond. Try again.', kind: ApiErrorKind.timeout);
     } catch (_) {
-      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", kind: ApiErrorKind.offline);
+      throw ApiException(0, "Can't reach Zynetix. Check your internet connection and the server address.", kind: ApiErrorKind.offline);
     }
 
     if (res.statusCode >= 400) {

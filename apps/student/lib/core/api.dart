@@ -66,7 +66,7 @@ class OtpChallenge {
   final int expiresInSeconds;
 }
 
-/// Everything the Student App asks of the KINETIX Cloud API. Tests use a fake.
+/// Everything the Student App asks of the Zynetix Cloud API. Tests use a fake.
 abstract class StudentApi {
   String get baseUrl;
   set baseUrl(String value);
@@ -120,7 +120,7 @@ abstract class StudentApi {
   /// The subjects of the student's class (`GET /v1/student/subjects`).
   Future<List<Subject>> subjects();
 
-  /// KINETIX AI: explains a doubt in the chosen language, grounded in the class's syllabus.
+  /// Zynetix AI: explains a doubt in the chosen language, grounded in the class's syllabus.
   Future<Explanation> explain({
     required String question,
     required AiLanguage language,
@@ -141,7 +141,7 @@ abstract class StudentApi {
   Future<List<TopicHit>> searchTopics(String query);
   Future<TopicDetail> topic(String id);
 
-  /// The topic's concept videos (KINETIX YouTube channel), the class's language first.
+  /// The topic's concept videos (Zynetix YouTube channel), the class's language first.
   Future<List<ConceptVideo>> conceptVideos(String topicId);
 
   /// The subject's syllabus, or null when the subject is not linked to a library course yet.
@@ -765,7 +765,7 @@ class HttpStudentApi implements StudentApi {
     } on TimeoutException {
       throw ApiException(0, 'The server is taking too long to respond. Try again.', problem: ApiProblem.timeout);
     } catch (_) {
-      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
+      throw ApiException(0, "Can't reach Zynetix. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
     }
     if (res.statusCode >= 400) {
       if (res.statusCode == 401) onUnauthorized?.call();
@@ -997,7 +997,7 @@ class HttpStudentApi implements StudentApi {
     } on TimeoutException {
       throw ApiException(0, 'The server is taking too long to respond. Try again.', problem: ApiProblem.timeout);
     } catch (_) {
-      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
+      throw ApiException(0, "Can't reach Zynetix. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
     }
 
     if (res.statusCode >= 400) {

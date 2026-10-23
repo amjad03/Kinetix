@@ -12,12 +12,12 @@ import '../../../../l10n/feature_strings.dart';
 
 /// Where the board's code lab runs code (packages/kinetix_cs HybridRunner): Python, JavaScript
 /// and SQL on the board, offline; C, C++ and Java on the school code box
-/// (docs/operations/school-code-box.md), else the KINETIX server.
+/// (docs/operations/school-code-box.md), else the Zynetix server.
 ///
 /// This sets up [CodeBox.shared] (this board's box address and key from Board settings → School
 /// code box, the institution's `codeBoxUrl` from the board config, mDNS, the school server) and
 /// [PythonRuntime.shared] (the Pyodide the Board already ships with JupyterLite, else a copy
-/// fetched once from the code box, the KINETIX server or jsDelivr and kept on the board).
+/// fetched once from the code box, the Zynetix server or jsDelivr and kept on the board).
 abstract final class CodeBoxSettings {
   static const _urlKey = 'kinetix.codeBox.url', _keyKey = 'kinetix.codeBox.key', _instKey = 'kinetix.codeBox.institution';
 
@@ -78,7 +78,7 @@ abstract final class CodeBoxSettings {
     _pythonServers();
   }
 
-  /// Python is fetched from the code box first, then the KINETIX server, then jsDelivr.
+  /// Python is fetched from the code box first, then the Zynetix server, then jsDelivr.
   static void _pythonServers() {
     const v = PythonRuntime.version;
     PythonRuntime.shared.servers = [
@@ -149,7 +149,7 @@ const codeBoxStringTable = <String, Map<String, String>>{
     'finding': 'Looking for the code box…',
     'invalid': 'Enter an address like 192.168.1.20 or http://lab-pc:8181',
     'found': 'Code box found: {n}',
-    'none': 'No code box found. C, C++ and Java will use the KINETIX server when it can be reached.',
+    'none': 'No code box found. C, C++ and Java will use the Zynetix server when it can be reached.',
     'runs': 'Runs: {n}',
     'python': 'Python on this board',
     'pyBundled': 'Ready (comes with the board app)',
@@ -171,7 +171,7 @@ const codeBoxStringTable = <String, Map<String, String>>{
     'finding': 'कोड बॉक्स खोजा जा रहा है…',
     'invalid': '192.168.1.20 या http://lab-pc:8181 जैसा पता लिखें',
     'found': 'कोड बॉक्स मिला: {n}',
-    'none': 'कोई कोड बॉक्स नहीं मिला। C, C++ और Java पहुँच में होने पर KINETIX सर्वर पर चलेंगे।',
+    'none': 'कोई कोड बॉक्स नहीं मिला। C, C++ और Java पहुँच में होने पर Zynetix सर्वर पर चलेंगे।',
     'runs': 'चलाता है: {n}',
     'python': 'इस बोर्ड पर Python',
     'pyBundled': 'तैयार (बोर्ड ऐप के साथ आता है)',
@@ -193,7 +193,7 @@ const codeBoxStringTable = <String, Map<String, String>>{
     'finding': 'ಕೋಡ್ ಬಾಕ್ಸ್ ಹುಡುಕಲಾಗುತ್ತಿದೆ…',
     'invalid': '192.168.1.20 ಅಥವಾ http://lab-pc:8181 ರೀತಿಯ ವಿಳಾಸ ಬರೆಯಿರಿ',
     'found': 'ಕೋಡ್ ಬಾಕ್ಸ್ ಸಿಕ್ಕಿದೆ: {n}',
-    'none': 'ಯಾವ ಕೋಡ್ ಬಾಕ್ಸ್ ಸಿಗಲಿಲ್ಲ. ತಲುಪಲು ಸಾಧ್ಯವಾದಾಗ C, C++ ಮತ್ತು Java KINETIX ಸರ್ವರ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತವೆ.',
+    'none': 'ಯಾವ ಕೋಡ್ ಬಾಕ್ಸ್ ಸಿಗಲಿಲ್ಲ. ತಲುಪಲು ಸಾಧ್ಯವಾದಾಗ C, C++ ಮತ್ತು Java Zynetix ಸರ್ವರ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತವೆ.',
     'runs': 'ನಡೆಸುವುದು: {n}',
     'python': 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ Python',
     'pyBundled': 'ಸಿದ್ಧ (ಬೋರ್ಡ್ ಆ್ಯಪ್ ಜೊತೆ ಬರುತ್ತದೆ)',

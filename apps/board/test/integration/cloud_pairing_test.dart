@@ -1,4 +1,4 @@
-// End-to-end: the board's real ApiClient and Realtime against a running KINETIX API.
+// End-to-end: the board's real ApiClient and Realtime against a running Zynetix API.
 // Run with scripts/board-it.sh (it reseeds the database and starts the API).
 @Tags(['integration'])
 library;

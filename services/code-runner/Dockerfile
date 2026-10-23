@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# KINETIX code runner: compiles and runs C, C++ and Java for the code lab (server.mjs).
+# Zynetix code runner: compiles and runs C, C++ and Java for the code lab (server.mjs).
 # Build from the repo root:
 #   docker build -f services/code-runner/Dockerfile -t kinetix-code-runner .
 # Run it only as docker-compose.yml does (no network, read-only, non-root, no capabilities,

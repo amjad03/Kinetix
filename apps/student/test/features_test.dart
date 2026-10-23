@@ -395,10 +395,10 @@ void main() {
       expect(api.consentRequests, isEmpty);
     });
 
-    testWidgets('KINETIX AI turned off by withdrawn consent says so and points to Privacy', (tester) async {
+    testWidgets('Zynetix AI turned off by withdrawn consent says so and points to Privacy', (tester) async {
       await pumpApp(
         tester,
-        setup: (api) => api.explainError = ApiException(403, 'KINETIX AI is turned off for this student (consent was withdrawn)', code: 'CONSENT_WITHDRAWN'),
+        setup: (api) => api.explainError = ApiException(403, 'Zynetix AI is turned off for this student (consent was withdrawn)', code: 'CONSENT_WITHDRAWN'),
       );
       await openTab(tester, 'Learn');
       await tester.enterText(find.byKey(const Key('question')), 'What is goodwill?');
@@ -407,7 +407,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('askButton')));
       await tester.pumpAndSettle();
-      expect(find.text('KINETIX AI is turned off'), findsOneWidget);
+      expect(find.text('Zynetix AI is turned off'), findsOneWidget);
       expect(find.byKey(const Key('aiRetry')), findsNothing);
       await tester.ensureVisible(find.byKey(const Key('aiOpenPrivacy')));
       await tester.tap(find.byKey(const Key('aiOpenPrivacy')));

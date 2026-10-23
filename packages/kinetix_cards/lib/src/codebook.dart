@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-/// KINETIX answer cards: one printed card per student, read by the tablet's
+/// Zynetix answer cards: one printed card per student, read by the tablet's
 /// camera from a photo of the class, so a class with no devices can answer.
 ///
 /// A card is a 7×7 grid: a black border and 25 cells that spell the card's

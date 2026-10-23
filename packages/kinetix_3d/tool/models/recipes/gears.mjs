@@ -67,7 +67,7 @@ export default {
     'ಹೊಂದಿಕೊಂಡ ಗೇರ್‌ಗಳು ವಿರುದ್ಧ ದಿಕ್ಕುಗಳಲ್ಲಿ ತಿರುಗುತ್ತವೆ. ಎರಡರಷ್ಟು ಹಲ್ಲುಗಳ ಗೇರ್ ಅರ್ಧ ವೇಗದಲ್ಲಿ ಆದರೆ ಎರಡರಷ್ಟು ತಿರುಗುಬಲದಿಂದ ತಿರುಗುತ್ತದೆ: ವೇಗ ಅನುಪಾತ ಹಲ್ಲುಗಳ ಅನುಪಾತ.',
   ),
   keywords: ['gear', 'gears', 'gear ratio', 'gear train', 'machines', 'speed ratio', 'torque', 'simple machines', 'bicycle', 'mechanical advantage', 'rotation'],
-  credit: 'Model built by KINETIX (involute spur gears, module 4 mm)',
+  credit: 'Model built by Zynetix (involute spur gears, module 4 mm)',
   crease: 40,
   build(THREE) {
     const at = (gs, x) => gs.map((g) => g.translate(x, 0, 0));

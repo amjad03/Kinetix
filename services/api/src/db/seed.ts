@@ -38,7 +38,7 @@ async function main() {
 
   const [tenant] = await db
     .insert(s.tenants)
-    .values({ slug: 'demo-college', name: 'KINETIX Demo College of Commerce & Science', kind: 'college', settings: { liveViewEnabled: true, liveViewIndicator: true } })
+    .values({ slug: 'demo-college', name: 'Zynetix Demo College of Commerce & Science', kind: 'college', settings: { liveViewEnabled: true, liveViewIndicator: true } })
     .returning();
   const tenantId = tenant.id;
   const [campus] = await db.insert(s.campuses).values({ tenantId, name: 'Main Campus', city: 'Bengaluru' }).returning();
@@ -314,7 +314,7 @@ async function main() {
             { minutes: 5, activity: 'Recap of the last class with two quick questions' },
             { minutes: 20, activity: `Explain ${topic.title} on the board with a worked example` },
             { minutes: 20, activity: 'Students solve Exercise 4.2 Q1 in pairs; discuss answers' },
-            { minutes: 10, activity: 'Quick quiz from KINETIX AI and summary' },
+            { minutes: 10, activity: 'Quick quiz from Zynetix AI and summary' },
           ],
           materials: ['Textbook chapter 4', 'Board: worked example'],
           assessment: 'Exit question: pass the journal entry for one case.',
@@ -399,14 +399,14 @@ async function main() {
     enrollmentCodeHash: hmac(env.PAIRING_HMAC_SECRET, `enroll:${code}`),
     enrollmentExpiresAt: new Date(Date.now() + 30 * 24 * 3600_000),
   });
-  // The demo administrator is also on the KINETIX platform team, to try Platform › Concept videos.
+  // The demo administrator is also on the Zynetix platform team, to try Platform › Concept videos.
   await db.insert(s.platformAdmins).values({ userId: admin.id, note: 'Demo' }).onConflictDoNothing();
 
   console.log(`
 Seeded tenant "demo-college".
   Staff logins (password "${PASSWORD}"):
     principal@demo.kinetix.in   (principal: can circulate messages)
-    admin@demo.kinetix.in       (tenant admin; also on the KINETIX platform team: concept videos)
+    admin@demo.kinetix.in       (tenant admin; also on the Zynetix platform team: concept videos)
     accounts@demo.kinetix.in    (accountant: fees)
     library@demo.kinetix.in     (librarian)
     anita@demo.kinetix.in       (teacher, BCom Sem 3 A)

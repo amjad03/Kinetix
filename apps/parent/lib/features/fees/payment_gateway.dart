@@ -103,7 +103,7 @@ class UnavailableGateway implements PaymentGateway {
   @override
   Future<PaymentResult> pay(BuildContext context, FeeCheckout checkout) async =>
       const PaymentFailed(
-        'Online payment works in the KINETIX Parent app on Android phones and iPhones.',
+        'Online payment works in the Zynetix Parent app on Android phones and iPhones.',
         reason: PaymentFailure.unavailable,
       );
 }

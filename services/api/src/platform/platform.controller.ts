@@ -60,7 +60,7 @@ const VIDEO = {
 };
 
 /**
- * The KINETIX platform team's area: concept videos on the global library, shared by every
+ * The Zynetix platform team's area: concept videos on the global library, shared by every
  * institution. Only people in platform_admins get in (PlatformAdminGuard); institutions' own
  * chapters and topics are never shown here. Writes use the owner role, because the app role may
  * only read concept_videos (migration 0034).
@@ -318,7 +318,7 @@ export class PlatformController {
       .innerJoin(chapters, eq(chapters.id, topics.chapterId))
       .innerJoin(courses, eq(courses.id, chapters.courseId))
       .where(and(eq(topics.id, id), isNull(topics.tenantId)));
-    if (!t) throw new NotFoundException('Topic not found in the KINETIX library');
+    if (!t) throw new NotFoundException('Topic not found in the Zynetix library');
     return t as typeof t & { courseLanguage: Language };
   }
 

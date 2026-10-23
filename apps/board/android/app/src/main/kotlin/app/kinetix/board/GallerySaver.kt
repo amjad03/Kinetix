@@ -9,7 +9,7 @@ import android.provider.MediaStore
 import java.io.File
 
 /**
- * Saves a PNG into the device gallery (Pictures/KINETIX): MediaStore on Android 10 and later (no
+ * Saves a PNG into the device gallery (Pictures/Zynetix): MediaStore on Android 10 and later (no
  * permission), the public Pictures folder plus a media scan before that. Answers the
  * `kinetix/gallery` channel (lib/core/picture_saver.dart). Returns where it went.
  */
@@ -20,7 +20,7 @@ class GallerySaver(private val context: Context) {
             val values = ContentValues().apply {
                 put(MediaStore.Images.Media.DISPLAY_NAME, safe)
                 put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/KINETIX")
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Zynetix")
                 put(MediaStore.Images.Media.IS_PENDING, 1)
             }
             val resolver = context.contentResolver
@@ -38,7 +38,7 @@ class GallerySaver(private val context: Context) {
             return uri.toString()
         }
         @Suppress("DEPRECATION")
-        val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "KINETIX")
+        val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Zynetix")
         if (!dir.exists() && !dir.mkdirs()) throw IllegalStateException("Cannot create ${dir.path}")
         val file = File(dir, safe)
         file.writeBytes(bytes)

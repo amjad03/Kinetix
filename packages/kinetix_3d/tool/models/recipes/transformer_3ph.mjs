@@ -26,7 +26,7 @@ export default {
     'ಪ್ರತಿ ಹಂತಕ್ಕೆ ಒಂದು ಕಂಬ, ಹಂಚಿಕೆಯ ಯೋಕ್‌ಗಳ ಮೇಲೆ. ಮೂರು ಫ್ಲಕ್ಸ್‌ಗಳು 120° ಅಂತರದಲ್ಲಿವೆ, ಹಾಗಾಗಿ ಪ್ರತಿ ಕ್ಷಣ ಅವುಗಳ ಮೊತ್ತ ಸೊನ್ನೆ; ಮರಳುವ ಕಂಬ ಬೇಕಿಲ್ಲ. ಪ್ರತಿ ಬದಿಯ ಸುರುಳಿಗಳನ್ನು ಸ್ಟಾರ್ ಅಥವಾ ಡೆಲ್ಟಾ ಆಗಿ ಜೋಡಿಸಬಹುದು (ವಿತರಣೆಗೆ Dyn11).',
   ),
   keywords: ['three phase transformer', 'core type transformer', 'distribution transformer', 'star delta', 'dyn11', 'vector group', 'hv winding', 'lv winding', 'electrical machines', 'power systems', 'substation'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const out = {

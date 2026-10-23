@@ -82,8 +82,8 @@ The simulations under phet/ are unmodified copies of PhET Interactive Simulation
 the University of Colorado Boulder under the Creative Commons Attribution 4.0 International
 licence: ${catalogue.licence}
 
-KINETIX mirrors them in India so classroom boards can download them nearby. PhET and the PhET
-logo are trademarks of the University of Colorado Boulder; KINETIX is not endorsed by PhET.
+Zynetix mirrors them in India so classroom boards can download them nearby. PhET and the PhET
+logo are trademarks of the University of Colorado Boulder; Zynetix is not endorsed by PhET.
 `,
 );
 upload(licence, 'phet/LICENSE.txt', 'text/plain; charset=utf-8');

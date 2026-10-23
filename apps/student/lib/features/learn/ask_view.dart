@@ -396,7 +396,7 @@ class AnswerCard extends StatelessWidget {
         ],
         const SizedBox(height: Kx.s16),
         Text(
-          'KINETIX AI can make mistakes. Check important answers with your teacher or textbook.',
+          'Zynetix AI can make mistakes. Check important answers with your teacher or textbook.',
           style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
         ),
       ];

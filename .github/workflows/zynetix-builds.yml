@@ -1,5 +1,6 @@
 # Zynetix builds: release APKs for board, teacher, student, parent, and the board macOS app (unsigned).
-# Android is signed with the CI debug key (see KINETIX_TEST_SIGNING in build.gradle.kts).
+# Android is signed with the CI debug key (see KINETIX_TEST_SIGNING in build.gradle.kts) and may use
+# plain HTTP on the LAN (KINETIX_LAN_HTTP) so a demo server at http://<LAN-IP>:4000 works. Not for schools.
 name: Zynetix builds
 
 on:
@@ -63,6 +64,9 @@ jobs:
       - name: Build release APK (debug-signed)
         env:
           KINETIX_TEST_SIGNING: 'true'
+          # Demo builds talk plain HTTP to a server on the school LAN (http://<LAN-IP>:4000):
+          # network_security_config_lan.xml / usesCleartextTraffic. release.yml never sets this.
+          KINETIX_LAN_HTTP: 'true'
         run: >-
           flutter build apk --release
           --dart-define=KINETIX_API_URL="$API_URL"

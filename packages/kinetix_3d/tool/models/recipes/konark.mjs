@@ -1,5 +1,5 @@
 // The Sun Temple at Konark, Odisha (about 1250, King Narasimhadeva I), drawn
-// by KINETIX from its published measurements: the temple was built as the
+// by Zynetix from its published measurements: the temple was built as the
 // chariot of the Sun god, with 24 carved stone wheels (about 3 m across) on
 // its platform and seven horses pulling it. The assembly hall (jagamohana)
 // still stands with its stepped pyramid roof; the great tower behind it fell
@@ -43,7 +43,7 @@ export default {
     '13ನೇ ಶತಮಾನದ ಸೂರ್ಯ ದೇವಾಲಯ, ಅವನ ದೈತ್ಯ ಕಲ್ಲಿನ ರಥದಂತೆ ನಿರ್ಮಿತ; 24 ಕೆತ್ತಿದ ಚಕ್ರಗಳು ಮತ್ತು ಏಳು ಕುದುರೆಗಳು. ಚಕ್ರಗಳು ಸೂರ್ಯಗಡಿಯಾರಗಳೂ ಹೌದು: ಕಡ್ಡಿಗಳ ನೆರಳು ಸಮಯ ತಿಳಿಸುತ್ತದೆ. ಸರಳ ಮಾದರಿ.',
   ),
   keywords: ['konark', 'sun temple', 'odisha', 'temple architecture', 'monument', 'chariot', 'sundial', 'kalinga architecture', 'eastern ganga dynasty', 'world heritage', 'konark wheel', 'temples'],
-  credit: 'Simplified model drawn by KINETIX from published measurements',
+  credit: 'Simplified model drawn by Zynetix from published measurements',
   size: 0.6,
   crease: 30,
   matte: true,

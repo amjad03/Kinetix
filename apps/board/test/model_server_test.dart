@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'support/fake_cloud.dart';
 
 /// 3D models download from this board's own server, then the institution's (the API's board
-/// config), then the KINETIX API's /assets/models, then GitHub.
+/// config), then the Zynetix API's /assets/models, then GitHub.
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -57,7 +57,7 @@ void main() {
     await tester.pumpWidget(localized('en', Scaffold(body: BoardSettingsDialog(board: board, initialQuery: '3D model'))));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('model-server')), findsOneWidget);
-    expect(find.text('1. KINETIX server: http://test/assets/models'), findsOneWidget);
+    expect(find.text('1. Zynetix server: http://test/assets/models'), findsOneWidget);
     expect(find.text('2. GitHub (always last): https://github.com/amjad03/Kinetix'), findsOneWidget);
 
     await tester.enterText(find.byKey(const Key('model-server-field')), 'ftp://wrong');

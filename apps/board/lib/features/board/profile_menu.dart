@@ -176,7 +176,11 @@ class ProfileMenu extends StatelessWidget {
               kiosk: board.kiosk,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s8),
-                child: Text('Zynetix 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                child: Row(children: [
+                  const ZynetixMark(size: 18),
+                  const SizedBox(width: Kx.s8),
+                  Text('Zynetix Board 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                ]),
               ),
             ),
           ],

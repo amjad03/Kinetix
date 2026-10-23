@@ -67,7 +67,7 @@ class _SummaryPanelState extends State<SummaryPanel> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
             children: [
-              if (!ai.canUseAi) ...[const AiSignInNotice(), const SizedBox(height: Kx.s16)],
+              if (!ai.canUseAi) ...[AiSignInNotice(board: ai.board), const SizedBox(height: Kx.s16)],
               Text(s('sumFormat'), style: context.text.labelLarge),
               const SizedBox(height: Kx.s4),
               SegmentedButton<String>(
@@ -164,7 +164,7 @@ class _LecturePanelState extends State<LecturePanel> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
             children: [
-              if (!ai.canUseAi) ...[const AiSignInNotice(), const SizedBox(height: Kx.s16)],
+              if (!ai.canUseAi) ...[AiSignInNotice(board: ai.board), const SizedBox(height: Kx.s16)],
               TextField(key: const Key('lecture-topic'), controller: _topic, decoration: InputDecoration(labelText: l.topicLabel), onSubmitted: (_) => _go()),
               const SizedBox(height: Kx.s12),
               NumberPicker(label: s('minutes'), value: _minutes, options: const [20, 30, 40, 45, 55, 60, 90], onChanged: (v) => setState(() => _minutes = v)),

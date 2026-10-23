@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// e2e tests run against a live KINETIX Cloud API with the demo seed (see README).
+// e2e tests run against a live Zynetix Cloud API with the demo seed (see README).
 const ERP_URL = process.env.ERP_URL ?? 'http://localhost:3000';
 const API_URL = process.env.KINETIX_API_URL ?? 'http://localhost:4000';
 const PORT = new URL(ERP_URL).port || '3000';

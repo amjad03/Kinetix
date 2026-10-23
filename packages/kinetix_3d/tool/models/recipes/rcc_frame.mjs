@@ -28,7 +28,7 @@ export default {
     'ಚೌಕಟ್ಟಿನ ಕಟ್ಟಡದಲ್ಲಿ ಭಾರ ಸ್ಲ್ಯಾಬ್‌ನಿಂದ ಬೀಮ್‌ಗೆ, ಬೀಮ್‌ನಿಂದ ಕಾಲಮ್‌ಗೆ ಮತ್ತು ಕಾಲಮ್‌ನಿಂದ ಅಡಿಪಾಯಕ್ಕೆ ಹೋಗಿ ಮಣ್ಣಿನಲ್ಲಿ ಹರಡುತ್ತದೆ. ಗೋಡೆಗಳು ಚೌಕಟ್ಟನ್ನು ತುಂಬುತ್ತವೆ ಅಷ್ಟೇ.',
   ),
   keywords: ['rcc', 'reinforced concrete', 'frame building', 'column', 'beam', 'slab', 'footing', 'load path', 'civil engineering', 'structure', 'building', 'storey'],
-  credit: 'Model built by KINETIX (a simplified RCC frame at 1:50)',
+  credit: 'Model built by Zynetix (a simplified RCC frame at 1:50)',
   crease: 40,
   build(THREE) {
     const xs = [0, 1, 2].map((i) => (i - 1) * BAY);

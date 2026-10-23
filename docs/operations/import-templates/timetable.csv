@@ -1,4 +1,4 @@
-# KINETIX import: the weekly timetable. One row per period.
+# Zynetix import: the weekly timetable. One row per period.
 # section       The class, as shown, e.g. BSc Sem 1 A (required)
 # subject_code  A subject of the class's program and term (required)
 # teacher       The teacher's email or phone (required; import staff first)

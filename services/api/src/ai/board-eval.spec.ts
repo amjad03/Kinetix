@@ -29,7 +29,7 @@ describe('board answer prompts (v4)', () => {
     const [, cards] = buildMessages('selectAsk', TaskInputs.selectAsk.parse({ action: 'quiz', content: 'The nucleus controls the cell.' }), g);
     expect(String(cards.content)).toContain('" Answer: "');
     const [, plan] = buildMessages('lessonPlan', TaskInputs.lessonPlan.parse({ topic: 'Fractions', minutes: 40 }), g);
-    expect(String(plan.content)).toContain('KINETIX interactive board');
+    expect(String(plan.content)).toContain('Zynetix interactive board');
   });
 
   it('asks in the chosen language', () => {

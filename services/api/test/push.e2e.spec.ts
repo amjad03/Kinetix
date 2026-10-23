@@ -49,7 +49,7 @@ describe('push notifications', () => {
     await drain();
     expect(push.sent.map((m) => m.token).sort()).toEqual(['old-tablet-token-0002', 'phone-of-parent-0001']);
     const m = push.sent[0];
-    expect(m).toMatchObject({ title: 'Attendance update', body: 'Open KINETIX to see the details.', data: { kind: 'absence' } });
+    expect(m).toMatchObject({ title: 'Attendance update', body: 'Open Zynetix to see the details.', data: { kind: 'absence' } });
     expect(JSON.stringify(push.sent)).not.toContain('Student A');
     const inbox = await http().get('/v1/notifications').set(auth('parent')).expect(200);
     expect(m.data.notificationId).toBe(inbox.body.items[0].id);
@@ -72,7 +72,7 @@ describe('push notifications', () => {
     const latest = (await http().get('/v1/notifications').set(auth('parent')).expect(200)).body.items[0];
     expect(latest.title).toBe('Student ಗೈರು ಎಂದು ದಾಖಲಾಗಿದೆ');
     expect(latest.body).toContain('Corporate Accounting (10:00–10:55) ತರಗತಿಯಲ್ಲಿ');
-    expect(push.sent[0]).toMatchObject({ title: 'ಹಾಜರಾತಿ ಸೂಚನೆ', body: 'ವಿವರಗಳನ್ನು ನೋಡಲು KINETIX ತೆರೆಯಿರಿ.' });
+    expect(push.sent[0]).toMatchObject({ title: 'ಹಾಜರಾತಿ ಸೂಚನೆ', body: 'ವಿವರಗಳನ್ನು ನೋಡಲು Zynetix ತೆರೆಯಿರಿ.' });
     await http().patch('/v1/me').set(auth('parent')).send({ preferredLanguage: 'en' }).expect(200);
   });
 

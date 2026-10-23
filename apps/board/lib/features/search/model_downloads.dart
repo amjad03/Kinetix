@@ -3,7 +3,7 @@ import 'package:kinetix_3d/kinetix_3d.dart';
 
 /// Where a 3D model in the library comes from: with the app, downloaded to this board (works
 /// offline), or from a model server on first use (ModelServer: the board's, the school's,
-/// the KINETIX server, then GitHub).
+/// the Zynetix server, then GitHub).
 enum ModelAvailability { bundled, downloaded, cloud }
 
 /// Downloads of the library's cloud models for offline use, with their progress. One for the

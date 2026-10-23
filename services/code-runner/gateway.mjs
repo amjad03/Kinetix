@@ -1,4 +1,4 @@
-// KINETIX school code box gateway: puts the code runner (server.mjs, which has no network
+// Zynetix school code box gateway: puts the code runner (server.mjs, which has no network
 // and listens only on a Unix socket) on the school network for the boards, without giving the
 // runner itself any network (infra/school-code-box/, docs/operations/school-code-box.md).
 //

@@ -60,7 +60,7 @@ class OtpChallenge {
   final int expiresInSeconds;
 }
 
-/// Everything the Parent App asks of the KINETIX Cloud API. Tests use a fake.
+/// Everything the Parent App asks of the Zynetix Cloud API. Tests use a fake.
 abstract class ParentApi {
   String get baseUrl;
   set baseUrl(String value);
@@ -107,7 +107,7 @@ abstract class ParentApi {
   /// Attendance, homework, class participation and shared boards over the last [days] days.
   Future<ChildSummary> summary(String childId, {int days = 30});
 
-  /// A short written update about the child, from their marks, attendance and homework (KINETIX AI). [language] is en, hi or kn.
+  /// A short written update about the child, from their marks, attendance and homework (Zynetix AI). [language] is en, hi or kn.
   Future<AiUpdate> aiUpdate(String childId, {required String language});
 
   /// Every period's mark over the last [days] days, newest day first.
@@ -577,7 +577,7 @@ class HttpParentApi implements ParentApi {
     } on TimeoutException {
       throw ApiException(0, 'The server is taking too long to respond. Try again.', problem: ApiProblem.timeout);
     } catch (_) {
-      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
+      throw ApiException(0, "Can't reach Zynetix. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
     }
     if (res.statusCode >= 400) {
       if (res.statusCode == 401) onUnauthorized?.call();
@@ -927,7 +927,7 @@ class HttpParentApi implements ParentApi {
     } on TimeoutException {
       throw ApiException(0, 'The server is taking too long to respond. Try again.', problem: ApiProblem.timeout);
     } catch (_) {
-      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
+      throw ApiException(0, "Can't reach Zynetix. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
     }
 
     if (res.statusCode >= 400) {

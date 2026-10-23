@@ -35,7 +35,7 @@ const PatchBody = z
 const TENANT = { id: tenants.id, slug: tenants.slug, name: tenants.name, kind: tenants.kind, edition: tenants.edition, timezone: tenants.timezone, createdAt: tenants.createdAt };
 
 /**
- * Institutions as the KINETIX platform team sees them: list, create (with the first
+ * Institutions as the Zynetix platform team sees them: list, create (with the first
  * administrator, as `pnpm db:create-institution` does) and set the edition (full ERP + board, or
  * the Zynetix board edition). Owner role, like the rest of the platform area.
  */

@@ -66,7 +66,7 @@ export default {
     'ಹೂವು ಸಸ್ಯದ ಸಂತಾನೋತ್ಪತ್ತಿ ಭಾಗ. ಕೇಸರಗಳು (ಗಂಡು) ಪರಾಗ ತಯಾರಿಸುತ್ತವೆ; ಶಲಾಕೆ (ಹೆಣ್ಣು) ಅಂಡಕಗಳನ್ನು ಹೊಂದಿದ್ದು ಅವು ನಿಷೇಚನದ ನಂತರ ಬೀಜಗಳಾಗುತ್ತವೆ.',
   ),
   keywords: ['flower', 'parts of a flower', 'pollination', 'fertilisation', 'fertilization', 'stamen', 'pistil', 'carpel', 'ovary', 'ovule', 'anther', 'stigma', 'reproduction in plants', 'sexual reproduction in flowering plants', 'getting to know plants'],
-  credit: 'Simplified model built by KINETIX',
+  credit: 'Simplified model built by Zynetix',
   groups: [
     { id: 'outer', name: t('Outer parts', 'बाहरी भाग', 'ಹೊರ ಭಾಗಗಳು') },
     { id: 'male', name: t('Stamen (male)', 'पुंकेसर (नर)', 'ಕೇಸರ (ಗಂಡು)') },

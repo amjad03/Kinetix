@@ -104,7 +104,7 @@ export default {
     'ಚೆಂಡು-ಕಡ್ಡಿ ಮಾದರಿಗಳು: ಪರಮಾಣುಗಳು ಚೆಂಡುಗಳು, ಬಂಧಗಳು ಕಡ್ಡಿಗಳು, ನೈಜ ಕೋನಗಳಲ್ಲಿ. ತಿರುಗಿಸಿ ನೀರು ಏಕೆ ಬಾಗಿದೆ, ಮೀಥೇನ್ ಏಕೆ ಚತುಷ್ಫಲಕ ಎಂದು ನೋಡಿ.',
   ),
   keywords: ['molecule', 'molecules', 'chemical bonding', 'covalent bond', 'ionic bond', 'molecular shape', 'vsepr', 'methane', 'water', 'benzene', 'carbon and its compounds', 'hydrocarbon', 'ethene', 'ethyne', 'sodium chloride'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   thumb: 'c6h6', // the library picture shows benzene
   variants: MOLECULES.map(([id, name]) => ({ id, name })),
   groups: [

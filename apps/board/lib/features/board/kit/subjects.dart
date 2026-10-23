@@ -7,7 +7,7 @@ import '../../ai/ai_controller.dart';
 
 /// Subjects taught from LKG to Class 12 and in college (B.Com, BBA, MBA, LLB, BSc). The class's subject reshapes the
 /// board: its accent colour, its paper, the subject tools on the left rail, the order of the AI
-/// tools on the right, and the tabs of its kit (ported from the KINETIX prototype).
+/// tools on the right, and the tabs of its kit (ported from the Zynetix prototype).
 enum Subject { maths, physics, chemistry, biology, science, evs, geography, history, civics, commerce, management, law, statistics, english, languages, computer, art, general }
 
 /// The subject's own tools on the left rail.

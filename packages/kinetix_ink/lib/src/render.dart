@@ -7,7 +7,7 @@ import 'board_background.dart';
 import 'element_painting.dart';
 import 'ink_models.dart';
 
-/// Draws one page off screen and encodes it as PNG: for reading the board with KINETIX AI, and
+/// Draws one page off screen and encodes it as PNG: for reading the board with Zynetix AI, and
 /// for thumbnails. [area] is the part of the board to draw (by default the [canvas]-sized
 /// screen from the origin); it is scaled to fit [maxWidth], keeping its proportions. Equations
 /// are drawn as readable text.

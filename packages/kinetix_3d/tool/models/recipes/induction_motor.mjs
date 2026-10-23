@@ -31,7 +31,7 @@ export default {
     '120° ಅಂತರದ ಮೂರು ಸುರುಳಿಗಳು ಮೂರು-ಹಂತದ ವಿದ್ಯುತ್ತಿನಿಂದ ಸಮಕಾಲಿಕ ವೇಗ Ns = 120f/P ನಲ್ಲಿ ತಿರುಗುವ ಕಾಂತಕ್ಷೇತ್ರ ಮಾಡುತ್ತವೆ. ಅದು ರೋಟರ್‌ನ ಪಂಜರದಲ್ಲಿ ವಿದ್ಯುತ್ ಪ್ರೇರಿಸುತ್ತದೆ; ರೋಟರ್ ಸ್ವಲ್ಪ ನಿಧಾನವಾಗಿ ಹಿಂಬಾಲಿಸುತ್ತದೆ: ಸ್ಲಿಪ್ s = (Ns − N)/Ns.',
   ),
   keywords: ['induction motor', 'squirrel cage', 'three phase motor', 'rotating magnetic field', 'slip', 'synchronous speed', 'stator winding', 'rotor bars', 'end ring', 'electrical machines', 'asynchronous motor'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const fins = [];

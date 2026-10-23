@@ -1,4 +1,4 @@
-# KINETIX import: recruiting companies. One row per company.
+# Zynetix import: recruiting companies. One row per company.
 # company         Company name (required; used to match on re-import)
 # sector          Industry, e.g. IT services
 # website, contact_name, contact_email, contact_phone   Placement contact

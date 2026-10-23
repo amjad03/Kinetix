@@ -12,7 +12,7 @@ enum CastPhase {
   /// The system's "share your screen" consent is showing.
   capturing,
 
-  /// Asking KINETIX Cloud to cast to the board.
+  /// Asking Zynetix Cloud to cast to the board.
   requesting,
 
   /// Waiting for the class teacher to approve on the board.

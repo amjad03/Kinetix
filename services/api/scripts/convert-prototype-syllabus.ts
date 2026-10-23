@@ -1,5 +1,5 @@
 /**
- * Converts the KINETIX prototype's syllabus (187 books, a lesson for each of their 2,573
+ * Converts the Zynetix prototype's syllabus (187 books, a lesson for each of their 2,573
  * chapters) into content-library files for `pnpm content:import`.
  *
  *   pnpm content:convert-prototype /path/to/kinetix_old_local

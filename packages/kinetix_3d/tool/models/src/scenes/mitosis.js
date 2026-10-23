@@ -18,7 +18,7 @@ export const script = {
     'ಒಂದು ಕೋಶ ಎರಡು ಒಂದೇ ರೀತಿಯ ಕೋಶಗಳಾಗುವುದು ಹೇಗೆ: ವರ್ಣತಂತುಗಳು ನಕಲಾಗುತ್ತವೆ, ಸಾಲಾಗಿ ನಿಲ್ಲುತ್ತವೆ, ಕದಿರು ತಂತುಗಳು ಅವನ್ನು ಬೇರ್ಪಡಿಸುತ್ತವೆ, ಮತ್ತು ಎರಡು ಹೊಸ ಕೋಶಕೇಂದ್ರಗಳಲ್ಲಿ ಸಮವಾಗಿ ಹಂಚಲ್ಪಡುತ್ತವೆ.',
   ),
   keywords: ['mitosis', 'cell division', 'chromosomes', 'chromatid', 'centromere', 'spindle', 'prophase', 'metaphase', 'anaphase', 'telophase', 'cytokinesis', 'interphase', 'cell cycle', 'growth'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#1f2428', '#07090a'],
     keyAt: [3, 6, 7],

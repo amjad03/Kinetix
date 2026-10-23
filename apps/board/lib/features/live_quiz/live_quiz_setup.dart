@@ -19,7 +19,7 @@ class LiveQuizSetup {
   final bool cards;
 }
 
-/// Live Quiz setup: the topic (today's, to start with), questions made on it (KINETIX AI, the
+/// Live Quiz setup: the topic (today's, to start with), questions made on it (Zynetix AI, the
 /// board's notes or the class bank, as exit tickets get them), saved questions from the server
 /// (the subject's question bank and questions asked in this class before), questions the teacher
 /// writes, the time for each question and whether answer cards play too.

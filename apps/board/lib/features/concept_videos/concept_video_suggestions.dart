@@ -292,7 +292,7 @@ class ConceptVideoTile extends StatelessWidget {
   }
 }
 
-/// Who linked a video: KINETIX, the institution or a teacher.
+/// Who linked a video: Zynetix, the institution or a teacher.
 class VideoSourceBadge extends StatelessWidget {
   const VideoSourceBadge({super.key, required this.source});
 

@@ -159,7 +159,7 @@ export class SsoAuthController {
         let [ident] = await tx.select().from(ssoIdentities).where(and(eq(ssoIdentities.providerId, p.id), eq(ssoIdentities.subject, claims.sub)));
         let userId = ident?.userId;
         if (!userId) {
-          // Just-in-time link: the first time, the provider's verified address finds the existing KINETIX user.
+          // Just-in-time link: the first time, the provider's verified address finds the existing Zynetix user.
           const [u] = await tx.select({ id: users.id, status: users.status }).from(users).where(sql`lower(${users.email}) = ${email}`);
           if (!u || u.status !== 'active') {
             await audit(tx, { tenantId: p.tenantId, actorType: 'system', action: 'auth.sso_no_account', subjectType: 'sso_provider', subjectId: p.id, data: { email } });

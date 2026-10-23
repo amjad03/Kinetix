@@ -64,7 +64,7 @@ enum RunPlace {
   /// On the school's code box on the local network (services/code-runner, docs/operations/school-code-box.md).
   box,
 
-  /// On the KINETIX server through the API (POST /v1/code/run).
+  /// On the Zynetix server through the API (POST /v1/code/run).
   server,
 }
 

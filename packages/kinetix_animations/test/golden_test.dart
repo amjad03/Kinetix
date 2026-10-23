@@ -7,7 +7,7 @@ import 'package:kinetix_animations/kinetix_animations.dart';
 
 import 'render_util.dart';
 
-/// The key frame (the thumbnail moment) of every animation, at 960 × 540 with the KINETIX fonts,
+/// The key frame (the thumbnail moment) of every animation, at 960 × 540 with the Zynetix fonts,
 /// against goldens in test/goldens. Update with `flutter test --update-goldens test/golden_test.dart`.
 /// Small anti-aliasing differences between machines are tolerated (see [_TolerantComparator]).
 void main() {

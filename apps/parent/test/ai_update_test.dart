@@ -1,4 +1,4 @@
-// An update from KINETIX AI about the child, asked for on demand.
+// An update from Zynetix AI about the child, asked for on demand.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_parent/core/api.dart';
@@ -23,7 +23,7 @@ void main() {
   });
 
   testWidgets('shows why it failed and lets the parent try again', (tester) async {
-    final (api, _) = await pumpApp(tester, setup: (a) => a.aiUpdateError = ApiException(503, 'KINETIX AI is not reachable right now.'));
+    final (api, _) = await pumpApp(tester, setup: (a) => a.aiUpdateError = ApiException(503, 'Zynetix AI is not reachable right now.'));
     final card = find.byKey(const Key('aiUpdateCard'));
     await tester.scrollUntilVisible(card, 300, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.byKey(const Key('aiUpdateAsk')));

@@ -31,7 +31,7 @@ export default {
     'ಜೀವದ ಘಟಕ. ತೆಳುವಾದ ಪೊರೆ ಕೋಶದ್ರವ್ಯವನ್ನು ಹಿಡಿದಿದೆ; ಅದರಲ್ಲಿ ಕೋಶಕೇಂದ್ರ ಮತ್ತು ಅನೇಕ ಸಣ್ಣ ಅಂಗಕಗಳು ತಮ್ಮ ತಮ್ಮ ಕೆಲಸ ಮಾಡುತ್ತವೆ.',
   ),
   keywords: ['animal cell', 'cell', 'cell structure', 'organelles', 'the fundamental unit of life', 'cell the unit of life', 'mitochondria', 'nucleus', 'golgi'],
-  credit: 'Simplified model built by KINETIX',
+  credit: 'Simplified model built by Zynetix',
   groups: [
     { id: 'outside', name: t('Boundary', 'सीमा', 'ಗಡಿ') },
     { id: 'control', name: t('Control centre', 'नियंत्रण केंद्र', 'ನಿಯಂತ್ರಣ ಕೇಂದ್ರ') },

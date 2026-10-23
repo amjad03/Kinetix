@@ -22,7 +22,7 @@ VERSION = '0.2.999'
 HERE = os.path.dirname(os.path.abspath(__file__))
 PYPI = os.path.join(HERE, '..', 'assets', 'simhub', 'jupyterlite', 'extensions', '@jupyterlite', 'pyodide-kernel-extension', 'static', 'pypi')
 
-SOURCE = '''"""Jupyter comms for the Pyodide kernel in the KINETIX board's JupyterLite.
+SOURCE = '''"""Jupyter comms for the Pyodide kernel in the Zynetix board's JupyterLite.
 
 The same API as the `comm` package (BaseComm, CommManager, create_comm, get_comm_manager), so
 pyodide_kernel and widget libraries work without fetching it from PyPI.
@@ -226,7 +226,7 @@ get_comm_manager = _get_comm_manager
 METADATA = f'''Metadata-Version: 2.1
 Name: comm
 Version: {VERSION}
-Summary: Jupyter comms for the KINETIX board's offline JupyterLite (same API as the comm package)
+Summary: Jupyter comms for the Zynetix board's offline JupyterLite (same API as the comm package)
 License: BSD-3-Clause
 Requires-Python: >=3.8
 '''

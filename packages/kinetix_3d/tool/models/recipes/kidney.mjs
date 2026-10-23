@@ -169,7 +169,7 @@ export default {
     'ಉದ್ದಕ್ಕೆ ಕತ್ತರಿಸಿದ ಮೂತ್ರಪಿಂಡ: ಹೊರಗೆ ಕಾರ್ಟೆಕ್ಸ್, ಮೆಡುಲ್ಲಾದ ಶಂಕುವಿನಾಕಾರದ ಪಿರಮಿಡ್‌ಗಳು, ಮತ್ತು ಮೂತ್ರವನ್ನು ಮೂತ್ರನಾಳಕ್ಕೆ ಸಂಗ್ರಹಿಸುವ ಕ್ಯಾಲಿಕ್ಸ್‌ಗಳು ಮತ್ತು ಪೆಲ್ವಿಸ್. ಸುಮಾರು ಹತ್ತು ಲಕ್ಷ ನೆಫ್ರಾನ್‌ಗಳು ರಕ್ತವನ್ನು ಸೋಸುತ್ತವೆ.',
   ),
   keywords: ['kidney', 'kidneys', 'cortex', 'medulla', 'renal pyramid', 'renal pelvis', 'calyx', 'excretion', 'excretory system', 'urine', 'ureter', 'life processes', 'excretory products and their elimination', 'longitudinal section of kidney'],
-  credit: 'Kidney shape, renal artery, vein and ureter: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; inside built by KINETIX (simplified)',
+  credit: 'Kidney shape, renal artery, vein and ureter: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; inside built by Zynetix (simplified)',
   source: 'bp3d',
   groups: [
     { id: 'kidney', name: t('Kidney tissue', 'वृक्क ऊतक', 'ಮೂತ್ರಪಿಂಡ ಅಂಗಾಂಶ') },

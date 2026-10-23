@@ -90,7 +90,7 @@ abstract final class KxType {
   static const double stat = 32, statLine = 40;
 }
 
-/// KINETIX colour roles, light (docs/design/design-system.md): white cards on a soft cool-grey
+/// Zynetix colour roles, light (docs/design/design-system.md): white cards on a soft cool-grey
 /// ground, one brand colour (a deep, trustworthy blue) for the one strong action on a screen,
 /// marigold ("spark") for AI only, and success / warning / danger for state. The ERP mirrors
 /// these as CSS variables (apps/erp/src/theme/tokens.css). Chalkboard green is only a board theme.

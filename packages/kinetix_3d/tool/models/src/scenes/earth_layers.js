@@ -19,7 +19,7 @@ export const script = {
     'ತೆಳುವಾದ ಭೂಹೊರಪದರದಿಂದ ಘನ ಒಳಗಿನ ತಿರುಳಿನವರೆಗೆ ಭೂಮಿಯ ಪದರಗಳು, ಮತ್ತು ಫಲಕಗಳನ್ನು ಚಲಿಸುವ ಕವಚದ ನಿಧಾನ ಸಂವಹನ ಪ್ರವಾಹಗಳು.',
   ),
   keywords: ['interior of the earth', 'earth layers', 'crust', 'mantle', 'core', 'inner core', 'outer core', 'convection currents', 'plates', 'lithosphere', 'geography'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#141a26', '#04060a'],
     keyAt: [4, 5, 6],

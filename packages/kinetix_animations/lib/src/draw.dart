@@ -8,7 +8,7 @@ import 'model.dart';
 part 'landscape.dart';
 part 'plate.dart';
 
-/// The animations' palette: restrained textbook colours on the board's paper, in KINETIX ink
+/// The animations' palette: restrained textbook colours on the board's paper, in Zynetix ink
 /// (no saturated primaries; see [TP] for the plates' own palette).
 abstract final class AC {
   static const ink = KxColor.ink;

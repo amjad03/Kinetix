@@ -156,7 +156,7 @@ void main() {
     expect(ModelCatalogue.byId('woolly_mammoth')?.id, 'dl.woolly_mammoth');
   });
 
-  test('a school server or the KINETIX API is tried before GitHub; a bad or missing copy hands over to the next', () async {
+  test('a school server or the Zynetix API is tried before GitHub; a bad or missing copy hands over to the next', () async {
     addTearDown(() => RemoteModels.servers = const []);
     RemoteModels.servers = ['http://10.0.0.5/models/', ' https://kinetix.school.in/assets/models ', 'not a url', 'ftp://x/y', RemoteModels.defaultBase, 'http://10.0.0.5/models'];
     expect(RemoteModels.servers, ['http://10.0.0.5/models', 'https://kinetix.school.in/assets/models']);

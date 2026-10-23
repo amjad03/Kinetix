@@ -64,7 +64,7 @@ const captionStringTable = <String, Map<String, String>>{
 typedef Caption = ({Duration at, Duration end, String text});
 
 /// Live captions: the teacher's words as subtitles on the board, recognised on the board itself
-/// (the device's speech recogniser, as KINETIX AI's voice input) in English, Hindi or Kannada,
+/// (the device's speech recogniser, as Zynetix AI's voice input) in English, Hindi or Kannada,
 /// for hearing-impaired students; kept as a transcript (WebVTT) for the lesson recording.
 class CaptionsController extends ChangeNotifier {
   CaptionsController({VoiceInput Function()? voice, DateTime Function()? now, this.restartDelay = const Duration(milliseconds: 150)})

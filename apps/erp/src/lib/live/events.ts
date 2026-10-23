@@ -55,7 +55,7 @@ export interface LiveFrame {
  * - `watching`: the API accepted; the session is attached.
  * - `frame`: ink from the board.
  * - `offline`: the board dropped off; frames resume (with a snapshot) when it reconnects.
- * - `reconnecting`: the ERP server lost KINETIX Cloud for a moment.
+ * - `reconnecting`: the ERP server lost Zynetix Cloud for a moment.
  * - `audio-state`: whether this viewer may hear class audio and whether the teacher's mic is on.
  * - `audio`: a chunk of class audio (only sent when allowed).
  * - `ended` / `refused`: final; the stream closes.

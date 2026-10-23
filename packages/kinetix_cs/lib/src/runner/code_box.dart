@@ -34,7 +34,7 @@ class CodeBox {
   String? key;
   String? institution;
 
-  /// The board's KINETIX server; a school server on the local network may host the box too.
+  /// The board's Zynetix server; a school server on the local network may host the box too.
   String? apiBase;
 
   /// Looks for boxes on the network (mDNS); null: not looked for.

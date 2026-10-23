@@ -24,7 +24,7 @@ export default {
     'ಆವಿ ಪ್ರತಿ ಟ್ರೇಯ ರಂಧ್ರಗಳ ಮೂಲಕ ಮೇಲೇರಿ ಅದರ ಮೇಲೆ ಹರಿಯುವ ದ್ರವದಲ್ಲಿ ಗುಳ್ಳೆಯಾಗುತ್ತದೆ; ಪ್ರತಿ ಟ್ರೇಯಲ್ಲಿ ಹೆಚ್ಚು ಬಾಷ್ಪಶೀಲ ಘಟಕ ಆವಿಗೆ ಸರಿಯುತ್ತದೆ. ಮೇಲಿನ ಸಾಂದ್ರಕ ಮತ್ತು ರಿಫ್ಲಕ್ಸ್, ಕೆಳಗಿನ ರೀಬಾಯ್ಲರ್ ಇದನ್ನು ನಡೆಸುತ್ತವೆ. ಮೆಕೇಬ್–ಥೀಲೆ ರೇಖಾಚಿತ್ರ ಟ್ರೇಗಳನ್ನು ಎಣಿಸುತ್ತದೆ.',
   ),
   keywords: ['distillation', 'distillation column', 'fractionating column', 'tray column', 'sieve tray', 'downcomer', 'reflux', 'condenser', 'reboiler', 'mccabe thiele', 'mass transfer', 'separation', 'chemical engineering', 'fractional distillation'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const trays = [], downcomers = [];

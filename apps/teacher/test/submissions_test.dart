@@ -143,7 +143,7 @@ void main() {
   });
 
   testWidgets('marking help shows the error when the AI is not reachable', (tester) async {
-    api.suggestError = ApiException(503, 'KINETIX AI is not reachable right now. Try again in a minute.');
+    api.suggestError = ApiException(503, 'Zynetix AI is not reachable right now. Try again in a minute.');
     await pumpDetail(tester);
     await tapAndSettle(tester, find.byKey(const Key('submission-s1')));
     await tester.ensureVisible(find.byKey(const Key('markingHelp')));

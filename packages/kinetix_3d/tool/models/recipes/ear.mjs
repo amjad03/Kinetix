@@ -142,7 +142,7 @@ export default {
     'ಹೊರಕಿವಿ ಶಬ್ದವನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ, ಮಧ್ಯಕಿವಿಯ ಮೂರು ಸಣ್ಣ ಮೂಳೆಗಳು ಕಂಪನಗಳನ್ನು ಮುಂದೆ ಸಾಗಿಸುತ್ತವೆ, ಒಳಕಿವಿ ಅವುಗಳನ್ನು ನರ ಸಂಕೇತಗಳಾಗಿ ಬದಲಿಸುತ್ತದೆ. ಒಳಕಿವಿ ಸಮತೋಲನವನ್ನೂ ಗ್ರಹಿಸುತ್ತದೆ. ನಿಜವಾದ ಗಾತ್ರದಲ್ಲಿ: ಇಡೀ ಒಳಕಿವಿ ಒಂದು ಬಟಾಣಿಗಿಂತ ಚಿಕ್ಕದು.',
   ),
   keywords: ['ear', 'human ear', 'hearing', 'sound', 'eardrum', 'cochlea', 'ossicles', 'semicircular canals', 'balance', 'sense organs', 'structure of the ear', 'neural control and coordination', 'auditory nerve', 'malleus', 'incus', 'stapes'],
-  credit: 'Pinna: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; inner ear: micro-CT bony labyrinth F07, Wimmer et al. 2019 (Zenodo 10.5281/zenodo.3355272), CC BY 4.0; middle ear built by KINETIX (simplified)',
+  credit: 'Pinna: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; inner ear: micro-CT bony labyrinth F07, Wimmer et al. 2019 (Zenodo 10.5281/zenodo.3355272), CC BY 4.0; middle ear built by Zynetix (simplified)',
   sources: {
     labyrinth: { file: 'ear/F07_uCT_SURF.ply', url: 'https://zenodo.org/api/records/3355272/files/F07.zip/content', zip: 'F07/uCT/F07_uCT_SURF.ply' },
   },

@@ -10,7 +10,7 @@ import 'ai_widgets.dart';
 
 const readAccent = Color(0xFFFCAD70);
 
-/// Read board: KINETIX AI reads the handwriting on the open page, so the teacher can copy it,
+/// Read board: Zynetix AI reads the handwriting on the open page, so the teacher can copy it,
 /// or ask about it.
 class ReadBoardPanel extends StatelessWidget {
   const ReadBoardPanel({super.key, required this.ai, this.onBack});
@@ -44,7 +44,7 @@ class ReadBoardPanel extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
             children: [
-              if (!ai.canUseAi) ...[const AiSignInNotice(), const SizedBox(height: Kx.s16)],
+              if (!ai.canUseAi) ...[AiSignInNotice(board: ai.board), const SizedBox(height: Kx.s16)],
               Text(
                 l.readIntro,
                 style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),

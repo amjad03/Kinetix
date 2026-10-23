@@ -10,7 +10,7 @@ import '../../l10n/feature_strings.dart';
 
 /// Where the board downloads 3D models from, tried in order before GitHub: this board's own
 /// setting (Board settings → 3D model downloads), the institution's school server (the API's
-/// board config, `modelsBase`) and the board's own KINETIX server (`<API>/assets/models`,
+/// board config, `modelsBase`) and the board's own Zynetix server (`<API>/assets/models`,
 /// served by services/api). A school server only needs the files of
 /// packages/kinetix_3d/remote_models under the same names.
 abstract final class ModelServer {
@@ -22,7 +22,7 @@ abstract final class ModelServer {
   /// The institution's model server from the board config, or null.
   static String? institution;
 
-  /// The board's KINETIX server, or null (demo and not set up).
+  /// The board's Zynetix server, or null (demo and not set up).
   static String? apiBase;
 
   /// Bumped whenever the servers change, for the settings section.
@@ -109,7 +109,7 @@ FeatureStrings modelServerStrings(String lang) => FeatureStrings(lang, modelServ
 const modelServerStringTable = <String, Map<String, String>>{
   'en': {
     'title': '3D model downloads',
-    'hint': 'Models not in the app are downloaded once and kept for offline use. The board tries these servers in order, then the KINETIX copy on GitHub.',
+    'hint': 'Models not in the app are downloaded once and kept for offline use. The board tries these servers in order, then the Zynetix copy on GitHub.',
     'field': "This board's model server",
     'fieldHint': 'For example http://10.0.0.5/models',
     'save': 'Save',
@@ -117,7 +117,7 @@ const modelServerStringTable = <String, Map<String, String>>{
     'invalid': 'Enter an address that starts with http:// or https://',
     'own': 'This board',
     'institution': 'Your institution',
-    'api': 'KINETIX server',
+    'api': 'Zynetix server',
     'github': 'GitHub (always last)',
     'saved': 'Saved. New downloads use this server first.',
   },

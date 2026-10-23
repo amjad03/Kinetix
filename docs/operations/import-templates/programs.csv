@@ -1,4 +1,4 @@
-# KINETIX import: programs, classes (sections) and subjects. One row per class or subject; repeat the program on each row.
+# Zynetix import: programs, classes (sections) and subjects. One row per class or subject; repeat the program on each row.
 # program        Program name, e.g. BCom, BSc, CBSE (required)
 # level          ug, pg or school (required)
 # terms          Number of semesters (ug/pg) or grades (school) (required)

@@ -80,7 +80,7 @@ export default {
     'ತೆರೆದ ಚರ್ಮದ ಸಣ್ಣ ತುಂಡು: ಮೇಲೆ ಹೊರಚರ್ಮ, ಕೂದಲು, ಗ್ರಂಥಿಗಳು, ರಕ್ತನಾಳಗಳು ಮತ್ತು ನರ ತುದಿಗಳಿರುವ ಒಳಚರ್ಮ, ಕೆಳಗೆ ಕೊಬ್ಬಿನ ಪದರ. ಚರ್ಮ ದೇಹವನ್ನು ರಕ್ಷಿಸುತ್ತದೆ, ಸ್ಪರ್ಶವನ್ನು ಅರಿಯುತ್ತದೆ ಮತ್ತು ದೇಹದ ತಾಪವನ್ನು ಸ್ಥಿರವಾಗಿಡುತ್ತದೆ. ಸರಳೀಕೃತ ಮಾದರಿ.',
   ),
   keywords: ['skin', 'epidermis', 'dermis', 'hair follicle', 'sweat gland', 'sebaceous gland', 'sense organs', 'touch', 'temperature control', 'excretion', 'sweat', 'melanin', 'integumentary system'],
-  credit: 'Simplified model built by KINETIX from textbook proportions',
+  credit: 'Simplified model built by Zynetix from textbook proportions',
   groups: [
     { id: 'layers', name: t('Layers', 'परतें', 'ಪದರಗಳು') },
     { id: 'hair', name: t('Hair and glands', 'बाल और ग्रंथियाँ', 'ಕೂದಲು ಮತ್ತು ಗ್ರಂಥಿಗಳು') },

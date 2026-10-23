@@ -20,7 +20,7 @@ class ParentApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: state,
       builder: (context, _) => MaterialApp(
-      title: 'KINETIX Parent',
+      title: 'Zynetix Parent',
       debugShowCheckedModeBanner: false,
       locale: state.locale,
       supportedLocales: AppLocalizations.supportedLocales,

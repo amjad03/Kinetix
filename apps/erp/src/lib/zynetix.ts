@@ -414,6 +414,8 @@ export interface AiConnection {
   keyHint: string | null;
   updatedAt: string | null;
   source: 'institution' | 'server' | 'none';
+  /** False when the API has no SECRETS_ENCRYPTION_KEY: a key can be neither saved nor used. */
+  canStoreKeys?: boolean;
 }
 
 export type AiTestResult = { ok: true; model: string; latencyMs: number } | { ok: false; error: string };

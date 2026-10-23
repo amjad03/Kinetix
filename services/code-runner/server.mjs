@@ -1,4 +1,4 @@
-// KINETIX code runner: compiles and runs C, C++ and Java for the code lab, behind the API
+// Zynetix code runner: compiles and runs C, C++ and Java for the code lab, behind the API
 // (POST /v1/code/run) or, on a school's own code box, behind gateway.mjs on the school
 // network (infra/school-code-box/). Where the image has them (the school box's build adds
 // python3 and sqlite3), it runs Python and SQL too. It is the only thing in its container, which has no network, a

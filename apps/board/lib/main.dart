@@ -40,7 +40,7 @@ void main() {
   // The picture library's credits on the licence page.
   registerPictureLibraryLicence();
   final board = Demo.enabled ? demoBoard(DemoBoardServer()) : (BoardController()..start());
-  // 3D models download from this board's own server, the institution's or the KINETIX API first.
+  // 3D models download from this board's own server, the institution's or the Zynetix API first.
   unawaited(ModelServer.attach(board));
   // Back in front (from Android settings, or the user unpinned the screen): kiosk mode locks
   // again if it should be on (docs/hardware/kiosk-mode.md).

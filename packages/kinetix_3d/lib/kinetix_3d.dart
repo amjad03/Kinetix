@@ -1,4 +1,4 @@
-/// KINETIX 3D: the three.js viewer for the teaching models (anatomy, cells, physics,
+/// Zynetix 3D: the three.js viewer for the teaching models (anatomy, cells, physics,
 /// chemistry, geography, space, solids with nets) in a WebView on Android and Windows,
 /// with labels in English, Hindi and Kannada, a laser pointer and snapshots for the
 /// board; and a small pure-Dart software 3D engine (solids with live measurements,

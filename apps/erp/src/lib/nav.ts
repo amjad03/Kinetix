@@ -273,7 +273,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/integrations', label: 'nav.integrations', section: 'integrations', icon: 'import' },
       { href: '/import', label: 'nav.import', section: 'import', icon: 'import' },
       { href: '/import/migration', label: 'nav.migration', section: 'import', icon: 'import' },
-      // The KINETIX platform team only (GET /v1/me platformAdmin), not an institution's role.
+      // The Zynetix platform team only (GET /v1/me platformAdmin), not an institution's role.
       { href: '/platform/concept-videos', label: 'nav.conceptVideos', section: 'platform', icon: 'platform' },
     ],
   },

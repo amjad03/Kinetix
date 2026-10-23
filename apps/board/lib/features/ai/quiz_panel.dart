@@ -79,7 +79,7 @@ class _QuizPanelState extends State<QuizPanel> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
             children: [
-              if (!ai.canUseAi) ...[const AiSignInNotice(), const SizedBox(height: Kx.s16)],
+              if (!ai.canUseAi) ...[AiSignInNotice(board: ai.board), const SizedBox(height: Kx.s16)],
               TextField(
                 key: const Key('quiz-topic'),
                 controller: _topic,

@@ -35,7 +35,7 @@ export default {
     'ಉಪಗ್ರಹ ಎತ್ತರ ಮಾಪನಗಳಿಂದ ಮಾಡಿದ ನೈಜ ಸ್ಥಳಗಳು: ಒಂದು ಪರ್ವತ, ಒಂದು ಕಣಿವೆ, ಒಂದು ಪ್ರಸ್ಥಭೂಮಿ ಮತ್ತು ಒಂದು ಮುಖಜಭೂಮಿ. ಪ್ರತಿಯೊಂದನ್ನೂ ತಿರುಗಿಸಿ ಭೂಮಿ ಹೇಗೆ ಏರಿಳಿಯುತ್ತದೆ ಹೋಲಿಸಿ.',
   ),
   keywords: ['landform', 'landforms', 'mountain', 'valley', 'plateau', 'delta', 'river', 'relief', 'physical features', 'himalaya', 'deccan plateau', 'meghalaya', 'cherrapunji', 'sundarbans', 'major landforms of the earth', 'physical features of india', 'contour'],
-  credit: 'Heights: Terrain Tiles on AWS (SRTM, GMTED2010; NASA/USGS, public domain); delta picture: NASA Worldview/GIBS, MODIS Aqua (public domain); model by KINETIX',
+  credit: 'Heights: Terrain Tiles on AWS (SRTM, GMTED2010; NASA/USGS, public domain); delta picture: NASA Worldview/GIBS, MODIS Aqua (public domain); model by Zynetix',
   sources: {
     delta: {
       file: 'landforms/delta_modis_aqua_2020-01-15.jpg',

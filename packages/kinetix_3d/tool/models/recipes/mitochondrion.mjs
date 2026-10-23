@@ -56,7 +56,7 @@ export default {
     'ಕೋಶದ ಶಕ್ತಿಕೇಂದ್ರ, 1 ರಿಂದ 2 µm ಉದ್ದ. ಇಲ್ಲಿ ಕೋಶೀಯ ಉಸಿರಾಟದಲ್ಲಿ ಆಹಾರ (ಗ್ಲೂಕೋಸ್) ಆಮ್ಲಜನಕದೊಂದಿಗೆ ವಿಭಜನೆಯಾಗಿ ಶಕ್ತಿ ATP ಆಗಿ ಸಂಗ್ರಹವಾಗುತ್ತದೆ. ಸರಳೀಕೃತ ಮಾದರಿ, ನಿಜಕ್ಕಿಂತ ಸುಮಾರು 20,000 ಪಟ್ಟು ದೊಡ್ಡದು.',
   ),
   keywords: ['mitochondrion', 'mitochondria', 'powerhouse of the cell', 'cristae', 'matrix', 'atp', 'respiration', 'cellular respiration', 'organelle', 'cell organelles', 'the fundamental unit of life', 'cell the unit of life', 'respiration in organisms'],
-  credit: 'Simplified model built by KINETIX from textbook structure',
+  credit: 'Simplified model built by Zynetix from textbook structure',
   size: 0.07,
   groups: [
     { id: 'membranes', name: t('Membranes', 'झिल्लियाँ', 'ಪೊರೆಗಳು') },

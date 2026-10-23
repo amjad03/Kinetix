@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:kinetix_ui/kinetix_ui.dart';
 
 /// The projector screen's side of projector mode (projector_controller.dart): what the class
 /// sees on the second display. It runs in its own Flutter engine, started by the platform with
@@ -103,7 +104,11 @@ class _Waiting extends StatelessWidget {
     key: Key('projector-waiting'),
     color: Colors.white,
     child: Center(
-      child: Text('Zynetix', style: TextStyle(fontSize: 64, fontWeight: FontWeight.w700, letterSpacing: 8, color: Color(0xFF1B1F24))),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        ZynetixMark(size: 80),
+        SizedBox(width: 24),
+        Text('Zynetix', style: TextStyle(fontSize: 64, fontWeight: FontWeight.w700, letterSpacing: 2, color: Color(0xFF1B1F24))),
+      ]),
     ),
   );
 }

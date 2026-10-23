@@ -42,7 +42,7 @@ IconData penIcon(WhiteboardController wb) => switch (wb.tool) {
 
 /// The main toolbar (screen 1, callout 2): the teacher's tools in their order (by default
 /// Pen · AI pen · Laser · Highlighter · Eraser · Select · Shapes │ Undo · Redo │ Tools · Add │
-/// KINETIX AI, see toolbar_layout.dart), labels under the icons, then ⋯ for the tools not on it.
+/// Zynetix AI, see toolbar_layout.dart), labels under the icons, then ⋯ for the tools not on it.
 /// It floats at the bottom centre; its grip drags it to the left or right edge (it snaps there),
 /// a long press on the grip or the bar opens Edit toolbar, and it folds away.
 class MainToolbar extends StatelessWidget {
@@ -185,7 +185,7 @@ class BarItem {
   /// The icon's own colour (the pen's ink, the AI pen's marigold).
   final Color? color;
 
-  /// The button's accent on a panel's toolbar (KINETIX AI).
+  /// The button's accent on a panel's toolbar (Zynetix AI).
   final Color? accent;
 }
 
@@ -406,7 +406,7 @@ int? minutesLeft(String? periodLabel, DateTime now) {
   return (end.difference(now).inSeconds / 60).ceil();
 }
 
-/// Go live: the class watches the board on their phones (needs KINETIX Cloud).
+/// Go live: the class watches the board on their phones (needs Zynetix Cloud).
 Future<void> toggleClassLive(BuildContext context, BoardController board) async {
     if (Demo.enabled) {
       showBoardMessage(context, context.l10n.notInDemo);

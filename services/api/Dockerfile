@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# KINETIX Cloud API (NestJS, ESM). Build from the repo root (the pnpm workspace):
+# Zynetix Cloud API (NestJS, ESM). Build from the repo root (the pnpm workspace):
 #   docker build -f services/api/Dockerfile -t kinetix-api .
 # Modes (see docker-entrypoint.sh): serve (default), migrate, seed, content-import, create-institution, db-bootstrap.
 #   docker run --rm --env-file api.env kinetix-api migrate   # one-off, owner role, before deploy

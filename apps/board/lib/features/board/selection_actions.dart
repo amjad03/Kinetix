@@ -45,7 +45,7 @@ class SelectionActions extends StatelessWidget {
   /// Edits the selected equation, note or text.
   final void Function(BoardElement e)? onEdit;
 
-  /// Reads what is selected with KINETIX AI.
+  /// Reads what is selected with Zynetix AI.
   final VoidCallback? onAskAi;
 
   /// Sends the selected equation to the maths solver.

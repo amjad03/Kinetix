@@ -131,7 +131,7 @@ void main() {
     expect(find.text('Calculator'), findsOneWidget);
     expect(find.text('Two quick questions at the end'), findsOneWidget);
     expect(find.text('Exercise 4.2'), findsOneWidget);
-    expect(find.text('Drafted with KINETIX AI'), findsOneWidget);
+    expect(find.text('Drafted with Zynetix AI'), findsOneWidget);
     expect(find.byType(TextField), findsNothing);
 
     // The step timer counts down the current step and moves on.

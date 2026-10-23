@@ -78,6 +78,11 @@ export function AiSettingsCard({ initial }: { initial: AiConnection }) {
         {saved.keySet && saved.keyHint && <span className="text-xs text-muted-foreground">{t('zx.aic.keyHint', { last4: saved.keyHint })}</span>}
         {saved.keySet && saved.updatedAt && <span className="text-xs text-muted-foreground">{t('zx.aic.updated', { when: fmt.dateTime(saved.updatedAt) })}</span>}
       </div>
+      {saved.canStoreKeys === false && (
+        <Alert className="mt-4" severity="warning" data-testid="zx-ai-no-secrets-key">
+          {t('zx.aic.noSecretsKey')}
+        </Alert>
+      )}
       {error && (
         <Alert className="mt-4" severity="error">
           {error}

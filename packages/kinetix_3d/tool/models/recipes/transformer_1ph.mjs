@@ -23,7 +23,7 @@ export default {
     'ಸುರುಳಿಗಳು ಕೋರ್‌ನ ಕಂಬಗಳನ್ನು ಸುತ್ತುವರಿಯುತ್ತವೆ: ಕಡಿಮೆ-ವೋಲ್ಟೇಜ್ ಸುರುಳಿ ಕೋರ್‌ನ ಪಕ್ಕ, ಹೆಚ್ಚು-ವೋಲ್ಟೇಜ್ ಸುರುಳಿ ಅದರ ಮೇಲೆ. ಒಂದೇ ಫ್ಲಕ್ಸ್ ಎರಡನ್ನೂ ಹೆಣೆಯುತ್ತದೆ, ಹಾಗಾಗಿ V1/V2 = N1/N2 ಮತ್ತು EMF E = 4.44 f N Φm.',
   ),
   keywords: ['transformer', 'single phase transformer', 'core type', 'emf equation', 'turns ratio', 'hv winding', 'lv winding', 'laminated core', 'electrical machines', 'mutual induction', 'core loss'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     return {

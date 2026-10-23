@@ -93,7 +93,7 @@ class Me {
   }
 }
 
-/// A short update written by KINETIX AI for a parent about their own child (`POST /v1/ai/parent/children/:id/insight`).
+/// A short update written by Zynetix AI for a parent about their own child (`POST /v1/ai/parent/children/:id/insight`).
 class AiUpdate {
   const AiUpdate({required this.headline, required this.highlights, required this.risks, required this.suggestions, required this.preview});
 
@@ -584,7 +584,7 @@ class FeeCheckout {
       orderId: j['orderId'] as String,
       amountPaise: _paise(j['amountPaise']),
       currency: j['currency'] as String? ?? 'INR',
-      name: j['name'] as String? ?? 'KINETIX',
+      name: j['name'] as String? ?? 'Zynetix',
       description: j['description'] as String? ?? '',
       prefillName: prefill['name'] as String? ?? '',
       prefillEmail: prefill['email'] as String? ?? '',

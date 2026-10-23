@@ -52,7 +52,7 @@ const quiz = (n: number) => ({
   })),
 });
 
-describe('KINETIX AI gateway', () => {
+describe('Zynetix AI gateway', () => {
   const owner = ownerPool();
   const clock = new FixedClock(nextMondayIst('10:30'));
   const model = new FakeModelServer();
@@ -254,7 +254,7 @@ describe('KINETIX AI gateway', () => {
   });
 });
 
-describe('KINETIX AI without a model server', () => {
+describe('Zynetix AI without a model server', () => {
   const owner = ownerPool();
   let app: INestApplication;
 

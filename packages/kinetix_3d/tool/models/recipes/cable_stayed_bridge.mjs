@@ -26,7 +26,7 @@ export default {
     'ನೇರ ಸ್ಟೇ ಕೇಬಲ್‌ಗಳು ಎತ್ತರದ ಪೈಲಾನ್‌ಗಳಿಂದ ನೇರವಾಗಿ ಡೆಕ್‌ಗೆ ಹೋಗುತ್ತವೆ. ಸ್ಟೇಗಳ ಎಳೆತ ಡೆಕ್ ಅನ್ನು ಒತ್ತುತ್ತದೆ; ಡೆಕ್ ಬೀಮ್ ಜೊತೆಗೆ ಉದ್ದ ಸಂಪೀಡನ ಸದಸ್ಯದಂತೆಯೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.',
   ),
   keywords: ['cable-stayed bridge', 'cable stayed', 'bridge', 'pylon', 'stay cable', 'fan', 'harp', 'tension', 'compression', 'civil engineering', 'bandra-worli sea link'],
-  credit: 'Model built by KINETIX (a simplified cable-stayed bridge at 1:1000)',
+  credit: 'Model built by Zynetix (a simplified cable-stayed bridge at 1:1000)',
   crease: 40,
   build(THREE) {
     const a = MAIN / 2;

@@ -27,7 +27,7 @@ export default {
     'ಟ್ರಸ್ ನೇರ ಸದಸ್ಯಗಳನ್ನು ತ್ರಿಕೋನಗಳಾಗಿ ಜೋಡಿಸಿ ಮಾಡಿದ್ದು, ಪ್ರತಿ ಸದಸ್ಯ ಎಳೆಯಲ್ಪಡುತ್ತದೆ ಅಥವಾ ತಳ್ಳಲ್ಪಡುತ್ತದೆ ಅಷ್ಟೇ. ಪ್ರ್ಯಾಟ್ ಟ್ರಸ್‌ನಲ್ಲಿ ಓರೆ ಸದಸ್ಯಗಳು ಸೆಳೆತದಲ್ಲಿ, ಲಂಬ ಸದಸ್ಯಗಳು ಸಂಪೀಡನದಲ್ಲಿ ಇರುತ್ತವೆ.',
   ),
   keywords: ['truss', 'truss bridge', 'pratt truss', 'bridge', 'tension', 'compression', 'member', 'chord', 'civil engineering', 'steel bridge', 'method of joints'],
-  credit: 'Model built by KINETIX (a simplified Pratt through-truss at 1:100)',
+  credit: 'Model built by Zynetix (a simplified Pratt through-truss at 1:100)',
   crease: 40,
   build(THREE) {
     const xs = Array.from({ length: PANELS + 1 }, (_, i) => -SPAN / 2 + i * P);

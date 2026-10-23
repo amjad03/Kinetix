@@ -91,7 +91,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get cloudUnreachable => 'KINETIX Cloud ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ';
+  String get cloudUnreachable => 'Zynetix Cloud ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ';
 
   @override
   String get toolRecord => 'ರೆಕಾರ್ಡ್';
@@ -241,7 +241,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get cloudUnreachableCheckOnline =>
-      'KINETIX Cloud ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ. ಬೋರ್ಡ್ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿದೆಯೇ ಎಂದು ನೋಡಿ.';
+      'Zynetix Cloud ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ. ಬೋರ್ಡ್ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿದೆಯೇ ಎಂದು ನೋಡಿ.';
 
   @override
   String get noClassList => 'ತರಗತಿ ಪಟ್ಟಿ ಇಲ್ಲ';
@@ -274,7 +274,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get connectedCloud => 'KINETIX Cloud‌ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ';
+  String get connectedCloud => 'Zynetix Cloud‌ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ';
 
   @override
   String get offlineSaved =>
@@ -325,7 +325,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get recordingSavedUploading =>
-      'ರೆಕಾರ್ಡಿಂಗ್ ಉಳಿಸಲಾಗಿದೆ. ಇದು KINETIX Cloud‌ಗೆ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ಉಳಿಸಲಾಗಿದೆ. ಇದು Zynetix Cloud‌ಗೆ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ.';
 
   @override
   String recordingSavedLater(String name) {
@@ -890,7 +890,7 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಟೈಮರ್, ಸ್ಟಾಪ್‌ವಾಚ್, ಹೆಸರು ಆಯ್ಕೆ, ದಾಳ, ಚಕ್ರ, ಶಬ್ದ ಮಾಪಕ, ಸ್ಕ್ರೀನ್ ಶೇಡ್, ಸ್ಪಾಟ್‌ಲೈಟ್ ಮತ್ತು ಇಮರ್ಸಿವ್ ರೀಡರ್.';
 
   @override
-  String get tourAiTitle => 'KINETIX AI';
+  String get tourAiTitle => 'Zynetix AI';
 
   @override
   String get tourAiBody =>
@@ -959,7 +959,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get helpGroupClass => 'ಬೋಧನಾ ಉಪಕರಣಗಳು';
 
   @override
-  String get helpGroupAi => 'KINETIX AI ಮತ್ತು ಪುಸ್ತಕಗಳು';
+  String get helpGroupAi => 'Zynetix AI ಮತ್ತು ಪುಸ್ತಕಗಳು';
 
   @override
   String get helpGroupSettings => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
@@ -1086,7 +1086,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get helpRecord2 => 'ನಿಲ್ಲಿಸಿ ಉಳಿಸಲು ಮತ್ತೆ ಒತ್ತಿ.';
 
   @override
-  String get helpAiTitle => 'KINETIX AI ಅನ್ನು ಕೇಳಿ';
+  String get helpAiTitle => 'Zynetix AI ಅನ್ನು ಕೇಳಿ';
 
   @override
   String get helpAi1 =>
@@ -1547,7 +1547,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get recUploadNote =>
-      'ಇದು ಹಿನ್ನೆಲೆಯಲ್ಲಿ KINETIX Cloud‌ಗೆ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತದೆ. ಗೈರು ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಇದರ ಬಗ್ಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
+      'ಇದು ಹಿನ್ನೆಲೆಯಲ್ಲಿ Zynetix Cloud‌ಗೆ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತದೆ. ಗೈರು ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಇದರ ಬಗ್ಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String sharedWith(String section) {
@@ -1618,10 +1618,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get thisBoard => 'ಈ ಬೋರ್ಡ್';
 
   @override
-  String get signInUsePhone => 'ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ KINETIX Teacher App ಬಳಸಿ.';
+  String get signInUsePhone => 'ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Zynetix Teacher App ಬಳಸಿ.';
 
   @override
-  String get signInStep1 => 'KINETIX Teacher App ತೆರೆಯಿರಿ';
+  String get signInStep1 => 'Zynetix Teacher App ತೆರೆಯಿರಿ';
 
   @override
   String get signInStep2 => '\"Connect to board\" ಟ್ಯಾಪ್ ಮಾಡಿ';
@@ -1636,7 +1636,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get cannotReachCloudRetrying =>
-      'KINETIX Cloud ಸಂಪರ್ಕ ಆಗುತ್ತಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ…';
+      'Zynetix Cloud ಸಂಪರ್ಕ ಆಗುತ್ತಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ…';
 
   @override
   String get signInCodeNote =>
@@ -1647,7 +1647,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get enrollHint =>
-      'KINETIX ERP ನಲ್ಲಿ Devices → Add board ತೆರೆಯಿರಿ, ನಂತರ ಅಲ್ಲಿ ತೋರಿಸಿದ ಕೋಡ್ ಇಲ್ಲಿ ನಮೂದಿಸಿ.';
+      'Zynetix dashboard ನಲ್ಲಿ Devices → Add board ತೆರೆಯಿರಿ, ನಂತರ ಅಲ್ಲಿ ತೋರಿಸಿದ ಕೋಡ್ ಇಲ್ಲಿ ನಮೂದಿಸಿ.';
 
   @override
   String get enrollCode => 'ನೋಂದಣಿ ಕೋಡ್';
@@ -1666,7 +1666,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get aiAskNeedsSignIn =>
-      'KINETIX AI ಅನ್ನು ಕೇಳಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+      'Zynetix AI ಅನ್ನು ಕೇಳಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get aiAskHint => 'ಯಾವುದೇ ವಿಷಯದ ಬಗ್ಗೆ ಕೇಳಿ';
@@ -1687,7 +1687,7 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಉತ್ತರಗಳು ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮವನ್ನು ಅನುಸರಿಸುತ್ತವೆ. ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get aiPreparing => 'KINETIX AI ವಿವರಣೆ ಸಿದ್ಧಪಡಿಸುತ್ತಿದೆ…';
+  String get aiPreparing => 'Zynetix AI ವಿವರಣೆ ಸಿದ್ಧಪಡಿಸುತ್ತಿದೆ…';
 
   @override
   String get aiGroupTeach => 'ಬೋಧನೆ';
@@ -1738,17 +1738,20 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get aiPreviewLabel =>
-      'ಮಾದರಿ — ನಿಜವಾದ ಉತ್ತರಗಳಿಗಾಗಿ KINETIX AI ಸರ್ವರ್ ಸಂಪರ್ಕಿಸಿ';
+      'ಮಾದರಿ. Zynetix AI ಇನ್ನೂ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ: ನಿರ್ವಾಹಕರು Zynetix dashboard (AI settings) ನಲ್ಲಿ Claude ಸಂಪರ್ಕಿಸುತ್ತಾರೆ.';
 
   @override
   String get aiPreview => 'ಮಾದರಿ';
 
   @override
-  String get aiLanguageTooltip => 'KINETIX AI ಭಾಷೆ';
+  String get aiLanguageTooltip => 'Zynetix AI ಭಾಷೆ';
 
   @override
   String get aiSignInNotice =>
-      'KINETIX AI ಗೆ ಶಿಕ್ಷಕರು ಸೈನ್ ಇನ್ ಆಗಿರಬೇಕು ಮತ್ತು ಬೋರ್ಡ್ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿರಬೇಕು. ಪ್ರೊಫೈಲ್ ಬಟನ್‌ನಿಂದ Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ. ಗಣಿತ ಸಾಲ್ವರ್ ಸೈನ್ ಇನ್ ಇಲ್ಲದೆಯೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+      'Zynetix AI ಬಳಸಲು ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿ. ಗಣಿತ ಸಾಲ್ವರ್ ಸೈನ್ ಇನ್ ಇಲ್ಲದೆಯೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+
+  @override
+  String get aiSignInButton => 'ಸೈನ್ ಇನ್ ಮಾಡಿ';
 
   @override
   String get difficultyEasy => 'ಸುಲಭ';
@@ -1769,23 +1772,23 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get aiErrSignInAgain =>
-      'KINETIX AI ಬಳಸಲು Teacher App ಮೂಲಕ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+      'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಮುಗಿದಿದೆ. Zynetix AI ಬಳಸಲು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get aiErrRefused =>
-      'KINETIX AI ಈ ವಿನಂತಿಗೆ ಸಹಾಯ ಮಾಡಲಾರದು. ತರಗತಿಗೆ ತಕ್ಕಂತೆ ಬೇರೆ ರೀತಿಯಲ್ಲಿ ಕೇಳಿ.';
+      'Zynetix AI ಈ ವಿನಂತಿಗೆ ಸಹಾಯ ಮಾಡಲಾರದು. ತರಗತಿಗೆ ತಕ್ಕಂತೆ ಬೇರೆ ರೀತಿಯಲ್ಲಿ ಕೇಳಿ.';
 
   @override
   String get aiErrQuota =>
-      'ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇಂದಿನ KINETIX AI ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ಅದು ನಾಳೆ ಮತ್ತೆ ಆರಂಭವಾಗುತ್ತದೆ.';
+      'ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇಂದಿನ Zynetix AI ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ಅದು ನಾಳೆ ಮತ್ತೆ ಆರಂಭವಾಗುತ್ತದೆ.';
 
   @override
   String get aiErrUnusable =>
-      'KINETIX AI ಬಳಸಬಹುದಾದ ಉತ್ತರ ನೀಡಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಬೇರೆ ರೀತಿಯಲ್ಲಿ ಕೇಳಿ.';
+      'Zynetix AI ಬಳಸಬಹುದಾದ ಉತ್ತರ ನೀಡಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಬೇರೆ ರೀತಿಯಲ್ಲಿ ಕೇಳಿ.';
 
   @override
   String get aiErrUnreachable =>
-      'KINETIX AI ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+      'Zynetix AI ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get aiErrCheckInput =>
@@ -1798,15 +1801,15 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get aiErrTimeout =>
-      'KINETIX AI ತುಂಬಾ ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+      'Zynetix AI ತುಂಬಾ ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get aiErrOffline =>
-      'ಬೋರ್ಡ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದೆ. KINETIX AI ಬಳಸಲು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ. ಗಣಿತ ಸಾಲ್ವರ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+      'ಬೋರ್ಡ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದೆ. Zynetix AI ಬಳಸಲು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ. ಗಣಿತ ಸಾಲ್ವರ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
 
   @override
   String get aiErrBusy =>
-      'KINETIX AI ಈಗ ಕಾರ್ಯನಿರತವಾಗಿದೆ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+      'Zynetix AI ಈಗ ಕಾರ್ಯನಿರತವಾಗಿದೆ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get aiErrNothingOnPages =>
@@ -1824,7 +1827,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get quizNeedsSignIn =>
-      'KINETIX AI ಮೂಲಕ ರಸಪ್ರಶ್ನೆ ಮಾಡಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+      'Zynetix AI ಮೂಲಕ ರಸಪ್ರಶ್ನೆ ಮಾಡಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get quizTypeTopic => 'ಮೊದಲು ರಸಪ್ರಶ್ನೆಯ ವಿಷಯ ಟೈಪ್ ಮಾಡಿ.';
@@ -1904,7 +1907,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get homeworkNeedsSignIn =>
-      'KINETIX AI ಮೂಲಕ ಹೋಂವರ್ಕ್ ಮಾಡಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+      'Zynetix AI ಮೂಲಕ ಹೋಂವರ್ಕ್ ಮಾಡಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get homeworkTypeTopic => 'ಮೊದಲು ಹೋಂವರ್ಕ್‌ನ ವಿಷಯ ಟೈಪ್ ಮಾಡಿ.';
@@ -2004,7 +2007,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get lessonNeedsSignIn =>
-      'KINETIX AI ಮೂಲಕ ಪಾಠ ಯೋಜನೆ ಮಾಡಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+      'Zynetix AI ಮೂಲಕ ಪಾಠ ಯೋಜನೆ ಮಾಡಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get lessonTypeTopic => 'ಮೊದಲು ಪಾಠದ ವಿಷಯ ಟೈಪ್ ಮಾಡಿ.';
@@ -2040,7 +2043,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get readNeedsSignIn =>
-      'KINETIX AI ಮೂಲಕ ಬೋರ್ಡ್ ಓದಿಸಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+      'Zynetix AI ಮೂಲಕ ಬೋರ್ಡ್ ಓದಿಸಲು Teacher App ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get readIntro =>
@@ -2068,7 +2071,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get copyText => 'ಪಠ್ಯ ನಕಲಿಸಿ';
 
   @override
-  String get askAiAboutThis => 'ಇದರ ಬಗ್ಗೆ KINETIX AI ಅನ್ನು ಕೇಳಿ';
+  String get askAiAboutThis => 'ಇದರ ಬಗ್ಗೆ Zynetix AI ಅನ್ನು ಕೇಳಿ';
 
   @override
   String get booksTopic => 'ವಿಷಯ';
@@ -2086,7 +2089,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get booksUnlinked =>
-      'ಈ ವಿಷಯವನ್ನು ಇನ್ನೂ ಯಾವುದೇ ಪಠ್ಯಕ್ರಮಕ್ಕೆ ಜೋಡಿಸಿಲ್ಲ. ನಿಮ್ಮ ಅಡ್ಮಿನ್ ಇದನ್ನು KINETIX ERP → Syllabus ನಲ್ಲಿ ಜೋಡಿಸಬಹುದು.';
+      'ಈ ವಿಷಯವನ್ನು ಇನ್ನೂ ಯಾವುದೇ ಪಠ್ಯಕ್ರಮಕ್ಕೆ ಜೋಡಿಸಿಲ್ಲ. ನಿಮ್ಮ ಅಡ್ಮಿನ್ ಇದನ್ನು Zynetix dashboard → Syllabus ನಲ್ಲಿ ಜೋಡಿಸಬಹುದು.';
 
   @override
   String get booksDraft =>
@@ -2117,7 +2120,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get booksCouldNotOpenTopic => 'ಈ ವಿಷಯ ತೆರೆಯಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get booksExplain => 'KINETIX AI ಮೂಲಕ ವಿವರಿಸಿ';
+  String get booksExplain => 'Zynetix AI ಮೂಲಕ ವಿವರಿಸಿ';
 
   @override
   String get booksQuiz => 'ಇದರ ಮೇಲೆ ತ್ವರಿತ ರಸಪ್ರಶ್ನೆ';
@@ -2581,7 +2584,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get planNone => 'ಈ ಅವಧಿಗೆ ಪಾಠ ಯೋಜನೆ ಇಲ್ಲ. Teacher app ನಲ್ಲಿ ಯೋಜಿಸಿ.';
 
   @override
-  String get planAiDrafted => 'KINETIX AI ಮೂಲಕ ಕರಡು ಮಾಡಲಾಗಿದೆ';
+  String get planAiDrafted => 'Zynetix AI ಮೂಲಕ ಕರಡು ಮಾಡಲಾಗಿದೆ';
 
   @override
   String get planTopics => 'ವಿಷಯಗಳು';
@@ -2617,7 +2620,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get demoBannerBody =>
-      'KINETIX ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
+      'Zynetix ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
 
   @override
   String demoSignInAs(String name) {
@@ -2639,7 +2642,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get kioskSettingsHint =>
-      'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು Zynetix ನಲ್ಲೇ ಇರಿಸುತ್ತದೆ ಮತ್ತು ವಿದ್ಯುತ್ ಹೋದ ನಂತರ ಅದನ್ನು ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ. ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇದನ್ನು KINETIX ERP → ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆನ್ ಮಾಡಿ IT PIN ಹೊಂದಿಸುತ್ತದೆ.';
+      'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು Zynetix ನಲ್ಲೇ ಇರಿಸುತ್ತದೆ ಮತ್ತು ವಿದ್ಯುತ್ ಹೋದ ನಂತರ ಅದನ್ನು ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ. ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇದನ್ನು Zynetix dashboard → ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆನ್ ಮಾಡಿ IT PIN ಹೊಂದಿಸುತ್ತದೆ.';
 
   @override
   String get kioskStatusLocked => 'ಆನ್: ಈ ಸಾಧನ Zynetix ಗೆ ಲಾಕ್ ಆಗಿದೆ.';
@@ -2675,7 +2678,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get kioskEnterPin =>
-      'IT ಸಿಬ್ಬಂದಿಗೆ: KINETIX ERP ನಲ್ಲಿ ಹೊಂದಿಸಿದ IT PIN ನಮೂದಿಸಿ.';
+      'IT ಸಿಬ್ಬಂದಿಗೆ: Zynetix dashboard ನಲ್ಲಿ ಹೊಂದಿಸಿದ IT PIN ನಮೂದಿಸಿ.';
 
   @override
   String get kioskPinLabel => 'IT PIN';
@@ -2701,7 +2704,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get kioskNoPin =>
-      'ಈ ಸಂಸ್ಥೆಗೆ ಇನ್ನೂ IT PIN ಹೊಂದಿಸಿಲ್ಲ. KINETIX ERP → ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಬೋರ್ಡ್ ಕಿಯೋಸ್ಕ್ ಮೋಡ್‌ನಲ್ಲಿ ಒಂದನ್ನು ಹೊಂದಿಸಿ; ಬೋರ್ಡ್ ಮುಂದಿನ ಬಾರಿ ಆನ್‌ಲೈನ್ ಆದಾಗ ಅದನ್ನು ಪಡೆಯುತ್ತದೆ. ಅಲ್ಲಿಯವರೆಗೆ ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಅನ್ನು ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿಯಲ್ಲಿ ಹೇಳಿದಂತೆ ಮಾತ್ರ ತೆಗೆಯಬಹುದು.';
+      'ಈ ಸಂಸ್ಥೆಗೆ ಇನ್ನೂ IT PIN ಹೊಂದಿಸಿಲ್ಲ. Zynetix dashboard → ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಬೋರ್ಡ್ ಕಿಯೋಸ್ಕ್ ಮೋಡ್‌ನಲ್ಲಿ ಒಂದನ್ನು ಹೊಂದಿಸಿ; ಬೋರ್ಡ್ ಮುಂದಿನ ಬಾರಿ ಆನ್‌ಲೈನ್ ಆದಾಗ ಅದನ್ನು ಪಡೆಯುತ್ತದೆ. ಅಲ್ಲಿಯವರೆಗೆ ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಅನ್ನು ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿಯಲ್ಲಿ ಹೇಳಿದಂತೆ ಮಾತ್ರ ತೆಗೆಯಬಹುದು.';
 
   @override
   String get kioskLeave => '10 ನಿಮಿಷ ಕಿಯೋಸ್ಕ್‌ನಿಂದ ಹೊರಬನ್ನಿ';
@@ -2940,7 +2943,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get kitAddWord => 'ಪದ ಸೇರಿಸಿ';
 
   @override
-  String get kitAiForLesson => 'ಈ ಪಾಠಕ್ಕೆ KINETIX AI';
+  String get kitAiForLesson => 'ಈ ಪಾಠಕ್ಕೆ Zynetix AI';
 
   @override
   String get kitAll => 'ಎಲ್ಲ';
@@ -3351,7 +3354,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get aiOfflineLabel =>
-      'ಆಫ್‌ಲೈನ್ ಮಾದರಿ — ಬೋರ್ಡ್‌ನದೇ ಟಿಪ್ಪಣಿಗಳಿಂದ (ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ), ಏಕೆಂದರೆ KINETIX AI ಸಂಪರ್ಕಕ್ಕೆ ಸಿಗುತ್ತಿಲ್ಲ';
+      'ಆಫ್‌ಲೈನ್ ಮಾದರಿ — ಬೋರ್ಡ್‌ನದೇ ಟಿಪ್ಪಣಿಗಳಿಂದ (ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ), ಏಕೆಂದರೆ Zynetix AI ಸಂಪರ್ಕಕ್ಕೆ ಸಿಗುತ್ತಿಲ್ಲ';
 
   @override
   String get profilesTitle => 'ಯಾರು ಕಲಿಸುತ್ತಿದ್ದಾರೆ?';
@@ -4201,7 +4204,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get aiVoiceNothingHeard => 'ಏನೂ ಕೇಳಿಸಲಿಲ್ಲ. ಮೈಕ್ ಒತ್ತಿ ಮಾತನಾಡಿ.';
 
   @override
-  String get booksAskAiChapter => 'KINETIX AI ವಿವರಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ';
+  String get booksAskAiChapter => 'Zynetix AI ವಿವರಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ';
 
   @override
   String get signInNeedsEnrolment =>
@@ -4357,7 +4360,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String offlineCodeBody(String time) {
-    return 'ಸಂಪರ್ಕವಿಲ್ಲ. ಈ ಬೋರ್ಡ್ ಅನ್ನು ದೃಢೀಕರಿಸಲು ಈ ಕೋಡ್ ಅನ್ನು KINETIX ಶಿಕ್ಷಕರ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ. ಇದು $time ವರೆಗೆ ಮಾನ್ಯ.';
+    return 'ಸಂಪರ್ಕವಿಲ್ಲ. ಈ ಬೋರ್ಡ್ ಅನ್ನು ದೃಢೀಕರಿಸಲು ಈ ಕೋಡ್ ಅನ್ನು Zynetix ಶಿಕ್ಷಕರ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ. ಇದು $time ವರೆಗೆ ಮಾನ್ಯ.';
   }
 
   @override
@@ -4422,7 +4425,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get setUpAgainHint =>
-      'ಬೇರೆ ನೆಟ್‌ವರ್ಕ್ ಅಥವಾ ಸರ್ವರ್‌ಗೆ ಸ್ಥಳಾಂತರಿಸಿದ್ದೀರಾ? ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸಿ, ನಂತರ ಹೊಸ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (KINETIX ERP → ಬೋರ್ಡ್‌ಗಳು) ನಮೂದಿಸಿ. ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಉಳಿಸಿದ ಬೋರ್ಡ್‌ಗಳು ಈ ಸಾಧನದಲ್ಲೇ ಇರುತ್ತವೆ.';
+      'ಬೇರೆ ನೆಟ್‌ವರ್ಕ್ ಅಥವಾ ಸರ್ವರ್‌ಗೆ ಸ್ಥಳಾಂತರಿಸಿದ್ದೀರಾ? ಮತ್ತೆ ಸಿದ್ಧಪಡಿಸಿ, ನಂತರ ಹೊಸ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (Zynetix dashboard → ಬೋರ್ಡ್‌ಗಳು) ನಮೂದಿಸಿ. ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಉಳಿಸಿದ ಬೋರ್ಡ್‌ಗಳು ಈ ಸಾಧನದಲ್ಲೇ ಇರುತ್ತವೆ.';
 
   @override
   String get setUpAgainKiosk =>
@@ -4433,7 +4436,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String setUpAgainBody(String server) {
-    return 'ಬೋರ್ಡ್ $server ಬಳಸುವುದನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ ಮತ್ತು ಶಿಕ್ಷಕರು ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ. ನಂತರ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು KINETIX ERP ಯಿಂದ ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (ಬೋರ್ಡ್‌ಗಳು → ಹೊಸ ನೋಂದಣಿ ಕೋಡ್) ನಮೂದಿಸಿ.';
+    return 'ಬೋರ್ಡ್ $server ಬಳಸುವುದನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ ಮತ್ತು ಶಿಕ್ಷಕರು ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ. ನಂತರ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು Zynetix dashboard ಯಿಂದ ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (ಬೋರ್ಡ್‌ಗಳು → ಹೊಸ ನೋಂದಣಿ ಕೋಡ್) ನಮೂದಿಸಿ.';
   }
 
   @override

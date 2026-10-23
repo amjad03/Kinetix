@@ -19,7 +19,7 @@ abstract final class ToolbarLayouts {
   static int maxFor({required bool phone}) => phone ? phoneMax : panelMax;
 
   /// The toolbar as it comes: the pens and the laser, the drawing tools, undo and redo, Tools,
-  /// Add and KINETIX AI (the AI pen and the laser are not on the Simple board).
+  /// Add and Zynetix AI (the AI pen and the laser are not on the Simple board).
   static List<String> defaults({required bool phone, required bool primary}) => phone
       ? (primary ? ['pen', 'highlighter', 'eraser', 'shapes', 'undo', 'tools', 'ai'] : ['pen', 'ai-pen', 'eraser', 'select', 'undo', 'tools', 'ai'])
       : [

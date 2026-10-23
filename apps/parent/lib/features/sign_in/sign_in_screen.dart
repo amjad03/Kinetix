@@ -318,12 +318,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(color: colors.primary, borderRadius: Kx.radiusMd),
-                            child: Icon(Icons.family_restroom, color: colors.onPrimary, size: 22),
-                          ),
+                          const ZynetixMark(size: 40, colors: ZynetixMark.parentColors),
                           const SizedBox(width: Kx.s12),
                           // Wraps under very large text instead of overflowing.
                           Expanded(
@@ -331,7 +326,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               spacing: Kx.s8,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                Text('KINETIX', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+                                Text('Zynetix', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
                                 Text('Parent', style: context.text.titleMedium?.copyWith(color: colors.onSurfaceVariant)),
                               ],
                             ),

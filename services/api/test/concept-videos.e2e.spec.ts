@@ -21,7 +21,7 @@ const fakeFetch = (async (input: string | URL) => {
   return new Response(JSON.stringify(hit[1]), { headers: { 'content-type': 'application/json' } });
 }) as typeof fetch;
 const youtube = new YouTube('test-key', fakeFetch);
-const oembed = (title: string) => routes.splice(0, routes.length, ['https://www.youtube.com/oembed', { title, author_name: 'KINETIX' }]);
+const oembed = (title: string) => routes.splice(0, routes.length, ['https://www.youtube.com/oembed', { title, author_name: 'Zynetix' }]);
 
 const VID = (n: number) => `vid${String(n).padStart(8, '0')}`;
 
@@ -46,7 +46,7 @@ describe('concept videos', () => {
   beforeAll(async () => {
     t = await createTenant(owner);
     other = await createTenant(owner);
-    kinetix = await createTenant(owner); // KINETIX's own institution, where the platform team has accounts
+    kinetix = await createTenant(owner); // Zynetix's own institution, where the platform team has accounts
     const [c] = await db.select({ id: s.courses.id }).from(s.courses).where(eq(s.courses.code, 'bcom-3-corporate-accounting'));
     await db.update(s.subjects).set({ courseId: c.id }).where(eq(s.subjects.id, t.subject.id));
     await addPlatformAdmin(db, kinetix.slug, kinetix.principal.email!, 'Curriculum team');
@@ -70,7 +70,7 @@ describe('concept videos', () => {
     await owner.end();
   });
 
-  it('lets only the KINETIX platform team in', async () => {
+  it('lets only the Zynetix platform team in', async () => {
     expect(parseArgs(['add', '--tenant', 'kinetix', '--login', 'a@kinetix.in', '--note=Videos'])).toEqual({ command: 'add', tenant: 'kinetix', login: 'a@kinetix.in', note: 'Videos' });
     expect(parseArgs(['list'])).toEqual({ command: 'list' });
     expect(() => parseArgs(['add', '--login', 'a@kinetix.in'])).toThrow(/--tenant/);
@@ -132,7 +132,7 @@ describe('concept videos', () => {
 
     oembed('Valuing goodwill: average profit method');
     const a = (await add({ url: `https://www.youtube.com/watch?v=${VID(1)}&t=10s` }).expect(201)).body;
-    expect(a).toMatchObject({ youtubeVideoId: VID(1), title: 'Valuing goodwill: average profit method', language: 'en', channelTitle: 'KINETIX', position: 1 });
+    expect(a).toMatchObject({ youtubeVideoId: VID(1), title: 'Valuing goodwill: average profit method', language: 'en', channelTitle: 'Zynetix', position: 1 });
     expect((await add({ url: `https://youtu.be/${VID(1)}` }).expect(409)).body.code).toBe('VIDEO_DUPLICATE');
     expect((await add({ url: 'https://vimeo.com/12345' }).expect(400)).body.code).toBe('VIDEO_BAD_LINK');
 
@@ -230,7 +230,7 @@ describe('concept videos', () => {
         items: [
           { snippet: { title: 'Super profit method of valuing goodwill', position: 0 }, contentDetails: { videoId: VID(4) } },
           { snippet: { title: 'Goodwill: capitalisation method', position: 1 }, contentDetails: { videoId: VID(7) } },
-          { snippet: { title: 'Welcome to the KINETIX channel', position: 2 }, contentDetails: { videoId: VID(8) } },
+          { snippet: { title: 'Welcome to the Zynetix channel', position: 2 }, contentDetails: { videoId: VID(8) } },
         ],
       }],
       ['https://www.googleapis.com/youtube/v3/videos', { items: [{ id: VID(7), snippet: { title: 'Goodwill: capitalisation method' }, contentDetails: { duration: 'PT6M30S' } }] }],

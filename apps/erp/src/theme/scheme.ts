@@ -1,6 +1,6 @@
 import { argbFromHex, Hct, hexFromArgb, MaterialDynamicColors, SchemeTonalSpot } from '@material/material-color-utilities';
 
-/** KINETIX seed colour, a deep trustworthy blue (mirrors `Kx.seed` in kinetix_ui). */
+/** Zynetix seed colour, a deep trustworthy blue (mirrors `Kx.seed` in kinetix_ui). */
 export const SEED = '#1D4ED8';
 
 /**
@@ -131,7 +131,7 @@ export function m3Scheme(seed: string = SEED, dark = false): M3Scheme {
   return out;
 }
 
-/** The KINETIX scheme: generated from [SEED], with the brand's hand-tuned roles on top. */
+/** The Zynetix scheme: generated from [SEED], with the brand's hand-tuned roles on top. */
 export function brandScheme(dark = false): M3Scheme {
   return { ...m3Scheme(SEED, dark), ...(dark ? BRAND_DARK : BRAND_LIGHT) };
 }

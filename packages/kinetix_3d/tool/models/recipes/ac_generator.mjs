@@ -25,7 +25,7 @@ export default {
     'ಕಾಂತಕ್ಷೇತ್ರದಲ್ಲಿ ಸುರುಳಿಯನ್ನು ತಿರುಗಿಸಿದರೆ ಅದರಲ್ಲಿ ವಿದ್ಯುತ್ ಪ್ರೇರಿತವಾಗುತ್ತದೆ (ವಿದ್ಯುತ್ಕಾಂತೀಯ ಪ್ರೇರಣೆ). ಜಾರು ಉಂಗುರಗಳು ಅದನ್ನು ಹೊರಗೆ ಒಯ್ಯುತ್ತವೆ; ಪ್ರತಿ ಅರ್ಧ ಸುತ್ತಿಗೆ ಅದು ದಿಕ್ಕು ಬದಲಿಸುತ್ತದೆ, ಹಾಗಾಗಿ ಇದು ಪರ್ಯಾಯ ವಿದ್ಯುತ್.',
   ),
   keywords: ['generator', 'ac generator', 'electric generator', 'dynamo', 'electromagnetic induction', 'slip rings', 'alternating current', 'fleming right hand rule', 'magnetic effects of electric current', 'induced current'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   groups: [
     { id: 'magnet', name: t('Magnet', 'चुंबक', 'ಕಾಂತ') },
     { id: 'rotor', name: t('Turning parts', 'घूमने वाले भाग', 'ತಿರುಗುವ ಭಾಗಗಳು') },

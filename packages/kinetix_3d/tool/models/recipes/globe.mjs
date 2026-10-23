@@ -27,7 +27,7 @@ export default {
     'ಓರೆಯಾದ ಅಕ್ಷದ ಮೇಲೆ ಭೂಮಿಯ ಮಾದರಿ, ನಾಸಾ ಉಪಗ್ರಹ ಚಿತ್ರಗಳಿಂದ ಮಾಡಿದ್ದು. ಸಮಭಾಜಕ ವೃತ್ತ, ಕರ್ಕಾಟಕ ಮತ್ತು ಮಕರ ವೃತ್ತಗಳು, ಧ್ರುವಗಳು ಮತ್ತು ಭಾರತವನ್ನು ಹುಡುಕಿ; ತಿರುಗಿಸಿ ಹಗಲು ಭೂಮಿಯ ಸುತ್ತ ಹೇಗೆ ಸಾಗುತ್ತದೆ ನೋಡಿ.',
   ),
   keywords: ['globe', 'earth', 'equator', 'latitude', 'longitude', 'axis', 'poles', 'tropic of cancer', 'tropic of capricorn', 'prime meridian', 'continents', 'oceans', 'globe latitudes and longitudes', 'the earth in the solar system', 'map'],
-  credit: 'Earth pictures: NASA Earth Observatory, Blue Marble: Next Generation (Reto Stöckli), public domain; model by KINETIX',
+  credit: 'Earth pictures: NASA Earth Observatory, Blue Marble: Next Generation (Reto Stöckli), public domain; model by Zynetix',
   sources: {
     earth: { file: 'globe/world.topo.bathy.200412.3x5400x2700.jpg', url: 'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg' },
   },

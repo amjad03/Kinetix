@@ -5,7 +5,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 
 /// Ready-made teaching drawings made of ordinary board elements, around (0, 0). The board
 /// places them in a free spot in view and groups them ([WhiteboardController.insert]), so they
-/// move, erase and undo like anything drawn by hand. Ported from the KINETIX prototype.
+/// move, erase and undo like anything drawn by hand. Ported from the Zynetix prototype.
 
 TextElement _text(String t, Offset at, Color c, {double size = 22, bool bold = false, bool center = false, BoardFont font = BoardFont.inter}) {
   final s = measureBoardText(t, size, bold: bold, font: font);

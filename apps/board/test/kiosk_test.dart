@@ -446,7 +446,7 @@ void main() {
       await pump(tester, policy: const KioskPolicy(enabled: true));
       await hold(tester, const Duration(milliseconds: 3100));
       expect(find.byKey(const Key('kiosk-no-pin')), findsOneWidget);
-      expect(find.textContaining('KINETIX ERP → Settings → Board kiosk mode'), findsOneWidget);
+      expect(find.textContaining('Zynetix dashboard → Settings → Board kiosk mode'), findsOneWidget);
       expect(find.byKey(const Key('kiosk-pin')), findsNothing);
     });
 

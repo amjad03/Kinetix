@@ -286,14 +286,9 @@ class _SignInScreenState extends State<SignInScreen> {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(color: colors.primary, borderRadius: Kx.radiusMd),
-                            child: Icon(Icons.school_outlined, color: colors.onPrimary, size: 22),
-                          ),
+                          const ZynetixMark(size: 40, colors: ZynetixMark.teacherColors),
                           const SizedBox(width: Kx.s12),
-                          Text('KINETIX', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+                          Text('Zynetix', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
                         ],
                       ),
                       const SizedBox(height: Kx.s32),

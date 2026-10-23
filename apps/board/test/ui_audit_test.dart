@@ -30,15 +30,15 @@ final _latin = RegExp(r"[A-Za-z][A-Za-z’'-]*[A-Za-z]");
 Iterable<String> _words(String text) => _latin.allMatches(text).map((m) => m[0]!);
 
 /// Names that are written in Latin script in every language (removed before looking for words).
-const _names = ['KINETIX Teacher App', 'KINETIX Student App', 'Teacher App', 'Student App', 'Zynetix', 'KINETIX AI', 'Connect to board'];
+const _names = ['Zynetix Teacher App', 'Zynetix Student App', 'Teacher App', 'Student App', 'Zynetix dashboard', 'AI settings', 'Zynetix AI', 'Zynetix', 'Connect to board'];
 
 /// Words that stay in Latin script in every language: product, font and file names, standards,
 /// keys of the keyboard, units, maths and logic, and the class's own data
 /// (test/support/fake_cloud.dart) and the simulations' titles and credits.
 Set<String> _allowed() {
   final words = <String>{
-    'KINETIX',
     'Zynetix',
+    'Claude',
     'PhET',
     // Programming languages, the school code box's setup command and file path, and textbook
     // chart names (P-V, T-s, RLC) stay as they are written.

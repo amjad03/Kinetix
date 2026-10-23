@@ -92,7 +92,7 @@ void main() {
     await tester.tap(find.byKey(const Key('askButton')));
     await tester.pump();
     expect(find.byKey(const Key('aiThinking')), findsOneWidget);
-    expect(find.text('KINETIX AI is thinking…'), findsOneWidget);
+    expect(find.text('Zynetix AI is thinking…'), findsOneWidget);
     // No second question while one is on its way.
     expect(tester.widget<FilledButton>(find.byKey(const Key('askButton'))).onPressed, isNull);
     gate.complete();
@@ -197,22 +197,22 @@ void main() {
     }
 
     testWidgets('an unsafe question is refused without a retry', (tester) async {
-      await askWith(tester, ApiException(422, "KINETIX AI can't help with that request. Try rephrasing it for the classroom."));
-      expect(find.text("KINETIX AI can't answer that"), findsOneWidget);
-      expect(find.text("KINETIX AI can't help with that request. Try rephrasing it for the classroom."), findsOneWidget);
+      await askWith(tester, ApiException(422, "Zynetix AI can't help with that request. Try rephrasing it for the classroom."));
+      expect(find.text("Zynetix AI can't answer that"), findsOneWidget);
+      expect(find.text("Zynetix AI can't help with that request. Try rephrasing it for the classroom."), findsOneWidget);
       expect(find.byKey(const Key('aiRetry')), findsNothing);
     });
 
     testWidgets("the day's allowance used up says so", (tester) async {
-      await askWith(tester, ApiException(429, "Your institution has used today's KINETIX AI allowance. It resets tomorrow."));
-      expect(find.text("Today's KINETIX AI allowance is used up"), findsOneWidget);
+      await askWith(tester, ApiException(429, "Your institution has used today's Zynetix AI allowance. It resets tomorrow."));
+      expect(find.text("Today's Zynetix AI allowance is used up"), findsOneWidget);
       expect(find.textContaining('It resets tomorrow.'), findsOneWidget);
       expect(find.byKey(const Key('aiRetry')), findsNothing);
     });
 
     testWidgets('unreachable: try again works', (tester) async {
-      final api = await askWith(tester, ApiException(503, 'KINETIX AI is not reachable right now. Try again in a minute.'));
-      expect(find.text('KINETIX AI is not reachable'), findsOneWidget);
+      final api = await askWith(tester, ApiException(503, 'Zynetix AI is not reachable right now. Try again in a minute.'));
+      expect(find.text('Zynetix AI is not reachable'), findsOneWidget);
       api.explainError = null;
       await tester.tap(find.byKey(const Key('aiRetry')));
       await tester.pumpAndSettle();
@@ -222,7 +222,7 @@ void main() {
     });
 
     testWidgets('offline offers a retry too', (tester) async {
-      await askWith(tester, ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address."));
+      await askWith(tester, ApiException(0, "Can't reach Zynetix. Check your internet connection and the server address."));
       expect(find.text('No connection'), findsOneWidget);
       expect(find.byKey(const Key('aiRetry')), findsOneWidget);
     });

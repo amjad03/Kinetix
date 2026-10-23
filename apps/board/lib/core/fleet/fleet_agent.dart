@@ -84,7 +84,7 @@ class AppHealth {
   final bool locked;
 }
 
-/// Reports the board's health to KINETIX Cloud over its device token (POST /v1/devices/me/health):
+/// Reports the board's health to Zynetix Cloud over its device token (POST /v1/devices/me/health):
 /// when it connects and every few minutes after, so the IT console shows whether it is online,
 /// its app version, OS, kiosk state, class, storage and battery.
 class FleetAgent {

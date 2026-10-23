@@ -91,7 +91,7 @@ test('the privacy & consent summary counts answers per purpose', async ({ page }
   await expect(data.getByTestId('consent-withdrawn')).toHaveText('0');
   await expect(data.getByTestId('consent-not-asked')).toHaveText(String(total - 2));
   const ai = summary.locator('[data-purpose="ai_features"]');
-  await expect(ai).toContainText('KINETIX AI');
+  await expect(ai).toContainText('Zynetix AI');
   await expect(ai.getByTestId('consent-granted')).toHaveText('1');
   await expect(ai.getByTestId('consent-not-asked')).toHaveText(String(total - 1));
   await expect(summary.locator('[data-purpose="photos"]').getByTestId('consent-not-asked')).toHaveText(String(total));

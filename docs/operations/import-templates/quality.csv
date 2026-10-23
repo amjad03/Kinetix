@@ -1,4 +1,4 @@
-# KINETIX import: accreditation and quality criteria. One row per criterion.
+# Zynetix import: accreditation and quality criteria. One row per criterion.
 # framework   Name of the framework, e.g. NAAC 2026 (created on first use; required)
 # body        naac, nba, nirf, iqac or custom (default custom)
 # code        Criterion code, e.g. 1.1.1 (required)

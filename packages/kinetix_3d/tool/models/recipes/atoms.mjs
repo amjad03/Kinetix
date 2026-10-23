@@ -69,7 +69,7 @@ export default {
     'ಬೋರ್ ಮಾದರಿಗಳು: ಬೀಜಕೇಂದ್ರದಲ್ಲಿ ಪ್ರೋಟಾನ್-ನ್ಯೂಟ್ರಾನ್‌ಗಳು, ಸುತ್ತಲಿನ ಕವಚಗಳಲ್ಲಿ ಚಲಿಸುವ ಎಲೆಕ್ಟ್ರಾನ್‌ಗಳು. ಧಾತುವನ್ನು ಆರಿಸಿ ಅದರ ಎಲೆಕ್ಟ್ರಾನ್ ವಿನ್ಯಾಸ ನೋಡಿ.',
   ),
   keywords: ['atom', 'atoms', 'structure of the atom', 'bohr model', 'electron', 'proton', 'neutron', 'electronic configuration', 'shells', 'atoms and molecules', 'valency'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   thumb: 'na', // the library picture shows sodium's three shells
   variants: ELEMENTS.map(([sym, en, hi, kn], i) => ({ id: sym.toLowerCase(), name: t(`${i + 1}. ${en} (${sym})`, `${i + 1}. ${hi} (${sym})`, `${i + 1}. ${kn} (${sym})`) })),
   groups: [

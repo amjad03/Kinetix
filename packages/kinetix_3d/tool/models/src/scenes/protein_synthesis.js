@@ -19,7 +19,7 @@ export const script = {
     'ಜೀನ್‌ನಿಂದ ಪ್ರೋಟೀನ್‌ವರೆಗೆ: DNA ಸಂದೇಶವಾಹಕ RNA ಆಗಿ ನಕಲಾಗುತ್ತದೆ; ರೈಬೋಸೋಮ್ mRNA ಅನ್ನು ಓದಿ tRNAಗಳು ತಂದ ಅಮೈನೋ ಆಮ್ಲಗಳನ್ನು ಸರಪಳಿಯಾಗಿ ಜೋಡಿಸುತ್ತದೆ; ಆ ಸರಪಳಿ ಮಡಚಿ ಪ್ರೋಟೀನ್ ಆಗುತ್ತದೆ.',
   ),
   keywords: ['protein synthesis', 'transcription', 'translation', 'mRNA', 'tRNA', 'ribosome', 'codon', 'anticodon', 'amino acids', 'gene', 'genetic code', 'central dogma', 'RNA polymerase', 'molecular basis of inheritance'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#1e2128', '#07080b'],
     keyAt: [3, 6, 7],

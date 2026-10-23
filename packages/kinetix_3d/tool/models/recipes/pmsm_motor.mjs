@@ -30,7 +30,7 @@ export default {
     'ಇನ್ವರ್ಟರ್ ಪೂರೈಸುವ ಮೂರು ಸ್ಟೇಟರ್ ಸುರುಳಿಗಳು ತಿರುಗುವ ಕ್ಷೇತ್ರ ಮಾಡುತ್ತವೆ; ರೋಟರ್‌ನ ಶಾಶ್ವತ ಕಾಂತಗಳು ಅದಕ್ಕೆ ಅಂಟಿ ನಿಖರ ಸಮಕಾಲಿಕ ವೇಗ N = 120f/P ನಲ್ಲಿ ತಿರುಗುತ್ತವೆ. ಬ್ರಷ್ ಇಲ್ಲ, ಹೆಚ್ಚು ದಕ್ಷತೆ (ಸುಮಾರು 95%), ಪುನರುತ್ಪಾದಕ ಬ್ರೇಕಿಂಗ್‌ನಲ್ಲಿ ಜನರೇಟರ್.',
   ),
   keywords: ['pmsm', 'bldc', 'brushless dc motor', 'permanent magnet synchronous motor', 'traction motor', 'ev motor', 'electric vehicle', 'electric drives', 'rotating magnetic field', 'regenerative braking', 'ev technology'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const out = {

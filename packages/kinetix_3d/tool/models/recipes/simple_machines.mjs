@@ -35,7 +35,7 @@ export default {
     'ಸನ್ನೆ, ರಾಟೆ ಮತ್ತು ಓರೆ ತಲ: ಪ್ರತಿಯೊಂದೂ ಕಡಿಮೆ ಪ್ರಯತ್ನದಿಂದ ಹೊರೆ ಸರಿಸಲು ಅಥವಾ ಬಲದ ದಿಕ್ಕು ಬದಲಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ. ಯಾಂತ್ರಿಕ ಲಾಭ = ಹೊರೆ ÷ ಪ್ರಯತ್ನ.',
   ),
   keywords: ['simple machines', 'lever', 'fulcrum', 'pulley', 'inclined plane', 'mechanical advantage', 'load', 'effort', 'work and energy', 'force and pressure', 'moments', 'principle of moments'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   variants: [
     { id: 'lever', name: t('Lever', 'उत्तोलक', 'ಸನ್ನೆ') },
     { id: 'pulley', name: t('Pulley', 'घिरनी', 'ರಾಟೆ') },

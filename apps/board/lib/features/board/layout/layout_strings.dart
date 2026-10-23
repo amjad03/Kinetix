@@ -156,7 +156,7 @@ class LayoutStrings {
 
   static const _strings = <String, Map<String, String>>{
     'en': {
-      'kinetixAi': 'KINETIX AI',
+      'kinetixAi': 'Zynetix AI',
       'eraser': 'Eraser',
       'add': 'Add',
       'collapse': 'Hide toolbar',
@@ -192,7 +192,7 @@ class LayoutStrings {
       'animationsSoon': 'Animations arrive with the animations pack.',
       'videosNone': 'No concept videos for this period yet.',
       'videoNoteAdded': 'Video note added to the board',
-      'videoSourcePlatform': 'KINETIX',
+      'videoSourcePlatform': 'Zynetix',
       'videoSourceInstitution': 'School',
       'videoSourceTeacher': 'Teacher',
       'addVideo': 'Add a video',
@@ -315,7 +315,7 @@ class LayoutStrings {
       'multiTouchHint': 'Several people can write at once',
     },
     'hi': {
-      'kinetixAi': 'KINETIX AI',
+      'kinetixAi': 'Zynetix AI',
       'eraser': 'रबर',
       'add': 'जोड़ें',
       'collapse': 'टूलबार छिपाएँ',
@@ -351,7 +351,7 @@ class LayoutStrings {
       'animationsSoon': 'एनिमेशन, एनिमेशन पैक के साथ आएँगे।',
       'videosNone': 'इस पीरियड के लिए अभी कोई कॉन्सेप्ट वीडियो नहीं।',
       'videoNoteAdded': 'वीडियो नोट बोर्ड पर जोड़ा गया',
-      'videoSourcePlatform': 'KINETIX',
+      'videoSourcePlatform': 'Zynetix',
       'videoSourceInstitution': 'स्कूल',
       'videoSourceTeacher': 'शिक्षक',
       'addVideo': 'वीडियो जोड़ें',
@@ -474,7 +474,7 @@ class LayoutStrings {
       'multiTouchHint': 'कई लोग एक साथ लिख सकते हैं',
     },
     'kn': {
-      'kinetixAi': 'KINETIX AI',
+      'kinetixAi': 'Zynetix AI',
       'eraser': 'ಅಳಿಸುವಿಕೆ',
       'add': 'ಸೇರಿಸಿ',
       'collapse': 'ಟೂಲ್‌ಬಾರ್ ಮರೆಮಾಡಿ',
@@ -510,7 +510,7 @@ class LayoutStrings {
       'animationsSoon': 'ಅನಿಮೇಷನ್‌ಗಳು ಅನಿಮೇಷನ್ ಪ್ಯಾಕ್‌ನೊಂದಿಗೆ ಬರುತ್ತವೆ.',
       'videosNone': 'ಈ ಅವಧಿಗೆ ಇನ್ನೂ ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳಿಲ್ಲ.',
       'videoNoteAdded': 'ವೀಡಿಯೊ ಟಿಪ್ಪಣಿ ಬೋರ್ಡ್‌ಗೆ ಸೇರಿತು',
-      'videoSourcePlatform': 'KINETIX',
+      'videoSourcePlatform': 'Zynetix',
       'videoSourceInstitution': 'ಶಾಲೆ',
       'videoSourceTeacher': 'ಶಿಕ್ಷಕ',
       'addVideo': 'ವೀಡಿಯೊ ಸೇರಿಸಿ',

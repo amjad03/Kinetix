@@ -3,17 +3,19 @@ import 'package:intl/intl.dart';
 import 'package:kinetix_ink/kinetix_ink.dart' show TexView;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../board/side_panel.dart';
+import '../signin/sign_in_dialog.dart';
 import 'ai_controller.dart';
 
-/// KINETIX AI's accent (the AI toolbar group).
+/// Zynetix AI's accent (the AI toolbar group).
 const aiAccent = Color(0xFFA142F4);
 
 /// Shown with every placeholder result, so nobody mistakes it for a real answer. (English; the
 /// board shows [AppLocalizations.aiPreviewLabel].)
-const previewLabel = 'Preview — connect the KINETIX AI server for real answers';
+const previewLabel = 'Preview. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).';
 
 /// Text sizes for reading from the back of a classroom.
 abstract final class ClassType {
@@ -157,15 +159,29 @@ class AiError extends StatelessWidget {
   );
 }
 
-/// Shown on AI pages when no teacher is signed in.
+/// Shown on AI pages when no teacher is signed in: "Sign in on this board", with a button that
+/// opens the board's own sign-in (email and password) when [board] is given.
 class AiSignInNotice extends StatelessWidget {
-  const AiSignInNotice({super.key});
+  const AiSignInNotice({super.key, this.board});
+
+  final BoardController? board;
 
   @override
-  Widget build(BuildContext context) => AiNotice(key: const Key('ai-signin'), icon: Icons.lock_outline, message: context.l10n.aiSignInNotice);
+  Widget build(BuildContext context) => AiNotice(
+    key: const Key('ai-signin'),
+    icon: Icons.lock_outline,
+    message: context.l10n.aiSignInNotice,
+    action: board == null
+        ? null
+        : FilledButton.tonal(
+            key: const Key('ai-signin-button'),
+            onPressed: () => showBoardSignInDialog(context, board!, withPassword: true),
+            child: Text(context.l10n.aiSignInButton),
+          ),
+  );
 }
 
-/// A spinner with a line of text, while KINETIX AI works.
+/// A spinner with a line of text, while Zynetix AI works.
 class AiLoading extends StatelessWidget {
   const AiLoading({super.key, required this.label});
 
@@ -203,7 +219,7 @@ List<({String text, bool math})> splitMath(String text) {
   return out;
 }
 
-/// AI text in a panel. KINETIX AI sends maths as plain Unicode (x², √, ×); LaTeX that an answer
+/// AI text in a panel. Zynetix AI sends maths as plain Unicode (x², √, ×); LaTeX that an answer
 /// still carries (an offline sample, an answer saved before) is typeset rather than shown raw.
 class AiText extends StatelessWidget {
   const AiText(this.text, {super.key, this.style});

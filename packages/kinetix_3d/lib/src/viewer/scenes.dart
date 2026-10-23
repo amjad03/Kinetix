@@ -108,7 +108,7 @@ class ProcessScene {
     subject: subject,
     title: title,
     summary: summary,
-    credit: 'Scene built by KINETIX',
+    credit: 'Scene built by Zynetix',
     size: 1,
     groups: groups,
     parts: parts,

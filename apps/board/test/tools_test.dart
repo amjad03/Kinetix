@@ -18,7 +18,7 @@ import 'support/fake_cloud.dart';
 import 'support/wait.dart';
 
 /// What used to say "coming soon": the calculator, the screenshot, touch lock, screen projection
-/// and voice questions to KINETIX AI, at phone and panel sizes.
+/// and voice questions to Zynetix AI, at phone and panel sizes.
 class FakeVoice extends VoiceInput {
   void Function(String, bool)? words;
   AiLanguage? language;

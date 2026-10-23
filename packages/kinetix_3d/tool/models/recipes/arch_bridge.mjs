@@ -26,7 +26,7 @@ export default {
     'ಕಮಾನು ಭಾರವನ್ನು ಮುಖ್ಯವಾಗಿ ಸಂಪೀಡನದಲ್ಲಿ ಹೊರುತ್ತದೆ ಮತ್ತು ತುದಿಗಳಲ್ಲಿ ಹೊರಕ್ಕೆ ತಳ್ಳುತ್ತದೆ (ಥ್ರಸ್ಟ್); ಆದ್ದರಿಂದ ಬಲವಾದ ಅಬಟ್‌ಮೆಂಟ್ ಬೇಕು. ಸಮ ಡೆಕ್ ಭಾರದಲ್ಲಿ ಪರವಲಯ ಕಮಾನಿನಲ್ಲಿ ಬಾಗುವಿಕೆ ಇರುವುದಿಲ್ಲ.',
   ),
   keywords: ['arch', 'arch bridge', 'bridge', 'thrust', 'compression', 'parabolic arch', 'spandrel', 'abutment', 'civil engineering', 'concrete bridge'],
-  credit: 'Model built by KINETIX (a simplified open-spandrel arch at 1:200)',
+  credit: 'Model built by Zynetix (a simplified open-spandrel arch at 1:200)',
   crease: 40,
   build(THREE) {
     const n = 32;

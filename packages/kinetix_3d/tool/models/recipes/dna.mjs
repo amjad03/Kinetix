@@ -190,7 +190,7 @@ export default {
     'ಎರಡು ಎಳೆಗಳು ಜೋಡಿ ಸುರುಳಿಯಾಗಿ ಹೆಣೆದಿವೆ. ಕ್ಷಾರಗಳು A ಯನ್ನು T ಯೊಂದಿಗೆ, G ಯನ್ನು C ಯೊಂದಿಗೆ ಜೋಡಿಸುತ್ತವೆ; ಹಾಗಾಗಿ ಪ್ರತಿ ಎಳೆ ಇನ್ನೊಂದನ್ನು ಮರುನಿರ್ಮಿಸುವ ಸಂಕೇತ ಹೊಂದಿದೆ.',
   ),
   keywords: ['dna', 'double helix', 'genes', 'heredity', 'nucleotide', 'base pairing', 'replication', 'molecular basis of inheritance', 'chromosome', 'adenine', 'thymine', 'guanine', 'cytosine'],
-  credit: 'Model built by KINETIX; atoms from PDB 1BNA (Drew, Wing, Takano, Broka, Tanaka, Itakura, Dickerson, 1981), RCSB Protein Data Bank, CC0',
+  credit: 'Model built by Zynetix; atoms from PDB 1BNA (Drew, Wing, Takano, Broka, Tanaka, Itakura, Dickerson, 1981), RCSB Protein Data Bank, CC0',
   sources: { pdb: PDB },
   groups: [
     { id: 'backbone', name: t('Backbones', 'आधार सूत्र', 'ಬೆನ್ನೆಲುಬುಗಳು') },

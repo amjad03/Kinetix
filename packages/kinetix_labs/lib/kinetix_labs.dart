@@ -1,4 +1,4 @@
-/// KINETIX virtual labs: experiments drawn on benches (pure, data-driven, with
+/// Zynetix virtual labs: experiments drawn on benches (pure, data-driven, with
 /// readings, graphs and results), engines that compute them, a catalogue with
 /// text in English, Hindi and Kannada, and the lab screen. Offline, no plugins.
 library;

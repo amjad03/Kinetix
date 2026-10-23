@@ -23,7 +23,7 @@ export default {
     'ದ್ರವ ಉದ್ದ ನಳಿಕೆಯಲ್ಲಿ ಮುಂದಿನ-ಹಿಂದಿನವುಗಳೊಂದಿಗೆ ಬೆರೆಯದ ಪ್ಲಗ್‌ಗಳಾಗಿ ಚಲಿಸುತ್ತದೆ, ಹಾಗಾಗಿ ಸಾಂದ್ರತೆ ಉದ್ದಕ್ಕೂ ಕ್ರಮವಾಗಿ ಇಳಿಯುತ್ತದೆ. ವಿನ್ಯಾಸ ಸಮೀಕರಣ: V = F₀∫dX/(−rA); ಪ್ರಥಮ ಕ್ರಮದ ಕ್ರಿಯೆಗೆ X = 1 − e^(−kτ).',
   ),
   keywords: ['pfr', 'plug flow reactor', 'tubular reactor', 'chemical reactor', 'reaction engineering', 'residence time', 'space time', 'conversion', 'chemical engineering'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const plugs = { feed: [], middle: [], product: [] };

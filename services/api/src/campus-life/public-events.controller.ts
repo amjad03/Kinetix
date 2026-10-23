@@ -5,7 +5,7 @@ import { campusEvents, eventRegistrations, tenants } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { CampusLifeService } from './campus-life.service.js';
 
-/** The public page of an open event: what, where, when, the fee and how many places are left. Registration itself happens in the KINETIX app. */
+/** The public page of an open event: what, where, when, the fee and how many places are left. Registration itself happens in the Zynetix app. */
 @Controller('v1/public/events/:slug')
 export class PublicEventsController {
   constructor(

@@ -773,7 +773,7 @@ class FakeStudentApi implements StudentApi {
 
   List<TopicHit> hits = [];
 
-  // -- KINETIX AI -------------------------------------------------------------------------------
+  // -- Zynetix AI -------------------------------------------------------------------------------
 
   /// What [explain] returns; [explainError] wins when set.
   Explanation answer = Explanation(
@@ -1959,7 +1959,7 @@ class FakeStudentApi implements StudentApi {
     return [MockSummary.fromJson({'id': 'mi0', 'kind': 'hr', 'role': 'Analyst', 'status': 'completed', 'score': 70.0, 'createdAt': '2026-09-01T05:00:00Z'})];
   }
 
-  /// Whether the next answer comes from KINETIX AI (false: the built-in guidance).
+  /// Whether the next answer comes from Zynetix AI (false: the built-in guidance).
   bool assistantAi = false;
   List<Map<String, dynamic>> assistantHistoryJson = [
     {'role': 'user', 'body': 'What should I study?', 'createdAt': '2026-09-01T05:00:00Z'},

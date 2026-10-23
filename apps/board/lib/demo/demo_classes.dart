@@ -1,7 +1,7 @@
 import '../features/board/kit/subjects.dart' show KitTab;
 
 /// One concept video linked to a demo class's topic. The YouTube ids are placeholders until
-/// the KINETIX channel's own videos are linked (YouTube then says "Video unavailable").
+/// the Zynetix channel's own videos are linked (YouTube then says "Video unavailable").
 typedef DemoVideo = ({String id, String youtube, String title, String lang, int seconds});
 
 /// One step of today's lesson plan.
@@ -462,7 +462,7 @@ extension DemoClassJson on DemoClass {
         'title': v.title,
         'language': v.lang,
         'durationSeconds': v.seconds,
-        'channelTitle': 'KINETIX',
+        'channelTitle': 'Zynetix',
         'position': i + 1,
       },
   ];

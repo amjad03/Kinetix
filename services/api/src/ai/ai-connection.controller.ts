@@ -22,7 +22,7 @@ export const NOT_AI_CONNECTION_ADMIN = "Only the institution's admin or principa
 
 /**
  * The institution's own Claude connection (Zynetix dashboard, AI settings). Signed-in users only;
- * the handler admits tenant_admin and principal, and the KINETIX platform team. The key is never returned.
+ * the handler admits tenant_admin and principal, and the Zynetix platform team. The key is never returned.
  */
 @Controller('v1/ai/admin/connection')
 export class AiConnectionController {

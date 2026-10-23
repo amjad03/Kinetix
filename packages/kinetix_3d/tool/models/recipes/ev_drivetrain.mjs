@@ -30,7 +30,7 @@ export default {
     'ಬ್ಯಾಟರಿ (DC) → ಇನ್ವರ್ಟರ್ (DC ಯಿಂದ ಮೂರು-ಹಂತ AC) → ಮೋಟಾರ್ → ರಿಡಕ್ಷನ್ ಗೇರ್ ಮತ್ತು ಡಿಫರೆನ್ಷಿಯಲ್ → ಚಕ್ರಗಳು. ಪುನರುತ್ಪಾದಕ ಬ್ರೇಕಿಂಗ್‌ನಲ್ಲಿ ಶಕ್ತಿ ಹಿಮ್ಮುಖ ಹರಿಯುತ್ತದೆ; ಆನ್‌ಬೋರ್ಡ್ ಚಾರ್ಜರ್ ಗ್ರಿಡ್‌ನಿಂದ ಬ್ಯಾಟರಿ ತುಂಬುತ್ತದೆ.',
   ),
   keywords: ['ev drivetrain', 'electric vehicle', 'ev architecture', 'powertrain', 'inverter', 'traction motor', 'onboard charger', 'dc-dc converter', 'regenerative braking', 'battery pack', 'reduction gear', 'differential', 'ev technology'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const rearZ = -WB / 2, frontZ = WB / 2, x = TRACK / 2;

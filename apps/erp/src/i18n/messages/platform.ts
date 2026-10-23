@@ -1,12 +1,12 @@
 import { area } from '../define';
 
-// Platform › Concept videos: the KINETIX platform team links YouTube videos to library topics.
+// Platform › Concept videos: the Zynetix platform team links YouTube videos to library topics.
 export default area(
   {
     'nav.platform': 'Platform',
     'nav.conceptVideos': 'Concept videos',
-    'pv.subtitle': 'Videos from the KINETIX YouTube channel, linked to library topics for every institution. Boards suggest them when a period starts; students watch them before and after class.',
-    'pv.teamOnly': 'KINETIX platform team',
+    'pv.subtitle': 'Videos from the Zynetix YouTube channel, linked to library topics for every institution. Boards suggest them when a period starts; students watch them before and after class.',
+    'pv.teamOnly': 'Zynetix platform team',
     'pv.search': 'Search topics, chapters or courses',
     'pv.missingOnly': 'Only topics without videos',
     'pv.coverage': '{with} of {topics} topics have videos',
@@ -58,7 +58,7 @@ export default area(
     'pv.import.count_other': 'Import {count} videos',
     'pv.import.done': 'Imported {added}; {skipped} were already there',
     'pv.import.empty': 'This playlist has no public videos.',
-    'error.NOT_PLATFORM_ADMIN': 'Only the KINETIX platform team can do this.',
+    'error.NOT_PLATFORM_ADMIN': 'Only the Zynetix platform team can do this.',
     'error.VIDEO_BAD_LINK': 'That is not a YouTube video link.',
     'error.VIDEO_TITLE_UNAVAILABLE': "YouTube didn't give the video's title. Type a title and add it again.",
     'error.VIDEO_DUPLICATE': 'This video is already on this topic.',
@@ -70,8 +70,8 @@ export default area(
     hi: {
       'nav.platform': 'प्लेटफ़ॉर्म',
       'nav.conceptVideos': 'कॉन्सेप्ट वीडियो',
-      'pv.subtitle': 'KINETIX यूट्यूब चैनल के वीडियो, हर संस्थान के लिए लाइब्रेरी के विषयों से जुड़े। पीरियड शुरू होने पर बोर्ड इन्हें सुझाता है; विद्यार्थी इन्हें कक्षा से पहले और बाद में देखते हैं।',
-      'pv.teamOnly': 'KINETIX प्लेटफ़ॉर्म टीम',
+      'pv.subtitle': 'Zynetix यूट्यूब चैनल के वीडियो, हर संस्थान के लिए लाइब्रेरी के विषयों से जुड़े। पीरियड शुरू होने पर बोर्ड इन्हें सुझाता है; विद्यार्थी इन्हें कक्षा से पहले और बाद में देखते हैं।',
+      'pv.teamOnly': 'Zynetix प्लेटफ़ॉर्म टीम',
       'pv.search': 'विषय, अध्याय या कोर्स खोजें',
       'pv.missingOnly': 'केवल बिना वीडियो वाले विषय',
       'pv.coverage': '{topics} में से {with} विषयों के वीडियो हैं',
@@ -123,7 +123,7 @@ export default area(
       'pv.import.count_other': '{count} वीडियो आयात करें',
       'pv.import.done': '{added} आयात हुए; {skipped} पहले से थे',
       'pv.import.empty': 'इस प्लेलिस्ट में कोई सार्वजनिक वीडियो नहीं है।',
-      'error.NOT_PLATFORM_ADMIN': 'यह केवल KINETIX प्लेटफ़ॉर्म टीम कर सकती है।',
+      'error.NOT_PLATFORM_ADMIN': 'यह केवल Zynetix प्लेटफ़ॉर्म टीम कर सकती है।',
       'error.VIDEO_BAD_LINK': 'यह यूट्यूब वीडियो का लिंक नहीं है।',
       'error.VIDEO_TITLE_UNAVAILABLE': 'यूट्यूब से वीडियो का शीर्षक नहीं मिला। शीर्षक लिखकर फिर से जोड़ें।',
       'error.VIDEO_DUPLICATE': 'यह वीडियो पहले से इस विषय पर है।',
@@ -134,8 +134,8 @@ export default area(
     kn: {
       'nav.platform': 'ಪ್ಲಾಟ್‌ಫಾರ್ಮ್',
       'nav.conceptVideos': 'ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು',
-      'pv.subtitle': 'KINETIX ಯೂಟ್ಯೂಬ್ ಚಾನೆಲ್‌ನ ವೀಡಿಯೊಗಳು, ಪ್ರತಿ ಸಂಸ್ಥೆಗಾಗಿ ಲೈಬ್ರರಿ ವಿಷಯಗಳಿಗೆ ಜೋಡಿಸಲಾಗಿದೆ. ಪೀರಿಯಡ್ ಆರಂಭವಾದಾಗ ಬೋರ್ಡ್ ಇವನ್ನು ಸೂಚಿಸುತ್ತದೆ; ವಿದ್ಯಾರ್ಥಿಗಳು ತರಗತಿಯ ಮೊದಲು ಮತ್ತು ನಂತರ ನೋಡುತ್ತಾರೆ.',
-      'pv.teamOnly': 'KINETIX ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ತಂಡ',
+      'pv.subtitle': 'Zynetix ಯೂಟ್ಯೂಬ್ ಚಾನೆಲ್‌ನ ವೀಡಿಯೊಗಳು, ಪ್ರತಿ ಸಂಸ್ಥೆಗಾಗಿ ಲೈಬ್ರರಿ ವಿಷಯಗಳಿಗೆ ಜೋಡಿಸಲಾಗಿದೆ. ಪೀರಿಯಡ್ ಆರಂಭವಾದಾಗ ಬೋರ್ಡ್ ಇವನ್ನು ಸೂಚಿಸುತ್ತದೆ; ವಿದ್ಯಾರ್ಥಿಗಳು ತರಗತಿಯ ಮೊದಲು ಮತ್ತು ನಂತರ ನೋಡುತ್ತಾರೆ.',
+      'pv.teamOnly': 'Zynetix ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ತಂಡ',
       'pv.search': 'ವಿಷಯ, ಅಧ್ಯಾಯ ಅಥವಾ ಕೋರ್ಸ್ ಹುಡುಕಿ',
       'pv.missingOnly': 'ವೀಡಿಯೊ ಇಲ್ಲದ ವಿಷಯಗಳು ಮಾತ್ರ',
       'pv.coverage': '{topics} ವಿಷಯಗಳಲ್ಲಿ {with} ಕ್ಕೆ ವೀಡಿಯೊಗಳಿವೆ',
@@ -187,7 +187,7 @@ export default area(
       'pv.import.count_other': '{count} ವೀಡಿಯೊಗಳನ್ನು ಆಮದು ಮಾಡಿ',
       'pv.import.done': '{added} ಆಮದಾಗಿವೆ; {skipped} ಈಗಾಗಲೇ ಇದ್ದವು',
       'pv.import.empty': 'ಈ ಪ್ಲೇಲಿಸ್ಟ್‌ನಲ್ಲಿ ಸಾರ್ವಜನಿಕ ವೀಡಿಯೊಗಳಿಲ್ಲ.',
-      'error.NOT_PLATFORM_ADMIN': 'ಇದನ್ನು KINETIX ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ತಂಡ ಮಾತ್ರ ಮಾಡಬಹುದು.',
+      'error.NOT_PLATFORM_ADMIN': 'ಇದನ್ನು Zynetix ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ತಂಡ ಮಾತ್ರ ಮಾಡಬಹುದು.',
       'error.VIDEO_BAD_LINK': 'ಇದು ಯೂಟ್ಯೂಬ್ ವೀಡಿಯೊ ಲಿಂಕ್ ಅಲ್ಲ.',
       'error.VIDEO_TITLE_UNAVAILABLE': 'ಯೂಟ್ಯೂಬ್ ವೀಡಿಯೊದ ಶೀರ್ಷಿಕೆ ನೀಡಲಿಲ್ಲ. ಶೀರ್ಷಿಕೆ ಬರೆದು ಮತ್ತೆ ಸೇರಿಸಿ.',
       'error.VIDEO_DUPLICATE': 'ಈ ವೀಡಿಯೊ ಈಗಾಗಲೇ ಈ ವಿಷಯದಲ್ಲಿದೆ.',

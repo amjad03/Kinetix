@@ -19,7 +19,7 @@ export const script = {
     'ಸಾಗರ ಫಲಕವು ಖಂಡದ ಕೆಳಗೆ ಹೇಗೆ ಜಾರುತ್ತದೆ, ಪರ್ವತ ಮತ್ತು ಜ್ವಾಲಾಮುಖಿಗಳನ್ನು ಹೇಗೆ ನಿರ್ಮಿಸುತ್ತದೆ, ಮತ್ತು ಸಿಕ್ಕಿಕೊಂಡ ಭ್ರಂಶದಲ್ಲಿ ಸಂಗ್ರಹವಾದ ಒತ್ತಡ ಭೂಕಂಪವಾಗಿ ಹೇಗೆ ಬಿಡುಗಡೆಯಾಗುತ್ತದೆ.',
   ),
   keywords: ['plate tectonics', 'earthquake', 'subduction', 'plates', 'focus', 'epicentre', 'seismic waves', 'fault', 'volcano', 'mountains', 'lithosphere', 'Richter scale', 'natural disasters', 'geography'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#1c2128', '#06080b'],
     keyAt: [4, 6, 6],

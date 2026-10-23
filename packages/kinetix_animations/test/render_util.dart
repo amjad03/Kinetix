@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
-/// Loads the KINETIX fonts so text renders as real glyphs in tests (for the preview dump).
+/// Loads the Zynetix fonts so text renders as real glyphs in tests (for the preview dump).
 Future<void> loadKxFonts() async {
   const dir = '../kinetix_ui/fonts';
   Future<void> load(String family, List<String> files) async {

@@ -84,7 +84,7 @@ export default {
     'ಕ್ಷೇತ್ರ ರೇಖೆಗಳು ಉತ್ತರ ಧ್ರುವದಿಂದ ಹೊರಟು ಬಾಗಿ ದಕ್ಷಿಣ ಧ್ರುವವನ್ನು ಪ್ರವೇಶಿಸುತ್ತವೆ. ಅವು ದಟ್ಟವಾಗಿರುವಲ್ಲಿ (ಧ್ರುವಗಳ ಬಳಿ) ಕ್ಷೇತ್ರ ಅತಿ ಪ್ರಬಲ. ದಿಕ್ಸೂಚಿಯ ಸೂಜಿ ಅವುಗಳ ಉದ್ದಕ್ಕೂ ನಿಲ್ಲುತ್ತದೆ.',
   ),
   keywords: ['magnet', 'bar magnet', 'magnetic field', 'field lines', 'compass', 'north pole', 'south pole', 'fun with magnets', 'magnetic effects of electric current', 'magnetism and matter'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   groups: [
     { id: 'magnet', name: t('Magnet', 'चुंबक', 'ಕಾಂತ') },
     { id: 'field', name: t('Field', 'क्षेत्र', 'ಕ್ಷೇತ್ರ') },
