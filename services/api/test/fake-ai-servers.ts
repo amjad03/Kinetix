@@ -91,6 +91,8 @@ export class FakeGemini extends FakeServer {
   replies: GeminiReply[] = [];
   answer: (body: any) => GeminiReply = () => '{}';
   noThinking = false;
+  /** Like current Claude models on Anthropic's endpoint: refuses temperature. */
+  noTemperature = false;
 
   get url() {
     return `${this.origin}/v1beta/openai`;
@@ -108,6 +110,7 @@ export class FakeGemini extends FakeServer {
     if (req.headers.authorization !== `Bearer ${FakeGemini.KEY}`) return error(400, 'INVALID_ARGUMENT', 'API key not valid. Please pass a valid API key.');
     const body = JSON.parse(raw.toString());
     this.requests.push({ headers: req.headers, body });
+    if (this.noTemperature && 'temperature' in body) return error(400, 'INVALID_ARGUMENT', '`temperature` is deprecated for this model.');
     if (this.noThinking && 'reasoning_effort' in body) return error(400, 'INVALID_ARGUMENT', 'Thinking is not supported by this model.');
     const fail = this.failures.shift();
     if (fail === 429 || fail === 'perDay') {

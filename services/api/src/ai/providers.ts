@@ -173,7 +173,7 @@ export interface OpenAiCompatibleOptions {
   reasoningEffort?: ReasoningEffort;
 }
 
-type OptionalField = 'response_format' | 'reasoning_effort';
+type OptionalField = 'response_format' | 'reasoning_effort' | 'temperature';
 
 /**
  * Any server that speaks the OpenAI chat-completions API: vLLM or llama.cpp on a GPU in the
@@ -197,6 +197,8 @@ export class OpenAiCompatibleProvider implements LlmProvider {
     options: OpenAiCompatibleOptions = {},
   ) {
     this.reasoningEffort = options.reasoningEffort ?? (isGemini(baseUrl) ? 'low' : undefined);
+    // Anthropic's OpenAI-compatible endpoint refuses temperature for current Claude models.
+    if (/anthropic\.com/i.test(baseUrl)) this.dropped.add('temperature');
   }
 
   async complete(messages: ChatMessage[], opts: CompleteOptions): Promise<Completion> {
@@ -207,8 +209,9 @@ export class OpenAiCompatibleProvider implements LlmProvider {
         messages,
         // A thinking model's reasoning counts against max_tokens: leave room for it.
         max_tokens: opts.maxTokens + (effort ? THINKING_TOKENS[effort] : 0),
-        temperature: opts.temperature,
       };
+      // Newer Claude models refuse temperature: left out once the server says so.
+      if (!this.dropped.has('temperature')) body.temperature = opts.temperature;
       if (!this.dropped.has('response_format')) body.response_format = { type: 'json_object' };
       if (effort) body.reasoning_effort = effort;
       try {
@@ -233,6 +236,7 @@ export class OpenAiCompatibleProvider implements LlmProvider {
     if (!(e instanceof AiUnavailableError) || e.status !== 400) return undefined;
     if ('reasoning_effort' in body && /reasoning|thinking/i.test(e.message)) return 'reasoning_effort';
     if ('response_format' in body && /response_format|json_object|mime/i.test(e.message)) return 'response_format';
+    if ('temperature' in body && /temperature/i.test(e.message)) return 'temperature';
     return undefined;
   }
 }

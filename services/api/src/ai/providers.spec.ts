@@ -142,6 +142,7 @@ describe('Google Gemini through its OpenAI-compatible endpoint', () => {
     gemini.failures = [];
     gemini.replies = [];
     gemini.noThinking = false;
+    gemini.noTemperature = false;
   });
 
   it('sends the key as a Bearer token, JSON mode, low reasoning and room for the thinking tokens', async () => {
@@ -161,6 +162,20 @@ describe('Google Gemini through its OpenAI-compatible endpoint', () => {
   it('reports a wrong key plainly, without retrying', async () => {
     const bad = new OpenAiCompatibleProvider(gemini.url, 'gemini-3.8-flash', 'wrong', 5000);
     await expect(bad.complete(ask, opts)).rejects.toMatchObject({ retryable: false, status: 400, message: expect.stringContaining('API key not valid') });
+  });
+
+  it('leaves out temperature when the model refuses it, from then on (Claude)', async () => {
+    gemini.noTemperature = true;
+    gemini.replies.push(reply, reply);
+    const p = flash();
+    expect((await p.complete(ask, opts)).text).toBe(reply);
+    await p.complete(ask, opts);
+    expect(gemini.requests.map((r) => 'temperature' in r.body)).toEqual([true, false, false]);
+  });
+
+  it('never sends temperature to Anthropic', () => {
+    const claude = new OpenAiCompatibleProvider('https://api.anthropic.com/v1', 'claude-sonnet-5-5', 'k', 5000);
+    expect((claude as unknown as { dropped: Set<string> }).dropped.has('temperature')).toBe(true);
   });
 
   it('leaves out reasoning_effort for a model without thinking, from then on', async () => {
