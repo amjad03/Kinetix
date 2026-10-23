@@ -4834,4 +4834,49 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get curSoonEv => 'EV आरेख';
+
+  @override
+  String inkSuggestPicture(String name) {
+    return 'चित्र: $name';
+  }
+
+  @override
+  String inkSuggestDiagram(String name) {
+    return 'आरेख: $name';
+  }
+
+  @override
+  String inkSuggestModel(String name) {
+    return '3D मॉडल: $name';
+  }
+
+  @override
+  String inkSuggestAnimation(String name) {
+    return 'एनिमेशन: $name';
+  }
+
+  @override
+  String get sketchSuggestCloudHint =>
+      'पेन या AI पेन से बनाने के बाद, चित्र की जगह साफ़ आइकन, चित्र, आरेख या मॉडल चुनें। इस बोर्ड पर स्केच मॉडल नहीं है, इसलिए चित्र की तस्वीर आपके संस्थान का Zynetix AI पढ़ता है।';
+
+  @override
+  String get aiDrawTitle => 'AI ड्रॉ';
+
+  @override
+  String get aiDrawHint =>
+      'कोई आरेख बताइए, या साफ़ करने के लिए पहले कुछ स्याही चुनिए। Zynetix AI उसे बोर्ड पर साफ़ चित्र के रूप में बनाता है।';
+
+  @override
+  String get aiDrawPrompt => 'क्या बनाना है';
+
+  @override
+  String get aiDrawFromInk =>
+      'चुनी गई स्याही को स्केच के रूप में उपयोग करता है';
+
+  @override
+  String get aiDrawGo => 'बनाएँ';
+
+  @override
+  String get aiDrawFailed =>
+      'Zynetix AI उसे नहीं बना सका। फिर से कोशिश करें, या अलग तरह से बताइए।';
 }

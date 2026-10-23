@@ -6,6 +6,7 @@ import 'windows_handwriting.dart';
 
 export 'mlkit_handwriting.dart';
 export 'windows_handwriting.dart';
+export 'cloud_handwriting.dart';
 
 /// The handwriting reader for this board: ML Kit Digital Ink on Android panels, the Windows
 /// handwriting recogniser on Windows panels, none elsewhere (words then stay as ink; maths and

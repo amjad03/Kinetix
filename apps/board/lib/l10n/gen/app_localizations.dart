@@ -8541,6 +8541,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'EV diagrams'**
   String get curSoonEv;
+
+  /// No description provided for @inkSuggestPicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture: {name}'**
+  String inkSuggestPicture(String name);
+
+  /// No description provided for @inkSuggestDiagram.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagram: {name}'**
+  String inkSuggestDiagram(String name);
+
+  /// No description provided for @inkSuggestModel.
+  ///
+  /// In en, this message translates to:
+  /// **'3D model: {name}'**
+  String inkSuggestModel(String name);
+
+  /// No description provided for @inkSuggestAnimation.
+  ///
+  /// In en, this message translates to:
+  /// **'Animation: {name}'**
+  String inkSuggestAnimation(String name);
+
+  /// No description provided for @sketchSuggestCloudHint.
+  ///
+  /// In en, this message translates to:
+  /// **'After you draw with the pen or the AI pen, pick a clean icon, picture, diagram or model to take the drawing\'s place. This board has no sketch model, so a picture of the drawing is read by your institution\'s Zynetix AI.'**
+  String get sketchSuggestCloudHint;
+
+  /// No description provided for @aiDrawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI draw'**
+  String get aiDrawTitle;
+
+  /// No description provided for @aiDrawHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe a diagram, or select some ink first to tidy it into one. Zynetix AI draws it as a clean picture on the board.'**
+  String get aiDrawHint;
+
+  /// No description provided for @aiDrawPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'What to draw'**
+  String get aiDrawPrompt;
+
+  /// No description provided for @aiDrawFromInk.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the selected ink as the sketch'**
+  String get aiDrawFromInk;
+
+  /// No description provided for @aiDrawGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw'**
+  String get aiDrawGo;
+
+  /// No description provided for @aiDrawFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Zynetix AI could not draw that. Try again, or describe it differently.'**
+  String get aiDrawFailed;
 }
 
 class _AppLocalizationsDelegate

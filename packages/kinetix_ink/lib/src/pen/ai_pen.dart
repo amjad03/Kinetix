@@ -76,6 +76,7 @@ class PenConversion {
     this.candidates = const [],
     this.plains = const [],
     this.chosen = 0,
+    this.fit,
   });
 
   final ConversionKind kind;
@@ -96,6 +97,9 @@ class PenConversion {
   /// For maths: each reading in the solver's syntax.
   final List<String> plains;
   int chosen;
+
+  /// For shapes: the kind of clean shape the ink became.
+  final FitKind? fit;
 
   String? get text => candidates.isEmpty ? null : candidates[chosen];
   String? get plain => plains.length > chosen ? plains[chosen] : null;
@@ -433,7 +437,7 @@ class AiPenController extends ChangeNotifier {
     for (final s in shapes) {
       final first = s.strokes.first;
       final el = board.withNewShapeMeasure(shapeElement(s, first.style.color, math.max(2.0, first.style.width)));
-      conversions[el.id] = PenConversion(kind: ConversionKind.shape, ink: s.strokes, inkBox: inkBounds(s.strokes), origin: el.frame.topLeft);
+      conversions[el.id] = PenConversion(kind: ConversionKind.shape, ink: s.strokes, inkBox: inkBounds(s.strokes), origin: el.frame.topLeft, fit: s.fit.kind);
       replace[first.id] = el;
       remove.addAll(s.strokes.skip(1).map((x) => x.id));
     }
@@ -812,7 +816,7 @@ class AiPenController extends ChangeNotifier {
     final first = conv.ink.first;
     final shape = board.withNewShapeMeasure(shapeElement(InkShape(conv.ink, r.$1, arrow: r.$2), first.style.color, math.max(2.0, first.style.width)));
     board.setElements([for (final e in board.page.elements) e.id == id ? shape : e]);
-    conversions[shape.id] = PenConversion(kind: ConversionKind.shape, ink: conv.ink, inkBox: conv.inkBox, origin: shape.frame.topLeft);
+    conversions[shape.id] = PenConversion(kind: ConversionKind.shape, ink: conv.ink, inkBox: conv.inkBox, origin: shape.frame.topLeft, fit: r.$1.kind);
     // Writing mistaken for a shape at this size: this teacher's letters are this big.
     final h = letterHeightPx(conv.ink, board.view.value.scale);
     if (h > 0 && h < letterPx * 2.5) {
@@ -820,6 +824,82 @@ class AiPenController extends ChangeNotifier {
       onLetterSize?.call(letterPx);
     }
     inspecting.value = null;
+    notifyListeners();
+    return true;
+  }
+
+  /// Other clean shapes the ink of converted element [id] can be ("a circle, not an ellipse"),
+  /// for the suggestion row: [shapeFitsOf] its ink, without the shape it is now.
+  List<FitKind> shapeAlternatives(String id) {
+    final conv = conversions[id];
+    if (conv == null) return const [];
+    return shapeFitsOf(conv.ink, except: conv.fit);
+  }
+
+  /// Makes converted element [id] (a shape, words or maths) the clean shape [kind] its ink fits,
+  /// in one undo step. False when the ink cannot make that shape.
+  bool reshape(String id, FitKind kind) {
+    final conv = conversions[id];
+    final el = board.byId(id);
+    if (conv == null || el == null) return false;
+    final fit = fitAs([for (final s in conv.ink) offsetsOf(s)], kind);
+    if (fit == null) return false;
+    final first = conv.ink.first;
+    final shape = board.withNewShapeMeasure(shapeElement(InkShape(conv.ink, fit), first.style.color, math.max(2.0, first.style.width)));
+    conversions.remove(id);
+    board.setElements([for (final e in board.page.elements) e.id == id ? shape : e]);
+    conversions[shape.id] = PenConversion(kind: ConversionKind.shape, ink: conv.ink, inkBox: conv.inkBox, origin: shape.frame.topLeft, fit: fit.kind);
+    if (inspecting.value == id) inspecting.value = null;
+    notifyListeners();
+    return true;
+  }
+
+  /// Turns [ink] on the page into the clean shape [kind], in one undo step (the suggestion row on
+  /// a drawing the AI pen left as ink). False when it cannot make that shape.
+  bool inkToShape(List<Stroke> ink, FitKind kind) {
+    final live = {for (final e in board.page.elements) e.id};
+    if (ink.isEmpty || !ink.every((s) => live.contains(s.id))) return false;
+    final fit = fitAs([for (final s in ink) offsetsOf(s)], kind);
+    if (fit == null) return false;
+    _placeShapes([InkShape(ink, fit)]);
+    notifyListeners();
+    return true;
+  }
+
+  /// Puts a reading of [ink] (words in [text], or maths in [latex]) in its place, from a reader
+  /// other than the AI pen's own (the board's AI for a platform with no handwriting model). It
+  /// becomes a converted element like any other: other readings, back to ink. False when the
+  /// ink has gone.
+  bool placeReading(List<Stroke> ink, {String? text, String? latex}) {
+    final live = {for (final e in board.page.elements) e.id};
+    if (ink.isEmpty || !ink.every((s) => live.contains(s.id))) return false;
+    final box = inkBounds(ink);
+    final ids = {for (final s in ink) s.id};
+    final color = ink.first.style.color;
+    final tex = latex?.trim() ?? '';
+    final words = text?.trim() ?? '';
+    if (tex.isNotEmpty) {
+      final fs = typedFontSize(ink, near: _nearSize(box)).clamp(22.0, 160.0);
+      final size = estimateMathSize(tex, fs);
+      final el = MathElement(id: newElementId(), position: Offset(box.left, box.center.dy - size.height / 2), latex: tex, color: color, fontSize: fs, size: size);
+      _replace(ids, el);
+      conversions[el.id] = PenConversion(kind: ConversionKind.maths, ink: ink, inkBox: box, origin: el.position, candidates: [tex], plains: [if (words.isNotEmpty) words]);
+    } else if (words.isNotEmpty) {
+      final fs = typedFontSize(ink, near: _nearSize(box));
+      final el = TextElement(
+        id: newElementId(),
+        position: Offset(box.left, box.center.dy - fs * 0.62),
+        text: words,
+        color: color,
+        fontSize: fs,
+        size: measureBoardText(words, fs, font: textFont ?? board.font),
+        font: textFont ?? board.font,
+      );
+      _replace(ids, el);
+      conversions[el.id] = PenConversion(kind: ConversionKind.text, ink: ink, inkBox: box, origin: el.position, candidates: [words]);
+    } else {
+      return false;
+    }
     notifyListeners();
     return true;
   }
@@ -866,4 +946,19 @@ class AiPenController extends ChangeNotifier {
     inspecting.dispose();
     super.dispose();
   }
+}
+
+/// The clean shapes [ink] could be, roughly in order of how a teacher draws them: circle,
+/// ellipse, rectangle, triangle, line; [except] (the shape it is already) left out.
+List<FitKind> shapeFitsOf(List<Stroke> ink, {FitKind? except}) {
+  if (ink.isEmpty) return const [];
+  final pts = [for (final s in ink) offsetsOf(s)];
+  final out = <FitKind>[];
+  for (final k in const [FitKind.circle, FitKind.ellipse, FitKind.rectangle, FitKind.triangle, FitKind.line]) {
+    if (k == except) continue;
+    final f = fitAs(pts, k);
+    if (f == null || f.kind == except || out.contains(f.kind)) continue;
+    out.add(f.kind);
+  }
+  return out;
 }

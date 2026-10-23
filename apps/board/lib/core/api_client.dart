@@ -455,6 +455,15 @@ class ApiClient {
   Future<AiResult<BoardReading>> readBoard(String pngBase64, AiLanguage language) =>
       _ai('read-board', {'image': pngBase64, 'language': language.name}, BoardReading.fromJson);
 
+  /// AI pen fallback where the board has no recogniser: what a PNG of some ink shows (labels),
+  /// or the writing in it ([mode]: auto, sketch or handwriting).
+  Future<AiResult<SketchReading>> recognizeSketch(String pngBase64, {String mode = 'auto', AiLanguage language = AiLanguage.en}) =>
+      _ai('recognize-sketch', {'image': pngBase64, 'mode': mode, 'language': language.name}, SketchReading.fromJson);
+
+  /// AI draw: a clean SVG diagram from a [prompt], a sketch (PNG, base64), or both.
+  Future<AiResult<AiDrawing>> aiDraw({String? prompt, String? pngBase64, AiLanguage language = AiLanguage.en}) =>
+      _ai('draw', {'prompt': ?prompt, 'image': ?pngBase64, 'language': language.name}, AiDrawing.fromJson);
+
   Future<AiResult<T>> _ai<T>(String task, Map<String, dynamic> body, T Function(Map<String, dynamic>) parse) async {
     final started = DateTime.now();
     final j = await _send('POST', '/v1/ai/$task', body: body) as Map<String, dynamic>;

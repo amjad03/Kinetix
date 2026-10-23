@@ -54,6 +54,8 @@ import '../search/solids3d.dart' show Solid3dDialog;
 import 'live_solids.dart';
 import 'ai_pen_ui.dart';
 import 'animations_hook.dart';
+import 'package:kinetix_animations/kinetix_animations.dart' show animationCatalogue;
+import '../../core/handwriting/handwriting.dart' show CloudHandwriting, MlKitHandwriting;
 import '../canvas_tools/canvas_tools.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
@@ -122,6 +124,9 @@ import 'board_shot.dart';
 import 'calculator.dart';
 import '../insert/presentation_pane.dart';
 import '../safe_web/safe_web.dart';
+import '../sketch/ai_draw.dart';
+import '../sketch/ink_asset_index.dart';
+import '../sketch/ink_assets_board.dart';
 import '../sketch/sketch_bar.dart';
 import '../sketch/sketch_recognizer.dart';
 import '../sketch/sketch_suggest.dart';
@@ -167,7 +172,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// The second board (split screen): a full whiteboard that follows the main board's tools.
   late final WhiteboardController _secondWb = WhiteboardController(palmMode: widget.board.touchProfile.palmMode);
-  late final AiPenController _secondPen = AiPenController(_secondWb, handwriting: widget.board.handwriting);
+  late final AiPenController _secondPen = AiPenController(_secondWb, handwriting: _penHandwriting(widget.board));
   late final AiController _ai;
 
   /// The AI pen: shapes, maths and words from what the teacher writes.
@@ -365,11 +370,20 @@ class _BoardScreenState extends State<BoardScreen> {
     board.projector.attach(ProjectorSource(board: _wb, background: () => _background, canvas: () => _canvasSize, captureSplit: _captureLabForProjector));
     board.profiles.onSwitch = (from, to) => switchProfileBoard(_wb, _canvasSize, _profileBoards, from, to);
     _planTimer = PlanTimer(board);
-    _pen = AiPenController(_wb, handwriting: board.handwriting)
+    _pen = AiPenController(_wb, handwriting: _penHandwriting(board))
       ..onNotice = _aiPenNotice
       ..onLetterSize = (px) => board.saveLetterSize(board.session?.teacherId, px);
     // After the AI pen, so it listens to the pen alongside it.
-    _sketch = SketchSuggestController(_wb, sketchRecognizerFor(board.handwriting));
+    // With the AI pen it is also the AI pen's suggestion row; with no sketch model on the board
+    // the board's AI reads the drawing.
+    _sketch = SketchSuggestController(
+      _wb,
+      sketchRecognizerFor(board.handwriting),
+      aiPen: _pen,
+      cloud: _readInkInCloud,
+      assets: boardInkAssets,
+      onOpen: _openInkAsset,
+    );
     _applyClass();
     // A demo board fetches the English and shape models by itself when it is online.
     if (Demo.enabled) unawaited(autoDownloadDemoModels(board.handwriting, onReady: _pen.modelsChanged));
@@ -1084,6 +1098,52 @@ class _BoardScreenState extends State<BoardScreen> {
     return w == 0 || h == 0 ? const Size(640, 480) : Size(w.toDouble(), h.toDouble());
   }
 
+  /// Where the board has no handwriting model of its own (macOS, Windows without the
+  /// language), the AI pen's words are read by the board's AI while signed in and online.
+  HandwritingRecognizer _penHandwriting(BoardController b) =>
+      b.handwriting is MlKitHandwriting ? b.handwriting : CloudHandwriting(b.handwriting, online: () => b.api != null && b.session != null, read: _readInkInCloud);
+
+  /// A picture of some ink read by the board's AI (POST /v1/ai/recognize-sketch); null when
+  /// not signed in.
+  Future<SketchReading?> _readInkInCloud(Uint8List png, String mode) async {
+    final api = board.api;
+    if (api == null || board.session == null) return null;
+    final r = await api.recognizeSketch(base64Encode(png), mode: mode, language: _ai.language).timeout(const Duration(seconds: 25));
+    return r.result;
+  }
+
+  /// A 3D model or an animation put on the board from the AI pen's suggestion row opens beside it.
+  void _openInkAsset(InkAsset a) => switch (a.kind) {
+    InkAssetKind.model3d => _openSplit(SplitContent.model3d, a.id),
+    InkAssetKind.animation => _openAnimation(a.id),
+    _ => null,
+  };
+
+  void _openAnimation(String id) {
+    final topic = animationCatalogue.where((x) => x.id == id).firstOrNull?.topic;
+    _openPage(LayoutStrings.of(context).tabAnimations, Icons.animation, (c) => animationsPanel(c, wb: _wb, subject: _subjectName, topic: topic));
+  }
+
+  /// AI draw (the AI pen's options): the selected ink and/or a prompt, drawn by the board's AI
+  /// as a clean diagram in the ink's place.
+  Future<void> _aiDraw() async {
+    setState(() => _popover = null);
+    final api = board.api;
+    final l = context.l10n;
+    if (api == null || board.session == null) {
+      showBoardMessage(context, l.aiSignInNotice);
+      return;
+    }
+    final ink = _wb.selectedElements.whereType<Stroke>().where(isPenInk).toList();
+    final drawing = await AiDrawDialog.show(
+      context,
+      ink: ink,
+      request: ({prompt, pngBase64}) async => (await api.aiDraw(prompt: prompt, pngBase64: pngBase64, language: _ai.language)).result,
+    );
+    if (drawing == null || !mounted) return;
+    if (!await placeAiDrawing(_wb, drawing, ink: ink) && mounted) showBoardMessage(context, l.aiDrawFailed);
+  }
+
   void _openLink(EmbedLink link) {
     // A solid put on the board opens in the solid explorer again, with its painted faces.
     final solid = SolidKind.values.where((k) => k.id == link.id).firstOrNull;
@@ -1096,6 +1156,8 @@ class _BoardScreenState extends State<BoardScreen> {
         _openSplit(SplitContent.lab, link.id, link.preset);
       case EmbedLink.model3d:
         _openSplit(SplitContent.model3d, link.id, link.preset);
+      case inkAnimationLink:
+        _openAnimation(link.id);
     }
   }
 
@@ -2884,7 +2946,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final screen = MediaQuery.sizeOf(context);
     void close() => setState(() => _popover = null);
     final Widget card = switch (_popover!) {
-      BoardPopover.pen => PenPopover(wb: _wb, board: board, memory: _penMemory, primary: _primary),
+      BoardPopover.pen => PenPopover(wb: _wb, board: board, memory: _penMemory, primary: _primary, onAiDraw: () => unawaited(_aiDraw())),
       BoardPopover.erase => ErasePopover(
         wb: _wb,
         onConfigChanged: board.saveInputConfig,

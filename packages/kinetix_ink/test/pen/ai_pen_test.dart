@@ -252,4 +252,43 @@ void main() {
     auto.dispose();
     board.dispose();
   });
+
+  test('shape alternatives: a converted shape becomes another clean shape its ink fits, in one undo step', () async {
+    draw(wb, sketch(const [Offset(200, 40), Offset(340, 260), Offset(60, 260)]));
+    await pen.convertPending();
+    final tri = wb.elements.single as Stroke;
+    expect(pen.conversions[tri.id]!.fit, FitKind.triangle);
+    final alts = pen.shapeAlternatives(tri.id);
+    expect(alts, isNot(contains(FitKind.triangle)));
+    expect(alts, contains(FitKind.line));
+    expect(pen.reshape(tri.id, FitKind.line), isTrue);
+    final line = wb.elements.single as Stroke;
+    expect(line.shape, isNot(ShapeKind.triangle));
+    expect(pen.conversions[line.id]!.fit, FitKind.line);
+    expect(pen.conversions.containsKey(tri.id), isFalse);
+    wb.undo();
+    expect((wb.elements.single as Stroke).shape, ShapeKind.triangle);
+  });
+
+  test('ink left as ink can be made a shape or take a reading from another reader', () async {
+    pen.convertShapes = false;
+    draw(wb, roughCircle(const Offset(300, 300), 120));
+    await pen.convertPending();
+    final ink = wb.elements.whereType<Stroke>().toList();
+    expect(ink.single.shape, isNull);
+    expect(shapeFitsOf(ink), contains(FitKind.circle));
+    expect(pen.inkToShape(ink, FitKind.circle), isTrue);
+    expect((wb.elements.single as Stroke).shape, ShapeKind.circle);
+    wb.undo();
+
+    expect(pen.placeReading(ink, latex: r'x^{2}', text: 'x^2'), isTrue);
+    final m = wb.elements.single as MathElement;
+    expect(m.latex, r'x^{2}');
+    expect(pen.conversions[m.id]!.kind, ConversionKind.maths);
+    pen.revertToInk(m.id);
+    expect(wb.elements.single.id, ink.single.id);
+    expect(pen.placeReading(ink, text: 'hello'), isTrue);
+    expect((wb.elements.single as TextElement).text, 'hello');
+    expect(pen.placeReading(ink, text: 'gone'), isFalse, reason: 'the ink is no longer on the page');
+  });
 }

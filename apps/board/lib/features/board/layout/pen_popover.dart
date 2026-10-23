@@ -57,7 +57,10 @@ IconData penTypeIcon(PenType t) => switch (t) {
 /// wheel, smoothing, pressure, palm rejection, single or multi touch, and for the AI pen what it
 /// converts and when. The AI pen shares every pen option.
 class PenPopover extends StatefulWidget {
-  const PenPopover({super.key, required this.wb, required this.board, required this.memory, this.primary = false, this.width = 480});
+  const PenPopover({super.key, required this.wb, required this.board, required this.memory, this.primary = false, this.width = 480, this.onAiDraw});
+
+  /// Opens AI draw (shown with the AI pen's options).
+  final VoidCallback? onAiDraw;
 
   final WhiteboardController wb;
   final BoardController board;
@@ -339,10 +342,16 @@ class _PenPopoverState extends State<PenPopover> {
                     onSelectionChanged: (v) => board.setAiPenLanguage(v.single),
                   ),
                 ),
+                if (widget.onAiDraw != null) ...[
+                  const SizedBox(height: Kx.s8),
+                  FilledButton.tonalIcon(key: const Key('ai-draw-open'), onPressed: widget.onAiDraw, icon: const Icon(Icons.draw_outlined), label: Text(l.aiDrawTitle)),
+                ],
               ],
               if (wb.tool == BoardTool.pen) SnapShapesSwitch(board: board),
               // Only where there is a sketch model (Android); elsewhere the bar never shows.
-              if (wb.tool == BoardTool.pen && sketchRecognizerFor(board.handwriting).available) SketchSuggestSwitch(board: board, available: true),
+              // With a sketch model (Android), or the board's AI when signed in; elsewhere the bar never shows.
+              if ((wb.tool == BoardTool.pen || wb.tool == BoardTool.aiPen) && (sketchRecognizerFor(board.handwriting).available || board.api != null))
+                SketchSuggestSwitch(board: board, available: true, cloud: !sketchRecognizerFor(board.handwriting).available),
             ],
           ),
         );

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { cleanAnswerText, cleanOcrText, tidyList } from './math-format.js';
 import { ContentSchema, parseSyllabusText } from '../curriculum/curriculum-logic.js';
+import { sanitizeSvg, SvgRejected } from './svg-sanitize.js';
 
 /**
  * The AI task catalogue. Apps ask for a task with structured input; they never send a raw
@@ -27,6 +28,7 @@ export interface Grounding {
 }
 
 const Topic = z.string().trim().min(2).max(300);
+const PngBase64 = z.string().min(100).max(6_000_000).regex(/^[A-Za-z0-9+/=]+$/, 'Send the PNG as base64');
 const BoardText = z.string().trim().max(20_000).optional();
 const Level = z.string().trim().max(120).optional();
 export const QuizType = z.enum(['mcq', 'trueFalse', 'fillBlank', 'shortAnswer']);
@@ -119,7 +121,18 @@ export const TaskInputs = {
   }),
   /** Curriculum importer: text read from an uploaded syllabus PDF or Word file; the model proposes subjects, units, topics and outcomes for a person to review. */
   syllabusImport: z.object({ text: z.string().trim().min(20).max(60_000), programName: z.string().trim().max(200).optional(), language: Language.default('en') }),
-  readBoard: z.object({ image: z.string().min(100).max(6_000_000).regex(/^[A-Za-z0-9+/=]+$/, 'Send the PNG as base64'), language: Language.default('en') }),
+  readBoard: z.object({ image: PngBase64, language: Language.default('en') }),
+  /** AI pen fallback: a PNG of the strokes the teacher just drew; the board turns the labels into suggestions. */
+  recognizeSketch: z.object({
+    image: z.string().min(100).max(3_000_000).regex(/^[A-Za-z0-9+/=]+$/, 'Send the PNG as base64'),
+    /** handwriting: read it as text or maths; sketch: name the drawing; auto: either. */
+    mode: z.enum(['auto', 'sketch', 'handwriting']).default('auto'),
+    language: Language.default('en'),
+  }),
+  /** AI draw: a clean SVG diagram from a prompt, a sketch (PNG), or both. */
+  draw: z
+    .object({ prompt: z.string().trim().max(500).optional(), image: PngBase64.optional(), language: Language.default('en') })
+    .refine((v) => !!v.prompt || !!v.image, 'Send a prompt or a sketch'),
 } as const;
 
 const Text = (max: number) => z.string().trim().min(1).max(max);
@@ -242,6 +255,15 @@ export const TaskOutputs = {
     /** Mathematics found, as LaTeX, one expression per item. */
     math: z.array(Text(500)).max(30).default([]),
   }),
+  recognizeSketch: z.object({
+    /** What the drawing shows, best first: short lowercase English nouns ("heart", "resistor", "bar chart"). */
+    labels: z.array(Text(60)).max(8).default([]),
+    /** Handwriting read as plain text, when the strokes are writing. */
+    text: z.string().trim().max(500).optional(),
+    /** The same as LaTeX, when it is mathematics. */
+    latex: z.string().trim().max(500).optional(),
+  }),
+  draw: z.object({ title: Text(120), svg: z.string().min(20).max(200_000) }),
 } as const;
 
 export type TaskName = keyof typeof TaskInputs;
@@ -273,8 +295,10 @@ function systemPrompt(g: Grounding, language: Language, task: TaskName): string 
     'Pitch the language to the class named above: simple words for lower classes, precise terms for senior classes.',
     'Begin with the content itself: no greeting or sign-off, and do not address the class or name the institution or class in the text.',
     'Accuracy first. For maths, physics, chemistry and any numerical question, work step by step: state the formula, substitute the values with units, calculate carefully, check the result, then give the final answer on its own last line starting "Answer:".',
-    task === 'readBoard'
-      ? 'In "text", write what is on the board as plain text. In "math", write each expression in LaTeX without $ signs.'
+    task === 'draw'
+      ? 'Labels inside the SVG are plain text with Unicode maths (x², √, π, θ, °, H₂O).'
+      : task === 'readBoard' || task === 'recognizeSketch'
+        ? 'In "text", write what is on the board as plain text. In "math", write each expression in LaTeX without $ signs.'
       : 'Write maths as plain text with Unicode (x², x³, √, ×, ÷, ±, ≤, ≥, π, θ, °, H₂O, fractions as a/b). Do not use LaTeX (no backslashes), dollar signs or markdown (no **, # or * bullets).',
     'Never invent facts, dates, names, formulas or figures. If the question is ambiguous, state the assumption you made. When you are unsure of something, begin that sentence with "Not sure:" and say what to verify in the textbook.',
     audience,
@@ -300,6 +324,8 @@ const SHAPES: Record<TaskName, string> = {
   gradeAssist: '{"criteria": [{"criterion": string (copied from the rubric, in order), "awarded": number (0 up to that criterion\'s marks), "comment": string (one sentence quoting what the answer did or missed)}], "total": number (sum of awarded), "rationale": string (two sentences for the examiner)}',
   summarize: '{"summary": string (one paragraph for a student who missed class), "keyPoints": string[]}',
   readBoard: '{"text": string (the handwriting, line by line, as written), "math": string[] (each mathematical expression in LaTeX)}',
+  recognizeSketch: '{"labels": string[] (up to 6 short lowercase English nouns naming what is drawn, best first; [] for pure writing), "text": string (the handwriting, if any), "latex": string (the mathematics in LaTeX, if any)}',
+  draw: '{"title": string (a short name for the diagram), "svg": string (one complete <svg> element with a viewBox)}',
   boardSummary:
     '{"keyConcepts": string[], "definitions": [{"term": string, "meaning": string}], "formulas": string[], "examples": string[], "importantPoints": string[], "questions": string[]}',
   lecture: '{"outline": string[], "explanation": string, "examples": string[], "analogies": string[], "boardPlan": string[] (what to write on the board, in order), "activities": string[], "recap": string}',
@@ -410,6 +436,17 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
         return `Read this syllabus${i.programName ? ` for ${i.programName}` : ''} and list every subject with its code, semester, credits, units (with hours and topics) and course outcomes. Copy what the document says; leave a value empty or zero when it is not stated.\n"""\n${i.text}\n"""`;
       case 'readBoard':
         return 'Read the handwriting on this classroom whiteboard exactly as written, top to bottom, left to right, one line of text per line. Keep Hindi and Kannada in their own script. Read digits carefully (0/O, 1/l, 5/S, 2/z, 7/1). Write each mathematical expression in LaTeX in the "math" list, with exponents, fractions, roots, subscripts and signs exactly as drawn, and also as written in "text". Put [?] in place of anything illegible; never guess a word. Do not solve, complete or correct anything. Ignore the board frame, shadows and the teacher\'s hand.';
+      case 'recognizeSketch': {
+        const what =
+          i.mode === 'handwriting'
+            ? 'These strokes are handwriting. Read them exactly as written in "text" (and in "latex" if it is mathematics); leave "labels" empty.'
+            : i.mode === 'sketch'
+              ? 'These strokes are a quick drawing. Name what it shows in "labels": the object, symbol, shape or diagram (for example "heart", "sun", "resistor", "logic and gate", "benzene ring", "bar chart", "right triangle").'
+              : 'Decide whether these strokes are a drawing or handwriting. For a drawing, name what it shows in "labels" (object, symbol, shape or diagram type: "heart", "resistor", "logic and gate", "benzene ring", "bar chart"). For writing, read it exactly in "text", and in "latex" if it is mathematics.';
+        return `A teacher drew this with a pen on a classroom board (black ink on white). ${what} Never guess wildly: an empty list is better than a wrong label. Do not solve or correct anything.`;
+      }
+      case 'draw':
+        return `Draw a clean, labelled teaching diagram as SVG${i.prompt ? ` of: ${i.prompt}` : ''}.${i.image ? ' The image is the teacher\'s rough sketch: keep its layout and parts, but draw them neatly.' : ''} Use a viewBox (about 0 0 800 600), black strokes (stroke-width 2 to 4) on a transparent background, at most three accent colours, and readable labels (font-size 20 or more, font-family sans-serif). Use only these elements: svg, g, defs, path, rect, circle, ellipse, line, polyline, polygon, text, tspan, marker, linearGradient, stop. No scripts, styles, images, links or foreignObject. Keep it under 40 KB.`;
     }
   })();
   const shape = task === 'quiz' && JSON.stringify(i.types) !== '["mcq"]' ? QUIZ_TYPE_SHAPE : task === 'homework' ? HOMEWORK_TYPE_SHAPE : SHAPES[task];
@@ -418,13 +455,13 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
 
 export function buildMessages<T extends TaskName>(task: T, input: TaskInput<T>, g: Grounding): ChatMessage[] {
   const language = (input as { language: Language }).language;
-  const user: ChatContent =
-    task === 'readBoard'
-      ? [
-          { type: 'text', text: userPrompt(task, input) },
-          { type: 'image_url', image_url: { url: `data:image/png;base64,${(input as TaskInput<'readBoard'>).image}` } },
-        ]
-      : userPrompt(task, input);
+  const image = (input as { image?: string }).image;
+  const user: ChatContent = image
+    ? [
+        { type: 'text', text: userPrompt(task, input) },
+        { type: 'image_url', image_url: { url: `data:image/png;base64,${image}` } },
+      ]
+    : userPrompt(task, input);
   return [
     { role: 'system', content: systemPrompt(g, language, task) },
     { role: 'user', content: user },
@@ -449,6 +486,8 @@ const MAX_TOKENS: Record<TaskName, number> = {
   lessonPlan: 1500,
   summarize: 1200,
   readBoard: 1500,
+  recognizeSketch: 400,
+  draw: 8000,
   boardSummary: 1800,
   lecture: 2500,
   selectAsk: 1500,
@@ -475,7 +514,7 @@ export function maxTokensFor(task: TaskName, input: unknown): number {
 
 /** Sampling temperature: low where there is one right answer, a little higher where variety helps (quizzes, lessons). */
 export function temperatureFor(task: TaskName): number {
-  if (task === 'summarize' || task === 'readBoard' || task === 'gradeAssist' || task === 'syllabusImport') return 0.1;
+  if (task === 'summarize' || task === 'readBoard' || task === 'recognizeSketch' || task === 'gradeAssist' || task === 'syllabusImport') return 0.1;
   if (task === 'explain' || task === 'selectAsk' || task === 'tutor') return 0.3;
   return 0.5;
 }
@@ -486,6 +525,14 @@ export function checkOutput<T extends TaskName>(task: T, input: TaskInput<T>, ou
     const total = (out as TaskOutput<'lessonPlan'>).steps.reduce((s, x) => s + x.minutes, 0);
     const want = (input as TaskInput<'lessonPlan'>).minutes;
     if (Math.abs(total - want) > 5) return `The step minutes add up to ${total}, not ${want}.`;
+  }
+  if (task === 'draw') {
+    try {
+      sanitizeSvg((out as TaskOutput<'draw'>).svg);
+    } catch (e) {
+      if (e instanceof SvgRejected) return `The SVG cannot be used: ${e.message}.`;
+      throw e;
+    }
   }
   return null;
 }
@@ -632,6 +679,16 @@ export function postProcess<T extends TaskName>(task: T, input: TaskInput<T>, ou
     const tex = e.math.map((m) => m.trim().replace(/^\$+|\$+$/g, '').replace(/^\\[([]|\\[)\]]$/g, '').trim()).filter(Boolean);
     return { text: cleanOcrText(e.text), math: [...new Set(tex)] } as TaskOutput<T>;
   }
+  if (task === 'recognizeSketch') {
+    const e = out as TaskOutput<'recognizeSketch'>;
+    const labels = [...new Set(e.labels.map((l) => l.trim().toLowerCase().replace(/[.!]+$/, '')).filter(Boolean))].slice(0, 6);
+    const latex = e.latex?.trim().replace(/^\$+|\$+$/g, '').trim();
+    return { labels, ...(e.text?.trim() ? { text: cleanOcrText(e.text) } : {}), ...(latex ? { latex } : {}) } as TaskOutput<T>;
+  }
+  if (task === 'draw') {
+    const e = out as TaskOutput<'draw'>;
+    return { title: cleanAnswerText(e.title), svg: sanitizeSvg(e.svg) } as TaskOutput<T>;
+  }
   if (task === 'syllabusImport') return out;
   if (task === 'gradeAssist') return fitGrade(input as TaskInput<'gradeAssist'>, cleanTexts(out as TaskOutput<'gradeAssist'>)) as TaskOutput<T>;
   if (task !== 'lessonPlan') return cleanTexts(out);
@@ -691,6 +748,13 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
       }
       case 'readBoard':
         return { text: 'Preview: connect a KINETIX AI server with a vision model to read the handwriting on the board.', math: [] };
+      case 'recognizeSketch':
+        return { labels: [] };
+      case 'draw':
+        return {
+          title: `Preview: ${String(i.prompt ?? 'sketch').slice(0, 80)}`,
+          svg: '<svg viewBox="0 0 400 120"><rect x="4" y="4" width="392" height="112" rx="12" fill="none" stroke="#888" stroke-width="3" stroke-dasharray="8 6"/><text x="200" y="68" text-anchor="middle" font-size="20" font-family="sans-serif">Preview: connect Zynetix AI to draw</text></svg>',
+        };
       case 'boardSummary':
         return {
           keyConcepts: [`Preview: the main idea of ${i.topic ?? 'this lesson'}`],

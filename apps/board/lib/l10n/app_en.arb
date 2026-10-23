@@ -2681,5 +2681,20 @@
   "curSoonPfd": "Process flow diagram kit",
   "@curSoonPfd": {"description": "Chemical engineering kit: process flow diagram symbols."},
   "curSoonEv": "EV diagrams",
-  "@curSoonEv": {"description": "Electric vehicle kit: drivetrain, battery and charging diagrams."}
+  "@curSoonEv": {"description": "Electric vehicle kit: drivetrain, battery and charging diagrams."},
+  "inkSuggestPicture": "Picture: {name}",
+  "@inkSuggestPicture": {"placeholders": {"name": {"type": "String"}}},
+  "inkSuggestDiagram": "Diagram: {name}",
+  "@inkSuggestDiagram": {"placeholders": {"name": {"type": "String"}}},
+  "inkSuggestModel": "3D model: {name}",
+  "@inkSuggestModel": {"placeholders": {"name": {"type": "String"}}},
+  "inkSuggestAnimation": "Animation: {name}",
+  "@inkSuggestAnimation": {"placeholders": {"name": {"type": "String"}}},
+  "sketchSuggestCloudHint": "After you draw with the pen or the AI pen, pick a clean icon, picture, diagram or model to take the drawing's place. This board has no sketch model, so a picture of the drawing is read by your institution's Zynetix AI.",
+  "aiDrawTitle": "AI draw",
+  "aiDrawHint": "Describe a diagram, or select some ink first to tidy it into one. Zynetix AI draws it as a clean picture on the board.",
+  "aiDrawPrompt": "What to draw",
+  "aiDrawFromInk": "Uses the selected ink as the sketch",
+  "aiDrawGo": "Draw",
+  "aiDrawFailed": "Zynetix AI could not draw that. Try again, or describe it differently."
 }

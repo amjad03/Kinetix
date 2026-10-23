@@ -4844,4 +4844,48 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get curSoonEv => 'EV ರೇಖಾಚಿತ್ರಗಳು';
+
+  @override
+  String inkSuggestPicture(String name) {
+    return 'ಚಿತ್ರ: $name';
+  }
+
+  @override
+  String inkSuggestDiagram(String name) {
+    return 'ರೇಖಾಚಿತ್ರ: $name';
+  }
+
+  @override
+  String inkSuggestModel(String name) {
+    return '3D ಮಾದರಿ: $name';
+  }
+
+  @override
+  String inkSuggestAnimation(String name) {
+    return 'ಅನಿಮೇಷನ್: $name';
+  }
+
+  @override
+  String get sketchSuggestCloudHint =>
+      'ಪೆನ್ ಅಥವಾ AI ಪೆನ್‌ನಿಂದ ಬರೆದ ನಂತರ, ಚಿತ್ರದ ಸ್ಥಾನದಲ್ಲಿ ಸ್ವಚ್ಛ ಐಕಾನ್, ಚಿತ್ರ, ರೇಖಾಚಿತ್ರ ಅಥವಾ ಮಾದರಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಸ್ಕೆಚ್ ಮಾದರಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಚಿತ್ರದ ಫೋಟೋವನ್ನು ನಿಮ್ಮ ಸಂಸ್ಥೆಯ Zynetix AI ಓದುತ್ತದೆ.';
+
+  @override
+  String get aiDrawTitle => 'AI ಚಿತ್ರಣ';
+
+  @override
+  String get aiDrawHint =>
+      'ರೇಖಾಚಿತ್ರವನ್ನು ವಿವರಿಸಿ, ಅಥವಾ ಅಚ್ಚುಕಟ್ಟಾಗಿಸಲು ಮೊದಲು ಸ್ವಲ್ಪ ಶಾಯಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ. Zynetix AI ಅದನ್ನು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಸ್ವಚ್ಛ ಚಿತ್ರವಾಗಿ ಬಿಡಿಸುತ್ತದೆ.';
+
+  @override
+  String get aiDrawPrompt => 'ಏನನ್ನು ಬಿಡಿಸಬೇಕು';
+
+  @override
+  String get aiDrawFromInk => 'ಆಯ್ಕೆಮಾಡಿದ ಶಾಯಿಯನ್ನು ಸ್ಕೆಚ್ ಆಗಿ ಬಳಸುತ್ತದೆ';
+
+  @override
+  String get aiDrawGo => 'ಬಿಡಿಸಿ';
+
+  @override
+  String get aiDrawFailed =>
+      'Zynetix AI ಅದನ್ನು ಬಿಡಿಸಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ಬೇರೆ ರೀತಿಯಲ್ಲಿ ವಿವರಿಸಿ.';
 }

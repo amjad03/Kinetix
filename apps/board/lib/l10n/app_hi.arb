@@ -1406,5 +1406,16 @@
   "curSoonMcu": "माइक्रोकंट्रोलर पिन आरेख",
   "curSoonNn": "न्यूरल नेटवर्क बिल्डर",
   "curSoonPfd": "प्रोसेस फ़्लो आरेख किट",
-  "curSoonEv": "EV आरेख"
+  "curSoonEv": "EV आरेख",
+  "inkSuggestPicture": "चित्र: {name}",
+  "inkSuggestDiagram": "आरेख: {name}",
+  "inkSuggestModel": "3D मॉडल: {name}",
+  "inkSuggestAnimation": "एनिमेशन: {name}",
+  "sketchSuggestCloudHint": "पेन या AI पेन से बनाने के बाद, चित्र की जगह साफ़ आइकन, चित्र, आरेख या मॉडल चुनें। इस बोर्ड पर स्केच मॉडल नहीं है, इसलिए चित्र की तस्वीर आपके संस्थान का Zynetix AI पढ़ता है।",
+  "aiDrawTitle": "AI ड्रॉ",
+  "aiDrawHint": "कोई आरेख बताइए, या साफ़ करने के लिए पहले कुछ स्याही चुनिए। Zynetix AI उसे बोर्ड पर साफ़ चित्र के रूप में बनाता है।",
+  "aiDrawPrompt": "क्या बनाना है",
+  "aiDrawFromInk": "चुनी गई स्याही को स्केच के रूप में उपयोग करता है",
+  "aiDrawGo": "बनाएँ",
+  "aiDrawFailed": "Zynetix AI उसे नहीं बना सका। फिर से कोशिश करें, या अलग तरह से बताइए।"
 }

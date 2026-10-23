@@ -25,6 +25,8 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_secure_storage: ^11.2.0
+  # AI draw: the board AI's SVG diagrams drawn as pictures (lib/features/sketch/ai_draw.dart).
+  flutter_svg: ^2.3.0
   # Read aloud with the board's own voices (Android TTS, Windows speech); no text leaves it.
   flutter_tts: ^4.2.5
   # Handwriting to text on Android panels: ML Kit Digital Ink, on-device (the language model

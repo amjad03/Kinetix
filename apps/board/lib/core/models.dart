@@ -551,6 +551,28 @@ class BoardReading {
   final List<String> math;
 }
 
+/// What the board's AI made of some ink (the AI pen's fallback): what a drawing shows, best
+/// first, and writing as text and LaTeX.
+class SketchReading {
+  const SketchReading({this.labels = const [], this.text, this.latex});
+  factory SketchReading.fromJson(Map<String, dynamic> j) => SketchReading(
+    labels: (j['labels'] as List<dynamic>? ?? const []).cast<String>(),
+    text: (j['text'] as String?)?.trim().isEmpty ?? true ? null : (j['text'] as String).trim(),
+    latex: (j['latex'] as String?)?.trim().isEmpty ?? true ? null : (j['latex'] as String).trim(),
+  );
+  final List<String> labels;
+  final String? text;
+  final String? latex;
+}
+
+/// AI draw's diagram: a sanitised SVG (checked on the server) and a short title.
+class AiDrawing {
+  const AiDrawing({required this.title, required this.svg});
+  factory AiDrawing.fromJson(Map<String, dynamic> j) => AiDrawing(title: j['title'] as String? ?? '', svg: j['svg'] as String? ?? '');
+  final String title;
+  final String svg;
+}
+
 class LessonPlan {
   LessonPlan({required this.objectives, required this.steps, required this.materials, required this.assessment});
 

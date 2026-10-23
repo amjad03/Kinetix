@@ -23,6 +23,8 @@ const Bodies = {
   boardSummary: TaskInputs.boardSummary.extend(Context.shape),
   lecture: TaskInputs.lecture.extend(Context.shape),
   selectAsk: TaskInputs.selectAsk.extend(Context.shape),
+  recognizeSketch: TaskInputs.recognizeSketch.extend(Context.shape),
+  draw: TaskInputs.draw.and(Context),
 };
 
 const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
@@ -108,6 +110,25 @@ export class AiController {
   @Auth(['board', 'user'], STAFF)
   readBoard(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.readBoard)) body: z.infer<typeof Bodies.readBoard>) {
     return this.run(p, 'readBoard', body);
+  }
+
+  /**
+   * AI pen fallback where the board has no on-device recogniser (macOS, Windows, no model): a PNG
+   * of the strokes in, labels for the suggestion row (and handwriting as text/LaTeX) out.
+   */
+  @Post('recognize-sketch')
+  @HttpCode(200)
+  @Auth(['board', 'user'], STAFF)
+  recognizeSketch(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.recognizeSketch)) body: z.infer<typeof Bodies.recognizeSketch>) {
+    return this.run(p, 'recognizeSketch', body);
+  }
+
+  /** AI draw: a prompt and/or a sketch PNG in, a clean SVG diagram (sanitised, size-limited) out. */
+  @Post('draw')
+  @HttpCode(200)
+  @Auth(['board', 'user'], STAFF)
+  draw(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.draw)) body: z.infer<typeof Bodies.draw>) {
+    return this.run(p, 'draw', body);
   }
 
   /** Last 30 days of AI use for the institution, by task and outcome. */

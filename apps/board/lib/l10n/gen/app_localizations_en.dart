@@ -4853,4 +4853,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get curSoonEv => 'EV diagrams';
+
+  @override
+  String inkSuggestPicture(String name) {
+    return 'Picture: $name';
+  }
+
+  @override
+  String inkSuggestDiagram(String name) {
+    return 'Diagram: $name';
+  }
+
+  @override
+  String inkSuggestModel(String name) {
+    return '3D model: $name';
+  }
+
+  @override
+  String inkSuggestAnimation(String name) {
+    return 'Animation: $name';
+  }
+
+  @override
+  String get sketchSuggestCloudHint =>
+      'After you draw with the pen or the AI pen, pick a clean icon, picture, diagram or model to take the drawing\'s place. This board has no sketch model, so a picture of the drawing is read by your institution\'s Zynetix AI.';
+
+  @override
+  String get aiDrawTitle => 'AI draw';
+
+  @override
+  String get aiDrawHint =>
+      'Describe a diagram, or select some ink first to tidy it into one. Zynetix AI draws it as a clean picture on the board.';
+
+  @override
+  String get aiDrawPrompt => 'What to draw';
+
+  @override
+  String get aiDrawFromInk => 'Uses the selected ink as the sketch';
+
+  @override
+  String get aiDrawGo => 'Draw';
+
+  @override
+  String get aiDrawFailed =>
+      'Zynetix AI could not draw that. Try again, or describe it differently.';
 }

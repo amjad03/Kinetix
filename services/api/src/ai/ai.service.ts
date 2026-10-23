@@ -193,7 +193,7 @@ export class AiService {
     const p = await this.providerFor(caller.tenantId);
     const { grounding, key, cached, sources } = await this.db.withTenant(caller.tenantId, async (tx) => {
       const words = requestText(input);
-      const { grounding, sources } = await this.grounding(tx, caller, task === 'readBoard' ? '' : words, task, (input as { language?: Language }).language ?? 'en');
+      const { grounding, sources } = await this.grounding(tx, caller, task === 'readBoard' || task === 'recognizeSketch' ? '' : words, task, (input as { language?: Language }).language ?? 'en');
       const key = this.cacheKey(task, input, grounding);
       // The answer log names the topic: the one chosen, else the first the request was grounded in.
       caller = { ...caller, topicId: caller.topicId ?? sources[0]?.topicId ?? null };
@@ -298,7 +298,7 @@ export class AiService {
    */
   private async generate<T extends TaskName>(provider: LlmProvider, task: T, input: TaskInput<T>, g: Grounding, usage: Usage): Promise<TaskOutput<T>> {
     // A text-only provider (e.g. the Sarvam fallback on its own) cannot read the board.
-    if (task === 'readBoard' && provider.vision === false) throw new AiUnavailableError('No vision model is configured', false);
+    if ((input as { image?: string }).image && provider.vision === false) throw new AiUnavailableError('No vision model is configured', false);
     const messages = buildMessages(task, input, g);
     let maxTokens = maxTokensFor(task, input);
     for (let attempt = 0; ; attempt++) {
