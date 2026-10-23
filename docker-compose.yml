@@ -68,7 +68,7 @@ services:
 
   migrate:
     image: kinetix-api:${KINETIX_TAG:-local}
-    build: *api-build
+    pull_policy: never  # built by the api service (same image); two builds of one tag collide
     command: ["migrate"]
     environment: *api-env
     depends_on:
