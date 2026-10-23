@@ -16,12 +16,20 @@ abstract final class RecordingPolicy {
   /// Classes whose teacher has seen the notice (by class session id).
   static final _noticed = <String>{};
 
-  /// Reads `recordingAllowed` from the board config (absent = allowed).
-  static void applyConfig(Map<String, dynamic> config) => allowed = config['recordingAllowed'] != false;
+  /// Whether a recording includes a video of the board (`recordingVideo: false` keeps it to
+  /// the ink and the voice).
+  static bool video = true;
+
+  /// Reads `recordingAllowed` and `recordingVideo` from the board config (absent = allowed).
+  static void applyConfig(Map<String, dynamic> config) {
+    allowed = config['recordingAllowed'] != false;
+    video = config['recordingVideo'] != false;
+  }
 
   /// For tests.
   static void reset() {
     allowed = true;
+    video = true;
     notice = true;
     _noticed.clear();
   }

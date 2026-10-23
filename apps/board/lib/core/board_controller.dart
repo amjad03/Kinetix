@@ -18,6 +18,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'api_client.dart';
 import 'class_audio/class_audio.dart';
 import 'class_audio/mic_capture.dart';
+import 'class_camera/teacher_camera.dart';
 import 'device_store.dart';
 import 'handwriting/handwriting.dart';
 import 'kiosk/kiosk_controller.dart';
@@ -99,6 +100,7 @@ class BoardController extends ChangeNotifier {
       request: (event, data) => _realtime?.request(event, data) ?? Future.value(),
       emit: (event, data) => _realtime?.emit(event, data),
     )..addListener(notifyListeners);
+    teacherCamera = TeacherCamera(emit: (event, data) => _realtime?.emit(event, data))..addListener(notifyListeners);
     this.cast = cast ?? CastController(emit: (event, data) => _realtime?.emit(event, data), request: (event, data) => _realtime?.request(event, data) ?? Future.value());
     this.cast.addListener(notifyListeners);
     fleet = FleetAgent(
@@ -138,6 +140,9 @@ class BoardController extends ChangeNotifier {
 
   /// Class audio: the teacher's microphone to the live class (off at the start of every class).
   late final ClassAudio classAudio;
+
+  /// The teacher's camera tile, and its pictures to remote viewers of a live class.
+  late final TeacherCamera teacherCamera;
 
   final DeviceStore _store;
   final OutboxStore _outboxStore;
@@ -275,7 +280,10 @@ class BoardController extends ChangeNotifier {
     if (api == null || session == null) throw StateError('Sign in to go live');
     await api!.setClassLive(on);
     classLive = on;
-    if (!on) unawaited(classAudio.turnOff());
+    if (!on) {
+      unawaited(classAudio.turnOff());
+      teacherCamera.turnOff();
+    }
     notifyListeners();
   }
 
@@ -962,6 +970,7 @@ class BoardController extends ChangeNotifier {
       liveStudents = (e['students'] as num?)?.toInt() ?? 0;
       liveIndicator = e['indicator'] as bool? ?? true;
       classAudio.setListeners((e['listeners'] as num?)?.toInt() ?? 0);
+      teacherCamera.setViewers((e['listeners'] as num?)?.toInt() ?? 0);
       notifyListeners();
     });
     rt.on(RealtimeEvents.liveSnapshotRequest, (_) => onLiveSnapshotRequest?.call());
@@ -980,6 +989,7 @@ class BoardController extends ChangeNotifier {
       online = true;
       unawaited(_fetchConfig());
       classAudio.reconnected();
+      teacherCamera.reconnected();
       if (!_demo && !Platform.environment.containsKey('FLUTTER_TEST')) fleet.start();
       unawaited(_pullDeviceActions());
       notifyListeners();
@@ -1078,6 +1088,8 @@ class BoardController extends ChangeNotifier {
     unawaited(cast.classEnded());
     unawaited(classAudio.turnOff());
     classAudio.setListeners(0);
+    teacherCamera.turnOff();
+    teacherCamera.setViewers(0);
     api?.sessionToken = null;
     session = null;
     _teacherLanguage = null;
@@ -1237,6 +1249,8 @@ class BoardController extends ChangeNotifier {
     projector.dispose();
     classAudio.removeListener(notifyListeners);
     classAudio.dispose();
+    teacherCamera.removeListener(notifyListeners);
+    teacherCamera.dispose();
     _realtime?.dispose();
     fleet.stop();
     cast.removeListener(notifyListeners);

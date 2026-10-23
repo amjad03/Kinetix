@@ -1,5 +1,6 @@
 package app.kinetix.board
 
+import android.content.Intent
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -54,6 +55,16 @@ class MainActivity : FlutterActivity() {
                 result.error("presenter", e.message, null)
             }
         }
+        // The lecture video: the screen and microphone into an MP4 (ScreenRecorder.kt).
+        val screen = ScreenRecorder(this)
+        screenRecorder = screen
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zynetix/screen_recorder").setMethodCallHandler { call, result ->
+            try {
+                screen.handle(call.method, call.arguments, result)
+            } catch (e: Exception) {
+                result.error("unavailable", e.message, null)
+            }
+        }
         val projectorChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/projector")
         val p = Projector(this, projectorChannel)
         projector = p
@@ -67,10 +78,24 @@ class MainActivity : FlutterActivity() {
     }
 
     private var projector: Projector? = null
+    private var screenRecorder: ScreenRecorder? = null
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (screenRecorder?.onActivityResult(requestCode, resultCode, data) == true) return
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (screenRecorder?.onPermissionResult(requestCode) == true) return
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
 
     override fun onDestroy() {
         projector?.dispose()
         projector = null
+        screenRecorder?.dispose()
+        screenRecorder = null
         super.onDestroy()
     }
 }

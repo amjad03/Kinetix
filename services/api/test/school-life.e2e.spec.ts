@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type LiveAudioChunk, type LiveAudioState, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
+import { RealtimeEvents, type LiveAudioChunk, type LiveAudioState, type LiveCameraFrame, type LiveCameraState, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -219,6 +219,17 @@ describe('school life', () => {
       expect((await owner.query(`select actor_type from audit_log where tenant_id = $1 and action = 'live_audio.on'`, [t.tenantId])).rows).toEqual([{ actor_type: 'device' }]);
       // A student cannot send audio into the class.
       student.emit(RealtimeEvents.LiveAudio, { seq: 1, rate: 16000, codec: 'ima-adpcm', data: 'AAAAAA==' });
+
+      // The teacher camera (hybrid class): state to every viewer, pictures to those allowed the audio.
+      const camOn = next<LiveCameraState>(student, RealtimeEvents.LiveCameraState);
+      expect(await board.emitWithAck(RealtimeEvents.LiveCameraState, { on: true })).toEqual({ ok: true });
+      expect(await camOn).toEqual({ deviceId: t.device.id, on: true });
+      const pic = next<LiveCameraFrame>(student, RealtimeEvents.LiveCamera);
+      board.emit(RealtimeEvents.LiveCamera, { seq: 0, mime: 'image/png', data: 'AAAA' }); // not a JPEG: dropped
+      board.emit(RealtimeEvents.LiveCamera, { seq: 1, mime: 'image/jpeg', data: '/9j/AAAA' });
+      expect(await pic).toEqual({ deviceId: t.device.id, seq: 1, mime: 'image/jpeg', data: '/9j/AAAA' });
+      expect((await owner.query(`select count(*)::int as n from audit_log where tenant_id = $1 and action = 'live_camera.on'`, [t.tenantId])).rows[0].n).toBe(1);
+      expect(await student.emitWithAck(RealtimeEvents.LiveCameraState, { on: true })).toEqual({ ok: false });
 
       const parentSocket = io(`${url}/realtime`, { auth: { token: tokens.parent }, transports: ['websocket'] });
       sockets.push(parentSocket);

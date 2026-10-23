@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
@@ -12,6 +14,8 @@ abstract final class LiveEvents {
   static const ended = 'live.ended';
   static const audioState = 'live.audio.state';
   static const audio = 'live.audio';
+  static const cameraState = 'live.camera.state';
+  static const camera = 'live.camera';
 
   /// To every socket of a user: a new message in one of their conversations.
   static const messageNew = 'message.new';
@@ -65,6 +69,23 @@ class LiveAudioChunk extends LiveSignal {
   final String deviceId;
   final int seq;
   final String data;
+}
+
+/// The teacher turned the board's camera on or off for the class.
+class LiveCameraState extends LiveSignal {
+  const LiveCameraState(this.deviceId, this.on);
+
+  final String deviceId;
+  final bool on;
+}
+
+/// A picture from the teacher's camera (JPEG), a few times a second.
+class LiveCameraFrame extends LiveSignal {
+  const LiveCameraFrame(this.deviceId, this.seq, this.jpeg);
+
+  final String deviceId;
+  final int seq;
+  final Uint8List jpeg;
 }
 
 /// A new message in one of the user's conversations (`message.new`), on any signed-in socket.
@@ -229,6 +250,18 @@ class SocketLiveConnection implements LiveConnection {
     socket.on(LiveEvents.audio, (d) {
       if (d is Map && d['data'] is String && d['codec'] == 'ima-adpcm') {
         _add(LiveAudioChunk('${d['deviceId']}', (d['seq'] as num?)?.toInt() ?? 0, d['data'] as String));
+      }
+    });
+    socket.on(LiveEvents.cameraState, (d) {
+      if (d is Map) _add(LiveCameraState('${d['deviceId']}', d['on'] == true));
+    });
+    socket.on(LiveEvents.camera, (d) {
+      if (d is Map && d['data'] is String && d['mime'] == 'image/jpeg') {
+        try {
+          _add(LiveCameraFrame('${d['deviceId']}', (d['seq'] as num?)?.toInt() ?? 0, base64Decode(d['data'] as String)));
+        } on FormatException {
+          // A broken frame: the next one follows shortly.
+        }
       }
     });
     socket.on(LiveEvents.messageNew, (d) {

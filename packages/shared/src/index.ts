@@ -28,6 +28,10 @@ export const RealtimeEvents = {
   LiveAudioState: 'live.audio.state',
   /** Board → server → listeners: a short piece of class audio ({@link LiveAudioChunk}). */
   LiveAudio: 'live.audio',
+  /** Board → server → viewers: whether the teacher's camera is on ({@link LiveCameraState}). */
+  LiveCameraState: 'live.camera.state',
+  /** Board → server → viewers allowed the class audio: a picture from the teacher's camera ({@link LiveCameraFrame}). */
+  LiveCamera: 'live.camera',
   /** Server → users in the conversation: a new message ({@link MessageNewEvent}); refetch it. */
   MessageNew: 'message.new',
   /** Server → students of the class: the teacher asked a question on the board ({@link PollView}). */
@@ -211,6 +215,23 @@ export interface LiveAudioChunk {
   seq: number;
   rate: 16000;
   codec: 'ima-adpcm';
+  data: string;
+}
+
+/** Board → server: `{on}`; server → viewers: `{deviceId, on}`. */
+export interface LiveCameraState {
+  deviceId?: string;
+  on: boolean;
+}
+
+/**
+ * The teacher's camera in a live or hybrid class: a small JPEG (base64) a few times a second,
+ * sent only while someone may watch. Viewers show the newest one beside the board.
+ */
+export interface LiveCameraFrame {
+  deviceId?: string;
+  seq: number;
+  mime: 'image/jpeg';
   data: string;
 }
 

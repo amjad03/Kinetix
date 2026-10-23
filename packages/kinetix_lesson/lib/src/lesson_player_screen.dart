@@ -10,6 +10,7 @@ import 'audio.dart';
 import 'format.dart';
 import 'l10n.dart';
 import 'recording.dart';
+import 'video.dart';
 
 /// Plays a lesson recording: the board as it was written, in step with the teacher's voice,
 /// with the summary and transcript when they are ready.
@@ -26,12 +27,20 @@ class LessonPlayerScreen extends StatefulWidget {
   /// Defaults to [createLessonAudio].
   final LessonAudioFactory? audioFactory;
 
-  static Future<void> open(BuildContext context, {required LessonSource source, required String recordingId, RecordingInfo? initial}) =>
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => LessonPlayerScreen(source: source, recordingId: recordingId, initial: initial),
-        ),
-      );
+  /// Opens the lecture video when the recording has one and this device can stream it
+  /// ([LessonVideoScreen]); otherwise the board replay.
+  static Future<void> open(BuildContext context, {required LessonSource source, required String recordingId, RecordingInfo? initial}) {
+    final video = (initial?.hasVideo ?? false) && source is LessonVideoSource && (lessonVideoSupported || LessonVideo.debugFactory != null)
+        ? (source as LessonVideoSource).video(recordingId)
+        : null;
+    return Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => video != null
+            ? LessonVideoScreen(source: source, recordingId: recordingId, location: video, initial: initial)
+            : LessonPlayerScreen(source: source, recordingId: recordingId, initial: initial),
+      ),
+    );
+  }
 
   @override
   State<LessonPlayerScreen> createState() => _LessonPlayerScreenState();
@@ -653,6 +662,239 @@ class _ErrorBox extends StatelessWidget {
             onPressed: onRetry,
             style: TextButton.styleFrom(foregroundColor: c.onErrorContainer),
             child: Text(LessonStrings.of(context).retry),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A recording's lecture video (board view and voice) with its chapters, summary and
+/// transcript. When the video cannot play here, the board replay ([LessonPlayerScreen]) takes
+/// its place.
+class LessonVideoScreen extends StatefulWidget {
+  const LessonVideoScreen({super.key, required this.source, required this.recordingId, required this.location, this.initial});
+
+  final LessonSource source;
+  final String recordingId;
+  final LessonAudioLocation location;
+  final RecordingInfo? initial;
+
+  @override
+  State<LessonVideoScreen> createState() => _LessonVideoScreenState();
+}
+
+class _LessonVideoScreenState extends State<LessonVideoScreen> {
+  LessonVideo? _video;
+  RecordingInfo? _info;
+  List<(int, String)> _chapters = const [];
+  String Function(BuildContext)? _error;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _error = null;
+      _loading = true;
+    });
+    try {
+      var info = await widget.source.recording(widget.recordingId);
+      if (widget.initial?.missed ?? false) info = info.copyWith(missed: true);
+      // Chapters come from the board's event log, kept with every recording.
+      var chapters = const <(int, String)>[];
+      try {
+        final lesson = await widget.source.lesson(widget.recordingId);
+        chapters = lessonChapters({'events': lesson.events});
+      } catch (_) {}
+      final video = LessonVideo.create(widget.location);
+      try {
+        await video.open();
+      } catch (e) {
+        video.dispose();
+        debugPrint('Lecture video unavailable, showing the board replay: $e');
+        if (!mounted) return;
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(LessonStrings.of(context).videoUnavailable)));
+        _replay(info);
+        return;
+      }
+      if (!mounted) {
+        video.dispose();
+        return;
+      }
+      _video?.removeListener(_changed);
+      _video?.dispose();
+      setState(() {
+        _info = info;
+        _chapters = chapters;
+        _video = video..addListener(_changed);
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = switch (e) {
+          LessonLoadException(:final describe?) => describe,
+          LessonLoadException(:final message) => (_) => message,
+          _ => (context) => LessonStrings.of(context).loadFailed,
+        };
+      });
+    }
+  }
+
+  void _replay(RecordingInfo? info) => Navigator.of(context).pushReplacement(
+    MaterialPageRoute<void>(builder: (_) => LessonPlayerScreen(source: widget.source, recordingId: widget.recordingId, initial: info ?? widget.initial)),
+  );
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _video?.removeListener(_changed);
+    _video?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _seek(Duration to) async {
+    final v = _video;
+    if (v == null) return;
+    if (to < Duration.zero) to = Duration.zero;
+    if (v.duration > Duration.zero && to > v.duration) to = v.duration;
+    await v.seek(to);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final s = LessonStrings.of(context);
+    final info = _info ?? widget.initial;
+    final subtitle = [?info?.subjectName, ?info?.teacherName, if (info != null) LessonFmt.when(info.startedAt, s)].join(' · ');
+    final v = _video;
+    return Scaffold(
+      backgroundColor: c.surfaceContainer,
+      appBar: AppBar(
+        backgroundColor: c.surfaceContainer,
+        titleSpacing: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(info?.title ?? s.lessonRecording, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.titleMedium),
+            if (subtitle.isNotEmpty)
+              Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+          ],
+        ),
+        actions: [
+          IconButton(key: const Key('lessonBoardReplay'), tooltip: s.boardReplay, onPressed: () => _replay(_info), icon: const Icon(Icons.draw_outlined)),
+        ],
+      ),
+      body: _error != null
+          ? Padding(
+              padding: const EdgeInsets.all(Kx.s16),
+              child: Align(alignment: Alignment.topCenter, child: _ErrorBox(_error!(context), onRetry: _load)),
+            )
+          : _loading || v == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (info?.missed ?? false)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, 0),
+                    child: Text(s.missedNote, style: context.text.bodyMedium?.copyWith(color: c.primary)),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(Kx.s8),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.45),
+                    child: Center(
+                      child: AspectRatio(
+                        aspectRatio: v.aspectRatio,
+                        child: ClipRRect(
+                          borderRadius: Kx.radiusSm,
+                          child: ColoredBox(key: const Key('lessonVideo'), color: const Color(0xFF000000), child: v.view()),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                _controls(context, v),
+                if (_chapters.isNotEmpty)
+                  SizedBox(
+                    height: Kx.target,
+                    child: ListView.separated(
+                      key: const Key('lessonChapters'),
+                      padding: const EdgeInsets.symmetric(horizontal: Kx.s8),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _chapters.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: Kx.s8),
+                      itemBuilder: (context, i) {
+                        final (ms, title) = _chapters[i];
+                        return Center(
+                          child: ActionChip(
+                            key: Key('chapter-$i'),
+                            label: Text('${LessonFmt.clock(Duration(milliseconds: ms))} · $title'),
+                            onPressed: () => _seek(Duration(milliseconds: ms)),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                if (info != null && _Details.tabsFor(info).isNotEmpty) Expanded(child: _Details(info: info)) else const Spacer(),
+              ],
+            ),
+    );
+  }
+
+  Widget _controls(BuildContext context, LessonVideo v) {
+    final s = LessonStrings.of(context);
+    final total = v.duration.inMilliseconds <= 0 ? 1.0 : v.duration.inMilliseconds.toDouble();
+    const speeds = _LessonPlayerScreenState.speeds;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Kx.s4),
+      child: Row(
+        children: [
+          IconButton(
+            key: const Key('lessonBack10'),
+            tooltip: s.back10,
+            onPressed: () => _seek(v.position - const Duration(seconds: 10)),
+            icon: const Icon(Icons.replay_10),
+          ),
+          IconButton.filled(
+            key: const Key('lessonPlay'),
+            tooltip: v.playing ? s.pause : (v.completed ? s.playAgain : s.play),
+            onPressed: () async {
+              if (v.playing) return v.pause();
+              if (v.completed) await v.seek(Duration.zero);
+              await v.play();
+            },
+            icon: Icon(v.playing ? Icons.pause : Icons.play_arrow),
+          ),
+          IconButton(
+            key: const Key('lessonForward10'),
+            tooltip: s.forward10,
+            onPressed: () => _seek(v.position + const Duration(seconds: 10)),
+            icon: const Icon(Icons.forward_10),
+          ),
+          Text(LessonFmt.clock(v.position), key: const Key('lessonPosition')),
+          Expanded(
+            child: Slider(
+              key: const Key('lessonSeek'),
+              value: v.position.inMilliseconds.clamp(0, total.toInt()).toDouble(),
+              max: total,
+              onChanged: (x) => _seek(Duration(milliseconds: x.round())),
+            ),
+          ),
+          TextButton(
+            key: const Key('lessonSpeed'),
+            onPressed: () => v.setSpeed(speeds[(speeds.indexOf(v.speed) + 1) % speeds.length]),
+            child: Text(s.speed(v.speed == v.speed.roundToDouble() ? '${v.speed.toInt()}×' : '${v.speed}×')),
           ),
         ],
       ),

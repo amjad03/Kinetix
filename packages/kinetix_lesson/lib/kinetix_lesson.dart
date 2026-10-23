@@ -10,3 +10,4 @@ export 'src/format.dart';
 export 'src/l10n.dart';
 export 'src/lesson_player_screen.dart';
 export 'src/recording.dart';
+export 'src/video.dart';

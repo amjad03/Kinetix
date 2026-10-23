@@ -30,7 +30,16 @@ abstract class RecordingStore {
 
   Stream<List<int>> readAudio(String id);
 
-  /// Removes the event log and audio (after upload), keeping the metadata.
+  /// The path the lecture video is recorded to (`video.<extension>`).
+  Future<String> prepareVideo(String id, String extension);
+
+  /// The size of the recorded video, or null when there is none.
+  Future<int?> videoLength(String id);
+
+  /// [length] bytes of the video from [offset] (fewer at its end), for chunked upload.
+  Future<Uint8List> readVideo(String id, int offset, int length);
+
+  /// Removes the event log, audio and video (after upload), keeping the metadata.
   Future<void> deleteMedia(String id);
 
   /// Removes everything about the recording.
@@ -106,9 +115,42 @@ class FileRecordingStore implements RecordingStore {
     yield* (await _file(id, 'audio.m4a')).openRead();
   }
 
+  static const _videoNames = ['video.mp4', 'video.mov', 'video.webm'];
+
+  @override
+  Future<String> prepareVideo(String id, String extension) async {
+    final f = await _file(id, 'video.$extension');
+    await f.parent.create(recursive: true);
+    return f.path;
+  }
+
+  Future<File?> _video(String id) async {
+    for (final name in _videoNames) {
+      final f = await _file(id, name);
+      if (await f.exists()) return f;
+    }
+    return null;
+  }
+
+  @override
+  Future<int?> videoLength(String id) async => (await _video(id))?.length();
+
+  @override
+  Future<Uint8List> readVideo(String id, int offset, int length) async {
+    final f = await _video(id);
+    if (f == null) throw StateError('The video of $id is gone');
+    final raf = await f.open();
+    try {
+      await raf.setPosition(offset);
+      return await raf.read(length);
+    } finally {
+      await raf.close();
+    }
+  }
+
   @override
   Future<void> deleteMedia(String id) async {
-    for (final name in ['events.json', 'audio.m4a']) {
+    for (final name in ['events.json', 'audio.m4a', ..._videoNames]) {
       final f = await _file(id, name);
       if (await f.exists()) await f.delete();
     }

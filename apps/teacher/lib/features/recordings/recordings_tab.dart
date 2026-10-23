@@ -239,7 +239,7 @@ class RecordingCard extends StatelessWidget {
         Processing.failed => Pill(l.noTranscript, icon: Icons.error_outline, background: c.errorContainer, foreground: c.onErrorContainer),
         Processing.none => const SizedBox.shrink(),
       },
-      if (!r.hasAudio && r.isFinished) Pill(l.noSound, icon: Icons.volume_off_outlined, background: neutral.$1, foreground: neutral.$2),
+      if (!r.hasAudio && !r.hasVideo && r.isFinished) Pill(l.noSound, icon: Icons.volume_off_outlined, background: neutral.$1, foreground: neutral.$2),
       if (r.keep)
         Pill(l.recordingKept, key: Key('kept-${r.id}'), icon: Icons.bookmark, background: goodBg, foreground: good)
       else if (r.expiresOn case final expires?)

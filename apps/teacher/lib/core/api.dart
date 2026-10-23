@@ -412,7 +412,7 @@ abstract class TeacherApi {
 }
 
 /// Lets the lesson player load recordings through a [TeacherApi].
-class TeacherLessonSource implements LessonSource {
+class TeacherLessonSource implements LessonSource, LessonVideoSource {
   TeacherLessonSource(this.api, {required this.notAvailable, required this.describe});
 
   final TeacherApi api;
@@ -440,6 +440,13 @@ class TeacherLessonSource implements LessonSource {
   @override
   LessonAudioLocation? audio(String id) => LessonAudioLocation(
     Uri.parse('${api.baseUrl}/v1/recordings/$id/audio'),
+    headers: {if (api.token != null) 'authorization': 'Bearer ${api.token}'},
+  );
+
+  /// The lecture video (board view and voice), streamed with Range requests.
+  @override
+  LessonAudioLocation? video(String id) => LessonAudioLocation(
+    Uri.parse('${api.baseUrl}/v1/recordings/$id/video'),
     headers: {if (api.token != null) 'authorization': 'Bearer ${api.token}'},
   );
 }

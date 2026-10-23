@@ -16,6 +16,9 @@ import '../cast/cast_panel.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../core/recording/lesson_capture.dart';
+import '../../core/recording/screen_video_recorder.dart' show NoVideoRecorder;
+import '../live/teacher_camera_tile.dart';
+import '../media/local_media.dart';
 import '../../demo/demo.dart';
 import '../../l10n/l10n.dart';
 import '../ai/ai_controller.dart';
@@ -163,6 +166,17 @@ class _BoardScreenState extends State<BoardScreen> {
   late final WhiteboardController _wb = WhiteboardController(palmMode: widget.board.touchProfile.palmMode);
   final _images = BoardImages();
   final _canvasKey = GlobalKey<WhiteboardCanvasState>();
+
+  /// What the class sees (board, panels, media, camera): pictured for the lecture video on
+  /// boards that build it from frames (Windows, Linux).
+  final _frameKey = GlobalKey();
+
+  Future<ui.Image?> _boardFrame() async {
+    final b = _frameKey.currentContext?.findRenderObject();
+    if (b is! RenderRepaintBoundary || !b.attached || b.debugNeedsPaint) return null;
+    final ratio = b.size.width > 0 ? (1280 / b.size.width).clamp(0.25, 1.0) : 1.0;
+    return b.toImage(pixelRatio: ratio);
+  }
   final _secondInk = InkController();
 
   /// The second board (split screen): a full whiteboard that follows the main board's tools.
@@ -1114,7 +1128,8 @@ class _BoardScreenState extends State<BoardScreen> {
     try {
       // The institution's policy, and the notice the first time in each class.
       if (!await RecordingPolicy.confirm(context, s.sessionId) || !mounted) return;
-      final capture = await board.recordings.newCapture(id: board.newId(), board: _wb, background: _background, canvas: _canvasSize);
+      board.recordings.videoEnabled = RecordingPolicy.video;
+      final capture = await board.recordings.newCapture(id: board.newId(), board: _wb, background: _background, canvas: _canvasSize, frames: _boardFrame);
       final noSound = await capture.start();
       if (!mounted || board.session?.sessionId != s.sessionId) {
         await capture.stop();
@@ -1128,6 +1143,9 @@ class _BoardScreenState extends State<BoardScreen> {
       });
       final l = context.l10n;
       showBoardMessage(context, noSound == null ? l.recordingStarted : l.recordingNoSound(voiceReason(l, noSound)));
+      final noVideo = capture.noVideo;
+      // Boards that never record video (no recorder at all) say nothing about it.
+      if (noVideo != null && noVideo != const NoVideoRecorder().reason) showBoardMessage(context, l.recordingNoVideo(noVideo));
     } catch (e) {
       if (mounted) showBoardMessage(context, context.l10n.couldNotStartRecording('$e'));
     } finally {
@@ -2126,7 +2144,20 @@ class _BoardScreenState extends State<BoardScreen> {
               listenable: board,
               builder: (context, _) => Stack(
                 children: [
-                  Positioned.fill(child: LayoutBuilder(builder: (context, size) => _layout(context, size))),
+                  Positioned.fill(
+                    child: RepaintBoundary(
+                      key: _frameKey,
+                      child: LayoutBuilder(
+                        builder: (context, size) => Stack(
+                          children: [
+                            Positioned.fill(child: _layout(context, size)),
+                            // The teacher's camera (hybrid class): over the board, so it is in the lecture video too.
+                            if (board.teacherCamera.on) TeacherCameraTile(camera: board.teacherCamera, area: size.biggest),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   // Touch lock (Tools): over everything, the board and its panels, until held.
                   if (_frozen)
                     Positioned.fill(
@@ -2773,7 +2804,21 @@ class _BoardScreenState extends State<BoardScreen> {
     return [
       InsertExtra(key: const Key('insert-cat-pdf'), icon: Icons.picture_as_pdf_outlined, title: s('catPdf'), hint: '', onTap: () => unawaited(importDocument(context, _wb))),
       InsertExtra(key: const Key('insert-cat-images'), icon: Icons.image_outlined, title: s('catImages'), hint: '', onTap: () => unawaited(insertDevicePicture(context, _wb))),
-      InsertExtra(key: const Key('insert-cat-videos'), icon: Icons.smart_display_outlined, title: s('catVideos'), hint: '', onTap: () => tool('concept-videos')),
+      // Videos: the topic's concept videos, or a video or audio file from the board or a USB stick.
+      InsertExtra(
+        key: const Key('insert-cat-videos'),
+        icon: Icons.smart_display_outlined,
+        title: s('catVideos'),
+        hint: '',
+        onTap: () => unawaited(chooseVideoSource(context, conceptVideos: () => tool('concept-videos'))),
+      ),
+      InsertExtra(
+        key: const Key('insert-cat-audio'),
+        icon: Icons.audio_file_outlined,
+        title: context.l10n.insertAudioCategory,
+        hint: '',
+        onTap: () => unawaited(openLocalMedia(context, LocalMediaKind.audio)),
+      ),
       InsertExtra(key: const Key('insert-cat-ppt'), icon: Icons.slideshow_outlined, title: s('catPpt'), hint: '', onTap: () => unawaited(importDocument(context, _wb))),
       InsertExtra(key: const Key('insert-cat-clipboard'), icon: Icons.content_paste, title: s('catClipboard'), hint: '', onTap: () => unawaited(_pasteClipboard())),
       InsertExtra(key: const Key('insert-cat-geometry'), icon: Icons.architecture, title: s('catGeometry'), hint: '', onTap: () => _toggle(BoardPopover.shapes)),

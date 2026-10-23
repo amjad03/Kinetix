@@ -387,7 +387,8 @@ class DemoBoardServer {
   Future<http.Response> _handle(http.Request req) async {
     final path = req.url.path, method = req.method;
     requests.add('$method $path');
-    final body = req.body.isEmpty
+    // Uploads (lesson video chunks, audio) are raw bytes, not JSON.
+    final body = req.bodyBytes.isEmpty || !(req.headers['content-type'] ?? '').contains('json')
         ? const <String, dynamic>{}
         : (jsonDecode(req.body) as Map).cast<String, dynamic>();
     final now = _clock();
@@ -556,7 +557,7 @@ class DemoBoardServer {
       return json(_recordings.values.toList().reversed.toList());
     }
     final rec = RegExp(
-      r'^/v1/recordings/([^/]+)(?:/(events|audio|finish|share))?$',
+      r'^/v1/recordings/([^/]+)(?:/(events|audio|finish|share|video/chunks/\d+|video/finalize|share-links))?$',
     ).firstMatch(path);
     if (rec != null) {
       final id = rec[1]!;
@@ -587,6 +588,16 @@ class DemoBoardServer {
         case 'share':
           _recordings[id]?['sharedAt'] = now.toUtc().toIso8601String();
           return json(_recordings[id]);
+        case 'video/finalize':
+          _recordings[id]?['hasVideo'] = true;
+          return json(_recordings[id]);
+        case 'share-links':
+          return json({
+            'url': 'https://demo.zynetix.app/v1/public/recordings/demo/${id.replaceAll('-', '').padRight(32, '0').substring(0, 32)}',
+            'expiresAt': now.toUtc().add(Duration(hours: (body['expiresInHours'] as num?)?.toInt() ?? 48)).toIso8601String(),
+          }, 201);
+        case final String step when step.startsWith('video/chunks/'):
+          return http.Response('', 204);
       }
     }
 

@@ -4853,4 +4853,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get curSoonEv => 'EV diagrams';
+
+  @override
+  String get insertVideosTitle => 'Videos';
+
+  @override
+  String get insertLocalVideo => 'Video from files or USB';
+
+  @override
+  String get insertLocalAudio => 'Audio from files or USB';
+
+  @override
+  String get insertAudioCategory => 'Audio';
+
+  @override
+  String get mediaCannotPlay => 'This board cannot play this file.';
+
+  @override
+  String get mediaAnnotate => 'Write on it';
+
+  @override
+  String get mediaClearInk => 'Clear writing';
+
+  @override
+  String get recVideo => 'Video';
+
+  @override
+  String get recShareQr => 'QR code';
+
+  @override
+  String get recLinkTitle => 'Scan to watch the lesson';
+
+  @override
+  String recLinkExpires(String time) {
+    return 'Anyone with this QR code or link can watch the video until $time.';
+  }
+
+  @override
+  String recLinkFailed(String error) {
+    return 'Could not make a link: $error';
+  }
+
+  @override
+  String recordingNoVideo(String reason) {
+    return 'Recording without video: $reason';
+  }
+
+  @override
+  String get cameraShow => 'Show my camera';
+
+  @override
+  String get cameraHide => 'Hide my camera';
+
+  @override
+  String get cameraLive => 'Live';
+
+  @override
+  String get cameraLiveNote =>
+      'Students watching this live class on Zynetix see your camera.';
+
+  @override
+  String get cameraNotAvailable => 'No camera is available on this board.';
 }
