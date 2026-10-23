@@ -584,7 +584,7 @@ class ApiClient {
   // --- Sharing and integrations (Zynetix W5): guest cast code, cloud drives, Classroom, Moodle -------
 
   /// The board's join code for guests casting from the browser /cast page (`fresh`: a new one).
-  Future<Map<String, dynamic>> castJoinCode({bool fresh = false}) async => await _send('GET', '/v1/cast/join-code${fresh ? '?fresh=1' : ''}') as Map<String, dynamic>;
+  Future<Map<String, dynamic>> castJoinCode({bool fresh = false}) async => await _send('GET', fresh ? '/v1/cast/join-code?fresh=1' : '/v1/cast/join-code') as Map<String, dynamic>;
 
   /// GET returning JSON (the cloud and share endpoints).
   Future<dynamic> getJson(String path) => _send('GET', path);
