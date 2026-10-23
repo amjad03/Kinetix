@@ -238,11 +238,12 @@ class _IsCodeBrowserState extends State<IsCodeBrowser> {
             Expanded(
               child: hits.isEmpty
                   ? Center(child: Text(s['noMatch']))
-                  : Row(
+                  // On a phone the list takes 40% of the width, so the table keeps room.
+                  : LayoutBuilder(builder: (context, box) => Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         SizedBox(
-                          width: 300,
+                          width: box.maxWidth < 760 ? box.maxWidth * 0.4 : 300,
                           child: ListView(
                             children: [
                               for (final t in hits)
@@ -282,7 +283,7 @@ class _IsCodeBrowserState extends State<IsCodeBrowser> {
                             ),
                           ),
                       ],
-                    ),
+                    )),
             ),
           ],
         ),
