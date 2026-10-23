@@ -371,7 +371,8 @@ class _ClassBarState extends State<ClassBar> {
                   ],
                   gap,
                   ClassAudioButton(board: board),
-                  TeacherCameraButton(board: board),
+                  // The teacher camera, for a live (hybrid) class or while it is on.
+                  if (board.classLive || board.teacherCamera.on) TeacherCameraButton(board: board),
                 ],
               ],
               if (s == null && widget.contextChip != null) ...[gap, widget.contextChip!],
