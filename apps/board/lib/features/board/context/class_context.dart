@@ -81,7 +81,7 @@ class ToolProfile {
 /// Class-management tools that every subject keeps: the timer, quiz, attendance, the screen tools.
 const alwaysTools = <String>{
   'toolkit-timer', 'toolkit-stopwatch', 'toolkit-picker', 'toolkit-dice', 'toolkit-spinner', 'toolkit-noise', 'toolkit-curtain', 'toolkit-spotlight', //
-  'badges', 'quick-quiz', 'ask-class', 'attendance', 'todays-plan', 'read-aloud', 'second-board', 'laser', 'move', 'eye-comfort', 'screenshot', 'touch-lock', //
+  'badges', 'quick-quiz', 'ask-class', 'attendance', 'todays-plan', 'read-aloud', 'second-board', 'laser', 'move', 'eye-comfort', 'screenshot', 'touch-lock', 'write-over-apps', 'panel-home', //
   'demo-classes', 'this-class', 'doc-camera', 'safe-web', 'live-captions', 'magnifier', 'seating-chart', 'group-maker', 'teacher-notes', 'scoreboard', 'buzzer', //
   'zones', 'subject-kits', 'diagnostics', 'exam-clock', 'exam-room', 'exit-ticket', 'concept-videos', 'mindmap', 'dictionary', 'worksheet', 'voice-commands',
 };

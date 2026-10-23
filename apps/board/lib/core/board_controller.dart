@@ -26,6 +26,7 @@ import 'models.dart';
 import 'outbox_store.dart';
 import 'cast/cast_controller.dart';
 import 'fleet/fleet_agent.dart';
+import 'panel/panel_controller.dart';
 import 'realtime.dart';
 import 'recording/recordings.dart';
 
@@ -84,6 +85,7 @@ class BoardController extends ChangeNotifier {
     ProjectorController? projector,
     DeviceProbe? deviceProbe,
     CastController? cast,
+    PanelController? panel,
   }) : _store = store ?? DeviceStore(),
       handwriting = handwriting ?? platformHandwriting(),
       _outboxStore = outboxStore ?? FileOutboxStore(),
@@ -101,7 +103,17 @@ class BoardController extends ChangeNotifier {
     )..addListener(notifyListeners);
     this.cast = cast ?? CastController(emit: (event, data) => _realtime?.emit(event, data), request: (event, data) => _realtime?.request(event, data) ?? Future.value());
     this.cast.addListener(notifyListeners);
+    this.panel =
+        panel ??
+        PanelController.forPlatform(
+          open: (url) => api == null ? Future.error(StateError('Not enrolled')) : api!.openDownload(url),
+          report: (id, state, {error}) async => api?.reportUpdateStatus(id, state, error: error),
+          saveHome: (json) => _store.setSetting('panelHome', json),
+        );
+    // In kiosk mode only the panel home's allow-listed apps may run (Kiosk.kt lock task packages).
+    this.kiosk.addListener(() => unawaited(this.panel.home.setKiosk(this.kiosk.active)));
     fleet = FleetAgent(
+      onAnswer: (answer) => unawaited(this.panel.apply(answer)),
       send: (body) async => api?.postHealth(body),
       probe: deviceProbe,
       app: () => AppHealth(
@@ -117,6 +129,9 @@ class BoardController extends ChangeNotifier {
 
   /// Reports this board's health to the IT console (core/fleet).
   late final FleetAgent fleet;
+
+  /// App updates, the panel home and writing over other apps (core/panel; Zynetix W4).
+  late final PanelController panel;
 
   /// IT locked this board from the device console: a lock screen covers it until unlocked.
   bool deviceLocked = false;
@@ -435,6 +450,7 @@ class BoardController extends ChangeNotifier {
         if (info != null) institutionBoardInfo = (jsonDecode(info) as Map).cast<String, dynamic>();
       } catch (_) {}
       _edition = await _store.setting('edition') == 'board' ? 'board' : 'full';
+      await panel.home.setAllowed(PanelHome.decode(await _store.setting('panelHome')));
       toolbarPanel = _ids(await _store.setting('toolbarPanel'));
       toolbarPhone = _ids(await _store.setting('toolbarPhone'));
       palmRejection = await _store.setting('palmRejection') != 'false';
@@ -1005,6 +1021,7 @@ class BoardController extends ChangeNotifier {
       setEdition(config['edition'] as String? ?? (config['institution'] as Map?)?['edition'] as String?);
       final kioskConfig = config['kiosk'];
       if (kioskConfig is Map<String, dynamic>) await kiosk.applyPolicy(KioskPolicy.fromConfig(kioskConfig));
+      if (config['launcher'] != null) unawaited(panel.apply({'launcher': config['launcher']}));
       // Profile → Schedule a Training and What's New; kept for offline.
       institutionBoardInfo = {'training': config['training'], 'whatsNew': config['whatsNew']};
       unawaited(_store.setSetting('boardInfo', jsonEncode(institutionBoardInfo)));
@@ -1239,6 +1256,7 @@ class BoardController extends ChangeNotifier {
     classAudio.dispose();
     _realtime?.dispose();
     fleet.stop();
+    panel.dispose();
     cast.removeListener(notifyListeners);
     cast.dispose();
     recordings.dispose();

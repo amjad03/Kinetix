@@ -4844,4 +4844,89 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get curSoonEv => 'EV ರೇಖಾಚಿತ್ರಗಳು';
+
+  @override
+  String get writeOverApps => 'ಆ್ಯಪ್‌ಗಳ ಮೇಲೆ ಬರೆಯಿರಿ';
+
+  @override
+  String get writeOverAppsPermission =>
+      'ಸೆಟ್ಟಿಂಗ್ಸ್‌ನಲ್ಲಿ ಇತರ ಆ್ಯಪ್‌ಗಳ ಮೇಲೆ ತೋರಲು Zynetix ಗೆ ಅನುಮತಿ ನೀಡಿ, ನಂತರ ಮತ್ತೆ ಆ್ಯಪ್‌ಗಳ ಮೇಲೆ ಬರೆಯಿರಿ ಒತ್ತಿ.';
+
+  @override
+  String get writeOverAppsSaved =>
+      'ಆ್ಯಪ್ ಮೇಲೆ ನೀವು ಬರೆದದ್ದು ಬೋರ್ಡ್‌ನ ಹೊಸ ಪುಟದಲ್ಲಿದೆ.';
+
+  @override
+  String get writeOverAppsUnsupported =>
+      'ಈ ಸಾಧನದಲ್ಲಿ ಆ್ಯಪ್‌ಗಳ ಮೇಲೆ ಬರೆಯುವುದು ಲಭ್ಯವಿಲ್ಲ.';
+
+  @override
+  String get overlayPen => 'ಪೆನ್';
+
+  @override
+  String get overlayEraser => 'ಅಳಿಸುವಿಕೆ';
+
+  @override
+  String get overlayClear => 'ತೆರವುಗೊಳಿಸಿ';
+
+  @override
+  String get overlayPassThrough => 'ಆ್ಯಪ್ ಬಳಸಿ';
+
+  @override
+  String get overlayCapture => 'ಬೋರ್ಡ್‌ಗೆ ಉಳಿಸಿ';
+
+  @override
+  String get overlayClose => 'ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗಿ';
+
+  @override
+  String get panelHome => 'ಪ್ಯಾನೆಲ್ ಹೋಮ್';
+
+  @override
+  String get panelHomeBoard => 'Zynetix ಬೋರ್ಡ್';
+
+  @override
+  String get panelHomeOtherApps =>
+      'ಇತರ ಆ್ಯಪ್‌ಗಳು (IT ಮಾತ್ರ, ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಹೊರಗೆ)';
+
+  @override
+  String get panelHomeEmpty =>
+      'ಈ ಪ್ಯಾನೆಲ್‌ನಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿ ಇಲ್ಲ. Zynetix ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನ ಪ್ಯಾನೆಲ್ ಹೋಮ್‌ನಲ್ಲಿ ಸೇರಿಸಿ.';
+
+  @override
+  String panelHomeLaunchFailed(String app) {
+    return '$app ತೆರೆಯಲಾಗಲಿಲ್ಲ.';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'Zynetix Board $version ಇನ್‌ಸ್ಟಾಲ್‌ಗೆ ಸಿದ್ಧವಾಗಿದೆ';
+  }
+
+  @override
+  String get updateNow => 'ಈಗ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ';
+
+  @override
+  String get updateLater => 'ನಂತರ';
+
+  @override
+  String updateDownloading(int percent) {
+    return 'ಅಪ್‌ಡೇಟ್ ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ… $percent%';
+  }
+
+  @override
+  String get updateInstalling =>
+      'ಅಪ್‌ಡೇಟ್ ಇನ್‌ಸ್ಟಾಲ್ ಆಗುತ್ತಿದೆ. Zynetix Board ತಾನಾಗಿಯೇ ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ.';
+
+  @override
+  String updateFailed(String error) {
+    return 'ಅಪ್‌ಡೇಟ್ ವಿಫಲವಾಯಿತು: $error';
+  }
+
+  @override
+  String get updateNeedsPermission =>
+      'ಸೆಟ್ಟಿಂಗ್ಸ್‌ನಲ್ಲಿ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು Zynetix ಗೆ ಅನುಮತಿ ನೀಡಿ, ನಂತರ ಈಗ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ ಒತ್ತಿ.';
+
+  @override
+  String get updateOpened =>
+      'ಇನ್‌ಸ್ಟಾಲರ್ ತೆರೆದಿದೆ. Zynetix Board ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಅದನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ.';
 }

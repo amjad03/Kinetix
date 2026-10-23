@@ -9,6 +9,7 @@ project(runner LANGUAGES CXX)
 add_executable(${BINARY_NAME} WIN32
   "flutter_window.cpp"
   "projector_window.cpp"
+  "overlay_window.cpp"
   "main.cpp"
   "utils.cpp"
   "win32_window.cpp"

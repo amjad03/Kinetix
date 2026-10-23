@@ -60,8 +60,25 @@ class ApiClient {
   /// Asks the server whether it is up (device diagnostics). Throws when it does not answer.
   Future<void> ping() async => _send('GET', '/health', auth: false);
 
-  /// The board's periodic health report for the IT console (device token).
-  Future<void> postHealth(Map<String, Object?> body) async => _send('POST', '/v1/devices/me/health', body: body, useDeviceToken: true);
+  /// The board's periodic health report for the IT console (device token). The answer carries an
+  /// app update rolled out to the board and the panel home's apps (lib/core/panel).
+  Future<Object?> postHealth(Map<String, Object?> body) async => await _send('POST', '/v1/devices/me/health', body: body, useDeviceToken: true) as Object?;
+
+  /// An app update's file, streamed (device token); [path] is the offer's `url`.
+  Future<({Stream<List<int>> body, int? length})> openDownload(String path) async {
+    final req = http.Request('GET', Uri.parse('$baseUrl$path'));
+    if (deviceToken != null) req.headers['authorization'] = 'Bearer $deviceToken';
+    final res = await _http.send(req);
+    if (res.statusCode >= 400) {
+      final text = await res.stream.bytesToString();
+      _decode(http.Response(text, res.statusCode));
+    }
+    return (body: res.stream as Stream<List<int>>, length: res.contentLength);
+  }
+
+  /// How installing a rolled-out update is going: downloading, downloaded, installing, failed or declined.
+  Future<void> reportUpdateStatus(String releaseId, String state, {String? error}) async =>
+      _send('POST', '/v1/devices/me/releases/$releaseId/status', body: {'state': state, if (error != null) 'error': error.length > 300 ? error.substring(0, 300) : error}, useDeviceToken: true);
 
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
 
