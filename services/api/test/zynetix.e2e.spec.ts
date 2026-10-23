@@ -256,8 +256,8 @@ describe('Zynetix board edition', () => {
 
   it('records edge and board compute from health reports and reports it over time', async () => {
     const base = { os: 'android', appVersion: '2.4.0', kiosk: 'on' };
-    await http().post('/v1/devices/me/health').set(as('device')).send({ ...base, deviceKind: 'edge', cpuPct: 40, gpuPct: 70, npuPct: 55, ramPct: 60, cpuTempC: 61, gpuTempC: 72, storageFreeMb: 25_000, storageTotalMb: 100_000, aiInferences: 30, aiInferenceMs: 9000 }).expect(204);
-    await http().post('/v1/devices/me/health').set(as('device')).send({ ...base, deviceKind: 'edge', cpuPct: 80, gpuPct: 90, ramPct: 70, cpuTempC: 75, aiInferences: 10, aiInferenceMs: 1000 }).expect(204);
+    await http().post('/v1/devices/me/health').set(as('device')).send({ ...base, deviceKind: 'edge', cpuPct: 40, gpuPct: 70, npuPct: 55, ramPct: 60, cpuTempC: 61, gpuTempC: 72, storageFreeMb: 25_000, storageTotalMb: 100_000, aiInferences: 30, aiInferenceMs: 9000 }).expect(200);
+    await http().post('/v1/devices/me/health').set(as('device')).send({ ...base, deviceKind: 'edge', cpuPct: 80, gpuPct: 90, ramPct: 70, cpuTempC: 75, aiInferences: 10, aiInferenceMs: 1000 }).expect(200);
     await http().post('/v1/devices/me/health').set(as('device')).send({ ...base, cpuPct: 101 }).expect(400);
 
     const status = (await get('principal', '/v1/devices/compute').expect(200)).body;

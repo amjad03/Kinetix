@@ -6,6 +6,7 @@ import { RateLimiter } from '../common/rate-limiter.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { DEFAULT_OFFLINE_HOURS, FleetService } from './fleet.service.js';
+import { PanelService } from './panel.service.js';
 
 const Pct = z.number().min(0).max(100).optional();
 const Temp = z.number().min(-40).max(150).optional();
@@ -49,15 +50,20 @@ export class FleetController {
     private readonly db: DbService,
     private readonly fleet: FleetService,
     private readonly limiter: RateLimiter,
+    private readonly panel: PanelService,
   ) {}
 
-  /** The board's periodic health report (every few minutes), on its existing device or board token. */
+  /**
+   * The board's periodic health report (every few minutes), on its existing device or board token.
+   * The answer tells it about an app update rolled out to it and its panel home's apps (W4).
+   */
   @Post('me/health')
-  @HttpCode(204)
+  @HttpCode(200)
   @Auth(['device', 'board'])
-  async health(@CurrentPrincipal() p: DevicePrincipal, @Body(new ZodBody(HealthBody)) body: z.infer<typeof HealthBody>): Promise<void> {
+  async health(@CurrentPrincipal() p: DevicePrincipal, @Body(new ZodBody(HealthBody)) body: z.infer<typeof HealthBody>) {
     await this.limiter.hit(`health:${p.deviceId}`, 30, 60_000);
     await this.fleet.report(p.tenantId, p.deviceId, body);
+    return this.panel.panelConfig(p.tenantId, p.deviceId, body.appVersion);
   }
 
   /** The fleet: health of every board, and those offline longer than `hours` (default 4) flagged as alerts. */

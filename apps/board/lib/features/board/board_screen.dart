@@ -27,6 +27,10 @@ import '../class_check/class_check.dart';
 import '../plan/plan_timer.dart';
 import '../profiles/profile_boards.dart';
 import '../profiles/profiles_ui.dart';
+import '../../core/panel/panel_controller.dart' show OverlayStart;
+import '../panel/desktop_overlay.dart';
+import '../panel/panel_home_screen.dart';
+import '../panel/update_banner.dart';
 import '../projector/projector_controller.dart';
 import '../projector/projector_ui.dart';
 import '../concept_videos/concept_videos.dart';
@@ -369,6 +373,11 @@ class _BoardScreenState extends State<BoardScreen> {
     // Projector mode and shared-board profiles (features/projector, features/profiles).
     board.projector.attach(ProjectorSource(board: _wb, background: () => _background, canvas: () => _canvasSize, captureSplit: _captureLabForProjector));
     board.profiles.onSwitch = (from, to) => switchProfileBoard(_wb, _canvasSize, _profileBoards, from, to);
+    // Write over apps (Android): the screenshot with the ink comes back as a new page; the home
+    // button while the board is the home app opens the panel home (features/panel).
+    _overlayCaptures = board.panel.overlay.captures.listen(_addOverlayPage);
+    _homePresses = board.panel.overlay.homePressed.listen((_) => _openPanelHome());
+    unawaited(board.panel.overlay.collectPending());
     _planTimer = PlanTimer(board);
     _pen = AiPenController(_wb, handwriting: _penHandwriting(board))
       ..onNotice = _aiPenNotice
@@ -481,6 +490,43 @@ class _BoardScreenState extends State<BoardScreen> {
     } catch (_) {
       if (mounted) showBoardMessage(context, context.l10n.remotePhotoFailed);
     }
+  }
+
+  StreamSubscription<Uint8List>? _overlayCaptures;
+  StreamSubscription<void>? _homePresses;
+
+  /// Write over apps: the screenshot with the teacher's ink on a page of its own, fitted to the board.
+  void _addOverlayPage(Uint8List png) {
+    if (!mounted) return;
+    final size = _pngSize(png);
+    final canvas = _canvasSize;
+    final k = size.width <= 0 || canvas.width <= 0 ? 1.0 : math.min(1.0, canvas.width / size.width);
+    _wb.addPages([
+      [ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, size.width * k, size.height * k), bytes: png)],
+    ]);
+    showBoardMessage(context, context.l10n.writeOverAppsSaved);
+  }
+
+  /// "Write over apps": the pen over other apps (Android) or over the desktop (macOS, Windows).
+  Future<void> _writeOverApps() async {
+    final panel = board.panel;
+    final l = context.l10n;
+    if (panel.overlay.supported) {
+      final r = await panel.overlay.start();
+      if (r == OverlayStart.needsPermission && mounted) showBoardMessage(context, l.writeOverAppsPermission);
+      return;
+    }
+    if (panel.desktopWindow.supported) {
+      final png = await DesktopOverlayScreen.open(context, panel);
+      if (png != null) _addOverlayPage(png);
+      return;
+    }
+    showBoardMessage(context, l.writeOverAppsUnsupported);
+  }
+
+  void _openPanelHome() {
+    if (!mounted || !board.panel.hasHome) return;
+    unawaited(PanelHomeScreen.open(context, board.panel.home));
   }
 
   /// "Put results on board": the question's bar chart as a picture on the page.
@@ -596,6 +642,8 @@ class _BoardScreenState extends State<BoardScreen> {
       ..removeListener(_onPhetChanged)
       ..dispose();
     board.projector.attach(null);
+    unawaited(_overlayCaptures?.cancel());
+    unawaited(_homePresses?.cancel());
     board.profiles.onSwitch = null;
     if (board.onLiveSnapshotRequest == _startLive) board.onLiveSnapshotRequest = null;
     if (board.classAudio.onUnavailable == _classAudioUnavailable) board.classAudio.onUnavailable = null;
@@ -1723,6 +1771,8 @@ class _BoardScreenState extends State<BoardScreen> {
       if (!_primary) DrawerTool('move', Icons.pan_tool_outlined, l.toolMove, [ToolGroup.classroom], cls, _run(() => _wb.tool = BoardTool.hand)),
       DrawerTool('eye-comfort', Icons.visibility_outlined, l.toolEyeComfort, [ToolGroup.classroom], cls, () => setState(() => _popover = BoardPopover.eyeComfort)),
       DrawerTool('screenshot', Icons.photo_camera_outlined, l.toolScreenshot, [ToolGroup.classroom], cls, _run(() => unawaited(BoardShot.take(context, _captureScreen)))),
+      if (board.panel.canWriteOverApps) DrawerTool('write-over-apps', Icons.draw_outlined, l.writeOverApps, [ToolGroup.classroom], cls, _run(() => unawaited(_writeOverApps()))),
+      if (board.panel.hasHome) DrawerTool('panel-home', Icons.apps_outlined, l.panelHome, [ToolGroup.classroom], cls, _run(_openPanelHome)),
       DrawerTool('subject-kits', Icons.backpack_outlined, l.curKits, [ToolGroup.classroom], cls, _run(_openSubjectKits)),
       DrawerTool('touch-lock', Icons.lock_outline, l.toolTouchLock, [ToolGroup.classroom], cls, _run(() => setState(() => _touchLocked = true))),
       ...extraDrawerTools(context, _extras, run: (f) => _run(f)()),
@@ -2197,6 +2247,8 @@ class _BoardScreenState extends State<BoardScreen> {
                       ),
                     ),
                   if (_touchLocked) Positioned.fill(child: BoardChromeTheme(child: TouchLockOverlay(onUnlock: () => setState(() => _touchLocked = false)))),
+                  // An app update the Zynetix dashboard rolled out (features/panel).
+                  Positioned(top: Kx.s12, left: 0, right: 0, child: Center(child: BoardChromeTheme(child: UpdateBanner(updater: board.panel.updater)))),
                 ],
               ),
             ),
@@ -2492,6 +2544,7 @@ class _BoardScreenState extends State<BoardScreen> {
       'spotlight': kit(ToolkitItem.spotlight),
       'apps': BarItem(const Key('tbar-apps'), Icons.apps, SbStrings.of(context)('apps'), _run(_openClassroomApps), color: ToolPalette.classroom),
       'screenshot': BarItem(const Key('tbar-screenshot'), Icons.photo_camera_outlined, l.toolScreenshot, _run(() => unawaited(BoardShot.take(context, _captureScreen))), color: ToolPalette.classroom),
+      'write-over-apps': BarItem(const Key('tbar-write-over-apps'), Icons.draw_outlined, l.writeOverApps, _run(() => unawaited(_writeOverApps())), color: ToolPalette.classroom),
       'models3d': BarItem(const Key('tbar-models3d'), Icons.view_in_ar_outlined, l.splitModel3d, _run(() => _openSplit(SplitContent.model3d)), color: ToolPalette.science),
       'labs': BarItem(const Key('tbar-labs'), Icons.biotech_outlined, s.tabLabs, _run(() => _openSplit(SplitContent.lab)), color: ToolPalette.science),
       'sims': BarItem(const Key('tbar-sims'), Icons.science, l.simTitle, _run(() => unawaited(_openSim())), color: ToolPalette.science),
@@ -2518,7 +2571,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// Tools tiles the catalogue already has under its own id (and calibrating, a one-off set-up
   /// that stays in Tools).
-  static const _drawerOnCatalog = {'calibrate', 'ruler', 'protractor', 'calculator', 'sims', 'labs', 'models3d', 'laser', 'move', 'eye-comfort', 'screenshot', 'toolkit-timer', 'toolkit-stopwatch', 'toolkit-picker', 'toolkit-spotlight'};
+  static const _drawerOnCatalog = {'calibrate', 'ruler', 'protractor', 'calculator', 'sims', 'labs', 'models3d', 'laser', 'move', 'eye-comfort', 'screenshot', 'write-over-apps', 'toolkit-timer', 'toolkit-stopwatch', 'toolkit-picker', 'toolkit-spotlight'};
 
   /// The ids on the bar for a phone or a panel: the teacher's own, or the default.
   List<String> _layoutIds({required bool phone, Map<String, BarItem>? catalog}) {

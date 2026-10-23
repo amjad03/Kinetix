@@ -8607,6 +8607,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Zynetix AI could not draw that. Try again, or describe it differently.'**
   String get aiDrawFailed;
+
+  /// Board tool: write with the pen over any other app (Zynetix panel overlay).
+  ///
+  /// In en, this message translates to:
+  /// **'Write over apps'**
+  String get writeOverApps;
+
+  /// No description provided for @writeOverAppsPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Zynetix to draw over other apps in Settings, then tap Write over apps again.'**
+  String get writeOverAppsPermission;
+
+  /// No description provided for @writeOverAppsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your writing over the app is on a new board page.'**
+  String get writeOverAppsSaved;
+
+  /// No description provided for @writeOverAppsUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing over apps is not available on this device.'**
+  String get writeOverAppsUnsupported;
+
+  /// Write over apps: draw with the pen.
+  ///
+  /// In en, this message translates to:
+  /// **'Pen'**
+  String get overlayPen;
+
+  /// No description provided for @overlayEraser.
+  ///
+  /// In en, this message translates to:
+  /// **'Eraser'**
+  String get overlayEraser;
+
+  /// No description provided for @overlayClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get overlayClear;
+
+  /// Write over apps: put the pen down so touches reach the app underneath.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the app'**
+  String get overlayPassThrough;
+
+  /// Write over apps: screenshot with the ink onto a new board page.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to board'**
+  String get overlayCapture;
+
+  /// No description provided for @overlayClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the board'**
+  String get overlayClose;
+
+  /// The Android panel's launcher with the allow-listed apps.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel home'**
+  String get panelHome;
+
+  /// The main tile of the panel home: back to the whiteboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Zynetix board'**
+  String get panelHomeBoard;
+
+  /// No description provided for @panelHomeOtherApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Other apps (IT only, outside kiosk mode)'**
+  String get panelHomeOtherApps;
+
+  /// No description provided for @panelHomeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No apps are allowed on this panel yet. Add them in the Zynetix dashboard: Panel home.'**
+  String get panelHomeEmpty;
+
+  /// No description provided for @panelHomeLaunchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} could not be opened.'**
+  String panelHomeLaunchFailed(String app);
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Zynetix Board {version} is ready to install'**
+  String updateAvailable(String version);
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get updateNow;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @updateDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading the update… {percent}%'**
+  String updateDownloading(int percent);
+
+  /// No description provided for @updateInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing the update. Zynetix Board restarts by itself.'**
+  String get updateInstalling;
+
+  /// No description provided for @updateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The update failed: {error}'**
+  String updateFailed(String error);
+
+  /// No description provided for @updateNeedsPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Zynetix to install apps in Settings, then tap Update now again.'**
+  String get updateNeedsPermission;
+
+  /// No description provided for @updateOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'The installer is open. Finish it to update Zynetix Board.'**
+  String get updateOpened;
 }
 
 class _AppLocalizationsDelegate

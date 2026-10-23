@@ -41,6 +41,7 @@ const TARGETS: Record<string, (id: string) => string> = {
   'committee-evidence': (id) => `/v1/campus-life/evidence/${id}/download`,
   'event-media': (id) => `/v1/campus-life/media/${id}/file`,
   'grievance-evidence': (id) => `/v1/grievances/evidence/${id}/download`,
+  'panel-release': (id) => `/v1/panel/releases/${id}/file`,
 };
 
 /**

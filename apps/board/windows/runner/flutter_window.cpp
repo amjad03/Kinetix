@@ -4,6 +4,7 @@
 
 #include "flutter/generated_plugin_registrant.h"
 #include "handwriting_channel.h"
+#include "overlay_window.h"
 #include "projector_window.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
@@ -30,6 +31,8 @@ bool FlutterWindow::OnCreate() {
   RegisterHandwritingChannel(flutter_controller_->engine()->messenger(), GetHandle());
   // Projector mode: the board on a second monitor (projector_window.h).
   RegisterProjectorChannel(flutter_controller_->engine()->messenger(), GetHandle());
+  // Write over apps: the window as a see-through layer over the desktop (overlay_window.h).
+  RegisterOverlayChannel(flutter_controller_->engine()->messenger(), GetHandle());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -47,6 +50,7 @@ bool FlutterWindow::OnCreate() {
 void FlutterWindow::OnDestroy() {
   UnregisterHandwritingChannel();
   UnregisterProjectorChannel();
+  UnregisterOverlayChannel();
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }

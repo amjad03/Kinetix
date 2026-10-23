@@ -88,12 +88,15 @@ class AppHealth {
 /// when it connects and every few minutes after, so the IT console shows whether it is online,
 /// its app version, OS, kiosk state, class, storage and battery.
 class FleetAgent {
-  FleetAgent({required this.send, required this.app, DeviceProbe? probe, this.interval = const Duration(minutes: 5), AiUsageMeter? ai})
+  FleetAgent({required this.send, required this.app, DeviceProbe? probe, this.interval = const Duration(minutes: 5), AiUsageMeter? ai, this.onAnswer})
     : probe = probe ?? PluginDeviceProbe(),
       ai = ai ?? AiUsageMeter.instance;
 
-  /// Posts the report body. Throws when offline; the next tick tries again.
-  final Future<void> Function(Map<String, Object?> body) send;
+  /// Posts the report body and returns the server's answer. Throws when offline; the next tick tries again.
+  final Future<Object?> Function(Map<String, Object?> body) send;
+
+  /// The server's answer to a report: an app update to take and the panel home's apps (lib/core/panel).
+  final void Function(Map<String, dynamic> answer)? onAnswer;
   final AppHealth Function() app;
   final DeviceProbe probe;
   final Duration interval;
@@ -150,7 +153,8 @@ class FleetAgent {
     _running = true;
     try {
       final b = await body();
-      await send(b);
+      final answer = await send(b);
+      if (answer is Map) onAnswer?.call(answer.cast<String, dynamic>());
       ai.consume((inferences: b['aiInferences'] as int, ms: b['aiInferenceMs'] as int));
     } catch (e) {
       debugPrint('Health not reported: $e');

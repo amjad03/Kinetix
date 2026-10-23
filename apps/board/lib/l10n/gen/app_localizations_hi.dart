@@ -4879,4 +4879,87 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get aiDrawFailed =>
       'Zynetix AI उसे नहीं बना सका। फिर से कोशिश करें, या अलग तरह से बताइए।';
+
+  @override
+  String get writeOverApps => 'ऐप्स के ऊपर लिखें';
+
+  @override
+  String get writeOverAppsPermission =>
+      'सेटिंग्स में Zynetix को दूसरे ऐप्स के ऊपर दिखने की अनुमति दें, फिर से ऐप्स के ऊपर लिखें दबाएँ।';
+
+  @override
+  String get writeOverAppsSaved => 'ऐप के ऊपर आपका लिखा बोर्ड के नए पेज पर है।';
+
+  @override
+  String get writeOverAppsUnsupported =>
+      'इस उपकरण पर ऐप्स के ऊपर लिखना उपलब्ध नहीं है।';
+
+  @override
+  String get overlayPen => 'पेन';
+
+  @override
+  String get overlayEraser => 'रबर';
+
+  @override
+  String get overlayClear => 'साफ़ करें';
+
+  @override
+  String get overlayPassThrough => 'ऐप चलाएँ';
+
+  @override
+  String get overlayCapture => 'बोर्ड पर सहेजें';
+
+  @override
+  String get overlayClose => 'बोर्ड पर लौटें';
+
+  @override
+  String get panelHome => 'पैनल होम';
+
+  @override
+  String get panelHomeBoard => 'Zynetix बोर्ड';
+
+  @override
+  String get panelHomeOtherApps => 'अन्य ऐप्स (केवल IT, कियोस्क मोड के बाहर)';
+
+  @override
+  String get panelHomeEmpty =>
+      'इस पैनल पर अभी कोई ऐप अनुमत नहीं है। उन्हें Zynetix डैशबोर्ड के पैनल होम में जोड़ें।';
+
+  @override
+  String panelHomeLaunchFailed(String app) {
+    return '$app नहीं खुल सका।';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'Zynetix Board $version इंस्टॉल के लिए तैयार है';
+  }
+
+  @override
+  String get updateNow => 'अभी अपडेट करें';
+
+  @override
+  String get updateLater => 'बाद में';
+
+  @override
+  String updateDownloading(int percent) {
+    return 'अपडेट डाउनलोड हो रहा है… $percent%';
+  }
+
+  @override
+  String get updateInstalling =>
+      'अपडेट इंस्टॉल हो रहा है। Zynetix Board अपने आप फिर से खुलेगा।';
+
+  @override
+  String updateFailed(String error) {
+    return 'अपडेट विफल: $error';
+  }
+
+  @override
+  String get updateNeedsPermission =>
+      'सेटिंग्स में Zynetix को ऐप इंस्टॉल करने की अनुमति दें, फिर अभी अपडेट करें दबाएँ।';
+
+  @override
+  String get updateOpened =>
+      'इंस्टॉलर खुला है। Zynetix Board अपडेट करने के लिए उसे पूरा करें।';
 }

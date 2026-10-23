@@ -14,6 +14,7 @@ import { DbService } from '../db/db.service.js';
 import { boardKioskConfig } from '../calendar/calendar.controller.js';
 import { campuses, devices, pairingCodes, rooms, tenants } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
+import { PanelService } from './panel.service.js';
 
 export const PAIRING_TTL_MS = 120_000;
 const ENROLLMENT_TTL_MS = 24 * 3600_000;
@@ -43,6 +44,7 @@ export class DevicesController {
     private readonly limiter: RateLimiter,
     private readonly clock: Clock,
     @Inject(ENV) private readonly env: Env,
+    private readonly panel: PanelService,
   ) {}
 
   /** Admin registers a board in the ERP and gets a one-time enrolment code to type on it. */
@@ -209,6 +211,8 @@ export class DevicesController {
         // Where to download 3D models from: the institution's server, else the deployment's
         // (MODELS_BASE_URL); null = the board's own API server, then GitHub.
         modelsBase: st.boardModelsBase ?? this.env.MODELS_BASE_URL ?? null,
+        // The panel home's allow-listed apps (Zynetix dashboard → Panel home), kept for offline starts.
+        launcher: { apps: await this.panel.launcherFor(tx, p.deviceId) },
       };
     });
   }

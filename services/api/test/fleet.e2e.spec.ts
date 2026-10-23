@@ -51,7 +51,7 @@ describe('device fleet', () => {
   });
 
   it('stores the health a board reports and shows it in the fleet', async () => {
-    await http().post('/v1/devices/me/health').set('authorization', `Bearer ${device}`).send({ os: 'Android', osVersion: '13', appVersion: '1.2.3', kiosk: 'on', storageFreeMb: 4096, storageTotalMb: 32768, battery: { percent: 80, charging: true }, currentClass: 'BCom · Accounting' }).expect(204);
+    await http().post('/v1/devices/me/health').set('authorization', `Bearer ${device}`).send({ os: 'Android', osVersion: '13', appVersion: '1.2.3', kiosk: 'on', storageFreeMb: 4096, storageTotalMb: 32768, battery: { percent: 80, charging: true }, currentClass: 'BCom · Accounting' }).expect(200);
     await http().post('/v1/devices/me/health').set('authorization', `Bearer ${device}`).send({ os: 'Android', kiosk: 'maybe' }).expect(400);
     const b = (await fleet()).boards[0];
     expect(b).toMatchObject({ name: 'Room 1 Board', appVersion: '1.2.3', online: true, locked: false, alert: false, health: { os: 'Android', kiosk: 'on', storageFreeMb: 4096, battery: { percent: 80, charging: true } } });

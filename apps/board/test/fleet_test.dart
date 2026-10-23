@@ -81,7 +81,7 @@ Matcher rec(String event, Object data) => predicate<(String, Object)>((r) => r.$
 void main() {
   test('the health report names the app, OS, kiosk state, storage, battery and class', () async {
     final probe = FakeProbe();
-    final agent = FleetAgent(send: (_) async {}, probe: probe, app: () => const AppHealth(kiosk: 'on', currentClass: 'Physics · BCom A', locked: false));
+    final agent = FleetAgent(send: (_) async => null, probe: probe, app: () => const AppHealth(kiosk: 'on', currentClass: 'Physics · BCom A', locked: false));
     final body = await agent.body();
     expect(body, {
       'os': 'android',
@@ -99,7 +99,7 @@ void main() {
     });
     // A panel with no battery and no storage plugin reports only what it knows.
     probe.snapshot = const DeviceSnapshot(os: 'windows');
-    final bare = await FleetAgent(send: (_) async {}, probe: probe, app: () => const AppHealth(kiosk: 'off')).body();
+    final bare = await FleetAgent(send: (_) async => null, probe: probe, app: () => const AppHealth(kiosk: 'off')).body();
     expect(bare.keys, unorderedEquals(['os', 'appVersion', 'kiosk', 'locked', 'aiInferences', 'aiInferenceMs']));
   });
 

@@ -4897,4 +4897,88 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiDrawFailed =>
       'Zynetix AI could not draw that. Try again, or describe it differently.';
+
+  @override
+  String get writeOverApps => 'Write over apps';
+
+  @override
+  String get writeOverAppsPermission =>
+      'Allow Zynetix to draw over other apps in Settings, then tap Write over apps again.';
+
+  @override
+  String get writeOverAppsSaved =>
+      'Your writing over the app is on a new board page.';
+
+  @override
+  String get writeOverAppsUnsupported =>
+      'Writing over apps is not available on this device.';
+
+  @override
+  String get overlayPen => 'Pen';
+
+  @override
+  String get overlayEraser => 'Eraser';
+
+  @override
+  String get overlayClear => 'Clear';
+
+  @override
+  String get overlayPassThrough => 'Use the app';
+
+  @override
+  String get overlayCapture => 'Save to board';
+
+  @override
+  String get overlayClose => 'Back to the board';
+
+  @override
+  String get panelHome => 'Panel home';
+
+  @override
+  String get panelHomeBoard => 'Zynetix board';
+
+  @override
+  String get panelHomeOtherApps => 'Other apps (IT only, outside kiosk mode)';
+
+  @override
+  String get panelHomeEmpty =>
+      'No apps are allowed on this panel yet. Add them in the Zynetix dashboard: Panel home.';
+
+  @override
+  String panelHomeLaunchFailed(String app) {
+    return '$app could not be opened.';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'Zynetix Board $version is ready to install';
+  }
+
+  @override
+  String get updateNow => 'Update now';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String updateDownloading(int percent) {
+    return 'Downloading the update… $percent%';
+  }
+
+  @override
+  String get updateInstalling =>
+      'Installing the update. Zynetix Board restarts by itself.';
+
+  @override
+  String updateFailed(String error) {
+    return 'The update failed: $error';
+  }
+
+  @override
+  String get updateNeedsPermission =>
+      'Allow Zynetix to install apps in Settings, then tap Update now again.';
+
+  @override
+  String get updateOpened =>
+      'The installer is open. Finish it to update Zynetix Board.';
 }

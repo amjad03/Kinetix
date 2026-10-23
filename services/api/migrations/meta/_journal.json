@@ -946,6 +946,13 @@
       "when": 1791600000000,
       "tag": "0142_ai_sketch_draw",
       "breakpoints": true
+    },
+    {
+      "idx": 135,
+      "version": "7",
+      "when": 1791600001000,
+      "tag": "0144_zynetix_panel",
+      "breakpoints": true
     }
   ]
 }
