@@ -17,6 +17,15 @@ export const deviceRoom = (deviceId: string) => `device:${deviceId}`;
 const liveRoom = (deviceId: string) => `live:${deviceId}`;
 /** A signed-in user's sockets (all their devices). */
 const userRoom = (userId: string) => `user:${userId}`;
+const guestRoom = (guestId: string) => `cast-guest:${guestId}`;
+
+/** A cast guest (browser /cast page, board join code); see cast/cast-guest.ts. */
+export interface RealtimeGuest {
+  tenantId: string;
+  deviceId: string;
+  guestId: string;
+  name: string;
+}
 /** Viewers of a board who may hear its class audio. */
 const audioRoom = (deviceId: string) => `live-audio:${deviceId}`;
 
@@ -103,6 +112,16 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
   async handleConnection(socket: Socket): Promise<void> {
     try {
+      const guestToken = socket.handshake.auth?.castGuest;
+      if (typeof guestToken === 'string') {
+        // A guest casting from the browser with the board's code: they may only cast (cast.gateway.ts).
+        const guest = this.guestResolver?.(guestToken);
+        if (!guest) throw new Error('invalid guest token');
+        socket.data.castGuest = guest;
+        await socket.join(guestRoom(guest.guestId));
+        socket.emit('ready', { guestId: guest.guestId });
+        return;
+      }
       const token = socket.handshake.auth?.token;
       if (typeof token !== 'string') throw new Error('missing token');
       const principal = await this.auth.resolve(token);
@@ -157,6 +176,19 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     const ids = [...new Set(userIds)];
     if (ids.length === 0) return;
     this.server?.to(ids.map(userRoom)).emit(event, payload);
+  }
+
+  private guestResolver?: (token: string) => RealtimeGuest | null;
+
+  /** Screen sharing verifies guests' tokens (it holds the secret and the clock). */
+  setGuestResolver(fn: (token: string) => RealtimeGuest | null): void {
+    this.guestResolver = fn;
+  }
+
+  /** To every socket of these cast guests. */
+  toGuests(guestIds: string[], event: string, payload: unknown): void {
+    if (guestIds.length === 0) return;
+    this.server?.to(guestIds.map(guestRoom)).emit(event, payload);
   }
 
   toDevices(deviceIds: string[], event: string, payload: unknown): void {

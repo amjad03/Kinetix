@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type CastApprovedEvent, type CastEndedEvent, type CastIceEvent, type CastPendingEvent, type CastRequestAck, type CastSignal } from '@kinetix/shared';
+import { RealtimeEvents, type CastApprovedEvent, type CastControlEvent, type CastEndedEvent, type CastIceEvent, type CastPendingEvent, type CastRequestAck, type CastSignal } from '@kinetix/shared';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -23,6 +23,7 @@ describe('screen sharing to the board', () => {
   let teacherToken: string;
   let studentToken: string;
   let board: Socket;
+  let boardToken: string;
   const sockets: Socket[] = [];
   const http = () => request(app.getHttpServer());
   const login = async (email: string) => (await http().post('/v1/auth/login').send({ tenant: t.slug, login: email, password: 'pw' }).expect(201)).body.accessToken as string;
@@ -42,7 +43,9 @@ describe('screen sharing to the board', () => {
     url = (await app.getUrl()).replace('[::1]', 'localhost');
     teacherToken = await login(t.teacher.email!);
     studentToken = await login(t.studentUser.email!);
-    board = (await pairBoard(app, t, teacherToken)).socket;
+    const paired = await pairBoard(app, t, teacherToken);
+    board = paired.socket;
+    boardToken = paired.boardToken;
   });
 
   afterAll(async () => {
@@ -119,7 +122,7 @@ describe('screen sharing to the board', () => {
 
   });
 
-  it('shows at most four screens at once', async () => {
+  it('shows at most nine screens at once', async () => {
     await owner.query(`update cast_sessions set state = 'ended' where device_id = $1`, [t.device.id]);
     const extra = async (n: number) => {
       const email = `extra${n}-${t.slug}@x.in`;
@@ -127,8 +130,62 @@ describe('screen sharing to the board', () => {
       await owner.query(`insert into user_roles (tenant_id, user_id, role, campus_id) values ($1, $2, 'teacher', $3)`, [t.tenantId, rows[0].id, t.campus.id]);
       return connect(await login(email));
     };
-    for (let i = 0; i < 4; i++) expect((await cast(await extra(i))).ok).toBe(true);
-    expect(await cast(await extra(9))).toMatchObject({ ok: false, error: 'This board already shows 4 screens' });
+    for (let i = 0; i < 9; i++) expect((await cast(await extra(i))).ok).toBe(true);
+    expect(await cast(await extra(99))).toMatchObject({ ok: false, error: 'This board already shows 9 screens' });
+    await owner.query(`update cast_sessions set state = 'ended' where device_id = $1`, [t.device.id]);
+  });
+
+  it('a guest joins from the browser with the code on the board: approved, signalled, muted and stopped by the teacher', async () => {
+    const code = (await http().get('/v1/cast/join-code').set('authorization', `Bearer ${boardToken}`).expect(200)).body as { code: string; url: string };
+    expect(code.code).toMatch(/^[A-Z2-9]{6}$/);
+    expect(code.url).toContain(`/cast?code=${code.code}`);
+    // The same code for the whole class, a new one on request.
+    expect((await http().get('/v1/cast/join-code').set('authorization', `Bearer ${boardToken}`).expect(200)).body.code).toBe(code.code);
+    // Only a board asks for it.
+    await http().get('/v1/cast/join-code').set('authorization', `Bearer ${teacherToken}`).expect(403);
+
+    expect((await http().post('/v1/cast/guest').send({ code: 'ZZZZZZ', name: 'Asha' }).expect(400)).body.code).toBe('CAST_CODE_INVALID');
+    const joined = (await http().post('/v1/cast/guest').send({ code: code.code.toLowerCase(), name: 'Asha' }).expect(200)).body as { token: string; board: { deviceId: string; name: string } };
+    expect(joined.board).toEqual({ deviceId: t.device.id, name: 'Room 1 Board' });
+
+    // A tampered token is turned away.
+    const bad = io(`${url}/realtime`, { auth: { castGuest: `${joined.token}x` }, transports: ['websocket'] });
+    sockets.push(bad);
+    expect(await next<{ message: string }>(bad, 'error')).toEqual({ message: 'unauthorized' });
+
+    const guest = io(`${url}/realtime`, { auth: { castGuest: joined.token }, transports: ['websocket'] });
+    sockets.push(guest);
+    await next(guest, 'ready');
+    const pending = next<CastPendingEvent>(board, RealtimeEvents.CastPending);
+    const ack = (await guest.emitWithAck(RealtimeEvents.CastRequest, {})) as CastRequestAck;
+    expect(ack).toMatchObject({ ok: true, approved: false });
+    expect(await pending).toEqual({ castId: ack.castId, name: 'Asha', role: 'guest' });
+
+    const approved = next<CastApprovedEvent>(guest, RealtimeEvents.CastApproved);
+    await board.emitWithAck(RealtimeEvents.CastDecide, { castId: ack.castId, approve: true });
+    expect((await approved).castId).toBe(ack.castId);
+    const atBoard = next<CastSignal>(board, RealtimeEvents.CastSignal);
+    expect(await guest.emitWithAck(RealtimeEvents.CastSignal, { castId: ack.castId, data: { type: 'offer', sdp: 'v=0' } })).toEqual({ ok: true });
+    expect((await atBoard).castId).toBe(ack.castId);
+    const atGuest = next<CastSignal>(guest, RealtimeEvents.CastSignal);
+    await board.emitWithAck(RealtimeEvents.CastSignal, { castId: ack.castId, data: { type: 'answer', sdp: 'a' } });
+    expect((await atGuest).data).toMatchObject({ type: 'answer' });
+
+    // The teacher mutes the screen: the guest's page is told.
+    const control = next<CastControlEvent>(guest, RealtimeEvents.CastControl);
+    expect(await board.emitWithAck(RealtimeEvents.CastControl, { castId: ack.castId, action: 'mute' })).toEqual({ ok: true });
+    expect(await control).toEqual({ castId: ack.castId, action: 'mute' });
+    // Only the board controls.
+    expect(await guest.emitWithAck(RealtimeEvents.CastControl, { castId: ack.castId, action: 'unmute' })).toEqual({ ok: false });
+
+    const ended = next<CastEndedEvent>(guest, RealtimeEvents.CastEnded);
+    expect(await board.emitWithAck(RealtimeEvents.CastStop, { castId: ack.castId })).toEqual({ ok: true });
+    expect(await ended).toEqual({ castId: ack.castId, reason: 'stopped' });
+
+    // A new code: the old one stops working.
+    const fresh = (await http().get('/v1/cast/join-code?fresh=1').set('authorization', `Bearer ${boardToken}`).expect(200)).body.code as string;
+    expect(fresh).not.toBe(code.code);
+    await http().post('/v1/cast/guest').send({ code: code.code, name: 'Asha' }).expect(400);
   });
 
   it('ends every cast when the class ends', async () => {

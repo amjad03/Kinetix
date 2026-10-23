@@ -30,12 +30,12 @@ describe('board edition', () => {
   it('shows only the Zynetix pages, the timetable and subjects and topics', () => {
     const groups = visibleGroups(['principal'], false, [], 'all', 'board');
     expect(groups.map((g) => g.id)).toEqual(['zynetix']);
-    expect(hrefs('board')).toEqual(['/zynetix', '/zynetix/library', '/zynetix/youtube', '/zynetix/programs', '/timetable', '/syllabus', '/topic-videos', '/zynetix/teachers', '/zynetix/boards', '/zynetix/updates', '/zynetix/panel-home', '/zynetix/ai-log', '/zynetix/ai-settings']);
+    expect(hrefs('board')).toEqual(['/zynetix', '/zynetix/library', '/zynetix/youtube', '/zynetix/programs', '/timetable', '/syllabus', '/topic-videos', '/zynetix/teachers', '/zynetix/boards', '/zynetix/updates', '/zynetix/panel-home', '/zynetix/ai-log', '/zynetix/ai-settings', '/zynetix/integrations']);
     expect(hrefs('board', true)).toContain('/platform/zynetix');
   });
 
   it('ignores the workspace in the board edition', () => {
-    expect(visibleGroups(['principal'], false, [], 'finance_ops', 'board').flatMap((g) => g.items).length).toBe(13);
+    expect(visibleGroups(['principal'], false, [], 'finance_ops', 'board').flatMap((g) => g.items).length).toBe(14);
   });
 
   it('adds a Zynetix group to the full ERP without repeating pages', () => {

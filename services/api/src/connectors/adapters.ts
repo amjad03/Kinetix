@@ -100,6 +100,15 @@ export class ConnectorAdapters {
         if (str(config, 'provider') === 'zoom') await this.json({ method: 'GET', url: `${trimSlash(str(config, 'apiBaseUrl') || 'https://api.zoom.us/v2')}/users/me`, headers: { authorization: `Bearer ${token}` } }, 'Zoom');
         return { status: 'ok', message: `Signed in to ${({ zoom: 'Zoom', meet: 'Google Meet', teams: 'Microsoft Teams' } as Record<string, string>)[str(config, 'provider')] ?? 'the provider'}` };
       }
+      if (type === 'cloud_google' || type === 'cloud_microsoft') {
+        return { status: 'ok', message: `Saved. Teachers connect their own ${type === 'cloud_google' ? 'Google' : 'Microsoft'} account from the board's Cloud menu.` };
+      }
+      if (type === 'lms_moodle') {
+        const res = await this.http.request({ method: 'POST', url: `${trimSlash(str(config, 'baseUrl'))}/webservice/rest/server.php`, headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form({ wstoken: str(config, 'token'), wsfunction: 'core_webservice_get_site_info', moodlewsrestformat: 'json' }) });
+        const j = JSON.parse(res.text || '{}') as { sitename?: string; username?: string; message?: string; exception?: string };
+        if (res.status >= 400 || j.exception) return { status: 'failed', message: j.message ?? `Moodle answered ${res.status}` };
+        return { status: 'ok', message: `Signed in to ${j.sitename ?? 'Moodle'} as ${j.username ?? 'the token user'}` };
+      }
       if (type === 'bi_export') {
         const sig = this.sign(str(config, 'signingSecret'), 'test', 'students', 1);
         if (!this.verify(str(config, 'signingSecret'), 'test', 'students', 1, sig)) return { status: 'failed', message: 'The signing secret did not work' };

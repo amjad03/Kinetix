@@ -151,6 +151,8 @@ const EnvSchema = z.object({
   CAST_TURN_URLS: z.string().default(''),
   CAST_TURN_SECRET: z.string().optional(),
   CAST_TURN_TTL_S: z.coerce.number().int().min(60).default(3600),
+  /** The browser cast page guests open from the board's QR (the Zynetix dashboard's /cast); defaults to VERIFY_BASE_URL's site + /cast. */
+  CAST_PAGE_URL: z.url().optional(),
   /** Sign-in codes by SMS: console logs them (development and tests); msg91 sends them (India, DLT). */
   SMS_PROVIDER: z.enum(['console', 'msg91']).default('console'),
   MSG91_AUTH_KEY: z.string().optional(),

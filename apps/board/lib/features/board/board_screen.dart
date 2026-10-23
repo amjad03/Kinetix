@@ -12,6 +12,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../cloud/cloud_sheet.dart' show importCloudFile, showCloudDrives;
 import '../cast/cast_panel.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
@@ -2890,11 +2891,22 @@ class _BoardScreenState extends State<BoardScreen> {
       InsertExtra(key: const Key('insert-cat-images'), icon: Icons.image_outlined, title: s('catImages'), hint: '', onTap: () => unawaited(insertDevicePicture(context, _wb))),
       InsertExtra(key: const Key('insert-cat-videos'), icon: Icons.smart_display_outlined, title: s('catVideos'), hint: '', onTap: () => tool('concept-videos')),
       InsertExtra(key: const Key('insert-cat-ppt'), icon: Icons.slideshow_outlined, title: s('catPpt'), hint: '', onTap: () => unawaited(importDocument(context, _wb))),
+      InsertExtra(key: const Key('insert-cat-cloud'), icon: Icons.cloud_outlined, title: context.l10n.cloudTitle, hint: '', onTap: () => unawaited(_openCloudDrives())),
       InsertExtra(key: const Key('insert-cat-clipboard'), icon: Icons.content_paste, title: s('catClipboard'), hint: '', onTap: () => unawaited(_pasteClipboard())),
       InsertExtra(key: const Key('insert-cat-geometry'), icon: Icons.architecture, title: s('catGeometry'), hint: '', onTap: () => _toggle(BoardPopover.shapes)),
       InsertExtra(key: const Key('insert-cat-table'), icon: Icons.table_chart_outlined, title: s('catTable'), hint: '', onTap: () => tool('spreadsheet')),
       InsertExtra(key: const Key('insert-cat-flowchart'), icon: Icons.account_tree_outlined, title: s('catFlowchart'), hint: '', onTap: () => unawaited(CanvasTools.insertFlowchart(context, _wb))),
     ];
+  }
+
+  /// Insert → Cloud drives: Google Drive and OneDrive (Zynetix W5), for the signed-in teacher.
+  Future<void> _openCloudDrives() async {
+    final cloud = board.cloud;
+    if (cloud == null || !board.isSignedIn) {
+      showBoardMessage(context, context.l10n.cloudSignIn);
+      return;
+    }
+    await showCloudDrives(context, cloud: cloud, onImport: (f, name, bytes) => importCloudFile(context, _wb, f.kind, name, bytes));
   }
 
   /// Clipboard (spec §29): the board's own copied objects, else text copied in any app as a

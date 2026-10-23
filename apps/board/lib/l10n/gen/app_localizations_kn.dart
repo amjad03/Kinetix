@@ -4973,4 +4973,153 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get updateOpened =>
       'ಇನ್‌ಸ್ಟಾಲರ್ ತೆರೆದಿದೆ. Zynetix Board ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಅದನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ.';
+
+  @override
+  String get castLayout => 'ವಿನ್ಯಾಸ';
+
+  @override
+  String get castLayoutAuto => 'ಸ್ವಯಂ';
+
+  @override
+  String get castPresent => 'ಪ್ರಸ್ತುತಕರ್ತರನ್ನಾಗಿ ಮಾಡಿ';
+
+  @override
+  String get castPresenter => 'ಪ್ರಸ್ತುತಕರ್ತ';
+
+  @override
+  String get castMute => 'ಈ ಪರದೆಯನ್ನು ವಿರಾಮಗೊಳಿಸಿ';
+
+  @override
+  String get castUnmute => 'ಈ ಪರದೆಯನ್ನು ಮತ್ತೆ ತೋರಿಸಿ';
+
+  @override
+  String get castPaused => 'ಶಿಕ್ಷಕರು ವಿರಾಮಗೊಳಿಸಿದ್ದಾರೆ';
+
+  @override
+  String get castRemove => 'ತೆಗೆದುಹಾಕಿ';
+
+  @override
+  String castMore(int n) {
+    return '+$n ಇನ್ನಷ್ಟು';
+  }
+
+  @override
+  String get castJoinTitle => 'ಯಾವುದೇ ಫೋನ್ ಅಥವಾ ಲ್ಯಾಪ್‌ಟಾಪ್‌ನಿಂದ ಸೇರಿ';
+
+  @override
+  String castJoinHow(String url) {
+    return 'QR ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಅಥವಾ $url ತೆರೆದು ಕೋಡ್ ಟೈಪ್ ಮಾಡಿ. ಆ್ಯಪ್ ಅಥವಾ ಖಾತೆ ಬೇಡ. 9 ಪರದೆಗಳವರೆಗೆ; ಪ್ರತಿಯೊಂದಕ್ಕೂ ನೀವು ಇಲ್ಲಿ ಅನುಮತಿ ನೀಡುತ್ತೀರಿ.';
+  }
+
+  @override
+  String get castNewCode => 'ಹೊಸ ಕೋಡ್';
+
+  @override
+  String get castJoinUnavailable =>
+      'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ತರಗತಿ ತೆರೆದಿದ್ದು ಅದು ಆನ್‌ಲೈನ್ ಇದ್ದಾಗ ಸೇರುವ ಕೋಡ್ ಕಾಣುತ್ತದೆ.';
+
+  @override
+  String get castJoinButton => 'ಸೇರುವ ಕೋಡ್';
+
+  @override
+  String get cloudTitle => 'ಕ್ಲೌಡ್ ಡ್ರೈವ್‌ಗಳು';
+
+  @override
+  String get cloudGoogle => 'Google Drive';
+
+  @override
+  String get cloudMicrosoft => 'OneDrive';
+
+  @override
+  String cloudNotConfigured(String service) {
+    return '$service ಇನ್ನೂ ನಿಮ್ಮ ಸಂಸ್ಥೆಗೆ ಹೊಂದಿಸಿಲ್ಲ. Zynetix ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ → ಸಂಯೋಜನೆಗಳು ನಲ್ಲಿ ಹೊಂದಿಸಲು ನಿಮ್ಮ ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ.';
+  }
+
+  @override
+  String cloudConnectHow(String service) {
+    return 'ನಿಮ್ಮ ಫೋನ್‌ನಿಂದ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ $service ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ. ಈ ಬೋರ್ಡ್ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಎಂದಿಗೂ ನೋಡುವುದಿಲ್ಲ.';
+  }
+
+  @override
+  String cloudConnect(String service) {
+    return '$service ಜೋಡಿಸಿ';
+  }
+
+  @override
+  String get cloudWaiting => 'ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ಮುಗಿಸುವವರೆಗೆ ಕಾಯುತ್ತಿದೆ…';
+
+  @override
+  String cloudConnectedAs(String account) {
+    return '$account ಆಗಿ ಜೋಡಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get cloudDisconnect => 'ಸಂಪರ್ಕ ತೆಗೆಯಿರಿ';
+
+  @override
+  String get cloudSearch => 'ಹುಡುಕಿ';
+
+  @override
+  String get cloudEmpty => 'ಇಲ್ಲಿ PDF, ಸ್ಲೈಡ್, ಚಿತ್ರ ಅಥವಾ ವೀಡಿಯೊ ಇಲ್ಲ.';
+
+  @override
+  String get cloudHome => 'ನನ್ನ ಫೈಲ್‌ಗಳು';
+
+  @override
+  String cloudOpening(String name) {
+    return '$name ಅನ್ನು ಬೋರ್ಡ್‌ಗೆ ತರಲಾಗುತ್ತಿದೆ…';
+  }
+
+  @override
+  String cloudFailed(String error) {
+    return 'ಡ್ರೈವ್ ತಲುಪಲಾಗಲಿಲ್ಲ: $error';
+  }
+
+  @override
+  String get cloudSignIn => 'ಕ್ಲೌಡ್ ಡ್ರೈವ್ ಬಳಸಲು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+
+  @override
+  String shareSaveTo(String service) {
+    return '$service ಗೆ ಉಳಿಸಿ';
+  }
+
+  @override
+  String get shareSlides => 'ಸ್ಲೈಡ್‌ಗಳು (PowerPoint)';
+
+  @override
+  String get shareClassroom => 'Google Classroom';
+
+  @override
+  String get shareMoodle => 'Moodle';
+
+  @override
+  String get shareAsPdf => 'PDF';
+
+  @override
+  String get shareChooseCourse => 'ಟಿಪ್ಪಣಿಗಳನ್ನು ಯಾವ ಕೋರ್ಸ್‌ಗೆ ಪೋಸ್ಟ್ ಮಾಡಬೇಕು?';
+
+  @override
+  String get shareNoCourses => 'ನಿಮ್ಮ ಖಾತೆಗೆ ಯಾವುದೇ ಕೋರ್ಸ್ ಸಿಗಲಿಲ್ಲ.';
+
+  @override
+  String sharePosted(String course) {
+    return '$course ಗೆ ಪೋಸ್ಟ್ ಆಗಿದೆ';
+  }
+
+  @override
+  String shareSavedTo(String service) {
+    return '$service ಗೆ ಉಳಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get shareMoodleLink =>
+      'Moodle ಪೋಸ್ಟ್ ಮಾಡಲು ಹೊಂದಿಸಿಲ್ಲ. ಲಿಂಕ್ ನಕಲಿಸಿ ನಿಮ್ಮ Moodle ಕೋರ್ಸ್‌ಗೆ ಸೇರಿಸಿ (ಅಥವಾ ಅಲ್ಲಿ LTI ಮೂಲಕ Zynetix ತೆರೆಯಿರಿ).';
+
+  @override
+  String shareConnectFirst(String service) {
+    return 'ಮೊದಲು ನಿಮ್ಮ $service ಖಾತೆ ಜೋಡಿಸಿ: Insert → ಕ್ಲೌಡ್ ಡ್ರೈವ್‌ಗಳು ತೆರೆಯಿರಿ.';
+  }
+
+  @override
+  String get shareWorking => 'ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ…';
 }

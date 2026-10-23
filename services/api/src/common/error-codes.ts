@@ -31,6 +31,11 @@ export const ERROR_CODES: Record<string, string> = {
   'No PIN is set for this teacher on this board': 'PROFILE_NO_PIN',
   'Choose a PIN that is harder to guess': 'PROFILE_PIN_WEAK',
   'The PIN must be 4 to 6 digits': 'PROFILE_PIN_FORMAT',
+  // Cloud drives, Classroom and Moodle (cloud/), guest casting (cast/).
+  'This cloud service is not set up for your institution yet. Ask your administrator to set it up in the Zynetix dashboard → Integrations.': 'CLOUD_NOT_CONFIGURED',
+  'Connect your account on this board first': 'CLOUD_NOT_CONNECTED',
+  'Moodle is not set up for your institution yet. Ask your administrator to set it up in the Zynetix dashboard → Integrations.': 'MOODLE_NOT_CONFIGURED',
+  'That code is not right, or the class has ended. Check the code on the board.': 'CAST_CODE_INVALID',
   'You do not teach this class': 'NOT_YOUR_CLASS',
   'That subject is not taught in this class': 'SUBJECT_NOT_IN_CLASS',
   'Some students are not in this class': 'STUDENTS_NOT_IN_CLASS',

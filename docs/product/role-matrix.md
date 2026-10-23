@@ -30,6 +30,7 @@ A role in brackets is not a staff role: `(board device)` is a smartboard, `(any 
 | cast | (any signed-in user; the handler checks ownership) | - | - | - | - | - | - | - |
 | chat | (any signed-in user; the handler checks ownership) | (any signed-in user; the handler checks ownership) | - | - | - | - | - | - |
 | classroom-profile | principal, student, tenant_admin | student | principal, tenant_admin | - | - | - | - | - |
+| cloud | principal, tenant_admin | - | - | - | - | - | - | - |
 | comms | hod, principal, tenant_admin | hod, principal, tenant_admin | hod, principal, tenant_admin | hod, principal, tenant_admin | - | - | - | - |
 | connectors | (any signed-in user; the handler checks ownership), hod, librarian, principal, teacher, tenant_admin | hod, principal, teacher, tenant_admin | tenant_admin | tenant_admin | - | - | - | - |
 | consent | guardian, principal, student, tenant_admin | guardian, student | - | - | - | - | - | - |

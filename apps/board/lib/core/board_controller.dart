@@ -25,6 +25,7 @@ import 'secret_store.dart';
 import 'models.dart';
 import 'outbox_store.dart';
 import 'cast/cast_controller.dart';
+import 'cloud/cloud_service.dart';
 import 'fleet/fleet_agent.dart';
 import 'panel/panel_controller.dart';
 import 'realtime.dart';
@@ -112,6 +113,13 @@ class BoardController extends ChangeNotifier {
         );
     // In kiosk mode only the panel home's allow-listed apps may run (Kiosk.kt lock task packages).
     this.kiosk.addListener(() => unawaited(this.panel.home.setKiosk(this.kiosk.active)));
+    // Guests join from the browser /cast page with this code (QR on the cast panel).
+    this.cast.fetchJoinCode ??= ({bool fresh = false}) async {
+      final a = api;
+      if (a == null || !isSignedIn) return null;
+      final j = await a.castJoinCode(fresh: fresh);
+      return CastJoinInfo(j['code'] as String, j['url'] as String);
+    };
     fleet = FleetAgent(
       onAnswer: (answer) => unawaited(this.panel.apply(answer)),
       send: (body) async => api?.postHealth(body),
@@ -164,6 +172,13 @@ class BoardController extends ChangeNotifier {
 
   BoardStage stage = BoardStage.loading;
   ApiClient? api;
+
+  /// Cloud drives, Google Classroom and Moodle through the server (Zynetix W5); tests set a fake.
+  CloudService? cloudService;
+  CloudService? get cloud => cloudService ?? switch (api) {
+    final a? => ApiCloudService(a),
+    null => null,
+  };
   Realtime? _realtime;
   String? deviceName;
   bool online = false;

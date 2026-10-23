@@ -131,9 +131,15 @@ List<List<BoardElement>> backdropPages(List<ImportedPage> pages) => [
 /// Picks a PDF or PowerPoint, draws its pages and adds them after the open page. Messages go
 /// to the board's snack bar.
 Future<void> importDocument(BuildContext context, WhiteboardController wb) async {
-  final l = context.l10n;
   final file = await DeviceFiles.instance.pickDocument();
   if (file == null || !context.mounted) return;
+  await importDocumentBytes(context, wb, file.name, file.bytes);
+}
+
+/// Draws a PDF's or PowerPoint's pages and adds them (from the device, or a cloud drive).
+Future<void> importDocumentBytes(BuildContext context, WhiteboardController wb, String name, Uint8List bytes) async {
+  final l = context.l10n;
+  final file = (name: name, bytes: bytes);
   final kind = docKindOf(file.bytes, file.name);
   if (kind == DocKind.ppt) {
     showBoardMessage(context, l.importOldPpt);

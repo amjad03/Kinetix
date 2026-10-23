@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
@@ -13,10 +14,47 @@ abstract final class CastEvents {
   static const signal = 'cast.signal';
   static const stop = 'cast.stop';
   static const ended = 'cast.ended';
+  static const control = 'cast.control';
 }
 
 /// Most screens the board shows at once (the API enforces the same).
-const maxCasts = 4;
+const maxCasts = 9;
+
+/// How the screens share the panel: chosen by the teacher, or [auto] (the smallest grid that fits).
+enum CastLayout {
+  auto(0),
+  one(1),
+  two(2),
+  four(4),
+  six(6),
+  nine(9);
+
+  const CastLayout(this.capacity);
+
+  /// Screens it shows at once (0: as many as there are).
+  final int capacity;
+}
+
+/// The grid for [n] screens in [layout]: columns, rows and how many fit. Two sit side by side
+/// when [wide], else one above the other.
+({int cols, int rows, int capacity}) castGrid(CastLayout layout, int n, {bool wide = true}) {
+  var cap = layout.capacity;
+  if (cap == 0) cap = const [1, 2, 4, 6, 9].firstWhere((c) => c >= n, orElse: () => maxCasts);
+  return switch (cap) {
+    1 => (cols: 1, rows: 1, capacity: 1),
+    2 => wide ? (cols: 2, rows: 1, capacity: 2) : (cols: 1, rows: 2, capacity: 2),
+    4 => (cols: 2, rows: 2, capacity: 4),
+    6 => wide ? (cols: 3, rows: 2, capacity: 6) : (cols: 2, rows: 3, capacity: 6),
+    _ => (cols: 3, rows: 3, capacity: 9),
+  };
+}
+
+/// The board's join code for guests, shown as text and as a QR of [url] (the browser /cast page).
+class CastJoinInfo {
+  const CastJoinInfo(this.code, this.url);
+  final String code;
+  final String url;
+}
 
 enum CastTileState {
   /// Asked to cast; the teacher has not answered.
@@ -31,13 +69,19 @@ enum CastTileState {
 
 /// One person's screen on the board.
 class CastTile {
-  CastTile({required this.id, required this.name, required this.teacher, this.state = CastTileState.pending});
+  CastTile({required this.id, required this.name, required this.teacher, this.guest = false, this.state = CastTileState.pending});
 
   final String id;
   final String name;
 
   /// A teacher (or leader) casting, rather than a student.
   final bool teacher;
+
+  /// Joined from a browser with the board's code (no account).
+  final bool guest;
+
+  /// The teacher paused this screen: it stays connected but is not shown.
+  bool muted = false;
   CastTileState state;
   CastReceiver? receiver;
 
@@ -57,8 +101,10 @@ class CastTile {
 /// Screens cast to the board (docs/architecture/screen-share-and-devices.md). A teacher's or
 /// student's phone or laptop asks to cast; the class teacher approves on the board (their own
 /// device needs no approval); the video comes straight from the sender over WebRTC, and the
-/// API only relays the signalling. Up to [maxCasts] screens share the panel, one can fill it,
-/// the teacher can draw over any, add its picture to the board, and stop it.
+/// API only relays the signalling. Guests join from any browser with the board's code (QR).
+/// Up to [maxCasts] screens share the panel in a grid of 1, 2, 4, 6 or 9; one can fill it or
+/// present (first and largest); the teacher can pause (mute) any, draw over it, add its picture
+/// to the board, and stop (remove) it.
 class CastController extends ChangeNotifier {
   CastController({required this.emit, required this.request, CastReceiverFactory? receiverFactory}) : _receiverFactory = receiverFactory ?? WebRtcCastReceiver.new;
 
@@ -74,6 +120,14 @@ class CastController extends ChangeNotifier {
   /// The screen filling the panel; null: all side by side.
   String? focusedId;
 
+  /// The presenter: shown first (and largest in the automatic layout).
+  String? presenterId;
+
+  CastLayout layout = CastLayout.auto;
+
+  /// The board's join code for guests (the API's `GET /v1/cast/join-code`); null when unavailable.
+  Future<CastJoinInfo?> Function({bool fresh})? fetchJoinCode;
+
   /// Called when something needs the teacher: the panel should open.
   VoidCallback? onAttention;
 
@@ -86,12 +140,24 @@ class CastController extends ChangeNotifier {
   bool get any => tiles.isNotEmpty;
   CastTile? tile(String id) => tiles.where((t) => t.id == id).firstOrNull;
 
-  /// The tiles to lay out now: the focused one alone, or every approved screen.
-  List<CastTile> get shown {
+  /// Every approved screen, the presenter first.
+  List<CastTile> get approved {
     final live = tiles.where((t) => t.state != CastTileState.pending).toList();
-    final f = live.where((t) => t.id == focusedId).firstOrNull;
-    return f != null ? [f] : live;
+    final p = live.indexWhere((t) => t.id == presenterId);
+    if (p > 0) live.insert(0, live.removeAt(p));
+    return live;
   }
+
+  /// The tiles to lay out now: the focused one alone, or as many approved screens as the layout holds.
+  List<CastTile> get shown {
+    final live = approved;
+    final f = live.where((t) => t.id == focusedId).firstOrNull;
+    if (f != null) return [f];
+    return live.take(castGrid(layout, live.length).capacity).toList();
+  }
+
+  /// Approved screens the chosen layout has no room for.
+  int get hidden => focusedId != null && tile(focusedId!) != null ? 0 : math.max(0, approved.length - shown.length);
 
   // --- From the server -----------------------------------------------------------------------
 
@@ -99,7 +165,7 @@ class CastController extends ChangeNotifier {
   void onPending(Map<String, dynamic> e) {
     final id = e['castId'] as String?;
     if (id == null || tile(id) != null) return;
-    tiles.add(CastTile(id: id, name: e['name'] as String? ?? '?', teacher: e['role'] == 'teacher'));
+    tiles.add(CastTile(id: id, name: e['name'] as String? ?? '?', teacher: e['role'] == 'teacher', guest: e['role'] == 'guest'));
     _changed();
     onAttention?.call();
   }
@@ -110,7 +176,7 @@ class CastController extends ChangeNotifier {
     if (id == null) return;
     var t = tile(id);
     if (t == null) {
-      t = CastTile(id: id, name: e['name'] as String? ?? '?', teacher: e['role'] == 'teacher');
+      t = CastTile(id: id, name: e['name'] as String? ?? '?', teacher: e['role'] == 'teacher', guest: e['role'] == 'guest');
       tiles.add(t);
     }
     if (t.receiver != null) return;
@@ -205,6 +271,33 @@ class CastController extends ChangeNotifier {
     }
   }
 
+  void setLayout(CastLayout l) {
+    layout = l;
+    focusedId = null;
+    _changed();
+  }
+
+  /// Makes a screen the presenter (first, and largest in the automatic layout), or stops presenting it.
+  void promote(String id) {
+    final t = tile(id);
+    if (t == null) return;
+    presenterId = presenterId == id ? null : id;
+    if (presenterId == id) {
+      t.muted = false;
+      emit(CastEvents.control, {'castId': id, 'action': 'promote'});
+    }
+    _changed();
+  }
+
+  /// Pauses a screen on the board (it stays connected), or shows it again; the sender is told.
+  void toggleMute(String id) {
+    final t = tile(id);
+    if (t == null) return;
+    t.muted = !t.muted;
+    emit(CastEvents.control, {'castId': id, 'action': t.muted ? 'mute' : 'unmute'});
+    _changed();
+  }
+
   void focus(String? id) {
     focusedId = focusedId == id ? null : id;
     _changed();
@@ -245,6 +338,7 @@ class CastController extends ChangeNotifier {
     tiles.remove(t);
     _early.remove(t.id);
     if (focusedId == t.id) focusedId = null;
+    if (presenterId == t.id) presenterId = null;
     _changed();
     final r = t.receiver;
     t.receiver = null;

@@ -9,3 +9,5 @@ export const SESSION_MAX_AGE = 12 * 3600;
 export const YEAR_COOKIE = 'kx_year';
 /** Teachers and students sign in on /cast only: this cookie is read by the cast page and relay, never by the ERP. */
 export const CAST_COOKIE = 'kx_cast';
+/** A guest who joined with the board's code (no account): their short-lived cast token and the board. */
+export const CAST_GUEST_COOKIE = 'kx_cast_guest';

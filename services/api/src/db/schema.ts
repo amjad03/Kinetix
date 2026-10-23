@@ -3143,6 +3143,8 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'cast_join_codes',
+  'cloud_accounts',
   'ai_connections',
   'chat_threads',
   'chat_members',
