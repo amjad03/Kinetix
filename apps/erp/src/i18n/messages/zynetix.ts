@@ -192,6 +192,7 @@ export default area(
     // Boards and edge
     'zx.b.subtitle': 'Boards, panels and edge boxes: online status, CPU, GPU, NPU and RAM load, temperatures, versions and on-device AI.',
     'zx.b.console': 'Device console',
+    'zx.b.register': 'Register a board',
     'zx.b.online': 'Online',
     'zx.b.offline': 'Offline',
     'zx.b.notEnrolled': 'Not enrolled',
@@ -495,6 +496,7 @@ export default area(
       'zx.t.done': 'हो गया',
       'zx.b.subtitle': 'बोर्ड, पैनल और एज बॉक्स: ऑनलाइन स्थिति, CPU, GPU, NPU और RAM का भार, तापमान, संस्करण और उपकरण पर AI।',
       'zx.b.console': 'उपकरण कंसोल',
+      'zx.b.register': 'बोर्ड पंजीकृत करें',
       'zx.b.online': 'ऑनलाइन',
       'zx.b.offline': 'ऑफ़लाइन',
       'zx.b.notEnrolled': 'पंजीकृत नहीं',
@@ -795,6 +797,7 @@ export default area(
       'zx.t.done': 'ಮುಗಿದಿದೆ',
       'zx.b.subtitle': 'ಬೋರ್ಡ್‌ಗಳು, ಪ್ಯಾನೆಲ್‌ಗಳು ಮತ್ತು ಎಡ್ಜ್ ಪೆಟ್ಟಿಗೆಗಳು: ಆನ್‌ಲೈನ್ ಸ್ಥಿತಿ, CPU, GPU, NPU ಮತ್ತು RAM ಹೊರೆ, ತಾಪಮಾನ, ಆವೃತ್ತಿಗಳು ಮತ್ತು ಸಾಧನದಲ್ಲಿನ AI.',
       'zx.b.console': 'ಸಾಧನ ಕನ್ಸೋಲ್',
+      'zx.b.register': 'ಬೋರ್ಡ್ ನೋಂದಾಯಿಸಿ',
       'zx.b.online': 'ಆನ್‌ಲೈನ್',
       'zx.b.offline': 'ಆಫ್‌ಲೈನ್',
       'zx.b.notEnrolled': 'ನೋಂದಾಯಿಸಿಲ್ಲ',

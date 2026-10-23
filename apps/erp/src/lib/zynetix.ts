@@ -10,7 +10,7 @@ export const ZYNETIX_HOME = '/zynetix';
  * Pages the board edition keeps: the Zynetix dashboard, the timetable, subjects and topics, topic
  * videos, the platform team's pages, and the account pages. Every other ERP page goes to the overview.
  */
-const BOARD_PATHS = ['/zynetix', '/timetable', '/syllabus', '/topic-videos', '/platform', '/account', '/audit'];
+const BOARD_PATHS = ['/zynetix', '/boards', '/devices', '/timetable', '/syllabus', '/topic-videos', '/platform', '/account', '/audit'];
 
 export function allowedInBoardEdition(pathname: string): boolean {
   const path = pathname.split('?')[0].replace(/\/$/, '') || '/';

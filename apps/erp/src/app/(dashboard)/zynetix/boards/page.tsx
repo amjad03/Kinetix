@@ -32,7 +32,7 @@ export default async function BoardsPage({ searchParams }: { searchParams: Promi
   const ai = c.devices.reduce((s, d) => s + d.ai24h.inferences, 0);
   return (
     <>
-      <PageHeader title={t('nav.zxBoards')} subtitle={t('zx.b.subtitle')} actions={<LinkButton href="/devices" variant="outlined">{t('zx.b.console')}</LinkButton>} />
+      <PageHeader title={t('nav.zxBoards')} subtitle={t('zx.b.subtitle')} actions={<><LinkButton href="/boards">{t('zx.b.register')}</LinkButton><LinkButton href="/devices" variant="outlined">{t('zx.b.console')}</LinkButton></>} />
       <StatGrid>
         <StatTile label={t('zx.b.online')} value={`${c.online} / ${c.total}`} testId="zx-boards-online" tone={c.online < c.total ? 'warning' : 'default'} />
         <StatTile label={t('zx.b.offline')} value={c.total - c.online} />

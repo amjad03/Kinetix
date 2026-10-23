@@ -59,6 +59,8 @@ describe('board edition', () => {
     expect(editionRedirect('full', '/fees')).toBeNull();
     expect(editionRedirect('board', null)).toBeNull();
     expect(allowedInBoardEdition('/zynetixx')).toBe(false);
+    expect(allowedInBoardEdition('/boards')).toBe(true);
+    expect(allowedInBoardEdition('/devices')).toBe(true);
   });
 });
 
