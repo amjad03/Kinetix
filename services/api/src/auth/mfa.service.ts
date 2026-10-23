@@ -79,7 +79,7 @@ export class MfaService {
       .insert(userMfa)
       .values({ userId, tenantId, secretEnc: this.box.encrypt(secret, this.aad(tenantId, userId)) })
       .onConflictDoUpdate({ target: userMfa.userId, set: { secretEnc: this.box.encrypt(secret, this.aad(tenantId, userId)), confirmedAt: null, backupCodes: [], lastStep: 0 } });
-    return { secret, otpauthUri: otpauthUri(secret, u.email ?? u.phone ?? u.fullName, 'KINETIX') };
+    return { secret, otpauthUri: otpauthUri(secret, u.email ?? u.phone ?? u.fullName, 'Zynetix') };
   }
 
   private newBackupCodes(): { plain: string[]; hashes: string[] } {

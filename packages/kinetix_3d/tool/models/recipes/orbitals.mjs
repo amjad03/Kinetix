@@ -82,7 +82,7 @@ export default {
     's, p ಮತ್ತು d ಕಕ್ಷೀಯಗಳ ಆಕಾರಗಳು: ಬೀಜಕೇಂದ್ರದ ಸುತ್ತ ಎಲೆಕ್ಟ್ರಾನ್ ಸಿಗುವ ಸಾಧ್ಯತೆ ಹೆಚ್ಚಿರುವ ಪ್ರದೇಶಗಳು. ಬಣ್ಣಗಳು ತರಂಗ ಫಲನದ ಚಿಹ್ನೆಯನ್ನು ತೋರಿಸುತ್ತವೆ.',
   ),
   keywords: ['orbital', 'orbitals', 'atomic orbital', 's orbital', 'p orbital', 'd orbital', 'quantum numbers', 'structure of atom', 'nodal plane', 'shapes of orbitals', 'azimuthal quantum number'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   thumb: 'dxy',
   variants: [
     { id: 's1', name: t('1s', '1s', '1s') },

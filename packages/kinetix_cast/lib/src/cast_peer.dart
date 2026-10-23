@@ -53,7 +53,7 @@ class WebRtcCastPeer implements CastPeer {
     await FlutterForegroundTask.startService(
       serviceId: 7410,
       serviceTypes: [ForegroundServiceTypes.mediaProjection],
-      notificationTitle: 'KINETIX',
+      notificationTitle: 'Zynetix',
       notificationText: 'Your screen is being shared to the board',
     );
   }

@@ -1,5 +1,5 @@
 name: kinetix_math
-description: KINETIX offline maths solver — arithmetic with BODMAS steps, linear and quadratic equations, exact fractions and surds. Pure Dart, no network.
+description: Zynetix offline maths solver — arithmetic with BODMAS steps, linear and quadratic equations, exact fractions and surds. Pure Dart, no network.
 publish_to: none
 version: 0.1.0
 

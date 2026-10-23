@@ -50,7 +50,7 @@ export default {
     'ಇಂಧನ ಸಿಲಿಂಡರ್ ಒಳಗೆ ಉರಿದು ಪಿಸ್ಟನ್ ಅನ್ನು ಕೆಳಗೆ ತಳ್ಳುತ್ತದೆ; ಸಂಪರ್ಕ ದಂಡ ಮತ್ತು ಕ್ರ್ಯಾಂಕ್‌ಶಾಫ್ಟ್ ಆ ತಳ್ಳುವಿಕೆಯನ್ನು ತಿರುಗುವಿಕೆಯಾಗಿ ಬದಲಿಸುತ್ತವೆ. ಪ್ರತಿ ಚಕ್ರದಲ್ಲಿ ನಾಲ್ಕು ಸ್ಟ್ರೋಕ್‌ಗಳು: ಸೇವನೆ, ಸಂಪೀಡನ, ಶಕ್ತಿ ಮತ್ತು ನಿಷ್ಕಾಸ.',
   ),
   keywords: ['engine', 'petrol engine', 'piston', 'crankshaft', 'internal combustion', 'four stroke', 'valves', 'spark plug', 'heat engine', 'combustion', 'connecting rod', 'machines', 'energy conversion'],
-  credit: 'Model built by KINETIX (a simplified single-cylinder engine)',
+  credit: 'Model built by Zynetix (a simplified single-cylinder engine)',
   crease: 40,
   build(THREE) {
     const finLoop = (y) => [[BORE + 0.0015, y], [0.082, y], [0.082, y + 0.004], [BORE + 0.0015, y + 0.004]];

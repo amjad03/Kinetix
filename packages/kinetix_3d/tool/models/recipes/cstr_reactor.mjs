@@ -36,7 +36,7 @@ export default {
     'ಫೀಡ್ ಒಳಗೆ ಬರುತ್ತದೆ, ಕಲಕಿ ತೊಟ್ಟಿಯನ್ನು ಸಂಪೂರ್ಣ ಮಿಶ್ರಣದಲ್ಲಿಡುತ್ತದೆ, ಉತ್ಪನ್ನ ತೊಟ್ಟಿಯ ಸಂಯೋಜನೆಯಲ್ಲೇ ಹೊರಹೋಗುತ್ತದೆ. ಜಾಕೆಟ್‌ನ ಶೀತಕ ಕ್ರಿಯೆಯ ಶಾಖ ತೆಗೆಯುತ್ತದೆ. ವಿನ್ಯಾಸ ಸಮೀಕರಣ: V = F₀X / (−rA).',
   ),
   keywords: ['cstr', 'continuous stirred tank reactor', 'stirred tank', 'mixed flow reactor', 'backmix reactor', 'chemical reactor', 'reaction engineering', 'agitator', 'impeller', 'rushton turbine', 'baffles', 'jacketed vessel', 'chemical engineering'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const baffles = [];

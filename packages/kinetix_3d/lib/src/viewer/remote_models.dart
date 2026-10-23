@@ -68,7 +68,7 @@ class RemoteModelInfo {
   String get fileName => url.substring(url.lastIndexOf('/') + 1);
 
   /// Where to fetch the model from, in order: the servers set in [RemoteModels.servers] (a
-  /// school's own server, the KINETIX API's /assets/models), then [url] (GitHub).
+  /// school's own server, the Zynetix API's /assets/models), then [url] (GitHub).
   List<String> get urls => [for (final b in RemoteModels.servers) '$b/$fileName', url];
 
   /// The library picture, bundled so the library looks the same offline.
@@ -80,11 +80,11 @@ class RemoteModels {
   RemoteModels._();
 
   /// Where tool/models puts the downloadable models (packages/kinetix_3d/remote_models in
-  /// the KINETIX repository on GitHub): the last place a model is fetched from.
+  /// the Zynetix repository on GitHub): the last place a model is fetched from.
   static const defaultBase = 'https://raw.githubusercontent.com/amjad03/Kinetix/refs/heads/claude/kinetix-ecosystem-overview-lpphjn/packages/kinetix_3d/remote_models';
 
   /// Model servers tried before GitHub, in order: the board's own setting, the institution's
-  /// (from the API's board config) and the KINETIX API's /assets/models. Each serves the
+  /// (from the API's board config) and the Zynetix API's /assets/models. Each serves the
   /// files of packages/kinetix_3d/remote_models under the same names.
   static List<String> get servers => _servers;
   static List<String> _servers = const [];

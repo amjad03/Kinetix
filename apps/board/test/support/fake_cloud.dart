@@ -1,4 +1,4 @@
-// The KINETIX Cloud as the board's tests see it: an enrolled board, a signed-in teacher and AI
+// The Zynetix Cloud as the board's tests see it: an enrolled board, a signed-in teacher and AI
 // answers in the teacher's language (test/l10n_test.dart, test/phone_layout_test.dart).
 import 'dart:convert';
 

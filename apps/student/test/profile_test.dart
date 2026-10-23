@@ -69,16 +69,16 @@ void main() {
   });
 
   testWidgets('a fees error offers a retry', (tester) async {
-    final (api, _) = await pumpApp(tester, setup: (api) => api.feesError = ApiException(0, "Can't reach KINETIX."));
+    final (api, _) = await pumpApp(tester, setup: (api) => api.feesError = ApiException(0, "Can't reach Zynetix."));
     await openProfile(tester);
-    await scrollTo(tester, find.text("Can't reach KINETIX."));
+    await scrollTo(tester, find.text("Can't reach Zynetix."));
     api.feesError = null;
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('feesTotal')), findsOneWidget);
   });
 
-  testWidgets('changes the KINETIX AI language', (tester) async {
+  testWidgets('changes the Zynetix AI language', (tester) async {
     final (_, state) = await pumpApp(tester);
     await openProfile(tester);
     await scrollTo(tester, find.byKey(const Key('aiLanguage')));

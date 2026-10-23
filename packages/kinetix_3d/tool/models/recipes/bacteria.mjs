@@ -42,7 +42,7 @@ export default {
     'ಸುಮಾರು 2 µm ಉದ್ದದ ಒಂದೇ ಪ್ರೊಕ್ಯಾರಿಯೋಟಿಕ್ ಕೋಶ: ಕೋಶಕೇಂದ್ರವಿಲ್ಲ, ಇದರ ಡಿಎನ್‌ಎ ಕೋಶದ್ರವ್ಯದಲ್ಲಿ ಸಡಿಲವಾಗಿದೆ. ಭಿತ್ತಿ ಮತ್ತು ಲೋಳೆಯ ಸಂಪುಟ ಇದನ್ನು ರಕ್ಷಿಸುತ್ತವೆ; ಚಾವಟಿಯಂತಹ ಕಶಾಂಗ ಇದನ್ನು ಚಲಿಸುತ್ತದೆ. ಸರಳೀಕೃತ ಮಾದರಿ, ನಿಜಕ್ಕಿಂತ ಸುಮಾರು 25,000 ಪಟ್ಟು ದೊಡ್ಡದು.',
   ),
   keywords: ['bacteria', 'bacterium', 'bacillus', 'prokaryote', 'prokaryotic cell', 'microorganisms', 'microbes', 'flagellum', 'plasmid', 'nucleoid', 'cell wall', 'pili', 'the fundamental unit of life', 'microorganisms friend and foe', 'biological classification'],
-  credit: 'Simplified model built by KINETIX from textbook structure',
+  credit: 'Simplified model built by Zynetix from textbook structure',
   size: 0.07,
   groups: [
     { id: 'cover', name: t('Coverings', 'आवरण', 'ಹೊದಿಕೆಗಳು') },

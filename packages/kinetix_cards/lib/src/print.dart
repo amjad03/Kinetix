@@ -60,7 +60,7 @@ Future<Uint8List> answerCardsPdf({
   pw.ThemeData? theme,
   String hint = 'Hold the card with your answer at the top. Keep your fingers off the black pattern.',
 }) async {
-  final doc = pw.Document(title: 'KINETIX answer cards · $classLabel', theme: theme);
+  final doc = pw.Document(title: 'Zynetix answer cards · $classLabel', theme: theme);
   for (final card in cards) {
     if (card.number < 1 || card.number > maxCards) continue;
     final cells = cardCells(card.number);

@@ -81,7 +81,7 @@ void main() {
         'What is forfeiture?',
       );
       await tapKey(tester, 'ai-ask-send');
-      expect(find.textContaining('Sample answer (demo)'), findsOneWidget);
+      expect(find.textContaining('Once connected it would explain'), findsOneWidget);
       expect(server.requests, contains('POST /v1/ai/explain'));
 
       // Attendance goes to the demo server like to the cloud.

@@ -172,7 +172,7 @@ export class Pdf {
     add(`<< /Type /Pages /Kids [${this.pages.map((_, i) => `${6 + i * 2} 0 R`).join(' ')}] /Count ${this.pages.length} >>`);
     add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
     add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
-    add(`<< /Title (${latin1(this.title).replace(/[\\()]/g, '\\$&')}) /Producer (KINETIX) >>`);
+    add(`<< /Title (${latin1(this.title).replace(/[\\()]/g, '\\$&')}) /Producer (Zynetix) >>`);
     const firstImage = 6 + this.pages.length * 2;
     const xobjects = this.images.length ? ` /XObject << ${this.images.map((_, k) => `/Im${k} ${firstImage + k} 0 R`).join(' ')} >>` : '';
     const indic = this.fonts.objects(firstImage + this.images.length);

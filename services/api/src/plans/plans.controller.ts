@@ -242,7 +242,7 @@ export class PlansController {
     });
   }
 
-  /** A first draft from KINETIX AI for the period's topics (not saved). */
+  /** A first draft from Zynetix AI for the period's topics (not saved). */
   @Post('lesson-plans/draft')
   @HttpCode(200)
   @Auth('user')

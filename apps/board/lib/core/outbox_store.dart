@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
-/// Where the board keeps classroom operations (attendance, participation) until KINETIX Cloud
+/// Where the board keeps classroom operations (attendance, participation) until Zynetix Cloud
 /// has them, so a crash, a restart or a dead network never loses a mark.
 abstract class OutboxStore {
   Future<List<Map<String, dynamic>>> load();

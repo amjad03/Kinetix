@@ -3,7 +3,7 @@ import { area } from '../define';
 // Institution settings, and the privacy & consent summary (docs/product/privacy-notice.md).
 export default area(
   {
-    'settings.subtitle': 'How KINETIX works in your institution. Changes apply at once and are recorded in the audit log.',
+    'settings.subtitle': 'How Zynetix works in your institution. Changes apply at once and are recorded in the audit log.',
     'settings.saved': 'Setting saved',
     'settings.live.title': 'Live classroom view',
     'settings.live.enabled': 'Let leaders watch classes live',
@@ -25,7 +25,7 @@ export default area(
     'settings.board.title': 'Board sign-in',
     'settings.pin': 'Let teachers sign in on the board with a PIN',
     'settings.pinHelp':
-      'Teachers sign in by scanning the board’s code with the Teacher App. With this on, a teacher without their phone can also type a PIN on a keypad whose keys move every time, so nobody can learn it by watching. Boards use this from the KINETIX Board update that adds PIN sign-in.',
+      'Teachers sign in by scanning the board’s code with the Teacher App. With this on, a teacher without their phone can also type a PIN on a keypad whose keys move every time, so nobody can learn it by watching. Boards use this from the Zynetix Board update that adds PIN sign-in.',
     'settings.on': 'On',
     'settings.off': 'Off',
 
@@ -36,7 +36,7 @@ export default area(
     'boardContent.contact': 'Contact',
     'boardContent.badUrl': 'The training link must start with http:// or https://',
     'boardContent.models': '3D model downloads',
-    'boardContent.modelsHelp': "Boards download 3D models that are not in the app from this server first (a school server with the files of packages/kinetix_3d/remote_models), then from the KINETIX server, then from GitHub. Leave it empty to use the KINETIX server.",
+    'boardContent.modelsHelp': "Boards download 3D models that are not in the app from this server first (a school server with the files of packages/kinetix_3d/remote_models), then from the Zynetix server, then from GitHub. Leave it empty to use the Zynetix server.",
     'boardContent.modelsUrl': 'Model server',
     'boardContent.badModelsUrl': 'The model server must start with http:// or https://',
     'boardContent.whatsNew': "What's New announcements",
@@ -54,8 +54,8 @@ export default area(
     'pastExams.badLines': 'Skipped lines: {lines}.',
     'pastExams.none': 'No questions could be read. Each line needs a question, the exam and the year.',
     'kiosk.title': 'Board kiosk mode',
-    'kiosk.enabled': 'Lock boards to KINETIX Board',
-    'kiosk.enabledHelp': 'Students cannot leave the board app, and it opens again by itself after a power cut. Android boards lock fully once IT makes KINETIX Board the device owner (or allow it in your MDM); otherwise they use screen pinning. Windows boards use Assigned Access. See the kiosk guide for setting up devices.',
+    'kiosk.enabled': 'Lock boards to Zynetix Board',
+    'kiosk.enabledHelp': 'Students cannot leave the board app, and it opens again by itself after a power cut. Android boards lock fully once IT makes Zynetix Board the device owner (or allow it in your MDM); otherwise they use screen pinning. Windows boards use Assigned Access. See the kiosk guide for setting up devices.',
     'kiosk.pin': 'IT PIN',
     'kiosk.pinHelp': 'IT staff type this PIN on a board (press and hold the clock for 3 seconds) to leave kiosk mode for 10 minutes or open Android settings. Boards keep it so it works offline, and lock the PIN for 5 minutes after 5 wrong tries. Only a scrambled (hashed) copy is stored; nobody can read the PIN back, so keep it with IT.',
     'kiosk.pinNotSet': 'No IT PIN yet. Boards still lock, but nobody can leave kiosk mode on a board until you set one.',
@@ -76,7 +76,7 @@ export default area(
 
     'consent.title': 'Privacy & consent',
     'consent.subtitle':
-      'Under the Digital Personal Data Protection Act, families (in a college, the students themselves) decide what KINETIX may do with a student’s data. They answer in the Parent and Student apps and can change their mind at any time.',
+      'Under the Digital Personal Data Protection Act, families (in a college, the students themselves) decide what Zynetix may do with a student’s data. They answer in the Parent and Student apps and can change their mind at any time.',
     'consent.notice': 'Privacy notice version {version}',
     'consent.of': '{pct}% of {n} students agreed',
     'consent.students': '{n} active students',
@@ -91,9 +91,9 @@ export default area(
     'consent.purpose.data_processing': 'Keeping student records',
     'consent.purpose.data_processing.help': 'Attendance, homework, marks, fees and library records, so the institution can run classes and keep families informed.',
     'consent.purpose.data_processing.no': 'If no: the institution still keeps what the law requires; the family gets no updates in the app.',
-    'consent.purpose.ai_features': 'KINETIX AI',
-    'consent.purpose.ai_features.help': 'The student asking KINETIX AI for help with doubts. Processed on servers in India; not used to train AI models.',
-    'consent.purpose.ai_features.no': 'If no: KINETIX AI is turned off for the student.',
+    'consent.purpose.ai_features': 'Zynetix AI',
+    'consent.purpose.ai_features.help': 'The student asking Zynetix AI for help with doubts. Processed on servers in India; not used to train AI models.',
+    'consent.purpose.ai_features.no': 'If no: Zynetix AI is turned off for the student.',
     'consent.purpose.class_recordings': 'Class recordings and live classes',
     'consent.purpose.class_recordings.help': 'The student’s voice or image in lesson recordings and live classes shared with the class.',
     'consent.purpose.class_recordings.no': 'If no: teachers are asked not to record the student.',
@@ -106,7 +106,7 @@ export default area(
     'consent.noticeDraft': 'First draft: to be reviewed by your legal adviser, and the Hindi and Kannada by native speakers, before the pilot.',
     'notice.who.title': 'Who decides',
     'notice.who.school': 'School (students under 18): the parent or guardian decides for the child.',
-    'notice.who.college': 'College or university: the student decides for themselves. A guardian decides only for a student who has no KINETIX login of their own.',
+    'notice.who.college': 'College or university: the student decides for themselves. A guardian decides only for a student who has no Zynetix login of their own.',
     'notice.who.change': 'Every decision can be changed at any time in the app (Profile → Privacy). Changing it does not affect what was done before the change.',
     'notice.where.title': 'Where data is kept',
     'notice.where.body': 'All data and all AI processing stay in India. Data is kept for the student’s time at the institution and then for the period the institution’s records policy requires.',
@@ -136,7 +136,7 @@ export default area(
   },
   {
     hi: {
-      'settings.subtitle': 'आपके संस्थान में KINETIX कैसे काम करता है। बदलाव तुरंत लागू होते हैं और ऑडिट लॉग में दर्ज होते हैं।',
+      'settings.subtitle': 'आपके संस्थान में Zynetix कैसे काम करता है। बदलाव तुरंत लागू होते हैं और ऑडिट लॉग में दर्ज होते हैं।',
       'settings.saved': 'सेटिंग सहेजी गई',
       'settings.live.title': 'लाइव कक्षा दृश्य',
       'settings.live.enabled': 'प्रमुखों को कक्षाएँ लाइव देखने दें',
@@ -158,7 +158,7 @@ export default area(
       'settings.board.title': 'बोर्ड पर साइन इन',
       'settings.pin': 'शिक्षकों को बोर्ड पर PIN से साइन इन करने दें',
       'settings.pinHelp':
-        'शिक्षक Teacher App से बोर्ड का कोड स्कैन करके साइन इन करते हैं। इसे चालू करने पर, जिस शिक्षक के पास फ़ोन नहीं है, वह ऐसे कीपैड पर PIN भी डाल सकता है जिसकी कुंजियाँ हर बार जगह बदलती हैं, ताकि देखकर कोई उसे न जान सके। बोर्ड इसका उपयोग KINETIX Board के उस अपडेट से करेंगे जिसमें PIN साइन इन जुड़ेगा।',
+        'शिक्षक Teacher App से बोर्ड का कोड स्कैन करके साइन इन करते हैं। इसे चालू करने पर, जिस शिक्षक के पास फ़ोन नहीं है, वह ऐसे कीपैड पर PIN भी डाल सकता है जिसकी कुंजियाँ हर बार जगह बदलती हैं, ताकि देखकर कोई उसे न जान सके। बोर्ड इसका उपयोग Zynetix Board के उस अपडेट से करेंगे जिसमें PIN साइन इन जुड़ेगा।',
       'settings.on': 'चालू',
       'settings.off': 'बंद',
 
@@ -187,8 +187,8 @@ export default area(
       'pastExams.badLines': 'छोड़ी गई पंक्तियाँ: {lines}।',
       'pastExams.none': 'कोई प्रश्न पढ़ा नहीं जा सका। हर पंक्ति में प्रश्न, परीक्षा और वर्ष चाहिए।',
       'kiosk.title': 'बोर्ड कियोस्क मोड',
-      'kiosk.enabled': 'बोर्ड को KINETIX Board पर लॉक करें',
-      'kiosk.enabledHelp': 'विद्यार्थी बोर्ड ऐप से बाहर नहीं जा सकते, और बिजली जाने के बाद यह अपने-आप फिर खुल जाता है। जब IT, KINETIX Board को डिवाइस ओनर बनाता है (या आपके MDM में अनुमति देता है), तब Android बोर्ड पूरी तरह लॉक होते हैं; नहीं तो वे स्क्रीन पिनिंग का उपयोग करते हैं। Windows बोर्ड Assigned Access का उपयोग करते हैं। डिवाइस सेट करने के लिए कियोस्क गाइड देखें।',
+      'kiosk.enabled': 'बोर्ड को Zynetix Board पर लॉक करें',
+      'kiosk.enabledHelp': 'विद्यार्थी बोर्ड ऐप से बाहर नहीं जा सकते, और बिजली जाने के बाद यह अपने-आप फिर खुल जाता है। जब IT, Zynetix Board को डिवाइस ओनर बनाता है (या आपके MDM में अनुमति देता है), तब Android बोर्ड पूरी तरह लॉक होते हैं; नहीं तो वे स्क्रीन पिनिंग का उपयोग करते हैं। Windows बोर्ड Assigned Access का उपयोग करते हैं। डिवाइस सेट करने के लिए कियोस्क गाइड देखें।',
       'kiosk.pin': 'IT PIN',
       'kiosk.pinHelp': 'IT स्टाफ़ बोर्ड पर यह PIN डालकर (घड़ी को 3 सेकंड दबाए रखें) 10 मिनट के लिए कियोस्क मोड से बाहर निकल सकते हैं या Android सेटिंग्स खोल सकते हैं। बोर्ड इसे अपने पास रखते हैं ताकि यह ऑफ़लाइन भी काम करे, और 5 गलत प्रयासों के बाद PIN को 5 मिनट के लिए रोक देते हैं। केवल इसकी बदली हुई (हैश) कॉपी रखी जाती है; PIN कोई वापस नहीं पढ़ सकता, इसलिए इसे IT के पास रखें।',
       'kiosk.pinNotSet': 'अभी कोई IT PIN नहीं है। बोर्ड फिर भी लॉक होते हैं, पर जब तक आप PIN तय नहीं करते, कोई भी बोर्ड पर कियोस्क मोड से बाहर नहीं निकल सकता।',
@@ -209,7 +209,7 @@ export default area(
 
       'consent.title': 'गोपनीयता और सहमति',
       'consent.subtitle':
-        'डिजिटल व्यक्तिगत डेटा संरक्षण अधिनियम के अनुसार, परिवार (कॉलेज में स्वयं विद्यार्थी) तय करते हैं कि KINETIX विद्यार्थी के डेटा के साथ क्या कर सकता है। वे Parent और Student ऐप में जवाब देते हैं और कभी भी अपना फ़ैसला बदल सकते हैं।',
+        'डिजिटल व्यक्तिगत डेटा संरक्षण अधिनियम के अनुसार, परिवार (कॉलेज में स्वयं विद्यार्थी) तय करते हैं कि Zynetix विद्यार्थी के डेटा के साथ क्या कर सकता है। वे Parent और Student ऐप में जवाब देते हैं और कभी भी अपना फ़ैसला बदल सकते हैं।',
       'consent.notice': 'गोपनीयता सूचना संस्करण {version}',
       'consent.of': '{n} में से {pct}% विद्यार्थी सहमत',
       'consent.students': '{n} सक्रिय विद्यार्थी',
@@ -224,9 +224,9 @@ export default area(
       'consent.purpose.data_processing': 'विद्यार्थी के रिकॉर्ड रखना',
       'consent.purpose.data_processing.help': 'उपस्थिति, होमवर्क, अंक, फ़ीस और पुस्तकालय के रिकॉर्ड, ताकि संस्थान कक्षाएँ चला सके और परिवारों को जानकारी देता रहे।',
       'consent.purpose.data_processing.no': 'मना करने पर: संस्थान फिर भी वह रखता है जो कानून के अनुसार ज़रूरी है; परिवार को ऐप में सूचनाएँ नहीं मिलतीं।',
-      'consent.purpose.ai_features': 'KINETIX AI',
-      'consent.purpose.ai_features.help': 'विद्यार्थी का KINETIX AI से संदेह पूछना। भारत में सर्वर पर प्रोसेस होता है; AI मॉडल सिखाने में उपयोग नहीं होता।',
-      'consent.purpose.ai_features.no': 'मना करने पर: विद्यार्थी के लिए KINETIX AI बंद हो जाता है।',
+      'consent.purpose.ai_features': 'Zynetix AI',
+      'consent.purpose.ai_features.help': 'विद्यार्थी का Zynetix AI से संदेह पूछना। भारत में सर्वर पर प्रोसेस होता है; AI मॉडल सिखाने में उपयोग नहीं होता।',
+      'consent.purpose.ai_features.no': 'मना करने पर: विद्यार्थी के लिए Zynetix AI बंद हो जाता है।',
       'consent.purpose.class_recordings': 'कक्षा रिकॉर्डिंग और लाइव कक्षाएँ',
       'consent.purpose.class_recordings.help': 'कक्षा के साथ साझा की गई पाठ रिकॉर्डिंग और लाइव कक्षाओं में विद्यार्थी की आवाज़ या तस्वीर।',
       'consent.purpose.class_recordings.no': 'मना करने पर: शिक्षकों से कहा जाता है कि वे विद्यार्थी को रिकॉर्ड न करें।',
@@ -239,7 +239,7 @@ export default area(
       'consent.noticeDraft': 'पहला मसौदा: पायलट से पहले आपके कानूनी सलाहकार द्वारा, और हिन्दी व कन्नड़ मूल भाषियों द्वारा जाँचा जाना है।',
       'notice.who.title': 'कौन तय करता है',
       'notice.who.school': 'स्कूल (18 साल से कम के विद्यार्थी): बच्चे के लिए अभिभावक तय करते हैं।',
-      'notice.who.college': 'कॉलेज या विश्वविद्यालय: विद्यार्थी अपने लिए स्वयं तय करते हैं। अभिभावक केवल उस विद्यार्थी के लिए तय करते हैं जिसका अपना KINETIX लॉगिन नहीं है।',
+      'notice.who.college': 'कॉलेज या विश्वविद्यालय: विद्यार्थी अपने लिए स्वयं तय करते हैं। अभिभावक केवल उस विद्यार्थी के लिए तय करते हैं जिसका अपना Zynetix लॉगिन नहीं है।',
       'notice.who.change': 'हर फ़ैसला ऐप में (प्रोफ़ाइल → गोपनीयता) कभी भी बदला जा सकता है। बदलने से पहले जो हो चुका है, उस पर असर नहीं पड़ता।',
       'notice.where.title': 'डेटा कहाँ रखा जाता है',
       'notice.where.body': 'सारा डेटा और सारी AI प्रोसेसिंग भारत में ही रहती है। डेटा विद्यार्थी के संस्थान में रहने तक, और फिर संस्थान की रिकॉर्ड नीति में तय अवधि तक रखा जाता है।',
@@ -268,7 +268,7 @@ export default area(
       'live.turnedOffSettings': 'सेटिंग्स खोलें',
     },
     kn: {
-      'settings.subtitle': 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯಲ್ಲಿ KINETIX ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ. ಬದಲಾವಣೆಗಳು ತಕ್ಷಣ ಜಾರಿಯಾಗುತ್ತವೆ ಮತ್ತು ಆಡಿಟ್ ಲಾಗ್‌ನಲ್ಲಿ ದಾಖಲಾಗುತ್ತವೆ.',
+      'settings.subtitle': 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯಲ್ಲಿ Zynetix ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ. ಬದಲಾವಣೆಗಳು ತಕ್ಷಣ ಜಾರಿಯಾಗುತ್ತವೆ ಮತ್ತು ಆಡಿಟ್ ಲಾಗ್‌ನಲ್ಲಿ ದಾಖಲಾಗುತ್ತವೆ.',
       'settings.saved': 'ಸೆಟ್ಟಿಂಗ್ ಉಳಿಸಲಾಗಿದೆ',
       'settings.live.title': 'ಲೈವ್ ತರಗತಿ ವೀಕ್ಷಣೆ',
       'settings.live.enabled': 'ಮುಖ್ಯಸ್ಥರಿಗೆ ತರಗತಿಗಳನ್ನು ಲೈವ್ ನೋಡಲು ಬಿಡಿ',
@@ -290,7 +290,7 @@ export default area(
       'settings.board.title': 'ಬೋರ್ಡ್ ಸೈನ್ ಇನ್',
       'settings.pin': 'ಶಿಕ್ಷಕರಿಗೆ ಬೋರ್ಡ್‌ನಲ್ಲಿ PIN ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಲು ಬಿಡಿ',
       'settings.pinHelp':
-        'ಶಿಕ್ಷಕರು Teacher App ಮೂಲಕ ಬೋರ್ಡ್‌ನ ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಸೈನ್ ಇನ್ ಆಗುತ್ತಾರೆ. ಇದನ್ನು ಆನ್ ಮಾಡಿದರೆ, ಫೋನ್ ಇಲ್ಲದ ಶಿಕ್ಷಕರು ಪ್ರತಿ ಬಾರಿ ಕೀಲಿಗಳು ಸ್ಥಳ ಬದಲಿಸುವ ಕೀಪ್ಯಾಡ್‌ನಲ್ಲಿ PIN ಟೈಪ್ ಮಾಡಬಹುದು; ನೋಡಿ ಯಾರೂ ಅದನ್ನು ಕಲಿಯಲಾಗುವುದಿಲ್ಲ. PIN ಸೈನ್ ಇನ್ ಸೇರಿಸುವ KINETIX Board ಅಪ್‌ಡೇಟ್‌ನಿಂದ ಬೋರ್ಡ್‌ಗಳು ಇದನ್ನು ಬಳಸುತ್ತವೆ.',
+        'ಶಿಕ್ಷಕರು Teacher App ಮೂಲಕ ಬೋರ್ಡ್‌ನ ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಸೈನ್ ಇನ್ ಆಗುತ್ತಾರೆ. ಇದನ್ನು ಆನ್ ಮಾಡಿದರೆ, ಫೋನ್ ಇಲ್ಲದ ಶಿಕ್ಷಕರು ಪ್ರತಿ ಬಾರಿ ಕೀಲಿಗಳು ಸ್ಥಳ ಬದಲಿಸುವ ಕೀಪ್ಯಾಡ್‌ನಲ್ಲಿ PIN ಟೈಪ್ ಮಾಡಬಹುದು; ನೋಡಿ ಯಾರೂ ಅದನ್ನು ಕಲಿಯಲಾಗುವುದಿಲ್ಲ. PIN ಸೈನ್ ಇನ್ ಸೇರಿಸುವ Zynetix Board ಅಪ್‌ಡೇಟ್‌ನಿಂದ ಬೋರ್ಡ್‌ಗಳು ಇದನ್ನು ಬಳಸುತ್ತವೆ.',
       'settings.on': 'ಆನ್',
       'settings.off': 'ಆಫ್',
 
@@ -319,8 +319,8 @@ export default area(
       'pastExams.badLines': 'ಬಿಟ್ಟ ಸಾಲುಗಳು: {lines}.',
       'pastExams.none': 'ಯಾವುದೇ ಪ್ರಶ್ನೆ ಓದಲಾಗಲಿಲ್ಲ. ಪ್ರತಿ ಸಾಲಿನಲ್ಲಿ ಪ್ರಶ್ನೆ, ಪರೀಕ್ಷೆ ಮತ್ತು ವರ್ಷ ಬೇಕು.',
       'kiosk.title': 'ಬೋರ್ಡ್ ಕಿಯೋಸ್ಕ್ ಮೋಡ್',
-      'kiosk.enabled': 'ಬೋರ್ಡ್‌ಗಳನ್ನು KINETIX Board ಗೆ ಲಾಕ್ ಮಾಡಿ',
-      'kiosk.enabledHelp': 'ವಿದ್ಯಾರ್ಥಿಗಳು ಬೋರ್ಡ್ ಆ್ಯಪ್‌ನಿಂದ ಹೊರಹೋಗಲು ಸಾಧ್ಯವಿಲ್ಲ, ಮತ್ತು ವಿದ್ಯುತ್ ಹೋದ ನಂತರ ಅದು ತಾನಾಗಿಯೇ ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ. IT ತಂಡ KINETIX Board ಅನ್ನು ಡಿವೈಸ್ ಓನರ್ ಮಾಡಿದಾಗ (ಅಥವಾ ನಿಮ್ಮ MDM ನಲ್ಲಿ ಅನುಮತಿಸಿದಾಗ) Android ಬೋರ್ಡ್‌ಗಳು ಪೂರ್ಣವಾಗಿ ಲಾಕ್ ಆಗುತ್ತವೆ; ಇಲ್ಲದಿದ್ದರೆ ಸ್ಕ್ರೀನ್ ಪಿನ್ನಿಂಗ್ ಬಳಸುತ್ತವೆ. Windows ಬೋರ್ಡ್‌ಗಳು Assigned Access ಬಳಸುತ್ತವೆ. ಸಾಧನಗಳನ್ನು ಹೊಂದಿಸಲು ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿ ನೋಡಿ.',
+      'kiosk.enabled': 'ಬೋರ್ಡ್‌ಗಳನ್ನು Zynetix Board ಗೆ ಲಾಕ್ ಮಾಡಿ',
+      'kiosk.enabledHelp': 'ವಿದ್ಯಾರ್ಥಿಗಳು ಬೋರ್ಡ್ ಆ್ಯಪ್‌ನಿಂದ ಹೊರಹೋಗಲು ಸಾಧ್ಯವಿಲ್ಲ, ಮತ್ತು ವಿದ್ಯುತ್ ಹೋದ ನಂತರ ಅದು ತಾನಾಗಿಯೇ ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ. IT ತಂಡ Zynetix Board ಅನ್ನು ಡಿವೈಸ್ ಓನರ್ ಮಾಡಿದಾಗ (ಅಥವಾ ನಿಮ್ಮ MDM ನಲ್ಲಿ ಅನುಮತಿಸಿದಾಗ) Android ಬೋರ್ಡ್‌ಗಳು ಪೂರ್ಣವಾಗಿ ಲಾಕ್ ಆಗುತ್ತವೆ; ಇಲ್ಲದಿದ್ದರೆ ಸ್ಕ್ರೀನ್ ಪಿನ್ನಿಂಗ್ ಬಳಸುತ್ತವೆ. Windows ಬೋರ್ಡ್‌ಗಳು Assigned Access ಬಳಸುತ್ತವೆ. ಸಾಧನಗಳನ್ನು ಹೊಂದಿಸಲು ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿ ನೋಡಿ.',
       'kiosk.pin': 'IT PIN',
       'kiosk.pinHelp': 'IT ಸಿಬ್ಬಂದಿ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಈ PIN ನಮೂದಿಸಿ (ಗಡಿಯಾರವನ್ನು 3 ಸೆಕೆಂಡ್ ಒತ್ತಿ ಹಿಡಿಯಿರಿ) 10 ನಿಮಿಷ ಕಿಯೋಸ್ಕ್ ಮೋಡ್‌ನಿಂದ ಹೊರಬರಬಹುದು ಅಥವಾ Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಬಹುದು. ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ಕೆಲಸ ಮಾಡಲು ಬೋರ್ಡ್‌ಗಳು ಇದನ್ನು ಇಟ್ಟುಕೊಳ್ಳುತ್ತವೆ, ಮತ್ತು 5 ತಪ್ಪು ಪ್ರಯತ್ನಗಳ ನಂತರ PIN ಅನ್ನು 5 ನಿಮಿಷ ತಡೆಯುತ್ತವೆ. ಅದರ ಬದಲಾಯಿಸಿದ (ಹ್ಯಾಶ್) ಪ್ರತಿಯನ್ನು ಮಾತ್ರ ಇಡಲಾಗುತ್ತದೆ; PIN ಅನ್ನು ಯಾರೂ ಮತ್ತೆ ಓದಲಾಗದು, ಆದ್ದರಿಂದ ಅದನ್ನು IT ಬಳಿ ಇಡಿ.',
       'kiosk.pinNotSet': 'ಇನ್ನೂ IT PIN ಇಲ್ಲ. ಬೋರ್ಡ್‌ಗಳು ಲಾಕ್ ಆಗುತ್ತವೆ, ಆದರೆ ನೀವು PIN ಹೊಂದಿಸುವವರೆಗೆ ಯಾರೂ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಕಿಯೋಸ್ಕ್ ಮೋಡ್‌ನಿಂದ ಹೊರಬರಲಾಗದು.',
@@ -341,7 +341,7 @@ export default area(
 
       'consent.title': 'ಗೌಪ್ಯತೆ ಮತ್ತು ಒಪ್ಪಿಗೆ',
       'consent.subtitle':
-        'ಡಿಜಿಟಲ್ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆಯಂತೆ, ವಿದ್ಯಾರ್ಥಿಯ ಡೇಟಾದೊಂದಿಗೆ KINETIX ಏನು ಮಾಡಬಹುದು ಎಂದು ಕುಟುಂಬಗಳು (ಕಾಲೇಜಿನಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿಗಳೇ) ನಿರ್ಧರಿಸುತ್ತಾರೆ. ಅವರು Parent ಮತ್ತು Student ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ ಮತ್ತು ಯಾವಾಗ ಬೇಕಾದರೂ ನಿರ್ಧಾರ ಬದಲಿಸಬಹುದು.',
+        'ಡಿಜಿಟಲ್ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆಯಂತೆ, ವಿದ್ಯಾರ್ಥಿಯ ಡೇಟಾದೊಂದಿಗೆ Zynetix ಏನು ಮಾಡಬಹುದು ಎಂದು ಕುಟುಂಬಗಳು (ಕಾಲೇಜಿನಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿಗಳೇ) ನಿರ್ಧರಿಸುತ್ತಾರೆ. ಅವರು Parent ಮತ್ತು Student ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ ಮತ್ತು ಯಾವಾಗ ಬೇಕಾದರೂ ನಿರ್ಧಾರ ಬದಲಿಸಬಹುದು.',
       'consent.notice': 'ಗೌಪ್ಯತಾ ಸೂಚನೆ ಆವೃತ್ತಿ {version}',
       'consent.of': '{n} ವಿದ್ಯಾರ್ಥಿಗಳಲ್ಲಿ {pct}% ಒಪ್ಪಿದ್ದಾರೆ',
       'consent.students': '{n} ಸಕ್ರಿಯ ವಿದ್ಯಾರ್ಥಿಗಳು',
@@ -356,9 +356,9 @@ export default area(
       'consent.purpose.data_processing': 'ವಿದ್ಯಾರ್ಥಿ ದಾಖಲೆಗಳನ್ನು ಇಡುವುದು',
       'consent.purpose.data_processing.help': 'ಹಾಜರಾತಿ, ಹೋಂವರ್ಕ್, ಅಂಕಗಳು, ಶುಲ್ಕ ಮತ್ತು ಗ್ರಂಥಾಲಯದ ದಾಖಲೆಗಳು; ಸಂಸ್ಥೆ ತರಗತಿಗಳನ್ನು ನಡೆಸಲು ಮತ್ತು ಕುಟುಂಬಗಳಿಗೆ ಮಾಹಿತಿ ನೀಡಲು.',
       'consent.purpose.data_processing.no': 'ಬೇಡ ಎಂದರೆ: ಕಾನೂನು ಕೇಳುವುದನ್ನು ಸಂಸ್ಥೆ ಇನ್ನೂ ಇಡುತ್ತದೆ; ಕುಟುಂಬಕ್ಕೆ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸೂಚನೆಗಳು ಬರುವುದಿಲ್ಲ.',
-      'consent.purpose.ai_features': 'KINETIX AI',
-      'consent.purpose.ai_features.help': 'ವಿದ್ಯಾರ್ಥಿ KINETIX AI ನಲ್ಲಿ ಸಂದೇಹ ಕೇಳುವುದು. ಭಾರತದ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಪ್ರಕ್ರಿಯೆಯಾಗುತ್ತದೆ; AI ಮಾದರಿಗಳನ್ನು ಕಲಿಸಲು ಬಳಸುವುದಿಲ್ಲ.',
-      'consent.purpose.ai_features.no': 'ಬೇಡ ಎಂದರೆ: ವಿದ್ಯಾರ್ಥಿಗೆ KINETIX AI ಆಫ್ ಆಗುತ್ತದೆ.',
+      'consent.purpose.ai_features': 'Zynetix AI',
+      'consent.purpose.ai_features.help': 'ವಿದ್ಯಾರ್ಥಿ Zynetix AI ನಲ್ಲಿ ಸಂದೇಹ ಕೇಳುವುದು. ಭಾರತದ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಪ್ರಕ್ರಿಯೆಯಾಗುತ್ತದೆ; AI ಮಾದರಿಗಳನ್ನು ಕಲಿಸಲು ಬಳಸುವುದಿಲ್ಲ.',
+      'consent.purpose.ai_features.no': 'ಬೇಡ ಎಂದರೆ: ವಿದ್ಯಾರ್ಥಿಗೆ Zynetix AI ಆಫ್ ಆಗುತ್ತದೆ.',
       'consent.purpose.class_recordings': 'ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ ಮತ್ತು ಲೈವ್ ತರಗತಿಗಳು',
       'consent.purpose.class_recordings.help': 'ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಂಡ ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್ ಮತ್ತು ಲೈವ್ ತರಗತಿಗಳಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿಯ ಧ್ವನಿ ಅಥವಾ ಚಿತ್ರ.',
       'consent.purpose.class_recordings.no': 'ಬೇಡ ಎಂದರೆ: ವಿದ್ಯಾರ್ಥಿಯನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡದಂತೆ ಶಿಕ್ಷಕರಿಗೆ ಕೇಳಲಾಗುತ್ತದೆ.',
@@ -371,7 +371,7 @@ export default area(
       'consent.noticeDraft': 'ಮೊದಲ ಕರಡು: ಪೈಲಟ್‌ಗೆ ಮೊದಲು ನಿಮ್ಮ ಕಾನೂನು ಸಲಹೆಗಾರರು, ಮತ್ತು ಹಿಂದಿ ಹಾಗೂ ಕನ್ನಡವನ್ನು ಸ್ಥಳೀಯ ಭಾಷಿಕರು ಪರಿಶೀಲಿಸಬೇಕು.',
       'notice.who.title': 'ಯಾರು ನಿರ್ಧರಿಸುತ್ತಾರೆ',
       'notice.who.school': 'ಶಾಲೆ (18 ವರ್ಷದೊಳಗಿನ ವಿದ್ಯಾರ್ಥಿಗಳು): ಮಗುವಿನ ಪರವಾಗಿ ಪೋಷಕರು ನಿರ್ಧರಿಸುತ್ತಾರೆ.',
-      'notice.who.college': 'ಕಾಲೇಜು ಅಥವಾ ವಿಶ್ವವಿದ್ಯಾಲಯ: ವಿದ್ಯಾರ್ಥಿ ತಮಗಾಗಿ ತಾವೇ ನಿರ್ಧರಿಸುತ್ತಾರೆ. ತಮ್ಮದೇ KINETIX ಲಾಗಿನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗೆ ಮಾತ್ರ ಪೋಷಕರು ನಿರ್ಧರಿಸುತ್ತಾರೆ.',
+      'notice.who.college': 'ಕಾಲೇಜು ಅಥವಾ ವಿಶ್ವವಿದ್ಯಾಲಯ: ವಿದ್ಯಾರ್ಥಿ ತಮಗಾಗಿ ತಾವೇ ನಿರ್ಧರಿಸುತ್ತಾರೆ. ತಮ್ಮದೇ Zynetix ಲಾಗಿನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗೆ ಮಾತ್ರ ಪೋಷಕರು ನಿರ್ಧರಿಸುತ್ತಾರೆ.',
       'notice.who.change': 'ಪ್ರತಿ ನಿರ್ಧಾರವನ್ನು ಆ್ಯಪ್‌ನಲ್ಲಿ (ಪ್ರೊಫೈಲ್ → ಗೌಪ್ಯತೆ) ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಿಸಬಹುದು. ಬದಲಿಸುವ ಮೊದಲು ನಡೆದದ್ದರ ಮೇಲೆ ಅದು ಪರಿಣಾಮ ಬೀರುವುದಿಲ್ಲ.',
       'notice.where.title': 'ಡೇಟಾ ಎಲ್ಲಿ ಇರುತ್ತದೆ',
       'notice.where.body': 'ಎಲ್ಲಾ ಡೇಟಾ ಮತ್ತು ಎಲ್ಲಾ AI ಪ್ರಕ್ರಿಯೆ ಭಾರತದಲ್ಲೇ ಇರುತ್ತದೆ. ವಿದ್ಯಾರ್ಥಿ ಸಂಸ್ಥೆಯಲ್ಲಿ ಇರುವವರೆಗೆ, ನಂತರ ಸಂಸ್ಥೆಯ ದಾಖಲೆ ನೀತಿ ಹೇಳುವ ಅವಧಿಯವರೆಗೆ ಡೇಟಾ ಇಡಲಾಗುತ್ತದೆ.',

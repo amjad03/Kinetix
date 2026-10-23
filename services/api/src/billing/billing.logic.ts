@@ -1,4 +1,4 @@
-/** Pure billing rules for the KINETIX subscription (PRD section 66). Money is in paise. No database. */
+/** Pure billing rules for the Zynetix subscription (PRD section 66). Money is in paise. No database. */
 
 export interface Plan {
   code: string;

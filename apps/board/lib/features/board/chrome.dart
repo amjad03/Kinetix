@@ -6,7 +6,7 @@ import '../../core/board_controller.dart';
 
 /// Building blocks for the board's floating chrome: toolbars, popovers and panels.
 ///
-/// The chrome follows the KINETIX design (docs/design/design-system.md) in the teacher's App
+/// The chrome follows the Zynetix design (docs/design/design-system.md) in the teacher's App
 /// theme (Board settings), whatever the layout or the device: white floating surfaces with a
 /// soft shadow in [KinetixTheme.board], Material 3 dark in [KinetixTheme.boardChrome], or
 /// chalkboard green.

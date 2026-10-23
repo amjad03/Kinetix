@@ -30,8 +30,8 @@ void main() {
     expect(find.text('Concept videos'), findsOneWidget);
     expect(find.text('Underwriting commission in 5 minutes'), findsOneWidget);
     expect(find.text('4:05 · हिन्दी'), findsOneWidget);
-    // Who linked each: KINETIX, or the class's teacher.
-    expect(find.descendant(of: find.byKey(const Key('videoSource-cv1')), matching: find.text('KINETIX')), findsOneWidget);
+    // Who linked each: Zynetix, or the class's teacher.
+    expect(find.descendant(of: find.byKey(const Key('videoSource-cv1')), matching: find.text('Zynetix')), findsOneWidget);
     expect(find.descendant(of: find.byKey(const Key('videoSource-cv2')), matching: find.text('Teacher')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('conceptVideo-cv1')));

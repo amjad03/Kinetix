@@ -11,7 +11,7 @@ import '../../l10n/l10n.dart';
 import '../board/panel/panel_host.dart';
 import 'reader_settings.dart';
 
-/// Read aloud and the immersive reader (from the KINETIX prototype): the board's own voices
+/// Read aloud and the immersive reader (from the Zynetix prototype): the board's own voices
 /// (Android text-to-speech, Windows speech) read English, Hindi and Kannada where the device
 /// has them. Nothing is sent anywhere.
 

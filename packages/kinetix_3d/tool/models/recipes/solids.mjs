@@ -119,7 +119,7 @@ export default {
     'ಪ್ರತಿ ಘನಾಕೃತಿಯನ್ನು ತಿರುಗಿಸಿ, "ಬಿಡಿಸಿ" ಮೂಲಕ ಅದರ ಬಲೆಯನ್ನು ತೆರೆಯಿರಿ, ಕತ್ತರಿಸಿ ಅಡ್ಡಛೇದಗಳನ್ನು ನೋಡಿ.',
   ),
   keywords: ['solid shapes', '3d shapes', 'nets', 'cube', 'cuboid', 'cylinder', 'cone', 'sphere', 'pyramid', 'prism', 'surface area', 'volume', 'mensuration', 'visualising solid shapes', 'conic sections', 'cross section'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   edges: true,
   caps: 'flat',
   variants: [

@@ -32,7 +32,7 @@ abstract final class KxFonts {
   static String boardFor({required bool primaryClass}) => primaryClass ? primary : board;
 }
 
-/// Material 3 themes for every KINETIX app: deep blue, white cards on a cool-grey ground, marigold
+/// Material 3 themes for every Zynetix app: deep blue, white cards on a cool-grey ground, marigold
 /// for AI (docs/design/design-system.md).
 abstract final class KinetixTheme {
   /// The light scheme, tuned by hand around the brand blue rather than generated, so surfaces

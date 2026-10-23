@@ -439,7 +439,7 @@ async function fetchSources(recipe) {
     const path = join(dir, s.file);
     if (existsSync(path)) continue;
     console.log(`  downloading ${s.url}`);
-    const res = await fetch(s.url, { headers: { 'user-agent': 'Mozilla/5.0 (KINETIX model build)' } });
+    const res = await fetch(s.url, { headers: { 'user-agent': 'Mozilla/5.0 (Zynetix model build)' } });
     if (!res.ok) throw new Error(`${recipe.id}: ${s.url}: HTTP ${res.status}`);
     mkdirSync(dirname(path), { recursive: true });
     if (s.zip) {

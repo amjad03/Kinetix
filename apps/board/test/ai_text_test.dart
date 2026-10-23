@@ -40,8 +40,8 @@ void main() {
     test('busy model, empty scan, offline and timeout each have their own words in every language', () {
       for (final code in ['en', 'hi', 'kn']) {
         final l = l10nFor(Locale(code));
-        expect(aiErrorMessage(l, ApiException(503, 'KINETIX AI is busy right now. Try again in a minute.', code: 'AI_BUSY')), l.aiErrBusy);
-        expect(aiErrorMessage(l, ApiException(503, 'KINETIX AI is not reachable right now. Try again in a minute.', code: 'SERVICE_UNAVAILABLE')), l.aiErrUnreachable);
+        expect(aiErrorMessage(l, ApiException(503, 'Zynetix AI is busy right now. Try again in a minute.', code: 'AI_BUSY')), l.aiErrBusy);
+        expect(aiErrorMessage(l, ApiException(503, 'Zynetix AI is not reachable right now. Try again in a minute.', code: 'SERVICE_UNAVAILABLE')), l.aiErrUnreachable);
         expect(aiErrorMessage(l, const NothingOnBoard()), l.aiErrNothingOnPages);
         expect(aiErrorMessage(l, TimeoutException('slow')), l.aiErrTimeout);
         expect(aiErrorMessage(l, Exception('no network')), l.aiErrOffline);

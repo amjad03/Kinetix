@@ -39,7 +39,7 @@
    "order": 1.6,
    "topic": "cell",
    "license": "Same as the app",
-   "credit": "Simplified model built by KINETIX from textbook structure",
+   "credit": "Simplified model built by Zynetix from textbook structure",
    "bytes": 331412
   },
   {
@@ -77,7 +77,7 @@
    "order": 1.7,
    "topic": "cell",
    "license": "Same as the app",
-   "credit": "Simplified model built by KINETIX from textbook structure",
+   "credit": "Simplified model built by Zynetix from textbook structure",
    "bytes": 185832
   },
   {
@@ -117,7 +117,7 @@
    "order": 6.1,
    "topic": "human",
    "license": "CC BY 4.0",
-   "credit": "Stomach, oesophagus and duodenum: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; wall layers and sphincters built by KINETIX (simplified)",
+   "credit": "Stomach, oesophagus and duodenum: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; wall layers and sphincters built by Zynetix (simplified)",
    "bytes": 288776
   },
   {
@@ -196,7 +196,7 @@
    "order": 6.3,
    "topic": "human",
    "license": "Same as the app",
-   "credit": "Simplified model built by KINETIX from textbook measurements",
+   "credit": "Simplified model built by Zynetix from textbook measurements",
    "bytes": 181942
   },
   {
@@ -235,7 +235,7 @@
    "order": 6.4,
    "topic": "human",
    "license": "Same as the app",
-   "credit": "Simplified model built by KINETIX from textbook proportions",
+   "credit": "Simplified model built by Zynetix from textbook proportions",
    "bytes": 374260
   },
   {

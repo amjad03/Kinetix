@@ -141,7 +141,7 @@ abstract final class SafeWebPolicy {
     } catch (_) {}
   }
 
-  /// The board config's `safeWeb` (from KINETIX Cloud): `{"allow": ["ncert.nic.in", …]}`.
+  /// The board config's `safeWeb` (from Zynetix Cloud): `{"allow": ["ncert.nic.in", …]}`.
   static Future<void> applyConfig(Object? config) async {
     if (config is! Map) return;
     final list = config['allow'];

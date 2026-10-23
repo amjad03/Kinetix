@@ -19,7 +19,7 @@ export const script = {
     'ವರ್ಣತಂತುವಿನಿಂದ ದ್ವಿಸುರುಳಿ ಮತ್ತು ಅದರ ಪ್ರತ್ಯಾಮ್ಲ ಜೋಡಿಗಳವರೆಗೆ, ನಂತರ ಕೋಶ ತನ್ನ DNA ಅನ್ನು ಹೇಗೆ ನಕಲು ಮಾಡುತ್ತದೆ: ಬಿಚ್ಚುವಿಕೆ, ಪ್ರತ್ಯಾಮ್ಲಗಳ ಹೊಂದಾಣಿಕೆ, ಮತ್ತು ಎರಡು ಒಂದೇ ರೀತಿಯ ಅಣುಗಳು.',
   ),
   keywords: ['DNA', 'DNA replication', 'double helix', 'base pairs', 'adenine', 'thymine', 'guanine', 'cytosine', 'helicase', 'DNA polymerase', 'nucleotides', 'chromosome', 'histones', 'heredity', 'semi-conservative'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#1e2128', '#07080b'],
     keyAt: [3, 6, 7],

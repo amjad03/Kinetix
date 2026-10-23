@@ -25,7 +25,7 @@ export default {
     'ಗಾಳಿ ಶ್ವಾಸನಾಳದ ಮೂಲಕ ಎರಡು ಶ್ವಾಸಕೋಶಗಳಿಗೆ, ಚಿಕ್ಕ ಚಿಕ್ಕ ನಳಿಕೆಗಳ ಮೂಲಕ ಸೂಕ್ಷ್ಮ ವಾಯುಕೋಶಗಳಿಗೆ ಹೋಗುತ್ತದೆ; ಅಲ್ಲಿ ಆಮ್ಲಜನಕ ರಕ್ತ ಸೇರುತ್ತದೆ, ಇಂಗಾಲದ ಡೈಆಕ್ಸೈಡ್ ಹೊರಬರುತ್ತದೆ.',
   ),
   keywords: ['lungs', 'lung', 'respiratory system', 'respiration', 'breathing', 'trachea', 'bronchi', 'alveoli', 'diaphragm', 'breathing and exchange of gases', 'human respiratory system'],
-  credit: 'BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (lung surfaces made by KINETIX around its airways)',
+  credit: 'BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (lung surfaces made by Zynetix around its airways)',
   detail: 0.4,
   envelopes: {
     right: { files: [...f.right.airways, ...f.right.arteries, ...f.right.veins], ...env },

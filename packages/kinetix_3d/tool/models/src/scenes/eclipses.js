@@ -19,7 +19,7 @@ export const script = {
     'ಸೂರ್ಯ, ಭೂಮಿ ಮತ್ತು ಚಂದ್ರ ಒಂದೇ ಸಾಲಿಗೆ ಬಂದು ಸೂರ್ಯ ಗ್ರಹಣ ಮತ್ತು ಚಂದ್ರ ಗ್ರಹಣ ಹೇಗೆ ಉಂಟಾಗುತ್ತವೆ, ಅವು ಹೇಗೆ ಕಾಣುತ್ತವೆ, ಮತ್ತು ಪ್ರತಿ ತಿಂಗಳು ಏಕೆ ಆಗುವುದಿಲ್ಲ.',
   ),
   keywords: ['eclipse', 'solar eclipse', 'lunar eclipse', 'umbra', 'penumbra', 'shadow', 'corona', 'new moon', 'full moon', 'grahan', 'moon', 'sun', 'geography'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#0e1119', '#020305'],
     keyAt: [0, 8, 4],

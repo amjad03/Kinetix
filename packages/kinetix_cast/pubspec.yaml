@@ -1,5 +1,5 @@
 name: kinetix_cast
-description: KINETIX screen sharing to the board - the sending side for the Teacher and Student apps (WebRTC, signalled over the realtime socket) and the shared message types.
+description: Zynetix screen sharing to the board - the sending side for the Teacher and Student apps (WebRTC, signalled over the realtime socket) and the shared message types.
 publish_to: none
 version: 0.1.0
 

@@ -50,7 +50,7 @@ export default {
     'ಶಾಲಾ ಪ್ರಯೋಗಾಲಯದ ಗಾಜಿನ ಉಪಕರಣಗಳು ಮತ್ತು ಸ್ಟ್ಯಾಂಡ್‌ಗಳು ನೈಜ ಗಾತ್ರದಲ್ಲಿ: ಬ್ಯೂರೆಟ್ ಮತ್ತು ಶಂಕುವಿನಾಕಾರದ ಫ್ಲಾಸ್ಕ್‌ನಿಂದ ಅನುಮಾಪನ, ದ್ರವ ಅಳೆಯುವುದು, ಪರೀಕ್ಷಾ ನಳಿಕೆಗಳು ಮತ್ತು ಬುನ್ಸೆನ್ ಬರ್ನರ್ ಮೇಲೆ ಬೀಕರ್ ಕಾಯಿಸುವುದು.',
   ),
   keywords: ['beaker', 'flask', 'conical flask', 'test tube', 'burette', 'bunsen burner', 'retort stand', 'measuring cylinder', 'tripod', 'wire gauze', 'lab equipment', 'titration', 'apparatus', 'laboratory', 'acids bases and salts'],
-  credit: 'Model built by KINETIX (standard glassware sizes)',
+  credit: 'Model built by Zynetix (standard glassware sizes)',
   build(THREE) {
     // Titration: retort stand, clamp, burette, conical flask on a white tile.
     const standBase = new THREE.BoxGeometry(0.16, 0.012, 0.12).translate(X.stand + 0.02, BENCH_TOP + 0.006, -0.02);

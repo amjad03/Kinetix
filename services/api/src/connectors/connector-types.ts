@@ -33,7 +33,7 @@ export const CONNECTOR_TYPES: ConnectorType[] = [
   {
     type: 'webhook_out',
     label: 'Outbound webhook',
-    description: 'Sends KINETIX events (fee paid, results published, student enrolled ...) to your own HTTPS endpoint, signed with HMAC-SHA256.',
+    description: 'Sends Zynetix events (fee paid, results published, student enrolled ...) to your own HTTPS endpoint, signed with HMAC-SHA256.',
     available: true,
     fields: [url('url', 'Endpoint URL'), secret('secret', 'Signing secret (at least 16 characters)'), { key: 'events', label: 'Events (leave empty for all)', kind: 'events', required: false }],
   },

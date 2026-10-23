@@ -68,6 +68,8 @@ jobs:
         env:
           # Signs the release build with the debug key (test builds only; see build.gradle.kts).
           KINETIX_TEST_SIGNING: 'true'
+          # Test builds may reach a demo server over plain HTTP on the LAN (release.yml stays HTTPS-only).
+          KINETIX_LAN_HTTP: 'true'
           API_URL: ${{ vars.KINETIX_API_URL || 'https://demo.kinetix.invalid' }}
         run: >-
           flutter build apk --release

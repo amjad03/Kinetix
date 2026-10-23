@@ -80,7 +80,7 @@ void main() {
       for (var i = 1; i < xs.length; i++) {
         expect(xs[i], greaterThan(xs[i - 1]), reason: order[i]);
       }
-      expect(find.text('KINETIX AI'), findsOneWidget);
+      expect(find.text('Zynetix AI'), findsOneWidget);
       for (final key in ['sign-in-chip', 'open-search', 'board-clock', 'profile-button', 'board-menu', 'record', 'previous-page', 'page-indicator', 'next-page', 'add-page', 'page-overview']) {
         expect(find.byKey(Key(key)), findsOneWidget, reason: key);
       }

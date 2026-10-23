@@ -198,7 +198,7 @@ void main() {
       expect(text, contains('three.js'), reason: f);
       expect(text, contains('MIT'), reason: f);
     }
-    expect(File('$_assets/viewer.js').readAsStringSync(), startsWith('/* KINETIX 3D viewer. Includes three.js (MIT License'));
+    expect(File('$_assets/viewer.js').readAsStringSync(), startsWith('/* Zynetix 3D viewer. Includes three.js (MIT License'));
     for (final lang in viewerLanguages) {
       final lines = Model3dCredits.lines(lang);
       expect(lines.join('\n'), contains('BodyParts3D'));

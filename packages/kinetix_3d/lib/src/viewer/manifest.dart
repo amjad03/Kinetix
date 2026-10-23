@@ -202,7 +202,7 @@ class ViewerManifest {
   final LocalText title;
   final LocalText summary;
 
-  /// Who made it (BodyParts3D for the anatomy, KINETIX for the rest).
+  /// Who made it (BodyParts3D for the anatomy, Zynetix for the rest).
   final String credit;
 
   /// The model's size in metres (its longest side), for the cut slider.

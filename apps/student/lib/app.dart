@@ -21,7 +21,7 @@ class StudentApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: state,
       builder: (context, _) => MaterialApp(
-      title: 'KINETIX Student',
+      title: 'Zynetix Student',
       debugShowCheckedModeBanner: false,
       locale: state.locale,
       supportedLocales: AppLocalizations.supportedLocales,

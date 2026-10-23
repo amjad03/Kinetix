@@ -28,7 +28,7 @@ export default {
     'ಸ್ಲಿಪ್ ಉಂಗುರಗಳ ಮೂಲಕ DC ಯಿಂದ ಕಾಂತೀಕರಿಸಿದ ರೋಟರ್ ಧ್ರುವಗಳು ಸ್ಟೇಟರ್ ಒಳಗೆ ತಿರುಗಿ ಅದರ ಸುರುಳಿಗಳಲ್ಲಿ 120° ಅಂತರದ ಮೂರು EMF ಪ್ರೇರಿಸುತ್ತವೆ. ಆವರ್ತನ ವೇಗದಿಂದ ನಿರ್ಧಾರ: f = PN/120 (1500 rpm ನಲ್ಲಿ 4-ಧ್ರುವ ಯಂತ್ರ 50 Hz ನೀಡುತ್ತದೆ).',
   ),
   keywords: ['alternator', 'synchronous generator', 'salient pole', 'slip rings', 'field winding', 'three phase', 'stator winding', 'synchronous speed', 'electrical machines', 'power systems', 'excitation'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const poles = [], shoes = [], coils = [];

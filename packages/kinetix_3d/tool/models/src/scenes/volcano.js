@@ -18,7 +18,7 @@ export const script = {
     'ಜ್ವಾಲಾಮುಖಿಯ ಒಳಗೆ: ಶಿಲಾಪಾಕ ಕೋಣೆ ಮತ್ತು ನಾಳಗಳು, ಒತ್ತಡ ಹೇಗೆ ಹೆಚ್ಚಿ ಜ್ವಾಲಾಮುಖಿ ಸ್ಫೋಟಿಸುತ್ತದೆ, ಮತ್ತು ಲಾವಾ ಹಾಗೂ ಬೂದಿ ಭೂಮಿಯನ್ನು ಹೇಗೆ ರೂಪಿಸುತ್ತವೆ.',
   ),
   keywords: ['volcano', 'eruption', 'magma', 'lava', 'crater', 'vent', 'magma chamber', 'ash', 'active volcano', 'dormant', 'extinct', 'Barren Island', 'natural disasters', 'geography'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#22201f', '#080707'],
     keyAt: [5, 6, 5],

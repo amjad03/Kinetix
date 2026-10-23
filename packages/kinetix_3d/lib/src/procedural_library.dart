@@ -8,7 +8,7 @@ import 'model.dart';
 import 'primitives.dart';
 import 'viewer/manifest.dart';
 
-/// Teaching models drawn by KINETIX in code (no third-party files): machines, optics, lab
+/// Teaching models drawn by Zynetix in code (no third-party files): machines, optics, lab
 /// apparatus, the globe, landforms, a virus, teeth, a skull and four Indian monuments.
 /// Parts are named and noted; labels come in English, Hindi and Kannada. The monuments, skull
 /// and teeth are simplified shapes and say so in their captions.

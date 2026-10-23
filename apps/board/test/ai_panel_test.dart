@@ -204,21 +204,24 @@ void main() {
       await pump(tester);
       await openAi(tester);
       final cases = {
-        429: 'Your institution has used today’s KINETIX AI allowance. It resets tomorrow.',
-        503: 'KINETIX AI is not reachable right now. Try again in a minute.',
-        502: 'KINETIX AI could not produce a usable answer. Try again or rephrase.',
+        429: 'Your institution has used today’s Zynetix AI allowance. It resets tomorrow.',
+        503: 'Zynetix AI is not reachable right now. Try again in a minute.',
+        502: 'Zynetix AI could not produce a usable answer. Try again or rephrase.',
         422: 'Not for the classroom.',
-        401: 'Sign in again with the Teacher app to use KINETIX AI.',
+        401: 'Your sign-in on this board has ended. Sign in again to use Zynetix AI.',
+        // Forbidden: the server's own reason is shown.
+        403: 'AI is turned off for this institution.',
       };
       for (final e in cases.entries) {
-        override = (_) async => http.Response(jsonEncode({'message': e.key == 422 ? 'Not for the classroom.' : 'x', 'statusCode': e.key}), e.key);
+        final message = switch (e.key) { 422 => 'Not for the classroom.', 403 => 'AI is turned off for this institution.', _ => 'x' };
+        override = (_) async => http.Response(jsonEncode({'message': message, 'statusCode': e.key}), e.key);
         await ask(tester, 'Question ${e.key}');
         expect(find.text(e.value), findsOneWidget, reason: '${e.key}');
       }
       // The model server (Gemini's free tier) stayed busy after the API waited and asked again.
-      override = (_) async => http.Response(jsonEncode({'message': 'KINETIX AI is busy right now. Try again in a minute.', 'statusCode': 503, 'code': 'AI_BUSY'}), 503);
+      override = (_) async => http.Response(jsonEncode({'message': 'Zynetix AI is busy right now. Try again in a minute.', 'statusCode': 503, 'code': 'AI_BUSY'}), 503);
       await ask(tester, 'Busy question');
-      expect(find.text('KINETIX AI is busy right now. Try again in a minute.'), findsOneWidget);
+      expect(find.text('Zynetix AI is busy right now. Try again in a minute.'), findsOneWidget);
       override = (_) async => throw http.ClientException('Network is unreachable');
       await ask(tester, 'Offline question');
       expect(find.textContaining('The board is offline'), findsOneWidget);
@@ -238,7 +241,14 @@ void main() {
       expect(find.byKey(const Key('ai-signin')), findsOneWidget);
       await ask(tester, 'What is a cell?');
       expect(calls('/v1/ai/explain'), isEmpty);
-      expect(find.text('Sign in with the Teacher app to ask KINETIX AI.'), findsOneWidget);
+      expect(find.text('Sign in with the Teacher app to ask Zynetix AI.'), findsOneWidget);
+
+      // The notice opens the board's own sign-in, on the email and password form.
+      await tapKey(tester, 'ai-signin-button');
+      expect(find.byKey(const Key('pw-email')), findsOneWidget);
+      expect(find.byKey(const Key('pw-password')), findsOneWidget);
+      await tester.tap(find.byTooltip('Close').last);
+      await tester.pumpAndSettle();
 
       await tapKey(tester, 'ai-tool-math');
       await tester.enterText(find.byKey(const Key('math-input')), '3');

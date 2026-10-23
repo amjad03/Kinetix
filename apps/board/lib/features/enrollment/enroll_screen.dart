@@ -25,7 +25,7 @@ Future<void> rememberServerUrl(String url) async {
   } catch (_) {}
 }
 
-/// First run: an admin registers this board with the enrolment code from KINETIX ERP.
+/// First run: an admin registers this board with the enrolment code from Zynetix dashboard.
 class EnrollScreen extends StatefulWidget {
   const EnrollScreen({super.key, required this.controller});
 
@@ -95,12 +95,7 @@ class _EnrollScreenState extends State<EnrollScreen> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(color: c.primaryContainer, borderRadius: Kx.radiusMd),
-                          child: Icon(Icons.co_present_outlined, color: c.onPrimaryContainer),
-                        ),
+                        const ZynetixMark(size: 48),
                         const SizedBox(width: Kx.s16),
                         Text(l.appTitle, style: context.text.titleLarge),
                       ],

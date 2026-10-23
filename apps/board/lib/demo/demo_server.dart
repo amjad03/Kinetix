@@ -11,8 +11,8 @@ import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
 
 import 'demo_classes.dart';
 
-/// The demo backend for the board (`--dart-define=KINETIX_DEMO=true`): KINETIX Cloud answered in
-/// memory, with KINETIX Demo College's BCom Sem 3 A · Corporate Accounting class (as
+/// The demo backend for the board (`--dart-define=KINETIX_DEMO=true`): Zynetix Cloud answered in
+/// memory, with Zynetix Demo College's BCom Sem 3 A · Corporate Accounting class (as
 /// services/api/src/db/seed.ts seeds it). [client] goes into ApiClient and [realtime] stands in
 /// for the Socket.IO connection, so nothing touches the network. Saved boards, coverage,
 /// recordings and attendance last until the app is closed; AI answers are labelled previews.
@@ -266,7 +266,7 @@ class DemoBoardServer {
   };
 
   /// Sample concept videos (as the platform team links them in the ERP). The ids are placeholders
-  /// until the KINETIX channel's own videos are linked; YouTube then shows "Video unavailable".
+  /// until the Zynetix channel's own videos are linked; YouTube then shows "Video unavailable".
   static const conceptVideos = [
     ('cv1', 't5', 'kxDemoRe01a', 'Re-issue of forfeited shares in 6 minutes', 'en', 372),
     ('cv2', 't5', 'kxDemoRe02b', 'Capital reserve on re-issue: worked example', 'en', 455),
@@ -284,7 +284,7 @@ class DemoBoardServer {
           'title': title,
           'language': lang,
           'durationSeconds': secs,
-          'channelTitle': 'KINETIX',
+          'channelTitle': 'Zynetix',
           'position': i + 1,
         },
   ];
@@ -633,7 +633,7 @@ class DemoBoardServer {
       }, 201);
     }
 
-    // KINETIX AI: sample answers, marked as previews so the board labels them.
+    // Zynetix AI: sample answers, marked as previews so the board labels them.
     final topicName = (body['topic'] ?? body['question'] ?? 'the topic')
         .toString();
     switch (path) {
@@ -641,7 +641,7 @@ class DemoBoardServer {
         return json(
           _ai('explain', {
             'answer':
-                'Sample answer (demo): with a KINETIX AI server this would explain "$topicName" for ${current.section}, '
+                'Zynetix AI is not connected yet (an admin connects Claude in the Zynetix dashboard, AI settings). Once connected it would explain "$topicName" for ${current.section}, '
                 'using the ${current.subject} syllabus notes.',
             'keyPoints': [
               'Start from the journal entry',

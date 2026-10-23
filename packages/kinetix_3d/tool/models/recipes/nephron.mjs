@@ -31,7 +31,7 @@ export default {
     'ಪ್ರತಿ ಮೂತ್ರಪಿಂಡದಲ್ಲಿ ಸುಮಾರು ಹತ್ತು ಲಕ್ಷ ನೆಫ್ರಾನ್‌ಗಳಿವೆ. ಗ್ಲೋಮೆರುಲಸ್‌ನಲ್ಲಿ ರಕ್ತ ಸೋಸಲ್ಪಡುತ್ತದೆ; ನಂತರ ನಳಿಕೆ ದೇಹಕ್ಕೆ ಬೇಕಾದುದನ್ನು ಹಿಂಪಡೆಯುತ್ತದೆ, ಉಳಿದದ್ದು ಮೂತ್ರ.',
   ),
   keywords: ['nephron', 'kidney', 'excretion', 'excretory system', 'glomerulus', 'bowman\'s capsule', 'loop of henle', 'urine formation', 'filtration', 'reabsorption', 'excretory products and their elimination', 'life processes'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   groups: [
     { id: 'filter', name: t('Filter', 'छन्नी', 'ಸೋಸುಕ') },
     { id: 'tubule', name: t('Tubule', 'नलिका', 'ನಳಿಕೆ') },

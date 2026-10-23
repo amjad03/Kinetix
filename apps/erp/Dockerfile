@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# KINETIX ERP (Next.js standalone server). Build from the repo root (the pnpm workspace):
+# Zynetix ERP (Next.js standalone server). Build from the repo root (the pnpm workspace):
 #   docker build -f apps/erp/Dockerfile -t kinetix-erp .
 #   docker run -p 3000:3000 -e KINETIX_API_URL=http://api:4000 kinetix-erp
 # Runtime settings (KINETIX_API_URL, KINETIX_TIMEZONE, KINETIX_INSECURE_COOKIES) are read by the

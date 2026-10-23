@@ -62,7 +62,7 @@ export default {
     'ಕರಗಿದ ಬಂಡೆ (ಶಿಲಾಪಾಕ) ನೆಲದಾಳದ ಕೋಣೆಯಿಂದ ನಾಳದ ಮೂಲಕ ಮೇಲೇರಿ ಲಾವಾ, ಬೂದಿ ಮತ್ತು ಅನಿಲವಾಗಿ ಸಿಡಿಯುತ್ತದೆ; ಪದರ ಪದರವಾಗಿ ಶಂಕು ನಿರ್ಮಿಸುತ್ತದೆ.',
   ),
   keywords: ['volcano', 'volcanoes', 'magma', 'lava', 'eruption', 'crater', 'our changing earth', 'natural disasters', 'landforms', 'igneous rocks'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   matte: true,
   groups: [
     { id: 'land', name: t('Rock and cone', 'चट्टान और शंकु', 'ಬಂಡೆ ಮತ್ತು ಶಂಕು') },

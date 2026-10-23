@@ -10,7 +10,7 @@ import { CircularProgress, ListSubheader, MenuItem, Select, Snackbar } from '@/c
 import { Unlink as LinkOff } from 'lucide-react';
 const NONE = '';
 
-/** Each of the institution's subjects, and the library course its class uses (the board's Books panel, KINETIX AI). */
+/** Each of the institution's subjects, and the library course its class uses (the board's Books panel, Zynetix AI). */
 export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjects: SubjectLink[]; courses: Course[]; curricula: Curriculum[]; canLink: boolean }) {
   const { t } = useI18n();
   const [links, setLinks] = useState(() => new Map(subjects.map((s) => [s.id, s.courseId])));

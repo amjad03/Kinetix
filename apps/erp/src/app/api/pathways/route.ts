@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return new Response('Sign in', { status: 401 });
   const upstream = await fetch(`${API_URL}${target}`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: AbortSignal.timeout(30_000) }).catch(() => null);
-  if (!upstream) return new Response("Can't reach KINETIX Cloud", { status: 502 });
+  if (!upstream) return new Response("Can't reach Zynetix Cloud", { status: 502 });
   if (!upstream.ok) return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json' } });
   const headers = new Headers();
   for (const h of ['content-type', 'content-disposition']) {

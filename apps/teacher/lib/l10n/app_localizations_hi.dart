@@ -10,7 +10,7 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get appTitle => 'KINETIX Teacher';
+  String get appTitle => 'Zynetix Teacher';
 
   @override
   String get cancel => 'रद्द करें';
@@ -159,7 +159,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get errorNotTeacher => 'यह ऐप शिक्षकों के लिए है। आपके अकाउंट में शिक्षक की भूमिका नहीं है।';
 
   @override
-  String get errorOffline => 'KINETIX से कनेक्ट नहीं हो पा रहा। अपना इंटरनेट कनेक्शन और सर्वर का पता जाँचें।';
+  String get errorOffline => 'Zynetix से कनेक्ट नहीं हो पा रहा। अपना इंटरनेट कनेक्शन और सर्वर का पता जाँचें।';
 
   @override
   String get errorTimeout => 'सर्वर जवाब देने में बहुत समय ले रहा है। फिर से कोशिश करें।';
@@ -194,7 +194,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get errorOtherCampus => 'आप उस कैंपस के शिक्षक नहीं हैं जिसका यह बोर्ड है';
 
   @override
-  String get errorNotPairingQr => 'यह KINETIX बोर्ड का QR कोड नहीं है';
+  String get errorNotPairingQr => 'यह Zynetix बोर्ड का QR कोड नहीं है';
 
   @override
   String get errorFutureAttendance => 'आने वाली तारीख की उपस्थिति अभी नहीं ली जा सकती';
@@ -406,7 +406,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'अभी टाइमटेबल में आपकी कोई कक्षा नहीं है, इसलिए बोर्ड बिना विद्यार्थियों की सूची के खुलेगा। 2 घंटे बाद आप अपने-आप साइन आउट हो जाएँगे।';
 
   @override
-  String get qrNotOurs => 'यह KINETIX बोर्ड का कोड नहीं है। बोर्ड की स्क्रीन पर दिख रहा QR कोड स्कैन करें।';
+  String get qrNotOurs => 'यह Zynetix बोर्ड का कोड नहीं है। बोर्ड की स्क्रीन पर दिख रहा QR कोड स्कैन करें।';
 
   @override
   String get scanTitle => 'बोर्ड का QR कोड स्कैन करें';
@@ -935,7 +935,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get syllabusProgressBody => 'हर कक्षा के लिए पढ़ाई गई विषय-वस्तु मार्क करें';
 
   @override
-  String get syllabusUnlinked => 'यह विषय अभी किसी पाठ्यक्रम से नहीं जुड़ा है। आपके एडमिन इसे KINETIX ERP → Syllabus में जोड़ सकते हैं।';
+  String get syllabusUnlinked =>
+      'यह विषय अभी किसी पाठ्यक्रम से नहीं जुड़ा है। आपके एडमिन इसे Zynetix dashboard → Syllabus में जोड़ सकते हैं।';
 
   @override
   String topicsTaught(int covered, int total) {
@@ -1094,7 +1095,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get yearPlanNone =>
-      'अभी कोई वार्षिक योजना नहीं है। KINETIX आपकी समय-सारिणी के अनुसार, छुट्टियाँ और परीक्षाएँ छोड़कर, इस विषय का पाठ्यक्रम सत्र के हफ़्तों में बाँट सकता है। बाद में आप विषय-वस्तु आगे-पीछे कर सकते हैं।';
+      'अभी कोई वार्षिक योजना नहीं है। Zynetix आपकी समय-सारिणी के अनुसार, छुट्टियाँ और परीक्षाएँ छोड़कर, इस विषय का पाठ्यक्रम सत्र के हफ़्तों में बाँट सकता है। बाद में आप विषय-वस्तु आगे-पीछे कर सकते हैं।';
 
   @override
   String get makeYearPlan => 'वार्षिक योजना बनाएँ';
@@ -1260,13 +1261,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get lessonHomeworkHint => 'वैकल्पिक';
 
   @override
-  String get draftWithAi => 'KINETIX AI से ड्राफ़्ट बनाएँ';
+  String get draftWithAi => 'Zynetix AI से ड्राफ़्ट बनाएँ';
 
   @override
-  String get drafting => 'KINETIX AI ड्राफ़्ट बना रहा है…';
+  String get drafting => 'Zynetix AI ड्राफ़्ट बना रहा है…';
 
   @override
-  String get replaceWithDraftTitle => 'KINETIX AI के ड्राफ़्ट से बदलें?';
+  String get replaceWithDraftTitle => 'Zynetix AI के ड्राफ़्ट से बदलें?';
 
   @override
   String get replaceWithDraftBody => 'इस योजना की विषय-वस्तु, उद्देश्य, चरण, सामग्री और जाँच बदल जाएगी। आपका होमवर्क वैसा ही रहेगा।';
@@ -1278,7 +1279,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get aiDraftLabel => 'AI ड्राफ़्ट — इस्तेमाल से पहले जाँचें';
 
   @override
-  String get aiPreviewNote => 'नमूना: KINETIX AI सर्वर जुड़ा नहीं है, इसलिए यह एक नमूना ड्राफ़्ट है।';
+  String get aiPreviewNote => 'नमूना: Zynetix AI सर्वर जुड़ा नहीं है, इसलिए यह एक नमूना ड्राफ़्ट है।';
 
   @override
   String get savePlan => 'योजना सहेजें';
@@ -1313,13 +1314,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get errorPeriodNotOnDay => 'यह कक्षा उस दिन नहीं है।';
 
   @override
-  String get errorAiAllowance => 'आपके संस्थान ने आज की KINETIX AI सीमा पूरी कर ली है। कल फिर से मिलेगी।';
+  String get errorAiAllowance => 'आपके संस्थान ने आज की Zynetix AI सीमा पूरी कर ली है। कल फिर से मिलेगी।';
 
   @override
-  String get errorAiUnavailable => 'KINETIX AI अभी उपलब्ध नहीं है। एक मिनट बाद फिर से कोशिश करें।';
+  String get errorAiUnavailable => 'Zynetix AI अभी उपलब्ध नहीं है। एक मिनट बाद फिर से कोशिश करें।';
 
   @override
-  String get errorAiUnusable => 'KINETIX AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।';
+  String get errorAiUnusable => 'Zynetix AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।';
 
   @override
   String reviewedByOn(String name, String date) {
@@ -1383,7 +1384,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get demoBannerBody =>
-      'KINETIX डेमो कॉलेज का नमूना डेटा। कुछ भी सर्वर पर नहीं भेजा जाता, और आपके बदलाव ऐप बंद होने तक ही रहते हैं।';
+      'Zynetix डेमो कॉलेज का नमूना डेटा। कुछ भी सर्वर पर नहीं भेजा जाता, और आपके बदलाव ऐप बंद होने तक ही रहते हैं।';
 
   @override
   String demoSignInAs(String name) {
@@ -2937,7 +2938,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get pubAddByDoi => 'DOI से जोड़ें';
 
   @override
-  String get pubDoiBody => 'प्रकाशन का DOI लिखें; KINETIX उसका विवरण DOI रजिस्ट्री से पढ़ लेगा।';
+  String get pubDoiBody => 'प्रकाशन का DOI लिखें; Zynetix उसका विवरण DOI रजिस्ट्री से पढ़ लेगा।';
 
   @override
   String get pubImport => 'आयात करें';
@@ -3130,7 +3131,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get offlineWrongInstitution => 'यह बोर्ड किसी दूसरे संस्थान का है।';
 
   @override
-  String get offlineBad => 'यह KINETIX बोर्ड का असली कोड नहीं है।';
+  String get offlineBad => 'यह Zynetix बोर्ड का असली कोड नहीं है।';
 
   @override
   String offlineVerified(String board, String time) {

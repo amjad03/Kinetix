@@ -19,7 +19,7 @@ export const script = {
     'ಸೂರ್ಯ ಭೂಮಿಯ ನೀರನ್ನು ಹೇಗೆ ಚಲನೆಯಲ್ಲಿಡುತ್ತಾನೆ: ಆವಿಯಾಗುವಿಕೆ ಮತ್ತು ಬಾಷ್ಪವಿಸರ್ಜನೆ, ಮೋಡಗಳಾಗಿ ಸಾಂದ್ರೀಕರಣ, ಮಳೆ ಮತ್ತು ಹಿಮ, ಮತ್ತು ನದಿಗಳು ಹಾಗೂ ಅಂತರ್ಜಲದ ಮೂಲಕ ನೀರಿನ ಮರಳುವಿಕೆ.',
   ),
   keywords: ['water cycle', 'evaporation', 'condensation', 'precipitation', 'transpiration', 'clouds', 'rain', 'groundwater', 'river', 'hydrological cycle', 'water', 'geography'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#3a4a5c', '#11161d'],
     keyAt: [-4, 7, 6],

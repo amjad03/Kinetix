@@ -39,7 +39,7 @@ export default {
     'ಕ್ಯಾಮ್ ಸ್ಥಿರ ತಿರುಗುವಿಕೆಯನ್ನು ಫಾಲೋವರ್‌ನ ಆಯ್ದ ಮೇಲೆ-ಕೆಳಗಿನ ಚಲನೆಯಾಗಿ ಬದಲಿಸುತ್ತದೆ. ಪ್ರತಿ ಕೋನದಲ್ಲಿ ಫಾಲೋವರ್ ಸ್ಥಾನಾಂತರ = ಅದರ ತುದಿಯ ಕೆಳಗಿನ ಕ್ಯಾಮ್ ತ್ರಿಜ್ಯ − ಮೂಲ ವೃತ್ತ.',
   ),
   keywords: ['cam', 'follower', 'cam and follower', 'camshaft', 'base circle', 'lift', 'dwell', 'rise', 'return', 'mechanism', 'kinematics', 'theory of machines', 'valve'],
-  credit: 'Model built by KINETIX (a disc cam with a knife-edge follower)',
+  credit: 'Model built by Zynetix (a disc cam with a knife-edge follower)',
   crease: 35,
   build(THREE) {
     const outline = [];

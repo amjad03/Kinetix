@@ -70,7 +70,7 @@ export class PlatformMaterialsController {
       .innerJoin(chapters, eq(chapters.id, topics.chapterId))
       .innerJoin(courses, eq(courses.id, chapters.courseId))
       .where(and(eq(topics.id, id), isNull(topics.tenantId)));
-    if (!t) throw new NotFoundException('Topic not found in the KINETIX library');
+    if (!t) throw new NotFoundException('Topic not found in the Zynetix library');
     return t.language;
   }
 

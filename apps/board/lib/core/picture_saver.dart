@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Saves a PNG where the teacher will find it: the Android gallery (Pictures/KINETIX, through
+/// Saves a PNG where the teacher will find it: the Android gallery (Pictures/Zynetix, through
 /// MediaStore, no permission needed on Android 10 and later), the Downloads folder on a computer,
 /// and the system Save dialog anywhere else. Android's Save dialog cannot be relied on for a
 /// picture the board has rendered, and a desktop one never writes the bytes it is given, which is
@@ -19,7 +19,7 @@ class PictureSaver {
   final Future<Directory?> Function() _downloads;
   final TargetPlatform? platform;
 
-  /// Where the last picture went, for the "saved" message: "Pictures/KINETIX" or a file path.
+  /// Where the last picture went, for the "saved" message: "Pictures/Zynetix" or a file path.
   String? savedTo;
 
   TargetPlatform get _target => platform ?? defaultTargetPlatform;
@@ -31,7 +31,7 @@ class PictureSaver {
     if (!kIsWeb && _target == TargetPlatform.android) {
       final uri = await _channel.invokeMethod<String>('savePng', {'name': name, 'bytes': png});
       if (uri == null || uri.isEmpty) return false;
-      savedTo = 'Pictures/KINETIX';
+      savedTo = 'Pictures/Zynetix';
       return true;
     }
     if (!kIsWeb && (_target == TargetPlatform.macOS || _target == TargetPlatform.windows || _target == TargetPlatform.linux)) {

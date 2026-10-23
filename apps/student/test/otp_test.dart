@@ -168,7 +168,7 @@ void main() {
         ..add('guardian'),
     );
     await signInWithCode(tester);
-    expect(find.textContaining('KINETIX Parent app'), findsOneWidget);
+    expect(find.textContaining('Zynetix Parent app'), findsOneWidget);
     expect(state.signedIn, isFalse);
     expect(api.token, isNull);
     expect(storedToken(state), isNull);

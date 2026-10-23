@@ -68,7 +68,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
                 <div className={cn('max-w-[82%] px-4 py-2.5', staff ? 'rounded-[16px_16px_4px_16px]' : 'rounded-[16px_16px_16px_4px]', staff ? 'bg-secondary' : 'bg-accent', staff ? 'text-secondary-foreground' : 'text-foreground')}
                 >
                   <span className="text-xs leading-4 tracking-[0.3px] font-medium block mb-0.5">
-                    {side === 'staff' ? t('conv.asTeacher', { name: c.staff.fullName }) : side === 'family' ? t('conv.asParent', { name: c.family.fullName }) : 'KINETIX'}
+                    {side === 'staff' ? t('conv.asTeacher', { name: c.staff.fullName }) : side === 'family' ? t('conv.asParent', { name: c.family.fullName }) : 'Zynetix'}
                   </span>
                   <p className="text-[13px] leading-[19px] whitespace-pre-wrap wrap-anywhere">
                     {m.body}

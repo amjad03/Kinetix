@@ -189,7 +189,7 @@ export class ConversationsController {
         id: m.id,
         conversationId: id,
         recipientId: fromStaff ? c.familyId : c.staffId,
-        senderName: sender?.fullName ?? 'KINETIX',
+        senderName: sender?.fullName ?? 'Zynetix',
         body: body.body,
         studentId: c.studentId,
       });

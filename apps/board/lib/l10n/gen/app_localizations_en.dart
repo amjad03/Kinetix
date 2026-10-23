@@ -91,7 +91,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cloudUnreachable => 'Could not reach KINETIX Cloud';
+  String get cloudUnreachable => 'Could not reach Zynetix Cloud';
 
   @override
   String get toolRecord => 'Record';
@@ -241,7 +241,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudUnreachableCheckOnline =>
-      'Could not reach KINETIX Cloud. Check the board is online.';
+      'Could not reach Zynetix Cloud. Check the board is online.';
 
   @override
   String get noClassList => 'No class list';
@@ -274,7 +274,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get connectedCloud => 'Connected to KINETIX Cloud';
+  String get connectedCloud => 'Connected to Zynetix Cloud';
 
   @override
   String get offlineSaved => 'Offline. Everything is saved and will sync.';
@@ -324,7 +324,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recordingSavedUploading =>
-      'Recording saved. It is uploading to KINETIX Cloud.';
+      'Recording saved. It is uploading to Zynetix Cloud.';
 
   @override
   String recordingSavedLater(String name) {
@@ -901,7 +901,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Timer, stopwatch, name picker, dice, spinner, noise meter, screen shade, spotlight and the immersive reader.';
 
   @override
-  String get tourAiTitle => 'KINETIX AI';
+  String get tourAiTitle => 'Zynetix AI';
 
   @override
   String get tourAiBody =>
@@ -971,7 +971,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpGroupClass => 'Teaching tools';
 
   @override
-  String get helpGroupAi => 'KINETIX AI and Books';
+  String get helpGroupAi => 'Zynetix AI and Books';
 
   @override
   String get helpGroupSettings => 'Settings';
@@ -1096,7 +1096,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpRecord2 => 'Tap it again to stop and save.';
 
   @override
-  String get helpAiTitle => 'Ask KINETIX AI';
+  String get helpAiTitle => 'Ask Zynetix AI';
 
   @override
   String get helpAi1 =>
@@ -1557,7 +1557,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recUploadNote =>
-      'It uploads to KINETIX Cloud in the background. Absent students are told it is there.';
+      'It uploads to Zynetix Cloud in the background. Absent students are told it is there.';
 
   @override
   String sharedWith(String section) {
@@ -1628,10 +1628,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get thisBoard => 'this board';
 
   @override
-  String get signInUsePhone => 'Use the KINETIX Teacher app on your phone.';
+  String get signInUsePhone => 'Use the Zynetix Teacher app on your phone.';
 
   @override
-  String get signInStep1 => 'Open the KINETIX Teacher app';
+  String get signInStep1 => 'Open the Zynetix Teacher app';
 
   @override
   String get signInStep2 => 'Tap Connect to board';
@@ -1646,7 +1646,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cannotReachCloudRetrying =>
-      'Cannot reach KINETIX Cloud. Retrying…';
+      'Cannot reach Zynetix Cloud. Retrying…';
 
   @override
   String get signInCodeNote =>
@@ -1657,7 +1657,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollHint =>
-      'In KINETIX ERP, open Devices → Add board, then enter the code shown there.';
+      'In Zynetix dashboard, open Devices → Add board, then enter the code shown there.';
 
   @override
   String get enrollCode => 'Enrolment code';
@@ -1676,7 +1676,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiAskNeedsSignIn =>
-      'Sign in with the Teacher app to ask KINETIX AI.';
+      'Sign in with the Teacher app to ask Zynetix AI.';
 
   @override
   String get aiAskHint => 'Ask anything about a topic';
@@ -1697,7 +1697,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Answers follow your syllabus. Check before sharing with the class.';
 
   @override
-  String get aiPreparing => 'KINETIX AI is preparing an explanation…';
+  String get aiPreparing => 'Zynetix AI is preparing an explanation…';
 
   @override
   String get aiGroupTeach => 'Teach';
@@ -1748,17 +1748,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiPreviewLabel =>
-      'Preview — connect the KINETIX AI server for real answers';
+      'Preview. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).';
 
   @override
   String get aiPreview => 'Preview';
 
   @override
-  String get aiLanguageTooltip => 'Language for KINETIX AI';
+  String get aiLanguageTooltip => 'Language for Zynetix AI';
 
   @override
   String get aiSignInNotice =>
-      'KINETIX AI needs a teacher signed in and the board online. Sign in with the Teacher app from the profile button. The maths solver works without signing in.';
+      'Sign in on this board to use Zynetix AI. The maths solver works without signing in.';
+
+  @override
+  String get aiSignInButton => 'Sign in';
 
   @override
   String get difficultyEasy => 'Easy';
@@ -1779,23 +1782,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiErrSignInAgain =>
-      'Sign in again with the Teacher app to use KINETIX AI.';
+      'Your sign-in on this board has ended. Sign in again to use Zynetix AI.';
 
   @override
   String get aiErrRefused =>
-      'KINETIX AI can’t help with that request. Try rephrasing it for the classroom.';
+      'Zynetix AI can’t help with that request. Try rephrasing it for the classroom.';
 
   @override
   String get aiErrQuota =>
-      'Your institution has used today’s KINETIX AI allowance. It resets tomorrow.';
+      'Your institution has used today’s Zynetix AI allowance. It resets tomorrow.';
 
   @override
   String get aiErrUnusable =>
-      'KINETIX AI could not produce a usable answer. Try again or rephrase.';
+      'Zynetix AI could not produce a usable answer. Try again or rephrase.';
 
   @override
   String get aiErrUnreachable =>
-      'KINETIX AI is not reachable right now. Try again in a minute.';
+      'Zynetix AI is not reachable right now. Try again in a minute.';
 
   @override
   String get aiErrCheckInput => 'Check what you typed and try again.';
@@ -1807,15 +1810,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiErrTimeout =>
-      'KINETIX AI is taking too long. Try again in a minute.';
+      'Zynetix AI is taking too long. Try again in a minute.';
 
   @override
   String get aiErrOffline =>
-      'The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.';
+      'The board is offline. Connect to the internet to use Zynetix AI. The maths solver works offline.';
 
   @override
   String get aiErrBusy =>
-      'KINETIX AI is busy right now. Try again in a minute.';
+      'Zynetix AI is busy right now. Try again in a minute.';
 
   @override
   String get aiErrNothingOnPages =>
@@ -1833,7 +1836,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quizNeedsSignIn =>
-      'Sign in with the Teacher app to make a quiz with KINETIX AI.';
+      'Sign in with the Teacher app to make a quiz with Zynetix AI.';
 
   @override
   String get quizTypeTopic => 'Type a topic for the quiz first.';
@@ -1913,7 +1916,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeworkNeedsSignIn =>
-      'Sign in with the Teacher app to make homework with KINETIX AI.';
+      'Sign in with the Teacher app to make homework with Zynetix AI.';
 
   @override
   String get homeworkTypeTopic => 'Type a topic for the homework first.';
@@ -2013,7 +2016,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lessonNeedsSignIn =>
-      'Sign in with the Teacher app to plan a lesson with KINETIX AI.';
+      'Sign in with the Teacher app to plan a lesson with Zynetix AI.';
 
   @override
   String get lessonTypeTopic => 'Type a topic for the lesson first.';
@@ -2049,7 +2052,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readNeedsSignIn =>
-      'Sign in with the Teacher app to read the board with KINETIX AI.';
+      'Sign in with the Teacher app to read the board with Zynetix AI.';
 
   @override
   String get readIntro =>
@@ -2077,7 +2080,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyText => 'Copy text';
 
   @override
-  String get askAiAboutThis => 'Ask KINETIX AI about this';
+  String get askAiAboutThis => 'Ask Zynetix AI about this';
 
   @override
   String get booksTopic => 'Topic';
@@ -2095,7 +2098,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get booksUnlinked =>
-      'This subject isn\'t linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.';
+      'This subject isn\'t linked to a syllabus yet. Your admin can link it in Zynetix dashboard → Syllabus.';
 
   @override
   String get booksDraft =>
@@ -2125,7 +2128,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get booksCouldNotOpenTopic => 'Could not open this topic.';
 
   @override
-  String get booksExplain => 'Explain with KINETIX AI';
+  String get booksExplain => 'Explain with Zynetix AI';
 
   @override
   String get booksQuiz => 'Quick quiz on this';
@@ -2595,7 +2598,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'No lesson plan for this period. Plan it in the Teacher app.';
 
   @override
-  String get planAiDrafted => 'Drafted with KINETIX AI';
+  String get planAiDrafted => 'Drafted with Zynetix AI';
 
   @override
   String get planTopics => 'Topics';
@@ -2631,7 +2634,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get demoBannerBody =>
-      'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
+      'Sample data from Zynetix Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
 
   @override
   String demoSignInAs(String name) {
@@ -2653,7 +2656,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kioskSettingsHint =>
-      'Keeps students in Zynetix and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.';
+      'Keeps students in Zynetix and opens it again after a power cut. Your institution turns it on and sets the IT PIN in Zynetix dashboard → Settings.';
 
   @override
   String get kioskStatusLocked => 'On: this device is locked to Zynetix.';
@@ -2689,7 +2692,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kioskEnterPin =>
-      'For IT staff: enter the IT PIN set in KINETIX ERP.';
+      'For IT staff: enter the IT PIN set in Zynetix dashboard.';
 
   @override
   String get kioskPinLabel => 'IT PIN';
@@ -2715,7 +2718,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kioskNoPin =>
-      'No IT PIN has been set for this institution yet. Set one in KINETIX ERP → Settings → Board kiosk mode; the board picks it up when it is next online. Until then, kiosk mode can only be removed as the kiosk guide describes.';
+      'No IT PIN has been set for this institution yet. Set one in Zynetix dashboard → Settings → Board kiosk mode; the board picks it up when it is next online. Until then, kiosk mode can only be removed as the kiosk guide describes.';
 
   @override
   String get kioskLeave => 'Leave kiosk for 10 minutes';
@@ -2953,7 +2956,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kitAddWord => 'Add a word';
 
   @override
-  String get kitAiForLesson => 'KINETIX AI for this lesson';
+  String get kitAiForLesson => 'Zynetix AI for this lesson';
 
   @override
   String get kitAll => 'All';
@@ -3363,7 +3366,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiOfflineLabel =>
-      'Offline sample — from the board\'s own notes (in English), because KINETIX AI cannot be reached';
+      'Offline sample — from the board\'s own notes (in English), because Zynetix AI cannot be reached';
 
   @override
   String get profilesTitle => 'Who is teaching?';
@@ -4213,7 +4216,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiVoiceNothingHeard => 'Nothing was heard. Tap the mic and speak.';
 
   @override
-  String get booksAskAiChapter => 'Tap for KINETIX AI to explain it';
+  String get booksAskAiChapter => 'Tap for Zynetix AI to explain it';
 
   @override
   String get signInNeedsEnrolment =>
@@ -4369,7 +4372,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String offlineCodeBody(String time) {
-    return 'No connection. Scan this code in the KINETIX Teacher app to confirm this board. It works until $time.';
+    return 'No connection. Scan this code in the Zynetix Teacher app to confirm this board. It works until $time.';
   }
 
   @override
@@ -4434,7 +4437,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setUpAgainHint =>
-      'Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (KINETIX ERP → Boards). Settings and saved boards stay on this device.';
+      'Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (Zynetix dashboard → Boards). Settings and saved boards stay on this device.';
 
   @override
   String get setUpAgainKiosk =>
@@ -4445,7 +4448,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String setUpAgainBody(String server) {
-    return 'The board stops using $server and the teacher is signed out. Then enter the server address and a new enrolment code from KINETIX ERP (Boards → New enrolment code).';
+    return 'The board stops using $server and the teacher is signed out. Then enter the server address and a new enrolment code from Zynetix ERP (Boards → New enrolment code).';
   }
 
   @override

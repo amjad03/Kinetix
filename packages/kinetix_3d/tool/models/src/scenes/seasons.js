@@ -19,7 +19,7 @@ export const script = {
     'ಭೂಮಿಯ ಆವರ್ತನ ಹಗಲು-ರಾತ್ರಿಯನ್ನು ಹೇಗೆ ಉಂಟುಮಾಡುತ್ತದೆ, ಮತ್ತು ಅದರ ಓರೆಯಾದ ಅಕ್ಷ ಹಾಗೂ ಸೂರ್ಯನ ಸುತ್ತಲಿನ ಪಯಣ ಋತುಗಳನ್ನು ಹೇಗೆ ಉಂಟುಮಾಡುತ್ತವೆ.',
   ),
   keywords: ['day and night', 'seasons', 'rotation', 'revolution', 'axis', 'tilt', 'orbit', 'solstice', 'equinox', 'summer', 'winter', 'motions of the earth', 'geography'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#10141d', '#030407'],
     keyAt: [0, 8, 4],

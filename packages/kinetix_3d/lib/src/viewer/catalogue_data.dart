@@ -41,7 +41,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [7, 10, 11],
     keywords: ['lungs', 'lung', 'respiratory system', 'respiration', 'breathing', 'trachea', 'bronchi', 'alveoli', 'diaphragm', 'breathing and exchange of gases', 'human respiratory system'],
     variants: [],
-    credit: 'BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (lung surfaces made by KINETIX around its airways)',
+    credit: 'BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (lung surfaces made by Zynetix around its airways)',
   ),
   ViewerModelInfo(
     id: 'eye',
@@ -81,7 +81,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [7, 10, 11],
     keywords: ['kidney', 'kidneys', 'cortex', 'medulla', 'renal pyramid', 'renal pelvis', 'calyx', 'excretion', 'excretory system', 'urine', 'ureter', 'life processes', 'excretory products and their elimination', 'longitudinal section of kidney'],
     variants: [],
-    credit: 'Kidney shape, renal artery, vein and ureter: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; inside built by KINETIX (simplified)',
+    credit: 'Kidney shape, renal artery, vein and ureter: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; inside built by Zynetix (simplified)',
   ),
   ViewerModelInfo(
     id: 'skull',
@@ -111,7 +111,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [9, 10, 11],
     keywords: ['neuron', 'nerve cell', 'nervous system', 'nerve impulse', 'synapse', 'axon', 'dendrite', 'control and coordination', 'neural control'],
     variants: [],
-    credit: 'Simplified model built by KINETIX',
+    credit: 'Simplified model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'microscope',
@@ -131,7 +131,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [8, 9, 11],
     keywords: ['animal cell', 'cell', 'cell structure', 'organelles', 'the fundamental unit of life', 'cell the unit of life', 'mitochondria', 'nucleus', 'golgi'],
     variants: [],
-    credit: 'Simplified model built by KINETIX',
+    credit: 'Simplified model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'ear',
@@ -141,7 +141,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [8, 9, 10, 11],
     keywords: ['ear', 'human ear', 'hearing', 'sound', 'eardrum', 'cochlea', 'ossicles', 'semicircular canals', 'balance', 'sense organs', 'structure of the ear', 'neural control and coordination', 'auditory nerve', 'malleus', 'incus', 'stapes'],
     variants: [],
-    credit: 'Pinna: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; inner ear: micro-CT bony labyrinth F07, Wimmer et al. 2019 (Zenodo 10.5281/zenodo.3355272), CC BY 4.0; middle ear built by KINETIX (simplified)',
+    credit: 'Pinna: BodyParts3D, © The Database Center for Life Science, CC BY 4.0; inner ear: micro-CT bony labyrinth F07, Wimmer et al. 2019 (Zenodo 10.5281/zenodo.3355272), CC BY 4.0; middle ear built by Zynetix (simplified)',
   ),
   ViewerModelInfo(
     id: 'nephron',
@@ -151,7 +151,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [10, 11],
     keywords: ['nephron', 'kidney', 'excretion', 'excretory system', 'glomerulus', 'bowman\'s capsule', 'loop of henle', 'urine formation', 'filtration', 'reabsorption', 'excretory products and their elimination', 'life processes'],
     variants: [],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'plant_cell',
@@ -161,7 +161,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [8, 9, 11],
     keywords: ['plant cell', 'cell', 'cell wall', 'chloroplast', 'vacuole', 'the fundamental unit of life', 'cell structure', 'organelles'],
     variants: [],
-    credit: 'Simplified model built by KINETIX',
+    credit: 'Simplified model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'flower',
@@ -171,7 +171,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 7, 10, 12],
     keywords: ['flower', 'parts of a flower', 'pollination', 'fertilisation', 'fertilization', 'stamen', 'pistil', 'carpel', 'ovary', 'ovule', 'anther', 'stigma', 'reproduction in plants', 'sexual reproduction in flowering plants', 'getting to know plants'],
     variants: [],
-    credit: 'Simplified model built by KINETIX',
+    credit: 'Simplified model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'dna',
@@ -181,7 +181,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [10, 12],
     keywords: ['dna', 'double helix', 'genes', 'heredity', 'nucleotide', 'base pairing', 'replication', 'molecular basis of inheritance', 'chromosome', 'adenine', 'thymine', 'guanine', 'cytosine'],
     variants: ['helix', 'ladder', 'atoms'],
-    credit: 'Model built by KINETIX; atoms from PDB 1BNA (Drew, Wing, Takano, Broka, Tanaka, Itakura, Dickerson, 1981), RCSB Protein Data Bank, CC0',
+    credit: 'Model built by Zynetix; atoms from PDB 1BNA (Drew, Wing, Takano, Broka, Tanaka, Itakura, Dickerson, 1981), RCSB Protein Data Bank, CC0',
   ),
   ViewerModelInfo(
     id: 'virus',
@@ -201,7 +201,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [10, 12],
     keywords: ['electric motor', 'motor', 'magnetic effects of electric current', 'fleming', 'left hand rule', 'commutator', 'split ring', 'armature', 'force on a current carrying conductor', 'moving charges and magnetism'],
     variants: [],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'ac_generator',
@@ -211,7 +211,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [10, 12],
     keywords: ['generator', 'ac generator', 'electric generator', 'dynamo', 'electromagnetic induction', 'slip rings', 'alternating current', 'fleming right hand rule', 'magnetic effects of electric current', 'induced current'],
     variants: [],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'prism',
@@ -221,7 +221,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [10, 12],
     keywords: ['prism', 'dispersion', 'spectrum', 'vibgyor', 'white light', 'refraction', 'rainbow', 'the human eye and the colourful world', 'light', 'ray optics'],
     variants: [],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'bar_magnet',
@@ -231,7 +231,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 10, 12],
     keywords: ['magnet', 'bar magnet', 'magnetic field', 'field lines', 'compass', 'north pole', 'south pole', 'fun with magnets', 'magnetic effects of electric current', 'magnetism and matter'],
     variants: [],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'electric_circuit',
@@ -241,7 +241,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 7, 10],
     keywords: ['electric circuit', 'circuit', 'electricity', 'electric current', 'ohm\'s law', 'ammeter', 'voltmeter', 'resistor', 'resistance', 'potential difference', 'cell', 'battery', 'bulb', 'series circuit', 'current electricity'],
     variants: [],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'lens_bench',
@@ -251,7 +251,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [7, 8, 10, 12],
     keywords: ['lens', 'convex lens', 'concave lens', 'optics', 'ray diagram', 'image formation', 'focal length', 'light', 'refraction', 'real image', 'virtual image', 'lens formula', 'magnification', 'light reflection and refraction'],
     variants: ['convex', 'concave'],
-    credit: 'Model built by KINETIX (image placed by the lens formula)',
+    credit: 'Model built by Zynetix (image placed by the lens formula)',
   ),
   ViewerModelInfo(
     id: 'transformer',
@@ -261,7 +261,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['transformer', 'step up transformer', 'step down transformer', 'mutual induction', 'electromagnetic induction', 'alternating current', 'turns ratio', 'primary coil', 'secondary coil', 'power transmission'],
     variants: ['step_up', 'step_down'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'simple_machines',
@@ -271,7 +271,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 7, 9],
     keywords: ['simple machines', 'lever', 'fulcrum', 'pulley', 'inclined plane', 'mechanical advantage', 'load', 'effort', 'work and energy', 'force and pressure', 'moments', 'principle of moments'],
     variants: ['lever', 'pulley', 'ramp'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'atoms',
@@ -281,7 +281,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [9, 10, 11],
     keywords: ['atom', 'atoms', 'structure of the atom', 'bohr model', 'electron', 'proton', 'neutron', 'electronic configuration', 'shells', 'atoms and molecules', 'valency'],
     variants: ['h', 'he', 'li', 'be', 'b', 'c', 'n', 'o', 'f', 'ne', 'na', 'mg', 'al', 'si', 'p', 's', 'cl', 'ar', 'k', 'ca'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'molecules',
@@ -291,7 +291,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [9, 10, 11],
     keywords: ['molecule', 'molecules', 'chemical bonding', 'covalent bond', 'ionic bond', 'molecular shape', 'vsepr', 'methane', 'water', 'benzene', 'carbon and its compounds', 'hydrocarbon', 'ethene', 'ethyne', 'sodium chloride'],
     variants: ['h2', 'o2', 'n2', 'hcl', 'h2o', 'nh3', 'ch4', 'co2', 'c2h6', 'c2h4', 'c2h2', 'c6h6', 'bf3', 'pcl5', 'sf6', 'nacl'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'orbitals',
@@ -301,7 +301,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['orbital', 'orbitals', 'atomic orbital', 's orbital', 'p orbital', 'd orbital', 'quantum numbers', 'structure of atom', 'nodal plane', 'shapes of orbitals', 'azimuthal quantum number'],
     variants: ['s1', 's2', 'px', 'py', 'pz', 'pall', 'dxy', 'dyz', 'dxz', 'dx2y2', 'dz2'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'hybridisation',
@@ -311,7 +311,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['hybridisation', 'hybridization', 'hybrid orbitals', 'sp3', 'sp2', 'sp', 'vsepr', 'chemical bonding and molecular structure', 'molecular geometry', 'bond angle', 'tetrahedral', 'trigonal planar', 'octahedral'],
     variants: ['sp', 'sp2', 'sp3', 'sp3d', 'sp3d2'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'crystal_lattices',
@@ -321,7 +321,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['crystal lattice', 'unit cell', 'solid state', 'the solid state', 'simple cubic', 'body centred cubic', 'face centred cubic', 'bcc', 'fcc', 'packing efficiency', 'coordination number', 'sodium chloride', 'close packing'],
     variants: ['sc', 'bcc', 'fcc', 'nacl'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'lab_apparatus',
@@ -331,7 +331,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 7, 8, 9, 10, 11],
     keywords: ['beaker', 'flask', 'conical flask', 'test tube', 'burette', 'bunsen burner', 'retort stand', 'measuring cylinder', 'tripod', 'wire gauze', 'lab equipment', 'titration', 'apparatus', 'laboratory', 'acids bases and salts'],
     variants: [],
-    credit: 'Model built by KINETIX (standard glassware sizes)',
+    credit: 'Model built by Zynetix (standard glassware sizes)',
   ),
   ViewerModelInfo(
     id: 'organic_molecules',
@@ -341,7 +341,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [10, 11, 12],
     keywords: ['ethanol', 'methanol', 'alcohol', 'acetic acid', 'ethanoic acid', 'carboxylic acid', 'glucose', 'sugar', 'carbohydrate', 'functional group', 'organic chemistry', 'carbon and its compounds', 'biomolecules', 'fermentation'],
     variants: ['methanol', 'ethanol', 'acetic_acid', 'glucose'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'globe',
@@ -351,7 +351,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [5, 6, 7, 9],
     keywords: ['globe', 'earth', 'equator', 'latitude', 'longitude', 'axis', 'poles', 'tropic of cancer', 'tropic of capricorn', 'prime meridian', 'continents', 'oceans', 'globe latitudes and longitudes', 'the earth in the solar system', 'map'],
     variants: [],
-    credit: 'Earth pictures: NASA Earth Observatory, Blue Marble: Next Generation (Reto Stöckli), public domain; model by KINETIX',
+    credit: 'Earth pictures: NASA Earth Observatory, Blue Marble: Next Generation (Reto Stöckli), public domain; model by Zynetix',
   ),
   ViewerModelInfo(
     id: 'earth_layers',
@@ -361,7 +361,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [7, 9, 11],
     keywords: ['earth layers', 'interior of the earth', 'inside our earth', 'crust', 'mantle', 'core', 'inner core', 'outer core', 'sial', 'sima', 'continents', 'oceans', 'earthquakes', 'the earth'],
     variants: [],
-    credit: 'Model built by KINETIX; coastlines from Natural Earth (public domain)',
+    credit: 'Model built by Zynetix; coastlines from Natural Earth (public domain)',
   ),
   ViewerModelInfo(
     id: 'landforms',
@@ -371,7 +371,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [5, 6, 7, 9],
     keywords: ['landform', 'landforms', 'mountain', 'valley', 'plateau', 'delta', 'river', 'relief', 'physical features', 'himalaya', 'deccan plateau', 'meghalaya', 'cherrapunji', 'sundarbans', 'major landforms of the earth', 'physical features of india', 'contour'],
     variants: ['mountain', 'valley', 'plateau', 'delta'],
-    credit: 'Heights: Terrain Tiles on AWS (SRTM, GMTED2010; NASA/USGS, public domain); delta picture: NASA Worldview/GIBS, MODIS Aqua (public domain); model by KINETIX',
+    credit: 'Heights: Terrain Tiles on AWS (SRTM, GMTED2010; NASA/USGS, public domain); delta picture: NASA Worldview/GIBS, MODIS Aqua (public domain); model by Zynetix',
   ),
   ViewerModelInfo(
     id: 'volcano',
@@ -381,7 +381,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [7, 9, 11],
     keywords: ['volcano', 'volcanoes', 'magma', 'lava', 'eruption', 'crater', 'our changing earth', 'natural disasters', 'landforms', 'igneous rocks'],
     variants: [],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'taj_mahal',
@@ -391,7 +391,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [7, 8, 12],
     keywords: ['taj mahal', 'mughal', 'shah jahan', 'mumtaz mahal', 'monument', 'architecture', 'agra', 'tomb', 'marble', 'world heritage', 'rulers and buildings', 'mughal empire', 'dome', 'minaret'],
     variants: [],
-    credit: 'Simplified model drawn by KINETIX from published measurements',
+    credit: 'Simplified model drawn by Zynetix from published measurements',
   ),
   ViewerModelInfo(
     id: 'qutub_minar',
@@ -401,7 +401,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 7, 12],
     keywords: ['qutub minar', 'qutb minar', 'delhi sultanate', 'aibak', 'iltutmish', 'monument', 'minaret', 'architecture', 'delhi', 'world heritage', 'towns traders and craftspersons', 'the delhi sultans'],
     variants: [],
-    credit: 'Simplified model drawn by KINETIX from published measurements',
+    credit: 'Simplified model drawn by Zynetix from published measurements',
   ),
   ViewerModelInfo(
     id: 'india_gate',
@@ -411,7 +411,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [8, 10, 12],
     keywords: ['india gate', 'war memorial', 'world war', 'first world war', 'delhi', 'new delhi', 'monument', 'lutyens', 'arch', 'amar jawan jyoti', 'colonialism', 'architecture'],
     variants: [],
-    credit: 'Simplified model drawn by KINETIX from published measurements',
+    credit: 'Simplified model drawn by Zynetix from published measurements',
   ),
   ViewerModelInfo(
     id: 'konark',
@@ -421,7 +421,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 7, 9, 12],
     keywords: ['konark', 'sun temple', 'odisha', 'temple architecture', 'monument', 'chariot', 'sundial', 'kalinga architecture', 'eastern ganga dynasty', 'world heritage', 'konark wheel', 'temples'],
     variants: [],
-    credit: 'Simplified model drawn by KINETIX from published measurements',
+    credit: 'Simplified model drawn by Zynetix from published measurements',
   ),
   ViewerModelInfo(
     id: 'solar_system',
@@ -431,7 +431,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 8, 9],
     keywords: ['solar system', 'planets', 'sun', 'orbit', 'stars and the solar system', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'asteroid belt'],
     variants: [],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
   ViewerModelInfo(
     id: 'seasons',
@@ -441,7 +441,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [6, 9, 11],
     keywords: ['seasons', 'motions of the earth', 'revolution', 'rotation', 'axis', 'tilt', 'equinox', 'solstice', 'day and night', 'tropic of cancer', 'tropic of capricorn', 'the earth in the solar system'],
     variants: [],
-    credit: 'Model built by KINETIX; coastlines from Natural Earth (public domain)',
+    credit: 'Model built by Zynetix; coastlines from Natural Earth (public domain)',
   ),
   ViewerModelInfo(
     id: 'engine',
@@ -451,7 +451,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [9, 10, 11, 12],
     keywords: ['engine', 'petrol engine', 'piston', 'crankshaft', 'internal combustion', 'four stroke', 'valves', 'spark plug', 'heat engine', 'combustion', 'connecting rod', 'machines', 'energy conversion'],
     variants: [],
-    credit: 'Model built by KINETIX (a simplified single-cylinder engine)',
+    credit: 'Model built by Zynetix (a simplified single-cylinder engine)',
   ),
   ViewerModelInfo(
     id: 'gears',
@@ -461,7 +461,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [7, 8, 9, 11],
     keywords: ['gear', 'gears', 'gear ratio', 'gear train', 'machines', 'speed ratio', 'torque', 'simple machines', 'bicycle', 'mechanical advantage', 'rotation'],
     variants: [],
-    credit: 'Model built by KINETIX (involute spur gears, module 4 mm)',
+    credit: 'Model built by Zynetix (involute spur gears, module 4 mm)',
   ),
   ViewerModelInfo(
     id: 'cam_follower',
@@ -471,7 +471,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['cam', 'follower', 'cam and follower', 'camshaft', 'base circle', 'lift', 'dwell', 'rise', 'return', 'mechanism', 'kinematics', 'theory of machines', 'valve'],
     variants: [],
-    credit: 'Model built by KINETIX (a disc cam with a knife-edge follower)',
+    credit: 'Model built by Zynetix (a disc cam with a knife-edge follower)',
   ),
   ViewerModelInfo(
     id: 'gear_types',
@@ -481,7 +481,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['gear', 'helical gear', 'bevel gear', 'helix angle', 'gear pair', 'pitch cone', 'gear ratio', 'differential', 'machines', 'kinematics', 'theory of machines', 'machine design', 'power transmission'],
     variants: [],
-    credit: 'Model built by KINETIX (involute profiles, module 4 mm; bevel teeth simplified)',
+    credit: 'Model built by Zynetix (involute profiles, module 4 mm; bevel teeth simplified)',
   ),
   ViewerModelInfo(
     id: 'dc_machine',
@@ -491,7 +491,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['dc machine', 'dc motor', 'dc generator', 'armature', 'commutator', 'brushes', 'field winding', 'pole shoe', 'yoke', 'electrical machines', 'back emf', 'shunt motor', 'series motor'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'rcc_frame',
@@ -501,7 +501,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['rcc', 'reinforced concrete', 'frame building', 'column', 'beam', 'slab', 'footing', 'load path', 'civil engineering', 'structure', 'building', 'storey'],
     variants: [],
-    credit: 'Model built by KINETIX (a simplified RCC frame at 1:50)',
+    credit: 'Model built by Zynetix (a simplified RCC frame at 1:50)',
   ),
   ViewerModelInfo(
     id: 'induction_motor',
@@ -511,7 +511,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['induction motor', 'squirrel cage', 'three phase motor', 'rotating magnetic field', 'slip', 'synchronous speed', 'stator winding', 'rotor bars', 'end ring', 'electrical machines', 'asynchronous motor'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'truss_bridge',
@@ -521,7 +521,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['truss', 'truss bridge', 'pratt truss', 'bridge', 'tension', 'compression', 'member', 'chord', 'civil engineering', 'steel bridge', 'method of joints'],
     variants: [],
-    credit: 'Model built by KINETIX (a simplified Pratt through-truss at 1:100)',
+    credit: 'Model built by Zynetix (a simplified Pratt through-truss at 1:100)',
   ),
   ViewerModelInfo(
     id: 'arch_bridge',
@@ -531,7 +531,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['arch', 'arch bridge', 'bridge', 'thrust', 'compression', 'parabolic arch', 'spandrel', 'abutment', 'civil engineering', 'concrete bridge'],
     variants: [],
-    credit: 'Model built by KINETIX (a simplified open-spandrel arch at 1:200)',
+    credit: 'Model built by Zynetix (a simplified open-spandrel arch at 1:200)',
   ),
   ViewerModelInfo(
     id: 'transformer_1ph',
@@ -541,7 +541,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['transformer', 'single phase transformer', 'core type', 'emf equation', 'turns ratio', 'hv winding', 'lv winding', 'laminated core', 'electrical machines', 'mutual induction', 'core loss'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'suspension_bridge',
@@ -551,7 +551,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['suspension bridge', 'bridge', 'cable', 'hanger', 'tower', 'anchorage', 'tension', 'parabola', 'sag', 'civil engineering', 'howrah', 'golden gate'],
     variants: [],
-    credit: 'Model built by KINETIX (a simplified suspension bridge at 1:1000)',
+    credit: 'Model built by Zynetix (a simplified suspension bridge at 1:1000)',
   ),
   ViewerModelInfo(
     id: 'transformer_3ph',
@@ -561,7 +561,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['three phase transformer', 'core type transformer', 'distribution transformer', 'star delta', 'dyn11', 'vector group', 'hv winding', 'lv winding', 'electrical machines', 'power systems', 'substation'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'alternator',
@@ -571,7 +571,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['alternator', 'synchronous generator', 'salient pole', 'slip rings', 'field winding', 'three phase', 'stator winding', 'synchronous speed', 'electrical machines', 'power systems', 'excitation'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'cable_stayed_bridge',
@@ -581,7 +581,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['cable-stayed bridge', 'cable stayed', 'bridge', 'pylon', 'stay cable', 'fan', 'harp', 'tension', 'compression', 'civil engineering', 'bandra-worli sea link'],
     variants: [],
-    credit: 'Model built by KINETIX (a simplified cable-stayed bridge at 1:1000)',
+    credit: 'Model built by Zynetix (a simplified cable-stayed bridge at 1:1000)',
   ),
   ViewerModelInfo(
     id: 'footings',
@@ -591,7 +591,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [11, 12],
     keywords: ['footing', 'foundation', 'isolated footing', 'combined footing', 'strip footing', 'raft foundation', 'pile foundation', 'pile cap', 'bearing capacity', 'soil', 'civil engineering', 'geotechnical'],
     variants: [],
-    credit: 'Model built by KINETIX (simplified foundations at 1:50)',
+    credit: 'Model built by Zynetix (simplified foundations at 1:50)',
   ),
   ViewerModelInfo(
     id: 'cstr_reactor',
@@ -601,7 +601,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['cstr', 'continuous stirred tank reactor', 'stirred tank', 'mixed flow reactor', 'backmix reactor', 'chemical reactor', 'reaction engineering', 'agitator', 'impeller', 'rushton turbine', 'baffles', 'jacketed vessel', 'chemical engineering'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'pfr_reactor',
@@ -611,7 +611,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['pfr', 'plug flow reactor', 'tubular reactor', 'chemical reactor', 'reaction engineering', 'residence time', 'space time', 'conversion', 'chemical engineering'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'packed_bed_reactor',
@@ -621,7 +621,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['packed bed reactor', 'fixed bed reactor', 'catalytic reactor', 'catalyst', 'heterogeneous catalysis', 'ergun equation', 'pressure drop', 'reaction engineering', 'chemical engineering', 'haber process'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'shell_tube_hx',
@@ -631,7 +631,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['heat exchanger', 'shell and tube', 'shell and tube heat exchanger', 'baffles', 'tube sheet', 'lmtd', 'heat transfer', 'counter current', 'condenser', 'chemical engineering', 'tema'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'distillation_column',
@@ -641,7 +641,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['distillation', 'distillation column', 'fractionating column', 'tray column', 'sieve tray', 'downcomer', 'reflux', 'condenser', 'reboiler', 'mccabe thiele', 'mass transfer', 'separation', 'chemical engineering', 'fractional distillation'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'ev_battery_pack',
@@ -651,7 +651,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['battery pack', 'ev battery', 'electric vehicle', 'lithium ion', 'cell', 'module', 'bms', 'battery management system', 'cell balancing', 'thermal management', 'cooling plate', 'contactor', '21700', 'ev technology'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'pmsm_motor',
@@ -661,7 +661,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['pmsm', 'bldc', 'brushless dc motor', 'permanent magnet synchronous motor', 'traction motor', 'ev motor', 'electric vehicle', 'electric drives', 'rotating magnetic field', 'regenerative braking', 'ev technology'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'ev_drivetrain',
@@ -671,7 +671,7 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [12],
     keywords: ['ev drivetrain', 'electric vehicle', 'ev architecture', 'powertrain', 'inverter', 'traction motor', 'onboard charger', 'dc-dc converter', 'regenerative braking', 'battery pack', 'reduction gear', 'differential', 'ev technology'],
     variants: [],
-    credit: 'Model built by KINETIX (proportions simplified)',
+    credit: 'Model built by Zynetix (proportions simplified)',
   ),
   ViewerModelInfo(
     id: 'solids',
@@ -681,6 +681,6 @@ const _viewerModels = <ViewerModelInfo>[
     classes: [5, 6, 7, 8, 9, 10, 11],
     keywords: ['solid shapes', '3d shapes', 'nets', 'cube', 'cuboid', 'cylinder', 'cone', 'sphere', 'pyramid', 'prism', 'surface area', 'volume', 'mensuration', 'visualising solid shapes', 'conic sections', 'cross section'],
     variants: ['cube', 'cuboid', 'pyramid', 'prism', 'cylinder', 'cone', 'sphere'],
-    credit: 'Model built by KINETIX',
+    credit: 'Model built by Zynetix',
   ),
 ];

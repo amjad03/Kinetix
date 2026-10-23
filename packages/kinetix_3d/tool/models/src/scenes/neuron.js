@@ -18,7 +18,7 @@ export const script = {
     'ನರಕೋಶದ ಭಾಗಗಳು, ಪೊರೆಯ ಮೂಲಕ ಅಯಾನುಗಳು ಹಾದುಹೋಗುವಾಗ ಆವೇಗ ಆಕ್ಸಾನ್ ಮೇಲೆ ಹೇಗೆ ಸಾಗುತ್ತದೆ, ಮೈಲಿನ್ ಅದನ್ನು ಹೇಗೆ ವೇಗಗೊಳಿಸುತ್ತದೆ, ಮತ್ತು ಸಂದೇಶ ಸಿನಾಪ್ಸ್ ದಾಟಿ ಮುಂದಿನ ಕೋಶವನ್ನು ಹೇಗೆ ತಲುಪುತ್ತದೆ.',
   ),
   keywords: ['neuron', 'nerve cell', 'nerve impulse', 'action potential', 'synapse', 'axon', 'dendrite', 'myelin', 'neurotransmitter', 'sodium', 'potassium', 'nervous system', 'control and coordination', 'neural control'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#1d2230', '#07090d'],
     keyAt: [3, 6, 7],

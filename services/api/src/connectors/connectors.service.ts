@@ -182,7 +182,7 @@ export class ConnectorsService implements OnApplicationBootstrap, BeforeApplicat
     else if (t.type !== 'webhook_out') result = await this.adapters.test(t.type, JSON.parse(this.requireBox().decrypt(r.configEnc, aad(p.tenantId, id))));
     else {
       const config = JSON.parse(this.requireBox().decrypt(r.configEnc, aad(p.tenantId, id))) as { url: string; secret: string };
-      const body = JSON.stringify({ id: randomUUID(), type: 'connector.test', tenantId: p.tenantId, occurredAt: new Date().toISOString(), data: { message: 'This is a test from KINETIX' } });
+      const body = JSON.stringify({ id: randomUUID(), type: 'connector.test', tenantId: p.tenantId, occurredAt: new Date().toISOString(), data: { message: 'This is a test from Zynetix' } });
       const sent = await this.post(config.url, config.secret, body, 'connector.test', randomUUID());
       result = sent.ok ? { status: 'ok', message: `The endpoint answered ${sent.status}`, httpStatus: sent.status } : { status: 'failed', message: sent.error, httpStatus: sent.status };
     }
@@ -200,7 +200,7 @@ export class ConnectorsService implements OnApplicationBootstrap, BeforeApplicat
         method: 'POST',
         redirect: 'manual',
         signal: AbortSignal.timeout(TIMEOUT_MS),
-        headers: { 'content-type': 'application/json', 'user-agent': 'KINETIX-Webhooks/1', 'x-kinetix-event': eventType, 'x-kinetix-delivery': deliveryId, 'x-kinetix-signature': signWebhook(secret, body, Math.floor(Date.now() / 1000)) },
+        headers: { 'content-type': 'application/json', 'user-agent': 'Zynetix-Webhooks/1', 'x-kinetix-event': eventType, 'x-kinetix-delivery': deliveryId, 'x-kinetix-signature': signWebhook(secret, body, Math.floor(Date.now() / 1000)) },
         body,
       });
       await res.arrayBuffer().catch(() => undefined);

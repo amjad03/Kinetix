@@ -90,7 +90,7 @@ describe('Phase 00 foundation', () => {
       secret = (await http().post('/v1/me/mfa/enrol').set(as('accountant')).expect(200)).body.secret;
       const uri = (await http().post('/v1/me/mfa/enrol').set(as('accountant')).expect(200)).body;
       secret = uri.secret;
-      expect(uri.otpauthUri).toMatch(/^otpauth:\/\/totp\/KINETIX/);
+      expect(uri.otpauthUri).toMatch(/^otpauth:\/\/totp\/Zynetix/);
       const wrong = await http().post('/v1/me/mfa/confirm').set(as('accountant')).send({ code: '000000' }).expect(403);
       expect(wrong.body.code).toBe('MFA_CODE_INVALID');
       const ok = await http().post('/v1/me/mfa/confirm').set(as('accountant')).send({ code: code(secret) }).expect(200);

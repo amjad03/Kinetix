@@ -25,7 +25,7 @@ export default {
     'ಕೋಶಗಳು ಸರಣಿ ಮತ್ತು ಸಮಾಂತರದಲ್ಲಿ ಸೇರಿ ಮಾಡ್ಯೂಲ್, ಮಾಡ್ಯೂಲ್‌ಗಳು ಪ್ಯಾಕ್ ಆಗುತ್ತವೆ (ಉದಾ. ಸುಮಾರು 350 Vಗೆ 96s). BMS ಪ್ರತಿ ಕೋಶದ ವೋಲ್ಟೇಜ್ ಮತ್ತು ತಾಪ ಗಮನಿಸಿ, ಸಮತೋಲನಗೊಳಿಸಿ, ದೋಷವಾದಾಗ ಕಾಂಟ್ಯಾಕ್ಟರ್ ತೆರೆಯುತ್ತದೆ; ತಂಪಿನ ಫಲಕ ಕೋಶಗಳನ್ನು 20–40 °C ನಲ್ಲಿಡುತ್ತದೆ.',
   ),
   keywords: ['battery pack', 'ev battery', 'electric vehicle', 'lithium ion', 'cell', 'module', 'bms', 'battery management system', 'cell balancing', 'thermal management', 'cooling plate', 'contactor', '21700', 'ev technology'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const out = {};

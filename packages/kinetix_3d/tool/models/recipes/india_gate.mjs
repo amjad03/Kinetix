@@ -1,5 +1,5 @@
 // India Gate, New Delhi (1921-1931, designed by Edwin Lutyens), drawn by
-// KINETIX from its published measurements: a 42 m arch of buff and red
+// Zynetix from its published measurements: a 42 m arch of buff and red
 // Bharatpur sandstone with a 9.1 m opening, smaller arches through the
 // piers, a deep cornice, the inscribed attic, stepped tiers and the shallow
 // bowl on top. A simplified model.
@@ -27,7 +27,7 @@ export default {
     'ಮೊದಲ ಮಹಾಯುದ್ಧ ಮತ್ತು 1914-1921ರ ಇತರ ಯುದ್ಧಗಳಲ್ಲಿ ಮಡಿದ ಭಾರತೀಯ ಸೇನೆಯ ಸುಮಾರು 84,000 ಸೈನಿಕರ ಸ್ಮರಣೆಯ 42 ಮೀ ಎತ್ತರದ ಯುದ್ಧ ಸ್ಮಾರಕ ಕಮಾನು; ಅವರ ಹೆಸರುಗಳನ್ನು ಇದರ ಗೋಡೆಗಳ ಮೇಲೆ ಕೆತ್ತಲಾಗಿದೆ. ನಿಜ ಅನುಪಾತದ ಸರಳ ಮಾದರಿ.',
   ),
   keywords: ['india gate', 'war memorial', 'world war', 'first world war', 'delhi', 'new delhi', 'monument', 'lutyens', 'arch', 'amar jawan jyoti', 'colonialism', 'architecture'],
-  credit: 'Simplified model drawn by KINETIX from published measurements',
+  credit: 'Simplified model drawn by Zynetix from published measurements',
   size: 0.6,
   crease: 30,
   matte: true,

@@ -13,7 +13,7 @@ FeatureStrings deviceLockStrings(String lang) => FeatureStrings(lang, deviceLock
 const deviceLockStringTable = <String, Map<String, String>>{
   'en': {
     'title': 'This board is locked',
-    'body': 'IT locked this board. It unlocks from the KINETIX ERP device console, or with the IT PIN.',
+    'body': 'IT locked this board. It unlocks from the Zynetix dashboard device console, or with the IT PIN.',
     'pin': 'IT PIN',
     'unlock': 'Unlock',
     'wrong': 'That PIN is not right.',
@@ -21,7 +21,7 @@ const deviceLockStringTable = <String, Map<String, String>>{
   },
   'hi': {
     'title': 'यह बोर्ड लॉक है',
-    'body': 'IT ने यह बोर्ड लॉक किया है। यह KINETIX ERP के डिवाइस कंसोल से, या IT PIN से अनलॉक होता है।',
+    'body': 'IT ने यह बोर्ड लॉक किया है। यह Zynetix dashboard के डिवाइस कंसोल से, या IT PIN से अनलॉक होता है।',
     'pin': 'IT PIN',
     'unlock': 'अनलॉक करें',
     'wrong': 'PIN सही नहीं है।',
@@ -29,7 +29,7 @@ const deviceLockStringTable = <String, Map<String, String>>{
   },
   'kn': {
     'title': 'ಈ ಬೋರ್ಡ್ ಲಾಕ್ ಆಗಿದೆ',
-    'body': 'IT ಈ ಬೋರ್ಡ್ ಅನ್ನು ಲಾಕ್ ಮಾಡಿದೆ. KINETIX ERP ಸಾಧನ ಕನ್ಸೋಲ್‌ನಿಂದ ಅಥವಾ IT PIN ನಿಂದ ಅನ್‌ಲಾಕ್ ಮಾಡಬಹುದು.',
+    'body': 'IT ಈ ಬೋರ್ಡ್ ಅನ್ನು ಲಾಕ್ ಮಾಡಿದೆ. Zynetix dashboard ಸಾಧನ ಕನ್ಸೋಲ್‌ನಿಂದ ಅಥವಾ IT PIN ನಿಂದ ಅನ್‌ಲಾಕ್ ಮಾಡಬಹುದು.',
     'pin': 'IT PIN',
     'unlock': 'ಅನ್‌ಲಾಕ್ ಮಾಡಿ',
     'wrong': 'PIN ಸರಿಯಿಲ್ಲ.',

@@ -1,4 +1,4 @@
-import { Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Inject, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { SecretBox } from '../common/secret-box.js';
 import { ENV, type Env } from '../config/env.js';
@@ -25,6 +25,8 @@ export interface AiConnectionView {
   updatedAt: Date | null;
   /** Whose AI answers this institution: its own key, the server's configuration, or none (previews). */
   source: 'institution' | 'server' | 'none';
+  /** False when the server has no SECRETS_ENCRYPTION_KEY: keys can be neither saved nor used. */
+  canStoreKeys: boolean;
 }
 
 export interface StoredConnection {
@@ -42,6 +44,8 @@ export interface StoredConnection {
 @Injectable()
 export class AiConnections {
   private readonly box: SecretBox | undefined;
+  private readonly log = new Logger('AiConnections');
+  private warnedStoredKey = false;
   private readonly cache = new Map<string, { at: number; provider: Promise<LlmProvider | null> }>();
 
   constructor(
@@ -49,6 +53,7 @@ export class AiConnections {
     @Inject(ENV) private readonly env: Env,
   ) {
     this.box = SecretBox.fromEnv(env);
+    if (!this.box) this.log.warn(`${AI_SECRETS_KEY_MISSING}: institutions cannot connect Claude from the Zynetix dashboard, and keys already saved are ignored. Set SECRETS_ENCRYPTION_KEY in .env.`);
   }
 
   /** The institution's own provider, or null to use the server's. Cached per institution. */
@@ -76,7 +81,13 @@ export class AiConnections {
   /** The current institution's decrypted connection, or null. */
   async stored(tx: Tx): Promise<StoredConnection | null> {
     const [row] = await tx.select().from(aiConnections);
-    if (!row || !this.box) return null;
+    if (!row) return null;
+    if (!this.box) {
+      // A key was saved, but this server cannot decrypt it: answers fall back to the server's provider.
+      if (!this.warnedStoredKey) this.log.warn(`Institution ${row.tenantId} has a saved Claude key, but ${AI_SECRETS_KEY_MISSING}; using the server's AI provider instead.`);
+      this.warnedStoredKey = true;
+      return null;
+    }
     return { apiKey: this.box.decrypt(row.apiKeyEnc, aad(row.tenantId)), model: row.model, fallbackModel: row.fallbackModel };
   }
 
@@ -90,6 +101,7 @@ export class AiConnections {
       keyHint: row?.apiKeyLast4 ?? null,
       updatedAt: row?.updatedAt ?? null,
       source: row && this.box ? 'institution' : server.preview ? 'none' : 'server',
+      canStoreKeys: !!this.box,
     };
   }
 

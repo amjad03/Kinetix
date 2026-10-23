@@ -1,4 +1,4 @@
-// Platform › Concept videos: helpers for the KINETIX platform team's pages (pure, unit-tested).
+// Platform › Concept videos: helpers for the Zynetix platform team's pages (pure, unit-tested).
 
 import type { PlatformCourseTree, PlaylistPreview } from './types';
 

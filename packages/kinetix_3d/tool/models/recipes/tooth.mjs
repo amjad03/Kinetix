@@ -61,7 +61,7 @@ export default {
     'ಅರ್ಧಕ್ಕೆ ಕತ್ತರಿಸಿದ ದವಡೆಹಲ್ಲು: ದಂತದ್ರವ್ಯದ ಮೇಲೆ ಗಟ್ಟಿಯಾದ ಎನಾಮೆಲ್, ನರ ಮತ್ತು ರಕ್ತನಾಳಗಳಿರುವ ಮೃದು ತಿರುಳು, ದವಡೆ ಮೂಳೆಯಲ್ಲಿ ಹಿಡಿದಿರುವ ಬೇರುಗಳು. ಸರಳೀಕೃತ ಮಾದರಿ.',
   ),
   keywords: ['tooth', 'teeth', 'molar', 'enamel', 'dentine', 'dentin', 'pulp', 'root', 'gum', 'cavity', 'tooth decay', 'dental care', 'structure of tooth', 'digestion', 'nutrition in animals'],
-  credit: 'Simplified model built by KINETIX from textbook measurements',
+  credit: 'Simplified model built by Zynetix from textbook measurements',
   groups: [
     { id: 'tooth', name: t('Tooth', 'दाँत', 'ಹಲ್ಲು') },
     { id: 'living', name: t('Living core', 'जीवित भाग', 'ಜೀವಂತ ಭಾಗ') },

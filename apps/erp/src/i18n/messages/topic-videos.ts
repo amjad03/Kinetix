@@ -4,7 +4,7 @@ import { area } from '../define';
 export default area(
   {
     'nav.topicVideos': 'Topic videos',
-    'tv.subtitle': 'Add YouTube videos to topics for your institution. They show on boards and in the Student App after the KINETIX videos. Teachers add videos for their own classes and can ask for them to be shared with everyone.',
+    'tv.subtitle': 'Add YouTube videos to topics for your institution. They show on boards and in the Student App after the Zynetix videos. Teachers add videos for their own classes and can ask for them to be shared with everyone.',
     'tv.subtitleTeacher': 'Add YouTube videos to topics for your classes. Ask for a video to be shared and the principal can approve it for the whole institution.',
     'tv.queue': 'Waiting for approval',
     'tv.queueEmpty': 'No videos are waiting for approval.',
@@ -18,7 +18,7 @@ export default area(
     'tv.teacherCount': '{count} from teachers',
     'tv.search': 'Search topics',
     'tv.noResults': 'No topics match',
-    'tv.source.platform': 'KINETIX',
+    'tv.source.platform': 'Zynetix',
     'tv.source.institution': 'Institution',
     'tv.source.teacher': 'Teacher',
     'tv.status.none': 'Your classes only',
@@ -64,7 +64,7 @@ export default area(
   {
     hi: {
       'nav.topicVideos': 'विषय के वीडियो',
-      'tv.subtitle': 'अपने संस्थान के लिए विषयों में यूट्यूब वीडियो जोड़ें। ये KINETIX के वीडियो के बाद बोर्ड और विद्यार्थी ऐप में दिखते हैं। शिक्षक अपनी कक्षाओं के लिए वीडियो जोड़ते हैं और सबके साथ साझा करने का अनुरोध कर सकते हैं।',
+      'tv.subtitle': 'अपने संस्थान के लिए विषयों में यूट्यूब वीडियो जोड़ें। ये Zynetix के वीडियो के बाद बोर्ड और विद्यार्थी ऐप में दिखते हैं। शिक्षक अपनी कक्षाओं के लिए वीडियो जोड़ते हैं और सबके साथ साझा करने का अनुरोध कर सकते हैं।',
       'tv.subtitleTeacher': 'अपनी कक्षाओं के लिए विषयों में यूट्यूब वीडियो जोड़ें। साझा करने का अनुरोध भेजें; प्राचार्य इसे पूरे संस्थान के लिए मंज़ूर कर सकते हैं।',
       'tv.queue': 'मंज़ूरी की प्रतीक्षा में',
       'tv.queueEmpty': 'कोई वीडियो मंज़ूरी की प्रतीक्षा में नहीं है।',
@@ -78,7 +78,7 @@ export default area(
       'tv.teacherCount': '{count} शिक्षकों के',
       'tv.search': 'विषय खोजें',
       'tv.noResults': 'कोई विषय नहीं मिला',
-      'tv.source.platform': 'KINETIX',
+      'tv.source.platform': 'Zynetix',
       'tv.source.institution': 'संस्थान',
       'tv.source.teacher': 'शिक्षक',
       'tv.status.none': 'केवल आपकी कक्षाएँ',
@@ -123,7 +123,7 @@ export default area(
     },
     kn: {
       'nav.topicVideos': 'ವಿಷಯದ ವೀಡಿಯೊಗಳು',
-      'tv.subtitle': 'ನಿಮ್ಮ ಸಂಸ್ಥೆಗಾಗಿ ವಿಷಯಗಳಿಗೆ ಯೂಟ್ಯೂಬ್ ವೀಡಿಯೊಗಳನ್ನು ಸೇರಿಸಿ. KINETIX ವೀಡಿಯೊಗಳ ನಂತರ ಅವು ಬೋರ್ಡ್ ಮತ್ತು ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್‌ನಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ. ಶಿಕ್ಷಕರು ತಮ್ಮ ತರಗತಿಗಳಿಗೆ ವೀಡಿಯೊ ಸೇರಿಸಿ, ಎಲ್ಲರೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲು ಕೋರಬಹುದು.',
+      'tv.subtitle': 'ನಿಮ್ಮ ಸಂಸ್ಥೆಗಾಗಿ ವಿಷಯಗಳಿಗೆ ಯೂಟ್ಯೂಬ್ ವೀಡಿಯೊಗಳನ್ನು ಸೇರಿಸಿ. Zynetix ವೀಡಿಯೊಗಳ ನಂತರ ಅವು ಬೋರ್ಡ್ ಮತ್ತು ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್‌ನಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ. ಶಿಕ್ಷಕರು ತಮ್ಮ ತರಗತಿಗಳಿಗೆ ವೀಡಿಯೊ ಸೇರಿಸಿ, ಎಲ್ಲರೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲು ಕೋರಬಹುದು.',
       'tv.subtitleTeacher': 'ನಿಮ್ಮ ತರಗತಿಗಳಿಗಾಗಿ ವಿಷಯಗಳಿಗೆ ಯೂಟ್ಯೂಬ್ ವೀಡಿಯೊಗಳನ್ನು ಸೇರಿಸಿ. ಹಂಚಿಕೊಳ್ಳಲು ಕೋರಿದರೆ ಪ್ರಾಂಶುಪಾಲರು ಇಡೀ ಸಂಸ್ಥೆಗೆ ಅನುಮೋದಿಸಬಹುದು.',
       'tv.queue': 'ಅನುಮೋದನೆಗೆ ಕಾಯುತ್ತಿವೆ',
       'tv.queueEmpty': 'ಯಾವ ವೀಡಿಯೊವೂ ಅನುಮೋದನೆಗೆ ಕಾಯುತ್ತಿಲ್ಲ.',
@@ -137,7 +137,7 @@ export default area(
       'tv.teacherCount': '{count} ಶಿಕ್ಷಕರವು',
       'tv.search': 'ವಿಷಯಗಳನ್ನು ಹುಡುಕಿ',
       'tv.noResults': 'ಯಾವ ವಿಷಯವೂ ಸಿಗಲಿಲ್ಲ',
-      'tv.source.platform': 'KINETIX',
+      'tv.source.platform': 'Zynetix',
       'tv.source.institution': 'ಸಂಸ್ಥೆ',
       'tv.source.teacher': 'ಶಿಕ್ಷಕ',
       'tv.status.none': 'ನಿಮ್ಮ ತರಗತಿಗಳಿಗೆ ಮಾತ್ರ',

@@ -1,4 +1,4 @@
-/// KINETIX ink engine, shared by the Board and the apps that show saved boards, recordings and
+/// Zynetix ink engine, shared by the Board and the apps that show saved boards, recordings and
 /// the live class: the endless whiteboard and its elements, the tools that draw on it, the
 /// saved-board and lesson formats, read-only viewers, and the AI pen (shapes, maths and words
 /// from handwriting).

@@ -9,14 +9,35 @@ import '../../core/models.dart';
 import '../../core/offline_codes.dart';
 import '../../l10n/feature_strings.dart';
 import '../../l10n/l10n.dart';
+import '../../core/board_controller.dart';
+import '../board/chrome.dart';
 import '../board/phone_chrome.dart';
 import 'password_sign_in.dart';
 
 /// "Sign in to this board": the teacher scans the QR code or types the 6-digit code in the
-/// KINETIX Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
+/// Zynetix Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
 /// when the board receives the session (see [BoardController.onPaired]).
+/// Opens "Sign in to this board" for [board] ([withPassword]: on the email and password form).
+/// Explains instead when the board is not enrolled (no API to sign in against).
+Future<void> showBoardSignInDialog(BuildContext context, BoardController board, {bool withPassword = false}) async {
+  final api = board.api;
+  if (api == null) {
+    showBoardMessage(context, context.l10n.signInNeedsEnrolment);
+    return;
+  }
+  await showDialog<void>(
+    context: context,
+    builder: (_) => BoardChromeTheme(
+      child: SignInDialog(api: api, boardName: board.deviceName, withPassword: withPassword, onTapSignIn: board.openSession, onPaired: board.openSession),
+    ),
+  );
+}
+
 class SignInDialog extends StatefulWidget {
-  const SignInDialog({super.key, required this.api, required this.boardName, this.onTapSignIn, this.onPaired, this.tapPoll = const Duration(seconds: 3), this.pairPoll = const Duration(seconds: 2)});
+  const SignInDialog({super.key, required this.api, required this.boardName, this.onTapSignIn, this.onPaired, this.tapPoll = const Duration(seconds: 3), this.pairPoll = const Duration(seconds: 2), this.withPassword = false});
+
+  /// Opens on the email and password form instead of the code (e.g. from the AI panel's notice).
+  final bool withPassword;
 
   /// Called when polling finds that a teacher paired while the realtime push never arrived.
   final void Function(String sessionToken, SessionContext session)? onPaired;
@@ -61,6 +82,7 @@ class _SignInDialogState extends State<SignInDialog> {
   @override
   void initState() {
     super.initState();
+    _withPassword = widget.withPassword && widget.onPaired != null;
     _load();
     _tick = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
     if (widget.onPaired != null) _pairTimer = Timer.periodic(widget.pairPoll, (_) => _pollPaired());
@@ -182,6 +204,8 @@ class _SignInDialogState extends State<SignInDialog> {
             children: [
               Row(
                 children: [
+                  const ZynetixMark(size: 40),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

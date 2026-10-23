@@ -243,7 +243,7 @@ double _angleDeg(Offset a, Offset b, Offset c) {
 
 // --- Fitting --------------------------------------------------------------------------------
 
-/// Selection thresholds, tuned on real drawings in the KINETIX prototype. [complexity] is the
+/// Selection thresholds, tuned on real drawings in the Zynetix prototype. [complexity] is the
 /// error a candidate must beat per extra corner: the simplest shape that explains the ink wins.
 abstract final class FitTuning {
   static const maxError = 0.05;

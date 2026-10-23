@@ -21,7 +21,7 @@ void main() {
     expect(seen!.method, 'savePng');
     expect((seen!.arguments as Map)['name'], 'board.png');
     expect((seen!.arguments as Map)['bytes'], png);
-    expect(saver.savedTo, 'Pictures/KINETIX');
+    expect(saver.savedTo, 'Pictures/Zynetix');
   });
 
   test('Android: a refusal from the device is raised, not swallowed', () async {

@@ -23,7 +23,7 @@ export default {
     'ಒಂದು ದ್ರವ ಕೊಳವೆಗಳ ಒಳಗೆ, ಇನ್ನೊಂದು ಶೆಲ್‌ನಲ್ಲಿ ಅವುಗಳ ಹೊರಗೆ ಹರಿಯುತ್ತದೆ, ಬ್ಯಾಫಲ್‌ಗಳು ಅದನ್ನು ಕೊಳವೆಗಳ ಅಡ್ಡಲಾಗಿ ತಿರುಗಿಸುತ್ತವೆ. ಶಾಖ ಕೊಳವೆಯ ಗೋಡೆಗಳ ಮೂಲಕ ಸಾಗುತ್ತದೆ: Q = U·A·ΔT_lm (ಲಾಗ್-ಸರಾಸರಿ ತಾಪ ವ್ಯತ್ಯಾಸ).',
   ),
   keywords: ['heat exchanger', 'shell and tube', 'shell and tube heat exchanger', 'baffles', 'tube sheet', 'lmtd', 'heat transfer', 'counter current', 'condenser', 'chemical engineering', 'tema'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const tubes = [];

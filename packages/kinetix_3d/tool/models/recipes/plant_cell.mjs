@@ -20,7 +20,7 @@ export default {
     'ಪ್ರಾಣಿ ಕೋಶದಂತೆಯೇ, ಆದರೆ ಪೊರೆಯ ಹೊರಗೆ ಗಟ್ಟಿಯಾದ ಕೋಶಭಿತ್ತಿ, ರಸ ತುಂಬಿದ ದೊಡ್ಡ ರಸದಾನಿ ಮತ್ತು ಸೂರ್ಯನ ಬೆಳಕಿನಿಂದ ಆಹಾರ ತಯಾರಿಸುವ ಹರಿತ್ತಿನ ಕಣಗಳು.',
   ),
   keywords: ['plant cell', 'cell', 'cell wall', 'chloroplast', 'vacuole', 'the fundamental unit of life', 'cell structure', 'organelles'],
-  credit: 'Simplified model built by KINETIX',
+  credit: 'Simplified model built by Zynetix',
   groups: [
     { id: 'outside', name: t('Boundary', 'सीमा', 'ಗಡಿ') },
     { id: 'control', name: t('Control centre', 'नियंत्रण केंद्र', 'ನಿಯಂತ್ರಣ ಕೇಂದ್ರ') },

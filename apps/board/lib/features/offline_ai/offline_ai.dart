@@ -9,7 +9,7 @@ import 'topics.dart';
 
 export 'topics.dart' show Topic, topics, findTopic;
 
-/// KINETIX AI's offline fallback: sample answers from 74 hand-written lesson notes, ported from
+/// Zynetix AI's offline fallback: sample answers from 74 hand-written lesson notes, ported from
 /// the prototype (topics.dart). Used in demo builds and when the board cannot reach the API.
 ///
 /// Everything happens on the board; nothing is sent anywhere. Answers carry
@@ -92,7 +92,7 @@ class OfflineAi {
   }
 }
 
-/// Whether [e] means KINETIX AI could not be reached (no network, the server down or not
+/// Whether [e] means Zynetix AI could not be reached (no network, the server down or not
 /// answering), as opposed to a refusal or a mistake in the request: then the offline notes may answer.
 bool cloudUnreachable(Object e) => switch (e) {
   ApiException(:final status) => status == 503 || status == 504,

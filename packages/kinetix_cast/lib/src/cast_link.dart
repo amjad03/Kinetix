@@ -38,7 +38,7 @@ class CastEndedEvent extends CastEvent {
   final CastEndReason reason;
 }
 
-/// The sender's line to KINETIX Cloud: ask to cast, relay WebRTC signalling, stop.
+/// The sender's line to Zynetix Cloud: ask to cast, relay WebRTC signalling, stop.
 abstract class CastLink {
   Stream<CastEvent> get events;
   Future<CastRequestResult> request(String deviceId);
@@ -97,7 +97,7 @@ class SocketCastLink implements CastLink {
       });
       return CastRequestResult.fromJson(await done.future.timeout(const Duration(seconds: 10)));
     } catch (e) {
-      return CastRequestResult(ok: false, error: e is StateError ? e.message : 'Could not reach KINETIX Cloud');
+      return CastRequestResult(ok: false, error: e is StateError ? e.message : 'Could not reach Zynetix Cloud');
     }
   }
 

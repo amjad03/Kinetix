@@ -253,7 +253,7 @@ abstract class AppLocalizations {
   /// No description provided for @cloudUnreachable.
   ///
   /// In en, this message translates to:
-  /// **'Could not reach KINETIX Cloud'**
+  /// **'Could not reach Zynetix Cloud'**
   String get cloudUnreachable;
 
   /// No description provided for @toolRecord.
@@ -499,7 +499,7 @@ abstract class AppLocalizations {
   /// No description provided for @cloudUnreachableCheckOnline.
   ///
   /// In en, this message translates to:
-  /// **'Could not reach KINETIX Cloud. Check the board is online.'**
+  /// **'Could not reach Zynetix Cloud. Check the board is online.'**
   String get cloudUnreachableCheckOnline;
 
   /// No description provided for @noClassList.
@@ -529,7 +529,7 @@ abstract class AppLocalizations {
   /// No description provided for @connectedCloud.
   ///
   /// In en, this message translates to:
-  /// **'Connected to KINETIX Cloud'**
+  /// **'Connected to Zynetix Cloud'**
   String get connectedCloud;
 
   /// No description provided for @offlineSaved.
@@ -613,7 +613,7 @@ abstract class AppLocalizations {
   /// No description provided for @recordingSavedUploading.
   ///
   /// In en, this message translates to:
-  /// **'Recording saved. It is uploading to KINETIX Cloud.'**
+  /// **'Recording saved. It is uploading to Zynetix Cloud.'**
   String get recordingSavedUploading;
 
   /// No description provided for @recordingSavedLater.
@@ -1585,7 +1585,7 @@ abstract class AppLocalizations {
   /// No description provided for @tourAiTitle.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI'**
+  /// **'Zynetix AI'**
   String get tourAiTitle;
 
   /// No description provided for @tourAiBody.
@@ -1711,7 +1711,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpGroupAi.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI and Books'**
+  /// **'Zynetix AI and Books'**
   String get helpGroupAi;
 
   /// No description provided for @helpGroupSettings.
@@ -1933,7 +1933,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpAiTitle.
   ///
   /// In en, this message translates to:
-  /// **'Ask KINETIX AI'**
+  /// **'Ask Zynetix AI'**
   String get helpAiTitle;
 
   /// No description provided for @helpAi1.
@@ -2767,7 +2767,7 @@ abstract class AppLocalizations {
   /// No description provided for @recUploadNote.
   ///
   /// In en, this message translates to:
-  /// **'It uploads to KINETIX Cloud in the background. Absent students are told it is there.'**
+  /// **'It uploads to Zynetix Cloud in the background. Absent students are told it is there.'**
   String get recUploadNote;
 
   /// No description provided for @sharedWith.
@@ -2875,13 +2875,13 @@ abstract class AppLocalizations {
   /// No description provided for @signInUsePhone.
   ///
   /// In en, this message translates to:
-  /// **'Use the KINETIX Teacher app on your phone.'**
+  /// **'Use the Zynetix Teacher app on your phone.'**
   String get signInUsePhone;
 
   /// No description provided for @signInStep1.
   ///
   /// In en, this message translates to:
-  /// **'Open the KINETIX Teacher app'**
+  /// **'Open the Zynetix Teacher app'**
   String get signInStep1;
 
   /// Button name in the Teacher App; keep it the same as the Teacher App shows it.
@@ -2905,7 +2905,7 @@ abstract class AppLocalizations {
   /// No description provided for @cannotReachCloudRetrying.
   ///
   /// In en, this message translates to:
-  /// **'Cannot reach KINETIX Cloud. Retrying…'**
+  /// **'Cannot reach Zynetix Cloud. Retrying…'**
   String get cannotReachCloudRetrying;
 
   /// No description provided for @signInCodeNote.
@@ -2923,7 +2923,7 @@ abstract class AppLocalizations {
   /// Devices and Add board are ERP menu names; keep them as the ERP shows them.
   ///
   /// In en, this message translates to:
-  /// **'In KINETIX ERP, open Devices → Add board, then enter the code shown there.'**
+  /// **'In Zynetix dashboard, open Devices → Add board, then enter the code shown there.'**
   String get enrollHint;
 
   /// No description provided for @enrollCode.
@@ -2959,7 +2959,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiAskNeedsSignIn.
   ///
   /// In en, this message translates to:
-  /// **'Sign in with the Teacher app to ask KINETIX AI.'**
+  /// **'Sign in with the Teacher app to ask Zynetix AI.'**
   String get aiAskNeedsSignIn;
 
   /// No description provided for @aiAskHint.
@@ -2995,7 +2995,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiPreparing.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI is preparing an explanation…'**
+  /// **'Zynetix AI is preparing an explanation…'**
   String get aiPreparing;
 
   /// No description provided for @aiGroupTeach.
@@ -3091,7 +3091,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiPreviewLabel.
   ///
   /// In en, this message translates to:
-  /// **'Preview — connect the KINETIX AI server for real answers'**
+  /// **'Preview. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).'**
   String get aiPreviewLabel;
 
   /// No description provided for @aiPreview.
@@ -3103,14 +3103,20 @@ abstract class AppLocalizations {
   /// No description provided for @aiLanguageTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Language for KINETIX AI'**
+  /// **'Language for Zynetix AI'**
   String get aiLanguageTooltip;
 
   /// No description provided for @aiSignInNotice.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI needs a teacher signed in and the board online. Sign in with the Teacher app from the profile button. The maths solver works without signing in.'**
+  /// **'Sign in on this board to use Zynetix AI. The maths solver works without signing in.'**
   String get aiSignInNotice;
+
+  /// No description provided for @aiSignInButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get aiSignInButton;
 
   /// No description provided for @difficultyEasy.
   ///
@@ -3145,31 +3151,31 @@ abstract class AppLocalizations {
   /// No description provided for @aiErrSignInAgain.
   ///
   /// In en, this message translates to:
-  /// **'Sign in again with the Teacher app to use KINETIX AI.'**
+  /// **'Your sign-in on this board has ended. Sign in again to use Zynetix AI.'**
   String get aiErrSignInAgain;
 
   /// No description provided for @aiErrRefused.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI can’t help with that request. Try rephrasing it for the classroom.'**
+  /// **'Zynetix AI can’t help with that request. Try rephrasing it for the classroom.'**
   String get aiErrRefused;
 
   /// No description provided for @aiErrQuota.
   ///
   /// In en, this message translates to:
-  /// **'Your institution has used today’s KINETIX AI allowance. It resets tomorrow.'**
+  /// **'Your institution has used today’s Zynetix AI allowance. It resets tomorrow.'**
   String get aiErrQuota;
 
   /// No description provided for @aiErrUnusable.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI could not produce a usable answer. Try again or rephrase.'**
+  /// **'Zynetix AI could not produce a usable answer. Try again or rephrase.'**
   String get aiErrUnusable;
 
   /// No description provided for @aiErrUnreachable.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI is not reachable right now. Try again in a minute.'**
+  /// **'Zynetix AI is not reachable right now. Try again in a minute.'**
   String get aiErrUnreachable;
 
   /// No description provided for @aiErrCheckInput.
@@ -3187,19 +3193,19 @@ abstract class AppLocalizations {
   /// No description provided for @aiErrTimeout.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI is taking too long. Try again in a minute.'**
+  /// **'Zynetix AI is taking too long. Try again in a minute.'**
   String get aiErrTimeout;
 
   /// No description provided for @aiErrOffline.
   ///
   /// In en, this message translates to:
-  /// **'The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.'**
+  /// **'The board is offline. Connect to the internet to use Zynetix AI. The maths solver works offline.'**
   String get aiErrOffline;
 
   /// No description provided for @aiErrBusy.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI is busy right now. Try again in a minute.'**
+  /// **'Zynetix AI is busy right now. Try again in a minute.'**
   String get aiErrBusy;
 
   /// No description provided for @aiErrNothingOnPages.
@@ -3208,13 +3214,13 @@ abstract class AppLocalizations {
   /// **'Nothing could be read on those pages. Write on the board first, or choose other pages.'**
   String get aiErrNothingOnPages;
 
-  /// Question sent to KINETIX AI, in the AI language.
+  /// Question sent to Zynetix AI, in the AI language.
   ///
   /// In en, this message translates to:
   /// **'Explain {topic}'**
   String aiExplainTopic(String topic);
 
-  /// Question sent to KINETIX AI, in the AI language.
+  /// Question sent to Zynetix AI, in the AI language.
   ///
   /// In en, this message translates to:
   /// **'Explain this from the board: {text}'**
@@ -3223,7 +3229,7 @@ abstract class AppLocalizations {
   /// No description provided for @quizNeedsSignIn.
   ///
   /// In en, this message translates to:
-  /// **'Sign in with the Teacher app to make a quiz with KINETIX AI.'**
+  /// **'Sign in with the Teacher app to make a quiz with Zynetix AI.'**
   String get quizNeedsSignIn;
 
   /// No description provided for @quizTypeTopic.
@@ -3331,7 +3337,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeworkNeedsSignIn.
   ///
   /// In en, this message translates to:
-  /// **'Sign in with the Teacher app to make homework with KINETIX AI.'**
+  /// **'Sign in with the Teacher app to make homework with Zynetix AI.'**
   String get homeworkNeedsSignIn;
 
   /// No description provided for @homeworkTypeTopic.
@@ -3469,7 +3475,7 @@ abstract class AppLocalizations {
   /// No description provided for @lessonNeedsSignIn.
   ///
   /// In en, this message translates to:
-  /// **'Sign in with the Teacher app to plan a lesson with KINETIX AI.'**
+  /// **'Sign in with the Teacher app to plan a lesson with Zynetix AI.'**
   String get lessonNeedsSignIn;
 
   /// No description provided for @lessonTypeTopic.
@@ -3535,7 +3541,7 @@ abstract class AppLocalizations {
   /// No description provided for @readNeedsSignIn.
   ///
   /// In en, this message translates to:
-  /// **'Sign in with the Teacher app to read the board with KINETIX AI.'**
+  /// **'Sign in with the Teacher app to read the board with Zynetix AI.'**
   String get readNeedsSignIn;
 
   /// No description provided for @readIntro.
@@ -3589,7 +3595,7 @@ abstract class AppLocalizations {
   /// No description provided for @askAiAboutThis.
   ///
   /// In en, this message translates to:
-  /// **'Ask KINETIX AI about this'**
+  /// **'Ask Zynetix AI about this'**
   String get askAiAboutThis;
 
   /// No description provided for @booksTopic.
@@ -3619,7 +3625,7 @@ abstract class AppLocalizations {
   /// No description provided for @booksUnlinked.
   ///
   /// In en, this message translates to:
-  /// **'This subject isn\'t linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.'**
+  /// **'This subject isn\'t linked to a syllabus yet. Your admin can link it in Zynetix dashboard → Syllabus.'**
   String get booksUnlinked;
 
   /// No description provided for @booksDraft.
@@ -3661,7 +3667,7 @@ abstract class AppLocalizations {
   /// No description provided for @booksExplain.
   ///
   /// In en, this message translates to:
-  /// **'Explain with KINETIX AI'**
+  /// **'Explain with Zynetix AI'**
   String get booksExplain;
 
   /// No description provided for @booksQuiz.
@@ -4426,10 +4432,10 @@ abstract class AppLocalizations {
   /// **'No lesson plan for this period. Plan it in the Teacher app.'**
   String get planNone;
 
-  /// The plan began as a KINETIX AI draft.
+  /// The plan began as a Zynetix AI draft.
   ///
   /// In en, this message translates to:
-  /// **'Drafted with KINETIX AI'**
+  /// **'Drafted with Zynetix AI'**
   String get planAiDrafted;
 
   /// Section: the lesson's syllabus topics.
@@ -4495,7 +4501,7 @@ abstract class AppLocalizations {
   /// Body of the demo banner.
   ///
   /// In en, this message translates to:
-  /// **'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.'**
+  /// **'Sample data from Zynetix Demo College. Nothing is sent to a server, and your changes last until the app is closed.'**
   String get demoBannerBody;
 
   /// One-tap demo sign-in button.
@@ -4531,7 +4537,7 @@ abstract class AppLocalizations {
   /// No description provided for @kioskSettingsHint.
   ///
   /// In en, this message translates to:
-  /// **'Keeps students in Zynetix and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.'**
+  /// **'Keeps students in Zynetix and opens it again after a power cut. Your institution turns it on and sets the IT PIN in Zynetix dashboard → Settings.'**
   String get kioskSettingsHint;
 
   /// No description provided for @kioskStatusLocked.
@@ -4591,7 +4597,7 @@ abstract class AppLocalizations {
   /// No description provided for @kioskEnterPin.
   ///
   /// In en, this message translates to:
-  /// **'For IT staff: enter the IT PIN set in KINETIX ERP.'**
+  /// **'For IT staff: enter the IT PIN set in Zynetix dashboard.'**
   String get kioskEnterPin;
 
   /// No description provided for @kioskPinLabel.
@@ -4621,7 +4627,7 @@ abstract class AppLocalizations {
   /// No description provided for @kioskNoPin.
   ///
   /// In en, this message translates to:
-  /// **'No IT PIN has been set for this institution yet. Set one in KINETIX ERP → Settings → Board kiosk mode; the board picks it up when it is next online. Until then, kiosk mode can only be removed as the kiosk guide describes.'**
+  /// **'No IT PIN has been set for this institution yet. Set one in Zynetix dashboard → Settings → Board kiosk mode; the board picks it up when it is next online. Until then, kiosk mode can only be removed as the kiosk guide describes.'**
   String get kioskNoPin;
 
   /// No description provided for @kioskLeave.
@@ -5071,7 +5077,7 @@ abstract class AppLocalizations {
   /// No description provided for @kitAiForLesson.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI for this lesson'**
+  /// **'Zynetix AI for this lesson'**
   String get kitAiForLesson;
 
   /// No description provided for @kitAll.
@@ -5827,7 +5833,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiOfflineLabel.
   ///
   /// In en, this message translates to:
-  /// **'Offline sample — from the board\'s own notes (in English), because KINETIX AI cannot be reached'**
+  /// **'Offline sample — from the board\'s own notes (in English), because Zynetix AI cannot be reached'**
   String get aiOfflineLabel;
 
   /// No description provided for @profilesTitle.
@@ -7429,7 +7435,7 @@ abstract class AppLocalizations {
   /// No description provided for @booksAskAiChapter.
   ///
   /// In en, this message translates to:
-  /// **'Tap for KINETIX AI to explain it'**
+  /// **'Tap for Zynetix AI to explain it'**
   String get booksAskAiChapter;
 
   /// No description provided for @signInNeedsEnrolment.
@@ -7717,7 +7723,7 @@ abstract class AppLocalizations {
   /// No description provided for @offlineCodeBody.
   ///
   /// In en, this message translates to:
-  /// **'No connection. Scan this code in the KINETIX Teacher app to confirm this board. It works until {time}.'**
+  /// **'No connection. Scan this code in the Zynetix Teacher app to confirm this board. It works until {time}.'**
   String offlineCodeBody(String time);
 
   /// No description provided for @faceColourTitle.
@@ -7837,7 +7843,7 @@ abstract class AppLocalizations {
   /// No description provided for @setUpAgainHint.
   ///
   /// In en, this message translates to:
-  /// **'Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (KINETIX ERP → Boards). Settings and saved boards stay on this device.'**
+  /// **'Moved to another network or server? Set up again, then enter the new server address and a new enrolment code (Zynetix dashboard → Boards). Settings and saved boards stay on this device.'**
   String get setUpAgainHint;
 
   /// No description provided for @setUpAgainKiosk.
@@ -7855,7 +7861,7 @@ abstract class AppLocalizations {
   /// No description provided for @setUpAgainBody.
   ///
   /// In en, this message translates to:
-  /// **'The board stops using {server} and the teacher is signed out. Then enter the server address and a new enrolment code from KINETIX ERP (Boards → New enrolment code).'**
+  /// **'The board stops using {server} and the teacher is signed out. Then enter the server address and a new enrolment code from Zynetix ERP (Boards → New enrolment code).'**
   String setUpAgainBody(String server);
 
   /// Board top bar: opens the live quiz launcher.

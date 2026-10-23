@@ -1,5 +1,5 @@
 // Reference material for the subject kit: formula sheets (NCERT chapter names), constants,
-// the periodic table, common ions and key dates. Ported from the KINETIX prototype. The
+// the periodic table, common ions and key dates. Ported from the Zynetix prototype. The
 // reference text is in English, as in the textbooks the formulas come from; the kit's own
 // words are translated.
 

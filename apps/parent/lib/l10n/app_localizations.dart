@@ -318,7 +318,7 @@ abstract class AppLocalizations {
   /// No description provided for @errUnreachable.
   ///
   /// In en, this message translates to:
-  /// **'Can\'t reach KINETIX. Check your internet connection and the server address.'**
+  /// **'Can\'t reach Zynetix. Check your internet connection and the server address.'**
   String get errUnreachable;
 
   /// No description provided for @errForbidden.
@@ -1326,7 +1326,7 @@ abstract class AppLocalizations {
   /// No description provided for @errTeacherAccount.
   ///
   /// In en, this message translates to:
-  /// **'This app is for parents and guardians. Teachers can use the KINETIX Teacher app.'**
+  /// **'This app is for parents and guardians. Teachers can use the Zynetix Teacher app.'**
   String get errTeacherAccount;
 
   /// No description provided for @homeSubtitle.
@@ -1758,7 +1758,7 @@ abstract class AppLocalizations {
   /// No description provided for @paymentPhonesOnly.
   ///
   /// In en, this message translates to:
-  /// **'Online payment works in the KINETIX Parent app on Android phones and iPhones. On this device, please pay at the fees counter.'**
+  /// **'Online payment works in the Zynetix Parent app on Android phones and iPhones. On this device, please pay at the fees counter.'**
   String get paymentPhonesOnly;
 
   /// No description provided for @demoPayment.
@@ -2190,7 +2190,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'What KINETIX may do with the student\'s information'**
+  /// **'What Zynetix may do with the student\'s information'**
   String get privacySubtitle;
 
   /// No description provided for @notNow.
@@ -2286,7 +2286,7 @@ abstract class AppLocalizations {
   /// No description provided for @noticeCollege.
   ///
   /// In en, this message translates to:
-  /// **'College or university: students decide for themselves. A guardian decides only for a student who has no KINETIX login of their own.'**
+  /// **'College or university: students decide for themselves. A guardian decides only for a student who has no Zynetix login of their own.'**
   String get noticeCollege;
 
   /// No description provided for @noticeWhatWeAsk.
@@ -2364,19 +2364,19 @@ abstract class AppLocalizations {
   /// No description provided for @purposeAiTitle.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI'**
+  /// **'Zynetix AI'**
   String get purposeAiTitle;
 
   /// No description provided for @purposeAiBody.
   ///
   /// In en, this message translates to:
-  /// **'The student asking KINETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.'**
+  /// **'The student asking Zynetix AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.'**
   String get purposeAiBody;
 
   /// No description provided for @purposeAiNo.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI is turned off for the student. Everything else works.'**
+  /// **'Zynetix AI is turned off for the student. Everything else works.'**
   String get purposeAiNo;
 
   /// No description provided for @purposeRecordingsTitle.
@@ -2442,7 +2442,7 @@ abstract class AppLocalizations {
   /// No description provided for @handInForNote.
   ///
   /// In en, this message translates to:
-  /// **'Hand in here for a child who doesn\'t have their own KINETIX login.'**
+  /// **'Hand in here for a child who doesn\'t have their own Zynetix login.'**
   String get handInForNote;
 
   /// No description provided for @consentTitleFor.
@@ -2454,25 +2454,25 @@ abstract class AppLocalizations {
   /// No description provided for @consentIntroFor.
   ///
   /// In en, this message translates to:
-  /// **'Choose what KINETIX may do with {name}\'s information. Nothing is switched on until you choose.'**
+  /// **'Choose what Zynetix may do with {name}\'s information. Nothing is switched on until you choose.'**
   String consentIntroFor(String name);
 
   /// No description provided for @privacyIntroFor.
   ///
   /// In en, this message translates to:
-  /// **'What KINETIX may do with {name}\'s information. Turn a switch off to withdraw your consent.'**
+  /// **'What Zynetix may do with {name}\'s information. Turn a switch off to withdraw your consent.'**
   String privacyIntroFor(String name);
 
   /// No description provided for @privacyIntroReadOnlyFor.
   ///
   /// In en, this message translates to:
-  /// **'What KINETIX may do with {name}\'s information, and who decided.'**
+  /// **'What Zynetix may do with {name}\'s information, and who decided.'**
   String privacyIntroReadOnlyFor(String name);
 
   /// No description provided for @managedByStudent.
   ///
   /// In en, this message translates to:
-  /// **'{name} manages this. At a college, students with their own KINETIX login make these choices themselves.'**
+  /// **'{name} manages this. At a college, students with their own Zynetix login make these choices themselves.'**
   String managedByStudent(String name);
 
   /// No description provided for @childPrivacy.
@@ -2508,7 +2508,7 @@ abstract class AppLocalizations {
   /// No description provided for @syllabusNotLinked.
   ///
   /// In en, this message translates to:
-  /// **'The syllabus for {subject} isn\'t in KINETIX yet.'**
+  /// **'The syllabus for {subject} isn\'t in Zynetix yet.'**
   String syllabusNotLinked(String subject);
 
   /// No description provided for @chaptersTopics.
@@ -2688,7 +2688,7 @@ abstract class AppLocalizations {
   /// Body of the demo banner.
   ///
   /// In en, this message translates to:
-  /// **'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.'**
+  /// **'Sample data from Zynetix Demo College. Nothing is sent to a server, and your changes last until the app is closed.'**
   String get demoBannerBody;
 
   /// One-tap demo sign-in button.
@@ -4956,7 +4956,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiUpdateTitle.
   ///
   /// In en, this message translates to:
-  /// **'An update from KINETIX AI'**
+  /// **'An update from Zynetix AI'**
   String get aiUpdateTitle;
 
   /// No description provided for @aiUpdateGood.
@@ -4992,7 +4992,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiUpdateNote.
   ///
   /// In en, this message translates to:
-  /// **'Written by KINETIX AI from {name}\'s marks, attendance and homework. It can be wrong: the class teacher knows {name} best.'**
+  /// **'Written by Zynetix AI from {name}\'s marks, attendance and homework. It can be wrong: the class teacher knows {name} best.'**
   String aiUpdateNote(String name);
 
   /// No description provided for @deviceTrustTitle.

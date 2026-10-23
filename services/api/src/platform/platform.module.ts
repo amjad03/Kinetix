@@ -6,7 +6,7 @@ import { PlatformController } from './platform.controller.js';
 import { PlatformTenantsController } from './tenants.controller.js';
 import { YouTube } from './youtube.js';
 
-/** The KINETIX platform team's endpoints (concept videos on the global library). */
+/** The Zynetix platform team's endpoints (concept videos on the global library). */
 @Module({
   controllers: [PlatformController, ContentLicensesController, PlatformTenantsController],
   exports: [YouTube],

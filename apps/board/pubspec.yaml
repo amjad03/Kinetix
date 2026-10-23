@@ -1,5 +1,5 @@
 name: kinetix_board
-description: "KINETIX Board: the classroom panel app (Windows panels/OPS PCs and Android panels)."
+description: "Zynetix Board: the classroom panel app (Windows panels/OPS PCs and Android panels)."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -222,10 +222,11 @@ flutter:
 # one); the certificate itself is passed on the command line, never committed:
 #   dart run msix:create --build-windows false --certificate-path <cert.pfx> --certificate-password <pw>
 msix_config:
-  display_name: KINETIX Board
-  publisher_display_name: KINETIX
+  display_name: Zynetix Board
+  publisher_display_name: Zynetix
   identity_name: in.kinetix.board
-  publisher: CN=KINETIX, O=KINETIX, C=IN
+  publisher: CN=Zynetix, O=Zynetix, C=IN
+  logo_path: windows/runner/resources/msix_logo.png
   capabilities: internetClient,microphone,webcam
   languages: en-in, hi-in, kn-in
   store: false

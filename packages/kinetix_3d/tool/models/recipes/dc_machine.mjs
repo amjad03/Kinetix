@@ -26,7 +26,7 @@ export default {
     'ನಾಲ್ಕು ಧ್ರುವಗಳ DC ಯಂತ್ರ: ಧ್ರುವಗಳ ಮೇಲಿನ ಕ್ಷೇತ್ರ ಸುರುಳಿಗಳು ಕಾಂತಕ್ಷೇತ್ರ ಮಾಡುತ್ತವೆ, ಆರ್ಮೇಚರ್ ಅದರಲ್ಲಿ ತಿರುಗುತ್ತದೆ, ಮತ್ತು ಕಮ್ಯೂಟೇಟರ್ ಬ್ರಷ್‌ಗಳೊಂದಿಗೆ ಟಾರ್ಕ್ (ಮೋಟಾರ್) ಅಥವಾ ಹೊರ ವಿದ್ಯುತ್ (ಜನಕ) ಒಂದೇ ದಿಕ್ಕಿನಲ್ಲಿರುವಂತೆ ಮಾಡುತ್ತದೆ.',
   ),
   keywords: ['dc machine', 'dc motor', 'dc generator', 'armature', 'commutator', 'brushes', 'field winding', 'pole shoe', 'yoke', 'electrical machines', 'back emf', 'shunt motor', 'series motor'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   crease: 35,
   build(THREE) {
     const poles = [], shoes = [], coils = [];

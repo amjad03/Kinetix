@@ -81,7 +81,7 @@ describe('plans', () => {
     clock.at = nextMondayIst('10:30');
   });
 
-  it('plans a period, drafts it with KINETIX AI, shows it on the board, and lets the head review it', async () => {
+  it('plans a period, drafts it with Zynetix AI, shows it on the board, and lets the head review it', async () => {
     const q = `slotId=${t.slot.id}&date=${monday}`;
     const empty = (await http().get(`/v1/lesson-plans/period?${q}`).set(auth('teacher')).expect(200)).body;
     expect(empty.plan).toBeNull();

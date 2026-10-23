@@ -265,7 +265,7 @@ function systemPrompt(g: Grounding, language: Language, task: TaskName): string 
       ? 'Students are under 18. Keep every example age-appropriate. Never include violence, sexual content, self-harm, drugs, gambling, hate or politics.'
       : 'Students are adults at an Indian college. Keep content professional and suitable for a classroom.';
   const lines = [
-    'You are KINETIX AI, a teaching assistant for Indian classrooms. Your answers are shown on the classroom board to the whole class.',
+    'You are Zynetix AI, a teaching assistant for Indian classrooms. Your answers are shown on the classroom board to the whole class.',
     `Institution: ${g.institution}.`,
     g.className ? `Class: ${g.className}.` : null,
     g.subjectName ? `Subject: ${g.subjectName}.` : null,
@@ -378,7 +378,7 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
       case 'selectAsk':
         return `${SELECT_ASK[i.action as keyof typeof SELECT_ASK]}${i.action === 'translate' ? ` into ${LANGUAGE_NAMES[(i.targetLanguage as Language) ?? 'hi']}` : ''}${i.level ? ` (${i.level})` : ''}. The teacher selected on the board:\n\"\"\"\n${i.content}\n\"\"\"`;
       case 'lessonPlan':
-        return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}. The classroom has a KINETIX interactive board (not a chalkboard).`;
+        return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}. The classroom has a Zynetix interactive board (not a chalkboard).`;
       case 'gradeAssist': {
         const rubric = (i.rubric as { criterion: string; marks: number }[]).map((r, n) => `${n + 1}. ${r.criterion} (${r.marks} marks)`).join('\n');
         return `Suggest marks out of ${i.maxMarks} for a student's answer, strictly by this rubric. Award marks only for what the answer actually says; do not give credit for what it might have meant. You are drafting for an examiner who will decide.\nQuestion: ${i.question}\nRubric:\n${rubric}\nStudent answer:\n"""\n${i.answerText}\n"""`;
@@ -652,7 +652,7 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
     switch (task) {
       case 'explain':
         return {
-          answer: `Preview answer about "${topic}". Connect the KINETIX AI server to get a real explanation that follows your syllabus.`,
+          answer: `Preview answer about "${topic}". Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).`,
           keyPoints: ['Start from what the class already knows', 'Define the key terms', 'Work through one example together'],
           followUps: ['Where is this used in real life?', 'Can you show another example?'],
         };
@@ -660,7 +660,7 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
         return {
           questions: Array.from({ length: i.count }, (_, n) => {
             const type = (i.types as string[])[n % (i.types as string[]).length];
-            const base = { type, question: `Preview question ${n + 1} on ${topic}`, explanation: 'Preview only. Real questions need the KINETIX AI server.' };
+            const base = { type, question: `Preview question ${n + 1} on ${topic}`, explanation: 'Preview only. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).' };
             if (type === 'trueFalse') return { ...base, options: ['True', 'False'], answer: n % 2 };
             if (type === 'fillBlank' || type === 'shortAnswer') return { ...base, options: [], answerText: 'Preview answer' };
             return { ...base, options: ['First option', 'Second option', 'Third option', 'Fourth option'], answer: n % 4 };
@@ -685,25 +685,25 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
             { minutes: practice, activity: 'Students practise in pairs; check two answers on the board.' },
             { minutes: wrap, activity: 'Quick quiz and summary.' },
           ],
-          materials: ['KINETIX Board'],
+          materials: ['Zynetix Board'],
           assessment: 'A 5-question quick quiz at the end of class.',
         };
       }
       case 'readBoard':
-        return { text: 'Preview: connect a KINETIX AI server with a vision model to read the handwriting on the board.', math: [] };
+        return { text: 'Preview only. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).', math: [] };
       case 'boardSummary':
         return {
           keyConcepts: [`Preview: the main idea of ${i.topic ?? 'this lesson'}`],
           definitions: [],
           formulas: [],
           examples: [],
-          importantPoints: ['Preview only. Connect the KINETIX AI server for a real summary of the board.'],
+          importantPoints: ['Preview only. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).'],
           questions: [],
         };
       case 'lecture':
         return {
           outline: ['Recall', `Introduce ${topic}`, 'Worked example', 'Practice', 'Recap'],
-          explanation: `Preview lecture on ${topic}. Connect the KINETIX AI server for a real one that follows your syllabus.`,
+          explanation: `Preview lecture on ${topic}. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).`,
           examples: [],
           analogies: [],
           boardPlan: [`Title: ${topic}`],
@@ -711,7 +711,7 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
           recap: 'Preview only.',
         };
       case 'tutor':
-        return { answer: `Preview only. Connect the KINETIX AI server for a tutor answer to: ${String(i.question).slice(0, 120)}`, keyPoints: [], nextSteps: [], followUps: [] };
+        return { answer: `Preview only. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).question).slice(0, 120)}`, keyPoints: [], nextSteps: [], followUps: [] };
       case 'financeInsight':
       case 'admissionsInsight':
       case 'hrInsight':
@@ -724,27 +724,27 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
           .slice(0, 4)
           .map(([k, v]) => `${k}: ${v}`);
         return {
-          headline: 'Preview only. Connect the KINETIX AI server for a written summary of these figures.',
+          headline: 'Preview only. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).',
           highlights: figures.length ? figures : ['No figures yet'],
           risks: [],
           suggestions: [],
         };
       }
       case 'careerCoach':
-        return { answer: 'Preview only. Connect the KINETIX AI server for personal career advice.', suggestions: [], pathways: [] };
+        return { answer: 'Preview only. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).', suggestions: [], pathways: [] };
       case 'syllabusImport':
         return parseSyllabusText(String(i.text));
       case 'gradeAssist':
         return {
           criteria: (i.rubric as { criterion: string }[]).map((r) => ({ criterion: r.criterion, awarded: 0, comment: 'Preview only: nothing was read.' })),
           total: 0,
-          rationale: 'Preview only. Connect the KINETIX AI server to get a marking draft. Mark this answer yourself.',
+          rationale: 'Preview only. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings). Mark this answer yourself.',
         };
       case 'selectAsk':
-        return { title: `Preview: ${i.action}`, answer: 'Preview only. Connect the KINETIX AI server to act on the selection.', items: [] };
+        return { title: `Preview: ${i.action}`, answer: 'Preview only. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).', items: [] };
       case 'summarize':
         return {
-          summary: `Preview summary. The lesson transcript has ${String(i.transcript).split(/\s+/).length} words; connect the KINETIX AI server for a real summary.`,
+          summary: `Preview summary. The lesson transcript has ${String(i.transcript).split(/\s+/).length} words. Zynetix AI is not connected yet: an admin connects Claude in the Zynetix dashboard (AI settings).`,
           keyPoints: ['Watch the recording to catch up'],
         };
     }

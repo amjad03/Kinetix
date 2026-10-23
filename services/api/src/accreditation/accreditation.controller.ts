@@ -309,7 +309,7 @@ export class AccreditationController {
       return pack;
     });
     const sheets: Sheet[] = pack.tables.map((t) => ({ name: t.title, rows: [t.columns.map((col) => col.label), ...t.rows.map((r) => t.columns.map((col) => (r[col.key] ?? '') as Cell))] }));
-    sheets.push({ name: 'To complete by hand', rows: [[pack.title], [`Period ${pack.period.from} to ${pack.period.to}`], [], ['Not recorded in KINETIX'], ...pack.gaps.map((g) => [g])], widths: [100] });
+    sheets.push({ name: 'To complete by hand', rows: [[pack.title], [`Period ${pack.period.from} to ${pack.period.to}`], [], ['Not recorded in Zynetix'], ...pack.gaps.map((g) => [g])], widths: [100] });
     this.send(res, `aishe-dcf-${pack.period.to}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', xlsx(sheets, this.clock.now()));
   }
 

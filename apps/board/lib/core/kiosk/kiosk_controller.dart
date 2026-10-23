@@ -10,7 +10,7 @@ import 'kiosk_platform.dart';
 export 'kiosk_pin.dart' show KioskPin;
 export 'kiosk_platform.dart';
 
-/// The institution's kiosk policy (KINETIX ERP → Settings → Board kiosk mode), from
+/// The institution's kiosk policy (Zynetix dashboard → Settings → Board kiosk mode), from
 /// GET /v1/devices/me/config. Kept on the board so it applies, and the PIN works, offline.
 @immutable
 class KioskPolicy {

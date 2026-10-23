@@ -9,10 +9,10 @@ import '../core/models.dart';
 import '../core/server_config.dart';
 import 'fake_api.dart';
 
-/// The demo backend: [FakeStudentApi] filled with KINETIX Demo College (as
+/// The demo backend: [FakeStudentApi] filled with Zynetix Demo College (as
 /// services/api/src/db/seed.ts seeds it) around today's date, signed in as Aarav Patel
 /// (BCom Sem 3 A). Hand-ins, messages and consent changes stay in memory until the app is closed;
-/// KINETIX AI answers with labelled samples.
+/// Zynetix AI answers with labelled samples.
 class DemoStudentApi extends FakeStudentApi {
   DemoStudentApi({DateTime Function()? clock}) : _clock = clock ?? DateTime.now {
     baseUrl = demoServerUrl;
@@ -21,7 +21,7 @@ class DemoStudentApi extends FakeStudentApi {
 
   static const demoTenant = 'demo-college';
   static const demoLogin = 'aarav@demo.kinetix.in';
-  static const institution = 'KINETIX Demo College of Commerce & Science';
+  static const institution = 'Zynetix Demo College of Commerce & Science';
 
   final DateTime Function() _clock;
   DateTime get _today => DateUtils.dateOnly(_clock());
@@ -238,7 +238,7 @@ class DemoStudentApi extends FakeStudentApi {
     syllabi = {'sub1': outline('co1', caTitle, ca), 'sub2': outline('co2', costTitle, cost)};
     underwriting = _topics['t6']!;
     // Sample concept videos, as the platform team links them. The ids are placeholders until the
-    // KINETIX channel's own videos are linked (YouTube then shows "Video unavailable").
+    // Zynetix channel's own videos are linked (YouTube then shows "Video unavailable").
     conceptVideoList = {
       't5': const [
         ConceptVideo(id: 'cv1', youtubeVideoId: 'kxDemoRe01a', title: 'Re-issue of forfeited shares in 6 minutes', language: 'en', durationSeconds: 372),
@@ -399,7 +399,7 @@ class DemoStudentApi extends FakeStudentApi {
     'events': calendarEvents,
   });
 
-  // ── KINETIX AI and the content library: labelled samples ──────────────────────────────────────
+  // ── Zynetix AI and the content library: labelled samples ──────────────────────────────────────
 
   @override
   Future<Explanation> explain({
@@ -412,8 +412,8 @@ class DemoStudentApi extends FakeStudentApi {
     final topic = topicId == null ? null : _topics[topicId];
     return Explanation(
       answer: topic == null
-          ? 'This is a sample answer from the KINETIX demo. With a server, KINETIX AI would answer "$question" from your syllabus notes.'
-          : 'This is a sample answer from the KINETIX demo. ${topic.title}: ${topic.summary}',
+          ? 'This is a sample answer from the Zynetix demo. With a server, Zynetix AI would answer "$question" from your syllabus notes.'
+          : 'This is a sample answer from the Zynetix demo. ${topic.title}: ${topic.summary}',
       keyPoints: const ['Sample key point: write the journal entry first', 'Sample key point: check the totals agree'],
       followUps: const ['Can you show a worked example?', 'What are the common mistakes?'],
       preview: true,

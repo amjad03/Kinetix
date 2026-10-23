@@ -1,4 +1,4 @@
-// KINETIX 3D viewer: one model at a time, driven by the app.
+// Zynetix 3D viewer: one model at a time, driven by the app.
 //
 // The app loads index.html?model=<id>&lang=<en|hi|kn>, then sends commands
 // with kx.cmd({...}) (WebView, WebView2) or postMessage({kxcmd: {...}})

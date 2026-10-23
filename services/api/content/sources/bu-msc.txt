@@ -3,7 +3,7 @@ file: bu-msc
 curriculum: bu-pg | Bangalore University (PG) | pg
 programme: MSc Forensic Science
 scheme: BU MSc CBCS | 2024-25
-! SIMS's MSc is listed as MSc Forensic Science (secondary sources). Paper titles and semesters are the KINETIX team's reading of typical BU/Indian MSc Forensic Science schemes; confirm against the BU MSc Forensic Science regulations.
+! SIMS's MSc is listed as MSc Forensic Science (secondary sources). Paper titles and semesters are the Zynetix team's reading of typical BU/Indian MSc Forensic Science schemes; confirm against the BU MSc Forensic Science regulations.
 ! Not written: Sem 4 dissertation/internship, practicals as separate courses, and electives beyond those below.
 
 # msc-fs-1-forensic-science-law | 1 | Forensic Science, Criminal Law and Quality Management

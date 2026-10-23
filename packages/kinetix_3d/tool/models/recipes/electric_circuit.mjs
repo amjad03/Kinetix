@@ -43,7 +43,7 @@ export default {
     'ಬ್ಯಾಟರಿ ಮುಚ್ಚಿದ ಪಥದಲ್ಲಿ ವಿದ್ಯುತ್ ಹರಿಸುತ್ತದೆ: ಸರಣಿಯಲ್ಲಿ ಪ್ಲಗ್ ಕೀ, ಆಮ್ಮೀಟರ್, ಬಲ್ಬ್ ಮತ್ತು ರೋಧಕ, ರೋಧಕದ ಅಡ್ಡಲಾಗಿ ವೋಲ್ಟ್‌ಮೀಟರ್. V = IR (ಓಮ್‌ನ ನಿಯಮ).',
   ),
   keywords: ['electric circuit', 'circuit', 'electricity', 'electric current', 'ohm\'s law', 'ammeter', 'voltmeter', 'resistor', 'resistance', 'potential difference', 'cell', 'battery', 'bulb', 'series circuit', 'current electricity'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   groups: [
     { id: 'source', name: t('Source and switch', 'स्रोत और स्विच', 'ಮೂಲ ಮತ್ತು ಸ್ವಿಚ್') },
     { id: 'load', name: t('Bulb and resistor', 'बल्ब और प्रतिरोधक', 'ಬಲ್ಬ್ ಮತ್ತು ರೋಧಕ') },

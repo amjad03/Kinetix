@@ -1,5 +1,5 @@
 /*
- * KINETIX design tokens for the web (docs/design/design-system.md). The same values as
+ * Zynetix design tokens for the web (docs/design/design-system.md). The same values as
  * packages/kinetix_ui (`KxColor`, `KxColorDark`, `Kx`, `KxType`, `KxFonts`), so the ERP, the Board
  * and the apps look like one product. MUI reads its palette from scheme.ts / palette.ts (which
  * hold the same hex values); these variables are for plain CSS, SVG charts, canvases (the live

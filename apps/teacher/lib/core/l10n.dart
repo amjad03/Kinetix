@@ -73,7 +73,7 @@ extension AppLocalizationsX on AppLocalizations {
       'This code is invalid or has expired. Use the new code on the board.' => errorCodeExpired,
       'Your account is not active' => errorAccountInactive,
       'You are not a teacher at the campus this board belongs to' => errorOtherCampus,
-      'Not a KINETIX pairing QR code' => errorNotPairingQr,
+      'Not a Zynetix pairing QR code' => errorNotPairingQr,
       'Enter the 6-digit code shown on the board' => enterAllDigits,
       'Attendance cannot be taken for a future date' => errorFutureAttendance,
       'You do not teach this class' => errorNotYourClass,
@@ -92,9 +92,9 @@ extension AppLocalizationsX on AppLocalizations {
       'There are no teaching days in these dates' => errorPlanNoTeachingDays,
       'The plan must end after it starts' => errorPlanEndsBeforeStart,
       'This period is not on that day' => errorPeriodNotOnDay,
-      "Your institution has used today's KINETIX AI allowance. It resets tomorrow." => errorAiAllowance,
-      'KINETIX AI is not reachable right now. Try again in a minute.' => errorAiUnavailable,
-      'KINETIX AI could not produce a usable answer. Try again or rephrase.' => errorAiUnusable,
+      "Your institution has used today's Zynetix AI allowance. It resets tomorrow." => errorAiAllowance,
+      'Zynetix AI is not reachable right now. Try again in a minute.' => errorAiUnavailable,
+      'Zynetix AI could not produce a usable answer. Try again or rephrase.' => errorAiUnusable,
       _ => null,
     };
     if (known != null) return known;

@@ -16,7 +16,7 @@ import 'sheet_formula.dart';
 /// saved by a newer app still opens in an older one, without the new kinds.
 const int boardFormatVersion = 2;
 
-/// A saved board as stored by KINETIX Cloud (`WhiteboardContent` in services/api).
+/// A saved board as stored by Zynetix Cloud (`WhiteboardContent` in services/api).
 class SavedBoard {
   const SavedBoard({
     required this.background,

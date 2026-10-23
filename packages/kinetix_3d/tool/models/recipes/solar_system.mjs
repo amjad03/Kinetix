@@ -30,7 +30,7 @@ export default {
     'ಸೂರ್ಯ ಮತ್ತು ಅದರ ಸುತ್ತ ಸುತ್ತುವ ಎಂಟು ಗ್ರಹಗಳು. ಗಾತ್ರ ಮತ್ತು ದೂರಗಳು ಪ್ರಮಾಣದಲ್ಲಿಲ್ಲ: ನಿಜದಲ್ಲಿ ಗ್ರಹಗಳು ಬಹಳ ಚಿಕ್ಕವು ಮತ್ತು ದೂರದೂರ.',
   ),
   keywords: ['solar system', 'planets', 'sun', 'orbit', 'stars and the solar system', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'asteroid belt'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   light: [0, 0, 0], // the Sun
   groups: [
     { id: 'star', name: t('Star', 'तारा', 'ನಕ್ಷತ್ರ') },

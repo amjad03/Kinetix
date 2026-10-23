@@ -31,7 +31,7 @@ export default {
     'ಪ್ರಾಥಮಿಕ ಸುರುಳಿಯಲ್ಲಿನ ಪರ್ಯಾಯ ವಿದ್ಯುತ್ ಕಬ್ಬಿಣದ ಕೋರ್‌ನಲ್ಲಿ ಬದಲಾಗುವ ಕಾಂತೀಯ ಫ್ಲಕ್ಸ್ ಉಂಟುಮಾಡುತ್ತದೆ, ಅದು ದ್ವಿತೀಯ ಸುರುಳಿಯಲ್ಲಿ ವೋಲ್ಟೇಜ್ ಪ್ರೇರಿಸುತ್ತದೆ. Vs / Vp = Ns / Np.',
   ),
   keywords: ['transformer', 'step up transformer', 'step down transformer', 'mutual induction', 'electromagnetic induction', 'alternating current', 'turns ratio', 'primary coil', 'secondary coil', 'power transmission'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   variants: [
     { id: 'step_up', name: t('Step-up', 'उच्चायी', 'ಏರಿಕೆ') },
     { id: 'step_down', name: t('Step-down', 'अपचायी', 'ಇಳಿಕೆ') },

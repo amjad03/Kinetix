@@ -27,7 +27,7 @@ List<BoardElement> codeLabElements(CodePut put, {required String code, required 
 
 /// The code lab: an editor with colouring, input, Run/Stop, the output, sample programs, a
 /// text size for the class, and "Put on board". Python, JavaScript and SQL run on the device,
-/// offline; C, C++ and Java on the school code box ([box]) or else the KINETIX server
+/// offline; C, C++ and Java on the school code box ([box]) or else the Zynetix server
 /// ([server]); each run says where it ran (HybridRunner).
 class CodeLab extends StatefulWidget {
   const CodeLab({

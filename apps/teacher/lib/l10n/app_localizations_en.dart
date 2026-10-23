@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'KINETIX Teacher';
+  String get appTitle => 'Zynetix Teacher';
 
   @override
   String get cancel => 'Cancel';
@@ -159,7 +159,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorNotTeacher => 'This app is for teachers. Your account does not have a teaching role.';
 
   @override
-  String get errorOffline => 'Can\'t reach KINETIX. Check your internet connection and the server address.';
+  String get errorOffline => 'Can\'t reach Zynetix. Check your internet connection and the server address.';
 
   @override
   String get errorTimeout => 'The server is taking too long to respond. Try again.';
@@ -194,7 +194,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorOtherCampus => 'You are not a teacher at the campus this board belongs to';
 
   @override
-  String get errorNotPairingQr => 'Not a KINETIX pairing QR code';
+  String get errorNotPairingQr => 'Not a Zynetix pairing QR code';
 
   @override
   String get errorFutureAttendance => 'Attendance cannot be taken for a future date';
@@ -406,7 +406,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have no timetabled class right now, so the board opens without a class list. It signs you out after 2 hours.';
 
   @override
-  String get qrNotOurs => 'That isn\'t a KINETIX board code. Scan the QR code on the board\'s screen.';
+  String get qrNotOurs => 'That isn\'t a Zynetix board code. Scan the QR code on the board\'s screen.';
 
   @override
   String get scanTitle => 'Scan board QR code';
@@ -934,7 +934,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syllabusProgressBody => 'Mark topics as taught for each class';
 
   @override
-  String get syllabusUnlinked => 'This subject isn\'t linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.';
+  String get syllabusUnlinked => 'This subject isn\'t linked to a syllabus yet. Your admin can link it in Zynetix dashboard → Syllabus.';
 
   @override
   String topicsTaught(int covered, int total) {
@@ -1093,7 +1093,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yearPlanNone =>
-      'No year plan yet. KINETIX can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.';
+      'No year plan yet. Zynetix can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.';
 
   @override
   String get makeYearPlan => 'Make a year plan';
@@ -1259,13 +1259,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonHomeworkHint => 'Optional';
 
   @override
-  String get draftWithAi => 'Draft with KINETIX AI';
+  String get draftWithAi => 'Draft with Zynetix AI';
 
   @override
-  String get drafting => 'KINETIX AI is drafting…';
+  String get drafting => 'Zynetix AI is drafting…';
 
   @override
-  String get replaceWithDraftTitle => 'Replace with a KINETIX AI draft?';
+  String get replaceWithDraftTitle => 'Replace with a Zynetix AI draft?';
 
   @override
   String get replaceWithDraftBody =>
@@ -1278,7 +1278,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiDraftLabel => 'AI draft — check before use';
 
   @override
-  String get aiPreviewNote => 'Preview: a sample draft, because the KINETIX AI server is not connected.';
+  String get aiPreviewNote => 'Preview: a sample draft, because the Zynetix AI server is not connected.';
 
   @override
   String get savePlan => 'Save plan';
@@ -1313,13 +1313,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorPeriodNotOnDay => 'This class is not on that day.';
 
   @override
-  String get errorAiAllowance => 'Your institution has used today\'s KINETIX AI allowance. It resets tomorrow.';
+  String get errorAiAllowance => 'Your institution has used today\'s Zynetix AI allowance. It resets tomorrow.';
 
   @override
-  String get errorAiUnavailable => 'KINETIX AI is not reachable right now. Try again in a minute.';
+  String get errorAiUnavailable => 'Zynetix AI is not reachable right now. Try again in a minute.';
 
   @override
-  String get errorAiUnusable => 'KINETIX AI could not write a usable draft. Try again.';
+  String get errorAiUnusable => 'Zynetix AI could not write a usable draft. Try again.';
 
   @override
   String reviewedByOn(String name, String date) {
@@ -1383,7 +1383,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get demoBannerBody =>
-      'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
+      'Sample data from Zynetix Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
 
   @override
   String demoSignInAs(String name) {
@@ -2937,7 +2937,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pubAddByDoi => 'Add by DOI';
 
   @override
-  String get pubDoiBody => 'Enter the publication\'s DOI; KINETIX reads its details from the DOI registry.';
+  String get pubDoiBody => 'Enter the publication\'s DOI; Zynetix reads its details from the DOI registry.';
 
   @override
   String get pubImport => 'Import';
@@ -3130,7 +3130,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get offlineWrongInstitution => 'This board belongs to another institution.';
 
   @override
-  String get offlineBad => 'This is not a genuine KINETIX board code.';
+  String get offlineBad => 'This is not a genuine Zynetix board code.';
 
   @override
   String offlineVerified(String board, String time) {

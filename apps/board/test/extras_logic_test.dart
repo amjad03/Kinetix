@@ -58,7 +58,7 @@ void main() {
     QuizQuestion q(String text) => QuizQuestion(question: text, options: ['a', 'b', 'c', 'd'], answer: 1, explanation: '');
     AiResult<Quiz> quiz(List<String> qs, {bool offline = false}) => AiResult(Quiz(topic: 't', questions: [for (final x in qs) q(x)]), AiMeta(cached: false, preview: false, offline: offline));
 
-    test('KINETIX AI first when it answers', () async {
+    test('Zynetix AI first when it answers', () async {
       final g = AssessmentGenerator(online: (t, n) async => quiz(['AI 1', 'AI 2', 'AI 3']), offline: (t, n) => quiz(['notes']));
       final r = await g.generate(AssessmentKind.exitTicket, 'Refraction', s);
       expect(r.source, QuestionSource.ai);
@@ -66,7 +66,7 @@ void main() {
       expect(r.questions.where((x) => x.section == 'R'), hasLength(2));
     });
 
-    test('offline notes when KINETIX AI cannot be reached', () async {
+    test('offline notes when Zynetix AI cannot be reached', () async {
       final g = AssessmentGenerator(online: (t, n) async => throw Exception('offline'), offline: (t, n) => quiz(['notes 1', 'notes 2', 'notes 3', 'notes 4', 'notes 5'], offline: true));
       final r = await g.generate(AssessmentKind.worksheet, 'Refraction', s);
       expect(r.source, QuestionSource.offline);

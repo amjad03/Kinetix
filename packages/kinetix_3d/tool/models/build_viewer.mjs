@@ -13,6 +13,6 @@ await build({
   format: 'iife',
   target: ['chrome80', 'safari14'],
   legalComments: 'none',
-  banner: { js: '/* KINETIX 3D viewer. Includes three.js (MIT License, Copyright 2010-2025 three.js authors). */' },
+  banner: { js: '/* Zynetix 3D viewer. Includes three.js (MIT License, Copyright 2010-2025 three.js authors). */' },
   logLevel: 'info',
 });

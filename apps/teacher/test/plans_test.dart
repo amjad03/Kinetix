@@ -184,7 +184,7 @@ void main() {
       expect(find.byKey(const Key('lessonTopic-t3')), findsNothing);
     });
 
-    testWidgets('KINETIX AI drafts the plan, labelled; replacing edits asks first', (tester) async {
+    testWidgets('Zynetix AI drafts the plan, labelled; replacing edits asks first', (tester) async {
       await openLessonPlan(tester);
       await tapAndSettle(tester, find.byKey(const Key('draftWithAi')));
       expect(api.calls, contains('draft slot1 2026-10-05 t3 en'));
@@ -199,7 +199,7 @@ void main() {
       await tester.enterText(find.byKey(const Key('homeworkField')), 'Ex 4.2');
       await tester.scrollUntilVisible(find.byKey(const Key('draftWithAi')), -200, scrollable: form());
       await tapAndSettle(tester, find.byKey(const Key('draftWithAi')));
-      expect(find.text('Replace with a KINETIX AI draft?'), findsOneWidget);
+      expect(find.text('Replace with a Zynetix AI draft?'), findsOneWidget);
       await tapAndSettle(tester, find.byKey(const Key('confirmReplace')));
       expect(api.calls.where((c) => c.startsWith('draft')), hasLength(2));
 

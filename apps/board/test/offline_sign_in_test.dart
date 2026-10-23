@@ -73,7 +73,7 @@ void main() {
     await tester.pump();
     expect(find.byKey(const Key('offline-qr')), findsOneWidget);
     expect(find.byKey(const Key('offline-note')), findsOneWidget);
-    expect(find.textContaining('Scan this code in the KINETIX Teacher app'), findsOneWidget);
+    expect(find.textContaining('Scan this code in the Zynetix Teacher app'), findsOneWidget);
     // Close the dialog so its refresh timer is cancelled.
     await tester.pumpWidget(const SizedBox());
   });

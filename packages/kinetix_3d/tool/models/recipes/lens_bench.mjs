@@ -51,7 +51,7 @@ export default {
     '10 ಸೆಂಮೀ ನಾಭಿದೂರದ ಮಸೂರದಿಂದ 30 ಸೆಂಮೀ ದೂರದಲ್ಲಿ ಒಂದು ಮೇಣದಬತ್ತಿ. ಪೀನ ಮಸೂರ ಬೆಳಕನ್ನು ಒಟ್ಟುಗೂಡಿಸಿ ಪರದೆಯ ಮೇಲೆ ನೈಜ, ತಲೆಕೆಳಗಾದ ಪ್ರತಿಬಿಂಬ ಮಾಡುತ್ತದೆ; ನಿಮ್ನ ಮಸೂರ ಬೆಳಕನ್ನು ಹರಡುತ್ತದೆ, ಆದ್ದರಿಂದ ಪ್ರತಿಬಿಂಬ ಮಸೂರದ ಹಿಂದಿನಿಂದ ಬಂದಂತೆ ಕಾಣುತ್ತದೆ.',
   ),
   keywords: ['lens', 'convex lens', 'concave lens', 'optics', 'ray diagram', 'image formation', 'focal length', 'light', 'refraction', 'real image', 'virtual image', 'lens formula', 'magnification', 'light reflection and refraction'],
-  credit: 'Model built by KINETIX (image placed by the lens formula)',
+  credit: 'Model built by Zynetix (image placed by the lens formula)',
   crease: 50,
   variants: [
     { id: 'convex', name: t('Convex lens', 'उत्तल लेंस', 'ಪೀನ ಮಸೂರ') },

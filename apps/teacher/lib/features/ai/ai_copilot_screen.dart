@@ -7,7 +7,7 @@ import '../../core/insights_models.dart';
 import '../../core/l10n.dart';
 import '../../widgets/common.dart';
 
-/// KINETIX AI for the teacher: explain a topic, or draft a quiz, homework or lesson plan. Every
+/// Zynetix AI for the teacher: explain a topic, or draft a quiz, homework or lesson plan. Every
 /// result is labelled a draft; nothing reaches students from here.
 class AiCopilotScreen extends StatefulWidget {
   const AiCopilotScreen({super.key, required this.api, this.language = 'en'});

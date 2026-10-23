@@ -37,7 +37,7 @@ export default {
     'ಡೆಕ್ ಲಂಬ ಹ್ಯಾಂಗರ್‌ಗಳ ಮೂಲಕ ಎರಡು ಮುಖ್ಯ ಕೇಬಲ್‌ಗಳಿಂದ ತೂಗುತ್ತದೆ; ಕೇಬಲ್‌ಗಳು ಗೋಪುರಗಳ ಮೇಲೆ ಹಾದು ಭಾರವಾದ ಆಂಕರೇಜ್‌ಗಳಲ್ಲಿ ಬಂಧಿಸಲ್ಪಟ್ಟಿವೆ. ಕೇಬಲ್‌ಗಳು ಸೆಳೆತದಲ್ಲಿ, ಗೋಪುರಗಳು ಸಂಪೀಡನದಲ್ಲಿ.',
   ),
   keywords: ['suspension bridge', 'bridge', 'cable', 'hanger', 'tower', 'anchorage', 'tension', 'parabola', 'sag', 'civil engineering', 'howrah', 'golden gate'],
-  credit: 'Model built by KINETIX (a simplified suspension bridge at 1:1000)',
+  credit: 'Model built by Zynetix (a simplified suspension bridge at 1:1000)',
   crease: 40,
   build(THREE) {
     const a = MAIN / 2;

@@ -30,7 +30,7 @@ export class ApplicationFeesService {
     if (!row) throw new NotFoundException('Application not found');
     if (row.app.feeStatus !== 'pending') throw new BadRequestException(row.app.feeStatus === 'paid' ? 'The application fee is already paid' : 'No application fee is due');
     const [tenant] = await tx.select({ name: tenants.name }).from(tenants);
-    return { provider, app: row.app, amountPaise: row.fee, description: `Application fee: ${row.cycleName}`, institution: tenant?.name ?? 'KINETIX' };
+    return { provider, app: row.app, amountPaise: row.fee, description: `Application fee: ${row.cycleName}`, institution: tenant?.name ?? 'Zynetix' };
   }
 
   async recordOrder(tx: Tx, a: { tenantId: string; applicationId: string; amountPaise: number; provider: string; orderId: string }) {

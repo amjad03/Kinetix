@@ -50,7 +50,7 @@ class CastRequestResult {
   const CastRequestResult({required this.ok, this.error, this.castId, this.approved = false, this.iceServers = const []});
 
   factory CastRequestResult.fromJson(Object? j) {
-    if (j is! Map) return const CastRequestResult(ok: false, error: 'No answer from KINETIX Cloud');
+    if (j is! Map) return const CastRequestResult(ok: false, error: 'No answer from Zynetix Cloud');
     return CastRequestResult(
       ok: j['ok'] == true,
       error: j['error'] as String?,

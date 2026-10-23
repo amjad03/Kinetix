@@ -168,9 +168,9 @@ class Viewer3dStrings {
     ],
     'earthCredit': ['Coastlines: Natural Earth (public domain)', 'तटरेखाएँ: Natural Earth (सार्वजनिक डोमेन)', 'ಕರಾವಳಿ ರೇಖೆಗಳು: Natural Earth (ಸಾರ್ವಜನಿಕ ಡೊಮೇನ್)'],
     'madeByKinetix': [
-      'Other models come from NIH 3D (NIAID, CC BY 4.0), NASA (public domain), the Smithsonian (CC0) and Poly Pizza (CC BY 3.0), each named under it; the rest are built in code by KINETIX.',
-      'अन्य मॉडल NIH 3D (NIAID, CC BY 4.0), नासा (सार्वजनिक), स्मिथसोनियन (CC0) और Poly Pizza (CC BY 3.0) से हैं, हर मॉडल के नीचे नाम लिखा है; बाकी KINETIX ने कोड से बनाए हैं।',
-      'ಇತರ ಮಾದರಿಗಳು NIH 3D (NIAID, CC BY 4.0), ನಾಸಾ (ಸಾರ್ವಜನಿಕ), ಸ್ಮಿತ್‌ಸೋನಿಯನ್ (CC0) ಮತ್ತು Poly Pizza (CC BY 3.0) ಇಂದ ಬಂದಿವೆ, ಪ್ರತಿಯೊಂದರ ಕೆಳಗೆ ಹೆಸರಿದೆ; ಉಳಿದವನ್ನು KINETIX ಕೋಡ್‌ನಲ್ಲಿ ನಿರ್ಮಿಸಿದೆ.',
+      'Other models come from NIH 3D (NIAID, CC BY 4.0), NASA (public domain), the Smithsonian (CC0) and Poly Pizza (CC BY 3.0), each named under it; the rest are built in code by Zynetix.',
+      'अन्य मॉडल NIH 3D (NIAID, CC BY 4.0), नासा (सार्वजनिक), स्मिथसोनियन (CC0) और Poly Pizza (CC BY 3.0) से हैं, हर मॉडल के नीचे नाम लिखा है; बाकी Zynetix ने कोड से बनाए हैं।',
+      'ಇತರ ಮಾದರಿಗಳು NIH 3D (NIAID, CC BY 4.0), ನಾಸಾ (ಸಾರ್ವಜನಿಕ), ಸ್ಮಿತ್‌ಸೋನಿಯನ್ (CC0) ಮತ್ತು Poly Pizza (CC BY 3.0) ಇಂದ ಬಂದಿವೆ, ಪ್ರತಿಯೊಂದರ ಕೆಳಗೆ ಹೆಸರಿದೆ; ಉಳಿದವನ್ನು Zynetix ಕೋಡ್‌ನಲ್ಲಿ ನಿರ್ಮಿಸಿದೆ.',
     ],
     'close': ['Close', 'बंद करें', 'ಮುಚ್ಚಿ'],
     'tabParts': ['Parts', 'भाग', 'ಭಾಗಗಳು'],

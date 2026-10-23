@@ -52,7 +52,7 @@ export default {
     'ಭೂಮಿಯ ಅಕ್ಷ 23.5° ಓರೆಯಾಗಿದ್ದು ಯಾವಾಗಲೂ ಒಂದೇ ದಿಕ್ಕಿಗೆ ತೋರುತ್ತದೆ. ಸೂರ್ಯನ ಸುತ್ತ ಸುತ್ತುವಾಗ ಮೊದಲು ಒಂದು, ನಂತರ ಇನ್ನೊಂದು ಗೋಳಾರ್ಧ ಸೂರ್ಯನ ಕಡೆಗೆ ಬಾಗುತ್ತದೆ: ಇದರಿಂದ ಋತುಗಳು.',
   ),
   keywords: ['seasons', 'motions of the earth', 'revolution', 'rotation', 'axis', 'tilt', 'equinox', 'solstice', 'day and night', 'tropic of cancer', 'tropic of capricorn', 'the earth in the solar system'],
-  credit: 'Model built by KINETIX; coastlines from Natural Earth (public domain)',
+  credit: 'Model built by Zynetix; coastlines from Natural Earth (public domain)',
   light: [0, 0, 0], // the Sun
   groups: [
     { id: 'sun', name: t('Sun and orbit', 'सूर्य और कक्षा', 'ಸೂರ್ಯ ಮತ್ತು ಕಕ್ಷೆ') },

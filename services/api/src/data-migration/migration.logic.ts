@@ -49,7 +49,7 @@ export const ENTITY_FIELDS: Record<MigrationEntity, FieldDef[]> = {
   students: [
     f('roll_no', 'Roll / admission number', ['admission_no', 'admission_number', 'reg_no', 'register_no', 'register_number', 'reg_number', 'roll_number', 'student_id'], true),
     f('full_name', 'Student name', ['name', 'student_name', 'name_of_student'], true),
-    f('section', 'Class (as shown in KINETIX)', ['class', 'class_name', 'division', 'batch'], true),
+    f('section', 'Class (as shown in Zynetix)', ['class', 'class_name', 'division', 'batch'], true),
     f('student_email', 'Student email', ['email', 'email_id', 'student_email_id']),
     f('student_phone', 'Student mobile', ['mobile', 'mobile_no', 'student_mobile']),
     f('preferred_language', 'Language', ['language', 'mother_tongue']),

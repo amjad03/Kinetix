@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.billing') };
 }
 
-/** The institution's own KINETIX subscription: plan, usage, invoices and GST. */
+/** The institution's own Zynetix subscription: plan, usage, invoices and GST. */
 export default async function BillingPage() {
   await requireSection('billing');
   const { t } = await getI18n();

@@ -19,7 +19,7 @@ import '../reader/read_aloud.dart' show ReadAloudScope;
 
 Color _booksAccent(BuildContext c) => Theme.of(c).brightness == Brightness.dark ? const Color(0xFF8AB4F8) : const Color(0xFF1A5FC8);
 
-/// Books: the syllabus of the class open on the board, from the KINETIX content library.
+/// Books: the syllabus of the class open on the board, from the Zynetix content library.
 /// A topic opens its notes and lesson (hook, terms, example, activity, questions, homework) in
 /// large type for the class, and can start an AI explanation or a
 /// quick quiz grounded in that topic. Topics taught to the open class are ticked, and the
@@ -289,7 +289,7 @@ class _BooksPanelState extends State<BooksPanel> {
                   trailing: ch.topics.isEmpty
                       ? (widget.ai.canUseAi ? const Icon(Icons.auto_awesome_outlined) : null)
                       : Icon(_open.contains(ch.id) ? Icons.expand_less : Icons.expand_more),
-                  // A chapter without topic notes yet: KINETIX AI explains the chapter.
+                  // A chapter without topic notes yet: Zynetix AI explains the chapter.
                   onTap: ch.topics.isEmpty
                       ? (widget.ai.canUseAi
                             ? () {

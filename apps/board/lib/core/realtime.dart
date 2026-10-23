@@ -27,7 +27,7 @@ abstract final class RealtimeEvents {
   static const deviceActionsPull = 'device.actions.pull';
 }
 
-/// The board's live connection to KINETIX Cloud. Reconnects on its own.
+/// The board's live connection to Zynetix Cloud. Reconnects on its own.
 class Realtime {
   Realtime(this.baseUrl);
 

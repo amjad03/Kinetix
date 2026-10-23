@@ -301,7 +301,7 @@ void main() {
         await tester.pump();
         expect(wb.elements.whereType<TextElement>().first.text, contains('Photosynthesis'));
 
-        // With KINETIX AI's questions, each can be asked as a poll.
+        // With Zynetix AI's questions, each can be asked as a poll.
         final ai = AssessmentGenerator(
           online: (t, n) async => AiResult(
             Quiz(topic: t, questions: [QuizQuestion(question: 'Where does photosynthesis happen?', options: ['Chloroplast', 'Nucleus', 'Root', 'Stem'], answer: 0, explanation: '')]),
@@ -336,7 +336,7 @@ void main() {
         await tester.enterText(find.byKey(const Key('dictionary-search')), 'ನೀರು');
         await tester.pump();
         expect(find.byKey(const Key('dictionary-word-water')), findsOneWidget);
-        // No class open: KINETIX AI falls back to the offline list.
+        // No class open: Zynetix AI falls back to the offline list.
         await tapKey(tester, 'dictionary-ai');
         await tester.pumpAndSettle();
         expect(find.byKey(const Key('dictionary-ai-answer')), findsOneWidget);

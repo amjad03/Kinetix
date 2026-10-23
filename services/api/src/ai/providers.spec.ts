@@ -238,10 +238,10 @@ describe('Google Gemini through its OpenAI-compatible endpoint', () => {
     const base = { DATABASE_URL: 'postgres://a@b/c', APP_DATABASE_URL: 'postgres://a@b/c', JWT_SECRET: 'x'.repeat(16), PAIRING_HMAC_SECRET: 'y'.repeat(8) };
     const gemini = loadEnv({ ...base, AI_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/openai', AI_MODEL: 'gemini-3.8-flash', AI_API_KEY: 'secret-key' });
     const line = describeProvider(gemini, providerFromEnv(gemini));
-    expect(line).toBe('KINETIX AI: gemini-3.8-flash at generativelanguage.googleapis.com');
+    expect(line).toBe('Zynetix AI: gemini-3.8-flash at generativelanguage.googleapis.com');
     expect(line).not.toContain('secret-key');
     const none = loadEnv(base);
-    expect(describeProvider(none, providerFromEnv(none))).toMatch(/^KINETIX AI: labelled preview answers/);
+    expect(describeProvider(none, providerFromEnv(none))).toMatch(/^Zynetix AI: labelled preview answers/);
   });
 
   it('tries the same server\'s other models when one is out of its daily allowance (AI_FALLBACK_MODELS)', async () => {
@@ -249,7 +249,7 @@ describe('Google Gemini through its OpenAI-compatible endpoint', () => {
     const env = loadEnv({ ...base, AI_BASE_URL: gemini.url, AI_MODEL: 'gemini-3.8-flash', AI_API_KEY: FakeGemini.KEY, AI_FALLBACK_MODELS: ' gemini-3.7-flash, gemini-flash-lite-latest,gemini-3.8-flash' });
     const p = providerFromEnv(env);
     expect(p.models).toEqual(['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-lite-latest']);
-    expect(describeProvider(env, p)).toBe(`KINETIX AI: gemini-3.8-flash, then gemini-3.7-flash, then gemini-flash-lite-latest at ${new URL(gemini.url).host}`);
+    expect(describeProvider(env, p)).toBe(`Zynetix AI: gemini-3.8-flash, then gemini-3.7-flash, then gemini-flash-lite-latest at ${new URL(gemini.url).host}`);
     gemini.failures = ['perDay'];
     gemini.replies.push(reply);
     const out = await p.complete(ask, opts);

@@ -35,7 +35,7 @@ Map<String, dynamic> _video(String id, String title, {String language = 'en'}) =
   'title': title,
   'language': language,
   'durationSeconds': 245,
-  'channelTitle': 'KINETIX',
+  'channelTitle': 'Zynetix',
   'position': 1,
   'topicTitle': 'Methods of valuing goodwill',
 };

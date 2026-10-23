@@ -32,7 +32,7 @@ Map<String, dynamic> _video(String id, String title, String source) => {
   'title': title,
   'language': 'en',
   'durationSeconds': 245,
-  'channelTitle': 'KINETIX',
+  'channelTitle': 'Zynetix',
   'position': 1,
   'topicTitle': 'Methods of valuing goodwill',
 };
@@ -52,7 +52,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     Map<String, dynamic>? posted;
-    var videos = [_video('v1', 'KINETIX explainer', 'platform'), _video('v2', 'School explainer', 'institution')];
+    var videos = [_video('v1', 'Zynetix explainer', 'platform'), _video('v2', 'School explainer', 'institution')];
     final client = MockClient((req) async {
       if (req.url.path == '/v1/devices/enroll') return http.Response(jsonEncode({'deviceToken': 'dev', 'device': {'name': 'Board'}}), 201);
       if (req.url.path == '/v1/devices/me/concept-videos') {
@@ -89,9 +89,9 @@ void main() {
     await tester.tap(find.byKey(const Key('videos-mode-concept')));
     await tester.pumpAndSettle();
 
-    expect(find.text('KINETIX explainer'), findsOneWidget);
+    expect(find.text('Zynetix explainer'), findsOneWidget);
     expect(find.byKey(const Key('videoSource-v1')), findsOneWidget);
-    expect(find.descendant(of: find.byKey(const Key('videoSource-v1')), matching: find.text('KINETIX')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('videoSource-v1')), matching: find.text('Zynetix')), findsOneWidget);
     expect(find.descendant(of: find.byKey(const Key('videoSource-v2')), matching: find.text('School')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('video-add')));

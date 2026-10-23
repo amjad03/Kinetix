@@ -33,7 +33,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Zynetix uses the microphone for the noise meter (only the sound level is measured), class audio and lesson recording.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Zynetix turns speech into live captions, voice commands and spoken questions for KINETIX AI.</string>
+	<string>Zynetix turns speech into live captions, voice commands and spoken questions for Zynetix AI.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Zynetix uses the camera for the document camera.</string>
 	<key>NSLocalNetworkUsageDescription</key>

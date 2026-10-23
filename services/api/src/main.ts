@@ -17,7 +17,7 @@ async function bootstrap() {
 
   const doc = SwaggerModule.createDocument(
     app,
-    new DocumentBuilder().setTitle('KINETIX Cloud API').setVersion('0.1').addBearerAuth().build(),
+    new DocumentBuilder().setTitle('Zynetix Cloud API').setVersion('0.1').addBearerAuth().build(),
   );
   SwaggerModule.setup('docs', app, doc);
 

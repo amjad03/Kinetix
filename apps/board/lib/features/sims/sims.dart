@@ -12,7 +12,7 @@ import '../search/filter_bar.dart';
 import '../search/fuzzy.dart';
 import '../search/search_strings.dart';
 
-/// The six interactive simulations from the KINETIX prototype. They open in a window over the
+/// The six interactive simulations from the Zynetix prototype. They open in a window over the
 /// board (they are not written on it).
 enum SimKind { pendulum, projectile, grapher, fractions, wave, pythagoras }
 

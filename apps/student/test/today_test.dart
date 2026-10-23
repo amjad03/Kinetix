@@ -71,8 +71,8 @@ void main() {
   });
 
   testWidgets('a failed load shows the error with Retry', (tester) async {
-    final (api, _) = await pumpApp(tester, setup: (api) => api.summaryError = ApiException(0, "Can't reach KINETIX."));
-    expect(find.text("Can't reach KINETIX."), findsOneWidget);
+    final (api, _) = await pumpApp(tester, setup: (api) => api.summaryError = ApiException(0, "Can't reach Zynetix."));
+    expect(find.text("Can't reach Zynetix."), findsOneWidget);
     api.summaryError = null;
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();

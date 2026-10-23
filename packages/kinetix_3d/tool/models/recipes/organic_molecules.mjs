@@ -89,7 +89,7 @@ export default {
     'ಮೆಥನಾಲ್, ಎಥನಾಲ್, ಅಸಿಟಿಕ್ ಆಮ್ಲ ಮತ್ತು ಗ್ಲೂಕೋಸ್ ಉಂಗುರದ ಚೆಂಡು-ಕಡ್ಡಿ ಮಾದರಿಗಳು, CPK ಬಣ್ಣಗಳಲ್ಲಿ: ಕಾರ್ಬನ್ ಕಪ್ಪು, ಆಮ್ಲಜನಕ ಕೆಂಪು, ಹೈಡ್ರೋಜನ್ ಬಿಳಿ.',
   ),
   keywords: ['ethanol', 'methanol', 'alcohol', 'acetic acid', 'ethanoic acid', 'carboxylic acid', 'glucose', 'sugar', 'carbohydrate', 'functional group', 'organic chemistry', 'carbon and its compounds', 'biomolecules', 'fermentation'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   thumb: 'glucose',
   variants: MOLECULES.map(([id, name]) => ({ id, name })),
   groups: [

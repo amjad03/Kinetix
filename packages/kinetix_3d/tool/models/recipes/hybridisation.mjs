@@ -107,7 +107,7 @@ export default {
     'ಕೇಂದ್ರ ಪರಮಾಣುವಿನ ಕಕ್ಷೀಯಗಳು ಸೇರಿ ಸಾಧ್ಯವಾದಷ್ಟು ದೂರ ತೋರುವ ಸಮಾನ ಸಂಕರ ಕಕ್ಷೀಯಗಳಾಗುತ್ತವೆ. ಸಂಕರಗಳ ಸಂಖ್ಯೆ ಅಣುವಿನ ಆಕಾರವನ್ನು ನಿರ್ಧರಿಸುತ್ತದೆ.',
   ),
   keywords: ['hybridisation', 'hybridization', 'hybrid orbitals', 'sp3', 'sp2', 'sp', 'vsepr', 'chemical bonding and molecular structure', 'molecular geometry', 'bond angle', 'tetrahedral', 'trigonal planar', 'octahedral'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   thumb: 'sp3',
   variants: KINDS.map(([id, label]) => ({ id, name: t(label, label, label) })),
   groups: [

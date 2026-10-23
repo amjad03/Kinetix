@@ -15,7 +15,7 @@ class MessageNew {
   final String senderId;
 }
 
-/// The signed-in teacher's live connection to KINETIX Cloud (namespace `/realtime`).
+/// The signed-in teacher's live connection to Zynetix Cloud (namespace `/realtime`).
 ///
 /// Messages arrive here as they are sent instead of on the next refresh. When the connection
 /// drops it comes back by itself with growing waits; [reconnected] then tells the app to catch

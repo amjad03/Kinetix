@@ -1,4 +1,4 @@
-// The Taj Mahal, Agra (1632-1653), drawn by KINETIX from its published
+// The Taj Mahal, Agra (1632-1653), drawn by Zynetix from its published
 // measurements: the marble plinth, the mausoleum with its great arched
 // portals (iwans) and cut corners, the onion dome on its drum, four
 // chhatris, four minarets and the long water channel of the garden. A
@@ -27,7 +27,7 @@ export default {
     'ಮೊಘಲ್ ಚಕ್ರವರ್ತಿ ಷಹಜಹಾನ್ ಮುಮ್ತಾಜ್ ಮಹಲ್‌ಗಾಗಿ ನಿರ್ಮಿಸಿದ ಬಿಳಿ ಅಮೃತಶಿಲೆಯ ಸಮಾಧಿ (1632-1653). ನಿಜ ಅನುಪಾತದ ಸರಳ ಮಾದರಿ: ಗುಮ್ಮಟದ ತುದಿಗೆ 73 ಮೀ, ಮಿನಾರುಗಳು 40 ಮೀ.',
   ),
   keywords: ['taj mahal', 'mughal', 'shah jahan', 'mumtaz mahal', 'monument', 'architecture', 'agra', 'tomb', 'marble', 'world heritage', 'rulers and buildings', 'mughal empire', 'dome', 'minaret'],
-  credit: 'Simplified model drawn by KINETIX from published measurements',
+  credit: 'Simplified model drawn by Zynetix from published measurements',
   size: 0.6,
   crease: 35,
   matte: true,

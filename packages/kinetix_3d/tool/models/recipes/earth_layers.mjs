@@ -72,7 +72,7 @@ export default {
     'ತೆಳುವಾದ ಭೂಹೊರಪದರದ ಕೆಳಗೆ ಪ್ರಾವಾರ, ದ್ರವ ಹೊರ ತಿರುಳು ಮತ್ತು ಘನ ಒಳ ತಿರುಳು ಇವೆ. ಆಳಕ್ಕೆ ಹೋದಂತೆ ಹೆಚ್ಚು ಬಿಸಿ.',
   ),
   keywords: ['earth layers', 'interior of the earth', 'inside our earth', 'crust', 'mantle', 'core', 'inner core', 'outer core', 'sial', 'sima', 'continents', 'oceans', 'earthquakes', 'the earth'],
-  credit: 'Model built by KINETIX; coastlines from Natural Earth (public domain)',
+  credit: 'Model built by Zynetix; coastlines from Natural Earth (public domain)',
   groups: [
     { id: 'crust', name: t('Crust', 'भूपर्पटी', 'ಭೂಹೊರಪದರ') },
     { id: 'layers', name: t('Deeper layers', 'गहरी परतें', 'ಆಳದ ಪದರಗಳು') },

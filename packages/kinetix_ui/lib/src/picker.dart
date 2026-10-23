@@ -22,7 +22,7 @@ class KxPickerItem<T> {
   }
 }
 
-/// The KINETIX choice field: shows the selection, and opens a searchable bottom sheet grouped
+/// The Zynetix choice field: shows the selection, and opens a searchable bottom sheet grouped
 /// by [KxPickerItem.group] with a check mark on the chosen item. Use it in place of a dropdown
 /// for anything with more than three choices. Works in a [Form] ([validator]).
 class KxPicker<T> extends FormField<T> {

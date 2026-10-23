@@ -1,4 +1,4 @@
-KINETIX 3D models and viewer
+Zynetix 3D models and viewer
 
 Human anatomy models (heart, brain, digestive system, lungs, eye, excretory
 system, skeleton, skull, teeth, the outer ear, the kidney; downloaded: liver,
@@ -7,7 +7,7 @@ stomach) are made from BodyParts3D,
 Creative Commons Attribution 4.0 International
 (https://creativecommons.org/licenses/by/4.0/).
 https://dbarchive.biosciencedbc.jp/en/bodyparts3d/
-KINETIX simplified the meshes, cut the vessels short, split the ventricle
+Zynetix simplified the meshes, cut the vessels short, split the ventricle
 wall into left, right and septum, and added names, notes and animations.
 The model files derived from BodyParts3D are shared under the same terms.
 
@@ -16,7 +16,7 @@ surface of specimen F07 from "Human Bony Labyrinth: Co-Registered CT and
 micro-CT Images, Surface Models and Anatomical Landmarks" by W. Wimmer,
 L. Anschuetz, S. Weder, F. Wagner, H. Delingette and M. Caversaccio (2019),
 https://doi.org/10.5281/zenodo.3355272, Creative Commons Attribution 4.0
-International. KINETIX simplified it, split it into its three parts and
+International. Zynetix simplified it, split it into its three parts and
 placed it in the ear.
 
 The DNA model's atoms are the B-DNA dodecamer of PDB entry 1BNA (H. R. Drew,
@@ -39,9 +39,9 @@ Creative Commons Attribution 3.0.
 
 Downloaded models: woolly mammoth, Cosmic Buddha and Apollo 11 command module
 from Smithsonian Open Access (CC0); Saturn V, Apollo Lunar Module and Hubble
-from NASA 3D Resources (public domain; KINETIX split them into named parts
+from NASA 3D Resources (public domain; Zynetix split them into named parts
 and keeps each part's pictures); liver and stomach from BodyParts3D (above);
-tooth, skin, bacterium and mitochondrion built in code by KINETIX.
+tooth, skin, bacterium and mitochondrion built in code by Zynetix.
 
 The cells, neuron, shapes, atoms, molecules, solar system, Earth's layers,
 volcano, orbitals, hybridisation, crystal lattices, electric circuit, AC
@@ -49,13 +49,13 @@ generator, transformer, simple machines, nephron, engine, gears, helical
 and bevel gears, cam and follower, lens bench, laboratory apparatus, RCC
 frame building, truss, arch, suspension and cable-stayed bridges and
 footing types, the DC machine, three-phase induction motor, single- and
-three-phase transformers and alternator are built in code by KINETIX, and so are the
+three-phase transformers and alternator are built in code by Zynetix, and so are the
 simplified Taj Mahal, Qutub Minar, India Gate and Konark Sun Temple, the
 middle ear and the inside of the kidney. The chemical engineering models
 (alcohols, acids and sugars; CSTR, plug flow and packed bed reactors; shell-
 and-tube heat exchanger; tray distillation column) and the electric-vehicle
 models (battery pack, PMSM traction motor, drivetrain) are built in code by
-KINETIX too.
+Zynetix too.
 
 The viewer uses three.js (https://threejs.org), MIT License:
 

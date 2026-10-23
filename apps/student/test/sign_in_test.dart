@@ -62,7 +62,7 @@ void main() {
     );
     await fill(tester, login: 'parent@demo.kinetix.in');
     expect(find.textContaining('This app is for students'), findsOneWidget);
-    expect(find.textContaining('KINETIX Parent app'), findsOneWidget);
+    expect(find.textContaining('Zynetix Parent app'), findsOneWidget);
     expect(state.signedIn, isFalse);
     expect(api.token, isNull);
   });
@@ -76,7 +76,7 @@ void main() {
         ..add('teacher'),
     );
     await fill(tester, login: 'anita@demo.kinetix.in');
-    expect(find.textContaining('KINETIX Teacher app'), findsOneWidget);
+    expect(find.textContaining('Zynetix Teacher app'), findsOneWidget);
   });
 
   testWidgets('explains a student login with no student record', (tester) async {

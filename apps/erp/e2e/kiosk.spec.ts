@@ -77,6 +77,6 @@ test('the principal removes the PIN', async ({ page }) => {
 test('the section is translated', async ({ page }) => {
   await setLanguageCookie(page, 'hi');
   await open(page, '/settings');
-  await expect(page.getByTestId('kiosk')).toContainText('बोर्ड को KINETIX Board पर लॉक करें');
+  await expect(page.getByTestId('kiosk')).toContainText('बोर्ड को Zynetix Board पर लॉक करें');
   await setLanguageCookie(page, 'en');
 });

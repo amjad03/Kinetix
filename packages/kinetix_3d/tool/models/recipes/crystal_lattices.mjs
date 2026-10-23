@@ -55,7 +55,7 @@ export default {
     'ಘನೀಯ ಹರಳುಗಳ ಏಕಕ ಕೋಶಗಳು: ಸರಳ ಘನೀಯ, ಕಾಯ ಕೇಂದ್ರಿತ, ಮುಖ ಕೇಂದ್ರಿತ ಮತ್ತು ಕಲ್ಲುಪ್ಪು. ಪ್ರತಿ ಕೋಶದಲ್ಲಿ ನಿಜವಾಗಿ ಎಷ್ಟು ಪರಮಾಣುಗಳಿವೆ, ಪ್ರತಿ ಪರಮಾಣುವಿನ ಹತ್ತಿರದ ನೆರೆಯವು ಯಾವುವು ಎಂದು ಎಣಿಸಿ.',
   ),
   keywords: ['crystal lattice', 'unit cell', 'solid state', 'the solid state', 'simple cubic', 'body centred cubic', 'face centred cubic', 'bcc', 'fcc', 'packing efficiency', 'coordination number', 'sodium chloride', 'close packing'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   thumb: 'fcc',
   variants: KINDS.map(([id, name]) => ({ id, name })),
   groups: [

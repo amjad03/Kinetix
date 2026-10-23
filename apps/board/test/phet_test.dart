@@ -51,7 +51,7 @@ void main() {
         }
         expect(s.locales, contains('en'), reason: s.id);
         // Named in Hindi and Kannada: PhET's own title where PhET has the sim in that language,
-        // KINETIX's (tools/phet/titles.json) where it does not (the sim then opens in English).
+        // Zynetix's (tools/phet/titles.json) where it does not (the sim then opens in English).
         for (final l in ['hi', 'kn']) {
           expect(s.titles[l], isNotNull, reason: '${s.id} has a $l title');
         }

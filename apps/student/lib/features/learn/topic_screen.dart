@@ -10,7 +10,7 @@ import 'ask_view.dart';
 import 'concept_videos.dart';
 
 /// A library topic: summary, notes and what the student should be able to do, with a way to
-/// ask KINETIX AI about it.
+/// ask Zynetix AI about it.
 class TopicScreen extends StatefulWidget {
   const TopicScreen({super.key, required this.api, required this.topicId, required this.controller});
 
@@ -166,7 +166,7 @@ class _Block extends StatelessWidget {
   );
 }
 
-/// "Ask KINETIX AI" about one topic, opened from its page.
+/// "Ask Zynetix AI" about one topic, opened from its page.
 class AskScreen extends StatefulWidget {
   const AskScreen({super.key, required this.template, required this.topic});
 

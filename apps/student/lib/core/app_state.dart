@@ -16,7 +16,7 @@ import 'server_config.dart';
 export 'server_config.dart' show defaultServerUrl;
 
 /// Who is signed in, their student record, the remembered server, institution and login, the
-/// app's language, and the language KINETIX AI answers in. The session token is kept in the
+/// app's language, and the language Zynetix AI answers in. The session token is kept in the
 /// device's secure store ([TokenStore]: Android Keystore / iOS Keychain), never in preferences.
 class AppState extends ChangeNotifier {
   AppState(
@@ -100,7 +100,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  /// The language KINETIX AI answers in: the student's own choice (kept separate from the app's
+  /// The language Zynetix AI answers in: the student's own choice (kept separate from the app's
   /// language), else the app's language.
   AiLanguage get aiLanguage => AiLanguage.parse(prefs.getString(_kAiLanguage) ?? language?.name);
 
@@ -195,9 +195,9 @@ class AppState extends ChangeNotifier {
     if (!profile.isStudent) {
       api.token = null;
       final (hint, problem) = profile.roles.contains('guardian')
-          ? ('Parents and guardians can use the KINETIX Parent app.', ApiProblem.guardianAccount)
+          ? ('Parents and guardians can use the Zynetix Parent app.', ApiProblem.guardianAccount)
           : profile.roles.any((r) => const ['teacher', 'hod', 'principal'].contains(r))
-          ? ('Teachers can use the KINETIX Teacher app.', ApiProblem.teacherAccount)
+          ? ('Teachers can use the Zynetix Teacher app.', ApiProblem.teacherAccount)
           : ('Ask your college office to set up your student login.', ApiProblem.notStudent);
       throw ApiException(403, 'This app is for students. $hint', problem: problem);
     }

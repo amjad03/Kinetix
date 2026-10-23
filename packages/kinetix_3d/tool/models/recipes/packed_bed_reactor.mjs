@@ -38,7 +38,7 @@ export default {
     'ಅನಿಲ ವೇಗವರ್ಧಕ ಗುಳಿಗೆಗಳ ಸ್ಥಿರ ಹಾಸಿನ ಮೂಲಕ ಕೆಳಗೆ ಹರಿದು ಅವುಗಳ ಮೇಲ್ಮೈಯಲ್ಲಿ ಕ್ರಿಯೆ ನಡೆಸುತ್ತದೆ (ಅಮೋನಿಯಾ, ಮೆಥನಾಲ್, ಸಲ್ಫ್ಯೂರಿಕ್ ಆಮ್ಲ ಘಟಕಗಳು). ವಿನ್ಯಾಸ ವೇಗವರ್ಧಕ ತೂಕದಿಂದ: W = F₀∫dX/(−r′A); ಎರ್ಗನ್ ಸಮೀಕರಣ ಒತ್ತಡ ಕುಸಿತ ನೀಡುತ್ತದೆ.',
   ),
   keywords: ['packed bed reactor', 'fixed bed reactor', 'catalytic reactor', 'catalyst', 'heterogeneous catalysis', 'ergun equation', 'pressure drop', 'reaction engineering', 'chemical engineering', 'haber process'],
-  credit: 'Model built by KINETIX (proportions simplified)',
+  credit: 'Model built by Zynetix (proportions simplified)',
   build(THREE) {
     const rnd = seeded(7);
     return {

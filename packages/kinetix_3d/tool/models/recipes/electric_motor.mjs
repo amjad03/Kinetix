@@ -52,7 +52,7 @@ export default {
     'ಕಾಂತಕ್ಷೇತ್ರದಲ್ಲಿರುವ ವಿದ್ಯುತ್ ಹರಿಯುವ ಸುರುಳಿಯ ಮೇಲೆ ಬಲ ಬೀಳುತ್ತದೆ (ಫ್ಲೆಮಿಂಗ್‌ನ ಎಡಗೈ ನಿಯಮ), ಅದು ತಿರುಗುತ್ತದೆ. ಸೀಳು ಉಂಗುರ ದಿಕ್ಪರಿವರ್ತಕ ಪ್ರತಿ ಅರ್ಧ ಸುತ್ತಿಗೆ ವಿದ್ಯುತ್ತನ್ನು ತಿರುಗಿಸುವುದರಿಂದ ಅದು ತಿರುಗುತ್ತಲೇ ಇರುತ್ತದೆ.',
   ),
   keywords: ['electric motor', 'motor', 'magnetic effects of electric current', 'fleming', 'left hand rule', 'commutator', 'split ring', 'armature', 'force on a current carrying conductor', 'moving charges and magnetism'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   groups: [
     { id: 'magnet', name: t('Magnet', 'चुंबक', 'ಕಾಂತ') },
     { id: 'rotor', name: t('Turning parts', 'घूमने वाले भाग', 'ತಿರುಗುವ ಭಾಗಗಳು') },

@@ -19,7 +19,7 @@ export const script = {
     'ತಿಂಗಳಲ್ಲಿ ಚಂದ್ರನ ಆಕಾರ ಬದಲಾದಂತೆ ಏಕೆ ಕಾಣುತ್ತದೆ: ಸೂರ್ಯ ಅದರ ಅರ್ಧ ಭಾಗವನ್ನು ಸದಾ ಬೆಳಗುತ್ತಾನೆ; ಅದು ಭೂಮಿಯನ್ನು ಸುತ್ತುವಾಗ ಬೆಳಗಿದ ಭಾಗದ ಕಡಿಮೆ ಅಥವಾ ಹೆಚ್ಚು ಅಂಶ ನಮಗೆ ಕಾಣುತ್ತದೆ.',
   ),
   keywords: ['moon', 'phases of the moon', 'new moon', 'full moon', 'crescent', 'first quarter', 'waxing', 'waning', 'lunar month', 'amavasya', 'purnima', 'satellite', 'geography'],
-  credit: 'Model built by KINETIX',
+  credit: 'Model built by Zynetix',
   look: {
     background: ['#0e1119', '#020305'],
     keyAt: [0, 8, 4],
