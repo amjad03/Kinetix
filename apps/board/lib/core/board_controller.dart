@@ -25,6 +25,7 @@ import 'secret_store.dart';
 import 'models.dart';
 import 'outbox_store.dart';
 import 'cast/cast_controller.dart';
+import 'cloud/cloud_service.dart';
 import 'fleet/fleet_agent.dart';
 import 'realtime.dart';
 import 'recording/recordings.dart';
@@ -101,6 +102,13 @@ class BoardController extends ChangeNotifier {
     )..addListener(notifyListeners);
     this.cast = cast ?? CastController(emit: (event, data) => _realtime?.emit(event, data), request: (event, data) => _realtime?.request(event, data) ?? Future.value());
     this.cast.addListener(notifyListeners);
+    // Guests join from the browser /cast page with this code (QR on the cast panel).
+    this.cast.fetchJoinCode ??= ({bool fresh = false}) async {
+      final a = api;
+      if (a == null || !isSignedIn) return null;
+      final j = await a.castJoinCode(fresh: fresh);
+      return CastJoinInfo(j['code'] as String, j['url'] as String);
+    };
     fleet = FleetAgent(
       send: (body) async => api?.postHealth(body),
       probe: deviceProbe,
@@ -149,6 +157,13 @@ class BoardController extends ChangeNotifier {
 
   BoardStage stage = BoardStage.loading;
   ApiClient? api;
+
+  /// Cloud drives, Google Classroom and Moodle through the server (Zynetix W5); tests set a fake.
+  CloudService? cloudService;
+  CloudService? get cloud => cloudService ?? switch (api) {
+    final a? => ApiCloudService(a),
+    null => null,
+  };
   Realtime? _realtime;
   String? deviceName;
   bool online = false;

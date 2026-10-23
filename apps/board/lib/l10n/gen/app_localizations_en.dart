@@ -4853,4 +4853,153 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get curSoonEv => 'EV diagrams';
+
+  @override
+  String get castLayout => 'Layout';
+
+  @override
+  String get castLayoutAuto => 'Auto';
+
+  @override
+  String get castPresent => 'Make presenter';
+
+  @override
+  String get castPresenter => 'Presenter';
+
+  @override
+  String get castMute => 'Pause this screen';
+
+  @override
+  String get castUnmute => 'Show this screen again';
+
+  @override
+  String get castPaused => 'Paused by the teacher';
+
+  @override
+  String get castRemove => 'Remove';
+
+  @override
+  String castMore(int n) {
+    return '+$n more';
+  }
+
+  @override
+  String get castJoinTitle => 'Join from any phone or laptop';
+
+  @override
+  String castJoinHow(String url) {
+    return 'Scan the QR or open $url and type the code. No app or account needed. Up to 9 screens; you approve each one here.';
+  }
+
+  @override
+  String get castNewCode => 'New code';
+
+  @override
+  String get castJoinUnavailable =>
+      'The join code appears when a class is open on this board and it is online.';
+
+  @override
+  String get castJoinButton => 'Join code';
+
+  @override
+  String get cloudTitle => 'Cloud drives';
+
+  @override
+  String get cloudGoogle => 'Google Drive';
+
+  @override
+  String get cloudMicrosoft => 'OneDrive';
+
+  @override
+  String cloudNotConfigured(String service) {
+    return '$service is not set up for your institution yet. Ask your administrator to set it up in the Zynetix dashboard → Integrations.';
+  }
+
+  @override
+  String cloudConnectHow(String service) {
+    return 'Scan with your phone and sign in to $service. This board never sees your password.';
+  }
+
+  @override
+  String cloudConnect(String service) {
+    return 'Connect $service';
+  }
+
+  @override
+  String get cloudWaiting => 'Waiting for you to finish on your phone…';
+
+  @override
+  String cloudConnectedAs(String account) {
+    return 'Connected as $account';
+  }
+
+  @override
+  String get cloudDisconnect => 'Disconnect';
+
+  @override
+  String get cloudSearch => 'Search';
+
+  @override
+  String get cloudEmpty => 'No PDFs, slides, pictures or videos here.';
+
+  @override
+  String get cloudHome => 'My files';
+
+  @override
+  String cloudOpening(String name) {
+    return 'Bringing $name onto the board…';
+  }
+
+  @override
+  String cloudFailed(String error) {
+    return 'Could not reach the drive: $error';
+  }
+
+  @override
+  String get cloudSignIn => 'Sign in on the board to use your cloud drives.';
+
+  @override
+  String shareSaveTo(String service) {
+    return 'Save to $service';
+  }
+
+  @override
+  String get shareSlides => 'Slides (PowerPoint)';
+
+  @override
+  String get shareClassroom => 'Google Classroom';
+
+  @override
+  String get shareMoodle => 'Moodle';
+
+  @override
+  String get shareAsPdf => 'PDF';
+
+  @override
+  String get shareChooseCourse => 'Post the notes to which course?';
+
+  @override
+  String get shareNoCourses => 'No courses found for your account.';
+
+  @override
+  String sharePosted(String course) {
+    return 'Posted to $course';
+  }
+
+  @override
+  String shareSavedTo(String service) {
+    return 'Saved to $service';
+  }
+
+  @override
+  String get shareMoodleLink =>
+      'Moodle is not set up for posting. Copy the link and add it to your Moodle course (or open Zynetix there through LTI).';
+
+  @override
+  String shareConnectFirst(String service) {
+    return 'Connect your $service account first: open Insert → Cloud drives.';
+  }
+
+  @override
+  String get shareWorking => 'Sending…';
 }

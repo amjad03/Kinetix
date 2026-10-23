@@ -4,7 +4,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getI18n } from '@/i18n/server';
 import { api, ApiError } from '@/lib/api';
-import { CAST_COOKIE, SESSION_MAX_AGE, TENANT_COOKIE } from '@/lib/config';
+import { guestCookieValue } from '@/lib/cast/events';
+import { CAST_COOKIE, CAST_GUEST_COOKIE, SESSION_MAX_AGE, TENANT_COOKIE } from '@/lib/config';
 import { secureCookies } from '@/lib/session';
 import type { LoginResponse, MfaChallenge } from '@/lib/types';
 
@@ -39,5 +40,38 @@ export async function castSignIn(_prev: CastSignInState, form: FormData): Promis
 
 export async function castSignOut() {
   (await cookies()).delete(CAST_COOKIE);
+  redirect('/cast');
+}
+
+export interface CastJoinState {
+  error?: string;
+  fields?: { code: string; name: string };
+}
+
+/** A guest joins with the code on the board and their name: no account, no app. */
+export async function castJoin(_prev: CastJoinState, form: FormData): Promise<CastJoinState> {
+  const { t } = await getI18n();
+  const code = String(form.get('code') ?? '').trim();
+  const name = String(form.get('name') ?? '').trim().slice(0, 60);
+  const fields = { code, name };
+  if (!code || !name) return { error: t('cast.guest.err.missing'), fields };
+  let res: { token: string; board: { deviceId: string; name: string } };
+  try {
+    res = await api<typeof res>('/v1/cast/guest', { method: 'POST', body: { code, name }, anonymous: true });
+  } catch (e) {
+    return { error: e instanceof ApiError ? e.message : t('cast.err.failed'), fields };
+  }
+  (await cookies()).set(CAST_GUEST_COOKIE, guestCookieValue({ token: res.token, deviceId: res.board.deviceId, board: res.board.name, name }), {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: secureCookies(),
+    path: '/',
+    maxAge: 3 * 3600,
+  });
+  redirect('/cast');
+}
+
+export async function castLeave() {
+  (await cookies()).delete(CAST_GUEST_COOKIE);
   redirect('/cast');
 }

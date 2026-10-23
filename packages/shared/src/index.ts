@@ -72,6 +72,8 @@ export const RealtimeEvents = {
   CastStop: 'cast.stop',
   /** Server → board and sender: the cast is over ({@link CastEndedEvent}). */
   CastEnded: 'cast.ended',
+  /** Board → server → sender: the teacher muted, resumed or promoted a screen ({@link CastControlEvent}). */
+  CastControl: 'cast.control',
   /** Server → board: an IT action to carry out ({@link DeviceActionEvent}). */
   DeviceAction: 'device.action',
   /** Board → server: the action was carried out or failed ({@link DeviceActionAck}). */

@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { endedKey, type CastSignalData, type CastStreamMessage, type IceServer } from '@/lib/cast/events';
+import { controlKey, endedKey, type CastSignalData, type CastStreamMessage, type IceServer } from '@/lib/cast/events';
 
 import { Alert, Button } from '@/components/kx';
 import { Cast as CastOutlined, ScreenShareOff as StopScreenShareOutlined } from 'lucide-react';
@@ -23,7 +23,7 @@ type Phase = 'idle' | 'connecting' | 'waiting' | 'live';
  * The laptop's side of a cast: getDisplayMedia, then a WebRTC offer to the board. Signalling goes through
  * this server (/api/cast/stream down, /api/cast/send up); the video goes straight to the board (or via TURN).
  */
-export function CastClient({ boards }: { boards: CastBoard[] }) {
+export function CastClient({ boards, guest = false }: { boards: CastBoard[]; guest?: boolean }) {
   const { t } = useI18n();
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>('idle');
@@ -34,7 +34,12 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
   const pc = useRef<RTCPeerConnection | null>(null);
   const conn = useRef<string | null>(null);
   const pendingIce = useRef<RTCIceCandidateInit[]>([]);
-  const supported = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia && typeof RTCPeerConnection !== 'undefined';
+  const hasRtc = typeof RTCPeerConnection !== 'undefined';
+  const canScreen = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia && hasRtc;
+  // Phones' browsers cannot capture the screen: they can show the camera (a page, a model, an experiment).
+  const canCamera = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && hasRtc;
+  // Browsers capture only on https (or localhost): a LAN demo server over http needs https or the apps.
+  const insecure = typeof window !== 'undefined' && window.isSecureContext === false;
 
   const post = useCallback(async (body: { kind: 'stop' } | { kind: 'signal'; data: CastSignalData }) => {
     if (!conn.current) return;
@@ -92,11 +97,14 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
     }
   }, []);
 
-  const start = async (b: CastBoard) => {
+  const start = async (b: CastBoard, capture: 'screen' | 'camera' = 'screen') => {
     setStatus(t('cast.status.connecting'));
     let stream: MediaStream;
     try {
-      stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 15 }, audio: false });
+      stream =
+        capture === 'camera'
+          ? await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false })
+          : await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 15 }, audio: false });
     } catch {
       setStatus(t('cast.status.denied'));
       return;
@@ -135,6 +143,11 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
           teardown();
           setStatus(t(endedKey(m.reason)));
           break;
+        case 'control': {
+          const key = controlKey(m.action);
+          if (key) setStatus(t(key));
+          break;
+        }
         case 'refused':
           teardown();
           setStatus(t('cast.status.failed', { error: m.error }));
@@ -155,7 +168,8 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
     setStatus(t('cast.status.stopped'));
   };
 
-  if (!supported) return <Alert severity="info">{t('cast.unsupported')}</Alert>;
+  if (insecure) return <Alert severity="warning">{t('cast.insecure')}</Alert>;
+  if (!canScreen && !canCamera) return <Alert severity="info">{t('cast.unsupported')}</Alert>;
 
   return (
     <div className="flex flex-col gap-4">
@@ -163,9 +177,11 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
         <h2 className="text-base leading-6 font-medium tracking-[0.1px]">
           {t('cast.boards')}
         </h2>
-        <Button size="small" onClick={() => router.refresh()} disabled={phase !== 'idle'}>
-          {t('cast.refresh')}
-        </Button>
+        {!guest && (
+          <Button size="small" onClick={() => router.refresh()} disabled={phase !== 'idle'}>
+            {t('cast.refresh')}
+          </Button>
+        )}
       </div>
       {boards.length === 0 && <Alert severity="info">{t('cast.noBoards')}</Alert>}
       {boards.map((b) => (
@@ -174,7 +190,7 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
           <div className="flex-1">
             <h6 className="text-base leading-6 font-medium tracking-[0.1px]">{b.name}</h6>
             <p className="text-[13px] leading-[19px] text-muted-foreground">
-              {[b.subject, b.section].filter(Boolean).join(' · ')} · {b.teacher}
+              {[b.subject, b.section, b.teacher].filter(Boolean).join(' · ')}
             </p>
           </div>
           {active === b.deviceId ? (
@@ -182,9 +198,18 @@ export function CastClient({ boards }: { boards: CastBoard[] }) {
               {t('cast.stop')}
             </Button>
           ) : (
-            <Button variant="contained" disabled={phase !== 'idle'} onClick={() => void start(b)}>
-              {t('cast.start')}
-            </Button>
+            <div className="flex flex-wrap gap-2 justify-end">
+              {canScreen && (
+                <Button variant="contained" disabled={phase !== 'idle'} onClick={() => void start(b)}>
+                  {t('cast.start')}
+                </Button>
+              )}
+              {canCamera && (
+                <Button variant={canScreen ? 'outlined' : 'contained'} disabled={phase !== 'idle'} onClick={() => void start(b, 'camera')} data-testid="cast-camera">
+                  {t('cast.camera')}
+                </Button>
+              )}
+            </div>
           )}
         </div>
       ))}

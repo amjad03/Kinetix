@@ -244,6 +244,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/zynetix/boards', label: 'nav.zxBoards', section: 'zynetix', icon: 'devices' },
       { href: '/zynetix/ai-log', label: 'nav.zxAiLog', section: 'zynetix', icon: 'ai' },
       { href: '/zynetix/ai-settings', label: 'nav.zxAiSettings', section: 'zynetix', icon: 'ai' },
+      { href: '/zynetix/integrations', label: 'nav.zxIntegrations', section: 'zynetix', icon: 'lms' },
       { href: '/platform/zynetix', label: 'nav.zxPlatform', section: 'platform', icon: 'platform' },
     ],
   },

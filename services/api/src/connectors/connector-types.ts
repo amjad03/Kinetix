@@ -49,6 +49,27 @@ export const CONNECTOR_TYPES: ConnectorType[] = [
     fields: [select('provider', 'Provider', ['zoom', 'meet', 'teams']), text('accountId', 'Zoom account id / Teams directory (tenant) id', false), text('clientId', 'OAuth client id'), secret('clientSecret', 'OAuth client secret'), secret('refreshToken', 'Google Meet: refresh token of the organiser', false), text('calendarId', 'Google Meet: calendar (empty for the organiser\'s own)', false), text('organizerId', 'Teams organiser (user id or address)', false), { ...url('meetApiUrl', 'Google Meet reports API URL (leave empty for the default)', false) }, { ...url('apiBaseUrl', 'API URL (leave empty for the provider default)', false) }, { ...url('tokenUrl', 'Token URL (leave empty for the provider default)', false) }],
   },
   {
+    type: 'cloud_google',
+    label: 'Google Drive and Google Classroom',
+    description: 'Teachers import PDFs, slides, pictures and videos from Google Drive onto the board, save board PDFs and slides back, and post notes to their Google Classroom courses. Create an OAuth client (Web application) in Google Cloud and add the redirect URI shown here.',
+    available: true,
+    fields: [text('clientId', 'OAuth client id'), secret('clientSecret', 'OAuth client secret'), { ...url('apiBaseUrl', 'API URL (leave empty for Google)', false) }],
+  },
+  {
+    type: 'cloud_microsoft',
+    label: 'Microsoft OneDrive',
+    description: 'Teachers import files from OneDrive onto the board and save board PDFs and slides back. Register an app in Microsoft Entra (Azure) with the redirect URI shown here and the Files.ReadWrite permission.',
+    available: true,
+    fields: [text('clientId', 'Application (client) id'), secret('clientSecret', 'Client secret'), text('directory', 'Directory (tenant) id (leave empty for any account)', false), { ...url('apiBaseUrl', 'API URL (leave empty for Microsoft)', false) }],
+  },
+  {
+    type: 'lms_moodle',
+    label: 'Moodle',
+    description: "Teachers post board notes to a Moodle course's announcements from the board. Uses a Moodle web service token (Site administration → Server → Web services); courses launched through LTI keep working as before.",
+    available: true,
+    fields: [url('baseUrl', 'Moodle site URL'), secret('token', 'Web service token')],
+  },
+  {
     type: 'bi_export',
     label: 'BI export (Power BI and others)',
     description: 'Read-only CSV exports of chosen datasets through signed, expiring links that Power BI or another tool can refresh from.',

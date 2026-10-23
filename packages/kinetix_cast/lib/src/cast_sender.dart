@@ -26,7 +26,7 @@ enum CastPhase {
 }
 
 /// Casting this device's screen to a board: ask, wait for the teacher's approval on the board,
-/// connect, and stop. One cast at a time; the board shows up to four people side by side.
+/// connect, and stop. One cast at a time; the board shows up to nine screens in a grid.
 class CastSender extends ChangeNotifier {
   CastSender({required this.link, required this.peerFactory});
 

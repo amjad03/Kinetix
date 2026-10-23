@@ -80,6 +80,7 @@ import { DocumentsModule } from './documents/documents.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
 import { CastModule } from './cast/cast.module.js';
+import { CloudModule } from './cloud/cloud.module.js';
 import { BoardSyncModule } from './board-sync/board-sync.module.js';
 import { ClassroomProfileModule } from './classroom-profile/classroom-profile.module.js';
 import { DevicesModule } from './devices/devices.module.js';
@@ -141,6 +142,7 @@ import { IntegrityModule } from './integrity/integrity.module.js';
     BadgesModule,
     RemoteModule,
     CastModule,
+    CloudModule,
     ClassroomProfileModule,
     BoardSyncModule,
     BoardProfilesModule,

@@ -4,9 +4,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/cast/cast_controller.dart';
 import '../../l10n/feature_strings.dart';
+import '../../l10n/l10n.dart';
 import '../board/chrome.dart' show showBoardMessage;
 import '../doc_camera/doc_camera.dart' show composeDocCameraShot, paintMarks;
 import '../insert/insert_actions.dart' show placePicture;
@@ -31,8 +33,8 @@ const castStringTable = <String, Map<String, String>>{
     'added': 'The screen is on the board',
     'failed': 'Could not take the picture',
     'empty': 'Nothing is being shared.',
-    'how': 'A teacher or student opens the KINETIX Teacher or Student App and chooses “Share screen to the board”, or a laptop opens the school’s /cast page. You approve each screen here, and you can stop any of them.',
-    'limit': 'Up to 4 screens at once.',
+    'how': 'A teacher or student opens the Zynetix Teacher or Student App and chooses “Share screen to the board”, or any phone or laptop scans the code below. You approve each screen here, and you can stop any of them.',
+    'limit': 'Up to 9 screens at once.',
     'you': 'Teacher',
   },
   'hi': {
@@ -51,8 +53,8 @@ const castStringTable = <String, Map<String, String>>{
     'added': 'स्क्रीन बोर्ड पर है',
     'failed': 'चित्र नहीं लिया जा सका',
     'empty': 'कुछ भी साझा नहीं हो रहा।',
-    'how': 'शिक्षक या छात्र KINETIX शिक्षक या छात्र ऐप खोलकर “स्क्रीन बोर्ड पर दिखाएँ” चुनते हैं, या लैपटॉप स्कूल का /cast पेज खोलता है। हर स्क्रीन की अनुमति आप यहाँ देते हैं और किसी को भी रोक सकते हैं।',
-    'limit': 'एक साथ 4 स्क्रीन तक।',
+    'how': 'शिक्षक या छात्र Zynetix शिक्षक या छात्र ऐप खोलकर “स्क्रीन बोर्ड पर दिखाएँ” चुनते हैं, या कोई भी फ़ोन या लैपटॉप नीचे दिया कोड स्कैन करता है। हर स्क्रीन की अनुमति आप यहाँ देते हैं और किसी को भी रोक सकते हैं।',
+    'limit': 'एक साथ 9 स्क्रीन तक।',
     'you': 'शिक्षक',
   },
   'kn': {
@@ -71,14 +73,15 @@ const castStringTable = <String, Map<String, String>>{
     'added': 'ಪರದೆ ಬೋರ್ಡ್‌ನಲ್ಲಿದೆ',
     'failed': 'ಚಿತ್ರ ತೆಗೆಯಲಾಗಲಿಲ್ಲ',
     'empty': 'ಏನನ್ನೂ ಹಂಚಿಕೊಳ್ಳುತ್ತಿಲ್ಲ.',
-    'how': 'ಶಿಕ್ಷಕರು ಅಥವಾ ವಿದ್ಯಾರ್ಥಿ KINETIX ಶಿಕ್ಷಕ ಅಥವಾ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ತೆರೆದು “ಪರದೆಯನ್ನು ಬೋರ್ಡ್‌ಗೆ ಹಂಚಿಕೊಳ್ಳಿ” ಆರಿಸುತ್ತಾರೆ, ಅಥವಾ ಲ್ಯಾಪ್‌ಟಾಪ್ ಶಾಲೆಯ /cast ಪುಟ ತೆರೆಯುತ್ತದೆ. ಪ್ರತಿ ಪರದೆಗೆ ನೀವು ಇಲ್ಲಿ ಅನುಮತಿ ನೀಡುತ್ತೀರಿ ಮತ್ತು ಯಾವುದನ್ನೂ ನಿಲ್ಲಿಸಬಹುದು.',
-    'limit': 'ಒಮ್ಮೆಗೆ 4 ಪರದೆಗಳವರೆಗೆ.',
+    'how': 'ಶಿಕ್ಷಕರು ಅಥವಾ ವಿದ್ಯಾರ್ಥಿ Zynetix ಶಿಕ್ಷಕ ಅಥವಾ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ತೆರೆದು “ಪರದೆಯನ್ನು ಬೋರ್ಡ್‌ಗೆ ಹಂಚಿಕೊಳ್ಳಿ” ಆರಿಸುತ್ತಾರೆ, ಅಥವಾ ಯಾವುದೇ ಫೋನ್ ಅಥವಾ ಲ್ಯಾಪ್‌ಟಾಪ್ ಕೆಳಗಿನ ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡುತ್ತದೆ. ಪ್ರತಿ ಪರದೆಗೆ ನೀವು ಇಲ್ಲಿ ಅನುಮತಿ ನೀಡುತ್ತೀರಿ ಮತ್ತು ಯಾವುದನ್ನೂ ನಿಲ್ಲಿಸಬಹುದು.',
+    'limit': 'ಒಮ್ಮೆಗೆ 9 ಪರದೆಗಳವರೆಗೆ.',
     'you': 'ಶಿಕ್ಷಕ',
   },
 };
 
-/// The split panel's Cast tab: who is asking to cast, and the screens on the board, up to four
-/// side by side or one filling the panel, each with marks drawn over it, "Add to board" and Stop.
+/// The split panel's Cast tab: who is asking to cast, the join code (QR) for any phone or laptop,
+/// and the screens on the board in a grid of 1, 2, 4, 6 or 9, one presenting or filling the panel,
+/// each with marks drawn over it, Pause, "Add to board" and Remove.
 class CastPanel extends StatelessWidget {
   const CastPanel({super.key, required this.cast, required this.wb});
 
@@ -97,10 +100,11 @@ class CastPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (final t in cast.pending) _Request(tile: t, cast: cast, s: s),
+            if (shown.isNotEmpty) _Toolbar(cast: cast),
             Expanded(
               child: shown.isEmpty
                   ? Center(
-                      child: Padding(
+                      child: SingleChildScrollView(
                         padding: const EdgeInsets.all(Kx.s24),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -112,6 +116,7 @@ class CastPanel extends StatelessWidget {
                             Text(s['how'], textAlign: TextAlign.center),
                             const SizedBox(height: Kx.s8),
                             Text(s['limit'], style: context.text.bodySmall),
+                            if (cast.fetchJoinCode != null) ...[const SizedBox(height: Kx.s16), CastJoinCard(cast: cast)],
                           ],
                         ),
                       ),
@@ -169,21 +174,57 @@ class _Grid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         final n = tiles.length;
-        // One fills the panel; two sit side by side when there is room and stack when not; three and four make a grid.
-        final cols = n == 1 ? 1 : (n == 2 ? (box.maxWidth >= 640 ? 2 : 1) : 2);
-        final rows = (n / cols).ceil();
         const gap = Kx.s8;
+        Widget view(CastTile t) => _CastTileView(key: ValueKey(t.id), tile: t, cast: cast, wb: wb, s: s, single: n == 1);
+        final more = cast.hidden;
+        final moreChip = more > 0
+            ? Positioned(right: gap * 2, bottom: gap * 2, child: Chip(key: const Key('cast-more'), label: Text(context.l10n.castMore(more))))
+            : null;
+        // A presenter in the automatic layout: large on the left, the others in a column beside it.
+        if (cast.layout == CastLayout.auto && n > 1 && tiles.first.id == cast.presenterId && box.maxWidth >= 640) {
+          final side = (box.maxWidth - gap * 3) * 0.28;
+          final rest = tiles.skip(1).toList();
+          final h = (box.maxHeight - gap * (rest.length + 1)) / rest.length;
+          return Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(gap),
+                child: Row(
+                  key: const Key('cast-spotlight'),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: view(tiles.first)),
+                    const SizedBox(width: gap),
+                    SizedBox(
+                      width: side,
+                      child: Column(children: [for (final (i, t) in rest.indexed) ...[if (i > 0) const SizedBox(height: gap), SizedBox(height: math.max(60, h), child: view(t))]]),
+                    ),
+                  ],
+                ),
+              ),
+              ?moreChip,
+            ],
+          );
+        }
+        // One fills the panel; otherwise the layout's grid (two side by side when there is room, else stacked).
+        final g = castGrid(cast.layout, n, wide: box.maxWidth >= 640);
+        final cols = n == 1 ? 1 : g.cols;
+        final rows = n == 1 ? 1 : math.max(1, math.min(g.rows, (n / cols).ceil()));
         final w = (box.maxWidth - gap * (cols + 1)) / cols;
         final h = (box.maxHeight - gap * (rows + 1)) / rows;
-        return Padding(
-          padding: const EdgeInsets.all(gap),
-          child: Wrap(
-            spacing: gap,
-            runSpacing: gap,
-            children: [
-              for (final t in tiles) SizedBox(width: math.max(80, w), height: math.max(80, h), child: _CastTileView(key: ValueKey(t.id), tile: t, cast: cast, wb: wb, s: s, single: n == 1)),
-            ],
-          ),
+        return Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(gap),
+              child: Wrap(
+                key: Key('cast-grid-$cols-$rows'),
+                spacing: gap,
+                runSpacing: gap,
+                children: [for (final t in tiles) SizedBox(width: math.max(80, w), height: math.max(60, h), child: view(t))],
+              ),
+            ),
+            ?moreChip,
+          ],
         );
       },
     );
@@ -242,6 +283,18 @@ class _CastTileViewState extends State<_CastTileView> {
             LayoutBuilder(
               builder: (context, box) {
                 _size = box.biggest;
+                if (t.muted) {
+                  return Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.pause_circle_outline, color: Colors.white70),
+                        const SizedBox(width: Kx.s8),
+                        Text(context.l10n.castPaused, key: Key('cast-paused-${t.id}'), style: const TextStyle(color: Colors.white70)),
+                      ],
+                    ),
+                  );
+                }
                 final video = t.receiver?.view();
                 return video ?? const SizedBox.expand();
               },
@@ -276,8 +329,8 @@ class _CastTileViewState extends State<_CastTileView> {
               left: Kx.s8,
               top: Kx.s8,
               child: Chip(
-                avatar: Icon(t.teacher ? Icons.school_outlined : Icons.person_outline, size: 16),
-                label: Text(live ? t.name : '${t.name} · ${s['connecting']}'),
+                avatar: Icon(t.teacher ? Icons.school_outlined : (t.guest ? Icons.devices_other_outlined : Icons.person_outline), size: 16),
+                label: Text([t.name, if (cast.presenterId == t.id) context.l10n.castPresenter, if (!live) s['connecting']].join(' · ')),
                 visualDensity: VisualDensity.compact,
               ),
             ),
@@ -299,14 +352,30 @@ class _CastTileViewState extends State<_CastTileView> {
                       ),
                   if (t.strokes.isNotEmpty) IconButton.filledTonal(key: Key('cast-clear-${t.id}'), tooltip: s['clear'], onPressed: () => cast.clearMarks(t.id), icon: const Icon(Icons.layers_clear_outlined)),
                   IconButton.filledTonal(key: Key('cast-annotate-${t.id}'), tooltip: s['annotate'], isSelected: t.annotate, onPressed: live ? () => cast.toggleAnnotate(t.id) : null, icon: const Icon(Icons.edit_outlined), selectedIcon: const Icon(Icons.edit)),
-                  IconButton.filledTonal(key: Key('cast-board-${t.id}'), tooltip: s['toBoard'], onPressed: live ? _toBoard : null, icon: const Icon(Icons.add_photo_alternate_outlined)),
+                  IconButton.filledTonal(key: Key('cast-board-${t.id}'), tooltip: s['toBoard'], onPressed: live && !t.muted ? _toBoard : null, icon: const Icon(Icons.add_photo_alternate_outlined)),
+                  IconButton.filledTonal(
+                    key: Key('cast-present-${t.id}'),
+                    tooltip: context.l10n.castPresent,
+                    isSelected: cast.presenterId == t.id,
+                    onPressed: () => cast.promote(t.id),
+                    icon: const Icon(Icons.star_outline),
+                    selectedIcon: const Icon(Icons.star),
+                  ),
+                  IconButton.filledTonal(
+                    key: Key('cast-mute-${t.id}'),
+                    tooltip: t.muted ? context.l10n.castUnmute : context.l10n.castMute,
+                    isSelected: t.muted,
+                    onPressed: () => cast.toggleMute(t.id),
+                    icon: const Icon(Icons.pause_outlined),
+                    selectedIcon: const Icon(Icons.play_arrow),
+                  ),
                   IconButton.filledTonal(
                     key: Key('cast-fill-${t.id}'),
                     tooltip: widget.single && cast.focusedId == t.id ? s['sideBySide'] : s['fill'],
                     onPressed: () => cast.focus(t.id),
                     icon: Icon(cast.focusedId == t.id ? Icons.grid_view_outlined : Icons.fit_screen_outlined),
                   ),
-                  IconButton.filled(key: Key('cast-stop-${t.id}'), tooltip: s['stop'], style: IconButton.styleFrom(backgroundColor: c.error, foregroundColor: c.onError), onPressed: () => unawaited(cast.stop(t.id)), icon: const Icon(Icons.stop_screen_share_outlined)),
+                  IconButton.filled(key: Key('cast-stop-${t.id}'), tooltip: context.l10n.castRemove, style: IconButton.styleFrom(backgroundColor: c.error, foregroundColor: c.onError), onPressed: () => unawaited(cast.stop(t.id)), icon: const Icon(Icons.stop_screen_share_outlined)),
                 ],
               ),
             ),
@@ -326,4 +395,118 @@ class _Marks extends CustomPainter {
 
   @override
   bool shouldRepaint(_Marks old) => true;
+}
+
+/// Above the screens: the layout (Auto, 1, 2, 4, 6, 9) and the join code.
+class _Toolbar extends StatelessWidget {
+  const _Toolbar({required this.cast});
+  final CastController cast;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Kx.s8, Kx.s8, Kx.s8, 0),
+      child: Wrap(
+        spacing: Kx.s8,
+        runSpacing: Kx.s4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(l.castLayout, style: context.text.labelLarge),
+          for (final layout in CastLayout.values)
+            ChoiceChip(
+              key: Key('cast-layout-${layout.name}'),
+              label: Text(layout == CastLayout.auto ? l.castLayoutAuto : '${layout.capacity}'),
+              selected: cast.layout == layout,
+              onSelected: (_) => cast.setLayout(layout),
+            ),
+          if (cast.fetchJoinCode != null)
+            TextButton.icon(
+              key: const Key('cast-join-button'),
+              onPressed: () => showDialog<void>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  content: SizedBox(width: 420, child: CastJoinCard(cast: cast)),
+                  actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(MaterialLocalizations.of(context).closeButtonLabel))],
+                ),
+              ),
+              icon: const Icon(Icons.qr_code_2),
+              label: Text(l.castJoinButton),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The join code and its QR: any phone or laptop opens the browser /cast page, no app or account.
+class CastJoinCard extends StatefulWidget {
+  const CastJoinCard({super.key, required this.cast});
+  final CastController cast;
+
+  @override
+  State<CastJoinCard> createState() => _CastJoinCardState();
+}
+
+class _CastJoinCardState extends State<CastJoinCard> {
+  CastJoinInfo? _info;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load({bool fresh = false}) async {
+    setState(() => _loading = true);
+    CastJoinInfo? info;
+    try {
+      info = await widget.cast.fetchJoinCode?.call(fresh: fresh);
+    } catch (e) {
+      debugPrint('Cast join code: $e');
+    }
+    if (!mounted) return;
+    setState(() {
+      _info = info;
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final info = _info;
+    if (_loading) return const Padding(padding: EdgeInsets.all(Kx.s16), child: Center(child: CircularProgressIndicator()));
+    if (info == null) return Text(l.castJoinUnavailable, key: const Key('cast-join-unavailable'), textAlign: TextAlign.center);
+    final page = Uri.tryParse(info.url)?.replace(query: '').toString().replaceAll(RegExp(r'\?$'), '') ?? info.url;
+    return Card(
+      key: const Key('cast-join'),
+      child: Padding(
+        padding: const EdgeInsets.all(Kx.s16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(color: Colors.white, padding: const EdgeInsets.all(6), child: QrImageView(data: info.url, size: 140)),
+            const SizedBox(width: Kx.s16),
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.castJoinTitle, style: context.text.titleSmall),
+                  const SizedBox(height: Kx.s8),
+                  SelectableText(info.code, key: const Key('cast-join-code'), style: context.text.headlineMedium?.copyWith(letterSpacing: 6, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: Kx.s8),
+                  Text(l.castJoinHow(page), style: context.text.bodySmall),
+                  const SizedBox(height: Kx.s8),
+                  TextButton.icon(key: const Key('cast-join-new'), onPressed: () => unawaited(_load(fresh: true)), icon: const Icon(Icons.refresh), label: Text(l.castNewCode)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { endedKey, parseSend } from './events';
+import { controlKey, endedKey, guestCookieValue, parseGuestCookie, parseSend } from './events';
 
 describe('cast relay messages', () => {
   it('maps why a cast ended to the status line', () => {
@@ -20,5 +20,25 @@ describe('cast relay messages', () => {
     expect(parseSend({ conn: 'c1', kind: 'signal', data: { type: 'bogus' } })).toBeNull();
     expect(parseSend({ kind: 'stop' })).toBeNull();
     expect(parseSend(null)).toBeNull();
+  });
+});
+
+describe('guest casting (board code)', () => {
+  const token = (exp: number, deviceId = 'd1') => `castguest.${Buffer.from(JSON.stringify({ tenantId: 't', deviceId, guestId: 'g', name: 'Asha', exp })).toString('base64url')}.sig`;
+
+  it('reads the guest cookie while its token lasts, for the board it was made for', () => {
+    const g = { token: token(2000), deviceId: 'd1', board: 'Room 1 Board', name: 'Asha' };
+    expect(parseGuestCookie(guestCookieValue(g), 1000)).toEqual(g);
+    expect(parseGuestCookie(guestCookieValue(g), 3000)).toBeNull();
+    expect(parseGuestCookie(guestCookieValue({ ...g, deviceId: 'other' }), 1000)).toBeNull();
+    expect(parseGuestCookie('not-base64-json', 1000)).toBeNull();
+    expect(parseGuestCookie(undefined)).toBeNull();
+  });
+
+  it('words the teacher muting, resuming and promoting a screen', () => {
+    expect(controlKey('mute')).toBe('cast.status.muted');
+    expect(controlKey('unmute')).toBe('cast.status.unmuted');
+    expect(controlKey('promote')).toBe('cast.status.promoted');
+    expect(controlKey('explode')).toBeNull();
   });
 });

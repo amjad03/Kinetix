@@ -11,7 +11,7 @@ namespace (`CastGateway`, `services/api/src/cast`) and keeps `cast_sessions` row
 Flow:
 
 1. The sender sends `cast.request {deviceId}`. The board must have an open class; a student must belong to its
-   section; teachers and leaders may cast. One cast per person per board, at most four per board.
+   section; teachers and leaders may cast; guests join from the browser /cast page with the board's join code (QR). One cast per person per board, at most nine per board.
 2. The class teacher's own cast is approved at once (board gets `cast.ice`). Anyone else is `pending`: the board
    gets `cast.pending` and the teacher answers with `cast.decide`. Approval sends `cast.approved` to the sender
    and `cast.ice` to the board (with ICE servers).
@@ -23,7 +23,7 @@ Flow:
 Clients:
 
 - Board (`apps/board`): `core/cast` (controller, WebRTC receiver) and the **Cast** tab of the split panel
-  (`features/cast`). Up to four tiles side by side, one can fill the panel, "Draw on it" marks stay on the board
+  (`features/cast`). Up to nine tiles in a grid of 1, 2, 4, 6 or 9, a presenter, pause (mute), one can fill the panel, "Draw on it" marks stay on the board
   only, "Add to board" puts the frame (with marks) on the whiteboard, Stop ends one. The tab opens by itself when
   someone asks.
 - Teacher and Student apps: `packages/kinetix_cast` (sender, cast screen). `GET /v1/cast/boards` lists boards the

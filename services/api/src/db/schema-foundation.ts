@@ -187,9 +187,11 @@ export const castSessions = pgTable(
     tenantId: tenantId(),
     deviceId: uuid('device_id').notNull().references(() => devices.id, { onDelete: 'cascade' }),
     boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    /** Null for a guest (joined from the browser with the board's code). */
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    guestId: text('guest_id'),
     senderName: text('sender_name').notNull(),
-    senderRole: text('sender_role').notNull(), // teacher | student
+    senderRole: text('sender_role').notNull(), // teacher | student | guest
     state: text('state').notNull().default('pending'), // pending | active | ended
     endReason: text('end_reason'),
     createdAt: createdAt(),
@@ -197,4 +199,33 @@ export const castSessions = pgTable(
     endedAt: timestamp('ended_at', { withTimezone: true }),
   },
   (t) => [index('cast_sessions_device_idx').on(t.deviceId, t.state)],
+);
+
+/** A board's join code for guests casting from the browser /cast page (looked up across institutions, by the system pool). */
+export const castJoinCodes = pgTable(
+  'cast_join_codes',
+  {
+    code: text('code').primaryKey(),
+    tenantId: tenantId(),
+    deviceId: uuid('device_id').notNull().references(() => devices.id, { onDelete: 'cascade' }),
+    boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id, { onDelete: 'cascade' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('cast_join_codes_device_idx').on(t.deviceId)],
+);
+
+/** A teacher's Google or Microsoft account for Drive/OneDrive/Classroom; the refresh token is encrypted (SecretBox, "<tenantId>:cloud.<provider>.<userId>"). */
+export const cloudAccounts = pgTable(
+  'cloud_accounts',
+  {
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    provider: text('provider').notNull(), // google | microsoft
+    account: text('account'),
+    refreshTokenEnc: text('refresh_token_enc').notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.userId, t.provider] })],
 );

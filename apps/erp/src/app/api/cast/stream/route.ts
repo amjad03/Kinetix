@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { io } from 'socket.io-client';
 import { API_URL } from '@/lib/config';
 import { CastEvents, type CastSignalData, type CastStreamMessage, type IceServer } from '@/lib/cast/events';
-import { castToken, relays } from '@/lib/cast/relay';
+import { castCredential, relays } from '@/lib/cast/relay';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,8 +20,11 @@ export async function GET(req: NextRequest) {
   if (!UUID.test(deviceId)) return new Response('Unknown board', { status: 404 });
   const site = req.headers.get('sec-fetch-site');
   if (site && site !== 'same-origin') return new Response('Forbidden', { status: 403 });
-  const token = await castToken();
-  if (!token) return new Response('Sign in again', { status: 401 });
+  const cred = await castCredential();
+  if (!cred) return new Response('Sign in again', { status: 401 });
+  // A guest may only cast to the board whose code they used.
+  if (cred.guest && cred.guest.deviceId !== deviceId) return new Response('Unknown board', { status: 404 });
+  const token = cred.token;
 
   const encoder = new TextEncoder();
   const conn = randomUUID();
@@ -33,7 +36,7 @@ export async function GET(req: NextRequest) {
       const send = (m: CastStreamMessage) => {
         if (open) controller.enqueue(encoder.encode(`data: ${JSON.stringify(m)}\n\n`));
       };
-      const socket = io(`${API_URL}/realtime`, { auth: { token }, transports: ['websocket'], reconnection: false });
+      const socket = io(`${API_URL}/realtime`, { auth: cred.guest ? { castGuest: token } : { token }, transports: ['websocket'], reconnection: false });
       const relay = { socket, token, castId: null as string | null };
       relays.set(conn, relay);
       const ping = setInterval(() => open && controller.enqueue(encoder.encode(': ping\n\n')), 15_000);
@@ -63,19 +66,22 @@ export async function GET(req: NextRequest) {
           relay.castId = ack.castId;
           send({ t: 'ack', castId: ack.castId, approved: ack.approved === true, iceServers: ack.iceServers ?? [] });
         } catch {
-          close({ t: 'refused', error: 'KINETIX Cloud did not answer. Try again.' });
+          close({ t: 'refused', error: 'Zynetix did not answer. Try again.' });
         }
       });
       socket.on('error', (e: { message?: string }) => {
         if (e?.message === 'unauthorized') close({ t: 'refused', error: 'Your session has ended. Sign in again.' });
       });
-      socket.on('connect_error', () => close({ t: 'refused', error: "Can't reach KINETIX Cloud." }));
+      socket.on('connect_error', () => close({ t: 'refused', error: "Can't reach the Zynetix server." }));
       socket.on('disconnect', () => close({ t: 'ended', reason: 'stopped' }));
       socket.on(CastEvents.Approved, (e: { castId?: string; iceServers?: IceServer[] }) => {
         if (e?.castId === relay.castId) send({ t: 'approved', iceServers: e.iceServers ?? [] });
       });
       socket.on(CastEvents.Signal, (e: { castId?: string; data?: CastSignalData }) => {
         if (e?.castId === relay.castId && e.data) send({ t: 'signal', data: e.data });
+      });
+      socket.on(CastEvents.Control, (e: { castId?: string; action?: string }) => {
+        if (e?.castId === relay.castId && typeof e.action === 'string') send({ t: 'control', action: e.action });
       });
       socket.on(CastEvents.Ended, (e: { castId?: string; reason?: string }) => {
         if (e?.castId === relay.castId) close({ t: 'ended', reason: e.reason ?? 'stopped' });

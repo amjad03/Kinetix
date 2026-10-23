@@ -1,9 +1,10 @@
 // Screen sharing to the board: WebRTC, signalled over the realtime gateway (docs/architecture/screen-share-and-devices.md).
 
-/** Most casts a board shows at once (tiles side by side), pending ones included. */
-export const MAX_CASTS_PER_BOARD = 4;
+/** Most casts a board shows at once (a grid of 1, 2, 4, 6 or 9 tiles), pending ones included. */
+export const MAX_CASTS_PER_BOARD = 9;
 
-export type CastSenderRole = 'teacher' | 'student';
+/** A guest joined from the browser /cast page with the board's join code (no account, no app). */
+export type CastSenderRole = 'teacher' | 'student' | 'guest';
 export type CastState = 'pending' | 'active' | 'ended';
 export type CastEndReason = 'stopped' | 'declined' | 'class_ended' | 'sender_left' | 'board_left';
 
@@ -56,4 +57,18 @@ export interface CastIceEvent {
   name: string;
   role: CastSenderRole;
   iceServers: IceServer[];
+}
+
+/** The board's join code for guests: shown as text and as a QR of [url]. */
+export interface CastJoinCode {
+  code: string;
+  expiresAt: string;
+  /** The browser /cast page with the code filled in. */
+  url: string;
+}
+
+/** Board → server → sender: the teacher paused (muted) or resumed a screen, or made it the presenter. */
+export interface CastControlEvent {
+  castId: string;
+  action: 'mute' | 'unmute' | 'promote';
 }

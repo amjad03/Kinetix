@@ -10,7 +10,47 @@ export const CastEvents = {
   Signal: 'cast.signal',
   Stop: 'cast.stop',
   Ended: 'cast.ended',
+  Control: 'cast.control',
 } as const;
+
+/** A guest's cast (joined with the board's code): kept in an httpOnly cookie, read by the page and the relay. */
+export interface GuestCast {
+  token: string;
+  deviceId: string;
+  board: string;
+  name: string;
+}
+
+export const guestCookieValue = (g: GuestCast) => Buffer.from(JSON.stringify(g)).toString('base64url');
+
+/** The guest cookie, or null when it is missing, malformed or its token has expired. */
+export function parseGuestCookie(v: string | undefined, nowS = Date.now() / 1000): GuestCast | null {
+  if (!v) return null;
+  try {
+    const g = JSON.parse(Buffer.from(v, 'base64url').toString('utf8')) as Partial<GuestCast>;
+    if (typeof g.token !== 'string' || typeof g.deviceId !== 'string' || typeof g.board !== 'string' || typeof g.name !== 'string') return null;
+    // The token (castguest.<payload>.<signature>) carries its expiry; the API checks the signature.
+    const payload = JSON.parse(Buffer.from(g.token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp?: number; deviceId?: string };
+    if (typeof payload.exp !== 'number' || payload.exp <= nowS || payload.deviceId !== g.deviceId) return null;
+    return g as GuestCast;
+  } catch {
+    return null;
+  }
+}
+
+/** The status line when the teacher mutes, resumes or promotes the screen. */
+export function controlKey(action: string): MessageKey | null {
+  switch (action) {
+    case 'mute':
+      return 'cast.status.muted';
+    case 'unmute':
+      return 'cast.status.unmuted';
+    case 'promote':
+      return 'cast.status.promoted';
+    default:
+      return null;
+  }
+}
 
 export interface IceServer {
   urls: string[];
@@ -27,6 +67,7 @@ export type CastStreamMessage =
   | { t: 'approved'; iceServers: IceServer[] }
   | { t: 'signal'; data: CastSignalData }
   | { t: 'ended'; reason: string }
+  | { t: 'control'; action: string }
   | { t: 'refused'; error: string };
 
 /** What the page posts to /api/cast/send. */

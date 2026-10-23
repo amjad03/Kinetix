@@ -8541,6 +8541,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'EV diagrams'**
   String get curSoonEv;
+
+  /// Cast panel: choose how many screens share the panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get castLayout;
+
+  /// Cast layout: the smallest grid that fits every screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get castLayoutAuto;
+
+  /// Cast tile button: show this screen first and largest.
+  ///
+  /// In en, this message translates to:
+  /// **'Make presenter'**
+  String get castPresent;
+
+  /// Cast tile label: this screen is the presenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Presenter'**
+  String get castPresenter;
+
+  /// Cast tile button: hide the screen without disconnecting it.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause this screen'**
+  String get castMute;
+
+  /// Cast tile button: show a paused screen again.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this screen again'**
+  String get castUnmute;
+
+  /// Cast tile: the screen is paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused by the teacher'**
+  String get castPaused;
+
+  /// Cast tile button: stop this screen and remove it.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get castRemove;
+
+  /// Cast panel: screens that do not fit the chosen layout.
+  ///
+  /// In en, this message translates to:
+  /// **'+{n} more'**
+  String castMore(int n);
+
+  /// Cast panel: guests join with the code or QR.
+  ///
+  /// In en, this message translates to:
+  /// **'Join from any phone or laptop'**
+  String get castJoinTitle;
+
+  /// Cast panel: how guests join.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the QR or open {url} and type the code. No app or account needed. Up to 9 screens; you approve each one here.'**
+  String castJoinHow(String url);
+
+  /// Cast panel: replace the join code.
+  ///
+  /// In en, this message translates to:
+  /// **'New code'**
+  String get castNewCode;
+
+  /// Cast panel: no join code (offline or no class).
+  ///
+  /// In en, this message translates to:
+  /// **'The join code appears when a class is open on this board and it is online.'**
+  String get castJoinUnavailable;
+
+  /// Cast panel toolbar: show the join code and QR.
+  ///
+  /// In en, this message translates to:
+  /// **'Join code'**
+  String get castJoinButton;
+
+  /// Cloud sheet title: Google Drive and OneDrive.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud drives'**
+  String get cloudTitle;
+
+  /// Cloud provider name.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Drive'**
+  String get cloudGoogle;
+
+  /// Cloud provider name.
+  ///
+  /// In en, this message translates to:
+  /// **'OneDrive'**
+  String get cloudMicrosoft;
+
+  /// Cloud: the institution has not configured this service.
+  ///
+  /// In en, this message translates to:
+  /// **'{service} is not set up for your institution yet. Ask your administrator to set it up in the Zynetix dashboard → Integrations.'**
+  String cloudNotConfigured(String service);
+
+  /// Cloud connect: scan the QR to sign in.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan with your phone and sign in to {service}. This board never sees your password.'**
+  String cloudConnectHow(String service);
+
+  /// Cloud: button to start connecting an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect {service}'**
+  String cloudConnect(String service);
+
+  /// Cloud connect: polling.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for you to finish on your phone…'**
+  String get cloudWaiting;
+
+  /// Cloud: whose account is connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected as {account}'**
+  String cloudConnectedAs(String account);
+
+  /// Cloud: remove this teacher's account.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get cloudDisconnect;
+
+  /// Cloud: search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get cloudSearch;
+
+  /// Cloud: empty folder.
+  ///
+  /// In en, this message translates to:
+  /// **'No PDFs, slides, pictures or videos here.'**
+  String get cloudEmpty;
+
+  /// Cloud: the drive's top folder.
+  ///
+  /// In en, this message translates to:
+  /// **'My files'**
+  String get cloudHome;
+
+  /// Cloud: downloading a file.
+  ///
+  /// In en, this message translates to:
+  /// **'Bringing {name} onto the board…'**
+  String cloudOpening(String name);
+
+  /// Cloud: an error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the drive: {error}'**
+  String cloudFailed(String error);
+
+  /// Cloud: the board is not signed in.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in on the board to use your cloud drives.'**
+  String get cloudSignIn;
+
+  /// Share menu: save the board PDF or slides to a drive.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to {service}'**
+  String shareSaveTo(String service);
+
+  /// Share menu: export the board as a PPTX.
+  ///
+  /// In en, this message translates to:
+  /// **'Slides (PowerPoint)'**
+  String get shareSlides;
+
+  /// Share menu: post the notes to a Classroom course.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Classroom'**
+  String get shareClassroom;
+
+  /// Share menu: post the notes to a Moodle course.
+  ///
+  /// In en, this message translates to:
+  /// **'Moodle'**
+  String get shareMoodle;
+
+  /// Share format choice.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF'**
+  String get shareAsPdf;
+
+  /// Share: course picker title.
+  ///
+  /// In en, this message translates to:
+  /// **'Post the notes to which course?'**
+  String get shareChooseCourse;
+
+  /// Share: course list is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses found for your account.'**
+  String get shareNoCourses;
+
+  /// Share: notes were posted.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted to {course}'**
+  String sharePosted(String course);
+
+  /// Share: file saved to a drive.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to {service}'**
+  String shareSavedTo(String service);
+
+  /// Share: Moodle without a web service token.
+  ///
+  /// In en, this message translates to:
+  /// **'Moodle is not set up for posting. Copy the link and add it to your Moodle course (or open Zynetix there through LTI).'**
+  String get shareMoodleLink;
+
+  /// Share: the teacher has not connected the account.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your {service} account first: open Insert → Cloud drives.'**
+  String shareConnectFirst(String service);
+
+  /// Share: in progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get shareWorking;
 }
 
 class _AppLocalizationsDelegate

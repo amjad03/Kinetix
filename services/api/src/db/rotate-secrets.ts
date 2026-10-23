@@ -7,11 +7,12 @@
  *
  *   pnpm secrets:rotate        (Docker: `kinetix-api rotate-secrets`)
  */
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { SecretBox } from '../common/secret-box.js';
 import { loadEnv } from '../config/env.js';
+import * as f from './schema-foundation.js';
 import * as s from './schema.js';
 
 export async function rotateSecrets(db: NodePgDatabase<typeof s>, box: SecretBox): Promise<{ rows: number; rotated: number }> {
@@ -32,7 +33,17 @@ export async function rotateSecrets(db: NodePgDatabase<typeof s>, box: SecretBox
     await db.update(s.aiConnections).set({ apiKeyEnc: box.rotate(r.apiKeyEnc, `${r.tenantId}:ai.anthropic.api_key`) }).where(eq(s.aiConnections.tenantId, r.tenantId));
     rotated++;
   }
-  return { rows: rows.length + ai.length, rotated };
+  // Teachers' Google and Microsoft refresh tokens (board cloud drives).
+  const cloud = await db.select().from(f.cloudAccounts);
+  for (const r of cloud) {
+    if (!box.isStale(r.refreshTokenEnc)) continue;
+    await db
+      .update(f.cloudAccounts)
+      .set({ refreshTokenEnc: box.rotate(r.refreshTokenEnc, `${r.tenantId}:cloud.${r.provider}.${r.userId}`) })
+      .where(and(eq(f.cloudAccounts.tenantId, r.tenantId), eq(f.cloudAccounts.userId, r.userId), eq(f.cloudAccounts.provider, r.provider)));
+    rotated++;
+  }
+  return { rows: rows.length + ai.length + cloud.length, rotated };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

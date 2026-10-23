@@ -543,6 +543,42 @@ class ApiClient {
     await _send(method, path, body: body);
   }
 
+  // --- Sharing and integrations (Zynetix W5): guest cast code, cloud drives, Classroom, Moodle -------
+
+  /// The board's join code for guests casting from the browser /cast page (`fresh`: a new one).
+  Future<Map<String, dynamic>> castJoinCode({bool fresh = false}) async => await _send('GET', '/v1/cast/join-code${fresh ? '?fresh=1' : ''}') as Map<String, dynamic>;
+
+  /// GET returning JSON (the cloud and share endpoints).
+  Future<dynamic> getJson(String path) => _send('GET', path);
+
+  /// POST or DELETE with an optional JSON body.
+  Future<dynamic> sendJson(String method, String path) => _send(method, path);
+
+  /// A file's bytes, its name (from content-disposition) and type.
+  Future<({String name, String mimeType, Uint8List bytes})> getBytes(String path) async {
+    final req = http.Request('GET', Uri.parse('$baseUrl$path'));
+    final token = sessionToken ?? deviceToken;
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    final res = await http.Response.fromStream(await _http.send(req));
+    if (res.statusCode >= 400) _decode(res);
+    final cd = res.headers['content-disposition'] ?? '';
+    final star = RegExp(r"filename\*=UTF-8''([^;]+)").firstMatch(cd)?.group(1);
+    final plain = RegExp(r'filename="([^"]+)"').firstMatch(cd)?.group(1);
+    final name = star != null ? Uri.decodeComponent(star) : (plain ?? 'file');
+    return (name: name, mimeType: (res.headers['content-type'] ?? 'application/octet-stream').split(';').first.trim(), bytes: res.bodyBytes);
+  }
+
+  /// POSTs raw bytes (a board PDF or PPTX) and returns the JSON answer.
+  Future<dynamic> postBytes(String path, String contentType, Uint8List bytes) async {
+    final req = http.Request('POST', Uri.parse('$baseUrl$path'))
+      ..headers['content-type'] = contentType
+      ..headers['accept'] = 'application/json'
+      ..bodyBytes = bytes;
+    final token = sessionToken ?? deviceToken;
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    return _decode(await http.Response.fromStream(await _http.send(req)));
+  }
+
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false, String? bearer}) async {
     final token = bearer ?? (useDeviceToken ? deviceToken : (sessionToken ?? deviceToken));
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
