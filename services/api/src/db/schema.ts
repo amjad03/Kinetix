@@ -396,6 +396,8 @@ export const devices = pgTable('devices', {
   locked: boolean('locked').notNull().default(false),
   /** IT turned kiosk mode on or off for this board only; null follows the institution setting. */
   kioskOverride: boolean('kiosk_override'),
+  /** Which app releases the board takes (migration 0144): stable, or beta too. */
+  updateChannel: text('update_channel').$type<'stable' | 'beta'>().notNull().default('stable'),
   createdAt: createdAt(),
 });
 
@@ -3301,6 +3303,10 @@ export const TENANT_TABLES = [
   'concept_videos',
   'topic_materials',
   'device_telemetry',
+  'panel_releases',
+  'panel_rollouts',
+  'panel_update_status',
+  'panel_launcher_apps',
   'audit_log',
   'transport_vehicles',
   'transport_drivers',

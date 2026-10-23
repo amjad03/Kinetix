@@ -167,6 +167,7 @@ export class FleetService {
         healthAt: devices.healthAt,
         locked: devices.locked,
         kioskOverride: devices.kioskOverride,
+        updateChannel: devices.updateChannel,
       })
       .from(devices)
       .leftJoin(rooms, eq(rooms.id, devices.roomId))
