@@ -541,6 +541,7 @@ def vignette(frame, s=0.42):
 
 def kenburns(im, k, move):
     """k: 0..1 through the shot."""
+    k = min(max(k, 0.0), 1.0)
     k = ease(k) * 0.6 + k * 0.4
     if move == 'push':
         z, ox, oy = 1.0 + 0.11 * k, 0, -10 * k
@@ -598,7 +599,6 @@ def plate(frame, u, t):
     b = u['b']
     im = photo(b['img'], 'warm')
     k = (t - u['S']) / max(1, u['E'] - u['S'])
-    base = kenburns(im, k, 'push' if b['img'] == 'plate' else 'pull')
     (x0, y0, x1, y1), mk = screen_box(b['img'])
     scr_src = home_frame() if b['screen'] == 'home' else cap_frame(b['screen'], t - u['S'])
     # place the screen into the photo, then apply the same camera move to both
@@ -656,9 +656,18 @@ def title(frame, text, a):
         ImageDraw.Draw(band).rectangle([0, H - 260, 900, H], fill=170)
         band = band.filter(ImageFilter.GaussianBlur(70)).point(lambda v: int(v * a))
         frame.paste((10, 10, 12), (0, 0), band)
+    y = H - (170 if light else 92) - ti.height
+    if light:                                  # a clean card above the board's toolbar
+        card = Image.new('RGBA', (ti.width + 70, ti.height + 34), (0, 0, 0, 0))
+        ImageDraw.Draw(card).rounded_rectangle([0, 0, card.width - 1, card.height - 1], 14, fill=(255, 255, 255, 236), outline=(222, 220, 214, 255))
+        sh = Image.new('L', (W, H), 0)
+        ImageDraw.Draw(sh).rounded_rectangle([pad - 14, y - 10, pad - 14 + card.width, y - 10 + card.height + 8], 14, fill=60)
+        sh = sh.filter(ImageFilter.GaussianBlur(14)).point(lambda v: int(v * a))
+        frame.paste((0, 0, 0), (0, 0), sh)
+        paste_a(frame, card, (pad - 14, y - 17), a)
     bar = Image.new('RGBA', (4, ti.height - 12), ((196, 128, 48) if light else WARM) + (255,))
-    paste_a(frame, bar, (pad, H - 92 - ti.height + 10), a)
-    paste_a(frame, ti, (pad + 22, H - 92 - ti.height + (1 - a) * 10), a)
+    paste_a(frame, bar, (pad + 4, y + 10), a)
+    paste_a(frame, ti, (pad + 22, y + (1 - a) * 10), a)
 
 
 def logo(frame, a, sub=None, sub2=None):
