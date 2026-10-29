@@ -1,0 +1,305 @@
+{
+ "chapters": [
+  {
+   "id": "hook",
+   "title": "",
+   "beats": [
+    {
+     "id": "h1",
+     "kind": "clip",
+     "src": "v3d/v3d_heart",
+     "vo": "^Imagine holding a human heart in your classroom. ^Cut it open. ^Take it apart.",
+     "title": "Lessons you can hold",
+     "sub": "Real 3D models on your classroom board",
+     "m": [
+      0,
+      1,
+      2
+     ]
+    },
+    {
+     "id": "h2",
+     "kind": "brand",
+     "vo": "^This is the Zynetix smart board. ^It turns the board you already have into the smartest assistant in the room.",
+     "title": "",
+     "sub": ""
+    }
+   ]
+  },
+  {
+   "id": "c1",
+   "title": "Bring lessons to life",
+   "beats": [
+    {
+     "id": "v_tour",
+     "kind": "clip",
+     "src": "v3d/v3d_tour",
+     "vo": "^More than forty 3D models. ^The solar system. ^Even the Taj Mahal.",
+     "title": "46 3D models",
+     "sub": "Turn them, cut them, take them apart",
+     "m": [
+      0,
+      1,
+      2
+     ]
+    },
+    {
+     "id": "v_lab",
+     "kind": "clip",
+     "src": "v3d/v3d_labels",
+     "vo": "^Tap a part, and it tells you its name. ^In Hindi, ^or in Kannada.",
+     "title": "Labels in 3 languages",
+     "sub": "English, Hindi and Kannada",
+     "m": [
+      0,
+      2,
+      3
+     ]
+    },
+    {
+     "id": "f_b52",
+     "kind": "board",
+     "src": "b52",
+     "vo": "^Virtual labs make every experiment safe. ^Move the light, and watch it bend.",
+     "title": "Virtual labs",
+     "sub": "Experiments without the mess"
+    },
+    {
+     "id": "f_b53",
+     "kind": "board",
+     "src": "b53",
+     "vo": "^Plus a hundred simulations. ^Animations. ^Concept videos. ^And a science kit.",
+     "title": "Simulations and videos",
+     "sub": "Ready for every topic"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "title": "An AI assistant for every teacher",
+   "beats": [
+    {
+     "id": "f_b63",
+     "kind": "board",
+     "src": "b63",
+     "vo": "^Planning a lesson now takes seconds.",
+     "title": "AI lesson builder",
+     "sub": "A complete plan in seconds"
+    },
+    {
+     "id": "f_b64",
+     "kind": "board",
+     "src": "b64",
+     "vo": "^Goals. ^Steps. ^Activities. ^And a quick check at the end.",
+     "title": "AI lesson builder",
+     "sub": "Goals, steps, activities, exit ticket"
+    },
+    {
+     "id": "f_b61",
+     "kind": "board",
+     "src": "b61",
+     "vo": "^Got a question in class? Just ask.",
+     "title": "Ask Zynetix AI",
+     "sub": "Clear answers in seconds"
+    },
+    {
+     "id": "f_b62",
+     "kind": "board",
+     "src": "b62",
+     "vo": "^It answers in simple words, and shows its source.",
+     "title": "Ask Zynetix AI",
+     "sub": "Every answer shows its source"
+    },
+    {
+     "id": "f_b65",
+     "kind": "board",
+     "src": "b65",
+     "vo": "^It also makes quizzes, ^homework, ^lecture notes, ^and can read what's on the board.",
+     "title": "One-tap AI tools",
+     "sub": "Quiz, homework, notes, read the board"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "title": "Every student takes part",
+   "beats": [
+    {
+     "id": "f_b72",
+     "kind": "board",
+     "src": "b72",
+     "vo": "^Ask the whole class a question.",
+     "title": "Live class questions",
+     "sub": "Every student answers"
+    },
+    {
+     "id": "f_b73",
+     "kind": "board",
+     "src": "b73",
+     "vo": "^Students answer from their phones, ^and the results appear live.",
+     "title": "Live class questions",
+     "sub": "Results on the board, instantly"
+    },
+    {
+     "id": "f_b74",
+     "kind": "board",
+     "src": "b74",
+     "vo": "^No phones? Students hold up answer cards, and the camera reads them.",
+     "title": "Answer cards",
+     "sub": "The camera counts every answer"
+    },
+    {
+     "id": "f_b76",
+     "kind": "board",
+     "src": "b76",
+     "vo": "^Ask for one word, ^and watch a word cloud grow.",
+     "title": "Word cloud",
+     "sub": "See what the class is thinking"
+    },
+    {
+     "id": "f_b77",
+     "kind": "board",
+     "src": "b77",
+     "vo": "^A random picker. ^A timer. ^A scoreboard. ^And badges.",
+     "title": "Classroom toolkit",
+     "sub": "Everything to run the class"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "title": "Smart ink",
+   "beats": [
+    {
+     "id": "f_b31",
+     "kind": "board",
+     "src": "b31",
+     "vo": "^Handwriting turns into neat, typed text.",
+     "title": "AI pen",
+     "sub": "Write naturally, get clean text"
+    },
+    {
+     "id": "f_b32",
+     "kind": "board",
+     "src": "b32",
+     "vo": "^A rough circle becomes a perfect one.",
+     "title": "Shape AI",
+     "sub": "Clean shapes, every time"
+    },
+    {
+     "id": "f_b34",
+     "kind": "board",
+     "src": "b34",
+     "vo": "^And the maths solver shows every step, even offline.",
+     "title": "Maths solver",
+     "sub": "Step-by-step, works offline"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "title": "Never miss a lesson",
+   "beats": [
+    {
+     "id": "f_b91",
+     "kind": "board",
+     "src": "b91",
+     "vo": "^Record any lesson, after asking for consent.",
+     "title": "Lesson recording",
+     "sub": "Consent comes first"
+    },
+    {
+     "id": "f_b93",
+     "kind": "board",
+     "src": "b93",
+     "vo": "^Every recording gets a transcript and a summary.",
+     "title": "Transcripts and summaries",
+     "sub": "Ready to share with students"
+    },
+    {
+     "id": "f_b94",
+     "kind": "board",
+     "src": "b94",
+     "vo": "^Live captions. ^Phone casting. ^A second screen. ^And freeze.",
+     "title": "Captions and casting",
+     "sub": "Everyone can follow"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "title": "Built for real classrooms",
+   "beats": [
+    {
+     "id": "f_b11",
+     "kind": "board",
+     "src": "b11",
+     "vo": "^Teachers sign in by scanning a code. No passwords on the big screen.",
+     "title": "Scan to sign in",
+     "sub": "With the teacher app"
+    },
+    {
+     "id": "f_b71",
+     "kind": "board",
+     "src": "b71",
+     "vo": "^Attendance takes one tap, and goes straight to the office.",
+     "title": "One-tap attendance",
+     "sub": "Sent to the ERP instantly"
+    },
+    {
+     "id": "f_b81",
+     "kind": "board",
+     "src": "b81",
+     "vo": "^Homework AI writes homework from today's lesson,",
+     "title": "Homework AI",
+     "sub": "From the lesson, in one tap"
+    },
+    {
+     "id": "f_b82",
+     "kind": "board",
+     "src": "b82",
+     "vo": "^and sends it to every student's phone.",
+     "title": "Homework AI",
+     "sub": "Sent to the student app"
+    },
+    {
+     "id": "f_b121",
+     "kind": "board",
+     "src": "b121",
+     "vo": "^If the Wi-Fi drops, ^nothing is lost. It syncs later.",
+     "title": "Works offline",
+     "sub": "Syncs when the internet is back"
+    },
+    {
+     "id": "f_b103",
+     "kind": "board",
+     "src": "b103",
+     "vo": "^It speaks Hindi, ^Kannada, and English.",
+     "title": "Three languages",
+     "sub": "The whole board, in your language"
+    },
+    {
+     "id": "f_b104",
+     "kind": "board",
+     "src": "b104",
+     "vo": "^Voice commands. ^A reader. ^A screen shade. ^And a spotlight.",
+     "title": "Help every learner",
+     "sub": "Built-in accessibility"
+    }
+   ]
+  },
+  {
+   "id": "end",
+   "title": "",
+   "beats": [
+    {
+     "id": "e1",
+     "kind": "end",
+     "vo": "^Zynetix runs on the smart boards you already have. ^Book your demo today.",
+     "title": "Runs on your existing boards",
+     "sub": "Android and Windows interactive panels"
+    }
+   ]
+  }
+ ]
+}
