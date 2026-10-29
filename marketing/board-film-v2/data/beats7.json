@@ -9,7 +9,17 @@
      "kind": "black",
      "vo": "Every morning, in thousands of classrooms, the same story begins.",
      "text": "8:40 am  ·  Class 10 B",
-     "sfx": "chalk"
+     "sfx": "chalk",
+     "pre": 1.4
+    },
+    {
+     "id": "s0",
+     "kind": "still",
+     "img": "open",
+     "vo": "",
+     "move": "push",
+     "grade": "cold",
+     "hold": 5.0
     },
     {
      "id": "s1",

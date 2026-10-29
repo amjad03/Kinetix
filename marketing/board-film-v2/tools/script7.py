@@ -13,7 +13,8 @@ def C(id, src, vo, title='', m=None): return dict(id=id, kind='clip', src=src, v
 
 ACTS = [
  ('before', [
-  K('k1', "Every morning, in thousands of classrooms, the same story begins.", '8:40 am  ·  Class 10 B', sfx='chalk'),
+  K('k1', "Every morning, in thousands of classrooms, the same story begins.", '8:40 am  ·  Class 10 B', sfx='chalk', pre=1.4),
+  dict(id='s0', kind='still', img='open', vo='', move='push', grade='cold', hold=5.0),
   S('s1', 'heart', "A teacher draws a heart on the board. It is flat. It is dusty. And by the next period, it is gone.", move='push'),
   S('s2', 'bored', "Forty students. One explanation. A few follow. Most quietly drift away.", move='pan'),
   S('s3', 'att', "Minutes go on calling names, one by one.", move='push', sfx='clock'),

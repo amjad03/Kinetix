@@ -20,7 +20,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 FPS, W, H = 30, 1920, 1080
-LEAD, INK_LEAD, HOLD = 0.30, 0.45, 1.4
+LEAD, INK_LEAD, HOLD = 0.30, 0.45, 1.9
 args = sys.argv[1:]
 FONTS = os.path.join(ROOT, 'packages', 'zynetix_ui', 'fonts')
 BEATS = json.load(open(os.path.join(HERE, 'data', 'beats7.json')))
@@ -303,9 +303,11 @@ def build():
             a['T'] = a['A'] - lead[j]
         vo_end = vo_start + tot
         last = u['A'][-1] if u['A'] else vo_start
-        E = max(vo_end + 0.25, last + HOLD + 0.1)
+        E = max(vo_end + 0.7, last + HOLD + 0.1)
         if u['kind'] in ('black', 'still'):
-            E = vo_end + 0.9
+            E = vo_end + 1.6 if pieces(bid) else S + u['b'].get('hold', 4.0)
+        if u['kind'] == 'plate':
+            E = vo_end + 1.6
         if u['kind'] == 'logo':
             E = S + u['b'].get('hold', 2.4)
         if u['kind'] == 'end':
@@ -645,13 +647,16 @@ def board_view(u, t):
 def title(frame, text, a):
     if not text or a <= 0:
         return
-    ti = text_img(text, F_TTL, INK)
     pad = 60
-    band = Image.new('L', (W, H), 0)
-    ImageDraw.Draw(band).rectangle([0, H - 260, 900, H], fill=170)
-    band = band.filter(ImageFilter.GaussianBlur(70)).point(lambda v: int(v * a))
-    frame.paste((10, 10, 12), (0, 0), band)
-    bar = Image.new('RGBA', (4, ti.height - 12), WARM + (255,))
+    region = frame.crop((0, H - 220, 900, H)).resize((90, 22))
+    light = np.asarray(region).mean() > 165
+    ti = text_img(text, F_TTL, (28, 28, 32) if light else INK)
+    if not light:
+        band = Image.new('L', (W, H), 0)
+        ImageDraw.Draw(band).rectangle([0, H - 260, 900, H], fill=170)
+        band = band.filter(ImageFilter.GaussianBlur(70)).point(lambda v: int(v * a))
+        frame.paste((10, 10, 12), (0, 0), band)
+    bar = Image.new('RGBA', (4, ti.height - 12), ((196, 128, 48) if light else WARM) + (255,))
     paste_a(frame, bar, (pad, H - 92 - ti.height + 10), a)
     paste_a(frame, ti, (pad + 22, H - 92 - ti.height + (1 - a) * 10), a)
 
