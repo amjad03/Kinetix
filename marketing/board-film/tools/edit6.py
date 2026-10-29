@@ -456,6 +456,28 @@ def unit_at(t):
 
 
 
+TXT = {}
+
+
+def text_img(s, fnt, fill):
+    k = (s, id(fnt), fill)
+    if k not in TXT:
+        bb = fnt.getbbox(s)
+        im = Image.new('RGBA', (bb[2] - bb[0] + 4, bb[3] - bb[1] + 8), (0, 0, 0, 0))
+        ImageDraw.Draw(im).text((-bb[0] + 2, -bb[1] + 4), s, font=fnt, fill=fill)
+        TXT[k] = im
+    return TXT[k]
+
+
+def paste_a(dst, im, xy, a):
+    if a <= 0:
+        return
+    if a < 1:
+        im = im.copy(); im.putalpha(im.getchannel('A').point(lambda v: int(v * a)))
+    dst.paste(im, (int(xy[0]), int(xy[1])), im)
+
+
+
 # ================================================================== v6 look: the board as a product on a dark stage
 BG = (22, 25, 30)                      # the 3D viewer's own background, so 3D shots and the stage are one space
 ACCENT = (110, 168, 255)
@@ -520,7 +542,9 @@ def small_rect(r):
 _last = framing(None)
 for u in units:
     keys = [(u['S'], _last)]
-    if u['kind'] == 'board':
+    if u['kind'] == 'board' and u['b'].get('wide'):
+        keys.append((u['S'] + 0.6, framing(None)))
+    elif u['kind'] == 'board':
         for a in u['anchors']:
             r = a['rect'] if a['rect'] and a['rect'][2] * a['rect'][3] < 0.85 * W * H else None
             keys.append((a['T'] - 0.35, framing(r)))
@@ -567,7 +591,7 @@ def device(frame, src, cam, spot=None, spot_a=0.0):
     scr = src.resize((ow, oh), Image.BICUBIC, box=(sx0, sy0, sx1, sy1))
     if spot and spot_a > 0.01:
         x, y, w, h = spot
-        m = Image.new('L', (ow // 4 + 1, oh // 4 + 1), int(255 * 0.5 * spot_a))
+        m = Image.new('L', (ow // 4 + 1, oh // 4 + 1), int(255 * 0.3 * spot_a))
         rx0, ry0 = (dx + (x - 14) * z - ox0) / 4, (dy + (y - 14) * z - oy0) / 4
         rx1, ry1 = (dx + (x + w + 14) * z - ox0) / 4, (dy + (y + h + 14) * z - oy0) / 4
         ImageDraw.Draw(m).rounded_rectangle([rx0, ry0, rx1, ry1], 6, fill=0)
@@ -583,7 +607,7 @@ def spot_for(u, t):
     """The spotlight on the act being talked about: in just before the act, out before the next one."""
     best, a_out = None, 0.0
     for j, a in enumerate(u['anchors']):
-        if not small_rect(a['rect']):
+        if not small_rect(a['rect']) or u['b'].get('wide'):
             continue
         t_in, t_out = a['T'] - 0.25, (u['anchors'][j + 1]['T'] - 0.6 if j + 1 < len(u['anchors']) else u['E'] - 0.3)
         if t_in - 0.3 <= t <= t_out + 0.3:
@@ -672,7 +696,7 @@ def render6(frame, i, t):
     if k == 'brand':
         A = u['A']
         if len(A) > 1 and t >= A[1] - 0.4:
-            a = ease((t - A[1] + 0.4) / 0.5)
+            a = ease((t - A[1] + 0.4) / 0.3)
             cam = framing(None, tx=960)
             cam = (cam[0], cam[1], 0.66 + 0.04 * ease((t - A[1]) / 4), 960, 560)
             device(frame, board_still(), cam)

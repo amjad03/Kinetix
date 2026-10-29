@@ -268,7 +268,8 @@
      "src": "b121",
      "vo": "^If the Wi-Fi drops, ^nothing is lost. It syncs later.",
      "title": "Works offline",
-     "sub": "Syncs when the internet is back"
+     "sub": "Syncs when the internet is back",
+     "wide": true
     },
     {
      "id": "f_b103",
@@ -284,7 +285,8 @@
      "src": "b104",
      "vo": "^Voice commands. ^A reader. ^A screen shade. ^And a spotlight.",
      "title": "Help every learner",
-     "sub": "Built-in accessibility"
+     "sub": "Built-in accessibility",
+     "wide": true
     }
    ]
   },

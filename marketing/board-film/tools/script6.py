@@ -5,8 +5,8 @@ Beat kinds: 'board' (real board capture beat; anchors = its acts, in order), 'cl
 import json, os
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-def B(id, vo, title, sub=''):
-    return dict(id='f_' + id, kind='board', src=id, vo=vo, title=title, sub=sub)
+def B(id, vo, title, sub='', **k):
+    return dict(id='f_' + id, kind='board', src=id, vo=vo, title=title, sub=sub, **k)
 def V(id, src, vo, title, sub='', m=None):
     return dict(id=id, kind='clip', src=src, vo=vo, title=title, sub=sub, m=m)
 
@@ -50,9 +50,9 @@ CH = [
   B('b71', "^Attendance takes one tap, and goes straight to the office.", 'One-tap attendance', 'Sent to the ERP instantly'),
   B('b81', "^Homework AI writes homework from today's lesson,", 'Homework AI', 'From the lesson, in one tap'),
   B('b82', "^and sends it to every student's phone.", 'Homework AI', 'Sent to the student app'),
-  B('b121', "^If the Wi-Fi drops, ^nothing is lost. It syncs later.", 'Works offline', 'Syncs when the internet is back'),
+  B('b121', "^If the Wi-Fi drops, ^nothing is lost. It syncs later.", 'Works offline', 'Syncs when the internet is back', wide=True),
   B('b103', "^It speaks Hindi, ^Kannada, and English.", 'Three languages', 'The whole board, in your language'),
-  B('b104', "^Voice commands. ^A reader. ^A screen shade. ^And a spotlight.", 'Help every learner', 'Built-in accessibility'),
+  B('b104', "^Voice commands. ^A reader. ^A screen shade. ^And a spotlight.", 'Help every learner', 'Built-in accessibility', wide=True),
  ]),
  ('end', '', [
   dict(id='e1', kind='end', vo="^Zynetix runs on the smart boards you already have. ^Book your demo today.", title='Runs on your existing boards', sub='Android and Windows interactive panels'),
