@@ -1,0 +1,288 @@
+{
+ "chapters": [
+  {
+   "id": "before",
+   "title": "",
+   "beats": [
+    {
+     "id": "k1",
+     "kind": "black",
+     "vo": "Every morning, in thousands of classrooms, the same story begins.",
+     "text": "8:40 am  ·  Class 10 B",
+     "sfx": "chalk"
+    },
+    {
+     "id": "s1",
+     "kind": "still",
+     "img": "heart",
+     "vo": "A teacher draws a heart on the board. It is flat. It is dusty. And by the next period, it is gone.",
+     "move": "push",
+     "grade": "cold"
+    },
+    {
+     "id": "s2",
+     "kind": "still",
+     "img": "bored",
+     "vo": "Forty students. One explanation. A few follow. Most quietly drift away.",
+     "move": "pan",
+     "grade": "cold"
+    },
+    {
+     "id": "s3",
+     "kind": "still",
+     "img": "att",
+     "vo": "Minutes go on calling names, one by one.",
+     "move": "push",
+     "grade": "cold",
+     "sfx": "clock"
+    },
+    {
+     "id": "s4",
+     "kind": "still",
+     "img": "night",
+     "vo": "And tonight, she'll plan tomorrow's lesson by hand. Again.",
+     "move": "pull",
+     "grade": "cold"
+    },
+    {
+     "id": "s5",
+     "kind": "still",
+     "img": "sick",
+     "vo": "If a student misses a day, that lesson is simply lost.",
+     "move": "push",
+     "grade": "cold"
+    },
+    {
+     "id": "k2",
+     "kind": "black",
+     "vo": "What if the board on the wall could change all of that?",
+     "text": "What if the board could help?",
+     "sfx": "bell"
+    }
+   ]
+  },
+  {
+   "id": "turn",
+   "title": "",
+   "beats": [
+    {
+     "id": "p1",
+     "kind": "plate",
+     "img": "plate",
+     "vo": "^Meet Zynetix. It runs on the smart board your school already has.",
+     "screen": "home"
+    },
+    {
+     "id": "l1",
+     "kind": "logo",
+     "vo": "",
+     "hold": 2.4
+    }
+   ]
+  },
+  {
+   "id": "after",
+   "title": "",
+   "beats": [
+    {
+     "id": "a1",
+     "kind": "clip",
+     "src": "v3d/v3d_heart",
+     "vo": "Now, that heart is real. ^Turn it. ^Cut it open. ^Take it apart.",
+     "title": "3D models",
+     "m": [
+      0,
+      1,
+      2
+     ]
+    },
+    {
+     "id": "a2",
+     "kind": "clip",
+     "src": "v3d/v3d_labels",
+     "vo": "Tap a part to see its name, ^in English, ^Hindi, ^or Kannada.",
+     "title": "Labels in three languages",
+     "m": [
+      1,
+      2,
+      3
+     ]
+    },
+    {
+     "id": "f_b52",
+     "kind": "board",
+     "src": "b52",
+     "vo": "^Experiments become safe and simple. ^Move the light, and watch it bend.",
+     "title": "Virtual labs"
+    },
+    {
+     "id": "p2",
+     "kind": "plate",
+     "img": "teacher",
+     "vo": "^And every student now has a voice.",
+     "screen": "b72"
+    },
+    {
+     "id": "f_b73",
+     "kind": "board",
+     "src": "b73",
+     "vo": "^Students answer from their phones, ^and the results appear live.",
+     "title": "Live class questions"
+    },
+    {
+     "id": "f_b76",
+     "kind": "board",
+     "src": "b76",
+     "vo": "^Ask for one word, ^and see what the whole class is thinking.",
+     "title": "Word cloud"
+    },
+    {
+     "id": "f_b77",
+     "kind": "board",
+     "src": "b77",
+     "vo": "^A random picker. ^A timer. ^A scoreboard. ^And badges, to keep everyone involved.",
+     "title": "Classroom toolkit"
+    },
+    {
+     "id": "f_b71",
+     "kind": "board",
+     "src": "b71",
+     "vo": "^Attendance takes one tap, and goes straight to the office.",
+     "title": "One-tap attendance"
+    },
+    {
+     "id": "f_b63",
+     "kind": "board",
+     "src": "b63",
+     "vo": "That late-night planning? ^The AI lesson builder writes a full plan in seconds.",
+     "title": "AI lesson builder"
+    },
+    {
+     "id": "f_b64",
+     "kind": "board",
+     "src": "b64",
+     "vo": "^Goals. ^Steps. ^Activities. ^And a quick check at the end.",
+     "title": "AI lesson builder"
+    },
+    {
+     "id": "f_b61",
+     "kind": "board",
+     "src": "b61",
+     "vo": "^During class, ask any question,",
+     "title": "Ask Zynetix AI"
+    },
+    {
+     "id": "f_b62",
+     "kind": "board",
+     "src": "b62",
+     "vo": "^and get a clear answer, with its source.",
+     "title": "Ask Zynetix AI"
+    },
+    {
+     "id": "f_b81",
+     "kind": "board",
+     "src": "b81",
+     "vo": "^Homework is written from the lesson,",
+     "title": "Homework AI"
+    },
+    {
+     "id": "f_b82",
+     "kind": "board",
+     "src": "b82",
+     "vo": "^and sent to every student in one tap.",
+     "title": "Homework AI"
+    },
+    {
+     "id": "f_b91",
+     "kind": "board",
+     "src": "b91",
+     "vo": "^Every lesson can be recorded,",
+     "title": "Lesson recording"
+    },
+    {
+     "id": "f_b93",
+     "kind": "board",
+     "src": "b93",
+     "vo": "^with a transcript and a summary.",
+     "title": "Lesson recording"
+    },
+    {
+     "id": "s6",
+     "kind": "still",
+     "img": "catchup",
+     "vo": "So a student at home can catch up on exactly what they missed.",
+     "move": "push",
+     "grade": "warm"
+    },
+    {
+     "id": "f_b31",
+     "kind": "board",
+     "src": "b31",
+     "vo": "Even the writing is smart. ^Handwriting becomes neat text.",
+     "title": "Smart ink"
+    },
+    {
+     "id": "f_b32",
+     "kind": "board",
+     "src": "b32",
+     "vo": "^Rough shapes become perfect.",
+     "title": "Smart ink"
+    },
+    {
+     "id": "f_b34",
+     "kind": "board",
+     "src": "b34",
+     "vo": "^And the maths solver shows every step.",
+     "title": "Maths solver"
+    },
+    {
+     "id": "f_b11",
+     "kind": "board",
+     "src": "b11",
+     "vo": "^Teachers sign in with a scan.",
+     "title": "Scan to sign in"
+    },
+    {
+     "id": "f_b121",
+     "kind": "board",
+     "src": "b121",
+     "vo": "^It works without internet, ^and syncs later.",
+     "title": "Works offline"
+    },
+    {
+     "id": "f_b103",
+     "kind": "board",
+     "src": "b103",
+     "vo": "^And it speaks Hindi, ^Kannada and English.",
+     "title": "Three languages"
+    }
+   ]
+  },
+  {
+   "id": "close",
+   "title": "",
+   "beats": [
+    {
+     "id": "s7",
+     "kind": "still",
+     "img": "hands",
+     "vo": "Same classroom. Same teacher. A completely different day.",
+     "move": "push",
+     "grade": "warm"
+    },
+    {
+     "id": "p3",
+     "kind": "plate",
+     "img": "plate",
+     "vo": "^Zynetix runs on the smart boards you already have.",
+     "screen": "b52"
+    },
+    {
+     "id": "e1",
+     "kind": "end",
+     "vo": "^Bring it to your school. Book a demo today."
+    }
+   ]
+  }
+ ]
+}
