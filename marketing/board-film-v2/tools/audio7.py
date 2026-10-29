@@ -119,7 +119,8 @@ while t < DUR - 1:
     t += bar; i += 1
 # final chord on the end card
 for m in (36, 48, 55, 60, 64, 67, 72):
-    add(mus, strings(midi(m), DUR - t_end + .5) + lp(piano(midi(m), 5), 2000) * .3, t_end, .06)
+    add(mus, strings(midi(m), DUR - t_end + .5), t_end, .06)
+    add(mus, lp(piano(midi(m), 5), 2000), t_end, .018)
 
 fade = np.ones(N); fo = int((DUR - 2.5) * SR); fade[fo:] = np.linspace(1, 0, N - fo) ** 1.5
 mus *= fade; sfx *= fade
