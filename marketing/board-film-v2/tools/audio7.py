@@ -66,7 +66,7 @@ mus = np.zeros(N); sfx = np.zeros(N)
 fan = bp(noise(t_turn + 1), 60, 400) * .05
 fan *= 1 + .35 * np.sin(2 * np.pi * 1.7 * np.arange(len(fan)) / SR)
 fan *= env(len(fan), 1.2, 1.5)
-add(sfx, fan, 0)
+# fan room tone removed: it read as background hiss
 
 
 def chalk(d):
@@ -79,7 +79,7 @@ def chalk(d):
     return x * e * .35
 
 
-for uid in ('k1', 's1'):
+for uid in ():                                                     # chalk scratch removed (sounded harsh)
     add(sfx, chalk(min(5.5, U[uid]['E'] - U[uid]['S'])), U[uid]['S'] + .2, .8 if uid == 'k1' else .45)
 for k in range(int(U['s3']['E'] - U['s3']['S'])):                  # the clock while names are called
     tk = np.exp(-np.arange(int(.03 * SR)) / SR * 220) * np.sin(2 * np.pi * 3000 * np.arange(int(.03 * SR)) / SR)
