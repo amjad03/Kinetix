@@ -4,7 +4,7 @@ import '../../core/api.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 
-/// One question to KINETIX AI and how it went.
+/// One question to Zynetix AI and how it went.
 class AskTurn {
   AskTurn(this.question);
 
@@ -26,7 +26,7 @@ class AskController extends ChangeNotifier {
   final String sectionId;
   final void Function(AiLanguage)? onLanguageChanged;
 
-  /// Opens Profile → Privacy (when KINETIX AI is off because consent was withdrawn).
+  /// Opens Profile → Privacy (when Zynetix AI is off because consent was withdrawn).
   final void Function(BuildContext context)? onOpenPrivacy;
 
   final input = TextEditingController();
@@ -123,7 +123,7 @@ class AskController extends ChangeNotifier {
 }
 
 /// How an AI error reads to a student, and whether trying again can help. What the server says
-/// about a refused question or the allowance is shown as sent. KINETIX AI turned off because
+/// about a refused question or the allowance is shown as sent. Zynetix AI turned off because
 /// consent was withdrawn ([privacy]) points to Profile → Privacy.
 ({String title, String message, bool retry, IconData icon, bool privacy}) describeAiError(AppLocalizations l, ApiException e) =>
     errorCodeOf(e) == 'CONSENT_WITHDRAWN'

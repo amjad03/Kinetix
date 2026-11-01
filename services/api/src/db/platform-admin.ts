@@ -1,7 +1,7 @@
 /**
- * Adds, removes or lists members of the KINETIX platform team (platform_admins), who look after
+ * Adds, removes or lists members of the Zynetix platform team (platform_admins), who look after
  * the global library for every institution (concept videos in the ERP's Platform area). A member
- * is an existing user, usually of KINETIX's own institution, found by email or mobile number. To
+ * is an existing user, usually of Zynetix's own institution, found by email or mobile number. To
  * sign in to the ERP they also need an ERP role there (tenant_admin, say); Platform › Concept
  * videos then appears in their menu.
  * Runs as the owner role (DATABASE_URL): the app role cannot touch platform_admins.
@@ -51,7 +51,7 @@ async function findUser(db: NodePgDatabase<typeof s>, tenant: string, login: str
     .from(s.users)
     .innerJoin(s.tenants, eq(s.tenants.id, s.users.tenantId))
     .where(and(eq(s.tenants.slug, tenant), or(eq(s.users.email, email), eq(s.users.phone, phone))));
-  if (!u) throw new NotFoundError(`No user "${login}" in institution "${tenant}". Create the account first (for KINETIX staff: in KINETIX's own institution).`);
+  if (!u) throw new NotFoundError(`No user "${login}" in institution "${tenant}". Create the account first (for Zynetix staff: in Zynetix's own institution).`);
   return u;
 }
 
@@ -97,7 +97,7 @@ async function main() {
       if (!rows.length) console.log('The platform team is empty.');
       for (const r of rows) console.log(`${who(r)}  (${r.tenant})${r.note ? `  ${r.note}` : ''}  since ${r.since.toISOString().slice(0, 10)}`);
     } else if (args.command === 'add') {
-      console.log(`${who(await addPlatformAdmin(db, args.tenant, args.login, args.note))} is on the KINETIX platform team. They see Platform in the ERP after signing in again.`);
+      console.log(`${who(await addPlatformAdmin(db, args.tenant, args.login, args.note))} is on the Zynetix platform team. They see Platform in the ERP after signing in again.`);
     } else {
       const r = await removePlatformAdmin(db, args.tenant, args.login);
       console.log(r.removed ? `${who(r.user)} is no longer on the platform team.` : `${who(r.user)} was not on the platform team.`);

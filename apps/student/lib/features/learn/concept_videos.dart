@@ -41,7 +41,7 @@ function onYouTubeIframeAPIReady() {
 </script></body></html>''';
 }
 
-/// "Concept videos" on a topic page: the KINETIX channel's explainers, to preview before class and
+/// "Concept videos" on a topic page: the Zynetix channel's explainers, to preview before class and
 /// revise after. Nothing shows when the topic has none (or they can't be loaded).
 class ConceptVideosSection extends StatefulWidget {
   const ConceptVideosSection({super.key, required this.api, required this.topicId});
@@ -152,7 +152,7 @@ class _VideoRow extends StatelessWidget {
   }
 }
 
-/// Who linked a video: KINETIX, the school or the class's teacher.
+/// Who linked a video: Zynetix, the school or the class's teacher.
 class _SourceBadge extends StatelessWidget {
   const _SourceBadge({super.key, required this.source});
 

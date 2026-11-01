@@ -1,7 +1,7 @@
 # Demo builds (offline sample data)
 
 A demo build of the Teacher, Parent, Student and Board apps runs with no server. Every screen
-works against an in-memory copy of **KINETIX Demo College** (the same people and classes as
+works against an in-memory copy of **Zynetix Demo College** (the same people and classes as
 `services/api/src/db/seed.ts`), so the apps can be installed on a phone or tablet and tried
 before anything is deployed.
 
@@ -33,7 +33,7 @@ screen (docs/operations/mobile-release.md).
   assigning and checking homework, handing in work, entering and publishing marks, marking topics
   taught, moving year-plan topics, saving lesson plans, messages, consent, and fee payment through
   the demo gateway.
-- KINETIX AI answers (lesson-plan drafts, student questions, the board's AI panel) are sample
+- Zynetix AI answers (lesson-plan drafts, student questions, the board's AI panel) are sample
   answers, labelled as previews like answers from a server without an AI model.
 - About eight seconds after sign-in, a reply "arrives" in the family/teacher chat, to show live
   messages. Push notifications are off.
@@ -76,7 +76,7 @@ key still fails as before; with a key configured, the flag changes nothing.
 ## Board against a real server (live demo)
 
 The board APK in `dist/kinetix-board.apk` is a server build, not a demo build: it talks to the
-KINETIX API. Pick the server in one of two ways:
+Zynetix API. Pick the server in one of two ways:
 
 1. **At build time:** `--dart-define=KINETIX_API_URL=<address>`, which pre-fills the server.
 2. **In the app:** the enrolment screen (first start, or after *Unpair* from the IT console) has a

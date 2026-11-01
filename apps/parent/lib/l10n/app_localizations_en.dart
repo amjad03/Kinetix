@@ -157,7 +157,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errUnreachable =>
-      'Can\'t reach KINETIX. Check your internet connection and the server address.';
+      'Can\'t reach Zynetix. Check your internet connection and the server address.';
 
   @override
   String get errForbidden => 'You don\'t have access to this.';
@@ -757,7 +757,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errTeacherAccount =>
-      'This app is for parents and guardians. Teachers can use the KINETIX Teacher app.';
+      'This app is for parents and guardians. Teachers can use the Zynetix Teacher app.';
 
   @override
   String homeSubtitle(Object name) {
@@ -1067,7 +1067,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentPhonesOnly =>
-      'Online payment works in the KINETIX Parent app on Android phones and iPhones. On this device, please pay at the fees counter.';
+      'Online payment works in the Zynetix Parent app on Android phones and iPhones. On this device, please pay at the fees counter.';
 
   @override
   String get demoPayment => 'Demo payment';
@@ -1341,7 +1341,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacySubtitle =>
-      'What KINETIX may do with the student\'s information';
+      'What Zynetix may do with the student\'s information';
 
   @override
   String get notNow => 'Not now';
@@ -1398,7 +1398,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noticeCollege =>
-      'College or university: students decide for themselves. A guardian decides only for a student who has no KINETIX login of their own.';
+      'College or university: students decide for themselves. A guardian decides only for a student who has no Zynetix login of their own.';
 
   @override
   String get noticeWhatWeAsk => 'What we ask about';
@@ -1442,15 +1442,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'the institution still keeps the records it must by law; you will not get updates in the app.';
 
   @override
-  String get purposeAiTitle => 'KINETIX AI';
+  String get purposeAiTitle => 'Zynetix AI';
 
   @override
   String get purposeAiBody =>
-      'The student asking KINETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.';
+      'The student asking Zynetix AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.';
 
   @override
   String get purposeAiNo =>
-      'KINETIX AI is turned off for the student. Everything else works.';
+      'Zynetix AI is turned off for the student. Everything else works.';
 
   @override
   String get purposeRecordingsTitle => 'Class recordings and live classes';
@@ -1494,7 +1494,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get handInForNote =>
-      'Hand in here for a child who doesn\'t have their own KINETIX login.';
+      'Hand in here for a child who doesn\'t have their own Zynetix login.';
 
   @override
   String consentTitleFor(String name) {
@@ -1503,22 +1503,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String consentIntroFor(String name) {
-    return 'Choose what KINETIX may do with $name\'s information. Nothing is switched on until you choose.';
+    return 'Choose what Zynetix may do with $name\'s information. Nothing is switched on until you choose.';
   }
 
   @override
   String privacyIntroFor(String name) {
-    return 'What KINETIX may do with $name\'s information. Turn a switch off to withdraw your consent.';
+    return 'What Zynetix may do with $name\'s information. Turn a switch off to withdraw your consent.';
   }
 
   @override
   String privacyIntroReadOnlyFor(String name) {
-    return 'What KINETIX may do with $name\'s information, and who decided.';
+    return 'What Zynetix may do with $name\'s information, and who decided.';
   }
 
   @override
   String managedByStudent(String name) {
-    return '$name manages this. At a college, students with their own KINETIX login make these choices themselves.';
+    return '$name manages this. At a college, students with their own Zynetix login make these choices themselves.';
   }
 
   @override
@@ -1544,7 +1544,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String syllabusNotLinked(String subject) {
-    return 'The syllabus for $subject isn\'t in KINETIX yet.';
+    return 'The syllabus for $subject isn\'t in Zynetix yet.';
   }
 
   @override
@@ -1660,7 +1660,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get demoBannerBody =>
-      'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
+      'Sample data from Zynetix Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
 
   @override
   String demoSignInAs(String name) {
@@ -2965,7 +2965,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get aiUpdateTitle => 'An update from KINETIX AI';
+  String get aiUpdateTitle => 'An update from Zynetix AI';
 
   @override
   String get aiUpdateGood => 'Going well';
@@ -2987,7 +2987,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String aiUpdateNote(String name) {
-    return 'Written by KINETIX AI from $name\'s marks, attendance and homework. It can be wrong: the class teacher knows $name best.';
+    return 'Written by Zynetix AI from $name\'s marks, attendance and homework. It can be wrong: the class teacher knows $name best.';
   }
 
   @override

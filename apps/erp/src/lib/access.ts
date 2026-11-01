@@ -125,7 +125,7 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   delegations: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
   // governance.controller.ts GOVERNANCE_ROLES: business rules, incidents and file retention
   governance: ['principal', 'tenant_admin', 'quality_officer'],
-  // billing.controller.ts BILLING_ROLES: the institution's own KINETIX plan, usage and invoices
+  // billing.controller.ts BILLING_ROLES: the institution's own Zynetix plan, usage and invoices
   billing: ['principal', 'tenant_admin'],
   // ai-admin.controller.ts AI_ADMIN: the AI action audit and the evaluation harness
   aiAudit: ['principal', 'tenant_admin', 'quality_officer'],

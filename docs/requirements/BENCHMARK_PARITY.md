@@ -1,8 +1,8 @@
-# Benchmark interactive panel: parity with KINETIX
+# Benchmark interactive panel: parity with Zynetix
 
 Sources: Benchmark Technomate / Benchmark Displays listings and the vendor site (benchmarkdisplays.com). Public pages only name the content categories: built-in teaching software, 3D content, virtual labs and apps. No page lists individual titles, so the "Benchmark" column is the category as marketed, not a verified title list. Ask a dealer for the datasheet of the exact model (Maxpro 11, Galaxy 11, Alpha 13) to confirm the title list.
 
-| Item | Benchmark | KINETIX status |
+| Item | Benchmark | Zynetix status |
 |---|---|---|
 | Whiteboard / teaching software | Yes (bundled) | Done (board) |
 | 3D content: human anatomy (heart, brain, lungs, eye, ear, digestive, excretory, skeleton, neuron, nephron) | Yes (category) | Done, 10 bundled GLBs, en/hi/kn labels, take-apart, cut planes |

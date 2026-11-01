@@ -44,7 +44,7 @@ void main() {
     });
 
     test('a generic code falls back to the known message, then the message itself', () {
-      expect(en.errorText(ApiException(400, 'Not a KINETIX pairing QR code', code: 'BAD_REQUEST')), en.errorNotPairingQr);
+      expect(en.errorText(ApiException(400, 'Not a Zynetix pairing QR code', code: 'BAD_REQUEST')), en.errorNotPairingQr);
       expect(en.errorText(ApiException(400, 'Marks cannot be more than 25', code: 'BAD_REQUEST')), 'Marks cannot be more than 25');
     });
 

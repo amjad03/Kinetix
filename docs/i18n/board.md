@@ -1,4 +1,4 @@
-# KINETIX Board: Hindi and Kannada
+# Zynetix Board: Hindi and Kannada
 
 The Board app (`apps/board`) shows its own buttons and messages in English, हिन्दी or ಕನ್ನಡ.
 Terms and style follow [glossary.md](glossary.md).
@@ -27,7 +27,7 @@ in schools and colleges before release.**
 
 Content from the server or the catalogue (AI answers, syllabus titles and notes, broadcast
 text, 3D model and lab content from `kinetix_3d` / `kinetix_labs`), names, class and subject
-names, product and app names (KINETIX, KINETIX AI, KINETIX Cloud, KINETIX ERP, Teacher App,
+names, product and app names (Zynetix, Zynetix AI, Zynetix Cloud, Zynetix ERP, Teacher App,
 Student App), ERP menu names quoted in instructions ("Devices → Add board", "Syllabus") and the
 Teacher App's "Connect to board" button. Server error messages are shown as the server sends
 them.
@@ -38,7 +38,7 @@ them.
 2. When a teacher pairs, the board switches to the teacher's preferred language if it is one of
    the three; when they sign out (or the period ends) it returns to the board's own language.
 3. Choosing a language in settings while a teacher is signed in applies at once.
-4. KINETIX AI's answer-language menu is separate. Text that goes out with AI content (homework
+4. Zynetix AI's answer-language menu is separate. Text that goes out with AI content (homework
    built from a quiz or a draft, "Explain …" questions) is written in the AI language.
 
 ## Strings to check first
@@ -59,4 +59,4 @@ them.
 - AI pen (AI पेन, AI ಪೆನ್): *Back to my ink* (मेरी स्याही वापस, ನನ್ನ ಶಾಯಿ ಮರಳಿ), scribble to rub out
   (घिचपिच करें, ಗೀಚಿ), handwriting model (लिखावट मॉडल, ಕೈಬರಹ ಮಾದರಿ).
 - Today's plan (आज की योजना, ಇಂದಿನ ಯೋಜನೆ): step timer (चरण टाइमर, ಹಂತ ಟೈಮರ್), Drafted with
-  KINETIX AI (`planAiDrafted`), and "Steps · x of y min" (`planStepsOf`).
+  Zynetix AI (`planAiDrafted`), and "Steps · x of y min" (`planStepsOf`).

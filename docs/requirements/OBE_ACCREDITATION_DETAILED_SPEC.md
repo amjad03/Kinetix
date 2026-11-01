@@ -1,10 +1,10 @@
-# Kinetix OBE + Accreditation Detailed System Specification
+# Zynetix OBE + Accreditation Detailed System Specification
 
-> Note: this document defines a configurable OBE engine. Institutions must configure their approved regulatory/accreditation framework and calculation rules; Kinetix must not hard-code one accreditor's methodology.
+> Note: this document defines a configurable OBE engine. Institutions must configure their approved regulatory/accreditation framework and calculation rules; Zynetix must not hard-code one accreditor's methodology.
 
 ## 1. OBE hierarchy
 
-Kinetix must support the following hierarchy/configuration:
+Zynetix must support the following hierarchy/configuration:
 
 Institution Mission/Vision
 → PEOs
@@ -100,7 +100,7 @@ Do not hard-code these values; framework configuration defines allowed scale.
 
 ## 6. Direct attainment
 
-Kinetix must support configurable rules such as:
+Zynetix must support configurable rules such as:
 
 - question-level evidence
 - rubric-level evidence

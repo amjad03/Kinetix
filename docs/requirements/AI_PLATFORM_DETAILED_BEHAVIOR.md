@@ -1,4 +1,4 @@
-# Kinetix AI Platform — Detailed Behavioral Requirements
+# Zynetix AI Platform — Detailed Behavioral Requirements
 
 ## AI surfaces
 

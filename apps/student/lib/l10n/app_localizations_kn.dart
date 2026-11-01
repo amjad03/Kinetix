@@ -157,7 +157,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get errUnreachable =>
-      'KINETIX ಗೆ ಸಂಪರ್ಕ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ.';
+      'Zynetix ಗೆ ಸಂಪರ್ಕ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get errForbidden => 'ಇದಕ್ಕೆ ನಿಮಗೆ ಅನುಮತಿ ಇಲ್ಲ.';
@@ -763,7 +763,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String homeworkHandIn(Object learn) {
-    return 'ಶಿಕ್ಷಕರು ಹೇಳಿದ ರೀತಿಯಲ್ಲೇ ಸಲ್ಲಿಸಿ. ಎಲ್ಲಿಯಾದರೂ ಸಿಲುಕಿದ್ದೀರಾ? $learn ಟ್ಯಾಬ್‌ನಲ್ಲಿ KINETIX AI ಅನ್ನು ಕೇಳಿ.';
+    return 'ಶಿಕ್ಷಕರು ಹೇಳಿದ ರೀತಿಯಲ್ಲೇ ಸಲ್ಲಿಸಿ. ಎಲ್ಲಿಯಾದರೂ ಸಿಲುಕಿದ್ದೀರಾ? $learn ಟ್ಯಾಬ್‌ನಲ್ಲಿ Zynetix AI ಅನ್ನು ಕೇಳಿ.';
   }
 
   @override
@@ -890,7 +890,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get stuckBody =>
-      'KINETIX AI ಗೆ ವಿವರಿಸಲು ಕೇಳಿ, English, हिन्दी ಅಥವಾ ಕನ್ನಡದಲ್ಲಿ.';
+      'Zynetix AI ಗೆ ವಿವರಿಸಲು ಕೇಳಿ, English, हिन्दी ಅಥವಾ ಕನ್ನಡದಲ್ಲಿ.';
 
   @override
   String get boardsEmpty =>
@@ -898,7 +898,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get feesNote =>
-      'ಶುಲ್ಕವನ್ನು ನಿಮ್ಮ ಪೋಷಕರು KINETIX Parent ಆ್ಯಪ್‌ನಲ್ಲಿ ಅಥವಾ ಕಾಲೇಜಿನ ಶುಲ್ಕ ಕೌಂಟರ್‌ನಲ್ಲಿ ಪಾವತಿಸುತ್ತಾರೆ. ಇಲ್ಲಿ ನೀವು ಎಷ್ಟು ಬಾಕಿ ಇದೆ ಎಂದು ನೋಡಬಹುದು ಮತ್ತು ನಿಮ್ಮ ರಸೀದಿಗಳನ್ನು ತೆರೆಯಬಹುದು.';
+      'ಶುಲ್ಕವನ್ನು ನಿಮ್ಮ ಪೋಷಕರು Zynetix Parent ಆ್ಯಪ್‌ನಲ್ಲಿ ಅಥವಾ ಕಾಲೇಜಿನ ಶುಲ್ಕ ಕೌಂಟರ್‌ನಲ್ಲಿ ಪಾವತಿಸುತ್ತಾರೆ. ಇಲ್ಲಿ ನೀವು ಎಷ್ಟು ಬಾಕಿ ಇದೆ ಎಂದು ನೋಡಬಹುದು ಮತ್ತು ನಿಮ್ಮ ರಸೀದಿಗಳನ್ನು ತೆರೆಯಬಹುದು.';
 
   @override
   String get invoicePaid => 'ಪಾವತಿಯಾಗಿದೆ';
@@ -992,7 +992,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get writeToYourTeachers => 'ನಿಮ್ಮ ಶಿಕ್ಷಕರಿಗೆ ಬರೆಯಿರಿ';
 
   @override
-  String get aiAnswersIn => 'KINETIX AI ಈ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತರಿಸುತ್ತದೆ';
+  String get aiAnswersIn => 'Zynetix AI ಈ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತರಿಸುತ್ತದೆ';
 
   @override
   String get answersIn => 'ಉತ್ತರದ ಭಾಷೆ';
@@ -1083,7 +1083,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get askIntro =>
-      'KINETIX AI ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮದ ಪ್ರಕಾರ ಇದನ್ನು ಹಂತ ಹಂತವಾಗಿ ವಿವರಿಸುತ್ತದೆ.';
+      'Zynetix AI ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮದ ಪ್ರಕಾರ ಇದನ್ನು ಹಂತ ಹಂತವಾಗಿ ವಿವರಿಸುತ್ತದೆ.';
 
   @override
   String aboutTopic(Object topic) {
@@ -1112,7 +1112,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get youAsked => 'ನೀವು ಕೇಳಿದ್ದು';
 
   @override
-  String get aiThinking => 'KINETIX AI ಯೋಚಿಸುತ್ತಿದೆ…';
+  String get aiThinking => 'Zynetix AI ಯೋಚಿಸುತ್ತಿದೆ…';
 
   @override
   String get keyPoints => 'ಮುಖ್ಯ ಅಂಶಗಳು';
@@ -1131,24 +1131,24 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get previewNote =>
-      'ನಿಮ್ಮ ಕಾಲೇಜಿನಲ್ಲಿ KINETIX AI ಇನ್ನೂ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಹಾಗಾಗಿ ಇದು ಕೇವಲ ಮಾದರಿ, ನಿಜವಾದ ವಿವರಣೆ ಅಲ್ಲ.';
+      'ನಿಮ್ಮ ಕಾಲೇಜಿನಲ್ಲಿ Zynetix AI ಇನ್ನೂ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಹಾಗಾಗಿ ಇದು ಕೇವಲ ಮಾದರಿ, ನಿಜವಾದ ವಿವರಣೆ ಅಲ್ಲ.';
 
   @override
-  String get aiCantAnswer => 'KINETIX AI ಇದಕ್ಕೆ ಉತ್ತರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ';
+  String get aiCantAnswer => 'Zynetix AI ಇದಕ್ಕೆ ಉತ್ತರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ';
 
   @override
   String get aiRephrase =>
       'ಇದನ್ನು ನಿಮ್ಮ ಓದಿಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಶ್ನೆಯಾಗಿ ಮತ್ತೆ ಬರೆದು ನೋಡಿ.';
 
   @override
-  String get aiAllowanceUsed => 'ಇಂದಿನ KINETIX AI ಮಿತಿ ಮುಗಿದಿದೆ';
+  String get aiAllowanceUsed => 'ಇಂದಿನ Zynetix AI ಮಿತಿ ಮುಗಿದಿದೆ';
 
   @override
   String get aiAllowanceBody =>
       'ನಿಮ್ಮ ಕಾಲೇಜು ಇಂದಿನ ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ಇದು ನಾಳೆ ಮತ್ತೆ ಆರಂಭವಾಗುತ್ತದೆ.';
 
   @override
-  String get aiUnreachable => 'KINETIX AI ಸಂಪರ್ಕಕ್ಕೆ ಸಿಗುತ್ತಿಲ್ಲ';
+  String get aiUnreachable => 'Zynetix AI ಸಂಪರ್ಕಕ್ಕೆ ಸಿಗುತ್ತಿಲ್ಲ';
 
   @override
   String get aiUnreachableBody =>
@@ -1167,7 +1167,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get topic => 'ವಿಷಯ';
 
   @override
-  String get askAboutThis => 'ಇದರ ಬಗ್ಗೆ KINETIX AI ಅನ್ನು ಕೇಳಿ';
+  String get askAboutThis => 'ಇದರ ಬಗ್ಗೆ Zynetix AI ಅನ್ನು ಕೇಳಿ';
 
   @override
   String get notes => 'ಟಿಪ್ಪಣಿಗಳು';
@@ -1183,7 +1183,7 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಈ ಟಿಪ್ಪಣಿಗಳನ್ನು ಪಠ್ಯಕ್ರಮ ತಂಡ ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ. ನಿಮ್ಮ ಪಠ್ಯಪುಸ್ತಕ ಮತ್ತು ಶಿಕ್ಷಕರಿಗೆ ಮೊದಲ ಆದ್ಯತೆ.';
 
   @override
-  String get askKinetixAi => 'KINETIX AI ಅನ್ನು ಕೇಳಿ';
+  String get askKinetixAi => 'Zynetix AI ಅನ್ನು ಕೇಳಿ';
 
   @override
   String get searchTopicsHint => 'ವಿಷಯಗಳನ್ನು ಹುಡುಕಿ, ಉದಾ. goodwill';
@@ -1193,7 +1193,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String noTopicsMatch(Object query) {
-    return '“$query” ಗೆ ಹೊಂದುವ ಯಾವುದೇ ವಿಷಯ ಸಿಗಲಿಲ್ಲ. ಚಿಕ್ಕ ಪದ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ KINETIX AI ಅನ್ನು ಕೇಳಿ.';
+    return '“$query” ಗೆ ಹೊಂದುವ ಯಾವುದೇ ವಿಷಯ ಸಿಗಲಿಲ್ಲ. ಚಿಕ್ಕ ಪದ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ Zynetix AI ಅನ್ನು ಕೇಳಿ.';
   }
 
   @override
@@ -1227,7 +1227,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String syllabusMissing(Object subject) {
-    return '$subject ವಿಷಯದ ಪಠ್ಯಕ್ರಮ ಇನ್ನೂ KINETIX ಲೈಬ್ರರಿಯಲ್ಲಿ ಇಲ್ಲ.\nಯಾವುದಾದರೂ ವಿಷಯವನ್ನು ಹುಡುಕಿ, ಅಥವಾ KINETIX AI ಅನ್ನು ಕೇಳಿ.';
+    return '$subject ವಿಷಯದ ಪಠ್ಯಕ್ರಮ ಇನ್ನೂ Zynetix ಲೈಬ್ರರಿಯಲ್ಲಿ ಇಲ್ಲ.\nಯಾವುದಾದರೂ ವಿಷಯವನ್ನು ಹುಡುಕಿ, ಅಥವಾ Zynetix AI ಅನ್ನು ಕೇಳಿ.';
   }
 
   @override
@@ -1338,11 +1338,11 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get errGuardianAccount =>
-      'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ಪೋಷಕರು KINETIX Parent ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
+      'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ಪೋಷಕರು Zynetix Parent ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
 
   @override
   String get errTeacherAccount =>
-      'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ಶಿಕ್ಷಕರು KINETIX Teacher ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
+      'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ಶಿಕ್ಷಕರು Zynetix Teacher ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
 
   @override
   String get errNotLinked =>
@@ -1537,7 +1537,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get privacySubtitle =>
-      'ವಿದ್ಯಾರ್ಥಿಯ ಮಾಹಿತಿಯೊಂದಿಗೆ KINETIX ಏನು ಮಾಡಬಹುದು';
+      'ವಿದ್ಯಾರ್ಥಿಯ ಮಾಹಿತಿಯೊಂದಿಗೆ Zynetix ಏನು ಮಾಡಬಹುದು';
 
   @override
   String get notNow => 'ಈಗ ಬೇಡ';
@@ -1594,7 +1594,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get noticeCollege =>
-      'ಕಾಲೇಜು ಅಥವಾ ವಿಶ್ವವಿದ್ಯಾಲಯ: ವಿದ್ಯಾರ್ಥಿಗಳು ತಮಗಾಗಿ ತಾವೇ ನಿರ್ಧರಿಸುತ್ತಾರೆ. ತಮ್ಮದೇ KINETIX ಲಾಗಿನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗೆ ಮಾತ್ರ ಪೋಷಕರು ನಿರ್ಧರಿಸುತ್ತಾರೆ.';
+      'ಕಾಲೇಜು ಅಥವಾ ವಿಶ್ವವಿದ್ಯಾಲಯ: ವಿದ್ಯಾರ್ಥಿಗಳು ತಮಗಾಗಿ ತಾವೇ ನಿರ್ಧರಿಸುತ್ತಾರೆ. ತಮ್ಮದೇ Zynetix ಲಾಗಿನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗೆ ಮಾತ್ರ ಪೋಷಕರು ನಿರ್ಧರಿಸುತ್ತಾರೆ.';
 
   @override
   String get noticeWhatWeAsk => 'ನಾವು ಏನು ಕೇಳುತ್ತೇವೆ';
@@ -1638,15 +1638,15 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಡಬೇಕಾದ ದಾಖಲೆಗಳನ್ನು ಸಂಸ್ಥೆ ಇನ್ನೂ ಇಡುತ್ತದೆ; ನಿಮಗೆ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸೂಚನೆಗಳು ಬರುವುದಿಲ್ಲ.';
 
   @override
-  String get purposeAiTitle => 'KINETIX AI';
+  String get purposeAiTitle => 'Zynetix AI';
 
   @override
   String get purposeAiBody =>
-      'ಸಂದೇಹಗಳಿಗೆ ವಿದ್ಯಾರ್ಥಿ KINETIX AI ನಿಂದ ಸಹಾಯ ಕೇಳುವುದು. ಪ್ರಶ್ನೆಗಳನ್ನು ಭಾರತದ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಸಂಸ್ಕರಿಸಲಾಗುತ್ತದೆ ಮತ್ತು AI ಮಾದರಿಗಳ ತರಬೇತಿಗೆ ಬಳಸಲಾಗುವುದಿಲ್ಲ.';
+      'ಸಂದೇಹಗಳಿಗೆ ವಿದ್ಯಾರ್ಥಿ Zynetix AI ನಿಂದ ಸಹಾಯ ಕೇಳುವುದು. ಪ್ರಶ್ನೆಗಳನ್ನು ಭಾರತದ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಸಂಸ್ಕರಿಸಲಾಗುತ್ತದೆ ಮತ್ತು AI ಮಾದರಿಗಳ ತರಬೇತಿಗೆ ಬಳಸಲಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get purposeAiNo =>
-      'ವಿದ್ಯಾರ್ಥಿಗೆ KINETIX AI ಆಫ್ ಆಗುತ್ತದೆ. ಉಳಿದೆಲ್ಲವೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+      'ವಿದ್ಯಾರ್ಥಿಗೆ Zynetix AI ಆಫ್ ಆಗುತ್ತದೆ. ಉಳಿದೆಲ್ಲವೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
 
   @override
   String get purposeRecordingsTitle => 'ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ ಮತ್ತು ಲೈವ್ ತರಗತಿಗಳು';
@@ -1675,11 +1675,11 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಶಾಲೆಯಲ್ಲಿ ಈ ಆಯ್ಕೆಗಳನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ಮಾಡುತ್ತಾರೆ.';
 
   @override
-  String get aiConsentWithdrawnTitle => 'KINETIX AI ಆಫ್ ಆಗಿದೆ';
+  String get aiConsentWithdrawnTitle => 'Zynetix AI ಆಫ್ ಆಗಿದೆ';
 
   @override
   String get aiConsentWithdrawnBody =>
-      'KINETIX AI ಗೆ ನೀಡಿದ ಅನುಮತಿಯನ್ನು ಹಿಂಪಡೆಯಲಾಗಿದೆ, ಆದ್ದರಿಂದ ಅದು ನಿಮಗೆ ಆಫ್ ಆಗಿದೆ. ಉಳಿದೆಲ್ಲವೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ. ಯಾರು ನಿರ್ಧರಿಸಿದರು ಎಂದು ನೋಡಲು ಅಥವಾ ಬದಲಾಯಿಸಲು ಪ್ರೊಫೈಲ್ → ಗೌಪ್ಯತೆ ತೆರೆಯಿರಿ.';
+      'Zynetix AI ಗೆ ನೀಡಿದ ಅನುಮತಿಯನ್ನು ಹಿಂಪಡೆಯಲಾಗಿದೆ, ಆದ್ದರಿಂದ ಅದು ನಿಮಗೆ ಆಫ್ ಆಗಿದೆ. ಉಳಿದೆಲ್ಲವೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ. ಯಾರು ನಿರ್ಧರಿಸಿದರು ಎಂದು ನೋಡಲು ಅಥವಾ ಬದಲಾಯಿಸಲು ಪ್ರೊಫೈಲ್ → ಗೌಪ್ಯತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String get openPrivacy => 'ಗೌಪ್ಯತೆ ತೆರೆಯಿರಿ';
@@ -1717,19 +1717,19 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get consentIntro =>
-      'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ. ನೀವು ಆಯ್ಕೆ ಮಾಡುವವರೆಗೆ ಯಾವುದೂ ಆನ್ ಆಗುವುದಿಲ್ಲ.';
+      'Zynetix ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ. ನೀವು ಆಯ್ಕೆ ಮಾಡುವವರೆಗೆ ಯಾವುದೂ ಆನ್ ಆಗುವುದಿಲ್ಲ.';
 
   @override
   String get privacyIntro =>
-      'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು. ಅನುಮತಿ ಹಿಂಪಡೆಯಲು ಸ್ವಿಚ್ ಆಫ್ ಮಾಡಿ.';
+      'Zynetix ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು. ಅನುಮತಿ ಹಿಂಪಡೆಯಲು ಸ್ವಿಚ್ ಆಫ್ ಮಾಡಿ.';
 
   @override
   String get privacyIntroReadOnly =>
-      'KINETIX ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು, ಮತ್ತು ಯಾರು ನಿರ್ಧರಿಸಿದರು.';
+      'Zynetix ನಿಮ್ಮ ಮಾಹಿತಿಯೊಂದಿಗೆ ಏನು ಮಾಡಬಹುದು, ಮತ್ತು ಯಾರು ನಿರ್ಧರಿಸಿದರು.';
 
   @override
   String get managedByParent =>
-      'ಇದನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಾರೆ. ಶಾಲೆಯಲ್ಲಿ ಈ ಆಯ್ಕೆಗಳನ್ನು ನಿಮ್ಮ ಪೋಷಕರು KINETIX Parent ಆ್ಯಪ್‌ನಲ್ಲಿ ಮಾಡುತ್ತಾರೆ.';
+      'ಇದನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಾರೆ. ಶಾಲೆಯಲ್ಲಿ ಈ ಆಯ್ಕೆಗಳನ್ನು ನಿಮ್ಮ ಪೋಷಕರು Zynetix Parent ಆ್ಯಪ್‌ನಲ್ಲಿ ಮಾಡುತ್ತಾರೆ.';
 
   @override
   String get thisWeekInClass => 'ಈ ವಾರ ತರಗತಿಯಲ್ಲಿ';
@@ -1834,7 +1834,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get demoBannerBody =>
-      'KINETIX ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
+      'Zynetix ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
 
   @override
   String demoSignInAs(String name) {
@@ -1863,7 +1863,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get conceptVideosFromYouTube => 'ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತದೆ';
 
   @override
-  String get conceptVideoSourcePlatform => 'KINETIX';
+  String get conceptVideoSourcePlatform => 'Zynetix';
 
   @override
   String get conceptVideoSourceInstitution => 'ಶಾಲೆ';
@@ -2329,7 +2329,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get continueLearningEmpty =>
-      'KINETIX AI ಗೆ ಸಂದೇಹ ಕೇಳಿ ಅಥವಾ ನನ್ನ ಕಲಿಕೆಯಿಂದ ಒಂದು ವಿಷಯ ತೆರೆಯಿರಿ.';
+      'Zynetix AI ಗೆ ಸಂದೇಹ ಕೇಳಿ ಅಥವಾ ನನ್ನ ಕಲಿಕೆಯಿಂದ ಒಂದು ವಿಷಯ ತೆರೆಯಿರಿ.';
 
   @override
   String continueProgress(int taught, int total) {
@@ -3736,7 +3736,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get prepAssistant => 'ವೃತ್ತಿ ಸಹಾಯಕ';
 
   @override
-  String get prepAssistantSub => 'ನಿಮ್ಮ ವೃತ್ತಿಯ ಬಗ್ಗೆ KINETIX AI ಯನ್ನು ಕೇಳಿ';
+  String get prepAssistantSub => 'ನಿಮ್ಮ ವೃತ್ತಿಯ ಬಗ್ಗೆ Zynetix AI ಯನ್ನು ಕೇಳಿ';
 
   @override
   String get rsHeadline => 'ಶೀರ್ಷಿಕೆ ವಾಕ್ಯ';

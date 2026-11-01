@@ -1,4 +1,4 @@
-# Kinetix Cross-Domain End-to-End Workflows
+# Zynetix Cross-Domain End-to-End Workflows
 
 ## Workflow 1 — Teacher teaches a class
 

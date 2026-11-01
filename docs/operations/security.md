@@ -23,7 +23,7 @@ row-level security in [docs/architecture/tenancy.md](../architecture/tenancy.md)
 
 ## DPDP Act 2023 (summary of our obligations as data fiduciary / processor)
 
-The institutions are data fiduciaries for their students' and staff data; KINETIX is their
+The institutions are data fiduciaries for their students' and staff data; Zynetix is their
 processor (and fiduciary for its own accounts). In practice:
 
 - **Contract**: a data-processing agreement with each institution: purpose, retention, security,

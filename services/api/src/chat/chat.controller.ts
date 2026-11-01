@@ -200,7 +200,7 @@ export class ChatController {
       await tx.update(chatMembers).set({ lastReadAt: now }).where(and(eq(chatMembers.threadId, id), eq(chatMembers.userId, p.userId)));
       const memberIds = (await tx.select({ userId: chatMembers.userId }).from(chatMembers).where(eq(chatMembers.threadId, id))).map((m) => m.userId);
       const [me] = await tx.select({ fullName: users.fullName }).from(users).where(eq(users.id, p.userId));
-      return { msg, thread, memberIds, senderName: me?.fullName ?? 'Kinetix' };
+      return { msg, thread, memberIds, senderName: me?.fullName ?? 'Zynetix' };
     });
     let delivery = msg.delivery;
     if (thread.kind === 'external') {

@@ -10,7 +10,7 @@ import { addDays, computeInvoice, invoiceNumber, PAYMENT_DUE_DAYS, periodEnd, pl
 
 export const BILLING_RENEWAL = 'billing.renew';
 
-/** The institution's KINETIX subscription: usage metering, invoices with GST, and renewal. */
+/** The institution's Zynetix subscription: usage metering, invoices with GST, and renewal. */
 @Injectable()
 export class BillingService implements OnModuleInit {
   constructor(

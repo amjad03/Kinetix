@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { open, setClassAudio, shot } from './helpers';
 
 // Signed in as the principal by principal.setup.ts. A pretend board is enrolled and paired
-// through the API, and answers snapshot requests like the KINETIX Board app.
+// through the API, and answers snapshot requests like the Zynetix Board app.
 test.describe.configure({ mode: 'serial' });
 
 let tokens: { admin: string; teacher: string };

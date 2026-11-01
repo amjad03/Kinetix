@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('the dashboard shows the stat tiles and the school name', async ({ page }) => {
-  await expect(page.getByTestId('school-name')).toHaveText('KINETIX Demo College of Commerce & Science');
+  await expect(page.getByTestId('school-name')).toHaveText('Zynetix Demo College of Commerce & Science');
   for (const id of ['stat-students', 'stat-classes', 'stat-attendance', 'stat-absent', 'stat-homework', 'stat-boards', 'stat-messages']) {
     await expect(page.getByTestId(id)).toBeVisible();
   }

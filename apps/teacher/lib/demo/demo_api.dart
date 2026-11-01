@@ -9,7 +9,7 @@ import '../core/realtime.dart';
 import '../core/server_config.dart';
 import 'fake_api.dart';
 
-/// The demo backend: [FakeTeacherApi] filled with KINETIX Demo College (as
+/// The demo backend: [FakeTeacherApi] filled with Zynetix Demo College (as
 /// services/api/src/db/seed.ts seeds it) around today's date. Everything the teacher changes
 /// stays in memory until the app is closed. Nothing touches the network.
 class DemoTeacherApi extends FakeTeacherApi {
@@ -23,7 +23,7 @@ class DemoTeacherApi extends FakeTeacherApi {
   static const demoTenant = 'demo-college';
   static const demoLogin = 'anita@demo.kinetix.in';
   static const demoOtp = '123456';
-  static const institution = 'KINETIX Demo College of Commerce & Science';
+  static const institution = 'Zynetix Demo College of Commerce & Science';
 
   final DateTime Function() _clock;
 

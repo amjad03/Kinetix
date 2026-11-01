@@ -10,7 +10,7 @@ export const AI_COLORS = { answered: 'kx.success', blocked: 'kx.live', failed: '
 
 const TASKS = ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize'];
 
-/** KINETIX AI use by task: requests, the outcome mix and tokens. */
+/** Zynetix AI use by task: requests, the outcome mix and tokens. */
 export function AiUsageTable({ tasks }: { tasks: TaskUsage[] }) {
   const { t, fmt } = useI18n();
   const label = (r: TaskUsage) => (TASKS.includes(r.task) ? t(`ai.task.${r.task}` as MessageKey) : r.label);

@@ -168,7 +168,7 @@ void main() {
         ..add('teacher'),
     );
     await signInWithCode(tester);
-    expect(find.textContaining('KINETIX Teacher app'), findsOneWidget);
+    expect(find.textContaining('Zynetix Teacher app'), findsOneWidget);
     expect(state.signedIn, isFalse);
     expect(api.token, isNull);
     expect(storedToken(state), isNull);

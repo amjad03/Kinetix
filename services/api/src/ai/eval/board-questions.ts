@@ -1,5 +1,5 @@
 /**
- * Evaluation set for the board's "Ask KINETIX AI": 40 questions a teacher asks at the board,
+ * Evaluation set for the board's "Ask Zynetix AI": 40 questions a teacher asks at the board,
  * with what a correct answer must contain. Each `must` entry is a group of acceptable spellings
  * separated by "|"; an answer passes when every group matches (case and spacing ignored).
  */

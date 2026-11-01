@@ -1,4 +1,4 @@
-# Deploying KINETIX
+# Deploying Zynetix
 
 Production runs on AWS in **ap-south-1 (Mumbai)**: ECS Fargate (API + ERP) behind an HTTPS
 load balancer, RDS PostgreSQL, ElastiCache Redis, S3 for recordings, Secrets Manager. Everything is

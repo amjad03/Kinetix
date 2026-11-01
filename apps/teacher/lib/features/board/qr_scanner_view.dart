@@ -4,7 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../core/l10n.dart';
 
-/// Full-screen camera that looks for a KINETIX pairing QR code (kinetix://pair?...).
+/// Full-screen camera that looks for a Zynetix pairing QR code (kinetix://pair?...).
 /// Only used on Android and iOS.
 class QrScannerView extends StatefulWidget {
   const QrScannerView({super.key, required this.busy, required this.error, required this.onScanned, required this.onEnterCode});

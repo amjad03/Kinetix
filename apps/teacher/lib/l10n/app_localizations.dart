@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// App name (keep in English).
   ///
   /// In en, this message translates to:
-  /// **'KINETIX Teacher'**
+  /// **'Zynetix Teacher'**
   String get appTitle;
 
   /// Button.
@@ -385,7 +385,7 @@ abstract class AppLocalizations {
   /// Network error.
   ///
   /// In en, this message translates to:
-  /// **'Can\'t reach KINETIX. Check your internet connection and the server address.'**
+  /// **'Can\'t reach Zynetix. Check your internet connection and the server address.'**
   String get errorOffline;
 
   /// Network error.
@@ -451,7 +451,7 @@ abstract class AppLocalizations {
   /// Server.
   ///
   /// In en, this message translates to:
-  /// **'Not a KINETIX pairing QR code'**
+  /// **'Not a Zynetix pairing QR code'**
   String get errorNotPairingQr;
 
   /// Server.
@@ -811,7 +811,7 @@ abstract class AppLocalizations {
   /// Scanner error.
   ///
   /// In en, this message translates to:
-  /// **'That isn\'t a KINETIX board code. Scan the QR code on the board\'s screen.'**
+  /// **'That isn\'t a Zynetix board code. Scan the QR code on the board\'s screen.'**
   String get qrNotOurs;
 
   /// Scanner title.
@@ -1708,10 +1708,10 @@ abstract class AppLocalizations {
   /// **'Mark topics as taught for each class'**
   String get syllabusProgressBody;
 
-  /// Syllabus screen when the subject has no course. Keep 'KINETIX ERP → Syllabus' in English.
+  /// Syllabus screen when the subject has no course. Keep 'Zynetix ERP → Syllabus' in English.
   ///
   /// In en, this message translates to:
-  /// **'This subject isn\'t linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.'**
+  /// **'This subject isn\'t linked to a syllabus yet. Your admin can link it in Zynetix ERP → Syllabus.'**
   String get syllabusUnlinked;
 
   /// Syllabus progress.
@@ -1993,7 +1993,7 @@ abstract class AppLocalizations {
   /// Empty state on the year plan screen.
   ///
   /// In en, this message translates to:
-  /// **'No year plan yet. KINETIX can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.'**
+  /// **'No year plan yet. Zynetix can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.'**
   String get yearPlanNone;
 
   /// Button and dialog title: generate the year plan.
@@ -2296,22 +2296,22 @@ abstract class AppLocalizations {
   /// **'Optional'**
   String get lessonHomeworkHint;
 
-  /// Button: KINETIX AI writes a first draft.
+  /// Button: Zynetix AI writes a first draft.
   ///
   /// In en, this message translates to:
-  /// **'Draft with KINETIX AI'**
+  /// **'Draft with Zynetix AI'**
   String get draftWithAi;
 
   /// While drafting.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI is drafting…'**
+  /// **'Zynetix AI is drafting…'**
   String get drafting;
 
   /// Confirmation dialog title.
   ///
   /// In en, this message translates to:
-  /// **'Replace with a KINETIX AI draft?'**
+  /// **'Replace with a Zynetix AI draft?'**
   String get replaceWithDraftTitle;
 
   /// Confirmation dialog body.
@@ -2326,7 +2326,7 @@ abstract class AppLocalizations {
   /// **'Replace'**
   String get replace;
 
-  /// Label on a plan written by KINETIX AI.
+  /// Label on a plan written by Zynetix AI.
   ///
   /// In en, this message translates to:
   /// **'AI draft — check before use'**
@@ -2335,7 +2335,7 @@ abstract class AppLocalizations {
   /// Shown when the draft is a placeholder (meta.preview).
   ///
   /// In en, this message translates to:
-  /// **'Preview: a sample draft, because the KINETIX AI server is not connected.'**
+  /// **'Preview: a sample draft, because the Zynetix AI server is not connected.'**
   String get aiPreviewNote;
 
   /// Button.
@@ -2401,19 +2401,19 @@ abstract class AppLocalizations {
   /// Error.
   ///
   /// In en, this message translates to:
-  /// **'Your institution has used today\'s KINETIX AI allowance. It resets tomorrow.'**
+  /// **'Your institution has used today\'s Zynetix AI allowance. It resets tomorrow.'**
   String get errorAiAllowance;
 
   /// Error.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI is not reachable right now. Try again in a minute.'**
+  /// **'Zynetix AI is not reachable right now. Try again in a minute.'**
   String get errorAiUnavailable;
 
   /// Error.
   ///
   /// In en, this message translates to:
-  /// **'KINETIX AI could not write a usable draft. Try again.'**
+  /// **'Zynetix AI could not write a usable draft. Try again.'**
   String get errorAiUnusable;
 
   /// The lesson plan's reviewer (head of department or principal) and the date.
@@ -2527,7 +2527,7 @@ abstract class AppLocalizations {
   /// Body of the demo banner.
   ///
   /// In en, this message translates to:
-  /// **'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.'**
+  /// **'Sample data from Zynetix Demo College. Nothing is sent to a server, and your changes last until the app is closed.'**
   String get demoBannerBody;
 
   /// One-tap demo sign-in button.
@@ -5359,7 +5359,7 @@ abstract class AppLocalizations {
   /// No description provided for @pubDoiBody.
   ///
   /// In en, this message translates to:
-  /// **'Enter the publication\'s DOI; KINETIX reads its details from the DOI registry.'**
+  /// **'Enter the publication\'s DOI; Zynetix reads its details from the DOI registry.'**
   String get pubDoiBody;
 
   /// No description provided for @pubImport.
@@ -5737,7 +5737,7 @@ abstract class AppLocalizations {
   /// No description provided for @offlineBad.
   ///
   /// In en, this message translates to:
-  /// **'This is not a genuine KINETIX board code.'**
+  /// **'This is not a genuine Zynetix board code.'**
   String get offlineBad;
 
   /// No description provided for @offlineVerified.

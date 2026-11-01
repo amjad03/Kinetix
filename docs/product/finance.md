@@ -12,7 +12,7 @@ All endpoints are under `/v1/finance`; the accounts office, principal and admini
 - **Actuals** by source: purchase orders that name a department (`inv_purchase_orders.department_id`, cancelled ones excluded), payroll employer cost for approved or locked runs of staff in the department (a person in two departments counts in both), and **expenses** entered here (`POST /expenses`: events, travel, repairs). Variance = budget minus actual; used % = actual / budget.
 
 ## Refunds
-`POST /refunds` refunds part or all of a paid fee payment (never more than was paid). The invoice's received amount goes down and it is due again if now short. Recorded in `fee_refunds`; the money movement itself happens outside KINETIX.
+`POST /refunds` refunds part or all of a paid fee payment (never more than was paid). The invoice's received amount goes down and it is due again if now short. Recorded in `fee_refunds`; the money movement itself happens outside Zynetix.
 
 ## GL export
 Journal entries for a date range (`GET /gl`, `/gl.csv`, `/gl.xml`):

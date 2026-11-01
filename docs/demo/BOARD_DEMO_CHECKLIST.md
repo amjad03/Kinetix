@@ -1,4 +1,4 @@
-# KINETIX Board: school demo checklist
+# Zynetix Board: school demo checklist
 
 A 20-minute smartboard demo for a school, with the Teacher App and Student App beside it. The Mac
 runs the API; the board is either the Mac itself (the macOS app, on a projector or TV) or an
@@ -63,7 +63,7 @@ Without these settings every AI answer is a sample marked **Preview**.
    retired.
 
 3. Restart the API (`scripts/demo-stop.sh && scripts/demo-start.sh`, or stop `pnpm start` and run
-   it again): it reads `.env` only when it starts. `grep "KINETIX AI:" /tmp/kinetix-api.log | tail -1`
+   it again): it reads `.env` only when it starts. `grep "Zynetix AI:" /tmp/kinetix-api.log | tail -1`
    must name the model, not "labelled preview answers".
 4. **Rehearse every AI question you will ask** (section 6, 10:00-13:00) on the board once: repeats come
    from the cache instantly and do not use the free allowance. If you run out,
@@ -99,7 +99,7 @@ the list, and a new code signs out a board already set up with that entry (in th
   A board not yet set up: type the new address in **Server**. A board already set up on the old
   address: board menu > **Board settings** > **This board** > **Set up again**, then the new address
   and a new enrolment code (if kiosk mode is on, IT unlocks it first: hold the clock 3 s, IT PIN).
-  Last resort on Android: Settings > Apps > KINETIX Board > Storage > **Clear storage**. The Mac app
+  Last resort on Android: Settings > Apps > Zynetix Board > Storage > **Clear storage**. The Mac app
   always uses `localhost` and never needs this.
 - Gemini needs the Mac to have internet. Everything else works on a LAN with no internet.
 - Keep the Mac on power, sleep off, other apps closed (8 GB). No builds or tests during the demo.
@@ -115,7 +115,7 @@ Naveen Patil, the Student App as Rohan, the AI questions rehearsed.
 | 2:00-5:00 | **Writing.** Pen, highlighter, colours; two people write at once (multi-touch); palm rubs out; two-finger tap undoes; new page and page overview; paper: ruled, grid, Hindi lines, world map. **AI pen**: draw a rough triangle and circle (they become clean shapes), write `2x + 3 = 11` (it becomes a typed equation), tap it > **Solve** for the steps. | All on the device, no network needed. |
 | 5:00-7:30 | **Geometry.** Ruler (a line along it snaps straight), protractor, compass, set square; a shape with **Show lengths** and **Show angles**; a 3D cube or cone with its volume and surface-area formula worked out; colour one face. | Offline. |
 | 7:30-10:00 | **3D models and simulations.** Tools > 3D models: the skull bone by bone, the virus, the microscope, the globe, a landform; turn, cut, take apart, labels in Hindi/Kannada, **Put on board**. Tools > Simulations hub: a PhET sim (circuits, states of matter), **Add to board**, pin it to the page. | Bundled models and sims are offline. Skip the "download on first use" models (mammoth, Saturn V) unless they were opened once before. |
-| 10:00-13:00 | **KINETIX AI.** Ask "Explain photosynthesis for Class 7" (typed or spoken); **Quick Quiz** on the topic, then **Scan the Board** for a quiz from what is written; explanation > Add to board; **Homework** draft with marks; **Read board** turns the handwriting into text and maths. | AI says "busy": wait a minute or ask a rehearsed question (cached). No internet: show the maths **Solve**, the Dictionary, Periodic table and Key dates, which are offline. |
+| 10:00-13:00 | **Zynetix AI.** Ask "Explain photosynthesis for Class 7" (typed or spoken); **Quick Quiz** on the topic, then **Scan the Board** for a quiz from what is written; explanation > Add to board; **Homework** draft with marks; **Read board** turns the handwriting into text and maths. | AI says "busy": wait a minute or ask a rehearsed question (cached). No internet: show the maths **Solve**, the Dictionary, Periodic table and Key dates, which are offline. |
 | 13:00-16:00 | **Running the class.** One-tap **attendance** on the board (it appears in the ERP and the Parent App); random student picker (only present students); timer; **Buzzer**: Rohan buzzes from the Student App and the order appears live; **Exit ticket**: one MCQ, Rohan answers, live bars; seat plan; noise meter; spotlight. | Attendance is kept on the board and sent when the network is back. Without the Student App: timer, picker, seat plan, noise meter and spotlight are offline. |
 | 16:00-18:00 | **Lessons from files.** Add > PDF: it opens in the right-hand drawer; **Add page** or **Add all** puts pages on the board to write on. Same with the PowerPoint. Open a second board in the drawer beside the first. | Files on the device: offline. |
 | 18:00-20:00 | **End class.** End class > notes > publish to students: Rohan's Student App shows the notes and the board; share the summary on WhatsApp or by QR. In the ERP, **Attendance** shows the period. | The board is autosaved on the device; end the class when the network is back, or save the picture (Screenshot) and share it. |
@@ -123,7 +123,7 @@ Naveen Patil, the Student App as Rohan, the AI questions rehearsed.
 ## 7. If something goes wrong
 
 - **"Preview" on AI answers**: the Gemini settings are missing or the API was not restarted (section 3).
-- **"KINETIX AI is busy right now"**: Gemini's free limit for the minute; wait a minute.
+- **"Zynetix AI is busy right now"**: Gemini's free limit for the minute; wait a minute.
 - **Board stuck on "Connecting" or Teacher App cannot pair**: check `http://<Mac IP>:4000/health` from
   the phone; same Wi-Fi; firewall **Allow** for `node`.
 - **"Invalid or expired enrolment code"**: codes are single use; issue a new one in the ERP.

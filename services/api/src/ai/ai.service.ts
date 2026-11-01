@@ -72,14 +72,14 @@ export function providerFromEnv(env: Env): LlmProvider {
 
 /**
  * The line the API logs at start-up: which model answers, or that answers are previews. After
- * editing .env, `grep "KINETIX AI:" /tmp/kinetix-api.log` shows whether the running API has it.
+ * editing .env, `grep "Zynetix AI:" /tmp/kinetix-api.log` shows whether the running API has it.
  */
 export function describeProvider(env: Env, p: LlmProvider): string {
-  if (p.preview) return 'KINETIX AI: labelled preview answers (no AI_BASE_URL or AI_FALLBACK_PROVIDER in .env)';
+  if (p.preview) return 'Zynetix AI: labelled preview answers (no AI_BASE_URL or AI_FALLBACK_PROVIDER in .env)';
   const parts: string[] = [];
   if (env.AI_BASE_URL) parts.push(`${[...new Set([env.AI_MODEL, ...env.AI_FALLBACK_MODELS])].join(', then ')} at ${new URL(env.AI_BASE_URL).host}`);
   if (env.AI_FALLBACK_PROVIDER === 'sarvam' && env.SARVAM_API_KEY) parts.push(`Sarvam AI (${env.SARVAM_LLM_MODEL})`);
-  return `KINETIX AI: ${parts.join(', then ')}`;
+  return `Zynetix AI: ${parts.join(', then ')}`;
 }
 
 /** Who is asking, and about which class. */
@@ -111,9 +111,9 @@ export interface AiResponse<T extends TaskName> {
 }
 
 const CACHE_DAYS = 30;
-const BLOCKED = "KINETIX AI can't help with that request. Try rephrasing it for the classroom.";
+const BLOCKED = "Zynetix AI can't help with that request. Try rephrasing it for the classroom.";
 /** The model server is rate-limiting or overloaded (429, 503) even after waiting and trying again. */
-export const AI_BUSY = 'KINETIX AI is busy right now. Try again in a minute.';
+export const AI_BUSY = 'Zynetix AI is busy right now. Try again in a minute.';
 
 type Outcome = (typeof aiUsage.$inferInsert)['outcome'];
 
@@ -208,7 +208,7 @@ export class AiService {
       // Refusals are thrown after the transaction commits, so the usage row is kept.
       if ('refusal' in r && r.refusal === 'blocked') throw new UnprocessableEntityException(BLOCKED);
       if ('refusal' in r && r.refusal === 'quota') {
-        throw new HttpException("Your institution has used today's KINETIX AI allowance. It resets tomorrow.", HttpStatus.TOO_MANY_REQUESTS);
+        throw new HttpException("Your institution has used today's Zynetix AI allowance. It resets tomorrow.", HttpStatus.TOO_MANY_REQUESTS);
       }
       return r;
     });
@@ -253,8 +253,8 @@ export class AiService {
       this.log.log(`AI ${task} served by ${usage.provider} (${usage.model}): ${usage.promptTokens}+${usage.completionTokens} tokens, about ₹${usage.costInr.toFixed(4)}`);
     }
 
-    if (outcome === 'unavailable') throw new ServiceUnavailableException(busy ? AI_BUSY : 'KINETIX AI is not reachable right now. Try again in a minute.');
-    if (outcome === 'invalid') throw new BadGatewayException('KINETIX AI could not produce a usable answer. Try again or rephrase.');
+    if (outcome === 'unavailable') throw new ServiceUnavailableException(busy ? AI_BUSY : 'Zynetix AI is not reachable right now. Try again in a minute.');
+    if (outcome === 'invalid') throw new BadGatewayException('Zynetix AI could not produce a usable answer. Try again or rephrase.');
     if (outcome === 'blocked') throw new UnprocessableEntityException(BLOCKED);
     return { task, result: result!, meta: { ...meta, provider: usage.provider, model: usage.model, cached: false } };
   }

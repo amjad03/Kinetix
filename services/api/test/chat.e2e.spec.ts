@@ -98,7 +98,7 @@ describe('Staff chat: direct and group threads, attachments, receipts, external 
     // A forged token, and a sender who is not the contact.
     await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'email', to: replyTo.replace(/\.[A-Za-z0-9_-]+@/, '.AAAAAAAAAAAAAAAAAAAAAA@'), from: 'rao@parent.in', body: 'x' }).expect(404);
     await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'email', to: replyTo, from: 'someone@else.in', body: 'x' }).expect(403);
-    const r = await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'email', to: `Kinetix <${replyTo}>`, from: 'Mr Rao <rao@parent.in>', body: 'Thank you, ma’am.\n\nOn Tue, Principal wrote:\n> Fee concession approved' }).expect(202);
+    const r = await http().post('/v1/chat/inbound').set('x-kinetix-inbound-secret', SECRET).send({ channel: 'email', to: `Zynetix <${replyTo}>`, from: 'Mr Rao <rao@parent.in>', body: 'Thank you, ma’am.\n\nOn Tue, Principal wrote:\n> Fee concession approved' }).expect(202);
     expect(r.body.threadId).toBe(ext);
     const th = (await http().get(`/v1/chat/threads/${ext}`).set(as('teacher')).expect(200)).body;
     expect(th.messages.at(-1)).toMatchObject({ direction: 'inbound', body: 'Thank you, ma’am.', externalFrom: 'Mr Rao <rao@parent.in>' });

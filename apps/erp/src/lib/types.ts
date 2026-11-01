@@ -1,4 +1,4 @@
-// Shapes returned by the KINETIX Cloud API (services/api). Kept by hand for this slice.
+// Shapes returned by the Zynetix Cloud API (services/api). Kept by hand for this slice.
 
 export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'accountant' | 'hr_manager' | 'student' | 'guardian' | string;
 
@@ -43,7 +43,7 @@ export interface Me {
   mustSetUpMfa?: boolean;
   /** False for phone-code-only accounts, which set a first password without a current one. */
   hasPassword?: boolean;
-  /** The KINETIX platform team (Platform › Concept videos); absent for everyone else. */
+  /** The Zynetix platform team (Platform › Concept videos); absent for everyone else. */
   platformAdmin?: boolean;
 }
 
@@ -332,7 +332,7 @@ export interface SubjectLink {
   courseId: string | null;
 }
 
-// ---- KINETIX AI (v1/ai/usage) ----
+// ---- Zynetix AI (v1/ai/usage) ----
 
 export interface AiUsage {
   days: number;
@@ -630,7 +630,7 @@ export interface LessonPlanList {
   plans: LessonPlan[];
 }
 
-// Platform › Concept videos (the KINETIX platform team; services/api/src/platform). Same shapes as
+// Platform › Concept videos (the Zynetix platform team; services/api/src/platform). Same shapes as
 // @kinetix/shared.
 
 export type VideoLanguage = 'en' | 'hi' | 'kn';

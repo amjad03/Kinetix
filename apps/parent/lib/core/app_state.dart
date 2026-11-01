@@ -168,7 +168,7 @@ class AppState extends ChangeNotifier {
       final teacher = profile.roles.contains('teacher');
       throw ApiException(
         403,
-        'This app is for parents and guardians. ${teacher ? 'Teachers can use the KINETIX Teacher app.' : 'Ask your institution to link your account to your child.'}',
+        'This app is for parents and guardians. ${teacher ? 'Teachers can use the Zynetix Teacher app.' : 'Ask your institution to link your account to your child.'}',
         problem: teacher ? ApiProblem.teacherAccount : ApiProblem.notGuardian,
       );
     }

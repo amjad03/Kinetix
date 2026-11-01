@@ -193,7 +193,7 @@ describe('school year', () => {
   });
 
   describe('consent', () => {
-    it('records decisions (adult student decides in a college), and withdrawing AI consent turns KINETIX AI off', async () => {
+    it('records decisions (adult student decides in a college), and withdrawing AI consent turns Zynetix AI off', async () => {
       const me = t.students[2].id;
       const before = (await http().get(`/v1/consents?studentId=${me}`).set(auth('student')).expect(200)).body;
       expect(before).toMatchObject({ canDecide: true, purposes: { ai_features: null } });

@@ -24,4 +24,4 @@ Today's classes → attendance → learning content → assignments → quiz/exa
 
 Child switcher → attendance → academic summary → assignments → results → fees → timetable/events → notices → teacher communication → transport where enabled.
 
-All mobile actions must respect the same server-side authorization as every other Kinetix client.
+All mobile actions must respect the same server-side authorization as every other Zynetix client.

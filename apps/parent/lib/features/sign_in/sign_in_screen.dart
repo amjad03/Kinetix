@@ -331,7 +331,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               spacing: Kx.s8,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                Text('KINETIX', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+                                Text('Zynetix', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
                                 Text('Parent', style: context.text.titleMedium?.copyWith(color: colors.onSurfaceVariant)),
                               ],
                             ),

@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Plain http:// only in debug/profile builds (dev server http://10.0.2.2:4000); release is HTTPS-only (build.gradle.kts). -->
     <application
-        android:label="KINETIX Student"
+        android:label="Zynetix Student"
         android:usesCleartextTraffic="${usesCleartextTraffic}"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

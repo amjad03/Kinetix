@@ -64,9 +64,9 @@ export const ERROR_CODES: Record<string, string> = {
   'No class is being taught on this board right now': 'LIVE_NO_CLASS',
   'This is not your class': 'LIVE_NOT_YOUR_CLASS',
   'This student hands in their own homework': 'SUBMISSION_STUDENT_ONLY',
-  'KINETIX AI is turned off for this student (consent was withdrawn)': 'CONSENT_WITHDRAWN',
+  'Zynetix AI is turned off for this student (consent was withdrawn)': 'CONSENT_WITHDRAWN',
   // The model server (Gemini, vLLM, Sarvam) kept answering 429 or 503 (ai/ai.service.ts AI_BUSY).
-  'KINETIX AI is busy right now. Try again in a minute.': 'AI_BUSY',
+  'Zynetix AI is busy right now. Try again in a minute.': 'AI_BUSY',
   // Fees: online payments go to the institution's own Razorpay account (fees/).
   'Online payment is not available yet. Please pay at the fees counter.': 'PAYMENTS_NOT_CONFIGURED',
   'Enter the key secret and the webhook secret': 'PAYMENTS_KEYS_REQUIRED',
@@ -75,7 +75,7 @@ export const ERROR_CODES: Record<string, string> = {
   'This secret is too short': 'PAYMENTS_SECRET_TOO_SHORT',
   'Payment keys cannot be stored on this server yet (SECRETS_ENCRYPTION_KEY is not set)': 'SECRETS_KEY_MISSING',
   // Concept videos: the platform team's area (platform/).
-  'Only the KINETIX platform team can do this': 'NOT_PLATFORM_ADMIN',
+  'Only the Zynetix platform team can do this': 'NOT_PLATFORM_ADMIN',
   'That is not a YouTube video link': 'VIDEO_BAD_LINK',
   "Couldn't get the video's title from YouTube. Type a title and add it again.": 'VIDEO_TITLE_UNAVAILABLE',
   'This video is already on this topic': 'VIDEO_DUPLICATE',

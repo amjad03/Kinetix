@@ -1,10 +1,10 @@
-# KINETIX ERP: principal dashboard (first slice)
+# Zynetix ERP: principal dashboard (first slice)
 
 The web dashboard for principals, administrators, heads of department and the accounts office:
 the whole school's day at a glance, classes, the timetable editor, attendance, homework, results,
 messages to every classroom ("Circulate"), the head of department's view of their department (with syllabus progress and year-plan status per class, and each class's year plan and lesson plans to review), departments set-up, a read-only safeguarding view of parent–teacher
 messages, the boards, live classroom view, fees, the library desk,
-the syllabus library, KINETIX AI usage, the academic calendar, and institution settings with the privacy & consent summary.
+the syllabus library, Zynetix AI usage, the academic calendar, and institution settings with the privacy & consent summary.
 In English, Hindi and Kannada ([docs/i18n/erp.md](../../docs/i18n/erp.md)). Spec: [docs/product/erp-dashboard.md](../../docs/product/erp-dashboard.md).
 
 Next.js (App Router, TypeScript strict) + Material UI themed to Material 3. The colour scheme is
@@ -15,7 +15,7 @@ dark themes follow the system.
 
 ## Run
 
-Needs the KINETIX Cloud API running with the demo seed (see the root README).
+Needs the Zynetix Cloud API running with the demo seed (see the root README).
 
 ```bash
 pnpm install                          # at the repo root
@@ -60,7 +60,7 @@ checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
 
 | Variable | Default | |
 |---|---|---|
-| `KINETIX_API_URL` | `http://localhost:4000` | KINETIX Cloud API. Only the Next.js server calls it |
+| `KINETIX_API_URL` | `http://localhost:4000` | Zynetix Cloud API. Only the Next.js server calls it |
 | `KINETIX_TIMEZONE` | `Asia/Kolkata` | School time zone for "today", the "now" line and times. Keep in step with the tenant's zone |
 | `KINETIX_INSECURE_COOKIES` | unset | `1` drops the `Secure` flag on cookies in production (only for plain-HTTP test deployments) |
 
@@ -101,5 +101,5 @@ checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
 - **Money** is integer paise from the API, shown as Indian rupees (`src/lib/money.ts`).
 - **Theme** (`src/theme`): `scheme.ts` generates M3 roles; `palette.ts` maps them onto MUI
   (`primary`, `background`, `text`, `divider`, state layers) and exposes the full scheme as
-  `palette.m3.*` and KINETIX extras as `palette.kx.*` (live/success colours, frame and pane).
+  `palette.m3.*` and Zynetix extras as `palette.kx.*` (live/success colours, frame and pane).
   `theme.ts` sets the M3 type scale, 4/8/12/16/28 shapes and flat surfaces.

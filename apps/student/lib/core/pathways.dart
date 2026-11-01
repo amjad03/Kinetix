@@ -484,7 +484,7 @@ class MockSummary {
 }
 
 /// One answer of the career assistant (`POST /v1/careers/assistant/ask`). [aiUsed] is false when the
-/// server answered from its built-in guidance because KINETIX AI is not connected.
+/// server answered from its built-in guidance because Zynetix AI is not connected.
 class AssistantReply {
   const AssistantReply({required this.answer, required this.suggestions, required this.pathways, required this.aiUsed});
 
@@ -504,7 +504,7 @@ class AssistantMessage {
 
   final String role, body;
 
-  /// Whether KINETIX AI wrote this answer; null for history lines, where the server does not say.
+  /// Whether Zynetix AI wrote this answer; null for history lines, where the server does not say.
   final bool? aiUsed;
   final List<String> suggestions;
 

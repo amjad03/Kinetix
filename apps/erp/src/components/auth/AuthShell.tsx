@@ -11,11 +11,11 @@ export function AuthShell({ children, title, lead, cardTitle, cardText, footer }
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center gap-4 py-8">
           <div className="flex items-center gap-2.5">
             <span className="grid size-8 place-items-center rounded-[9px] bg-[linear-gradient(135deg,#0f9488,#4f46e5)] font-bold text-white">K</span>
-            <b className="text-[17px]">Kinetix</b>
+            <b className="text-[17px]">Zynetix</b>
           </div>
           {children}
         </div>
-        <div className="text-center text-xs text-muted-foreground">{footer ?? '© 2026 Kinetix'}</div>
+        <div className="text-center text-xs text-muted-foreground">{footer ?? '© 2026 Zynetix'}</div>
       </div>
       <div className="sticky top-0 hidden h-[100dvh] p-4 md:block">
         <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[22px] bg-[#101826] p-10 text-white">

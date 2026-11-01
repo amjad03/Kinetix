@@ -26,7 +26,7 @@ English, Hindi and Kannada. Terms and style follow [glossary.md](glossary.md).
 ## Rules
 
 - **Server content is not translated**: names, class and subject names, homework and fee titles,
-  syllabus text, KINETIX AI answers, messages, and notification titles/bodies (the server writes
+  syllabus text, Zynetix AI answers, messages, and notification titles/bodies (the server writes
   those in the recipient's `preferredLanguage`). Validation messages from the server are shown as
   sent; the app's own errors (offline, timeout, wrong password, wrong account type, 404/429/5xx)
   are translated.
@@ -35,7 +35,7 @@ English, Hindi and Kannada. Terms and style follow [glossary.md](glossary.md).
   `en_IN` abbreviates September as "Sept".
 - **Numbers**: Western digits everywhere; money is always Indian grouping (`₹1,23,456`), also in
   Kannada (whose intl number pattern is Western grouping).
-- Keep in Latin script: KINETIX, KINETIX AI, app names (KINETIX Parent / Teacher), OTP, UPI,
+- Keep in Latin script: Zynetix, Zynetix AI, app names (Zynetix Parent / Teacher), OTP, UPI,
   roll numbers, class and subject names.
 
 ## Language choice
@@ -46,7 +46,7 @@ English, Hindi and Kannada. Terms and style follow [glossary.md](glossary.md).
    `language`) and is saved to the account with `PATCH /v1/me {preferredLanguage}` so updates and
    push lines arrive in it. The save is fire-and-forget; if it fails (`language_unsynced`), it is
    retried quietly on the next start or sign-in.
-4. Student App: "KINETIX AI answers in" stays a separate setting; until the student picks one it
+4. Student App: "Zynetix AI answers in" stays a separate setting; until the student picks one it
    follows the app language.
 
 ## Layout

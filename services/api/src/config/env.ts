@@ -154,7 +154,7 @@ const EnvSchema = z.object({
   /** The 6-character DLT sender id (header), e.g. KINTIX. */
   MSG91_SENDER_ID: z.string().optional(),
   /** The app name passed to the SMS template. */
-  SMS_APP_NAME: z.string().default('KINETIX'),
+  SMS_APP_NAME: z.string().default('Zynetix'),
   /**
    * YouTube Data API key (Google Cloud, YouTube Data API v3), optional. Only the platform team's
    * playlist import and video durations use it (playlistItems.list and videos.list cost one

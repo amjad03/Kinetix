@@ -1,8 +1,8 @@
-# KINETIX: product vision and scope
+# Zynetix: product vision and scope
 
 ## One sentence
 
-KINETIX turns any classroom screen into an AI teaching board, and connects what happens in
+Zynetix turns any classroom screen into an AI teaching board, and connects what happens in
 that room to every student's record, every parent's phone and the principal's dashboard.
 
 ## Who it serves
@@ -20,11 +20,11 @@ K-12 models won't do. K-12 is the same model with "grade" in place of "semester"
 ## Ecosystem
 
 ```
-                 ┌──────────────────────── KINETIX Cloud (AWS ap-south-1, Mumbai) ──────────────────────┐
+                 ┌──────────────────────── Zynetix Cloud (AWS ap-south-1, Mumbai) ──────────────────────┐
                  │  Identity & tenancy · Academic core · Content library · Sync · Realtime · AI · Files │
                  └───────▲──────────────▲───────────────▲───────────────▲───────────────▲───────────────┘
                          │              │               │               │               │
-                  KINETIX Board     KINETIX ERP     Teacher App     Student App     Parent App
+                  Zynetix Board     Zynetix ERP     Teacher App     Student App     Parent App
                   (classroom)       (web: admin,    (attendance,    (recordings,    (alerts, fees,
                                     principal,      homework,       AI tutor,       progress,
                                     content team)   board pairing)  library)        concerns)

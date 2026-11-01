@@ -4,7 +4,7 @@ import { area } from '../define';
 export default area(
   {
     'wb.title': 'Workflow builder',
-    'wb.subtitle': 'Automate approvals, reminders and alerts across Kinetix',
+    'wb.subtitle': 'Automate approvals, reminders and alerts across Zynetix',
     'wb.tab.workflows': 'Workflows',
     'wb.tab.runs': 'Runs',
     'wb.new': 'New workflow',
@@ -171,7 +171,7 @@ export default area(
   {
     hi: {
       'wb.title': 'वर्कफ़्लो बिल्डर',
-      'wb.subtitle': 'KINETIX में स्वीकृतियाँ, रिमाइंडर और सूचनाएँ स्वचालित करें',
+      'wb.subtitle': 'Zynetix में स्वीकृतियाँ, रिमाइंडर और सूचनाएँ स्वचालित करें',
       'wb.tab.workflows': 'वर्कफ़्लो',
       'wb.tab.runs': 'रन',
       'wb.new': 'नया वर्कफ़्लो',
@@ -337,7 +337,7 @@ export default area(
     },
     kn: {
       'wb.title': 'ವರ್ಕ್‌ಫ್ಲೋ ಬಿಲ್ಡರ್',
-      'wb.subtitle': 'KINETIX ನಾದ್ಯಂತ ಅನುಮೋದನೆ, ಜ್ಞಾಪನೆ ಮತ್ತು ಸೂಚನೆಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತಗೊಳಿಸಿ',
+      'wb.subtitle': 'Zynetix ನಾದ್ಯಂತ ಅನುಮೋದನೆ, ಜ್ಞಾಪನೆ ಮತ್ತು ಸೂಚನೆಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತಗೊಳಿಸಿ',
       'wb.tab.workflows': 'ವರ್ಕ್‌ಫ್ಲೋಗಳು',
       'wb.tab.runs': 'ರನ್‌ಗಳು',
       'wb.new': 'ಹೊಸ ವರ್ಕ್‌ಫ್ಲೋ',

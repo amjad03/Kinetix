@@ -1,8 +1,8 @@
-# Kinetix Detailed System Requirements Pack — v2
+# Zynetix Detailed System Requirements Pack — v2
 
 ## Purpose
 
-This package extends the Kinetix master engineering pack into a **detailed system-requirements and implementation contract**. It is intended to be used before and during implementation by product owners, architects, AI coding agents, QA engineers, security engineers, DevOps engineers, and maintenance developers.
+This package extends the Zynetix master engineering pack into a **detailed system-requirements and implementation contract**. It is intended to be used before and during implementation by product owners, architects, AI coding agents, QA engineers, security engineers, DevOps engineers, and maintenance developers.
 
 It is deliberately organized so that a future developer can answer:
 
@@ -15,11 +15,11 @@ It is deliberately organized so that a future developer can answer:
 - What must be audited?
 - What must be tested?
 - What are the acceptance criteria?
-- How does the module interact with the rest of Kinetix?
+- How does the module interact with the rest of Zynetix?
 
 ## Locked architecture baseline
 
-- Product: Kinetix Education Operating System
+- Product: Zynetix Education Operating System
 - First reference institution: Soundarya Institute of Management & Science
 - Scope: Schools + Colleges/Universities
 - Web: Next.js + TypeScript
@@ -28,7 +28,7 @@ It is deliberately organized so that a future developer can answer:
 - Database: PostgreSQL
 - Mobile: Flutter
 - Smartboard: Android native, Kotlin + Jetpack Compose
-- Authentication: Kinetix in-house identity/authentication
+- Authentication: Zynetix in-house identity/authentication
 - AI: Cloud AI APIs + local 2–3B models; no school-computer AI cluster in the initial architecture
 - Deployment: Multi-tenant SaaS + dedicated/private + on-premise
 - Scale target: 10,000 institutions / millions of users

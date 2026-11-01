@@ -126,7 +126,7 @@ export class FeedsController {
   async metadata(@Req() req: Request) {
     const scopes = await this.visible(req);
     const ents = ENTITIES.filter((e) => scopes.includes(e.scope));
-    return `<?xml version="1.0" encoding="utf-8"?><edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx"><edmx:DataServices><Schema Namespace="Kinetix" xmlns="http://docs.oasis-open.org/odata/ns/edm">${ents
+    return `<?xml version="1.0" encoding="utf-8"?><edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx"><edmx:DataServices><Schema Namespace="Zynetix" xmlns="http://docs.oasis-open.org/odata/ns/edm">${ents
       .map((e) => `<EntityType Name="${e.set.replace(/s$/, '')}"><Key><PropertyRef Name="${e.key}"/></Key>${Object.entries(e.fields).map(([n, fl]) => `<Property Name="${n}" Type="Edm.${fl.type}"${n === e.key ? ' Nullable="false"' : ''}/>`).join('')}</EntityType>`)
       .join('')}<EntityContainer Name="Container">${ents.map((e) => `<EntitySet Name="${e.set}" EntityType="Kinetix.${e.set.replace(/s$/, '')}"/>`).join('')}</EntityContainer></Schema></edmx:DataServices></edmx:Edmx>`;
   }

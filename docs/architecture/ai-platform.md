@@ -1,4 +1,4 @@
-# KINETIX AI platform (India-hosted)
+# Zynetix AI platform (India-hosted)
 
 **Constraint:** all AI processing runs in India: on the device, on a GPU we run (in the college
 or rented from an Indian GPU cloud), or with an Indian pay-per-use API under a contract that
@@ -57,7 +57,7 @@ In practice, "AI offline" covers almost everything a teacher needs, even on low-
 **Built today: offline sample answers** (`apps/board/lib/features/offline_ai`). The board carries
 74 hand-written lesson notes (ported from the prototype: number systems to the French
 Revolution, primary to senior secondary), each with a summary, key points, an example, an
-activity, common mistakes and quiz questions. When KINETIX AI cannot be reached (no network,
+activity, common mistakes and quiz questions. When Zynetix AI cannot be reached (no network,
 or the API answers 503/504) and the question, quiz, homework or lesson-plan topic matches a
 note, the board answers from it; in demo builds it answers known topics without asking the
 demo server. These answers are labelled "Offline sample" in every board language (the notes

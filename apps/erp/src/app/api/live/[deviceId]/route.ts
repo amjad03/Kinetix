@@ -13,7 +13,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CLASS_OVER = new Set(['class_ended', 'teacher_ended', 'period_over', 'idle', 'taken_over', 'admin_revoked']);
 
 /**
- * Live view relay: watches a board on KINETIX Cloud's `/realtime` socket **from this server**
+ * Live view relay: watches a board on Zynetix Cloud's `/realtime` socket **from this server**
  * with the session token, and streams what arrives to the page as server-sent events.
  *
  * The user's token stays in its httpOnly cookie and never reaches the browser (as for every
@@ -33,10 +33,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ devi
   try {
     const res = await fetch(`${API_URL}/v1/me`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: AbortSignal.timeout(10_000) });
     if (res.status === 401) return new Response('Sign in again', { status: 401 });
-    if (!res.ok) return new Response('KINETIX Cloud error', { status: 502 });
+    if (!res.ok) return new Response('Zynetix Cloud error', { status: 502 });
     me = (await res.json()) as Me;
   } catch {
-    return new Response("Can't reach KINETIX Cloud", { status: 502 });
+    return new Response("Can't reach Zynetix Cloud", { status: 502 });
   }
   if (!canSee(me.roles, 'live')) return new Response('Forbidden', { status: 403 });
 
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ devi
           }
           else close({ type: 'refused', error: ack?.error ?? 'This class cannot be watched right now', code: refusalCode(ack?.error, ack?.code) });
         } catch {
-          close({ type: 'refused', error: 'KINETIX Cloud did not answer. Try again.', code: 'unavailable' });
+          close({ type: 'refused', error: 'Zynetix Cloud did not answer. Try again.', code: 'unavailable' });
         }
       });
       // The API rejects a socket whose token has expired with an `error` event, then disconnects.
@@ -98,7 +98,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ devi
       socket.on('connect_error', () => send({ type: 'reconnecting' }));
       socket.on('disconnect', (reason) => {
         // The server closed us out (an expired token is reported by `error` first): no reconnecting.
-        if (reason === 'io server disconnect') close({ type: 'refused', error: 'KINETIX Cloud closed the connection. Try again.', code: 'unavailable' });
+        if (reason === 'io server disconnect') close({ type: 'refused', error: 'Zynetix Cloud closed the connection. Try again.', code: 'unavailable' });
         else send({ type: 'reconnecting' });
       });
       socket.on(LiveEvents.Frame, (frame: LiveFrame) => {

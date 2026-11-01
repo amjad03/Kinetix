@@ -35,6 +35,6 @@ export async function POST(req: NextRequest) {
     duplex: 'half',
     signal: AbortSignal.timeout(60_000),
   }).catch(() => null);
-  if (!upstream) return Response.json({ message: "Can't reach KINETIX Cloud" }, { status: 502 });
+  if (!upstream) return Response.json({ message: "Can't reach Zynetix Cloud" }, { status: 502 });
   return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': upstream.headers.get('content-type') ?? 'application/json' } });
 }

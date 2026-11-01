@@ -1,4 +1,4 @@
-# KINETIX design system
+# Zynetix design system
 
 **Principles:**
 
@@ -41,7 +41,7 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-| Teachmint X element | KINETIX equivalent |
+| Teachmint X element | Zynetix equivalent |
 |---|---|
 | Top-left "Classroom ID", "Go Live", "N students in your classroom · Add" | Class chip (teacher · class · period), Go live chip, attendance chip |
 | Top-right cast, screenshot, date/time | Sync status and clock pill; End class button |
@@ -50,7 +50,7 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 | Bottom-right Hide · Previous 1/1 Next · Switch | Same. "Next" on the last page becomes **New page** |
 | Pen popover (pen type, tips, colours) | **Write** popover: Pen/Highlighter segmented button, 10 colours, 4 thicknesses |
 | Shapes popover with 2D/3D tabs, Show lengths, Show angles | Same: 13 2D shapes, labels in cm on a 1 cm grid, angles to 0.1°. 3D is coming |
-| EduAI side panel (Ask me anything, Smart tools, Browse, Other tools) with a handle rail (⠿ ⌂ ✕) | **KINETIX AI** panel; rail with resize handle, swap side, close |
+| EduAI side panel (Ask me anything, Smart tools, Browse, Other tools) with a handle rail (⠿ ⌂ ✕) | **Zynetix AI** panel; rail with resize handle, swap side, close |
 | "Teacher Device Registration" dialog (phone keypad + QR) | **Sign in** dialog: steps + rotating 6-digit code + QR. No PIN is typed on the shared screen |
 | Utilities drawer (countdown, eye protection, calculator, touch lock…) | **Tools** popover grid (timer, random pick, attendance, split screen, eye comfort; others marked *Soon*) |
 

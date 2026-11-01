@@ -1,6 +1,6 @@
-# Hosting KINETIX AI
+# Hosting Zynetix AI
 
-KINETIX AI runs **as locally as possible**: a self-hosted open model (and speech-to-text
+Zynetix AI runs **as locally as possible**: a self-hosted open model (and speech-to-text
 server) first, then **Sarvam AI**'s pay-per-use API for whatever the self-hosted servers cannot
 take. Every option on this page keeps processing in India. The design is in
 [docs/architecture/ai-platform.md](../architecture/ai-platform.md#hosting-local-first-with-an-indian-fallback).

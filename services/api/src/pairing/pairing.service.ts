@@ -227,13 +227,13 @@ export class PairingService {
       try {
         url = new URL(input.qr);
       } catch {
-        throw new BadRequestException('Not a KINETIX pairing QR code');
+        throw new BadRequestException('Not a Zynetix pairing QR code');
       }
       const code = url.searchParams.get('c');
       const secret = url.searchParams.get('s');
       const deviceId = url.searchParams.get('d');
       if (url.protocol !== 'kinetix:' || url.host !== 'pair' || !code || !secret || !deviceId) {
-        throw new BadRequestException('Not a KINETIX pairing QR code');
+        throw new BadRequestException('Not a Zynetix pairing QR code');
       }
       return { code, secret, deviceId };
     }

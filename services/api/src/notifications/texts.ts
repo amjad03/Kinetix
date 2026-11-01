@@ -240,9 +240,9 @@ export const texts = {
       const what = p.sectionName ? `${p.title} (${p.sectionName})` : p.title;
       const d = dateIn(l, p.expiresOn);
       return {
-        en: { title: `Recording will be deleted on ${d}`, body: `${what}. The semester has ended. Mark it "Keep" in KINETIX Teacher to save it.` },
-        hi: { title: `रिकॉर्डिंग ${d} को हटा दी जाएगी`, body: `${what}। सेमेस्टर समाप्त हो गया है। इसे रखने के लिए KINETIX Teacher में "रखें" चुनें।` },
-        kn: { title: `ರೆಕಾರ್ಡಿಂಗ್ ${d} ರಂದು ಅಳಿಸಲಾಗುವುದು`, body: `${what}. ಸೆಮಿಸ್ಟರ್ ಮುಗಿದಿದೆ. ಉಳಿಸಲು KINETIX Teacher ನಲ್ಲಿ "ಉಳಿಸಿ" ಆಯ್ಕೆಮಾಡಿ.` },
+        en: { title: `Recording will be deleted on ${d}`, body: `${what}. The semester has ended. Mark it "Keep" in Zynetix Teacher to save it.` },
+        hi: { title: `रिकॉर्डिंग ${d} को हटा दी जाएगी`, body: `${what}। सेमेस्टर समाप्त हो गया है। इसे रखने के लिए Zynetix Teacher में "रखें" चुनें।` },
+        kn: { title: `ರೆಕಾರ್ಡಿಂಗ್ ${d} ರಂದು ಅಳಿಸಲಾಗುವುದು`, body: `${what}. ಸೆಮಿಸ್ಟರ್ ಮುಗಿದಿದೆ. ಉಳಿಸಲು Zynetix Teacher ನಲ್ಲಿ "ಉಳಿಸಿ" ಆಯ್ಕೆಮಾಡಿ.` },
       }[l];
     }),
 
@@ -270,9 +270,9 @@ export const texts = {
     all(
       (l) =>
         ({
-          en: { title: `Live now: ${p.subject ?? 'class'}`, body: `${p.teacherName} is teaching live. Open KINETIX to watch the board.` },
-          hi: { title: `अभी लाइव: ${p.subject ?? 'कक्षा'}`, body: `${p.teacherName} लाइव पढ़ा रहे हैं। बोर्ड देखने के लिए KINETIX खोलें।` },
-          kn: { title: `ಈಗ ಲೈವ್: ${p.subject ?? 'ತರಗತಿ'}`, body: `${p.teacherName} ಲೈವ್ ಆಗಿ ಕಲಿಸುತ್ತಿದ್ದಾರೆ. ಬೋರ್ಡ್ ನೋಡಲು KINETIX ತೆರೆಯಿರಿ.` },
+          en: { title: `Live now: ${p.subject ?? 'class'}`, body: `${p.teacherName} is teaching live. Open Zynetix to watch the board.` },
+          hi: { title: `अभी लाइव: ${p.subject ?? 'कक्षा'}`, body: `${p.teacherName} लाइव पढ़ा रहे हैं। बोर्ड देखने के लिए Zynetix खोलें।` },
+          kn: { title: `ಈಗ ಲೈವ್: ${p.subject ?? 'ತರಗತಿ'}`, body: `${p.teacherName} ಲೈವ್ ಆಗಿ ಕಲಿಸುತ್ತಿದ್ದಾರೆ. ಬೋರ್ಡ್ ನೋಡಲು Zynetix ತೆರೆಯಿರಿ.` },
         })[l],
     ),
 
@@ -343,7 +343,7 @@ export const LOCK_SCREEN: Record<string, Record<Lang, string>> = {
 };
 
 export const OPEN_APP: Record<Lang, string> = {
-  en: 'Open KINETIX to see the details.',
-  hi: 'जानकारी देखने के लिए KINETIX खोलें।',
-  kn: 'ವಿವರಗಳನ್ನು ನೋಡಲು KINETIX ತೆರೆಯಿರಿ.',
+  en: 'Open Zynetix to see the details.',
+  hi: 'जानकारी देखने के लिए Zynetix खोलें।',
+  kn: 'ವಿವರಗಳನ್ನು ನೋಡಲು Zynetix ತೆರೆಯಿರಿ.',
 };

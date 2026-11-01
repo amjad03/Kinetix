@@ -25,7 +25,7 @@ class _Step {
 }
 
 /// The lesson plan for one period on one day: topics, objectives, timed steps, materials, how
-/// to check understanding and homework. KINETIX AI can write a first draft; the teacher edits
+/// to check understanding and homework. Zynetix AI can write a first draft; the teacher edits
 /// and saves it. A remark from the head of department's review is shown at the top.
 class LessonPlanScreen extends StatefulWidget {
   const LessonPlanScreen({super.key, required this.api, required this.period, required this.date, this.onSaved});
@@ -52,7 +52,7 @@ class _LessonPlanScreenState extends State<LessonPlanScreen> {
   bool _drafting = false;
   bool _dirty = false;
 
-  /// The content came from KINETIX AI (and [_preview]: a placeholder draft).
+  /// The content came from Zynetix AI (and [_preview]: a placeholder draft).
   bool _aiDrafted = false;
   bool _preview = false;
 

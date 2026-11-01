@@ -25,7 +25,7 @@ flutter build appbundle --release --dart-define=KINETIX_API_URL=https://api.exam
 - **Debug** builds without the define use `http://localhost:4000` (Android emulator: type
   `http://10.0.2.2:4000` in the sign-in screen).
 - **Profile and release** builds without it (or with a value that is not an `http(s)://` URL)
-  refuse to start: they show "KINETIX cannot start: This build has no server address…" and log
+  refuse to start: they show "Zynetix cannot start: This build has no server address…" and log
   `ServerConfigError` (`lib/core/server_config.dart` in each app, checked first in `main()`). The
   release workflow also refuses to run without it.
 - The address is the *default*: the sign-in screens (Teacher, Parent, Student) still let the user
@@ -130,8 +130,8 @@ only; Firebase never receives names, marks or messages.
    profile with the Push Notifications capability), then
    `flutter build ipa --release --dart-define=KINETIX_API_URL=https://… --dart-define-from-file=firebase.prod.json`
    and upload `build/ios/ipa/*.ipa` with Transporter or `xcrun altool`.
-   - Bundle ids `in.kinetix.teacher` / `…Parent` / `…Student`; display names "KINETIX
-     Teacher" / "KINETIX Parent" / "KINETIX Student"; minimum iOS 15.0 (what Firebase 12 and
+   - Bundle ids `in.kinetix.teacher` / `…Parent` / `…Student`; display names "Zynetix
+     Teacher" / "Zynetix Parent" / "Zynetix Student"; minimum iOS 15.0 (what Firebase 12 and
      mobile_scanner 7 need). Version and build from `pubspec.yaml`.
    - Push: the **Release** configuration signs with `Runner/Runner-Release.entitlements`
      (`aps-environment` = `production`); Debug and Profile use `Runner/Runner.entitlements`
@@ -163,7 +163,7 @@ store.
   # → build/windows/x64/runner/Release/kinetix_board.msix
   ```
 
-  `publisher` in `msix_config` is a **placeholder** (`CN=KINETIX, O=KINETIX, C=IN`): replace it
+  `publisher` in `msix_config` is a **placeholder** (`CN=Zynetix, O=Zynetix, C=IN`): replace it
   with the exact Subject of the code-signing certificate (an OV/EV certificate from a CA — cost to
   confirm) so SmartScreen and App Installer accept it. Without a certificate
   (`--sign-msix false`) the MSIX only installs on test machines that trust a self-signed one.

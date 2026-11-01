@@ -22,7 +22,7 @@ export default area(
     'acc.b.fix': 'Fix',
     'acc.b.evidence': 'Evidence',
     'acc.ev.uploaded': 'Uploaded',
-    'acc.ev.auto': 'Auto from Kinetix',
+    'acc.ev.auto': 'Auto from Zynetix',
     'acc.ev.review': 'Needs review',
     'acc.ev.missing': 'Missing',
     'acc.iqac.kMeetings': 'Meetings this year',

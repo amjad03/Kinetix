@@ -6,7 +6,7 @@
                                    ┌──────────────── AWS ap-south-1 (Mumbai) ── DR: ap-south-2 (Hyderabad) ────────────────┐
                                    │                                                                                        │
  Board (Flutter, Android/Windows)  │   ┌──────────────┐   ┌────────────────┐   ┌─────────────────┐   ┌───────────────────┐   │
-   local SQLite + outbox  ◄────────┼──►│  API gateway │──►│  KINETIX API   │──►│ PostgreSQL 16   │   │ AI platform       │   │
+   local SQLite + outbox  ◄────────┼──►│  API gateway │──►│  Zynetix API   │──►│ PostgreSQL 16   │   │ AI platform       │   │
    ws: realtime                    │   │  (ALB + WAF) │   │  NestJS        │   │ (RDS, RLS)      │   │ vLLM / Triton on  │   │
                                    │   └──────────────┘   │  modules:      │   └─────────────────┘   │ GPU (g6/g5)       │   │
  ERP (Next.js) ◄───────────────────┼──────────────────────│  auth, tenancy,│──►┌─────────────────┐   │ LLM · ASR · TTS · │   │
@@ -50,7 +50,7 @@
 | Student / parent | App: phone OTP ([auth-otp.md](auth-otp.md)) | User JWT |
 | Board device | One-time **enrolment code** from the ERP, then device credentials | Device JWT, scoped to its campus |
 | Teacher on a board | **Pairing** from the Teacher App ([board-pairing.md](board-pairing.md)) | Board session token, scoped to teacher + device + class |
-| Platform staff (KINETIX) | SSO + hardware key | Separate audience; cross-tenant access is logged |
+| Platform staff (Zynetix) | SSO + hardware key | Separate audience; cross-tenant access is logged |
 
 ## Running in production
 

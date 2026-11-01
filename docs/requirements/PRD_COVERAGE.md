@@ -722,7 +722,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Institution-side fees, invoices, scholarships, refunds | Built | `api/fees`, `api/finance` | |
 | Adapter-based gateway (not embedded) | Built | `api/fees/payment-provider.ts` | Razorpay and PayU behind one interface; external: PayU merchant account to certify live; Cashfree not integrated |
 | UPI, cards, bank transfer, invoice/PO | Built | `api/fees/bank-transfers.controller.ts` | via Razorpay + manual |
-| Kinetix SaaS billing (plans, subscription, usage, renewal, tax) | Built | `api/billing/*`, tables `saas_subscriptions`, `saas_usage_snapshots`, `saas_invoices`, `erp/billing`, `test/governance-billing-ai.e2e.spec.ts` | three plans, per-student pricing with a minimum, usage metering, a daily renewal job, GST invoices (CGST and SGST in Karnataka, IGST elsewhere); collecting the money online is not built (payments are recorded by reference) |
+| Zynetix SaaS billing (plans, subscription, usage, renewal, tax) | Built | `api/billing/*`, tables `saas_subscriptions`, `saas_usage_snapshots`, `saas_invoices`, `erp/billing`, `test/governance-billing-ai.e2e.spec.ts` | three plans, per-student pricing with a minimum, usage metering, a daily renewal job, GST invoices (CGST and SGST in Karnataka, IGST elsewhere); collecting the money online is not built (payments are recorded by reference) |
 
 ## 67. Integrations / connectors
 
@@ -945,7 +945,7 @@ Excel (xlsx) export in report builder (S); subject ranking and consolidated mark
 | Tally live push (beyond file export) | 34, 67 | customer Tally gateway |
 | Indic fonts in server PDFs | 25 | embedded Noto fonts with shaping (licence-free, but engineering plus font choice) |
 | Payment gateway beyond Razorpay (adapter for UPI-only, bank APIs) | 66 | merchant accounts |
-| SaaS billing (Kinetix plans, tax invoices) | 66 | GST registration, billing provider (or build) |
+| SaaS billing (Zynetix plans, tax invoices) | 66 | GST registration, billing provider (or build) |
 | DigiLocker / NAD / university credential push | 26 | government API onboarding |
 | Quest Studio content | 20 | external product agreement |
 | Privacy notice, DPDP consent text, child-safety policy | 70, 81 | legal counsel review |

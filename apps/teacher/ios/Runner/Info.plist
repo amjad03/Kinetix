@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>KINETIX Teacher</string>
+	<string>Zynetix Teacher</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<!-- Pushes (APNs via Firebase Cloud Messaging). -->
@@ -16,7 +16,7 @@
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>KINETIX uses the camera to scan the QR code on your classroom board.</string>
+	<string>Zynetix uses the camera to scan the QR code on your classroom board.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<!-- Development only: lets the app reach a local http:// API. -->

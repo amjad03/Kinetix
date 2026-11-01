@@ -18,7 +18,7 @@ Amounts are stored as integer **paise**.
 **Owner decision:** every institution receives online fee payments **directly in its own Razorpay
 account**. Razorpay settles to the institution's bank account; the institution is Razorpay's
 merchant (KYC, settlements, refunds, disputes and settlement reports are in its own Razorpay
-dashboard). KINETIX never holds the money and takes **no commission** in this model, so there is no
+dashboard). Zynetix never holds the money and takes **no commission** in this model, so there is no
 platform account, no Razorpay Route and no split settlement. There are no platform-wide Razorpay
 keys: `RAZORPAY_*` environment variables are gone.
 

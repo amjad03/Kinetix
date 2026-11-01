@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "KINETIX Teacher",
+  "appTitle": "Zynetix Teacher",
   "@appTitle": {
     "description": "App name (keep in English)."
   },
@@ -208,7 +208,7 @@
   "@errorNotTeacher": {
     "description": "Sign-in error."
   },
-  "errorOffline": "Can't reach KINETIX. Check your internet connection and the server address.",
+  "errorOffline": "Can't reach Zynetix. Check your internet connection and the server address.",
   "@errorOffline": {
     "description": "Network error."
   },
@@ -257,7 +257,7 @@
   "@errorOtherCampus": {
     "description": "Server: pairing with another campus board."
   },
-  "errorNotPairingQr": "Not a KINETIX pairing QR code",
+  "errorNotPairingQr": "Not a Zynetix pairing QR code",
   "@errorNotPairingQr": {
     "description": "Server."
   },
@@ -572,7 +572,7 @@
   "@freeSessionBody": {
     "description": "Explains a free session."
   },
-  "qrNotOurs": "That isn't a KINETIX board code. Scan the QR code on the board's screen.",
+  "qrNotOurs": "That isn't a Zynetix board code. Scan the QR code on the board's screen.",
   "@qrNotOurs": {
     "description": "Scanner error."
   },
@@ -1351,9 +1351,9 @@
   "@syllabusProgressBody": {
     "description": "Profile → Syllabus progress subtitle."
   },
-  "syllabusUnlinked": "This subject isn't linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.",
+  "syllabusUnlinked": "This subject isn't linked to a syllabus yet. Your admin can link it in Zynetix ERP → Syllabus.",
   "@syllabusUnlinked": {
-    "description": "Syllabus screen when the subject has no course. Keep 'KINETIX ERP → Syllabus' in English."
+    "description": "Syllabus screen when the subject has no course. Keep 'Zynetix ERP → Syllabus' in English."
   },
   "topicsTaught": "{covered} of {total} topics taught",
   "@topicsTaught": {
@@ -1591,7 +1591,7 @@
   "@yearPlan": {
     "description": "Title: a class's syllabus spread over the weeks of the term."
   },
-  "yearPlanNone": "No year plan yet. KINETIX can spread this subject's syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.",
+  "yearPlanNone": "No year plan yet. Zynetix can spread this subject's syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.",
   "@yearPlanNone": {
     "description": "Empty state on the year plan screen."
   },
@@ -1826,15 +1826,15 @@
   "@lessonHomeworkHint": {
     "description": "Hint: homework is optional."
   },
-  "draftWithAi": "Draft with KINETIX AI",
+  "draftWithAi": "Draft with Zynetix AI",
   "@draftWithAi": {
-    "description": "Button: KINETIX AI writes a first draft."
+    "description": "Button: Zynetix AI writes a first draft."
   },
-  "drafting": "KINETIX AI is drafting…",
+  "drafting": "Zynetix AI is drafting…",
   "@drafting": {
     "description": "While drafting."
   },
-  "replaceWithDraftTitle": "Replace with a KINETIX AI draft?",
+  "replaceWithDraftTitle": "Replace with a Zynetix AI draft?",
   "@replaceWithDraftTitle": {
     "description": "Confirmation dialog title."
   },
@@ -1848,9 +1848,9 @@
   },
   "aiDraftLabel": "AI draft — check before use",
   "@aiDraftLabel": {
-    "description": "Label on a plan written by KINETIX AI."
+    "description": "Label on a plan written by Zynetix AI."
   },
-  "aiPreviewNote": "Preview: a sample draft, because the KINETIX AI server is not connected.",
+  "aiPreviewNote": "Preview: a sample draft, because the Zynetix AI server is not connected.",
   "@aiPreviewNote": {
     "description": "Shown when the draft is a placeholder (meta.preview)."
   },
@@ -1899,15 +1899,15 @@
   "@errorPeriodNotOnDay": {
     "description": "Error: saving a lesson plan for a day the period is not on."
   },
-  "errorAiAllowance": "Your institution has used today's KINETIX AI allowance. It resets tomorrow.",
+  "errorAiAllowance": "Your institution has used today's Zynetix AI allowance. It resets tomorrow.",
   "@errorAiAllowance": {
     "description": "Error."
   },
-  "errorAiUnavailable": "KINETIX AI is not reachable right now. Try again in a minute.",
+  "errorAiUnavailable": "Zynetix AI is not reachable right now. Try again in a minute.",
   "@errorAiUnavailable": {
     "description": "Error."
   },
-  "errorAiUnusable": "KINETIX AI could not write a usable draft. Try again.",
+  "errorAiUnusable": "Zynetix AI could not write a usable draft. Try again.",
   "@errorAiUnusable": {
     "description": "Error."
   },
@@ -2001,7 +2001,7 @@
   "@demoBannerTitle": {
     "description": "Title of the banner on the sign-in screen of demo builds."
   },
-  "demoBannerBody": "Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.",
+  "demoBannerBody": "Sample data from Zynetix Demo College. Nothing is sent to a server, and your changes last until the app is closed.",
   "@demoBannerBody": {
     "description": "Body of the demo banner."
   },
@@ -3271,7 +3271,7 @@
   "projectsEmpty": "You are not on any projects.",
   "projectsTitle": "Project mentoring",
   "pubAddByDoi": "Add by DOI",
-  "pubDoiBody": "Enter the publication's DOI; KINETIX reads its details from the DOI registry.",
+  "pubDoiBody": "Enter the publication's DOI; Zynetix reads its details from the DOI registry.",
   "pubImport": "Import",
   "pubKindBook": "Book",
   "pubKindChapter": "Book chapter",
@@ -3370,7 +3370,7 @@
   "offlineExpired": "This code has expired. Look at the board for the current one.",
   "offlineNotYet": "This code is not valid yet. Check the time on this phone.",
   "offlineWrongInstitution": "This board belongs to another institution.",
-  "offlineBad": "This is not a genuine KINETIX board code.",
+  "offlineBad": "This is not a genuine Zynetix board code.",
   "offlineVerified": "A genuine board of your institution (ending {board}). The code is valid until {time}. Signing in to it still needs the internet.",
   "@offlineVerified": {
     "placeholders": {

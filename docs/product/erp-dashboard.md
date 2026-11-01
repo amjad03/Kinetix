@@ -1,9 +1,9 @@
-# KINETIX ERP: principal dashboard (first slice)
+# Zynetix ERP: principal dashboard (first slice)
 
 **Who:** principal, administrator (`tenant_admin`), head of department (`hod`), the accounts
 office (`accountant`, Fees only) and the library desk (`librarian`, Library only). Teachers,
 students and parents are refused at sign-in and pointed to their apps.
-**Where:** `apps/erp` (Next.js). Reads the KINETIX Cloud API `v1/admin/*` (including
+**Where:** `apps/erp` (Next.js). Reads the Zynetix Cloud API `v1/admin/*` (including
 `v1/admin/timetable`), `v1/broadcasts`, `v1/devices`, `v1/fees`, `v1/library`, `v1/assessments`,
 `v1/conversations`, `v1/content`, `v1/ai/usage` and the `/realtime` socket (live view).
 
@@ -36,7 +36,7 @@ the system.
 | **Fees** | Billed, collected (with a bar), outstanding and overdue (amount and invoices) in rupees (₹1,23,456; tiles shorten to ₹9.16 L), then each class. **Issue fee** to a class (name, amount per student in ₹, due date): every student gets an invoice and families are notified. **Invoices**: Due / Overdue / Paid / Cancelled / All, by class, search by student or roll number; **Record payment** at the counter (cash, cheque, bank transfer, UPI with its reference; part payments allowed) shows the numbered receipt at once; **Print receipt** opens a print-ready receipt (amount in words); **Cancel invoice** for a fee with no money received; past receipts from the row menu. Principal, administrator, accounts office. |
 | **Library** | Titles, copies on the shelf, books on loan and overdue (with the fines if they came back today). **On loan**: book, student (roll number, class), issued, due ("Due in 5 days" / "4 days late"), today's fine; overdue loans are tinted and marked **Overdue**; All / Overdue chips and search. **Return** shows the fine before confirming and the recorded fine (₹2 a day late) afterwards, marked **Unpaid**, with **Mark ₹8 paid** to collect it there and then or **Collect later**. **Unpaid fines**: student, book, due, returned, fine; **Mark paid** confirms the amount received (recorded in the audit log). A tile shows the total still to collect. **Catalogue**: search by title, author, call number or ISBN; copies and "2 of 4 available" / "All out"; **Issue** from a row. **Issue a book**: book (only ones on the shelf), student (any active student, searched on the server by name, roll number or class from two letters), due date (14 days by default); the family sees it in the Parent app. **Add book**: title, author, call number, copies, ISBN. The library desk sees only this page; principal and administrator see it too. |
 | **Syllabus** | Your subjects (from the school structure, with the classes that study them) and the library course each is linked to; principal and administrator change the link. The library by curriculum, with **Not reviewed** on courses not yet checked by a subject expert and which subject uses each course. A course shows its chapters and topics (notes, learning outcomes); the institution adds, edits and deletes **its own topics** (library topics are read-only). |
-| **AI usage** | KINETIX AI over the last 30 days: requests, share answered, blocked or failed, tokens, and the same per task (Explain, Quiz, Homework, Lesson plan, Lesson summary). Principal and administrator. |
+| **AI usage** | Zynetix AI over the last 30 days: requests, share answered, blocked or failed, tokens, and the same per task (Explain, Quiz, Homework, Lesson plan, Lesson summary). Principal and administrator. |
 
 Every dated page has previous / next day, a calendar and **Today**. A day without classes says
 why: on Sundays, "No classes on Sundays" with buttons for Saturday and Monday.

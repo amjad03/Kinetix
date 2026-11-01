@@ -22,7 +22,7 @@ export interface ShellUser {
   fullName: string;
   email: string | null;
   roles: string[];
-  /** On the KINETIX platform team: Platform › Concept videos. */
+  /** On the Zynetix platform team: Platform › Concept videos. */
   platformAdmin?: boolean;
 }
 

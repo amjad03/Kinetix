@@ -44,7 +44,7 @@ export class PushService implements OnModuleInit {
     const messages: PushMessage[] = targets.map((t) => ({
       token: t.token,
       platform: t.platform,
-      title: LOCK_SCREEN[t.kind]?.[t.lang as Lang] ?? 'KINETIX',
+      title: LOCK_SCREEN[t.kind]?.[t.lang as Lang] ?? 'Zynetix',
       body: OPEN_APP[t.lang as Lang],
       data: { notificationId: t.id, kind: t.kind },
     }));

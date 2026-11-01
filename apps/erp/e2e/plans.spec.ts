@@ -22,7 +22,7 @@ async function showWeekOf(page: Page, date: string) {
   await expect(page.getByTestId('lessons-week')).toBeVisible();
 }
 
-/** Ravi plans his next Discrete Mathematics period through the API, as the Teacher App would (with KINETIX AI). */
+/** Ravi plans his next Discrete Mathematics period through the API, as the Teacher App would (with Zynetix AI). */
 async function raviPlansAPeriod(request: APIRequestContext) {
   const login = await request.post(`${API_URL}/v1/auth/login`, { data: { tenant: TENANT, login: 'ravi@demo.kinetix.in', password: PASSWORD } });
   expect(login.ok()).toBe(true);

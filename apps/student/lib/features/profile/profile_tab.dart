@@ -41,7 +41,7 @@ import '../privacy/dpdp_screen.dart';
 import '../privacy/privacy.dart';
 
 /// The student's details, attendance history, fees (read-only, with receipts), the language
-/// KINETIX AI answers in, and sign out.
+/// Zynetix AI answers in, and sign out.
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key, required this.state, required this.study, this.messages});
 
@@ -518,7 +518,7 @@ class ProfileTabState extends State<ProfileTab> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => CalendarScreen.open(context, widget.study.api, program: st.programName),
                 ),
-                const KxSectionHeader('KINETIX AI'),
+                const KxSectionHeader('Zynetix AI'),
                 ListTile(
                   key: const Key('aiLanguage'),
                   leading: const Icon(Icons.auto_awesome_outlined),

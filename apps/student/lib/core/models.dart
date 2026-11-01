@@ -436,9 +436,9 @@ class Inbox {
 }
 
 // ---------------------------------------------------------------------------------------------
-// KINETIX AI
+// Zynetix AI
 
-/// The languages KINETIX AI answers in. The fonts for all three are bundled in kinetix_ui.
+/// The languages Zynetix AI answers in. The fonts for all three are bundled in kinetix_ui.
 enum AiLanguage {
   en('English', 'English'),
   hi('हिन्दी', 'Hindi'),
@@ -600,7 +600,7 @@ class TopicDetail {
   TopicRef get ref => TopicRef(id: id, title: title);
 }
 
-/// A concept video from the KINETIX YouTube channel (`GET /v1/content/topics/:id/videos`), in the
+/// A concept video from the Zynetix YouTube channel (`GET /v1/content/topics/:id/videos`), in the
 /// class's language first. Only the YouTube id is kept; it plays in YouTube's embedded player.
 class ConceptVideo {
   const ConceptVideo({required this.id, required this.youtubeVideoId, required this.title, required this.language, this.durationSeconds, this.source = 'platform'});
@@ -622,7 +622,7 @@ class ConceptVideo {
   final String language;
   final int? durationSeconds;
 
-  /// Who linked it: platform (KINETIX), institution (the school) or teacher (this class's teacher, or approved for all).
+  /// Who linked it: platform (Zynetix), institution (the school) or teacher (this class's teacher, or approved for all).
   final String source;
 
   /// YouTube's own thumbnail (i.ytimg.com).

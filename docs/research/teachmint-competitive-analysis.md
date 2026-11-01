@@ -1,8 +1,8 @@
-# Teachmint X: Competitive Analysis for KINETIX Board
+# Teachmint X: Competitive Analysis for Zynetix Board
 
 - **Prepared:** 2026-10-04
 - **Scope:** Teachmint X / X2 AI interactive flat panels (IFPs), EduAI, VisionX, Click X, Share X, the Teachmint platform and ERP, plus five other smart-board competitors in India.
-- **Purpose:** List every Teachmint feature KINETIX Board must match, and find where a software-only board (Android tablet or IFP plus projector/TV, on our own ERP) can do better.
+- **Purpose:** List every Teachmint feature Zynetix Board must match, and find where a software-only board (Android tablet or IFP plus projector/TV, on our own ERP) can do better.
 
 > **How this was researched.** The research environment's egress proxy blocked direct page fetches from teachmint.com, blog/cart/community.teachmint.com, Amazon, Flipkart, Entrackr, Forbes India and afaqs. Every claim below therefore comes from **search-engine snippets of those pages**. Snippets can be stale or paraphrased. A claim with no named source, or with conflicting sources, is marked **(unverified)**. Before any claim goes into sales material, check it against the live page or a demo unit.
 
@@ -268,11 +268,11 @@ Legend: Source codes are listed at the end of this section. **(U)** = unverified
 
 Sources: fonearena.com, 91mobiles.com, benq.com/en-in (RP05); digitalterminal.in, cxotoday.com, mysmartprice.com (ViewSonic); extramarks.com, theweek.in (Extramarks); senseselec.com, tribuneindia.com (Senses); theweek.in, amarujala.com (Tata ClassEdge); cxotoday.com, bwdisrupt.com (LEAD TECHBOOK); samsung.com, educationreview.com.au (Flip Pro).
 
-**Market takeaway:** Hardware AI features (lesson, quiz, math solver, ask-AI, translation, camera tracking) are becoming **commoditised across every EDLA panel in 2025–26**. What remains defensible: (1) deep curriculum-grounded content, (2) ERP and parent-loop integration, (3) admin visibility, (4) cost per classroom, and (5) regional language. Teachmint covers (2) and (3) but locks them to its own hardware. **KINETIX's opening is to deliver all five on any screen.**
+**Market takeaway:** Hardware AI features (lesson, quiz, math solver, ask-AI, translation, camera tracking) are becoming **commoditised across every EDLA panel in 2025–26**. What remains defensible: (1) deep curriculum-grounded content, (2) ERP and parent-loop integration, (3) admin visibility, (4) cost per classroom, and (5) regional language. Teachmint covers (2) and (3) but locks them to its own hardware. **Zynetix's opening is to deliver all five on any screen.**
 
 ---
 
-## 5. KINETIX Board: must-match checklist and differentiators
+## 5. Zynetix Board: must-match checklist and differentiators
 
 ### 5.1 Must-match checklist (parity with Teachmint X)
 
@@ -331,7 +331,7 @@ Sources: fonearena.com, 91mobiles.com, benq.com/en-in (RP05); digitalterminal.in
 - [ ] In-app guided onboarding and micro-tutorials; teacher certification track
 - [ ] Remote training and refresher webinars; community or forum; fast support SLA
 
-### 5.2 Differentiators: where KINETIX can win
+### 5.2 Differentiators: where Zynetix can win
 
 1. **Bring-your-own-screen economics.** A ₹15–25k Android tablet plus an existing projector or TV gives a 20–40 inch-equivalent classroom board for **under 10–20% of a Teachmint X**. Publish a TCO calculator (for example, "40 classrooms: ₹1 Cr vs ₹10 lakh"). The same app runs on any Android or Windows IFP (BenQ, Senses, ViewSonic, no-brand), so schools that already own panels can **add the AI plus ERP layer without replacing hardware**. That hits Teachmint's lock-in (G1, G2).
 2. **Tablet-as-wand mobility.** The teacher walks the room holding the tablet. Writing mirrors to the projector, so there is no turning their back to the class. Students' tablets or phones can be handed the pen (permissioned "pass the pen"). An IFP fixed to the wall cannot do this.
@@ -360,7 +360,7 @@ Sources: fonearena.com, 91mobiles.com, benq.com/en-in (RP05); digitalterminal.in
     - Safe casting: an AI filter on student-cast content (matches BenQ AI Guardian).
 13. **Fast deployment.** Install from the Play Store or an MSI, log in with the school's ERP code, and the timetable and rosters are auto-provisioned. "Live in 15 minutes per classroom", against Teachmint's "one day with installer".
 
-### 5.3 Risks to watch for KINETIX
+### 5.3 Risks to watch for Zynetix
 - **Tablet ergonomics on a projector.** Latency over the HDMI/USB-C to projector chain, and how readable it is in a sunlit room. Recommend specific tested tablet and projector combinations, plus a low-cost stylus.
 - **No large touch surface.** Students cannot walk up and write unless they use a tablet or phone. Mitigate with "pass the pen" and IFP support.
 - **Content licensing costs** for a curriculum-grounded RAG corpus (NCERT is openly available; state-board and private publishers' books need licences).

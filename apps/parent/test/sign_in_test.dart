@@ -67,7 +67,7 @@ void main() {
     await tester.tap(find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
     expect(find.textContaining('This app is for parents and guardians'), findsOneWidget);
-    expect(find.textContaining('KINETIX Teacher app'), findsOneWidget);
+    expect(find.textContaining('Zynetix Teacher app'), findsOneWidget);
     expect(state.signedIn, isFalse);
     expect(api.token, isNull);
   });

@@ -46,7 +46,7 @@ export function fromCrossref(w: CrossrefWork): DoiRecord | null {
 @Injectable()
 export class CrossrefDoiResolver extends DoiResolver {
   async resolve(doi: string): Promise<DoiRecord | null> {
-    const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, { headers: { 'User-Agent': 'KINETIX/1.0 (research office)' }, signal: AbortSignal.timeout(8000) });
+    const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, { headers: { 'User-Agent': 'Zynetix/1.0 (research office)' }, signal: AbortSignal.timeout(8000) });
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Crossref answered ${res.status}`);
     const body = (await res.json()) as { message?: CrossrefWork };

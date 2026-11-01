@@ -76,7 +76,7 @@ test('issue a fee, take a counter payment and print the receipt', async ({ page 
   await open(page, href!);
   const receipt = page.getByTestId('receipt');
   await expect(receipt).toContainText('Fee receipt');
-  await expect(receipt).toContainText('KINETIX Demo College of Commerce & Science');
+  await expect(receipt).toContainText('Zynetix Demo College of Commerce & Science');
   await expect(receipt).toContainText('Diya Patel');
   await expect(receipt).toContainText('Rupees One Thousand Two Hundred Fifty only');
   await expect(page.getByRole('button', { name: 'Print' })).toBeVisible();

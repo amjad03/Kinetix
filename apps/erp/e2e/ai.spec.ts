@@ -3,12 +3,12 @@ import { API_URL, apiLogin } from './board-sim';
 import { open, shot } from './helpers';
 
 // Signed in as the principal by principal.setup.ts.
-test('KINETIX AI usage shows requests by task and outcome', async ({ page }) => {
+test('Zynetix AI usage shows requests by task and outcome', async ({ page }) => {
   await open(page, '/ai');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('KINETIX AI usage');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Zynetix AI usage');
   if (await page.getByTestId('no-ai-usage').isVisible()) await shot(page, 'ai-usage-empty');
 
-  // Ask KINETIX AI something (without a model server the API answers with a preview).
+  // Ask Zynetix AI something (without a model server the API answers with a preview).
   const token = await apiLogin('principal@demo.kinetix.in');
   for (const [path, body] of [
     ['explain', { question: 'What is underwriting of shares?' }],

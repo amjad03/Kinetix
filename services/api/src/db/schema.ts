@@ -1,5 +1,5 @@
 /**
- * KINETIX core schema.
+ * Zynetix core schema.
  *
  * Every table except `tenants` carries `tenant_id`. Row-level security policies live in the
  * hand-written migration `migrations/0001_rls.sql` (Drizzle cannot express FORCE RLS).
@@ -825,7 +825,7 @@ export const pushPlatform = pgEnum('push_platform', ['android', 'ios', 'web']);
 
 /**
  * Phones and browsers that receive push notifications for a user. Pushes carry only a
- * notification id and kind; the app fetches the text from KINETIX Cloud, so no personal data
+ * notification id and kind; the app fetches the text from Zynetix Cloud, so no personal data
  * passes through the push provider.
  */
 export const pushDevices = pgTable(
@@ -836,7 +836,7 @@ export const pushDevices = pgTable(
     userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
     token: text('token').notNull(),
     platform: pushPlatform('platform').notNull(),
-    /** Which KINETIX app: parent, student, teacher. */
+    /** Which Zynetix app: parent, student, teacher. */
     app: text('app').notNull(),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
     createdAt: createdAt(),
@@ -1141,7 +1141,7 @@ export const jobs = pgTable(
 );
 
 // ---------------------------------------------------------------------------------------------
-// Content library. Curricula and courses are global (produced by the KINETIX curriculum team
+// Content library. Curricula and courses are global (produced by the Zynetix curriculum team
 // and shared by every institution). Chapters and topics are global too, and an institution may
 // add its own on top: rows with a tenant_id are visible only to that tenant.
 // ---------------------------------------------------------------------------------------------
@@ -1235,7 +1235,7 @@ export const topics = pgTable(
     title: text('title').notNull(),
     /** A short teacher-facing summary. */
     summary: text('summary').notNull().default(''),
-    /** Key facts, definitions and formulas. Given to KINETIX AI as grounding. */
+    /** Key facts, definitions and formulas. Given to Zynetix AI as grounding. */
     notes: jsonb('notes').$type<string[]>().notNull().default([]),
     /** What students should be able to do afterwards. */
     outcomes: jsonb('outcomes').$type<string[]>().notNull().default([]),
@@ -1250,8 +1250,8 @@ export const topics = pgTable(
 );
 
 /**
- * The KINETIX platform team: people who look after the global library for every institution
- * (concept videos today). Each is an ordinary user of some institution (usually KINETIX's own),
+ * The Zynetix platform team: people who look after the global library for every institution
+ * (concept videos today). Each is an ordinary user of some institution (usually Zynetix's own),
  * added with `pnpm platform:admin`. The app role has no access to this table at all; only
  * SystemLookups reads it (owner role).
  */
@@ -1262,7 +1262,7 @@ export const platformAdmins = pgTable('platform_admins', {
 });
 
 /**
- * Concept videos: short explainers from the KINETIX YouTube channel, linked to global topics by
+ * Concept videos: short explainers from the Zynetix YouTube channel, linked to global topics by
  * the platform team and shown to every institution (board, Student App). Only the YouTube id is
  * kept; the apps play it with YouTube's own embedded player and never download it.
  * Platform rows are written by the platform endpoints as the owner; institution and teacher rows by the institution (RLS, migration 0066).
@@ -1698,7 +1698,7 @@ export const yearPlanItems = pgTable(
   (t) => [primaryKey({ columns: [t.planId, t.topicId] })],
 );
 
-/** A lesson plan's content: the same shape KINETIX AI drafts (ai/tasks.ts lessonPlan). */
+/** A lesson plan's content: the same shape Zynetix AI drafts (ai/tasks.ts lessonPlan). */
 export interface LessonPlanContent {
   objectives: string[];
   steps: { minutes: number; activity: string }[];
@@ -1720,7 +1720,7 @@ export const lessonPlans = pgTable(
     teacherId: uuid('teacher_id').notNull().references(() => users.id),
     topicIds: uuid('topic_ids').array().notNull().default(sql`'{}'::uuid[]`),
     content: jsonb('content').$type<LessonPlanContent>().notNull(),
-    /** Drafted with KINETIX AI (then edited or not). */
+    /** Drafted with Zynetix AI (then edited or not). */
     aiDrafted: boolean('ai_drafted').notNull().default(false),
     reviewedBy: uuid('reviewed_by').references(() => users.id),
     reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
@@ -6691,7 +6691,7 @@ export const documentRetentionPolicies = pgTable(
   (t) => [uniqueIndex('document_retention_uq').on(t.tenantId, t.category)],
 );
 
-/** The institution's KINETIX subscription (PRD section 66): the plan, billing interval and current period. */
+/** The institution's Zynetix subscription (PRD section 66): the plan, billing interval and current period. */
 export const saasSubscriptions = pgTable(
   'saas_subscriptions',
   {
@@ -6947,7 +6947,7 @@ export const buzzerPresses = pgTable(
 // Data migration, university result formats, transcripts and the external examiner portal
 // ---------------------------------------------------------------------------------------------
 
-/** A saved column mapping: which column of a Linways/Excel export fills which KINETIX field. */
+/** A saved column mapping: which column of a Linways/Excel export fills which Zynetix field. */
 export const migrationMappings = pgTable(
   'migration_mappings',
   {
@@ -6955,7 +6955,7 @@ export const migrationMappings = pgTable(
     tenantId: tenantId(),
     entity: text('entity').notNull(),
     name: text('name').notNull(),
-    /** KINETIX field → the export's column heading. */
+    /** Zynetix field → the export's column heading. */
     mapping: jsonb('mapping').$type<Record<string, string>>().notNull(),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),

@@ -1,6 +1,6 @@
 # Push notifications setup
 
-How the KINETIX apps receive pushes (Firebase Cloud Messaging, which delivers through APNs on iOS). Pushes are optional: without configuration the apps and API run normally and notifications still appear in each app's inbox.
+How the Zynetix apps receive pushes (Firebase Cloud Messaging, which delivers through APNs on iOS). Pushes are optional: without configuration the apps and API run normally and notifications still appear in each app's inbox.
 
 ## Teacher App
 

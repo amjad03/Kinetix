@@ -1,4 +1,4 @@
-# KINETIX Board: specification coverage
+# Zynetix Board: specification coverage
 
 Audit of the smartboard specifications against the code, October 2026. Sources:
 `02_AUTHORITATIVE_PRODUCT_SPECS/SMARTBOARD/KINETIX_SMARTBOARD_COMPLETE_PRODUCT_REQUIREMENTS_AND_AGENT_HANDOFF_V1.md`

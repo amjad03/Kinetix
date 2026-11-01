@@ -1,6 +1,6 @@
 import { area } from '../define';
 
-// Timetable editor, KINETIX AI usage, departments set-up and sign-in.
+// Timetable editor, Zynetix AI usage, departments set-up and sign-in.
 export default area(
   {
     'tt.subtitle': 'The week for a class or a teacher. Add, move and remove periods; clashes are caught before saving.',
@@ -52,10 +52,10 @@ export default area(
     'tt.err.again': 'Choose the class, subject, teacher and room again.',
     'tt.err.unknown': 'Unknown period.',
 
-    'ai.title': 'KINETIX AI usage',
-    'ai.subtitle': 'How teachers used KINETIX AI on the boards and in the apps over the last {days} days',
-    'ai.none': 'No KINETIX AI requests in the last {days} days',
-    'ai.noneBody': "Teachers ask KINETIX AI for explanations, quizzes, homework and lesson plans from the board's AI panel and the Teacher App.",
+    'ai.title': 'Zynetix AI usage',
+    'ai.subtitle': 'How teachers used Zynetix AI on the boards and in the apps over the last {days} days',
+    'ai.none': 'No Zynetix AI requests in the last {days} days',
+    'ai.noneBody': "Teachers ask Zynetix AI for explanations, quizzes, homework and lesson plans from the board's AI panel and the Teacher App.",
     'ai.legend.answered': 'Answered (including repeats served from cache)',
     'ai.legend.blocked': 'Stopped by the safety check',
     'ai.legend.failed': 'Not answered (AI unavailable, unusable answer or over the limit)',
@@ -76,7 +76,7 @@ export default area(
     'ai.col.failed': 'Failed',
     'ai.col.tokens': 'Tokens',
     'ai.bar': '{answered} answered, {blocked} blocked, {failed} failed',
-    'ai.tokensNote': 'Tokens are the units of text KINETIX AI reads and writes; repeats served from cache use none.',
+    'ai.tokensNote': 'Tokens are the units of text Zynetix AI reads and writes; repeats served from cache use none.',
     'ai.task.explain': 'Explain',
     'ai.task.quiz': 'Quiz',
     'ai.task.homework': 'Homework',
@@ -124,7 +124,7 @@ export default area(
     'depts.err.unknown': 'Unknown department.',
 
     'login.title': 'Sign in',
-    'login.lead': "to KINETIX ERP: your school's day at a glance, messages to every classroom, and the boards.",
+    'login.lead': "to Zynetix ERP: your school's day at a glance, messages to every classroom, and the boards.",
     'login.tenant': 'Institution code',
     'login.tenantHelp': 'Given by your school, for example demo-college',
     'login.login': 'Email or phone',
@@ -137,9 +137,9 @@ export default area(
     'login.missing': 'Enter your institution code, email or phone, and password.',
     'login.failed': 'Sign-in failed. Try again.',
     'login.notForRole':
-      'KINETIX ERP is for principals, administrators, heads of department, the accounts office and the library. Teachers can use the KINETIX Teacher App; students and parents, their own apps.',
+      'Zynetix ERP is for principals, administrators, heads of department, the accounts office and the library. Teachers can use the Zynetix Teacher App; students and parents, their own apps.',
     'login.expired': 'Your session has ended. Sign in again to continue.',
-    'login.denied': 'KINETIX ERP is for principals, administrators, heads of department, the accounts office and the library. Teachers can use the KINETIX Teacher App.',
+    'login.denied': 'Zynetix ERP is for principals, administrators, heads of department, the accounts office and the library. Teachers can use the Zynetix Teacher App.',
     'login.signedOut': 'You have signed out.',
   },
   {
@@ -193,10 +193,10 @@ export default area(
       'tt.err.again': 'कक्षा, विषय, शिक्षक और कमरा फिर से चुनें।',
       'tt.err.unknown': 'अज्ञात पीरियड।',
 
-      'ai.title': 'KINETIX AI उपयोग',
-      'ai.subtitle': 'पिछले {days} दिनों में शिक्षकों ने बोर्ड और ऐप में KINETIX AI का कैसे उपयोग किया',
-      'ai.none': 'पिछले {days} दिनों में KINETIX AI से कोई अनुरोध नहीं',
-      'ai.noneBody': 'शिक्षक बोर्ड के AI पैनल और Teacher App से KINETIX AI से व्याख्या, क्विज़, होमवर्क और पाठ योजना माँगते हैं।',
+      'ai.title': 'Zynetix AI उपयोग',
+      'ai.subtitle': 'पिछले {days} दिनों में शिक्षकों ने बोर्ड और ऐप में Zynetix AI का कैसे उपयोग किया',
+      'ai.none': 'पिछले {days} दिनों में Zynetix AI से कोई अनुरोध नहीं',
+      'ai.noneBody': 'शिक्षक बोर्ड के AI पैनल और Teacher App से Zynetix AI से व्याख्या, क्विज़, होमवर्क और पाठ योजना माँगते हैं।',
       'ai.legend.answered': 'जवाब दिया (कैश से दोहराए गए जवाब सहित)',
       'ai.legend.blocked': 'सुरक्षा जाँच ने रोका',
       'ai.legend.failed': 'जवाब नहीं मिला (AI उपलब्ध नहीं, जवाब उपयोग लायक नहीं या सीमा पार)',
@@ -217,7 +217,7 @@ export default area(
       'ai.col.failed': 'विफल',
       'ai.col.tokens': 'टोकन',
       'ai.bar': '{answered} जवाब दिए, {blocked} रोके गए, {failed} विफल',
-      'ai.tokensNote': 'टोकन वे पाठ इकाइयाँ हैं जिन्हें KINETIX AI पढ़ता और लिखता है; कैश से दोहराए गए जवाबों में कोई टोकन नहीं लगता।',
+      'ai.tokensNote': 'टोकन वे पाठ इकाइयाँ हैं जिन्हें Zynetix AI पढ़ता और लिखता है; कैश से दोहराए गए जवाबों में कोई टोकन नहीं लगता।',
       'ai.task.explain': 'व्याख्या',
       'ai.task.quiz': 'क्विज़',
       'ai.task.homework': 'होमवर्क',
@@ -265,7 +265,7 @@ export default area(
       'depts.err.unknown': 'अज्ञात विभाग।',
 
       'login.title': 'साइन इन',
-      'login.lead': 'KINETIX ERP में: आपके संस्थान का दिन एक नज़र में, हर कक्षा को संदेश, और बोर्ड।',
+      'login.lead': 'Zynetix ERP में: आपके संस्थान का दिन एक नज़र में, हर कक्षा को संदेश, और बोर्ड।',
       'login.tenant': 'संस्थान कोड',
       'login.tenantHelp': 'आपके संस्थान द्वारा दिया गया, जैसे demo-college',
       'login.login': 'ईमेल या फ़ोन',
@@ -278,9 +278,9 @@ export default area(
       'login.missing': 'अपना संस्थान कोड, ईमेल या फ़ोन, और पासवर्ड लिखें।',
       'login.failed': 'साइन इन नहीं हो सका। फिर से कोशिश करें।',
       'login.notForRole':
-        'KINETIX ERP प्रधानाचार्य, प्रशासक, विभागाध्यक्ष, लेखा कार्यालय और पुस्तकालय के लिए है। शिक्षक KINETIX Teacher App इस्तेमाल कर सकते हैं; विद्यार्थी और अभिभावक अपने ऐप।',
+        'Zynetix ERP प्रधानाचार्य, प्रशासक, विभागाध्यक्ष, लेखा कार्यालय और पुस्तकालय के लिए है। शिक्षक Zynetix Teacher App इस्तेमाल कर सकते हैं; विद्यार्थी और अभिभावक अपने ऐप।',
       'login.expired': 'आपका सत्र समाप्त हो गया है। जारी रखने के लिए फिर से साइन इन करें।',
-      'login.denied': 'KINETIX ERP प्रधानाचार्य, प्रशासक, विभागाध्यक्ष, लेखा कार्यालय और पुस्तकालय के लिए है। शिक्षक KINETIX Teacher App इस्तेमाल कर सकते हैं।',
+      'login.denied': 'Zynetix ERP प्रधानाचार्य, प्रशासक, विभागाध्यक्ष, लेखा कार्यालय और पुस्तकालय के लिए है। शिक्षक Zynetix Teacher App इस्तेमाल कर सकते हैं।',
       'login.signedOut': 'आपने साइन आउट कर दिया है।',
     },
     kn: {
@@ -333,10 +333,10 @@ export default area(
       'tt.err.again': 'ತರಗತಿ, ವಿಷಯ, ಶಿಕ್ಷಕರು ಮತ್ತು ಕೊಠಡಿಯನ್ನು ಮತ್ತೆ ಆಯ್ಕೆಮಾಡಿ.',
       'tt.err.unknown': 'ಗೊತ್ತಿಲ್ಲದ ಅವಧಿ.',
 
-      'ai.title': 'KINETIX AI ಬಳಕೆ',
-      'ai.subtitle': 'ಕಳೆದ {days} ದಿನಗಳಲ್ಲಿ ಶಿಕ್ಷಕರು ಬೋರ್ಡ್‌ಗಳು ಮತ್ತು ಆ್ಯಪ್‌ಗಳಲ್ಲಿ KINETIX AI ಅನ್ನು ಹೇಗೆ ಬಳಸಿದರು',
-      'ai.none': 'ಕಳೆದ {days} ದಿನಗಳಲ್ಲಿ KINETIX AI ಗೆ ಯಾವುದೇ ವಿನಂತಿ ಇಲ್ಲ',
-      'ai.noneBody': 'ಶಿಕ್ಷಕರು ಬೋರ್ಡ್‌ನ AI ಪ್ಯಾನೆಲ್ ಮತ್ತು Teacher App ನಿಂದ KINETIX AI ಗೆ ವಿವರಣೆ, ರಸಪ್ರಶ್ನೆ, ಹೋಂವರ್ಕ್ ಮತ್ತು ಪಾಠ ಯೋಜನೆ ಕೇಳುತ್ತಾರೆ.',
+      'ai.title': 'Zynetix AI ಬಳಕೆ',
+      'ai.subtitle': 'ಕಳೆದ {days} ದಿನಗಳಲ್ಲಿ ಶಿಕ್ಷಕರು ಬೋರ್ಡ್‌ಗಳು ಮತ್ತು ಆ್ಯಪ್‌ಗಳಲ್ಲಿ Zynetix AI ಅನ್ನು ಹೇಗೆ ಬಳಸಿದರು',
+      'ai.none': 'ಕಳೆದ {days} ದಿನಗಳಲ್ಲಿ Zynetix AI ಗೆ ಯಾವುದೇ ವಿನಂತಿ ಇಲ್ಲ',
+      'ai.noneBody': 'ಶಿಕ್ಷಕರು ಬೋರ್ಡ್‌ನ AI ಪ್ಯಾನೆಲ್ ಮತ್ತು Teacher App ನಿಂದ Zynetix AI ಗೆ ವಿವರಣೆ, ರಸಪ್ರಶ್ನೆ, ಹೋಂವರ್ಕ್ ಮತ್ತು ಪಾಠ ಯೋಜನೆ ಕೇಳುತ್ತಾರೆ.',
       'ai.legend.answered': 'ಉತ್ತರಿಸಲಾಗಿದೆ (ಕ್ಯಾಶ್‌ನಿಂದ ಪುನರಾವರ್ತಿತ ಉತ್ತರಗಳು ಸೇರಿ)',
       'ai.legend.blocked': 'ಸುರಕ್ಷತಾ ಪರಿಶೀಲನೆ ತಡೆದಿದೆ',
       'ai.legend.failed': 'ಉತ್ತರಿಸಿಲ್ಲ (AI ಲಭ್ಯವಿಲ್ಲ, ಬಳಸಲಾಗದ ಉತ್ತರ ಅಥವಾ ಮಿತಿ ಮೀರಿದೆ)',
@@ -357,7 +357,7 @@ export default area(
       'ai.col.failed': 'ವಿಫಲ',
       'ai.col.tokens': 'ಟೋಕನ್‌ಗಳು',
       'ai.bar': '{answered} ಉತ್ತರಿಸಲಾಗಿದೆ, {blocked} ತಡೆಯಲಾಗಿದೆ, {failed} ವಿಫಲ',
-      'ai.tokensNote': 'ಟೋಕನ್‌ಗಳು KINETIX AI ಓದುವ ಮತ್ತು ಬರೆಯುವ ಪಠ್ಯದ ಘಟಕಗಳು; ಕ್ಯಾಶ್‌ನಿಂದ ಪುನರಾವರ್ತಿತ ಉತ್ತರಗಳು ಯಾವುದನ್ನೂ ಬಳಸುವುದಿಲ್ಲ.',
+      'ai.tokensNote': 'ಟೋಕನ್‌ಗಳು Zynetix AI ಓದುವ ಮತ್ತು ಬರೆಯುವ ಪಠ್ಯದ ಘಟಕಗಳು; ಕ್ಯಾಶ್‌ನಿಂದ ಪುನರಾವರ್ತಿತ ಉತ್ತರಗಳು ಯಾವುದನ್ನೂ ಬಳಸುವುದಿಲ್ಲ.',
       'ai.task.explain': 'ವಿವರಣೆ',
       'ai.task.quiz': 'ರಸಪ್ರಶ್ನೆ',
       'ai.task.homework': 'ಹೋಂವರ್ಕ್',
@@ -405,7 +405,7 @@ export default area(
       'depts.err.unknown': 'ಗೊತ್ತಿಲ್ಲದ ವಿಭಾಗ.',
 
       'login.title': 'ಸೈನ್ ಇನ್',
-      'login.lead': 'KINETIX ERP ಗೆ: ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ದಿನ ಒಂದೇ ನೋಟದಲ್ಲಿ, ಪ್ರತಿ ತರಗತಿಗೆ ಸಂದೇಶಗಳು, ಮತ್ತು ಬೋರ್ಡ್‌ಗಳು.',
+      'login.lead': 'Zynetix ERP ಗೆ: ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ದಿನ ಒಂದೇ ನೋಟದಲ್ಲಿ, ಪ್ರತಿ ತರಗತಿಗೆ ಸಂದೇಶಗಳು, ಮತ್ತು ಬೋರ್ಡ್‌ಗಳು.',
       'login.tenant': 'ಸಂಸ್ಥೆಯ ಕೋಡ್',
       'login.tenantHelp': 'ನಿಮ್ಮ ಸಂಸ್ಥೆ ನೀಡಿದ್ದು, ಉದಾಹರಣೆಗೆ demo-college',
       'login.login': 'ಇಮೇಲ್ ಅಥವಾ ಫೋನ್',
@@ -418,9 +418,9 @@ export default area(
       'login.missing': 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಕೋಡ್, ಇಮೇಲ್ ಅಥವಾ ಫೋನ್, ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ.',
       'login.failed': 'ಸೈನ್ ಇನ್ ವಿಫಲವಾಯಿತು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
       'login.notForRole':
-        'KINETIX ERP ಪ್ರಾಂಶುಪಾಲರು, ನಿರ್ವಾಹಕರು, ವಿಭಾಗದ ಮುಖ್ಯಸ್ಥರು, ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿ ಮತ್ತು ಗ್ರಂಥಾಲಯಕ್ಕಾಗಿ. ಶಿಕ್ಷಕರು KINETIX Teacher App ಬಳಸಬಹುದು; ವಿದ್ಯಾರ್ಥಿಗಳು ಮತ್ತು ಪೋಷಕರು, ತಮ್ಮ ಆ್ಯಪ್‌ಗಳನ್ನು.',
+        'Zynetix ERP ಪ್ರಾಂಶುಪಾಲರು, ನಿರ್ವಾಹಕರು, ವಿಭಾಗದ ಮುಖ್ಯಸ್ಥರು, ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿ ಮತ್ತು ಗ್ರಂಥಾಲಯಕ್ಕಾಗಿ. ಶಿಕ್ಷಕರು Zynetix Teacher App ಬಳಸಬಹುದು; ವಿದ್ಯಾರ್ಥಿಗಳು ಮತ್ತು ಪೋಷಕರು, ತಮ್ಮ ಆ್ಯಪ್‌ಗಳನ್ನು.',
       'login.expired': 'ನಿಮ್ಮ ಅವಧಿ ಮುಗಿದಿದೆ. ಮುಂದುವರಿಯಲು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.',
-      'login.denied': 'KINETIX ERP ಪ್ರಾಂಶುಪಾಲರು, ನಿರ್ವಾಹಕರು, ವಿಭಾಗದ ಮುಖ್ಯಸ್ಥರು, ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿ ಮತ್ತು ಗ್ರಂಥಾಲಯಕ್ಕಾಗಿ. ಶಿಕ್ಷಕರು KINETIX Teacher App ಬಳಸಬಹುದು.',
+      'login.denied': 'Zynetix ERP ಪ್ರಾಂಶುಪಾಲರು, ನಿರ್ವಾಹಕರು, ವಿಭಾಗದ ಮುಖ್ಯಸ್ಥರು, ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿ ಮತ್ತು ಗ್ರಂಥಾಲಯಕ್ಕಾಗಿ. ಶಿಕ್ಷಕರು Zynetix Teacher App ಬಳಸಬಹುದು.',
       'login.signedOut': 'ನೀವು ಸೈನ್ ಔಟ್ ಆಗಿದ್ದೀರಿ.',
     },
   },
