@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zynetix ER Explorer</title>
+<style>
+:root{--bg:#f8fafc;--panel:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#4f46e5;--accent-soft:#eef2ff;--pk:#b45309;--fk:#0e7490}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1020;--panel:#111827;--ink:#e5e7eb;--muted:#94a3b8;--line:#1f2937;--accent:#818cf8;--accent-soft:#1e1b4b;--pk:#fbbf24;--fk:#67e8f9}}
+:root[data-theme="dark"]{--bg:#0b1020;--panel:#111827;--ink:#e5e7eb;--muted:#94a3b8;--line:#1f2937;--accent:#818cf8;--accent-soft:#1e1b4b;--pk:#fbbf24;--fk:#67e8f9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:5;display:flex;gap:12px;align-items:center;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:16px;margin:0;white-space:nowrap}
+header .stats{color:var(--muted);font-size:12px;white-space:nowrap}
+#q{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+button{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
+button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.wrap{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 53px)}
+@media (max-width:760px){nav{top:98px!important;inset:98px 0 0 0!important}}
+nav{border-right:1px solid var(--line);background:var(--panel);overflow:auto;max-height:calc(100vh - 53px);position:sticky;top:53px}
+nav a{display:flex;justify-content:space-between;gap:8px;padding:7px 14px;color:inherit;text-decoration:none;border-left:3px solid transparent}
+nav a:hover{background:var(--bg)}
+nav a.on{border-left-color:var(--accent);background:var(--accent-soft)}
+nav a span{color:var(--muted);font-size:12px}
+main{padding:16px;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.card h3{margin:0;padding:10px 12px;font-size:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;cursor:pointer}
+.card h3 small{color:var(--muted);font-weight:400}
+.card.hl{outline:2px solid var(--accent)}
+.card.dim{opacity:.35}
+.cols{margin:0;padding:6px 0;list-style:none;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+.cols li{display:flex;justify-content:space-between;gap:8px;padding:0 12px}
+.cols li .t{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.k{font-size:10px;font-weight:700;margin-left:4px}.k.pk{color:var(--pk)}.k.fk{color:var(--fk)}
+.more{color:var(--muted);font-size:12px;padding:0 12px 8px}
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.detail h2{margin:0 0 4px;font-size:18px}
+.detail .sub{color:var(--muted);margin-bottom:12px}
+.rel{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;background:var(--bg)}
+.chip:hover{border-color:var(--accent)}
+table.full{width:100%;border-collapse:collapse;font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
+table.full th,table.full td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+table.full th{color:var(--muted);font-weight:600}
+.tw{overflow-x:auto}
+#graph{width:100%;height:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+#graph text{fill:var(--ink)}
+#graph .n rect{cursor:pointer}
+.legend{color:var(--muted);font-size:12px;margin:8px 0}
+#menu{display:none}
+@media (max-width:760px){
+ .wrap{grid-template-columns:1fr}
+ nav{display:none;position:fixed;inset:53px 0 0 0;z-index:4;max-height:none}
+ nav.open{display:block}
+ #menu{display:inline-block}
+ header .stats{display:none}
+ header{flex-wrap:wrap}
+ #q{order:5;flex-basis:100%}
+ main{padding:12px}
+}
+</style>
+</head>
+<body>
+<header>
+ <button id="menu" aria-label="Modules">☰</button>
+ <h1>Zynetix ER</h1>
+ <span class="stats" id="stats"></span>
+ <input id="q" type="search" placeholder="Search tables or columns…" autocomplete="off">
+ <button id="ov">Overview</button>
+ <button id="theme" aria-label="Toggle theme">◐</button>
+</header>
+<div class="wrap">
+ <nav id="nav"></nav>
+ <main id="main"></main>
+</div>
+<script>
+const D = /*__ER_DATA__*/null;
+const T = new Map(D.tables.map(t => [t.name, t]));
+const modOf = new Map(D.tables.map(t => [t.name, t.module]));
+const inbound = new Map();
+for (const r of D.relations) { if (!inbound.has(r.to)) inbound.set(r.to, []); inbound.get(r.to).push(r); }
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const keys = c => (c.pk ? '<b class="k pk">PK</b>' : '') + (c.fk ? '<b class="k fk">FK</b>' : '') + (!c.pk && c.unique ? '<b class="k">UK</b>' : '');
+$('#stats').textContent = `${D.counts.tables} tables · ${D.counts.relations} FKs · ${D.counts.modules} modules`;
+
+function nav(active) {
+  $('#nav').innerHTML = D.modules.map(m => `<a href="#m/${encodeURIComponent(m.name)}" class="${m.name === active ? 'on' : ''}">${esc(m.name)}<span>${m.tables.length}</span></a>`).join('');
+}
+function card(t, cls = '') {
+  const shown = t.columns.slice(0, 10);
+  return `<div class="card ${cls}" data-t="${t.name}"><h3 onclick="location.hash='t/${t.name}'">${esc(t.name)}<small>${t.columns.length} cols</small></h3>
+  <ul class="cols">${shown.map(c => `<li><span>${esc(c.name)}${keys(c)}</span><span class="t">${esc(c.type)}${c.nullable ? '?' : ''}</span></li>`).join('')}</ul>
+  ${t.columns.length > shown.length ? `<div class="more">+${t.columns.length - shown.length} more</div>` : ''}</div>`;
+}
+function chips(names) {
+  return [...new Set(names)].map(n => `<span class="chip" onclick="location.hash='t/${n}'">${esc(n)} <small>· ${esc(modOf.get(n) || '')}</small></span>`).join('') || '<span class="sub">none</span>';
+}
+function moduleView(name) {
+  const m = D.modules.find(x => x.name === name) || D.modules[0];
+  nav(m.name);
+  const own = new Set(m.tables);
+  const ext = D.relations.filter(r => own.has(r.from) && !own.has(r.to) && r.to !== 'tenants').map(r => r.to);
+  const extIn = D.relations.filter(r => own.has(r.to) && !own.has(r.from)).map(r => r.from);
+  $('#main').innerHTML = `<div class="detail"><h2>${esc(m.name)}</h2><div class="sub">${m.tables.length} tables. Hover a table to see what it links to; click it for full detail.</div>
+   <b>Depends on (other modules)</b><div class="rel">${chips(ext)}</div><b>Used by (other modules)</b><div class="rel">${chips(extIn)}</div></div>
+   <div class="grid">${m.tables.map(n => card(T.get(n))).join('')}</div>`;
+  document.querySelectorAll('.card').forEach(el => {
+    el.onmouseenter = () => {
+      const n = el.dataset.t;
+      const linked = new Set([n, ...T.get(n).fks.map(f => f.table), ...(inbound.get(n) || []).map(r => r.from)]);
+      document.querySelectorAll('.card').forEach(c => c.classList.toggle('dim', !linked.has(c.dataset.t)));
+      el.classList.add('hl');
+    };
+    el.onmouseleave = () => document.querySelectorAll('.card').forEach(c => c.classList.remove('dim', 'hl'));
+  });
+}
+function tableView(name) {
+  const t = T.get(name); if (!t) return moduleView();
+  nav(t.module);
+  const inn = inbound.get(name) || [];
+  $('#main').innerHTML = `<div class="detail"><h2>${esc(t.name)}</h2><div class="sub">${esc(t.module)} · <code>${esc(t.file)}</code> · <code>${esc(t.exportName)}</code></div>
+   <b>References</b><div class="rel">${chips(t.fks.map(f => f.table))}</div>
+   <b>Referenced by (${inn.length})</b><div class="rel">${chips(inn.map(r => r.from))}</div>
+   <div class="tw"><table class="full"><thead><tr><th>Column</th><th>Type</th><th>Null</th><th>Key</th><th>References</th></tr></thead><tbody>
+   ${t.columns.map(c => { const f = t.fks.find(x => x.columns.includes(c.name)); return `<tr><td>${esc(c.name)}</td><td>${esc(c.type)}</td><td>${c.nullable ? 'yes' : ''}</td><td>${keys(c)}</td><td>${f ? `<a href="#t/${f.table}">${esc(f.table)}</a> <small>(${esc(f.onDelete)})</small>` : ''}</td></tr>`; }).join('')}
+   </tbody></table></div>
+   ${t.uniques.length ? `<p class="sub">Unique: ${t.uniques.map(u => '(' + esc(u.join(', ')) + ')').join(' · ')}</p>` : ''}</div>`;
+}
+function overview() {
+  nav(null);
+  const mods = D.modules.map(m => m.name), n = mods.length;
+  const S = 1000, R = 400, c = S / 2;
+  const p = new Map(mods.map((m, i) => [m, { x: c + R * Math.cos(2 * Math.PI * i / n - Math.PI / 2), y: c + R * Math.sin(2 * Math.PI * i / n - Math.PI / 2) }]));
+  const e = new Map();
+  for (const r of D.relations) { const a = modOf.get(r.from), b = modOf.get(r.to); if (r.to === 'tenants' || a === b) continue; const k = [a, b].sort().join('|'); e.set(k, (e.get(k) || 0) + 1); }
+  const mx = Math.max(1, ...e.values());
+  let s = `<svg id="graph" viewBox="-230 0 ${S + 460} ${S}" role="img" aria-label="Modules and the foreign keys between them">`;
+  for (const [k, v] of e) { const [a, b] = k.split('|').map(x => p.get(x)); s += `<line data-k="${esc(k)}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--accent)" stroke-opacity="${.08 + .5 * v / mx}" stroke-width="${.5 + 5 * v / mx}"/>`; }
+  mods.forEach((m, i) => { const q = p.get(m), left = q.x < c - 5; s += `<g class="n" onclick="location.hash='m/${encodeURIComponent(m)}'"><circle cx="${q.x}" cy="${q.y}" r="${5 + Math.sqrt(D.modules[i].tables.length) * 2}" fill="hsl(${Math.round(i * 360 / n)} 65% 55%)"/><text x="${q.x + (left ? -12 : 12)}" y="${q.y + 4}" font-size="18" text-anchor="${left ? 'end' : 'start'}" style="cursor:pointer">${esc(m)} (${D.modules[i].tables.length})</text></g>`; });
+  s += '</svg>';
+  $('#main').innerHTML = `<div class="detail"><h2>Zynetix ERP — module map</h2><div class="sub">${D.counts.tables} tables, ${D.counts.columns} columns, ${D.counts.relations} foreign keys across ${D.counts.modules} modules. Line width = foreign keys between two modules (tenant links omitted). Click a module.</div>${s}<p class="legend">Generated ${esc(D.generatedAt.slice(0, 16).replace('T', ' '))} UTC from services/api/src/db.</p></div>`;
+}
+function search(q) {
+  q = q.trim().toLowerCase(); if (!q) return route();
+  const hits = D.tables.filter(t => t.name.includes(q) || t.columns.some(c => c.name.includes(q)));
+  $('#main').innerHTML = `<div class="detail"><h2>${hits.length} match${hits.length === 1 ? '' : 'es'} for “${esc(q)}”</h2></div><div class="grid">${hits.slice(0, 120).map(t => card(t)).join('')}</div>`;
+}
+function route() {
+  $('#nav').classList.remove('open');
+  const [kind, arg] = location.hash.slice(1).split('/');
+  $('#ov').classList.toggle('on', !kind);
+  if (kind === 'm') moduleView(decodeURIComponent(arg)); else if (kind === 't') tableView(arg); else overview();
+  window.scrollTo(0, 0);
+}
+let tm; $('#q').oninput = e => { clearTimeout(tm); tm = setTimeout(() => search(e.target.value), 150); };
+$('#ov').onclick = () => { location.hash = ''; route(); };
+$('#menu').onclick = () => $('#nav').classList.toggle('open');
+$('#theme').onclick = () => { const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; };
+addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>

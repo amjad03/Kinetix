@@ -29,6 +29,18 @@
         "apps/board/build/macos/Build/Products/Debug/kinetix_board.app"
       ],
       "port": 4000
+    },
+    {
+      "name": "er-docs",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4870",
+        "--directory",
+        "/Users/amjadraza/Downloads/Kinetix/docs/architecture/er"
+      ],
+      "port": 4870
     }
   ]
 }
