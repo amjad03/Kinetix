@@ -2938,6 +2938,12 @@ abstract class AppLocalizations {
   /// **'Server'**
   String get enrollServer;
 
+  /// Set-up screen note when the board was enrolled before but its device token was not found on start.
+  ///
+  /// In en, this message translates to:
+  /// **'This board was set up with {server}, but this computer did not keep its key. Enter a new enrolment code to connect it again; its settings and saved boards are still here.'**
+  String enrollKeyLost(String server);
+
   /// No description provided for @enrollRegistering.
   ///
   /// In en, this message translates to:

@@ -107,4 +107,50 @@ void main() {
     expect(find.byKey(const Key('board-settings')), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  test('a Mac keeps the device token in the login keychain (an ad-hoc signed app has no data protection keychain)', () {
+    expect(OsSecretStore.macOptions.usesDataProtectionKeychain, isFalse);
+  });
+
+  testWidgets('a board whose key was not kept opens the set-up screen with its server filled in', (tester) async {
+    await loadBoardFonts();
+    SharedPreferences.setMockInitialValues({'server_url': 'http://localhost:4000', 'device_name': 'Room 104 Board'});
+    final board = BoardController(
+      store: DeviceStore(secrets: MemorySecretStore()),
+      apiFactory: (url) => ApiClient(baseUrl: url, client: MockClient((_) async => http.Response('{}', 200))),
+      realtimeFactory: (_) => NoRealtime(),
+      outboxStore: MemoryOutboxStore(),
+    );
+    await tester.runAsync(() async {
+      await board.start();
+      await pumpEventQueue();
+    });
+    expect(board.stage, BoardStage.needsEnrollment);
+    expect(board.lostKeyServer, 'http://localhost:4000');
+    await tester.pumpWidget(localized('en', EnrollScreen(controller: board)));
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(find.byKey(const Key('enroll-server'))).controller!.text, 'http://localhost:4000');
+    expect(find.byKey(const Key('enroll-key-lost')), findsOneWidget);
+    expect(find.textContaining('did not keep its key'), findsOneWidget);
+    await tester.pumpWidget(localized('kn', EnrollScreen(key: const ValueKey('kn'), controller: board)));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('http://localhost:4000'), findsWidgets);
+    expect(tester.takeException(), isNull);
+    board.dispose();
+  });
+
+  test('a first start has no lost-key note', () async {
+    SharedPreferences.setMockInitialValues({});
+    final board = BoardController(
+      store: DeviceStore(secrets: MemorySecretStore()),
+      apiFactory: (url) => ApiClient(baseUrl: url, client: MockClient((_) async => http.Response('{}', 200))),
+      realtimeFactory: (_) => NoRealtime(),
+      outboxStore: MemoryOutboxStore(),
+    );
+    await board.start();
+    await pumpEventQueue();
+    expect(board.stage, BoardStage.needsEnrollment);
+    expect(board.lostKeyServer, isNull);
+    board.dispose();
+  });
 }
