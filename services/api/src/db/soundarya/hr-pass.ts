@@ -74,7 +74,10 @@ export async function hrPass(c: Ctx): Promise<void> {
       if (!def.roles.includes('teacher')) continue;
       const d = def.designation;
       const level = /^Professor/.test(d) ? lv('14') : /Associate/.test(d) ? lv('13A') : def.basic >= 57_000 ? lv('11') : lv('10');
-      const cell = cellAtOrAbove(level.cells, def.basic * 100);
+      // One cell for each completed year of service (the annual increments a teacher would have drawn), never below their pay.
+      const [prof] = await tx.select({ joined: staffProfiles.dateOfJoining }).from(staffProfiles).where(eq(staffProfiles.userId, c.staff[i].id));
+      const years = prof?.joined ? Math.floor((Date.parse(c.today) - Date.parse(prof.joined)) / (365.25 * 86_400_000)) : 0;
+      const cell = Math.min(level.cells.length, Math.max(cellAtOrAbove(level.cells, def.basic * 100), 1 + Math.min(years, 12)));
       await matrix.place(tx, principal, c.staff[i].id, { levelId: level.id, cell, effectiveFrom: `${month}-01`, kind: 'placement', hraClass: 'Y', orderNo: `SIMS/HR/${month.slice(0, 4)}/PM-${String(i + 1).padStart(3, '0')}`, note: '7th CPC pay matrix adopted by the governing council' });
     }
   });

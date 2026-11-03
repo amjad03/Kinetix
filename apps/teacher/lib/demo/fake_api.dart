@@ -2376,4 +2376,44 @@ class FakeTeacherApi implements TeacherApi {
     calls.add('attachLeaveDocument $requestId ${file.name}');
     if (attachError != null) throw attachError!;
   }
+
+  List<ClaimInfo> claimList = [];
+  TaxDeclarationInfo? taxDeclaration;
+  int taxYear = 2026;
+
+  @override
+  Future<List<ClaimInfo>> myClaims() async => claimList;
+
+  @override
+  Future<ClaimInfo> submitClaim({required String category, required String spentOn, required int amountPaise, required String description}) async {
+    calls.add('submitClaim $category $spentOn $amountPaise');
+    final c = ClaimInfo(id: 'rb${claimList.length + 1}', claimNo: 'RB/2026-27/000${claimList.length + 1}', category: category, spentOn: spentOn, amountPaise: amountPaise, description: description, hasBill: false, status: 'submitted');
+    claimList = [c, ...claimList];
+    return c;
+  }
+
+  @override
+  Future<void> attachClaimBill(String claimId, ChatUpload file) async => calls.add('attachClaimBill $claimId ${file.name}');
+
+  @override
+  Future<(int, TaxDeclarationInfo?)> myTaxDeclaration() async => (taxYear, taxDeclaration);
+
+  @override
+  Future<TaxDeclarationInfo> saveTaxDeclaration({required int fy, required String regime, required int rentMonthlyPaise, required int rentMonths, String? landlordPan, required List<TaxItemInfo> items, int? expectedVersion}) async {
+    calls.add('saveTaxDeclaration $fy $regime $rentMonthlyPaise ${items.map((i) => '${i.section}:${i.declaredPaise}').join(',')}');
+    final d = TaxDeclarationInfo(fy: fy, fyLabel: '$fy-${(fy + 1) % 100}', regime: regime, status: 'draft', rentMonthlyPaise: rentMonthlyPaise, rentMonths: rentMonths, items: [for (final (k, i) in items.indexed) TaxItemInfo(id: 'ti$k', section: i.section, label: i.label, declaredPaise: i.declaredPaise)], oldTaxPaise: 4200000, newTaxPaise: 3900000, landlordPan: landlordPan, version: (expectedVersion ?? 0) + 1);
+    taxDeclaration = d;
+    return d;
+  }
+
+  @override
+  Future<TaxDeclarationInfo> submitTaxDeclaration(int fy, {bool proofs = false}) async {
+    calls.add('submitTaxDeclaration $fy ${proofs ? 'proofs' : 'declaration'}');
+    final d = taxDeclaration!;
+    taxDeclaration = TaxDeclarationInfo(fy: d.fy, fyLabel: d.fyLabel, regime: d.regime, status: proofs ? 'proofs_submitted' : 'submitted', rentMonthlyPaise: d.rentMonthlyPaise, rentMonths: d.rentMonths, items: d.items, oldTaxPaise: d.oldTaxPaise, newTaxPaise: d.newTaxPaise, version: d.version + 1);
+    return taxDeclaration!;
+  }
+
+  @override
+  Future<void> attachTaxProof(String itemId, ChatUpload file) async => calls.add('attachTaxProof $itemId ${file.name}');
 }

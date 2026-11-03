@@ -4439,5 +4439,286 @@
         "type": "int"
       }
     }
+  },
+  "taxClaimsTitle": "Tax and claims",
+  "@taxClaimsTitle": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxClaimsBody": "Investment declaration for TDS, and reimbursement claims",
+  "@taxClaimsBody": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxDeclarationTab": "Declaration",
+  "@taxDeclarationTab": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimsTab": "Claims",
+  "@claimsTab": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxDeclarationFor": "Investment declaration, FY {fy}",
+  "@taxDeclarationFor": {
+    "description": "Tax and claims (Profile → Work).",
+    "placeholders": {
+      "fy": {
+        "type": "String"
+      }
+    }
+  },
+  "taxEstimate": "Tax for the year: {oldTax} (old regime) or {newTax} (new regime)",
+  "@taxEstimate": {
+    "description": "Tax and claims (Profile → Work).",
+    "placeholders": {
+      "oldTax": {
+        "type": "String"
+      },
+      "newTax": {
+        "type": "String"
+      }
+    }
+  },
+  "taxRegimeNew": "New regime",
+  "@taxRegimeNew": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxRegimeOld": "Old regime",
+  "@taxRegimeOld": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxRent": "Rent a month (₹)",
+  "@taxRent": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxRentMonths": "Months",
+  "@taxRentMonths": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxLandlordPan": "Landlord's PAN",
+  "@taxLandlordPan": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxLandlordPanHelp": "Needed when rent passes ₹1 lakh a year",
+  "@taxLandlordPanHelp": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSection": "Section",
+  "@taxSection": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxWhat": "What it is",
+  "@taxWhat": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxAmount": "Amount (₹)",
+  "@taxAmount": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxAddItem": "Add an investment",
+  "@taxAddItem": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxRemove": "Remove",
+  "@taxRemove": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSaveDraft": "Save draft",
+  "@taxSaveDraft": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSubmit": "Submit",
+  "@taxSubmit": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSubmitProofs": "Submit proofs",
+  "@taxSubmitProofs": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxAttachProof": "Attach proof",
+  "@taxAttachProof": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSaved": "Declaration saved",
+  "@taxSaved": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSent": "Sent to HR for approval",
+  "@taxSent": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxProofsSent": "Proofs sent to HR",
+  "@taxProofsSent": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxProofAttached": "Proof attached",
+  "@taxProofAttached": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxAmountError": "Enter each amount in rupees",
+  "@taxAmountError": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxStatusDraft": "Draft",
+  "@taxStatusDraft": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxStatusSubmitted": "Waiting for approval",
+  "@taxStatusSubmitted": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxStatusApproved": "Approved: attach proofs",
+  "@taxStatusApproved": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxStatusProofs": "Proofs waiting",
+  "@taxStatusProofs": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxStatusVerified": "Verified",
+  "@taxStatusVerified": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxStatusRejected": "Sent back",
+  "@taxStatusRejected": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxProofNone": "No proof yet",
+  "@taxProofNone": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxProofSubmitted": "Proof attached",
+  "@taxProofSubmitted": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxProofAccepted": "Proof accepted",
+  "@taxProofAccepted": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxProofRejected": "Proof not accepted",
+  "@taxProofRejected": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec80c": "80C: LIC, PPF, ELSS, tuition fees, housing loan principal",
+  "@taxSec80c": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec80ccd1b": "80CCD(1B): own NPS contribution",
+  "@taxSec80ccd1b": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec80d": "80D: health insurance",
+  "@taxSec80d": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec80dParents": "80D: parents' health insurance",
+  "@taxSec80dParents": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec80dSenior": "80D: senior citizen parents",
+  "@taxSec80dSenior": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec80e": "80E: education loan interest",
+  "@taxSec80e": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec80g": "80G: donations",
+  "@taxSec80g": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec80tta": "80TTA: savings bank interest",
+  "@taxSec80tta": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "taxSec24b": "24(b): housing loan interest",
+  "@taxSec24b": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimNew": "New claim",
+  "@claimNew": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimsEmpty": "No claims yet. Claim travel, conference, book or phone bills here.",
+  "@claimsEmpty": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimCategory": "Category",
+  "@claimCategory": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimTaxFreeHelp": "Official travel, conferences, books and telephone are paid tax free; medical and fuel are taxable",
+  "@claimTaxFreeHelp": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimBillDate": "Bill date",
+  "@claimBillDate": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimWhat": "What the bill was for",
+  "@claimWhat": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimAttachBill": "Attach the bill",
+  "@claimAttachBill": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimSend": "Send claim",
+  "@claimSend": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimSent": "Claim sent to HR",
+  "@claimSent": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimFormError": "Enter the amount and what the bill was for",
+  "@claimFormError": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimCatTravel": "Official travel",
+  "@claimCatTravel": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimCatConference": "Conference or seminar",
+  "@claimCatConference": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimCatBooks": "Books and journals",
+  "@claimCatBooks": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimCatTelephone": "Telephone and internet",
+  "@claimCatTelephone": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimCatMedical": "Medical",
+  "@claimCatMedical": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimCatFuel": "Fuel",
+  "@claimCatFuel": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimCatOther": "Other",
+  "@claimCatOther": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimStatusSubmitted": "Waiting",
+  "@claimStatusSubmitted": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimStatusApproved": "Approved",
+  "@claimStatusApproved": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimStatusPaid": "Paid",
+  "@claimStatusPaid": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimStatusRejected": "Rejected",
+  "@claimStatusRejected": {
+    "description": "Tax and claims (Profile → Work)."
+  },
+  "claimStatusCancelled": "Cancelled",
+  "@claimStatusCancelled": {
+    "description": "Tax and claims (Profile → Work)."
   }
 }
