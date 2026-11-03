@@ -1,4 +1,5 @@
 import { subjectFrequency } from '../db/schema-g1.js';
+import { facultyUnavailability } from '../db/schema-academics-pass.js';
 import { frequencyProblem } from '../scheduling/scheduling-logic.js';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { and, eq, gt, inArray, isNull, lt, ne, or, sql } from 'drizzle-orm';
@@ -104,6 +105,20 @@ export async function validateSlot(tx: Tx, b: SlotInput, replacing: string | nul
   }
   const clash = await findClash(tx, { ...b, combinedSectionIds: combined }, replacing);
   if (clash) throw new ConflictException({ statusCode: 409, message: clash.message, error: 'Conflict', code: clash.code });
+  // The teacher said they cannot be timetabled then (Timetable → Setup → Unavailability).
+  const [away] = await tx
+    .select({ reason: facultyUnavailability.reason })
+    .from(facultyUnavailability)
+    .where(
+      and(
+        eq(facultyUnavailability.teacherId, teacher.id),
+        eq(facultyUnavailability.dayOfWeek, b.dayOfWeek),
+        sql`(${facultyUnavailability.toDate} is null or ${facultyUnavailability.toDate} >= current_date)`,
+        sql`(${facultyUnavailability.startsAt} is null or (${facultyUnavailability.startsAt} < ${b.endsAt}::time and ${facultyUnavailability.endsAt} > ${b.startsAt}::time))`,
+      ),
+    )
+    .limit(1);
+  if (away) throw new ConflictException({ statusCode: 409, message: `This teacher is not available then${away.reason ? ` (${away.reason})` : ''}`, error: 'Conflict', code: 'TIMETABLE_TEACHER_UNAVAILABLE' });
   // Subject frequency: a subject may appear only so often in a week and in a day.
   const [rule] = await tx.select().from(subjectFrequency).where(eq(subjectFrequency.subjectId, b.subjectId));
   if (rule) {

@@ -5,6 +5,8 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { Clock, localParts } from '../common/time.js';
 import { periodHints } from '../attendance-governance/suggestions.js';
 import type { Tx } from '../db/db.service.js';
+import { alias } from 'drizzle-orm/pg-core';
+import { teachingLogs } from '../db/schema-academics-pass.js';
 import { attendanceRecords, homework, lessonPlans, rooms, sections, students, subjects, teacherSubstitutions, timetableSlots, users } from '../db/schema.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
@@ -72,6 +74,43 @@ export class TeacherService {
     const rows = all.filter((r) => !holidays.on(day, r.programId));
     const holiday = holidays.forAll(day) ?? (all.length > 0 && rows.length === 0 ? holidays.on(day, all[0].programId) : null);
 
+    // Substitutions on the day: periods this teacher covers for a colleague, and own periods a colleague covers.
+    const original = alias(users, 'original_teacher');
+    const covering = holidays.forAll(day)
+      ? []
+      : await tx
+          .select({
+            slot: timetableSlots,
+            section: { id: sections.id, displayName: sections.displayName },
+            programId: sections.programId,
+            subject: { id: subjects.id, code: subjects.code, name: subjects.name },
+            room: { id: rooms.id, name: rooms.name },
+            forTeacher: { id: original.id, fullName: original.fullName },
+          })
+          .from(teacherSubstitutions)
+          .innerJoin(timetableSlots, eq(timetableSlots.id, teacherSubstitutions.slotId))
+          .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
+          .innerJoin(subjects, eq(subjects.id, timetableSlots.subjectId))
+          .innerJoin(original, eq(original.id, teacherSubstitutions.originalTeacherId))
+          .leftJoin(rooms, eq(rooms.id, timetableSlots.roomId))
+          .where(and(eq(teacherSubstitutions.substituteTeacherId, teacherId), eq(teacherSubstitutions.date, day), eq(teacherSubstitutions.status, 'assigned')));
+    const coveredBy = new Map(
+      rows.length
+        ? (
+            await tx
+              .select({ slotId: teacherSubstitutions.slotId, id: users.id, fullName: users.fullName })
+              .from(teacherSubstitutions)
+              .innerJoin(users, eq(users.id, teacherSubstitutions.substituteTeacherId))
+              .where(and(eq(teacherSubstitutions.date, day), eq(teacherSubstitutions.status, 'assigned'), inArray(teacherSubstitutions.slotId, rows.map((r) => r.slot.id))))
+          ).map((c) => [c.slotId, { id: c.id, fullName: c.fullName }])
+        : [],
+    );
+    const forOthers = covering.filter((c) => !holidays.on(day, c.programId) && !rows.some((r) => r.slot.id === c.slot.id));
+    const allSlotIds = [...rows.map((r) => r.slot.id), ...forOthers.map((c) => c.slot.id)];
+    const logged = new Set(
+      allSlotIds.length ? (await tx.select({ slotId: teachingLogs.timetableSlotId }).from(teachingLogs).where(and(eq(teachingLogs.date, day), inArray(teachingLogs.timetableSlotId, allSlotIds)))).map((r) => r.slotId) : [],
+    );
+
     const taken = new Set<string>();
     if (rows.length) {
       const marked = await tx
@@ -90,17 +129,30 @@ export class TeacherService {
       for (const r of lp) planned.add(r.slotId);
     }
 
-    const periods: TeacherPeriod[] = rows.map((r) => ({
-      slotId: r.slot.id,
-      startsAt: r.slot.startsAt,
-      endsAt: r.slot.endsAt,
-      section: r.section,
-      subject: r.subject,
-      room: r.room?.id ? { id: r.room.id, name: r.room.name } : null,
-      isNow: day === now.date && r.slot.startsAt <= now.time && now.time < r.slot.endsAt,
-      attendanceTaken: taken.has(r.slot.id),
-      lessonPlanned: planned.has(r.slot.id),
-    }));
+    if (forOthers.length) {
+      const marked = await tx
+        .selectDistinct({ slotId: attendanceRecords.timetableSlotId })
+        .from(attendanceRecords)
+        .where(and(eq(attendanceRecords.date, day), inArray(attendanceRecords.timetableSlotId, forOthers.map((r) => r.slot.id))));
+      for (const m of marked) if (m.slotId) taken.add(m.slotId);
+    }
+    const periods: TeacherPeriod[] = [...rows.map((r) => ({ ...r, forTeacher: null })), ...forOthers]
+      .map((r) => ({
+        slotId: r.slot.id,
+        startsAt: r.slot.startsAt,
+        endsAt: r.slot.endsAt,
+        section: r.section,
+        subject: r.subject,
+        room: r.room?.id ? { id: r.room.id, name: r.room.name } : null,
+        isNow: day === now.date && r.slot.startsAt <= now.time && now.time < r.slot.endsAt,
+        attendanceTaken: taken.has(r.slot.id),
+        lessonPlanned: planned.has(r.slot.id),
+        substituteFor: r.forTeacher,
+        coveredBy: coveredBy.get(r.slot.id) ?? null,
+        batch: r.slot.batch,
+        logged: logged.has(r.slot.id),
+      }))
+      .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
     // The next day with classes (not cancelled by a holiday), so an empty Sunday can point at Monday.
     let nextTeachingDate: string | null = null;

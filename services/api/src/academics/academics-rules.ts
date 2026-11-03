@@ -66,6 +66,9 @@ export const SETTINGS_SCHEMAS = {
     maxPeriodsPerTeacherPerWeek: z.number().int().min(1).max(70),
     changeNeedsApproval: z.boolean(),
     substitutionNeedsApproval: z.boolean(),
+    /** The timetable generator: most periods a teacher teaches in a row, and how many periods make one lab block. */
+    maxConsecutivePerTeacher: z.number().int().min(1).max(8).default(3),
+    labBlockPeriods: z.number().int().min(1).max(4).default(2),
   }),
   registration: z.object({ minCredits: z.number().min(0).max(60), maxCredits: z.number().min(1).max(60), advisorApproval: z.boolean(), addDropDays: z.number().int().min(0).max(60), waitlist: z.boolean() }),
   /** Teaching load norms (UGC: 16 hours a week for an assistant professor, 14 for associate professors and professors). */
@@ -115,7 +118,7 @@ export const SETTINGS_DEFAULTS: { [K in SettingsKind]: Settings<K> } = {
     lockBeforePublish: false,
     passPercent: 35,
   },
-  timetable: { periodsPerDay: 8, periodMinutes: 45, maxPeriodsPerTeacherPerDay: 6, maxPeriodsPerTeacherPerWeek: 30, changeNeedsApproval: true, substitutionNeedsApproval: true },
+  timetable: { periodsPerDay: 8, periodMinutes: 45, maxPeriodsPerTeacherPerDay: 6, maxPeriodsPerTeacherPerWeek: 30, changeNeedsApproval: true, substitutionNeedsApproval: true, maxConsecutivePerTeacher: 3, labBlockPeriods: 2 },
   registration: { minCredits: 16, maxCredits: 26, advisorApproval: true, addDropDays: 14, waitlist: true },
   workload: {
     defaultHoursPerWeek: 16,

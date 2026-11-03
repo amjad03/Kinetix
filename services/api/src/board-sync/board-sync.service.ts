@@ -9,6 +9,8 @@ import { pollCoMap } from '../db/schema-assist.js';
 import { boardSessions, coSets, courseOutcomes, devices, polls, examPapers, examSeats, examSessions, invigilationDuties, rooms, sections, subjects, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
+import { DayTimetableService } from '../timetable/day-timetable.service.js';
+import { TeacherService } from '../teacher/teacher.service.js';
 
 /** How long before a paper starts the board switches to exam room mode. */
 export const EXAM_LEAD_MINUTES = 15;
@@ -25,7 +27,28 @@ export class BoardSyncService {
     private readonly clock: Clock,
     private readonly timetable: TimetableService,
     private readonly sessions: SessionsService,
+    private readonly days: DayTimetableService,
+    private readonly teachers: TeacherService,
   ) {}
+
+  /** Today's timetable of the board's room and of the signed-in teacher (see the controller). */
+  async today(tx: Tx, p: BoardPrincipal) {
+    const roomId = await this.roomOf(tx, p.deviceId);
+    const now = localParts(this.clock.now(), await this.timetable.tenantTimezone(tx));
+    const [room] = roomId ? await tx.select({ id: rooms.id, name: rooms.name }).from(rooms).where(eq(rooms.id, roomId)) : [];
+    const [roomDay] = roomId ? await this.days.forRoom(tx, roomId, now.date, now.date) : [];
+    const mine = await this.teachers.timetableFor(tx, p.teacherId, now.date);
+    const current = await this.timetable.currentSlotForTeacher(tx, p.teacherId, roomId);
+    return {
+      date: now.date,
+      time: now.time.slice(0, 5),
+      room: room ?? null,
+      holiday: roomDay?.holiday ?? mine.holiday?.title ?? null,
+      roomPeriods: (roomDay?.periods ?? []).map((x) => ({ ...x, isNow: x.startsAt <= now.time.slice(0, 5) && now.time.slice(0, 5) < x.endsAt })),
+      myPeriods: mine.periods,
+      currentSlotId: current?.id ?? null,
+    };
+  }
 
   private async roomOf(tx: Tx, deviceId: string): Promise<string | null> {
     const [d] = await tx.select({ roomId: devices.roomId }).from(devices).where(eq(devices.id, deviceId));
