@@ -19,8 +19,9 @@ export interface RankedCandidate extends RankCandidate {
   categoryRank: number | null;
 }
 
-export function compareCandidates(a: RankCandidate, b: RankCandidate): number {
-  if (b.indexMark !== a.indexMark) return b.indexMark - a.indexMark;
+/** `ascending`: the index mark is an entrance rank, so the lowest comes first. */
+export function compareCandidates(a: RankCandidate, b: RankCandidate, ascending = false): number {
+  if (b.indexMark !== a.indexMark) return ascending ? a.indexMark - b.indexMark : b.indexMark - a.indexMark;
   for (let i = 0; i < Math.max(a.tie.length, b.tie.length); i++) {
     const d = (b.tie[i] ?? 0) - (a.tie[i] ?? 0);
     if (d !== 0) return d;
@@ -30,8 +31,8 @@ export function compareCandidates(a: RankCandidate, b: RankCandidate): number {
 }
 
 /** Overall rank 1..n (no gaps: ties are fully broken) plus the rank inside each category. */
-export function buildRankList(cands: RankCandidate[]): RankedCandidate[] {
-  const sorted = [...cands].sort(compareCandidates);
+export function buildRankList(cands: RankCandidate[], ascending = false): RankedCandidate[] {
+  const sorted = [...cands].sort((a, b) => compareCandidates(a, b, ascending));
   const perCat = new Map<string, number>();
   return sorted.map((c, i) => {
     let categoryRank: number | null = null;

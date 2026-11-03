@@ -91,7 +91,7 @@ export class DepthService {
     const cands: RankCandidate[] = rows
       .filter((r) => r.m.complete && r.m.indexMark !== null)
       .map((r) => ({ id: r.a.id, applicationNo: r.a.applicationNo, indexMark: r.m.indexMark!, category: categoryOf(r.a), dateOfBirth: r.a.dateOfBirth ?? '9999-12-31', tie: f.tieBreak.map((k) => Number(r.m.marks[k] ?? 0)) }));
-    const ranked = buildRankList(cands);
+    const ranked = buildRankList(cands, !!f.rankBy);
     for (const r of ranked) await tx.update(applicationIndexMarks).set({ overallRank: r.overallRank, categoryRank: r.categoryRank }).where(eq(applicationIndexMarks.applicationId, r.id));
     await audit(tx, { ...auditActor(actor), action: 'admissions.rank_list_built.v1', subjectType: 'admission_cycle', subjectId: cycleId, data: { ranked: ranked.length, incomplete: incomplete.length } });
     return { ranked: ranked.length, incomplete };
