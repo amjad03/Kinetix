@@ -477,9 +477,13 @@ export class FeesController {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
     const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
-    const pay = tenant && orderId && /^[A-Za-z0-9_-]{1,64}$/.test(orderId) ? await this.flow.paymentOfOrder(tenant.id, orderId) : null;
-    if (!tenant || !pay) return RETURN_PAGE(false);
-    return RETURN_PAGE((await this.flow.refresh(tenant.id, pay)).status === 'paid');
+    const ok = tenant && orderId && /^[A-Za-z0-9_-]{1,64}$/.test(orderId);
+    const pay = ok ? await this.flow.paymentOfOrder(tenant.id, orderId) : null;
+    if (tenant && pay) return RETURN_PAGE((await this.flow.refresh(tenant.id, pay)).status === 'paid');
+    // An admission application fee paid through the same gateway.
+    const app = ok ? await this.flow.applicationPaymentOfOrder(tenant.id, orderId) : null;
+    if (!tenant || !app) return RETURN_PAGE(false);
+    return RETURN_PAGE((await this.flow.refreshApplication(tenant.id, app)).status === 'paid');
   }
 
   private paymentEntity(req: Request) {

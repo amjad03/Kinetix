@@ -12,6 +12,7 @@ import { Day, Phone } from '../common/zod-fields.js';
 import { DbService } from '../db/db.service.js';
 import { academicYears, admissionCycles, applicationDocuments, applicationPayments, applications, auditLog, enquiries, enquiryActivities, meritLists, programs, users } from '../db/schema.js';
 import { ApplicationFeesService } from '../fees/application-fees.service.js';
+import { EnrolmentService } from './pass/enrolment.service.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { AdmissionsService, cycleConfig } from './admissions.service.js';
 import { EnquiriesService } from './enquiries.service.js';
@@ -50,6 +51,8 @@ const CycleBase = z.object({
       ageOn: Day.optional(),
       minimums: z.array(z.object({ field: z.string(), min: z.number() })).max(20).optional(),
       allowed: z.array(z.object({ field: z.string(), values: z.array(z.string()).min(1) })).max(20).optional(),
+      /** The university-profile preset (admissions/pass/eligibility-profile.ts) checked as well; kept when the cycle is edited. */
+      profilePreset: z.string().regex(/^[a-z0-9-]{2,60}$/).optional(),
     })
     .default({}),
   meritRules: z.array(z.object({ field: z.string(), weight: z.number().min(0).max(1000) })).max(20).default([]),
@@ -96,6 +99,7 @@ export class AdmissionsController {
     private readonly svc: AdmissionsService,
     private readonly enquiriesSvc: EnquiriesService,
     private readonly fees: ApplicationFeesService,
+    private readonly enrolment: EnrolmentService,
     private readonly storage: ObjectStorage,
   ) {}
 
@@ -428,6 +432,6 @@ export class AdmissionsController {
   @Post('applications/:id/enroll')
   @Auth('user', ADMISSIONS_ROLES)
   enroll(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(EnrollBody)) body: z.infer<typeof EnrollBody>) {
-    return this.db.withTenant(p.tenantId, (tx) => this.svc.enroll(tx, { tenantId: p.tenantId, userId: p.userId }, id, body));
+    return this.db.withTenant(p.tenantId, (tx) => this.enrolment.enroll(tx, p, id, body));
   }
 }

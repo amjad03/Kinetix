@@ -18,7 +18,12 @@ import {
 import { governedParams } from '../../governance/rule-params.js';
 import { AdmissionsService, normCategory, categoryOf } from '../admissions.service.js';
 import { type Actor, auditActor } from '../enquiries.service.js';
-import { MERIT, runRound, seatMatrixFromShares, type Contender, type Held, type Response, type SeatRow } from './allotment.js';
+import { MERIT, seatMatrixFromShares, type Response, type SeatRow } from './allotment.js';
+import { allotRound, categoryKey, type Contender, type Held } from '../pass/reservation.js';
+import { canMoveApplication, type ApplicationStatus } from '@zynetix/shared';
+
+/** The seat type an application competes for, from its quota (sports and the like sit in the open seats). */
+export const seatTypeOf = (quota: string | null | undefined): string => (['comedk', 'management', 'nri'].includes(quota ?? '') ? quota! : MERIT);
 import { tdsOn, type CommissionRule } from './commission.js';
 import { computeIndexMark, formulaProblems, INDEX_PRESETS, overlayWeights, type IndexFormula } from './index-mark.js';
 import { buildRankList, type RankCandidate } from './rank-list.js';
@@ -128,7 +133,7 @@ export class DepthService {
       if (total > cycle.seats) throw new BadRequestException(`The options have ${total} seats but the cycle has only ${cycle.seats}`);
       rows = seatMatrixFromShares(input.generate, await this.admissions.seatQuotas(tx, cycleId), cycle.seats);
     } else rows = input.rows ?? [];
-    rows = rows.map((r) => ({ ...r, category: r.category === MERIT ? MERIT : normCategory(r.category) })).filter((r) => r.seats > 0);
+    rows = rows.map((r) => ({ ...r, category: r.category === MERIT ? MERIT : categoryKey(normCategory(r.category)) })).filter((r) => r.seats > 0);
     const keys = rows.map((r) => `${r.option}|${r.category}`);
     if (new Set(keys).size !== keys.length) throw new BadRequestException('An option and category appear twice');
     if (rows.reduce((n, r) => n + r.seats, 0) > cycle.seats) throw new BadRequestException(`The seat matrix has more seats than the cycle's ${cycle.seats}`);
@@ -145,8 +150,10 @@ export class DepthService {
     const matrix = await this.seatMatrix(tx, cycleId);
     const held = await this.latestAllotments(tx, cycleId);
     return matrix.map((m) => {
-      const taken = [...held.values()].filter((h) => h.optionLabel === m.optionLabel && h.seatCategory === m.category && HOLDING.includes(h.response as Response)).length;
-      return { option: m.optionLabel, category: m.category, seats: m.seats, held: taken, left: m.seats - taken };
+      const inRow = [...held.values()].filter((h) => h.optionLabel === m.optionLabel && h.seatType === m.seatType && h.seatCategory === m.category && HOLDING.includes(h.response as Response));
+      const horizontalHeld: Record<string, number> = {};
+      for (const h of inRow) if (h.horizontal) horizontalHeld[h.horizontal] = (horizontalHeld[h.horizontal] ?? 0) + 1;
+      return { option: m.optionLabel, seatType: m.seatType, category: m.category, supernumerary: m.supernumerary, horizontal: m.horizontal, horizontalHeld, seats: m.seats, held: inRow.length, left: m.seats - inRow.length };
     });
   }
 
@@ -208,10 +215,13 @@ export class DepthService {
     if (!ranked.length) throw new BadRequestException('Build the rank list and collect preferences first');
     const prev = await this.latestAllotments(tx, cycleId);
     const out = new Set([...prev.values()].filter((p) => p.response === 'reject' || p.response === 'forfeit').map((p) => p.applicationId));
-    const contenders: Contender[] = ranked.filter((r) => !out.has(r.a.id)).map((r) => ({ id: r.a.id, rank: r.m.overallRank!, category: categoryOf(r.a), prefs: r.p.options }));
+    // Each candidate competes in their own seat type, for the open row and their category's, plus any verified claims.
+    const contenders: Contender[] = ranked
+      .filter((r) => !out.has(r.a.id))
+      .map((r) => ({ id: r.a.id, rank: r.m.overallRank!, seatType: seatTypeOf(r.a.quota), category: categoryKey(categoryOf(r.a)), horizontal: r.a.claims?.horizontal ?? [], supernumerary: r.a.claims?.supernumerary ?? [], prefs: r.p.options }));
     const held = new Map<string, Held>();
-    for (const p of prev.values()) if (p.response === 'freeze' || p.response === 'float' || p.response === 'slide') held.set(p.applicationId, { option: p.optionLabel, seatCategory: p.seatCategory, response: p.response });
-    const { allotments } = runRound(matrix.map((m) => ({ option: m.optionLabel, category: m.category, seats: m.seats })), contenders, held);
+    for (const p of prev.values()) if (p.response === 'freeze' || p.response === 'float' || p.response === 'slide') held.set(p.applicationId, { option: p.optionLabel, seatType: p.seatType, seatCategory: p.seatCategory, response: p.response });
+    const { allotments } = allotRound(matrix.map((m) => ({ option: m.optionLabel, seatType: m.seatType, category: m.category, seats: m.seats, horizontal: m.horizontal ?? {}, supernumerary: m.supernumerary })), contenders, held);
     const roundNo = (last?.roundNo ?? 0) + 1;
     const [round] = await tx.insert(admissionRounds).values({ tenantId: actor.tenantId, cycleId, roundNo, createdBy: actor.userId }).returning();
     if (allotments.length) {
@@ -223,6 +233,8 @@ export class DepthService {
           applicationId: a.id,
           optionLabel: a.option,
           seatCategory: a.seatCategory,
+          seatType: a.seatType,
+          horizontal: a.horizontal,
           rank: a.rank,
           kind: a.kind,
           // A float holder who found nothing better keeps what they said last time.
@@ -243,21 +255,45 @@ export class DepthService {
       .innerJoin(applications, eq(applications.id, admissionAllotments.applicationId))
       .where(eq(admissionAllotments.roundId, roundId))
       .orderBy(asc(admissionAllotments.rank));
-    return { round, allotments: rows.map((r) => ({ id: r.al.id, applicationId: r.al.applicationId, applicationNo: r.no, name: r.name, rank: r.al.rank, option: r.al.optionLabel, seatCategory: r.al.seatCategory, kind: r.al.kind, response: r.al.response })) };
+    return { round, allotments: rows.map((r) => ({ id: r.al.id, applicationId: r.al.applicationId, applicationNo: r.no, name: r.name, rank: r.al.rank, option: r.al.optionLabel, seatType: r.al.seatType, seatCategory: r.al.seatCategory, horizontal: r.al.horizontal, kind: r.al.kind, response: r.al.response })) };
   }
 
   async publishRound(tx: Tx, actor: Actor, roundId: string) {
     const [round] = await tx.update(admissionRounds).set({ status: 'published', publishedAt: new Date() }).where(and(eq(admissionRounds.id, roundId), eq(admissionRounds.status, 'draft'))).returning();
     if (!round) throw new ConflictException('Only a draft round can be published');
-    await audit(tx, { ...auditActor(actor), action: 'admissions.round_published.v1', subjectType: 'admission_round', subjectId: roundId, data: { roundNo: round.roundNo } });
-    return round;
+    // A new or upgraded seat is an offer on the application (the seat it names is recorded with it).
+    const rows = await tx.select().from(admissionAllotments).where(eq(admissionAllotments.roundId, roundId));
+    let offered = 0;
+    for (const al of rows) {
+      await this.recordSeat(tx, al);
+      if (al.kind !== 'kept' && (await this.moveApplication(tx, actor, al.applicationId, 'offered', `Allotted ${al.optionLabel} (${al.seatType}, ${al.seatCategory}) in round ${round.roundNo}`))) offered++;
+    }
+    await audit(tx, { ...auditActor(actor), action: 'admissions.round_published.v1', subjectType: 'admission_round', subjectId: roundId, data: { roundNo: round.roundNo, offered } });
+    return { ...round, offered };
+  }
+
+  /** Writes the seat an allotment names onto its application (the fee structure and returns read it there). */
+  private async recordSeat(tx: Tx, al: typeof admissionAllotments.$inferSelect) {
+    await tx.update(applications).set({ seatType: al.seatType, seatCategory: al.seatCategory, allottedOption: al.optionLabel, updatedAt: new Date() }).where(eq(applications.id, al.applicationId));
+  }
+
+  /** Moves an application along with its allotment when the move is allowed from where it stands; false otherwise. */
+  private async moveApplication(tx: Tx, actor: Actor, applicationId: string, to: ApplicationStatus, reason: string): Promise<boolean> {
+    const [a] = await tx.select({ status: applications.status }).from(applications).where(eq(applications.id, applicationId));
+    if (!a || a.status === to || !canMoveApplication(a.status as ApplicationStatus, to)) return false;
+    await this.admissions.setStatus(tx, actor, applicationId, to, reason, { skipSeatCheck: true, by: 'counselling_round' });
+    return true;
   }
 
   /** Closes a published round: allotments nobody answered are forfeited and their seats go back into the pool. */
   async closeRound(tx: Tx, actor: Actor, roundId: string) {
     const [round] = await tx.update(admissionRounds).set({ status: 'closed', closedAt: new Date() }).where(and(eq(admissionRounds.id, roundId), eq(admissionRounds.status, 'published'))).returning();
     if (!round) throw new ConflictException('Only a published round can be closed');
-    const forfeited = await tx.update(admissionAllotments).set({ response: 'forfeit' }).where(and(eq(admissionAllotments.roundId, roundId), eq(admissionAllotments.response, 'pending'))).returning({ id: admissionAllotments.id });
+    const forfeited = await tx.update(admissionAllotments).set({ response: 'forfeit' }).where(and(eq(admissionAllotments.roundId, roundId), eq(admissionAllotments.response, 'pending'))).returning({ id: admissionAllotments.id, applicationId: admissionAllotments.applicationId });
+    for (const f of forfeited) {
+      await tx.update(applications).set({ seatType: null, seatCategory: null, allottedOption: null }).where(eq(applications.id, f.applicationId));
+      await this.moveApplication(tx, actor, f.applicationId, 'declined', `Seat forfeited: no answer by the close of round ${round.roundNo}`);
+    }
     await audit(tx, { ...auditActor(actor), action: 'admissions.round_closed.v1', subjectType: 'admission_round', subjectId: roundId, data: { roundNo: round.roundNo, forfeited: forfeited.length } });
     return { ...round, forfeited: forfeited.length };
   }
@@ -272,6 +308,14 @@ export class DepthService {
     if (!row) throw new NotFoundException('Allotment not found');
     if (row.status !== 'published') throw new ConflictException('This round is not open for answers');
     const [done] = await tx.update(admissionAllotments).set({ response, respondedAt: new Date() }).where(eq(admissionAllotments.id, allotmentId)).returning();
+    // Freeze, float and slide keep the seat (the candidate reports and pays); reject gives it up.
+    if (response === 'reject') {
+      await tx.update(applications).set({ seatType: null, seatCategory: null, allottedOption: null }).where(eq(applications.id, row.al.applicationId));
+      await this.moveApplication(tx, actor, row.al.applicationId, 'declined', 'Rejected the allotted seat');
+    } else {
+      await this.recordSeat(tx, done);
+      await this.moveApplication(tx, actor, row.al.applicationId, 'accepted', `Accepted the allotted seat (${response})`);
+    }
     await audit(tx, { ...auditActor(actor), action: 'admissions.allotment_response.v1', subjectType: 'application', subjectId: row.al.applicationId, data: { allotmentId, response } });
     return done;
   }
@@ -284,7 +328,7 @@ export class DepthService {
       .innerJoin(admissionRounds, eq(admissionRounds.id, admissionAllotments.roundId))
       .where(and(eq(admissionAllotments.applicationId, applicationId), inArray(admissionRounds.status, ['published', 'closed'])))
       .orderBy(desc(admissionRounds.roundNo));
-    return rows.map((r) => ({ id: r.al.id, roundNo: r.roundNo, roundStatus: r.status, option: r.al.optionLabel, seatCategory: r.al.seatCategory, kind: r.al.kind, response: r.al.response }));
+    return rows.map((r) => ({ id: r.al.id, roundNo: r.roundNo, roundStatus: r.status, option: r.al.optionLabel, seatType: r.al.seatType, seatCategory: r.al.seatCategory, kind: r.al.kind, response: r.al.response }));
   }
 
   // ---- agent commission rules and payouts -----------------------------------------------------------

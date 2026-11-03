@@ -2041,6 +2041,8 @@ export const enquiries = pgTable(
     leadScore: integer('lead_score').notNull().default(0),
     /** The agent or partner whose referral code the family used. */
     agentId: uuid('agent_id').references((): AnyPgColumn => admissionAgents.id, { onDelete: 'set null' }),
+    /** The family asked not to be messaged again (STOP reply or a request to the office); broadcasts skip them. */
+    optedOutAt: timestamp('opted_out_at', { withTimezone: true }),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -2167,6 +2169,25 @@ export const applications = pgTable(
     /** The seat quota applied for: merit (default), management, nri, sports and the like. */
     quota: text('quota').notNull().default('merit'),
     studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
+    /** The entrance test (kcet, comedk, neet, jee_main, pgcet, kmat) with the applicant's roll number, rank and score (migration 0196). */
+    entranceExam: text('entrance_exam'),
+    entranceRollNo: text('entrance_roll_no'),
+    entranceRank: integer('entrance_rank'),
+    entranceScore: numeric('entrance_score', { precision: 9, scale: 3, mode: 'number' }),
+    /** Verified claims: horizontal (pwd, rural, kannada_medium…), supernumerary (tfw, foreign…), family income for TFW. */
+    claims: jsonb('claims').$type<{ horizontal?: string[]; supernumerary?: string[]; familyIncomePaise?: number; verifiedBy?: string; verifiedAt?: string }>().notNull().default({}),
+    /** The seat held: seat type, the row's category and the option, from the counselling allotment or an outside authority. */
+    seatType: text('seat_type'),
+    seatCategory: text('seat_category'),
+    allottedOption: text('allotted_option'),
+    /** The KEA / COMEDK allotment reference for a seat allotted outside (unique per institution). */
+    externalAllotmentRef: text('external_allotment_ref'),
+    /** The eligibility preset the application was last checked against. */
+    eligibilityPreset: text('eligibility_preset'),
+    /** Admitted on an undertaking with checklist items deferred to `provisionalUntil`; confirmed when every item is in (migration 0197). */
+    provisional: boolean('provisional').notNull().default(false),
+    provisionalUntil: date('provisional_until'),
+    admissionConfirmedAt: timestamp('admission_confirmed_at', { withTimezone: true }),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: updatedAt(),
   },
@@ -2217,6 +2238,11 @@ export const applicationPayments = pgTable(
     receiptNo: text('receipt_no'),
     recordedBy: uuid('recorded_by').references(() => users.id, { onDelete: 'set null' }),
     paidAt: timestamp('paid_at', { withTimezone: true }),
+    /** The gateway account the order was made with (webhooks and status checks use its keys), and what the checkout needs (migration 0197). */
+    gatewayAccountId: uuid('gateway_account_id'),
+    checkout: jsonb('checkout').$type<Record<string, unknown>>(),
+    statusChecks: integer('status_checks').notNull().default(0),
+    statusCheckedAt: timestamp('status_checked_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('application_payments_order_uq').on(t.providerOrderId), index('application_payments_app_idx').on(t.applicationId)],
@@ -4080,6 +4106,8 @@ export const TENANT_TABLES = [
   'exam_application_subjects', 'qp_appointments', 'qp_set_draws', 'marks_unlock_requests',
   // Fees flagship: fee accounts, gateways, links, accruals, flags, transfers, reminder steps (migrations 0189-0191; schema-fee-flagship.ts).
   'fee_accounts', 'gateway_webhook_events', 'fee_payment_links', 'fee_accruals', 'fee_payment_flags', 'fee_programme_transfers', 'fee_reminder_sends',
+  // Admissions pass: seat conversions, programme approvals, checklist, credentials, broadcasts (migrations 0196-0197; schema-admissions-pass.ts).
+  'admission_seat_conversions', 'admission_programme_settings', 'admission_checklist_items', 'admission_credential_issues', 'admission_broadcasts', 'admission_broadcast_sends',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -8340,9 +8368,16 @@ export const admissionSeatMatrix = pgTable(
     optionLabel: text('option_label').notNull(),
     category: text('category').notNull().default('merit'),
     seats: integer('seats').notNull(),
+    /** Government/CET ('merit'), comedk, management or nri (migration 0196). */
+    seatType: text('seat_type').notNull().default('merit'),
+    /** Horizontal seats earmarked inside the row: { pwd: 1, rural: 2 }. */
+    horizontal: jsonb('horizontal').$type<Record<string, number>>().notNull().default({}),
+    /** Outside the approved intake (TFW, foreign nationals); `category` then names the claim. */
+    supernumerary: boolean('supernumerary').notNull().default(false),
+    sortOrder: integer('sort_order').notNull().default(0),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('admission_seat_matrix_uq').on(t.cycleId, t.optionLabel, t.category)],
+  (t) => [uniqueIndex('admission_seat_matrix_uq').on(t.cycleId, t.optionLabel, t.seatType, t.category)],
 );
 
 /** The ordered options an applicant wants, most wanted first. */
@@ -8387,6 +8422,9 @@ export const admissionAllotments = pgTable(
     applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
     optionLabel: text('option_label').notNull(),
     seatCategory: text('seat_category').notNull(),
+    seatType: text('seat_type').notNull().default('merit'),
+    /** The horizontal claim the seat counts towards. */
+    horizontal: text('horizontal'),
     rank: integer('rank').notNull(),
     kind: text('kind').notNull().default('new'), // new | upgraded | kept
     response: text('response').notNull().default('pending'), // pending | freeze | float | slide | reject | forfeit

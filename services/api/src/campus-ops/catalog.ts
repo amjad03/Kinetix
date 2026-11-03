@@ -41,7 +41,27 @@ export const NUMBERING: Record<OpsModule, string[]> = {
 
 export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
   admissions: {
-    rules: { documentsBeforeOffer: false, interviewRequired: false, offerValidDays: 7, admissionFeeBeforeEnrolment: true },
+    rules: {
+      documentsBeforeOffer: false,
+      interviewRequired: false,
+      offerValidDays: 7,
+      admissionFeeBeforeEnrolment: true,
+      /** The fee account whose gateway collects application fees ('' = the institution's default gateway). */
+      applicationFeeAccountId: '',
+      /** Register numbers built at enrolment, e.g. VTU USN '{region}{college}{yy}{branch}{seq:3}' ('' = issued by the university). */
+      registerNumberTemplate: '',
+      collegeCode: '',
+      regionCode: '',
+      /** At enrolment: raise the matching published fee structures and send the student and parent their sign-in details. */
+      assignFeesOnEnrol: true,
+      issueCredentialsOnEnrol: true,
+      /** Days a provisional admission may run before the deferred certificates are due. */
+      provisionalDays: 30,
+      /** Boards counted as the home state's (no migration or eligibility certificate needed), comma separated. */
+      homeBoards: 'Karnataka,KSEAB,Department of Pre-University Education',
+      /** Campaign SMS and WhatsApp only between 9 am and 9 pm (TRAI's promotional window). */
+      broadcastQuietHours: true,
+    },
     templates: { offerLetter: 'Dear {name}, you have been offered a seat in {program}. Please pay the admission fee by {due}.', rejectionNote: 'Thank you for applying. We are unable to offer you a seat this year.' },
     defaults: { counsellorFollowUpDays: 2, enquirySource: 'walk_in' },
   },
