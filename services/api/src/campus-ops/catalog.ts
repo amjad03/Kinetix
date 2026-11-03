@@ -91,7 +91,9 @@ export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
     defaults: { messPlan: '', vacateNoticeDays: 15 },
   },
   transport: {
-    rules: { passValidMonths: 12, feeDueDay: 10, overspeedKmh: 50, docExpiryWarnDays: 30, deviationMeters: 500, handoverOtpMinutes: 30, alertGapMinutes: 10 },
+    // Production pass (0206-0207): delay notices, boarding notices, the not-boarded alert, the safety check interval,
+    // the driver's minimum years with a licence (school-bus guidelines: five) and the expiry reminder days.
+    rules: { passValidMonths: 12, feeDueDay: 10, overspeedKmh: 50, docExpiryWarnDays: 30, deviationMeters: 500, handoverOtpMinutes: 30, alertGapMinutes: 10, delayAlertMinutes: 10, boardingNotices: true, notBoardedAlerts: true, safetyCheckEveryDays: 90, minDriverExperienceYears: 5, expiryReminderDays: '30,15,7,1,0' },
     templates: { busPass: '{name} · Route {route} · Stop {stop} · valid till {until}' },
     defaults: { direction: 'to_campus' },
   },

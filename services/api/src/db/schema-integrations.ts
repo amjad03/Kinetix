@@ -2,7 +2,7 @@
 // Kept apart from schema.ts, which these tables reference.
 import { sql } from 'drizzle-orm';
 import { boolean, customType, date, integer, jsonb, numeric, pgTable, primaryKey, real, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { courses, students, tenants, transportRoutes, users } from './schema.js';
+import { courses, students, tenants, transportRoutes, transportStops, transportTrips, users } from './schema.js';
 
 const id = () => uuid('id').primaryKey().default(sql`gen_random_uuid()`);
 const tenantId = () => uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' });
@@ -44,6 +44,13 @@ export const deviceEvents = pgTable('device_events', {
 export const transportBoardings = pgTable('transport_boardings', {
   id: id(), tenantId: tenantId(), studentId: uuid('student_id').notNull().references(() => students.id), routeId: uuid('route_id').references(() => transportRoutes.id),
   deviceId: uuid('device_id').references(() => accessDevices.id, { onDelete: 'set null' }), boardedAt: timestamp('boarded_at', { withTimezone: true }).notNull(), onDate: date('on_date').notNull(),
+  // Migration 0207: the trip and stop, getting on or off, and how it was marked (an RFID reader, the pass QR, the conductor by hand).
+  tripId: uuid('trip_id').references(() => transportTrips.id, { onDelete: 'set null' }), stopId: uuid('stop_id').references(() => transportStops.id, { onDelete: 'set null' }),
+  /** board | alight */
+  kind: text('kind').notNull().default('board'),
+  /** rfid | qr | manual */
+  method: text('method').notNull().default('rfid'),
+  recordedBy: uuid('recorded_by').references(() => users.id, { onDelete: 'set null' }),
 });
 export const apiTokens = pgTable('api_tokens', {
   id: id(), tenantId: tenantId(), name: text('name').notNull(), scopes: text('scopes').array().notNull(), secretHash: text('secret_hash').notNull(), createdBy: uuid('created_by').notNull().references(() => users.id),
