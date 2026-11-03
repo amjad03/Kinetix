@@ -954,9 +954,15 @@ class FakeStudentApi implements StudentApi {
   Future<Inbox> notifications() async => Inbox(unread: inbox.where((n) => n.unread).length, items: inbox);
 
   @override
-  Future<bool> scanAttendance(String code) async {
+  /// The scan the next [scanAttendance] answers with (accepted by default).
+  AttendanceScan nextScan = const AttendanceScan(outcome: 'accepted', alreadyMarked: false);
+  ScanLocation? lastScanLocation;
+
+  @override
+  Future<AttendanceScan> scanAttendance(String code, {ScanLocation? location}) async {
     calls.add('scan $code');
-    return false;
+    lastScanLocation = location;
+    return nextScan;
   }
 
   @override

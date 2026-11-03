@@ -31,7 +31,12 @@ async function get(prefix, url) {
 const classes = (await get('principal', '/v1/attendance-desk/classes')) ?? [];
 const bcom = classes.find((c) => c.name === 'BCom Sem 3 A') ?? classes[0];
 const sahana = (await get('principal', `/v1/students?q=25BCM001`))?.rows?.[0] ?? (await get('principal', `/v1/students?q=25BCM001`))?.[0];
-const month = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 7);
+const today = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
+const month = today.slice(0, 7);
+// The class's second period today has the classroom face terminal's taps (Soundarya seed, attendance-pass.ts).
+const day = await get('principal', `/v1/attendance-desk/day?sectionId=${bcom.id}&date=${today}`);
+const tapped = day?.periods?.[1]?.slotId;
+const markUrl = tapped ? `/attendance/mark?slot=${tapped}&date=${today}` : '/attendance/mark';
 
 const PAGES = [
   ['/attendance', 'principal'],
@@ -42,8 +47,14 @@ const PAGES = [
   [`/attendance/register?sectionId=${bcom.id}&month=${month}&view=subjects`, 'principal'],
   ['/attendance/eligibility', 'principal'],
   ['/attendance/governance', 'principal'],
+  ['/attendance/eligibility?view=programme', 'principal'],
   ['/attendance/qr-review', 'principal'],
+  ['/attendance/qr-review?status=all', 'hod.commerce'],
   ['/attendance/reports', 'principal'],
+  [`/attendance/reports?view=subjects&section=${bcom.id}`, 'principal'],
+  ['/attendance/reports?view=trend', 'principal'],
+  ['/attendance/reports?view=accreditation', 'principal'],
+  ['/academics/settings', 'principal'],
   ...(sahana ? [[`/attendance/student?studentId=${sahana.id}`, 'principal']] : []),
   ['/hr/attendance', 'hr'],
   ['/timetable', 'principal'],
@@ -95,13 +106,13 @@ if (!shotsOnly) {
 mkdirSync(OUT, { recursive: true });
 const SHOTS = [
   { name: '01-department-day', url: '/attendance' },
-  { name: '02-mark-period', url: '/attendance/mark', login: 'hod.commerce' },
+  { name: '02-mark-reader-taps', url: markUrl },
   { name: '03-qr-review', url: '/attendance/qr-review' },
-  { name: '04-eligibility-detention', url: '/attendance/eligibility' },
+  { name: '04-detention-lists', url: '/attendance/eligibility?view=programme' },
   { name: '05-monthly-register', url: `/attendance/register?sectionId=${bcom.id}&month=${month}` },
-  { name: '06-reports-naac', url: '/attendance/reports' },
-  { name: '07-governance', url: '/attendance/governance' },
-  { name: '08-mark-phone', url: '/attendance/mark', login: 'hod.commerce', width: 390 },
+  { name: '06-reports-naac', url: '/attendance/reports?view=accreditation' },
+  { name: '07-defaulter-trend', url: '/attendance/reports?view=trend' },
+  { name: '08-qr-review-phone', url: '/attendance/qr-review', width: 390 },
 ];
 for (const s of SHOTS) {
   const ctx = await open(s.width ?? 1280, s.login);

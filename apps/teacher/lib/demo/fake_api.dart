@@ -309,7 +309,26 @@ class FakeTeacherApi implements TeacherApi {
 
   @override
   Future<AttendanceSheet> attendance({required String slotId, required String date}) async =>
-      AttendanceSheet(taken: existingMarks.isNotEmpty, records: existingMarks);
+      AttendanceSheet(taken: existingMarks.isNotEmpty, records: existingMarks, hints: hints);
+
+  /// Reader taps and held QR scans the sheet offers.
+  List<AttendanceHint> hints = [];
+  int codeCalls = 0;
+
+  @override
+  Future<AttendanceCode> attendanceCode({required String slotId, required String date}) async {
+    codeCalls++;
+    calls.add('code $slotId $date');
+    return AttendanceCode(code: (40517283 + codeCalls).toString(), expiresAt: DateTime.now().add(const Duration(seconds: 30)));
+  }
+
+  @override
+  Future<void> decideQrScan(String scanId, {required bool accept}) async {
+    calls.add('qr ${accept ? 'accept' : 'reject'} $scanId');
+    final h = hints.where((x) => x.scanId == scanId);
+    if (accept && h.isNotEmpty) existingMarks[h.first.studentId] = AttendanceStatus.present;
+    hints = [for (final x in hints) if (x.scanId != scanId) x];
+  }
 
   @override
   Future<AttendanceSheet> submitAttendance({

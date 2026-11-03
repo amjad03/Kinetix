@@ -36,7 +36,20 @@ export function QrReviewTable({ rows, status }: { rows: QrScanRow[]; status: str
   const reasons = (r: QrScanRow) => r.reasons.map((x) => t(reasonKey(x))).join(', ');
   const columns: Column<QrScanRow>[] = [
     { id: 'when', header: t('atdp.qr.scanned'), cell: (r) => `${fmt.date(r.date, 'short')} ${fmt.time(r.scannedAt)}`, sort: (r) => r.scannedAt },
-    { id: 'student', header: t('atd.col.student'), cell: (r) => `${r.rollNo} ${r.student}`, sort: (r) => r.student, rowHeader: true },
+    {
+      id: 'student',
+      header: t('atd.col.student'),
+      cell: (r) => (
+        <span className="grid">
+          <span className="font-medium">{r.student}</span>
+          <span className="text-xs text-muted-foreground tabular-nums">{r.rollNo}</span>
+        </span>
+      ),
+      csv: (r) => `${r.rollNo} ${r.student}`,
+      sort: (r) => r.student,
+      rowHeader: true,
+      width: 200,
+    },
     { id: 'class', header: t('atd.col.class'), cell: (r) => r.section, sort: (r) => r.section, hideBelow: 'md' },
     { id: 'period', header: t('atdp.qr.period'), cell: (r) => `${r.startsAt} ${r.subject}`, sort: (r) => `${r.date} ${r.startsAt}`, hideBelow: 'sm' },
     {
@@ -178,7 +191,7 @@ export function DetentionLists({ lists, programId, term, canPublish }: { lists: 
         ]
       : [];
   return (
-    <section className="mt-6 grid gap-3" aria-labelledby="det-lists">
+    <section className="mt-6 flex min-w-0 flex-col gap-3" aria-labelledby="det-lists">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="det-lists" className="m-0 text-base font-semibold">
@@ -227,7 +240,7 @@ export function DetentionLists({ lists, programId, term, canPublish }: { lists: 
 export function ComplianceTable({ rows, total }: { rows: ComplianceRow[]; total: { scheduled: number; sameDay: number; later: number; unmarked: number; markedPct: number | null; onTimePct: number | null } }) {
   const { t, fmt } = useI18n();
   const columns: Column<ComplianceRow>[] = [
-    { id: 'teacher', header: t('atdp.rep.teacher'), cell: (r) => r.teacher, sort: (r) => r.teacher, rowHeader: true },
+    { id: 'teacher', header: t('atdp.rep.teacher'), cell: (r) => r.teacher, sort: (r) => r.teacher, rowHeader: true, width: 220 },
     { id: 'department', header: t('atdp.rep.department'), cell: (r) => r.department || '—', sort: (r) => r.department, hideBelow: 'md' },
     { id: 'scheduled', header: t('atdp.rep.periods'), cell: (r) => fmt.number(r.scheduled), sort: (r) => r.scheduled, align: 'right' },
     { id: 'sameDay', header: t('atdp.rep.sameDay'), cell: (r) => fmt.number(r.sameDay), sort: (r) => r.sameDay, align: 'right', hideBelow: 'sm' },
@@ -279,7 +292,7 @@ export function TrendView({ weeks }: { weeks: TrendWeek[] }) {
     { id: 'warning', header: t('atdp.rep.warning'), cell: (w) => fmt.number(w.warning), align: 'right', hideBelow: 'md' },
   ];
   return (
-    <div className="grid gap-4">
+    <div className="flex min-w-0 flex-col gap-4">
       <figure className="m-0 rounded-lg border bg-card p-4" aria-label={t('atdp.rep.trend')}>
         <div className="flex h-40 items-end gap-2" role="img" aria-label={weeks.map((w) => `${w.weekEnding}: ${w.short}`).join(', ')}>
           {weeks.map((w) => (
@@ -289,7 +302,7 @@ export function TrendView({ weeks }: { weeks: TrendWeek[] }) {
                 <div className="bg-amber-300/70" style={{ height: `${(w.warning / Math.max(1, w.short + w.warning)) * 100}%` }} />
                 <div className="flex-1 bg-red-500/70" />
               </div>
-              <span className="truncate text-[11px] text-muted-foreground">{fmt.date(w.weekEnding, 'short').replace(/\s?\d{4}$/, '')}</span>
+              <span className="w-full truncate text-center text-[11px] text-muted-foreground">{fmt.date(w.weekEnding, 'short').replace(/\s?\d{4}$/, '')}</span>
             </div>
           ))}
         </div>
@@ -317,7 +330,7 @@ export function AccreditationView({ data }: { data: AccreditationFigures }) {
     { id: 'avg', header: t('atdp.rep.average'), cell: (r) => pctText(r.averagePct, fmt), sort: (r) => r.averagePct ?? -1, align: 'right' },
   ];
   return (
-    <div className="grid gap-6">
+    <div className="flex min-w-0 flex-col gap-6">
       <StatGrid>
         <StatTile label={t('atdp.acc.days')} value={fmt.number(data.instructionalDays)} caption={t('atdp.acc.periods', { n: fmt.number(data.periodsHeld) })} />
         <StatTile label={t('atdp.acc.shortage')} value={fmt.number(data.shortageStudents)} caption={t('atdp.acc.texted', { n: fmt.number(data.alertsTexted) })} />

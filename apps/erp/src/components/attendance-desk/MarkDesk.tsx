@@ -37,7 +37,7 @@ export function DayPanel({ day, policy, current, base }: { day: ClassDay; policy
   if (policy.mode === 'session')
     for (const s of ['fn', 'an'] as const) items.push({ key: `session:${s}`, href: `${base}&session=${s}`, title: t(`atd.session.${s}`), sub: t('atd.markedOf', { n: fmt.number(day.sessionsMarked[s] ?? 0), d: fmt.number(day.strength) }), done: (day.sessionsMarked[s] ?? 0) > 0 });
   return (
-    <nav aria-label={t('atd.dayList')} className="grid gap-2" data-testid="day-panel">
+    <nav aria-label={t('atd.dayList')} className="grid content-start gap-2 self-start" data-testid="day-panel">
       {day.holiday && <p className="rounded-md border-l-4 border-amber-ink bg-muted px-3 py-2 text-sm">{t('atd.holiday', { title: day.holiday })}</p>}
       {day.followsWeekday && <p className="rounded-md border-l-4 border-blue-ink bg-muted px-3 py-2 text-sm">{t('atd.follows', { day: fmt.date(day.date, 'weekday') })}</p>}
       {items.length === 0 && <p className="text-sm text-muted-foreground">{t('atd.noPeriods')}</p>}

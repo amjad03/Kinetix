@@ -102,7 +102,10 @@ abstract class StudentApi implements AnnouncementSource {
   Future<List<ClassMark>> attendance(String studentId, {int days = 30});
 
   /// Marks the student present for the period whose code the teacher is showing. Returns true when a mark was already there.
-  Future<bool> scanAttendance(String code);
+  /// Marks the student present with the code on the teacher's screen, sending where the phone is (when it could be
+  /// read) for the campus check; the install id goes in the request header. A scan that fails a check is held for
+  /// the teacher ([AttendanceScan.held]).
+  Future<AttendanceScan> scanAttendance(String code, {ScanLocation? location});
 
   Future<Inbox> notifications();
   Future<void> markRead(String notificationId);
@@ -688,8 +691,13 @@ class HttpStudentApi implements StudentApi {
   ];
 
   @override
-  Future<bool> scanAttendance(String code) async =>
-      ((await _send('POST', '/v1/student/attendance/scan', body: {'code': code.trim()})) as Map<String, dynamic>)['alreadyMarked'] == true;
+  Future<AttendanceScan> scanAttendance(String code, {ScanLocation? location}) async => AttendanceScan.fromJson(
+        (await _send('POST', '/v1/student/attendance/scan', body: {
+          'code': code.trim(),
+          'deviceId': ?deviceId,
+          if (location != null) 'location': location.toJson(),
+        })) as Map<String, dynamic>,
+      );
 
   @override
   Future<Inbox> notifications() async => Inbox.fromJson(await _send('GET', '/v1/notifications'));
@@ -1632,4 +1640,38 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<void> cancelAttendanceLeave(String id) => _send('POST', '/v1/attendance-desk/leaves/$id/cancel');
+}
+
+/// Where the phone was when the code was scanned (for the campus geofence).
+class ScanLocation {
+  const ScanLocation({required this.lat, required this.lng, required this.accuracyM, this.mocked = false});
+
+  final double lat;
+  final double lng;
+  final double accuracyM;
+
+  /// Android reports a location from a mock-location app.
+  final bool mocked;
+
+  Map<String, dynamic> toJson() => {'lat': lat, 'lng': lng, 'accuracyM': accuracyM, if (mocked) 'mocked': true};
+}
+
+/// The answer to a QR self-mark: marked, already recorded, or held for the teacher with the reasons.
+class AttendanceScan {
+  const AttendanceScan({required this.outcome, required this.alreadyMarked, this.reasons = const []});
+
+  /// accepted or flagged.
+  final String outcome;
+  final bool alreadyMarked;
+
+  /// outside_campus, new_device, late_scan, no_location, poor_accuracy, mock_location, no_device.
+  final List<String> reasons;
+
+  bool get held => outcome == 'flagged';
+
+  factory AttendanceScan.fromJson(Map<String, dynamic> j) => AttendanceScan(
+        outcome: j['outcome'] as String? ?? 'accepted',
+        alreadyMarked: j['alreadyMarked'] == true,
+        reasons: [for (final r in (j['reasons'] as List? ?? const [])) r as String],
+      );
 }

@@ -5418,4 +5418,21 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get revalKindPhotocopy => 'उत्तर पुस्तिका की प्रति';
+
+  @override
+  String attendanceHeld(String reasons) {
+    return 'आपका स्कैन शिक्षक की पुष्टि की प्रतीक्षा में है: $reasons।';
+  }
+
+  @override
+  String get attendanceReasonOutside => 'आप परिसर से बाहर लगते हैं';
+
+  @override
+  String get attendanceReasonPhone => 'यह वह फ़ोन नहीं है जिससे आप सामान्यतः उपस्थिति लगाते हैं';
+
+  @override
+  String get attendanceReasonLate => 'पीरियड शुरू हुए काफ़ी समय हो गया';
+
+  @override
+  String get attendanceReasonLocation => 'आपके स्थान की पुष्टि नहीं हो सकी';
 }

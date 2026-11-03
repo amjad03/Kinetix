@@ -79,6 +79,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your college may check that you are on the campus when you mark attendance with the code.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>ZYNETIX uses the camera to take photos of your homework to hand in.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

@@ -5420,4 +5420,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get revalKindPhotocopy => 'Photocopy of the answer script';
+
+  @override
+  String attendanceHeld(String reasons) {
+    return 'Your scan is waiting for your teacher to confirm: $reasons.';
+  }
+
+  @override
+  String get attendanceReasonOutside => 'you seem to be outside the campus';
+
+  @override
+  String get attendanceReasonPhone => 'this is not the phone you usually mark from';
+
+  @override
+  String get attendanceReasonLate => 'the period started a while ago';
+
+  @override
+  String get attendanceReasonLocation => 'your location could not be confirmed';
 }

@@ -5432,4 +5432,21 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get revalKindPhotocopy => 'ಉತ್ತರ ಪತ್ರಿಕೆಯ ಪ್ರತಿ';
+
+  @override
+  String attendanceHeld(String reasons) {
+    return 'ನಿಮ್ಮ ಸ್ಕ್ಯಾನ್ ಶಿಕ್ಷಕರ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯುತ್ತಿದೆ: $reasons.';
+  }
+
+  @override
+  String get attendanceReasonOutside => 'ನೀವು ಆವರಣದ ಹೊರಗಿರುವಂತೆ ಕಾಣುತ್ತದೆ';
+
+  @override
+  String get attendanceReasonPhone => 'ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಹಾಜರಿ ಹಾಕುವ ಫೋನ್ ಇದಲ್ಲ';
+
+  @override
+  String get attendanceReasonLate => 'ಅವಧಿ ಆರಂಭವಾಗಿ ಸ್ವಲ್ಪ ಸಮಯವಾಗಿದೆ';
+
+  @override
+  String get attendanceReasonLocation => 'ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ದೃಢೀಕರಿಸಲಾಗಲಿಲ್ಲ';
 }

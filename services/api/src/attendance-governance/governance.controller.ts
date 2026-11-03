@@ -413,7 +413,7 @@ export class StudentQrController {
       await tx.insert(attendanceRecords).values({ tenantId: p.tenantId, studentId: stu.id, sectionId: stu.sectionId, date, timetableSlotId: slot.id, status: 'present', markedBy: p.userId, occurredAt: now });
       return { status: 'present' as const, alreadyMarked: false, outcome: 'accepted' as const, reasons: [] };
     });
-    if ('refused' in r) {
+    if ('refused' in r && r.refused) {
       throw new ForbiddenException({ message: r.refused.includes('period_over') ? 'This period is over. Ask your teacher to mark you.' : 'This phone has already been used to mark another student. Use your own phone, or ask your teacher.', reasons: r.refused, code: 'QR_REFUSED' });
     }
     return r;

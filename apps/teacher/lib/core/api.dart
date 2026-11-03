@@ -281,6 +281,12 @@ abstract class TeacherApi implements AnnouncementSource {
   /// The class's answer cards (card number per student, by roll number), to print.
   Future<List<AnswerCard>> answerCards(String sectionId);
   Future<AttendanceSheet> attendance({required String slotId, required String date});
+
+  /// The rotating code students type in the Student App to mark themselves present for this period.
+  Future<AttendanceCode> attendanceCode({required String slotId, required String date});
+
+  /// Accepts (marks present) or rejects a QR self-mark held by the anti-proxy checks.
+  Future<void> decideQrScan(String scanId, {required bool accept});
   Future<AttendanceSheet> submitAttendance({required String slotId, required String date, required Map<String, AttendanceStatus> marks});
   Future<BoardConnection?> activeSession();
 
@@ -1067,6 +1073,14 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<AttendanceSheet> attendance({required String slotId, required String date}) async =>
       AttendanceSheet.fromJson(await _send('GET', '/v1/attendance?slotId=$slotId&date=$date'));
+
+  @override
+  Future<AttendanceCode> attendanceCode({required String slotId, required String date}) async =>
+      AttendanceCode.fromJson(await _send('POST', '/v1/attendance/qr', body: {'slotId': slotId, 'date': date}) as Map<String, dynamic>);
+
+  @override
+  Future<void> decideQrScan(String scanId, {required bool accept}) async =>
+      _send('POST', '/v1/attendance-desk/qr-scans/$scanId/decision', body: {'decision': accept ? 'accepted' : 'rejected'});
 
   @override
   Future<AttendanceSheet> submitAttendance({

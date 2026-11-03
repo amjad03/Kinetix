@@ -1599,5 +1599,10 @@
   "revalKind": "ನಿಮಗೆ ಏನು ಬೇಕು?",
   "revalKindRevaluation": "ಮರುಮೌಲ್ಯಮಾಪನ",
   "revalKindRetotalling": "ಮರುಎಣಿಕೆ",
-  "revalKindPhotocopy": "ಉತ್ತರ ಪತ್ರಿಕೆಯ ಪ್ರತಿ"
+  "revalKindPhotocopy": "ಉತ್ತರ ಪತ್ರಿಕೆಯ ಪ್ರತಿ",
+  "attendanceHeld": "ನಿಮ್ಮ ಸ್ಕ್ಯಾನ್ ಶಿಕ್ಷಕರ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯುತ್ತಿದೆ: {reasons}.",
+  "attendanceReasonOutside": "ನೀವು ಆವರಣದ ಹೊರಗಿರುವಂತೆ ಕಾಣುತ್ತದೆ",
+  "attendanceReasonPhone": "ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಹಾಜರಿ ಹಾಕುವ ಫೋನ್ ಇದಲ್ಲ",
+  "attendanceReasonLate": "ಅವಧಿ ಆರಂಭವಾಗಿ ಸ್ವಲ್ಪ ಸಮಯವಾಗಿದೆ",
+  "attendanceReasonLocation": "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ದೃಢೀಕರಿಸಲಾಗಲಿಲ್ಲ"
 }

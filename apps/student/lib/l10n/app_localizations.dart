@@ -9692,6 +9692,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Photocopy of the answer script'**
   String get revalKindPhotocopy;
+
+  /// No description provided for @attendanceHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Your scan is waiting for your teacher to confirm: {reasons}.'**
+  String attendanceHeld(String reasons);
+
+  /// No description provided for @attendanceReasonOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'you seem to be outside the campus'**
+  String get attendanceReasonOutside;
+
+  /// No description provided for @attendanceReasonPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'this is not the phone you usually mark from'**
+  String get attendanceReasonPhone;
+
+  /// No description provided for @attendanceReasonLate.
+  ///
+  /// In en, this message translates to:
+  /// **'the period started a while ago'**
+  String get attendanceReasonLate;
+
+  /// No description provided for @attendanceReasonLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'your location could not be confirmed'**
+  String get attendanceReasonLocation;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

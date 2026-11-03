@@ -1761,5 +1761,19 @@
   "unlockPending": "ಕಾಯುತ್ತಿದೆ",
   "unlockApproved": "ಅನ್‌ಲಾಕ್ ಆಗಿದೆ",
   "unlockRejected": "ನಿರಾಕರಿಸಲಾಗಿದೆ",
-  "unlockCancelled": "ಹಿಂಪಡೆಯಲಾಗಿದೆ"
+  "unlockCancelled": "ಹಿಂಪಡೆಯಲಾಗಿದೆ",
+  "qrCodeTitle": "ಸ್ವಯಂ ಹಾಜರಿ ಕೋಡ್",
+  "qrCodeHelp": "ವಿದ್ಯಾರ್ಥಿಗಳು ಈ ಕೋಡ್ ಅನ್ನು ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್‌ನಲ್ಲಿ ಬರೆಯುತ್ತಾರೆ. ಇದು ಪ್ರತಿ 30 ಸೆಕೆಂಡಿಗೆ ಬದಲಾಗುತ್ತದೆ, ಆದ್ದರಿಂದ ತರಗತಿಯ ಹೊರಗೆ ಕಳುಹಿಸಿದ ಕೋಡ್ ಕೆಲಸ ಮಾಡುವುದಿಲ್ಲ.",
+  "qrCodeChanges": "{seconds} ಸೆ. ನಲ್ಲಿ ಬದಲಾಗುತ್ತದೆ",
+  "qrHeldTitle": "ನಿಮ್ಮ ಪರಿಶೀಲನೆಗೆ ತಡೆಹಿಡಿದವು ({count})",
+  "qrHeldNone": "ಯಾವ ಸ್ಕ್ಯಾನ್ ಕಾಯುತ್ತಿಲ್ಲ.",
+  "qrAccept": "ಒಪ್ಪಿ: ಹಾಜರು ಗುರುತಿಸಿ",
+  "qrReject": "ತಿರಸ್ಕರಿಸಿ",
+  "qrScanAccepted": "ಹಾಜರು ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ",
+  "qrScanRejected": "ಸ್ಕ್ಯಾನ್ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",
+  "qrReasonOutside": "ಆವರಣದ ಹೊರಗೆ",
+  "qrReasonPhone": "ಬೇರೆ ಫೋನ್",
+  "qrReasonLate": "ತಡವಾದ ಸ್ಕ್ಯಾನ್",
+  "qrReasonLocation": "ಸ್ಥಳ ದೃಢಪಡಿಲ್ಲ",
+  "useReaderTaps": "ತರಗತಿ ರೀಡರ್ ಟ್ಯಾಪ್ ಬಳಸಿ ({count})"
 }

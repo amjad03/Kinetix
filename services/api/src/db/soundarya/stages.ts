@@ -28,6 +28,7 @@ import { qualityHubSettings } from './quality-hub.js';
 import { migrationAndExaminer } from './migration-examiner.js';
 import { examOffice } from './exam-office.js';
 import { examFlagship } from './exam-flagship.js';
+import { attendancePass } from './attendance-pass.js';
 import { gatewayBooksSamples } from './gateway-books.js';
 import { feeAccountsSamples } from './fee-accounts.js';
 
@@ -100,4 +101,6 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['academics desk: settings, approval requests, locked marks and lesson plans to review', academicsCore],
   // After the fees and accounts desk: the exam fees are invoices numbered by its series.
   ['exam applications with fees on the fee account, question paper setting and marks unlock requests', examFlagship],
+  // After the academics desk (its attendance settings) and the exams: QR scans, a face terminal, a published detention list.
+  ['attendance: QR scans with anti-proxy checks, classroom face terminal, SMS templates, detention lists', attendancePass],
 ];
