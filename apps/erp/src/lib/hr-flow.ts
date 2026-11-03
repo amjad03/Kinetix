@@ -72,7 +72,7 @@ export interface HrModuleSettings {
   preview: { employeeCode: string; payslipNo: string };
 }
 
-export const HR_REPORTS = ['staff-strength', 'staff-category', 'faculty-cadre', 'sfr', 'naac-faculty', 'publications', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'pt-return', 'lwf', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition'] as const;
+export const HR_REPORTS = ['staff-strength', 'staff-category', 'faculty-cadre', 'sfr', 'naac-faculty', 'publications', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'pt-return', 'lwf', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition', 'cadre-eligibility'] as const;
 export type HrReportKind = (typeof HR_REPORTS)[number];
 export interface HrReport {
   kind: HrReportKind;
@@ -104,6 +104,7 @@ export const REPORT_FILTERS: Record<HrReportKind, ('month' | 'fy' | 'year')[]> =
   'appraisal-summary': [],
   'fdp-summary': ['fy'],
   attrition: ['fy'],
+  'cadre-eligibility': [],
 };
 
 /** The verbs at the end of audit actions that have a translation (hf.verb.<verb>); others are shown as they are. */

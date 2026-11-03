@@ -9,6 +9,7 @@ import { PAYROLL_TABS, type PayrollTab } from '@/lib/hr';
 import { getI18n } from '@/i18n/server';
 import type { PayrollRunSummary, PayrollSettings, SalaryComponent, StaffSummary } from '@/lib/hr-types';
 import { loadRecords } from '@/lib/records-server';
+import type { BankFileSettings } from '@/lib/hr-pass';
 import { schoolToday } from '@/lib/school';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -31,6 +32,7 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
         tab === 'structures' ? api<SalaryComponent[]>('/v1/payroll/components') : Promise.resolve([] as SalaryComponent[]),
         tab === 'settings' ? api<PayrollSettings>('/v1/payroll/settings') : Promise.resolve(null),
         tab === 'runs' || tab === 'structures' ? api<StaffSummary[]>('/v1/hr/staff') : Promise.resolve([] as StaffSummary[]),
+        tab === 'settings' ? api<BankFileSettings>('/v1/payroll/bank-file') : Promise.resolve(null),
       ]),
     ),
     entity ? loadRecords(entity, sp) : Promise.resolve(null),
@@ -49,6 +51,7 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
           components={data.data[1]}
           settings={data.data[2]}
           staff={data.data[3]}
+          bankFile={data.data[4]}
           thisMonth={schoolToday().slice(0, 7)}
           canApprove={!!me && canApprovePayroll(me.roles)}
         />

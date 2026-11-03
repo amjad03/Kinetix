@@ -83,6 +83,8 @@ export interface Separation {
   noticeShortfallDays: number;
   settlementPaise: number | null;
   settlementNote: string | null;
+  /** The worked full-and-final lines, when the settlement was worked out (not typed in). */
+  settlementLines?: { code: string; label: string; kind: 'earning' | 'recovery'; amountPaise: number; basis: string }[] | null;
   relievedOn: string | null;
 }
 export interface SeparationDetail extends Separation {

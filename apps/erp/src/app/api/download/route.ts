@@ -54,6 +54,11 @@ const TARGETS: Record<string, (id: string) => string> = {
   'experience-cert': (id) => `/v1/hr/separations/${id}/experience-certificate`,
   lwf: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=lwf`,
   ecr: (id) => `/v1/payroll/runs/${id}/ecr.txt`,
+  'bank-sbi': (id) => `/v1/payroll/runs/${id}/bank-file?format=sbi`,
+  'bank-canara': (id) => `/v1/payroll/runs/${id}/bank-file?format=canara`,
+  'bank-hdfc': (id) => `/v1/payroll/runs/${id}/bank-file?format=hdfc`,
+  'tax-proof': (id) => `/v1/hr/tax-declarations/items/${id}/proof`,
+  'claim-bill': (id) => `/v1/hr/reimbursements/${id}/bill`,
 };
 
 /**

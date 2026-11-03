@@ -15,6 +15,8 @@ import type { PayrollRunSummary, PayrollSettings, SalaryComponent, SalaryStructu
 
 import { Button, Checkbox, FormControlLabel, IconButton, MenuItem, Switch } from '@/components/kx';
 import { Plus as Add, Download, Trash2 as DeleteOutlined } from 'lucide-react';
+import { BankFileCard } from './PayPass';
+import type { BankFileSettings } from '@/lib/hr-pass';
 
 const TAB_LABEL: Record<PayrollTab, MessageKey> = {
   runs: 'pay.tab.runs',
@@ -25,7 +27,7 @@ const TAB_LABEL: Record<PayrollTab, MessageKey> = {
   settings: 'pay.tab.settings',
 };
 
-export function PayrollDesk({ tab, runs, list, components, settings, staff, thisMonth, canApprove }: { tab: PayrollTab; runs: PayrollRunSummary[]; list?: HrListData; components: SalaryComponent[]; settings: PayrollSettings | null; staff: StaffSummary[]; thisMonth: string; canApprove: boolean }) {
+export function PayrollDesk({ tab, runs, list, components, settings, staff, thisMonth, canApprove, bankFile }: { tab: PayrollTab; runs: PayrollRunSummary[]; list?: HrListData; components: SalaryComponent[]; settings: PayrollSettings | null; staff: StaffSummary[]; thisMonth: string; canApprove: boolean; bankFile?: BankFileSettings | null }) {
   const { t } = useI18n();
   return (
     <>
@@ -35,6 +37,7 @@ export function PayrollDesk({ tab, runs, list, components, settings, staff, this
       {tab === 'components' && list && <HrList entity="salary-components" data={list} extraParams={{ tab }} />}
       {tab === 'challans' && list && <HrList entity="tds-challans" data={list} extraParams={{ tab }} />}
       {tab === 'returns' && <Returns thisMonth={thisMonth} />}
+      {tab === 'settings' && bankFile && <div className="mb-6"><BankFileCard settings={bankFile} canEdit={canApprove} /></div>}
       {tab === 'settings' && settings && <Settings settings={settings} canEdit={canApprove} />}
     </>
   );

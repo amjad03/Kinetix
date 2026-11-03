@@ -50,6 +50,10 @@ export const downloadUrl = {
   payslip: (id: string) => `/api/download?kind=payslip&id=${id}`,
   /** EPFO ECR 2.0 text file of a run. */
   ecr: (runId: string) => `/api/download?kind=ecr&id=${runId}`,
+  /** The salary file in a bank's own upload format. */
+  bankFile: (runId: string, bank: 'sbi' | 'canara' | 'hdfc') => `/api/download?kind=bank-${bank}&id=${runId}`,
+  taxProof: (itemId: string) => `/api/download?kind=tax-proof&id=${itemId}`,
+  claimBill: (claimId: string) => `/api/download?kind=claim-bill&id=${claimId}`,
   /** Form 24Q for a financial year (2026 = 2026-27) and quarter; annexure II goes with the fourth quarter. */
   q24: (fy: number, quarter: number, annexure: 1 | 2) => `/api/download?kind=q24&fy=${fy}&quarter=${quarter}&annexure=${annexure}`,
 };

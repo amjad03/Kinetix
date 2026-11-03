@@ -175,6 +175,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: 'payroll' },
       { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: 'payslips' },
       { href: '/payroll/loans', label: 'hf.loan.title', section: 'payslips', icon: 'payroll' },
+      { href: '/hr/my-tax', label: 'hp.my.title', section: 'payslips', icon: 'payslips' },
+      { href: '/payroll/claims', label: 'hp.claims.title', section: 'payroll', icon: 'payroll' },
+      { href: '/payroll/pay-matrix', label: 'hp.mx.title', section: 'payroll', icon: 'payroll' },
     ],
   },
   {

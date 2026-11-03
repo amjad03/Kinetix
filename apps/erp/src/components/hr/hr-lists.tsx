@@ -489,6 +489,57 @@ export const HR_LISTS = {
       { key: 'status', label: 'hk.col.status', kind: 'status', tones: { draft: 'neutral', verified: 'info', approved: 'warning', locked: 'success', reversed: 'danger' } },
     ],
   },
+  'reimbursement-claims': {
+    label: 'rk.entity.reimbursement-claims',
+    empty: { icon: Receipt, title: 'hp.empty.claims', body: 'hp.empty.claimsBody' },
+    rowHref: staffLink,
+    cols: [
+      { key: 'claimNo', label: 'hp.col.claim', sort: 'claimNo', sub: 'staffName' },
+      { key: 'category', label: 'hp.col.category', kind: 'option' },
+      { key: 'spentOn', label: 'hp.col.billDate', kind: 'date', sort: 'spent', hideBelow: 'md' },
+      { key: 'amount', label: 'hp.col.claimed', kind: 'money', sort: 'amount' },
+      { key: 'approved', label: 'hp.col.approved', kind: 'money', hideBelow: 'md' },
+      { key: 'payMonth', label: 'hp.col.payMonth', kind: 'month', hideBelow: 'lg' },
+      { key: 'status', label: 'hk.col.status', kind: 'status', tones: { submitted: 'warning', approved: 'info', paid: 'success', rejected: 'danger', cancelled: 'neutral' } },
+      { key: 'description', label: 'hp.f.forWhat', wrap: true, hidden: true },
+    ],
+    links: (r: Row) => (r.hasBill ? [{ label: 'hp.col.bill', href: dl('claim-bill', String(r.id)) }] : []),
+    params: [
+      { key: 'approve', fields: [{ name: 'payMonth', type: 'month', help: 'hp.help.payMonth' }, note], when: (r: Row) => r.status === 'submitted' },
+      { key: 'reject', fields: [{ ...note, required: true }], tone: 'danger', when: (r: Row) => r.status === 'submitted' },
+    ],
+    quick: [{ key: 'cancel', when: (r: Row) => r.status === 'submitted', tone: 'danger' }],
+  },
+  'tax-declarations': {
+    label: 'rk.entity.tax-declarations',
+    empty: { icon: ScrollText, title: 'hp.empty.declarations', body: 'hp.empty.declarationsBody' },
+    rowHref: (r: Row) => `/payroll/declarations/${r.id}`,
+    cols: [
+      { key: 'staffName', label: 'hk.col.staff', sort: 'staff', sub: 'employeeCode' },
+      { key: 'fy', label: 'hp.col.fy', kind: 'num', sort: 'fy', hideBelow: 'md' },
+      { key: 'regime', label: 'hp.f.regime', kind: 'option' },
+      { key: 'declared', label: 'hp.col.declared', kind: 'money', sort: 'declared' },
+      { key: 'proofs', label: 'hp.col.proofs', kind: 'num', hideBelow: 'md' },
+      { key: 'status', label: 'hk.col.status', kind: 'status', tones: { draft: 'neutral', submitted: 'warning', approved: 'info', proofs_submitted: 'warning', verified: 'success', rejected: 'danger' } },
+      { key: 'submittedAt', label: 'hp.col.submitted', kind: 'datetime', sort: 'submitted', hideBelow: 'lg' },
+    ],
+    params: [
+      { key: 'approve', fields: [note], when: (r: Row) => r.status === 'submitted' },
+      { key: 'sendBack', fields: [{ ...note, required: true }], tone: 'danger', when: (r: Row) => r.status === 'submitted' || r.status === 'proofs_submitted' },
+    ],
+  },
+  'pay-matrix-levels': {
+    label: 'rk.entity.pay-matrix-levels',
+    empty: { icon: Landmark, title: 'hp.empty.levels', body: 'hp.empty.levelsBody' },
+    cols: [
+      { key: 'level', label: 'hp.mx.level', sort: 'level', sub: 'name' },
+      { key: 'scheme', label: 'hp.col.scheme', kind: 'option', hideBelow: 'md' },
+      { key: 'entry', label: 'hp.col.entry', kind: 'money', sort: 'entry' },
+      { key: 'top', label: 'hp.col.top', kind: 'money', hideBelow: 'md' },
+      { key: 'cellCount', label: 'hp.col.cells', kind: 'num' },
+      { key: 'staff', label: 'hp.col.staffOn', kind: 'num' },
+    ],
+  },
 } satisfies Record<string, ListConfig>;
 
 export type HrEntity = keyof typeof HR_LISTS;
