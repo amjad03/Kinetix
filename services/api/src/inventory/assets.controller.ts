@@ -169,7 +169,7 @@ export class AssetsController {
    */
   @Post('gl/depreciation')
   @HttpCode(200)
-  @Auth('user', STORE_ROLES)
+  @Auth('user', [...STORE_ROLES, 'accountant'])
   postDepreciation(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(FyBody)) b: z.infer<typeof FyBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const start = Number(b.fiscalYear.slice(0, 4));

@@ -73,7 +73,7 @@ describe('inventory, purchase and assets pass', () => {
 
   it('checks GSTINs, PANs, HSN codes and GST rates on the masters', async () => {
     // 27AAPFU0939F1ZV is a real GSTIN; changing its last character breaks the check character.
-    expect((await post('keeper', `${inv}/vendors`, { name: 'Typo Traders', gstin: '27AAPFU0939F1ZW' }).expect(400)).body.message).toMatch(/check character/);
+    expect((await post('keeper', `${inv}/vendors`, { name: 'Typo Traders', gstin: '27AAPFU0939F1ZW' }).expect(400)).body.fieldErrors.gstin[0]).toMatch(/check character/);
     await post('keeper', `${inv}/vendors`, { name: 'Wrong PAN', gstin: '27AAPFU0939F1ZV', pan: 'AAPFU0939G' }).expect(400);
     await post('keeper', '/v1/records/inv-vendors', { name: 'Kit Typo', gstin: '29AABFS1234L1Z7' }).expect(400);
     ids.vA = (await post('keeper', `${inv}/vendors`, { name: 'Sri Lakshmi Stationers', gstin: '29AABFS1234L1Z4' }).expect(201)).body.id;

@@ -5,7 +5,7 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2864
+- Routes: 2882
 - Public (no @Auth, no guard): 101 (all on the allow list below unless flagged)
 - Any signed-in user (no role list): 309; open to students and families, so each must scope to the caller
 - Flagged for review: 40
@@ -667,8 +667,11 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/assets/condemnations` | principal, store_keeper, tenant_admin |  |
 | POST | `/v1/assets/condemnations/:id/decision` | principal, tenant_admin |  |
 | POST | `/v1/assets/condemnations/:id/write-off` | principal, store_keeper, tenant_admin |  |
-| POST | `/v1/assets/gl/depreciation` | principal, store_keeper, tenant_admin |  |
+| POST | `/v1/assets/gl/depreciation` | accountant, principal, store_keeper, tenant_admin |  |
 | GET | `/v1/assets/maintenance-due` | principal, store_keeper, tenant_admin |  |
+| GET | `/v1/assets/reports/depreciation` | accountant, principal, store_keeper, tenant_admin |  |
+| GET | `/v1/assets/reports/labs` | accountant, hod, principal, quality_officer, store_keeper, tenant_admin |  |
+| GET | `/v1/assets/reports/naac` | accountant, hod, principal, quality_officer, store_keeper, tenant_admin |  |
 | GET | `/v1/assets/tags.pdf` | principal, store_keeper, tenant_admin |  |
 | GET | `/v1/attendance` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/attendance` | hod, principal, teacher, tenant_admin |  |
@@ -1803,6 +1806,9 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/integrity/homework/:id` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/integrity/homework/:id/check` | hod, principal, teacher, tenant_admin |  |
 | PUT | `/v1/integrity/matches/:id` | hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/inventory/batches` | principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/books/month` | accountant, principal, tenant_admin |  |
+| POST | `/v1/inventory/books/month` | accountant, principal, tenant_admin |  |
 | GET | `/v1/inventory/budget/:departmentId` | accountant, canteen_manager, hod, hostel_warden, librarian, principal, store_keeper, teacher, tenant_admin, transport_manager |  |
 | GET | `/v1/inventory/categories` | accountant, canteen_manager, hod, hostel_warden, librarian, principal, store_keeper, teacher, tenant_admin, transport_manager |  |
 | PUT | `/v1/inventory/categories/:id/vendors` | principal, store_keeper, tenant_admin |  |
@@ -1811,6 +1817,9 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/inventory/invoices` | accountant, principal, store_keeper, tenant_admin |  |
 | POST | `/v1/inventory/invoices/:id/approve` | principal, tenant_admin |  |
 | POST | `/v1/inventory/invoices/:id/paid` | accountant, principal, tenant_admin |  |
+| GET | `/v1/inventory/issue-slips` | accountant, principal, store_keeper, tenant_admin |  |
+| POST | `/v1/inventory/issue-slips` | principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/issue-slips/:id` | accountant, principal, store_keeper, tenant_admin |  |
 | GET | `/v1/inventory/items` | accountant, canteen_manager, hod, hostel_warden, librarian, principal, store_keeper, teacher, tenant_admin, transport_manager |  |
 | POST | `/v1/inventory/items` | principal, store_keeper, tenant_admin |  |
 | PATCH | `/v1/inventory/items/:id` | principal, store_keeper, tenant_admin |  |
@@ -1826,6 +1835,12 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/inventory/rate-contracts/current` | principal, store_keeper, tenant_admin |  |
 | GET | `/v1/inventory/reorder` | principal, store_keeper, tenant_admin |  |
 | POST | `/v1/inventory/reorder/indent` | principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/reports/ageing` | accountant, principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/reports/dead-stock` | accountant, principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/reports/ledger` | accountant, principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/reports/msme-dues` | accountant, principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/reports/purchase-register` | accountant, principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/reports/stock-summary` | accountant, principal, store_keeper, tenant_admin |  |
 | GET | `/v1/inventory/requisitions` | accountant, canteen_manager, hod, hostel_warden, librarian, principal, store_keeper, teacher, tenant_admin, transport_manager |  |
 | POST | `/v1/inventory/requisitions` | accountant, canteen_manager, hod, hostel_warden, librarian, principal, store_keeper, teacher, tenant_admin, transport_manager |  |
 | GET | `/v1/inventory/requisitions/:id` | accountant, canteen_manager, hod, hostel_warden, librarian, principal, store_keeper, teacher, tenant_admin, transport_manager |  |
@@ -1856,6 +1871,9 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/inventory/verifications/:id` | principal, store_keeper, tenant_admin |  |
 | POST | `/v1/inventory/verifications/:id/close` | principal, store_keeper, tenant_admin |  |
 | PUT | `/v1/inventory/verifications/:id/counts` | principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/write-offs` | accountant, principal, store_keeper, tenant_admin |  |
+| POST | `/v1/inventory/write-offs` | principal, store_keeper, tenant_admin |  |
+| POST | `/v1/inventory/write-offs/:id/decision` | principal, tenant_admin |  |
 | POST | `/v1/invigilation/duties/:id/swap` | exam_controller, examiner, hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/invigilation/mine` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/invigilation/swaps/:id/decide` | exam_controller, hod, principal, tenant_admin |  |

@@ -336,7 +336,7 @@ export class InventoryRecords implements OnModuleInit {
       },
       fields: {
         name: { label: 'Name', type: 'text', schema: Text(120), column: invVendors.name, required: true },
-        gstin: { label: 'GSTIN', type: 'text', schema: z.union([z.string().trim().toUpperCase().refine((v) => !gstinProblem(v), (v) => ({ message: gstinProblem(v) ?? '' })), z.literal('')]).nullable().transform((v) => v || null), column: invVendors.gstin, help: 'Checked with its check character; the state decides CGST and SGST or IGST' },
+        gstin: { label: 'GSTIN', type: 'text', schema: z.union([z.string().trim().toUpperCase().superRefine((v, c) => { const m = gstinProblem(v); if (m) c.addIssue({ code: 'custom', message: m }); }), z.literal('')]).nullable().transform((v) => v || null), column: invVendors.gstin, help: 'Checked with its check character; the state decides CGST and SGST or IGST' },
         pan: { label: 'PAN', type: 'text', schema: z.union([z.string().trim().regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, 'A PAN looks like ABCDE1234F'), z.literal('')]).nullable().transform((v) => v || null), column: invVendors.pan },
         contactPerson: { label: 'Contact person', type: 'text', schema: z.string().trim().max(120), column: invVendors.contactPerson },
         phone: { label: 'Phone', type: 'phone', schema: z.string().trim().max(20), column: invVendors.phone },
@@ -402,7 +402,7 @@ export class InventoryRecords implements OnModuleInit {
             const gstin = r.get('gstin').toUpperCase() || null;
             const pan = r.get('pan').toUpperCase() || null;
             const gp = gstin ? gstinProblem(gstin, pan) : null;
-            if (gp) fail(gp, gstin);
+            if (gp && gstin) fail(gp, gstin);
             const values = { gstin, stateCode: gstin ? gstin.slice(0, 2) : null, gstRegistration: gstin ? 'regular' : 'unregistered', pan, contactPerson: r.get('contact_person'), phone: r.get('phone'), email: r.get('email').toLowerCase() || null, address: r.get('address') };
             const [found] = await tx.select().from(invVendors).where(sql`lower(${invVendors.name}) = ${lc(name)}`).limit(1);
             if (!found) {
@@ -420,7 +420,7 @@ export class InventoryRecords implements OnModuleInit {
   // ---- rate contracts -----------------------------------------------------------------------------
 
   private rateContracts(): RecordEntity {
-    const inForce = sql<boolean>`${invRateContracts.active} and current_date between ${invRateContracts.validFrom} and ${invRateContracts.validTo}`;
+    const inForce = sql<boolean>`${invRateContracts.active} and (now() at time zone 'Asia/Kolkata')::date between ${invRateContracts.validFrom} and ${invRateContracts.validTo}`;
     return {
       key: 'inv-rate-contracts',
       module: 'procurement',

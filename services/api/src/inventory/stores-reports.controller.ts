@@ -39,7 +39,15 @@ export class StoresReportsController {
     const store = uuidOr(storeId);
     return this.db.withTenant(p.tenantId, async (tx) => {
       const on = day ?? (await this.proc.today(tx));
-      const { rows } = await tx.execute<{ storeId: string; store: string; storeKind: string; itemId: string; sku: string; item: string; category: string; unit: string; valuation: string; qty: number; valuePaise: string; reorderLevel: number }>(sql`
+      type Row = { storeId: string; store: string; storeKind: string; itemId: string; sku: string; item: string; category: string; unit: string; valuation: string; qty: number; valuePaise: string; reorderLevel: number };
+      // Today: the stock as it stands; a past day: rebuilt from the ledger up to that day.
+      const { rows } = !day
+        ? await tx.execute<Row>(sql`
+        select st.id as "storeId", st.name as store, st.kind as "storeKind", i.id as "itemId", i.sku, i.name as item, i.category, i.unit, i.valuation, i.reorder_level as "reorderLevel", s.qty, s.value_paise as "valuePaise"
+        from inv_stock s join inv_items i on i.id = s.item_id join inv_stores st on st.id = s.store_id
+        where (s.qty <> 0 or s.value_paise <> 0) and (${store}::uuid is null or s.store_id = ${store}::uuid) and (${category ?? null}::text is null or lower(i.category) = lower(${category ?? null}::text))
+        order by st.name, i.category, i.name`)
+        : await tx.execute<Row>(sql`
         select st.id as "storeId", st.name as store, st.kind as "storeKind", i.id as "itemId", i.sku, i.name as item, i.category, i.unit, i.valuation, i.reorder_level as "reorderLevel",
                sum(m.delta)::int as qty, sum(m.value_paise)::bigint as "valuePaise"
         from inv_stock_moves m join inv_items i on i.id = m.item_id join inv_stores st on st.id = m.store_id
