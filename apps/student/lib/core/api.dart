@@ -275,6 +275,10 @@ abstract class StudentApi implements AnnouncementSource {
   /// and the next 90 days).
   Future<CalendarRange> calendar({DateTime? from, DateTime? to});
 
+  /// The student's timetable for [days] days from [from] (default: this week from Monday), as they have it: their lab
+  /// batch, their elective, substitutes, special classes and holidays.
+  Future<TimetableWeek> timetable(String studentId, {DateTime? from, int days = 7});
+
   /// How much of [subjectId]'s syllabus the class [sectionId] has been taught.
   Future<Coverage> coverage({required String sectionId, required String subjectId});
 
@@ -1035,6 +1039,12 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<String> answerQuestion(String id, String answer) async =>
       (await _send('POST', '/v1/polls/$id/answer', body: {'answer': answer}) as Map<String, dynamic>)['answer'] as String;
+
+  @override
+  Future<TimetableWeek> timetable(String studentId, {DateTime? from, int days = 7}) async {
+    final q = ['days=$days', if (from != null) 'from=${isoDate(from)}'].join('&');
+    return TimetableWeek.fromJson(await _send('GET', '/v1/parent/children/$studentId/timetable?$q') as Map<String, dynamic>);
+  }
 
   @override
   Future<CalendarRange> calendar({DateTime? from, DateTime? to}) async {

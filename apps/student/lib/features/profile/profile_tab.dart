@@ -15,6 +15,7 @@ import '../campus/elections_screen.dart';
 import '../campus/hostel_screen.dart';
 import '../quizzes/quizzes_screen.dart';
 import '../calendar/calendar_screen.dart';
+import '../timetable/timetable_screen.dart';
 import '../campus/bus_screen.dart';
 import '../campus/campus_life_screen.dart';
 import '../campus/certificates_screen.dart';
@@ -160,12 +161,6 @@ class ProfileTabState extends State<ProfileTab> {
     );
   }
 
-  void _soon(String what) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(context.l10n.comingLater(what))));
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
@@ -174,9 +169,6 @@ class ProfileTabState extends State<ProfileTab> {
     final c = context.colors;
     final l = context.l10n;
     final today = widget.study.today;
-
-    Widget soonTile(IconData icon, String title, String subtitle) =>
-        ListTile(leading: Icon(icon), title: Text(title), subtitle: Text(subtitle), trailing: const SoonPill(), onTap: () => _soon(title));
 
     void openFees() => FeesScreen.open(context, widget.study.api, st.id, today: today);
 
@@ -562,6 +554,14 @@ class ProfileTabState extends State<ProfileTab> {
                   onTap: () => DpdpScreen.open(context, widget.study.api),
                 ),
                 ListTile(
+                  key: const Key('openTimetable'),
+                  leading: const Icon(Icons.calendar_view_week_outlined),
+                  title: Text(l.timetable),
+                  subtitle: Text(l.timetableSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => TimetableScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
                   key: const Key('openCalendar'),
                   leading: const Icon(Icons.event_outlined),
                   title: Text(l.calendar),
@@ -578,8 +578,6 @@ class ProfileTabState extends State<ProfileTab> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _chooseLanguage,
                 ),
-                KxSectionHeader(l.comingSoon),
-                soonTile(Icons.calendar_view_week_outlined, l.timetable, l.timetableSubtitle),
                 KxSectionHeader(l.account),
                 ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
                 Padding(

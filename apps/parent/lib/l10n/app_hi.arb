@@ -1105,5 +1105,18 @@
   "paymentPending": "अभी पुष्टि नहीं हुई। यदि आपने भुगतान किया है, तो कुछ मिनटों में यहाँ दिखेगा।",
   "payDueNow": "किस्त {amount}",
   "atLeastPart": "एक बार में कम से कम {amount} चुकाएँ",
-  "downloadReceipt": "रसीद डाउनलोड करें (PDF)"
+  "downloadReceipt": "रसीद डाउनलोड करें (PDF)",
+  "ttPrevWeek": "पिछला सप्ताह",
+  "ttNextWeek": "अगला सप्ताह",
+  "ttHoliday": "छुट्टी: {title}। कक्षाएँ नहीं होंगी।",
+  "ttFollows": "इस कार्य दिवस पर {day} की समय-सारिणी चलेगी।",
+  "ttNoClasses": "इस दिन कोई कक्षा नहीं।",
+  "ttSubstitute": "{teacher} ({usual} के स्थान पर)",
+  "ttNow": "अभी",
+  "ttBatch": "बैच {batch}",
+  "ttElective": "वैकल्पिक",
+  "ttSpecial": "अतिरिक्त कक्षा",
+  "ttChildTimetable": "{name} की समय-सारिणी",
+  "timetable": "समय-सारिणी",
+  "timetableSubtitle": "सप्ताह की कक्षाएँ"
 }

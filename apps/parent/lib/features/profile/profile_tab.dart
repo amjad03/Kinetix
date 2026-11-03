@@ -8,6 +8,7 @@ import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_overview_screen.dart';
 import '../calendar/calendar_screen.dart';
+import '../timetable/timetable_screen.dart';
 import '../hostel/out_pass_approvals_screen.dart';
 import '../school_life/mentoring_screen.dart';
 import '../courses/courses_screen.dart';
@@ -269,6 +270,15 @@ class ProfileTab extends StatelessWidget {
                   subtitle: Text(l.syllabusProgressSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => SyllabusProgressScreen.open(context, family, child),
+                ),
+              for (final child in family.children)
+                ListTile(
+                  key: Key('profile-timetable-${child.id}'),
+                  leading: const Icon(Icons.calendar_view_week_outlined),
+                  title: Text(family.children.length == 1 ? l.timetable : l.ttChildTimetable(child.firstName)),
+                  subtitle: Text(l.timetableSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => TimetableScreen.open(context, family.api, child.id, title: family.children.length == 1 ? null : l.ttChildTimetable(child.firstName)),
                 ),
               ListTile(
                 key: const Key('profile-calendar'),

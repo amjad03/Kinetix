@@ -1713,3 +1713,88 @@ class StudentBus {
     );
   }
 }
+
+/// One period as the student has it on a day: their batch's labs, their elective, substitutes and special classes
+/// (`GET /v1/parent/children/:id/timetable`).
+class TimetablePeriod {
+  TimetablePeriod({
+    required this.startsAt,
+    required this.endsAt,
+    required this.subjectCode,
+    required this.subject,
+    required this.teacher,
+    this.usualTeacher,
+    this.room,
+    this.batch,
+    this.special = false,
+    this.elective = false,
+  });
+
+  factory TimetablePeriod.fromJson(Map<String, dynamic> j) => TimetablePeriod(
+    startsAt: j['startsAt'] as String,
+    endsAt: j['endsAt'] as String,
+    subjectCode: j['subjectCode'] as String? ?? '',
+    subject: j['subject'] as String? ?? '',
+    teacher: j['teacher'] as String? ?? '',
+    usualTeacher: j['usualTeacher'] as String?,
+    room: j['room'] as String?,
+    batch: j['batch'] as String?,
+    special: j['kind'] == 'special',
+    elective: j['elective'] as bool? ?? false,
+  );
+
+  final String startsAt;
+  final String endsAt;
+  final String subjectCode;
+  final String subject;
+  final String teacher;
+
+  /// Set when a substitute takes the period: whose period it usually is.
+  final String? usualTeacher;
+  final String? room;
+  final String? batch;
+
+  /// An extra, remedial or make-up class on that date.
+  final bool special;
+  final bool elective;
+
+  bool isNowAt(DateTime now) {
+    final t = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    return startsAt.compareTo(t) <= 0 && t.compareTo(endsAt) < 0;
+  }
+}
+
+class TimetableDay {
+  TimetableDay({required this.date, required this.weekday, required this.follows, this.holiday, required this.periods});
+
+  factory TimetableDay.fromJson(Map<String, dynamic> j) => TimetableDay(
+    date: parseIsoDate(j['date'] as String),
+    weekday: j['weekday'] as int,
+    follows: j['follows'] as int? ?? j['weekday'] as int,
+    holiday: j['holiday'] as String?,
+    periods: [for (final p in j['periods'] as List) TimetablePeriod.fromJson(p as Map<String, dynamic>)],
+  );
+
+  final DateTime date;
+  final int weekday;
+
+  /// The weekday whose timetable meets (a compensatory working day follows another).
+  final int follows;
+  final String? holiday;
+  final List<TimetablePeriod> periods;
+}
+
+/// A week (or a few days) of the student's timetable.
+class TimetableWeek {
+  TimetableWeek({required this.from, required this.today, required this.days});
+
+  factory TimetableWeek.fromJson(Map<String, dynamic> j) => TimetableWeek(
+    from: parseIsoDate(j['from'] as String),
+    today: parseIsoDate(j['today'] as String),
+    days: [for (final d in j['days'] as List) TimetableDay.fromJson(d as Map<String, dynamic>)],
+  );
+
+  final DateTime from;
+  final DateTime today;
+  final List<TimetableDay> days;
+}

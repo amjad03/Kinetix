@@ -2598,6 +2598,60 @@ class FakeStudentApi implements StudentApi {
   ];
   ApiException? calendarError;
 
+  // ── Timetable ─────────────────────────────────────────────────────────────────────────────
+
+  ApiException? timetableError;
+
+  /// A week from Monday 5 October 2026: Monday has a substitute and the student's lab batch, Friday is a holiday,
+  /// Saturday follows Monday's timetable.
+  Map<String, dynamic> timetableJson = {
+    'from': '2026-10-05',
+    'today': '2026-10-05',
+    'days': [
+      {
+        'date': '2026-10-05',
+        'weekday': 1,
+        'follows': 1,
+        'holiday': null,
+        'periods': [
+          {'startsAt': '09:00', 'endsAt': '09:50', 'subjectCode': 'BCOM-3.1', 'subject': 'Corporate Accounting', 'teacher': 'Prof. Sudhir Kamath', 'usualTeacher': null, 'room': 'Room 101', 'batch': null, 'kind': 'timetable', 'elective': false},
+          {'startsAt': '09:50', 'endsAt': '10:40', 'subjectCode': 'BCOM-3.2', 'subject': 'Business Law', 'teacher': 'Dr. Meera Rao', 'usualTeacher': 'Prof. Anil Shetty', 'room': 'Room 101', 'batch': null, 'kind': 'timetable', 'elective': false},
+          {'startsAt': '13:30', 'endsAt': '15:10', 'subjectCode': 'BCOM-3.L', 'subject': 'Tally lab', 'teacher': 'Ms. Kavya N', 'usualTeacher': null, 'room': 'Computer lab 1', 'batch': 'B1', 'kind': 'timetable', 'elective': false},
+        ],
+      },
+      {
+        'date': '2026-10-06',
+        'weekday': 2,
+        'follows': 2,
+        'holiday': null,
+        'periods': [
+          {'startsAt': '11:00', 'endsAt': '11:50', 'subjectCode': 'OE-1', 'subject': 'Digital marketing', 'teacher': 'Dr. Ravi Kumar', 'usualTeacher': null, 'room': 'Seminar hall', 'batch': null, 'kind': 'timetable', 'elective': true},
+          {'startsAt': '16:00', 'endsAt': '16:50', 'subjectCode': 'BCOM-3.1', 'subject': 'Corporate Accounting', 'teacher': 'Prof. Sudhir Kamath', 'usualTeacher': null, 'room': null, 'batch': null, 'kind': 'special', 'elective': false},
+        ],
+      },
+      {'date': '2026-10-07', 'weekday': 3, 'follows': 3, 'holiday': null, 'periods': []},
+      {'date': '2026-10-08', 'weekday': 4, 'follows': 4, 'holiday': null, 'periods': []},
+      {'date': '2026-10-09', 'weekday': 5, 'follows': 5, 'holiday': 'Dasara', 'periods': []},
+      {
+        'date': '2026-10-10',
+        'weekday': 6,
+        'follows': 1,
+        'holiday': null,
+        'periods': [
+          {'startsAt': '09:00', 'endsAt': '09:50', 'subjectCode': 'BCOM-3.1', 'subject': 'Corporate Accounting', 'teacher': 'Prof. Sudhir Kamath', 'usualTeacher': null, 'room': 'Room 101', 'batch': null, 'kind': 'timetable', 'elective': false},
+        ],
+      },
+      {'date': '2026-10-11', 'weekday': 7, 'follows': 7, 'holiday': null, 'periods': []},
+    ],
+  };
+
+  @override
+  Future<TimetableWeek> timetable(String studentId, {DateTime? from, int days = 7}) async {
+    calls.add('timetable');
+    if (timetableError != null) throw timetableError!;
+    return TimetableWeek.fromJson(timetableJson);
+  }
+
   @override
   Future<CalendarRange> calendar({DateTime? from, DateTime? to}) async {
     calls.add('calendar');
