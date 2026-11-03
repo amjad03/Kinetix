@@ -95,7 +95,7 @@ export class TransportPassRecords implements OnModuleInit {
   }
 
   safetyChecks(): RecordEntity {
-    const itemFields = Object.fromEntries(SAFETY_ITEMS.map((k) => [k, { label: SAFETY_LABELS[k], type: 'boolean', schema: Bool, edit: false, apply: async () => undefined } satisfies RecordField])) as Record<SafetyItem, RecordField>;
+    const itemFields = Object.fromEntries(SAFETY_ITEMS.map((k) => [k, { label: SAFETY_LABELS[k], type: 'boolean', schema: Bool, edit: false, apply: async () => undefined } satisfies RecordField])) as unknown as Record<SafetyItem, RecordField>;
     const failed = sql<string>`(select coalesce(string_agg(k, ', '), '') from jsonb_each(${transportSafetyChecks.items}) as e(k, v) where v <> 'true'::jsonb)`;
     const overdue = sql`${transportSafetyChecks.nextDueOn} < ${IST_TODAY} and not exists (select 1 from transport_safety_checks n where n.vehicle_id = ${transportSafetyChecks.vehicleId} and n.checked_on > ${transportSafetyChecks.checkedOn})`;
     return {
