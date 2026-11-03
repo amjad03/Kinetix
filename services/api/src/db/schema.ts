@@ -4031,6 +4031,8 @@ export const TENANT_TABLES = [
   // Academic planning and the attendance desk (migrations 0153, 0154; schema-academic-ops.ts).
   'elective_baskets', 'elective_basket_subjects', 'subject_requisites', 'credit_transfers', 'faculty_allocations', 'period_structures', 'special_classes', 'working_day_swaps', 'student_batches',
   'attendance_leaves', 'special_class_attendance', 'attendance_session_marks', 'attendance_alerts',
+  // QR anti-proxy and published detention lists (migrations 0194, 0195).
+  'attendance_qr_scans', 'attendance_device_bindings', 'attendance_detention_lists', 'attendance_detention_entries',
   // Procurement, assets and facilities depth (migrations 0171, 0172).
   'inv_categories', 'inv_approved_vendors', 'inv_vendor_ratings', 'inv_rate_contracts', 'inv_approvals', 'inv_po_amendments', 'inv_debit_notes',
   'inv_stock_verifications', 'inv_stock_verification_lines', 'inv_gate_entries', 'asset_transfers', 'asset_condemnations', 'facility_bookings', 'maintenance_tickets',

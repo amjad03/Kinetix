@@ -19,7 +19,7 @@ import { workflowDefinitions, workflowRequests } from '../db/schema.js';
 import { GOVERNANCE_RULES, type GovernanceModel } from '../institution/presets.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { parseDate } from '../teacher/teacher.service.js';
-import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
+import { attendanceHolds } from '../attendance-governance/holds.js';
 import { hallTicketData } from './documents.js';
 import { FeeHoldsService } from '../fee-depth/fee-holds.js';
 import { DocumentEngine } from '../documents/document-engine.service.js';
@@ -288,12 +288,10 @@ export class ExamSessionsController {
         if (!blocks.has(f.studentId)) blocks.set(f.studentId, `Exam fee of Rs ${(f.amountPaise / 100).toFixed(2)} is not paid`);
       }
       if (body.blockByAttendance) {
-        const cfg = await attendanceSettings(tx);
-        const att = await overallAttendance(tx, roster.map((r) => r.id), cfg.thresholdPct);
-        for (const r of roster) {
-          const a = att.get(r.id);
-          if (a && !a.eligible && !blocks.has(r.id)) blocks.set(r.id, `Attendance ${a.effectivePct}% is below ${cfg.thresholdPct}%`);
-        }
+        // Each class's own attendance policy and the published detention list (attendance-governance/holds.ts).
+        const [{ d: today }] = (await tx.execute<{ d: string }>(sql`select to_char(now() at time zone coalesce(timezone, 'Asia/Kolkata'), 'YYYY-MM-DD') as d from tenants limit 1`)).rows;
+        const held = await attendanceHolds(tx, roster.map((r) => r.id), today);
+        for (const r of roster) if (held.has(r.id) && !blocks.has(r.id)) blocks.set(r.id, held.get(r.id)!);
       }
       // With a registration window, only registered students (eligible, or overridden by the controller) get a ticket.
       const [win] = await tx.select({ id: examRegistrationWindows.id }).from(examRegistrationWindows).where(eq(examRegistrationWindows.sessionId, id));

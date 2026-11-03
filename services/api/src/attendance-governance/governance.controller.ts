@@ -1,7 +1,7 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, lte, ne, sql } from 'drizzle-orm';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
 import { documentType } from '../admissions/public-admissions.controller.js';
@@ -13,7 +13,7 @@ import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { attendanceLeaves } from '../db/schema-academic-ops.js';
+import { attendanceDeviceBindings, attendanceLeaves, attendanceQrScans } from '../db/schema-academic-ops.js';
 import { attendanceCondonations, attendanceCorrections, attendanceRecords, sections, students, subjects, tenants, timetableSlots, users } from '../db/schema.js';
 import { CampusLifeService } from '../campus-life/campus-life.service.js';
 import { hasRole } from '../placements/placements.access.js';
@@ -24,6 +24,7 @@ import { TeacherService } from '../teacher/teacher.service.js';
 import { attendanceLocked, checkQrCode, makeQrCode, QR_TTL_SECONDS } from './attendance-rules.js';
 import { CONDONATION_DECIDERS, CORRECTION_DECIDERS, decideCondonation, decideCorrection, recordCondonationFee } from './decisions.js';
 import { attendanceSettings } from './eligibility.js';
+import { deviceHashOf, minutesBetween, qrVerdict } from './qr-guard.js';
 import { attendancePolicy, attendanceWindow, canBeCondoned, classStudents, eligibilityFor } from './policy.js';
 
 const CLASS_ROLES: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
@@ -35,7 +36,12 @@ const CondonationBody = z.object({ studentId: z.uuid().optional(), subjectId: z.
 const CondonationDecision = z.object({ decision: z.enum(['approved', 'rejected']), points: z.number().int().min(0).max(30).default(0), note: z.string().trim().min(3).max(500), feePaise: z.number().int().min(0).max(10_000_000).optional() });
 const FeeBody = z.object({ action: z.enum(['paid', 'waived']), receipt: z.string().trim().min(1).max(60).optional(), note: z.string().trim().max(500).optional() });
 const QrBody = z.object({ slotId: z.uuid(), date: Day.optional() });
-const ScanBody = z.object({ code: z.string().trim().min(8).max(20) });
+const ScanBody = z.object({
+  code: z.string().trim().min(8).max(20),
+  /** The app's install id (hashed before it is stored); binds the student to one phone. */
+  deviceId: z.string().trim().min(8).max(128).optional(),
+  location: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180), accuracyM: z.number().min(0).max(100_000), mocked: z.boolean().optional() }).optional(),
+});
 
 /** Attendance corrections, shortage and condonation, and QR attendance. */
 @Controller('v1/attendance')
@@ -374,15 +380,39 @@ export class StudentQrController {
       const check = checkQrCode(this.env.JWT_SECRET, p.tenantId, b.code, slots.map((x) => ({ slotId: x.id, date: today.date })), now);
       if (!check.ok) throw new BadRequestException(check.reason === 'malformed' ? 'Enter the 8 digits shown on the screen' : 'That code is not valid or has expired. Use the one on the screen now.');
       const slot = slots.find((x) => x.id === check.slotId)!;
-      const cfg = await attendanceSettings(tx, stu.sectionId);
+      const policy = await attendancePolicy(tx, stu.sectionId);
+      if (!policy.qr.enabled) throw new ForbiddenException('Self-marking with the code is turned off. Your teacher will mark attendance.');
       const date = today.date;
-      if (attendanceLocked(date, now, tz, cfg.lockHours)) throw new ConflictException('Attendance for this day is locked');
+      if (attendanceLocked(date, now, tz, policy.lockHours)) throw new ConflictException('Attendance for this day is locked');
       const [cur] = await tx.select({ status: attendanceRecords.status }).from(attendanceRecords).where(and(eq(attendanceRecords.studentId, stu.id), eq(attendanceRecords.date, date), eq(attendanceRecords.timetableSlotId, slot.id)));
       // A mark the teacher already made stands: scanning never overrides it.
-      if (cur) return { status: cur.status, alreadyMarked: true };
+      if (cur) return { status: cur.status, alreadyMarked: true, outcome: 'accepted' as const, reasons: [] };
+      const [held] = await tx.select({ id: attendanceQrScans.id, outcome: attendanceQrScans.outcome, reasons: attendanceQrScans.reasons }).from(attendanceQrScans).where(and(eq(attendanceQrScans.studentId, stu.id), eq(attendanceQrScans.timetableSlotId, slot.id), eq(attendanceQrScans.date, date), inArray(attendanceQrScans.outcome, ['accepted', 'flagged'])));
+      if (held) return { status: held.outcome === 'accepted' ? ('present' as const) : null, alreadyMarked: true, outcome: held.outcome, reasons: held.reasons };
+
+      const deviceHash = deviceHashOf(p.tenantId, b.deviceId);
+      const [bound] = await tx.select({ deviceHash: attendanceDeviceBindings.deviceHash }).from(attendanceDeviceBindings).where(and(eq(attendanceDeviceBindings.studentId, stu.id), isNull(attendanceDeviceBindings.releasedAt)));
+      const [other] = deviceHash ? await tx.select({ id: attendanceDeviceBindings.id }).from(attendanceDeviceBindings).where(and(eq(attendanceDeviceBindings.deviceHash, deviceHash), isNull(attendanceDeviceBindings.releasedAt), ne(attendanceDeviceBindings.studentId, stu.id))).limit(1) : [];
+      const [used] = deviceHash ? await tx.select({ id: attendanceQrScans.id }).from(attendanceQrScans).where(and(eq(attendanceQrScans.timetableSlotId, slot.id), eq(attendanceQrScans.date, date), eq(attendanceQrScans.deviceHash, deviceHash), ne(attendanceQrScans.studentId, stu.id), inArray(attendanceQrScans.outcome, ['accepted', 'flagged']))).limit(1) : [];
+      const v = qrVerdict(policy.qr, {
+        minutesIn: minutesBetween(slot.startsAt, today.time),
+        periodMinutes: minutesBetween(slot.startsAt, slot.endsAt),
+        deviceHash,
+        boundDevice: bound?.deviceHash ?? null,
+        deviceBoundToOther: !!other,
+        deviceUsedInSlot: !!used,
+        location: b.location ?? null,
+      });
+      const loc = b.location;
+      await tx.insert(attendanceQrScans).values({ tenantId: p.tenantId, studentId: stu.id, timetableSlotId: slot.id, date, deviceHash, lat: loc?.lat ?? null, lng: loc?.lng ?? null, accuracyM: loc ? Math.round(loc.accuracyM) : null, distanceM: v.distanceM, outcome: v.outcome, reasons: v.reasons });
+      if (v.bind && deviceHash) await tx.insert(attendanceDeviceBindings).values({ tenantId: p.tenantId, studentId: stu.id, deviceHash }).onConflictDoNothing();
+      await auditUser(tx, p, `attendance.qr_scan.${v.outcome}`, 'timetable_slot', slot.id, { date, studentId: stu.id, reasons: v.reasons, distanceM: v.distanceM });
+      if (v.outcome === 'refused') {
+        throw new ForbiddenException({ message: v.reasons.includes('period_over') ? 'This period is over. Ask your teacher to mark you.' : 'This phone has already been used to mark another student. Use your own phone, or ask your teacher.', reasons: v.reasons });
+      }
+      if (v.outcome === 'flagged') return { status: null, alreadyMarked: false, outcome: 'flagged' as const, reasons: v.reasons };
       await tx.insert(attendanceRecords).values({ tenantId: p.tenantId, studentId: stu.id, sectionId: stu.sectionId, date, timetableSlotId: slot.id, status: 'present', markedBy: p.userId, occurredAt: now });
-      await auditUser(tx, p, 'attendance.qr_scan', 'timetable_slot', slot.id, { date, studentId: stu.id });
-      return { status: 'present' as const, alreadyMarked: false };
+      return { status: 'present' as const, alreadyMarked: false, outcome: 'accepted' as const, reasons: [] };
     });
   }
 }

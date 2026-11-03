@@ -8,17 +8,34 @@ import { audit, auditUser } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { attendanceAlerts, attendanceLeaves, attendanceSessionMarks, specialClassAttendance, specialClasses, studentBatches } from '../db/schema-academic-ops.js';
-import { attendanceRecords, departments, sections, students, subjects, teacherSubstitutions, timetableSlots, users } from '../db/schema.js';
+import { attendanceRecords, departments, sections, students, subjects, teacherSubstitutions, tenants, timetableSlots, users } from '../db/schema.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { addDays, isoWeekday, isSchoolAdmin } from '../teacher/teacher.service.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 import { deskTexts } from './desk-texts.js';
+import { periodHints } from '../attendance-governance/suggestions.js';
+import { ATTENDANCE_TEMPLATES, emptyChannels, queueFamilyMessage, type ChannelResult } from './alert-channels.js';
 
 export const ALERTS_JOB = 'attendance.alerts';
 export type Status = 'present' | 'absent' | 'late' | 'excused';
 export type LeaveKind = 'on_duty' | 'medical' | 'personal';
+
+/** A student short of attendance on the detention list. */
+export interface DetentionRow {
+  studentId: string;
+  rollNo: string;
+  fullName: string;
+  sectionId: string;
+  section: string;
+  status: 'condonable' | 'detained';
+  pct: number | null;
+  effectivePct: number | null;
+  thresholdPct: number;
+  basis: 'overall' | 'per_subject';
+  shortIn: { code: string; subject: string; pct: number | null; effective: number | null }[];
+}
 
 /** The longest leave approval writes marks for, and the longest range the unmarked list looks at. */
 const MAX_LEAVE_DAYS = 62;
@@ -43,6 +60,8 @@ export interface DayPeriod {
   batch: string | null;
   combined: number;
   marked: number;
+  /** The subject's department (set by the unmarked list). */
+  departmentId?: string | null;
 }
 
 /**
@@ -230,6 +249,8 @@ export class AttendanceDeskService implements OnModuleInit {
       future: date > now.date,
       others,
       roster: this.sheetRows(roster, new Map(marks.map((m) => [m.id, m])), leave, new Map(punches.map((x) => [x.id, x.status]))),
+      // Classroom reader taps and held QR scans, for the teacher to confirm (periodHints).
+      hints: await periodHints(tx, slotId, date),
     };
   }
 
@@ -397,7 +418,7 @@ export class AttendanceDeskService implements OnModuleInit {
    * Periods that met between two dates (weekday or compensatory working day, not a holiday, already over) and have no
    * marks. The principal sees all; a head of department their department's subjects; a teacher their own.
    */
-  async unmarked(tx: Tx, p: UserPrincipal, q: { from: string; to: string; departmentId?: string; teacherId?: string; sectionId?: string }): Promise<DayPeriod[]> {
+  async unmarked(tx: Tx, p: UserPrincipal, q: { from: string; to: string; departmentId?: string; teacherId?: string; sectionId?: string; includeMarked?: boolean }): Promise<DayPeriod[]> {
     if (q.from > q.to) throw new BadRequestException('from must be on or before to');
     if (daysBetween(q.from, q.to) > MAX_RANGE_DAYS) throw new BadRequestException(`Choose at most ${MAX_RANGE_DAYS} days`);
     const now = await this.now(tx);
@@ -436,7 +457,8 @@ export class AttendanceDeskService implements OnModuleInit {
         if (s.slot.archivedAt && s.slot.archivedAt.toISOString().slice(0, 10) <= d) continue;
         if (holidays.on(d, s.programId)) continue;
         if (d === now.date && hm(s.slot.endsAt) > hm(now.time)) continue;
-        if (marked.has(`${s.slot.id}|${d}`)) continue;
+        const done = marked.has(`${s.slot.id}|${d}`);
+        if (done && !q.includeMarked) continue;
         const sub = subOf.get(`${s.slot.id}|${d}`);
         const teacherId = sub?.id ?? s.slot.teacherId;
         if (q.teacherId && teacherId !== q.teacherId) continue;
@@ -455,7 +477,8 @@ export class AttendanceDeskService implements OnModuleInit {
           substitute: !!sub,
           batch: s.slot.batch,
           combined: s.slot.combinedSectionIds?.length ?? 0,
-          marked: 0,
+          marked: done ? 1 : 0,
+          departmentId: s.departmentId,
         });
       }
     }
@@ -636,21 +659,26 @@ export class AttendanceDeskService implements OnModuleInit {
         reminders = due.length;
       }
       if (now.time < '18:00') return { reminders, digests: 0, alerts: 0 };
-      const digests = policy.dailyDigest ? await this.sendDigests(tx, now.date) : 0;
+      // The evening digest goes in the apps when the office asks for it, and on SMS or WhatsApp whenever those channels are on.
+      const texting = policy.alertChannels.some((c) => c !== 'app');
+      const digests = policy.dailyDigest || texting ? await this.sendDigests(tx, now.date, { app: policy.dailyDigest, channels: policy.alertChannels }) : 0;
       const alerts = policy.shortageAlerts ? (await this.sendShortageAlerts(tx, null)).students : 0;
       return { reminders, digests, alerts };
     });
   }
 
   /** The evening summary to each family of a student absent for one or more periods today. */
-  async sendDigests(tx: Tx, date: string): Promise<number> {
+  async sendDigests(tx: Tx, date: string, how: { app: boolean; channels: readonly string[] } = { app: true, channels: ['app'] }): Promise<number> {
+    const tenantId = await this.tenantOf(tx);
+    const queued = emptyChannels();
     const rows = await tx.execute<{ student_id: string; name: string; absent: number; held: number; subjects: string }>(sql`
       select ar.student_id, st.full_name as name, count(*) filter (where ar.status = 'absent')::int as absent, count(*)::int as held,
              string_agg(distinct sb.name, ', ') filter (where ar.status = 'absent') as subjects
       from attendance_records ar join students st on st.id = ar.student_id left join timetable_slots ts on ts.id = ar.timetable_slot_id left join subjects sb on sb.id = ts.subject_id
       where ar.date = ${date}::date and st.status = 'active' group by ar.student_id, st.full_name having count(*) filter (where ar.status = 'absent') > 0`);
     for (const r of rows.rows) {
-      await this.notifications.attendanceNotice(tx, r.student_id, { text: deskTexts.digest({ studentName: r.name, date, absent: r.absent, held: r.held, subjects: r.subjects ?? '' }), data: { studentId: r.student_id, date }, dedupeKey: `att-digest:${r.student_id}:${date}` });
+      if (how.app) await this.notifications.attendanceNotice(tx, r.student_id, { text: deskTexts.digest({ studentName: r.name, date, absent: r.absent, held: r.held, subjects: r.subjects ?? '' }), data: { studentId: r.student_id, date }, dedupeKey: `att-digest:${r.student_id}:${date}` });
+      await queueFamilyMessage(tx, { tenantId, channels: how.channels, template: ATTENDANCE_TEMPLATES.absence, studentId: r.student_id, studentName: r.name, vars: { date, absent: String(r.absent), held: String(r.held), subjects: r.subjects ?? '' }, dedupeKey: `att-digest:${r.student_id}:${date}`, now: this.clock.now() }, queued);
     }
     return rows.rows.length;
   }
@@ -659,7 +687,8 @@ export class AttendanceDeskService implements OnModuleInit {
    * Tells each student (and family) who has fallen under the warning level or the minimum, once per level and scope
    * (a subject, or overall), and logs it. For all classes, or the ones given.
    */
-  async sendShortageAlerts(tx: Tx, sectionIds: string[] | null): Promise<{ students: number; recipients: number }> {
+  async sendShortageAlerts(tx: Tx, sectionIds: string[] | null): Promise<{ students: number; recipients: number } & ChannelResult> {
+    const queued = emptyChannels();
     const secs = sectionIds ?? (await tx.selectDistinct({ id: students.sectionId }).from(students).where(eq(students.status, 'active'))).map((s) => s.id);
     const now = await this.now(tx);
     const tenantId = await this.tenantOf(tx);
@@ -686,19 +715,64 @@ export class AttendanceDeskService implements OnModuleInit {
           const [logged] = await tx.insert(attendanceAlerts).values({ tenantId, studentId: e.studentId, kind, scope: s.scope, level, percent: s.pct }).onConflictDoNothing().returning({ id: attendanceAlerts.id });
           if (!logged) continue;
           const n = await this.notifications.attendanceNotice(tx, e.studentId, { text: deskTexts.shortage({ studentName: names.get(e.studentId) ?? '', subject: s.label, pct: s.pct, threshold: policy.thresholdPct, short: kind === 'shortage' }), data: { studentId: e.studentId, scope: s.scope }, dedupeKey: `att-${kind}:${e.studentId}:${s.scope}:${level}` });
-          await tx.update(attendanceAlerts).set({ recipients: n }).where(eq(attendanceAlerts.id, logged.id));
+          const before = queued.sms + queued.whatsapp;
+          await queueFamilyMessage(tx, { tenantId, channels: policy.alertChannels, template: ATTENDANCE_TEMPLATES.shortage, studentId: e.studentId, studentName: names.get(e.studentId) ?? '', vars: { pct: String(s.pct), subject: s.label || 'overall', threshold: String(policy.thresholdPct) }, dedupeKey: `att-${kind}:${e.studentId}:${s.scope}:${level}`, now: this.clock.now() }, queued);
+          const texted = queued.sms + queued.whatsapp > before;
+          await tx.update(attendanceAlerts).set({ recipients: n, channels: texted ? ['app', ...policy.alertChannels.filter((c) => c !== 'app')] : ['app'] }).where(eq(attendanceAlerts.id, logged.id));
           recipients += n;
           sent = true;
         }
         if (sent) told++;
       }
     }
-    return { students: told, recipients };
+    return { students: told, recipients, ...queued };
   }
 
   private async tenantOf(tx: Tx): Promise<string> {
     const { rows } = await tx.execute<{ id: string }>(sql`select nullif(current_setting('app.tenant_id', true), '')::uuid as id`);
     return rows[0].id;
+  }
+
+  // ---- detention ---------------------------------------------------------------------------------------
+
+  /**
+   * Students short of attendance across the current year's classes of a programme (and term), or every class:
+   * condonable ones and those detained under each class's policy, for the examination's eligibility list.
+   */
+  async detentionRows(tx: Tx, programId?: string, term?: number) {
+    const secs = await tx.execute<{ id: string; name: string }>(sql`
+      select s.id, s.display_name as name from sections s join academic_years y on y.id = s.academic_year_id
+      where y.is_current and (${programId ?? null}::uuid is null or s.program_id = ${programId ?? null}::uuid) and (${term ?? null}::int is null or s.term = ${term ?? null}::int)
+      order by s.display_name`);
+    const today = (await this.now(tx)).date;
+    const rows: DetentionRow[] = [];
+    let eligible = 0;
+    for (const s of secs.rows) {
+      const policy = await attendancePolicy(tx, s.id);
+      const window = await attendanceWindow(tx, s.id, today);
+      const roster = await classStudents(tx, s.id);
+      const who = new Map(roster.map((r) => [r.id, r]));
+      for (const e of await eligibilityFor(tx, roster.map((r) => r.id), policy, window)) {
+        if (e.status === 'eligible') {
+          eligible++;
+          continue;
+        }
+        rows.push({
+          studentId: e.studentId,
+          rollNo: who.get(e.studentId)!.rollNo,
+          fullName: who.get(e.studentId)!.fullName,
+          sectionId: s.id,
+          section: s.name,
+          status: e.status,
+          pct: e.overall.pct,
+          effectivePct: e.overall.effective,
+          thresholdPct: policy.thresholdPct,
+          basis: policy.basis,
+          shortIn: e.subjects.filter((x) => e.shortIn.includes(x.subjectId)).map((x) => ({ code: x.code, subject: x.subject, pct: x.pct, effective: x.effective })),
+        });
+      }
+    }
+    return { classes: secs.rows.length, eligible, rows };
   }
 
   // ---- registers and one student's view ------------------------------------------------------------
@@ -746,7 +820,9 @@ export class AttendanceDeskService implements OnModuleInit {
       }
       return { id: r.id, rollNo: r.rollNo, fullName: r.fullName, enrolledOn: r.enrolledOn, cells, held, attended: got, pct: held ? Math.round((got / held) * 1000) / 10 : null };
     });
-    return { section: sec.name, month, from, to, mode: policy.mode, subjectId: subjectId ?? null, thresholdPct: policy.thresholdPct, days, students };
+    const [inst] = await tx.select({ name: tenants.name }).from(tenants);
+    const [subj] = subjectId ? await tx.select({ name: subjects.name, code: subjects.code }).from(subjects).where(eq(subjects.id, subjectId)) : [];
+    return { institution: inst?.name ?? '', section: sec.name, month, from, to, mode: policy.mode, subjectId: subjectId ?? null, subject: subj ? `${subj.code} ${subj.name}` : null, thresholdPct: policy.thresholdPct, days, students };
   }
 
   /** One student's attendance: per subject and overall under the policy, and day by day with each period's mark. */

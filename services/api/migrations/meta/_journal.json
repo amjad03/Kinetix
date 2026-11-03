@@ -1247,6 +1247,20 @@
       "when": 1791506049000,
       "tag": "0192_perf_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 181,
+      "version": "7",
+      "when": 1791506050000,
+      "tag": "0194_attendance_qr_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 182,
+      "version": "7",
+      "when": 1791506051000,
+      "tag": "0195_attendance_detention_lists",
+      "breakpoints": true
     }
   ]
 }

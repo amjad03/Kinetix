@@ -19,20 +19,28 @@ import { LibraryDesk } from './library-desk.js';
 const ADMIN = [...INTEGRATION_ADMIN, 'hr_manager', 'librarian', 'transport_manager'] as never[];
 const Purpose = z.enum(['attendance', 'library', 'transport', 'board_signin']);
 const DeviceBody = z.object({
-  kind: z.enum(['biometric', 'rfid_reader']),
+  /** face_terminal: a face-recognition terminal (eSSL, ZKTeco, Matrix), which pushes the enrolled person's PIN like a biometric. */
+  kind: z.enum(['biometric', 'rfid_reader', 'face_terminal']),
   vendor: z.enum(['essl', 'zkteco', 'cosec', 'generic']).default('generic'),
   serial: z.string().trim().min(1).max(60),
   name: z.string().trim().min(1).max(100),
   purpose: Purpose,
   location: z.string().trim().max(120).default(''),
-  /** routeId and direction for transport readers; boardDeviceId for board sign-in; lateAfter ("09:30") for attendance; tzOffsetMinutes of the device clock. */
-  config: z.object({ routeId: z.uuid().optional(), direction: z.enum(['to_school', 'from_school']).optional(), boardDeviceId: z.uuid().optional(), lateAfter: z.string().regex(/^\d{2}:\d{2}$/).optional(), tzOffsetMinutes: z.number().int().min(-720).max(840).optional() }).default({}),
+  /**
+   * routeId and direction for transport readers; boardDeviceId for board sign-in; lateAfter ("09:30") for attendance;
+   * roomId for a classroom reader (its taps are suggested for the period in that room, for the teacher to confirm);
+   * tzOffsetMinutes of the device clock.
+   */
+  config: z.object({ roomId: z.uuid().optional(), routeId: z.uuid().optional(), direction: z.enum(['to_school', 'from_school']).optional(), boardDeviceId: z.uuid().optional(), lateAfter: z.string().regex(/^\d{2}:\d{2}$/).optional(), tzOffsetMinutes: z.number().int().min(-720).max(840).optional() }).default({}),
 });
 const TagBody = z.object({ kind: z.enum(['rfid', 'biometric_pin']), value: z.string().trim().min(1).max(60), subjectType: z.enum(['student', 'staff', 'book']), subjectId: z.uuid() });
-const PushBody = z.object({ events: z.array(z.object({ tag: z.string().trim().min(1).max(60), at: z.string().optional(), direction: z.enum(['in', 'out']).optional() })).min(1).max(500) });
+const PushBody = z.object({ events: z.array(z.object({ tag: z.string().trim().min(1).max(60), at: z.string().optional(), direction: z.enum(['in', 'out']).optional(), verify: z.enum(['finger', 'face', 'card', 'pin', 'palm', 'iris']).optional() })).min(1).max(500) });
 
 type Device = typeof accessDevices.$inferSelect;
-interface RawEvent { tag: string; at?: Date; direction?: 'in' | 'out' }
+interface RawEvent { tag: string; at?: Date; direction?: 'in' | 'out'; verify?: string }
+
+/** ZKTeco / eSSL ADMS verify codes (ATTLOG's fourth column). */
+const ADMS_VERIFY: Record<string, string> = { '0': 'pin', '1': 'finger', '2': 'card', '3': 'pin', '4': 'card', '9': 'pin', '15': 'face', '25': 'palm', '11': 'iris' };
 const LATE_TEXT = { en: (n: string, r: string) => ({ title: `${n} boarded the bus`, body: `${n} boarded ${r} just now.` }), hi: (n: string, r: string) => ({ title: `${n} बस में चढ़े`, body: `${n} अभी ${r} में चढ़े हैं।` }), kn: (n: string, r: string) => ({ title: `${n} ಬಸ್ ಹತ್ತಿದ್ದಾರೆ`, body: `${n} ಈಗ ${r} ಹತ್ತಿದ್ದಾರೆ.` }) };
 
 /** Parses a device wall-clock time ("2026-10-13 09:02:11") using the device's offset, or an ISO string with its own zone. */
@@ -172,7 +180,7 @@ export class DevicesController {
   @HttpCode(200)
   async push(@Req() req: { headers: Record<string, string | undefined> }, @Body(new ZodBody(PushBody)) b: z.infer<typeof PushBody>) {
     const key = req.headers['x-device-key'];
-    return this.run(key, (device, now) => b.events.map((e) => ({ tag: e.tag, at: deviceTime(e.at, (device.config.tzOffsetMinutes as number | undefined) ?? 330, now), direction: e.direction })));
+    return this.run(key, (device, now) => b.events.map((e) => ({ tag: e.tag, at: deviceTime(e.at, (device.config.tzOffsetMinutes as number | undefined) ?? 330, now), direction: e.direction, verify: e.verify })));
   }
 
   /** eSSL / ZKTeco ADMS handshake (the device asks for its options before pushing). */
@@ -193,8 +201,8 @@ export class DevicesController {
     const res = await this.run(key, (device, now) => {
       const off = (device.config.tzOffsetMinutes as number | undefined) ?? 330;
       return text.split(/\r?\n/).filter((l) => l.trim()).map((l) => {
-        const [pin, time, status] = l.split('\t');
-        return { tag: pin.trim(), at: deviceTime(time, off, now), direction: status === '1' || status === '5' ? ('out' as const) : ('in' as const) };
+        const [pin, time, status, verify] = l.split('\t');
+        return { tag: pin.trim(), at: deviceTime(time, off, now), direction: status === '1' || status === '5' ? ('out' as const) : ('in' as const), verify: ADMS_VERIFY[(verify ?? '').trim()] };
       });
     }, sn);
     return `OK: ${res.processed}`;
@@ -237,7 +245,7 @@ export class DevicesController {
 
   /** Maps one punch or tap to attendance, a library transaction or a boarding. */
   private async process(tx: Tx, tenantId: string, device: Device, e: RawEvent): Promise<string> {
-    const tagKind = device.kind === 'biometric' ? 'biometric_pin' : 'rfid';
+    const tagKind = device.kind === 'rfid_reader' ? 'rfid' : 'biometric_pin';
     const [tag] = await tx.select().from(credentialTags).where(and(eq(credentialTags.kind, tagKind), eq(credentialTags.value, e.tag), eq(credentialTags.active, true)));
     const [ev] = await tx.insert(deviceEvents).values({ tenantId, deviceId: device.id, tagKind, tagValue: e.tag, eventAt: e.at!, direction: e.direction ?? 'in', outcome: 'received', subjectType: tag?.subjectType ?? null, subjectId: tag?.subjectId ?? null }).onConflictDoNothing().returning({ id: deviceEvents.id });
     if (!ev) return 'duplicate';
@@ -258,10 +266,16 @@ export class DevicesController {
         if (tag.subjectType === 'student' && device.purpose === 'attendance') {
           const [s] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.id, tag.subjectId));
           if (!s) return finish('rejected', { reason: 'student_missing' });
+          // A classroom reader: the tap is suggested for the period in its room, and the teacher confirms it on the sheet.
+          const roomId = device.config.roomId as string | undefined;
+          if (roomId) {
+            const slot = await this.periodInRoom(tx, roomId, s.sectionId, local);
+            return slot ? finish('period_tap', { date: local.date, slotId: slot, verify: e.verify ?? null }) : finish('outside_period', { date: local.date, verify: e.verify ?? null });
+          }
           const lateAfter = device.config.lateAfter as string | undefined;
           const status = lateAfter && local.time.slice(0, 5) > lateAfter ? 'late' : 'present';
           const done = await tx.insert(attendanceRecords).values({ tenantId, studentId: tag.subjectId, sectionId: s.sectionId, date: local.date, timetableSlotId: null, status, markedBy: device.createdBy, occurredAt: e.at! }).onConflictDoNothing().returning({ id: attendanceRecords.id });
-          return finish(done.length ? 'attendance_marked' : 'already_marked', { date: local.date, status });
+          return finish(done.length ? 'attendance_marked' : 'already_marked', { date: local.date, status, verify: e.verify ?? null });
         }
         return finish('rejected', { reason: 'tag_not_valid_here' });
       }
@@ -284,6 +298,21 @@ export class DevicesController {
       }
     }
     return finish('rejected');
+  }
+
+  /**
+   * The period meeting in a room at this local time (from 10 minutes before it starts to its end) that the student's
+   * class attends (its own or a combined class).
+   */
+  private async periodInRoom(tx: Tx, roomId: string, sectionId: string, local: { date: string; time: string }): Promise<string | null> {
+    const weekday = ((new Date(`${local.date}T00:00:00Z`).getUTCDay() + 6) % 7) + 1;
+    const t = local.time.slice(0, 8);
+    const rows = await tx.execute<{ id: string }>(sql`
+      select id from timetable_slots where room_id = ${roomId}::uuid and day_of_week = ${weekday} and archived_at is null
+        and starts_at - interval '10 minutes' <= ${t}::time and ends_at >= ${t}::time
+        and (section_id = ${sectionId}::uuid or ${sectionId}::uuid = any(coalesce(combined_section_ids, '{}')))
+      order by starts_at limit 1`);
+    return rows.rows[0]?.id ?? null;
   }
 
   private async staffPunch(tx: Tx, tenantId: string, userId: string, date: string, at: Date) {

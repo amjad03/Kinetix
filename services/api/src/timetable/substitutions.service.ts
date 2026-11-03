@@ -3,7 +3,7 @@ import { and, asc, eq, gt, gte, inArray, isNull, lt, lte, ne } from 'drizzle-orm
 import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { departmentStaff, leaveRequests, rooms, sections, subjects, teacherSubstitutions, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
+import { departmentStaff, leaveRequests, rooms, staffAttendance, sections, subjects, teacherSubstitutions, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
 
 export interface SubActor {
   tenantId: string;
@@ -53,6 +53,8 @@ export class SubstitutionsService {
   /** Why a teacher cannot cover `slot` on `date`, or null when they are free. */
   async busyReason(tx: Tx, teacherId: string, slot: { id: string; dayOfWeek: number; startsAt: string; endsAt: string }, date: string): Promise<string | null> {
     if (await this.leaveOn(tx, teacherId, date)) return 'is on leave that day';
+    const [away] = await tx.select({ status: staffAttendance.status }).from(staffAttendance).where(and(eq(staffAttendance.userId, teacherId), eq(staffAttendance.date, date), inArray(staffAttendance.status, ['absent', 'on_leave'])));
+    if (away) return 'is marked absent that day';
     const subbed = await tx
       .select({ slotId: teacherSubstitutions.slotId })
       .from(teacherSubstitutions)
@@ -193,10 +195,18 @@ export class SubstitutionsService {
   /** Periods of teachers on approved leave that day which nobody covers yet. */
   async needed(tx: Tx, date: string) {
     const weekday = weekdayOf(date);
-    const onLeave = await tx
+    const approved = await tx
       .select({ userId: leaveRequests.userId, leaveRequestId: leaveRequests.id })
       .from(leaveRequests)
       .where(and(eq(leaveRequests.status, 'approved'), lte(leaveRequests.fromDate, date), gte(leaveRequests.toDate, date)));
+    // A teacher marked absent that day (biometric, HR, or "not in" on the staff register) without approved leave also
+    // needs cover: the period should not go untaught while the leave is regularised.
+    const absent = await tx
+      .select({ userId: staffAttendance.userId })
+      .from(staffAttendance)
+      .where(and(eq(staffAttendance.date, date), eq(staffAttendance.status, 'absent')));
+    const onLeave: { userId: string; leaveRequestId: string | null; reason: 'leave' | 'absent' }[] = approved.map((l) => ({ ...l, reason: 'leave' as const }));
+    for (const a of absent) if (!onLeave.some((l) => l.userId === a.userId)) onLeave.push({ userId: a.userId, leaveRequestId: null, reason: 'absent' });
     if (onLeave.length === 0) return [];
     const slots = await tx
       .select({ slotId: timetableSlots.id, startsAt: timetableSlots.startsAt, endsAt: timetableSlots.endsAt, teacherId: timetableSlots.teacherId, teacher: users.fullName, section: sections.displayName, subject: subjects.name })
@@ -208,6 +218,9 @@ export class SubstitutionsService {
       .orderBy(asc(timetableSlots.startsAt));
     const covered = await tx.select({ slotId: teacherSubstitutions.slotId }).from(teacherSubstitutions).where(and(eq(teacherSubstitutions.date, date), eq(teacherSubstitutions.status, 'assigned')));
     const done = new Set(covered.map((c) => c.slotId));
-    return slots.filter((s) => !done.has(s.slotId)).map((s) => ({ ...s, date, leaveRequestId: onLeave.find((l) => l.userId === s.teacherId)?.leaveRequestId ?? null }));
+    return slots.filter((s) => !done.has(s.slotId)).map((s) => {
+      const why = onLeave.find((l) => l.userId === s.teacherId);
+      return { ...s, date, leaveRequestId: why?.leaveRequestId ?? null, reason: why?.reason ?? 'leave' };
+    });
   }
 }

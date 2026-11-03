@@ -1,5 +1,5 @@
 import { and, eq, gte, inArray, lte, sql, type SQL } from 'drizzle-orm';
-import { SETTINGS_DEFAULTS, SETTINGS_SCHEMAS, type Settings } from '../academics/academics-rules.js';
+import { SETTINGS_DEFAULTS, SETTINGS_SCHEMAS, type QrRules, type Settings } from '../academics/academics-rules.js';
 import { resolveForSection, resolveAffiliation } from '../affiliation/resolve.js';
 import type { Tx } from '../db/db.service.js';
 import { attendanceLeaves, studentBatches } from '../db/schema-academic-ops.js';
@@ -35,6 +35,10 @@ export interface AttendancePolicy {
   personalCountsAs: 'absent' | 'excused';
   condonationFeePaise: number;
   correctionWindowDays: number;
+  /** Channels for absence and shortage alerts (the apps, SMS, WhatsApp). */
+  alertChannels: ('app' | 'sms' | 'whatsapp')[];
+  /** QR self-marking: geofence and anti-proxy rules. */
+  qr: QrRules;
   profile: { code: string; name: string; scheme: string } | null;
 }
 
@@ -69,6 +73,8 @@ export async function attendancePolicy(tx: Tx, sectionId?: string | null): Promi
     personalCountsAs: office.personalCountsAs,
     condonationFeePaise: office.condonationFeePaise,
     correctionWindowDays: office.correctionWindowDays,
+    alertChannels: office.alertChannels,
+    qr: office.qr,
     profile: aff ? { code: aff.profile.code, name: aff.profile.name, scheme: aff.scheme.code } : null,
   };
 }

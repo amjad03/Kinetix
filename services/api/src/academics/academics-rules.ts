@@ -6,6 +6,28 @@ import type { AcademicRequestStep } from '../db/schema.js';
 export const Series = z.object({ prefix: z.string().trim().max(40), next: z.number().int().min(1).max(99_999_999), pad: z.number().int().min(1).max(10), suffix: z.string().trim().max(20).default('') });
 export type Series = z.infer<typeof Series>;
 
+/**
+ * QR self-marking rules. A scan that fails a check is held for the teacher (flagged) rather than refused, except a
+ * phone already used for another student in the same period, which is refused outright.
+ */
+export const QrRules = z.object({
+  /** Students may mark themselves with the rotating code at all. */
+  enabled: z.boolean().default(true),
+  /** Ask the phone for its location and hold scans made outside the geofence. */
+  requireLocation: z.boolean().default(false),
+  lat: z.number().min(-90).max(90).nullable().default(null),
+  lng: z.number().min(-180).max(180).nullable().default(null),
+  radiusM: z.number().int().min(20).max(5000).default(250),
+  /** A location fix coarser than this is held (indoor GPS is often 20 to 60 m). */
+  maxAccuracyM: z.number().int().min(5).max(2000).default(150),
+  /** Minutes after the period starts that a scan is accepted without review. */
+  lateMinutes: z.number().int().min(0).max(120).default(15),
+  /** Bind each student to the first phone they scan from; another phone is held for review. */
+  bindDevice: z.boolean().default(true),
+});
+export type QrRules = z.infer<typeof QrRules>;
+export const QR_DEFAULTS: QrRules = { enabled: true, requireLocation: false, lat: null, lng: null, radiusM: 250, maxAccuracyM: 150, lateMinutes: 15, bindDevice: true };
+
 const Component = z.object({ code: z.string().trim().min(1).max(12), name: z.string().trim().min(1).max(80), weight: z.number().min(0).max(100), maxMarks: z.number().positive().max(1000) });
 
 export const SETTINGS_SCHEMAS = {
@@ -31,6 +53,10 @@ export const SETTINGS_SCHEMAS = {
     personalCountsAs: z.enum(['absent', 'excused']).default('absent'),
     /** Fee for a condonation, in paise (0 = no fee). */
     condonationFeePaise: z.number().int().min(0).max(10_000_000).default(0),
+    /** Where absence and shortage alerts go: the apps always, SMS and WhatsApp through Communication templates. */
+    alertChannels: z.array(z.enum(['app', 'sms', 'whatsapp'])).min(1).max(3).default(['app']),
+    /** QR self-marking from the Student App: the campus geofence and the anti-proxy checks. */
+    qr: QrRules.default(QR_DEFAULTS),
   }),
   assessment: z.object({ components: z.array(Component).max(12), lockBeforePublish: z.boolean(), passPercent: z.number().min(0).max(100) }),
   timetable: z.object({
@@ -76,6 +102,8 @@ export const SETTINGS_DEFAULTS: { [K in SettingsKind]: Settings<K> } = {
     medicalCountsAs: 'absent',
     personalCountsAs: 'absent',
     condonationFeePaise: 0,
+    alertChannels: ['app'],
+    qr: QR_DEFAULTS,
   },
   assessment: {
     components: [
@@ -102,6 +130,10 @@ export const SETTINGS_DEFAULTS: { [K in SettingsKind]: Settings<K> } = {
 /** Problems the schema cannot express; empty when the settings are consistent. */
 export function settingsProblem(kind: SettingsKind, v: Record<string, unknown>): string | null {
   if (kind === 'attendance' && (v.warnPercent as number) < (v.minPercent as number)) return 'The warning level must be at or above the minimum attendance';
+  if (kind === 'attendance') {
+    const qr = v.qr as QrRules | undefined;
+    if (qr?.requireLocation && (qr.lat === null || qr.lng === null)) return 'Set the campus location (latitude and longitude) to check where QR scans are made';
+  }
   if (kind === 'registration' && (v.minCredits as number) > (v.maxCredits as number)) return 'Minimum credits cannot exceed maximum credits';
   if (kind === 'workload') {
     const names = (v.norms as { designation: string }[]).map((n) => n.designation.toLowerCase());
