@@ -25,8 +25,6 @@ Load or reload with `pnpm db:seed:soundarya` in `services/api` (replaces this in
 | guardian | Basavaraj Gowda (father of Sahana Gowda) | parent.bcom@soundarya.demo.zynetix.in |
 | guardian | Revathi Naik (mother of Vignesh Naik and Chaitra Naik) | parent.bca@soundarya.demo.zynetix.in |
 
-Hostel: `warden` is the chief warden (both hostels); `warden.girls` (Lakshmi Devaraj) looks after Sharada Block only. Resident with a gate QR: `student.bca` (Vignesh Naik), whose mother `parent.bca` has an out-pass waiting.
-
 Other staff sign in with `<email prefix>@soundarya.demo.zynetix.in` (for example `admissions`, `placements`, `warden`, `transport`, `stores`, `grievance`, `research`).
 
 Institution: Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru 560073. Bengaluru City University, NEP semester scheme, academic year 2026-27.

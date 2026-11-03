@@ -37,6 +37,7 @@ import { gatewayBooksSamples } from './gateway-books.js';
 import { feeAccountsSamples } from './fee-accounts.js';
 import { feeFlagshipSamples } from './fee-flagship.js';
 import { libraryPass } from './library-pass.js';
+import { transportPass } from './transport-pass.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -116,6 +117,8 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['hostel pass: hostels and room types, a block-scoped warden, applications, deposits and a settlement, the QR gate log, emergencies, anti-ragging committee and undertakings, mess inspections and diet bills, hostel fee defaulters', hostelPass],
   // After the library depth samples (barcodes, prices, e-resources) and the stock verification of last term.
   ['library pass: cards, accession register, rules matrix, gate register, vendors and orders, serials, e-resources and usage, binding', libraryPass],
+  // After the fees and the campus transport stage: fare slabs, crew and verification, safety checks, trip sheets, boardings, a late bus, transport fees.
+  ['transport pass: fare slabs, crew and driver verification, safety checks, trip sheets and the boarding log, a late bus this morning, an SOS, transport fees and a cancelled seat', transportPass],
   // Last: version 1 is the live timetable as the earlier stages left it, and the diary follows the held periods.
   ['academics: bell schedule, lab batches and an open elective, allocations, unavailability, timetable versions, the teaching diary', academicsPass],
 ];

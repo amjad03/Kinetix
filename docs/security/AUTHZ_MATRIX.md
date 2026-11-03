@@ -5,9 +5,9 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2864
+- Routes: 2873
 - Public (no @Auth, no guard): 101 (all on the allow list below unless flagged)
-- Any signed-in user (no role list): 309; open to students and families, so each must scope to the caller
+- Any signed-in user (no role list): 310; open to students and families, so each must scope to the caller
 - Flagged for review: 40
 
 Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a staff-sounding path open to students, families or any user; `OWNERSHIP?` an id in the path, open to non-staff, and no sign that the handler or its service reads the caller (each was reviewed: see *Reviewed* below and docs/security/SECURITY_AUDIT.md).
@@ -2822,6 +2822,8 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/transport/expenses` | principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/expenses` | principal, tenant_admin, transport_manager |  |
 | GET | `/v1/transport/expenses/summary` | principal, tenant_admin, transport_manager |  |
+| POST | `/v1/transport/expiry-reminders/run` | principal, tenant_admin, transport_manager |  |
+| POST | `/v1/transport/fare-slabs/apply` | principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/fees` | principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/fees/month` | principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/gps/:tenantSlug` | PUBLIC |  |
@@ -2834,8 +2836,10 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/transport/incidents` | principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/incidents` | driver, principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/incidents/:id/resolve` | principal, tenant_admin, transport_manager |  |
+| GET | `/v1/transport/live` | principal, tenant_admin, transport_manager |  |
 | GET | `/v1/transport/me` | driver |  |
 | GET | `/v1/transport/no-dues/:studentId` | any signed-in user |  |
+| GET | `/v1/transport/optimisation` | principal, tenant_admin, transport_manager |  |
 | GET | `/v1/transport/passes/:studentId.pdf` | any signed-in user |  |
 | GET | `/v1/transport/passes/route/:routeId.pdf` | principal, tenant_admin, transport_manager |  |
 | GET | `/v1/transport/routes` | principal, tenant_admin, transport_manager |  |
@@ -2844,13 +2848,18 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/transport/routes/:id` | principal, tenant_admin, transport_manager |  |
 | PATCH | `/v1/transport/routes/:id` | principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/routes/:id/stops` | principal, tenant_admin, transport_manager |  |
+| GET | `/v1/transport/safety` | principal, tenant_admin, transport_manager |  |
 | GET | `/v1/transport/students/:id` | any signed-in user |  |
+| GET | `/v1/transport/students/:id/fee-adjustments` | any signed-in user |  |
 | GET | `/v1/transport/students/:id/pickup-persons` | any signed-in user |  |
 | GET | `/v1/transport/trips` | principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/trips` | driver |  |
 | GET | `/v1/transport/trips/:id` | principal, tenant_admin, transport_manager |  |
+| POST | `/v1/transport/trips/:id/boardings` | driver, principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/trips/:id/end` | driver |  |
+| GET | `/v1/transport/trips/:id/manifest` | driver, principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/trips/:id/position` | driver |  |
+| POST | `/v1/transport/trips/:id/sos` | driver |  |
 | GET | `/v1/transport/vehicles` | principal, tenant_admin, transport_manager |  |
 | POST | `/v1/transport/vehicles` | principal, tenant_admin, transport_manager |  |
 | GET | `/v1/university-results/registers` | exam_controller, principal, tenant_admin |  |
