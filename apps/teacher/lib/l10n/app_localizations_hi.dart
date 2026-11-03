@@ -4385,4 +4385,86 @@ class AppLocalizationsHi extends AppLocalizations {
   String useReaderTaps(int count) {
     return 'कक्षा रीडर के टैप लागू करें ($count)';
   }
+
+  @override
+  String get diaryWrite => 'डायरी लिखें';
+
+  @override
+  String get diaryWritten => 'डायरी लिखी गई';
+
+  @override
+  String get diaryTitle => 'शिक्षण डायरी';
+
+  @override
+  String get diaryTopics => 'पढ़ाए विषय';
+
+  @override
+  String get diaryTopicsHelp => 'इन्हें कक्षा के लिए पूरा माना जाएगा।';
+
+  @override
+  String get diaryDelivery => 'कैसे पढ़ाया';
+
+  @override
+  String get diarySummary => 'क्या किया गया';
+
+  @override
+  String get diaryDeviation => 'पाठ योजना से अंतर क्यों';
+
+  @override
+  String get diarySave => 'डायरी सहेजें';
+
+  @override
+  String get diarySaved => 'डायरी सहेजी गई';
+
+  @override
+  String get diaryNoSyllabus =>
+      'इस विषय से कोई पाठ्यक्रम जुड़ा नहीं; क्या किया गया लिखें।';
+
+  @override
+  String get diaryNeedSomething => 'पढ़ाए विषय चुनें या क्या किया गया लिखें।';
+
+  @override
+  String coveringFor(String name) {
+    return '$name के स्थान पर';
+  }
+
+  @override
+  String coveredBy(String name) {
+    return '$name ले रहे हैं';
+  }
+
+  @override
+  String batchLabel(String batch) {
+    return 'बैच $batch';
+  }
+
+  @override
+  String get delivery_lecture => 'व्याख्यान';
+
+  @override
+  String get delivery_tutorial => 'ट्यूटोरियल';
+
+  @override
+  String get delivery_practical => 'प्रायोगिक';
+
+  @override
+  String get delivery_seminar => 'संगोष्ठी';
+
+  @override
+  String get delivery_discussion => 'चर्चा';
+
+  @override
+  String get delivery_demonstration => 'प्रदर्शन';
+
+  @override
+  String get delivery_revision => 'दोहराव';
+
+  @override
+  String get delivery_test => 'परीक्षण';
+
+  @override
+  String get delivery_online => 'ऑनलाइन';
+
+  @override
+  String get delivery_field_visit => 'क्षेत्र भ्रमण';
 }

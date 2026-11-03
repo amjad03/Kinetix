@@ -7689,6 +7689,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use classroom reader taps ({count})'**
   String useReaderTaps(int count);
+
+  /// No description provided for @diaryWrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Write diary'**
+  String get diaryWrite;
+
+  /// No description provided for @diaryWritten.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary written'**
+  String get diaryWritten;
+
+  /// No description provided for @diaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching diary'**
+  String get diaryTitle;
+
+  /// No description provided for @diaryTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Topics taught'**
+  String get diaryTopics;
+
+  /// No description provided for @diaryTopicsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'They are marked as covered for the class.'**
+  String get diaryTopicsHelp;
+
+  /// No description provided for @diaryDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'How it was taught'**
+  String get diaryDelivery;
+
+  /// No description provided for @diarySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'What was done'**
+  String get diarySummary;
+
+  /// No description provided for @diaryDeviation.
+  ///
+  /// In en, this message translates to:
+  /// **'Why it differed from the lesson plan'**
+  String get diaryDeviation;
+
+  /// No description provided for @diarySave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save diary'**
+  String get diarySave;
+
+  /// No description provided for @diarySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary saved'**
+  String get diarySaved;
+
+  /// No description provided for @diaryNoSyllabus.
+  ///
+  /// In en, this message translates to:
+  /// **'No syllabus is linked to this subject; write what was done.'**
+  String get diaryNoSyllabus;
+
+  /// No description provided for @diaryNeedSomething.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the topics taught or write what was done.'**
+  String get diaryNeedSomething;
+
+  /// No description provided for @coveringFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Covering for {name}'**
+  String coveringFor(String name);
+
+  /// No description provided for @coveredBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Covered by {name}'**
+  String coveredBy(String name);
+
+  /// No description provided for @batchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch {batch}'**
+  String batchLabel(String batch);
+
+  /// No description provided for @delivery_lecture.
+  ///
+  /// In en, this message translates to:
+  /// **'Lecture'**
+  String get delivery_lecture;
+
+  /// No description provided for @delivery_tutorial.
+  ///
+  /// In en, this message translates to:
+  /// **'Tutorial'**
+  String get delivery_tutorial;
+
+  /// No description provided for @delivery_practical.
+  ///
+  /// In en, this message translates to:
+  /// **'Practical'**
+  String get delivery_practical;
+
+  /// No description provided for @delivery_seminar.
+  ///
+  /// In en, this message translates to:
+  /// **'Seminar'**
+  String get delivery_seminar;
+
+  /// No description provided for @delivery_discussion.
+  ///
+  /// In en, this message translates to:
+  /// **'Discussion'**
+  String get delivery_discussion;
+
+  /// No description provided for @delivery_demonstration.
+  ///
+  /// In en, this message translates to:
+  /// **'Demonstration'**
+  String get delivery_demonstration;
+
+  /// No description provided for @delivery_revision.
+  ///
+  /// In en, this message translates to:
+  /// **'Revision'**
+  String get delivery_revision;
+
+  /// No description provided for @delivery_test.
+  ///
+  /// In en, this message translates to:
+  /// **'Test'**
+  String get delivery_test;
+
+  /// No description provided for @delivery_online.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get delivery_online;
+
+  /// No description provided for @delivery_field_visit.
+  ///
+  /// In en, this message translates to:
+  /// **'Field visit'**
+  String get delivery_field_visit;
 }
 
 class _AppLocalizationsDelegate

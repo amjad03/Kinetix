@@ -4384,4 +4384,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String useReaderTaps(int count) {
     return 'Use classroom reader taps ($count)';
   }
+
+  @override
+  String get diaryWrite => 'Write diary';
+
+  @override
+  String get diaryWritten => 'Diary written';
+
+  @override
+  String get diaryTitle => 'Teaching diary';
+
+  @override
+  String get diaryTopics => 'Topics taught';
+
+  @override
+  String get diaryTopicsHelp => 'They are marked as covered for the class.';
+
+  @override
+  String get diaryDelivery => 'How it was taught';
+
+  @override
+  String get diarySummary => 'What was done';
+
+  @override
+  String get diaryDeviation => 'Why it differed from the lesson plan';
+
+  @override
+  String get diarySave => 'Save diary';
+
+  @override
+  String get diarySaved => 'Diary saved';
+
+  @override
+  String get diaryNoSyllabus =>
+      'No syllabus is linked to this subject; write what was done.';
+
+  @override
+  String get diaryNeedSomething =>
+      'Pick the topics taught or write what was done.';
+
+  @override
+  String coveringFor(String name) {
+    return 'Covering for $name';
+  }
+
+  @override
+  String coveredBy(String name) {
+    return 'Covered by $name';
+  }
+
+  @override
+  String batchLabel(String batch) {
+    return 'Batch $batch';
+  }
+
+  @override
+  String get delivery_lecture => 'Lecture';
+
+  @override
+  String get delivery_tutorial => 'Tutorial';
+
+  @override
+  String get delivery_practical => 'Practical';
+
+  @override
+  String get delivery_seminar => 'Seminar';
+
+  @override
+  String get delivery_discussion => 'Discussion';
+
+  @override
+  String get delivery_demonstration => 'Demonstration';
+
+  @override
+  String get delivery_revision => 'Revision';
+
+  @override
+  String get delivery_test => 'Test';
+
+  @override
+  String get delivery_online => 'Online';
+
+  @override
+  String get delivery_field_visit => 'Field visit';
 }

@@ -1778,6 +1778,22 @@ class FakeTeacherApi implements TeacherApi {
   /// Set to make marking fail with this error.
   ApiException? markError;
 
+  /// Diary entries written: slotId|date → body. Set [diaryError] to refuse the next one.
+  final diary = <String, Map<String, Object?>>{};
+  ApiException? diaryError;
+
+  @override
+  Future<DiaryEntry> writeDiary({required String slotId, required String date, required List<String> topicIds, required String delivery, String summary = '', String? deviationReason}) async {
+    calls.add('writeDiary $slotId $date');
+    final e = diaryError;
+    if (e != null) {
+      diaryError = null;
+      throw e;
+    }
+    diary['$slotId|$date'] = {'topicIds': topicIds, 'delivery': delivery, 'summary': summary, 'deviationReason': deviationReason};
+    return DiaryEntry(id: 'log-${diary.length}', againstPlan: deviationReason == null ? 'as_planned' : 'behind', topicIds: topicIds);
+  }
+
   @override
   Future<Syllabus?> syllabus(String subjectId) async {
     calls.add('syllabus $subjectId');
