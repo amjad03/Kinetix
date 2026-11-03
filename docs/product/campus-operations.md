@@ -17,6 +17,8 @@ Every write is tenant-scoped (RLS), role-checked, validated with zod and audited
 - GPS vendors: `GpsAdapter` (`transport/gps-adapter.ts`) turns a vendor's payload into fixes keyed by registration number; `GenericHttpGpsAdapter` reads one fix, an array or `{positions:[…]}` with `vehicle` (or `regNo`/`deviceId`), `lat`, `lng`, `speed`/`speedKmh`. The office registers a source (`POST gps/sources`, the token is shown once, only its SHA-256 is kept; `revoke` stops it); the vendor posts to `POST /v1/transport/gps/<institution slug>` with `x-gps-token`. Each fix goes through the same path as the driver's phone (stops reached, arrival notices, `transport.position`) for the running trip on that vehicle's route; fixes with no running trip are ignored.
 
 ## Hostel (`/v1/hostel`) and canteen (`/v1/canteen`)
+
+The hostel user guide (allotment, the QR gate, the diet system, committees, reports) is `docs/product/hostel.md`.
 - Blocks, rooms (bed count creates beds), allotment and vacate (one bed per student and per bed; vacating is blocked while the student is out on a pass and cancels unused passes).
 - Gate pass: issued for a resident, `out` then `in` at the gate; each gate event notifies the student's guardians (kind `hostel`). Overdue passes are flagged in the list.
 - Visitors book, mess plans and subscriptions, weekly menu (readable by everyone), complaints (families raise for their own child; the warden resolves with a note).
