@@ -131,13 +131,13 @@ export class PayMatrixService {
   /** Staff on the matrix with their level, cell, basic and when they last moved. */
   async staff(tx: Tx) {
     const rows = await tx
-      .select({ userId: staffProfiles.userId, fullName: users.fullName, code: staffProfiles.employeeCode, joined: staffProfiles.dateOfJoining, levelId: staffProfiles.payLevelId, cell: staffProfiles.payCell, hraClass: staffProfiles.hraClass, level: payMatrixLevels.level, levelName: payMatrixLevels.name, cells: payMatrixLevels.cells, lastMove: sql<string | null>`(select max(m.effective_from)::text from pay_matrix_moves m where m.user_id = ${staffProfiles.userId})` })
+      .select({ userId: staffProfiles.userId, fullName: users.fullName, code: staffProfiles.employeeCode, joined: staffProfiles.dateOfJoining, levelId: staffProfiles.payLevelId, cell: staffProfiles.payCell, hraClass: staffProfiles.hraClass, level: payMatrixLevels.level, levelName: payMatrixLevels.name, cells: payMatrixLevels.cells, lastMove: sql<string | null>`(select max(m.effective_from)::text from pay_matrix_moves m where m.user_id = ${staffProfiles.userId})`, lastPromotion: sql<string | null>`(select max(m.effective_from)::text from pay_matrix_moves m where m.user_id = ${staffProfiles.userId} and m.kind = 'promotion')` })
       .from(staffProfiles)
       .innerJoin(users, eq(users.id, staffProfiles.userId))
       .innerJoin(payMatrixLevels, eq(payMatrixLevels.id, staffProfiles.payLevelId))
       .where(and(eq(staffProfiles.payBasis, 'matrix'), sql`${staffProfiles.status} <> 'exited'`))
       .orderBy(asc(payMatrixLevels.sortOrder), desc(staffProfiles.payCell), asc(users.fullName));
-    return rows.map((r) => ({ userId: r.userId, fullName: r.fullName, employeeCode: r.code, levelId: r.levelId, level: r.level, levelName: r.levelName, cell: r.cell, basicPaise: r.cell ? r.cells[r.cell - 1] : null, nextBasicPaise: r.cell && r.cell < r.cells.length ? r.cells[r.cell] : null, cellCount: r.cells.length, hraClass: r.hraClass, lastMove: r.lastMove, joined: r.joined }));
+    return rows.map((r) => ({ userId: r.userId, fullName: r.fullName, employeeCode: r.code, levelId: r.levelId, level: r.level, levelName: r.levelName, cell: r.cell, basicPaise: r.cell ? r.cells[r.cell - 1] : null, nextBasicPaise: r.cell && r.cell < r.cells.length ? r.cells[r.cell] : null, cellCount: r.cells.length, hraClass: r.hraClass, lastMove: r.lastMove, lastPromotion: r.lastPromotion, joined: r.joined }));
   }
 
   /**
@@ -155,7 +155,8 @@ export class PayMatrixService {
         out.push({ userId: s.userId, fullName: s.fullName, level: s.level, fromCell: s.cell, toCell: s.cell, fromBasicPaise: s.basicPaise, toBasicPaise: s.basicPaise, due: false, reason: 'Already given' });
         continue;
       }
-      const since = s.lastMove && s.lastMove < on ? s.lastMove : s.joined;
+      // Qualifying service runs from joining or the last promotion; placing someone on the matrix does not restart it.
+      const since = s.lastPromotion && s.lastPromotion < on ? s.lastPromotion : s.joined;
       const d = incrementDue({ on, since, cell: s.cell ?? 0, cellCount: s.cellCount });
       out.push({ userId: s.userId, fullName: s.fullName, level: s.level, fromCell: s.cell, toCell: d.due ? (s.cell ?? 0) + 1 : s.cell, fromBasicPaise: s.basicPaise, toBasicPaise: d.due ? s.nextBasicPaise : s.basicPaise, due: d.due, reason: d.reason });
     }
