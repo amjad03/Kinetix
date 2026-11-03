@@ -1617,5 +1617,9 @@
   "attendanceReasonOutside": "ನೀವು ಆವರಣದ ಹೊರಗಿರುವಂತೆ ಕಾಣುತ್ತದೆ",
   "attendanceReasonPhone": "ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಹಾಜರಿ ಹಾಕುವ ಫೋನ್ ಇದಲ್ಲ",
   "attendanceReasonLate": "ಅವಧಿ ಆರಂಭವಾಗಿ ಸ್ವಲ್ಪ ಸಮಯವಾಗಿದೆ",
-  "attendanceReasonLocation": "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ದೃಢೀಕರಿಸಲಾಗಲಿಲ್ಲ"
+  "attendanceReasonLocation": "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ದೃಢೀಕರಿಸಲಾಗಲಿಲ್ಲ",
+  "libFacetSubject": "ವಿಷಯ",
+  "libFacetLanguage": "ಭಾಷೆ",
+  "libFacetDecade": "ಪ್ರಕಟಣೆ",
+  "libDecade": "{year} ರ ದಶಕ"
 }

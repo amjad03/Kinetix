@@ -3929,5 +3929,26 @@
         "type": "String"
       }
     }
+  },
+  "libFacetSubject": "Subject",
+  "@libFacetSubject": {
+    "description": "Library catalogue facets."
+  },
+  "libFacetLanguage": "Language",
+  "@libFacetLanguage": {
+    "description": "Library catalogue facets."
+  },
+  "libFacetDecade": "Published",
+  "@libFacetDecade": {
+    "description": "Library catalogue facets."
+  },
+  "libDecade": "{year}s",
+  "@libDecade": {
+    "description": "Library catalogue facets.",
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
   }
 }

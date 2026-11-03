@@ -27,6 +27,7 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
   final _query = TextEditingController();
   Timer? _wait;
   bool _shelfOnly = false;
+  final Map<String, String> _facets = {};
   CataloguePage? _page;
   List<CatalogueBook> _books = [];
   List<BookReservation>? _reservations;
@@ -63,7 +64,7 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
 
   Future<void> _search({bool more = false}) async {
     final q = _query.text.trim();
-    if (q.isEmpty && !_shelfOnly) {
+    if (q.isEmpty && !_shelfOnly && _facets.isEmpty) {
       setState(() {
         _page = null;
         _books = [];
@@ -76,7 +77,7 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
       _error = null;
     });
     try {
-      final p = await widget.api.searchCatalogue(q, availableOnly: _shelfOnly, page: more ? (_page?.page ?? 0) + 1 : 1);
+      final p = await widget.api.searchCatalogue(q, availableOnly: _shelfOnly, page: more ? (_page?.page ?? 0) + 1 : 1, facets: Map.of(_facets));
       if (!mounted || (q != _query.text.trim())) return;
       setState(() {
         _page = p;
@@ -87,6 +88,11 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _toggleFacet(String facet, String value) {
+    setState(() => _facets[facet] == value ? _facets.remove(facet) : _facets[facet] = value);
+    _search();
   }
 
   Future<void> _reserve(CatalogueBook b) async {
@@ -153,8 +159,30 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
                     _search();
                   },
                 ),
+                for (final e in _facets.entries)
+                  Padding(
+                    padding: const EdgeInsets.only(left: Kx.s8),
+                    child: InputChip(key: Key('facetChosen-${e.key}'), label: Text(e.key == 'decade' ? l.libDecade(e.value) : e.value), onDeleted: () => _toggleFacet(e.key, e.value)),
+                  ),
               ],
             ),
+            if (_page != null)
+              for (final f in catalogueFacets)
+                if (_facets[f] == null && (_page!.facets[f] ?? const []).length > 1) ...[
+                  Padding(padding: const EdgeInsets.only(top: Kx.s8, bottom: Kx.s4), child: Text(f == 'subject' ? l.libFacetSubject : f == 'language' ? l.libFacetLanguage : l.libFacetDecade, style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant))),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final v in _page!.facets[f]!.take(8))
+                          Padding(
+                            padding: const EdgeInsets.only(right: Kx.s8),
+                            child: ActionChip(key: Key('facet-$f-${v.value}'), label: Text('${f == 'decade' ? l.libDecade(v.value) : v.value} (${v.count})'), onPressed: () => _toggleFacet(f, v.value)),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
             if ((_reservations ?? const []).isNotEmpty) ...[
               SectionTitle(l.libMyReservations),
               for (final r in _reservations!)

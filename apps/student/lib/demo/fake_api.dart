@@ -2943,15 +2943,19 @@ class FakeStudentApi implements StudentApi {
   ApiException? checkoutError;
 
   @override
-  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1}) async {
-    calls.add('searchCatalogue $query${availableOnly ? ' available' : ''} $page');
+  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1, Map<String, String> facets = const {}}) async {
+    calls.add('searchCatalogue $query${availableOnly ? ' available' : ''} $page${facets.isEmpty ? '' : ' ${[for (final e in facets.entries) '${e.key}=${e.value}'].join(',')}'}');
     if (catalogueError != null) throw catalogueError!;
     final words = query.toLowerCase().split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
     final rows = [
       for (final b in catalogue)
-        if (words.every((w) => '${b['title']} ${b['author']} ${b['subject']} ${b['isbn']}'.toLowerCase().contains(w)) && (!availableOnly || (b['available'] as int) > 0)) b,
+        if (words.every((w) => '${b['title']} ${b['author']} ${b['subject']} ${b['isbn']}'.toLowerCase().contains(w)) && (!availableOnly || (b['available'] as int) > 0) && (facets['subject'] == null || b['subject'] == facets['subject'])) b,
     ];
-    return CataloguePage.fromJson({'total': rows.length, 'page': page, 'rows': rows});
+    final subjects = <String, int>{};
+    for (final b in rows) {
+      if ('${b['subject'] ?? ''}'.isNotEmpty) subjects['${b['subject']}'] = (subjects['${b['subject']}'] ?? 0) + 1;
+    }
+    return CataloguePage.fromJson({'total': rows.length, 'page': page, 'rows': rows, 'facets': {'subject': [for (final e in subjects.entries) {'value': e.key, 'count': e.value}]}});
   }
 
   @override
