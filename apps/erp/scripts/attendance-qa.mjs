@@ -1,0 +1,123 @@
+// Checks every attendance page at 1280px and 390px (loads, no error state, no sideways scroll, no console errors)
+// and saves the attendance screenshots into docs/demo/screens/attendance/.
+// Needs the ERP and the API with the Soundarya seed (docs/demo/SOUNDARYA_DEMO_LOGINS.md):
+//   ERP_URL=http://localhost:3320 API_URL=http://localhost:4320 \
+//   PW_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node scripts/attendance-qa.mjs [--shots-only] [--out dir]
+import { mkdirSync } from 'node:fs';
+import path from 'node:path';
+import { chromium } from '@playwright/test';
+
+const ERP = process.env.ERP_URL ?? 'http://localhost:3320';
+const API = process.env.API_URL ?? 'http://localhost:4320';
+const outArg = process.argv.indexOf('--out');
+const OUT = outArg > 0 ? path.resolve(process.argv[outArg + 1]) : path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../../docs/demo/screens/attendance');
+const domain = 'soundarya.demo.zynetix.in';
+const shotsOnly = process.argv.includes('--shots-only');
+
+const tokens = new Map();
+async function token(prefix) {
+  if (tokens.has(prefix)) return tokens.get(prefix);
+  const r = await fetch(`${API}/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tenant: 'soundarya', login: `${prefix}@${domain}`, password: 'zynetix123' }) });
+  const t = (await r.json()).accessToken;
+  if (!t) throw new Error(`sign-in failed for ${prefix} (${r.status})`);
+  tokens.set(prefix, t);
+  return t;
+}
+async function get(prefix, url) {
+  const r = await fetch(`${API}${url}`, { headers: { authorization: `Bearer ${await token(prefix)}` } });
+  return r.json();
+}
+
+const classes = (await get('principal', '/v1/attendance-desk/classes')) ?? [];
+const bcom = classes.find((c) => c.name === 'BCom Sem 3 A') ?? classes[0];
+const sahana = (await get('principal', `/v1/students?q=25BCM001`))?.rows?.[0] ?? (await get('principal', `/v1/students?q=25BCM001`))?.[0];
+const month = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 7);
+
+const PAGES = [
+  ['/attendance', 'principal'],
+  ['/attendance/mark', 'hod.commerce'],
+  ['/attendance/unmarked', 'principal'],
+  ['/attendance/leave', 'principal'],
+  [`/attendance/register?sectionId=${bcom.id}&month=${month}`, 'principal'],
+  [`/attendance/register?sectionId=${bcom.id}&month=${month}&view=subjects`, 'principal'],
+  ['/attendance/eligibility', 'principal'],
+  ['/attendance/governance', 'principal'],
+  ['/attendance/qr-review', 'principal'],
+  ['/attendance/reports', 'principal'],
+  ...(sahana ? [[`/attendance/student?studentId=${sahana.id}`, 'principal']] : []),
+  ['/hr/attendance', 'hr'],
+  ['/timetable', 'principal'],
+];
+
+const settle = async (page) => {
+  await page.locator('main h1').first().waitFor({ timeout: 25000 }).catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(600);
+};
+
+const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM_PATH || undefined });
+async function open(width, login = 'principal') {
+  const ctx = await browser.newContext({ viewport: { width, height: width < 500 ? 844 : 900 }, deviceScaleFactor: width < 500 ? 2 : 1, colorScheme: 'light' });
+  await ctx.addCookies([
+    { name: 'kx_session', value: await token(login), url: ERP },
+    { name: 'kx_lang', value: 'en', url: ERP },
+  ]);
+  return ctx;
+}
+
+let failures = 0;
+if (!shotsOnly) {
+  for (const width of [1280, 390]) {
+    const ctxs = new Map();
+    for (const [url, login] of PAGES) {
+      if (!ctxs.has(login)) ctxs.set(login, await open(width, login));
+      const page = await ctxs.get(login).newPage();
+      const errors = [];
+      page.on('console', (m) => m.type() === 'error' && !/favicon|Download the React DevTools/.test(m.text()) && errors.push(m.text().slice(0, 160)));
+      page.on('pageerror', (e) => errors.push(e.message.slice(0, 160)));
+      const res = await page.goto(ERP + url).catch((e) => ({ status: () => 0, e }));
+      await settle(page);
+      const facts = await page.evaluate(() => ({
+        h1: document.querySelector('main h1')?.textContent?.trim() ?? '',
+        sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        error: !!document.querySelector('[role=alert].error-state, [data-testid=error-state]') || /Something went wrong|Application error/.test(document.body.innerText),
+      }));
+      const ok = res.status() === 200 && facts.h1 && facts.sideways <= 1 && !facts.error && errors.length === 0;
+      if (!ok) failures++;
+      console.log(`${ok ? 'ok  ' : 'FAIL'} ${width} ${url} status=${res.status()} h1="${facts.h1}" sideways=${facts.sideways}${facts.error ? ' error-state' : ''}${errors.length ? ` console=${JSON.stringify(errors)}` : ''}`);
+      await page.close();
+    }
+    for (const c of ctxs.values()) await c.close();
+  }
+}
+
+// The screenshots.
+mkdirSync(OUT, { recursive: true });
+const SHOTS = [
+  { name: '01-department-day', url: '/attendance' },
+  { name: '02-mark-period', url: '/attendance/mark', login: 'hod.commerce' },
+  { name: '03-qr-review', url: '/attendance/qr-review' },
+  { name: '04-eligibility-detention', url: '/attendance/eligibility' },
+  { name: '05-monthly-register', url: `/attendance/register?sectionId=${bcom.id}&month=${month}` },
+  { name: '06-reports-naac', url: '/attendance/reports' },
+  { name: '07-governance', url: '/attendance/governance' },
+  { name: '08-mark-phone', url: '/attendance/mark', login: 'hod.commerce', width: 390 },
+];
+for (const s of SHOTS) {
+  const ctx = await open(s.width ?? 1280, s.login);
+  const page = await ctx.newPage();
+  try {
+    await page.goto(ERP + s.url);
+    await settle(page);
+    if (s.run) await s.run(page);
+    await page.screenshot({ path: path.join(OUT, `${s.name}.png`), fullPage: true });
+    console.log('saved', s.name);
+  } catch (e) {
+    failures++;
+    console.log('FAILED', s.name, e.message.split('\n')[0]);
+  }
+  await ctx.close();
+}
+await browser.close();
+console.log(failures ? `${failures} problem(s)` : 'all pages ok');
+process.exit(failures ? 1 : 0);
