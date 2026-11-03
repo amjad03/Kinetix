@@ -4,6 +4,7 @@ import { assets, hostelAndCanteen, inventory, library, transport } from './campu
 import { attendanceGovernance } from './attendance-gov.js';
 import { academicsCore } from './academics-core.js';
 import { admissions } from './admissions.js';
+import { admissionsPass } from './admissions-pass.js';
 import { admissionsGrowth, hrLifecycle } from './growth.js';
 import { alumni, campusLife, mentoring, placements, skills } from './engagement.js';
 import { communication, documents, governance, health, integrations, lifecycle, reportsAndSystem, research, smartboards, tasksAndWorkflows, welfareAndDiscipline } from './operations.js';
@@ -54,6 +55,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['recruitment', recruitment],
   ['admissions: enquiries, campaigns, cycles, merit list', admissions],
   ['admissions growth: agents, commissions, interviews, online entrance test', admissionsGrowth],
+  ['admissions pass: seat matrix and counselling, KEA allotments, checklists, provisional admission, enrolment, broadcasts', admissionsPass],
   ['HR lifecycle: appraisal, training, offers, onboarding, exit', hrLifecycle],
   ['student accounts', studentAccounts],
   ['outcome-based education: statements, COs, approvals, CO-PO matrices, question papers and question-wise marks', obeStructure],

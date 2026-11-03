@@ -69,7 +69,7 @@ export function AdmissionPanel({ applicationId, status, studentId, claims, check
               {t('ap.claims.save')}
             </Button>
           </FormRow>
-          {(seat.seatType || seat.option) && <p className="text-[13px] text-muted-foreground">{t('ap.claims.seat', { option: seat.option ?? '-', type: seat.seatType ?? '-', category: (seat.seatCategory ?? '-').toUpperCase() })}</p>}
+          {(seat.seatType || seat.option) && <p className="text-[13px] text-muted-foreground">{t('ap.claims.seat', { option: seat.option ?? '-', type: seat.seatType === 'merit' ? t('ap.seat.government') : (seat.seatType ?? '-'), category: seat.seatCategory === 'merit' ? 'GM' : (seat.seatCategory ?? '-').toUpperCase() })}</p>}
         </div>
       </Card>
 

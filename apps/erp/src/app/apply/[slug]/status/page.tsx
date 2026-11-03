@@ -19,7 +19,7 @@ export default async function StatusPage({ params }: { params: Promise<{ slug: s
   return (
     <div className="min-h-[100dvh] bg-background py-8">
       <Container maxWidth="sm">
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
           <Logo />
           <div>
             <h1 className="text-xl font-semibold leading-7">{t('ap.status.title')}</h1>

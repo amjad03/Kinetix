@@ -53,7 +53,7 @@ export function SeatPlanDesk({ cycleId, cycleSeats, catalog, matrix, eligibility
 
   const cols: Col<MatrixRow>[] = [
     { label: t('ap.seat.option'), cell: (r) => r.option },
-    { label: t('ap.seat.seatType'), cell: (r) => catalog.seatTypes.find((s) => s.key === r.seatType)?.label ?? r.seatType },
+    { label: t('ap.seat.seatType'), cell: (r) => (catalog.seatTypes.find((s) => s.key === r.seatType)?.label ?? r.seatType).split(' (')[0], sort: (r) => r.seatType },
     { label: t('ap.seat.category'), cell: (r) => (r.supernumerary ? <StatusPill tone="info">{t(`ap.super.${r.category}` as MessageKey)}</StatusPill> : cat(r.category)), sort: (r) => r.category },
     { label: t('ap.seat.horizontal'), cell: (r) => Object.entries(r.horizontal).map(([k, n]) => `${t(`ap.hz.${k}` as MessageKey)} ${r.horizontalHeld[k] ?? 0}/${n}`).join(', ') || '-', sort: (r) => Object.keys(r.horizontal).join() },
     { label: t('ap.seat.seats'), cell: (r) => r.seats, num: true },
