@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Controller, Get, Inject, Module, UnauthorizedException, Headers, Header } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
+import { safeEqual } from '../common/crypto.js';
 import { ENV, type Env } from '../config/env.js';
 import { httpDuration, httpRequests, renderMetrics } from './metrics.js';
 import { requestContext, type RequestContext } from './request-context.js';
@@ -56,7 +57,7 @@ export class MetricsController {
   @Get('metrics')
   @Header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
   metrics(@Headers('authorization') authorization?: string): string {
-    if (this.env.METRICS_TOKEN && authorization !== `Bearer ${this.env.METRICS_TOKEN}`) throw new UnauthorizedException('Metrics token required');
+    if (this.env.METRICS_TOKEN && !safeEqual(authorization ?? '', `Bearer ${this.env.METRICS_TOKEN}`)) throw new UnauthorizedException('Metrics token required');
     return renderMetrics();
   }
 }

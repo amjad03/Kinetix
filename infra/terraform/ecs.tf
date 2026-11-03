@@ -56,6 +56,10 @@ locals {
       # C, C++ and Java for the code lab (code_runner.tf).
       CODE_RUNNER_URL            = local.code_runner_url
       CODE_RUN_TENANT_PER_MINUTE = tostring(var.code_run_tenant_per_minute)
+      # prod: the API refuses to start with test-only settings (services/api/src/config/env.ts productionProblems).
+      DEPLOYMENT         = var.environment == "prod" ? "production" : "staging"
+      CORS_ORIGINS       = "https://${var.erp_domain}"
+      MFA_ENFORCED_ROLES = "tenant_admin,principal,accountant,hr_manager,exam_controller"
     },
     # Traces to an OTLP/HTTP collector (docs/operations/observability.md); unset = no tracing.
     var.otel_exporter_endpoint != "" ? { OTEL_EXPORTER_OTLP_ENDPOINT = var.otel_exporter_endpoint, OTEL_SERVICE_NAME = "zynetix-api-${var.environment}" } : {},

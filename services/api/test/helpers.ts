@@ -32,8 +32,16 @@ export const env = {
   STORAGE_DIR: `/tmp/zynetix-test-objects-${process.pid}`,
   /** Encrypts institutions' payment secrets in tests (32 bytes, base64; not a real key). */
   SECRETS_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
+  /** Every test signs in from 127.0.0.1: per-IP limits are exercised in security.e2e.spec.ts with their own app. */
+  LOGIN_PER_IP_PER_MINUTE: '100000',
+  PUBLIC_PER_IP_PER_MINUTE: '100000',
+  /** Dashboard figures are recomputed on every call, so a test sees its own writes at once. */
+  DASHBOARD_CACHE_MS: '0',
 };
 Object.assign(process.env, env);
+
+/** A real 2x2 JPEG: photo uploads are decoded and drawn again (common/image.ts), so a bare magic number is refused. */
+export const TINY_JPEG = Buffer.from('/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAACAAIDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AKpAB//Z', 'base64');
 
 export class FixedClock extends Clock {
   constructor(public at: Date) {

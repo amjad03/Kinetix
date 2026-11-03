@@ -1,15 +1,16 @@
-# Pull requests and main: the shared TS package, the API (with Postgres) and the ERP.
+# Every push and pull request: the shared TS package, the API (with Postgres), the ERP, Terraform, and the security
+# checks (dependency advisories, committed secrets, the authorization matrix).
 # Flutter is in flutter.yml, images in docker.yml, the ERP's Playwright suite in erp-e2e.yml.
 name: CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: ['**']
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -90,6 +91,28 @@ jobs:
         run: pnpm --filter @zynetix/erp build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
+
+  security:
+    name: Dependency advisories, secret scan, authorization matrix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      # Fails on any critical advisory in production or development dependencies (docs/security/SECURITY_AUDIT.md).
+      - run: pnpm audit --audit-level critical
+      - name: No secrets committed
+        run: scripts/secret-scan.sh
+      - run: pnpm install --frozen-lockfile --filter "@zynetix/api..."
+      - run: pnpm --filter @zynetix/shared build
+      # Every route's @Auth from the Nest metadata: fails on an unreviewed public route or a stale docs/security/AUTHZ_MATRIX.md.
+      - name: Authorization matrix and unit specs (no database)
+        working-directory: services/api
+        run: ./node_modules/.bin/vitest run -c vitest.scan.config.ts
 
   terraform:
     name: Terraform fmt, validate, offline tests

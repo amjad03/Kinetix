@@ -253,6 +253,9 @@ describe('analytics and reporting', () => {
       const runs = await db.select().from(reportRuns).where(and(eq(reportRuns.scheduleId, scheduleId), eq(reportRuns.status, 'failed')));
       expect(runs).toHaveLength(1);
       expect(mailer.sent).toHaveLength(1);
+      // Roles are read on every request, so the accountant's token has lost the role too; give it back for the tests below.
+      await http().get('/v1/analytics/schedules').set(as('accountant')).expect(403);
+      await db.insert(s.userRoles).values({ tenantId: t.tenantId, userId: ids.accountant, role: 'accountant', campusId: null });
       await http().delete(`/v1/analytics/schedules/${scheduleId}`).set(as('principal')).expect(204);
       await http().delete(`/v1/analytics/schedules/${scheduleId}`).set(as('principal')).expect(404);
     });

@@ -1,3 +1,4 @@
+import { sealVisit } from '../school-life/health-seal.js';
 import { BadRequestException, ConflictException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { and, asc, eq, isNull, sql, type AnyColumn } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -1165,7 +1166,7 @@ export class HostelRecords implements OnModuleInit {
         const s = await studentByRoll(ctx.tx, String(v.student));
         const now = this.clock.now();
         // The visit goes on the student's health record too.
-        const [visit] = await ctx.tx.insert(healthVisits).values({ tenantId: ctx.p.tenantId, studentId: s.id, visitedAt: now, complaint: String(v.symptoms), action: [String(v.treatment ?? ''), v.referredTo ? `Referred to ${v.referredTo}` : ''].filter(Boolean).join('. '), sentHome: false, recordedBy: ctx.p.userId }).returning({ id: healthVisits.id });
+        const [visit] = await ctx.tx.insert(healthVisits).values(sealVisit(ctx.p.tenantId, s.id, { tenantId: ctx.p.tenantId, studentId: s.id, visitedAt: now, complaint: String(v.symptoms), action: [String(v.treatment ?? ''), v.referredTo ? `Referred to ${v.referredTo}` : ''].filter(Boolean).join('. '), sentHome: false, recordedBy: ctx.p.userId })).returning({ id: healthVisits.id });
         const family = await familyUserIds(ctx.tx, s.id);
         const [row] = await ctx.tx.insert(hostelSickbay).values({ tenantId: ctx.p.tenantId, studentId: s.id, healthVisitId: visit.id, admittedAt: now, symptoms: String(v.symptoms), treatment: String(v.treatment ?? ''), referredTo: String(v.referredTo ?? ''), parentAlerted: family.length > 0, recordedBy: ctx.p.userId }).returning({ id: hostelSickbay.id });
         await this.notifications.notifyUsers(ctx.tx, family, {

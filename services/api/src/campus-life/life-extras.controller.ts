@@ -6,6 +6,7 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { BlobBody, putBlob, sendBlob } from '../common/blob.js';
+import { UploadScanService } from '../scanning/upload-scan.js';
 import { Day } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -54,6 +55,7 @@ export class LifeExtrasController {
     private readonly svc: CampusLifeService,
     private readonly storage: ObjectStorage,
     private readonly auto: AutoCertificatesService,
+    private readonly scans: UploadScanService,
   ) {}
 
   // ---- club office bearers and achievements ------------------------------------------------------
@@ -150,7 +152,7 @@ export class LifeExtrasController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       found((await tx.select({ id: committees.id }).from(committees).where(eq(committees.id, id)))[0], 'Committee');
       if (b.meetingId) found((await tx.select({ id: committeeMeetings.id }).from(committeeMeetings).where(and(eq(committeeMeetings.id, b.meetingId), eq(committeeMeetings.committeeId, id))))[0], 'Meeting');
-      const stored = b.file ? await putBlob(this.storage, p.tenantId, `committees/${id}`, b.file) : null;
+      const stored = b.file ? await putBlob(this.storage, p.tenantId, `committees/${id}`, b.file, this.scans) : null;
       const [row] = await tx
         .insert(committeeEvidence)
         .values({ tenantId: p.tenantId, committeeId: id, meetingId: b.meetingId ?? null, title: b.title ?? stored?.title ?? 'Evidence', kind: b.kind, url: b.url ?? null, storageKey: stored?.storageKey ?? null, contentType: stored?.contentType ?? null, sizeBytes: stored?.sizeBytes ?? null, uploadedBy: p.userId })
@@ -278,7 +280,7 @@ export class LifeExtrasController {
       found((await tx.select({ id: campusEvents.id }).from(campusEvents).where(eq(campusEvents.id, id)))[0], 'Event');
       const who = await this.canUpload(tx, p, id);
       if (b.file && !['image/png', 'image/jpeg', 'video/mp4'].includes(b.file.contentType)) throw new ConflictException('Gallery files must be PNG, JPEG or MP4');
-      const stored = b.file ? await putBlob(this.storage, p.tenantId, `events/${id}`, b.file) : null;
+      const stored = b.file ? await putBlob(this.storage, p.tenantId, `events/${id}`, b.file, this.scans) : null;
       const [row] = await tx
         .insert(eventMedia)
         .values({ tenantId: p.tenantId, eventId: id, caption: b.caption, kind: b.kind, url: b.url ?? null, storageKey: stored?.storageKey ?? null, contentType: stored?.contentType ?? null, sizeBytes: stored?.sizeBytes ?? null, approved: who === 'staff', uploadedBy: p.userId })

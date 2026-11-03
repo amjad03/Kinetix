@@ -14,7 +14,7 @@
  * (users.password_must_change). With --otp-only there is no password and the administrator signs
  * in with a code sent to --admin-phone.
  */
-import argon2 from 'argon2';
+import { hashPassword } from '../auth/password-policy.js';
 import { eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
@@ -101,7 +101,7 @@ export class SlugTakenError extends Error {}
 /** Creates the institution in one transaction (owner role). Returns the tenant and the one-time password (null with otpOnly). */
 export async function createInstitution(db: NodePgDatabase<typeof s>, a: InstitutionArgs) {
   const password = a.otpOnly ? null : temporaryPassword();
-  const passwordHash = password ? await argon2.hash(password) : null;
+  const passwordHash = password ? await hashPassword(password) : null;
   return db.transaction(async (tx) => {
     const [taken] = await tx.select({ id: s.tenants.id }).from(s.tenants).where(eq(s.tenants.slug, a.slug));
     if (taken) throw new SlugTakenError(`An institution with the slug "${a.slug}" already exists. Nothing was changed.`);

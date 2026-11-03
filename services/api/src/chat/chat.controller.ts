@@ -180,8 +180,7 @@ export class ChatController {
   async send(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(SendBody)) body: z.infer<typeof SendBody>) {
     let stored: Awaited<ReturnType<typeof putBlob>> | undefined;
     if (body.attachment) {
-      await this.scans.assertClean(Buffer.from(body.attachment.contentBase64, 'base64'), 'The attachment');
-      stored = await putBlob(this.storage, p.tenantId, 'chat', body.attachment);
+      stored = await putBlob(this.storage, p.tenantId, 'chat', body.attachment, this.scans);
     }
     const { msg, thread, memberIds, senderName } = await this.db.withTenant(p.tenantId, async (tx) => {
       const thread = await this.member(tx, p, id);

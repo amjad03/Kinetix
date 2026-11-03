@@ -10,6 +10,7 @@ import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { academicTerms, eyMilestones, eyMilestoneStatus, eyObservations, sections, students, tenants } from '../db/schema.js';
+import { reencodePhoto } from '../common/image.js';
 import { photoType } from '../profile/profile.controller.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
@@ -209,11 +210,14 @@ export class EarlyYearsController extends EarlyYearsData {
   @Auth('user', EARLY_YEARS_STAFF)
   @UseInterceptors(FileInterceptor('photo', { limits: { fileSize: MAX_PHOTO_BYTES, files: 1 } }))
   async observe(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ObservationBody)) b: z.infer<typeof ObservationBody>, @UploadedFile() file?: { buffer: Buffer; size: number }) {
-    let mime: string | null = null;
+    let mime: ReturnType<typeof photoType> = null;
+    let photo: Buffer | null = null;
     if (file?.buffer?.length) {
       mime = photoType(file.buffer);
       if (!mime) throw new BadRequestException('The photo must be a JPEG, PNG or WebP image');
       await this.scans.assertClean(file.buffer, 'This photo');
+      // A young child's photo: drawn again without EXIF (location, device, time).
+      photo = await reencodePhoto(file.buffer, mime);
     }
     if (b.status && !b.milestoneId) throw new BadRequestException('Choose the milestone this status is for');
     const key = await this.db.withTenant(p.tenantId, async (tx) => {
@@ -226,8 +230,8 @@ export class EarlyYearsController extends EarlyYearsData {
       }
       if (!domain) throw new BadRequestException('Choose a domain or a milestone');
       const observationId = crypto.randomUUID();
-      const photoKey = file && mime ? `tenants/${p.tenantId}/early-years/${observationId}.${mime.slice(6)}` : null;
-      if (photoKey && file && mime) await this.storage.put(photoKey, Readable.from(file.buffer), MAX_PHOTO_BYTES, mime);
+      const photoKey = photo && mime ? `tenants/${p.tenantId}/early-years/${observationId}.${mime.slice(6)}` : null;
+      if (photoKey && photo && mime) await this.storage.put(photoKey, Readable.from(photo), MAX_PHOTO_BYTES, mime);
       await tx.insert(eyObservations).values({ id: observationId, tenantId: p.tenantId, studentId: id, milestoneId: b.milestoneId ?? null, domain, note: b.note, photoKey, status: b.status ?? null, observedOn: b.observedOn ?? (await this.svc.today(tx)), observedBy: p.userId });
       if (b.milestoneId && b.status) await this.setStatus(tx, p, id, b.milestoneId, b.status);
       await auditUser(tx, p, 'early_years.observation_added', 'ey_observation', observationId, { studentId: id, photo: !!photoKey });

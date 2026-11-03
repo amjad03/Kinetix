@@ -1,5 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
+import { assertPublicUrl } from '../connectors/safe-url.js';
 import type { Tx } from '../db/db.service.js';
 import { integrationSettings } from '../db/schema-integrations.js';
 
@@ -39,7 +40,9 @@ export function maskSecrets(v: Record<string, any>, secretKeys: string[]): Recor
 /** fetch with a timeout; a failure comes back as `{ ok: false, error }` so callers can record it on the row. */
 export async function call(url: string, init: RequestInit = {}, timeoutMs = 8000): Promise<{ ok: boolean; status: number; body: any; error?: string }> {
   try {
-    const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+    // Addresses an institution typed (DigiLocker, NAD, LTI JWKS): public only in production, and no redirects inward.
+    await assertPublicUrl(url);
+    const res = await fetch(url, { redirect: 'manual', ...init, signal: AbortSignal.timeout(timeoutMs) });
     const text = await res.text();
     let body: any = text;
     try {

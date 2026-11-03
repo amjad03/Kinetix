@@ -1,3 +1,4 @@
+import { dashboardCache, dashboardTtl, scopeKey } from '../common/ttl-cache.js';
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
@@ -459,6 +460,11 @@ export class AttendanceDeskController {
   @Get('dashboard')
   @Auth('user', ['principal', 'tenant_admin', 'hod'])
   dashboard(@CurrentPrincipal() p: UserPrincipal, @Query('date') date?: string) {
+    // Polled by the dashboard: the same answer for 30 s per reader (a head of department sees only their department).
+    return dashboardCache.get(scopeKey('attendance_desk.dashboard', p.tenantId, { user: p.userId, date: date ?? null }), dashboardTtl(), () => this.dashboardNow(p, date));
+  }
+
+  private dashboardNow(p: UserPrincipal, date?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const d = day(date) ?? (await this.desk.now(tx)).date;
       const unmarked = await this.desk.unmarked(tx, p, { from: d, to: d });

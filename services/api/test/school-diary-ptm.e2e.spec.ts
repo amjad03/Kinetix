@@ -5,10 +5,10 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as s from '../src/db/schema.js';
-import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
+import { createApp, createTenant, FixedClock, ownerPool, TINY_JPEG } from './helpers.js';
 
 /** The smallest JPEG the learning story can embed: a JFIF header, a 1x1 frame header and the end marker. */
-const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xc0, 0x00, 0x11, 0x08, 0x00, 0x01, 0x00, 0x01, 0x03, 0x01, 0x11, 0x00, 0x02, 0x11, 0x00, 0x03, 0x11, 0x00, 0xff, 0xd9]);
+const JPEG = TINY_JPEG;
 
 describe('school diary, parent-teacher meetings, early years and health records', () => {
   const owner = ownerPool();

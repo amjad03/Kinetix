@@ -27,7 +27,8 @@ export class DbService implements OnApplicationShutdown {
   readonly system: Database;
 
   constructor(@Inject(ENV) env: Env) {
-    this.appPool = new pg.Pool({ connectionString: env.APP_DATABASE_URL, max: 20 });
+    // DB_POOL_MAX per instance: instances × this must stay below the database's max_connections (RDS t4g.medium: ~400).
+    this.appPool = new pg.Pool({ connectionString: env.APP_DATABASE_URL, max: env.DB_POOL_MAX });
     this.systemPool = new pg.Pool({ connectionString: env.DATABASE_URL, max: 3 });
     this.app = drizzle(this.appPool, { schema });
     this.system = drizzle(this.systemPool, { schema });

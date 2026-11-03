@@ -17,6 +17,12 @@ resource "random_password" "pairing_hmac" {
   special = false
 }
 
+# Prometheus scrapes GET /metrics with this bearer token (the API refuses to start in prod without one).
+resource "random_password" "metrics" {
+  length  = 48
+  special = false
+}
+
 # Master key for secrets stored in the database (institutions' Razorpay key and webhook secrets),
 # AES-256-GCM. Rotation (docs/operations/security.md): keep the old value as
 # SECRETS_ENCRYPTION_OLD_KEYS, taint this, raise secrets_encryption_key_version, run rotate-secrets.
@@ -56,6 +62,7 @@ resource "aws_secretsmanager_secret_version" "app" {
     SECRETS_ENCRYPTION_OLD_KEYS = var.secrets_encryption_old_keys
     # The API's key to the code runner (code_runner.tf).
     CODE_RUNNER_TOKEN = random_password.code_runner.result
+    METRICS_TOKEN     = random_password.metrics.result
   })
 }
 
@@ -126,6 +133,7 @@ locals {
       SECRETS_ENCRYPTION_KEY      = "${aws_secretsmanager_secret.app.arn}:SECRETS_ENCRYPTION_KEY::"
       SECRETS_ENCRYPTION_OLD_KEYS = "${aws_secretsmanager_secret.app.arn}:SECRETS_ENCRYPTION_OLD_KEYS::"
       CODE_RUNNER_TOKEN           = "${aws_secretsmanager_secret.app.arn}:CODE_RUNNER_TOKEN::"
+      METRICS_TOKEN               = "${aws_secretsmanager_secret.app.arn}:METRICS_TOKEN::"
     },
     var.sms_provider == "msg91" ? {
       for k in local.manual_secrets.msg91.keys : k => "${aws_secretsmanager_secret.manual["msg91"].arn}:${k}::"

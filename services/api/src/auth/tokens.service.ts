@@ -68,7 +68,7 @@ export class TokensService {
 
   verifyMfaChallenge(token: string): MfaChallengeClaims {
     try {
-      const c = this.jwt.verify<MfaChallengeClaims & { typ: string }>(token, { audience: MFA_AUDIENCE });
+      const c = this.jwt.verify<MfaChallengeClaims & { typ: string }>(token, { audience: MFA_AUDIENCE, algorithms: ['HS256'] });
       if (c.typ !== 'mfa') throw new Error('wrong type');
       return c;
     } catch {
@@ -87,7 +87,7 @@ export class TokensService {
 
   verify(token: string): Claims {
     try {
-      return this.jwt.verify<Claims & object>(token, { audience: AUDIENCE });
+      return this.jwt.verify<Claims & object>(token, { audience: AUDIENCE, algorithms: ['HS256'] });
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
     }

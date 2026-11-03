@@ -293,8 +293,7 @@ export class AnnouncementsController {
   private async store(p: UserPrincipal, files: z.infer<typeof File>[]): Promise<AnnouncementAttachment[]> {
     const out: AnnouncementAttachment[] = [];
     for (const f of files) {
-      await this.scans.assertClean(Buffer.from(f.contentBase64, 'base64'), f.filename);
-      const s = await putBlob(this.storage, p.tenantId, 'announcements', f);
+      const s = await putBlob(this.storage, p.tenantId, 'announcements', f, this.scans);
       out.push({ id: randomUUID(), key: s.storageKey, name: s.title, type: s.contentType, size: s.sizeBytes });
     }
     return out;

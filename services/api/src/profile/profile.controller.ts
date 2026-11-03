@@ -7,6 +7,7 @@ import { Readable } from 'node:stream';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { reencodePhoto } from '../common/image.js';
 import { Clock } from '../common/time.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { guardians, students, userRoles, users } from '../db/schema.js';
@@ -51,11 +52,13 @@ export class ProfilePhotoController {
     const now = this.clock.now();
     const key = `tenants/${p.tenantId}/users/${p.userId}/photo-${now.getTime()}.${mime.slice(6)}`;
     await this.scans.assertClean(file.buffer, 'This photo');
-    await this.storage.put(key, Readable.from(file.buffer), MAX_PHOTO_BYTES, mime);
+    // Drawn again without metadata (no EXIF location of the person's home).
+    const clean = await reencodePhoto(file.buffer, mime, 1024);
+    await this.storage.put(key, Readable.from(clean), MAX_PHOTO_BYTES, mime);
     const old = await this.db.withTenant(p.tenantId, async (tx) => {
       const [u] = await tx.select({ photoKey: users.photoKey }).from(users).where(eq(users.id, p.userId));
       await tx.update(users).set({ photoKey: key, photoUpdatedAt: now, updatedAt: now }).where(eq(users.id, p.userId));
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'profile.photo_changed', subjectType: 'user', subjectId: p.userId, data: { bytes: file.size, mime } });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'profile.photo_changed', subjectType: 'user', subjectId: p.userId, data: { bytes: clean.length, mime } });
       return u?.photoKey;
     });
     if (old && old !== key) await this.storage.delete(old).catch(() => undefined);

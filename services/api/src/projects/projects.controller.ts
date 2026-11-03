@@ -6,6 +6,7 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { BlobBody, putBlob, sendBlob } from '../common/blob.js';
+import { UploadScanService } from '../scanning/upload-scan.js';
 import { orConflict } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -44,6 +45,7 @@ export class ProjectsController {
     private readonly db: DbService,
     private readonly storage: ObjectStorage,
     private readonly notifications: NotificationsService,
+    private readonly scans: UploadScanService,
   ) {}
 
   /** The projects the caller takes part in, with their part. */
@@ -148,7 +150,7 @@ export class ProjectsController {
   addFile(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(FileBody)) b: z.infer<typeof FileBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await requireParticipant(tx, p, id);
-      const stored = b.file ? await putBlob(this.storage, p.tenantId, `projects/${id}`, b.file) : null;
+      const stored = b.file ? await putBlob(this.storage, p.tenantId, `projects/${id}`, b.file, this.scans) : null;
       const [row] = await tx
         .insert(projectFiles)
         .values({ tenantId: p.tenantId, projectId: id, title: b.title ?? stored?.title ?? 'File', kind: b.url ? 'link' : b.kind, url: b.url ?? null, storageKey: stored?.storageKey ?? null, contentType: stored?.contentType ?? null, sizeBytes: stored?.sizeBytes ?? null, uploadedBy: p.userId })

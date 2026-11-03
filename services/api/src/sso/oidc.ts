@@ -1,4 +1,5 @@
 import { createHash, createPublicKey, createVerify, randomBytes } from 'node:crypto';
+import { assertPublicUrl } from '../connectors/safe-url.js';
 
 /** OpenID Connect pieces: PKCE, the authorization URL, and id_token verification against the provider's JWKS. */
 
@@ -70,7 +71,8 @@ const jwksCache = new Map<string, { at: number; keys: Jwk[] }>();
 async function jwks(uri: string, force = false): Promise<Jwk[]> {
   const hit = jwksCache.get(uri);
   if (hit && !force && Date.now() - hit.at < 10 * 60_000) return hit.keys;
-  const res = await fetch(uri, { signal: AbortSignal.timeout(10_000) });
+  await assertPublicUrl(uri);
+  const res = await fetch(uri, { redirect: 'manual', signal: AbortSignal.timeout(10_000) });
   if (!res.ok) throw new Error(`The sign-in provider's keys could not be read (${res.status})`);
   const keys = ((await res.json()) as { keys?: Jwk[] }).keys ?? [];
   jwksCache.set(uri, { at: Date.now(), keys });

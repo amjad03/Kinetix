@@ -2,7 +2,7 @@
  * Demo data: a Bangalore University–affiliated UG/PG college with one board.
  * Usage: pnpm db:seed   (prints the board enrolment code and staff logins)
  */
-import argon2 from 'argon2';
+import { hashPassword } from '../auth/password-policy.js';
 import { eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
@@ -32,7 +32,7 @@ async function main() {
     console.log('Demo tenant already exists. Drop the database to reseed.');
     return;
   }
-  const hash = await argon2.hash(PASSWORD);
+  const hash = await hashPassword(PASSWORD);
   const library = await importContent(db);
   const course = async (code: string) => (await db.query.courses.findFirst({ where: (c, { eq }) => eq(c.code, code) }))?.id ?? null;
 

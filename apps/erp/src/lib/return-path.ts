@@ -3,7 +3,8 @@ export const PATH_HEADER = 'x-kx-path';
 
 /** A local page worth returning to after signing in (never the sign-in pages themselves). */
 export function safeReturnPath(p: string | null | undefined): string | null {
-  if (!p || !p.startsWith('/') || p.startsWith('//') || p.includes('\\')) return null;
+  // Browsers drop tabs and newlines from URLs, so "/\t/evil.example" would become "//evil.example": refuse any control character.
+  if (!p || !p.startsWith('/') || p.startsWith('//') || p.includes('\\') || /[\u0000-\u001f\u007f]/.test(p)) return null;
   if (p === '/' || /^\/(login|auth|account|api|_next)(\/|\?|$)/.test(p)) return null;
   return p.length > 512 ? null : p;
 }

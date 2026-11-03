@@ -10,6 +10,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { healthProfiles, healthVaccinations, healthVisits, sections, students } from '../db/schema.js';
 import { HEALTH_STAFF, SchoolLifeService } from './school-life.service.js';
 import { naturalAsc } from '../common/natural-order.js';
+import { openProfile, openVisit, sealProfile, sealVisit } from './health-seal.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-20');
 const List = z.array(z.string().trim().min(1).max(100)).max(30).default([]);
@@ -29,7 +30,7 @@ async function healthRecord(tx: Tx, studentId: string) {
   const [profile] = await tx.select().from(healthProfiles).where(eq(healthProfiles.studentId, studentId));
   const visits = await tx.select().from(healthVisits).where(eq(healthVisits.studentId, studentId)).orderBy(desc(healthVisits.visitedAt)).limit(100);
   const vaccinations = await tx.select().from(healthVaccinations).where(eq(healthVaccinations.studentId, studentId)).orderBy(desc(healthVaccinations.givenOn));
-  return { profile: profile ?? null, visits, vaccinations };
+  return { profile: profile ? openProfile(profile) : null, visits: visits.map(openVisit), vaccinations };
 }
 
 /**
@@ -84,10 +85,10 @@ export class HealthRecordsController {
   saveProfile(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ProfileBody)) b: z.infer<typeof ProfileBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.student(tx, id);
-      const values = { ...b, updatedBy: p.userId, updatedAt: this.svc.now() };
+      const values = { ...sealProfile(p.tenantId, id, b), updatedBy: p.userId, updatedAt: this.svc.now() };
       const [row] = await tx.insert(healthProfiles).values({ ...values, tenantId: p.tenantId, studentId: id }).onConflictDoUpdate({ target: healthProfiles.studentId, set: values }).returning();
       await auditUser(tx, p, 'health.profile_saved', 'student', id);
-      return row;
+      return openProfile(row);
     });
   }
 
@@ -96,7 +97,8 @@ export class HealthRecordsController {
   logVisit(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(VisitBody)) b: z.infer<typeof VisitBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const s = await this.student(tx, id);
-      const [row] = await tx.insert(healthVisits).values({ tenantId: p.tenantId, studentId: id, visitedAt: b.visitedAt ? new Date(b.visitedAt) : this.svc.now(), complaint: b.complaint, action: b.action, sentHome: b.sentHome, recordedBy: p.userId }).returning();
+      const [sealed] = await tx.insert(healthVisits).values(sealVisit(p.tenantId, id, { tenantId: p.tenantId, studentId: id, visitedAt: b.visitedAt ? new Date(b.visitedAt) : this.svc.now(), complaint: b.complaint, action: b.action, sentHome: b.sentHome, recordedBy: p.userId })).returning();
+      const row = openVisit(sealed);
       await auditUser(tx, p, 'health.visit_logged', 'student', id, { visitId: row.id, sentHome: b.sentHome });
       if (b.sentHome) await this.svc.notify(tx, await this.svc.guardiansOf(tx, id), 'welfare', `${s.fullName} was sent home`, 'The school nurse has sent your child home. Please contact the school.', `health:home:${row.id}`, { studentId: id });
       return row;
@@ -116,7 +118,7 @@ export class HealthRecordsController {
         .orderBy(desc(healthVisits.visitedAt))
         .limit(200);
       await auditUser(tx, p, 'health.visits_listed', 'health_visit', undefined, { count: rows.length });
-      return rows.map((r) => ({ ...r.visit, student: r.student, rollNo: r.rollNo }));
+      return rows.map((r) => ({ ...openVisit(r.visit), student: r.student, rollNo: r.rollNo }));
     });
   }
 
