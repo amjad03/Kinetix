@@ -173,7 +173,7 @@ export class HostelPassController {
       const now = this.clock.now();
       return rows.rows
         .filter((r) => r.direction === 'out')
-        .map((r) => ({ studentId: r.student_id, studentName: r.full_name, rollNo: r.roll_no, place: r.place, outAt: r.out_at, passReason: r.pass_reason, expectedBackAt: r.expected_back_at, overdue: !!r.expected_back_at && new Date(r.expected_back_at) < now }));
+        .map((r) => ({ studentId: r.student_id, studentName: r.full_name, rollNo: r.roll_no, place: r.place, outAt: new Date(r.out_at).toISOString(), passReason: r.pass_reason, expectedBackAt: r.expected_back_at ? new Date(r.expected_back_at).toISOString() : null, overdue: !!r.expected_back_at && new Date(r.expected_back_at) < now }));
     });
   }
 

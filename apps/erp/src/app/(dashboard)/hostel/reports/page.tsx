@@ -8,7 +8,10 @@ import { ErrorState } from '@/components/States';
 import { Card, LinkTabs, StatGrid, StatTile, StatusPill } from '@/components/ui';
 import type { MessageKey } from '@/i18n/messages';
 import { getI18n } from '@/i18n/server';
-import { api, load, requireSection } from '@/lib/api';
+import { redirect, unstable_rethrow } from 'next/navigation';
+import { canSee, homeFor } from '@/lib/access';
+import { api, getMe, load } from '@/lib/api';
+import type { Me } from '@/lib/types';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('hsp.rep.title') };
@@ -50,6 +53,20 @@ interface Aishe {
 }
 
 type Tab = 'compliance' | 'defaulters' | 'aishe';
+
+/** The hostel's own people, and the accountant (fee defaulters) and the IQAC (AISHE and NAAC), as the API allows. */
+async function requireReports(): Promise<boolean> {
+  let me: Me;
+  try {
+    me = await getMe();
+  } catch (e) {
+    unstable_rethrow(e);
+    return false; // the layout shows the error
+  }
+  const staff = canSee(me.roles, 'hostel');
+  if (!staff && !me.roles.some((r) => r === 'accountant' || r === 'quality_officer')) redirect(homeFor(me.roles));
+  return staff;
+}
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const YEAR = /^\d{4}-\d{2}$/;
 
@@ -58,14 +75,14 @@ const YEAR = /^\d{4}-\d{2}$/;
  * (paged on the server), and the AISHE DCF-II hostel table with the NAAC hostel figures for an academic year.
  */
 export default async function HostelReportsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  await requireSection('hostel');
+  const staff = await requireReports();
   const sp = await searchParams;
   const { t } = await getI18n();
   const tab: Tab = sp.tab === 'defaulters' || sp.tab === 'aishe' ? sp.tab : 'compliance';
   const items = (['compliance', 'defaulters', 'aishe'] as const).map((v) => ({ value: v, label: t(`hsp.rep.tab.${v}`), href: `/hostel/reports?tab=${v}` }));
   return (
     <>
-      <PageHeader title={t('hsp.rep.title')} subtitle={t('hsp.rep.sub')} actions={<><LhtLinks module="hostel" here="home" /><HostelLinks here="reports" /></>} />
+      <PageHeader title={t('hsp.rep.title')} subtitle={t('hsp.rep.sub')} actions={staff ? <><LhtLinks module="hostel" here="home" /><HostelLinks here="reports" /></> : undefined} />
       <LinkTabs value={tab} label={t('hsp.rep.title')} items={items} />
       {tab === 'compliance' && <ComplianceTab />}
       {tab === 'defaulters' && <DefaultersTab asOf={sp.asOf && DAY.test(sp.asOf) ? sp.asOf : undefined} page={Math.max(Number(sp.page) || 1, 1)} />}
