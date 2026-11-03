@@ -550,7 +550,10 @@ describe('HR depth on the record kit', () => {
     expect(items.total).toBeGreaterThan(0);
     expect((await bulk('hr', 'onboarding-items', [items.rows[0].id], 'done').expect(200)).body.succeeded).toBe(1);
 
-    const del = (await post('teacher', '/v1/records/delegations', { delegateId: ids.teacher2, scope: 'leave', startsOn: '2026-10-21', endsOn: '2026-10-25', reason: 'Conference' }).expect(201)).body;
+    // A delegation's state ("upcoming") is worked out by the database against today's real date (not the test clock),
+    // so its dates are set a month after the real today rather than hardcoded.
+    const plusDays = (n: number) => new Date(Date.now() + n * 86_400_000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    const del = (await post('teacher', '/v1/records/delegations', { delegateId: ids.teacher2, scope: 'leave', startsOn: plusDays(30), endsOn: plusDays(34), reason: 'Conference' }).expect(201)).body;
     expect(del).toMatchObject({ delegatorId: ids.teacher, state: 'upcoming' });
     expect((await get('teacher2', '/v1/records/delegations?f.mine=received').expect(200)).body.total).toBeGreaterThan(0);
     await http().delete(`/v1/records/delegations/${del.id}`).set(auth('teacher')).expect(403);
