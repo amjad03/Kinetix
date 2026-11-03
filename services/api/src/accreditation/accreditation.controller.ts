@@ -728,8 +728,7 @@ export class AccreditationController {
   /** Scans and stores a file sent inside a JSON body; returns what the table keeps. */
   private async storeBlob(p: UserPrincipal, f: BlobInput | undefined) {
     if (!f) return { fileKey: null, fileName: null };
-    await this.scans.assertClean(Buffer.from(f.contentBase64, 'base64'), 'The evidence file');
-    const b = await putBlob(this.storage, p.tenantId, 'accreditation', f);
+    const b = await putBlob(this.storage, p.tenantId, 'accreditation', f, this.scans);
     return { fileKey: b.storageKey, fileName: f.filename.slice(0, 200) };
   }
 

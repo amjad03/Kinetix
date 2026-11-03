@@ -1,6 +1,6 @@
 import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { assertSafeUrl } from './safe-url.js';
+import { assertPublicUrl, assertSafeUrl } from './safe-url.js';
 
 /** One outgoing call to an outside system. */
 export interface HttpRequest {
@@ -23,6 +23,7 @@ export abstract class ConnectorHttp {
 export class FetchHttp extends ConnectorHttp {
   async request(r: HttpRequest): Promise<HttpResponse> {
     assertSafeUrl(r.url);
+    await assertPublicUrl(r.url);
     const res = await fetch(r.url, { method: r.method, headers: r.headers, body: r.body, redirect: 'manual', signal: AbortSignal.timeout(10_000) });
     return { status: res.status, text: await res.text() };
   }

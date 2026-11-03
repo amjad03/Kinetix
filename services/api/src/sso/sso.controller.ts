@@ -11,7 +11,7 @@ import { SecretBox } from '../common/secret-box.js';
 import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { ENV, type Env } from '../config/env.js';
-import { assertSafeUrl } from '../connectors/safe-url.js';
+import { assertPublicUrl, assertSafeUrl } from '../connectors/safe-url.js';
 import { DbService } from '../db/db.service.js';
 import { ssoIdentities, ssoLoginTickets, ssoProviders, tenants, users } from '../db/schema.js';
 import { authorizationUrl, claimEmail, newNonce, newPkce, presetEndpoints, verifyIdToken } from './oidc.js';
@@ -73,7 +73,8 @@ export class SsoService {
     assertSafeUrl(b.issuer);
     let { authorizationEndpoint, tokenEndpoint, jwksUri } = b;
     if (!authorizationEndpoint || !tokenEndpoint || !jwksUri) {
-      const res = await fetch(`${b.issuer.replace(/\/$/, '')}/.well-known/openid-configuration`, { signal: AbortSignal.timeout(10_000) }).catch(() => null);
+      await assertPublicUrl(b.issuer);
+      const res = await fetch(`${b.issuer.replace(/\/$/, '')}/.well-known/openid-configuration`, { redirect: 'manual', signal: AbortSignal.timeout(10_000) }).catch(() => null);
       if (!res?.ok) throw new BadRequestException('Could not read the provider settings; enter the endpoints by hand');
       const d = (await res.json()) as { authorization_endpoint?: string; token_endpoint?: string; jwks_uri?: string };
       authorizationEndpoint ??= d.authorization_endpoint;
@@ -174,7 +175,9 @@ export class SsoAuthController {
       const { p, slug } = loaded;
       const secret = this.sso.box.decrypt(p.clientSecretEnc, aad(p.tenantId));
       assertSafeUrl(p.tokenEndpoint);
+      await assertPublicUrl(p.tokenEndpoint);
       const tok = await fetch(p.tokenEndpoint, {
+        redirect: 'manual',
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' },
         body: new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: `${redirectBase(this.sso.env, req)}/v1/auth/sso/callback`, client_id: p.clientId, client_secret: secret, code_verifier: st.v }),

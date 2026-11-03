@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
+import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ENV, loadEnv, productionProblems } from '../src/config/env.js';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
@@ -52,6 +53,18 @@ describe('security controls', () => {
     expect(res.headers['x-powered-by']).toBeUndefined();
     const notes = await http().get('/v1/class-notes/not-a-token');
     expect(notes.headers['x-frame-options']).toBeUndefined();
+  });
+
+  it('photos are stored without their EXIF (camera location), and a fake image is refused', async () => {
+    const token = (await login(t.teacher.email!).expect(201)).body.accessToken as string;
+    const withGps = await sharp({ create: { width: 8, height: 8, channels: 3, background: '#336699' } }).withExif({ IFD0: { Make: 'PhoneCo', Model: 'X1' }, IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '12/1 58/1 0/1' } }).jpeg().toBuffer();
+    expect((await sharp(withGps).metadata()).exif).toBeDefined();
+    const me = (await http().post('/v1/me/photo').set({ authorization: `Bearer ${token}` }).attach('photo', withGps, { filename: 'me.jpg', contentType: 'image/jpeg' }).expect(200)).body;
+    const stored = (await http().get(me.photoUrl).set({ authorization: `Bearer ${token}` }).buffer(true).parse((res, cb) => { const c: Buffer[] = []; res.on('data', (d: Buffer) => c.push(d)); res.on('end', () => cb(null, Buffer.concat(c))); }).expect(200)).body as Buffer;
+    const meta = await sharp(stored).metadata();
+    expect(meta.format).toBe('jpeg');
+    expect(meta.exif).toBeUndefined();
+    await http().post('/v1/me/photo').set({ authorization: `Bearer ${token}` }).attach('photo', Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from('<script>')]), { filename: 'x.jpg', contentType: 'image/jpeg' }).expect(400);
   });
 
   it('signed-in answers are not cached by default', async () => {

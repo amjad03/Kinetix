@@ -11,7 +11,7 @@ import { contentLicenses, domainEvents, eventConsumptions, uploadScans, userSess
 import { DomainEvents, EventBus } from '../src/events/events.js';
 import { JobsService } from '../src/jobs/jobs.service.js';
 import { UploadScanService, VirusScanner } from '../src/scanning/upload-scan.js';
-import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
+import { createApp, createTenant, FixedClock, ownerPool, TINY_JPEG } from './helpers.js';
 
 class FakeScanner extends VirusScanner {
   readonly enabled = true;
@@ -261,7 +261,7 @@ describe('Phase 00 foundation', () => {
     });
 
     it('scans small uploads inline: infected files are refused, and nothing is stored while the scanner is down', async () => {
-      const jpeg = (body: string) => Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from(body)]);
+      const jpeg = (body: string) => Buffer.concat([TINY_JPEG, Buffer.from(body)]);
       const up = (b: Buffer) => http().post('/v1/me/photo').set(as('teacher')).attach('photo', b, { filename: 'p.jpg', contentType: 'image/jpeg' });
       expect((await up(jpeg('EICAR'))).status).toBe(422);
       scanner.down = true;

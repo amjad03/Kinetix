@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { assertPublicUrl } from '../connectors/safe-url.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { acctAccounts, acctVoucherLines, acctVouchers, tallyLedgerMap, tallySettings, tallySyncLog } from '../db/schema.js';
@@ -90,7 +91,9 @@ export class TallySync {
         error = 'Nothing to send any more';
       } else {
         try {
-          const res = await fetch(`http://${cfg.host}:${cfg.port}`, { method: 'POST', headers: { 'content-type': 'text/xml; charset=utf-8' }, body: xml, signal: AbortSignal.timeout(TIMEOUT_MS) });
+          // The Tally gateway is on the institution's network, reached over the internet: never this VPC or the metadata service.
+          await assertPublicUrl(`http://${cfg.host}:${cfg.port}`, { allowHttp: true });
+          const res = await fetch(`http://${cfg.host}:${cfg.port}`, { redirect: 'manual', method: 'POST', headers: { 'content-type': 'text/xml; charset=utf-8' }, body: xml, signal: AbortSignal.timeout(TIMEOUT_MS) });
           const answer = res.ok ? readAnswer(await res.text()) : { ok: false as const, message: `Tally answered ${res.status}` };
           if (!answer.ok) {
             status = 'failed';

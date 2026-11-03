@@ -6,6 +6,7 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { BlobBody, putBlob, sendBlob } from '../common/blob.js';
+import { UploadScanService } from '../scanning/upload-scan.js';
 import { Day, orConflict } from '../common/ops.js';
 import { tenantToday } from '../common/tenant-today.js';
 import { Clock } from '../common/time.js';
@@ -41,6 +42,7 @@ export class DatasetsController {
     private readonly storage: ObjectStorage,
     private readonly doi: DoiResolver,
     private readonly clock: Clock,
+    private readonly scans: UploadScanService,
   ) {}
 
   /** Whether the caller may open the dataset's files: owner and office always; others when it is open, or its embargo has ended. */
@@ -88,7 +90,7 @@ export class DatasetsController {
       const [d] = await tx.select().from(researchDatasets).where(eq(researchDatasets.id, id));
       if (!d || (d.ownerUserId !== p.userId && !hasRole(p, RESEARCH_ROLES))) throw new NotFoundException('Dataset not found');
       if (d.files.length >= 20) throw new ConflictException('A dataset can hold up to 20 files');
-      const stored = await putBlob(this.storage, p.tenantId, `datasets/${id}`, b);
+      const stored = await putBlob(this.storage, p.tenantId, `datasets/${id}`, b, this.scans);
       const files = [...d.files, { name: stored.title, storageKey: stored.storageKey, sizeBytes: stored.sizeBytes, contentType: stored.contentType }];
       await tx.update(researchDatasets).set({ files }).where(eq(researchDatasets.id, id));
       await auditUser(tx, p, 'research.dataset_file_added', 'research_dataset', id, { name: stored.title, sizeBytes: stored.sizeBytes });

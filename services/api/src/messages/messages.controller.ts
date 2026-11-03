@@ -388,8 +388,7 @@ export class ConversationsController {
     // Who may write is checked before the file is stored.
     await this.db.withTenant(p.tenantId, async (tx) => this.writable(tx, p, await this.load(tx, id), await this.officeStaffIds(tx)));
     if (body.attachment) {
-      await this.scans.assertClean(Buffer.from(body.attachment.contentBase64, 'base64'), 'The attachment');
-      stored = await putBlob(this.storage, p.tenantId, 'conversations', body.attachment);
+      stored = await putBlob(this.storage, p.tenantId, 'conversations', body.attachment, this.scans);
     }
     const { out, notify } = await this.db.withTenant(p.tenantId, async (tx) => {
       const c = await this.load(tx, id);

@@ -6,6 +6,7 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { BlobBody, putBlob, sendBlob } from '../common/blob.js';
+import { UploadScanService } from '../scanning/upload-scan.js';
 import { Day } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -27,6 +28,7 @@ export class GrievanceEvidenceController {
   constructor(
     private readonly db: DbService,
     private readonly storage: ObjectStorage,
+    private readonly scans: UploadScanService,
   ) {}
 
   /** The ticket, and the caller's relationship to it. Committee matters are invisible outside the committee. */
@@ -58,7 +60,7 @@ export class GrievanceEvidenceController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { t, viewer } = await this.access(tx, p, id);
       if (t.status === 'closed') throw new ConflictException('This ticket is closed');
-      const stored = await putBlob(this.storage, p.tenantId, `grievances/${id}`, b.file);
+      const stored = await putBlob(this.storage, p.tenantId, `grievances/${id}`, b.file, this.scans);
       const [row] = await tx.insert(grievanceEvidence).values({ tenantId: p.tenantId, ticketId: id, title: b.title ?? stored.title, contentType: stored.contentType, sizeBytes: stored.sizeBytes, storageKey: stored.storageKey, addedBy: p.userId }).returning({ id: grievanceEvidence.id, title: grievanceEvidence.title, sizeBytes: grievanceEvidence.sizeBytes });
       await tx.insert(grievanceEvents).values({ tenantId: p.tenantId, ticketId: id, actorUserId: p.userId, actorRole: viewer, kind: 'evidence_added', visibility: 'public', body: row.title });
       await auditUser(tx, p, 'grievance.evidence_added', 'grievance', id, { evidenceId: row.id });

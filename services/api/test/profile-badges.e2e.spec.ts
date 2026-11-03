@@ -4,10 +4,10 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as s from '../src/db/schema.js';
-import { createApp, createTenant, FixedClock, nextMondayIst, ownerPool, pairBoard } from './helpers.js';
+import { createApp, createTenant, FixedClock, nextMondayIst, ownerPool, pairBoard, TINY_JPEG } from './helpers.js';
 
-/** The smallest valid JPEG header is enough: the API checks the type, the apps crop and compress. */
-const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200, 1), Buffer.from([0xff, 0xd9])]);
+/** A real (tiny) JPEG: the API checks the type and draws the photo again without its metadata; the apps crop and compress. */
+const JPEG = TINY_JPEG;
 
 describe('profile and badges', () => {
   const owner = ownerPool();
@@ -83,7 +83,8 @@ describe('profile and badges', () => {
 
       const got = await http().get(me.photoUrl).set(auth('parent')).expect(200);
       expect(got.headers['content-type']).toBe('image/jpeg');
-      expect(Buffer.compare(got.body as Buffer, JPEG)).toBe(0);
+      // Drawn again (no metadata), so the bytes differ but it is still the JPEG.
+      expect((got.body as Buffer).subarray(0, 3)).toEqual(Buffer.from([0xff, 0xd8, 0xff]));
       await http().get(me.photoUrl).set(auth('teacher')).expect(200);
       // Another family, and another institution, cannot.
       await http().get(me.photoUrl).set(auth('parent2')).expect(404);

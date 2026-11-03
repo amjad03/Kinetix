@@ -9,7 +9,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { connectorDeliveries, connectors } from '../db/schema.js';
 import { type DomainEvent, EventBus } from '../events/events.js';
 import { ConnectorAdapters } from './adapters.js';
-import { assertSafeUrl } from './safe-url.js';
+import { assertPublicUrl, assertSafeUrl } from './safe-url.js';
 import { configSchema, connectorType, type ConnectorType } from './connector-types.js';
 
 export const SECRETS_KEY_MISSING = 'Connector settings cannot be stored on this server yet (SECRETS_ENCRYPTION_KEY is not set)';
@@ -196,6 +196,7 @@ export class ConnectorsService implements OnApplicationBootstrap, BeforeApplicat
   private async post(url: string, secret: string, body: string, eventType: string, deliveryId: string): Promise<{ ok: boolean; status?: number; error: string }> {
     try {
       assertSafeUrl(url);
+      await assertPublicUrl(url);
       const res = await fetch(url, {
         method: 'POST',
         redirect: 'manual',

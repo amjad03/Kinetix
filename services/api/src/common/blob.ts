@@ -53,12 +53,21 @@ export function matchesType(buf: Buffer, contentType: string): boolean {
   }
 }
 
-/** Stores the file under `tenants/<tenant>/<area>/…` and returns what the table keeps. */
-export async function putBlob(storage: ObjectStorage, tenantId: string, area: string, b: BlobInput): Promise<{ storageKey: string; sizeBytes: number; contentType: string; title: string }> {
+/** What putBlob needs from the virus scanner (UploadScanService): refuses infected files, and every file while the scanner is down. */
+export interface InlineScan {
+  assertClean(data: Buffer, name?: string): Promise<void>;
+}
+
+/**
+ * Stores the file under `tenants/<tenant>/<area>/…` and returns what the table keeps: checked for size, for looking like its
+ * type, and for viruses (when scanning is on) before anything is written.
+ */
+export async function putBlob(storage: ObjectStorage, tenantId: string, area: string, b: BlobInput, scans: InlineScan): Promise<{ storageKey: string; sizeBytes: number; contentType: string; title: string }> {
   const buf = Buffer.from(b.contentBase64, 'base64');
   if (buf.length === 0) throw new BadRequestException('The file is empty');
   if (buf.length > MAX_BYTES) throw new BadRequestException('Files here can be up to 4 MB');
   if (!matchesType(buf, b.contentType)) throw new BadRequestException('The file does not look like its type');
+  await scans.assertClean(buf, b.filename);
   const ext = (b.filename.match(/\.([A-Za-z0-9]{1,8})$/)?.[1] ?? 'bin').toLowerCase();
   const storageKey = `tenants/${tenantId}/${area}/${randomUUID()}.${ext}`;
   await storage.put(storageKey, Readable.from(buf), MAX_BYTES, b.contentType);
