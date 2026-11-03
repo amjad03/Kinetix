@@ -25,7 +25,7 @@ const EvalBody = z.object({
   scores: z.record(z.enum(EVAL_CRITERIA), z.number().int().min(1).max(5)).refine((s) => Object.keys(s).length === EVAL_CRITERIA.length, 'Rate every question'),
   comment: z.string().trim().max(1000).default(''),
 });
-const AdjBody = z.object({ userId: z.uuid(), kind: z.enum(['overtime', 'arrear', 'bonus', 'recovery']), payMonth: Month, hours: z.number().min(0).max(300).nullish(), ratePaise: z.number().int().min(0).nullish(), amountPaise: z.number().int().min(1).nullish(), reason: z.string().trim().min(3).max(300) });
+const AdjBody = z.object({ userId: z.uuid(), kind: z.enum(['overtime', 'arrear', 'bonus', 'recovery', 'guest_hours']), payMonth: Month, hours: z.number().min(0).max(300).nullish(), ratePaise: z.number().int().min(0).nullish(), amountPaise: z.number().int().min(1).nullish(), reason: z.string().trim().min(3).max(300) });
 const TaxProfileBody = z.object({ tan: z.string().trim().toUpperCase().regex(/^[A-Z]{4}\d{5}[A-Z]$/, 'A TAN looks like BLRA12345B'), pan: z.string().trim().toUpperCase().regex(/^[A-Z]{5}\d{4}[A-Z]$/, 'A PAN looks like ABCDE1234F'), deductorName: z.string().trim().min(2).max(200), deductorAddress: z.string().trim().max(400).default(''), responsiblePerson: z.string().trim().max(120).default(''), responsibleDesignation: z.string().trim().max(120).default('') });
 const ChallanBody = z.object({ payMonth: Month, section: z.string().trim().max(10).default('192'), bsrCode: z.string().trim().regex(/^\d{7}$/, 'A BSR code has seven digits'), challanSerial: z.string().trim().min(1).max(20), depositedOn: Day, tdsPaise: z.number().int().min(1), interestPaise: z.number().int().min(0).default(0) });
 
@@ -265,6 +265,14 @@ export class HrDepthController {
           if (!e) throw new ConflictException('This staff member has no salary structure to work the rate from');
           amount = overtimeAmount(e.total, b.hours);
         }
+      }
+      if (b.kind === 'guest_hours') {
+        // Guest and visiting faculty: the hours taught at their hourly rate (or the rate given).
+        if (!b.hours) throw new BadRequestException('Give the hours taught');
+        const [prof] = await tx.select({ rate: staffProfiles.hourlyRatePaise }).from(staffProfiles).where(eq(staffProfiles.userId, b.userId));
+        const rate = b.ratePaise ?? prof?.rate ?? 0;
+        if (!rate) throw new ConflictException('Set the hourly rate on the staff record first');
+        amount = Math.round((b.hours * rate) / 100) * 100;
       }
       if (amount <= 0) throw new BadRequestException('Give an amount');
       const [row] = await tx.insert(payrollAdjustments).values({ tenantId: p.tenantId, userId: b.userId, kind: b.kind, payMonth: b.payMonth, hours: b.hours ?? null, ratePaise: b.ratePaise ?? null, amountPaise: amount, reason: b.reason, createdBy: p.userId }).returning();

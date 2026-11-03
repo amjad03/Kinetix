@@ -114,13 +114,14 @@ export class RecruitmentRecords implements OnModuleInit {
       roles: { read: HR_ROLES, write: HR_ROLES },
       label: (r) => String(r.title),
       list: {
-        select: { id: o.id, title: o.title, departmentId: o.departmentId, departmentName: departments.name, designationId: o.designationId, designationName: designations.name, positions: o.positions, description: o.description, status: o.status, closesOn: o.closesOn, justification: o.justification, applicants, inProcess, hired, createdAt: o.createdAt },
+        select: { id: o.id, title: o.title, departmentId: o.departmentId, departmentName: departments.name, designationId: o.designationId, designationName: designations.name, positions: o.positions, description: o.description, status: o.status, closesOn: o.closesOn, justification: o.justification, published: o.published, eligibility: o.eligibility, applicants, inProcess, hired, createdAt: o.createdAt },
         joins: (q) => q.leftJoin(departments, eq(departments.id, o.departmentId)).leftJoin(designations, eq(designations.id, o.designationId)),
         search: [o.title, o.description, departments.name],
         filters: {
           status: choiceFilter('Status', OPENING_STATUS, o.status),
           department: { label: 'Department', options: departmentChoices, where: (v) => uuidEq(o.departmentId, v) },
           designation: { label: 'Designation', options: designationChoices, where: (v) => uuidEq(o.designationId, v) },
+          published: { label: 'Careers page', options: opts([['yes', 'On the careers page'], ['no', 'Not published']]), where: (v) => (v === 'yes' ? eq(o.published, true) : v === 'no' ? eq(o.published, false) : undefined) },
         },
         sorts: { title: o.title, created: o.createdAt, closes: o.closesOn, applicants, positions: o.positions },
         defaultSort: { id: 'created', dir: 'desc' },
@@ -133,15 +134,17 @@ export class RecruitmentRecords implements OnModuleInit {
         closesOn: { label: 'Applications close on', type: 'date', schema: DateText, column: o.closesOn, bulk: true },
         status: { label: 'Status', type: 'select', schema: sel(SETTABLE_STATUS), column: o.status, options: SETTABLE_STATUS, create: false, bulk: true },
         description: { label: 'Description and eligibility', type: 'textarea', schema: z.string().trim().max(5000).default(''), column: o.description },
+        eligibility: { label: 'Eligibility (as advertised)', type: 'textarea', schema: z.string().trim().max(2000).default(''), column: o.eligibility, help: "UGC/AICTE qualification: master's with 55%, NET/SET or Ph.D., experience" },
+        published: { label: 'Show on the careers page', type: 'boolean', schema: z.boolean(), column: o.published, bulk: true, help: 'Open openings on the public careers page take applications online' },
       },
       create: async (ctx, v) => {
         const [row] = await ctx.tx
           .insert(o)
-          .values({ tenantId: ctx.p.tenantId, title: String(v.title), departmentId: (v.departmentId as string | null) ?? null, designationId: (v.designationId as string | null) ?? null, positions: Number(v.positions ?? 1), closesOn: (v.closesOn as string | null) ?? null, description: String(v.description ?? ''), status: 'open', createdBy: ctx.p.userId })
+          .values({ tenantId: ctx.p.tenantId, title: String(v.title), departmentId: (v.departmentId as string | null) ?? null, designationId: (v.designationId as string | null) ?? null, positions: Number(v.positions ?? 1), closesOn: (v.closesOn as string | null) ?? null, description: String(v.description ?? ''), eligibility: String(v.eligibility ?? ''), published: v.published === true, status: 'open', createdBy: ctx.p.userId })
           .returning({ id: o.id });
         return row.id;
       },
-      duplicate: async (ctx, row) => ({ title: await copyName(ctx.tx, o, o.title, String(row.title)), status: 'open', approved_by: null, approved_at: null, decision_note: null, created_by: ctx.p.userId, created_at: new Date() }),
+      duplicate: async (ctx, row) => ({ title: await copyName(ctx.tx, o, o.title, String(row.title)), status: 'open', published: false, approved_by: null, approved_at: null, decision_note: null, created_by: ctx.p.userId, created_at: new Date() }),
       remove: {
         guard: async (ctx, id) => {
           const [h] = await ctx.tx.select({ id: jobApplicants.id }).from(jobApplicants).where(and(eq(jobApplicants.openingId, id), eq(jobApplicants.stage, 'hired'))).limit(1);
@@ -160,6 +163,7 @@ export class RecruitmentRecords implements OnModuleInit {
         { key: 'positions', header: 'Positions' },
         { key: 'status', header: 'Status', value: (r) => labelOf(OPENING_STATUS, r.status) },
         { key: 'closesOn', header: 'Closes on' },
+        { key: 'published', header: 'Careers page', value: (r) => (r.published ? 'Yes' : 'No') },
         { key: 'applicants', header: 'Applicants' },
         { key: 'inProcess', header: 'In process' },
         { key: 'hired', header: 'Hired' },

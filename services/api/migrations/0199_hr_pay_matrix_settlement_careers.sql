@@ -49,6 +49,10 @@ ALTER TABLE "separations" ADD COLUMN IF NOT EXISTS "settlement_lines" jsonb;--> 
 ALTER TABLE "job_openings" ADD COLUMN IF NOT EXISTS "published" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "job_openings" ADD COLUMN IF NOT EXISTS "eligibility" text DEFAULT '' NOT NULL;--> statement-breakpoint
 
+-- Yearly reimbursement limits by category (paise), and the declared vacation periods of teaching staff.
+ALTER TABLE "hr_settings" ADD COLUMN IF NOT EXISTS "reimbursement_limits" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "hr_settings" ADD COLUMN IF NOT EXISTS "vacations" jsonb DEFAULT '[]'::jsonb NOT NULL;--> statement-breakpoint
+
 DO $$
 DECLARE t text;
 BEGIN

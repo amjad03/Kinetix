@@ -15,7 +15,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { texts } from '../notifications/texts.js';
 import { HrService } from './hr.service.js';
 import { HR_ROLES, isHr } from './hr.access.js';
-import { accruedDays, availableDays, compOffAccrued, leaveRuleProblem, UNLIMITED_KINDS } from './leave-math.js';
+import { accruedDays, availableDays, compOffAccrued, leaveRuleProblem, UNLIMITED_KINDS, vacationProblem } from './leave-math.js';
 
 type Who = { id: string | null; fullName: string | null };
 import { workingDays } from './lop.js';
@@ -28,6 +28,7 @@ export const DEFAULT_LEAVE_TYPES = [
   { code: 'DL', name: 'Duty leave', paid: true, annualDays: 0, accrual: 'yearly', carryForwardMax: 0, kind: 'duty' },
   { code: 'CO', name: 'Compensatory off', paid: true, annualDays: 0, accrual: 'yearly', carryForwardMax: 0, kind: 'comp_off' },
   { code: 'ML', name: 'Maternity leave', paid: true, annualDays: 182, accrual: 'yearly', carryForwardMax: 0, kind: 'maternity', gender: 'female', countsHolidays: true, halfDayAllowed: false },
+  { code: 'VL', name: 'Vacation leave', paid: true, annualDays: 0, accrual: 'yearly', carryForwardMax: 0, kind: 'vacation', countsHolidays: true, halfDayAllowed: false },
 ].map((t, i) => ({ ...t, sortOrder: (i + 1) * 10 }));
 
 type TypeRow = typeof leaveTypes.$inferSelect;
@@ -69,7 +70,7 @@ export class LeaveService {
   }
 
   async balances(tx: Tx, tenantId: string, userId: string, year: number): Promise<LeaveBalance[]> {
-    const types = (await this.types(tx, tenantId)).filter((t) => t.active && !['duty', 'special'].includes(t.kind));
+    const types = (await this.types(tx, tenantId)).filter((t) => t.active && !['duty', 'special', 'vacation'].includes(t.kind));
     const [prof] = await tx.select({ joined: staffProfiles.dateOfJoining }).from(staffProfiles).where(eq(staffProfiles.userId, userId));
     const credits = await tx
       .select({ days: compOffCredits.days, expiresOn: compOffCredits.expiresOn })
@@ -215,7 +216,11 @@ export class LeaveService {
     const working = type.countsHolidays ? eachDay(body.fromDate, body.toDate).length : workingDays(body.fromDate, body.toDate, settings.weeklyOffs, holidays);
     if (working === 0) throw new BadRequestException('Those dates are weekly offs or holidays: no leave is needed');
     const days = body.halfDay ? 0.5 : working;
-    const [who] = await tx.select({ gender: staffProfiles.gender }).from(staffProfiles).where(eq(staffProfiles.userId, applicant));
+    const [who] = await tx.select({ gender: staffProfiles.gender, category: staffProfiles.staffCategory }).from(staffProfiles).where(eq(staffProfiles.userId, applicant));
+    if (type.kind === 'vacation') {
+      const vp = vacationProblem((await hrModuleSettings(tx, p.tenantId)).vacations, { fromDate: body.fromDate, toDate: body.toDate, staffCategory: who?.category ?? null });
+      if (vp) throw new BadRequestException(vp);
+    }
     const today = await this.hr.today(tx);
     const problem = leaveRuleProblem(type, { days, halfDay: body.halfDay, noticeDays: Math.round((Date.parse(body.fromDate) - Date.parse(today)) / 86_400_000), gender: who?.gender ?? null, onBehalf });
     if (problem) throw new BadRequestException(problem);

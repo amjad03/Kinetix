@@ -11,6 +11,8 @@ export const DEFAULT_HR_SETTINGS: HrModuleSettings = {
   encashment: { maxDaysPerYear: 15, minBalanceAfter: 0 },
   attendance: { officeStart: '09:00', graceMinutes: 10, halfDayAfterMinutes: 120, minHoursFullDay: 6, officeEnd: '17:00', lateMarksPerHalfDay: 3 },
   loans: { maxInstallments: 24, maxAdvancePaise: 5_000_000, maxLoanPaise: 50_000_000 },
+  reimbursementLimits: {},
+  vacations: [],
 };
 
 /** `{FY}` is the Indian financial year (April to March), `{YYYY}`/`{YY}` the calendar year. */

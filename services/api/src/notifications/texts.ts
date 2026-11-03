@@ -58,6 +58,42 @@ export const texts = {
       const verdict = l === 'hi' ? (p.approved ? 'स्वीकृत' : 'अस्वीकृत') : l === 'kn' ? (p.approved ? 'ಅನುಮೋದಿಸಲಾಗಿದೆ' : 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ') : p.approved ? 'approved' : 'not approved';
       return { title: l === 'en' ? `Your ${what} request was ${verdict}` : `${what}: ${verdict}`, body: p.detail };
     }),
+  taxDeclarationSubmitted: (p: { name: string; fy: string; proofs: boolean }) =>
+    all((l) => ({
+      title: p.proofs ? (l === 'hi' ? `${p.name} ने निवेश प्रमाण जमा किए` : l === 'kn' ? `${p.name} ಹೂಡಿಕೆ ಪುರಾವೆ ಸಲ್ಲಿಸಿದ್ದಾರೆ` : `Investment proofs from ${p.name}`) : l === 'hi' ? `${p.name} की निवेश घोषणा` : l === 'kn' ? `${p.name} ಹೂಡಿಕೆ ಘೋಷಣೆ` : `Investment declaration from ${p.name}`,
+      body: `FY ${p.fy}`,
+    })),
+  taxDeclarationDecided: (p: { status: 'approved' | 'rejected' | 'verified'; fy: string; note?: string }) =>
+    all((l) => ({
+      title:
+        p.status === 'rejected'
+          ? l === 'hi' ? 'निवेश घोषणा लौटाई गई' : l === 'kn' ? 'ಹೂಡಿಕೆ ಘೋಷಣೆ ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ' : 'Investment declaration sent back'
+          : p.status === 'verified'
+            ? l === 'hi' ? 'निवेश प्रमाण सत्यापित' : l === 'kn' ? 'ಹೂಡಿಕೆ ಪುರಾವೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ' : 'Investment proofs verified'
+            : l === 'hi' ? 'निवेश घोषणा स्वीकृत' : l === 'kn' ? 'ಹೂಡಿಕೆ ಘೋಷಣೆ ಅನುಮೋದಿಸಲಾಗಿದೆ' : 'Investment declaration approved',
+      body: `FY ${p.fy}${p.note ? ` · ${p.note}` : ''}`,
+    })),
+  reimbursementSubmitted: (p: { name: string; claimNo: string; amountPaise: number }) =>
+    all((l) => ({ title: l === 'hi' ? `${p.name} का प्रतिपूर्ति दावा` : l === 'kn' ? `${p.name} ಮರುಪಾವತಿ ಕ್ಲೇಮ್` : `Reimbursement claim from ${p.name}`, body: `${p.claimNo} · ${rupees(p.amountPaise)}` })),
+  reimbursementDecided: (p: { approved: boolean; claimNo: string; amountPaise: number; payMonth?: string | null; note?: string }) =>
+    all((l) => ({
+      title: p.approved ? (l === 'hi' ? 'प्रतिपूर्ति स्वीकृत' : l === 'kn' ? 'ಮರುಪಾವತಿ ಅನುಮೋದಿಸಲಾಗಿದೆ' : 'Reimbursement approved') : l === 'hi' ? 'प्रतिपूर्ति अस्वीकृत' : l === 'kn' ? 'ಮರುಪಾವತಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ' : 'Reimbursement rejected',
+      body: `${p.claimNo} · ${rupees(p.amountPaise)}${p.payMonth ? ` · ${p.payMonth}` : ''}${p.note ? ` · ${p.note}` : ''}`,
+    })),
+  payRevised: (p: { kind: 'placement' | 'increment' | 'promotion'; basicPaise: number; from: string }) =>
+    all((l) => ({
+      title:
+        p.kind === 'increment'
+          ? l === 'hi' ? 'वार्षिक वेतन वृद्धि' : l === 'kn' ? 'ವಾರ್ಷಿಕ ವೇತನ ಬಡ್ತಿ' : 'Annual increment'
+          : p.kind === 'promotion'
+            ? l === 'hi' ? 'पदोन्नति पर वेतन निर्धारण' : l === 'kn' ? 'ಬಡ್ತಿ ವೇತನ ನಿಗದಿ' : 'Pay fixed on promotion'
+            : l === 'hi' ? 'वेतन मैट्रिक्स में नियुक्ति' : l === 'kn' ? 'ವೇತನ ಮ್ಯಾಟ್ರಿಕ್ಸ್‌ನಲ್ಲಿ ನಿಗದಿ' : 'Placed on the pay matrix',
+      body: `${rupees(p.basicPaise)} · ${dateIn(l, p.from)}`,
+    })),
+  jobApplicationReceived: (p: { title: string; name: string }) =>
+    all((l) => ({ title: l === 'hi' ? `नया आवेदन: ${p.title}` : l === 'kn' ? `ಹೊಸ ಅರ್ಜಿ: ${p.title}` : `New application: ${p.title}`, body: p.name })),
+  settlementReady: (p: { netPaise: number }) =>
+    all((l) => ({ title: l === 'hi' ? 'पूर्ण और अंतिम निपटान' : l === 'kn' ? 'ಪೂರ್ಣ ಮತ್ತು ಅಂತಿಮ ಇತ್ಯರ್ಥ' : 'Full and final settlement', body: rupees(p.netPaise) })),
   payslipReady: (p: { month: string }) =>
     all((l) => ({ title: l === 'hi' ? 'वेतन पर्ची उपलब्ध' : l === 'kn' ? 'ವೇತನ ಚೀಟಿ ಲಭ್ಯ' : 'Your payslip is ready', body: p.month })),
   certificateIssued: (p: { title: string; serialNo: string }) =>

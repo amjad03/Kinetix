@@ -10,7 +10,9 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { payrollRuns, payrollSettings, salaryComponents, tenants } from '../db/schema.js';
 import { monthEnd } from './dates.js';
-import { bankTransferCsv, ecrText, statutoryCsv, tallyXml, type StatRow } from './exports.js';
+import { bankTransferCsv, ecrText, statutoryCsv, tallyXml, type BankRow, type StatRow } from './exports.js';
+import { BANK_FORMATS, bankFile, debitAccountAad } from './bank-files.js';
+import { seal, unseal } from '../common/sensitive.js';
 import { PAYROLL_APPROVERS, PAYROLL_ROLES, STAFF_ROLES, hasAnyRole } from './hr.access.js';
 import { HrService } from './hr.service.js';
 import { PayrollService } from './payroll.service.js';
@@ -62,6 +64,12 @@ const RunBody = z.object({
   note: z.string().trim().max(300).default(''),
 });
 const VersionBody = z.object({ expectedVersion: z.number().int().min(1) });
+const BankFileBody = z.object({
+  format: z.enum(BANK_FORMATS),
+  /** The salary (debit) account; omitted: left as it is. */
+  debitAccount: z.string().trim().regex(/^\d{9,18}$/, 'An account number is 9 to 18 digits').optional(),
+  corporateId: z.string().trim().max(40).default(''),
+});
 const RecomputeBody = z.object({ expectedVersion: z.number().int().min(1).optional() });
 
 /** Salary structures, monthly payroll runs, payslips and the bank/statutory/Tally exports. */
@@ -94,6 +102,30 @@ export class PayrollController {
       await tx.update(payrollSettings).set({ ...b, ptSlabs: slabs as PtSlab[], updatedAt: new Date() }).where(eq(payrollSettings.tenantId, p.tenantId));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.settings_updated', subjectType: 'payroll_settings', data: { before: { pfCap: before.pfCapAtCeiling, pt: before.ptSlabs }, after: { pfCap: b.pfCapAtCeiling, pt: slabs } } });
       return this.hr.settings(tx, p.tenantId);
+    });
+  }
+
+  /** The bank format of the salary transfer file and the debit account (only its last four come back). */
+  @Get('bank-file')
+  @Auth('user', PAYROLL_ROLES)
+  bankFileSettings(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.hr.settings(tx, p.tenantId);
+      const [r] = await tx.select({ b: payrollSettings.bankFile }).from(payrollSettings);
+      return { format: r.b.format, debitAccountLast4: r.b.debitAccountLast4, corporateId: r.b.corporateId };
+    });
+  }
+
+  @Put('bank-file')
+  @Auth('user', PAYROLL_APPROVERS)
+  saveBankFile(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(BankFileBody)) b: z.infer<typeof BankFileBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.hr.settings(tx, p.tenantId);
+      const [r] = await tx.select({ b: payrollSettings.bankFile }).from(payrollSettings);
+      const next = { ...r.b, format: b.format, corporateId: b.corporateId, ...(b.debitAccount ? { debitAccountEnc: seal(debitAccountAad(p.tenantId), b.debitAccount), debitAccountLast4: b.debitAccount.slice(-4) } : {}) };
+      await tx.update(payrollSettings).set({ bankFile: next, updatedAt: new Date() }).where(eq(payrollSettings.tenantId, p.tenantId));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.bank_file_settings', subjectType: 'payroll_settings', before: { format: r.b.format, debitAccountLast4: r.b.debitAccountLast4 }, after: { format: next.format, debitAccountLast4: next.debitAccountLast4 } });
+      return { format: next.format, debitAccountLast4: next.debitAccountLast4, corporateId: next.corporateId };
     });
   }
 
@@ -292,6 +324,38 @@ export class PayrollController {
       res.setHeader('Content-Disposition', `attachment; filename="bank-transfer-${run.month}.csv"`);
       if (missing.length) res.setHeader('X-Missing-Bank', encodeURIComponent(missing.join(', ')));
       return bankTransferCsv(ok);
+    });
+  }
+
+  /**
+   * The salary transfer file in the bank's own upload format (SBI, Canara Bank, HDFC Bank; ?format= overrides the
+   * setting). Same rules as bank-transfer.csv: approved or locked runs, account numbers decrypted only here, audited.
+   */
+  @Get('runs/:id/bank-file')
+  @Auth('user', PAYROLL_ROLES)
+  bankFileExport(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('format') format: string | undefined, @Res({ passthrough: true }) res: Response) {
+    const f = format === undefined ? null : z.enum(BANK_FORMATS).safeParse(format);
+    if (f && !f.success) throw new BadRequestException('format must be generic, sbi, canara or hdfc');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { run, rows } = await this.payroll.exportRows(tx, p.tenantId, id);
+      const [st] = await tx.select({ b: payrollSettings.bankFile }).from(payrollSettings);
+      const chosen = f?.data ?? st?.b.format ?? 'generic';
+      if (chosen !== 'generic' && !st?.b.debitAccountEnc) throw new ConflictException("Record the institution's salary account first (Payroll settings → Bank file)");
+      const ok: BankRow[] = [];
+      const missing: string[] = [];
+      for (const { d, prof } of rows) {
+        if (d.netPaise <= 0) continue;
+        if (!prof?.bankAccountEnc || !prof.bankIfsc) missing.push(d.user.fullName);
+        else ok.push({ name: prof.bankAccountHolder ?? d.user.fullName, account: this.hr.accountNumber(p.tenantId, d.user.id, prof.bankAccountEnc), ifsc: prof.bankIfsc, netPaise: d.netPaise, narration: `Salary ${monthLabel(run.month)}` });
+      }
+      const debit = st?.b.debitAccountEnc ? unseal(debitAccountAad(p.tenantId), st.b.debitAccountEnc) : '';
+      const file = bankFile(chosen, ok, { debitAccount: debit, valueDate: await this.hr.today(tx), reference: `SAL-${run.month}` }, bankTransferCsv);
+      await tx.update(payrollRuns).set({ bankFileAt: new Date() }).where(eq(payrollRuns.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.export_bank', subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version, format: chosen, rows: ok.length, missing: missing.length } });
+      res.setHeader('Content-Type', file.contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="salary-${chosen}-${run.month}.${file.ext}"`);
+      if (missing.length) res.setHeader('X-Missing-Bank', encodeURIComponent(missing.join(', ')));
+      return file.body;
     });
   }
 

@@ -40,6 +40,11 @@ const ProfileBody = z.object({
   pfEnabled: z.boolean().default(true),
   esiEnabled: z.boolean().default(false),
   ptEnabled: z.boolean().default(true),
+  /** How pay is set (omitted: left as it is). Matrix placement itself goes through /v1/payroll/pay-matrix. */
+  payBasis: z.enum(['structure', 'matrix', 'consolidated', 'hourly']).optional(),
+  hraClass: z.enum(['X', 'Y', 'Z']).optional(),
+  /** Guest and visiting faculty: the rate per teaching hour. */
+  hourlyRatePaise: Paise.nullable().optional(),
   /** 0 (or omitted) when creating the record. */
   expectedVersion: z.number().int().min(0).default(0),
 });

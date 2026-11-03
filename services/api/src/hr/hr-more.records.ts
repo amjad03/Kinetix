@@ -36,6 +36,7 @@ export const BOOK_KINDS = opts([
   ['confirmation', 'Confirmation'],
   ['promotion', 'Promotion'],
   ['increment', 'Increment'],
+  ['pay_fixation', 'Pay fixation'],
   ['transfer', 'Transfer'],
   ['award', 'Award'],
   ['penalty', 'Penalty'],

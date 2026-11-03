@@ -16,6 +16,7 @@ import { requireVersion } from './hr.access.js';
 import { annualTax, computePayslip, daysInMonth, fyStart, resolveLines, type StructureLine } from './payroll-math.js';
 import { csv as csvText } from './exports.js';
 import { openStaffId } from './staff-ids.js';
+import { settledFor } from './settled-months.js';
 import { monthTakesAdjustments } from './hr-depth.controller.js';
 import { monthLabel } from './payslip-pdf.js';
 import { formatSeries, takeNumbers } from './hr-settings.js';
@@ -213,6 +214,8 @@ export class PayrollService {
     const ADJ_NAME: Record<string, [string, string]> = { overtime: ['OT', 'Overtime'], arrear: ['ARR', 'Arrears'], bonus: ['BONUS', 'Bonus'], recovery: ['REC', 'Recovery'], encashment: ['LENC', 'Leave encashment'], reimbursement: ['REIMB', 'Reimbursement'], guest_hours: ['GUEST', 'Guest lectures'] };
 
     await tx.delete(payslips).where(eq(payslips.runId, run.id));
+    // A full and final settlement that paid this month's salary takes the place of the payslip.
+    const settled = await settledFor(tx, month);
     const skipped: Run['skipped'] = [];
     const days = daysInMonth(month);
     for (const s of staff) {
@@ -223,6 +226,10 @@ export class PayrollService {
       }
       if (prof.status === 'exited' && prof.dateOfLeaving && prof.dateOfLeaving < monthStart(month)) continue;
       if (prof.dateOfJoining && prof.dateOfJoining > monthEnd(month)) continue;
+      if (settled.has(s.userId) && !supplementary) {
+        skipped.push({ userId: s.userId, fullName: s.fullName, reason: 'Paid in the full and final settlement' });
+        continue;
+      }
       const structure = structures.find((x) => x.userId === s.userId);
       const extras = adjRows.filter((a) => a.userId === s.userId);
       // A supplementary run pays in full only the staff it names (late joiners) who were not paid this month,

@@ -8,8 +8,9 @@ import { PAYROLL_ROLES } from './hr.access.js';
 import { LeaveService } from './leave.service.js';
 import { cadreRatio, sfr } from './hr-master.logic.js';
 import { openStaffId, type StaffIdField } from './staff-ids.js';
+import { cadreEligibility } from './cadre-eligibility.js';
 
-export const HR_REPORTS = ['staff-strength', 'staff-category', 'faculty-cadre', 'sfr', 'naac-faculty', 'publications', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'pt-return', 'lwf', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition'] as const;
+export const HR_REPORTS = ['staff-strength', 'staff-category', 'faculty-cadre', 'sfr', 'naac-faculty', 'publications', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'pt-return', 'lwf', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition', 'cadre-eligibility'] as const;
 export type HrReport = (typeof HR_REPORTS)[number];
 
 type Row = Record<string, string | number | null>;
@@ -229,6 +230,26 @@ export class HrReportsController {
             left join training_records t on t.user_id = sp.user_id and t.starts_on >= ${`${fy}-04-01`}::date and t.starts_on <= ${`${fy + 1}-03-31`}::date
             where sp.status <> 'exited' ${deptCond(sql`sp.department_id`)} group by 1, 2, 3 order by 5 desc, 2`);
           break;
+        case 'cadre-eligibility': {
+          // UGC Regulations 2018 minimum qualifications for each teacher's cadre, from the staff record.
+          columns = ['code', 'name', 'department', 'cadre', 'mastersPercent', 'phd', 'netSet', 'experienceTotal', 'publications', 'eligible', 'missing'];
+          const staff = await run(sql`
+            select sp.employee_code as code, u.full_name as name, coalesce(d.name, '') as department, coalesce(sp.cadre, g.cadre) as cadre,
+              (select max(q.percentage)::float from staff_qualifications q where q.user_id = sp.user_id and q.kind = 'degree' and (q.level ilike '%PG%' or q.level ilike '%post%' or q.level ilike '%master%' or q.title ~* '(^|[^a-z])(m\.? ?(a|sc|com|tech|e|phil|ba|ca)|master)')) as "mastersPercent",
+              (select count(*)::int from staff_qualifications q where q.user_id = sp.user_id and q.kind = 'degree' and (q.level ilike '%PG%' or q.level ilike '%post%' or q.level ilike '%master%' or q.level ilike '%doctor%' or q.level ilike 'Ph.D.%' or q.title ~* '(^|[^a-z])(m\.? ?(a|sc|com|tech|e|phil|ba|ca)|master|ph\.? ?d)')) as masters,
+              case when sp.phd_status = 'awarded' then 'Yes' else 'No' end as phd, case when sp.net_set <> 'none' then 'Yes' else 'No' end as "netSet",
+              round((((coalesce(sp.date_of_leaving, current_date) - sp.date_of_joining) + coalesce((select sum(e.to_date - e.from_date + 1) from staff_experience e where e.user_id = sp.user_id and e.kind in ('teaching', 'research')), 0)) / 365.25)::numeric, 1)::float as "experienceTotal",
+              (select count(*)::int from staff_publications pb where pb.user_id = sp.user_id) as publications,
+              (sp.social_category in ('sc', 'st', 'obc') or sp.differently_abled) as relaxed
+            from staff_profiles sp join users u on u.id = sp.user_id left join departments d on d.id = sp.department_id left join designations g on g.id = sp.designation_id
+            where sp.status <> 'exited' and sp.staff_category = 'teaching' and sp.date_of_joining is not null ${deptCond(sql`sp.department_id`)} order by 3, 2`);
+          rows = staff.map((r) => {
+            const e = cadreEligibility({ cadre: (r.cadre as string | null) ?? null, mastersPercent: r.mastersPercent === null ? null : Number(r.mastersPercent), hasMasters: Number(r.masters) > 0, phd: r.phd === 'Yes', netSet: r.netSet === 'Yes', experienceYears: Number(r.experienceTotal ?? 0), publications: Number(r.publications), relaxed: (r.relaxed as unknown) === true });
+            const { masters: _m, relaxed: _r, ...rest } = r;
+            return { ...rest, cadre: e?.cadre ?? (r.cadre ? String(r.cadre) : '—'), eligible: e ? (e.eligible ? 'Yes' : 'No') : 'Not checked', missing: e?.missing.join('; ') ?? '' };
+          });
+          break;
+        }
         case 'attrition':
           columns = ['department', 'opening', 'joined', 'left', 'closing', 'attritionPct'];
           rows = (
